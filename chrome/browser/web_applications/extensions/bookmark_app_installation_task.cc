@@ -48,7 +48,7 @@ BookmarkAppInstallationTask::BookmarkAppInstallationTask(
     web_app::InstallOptions install_options)
     : profile_(profile),
       install_finalizer_(install_finalizer),
-      extension_ids_map_(profile_->GetPrefs()),
+      externally_installed_app_prefs_(profile_->GetPrefs()),
       install_options_(std::move(install_options)) {}
 
 BookmarkAppInstallationTask::~BookmarkAppInstallationTask() = default;
@@ -106,9 +106,10 @@ void BookmarkAppInstallationTask::OnWebAppInstalled(
     return;
   }
 
-  extension_ids_map_.Insert(install_options_.url, app_id,
-                            install_options_.install_source);
-  extension_ids_map_.SetIsPlaceholder(install_options_.url, is_placeholder);
+  externally_installed_app_prefs_.Insert(install_options_.url, app_id,
+                                         install_options_.install_source);
+  externally_installed_app_prefs_.SetIsPlaceholder(install_options_.url,
+                                                   is_placeholder);
 
   auto success_closure =
       base::BindOnce(std::move(result_callback),

@@ -11,9 +11,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
@@ -135,7 +135,7 @@ void ApkWebAppInstaller::OnWebAppCreated(const GURL& app_url,
   // Otherwise, insert this web app into the extensions ID map so it is not
   // removed automatically. TODO(crbug.com/910008): have a less bad way of doing
   // this.
-  web_app::ExtensionIdsMap(profile_->GetPrefs())
+  web_app::ExternallyInstalledWebAppPrefs(profile_->GetPrefs())
       .Insert(app_url, app_id, web_app::InstallSource::kArc);
   CompleteInstallation(app_id, code);
 }

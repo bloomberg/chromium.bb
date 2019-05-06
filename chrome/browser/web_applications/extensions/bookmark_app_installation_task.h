@@ -11,9 +11,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/install_options.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 
 class Profile;
 
@@ -78,7 +78,7 @@ class BookmarkAppInstallationTask {
   Profile* profile_;
   web_app::InstallFinalizer* install_finalizer_;
 
-  web_app::ExtensionIdsMap extension_ids_map_;
+  web_app::ExternallyInstalledWebAppPrefs externally_installed_app_prefs_;
 
   const web_app::InstallOptions install_options_;
 

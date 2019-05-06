@@ -53,7 +53,7 @@ PendingBookmarkAppManager::PendingBookmarkAppManager(
       install_finalizer_(install_finalizer),
       uninstaller_(
           std::make_unique<BookmarkAppUninstaller>(profile_, registrar_)),
-      extension_ids_map_(profile->GetPrefs()),
+      externally_installed_app_prefs_(profile->GetPrefs()),
       url_loader_(std::make_unique<web_app::WebAppUrlLoader>()),
       task_factory_(base::BindRepeating(&InstallationTaskCreateWrapper)) {}
 
@@ -98,19 +98,19 @@ void PendingBookmarkAppManager::UninstallApps(
 
 std::vector<GURL> PendingBookmarkAppManager::GetInstalledAppUrls(
     web_app::InstallSource install_source) const {
-  return web_app::ExtensionIdsMap::GetInstalledAppUrls(profile_,
-                                                       install_source);
+  return web_app::ExternallyInstalledWebAppPrefs::GetInstalledAppUrls(
+      profile_, install_source);
 }
 
 base::Optional<web_app::AppId> PendingBookmarkAppManager::LookupAppId(
     const GURL& url) const {
-  return extension_ids_map_.LookupExtensionId(url);
+  return externally_installed_app_prefs_.LookupAppId(url);
 }
 
 bool PendingBookmarkAppManager::HasAppIdWithInstallSource(
     const web_app::AppId& app_id,
     web_app::InstallSource install_source) const {
-  return web_app::ExtensionIdsMap::HasExtensionIdWithInstallSource(
+  return web_app::ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
       profile_->GetPrefs(), app_id, install_source);
 }
 
@@ -150,20 +150,21 @@ void PendingBookmarkAppManager::MaybeStartNextInstallation() {
       return;
     }
 
-    base::Optional<std::string> extension_id =
-        extension_ids_map_.LookupExtensionId(install_options.url);
+    base::Optional<web_app::AppId> app_id =
+        externally_installed_app_prefs_.LookupAppId(install_options.url);
 
-    // If the URL is not in ExtensionIdsMap, we haven't installed it.
-    if (!extension_id.has_value()) {
+    // If the URL is not in ExternallyInstalledWebAppPrefs, then no external
+    // source has installed it.
+    if (!app_id.has_value()) {
       StartInstallationTask(std::move(front));
       return;
     }
 
-    if (registrar_->IsInstalled(extension_id.value())) {
+    if (registrar_->IsInstalled(app_id.value())) {
       if (install_options.wait_for_windows_closed &&
-          GetUiDelegate().GetNumWindowsForApp(extension_id.value()) != 0) {
+          GetUiDelegate().GetNumWindowsForApp(app_id.value()) != 0) {
         GetUiDelegate().NotifyOnAllAppWindowsClosed(
-            extension_id.value(),
+            app_id.value(),
             base::BindOnce(&PendingBookmarkAppManager::Install,
                            weak_ptr_factory_.GetWeakPtr(), install_options,
                            std::move(front->callback)));
@@ -173,7 +174,8 @@ void PendingBookmarkAppManager::MaybeStartNextInstallation() {
       // If the app is already installed, only reinstall it if the app is a
       // placeholder app and the client asked for it to be reinstalled.
       if (install_options.reinstall_placeholder &&
-          extension_ids_map_.LookupPlaceholderAppId(install_options.url)
+          externally_installed_app_prefs_
+              .LookupPlaceholderAppId(install_options.url)
               .has_value()) {
         StartInstallationTask(std::move(front));
         return;
@@ -189,7 +191,7 @@ void PendingBookmarkAppManager::MaybeStartNextInstallation() {
     // The app is not installed, but it might have been previously uninstalled
     // by the user. If that's the case, don't install it again unless
     // |override_previous_user_uninstall| is true.
-    if (registrar_->WasExternalAppUninstalledByUser(extension_id.value()) &&
+    if (registrar_->WasExternalAppUninstalledByUser(app_id.value()) &&
         !install_options.override_previous_user_uninstall) {
       std::move(front->callback)
           .Run(install_options.url,
@@ -212,11 +214,11 @@ bool PendingBookmarkAppManager::UninstallPlaceholderIfNecessary(
   if (!install_options.reinstall_placeholder)
     return true;
 
-  base::Optional<std::string> extension_id =
-      extension_ids_map_.LookupPlaceholderAppId(install_options.url);
+  base::Optional<web_app::AppId> app_id =
+      externally_installed_app_prefs_.LookupPlaceholderAppId(
+          install_options.url);
 
-  if (extension_id.has_value() &&
-      registrar_->IsInstalled(extension_id.value())) {
+  if (app_id.has_value() && registrar_->IsInstalled(app_id.value())) {
     return uninstaller_->UninstallApp(install_options.url);
   }
 
@@ -266,12 +268,12 @@ void PendingBookmarkAppManager::OnUrlLoaded(
     return;
   }
 
-  base::Optional<std::string> extension_id =
-      extension_ids_map_.LookupPlaceholderAppId(install_options.url);
-  if (extension_id.has_value() &&
-      registrar_->IsInstalled(extension_id.value())) {
+  base::Optional<web_app::AppId> app_id =
+      externally_installed_app_prefs_.LookupPlaceholderAppId(
+          install_options.url);
+  if (app_id.has_value() && registrar_->IsInstalled(app_id.value())) {
     // No need to install a placeholder app again.
-    CurrentInstallationFinished(extension_id.value());
+    CurrentInstallationFinished(app_id.value());
     return;
   }
 
@@ -293,7 +295,7 @@ void PendingBookmarkAppManager::OnInstalled(
 }
 
 void PendingBookmarkAppManager::CurrentInstallationFinished(
-    const base::Optional<std::string>& app_id) {
+    const base::Optional<web_app::AppId>& app_id) {
   // Post a task to avoid InstallableManager crashing and do so before
   // running the callback in case the callback tries to install another
   // app.

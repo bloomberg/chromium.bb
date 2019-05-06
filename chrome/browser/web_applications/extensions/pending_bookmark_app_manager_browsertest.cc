@@ -13,8 +13,8 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
@@ -67,9 +67,9 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest, InstallSucceeds) {
   GURL url(embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
   InstallApp(CreateInstallOptions(url));
   EXPECT_EQ(web_app::InstallResultCode::kSuccess, result_code_.value());
-  base::Optional<std::string> id =
-      web_app::ExtensionIdsMap(browser()->profile()->GetPrefs())
-          .LookupExtensionId(url);
+  base::Optional<web_app::AppId> id =
+      web_app::ExternallyInstalledWebAppPrefs(browser()->profile()->GetPrefs())
+          .LookupAppId(url);
   ASSERT_TRUE(id.has_value());
   const Extension* app = ExtensionRegistry::Get(browser()->profile())
                              ->enabled_extensions()
@@ -167,9 +167,9 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest,
       "/banners/manifest_test_page.html?manifest=manifest_chrome_url.json"));
   InstallApp(CreateInstallOptions(url));
   EXPECT_EQ(web_app::InstallResultCode::kSuccess, result_code_.value());
-  base::Optional<std::string> id =
-      web_app::ExtensionIdsMap(browser()->profile()->GetPrefs())
-          .LookupExtensionId(url);
+  base::Optional<web_app::AppId> id =
+      web_app::ExternallyInstalledWebAppPrefs(browser()->profile()->GetPrefs())
+          .LookupAppId(url);
   ASSERT_TRUE(id.has_value());
   const Extension* app = ExtensionRegistry::Get(browser()->profile())
                              ->enabled_extensions()
@@ -195,9 +195,9 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest,
 
   EXPECT_EQ(web_app::InstallResultCode::kFailedUnknownReason,
             result_code_.value());
-  base::Optional<std::string> id =
-      web_app::ExtensionIdsMap(browser()->profile()->GetPrefs())
-          .LookupExtensionId(url);
+  base::Optional<web_app::AppId> id =
+      web_app::ExternallyInstalledWebAppPrefs(browser()->profile()->GetPrefs())
+          .LookupAppId(url);
   ASSERT_FALSE(id.has_value());
 }
 

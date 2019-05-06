@@ -88,7 +88,7 @@ class TestBookmarkAppInstallationTask : public BookmarkAppInstallationTask {
         profile_(profile),
         registrar_(registrar),
         succeeds_(succeeds),
-        extension_ids_map_(profile_->GetPrefs()) {}
+        externally_installed_app_prefs_(profile_->GetPrefs()) {}
   ~TestBookmarkAppInstallationTask() override = default;
 
   void Install(content::WebContents* web_contents,
@@ -126,9 +126,10 @@ class TestBookmarkAppInstallationTask : public BookmarkAppInstallationTask {
   BookmarkAppInstallationTask::Result SimulateInstallingApp(
       bool is_placeholder = false) {
     std::string app_id = GenerateFakeAppId(install_options().url);
-    extension_ids_map_.Insert(install_options().url, app_id,
-                              install_options().install_source);
-    extension_ids_map_.SetIsPlaceholder(install_options().url, is_placeholder);
+    externally_installed_app_prefs_.Insert(install_options().url, app_id,
+                                           install_options().install_source);
+    externally_installed_app_prefs_.SetIsPlaceholder(install_options().url,
+                                                     is_placeholder);
     registrar_->AddAsInstalled(app_id);
     return {web_app::InstallResultCode::kSuccess, app_id};
   }
@@ -136,7 +137,7 @@ class TestBookmarkAppInstallationTask : public BookmarkAppInstallationTask {
   Profile* profile_;
   web_app::TestAppRegistrar* registrar_;
   bool succeeds_;
-  web_app::ExtensionIdsMap extension_ids_map_;
+  web_app::ExternallyInstalledWebAppPrefs externally_installed_app_prefs_;
 
   base::OnceClosure on_install_called_;
   base::OnceClosure on_install_placeholder_called_;

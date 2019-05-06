@@ -22,8 +22,8 @@
 #include "chrome/browser/ui/app_list/extension_uninstaller.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
@@ -446,14 +446,14 @@ apps::mojom::InstallSource GetInstallSource(
     const Profile* profile,
     const extensions::Extension* extension) {
   if (extensions::Manifest::IsComponentLocation(extension->location()) ||
-      web_app::ExtensionIdsMap::HasExtensionIdWithInstallSource(
+      web_app::ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
           profile->GetPrefs(), extension->id(),
           web_app::InstallSource::kSystemInstalled)) {
     return apps::mojom::InstallSource::kSystem;
   }
 
   if (extensions::Manifest::IsPolicyLocation(extension->location()) ||
-      web_app::ExtensionIdsMap::HasExtensionIdWithInstallSource(
+      web_app::ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
           profile->GetPrefs(), extension->id(),
           web_app::InstallSource::kExternalPolicy)) {
     return apps::mojom::InstallSource::kPolicy;
@@ -464,7 +464,7 @@ apps::mojom::InstallSource GetInstallSource(
   }
 
   if (extension->was_installed_by_default() ||
-      web_app::ExtensionIdsMap::HasExtensionIdWithInstallSource(
+      web_app::ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
           profile->GetPrefs(), extension->id(),
           web_app::InstallSource::kExternalDefault)) {
     return apps::mojom::InstallSource::kDefault;

@@ -7,6 +7,8 @@ source_set("components") {
     "app_registrar.cc",
     "app_registrar.h",
     "app_registrar_observer.h",
+    "externally_installed_web_app_prefs.cc",
+    "externally_installed_web_app_prefs.h",
     "install_finalizer.h",
     "install_manager.cc",
     "install_manager.h",

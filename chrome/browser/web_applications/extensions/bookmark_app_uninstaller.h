@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_UNINSTALLER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_UNINSTALLER_H_
 
-#include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
+#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 
 class Profile;
 class GURL;
@@ -29,7 +29,7 @@ class BookmarkAppUninstaller {
  private:
   Profile* profile_;
   web_app::AppRegistrar* registrar_;
-  web_app::ExtensionIdsMap extension_ids_map_;
+  web_app::ExternallyInstalledWebAppPrefs externally_installed_app_prefs_;
 };
 
 }  // namespace extensions

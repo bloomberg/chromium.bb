@@ -83,8 +83,6 @@ class BookmarkAppUninstallerTest : public ChromeRenderViewHostTestHarness {
         std::make_unique<TestExtensionRegistryObserver>(
             ExtensionRegistry::Get(profile()));
 
-    extension_ids_map_ =
-        std::make_unique<web_app::ExtensionIdsMap>(profile()->GetPrefs());
     registrar_ = std::make_unique<BookmarkAppRegistrar>(profile());
 
     uninstaller_ =
@@ -105,8 +103,8 @@ class BookmarkAppUninstallerTest : public ChromeRenderViewHostTestHarness {
                          .SetID(app_id)
                          .Build();
     ExtensionRegistry::Get(profile())->AddEnabled(extension);
-    extension_ids_map_->Insert(app_url, app_id,
-                               web_app::InstallSource::kExternalPolicy);
+    web_app::ExternallyInstalledWebAppPrefs(profile()->GetPrefs())
+        .Insert(app_url, app_id, web_app::InstallSource::kExternalPolicy);
     return app_id;
   }
 
@@ -133,7 +131,6 @@ class BookmarkAppUninstallerTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<TestExtensionRegistryObserver>
       test_extension_registry_observer_;
 
-  std::unique_ptr<web_app::ExtensionIdsMap> extension_ids_map_;
   std::unique_ptr<BookmarkAppRegistrar> registrar_;
   std::unique_ptr<BookmarkAppUninstaller> uninstaller_;
 

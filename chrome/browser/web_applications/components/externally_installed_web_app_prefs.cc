@@ -1,8 +1,8 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
+#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 
 #include <string>
 #include <utility>
@@ -45,21 +45,24 @@ namespace {
 // Two levels in is a dictionary (key/value pairs) whose keys are URLs and
 // values are leaf dictionaries. Those leaf dictionaries have keys such as
 // kExtensionId and kInstallSource.
+// The name "extension_id" comes from when PWAs were only backed by the
+// Extension system rather than their own. It cannot be changed now that it
+// lives persistently in users' profiles.
 constexpr char kExtensionId[] = "extension_id";
 constexpr char kInstallSource[] = "install_source";
 constexpr char kIsPlaceholder[] = "is_placeholder";
 
 // Returns the base::Value in |pref_service| corresponding to our stored dict
-// for |extension_id|, or nullptr if it doesn't exist.
+// for |app_id|, or nullptr if it doesn't exist.
 const base::Value* GetPreferenceValue(const PrefService* pref_service,
-                                      const std::string& extension_id) {
+                                      const AppId& app_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const base::DictionaryValue* urls_to_dicts =
       pref_service->GetDictionary(prefs::kWebAppsExtensionIDs);
   if (!urls_to_dicts) {
     return nullptr;
   }
-  // Do a simple O(N) scan for extension_id being a value in each dictionary's
+  // Do a simple O(N) scan for app_id being a value in each dictionary's
   // key/value pairs. We expect both N and the number of times
   // GetPreferenceValue is called to be relatively small in practice. If they
   // turn out to be large, we can write a more sophisticated implementation.
@@ -68,7 +71,7 @@ const base::Value* GetPreferenceValue(const PrefService* pref_service,
     const base::Value* v = root;
     if (v->is_dict()) {
       v = v->FindKey(kExtensionId);
-      if (v && v->is_string() && (v->GetString() == extension_id)) {
+      if (v && v->is_string() && (v->GetString() == app_id)) {
         return root;
       }
     }
@@ -79,24 +82,24 @@ const base::Value* GetPreferenceValue(const PrefService* pref_service,
 }  // namespace
 
 // static
-void ExtensionIdsMap::RegisterProfilePrefs(
+void ExternallyInstalledWebAppPrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(prefs::kWebAppsExtensionIDs);
 }
 
 // static
-bool ExtensionIdsMap::HasExtensionId(const PrefService* pref_service,
-                                     const std::string& extension_id) {
-  return GetPreferenceValue(pref_service, extension_id) != nullptr;
+bool ExternallyInstalledWebAppPrefs::HasAppId(const PrefService* pref_service,
+                                              const AppId& app_id) {
+  return GetPreferenceValue(pref_service, app_id) != nullptr;
 }
 
 // static
 
-bool ExtensionIdsMap::HasExtensionIdWithInstallSource(
+bool ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
     const PrefService* pref_service,
-    const std::string& extension_id,
+    const AppId& app_id,
     InstallSource install_source) {
-  const base::Value* v = GetPreferenceValue(pref_service, extension_id);
+  const base::Value* v = GetPreferenceValue(pref_service, app_id);
   if (v == nullptr || !v->is_dict())
     return false;
 
@@ -105,7 +108,7 @@ bool ExtensionIdsMap::HasExtensionIdWithInstallSource(
 }
 
 // static
-std::vector<GURL> ExtensionIdsMap::GetInstalledAppUrls(
+std::vector<GURL> ExternallyInstalledWebAppPrefs::GetInstalledAppUrls(
     Profile* profile,
     InstallSource install_source) {
   const base::DictionaryValue* urls_to_dicts =
@@ -147,23 +150,24 @@ std::vector<GURL> ExtensionIdsMap::GetInstalledAppUrls(
   return installed_app_urls;
 }
 
-ExtensionIdsMap::ExtensionIdsMap(PrefService* pref_service)
+ExternallyInstalledWebAppPrefs::ExternallyInstalledWebAppPrefs(
+    PrefService* pref_service)
     : pref_service_(pref_service) {}
 
-void ExtensionIdsMap::Insert(const GURL& url,
-                             const std::string& extension_id,
-                             InstallSource install_source) {
+void ExternallyInstalledWebAppPrefs::Insert(const GURL& url,
+                                            const AppId& app_id,
+                                            InstallSource install_source) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetKey(kExtensionId, base::Value(extension_id));
+  dict.SetKey(kExtensionId, base::Value(app_id));
   dict.SetKey(kInstallSource, base::Value(static_cast<int>(install_source)));
 
   DictionaryPrefUpdate update(pref_service_, prefs::kWebAppsExtensionIDs);
   update->SetKey(url.spec(), std::move(dict));
 }
 
-base::Optional<std::string> ExtensionIdsMap::LookupExtensionId(
+base::Optional<AppId> ExternallyInstalledWebAppPrefs::LookupAppId(
     const GURL& url) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -179,7 +183,7 @@ base::Optional<std::string> ExtensionIdsMap::LookupExtensionId(
   return base::nullopt;
 }
 
-base::Optional<std::string> ExtensionIdsMap::LookupPlaceholderAppId(
+base::Optional<AppId> ExternallyInstalledWebAppPrefs::LookupPlaceholderAppId(
     const GURL& url) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -196,7 +200,8 @@ base::Optional<std::string> ExtensionIdsMap::LookupPlaceholderAppId(
   return *entry->FindStringKey(kExtensionId);
 }
 
-void ExtensionIdsMap::SetIsPlaceholder(const GURL& url, bool is_placeholder) {
+void ExternallyInstalledWebAppPrefs::SetIsPlaceholder(const GURL& url,
+                                                      bool is_placeholder) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   DCHECK(pref_service_->GetDictionary(prefs::kWebAppsExtensionIDs)

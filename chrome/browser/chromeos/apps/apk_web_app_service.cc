@@ -10,8 +10,8 @@
 #include "chrome/browser/chromeos/apps/apk_web_app_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 #include "components/arc/common/app.mojom.h"
 #include "components/arc/session/connection_holder.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -85,7 +85,7 @@ void ApkWebAppService::SetArcAppListPrefsForTesting(ArcAppListPrefs* prefs) {
 }
 
 void ApkWebAppService::UninstallWebApp(const web_app::AppId& web_app_id) {
-  if (!web_app::ExtensionIdsMap::HasExtensionIdWithInstallSource(
+  if (!web_app::ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
           profile_->GetPrefs(), web_app_id, web_app::InstallSource::kArc)) {
     // Do not uninstall a web app that was not installed via ApkWebAppInstaller.
     return;

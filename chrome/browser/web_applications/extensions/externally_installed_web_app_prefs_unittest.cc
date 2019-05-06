@@ -1,8 +1,8 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
+#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 
 #include <algorithm>
 
@@ -21,13 +21,15 @@ namespace web_app {
 
 using InstallSource = InstallSource;
 
-class WebAppExtensionIdsMapTest : public ChromeRenderViewHostTestHarness {
+class ExternallyInstalledWebAppPrefsTest
+    : public ChromeRenderViewHostTestHarness {
  public:
-  WebAppExtensionIdsMapTest() = default;
-  ~WebAppExtensionIdsMapTest() override = default;
+  ExternallyInstalledWebAppPrefsTest() = default;
+  ~ExternallyInstalledWebAppPrefsTest() override = default;
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
+    // TODO(https://crbug.com/891172): Use an extension agnostic test registry.
     extensions::TestExtensionSystem* test_system =
         static_cast<extensions::TestExtensionSystem*>(
             extensions::ExtensionSystem::Get(profile()));
@@ -45,8 +47,8 @@ class WebAppExtensionIdsMapTest : public ChromeRenderViewHostTestHarness {
     extensions::ExtensionRegistry::Get(profile())->AddEnabled(
         extensions::ExtensionBuilder("Dummy Name").SetID(id).Build());
 
-    ExtensionIdsMap extension_ids_map(profile()->GetPrefs());
-    extension_ids_map.Insert(url, id, install_source);
+    ExternallyInstalledWebAppPrefs(profile()->GetPrefs())
+        .Insert(url, id, install_source);
   }
 
   void SimulateUninstallApp(GURL url) {
@@ -55,17 +57,17 @@ class WebAppExtensionIdsMapTest : public ChromeRenderViewHostTestHarness {
   }
 
   std::vector<GURL> GetInstalledAppUrls(InstallSource install_source) {
-    std::vector<GURL> vec =
-        ExtensionIdsMap::GetInstalledAppUrls(profile(), install_source);
+    std::vector<GURL> vec = ExternallyInstalledWebAppPrefs::GetInstalledAppUrls(
+        profile(), install_source);
     std::sort(vec.begin(), vec.end());
     return vec;
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WebAppExtensionIdsMapTest);
+  DISALLOW_COPY_AND_ASSIGN(ExternallyInstalledWebAppPrefsTest);
 };
 
-TEST_F(WebAppExtensionIdsMapTest, BasicOps) {
+TEST_F(ExternallyInstalledWebAppPrefsTest, BasicOps) {
   GURL url_a("https://a.example.com/");
   GURL url_b("https://b.example.com/");
   GURL url_c("https://c.example.com/");
@@ -77,19 +79,19 @@ TEST_F(WebAppExtensionIdsMapTest, BasicOps) {
   std::string id_d = GenerateFakeExtensionId(url_d);
 
   auto* prefs = profile()->GetPrefs();
-  ExtensionIdsMap map(prefs);
+  ExternallyInstalledWebAppPrefs map(prefs);
 
   // Start with an empty map.
 
-  EXPECT_EQ("missing", map.LookupExtensionId(url_a).value_or("missing"));
-  EXPECT_EQ("missing", map.LookupExtensionId(url_b).value_or("missing"));
-  EXPECT_EQ("missing", map.LookupExtensionId(url_c).value_or("missing"));
-  EXPECT_EQ("missing", map.LookupExtensionId(url_d).value_or("missing"));
+  EXPECT_EQ("missing", map.LookupAppId(url_a).value_or("missing"));
+  EXPECT_EQ("missing", map.LookupAppId(url_b).value_or("missing"));
+  EXPECT_EQ("missing", map.LookupAppId(url_c).value_or("missing"));
+  EXPECT_EQ("missing", map.LookupAppId(url_d).value_or("missing"));
 
-  EXPECT_FALSE(ExtensionIdsMap::HasExtensionId(prefs, id_a));
-  EXPECT_FALSE(ExtensionIdsMap::HasExtensionId(prefs, id_b));
-  EXPECT_FALSE(ExtensionIdsMap::HasExtensionId(prefs, id_c));
-  EXPECT_FALSE(ExtensionIdsMap::HasExtensionId(prefs, id_d));
+  EXPECT_FALSE(ExternallyInstalledWebAppPrefs::HasAppId(prefs, id_a));
+  EXPECT_FALSE(ExternallyInstalledWebAppPrefs::HasAppId(prefs, id_b));
+  EXPECT_FALSE(ExternallyInstalledWebAppPrefs::HasAppId(prefs, id_c));
+  EXPECT_FALSE(ExternallyInstalledWebAppPrefs::HasAppId(prefs, id_d));
 
   EXPECT_EQ(std::vector<GURL>({}),
             GetInstalledAppUrls(InstallSource::kInternal));
@@ -104,15 +106,15 @@ TEST_F(WebAppExtensionIdsMapTest, BasicOps) {
   SimulatePreviouslyInstalledApp(url_b, InstallSource::kInternal);
   SimulatePreviouslyInstalledApp(url_c, InstallSource::kExternalDefault);
 
-  EXPECT_EQ(id_a, map.LookupExtensionId(url_a).value_or("missing"));
-  EXPECT_EQ(id_b, map.LookupExtensionId(url_b).value_or("missing"));
-  EXPECT_EQ(id_c, map.LookupExtensionId(url_c).value_or("missing"));
-  EXPECT_EQ("missing", map.LookupExtensionId(url_d).value_or("missing"));
+  EXPECT_EQ(id_a, map.LookupAppId(url_a).value_or("missing"));
+  EXPECT_EQ(id_b, map.LookupAppId(url_b).value_or("missing"));
+  EXPECT_EQ(id_c, map.LookupAppId(url_c).value_or("missing"));
+  EXPECT_EQ("missing", map.LookupAppId(url_d).value_or("missing"));
 
-  EXPECT_TRUE(ExtensionIdsMap::HasExtensionId(prefs, id_a));
-  EXPECT_TRUE(ExtensionIdsMap::HasExtensionId(prefs, id_b));
-  EXPECT_TRUE(ExtensionIdsMap::HasExtensionId(prefs, id_c));
-  EXPECT_FALSE(ExtensionIdsMap::HasExtensionId(prefs, id_d));
+  EXPECT_TRUE(ExternallyInstalledWebAppPrefs::HasAppId(prefs, id_a));
+  EXPECT_TRUE(ExternallyInstalledWebAppPrefs::HasAppId(prefs, id_b));
+  EXPECT_TRUE(ExternallyInstalledWebAppPrefs::HasAppId(prefs, id_c));
+  EXPECT_FALSE(ExternallyInstalledWebAppPrefs::HasAppId(prefs, id_d));
 
   EXPECT_EQ(std::vector<GURL>({url_b}),
             GetInstalledAppUrls(InstallSource::kInternal));
@@ -125,15 +127,15 @@ TEST_F(WebAppExtensionIdsMapTest, BasicOps) {
 
   SimulatePreviouslyInstalledApp(url_c, InstallSource::kInternal);
 
-  EXPECT_EQ(id_a, map.LookupExtensionId(url_a).value_or("missing"));
-  EXPECT_EQ(id_b, map.LookupExtensionId(url_b).value_or("missing"));
-  EXPECT_EQ(id_c, map.LookupExtensionId(url_c).value_or("missing"));
-  EXPECT_EQ("missing", map.LookupExtensionId(url_d).value_or("missing"));
+  EXPECT_EQ(id_a, map.LookupAppId(url_a).value_or("missing"));
+  EXPECT_EQ(id_b, map.LookupAppId(url_b).value_or("missing"));
+  EXPECT_EQ(id_c, map.LookupAppId(url_c).value_or("missing"));
+  EXPECT_EQ("missing", map.LookupAppId(url_d).value_or("missing"));
 
-  EXPECT_TRUE(ExtensionIdsMap::HasExtensionId(prefs, id_a));
-  EXPECT_TRUE(ExtensionIdsMap::HasExtensionId(prefs, id_b));
-  EXPECT_TRUE(ExtensionIdsMap::HasExtensionId(prefs, id_c));
-  EXPECT_FALSE(ExtensionIdsMap::HasExtensionId(prefs, id_d));
+  EXPECT_TRUE(ExternallyInstalledWebAppPrefs::HasAppId(prefs, id_a));
+  EXPECT_TRUE(ExternallyInstalledWebAppPrefs::HasAppId(prefs, id_b));
+  EXPECT_TRUE(ExternallyInstalledWebAppPrefs::HasAppId(prefs, id_c));
+  EXPECT_FALSE(ExternallyInstalledWebAppPrefs::HasAppId(prefs, id_d));
 
   EXPECT_EQ(std::vector<GURL>({url_b, url_c}),
             GetInstalledAppUrls(InstallSource::kInternal));
@@ -142,21 +144,21 @@ TEST_F(WebAppExtensionIdsMapTest, BasicOps) {
   EXPECT_EQ(std::vector<GURL>({}),
             GetInstalledAppUrls(InstallSource::kExternalPolicy));
 
-  // Uninstall an underlying extension. The ExtensionIdsMap will still return
-  // positive for LookupExtensionId and HasExtensionId (as they ignore
+  // Uninstall an underlying extension. The ExternallyInstalledWebAppPrefs will
+  // still return positive for LookupAppId and HasAppId (as they ignore
   // installed-ness), but GetInstalledAppUrls will skip over it.
 
   SimulateUninstallApp(url_b);
 
-  EXPECT_EQ(id_a, map.LookupExtensionId(url_a).value_or("missing"));
-  EXPECT_EQ(id_b, map.LookupExtensionId(url_b).value_or("missing"));
-  EXPECT_EQ(id_c, map.LookupExtensionId(url_c).value_or("missing"));
-  EXPECT_EQ("missing", map.LookupExtensionId(url_d).value_or("missing"));
+  EXPECT_EQ(id_a, map.LookupAppId(url_a).value_or("missing"));
+  EXPECT_EQ(id_b, map.LookupAppId(url_b).value_or("missing"));
+  EXPECT_EQ(id_c, map.LookupAppId(url_c).value_or("missing"));
+  EXPECT_EQ("missing", map.LookupAppId(url_d).value_or("missing"));
 
-  EXPECT_TRUE(ExtensionIdsMap::HasExtensionId(prefs, id_a));
-  EXPECT_TRUE(ExtensionIdsMap::HasExtensionId(prefs, id_b));
-  EXPECT_TRUE(ExtensionIdsMap::HasExtensionId(prefs, id_c));
-  EXPECT_FALSE(ExtensionIdsMap::HasExtensionId(prefs, id_d));
+  EXPECT_TRUE(ExternallyInstalledWebAppPrefs::HasAppId(prefs, id_a));
+  EXPECT_TRUE(ExternallyInstalledWebAppPrefs::HasAppId(prefs, id_b));
+  EXPECT_TRUE(ExternallyInstalledWebAppPrefs::HasAppId(prefs, id_c));
+  EXPECT_FALSE(ExternallyInstalledWebAppPrefs::HasAppId(prefs, id_d));
 
   EXPECT_EQ(std::vector<GURL>({url_c}),
             GetInstalledAppUrls(InstallSource::kInternal));

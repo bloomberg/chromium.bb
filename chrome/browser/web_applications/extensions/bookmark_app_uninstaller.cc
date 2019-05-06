@@ -17,20 +17,20 @@ BookmarkAppUninstaller::BookmarkAppUninstaller(Profile* profile,
                                                web_app::AppRegistrar* registrar)
     : profile_(profile),
       registrar_(registrar),
-      extension_ids_map_(profile->GetPrefs()) {}
+      externally_installed_app_prefs_(profile->GetPrefs()) {}
 
 BookmarkAppUninstaller::~BookmarkAppUninstaller() = default;
 
 bool BookmarkAppUninstaller::UninstallApp(const GURL& app_url) {
-  base::Optional<std::string> extension_id =
-      extension_ids_map_.LookupExtensionId(app_url);
-  if (!extension_id.has_value()) {
+  base::Optional<web_app::AppId> app_id =
+      externally_installed_app_prefs_.LookupAppId(app_url);
+  if (!app_id.has_value()) {
     LOG(WARNING) << "Couldn't uninstall app with url " << app_url
                  << "; No corresponding extension for url.";
     return false;
   }
 
-  if (!registrar_->IsInstalled(extension_id.value())) {
+  if (!registrar_->IsInstalled(app_id.value())) {
     LOG(WARNING) << "Couldn't uninstall app with url " << app_url
                  << "; Extension not installed.";
     return false;
@@ -39,8 +39,7 @@ bool BookmarkAppUninstaller::UninstallApp(const GURL& app_url) {
   base::string16 error;
   bool uninstalled =
       ExtensionSystem::Get(profile_)->extension_service()->UninstallExtension(
-          extension_id.value(), UNINSTALL_REASON_ORPHANED_EXTERNAL_EXTENSION,
-          &error);
+          app_id.value(), UNINSTALL_REASON_ORPHANED_EXTERNAL_EXTENSION, &error);
 
   if (!uninstalled) {
     LOG(WARNING) << "Couldn't uninstall app with url " << app_url << ". "

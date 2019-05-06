@@ -24,10 +24,10 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/installable/installable_data.h"
 #include "chrome/browser/web_applications/bookmark_apps/bookmark_app_install_manager.h"
+#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
 #include "chrome/browser/web_applications/test/test_install_finalizer.h"
 #include "chrome/common/pref_names.h"
@@ -52,8 +52,8 @@ namespace {
 const char kWebAppTitle[] = "Foo Title";
 const GURL kWebAppUrl("https://foo.example");
 
-// TODO(ortuno): Move this to ExtensionIdsMap or replace with a method
-// in ExtensionIdsMap once there is one.
+// TODO(ortuno): Move this to ExternallyInstalledWebAppPrefs or replace with a
+// method in ExternallyInstalledWebAppPrefs once there is one.
 bool IsPlaceholderApp(Profile* profile, const GURL& url) {
   const base::Value* map =
       profile->GetPrefs()->GetDictionary(prefs::kWebAppsExtensionIDs);
@@ -192,9 +192,9 @@ TEST_F(BookmarkAppInstallationTaskTest,
       web_contents(),
       base::BindLambdaForTesting(
           [&](BookmarkAppInstallationTask::Result result) {
-            base::Optional<std::string> id =
-                web_app::ExtensionIdsMap(profile()->GetPrefs())
-                    .LookupExtensionId(kWebAppUrl);
+            base::Optional<web_app::AppId> id =
+                web_app::ExternallyInstalledWebAppPrefs(profile()->GetPrefs())
+                    .LookupAppId(kWebAppUrl);
 
             EXPECT_EQ(web_app::InstallResultCode::kSuccess, result.code);
             EXPECT_TRUE(result.app_id.has_value());
@@ -231,20 +231,20 @@ TEST_F(BookmarkAppInstallationTaskTest,
                               web_app::InstallSource::kInternal));
 
   bool callback_called = false;
-  task->Install(web_contents(),
-                base::BindLambdaForTesting(
-                    [&](BookmarkAppInstallationTask::Result result) {
-                      base::Optional<std::string> id =
-                          web_app::ExtensionIdsMap(profile()->GetPrefs())
-                              .LookupExtensionId(kWebAppUrl);
+  task->Install(
+      web_contents(),
+      base::BindLambdaForTesting(
+          [&](BookmarkAppInstallationTask::Result result) {
+            base::Optional<web_app::AppId> id =
+                web_app::ExternallyInstalledWebAppPrefs(profile()->GetPrefs())
+                    .LookupAppId(kWebAppUrl);
 
-                      EXPECT_NE(web_app::InstallResultCode::kSuccess,
-                                result.code);
-                      EXPECT_FALSE(result.app_id.has_value());
+            EXPECT_NE(web_app::InstallResultCode::kSuccess, result.code);
+            EXPECT_FALSE(result.app_id.has_value());
 
-                      EXPECT_FALSE(id.has_value());
-                      callback_called = true;
-                    }));
+            EXPECT_FALSE(id.has_value());
+            callback_called = true;
+          }));
 
   content::RunAllTasksUntilIdle();
 
