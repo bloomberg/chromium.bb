@@ -229,24 +229,6 @@ const char kGesturePropertiesServiceSetPropertyMethod[] = "SetProperty";
 
 }  // namespace chromeos
 
-namespace cromo {
-// cromo D-Bus service identifiers
-const char kCromoServiceName[] = "org.chromium.ModemManager";
-const char kCromoServicePath[] = "/org/chromium/ModemManager";
-
-// cromo D-Bus interfaces
-const char kModemInterface[] = "org.freedesktop.ModemManager.Modem";
-const char kModemSimpleInterface[] =
-    "org.freedesktop.ModemManager.Modem.Simple";
-const char kModemCdmaInterface[] = "org.freedesktop.ModemManager.Modem.Cdma";
-const char kModemGsmInterface[] = "org.freedesktop.ModemManager.Modem.Gsm";
-const char kModemGsmCardInterface[] =
-    "org.freedesktop.ModemManager.Modem.Gsm.Card";
-const char kModemGsmNetworkInterface[] =
-    "org.freedesktop.ModemManager.Modem.Gsm.Network";
-const char kModemGobiInterface[] = "org.chromium.ModemManager.Modem.Gobi";
-}  // namespace cromo
-
 namespace media_perception {
 
 const char kMediaPerceptionServiceName[] = "org.chromium.MediaPerception";
