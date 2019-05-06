@@ -36,6 +36,10 @@ interface PortalClient {
   ForwardMessageFromGuest(TransferableMessage message,
                           url.mojom.Origin source_origin,
                           url.mojom.Origin? target_origin);
+
+  // Dispatches the load event on the HTMLPortalElement when the portal finishes
+  // loading.
+  DispatchLoadEvent();
 };
 
 // Used by blink::PortalHost in the inner renderer process to communicate with

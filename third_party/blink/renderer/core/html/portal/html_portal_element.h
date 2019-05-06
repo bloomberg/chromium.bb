@@ -64,6 +64,7 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement,
       BlinkTransferableMessage message,
       const scoped_refptr<const SecurityOrigin>& source_origin,
       const scoped_refptr<const SecurityOrigin>& target_origin) override;
+  void DispatchLoadEvent() override;
 
   const base::UnguessableToken& GetToken() const { return portal_token_; }
 

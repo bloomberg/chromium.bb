@@ -271,6 +271,14 @@ void HTMLPortalElement::ForwardMessageFromGuest(
       this, std::move(message), source_origin, target_origin);
 }
 
+void HTMLPortalElement::DispatchLoadEvent() {
+  if (!portal_ptr_)
+    return;
+
+  DispatchLoad();
+  GetDocument().CheckCompleted();
+}
+
 HTMLPortalElement::InsertionNotificationRequest HTMLPortalElement::InsertedInto(
     ContainerNode& node) {
   auto result = HTMLFrameOwnerElement::InsertedInto(node);

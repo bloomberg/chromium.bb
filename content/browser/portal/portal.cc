@@ -240,6 +240,13 @@ void Portal::WebContentsDestroyed() {
   binding_->Close();  // Also deletes |this|.
 }
 
+void Portal::LoadingStateChanged(WebContents* source,
+                                 bool to_different_document) {
+  DCHECK_EQ(source, portal_contents_impl_);
+  if (!source->IsLoading())
+    client_->DispatchLoadEvent();
+}
+
 void Portal::PortalWebContentsCreated(WebContents* portal_web_contents) {
   WebContentsImpl* outer_contents = static_cast<WebContentsImpl*>(
       WebContents::FromRenderFrameHost(owner_render_frame_host_));

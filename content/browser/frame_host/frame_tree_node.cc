@@ -483,12 +483,12 @@ void FrameTreeNode::DidStopLoading() {
   // the WebContents of the load progress change.
   DidChangeLoadProgress(kLoadingProgressDone);
 
+  // Notify the RenderFrameHostManager of the event.
+  render_manager()->OnDidStopLoading();
+
   // Notify the WebContents.
   if (!frame_tree_->IsLoading())
     navigator()->GetDelegate()->DidStopLoading();
-
-  // Notify the RenderFrameHostManager of the event.
-  render_manager()->OnDidStopLoading();
 
   // Notify accessibility that the user is no longer trying to load or
   // reload a page.

@@ -203,6 +203,8 @@
 #include "third_party/blink/renderer/core/html/parser/nesting_level_incrementer.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/html/plugin_document.h"
+#include "third_party/blink/renderer/core/html/portal/document_portals.h"
+#include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
 #include "third_party/blink/renderer/core/html/window_name_collection.h"
 #include "third_party/blink/renderer/core/html_element_factory.h"
 #include "third_party/blink/renderer/core/html_element_type_helpers.h"
@@ -3429,12 +3431,18 @@ void Document::ImplicitClose() {
     AccessSVGExtensions().StartAnimations();
 }
 
-static bool AllDescendantsAreComplete(Frame* frame) {
+static bool AllDescendantsAreComplete(Document* document) {
+  Frame* frame = document->GetFrame();
   if (!frame)
     return true;
   for (Frame* child = frame->Tree().FirstChild(); child;
        child = child->Tree().TraverseNext(frame)) {
     if (child->IsLoading())
+      return false;
+  }
+  for (HTMLPortalElement* portal :
+       DocumentPortals::From(*document).GetPortals()) {
+    if (portal->ContentFrame() && portal->ContentFrame()->IsLoading())
       return false;
   }
   return true;
@@ -3445,7 +3453,7 @@ bool Document::ShouldComplete() {
          !fetcher_->BlockingRequestCount() && !IsDelayingLoadEvent() &&
          !javascript_url_task_handle_.IsActive() &&
          load_event_progress_ != kLoadEventInProgress &&
-         AllDescendantsAreComplete(frame_);
+         AllDescendantsAreComplete(this);
 }
 
 void Document::Abort(bool for_form_submission) {
@@ -3514,7 +3522,7 @@ bool Document::CheckCompletedInternal() {
   View()->HandleLoadCompleted();
   // The document itself is complete, but if a child frame was restarted due to
   // an event, this document is still considered to be in progress.
-  if (!AllDescendantsAreComplete(frame_))
+  if (!AllDescendantsAreComplete(this))
     return false;
 
   // No need to repeat if we've already notified this load as finished.

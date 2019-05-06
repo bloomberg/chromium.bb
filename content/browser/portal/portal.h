@@ -77,6 +77,8 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   void WebContentsDestroyed() override;
 
   // WebContentsDelegate overrides.
+  void LoadingStateChanged(WebContents* source,
+                           bool to_different_document) override;
   void PortalWebContentsCreated(WebContents* portal_web_contents) override;
 
   // Returns the token which uniquely identifies this Portal.
@@ -127,7 +129,7 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   // When the portal is not attached, the Portal owns its WebContents.
   std::unique_ptr<WebContents> portal_contents_;
 
-  WebContentsImpl* portal_contents_impl_;
+  WebContentsImpl* portal_contents_impl_ = nullptr;
 };
 
 }  // namespace content
