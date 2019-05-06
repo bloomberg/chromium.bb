@@ -451,8 +451,9 @@ class AssistantOptInFlowTest : public MixinBasedInProcessBrowserTest {
 
   std::unique_ptr<FakeAssistantSettings> assistant_settings_;
 
-  // If set, HandleRequest will return errors for value prop URLs.
-  bool fail_value_prop_url_requests_ = false;
+  // If set, HandleRequest will return an error for the next value prop URL
+  // request..
+  bool fail_next_value_prop_url_request_ = false;
 
   base::test::ScopedFeatureList feature_list_;
 
@@ -460,7 +461,8 @@ class AssistantOptInFlowTest : public MixinBasedInProcessBrowserTest {
   std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
     auto response = std::make_unique<BasicHttpResponse>();
     if (request.relative_url != "/test_assistant/en_us/value_prop.html" ||
-        fail_value_prop_url_requests_) {
+        fail_next_value_prop_url_request_) {
+      fail_next_value_prop_url_request_ = false;
       response->set_code(net::HTTP_NOT_FOUND);
     } else {
       response->set_code(net::HTTP_OK);
@@ -719,7 +721,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, RetryOnWebviewLoadFail) {
   SetUpAssistantScreensForTest();
-  fail_value_prop_url_requests_ = true;
+  fail_next_value_prop_url_request_ = true;
 
   assistant_optin_flow_screen_->Show();
 
@@ -733,7 +735,6 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, RetryOnWebviewLoadFail) {
   // Value prop webview requests are set to fail - loading screen should display
   // an error and an option to retry the request.
   WaitForAssistantScreen("loading");
-  fail_value_prop_url_requests_ = false;
   TapWhenEnabled({"assistant-optin-flow-card", "loading", "retry-button"});
 
   WaitForAssistantScreen("value-prop");
