@@ -4,6 +4,8 @@
 
 #include "components/cdm/renderer/widevine_key_system_properties.h"
 
+#include "base/feature_list.h"
+#include "media/base/media_switches.h"
 #include "third_party/widevine/cdm/buildflags.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 
@@ -98,12 +100,18 @@ EmeConfigRule WidevineKeySystemProperties::GetEncryptionSchemeConfigRule(
 }
 
 SupportedCodecs WidevineKeySystemProperties::GetSupportedCodecs() const {
-  return codecs_;
+  // Disable AV1 if feature kWidevineAv1 is disabled
+  return base::FeatureList::IsEnabled(media::kWidevineAv1)
+             ? codecs_
+             : (codecs_ & ~media::EME_CODEC_AV1);
 }
 
 SupportedCodecs WidevineKeySystemProperties::GetSupportedHwSecureCodecs()
     const {
-  return hw_secure_codecs_;
+  // Disable AV1 if feature kWidevineAv1 is disabled
+  return base::FeatureList::IsEnabled(media::kWidevineAv1)
+             ? hw_secure_codecs_
+             : (hw_secure_codecs_ & ~media::EME_CODEC_AV1);
 }
 
 EmeConfigRule WidevineKeySystemProperties::GetRobustnessConfigRule(
