@@ -32,6 +32,11 @@ class ProtoDatabaseProviderFactory : public SimpleKeyedServiceFactory {
   // instantiate ProtoDatabases that use the appropriate profile directory.
   static ProtoDatabaseProvider* GetForKey(SimpleFactoryKey* key);
 
+  // Some tests may get databases with manually created keys, this method
+  // removes a key from the mapping to avoid reusing a database from a past
+  // test.
+  static void RemoveKeyForTesting(SimpleFactoryKey* key);
+
  private:
   friend class base::NoDestructor<ProtoDatabaseProviderFactory>;
 

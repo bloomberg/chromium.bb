@@ -65,6 +65,8 @@ std::string SharedProtoDatabaseClientList::ProtoDbTypeToString(
       return "BudgetManager";
     case ProtoDbType::STRIKE_DATABASE:
       return "StrikeService";
+    case ProtoDbType::HINT_CACHE_STORE:
+      return "PreviewsHintCacheStore";
     case ProtoDbType::LAST:
       NOTREACHED();
       return std::string();

@@ -12,7 +12,10 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/keyed_service/core/test_simple_factory_key.h"
+#include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/previews/content/hint_cache_store.h"
+#include "components/previews/content/proto_database_provider_test_base.h"
 #include "components/previews/core/previews_experiments.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -25,25 +28,30 @@ std::string GetHostDomainOrg(int index) {
   return "host.domain" + std::to_string(index) + ".org";
 }
 
-class HintCacheTest : public testing::Test {
+class HintCacheTest : public ProtoDatabaseProviderTestBase {
  public:
   HintCacheTest() : loaded_hint_(nullptr) {}
 
   ~HintCacheTest() override {}
 
-  void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
+  void SetUp() override { ProtoDatabaseProviderTestBase::SetUp(); }
 
-  void TearDown() override { DestroyHintCache(); }
+  void TearDown() override {
+    ProtoDatabaseProviderTestBase::TearDown();
+    DestroyHintCache();
+  }
 
  protected:
   // Creates and initializes the hint cache and hint cache store and waits for
   // the callback indicating that initialization is complete.
   void CreateAndInitializeHintCache(int memory_cache_size,
                                     bool purge_existing_data = false) {
+    auto database_path = temp_dir_.GetPath();
+    auto database_task_runner =
+        scoped_task_environment_.GetMainThreadTaskRunner();
     hint_cache_ = std::make_unique<HintCache>(
-        std::make_unique<HintCacheStore>(
-            temp_dir_.GetPath(),
-            scoped_task_environment_.GetMainThreadTaskRunner()),
+        std::make_unique<HintCacheStore>(db_provider_, database_path,
+                                         database_task_runner),
         memory_cache_size);
     is_store_initialized_ = false;
     hint_cache_->Initialize(purge_existing_data,
@@ -127,7 +135,6 @@ class HintCacheTest : public testing::Test {
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  base::ScopedTempDir temp_dir_;
 
   std::unique_ptr<HintCache> hint_cache_;
   const optimization_guide::proto::Hint* loaded_hint_;

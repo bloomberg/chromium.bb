@@ -36,12 +36,15 @@
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_delegate.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_item.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_store.h"
+#include "components/keyed_service/core/test_simple_factory_key.h"
+#include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/previews/content/hint_cache_store.h"
 #include "components/previews/content/previews_hints.h"
 #include "components/previews/content/previews_top_host_provider.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/content/previews_user_data.h"
+#include "components/previews/content/proto_database_provider_test_base.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
@@ -154,12 +157,14 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
       const base::FilePath& test_path,
+      leveldb_proto::ProtoDatabaseProvider* database_provider,
       PreviewsTopHostProvider* previews_top_host_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
       : PreviewsOptimizationGuide(optimization_guide_service,
                                   ui_task_runner,
                                   background_task_runner,
                                   test_path,
+                                  database_provider,
                                   previews_top_host_provider,
                                   url_loader_factory) {}
   ~TestPreviewsOptimizationGuide() override {}
@@ -365,7 +370,7 @@ class TestOptOutStore : public blacklist::OptOutStore {
   void ClearBlackList(base::Time begin_time, base::Time end_time) override {}
 };
 
-class PreviewsDeciderImplTest : public testing::Test {
+class PreviewsDeciderImplTest : public ProtoDatabaseProviderTestBase {
  public:
   PreviewsDeciderImplTest()
       : field_trial_list_(nullptr),
@@ -384,9 +389,12 @@ class PreviewsDeciderImplTest : public testing::Test {
     variations::testing::ClearAllVariationParams();
   }
 
-  void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
+  void SetUp() override { ProtoDatabaseProviderTestBase::SetUp(); }
 
-  void TearDown() override { ui_service_.reset(); }
+  void TearDown() override {
+    ProtoDatabaseProviderTestBase::TearDown();
+    ui_service_.reset();
+  }
 
   void InitializeUIServiceWithoutWaitingForBlackList() {
     blacklist::BlacklistData::AllowedTypesAndVersions allowed_types;
@@ -407,7 +415,7 @@ class PreviewsDeciderImplTest : public testing::Test {
             scoped_task_environment_.GetMainThreadTaskRunner(),
             base::CreateSequencedTaskRunnerWithTraits(
                 {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
-            temp_dir_.GetPath(), &previews_top_host_provider_,
+            temp_dir_.GetPath(), db_provider_, &previews_top_host_provider_,
             url_loader_factory_),
         base::BindRepeating(&IsPreviewFieldTrialEnabled),
         std::make_unique<PreviewsLogger>(), std::move(allowed_types),
@@ -446,7 +454,6 @@ class PreviewsDeciderImplTest : public testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  base::ScopedTempDir temp_dir_;
   base::FieldTrialList field_trial_list_;
   TestPreviewsDeciderImpl* previews_decider_impl_;
   optimization_guide::OptimizationGuideService optimization_guide_service_;

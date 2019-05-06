@@ -78,6 +78,7 @@
 #include "components/bookmarks/browser/startup_task_runner_service.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -1336,10 +1337,14 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile)->
       MaybeActivateDataReductionProxy(true);
 
+  auto* proto_db_provider =
+      leveldb_proto::ProtoDatabaseProviderFactory::GetInstance()->GetForKey(
+          profile->GetProfileKey());
+
   // Create the Previews Service and begin loading opt out history from
   // persistent memory.
   PreviewsServiceFactory::GetForProfile(profile)->Initialize(
-      g_browser_process->optimization_guide_service(),
+      g_browser_process->optimization_guide_service(), proto_db_provider,
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
       profile->GetPath());
 

@@ -128,13 +128,15 @@ PreviewsOptimizationGuide::PreviewsOptimizationGuide(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
     const base::FilePath& profile_path,
+    leveldb_proto::ProtoDatabaseProvider* database_provider,
     PreviewsTopHostProvider* previews_top_host_provider,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : optimization_guide_service_(optimization_guide_service),
       ui_task_runner_(ui_task_runner),
       background_task_runner_(background_task_runner),
       hint_cache_(std::make_unique<HintCache>(
-          std::make_unique<HintCacheStore>(profile_path,
+          std::make_unique<HintCacheStore>(database_provider,
+                                           profile_path,
                                            background_task_runner_))),
       previews_top_host_provider_(previews_top_host_provider),
       time_clock_(base::DefaultClock::GetInstance()),

@@ -22,6 +22,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "components/keyed_service/core/test_simple_factory_key.h"
+#include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/proto/hints.pb.h"
@@ -29,6 +31,7 @@
 #include "components/previews/content/previews_hints.h"
 #include "components/previews/content/previews_top_host_provider.h"
 #include "components/previews/content/previews_user_data.h"
+#include "components/previews/content/proto_database_provider_test_base.h"
 #include "components/previews/core/bloom_filter.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
@@ -160,12 +163,14 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
       const base::FilePath& profile_path,
+      leveldb_proto::ProtoDatabaseProvider* database_provider,
       PreviewsTopHostProvider* previews_top_host_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
       : PreviewsOptimizationGuide(optimization_guide_service,
                                   ui_task_runner,
                                   background_task_runner,
                                   profile_path,
+                                  database_provider,
                                   previews_top_host_provider,
                                   url_loader_factory) {}
 
@@ -188,7 +193,7 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
   bool fetched_hints_stored_ = false;
 };
 
-class PreviewsOptimizationGuideTest : public testing::Test {
+class PreviewsOptimizationGuideTest : public ProtoDatabaseProviderTestBase {
  public:
   PreviewsOptimizationGuideTest()
       : scoped_task_environment_(
@@ -197,12 +202,15 @@ class PreviewsOptimizationGuideTest : public testing::Test {
   ~PreviewsOptimizationGuideTest() override {}
 
   void SetUp() override {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    ProtoDatabaseProviderTestBase::SetUp();
     CreateServiceAndGuide();
   }
 
   // Delete |guide_| if it hasn't been deleted.
-  void TearDown() override { ResetGuide(); }
+  void TearDown() override {
+    ProtoDatabaseProviderTestBase::TearDown();
+    ResetGuide();
+  }
 
   PreviewsOptimizationGuide* guide() { return guide_.get(); }
 
@@ -250,7 +258,7 @@ class PreviewsOptimizationGuideTest : public testing::Test {
         optimization_guide_service_.get(),
         scoped_task_environment_.GetMainThreadTaskRunner(),
         scoped_task_environment_.GetMainThreadTaskRunner(), temp_dir(),
-        previews_top_host_provider_.get(), url_loader_factory_);
+        db_provider_, previews_top_host_provider_.get(), url_loader_factory_);
 
     guide_->SetTimeClockForTesting(scoped_task_environment_.GetMockClock());
 
@@ -347,8 +355,6 @@ class PreviewsOptimizationGuideTest : public testing::Test {
   // Callback used to indicate that the asynchronous call to
   // MaybeLoadOptimizationHints() has completed its processing.
   void OnLoadOptimizationHints();
-
-  base::ScopedTempDir temp_dir_;
 
   // std::unique_ptr<PreviewsOptimizationGuide> guide_;
   std::unique_ptr<TestPreviewsOptimizationGuide> guide_;

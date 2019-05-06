@@ -125,6 +125,7 @@ PreviewsService::~PreviewsService() {
 
 void PreviewsService::Initialize(
     optimization_guide::OptimizationGuideService* optimization_guide_service,
+    leveldb_proto::ProtoDatabaseProvider* database_provider,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
     const base::FilePath& profile_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -146,7 +147,7 @@ void PreviewsService::Initialize(
       optimization_guide_service
           ? std::make_unique<previews::PreviewsOptimizationGuide>(
                 optimization_guide_service, ui_task_runner,
-                background_task_runner, profile_path,
+                background_task_runner, profile_path, database_provider,
                 previews_top_host_provider_.get(), previews_url_loader_factory_)
           : nullptr,
       base::Bind(&IsPreviewsTypeEnabled),

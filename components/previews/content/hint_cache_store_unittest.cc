@@ -128,8 +128,7 @@ class HintCacheStoreTest : public testing::Test {
     // Setup the fake db and the class under test.
     auto db = std::make_unique<FakeDB<StoreEntry>>(&db_store_);
     db_ = db.get();
-    hint_store_ =
-        std::make_unique<HintCacheStore>(base::FilePath(), std::move(db));
+    hint_store_ = std::make_unique<HintCacheStore>(std::move(db));
   }
 
   void InitializeDatabase(bool success, bool purge_existing_data = false) {
@@ -138,7 +137,8 @@ class HintCacheStoreTest : public testing::Test {
                              base::BindOnce(&HintCacheStoreTest::OnInitialized,
                                             base::Unretained(this)));
     // OnDatabaseInitialized callback
-    db()->InitCallback(success);
+    db()->InitStatusCallback(success ? leveldb_proto::Enums::kOK
+                                     : leveldb_proto::Enums::kError);
   }
 
   void InitializeStore(MetadataSchemaState state,

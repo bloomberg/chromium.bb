@@ -14,12 +14,15 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/keyed_service/core/test_simple_factory_key.h"
+#include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/previews/content/hint_cache.h"
 #include "components/previews/content/hint_cache_store.h"
 #include "components/previews/content/hint_update_data.h"
 #include "components/previews/content/previews_hints_util.h"
+#include "components/previews/content/proto_database_provider_test_base.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -70,16 +73,16 @@ class TestHostFilter : public previews::HostFilter {
   std::string single_host_match_;
 };
 
-class PreviewsHintsTest : public testing::Test {
+class PreviewsHintsTest : public ProtoDatabaseProviderTestBase {
  public:
   PreviewsHintsTest() {}
 
   ~PreviewsHintsTest() override {}
 
   void SetUp() override {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    ProtoDatabaseProviderTestBase::SetUp();
     hint_cache_ = std::make_unique<HintCache>(std::make_unique<HintCacheStore>(
-        temp_dir_.GetPath(),
+        db_provider_, temp_dir_.GetPath(),
         scoped_task_environment_.GetMainThreadTaskRunner()));
 
     is_store_initialized_ = false;
@@ -93,6 +96,7 @@ class PreviewsHintsTest : public testing::Test {
   }
 
   void TearDown() override {
+    ProtoDatabaseProviderTestBase::TearDown();
     previews_hints_.reset();
     RunUntilIdle();
     hint_cache_.reset();
@@ -159,7 +163,6 @@ class PreviewsHintsTest : public testing::Test {
   void MaybeLoadHint(const GURL& url);
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  base::ScopedTempDir temp_dir_;
 
   bool is_store_initialized_;
   bool are_previews_hints_initialized_;

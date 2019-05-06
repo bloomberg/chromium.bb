@@ -8,17 +8,14 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "components/leveldb_proto/public/proto_database.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
+#include "components/leveldb_proto/public/shared_proto_database_client_list.h"
 #include "components/previews/content/proto/hint_cache.pb.h"
 
 namespace previews {
 
 namespace {
-
-// Statistics are logged to UMA with this string as part of histogram name. They
-// can all be found under LevelDB.*.PreviewsHintCacheStore. Changing this needs
-// synchronization with histograms.xml.
-constexpr char kHintCacheStoreUMAClientName[] = "PreviewsHintCacheStore";
 
 // The folder where the data will be stored on disk.
 constexpr char kHintCacheStoreFolder[] = "previews_hint_cache_store";
@@ -81,21 +78,23 @@ bool DatabasePrefixFilter(const std::string& key_prefix,
 }  // namespace
 
 HintCacheStore::HintCacheStore(
+    leveldb_proto::ProtoDatabaseProvider* database_provider,
     const base::FilePath& database_dir,
     scoped_refptr<base::SequencedTaskRunner> store_task_runner)
-    : HintCacheStore(database_dir,
-                     leveldb_proto::ProtoDatabaseProvider::CreateUniqueDB<
-                         previews::proto::StoreEntry>(store_task_runner)) {}
+    : weak_ptr_factory_(this) {
+  base::FilePath hint_store_dir =
+      database_dir.AppendASCII(kHintCacheStoreFolder);
+  database_ = database_provider->GetDB<previews::proto::StoreEntry>(
+      leveldb_proto::ProtoDbType::HINT_CACHE_STORE, hint_store_dir,
+      store_task_runner);
+
+  RecordStatusChange(status_);
+}
 
 HintCacheStore::HintCacheStore(
-    const base::FilePath& database_dir,
     std::unique_ptr<leveldb_proto::ProtoDatabase<previews::proto::StoreEntry>>
         database)
-    : database_dir_(database_dir),
-      database_(std::move(database)),
-      status_(Status::kUninitialized),
-      data_update_in_flight_(false),
-      weak_ptr_factory_(this) {
+    : database_(std::move(database)), weak_ptr_factory_(this) {
   RecordStatusChange(status_);
 }
 
@@ -120,9 +119,7 @@ void HintCacheStore::Initialize(bool purge_existing_data,
 
   leveldb_env::Options options = leveldb_proto::CreateSimpleOptions();
   options.write_buffer_size = kDatabaseWriteBufferSizeBytes;
-  base::FilePath hint_store_dir =
-      database_dir_.AppendASCII(kHintCacheStoreFolder);
-  database_->Init(kHintCacheStoreUMAClientName, hint_store_dir, options,
+  database_->Init(options,
                   base::BindOnce(&HintCacheStore::OnDatabaseInitialized,
                                  weak_ptr_factory_.GetWeakPtr(),
                                  purge_existing_data, std::move(callback)));
@@ -431,12 +428,13 @@ size_t HintCacheStore::GetHintEntryKeyCount() const {
   return hint_entry_keys_ ? hint_entry_keys_->size() : 0;
 }
 
-void HintCacheStore::OnDatabaseInitialized(bool purge_existing_data,
-                                           base::OnceClosure callback,
-                                           bool success) {
+void HintCacheStore::OnDatabaseInitialized(
+    bool purge_existing_data,
+    base::OnceClosure callback,
+    leveldb_proto::Enums::InitStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!success) {
+  if (status != leveldb_proto::Enums::InitStatus::kOK) {
     UpdateStatus(Status::kFailed);
     std::move(callback).Run();
     return;

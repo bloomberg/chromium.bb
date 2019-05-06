@@ -17,6 +17,7 @@
 #include "base/sequence_checker.h"
 #include "base/version.h"
 #include "components/leveldb_proto/public/proto_database.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/previews/content/hint_update_data.h"
 
 namespace base {
@@ -63,10 +64,11 @@ class HintCacheStore {
     kMaxValue = kFailed,
   };
 
-  HintCacheStore(const base::FilePath& database_dir,
+  HintCacheStore(leveldb_proto::ProtoDatabaseProvider* database_provider,
+                 const base::FilePath& database_dir,
                  scoped_refptr<base::SequencedTaskRunner> store_task_runner);
-  HintCacheStore(const base::FilePath& database_dir,
-                 std::unique_ptr<StoreEntryProtoDatabase> database);
+  // For tests only.
+  explicit HintCacheStore(std::unique_ptr<StoreEntryProtoDatabase> database);
   ~HintCacheStore();
 
   // Initializes the hint cache store. If |purge_existing_data| is set to true,
@@ -232,7 +234,7 @@ class HintCacheStore {
   // otherwise, triggers loading of the metadata.
   void OnDatabaseInitialized(bool purge_existing_data,
                              base::OnceClosure callback,
-                             bool success);
+                             leveldb_proto::Enums::InitStatus status);
 
   // Callback that is run after the database finishes being destroyed.
   void OnDatabaseDestroyed(bool success);
@@ -274,16 +276,13 @@ class HintCacheStore {
                   bool success,
                   std::unique_ptr<previews::proto::StoreEntry> entry);
 
-  // Path to the directory for the profile using this store.
-  const base::FilePath database_dir_;
-
   // Proto database used by the store.
-  const std::unique_ptr<StoreEntryProtoDatabase> database_;
+  std::unique_ptr<StoreEntryProtoDatabase> database_;
 
   // The current status of the store. It should only be updated through
   // UpdateStatus(), which validates status transitions and triggers
   // accompanying logic.
-  Status status_;
+  Status status_ = Status::kUninitialized;
 
   // The current component version of the store. This should only be updated
   // via SetComponentVersion(), which ensures that both |component_version_|
@@ -297,7 +296,7 @@ class HintCacheStore {
 
   // If a component data update is in the middle of being processed; when this
   // is true, keys and hints will not be returned by the store.
-  bool data_update_in_flight_;
+  bool data_update_in_flight_ = false;
 
   // The next update time for the fetched hints that are currently in the
   // store.

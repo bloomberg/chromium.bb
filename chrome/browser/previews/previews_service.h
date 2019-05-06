@@ -39,6 +39,10 @@ class PreviewsTopHostProviderImpl;
 class PreviewsUIService;
 }
 
+namespace leveldb_proto {
+class ProtoDatabaseProvider;
+}
+
 class PreviewsOfflineHelper;
 
 // Keyed service that owns a previews::PreviewsUIService. PreviewsService lives
@@ -54,6 +58,7 @@ class PreviewsService : public KeyedService {
   // |profile_path| is the path to user data on disc.
   void Initialize(
       optimization_guide::OptimizationGuideService* optimization_guide_service,
+      leveldb_proto::ProtoDatabaseProvider* database_provider,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
       const base::FilePath& profile_path);
 
