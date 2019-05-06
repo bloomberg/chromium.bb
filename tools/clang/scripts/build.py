@@ -143,12 +143,7 @@ def CheckoutRepos(args):
 
   Checkout('LLVM', LLVM_REPO_URL + '/llvm/trunk', LLVM_DIR)
   Checkout('Clang', LLVM_REPO_URL + '/cfe/trunk', CLANG_DIR)
-  if True:
-    Checkout('LLD', LLVM_REPO_URL + '/lld/trunk', LLD_DIR)
-  elif os.path.exists(LLD_DIR):
-    # In case someone sends a tryjob that temporary adds lld to the checkout,
-    # make sure it's not around on future builds.
-    RmTree(LLD_DIR)
+  Checkout('LLD', LLVM_REPO_URL + '/lld/trunk', LLD_DIR)
   # Remove compiler-rt at old location.
   if (sys.platform == 'darwin' and
       os.path.exists(os.path.join(LLVM_DIR, 'compiler-rt'))):
@@ -158,9 +153,6 @@ def CheckoutRepos(args):
     # clang needs a libc++ checkout, else -stdlib=libc++ won't find includes
     # (i.e. this is needed for bootstrap builds).
     Checkout('libcxx', LLVM_REPO_URL + '/libcxx/trunk', LIBCXX_DIR)
-    # We used to check out libcxxabi on OS X; we no longer need that.
-    if os.path.exists(LIBCXXABI_DIR):
-      RmTree(LIBCXXABI_DIR)
 
 
 def DeleteChromeToolsShim():
@@ -270,10 +262,7 @@ def VerifyVersionOfBuiltClangMatchesVERSION():
   in an `if args.llvm_force_head_revision:` block inupdate. main() first)."""
   clang = os.path.join(LLVM_BUILD_DIR, 'bin', 'clang')
   if sys.platform == 'win32':
-    # TODO: Parse `clang-cl /?` output for built clang's version and check that
-    # to check the binary we're actually shipping? But clang-cl.exe is just
-    # a copy of clang.exe, so this does check the same thing.
-    clang += '.exe'
+    clang += '-cl.exe'
   version_out = subprocess.check_output([clang, '--version'])
   version_out = re.match(r'clang version ([0-9.]+)', version_out).group(1)
   if version_out != RELEASE_VERSION:

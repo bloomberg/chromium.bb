@@ -17,7 +17,6 @@ near-tip-of-tree clang version:
 from __future__ import print_function
 import argparse
 import os
-import re
 import shutil
 import stat
 import sys
