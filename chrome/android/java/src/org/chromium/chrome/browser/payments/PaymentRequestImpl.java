@@ -886,7 +886,8 @@ public class PaymentRequestImpl
 
         if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
 
-        if (mInvokedPaymentInstrument != null) {
+        if (mInvokedPaymentInstrument != null
+                && !(mInvokedPaymentInstrument instanceof AutofillPaymentInstrument)) {
             // After a payment app has been invoked, all of the merchant's calls to update the price
             // via updateWith() should be forwarded to the invoked app, so it can reflect the
             // updated price in its UI.
@@ -901,7 +902,7 @@ public class PaymentRequestImpl
             return;
         }
 
-        if ((mUiShippingOptions.isEmpty() || !TextUtils.isEmpty(details.error))
+        if (mRequestShipping && (mUiShippingOptions.isEmpty() || !TextUtils.isEmpty(details.error))
                 && mShippingAddressesSection.getSelectedItem() != null) {
             mShippingAddressesSection.getSelectedItem().setInvalid();
             mShippingAddressesSection.setSelectedItemIndex(SectionInformation.INVALID_SELECTION);
@@ -961,7 +962,8 @@ public class PaymentRequestImpl
             return;
         }
 
-        if (mInvokedPaymentInstrument != null) {
+        if (mInvokedPaymentInstrument != null
+                && !(mInvokedPaymentInstrument instanceof AutofillPaymentInstrument)) {
             mInvokedPaymentInstrument.onPaymentDetailsUpdate(null, null);
             return;
         }
