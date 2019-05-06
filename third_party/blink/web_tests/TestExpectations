@@ -253,6 +253,7 @@ crbug.com/907601 fast/scrolling/events/scrollend-event-fired-after-snap.html [ S
 crbug.com/907601 virtual/fractional_scrolling/fast/scrolling/events/scrollend-event-fired-after-snap.html [ Skip ]
 crbug.com/907601 virtual/fractional_scrolling_threaded/fast/scrolling/events/scrollend-event-fired-after-snap.html [ Skip ]
 crbug.com/907601 virtual/scroll_customization/fast/scrolling/events/scrollend-event-fired-after-snap.html [ Skip ]
+crbug.com/907601 external/wpt/dom/events/scrolling/scrollend-event-fired-after-snap.html [ Skip ]
 
 # Tests not yet passing with Blink FractionalScrollOffsets enabled.
 crbug.com/414283 virtual/fractional_scrolling/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Failure ]
