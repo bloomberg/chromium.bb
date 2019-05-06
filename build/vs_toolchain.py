@@ -5,7 +5,6 @@
 
 from __future__ import print_function
 
-import collections
 import glob
 import json
 import os
@@ -23,11 +22,9 @@ from gn_helpers import ToGNString
 script_dir = os.path.dirname(os.path.realpath(__file__))
 json_data_file = os.path.join(script_dir, 'win_toolchain.json')
 
-# VS versions are listed in descending order of priority (highest first).
-TOOLCHAIN_VERSIONS = collections.OrderedDict([
-  ('2017', '15.0'),
-  ('2019', '16.0'),
-])
+
+# Use MSVS2017 as the default toolchain.
+CURRENT_DEFAULT_TOOLCHAIN_VERSION = '2017'
 
 
 def SetEnvironmentAndGetRuntimeDllDirs():
@@ -132,40 +129,9 @@ def _RegistryGetValue(key, value):
 
 
 def GetVisualStudioVersion():
-  """Return best available version of Visual Studio.
+  """Return GYP_MSVS_VERSION of Visual Studio.
   """
-
-  supported_versions = TOOLCHAIN_VERSIONS.keys()
-  supported_versions_str = ', '.join('{} ({})'.format(v,k)
-      for k,v in TOOLCHAIN_VERSIONS.items())
-  available_versions = []
-  for version in supported_versions:
-    for path in (
-        os.environ.get('vs%s_install' % version),
-        os.path.expandvars('%ProgramFiles(x86)%' +
-                           '/Microsoft Visual Studio/%s' % version)):
-      if path and os.path.exists(path):
-        available_versions.append(version)
-        break
-
-  if not available_versions:
-    if bool(int(os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN', '1'))):
-      return TOOLCHAIN_VERSIONS.keys()[0]
-    raise Exception(('No supported Visual Studio can be found.'
-                     ' Supported versions are: %s.') % supported_versions_str)
-
-  env_version = os.environ.get('GYP_MSVS_VERSION')
-  if env_version:
-    if env_version not in supported_versions:
-      raise Exception(('Visual Studio version %s (from GYP_MSVS_VERSION)'
-                       ' is not supported. Supported versions are: %s.')
-                       % (env_version, supported_versions_str))
-    if env_version not in available_versions:
-      raise Exception(('Visual Studio version %s (from GYP_MSVS_VERSION)'
-                       ' is not available.') % env_version)
-    return env_version
-
-  return available_versions[0]
+  return os.environ.get('GYP_MSVS_VERSION', CURRENT_DEFAULT_TOOLCHAIN_VERSION)
 
 
 def DetectVisualStudioPath():
@@ -175,6 +141,14 @@ def DetectVisualStudioPath():
   # Note that this code is used from
   # build/toolchain/win/setup_toolchain.py as well.
   version_as_year = GetVisualStudioVersion()
+  year_to_version = {
+      '2017': '15.0',
+      '2019': '16.0',
+  }
+  if version_as_year not in year_to_version:
+    raise Exception(('Visual Studio version %s (from GYP_MSVS_VERSION)'
+                     ' not supported. Supported versions are: %s') % (
+                       version_as_year, ', '.join(year_to_version.keys())))
 
   # The VC++ >=2017 install location needs to be located using COM instead of
   # the registry. For details see:
@@ -293,7 +267,7 @@ def FindVCComponentRoot(component):
   version number part changes frequently so the highest version number found is
   used.
   """
-
+  assert GetVisualStudioVersion() in ['2017', '2019']
   SetEnvironmentAndGetRuntimeDllDirs()
   assert ('GYP_MSVS_OVERRIDE_PATH' in os.environ)
   vc_component_msvc_root = os.path.join(os.environ['GYP_MSVS_OVERRIDE_PATH'],
