@@ -505,8 +505,10 @@ LayoutUnit LayoutFlexibleBox::ChildUnstretchedLogicalHeight(
     LayoutUnit child_intrinsic_logical_height =
         child_intrinsic_content_logical_height +
         child.ScrollbarLogicalHeight() + child.BorderAndPaddingLogicalHeight();
-    return child.ConstrainLogicalHeightByMinMax(
-        child_intrinsic_logical_height, child_intrinsic_content_logical_height);
+    LogicalExtentComputedValues values;
+    child.ComputeLogicalHeight(child_intrinsic_logical_height, LayoutUnit(),
+                               values);
+    return values.extent_;
   }
   return child.LogicalHeight();
 }
