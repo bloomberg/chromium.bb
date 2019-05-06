@@ -60,6 +60,15 @@ public class TouchlessDialogProperties {
     }
 
     /**
+     * Struct-like class for holding the Names for the dialog actions.
+     */
+    public static class ActionNames {
+        public String cancel;
+        public String select;
+        public String alt;
+    }
+
+    /**
      * Whether the dialog is fullscreen. If false there will be a gap at the top showing the content
      * behind the dialog.
      */
@@ -72,20 +81,12 @@ public class TouchlessDialogProperties {
     public static final WritableObjectPropertyKey<PropertyModel[]> LIST_MODELS =
             new WritableObjectPropertyKey<>();
 
-    /** The cancel event's name. */
-    public static final WritableObjectPropertyKey<String> CANCEL_NAME =
+    /** The names for the Actions. */
+    public static final WritableObjectPropertyKey<ActionNames> ACTION_NAMES =
             new WritableObjectPropertyKey<>();
 
     /** What will happen when cancel is triggered. */
     public static final WritableObjectPropertyKey<OnClickListener> CANCEL_ACTION =
-            new WritableObjectPropertyKey<>();
-
-    /** The name of the select action. */
-    public static final WritableObjectPropertyKey<String> SELECT_NAME =
-            new WritableObjectPropertyKey<>();
-
-    /** The alternative action's name. */
-    public static final WritableObjectPropertyKey<String> ALT_NAME =
             new WritableObjectPropertyKey<>();
 
     /** What will happen when alternative action is triggered. */
@@ -95,11 +96,11 @@ public class TouchlessDialogProperties {
     /** The priority for this set of properties. */
     public static final WritableIntPropertyKey PRIORITY = new WritableIntPropertyKey();
 
-    public static final PropertyKey[] MINIMAL_DIALOG_KEYS = {ModalDialogProperties.TITLE,
-            CANCEL_NAME, CANCEL_ACTION, SELECT_NAME, ALT_NAME, ALT_ACTION, PRIORITY};
+    public static final PropertyKey[] MINIMAL_DIALOG_KEYS = {
+            ModalDialogProperties.TITLE, ACTION_NAMES, CANCEL_ACTION, ALT_ACTION, PRIORITY};
 
     public static final PropertyKey[] ALL_DIALOG_KEYS =
             PropertyModel.concatKeys(ModalDialogProperties.ALL_KEYS,
-                    new PropertyKey[] {CANCEL_NAME, CANCEL_ACTION, SELECT_NAME, ALT_NAME,
-                            ALT_ACTION, PRIORITY, IS_FULLSCREEN, LIST_MODELS});
+                    new PropertyKey[] {ACTION_NAMES, CANCEL_ACTION, ALT_ACTION, PRIORITY,
+                            IS_FULLSCREEN, LIST_MODELS});
 }
