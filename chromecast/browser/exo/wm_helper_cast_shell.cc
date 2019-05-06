@@ -98,7 +98,7 @@ void WMHelperCastShell::AddVSyncParameterObserver(
   cast_window_manager_aura_->GetRootWindow()
       ->layer()
       ->GetCompositor()
-      ->AddVSyncObserver(std::move(observer));
+      ->AddVSyncParameterObserver(std::move(observer));
 }
 
 const display::ManagedDisplayInfo& WMHelperCastShell::GetDisplayInfo(
