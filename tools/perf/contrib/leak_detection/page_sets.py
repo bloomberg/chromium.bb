@@ -163,7 +163,8 @@ class LeakDetectionStorySet(story_module.StorySet):
       # https://crbug.com/892352
       # 'https://www.tumblr.com/',
       'https://www.paypal.com/',
-      'http://www.espn.com/',
+      # TODO(yuzus): espn.com is flaky. https://crbug.com/959796
+      #'http://www.espn.com/',
       'https://edition.cnn.com/',
       'https://www.pinterest.com/',
       'https://www.nytimes.com/',
