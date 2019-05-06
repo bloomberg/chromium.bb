@@ -269,7 +269,7 @@ void av1_quantize_b_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
     // TODO(sarahparker) These quantize_b optimizations need SIMD
     // implementations
     if (qm_ptr != NULL && iqm_ptr != NULL) {
-      quantize_b_adaptive_helper_c(
+      aom_quantize_b_adaptive_helper_c(
           coeff_ptr, n_coeffs, p->zbin_QTX, p->round_QTX, p->quant_QTX,
           p->quant_shift_QTX, qcoeff_ptr, dqcoeff_ptr, p->dequant_QTX, eob_ptr,
           sc->scan, sc->iscan, qm_ptr, iqm_ptr, qparam->log_scale);
@@ -298,10 +298,10 @@ void av1_quantize_b_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
     }
   } else {
     if (qm_ptr != NULL && iqm_ptr != NULL) {
-      quantize_b_helper_c(coeff_ptr, n_coeffs, p->zbin_QTX, p->round_QTX,
-                          p->quant_QTX, p->quant_shift_QTX, qcoeff_ptr,
-                          dqcoeff_ptr, p->dequant_QTX, eob_ptr, sc->scan,
-                          sc->iscan, qm_ptr, iqm_ptr, qparam->log_scale);
+      aom_quantize_b_helper_c(coeff_ptr, n_coeffs, p->zbin_QTX, p->round_QTX,
+                              p->quant_QTX, p->quant_shift_QTX, qcoeff_ptr,
+                              dqcoeff_ptr, p->dequant_QTX, eob_ptr, sc->scan,
+                              sc->iscan, qm_ptr, iqm_ptr, qparam->log_scale);
     } else {
       switch (qparam->log_scale) {
         case 0:
@@ -416,7 +416,7 @@ void av1_highbd_quantize_b_facade(const tran_low_t *coeff_ptr,
   const qm_val_t *iqm_ptr = qparam->iqmatrix;
   if (qparam->use_quant_b_adapt) {
     if (qm_ptr != NULL && iqm_ptr != NULL) {
-      highbd_quantize_b_adaptive_helper_c(
+      aom_highbd_quantize_b_adaptive_helper_c(
           coeff_ptr, n_coeffs, p->zbin_QTX, p->round_QTX, p->quant_QTX,
           p->quant_shift_QTX, qcoeff_ptr, dqcoeff_ptr, p->dequant_QTX, eob_ptr,
           sc->scan, sc->iscan, qm_ptr, iqm_ptr, qparam->log_scale);
@@ -454,10 +454,10 @@ void av1_highbd_quantize_b_facade(const tran_low_t *coeff_ptr,
     }
   } else {
     if (qm_ptr != NULL && iqm_ptr != NULL) {
-      highbd_quantize_b_helper_c(coeff_ptr, n_coeffs, p->zbin_QTX, p->round_QTX,
-                                 p->quant_QTX, p->quant_shift_QTX, qcoeff_ptr,
-                                 dqcoeff_ptr, p->dequant_QTX, eob_ptr, sc->scan,
-                                 sc->iscan, qm_ptr, iqm_ptr, qparam->log_scale);
+      aom_highbd_quantize_b_helper_c(
+          coeff_ptr, n_coeffs, p->zbin_QTX, p->round_QTX, p->quant_QTX,
+          p->quant_shift_QTX, qcoeff_ptr, dqcoeff_ptr, p->dequant_QTX, eob_ptr,
+          sc->scan, sc->iscan, qm_ptr, iqm_ptr, qparam->log_scale);
     } else {
       switch (qparam->log_scale) {
         case 0:
