@@ -121,6 +121,13 @@
     }
     syncSetupService->CommitSyncChanges();
   }
+  if (self.signinInteractionCoordinator) {
+    [self.signinInteractionCoordinator cancel];
+    // |self.signinInteractionCoordinator| is set to nil by
+    // the completion block called by -[GoogleServicesSettingsCoordinator
+    // signInInteractionCoordinatorDidComplete]
+    DCHECK(!self.signinInteractionCoordinator);
+  }
   self.stopDone = YES;
 }
 

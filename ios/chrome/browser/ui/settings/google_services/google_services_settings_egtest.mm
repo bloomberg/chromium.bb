@@ -16,6 +16,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -23,9 +24,7 @@
 #endif
 
 using l10n_util::GetNSString;
-using chrome_test_util::GetOriginalBrowserState;
 using chrome_test_util::GoogleServicesSettingsButton;
-using chrome_test_util::SettingsMenuBackButton;
 using chrome_test_util::SettingsDoneButton;
 
 // Integration tests using the Google services settings screen.
@@ -36,8 +35,6 @@ using chrome_test_util::SettingsDoneButton;
 @end
 
 @implementation GoogleServicesSettingsTestCase
-
-@synthesize scrollViewMatcher = _scrollViewMatcher;
 
 // Opens the Google services settings view, and closes it.
 - (void)testOpenGoogleServicesSettings {
@@ -57,6 +54,43 @@ using chrome_test_util::SettingsDoneButton;
 - (void)testOpeningServices {
   [self openGoogleServicesSettings];
   [self assertNonPersonalizedServices];
+}
+
+// Tests the following steps:
+//  + Opens sign-in from Google services
+//  + Taps on the settings link to open the advanced sign-in settings
+//  + Opens "Data from Chromium sync" to interrupt sign-in
+- (void)testInterruptSigninFromGoogleServicesSettings {
+  // Adds default identity.
+  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
+      [SigninEarlGreyUtils fakeIdentity1]);
+  // Open "Google Services" settings.
+  [self openGoogleServicesSettings];
+  // Open sign-in.
+  id<GREYMatcher> signinCellMatcher =
+      [self cellMatcherWithTitleID:IDS_IOS_SIGN_IN_TO_CHROME_SETTING_TITLE
+                      detailTextID:
+                          IDS_IOS_GOOGLE_SERVICES_SETTINGS_SIGN_IN_DETAIL_TEXT];
+  [[EarlGrey selectElementWithMatcher:signinCellMatcher]
+      performAction:grey_tap()];
+  // Opens Settings link.
+  [SigninEarlGreyUI tapSettingsLink];
+  // Opens "Manage Sync" settings.
+  id<GREYMatcher> manageSyncMatcher =
+      [self cellMatcherWithTitleID:IDS_IOS_MANAGE_SYNC_SETTINGS_TITLE
+                      detailTextID:0];
+  [[EarlGrey selectElementWithMatcher:manageSyncMatcher]
+      performAction:grey_tap()];
+  // Opens "Data from Chrome sync".
+  id<GREYMatcher> manageSyncScrollViewMatcher =
+      grey_accessibilityID(@"manage_sync_settings_view_controller");
+  id<GREYMatcher> dataFromChromeSyncMatcher = [self
+      cellMatcherWithTitleID:IDS_IOS_MANAGE_SYNC_DATA_FROM_CHROME_SYNC_TITLE
+                detailTextID:
+                    IDS_IOS_MANAGE_SYNC_DATA_FROM_CHROME_SYNC_DESCRIPTION];
+  [[self elementInteractionWithGreyMatcher:dataFromChromeSyncMatcher
+                         scrollViewMatcher:manageSyncScrollViewMatcher]
+      performAction:grey_tap()];
 }
 
 #pragma mark - Helpers
@@ -92,9 +126,11 @@ using chrome_test_util::SettingsDoneButton;
                     grey_sufficientlyVisible(), nil);
 }
 
-// Returns GREYElementInteraction for |matcher|, with a scroll down action.
-- (GREYElementInteraction*)elementInteractionWithGreyMatcher:
-    (id<GREYMatcher>)matcher {
+// Returns GREYElementInteraction for |matcher|, using |scrollViewMatcher| to
+// scroll.
+- (GREYElementInteraction*)
+    elementInteractionWithGreyMatcher:(id<GREYMatcher>)matcher
+                    scrollViewMatcher:(id<GREYMatcher>)scrollViewMatcher {
   // Needs to scroll slowly to make sure to not miss a cell if it is not
   // currently on the screen. It should not be bigger than the visible part
   // of the collection view.
@@ -103,7 +139,15 @@ using chrome_test_util::SettingsDoneButton;
       grey_scrollInDirection(kGREYDirectionDown, kPixelsToScroll);
   return [[EarlGrey selectElementWithMatcher:matcher]
          usingSearchAction:searchAction
-      onElementWithMatcher:self.scrollViewMatcher];
+      onElementWithMatcher:scrollViewMatcher];
+}
+
+// Returns GREYElementInteraction for |matcher|, with |self.scrollViewMatcher|
+// to scroll.
+- (GREYElementInteraction*)elementInteractionWithGreyMatcher:
+    (id<GREYMatcher>)matcher {
+  return [self elementInteractionWithGreyMatcher:matcher
+                               scrollViewMatcher:self.scrollViewMatcher];
 }
 
 // Returns GREYElementInteraction for a cell based on the title string ID and
