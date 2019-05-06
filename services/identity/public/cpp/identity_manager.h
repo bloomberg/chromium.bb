@@ -109,9 +109,6 @@ class IdentityManager : public SigninManagerBase::Observer,
         const GoogleServiceAuthError& error) {}
 
     // Called after refresh tokens are loaded.
-    // CAVEAT: On ChromeOS, this callback is not invoked during
-    // startup in all cases. See https://crbug.com/749535, which
-    // details the cases where it's not invoked.
     virtual void OnRefreshTokensLoaded() {}
 
     // Called whenever the list of Gaia accounts in the cookie jar has changed.
@@ -177,7 +174,7 @@ class IdentityManager : public SigninManagerBase::Observer,
         bool is_refresh_token_valid,
         const std::string& source) {}
 
-    // Called when a refreh token is removed. Contains diagnostic information
+    // Called when a refresh token is removed. Contains diagnostic information
     // about the source that initiated the revokation operation.
     virtual void OnRefreshTokenRemovedForAccountFromSource(
         const std::string& account_id,
@@ -224,8 +221,7 @@ class IdentityManager : public SigninManagerBase::Observer,
   // string.
   bool HasPrimaryAccount() const;
 
-  // Provides access to the latest cached information of all accounts that have
-  // refresh tokens.
+  // Provides the information of all accounts that have refresh tokens.
   // NOTE: The accounts should not be assumed to be in any particular order; in
   // particular, they are not guaranteed to be in the order in which the
   // refresh tokens were added.
@@ -236,9 +232,8 @@ class IdentityManager : public SigninManagerBase::Observer,
   std::vector<AccountInfo> GetExtendedAccountInfoForAccountsWithRefreshToken()
       const;
 
-  // Provides access to the latest cached information of all accounts that are
-  // present in the Gaia cookie in the cookie jar, ordered by their order in
-  // the cookie.
+  // Provides the information of all accounts that are present in the Gaia
+  // cookie in the cookie jar, ordered by their order in the cookie.
   // If the returned accounts are not fresh, an internal update will be
   // triggered and there will be a subsequent invocation of
   // IdentityManager::Observer::OnAccountsInCookieJarChanged().
@@ -328,7 +323,7 @@ class IdentityManager : public SigninManagerBase::Observer,
       AccessTokenFetcher::TokenCallback callback,
       AccessTokenFetcher::Mode mode);
 
-  // If an entry exists in the Identity Service's cache corresponding to the
+  // If an entry exists in the cache of access tokens corresponding to the
   // given information, removes that entry; in this case, the next access token
   // request for |account_id| and |scopes| will fetch a new token from the
   // network. Otherwise, is a no-op.
@@ -635,10 +630,7 @@ class IdentityManager : public SigninManagerBase::Observer,
   void OnAccountUpdated(const AccountInfo& info) override;
   void OnAccountRemoved(const AccountInfo& info) override;
 
-  // Backing signin classes. NOTE: We strive to limit synchronous access to
-  // these classes in the IdentityManager implementation, as all such
-  // synchronous access will become impossible when IdentityManager is
-  // backed by the Identity Service.
+  // Backing signin classes.
   std::unique_ptr<AccountTrackerService> account_tracker_service_;
   std::unique_ptr<ProfileOAuth2TokenService> token_service_;
   std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service_;

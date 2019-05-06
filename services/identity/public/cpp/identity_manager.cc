@@ -124,9 +124,6 @@ IdentityManager::GetExtendedAccountInfoForAccountsWithRefreshToken() const {
 }
 
 AccountsInCookieJarInfo IdentityManager::GetAccountsInCookieJar() const {
-  // TODO(859882): Change this implementation to interact asynchronously with
-  // GaiaCookieManagerService as detailed in
-  // https://docs.google.com/document/d/1hcrJ44facCSHtMGBmPusvcoP-fAR300Hi-UFez8ffYQ/edit?pli=1#heading=h.w97eil1cygs2.
   std::vector<gaia::ListedAccount> signed_in_accounts;
   std::vector<gaia::ListedAccount> signed_out_accounts;
   bool accounts_are_fresh = gaia_cookie_manager_service_->ListAccounts(
@@ -261,12 +258,6 @@ void IdentityManager::RemoveAccessTokenFromCache(
     const std::string& account_id,
     const identity::ScopeSet& scopes,
     const std::string& access_token) {
-  // TODO(843510): Consider making the request to ProfileOAuth2TokenService
-  // asynchronously once there are no direct clients of PO2TS. This change would
-  // need to be made together with changing all callsites to
-  // ProfileOAuth2TokenService::RequestAccessToken() to be made asynchronously
-  // as well (to maintain ordering in the case where a client removes an access
-  // token from the cache and then immediately requests an access token).
   token_service_->InvalidateAccessToken(account_id, scopes, access_token);
 }
 
@@ -540,8 +531,6 @@ void IdentityManager::OnAccessTokenRequested(
     const std::string& account_id,
     const std::string& consumer_id,
     const OAuth2TokenService::ScopeSet& scopes) {
-  // TODO(843510): Consider notifying observers asynchronously once there
-  // are no direct clients of ProfileOAuth2TokenService.
   for (auto& observer : diagnostics_observer_list_) {
     observer.OnAccessTokenRequested(account_id, consumer_id, scopes);
   }
