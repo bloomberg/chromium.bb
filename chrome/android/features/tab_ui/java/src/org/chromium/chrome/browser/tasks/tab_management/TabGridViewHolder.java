@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -33,6 +34,9 @@ class TabGridViewHolder extends RecyclerView.ViewHolder {
         super(itemView);
         this.thumbnail = itemView.findViewById(R.id.tab_thumbnail);
         this.title = itemView.findViewById(R.id.tab_title);
+        // TODO(yuezhanggg): Remove this when the strip is properly tinted. (crbug/939915)
+        title.setTextColor(
+                ContextCompat.getColor(itemView.getContext(), R.color.default_text_color_dark));
         this.favicon = itemView.findViewById(R.id.tab_favicon);
         this.closeButton = itemView.findViewById(R.id.close_button);
         DrawableCompat.setTint(this.closeButton.getDrawable(),
