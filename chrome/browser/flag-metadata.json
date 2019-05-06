@@ -385,11 +385,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "content-suggestions-debug-log",
-    "owners": [ "fgorski" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "contextual-search",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
     "expiry_milestone": 74

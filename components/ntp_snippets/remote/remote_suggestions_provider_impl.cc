@@ -16,7 +16,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -343,7 +342,6 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
     std::unique_ptr<RemoteSuggestionsDatabase> database,
     std::unique_ptr<RemoteSuggestionsStatusService> status_service,
     std::unique_ptr<PrefetchedPagesTracker> prefetched_pages_tracker,
-    Logger* debug_logger,
     std::unique_ptr<base::OneShotTimer> fetch_timeout_timer)
     : RemoteSuggestionsProvider(observer),
       state_(State::NOT_INITED),
@@ -361,10 +359,8 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
       clear_cached_suggestions_when_initialized_(false),
       clock_(base::DefaultClock::GetInstance()),
       prefetched_pages_tracker_(std::move(prefetched_pages_tracker)),
-      debug_logger_(debug_logger),
       fetch_timeout_timer_(std::move(fetch_timeout_timer)),
       request_status_(FetchRequestStatus::NONE) {
-  DCHECK(debug_logger_);
   DCHECK(fetch_timeout_timer_);
   RestoreCategoriesFromPrefs();
   // The articles category always exists. Add it if we didn't get it from prefs.
@@ -488,9 +484,6 @@ void RemoteSuggestionsProviderImpl::FetchSuggestionsWithLoadingIndicator(
     // If the article section is not AVAILABLE, we cannot safely flip its status
     // to AVAILABLE_LOADING and back. Instead, we fallback to the standard
     // background refetch.
-    debug_logger_->Log(
-        FROM_HERE,
-        "fallback because the articles category is not displayed yet");
     FetchSuggestions(interactive_request, std::move(callback));
     return;
   }
@@ -532,7 +525,6 @@ void RemoteSuggestionsProviderImpl::
 void RemoteSuggestionsProviderImpl::FetchSuggestions(
     bool interactive_request,
     FetchStatusCallback callback) {
-  debug_logger_->Log(FROM_HERE, /*message=*/std::string());
   if (!ready()) {
     if (callback) {
       std::move(callback).Run(
@@ -565,8 +557,6 @@ void RemoteSuggestionsProviderImpl::Fetch(
     const Category& category,
     const std::set<std::string>& known_suggestion_ids,
     FetchDoneCallback callback) {
-  debug_logger_->Log(FROM_HERE, /*message=*/std::string());
-
   if (!ready()) {
     CallWithEmptyResults(std::move(callback),
                          Status(StatusCode::TEMPORARY_ERROR,
@@ -886,7 +876,6 @@ void RemoteSuggestionsProviderImpl::OnFetchFinished(
     bool interactive_request,
     Status status,
     RemoteSuggestionsFetcher::OptionalFetchedCategories fetched_categories) {
-  debug_logger_->Log(FROM_HERE, /*message=*/std::string());
 
   FetchRequestStatus request_status = request_status_;
   // TODO(jkrcal): This is potentially incorrect if there is another concurrent
@@ -967,12 +956,6 @@ void RemoteSuggestionsProviderImpl::OnFetchFinished(
   // If suggestions were fetched successfully, update our |category_contents_|
   // from each category provided by the server.
   if (fetched_categories) {
-    if (Logger::IsLoggingEnabled()) {
-      debug_logger_->Log(
-          FROM_HERE,
-          base::StringPrintf("fetched categories count = %d",
-                             static_cast<int>(fetched_categories->size())));
-    }
 
     // TODO(treib): Reorder |category_contents_| to match the order we received
     // from the server. crbug.com/653816
@@ -984,14 +967,6 @@ void RemoteSuggestionsProviderImpl::OnFetchFinished(
             std::min(fetched_category.suggestions.size(),
                      static_cast<size_t>(kMaxNormalFetchSuggestionCount)));
         response_includes_article_category = true;
-
-        if (Logger::IsLoggingEnabled()) {
-          debug_logger_->Log(
-              FROM_HERE,
-              base::StringPrintf(
-                  "articles category size = %d",
-                  static_cast<int>(fetched_category.suggestions.size())));
-        }
       }
 
       CategoryContent* content =
@@ -1342,7 +1317,6 @@ void RemoteSuggestionsProviderImpl::ClearHistoryDependentState() {
     return;
   }
 
-  debug_logger_->Log(FROM_HERE, /*message=*/std::string());
   NukeAllSuggestions();
   remote_suggestions_scheduler_->OnHistoryCleared();
 }
@@ -1353,7 +1327,6 @@ void RemoteSuggestionsProviderImpl::ClearCachedSuggestionsImpl() {
     return;
   }
 
-  debug_logger_->Log(FROM_HERE, /*message=*/std::string());
   NukeAllSuggestions();
   remote_suggestions_scheduler_->OnSuggestionsCleared();
 }

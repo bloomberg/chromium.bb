@@ -1994,10 +1994,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableScrollAnchorSerializationDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kScrollAnchorSerialization)},
 #if defined(OS_ANDROID)
-    {"content-suggestions-debug-log",
-     flag_descriptions::kContentSuggestionsDebugLogName,
-     flag_descriptions::kContentSuggestionsDebugLogDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(ntp_snippets::kContentSuggestionsDebugLog)},
     {"contextual-suggestions-button",
      flag_descriptions::kContextualSuggestionsButtonName,
      flag_descriptions::kContextualSuggestionsButtonDescription, kOsAndroid,

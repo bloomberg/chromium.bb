@@ -27,7 +27,6 @@
 #include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/features.h"
-#include "components/ntp_snippets/logger.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/remote/persistent_scheduler.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
@@ -56,7 +55,6 @@ using image_fetcher::CreateIOSImageDecoder;
 using image_fetcher::ImageFetcherImpl;
 using ntp_snippets::ContentSuggestionsService;
 using ntp_snippets::GetFetchEndpoint;
-using ntp_snippets::Logger;
 using ntp_snippets::PersistentScheduler;
 using ntp_snippets::RemoteSuggestionsDatabase;
 using ntp_snippets::RemoteSuggestionsFetcherImpl;
@@ -115,13 +113,11 @@ std::unique_ptr<KeyedService> CreateChromeContentSuggestionsService(
   auto user_classifier = std::make_unique<UserClassifier>(
       prefs, base::DefaultClock::GetInstance());
 
-  auto debug_logger = std::make_unique<Logger>();
-
   // TODO(crbug.com/676249): Implement a persistent scheduler for iOS.
   auto scheduler = std::make_unique<RemoteSuggestionsSchedulerImpl>(
       /*persistent_scheduler=*/nullptr, user_classifier.get(), prefs,
       GetApplicationContext()->GetLocalState(),
-      base::DefaultClock::GetInstance(), debug_logger.get());
+      base::DefaultClock::GetInstance());
 
   // Create the ContentSuggestionsService.
   identity::IdentityManager* identity_manager =
@@ -138,7 +134,7 @@ std::unique_ptr<KeyedService> CreateChromeContentSuggestionsService(
   return std::make_unique<ContentSuggestionsService>(
       State::ENABLED, identity_manager, history_service, large_icon_service,
       prefs, std::move(category_ranker), std::move(user_classifier),
-      std::move(scheduler), std::move(debug_logger));
+      std::move(scheduler));
 }
 
 void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
@@ -185,7 +181,7 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
       std::make_unique<RemoteSuggestionsDatabase>(db_provider, database_dir),
       std::make_unique<RemoteSuggestionsStatusServiceImpl>(
           identity_manager->HasPrimaryAccount(), prefs, pref_name),
-      /*prefetched_pages_tracker=*/nullptr, service->debug_logger(),
+      /*prefetched_pages_tracker=*/nullptr,
       std::make_unique<base::OneShotTimer>());
 
   service->remote_suggestions_scheduler()->SetProvider(provider.get());

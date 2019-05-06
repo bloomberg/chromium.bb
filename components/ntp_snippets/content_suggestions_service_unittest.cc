@@ -22,7 +22,6 @@
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
-#include "components/ntp_snippets/logger.h"
 #include "components/ntp_snippets/mock_content_suggestions_provider.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider_impl.h"
 #include "components/ntp_snippets/user_classifier.h"
@@ -161,7 +160,7 @@ class ContentSuggestionsServiceTest : public testing::Test {
         enabled, /*identity_manager=*/nullptr, /*history_service=*/nullptr,
         /*large_icon_service=*/nullptr, pref_service_.get(),
         std::move(category_ranker_), std::move(user_classifier),
-        /*scheduler=*/nullptr, /*debug_logger=*/std::make_unique<Logger>());
+        /*scheduler=*/nullptr);
   }
 
   void ResetService() {

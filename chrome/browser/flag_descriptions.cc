@@ -2169,11 +2169,6 @@ const char kClearOldBrowsingDataDescription[] =
     "Enables clearing of browsing data which is older than a given time "
     "period.";
 
-const char kContentSuggestionsDebugLogName[] = "Content suggestions debug log";
-const char kContentSuggestionsDebugLogDescription[] =
-    "Enable content suggestions debug log accessible through "
-    "snippets-internals.";
-
 const char kContextualSearchDefinitionsName[] = "Contextual Search definitions";
 const char kContextualSearchDefinitionsDescription[] =
     "Enables tap-activated contextual definitions of words on a page to be "

@@ -11,7 +11,6 @@
 #include "components/ntp_snippets/category_rankers/fake_category_ranker.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
-#include "components/ntp_snippets/logger.h"
 #include "components/ntp_snippets/mock_content_suggestions_provider.h"
 #include "components/offline_pages/core/client_id.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
@@ -44,8 +43,7 @@ class TestContentSuggestionsService
             pref_service,
             std::make_unique<ntp_snippets::FakeCategoryRanker>(),
             /*user_classifier=*/nullptr,
-            /*remote_suggestions_scheduler=*/nullptr,
-            std::make_unique<ntp_snippets::Logger>()) {}
+            /*remote_suggestions_scheduler=*/nullptr) {}
 
   ntp_snippets::MockContentSuggestionsProvider* MakeRegisteredMockProvider(
       const std::vector<ntp_snippets::Category>& provided_categories) {

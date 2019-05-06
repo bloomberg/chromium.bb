@@ -37,7 +37,6 @@ class SnippetsInternalsPageHandler
   void GetCategoryRankerProperties(
       GetCategoryRankerPropertiesCallback) override;
   void ReloadSuggestions() override;
-  void GetDebugLog(GetDebugLogCallback) override;
   void ClearCachedSuggestions() override;
   void GetRemoteContentSuggestionsProperties(
       GetRemoteContentSuggestionsPropertiesCallback) override;

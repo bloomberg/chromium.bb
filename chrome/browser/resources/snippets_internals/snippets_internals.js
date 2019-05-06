@@ -199,16 +199,6 @@ function setupEventListeners() {
     pageHandler.reloadSuggestions();
   });
 
-  $('debug-log-dump').addEventListener('click', function(event) {
-    pageHandler.getDebugLog().then(function(response) {
-      let logs = response.debugLog;
-      if (logs === '') {
-        logs = 'No data yet. Have you enabled debug logging in chrome://flags?';
-      }
-      downloadData('debug_log.txt', 'text/plain', logs);
-    });
-  });
-
   $('clear-cached-suggestions').addEventListener('click', function(event) {
     pageHandler.clearCachedSuggestions();
   });

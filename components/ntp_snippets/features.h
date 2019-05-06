@@ -79,9 +79,6 @@ constexpr int kNotificationsIgnoredDefaultLimit = 3;
 // have been fetched.
 extern const base::Feature kKeepPrefetchedContentSuggestions;
 
-// Enables debug logging accessible through snippets-internals.
-extern const base::Feature kContentSuggestionsDebugLog;
-
 // Return all the features as a vector.
 std::vector<const base::Feature*> GetAllFeatures();
 

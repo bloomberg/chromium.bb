@@ -46,9 +46,6 @@ interface PageHandler {
   // Reload the current suggestions.
   ReloadSuggestions();
 
-  // Get the debug log.
-  GetDebugLog() => (string debugLog);
-
   // Clear cached suggestions.
   ClearCachedSuggestions();
 

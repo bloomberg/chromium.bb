@@ -217,10 +217,6 @@ void SnippetsInternalsPageHandler::ReloadSuggestions() {
   }
 }
 
-void SnippetsInternalsPageHandler::GetDebugLog(GetDebugLogCallback callback) {
-  std::move(callback).Run(content_suggestions_service_->GetDebugLog());
-}
-
 void SnippetsInternalsPageHandler::ClearCachedSuggestions() {
   content_suggestions_service_->ClearAllCachedSuggestions();
   page_->OnSuggestionsChanged();

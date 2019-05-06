@@ -34,7 +34,6 @@
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/features.h"
-#include "components/ntp_snippets/logger.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/remote/persistent_scheduler.h"
 #include "components/ntp_snippets/remote/prefetched_pages_tracker.h"
@@ -136,8 +135,7 @@ bool IsKeepingPrefetchedSuggestionsEnabled() {
 void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
                                       Profile* profile,
                                       UserClassifier* user_classifier,
-                                      OfflinePageModel* offline_page_model,
-                                      ntp_snippets::Logger* debug_logger) {
+                                      OfflinePageModel* offline_page_model) {
   if (!IsArticleProviderEnabled()) {
     return;
   }
@@ -189,7 +187,7 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
           database_dir),
       std::make_unique<RemoteSuggestionsStatusServiceImpl>(
           identity_manager->HasPrimaryAccount(), pref_service, std::string()),
-      std::move(prefetched_pages_tracker), debug_logger,
+      std::move(prefetched_pages_tracker),
       std::make_unique<base::OneShotTimer>());
 
   service->remote_suggestions_scheduler()->SetProvider(provider.get());
@@ -263,9 +261,6 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   OfflinePageModel* offline_page_model = nullptr;
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
-  auto debug_logger = std::make_unique<ntp_snippets::Logger>();
-  ntp_snippets::Logger* raw_debug_logger = debug_logger.get();
-
   // Create the RemoteSuggestionsScheduler.
   PersistentScheduler* persistent_scheduler = nullptr;
 #if defined(OS_ANDROID)
@@ -273,8 +268,7 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
 #endif  // OS_ANDROID
   auto scheduler = std::make_unique<RemoteSuggestionsSchedulerImpl>(
       persistent_scheduler, user_classifier_raw, pref_service,
-      g_browser_process->local_state(), base::DefaultClock::GetInstance(),
-      raw_debug_logger);
+      g_browser_process->local_state(), base::DefaultClock::GetInstance());
 
   // Create the ContentSuggestionsService.
   identity::IdentityManager* identity_manager =
@@ -290,10 +284,10 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   auto* service = new ContentSuggestionsService(
       State::ENABLED, identity_manager, history_service, large_icon_service,
       pref_service, std::move(category_ranker), std::move(user_classifier),
-      std::move(scheduler), std::move(debug_logger));
+      std::move(scheduler));
 
   RegisterArticleProviderIfEnabled(service, profile, user_classifier_raw,
-                                   offline_page_model, raw_debug_logger);
+                                   offline_page_model);
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   RegisterWithPrefetching(service, profile);

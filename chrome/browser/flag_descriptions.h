@@ -1303,9 +1303,6 @@ extern const char kChromeDuetDescription[];
 extern const char kClearOldBrowsingDataName[];
 extern const char kClearOldBrowsingDataDescription[];
 
-extern const char kContentSuggestionsDebugLogName[];
-extern const char kContentSuggestionsDebugLogDescription[];
-
 extern const char kContextualSearchDefinitionsName[];
 extern const char kContextualSearchDefinitionsDescription[];
 
