@@ -175,10 +175,6 @@ class WebStateImpl;
         MIMEType:(NSString*)MIMEType
           forURL:(const GURL&)URL;
 
-// Loads HTML in the page and presents it as if it was originating from an
-// application specific URL. |HTML| must not be empty.
-- (void)loadHTML:(NSString*)HTML forAppSpecificURL:(const GURL&)URL;
-
 // Stops loading the page.
 - (void)stopLoading;
 

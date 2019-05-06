@@ -131,9 +131,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void ProcessWebUIMessage(const GURL& source_url,
                            const std::string& message,
                            const base::ListValue& args);
-  // Invokes page load for WebUI URL with HTML. URL must have an application
-  // specific scheme.
-  virtual void LoadWebUIHtml(const base::string16& html, const GURL& url);
 
   // Gets the HTTP response headers associated with the current page.
   // NOTE: For a WKWebView-based WebState, these headers are generated via

@@ -1294,13 +1294,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                 forNavigation:navigation];
 }
 
-- (void)loadHTML:(NSString*)HTML forAppSpecificURL:(const GURL&)URL {
-  CHECK(web::GetWebClient()->IsAppSpecificURL(URL));
-  [self loadHTML:HTML forURL:URL];
-}
-
-// Loads the HTML into the page at the given URL. Extracted from
-// loadHTML:forAppSpecificURL: for testing purpose.
+// Loads the HTML into the page at the given URL. Only for testing purpose.
 - (void)loadHTML:(NSString*)HTML forURL:(const GURL&)URL {
   DCHECK(HTML.length);
   // Remove the transient content view.

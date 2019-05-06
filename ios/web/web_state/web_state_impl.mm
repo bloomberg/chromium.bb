@@ -314,12 +314,6 @@ void WebStateImpl::ProcessWebUIMessage(const GURL& source_url,
     web_ui_->ProcessWebUIIOSMessage(source_url, message, args);
 }
 
-void WebStateImpl::LoadWebUIHtml(const base::string16& html, const GURL& url) {
-  CHECK(web::GetWebClient()->IsAppSpecificURL(url));
-  [web_controller_ loadHTML:base::SysUTF16ToNSString(html)
-          forAppSpecificURL:url];
-}
-
 const base::string16& WebStateImpl::GetTitle() const {
   // TODO(stuartmorgan): Implement the NavigationManager logic necessary to
   // match the WebContents implementation of this method.
