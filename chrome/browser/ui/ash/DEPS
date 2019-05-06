@@ -10,6 +10,7 @@ specific_include_rules = {
    "!ash",
    "+ash/components/shortcut_viewer",
    "+ash/public",
+   "+ash/shelf/shelf_constants.h",
   ],
   # AshShellInit supports classic (non-mash) mode so allow ash/ includes.
   "ash_shell_init\.cc": [
