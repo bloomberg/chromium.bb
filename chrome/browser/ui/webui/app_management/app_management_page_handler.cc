@@ -201,16 +201,18 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
 }
 
 void AppManagementPageHandler::OnAppUpdate(const apps::AppUpdate& update) {
+  if (update.ReadinessChanged() &&
+      update.Readiness() == apps::mojom::Readiness::kUninstalledByUser) {
+    page_->OnAppRemoved(update.AppId());
+    return;
+  }
+
   if (update.ShowInManagement() != apps::mojom::OptionalBool::kTrue) {
     return;
   }
 
   if (update.ReadinessChanged() &&
-      update.Readiness() == apps::mojom::Readiness::kUninstalledByUser) {
-    page_->OnAppRemoved(update.AppId());
-
-  } else if (update.ReadinessChanged() &&
-             update.Readiness() == apps::mojom::Readiness::kReady) {
+      update.Readiness() == apps::mojom::Readiness::kReady) {
     page_->OnAppAdded(CreateUIAppPtr(update));
   } else {
     page_->OnAppChanged(CreateUIAppPtr(update));

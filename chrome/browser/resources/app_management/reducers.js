@@ -44,7 +44,9 @@ cr.define('app_management', function() {
    * @return {AppMap}
    */
   AppState.removeApp = function(apps, action) {
-    assert(apps[action.id]);
+    if (!apps.hasOwnProperty(action.id)) {
+      return apps;
+    }
 
     delete apps[action.id];
     return Object.assign({}, apps);
