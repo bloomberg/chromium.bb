@@ -218,6 +218,10 @@ const base::Feature kWasmCodeCache = {"WasmCodeCache",
 const base::Feature kNativeFileSystemAPI{"NativeFileSystemAPI",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// File handling integration. https://crbug.com/829689
+const base::Feature kFileHandlingAPI{"FileHandlingAPI",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Allows for synchronous XHR requests during page dismissal
 const base::Feature kForbidSyncXHRInPageDismissal{
     "ForbidSyncXHRInPageDismissal", base::FEATURE_DISABLED_BY_DEFAULT};

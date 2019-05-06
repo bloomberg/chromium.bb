@@ -991,6 +991,11 @@ const char kEffectiveConnectionType2GDescription[] = "2G";
 const char kEffectiveConnectionType3GDescription[] = "3G";
 const char kEffectiveConnectionType4GDescription[] = "4G";
 
+const char kFileHandlingAPIName[] = "File Handling API";
+const char kFileHandlingAPIDescription[] =
+    "Enables the file handling API, allowing websites to register as file "
+    "handlers. This depends on native-file-system";
+
 const char kFillOnAccountSelectName[] = "Fill passwords on account selection";
 const char kFillOnAccountSelectDescription[] =
     "Filling of passwords when an account is explicitly selected by the user "

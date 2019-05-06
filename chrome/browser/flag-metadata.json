@@ -1997,6 +1997,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "file-handling-api",
+    "owners": ["harrisjay@chromium.org", "raymes@chromium.org"],
+    "expiry_milestone": 79
+  },
+  {
     "name": "file-manager-feedback-panel",
     "owners": [ "adanilo" ],
     "expiry_milestone": 77

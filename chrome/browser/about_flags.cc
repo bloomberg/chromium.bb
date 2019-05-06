@@ -3734,6 +3734,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNativeFileSystemAPIDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kNativeFileSystemAPI)},
 
+    {"file-handling-api", flag_descriptions::kFileHandlingAPIName,
+     flag_descriptions::kFileHandlingAPIDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(blink::features::kFileHandlingAPI)},
+
 #if !defined(OS_ANDROID)
     {"enable-intent-picker", flag_descriptions::kIntentPickerName,
      flag_descriptions::kIntentPickerDescription, kOsMac | kOsWin | kOsLinux,
