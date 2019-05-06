@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "components/autofill_assistant/browser/actions/autofill_action.h"
 #include "components/autofill_assistant/browser/actions/click_action.h"
+#include "components/autofill_assistant/browser/actions/configure_bottom_sheet_action.h"
 #include "components/autofill_assistant/browser/actions/expect_navigation_action.h"
 #include "components/autofill_assistant/browser/actions/focus_element_action.h"
 #include "components/autofill_assistant/browser/actions/get_payment_information_action.h"
@@ -268,6 +269,10 @@ bool ProtocolUtils::ParseActions(const std::string& response,
       }
       case ActionProto::ActionInfoCase::kWaitForNavigation: {
         client_action = std::make_unique<WaitForNavigationAction>(action);
+        break;
+      }
+      case ActionProto::ActionInfoCase::kConfigureBottomSheet: {
+        client_action = std::make_unique<ConfigureBottomSheetAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {

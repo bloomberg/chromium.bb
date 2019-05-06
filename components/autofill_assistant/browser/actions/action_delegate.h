@@ -251,6 +251,12 @@ class ActionDelegate {
   // Shows the progress bar when |visible| is true. Hides it when false.
   virtual void SetProgressVisible(bool visible) = 0;
 
+  // Set whether the viewport should be resized.
+  virtual void SetResizeViewport(bool resize_viewport) = 0;
+
+  // Set the peek mode.
+  virtual void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) = 0;
+
  protected:
   ActionDelegate() = default;
 };

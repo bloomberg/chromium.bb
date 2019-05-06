@@ -44,6 +44,8 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   void SetChips(std::unique_ptr<std::vector<Chip>> chips) override;
   void SetPaymentRequestOptions(
       std::unique_ptr<PaymentRequestOptions> options) override;
+  void SetResizeViewport(bool resize_viewport) override;
+  void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) override;
   bool HasNavigationError() override;
   bool IsNavigatingToNewDocument() override;
   void AddListener(Listener* listener) override;

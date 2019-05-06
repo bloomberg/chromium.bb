@@ -102,6 +102,11 @@ class UiDelegate {
   virtual void OnFatalError(const std::string& error_message,
                             Metrics::DropOutReason reason) = 0;
 
+  // Returns whether the viewport should be resized.
+  virtual bool GetResizeViewport() = 0;
+
+  virtual ConfigureBottomSheetProto::PeekMode GetPeekMode() = 0;
+
  protected:
   UiDelegate() = default;
 };

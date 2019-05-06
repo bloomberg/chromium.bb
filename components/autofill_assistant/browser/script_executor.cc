@@ -458,6 +458,15 @@ void ScriptExecutor::SetInfoBox(const InfoBox& info_box) {
   delegate_->SetInfoBox(info_box);
 }
 
+void ScriptExecutor::SetResizeViewport(bool resize_viewport) {
+  delegate_->SetResizeViewport(resize_viewport);
+}
+
+void ScriptExecutor::SetPeekMode(
+    ConfigureBottomSheetProto::PeekMode peek_mode) {
+  delegate_->SetPeekMode(peek_mode);
+}
+
 void ScriptExecutor::OnGetActions(bool result, const std::string& response) {
   bool success = result && ProcessNextActionResponse(response);
   DVLOG(2) << __func__ << " result=" << result;

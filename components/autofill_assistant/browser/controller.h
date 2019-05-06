@@ -83,6 +83,8 @@ class Controller : public ScriptExecutorDelegate,
   void SetProgress(int progress) override;
   void SetProgressVisible(bool visible) override;
   void SetChips(std::unique_ptr<std::vector<Chip>> chips) override;
+  void SetResizeViewport(bool resize_viewport) override;
+  void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) override;
   bool IsNavigatingToNewDocument() override;
   bool HasNavigationError() override;
   void AddListener(ScriptExecutorDelegate::Listener* listener) override;
@@ -119,6 +121,8 @@ class Controller : public ScriptExecutorDelegate,
   void GetTouchableArea(std::vector<RectF>* area) const override;
   void OnFatalError(const std::string& error_message,
                     Metrics::DropOutReason reason) override;
+  bool GetResizeViewport() override;
+  ConfigureBottomSheetProto::PeekMode GetPeekMode() override;
 
  private:
   friend ControllerTest;
@@ -266,6 +270,13 @@ class Controller : public ScriptExecutorDelegate,
 
   // Current set of actions. May be null, but never empty.
   std::unique_ptr<std::vector<Chip>> actions_;
+
+  // Whether the viewport should be resized.
+  bool resize_viewport_ = false;
+
+  // Current peek mode.
+  ConfigureBottomSheetProto::PeekMode peek_mode_ =
+      ConfigureBottomSheetProto::HANDLE;
 
   // Flag indicates whether it is ready to fetch and execute scripts.
   bool started_ = false;

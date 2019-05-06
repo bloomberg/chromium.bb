@@ -64,6 +64,9 @@ public class AssistantPaymentRequestCoordinator implements AssistantPaymentReque
     private SectionInformation mShippingAddressesSection;
     private ContactDetailsSection mContactSection;
 
+    private boolean mVisible;
+    private boolean mForceInvisible;
+
     public AssistantPaymentRequestCoordinator(Context context, AssistantPaymentRequestModel model) {
         mContext = context;
         mModel = model;
@@ -87,10 +90,23 @@ public class AssistantPaymentRequestCoordinator implements AssistantPaymentReque
     }
 
     private void setVisible(boolean visible) {
-        int visibility = visible ? View.VISIBLE : View.GONE;
+        mVisible = visible;
+        updateVisibility();
+    }
+
+    private void updateVisibility() {
+        int visibility = mVisible && !mForceInvisible ? View.VISIBLE : View.GONE;
         if (getView().getVisibility() != visibility) {
             getView().setVisibility(visibility);
         }
+    }
+
+    /** Force the view of this coordinator to be invisible. */
+    public void setForceInvisible(boolean forceInvisible) {
+        if (mForceInvisible == forceInvisible) return;
+
+        mForceInvisible = forceInvisible;
+        updateVisibility();
     }
 
     private void resetPaymentRequestUI(@Nullable WebContents webContents,

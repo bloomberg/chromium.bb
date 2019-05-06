@@ -158,6 +158,9 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD1(SetProgress, void(int progress));
   MOCK_METHOD1(SetProgressVisible, void(bool visible));
   MOCK_METHOD1(SetChips, void(std::unique_ptr<std::vector<Chip>> chips));
+  MOCK_METHOD1(SetResizeViewport, void(bool resize_viewport));
+  MOCK_METHOD1(SetPeekMode,
+               void(ConfigureBottomSheetProto::PeekMode peek_mode));
 };
 
 }  // namespace autofill_assistant

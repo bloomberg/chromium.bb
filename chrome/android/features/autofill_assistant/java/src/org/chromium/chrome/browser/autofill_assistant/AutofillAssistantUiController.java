@@ -300,6 +300,16 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
                 (a, b) -> a.getType() == b.getType() && a.getText().equals(b.getText()));
     }
 
+    @CalledByNative
+    private void setResizeViewport(boolean resizeViewport) {
+        mCoordinator.getBottomBarCoordinator().setResizeViewport(resizeViewport);
+    }
+
+    @CalledByNative
+    private void setPeekMode(@AssistantPeekHeightCoordinator.PeekMode int peekMode) {
+        mCoordinator.getBottomBarCoordinator().setPeekMode(peekMode);
+    }
+
     // Native methods.
     private void safeSnackbarResult(boolean undo) {
         if (mNativeUiController != 0) nativeSnackbarResult(mNativeUiController, undo);
