@@ -43,7 +43,7 @@ namespace base {
 //   // On any thread...
 //   scoped_refptr<SequencedTaskRunner> main_task_runner = ...;
 //   auto widget = SequenceBound<MyClass>(main_task_runner, "My Title");
-//   widget.Post(&MyObject::DoSomething, 1234);
+//   widget.Post(&MyClass::DoSomething, 1234);
 //
 // Note that |widget| is constructed asynchronously on |main_task_runner|,
 // but calling Post() immediately is safe, since the actual call is posted
