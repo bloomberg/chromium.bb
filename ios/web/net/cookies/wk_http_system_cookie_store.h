@@ -59,11 +59,6 @@ class API_AVAILABLE(ios(11.0)) WKHTTPSystemCookieStore
       WKWebViewConfigurationProvider* config_provider,
       WKWebViewConfiguration* new_config) override;
 
-  // WKWebViewConfigurationProviderObserver:
-  // Stops observing |config_provider|.
-  void ConfigurationProviderDestroyed(
-      WKWebViewConfigurationProvider* config_provider) override;
-
   // Filters |cookies| to match |include_url|, sorts based on RFC6265 using
   // |weak_time_manager| and then runs |callback|.
   // If |include_url| is empty then cookies are processed without filtering.
@@ -76,11 +71,6 @@ class API_AVAILABLE(ios(11.0)) WKHTTPSystemCookieStore
   // Using CRWWKHTTPCookieStore instead of using WKHTTPCookieStore directly to
   // work around several bugs on WKHTTPCookieStore.
   CRWWKHTTPCookieStore* crw_cookie_store_ = nil;
-
-  // The WKWebViewConfigurationProvider object that is observed by this cookie
-  // store. If this cookie store doesn't observe any
-  // WKWebViewConfigurationProvider |config_provider_| will be nullptr.
-  WKWebViewConfigurationProvider* config_provider_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WKHTTPSystemCookieStore);
 };

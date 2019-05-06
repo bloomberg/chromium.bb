@@ -64,7 +64,10 @@ class WKWebViewConfigurationProvider : public base::SupportsUserData::Data {
   BrowserState* browser_state_;
 
   // A list of observers notified when WKWebViewConfiguration changes.
-  base::ObserverList<WKWebViewConfigurationProviderObserver, true>::Unchecked
+  // This observer list has its' check_empty flag set to false, because
+  // observers need to remove them selves from the list in the UI Thread which
+  // will add more complixity if they are destructed on the IO thread.
+  base::ObserverList<WKWebViewConfigurationProviderObserver, false>::Unchecked
       observers_;
 
   DISALLOW_COPY_AND_ASSIGN(WKWebViewConfigurationProvider);

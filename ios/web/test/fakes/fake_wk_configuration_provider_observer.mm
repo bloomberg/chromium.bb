@@ -31,14 +31,4 @@ void FakeWKConfigurationProviderObserver::DidCreateNewConfiguration(
   last_created_wk_config_ = new_config;
 }
 
-bool FakeWKConfigurationProviderObserver::IsProviderDestroyed() const {
-  return is_provider_destroyed_;
-}
-
-void FakeWKConfigurationProviderObserver::ConfigurationProviderDestroyed(
-    WKWebViewConfigurationProvider* config_provider) {
-  config_provider->RemoveObserver(this);
-  is_provider_destroyed_ = true;
-}
-
 }  // namespace web

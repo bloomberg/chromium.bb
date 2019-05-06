@@ -175,11 +175,6 @@ TEST_F(WKWebViewConfigurationProviderTest, Observers) {
   observer.ResetLastCreatedWKConfig();
   config = provider->GetWebViewConfiguration();
   EXPECT_FALSE(observer.GetLastCreatedWKConfiguration());
-
-  // Test that ConfigurationProviderDestroyed is called.
-  ASSERT_FALSE(observer.IsProviderDestroyed());
-  browser_state.reset();
-  EXPECT_TRUE(observer.IsProviderDestroyed());
 }
 
 }  // namespace

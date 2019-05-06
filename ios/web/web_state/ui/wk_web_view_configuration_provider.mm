@@ -80,10 +80,7 @@ WKWebViewConfigurationProvider::WKWebViewConfigurationProvider(
     BrowserState* browser_state)
     : browser_state_(browser_state) {}
 
-WKWebViewConfigurationProvider::~WKWebViewConfigurationProvider() {
-  for (auto& observer : observers_)
-    observer.ConfigurationProviderDestroyed(this);
-}
+WKWebViewConfigurationProvider::~WKWebViewConfigurationProvider() = default;
 
 WKWebViewConfiguration*
 WKWebViewConfigurationProvider::GetWebViewConfiguration() {

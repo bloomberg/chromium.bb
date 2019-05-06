@@ -54,17 +54,13 @@ bool ShouldIncludeForRequestUrl(NSHTTPCookie* cookie, const GURL& url) {
 
 WKHTTPSystemCookieStore::WKHTTPSystemCookieStore(
     WKWebViewConfigurationProvider* config_provider)
-    : crw_cookie_store_([[CRWWKHTTPCookieStore alloc] init]),
-      config_provider_(config_provider) {
+    : crw_cookie_store_([[CRWWKHTTPCookieStore alloc] init]) {
   crw_cookie_store_.HTTPCookieStore = config_provider->GetWebViewConfiguration()
                                           .websiteDataStore.httpCookieStore;
   config_provider->AddObserver(this);
 }
 
-WKHTTPSystemCookieStore::~WKHTTPSystemCookieStore() {
-  if (config_provider_)
-    config_provider_->RemoveObserver(this);
-}
+WKHTTPSystemCookieStore::~WKHTTPSystemCookieStore() = default;
 
 #pragma mark -
 #pragma mark SystemCookieStore methods
@@ -188,13 +184,6 @@ void WKHTTPSystemCookieStore::DidCreateNewConfiguration(
     WKWebViewConfiguration* new_config) {
   crw_cookie_store_.HTTPCookieStore =
       new_config.websiteDataStore.httpCookieStore;
-}
-
-void WKHTTPSystemCookieStore::ConfigurationProviderDestroyed(
-    WKWebViewConfigurationProvider* config_provider) {
-  DCHECK_EQ(config_provider_, config_provider);
-  config_provider->RemoveObserver(this);
-  config_provider_ = nullptr;
 }
 
 #pragma mark private methods

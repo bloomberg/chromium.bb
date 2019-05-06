@@ -21,10 +21,6 @@ class WKWebViewConfigurationProviderObserver {
       WKWebViewConfigurationProvider* config_provider,
       WKWebViewConfiguration* new_config) {}
 
-  // Called when the observed WKWebViewConfigurationProvider is being destroyed.
-  virtual void ConfigurationProviderDestroyed(
-      WKWebViewConfigurationProvider* config_provider) {}
-
   virtual ~WKWebViewConfigurationProviderObserver() = default;
 
  protected:
