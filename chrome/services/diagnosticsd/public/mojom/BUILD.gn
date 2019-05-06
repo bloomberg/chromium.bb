@@ -8,7 +8,7 @@ assert(is_chromeos)
 
 mojom("mojom") {
   sources = [
-    "wilco_dtc_supportd.mojom",
+    "diagnosticsd.mojom",
   ]
 
   public_deps = [

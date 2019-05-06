@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_FAKE_WILCO_DTC_SUPPORTD_CLIENT_H_
-#define CHROMEOS_DBUS_FAKE_WILCO_DTC_SUPPORTD_CLIENT_H_
+#ifndef CHROMEOS_DBUS_FAKE_DIAGNOSTICSD_CLIENT_H_
+#define CHROMEOS_DBUS_FAKE_DIAGNOSTICSD_CLIENT_H_
 
 #include <vector>
 
@@ -11,20 +11,20 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
-#include "chromeos/dbus/wilco_dtc_supportd_client.h"
+#include "chromeos/dbus/diagnosticsd_client.h"
 
 namespace chromeos {
 
-class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeWilcoDtcSupportdClient final
-    : public WilcoDtcSupportdClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeDiagnosticsdClient final
+    : public DiagnosticsdClient {
  public:
-  FakeWilcoDtcSupportdClient();
-  ~FakeWilcoDtcSupportdClient() override;
+  FakeDiagnosticsdClient();
+  ~FakeDiagnosticsdClient() override;
 
   // DBusClient overrides:
   void Init(dbus::Bus* bus) override;
 
-  // WilcoDtcSupportdClient overrides:
+  // DiagnosticsdClient overrides:
   void WaitForServiceToBeAvailable(
       WaitForServiceToBeAvailableCallback callback) override;
   void BootstrapMojoConnection(base::ScopedFD fd,
@@ -55,9 +55,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeWilcoDtcSupportdClient final
   std::vector<VoidDBusMethodCallback>
       pending_bootstrap_mojo_connection_callbacks_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeWilcoDtcSupportdClient);
+  DISALLOW_COPY_AND_ASSIGN(FakeDiagnosticsdClient);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_FAKE_WILCO_DTC_SUPPORTD_CLIENT_H_
+#endif  // CHROMEOS_DBUS_FAKE_DIAGNOSTICSD_CLIENT_H_

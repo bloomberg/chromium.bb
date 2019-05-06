@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_WILCO_DTC_SUPPORTD_CLIENT_H_
-#define CHROMEOS_DBUS_WILCO_DTC_SUPPORTD_CLIENT_H_
+#ifndef CHROMEOS_DBUS_DIAGNOSTICSD_CLIENT_H_
+#define CHROMEOS_DBUS_DIAGNOSTICSD_CLIENT_H_
 
 #include <memory>
 
@@ -16,30 +16,29 @@
 
 namespace chromeos {
 
-class COMPONENT_EXPORT(CHROMEOS_DBUS) WilcoDtcSupportdClient
-    : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) DiagnosticsdClient : public DBusClient {
  public:
   // Factory function.
-  static std::unique_ptr<WilcoDtcSupportdClient> Create();
+  static std::unique_ptr<DiagnosticsdClient> Create();
 
-  // Registers |callback| to run when the wilco_dtc_supportd service becomes
+  // Registers |callback| to run when the diagnosticsd service becomes
   // available.
   virtual void WaitForServiceToBeAvailable(
       WaitForServiceToBeAvailableCallback callback) = 0;
 
-  // Bootstrap the Mojo connection between Chrome and the wilco_dtc_supportd
-  // daemon. |fd| is the file descriptor with the child end of the Mojo pipe.
+  // Bootstrap the Mojo connection between Chrome and the diagnosticsd daemon.
+  // |fd| is the file descriptor with the child end of the Mojo pipe.
   virtual void BootstrapMojoConnection(base::ScopedFD fd,
                                        VoidDBusMethodCallback callback) = 0;
 
  protected:
   // Create() should be used instead.
-  WilcoDtcSupportdClient();
+  DiagnosticsdClient();
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WilcoDtcSupportdClient);
+  DISALLOW_COPY_AND_ASSIGN(DiagnosticsdClient);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_WILCO_DTC_SUPPORTD_CLIENT_H_
+#endif  // CHROMEOS_DBUS_DIAGNOSTICSD_CLIENT_H_

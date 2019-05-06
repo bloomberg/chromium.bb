@@ -40,6 +40,7 @@ namespace chromeos {
 class ArcKioskAppManager;
 class CrosUsbDetector;
 class DemoModeResourcesRemover;
+class DiagnosticsdManager;
 class DiscoverManager;
 class EventRewriterDelegateImpl;
 class FastTransitionObserver;
@@ -53,7 +54,6 @@ class RendererFreezer;
 class SchedulerConfigurationManager;
 class ShutdownPolicyForwarder;
 class WakeOnWifiManager;
-class WilcoDtcSupportdManager;
 
 namespace default_app_order {
 class ExternalLoader;
@@ -164,12 +164,12 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
       scheduler_configuration_manager_;
 
   std::unique_ptr<CrosUsbDetector> cros_usb_detector_;
+  std::unique_ptr<DiagnosticsdManager> diagnosticsd_manager_;
 
   std::unique_ptr<chromeos::system::DarkResumeController>
       dark_resume_controller_;
 
   std::unique_ptr<policy::LockToSingleUserManager> lock_to_single_user_manager_;
-  std::unique_ptr<WilcoDtcSupportdManager> wilco_dtc_supportd_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_WILCO_DTC_SUPPORTD_WILCO_DTC_SUPPORTD_MANAGER_H_
-#define CHROME_BROWSER_CHROMEOS_WILCO_DTC_SUPPORTD_WILCO_DTC_SUPPORTD_MANAGER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DIAGNOSTICSD_DIAGNOSTICSD_MANAGER_H_
+#define CHROME_BROWSER_CHROMEOS_DIAGNOSTICSD_DIAGNOSTICSD_MANAGER_H_
 
 #include <memory>
 #include <string>
@@ -16,40 +16,38 @@
 
 namespace chromeos {
 
-class WilcoDtcSupportdBridge;
+class DiagnosticsdBridge;
 
 // The class controls the lifetime of the wilco DTC (diagnostics and telemetry
 // controller) support services.
 // The wilco DTC is allowed to be running only when:
 // * The wilco DTC is enabled by policy.
 // * An affiliated user/no user is logged-in.
-class WilcoDtcSupportdManager final
+class DiagnosticsdManager final
     : public session_manager::SessionManagerObserver {
  public:
   using WilcoDtcCallback = base::OnceCallback<void(bool)>;
 
-  // Delegate class, allowing to pass a stub wilco_dtc_supportd bridge in unit
-  // tests.
+  // Delegate class, allowing to pass a stub diagnosticsd bridge in unit tests.
   class Delegate {
    public:
     virtual ~Delegate();
-    // Returns a WilcoDtcSupportdBridge instance.
-    virtual std::unique_ptr<WilcoDtcSupportdBridge>
-    CreateWilcoDtcSupportdBridge() = 0;
+    // Returns a DiagnosticsdBridge instance.
+    virtual std::unique_ptr<DiagnosticsdBridge> CreateDiagnosticsdBridge() = 0;
   };
 
   // Returns the global singleton instance.
-  static WilcoDtcSupportdManager* Get();
+  static DiagnosticsdManager* Get();
 
-  WilcoDtcSupportdManager();
+  DiagnosticsdManager();
   // For use in tests.
-  explicit WilcoDtcSupportdManager(std::unique_ptr<Delegate> delegate);
+  explicit DiagnosticsdManager(std::unique_ptr<Delegate> delegate);
 
-  ~WilcoDtcSupportdManager() override;
+  ~DiagnosticsdManager() override;
 
   // Sets the Wilco DTC configuration data, passed by the device policy.
   // The nullptr should be passed to clear it.
-  // Notifies the |wilco_dtc_supportd_bridge_| if it is created.
+  // Notifies the |diagnosticsd_bridge_| if it is created.
   void SetConfigurationData(std::unique_ptr<std::string> data);
 
  private:
@@ -77,19 +75,19 @@ class WilcoDtcSupportdManager final
   // The configuration data blob is stored and owned.
   std::unique_ptr<std::string> configuration_data_;
 
-  std::unique_ptr<WilcoDtcSupportdBridge> wilco_dtc_supportd_bridge_;
+  std::unique_ptr<DiagnosticsdBridge> diagnosticsd_bridge_;
 
   // |callback_weak_factory_ptr_| is used only in Stop/StartWilcoDtc to be able
   // to discard the callbacks for the older requests.
-  base::WeakPtrFactory<WilcoDtcSupportdManager> callback_weak_ptr_factory_;
+  base::WeakPtrFactory<DiagnosticsdManager> callback_weak_ptr_factory_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<WilcoDtcSupportdManager> weak_ptr_factory_;
+  base::WeakPtrFactory<DiagnosticsdManager> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(WilcoDtcSupportdManager);
+  DISALLOW_COPY_AND_ASSIGN(DiagnosticsdManager);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_WILCO_DTC_SUPPORTD_WILCO_DTC_SUPPORTD_MANAGER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DIAGNOSTICSD_DIAGNOSTICSD_MANAGER_H_

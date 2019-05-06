@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_manager.h"
+#include "chrome/browser/chromeos/diagnosticsd/diagnosticsd_manager.h"
 
 #include "base/barrier_closure.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "chrome/browser/chromeos/diagnosticsd/testing_diagnosticsd_bridge_wrapper.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
-#include "chrome/browser/chromeos/wilco_dtc_supportd/testing_wilco_dtc_supportd_bridge_wrapper.h"
-#include "chrome/services/wilco_dtc_supportd/public/mojom/wilco_dtc_supportd.mojom.h"
+#include "chrome/services/diagnosticsd/public/mojom/diagnosticsd.mojom.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/upstart/fake_upstart_client.h"
 #include "components/session_manager/core/session_manager.h"
@@ -46,59 +46,59 @@ class TestUpstartClient final : public FakeUpstartClient {
   }
 };
 
-class MockMojoWilcoDtcSupportdService
-    : public wilco_dtc_supportd::mojom::WilcoDtcSupportdService {
+class MockMojoDiagnosticsdService
+    : public diagnosticsd::mojom::DiagnosticsdService {
  public:
-  MOCK_METHOD2(SendUiMessageToWilcoDtc,
-               void(mojo::ScopedHandle, SendUiMessageToWilcoDtcCallback));
+  MOCK_METHOD2(SendUiMessageToDiagnosticsProcessor,
+               void(mojo::ScopedHandle,
+                    SendUiMessageToDiagnosticsProcessorCallback));
 
   MOCK_METHOD0(NotifyConfigurationDataChanged, void());
 };
 
-// An implementation of the WilcoDtcSupportdManager::Delegate that owns the
-// testing instance of the WilcoDtcSupportdBridge.
-class FakeWilcoDtcSupportdManagerDelegate final
-    : public WilcoDtcSupportdManager::Delegate {
+// An implementation of the DiagnosticsdManager::Delegate that owns the testing
+// instance of the DiagnosticsdBridge.
+class FakeDiagnosticsdManagerDelegate final
+    : public DiagnosticsdManager::Delegate {
  public:
-  FakeWilcoDtcSupportdManagerDelegate(
-      MockMojoWilcoDtcSupportdService* mojo_wilco_dtc_supportd_service)
-      : mojo_wilco_dtc_supportd_service_(mojo_wilco_dtc_supportd_service) {}
+  FakeDiagnosticsdManagerDelegate(
+      MockMojoDiagnosticsdService* mojo_diagnosticsd_service)
+      : mojo_diagnosticsd_service_(mojo_diagnosticsd_service) {}
 
-  // WilcoDtcSupportdManager::Delegate overrides:
-  std::unique_ptr<WilcoDtcSupportdBridge> CreateWilcoDtcSupportdBridge()
-      override {
-    std::unique_ptr<WilcoDtcSupportdBridge> wilco_dtc_supportd_bridge;
-    testing_wilco_dtc_supportd_bridge_wrapper_ =
-        TestingWilcoDtcSupportdBridgeWrapper::Create(
-            mojo_wilco_dtc_supportd_service_,
+  // DiagnosticsdManager::Delegate overrides:
+  std::unique_ptr<DiagnosticsdBridge> CreateDiagnosticsdBridge() override {
+    std::unique_ptr<DiagnosticsdBridge> diagnosticsd_bridge;
+    testing_diagnosticsd_bridge_wrapper_ =
+        TestingDiagnosticsdBridgeWrapper::Create(
+            mojo_diagnosticsd_service_,
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_),
-            &wilco_dtc_supportd_bridge);
-    DCHECK(wilco_dtc_supportd_bridge);
-    testing_wilco_dtc_supportd_bridge_wrapper_->EstablishFakeMojoConnection();
-    return wilco_dtc_supportd_bridge;
+            &diagnosticsd_bridge);
+    DCHECK(diagnosticsd_bridge);
+    testing_diagnosticsd_bridge_wrapper_->EstablishFakeMojoConnection();
+    return diagnosticsd_bridge;
   }
 
  private:
   network::TestURLLoaderFactory test_url_loader_factory_;
-  std::unique_ptr<TestingWilcoDtcSupportdBridgeWrapper>
-      testing_wilco_dtc_supportd_bridge_wrapper_;
-  MockMojoWilcoDtcSupportdService* mojo_wilco_dtc_supportd_service_;
+  std::unique_ptr<TestingDiagnosticsdBridgeWrapper>
+      testing_diagnosticsd_bridge_wrapper_;
+  MockMojoDiagnosticsdService* mojo_diagnosticsd_service_;
 };
 
-// Tests WilcoDtcSupportdManager class instance.
-class WilcoDtcSupportdManagerTest : public testing::Test {
+// Tests DiagnosticsdManager class instance.
+class DiagnosticsdManagerTest : public testing::Test {
  protected:
-  WilcoDtcSupportdManagerTest() {
+  DiagnosticsdManagerTest() {
     DBusThreadManager::Initialize();
     upstart_client_ = std::make_unique<TestUpstartClient>();
   }
 
-  ~WilcoDtcSupportdManagerTest() override { DBusThreadManager::Shutdown(); }
+  ~DiagnosticsdManagerTest() override { DBusThreadManager::Shutdown(); }
 
-  std::unique_ptr<WilcoDtcSupportdManager::Delegate> CreateDelegate() {
-    return std::make_unique<FakeWilcoDtcSupportdManagerDelegate>(
-        &mojo_wilco_dtc_supportd_service_);
+  std::unique_ptr<DiagnosticsdManager::Delegate> CreateDelegate() {
+    return std::make_unique<FakeDiagnosticsdManagerDelegate>(
+        &mojo_diagnosticsd_service_);
   }
 
   void SetWilcoDtcAllowedPolicy(bool wilco_dtc_allowed) {
@@ -114,8 +114,8 @@ class WilcoDtcSupportdManagerTest : public testing::Test {
     session_manager_.SetSessionState(session_manager::SessionState::ACTIVE);
   }
 
-  MockMojoWilcoDtcSupportdService* mojo_wilco_dtc_supportd_service() {
-    return &mojo_wilco_dtc_supportd_service_;
+  MockMojoDiagnosticsdService* mojo_diagnosticsd_service() {
+    return &mojo_diagnosticsd_service_;
   }
 
  private:
@@ -126,116 +126,113 @@ class WilcoDtcSupportdManagerTest : public testing::Test {
   user_manager::ScopedUserManager scoped_user_manager_{
       base::WrapUnique(fake_user_manager_)};
   session_manager::SessionManager session_manager_;
-  StrictMock<MockMojoWilcoDtcSupportdService> mojo_wilco_dtc_supportd_service_;
+  StrictMock<MockMojoDiagnosticsdService> mojo_diagnosticsd_service_;
 };
 
 // Test that wilco DTC support services are not started on enterprise enrolled
 // devices with a certain device policy unset.
-TEST_F(WilcoDtcSupportdManagerTest, EnterpriseiWilcoDtcBasic) {
-  WilcoDtcSupportdManager wilco_dtc_supportd_manager(CreateDelegate());
-  EXPECT_FALSE(WilcoDtcSupportdBridge::Get());
+TEST_F(DiagnosticsdManagerTest, EnterpriseiWilcoDtcBasic) {
+  DiagnosticsdManager diagnosticsd_manager(CreateDelegate());
+  EXPECT_FALSE(DiagnosticsdBridge::Get());
 }
 
 // Test that wilco DTC support services are not started if disabled by device
 // policy.
-TEST_F(WilcoDtcSupportdManagerTest, EnterpriseWilcoDtcDisabled) {
-  WilcoDtcSupportdManager wilco_dtc_supportd_manager(CreateDelegate());
-  EXPECT_FALSE(WilcoDtcSupportdBridge::Get());
+TEST_F(DiagnosticsdManagerTest, EnterpriseWilcoDtcDisabled) {
+  DiagnosticsdManager diagnosticsd_manager(CreateDelegate());
+  EXPECT_FALSE(DiagnosticsdBridge::Get());
 
   SetWilcoDtcAllowedPolicy(false);
-  EXPECT_FALSE(WilcoDtcSupportdBridge::Get());
+  EXPECT_FALSE(DiagnosticsdBridge::Get());
 }
 
 // Test that wilco DTC support services are started if enabled by policy.
-TEST_F(WilcoDtcSupportdManagerTest, EnterpriseWilcoDtcAllowed) {
+TEST_F(DiagnosticsdManagerTest, EnterpriseWilcoDtcAllowed) {
   SetWilcoDtcAllowedPolicy(true);
-  WilcoDtcSupportdManager wilco_dtc_supportd_manager(CreateDelegate());
-  EXPECT_TRUE(WilcoDtcSupportdBridge::Get());
+  DiagnosticsdManager diagnosticsd_manager(CreateDelegate());
+  EXPECT_TRUE(DiagnosticsdBridge::Get());
 }
 
 // Test that wilco DTC support services are not started if non-affiliated user
 // is logged-in.
-TEST_F(WilcoDtcSupportdManagerTest, EnterpriseNonAffiliatedUserLoggedIn) {
-  WilcoDtcSupportdManager wilco_dtc_supportd_manager(CreateDelegate());
-  EXPECT_FALSE(WilcoDtcSupportdBridge::Get());
+TEST_F(DiagnosticsdManagerTest, EnterpriseNonAffiliatedUserLoggedIn) {
+  DiagnosticsdManager diagnosticsd_manager(CreateDelegate());
+  EXPECT_FALSE(DiagnosticsdBridge::Get());
 
   SetWilcoDtcAllowedPolicy(true);
-  EXPECT_TRUE(WilcoDtcSupportdBridge::Get());
+  EXPECT_TRUE(DiagnosticsdBridge::Get());
 
   LogInUser(false);
-  EXPECT_FALSE(WilcoDtcSupportdBridge::Get());
+  EXPECT_FALSE(DiagnosticsdBridge::Get());
 }
 
 // Test that wilco DTC support services are started if enabled by device policy
 // and affiliated user is logged-in.
-TEST_F(WilcoDtcSupportdManagerTest, EnterpriseAffiliatedUserLoggedIn) {
+TEST_F(DiagnosticsdManagerTest, EnterpriseAffiliatedUserLoggedIn) {
   SetWilcoDtcAllowedPolicy(true);
-  WilcoDtcSupportdManager wilco_dtc_supportd_manager(CreateDelegate());
-  EXPECT_TRUE(WilcoDtcSupportdBridge::Get());
+  DiagnosticsdManager diagnosticsd_manager(CreateDelegate());
+  EXPECT_TRUE(DiagnosticsdBridge::Get());
 
   LogInUser(true);
-  EXPECT_TRUE(WilcoDtcSupportdBridge::Get());
+  EXPECT_TRUE(DiagnosticsdBridge::Get());
 }
 
 // Test that wilco DTC support services are not started if non-affiliated user
 // is logged-in before the construction.
-TEST_F(WilcoDtcSupportdManagerTest, EnterpriseNonAffiliatedUserLoggedInBefore) {
+TEST_F(DiagnosticsdManagerTest, EnterpriseNonAffiliatedUserLoggedInBefore) {
   SetWilcoDtcAllowedPolicy(true);
   LogInUser(false);
-  WilcoDtcSupportdManager wilco_dtc_supportd_manager(CreateDelegate());
+  DiagnosticsdManager diagnosticsd_manager(CreateDelegate());
 
-  EXPECT_FALSE(WilcoDtcSupportdBridge::Get());
+  EXPECT_FALSE(DiagnosticsdBridge::Get());
 }
 
 // Test that wilco DTC support services are properly notified about the changes
 // of configuration data.
-TEST_F(WilcoDtcSupportdManagerTest, ConfigurationData) {
+TEST_F(DiagnosticsdManagerTest, ConfigurationData) {
   constexpr char kFakeConfigurationData[] =
       "{\"fake-message\": \"Fake JSON configuration data\"}";
 
-  WilcoDtcSupportdManager wilco_dtc_supportd_manager(CreateDelegate());
-  EXPECT_FALSE(WilcoDtcSupportdBridge::Get());
+  DiagnosticsdManager diagnosticsd_manager(CreateDelegate());
+  EXPECT_FALSE(DiagnosticsdBridge::Get());
 
   SetWilcoDtcAllowedPolicy(true);
-  EXPECT_TRUE(WilcoDtcSupportdBridge::Get());
+  EXPECT_TRUE(DiagnosticsdBridge::Get());
   // An empty configuration data by default.
   EXPECT_TRUE(
-      WilcoDtcSupportdBridge::Get()->GetConfigurationDataForTesting().empty());
+      DiagnosticsdBridge::Get()->GetConfigurationDataForTesting().empty());
 
   // Set a non-empty configuration data.
   {
     base::RunLoop run_loop;
-    EXPECT_CALL(*mojo_wilco_dtc_supportd_service(),
-                NotifyConfigurationDataChanged())
+    EXPECT_CALL(*mojo_diagnosticsd_service(), NotifyConfigurationDataChanged())
         .WillOnce(Invoke([&run_loop]() { run_loop.Quit(); }));
 
-    wilco_dtc_supportd_manager.SetConfigurationData(
+    diagnosticsd_manager.SetConfigurationData(
         std::make_unique<std::string>(kFakeConfigurationData));
     EXPECT_EQ(kFakeConfigurationData,
-              WilcoDtcSupportdBridge::Get()->GetConfigurationDataForTesting());
+              DiagnosticsdBridge::Get()->GetConfigurationDataForTesting());
     run_loop.Run();
   }
 
   // Restart the bridge.
   SetWilcoDtcAllowedPolicy(false);
-  EXPECT_FALSE(WilcoDtcSupportdBridge::Get());
+  EXPECT_FALSE(DiagnosticsdBridge::Get());
   SetWilcoDtcAllowedPolicy(true);
-  EXPECT_TRUE(WilcoDtcSupportdBridge::Get());
+  EXPECT_TRUE(DiagnosticsdBridge::Get());
 
   // The configuration data has not been changed.
   EXPECT_EQ(kFakeConfigurationData,
-            WilcoDtcSupportdBridge::Get()->GetConfigurationDataForTesting());
+            DiagnosticsdBridge::Get()->GetConfigurationDataForTesting());
 
   // Clear the configuration data.
   {
     base::RunLoop run_loop;
-    EXPECT_CALL(*mojo_wilco_dtc_supportd_service(),
-                NotifyConfigurationDataChanged())
+    EXPECT_CALL(*mojo_diagnosticsd_service(), NotifyConfigurationDataChanged())
         .WillOnce(Invoke([&run_loop]() { run_loop.Quit(); }));
-    wilco_dtc_supportd_manager.SetConfigurationData(nullptr);
-    EXPECT_TRUE(WilcoDtcSupportdBridge::Get()
-                    ->GetConfigurationDataForTesting()
-                    .empty());
+    diagnosticsd_manager.SetConfigurationData(nullptr);
+    EXPECT_TRUE(
+        DiagnosticsdBridge::Get()->GetConfigurationDataForTesting().empty());
     run_loop.Run();
   }
 }
