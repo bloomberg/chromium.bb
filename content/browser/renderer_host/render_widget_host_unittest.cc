@@ -15,7 +15,6 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -443,9 +442,7 @@ class RenderWidgetHostTest : public testing::Test {
       : process_(nullptr),
         handle_key_press_event_(false),
         handle_mouse_event_(false),
-        last_simulated_event_time_(ui::EventTimeForNow()) {
-    feature_list_.Init();
-  }
+        last_simulated_event_time_(ui::EventTimeForNow()) {}
   ~RenderWidgetHostTest() override {}
 
   bool KeyPressEventCallback(const NativeWebKeyboardEvent& /* event */) {
@@ -716,7 +713,6 @@ class RenderWidgetHostTest : public testing::Test {
   SyntheticWebTouchEvent touch_event_;
 
   TestBrowserThreadBundle thread_bundle_;
-  base::test::ScopedFeatureList feature_list_;
   viz::mojom::CompositorFrameSinkClientPtr renderer_compositor_frame_sink_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostTest);
@@ -1658,8 +1654,7 @@ TEST_F(RenderWidgetHostTest, VisualProperties) {
 }
 
 // Make sure no dragging occurs after renderer exited. See crbug.com/704832.
-// DISABLED for crbug.com/908012
-TEST_F(RenderWidgetHostTest, DISABLED_RendererExitedNoDrag) {
+TEST_F(RenderWidgetHostTest, RendererExitedNoDrag) {
   host_->SetView(new TestView(host_.get()));
 
   EXPECT_EQ(delegate_->mock_delegate_view()->start_dragging_count(), 0);
