@@ -106,11 +106,9 @@ aura::Window* GetWindowForTabDraggingProperties(const TabStrip* tab_strip) {
 // Returns true if |tab_strip| browser window is snapped.
 bool IsSnapped(const TabStrip* tab_strip) {
   DCHECK(tab_strip);
-  aura::Window* window = GetWindowForTabDraggingProperties(tab_strip);
   ash::mojom::WindowStateType type =
-      window->GetProperty(ash::kTabDroppedWindowStateTypeKey);
-  if (type == ash::mojom::WindowStateType::DEFAULT)
-    type = window->GetProperty(ash::kWindowStateTypeKey);
+      GetWindowForTabDraggingProperties(tab_strip)->GetProperty(
+          ash::kWindowStateTypeKey);
   return type == ash::mojom::WindowStateType::LEFT_SNAPPED ||
          type == ash::mojom::WindowStateType::RIGHT_SNAPPED;
 }
@@ -2097,7 +2095,6 @@ void TabDragController::ClearTabDraggingInfo() {
       GetWindowForTabDraggingProperties(dragged_tabstrip);
   dragged_window->ClearProperty(ash::kIsDraggingTabsKey);
   dragged_window->ClearProperty(ash::kTabDraggingSourceWindowKey);
-  dragged_window->ClearProperty(ash::kTabDroppedWindowStateTypeKey);
 #endif
 }
 

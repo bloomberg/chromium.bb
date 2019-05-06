@@ -64,10 +64,6 @@ const string kPrePipWindowStateType_Property = "ash:pre-pip-window-state-type";
 const string kTabDraggingSourceWindow_Property =
     "ash:tab-dragging-source-window";
 
-// A property key to store the window state type when the tab-dragging finishes.
-const string kTabDroppedWindowStateType_Property =
-    "ash:tab-dropped-window-state-type";
-
 // This is put on windows to indicate that ash should perform auto management of
 // window positions; when you open a second browser, ash will move the two to
 // minimize overlap.

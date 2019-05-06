@@ -153,13 +153,6 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<int32_t>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<aura::Window*>* const
     kTabDraggingSourceWindowKey;
 
-// A property key to store the window state type when the tab-dragging finishes.
-// This is for Mash to share the window state type before actual state
-// transition happens. See TabDragController::IsSnapped, and
-// https://crbug.com/880635.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
-    mojom::WindowStateType>* const kTabDroppedWindowStateTypeKey;
-
 // A property key to store the active color on the window frame.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<SkColor>* const
     kFrameActiveColorKey;

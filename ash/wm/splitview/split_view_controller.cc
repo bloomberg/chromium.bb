@@ -125,10 +125,12 @@ mojom::SplitViewState ToMojomSplitViewState(SplitViewController::State state) {
 
 mojom::WindowStateType GetStateTypeFromSnapPosition(
     SplitViewController::SnapPosition snap_position) {
+  DCHECK(snap_position != SplitViewController::NONE);
   if (snap_position == SplitViewController::LEFT)
     return mojom::WindowStateType::LEFT_SNAPPED;
   if (snap_position == SplitViewController::RIGHT)
     return mojom::WindowStateType::RIGHT_SNAPPED;
+  NOTREACHED();
   return mojom::WindowStateType::DEFAULT;
 }
 
@@ -709,9 +711,6 @@ void SplitViewController::OnWindowDragEnded(
     SnapPosition desired_snap_position,
     const gfx::Point& last_location_in_screen) {
   if (wm::IsDraggingTabs(dragged_window)) {
-    dragged_window->SetProperty(
-        kTabDroppedWindowStateTypeKey,
-        GetStateTypeFromSnapPosition(desired_snap_position));
     dragged_window_observer_.reset(new TabDraggedWindowObserver(
         this, dragged_window, desired_snap_position, last_location_in_screen));
   } else {

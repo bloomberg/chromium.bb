@@ -129,9 +129,6 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
       mojom::kRestoreWindowStateTypeOverride_Property,
       base::BindRepeating(&IsValidWindowStateType));
   property_converter->RegisterPrimitiveProperty(
-      kTabDroppedWindowStateTypeKey, mojom::kTabDroppedWindowStateType_Property,
-      base::BindRepeating(&IsValidWindowStateType));
-  property_converter->RegisterPrimitiveProperty(
       aura::client::kTitleShownKey,
       ws::mojom::WindowManager::kWindowTitleShown_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
@@ -195,9 +192,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kShelfItemTypeKey, TYPE_UNDEFINED)
 DEFINE_UI_CLASS_PROPERTY_KEY(aura::Window*,
                              kTabDraggingSourceWindowKey,
                              nullptr)
-DEFINE_UI_CLASS_PROPERTY_KEY(mojom::WindowStateType,
-                             kTabDroppedWindowStateTypeKey,
-                             mojom::WindowStateType::DEFAULT)
 
 DEFINE_UI_CLASS_PROPERTY_KEY(SkColor, kFrameActiveColorKey, kDefaultFrameColor)
 DEFINE_UI_CLASS_PROPERTY_KEY(SkColor,
