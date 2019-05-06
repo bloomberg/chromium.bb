@@ -12,6 +12,12 @@
 
 #include <algorithm>
 
+#include "base/android/build_info.h"
+#include "base/android/java_exception_reporter.h"
+#include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
+#include "base/android/jni_string.h"
+#include "base/android/path_utils.h"
 #include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
@@ -27,6 +33,7 @@
 #include "build/build_config.h"
 #include "components/crash/content/app/crash_reporter_client.h"
 #include "content/public/common/content_descriptors.h"
+#include "jni/PackagePaths_jni.h"
 #include "sandbox/linux/services/syscall_wrappers.h"
 #include "third_party/crashpad/crashpad/client/annotation.h"
 #include "third_party/crashpad/crashpad/client/client_argv_handling.h"
@@ -39,16 +46,6 @@
 #include "third_party/crashpad/crashpad/util/linux/scoped_pr_set_dumpable.h"
 #include "third_party/crashpad/crashpad/util/misc/from_pointer_cast.h"
 #include "third_party/crashpad/crashpad/util/posix/signals.h"
-
-#if defined(OS_ANDROID)
-#include "base/android/build_info.h"
-#include "base/android/java_exception_reporter.h"
-#include "base/android/jni_android.h"
-#include "base/android/jni_array.h"
-#include "base/android/jni_string.h"
-#include "base/android/path_utils.h"
-#include "jni/PackagePaths_jni.h"
-#endif  // OS_ANDROID
 
 namespace crashpad {
 namespace {
@@ -104,7 +101,6 @@ class SandboxedHandler {
     server_fd_ = base::GlobalDescriptors::GetInstance()->Get(
         service_manager::kCrashDumpSignal);
 
-#if defined(OS_ANDROID)
     // Android's debuggerd handler on JB MR2 until OREO displays a dialog which
     // is a bad user experience for child process crashes. Disable the debuggerd
     // handler for user builds. crbug.com/273706
@@ -115,9 +111,6 @@ class SandboxedHandler {
         build_info->sdk_int() >= base::android::SDK_VERSION_OREO ||
         strcmp(build_info->build_type(), "eng") == 0 ||
         strcmp(build_info->build_type(), "userdebug") == 0;
-#else
-    restore_previous_handler_ = false;
-#endif
 
     return Signals::InstallCrashHandlers(HandleCrash, 0, &old_actions_);
   }
@@ -214,8 +207,6 @@ class SandboxedHandler {
 
 namespace crash_reporter {
 namespace {
-
-#if defined(OS_ANDROID)
 
 void SetJavaExceptionInfo(const char* info_string) {
   static crashpad::StringAnnotation<5 * 4096> exception_info("exception_info");
@@ -354,8 +345,6 @@ bool BuildEnvironmentWithApk(bool use_64_bit,
 const char kCrashpadJavaMain[] =
     "org.chromium.components.crash.browser.CrashpadMain";
 
-#endif  // OS_ANDROID
-
 void BuildHandlerArgs(CrashReporterClient* crash_reporter_client,
                       base::FilePath* database_path,
                       base::FilePath* metrics_path,
@@ -366,12 +355,7 @@ void BuildHandlerArgs(CrashReporterClient* crash_reporter_client,
   crash_reporter_client->GetCrashMetricsLocation(metrics_path);
 
 // TODO(jperaza): Set URL for Android when Crashpad takes over report upload.
-#if defined(GOOGLE_CHROME_BUILD) && defined(OFFICIAL_BUILD) && \
-    !defined(OS_ANDROID)
-  *url = "https://clients2.google.com/cr/report";
-#else
   *url = std::string();
-#endif
 
   std::string product_name;
   std::string product_version;
@@ -381,9 +365,7 @@ void BuildHandlerArgs(CrashReporterClient* crash_reporter_client,
   (*process_annotations)["prod"] = product_name;
   (*process_annotations)["ver"] = product_version;
 
-#if defined(OS_ANDROID)
   SetBuildInfoAnnotations(process_annotations);
-#endif  // OS_ANDROID
 
 #if defined(GOOGLE_CHROME_BUILD)
   // Empty means stable.
@@ -395,11 +377,7 @@ void BuildHandlerArgs(CrashReporterClient* crash_reporter_client,
     (*process_annotations)["channel"] = channel;
   }
 
-#if defined(OS_ANDROID)
   (*process_annotations)["plat"] = std::string("Android");
-#else
-  (*process_annotations)["plat"] = std::string("Linux");
-#endif
 
   if (crash_reporter_client->ShouldMonitorCrashHandlerExpensively()) {
     arguments->push_back("--monitor-self");
@@ -412,7 +390,6 @@ void BuildHandlerArgs(CrashReporterClient* crash_reporter_client,
 }
 
 bool GetHandlerPath(base::FilePath* exe_dir, base::FilePath* handler_path) {
-#if defined(OS_ANDROID)
   // There is not any normal way to package native executables in an Android
   // APK. The Crashpad handler is packaged like a loadable module, which
   // Android's APK installer expects to be named like a shared library, but it
@@ -421,17 +398,11 @@ bool GetHandlerPath(base::FilePath* exe_dir, base::FilePath* handler_path) {
     return false;
   }
   *handler_path = exe_dir->Append("libcrashpad_handler.so");
-#else
-  if (!base::PathService::Get(base::DIR_EXE, exe_dir)) {
-    return false;
-  }
-  *handler_path = exe_dir->Append("crashpad_handler");
-#endif
   return true;
 }
 
 bool SetLdLibraryPath(const base::FilePath& lib_path) {
-#if defined(OS_ANDROID) && defined(COMPONENT_BUILD)
+#if defined(COMPONENT_BUILD)
   std::string library_path(lib_path.value());
 
   static constexpr char kLibraryPathVar[] = "LD_LIBRARY_PATH";
@@ -451,7 +422,6 @@ bool SetLdLibraryPath(const base::FilePath& lib_path) {
 }
 
 class HandlerStarter {
-#if defined(OS_ANDROID)
   // TODO(jperaza): Currently only launching a same-bitness handler is
   // supported. The logic to build package paths, locate a handler executable,
   // and the crashpad client interface for launching a Java handler need to be
@@ -462,7 +432,6 @@ class HandlerStarter {
 #else
   static constexpr bool kUse64Bit = false;
 #endif
-#endif  // OS_ANDROID
 
  public:
   static HandlerStarter* Get() {
@@ -491,7 +460,6 @@ class HandlerStarter {
                                              &browser_sanitization_info_));
     }
 
-#if defined(OS_ANDROID)
     std::string browser_ptype;
     if (GetCrashReporterClient()->GetBrowserProcessType(&browser_ptype)) {
       process_annotations["ptype"] = browser_ptype;
@@ -530,7 +498,6 @@ class HandlerStarter {
       DCHECK(result);
       return database_path;
     }
-#endif
 
     if (!SetLdLibraryPath(exe_dir)) {
       return database_path;
@@ -558,7 +525,6 @@ class HandlerStarter {
       return false;
     }
 
-#if defined(OS_ANDROID)
     if (use_java_handler_ || !handler_trampoline_.empty()) {
       std::vector<std::string> env;
       if (!BuildEnvironmentWithApk(kUse64Bit, &env)) {
@@ -576,7 +542,6 @@ class HandlerStarter {
                     arguments, fd);
       return result;
     }
-#endif
 
     if (!SetLdLibraryPath(exe_dir)) {
       return false;
@@ -592,11 +557,9 @@ class HandlerStarter {
   ~HandlerStarter() = delete;
 
   crashpad::SanitizationInformation browser_sanitization_info_;
-#if defined(OS_ANDROID)
   std::string handler_trampoline_;
   std::string handler_library_;
   bool use_java_handler_ = false;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(HandlerStarter);
 };
@@ -623,7 +586,6 @@ bool g_is_browser = false;
 
 }  // namespace
 
-#if defined(OS_ANDROID)
 // TODO(jperaza): This might be simplified to have both the browser and child
 // processes use CRASHPAD_SIMULATE_CRASH() if CrashpadClient allows injecting
 // the Chromium specific SandboxedHandler.
@@ -643,7 +605,6 @@ void DumpWithoutCrashing() {
                                                            &siginfo, &context);
   }
 }
-#endif
 
 bool DumpWithoutCrashingForClient(CrashReporterClient* client) {
   base::ScopedFD connection;
@@ -691,14 +652,13 @@ base::FilePath PlatformCrashpadInitialization(
   DCHECK_EQ(initial_client, browser_process);
   DCHECK(initial_arguments.empty());
 
-  // Not used on Linux/Android.
+  // Not used on Android.
   DCHECK(!embedded_handler);
   DCHECK(exe_path.empty());
 
   g_is_browser = browser_process;
 
   bool dump_at_crash = true;
-#if defined(OS_ANDROID)
   base::android::SetJavaExceptionCallback(SetJavaExceptionInfo);
 
   unsigned int dump_percentage =
@@ -707,7 +667,6 @@ base::FilePath PlatformCrashpadInitialization(
       static_cast<unsigned int>(base::RandInt(0, 99)) >= dump_percentage) {
     dump_at_crash = false;
   }
-#endif  // OS_ANDROID
 
   if (browser_process) {
     HandlerStarter* starter = HandlerStarter::Get();

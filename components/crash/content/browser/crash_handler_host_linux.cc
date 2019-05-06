@@ -51,7 +51,7 @@
 #define SYS_read __NR_read
 #endif
 
-#if !defined(OS_CHROMEOS)
+#if defined(OS_ANDROID)
 #include "components/crash/content/app/crashpad.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"  // nogncheck
 #include "third_party/crashpad/crashpad/util/posix/signals.h"      // nogncheck
@@ -502,9 +502,7 @@ bool CrashHandlerHostLinux::IsShuttingDown() const {
 
 }  // namespace breakpad
 
-#endif  // !defined(OS_ANDROID)
-
-#if !defined(OS_CHROMEOS)
+#else  // !OS_ANDROID
 
 namespace crashpad {
 
@@ -623,13 +621,9 @@ bool CrashHandlerHost::ReceiveClientMessage(int client_fd,
     NotifyCrashSignalObservers(child_pid, signo);
   }
 
-#if defined(OS_ANDROID)
   if (!request_dump) {
     return false;
   }
-#else
-  DCHECK(request_dump);
-#endif
 
   handler_fd->reset(child_fd.release());
   return true;
@@ -666,4 +660,4 @@ void CrashHandlerHost::WillDestroyCurrentMessageLoop() {
 
 }  // namespace crashpad
 
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !OS_ANDROID
