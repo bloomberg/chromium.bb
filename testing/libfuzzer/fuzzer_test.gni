@@ -81,7 +81,7 @@ template("fuzzer_test") {
         deps = [ "//testing/libfuzzer:seed_corpus" ] + seed_corpus_deps
       }
 
-      if (!archive_seed_corpus) {
+      if (archive_seed_corpus) {
         test_deps += [ ":" + target_name + "_seed_corpus" ]
       }
     }
