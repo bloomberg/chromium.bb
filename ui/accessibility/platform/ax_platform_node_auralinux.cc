@@ -3650,6 +3650,11 @@ void AXPlatformNodeAuraLinux::GetFloatAttributeInGValue(
   }
 }
 
+bool AXPlatformNodeAuraLinux::IsTextOnlyObject() const {
+  return GetData().role == ax::mojom::Role::kListMarker ||
+         AXPlatformNodeBase::IsTextOnlyObject();
+}
+
 void AXPlatformNodeAuraLinux::AddAttributeToList(const char* name,
                                                  const char* value,
                                                  AtkAttributeSet** attributes) {

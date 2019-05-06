@@ -685,4 +685,29 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestSetSelection) {
   g_free(selected_text);
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestAtkTextListItem) {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+      <body>
+        <li>Text</li>
+      </body>
+      </html>)HTML");
+
+  // Retrieve the AtkObject interface for the document node.
+  AtkObject* document = GetRendererAccessible();
+  EXPECT_EQ(1, atk_object_get_n_accessible_children(document));
+  AtkObject* list_item = atk_object_ref_accessible_child(document, 0);
+
+  EXPECT_TRUE(ATK_IS_TEXT(list_item));
+
+  // The text of the list item should include the list marker and the text of
+  // the item itself.
+  gchar* text = atk_text_get_text(ATK_TEXT(list_item), 0, -1);
+  ASSERT_STREQ(text, "\xE2\x80\xA2 Text");
+  g_free(text);
+
+  g_object_unref(list_item);
+}
+
 }  // namespace content

@@ -209,7 +209,7 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
 
   // Returns true if this node has role of StaticText, LineBreak, or
   // InlineTextBox
-  bool IsTextOnlyObject() const;
+  virtual bool IsTextOnlyObject() const;
 
   // Returns true if the node is an editable text field.
   bool IsPlainTextField() const;
