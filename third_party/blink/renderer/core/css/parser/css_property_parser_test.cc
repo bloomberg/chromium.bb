@@ -442,9 +442,9 @@ class CSSPropertyUseCounterTest : public ::testing::Test {
     return UseCounter::IsCounted(GetDocument(), feature);
   }
 
- private:
   Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
 
+ private:
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
@@ -516,6 +516,18 @@ TEST_F(CSSPropertyUseCounterTest, CSSPropertyCyUnitlessUseCount) {
   EXPECT_FALSE(IsCounted(feature));
   ParseProperty(CSSPropertyID::kCy, "42");
   EXPECT_TRUE(IsCounted(feature));
+}
+
+TEST_F(CSSPropertyUseCounterTest, UnitlessPresentationAttributesNotCounted) {
+  WebFeature feature = WebFeature::kSVGGeometryPropertyHasNonZeroUnitlessValue;
+  EXPECT_FALSE(IsCounted(feature));
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <svg>
+      <rect x="42" y="42" rx="42" ry="42"/>
+      <circle cx="42" cy="42" r="42"/>
+    </svg>
+  )HTML");
+  EXPECT_FALSE(IsCounted(feature));
 }
 
 TEST_F(CSSPropertyUseCounterTest, CSSPropertyAnimationNameCustomIdentUseCount) {
