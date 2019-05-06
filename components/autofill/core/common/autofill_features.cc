@@ -133,7 +133,7 @@ const base::Feature kAutofillProfileServerValidation{
 // Controls whether autofill rejects using non-verified company names that are
 // in the format of a birthyear.
 const base::Feature kAutofillRejectCompanyBirthyear{
-    "AutofillRejectCompanyBirthyearName", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillRejectCompanyBirthyear", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether or not a group of fields not enclosed in a form can be
 // considered a form. If this is enabled, unowned fields will only constitute
