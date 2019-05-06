@@ -128,6 +128,7 @@
 <translation id="2800683595868705743">Salir del alternador de pestañas</translation>
 <translation id="2830972654601096923">Administrar direcciones…</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
+<translation id="2840687315230832938">No se completó la configuración de sincronización inicial</translation>
 <translation id="2843803966603263712">Restablecer</translation>
 <translation id="2858204748079866344">Para proteger tu privacidad, Chrome no completará de forma automática tu contraseña en este campo.</translation>
 <translation id="285960592395650245">Volver a descargar</translation>
@@ -411,6 +412,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="7280856130494094142">Ingresa la frase de contraseña para iniciar la sincronización</translation>
 <translation id="7285236536143823449">SÍ, ACEPTO</translation>
 <translation id="7291368939935408496">Preparando las contraseñas…</translation>
+<translation id="7293171162284876153">Para comenzar la sincronización, activa "Sincroniza tus datos de Chrome".</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> % descargado</translation>
 <translation id="7346909386216857016">Entendido</translation>
 <translation id="7348502496356775519">Agregar a favoritos</translation>

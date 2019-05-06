@@ -1345,7 +1345,7 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
 
          Jeśli ta zasada będzie wyłączona lub nieustawiona, odliczanie opóźnień związanych z zarządzaniem energią oraz czasu związanego z limitem długości sesji będzie rozpoczynane od razu po rozpoczęciu sesji.</translation>
 <translation id="3478024346823118645">Wyczyść dane użytkownika przy wylogowaniu</translation>
-<translation id="3480961938508521469">Naładuj baterię całkowicie ze standardową szybkością.</translation>
+<translation id="3480961938508521469">Naładuj baterię do pełna ze standardową szybkością.</translation>
 <translation id="348495353354674884">Włącz wirtualną klawiaturę</translation>
 <translation id="3487623755010328395">
         Jeśli ta zasada jest włączona, usługa <ph name="PRODUCT_NAME" /> podejmie próbę zarejestrowania samej siebie i zastosowania powiązanych zasad dotyczących chmury we wszystkich profilach.
@@ -3560,7 +3560,7 @@ Jeśli zasada nie jest skonfigurowana, na wszystkich stronach używany jest domy
 
           Uwaga: wartość <ph name="CHARGE_START_TIME_FIELD_NAME" /> musi być mniejsza niż <ph name="CHARGE_END_TIME_FIELD_NAME" />.
 
-          Uwaga: dozwolone wartości w polu <ph name="MINUTE_FIELD_NAME" /> w opcjach <ph name="CHARGE_START_TIME_FIELD_NAME" /> i <ph name="CHARGE_END_TIME_FIELD_NAME" /> to 0, 15, 30, 45.</translation>
+Uwaga: dozwolone wartości w polu <ph name="MINUTE_FIELD_NAME" /> w opcjach <ph name="CHARGE_START_TIME_FIELD_NAME" /> i <ph name="CHARGE_END_TIME_FIELD_NAME" /> to: 0, 15, 30 i 45.</translation>
 <translation id="7717938661004793600">Skonfiguruj ułatwienia dostępu w <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7724994675283793633">Ta zasada włącza HTTP/0.9 w portach innych niż 80 dla HTTP i 443 dla HTTPS.
 

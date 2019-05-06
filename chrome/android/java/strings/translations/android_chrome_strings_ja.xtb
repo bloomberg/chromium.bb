@@ -95,6 +95,7 @@
 <translation id="1671236975893690980">ダウンロードを待機しています...</translation>
 <translation id="1672586136351118594">次回から表示しない</translation>
 <translation id="1692118695553449118">同期は有効です</translation>
+<translation id="169515064810179024">サイトによるモーション センターへのアクセスをブロックする</translation>
 <translation id="1709438864123551175">データセーバー</translation>
 <translation id="1718835860248848330">1 時間以内</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" />に更新</translation>
@@ -205,7 +206,7 @@
 <translation id="2450083983707403292"><ph name="FILE_NAME" /> のダウンロードをやり直してもよろしいですか？</translation>
 <translation id="2476578072172137802">サイトの設定</translation>
 <translation id="2482878487686419369">通知</translation>
-<translation id="2490684707762498678"><ph name="APP_NAME" /> によって管理されています</translation>
+<translation id="2490684707762498678"><ph name="APP_NAME" /> で管理</translation>
 <translation id="2494974097748878569">Chrome の Google アシスタント</translation>
 <translation id="2496180316473517155">閲覧履歴</translation>
 <translation id="2498359688066513246">ヘルプとフィードバック</translation>
@@ -248,6 +249,7 @@
 <translation id="2777555524387840389">残り <ph name="SECONDS" /> 秒</translation>
 <translation id="2779651927720337254">失敗</translation>
 <translation id="2781151931089541271">残り 1 秒</translation>
+<translation id="2801022321632964776">Chrome を更新し、最新バージョンでお使いの言語を入手してください</translation>
 <translation id="2803478378562657435">保存したパスワードとパスワードのオプションを表示しています</translation>
 <translation id="2810645512293415242">簡易版ページを使用してデータの保存と読み込みを高速化します。</translation>
 <translation id="281504910091592009"><ph name="BEGIN_LINK" />Google アカウント<ph name="END_LINK" />での保存パスワードの表示と管理</translation>
@@ -265,7 +267,7 @@
 <translation id="2893180576842394309">検索やその他の Google サービスをカスタマイズするために、Google で履歴が使用されることがあります</translation>
 <translation id="2900528713135656174">予定を作成</translation>
 <translation id="2902702728133930130">Chrome の起動時に予期しないエラーが発生し、起動できませんでした。</translation>
-<translation id="290376772003165898"><ph name="LANGUAGE" />のページではない場合:</translation>
+<translation id="290376772003165898"><ph name="LANGUAGE" />のページではない場合</translation>
 <translation id="2910701580606108292">保護されたコンテンツの再生をサイトに許可する前に確認する</translation>
 <translation id="2913331724188855103">サイトに Cookie データの保存と読み取りを許可する（推奨）</translation>
 <translation id="2923908459366352541">名前が無効です</translation>
@@ -310,6 +312,7 @@
 <translation id="3259831549858767975">ページ上のすべての要素を縮小する</translation>
 <translation id="3269093882174072735">画像を読み込む</translation>
 <translation id="3269956123044984603">他のデバイスと同じタブを使用するには、Android のアカウント設定で [データの自動同期] を有効にします。</translation>
+<translation id="3277252321222022663">サイトによるセンサーへのアクセスを許可する（推奨）</translation>
 <translation id="3282568296779691940">Chrome にログイン</translation>
 <translation id="3288003805934695103">ページを再読み込みする</translation>
 <translation id="32895400574683172">通知が許可されています</translation>
@@ -550,6 +553,7 @@
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">許可</translation>
 <translation id="5040262127954254034">プライバシー</translation>
+<translation id="5048398596102334565">サイトによるモーション センサーへのアクセスを許可する（推奨）</translation>
 <translation id="5063480226653192405">使用状況</translation>
 <translation id="5073204694187207510">全画面グリッドを非表示</translation>
 <translation id="5082793167783849073">グループを作成して簡単にページを比較できます。グループを作成するには、リンクを長押しします。</translation>
@@ -743,6 +747,7 @@
 <translation id="6406506848690869874">同期</translation>
 <translation id="641643625718530986">印刷...</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB をダウンロード済み</translation>
+<translation id="6427112570124116297">ウェブの翻訳</translation>
 <translation id="6433501201775827830">検索エンジンを選択</translation>
 <translation id="6437478888915024427">ページ情報</translation>
 <translation id="6441734959916820584">名前が長すぎます</translation>
@@ -858,6 +863,7 @@
 <translation id="7189598951263744875">共有...</translation>
 <translation id="7191430249889272776">バックグラウンドでタブを開きました。</translation>
 <translation id="723171743924126238">画像を選択</translation>
+<translation id="7233236755231902816">お使いの言語でウェブを表示するには、Chrome の最新バージョンを入手してください</translation>
 <translation id="7243308994586599757">画面の下の方にオプションがあります</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> 件選択されています</translation>
 <translation id="7253272406652746122">デバイスの設定アプリのアカウント ページで Google アカウントを追加してください。</translation>
@@ -1013,6 +1019,7 @@
 <translation id="8310344678080805313">標準のタブ</translation>
 <translation id="8313455859591948645">起動ページの編集</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> とその他のサイト</translation>
+<translation id="8327155640814342956">快適にご利用いただけるよう、Chrome を開いて更新することをおすすめします</translation>
 <translation id="8339163506404995330"><ph name="LANGUAGE" />のページは翻訳されません</translation>
 <translation id="8349013245300336738">データ使用量で並べ替え</translation>
 <translation id="8372893542064058268">特定のサイトに対してバックグラウンド同期を許可します。</translation>
@@ -1072,6 +1079,7 @@
 <translation id="8788968922598763114">最後に閉じたタブを開く</translation>
 <translation id="8801436777607969138">特定のサイトで JavaScript をブロックします。</translation>
 <translation id="8812260976093120287">一部のウェブサイトでは、デバイスでサポートされている上記のお支払いアプリを使って支払いができます。</translation>
+<translation id="8816026460808729765">サイトによるセンサーへのアクセスをブロックする</translation>
 <translation id="8816439037877937734">Chrome で <ph name="APP_NAME" /> を開きます。続行すると、Chrome の<ph name="BEGIN_LINK1" />利用規約<ph name="END_LINK1" />と<ph name="BEGIN_LINK2" />プライバシーに関するお知らせ<ph name="END_LINK2" />、および <ph name="BEGIN_LINK3" />ファミリー リンクで作成された Google アカウントのプライバシーに関するお知らせ<ph name="END_LINK3" />に同意したことになります。</translation>
 <translation id="8820817407110198400">ブックマーク</translation>
 <translation id="8833831881926404480">サイトが画面を共有しています</translation>

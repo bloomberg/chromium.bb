@@ -1634,7 +1634,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           permisos adicionales que soliciten las apps o extensiones en próximas
           versiones. Además, los permisos se conceden para las API de las
           extensiones enterprise.deviceAttributes y enterprise.platformKeys (estas
-          no están disponibles para las apps o extensiones instaladas de manera
+          no están disponibles para las apps ni extensiones instaladas de manera
           automática).
 
           Esta política tiene prioridad por sobre una política de <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> posiblemente conflictiva. Si una app o extensión, instalada de manera automática, se quita de esta lista, <ph name="PRODUCT_NAME" /> la desinstala de forma automática.
@@ -1643,7 +1643,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           Ten en cuenta que es posible que los usuarios modifiquen el código fuente de cualquier extensión a través de las Herramientas para desarrolladores (y muy probablemente deje de funcionar). Si esta situación te inquieta, establece la política <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
 
-          Cada elemento de la lista de la política es un string que contiene un ID de extensión y una URL de actualización separada por un punto y coma (<ph name="SEMICOLON" />). El ID de extensión es el string de 32 letras que se encuentra, p. ej., en <ph name="CHROME_EXTENSIONS_LINK" /> en el modo de desarrollador. Si se especifica, la URL de actualización debe direccionarte a un documento XML del manifiesto de actualización, como se describe en <ph name="LINK_TO_EXTENSION_DOC1" />. De forma predeterminada, se usa la URL de actualización de Chrome Web Store (actualmente es "https://clients2.google.com/service/update2/crx"). Ten en cuenta que la URL de actualización que se establece en esta política solo se usa para la instalación inicial; las actualizaciones posteriores de la extensión utilizan la URL de actualización que se indica en el manifiesto de la extensión. Ten en cuenta también que el uso de la URL de actualización era explícitamente obligatorio en las versiones de <ph name="PRODUCT_NAME" /> hasta la 67 inclusive.
+          Cada elemento de la lista de la política es un string que contiene un ID de extensión y, de forma opcional, una URL de actualización separada por un punto y coma (<ph name="SEMICOLON" />). El ID de extensión es el string de 32 letras que se encuentra, p. ej., en <ph name="CHROME_EXTENSIONS_LINK" /> en el modo de desarrollador. Si se especifica, la URL de actualización debe direccionarte a un documento XML del manifiesto de actualización, como se describe en <ph name="LINK_TO_EXTENSION_DOC1" />. De forma predeterminada, se usa la URL de actualización de Chrome Web Store (actualmente es "https://clients2.google.com/service/update2/crx"). Ten en cuenta que la URL de actualización que se establece en esta política solo se usa para la instalación inicial; las actualizaciones posteriores de la extensión utilizan la URL de actualización que se indica en el manifiesto de la extensión. Ten en cuenta también que el uso de la URL de actualización era explícitamente obligatorio en las versiones de <ph name="PRODUCT_NAME" /> hasta la 67 inclusive.
 
           Por ejemplo, <ph name="EXTENSION_POLICY_EXAMPLE" /> instala la extensión con la ID <ph name="EXTENSION_ID_SAMPLE" /> desde la URL de actualización convencional de Chrome Web Store. Para obtener más información sobre las extensiones de host, consulta: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
@@ -2583,8 +2583,8 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       </translation>
 <translation id="5901427587865226597">Solo impresión doble</translation>
 <translation id="5903898512448364160">
-      Si se configura esta política como verdadera y entra en conflicto con la política de la plataforma, prevalece la política de la nube.
-      Si se configura como falsa o no se configura, y entra en conflicto con la política de la nube, prevalece la política de la plataforma.
+      Si se configura esta política como verdadera y entra en conflicto con la política de la plataforma, prevalecerá la política de la nube.
+      Si se configura como falsa o no se configura, y entra en conflicto con la política de la nube, prevalecerá la política de la plataforma.
 
       Esta política solo está disponible como una política obligatoria de la plataforma de la máquina y solo afecta las políticas de la nube con alcance en la máquina.
       </translation>

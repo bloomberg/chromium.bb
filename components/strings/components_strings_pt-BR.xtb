@@ -223,6 +223,7 @@
 <translation id="2111256659903765347">Super A</translation>
 <translation id="2113977810652731515">Cartão</translation>
 <translation id="2114841414352855701">Ignorado porque foi substituído por <ph name="POLICY_NAME" />.</translation>
+<translation id="2129079103035905234">Sensores de movimento</translation>
 <translation id="213826338245044447">Favoritos nos dispositivos móveis</translation>
 <translation id="214556005048008348">Cancelar pagamento</translation>
 <translation id="2147827593068025794">Sincronização em segundo plano</translation>
@@ -618,7 +619,7 @@
 <translation id="4265872034478892965">Permitido pelo administrador</translation>
 <translation id="4275830172053184480">Reiniciar seu dispositivo</translation>
 <translation id="4277028893293644418">Redefinir senha</translation>
-<translation id="4279811152705618813">Seu <ph name="DEVICE_TYPE" /> é gerenciado por <ph name="ENROLLMENT_DOMAIN" />.</translation>
+<translation id="4279811152705618813">Seu <ph name="DEVICE_TYPE" /> é gerenciado por <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4280429058323657511">, validade <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Esse cartão foi adicionado à sua Conta do Google}one{Esse cartão foi adicionado à sua Conta do Google}other{Esses cartões foram adicionados à sua Conta do Google}}</translation>
 <translation id="42981349822642051">Expandir</translation>
@@ -1349,7 +1350,7 @@ Mais detalhes:
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Se você entende os riscos para sua segurança, pode <ph name="BEGIN_LINK" />visitar este site<ph name="END_LINK" /> antes de os programas nocivos serem removidos.</translation>
 <translation id="8349305172487531364">Barra de favoritos</translation>
-<translation id="8363502534493474904">Desativar modo avião</translation>
+<translation id="8363502534493474904">Desativar o modo avião</translation>
 <translation id="8364627913115013041">Não definida.</translation>
 <translation id="8368476060205742148">Serviços do Google Play</translation>
 <translation id="8371889962595521444">Personalizar certificados raiz</translation>

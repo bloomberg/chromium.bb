@@ -1187,7 +1187,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="3077183141551274418">Povolí alebo zakáže životné cykly kariet</translation>
 <translation id="3079417254871857650">Určuje akciu, ktorá sa má vykonať, keď bol domovský adresár používateľa vytvorený so šifrovaním ecryptfs.
 
-      Ak toto pravidlo nastavíte na hodnotu DisallowArc, používateľ nebude môcť používať aplikácie pre Android a nevykoná sa žiadna migrácia zo šifrovania ecryptfs na šifrovanie ext4. Ak domovský adresár už šifrovanie ext4 používa, spúšťanie aplikácií pre Android zakázané nebude.
+      Ak toto pravidlo nastavíte na hodnotu DisallowArc, používateľ nebude môcť používať aplikácie pre Android a neprebehne migrácia zo šifrovania ecryptfs na šifrovanie ext4. Ak domovský adresár už šifrovanie ext4 používa, spúšťanie aplikácií pre Android zakázané nebude.
 
       Ak toto pravidlo nastavíte na hodnotu Migrate, domovské adresáre so šifrovaním ecryptfs sa pri prihlásení automaticky prevedú na šifrovanie ext4 bez toho, aby bol používateľ požiadaný o súhlas.
 
@@ -1356,7 +1356,7 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
 
           Ak je toto pravidlo nastavené na hodnotu False alebo nastavené nie je, oneskorenia správy napájania a limit dĺžky relácie sa spustia hneď na začiatku relácie.</translation>
 <translation id="3478024346823118645">Vymazať údaje používateľa po odhlásení</translation>
-<translation id="3480961938508521469">Úplne nabite batériu štandardnou rýchlosťou.</translation>
+<translation id="3480961938508521469">Úplne nabiť batériu štandardnou rýchlosťou</translation>
 <translation id="348495353354674884">Povoliť virtuálnu klávesnicu</translation>
 <translation id="3487623755010328395">
         Ak je toto pravidlo nastavené, <ph name="PRODUCT_NAME" /> sa pokúsi zaregistrovať a použiť pre všetky profily prepojené pravidlá použitia cloudu.
@@ -2511,9 +2511,9 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 <translation id="5630352020869108293">Obnoviť poslednú reláciu</translation>
 <translation id="5643906875497889108">Ovláda typy aplikácií a rozšírení, ktoré je možné nainštalovať. Tiež obmedzuje prístup k spúšťaniu.
 
-          Týmto nastavením pridáte do zoznamu povolených položiek povolené typy rozšírení a aplikácií, ktoré je možné nainštalovať v aplikácii <ph name="PRODUCT_NAME" /> a hostiteľov, s ktorými je možné interagovať. Daná hodnota je zoznam týchto reťazcov: extension, theme, user_script, hosted_app, legacy_packaged_app, platform_app. Ďalšie informácie o týchto typoch si môžete prečítať v dokumentácii k rozšíreniam prehliadača <ph name="PRODUCT_NAME" />.
+          Týmto nastavením pridáte do zoznamu povolených položiek povolené typy rozšírení a aplikácií, ktoré je možné nainštalovať v aplikácii <ph name="PRODUCT_NAME" />, a hostiteľov, s ktorými je možné interagovať. Daná hodnota je zoznam týchto reťazcov: extension, theme, user_script, hosted_app, legacy_packaged_app, platform_app. Ďalšie informácie o týchto typoch si môžete prečítať v dokumentácii k rozšíreniam prehliadača <ph name="PRODUCT_NAME" />.
 
-          Upozorňujeme, že toto pravidlo má vplyv aj na rozšírenia a aplikácie, ktoré budú vynútene nainštalované prostredníctvom pravidla ExtensionInstallForcelist.
+          Upozorňujeme, že toto pravidlo má vplyv aj na rozšírenia a aplikácie, ktorých inštalácia bude presadená prostredníctvom pravidla ExtensionInstallForcelist.
 
           Ak je toto nastavenie nakonfigurované, rozšírenia a aplikácie typu, ktorý sa nenachádza v zozname, sa nenainštalujú.
 
@@ -2559,7 +2559,7 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 <translation id="5765780083710877561">Popis:</translation>
 <translation id="5770738360657678870">Verzia pre vývojárov (môže byť nestabilná)</translation>
 <translation id="5774856474228476867">Webová adresa vyhľadávania predvoleného poskytovateľa vyhľadávania</translation>
-<translation id="5775235485119094648">Nabíjajte batériu v pevnom rozmedzí.</translation>
+<translation id="5775235485119094648">Nabíjať batériu v pevnom rozsahu</translation>
 <translation id="5776485039795852974">Opýtať sa vždy, keď chcú stránky zobrazovať upozornenia na pracovnej ploche</translation>
 <translation id="5781412041848781654">Určuje, ktorá knižnica GSSAPI sa má použiť na overenie HTTP. Môžete nastaviť buď len názov knižnice, alebo úplnú cestu.
 
@@ -2640,7 +2640,7 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
       Ak toto pravidlo nastavíte na hodnotu true, pravidlá používania cloudu budú uprednostnené, ak sa dostanú do konfliktu s pravidlami platformy.
       Ak ho nastavíte na hodnotu false alebo ho nenakonfigurujete, pravidlá platformy budú uprednostnené, ak sa dostanú do konfliktu s pravidlami používania cloudu.
 
-      Je k dispozícii iba ako povinné pravidlo počítačovej platformy a ovplyvňuje iba pravidlá rozsahu používania cloudu v počítači.
+      Toto pravidlo je k dispozícii iba ako povinné pravidlo platformy zariadenia a ovplyvňuje iba pravidlá používania cloudu pre zariadenia.
       </translation>
 <translation id="5905473632148429217">Povoliť online kontroly OCSP/CRL</translation>
 <translation id="5906199912611534122">Umožňuje aktivovať alebo deaktivovať obmedzenie rýchlosti siete.
@@ -2668,7 +2668,7 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 
       Ak toto nastavenie zakážete alebo nenastavíte žiadnu hodnotu, Bezpečné vyhľadávanie vo Vyhľadávaní Google vynucované nebude.</translation>
 <translation id="5946082169633555022">Verzia beta</translation>
-<translation id="5946329690214660966">Nastavenie vlastného plánu kontroly dostupnosti aktualizácií</translation>
+<translation id="5946329690214660966">Nastaviť vlastný plán kontroly dostupnosti aktualizácií</translation>
 <translation id="5950205771952201658">Vzhľadom na to, že kontroly online odvolania s príznakom soft-fail neposkytujú žiadne účinné bezpečnostné výhody, sú v predvolenom nastavení aplikácie <ph name="PRODUCT_NAME" /> verzie 19 alebo vyššej deaktivované. Ak toto pravidlo nastavíte na hodnotu true, predchádzajúce správanie sa obnoví a budú sa vykonávať kontroly online OCSP/CRL.
 
       Ak toto pravidlo nie je nastavené alebo je nastavené na hodnotu false, <ph name="PRODUCT_NAME" /> nebude v aplikácii <ph name="PRODUCT_NAME" /> verzie 19 alebo novšej vykonávať kontroly online odvolania.</translation>
@@ -2735,7 +2735,7 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 <translation id="6034341625190551415">Ovláda typy účtov verejných relácií a verejných terminálov.</translation>
 <translation id="6034603289689965535">Povoľuje stránke zobrazovať vyskakovacie okná počas rušenia jej načítania</translation>
 <translation id="6036523166753287175">Povoliť prechod cez bránu firewall v smere od hostiteľa vzdialeného prístupu</translation>
-<translation id="605475635122964053">Obmedzí režim tlače s kódom PIN. Ak toto pravidlo nenastavíte, nepoužijú sa žiadne obmedzenia. Ak tento režim nie je k dispozícii, toto pravidlo sa bude ignorovať. Upozorňujeme, že funkcia tlače s kódom PIN je povolená iba pre tlačiarne, ktoré používajú protokol IPPS, USB alebo IPP-over-USB. </translation>
+<translation id="605475635122964053">Obmedzí režim tlače s kódom PIN. Ak toto pravidlo nenastavíte, nepoužijú sa žiadne obmedzenia. Ak nie je tento režim k dispozícii, toto pravidlo sa bude ignorovať. Upozorňujeme, že funkcia tlače s kódom PIN je povolená iba pre tlačiarne, ktoré používajú protokol IPPS, USB alebo IPP-over-USB. </translation>
 <translation id="6070667616071269965">Rozloženie klávesnice na prihlasovacej obrazovke zariadenia</translation>
 <translation id="6074963268421707432">Nepovoliť žiadnym stránkam zobrazovať upozornenia na pracovnej ploche</translation>
 <translation id="6074964551275531965">Nastaviť časové obdobie upozornení na aktualizáciu</translation>
@@ -3547,9 +3547,9 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
       Ak toto pravidlo bude mať hodnotu 0, použije sa predvolená veľkosť vyrovnávacej pamäte, ale používateľ ju nebude môcť zmeniť.
 
       Ak toto pravidlo nebude nastavené, použije sa predvolená veľkosť a používateľ ju bude môcť prepísať pomocou príznaku --disk-cache-size.</translation>
-<translation id="759389052790680884">Nastavte vlastnú hodnotu zastavenia nabíjania batérie v percentách.
+<translation id="759389052790680884">Nastavte vlastnú hodnotu ukončenia nabíjania batérie v percentách.
 
-          Nabíjanie batérie sa zastaví po dosiahnutí vlastnej hodnoty zastavenia jej nabíjania.
+          Nabíjanie batérie sa zastaví po dosiahnutí vlastnej hodnoty ukončenia nabíjania.
 
           Parameter DeviceBatteryChargeCustomStartCharging musí byť menší ako DeviceBatteryChargeCustomStopCharging.
 

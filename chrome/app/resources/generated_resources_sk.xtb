@@ -1707,7 +1707,7 @@
 <translation id="3664511988987167893">Ikona rozšírenia</translation>
 <translation id="3665589677786828986">Chrome zistil, že niektoré nastavenia boli poškodené iným programom, a preto obnovil pôvodné predvolené nastavenia.</translation>
 <translation id="3668570675727296296">Nastavenia jazyka</translation>
-<translation id="366867565525278777">Nepodarilo sa stiahnuť pre nedostatok miesta v úložisku. Vyžaduje sa minimálne <ph name="INSTALL_SIZE" /> voľného miesta. Miesto uvoľníte odstránením súborov z úložiska zariadenia.</translation>
+<translation id="366867565525278777">Nepodarilo sa nainštalovať pre nedostatok miesta v úložisku. Vyžaduje sa minimálne <ph name="INSTALL_SIZE" /> voľného miesta. Miesto uvoľníte odstránením súborov z úložiska zariadenia.</translation>
 <translation id="3668801437375206837">Zamestnanci Googlu môžu do svojich hlásení so spätnou väzbou zahrnúť ďalšie denníky rozhrania Bluetooth, aby bolo možné lepšie diagnostikovať problémy s rozhraním Bluetooth. Keď začiarknete túto možnosť, hlásenie bude obsahovať denníky btsnoop a HCI aktuálnej relácie, z ktorých boli odstránené všetky informácie umožňujúce identifikáciu osôb. Prístup k týmto denníkom bude obmedzený na správcov skupiny produktov so systémom Chrome OS v nástroji Listnr. Denníky budú vyčistené po 90 dňoch.</translation>
 <translation id="3668823961463113931">Obslužné nástroje</translation>
 <translation id="3670113805793654926">Zariadenia od ľubovoľného dodávateľa</translation>
@@ -2178,7 +2178,7 @@
 <translation id="438503109373656455">Saratoga</translation>
 <translation id="4387004326333427325">Certifikát na overenie totožnosti bol zamietnutý na diaľku</translation>
 <translation id="4389091756366370506">Používateľ <ph name="VALUE" /></translation>
-<translation id="4390000551125140321">{0,plural, =1{Inkognito}few{# otvorené okná inkognito}many{# otvoreného okna inkognito}other{# otvorených okien inkognito}}</translation>
+<translation id="4390000551125140321">{0,plural, =1{Inkognito}few{# otvorené okná inkognito}many{# open incognito windows}other{# otvorených okien inkognito}}</translation>
 <translation id="439266289085815679">Konfiguráciu rozhrania Bluetooth spravuje <ph name="USER_EMAIL" />.</translation>
 <translation id="4394049700291259645">Zakázať</translation>
 <translation id="4400367121200150367">Tu sa zobrazia weby, ktoré nikdy neukladajú heslo</translation>
@@ -2252,6 +2252,7 @@
 <translation id="4524832533047962394">Poskytnutý režim registrácie táto verzia operačného systému nepodporuje. Uistite sa, že používate najnovšiu verziu.</translation>
 <translation id="4525382759303819021">Získavať najaktuálnejšie informácie a odporúčania týkajúce sa aplikácií Obchodu Play</translation>
 <translation id="4530494379350999373">Pôvod</translation>
+<translation id="4532646538815530781">Tento web používa senzory pohybu.</translation>
 <translation id="4533846798469727141">Teraz povedzte „Hej Google“</translation>
 <translation id="4533985347672295764">Čas využitia procesora</translation>
 <translation id="4534661889221639075">Skúste to znova.</translation>
@@ -2486,6 +2487,7 @@
 <translation id="4892229439761351791">Web môže používať Bluetooth</translation>
 <translation id="4893336867552636863">Táto akcia natrvalo odstráni údaje prehliadania z tohto zariadenia.</translation>
 <translation id="4893522937062257019">Na uzamknutej obrazovke</translation>
+<translation id="489454699928748701">Povoliť webom používať senzory pohybu</translation>
 <translation id="4898011734382862273">Certifikát „<ph name="CERTIFICATE_NAME" />“ predstavuje certifikačnú autoritu</translation>
 <translation id="489985760463306091">Odstraňovanie škodlivého softvéru dokončite reštartovaním počítača</translation>
 <translation id="4900392736118574277">Vaša stránka pri spustení bola zmenená na <ph name="URL" />.</translation>
@@ -2949,6 +2951,7 @@
 <translation id="5620568081365989559">Nástroj DevTools požaduje úplný prístup k priečinku <ph name="FOLDER_PATH" />. Dajte pozor, aby ste mu nesprístupnili žiadne citlivé informácie.</translation>
 <translation id="5620612546311710611">štatistiky používania</translation>
 <translation id="5620655347161642930">Exportovať heslá…</translation>
+<translation id="5623282979409330487">Tento web má prístup k senzorom pohybu.</translation>
 <translation id="5623842676595125836">Denník</translation>
 <translation id="5624120631404540903">Správa hesiel</translation>
 <translation id="5626134646977739690">Názov:</translation>
@@ -3442,6 +3445,7 @@
 <translation id="6390994422085833176">Skontrolovať funkcie synchronizácie a prispôsobenia po dokončení nastavovania</translation>
 <translation id="6393156038355142111">Navrhnúť silné heslo</translation>
 <translation id="6395423953133416962">Odosielať <ph name="BEGIN_LINK1" />informácie o systéme<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />metriky<ph name="END_LINK2" /></translation>
+<translation id="6396988158856674517">Zakázať webom používať senzory pohybu</translation>
 <translation id="6397094776139756010">Možnosti synchronizácie a prispôsobenia</translation>
 <translation id="6398715114293939307">Odstrániť Obchod Google Play</translation>
 <translation id="6398765197997659313">Ukončiť zobrazenie na celú obrazovku</translation>
@@ -3536,6 +3540,7 @@
 <translation id="6531282281159901044">Ponechať nebezpečný súbor</translation>
 <translation id="6532101170117367231">Uložiť do služby Disk Google</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Poznámka:<ph name="END_BOLD" /> Túto možnosť povoľte iba v prípade, ak viete, čo robíte, alebo ak vás o to niekto požiadal, pretože zhromažďovanie údajov môže znížiť výkonnosť.</translation>
+<translation id="6541638731489116978">Tomuto webu bol zablokovaný prístup k senzorom pohybu.</translation>
 <translation id="654233263479157500">Riešiť chyby v navigácii pomocou webovej služby</translation>
 <translation id="6544215763872433504">Webový prehliadač od Googlu – pre vás</translation>
 <translation id="6545665334409411530">Rýchlosť opakovania</translation>
@@ -4276,6 +4281,7 @@
 <translation id="7704628569466676326">Spárujte svoj bezpečnostný kľúč s týmto zariadením, aby ste sa mohli pomocou neho prihlasovať do účtu</translation>
 <translation id="7705276765467986571">Nepodarilo sa načítať model záložiek.</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7707108266051544351">Tomuto webu bolo zablokované používanie senzorov pohybu.</translation>
 <translation id="7707922173985738739">Používať mobilné dáta</translation>
 <translation id="7709152031285164251">Zlyhanie – <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;Prenášať…</translation>
@@ -4947,7 +4953,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8732212173949624846">Čítať a meniť históriu prehliadania na všetkých prihlásených zariadeniach</translation>
 <translation id="8732844209475700754">Ďalšie nastavenia týkajúce sa ochrany súkromia, zabezpečenia a zhromažďovania údajov</translation>
 <translation id="8734073480934656039">Povolením tohto nastavenia umožníte aplikáciám verejného terminálu, aby sa automaticky spúšťali pri spustení počítača.</translation>
-<translation id="8734671092194994316">Týmto zanecháte záznam o vašej návšteve webu <ph name="WEBSITE" /> na bezpečnostnom kľúči.</translation>
+<translation id="8734671092194994316">Týmto zanecháte záznam o návšteve webu <ph name="WEBSITE" /> na bezpečnostnom kľúči.</translation>
 <translation id="873545264931343897">Po dokončení aktualizácie doplnku <ph name="PLUGIN_NAME" /> ho aktivujete opätovným načítaním stránky</translation>
 <translation id="8736288397686080465">Tieto webové stránky boli aktualizované na pozadí.</translation>
 <translation id="8737685506611670901">Otvárať odkazy protokolu <ph name="PROTOCOL" /> a nie aplikáciu <ph name="REPLACED_HANDLER_TITLE" /></translation>

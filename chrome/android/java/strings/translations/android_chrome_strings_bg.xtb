@@ -96,6 +96,7 @@
 <translation id="1672586136351118594">Да не се показва отново</translation>
 <translation id="1692118695553449118">Синхронизирането е включено</translation>
 <translation id="1709438864123551175">Икономия на данни</translation>
+<translation id="1717218214683051432">Сензори за движение</translation>
 <translation id="1718835860248848330">Последния час</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – актуализирано <ph name="TIME_SINCE_UPDATE" /></translation>
 <translation id="1736419249208073774">Разглеждане</translation>
@@ -258,7 +259,7 @@
 <translation id="2845873210977809562">Секцията „Отворени раздели“ е затворена</translation>
 <translation id="2870560284913253234">Сайт</translation>
 <translation id="2874939134665556319">Предишен запис</translation>
-<translation id="2876369937070532032">Изпраща до Google URL адресите на някои от страниците, които посещавате, когато сигурността ви е застрашена</translation>
+<translation id="2876369937070532032">Когато сигурността ви е застрашена, изпраща до Google URL адресите на някои от страниците, които посещавате.</translation>
 <translation id="2876764156902388290">Chrome използва по-малко данни, за да ви покаже тази страница</translation>
 <translation id="2888126860611144412">Всичко за Chrome</translation>
 <translation id="2891154217021530873">Спиране на зареждането на страницата</translation>

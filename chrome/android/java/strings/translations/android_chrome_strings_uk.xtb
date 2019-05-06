@@ -95,7 +95,9 @@
 <translation id="1671236975893690980">Очікується завантаження…</translation>
 <translation id="1672586136351118594">Більше не показувати</translation>
 <translation id="1692118695553449118">Синхронізацію ввімкнено</translation>
+<translation id="169515064810179024">Заборонити сайтам доступ до датчиків руху</translation>
 <translation id="1709438864123551175">Заощадження трафіку</translation>
+<translation id="1717218214683051432">Датчики руху</translation>
 <translation id="1718835860248848330">Остання година</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – оновлено <ph name="TIME_SINCE_UPDATE" /></translation>
 <translation id="1736419249208073774">Огляд</translation>
@@ -205,7 +207,7 @@
 <translation id="2450083983707403292">Завантажити файл <ph name="FILE_NAME" /> ще раз?</translation>
 <translation id="2476578072172137802">Налаштування сайту</translation>
 <translation id="2482878487686419369">Сповіщення</translation>
-<translation id="2490684707762498678">Під керуванням додатка <ph name="APP_NAME" /></translation>
+<translation id="2490684707762498678">Адміністратор сімейної групи: <ph name="APP_NAME" /></translation>
 <translation id="2494974097748878569">Google Асистент у Chrome</translation>
 <translation id="2496180316473517155">Історія переглядів</translation>
 <translation id="2498359688066513246">Довідка й відгуки</translation>
@@ -248,6 +250,7 @@
 <translation id="2777555524387840389">Залишилося <ph name="SECONDS" /> с</translation>
 <translation id="2779651927720337254">не завантажено</translation>
 <translation id="2781151931089541271">Залишилась 1 с</translation>
+<translation id="2801022321632964776">Виконайте оновлення, щоб користуватися своєю мовою в останній версії Chrome</translation>
 <translation id="2803478378562657435">Показано збережені паролі та їх параметри</translation>
 <translation id="2810645512293415242">Спрощена сторінка для заощадження трафіку та швидшого завантаження.</translation>
 <translation id="281504910091592009">Переглядайте збережені паролі й керуйте ними в <ph name="BEGIN_LINK" />обліковому записі Google<ph name="END_LINK" /></translation>
@@ -310,6 +313,7 @@
 <translation id="3259831549858767975">Зменшити всі елементи на сторінці</translation>
 <translation id="3269093882174072735">Завантажити зображення</translation>
 <translation id="3269956123044984603">Щоб мати доступ до вкладок з інших пристроїв, увімкніть опцію "Автоматично синхронізувати дані" в налаштуваннях облікового запису на Android.</translation>
+<translation id="3277252321222022663">Надати сайтам доступ до датчиків (рекомендовано)</translation>
 <translation id="3282568296779691940">Вхід у Chrome</translation>
 <translation id="3288003805934695103">перезавантажити сторінку</translation>
 <translation id="32895400574683172">Сповіщення дозволено</translation>
@@ -550,6 +554,7 @@
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Дозволити</translation>
 <translation id="5040262127954254034">Конфіденційність</translation>
+<translation id="5048398596102334565">Надати сайтам доступ до датчиків руху (рекомендовано)</translation>
 <translation id="5063480226653192405">Використання</translation>
 <translation id="5073204694187207510">Сховати повноекранну сітку</translation>
 <translation id="5082793167783849073">Швидко порівнюйте сторінки, створивши групу. Щоб почати, натисніть і втримуйте посилання.</translation>
@@ -743,6 +748,7 @@
 <translation id="6406506848690869874">Синхронізація</translation>
 <translation id="641643625718530986">Друк…</translation>
 <translation id="6416782512398055893">Завантажено <ph name="MBS" /> МБ</translation>
+<translation id="6427112570124116297">Перекласти веб-сторінки</translation>
 <translation id="6433501201775827830">Виберіть пошукову систему</translation>
 <translation id="6437478888915024427">Інформація про сторінку</translation>
 <translation id="6441734959916820584">Задовга назва</translation>
@@ -858,6 +864,7 @@
 <translation id="7189598951263744875">Поділитися...</translation>
 <translation id="7191430249889272776">Вкладку відкрито у фоновому режимі.</translation>
 <translation id="723171743924126238">Вибрати зображення</translation>
+<translation id="7233236755231902816">Щоб переглядати сторінки вашою мовою, установіть останню версію Chrome</translation>
 <translation id="7243308994586599757">Опції можна знайти внизу екрана</translation>
 <translation id="7250468141469952378">Вибрано <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Додайте обліковий запис Google зі сторінки "Облікові записи" в додатку Налаштування на пристрої.</translation>
@@ -1013,6 +1020,7 @@
 <translation id="8310344678080805313">Стандартні вкладки</translation>
 <translation id="8313455859591948645">Редагувати стартову сторінку</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> та інші сайти</translation>
+<translation id="8327155640814342956">Оновіть Chrome для зручнішого перегляду веб-сторінок</translation>
 <translation id="8339163506404995330">Сторінки цією мовою (<ph name="LANGUAGE" />) не перекладатимуться</translation>
 <translation id="8349013245300336738">Сортувати за кількістю використаного трафіку</translation>
 <translation id="8372893542064058268">сайті.</translation>
@@ -1072,6 +1080,7 @@
 <translation id="8788968922598763114">Відкрити останню закриту вкладку</translation>
 <translation id="8801436777607969138">Блокувати Javascript на певному сайті.</translation>
 <translation id="8812260976093120287">На деяких веб-сайтах ви можна оплачувати за допомогою перелічених вище підтримуваних додатків для платежів на вашому пристрої.</translation>
+<translation id="8816026460808729765">Заборонити сайтам доступ до датчиків</translation>
 <translation id="8816439037877937734">Додаток <ph name="APP_NAME" /> відкриватиметься в Chrome. Продовжуючи, ви приймаєте <ph name="BEGIN_LINK1" />Умови використання<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />Примітку про конфіденційність<ph name="END_LINK2" /> Chrome, а також <ph name="BEGIN_LINK3" />Примітку про конфіденційність для облікових записів Google, якими можна керувати у Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Закладки</translation>
 <translation id="8833831881926404480">Сайт показує ваш екран</translation>

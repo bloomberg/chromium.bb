@@ -336,7 +336,7 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 <translation id="1509692106376861764">Esta política no está disponible desde la versión 29 de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1514888685242892912">Habilitar <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">Permitir que los sitios puedan hacer un seguimiento de la ubicación física de los usuarios</translation>
-<translation id="1523774894176285446">Navegador alternativo que se abre para los sitios web configurados.</translation>
+<translation id="1523774894176285446">Navegador alternativo donde se abren los sitios web configurados.</translation>
 <translation id="152657506688053119">Lista de URL alternativas para el proveedor de búsquedas predeterminado</translation>
 <translation id="1530812829012954197">Mostrar siempre los patrones de URL que se indican a continuación en el navegador del host</translation>
 <translation id="1541170838458414064">Restringir el tamaño de impresión de página</translation>
@@ -1431,7 +1431,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="3583230441447348508">Define una lista de sistemas de archivos compartidos en red preconfigurados.
 
       Cada elemento de la política incluido en la lista es un objeto con dos componentes: "share_url" y "mode". El elemento "share_url" debe ser la URL del sistema compartido y "mode" debe tener asignado el valor "drop_down" o "pre_mount". El modo "drop_down" indica que el elemento "share_url" se añadirá al desplegable de la búsqueda de elementos compartidos. El modo "pre_mount" indica que se activará el elemento "share_url".</translation>
-<translation id="3591527072193107424">Habilita la función de compatibilidad con navegadores antiguos.</translation>
+<translation id="3591527072193107424">Habilitar la función de compatibilidad con navegadores antiguos.</translation>
 <translation id="3591584750136265240">Configurar el comportamiento de la autenticación de inicio de sesión</translation>
 <translation id="3624171042292187668">
       Para conseguir aislamiento y que el impacto en los usuarios sea limitado, utiliza la política IsolateOrigins con una lista de los sitios web que quieras aislar. La opción SitePerProcess aísla todos los sitios web.
@@ -1646,7 +1646,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si se asigna el valor true a esta política, se enviarán paquetes de red de supervisión (denominados <ph name="HEARTBEATS_TERM" />).
       Si se asigna el valor false o si esta política no se configura, no se enviarán paquetes.</translation>
 <translation id="3950239119790560549">Actualizar restricciones de tiempo</translation>
-<translation id="3956686688560604829">Usar la política SiteList de Internet Explorer para la compatibilidad con navegadores antiguos.</translation>
+<translation id="3956686688560604829">Usar la política SiteList de Internet Explorer para gestionar la compatibilidad con navegadores antiguos.</translation>
 <translation id="3958586912393694012">Permitir el uso de Smart Lock</translation>
 <translation id="3963602271515417124">Si se asigna el valor True, se habilitará la confirmación remota para el dispositivo y se generará automáticamente un certificado que se subirá al servidor de administración de dispositivos.
 
@@ -2111,7 +2111,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="4978405676361550165">Si se establece la política "OffHours", se ignorarán las políticas de dispositivos especificadas (se utiliza la configuración predeterminada de estas políticas) durante los intervalos de tiempo establecidos. Chrome vuelve a aplicar las políticas de dispositivos cada vez que se inicia o finaliza el periodo de "OffHours". El usuario recibirá una notificación y tendrá que cerrar sesión cuando finalice OffHours y se modifique la configuración de la política de dispositivos (por ejemplo, cuando el usuario no haya iniciado sesión con una cuenta permitida).</translation>
 <translation id="4980635395568992380">Tipo de datos:</translation>
 <translation id="4983201894483989687">Permitir la ejecución de complementos obsoletos</translation>
-<translation id="4986560318567565414">Ruta a Chrome para el cambio desde el navegador alternativo.</translation>
+<translation id="4986560318567565414">Ruta a Chrome para cambiar desde el navegador alternativo.</translation>
 <translation id="4988291787868618635">Acción que se realiza al alcanzar el retraso de inactividad</translation>
 <translation id="5034604678285451405">Establece el umbral del ahorro de batería de Peak Shift en forma de porcentaje.
 
@@ -2342,7 +2342,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       En caso contrario, se le asigna uno de estos valores: "tls1.2" o "tls1.3". Si se habilita, <ph name="PRODUCT_NAME" /> no usa las versiones de SSL/TLS superiores a la versión especificada y se ignoran los valores no reconocidos.</translation>
 <translation id="5330684698007383292">Permitir que <ph name="PRODUCT_FRAME_NAME" /> procese los tipos de contenido que se indican a continuación</translation>
 <translation id="5331746669335642668">La política relativa a la nube de <ph name="PRODUCT_NAME" /> anula la política de la plataforma.</translation>
-<translation id="5365476955714838841">Parámetros de línea de comandos para el navegador alternativo.</translation>
+<translation id="5365476955714838841">Parámetros de línea de comandos correspondientes al navegador alternativo.</translation>
 <translation id="5365946944967967336">Mostrar botón de página principal en la barra de herramientas</translation>
 <translation id="5366745336748853475">Te permite definir una lista de patrones de URL que especifican los sitios web en los que se selecciona automáticamente un certificado de cliente (si se solicita) en la pantalla de inicio de sesión del marco en el que se aloja el flujo SAML. Un ejemplo de uso es configurar un certificado a nivel de dispositivo para presentarlo a un proveedor de identidad SAML.
 

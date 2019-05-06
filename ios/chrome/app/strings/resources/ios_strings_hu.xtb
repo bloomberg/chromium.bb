@@ -128,6 +128,7 @@
 <translation id="2800683595868705743">Kilépés a lapváltóból</translation>
 <translation id="2830972654601096923">Címek kezelése…</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
+<translation id="2840687315230832938">A szinkronizálás kezdeti beállítása nem fejeződött be</translation>
 <translation id="2843803966603263712">A Fordító beállításainak visszaállítása</translation>
 <translation id="2858204748079866344">Adatai védelme érdekében a Chrome nem tölti ki automatikusan a jelszavát ebben a mezőben.</translation>
 <translation id="285960592395650245">Letöltés újrapróbálása</translation>
@@ -411,6 +412,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="7280856130494094142">A szinkronizálás megkezdéséhez adja meg az összetett jelszót</translation>
 <translation id="7285236536143823449">BELEEGYEZEM</translation>
 <translation id="7291368939935408496">Jelszavak előkészítése…</translation>
+<translation id="7293171162284876153">A szinkronizálás megkezdéséhez kapcsolja be a „Chrome-adatok szinkronizálása” beállítást.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> százalék letöltve</translation>
 <translation id="7346909386216857016">Rendben, értem</translation>
 <translation id="7348502496356775519">Felvétel a könyvjelzők közé</translation>

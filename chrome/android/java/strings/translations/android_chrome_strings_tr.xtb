@@ -95,7 +95,9 @@
 <translation id="1671236975893690980">İndirme işlemi beklemede…</translation>
 <translation id="1672586136351118594">Bir daha gösterme</translation>
 <translation id="1692118695553449118">Senkronizasyon açık.</translation>
+<translation id="169515064810179024">Sitelerin hareket sensörlerine erişimini engelle</translation>
 <translation id="1709438864123551175">Veri Tasarrufu</translation>
+<translation id="1717218214683051432">Hareket sensörleri</translation>
 <translation id="1718835860248848330">Son saat</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - Son Güncellenme: <ph name="TIME_SINCE_UPDATE" /></translation>
 <translation id="1736419249208073774">Keşfet</translation>
@@ -248,6 +250,7 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> sn. kaldı</translation>
 <translation id="2779651927720337254">başarısız</translation>
 <translation id="2781151931089541271">1 sn. kaldı</translation>
+<translation id="2801022321632964776">Chrome'un en son sürümünü kendi dilinizde kullanmak için güncelleyin</translation>
 <translation id="2803478378562657435">Kayıtlı şifreler ve şifre seçenekleri gösteriliyor</translation>
 <translation id="2810645512293415242">Veriden tasarruf etmek ve daha hızlı yüklemek için basitleştirilmiş sayfa.</translation>
 <translation id="281504910091592009"><ph name="BEGIN_LINK" />Google Hesabınızdaki<ph name="END_LINK" /> kayıtlı şifrelerinizi görüntüleyin ve yönetin.</translation>
@@ -310,6 +313,7 @@
 <translation id="3259831549858767975">Sayfadaki her şeyi küçültür</translation>
 <translation id="3269093882174072735">Resim yükle</translation>
 <translation id="3269956123044984603">Diğer cihazlarınızdaki sekmelerinize ulaşmak için Android hesap ayarlarından "Verileri otomatik senkronize et" seçeneğini etkinleştirin.</translation>
+<translation id="3277252321222022663">Sitelerin sensörlere erişmesine izin ver (önerilen)</translation>
 <translation id="3282568296779691940">Chrome'da oturum aç</translation>
 <translation id="3288003805934695103">Sayfayı yeniden yükleme</translation>
 <translation id="32895400574683172">Bildirimlere izin veriliyor</translation>
@@ -550,6 +554,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">İzin ver</translation>
 <translation id="5040262127954254034">Gizlilik</translation>
+<translation id="5048398596102334565">Sitelerin hareket sensörlerine erişmesine izin ver (önerilen)</translation>
 <translation id="5063480226653192405">Kullanım</translation>
 <translation id="5073204694187207510">Tam ekran ızgarayı gizler</translation>
 <translation id="5082793167783849073">Grup oluşturarak sayfaları hızlıca karşılaştırın. Başlamak için bir bağlantıya dokunup basılı tutun.</translation>
@@ -743,6 +748,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="6406506848690869874">Senkronizasyon</translation>
 <translation id="641643625718530986">Yazdır…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB indirildi</translation>
+<translation id="6427112570124116297">Web'i çevir</translation>
 <translation id="6433501201775827830">Arama motorunuzu seçin</translation>
 <translation id="6437478888915024427">Sayfa bilgileri</translation>
 <translation id="6441734959916820584">Ad çok uzun</translation>
@@ -858,6 +864,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="7189598951263744875">Paylaş...</translation>
 <translation id="7191430249889272776">Sekme arka planda açıldı.</translation>
 <translation id="723171743924126238">Resim seç</translation>
+<translation id="7233236755231902816">Web'i kendi dilinizde görmek için Chrome'un en son sürümünü edinin</translation>
 <translation id="7243308994586599757">Sayfanın altına yakın bir yerde kullanılabilen seçenekler</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> öğe seçildi</translation>
 <translation id="7253272406652746122">Cihazınızın Ayarlar uygulamasındaki Hesaplar sayfasından bir Google Hesabı ekleyin.</translation>
@@ -924,7 +931,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="7649070708921625228">Yardım</translation>
 <translation id="7658239707568436148">İptal</translation>
 <translation id="7665369617277396874">Hesap ekle</translation>
-<translation id="766587987807204883">Makaleler burada görünür ve çevrimdışı olsanız bile bunları okuyabilirsiniz.</translation>
+<translation id="766587987807204883">Çevrimdışı olsanız bile okuyabileceğiniz makaleler burada görünür.</translation>
 <translation id="7682724950699840886">Şu ipuçlarını deneyin: Cihazınızda yeterli alan bulunduğundan emin olun, daha sonra dışa aktarmayı tekrar deneyin.</translation>
 <translation id="7698359219371678927"><ph name="APP_NAME" /> adlı uygulamada e-posta oluşturun</translation>
 <translation id="7704317875155739195">Aramaları ve URL'leri otomatik tamamla</translation>
@@ -1013,6 +1020,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="8310344678080805313">Standart sekmeler</translation>
 <translation id="8313455859591948645">Başlangıç sayfasını düzenle</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> ve diğer siteler</translation>
+<translation id="8327155640814342956">Web'e en iyi göz atma deneyimi için Chrome'u açıp güncelleyin</translation>
 <translation id="8339163506404995330"><ph name="LANGUAGE" /> dilindeki sayfalar çevrilmeyecek</translation>
 <translation id="8349013245300336738">Kullanılan veri miktarına göre sırala</translation>
 <translation id="8372893542064058268">Belirli bir site için Arka Plan Senkronizasyonuna izin verin.</translation>
@@ -1072,6 +1080,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="8788968922598763114">Son kapatılan sekmeyi yeniden açar</translation>
 <translation id="8801436777607969138">JavaScript'i belirli bir site için engelleyin.</translation>
 <translation id="8812260976093120287">Bazı web sitelerinde, yukarıdaki desteklenen ödeme uygulamalarıyla cihazınızdan ödeme yapabilirsiniz.</translation>
+<translation id="8816026460808729765">Sitelerin sensörlere erişimini engelle</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> Chrome'da açılacak. Devam ederek Chrome'un <ph name="BEGIN_LINK1" />Hizmet Şartları<ph name="END_LINK1" />'nı, <ph name="BEGIN_LINK2" />Gizlilik Uyarısı<ph name="END_LINK2" />'nı ve <ph name="BEGIN_LINK3" />Family Link ile Yönetilen Google Hesapları için Gizlilik Uyarısı<ph name="END_LINK3" />'nı kabul etmiş olursunuz.</translation>
 <translation id="8820817407110198400">Favoriler</translation>
 <translation id="8833831881926404480">Bir site, ekranınızı paylaşıyor</translation>

@@ -465,6 +465,7 @@
 <translation id="1711401317189798723">Backup sedang berlangsung untuk <ph name="CONTAINER_ID" /></translation>
 <translation id="1712349894969001173">Dapatkan sandi ini di iPhone</translation>
 <translation id="1712552549805331520"><ph name="URL" /> ingin menyimpan data di komputer lokal Anda secara permanen</translation>
+<translation id="1717218214683051432">Sensor gerakan</translation>
 <translation id="1718835860248848330">1 jam terakhir</translation>
 <translation id="1719312230114180055">Catatan: Sidik jari mungkin kurang aman dibandingkan dengan PIN atau sandi yang kuat.</translation>
 <translation id="1720318856472900922">Autentikasi Server TLS WWW</translation>
@@ -1706,7 +1707,7 @@
 <translation id="3664511988987167893">Ikon Ekstensi</translation>
 <translation id="3665589677786828986">Chrome mendeteksi bahwa beberapa setelan Anda dirusak oleh program lain dan menyetelnya ulang ke setelan default aslinya.</translation>
 <translation id="3668570675727296296">Setelan bahasa</translation>
-<translation id="366867565525278777">Gagal menginstal karena ruang penyimpanan tidak cukup. Diperlukan ruang kosong minimal sebesar <ph name="INSTALL_SIZE" />. Untuk mengosongkan ruang, hapus file dari penyimpanan perangkat.</translation>
+<translation id="366867565525278777">Gagal menginstal karena ruang penyimpanan tidak cukup. Diperlukan ruang kosong minimal <ph name="INSTALL_SIZE" />. Untuk mengosongkan ruang, hapus file dari penyimpanan perangkat.</translation>
 <translation id="3668801437375206837">Untuk mendiagnosis masalah Bluetooth dengan lebih baik, Googler dapat menyertakan log Bluetooth tambahan dengan laporan umpannya. Jika opsi ini dicentang, laporan Anda akan menyertakan log HCI dan btsnoop dari sesi Anda saat ini, yang dihapus untuk membuang PII sebanyak mungkin. Akses ke log ini akan dibatasi pada pengelola grup produk Chrome OS di Listnr. Log akan dihapus setelah 90 hari.</translation>
 <translation id="3668823961463113931">Penangan</translation>
 <translation id="3670113805793654926">Perangkat dari semua vendor</translation>
@@ -2049,6 +2050,7 @@
 <translation id="4146026355784316281">Selalu Buka Dengan Penampil Sistem</translation>
 <translation id="4146785383423576110">Setel ulang dan bersihkan</translation>
 <translation id="4147911968024186208">Harap coba lagi. Jika Anda melihat error ini lagi, hubungi perwakilan dukungan Anda.</translation>
+<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">Tampilan</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 tab}other{# tab}}</translation>
 <translation id="4154664944169082762">Sidik jari</translation>
@@ -4590,7 +4592,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8141584439523427891">Membuka di browser alternatif sekarang</translation>
 <translation id="8141725884565838206">Kelola sandi Anda</translation>
 <translation id="8143442547342702591">Aplikasi tidak valid</translation>
-<translation id="8146177459103116374">Jika Anda telah terdaftar di perangkat ini, Anda dapat <ph name="LINK2_START" />masuk sebagai pengguna yang ada<ph name="LINK2_END" />.</translation>
+<translation id="8146177459103116374">Jika Anda telah terdaftar di perangkat ini, Anda dapat <ph name="LINK2_START" />login sebagai pengguna yang ada<ph name="LINK2_END" />.</translation>
 <translation id="8146793085009540321">Proses masuk gagal. Hubungi administrator Anda atau coba lagi.</translation>
 <translation id="8151638057146502721">Konfigurasi</translation>
 <translation id="8152091997436726702">Waktu pendaftaran printer telah habis. Untuk mendaftarkan printer, Anda harus mengonfirmasi pendaftaran di printer tersebut.</translation>
@@ -4772,7 +4774,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8461329675984532579">Nama penyedia rumah</translation>
 <translation id="84613761564611563">Antarmuka konfigurasi jaringan diminta, harap tunggu...</translation>
 <translation id="8461914792118322307">Proxy</translation>
-<translation id="8463215747450521436">Pengguna yang diawasi ini dapat dihapus atau dinonaktifkan oleh pengelola. Hubungi pengelola jika Anda ingin terus masuk sebagai pengguna ini.</translation>
+<translation id="8463215747450521436">Pengguna yang diawasi ini dapat dihapus atau dinonaktifkan oleh pengelola. Hubungi pengelola jika Anda ingin terus login sebagai pengguna ini.</translation>
 <translation id="846374874681391779">Kotak download</translation>
 <translation id="8463955938112983119"><ph name="PLUGIN_NAME" /> dinonaktifkan.</translation>
 <translation id="8464132254133862871">Akun pengguna ini tidak layak mendapatkan layanan.</translation>

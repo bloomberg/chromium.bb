@@ -95,7 +95,9 @@
 <translation id="1671236975893690980">Letöltés függőben…</translation>
 <translation id="1672586136351118594">Ne jelenjen meg többé</translation>
 <translation id="1692118695553449118">Szinkronizálás bekapcsolva</translation>
+<translation id="169515064810179024">A mozgásérzékelőkhöz való hozzáférés letiltása a webhelyek számára</translation>
 <translation id="1709438864123551175">Adatforgalom-csökkentő</translation>
+<translation id="1717218214683051432">Mozgásérzékelők</translation>
 <translation id="1718835860248848330">Az elmúlt órából</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – Frissítve: <ph name="TIME_SINCE_UPDATE" /></translation>
 <translation id="1736419249208073774">Felfedezés</translation>
@@ -248,6 +250,7 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> másodperc van hátra</translation>
 <translation id="2779651927720337254">sikertelen</translation>
 <translation id="2781151931089541271">1 másodperc van hátra</translation>
+<translation id="2801022321632964776">Frissítsen, hogy a saját nyelvén használhassa a Chrome legújabb verzióját</translation>
 <translation id="2803478378562657435">Mentett jelszavak és jelszóbeállítások megjelenítve</translation>
 <translation id="2810645512293415242">Egyszerűsített oldal az alacsonyabb adathasználat és a gyorsabb betöltés érdekében.</translation>
 <translation id="281504910091592009">Mentett jelszavait megtekintheti és kezelheti <ph name="BEGIN_LINK" />Google-fiókjában<ph name="END_LINK" /></translation>
@@ -310,6 +313,7 @@
 <translation id="3259831549858767975">Minden kicsinyítése az oldalon</translation>
 <translation id="3269093882174072735">Kép betöltése</translation>
 <translation id="3269956123044984603">A többi eszközéről is hozzáférhet a lapjaihoz, ha bekapcsolja az Android-fiókbeállítások között található „Adatok automatikus szinkronizálása” funkciót.</translation>
+<translation id="3277252321222022663">Az érzékelőkhöz való hozzáférés engedélyezése a webhelyek számára (ajánlott)</translation>
 <translation id="3282568296779691940">Bejelentkezés a Chrome-ba</translation>
 <translation id="3288003805934695103">Az oldal frissítése</translation>
 <translation id="32895400574683172">Értesítések engedélyezve</translation>
@@ -550,6 +554,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Engedélyezés</translation>
 <translation id="5040262127954254034">Adatvédelem</translation>
+<translation id="5048398596102334565">A mozgásérzékelőkhöz való hozzáférés engedélyezése a webhelyek számára (ajánlott)</translation>
 <translation id="5063480226653192405">Használat</translation>
 <translation id="5073204694187207510">Teljes képernyős rács elrejtése</translation>
 <translation id="5082793167783849073">Csoport kialakításával gyorsan összehasonlíthat oldalakat. A kezdéshez tartsa lenyomva ujját a kívánt linken.</translation>
@@ -743,6 +748,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6406506848690869874">Szinkronizálás</translation>
 <translation id="641643625718530986">Nyomtatás…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB letöltve</translation>
+<translation id="6427112570124116297">Lefordíthatja az internetet</translation>
 <translation id="6433501201775827830">Keresőmotor kiválasztása</translation>
 <translation id="6437478888915024427">Oldaladatok</translation>
 <translation id="6441734959916820584">Túl hosszú a név</translation>
@@ -858,6 +864,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7189598951263744875">Megosztás...</translation>
 <translation id="7191430249889272776">A lap megnyílt a háttérben.</translation>
 <translation id="723171743924126238">Képek kiválasztása</translation>
+<translation id="7233236755231902816">Ha saját nyelvén szeretné böngészni az internetet, szerezze be a Chrome legújabb verzióját</translation>
 <translation id="7243308994586599757">A beállítások a képernyő alsó részén találhatók</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> elem kiválasztva</translation>
 <translation id="7253272406652746122">Adjon hozzá Google-fiókot az eszköz Beállítások alkalmazásának Fiókok oldalán.</translation>
@@ -1013,6 +1020,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8310344678080805313">Szabványos lapok</translation>
 <translation id="8313455859591948645">Kezdőoldal szerkesztése</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> és további webhelyek</translation>
+<translation id="8327155640814342956">Nyissa meg a Chrome-ot, és frissítsen a legjobb böngészési élmény érdekében</translation>
 <translation id="8339163506404995330">A(z) <ph name="LANGUAGE" /> nyelvű oldalak nem lesznek lefordítva</translation>
 <translation id="8349013245300336738">Rendezés a felhasznált adatmennyiség szerint</translation>
 <translation id="8372893542064058268">Háttérben történő szinkronizálás engedélyezése adott webhely esetében.</translation>
@@ -1072,6 +1080,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8788968922598763114">A legutóbb bezárt lap újranyitása</translation>
 <translation id="8801436777607969138">JavaScript letiltása adott webhelynél.</translation>
 <translation id="8812260976093120287">Bizonyos webhelyeken fizethet eszközén a fenti támogatott fizetési alkalmazásokkal.</translation>
+<translation id="8816026460808729765">Az érzékelőkhöz való hozzáférés tiltása a webhelyek számára</translation>
 <translation id="8816439037877937734">A(z) <ph name="APP_NAME" /> a Chrome-ban nyílik meg. A folytatással elfogadja a Chrome <ph name="BEGIN_LINK1" />Általános Szerződési Feltételeit<ph name="END_LINK1" /> és <ph name="BEGIN_LINK2" />Adatvédelmi közleményét<ph name="END_LINK2" />, valamint <ph name="BEGIN_LINK3" />A Family Link szolgáltatással kezelt Google-fiókokra vonatkozó Adatvédelmi közleményt<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Könyvjelzők</translation>
 <translation id="8833831881926404480">Az egyik webhely jelenleg megosztja a képernyőt</translation>

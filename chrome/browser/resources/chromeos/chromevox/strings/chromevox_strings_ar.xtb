@@ -442,7 +442,7 @@
 <translation id="4148180433151187540">{COUNT,plural, =1{قوس كبير أيمن واحد}zero{# right braces}two{قوسان كبيران أيمنان (#)}few{# أقواس كبيرة يمنى}many{# قوسًا كبيرًا أيمنًا}other{# من الأقواس الكبيرة اليمنى}}</translation>
 <translation id="4158704014418536539">حساس لحالة الأحرف.</translation>
 <translation id="4159784952369912983">أرجواني</translation>
-<translation id="4161104397932142764">{COUNT,plural, =1{ثانية واحدة}zero{ثوانٍ}two{ثانيتان}few{ثوانٍ}many{ثانيةً}other{ثانية}}</translation>
+<translation id="4161104397932142764">{COUNT,plural, =1{ثانية واحدة}zero{ثوانٍ}two{ثانيتان}few{ثوانٍ}many{ثوانٍ}other{ثوانٍ}}</translation>
 <translation id="4161663686871496107">‏تعليقات ChromeVox المنطوقة جاهزة</translation>
 <translation id="4173994908659439270">ليس هناك حقل تالٍ قابل للتعديل.</translation>
 <translation id="4176463684765177261">غير مفعّل</translation>
@@ -945,7 +945,7 @@
 <translation id="7641134354185483015">ليس هناك عنوان سابق من المستوى الثالث.</translation>
 <translation id="7659376057562985921">مربع نص <ph name="NAME" />، بالقيمة <ph name="VALUE" /></translation>
 <translation id="7663318257180412551">العنوان الثاني</translation>
-<translation id="7668307052366682650">{COUNT,plural, =1{ساعة واحدة}zero{ساعة}two{ساعتان}few{ساعات}many{ساعةً}other{ساعة}}</translation>
+<translation id="7668307052366682650">{COUNT,plural, =1{ساعة واحدة}zero{ساعات}two{ساعتان}few{ساعات}many{ساعات}other{ساعات}}</translation>
 <translation id="7674576868851035240">الرابط التالي</translation>
 <translation id="7674768236845044097">علامة</translation>
 <translation id="7684431668231950609">‏تعديل النص، إدخال عنوان URL</translation>

@@ -128,6 +128,7 @@
 <translation id="2800683595868705743">Išjungti skirtukų perjungiklį</translation>
 <translation id="2830972654601096923">Tvarkyti adresus...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
+<translation id="2840687315230832938">Pradinė sinchronizavimo sąranka nebaigta</translation>
 <translation id="2843803966603263712">Nust. Vert. nust. iš n.</translation>
 <translation id="2858204748079866344">Siekiant apsaugoti jūsų privatumą, „Chrome“ šio lauko automatiškai nepildys jūsų slaptažodžiu.</translation>
 <translation id="285960592395650245">Bandyti atsis. iš naujo</translation>
@@ -411,6 +412,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="7280856130494094142">Įvesti slaptažodį, norint pradėti sinchronizuoti</translation>
 <translation id="7285236536143823449">TAIP, NAUDOTI</translation>
 <translation id="7291368939935408496">Ruošiami slaptažodžiai…</translation>
+<translation id="7293171162284876153">Norėdami pradėti sinchronizuoti, įjunkite parinktį „Sinchronizuoti „Chrome“ duomenis“.</translation>
 <translation id="7336264872878993241">Atsisiųsta <ph name="PERCENT" /> proc.</translation>
 <translation id="7346909386216857016">Gerai, supratau</translation>
 <translation id="7348502496356775519">Žymėti</translation>

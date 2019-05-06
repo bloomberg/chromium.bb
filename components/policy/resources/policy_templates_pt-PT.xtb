@@ -1399,7 +1399,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política estiver definida como "DeveloperToolsAllowed" (valor 1), é possível aceder às Ferramentas para programadores e à Consola de JavaScript e utilizá-las em todos os contextos, inclusive no contexto de extensões instaladas pela política empresarial.
       Se esta política estiver definida como "DeveloperToolsDisallowed" (valor 2), não é possível aceder às Ferramentas do programador e deixa de ser possível inspecionar os elementos do Website. Todos os atalhos de teclado e todas as entradas de menu ou de menu de contexto para abrir as Ferramentas para programadores ou a Consola de JavaScript serão desativados.</translation>
 <translation id="3547954654003013442">Definições de proxy</translation>
-<translation id="3550875587920006460">Permite definir uma agenda personalizada para verificar a existência de atualizações. Aplica-se a todos os utilizadores e a todas as interfaces no dispositivo. Uma vez definida, o dispositivo verifica se existem atualizações de acordo com a agenda. A política deve ser removida para cancelar futuras verificações da existência de atualizações agendadas.</translation>
+<translation id="3550875587920006460">Permite definir uma agenda personalizada para verificar a existência de atualizações. Aplica-se a todos os utilizadores e a todas as interfaces no dispositivo. Uma vez definida, o dispositivo verifica se existem atualizações de acordo com a agenda. A política tem de ser removida para cancelar futuras verificações da existência de atualizações agendadas.</translation>
 <translation id="355118380775352753">Websites a abrir num navegador alternativo</translation>
 <translation id="3554984410014457319">Permitir ao Assistente Google ouvir a frase de ativação por voz</translation>
 <translation id="356579196325389849">Os utilizadores podem configurar o canal de lançamento do Chrome OS.</translation>
@@ -1613,7 +1613,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           O valor DeviceBatteryChargeCustomStartCharging tem de ser inferior ao valor DeviceBatteryChargeCustomStopCharging.
 
-          Esta política só é utilizada se DeviceBatteryChargeMode estiver definida como personalizada.
+          Esta política só é utilizada se a política DeviceBatteryChargeMode estiver definida como personalizada.
 
           Se esta política não for configurada ou não for definida, será aplicado o modo de carregamento da bateria padrão.</translation>
 <translation id="3925377537407648234">Definir a resolução do ecrã e o fator de escala</translation>
@@ -1644,25 +1644,25 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política estiver definida como verdadeira ou não estiver definida, os utilizadores poderão resgatar ofertas através do Registo no Chrome OS.
 
       Se esta política estiver definida como falsa, os utilizadores não poderão resgatar ofertas.</translation>
-<translation id="4008233182078913897">Especifica uma lista de aplicações e de extensões que são instaladas silenciosamente,
-          sem a interação do utilizador, e que não podem ser desinstaladas nem
+<translation id="4008233182078913897">Especifica uma lista de aplicações e extensões que são instaladas em silêncio,
+          sem interação do utilizador, e que não podem ser desinstaladas nem
           desativadas pelo utilizador. Todas as autorizações solicitadas pelas
-          aplicações/extensões são fornecidas implicitamente, sem interação do utilizador,
-          incluindo autorizações adicionais solicitadas por versões futuras da
-          aplicação/extensão. Além disso, as autorizações são fornecidas às
-          APIs de extensão enterprise.deviceAttributes e enterprise.platformKeys 
-          (estas duas APIs não estão disponíveis para aplicações/extensões cuja
-          instalação não é forçada).
+          aplicações/extensões são concedidas implicitamente, sem a interação do utilizador,
+          incluindo quaisquer autorizações adicionais obrigatórias para as versões futuras
+          da aplicação/extensão. Além disso, as autorizações são concedidas às
+          APIs de extensão enterprise.deviceAttributes e
+          enterprise.platformKeys. (Estas duas APIs não estão disponíveis para aplicações/extensões cuja
+          instalação não é forçada.)
 
-          Esta política tem precedência sobre uma política <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> potencialmente conflituosa. Se uma aplicação ou uma extensão previamente instalada de forma forçada for removida desta lista, é automaticamente desinstalada pelo <ph name="PRODUCT_NAME" />.
+          Esta política tem prioridade sobre uma política <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> potencialmente conflituosa. Se uma aplicação ou extensão previamente instalada de forma forçada for removida desta lista, é automaticamente desinstalada pelo <ph name="PRODUCT_NAME" />.
 
-          Em instâncias do Windows que não fazem parte de um domínio <ph name="MS_AD_NAME" />, a instalação forçada está limitada a aplicações e extensões apresentadas na Web Store do Chrome.
+          Em instâncias do Windows que não façam parte de um domínio <ph name="MS_AD_NAME" />, a instalação forçada está limitada a aplicações e extensões apresentadas na Web Store do Chrome.
 
           Tenha em atenção que o código-fonte de qualquer extensão pode ser alterado pelos utilizadores através das Ferramentas para programadores (o que pode resultar no funcionamento incorreto da extensão). Se pretender evitar esta situação, defina a política <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
 
-          Cada item de lista da política é uma string que contém um ID de extensão e, opcionalmente, um URL de "atualização" separado por ponto e vírgula (<ph name="SEMICOLON" />). O ID de extensão é a string de 32 letras encontrada, por exemplo, em <ph name="CHROME_EXTENSIONS_LINK" /> no modo de programador. O URL de "atualização", se especificado, deve apontar para um documento XML de Atualização do manifesto conforme descrito em <ph name="LINK_TO_EXTENSION_DOC1" />. Por predefinição, utiliza-se o URL de atualização da Web Store do Chrome (que, atualmente, é "https://clients2.google.com/service/update2/crx"). Tenha em atenção que o URL de "atualização" definido nesta política apenas é utilizado para a instalação inicial e as atualizações subsequentes da extensão utilizam o URL de atualização indicado no manifesto da extensão. Tenha também em atenção que era obrigatório especificar explicitamente o URL de "atualização" até à versão 67 do <ph name="PRODUCT_NAME" />, inclusive.
+          Cada item de lista da política é uma string que contém um ID de extensão e, opcionalmente, um URL de "atualização" separado por ponto e vírgula (<ph name="SEMICOLON" />). O ID da extensão é a string de 32 letras encontrada, por exemplo, em <ph name="CHROME_EXTENSIONS_LINK" /> no modo de programador. O URL de "atualização", se especificado, deve apontar para um documento XML de Atualização do manifesto conforme descrito em <ph name="LINK_TO_EXTENSION_DOC1" />. Por predefinição, utiliza-se o URL de atualização da Web Store do Chrome (que, atualmente, é "https://clients2.google.com/service/update2/crx"). Tenha em atenção que o URL de "atualização" definido nesta política apenas é utilizado para a instalação inicial e as atualizações subsequentes da extensão utilizam o URL de atualização indicado no manifesto da extensão. Tenha também em atenção que era obrigatório especificar explicitamente o URL de "atualização" até à versão 67 do <ph name="PRODUCT_NAME" />, inclusive.
 
-          Por exemplo, <ph name="EXTENSION_POLICY_EXAMPLE" /> instala a extensão com o ID <ph name="EXTENSION_ID_SAMPLE" /> a partir do URL de "atualização" padrão da Web Store do Chrome. Para obter mais informações sobre o alojamento de extensões, consulte: <ph name="LINK_TO_EXTENSION_DOC2" />.
+          Por exemplo, a política <ph name="EXTENSION_POLICY_EXAMPLE" /> instala a extensão com o ID <ph name="EXTENSION_ID_SAMPLE" /> a partir do URL de "atualização" padrão da Web Store do Chrome. Para mais informações acerca do alojamento de extensões, consulte: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
           Se esta política não estiver definida, não é efetuada a instalação automática de aplicações ou de extensões e o utilizador pode desinstalar qualquer aplicação ou extensão no <ph name="PRODUCT_NAME" />.
 
@@ -2610,7 +2610,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se a política estiver definida como Verdadeira, a política da nuvem tem prioridade em caso de conflito com a política da plataforma.
       Se a política estiver definida como Falsa ou não estiver configurada, a política da plataforma tem prioridade em caso de conflito com a política da nuvem.
 
-      Esta política só está disponível como uma política de plataforma de máquinas obrigatória e afeta apenas as políticas de nuvem num âmbito das máquinas.
+      Esta política só está disponível como uma política da plataforma automática obrigatória e apenas afeta as políticas de nuvem num âmbito automático.
       </translation>
 <translation id="5905473632148429217">Ative as verificações OCSP/CRL online</translation>
 <translation id="5906199912611534122">Permite a ativação ou a desativação do controlo de rede.

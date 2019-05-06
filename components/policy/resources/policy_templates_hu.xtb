@@ -2604,8 +2604,8 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       </translation>
 <translation id="5901427587865226597">Csak kétoldalas nyomtatás</translation>
 <translation id="5903898512448364160">
-      Ha a házirend igaz értékre van beállítva, ütközés esetén a felhőbeli házirend előnyt élvez az operációs rendszer házirendjével szemben.
-      Ha a házirend hamis értékre van beállítva, vagy beállítatlanul marad, az operációs rendszer házirendje élvez előnyt, amennyiben ütközik a felhőbeli házirenddel.
+      Ha a házirend igaz értékre van beállítva, ütközés esetén a felhőbeli házirend előnyt élvez a platform házirendjével szemben.
+      Ha a házirend hamis értékre van beállítva, vagy beállítatlanul marad, ütközés esetén a platform házirendje előnyt élvez a felhőbeli házirenddel szemben.
 
       Ez a házirend csak gépi platformok kötelező házirendjeként áll rendelkezésre, és csak a gépek hatókörére érvényes, felhővel kapcsolatos házirendekre vonatkozik.
       </translation>

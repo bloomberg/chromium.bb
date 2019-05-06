@@ -2779,7 +2779,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="6034341625190551415">Nadzira vrste računov za javne seje in kiosk.</translation>
 <translation id="6034603289689965535">Strani med razkladanjem dovoli prikazovanje pojavnih oken</translation>
 <translation id="6036523166753287175">Omogoči prehod skozi požarni zid iz gostitelja za oddaljeni dostop</translation>
-<translation id="605475635122964053">Omejuje način tiskanja s kodo PIN. Če pravilnik ni nastavljen, ni omejitve. Če način ni na voljo, je ta pravilnik prezrt. Upoštevajte, da je funkcija tiskanja s kodo PIN omogočena samo za tiskalnike, ki uporablja enega od teh protokolov: IPPS, USB ali IPP prek USB-ja </translation>
+<translation id="605475635122964053">Omejuje način tiskanja s kodo PIN. Če pravilnik ni nastavljen, ni omejitve. Če način ni na voljo, je ta pravilnik prezrt. Upoštevajte, da je funkcija tiskanja s kodo PIN omogočena samo za tiskalnike, ki uporabljajo enega od teh protokolov: IPPS, USB ali IPP prek USB-ja </translation>
 <translation id="6070667616071269965">Postavitve tipkovnice na zaslonu za prijavo v napravi</translation>
 <translation id="6074963268421707432">Nobenemu spletnemu mestu ne dovoli, da pokaže namizna obvestila</translation>
 <translation id="6074964551275531965">Nastavitev časovnega obdobja za obvestila o posodobitvah</translation>

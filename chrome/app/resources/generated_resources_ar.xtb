@@ -465,6 +465,7 @@
 <translation id="1711401317189798723">الاحتفاظ بنسخة احتياطية حاليًا قيد التقدم لـ <ph name="CONTAINER_ID" /></translation>
 <translation id="1712349894969001173">‏الحصول على كلمة المرور هذه على جهاز iPhone</translation>
 <translation id="1712552549805331520">يريد <ph name="URL" /> تخزين بيانات على جهاز الكمبيوتر المحلي بشكل دائم.</translation>
+<translation id="1717218214683051432">مستشعرات الحركة</translation>
 <translation id="1718835860248848330">آخر ساعة</translation>
 <translation id="1719312230114180055">ملاحظة: قد يكون استخدام ميزة بصمة الإصبع أقل أمانًا من استخدام كلمة مرور أو رقم تعريف شخصي قوي.</translation>
 <translation id="1720318856472900922">‏مصادقة TLS (بروتوكول أمان طبقة النقل) للخادم WWW</translation>
@@ -801,7 +802,7 @@
 <translation id="2241053333139545397">قراءة بياناتك وتغييرها على عدد من المواقع</translation>
 <translation id="2241634353105152135">مرة واحدة فقط</translation>
 <translation id="2242687258748107519">معلومات الملف</translation>
-<translation id="2246549592927364792">‏هل ترغب في الحصول على أوصاف الصور من Google؟</translation>
+<translation id="2246549592927364792">‏هل تريد الحصول على أوصاف الصور من Google؟</translation>
 <translation id="224940702122312781">ستستخدم هذه الصفحة الكثير من البيانات.</translation>
 <translation id="2249605167705922988">مثال: 1-5، 8، 11-13</translation>
 <translation id="2251218783371366160">فتح باستخدام عارض النظام</translation>
@@ -1706,7 +1707,7 @@
 <translation id="3664511988987167893">رمز الإضافة</translation>
 <translation id="3665589677786828986">‏اكتشف Chrome أن بعض إعداداتك تم إتلافها من قبل برنامج آخر وإعادة تعيينها للحالة التلقائية الأصلية.</translation>
 <translation id="3668570675727296296">إعدادات اللغة</translation>
-<translation id="366867565525278777">تعذَّر التثبيت لعدم توفر مساحة تخزين. تتطلب <ph name="INSTALL_SIZE" /> على الأقل من المساحة الخالية. لتفريغ مساحة، يمكنك حذف الملفات من مساحة تخزين الجهاز.</translation>
+<translation id="366867565525278777">تعذَّر التثبيت لعدم توفر مساحة تخزين. يجب توفر <ph name="INSTALL_SIZE" /> على الأقل من المساحة الخالية. لتفريغ مساحة، يمكنك حذف الملفات من مساحة تخزين الجهاز.</translation>
 <translation id="3668801437375206837">‏لتشخيص مشاكل البلوتوث بشكل أفضل، يمكن لمستخدمي Google تضمين سجلّات بلوتوث إضافية مع تقارير التعليقات. وعند تحديد هذا الخيار، سيتضمَّن تقريرك للجلسة الحالية ملفات بتنسيقات btsnoop وسجلّات وحدة تحكُّم المُضيف (HCI) مُصحَّحة لإزالة أكبر قدر ممكن من معلومات تحديد الهوية الشخصية. وسيقتصر الوصول إلى هذه السجلّات على مديري مجموعة منتجات نظام التشغيل Chrome في Listnr. وستُزال السجلّات نهائيًا بعد 90 يومًا.</translation>
 <translation id="3668823961463113931">المعالجات</translation>
 <translation id="3670113805793654926">أجهزة من أي مورّد</translation>
@@ -2046,6 +2047,7 @@
 <translation id="4146026355784316281">افتح دائمًا باستخدام عرض النظام</translation>
 <translation id="4146785383423576110">إعادة التعيين وإزالة البرامج الضارة</translation>
 <translation id="4147911968024186208">يُرجى إعادة المحاولة. وإذا ظهر هذا الخطأ مرة أخرى، يُرجى التواصل مع ممثِّل الدعم.</translation>
+<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">عرض</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{علامة تبويب واحدة}zero{# من علامات التبويب}two{علامتا تبويب (#)}few{# علامات تبويب}many{# علامة تبويب}other{# من علامات التبويب}}</translation>
 <translation id="4154664944169082762">بصمات الأصابع</translation>
@@ -2247,6 +2249,7 @@
 <translation id="4524832533047962394">لا يمكن استخدام وضع التسجيل المُقدَّم على هذا الإصدار من نظام التشغيل. يُرجى التأكد من استخدام أحدث إصدار.</translation>
 <translation id="4525382759303819021">‏التعرّف على آخر التحديثات والاقتراحات في تطبيقات "متجر Play"</translation>
 <translation id="4530494379350999373">الأصل</translation>
+<translation id="4532646538815530781">تم السماح لموقع الويب هذا باستخدام مستشعرات الحركة.</translation>
 <translation id="4533846798469727141">‏الآن، يُرجى قول "Hey Google"</translation>
 <translation id="4533985347672295764">وقت وحدة المعالجة المركزية</translation>
 <translation id="4534661889221639075">يُرجى إعادة المحاولة.</translation>
@@ -2481,6 +2484,7 @@
 <translation id="4892229439761351791">يمكن لموقع الويب استخدام البلوتوث</translation>
 <translation id="4893336867552636863">سيؤدي هذا إلى حذف بيانات التصفح من هذا الجهاز نهائيًا.</translation>
 <translation id="4893522937062257019">على شاشة التأمين</translation>
+<translation id="489454699928748701">السماح لمواقع الويب باستخدام مستشعرات الحركة</translation>
 <translation id="4898011734382862273">تمثل الشهادة "<ph name="CERTIFICATE_NAME" />" مرجعًا مصدقًا</translation>
 <translation id="489985760463306091">لإنهاء إزالة البرامج الضارة، أعد تشغيل الكمبيوتر</translation>
 <translation id="4900392736118574277">تم تغيير صفحة بدء التشغيل إلى <ph name="URL" />.</translation>
@@ -2944,6 +2948,7 @@
 <translation id="5620568081365989559">‏تطلب DevTools الدخول الكامل إلى <ph name="FOLDER_PATH" />. احرص على عدم كشف أي معلومات حساسة.</translation>
 <translation id="5620612546311710611">إحصاءات الاستخدام</translation>
 <translation id="5620655347161642930">جارٍ تصدير كلمات المرور...</translation>
+<translation id="5623282979409330487">يحاول موقع الويب هذا الوصول إلى مستشعرات الحركة.</translation>
 <translation id="5623842676595125836">السجل</translation>
 <translation id="5624120631404540903">إدارة كلمات المرور</translation>
 <translation id="5626134646977739690">الاسم:</translation>
@@ -3438,6 +3443,7 @@
 <translation id="6390994422085833176">مراجعة ميزات المزامنة والتخصيص بعد اكتمال عملية الإعداد</translation>
 <translation id="6393156038355142111">اقتراح كلمة مرور قوية</translation>
 <translation id="6395423953133416962">إرسال <ph name="BEGIN_LINK1" />معلومات النظام<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />المقاييس<ph name="END_LINK2" /></translation>
+<translation id="6396988158856674517">حظر مواقع الويب من استخدام مستشعرات الحركة</translation>
 <translation id="6397094776139756010">خيارات التخصيص والمزامنة</translation>
 <translation id="6398715114293939307">‏إزالة متجر Google Play</translation>
 <translation id="6398765197997659313">إنهاء وضع ملء الشاشة</translation>
@@ -3532,6 +3538,7 @@
 <translation id="6531282281159901044">الاحتفاظ بالملف الضار</translation>
 <translation id="6532101170117367231">‏حفظ في Google Drive</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />ملاحظة:<ph name="END_BOLD" /> يُوصى بعدم التمكين إلا إذا كنت تعرف ماذا تريد أو عندما يُطلب منك إجراء ذلك، ذلك أن جمع البيانات قد يقلل من مستوى الأداء.</translation>
+<translation id="6541638731489116978">تم حظر موقع الويب هذا من الوصول إلى مستشعرات الحركة.</translation>
 <translation id="654233263479157500">استخدام إحدى خدمات الويب للمساعدة على حل أخطاء التنقل</translation>
 <translation id="6544215763872433504">‏متصفح الويب المقدم من Google، لك</translation>
 <translation id="6545665334409411530">معدل التكرار</translation>
@@ -4272,6 +4279,7 @@
 <translation id="7704628569466676326">إقران مفتاح الأمان مع هذا الجهاز حتى تتمكّن من استخدامه لتسجيل الدخول إلى حسابك</translation>
 <translation id="7705276765467986571">تعذر تحميل نموذج الإشارة.</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7707108266051544351">تم حظر موقع الويب هذا من استخدام مستشعرات الحركة.</translation>
 <translation id="7707922173985738739">استخدام بيانات الجوّال</translation>
 <translation id="7709152031285164251">تعذّر - <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;إرسال...</translation>
@@ -4977,7 +4985,7 @@
 <translation id="8780123805589053431">‏الحصول على أوصاف الصور من Google</translation>
 <translation id="8780443667474968681">تم إيقاف ميزة البحث الصوتي.</translation>
 <translation id="878069093594050299">تم التحقق من هذه الشهادة للاستخدامات التالية:</translation>
-<translation id="8781470833671194250">النقر على تثبيت الموضع</translation>
+<translation id="8781470833671194250">تثبيت موضع النقر</translation>
 <translation id="8781980678064919987">إيقاف التشغيل عند إغلاق الغطاء</translation>
 <translation id="8782565991310229362">‏تم إلغاء تشغيل تطبيق Kiosk.</translation>
 <translation id="8783093612333542422">‏يرغب &lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; بمشاركة طابعة &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; معك.</translation>

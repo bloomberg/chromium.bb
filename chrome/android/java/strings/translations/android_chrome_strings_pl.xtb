@@ -95,7 +95,9 @@
 <translation id="1671236975893690980">Oczekuję na pobranie…</translation>
 <translation id="1672586136351118594">Nie pokazuj ponownie</translation>
 <translation id="1692118695553449118">Synchronizacja jest włączona</translation>
+<translation id="169515064810179024">Blokuj stronom dostęp do czujników ruchu</translation>
 <translation id="1709438864123551175">Oszczędzanie danych</translation>
+<translation id="1717218214683051432">Czujniki ruchu</translation>
 <translation id="1718835860248848330">Ostatnia godzina</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – zaktualizowano <ph name="TIME_SINCE_UPDATE" /></translation>
 <translation id="1736419249208073774">Odkrywaj</translation>
@@ -248,6 +250,7 @@
 <translation id="2777555524387840389">Pozostało: <ph name="SECONDS" /> s</translation>
 <translation id="2779651927720337254">Nie pobrano</translation>
 <translation id="2781151931089541271">Pozostała sekunda</translation>
+<translation id="2801022321632964776">Zaktualizuj Chrome do najnowszej wersji, by mieć w nim dostępny swój język</translation>
 <translation id="2803478378562657435">Wyświetlam zapisane hasła i opcje haseł</translation>
 <translation id="2810645512293415242">Uproszczona wersja strony pozwala szybciej zapisywać i wczytywać dane.</translation>
 <translation id="281504910091592009">Zapisane hasła znajdziesz na swoim <ph name="BEGIN_LINK" />koncie Google<ph name="END_LINK" /></translation>
@@ -310,6 +313,7 @@
 <translation id="3259831549858767975">Pomniejsz całą zawartość strony</translation>
 <translation id="3269093882174072735">Wczytaj obraz</translation>
 <translation id="3269956123044984603">Aby korzystać z kart ze swoich pozostałych urządzeń, włącz opcję „Autosynchronizacja danych” w ustawieniach konta na urządzeniu z Androidem.</translation>
+<translation id="3277252321222022663">Zezwalaj stronom na dostęp do czujników (zalecane)</translation>
 <translation id="3282568296779691940">Zaloguj się w Chrome</translation>
 <translation id="3288003805934695103">Odśwież stronę</translation>
 <translation id="32895400574683172">Powiadomienia są włączone</translation>
@@ -419,7 +423,7 @@ Jeśli chcesz dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je
 <translation id="410351446219883937">Autoodtwarzanie</translation>
 <translation id="4116038641877404294">Pobierz strony, by przeglądać je w trybie offline</translation>
 <translation id="4149994727733219643">Uproszczony widok stron internetowych</translation>
-<translation id="4165986682804962316">Ustawienia witryny</translation>
+<translation id="4165986682804962316">Ustawienia witryn</translation>
 <translation id="4170011742729630528">Usługa jest niedostępna. Spróbuj ponownie później.</translation>
 <translation id="4179980317383591987">Wykorzystano <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Języki</translation>
@@ -550,6 +554,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5016205925109358554">Szeryfowa</translation>
 <translation id="5039804452771397117">Zezwalaj</translation>
 <translation id="5040262127954254034">Prywatność</translation>
+<translation id="5048398596102334565">Zezwalaj stronom na dostęp do czujników ruchu (zalecane)</translation>
 <translation id="5063480226653192405">Wykorzystanie</translation>
 <translation id="5073204694187207510">Ukryj siatkę pełnego ekranu</translation>
 <translation id="5082793167783849073">Możesz szybko porównać strony, tworząc ich grupę. Aby to zrobić, naciśnij i przytrzymaj link.</translation>
@@ -743,6 +748,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6406506848690869874">Synchronizacja</translation>
 <translation id="641643625718530986">Drukuj…</translation>
 <translation id="6416782512398055893">Pobrano <ph name="MBS" /> MB</translation>
+<translation id="6427112570124116297">Tłumacz internet</translation>
 <translation id="6433501201775827830">Wybierz wyszukiwarkę</translation>
 <translation id="6437478888915024427">Informacje o stronie</translation>
 <translation id="6441734959916820584">Nazwa jest zbyt długa</translation>
@@ -858,6 +864,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7189598951263744875">Udostępnij...</translation>
 <translation id="7191430249889272776">Karta otwarta w tle.</translation>
 <translation id="723171743924126238">Wybierz zdjęcia</translation>
+<translation id="7233236755231902816">Aby wyświetlać strony internetowe w swoim języku, pobierz najnowszą wersję Chrome</translation>
 <translation id="7243308994586599757">Opcje dostępne u dołu ekranu</translation>
 <translation id="7250468141469952378">Wybrano <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Otwórz aplikację Ustawienia na urządzeniu, przejdź na stronę Konta i dodaj konto Google.</translation>
@@ -1013,6 +1020,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8310344678080805313">Karty standardowe</translation>
 <translation id="8313455859591948645">Zmiana strony startowej</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> i więcej stron</translation>
+<translation id="8327155640814342956">Aby komfortowo przeglądać internet, otwórz tę stronę i zaktualizuj Chrome</translation>
 <translation id="8339163506404995330">Strony, których językiem jest <ph name="LANGUAGE" />, nie będą tłumaczone</translation>
 <translation id="8349013245300336738">Sortuj według ilości wykorzystanych danych</translation>
 <translation id="8372893542064058268">Zezwalaj na synchronizowanie w tle z określoną stroną.</translation>
@@ -1072,6 +1080,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8788968922598763114">Ponownie otwórz ostatnio zamknięte karty</translation>
 <translation id="8801436777607969138">Zablokuj JavaScript w określonej witrynie.</translation>
 <translation id="8812260976093120287">Używając swojego urządzenia, na niektórych stronach możesz płacić za pomocą powyższych obsługiwanych aplikacji do płatności.</translation>
+<translation id="8816026460808729765">Blokuj stronom dostęp do czujników</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> otworzy się w Chrome. Przechodząc dalej, akceptujesz <ph name="BEGIN_LINK1" />Warunki korzystania z usługi<ph name="END_LINK1" /> Chrome, <ph name="BEGIN_LINK2" />Informacje na temat ochrony prywatności<ph name="END_LINK2" /> i <ph name="BEGIN_LINK3" />Informacje na temat ochrony prywatności dotyczące kont Google zarządzanych przez Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Zakładki</translation>
 <translation id="8833831881926404480">Strona udostępnia Twój ekran</translation>

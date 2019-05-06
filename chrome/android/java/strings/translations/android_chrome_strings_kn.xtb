@@ -96,7 +96,9 @@
 <translation id="1671236975893690980">ಡೌನ್‌ಲೋಡ್ ಬಾಕಿ ಉಳಿದಿದೆ...</translation>
 <translation id="1672586136351118594">ಮತ್ತೊಮ್ಮೆ ತೋರಿಸಬೇಡಿ</translation>
 <translation id="1692118695553449118">ಸಿಂಕ್‌ ಆನ್‌ ಆಗಿದೆ</translation>
+<translation id="169515064810179024">ಚಲನಾ ಸೆನ್ಸರ್‌ಗಳನ್ನು ಪ್ರವೇಶಿಸದಂತೆ ಸೈಟ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
 <translation id="1709438864123551175">ಡೇಟಾ ಉಳಿಸುವಿಕೆ</translation>
+<translation id="1717218214683051432">ಮೋಷನ್ ಸೆನ್ಸಾರ್‌ಗಳು</translation>
 <translation id="1718835860248848330">ಕೊನೆಯ ಗಂಟೆ</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" /> ಸಮಯದ ಹಿಂದೆ ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="1736419249208073774">ಎಕ್ಸ್‌ಪ್ಲೋರ್ ಮಾಡಿ</translation>
@@ -206,7 +208,7 @@
 <translation id="2450083983707403292">ನೀವು <ph name="FILE_NAME" /> ಅನ್ನು ಪುನಃ ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು ಬಯಸುತ್ತೀರಾ?</translation>
 <translation id="2476578072172137802">ಸೈಟ್‌ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="2482878487686419369">ಸೂಚನೆಗಳು</translation>
-<translation id="2490684707762498678"><ph name="APP_NAME" /> ಆ್ಯಪ್ ನಿರ್ವಹಿಸುತ್ತದೆ</translation>
+<translation id="2490684707762498678"><ph name="APP_NAME" /> ಆ್ಯಪ್ ನಿರ್ವಹಿಸುತ್ತಿದೆ</translation>
 <translation id="2494974097748878569">Chrome ನಲ್ಲಿನ Google ಅಸಿಸ್ಟೆಂಟ್</translation>
 <translation id="2496180316473517155">ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸ</translation>
 <translation id="2498359688066513246">ಸಹಾಯ ಮತ್ತು ಪ್ರತಿಕ್ರಿಯೆ</translation>
@@ -249,6 +251,7 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> ಸೆಕೆಂಡುಗಳು ಉಳಿದಿವೆ</translation>
 <translation id="2779651927720337254">ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="2781151931089541271">1 ಸೆಕೆಂಡು ಉಳಿದಿದೆ</translation>
+<translation id="2801022321632964776">ನಿಮ್ಮ ಭಾಷೆಯನ್ನು Chrome ನ ಇತ್ತೀಚಿನ ಆವೃತ್ತಿಗೆ ಪಡೆದುಕೊಳ್ಳಲು ಅಪ್‌ಡೇಟ್ ಮಾಡಿ</translation>
 <translation id="2803478378562657435">ಉಳಿಸಿದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಪಾಸ್‌ವರ್ಡ್ ಆಯ್ಕೆಗಳನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="2810645512293415242">ಡೇಟಾ ಉಳಿಸಲು ಮತ್ತು ವೇಗವಾಗಿ ಲೋಡ್ ಮಾಡಲು ಪುಟವನ್ನು ಸರಳೀಕೃತಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="281504910091592009">ಉಳಿಸಲಾದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ನಿಮ್ಮ <ph name="BEGIN_LINK" />Google ಖಾತೆಯಲ್ಲಿ<ph name="END_LINK" /> ವೀಕ್ಷಿಸಿ ಮತ್ತು ನಿರ್ವಹಿಸಿ</translation>
@@ -311,6 +314,7 @@
 <translation id="3259831549858767975">ಪುಟದಲ್ಲಿರುವ ಪ್ರತಿಯೊಂದನ್ನೂ ಚಿಕ್ಕದಾಗಿಸಿ</translation>
 <translation id="3269093882174072735">ಚಿತ್ರ ಲೋಡ್ ಮಾಡಿ</translation>
 <translation id="3269956123044984603">ನಿಮ್ಮ ಇತರೆ ಸಾಧನಗಳಿಂದ ನಿಮ್ಮ ಟ್ಯಾಬ್‌ಗಳನ್ನು ಪಡೆದುಕೊಳ್ಳಲು, Android ಖಾತೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ''ಸ್ವಯಂ-ಸಿಂಕ್ ಡೇಟಾ" ಆನ್ ಮಾಡಿ.</translation>
+<translation id="3277252321222022663">ಸೆನ್ಸರ್‌ಗಳನ್ನು ಪ್ರವೇಶಿಸಲು ಸೈಟ್‌ಗಳಿಗೆ ಅನುಮತಿ ನೀಡಿ (ಶಿಫಾರಸು ಮಾಡಿರುವುದು)</translation>
 <translation id="3282568296779691940">Chrome ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ</translation>
 <translation id="3288003805934695103">ಪುಟ ಮರುಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
 <translation id="32895400574683172">ಅಧಿಸೂಚನೆಗಳನ್ನು ಅನುಮತಿಸಲಾಗಿದೆ</translation>
@@ -550,6 +554,7 @@
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">ಅನುಮತಿಸಿ</translation>
 <translation id="5040262127954254034">ಗೌಪ್ಯತೆ</translation>
+<translation id="5048398596102334565">ಚಲನಾ ಸೆನ್ಸರ್‌ಗಳನ್ನು ಪ್ರವೇಶಿಸಲು ಸೈಟ್‌ಗಳಿಗೆ ಅನುಮತಿ ನೀಡಿ (ಶಿಫಾರಸು ಮಾಡಿರುವುದು)</translation>
 <translation id="5063480226653192405">ಬಳಕೆ</translation>
 <translation id="5073204694187207510">ಪೂರ್ಣ ಸ್ಕ್ರೀನ್ ಗ್ರಿಡ್‌ ಅನ್ನು ಮರೆಮಾಡಿ</translation>
 <translation id="5082793167783849073">ಗುಂಪನ್ನು ರಚಿಸುವ ಮೂಲಕ ಪುಟಗಳನ್ನು ತ್ವರಿತವಾಗಿ ಹೋಲಿಸಿ ನೋಡಿ. ಪ್ರಾರಂಭಿಸಲು, ಲಿಂಕ್ ಸ್ಪರ್ಶಿಸಿ ಹಿಡಿಯಿರಿ.</translation>
@@ -743,6 +748,7 @@
 <translation id="6406506848690869874">ಸಿಂಕ್</translation>
 <translation id="641643625718530986">ಮುದ್ರಿಸು...</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗಿದೆ</translation>
+<translation id="6427112570124116297">ವೆಬ್ ಅನ್ನು ಅನುವಾದಿಸಿ</translation>
 <translation id="6433501201775827830">ನಿಮ್ಮ ಹುಡುಕಾಟದ ಇಂಜಿನ್ ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="6437478888915024427">ಪುಟದ ಮಾಹಿತಿ</translation>
 <translation id="6441734959916820584">ಹೆಸರು ತುಂಬಾ ಉದ್ದವಾಗಿದೆ</translation>
@@ -859,6 +865,7 @@
 <translation id="7189598951263744875">ಹಂಚಿ...</translation>
 <translation id="7191430249889272776">ಟ್ಯಾಬ್ ಅನ್ನು ಹಿನ್ನೆಲೆಯಲ್ಲಿ ತೆರೆಯಲಾಗಿದೆ.</translation>
 <translation id="723171743924126238">ಚಿತ್ರಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
+<translation id="7233236755231902816">ನಿಮ್ಮ ಭಾಷೆಯಲ್ಲಿ ವೆಬ್ ಪುಟವನ್ನು ವೀಕ್ಷಿಸಲು, ಇತ್ತೀಚಿನ Chrome ಆವೃತ್ತಿಯನ್ನು ಪಡೆಯಿರಿ</translation>
 <translation id="7243308994586599757">ಪರದೆಯ ಕೆಳಗೆ ಲಭ್ಯವಿರುವ ಆಯ್ಕೆಗಳು</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ಅನ್ನು ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ</translation>
 <translation id="7253272406652746122">ನಿಮ್ಮ ಸಾಧನದ ಸೆಟ್ಟಿಂಗ್‌‌ಗಳ ಅಪ್ಲಿಕೇಶನ್‌ನಲ್ಲಿ ಖಾತೆಗಳ ಪುಟದಿಂದ Google ಖಾತೆಯನ್ನು ಸೇರಿಸಿ.</translation>
@@ -1014,6 +1021,7 @@
 <translation id="8310344678080805313">ಪ್ರಮಾಣಿತ ಟ್ಯಾಬ್‌ಗಳು</translation>
 <translation id="8313455859591948645">ಆರಂಭಿಕ ಪುಟವನ್ನು ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> ಮತ್ತು ಹೆಚ್ಚಿನ ಸೈಟ್‌ಗಳು</translation>
+<translation id="8327155640814342956">ಉತ್ತಮ ಬ್ರೌಸಿಂಗ್ ಅನುಭವಕ್ಕಾಗಿ, Chrome ಅನ್ನು ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲು ತೆರೆಯಿರಿ</translation>
 <translation id="8339163506404995330"><ph name="LANGUAGE" /> ನಲ್ಲಿನ ಪುಟಗಳನ್ನು ಅನುವಾದ ಮಾಡಲಾಗುವುದಿಲ್ಲ</translation>
 <translation id="8349013245300336738">ಬಳಸಿದ ಡೇಟಾ ಪ್ರಮಾಣದ ಪ್ರಕಾರ ವಿಂಗಡಿಸಿ</translation>
 <translation id="8372893542064058268">ನಿರ್ದಿಷ್ಟ ಸೈಟ್‌ಗಾಗಿ ಹಿನ್ನೆಲೆ ಸಿಂಕ್‌ ಅನುಮತಿಸಿ.</translation>
@@ -1073,6 +1081,7 @@
 <translation id="8788968922598763114">ಕೊನೆಯದಾಗಿ ಮುಚ್ಚಿದ ಟ್ಯಾಬ್ ಮರುತೆರೆಯಿರಿ</translation>
 <translation id="8801436777607969138">ನಿರ್ದಿಷ್ಟ ಸೈಟ್‌ಗೆ JavaScript ಅನ್ನು ನಿರ್ಬಂಧಿಸಿ.</translation>
 <translation id="8812260976093120287">ಕೆಲವು ವೆಬ್‌ಸೈಟ್‌ಗಳಲ್ಲಿ, ನೀವು ಮೇಲೆ ಬೆಂಬಲಿಸಲಾದ ಪಾವತಿ ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಬಳಸಿಕೊಂಡು ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಪಾವತಿಸಬಹುದು.</translation>
+<translation id="8816026460808729765">ಸೆನ್ಸರ್‌ಗಳನ್ನು ಪ್ರವೇಶಿಸದಂತೆ ಸೈಟ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> Chrome ನಲ್ಲಿ ತೆರೆಯುತ್ತದೆ. ಮುಂದುವರಿಸುವ ಮೂಲಕ, ನೀವು Chrome ನ <ph name="BEGIN_LINK1" />ಸೇವಾ ನಿಯಮಗಳು<ph name="END_LINK1" /> ಮತ್ತು <ph name="BEGIN_LINK2" />ಗೌಪ್ಯತಾ ಸೂಚನೆ<ph name="END_LINK2" />, ಮತ್ತು <ph name="BEGIN_LINK3" />ಕುಟುಂಬ ಲಿಂಕ್ ಮೂಲಕ Google ಖಾತೆಗಳಿಗಾಗಿ ನಿರ್ವಹಿಸಲಾದ ಗೌಪ್ಯತೆ ಸೂಚನೆ<ph name="END_LINK3" />ಗೆ ಸಮ್ಮತಿಸುತ್ತೀರಿ.</translation>
 <translation id="8820817407110198400">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು</translation>
 <translation id="8833831881926404480">ನಿಮ್ಮ ಸ್ಕ್ರೀನ್ ಅನ್ನು ಒಂದು ಸೈಟ್ ಹಂಚಿಕೊಳ್ಳುತ್ತಿದೆ</translation>

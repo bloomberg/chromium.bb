@@ -95,7 +95,9 @@
 <translation id="1671236975893690980">Nedladdning väntar …</translation>
 <translation id="1672586136351118594">Visa inte igen</translation>
 <translation id="1692118695553449118">Synkronisering är på</translation>
+<translation id="169515064810179024">Blockera webbplatser från att använda enhetens rörelsesensorer</translation>
 <translation id="1709438864123551175">Databesparing</translation>
+<translation id="1717218214683051432">Rörelsesensorer</translation>
 <translation id="1718835860248848330">Senaste timmen</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – uppdaterades <ph name="TIME_SINCE_UPDATE" /></translation>
 <translation id="1736419249208073774">Utforska</translation>
@@ -248,6 +250,7 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekunder kvar</translation>
 <translation id="2779651927720337254">misslyckades</translation>
 <translation id="2781151931089541271">1 sekund kvar</translation>
+<translation id="2801022321632964776">Uppdatera och få ditt språk i den senaste versionen av Chrome</translation>
 <translation id="2803478378562657435">Sparade lösenord och lösenordsalternativ visas</translation>
 <translation id="2810645512293415242">Förenklad sida visades för att spara data och minska inläsningstiden.</translation>
 <translation id="281504910091592009">Visa och hantera sparade lösenord i <ph name="BEGIN_LINK" />Google-kontot<ph name="END_LINK" /></translation>
@@ -310,6 +313,7 @@
 <translation id="3259831549858767975">Gör allt på sidan mindre</translation>
 <translation id="3269093882174072735">Läs in bild</translation>
 <translation id="3269956123044984603">Aktivera Automatisk synkronisering av data i kontoinställningarna för Android om du vill ha samma flikar tillgängliga på alla enheter.</translation>
+<translation id="3277252321222022663">Tillåt att webbplatser får åtkomst till enhetens sensorer (rekommenderas)</translation>
 <translation id="3282568296779691940">Logga in i Chrome</translation>
 <translation id="3288003805934695103">läsa in sidan igen</translation>
 <translation id="32895400574683172">Aviseringar tillåts</translation>
@@ -550,6 +554,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Tillåt</translation>
 <translation id="5040262127954254034">Sekretess</translation>
+<translation id="5048398596102334565">Tillåt webbplatser att använda enhetens rörelsesensorer (rekommenderas)</translation>
 <translation id="5063480226653192405">Användning</translation>
 <translation id="5073204694187207510">Dölj helskärmsrutnät</translation>
 <translation id="5082793167783849073">Jämför sidor snabbt genom att skapa en grupp. Börja med att trycka länge på en länk.</translation>
@@ -743,6 +748,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6406506848690869874">Synkronisera</translation>
 <translation id="641643625718530986">Skriv ut …</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB har laddats ned</translation>
+<translation id="6427112570124116297">Översätt webbsidor</translation>
 <translation id="6433501201775827830">Välj sökmotor</translation>
 <translation id="6437478888915024427">Sidinformation</translation>
 <translation id="6441734959916820584">Namnet är för långt</translation>
@@ -858,6 +864,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7189598951263744875">Dela ...</translation>
 <translation id="7191430249889272776">Fliken öppnades i bakgrunden.</translation>
 <translation id="723171743924126238">Välj bilder</translation>
+<translation id="7233236755231902816">Skaffa den senaste versionen av Chrome och få webben översatt till ditt språk</translation>
 <translation id="7243308994586599757">Alternativ visas nära skärmens nedre kant</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> har valts</translation>
 <translation id="7253272406652746122">Lägg till ett Google-konto från kontosidan i appen Inställningar på enheten.</translation>
@@ -924,7 +931,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7649070708921625228">Hjälp</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7665369617277396874">Lägg till konto</translation>
-<translation id="766587987807204883">Artiklar visas här, och de kan du läsa även när du är offline</translation>
+<translation id="766587987807204883">Artiklar som du kan läsa även när du är offline visas här</translation>
 <translation id="7682724950699840886">Testa följande: kontrollera att det finns tillräckligt mycket utrymme på enheten, gör om exporten.</translation>
 <translation id="7698359219371678927">Skapa ett e-postmeddelande i <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Autoslutför sökningar och webbadresser</translation>
@@ -1013,6 +1020,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8310344678080805313">Standardflikar</translation>
 <translation id="8313455859591948645">Redigera startfliken</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> och fler webbplatser</translation>
+<translation id="8327155640814342956">Uppdatera Chrome så att du får bästa möjliga surfupplevelse</translation>
 <translation id="8339163506404995330">Sidor på <ph name="LANGUAGE" /> översätts inte</translation>
 <translation id="8349013245300336738">Sortera efter dataförbrukning</translation>
 <translation id="8372893542064058268">Tillåt bakgrundssynkronisering för en specifik webbplats.</translation>
@@ -1072,6 +1080,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8788968922598763114">Öppna den senast stängda fliken igen</translation>
 <translation id="8801436777607969138">Blockera JavaScript på en enskild webbplats.</translation>
 <translation id="8812260976093120287">På vissa webbplatser kan du betala med ovanstående betalningsappar som stöds på enheten.</translation>
+<translation id="8816026460808729765">Blockera webbplatser från att använda enhetens sensorer</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> öppnas i Chrome. Genom att fortsätta godkänner du Chromes <ph name="BEGIN_LINK1" />användarvillkor<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />sekretesspolicy<ph name="END_LINK2" /> samt <ph name="BEGIN_LINK3" />sekretessmeddelandet för  Google-konton som hanteras via Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Bokmärken</translation>
 <translation id="8833831881926404480">En webbplats delar din skärm</translation>

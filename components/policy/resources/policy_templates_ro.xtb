@@ -1606,7 +1606,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
           Politica este folosită numai dacă valoarea DeviceBatteryChargeMode este personalizată.
 
-          Dacă această politică nu este configurată sau setată, se va aplica modul standard de încărcare a bateriei.</translation>
+          Dacă politica nu este configurată sau setată, se va aplica modul standard de încărcare a bateriei.</translation>
 <translation id="3925377537407648234">Setează rezoluția ecranului și factorul de scalare</translation>
 <translation id="3939893074578116847">Trimite pachete din rețea serverului de gestionare, pentru a monitoriza starea
        online, permițând astfel serverului să detecteze dacă dispozitivul este offline.
@@ -3507,7 +3507,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 
           Politica este folosită numai dacă valoarea DeviceBatteryChargeMode este personalizată.
 
-          Dacă această politică nu este configurată sau setată, se va aplica modul standard de încărcare a bateriei.</translation>
+          Dacă politica nu este configurată sau setată, se va aplica modul standard de încărcare a bateriei.</translation>
 <translation id="759957074386651883">Setări de Navigare sigură</translation>
 <translation id="7604169113182304895">Aplicațiile Android pot alege în mod voluntar să respecte această listă. Nu le poți forța să o respecte.</translation>
 <translation id="7612157962821894603">Marcaje la nivel de sistem de aplicat când pornește <ph name="PRODUCT_NAME" /></translation>

@@ -2018,7 +2018,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="409579654357498729">Ajouter à Google Cloud Print</translation>
 <translation id="4096508467498758490">Désactiver les extensions exécutées en mode développeur ?</translation>
 <translation id="4096824249111507322">Préparation du module sécurisé en cours. Veuillez patienter, l'opération peut prendre quelques minutes…</translation>
-<translation id="4097560579602855702">Recherche Google</translation>
+<translation id="4097560579602855702">Effectuez une recherche sur Google</translation>
 <translation id="4099060993766194518">Restaurer le moteur de recherche par défaut ?</translation>
 <translation id="4099874310852108874">Une erreur réseau s'est produite.</translation>
 <translation id="4100733287846229632">Très peu d'espace disponible sur l'appareil</translation>
@@ -2919,7 +2919,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5584915726528712820"><ph name="BEGIN_PARAGRAPH1" />Ces informations d'ordre général concernent votre appareil et l'usage qui en est fait (comme le niveau de batterie, les erreurs, et l'activité du système et des applications). Elles serviront à améliorer Android, et certaines informations agrégées aideront également nos développeurs d'applications et nos partenaires, tels que les développeurs Android, à améliorer leurs applications et leurs produits.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />Notez que la désactivation de cette fonctionnalité n'empêche pas votre appareil d'envoyer les informations nécessaires pour bénéficier de services essentiels, tels que les mises à jour du système et les fonctions de sécurité.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />Le propriétaire de l'appareil peut contrôler cette fonctionnalité dans Paramètres &gt; Avancés &gt; Envoyer automatiquement des données de diagnostic et d'utilisation à Google.<ph name="END_PARAGRAPH3" />
-    <ph name="BEGIN_PARAGRAPH4" />Si vous activez l'enregistrement de votre activité additionnelle sur le Web et les applications, ces données peuvent être enregistrées dans votre compte Google. Vous pouvez consulter vos données, les supprimer et modifier les paramètres de votre compte à l'adresse account.google.com.<ph name="END_PARAGRAPH4" /></translation>
+    <ph name="BEGIN_PARAGRAPH4" />Si vous activez également l'option "Activité sur le Web et les applications", les données concernées pourront être enregistrées dans votre compte Google. Vous pouvez consulter vos données, les supprimer et modifier les paramètres de votre compte à l'adresse account.google.com.<ph name="END_PARAGRAPH4" /></translation>
 <translation id="5585118885427931890">Impossible de créer le dossier de favoris.</translation>
 <translation id="558563010977877295">Ouvrir une page ou un ensemble de pages spécifiques</translation>
 <translation id="5585912436068747822">Échec du formatage</translation>
@@ -3290,7 +3290,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6143186082490678276">Aide</translation>
 <translation id="6144938890088808325">Aidez-nous à améliorer les Chromebooks</translation>
 <translation id="6147020289383635445">Échec de l'aperçu avant impression.</translation>
-<translation id="614940544461990577">Essayez les suggestions ci-dessous :</translation>
+<translation id="614940544461990577">Voici quelques conseils :</translation>
 <translation id="6150961653851236686">Cette langue est utilisée pour la traduction des pages</translation>
 <translation id="6151323131516309312">Appuyez sur <ph name="SEARCH_KEY" /> pour rechercher sur <ph name="SITE_NAME" /></translation>
 <translation id="6151771661215463137">Ce fichier existe déjà dans votre dossier de téléchargements.</translation>
@@ -4159,7 +4159,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7513029293694390567">Permet de se connecter automatiquement aux sites Web à l'aide des identifiants enregistrés. Si cette fonctionnalité est désactivée, vous êtes invité à confirmer chaque connexion à un site Web.</translation>
 <translation id="7517786267097410259">Créer un mot de passe –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="7522255036471229694">Dites "Ok Google".</translation>
+<translation id="7522255036471229694">Dites "Ok Google"</translation>
 <translation id="7525067979554623046">Créer</translation>
 <translation id="7529411698175791732">Vérifiez votre connexion Internet. Si le problème persiste, essayez de vous déconnecter, puis de vous reconnecter.</translation>
 <translation id="7530016656428373557">Taux de décharge en watts</translation>

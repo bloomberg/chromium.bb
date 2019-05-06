@@ -465,6 +465,7 @@
 <translation id="1711401317189798723">Konteineri <ph name="CONTAINER_ID" /> varundamine on praegu pooleli</translation>
 <translation id="1712349894969001173">Saatke see parool oma iPhone'i</translation>
 <translation id="1712552549805331520"><ph name="URL" /> soovib andmed alaliselt teie kohalikku arvutisse salvestada</translation>
+<translation id="1717218214683051432">Liikumisandurid</translation>
 <translation id="1718835860248848330">Viimase tunni jooksul</translation>
 <translation id="1719312230114180055">Märkus. Sõrmejälg võib olla vähem turvaline kui tugev parool või PIN-kood.</translation>
 <translation id="1720318856472900922">TLS WWW serveri autentimine</translation>
@@ -2051,6 +2052,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4146026355784316281">Ava alati süsteemivaaturiga</translation>
 <translation id="4146785383423576110">Lähtestamine ja puhastamine</translation>
 <translation id="4147911968024186208">Proovige uuesti. Kui viga ilmub siiski, võtke ühendust tugiteenuse esindajaga.</translation>
+<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">Kuva</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 vaheleht}other{# vahelehte}}</translation>
 <translation id="4154664944169082762">Sõrmejäljed</translation>
@@ -2252,6 +2254,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4524832533047962394">Operatsioonisüsteemi see versioon ei toeta valitud registreerimisviisi. Veenduge, et käitaksite uusimat versiooni.</translation>
 <translation id="4525382759303819021">Hangi Play poe rakenduste kohta värskeimaid uudiseid ja soovitusi</translation>
 <translation id="4530494379350999373">Päritolu</translation>
+<translation id="4532646538815530781">Sait kasutab liikumisandureid.</translation>
 <translation id="4533846798469727141">Nüüd öelge „Hey Google”</translation>
 <translation id="4533985347672295764">Protsessoriaeg</translation>
 <translation id="4534661889221639075">Proovige uuesti.</translation>
@@ -2486,6 +2489,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4892229439761351791">Sait saab kasutada Bluetoothi</translation>
 <translation id="4893336867552636863">See kustutab teie sirvimisandmed sellest seadmest jäädavalt.</translation>
 <translation id="4893522937062257019">Lukustuskuval</translation>
+<translation id="489454699928748701">Luba saitidel kasutada liikumisandureid</translation>
 <translation id="4898011734382862273">Sertifikaat „<ph name="CERTIFICATE_NAME" />” esindab sertifitseerimisorganit</translation>
 <translation id="489985760463306091">Kahjuliku tarkvara eemaldamise lõpuleviimiseks taaskäivitage arvuti</translation>
 <translation id="4900392736118574277">Käivitamisel avatavaks leheks määrati <ph name="URL" />.</translation>
@@ -2949,6 +2953,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="5620568081365989559">DevTools taotleb täielikku juurdepääsu kaustale <ph name="FOLDER_PATH" />. Veenduge, et te ei avalikustaks tundlikku teavet.</translation>
 <translation id="5620612546311710611">kasutamise statistika</translation>
 <translation id="5620655347161642930">Paroolide eksportimine …</translation>
+<translation id="5623282979409330487">Saidil on juurdepääs teie liikumisanduritele.</translation>
 <translation id="5623842676595125836">Logi</translation>
 <translation id="5624120631404540903">Paroolide haldamine</translation>
 <translation id="5626134646977739690">Nimi:</translation>
@@ -3442,6 +3447,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6390994422085833176">Pärast seadistamist vaadake üle sünkroonimise ja isikupärastamise funktsioonid</translation>
 <translation id="6393156038355142111">Soovita tugevat parooli</translation>
 <translation id="6395423953133416962">Saada <ph name="BEGIN_LINK1" />süsteemiteave<ph name="END_LINK1" /> ja <ph name="BEGIN_LINK2" />mõõdikud<ph name="END_LINK2" /></translation>
+<translation id="6396988158856674517">Blokeeri saitide jaoks liikumisandurite kasutamine</translation>
 <translation id="6397094776139756010">Sünkroonimise ja isikupärastamise valikud</translation>
 <translation id="6398715114293939307">Google Play poe eemaldamine</translation>
 <translation id="6398765197997659313">Välju täisekraanilt</translation>
@@ -3536,6 +3542,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6531282281159901044">Säilita ohtlik fail</translation>
 <translation id="6532101170117367231">Salvesta rakendusse Google Drive</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Märkus.<ph name="END_BOLD" /> Lubage see ainult siis, kui teate, mida teete, või kui teil paluti seda teha, sest andmete kogumine võib toimivust vähendada.</translation>
+<translation id="6541638731489116978">Sellel saidil on juurdepääs teie liikumisanduritele blokeeritud.</translation>
 <translation id="654233263479157500">Kasuta veebiteenust navigeerimistõrgete lahendamisele kaasaaitamiseks</translation>
 <translation id="6544215763872433504">Google'i loodud veebibrauser teie jaoks</translation>
 <translation id="6545665334409411530">Kordussagedus</translation>
@@ -4276,6 +4283,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="7704628569466676326">Siduge oma turvavõti selle seadmega, et saaksite seda kasutada oma kontole sisselogimiseks</translation>
 <translation id="7705276765467986571">Järjehoidja mudelit ei õnnestunud laadida.</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7707108266051544351">Saidil pole lubatud liikumisandureid kasutada.</translation>
 <translation id="7707922173985738739">Kasuta mobiilset andmesidet</translation>
 <translation id="7709152031285164251">Ebaõnnestus – <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;Ülekandmine …</translation>

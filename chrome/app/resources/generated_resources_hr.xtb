@@ -465,6 +465,7 @@
 <translation id="1711401317189798723">U tijeku je sigurnosno kopiranje spremnika <ph name="CONTAINER_ID" /></translation>
 <translation id="1712349894969001173">Koristite ovu zaporku na iPhoneu</translation>
 <translation id="1712552549805331520"><ph name="URL" /> želi trajno pohraniti podatke na vaše lokalno računalo</translation>
+<translation id="1717218214683051432">Senzori kretanja</translation>
 <translation id="1718835860248848330">Zadnji sat</translation>
 <translation id="1719312230114180055">Napomena: otisak prsta može biti manje siguran od snažne zaporke ili PIN-a.</translation>
 <translation id="1720318856472900922">Provjera autentičnosti TLS WWW poslužitelja</translation>
@@ -1046,7 +1047,7 @@
 <translation id="26224892172169984">Ne dopusti nijednoj web-lokaciji rukovanje protokolima</translation>
 <translation id="2624142942574147739">Ova stranica pristupa vašoj kameri i vašem mikrofonu.</translation>
 <translation id="2626799779920242286">Pokušajte ponovo kasnije.</translation>
-<translation id="2630681426381349926">Povežite se s Wi-Fi-jem da biste počeli</translation>
+<translation id="2630681426381349926">Povežite se s Wi-Fijem da biste počeli</translation>
 <translation id="2631120081682787498">Jeste li sigurni da želite zatvoriti tu karticu?</translation>
 <translation id="2631498379019108537">Prikaži opcije unosa na polici</translation>
 <translation id="2633199387167390344"><ph name="NAME" /> upotrebljava <ph name="USAGE" /> MB prostora na disku.</translation>
@@ -1696,7 +1697,7 @@
 <translation id="3649138363871392317">Fotografija je snimljena</translation>
 <translation id="3650845953328929506">Prijenos zapisnika na čekanju.</translation>
 <translation id="3650952250015018111">Dopusti aplikaciji "<ph name="APP_NAME" />" da pristupi:</translation>
-<translation id="3651488188562686558">prekinuti vezu s Wi-Fi-jem</translation>
+<translation id="3651488188562686558">prekinuti vezu s Wi-Fijem</translation>
 <translation id="3652817283076144888">Inicijalizacija</translation>
 <translation id="3653160965917900914">Mrežna dijeljenja datoteka</translation>
 <translation id="3653842108912548333">Pristupite Asistentu pomoću Voice Matcha</translation>
@@ -2051,6 +2052,7 @@
 <translation id="4146026355784316281">Uvijek otvori u pregledniku sustava</translation>
 <translation id="4146785383423576110">Vrati na zadano i očisti</translation>
 <translation id="4147911968024186208">Pokušajte ponovo. Ako se pogreška ponovi, obratite se predstavniku podrške.</translation>
+<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">Zaslon</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 kartica}one{# kartica}few{# kartice}other{# kartica}}</translation>
 <translation id="4154664944169082762">Otisci prstiju</translation>
@@ -2348,7 +2350,7 @@
 <translation id="4688036121858134881">Lokalni ID zapisnika: <ph name="WEBRTC_EVENT_LOG_LOCAL_ID" />.</translation>
 <translation id="4689235506267737042">Odaberite svoje demo-postavke</translation>
 <translation id="4689421377817139245">Sinkronizirajte ovu oznaku sa svojim iPhoneom</translation>
-<translation id="4690091457710545971">&lt;Četiri datoteke koje je generirala Intelova oprema za Wi-Fi: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. Prve su tri datoteke binarne i sadrže ispis registra, a Intel potvrđuje da ne sadrže osobne podatke ni podatke za identifikaciju uređaja. Zadnja je datoteka zapis izvedbe Intelove opreme; iz nje su izbrisani svi osobni podaci i podaci za identifikaciju uređaja, no prevelika je da bi se prikazala ovdje. Te su datoteke generirane zbog nedavnih poteškoća s Wi-Fi-jem na vašem uređaju i podijelit će se s Intelom radi rješavanja tih problema.&gt;</translation>
+<translation id="4690091457710545971">&lt;Četiri datoteke koje je generirala Intelova oprema za Wi-Fi: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. Prve su tri datoteke binarne i sadrže ispis registra, a Intel potvrđuje da ne sadrže osobne podatke ni podatke za identifikaciju uređaja. Zadnja je datoteka zapis izvedbe Intelove opreme; iz nje su izbrisani svi osobni podaci i podaci za identifikaciju uređaja, no prevelika je da bi se prikazala ovdje. Te su datoteke generirane zbog nedavnih poteškoća s Wi-Fijem na vašem uređaju i podijelit će se s Intelom radi rješavanja tih problema.&gt;</translation>
 <translation id="469230890969474295">OEM mapa</translation>
 <translation id="4692623383562244444">Tražilice</translation>
 <translation id="4693155481716051732">Suši</translation>

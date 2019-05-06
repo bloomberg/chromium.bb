@@ -223,6 +223,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Tarjeta</translation>
 <translation id="2114841414352855701">Se ignoró porque fue anulada por <ph name="POLICY_NAME" /> .</translation>
+<translation id="2129079103035905234">Sensores de movimiento</translation>
 <translation id="213826338245044447">Favoritos del celular</translation>
 <translation id="214556005048008348">Cancelar pago</translation>
 <translation id="2147827593068025794">Sincronización en segundo plano</translation>
@@ -431,7 +432,7 @@
 <translation id="3287510313208355388">Descargar cuando haya conexión</translation>
 <translation id="3293642807462928945">Más información sobre la política <ph name="POLICY_NAME" /></translation>
 <translation id="3303855915957856445">No se encontraron resultados en la búsqueda</translation>
-<translation id="3311730110465560799">Puede cambiar la configuración de tu dispositivo de forma remota.</translation>
+<translation id="3311730110465560799">Puedes cambiar la configuración de tu dispositivo de forma remota.</translation>
 <translation id="3320021301628644560">Agregar dirección de facturación</translation>
 <translation id="3324983252691184275">Carmesí</translation>
 <translation id="3338095232262050444">Seguro</translation>
@@ -898,7 +899,7 @@
 <translation id="5838278095973806738">No debes ingresar información confidencial en este sitio (p. ej., contraseñas o tarjetas de crédito), ya que los atacantes podrían robarla.</translation>
 <translation id="5860033963881614850">Desactivado</translation>
 <translation id="5863847714970149516">Es posible que la página siguiente intente cobrarte dinero</translation>
-<translation id="5865951947699094510">Puedes cambiar la configuración de tu cuenta de forma remota</translation>
+<translation id="5865951947699094510">Puedes cambiar la configuración de tu cuenta de forma remota.</translation>
 <translation id="5866257070973731571">Agregar número de teléfono</translation>
 <translation id="5869405914158311789">No se puede acceder a este sitio</translation>
 <translation id="5869522115854928033">Contraseñas almacenadas</translation>

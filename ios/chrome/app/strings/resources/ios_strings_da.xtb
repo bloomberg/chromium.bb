@@ -128,6 +128,7 @@
 <translation id="2800683595868705743">Luk Faneskift</translation>
 <translation id="2830972654601096923">Administrer adresser...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
+<translation id="2840687315230832938">Den indledende konfiguration af synkronisering er ikke slut</translation>
 <translation id="2843803966603263712">Nulstil oversættelsesindstillinger</translation>
 <translation id="2858204748079866344">Af hensyn til beskyttelsen af dine personlige oplysninger autofylder Chrome ikke din adgangskode i dette felt.</translation>
 <translation id="285960592395650245">Prøv at downloade igen</translation>
@@ -292,7 +293,7 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 <translation id="5659593005791499971">Mail</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Version <ph name="PRODUCT_VERSION" /></translation>
-<translation id="5711039611392265845">Du kan finde flere indstillinger vedrørende privatliv, sikkerhed og dataindsamling ved at gå til <ph name="BEGIN_LINK" />Synkronisering og Google-tjenester<ph name="END_LINK" /></translation>
+<translation id="5711039611392265845">Du kan finde flere indstillinger vedrørende privatliv, sikkerhed og dataindsamling under <ph name="BEGIN_LINK" />Synkronisering og Google-tjenester<ph name="END_LINK" />.</translation>
 <translation id="5728700505257787410">Der var et problem med at logge ind på din konto.</translation>
 <translation id="5737974891429562743">Loginoplysningerne for kontoen er forældede. Opdater dem for at påbegynde synkroniseringen.</translation>
 <translation id="5738887413654608789">Dette giver dig mulighed for at opdage relevante websider baseret på dine omgivelser.</translation>
@@ -411,6 +412,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="7280856130494094142">Angiv adgangssætning for at begynde at synkronisere</translation>
 <translation id="7285236536143823449">JA TAK</translation>
 <translation id="7291368939935408496">Forbereder adgangskoder...</translation>
+<translation id="7293171162284876153">Aktivér "Synkroniser dine Chrome-data" for starte synkroniseringen.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> procent er downloadet</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="7348502496356775519">Tilføj bogmærke</translation>

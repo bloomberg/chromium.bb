@@ -1666,19 +1666,19 @@
       Als dit beleid is ingesteld op 'True' of niet wordt ingesteld, kunnen gebruikers aanbiedingen inwisselen via registratie van Chrome OS.
 
       Als dit beleid is ingesteld op 'False' kunnen gebruikers geen aanbiedingen inwisselen.</translation>
-<translation id="4008233182078913897">Hiermee wordt een lijst opgegeven met apps en extensies die zonder gebruikersinteractie op de achtergrond worden geïnstalleerd en die niet kunnen worden verwijderd of uitgeschakeld door de gebruiker. Alle rechten die worden aangevraagd door de apps/extensies, worden impliciet zonder gebruikersinteractie verleend, inclusief aanvullende rechten die worden aangevraagd door toekomstige versies van de app/extensie. Bovendien worden rechten verleend voor de API's van de enterprise.deviceAttributes- en enterprise.platformKeys-extensie. (Deze twee API's zijn niet beschikbaar voor apps/extensies die niet gedwongen zijn geïnstalleerd.)
+<translation id="4008233182078913897">Hiermee wordt een lijst opgegeven met apps en extensies die zonder gebruikersinteractie op de achtergrond worden geïnstalleerd en die niet kunnen worden verwijderd of uitgeschakeld door de gebruiker. Alle machtigingen die worden aangevraagd door de apps/extensies, worden impliciet zonder gebruikersinteractie verleend, inclusief aanvullende machtigingen die worden aangevraagd door toekomstige versies van de app/extensie. Bovendien worden machtigingen verleend voor de API's van de enterprise.deviceAttributes- en enterprise.platformKeys-extensie. (Deze twee API's zijn niet beschikbaar voor apps/extensies die niet gedwongen zijn geïnstalleerd.)
 
-          Dit beleid krijgt voorrang boven een potentieel conflicterend <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />-beleid. Als een app of extensie die eerder gedwongen is geïnstalleerd, uit deze lijst wordt verwijderd, wordt de app of extensie automatisch verwijderd door <ph name="PRODUCT_NAME" />.
+          Dit beleid krijgt voorrang boven een potentieel conflicterend <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />-beleid. Als een app of extensie die eerder gedwongen is geïnstalleerd uit deze lijst wordt verwijderd, wordt de app of extensie automatisch verwijderd door <ph name="PRODUCT_NAME" />.
 
           Voor Windows-instanties die niet zijn gekoppeld aan een <ph name="MS_AD_NAME" />-domein, is gedwongen installatie beperkt tot apps en extensies die worden vermeld in de Chrome Web Store.
 
           Houd er rekening mee dat gebruikers de broncode van een extensie kunnen wijzigen via de ontwikkelaarstools (waardoor de extensie mogelijk niet meer functioneert). Als je je hierover zorgen maakt, moet het <ph name="DEVELOPER_TOOLS_POLICY_NAME" />-beleid worden ingesteld.
 
-          Elk lijstitem van het beleid is een tekenreeks die een extensie-ID en optioneel een update-URL bevat, gescheiden door een puntkomma (<ph name="SEMICOLON" />). De extensie-ID is de tekenreeks van 32 letters die bijvoorbeeld op <ph name="CHROME_EXTENSIONS_LINK" /> kan worden gevonden wanneer de ontwikkelaarsmodus actief is. De update-URL, indien opgegeven, moet verwijzen naar een XML-updatedocument voor het manifest, zoals beschreven op <ph name="LINK_TO_EXTENSION_DOC1" />. Standaard wordt de update-URL van de Chrome Web Store gebruikt (momenteel https://clients2.google.com/service/update2/crx). Houd er rekening mee dat de update-URL die in dit beleid is ingesteld, alleen voor de eerste installatie wordt gebruikt. Daaropvolgende updates van de extensie gebruiken de update-URL die in het manifest van de extensie wordt aangegeven. Houd er ook rekening mee dat het expliciet opgeven van de update-URL verplicht was in <ph name="PRODUCT_NAME" />-versie tot en met 67.
+          Elk lijstitem van het beleid is een tekenreeks die een extensie-ID en optioneel een update-URL bevat, gescheiden door een puntkomma (<ph name="SEMICOLON" />). De extensie-ID is de tekenreeks van 32 letters die bijvoorbeeld op <ph name="CHROME_EXTENSIONS_LINK" /> kan worden gevonden wanneer de ontwikkelaarsmodus actief is. De update-URL, indien opgegeven, moet verwijzen naar een XML-updatedocument voor het manifest, zoals beschreven op <ph name="LINK_TO_EXTENSION_DOC1" />. Standaard wordt de update-URL van de Chrome Web Store gebruikt (momenteel https://clients2.google.com/service/update2/crx). Houd er rekening mee dat de update-URL die in dit beleid is ingesteld, alleen voor de eerste installatie wordt gebruikt. Daaropvolgende updates van de extensie gebruiken de update-URL die in het manifest van de extensie wordt aangegeven. Houd er ook rekening mee dat het expliciet opgeven van de update-URL verplicht was in <ph name="PRODUCT_NAME" />-versies tot en met 67.
 
-          Met <ph name="EXTENSION_POLICY_EXAMPLE" /> wordt de app met ID <ph name="EXTENSION_ID_SAMPLE" /> bijvoorbeeld geïnstalleerd via de standaard update-URL van de Chrome Web Store. Raadpleeg voor meer informatie over de hosting van extensies de volgende link: <ph name="LINK_TO_EXTENSION_DOC2" />.
+          Met <ph name="EXTENSION_POLICY_EXAMPLE" /> wordt de extensie met de ID <ph name="EXTENSION_ID_SAMPLE" /> bijvoorbeeld geïnstalleerd via de standaard update-URL van de Chrome Web Store. Ga naar <ph name="LINK_TO_EXTENSION_DOC2" /> voor meer informatie over het hosten van extensies.
 
-          Als dit beleid niet wordt ingesteld, worden er geen apps en extensies automatisch geïnstalleerd en kan de gebruiker elke app of extensie in <ph name="PRODUCT_NAME" /> verwijderen.
+          Als dit beleid niet wordt ingesteld, worden apps en extensies automatisch geïnstalleerd en kan de gebruiker elke app of extensie in <ph name="PRODUCT_NAME" /> verwijderen.
 
           Houd er rekening mee dat dit beleid niet van toepassing is op de incognitomodus.</translation>
 <translation id="4008507541867797979">Als dit beleid is ingesteld op 'True' of niet is geconfigureerd, worden op het inlogscherm van <ph name="PRODUCT_OS_NAME" /> bestaande gebruikers weergegeven die kunnen worden geselecteerd.
@@ -2191,7 +2191,7 @@ Anders dan bij <ph name="URL_LIST_POLICY_NAME" /> kunnen regels in twee richting
 <translation id="5124368997194894978">Opstarten bij netstroom (wisselstroom) inschakelen</translation>
 <translation id="5131211790949066746">Hiermee worden de lijstbeleidsregels <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> en <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> voor installatie van extensies samengevoegd.
 
-      Als je deze instelling inschakelt, worden de waarden van het beleid voor het machineplatform, de machinecloud en het gebruikersplatform samengevoegd tot één lijst. Bovendien worden ze als een geheel gebruikt in plaats van alleen de waarden van de bron met de hoogste prioriteit te gebruiken.
+      Als je deze instelling inschakelt, worden de waarden van de beleidsregels voor het machineplatform, de machinecloud en het gebruikersplatform samengevoegd tot één lijst. Bovendien worden ze als één geheel gebruikt in plaats van alleen de waarden van de bron met de hoogste prioriteit te gebruiken.
 
       Als je deze instelling uitschakelt of niet instelt, worden alleen lijstitems uit de bron met de hoogste prioriteit meegenomen. Alle andere bronnen worden wel als conflicten weergegeven, maar worden genegeerd.</translation>
 <translation id="5141670636904227950">Het standaardtype van vergrootglas instellen dat op het inlogscherm is ingeschakeld</translation>
@@ -2667,7 +2667,7 @@ Anders dan bij <ph name="URL_LIST_POLICY_NAME" /> kunnen regels in twee richting
       Als het beleid is ingesteld op 'true', krijgt het cloudbeleid voorrang bij een conflict met het platformbeleid.
       Als het beleid is ingesteld op 'false' of niet is geconfigureerd, krijgt het platformbeleid voorrang bij een conflict met het cloudbeleid.
 
-      Dit beleid is alleen beschikbaar als verplicht machineplatformbeleid en is alleen van toepassing op cloudbeleid op machineniveau.
+      Dit beleid is uitsluitend beschikbaar als verplichte beleidsregel voor machineplatforms en is alleen van toepassing op cloudbeleid voor het machinebereik.
       </translation>
 <translation id="5905473632148429217">Online OCSP/CRL-controles inschakelen</translation>
 <translation id="5906199912611534122">Hiermee kan netwerkbeperking worden in- of uitgeschakeld.

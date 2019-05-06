@@ -7,7 +7,7 @@
 <translation id="1049743911850919806">无痕</translation>
 <translation id="10614374240317010">一律不保存</translation>
 <translation id="1067922213147265141">其他 Google 服务</translation>
-<translation id="1068672505746868501">一律不翻译源语言为<ph name="SOURCE_LANGUAGE" />的网页</translation>
+<translation id="1068672505746868501">一律不翻译<ph name="SOURCE_LANGUAGE" />网页</translation>
 <translation id="1080790410959514870">您要退出某个由 <ph name="DOMAIN_NAME" /> 管理的帐号。这会导致系统删除此设备上存储的 Chrome 数据，但这些数据仍会保留在您的 Google 帐号中。</translation>
 <translation id="1099080783256647258">开启流量节省程序后，Chrome 会使用 Google 服务器加快网页的加载速度并压缩加载的网页。在加载速度特别慢的网页上，流量节省程序会重写网页以仅加载必要内容。流量节省程序不会优化在无痕模式下加载的网页。</translation>
 <translation id="1100066534610197918">在群组内的新标签页中打开</translation>
@@ -96,6 +96,7 @@
 <translation id="1672586136351118594">不再显示</translation>
 <translation id="1692118695553449118">同步功能已开启</translation>
 <translation id="1709438864123551175">流量节省程序</translation>
+<translation id="1717218214683051432">动态传感器</translation>
 <translation id="1718835860248848330">过去一小时</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - 更新时间：<ph name="TIME_SINCE_UPDATE" /></translation>
 <translation id="1736419249208073774">探索</translation>
@@ -809,7 +810,7 @@
 <translation id="6850830437481525139">已关闭 <ph name="TAB_COUNT" /> 个标签页</translation>
 <translation id="6864459304226931083">下载图片</translation>
 <translation id="6865313869410766144">自动填充表单数据</translation>
-<translation id="6868088497967843822">登录后可获取您所有设备上保存的书签、历史记录、密码和其他设置</translation>
+<translation id="6868088497967843822">登录后可将您的书签、历史记录、密码和其他设置同步到所有设备上</translation>
 <translation id="688738109438487280">将现有数据添加到 <ph name="TO_ACCOUNT" />。</translation>
 <translation id="6891726759199484455">需解锁才能复制您的密码</translation>
 <translation id="6896758677409633944">复制</translation>

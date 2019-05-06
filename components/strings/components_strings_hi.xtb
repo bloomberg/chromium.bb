@@ -168,7 +168,7 @@
 <translation id="1763864636252898013">यह सर्वर यह नहीं प्रमाणित कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाणपत्र आपके डिवाइस के ऑपरेटिंग सिस्टम द्वारा विश्वसनीय नहीं है. ऐसा गलत कॉन्फ़िगरेशन या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows नेटवर्क निदान चलाकर देखें<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">कृपया अपना सिंक 'पासफ्रेज़' अपडेट करें.</translation>
-<translation id="1787142507584202372">आपके द्वारा खोले गए टैब, यहां दिखाई देंगे</translation>
+<translation id="1787142507584202372">  खोले गए टैब, यहां दिखाई देंगे</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1800473098294731951">बी9</translation>
 <translation id="1803264062614276815">कार्ड के मालिक का नाम</translation>
@@ -222,6 +222,7 @@
 <translation id="2111256659903765347">सुपर-ए</translation>
 <translation id="2113977810652731515">कार्ड</translation>
 <translation id="2114841414352855701">ध्यान नहीं दिया गया क्योंकि यह <ph name="POLICY_NAME" /> द्वारा ओवरराइड की गई थी.</translation>
+<translation id="2129079103035905234">हलचल पकड़ने वाले सेंसर</translation>
 <translation id="213826338245044447">मोबाइल बुकमार्क</translation>
 <translation id="214556005048008348">भुगतान न करें</translation>
 <translation id="2147827593068025794">बैकग्राउंड सिंक</translation>
@@ -610,20 +611,20 @@
 <translation id="4235360514405112390">मान्य</translation>
 <translation id="4250431568374086873">इस साइट से आपका कनेक्शन पूरी तरह से सुरक्षित नहीं है</translation>
 <translation id="4250680216510889253">नहीं</translation>
-<translation id="425582637250725228">हो सकता है कि आपके द्वारा किए गए बदलाव सहेजे ना जाएं.</translation>
+<translation id="425582637250725228">हो सकता है कि   किए गए बदलाव सहेजे ना जाएं.</translation>
 <translation id="4258748452823770588">खराब हस्ताक्षर</translation>
 <translation id="4261046003697461417">सुरक्षित दस्तावेज़ों को एनोटेट नहीं किया जा सकता</translation>
 <translation id="4265872034478892965">आपके व्यवस्थापक ने अनुमति दी है</translation>
 <translation id="4275830172053184480">अपना डिवाइस फिर से प्रारंभ करें</translation>
 <translation id="4277028893293644418">पासवर्ड रीसेट करें</translation>
-<translation id="4279811152705618813"><ph name="ENROLLMENT_DOMAIN" /> आपके <ph name="DEVICE_TYPE" /> को प्रबंधित करता है</translation>
+<translation id="4279811152705618813">आपके <ph name="DEVICE_TYPE" /> का प्रबंधन <ph name="ENROLLMENT_DOMAIN" /> करता है</translation>
 <translation id="4280429058323657511">, समाप्ति तारीख <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{यह कार्ड आपके Google खाते में सेव कर लिया गया है}one{ये कार्ड आपके Google खाते में सेव कर लिए गए हैं}other{ये कार्ड आपके Google खाते में सेव कर लिए गए हैं}}</translation>
 <translation id="42981349822642051">विस्तृत करें</translation>
 <translation id="4302965934281694568">शू3 (एन्वेलप)</translation>
 <translation id="4305817255990598646">बदलें</translation>
 <translation id="4312613361423056926">बी2</translation>
-<translation id="4312866146174492540">अवरुद्ध करें (डिफ़ॉल्ट)</translation>
+<translation id="4312866146174492540">ब्लॉक करें (डिफ़ॉल्ट)</translation>
 <translation id="4318566738941496689">आपके डिवाइस का नाम और नेटवर्क का पता</translation>
 <translation id="4325863107915753736">लेख ढूंढ़ने में विफल</translation>
 <translation id="4326324639298822553">अपने क्रेडिट कार्ड की समय सीमा खत्म होने की तारीख जांचें और फिर से कोशिश करें</translation>
@@ -937,7 +938,7 @@
 <translation id="6052284303005792909">•</translation>
 <translation id="6058977677006700226">क्या आप अपने कार्ड का इस्तेमाल सभी डिवाइस पर करना चाहते हैं?</translation>
 <translation id="6059925163896151826">USB डिवाइस</translation>
-<translation id="6080696365213338172">आपने व्यवस्थापक द्वारा प्रदत्त प्रमाणपत्र के उपयोग से सामग्री एक्सेस की है. आपके द्वारा <ph name="DOMAIN" /> को प्रदान किया गया डेटा आपके व्यवस्थापक द्वारा बीच में रोका जा सकता है.</translation>
+<translation id="6080696365213338172">आपने व्यवस्थापक द्वारा प्रदत्त प्रमाणपत्र के उपयोग से सामग्री एक्सेस की है.   <ph name="DOMAIN" /> को प्रदान किया गया डेटा आपके व्यवस्थापक द्वारा बीच में रोका जा सकता है.</translation>
 <translation id="6094273045989040137">एनोटेट करें</translation>
 <translation id="610911394827799129">आपके Google खाते में <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> पर दूसरी तरह के ब्राउज़िंग इतिहास हो सकते हैं</translation>
 <translation id="6132597952260690497">इंस्टॉल किए गए एक्सटेंशन और प्लग इन के बारे में जानकारी</translation>

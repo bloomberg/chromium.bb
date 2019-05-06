@@ -223,6 +223,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">البطاقة</translation>
 <translation id="2114841414352855701">تم تجاهلها نظرًا لتجاوزها بواسطة <ph name="POLICY_NAME" />.</translation>
+<translation id="2129079103035905234">مستشعرات الحركة</translation>
 <translation id="213826338245044447">الإشارات المرجعية على الجوّال</translation>
 <translation id="214556005048008348">إلغاء الدفع</translation>
 <translation id="2147827593068025794">المزامنة في الخلفية</translation>
@@ -1006,7 +1007,7 @@
 <translation id="6508722015517270189">‏إعادة تشغيل Chrome</translation>
 <translation id="6529602333819889595">إعادة الح&amp;ذف</translation>
 <translation id="6534179046333460208">اقتراحات الشبكة المادية</translation>
-<translation id="6554795675067793129">تتم إدارة حسابك من خلال <ph name="ENROLLMENT_DOMAIN" />.</translation>
+<translation id="6554795675067793129">يدير <ph name="ENROLLMENT_DOMAIN" /> حسابك.</translation>
 <translation id="6556866813142980365">إعادة</translation>
 <translation id="6563469144985748109">لم يوافق عليه مديرك حتى الآن</translation>
 <translation id="6569060085658103619">أنت تعرض صفحة إضافة</translation>

@@ -97,6 +97,7 @@
 <translation id="1692118695553449118">Sinkronisasi aktif</translation>
 <translation id="169515064810179024">Memblokir situs agar tidak mengakses sensor gerakan</translation>
 <translation id="1709438864123551175">Penghemat Kuota Internet</translation>
+<translation id="1717218214683051432">Sensor gerakan</translation>
 <translation id="1718835860248848330">1 jam terakhir</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - Diupdate <ph name="TIME_SINCE_UPDATE" /></translation>
 <translation id="1736419249208073774">Jelajahi</translation>
@@ -294,7 +295,7 @@
 <translation id="3137521801621304719">Tutup mode penyamaran</translation>
 <translation id="3143515551205905069">Batalkan sinkronisasi</translation>
 <translation id="3148434565183091099">Untuk dapat mengakses bookmark Anda di semua perangkat, login ke Chrome.</translation>
-<translation id="3157842584138209013">Lihat berapa banyak data yang dihemat dari tombol Opsi Lainnya</translation>
+<translation id="3157842584138209013">Lihat banyaknya kuota yang Anda hemat dari tombol Opsi Lainnya</translation>
 <translation id="3166827708714933426">Pintasan tab dan jendela</translation>
 <translation id="3181954750937456830">Safe Browsing (melindungi Anda dan perangkat dari situs berbahaya)</translation>
 <translation id="3190152372525844641">Aktifkan izin untuk Chrome di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
@@ -324,7 +325,7 @@
 <translation id="3315103659806849044">Anda sedang menyesuaikan setelan layanan Google dan Sinkronisasi. Untuk menyelesaikan pengaktifan sinkronisasi, tap tombol Konfirmasi di dekat bagian bawah layar. Kembali ke atas</translation>
 <translation id="3328801116991980348">Informasi situs</translation>
 <translation id="3333961966071413176">Semua kontak</translation>
-<translation id="3341058695485821946">Lihat berapa banyak data yang dihemat</translation>
+<translation id="3341058695485821946">Lihat banyaknya kuota yang Anda hemat</translation>
 <translation id="3350687908700087792">Tutup semua jendela penyamaran</translation>
 <translation id="3353615205017136254">Halaman ringan yang ditampilkan oleh Google. Tap tombol muat versi asli untuk memuat halaman asli.</translation>
 <translation id="3367813778245106622">Login lagi untuk memulai sinkronisasi</translation>
@@ -418,7 +419,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk memerinc
 <translation id="4084712963632273211">Dari <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />dikirim oleh Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> MB didownload</translation>
 <translation id="4095146165863963773">Hapus data aplikasi?</translation>
-<translation id="4099578267706723511">Bantu penyempurnaan Chrome dengan mengirimkan statistik penggunaan dan laporan kerusakan ke Google.</translation>
+<translation id="4099578267706723511">Bantu penyempurnaan Chrome dengan mengirimkan statistik penggunaan dan laporan error ke Google.</translation>
 <translation id="410351446219883937">Putar otomatis</translation>
 <translation id="4116038641877404294">Download halaman untuk melihat secara offline</translation>
 <translation id="4149994727733219643">Tampilan sederhana untuk halaman web</translation>
@@ -496,7 +497,7 @@ Akun Google Anda mungkin memiliki bentuk histori penjelajahan lain seperti penel
 <translation id="4698034686595694889">Lihat secara offline di <ph name="APP_NAME" /></translation>
 <translation id="4698413471314543145">Fungsi penting yang diperlukan untuk menjalankan Chrome tidak ada; bisa jadi karena pemasangan Chrome Anda tidak lengkap, atau tidak kompatibel dengan versi Android ini.</translation>
 <translation id="4699172675775169585">Gambar dan file dalam cache</translation>
-<translation id="4714588616299687897">Hemat data hingga 60%</translation>
+<translation id="4714588616299687897">Hemat kuota hingga 60%</translation>
 <translation id="4719927025381752090">Tawarkan penerjemahan</translation>
 <translation id="4720023427747327413">Buka di <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Bantu sempurnakan Chrome. <ph name="BEGIN_LINK" />Ikuti survei<ph name="END_LINK" /></translation>
@@ -648,7 +649,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="569536719314091526">Terjemahkan halaman ini ke bahasa apa pun dari tombol Opsi lainnya</translation>
 <translation id="572328651809341494">Tab baru-baru ini</translation>
 <translation id="5726692708398506830">Memperbesar semua yang ada di halaman</translation>
-<translation id="5734520971562437809">Hemat data hingga 60 persen dan muat web lebih cepat.</translation>
+<translation id="5734520971562437809">Hemat kuota hingga 60 persen dan muat web lebih cepat.</translation>
 <translation id="5748802427693696783">Beralih ke tab standar</translation>
 <translation id="5749068826913805084">Chrome memerlukan akses penyimpanan untuk mendownload file.</translation>
 <translation id="5763382633136178763">Tab penyamaran</translation>
@@ -703,7 +704,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="6140912465461743537">Negara/Wilayah</translation>
 <translation id="614940544461990577">Coba:</translation>
 <translation id="6154478581116148741">Aktifkan kunci layar di Setelan untuk mengekspor sandi dari perangkat ini</translation>
-<translation id="6159335304067198720">Penghematan data <ph name="PERCENT" /></translation>
+<translation id="6159335304067198720">Penghematan kuota <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Pelajari lebih lanjut</translation>
 <translation id="6177111841848151710">Diblokir untuk mesin telusur yang sedang digunakan</translation>
 <translation id="6177390657002841081">Mengaktifkan Penghemat Kuota Internet</translation>
@@ -1130,11 +1131,11 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="9188680907066685419">Keluar dari akun yang dikelola</translation>
 <translation id="9204836675896933765">1 file tersisa</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9215534869786664672">Hemat data hingga 60 persen dan muat web lebih cepat. Server Google akan mengoptimalkan halaman yang Anda buka.</translation>
+<translation id="9215534869786664672">Hemat kuota hingga 60 persen dan muat web lebih cepat. Server Google akan mengoptimalkan halaman yang Anda buka.</translation>
 <translation id="9219103736887031265">Gambar</translation>
 <translation id="926205370408745186">Hapus aktivitas Chrome Anda dari Kesehatan Digital</translation>
 <translation id="932327136139879170">Beranda</translation>
-<translation id="932599481871055447">Hemat data dan akses lebih cepat</translation>
+<translation id="932599481871055447">Hemat kuota dan percepat penelusuran</translation>
 <translation id="938850635132480979">Kesalahan: <ph name="ERROR_CODE" /></translation>
 <translation id="945522503751344254">Kirim masukan</translation>
 <translation id="945632385593298557">Akses mikrofon Anda</translation>

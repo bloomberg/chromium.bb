@@ -465,6 +465,7 @@
 <translation id="1711401317189798723">La còpia de seguretat de <ph name="CONTAINER_ID" /> està en curs</translation>
 <translation id="1712349894969001173">Obtén aquesta contrasenya al dispositiu iPhone</translation>
 <translation id="1712552549805331520"><ph name="URL" /> vol emmagatzemar dades a l'ordinador local de manera permanent</translation>
+<translation id="1717218214683051432">Sensors de moviment</translation>
 <translation id="1718835860248848330">Darrera hora</translation>
 <translation id="1719312230114180055">Nota: és possible que fer servir una empremta digital sigui menys segur que utilitzar una contrasenya segura o un PIN.</translation>
 <translation id="1720318856472900922">Autenticació de servidor WWW de TLS</translation>
@@ -2045,6 +2046,7 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="4146026355784316281">Obrir sempre amb el visualitzador del sistema</translation>
 <translation id="4146785383423576110">Restableix i neteja</translation>
 <translation id="4147911968024186208">Torna-ho a provar. Si tornes a veure aquest error, contacta amb el representant del servei d'assistència.</translation>
+<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">Pantalla</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 pestanya}other{# pestanyes}}</translation>
 <translation id="4154664944169082762">Empremtes</translation>
@@ -2186,7 +2188,7 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="44141919652824029">Vols permetre que <ph name="APP_NAME" /> obtingui la llista de dispositius USB vinculats?</translation>
 <translation id="4414232939543644979">F&amp;inestra d'incògnit nova</translation>
 <translation id="4415245286584082850">No s'ha trobat cap dispositiu. Obre un article del centre d'ajuda en una pestanya nova.</translation>
-<translation id="4415276339145661267">Gestiona el Compte de Google</translation>
+<translation id="4415276339145661267">Gestiona el teu Compte de Google</translation>
 <translation id="4415748029120993980">Corba el·líptica secp384r1 d'SECG (també coneguda com a NIST P-384)</translation>
 <translation id="4416582610654027550">Escriu un URL vàlid</translation>
 <translation id="4419409365248380979">Permet sempre que <ph name="HOST" /> pugui emmagatzemar galetes</translation>

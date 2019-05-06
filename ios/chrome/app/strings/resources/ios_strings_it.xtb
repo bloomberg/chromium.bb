@@ -128,6 +128,7 @@
 <translation id="2800683595868705743">Chiudi selettore di schede</translation>
 <translation id="2830972654601096923">Gestisci indirizzi…</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
+<translation id="2840687315230832938">Configurazione della sincronizzazione iniziale non terminata</translation>
 <translation id="2843803966603263712">Reimposta impostazioni traduzione</translation>
 <translation id="2858204748079866344">Per tutelare la tua privacy, Chrome non compilerà automaticamente questo campo con la tua password.</translation>
 <translation id="285960592395650245">Riprova a scaricare</translation>
@@ -411,6 +412,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="7280856130494094142">Inserisci la passphrase per avviare la sincronizzazione</translation>
 <translation id="7285236536143823449">ACCETTO</translation>
 <translation id="7291368939935408496">Preparazione delle password...</translation>
+<translation id="7293171162284876153">Per iniziare la sincronizzazione, attiva "Sincronizza i tuoi dati di Chrome".</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" />% scaricato</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="7348502496356775519">Aggiungi ai preferiti</translation>

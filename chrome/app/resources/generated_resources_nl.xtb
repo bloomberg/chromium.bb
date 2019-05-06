@@ -465,6 +465,7 @@
 <translation id="1711401317189798723">Er wordt momenteel een back-up gemaakt van <ph name="CONTAINER_ID" /></translation>
 <translation id="1712349894969001173">Dit wachtwoord gebruiken op je iPhone</translation>
 <translation id="1712552549805331520"><ph name="URL" /> vraagt toestemming om permanent gegevens op je lokale computer op te slaan</translation>
+<translation id="1717218214683051432">Bewegingssensoren</translation>
 <translation id="1718835860248848330">Afgelopen uur</translation>
 <translation id="1719312230114180055">Opmerking: Je vingerafdruk is mogelijk minder beveiligd dan een sterk wachtwoord of sterke pincode.</translation>
 <translation id="1720318856472900922">TLS WWW-serververificatie</translation>
@@ -851,7 +852,7 @@
 <translation id="2322318151094136999">Goedkeuring vragen wanneer een site toegang wil tot seriële poorten (aanbevolen)</translation>
 <translation id="2326931316514688470">App opnieuw &amp;laden</translation>
 <translation id="2327492829706409234">App inschakelen</translation>
-<translation id="2329597144923131178">Log in om je bladwijzers, geschiedenis, wachtwoorden en andere instellingen op al je apparaten te gebruiken.</translation>
+<translation id="2329597144923131178">Als je inlogt, heb je al je instellingen op al je apparaten: bladwijzers, geschiedenis, wachtwoorden en meer.</translation>
 <translation id="2332131598580221120">Bekijken in de Web Store</translation>
 <translation id="2332192922827071008">Voorkeuren openen</translation>
 <translation id="2332742915001411729">Terugzetten naar standaardinstelling</translation>
@@ -1122,7 +1123,7 @@
 <translation id="2731392572903530958">G&amp;esloten venster opnieuw openen</translation>
 <translation id="2731700343119398978">Even geduld...</translation>
 <translation id="2731710757838467317">Je gebruiker met beperkte rechten wordt gemaakt. Dit kan even duren.</translation>
-<translation id="2731971182069536520">De volgende keer dat je je apparaat opnieuw start, voert je beheerder een update uit waarmee je lokale gegevens worden verwijderd.</translation>
+<translation id="2731971182069536520">De volgende keer dat je je apparaat opnieuw opstart, voert je beheerder een update uit waarmee je lokale gegevens worden verwijderd.</translation>
 <translation id="2734760316755174687">Sites onder <ph name="SITE_GROUP_NAME" /> worden ook gereset.</translation>
 <translation id="2735438478659026460">Automatisch klikken wanneer de muisaanwijzer stopt</translation>
 <translation id="2735712963799620190">Schema</translation>
@@ -2051,6 +2052,7 @@
 <translation id="4146026355784316281">Altijd openen met systeemviewer</translation>
 <translation id="4146785383423576110">Resetten en opruimen</translation>
 <translation id="4147911968024186208">Probeer het opnieuw. Als deze fout opnieuw wordt weergegeven, neem je contact op met een medewerker van de ondersteuning.</translation>
+<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">Weergave</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 tabblad}other{# tabbladen}}</translation>
 <translation id="4154664944169082762">Vingerafdrukken</translation>
@@ -2252,6 +2254,7 @@
 <translation id="4524832533047962394">De geleverde inschrijvingsmodus wordt niet ondersteund door deze versie van het besturingssysteem. Zorg ervoor dat je de nieuwste versie gebruikt.</translation>
 <translation id="4525382759303819021">De nieuwste updates en aanbevelingen voor Play Store-apps ontvangen</translation>
 <translation id="4530494379350999373">Herkomst</translation>
+<translation id="4532646538815530781">Deze site gebruikt bewegingssensoren.</translation>
 <translation id="4533846798469727141">Zeg nu 'Hey Google'</translation>
 <translation id="4533985347672295764">CPU-tijd</translation>
 <translation id="4534661889221639075">Probeer het opnieuw.</translation>
@@ -2486,6 +2489,7 @@
 <translation id="4892229439761351791">Site kan Bluetooth gebruiken</translation>
 <translation id="4893336867552636863">Hiermee worden je browsegegevens op dit apparaat definitief verwijderd.</translation>
 <translation id="4893522937062257019">Op het vergrendelingsscherm</translation>
+<translation id="489454699928748701">Toestaan dat sites bewegingssensoren gebruiken</translation>
 <translation id="4898011734382862273">Het certificaat '<ph name="CERTIFICATE_NAME" />' vertegenwoordigt een certificeringsinstantie.</translation>
 <translation id="489985760463306091">Start je computer opnieuw op om de verwijdering van schadelijke software te voltooien</translation>
 <translation id="4900392736118574277">Je startpagina is gewijzigd in <ph name="URL" />.</translation>
@@ -2949,6 +2953,7 @@
 <translation id="5620568081365989559">DevTools vereist volledige toegang tot <ph name="FOLDER_PATH" />. Zorg ervoor dat je geen gevoelige informatie vrijgeeft.</translation>
 <translation id="5620612546311710611">gebruiksstatistieken</translation>
 <translation id="5620655347161642930">Wachtwoorden exporteren...</translation>
+<translation id="5623282979409330487">Deze site heeft toegang tot je bewegingssensoren.</translation>
 <translation id="5623842676595125836">Logboek</translation>
 <translation id="5624120631404540903">Wachtwoorden beheren</translation>
 <translation id="5626134646977739690">Naam:</translation>
@@ -3442,6 +3447,7 @@
 <translation id="6390994422085833176">De synchronisatie- en personalisatiefuncties controleren na de installatie</translation>
 <translation id="6393156038355142111">Sterk wachtwoord voorstellen</translation>
 <translation id="6395423953133416962"><ph name="BEGIN_LINK1" />Systeeminformatie<ph name="END_LINK1" /> en <ph name="BEGIN_LINK2" />statistische gegevens<ph name="END_LINK2" /> verzenden</translation>
+<translation id="6396988158856674517">Niet toestaan dat sites bewegingssensoren gebruiken</translation>
 <translation id="6397094776139756010">Synchronisatie- en personalisatieopties</translation>
 <translation id="6398715114293939307">Google Play Store verwijderen</translation>
 <translation id="6398765197997659313">Volledig scherm sluiten</translation>
@@ -3536,6 +3542,7 @@
 <translation id="6531282281159901044">Gevaarlijk bestand behouden</translation>
 <translation id="6532101170117367231">Opslaan in Google Drive</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Opmerking:<ph name="END_BOLD" /> schakel dit alleen in als je weet wat je doet of als je bent gevraagd dit te doen, omdat het verzamelen van gegevens kan leiden tot verminderde prestaties.</translation>
+<translation id="6541638731489116978">Deze site heeft geen toegang tot je bewegingssensoren.</translation>
 <translation id="654233263479157500">Een webservice gebruiken voor het oplossen van navigatiefouten</translation>
 <translation id="6544215763872433504">De webbrowser van Google, voor jou</translation>
 <translation id="6545665334409411530">Herhalingssnelheid</translation>
@@ -4276,6 +4283,7 @@
 <translation id="7704628569466676326">Koppel je beveiligingssleutel met dit apparaat zodat je de sleutel kunt gebruiken om in te loggen op je account</translation>
 <translation id="7705276765467986571">Kan bladwijzermodel niet laden.</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7707108266051544351">Deze site mag je bewegingssensoren niet gebruiken.</translation>
 <translation id="7707922173985738739">Mobiele data gebruiken</translation>
 <translation id="7709152031285164251">Mislukt - <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;Casten...</translation>

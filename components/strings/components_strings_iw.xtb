@@ -610,7 +610,7 @@
 <translation id="4265872034478892965">אושרה על-ידי מנהל המערכת</translation>
 <translation id="4275830172053184480">הפעלת המכשיר מחדש</translation>
 <translation id="4277028893293644418">איפוס סיסמה</translation>
-<translation id="4279811152705618813">ה<ph name="DEVICE_TYPE" /> מנוהל על-ידי <ph name="ENROLLMENT_DOMAIN" /></translation>
+<translation id="4279811152705618813">ה-<ph name="DEVICE_TYPE" /> מנוהל על-ידי <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4280429058323657511">, בתוקף עד <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{‏הכרטיס הזה נשמר בחשבון Google שלך}two{‏הכרטיסים האלה נשמרו בחשבון Google שלך}many{‏הכרטיסים האלה נשמרו בחשבון Google שלך}other{‏הכרטיסים האלה נשמרו בחשבון Google שלך}}</translation>
 <translation id="42981349822642051">הרחבה</translation>

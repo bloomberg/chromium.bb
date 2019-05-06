@@ -223,6 +223,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Karta</translation>
 <translation id="2114841414352855701">Ignorowana, ponieważ jest zastąpiona przez <ph name="POLICY_NAME" />.</translation>
+<translation id="2129079103035905234">Czujniki ruchu</translation>
 <translation id="213826338245044447">Zakładki na komórce</translation>
 <translation id="214556005048008348">Anuluj płatność</translation>
 <translation id="2147827593068025794">Synchronizacja w tle</translation>
@@ -581,7 +582,7 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Użyj globalnego ustawienia domyślnego (Wykrywaj)</translation>
 <translation id="4159784952369912983">Purpurowy</translation>
-<translation id="4165986682804962316">Ustawienia witryny</translation>
+<translation id="4165986682804962316">Ustawienia witryn</translation>
 <translation id="4171400957073367226">Nieprawidłowy podpis weryfikujący</translation>
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Jeszcze <ph name="ITEM_COUNT" /> element}few{Jeszcze <ph name="ITEM_COUNT" /> elementy}many{Jeszcze <ph name="ITEM_COUNT" /> elementów}other{Jeszcze <ph name="ITEM_COUNT" /> elementu}}</translation>
@@ -1091,7 +1092,7 @@
 <translation id="7062635574500127092">Morski</translation>
 <translation id="7064851114919012435">Dane kontaktowe</translation>
 <translation id="7079718277001814089">Ta strona zawiera złośliwe oprogramowanie</translation>
-<translation id="7081564429925484109">Ostrzeżenie: Ta zasada nie została scalona na podstawie zasady PolicyListMultipleSourceMergeList, ponieważ nie jest listą.</translation>
+<translation id="7081564429925484109">Ostrzeżenie: ta zasada nie została scalona na podstawie zasady PolicyListMultipleSourceMergeList, ponieważ nie jest listą.</translation>
 <translation id="7087282848513945231">Hrabstwo</translation>
 <translation id="7090678807593890770">Wyszukaj w Google: <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Ukryj</translation>

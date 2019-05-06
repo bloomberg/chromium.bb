@@ -465,6 +465,7 @@
 <translation id="1711401317189798723">Se face backup pentru <ph name="CONTAINER_ID" /></translation>
 <translation id="1712349894969001173">Obține parola pe iPhone</translation>
 <translation id="1712552549805331520"><ph name="URL" /> dorește să stocheze permanent date pe computer</translation>
+<translation id="1717218214683051432">Senzori de mișcare</translation>
 <translation id="1718835860248848330">Ultima oră</translation>
 <translation id="1719312230114180055">Notă: este posibil ca amprenta să fie mai puțin sigură decât o parolă sau un cod PIN puternic.</translation>
 <translation id="1720318856472900922">Autentificarea serverului TLS WWW</translation>
@@ -2018,7 +2019,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="409579654357498729">Adăugați la Cloud Print</translation>
 <translation id="4096508467498758490">Dezactivați extensiile care rulează în modul pentru dezvoltatori</translation>
 <translation id="4096824249111507322">Se pregătește modulul securizat. Așteaptă (poate dura câteva minute)...</translation>
-<translation id="4097560579602855702">Caută pe Google</translation>
+<translation id="4097560579602855702">Căutați pe Google</translation>
 <translation id="4099060993766194518">Restabilești motorul de căutare prestabilit?</translation>
 <translation id="4099874310852108874">A apărut o eroare de rețea.</translation>
 <translation id="4100733287846229632">Spațiul de pe dispozitiv este foarte redus</translation>
@@ -2051,6 +2052,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4146026355784316281">Deschide întotdeauna cu Utilitarul de vizualizare al sistemului</translation>
 <translation id="4146785383423576110">Resetează și curăță</translation>
 <translation id="4147911968024186208">Reîncearcă. Dacă vezi această eroare din nou, contactează reprezentantul de asistență.</translation>
+<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">Ecran</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{O filă}few{# file}other{# de file}}</translation>
 <translation id="4154664944169082762">Amprente digitale</translation>
@@ -2252,6 +2254,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4524832533047962394">Modul de înregistrare furnizat nu este acceptat de această versiune a sistemului de operare. Asigură-te că rulezi cea mai recentă versiune.</translation>
 <translation id="4525382759303819021">Obține cele mai recente actualizări și recomandări pentru aplicațiile din Magazinul Play</translation>
 <translation id="4530494379350999373">Origine</translation>
+<translation id="4532646538815530781">Site-ul folosește senzorii de mișcare.</translation>
 <translation id="4533846798469727141">Acum rostește „Hei Google”</translation>
 <translation id="4533985347672295764">Timp CPU</translation>
 <translation id="4534661889221639075">Încearcă din nou.</translation>
@@ -2486,6 +2489,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4892229439761351791">Site-ul poate folosi Bluetooth</translation>
 <translation id="4893336867552636863">Astfel, vor fi șterse definitiv datele de navigare de pe acest dispozitiv.</translation>
 <translation id="4893522937062257019">Pe ecranul de blocare</translation>
+<translation id="489454699928748701">Permite site-urilor să folosească senzorii de mișcare</translation>
 <translation id="4898011734382862273">Certificatul „<ph name="CERTIFICATE_NAME" />” reprezintă o Autoritate de certificare</translation>
 <translation id="489985760463306091">Pentru a finaliza eliminarea software-ului dăunător, repornește computerul</translation>
 <translation id="4900392736118574277">Pagina de pornire a fost înlocuită cu <ph name="URL" />.</translation>
@@ -2949,6 +2953,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5620568081365989559">DevTools solicită acces complet la <ph name="FOLDER_PATH" />. Asigură-te că nu expui informații sensibile.</translation>
 <translation id="5620612546311710611">statistici de utilizare</translation>
 <translation id="5620655347161642930">Exportă parolele...</translation>
+<translation id="5623282979409330487">Acest site accesează senzorii de mișcare.</translation>
 <translation id="5623842676595125836">Jurnal</translation>
 <translation id="5624120631404540903">Gestionați parolele</translation>
 <translation id="5626134646977739690">Nume:</translation>
@@ -3442,6 +3447,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6390994422085833176">Examinează funcțiile de sincronizare și personalizare după configurare</translation>
 <translation id="6393156038355142111">Sugerează o parolă puternică</translation>
 <translation id="6395423953133416962">Trimiteți <ph name="BEGIN_LINK2" />valori<ph name="END_LINK2" /> și <ph name="BEGIN_LINK1" />informații de sistem<ph name="END_LINK1" /></translation>
+<translation id="6396988158856674517">Împiedică site-urile să folosească senzori de mișcare</translation>
 <translation id="6397094776139756010">Opțiuni de sincronizare și personalizare</translation>
 <translation id="6398715114293939307">Elimină Magazinul Google Play</translation>
 <translation id="6398765197997659313">Ieși din ecranul complet</translation>
@@ -3536,6 +3542,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6531282281159901044">Păstrează fișierul periculos</translation>
 <translation id="6532101170117367231">Salvați în Google Drive</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Notă:<ph name="END_BOLD" /> activați culegerea datelor numai dacă înțelegeți consecințele acțiunii sau dacă vi s-a solicitat să o activați, deoarece aceasta ar putea reduce performanța.</translation>
+<translation id="6541638731489116978">Site-ul nu are permisiunea de a accesa senzorii de mișcare.</translation>
 <translation id="654233263479157500">Folosește un serviciu web pentru a soluționa erorile de navigare</translation>
 <translation id="6544215763872433504">Browserul web de la Google, pentru tine</translation>
 <translation id="6545665334409411530">Frecvența de repetare</translation>
@@ -4276,6 +4283,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7704628569466676326">Asociază-ți cheia de securitate cu acest dispozitiv ca să o poți folosi pentru a te conecta la cont</translation>
 <translation id="7705276765467986571">Nu se poate încărca modelul de marcaj.</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7707108266051544351">Site-ul nu are permisiunea de a folosi senzorii de mișcare.</translation>
 <translation id="7707922173985738739">va folosi datele mobile;</translation>
 <translation id="7709152031285164251">Nu a reușit – <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;Proiectează…</translation>

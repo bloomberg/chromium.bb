@@ -165,7 +165,7 @@
 <translation id="5386244825306882791">‏הגדרה זו גם קובעת איזה דף מוצג כשאתה מפעיל את Chrome או מבצע חיפוש  מסרגל הכתובות.</translation>
 <translation id="5430073640787465221">‏קובץ ההעדפות שלך פגום או לא חוקי. Google Chrome לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="5483595757826856374">{0,plural, =0{‏Chrome יופעל מחדש עכשיו}=1{‏Chrome יופעל מחדש בעוד שנייה}two{‏Chrome יופעל מחדש בעוד שתי שניות}many{‏Chrome יופעל מחדש בעוד # שניות}other{‏Chrome יופעל מחדש בעוד # שניות}}</translation>
-<translation id="5543953544073077331">‏חלונות אחרים של Chrome פועלים. כדי לעדכן צריך לסגור אותם.</translation>
+<translation id="5543953544073077331">‏עותקים אחרים של Chrome פועלים. כדי לעדכן צריך לסגור אותם.</translation>
 <translation id="556024056938947818">‏Google Chrome מנסה להציג סיסמאות.</translation>
 <translation id="5566025111015594046">‏Google Chrome‏ (mDNS-In)</translation>
 <translation id="565744775970812598">‏<ph name="FILE_NAME" /> עלול להיות מסוכן, ולכן Chrome חסם אותו.</translation>
@@ -226,7 +226,7 @@
 <translation id="7473136999113284234">‏Chrome מתעדכן באופן אוטומטי, כך שתמיד נמצאת ברשותך הגרסה העדכנית ביותר.</translation>
 <translation id="7486227612705979895">‏Chrome ייגש ל-Drive שלך כדי להציג הצעות בשורת כתובת האתר</translation>
 <translation id="748945194546522577">‏Chrome‏ חסם את הקובץ הזה כי הוא מסוכן. ההגנה המתקדמת שומרת עליך.</translation>
-<translation id="7531671357096394523">‏יש לסגור את כל החלונות של Chrome.</translation>
+<translation id="7531671357096394523">‏יש לסגור את כל העותקים של Chrome.</translation>
 <translation id="7535429826459677826">‏גרסת הפיתוח של Google Chrome</translation>
 <translation id="7552219221109926349">‏הצג את מערכת ההפעלה של Chrome בשפה זו</translation>
 <translation id="7561940363513215021">{0,plural, =1{‏Chrome יופעל מחדש בעוד דקה}two{‏Chrome יופעל מחדש בעוד שתי דקות}many{‏Chrome יופעל מחדש בעוד # דקות}other{‏Chrome יופעל מחדש בעוד # דקות}}</translation>

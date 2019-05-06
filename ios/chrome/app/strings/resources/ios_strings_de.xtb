@@ -128,6 +128,7 @@
 <translation id="2800683595868705743">Tab-Wechsler beenden</translation>
 <translation id="2830972654601096923">Adressen verwalten…</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
+<translation id="2840687315230832938">Erste Einrichtung der Synchronisierung nicht abgeschlossen</translation>
 <translation id="2843803966603263712">Übersetzungseinstellungen zurücksetzen</translation>
 <translation id="2858204748079866344">Um Ihre Daten zu schützen, füllt Chrome dieses Feld nicht automatisch mit Ihrem Passwort aus.</translation>
 <translation id="285960592395650245">Download wiederholen</translation>
@@ -411,6 +412,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="7280856130494094142">Geben Sie Ihre Passphrase ein, um die Synchronisierung zu starten</translation>
 <translation id="7285236536143823449">JA, ICH BIN DABEI</translation>
 <translation id="7291368939935408496">Passwörter werden zum Exportieren vorbereitet…</translation>
+<translation id="7293171162284876153">Aktivieren Sie "Chrome-Daten synchronisieren", um die Synchronisierung zu starten.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> % heruntergeladen</translation>
 <translation id="7346909386216857016">Ok</translation>
 <translation id="7348502496356775519">Lesezeichen</translation>

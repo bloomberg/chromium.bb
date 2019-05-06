@@ -465,6 +465,7 @@
 <translation id="1711401317189798723">Backup attualmente in corso per <ph name="CONTAINER_ID" /></translation>
 <translation id="1712349894969001173">Ricevi la password sull'iPhone</translation>
 <translation id="1712552549805331520"><ph name="URL" /> vuole memorizzare in modo definitivo i dati sul computer locale</translation>
+<translation id="1717218214683051432">Sensori di movimento</translation>
 <translation id="1718835860248848330">Ultima ora</translation>
 <translation id="1719312230114180055">Nota: la tua impronta digitale potrebbe essere meno sicura di una password o di un PIN efficaci.</translation>
 <translation id="1720318856472900922">Autenticazione TLS server WWW</translation>
@@ -898,7 +899,7 @@
 <translation id="2392369802118427583">Attiva</translation>
 <translation id="2394566832561516196">Le impostazioni verranno cancellate al prossimo aggiornamento della pagina.</translation>
 <translation id="2395616325548404795">Il dispositivo <ph name="DEVICE_TYPE" /> è stato registrato correttamente per la gestione aziendale, ma l'invio delle relative informazioni su asset e posizione non è riuscito. Inserisci manualmente queste informazioni nella Console di amministrazione del dispositivo.</translation>
-<translation id="2396783860772170191">Inserisci il pin di 4 cifre (0000-9999)</translation>
+<translation id="2396783860772170191">Inserisci il PIN di 4 cifre (0000-9999)</translation>
 <translation id="2408955596600435184">Inserisci il codice PIN</translation>
 <translation id="241082044617551207">Plug-in sconosciuto</translation>
 <translation id="2413749388954403953">Modifica dell'interfaccia utente dei Preferiti</translation>
@@ -2047,6 +2048,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4146026355784316281">Apri sempre con visualizzatore di sistema</translation>
 <translation id="4146785383423576110">Reimpostazione e pulizia</translation>
 <translation id="4147911968024186208">Riprova. Se ricevi ancora questo messaggio di errore, contatta il tuo rappresentante dell'assistenza.</translation>
+<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">Display</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 scheda}other{# schede}}</translation>
 <translation id="4154664944169082762">Impronte digitali</translation>
@@ -4015,7 +4017,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="7289225569524511578">Apri l'app wallpaper</translation>
 <translation id="7290242001003353852">Questo servizio di accesso, ospitato da <ph name="SAML_DOMAIN" />, sta accedendo alla videocamera.</translation>
 <translation id="7290594223351252791">Conferma registrazione</translation>
-<translation id="7295614427631867477">Tieni presente che Android, Play e le app associate sono gestiti dalle loro norme di raccolta e utilizzo dei dati.</translation>
+<translation id="7295614427631867477">Tieni presente che Android, Play e le app associate sono regolati dalle loro norme di raccolta e utilizzo dei dati.</translation>
 <translation id="729583233778673644">Consenti la crittografia AES e RC4. Se scegli di utilizzare quest'opzione vai incontro a un rischio maggiore, in quanto le crittografie RC4 non sono sicure.</translation>
 <translation id="7296774163727375165">Termini di <ph name="DOMAIN" /></translation>
 <translation id="7297443947353982503">Nome utente/password errati o autenticazione EAP non riuscita</translation>

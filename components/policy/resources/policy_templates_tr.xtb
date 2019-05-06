@@ -1412,7 +1412,7 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
       Bu politika "DeveloperToolsAllowed" (1 değeri) olarak ayarlanırsa, Geliştirici Araçları ve JavaScript konsoluna erişilebilir ve bunlar kurumsal politikaya göre yüklenen uzantılar bağlamı dahil tüm bağlamlarda kullanılabilir.
       Bu politika "DeveloperToolsDisallowed" (2 değeri) olarak ayarlanırsa Geliştirici Araçları'na erişilemez ve web sitesi öğeleri bundan sonra incelenemez. Geliştirici Araçları veya JavaScript Konsolu'nu açmaya yönelik klavye kısayolları ve menü ya da içerik menüsü girişleri devre dışı bırakılır.</translation>
 <translation id="3547954654003013442">Proxy ayarları</translation>
-<translation id="3550875587920006460">Güncellemeleri kontrol etmek için özel bir programın belirlenmesini sağlar. Bu, tüm kullanıcılar ve cihazdaki tüm arayüzler için geçerlidir. Bu belirlendikten sonra cihaz, güncellemeleri programa göre kontrol edecektir. Programlanmış diğer güncelleme kontrollerini iptal etmek için politikanın ortadan kaldırılması gereklidir.</translation>
+<translation id="3550875587920006460">Güncellemeleri kontrol etmek için özel bir programın belirlenmesini sağlar. Bu, tüm kullanıcılar ve cihazdaki tüm arayüzler için geçerlidir. Bu belirlendikten sonra cihaz, güncellemeleri programa göre kontrol edecektir. Programlanmış diğer güncelleme kontrollerini iptal etmek için politikanın kaldırılması gerekir.</translation>
 <translation id="355118380775352753">Alternatif tarayıcıda açılacak web siteleri</translation>
 <translation id="3554984410014457319">Google Asistan'ın sesli etkinleştirme ifadesini dinlemesine izin ver</translation>
 <translation id="356579196325389849">Kullanıcılar Chrome OS sürümü kanalını yapılandırabilir</translation>
@@ -2662,7 +2662,7 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
       Bu politika true (doğru) değerine ayarlanırsa, platform politikasıyla çelişmesi halinde bulut politikası öncelikli olur.
       Bu politika false (yanlış) değerine ayarlanırsa veya yapılandırılmazsa, bulut politikasıyla çelişmesi halinde platform politikası öncelikli olur.
 
-      Bu politika yalnızca zorunlu makine platformu politikası olarak mevcuttur ve yalnızca makine kapsamı bulut politikaları için geçerlidir.
+      Bu politika yalnızca zorunlu makine platformu politikası olarak kullanılabilir ve yalnızca makine kapsamı bulut politikalarını etkiler.
       </translation>
 <translation id="5905473632148429217">Online OCSP/CRL denetimlerini etkinleştir</translation>
 <translation id="5906199912611534122">Ağ daraltma işlemini etkinleştirmeye veya devre dışı bırakmaya izin verir.
@@ -2689,7 +2689,7 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 
       Bu ayarı devre dışı bırakırsanız veya bir değer ayarlamazsanız, Google Arama'da Güvenli Arama uygulanmaz.</translation>
 <translation id="5946082169633555022">Beta kanalı</translation>
-<translation id="5946329690214660966">Güncellemeleri kontrol etmek için özel bir program belirleyin</translation>
+<translation id="5946329690214660966">Güncellemeleri kontrol etmek için özel bir program belirle</translation>
 <translation id="5950205771952201658">Kısmi çökme bağlamında, çevrimiçi iptal denetimleri güvenlik açısından etkili yararlar sağlamaz. Bunlar <ph name="PRODUCT_NAME" /> 19 ve sonraki sürümlerde varsayılan olarak devre dışı bırakılmıştır. Bu politika doğru değerine ayarlandığında, önceki çalışma biçimi geri yüklenir ve çevrimiçi OCSP/CRL denetimleri yapılır.
 
       Politika ayarlanmazsa veya yanlış seçeneğine ayarlanırsa <ph name="PRODUCT_NAME" />, çevrimiçi iptal denetimlerini <ph name="PRODUCT_NAME" /> 19 ve sonraki sürümlerinde yapmaz.</translation>

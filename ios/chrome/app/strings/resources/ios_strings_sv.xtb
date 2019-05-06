@@ -293,7 +293,7 @@ Du måste även aktivera Handoff i avsnittet Allmänt i inställningarna och sam
 <translation id="5659593005791499971">E-post</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Version <ph name="PRODUCT_VERSION" /></translation>
-<translation id="5711039611392265845">Fler inställningar som rör sekretess, säkerhet och datainsamling finns under <ph name="BEGIN_LINK" />Synkronisering och Googles tjänster<ph name="END_LINK" />.</translation>
+<translation id="5711039611392265845">Fler inställningar som rör sekretess, säkerhet och datainsamling finns under <ph name="BEGIN_LINK" />Synk och Googles tjänster<ph name="END_LINK" />.</translation>
 <translation id="5728700505257787410">Det gick inte att logga in på ditt konto.</translation>
 <translation id="5737974891429562743">Inloggningsuppgifterna för kontot är inte aktuella. Starta synkroniseringen genom att uppdatera.</translation>
 <translation id="5738887413654608789">Detta gör det möjligt att upptäcka relevanta webbsidor utifrån din omgivning.</translation>
@@ -412,7 +412,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="7280856130494094142">Ange lösenfrasen för att starta synkroniseringen</translation>
 <translation id="7285236536143823449">JA</translation>
 <translation id="7291368939935408496">Lösenorden förbereds …</translation>
-<translation id="7293171162284876153">Aktivera Synkronisera data i Chrome för att börja synkronisera.</translation>
+<translation id="7293171162284876153">Starta synkroniseringen genom att aktivera Synkronisera data i Chrome.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> procent har laddats ned</translation>
 <translation id="7346909386216857016">Ok, jag förstår</translation>
 <translation id="7348502496356775519">Bokmärke</translation>
@@ -481,7 +481,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="850600235656508448">Öppna i inkognitoläge</translation>
 <translation id="8517375800490286174">Licenser för öppen källkod</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" />-flikarna <ph name="FIRST_VISIBLE_TAB" /> till <ph name="LAST_VISIBLE_TAB" /> av <ph name="NUMBER_OF_OPEN_TABS" /></translation>
-<translation id="8529767659511976195">Ny</translation>
+<translation id="8529767659511976195">Nytt</translation>
 <translation id="8532105204136943229">Sista giltighetsår</translation>
 <translation id="8534481786647257214">Inlägg på Google+ klart.</translation>
 <translation id="8548878600947630424">Hitta på sidan ...</translation>

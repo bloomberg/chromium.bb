@@ -465,6 +465,7 @@
 <translation id="1711401317189798723">目前正在執行 <ph name="CONTAINER_ID" /> 備份</translation>
 <translation id="1712349894969001173">在 iPhone 上取得這個密碼</translation>
 <translation id="1712552549805331520"><ph name="URL" /> 要求在你的本機電腦上永久儲存資料</translation>
+<translation id="1717218214683051432">動作感應器</translation>
 <translation id="1718835860248848330">過去 1 小時</translation>
 <translation id="1719312230114180055">注意：使用高強度的密碼或 PIN 碼會比感應指紋來得安全。</translation>
 <translation id="1720318856472900922">TLS WWW 伺服器驗證</translation>
@@ -801,7 +802,7 @@
 <translation id="2241053333139545397">讀取及變更你在多個網站上的資料</translation>
 <translation id="2241634353105152135">只有這一次</translation>
 <translation id="2242687258748107519">檔案資訊</translation>
-<translation id="2246549592927364792">要從 Google 取得圖片說明嗎？</translation>
+<translation id="2246549592927364792">要取得 Google 提供的圖片說明嗎？</translation>
 <translation id="224940702122312781">這個網頁會耗用許多數據流量。</translation>
 <translation id="2249605167705922988">例如：1-5、8、11-13</translation>
 <translation id="2251218783371366160">使用系統檢視器開啟</translation>
@@ -2049,6 +2050,7 @@
 <translation id="4146026355784316281">一律使用系統檢視器開啟</translation>
 <translation id="4146785383423576110">重設與清理</translation>
 <translation id="4147911968024186208">請再試一次。如果這個錯誤再次發生，請與你的產品支援代表聯絡。</translation>
+<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">顯示設定</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 個分頁}other{# 個分頁}}</translation>
 <translation id="4154664944169082762">指紋</translation>
@@ -2250,6 +2252,7 @@
 <translation id="4524832533047962394">這個版本的作業系統不支援目前提供的註冊模式。請確認你使用的是最新版本。</translation>
 <translation id="4525382759303819021">取得 Play 商店應用程式的最新更新和推薦項目</translation>
 <translation id="4530494379350999373">來源</translation>
+<translation id="4532646538815530781">這個網站正在使用動作感應器。</translation>
 <translation id="4533846798469727141">現在說出「Hey Google」</translation>
 <translation id="4533985347672295764">CPU 時間</translation>
 <translation id="4534661889221639075">請再試一次。</translation>
@@ -2484,6 +2487,7 @@
 <translation id="4892229439761351791">網站可以使用藍牙</translation>
 <translation id="4893336867552636863">這會將您的瀏覽資料從這個裝置上永久刪除。</translation>
 <translation id="4893522937062257019">螢幕鎖定時</translation>
+<translation id="489454699928748701">允許網站使用動作感應器</translation>
 <translation id="4898011734382862273">憑證「<ph name="CERTIFICATE_NAME" />」代表憑證授權單位</translation>
 <translation id="489985760463306091">如要完成有害軟體清除程序，請重新開機。</translation>
 <translation id="4900392736118574277">你的起始網頁已變更為 <ph name="URL" />。</translation>
@@ -2947,6 +2951,7 @@
 <translation id="5620568081365989559">DevTools 要求取得 <ph name="FOLDER_PATH" /> 的完整權限。請務必小心，不要透露任何機密資訊。</translation>
 <translation id="5620612546311710611">使用統計資料</translation>
 <translation id="5620655347161642930">匯出密碼...</translation>
+<translation id="5623282979409330487">這個網站正在存取你的動作感應器。</translation>
 <translation id="5623842676595125836">記錄</translation>
 <translation id="5624120631404540903">管理密碼</translation>
 <translation id="5626134646977739690">名稱：</translation>
@@ -3440,6 +3445,7 @@
 <translation id="6390994422085833176">在設定完成後檢閱同步處理和個人化功能</translation>
 <translation id="6393156038355142111">建議高強度密碼</translation>
 <translation id="6395423953133416962">傳送<ph name="BEGIN_LINK1" />系統資訊<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />指標<ph name="END_LINK2" /></translation>
+<translation id="6396988158856674517">禁止網站使用動作感應器</translation>
 <translation id="6397094776139756010">同步處理與個人化選項</translation>
 <translation id="6398715114293939307">移除 Google Play 商店</translation>
 <translation id="6398765197997659313">退出全螢幕模式</translation>
@@ -3534,6 +3540,7 @@
 <translation id="6531282281159901044">保留不安全的檔案</translation>
 <translation id="6532101170117367231">儲存至 Google 雲端硬碟</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />注意：<ph name="END_BOLD" />除非你瞭解這項功能的用途或是收到相關指示，否則請不要啟用這項功能，因為收集資料可能會導致系統效能降低。</translation>
+<translation id="6541638731489116978">這個網站無法存取你的動作感應器。</translation>
 <translation id="654233263479157500">使用網路服務來協助解決瀏覽錯誤</translation>
 <translation id="6544215763872433504">Google 提供的網路瀏覽器，滿足你的需求</translation>
 <translation id="6545665334409411530">重複頻率</translation>
@@ -4273,6 +4280,7 @@
 <translation id="7704628569466676326">將你的安全金鑰與這個裝置配對，即可透過金鑰登入你的帳戶</translation>
 <translation id="7705276765467986571">無法載入書籤模型。</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7707108266051544351">這個網站無法使用動作感應器。</translation>
 <translation id="7707922173985738739">使用行動數據</translation>
 <translation id="7709152031285164251">失敗 - <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">投放(&amp;C)...</translation>

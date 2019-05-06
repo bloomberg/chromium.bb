@@ -1635,7 +1635,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 
           Cada item da lista da política é uma string que contém um código de extensão e, opcionalmente, um URL de "atualização" separados por ponto e vírgula (<ph name="SEMICOLON" />). O código da extensão é a string de 32 letras encontrada, por exemplo, em <ph name="CHROME_EXTENSIONS_LINK" /> no modo de desenvolvedor. O URL de "atualização", se especificado, precisa apontar para um documento XML de manifesto de atualização, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC1" />. Por padrão, é usado o URL de "atualização" da Chrome Web Store (atualmente, "https://clients2.google.com/service/update2/crx"). Observe que o URL de "atualização" definido nesta política só é usado na instalação inicial. As atualizações subsequentes da extensão empregam o URL de atualização indicado no manifesto da extensão. Observe também que especificar o URL de "atualização" era uma etapa obrigatória nas versões do <ph name="PRODUCT_NAME" /> até a 67.
 
-          Por exemplo, <ph name="EXTENSION_POLICY_EXAMPLE" /> instala a extensão com código <ph name="EXTENSION_ID_SAMPLE" /> por meio do URL de "atualização" padrão da Chrome Web Store. Para ver mais informações sobre extensões de hospedagem, consulte: <ph name="LINK_TO_EXTENSION_DOC2" />.
+          Por exemplo, <ph name="EXTENSION_POLICY_EXAMPLE" /> instala a extensão com código <ph name="EXTENSION_ID_SAMPLE" /> por meio do URL de "atualização" padrão da Chrome Web Store. Para ver mais informações sobre a hospedagem de extensões, consulte: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
           Se esta política não for definida, nenhum app ou extensão será instalado automaticamente, e o usuário poderá desinstalar apps ou extensões no <ph name="PRODUCT_NAME" />.
 
@@ -2576,7 +2576,7 @@ Se esta política não for definida, qualquer plug-in que corresponder aos padr�
       Se a política for definida como verdadeira, a política da nuvem terá precedência caso haja conflito com a da plataforma.
       Se a política for definida como falsa ou não for configurada, a política da plataforma terá precedência caso haja conflito com a política da nuvem.
 
-      Esta política está disponível apenas como uma política de plataforma de máquina obrigatória e afeta as políticas da nuvem no escopo da máquina.
+      Esta política está disponível apenas como uma política de plataforma de máquina obrigatória e afeta apenas as políticas da nuvem no escopo da máquina.
       </translation>
 <translation id="5905473632148429217">Ativar verificações OCSP/CRL on-line</translation>
 <translation id="5906199912611534122">Permite ativar ou desativar a limitação da rede.

@@ -95,7 +95,9 @@
 <translation id="1671236975893690980">Nedlasting venter</translation>
 <translation id="1672586136351118594">Ikke vis igjen</translation>
 <translation id="1692118695553449118">Synkronisering er slått på.</translation>
+<translation id="169515064810179024">Blokkér nettsteder fra å få tilgang til bevegelsessensorer</translation>
 <translation id="1709438864123551175">Datasparing</translation>
+<translation id="1717218214683051432">Bevegelsessensorer</translation>
 <translation id="1718835860248848330">Siste time</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – oppdatert <ph name="TIME_SINCE_UPDATE" /></translation>
 <translation id="1736419249208073774">Utforsk</translation>
@@ -248,6 +250,7 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekunder igjen</translation>
 <translation id="2779651927720337254">mislyktes</translation>
 <translation id="2781151931089541271">1 sekund igjen</translation>
+<translation id="2801022321632964776">Oppdater for å få språket ditt i den nyeste versjonen av Chrome</translation>
 <translation id="2803478378562657435">Viser lagrede passord og passordalternativer</translation>
 <translation id="2810645512293415242">Siden er forenklet for å spare data og laste den inn raskere.</translation>
 <translation id="281504910091592009">Se og administrer lagrede passord i <ph name="BEGIN_LINK" />Google-kontoen<ph name="END_LINK" /> din</translation>
@@ -310,6 +313,7 @@
 <translation id="3259831549858767975">Gjør alt på siden mindre</translation>
 <translation id="3269093882174072735">Last inn bildet</translation>
 <translation id="3269956123044984603">For å få fanene dine fra de andre enhetene du bruker, slå på «Synkroniser data automatisk» i kontoinnstillingene for Android.</translation>
+<translation id="3277252321222022663">Gi nettsteder tilgang til sensorer (anbefalt)</translation>
 <translation id="3282568296779691940">Logg på Chrome</translation>
 <translation id="3288003805934695103">Last inn siden på nytt</translation>
 <translation id="32895400574683172">Varsler er tillatt</translation>
@@ -550,6 +554,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Tillat</translation>
 <translation id="5040262127954254034">Personvern</translation>
+<translation id="5048398596102334565">Gi nettsteder tilgang til bevegelsessensorer (anbefalt)</translation>
 <translation id="5063480226653192405">Bruk</translation>
 <translation id="5073204694187207510">Skjul fullskjermrutenett</translation>
 <translation id="5082793167783849073">Sammenlign sider raskt ved å lage en gruppe. For å begynne, trykk og hold på en link.</translation>
@@ -743,6 +748,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6406506848690869874">Synkroniser</translation>
 <translation id="641643625718530986">Skriv ut</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB er lastet ned</translation>
+<translation id="6427112570124116297">Oversett nettet</translation>
 <translation id="6433501201775827830">Velg søkemotor</translation>
 <translation id="6437478888915024427">Sideinformasjon</translation>
 <translation id="6441734959916820584">Navnet er for langt</translation>
@@ -858,6 +864,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7189598951263744875">Del</translation>
 <translation id="7191430249889272776">En fane ble åpnet i bakgrunnen.</translation>
 <translation id="723171743924126238">Velg bilder</translation>
+<translation id="7233236755231902816">For å se nettet på ditt eget språk, skaff den nyeste versjonen av Chrome</translation>
 <translation id="7243308994586599757">Du finner alternativer ved bunnen av skjermen</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> er valgt</translation>
 <translation id="7253272406652746122">Legg til en Google-konto på Kontoer-siden i Innstillinger-appen på enheten din.</translation>
@@ -924,7 +931,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7649070708921625228">Hjelp</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7665369617277396874">Legg til konto</translation>
-<translation id="766587987807204883">Her vises artikler, som du kan lese selv om du ikke har nett</translation>
+<translation id="766587987807204883">Her vises artikler, som du kan lese selv om du er uten nett</translation>
 <translation id="7682724950699840886">Prøv dette: Sørg for at det er nok plass på enheten, og prøv å eksportere på nytt.</translation>
 <translation id="7698359219371678927">Opprett en e-post i <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Autofullfør søk og nettadresser</translation>
@@ -1013,6 +1020,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8310344678080805313">Standardfaner</translation>
 <translation id="8313455859591948645">Endre oppstartssiden</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> og flere nettsteder</translation>
+<translation id="8327155640814342956">For å få den beste surfeopplevelsen, åpne for å oppdatere Chrome</translation>
 <translation id="8339163506404995330">Sider på <ph name="LANGUAGE" /> oversettes ikke</translation>
 <translation id="8349013245300336738">Sortér etter mengden data som er brukt</translation>
 <translation id="8372893542064058268">Tillat bakgrunnssynkronisering for et bestemt nettsted.</translation>
@@ -1072,6 +1080,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8788968922598763114">Åpne den sist lukkede fanen på nytt</translation>
 <translation id="8801436777607969138">Blokkér JavaScript for et bestemt nettsted.</translation>
 <translation id="8812260976093120287">På noen nettsteder kan du betale med de støttede betalingsappene ovenfor på enheten din.</translation>
+<translation id="8816026460808729765">Blokkér nettsteder fra å få tilgang til sensorer</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> åpnes i Chrome. Ved å fortsette godtar du <ph name="BEGIN_LINK1" />vilkårene for bruk<ph name="END_LINK1" /> av Chrome og <ph name="BEGIN_LINK2" />merknaden om personvern<ph name="END_LINK2" /> samt <ph name="BEGIN_LINK3" />merknaden om personvern for Google-kontoer som administreres med Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Bokmerker</translation>
 <translation id="8833831881926404480">Et nettsted deler skjermen din</translation>

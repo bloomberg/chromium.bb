@@ -462,6 +462,7 @@
 <translation id="1711401317189798723">Прављење резервне копије је у току за <ph name="CONTAINER_ID" /></translation>
 <translation id="1712349894969001173">Користите ову лозинку на iPhone-у</translation>
 <translation id="1712552549805331520"><ph name="URL" /> жели трајно да складишти податке на локалном рачунару</translation>
+<translation id="1717218214683051432">Сензори покрета</translation>
 <translation id="1718835860248848330">Последњих сат времена</translation>
 <translation id="1719312230114180055">Напомена: дигитални отисак може да буде мање безбедан од јаке лозинке или PIN-а.</translation>
 <translation id="1720318856472900922">TLS WWW потврда идентитета сервера</translation>
@@ -2047,6 +2048,7 @@
 <translation id="4146026355784316281">Увек отварај помоћу системског приказивача</translation>
 <translation id="4146785383423576110">Ресетовање и чишћење</translation>
 <translation id="4147911968024186208">Пробајте поново. Ако се ова грешка поново прикаже, контактирајте представника подршке.</translation>
+<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">Екран</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 картица}one{# картица}few{# картице}other{# картица}}</translation>
 <translation id="4154664944169082762">Отисци</translation>
@@ -2248,6 +2250,7 @@
 <translation id="4524832533047962394">Ова верзија оперативног система не подржава наведени режим регистровања. Проверите да ли користите најновију верзију.</translation>
 <translation id="4525382759303819021">Преузимај најновија ажурирања и препоруке за апликације из Play продавнице</translation>
 <translation id="4530494379350999373">Извор</translation>
+<translation id="4532646538815530781">Овај сајт користи сензоре за покрет.</translation>
 <translation id="4533846798469727141">Сада реците „Хеј Google“</translation>
 <translation id="4533985347672295764">CPU време</translation>
 <translation id="4534661889221639075">Пробајте поново.</translation>
@@ -2482,6 +2485,7 @@
 <translation id="4892229439761351791">Сајт може да користи Bluetooth</translation>
 <translation id="4893336867552636863">То ће трајно избрисати податке прегледања са овог уређаја.</translation>
 <translation id="4893522937062257019">На закључаном екрану</translation>
+<translation id="489454699928748701">Дозволи сајтовима да користе сензоре за покрет</translation>
 <translation id="4898011734382862273">Сертификат „<ph name="CERTIFICATE_NAME" />“ представља ауторитет за издавање сертификата</translation>
 <translation id="489985760463306091">Да бисте довршили уклањање штетног софтвера, поново покрените рачунар</translation>
 <translation id="4900392736118574277">Полазна страница је промењена у <ph name="URL" />.</translation>
@@ -2946,6 +2950,7 @@
 Водите рачуна да не откријете никакве осетљиве информације.</translation>
 <translation id="5620612546311710611">статистика коришћења</translation>
 <translation id="5620655347161642930">Извези лозинке…</translation>
+<translation id="5623282979409330487">Овај сајт приступа сензорима за покрет.</translation>
 <translation id="5623842676595125836">Евиденција</translation>
 <translation id="5624120631404540903">Управљај лозинкама</translation>
 <translation id="5626134646977739690">Име:</translation>
@@ -3440,6 +3445,7 @@
 <translation id="6390994422085833176">Прегледајте функције синхронизације и персонализације после подешавања</translation>
 <translation id="6393156038355142111">Предложи јаку лозинку</translation>
 <translation id="6395423953133416962">Шаљи <ph name="BEGIN_LINK1" />информације<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />показатеље<ph name="END_LINK2" /> о систему</translation>
+<translation id="6396988158856674517">Не дозволи да сајтови користе сензоре за покрет</translation>
 <translation id="6397094776139756010">Опције синхронизације и персонализације</translation>
 <translation id="6398715114293939307">Уклоните Google Play продавницу</translation>
 <translation id="6398765197997659313">Изађи из режима целог екрана</translation>
@@ -3534,6 +3540,7 @@
 <translation id="6531282281159901044">Задржи опасну датотеку</translation>
 <translation id="6532101170117367231">Чување на Google диску</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Напомена:<ph name="END_BOLD" /> Омогућите ово само ако знате шта радите или ако је то неко затражио од вас јер прикупљање података може да погорша учинак.</translation>
+<translation id="6541638731489116978">Овом сајту је забрањено да приступа сензорима за покрет.</translation>
 <translation id="654233263479157500">Користи веб услугу за помоћ у решавању грешака при навигацији</translation>
 <translation id="6544215763872433504">Google-ов веб-прегледач за вас</translation>
 <translation id="6545665334409411530">Брзина понављања</translation>
@@ -4274,6 +4281,7 @@
 <translation id="7704628569466676326">Упарите безбедносни кључ са овим уређајем да бисте га користили за пријављивање на налог</translation>
 <translation id="7705276765467986571">Није могуће учитати модел обележивача.</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7707108266051544351">Овом сајту је забрањено да користи сензоре за покрет.</translation>
 <translation id="7707922173985738739">Користи мобилне податке</translation>
 <translation id="7709152031285164251">Није успело – <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;Пребаци...</translation>

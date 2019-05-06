@@ -465,6 +465,7 @@
 <translation id="1711401317189798723">Backup de <ph name="CONTAINER_ID" /> em andamento</translation>
 <translation id="1712349894969001173">Receber essa senha no seu iPhone</translation>
 <translation id="1712552549805331520"><ph name="URL" /> quer armazenar dados no computador local</translation>
+<translation id="1717218214683051432">Sensores de movimento</translation>
 <translation id="1718835860248848330">Última hora</translation>
 <translation id="1719312230114180055">Observação: sua impressão digital pode ser menos segura que uma senha forte ou um PIN.</translation>
 <translation id="1720318856472900922">Autenticação do servidor TLS WWW</translation>
@@ -1708,7 +1709,7 @@
 <translation id="3664511988987167893">Ícone de extensão</translation>
 <translation id="3665589677786828986">O Google Chrome detectou que algumas das suas configurações foram corrompidas por outro programa e as redefiniu para os padrões originais.</translation>
 <translation id="3668570675727296296">Configurações de idioma</translation>
-<translation id="366867565525278777">Falha na instalação devido à falta de espaço de armazenamento. É necessário pelo menos <ph name="INSTALL_SIZE" /> de espaço livre. Para liberar espaço, exclua arquivos do armazenamento do dispositivo.</translation>
+<translation id="366867565525278777">Falha na instalação devido à falta de espaço de armazenamento. É necessário ter pelo menos <ph name="INSTALL_SIZE" /> de espaço livre. Para liberar espaço, exclua arquivos do armazenamento do dispositivo.</translation>
 <translation id="3668801437375206837">Para diagnosticar melhor os problemas de Bluetooth, os Googlers podem incluir outros registros de Bluetooth aos relatórios de feedback deles. Quando essa opção estiver marcada, seu relatório incluirá registros btsnoop e HCI da sua sessão atual, depois de terem sido corrigidos para remover o máximo de PII possível. O acesso a esses registros será restrito aos gerentes do grupo de produtos do Chrome OS no Listnr. Os registros serão excluídos após 90 dias.</translation>
 <translation id="3668823961463113931">Manipuladores</translation>
 <translation id="3670113805793654926">Dispositivos de qualquer fornecedor</translation>
@@ -2051,6 +2052,7 @@
 <translation id="4146026355784316281">Sempre abrir com visualizador do sistema</translation>
 <translation id="4146785383423576110">Redefinir e limpar</translation>
 <translation id="4147911968024186208">Tente novamente. Se o erro se repetir, entre em contato com seu representante de suporte.</translation>
+<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">Exibição</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 guia}one{# guias}other{# guias}}</translation>
 <translation id="4154664944169082762">Assinaturas digitais</translation>
@@ -2252,6 +2254,7 @@
 <translation id="4524832533047962394">O modo de inscrição fornecido não é compatível com esta versão do sistema operacional. Verifique se você está executando a versão mais recente.</translation>
 <translation id="4525382759303819021">Receber as atualizações e recomendações mais recentes sobre os apps da Play Store</translation>
 <translation id="4530494379350999373">Origem</translation>
+<translation id="4532646538815530781">Este site está usando os sensores de movimento.</translation>
 <translation id="4533846798469727141">Agora diga "Ei Google"</translation>
 <translation id="4533985347672295764">Tempo de CPU</translation>
 <translation id="4534661889221639075">Tente novamente.</translation>
@@ -2486,6 +2489,7 @@
 <translation id="4892229439761351791">O site pode usar o Bluetooth</translation>
 <translation id="4893336867552636863">Isso excluirá permanentemente os dados de navegação deste dispositivo.</translation>
 <translation id="4893522937062257019">Na tela de bloqueio</translation>
+<translation id="489454699928748701">Permitir que sites usem os sensores de movimento</translation>
 <translation id="4898011734382862273">O certificado "<ph name="CERTIFICATE_NAME" />" representa uma Autoridade de certificação</translation>
 <translation id="489985760463306091">Para terminar de remover o software nocivo, reinicie o computador</translation>
 <translation id="4900392736118574277">Sua página de inicialização foi alterada para <ph name="URL" />.</translation>
@@ -2950,6 +2954,7 @@
 Não exponha nenhuma informação confidencial.</translation>
 <translation id="5620612546311710611">estatísticas de uso</translation>
 <translation id="5620655347161642930">Exportar senhas...</translation>
+<translation id="5623282979409330487">Este site está acessando seus sensores de movimento.</translation>
 <translation id="5623842676595125836">Registro</translation>
 <translation id="5624120631404540903">Gerenciar senhas</translation>
 <translation id="5626134646977739690">Nome:</translation>
@@ -3444,6 +3449,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6390994422085833176">Revise os recursos de sincronização e personalização após a configuração</translation>
 <translation id="6393156038355142111">Sugerir senha forte</translation>
 <translation id="6395423953133416962">Enviar <ph name="BEGIN_LINK1" />informações<ph name="END_LINK1" /> e <ph name="BEGIN_LINK2" />métricas do sistema<ph name="END_LINK2" /></translation>
+<translation id="6396988158856674517">Impedir que sites usem sensores de movimento</translation>
 <translation id="6397094776139756010">Opções de sincronização e personalização</translation>
 <translation id="6398715114293939307">Remover Google Play Store</translation>
 <translation id="6398765197997659313">Sair do modo tela cheia</translation>
@@ -3538,6 +3544,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6531282281159901044">Manter arquivo perigoso</translation>
 <translation id="6532101170117367231">Salvar no Google Drive</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Observação:<ph name="END_BOLD" /> Ative somente se você souber o que está fazendo ou tiver sido solicitado(a) a fazê-lo, porque a coleta de dados pode reduzir o desempenho.</translation>
+<translation id="6541638731489116978">Este site foi impedido de acessar seus sensores de movimento.</translation>
 <translation id="654233263479157500">Utilizar um serviço da web para ajudar a solucionar erros de navegação</translation>
 <translation id="6544215763872433504">O navegador da Web do Google para você</translation>
 <translation id="6545665334409411530">Taxa de repetição</translation>
@@ -4278,6 +4285,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7704628569466676326">Pareie sua chave de segurança com este dispositivo para fazer login na sua conta</translation>
 <translation id="7705276765467986571">Não foi possível carregar o modelo do favorito.</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7707108266051544351">Este site foi impedido de usar os sensores de movimento.</translation>
 <translation id="7707922173985738739">Usar dados móveis</translation>
 <translation id="7709152031285164251">Falha - <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;Transmitir…</translation>
@@ -5254,7 +5262,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="930268624053534560">Timestamps detalhados</translation>
 <translation id="932327136139879170">Início</translation>
 <translation id="932508678520956232">Não foi possível iniciar a impressão.</translation>
-<translation id="93343527085570547">Acesse a <ph name="BEGIN_LINK1" />página de Ajuda Jurídica<ph name="END_LINK1" /> para solicitar alterações de conteúdo por motivos legais. Algumas informações da conta e do sistema podem ser enviadas ao Google. Usaremos as informações fornecidas para resolver problemas técnicos e melhorar nossos serviços, de acordo com nossa <ph name="BEGIN_LINK2" />Política de Privacidade<ph name="END_LINK2" /> e nossos <ph name="BEGIN_LINK3" />Termos de Serviço<ph name="END_LINK3" />.</translation>
+<translation id="93343527085570547">Acesse a <ph name="BEGIN_LINK1" />página de Ajuda Jurídica<ph name="END_LINK1" /> para solicitar alterações de conteúdo por motivos legais. Algumas informações podem ser enviadas ao Google, e elas serão usadas para resolver problemas técnicos e melhorar nossos serviços, de acordo com nossa <ph name="BEGIN_LINK2" />Política de Privacidade<ph name="END_LINK2" /> e nossos <ph name="BEGIN_LINK3" />Termos de Serviço<ph name="END_LINK3" />.</translation>
 <translation id="93393615658292258">Somente senha</translation>
 <translation id="934503638756687833">Itens que não estão listados aqui também serão removidos, se necessário. Saiba mais sobre a &lt;a href="<ph name="URL" />"&gt;proteção contra softwares indesejados&lt;/a&gt; no artigo sobre privacidade do Chrome.</translation>
 <translation id="935490618240037774">Seus favoritos, histórico, senhas e outras configurações serão sincronizados com sua Conta do Google para que seja possível usá-los em todos os seus dispositivos.</translation>

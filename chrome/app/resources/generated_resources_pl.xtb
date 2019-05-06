@@ -465,6 +465,7 @@
 <translation id="1711401317189798723">Trwa zapisywanie kopii zapasowej kontenera <ph name="CONTAINER_ID" /></translation>
 <translation id="1712349894969001173">Pobierz to hasło na iPhone'a</translation>
 <translation id="1712552549805331520"><ph name="URL" /> chce na stałe przechowywać dane na Twoim komputerze lokalnym</translation>
+<translation id="1717218214683051432">Czujniki ruchu</translation>
 <translation id="1718835860248848330">Ostatnia godzina</translation>
 <translation id="1719312230114180055">Uwaga: odcisk palca może być mniej bezpieczny niż silne hasło czy kod PIN.</translation>
 <translation id="1720318856472900922">Uwierzytelnianie serwera WWW TLS</translation>
@@ -1383,7 +1384,7 @@
     <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="3149510190863420837">Aplikacje Chrome</translation>
 <translation id="3150927491400159470">Wymuś ponowne załadowanie</translation>
-<translation id="315116470104423982">Komórkowa transmisja danych</translation>
+<translation id="315116470104423982">Mobilna transmisja danych</translation>
 <translation id="3151539355209957474">Czas rozpoczęcia</translation>
 <translation id="3151562827395986343">Usuń pliki cookie, dane z historii i pamięci podręcznej oraz inne dane</translation>
 <translation id="3151786313568798007">Orientacja</translation>
@@ -2051,6 +2052,7 @@
 <translation id="4146026355784316281">Zawsze otwieraj w przeglądarce systemowej</translation>
 <translation id="4146785383423576110">Resetowanie komputera i czyszczenie danych</translation>
 <translation id="4147911968024186208">Spróbuj jeszcze raz. Jeśli ten błąd pojawi się ponownie, skontaktuj się z przedstawicielem pomocy.</translation>
+<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">Wyświetlacz</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 karta}few{# karty}many{# kart}other{# karty}}</translation>
 <translation id="4154664944169082762">Odciski cyfrowe</translation>
@@ -2252,6 +2254,7 @@
 <translation id="4524832533047962394">Ta wersja systemu operacyjnego nie obsługuje użytego trybu rejestrowania. Upewnij się, że używasz najnowszej wersji systemu.</translation>
 <translation id="4525382759303819021">Chcę otrzymywać najnowsze wiadomości i rekomendacje aplikacji ze Sklepu Play</translation>
 <translation id="4530494379350999373">Pochodzenie</translation>
+<translation id="4532646538815530781">Ta strona używa czujników ruchu.</translation>
 <translation id="4533846798469727141">Teraz powiedz „Hej Google”</translation>
 <translation id="4533985347672295764">Czas pracy procesora</translation>
 <translation id="4534661889221639075">Spróbuj ponownie.</translation>
@@ -2486,6 +2489,7 @@
 <translation id="4892229439761351791">Strona może używać Bluetootha</translation>
 <translation id="4893336867552636863">Spowoduje to trwałe usunięcie danych przeglądania z tego urządzenia.</translation>
 <translation id="4893522937062257019">Na ekranie blokady</translation>
+<translation id="489454699928748701">Zezwalaj stronom na używanie czujników ruchu</translation>
 <translation id="4898011734382862273">Certyfikat „<ph name="CERTIFICATE_NAME" />” reprezentuje urząd certyfikacji</translation>
 <translation id="489985760463306091">Aby ukończyć usuwanie szkodliwego oprogramowania, uruchom ponownie komputer</translation>
 <translation id="4900392736118574277">Strona startowa została zmieniona na <ph name="URL" />.</translation>
@@ -2949,6 +2953,7 @@
 <translation id="5620568081365989559">DevTools wymaga pełnego dostępu do <ph name="FOLDER_PATH" />. Upewnij się, że nie ujawniasz żadnych poufnych informacji.</translation>
 <translation id="5620612546311710611">statystyki użytkowania</translation>
 <translation id="5620655347161642930">Eksportuj hasła…</translation>
+<translation id="5623282979409330487">Ta strona ma dostęp do czujników ruchu.</translation>
 <translation id="5623842676595125836">Dziennik</translation>
 <translation id="5624120631404540903">Zarządzaj hasłami</translation>
 <translation id="5626134646977739690">Nazwa:</translation>
@@ -3442,6 +3447,7 @@
 <translation id="6390994422085833176">Przejrzyj ustawienia funkcji synchronizacji i personalizacji po ich skonfigurowaniu</translation>
 <translation id="6393156038355142111">Zaproponuj silne hasło</translation>
 <translation id="6395423953133416962">Przesyłaj <ph name="BEGIN_LINK1" />informacje o systemie<ph name="END_LINK1" /> i <ph name="BEGIN_LINK2" />dane<ph name="END_LINK2" /></translation>
+<translation id="6396988158856674517">Blokuj stronom używanie czujników ruchu</translation>
 <translation id="6397094776139756010">Opcje synchronizacji i personalizacji</translation>
 <translation id="6398715114293939307">Usuń Sklep Google Play</translation>
 <translation id="6398765197997659313">Zamknij pełny ekran</translation>
@@ -3536,6 +3542,7 @@
 <translation id="6531282281159901044">Zachowaj niebezpieczny plik</translation>
 <translation id="6532101170117367231">Zapisz na Dysku Google</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Uwaga:<ph name="END_BOLD" /> włącz tę opcję, tylko jeśli dokładnie wiesz, co robisz, lub ktoś Cię o to poprosił – zbieranie danych może obniżyć wydajność.</translation>
+<translation id="6541638731489116978">Tej stronie zablokowano dostęp do czujników ruchu.</translation>
 <translation id="654233263479157500">Używaj usługi internetowej, aby pomóc w rozwiązywaniu błędów nawigacji</translation>
 <translation id="6544215763872433504">Przeglądarka Google dla Ciebie</translation>
 <translation id="6545665334409411530">Szybkość powtarzania</translation>
@@ -4276,6 +4283,7 @@
 <translation id="7704628569466676326">Sparuj klucz bezpieczeństwa z tym urządzeniem, by używać go do logowania się na swoje konto</translation>
 <translation id="7705276765467986571">Nie można wczytać modelu zakładek.</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7707108266051544351">Tej stronie zablokowano używanie czujników ruchu.</translation>
 <translation id="7707922173985738739">Użycie mobilnej transmisji danych</translation>
 <translation id="7709152031285164251">Niepowodzenie – <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;Przesyłaj…</translation>
@@ -4949,7 +4957,7 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8732212173949624846">Odczyt i zmiana historii przeglądania na wszystkich zalogowanych urządzeniach</translation>
 <translation id="8732844209475700754">Więcej ustawień związanych z prywatnością, bezpieczeństwem i zbieraniem danych</translation>
 <translation id="8734073480934656039">Jeśli włączysz to ustawienie, możliwe będzie automatyczne uruchamianie aplikacji kiosku po włączeniu komputera.</translation>
-<translation id="8734671092194994316">Spowoduje to zarejestrowanie otwarcia strony <ph name="WEBSITE" /> na Twoim kluczu bezpieczeństwa.</translation>
+<translation id="8734671092194994316">Spowoduje to zarejestrowanie na Twoim kluczu bezpieczeństwa otwarcia strony <ph name="WEBSITE" />.</translation>
 <translation id="873545264931343897">Aby aktywować wtyczkę <ph name="PLUGIN_NAME" /> po jej zaktualizowaniu, ponownie załaduj stronę</translation>
 <translation id="8736288397686080465">Ta witryna została zaktualizowana w tle.</translation>
 <translation id="8737685506611670901">Otwieranie linków protokołu <ph name="PROTOCOL" /> zamiast modułu <ph name="REPLACED_HANDLER_TITLE" /></translation>

@@ -25,7 +25,7 @@
 <translation id="1265739287306757398">Tìm hiểu cách thức</translation>
 <translation id="1272079795634619415">Dừng</translation>
 <translation id="1323735185997015385">Xóa</translation>
-<translation id="132683371494960526">Nhấn đúp để thay đổi thư mục gốc.</translation>
+<translation id="132683371494960526">Nhấn đúp để thay đổi thư mục mẹ.</translation>
 <translation id="1340643665687018190">Đóng Menu</translation>
 <translation id="1358214951266274152">Truy cập liên kết bạn đã sao chép</translation>
 <translation id="1360432990279830238">Đăng xuất và tắt tính năng đồng bộ hóa?</translation>
@@ -171,7 +171,7 @@
 <translation id="3474649192738347024">Đã điền biểu mẫu.</translation>
 <translation id="3478058380795961209">Tháng hết hạn</translation>
 <translation id="3482959374254649722">Đang đồng bộ hóa tab của bạn...</translation>
-<translation id="3493531032208478708"><ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /> về nội dung được đề xuất</translation>
+<translation id="3493531032208478708"><ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /> về nội dung đề xuất</translation>
 <translation id="3494788280727468875">Xác nhận xóa dữ liệu duyệt web</translation>
 <translation id="3519193562722059437">Mở tab để duyệt web.</translation>
 <translation id="3527085408025491307">Thư mục</translation>
@@ -376,7 +376,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="6730682669179532099">Không thể xuất mật khẩu</translation>
 <translation id="6780034285637185932">Mã zip</translation>
 <translation id="6785453220513215166">Đang gửi báo cáo lỗi...</translation>
-<translation id="679325081238418596">Nhận dấu trang, lịch sử, mật khẩu và các cài đặt khác trên tất cả thiết bị của bạn</translation>
+<translation id="679325081238418596">Sử dụng dấu trang, lịch sử hoạt động, mật khẩu và các tùy chọn cài đặt khác trên tất cả thiết bị của bạn</translation>
 <translation id="6797885426782475225">Tìm kiếm bằng giọng nói</translation>
 <translation id="6807889908376551050">Hiển thị tất cả...</translation>
 <translation id="681368974849482173">Đã tạo mục</translation>
@@ -418,14 +418,14 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="7348502496356775519">Đánh dấu trang</translation>
 <translation id="7383797227493018512">Danh sách đọc</translation>
 <translation id="7400418766976504921">URL</translation>
-<translation id="7425346204213733349">Các thay đổi đối với dấu trang, lịch sử, mật khẩu và cài đặt khác sẽ không còn được đồng bộ hóa với Tài khoản Google của bạn. Tuy nhiên, dữ liệu hiện có của bạn sẽ vẫn được lưu trữ trong Tài khoản Google.</translation>
+<translation id="7425346204213733349">Các thay đổi đối với dấu trang, lịch sử, mật khẩu và các tùy chọn cài đặt khác sẽ không đồng bộ hóa với Tài khoản Google của bạn nữa. Tuy nhiên, dữ liệu hiện có của bạn sẽ vẫn được lưu trữ trong tài khoản Google của bạn.</translation>
 <translation id="744343212394640790">Không phải là <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Tiểu bang/quận</translation>
 <translation id="7456847797759667638">Mở Vị trí...</translation>
 <translation id="7464701184726199289">Thao tác này sẽ xóa dữ liệu được đồng bộ hóa khỏi tất cả thiết bị. Cài đặt trang web đã lưu sẽ không bị xóa và có thể phản ánh thói quen duyệt web của bạn. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Tên công ty</translation>
 <translation id="7481312909269577407">Chuyển tiếp</translation>
-<translation id="750493650310597496">Đã chọn 0 dấu trang</translation>
+<translation id="750493650310597496">Đã chọn 0</translation>
 <translation id="7514365320538308">Tải xuống</translation>
 <translation id="7537586195939242955">Rất tiếc, không thể cài đặt Pass (Vé xem) của bạn vào Passbook (Ví điện tử) lúc này.</translation>
 <translation id="7554791636758816595">Tab mới</translation>

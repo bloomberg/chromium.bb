@@ -254,7 +254,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="287383510823843610">Tumši oranža</translation>
 <translation id="2879867157561757640">Velciet ar trim pirkstiem uz leju</translation>
 <translation id="288178314850623291">Izmantojiet pārejas komandas, lai izlaistu konkrētu veidu elementus. Lai pārietu uz priekšu pa virsrakstiem, vienlaikus nospiediet meklēšanas taustiņu un taustiņu H; lai pārietu atpakaļ — meklēšanas taustiņu, pārslēgšanas taustiņu un taustiņu H.</translation>
-<translation id="2885764457467528513">{COUNT,plural, =1{minūte}zero{minūtes}one{minūtes}other{minūtes}}</translation>
+<translation id="2885764457467528513">{COUNT,plural, =1{minūte}zero{minūtes}one{minūte}other{minūtes}}</translation>
 <translation id="2894654529758326923">Informācija</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{atverošā figūriekava}zero{# atverošo figūriekavu}one{# atverošā figūriekava}other{# atverošās figūriekavas}}</translation>
 <translation id="2911433807131383493">Atvērt ChromeVox mācības</translation>
@@ -442,7 +442,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="4148180433151187540">{COUNT,plural, =1{aizverošā figūriekava}zero{# aizverošo figūriekavu}one{# aizverošā figūriekava}other{# aizverošās figūriekavas}}</translation>
 <translation id="4158704014418536539">Reģistrjutīgs.</translation>
 <translation id="4159784952369912983">Violets</translation>
-<translation id="4161104397932142764">{COUNT,plural, =1{sekunde}zero{sekundes}one{sekundes}other{sekundes}}</translation>
+<translation id="4161104397932142764">{COUNT,plural, =1{sekunde}zero{sekundes}one{sekunde}other{sekundes}}</translation>
 <translation id="4161663686871496107">ChromeVox izrunas funkcija ir gatava</translation>
 <translation id="4173994908659439270">Tālāk nav neviena rediģējama teksta lauka.</translation>
 <translation id="4176463684765177261">Atspējots</translation>
@@ -623,7 +623,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="5349770431644471053">Atpakaļsaite</translation>
 <translation id="536031132345979795">Pāriet atpakaļ nepārtraukta lasījuma laikā</translation>
 <translation id="5368000168321181111">Signāli izslēgti</translation>
-<translation id="5368505757342402527">Faila “<ph name="FILE_NAME" />” lejupielāde: <ph name="PROGRESS" />% pabeigti. Aptuvenais atlikušais laiks: <ph name="TIME" /> <ph name="UNITS" />.</translation>
+<translation id="5368505757342402527">Faila “<ph name="FILE_NAME" />” lejupielādes norise: <ph name="PROGRESS" />%. Aptuvenais atlikušais laiks: <ph name="TIME" /> <ph name="UNITS" />.</translation>
 <translation id="5374320867641260420">Tālāk nav nevienas pogas.</translation>
 <translation id="5376407118396657359">Lai pārvietotos pa vienai šūnai, vienlaicīgi nospiediet meklēšanas, vadīšanas un alternēšanas taustiņu.</translation>
 <translation id="5382299583965267720">Tālāk nav neviena 1. līmeņa virsraksta.</translation>
@@ -945,7 +945,7 @@ Lai atvērtu Chrome pārlūka izvēlni, vienlaikus nospiediet alternēšanas tau
 <translation id="7641134354185483015">Iepriekš nav neviena 3. līmeņa virsraksta.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, tekstlodziņš</translation>
 <translation id="7663318257180412551">2. līmeņa virsraksts</translation>
-<translation id="7668307052366682650">{COUNT,plural, =1{stunda}zero{stundas}one{stundas}other{stundas}}</translation>
+<translation id="7668307052366682650">{COUNT,plural, =1{stunda}zero{stundas}one{stunda}other{stundas}}</translation>
 <translation id="7674576868851035240">Nākamā saite</translation>
 <translation id="7674768236845044097">iezīmēt</translation>
 <translation id="7684431668231950609">Rediģējams teksts: URL ievade</translation>

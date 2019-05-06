@@ -95,7 +95,9 @@
 <translation id="1671236975893690980">ડાઉનલોડ બાકી…</translation>
 <translation id="1672586136351118594">ફરીથી બતાવશો નહીં</translation>
 <translation id="1692118695553449118">સમન્વયન ચાલુ છે</translation>
+<translation id="169515064810179024">સાઇટને મોશન સેન્સરને ઍક્સેસ કરવાથી બ્લૉક કરો</translation>
 <translation id="1709438864123551175">ડેટા સેવર</translation>
+<translation id="1717218214683051432">મોશન સેન્સર</translation>
 <translation id="1718835860248848330">છેલ્લા એક કલાક</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" /> અપડેટ કર્યું</translation>
 <translation id="1736419249208073774">શોધખોળ કરો</translation>
@@ -248,6 +250,7 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> સેકંડ બાકી</translation>
 <translation id="2779651927720337254">નિષ્ફળ થયું</translation>
 <translation id="2781151931089541271">1 સેકંડ બાકી</translation>
+<translation id="2801022321632964776">Chromeના એકદમ નવા વર્ઝનમાં તમારી ભાષા મેળવવા માટે અપડેટ કરો</translation>
 <translation id="2803478378562657435">સાચવેલા પાસવર્ડ અને પાસવર્ડ માટેના વિકલ્પો બતાવી રહ્યા છીએ</translation>
 <translation id="2810645512293415242">ડેટા બચાવવા અને વધુ ઝડપથી પેજ લોડ કરવા માટે પેજ સરળ બનાવ્યું.</translation>
 <translation id="281504910091592009">સાચવેલા પાસવર્ડ તમારા <ph name="BEGIN_LINK" />Google એકાઉન્ટ<ph name="END_LINK" />માં જુઓ અને મેનેજ કરો</translation>
@@ -310,6 +313,7 @@
 <translation id="3259831549858767975">પૃષ્ઠ પરની તમામ સામગ્રીને નાની કરો</translation>
 <translation id="3269093882174072735">છબી લોડ કરો</translation>
 <translation id="3269956123044984603">તમારા બીજા ડિવાઇસ પરથી તમારા ટૅબ્સ મેળવવા માટે, Android એકાઉન્ટ સેટિંગમાં "સ્વતઃ-સિંક કરો ડેટા" ચાલુ કરો.</translation>
+<translation id="3277252321222022663">સાઇટને સેન્સરના ઍક્સેસની મંજૂરી આપો (સુઝાવ આપેલ)</translation>
 <translation id="3282568296779691940">Chrome માં સાઇન ઇન કરો</translation>
 <translation id="3288003805934695103">પૃષ્ઠ ફરીથી લોડ કરીને</translation>
 <translation id="32895400574683172">નોટિફિકેશનોની મંજૂરી છે</translation>
@@ -550,6 +554,7 @@
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">મંજૂરી આપો</translation>
 <translation id="5040262127954254034">ગોપનીયતા</translation>
+<translation id="5048398596102334565">સાઇટને મોશન સેન્સરના ઍક્સેસની મંજૂરી આપો (સુઝાવ આપેલ)</translation>
 <translation id="5063480226653192405">ઉપયોગ</translation>
 <translation id="5073204694187207510">પૂર્ણસ્ક્રીન ગ્રિડને છુપાવો</translation>
 <translation id="5082793167783849073">ગ્રૂપ બનાવીને ઝડપથી પેજની સરખામણી કરો. શરૂ કરવા માટે, લિંકને સ્પર્શ કરી રાખો.</translation>
@@ -743,6 +748,7 @@
 <translation id="6406506848690869874">સમન્વયન</translation>
 <translation id="641643625718530986">પ્રિન્ટ…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB ડાઉનલોડ કર્યા</translation>
+<translation id="6427112570124116297">વેબનો અનુવાદ કરો</translation>
 <translation id="6433501201775827830">તમારું શોધ એંજિન પસંદ કરો</translation>
 <translation id="6437478888915024427">પેજ વિશે માહિતી</translation>
 <translation id="6441734959916820584">નામ ખૂબ લાંબું છે</translation>
@@ -858,6 +864,7 @@
 <translation id="7189598951263744875">શેર કરો...</translation>
 <translation id="7191430249889272776">ટેબ પૃષ્ઠભૂમિમાં ખોલવામાં આવ્યું છે.</translation>
 <translation id="723171743924126238">છબીઓ પસંદ કરો</translation>
+<translation id="7233236755231902816">વેબ તમારી ભાષામાં જોવા માટે Chromeનું એકદમ નવું વર્ઝન મેળવો</translation>
 <translation id="7243308994586599757">સ્ક્રીનના તળિયા નજીક વિકલ્પો ઉપલબ્ધ છે</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" />ની પસંદગી કરી</translation>
 <translation id="7253272406652746122">તમારા ડિવાઇસની સેટિંગ ઍપ્લિકેશનમાં એકાઉન્ટ પેજમાંથી Google એકાઉન્ટ ઉમેરો.</translation>
@@ -1013,6 +1020,7 @@
 <translation id="8310344678080805313">માનક ટેબ્સ</translation>
 <translation id="8313455859591948645">સ્ટાર્ટઅપ પેજમાં ફેરફાર કરો</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> અને વધુ સાઇટ</translation>
+<translation id="8327155640814342956">બ્રાઉઝિંગનો શ્રેષ્ઠ અનુભવ મેળવવા અપડેટ કરવા માટે Chrome ખોલો</translation>
 <translation id="8339163506404995330"><ph name="LANGUAGE" />માં છે તે પેજનો અનુવાદ થશે નહીં</translation>
 <translation id="8349013245300336738">વપરાયેલ ડેટાના પ્રમાણ અનુસાર સૉર્ટ કરો</translation>
 <translation id="8372893542064058268">ચોક્કસ સાઇટ માટે પૃષ્ઠભૂમિ સમન્વયનની મંજૂરી આપો.</translation>
@@ -1072,6 +1080,7 @@
 <translation id="8788968922598763114">છેલ્લે બંધ કરેલ ટૅબ ફરીથી ખોલો</translation>
 <translation id="8801436777607969138">કોઈ ચોક્કસ સાઇટ માટે JavaScriptને બ્લૉક કરો.</translation>
 <translation id="8812260976093120287">કેટલીક વેબસાઇટ પર, તમે સમર્થિત ચુકવણી ઍપ્લિકેશનો વડે ચુકવણી કરી શકો છો.</translation>
+<translation id="8816026460808729765">સાઇટને સેન્સરને ઍક્સેસ કરવાથી બ્લૉક કરો</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> Chromeમાં ખૂલશે. ચાલુ રાખીને, તમે Chromeની <ph name="BEGIN_LINK1" />સેવાની શરતો<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />ગોપનીયતા સૂચના<ph name="END_LINK2" /> અને <ph name="BEGIN_LINK3" />Family Link દ્વારા મેનેજ થતા Google એકાઉન્ટ માટેની ગોપનીયતા સૂચના<ph name="END_LINK3" /> સાથે સંમત થાઓ છો.</translation>
 <translation id="8820817407110198400">બુકમાર્ક્સ</translation>
 <translation id="8833831881926404480">સાઇટ તમારી સ્ક્રીન શેર કરી રહી છે</translation>

@@ -1390,7 +1390,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis denne regelen er angitt som «DeveloperToolsAllowed» (verdi 1), kan utviklerverktøyene og JavaScript-konsollen brukes i alle kontekster, inkludert konteksten til utvidelser installert av bedriftens retningslinjer.
       Hvis denne regelen er angitt som «DeveloperToolsDisallowed» (verdi 2), kan ikke utviklerverktøyene brukes, og elementer på nettsteder kan ikke inspiseres lenger. Alle hurtigtaster og alle oppføringer for menyer eller kontekstuelle menyer for å åpne utviklerverktøy eller JavaScript-konsollen deaktiveres.</translation>
 <translation id="3547954654003013442">Innstillinger for proxy-tjener</translation>
-<translation id="3550875587920006460">Gjør det mulig å sette opp en egendefinert tidsplan for når enheten skal se etter oppdateringer. Denne gjelder alle brukere og alle grensesnitt på enheten. Når regelen er angitt, ser enheten etter oppdateringer i henhold til tidsplanen. Regelen må fjernes for å avbryte eventuelle andre oppdateringssjekker som er planlagt.</translation>
+<translation id="3550875587920006460">Gjør det mulig å sette opp en egendefinert tidsplan for når enheten skal se etter oppdateringer. Denne planen gjelder for alle brukere og alle grensesnitt på enheten. Når regelen er angitt, ser enheten etter oppdateringer i henhold til tidsplanen. Regelen må fjernes for å avbryte eventuelle andre oppdateringssjekker som er planlagt.</translation>
 <translation id="355118380775352753">Nettsteder som skal åpnes i en alternativ nettleser</translation>
 <translation id="3554984410014457319">La Google-assistenten lytte etter frasen for taleaktivering</translation>
 <translation id="356579196325389849">Brukere kan konfigurere utgivelseskanalen for Chrome OS</translation>
@@ -1643,8 +1643,8 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
           også eventuelle tillatelser fremtidige versjoner av appen/utvidelsen
           ber om. Tillatelser gis også for utvidelses-API-ene
           enterprise.deviceAttributes og enterprise.platformKeys.
-          (Disse to API-ene er ikke tilgjengelig for apper/utvidelser som ikke er
-          administratorinstallert.)
+          (Disse to API-ene er ikke tilgjengelige for apper/utvidelser som
+          ikke er administratorinstallert.)
 
           Denne regelen prioriteres foran eventuelle regler for <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> hvis de er i konflikt med hverandre. Hvis apper eller utvidelser som tidligere var administratorinstallert, blir fjernet fra listen, blir de automatisk avinstallert av <ph name="PRODUCT_NAME" />.
 
@@ -1652,9 +1652,9 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
          Vær oppmerksom på at kildekoden for utvidelsene kan endres av brukere via utviklerverktøy (noe som potensielt kan føre til at utvidelsene ikke fungerer). Hvis dette kan bli et problem, bør du angi regelen <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
 
-          Hvert av elementene i listen er en streng som inneholder en utvidelses-ID og eventuelt (valgfritt) en «oppdatering»-nettadresse, atskilt med semikolon (<ph name="SEMICOLON" />). Utvidelses-ID-en er strengen på 32 tegn du for eksempel finner i <ph name="CHROME_EXTENSIONS_LINK" /> når du er i utviklermodus. «Oppdatering»-nettadressen peker til et oppdateringsmanifest i XML-format, som beskrevet her: <ph name="LINK_TO_EXTENSION_DOC1" />. Oppdateringsnettadressen for Chrome Nettmarked brukes som standard (og for øyeblikket er den «https://clients2.google.com/service/update2/crx»). Vær oppmerksom på at «oppdatering»-nettadressen som angis i denne regelen, bare brukes for den første installasjonen. Påfølgende oppdateringer av utvidelsen bruker oppdateringsnettadressen som er beskrevet i utvidelsens manifest. Vær også oppmerksom på at det var uttrykkelig påkrevd å angi «oppdatering»-nettadressen i <ph name="PRODUCT_NAME" />-versjoner opptil og inkludert 67.
+          Hvert av elementene i listen er en streng som inneholder en utvidelses-ID og eventuelt (valgfritt) en oppdateringsadresse, atskilt med semikolon (<ph name="SEMICOLON" />). Utvidelses-ID-en er strengen på 32 tegn du for eksempel finner i <ph name="CHROME_EXTENSIONS_LINK" /> når du er i utviklermodus. Oppdateringsadressen skal være til et oppdateringsmanifest i XML-format, som beskrevet her: <ph name="LINK_TO_EXTENSION_DOC1" />. Oppdateringsadressen for Chrome Nettmarked brukes som standard (og for øyeblikket er den «https://clients2.google.com/service/update2/crx»). Vær oppmerksom på at oppdateringsadressen som angis i denne regelen, bare brukes for den første installasjonen. Påfølgende oppdateringer av utvidelsen bruker oppdateringsadressen som er beskrevet i utvidelsens manifest. Vær også oppmerksom på at det var uttrykkelig påkrevd å angi oppdateringsadressen i <ph name="PRODUCT_NAME" />-versjoner opptil og inkludert 67.
 
-          For eksempel installerer <ph name="EXTENSION_POLICY_EXAMPLE" /> utvidelsen med ID-en <ph name="EXTENSION_ID_SAMPLE" /> fra «oppdatering»-nettadressen som er standard for Chrome Nettmarked. Gå til <ph name="LINK_TO_EXTENSION_DOC2" /> for å finne ut mer om å være vert for utvidelser.
+          For eksempel installerer <ph name="EXTENSION_POLICY_EXAMPLE" /> utvidelsen med ID-en <ph name="EXTENSION_ID_SAMPLE" /> fra den oppdateringsadressen som er standard for Chrome Nettmarked. Gå til <ph name="LINK_TO_EXTENSION_DOC2" /> for å finne ut mer om verter for utvidelser.
 
           Hvis denne regelen ikke er angitt, blir ingen apper eller utvidelser installert automatisk, og brukere kan avinstallere hvilke som helst apper og utvidelser i <ph name="PRODUCT_NAME" />.
 

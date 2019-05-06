@@ -95,6 +95,7 @@
 <translation id="1671236975893690980">Download afventer…</translation>
 <translation id="1672586136351118594">Vis ikke igen</translation>
 <translation id="1692118695553449118">Synkronisering er slået til</translation>
+<translation id="169515064810179024">Bloker adgang til bevægelsessensorer på websites</translation>
 <translation id="1709438864123551175">Datasparefunktion</translation>
 <translation id="1718835860248848330">Den seneste time</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – opdateret <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -193,7 +194,7 @@
 <translation id="2359808026110333948">Fortsæt</translation>
 <translation id="2369533728426058518">åbne faner</translation>
 <translation id="2387895666653383613">Tekststørrelse</translation>
-<translation id="2394602618534698961">Filer, som du downloader, vises her</translation>
+<translation id="2394602618534698961">Her vises de filer, du downloader</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2410754283952462441">Vælg en konto</translation>
 <translation id="2414886740292270097">Mørk</translation>
@@ -248,6 +249,7 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekunder tilbage</translation>
 <translation id="2779651927720337254">mislykkedes</translation>
 <translation id="2781151931089541271">1 sekund tilbage</translation>
+<translation id="2801022321632964776">Opdater til den nyeste version af Chrome for at bruge dit eget sprog</translation>
 <translation id="2803478378562657435">Viser gemte adgangskoder og valgmuligheder for adgangskoder</translation>
 <translation id="2810645512293415242">Forenklet side, der sparer data og indlæses hurtigere.</translation>
 <translation id="281504910091592009">Se og administrer gemte adgangskoder på din <ph name="BEGIN_LINK" />Google-konto<ph name="END_LINK" /></translation>
@@ -310,6 +312,7 @@
 <translation id="3259831549858767975">Gør alting på siden mindre</translation>
 <translation id="3269093882174072735">Indlæs billede</translation>
 <translation id="3269956123044984603">Aktivér "Automatisk synkronisering af data" i kontoindstillingerne for Android for at få adgang til dine faner på dine andre enheder.</translation>
+<translation id="3277252321222022663">Tillad, at websites kan få adgang til sensorer (anbefales)</translation>
 <translation id="3282568296779691940">Log ind i Chrome</translation>
 <translation id="3288003805934695103">Genindlæse siden</translation>
 <translation id="32895400574683172">Notifikationer er tilladt</translation>
@@ -550,6 +553,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Tillad</translation>
 <translation id="5040262127954254034">Privatliv</translation>
+<translation id="5048398596102334565">Tillad, at websites kan få adgang til bevægelsessensorer (anbefales)</translation>
 <translation id="5063480226653192405">Databrug</translation>
 <translation id="5073204694187207510">Skjul fuldskærmsgitter</translation>
 <translation id="5082793167783849073">Sammenlign hurtigt sider ved at oprette en gruppe. Hold et link nede for at starte.</translation>
@@ -743,6 +747,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6406506848690869874">Synkronisering</translation>
 <translation id="641643625718530986">Udskriv…</translation>
 <translation id="6416782512398055893">Der er downloadet <ph name="MBS" /> MB</translation>
+<translation id="6427112570124116297">Oversæt på nettet</translation>
 <translation id="6433501201775827830">Vælg en søgemaskine</translation>
 <translation id="6437478888915024427">Sideoplysninger</translation>
 <translation id="6441734959916820584">Navnet er for langt</translation>
@@ -858,6 +863,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7189598951263744875">Del...</translation>
 <translation id="7191430249889272776">Fanen blev åbnet i baggrunden.</translation>
 <translation id="723171743924126238">Vælg billeder</translation>
+<translation id="7233236755231902816">Hent den nyeste version af Chrome for at bruge browseren på dit eget sprog</translation>
 <translation id="7243308994586599757">Du finder indstillingerne nederst på skærmen</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> er markeret</translation>
 <translation id="7253272406652746122">Tilføj en Google-konto fra siden Konti i appen Indstillinger på din enhed.</translation>
@@ -1013,6 +1019,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8310344678080805313">Standardfaner</translation>
 <translation id="8313455859591948645">Rediger opstartsside</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> og andre websites</translation>
+<translation id="8327155640814342956">Opdater Chrome for at få den bedste browseroplevelse</translation>
 <translation id="8339163506404995330">Sider på <ph name="LANGUAGE" /> oversættes ikke</translation>
 <translation id="8349013245300336738">Sortér efter mængden af data, der er brugt</translation>
 <translation id="8372893542064058268">Tillad synkronisering i baggrunden for et bestemt website.</translation>
@@ -1072,6 +1079,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8788968922598763114">Åbn den senest lukkede fane igen</translation>
 <translation id="8801436777607969138">Bloker JavaScript for et bestemt website.</translation>
 <translation id="8812260976093120287">På nogle websites kan du betale med ovenstående understøttede betalingsapps på din enhed.</translation>
+<translation id="8816026460808729765">Bloker adgang til sensorer på websites</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> åbnes i Chrome. Når du fortsætter, accepterer du Chromes <ph name="BEGIN_LINK1" />servicevilkår<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />erklæring om privatliv<ph name="END_LINK2" /> samt <ph name="BEGIN_LINK3" />erklæringen om privatliv for Google-konti, der administreres med Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Bogmærker</translation>
 <translation id="8833831881926404480">Et website deler din skærm</translation>

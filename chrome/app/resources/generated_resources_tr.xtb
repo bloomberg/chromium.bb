@@ -465,6 +465,7 @@
 <translation id="1711401317189798723"><ph name="CONTAINER_ID" /> için yedekleme şu anda devam ediyor</translation>
 <translation id="1712349894969001173">Bu şifreyi iPhone'unuzda alın</translation>
 <translation id="1712552549805331520"><ph name="URL" />, verileri yerel bilgisayarınızda kalıcı olarak saklamak istiyor</translation>
+<translation id="1717218214683051432">Hareket sensörleri</translation>
 <translation id="1718835860248848330">Son saat</translation>
 <translation id="1719312230114180055">Not: Parmak iziniz güçlü bir şifre veya PIN kadar güvenli olmayabilir.</translation>
 <translation id="1720318856472900922">TLS WWW Sunucu Kimlik Doğrulaması</translation>
@@ -1708,7 +1709,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3664511988987167893">Uzantı Simgesi</translation>
 <translation id="3665589677786828986">Chrome, bazı ayarlarınızın başka bir program tarafından bozulduğunu algıladı ve onları orijinal varsayılan değerlerine sıfırladı.</translation>
 <translation id="3668570675727296296">Dil ayarları</translation>
-<translation id="366867565525278777">Depolama alanı yetersiz olduğu için yüklenemedi. En az <ph name="INSTALL_SIZE" /> boyutunda boş alan gerekli. Yer açmak için cihaz depolama alanındaki dosyaları silin.</translation>
+<translation id="366867565525278777">Depolama alanı yetersiz olduğu için yükleme işlemi başarısız oldu. En az <ph name="INSTALL_SIZE" /> boş alan gerekiyor. Yer açmak için cihaz depolama alanındaki dosyaları silin.</translation>
 <translation id="3668801437375206837">Google çalışanları Bluetooth sorunlarını daha iyi teşhis etmek için geri bildirim raporlarına ek Bluetooth günlükleri dahil edebilirler. Bu seçenek işaretlendiğinde, geçerli oturumunuzdan btsnoop ve HCI günlükleri raporunuza eklenecektir. Bu şekilde mümkün olan en fazla sayıda PII temizlenecektir. Bu günlüklere erişim, Listnr'da Chrome OS ürün grubu yöneticileri ile kısıtlı olacaktır. Günlükler 90 gün sonra tamamen silinecektir.</translation>
 <translation id="3668823961463113931">İşleyiciler</translation>
 <translation id="3670113805793654926">Herhangi bir tedarikçinin cihazları</translation>
@@ -2018,7 +2019,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="409579654357498729">Google Cloud Print'e ekle</translation>
 <translation id="4096508467498758490">Geliştirici modu uzantılarını devre dışı bırakın</translation>
 <translation id="4096824249111507322">Güvenli modül hazırlanıyor, lütfen bekleyin (bu işlem birkaç dakika sürebilir)...</translation>
-<translation id="4097560579602855702">Google’da arama yapın</translation>
+<translation id="4097560579602855702">Google’da Ara</translation>
 <translation id="4099060993766194518">Varsayılan arama motoru geri yüklensin mi?</translation>
 <translation id="4099874310852108874">Ağ hatası oluştu.</translation>
 <translation id="4100733287846229632">Cihazda kullanılabilir alan kritik düzeyde az</translation>
@@ -2051,6 +2052,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4146026355784316281">Her Zaman Sistem Görüntüleyici ile Aç</translation>
 <translation id="4146785383423576110">Sıfırla ve temizle</translation>
 <translation id="4147911968024186208">Lütfen yeniden deneyin. Bu hatayı tekrar görürseniz lütfen destek temsilcinizle iletişime geçin.</translation>
+<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">Ekran</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 sekme}other{# sekme}}</translation>
 <translation id="4154664944169082762">Parmak izleri</translation>
@@ -2252,6 +2254,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4524832533047962394">Sağlanan kayıt modu işletim sisteminin bu sürümü tarafından desteklenmiyor. Lütfen en yeni sürümü kullandığınızdan emin olun.</translation>
 <translation id="4525382759303819021">Play Store uygulamalarıyla ilgili en son güncellemeleri ve önerileri alın</translation>
 <translation id="4530494379350999373">Kaynak</translation>
+<translation id="4532646538815530781">Bu site hareket sensörlerini kullanıyor.</translation>
 <translation id="4533846798469727141">Şimdi "Hey Google" deyin</translation>
 <translation id="4533985347672295764">CPU Süresi</translation>
 <translation id="4534661889221639075">Tekrar deneyin.</translation>
@@ -2486,6 +2489,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4892229439761351791">Sitede Bluetooth bağlantısı kullanılabilir</translation>
 <translation id="4893336867552636863">Bu işlem, tarama verilerinizi bu cihazdan kalıcı olarak silecektir.</translation>
 <translation id="4893522937062257019">Kilit ekranında</translation>
+<translation id="489454699928748701">Sitelerin hareket sensörlerini kullanmasına izin ver</translation>
 <translation id="4898011734382862273">"<ph name="CERTIFICATE_NAME" />" sertifikası bir Sertifika Yetkilisi'ni temsil ediyor.</translation>
 <translation id="489985760463306091">Zararlı yazılımları kaldırma işlemini tamamlamak için bilgisayarınızı yeniden başlatın</translation>
 <translation id="4900392736118574277">Başlangıç sayfanız <ph name="URL" /> olarak değiştirildi.</translation>
@@ -2950,6 +2954,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5620612546311710611">kullanım istatistikleri</translation>
 <translation id="5620655347161642930">Şifreleri dışa aktar...</translation>
+<translation id="5623282979409330487">Bu site, hareket sensörlerinize erişiyor.</translation>
 <translation id="5623842676595125836">Günlük</translation>
 <translation id="5624120631404540903">Şifreleri yönet</translation>
 <translation id="5626134646977739690">Adı:</translation>
@@ -3443,6 +3448,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6390994422085833176">Kurulumun ardından senkronizasyon ve kişiselleştirme özelliklerini incele</translation>
 <translation id="6393156038355142111">Güçlü şifre öner</translation>
 <translation id="6395423953133416962"><ph name="BEGIN_LINK1" />Sistem bilgileri<ph name="END_LINK1" /> ve <ph name="BEGIN_LINK2" />metrikleri<ph name="END_LINK2" /> gönder</translation>
+<translation id="6396988158856674517">Sitelerin hareket sensörünü kullanmasını engelle</translation>
 <translation id="6397094776139756010">Senkronizasyon ve kişiselleştirme seçenekleri</translation>
 <translation id="6398715114293939307">Google Play Store'u kaldır</translation>
 <translation id="6398765197997659313">Tam ekrandan çık</translation>
@@ -3537,6 +3543,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6531282281159901044">Tehlikeli dosyayı tut</translation>
 <translation id="6532101170117367231">Google Drive'a Kaydet</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Not:<ph name="END_BOLD" /> Veri toplama işlemi performansı düşürebileceğinden sadece etkinleştirmenin sonuçlarını biliyorsanız veya etkinleştirmeniz istenmişse bunu yapın.</translation>
+<translation id="6541638731489116978">Bu sitenin, hareket sensörlerinize erişimi engellenmiştir.</translation>
 <translation id="654233263479157500">Gezinme hatalarının çözülmesine yardımcı olması için bir web hizmeti kullan</translation>
 <translation id="6544215763872433504">Sizin için Google'dan web tarayıcısı</translation>
 <translation id="6545665334409411530">Yineleme hızı</translation>
@@ -4277,6 +4284,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7704628569466676326">Güvenlik anahtarınızı hesabınızda oturum açarken kullanabilmeniz için bu cihazla eşleyin</translation>
 <translation id="7705276765467986571">Yer işareti modeli yüklenemedi.</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7707108266051544351">Bu sitenin, hareket sensörlerini kullanımı engellenmiştir.</translation>
 <translation id="7707922173985738739">Mobil veri kullanın</translation>
 <translation id="7709152031285164251">Başarısız - <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;Yayınla...</translation>
