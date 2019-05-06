@@ -59,6 +59,15 @@ class ArcSystemStatCollector {
       -1,  // End of sequence
   };
 
+  // Indices of fields to parse
+  // /sys/class/hwmon/hwmon*/temp*_input
+  // As an example:
+  // 30000
+  static constexpr int kCpuTempInfoColumns[] = {
+      0,   // Temperature in celsius * 1000.
+      -1,  // End of sequence
+  };
+
   ArcSystemStatCollector();
   ~ArcSystemStatCollector();
 
@@ -84,6 +93,8 @@ class ArcSystemStatCollector {
     int64_t mem_info[base::size(kMemInfoColumns) - 1] = {0};
     // objects, used bytes.
     int64_t gem_info[base::size(kGemInfoColumns) - 1] = {0};
+    // Temperature of CPU, Core 0.
+    int64_t cpu_temperature_ = std::numeric_limits<int>::min();
   };
 
   // Schedule reading System stat files in |ReadSystemStatOnBackgroundThread| on

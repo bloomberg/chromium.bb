@@ -45,6 +45,12 @@ TEST_F(ArcSystemStatCollectorTest, Parse) {
                             gem_values));
   EXPECT_EQ(853, gem_values[0]);
   EXPECT_EQ(458256384, gem_values[1]);
+
+  int64_t cpu_temp;
+  EXPECT_TRUE(ParseStatFile(GetPath("temp1_input"),
+                            ArcSystemStatCollector::kCpuTempInfoColumns,
+                            &cpu_temp));
+  EXPECT_EQ(52000, cpu_temp);
 }
 
 }  // namespace arc

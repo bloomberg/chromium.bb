@@ -5,8 +5,11 @@
 #include "chrome/browser/chromeos/arc/tracing/arc_system_stat_collector.h"
 
 #include "base/bind.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
+#include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -34,6 +37,59 @@ bool IsEnd(char c) {
   return IsWhitespace(c) || c == 0;
 }
 
+// Detects path to stat file that contains temperature for CPU Core 0 that is
+// used as temperature for CPU. Not all cores may be covered by this statistics.
+// Detected path is stored |path_|
+class CpuTemperaturePathDetector {
+ public:
+  CpuTemperaturePathDetector() {
+    base::FileEnumerator hwmon_enumerator(
+        base::FilePath(FILE_PATH_LITERAL("/sys/class/hwmon/")),
+        false /* recursive */, base::FileEnumerator::DIRECTORIES,
+        FILE_PATH_LITERAL("hwmon*"));
+    for (base::FilePath hwmon_path = hwmon_enumerator.Next();
+         !hwmon_path.empty(); hwmon_path = hwmon_enumerator.Next()) {
+      base::FileEnumerator enumerator(
+          hwmon_path, false, base::FileEnumerator::FILES, "temp*_label");
+      for (base::FilePath temperature_label_path = enumerator.Next();
+           !temperature_label_path.empty();
+           temperature_label_path = enumerator.Next()) {
+        std::string label;
+        if (!base::ReadFileToString(temperature_label_path, &label))
+          continue;
+        base::TrimWhitespaceASCII(label, base::TRIM_TRAILING, &label);
+        if (label != "Core 0" && label != "Physical id 0")
+          continue;
+        std::string temperature_input_path_string =
+            temperature_label_path.value();
+        base::ReplaceSubstringsAfterOffset(&temperature_input_path_string, 0,
+                                           "label", "input");
+        const base::FilePath temperature_input_path =
+            base::FilePath(temperature_input_path_string);
+        if (!base::PathExists(temperature_input_path))
+          continue;
+        path_ = temperature_input_path;
+        VLOG(1) << "Detected path to read CPU temperature (" << label
+                << "): " << temperature_input_path;
+        return;
+      }
+    }
+    LOG(WARNING) << "Not detected path to read CPU temperature.";
+  }
+
+  const base::FilePath& path() const { return path_; }
+
+ private:
+  base::FilePath path_;
+
+  DISALLOW_COPY_AND_ASSIGN(CpuTemperaturePathDetector);
+};
+
+const base::FilePath& GetCpuTemperaturePathOnFileThread() {
+  static base::NoDestructor<CpuTemperaturePathDetector> instance;
+  return instance->path();
+}
+
 }  // namespace
 
 struct ArcSystemStatCollector::Sample {
@@ -45,6 +101,7 @@ struct ArcSystemStatCollector::Sample {
   int mem_used_kb = 0;
   int gem_objects = 0;
   int gem_size_kb = 0;
+  int cpu_temperature = std::numeric_limits<int>::min();
 };
 
 // static
@@ -55,6 +112,9 @@ constexpr int ArcSystemStatCollector::kMemInfoColumns[];
 
 // static
 constexpr int ArcSystemStatCollector::kGemInfoColumns[];
+
+// static
+constexpr int ArcSystemStatCollector::kCpuTempInfoColumns[];
 
 ArcSystemStatCollector::ArcSystemStatCollector() : weak_ptr_factory_(this) {}
 
@@ -104,6 +164,8 @@ void ArcSystemStatCollector::Flush(const base::TimeTicks& min_timestamp,
                                   ArcValueEvent::Type::kSwapWrite);
   ArcValueEventTrimmer swap_wait(&system_model->memory_events(),
                                  ArcValueEvent::Type::kSwapWait);
+  ArcValueEventTrimmer cpu_temperature(&system_model->memory_events(),
+                                       ArcValueEvent::Type::kCpuTemp);
   while (sample_index < write_index_) {
     const Sample& sample = samples_[sample_index % samples_.size()];
     ++sample_index;
@@ -120,6 +182,8 @@ void ArcSystemStatCollector::Flush(const base::TimeTicks& min_timestamp,
     swap_read.MaybeAdd(timestamp, sample.swap_sectors_read);
     swap_write.MaybeAdd(timestamp, sample.swap_sectors_write);
     swap_wait.MaybeAdd(timestamp, sample.swap_waiting_time_ms);
+    if (sample.cpu_temperature > std::numeric_limits<int>::min())
+      cpu_temperature.MaybeAdd(timestamp, sample.cpu_temperature);
   }
   // Trimmer may break time sequence for events of different types. However
   // time sequence of events of the same type should be preserved.
@@ -188,6 +252,13 @@ ArcSystemStatCollector::ReadSystemStatOnBackgroundThread() {
     }
   }
 
+  const base::FilePath& cpu_temp_path = GetCpuTemperaturePathOnFileThread();
+  if (cpu_temp_path.empty() ||
+      !ParseStatFile(cpu_temp_path, kCpuTempInfoColumns,
+                     &current_frame.cpu_temperature_)) {
+    current_frame.cpu_temperature_ = std::numeric_limits<int>::min();
+  }
+
   return current_frame;
 }
 
@@ -214,6 +285,7 @@ void ArcSystemStatCollector::UpdateSystemStatOnUiThread(
     current_sample.swap_waiting_time_ms =
         current_frame.zram_stat[2] - previous_frame_.zram_stat[2];
   }
+  current_sample.cpu_temperature = current_frame.cpu_temperature_;
   DCHECK_GE(current_sample.swap_sectors_read, 0);
   DCHECK_GE(current_sample.swap_sectors_write, 0);
   DCHECK_GE(current_sample.swap_waiting_time_ms, 0);
