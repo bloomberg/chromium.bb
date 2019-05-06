@@ -471,22 +471,6 @@ bool CrossProcessFrameConnector::IsHidden() const {
   return visibility_ == blink::mojom::FrameVisibility::kNotRendered;
 }
 
-#if defined(USE_AURA)
-void CrossProcessFrameConnector::EmbedRendererWindowTreeClientInParent(
-    ws::mojom::WindowTreeClientPtr window_tree_client) {
-  RenderWidgetHostViewBase* root = GetRootRenderWidgetHostView();
-  RenderWidgetHostViewBase* parent = GetParentRenderWidgetHostView();
-  if (!parent || !root)
-    return;
-  const int frame_routing_id = frame_proxy_in_parent_renderer_->GetRoutingID();
-  parent->EmbedChildFrameRendererWindowTreeClient(
-      root, frame_routing_id, std::move(window_tree_client));
-  frame_proxy_in_parent_renderer_->SetDestructionCallback(
-      base::BindOnce(&RenderWidgetHostViewBase::OnChildFrameDestroyed,
-                     parent->GetWeakPtr(), frame_routing_id));
-}
-#endif
-
 void CrossProcessFrameConnector::DidUpdateVisualProperties(
     const cc::RenderFrameMetadata& metadata) {
   frame_proxy_in_parent_renderer_->Send(new FrameMsg_DidUpdateVisualProperties(

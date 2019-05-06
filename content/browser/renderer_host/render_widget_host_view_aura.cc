@@ -23,7 +23,6 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
-#include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/bad_message.h"
@@ -47,7 +46,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_event_handler.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/input_messages.h"
-#include "content/common/render_widget_window_tree_client_factory.mojom.h"
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
@@ -56,8 +54,6 @@
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/ws/common/switches.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/web/web_ime_text_span.h"
 #include "ui/accessibility/accessibility_switches.h"
@@ -71,7 +67,6 @@
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
@@ -79,7 +74,6 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/base/ui_base_types.h"
@@ -144,16 +138,6 @@ using blink::WebGestureEvent;
 using blink::WebTouchEvent;
 
 namespace content {
-
-namespace {
-
-// Callback from embedding the renderer.
-void EmbedCallback(bool result) {
-  if (!result)
-    DVLOG(1) << "embed failed";
-}
-
-}  // namespace
 
 #if defined(OS_WIN)
 
@@ -369,11 +353,8 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(
       is_guest_view_hack_(is_guest_view_hack),
       device_scale_factor_(0.0f),
       event_handler_(new RenderWidgetHostViewEventHandler(host(), this, this)),
-      frame_sink_id_(features::IsMultiProcessMash()
-                         ? viz::FrameSinkId()
-                         : is_guest_view_hack_
-                               ? AllocateFrameSinkIdForGuestViewHack()
-                               : host()->GetFrameSinkId()),
+      frame_sink_id_(is_guest_view_hack_ ? AllocateFrameSinkIdForGuestViewHack()
+                                         : host()->GetFrameSinkId()),
       weak_ptr_factory_(this) {
   if (!is_mus_browser_plugin_guest_)
     CreateDelegatedFrameHostClient();
@@ -956,20 +937,6 @@ void RenderWidgetHostViewAura::TransformPointToRootSurface(gfx::PointF* point) {
   aura::Window* root = window_->GetRootWindow();
   aura::Window::ConvertPointToTarget(window_, root, point);
   root->GetRootWindow()->transform().TransformPoint(point);
-
-// On ChromeOS, the root surface is the whole desktop. When using the
-// window-service converting to screen coordinates gives us that.
-#if defined(OS_CHROMEOS)
-  if (features::IsUsingWindowService()) {
-    aura::client::ScreenPositionClient* screen_client =
-        aura::client::GetScreenPositionClient(root);
-    if (screen_client) {
-      gfx::Point rounded_point(point->x(), point->y());
-      screen_client->ConvertPointToScreen(root, &rounded_point);
-      *point = gfx::PointF(rounded_point);
-    }
-  }
-#endif
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetBoundsInRootWindow() {
@@ -1822,14 +1789,6 @@ viz::FrameSinkId RenderWidgetHostViewAura::GetRootFrameSinkId() {
   if (!window_ || !window_->GetHost() || !window_->GetHost()->compositor())
     return viz::FrameSinkId();
 
-  // In single-process mash the root is provided by Ash. Have
-  // HostFrameSinkManager walk the tree to find the right root.
-  if (features::IsSingleProcessMash()) {
-    base::Optional<viz::FrameSinkId> root =
-        GetHostFrameSinkManager()->FindRootFrameSinkId(frame_sink_id_);
-    return root ? *root : viz::FrameSinkId();
-  }
-
   return window_->GetHost()->compositor()->frame_sink_id();
 }
 
@@ -1869,14 +1828,6 @@ void RenderWidgetHostViewAura::FocusedNodeChanged(
     }
   }
 #endif
-}
-
-void RenderWidgetHostViewAura::ScheduleEmbed(
-    ws::mojom::WindowTreeClientPtr client,
-    base::OnceCallback<void(const base::UnguessableToken&)> callback) {
-  DCHECK(features::IsMultiProcessMash());
-  aura::Env::GetInstance()->ScheduleEmbed(std::move(client),
-                                          std::move(callback));
 }
 
 void RenderWidgetHostViewAura::OnScrollEvent(ui::ScrollEvent* event) {
@@ -2108,18 +2059,6 @@ void RenderWidgetHostViewAura::CreateAuraWindow(aura::client::WindowType type) {
   // Init(), because it needs to have the layer.
   if (frame_sink_id_.is_valid())
     window_->SetEmbedFrameSinkId(frame_sink_id_);
-
-  if (!features::IsMultiProcessMash())
-    return;
-
-  // Embed the renderer into the Window.
-  // Use kEmbedFlagEmbedderControlsVisibility so that the renderer can't change
-  // the visibility of |window_|.
-  aura::WindowPortMus::Get(window_)->Embed(
-      GetWindowTreeClientFromRenderer(),
-      ws::mojom::kEmbedFlagEmbedderInterceptsEvents |
-          ws::mojom::kEmbedFlagEmbedderControlsVisibility,
-      base::BindOnce(&EmbedCallback));
 }
 
 void RenderWidgetHostViewAura::CreateDelegatedFrameHostClient() {

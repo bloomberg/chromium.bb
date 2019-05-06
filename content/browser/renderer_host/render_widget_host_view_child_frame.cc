@@ -43,16 +43,10 @@
 #include "content/public/browser/render_process_host.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "third_party/blink/public/platform/web_touch_event.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/touch_selection/touch_selection_controller.h"
-
-#if defined(USE_AURA)
-#include "services/ws/public/mojom/window_tree.mojom.h"
-#include "ui/aura/env.h"
-#endif
 
 namespace content {
 
@@ -76,20 +70,14 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
       enable_surface_synchronization_(
           features::IsSurfaceSynchronizationEnabled()),
       weak_factory_(this) {
-  if (features::IsMultiProcessMash()) {
-    // In Mus the RenderFrameProxy will eventually assign a viz::FrameSinkId
-    // until then set ours invalid, as operations using it will be disregarded.
-    frame_sink_id_ = viz::FrameSinkId();
-  } else {
-    GetHostFrameSinkManager()->RegisterFrameSinkId(
-        frame_sink_id_, this,
-        enable_surface_synchronization_
-            ? viz::ReportFirstSurfaceActivation::kNo
-            : viz::ReportFirstSurfaceActivation::kYes);
-    GetHostFrameSinkManager()->SetFrameSinkDebugLabel(
-        frame_sink_id_, "RenderWidgetHostViewChildFrame");
-    CreateCompositorFrameSinkSupport();
-  }
+  GetHostFrameSinkManager()->RegisterFrameSinkId(
+      frame_sink_id_, this,
+      enable_surface_synchronization_
+          ? viz::ReportFirstSurfaceActivation::kNo
+          : viz::ReportFirstSurfaceActivation::kYes);
+  GetHostFrameSinkManager()->SetFrameSinkDebugLabel(
+      frame_sink_id_, "RenderWidgetHostViewChildFrame");
+  CreateCompositorFrameSinkSupport();
 }
 
 RenderWidgetHostViewChildFrame::~RenderWidgetHostViewChildFrame() {
@@ -99,11 +87,9 @@ RenderWidgetHostViewChildFrame::~RenderWidgetHostViewChildFrame() {
   if (frame_connector_)
     DetachFromTouchSelectionClientManagerIfNecessary();
 
-  if (!features::IsMultiProcessMash()) {
-    ResetCompositorFrameSinkSupport();
-    if (GetHostFrameSinkManager())
-      GetHostFrameSinkManager()->InvalidateFrameSinkId(frame_sink_id_);
-  }
+  ResetCompositorFrameSinkSupport();
+  if (GetHostFrameSinkManager())
+    GetHostFrameSinkManager()->InvalidateFrameSinkId(frame_sink_id_);
 }
 
 void RenderWidgetHostViewChildFrame::Init() {
@@ -152,8 +138,7 @@ void RenderWidgetHostViewChildFrame::SetFrameConnectorDelegate(
       frame_connector_->GetParentRenderWidgetHostView();
 
   if (parent_view) {
-    DCHECK(parent_view->GetFrameSinkId().is_valid() ||
-           features::IsMultiProcessMash());
+    DCHECK(parent_view->GetFrameSinkId().is_valid());
     SetParentFrameSinkId(parent_view->GetFrameSinkId());
   }
 
@@ -173,23 +158,8 @@ void RenderWidgetHostViewChildFrame::SetFrameConnectorDelegate(
     }
   }
 
-#if defined(USE_AURA)
-  if (features::IsMultiProcessMash()) {
-    frame_connector_->EmbedRendererWindowTreeClientInParent(
-        GetWindowTreeClientFromRenderer());
-  }
-#endif
-
   SendSurfaceInfoToEmbedder();
 }
-
-#if defined(USE_AURA)
-void RenderWidgetHostViewChildFrame::SetFrameSinkId(
-    const viz::FrameSinkId& frame_sink_id) {
-  if (features::IsMultiProcessMash())
-    frame_sink_id_ = frame_sink_id;
-}
-#endif  // defined(USE_AURA)
 
 void RenderWidgetHostViewChildFrame::UpdateIntrinsicSizingInfo(
     const blink::WebIntrinsicSizingInfo& sizing_info) {
@@ -601,8 +571,7 @@ void RenderWidgetHostViewChildFrame::DidCreateNewRendererCompositorFrameSink(
 
 void RenderWidgetHostViewChildFrame::SetParentFrameSinkId(
     const viz::FrameSinkId& parent_frame_sink_id) {
-  if (parent_frame_sink_id_ == parent_frame_sink_id ||
-      features::IsMultiProcessMash())
+  if (parent_frame_sink_id_ == parent_frame_sink_id)
     return;
 
   auto* host_frame_sink_manager = GetHostFrameSinkManager();
@@ -623,8 +592,6 @@ void RenderWidgetHostViewChildFrame::SetParentFrameSinkId(
 }
 
 void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedder() {
-  if (features::IsMultiProcessMash())
-    return;
   if (enable_surface_synchronization_)
     return;
   if (!last_activated_surface_info_.is_valid())
@@ -1065,7 +1032,7 @@ RenderWidgetHostViewChildFrame::DidUpdateVisualProperties(
 }
 
 void RenderWidgetHostViewChildFrame::CreateCompositorFrameSinkSupport() {
-  if (features::IsMultiProcessMash() || enable_viz_)
+  if (enable_viz_)
     return;
 
   DCHECK(!support_);

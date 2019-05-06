@@ -216,7 +216,6 @@
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/accessibility/accessibility_switches.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/display/display_switches.h"
@@ -1545,14 +1544,12 @@ RenderProcessHostImpl::RenderProcessHostImpl(
 
   InitializeChannelProxy();
 
-  if (!features::IsMultiProcessMash()) {
-    const int id = GetID();
-    const uint64_t tracing_id =
-        ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(id);
-    gpu_client_.reset(new viz::GpuClient(
-        std::make_unique<BrowserGpuClientDelegate>(), id, tracing_id,
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})));
-  }
+  const int id = GetID();
+  const uint64_t tracing_id =
+      ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(id);
+  gpu_client_.reset(new viz::GpuClient(
+      std::make_unique<BrowserGpuClientDelegate>(), id, tracing_id,
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})));
 }
 
 // static

@@ -44,17 +44,7 @@
 #include "ui/gfx/range/range.h"
 #include "ui/surface/transport_dib.h"
 
-#if defined(USE_AURA)
-#include "base/containers/flat_map.h"
-#include "content/common/render_widget_window_tree_client_factory.mojom.h"
-#include "services/ws/public/mojom/window_tree.mojom.h"
-#endif
-
 struct WidgetHostMsg_SelectionBounds_Params;
-
-namespace base {
-class UnguessableToken;
-}
 
 namespace cc {
 struct BeginFrameAck;
@@ -582,14 +572,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
     return is_currently_scrolling_viewport_;
   }
 
-#if defined(USE_AURA)
-  void EmbedChildFrameRendererWindowTreeClient(
-      RenderWidgetHostViewBase* root_view,
-      int routing_id,
-      ws::mojom::WindowTreeClientPtr renderer_window_tree_client);
-  void OnChildFrameDestroyed(int routing_id);
-#endif
-
   virtual void DidNavigate();
 
   // Called when the RenderWidgetHostImpl has be initialized.
@@ -619,14 +601,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // but not consumed.
   virtual void StopFlingingIfNecessary(const blink::WebGestureEvent& event,
                                        InputEventAckState ack_result);
-
-#if defined(USE_AURA)
-  virtual void ScheduleEmbed(
-      ws::mojom::WindowTreeClientPtr client,
-      base::OnceCallback<void(const base::UnguessableToken&)> callback);
-
-  ws::mojom::WindowTreeClientPtr GetWindowTreeClientFromRenderer();
-#endif
 
   // If |event| is a touchpad pinch or double tap event for which we've sent a
   // synthetic wheel event, forward the |event| to the renderer, subject to
@@ -694,12 +668,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 
   void SynchronizeVisualProperties();
 
-#if defined(USE_AURA)
-  void OnDidScheduleEmbed(int routing_id,
-                          int embed_id,
-                          const base::UnguessableToken& token);
-#endif
-
   // Called when display properties that need to be synchronized with the
   // renderer process changes. This method is called before notifying
   // RenderWidgetHostImpl in order to allow the view to allocate a new
@@ -730,18 +698,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   uint32_t renderer_frame_number_ = 0;
 
   base::ObserverList<RenderWidgetHostViewBaseObserver>::Unchecked observers_;
-
-#if defined(USE_AURA)
-  mojom::RenderWidgetWindowTreeClientPtr render_widget_window_tree_client_;
-
-  int next_embed_id_ = 0;
-  // Maps from routing_id to embed-id. The |routing_id| is the id supplied to
-  // EmbedChildFrameRendererWindowTreeClient() and the embed-id a unique id
-  // generate at the time EmbedChildFrameRendererWindowTreeClient() was called.
-  // This is done to ensure when OnDidScheduleEmbed() is received another call
-  // too EmbedChildFrameRendererWindowTreeClient() did not come in.
-  base::flat_map<int, int> pending_embeds_;
-#endif
 
   base::Optional<blink::WebGestureEvent> pending_touchpad_pinch_begin_;
 

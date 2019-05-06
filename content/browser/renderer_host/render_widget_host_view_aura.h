@@ -194,12 +194,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       gfx::PointF* transformed_point) override;
   viz::FrameSinkId GetRootFrameSinkId() override;
   viz::SurfaceId GetCurrentSurfaceId() const override;
-
   void FocusedNodeChanged(bool is_editable_node,
                           const gfx::Rect& node_bounds_in_screen) override;
-  void ScheduleEmbed(ws::mojom::WindowTreeClientPtr client,
-                     base::OnceCallback<void(const base::UnguessableToken&)>
-                         callback) override;
   void OnSynchronizedDisplayPropertiesChanged() override;
   viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
       const cc::RenderFrameMetadata& metadata) override;

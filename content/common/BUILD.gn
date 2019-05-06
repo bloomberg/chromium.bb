@@ -487,7 +487,6 @@ mojom("mojo_bindings") {
     "render_frame_message_filter.mojom",
     "render_frame_metadata.mojom",
     "render_message_filter.mojom",
-    "render_widget_window_tree_client_factory.mojom",
     "renderer.mojom",
     "renderer_host.mojom",
     "widget.mojom",

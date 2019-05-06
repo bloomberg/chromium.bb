@@ -75,7 +75,6 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
-#include "services/ws/public/mojom/constants.mojom.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
@@ -463,14 +462,6 @@ void BindDiscardableMemoryRequestOnIO(
 void BindDiscardableMemoryRequestOnUI(
     discardable_memory::mojom::DiscardableSharedMemoryManagerRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-#if defined(USE_AURA)
-  if (features::IsMultiProcessMash()) {
-    ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-        ws::mojom::kServiceName, std::move(request));
-    return;
-  }
-#endif
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(

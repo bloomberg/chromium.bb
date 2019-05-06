@@ -66,7 +66,6 @@
 #include "gpu/vulkan/buildflags.h"
 #include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/khronos/GLES2/gl2.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/host/external_begin_frame_controller_client_impl.h"
@@ -217,13 +216,6 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kHeadless))
     return base::WrapUnique(new viz::SoftwareOutputDevice);
-
-#if defined(USE_AURA)
-  if (features::IsMultiProcessMash()) {
-    NOTREACHED();
-    return nullptr;
-  }
-#endif
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(OS_WIN)

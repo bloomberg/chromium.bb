@@ -41,11 +41,6 @@
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/size_f.h"
 
-#if defined(USE_AURA)
-#include "base/unguessable_token.h"
-#include "content/common/render_widget_window_tree_client_factory.mojom.h"
-#endif
-
 namespace content {
 
 RenderWidgetHostViewBase::RenderWidgetHostViewBase(RenderWidgetHost* host)
@@ -840,73 +835,10 @@ base::TimeTicks RenderWidgetHostViewBase::GetAndResetLastTabChangeStartTime() {
   return stored_time;
 }
 
-#if defined(USE_AURA)
-void RenderWidgetHostViewBase::EmbedChildFrameRendererWindowTreeClient(
-    RenderWidgetHostViewBase* root_view,
-    int routing_id,
-    ws::mojom::WindowTreeClientPtr renderer_window_tree_client) {
-  RenderWidgetHost* render_widget_host = GetRenderWidgetHost();
-  if (!render_widget_host)
-    return;
-  const int embed_id = ++next_embed_id_;
-  pending_embeds_[routing_id] = embed_id;
-  root_view->ScheduleEmbed(
-      std::move(renderer_window_tree_client),
-      base::BindOnce(&RenderWidgetHostViewBase::OnDidScheduleEmbed,
-                     GetWeakPtr(), routing_id, embed_id));
-}
-
-void RenderWidgetHostViewBase::OnChildFrameDestroyed(int routing_id) {
-  pending_embeds_.erase(routing_id);
-  // Tests may not create |render_widget_window_tree_client_| (tests don't
-  // necessarily create RenderWidgetHostViewAura).
-  if (render_widget_window_tree_client_)
-    render_widget_window_tree_client_->DestroyFrame(routing_id);
-}
-#endif
-
 void RenderWidgetHostViewBase::SynchronizeVisualProperties() {
   if (host())
     host()->SynchronizeVisualProperties();
 }
-
-#if defined(USE_AURA)
-void RenderWidgetHostViewBase::OnDidScheduleEmbed(
-    int routing_id,
-    int embed_id,
-    const base::UnguessableToken& token) {
-  auto iter = pending_embeds_.find(routing_id);
-  if (iter == pending_embeds_.end() || iter->second != embed_id)
-    return;
-  pending_embeds_.erase(iter);
-  // Tests may not create |render_widget_window_tree_client_| (tests don't
-  // necessarily create RenderWidgetHostViewAura).
-  if (render_widget_window_tree_client_)
-    render_widget_window_tree_client_->Embed(routing_id, token);
-}
-
-void RenderWidgetHostViewBase::ScheduleEmbed(
-    ws::mojom::WindowTreeClientPtr client,
-    base::OnceCallback<void(const base::UnguessableToken&)> callback) {
-  NOTREACHED();
-}
-
-ws::mojom::WindowTreeClientPtr
-RenderWidgetHostViewBase::GetWindowTreeClientFromRenderer() {
-  // NOTE: this function may be called multiple times.
-  RenderWidgetHost* render_widget_host = GetRenderWidgetHost();
-  mojom::RenderWidgetWindowTreeClientFactoryPtr factory;
-  BindInterface(render_widget_host->GetProcess(), &factory);
-
-  ws::mojom::WindowTreeClientPtr window_tree_client;
-  factory->CreateWindowTreeClientForRenderWidget(
-      render_widget_host->GetRoutingID(),
-      mojo::MakeRequest(&window_tree_client),
-      mojo::MakeRequest(&render_widget_window_tree_client_));
-  return window_tree_client;
-}
-
-#endif
 
 void RenderWidgetHostViewBase::DidNavigate() {
   if (host())
