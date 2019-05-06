@@ -54,6 +54,9 @@ ForeignLayerDisplayItem::ForeignLayerDisplayItem(Type type,
   DCHECK(IsForeignLayerType(type));
   DCHECK(GetLayer());
   DCHECK(!IsCacheable());
+  // TODO(959734): This CHECK is intended to find stack traces that are causing
+  // a segfault.
+  CHECK(GetLayer());
 }
 
 ForeignLayerDisplayItem::~ForeignLayerDisplayItem() {
