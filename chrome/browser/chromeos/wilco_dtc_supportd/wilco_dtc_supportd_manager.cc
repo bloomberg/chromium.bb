@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/diagnosticsd/diagnosticsd_manager.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_manager.h"
 
 #include <utility>
 
@@ -10,7 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/diagnosticsd/diagnosticsd_bridge.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_bridge.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
 #include "components/session_manager/core/session_manager.h"
@@ -23,28 +23,31 @@ namespace chromeos {
 
 namespace {
 
-DiagnosticsdManager* g_diagnosticsd_manager_instance = nullptr;
+WilcoDtcSupportdManager* g_wilco_dtc_supportd_manager_instance = nullptr;
 
-class DiagnosticsdManagerDelegateImpl final
-    : public DiagnosticsdManager::Delegate {
+class WilcoDtcSupportdManagerDelegateImpl final
+    : public WilcoDtcSupportdManager::Delegate {
  public:
-  DiagnosticsdManagerDelegateImpl();
-  ~DiagnosticsdManagerDelegateImpl() override;
+  WilcoDtcSupportdManagerDelegateImpl();
+  ~WilcoDtcSupportdManagerDelegateImpl() override;
 
   // Delegate overrides:
-  std::unique_ptr<DiagnosticsdBridge> CreateDiagnosticsdBridge() override;
+  std::unique_ptr<WilcoDtcSupportdBridge> CreateWilcoDtcSupportdBridge()
+      override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DiagnosticsdManagerDelegateImpl);
+  DISALLOW_COPY_AND_ASSIGN(WilcoDtcSupportdManagerDelegateImpl);
 };
 
-DiagnosticsdManagerDelegateImpl::DiagnosticsdManagerDelegateImpl() = default;
+WilcoDtcSupportdManagerDelegateImpl::WilcoDtcSupportdManagerDelegateImpl() =
+    default;
 
-DiagnosticsdManagerDelegateImpl::~DiagnosticsdManagerDelegateImpl() = default;
+WilcoDtcSupportdManagerDelegateImpl::~WilcoDtcSupportdManagerDelegateImpl() =
+    default;
 
-std::unique_ptr<DiagnosticsdBridge>
-DiagnosticsdManagerDelegateImpl::CreateDiagnosticsdBridge() {
-  return std::make_unique<DiagnosticsdBridge>(
+std::unique_ptr<WilcoDtcSupportdBridge>
+WilcoDtcSupportdManagerDelegateImpl::CreateWilcoDtcSupportdBridge() {
+  return std::make_unique<WilcoDtcSupportdBridge>(
       g_browser_process->system_network_context_manager()
           ->GetSharedURLLoaderFactory());
 }
@@ -63,27 +66,28 @@ bool AreOnlyAffiliatedUsersLoggedIn() {
 
 }  // namespace
 
-DiagnosticsdManager::Delegate::~Delegate() = default;
+WilcoDtcSupportdManager::Delegate::~Delegate() = default;
 
 // static
-DiagnosticsdManager* DiagnosticsdManager::Get() {
-  return g_diagnosticsd_manager_instance;
+WilcoDtcSupportdManager* WilcoDtcSupportdManager::Get() {
+  return g_wilco_dtc_supportd_manager_instance;
 }
 
-DiagnosticsdManager::DiagnosticsdManager()
-    : DiagnosticsdManager(std::make_unique<DiagnosticsdManagerDelegateImpl>()) {
-}
+WilcoDtcSupportdManager::WilcoDtcSupportdManager()
+    : WilcoDtcSupportdManager(
+          std::make_unique<WilcoDtcSupportdManagerDelegateImpl>()) {}
 
-DiagnosticsdManager::DiagnosticsdManager(std::unique_ptr<Delegate> delegate)
+WilcoDtcSupportdManager::WilcoDtcSupportdManager(
+    std::unique_ptr<Delegate> delegate)
     : delegate_(std::move(delegate)),
       callback_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
   DCHECK(delegate_);
-  DCHECK(!g_diagnosticsd_manager_instance);
-  g_diagnosticsd_manager_instance = this;
+  DCHECK(!g_wilco_dtc_supportd_manager_instance);
+  g_wilco_dtc_supportd_manager_instance = this;
   wilco_dtc_allowed_observer_ = CrosSettings::Get()->AddSettingsObserver(
       kDeviceWilcoDtcAllowed,
-      base::BindRepeating(&DiagnosticsdManager::StartOrStopWilcoDtc,
+      base::BindRepeating(&WilcoDtcSupportdManager::StartOrStopWilcoDtc,
                           weak_ptr_factory_.GetWeakPtr()));
 
   session_manager::SessionManager::Get()->AddObserver(this);
@@ -91,9 +95,9 @@ DiagnosticsdManager::DiagnosticsdManager(std::unique_ptr<Delegate> delegate)
   StartOrStopWilcoDtc();
 }
 
-DiagnosticsdManager::~DiagnosticsdManager() {
-  DCHECK_EQ(g_diagnosticsd_manager_instance, this);
-  g_diagnosticsd_manager_instance = nullptr;
+WilcoDtcSupportdManager::~WilcoDtcSupportdManager() {
+  DCHECK_EQ(g_wilco_dtc_supportd_manager_instance, this);
+  g_wilco_dtc_supportd_manager_instance = nullptr;
 
   // The destruction may mean that non-affiliated user is logging out.
   StartOrStopWilcoDtc();
@@ -101,27 +105,28 @@ DiagnosticsdManager::~DiagnosticsdManager() {
   session_manager::SessionManager::Get()->RemoveObserver(this);
 }
 
-void DiagnosticsdManager::SetConfigurationData(
+void WilcoDtcSupportdManager::SetConfigurationData(
     std::unique_ptr<std::string> data) {
   configuration_data_ = std::move(data);
 
-  if (!diagnosticsd_bridge_) {
+  if (!wilco_dtc_supportd_bridge_) {
     VLOG(0) << "Cannot send notification - no bridge to the daemon";
     return;
   }
-  diagnosticsd_bridge_->SetConfigurationData(configuration_data_.get());
+  wilco_dtc_supportd_bridge_->SetConfigurationData(configuration_data_.get());
 
-  diagnosticsd::mojom::DiagnosticsdServiceProxy* const diagnosticsd_mojo_proxy =
-      diagnosticsd_bridge_->diagnosticsd_service_mojo_proxy();
-  if (!diagnosticsd_mojo_proxy) {
+  wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceProxy* const
+      wilco_dtc_supportd_mojo_proxy =
+          wilco_dtc_supportd_bridge_->wilco_dtc_supportd_service_mojo_proxy();
+  if (!wilco_dtc_supportd_mojo_proxy) {
     VLOG(0) << "Cannot send message - Mojo connection to the daemon isn't "
                "bootstrapped yet";
     return;
   }
-  diagnosticsd_mojo_proxy->NotifyConfigurationDataChanged();
+  wilco_dtc_supportd_mojo_proxy->NotifyConfigurationDataChanged();
 }
 
-void DiagnosticsdManager::OnSessionStateChanged() {
+void WilcoDtcSupportdManager::OnSessionStateChanged() {
   session_manager::SessionState session_state =
       session_manager::SessionManager::Get()->session_state();
   // The user is logged-in and the affiliation is set.
@@ -129,7 +134,7 @@ void DiagnosticsdManager::OnSessionStateChanged() {
     StartOrStopWilcoDtc();
 }
 
-void DiagnosticsdManager::StartOrStopWilcoDtc() {
+void WilcoDtcSupportdManager::StartOrStopWilcoDtc() {
   callback_weak_ptr_factory_.InvalidateWeakPtrs();
   bool wilco_dtc_allowed;
   // Start wilco DTC support services only if logged-in users are affiliated
@@ -137,45 +142,45 @@ void DiagnosticsdManager::StartOrStopWilcoDtc() {
   if (CrosSettings::Get()->GetBoolean(kDeviceWilcoDtcAllowed,
                                       &wilco_dtc_allowed) &&
       wilco_dtc_allowed && AreOnlyAffiliatedUsersLoggedIn()) {
-    StartWilcoDtc(base::BindOnce(&DiagnosticsdManager::OnStartWilcoDtc,
+    StartWilcoDtc(base::BindOnce(&WilcoDtcSupportdManager::OnStartWilcoDtc,
                                  callback_weak_ptr_factory_.GetWeakPtr()));
   } else {
-    StopWilcoDtc(base::BindOnce(&DiagnosticsdManager::OnStopWilcoDtc,
+    StopWilcoDtc(base::BindOnce(&WilcoDtcSupportdManager::OnStopWilcoDtc,
                                 callback_weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
-void DiagnosticsdManager::StartWilcoDtc(WilcoDtcCallback callback) {
+void WilcoDtcSupportdManager::StartWilcoDtc(WilcoDtcCallback callback) {
   VLOG(1) << "Starting wilco DTC";
   UpstartClient::Get()->StartWilcoDtcService(std::move(callback));
 }
 
-void DiagnosticsdManager::StopWilcoDtc(WilcoDtcCallback callback) {
+void WilcoDtcSupportdManager::StopWilcoDtc(WilcoDtcCallback callback) {
   VLOG(1) << "Stopping wilco DTC";
   UpstartClient::Get()->StopWilcoDtcService(std::move(callback));
 }
 
-void DiagnosticsdManager::OnStartWilcoDtc(bool success) {
+void WilcoDtcSupportdManager::OnStartWilcoDtc(bool success) {
   if (!success) {
     DLOG(ERROR) << "Failed to start the wilco DTC";
   } else {
     VLOG(1) << "Wilco DTC started";
-    if (!diagnosticsd_bridge_)
-      diagnosticsd_bridge_ = delegate_->CreateDiagnosticsdBridge();
-    DCHECK(diagnosticsd_bridge_);
+    if (!wilco_dtc_supportd_bridge_)
+      wilco_dtc_supportd_bridge_ = delegate_->CreateWilcoDtcSupportdBridge();
+    DCHECK(wilco_dtc_supportd_bridge_);
 
     // Once the bridge is created, notify it about an available configuration
     // data blob.
-    diagnosticsd_bridge_->SetConfigurationData(configuration_data_.get());
+    wilco_dtc_supportd_bridge_->SetConfigurationData(configuration_data_.get());
   }
 }
 
-void DiagnosticsdManager::OnStopWilcoDtc(bool success) {
+void WilcoDtcSupportdManager::OnStopWilcoDtc(bool success) {
   if (!success) {
     DLOG(ERROR) << "Failed to stop wilco DTC";
   } else {
     VLOG(1) << "Wilco DTC stopped";
-    diagnosticsd_bridge_.reset();
+    wilco_dtc_supportd_bridge_.reset();
   }
 }
 

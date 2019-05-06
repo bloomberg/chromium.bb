@@ -13,10 +13,10 @@
 #include "base/memory/shared_memory.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "chrome/browser/chromeos/diagnosticsd/diagnosticsd_messaging.h"
-#include "chrome/browser/chromeos/diagnosticsd/mojo_utils.h"
-#include "chrome/browser/chromeos/diagnosticsd/testing_diagnosticsd_bridge_wrapper.h"
-#include "chrome/services/diagnosticsd/public/mojom/diagnosticsd.mojom.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/mojo_utils.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/testing_wilco_dtc_supportd_bridge_wrapper.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_messaging.h"
+#include "chrome/services/wilco_dtc_supportd/public/mojom/wilco_dtc_supportd.mojom.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
 #include "mojo/public/cpp/system/handle.h"
@@ -70,22 +70,22 @@ mojo::ScopedHandle AssertCreateReadOnlySharedMemoryMojoHandle(
   return shared_memory_handle;
 }
 
-using SendUiMessageToDiagnosticsProcessorImplCallback =
+using SendUiMessageToWilcoDtcImplCallback =
     base::RepeatingCallback<void(const std::string& response_json_message)>;
 
-class MockMojoDiagnosticsdService
-    : public diagnosticsd::mojom::DiagnosticsdService {
+class MockMojoWilcoDtcSupportdService
+    : public wilco_dtc_supportd::mojom::WilcoDtcSupportdService {
  public:
-  void SendUiMessageToDiagnosticsProcessor(
+  void SendUiMessageToWilcoDtc(
       mojo::ScopedHandle json_message,
-      SendUiMessageToDiagnosticsProcessorCallback callback) override {
+      SendUiMessageToWilcoDtcCallback callback) override {
     // Redirect the call to the Impl method to workaround GMock's issues with
     // move-only types and to make setting test expectations easier (by using
     // std::string's rather than memory handles).
-    SendUiMessageToDiagnosticsProcessorImpl(
+    SendUiMessageToWilcoDtcImpl(
         AssertGetStringFromMojoHandle(std::move(json_message)),
         base::BindRepeating(
-            [](SendUiMessageToDiagnosticsProcessorCallback original_callback,
+            [](SendUiMessageToWilcoDtcCallback original_callback,
                const std::string& response_json_message) {
               std::move(original_callback)
                   .Run(AssertCreateReadOnlySharedMemoryMojoHandle(
@@ -94,22 +94,22 @@ class MockMojoDiagnosticsdService
             base::Passed(&callback)));
   }
 
-  MOCK_METHOD2(SendUiMessageToDiagnosticsProcessorImpl,
+  MOCK_METHOD2(SendUiMessageToWilcoDtcImpl,
                void(const std::string& json_message,
-                    SendUiMessageToDiagnosticsProcessorImplCallback callback));
+                    SendUiMessageToWilcoDtcImplCallback callback));
   MOCK_METHOD0(NotifyConfigurationDataChanged, void());
 };
 
 }  // namespace
 
-// Test that the message channel gets closed if the DiagnosticsdBridge
+// Test that the message channel gets closed if the WilcoDtcSupportdBridge
 // instance isn't created.
-TEST(DiagnosticsdMessagingOpenedByExtensionNoBridgeTest, Test) {
+TEST(WilcoDtcSupportdMessagingOpenedByExtensionNoBridgeTest, Test) {
   base::test::ScopedTaskEnvironment scoped_task_environment;
 
   // Create the message host.
   std::unique_ptr<extensions::NativeMessageHost> message_host =
-      CreateExtensionOwnedDiagnosticsdMessageHost();
+      CreateExtensionOwnedWilcoDtcSupportdMessageHost();
   StrictMock<MockNativeMessageHostClient> message_host_client;
 
   // The message host will close the channel during the OnMessage() call at the
@@ -122,53 +122,54 @@ TEST(DiagnosticsdMessagingOpenedByExtensionNoBridgeTest, Test) {
 
 namespace {
 
-// Test fixture that spins up a testing DiagnosticsdBridge instance.
-class DiagnosticsdMessagingOpenedByExtensionTest : public testing::Test {
+// Test fixture that spins up a testing WilcoDtcSupportdBridge instance.
+class WilcoDtcSupportdMessagingOpenedByExtensionTest : public testing::Test {
  protected:
-  DiagnosticsdMessagingOpenedByExtensionTest() {
+  WilcoDtcSupportdMessagingOpenedByExtensionTest() {
     DBusThreadManager::Initialize();
-    testing_diagnosticsd_bridge_wrapper_ =
-        TestingDiagnosticsdBridgeWrapper::Create(
-            &mojo_diagnosticsd_service_,
+    testing_wilco_dtc_supportd_bridge_wrapper_ =
+        TestingWilcoDtcSupportdBridgeWrapper::Create(
+            &mojo_wilco_dtc_supportd_service_,
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_),
-            &diagnosticsd_bridge_);
+            &wilco_dtc_supportd_bridge_);
   }
 
-  ~DiagnosticsdMessagingOpenedByExtensionTest() override {
-    // Make sure |diagnosticsd_bridge_| is destroyed before DBusThreadManager is
-    // shut down, since the DiagnosticsdBridge class uses the latter.
-    diagnosticsd_bridge_.reset();
+  ~WilcoDtcSupportdMessagingOpenedByExtensionTest() override {
+    // Make sure |wilco_dtc_supportd_bridge_| is destroyed before
+    // DBusThreadManager is shut down, since the WilcoDtcSupportdBridge class
+    // uses the latter.
+    wilco_dtc_supportd_bridge_.reset();
     DBusThreadManager::Shutdown();
   }
 
-  MockMojoDiagnosticsdService* mojo_diagnosticsd_service() {
-    return &mojo_diagnosticsd_service_;
+  MockMojoWilcoDtcSupportdService* mojo_wilco_dtc_supportd_service() {
+    return &mojo_wilco_dtc_supportd_service_;
   }
 
-  TestingDiagnosticsdBridgeWrapper* diagnosticsd_bridge_wrapper() {
-    return testing_diagnosticsd_bridge_wrapper_.get();
+  TestingWilcoDtcSupportdBridgeWrapper* wilco_dtc_supportd_bridge_wrapper() {
+    return testing_wilco_dtc_supportd_bridge_wrapper_.get();
   }
 
   void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  StrictMock<MockMojoDiagnosticsdService> mojo_diagnosticsd_service_;
+  StrictMock<MockMojoWilcoDtcSupportdService> mojo_wilco_dtc_supportd_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  std::unique_ptr<TestingDiagnosticsdBridgeWrapper>
-      testing_diagnosticsd_bridge_wrapper_;
-  std::unique_ptr<DiagnosticsdBridge> diagnosticsd_bridge_;
+  std::unique_ptr<TestingWilcoDtcSupportdBridgeWrapper>
+      testing_wilco_dtc_supportd_bridge_wrapper_;
+  std::unique_ptr<WilcoDtcSupportdBridge> wilco_dtc_supportd_bridge_;
 };
 
 }  // namespace
 
 // Test that the message channel gets closed if there's no Mojo connection to
-// the diagnosticsd daemon.
-TEST_F(DiagnosticsdMessagingOpenedByExtensionTest, NoMojoConnection) {
+// the wilco_dtc_supportd daemon.
+TEST_F(WilcoDtcSupportdMessagingOpenedByExtensionTest, NoMojoConnection) {
   // Create the message host.
   std::unique_ptr<extensions::NativeMessageHost> message_host =
-      CreateExtensionOwnedDiagnosticsdMessageHost();
+      CreateExtensionOwnedWilcoDtcSupportdMessageHost();
   StrictMock<MockNativeMessageHostClient> message_host_client;
   message_host->Start(&message_host_client);
 
@@ -180,14 +181,15 @@ TEST_F(DiagnosticsdMessagingOpenedByExtensionTest, NoMojoConnection) {
 
 namespace {
 
-// Test fixture that spins up a testing DiagnosticsdBridge instance and creates
-// and owns a single message host, to simplify testing of basic scenarios.
-class DiagnosticsdMessagingOpenedByExtensionSingleHostTest
-    : public DiagnosticsdMessagingOpenedByExtensionTest {
+// Test fixture that spins up a testing WilcoDtcSupportdBridge instance and
+// creates and owns a single message host, to simplify testing of basic
+// scenarios.
+class WilcoDtcSupportdMessagingOpenedByExtensionSingleHostTest
+    : public WilcoDtcSupportdMessagingOpenedByExtensionTest {
  protected:
-  DiagnosticsdMessagingOpenedByExtensionSingleHostTest() {
-    diagnosticsd_bridge_wrapper()->EstablishFakeMojoConnection();
-    message_host_ = CreateExtensionOwnedDiagnosticsdMessageHost();
+  WilcoDtcSupportdMessagingOpenedByExtensionSingleHostTest() {
+    wilco_dtc_supportd_bridge_wrapper()->EstablishFakeMojoConnection();
+    message_host_ = CreateExtensionOwnedWilcoDtcSupportdMessageHost();
     message_host_->Start(&message_host_client_);
   }
 
@@ -200,10 +202,10 @@ class DiagnosticsdMessagingOpenedByExtensionSingleHostTest
 
   void ExpectMojoSendMessageCall(
       const std::string& expected_message,
-      SendUiMessageToDiagnosticsProcessorImplCallback* captured_callback,
+      SendUiMessageToWilcoDtcImplCallback* captured_callback,
       base::RunLoop* run_loop) {
-    EXPECT_CALL(*mojo_diagnosticsd_service(),
-                SendUiMessageToDiagnosticsProcessorImpl(expected_message, _))
+    EXPECT_CALL(*mojo_wilco_dtc_supportd_service(),
+                SendUiMessageToWilcoDtcImpl(expected_message, _))
         .WillOnce(DoAll(SaveArg<1>(captured_callback),
                         InvokeWithoutArgs(run_loop, &base::RunLoop::Quit)));
   }
@@ -211,10 +213,10 @@ class DiagnosticsdMessagingOpenedByExtensionSingleHostTest
   void ExpectMojoSendMessageCallAndRespond(
       const std::string& expected_message,
       const std::string& response_message_to_pass) {
-    EXPECT_CALL(*mojo_diagnosticsd_service(),
-                SendUiMessageToDiagnosticsProcessorImpl(expected_message, _))
-        .WillOnce(WithArg<1>(Invoke(
-            [=](SendUiMessageToDiagnosticsProcessorImplCallback callback) {
+    EXPECT_CALL(*mojo_wilco_dtc_supportd_service(),
+                SendUiMessageToWilcoDtcImpl(expected_message, _))
+        .WillOnce(WithArg<1>(
+            Invoke([=](SendUiMessageToWilcoDtcImplCallback callback) {
               std::move(callback).Run(response_message_to_pass);
             })));
   }
@@ -245,10 +247,10 @@ class DiagnosticsdMessagingOpenedByExtensionSingleHostTest
 
 // Test the basic successful scenario when the message is successfully delivered
 // from an extension to the daemon and the response is delivered back.
-TEST_F(DiagnosticsdMessagingOpenedByExtensionSingleHostTest,
+TEST_F(WilcoDtcSupportdMessagingOpenedByExtensionSingleHostTest,
        SingleRequestResponse) {
   // Set up the daemon's Mojo service to expect the message from the extension.
-  SendUiMessageToDiagnosticsProcessorImplCallback mojo_method_callback;
+  SendUiMessageToWilcoDtcImplCallback mojo_method_callback;
   base::RunLoop mojo_method_run_loop;
   ExpectMojoSendMessageCall(kMessageFromExtension /* expected_message */,
                             &mojo_method_callback, &mojo_method_run_loop);
@@ -271,7 +273,8 @@ TEST_F(DiagnosticsdMessagingOpenedByExtensionSingleHostTest,
 
 // Test that when the daemon responds without any message, no message is sent to
 // the extension.
-TEST_F(DiagnosticsdMessagingOpenedByExtensionSingleHostTest, EmptyResponse) {
+TEST_F(WilcoDtcSupportdMessagingOpenedByExtensionSingleHostTest,
+       EmptyResponse) {
   // Set up the daemon's Mojo service to expect the message from the extension
   // and to respond with an empty message.
   ExpectMojoSendMessageCallAndRespond(
@@ -291,10 +294,11 @@ TEST_F(DiagnosticsdMessagingOpenedByExtensionSingleHostTest, EmptyResponse) {
 
 // Test the case when both the extension and the daemon send heavy messages, but
 // which are nevertheless within the acceptable bounds.
-TEST_F(DiagnosticsdMessagingOpenedByExtensionSingleHostTest, HeavyMessages) {
-  const std::string kHeavyMessageFromExtension(kDiagnosticsdUiMessageMaxSize,
-                                               '\1');
-  const std::string kHeavyMessageFromDaemon(kDiagnosticsdUiMessageMaxSize,
+TEST_F(WilcoDtcSupportdMessagingOpenedByExtensionSingleHostTest,
+       HeavyMessages) {
+  const std::string kHeavyMessageFromExtension(
+      kWilcoDtcSupportdUiMessageMaxSize, '\1');
+  const std::string kHeavyMessageFromDaemon(kWilcoDtcSupportdUiMessageMaxSize,
                                             '\2');
 
   // Set up the daemon's Mojo service to expect the message from the extension
@@ -317,15 +321,15 @@ TEST_F(DiagnosticsdMessagingOpenedByExtensionSingleHostTest, HeavyMessages) {
 
 // Test that when the extension sends a too heavy message, it is discarded and
 // the message channel is closed.
-TEST_F(DiagnosticsdMessagingOpenedByExtensionSingleHostTest,
+TEST_F(WilcoDtcSupportdMessagingOpenedByExtensionSingleHostTest,
        ExcessivelyBigRequest) {
-  const std::string kExcessivelyBigMessage(kDiagnosticsdUiMessageMaxSize + 1,
-                                           '\1');
+  const std::string kExcessivelyBigMessage(
+      kWilcoDtcSupportdUiMessageMaxSize + 1, '\1');
 
   base::RunLoop channel_close_run_loop;
-  ExpectChannelClosingWithError(
-      kDiagnosticsdUiMessageTooBigExtensionsError /* expected_error_message */,
-      &channel_close_run_loop);
+  ExpectChannelClosingWithError(kWilcoDtcSupportdUiMessageTooBigExtensionsError
+                                /* expected_error_message */,
+                                &channel_close_run_loop);
 
   message_host()->OnMessage(kExcessivelyBigMessage);
 
@@ -334,10 +338,10 @@ TEST_F(DiagnosticsdMessagingOpenedByExtensionSingleHostTest,
 
 // Test that when the daemon sends a too heavy message, it is discarded and the
 // message channel is closed.
-TEST_F(DiagnosticsdMessagingOpenedByExtensionSingleHostTest,
+TEST_F(WilcoDtcSupportdMessagingOpenedByExtensionSingleHostTest,
        ExcessivelyBigResponse) {
-  const std::string kExcessivelyBigMessage(kDiagnosticsdUiMessageMaxSize + 1,
-                                           '\1');
+  const std::string kExcessivelyBigMessage(
+      kWilcoDtcSupportdUiMessageMaxSize + 1, '\1');
 
   // Set up the daemon's Mojo service to expect the message from the extension
   // and to respond with a heavy message.
@@ -348,9 +352,9 @@ TEST_F(DiagnosticsdMessagingOpenedByExtensionSingleHostTest,
   // Set up the expectation that the message host closes the channel with an
   // empty error message.
   base::RunLoop channel_close_run_loop;
-  ExpectChannelClosingWithError(
-      kDiagnosticsdUiMessageTooBigExtensionsError /* expected_error_message */,
-      &channel_close_run_loop);
+  ExpectChannelClosingWithError(kWilcoDtcSupportdUiMessageTooBigExtensionsError
+                                /* expected_error_message */,
+                                &channel_close_run_loop);
 
   // Send the message from the extension and wait till the channel gets closed.
   message_host()->OnMessage(kMessageFromExtension);
@@ -359,10 +363,10 @@ TEST_F(DiagnosticsdMessagingOpenedByExtensionSingleHostTest,
 
 // Test that extra messages sent by the extension before the daemon's response
 // arrives result in the channel being closed with an error.
-TEST_F(DiagnosticsdMessagingOpenedByExtensionSingleHostTest,
+TEST_F(WilcoDtcSupportdMessagingOpenedByExtensionSingleHostTest,
        ExtraRequestsBeforeResponse) {
   // Set up the daemon's Mojo service to expect the message from the extension.
-  SendUiMessageToDiagnosticsProcessorImplCallback mojo_method_callback;
+  SendUiMessageToWilcoDtcImplCallback mojo_method_callback;
   base::RunLoop mojo_method_run_loop;
   ExpectMojoSendMessageCall(kMessageFromExtension /* expected_message */,
                             &mojo_method_callback, &mojo_method_run_loop);
@@ -373,9 +377,9 @@ TEST_F(DiagnosticsdMessagingOpenedByExtensionSingleHostTest,
   // Send the second message from the extension and wait till the message host
   // closes the channel.
   base::RunLoop channel_close_run_loop;
-  ExpectChannelClosingWithError(
-      kDiagnosticsdUiExtraMessagesExtensionsError /* expected_error_message */,
-      &channel_close_run_loop);
+  ExpectChannelClosingWithError(kWilcoDtcSupportdUiExtraMessagesExtensionsError
+                                /* expected_error_message */,
+                                &channel_close_run_loop);
   message_host()->OnMessage(kMessageFromExtension);
   channel_close_run_loop.Run();
 
@@ -397,7 +401,7 @@ TEST_F(DiagnosticsdMessagingOpenedByExtensionSingleHostTest,
 // Test that extra messages sent by the extension after the daemon's response is
 // delivered are ignored (since the message channel is in the middle of being
 // closed at this point).
-TEST_F(DiagnosticsdMessagingOpenedByExtensionSingleHostTest,
+TEST_F(WilcoDtcSupportdMessagingOpenedByExtensionSingleHostTest,
        ExtraRequestsAfterResponse) {
   // Set up the daemon's Mojo service to expect the message from the extension
   // and to respond with another message.
@@ -427,10 +431,10 @@ TEST_F(DiagnosticsdMessagingOpenedByExtensionSingleHostTest,
 
 // Test the scenario when the message host is destroyed before the response from
 // the daemon arrives.
-TEST_F(DiagnosticsdMessagingOpenedByExtensionSingleHostTest,
+TEST_F(WilcoDtcSupportdMessagingOpenedByExtensionSingleHostTest,
        DestroyBeforeResponse) {
   // Set up the daemon's Mojo service to expect the message from the extension.
-  SendUiMessageToDiagnosticsProcessorImplCallback mojo_method_callback;
+  SendUiMessageToWilcoDtcImplCallback mojo_method_callback;
   base::RunLoop mojo_method_run_loop;
   ExpectMojoSendMessageCall(kMessageFromExtension /* expected_message */,
                             &mojo_method_callback, &mojo_method_run_loop);

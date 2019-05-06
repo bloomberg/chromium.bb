@@ -35,7 +35,6 @@ class CrosDisksClient;
 class DBusClientsBrowser;
 class DBusThreadManagerSetter;
 class DebugDaemonClient;
-class DiagnosticsdClient;
 class EasyUnlockClient;
 class GsmSMSClient;
 class ImageBurnerClient;
@@ -55,6 +54,7 @@ class SmbProviderClient;
 class SMSClient;
 class UpdateEngineClient;
 class VirtualFileProviderClient;
+class WilcoDtcSupportdClient;
 
 // THIS CLASS IS BEING DEPRECATED. See README.md for guidelines and
 // https://crbug.com/647367 for details.
@@ -123,7 +123,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManager {
   ConciergeClient* GetConciergeClient();
   CrosDisksClient* GetCrosDisksClient();
   DebugDaemonClient* GetDebugDaemonClient();
-  DiagnosticsdClient* GetDiagnosticsdClient();
   EasyUnlockClient* GetEasyUnlockClient();
   ImageBurnerClient* GetImageBurnerClient();
   ImageLoaderClient* GetImageLoaderClient();
@@ -134,6 +133,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManager {
   SmbProviderClient* GetSmbProviderClient();
   UpdateEngineClient* GetUpdateEngineClient();
   VirtualFileProviderClient* GetVirtualFileProviderClient();
+  WilcoDtcSupportdClient* GetWilcoDtcSupportdClient();
 
   // DEPRECATED, DO NOT USE. The static getter for each of these classes should
   // be used instead. TODO(stevenjb): Remove. https://crbug.com/948390.

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DIAGNOSTICSD_DIAGNOSTICSD_WEB_REQUEST_SERVICE_H_
-#define CHROME_BROWSER_CHROMEOS_DIAGNOSTICSD_DIAGNOSTICSD_WEB_REQUEST_SERVICE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_WILCO_DTC_SUPPORTD_WILCO_DTC_SUPPORTD_WEB_REQUEST_SERVICE_H_
+#define CHROME_BROWSER_CHROMEOS_WILCO_DTC_SUPPORTD_WILCO_DTC_SUPPORTD_WEB_REQUEST_SERVICE_H_
 
 #include <memory>
 #include <string>
@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_piece.h"
-#include "chrome/services/diagnosticsd/public/mojom/diagnosticsd.mojom.h"
+#include "chrome/services/wilco_dtc_supportd/public/mojom/wilco_dtc_supportd.mojom.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -27,33 +27,34 @@ class SimpleURLLoader;
 namespace chromeos {
 
 // Max number of supported pending web requests.
-extern const int kDiagnosticsdWebRequestQueueMaxSize;
+extern const int kWilcoDtcSupportdWebRequestQueueMaxSize;
 
 // Max size of web response body in bytes.
-extern const int kDiagnosticsdWebResponseMaxSizeInBytes;
+extern const int kWilcoDtcSupportdWebResponseMaxSizeInBytes;
 
 // This class manages and performs web requests initiated by
-// diagnosticsd_processor. This service performs only one request at a time
-// and queues additional incoming requests. It can handle the limited number of
-// queued web requests. If the web request queue overflows, new web requests
-// fail with kNetworkError.
-class DiagnosticsdWebRequestService final {
+// wilco_dtc_supportd_processor. This service performs only one request at a
+// time and queues additional incoming requests. It can handle the limited
+// number of queued web requests. If the web request queue overflows, new web
+// requests fail with kNetworkError.
+class WilcoDtcSupportdWebRequestService final {
  public:
-  using PerformWebRequestCallback =
-      base::OnceCallback<void(diagnosticsd::mojom::DiagnosticsdWebRequestStatus,
-                              int,
-                              mojo::ScopedHandle)>;
+  using PerformWebRequestCallback = base::OnceCallback<void(
+      wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus,
+      int,
+      mojo::ScopedHandle)>;
 
-  explicit DiagnosticsdWebRequestService(
+  explicit WilcoDtcSupportdWebRequestService(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
-  ~DiagnosticsdWebRequestService();
+  ~WilcoDtcSupportdWebRequestService();
 
   // Performs web request. The response is returned by |callback| which is
   // guaranteed to be called. The requests, that were not complete in lifetime
   // of the service, will be canceled and the |callback| will be executed in
   // the destructor and fail with kNetworkError.
   void PerformRequest(
-      diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod http_method,
+      wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod
+          http_method,
       GURL url,
       std::vector<base::StringPiece> headers,
       std::string request_body,
@@ -85,9 +86,9 @@ class DiagnosticsdWebRequestService final {
   base::queue<std::unique_ptr<WebRequest>> request_queue_;
   std::unique_ptr<WebRequest> active_request_;
 
-  DISALLOW_COPY_AND_ASSIGN(DiagnosticsdWebRequestService);
+  DISALLOW_COPY_AND_ASSIGN(WilcoDtcSupportdWebRequestService);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_DIAGNOSTICSD_DIAGNOSTICSD_WEB_REQUEST_SERVICE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_WILCO_DTC_SUPPORTD_WILCO_DTC_SUPPORTD_WEB_REQUEST_SERVICE_H_

@@ -148,11 +148,6 @@ DebugDaemonClient* DBusThreadManager::GetDebugDaemonClient() {
                           : nullptr;
 }
 
-DiagnosticsdClient* DBusThreadManager::GetDiagnosticsdClient() {
-  return clients_browser_ ? clients_browser_->diagnosticsd_client_.get()
-                          : nullptr;
-}
-
 EasyUnlockClient* DBusThreadManager::GetEasyUnlockClient() {
   return clients_browser_ ? clients_browser_->easy_unlock_client_.get()
                           : nullptr;
@@ -237,6 +232,11 @@ VirtualFileProviderClient* DBusThreadManager::GetVirtualFileProviderClient() {
   return clients_browser_
              ? clients_browser_->virtual_file_provider_client_.get()
              : nullptr;
+}
+
+WilcoDtcSupportdClient* DBusThreadManager::GetWilcoDtcSupportdClient() {
+  return clients_browser_ ? clients_browser_->wilco_dtc_supportd_client_.get()
+                          : nullptr;
 }
 
 void DBusThreadManager::InitializeClients() {

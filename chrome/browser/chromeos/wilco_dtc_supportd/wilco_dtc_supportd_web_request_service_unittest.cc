@@ -14,8 +14,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
-#include "chrome/browser/chromeos/diagnosticsd/mojo_utils.h"
-#include "chrome/services/diagnosticsd/public/mojom/diagnosticsd.mojom.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/mojo_utils.h"
+#include "chrome/services/wilco_dtc_supportd/public/mojom/wilco_dtc_supportd.mojom.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -25,7 +25,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-#include "chrome/browser/chromeos/diagnosticsd/diagnosticsd_web_request_service.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_web_request_service.h"
 
 namespace chromeos {
 
@@ -38,13 +38,14 @@ constexpr char kInvalidUrl[] = "\0\0\1invalid_url";
 constexpr char kFakeRequestBody[] = "Fake\0Request\11Body\n\0";
 constexpr char kFakeResponseBody[] = "Fake\11Response\0\0\nBody";
 
-// Tests for the DiagnosticsdWebRequestService class.
-class DiagnosticsdWebRequestServiceTest : public testing::Test {
+// Tests for the WilcoDtcSupportdWebRequestService class.
+class WilcoDtcSupportdWebRequestServiceTest : public testing::Test {
  protected:
   struct WebRequestResult {
-    WebRequestResult(diagnosticsd::mojom::DiagnosticsdWebRequestStatus status,
-                     int http_status,
-                     mojo::ScopedHandle response_body_handle)
+    WebRequestResult(
+        wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus status,
+        int http_status,
+        mojo::ScopedHandle response_body_handle)
         : status(status), http_status(http_status) {
       if (!response_body_handle.is_valid()) {
         response_body = "";
@@ -59,17 +60,17 @@ class DiagnosticsdWebRequestServiceTest : public testing::Test {
       }
     }
 
-    diagnosticsd::mojom::DiagnosticsdWebRequestStatus status;
+    wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus status;
     int http_status;
     std::string response_body;
   };
-  DiagnosticsdWebRequestServiceTest() {
-    web_request_service_ = std::make_unique<DiagnosticsdWebRequestService>(
+  WilcoDtcSupportdWebRequestServiceTest() {
+    web_request_service_ = std::make_unique<WilcoDtcSupportdWebRequestService>(
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &test_url_loader_factory_));
   }
 
-  ~DiagnosticsdWebRequestServiceTest() override {}
+  ~WilcoDtcSupportdWebRequestServiceTest() override {}
 
   void TearDown() override { test_url_loader_factory_.ClearResponses(); }
 
@@ -82,7 +83,8 @@ class DiagnosticsdWebRequestServiceTest : public testing::Test {
   //                      web response.
   // * |run_loop| - the current run loop.
   void StartWebRequest(
-      diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod http_method,
+      wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod
+          http_method,
       const std::string& url,
       const std::string& request_body,
       std::unique_ptr<WebRequestResult>* request_result,
@@ -90,9 +92,9 @@ class DiagnosticsdWebRequestServiceTest : public testing::Test {
     web_request_service()->PerformRequest(
         http_method, GURL(url), std::vector<base::StringPiece>() /* headers */,
         request_body,
-        base::BindOnce(&DiagnosticsdWebRequestServiceTest::OnRequestComplete,
-                       base::Unretained(this), request_result,
-                       run_loop->QuitClosure()));
+        base::BindOnce(
+            &WilcoDtcSupportdWebRequestServiceTest::OnRequestComplete,
+            base::Unretained(this), request_result, run_loop->QuitClosure()));
   }
 
   // Injects the web response for |url|.
@@ -111,7 +113,7 @@ class DiagnosticsdWebRequestServiceTest : public testing::Test {
 
   void DestroyService() { web_request_service_.reset(); }
 
-  DiagnosticsdWebRequestService* web_request_service() {
+  WilcoDtcSupportdWebRequestService* web_request_service() {
     return web_request_service_.get();
   }
 
@@ -119,7 +121,7 @@ class DiagnosticsdWebRequestServiceTest : public testing::Test {
   void OnRequestComplete(
       std::unique_ptr<WebRequestResult>* request_result,
       base::RepeatingClosure callback,
-      diagnosticsd::mojom::DiagnosticsdWebRequestStatus status,
+      wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus status,
       int http_status,
       mojo::ScopedHandle response_body) {
     auto response = std::make_unique<WebRequestResult>(
@@ -128,33 +130,36 @@ class DiagnosticsdWebRequestServiceTest : public testing::Test {
     std::move(callback).Run();
   }
 
-  std::unique_ptr<DiagnosticsdWebRequestService> web_request_service_;
+  std::unique_ptr<WilcoDtcSupportdWebRequestService> web_request_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   base::MessageLoop message_loop_;
 };
 
 }  // namespace
 
-TEST_F(DiagnosticsdWebRequestServiceTest, HttpMethodGetNonEmptyBody) {
+TEST_F(WilcoDtcSupportdWebRequestServiceTest, HttpMethodGetNonEmptyBody) {
   std::unique_ptr<WebRequestResult> request_result;
   base::RunLoop run_loop;
 
-  StartWebRequest(diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod::kGet,
-                  kFakeUrl, kFakeRequestBody, &request_result, &run_loop);
+  StartWebRequest(
+      wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod::kGet,
+      kFakeUrl, kFakeRequestBody, &request_result, &run_loop);
   // The test fails with a network error on the same thread.
   ASSERT_TRUE(request_result);
   EXPECT_EQ(request_result->status,
-            diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kNetworkError);
+            wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::
+                kNetworkError);
   EXPECT_EQ(request_result->http_status, 0);
   EXPECT_EQ(request_result->response_body, "");
 }
 
-TEST_F(DiagnosticsdWebRequestServiceTest, HttpMethodHeadEmptyBody) {
+TEST_F(WilcoDtcSupportdWebRequestServiceTest, HttpMethodHeadEmptyBody) {
   std::unique_ptr<WebRequestResult> request_result;
   base::RunLoop run_loop;
 
-  StartWebRequest(diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod::kHead,
-                  kFakeUrl, "" /* request_body */, &request_result, &run_loop);
+  StartWebRequest(
+      wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod::kHead,
+      kFakeUrl, "" /* request_body */, &request_result, &run_loop);
   EXPECT_FALSE(request_result);
   InjectNetworkResponse(kFakeUrl,
                         std::make_unique<net::HttpStatusCode>(net::HTTP_OK),
@@ -162,17 +167,18 @@ TEST_F(DiagnosticsdWebRequestServiceTest, HttpMethodHeadEmptyBody) {
   run_loop.Run();
   ASSERT_TRUE(request_result);
   EXPECT_EQ(request_result->status,
-            diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kOk);
+            wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::kOk);
   EXPECT_EQ(request_result->http_status, net::HTTP_OK);
   EXPECT_EQ(request_result->response_body, "");
 }
 
-TEST_F(DiagnosticsdWebRequestServiceTest, HttpMethodPostNonEmptyBody) {
+TEST_F(WilcoDtcSupportdWebRequestServiceTest, HttpMethodPostNonEmptyBody) {
   std::unique_ptr<WebRequestResult> request_result;
   base::RunLoop run_loop;
 
-  StartWebRequest(diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod::kPost,
-                  kFakeUrl, kFakeRequestBody, &request_result, &run_loop);
+  StartWebRequest(
+      wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod::kPost,
+      kFakeUrl, kFakeRequestBody, &request_result, &run_loop);
   EXPECT_FALSE(request_result);
   InjectNetworkResponse(kFakeUrl,
                         std::make_unique<net::HttpStatusCode>(net::HTTP_OK),
@@ -180,17 +186,18 @@ TEST_F(DiagnosticsdWebRequestServiceTest, HttpMethodPostNonEmptyBody) {
   run_loop.Run();
   ASSERT_TRUE(request_result);
   EXPECT_EQ(request_result->status,
-            diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kOk);
+            wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::kOk);
   EXPECT_EQ(request_result->http_status, net::HTTP_OK);
   EXPECT_EQ(request_result->response_body, kFakeResponseBody);
 }
 
-TEST_F(DiagnosticsdWebRequestServiceTest, HttpMethodPutEmptyBody) {
+TEST_F(WilcoDtcSupportdWebRequestServiceTest, HttpMethodPutEmptyBody) {
   std::unique_ptr<WebRequestResult> request_result;
   base::RunLoop run_loop;
 
-  StartWebRequest(diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod::kPut,
-                  kFakeUrl, "" /* request_body */, &request_result, &run_loop);
+  StartWebRequest(
+      wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod::kPut,
+      kFakeUrl, "" /* request_body */, &request_result, &run_loop);
   EXPECT_FALSE(request_result);
   InjectNetworkResponse(kFakeUrl,
                         std::make_unique<net::HttpStatusCode>(net::HTTP_OK),
@@ -198,51 +205,57 @@ TEST_F(DiagnosticsdWebRequestServiceTest, HttpMethodPutEmptyBody) {
   run_loop.Run();
   ASSERT_TRUE(request_result);
   EXPECT_EQ(request_result->status,
-            diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kOk);
+            wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::kOk);
   EXPECT_EQ(request_result->http_status, net::HTTP_OK);
   EXPECT_EQ(request_result->response_body, "");
 }
 
-TEST_F(DiagnosticsdWebRequestServiceTest, ResponseCodeParsingError) {
+TEST_F(WilcoDtcSupportdWebRequestServiceTest, ResponseCodeParsingError) {
   std::unique_ptr<WebRequestResult> request_result;
   base::RunLoop run_loop;
 
-  StartWebRequest(diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod::kPost,
-                  kFakeUrl, kFakeRequestBody, &request_result, &run_loop);
+  StartWebRequest(
+      wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod::kPost,
+      kFakeUrl, kFakeRequestBody, &request_result, &run_loop);
   EXPECT_FALSE(request_result);
   InjectNetworkResponse(kFakeUrl, nullptr /* response_status */, net::OK,
                         "" /* response_body */);
   run_loop.Run();
   ASSERT_TRUE(request_result);
-  EXPECT_EQ(request_result->status,
-            diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kHttpError);
+  EXPECT_EQ(
+      request_result->status,
+      wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::kHttpError);
   EXPECT_EQ(request_result->http_status, net::HTTP_INTERNAL_SERVER_ERROR);
   EXPECT_EQ(request_result->response_body, "");
 }
 
-TEST_F(DiagnosticsdWebRequestServiceTest, ResponseCodeParsingErrorNetError) {
+TEST_F(WilcoDtcSupportdWebRequestServiceTest,
+       ResponseCodeParsingErrorNetError) {
   std::unique_ptr<WebRequestResult> request_result;
   base::RunLoop run_loop;
 
-  StartWebRequest(diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod::kGet,
-                  kFakeUrl, "" /* request_body */, &request_result, &run_loop);
+  StartWebRequest(
+      wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod::kGet,
+      kFakeUrl, "" /* request_body */, &request_result, &run_loop);
   EXPECT_FALSE(request_result);
   InjectNetworkResponse(kFakeUrl, nullptr /* response_status */,
                         net::ERR_CERT_INVALID, kFakeResponseBody);
   run_loop.Run();
   ASSERT_TRUE(request_result);
   EXPECT_EQ(request_result->status,
-            diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kNetworkError);
+            wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::
+                kNetworkError);
   EXPECT_EQ(request_result->http_status, 0);
   EXPECT_EQ(request_result->response_body, "");
 }
 
-TEST_F(DiagnosticsdWebRequestServiceTest, HttpStatusOkNetError) {
+TEST_F(WilcoDtcSupportdWebRequestServiceTest, HttpStatusOkNetError) {
   std::unique_ptr<WebRequestResult> request_result;
   base::RunLoop run_loop;
 
-  StartWebRequest(diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod::kPost,
-                  kFakeUrl, kFakeRequestBody, &request_result, &run_loop);
+  StartWebRequest(
+      wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod::kPost,
+      kFakeUrl, kFakeRequestBody, &request_result, &run_loop);
   EXPECT_FALSE(request_result);
   InjectNetworkResponse(kFakeUrl,
                         std::make_unique<net::HttpStatusCode>(net::HTTP_OK),
@@ -250,17 +263,19 @@ TEST_F(DiagnosticsdWebRequestServiceTest, HttpStatusOkNetError) {
   run_loop.Run();
   ASSERT_TRUE(request_result);
   EXPECT_EQ(request_result->status,
-            diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kNetworkError);
+            wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::
+                kNetworkError);
   EXPECT_EQ(request_result->http_status, 0);
   EXPECT_EQ(request_result->response_body, "");
 }
 
-TEST_F(DiagnosticsdWebRequestServiceTest, HttpErrorNetError) {
+TEST_F(WilcoDtcSupportdWebRequestServiceTest, HttpErrorNetError) {
   std::unique_ptr<WebRequestResult> request_result;
   base::RunLoop run_loop;
 
-  StartWebRequest(diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod::kPost,
-                  kFakeUrl, kFakeRequestBody, &request_result, &run_loop);
+  StartWebRequest(
+      wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod::kPost,
+      kFakeUrl, kFakeRequestBody, &request_result, &run_loop);
   EXPECT_FALSE(request_result);
   InjectNetworkResponse(
       kFakeUrl, std::make_unique<net::HttpStatusCode>(net::HTTP_BAD_REQUEST),
@@ -268,17 +283,20 @@ TEST_F(DiagnosticsdWebRequestServiceTest, HttpErrorNetError) {
   run_loop.Run();
   ASSERT_TRUE(request_result);
   EXPECT_EQ(request_result->status,
-            diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kNetworkError);
+            wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::
+                kNetworkError);
   EXPECT_EQ(request_result->http_status, 0);
   EXPECT_EQ(request_result->response_body, "");
 }
 
-TEST_F(DiagnosticsdWebRequestServiceTest, DestroyServiceWithActiveWebRequest) {
+TEST_F(WilcoDtcSupportdWebRequestServiceTest,
+       DestroyServiceWithActiveWebRequest) {
   std::unique_ptr<WebRequestResult> request_result;
   base::RunLoop run_loop;
 
-  StartWebRequest(diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod::kPost,
-                  kFakeUrl, kFakeRequestBody, &request_result, &run_loop);
+  StartWebRequest(
+      wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod::kPost,
+      kFakeUrl, kFakeRequestBody, &request_result, &run_loop);
   InjectNetworkResponse(kFakeUrl,
                         std::make_unique<net::HttpStatusCode>(net::HTTP_OK),
                         net::OK, kFakeResponseBody);
@@ -288,21 +306,22 @@ TEST_F(DiagnosticsdWebRequestServiceTest, DestroyServiceWithActiveWebRequest) {
 
   ASSERT_TRUE(request_result);
   EXPECT_EQ(request_result->status,
-            diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kNetworkError);
+            wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::
+                kNetworkError);
   EXPECT_EQ(request_result->http_status, 0);
   EXPECT_EQ(request_result->response_body, "");
 }
 
-TEST_F(DiagnosticsdWebRequestServiceTest, TwoWebRequests) {
+TEST_F(WilcoDtcSupportdWebRequestServiceTest, TwoWebRequests) {
   constexpr int kNumberOfRequests = 2;
 
   std::unique_ptr<WebRequestResult> request_results[kNumberOfRequests];
   base::RunLoop run_loops[kNumberOfRequests];
 
   for (int i = 0; i < kNumberOfRequests; ++i) {
-    StartWebRequest(diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod::kPut,
-                    kFakeUrl, kFakeRequestBody, &request_results[i],
-                    &run_loops[i]);
+    StartWebRequest(
+        wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod::kPut,
+        kFakeUrl, kFakeRequestBody, &request_results[i], &run_loops[i]);
     InjectNetworkResponse(kFakeUrl,
                           std::make_unique<net::HttpStatusCode>(net::HTTP_OK),
                           net::OK, kFakeResponseBody);
@@ -320,44 +339,46 @@ TEST_F(DiagnosticsdWebRequestServiceTest, TwoWebRequests) {
   for (const auto& request_result : request_results) {
     ASSERT_TRUE(request_result);
     EXPECT_EQ(request_result->status,
-              diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kOk);
+              wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::kOk);
     EXPECT_EQ(request_result->http_status, net::HTTP_OK);
     EXPECT_EQ(request_result->response_body, kFakeResponseBody);
   }
 }
 
-TEST_F(DiagnosticsdWebRequestServiceTest, RequestQueueOverflow) {
-  // The number of requests in the queue is kDiagnosticsdRequestQueueMaxSize.
-  // One is already pending.
+TEST_F(WilcoDtcSupportdWebRequestServiceTest, RequestQueueOverflow) {
+  // The number of requests in the queue is
+  // kWilcoDtcSupportdRequestQueueMaxSize. One is already pending.
   std::unique_ptr<WebRequestResult>
-      request_results[kDiagnosticsdWebRequestQueueMaxSize + 1];
-  base::RunLoop run_loops[kDiagnosticsdWebRequestQueueMaxSize + 1];
+      request_results[kWilcoDtcSupportdWebRequestQueueMaxSize + 1];
+  base::RunLoop run_loops[kWilcoDtcSupportdWebRequestQueueMaxSize + 1];
 
-  for (int i = 0; i < kDiagnosticsdWebRequestQueueMaxSize + 1; ++i) {
-    StartWebRequest(diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod::kPut,
-                    kFakeUrl, kFakeRequestBody, &request_results[i],
-                    &run_loops[i]);
+  for (int i = 0; i < kWilcoDtcSupportdWebRequestQueueMaxSize + 1; ++i) {
+    StartWebRequest(
+        wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod::kPut,
+        kFakeUrl, kFakeRequestBody, &request_results[i], &run_loops[i]);
     InjectNetworkResponse(kFakeUrl,
                           std::make_unique<net::HttpStatusCode>(net::HTTP_OK),
                           net::OK, kFakeResponseBody);
     EXPECT_FALSE(request_results[i]);
   }
-  EXPECT_EQ(kDiagnosticsdWebRequestQueueMaxSize,
+  EXPECT_EQ(kWilcoDtcSupportdWebRequestQueueMaxSize,
             web_request_service()->request_queue_size_for_testing());
 
   // Try to add one more. Should fail with kNetworkError.
   {
     std::unique_ptr<WebRequestResult> request_result;
     base::RunLoop run_loop;
-    StartWebRequest(diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod::kPut,
-                    kFakeUrl, kFakeRequestBody, &request_result, &run_loop);
+    StartWebRequest(
+        wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod::kPut,
+        kFakeUrl, kFakeRequestBody, &request_result, &run_loop);
     InjectNetworkResponse(kFakeUrl,
                           std::make_unique<net::HttpStatusCode>(net::HTTP_OK),
                           net::OK, kFakeResponseBody);
     // The test fails with a network error on the same thread.
     EXPECT_TRUE(request_result);
     EXPECT_EQ(request_result->status,
-              diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kNetworkError);
+              wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::
+                  kNetworkError);
     EXPECT_EQ(request_result->http_status, 0);
     EXPECT_EQ(request_result->response_body, "");
   }
@@ -367,91 +388,97 @@ TEST_F(DiagnosticsdWebRequestServiceTest, RequestQueueOverflow) {
   for (const auto& request_result : request_results) {
     EXPECT_TRUE(request_result);
     EXPECT_EQ(request_result->status,
-              diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kOk);
+              wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::kOk);
     EXPECT_EQ(request_result->http_status, net::HTTP_OK);
     EXPECT_EQ(request_result->response_body, kFakeResponseBody);
   }
 }
 
-TEST_F(DiagnosticsdWebRequestServiceTest, ResponseBodyMaxSize) {
+TEST_F(WilcoDtcSupportdWebRequestServiceTest, ResponseBodyMaxSize) {
   std::unique_ptr<WebRequestResult> request_result;
   base::RunLoop run_loop;
 
-  StartWebRequest(diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod::kHead,
-                  kFakeUrl, "" /* request_body */, &request_result, &run_loop);
+  StartWebRequest(
+      wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod::kHead,
+      kFakeUrl, "" /* request_body */, &request_result, &run_loop);
   EXPECT_FALSE(request_result);
   InjectNetworkResponse(
       kFakeUrl, std::make_unique<net::HttpStatusCode>(net::HTTP_OK), net::OK,
-      std::string(kDiagnosticsdWebResponseMaxSizeInBytes, 'A'));
+      std::string(kWilcoDtcSupportdWebResponseMaxSizeInBytes, 'A'));
   run_loop.Run();
   ASSERT_TRUE(request_result);
   EXPECT_EQ(request_result->status,
-            diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kOk);
+            wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::kOk);
   EXPECT_EQ(request_result->http_status, net::HTTP_OK);
   EXPECT_EQ(request_result->response_body,
-            std::string(kDiagnosticsdWebResponseMaxSizeInBytes, 'A'));
+            std::string(kWilcoDtcSupportdWebResponseMaxSizeInBytes, 'A'));
 }
 
-TEST_F(DiagnosticsdWebRequestServiceTest, ResponseBodyOverflow) {
+TEST_F(WilcoDtcSupportdWebRequestServiceTest, ResponseBodyOverflow) {
   std::unique_ptr<WebRequestResult> request_result;
   base::RunLoop run_loop;
 
-  StartWebRequest(diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod::kHead,
-                  kFakeUrl, "" /* request_body */, &request_result, &run_loop);
+  StartWebRequest(
+      wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod::kHead,
+      kFakeUrl, "" /* request_body */, &request_result, &run_loop);
   EXPECT_FALSE(request_result);
   InjectNetworkResponse(
       kFakeUrl, std::make_unique<net::HttpStatusCode>(net::HTTP_OK), net::OK,
-      std::string(kDiagnosticsdWebResponseMaxSizeInBytes + 1, 'A'));
+      std::string(kWilcoDtcSupportdWebResponseMaxSizeInBytes + 1, 'A'));
   run_loop.Run();
   ASSERT_TRUE(request_result);
   EXPECT_EQ(request_result->status,
-            diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kNetworkError);
+            wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::
+                kNetworkError);
   EXPECT_EQ(request_result->http_status, 0);
   EXPECT_EQ(request_result->response_body, "");
 }
 
-TEST_F(DiagnosticsdWebRequestServiceTest, LocalhostRequestNetworkError) {
+TEST_F(WilcoDtcSupportdWebRequestServiceTest, LocalhostRequestNetworkError) {
   std::unique_ptr<WebRequestResult> request_result;
   base::RunLoop run_loop;
 
-  StartWebRequest(diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod::kHead,
-                  kLocalhostUrl, "" /* request_body */, &request_result,
-                  &run_loop);
+  StartWebRequest(
+      wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod::kHead,
+      kLocalhostUrl, "" /* request_body */, &request_result, &run_loop);
   // The test fails with a network error on the same thread.
   run_loop.Run();
   ASSERT_TRUE(request_result);
   EXPECT_EQ(request_result->status,
-            diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kNetworkError);
+            wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::
+                kNetworkError);
   EXPECT_EQ(request_result->http_status, 0);
   EXPECT_EQ(request_result->response_body, "");
 }
 
-TEST_F(DiagnosticsdWebRequestServiceTest, HttpUrlNetworkError) {
+TEST_F(WilcoDtcSupportdWebRequestServiceTest, HttpUrlNetworkError) {
   std::unique_ptr<WebRequestResult> request_result;
   base::RunLoop run_loop;
 
-  StartWebRequest(diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod::kHead,
-                  kIncorrectHttpUrl, "" /* request_body */, &request_result,
-                  &run_loop);
+  StartWebRequest(
+      wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod::kHead,
+      kIncorrectHttpUrl, "" /* request_body */, &request_result, &run_loop);
   // The test fails with a network error on the same thread.
   ASSERT_TRUE(request_result);
   EXPECT_EQ(request_result->status,
-            diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kNetworkError);
+            wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::
+                kNetworkError);
   EXPECT_EQ(request_result->http_status, 0);
   EXPECT_EQ(request_result->response_body, "");
 }
 
-TEST_F(DiagnosticsdWebRequestServiceTest, InvalidUrlNetworkError) {
+TEST_F(WilcoDtcSupportdWebRequestServiceTest, InvalidUrlNetworkError) {
   std::unique_ptr<WebRequestResult> request_result;
   base::RunLoop run_loop;
 
-  StartWebRequest(diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod::kHead,
-                  kInvalidUrl, "" /* request_body */, &request_result,
-                  &run_loop);
+  StartWebRequest(
+      wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod::kHead,
+      kInvalidUrl, "" /* request_body */, &request_result, &run_loop);
   // The test fails with a network error on the same thread.
   ASSERT_TRUE(request_result);
   EXPECT_EQ(request_result->status,
-            diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kNetworkError);
+            wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::
+                kNetworkError);
   EXPECT_EQ(request_result->http_status, 0);
   EXPECT_EQ(request_result->response_body, "");
 }
