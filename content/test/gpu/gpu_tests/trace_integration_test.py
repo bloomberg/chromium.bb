@@ -368,7 +368,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
                    presentation_mode_history)))
       valid_entry_found = True
     if not valid_entry_found:
-      self.fail('No valid frame statistics being collected: %s',
+      self.fail('No valid frame statistics being collected: %s' %
           TraceIntegrationTest._SwapChainPresentationModeListToStr(
               presentation_mode_history))
 
