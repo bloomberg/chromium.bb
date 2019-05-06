@@ -278,7 +278,7 @@ target(link_target_type, "ffmpeg_internal") {
     }
   }
 
-  if (is_posix || is_fuchsia) {
+  if (is_fuchsia || (is_posix && !(is_android && use_call_graph))) {
     # Remove default stack frames config so we can force -fomit-frame-pointer.
     configs -= [ "//build/config/compiler:default_stack_frames" ]
 
