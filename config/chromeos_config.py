@@ -2094,7 +2094,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'octavius',
       'octopus',
       'panther',
-      'peach_pit',
       'peppy',
       'poppy',
       'quawks',
@@ -2237,7 +2236,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'nyan_big',
       'nyan_kitty',
       'octopus',
-      'peach_pit',
       'peppy',
       'reef',
       'scarlet',
@@ -2405,7 +2403,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     # bvt-inline      bvt-cq           bvt-arc             bvt-tast-cq          family
     (None,            None,            None,               None),               # daisy (Exynos5250)
     ('wolf',          'peppy',         None,               'wolf'),             # slippy (HSW)
-    ('peach_pit',     None,            None,               'peach_pit'),        # peach (Exynos5420)
     ('winky',         'kip',           None,               'winky'),            # rambi (BYT)
     ('nyan_big',      'nyan_kitty',    None,               'nyan_big'),         # nyan (K1)
     ('auron_paine',   'tidus',         'auron_yuna',       'auron_paine'),      # auron (BDW)
@@ -2845,7 +2842,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
   _chrome_informational_hwtest_boards = frozenset([
       'caroline',
       'eve',
-      'peach_pit',
       'reks',
       'tricky',
       'veyron_minnie',
@@ -3046,7 +3042,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       [
           'caroline',
           'eve',
-          'peach_pit',
           'tricky',
           'veyron_minnie',
           'kevin-arcnext',
@@ -3170,7 +3165,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'kevin64',
       'nocturne',
       'nyan_big',
-      'peach_pit',
       'peppy',
       'reef',
       'terra',
@@ -3187,7 +3181,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'kevin-arcnext',
       'kevin64',
       'grunt',
-      'peach_pit',
       'peppy',
       'reef',
       'tricky',

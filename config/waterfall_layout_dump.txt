@@ -6,7 +6,6 @@
   daisy-tot-chromium-pfq-informational
   eve-tot-chrome-pfq-informational
   kevin-arcnext-tot-chrome-pfq-informational
-  peach_pit-tot-chrome-pfq-informational
   tricky-tot-chrome-pfq-informational
   veyron_minnie-tot-chrome-pfq-informational
 
@@ -33,7 +32,6 @@
     kevin64-chrome-pfq
     nocturne-chrome-pfq
     nyan_big-chrome-pfq
-    peach_pit-chrome-pfq
     peppy-chrome-pfq
     reef-chrome-pfq
     scarlet-chromium-pfq
@@ -117,7 +115,6 @@
     octavius-paladin
     octopus-paladin
     panther-paladin
-    peach_pit-paladin
     peppy-paladin
     poppy-paladin
     quawks-paladin
@@ -503,7 +500,6 @@
     octopus-postsubmit
     orco-postsubmit
     panther-postsubmit
-    peach_pit-postsubmit
     peppy-postsubmit
     poppy-postsubmit
     pyro-postsubmit
@@ -2562,7 +2558,6 @@
     kevin64-chrome-pfq-tryjob
     nocturne-chrome-pfq-tryjob
     nyan_big-chrome-pfq-tryjob
-    peach_pit-chrome-pfq-tryjob
     peppy-chrome-pfq-tryjob
     reef-chrome-pfq-tryjob
     scarlet-chromium-pfq-tryjob
@@ -2675,7 +2670,6 @@
     octavius-paladin-tryjob
     octopus-paladin-tryjob
     panther-paladin-tryjob
-    peach_pit-paladin-tryjob
     peppy-paladin-tryjob
     poppy-paladin-tryjob
     quawks-paladin-tryjob
@@ -2807,7 +2801,6 @@
     octopus-postsubmit-tryjob
     orco-postsubmit-tryjob
     panther-postsubmit-tryjob
-    peach_pit-postsubmit-tryjob
     peppy-postsubmit-tryjob
     poppy-postsubmit-tryjob
     pyro-postsubmit-tryjob
