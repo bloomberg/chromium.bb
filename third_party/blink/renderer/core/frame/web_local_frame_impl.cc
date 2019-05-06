@@ -2158,8 +2158,11 @@ bool WebLocalFrameImpl::IsLoading() const {
 
 bool WebLocalFrameImpl::IsNavigationScheduledWithin(
     double interval_in_seconds) const {
-  return GetFrame() && GetFrame()->GetDocument()->IsHttpRefreshScheduledWithin(
-                           interval_in_seconds);
+  if (!GetFrame())
+    return false;
+  return GetFrame()->Loader().HasProvisionalNavigation() ||
+         GetFrame()->GetDocument()->IsHttpRefreshScheduledWithin(
+             interval_in_seconds);
 }
 
 void WebLocalFrameImpl::SetCommittedFirstRealLoad() {

@@ -6134,9 +6134,7 @@ blink::mojom::CommitResult RenderFrameImpl::PrepareForHistoryNavigationCommit(
   // client redirect) interrupted it and has either been scheduled,
   // started loading, or has committed, we should ignore the history item.
   bool interrupted_by_client_redirect =
-      frame_->IsNavigationScheduledWithin(0) ||
-      frame_->GetProvisionalDocumentLoader() ||
-      browser_side_navigation_pending_ || !current_history_item_.IsNull();
+      frame_->IsNavigationScheduledWithin(0) || !current_history_item_.IsNull();
   if (commit_params.is_history_navigation_in_new_child &&
       interrupted_by_client_redirect) {
     return blink::mojom::CommitResult::Aborted;
