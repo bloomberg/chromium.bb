@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -19,11 +20,32 @@
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/app_list_launch_recorder.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/search_result_ranker.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 
 namespace app_list {
+
+namespace {
+
+// Normalizes training targets by removing any scheme prefix and trailing slash:
+// "arc://[id]/" to "[id]". This is necessary because apps launched from
+// different parts of the launcher have differently formatted IDs.
+std::string NormalizeId(const std::string& id) {
+  std::string result(id);
+  // No existing scheme names include the delimiter string "://".
+  std::size_t delimiter_index = result.find("://");
+  if (delimiter_index != std::string::npos)
+    result.erase(0, delimiter_index + 3);
+  if (!result.empty() && result.back() == '/')
+    result.pop_back();
+  return result;
+}
+
+}  // namespace
 
 SearchController::SearchController(AppListModelUpdater* model_updater,
                                    AppListControllerDelegate* list_controller,
@@ -42,6 +64,7 @@ void SearchController::Start(const base::string16& query) {
     provider->Start(query);
 
   dispatching_query_ = false;
+  last_query_ = query;
   query_for_recommendation_ = query.empty();
 
   OnResultsChanged();
@@ -133,6 +156,21 @@ void SearchController::SetSearchResultRanker(
 }
 
 void SearchController::Train(const std::string& id, RankingItemType type) {
+  if (app_list_features::IsAppListLaunchRecordingEnabled()) {
+    AppListLaunchRecorder::LaunchType launch_type;
+    if (type == RankingItemType::kApp ||
+        type == RankingItemType::kArcAppShortcut) {
+      launch_type = AppListLaunchRecorder::APP_TILES;
+    } else {
+      launch_type = AppListLaunchRecorder::RESULTS_LIST;
+    }
+
+    // TODO(951287): Record the last-used domain and app.
+    AppListLaunchRecorder::GetInstance()->Record(
+        {launch_type, NormalizeId(id), base::UTF16ToUTF8(last_query_),
+         std::string(), std::string()});
+  }
+
   for (const auto& provider : providers_)
     provider->Train(id, type);
   mixer_->Train(id, type);

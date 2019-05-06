@@ -74,6 +74,9 @@ class SearchController {
   // If true, the search results are shown on the launcher start page.
   bool query_for_recommendation_ = false;
 
+  // The query associated with the most recent search.
+  base::string16 last_query_;
+
   using Providers = std::vector<std::unique_ptr<SearchProvider>>;
   Providers providers_;
   std::unique_ptr<Mixer> mixer_;

@@ -63,6 +63,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableEmbeddedAssistantUI;
 // Enables ghosting in any AppsGridView (folder or root) when dragging an item.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppGridGhost;
 
+// Enables hashed recording of a app list launches.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppListLaunchRecording;
+
 bool ASH_PUBLIC_EXPORT IsAnswerCardEnabled();
 bool ASH_PUBLIC_EXPORT IsBackgroundBlurEnabled();
 bool ASH_PUBLIC_EXPORT IsPlayStoreAppSearchEnabled();
@@ -77,6 +80,7 @@ bool ASH_PUBLIC_EXPORT IsQueryBasedMixedTypesRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsAppReinstallZeroStateEnabled();
 bool ASH_PUBLIC_EXPORT IsEmbeddedAssistantUIEnabled();
 bool ASH_PUBLIC_EXPORT IsAppGridGhostEnabled();
+bool ASH_PUBLIC_EXPORT IsAppListLaunchRecordingEnabled();
 
 std::string ASH_PUBLIC_EXPORT AnswerServerUrl();
 std::string ASH_PUBLIC_EXPORT AnswerServerQuerySuffix();

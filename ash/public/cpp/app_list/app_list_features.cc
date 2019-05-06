@@ -39,6 +39,8 @@ const base::Feature kEnableEmbeddedAssistantUI{
     "EnableEmbeddedAssistantUI", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableAppGridGhost{"EnableAppGridGhost",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableAppListLaunchRecording{
+    "EnableAppListLaunchRecording", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAnswerCardEnabled() {
   // Not using local static variable to allow tests to change this value.
@@ -120,6 +122,10 @@ std::string AppSearchResultRankerPredictorName() {
   if (!predictor_name.empty())
     return predictor_name;
   return std::string("MrfuAppLaunchPredictor");
+}
+
+bool IsAppListLaunchRecordingEnabled() {
+  return base::FeatureList::IsEnabled(kEnableAppListLaunchRecording);
 }
 
 }  // namespace app_list_features
