@@ -88,7 +88,7 @@ Polymer({
     globalPolicy: {
       type: Object,
       value: null,
-      observer: 'updateAutoConnectPref_'
+      observer: 'updateAutoConnectPref_',
     },
 
     /**
@@ -929,6 +929,16 @@ Polymer({
   /** @private */
   showTetherDialog_: function() {
     this.getTetherDialog_().open();
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  showHiddenNetworkWarning_: function() {
+    return !!this.autoConnect_ && !!this.autoConnect_.value &&
+        !!this.networkProperties_ && !!this.networkProperties_.WiFi &&
+        !!CrOnc.getActiveValue(this.networkProperties_.WiFi.HiddenSSID);
   },
 
   /**

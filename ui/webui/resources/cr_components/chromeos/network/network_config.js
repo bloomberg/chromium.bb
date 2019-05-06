@@ -175,6 +175,12 @@ Polymer({
     },
 
     /**
+     * Whether the device should automatically connect to the network.
+     * @private
+     */
+    autoConnect_: Boolean,
+
+    /**
      * Security value, used for Ethernet and Wifi and to detect when Security
      * changes.
      * @private
@@ -380,6 +386,13 @@ Polymer({
         this.focusFirstInput_();
       });
     }
+    if (this.type == CrOnc.Type.VPN ||
+        (this.globalPolicy &&
+         this.globalPolicy.AllowOnlyPolicyNetworksToConnect)) {
+      this.autoConnect_ = false;
+    } else {
+      this.autoConnect_ = true;
+    }
     this.onCertificateListsChanged_();
     this.updateIsConfigured_();
     this.setShareNetwork_();
@@ -407,12 +420,9 @@ Polymer({
 
     const propertiesToSet = this.getPropertiesToSet_();
     if (this.getSource_() == CrOnc.Source.NONE) {
-      // Set 'AutoConnect' to false for VPN or if prohibited by policy.
-      // Note: Do not set AutoConnect to true, the connection manager will do
-      // that on a successful connection (unless set to false here).
-      if (this.type == CrOnc.Type.VPN ||
-          (this.globalPolicy &&
-           this.globalPolicy.AllowOnlyPolicyNetworksToConnect)) {
+      if (!this.autoConnect_) {
+        // Note: Do not set AutoConnect to true, the connection manager will do
+        // that on a successful connection (unless set to false here).
         CrOnc.setTypeProperty(propertiesToSet, 'AutoConnect', false);
       }
       this.networkingPrivate.createNetwork(
@@ -1270,6 +1280,32 @@ Polymer({
       }
     }
     return true;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  configCanAutoConnect_: function() {
+    // Only WiFi can choose whether or not to autoConnect.
+    return this.type == CrOnc.Type.WI_FI;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  autoConnectDisabled_: function() {
+    return this.isAutoConnectEnforcedByPolicy_();
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  isAutoConnectEnforcedByPolicy_: function() {
+    return !!this.globalPolicy &&
+        !!this.globalPolicy.AllowOnlyPolicyNetworksToAutoconnect;
   },
 
   /**
