@@ -5,5 +5,5 @@
 
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
     <solid android:color="@android:color/white"/>
-    <corners android:radius="@dimen/default_card_corner_radius" />
+    <corners android:radius="@dimen/default_rounded_corner_radius" />
 </shape>

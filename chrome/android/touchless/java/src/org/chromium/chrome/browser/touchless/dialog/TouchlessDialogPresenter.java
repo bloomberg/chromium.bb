@@ -11,6 +11,7 @@ import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.support.v4.view.ViewCompat;
 import android.util.Pair;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,7 @@ import android.view.Window;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.DialogListItemProperties;
@@ -61,7 +63,16 @@ public class TouchlessDialogPresenter extends Presenter {
             return;
         }
 
-        mDialog = new Dialog(mActivity, R.style.Theme_Chromium_DialogWhenLarge);
+        // If not fullscreen don't use a predefined style.
+        if (!model.get(TouchlessDialogProperties.IS_FULLSCREEN)) {
+            mDialog = new Dialog(mActivity);
+            mDialog.getWindow().setGravity(Gravity.BOTTOM);
+            mDialog.getWindow().setBackgroundDrawable(ApiCompatibilityUtils.getDrawable(
+                    mActivity.getResources(), R.drawable.dialog_rounded_top));
+        } else {
+            mDialog = new Dialog(mActivity, R.style.Theme_Chromium_DialogWhenLarge);
+        }
+
         mDialog.setOnCancelListener(dialogInterface
                 -> dismissCurrentDialog(DialogDismissalCause.NAVIGATE_BACK_OR_TOUCH_OUTSIDE));
         mDialog.setOnShowListener(dialog
@@ -88,6 +99,14 @@ public class TouchlessDialogPresenter extends Presenter {
         mModelChangeProcessor = PropertyModelChangeProcessor.create(
                 model, Pair.create(dialogView, adapter), TouchlessDialogPresenter::bind);
         mDialog.setContentView(dialogView);
+
+        // If the modal dialog is not specified to be fullscreen, wrap content and place at the
+        // bottom of the screen. This needs to be done after content is added to the dialog.
+        if (!model.get(TouchlessDialogProperties.IS_FULLSCREEN)) {
+            mDialog.getWindow().setLayout(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+
         mDialog.show();
         dialogView.announceForAccessibility(getContentDescription(model));
     }

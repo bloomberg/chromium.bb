@@ -144,7 +144,7 @@ public class FeedNewTabPage extends NewTabPage {
         public BasicCardConfiguration(Resources resources, UiConfig uiConfig) {
             mResources = resources;
             mUiConfig = uiConfig;
-            mCornerRadius = mResources.getDimensionPixelSize(R.dimen.default_card_corner_radius);
+            mCornerRadius = mResources.getDimensionPixelSize(R.dimen.default_rounded_corner_radius);
             mCardMargin = mResources.getDimensionPixelSize(
                     R.dimen.content_suggestions_card_modern_margin);
             mCardWideMargin =
