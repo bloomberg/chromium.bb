@@ -122,7 +122,11 @@ def Checkout(name, url, dir):
   print("Checking out %s r%s into '%s'" % (name, CLANG_REVISION, dir))
 
   command = ['svn', 'checkout', '--force', url + '@' + CLANG_REVISION, dir]
-  if RunCommand(command, fail_hard=False):
+  # The checkout command usually succeeds and produces lots of unininteresting
+  # output. Hence, pass `--quiet` on the first run and run an explicit command
+  # to print the revision we got afterwards on the first attempt.
+  if RunCommand(command + ['--quiet'], fail_hard=False):
+    RunCommand(['svn', 'info', '--show-item', 'revision'])
     return
 
   if os.path.isdir(dir):
