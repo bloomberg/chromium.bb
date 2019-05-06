@@ -2211,9 +2211,16 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
     };
     CreateCleanupCallbackForSkiaFlush(
         shared_context_state_->vk_context_provider(), &flush_info);
-    auto result = sk_surface_->flush(SkSurface::BackendSurfaceAccess::kPresent,
-                                     flush_info);
-    DCHECK(result == GrSemaphoresSubmitted::kYes || end_semaphores_.empty());
+    if (use_ddl_) {
+      // TODO(penghuang): Switch to sk_surface_->flush() when skia flush bug is
+      // fixed. https://crbug.com/958055
+      auto result = gr_context()->flush(flush_info);
+      DCHECK(result == GrSemaphoresSubmitted::kYes || end_semaphores_.empty());
+    } else {
+      auto result = sk_surface_->flush(
+          SkSurface::BackendSurfaceAccess::kPresent, flush_info);
+      DCHECK(result == GrSemaphoresSubmitted::kYes || end_semaphores_.empty());
+    }
     end_semaphores_.clear();
   }
 
