@@ -311,6 +311,30 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, ImageDoc) {
                            "image Appears to say: red.png Annotation"));
 }
 
+IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, ImageUrl) {
+  FakeAnnotator::SetReturnOcrResults(true);
+  ui_test_utils::NavigateToURL(browser(), https_server_.GetURL("/red.png"));
+
+  // Block until the accessibility tree has at least 2 annotations. If
+  // that never happens, the test will time out.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  while (2 > DescribeNodesWithAnnotations(
+                 content::GetAccessibilityTreeSnapshot(web_contents))
+                 .size()) {
+    content::WaitForAccessibilityTreeToChange(web_contents);
+  }
+
+  // When a document contains exactly one image, the document should be
+  // annotated with the image's annotation, too.
+  ui::AXTreeUpdate ax_tree_update =
+      content::GetAccessibilityTreeSnapshot(web_contents);
+  EXPECT_THAT(
+      DescribeNodesWithAnnotations(ax_tree_update),
+      testing::ElementsAre("rootWebArea Appears to say: red.png Annotation",
+                           "image Appears to say: red.png Annotation"));
+}
+
 IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, NoAnnotationsAvailable) {
   // Don't return any results.
   FakeAnnotator::SetReturnOcrResults(false);
