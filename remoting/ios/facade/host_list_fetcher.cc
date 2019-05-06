@@ -101,37 +101,34 @@ bool HostListFetcher::ProcessResponse(
     return false;
   }
 
-  std::unique_ptr<base::Value> response_value(
-      base::JSONReader::ReadDeprecated(response_string));
-  if (!response_value || !response_value->is_dict()) {
+  base::Optional<base::Value> response =
+      base::JSONReader::Read(response_string);
+  if (!response) {
     LOG(ERROR) << "Failed to parse response string to JSON";
     return false;
   }
 
-  const base::DictionaryValue* response;
-  if (!response_value->GetAsDictionary(&response)) {
-    LOG(ERROR) << "Failed to convert parsed JSON to a dictionary object";
+  if (!response->is_dict()) {
+    LOG(ERROR) << "Parsed JSON is not a dictionary";
     return false;
   }
 
-  const base::DictionaryValue* data = nullptr;
-  if (!response->GetDictionary("data", &data)) {
+  const base::Value* data = response->FindDictKey("data");
+  if (!data) {
     LOG(ERROR) << "Hostlist response data is empty";
     return false;
   }
 
-  const base::ListValue* hosts = nullptr;
-  if (!data->GetList("items", &hosts)) {
+  const base::Value* hosts = data->FindListKey("items");
+  if (!hosts) {
     // This will happen if the user has no host.
     return true;
   }
 
   // Any host_info with malformed data will not be added to the hostlist.
-  const base::DictionaryValue* host_dict;
-  for (const auto& host_info : *hosts) {
+  for (const base::Value& host_info : hosts->GetList()) {
     remoting::HostInfo host;
-    if (host_info.GetAsDictionary(&host_dict) &&
-        host.ParseHostInfo(*host_dict)) {
+    if (host_info.is_dict() && host.ParseHostInfo(host_info)) {
       hostlist->push_back(host);
     }
   }
