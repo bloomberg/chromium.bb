@@ -325,6 +325,44 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
         compress_file=compress_file,
         upload=upload)
 
+  def testCreateAndUploadMergedAFDOProfileMergesBranchProfiles(self):
+    unmerged_name = _benchmark_afdo_profile_name(major=10, build=13, patch=99)
+
+    _, uploaded, mocks = \
+        self.runCreateAndUploadMergedAFDOProfileOnce(
+            recent_to_merge=5,
+            unmerged_name=unmerged_name)
+    self.assertTrue(uploaded)
+
+    def _afdo_name(major, build, patch=0, merged_suffix=False):
+      return _benchmark_afdo_profile_name(
+          major=major,
+          build=build,
+          patch=patch,
+          merged_suffix=merged_suffix,
+          compression_suffix=False)
+
+    expected_unordered_args = [
+        '-output=/tmp/' + _afdo_name(
+            major=10, build=13, patch=2, merged_suffix=True),
+        '-weighted-input=1,/tmp/' + _afdo_name(major=10, build=11),
+        '-weighted-input=1,/tmp/' + _afdo_name(major=10, build=12),
+        '-weighted-input=1,/tmp/' + _afdo_name(major=10, build=13),
+        '-weighted-input=1,/tmp/' + _afdo_name(major=10, build=13, patch=1),
+        '-weighted-input=1,/tmp/' + _afdo_name(major=10, build=13, patch=2),
+    ]
+
+    # Note that these should all be in-chroot names.
+    expected_ordered_args = ['llvm-profdata', 'merge', '-sample']
+
+    args = mocks.run_command.call_args[0][0]
+    ordered_args = args[:len(expected_ordered_args)]
+    self.assertEqual(ordered_args, expected_ordered_args)
+
+    unordered_args = args[len(expected_ordered_args):]
+    self.assertItemsEqual(unordered_args, expected_unordered_args)
+    self.assertEqual(mocks.gs_context.Copy.call_count, 5)
+
   def testCreateAndUploadMergedAFDOProfileWorksInTheHappyCase(self):
     merged_name, uploaded, mocks = \
         self.runCreateAndUploadMergedAFDOProfileOnce(recent_to_merge=5)
@@ -342,18 +380,17 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
     # Note that these should all be in-chroot names.
     expected_ordered_args = ['llvm-profdata', 'merge', '-sample']
 
-    def _afdo_name(major, build, patch=0, merged_suffix=False):
+    def _afdo_name(major, build, merged_suffix=False):
       return _benchmark_afdo_profile_name(
           major=major,
           build=build,
-          patch=patch,
           merged_suffix=merged_suffix,
           compression_suffix=False)
 
     input_afdo_names = [
+        _afdo_name(major=10, build=11),
+        _afdo_name(major=10, build=12),
         _afdo_name(major=10, build=13),
-        _afdo_name(major=10, build=13, patch=1),
-        _afdo_name(major=10, build=13, patch=2),
         _afdo_name(major=11, build=14),
         _afdo_name(major=11, build=15),
     ]
@@ -411,7 +448,7 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
                                                      max_age_days=1000)
     self.assertTrue(uploaded)
     self.assertIsNotNone(merged_name)
-    self.assertEqual(mocks.gs_context.Copy.call_count, 9)
+    self.assertEqual(mocks.gs_context.Copy.call_count, 7)
 
   def testNoProfileIsGeneratedIfNoFilesBeforeMergedNameExist(self):
     merged_name, uploaded, _ = \
