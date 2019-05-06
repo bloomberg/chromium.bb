@@ -15,9 +15,9 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "net/reporting/reporting_cache.h"
-#include "net/reporting/reporting_client.h"
 #include "net/reporting/reporting_context.h"
 #include "net/reporting/reporting_delegate.h"
+#include "net/reporting/reporting_endpoint.h"
 
 namespace net {
 
@@ -65,7 +65,7 @@ HeaderEndpointOutcome ProcessEndpoint(
     ReportingDelegate* delegate,
     const url::Origin& origin,
     const base::Value& value,
-    ReportingClient::EndpointInfo* endpoint_info_out) {
+    ReportingEndpoint::EndpointInfo* endpoint_info_out) {
   const base::DictionaryValue* dict = nullptr;
   if (!value.GetAsDictionary(&dict))
     return HeaderEndpointOutcome::DISCARDED_NOT_DICTIONARY;
@@ -84,14 +84,14 @@ HeaderEndpointOutcome ProcessEndpoint(
     return HeaderEndpointOutcome::DISCARDED_URL_INSECURE;
   endpoint_info_out->url = std::move(endpoint_url);
 
-  int priority = ReportingClient::EndpointInfo::kDefaultPriority;
+  int priority = ReportingEndpoint::EndpointInfo::kDefaultPriority;
   if (dict->HasKey(kPriorityKey) && !dict->GetInteger(kPriorityKey, &priority))
     return HeaderEndpointOutcome::DISCARDED_PRIORITY_NOT_INTEGER;
   if (priority < 0)
     return HeaderEndpointOutcome::DISCARDED_PRIORITY_NEGATIVE;
   endpoint_info_out->priority = priority;
 
-  int weight = ReportingClient::EndpointInfo::kDefaultWeight;
+  int weight = ReportingEndpoint::EndpointInfo::kDefaultWeight;
   if (dict->HasKey(kWeightKey) && !dict->GetInteger(kWeightKey, &weight))
     return HeaderEndpointOutcome::DISCARDED_WEIGHT_NOT_INTEGER;
   if (weight < 0)
@@ -152,14 +152,14 @@ HeaderEndpointGroupOutcome ProcessEndpointGroup(
   if (!dict->GetList(kEndpointsKey, &endpoint_list))
     return HeaderEndpointGroupOutcome::DISCARDED_ENDPOINTS_NOT_LIST;
 
-  std::vector<ReportingClient::EndpointInfo> endpoints;
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints;
 
   for (size_t i = 0; i < endpoint_list->GetSize(); i++) {
     const base::Value* endpoint = nullptr;
     bool got_endpoint = endpoint_list->Get(i, &endpoint);
     DCHECK(got_endpoint);
 
-    ReportingClient::EndpointInfo parsed_endpoint;
+    ReportingEndpoint::EndpointInfo parsed_endpoint;
 
     HeaderEndpointOutcome outcome =
         ProcessEndpoint(delegate, origin, *endpoint, &parsed_endpoint);

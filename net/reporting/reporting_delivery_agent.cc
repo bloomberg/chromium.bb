@@ -93,7 +93,7 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
 
     ~Delivery() = default;
 
-    void AddReports(const ReportingClient& endpoint,
+    void AddReports(const ReportingEndpoint& endpoint,
                     const std::vector<const ReportingReport*>& to_add) {
       OriginGroupEndpoint key =
           std::make_tuple(endpoint.group_key.origin,
@@ -173,7 +173,7 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
       if (base::ContainsKey(pending_origin_groups_, origin_group))
         continue;
 
-      const ReportingClient endpoint =
+      const ReportingEndpoint endpoint =
           endpoint_manager()->FindEndpointForDelivery(report_origin, group);
       if (!endpoint) {
         // TODO(chlily): Remove reports for which there are no valid

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_REPORTING_REPORTING_CLIENT_H_
-#define NET_REPORTING_REPORTING_CLIENT_H_
+#ifndef NET_REPORTING_REPORTING_ENDPOINT_H_
+#define NET_REPORTING_REPORTING_ENDPOINT_H_
 
 #include <string>
 #include <vector>
@@ -38,7 +38,7 @@ NET_EXPORT bool operator<(const ReportingEndpointGroupKey& lhs,
 // TODO(crbug.com/921049): Rename to ReportingEndpoint because that's what it
 // actually represents.
 // TODO(crbug.com/912622): Track endpoint failures for garbage collection.
-struct NET_EXPORT ReportingClient {
+struct NET_EXPORT ReportingEndpoint {
   struct NET_EXPORT EndpointInfo {
     static const int kDefaultPriority;
     static const int kDefaultWeight;
@@ -71,17 +71,17 @@ struct NET_EXPORT ReportingClient {
     int successful_reports = 0;
   };
 
-  // Constructs an invalid ReportingClient.
-  ReportingClient();
+  // Constructs an invalid ReportingEndpoint.
+  ReportingEndpoint();
 
-  ReportingClient(url::Origin origin,
-                  std::string group_name,
-                  EndpointInfo endpoint_info);
+  ReportingEndpoint(url::Origin origin,
+                    std::string group_name,
+                    EndpointInfo endpoint_info);
 
-  ReportingClient(const ReportingClient& other);
-  ReportingClient(ReportingClient&& other);
+  ReportingEndpoint(const ReportingEndpoint& other);
+  ReportingEndpoint(ReportingEndpoint&& other);
 
-  ~ReportingClient();
+  ~ReportingEndpoint();
 
   bool is_valid() const;
   explicit operator bool() const { return is_valid(); }
@@ -119,7 +119,7 @@ struct NET_EXPORT ReportingEndpointGroup {
   base::TimeDelta ttl;
 
   // Endpoints in this group.
-  std::vector<ReportingClient::EndpointInfo> endpoints;
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints;
 };
 
 // Representation of an endpoint group used for in-memory and persistent
@@ -156,4 +156,4 @@ struct NET_EXPORT CachedReportingEndpointGroup {
 
 }  // namespace net
 
-#endif  // NET_REPORTING_REPORTING_CLIENT_H_
+#endif  // NET_REPORTING_REPORTING_ENDPOINT_H_

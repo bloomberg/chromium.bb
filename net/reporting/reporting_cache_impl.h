@@ -20,8 +20,8 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "net/reporting/reporting_cache.h"
-#include "net/reporting/reporting_client.h"
 #include "net/reporting/reporting_context.h"
+#include "net/reporting/reporting_endpoint.h"
 #include "net/reporting/reporting_header_parser.h"
 #include "net/reporting/reporting_report.h"
 #include "url/gurl.h"
@@ -76,14 +76,14 @@ class ReportingCacheImpl : public ReportingCache {
   void RemoveEndpointGroup(const url::Origin& origin,
                            const std::string& name) override;
   void RemoveEndpointsForUrl(const GURL& url) override;
-  std::vector<ReportingClient> GetCandidateEndpointsForDelivery(
+  std::vector<ReportingEndpoint> GetCandidateEndpointsForDelivery(
       const url::Origin& origin,
       const std::string& group_name) override;
   base::Value GetClientsAsValue() const override;
   size_t GetEndpointCount() const override;
-  ReportingClient GetEndpointForTesting(const url::Origin& origin,
-                                        const std::string& group_name,
-                                        const GURL& url) const override;
+  ReportingEndpoint GetEndpointForTesting(const url::Origin& origin,
+                                          const std::string& group_name,
+                                          const GURL& url) const override;
   bool EndpointGroupExistsForTesting(const url::Origin& origin,
                                      const std::string& group_name,
                                      OriginSubdomains include_subdomains,
@@ -126,7 +126,8 @@ class ReportingCacheImpl : public ReportingCache {
   using OriginClientMap = std::unordered_multimap<std::string, OriginClient>;
   using EndpointGroupMap =
       std::map<ReportingEndpointGroupKey, CachedReportingEndpointGroup>;
-  using EndpointMap = std::multimap<ReportingEndpointGroupKey, ReportingClient>;
+  using EndpointMap =
+      std::multimap<ReportingEndpointGroupKey, ReportingEndpoint>;
 
   // Returns whether the cached data is persisted across restarts in the
   // PersistentReportingStore.
@@ -157,7 +158,7 @@ class ReportingCacheImpl : public ReportingCache {
       const CachedReportingEndpointGroup& group) const;
 
   void SanityCheckEndpoint(const ReportingEndpointGroupKey& key,
-                           const ReportingClient& endpoint,
+                           const ReportingEndpoint& endpoint,
                            EndpointMap::const_iterator endpoint_it) const;
 #endif  // DCHECK_IS_ON()
 
@@ -182,7 +183,7 @@ class ReportingCacheImpl : public ReportingCache {
   // one.
   void AddOrUpdateClient(OriginClient new_client);
   void AddOrUpdateEndpointGroup(CachedReportingEndpointGroup new_group);
-  void AddOrUpdateEndpoint(ReportingClient new_endpoint);
+  void AddOrUpdateEndpoint(ReportingEndpoint new_endpoint);
 
   // Remove all the endpoints configured for |origin| and |group| whose urls are
   // not in |endpoints_to_keep_urls|. Does not guarantee that all the endpoints
@@ -199,7 +200,7 @@ class ReportingCacheImpl : public ReportingCache {
       const std::set<std::string>& groups_to_keep_names);
 
   // Gets the endpoints in the given group.
-  std::vector<ReportingClient> GetEndpointsInGroup(
+  std::vector<ReportingEndpoint> GetEndpointsInGroup(
       const ReportingEndpointGroupKey& group_key) const;
 
   // Gets the number of endpoints for the given origin and group.
@@ -283,7 +284,7 @@ class ReportingCacheImpl : public ReportingCache {
   base::Value GetOriginClientAsValue(const OriginClient& client) const;
   base::Value GetEndpointGroupAsValue(
       const CachedReportingEndpointGroup& group) const;
-  base::Value GetEndpointAsValue(const ReportingClient& endpoint) const;
+  base::Value GetEndpointAsValue(const ReportingEndpoint& endpoint) const;
 
   base::Clock* clock() const { return context_->clock(); }
 

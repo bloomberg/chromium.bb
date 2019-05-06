@@ -14,7 +14,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "net/base/net_export.h"
-#include "net/reporting/reporting_client.h"
+#include "net/reporting/reporting_endpoint.h"
 #include "net/reporting/reporting_header_parser.h"
 #include "net/reporting/reporting_report.h"
 #include "url/gurl.h"
@@ -182,7 +182,7 @@ class NET_EXPORT ReportingCache {
   // If both https://bar.baz.com/ and https://bar.baz.com:444/ had a group with
   // name |group| with include_subdomains enabled, this method would return
   // endpoints from that group from the earliest-inserted origin.
-  virtual std::vector<ReportingClient> GetCandidateEndpointsForDelivery(
+  virtual std::vector<ReportingEndpoint> GetCandidateEndpointsForDelivery(
       const url::Origin& origin,
       const std::string& group_name) = 0;
 
@@ -194,10 +194,10 @@ class NET_EXPORT ReportingCache {
   virtual size_t GetEndpointCount() const = 0;
 
   // Finds an endpoint for the given |origin|, |group_name|, and |url|,
-  // otherwise returns an invalid ReportingClient.
-  virtual ReportingClient GetEndpointForTesting(const url::Origin& origin,
-                                                const std::string& group_name,
-                                                const GURL& url) const = 0;
+  // otherwise returns an invalid ReportingEndpoint.
+  virtual ReportingEndpoint GetEndpointForTesting(const url::Origin& origin,
+                                                  const std::string& group_name,
+                                                  const GURL& url) const = 0;
 
   // Returns whether an endpoint group with exactly the given properties exists
   // in the cache. If |expires| is base::Time(), it will not be checked.
@@ -229,7 +229,7 @@ class NET_EXPORT ReportingCache {
 class NET_EXPORT ReportingCache::PersistentReportingStore {
  public:
   using ReportingClientsLoadedCallback =
-      base::OnceCallback<void(std::vector<ReportingClient>,
+      base::OnceCallback<void(std::vector<ReportingEndpoint>,
                               std::vector<CachedReportingEndpointGroup>)>;
 
   PersistentReportingStore() = default;
@@ -241,7 +241,7 @@ class NET_EXPORT ReportingCache::PersistentReportingStore {
       ReportingClientsLoadedCallback loaded_callback) = 0;
 
   // Adds an endpoint to the store.
-  virtual void AddReportingEndpoint(const ReportingClient& endpoint) = 0;
+  virtual void AddReportingEndpoint(const ReportingEndpoint& endpoint) = 0;
   // Adds an endpoint group to the store.
   virtual void AddReportingEndpointGroup(
       const CachedReportingEndpointGroup& group) = 0;
@@ -252,13 +252,13 @@ class NET_EXPORT ReportingCache::PersistentReportingStore {
 
   // Updates the details of an endpoint in the store.
   virtual void UpdateReportingEndpointDetails(
-      const ReportingClient& endpoint) = 0;
+      const ReportingEndpoint& endpoint) = 0;
   // Updates the details of an endpoint group in the store.
   virtual void UpdateReportingEndpointGroupDetails(
       const CachedReportingEndpointGroup& group) = 0;
 
   // Deletes an endpoint from the store.
-  virtual void DeleteReportingEndpoint(const ReportingClient& endpoint) = 0;
+  virtual void DeleteReportingEndpoint(const ReportingEndpoint& endpoint) = 0;
   // Deletes an endpoint group from the store.
   virtual void DeleteReportingEndpointGroup(
       const CachedReportingEndpointGroup& group) = 0;

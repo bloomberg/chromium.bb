@@ -15,7 +15,7 @@
 #include "base/values.h"
 #include "net/reporting/reporting_cache_impl.h"
 #include "net/reporting/reporting_cache_observer.h"
-#include "net/reporting/reporting_client.h"
+#include "net/reporting/reporting_endpoint.h"
 #include "net/reporting/reporting_report.h"
 #include "net/reporting/reporting_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -336,7 +336,7 @@ TEST_F(ReportingCacheTest, Endpoints) {
   ASSERT_TRUE(SetEndpointInCache(kOrigin1_, kGroup1_, kEndpoint1_, kExpires1_));
   EXPECT_EQ(1u, cache()->GetEndpointCount());
 
-  const ReportingClient endpoint1 =
+  const ReportingEndpoint endpoint1 =
       FindEndpointInCache(kOrigin1_, kGroup1_, kEndpoint1_);
   ASSERT_TRUE(endpoint1);
   EXPECT_EQ(kOrigin1_, endpoint1.group_key.origin);
@@ -352,7 +352,7 @@ TEST_F(ReportingCacheTest, Endpoints) {
   ASSERT_TRUE(SetEndpointInCache(kOrigin1_, kGroup1_, kEndpoint2_, kExpires1_));
   EXPECT_EQ(2u, cache()->GetEndpointCount());
 
-  const ReportingClient endpoint2 =
+  const ReportingEndpoint endpoint2 =
       FindEndpointInCache(kOrigin1_, kGroup1_, kEndpoint2_);
   ASSERT_TRUE(endpoint2);
   EXPECT_EQ(kOrigin1_, endpoint2.group_key.origin);
@@ -371,7 +371,7 @@ TEST_F(ReportingCacheTest, Endpoints) {
   ASSERT_TRUE(SetEndpointInCache(kOrigin2_, kGroup1_, kEndpoint2_, kExpires1_));
   EXPECT_EQ(3u, cache()->GetEndpointCount());
 
-  const ReportingClient endpoint3 =
+  const ReportingEndpoint endpoint3 =
       FindEndpointInCache(kOrigin2_, kGroup1_, kEndpoint2_);
   ASSERT_TRUE(endpoint3);
   EXPECT_EQ(kOrigin2_, endpoint3.group_key.origin);
@@ -552,10 +552,10 @@ TEST_F(ReportingCacheTest, GetCandidateEndpointsForDelivery) {
   ASSERT_TRUE(SetEndpointInCache(kOrigin1_, kGroup1_, kEndpoint2_, kExpires1_));
   ASSERT_TRUE(SetEndpointInCache(kOrigin2_, kGroup1_, kEndpoint1_, kExpires1_));
   ASSERT_TRUE(SetEndpointInCache(kOrigin2_, kGroup2_, kEndpoint2_, kExpires1_));
-  std::vector<ReportingClient> candidate_endpoints =
+  std::vector<ReportingEndpoint> candidate_endpoints =
       cache()->GetCandidateEndpointsForDelivery(kOrigin1_, kGroup1_);
   ASSERT_EQ(2u, candidate_endpoints.size());
-  for (const ReportingClient& endpoint : candidate_endpoints) {
+  for (const ReportingEndpoint& endpoint : candidate_endpoints) {
     EXPECT_EQ(kOrigin1_, endpoint.group_key.origin);
     EXPECT_EQ(kGroup1_, endpoint.group_key.group_name);
   }
@@ -577,7 +577,7 @@ TEST_F(ReportingCacheTest, GetCandidateEndpointsExcludesExpired) {
   ASSERT_GT(clock()->Now(), kExpires1_);
   ASSERT_LT(clock()->Now(), kExpires2_);
 
-  std::vector<ReportingClient> candidate_endpoints =
+  std::vector<ReportingEndpoint> candidate_endpoints =
       cache()->GetCandidateEndpointsForDelivery(kOrigin1_, kGroup1_);
   ASSERT_EQ(0u, candidate_endpoints.size());
 
@@ -599,7 +599,7 @@ TEST_F(ReportingCacheTest, ExcludeSubdomainsDifferentPort) {
   ASSERT_TRUE(SetEndpointInCache(kDifferentPortOrigin, kGroup1_, kEndpoint1_,
                                  kExpires1_, OriginSubdomains::EXCLUDE));
 
-  std::vector<ReportingClient> candidate_endpoints =
+  std::vector<ReportingEndpoint> candidate_endpoints =
       cache()->GetCandidateEndpointsForDelivery(kOrigin, kGroup1_);
   ASSERT_EQ(0u, candidate_endpoints.size());
 }
@@ -612,7 +612,7 @@ TEST_F(ReportingCacheTest, ExcludeSubdomainsSuperdomain) {
   ASSERT_TRUE(SetEndpointInCache(kSuperOrigin, kGroup1_, kEndpoint1_,
                                  kExpires1_, OriginSubdomains::EXCLUDE));
 
-  std::vector<ReportingClient> candidate_endpoints =
+  std::vector<ReportingEndpoint> candidate_endpoints =
       cache()->GetCandidateEndpointsForDelivery(kOrigin, kGroup1_);
   ASSERT_EQ(0u, candidate_endpoints.size());
 }
@@ -625,7 +625,7 @@ TEST_F(ReportingCacheTest, IncludeSubdomainsDifferentPort) {
   ASSERT_TRUE(SetEndpointInCache(kDifferentPortOrigin, kGroup1_, kEndpoint1_,
                                  kExpires1_, OriginSubdomains::INCLUDE));
 
-  std::vector<ReportingClient> candidate_endpoints =
+  std::vector<ReportingEndpoint> candidate_endpoints =
       cache()->GetCandidateEndpointsForDelivery(kOrigin, kGroup1_);
   ASSERT_EQ(1u, candidate_endpoints.size());
   EXPECT_EQ(kDifferentPortOrigin, candidate_endpoints[0].group_key.origin);
@@ -639,7 +639,7 @@ TEST_F(ReportingCacheTest, IncludeSubdomainsSuperdomain) {
   ASSERT_TRUE(SetEndpointInCache(kSuperOrigin, kGroup1_, kEndpoint1_,
                                  kExpires1_, OriginSubdomains::INCLUDE));
 
-  std::vector<ReportingClient> candidate_endpoints =
+  std::vector<ReportingEndpoint> candidate_endpoints =
       cache()->GetCandidateEndpointsForDelivery(kOrigin, kGroup1_);
   ASSERT_EQ(1u, candidate_endpoints.size());
   EXPECT_EQ(kSuperOrigin, candidate_endpoints[0].group_key.origin);
@@ -655,7 +655,7 @@ TEST_F(ReportingCacheTest, IncludeSubdomainsPreferOriginToDifferentPort) {
   ASSERT_TRUE(SetEndpointInCache(kDifferentPortOrigin, kGroup1_, kEndpoint1_,
                                  kExpires1_, OriginSubdomains::INCLUDE));
 
-  std::vector<ReportingClient> candidate_endpoints =
+  std::vector<ReportingEndpoint> candidate_endpoints =
       cache()->GetCandidateEndpointsForDelivery(kOrigin, kGroup1_);
   ASSERT_EQ(1u, candidate_endpoints.size());
   EXPECT_EQ(kOrigin, candidate_endpoints[0].group_key.origin);
@@ -671,7 +671,7 @@ TEST_F(ReportingCacheTest, IncludeSubdomainsPreferOriginToSuperdomain) {
   ASSERT_TRUE(SetEndpointInCache(kSuperOrigin, kGroup1_, kEndpoint1_,
                                  kExpires1_, OriginSubdomains::INCLUDE));
 
-  std::vector<ReportingClient> candidate_endpoints =
+  std::vector<ReportingEndpoint> candidate_endpoints =
       cache()->GetCandidateEndpointsForDelivery(kOrigin, kGroup1_);
   ASSERT_EQ(1u, candidate_endpoints.size());
   EXPECT_EQ(kOrigin, candidate_endpoints[0].group_key.origin);
@@ -690,7 +690,7 @@ TEST_F(ReportingCacheTest, IncludeSubdomainsPreferMoreSpecificSuperdomain) {
   ASSERT_TRUE(SetEndpointInCache(kSuperSuperOrigin, kGroup1_, kEndpoint1_,
                                  kExpires1_, OriginSubdomains::INCLUDE));
 
-  std::vector<ReportingClient> candidate_endpoints =
+  std::vector<ReportingEndpoint> candidate_endpoints =
       cache()->GetCandidateEndpointsForDelivery(kOrigin, kGroup1_);
   ASSERT_EQ(1u, candidate_endpoints.size());
   EXPECT_EQ(kSuperOrigin, candidate_endpoints[0].group_key.origin);
@@ -870,7 +870,7 @@ TEST_F(ReportingCacheTest, EvictFromLargestGroup) {
   EXPECT_TRUE(EndpointGroupExistsInCache(kOrigin1_, kGroup2_,
                                          OriginSubdomains::DEFAULT));
   // Count the number of endpoints remaining in kGroup2_.
-  std::vector<ReportingClient> endpoints_in_group =
+  std::vector<ReportingEndpoint> endpoints_in_group =
       cache()->GetCandidateEndpointsForDelivery(kOrigin1_, kGroup2_);
   EXPECT_EQ(1u, endpoints_in_group.size());
 }

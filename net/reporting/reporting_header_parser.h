@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "net/base/net_export.h"
-#include "net/reporting/reporting_client.h"
 #include "url/gurl.h"
 
 namespace base {

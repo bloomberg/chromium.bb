@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "net/reporting/reporting_cache.h"
-#include "net/reporting/reporting_client.h"
 #include "net/reporting/reporting_context.h"
 #include "net/reporting/reporting_report.h"
 

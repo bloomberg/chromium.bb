@@ -202,7 +202,7 @@ void ReportingCacheImpl::IncrementEndpointDeliveries(
   if (endpoint_it == endpoints_.end())
     return;
 
-  ReportingClient::Statistics& stats = endpoint_it->second.stats;
+  ReportingEndpoint::Statistics& stats = endpoint_it->second.stats;
   ++stats.attempted_uploads;
   stats.attempted_reports += reports_delivered;
   if (successful) {
@@ -278,8 +278,8 @@ void ReportingCacheImpl::OnParsedHeader(
     std::set<GURL> new_endpoints;
     for (const auto& parsed_endpoint_info : parsed_endpoint_group.endpoints) {
       new_endpoints.insert(parsed_endpoint_info.url);
-      ReportingClient new_endpoint(origin, parsed_endpoint_group.name,
-                                   std::move(parsed_endpoint_info));
+      ReportingEndpoint new_endpoint(origin, parsed_endpoint_group.name,
+                                     std::move(parsed_endpoint_info));
       AddOrUpdateEndpoint(std::move(new_endpoint));
     }
 
@@ -382,7 +382,7 @@ void ReportingCacheImpl::RemoveEndpointsForUrl(const GURL& url) {
   context_->NotifyCachedClientsUpdated();
 }
 
-std::vector<ReportingClient>
+std::vector<ReportingEndpoint>
 ReportingCacheImpl::GetCandidateEndpointsForDelivery(
     const url::Origin& origin,
     const std::string& group_name) {
@@ -429,7 +429,7 @@ ReportingCacheImpl::GetCandidateEndpointsForDelivery(
     }
     domain = GetSuperdomain(domain);
   }
-  return std::vector<ReportingClient>();
+  return std::vector<ReportingEndpoint>();
 }
 
 base::Value ReportingCacheImpl::GetClientsAsValue() const {
@@ -446,20 +446,20 @@ size_t ReportingCacheImpl::GetEndpointCount() const {
   return endpoints_.size();
 }
 
-ReportingClient ReportingCacheImpl::GetEndpointForTesting(
+ReportingEndpoint ReportingCacheImpl::GetEndpointForTesting(
     const url::Origin& origin,
     const std::string& group_name,
     const GURL& url) const {
   SanityCheckClients();
   for (const auto& group_key_and_endpoint : endpoints_) {
-    const ReportingClient& endpoint = group_key_and_endpoint.second;
+    const ReportingEndpoint& endpoint = group_key_and_endpoint.second;
     if (endpoint.group_key.origin == origin &&
         endpoint.group_key.group_name == group_name &&
         endpoint.info.url == url) {
       return endpoint;
     }
   }
-  return ReportingClient();
+  return ReportingEndpoint();
 }
 
 bool ReportingCacheImpl::EndpointGroupExistsForTesting(
@@ -527,11 +527,11 @@ void ReportingCacheImpl::SetEndpointForTesting(
   EndpointMap::iterator endpoint_it = FindEndpointIt(group_key, url);
   // If the endpoint doesn't yet exist, add it.
   if (endpoint_it == endpoints_.end()) {
-    ReportingClient::EndpointInfo info;
+    ReportingEndpoint::EndpointInfo info;
     info.url = std::move(url);
     info.priority = priority;
     info.weight = weight;
-    ReportingClient new_endpoint(origin, group_name, info);
+    ReportingEndpoint new_endpoint(origin, group_name, info);
     endpoint_it =
         endpoints_.insert(std::make_pair(group_key, std::move(new_endpoint)));
     AddEndpointItToIndex(endpoint_it);
@@ -666,7 +666,7 @@ size_t ReportingCacheImpl::SanityCheckEndpointGroup(
 
   const auto group_range = endpoints_.equal_range(key);
   for (auto it = group_range.first; it != group_range.second; ++it) {
-    const ReportingClient& endpoint = it->second;
+    const ReportingEndpoint& endpoint = it->second;
 
     SanityCheckEndpoint(key, endpoint, it);
 
@@ -683,7 +683,7 @@ size_t ReportingCacheImpl::SanityCheckEndpointGroup(
 
 void ReportingCacheImpl::SanityCheckEndpoint(
     const ReportingEndpointGroupKey& key,
-    const ReportingClient& endpoint,
+    const ReportingEndpoint& endpoint,
     EndpointMap::const_iterator endpoint_it) const {
   // Origin and group name match.
   DCHECK(key == endpoint.group_key);
@@ -777,7 +777,7 @@ void ReportingCacheImpl::AddOrUpdateEndpointGroup(
   // added/updated the OriginClient for |origin| yet.
 }
 
-void ReportingCacheImpl::AddOrUpdateEndpoint(ReportingClient new_endpoint) {
+void ReportingCacheImpl::AddOrUpdateEndpoint(ReportingEndpoint new_endpoint) {
   EndpointMap::iterator endpoint_it =
       FindEndpointIt(new_endpoint.group_key, new_endpoint.info.url);
 
@@ -796,7 +796,7 @@ void ReportingCacheImpl::AddOrUpdateEndpoint(ReportingClient new_endpoint) {
   }
 
   // If an entry already existed, just update it.
-  ReportingClient& old_endpoint = endpoint_it->second;
+  ReportingEndpoint& old_endpoint = endpoint_it->second;
   old_endpoint.info.priority = new_endpoint.info.priority;
   old_endpoint.info.weight = new_endpoint.info.weight;
   // |old_endpoint.stats| stays the same.
@@ -857,10 +857,10 @@ void ReportingCacheImpl::RemoveEndpointGroupsForOriginOtherThan(
   }
 }
 
-std::vector<ReportingClient> ReportingCacheImpl::GetEndpointsInGroup(
+std::vector<ReportingEndpoint> ReportingCacheImpl::GetEndpointsInGroup(
     const ReportingEndpointGroupKey& group_key) const {
   const auto group_range = endpoints_.equal_range(group_key);
-  std::vector<ReportingClient> endpoints_out;
+  std::vector<ReportingEndpoint> endpoints_out;
   for (auto it = group_range.first; it != group_range.second; ++it) {
     endpoints_out.push_back(it->second);
   }
@@ -1061,7 +1061,7 @@ void ReportingCacheImpl::EvictEndpointFromGroup(
   const auto group_range = endpoints_.equal_range(group_key);
   EndpointMap::iterator endpoint_to_evict_it = endpoints_.end();
   for (auto it = group_range.first; it != group_range.second; ++it) {
-    const ReportingClient& endpoint = it->second;
+    const ReportingEndpoint& endpoint = it->second;
     if (endpoint_to_evict_it == endpoints_.end() ||
         // Lower priority = higher numerical value of |priority|.
         endpoint.info.priority > endpoint_to_evict_it->second.info.priority ||
@@ -1152,7 +1152,7 @@ base::Value ReportingCacheImpl::GetEndpointGroupAsValue(
 
   const auto group_range = endpoints_.equal_range(group.group_key);
   for (auto it = group_range.first; it != group_range.second; ++it) {
-    const ReportingClient& endpoint = it->second;
+    const ReportingEndpoint& endpoint = it->second;
     endpoint_list.push_back(GetEndpointAsValue(endpoint));
   }
 
@@ -1162,13 +1162,13 @@ base::Value ReportingCacheImpl::GetEndpointGroupAsValue(
 }
 
 base::Value ReportingCacheImpl::GetEndpointAsValue(
-    const ReportingClient& endpoint) const {
+    const ReportingEndpoint& endpoint) const {
   base::Value endpoint_dict(base::Value::Type::DICTIONARY);
   endpoint_dict.SetKey("url", base::Value(endpoint.info.url.spec()));
   endpoint_dict.SetKey("priority", base::Value(endpoint.info.priority));
   endpoint_dict.SetKey("weight", base::Value(endpoint.info.weight));
 
-  const ReportingClient::Statistics& stats = endpoint.stats;
+  const ReportingEndpoint::Statistics& stats = endpoint.stats;
   base::Value successful_dict(base::Value::Type::DICTIONARY);
   successful_dict.SetKey("uploads", base::Value(stats.successful_uploads));
   successful_dict.SetKey("reports", base::Value(stats.successful_reports));

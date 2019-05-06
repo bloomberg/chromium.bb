@@ -36,7 +36,7 @@ class Origin;
 
 namespace net {
 
-struct ReportingClient;
+struct ReportingEndpoint;
 class ReportingGarbageCollector;
 class TestURLRequestContext;
 
@@ -186,10 +186,10 @@ class ReportingTestBase : public TestWithScopedTaskEnvironment {
   void UseStore(ReportingCache::PersistentReportingStore* store);
 
   // Finds a particular endpoint (by origin, group, url) in the cache and
-  // returns it (or ReportingClient with invalid url, if not found).
-  const ReportingClient FindEndpointInCache(const url::Origin& origin,
-                                            const std::string& group_name,
-                                            const GURL& url);
+  // returns it (or an invalid ReportingEndpoint, if not found).
+  const ReportingEndpoint FindEndpointInCache(const url::Origin& origin,
+                                              const std::string& group_name,
+                                              const GURL& url);
 
   // Sets an endpoint with the given properties in a group with the given
   // properties, bypassing header parsing. Note that the endpoint is not
@@ -201,8 +201,8 @@ class ReportingTestBase : public TestWithScopedTaskEnvironment {
       const GURL& url,
       base::Time expires,
       OriginSubdomains include_subdomains = OriginSubdomains::DEFAULT,
-      int priority = ReportingClient::EndpointInfo::kDefaultPriority,
-      int weight = ReportingClient::EndpointInfo::kDefaultWeight);
+      int priority = ReportingEndpoint::EndpointInfo::kDefaultPriority,
+      int weight = ReportingEndpoint::EndpointInfo::kDefaultWeight);
 
   // Returns whether an endpoint with the given properties exists in the cache.
   bool EndpointExistsInCache(const url::Origin& origin,
@@ -210,7 +210,7 @@ class ReportingTestBase : public TestWithScopedTaskEnvironment {
                              const GURL& url);
 
   // Gets the statistics for a given endpoint, if it exists.
-  ReportingClient::Statistics GetEndpointStatistics(
+  ReportingEndpoint::Statistics GetEndpointStatistics(
       const url::Origin& origin,
       const std::string& group_name,
       const GURL& url);

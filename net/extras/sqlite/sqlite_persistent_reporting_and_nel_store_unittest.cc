@@ -110,7 +110,7 @@ class SQLitePersistentReportingAndNELStoreTest
 
     // One load should be sufficient to initialize the database, but we might as
     // well load everything to check that there is nothing in the database.
-    std::vector<ReportingClient> endpoints;
+    std::vector<ReportingEndpoint> endpoints;
     std::vector<CachedReportingEndpointGroup> groups;
     LoadReportingClients(&endpoints, &groups);
     EXPECT_EQ(0u, endpoints.size());
@@ -135,7 +135,7 @@ class SQLitePersistentReportingAndNELStoreTest
   }
 
   void LoadReportingClients(
-      std::vector<ReportingClient>* endpoints_out,
+      std::vector<ReportingEndpoint>* endpoints_out,
       std::vector<CachedReportingEndpointGroup>* groups_out) {
     base::RunLoop run_loop;
     store_->LoadReportingClients(base::BindRepeating(
@@ -146,9 +146,9 @@ class SQLitePersistentReportingAndNELStoreTest
 
   void OnReportingClientsLoaded(
       base::RunLoop* run_loop,
-      std::vector<ReportingClient>* endpoints_out,
+      std::vector<ReportingEndpoint>* endpoints_out,
       std::vector<CachedReportingEndpointGroup>* groups_out,
-      std::vector<ReportingClient> endpoints,
+      std::vector<ReportingEndpoint> endpoints,
       std::vector<CachedReportingEndpointGroup> groups) {
     endpoints_out->swap(endpoints);
     groups_out->swap(groups);
@@ -193,17 +193,17 @@ class SQLitePersistentReportingAndNELStoreTest
     return policy;
   }
 
-  ReportingClient MakeReportingEndpoint(
+  ReportingEndpoint MakeReportingEndpoint(
       url::Origin origin,
       std::string group_name,
       GURL url,
-      int priority = ReportingClient::EndpointInfo::kDefaultPriority,
-      int weight = ReportingClient::EndpointInfo::kDefaultWeight) {
-    ReportingClient::EndpointInfo info;
+      int priority = ReportingEndpoint::EndpointInfo::kDefaultPriority,
+      int weight = ReportingEndpoint::EndpointInfo::kDefaultWeight) {
+    ReportingEndpoint::EndpointInfo info;
     info.url = url;
     info.priority = priority;
     info.weight = weight;
-    ReportingClient endpoint(origin, group_name, std::move(info));
+    ReportingEndpoint endpoint(origin, group_name, std::move(info));
     return endpoint;
   }
 
@@ -654,7 +654,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest, PersistReportingClients) {
   CreateStore();
   InitializeStore();
   base::Time now = base::Time::Now();
-  ReportingClient endpoint =
+  ReportingEndpoint endpoint =
       MakeReportingEndpoint(kOrigin1, kGroupName1, kEndpoint1);
   CachedReportingEndpointGroup group =
       MakeReportingEndpointGroup(kOrigin1, kGroupName1, now);
@@ -667,7 +667,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest, PersistReportingClients) {
   CreateStore();
 
   // Load the stored clients.
-  std::vector<ReportingClient> endpoints;
+  std::vector<ReportingEndpoint> endpoints;
   std::vector<CachedReportingEndpointGroup> groups;
   LoadReportingClients(&endpoints, &groups);
   ASSERT_EQ(1u, endpoints.size());
@@ -701,7 +701,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
   DestroyStore();
   CreateStore();
 
-  std::vector<ReportingClient> endpoints;
+  std::vector<ReportingEndpoint> endpoints;
   std::vector<CachedReportingEndpointGroup> groups;
   LoadReportingClients(&endpoints, &groups);
   ASSERT_EQ(1u, groups.size());
@@ -714,7 +714,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
        UpdateReportingEndpointDetails) {
   CreateStore();
   InitializeStore();
-  ReportingClient endpoint =
+  ReportingEndpoint endpoint =
       MakeReportingEndpoint(kOrigin1, kGroupName1, kEndpoint1);
 
   store_->AddReportingEndpoint(endpoint);
@@ -727,7 +727,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
   DestroyStore();
   CreateStore();
 
-  std::vector<ReportingClient> endpoints;
+  std::vector<ReportingEndpoint> endpoints;
   std::vector<CachedReportingEndpointGroup> groups;
   LoadReportingClients(&endpoints, &groups);
   ASSERT_EQ(1u, endpoints.size());
@@ -757,7 +757,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
   DestroyStore();
   CreateStore();
 
-  std::vector<ReportingClient> endpoints;
+  std::vector<ReportingEndpoint> endpoints;
   std::vector<CachedReportingEndpointGroup> groups;
   LoadReportingClients(&endpoints, &groups);
   ASSERT_EQ(1u, groups.size());
@@ -771,9 +771,9 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
 TEST_F(SQLitePersistentReportingAndNELStoreTest, DeleteReportingEndpoint) {
   CreateStore();
   InitializeStore();
-  ReportingClient endpoint1 =
+  ReportingEndpoint endpoint1 =
       MakeReportingEndpoint(kOrigin1, kGroupName1, kEndpoint1);
-  ReportingClient endpoint2 =
+  ReportingEndpoint endpoint2 =
       MakeReportingEndpoint(kOrigin2, kGroupName2, kEndpoint2);
 
   store_->AddReportingEndpoint(endpoint1);
@@ -785,7 +785,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest, DeleteReportingEndpoint) {
   DestroyStore();
   CreateStore();
 
-  std::vector<ReportingClient> endpoints;
+  std::vector<ReportingEndpoint> endpoints;
   std::vector<CachedReportingEndpointGroup> groups;
   LoadReportingClients(&endpoints, &groups);
   ASSERT_EQ(1u, endpoints.size());
@@ -818,7 +818,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest, DeleteReportingEndpointGroup) {
   DestroyStore();
   CreateStore();
 
-  std::vector<ReportingClient> endpoints;
+  std::vector<ReportingEndpoint> endpoints;
   std::vector<CachedReportingEndpointGroup> groups;
   LoadReportingClients(&endpoints, &groups);
   ASSERT_EQ(1u, groups.size());
@@ -837,9 +837,9 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
        ReportingEndpointUniquenessConstraint) {
   CreateStore();
   InitializeStore();
-  ReportingClient endpoint1 = MakeReportingEndpoint(
+  ReportingEndpoint endpoint1 = MakeReportingEndpoint(
       kOrigin1, kGroupName1, kEndpoint1, 1 /* priority */, 1 /* weight */);
-  ReportingClient endpoint2 = MakeReportingEndpoint(
+  ReportingEndpoint endpoint2 = MakeReportingEndpoint(
       kOrigin1, kGroupName1, kEndpoint1, 2 /* priority */, 2 /* weight */);
 
   store_->AddReportingEndpoint(endpoint1);
@@ -850,7 +850,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
   DestroyStore();
   CreateStore();
 
-  std::vector<ReportingClient> endpoints;
+  std::vector<ReportingEndpoint> endpoints;
   std::vector<CachedReportingEndpointGroup> groups;
   LoadReportingClients(&endpoints, &groups);
   // Only the first endpoint we added should be in the store.
@@ -882,7 +882,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
   DestroyStore();
   CreateStore();
 
-  std::vector<ReportingClient> endpoints;
+  std::vector<ReportingEndpoint> endpoints;
   std::vector<CachedReportingEndpointGroup> groups;
   LoadReportingClients(&endpoints, &groups);
   // Only the first group we added should be in the store.
@@ -896,7 +896,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
 
 TEST_F(SQLitePersistentReportingAndNELStoreTest,
        CoalesceReportingEndpointOperations) {
-  ReportingClient endpoint =
+  ReportingEndpoint endpoint =
       MakeReportingEndpoint(kOrigin1, kGroupName1, kEndpoint1);
 
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -906,7 +906,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
     CreateStore();
     base::RunLoop run_loop;
     store_->LoadReportingClients(base::BindLambdaForTesting(
-        [&](std::vector<ReportingClient>,
+        [&](std::vector<ReportingEndpoint>,
             std::vector<CachedReportingEndpointGroup>) { run_loop.Quit(); }));
     run_loop.Run();
 
@@ -953,9 +953,9 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
   CreateStore();
   InitializeStore();
 
-  ReportingClient endpoint1 =
+  ReportingEndpoint endpoint1 =
       MakeReportingEndpoint(kOrigin1, kGroupName1, kEndpoint1);
-  ReportingClient endpoint2 =
+  ReportingEndpoint endpoint2 =
       MakeReportingEndpoint(kOrigin2, kGroupName2, kEndpoint2);
 
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -990,7 +990,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
     CreateStore();
     base::RunLoop run_loop;
     store_->LoadReportingClients(base::BindLambdaForTesting(
-        [&](std::vector<ReportingClient>,
+        [&](std::vector<ReportingEndpoint>,
             std::vector<CachedReportingEndpointGroup>) { run_loop.Quit(); }));
     run_loop.Run();
 
@@ -1034,7 +1034,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
     CreateStore();
     base::RunLoop run_loop;
     store_->LoadReportingClients(base::BindLambdaForTesting(
-        [&](std::vector<ReportingClient>,
+        [&](std::vector<ReportingEndpoint>,
             std::vector<CachedReportingEndpointGroup>) { run_loop.Quit(); }));
     run_loop.Run();
 

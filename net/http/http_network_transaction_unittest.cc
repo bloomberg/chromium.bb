@@ -125,7 +125,7 @@
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/network_error_logging/network_error_logging_test_util.h"
 #include "net/reporting/reporting_cache.h"
-#include "net/reporting/reporting_client.h"
+#include "net/reporting/reporting_endpoint.h"
 #include "net/reporting/reporting_header_parser.h"
 #include "net/reporting/reporting_service.h"
 #include "net/reporting/reporting_test_util.h"
@@ -18451,7 +18451,7 @@ TEST_F(HttpNetworkTransactionReportingTest, DontProcessReportToHeaderHttp) {
 TEST_F(HttpNetworkTransactionReportingTest, ProcessReportToHeaderHttps) {
   RequestPolicy();
   ASSERT_EQ(1u, reporting_context()->cache()->GetEndpointCount());
-  const ReportingClient endpoint =
+  const ReportingEndpoint endpoint =
       reporting_context()->cache()->GetEndpointForTesting(
           url::Origin::Create(GURL("https://www.example.org/")), "nel",
           GURL("https://www.example.org/upload/"));

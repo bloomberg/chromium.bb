@@ -10,7 +10,7 @@
 #include "base/time/time.h"
 #include "net/base/backoff_entry.h"
 #include "net/reporting/reporting_cache.h"
-#include "net/reporting/reporting_client.h"
+#include "net/reporting/reporting_endpoint.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,8 +37,8 @@ class ReportingEndpointManagerTest : public ReportingTestBase {
  protected:
   void SetEndpoint(
       const GURL& endpoint,
-      int priority = ReportingClient::EndpointInfo::kDefaultPriority,
-      int weight = ReportingClient::EndpointInfo::kDefaultWeight) {
+      int priority = ReportingEndpoint::EndpointInfo::kDefaultPriority,
+      int weight = ReportingEndpoint::EndpointInfo::kDefaultWeight) {
     ASSERT_TRUE(
         SetEndpointInCache(kOrigin_, kGroup_, endpoint,
                            base::Time::Now() + base::TimeDelta::FromDays(1),
@@ -51,7 +51,7 @@ class ReportingEndpointManagerTest : public ReportingTestBase {
 };
 
 TEST_F(ReportingEndpointManagerTest, NoEndpoint) {
-  ReportingClient endpoint =
+  ReportingEndpoint endpoint =
       endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
   EXPECT_FALSE(endpoint);
 }
@@ -59,7 +59,7 @@ TEST_F(ReportingEndpointManagerTest, NoEndpoint) {
 TEST_F(ReportingEndpointManagerTest, Endpoint) {
   SetEndpoint(kEndpoint_);
 
-  ReportingClient endpoint =
+  ReportingEndpoint endpoint =
       endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
   ASSERT_TRUE(endpoint);
   EXPECT_EQ(kEndpoint_, endpoint.info.url);
@@ -71,7 +71,7 @@ TEST_F(ReportingEndpointManagerTest, ExpiredEndpoint) {
   // Default expiration is "tomorrow", so make sure we're past that.
   clock()->Advance(base::TimeDelta::FromDays(2));
 
-  ReportingClient endpoint =
+  ReportingEndpoint endpoint =
       endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
   EXPECT_FALSE(endpoint);
 }
@@ -87,14 +87,14 @@ TEST_F(ReportingEndpointManagerTest, BackedOffEndpoint) {
   endpoint_manager()->InformOfEndpointRequest(kEndpoint_, false);
 
   // After one failure, endpoint is in exponential backoff.
-  ReportingClient endpoint =
+  ReportingEndpoint endpoint =
       endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
   EXPECT_FALSE(endpoint);
 
   // After initial delay, endpoint is usable again.
   tick_clock()->Advance(initial_delay);
 
-  ReportingClient endpoint2 =
+  ReportingEndpoint endpoint2 =
       endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
   ASSERT_TRUE(endpoint2);
   EXPECT_EQ(kEndpoint_, endpoint2.info.url);
@@ -102,21 +102,21 @@ TEST_F(ReportingEndpointManagerTest, BackedOffEndpoint) {
   endpoint_manager()->InformOfEndpointRequest(kEndpoint_, false);
 
   // After a second failure, endpoint is backed off again.
-  ReportingClient endpoint3 =
+  ReportingEndpoint endpoint3 =
       endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
   EXPECT_FALSE(endpoint3);
 
   tick_clock()->Advance(initial_delay);
 
   // Next backoff is longer -- 2x the first -- so endpoint isn't usable yet.
-  ReportingClient endpoint4 =
+  ReportingEndpoint endpoint4 =
       endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
   EXPECT_FALSE(endpoint4);
 
   tick_clock()->Advance(initial_delay);
 
   // After 2x the initial delay, the endpoint is usable again.
-  ReportingClient endpoint5 =
+  ReportingEndpoint endpoint5 =
       endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
   ASSERT_TRUE(endpoint5);
   EXPECT_EQ(kEndpoint_, endpoint5.info.url);
@@ -128,13 +128,13 @@ TEST_F(ReportingEndpointManagerTest, BackedOffEndpoint) {
   // again.
   endpoint_manager()->InformOfEndpointRequest(kEndpoint_, false);
 
-  ReportingClient endpoint6 =
+  ReportingEndpoint endpoint6 =
       endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
   EXPECT_FALSE(endpoint6);
 
   tick_clock()->Advance(initial_delay);
 
-  ReportingClient endpoint7 =
+  ReportingEndpoint endpoint7 =
       endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
   EXPECT_TRUE(endpoint7);
 }
@@ -153,7 +153,7 @@ TEST_F(ReportingEndpointManagerTest, RandomEndpoint) {
   bool endpoint2_seen = false;
 
   for (int i = 0; i < kMaxAttempts; ++i) {
-    ReportingClient endpoint =
+    ReportingEndpoint endpoint =
         endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
     ASSERT_TRUE(endpoint);
     ASSERT_TRUE(endpoint.info.url == kEndpoint1 ||
@@ -177,11 +177,11 @@ TEST_F(ReportingEndpointManagerTest, Priority) {
   static const GURL kBackupEndpoint("https://endpoint2/");
 
   SetEndpoint(kPrimaryEndpoint, 10 /* priority */,
-              ReportingClient::EndpointInfo::kDefaultWeight);
+              ReportingEndpoint::EndpointInfo::kDefaultWeight);
   SetEndpoint(kBackupEndpoint, 20 /* priority */,
-              ReportingClient::EndpointInfo::kDefaultWeight);
+              ReportingEndpoint::EndpointInfo::kDefaultWeight);
 
-  ReportingClient endpoint =
+  ReportingEndpoint endpoint =
       endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
   ASSERT_TRUE(endpoint);
   EXPECT_EQ(kPrimaryEndpoint, endpoint.info.url);
@@ -190,7 +190,7 @@ TEST_F(ReportingEndpointManagerTest, Priority) {
   // upload will take the primary endpoint out of contention.  This should cause
   // us to choose the backend endpoint.
   endpoint_manager()->InformOfEndpointRequest(kPrimaryEndpoint, false);
-  ReportingClient endpoint2 =
+  ReportingEndpoint endpoint2 =
       endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
   ASSERT_TRUE(endpoint2);
   EXPECT_EQ(kBackupEndpoint, endpoint2.info.url);
@@ -198,7 +198,7 @@ TEST_F(ReportingEndpointManagerTest, Priority) {
   // Advance the current time far enough to clear out the primary endpoint's
   // backoff clock.  This should bring the primary endpoint back into play.
   tick_clock()->Advance(base::TimeDelta::FromMinutes(2));
-  ReportingClient endpoint3 =
+  ReportingEndpoint endpoint3 =
       endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
   ASSERT_TRUE(endpoint3);
   EXPECT_EQ(kPrimaryEndpoint, endpoint3.info.url);
@@ -215,16 +215,16 @@ TEST_F(ReportingEndpointManagerTest, Weight) {
   static const int kEndpoint2Weight = 2;
   static const int kTotalEndpointWeight = kEndpoint1Weight + kEndpoint2Weight;
 
-  SetEndpoint(kEndpoint1, ReportingClient::EndpointInfo::kDefaultPriority,
+  SetEndpoint(kEndpoint1, ReportingEndpoint::EndpointInfo::kDefaultPriority,
               kEndpoint1Weight);
-  SetEndpoint(kEndpoint2, ReportingClient::EndpointInfo::kDefaultPriority,
+  SetEndpoint(kEndpoint2, ReportingEndpoint::EndpointInfo::kDefaultPriority,
               kEndpoint2Weight);
 
   int endpoint1_count = 0;
   int endpoint2_count = 0;
 
   for (int i = 0; i < kTotalEndpointWeight; ++i) {
-    ReportingClient endpoint =
+    ReportingEndpoint endpoint =
         endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
     ASSERT_TRUE(endpoint);
     ASSERT_TRUE(endpoint.info.url == kEndpoint1 ||

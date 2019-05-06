@@ -85,7 +85,7 @@ TEST_F(ReportingDeliveryAgentTest, SuccessfulImmediateUpload) {
   EXPECT_TRUE(reports.empty());
 
   {
-    const ReportingClient::Statistics stats =
+    const ReportingEndpoint::Statistics stats =
         GetEndpointStatistics(kOrigin_, kGroup_, kEndpoint_);
     EXPECT_EQ(1, stats.attempted_uploads);
     EXPECT_EQ(1, stats.successful_uploads);
@@ -134,7 +134,7 @@ TEST_F(ReportingDeliveryAgentTest, SuccessfulImmediateSubdomainUpload) {
   EXPECT_TRUE(reports.empty());
 
   {
-    const ReportingClient::Statistics stats =
+    const ReportingEndpoint::Statistics stats =
         GetEndpointStatistics(kOrigin_, kGroup_, kEndpoint_);
     EXPECT_EQ(1, stats.attempted_uploads);
     EXPECT_EQ(1, stats.successful_uploads);
@@ -164,7 +164,7 @@ TEST_F(ReportingDeliveryAgentTest,
   pending_uploads()[0]->Complete(ReportingUploader::Outcome::SUCCESS);
 
   {
-    const ReportingClient::Statistics stats =
+    const ReportingEndpoint::Statistics stats =
         GetEndpointStatistics(kOrigin_, kGroup_, kEndpoint_);
     EXPECT_EQ(1, stats.attempted_uploads);
     EXPECT_EQ(1, stats.successful_uploads);
@@ -217,7 +217,7 @@ TEST_F(ReportingDeliveryAgentTest, SuccessfulDelayedUpload) {
   pending_uploads()[0]->Complete(ReportingUploader::Outcome::SUCCESS);
 
   {
-    const ReportingClient::Statistics stats =
+    const ReportingEndpoint::Statistics stats =
         GetEndpointStatistics(kOrigin_, kGroup_, kEndpoint_);
     EXPECT_EQ(2, stats.attempted_uploads);
     EXPECT_EQ(2, stats.successful_uploads);
@@ -246,7 +246,7 @@ TEST_F(ReportingDeliveryAgentTest, FailedUpload) {
   pending_uploads()[0]->Complete(ReportingUploader::Outcome::FAILURE);
 
   {
-    const ReportingClient::Statistics stats =
+    const ReportingEndpoint::Statistics stats =
         GetEndpointStatistics(kOrigin_, kGroup_, kEndpoint_);
     EXPECT_EQ(1, stats.attempted_uploads);
     EXPECT_EQ(0, stats.successful_uploads);
@@ -268,7 +268,7 @@ TEST_F(ReportingDeliveryAgentTest, FailedUpload) {
   EXPECT_TRUE(pending_uploads().empty());
 
   {
-    const ReportingClient::Statistics stats =
+    const ReportingEndpoint::Statistics stats =
         GetEndpointStatistics(kOrigin_, kGroup_, kEndpoint_);
     EXPECT_EQ(1, stats.attempted_uploads);
     EXPECT_EQ(0, stats.successful_uploads);
@@ -301,7 +301,7 @@ TEST_F(ReportingDeliveryAgentTest, DisallowedUpload) {
   EXPECT_TRUE(pending_uploads().empty());
 
   {
-    const ReportingClient::Statistics stats =
+    const ReportingEndpoint::Statistics stats =
         GetEndpointStatistics(kOrigin_, kGroup_, kEndpoint_);
     EXPECT_EQ(0, stats.attempted_uploads);
     EXPECT_EQ(0, stats.successful_uploads);

@@ -15,7 +15,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "net/reporting/reporting_cache.h"
-#include "net/reporting/reporting_client.h"
+#include "net/reporting/reporting_endpoint.h"
 #include "net/reporting/reporting_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -37,7 +37,7 @@ class ReportingHeaderParserTest : public ReportingTestBase {
 
   ReportingEndpointGroup MakeEndpointGroup(
       std::string name,
-      std::vector<ReportingClient::EndpointInfo> endpoints,
+      std::vector<ReportingEndpoint::EndpointInfo> endpoints,
       OriginSubdomains include_subdomains = OriginSubdomains::DEFAULT,
       base::TimeDelta ttl = base::TimeDelta::FromDays(1)) {
     ReportingEndpointGroup group;
@@ -71,18 +71,20 @@ class ReportingHeaderParserTest : public ReportingTestBase {
     }
 
     s << "\"endpoints\": [";
-    for (const ReportingClient::EndpointInfo& endpoint_info : group.endpoints) {
+    for (const ReportingEndpoint::EndpointInfo& endpoint_info :
+         group.endpoints) {
       s << "{ ";
       s << "\"url\": \"" << endpoint_info.url.spec() << "\"";
 
       if (!omit_defaults ||
           endpoint_info.priority !=
-              ReportingClient::EndpointInfo::kDefaultPriority) {
+              ReportingEndpoint::EndpointInfo::kDefaultPriority) {
         s << ", \"priority\": " << endpoint_info.priority;
       }
 
-      if (!omit_defaults || endpoint_info.weight !=
-                                ReportingClient::EndpointInfo::kDefaultWeight) {
+      if (!omit_defaults ||
+          endpoint_info.weight !=
+              ReportingEndpoint::EndpointInfo::kDefaultWeight) {
         s << ", \"weight\": " << endpoint_info.weight;
       }
 
@@ -174,7 +176,7 @@ TEST_F(ReportingHeaderParserTest, Invalid) {
 }
 
 TEST_F(ReportingHeaderParserTest, Basic) {
-  std::vector<ReportingClient::EndpointInfo> endpoints = {{kEndpoint_}};
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints = {{kEndpoint_}};
 
   std::string header =
       ConstructHeaderGroupString(MakeEndpointGroup(kGroup_, endpoints));
@@ -185,19 +187,20 @@ TEST_F(ReportingHeaderParserTest, Basic) {
       EndpointGroupExistsInCache(kOrigin_, kGroup_, OriginSubdomains::DEFAULT));
   EXPECT_TRUE(OriginClientExistsInCache(kOrigin_));
   EXPECT_EQ(1u, cache()->GetEndpointCount());
-  ReportingClient endpoint = FindEndpointInCache(kOrigin_, kGroup_, kEndpoint_);
+  ReportingEndpoint endpoint =
+      FindEndpointInCache(kOrigin_, kGroup_, kEndpoint_);
   ASSERT_TRUE(endpoint);
   EXPECT_EQ(kOrigin_, endpoint.group_key.origin);
   EXPECT_EQ(kGroup_, endpoint.group_key.group_name);
   EXPECT_EQ(kEndpoint_, endpoint.info.url);
-  EXPECT_EQ(ReportingClient::EndpointInfo::kDefaultPriority,
+  EXPECT_EQ(ReportingEndpoint::EndpointInfo::kDefaultPriority,
             endpoint.info.priority);
-  EXPECT_EQ(ReportingClient::EndpointInfo::kDefaultWeight,
+  EXPECT_EQ(ReportingEndpoint::EndpointInfo::kDefaultWeight,
             endpoint.info.weight);
 }
 
 TEST_F(ReportingHeaderParserTest, OmittedGroupName) {
-  std::vector<ReportingClient::EndpointInfo> endpoints = {{kEndpoint_}};
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints = {{kEndpoint_}};
   std::string header =
       ConstructHeaderGroupString(MakeEndpointGroup(std::string(), endpoints));
 
@@ -207,20 +210,20 @@ TEST_F(ReportingHeaderParserTest, OmittedGroupName) {
                                          OriginSubdomains::DEFAULT));
   EXPECT_TRUE(OriginClientExistsInCache(kOrigin_));
   EXPECT_EQ(1u, cache()->GetEndpointCount());
-  ReportingClient endpoint =
+  ReportingEndpoint endpoint =
       FindEndpointInCache(kOrigin_, "default", kEndpoint_);
   ASSERT_TRUE(endpoint);
   EXPECT_EQ(kOrigin_, endpoint.group_key.origin);
   EXPECT_EQ("default", endpoint.group_key.group_name);
   EXPECT_EQ(kEndpoint_, endpoint.info.url);
-  EXPECT_EQ(ReportingClient::EndpointInfo::kDefaultPriority,
+  EXPECT_EQ(ReportingEndpoint::EndpointInfo::kDefaultPriority,
             endpoint.info.priority);
-  EXPECT_EQ(ReportingClient::EndpointInfo::kDefaultWeight,
+  EXPECT_EQ(ReportingEndpoint::EndpointInfo::kDefaultWeight,
             endpoint.info.weight);
 }
 
 TEST_F(ReportingHeaderParserTest, IncludeSubdomainsTrue) {
-  std::vector<ReportingClient::EndpointInfo> endpoints = {{kEndpoint_}};
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints = {{kEndpoint_}};
 
   std::string header = ConstructHeaderGroupString(
       MakeEndpointGroup(kGroup_, endpoints, OriginSubdomains::INCLUDE));
@@ -234,7 +237,7 @@ TEST_F(ReportingHeaderParserTest, IncludeSubdomainsTrue) {
 }
 
 TEST_F(ReportingHeaderParserTest, IncludeSubdomainsFalse) {
-  std::vector<ReportingClient::EndpointInfo> endpoints = {{kEndpoint_}};
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints = {{kEndpoint_}};
 
   std::string header = ConstructHeaderGroupString(
       MakeEndpointGroup(kGroup_, endpoints, OriginSubdomains::EXCLUDE),
@@ -266,7 +269,7 @@ TEST_F(ReportingHeaderParserTest, IncludeSubdomainsNotBoolean) {
 
 TEST_F(ReportingHeaderParserTest, NonDefaultPriority) {
   const int kNonDefaultPriority = 10;
-  std::vector<ReportingClient::EndpointInfo> endpoints = {
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints = {
       {kEndpoint_, kNonDefaultPriority}};
 
   std::string header =
@@ -277,17 +280,18 @@ TEST_F(ReportingHeaderParserTest, NonDefaultPriority) {
   EXPECT_TRUE(
       EndpointGroupExistsInCache(kOrigin_, kGroup_, OriginSubdomains::DEFAULT));
   EXPECT_EQ(1u, cache()->GetEndpointCount());
-  ReportingClient endpoint = FindEndpointInCache(kOrigin_, kGroup_, kEndpoint_);
+  ReportingEndpoint endpoint =
+      FindEndpointInCache(kOrigin_, kGroup_, kEndpoint_);
   ASSERT_TRUE(endpoint);
   EXPECT_EQ(kNonDefaultPriority, endpoint.info.priority);
-  EXPECT_EQ(ReportingClient::EndpointInfo::kDefaultWeight,
+  EXPECT_EQ(ReportingEndpoint::EndpointInfo::kDefaultWeight,
             endpoint.info.weight);
 }
 
 TEST_F(ReportingHeaderParserTest, NonDefaultWeight) {
   const int kNonDefaultWeight = 10;
-  std::vector<ReportingClient::EndpointInfo> endpoints = {
-      {kEndpoint_, ReportingClient::EndpointInfo::kDefaultPriority,
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints = {
+      {kEndpoint_, ReportingEndpoint::EndpointInfo::kDefaultPriority,
        kNonDefaultWeight}};
 
   std::string header =
@@ -298,9 +302,10 @@ TEST_F(ReportingHeaderParserTest, NonDefaultWeight) {
   EXPECT_TRUE(
       EndpointGroupExistsInCache(kOrigin_, kGroup_, OriginSubdomains::DEFAULT));
   EXPECT_EQ(1u, cache()->GetEndpointCount());
-  ReportingClient endpoint = FindEndpointInCache(kOrigin_, kGroup_, kEndpoint_);
+  ReportingEndpoint endpoint =
+      FindEndpointInCache(kOrigin_, kGroup_, kEndpoint_);
   ASSERT_TRUE(endpoint);
-  EXPECT_EQ(ReportingClient::EndpointInfo::kDefaultPriority,
+  EXPECT_EQ(ReportingEndpoint::EndpointInfo::kDefaultPriority,
             endpoint.info.priority);
   EXPECT_EQ(kNonDefaultWeight, endpoint.info.weight);
 }
@@ -310,7 +315,7 @@ TEST_F(ReportingHeaderParserTest, MaxAge) {
   base::TimeDelta ttl = base::TimeDelta::FromSeconds(kMaxAgeSecs);
   base::Time expires = clock()->Now() + ttl;
 
-  std::vector<ReportingClient::EndpointInfo> endpoints = {{kEndpoint_}};
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints = {{kEndpoint_}};
 
   std::string header = ConstructHeaderGroupString(
       MakeEndpointGroup(kGroup_, endpoints, OriginSubdomains::DEFAULT, ttl));
@@ -322,8 +327,8 @@ TEST_F(ReportingHeaderParserTest, MaxAge) {
 }
 
 TEST_F(ReportingHeaderParserTest, MultipleEndpointsSameGroup) {
-  std::vector<ReportingClient::EndpointInfo> endpoints = {{kEndpoint_},
-                                                          {kEndpoint2_}};
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints = {{kEndpoint_},
+                                                            {kEndpoint2_}};
   std::string header =
       ConstructHeaderGroupString(MakeEndpointGroup(kGroup_, endpoints));
 
@@ -333,31 +338,32 @@ TEST_F(ReportingHeaderParserTest, MultipleEndpointsSameGroup) {
       EndpointGroupExistsInCache(kOrigin_, kGroup_, OriginSubdomains::DEFAULT));
   EXPECT_TRUE(OriginClientExistsInCache(kOrigin_));
   EXPECT_EQ(2u, cache()->GetEndpointCount());
-  ReportingClient endpoint = FindEndpointInCache(kOrigin_, kGroup_, kEndpoint_);
+  ReportingEndpoint endpoint =
+      FindEndpointInCache(kOrigin_, kGroup_, kEndpoint_);
   ASSERT_TRUE(endpoint);
   EXPECT_EQ(kOrigin_, endpoint.group_key.origin);
   EXPECT_EQ(kGroup_, endpoint.group_key.group_name);
   EXPECT_EQ(kEndpoint_, endpoint.info.url);
-  EXPECT_EQ(ReportingClient::EndpointInfo::kDefaultPriority,
+  EXPECT_EQ(ReportingEndpoint::EndpointInfo::kDefaultPriority,
             endpoint.info.priority);
-  EXPECT_EQ(ReportingClient::EndpointInfo::kDefaultWeight,
+  EXPECT_EQ(ReportingEndpoint::EndpointInfo::kDefaultWeight,
             endpoint.info.weight);
 
-  ReportingClient endpoint2 =
+  ReportingEndpoint endpoint2 =
       FindEndpointInCache(kOrigin_, kGroup_, kEndpoint2_);
   ASSERT_TRUE(endpoint2);
   EXPECT_EQ(kOrigin_, endpoint2.group_key.origin);
   EXPECT_EQ(kGroup_, endpoint2.group_key.group_name);
   EXPECT_EQ(kEndpoint2_, endpoint2.info.url);
-  EXPECT_EQ(ReportingClient::EndpointInfo::kDefaultPriority,
+  EXPECT_EQ(ReportingEndpoint::EndpointInfo::kDefaultPriority,
             endpoint2.info.priority);
-  EXPECT_EQ(ReportingClient::EndpointInfo::kDefaultWeight,
+  EXPECT_EQ(ReportingEndpoint::EndpointInfo::kDefaultWeight,
             endpoint2.info.weight);
 }
 
 TEST_F(ReportingHeaderParserTest, MultipleEndpointsDifferentGroups) {
-  std::vector<ReportingClient::EndpointInfo> endpoints1 = {{kEndpoint_}};
-  std::vector<ReportingClient::EndpointInfo> endpoints2 = {{kEndpoint_}};
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints1 = {{kEndpoint_}};
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints2 = {{kEndpoint_}};
   std::string header =
       ConstructHeaderGroupString(MakeEndpointGroup(kGroup_, endpoints1)) +
       ", " +
@@ -372,37 +378,38 @@ TEST_F(ReportingHeaderParserTest, MultipleEndpointsDifferentGroups) {
   EXPECT_TRUE(OriginClientExistsInCache(kOrigin_));
 
   EXPECT_EQ(2u, cache()->GetEndpointCount());
-  ReportingClient endpoint = FindEndpointInCache(kOrigin_, kGroup_, kEndpoint_);
+  ReportingEndpoint endpoint =
+      FindEndpointInCache(kOrigin_, kGroup_, kEndpoint_);
   ASSERT_TRUE(endpoint);
   EXPECT_EQ(kOrigin_, endpoint.group_key.origin);
   EXPECT_EQ(kGroup_, endpoint.group_key.group_name);
-  EXPECT_EQ(ReportingClient::EndpointInfo::kDefaultPriority,
+  EXPECT_EQ(ReportingEndpoint::EndpointInfo::kDefaultPriority,
             endpoint.info.priority);
-  EXPECT_EQ(ReportingClient::EndpointInfo::kDefaultWeight,
+  EXPECT_EQ(ReportingEndpoint::EndpointInfo::kDefaultWeight,
             endpoint.info.weight);
 
-  ReportingClient endpoint2 =
+  ReportingEndpoint endpoint2 =
       FindEndpointInCache(kOrigin_, kGroup2_, kEndpoint_);
   ASSERT_TRUE(endpoint2);
   EXPECT_EQ(kOrigin_, endpoint2.group_key.origin);
   EXPECT_EQ(kGroup2_, endpoint2.group_key.group_name);
-  EXPECT_EQ(ReportingClient::EndpointInfo::kDefaultPriority,
+  EXPECT_EQ(ReportingEndpoint::EndpointInfo::kDefaultPriority,
             endpoint2.info.priority);
-  EXPECT_EQ(ReportingClient::EndpointInfo::kDefaultWeight,
+  EXPECT_EQ(ReportingEndpoint::EndpointInfo::kDefaultWeight,
             endpoint2.info.weight);
 }
 
 TEST_F(ReportingHeaderParserTest, MultipleHeadersFromDifferentOrigins) {
   // First origin sets a header with two endpoints in the same group.
-  std::vector<ReportingClient::EndpointInfo> endpoints1 = {{kEndpoint_},
-                                                           {kEndpoint2_}};
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints1 = {{kEndpoint_},
+                                                             {kEndpoint2_}};
   std::string header1 =
       ConstructHeaderGroupString(MakeEndpointGroup(kGroup_, endpoints1));
   ParseHeader(kUrl_, header1);
 
   // Second origin has two endpoint groups.
-  std::vector<ReportingClient::EndpointInfo> endpoints2 = {{kEndpoint_}};
-  std::vector<ReportingClient::EndpointInfo> endpoints3 = {{kEndpoint2_}};
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints2 = {{kEndpoint_}};
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints3 = {{kEndpoint2_}};
   std::string header2 =
       ConstructHeaderGroupString(MakeEndpointGroup(kGroup_, endpoints2)) +
       ", " +
@@ -429,8 +436,8 @@ TEST_F(ReportingHeaderParserTest, MultipleHeadersFromDifferentOrigins) {
 
 TEST_F(ReportingHeaderParserTest,
        HeaderErroneouslyContainsMultipleGroupsOfSameName) {
-  std::vector<ReportingClient::EndpointInfo> endpoints1 = {{kEndpoint_}};
-  std::vector<ReportingClient::EndpointInfo> endpoints2 = {{kEndpoint2_}};
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints1 = {{kEndpoint_}};
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints2 = {{kEndpoint2_}};
   std::string header =
       ConstructHeaderGroupString(MakeEndpointGroup(kGroup_, endpoints1)) +
       ", " + ConstructHeaderGroupString(MakeEndpointGroup(kGroup_, endpoints2));
@@ -444,29 +451,30 @@ TEST_F(ReportingHeaderParserTest,
   EXPECT_TRUE(OriginClientExistsInCache(kOrigin_));
 
   EXPECT_EQ(2u, cache()->GetEndpointCount());
-  ReportingClient endpoint = FindEndpointInCache(kOrigin_, kGroup_, kEndpoint_);
+  ReportingEndpoint endpoint =
+      FindEndpointInCache(kOrigin_, kGroup_, kEndpoint_);
   ASSERT_TRUE(endpoint);
   EXPECT_EQ(kOrigin_, endpoint.group_key.origin);
   EXPECT_EQ(kGroup_, endpoint.group_key.group_name);
-  EXPECT_EQ(ReportingClient::EndpointInfo::kDefaultPriority,
+  EXPECT_EQ(ReportingEndpoint::EndpointInfo::kDefaultPriority,
             endpoint.info.priority);
-  EXPECT_EQ(ReportingClient::EndpointInfo::kDefaultWeight,
+  EXPECT_EQ(ReportingEndpoint::EndpointInfo::kDefaultWeight,
             endpoint.info.weight);
 
-  ReportingClient endpoint2 =
+  ReportingEndpoint endpoint2 =
       FindEndpointInCache(kOrigin_, kGroup_, kEndpoint2_);
   ASSERT_TRUE(endpoint2);
   EXPECT_EQ(kOrigin_, endpoint2.group_key.origin);
   EXPECT_EQ(kGroup_, endpoint2.group_key.group_name);
-  EXPECT_EQ(ReportingClient::EndpointInfo::kDefaultPriority,
+  EXPECT_EQ(ReportingEndpoint::EndpointInfo::kDefaultPriority,
             endpoint2.info.priority);
-  EXPECT_EQ(ReportingClient::EndpointInfo::kDefaultWeight,
+  EXPECT_EQ(ReportingEndpoint::EndpointInfo::kDefaultWeight,
             endpoint2.info.weight);
 }
 
 TEST_F(ReportingHeaderParserTest, OverwriteOldHeader) {
   // First, the origin sets a header with two endpoints in the same group.
-  std::vector<ReportingClient::EndpointInfo> endpoints1 = {
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints1 = {
       {kEndpoint_, 10 /* priority */}, {kEndpoint2_}};
   std::string header1 =
       ConstructHeaderGroupString(MakeEndpointGroup(kGroup_, endpoints1));
@@ -481,12 +489,12 @@ TEST_F(ReportingHeaderParserTest, OverwriteOldHeader) {
   EXPECT_TRUE(FindEndpointInCache(kOrigin_, kGroup_, kEndpoint2_));
 
   // Second header from the same origin should overwrite the previous one.
-  std::vector<ReportingClient::EndpointInfo> endpoints2 = {
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints2 = {
       // This endpoint should update the priority of the existing one.
       {kEndpoint_, 20 /* priority */}};
   // The second endpoint in this group will be deleted.
   // This group is new.
-  std::vector<ReportingClient::EndpointInfo> endpoints3 = {{kEndpoint2_}};
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints3 = {{kEndpoint2_}};
   std::string header2 =
       ConstructHeaderGroupString(MakeEndpointGroup(kGroup_, endpoints2)) +
       ", " +
@@ -509,12 +517,12 @@ TEST_F(ReportingHeaderParserTest, OverwriteOldHeader) {
 }
 
 TEST_F(ReportingHeaderParserTest, OverwriteOldHeaderWithCompletelyNew) {
-  std::vector<ReportingClient::EndpointInfo> endpoints1_1 = {{MakeURL(10)},
-                                                             {MakeURL(11)}};
-  std::vector<ReportingClient::EndpointInfo> endpoints2_1 = {{MakeURL(20)},
-                                                             {MakeURL(21)}};
-  std::vector<ReportingClient::EndpointInfo> endpoints3_1 = {{MakeURL(30)},
-                                                             {MakeURL(31)}};
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints1_1 = {{MakeURL(10)},
+                                                               {MakeURL(11)}};
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints2_1 = {{MakeURL(20)},
+                                                               {MakeURL(21)}};
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints3_1 = {{MakeURL(30)},
+                                                               {MakeURL(31)}};
   std::string header1 =
       ConstructHeaderGroupString(MakeEndpointGroup("1", endpoints1_1)) + ", " +
       ConstructHeaderGroupString(MakeEndpointGroup("2", endpoints2_1)) + ", " +
@@ -531,9 +539,9 @@ TEST_F(ReportingHeaderParserTest, OverwriteOldHeaderWithCompletelyNew) {
   EXPECT_EQ(6u, cache()->GetEndpointCount());
 
   // Replace endpoints in each group with completely new endpoints.
-  std::vector<ReportingClient::EndpointInfo> endpoints1_2 = {{MakeURL(12)}};
-  std::vector<ReportingClient::EndpointInfo> endpoints2_2 = {{MakeURL(22)}};
-  std::vector<ReportingClient::EndpointInfo> endpoints3_2 = {{MakeURL(32)}};
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints1_2 = {{MakeURL(12)}};
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints2_2 = {{MakeURL(22)}};
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints3_2 = {{MakeURL(32)}};
   std::string header2 =
       ConstructHeaderGroupString(MakeEndpointGroup("1", endpoints1_2)) + ", " +
       ConstructHeaderGroupString(MakeEndpointGroup("2", endpoints2_2)) + ", " +
@@ -559,8 +567,8 @@ TEST_F(ReportingHeaderParserTest, OverwriteOldHeaderWithCompletelyNew) {
   EXPECT_FALSE(FindEndpointInCache(kOrigin_, "3", MakeURL(31)));
 
   // Replace all the groups with completely new groups.
-  std::vector<ReportingClient::EndpointInfo> endpoints4_3 = {{MakeURL(40)}};
-  std::vector<ReportingClient::EndpointInfo> endpoints5_3 = {{MakeURL(50)}};
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints4_3 = {{MakeURL(40)}};
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints5_3 = {{MakeURL(50)}};
   std::string header3 =
       ConstructHeaderGroupString(MakeEndpointGroup("4", endpoints4_3)) + ", " +
       ConstructHeaderGroupString(MakeEndpointGroup("5", endpoints5_3));
@@ -588,8 +596,8 @@ TEST_F(ReportingHeaderParserTest, ZeroMaxAgeRemovesEndpointGroup) {
   EXPECT_EQ(0u, cache()->GetEndpointCount());
 
   // Set a header with two endpoint groups.
-  std::vector<ReportingClient::EndpointInfo> endpoints1 = {{kEndpoint_}};
-  std::vector<ReportingClient::EndpointInfo> endpoints2 = {{kEndpoint2_}};
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints1 = {{kEndpoint_}};
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints2 = {{kEndpoint2_}};
   std::string header1 =
       ConstructHeaderGroupString(MakeEndpointGroup(kGroup_, endpoints1)) +
       ", " +
@@ -627,7 +635,7 @@ TEST_F(ReportingHeaderParserTest, ZeroMaxAgeRemovesEndpointGroup) {
   // Set another header with max_age: 0 to delete the other group. (Should work
   // even if the endpoints field is an empty list.)
   std::string header3 = ConstructHeaderGroupString(MakeEndpointGroup(
-      kGroup2_, std::vector<ReportingClient::EndpointInfo>(),
+      kGroup2_, std::vector<ReportingEndpoint::EndpointInfo>(),
       OriginSubdomains::DEFAULT, base::TimeDelta::FromSeconds(0)));
   ParseHeader(kUrl_, header3);
 
@@ -640,7 +648,7 @@ TEST_F(ReportingHeaderParserTest, ZeroMaxAgeRemovesEndpointGroup) {
 
 TEST_F(ReportingHeaderParserTest, EvictEndpointsOverPerOriginLimit1) {
   // Set a header with too many endpoints, all in the same group.
-  std::vector<ReportingClient::EndpointInfo> endpoints;
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints;
   for (size_t i = 0; i < policy().max_endpoints_per_origin + 1; ++i) {
     endpoints.push_back({MakeURL(i)});
   }
@@ -656,7 +664,7 @@ TEST_F(ReportingHeaderParserTest, EvictEndpointsOverPerOriginLimit2) {
   // Set a header with too many endpoints, in different groups.
   std::string header;
   for (size_t i = 0; i < policy().max_endpoints_per_origin + 1; ++i) {
-    std::vector<ReportingClient::EndpointInfo> endpoints = {{MakeURL(i)}};
+    std::vector<ReportingEndpoint::EndpointInfo> endpoints = {{MakeURL(i)}};
     header = header + ConstructHeaderGroupString(MakeEndpointGroup(
                           base::NumberToString(i), endpoints));
     if (i != policy().max_endpoints_per_origin)
@@ -671,7 +679,7 @@ TEST_F(ReportingHeaderParserTest, EvictEndpointsOverPerOriginLimit2) {
 TEST_F(ReportingHeaderParserTest, EvictEndpointsOverGlobalLimit) {
   // Set headers from different origins up to the global limit.
   for (size_t i = 0; i < policy().max_endpoint_count; ++i) {
-    std::vector<ReportingClient::EndpointInfo> endpoints = {{MakeURL(i)}};
+    std::vector<ReportingEndpoint::EndpointInfo> endpoints = {{MakeURL(i)}};
     std::string header =
         ConstructHeaderGroupString(MakeEndpointGroup(kGroup_, endpoints));
     ParseHeader(MakeURL(i), header);

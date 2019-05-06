@@ -17,8 +17,8 @@
 #include "net/base/backoff_entry.h"
 #include "net/base/rand_callback.h"
 #include "net/reporting/reporting_cache.h"
-#include "net/reporting/reporting_client.h"
 #include "net/reporting/reporting_delegate.h"
+#include "net/reporting/reporting_endpoint.h"
 #include "net/reporting/reporting_policy.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -35,21 +35,21 @@ class ReportingEndpointManagerImpl : public ReportingEndpointManager {
 
   ~ReportingEndpointManagerImpl() override = default;
 
-  const ReportingClient FindEndpointForDelivery(
+  const ReportingEndpoint FindEndpointForDelivery(
       const url::Origin& origin,
       const std::string& group) override {
     // Get unexpired endpoints that apply to a delivery to |origin| and |group|.
     // May have been configured by a superdomain of |origin|.
-    std::vector<ReportingClient> endpoints =
+    std::vector<ReportingEndpoint> endpoints =
         cache()->GetCandidateEndpointsForDelivery(origin, group);
 
     // Highest-priority endpoint(s) that are not expired, failing, or
     // forbidden for use by the ReportingDelegate.
-    std::vector<ReportingClient> available_endpoints;
+    std::vector<ReportingEndpoint> available_endpoints;
     // Total weight of endpoints in |available_endpoints|.
     int total_weight = 0;
 
-    for (const ReportingClient endpoint : endpoints) {
+    for (const ReportingEndpoint endpoint : endpoints) {
       if (base::ContainsKey(endpoint_backoff_, endpoint.info.url) &&
           endpoint_backoff_[endpoint.info.url]->ShouldRejectRequest()) {
         continue;
@@ -78,7 +78,7 @@ class ReportingEndpointManagerImpl : public ReportingEndpointManager {
     }
 
     if (available_endpoints.empty()) {
-      return ReportingClient();
+      return ReportingEndpoint();
     }
 
     // TODO(chlily): This will DCHECK if all the endpoints with the desired
@@ -87,7 +87,7 @@ class ReportingEndpointManagerImpl : public ReportingEndpointManager {
     int random_index = rand_callback_.Run(0, total_weight - 1);
     int weight_so_far = 0;
     for (size_t i = 0; i < available_endpoints.size(); ++i) {
-      const ReportingClient& endpoint = available_endpoints[i];
+      const ReportingEndpoint& endpoint = available_endpoints[i];
       weight_so_far += endpoint.info.weight;
       if (random_index < weight_so_far) {
         return endpoint;
@@ -96,7 +96,7 @@ class ReportingEndpointManagerImpl : public ReportingEndpointManager {
 
     // TODO(juliatuttle): Can we reach this in some weird overflow case?
     NOTREACHED();
-    return ReportingClient();
+    return ReportingEndpoint();
   }
 
   void InformOfEndpointRequest(const GURL& endpoint, bool succeeded) override {

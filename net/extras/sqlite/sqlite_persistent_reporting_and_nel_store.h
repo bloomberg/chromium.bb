@@ -44,15 +44,16 @@ class COMPONENT_EXPORT(NET_EXTRAS) SQLitePersistentReportingAndNELStore
   // ReportingCache::PersistentReportingStore implementation
   void LoadReportingClients(
       ReportingClientsLoadedCallback loaded_callback) override;
-  void AddReportingEndpoint(const ReportingClient& endpoint) override;
+  void AddReportingEndpoint(const ReportingEndpoint& endpoint) override;
   void AddReportingEndpointGroup(
       const CachedReportingEndpointGroup& group) override;
   void UpdateReportingEndpointGroupAccessTime(
       const CachedReportingEndpointGroup& group) override;
-  void UpdateReportingEndpointDetails(const ReportingClient& endpoint) override;
+  void UpdateReportingEndpointDetails(
+      const ReportingEndpoint& endpoint) override;
   void UpdateReportingEndpointGroupDetails(
       const CachedReportingEndpointGroup& group) override;
-  void DeleteReportingEndpoint(const ReportingClient& endpoint) override;
+  void DeleteReportingEndpoint(const ReportingEndpoint& endpoint) override;
   void DeleteReportingEndpointGroup(
       const CachedReportingEndpointGroup& group) override;
 
@@ -71,7 +72,7 @@ class COMPONENT_EXPORT(NET_EXTRAS) SQLitePersistentReportingAndNELStore
   // Calls |callback| with the loaded |endpoints| and |endpoint_groups|.
   void CompleteLoadReportingClients(
       ReportingClientsLoadedCallback callback,
-      std::vector<ReportingClient> endpoints,
+      std::vector<ReportingEndpoint> endpoints,
       std::vector<CachedReportingEndpointGroup> endpoint_groups);
 
   const scoped_refptr<Backend> backend_;

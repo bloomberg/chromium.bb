@@ -11,7 +11,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "net/reporting/reporting_cache.h"
-#include "net/reporting/reporting_client.h"
 #include "net/reporting/reporting_header_parser.h"
 #include "net/reporting/reporting_policy.pb.h"
 #include "net/reporting/reporting_test_util.h"

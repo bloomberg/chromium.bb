@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "net/reporting/reporting_cache.h"
-#include "net/reporting/reporting_client.h"
 #include "net/reporting/reporting_context.h"
 #include "net/reporting/reporting_report.h"
 #include "net/reporting/reporting_test_util.h"

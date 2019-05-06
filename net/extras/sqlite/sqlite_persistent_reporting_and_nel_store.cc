@@ -18,7 +18,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/thread_annotations.h"
 #include "net/extras/sqlite/sqlite_persistent_store_backend_base.h"
-#include "net/reporting/reporting_client.h"
+#include "net/reporting/reporting_endpoint.h"
 #include "sql/database.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
@@ -58,14 +58,14 @@ class SQLitePersistentReportingAndNELStore::Backend
   void DeleteNELPolicy(const NetworkErrorLoggingService::NELPolicy& policy);
 
   void LoadReportingClients(ReportingClientsLoadedCallback loaded_callback);
-  void AddReportingEndpoint(const ReportingClient& endpoint);
+  void AddReportingEndpoint(const ReportingEndpoint& endpoint);
   void AddReportingEndpointGroup(const CachedReportingEndpointGroup& group);
   void UpdateReportingEndpointGroupAccessTime(
       const CachedReportingEndpointGroup& group);
-  void UpdateReportingEndpointDetails(const ReportingClient& endpoint);
+  void UpdateReportingEndpointDetails(const ReportingEndpoint& endpoint);
   void UpdateReportingEndpointGroupDetails(
       const CachedReportingEndpointGroup& group);
-  void DeleteReportingEndpoint(const ReportingClient& endpoint);
+  void DeleteReportingEndpoint(const ReportingEndpoint& endpoint);
   void DeleteReportingEndpointGroup(const CachedReportingEndpointGroup& group);
 
   // Gets the number of queued operations.
@@ -103,7 +103,7 @@ class SQLitePersistentReportingAndNELStore::Backend
   // Key types are: - url::Origin for NEL policies,
   //                - ReportingEndpointKey for Reporting endpoints,
   //                - ReportingEndpointGroupKey for Reporting endpoint groups
-  //                  (defined in //net/reporting/reporting_client.h).
+  //                  (defined in //net/reporting/reporting_endpoint.h).
   template <typename KeyType, typename DataType>
   using QueueType = std::map<KeyType, PendingOperationsVector<DataType>>;
 
@@ -171,7 +171,7 @@ class SQLitePersistentReportingAndNELStore::Backend
   // successful, also report metrics.
   void CompleteLoadReportingClientsAndNotifyInForeground(
       ReportingClientsLoadedCallback loaded_callback,
-      std::vector<ReportingClient> loaded_endpoints,
+      std::vector<ReportingEndpoint> loaded_endpoints,
       std::vector<CachedReportingEndpointGroup> loaded_endpoint_groups,
       bool load_success);
 
@@ -316,10 +316,10 @@ struct SQLitePersistentReportingAndNELStore::Backend::NELPolicyInfo {
   int64_t last_access_us_since_epoch = 0;
 };
 
-// Makes a copy of the relevant information about a ReportingClient, stored in a
-// form suitable for adding to the database.
+// Makes a copy of the relevant information about a ReportingEndpoint, stored in
+// a form suitable for adding to the database.
 struct SQLitePersistentReportingAndNELStore::Backend::ReportingEndpointInfo {
-  ReportingEndpointInfo(const ReportingClient& endpoint)
+  ReportingEndpointInfo(const ReportingEndpoint& endpoint)
       : origin_scheme(endpoint.group_key.origin.scheme()),
         origin_host(endpoint.group_key.origin.host()),
         origin_port(endpoint.group_key.origin.port()),
@@ -337,9 +337,9 @@ struct SQLitePersistentReportingAndNELStore::Backend::ReportingEndpointInfo {
   // URL of the endpoint.
   std::string url;
   // Priority of the endpoint.
-  int priority = ReportingClient::EndpointInfo::kDefaultPriority;
+  int priority = ReportingEndpoint::EndpointInfo::kDefaultPriority;
   // Weight of the endpoint.
-  int weight = ReportingClient::EndpointInfo::kDefaultWeight;
+  int weight = ReportingEndpoint::EndpointInfo::kDefaultWeight;
 };
 
 struct SQLitePersistentReportingAndNELStore::Backend::
@@ -409,7 +409,7 @@ void SQLitePersistentReportingAndNELStore::Backend::LoadReportingClients(
 }
 
 void SQLitePersistentReportingAndNELStore::Backend::AddReportingEndpoint(
-    const ReportingClient& endpoint) {
+    const ReportingEndpoint& endpoint) {
   auto po = std::make_unique<PendingOperation<ReportingEndpointInfo>>(
       PendingOperation<ReportingEndpointInfo>::Type::ADD,
       ReportingEndpointInfo(endpoint));
@@ -439,7 +439,7 @@ void SQLitePersistentReportingAndNELStore::Backend::
 }
 
 void SQLitePersistentReportingAndNELStore::Backend::
-    UpdateReportingEndpointDetails(const ReportingClient& endpoint) {
+    UpdateReportingEndpointDetails(const ReportingEndpoint& endpoint) {
   auto po = std::make_unique<PendingOperation<ReportingEndpointInfo>>(
       PendingOperation<ReportingEndpointInfo>::Type::UPDATE_DETAILS,
       ReportingEndpointInfo(endpoint));
@@ -460,7 +460,7 @@ void SQLitePersistentReportingAndNELStore::Backend::
 }
 
 void SQLitePersistentReportingAndNELStore::Backend::DeleteReportingEndpoint(
-    const ReportingClient& endpoint) {
+    const ReportingEndpoint& endpoint) {
   auto po = std::make_unique<PendingOperation<ReportingEndpointInfo>>(
       PendingOperation<ReportingEndpointInfo>::Type::DELETE,
       ReportingEndpointInfo(endpoint));
@@ -1022,7 +1022,7 @@ void SQLitePersistentReportingAndNELStore::Backend::
         ReportingClientsLoadedCallback loaded_callback) {
   DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
 
-  std::vector<ReportingClient> loaded_endpoints;
+  std::vector<ReportingEndpoint> loaded_endpoints;
   std::vector<CachedReportingEndpointGroup> loaded_endpoint_groups;
   if (!InitializeDatabase()) {
     PostClientTask(
@@ -1053,13 +1053,13 @@ void SQLitePersistentReportingAndNELStore::Backend::
   }
 
   while (endpoints_smt.Step()) {
-    // Reconstitute a ReportingClient from the fields stored in the database.
+    // Reconstitute a ReportingEndpoint from the fields stored in the database.
     url::Origin origin = url::Origin::CreateFromNormalizedTuple(
         /* origin_scheme = */ endpoints_smt.ColumnString(0),
         /* origin_host = */ endpoints_smt.ColumnString(1),
         /* origin_port = */ endpoints_smt.ColumnInt(2));
     std::string group_name = endpoints_smt.ColumnString(3);
-    ReportingClient::EndpointInfo endpoint_info;
+    ReportingEndpoint::EndpointInfo endpoint_info;
     endpoint_info.url = GURL(endpoints_smt.ColumnString(4));
     endpoint_info.priority = endpoints_smt.ColumnInt(5);
     endpoint_info.weight = endpoints_smt.ColumnInt(6);
@@ -1100,7 +1100,7 @@ void SQLitePersistentReportingAndNELStore::Backend::
 void SQLitePersistentReportingAndNELStore::Backend::
     CompleteLoadReportingClientsAndNotifyInForeground(
         ReportingClientsLoadedCallback loaded_callback,
-        std::vector<ReportingClient> loaded_endpoints,
+        std::vector<ReportingEndpoint> loaded_endpoints,
         std::vector<CachedReportingEndpointGroup> loaded_endpoint_groups,
         bool load_success) {
   DCHECK(client_task_runner()->RunsTasksInCurrentSequence());
@@ -1159,7 +1159,7 @@ void SQLitePersistentReportingAndNELStore::LoadReportingClients(
 }
 
 void SQLitePersistentReportingAndNELStore::AddReportingEndpoint(
-    const ReportingClient& endpoint) {
+    const ReportingEndpoint& endpoint) {
   backend_->AddReportingEndpoint(endpoint);
 }
 
@@ -1175,7 +1175,7 @@ void SQLitePersistentReportingAndNELStore::
 }
 
 void SQLitePersistentReportingAndNELStore::UpdateReportingEndpointDetails(
-    const ReportingClient& endpoint) {
+    const ReportingEndpoint& endpoint) {
   backend_->UpdateReportingEndpointDetails(endpoint);
 }
 
@@ -1185,7 +1185,7 @@ void SQLitePersistentReportingAndNELStore::UpdateReportingEndpointGroupDetails(
 }
 
 void SQLitePersistentReportingAndNELStore::DeleteReportingEndpoint(
-    const ReportingClient& endpoint) {
+    const ReportingEndpoint& endpoint) {
   backend_->DeleteReportingEndpoint(endpoint);
 }
 
@@ -1210,7 +1210,7 @@ void SQLitePersistentReportingAndNELStore::CompleteLoadNELPolicies(
 
 void SQLitePersistentReportingAndNELStore::CompleteLoadReportingClients(
     ReportingClientsLoadedCallback callback,
-    std::vector<ReportingClient> endpoints,
+    std::vector<ReportingEndpoint> endpoints,
     std::vector<CachedReportingEndpointGroup> endpoint_groups) {
   std::move(callback).Run(std::move(endpoints), std::move(endpoint_groups));
 }

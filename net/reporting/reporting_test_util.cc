@@ -18,10 +18,10 @@
 #include "base/timer/mock_timer.h"
 #include "net/base/rand_callback.h"
 #include "net/reporting/reporting_cache.h"
-#include "net/reporting/reporting_client.h"
 #include "net/reporting/reporting_context.h"
 #include "net/reporting/reporting_delegate.h"
 #include "net/reporting/reporting_delivery_agent.h"
+#include "net/reporting/reporting_endpoint.h"
 #include "net/reporting/reporting_garbage_collector.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_uploader.h"
@@ -204,7 +204,7 @@ void ReportingTestBase::UseStore(
   CreateContext(policy(), clock()->Now(), tick_clock()->NowTicks());
 }
 
-const ReportingClient ReportingTestBase::FindEndpointInCache(
+const ReportingEndpoint ReportingTestBase::FindEndpointInCache(
     const url::Origin& origin,
     const std::string& group_name,
     const GURL& url) {
@@ -220,27 +220,28 @@ bool ReportingTestBase::SetEndpointInCache(const url::Origin& origin,
                                            int weight) {
   cache()->SetEndpointForTesting(origin, group_name, url, include_subdomains,
                                  expires, priority, weight);
-  const ReportingClient endpoint = FindEndpointInCache(origin, group_name, url);
+  const ReportingEndpoint endpoint =
+      FindEndpointInCache(origin, group_name, url);
   return endpoint.is_valid();
 }
 
 bool ReportingTestBase::EndpointExistsInCache(const url::Origin& origin,
                                               const std::string& group_name,
                                               const GURL& url) {
-  ReportingClient endpoint =
+  ReportingEndpoint endpoint =
       cache()->GetEndpointForTesting(origin, group_name, url);
   return endpoint.is_valid();
 }
 
-ReportingClient::Statistics ReportingTestBase::GetEndpointStatistics(
+ReportingEndpoint::Statistics ReportingTestBase::GetEndpointStatistics(
     const url::Origin& origin,
     const std::string& group_name,
     const GURL& url) {
-  ReportingClient endpoint =
+  ReportingEndpoint endpoint =
       cache()->GetEndpointForTesting(origin, group_name, url);
   if (endpoint)
     return endpoint.stats;
-  return ReportingClient::Statistics();
+  return ReportingEndpoint::Statistics();
 }
 
 bool ReportingTestBase::EndpointGroupExistsInCache(

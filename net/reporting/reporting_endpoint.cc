@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/reporting/reporting_client.h"
+#include "net/reporting/reporting_endpoint.h"
 
 #include <string>
 #include <tuple>
@@ -33,26 +33,27 @@ bool operator<(const ReportingEndpointGroupKey& lhs,
          std::tie(rhs.origin, rhs.group_name);
 }
 
-const int ReportingClient::EndpointInfo::kDefaultPriority = 1;
-const int ReportingClient::EndpointInfo::kDefaultWeight = 1;
+const int ReportingEndpoint::EndpointInfo::kDefaultPriority = 1;
+const int ReportingEndpoint::EndpointInfo::kDefaultWeight = 1;
 
-ReportingClient::ReportingClient() : group_key(url::Origin(), std::string()) {}
+ReportingEndpoint::ReportingEndpoint()
+    : group_key(url::Origin(), std::string()) {}
 
-ReportingClient::ReportingClient(url::Origin origin,
-                                 std::string group_name,
-                                 EndpointInfo endpoint_info)
+ReportingEndpoint::ReportingEndpoint(url::Origin origin,
+                                     std::string group_name,
+                                     EndpointInfo endpoint_info)
     : group_key(std::move(origin), std::move(group_name)),
       info(std::move(endpoint_info)) {
   DCHECK_LE(0, info.weight);
   DCHECK_LE(0, info.priority);
 }
 
-ReportingClient::ReportingClient(const ReportingClient& other) = default;
-ReportingClient::ReportingClient(ReportingClient&& other) = default;
+ReportingEndpoint::ReportingEndpoint(const ReportingEndpoint& other) = default;
+ReportingEndpoint::ReportingEndpoint(ReportingEndpoint&& other) = default;
 
-ReportingClient::~ReportingClient() = default;
+ReportingEndpoint::~ReportingEndpoint() = default;
 
-bool ReportingClient::is_valid() const {
+bool ReportingEndpoint::is_valid() const {
   return info.url.is_valid();
 }
 
