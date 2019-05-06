@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.SingleTabActivity;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabState;
@@ -281,6 +282,13 @@ public class NoTouchActivity extends SingleTabActivity {
         boolean consumedEvent = mUiController != null ? mUiController.onKeyEvent(event) : false;
 
         return consumedEvent || super.dispatchKeyEvent(event);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        ChromePreferenceManager.getInstance().incrementInt(
+                ChromePreferenceManager.TOUCHLESS_BROWSING_SESSION_COUNT);
     }
 
     @Override
