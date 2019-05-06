@@ -202,11 +202,9 @@ class GaiaAuthFetcher {
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Called by OnURLLoadComplete, exposed for ease of testing.
-  virtual void OnURLLoadCompleteInternal(
-      net::Error net_error,
-      int response_code,
-      const network::HttpRawRequestResponseInfo::HeadersVector& headers,
-      std::string response_body);
+  void OnURLLoadCompleteInternal(net::Error net_error,
+                                 int response_code,
+                                 std::string response_body);
 
   // Dispatch the results of a request.
   void DispatchFetchedRequest(const GURL& url,

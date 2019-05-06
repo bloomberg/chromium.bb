@@ -284,10 +284,6 @@ void GaiaAuthFetcher::CreateAndStartGaiaFetcher(
   // will be done explicitly.
   resource_request->load_flags = load_flags;
 
-  // Use raw headers as the cookies are filtered-out of the response when
-  // serialized at the IPC layer.
-  resource_request->report_raw_headers = true;
-
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  traffic_annotation);
   if (!body.empty())
@@ -1089,22 +1085,16 @@ void GaiaAuthFetcher::OnURLLoadComplete(
   std::string data = response_body ? std::move(*response_body) : "";
 
   int response_code = 0;
-  network::HttpRawRequestResponseInfo::HeadersVector headers;
   if (url_loader_->ResponseInfo()) {
     if (url_loader_->ResponseInfo()->headers)
       response_code = url_loader_->ResponseInfo()->headers->response_code();
-    if (url_loader_->ResponseInfo()->raw_request_response_info) {
-      headers = url_loader_->ResponseInfo()
-                    ->raw_request_response_info->response_headers;
-    }
   }
-  OnURLLoadCompleteInternal(net_error, response_code, headers, data);
+  OnURLLoadCompleteInternal(net_error, response_code, data);
 }
 
 void GaiaAuthFetcher::OnURLLoadCompleteInternal(
     net::Error net_error,
     int response_code,
-    const network::HttpRawRequestResponseInfo::HeadersVector& headers,
     std::string data) {
   fetch_pending_ = false;
 

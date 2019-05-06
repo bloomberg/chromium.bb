@@ -219,13 +219,8 @@ class TestGaiaAuthFetcher : public GaiaAuthFetcher {
   void TestOnURLLoadCompleteInternal(
       net::Error net_error,
       int response_code = net::HTTP_OK,
-      const std::vector<std::string>& cookies = {},
       std::string response_body = "") {
-    net::HttpRawRequestHeaders::HeaderVector headers;
-    for (auto& cookie : cookies) {
-      headers.push_back(std::make_pair("Set-Cookie", cookie));
-    }
-    OnURLLoadCompleteInternal(net_error, response_code, headers, response_body);
+    OnURLLoadCompleteInternal(net_error, response_code, response_body);
   }
 };
 
@@ -337,7 +332,7 @@ TEST_F(GaiaAuthFetcherTest, StartAuthCodeForOAuth2TokenExchange_Success) {
   EXPECT_EQ(std::string::npos, body.find("device_type=chrome"));
   EXPECT_TRUE(auth.HasPendingFetch());
 
-  auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK, {},
+  auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK,
                                      kGetTokenPairValidResponse);
   EXPECT_FALSE(auth.HasPendingFetch());
 }
@@ -378,8 +373,7 @@ TEST_F(GaiaAuthFetcherTest, MergeSessionSuccess) {
   auth.StartMergeSession("myubertoken", std::string());
 
   EXPECT_TRUE(auth.HasPendingFetch());
-  auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK, {},
-                                     "<html></html>");
+  auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK, "<html></html>");
 
   EXPECT_FALSE(auth.HasPendingFetch());
 }
@@ -397,7 +391,7 @@ TEST_F(GaiaAuthFetcherTest, MultiloginSuccess) {
       std::vector<GaiaAuthFetcher::MultiloginTokenIDPair>());
 
   EXPECT_TRUE(auth.HasPendingFetch());
-  auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK, {},
+  auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK,
                                      R"()]}'
         {
           "status": "OK",
@@ -432,7 +426,7 @@ TEST_F(GaiaAuthFetcherTest, MultiloginFailureNetError) {
       std::vector<GaiaAuthFetcher::MultiloginTokenIDPair>());
 
   EXPECT_TRUE(auth.HasPendingFetch());
-  auth.TestOnURLLoadCompleteInternal(net::ERR_ABORTED, net::HTTP_OK, {},
+  auth.TestOnURLLoadCompleteInternal(net::ERR_ABORTED, net::HTTP_OK,
                                      R"()]}'
         {
           "status": "OK",
@@ -467,7 +461,7 @@ TEST_F(GaiaAuthFetcherTest, MultiloginFailureServerError) {
       std::vector<GaiaAuthFetcher::MultiloginTokenIDPair>());
 
   EXPECT_TRUE(auth.HasPendingFetch());
-  auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK, {},
+  auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK,
                                      "\n{\"status\": \"ERROR\"}");
 
   EXPECT_FALSE(auth.HasPendingFetch());
@@ -482,7 +476,7 @@ TEST_F(GaiaAuthFetcherTest, UberAuthTokenSuccess) {
                                           true /* is_bound_to_channel_id */);
 
   EXPECT_TRUE(auth.HasPendingFetch());
-  auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK, {}, "uberToken");
+  auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK, "uberToken");
 
   EXPECT_FALSE(auth.HasPendingFetch());
 }
@@ -505,7 +499,7 @@ TEST_F(GaiaAuthFetcherTest, StartOAuthLogin) {
   auth.CreateAndStartGaiaFetcherForTesting(/*body=*/"", /*headers=*/"",
                                            oauth_login_gurl_, /*load_flags=*/0,
                                            NO_TRAFFIC_ANNOTATION_YET);
-  auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK, {}, data);
+  auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK, data);
 }
 
 TEST_F(GaiaAuthFetcherTest, ListAccounts) {
@@ -530,7 +524,7 @@ TEST_F(GaiaAuthFetcherTest, ListAccounts) {
   EXPECT_EQ(net::LOAD_NORMAL, received_requests_.at(0).load_flags);
   EXPECT_EQ(GaiaUrls::GetInstance()->gaia_url(),
             received_requests_.at(0).site_for_cookies);
-  auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK, {}, data);
+  auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK, data);
 }
 
 TEST_F(GaiaAuthFetcherTest, LogOutSuccess) {
@@ -577,7 +571,7 @@ TEST_F(GaiaAuthFetcherTest, GetCheckConnectionInfo) {
       GaiaUrls::GetInstance()->GetCheckConnectionInfoURLWithSource(
           GaiaConstants::kChromeSource),
       /*load_flags=*/0, NO_TRAFFIC_ANNOTATION_YET);
-  auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK, {}, data);
+  auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK, data);
 }
 
 TEST_F(GaiaAuthFetcherTest, RevokeOAuth2TokenSuccess) {
@@ -591,7 +585,7 @@ TEST_F(GaiaAuthFetcherTest, RevokeOAuth2TokenSuccess) {
   auth.CreateAndStartGaiaFetcherForTesting(
       /*body=*/"", /*headers=*/"", GaiaUrls::GetInstance()->oauth2_revoke_url(),
       /*load_flags=*/0, NO_TRAFFIC_ANNOTATION_YET);
-  auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK, {}, data);
+  auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK, data);
 }
 
 TEST_F(GaiaAuthFetcherTest, RevokeOAuth2TokenCanceled) {
@@ -648,7 +642,7 @@ TEST_F(GaiaAuthFetcherTest, RevokeOAuth2TokenInvalidToken) {
   auth.CreateAndStartGaiaFetcherForTesting(
       /*body=*/"", /*headers=*/"", GaiaUrls::GetInstance()->oauth2_revoke_url(),
       /*load_flags=*/0, NO_TRAFFIC_ANNOTATION_YET);
-  auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_BAD_REQUEST, {}, data);
+  auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_BAD_REQUEST, data);
 }
 
 TEST_F(GaiaAuthFetcherTest, RevokeOAuth2TokenInvalidRequest) {
@@ -663,7 +657,7 @@ TEST_F(GaiaAuthFetcherTest, RevokeOAuth2TokenInvalidRequest) {
   auth.CreateAndStartGaiaFetcherForTesting(
       /*body=*/"", /*headers=*/"", GaiaUrls::GetInstance()->oauth2_revoke_url(),
       /*load_flags=*/0, NO_TRAFFIC_ANNOTATION_YET);
-  auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_BAD_REQUEST, {}, data);
+  auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_BAD_REQUEST, data);
 }
 
 TEST_F(GaiaAuthFetcherTest, RevokeOAuth2TokenServerError) {
@@ -679,5 +673,5 @@ TEST_F(GaiaAuthFetcherTest, RevokeOAuth2TokenServerError) {
       /*body=*/"", /*headers=*/"", GaiaUrls::GetInstance()->oauth2_revoke_url(),
       /*load_flags=*/0, NO_TRAFFIC_ANNOTATION_YET);
   auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_INTERNAL_SERVER_ERROR,
-                                     {}, data);
+                                     data);
 }
