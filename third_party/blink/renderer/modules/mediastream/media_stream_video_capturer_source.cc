@@ -14,6 +14,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -121,8 +122,8 @@ void MediaStreamVideoCapturerSource::StartSourceImpl(
   frame_callback_ = frame_callback;
   source_->StartCapture(
       capture_params_, frame_callback_,
-      base::Bind(&MediaStreamVideoCapturerSource::OnRunStateChanged,
-                 base::Unretained(this), capture_params_));
+      WTF::BindRepeating(&MediaStreamVideoCapturerSource::OnRunStateChanged,
+                         WTF::Unretained(this), capture_params_));
 }
 
 void MediaStreamVideoCapturerSource::StopSourceImpl() {
@@ -153,8 +154,8 @@ void MediaStreamVideoCapturerSource::RestartSourceImpl(
   state_ = RESTARTING;
   source_->StartCapture(
       new_capture_params, frame_callback_,
-      base::Bind(&MediaStreamVideoCapturerSource::OnRunStateChanged,
-                 base::Unretained(this), new_capture_params));
+      WTF::BindRepeating(&MediaStreamVideoCapturerSource::OnRunStateChanged,
+                         WTF::Unretained(this), new_capture_params));
 }
 
 base::Optional<media::VideoCaptureFormat>
@@ -184,8 +185,8 @@ void MediaStreamVideoCapturerSource::ChangeSourceImpl(
   source_ = device_capturer_factory_callback_.Run(new_device.session_id);
   source_->StartCapture(
       capture_params_, frame_callback_,
-      base::BindRepeating(&MediaStreamVideoCapturerSource::OnRunStateChanged,
-                          base::Unretained(this), capture_params_));
+      WTF::BindRepeating(&MediaStreamVideoCapturerSource::OnRunStateChanged,
+                         WTF::Unretained(this), capture_params_));
 }
 
 void MediaStreamVideoCapturerSource::OnRunStateChanged(
