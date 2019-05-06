@@ -289,8 +289,7 @@ TEST_F(WebUsbServiceImplTest, ReconnectDeviceManager) {
 }
 
 TEST_F(WebUsbServiceImplTest, RevokeDevicePermission) {
-  GURL url(kDefaultTestUrl);
-  const auto origin = url::Origin::Create(url);
+  const auto origin = url::Origin::Create(GURL(kDefaultTestUrl));
 
   auto* context = GetChooserContext();
   auto device_info = device_manager()->CreateAndAddDevice(
@@ -317,8 +316,8 @@ TEST_F(WebUsbServiceImplTest, RevokeDevicePermission) {
   device_ptr.set_connection_error_handler(
       base::BindLambdaForTesting([&]() { device_ptr.reset(); }));
 
-  auto objects = context->GetGrantedObjects(url, url);
-  context->RevokeObjectPermission(url, url, objects[0]->value);
+  auto objects = context->GetGrantedObjects(origin, origin);
+  context->RevokeObjectPermission(origin, origin, objects[0]->value);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(device_ptr);

@@ -56,8 +56,8 @@ class ChooserContextBase : public KeyedService {
         ContentSettingsType data_content_settings_type);
     // Notify obsever that an object permission was revoked for
     // |requesting_origin| and |embedding_origin|.
-    virtual void OnPermissionRevoked(const GURL& requesting_origin,
-                                     const GURL& embedding_origin);
+    virtual void OnPermissionRevoked(const url::Origin& requesting_origin,
+                                     const url::Origin& embedding_origin);
   };
 
   void AddObserver(PermissionObserver* observer);
@@ -81,8 +81,8 @@ class ChooserContextBase : public KeyedService {
   // This method may be extended by a subclass to return objects not stored in
   // |host_content_settings_map_|.
   virtual std::vector<std::unique_ptr<Object>> GetGrantedObjects(
-      const GURL& requesting_origin,
-      const GURL& embedding_origin);
+      const url::Origin& requesting_origin,
+      const url::Origin& embedding_origin);
 
   // Returns the set of all objects that any origin has been granted permission
   // to access.
@@ -103,8 +103,8 @@ class ChooserContextBase : public KeyedService {
   // This method may be extended by a subclass to revoke permission to access
   // objects returned by GetPreviouslyChosenObjects but not stored in
   // |host_content_settings_map_|.
-  virtual void RevokeObjectPermission(const GURL& requesting_origin,
-                                      const GURL& embedding_origin,
+  virtual void RevokeObjectPermission(const url::Origin& requesting_origin,
+                                      const url::Origin& embedding_origin,
                                       const base::Value& object);
 
   // Validates the structure of an object read from
@@ -113,8 +113,8 @@ class ChooserContextBase : public KeyedService {
 
  protected:
   void NotifyPermissionChanged();
-  void NotifyPermissionRevoked(const GURL& requesting_origin,
-                               const GURL& embedding_origin);
+  void NotifyPermissionRevoked(const url::Origin& requesting_origin,
+                               const url::Origin& embedding_origin);
 
   const ContentSettingsType guard_content_settings_type_;
   const ContentSettingsType data_content_settings_type_;

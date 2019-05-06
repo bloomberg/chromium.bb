@@ -1143,8 +1143,9 @@ void SiteSettingsHandler::HandleResetChooserExceptionForSite(
   CHECK(embedding_origin.is_valid());
 
   ChooserContextBase* chooser_context = chooser_type->get_context(profile_);
-  chooser_context->RevokeObjectPermission(requesting_origin, embedding_origin,
-                                          args->GetList()[3]);
+  chooser_context->RevokeObjectPermission(
+      url::Origin::Create(requesting_origin),
+      url::Origin::Create(embedding_origin), args->GetList()[3]);
 }
 
 void SiteSettingsHandler::HandleIsOriginValid(const base::ListValue* args) {

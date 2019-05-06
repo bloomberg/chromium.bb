@@ -128,10 +128,11 @@ void WebUsbServiceImpl::SetClient(
   clients_.AddPtr(std::move(client_ptr));
 }
 
-void WebUsbServiceImpl::OnPermissionRevoked(const GURL& requesting_origin,
-                                            const GURL& embedding_origin) {
-  if (requesting_origin_.GetURL() != requesting_origin ||
-      embedding_origin_.GetURL() != embedding_origin) {
+void WebUsbServiceImpl::OnPermissionRevoked(
+    const url::Origin& requesting_origin,
+    const url::Origin& embedding_origin) {
+  if (requesting_origin_ != requesting_origin ||
+      embedding_origin_ != embedding_origin) {
     return;
   }
 

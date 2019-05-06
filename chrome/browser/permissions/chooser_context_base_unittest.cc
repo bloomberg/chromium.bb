@@ -76,24 +76,24 @@ TEST_F(ChooserContextBaseTest, GrantAndRevokeObjectPermissions) {
   context.GrantObjectPermission(origin1_, origin1_, object2_.Clone());
 
   std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
-      context.GetGrantedObjects(url1_, url1_);
+      context.GetGrantedObjects(origin1_, origin1_);
   EXPECT_EQ(2u, objects.size());
   EXPECT_EQ(object1_, objects[0]->value);
   EXPECT_EQ(object2_, objects[1]->value);
 
   // Granting permission to one origin should not grant them to another.
-  objects = context.GetGrantedObjects(url2_, url2_);
+  objects = context.GetGrantedObjects(origin2_, origin2_);
   EXPECT_EQ(0u, objects.size());
 
   // Nor when the original origin is embedded in another.
-  objects = context.GetGrantedObjects(url1_, url2_);
+  objects = context.GetGrantedObjects(origin1_, origin2_);
   EXPECT_EQ(0u, objects.size());
 
   EXPECT_CALL(mock_observer, OnChooserObjectPermissionChanged(_, _)).Times(2);
-  EXPECT_CALL(mock_observer, OnPermissionRevoked(url1_, url1_)).Times(2);
-  context.RevokeObjectPermission(url1_, url1_, object1_);
-  context.RevokeObjectPermission(url1_, url1_, object2_);
-  objects = context.GetGrantedObjects(url1_, url1_);
+  EXPECT_CALL(mock_observer, OnPermissionRevoked(origin1_, origin1_)).Times(2);
+  context.RevokeObjectPermission(origin1_, origin1_, object1_);
+  context.RevokeObjectPermission(origin1_, origin1_, object2_);
+  objects = context.GetGrantedObjects(origin1_, origin1_);
   EXPECT_EQ(0u, objects.size());
 }
 
@@ -107,14 +107,14 @@ TEST_F(ChooserContextBaseTest, GrantObjectPermissionTwice) {
   context.GrantObjectPermission(origin1_, origin1_, object1_.Clone());
 
   std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
-      context.GetGrantedObjects(url1_, url1_);
+      context.GetGrantedObjects(origin1_, origin1_);
   EXPECT_EQ(1u, objects.size());
   EXPECT_EQ(object1_, objects[0]->value);
 
   EXPECT_CALL(mock_observer, OnChooserObjectPermissionChanged(_, _));
-  EXPECT_CALL(mock_observer, OnPermissionRevoked(url1_, url1_));
-  context.RevokeObjectPermission(url1_, url1_, object1_);
-  objects = context.GetGrantedObjects(url1_, url1_);
+  EXPECT_CALL(mock_observer, OnPermissionRevoked(origin1_, origin1_));
+  context.RevokeObjectPermission(origin1_, origin1_, object1_);
+  objects = context.GetGrantedObjects(origin1_, origin1_);
   EXPECT_EQ(0u, objects.size());
 }
 
@@ -127,16 +127,16 @@ TEST_F(ChooserContextBaseTest, GrantObjectPermissionEmbedded) {
   context.GrantObjectPermission(origin1_, origin2_, object1_.Clone());
 
   std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
-      context.GetGrantedObjects(url1_, url2_);
+      context.GetGrantedObjects(origin1_, origin2_);
   EXPECT_EQ(1u, objects.size());
   EXPECT_EQ(object1_, objects[0]->value);
 
   // The embedding origin still does not have permission.
-  objects = context.GetGrantedObjects(url2_, url2_);
+  objects = context.GetGrantedObjects(origin2_, origin2_);
   EXPECT_EQ(0u, objects.size());
 
   // The requesting origin also doesn't have permission when not embedded.
-  objects = context.GetGrantedObjects(url1_, url1_);
+  objects = context.GetGrantedObjects(origin1_, origin1_);
   EXPECT_EQ(0u, objects.size());
 }
 
@@ -188,11 +188,11 @@ TEST_F(ChooserContextBaseTest, GetGrantedObjectsWithGuardBlocked) {
   context.GrantObjectPermission(origin2_, origin2_, object2_.Clone());
 
   std::vector<std::unique_ptr<ChooserContextBase::Object>> objects1 =
-      context.GetGrantedObjects(url1_, url1_);
+      context.GetGrantedObjects(origin1_, origin1_);
   EXPECT_EQ(0u, objects1.size());
 
   std::vector<std::unique_ptr<ChooserContextBase::Object>> objects2 =
-      context.GetGrantedObjects(url2_, url2_);
+      context.GetGrantedObjects(origin2_, origin2_);
   ASSERT_EQ(1u, objects2.size());
   EXPECT_EQ(object2_, objects2[0]->value);
 }

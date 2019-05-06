@@ -1714,6 +1714,8 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
   const std::string kUsbChooserGroupName =
       site_settings::ContentSettingsTypeToGroupName(
           CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA);
+  const auto kAndroidOrigin = url::Origin::Create(kAndroidUrl);
+  const auto kChromiumOrigin = url::Origin::Create(kChromiumUrl);
   const std::string kAndroidOriginStr = kAndroidUrl.GetOrigin().spec();
   const std::string kChromiumOriginStr = kChromiumUrl.GetOrigin().spec();
 
@@ -1736,7 +1738,7 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
   EXPECT_CALL(observer_, OnChooserObjectPermissionChanged(
                              CONTENT_SETTINGS_TYPE_USB_GUARD,
                              CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
-  EXPECT_CALL(observer_, OnPermissionRevoked(kAndroidUrl, kChromiumUrl));
+  EXPECT_CALL(observer_, OnPermissionRevoked(kAndroidOrigin, kChromiumOrigin));
   handler()->HandleResetChooserExceptionForSite(&args);
 
   // The HandleResetChooserExceptionForSite() method should have also caused the
@@ -1783,7 +1785,7 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
   EXPECT_CALL(observer_, OnChooserObjectPermissionChanged(
                              CONTENT_SETTINGS_TYPE_USB_GUARD,
                              CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
-  EXPECT_CALL(observer_, OnPermissionRevoked(kChromiumUrl, kChromiumUrl));
+  EXPECT_CALL(observer_, OnPermissionRevoked(kChromiumOrigin, kChromiumOrigin));
   handler()->HandleResetChooserExceptionForSite(&args);
 
   // The HandleResetChooserExceptionForSite() method should have also caused the
@@ -1824,7 +1826,7 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
   EXPECT_CALL(observer_, OnChooserObjectPermissionChanged(
                              CONTENT_SETTINGS_TYPE_USB_GUARD,
                              CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
-  EXPECT_CALL(observer_, OnPermissionRevoked(kAndroidUrl, kAndroidUrl));
+  EXPECT_CALL(observer_, OnPermissionRevoked(kAndroidOrigin, kAndroidOrigin));
   handler()->HandleResetChooserExceptionForSite(&args);
 
   // The HandleResetChooserExceptionForSite() method should have also caused the

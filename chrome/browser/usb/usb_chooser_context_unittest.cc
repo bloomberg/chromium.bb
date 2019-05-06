@@ -111,7 +111,7 @@ TEST_F(UsbChooserContextTest, CheckGrantAndRevokePermission) {
   store->GrantDevicePermission(origin, origin, *device_info);
   EXPECT_TRUE(store->HasDevicePermission(origin, origin, *device_info));
   std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
-      store->GetGrantedObjects(url, url);
+      store->GetGrantedObjects(origin, origin);
   ASSERT_EQ(1u, objects.size());
   EXPECT_EQ(object, objects[0]->value);
 
@@ -127,12 +127,12 @@ TEST_F(UsbChooserContextTest, CheckGrantAndRevokePermission) {
       mock_permission_observer_,
       OnChooserObjectPermissionChanged(CONTENT_SETTINGS_TYPE_USB_GUARD,
                                        CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
-  EXPECT_CALL(mock_permission_observer_, OnPermissionRevoked(url, url));
+  EXPECT_CALL(mock_permission_observer_, OnPermissionRevoked(origin, origin));
 
-  store->RevokeObjectPermission(url, url, objects[0]->value);
+  store->RevokeObjectPermission(origin, origin, objects[0]->value);
   EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
 
-  objects = store->GetGrantedObjects(url, url);
+  objects = store->GetGrantedObjects(origin, origin);
   EXPECT_EQ(0u, objects.size());
 
   all_origin_objects = store->GetAllGrantedObjects();
@@ -166,7 +166,7 @@ TEST_F(UsbChooserContextTest, CheckGrantAndRevokeEphemeralPermission) {
   EXPECT_FALSE(store->HasDevicePermission(origin, origin, *other_device_info));
 
   std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
-      store->GetGrantedObjects(url, url);
+      store->GetGrantedObjects(origin, origin);
   EXPECT_EQ(1u, objects.size());
   EXPECT_EQ(object, objects[0]->value);
 
@@ -182,12 +182,12 @@ TEST_F(UsbChooserContextTest, CheckGrantAndRevokeEphemeralPermission) {
       mock_permission_observer_,
       OnChooserObjectPermissionChanged(CONTENT_SETTINGS_TYPE_USB_GUARD,
                                        CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
-  EXPECT_CALL(mock_permission_observer_, OnPermissionRevoked(url, url));
+  EXPECT_CALL(mock_permission_observer_, OnPermissionRevoked(origin, origin));
 
-  store->RevokeObjectPermission(url, url, objects[0]->value);
+  store->RevokeObjectPermission(origin, origin, objects[0]->value);
   EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
 
-  objects = store->GetGrantedObjects(url, url);
+  objects = store->GetGrantedObjects(origin, origin);
   EXPECT_EQ(0u, objects.size());
   all_origin_objects = store->GetAllGrantedObjects();
   EXPECT_EQ(0u, all_origin_objects.size());
@@ -211,7 +211,7 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithPermission) {
   EXPECT_TRUE(store->HasDevicePermission(origin, origin, *device_info));
 
   std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
-      store->GetGrantedObjects(url, url);
+      store->GetGrantedObjects(origin, origin);
   EXPECT_EQ(1u, objects.size());
 
   std::vector<std::unique_ptr<ChooserContextBase::Object>> all_origin_objects =
@@ -223,7 +223,7 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithPermission) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(store->HasDevicePermission(origin, origin, *device_info));
-  objects = store->GetGrantedObjects(url, url);
+  objects = store->GetGrantedObjects(origin, origin);
   EXPECT_EQ(1u, objects.size());
   all_origin_objects = store->GetAllGrantedObjects();
   EXPECT_EQ(1u, all_origin_objects.size());
@@ -233,7 +233,7 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithPermission) {
 
   EXPECT_TRUE(
       store->HasDevicePermission(origin, origin, *reconnected_device_info));
-  objects = store->GetGrantedObjects(url, url);
+  objects = store->GetGrantedObjects(origin, origin);
   EXPECT_EQ(1u, objects.size());
   all_origin_objects = store->GetAllGrantedObjects();
   EXPECT_EQ(1u, all_origin_objects.size());
@@ -257,7 +257,7 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithEphemeralPermission) {
   EXPECT_TRUE(store->HasDevicePermission(origin, origin, *device_info));
 
   std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
-      store->GetGrantedObjects(url, url);
+      store->GetGrantedObjects(origin, origin);
   EXPECT_EQ(1u, objects.size());
 
   std::vector<std::unique_ptr<ChooserContextBase::Object>> all_origin_objects =
@@ -273,7 +273,7 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithEphemeralPermission) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
-  objects = store->GetGrantedObjects(url, url);
+  objects = store->GetGrantedObjects(origin, origin);
   EXPECT_EQ(0u, objects.size());
   all_origin_objects = store->GetAllGrantedObjects();
   EXPECT_EQ(0u, all_origin_objects.size());
@@ -283,7 +283,7 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithEphemeralPermission) {
 
   EXPECT_FALSE(
       store->HasDevicePermission(origin, origin, *reconnected_device_info));
-  objects = store->GetGrantedObjects(url, url);
+  objects = store->GetGrantedObjects(origin, origin);
   EXPECT_EQ(0u, objects.size());
   all_origin_objects = store->GetAllGrantedObjects();
   EXPECT_EQ(0u, all_origin_objects.size());
@@ -325,7 +325,7 @@ TEST_F(UsbChooserContextTest, GrantPermissionInIncognito) {
 
   {
     std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
-        store->GetGrantedObjects(url, url);
+        store->GetGrantedObjects(origin, origin);
     EXPECT_EQ(1u, objects.size());
     std::vector<std::unique_ptr<ChooserContextBase::Object>>
         all_origin_objects = store->GetAllGrantedObjects();
@@ -334,7 +334,7 @@ TEST_F(UsbChooserContextTest, GrantPermissionInIncognito) {
   }
   {
     std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
-        incognito_store->GetGrantedObjects(url, url);
+        incognito_store->GetGrantedObjects(origin, origin);
     EXPECT_EQ(1u, objects.size());
     std::vector<std::unique_ptr<ChooserContextBase::Object>>
         all_origin_objects = incognito_store->GetAllGrantedObjects();
@@ -370,10 +370,10 @@ TEST_F(UsbChooserContextTest, UsbGuardPermission) {
   store->GrantDevicePermission(kBarOrigin, kBarOrigin, *ephemeral_device_info);
 
   std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
-      store->GetGrantedObjects(kFooUrl, kFooUrl);
+      store->GetGrantedObjects(kFooOrigin, kFooOrigin);
   EXPECT_EQ(0u, objects.size());
 
-  objects = store->GetGrantedObjects(kBarUrl, kBarUrl);
+  objects = store->GetGrantedObjects(kBarOrigin, kBarOrigin);
   EXPECT_EQ(2u, objects.size());
 
   std::vector<std::unique_ptr<ChooserContextBase::Object>> all_origin_objects =
@@ -646,7 +646,8 @@ TEST_F(UsbChooserContextTest, GetGrantedObjectsWithOnlyPolicyAllowedDevices) {
   profile()->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
                              *base::JSONReader::ReadDeprecated(kPolicySetting));
 
-  auto objects = store->GetGrantedObjects(kVendorUrl, kVendorUrl);
+  const auto kVendorOrigin = url::Origin::Create(kVendorUrl);
+  auto objects = store->GetGrantedObjects(kVendorOrigin, kVendorOrigin);
   ASSERT_EQ(objects.size(), 1u);
 
   ExpectChooserObjectInfo(objects[0].get(),
@@ -676,7 +677,7 @@ TEST_F(UsbChooserContextTest,
   store->GrantDevicePermission(kVendorOrigin, kVendorOrigin,
                                *ephemeral_device_info);
 
-  auto objects = store->GetGrantedObjects(kVendorUrl, kVendorUrl);
+  auto objects = store->GetGrantedObjects(kVendorOrigin, kVendorOrigin);
   ASSERT_EQ(objects.size(), 3u);
 
   // The user granted permissions appear before the policy granted permissions.
@@ -723,7 +724,8 @@ TEST_F(UsbChooserContextTest,
   store->GrantDevicePermission(kProductVendorOrigin, kProductVendorOrigin,
                                *persistent_device_info);
 
-  auto objects = store->GetGrantedObjects(kProductVendorUrl, kProductVendorUrl);
+  auto objects =
+      store->GetGrantedObjects(kProductVendorOrigin, kProductVendorOrigin);
   ASSERT_EQ(objects.size(), 1u);
 
   // User granted permissions for a device that is also granted by a specific
@@ -751,7 +753,7 @@ TEST_F(UsbChooserContextTest,
   store->GrantDevicePermission(kVendorOrigin, kVendorOrigin,
                                *persistent_device_info);
 
-  auto objects = store->GetGrantedObjects(kVendorUrl, kVendorUrl);
+  auto objects = store->GetGrantedObjects(kVendorOrigin, kVendorOrigin);
   ASSERT_EQ(objects.size(), 1u);
 
   // User granted permissions for a device that is also granted by a vendor
@@ -778,7 +780,7 @@ TEST_F(UsbChooserContextTest,
   store->GrantDevicePermission(kAnyDeviceOrigin, kAnyDeviceOrigin,
                                *persistent_device_info);
 
-  auto objects = store->GetGrantedObjects(kAnyDeviceUrl, kAnyDeviceUrl);
+  auto objects = store->GetGrantedObjects(kAnyDeviceOrigin, kAnyDeviceOrigin);
   ASSERT_EQ(objects.size(), 1u);
 
   // User granted permissions for a device that is also granted by a wildcard

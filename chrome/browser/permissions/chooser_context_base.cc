@@ -43,8 +43,8 @@ void ChooserContextBase::PermissionObserver::OnChooserObjectPermissionChanged(
     ContentSettingsType guard_content_settings_type) {}
 
 void ChooserContextBase::PermissionObserver::OnPermissionRevoked(
-    const GURL& requesting_origin,
-    const GURL& embedding_origin) {}
+    const url::Origin& requesting_origin,
+    const url::Origin& embedding_origin) {}
 
 void ChooserContextBase::AddObserver(PermissionObserver* observer) {
   permission_observer_list_.AddObserver(observer);
@@ -67,13 +67,8 @@ bool ChooserContextBase::CanRequestObjectPermission(
 }
 
 std::vector<std::unique_ptr<ChooserContextBase::Object>>
-ChooserContextBase::GetGrantedObjects(const GURL& requesting_origin_url,
-                                      const GURL& embedding_origin_url) {
-  const auto requesting_origin = url::Origin::Create(requesting_origin_url);
-  DCHECK_EQ(requesting_origin_url, requesting_origin.GetURL());
-  const auto embedding_origin = url::Origin::Create(embedding_origin_url);
-  DCHECK_EQ(embedding_origin_url, embedding_origin.GetURL());
-
+ChooserContextBase::GetGrantedObjects(const url::Origin& requesting_origin,
+                                      const url::Origin& embedding_origin) {
   if (!CanRequestObjectPermission(requesting_origin, embedding_origin))
     return {};
 
@@ -89,8 +84,9 @@ ChooserContextBase::GetGrantedObjects(const GURL& requesting_origin_url,
   for (auto& object : objects->GetList()) {
     if (IsValidObject(object)) {
       results.push_back(std::make_unique<Object>(
-          requesting_origin_url, embedding_origin_url, std::move(object),
-          info.source, host_content_settings_map_->is_incognito()));
+          requesting_origin.GetURL(), embedding_origin.GetURL(),
+          std::move(object), info.source,
+          host_content_settings_map_->is_incognito()));
     }
   }
   return results;
@@ -158,13 +154,9 @@ void ChooserContextBase::GrantObjectPermission(
 }
 
 void ChooserContextBase::RevokeObjectPermission(
-    const GURL& requesting_origin_url,
-    const GURL& embedding_origin_url,
+    const url::Origin& requesting_origin,
+    const url::Origin& embedding_origin,
     const base::Value& object) {
-  const auto requesting_origin = url::Origin::Create(requesting_origin_url);
-  DCHECK_EQ(requesting_origin_url, requesting_origin.GetURL());
-  const auto embedding_origin = url::Origin::Create(embedding_origin_url);
-  DCHECK_EQ(embedding_origin_url, embedding_origin.GetURL());
   DCHECK(IsValidObject(object));
 
   base::Value setting =
@@ -179,7 +171,7 @@ void ChooserContextBase::RevokeObjectPermission(
     objects->GetList().erase(it);
 
   SetWebsiteSetting(requesting_origin, embedding_origin, std::move(setting));
-  NotifyPermissionRevoked(requesting_origin_url, embedding_origin_url);
+  NotifyPermissionRevoked(requesting_origin, embedding_origin);
 }
 
 void ChooserContextBase::NotifyPermissionChanged() {
@@ -189,8 +181,9 @@ void ChooserContextBase::NotifyPermissionChanged() {
   }
 }
 
-void ChooserContextBase::NotifyPermissionRevoked(const GURL& requesting_origin,
-                                                 const GURL& embedding_origin) {
+void ChooserContextBase::NotifyPermissionRevoked(
+    const url::Origin& requesting_origin,
+    const url::Origin& embedding_origin) {
   for (auto& observer : permission_observer_list_) {
     observer.OnChooserObjectPermissionChanged(guard_content_settings_type_,
                                               data_content_settings_type_);

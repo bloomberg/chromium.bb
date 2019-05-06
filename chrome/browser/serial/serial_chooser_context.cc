@@ -73,10 +73,8 @@ std::string SerialChooserContext::GetObjectName(const base::Value& object) {
 }
 
 std::vector<std::unique_ptr<ChooserContextBase::Object>>
-SerialChooserContext::GetGrantedObjects(const GURL& requesting_origin_url,
-                                        const GURL& embedding_origin_url) {
-  auto requesting_origin = url::Origin::Create(requesting_origin_url);
-  auto embedding_origin = url::Origin::Create(embedding_origin_url);
+SerialChooserContext::GetGrantedObjects(const url::Origin& requesting_origin,
+                                        const url::Origin& embedding_origin) {
   if (!CanRequestObjectPermission(requesting_origin, embedding_origin))
     return {};
 
@@ -93,7 +91,8 @@ SerialChooserContext::GetGrantedObjects(const GURL& requesting_origin_url,
       continue;
 
     objects.push_back(std::make_unique<Object>(
-        requesting_origin_url, embedding_origin_url, it->second.Clone(),
+        requesting_origin.GetURL(), embedding_origin.GetURL(),
+        it->second.Clone(),
         content_settings::SettingSource::SETTING_SOURCE_USER, is_incognito_));
   }
 
@@ -125,12 +124,12 @@ SerialChooserContext::GetAllGrantedObjects() {
   return objects;
 }
 
-void SerialChooserContext::RevokeObjectPermission(const GURL& requesting_origin,
-                                                  const GURL& embedding_origin,
-                                                  const base::Value& object) {
+void SerialChooserContext::RevokeObjectPermission(
+    const url::Origin& requesting_origin,
+    const url::Origin& embedding_origin,
+    const base::Value& object) {
   auto origin_it = ephemeral_ports_.find(
-      std::make_pair(url::Origin::Create(requesting_origin),
-                     url::Origin::Create(embedding_origin)));
+      std::make_pair(requesting_origin, embedding_origin));
   if (origin_it == ephemeral_ports_.end())
     return;
   std::set<base::UnguessableToken>& ports = origin_it->second;
@@ -220,7 +219,6 @@ void SerialChooserContext::OnPortManagerConnectionError() {
     observer.OnChooserObjectPermissionChanged(guard_content_settings_type_,
                                               data_content_settings_type_);
     for (const auto& origin : revoked_origins)
-      observer.OnPermissionRevoked(origin.first.GetURL(),
-                                   origin.second.GetURL());
+      observer.OnPermissionRevoked(origin.first, origin.second);
   }
 }

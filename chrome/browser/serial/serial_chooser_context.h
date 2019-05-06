@@ -38,11 +38,11 @@ class SerialChooserContext : public ChooserContextBase {
   // In addition these methods from ChooserContextBase are overridden in order
   // to expose ephemeral devices through the public interface.
   std::vector<std::unique_ptr<Object>> GetGrantedObjects(
-      const GURL& requesting_origin,
-      const GURL& embedding_origin) override;
+      const url::Origin& requesting_origin,
+      const url::Origin& embedding_origin) override;
   std::vector<std::unique_ptr<Object>> GetAllGrantedObjects() override;
-  void RevokeObjectPermission(const GURL& requesting_origin,
-                              const GURL& embedding_origin,
+  void RevokeObjectPermission(const url::Origin& requesting_origin,
+                              const url::Origin& embedding_origin,
                               const base::Value& object) override;
 
   // Serial-specific interface for granting and checking permissions.

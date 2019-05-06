@@ -64,8 +64,8 @@ class WebUsbServiceImpl : public blink::mojom::WebUsbService,
       std::vector<device::mojom::UsbDeviceInfoPtr> device_info_list);
 
   // ChooserContextBase::PermissionObserver implementation:
-  void OnPermissionRevoked(const GURL& requesting_origin,
-                           const GURL& embedding_origin) override;
+  void OnPermissionRevoked(const url::Origin& requesting_origin,
+                           const url::Origin& embedding_origin) override;
 
   // UsbChooserContext::DeviceObserver implementation:
   void OnDeviceAdded(const device::mojom::UsbDeviceInfo& device_info) override;

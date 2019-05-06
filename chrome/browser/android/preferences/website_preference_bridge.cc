@@ -610,7 +610,8 @@ static void JNI_WebsitePreferenceBridge_RevokeObjectPermission(
   DCHECK(object);
   ChooserContextBase* context = GetChooserContext(
       static_cast<ContentSettingsType>(content_settings_type));
-  context->RevokeObjectPermission(origin, embedder, *object);
+  context->RevokeObjectPermission(url::Origin::Create(origin),
+                                  url::Origin::Create(embedder), *object);
 }
 
 namespace {

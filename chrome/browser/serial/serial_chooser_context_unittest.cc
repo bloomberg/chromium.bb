@@ -55,7 +55,7 @@ TEST_F(SerialChooserContextTest, GrantAndRevokeEphemeralPermission) {
   EXPECT_TRUE(context->HasPortPermission(origin, origin, *port));
 
   std::vector<std::unique_ptr<ChooserContextBase::Object>> origin_objects =
-      context->GetGrantedObjects(origin.GetURL(), origin.GetURL());
+      context->GetGrantedObjects(origin, origin);
   ASSERT_EQ(1u, origin_objects.size());
 
   std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
@@ -71,13 +71,11 @@ TEST_F(SerialChooserContextTest, GrantAndRevokeEphemeralPermission) {
   EXPECT_CALL(observer(), OnChooserObjectPermissionChanged(
                               CONTENT_SETTINGS_TYPE_SERIAL_GUARD,
                               CONTENT_SETTINGS_TYPE_SERIAL_CHOOSER_DATA));
-  EXPECT_CALL(observer(),
-              OnPermissionRevoked(origin.GetURL(), origin.GetURL()));
+  EXPECT_CALL(observer(), OnPermissionRevoked(origin, origin));
 
-  context->RevokeObjectPermission(origin.GetURL(), origin.GetURL(),
-                                  objects[0]->value);
+  context->RevokeObjectPermission(origin, origin, objects[0]->value);
   EXPECT_FALSE(context->HasPortPermission(origin, origin, *port));
-  origin_objects = context->GetGrantedObjects(origin.GetURL(), origin.GetURL());
+  origin_objects = context->GetGrantedObjects(origin, origin);
   EXPECT_EQ(0u, origin_objects.size());
   objects = context->GetAllGrantedObjects();
   EXPECT_EQ(0u, objects.size());
@@ -100,7 +98,7 @@ TEST_F(SerialChooserContextTest, GuardPermission) {
   EXPECT_FALSE(context->HasPortPermission(origin, origin, *port));
 
   std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
-      context->GetGrantedObjects(origin.GetURL(), origin.GetURL());
+      context->GetGrantedObjects(origin, origin);
   EXPECT_EQ(0u, objects.size());
 
   std::vector<std::unique_ptr<ChooserContextBase::Object>> all_origin_objects =
