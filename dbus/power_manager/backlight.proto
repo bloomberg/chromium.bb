@@ -22,10 +22,15 @@ message SetBacklightBrightnessRequest {
 
   // The speed at which the brightness should go to the requested percent.
   enum Transition {
-    // The brightness should animate to the new percent.
-    GRADUAL = 0;
-    // The brightness should instantaneously go to the new percent.
+    // The brightness will be instantaneously set to the new percent.
     INSTANT = 1;
+    // The brightness will quickly animate to the new percent. This should
+    // typically be used in response to a user request.
+    FAST = 0;
+    // The brightness will slowly animate to the new percent. This should
+    // typically be used to perform an automated change that was not directly
+    // requested by the user.
+    SLOW = 2;
   }
   optional Transition transition = 2;
 
