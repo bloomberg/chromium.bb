@@ -16,15 +16,15 @@ const base::Feature kIPHDummyFeature{"IPH_Dummy",
 
 #if defined(OS_ANDROID)
 const base::Feature kIPHDataSaverDetailFeature{
-    "IPH_DataSaverDetail", base::FEATURE_DISABLED_BY_DEFAULT};
+    "IPH_DataSaverDetail", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHDataSaverMilestonePromoFeature{
     "IPH_DataSaverMilestonePromo", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHDataSaverPreviewFeature{
     "IPH_DataSaverPreview", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHDownloadHomeFeature{"IPH_DownloadHome",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHDownloadPageFeature{"IPH_DownloadPage",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHDownloadPageScreenshotFeature{
     "IPH_DownloadPageScreenshot", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHChromeDuetFeature{"IPH_ChromeDuet",

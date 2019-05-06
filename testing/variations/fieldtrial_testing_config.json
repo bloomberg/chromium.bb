@@ -244,29 +244,6 @@
             ]
         }
     ],
-    "AndroidInProductHelpDataSaverDetail": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledTracking",
-                    "params": {
-                        "availability": "any",
-                        "event_data_saved": "name:data_saved_page_load;comparator:>=1;window:90;storage:360",
-                        "event_trigger": "name:data_saver_detail_iph_would_have_triggered;comparator:==0;window:90;storage:360",
-                        "event_used": "name:data_saver_overview_opened;comparator:==0;window:90;storage:360",
-                        "session_rate": "==0",
-                        "tracking_only": "true"
-                    },
-                    "enable_features": [
-                        "IPH_DataSaverDetail"
-                    ]
-                }
-            ]
-        }
-    ],
     "AndroidInProductHelpDataSaverPreview": [
         {
             "platforms": [
@@ -283,28 +260,6 @@
                     },
                     "enable_features": [
                         "IPH_DataSaverPreview"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AndroidInProductHelpDownloadHome": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Tracking",
-                    "params": {
-                        "availability": ">=14",
-                        "event_1": "name:download_completed;comparator:>=1;window:90;storage:360",
-                        "event_trigger": "name:download_home_iph_trigger;comparator:==0;window:90;storage:360",
-                        "event_used": "name:download_home_opened;comparator:==0;window:90;storage:360",
-                        "session_rate": "<0"
-                    },
-                    "enable_features": [
-                        "IPH_DownloadHome"
                     ]
                 }
             ]

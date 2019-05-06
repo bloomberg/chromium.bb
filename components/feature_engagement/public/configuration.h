@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_FEATURE_ENGAGEMENT_INTERNAL_CONFIGURATION_H_
-#define COMPONENTS_FEATURE_ENGAGEMENT_INTERNAL_CONFIGURATION_H_
+#ifndef COMPONENTS_FEATURE_ENGAGEMENT_PUBLIC_CONFIGURATION_H_
+#define COMPONENTS_FEATURE_ENGAGEMENT_PUBLIC_CONFIGURATION_H_
 
 #include <map>
 #include <ostream>
@@ -187,4 +187,4 @@ class Configuration {
 
 }  // namespace feature_engagement
 
-#endif  // COMPONENTS_FEATURE_ENGAGEMENT_INTERNAL_CONFIGURATION_H_
+#endif  // COMPONENTS_FEATURE_ENGAGEMENT_PUBLIC_CONFIGURATION_H_

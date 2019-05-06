@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/feature_engagement/internal/configuration.h"
+#include "components/feature_engagement/public/configuration.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
