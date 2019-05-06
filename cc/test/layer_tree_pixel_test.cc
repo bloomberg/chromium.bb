@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
+#include "base/test/scoped_feature_list.h"
 #include "cc/base/switches.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/texture_layer.h"
@@ -19,10 +20,14 @@
 #include "cc/test/test_in_process_context_provider.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "components/viz/common/display/renderer_settings.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/service/display/software_output_device.h"
+#include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 #include "components/viz/test/paths.h"
+#include "components/viz/test/test_gpu_service_holder.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/ipc/gl_in_process_context.h"
@@ -74,6 +79,23 @@ LayerTreePixelTest::CreateLayerTreeFrameSink(
   delegating_output_surface->SetEnlargePassTextureAmount(
       enlarge_texture_amount_);
   return delegating_output_surface;
+}
+
+std::unique_ptr<viz::SkiaOutputSurface>
+LayerTreePixelTest::CreateDisplaySkiaOutputSurfaceOnThread() {
+  // SkiaOutputSurfaceImplOnGpu requires UseSkiaRenderer.
+  std::vector<base::Feature> enable_features = {features::kVizDisplayCompositor,
+                                                features::kUseSkiaRenderer};
+  std::vector<base::Feature> disable_features = {};
+  scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list_->InitWithFeatures(enable_features, disable_features);
+  gpu_service_holder_ = std::make_unique<viz::TestGpuServiceHolder>();
+
+  // Set up the SkiaOutputSurfaceImpl.
+  auto output_surface = std::make_unique<viz::SkiaOutputSurfaceImpl>(
+      gpu_service_holder_->gpu_service(), gpu::kNullSurfaceHandle,
+      viz::RendererSettings());
+  return output_surface;
 }
 
 std::unique_ptr<viz::OutputSurface>

@@ -262,8 +262,17 @@ class LayerTreeHostBlendingPixelTest
   SkColor misc_opaque_color_ = 0xffc86464;
 };
 
+INSTANTIATE_TEST_SUITE_P(
+    B,
+    LayerTreeHostBlendingPixelTest,
+    ::testing::Combine(::testing::Values(SOFTWARE, ZERO_COPY, SKIA_GL),
+                       ::testing::ValuesIn(kBlendModes)));
+
+using LayerTreeHostBlendingPixelTestNonSkia = LayerTreeHostBlendingPixelTest;
+
+// TODO(crbug.com/948128): Enable these tests for Skia.
 INSTANTIATE_TEST_SUITE_P(B,
-                         LayerTreeHostBlendingPixelTest,
+                         LayerTreeHostBlendingPixelTestNonSkia,
                          ::testing::Combine(::testing::Values(SOFTWARE,
                                                               ZERO_COPY),
                                             ::testing::ValuesIn(kBlendModes)));
@@ -295,7 +304,7 @@ TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithRoot) {
   RunPixelResourceTest(background, expected);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithBackdropFilter) {
+TEST_P(LayerTreeHostBlendingPixelTestNonSkia, BlendingWithBackdropFilter) {
   const int kRootWidth = 2;
   const int kRootHeight = 2;
   InitializeFromTestCase(resource_type());
@@ -371,36 +380,39 @@ TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithTransparent) {
   RunPixelResourceTest(root, expected);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithRenderPass) {
+TEST_P(LayerTreeHostBlendingPixelTestNonSkia, BlendingWithRenderPass) {
   RunBlendingWithRenderPass(0);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassAA) {
+TEST_P(LayerTreeHostBlendingPixelTestNonSkia, BlendingWithRenderPassAA) {
   RunBlendingWithRenderPass(kUseAntialiasing);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassColorMatrix) {
+TEST_P(LayerTreeHostBlendingPixelTestNonSkia,
+       BlendingWithRenderPassColorMatrix) {
   RunBlendingWithRenderPass(kUseColorMatrix);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassWithMask) {
+TEST_P(LayerTreeHostBlendingPixelTestNonSkia, BlendingWithRenderPassWithMask) {
   RunBlendingWithRenderPass(kUseMasks);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassColorMatrixAA) {
+TEST_P(LayerTreeHostBlendingPixelTestNonSkia,
+       BlendingWithRenderPassColorMatrixAA) {
   RunBlendingWithRenderPass(kUseAntialiasing | kUseColorMatrix);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassWithMaskAA) {
+TEST_P(LayerTreeHostBlendingPixelTestNonSkia,
+       BlendingWithRenderPassWithMaskAA) {
   RunBlendingWithRenderPass(kUseMasks | kUseAntialiasing);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTest,
+TEST_P(LayerTreeHostBlendingPixelTestNonSkia,
        BlendingWithRenderPassWithMaskColorMatrix) {
   RunBlendingWithRenderPass(kUseMasks | kUseColorMatrix);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTest,
+TEST_P(LayerTreeHostBlendingPixelTestNonSkia,
        BlendingWithRenderPassWithMaskColorMatrixAA) {
   RunBlendingWithRenderPass(kUseMasks | kUseAntialiasing | kUseColorMatrix);
 }

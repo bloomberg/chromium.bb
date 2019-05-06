@@ -20,6 +20,12 @@
 
 class SkBitmap;
 
+namespace base {
+namespace test {
+class ScopedFeatureList;
+}
+}  // namespace base
+
 namespace gfx {
 class ColorSpace;
 }
@@ -27,6 +33,7 @@ class ColorSpace;
 namespace viz {
 class CopyOutputRequest;
 class CopyOutputResult;
+class TestGpuServiceHolder;
 }
 
 namespace cc {
@@ -66,6 +73,8 @@ class LayerTreePixelTest : public LayerTreeTest {
       scoped_refptr<viz::ContextProvider> compositor_context_provider,
       scoped_refptr<viz::RasterContextProvider> worker_context_provider)
       override;
+  std::unique_ptr<viz::SkiaOutputSurface>
+  CreateDisplaySkiaOutputSurfaceOnThread() override;
   std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurfaceOnThread(
       scoped_refptr<viz::ContextProvider> compositor_context_provider) override;
 
@@ -153,6 +162,10 @@ class LayerTreePixelTest : public LayerTreeTest {
   std::vector<scoped_refptr<TextureLayer>> texture_layers_;
   int pending_texture_mailbox_callbacks_;
   gfx::Size enlarge_texture_amount_;
+
+  // Used to create SkiaOutputSurfaceImpl.
+  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
+  std::unique_ptr<viz::TestGpuServiceHolder> gpu_service_holder_;
 };
 
 }  // namespace cc

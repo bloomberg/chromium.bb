@@ -75,20 +75,36 @@ class LayerTreeHostFiltersPixelTest
   bool layer_transforms_should_scale_layer_contents_ = true;
 };
 
-// TODO(crbug.com/948128): Enable these tests for Skia.
 INSTANTIATE_TEST_SUITE_P(
     ,
     LayerTreeHostFiltersPixelTest,
     ::testing::Values(LayerTreePixelTest::PIXEL_TEST_GL,
+                      LayerTreePixelTest::PIXEL_TEST_SKIA_GL,
                       LayerTreePixelTest::PIXEL_TEST_SOFTWARE));
 
-class LayerTreeHostFiltersPixelTestGPU : public LayerTreeHostFiltersPixelTest {
-};
+using LayerTreeHostFiltersPixelTestNonSkia = LayerTreeHostFiltersPixelTest;
+
+// TODO(crbug.com/948128): Enable these tests for Skia.
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    LayerTreeHostFiltersPixelTestNonSkia,
+    ::testing::Values(LayerTreePixelTest::PIXEL_TEST_GL,
+                      LayerTreePixelTest::PIXEL_TEST_SOFTWARE));
+
+using LayerTreeHostFiltersPixelTestGL = LayerTreeHostFiltersPixelTest;
 
 // TODO(crbug.com/948128): Enable these tests for Skia.
 INSTANTIATE_TEST_SUITE_P(,
-                         LayerTreeHostFiltersPixelTestGPU,
+                         LayerTreeHostFiltersPixelTestGL,
                          ::testing::Values(LayerTreePixelTest::PIXEL_TEST_GL));
+
+using LayerTreeHostFiltersPixelTestGPU = LayerTreeHostFiltersPixelTest;
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    LayerTreeHostFiltersPixelTestGPU,
+    ::testing::Values(LayerTreePixelTest::PIXEL_TEST_GL,
+                      LayerTreePixelTest::PIXEL_TEST_SKIA_GL));
 
 TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurRect) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
@@ -163,6 +179,8 @@ TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurRounded) {
       percentage_pixels_large_error, percentage_pixels_small_error,
       average_error_allowed_in_bad_pixels, large_error_allowed,
       small_error_allowed));
+#else
+  pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(false);
 #endif
 
   RunPixelTest(
@@ -219,7 +237,7 @@ TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurOutsets) {
       base::FilePath(FILE_PATH_LITERAL("backdrop_filter_blur_outsets.png")));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurOffAxis) {
+TEST_P(LayerTreeHostFiltersPixelTestGL, BackdropFilterBlurOffAxis) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorTRANSPARENT);
 
@@ -441,7 +459,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterNonZeroOrigin) {
                base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterScaled) {
+TEST_P(LayerTreeHostFiltersPixelTestNonSkia, ImageFilterScaled) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
@@ -509,7 +527,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterScaled) {
           .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterRotated) {
+TEST_P(LayerTreeHostFiltersPixelTestNonSkia, BackdropFilterRotated) {
   // Add a white background with a rotated red rect in the center.
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
@@ -600,16 +618,18 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageRenderSurfaceScaled) {
 
   // Software has some huge differences in the AA'd pixels on the different
   // trybots. See crbug.com/452198.
-  float percentage_pixels_large_error = 0.686f;
-  float percentage_pixels_small_error = 0.0f;
-  float average_error_allowed_in_bad_pixels = 16.f;
-  int large_error_allowed = 17;
-  int small_error_allowed = 0;
-  pixel_comparator_.reset(new FuzzyPixelComparator(
-      true,  // discard_alpha
-      percentage_pixels_large_error, percentage_pixels_small_error,
-      average_error_allowed_in_bad_pixels, large_error_allowed,
-      small_error_allowed));
+  if (GetPixelTestType() == LayerTreePixelTest::PIXEL_TEST_SOFTWARE) {
+    float percentage_pixels_large_error = 0.686f;
+    float percentage_pixels_small_error = 0.0f;
+    float average_error_allowed_in_bad_pixels = 16.f;
+    int large_error_allowed = 17;
+    int small_error_allowed = 0;
+    pixel_comparator_.reset(new FuzzyPixelComparator(
+        true,  // discard_alpha
+        percentage_pixels_large_error, percentage_pixels_small_error,
+        average_error_allowed_in_bad_pixels, large_error_allowed,
+        small_error_allowed));
+  }
 
   RunPixelTest(
       GetPixelTestType(), background,
@@ -617,7 +637,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageRenderSurfaceScaled) {
           .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTest, ZoomFilter) {
+TEST_P(LayerTreeHostFiltersPixelTestNonSkia, ZoomFilter) {
   scoped_refptr<SolidColorLayer> root =
       CreateSolidColorLayer(gfx::Rect(300, 300), SK_ColorWHITE);
 
@@ -727,7 +747,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, RotatedFilter) {
                    .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTest, RotatedDropShadowFilter) {
+TEST_P(LayerTreeHostFiltersPixelTestNonSkia, RotatedDropShadowFilter) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(300, 300), SK_ColorWHITE);
 
@@ -774,7 +794,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, RotatedDropShadowFilter) {
           .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTest, TranslatedFilter) {
+TEST_P(LayerTreeHostFiltersPixelTestNonSkia, TranslatedFilter) {
   scoped_refptr<Layer> clip = Layer::Create();
   clip->SetBounds(gfx::Size(300, 300));
   clip->SetMasksToBounds(true);
@@ -892,7 +912,8 @@ TEST_P(LayerTreeHostFiltersPixelTest, EnlargedTextureWithCropOffsetFilter) {
       base::FilePath(FILE_PATH_LITERAL("enlarged_texture_on_crop_offset.png")));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTest, BlurFilterWithClip) {
+// TODO(crbug.com/948128): Enable this test for SkiaRenderer.
+TEST_P(LayerTreeHostFiltersPixelTestNonSkia, BlurFilterWithClip) {
   scoped_refptr<SolidColorLayer> child1 =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorBLUE);
   scoped_refptr<SolidColorLayer> child2 =

@@ -498,8 +498,7 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
 
   DCHECK(output_device_);
   gfx::SwapResponse response;
-  if (capabilities().supports_post_sub_buffer) {
-    DCHECK(frame.sub_buffer_rect);
+  if (capabilities().supports_post_sub_buffer && frame.sub_buffer_rect) {
     DCHECK(!frame.sub_buffer_rect->IsEmpty());
     if (!capabilities().flipped_output_surface)
       frame.sub_buffer_rect->set_y(size_.height() - frame.sub_buffer_rect->y() -
