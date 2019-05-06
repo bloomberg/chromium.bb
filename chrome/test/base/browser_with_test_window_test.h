@@ -161,7 +161,8 @@ class BrowserWithTestWindowTest : public testing::Test {
                                            const GURL& url,
                                            const base::string16& title);
 
-  // Creates the profile used by this test. The caller owns the return value.
+  // Creates the profile used by this test. The caller doesn't own the return
+  // value.
   virtual TestingProfile* CreateProfile();
 
   // Returns a vector of testing factories to be used when creating the profile.
