@@ -106,8 +106,9 @@ TEST_F(RulesetMatcherTest, PreventSelfRedirect) {
   std::unique_ptr<RulesetMatcher> matcher;
   ASSERT_TRUE(CreateVerifiedMatcher({rule}, CreateTemporarySource(), &matcher));
 
+  GURL url("http://google.com");
   RequestParams params;
-  params.url = new GURL("http://google.com");
+  params.url = &url;
   params.element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
   params.is_third_party = true;
 
