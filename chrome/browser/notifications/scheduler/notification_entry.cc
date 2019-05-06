@@ -14,6 +14,13 @@ NotificationEntry::NotificationEntry(SchedulerClientType type,
 
 NotificationEntry::NotificationEntry(const NotificationEntry& other) = default;
 
+bool NotificationEntry::operator==(const NotificationEntry& other) const {
+  return type == other.type && guid == other.guid &&
+         create_time == other.create_time &&
+         notification_data == other.notification_data &&
+         schedule_params == other.schedule_params;
+}
+
 NotificationEntry::~NotificationEntry() = default;
 
 }  // namespace notifications

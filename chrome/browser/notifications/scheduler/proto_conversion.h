@@ -10,8 +10,10 @@
 #include "base/macros.h"
 #include "chrome/browser/notifications/proto/client_state.pb.h"
 #include "chrome/browser/notifications/proto/icon.pb.h"
+#include "chrome/browser/notifications/proto/notification_entry.pb.h"
 #include "chrome/browser/notifications/scheduler/icon_entry.h"
 #include "chrome/browser/notifications/scheduler/impression_types.h"
+#include "chrome/browser/notifications/scheduler/notification_entry.h"
 
 namespace notifications {
 
@@ -28,6 +30,14 @@ void ClientStateToProto(ClientState* client_state,
 // Converts proto to client state.
 void ClientStateFromProto(proto::ClientState* proto,
                           notifications::ClientState* client_state);
+
+// Converts notification entry to proto.
+void NotificationEntryToProto(NotificationEntry* entry,
+                              proto::NotificationEntry* proto);
+
+// Converts proto to notification entry.
+void NotificationEntryFromProto(proto::NotificationEntry* proto,
+                                NotificationEntry* entry);
 
 }  // namespace notifications
 

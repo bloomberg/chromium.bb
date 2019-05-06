@@ -39,32 +39,31 @@ base::Time MillisecondsToTime(int64_t serialized_time_ms) {
 }
 
 // Converts SchedulerClientType to its associated enum in proto buffer.
-proto::ClientState_SchedulerClientType ToSchedulerClientType(
-    SchedulerClientType type) {
+proto::SchedulerClientType ToSchedulerClientType(SchedulerClientType type) {
   switch (type) {
     case SchedulerClientType::kTest1:
-      return proto::ClientState_SchedulerClientType_TEST_1;
+      return proto::SchedulerClientType::TEST_1;
     case SchedulerClientType::kTest2:
-      return proto::ClientState_SchedulerClientType_TEST_2;
+      return proto::SchedulerClientType::TEST_2;
     case SchedulerClientType::kTest3:
-      return proto::ClientState_SchedulerClientType_TEST_3;
+      return proto::SchedulerClientType::TEST_3;
     case SchedulerClientType::kUnknown:
-      return proto::ClientState_SchedulerClientType_UNKNOWN;
+      return proto::SchedulerClientType::UNKNOWN;
   }
   NOTREACHED();
 }
 
 // Converts SchedulerClientType from its associated enum in proto buffer.
 SchedulerClientType FromSchedulerClientType(
-    proto::ClientState_SchedulerClientType proto_type) {
+    proto::SchedulerClientType proto_type) {
   switch (proto_type) {
-    case proto::ClientState_SchedulerClientType_TEST_1:
+    case proto::SchedulerClientType::TEST_1:
       return SchedulerClientType::kTest1;
-    case proto::ClientState_SchedulerClientType_TEST_2:
+    case proto::SchedulerClientType::TEST_2:
       return SchedulerClientType::kTest2;
-    case proto::ClientState_SchedulerClientType_TEST_3:
+    case proto::SchedulerClientType::TEST_3:
       return SchedulerClientType::kTest3;
-    case proto::ClientState_SchedulerClientType_UNKNOWN:
+    case proto::SchedulerClientType::UNKNOWN:
       return SchedulerClientType::kUnknown;
   }
   NOTREACHED();
@@ -167,6 +166,66 @@ SchedulerTaskTime FromSchedulerTaskTime(
   NOTREACHED();
 }
 
+// Converts NotificationData to proto buffer type.
+void NotificationDataToProto(NotificationData* notification_data,
+                             proto::NotificationData* proto) {
+  proto->set_id(notification_data->id);
+  proto->set_title(notification_data->title);
+  proto->set_message(notification_data->message);
+  proto->set_icon_uuid(notification_data->icon_uuid);
+  proto->set_url(notification_data->url);
+}
+
+// Converts NotificationData from proto buffer type.
+void NotificationDataFromProto(proto::NotificationData* proto,
+                               NotificationData* notification_data) {
+  notification_data->id = proto->id();
+  notification_data->title = proto->title();
+  notification_data->message = proto->message();
+  notification_data->icon_uuid = proto->icon_uuid();
+  notification_data->url = proto->url();
+}
+
+// Converts ScheduleParams::Priority to proto buffer type.
+proto::ScheduleParams_Priority ScheduleParamsPriorityToProto(
+    ScheduleParams::Priority priority) {
+  using Priority = ScheduleParams::Priority;
+  switch (priority) {
+    case Priority::kLow:
+      return proto::ScheduleParams_Priority_LOW;
+    case Priority::kHigh:
+      return proto::ScheduleParams_Priority_HIGH;
+    case Priority::kNoThrottle:
+      return proto::ScheduleParams_Priority_NO_THROTTLE;
+  }
+}
+
+// Converts ScheduleParams::Priority from proto buffer type.
+ScheduleParams::Priority ScheduleParamsPriorityFromProto(
+    proto::ScheduleParams_Priority priority) {
+  using Priority = ScheduleParams::Priority;
+  switch (priority) {
+    case proto::ScheduleParams_Priority_LOW:
+      return Priority::kLow;
+    case proto::ScheduleParams_Priority_HIGH:
+      return Priority::kHigh;
+    case proto::ScheduleParams_Priority_NO_THROTTLE:
+      return Priority::kNoThrottle;
+  }
+}
+
+// Converts ScheduleParams to proto buffer type.
+void ScheduleParamsToProto(ScheduleParams* params,
+                           proto::ScheduleParams* proto) {
+  proto->set_priority(ScheduleParamsPriorityToProto(params->priority));
+}
+
+// Converts ScheduleParams from proto buffer type.
+void ScheduleParamsFromProto(proto::ScheduleParams* proto,
+                             ScheduleParams* params) {
+  params->priority = ScheduleParamsPriorityFromProto(proto->priority());
+}
+
 }  // namespace
 
 void IconEntryToProto(IconEntry* entry, notifications::proto::Icon* proto) {
@@ -240,6 +299,28 @@ void ClientStateFromProto(proto::ClientState* proto,
     suppression_info.recover_goal = proto_suppression.recover_goal();
     client_state->suppression_info = std::move(suppression_info);
   }
+}
+
+void NotificationEntryToProto(NotificationEntry* entry,
+                              proto::NotificationEntry* proto) {
+  proto->set_type(ToSchedulerClientType(entry->type));
+  proto->set_guid(entry->guid);
+  proto->set_create_time(TimeToMilliseconds(entry->create_time));
+  auto* proto_notification_data = proto->mutable_notification_data();
+  NotificationDataToProto(&entry->notification_data, proto_notification_data);
+  auto* proto_schedule_params = proto->mutable_schedule_params();
+  ScheduleParamsToProto(&entry->schedule_params, proto_schedule_params);
+}
+
+void NotificationEntryFromProto(proto::NotificationEntry* proto,
+                                NotificationEntry* entry) {
+  entry->type = FromSchedulerClientType(proto->type());
+  entry->guid = proto->guid();
+  entry->create_time = MillisecondsToTime(proto->create_time());
+  NotificationDataFromProto(proto->mutable_notification_data(),
+                            &entry->notification_data);
+  ScheduleParamsFromProto(proto->mutable_schedule_params(),
+                          &entry->schedule_params);
 }
 
 }  // namespace notifications

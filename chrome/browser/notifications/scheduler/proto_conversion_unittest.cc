@@ -4,6 +4,10 @@
 
 #include "chrome/browser/notifications/scheduler/proto_conversion.h"
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/logging.h"
 #include "chrome/browser/notifications/scheduler/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,6 +21,27 @@ const char kUuid[] = "123";
 const char kGuid[] = "testGuid";
 const char kData[] = "bitmapdata";
 
+std::string DebugString(NotificationData* data) {
+  DCHECK(data);
+  std::ostringstream stream;
+  stream << " Notification Data: \n id:" << data->id
+         << " \n title:" << data->title << "\n message:" << data->message
+         << " \n icon_id:" << data->icon_uuid << " \n url:" << data->url;
+  return stream.str();
+}
+
+std::string DebugString(NotificationEntry* entry) {
+  DCHECK(entry);
+  std::ostringstream stream;
+  stream << "NotificationEntry: \n  type: " << static_cast<int>(entry->type)
+         << " \n guid: " << entry->guid << "\n create_time: "
+         << entry->create_time.ToDeltaSinceWindowsEpoch().InMicroseconds()
+         << " \n notification_data:" << DebugString(&entry->notification_data)
+         << " \n schedule params: priority:"
+         << static_cast<int>(entry->schedule_params.priority);
+  return stream.str();
+}
+
 void TestClientStateConversion(ClientState* client_state) {
   DCHECK(client_state);
   notifications::proto::ClientState proto;
@@ -26,6 +51,19 @@ void TestClientStateConversion(ClientState* client_state) {
   EXPECT_EQ(*client_state, expected)
       << " \n Output: \n " << client_state->DebugPrint() << " \n Expected: \n"
       << expected.DebugPrint();
+}
+
+void TestNotificationEntryConversion(NotificationEntry* entry) {
+  DCHECK(entry);
+  notifications::proto::NotificationEntry proto;
+  NotificationEntry expected(SchedulerClientType::kTest1, "");
+  NotificationEntryToProto(entry, &proto);
+  NotificationEntryFromProto(&proto, &expected);
+  EXPECT_EQ(entry->notification_data, expected.notification_data);
+  EXPECT_EQ(entry->schedule_params, expected.schedule_params);
+
+  EXPECT_EQ(*entry, expected) << "Output: " << DebugString(entry)
+                              << " \n Expected: " << DebugString(&expected);
 }
 
 TEST(ProtoConversionTest, IconEntryFromProto) {
@@ -134,6 +172,32 @@ TEST(ProtoConversionTest, MultipleImpressionConversion) {
   client_state.impressions.emplace_back(std::move(impression));
   client_state.impressions.emplace_back(std::move(other_impression));
   TestClientStateConversion(&client_state);
+}
+
+// Verifies notification entry proto conversion.
+TEST(ProtoConversionTest, NotificationEntryConversion) {
+  NotificationEntry entry(SchedulerClientType::kTest2, kGuid);
+  bool success =
+      base::Time::FromString("04/25/20 01:00:00 AM", &entry.create_time);
+  DCHECK(success);
+  TestNotificationEntryConversion(&entry);
+
+  // Test notification data.
+  entry.notification_data.id = kGuid;
+  entry.notification_data.title = "title";
+  entry.notification_data.message = "message";
+  entry.notification_data.icon_uuid = "icon_uuid";
+  entry.notification_data.url = "url";
+  TestNotificationEntryConversion(&entry);
+
+  // Test scheduling params.
+  const ScheduleParams::Priority priorities[] = {
+      ScheduleParams::Priority::kLow, ScheduleParams::Priority::kHigh,
+      ScheduleParams::Priority::kNoThrottle};
+  for (auto priority : priorities) {
+    entry.schedule_params.priority = priority;
+    TestNotificationEntryConversion(&entry);
+  }
 }
 
 }  // namespace

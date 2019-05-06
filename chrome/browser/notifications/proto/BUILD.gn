@@ -10,5 +10,6 @@ proto_library("proto") {
     "icon.proto",
     "impression.proto",
     "notification_data.proto",
+    "notification_entry.proto",
   ]
 }
