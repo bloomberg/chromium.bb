@@ -9,6 +9,8 @@ is more than one downstream branch, then this script will prompt you to select
 which branch.
 """
 
+from __future__ import print_function
+
 import argparse
 import sys
 
@@ -36,24 +38,24 @@ def main(args):
     cur = hash_one(cur)
   downstreams = [b for b in branches() if upfn(b) == cur]
   if not downstreams:
-    print "No downstream branches"
+    print("No downstream branches")
     return 1
   elif len(downstreams) == 1:
     run('checkout', downstreams[0], stdout=sys.stdout, stderr=sys.stderr)
   else:
     high = len(downstreams) - 1
     while True:
-      print "Please select a downstream branch"
+      print("Please select a downstream branch")
       for i, b in enumerate(downstreams):
-        print "  %d. %s" % (i, b)
+        print("  %d. %s" % (i, b))
       prompt = "Selection (0-%d)[0]: " % high
       r = opts.pick
       if r:
-        print prompt + r
+        print(prompt + r)
       else:
         r = raw_input(prompt).strip() or '0'
       if not r.isdigit() or (0 > int(r) > high):
-        print "Invalid choice."
+        print("Invalid choice.")
       else:
         run('checkout', downstreams[int(r)], stdout=sys.stdout,
             stderr=sys.stderr)

@@ -8,6 +8,9 @@
 Example:
   - my_reviews.py -r me@chromium.org -Q  for stats for last quarter.
 """
+
+from __future__ import print_function
+
 import datetime
 import math
 import optparse
@@ -22,7 +25,7 @@ try:
   import dateutil.parser
   from dateutil.relativedelta import relativedelta
 except ImportError:
-  print 'python-dateutil package required'
+  print('python-dateutil package required')
   exit(1)
 
 
@@ -214,13 +217,13 @@ def print_issue(issue, reviewer, stats):
     reviewed = ''
 
   # More information is available, print issue.keys() to see them.
-  print '%7d %10s %3s %14s %-15s  %s' % (
+  print('%7d %10s %3s %14s %-15s  %s' % (
       issue['issue'],
       issue['created'][:10],
       reviewed,
       latency,
       issue['owner_email'],
-      ', '.join(sorted(issue['reviewers'])))
+      ', '.join(sorted(issue['reviewers']))))
 
 
 def print_reviews(
@@ -232,8 +235,9 @@ def print_reviews(
   stats = Stats()
 
   # Column sizes need to match print_issue() output.
-  print >> sys.stderr, (
-      'Issue   Creation   Did         Latency Owner           Reviewers')
+  print(
+      'Issue   Creation   Did         Latency Owner           Reviewers',
+      file=sys.stderr)
 
   # See def search() in rietveld.py to see all the filters you can use.
   issues = []
@@ -253,39 +257,40 @@ def print_reviews(
     last_day = issues[-1]['created'][:10]
   stats.finalize(first_day, last_day)
 
-  print >> sys.stderr, (
+  print(
       '%s reviewed %d issues out of %d (%1.1f%%). %d were self-review.' %
       (reviewer, stats.actually_reviewed, stats.total, stats.percent_done,
-        stats.self_review))
-  print >> sys.stderr, (
-      '%4.1f review request/day during %3d days   (%4.1f r/d done).' % (
-      stats.review_per_day, stats.days, stats.review_done_per_day))
-  print >> sys.stderr, (
-      '%4d were drive-bys                       (%5.1f%% of reviews done).' % (
-        stats.drive_by, stats.percent_drive_by))
-  print >> sys.stderr, (
-      '%4d were requested over IM or irc        (%5.1f%% of reviews done).' % (
-        stats.not_requested, stats.percent_not_requested))
-  print >> sys.stderr, (
-      ('%4d issues LGTM\'d                        (%5.1f%% of reviews done),'
-       ' gave multiple LGTMs on %d issues.') % (
-      stats.lgtms, stats.percent_lgtm, stats.multiple_lgtms))
-  print >> sys.stderr, (
+       stats.self_review), file=sys.stderr)
+  print(
+      '%4.1f review request/day during %3d days   (%4.1f r/d done).' %
+      (stats.review_per_day, stats.days, stats.review_done_per_day),
+      file=sys.stderr)
+  print(
+      '%4d were drive-bys                       (%5.1f%% of reviews done).' %
+      (stats.drive_by, stats.percent_drive_by), file=sys.stderr)
+  print(
+      '%4d were requested over IM or irc        (%5.1f%% of reviews done).' %
+      (stats.not_requested, stats.percent_not_requested), file=sys.stderr)
+  print(
+      '%4d issues LGTM\'d                        (%5.1f%% of reviews done),'
+      ' gave multiple LGTMs on %d issues.' %
+      (stats.lgtms, stats.percent_lgtm, stats.multiple_lgtms), file=sys.stderr)
+  print(
       'Average latency from request to first comment is %s.' %
-      to_time(stats.average_latency))
-  print >> sys.stderr, (
+      to_time(stats.average_latency), file=sys.stderr)
+  print(
       'Median latency from request to first comment is %s.' %
-      to_time(stats.median_latency))
+      to_time(stats.median_latency), file=sys.stderr)
 
 
 def print_count(
     reviewer, created_after, created_before, instance_url, auth_config):
   remote = rietveld.Rietveld(instance_url, auth_config)
-  print len(list(remote.search(
+  print(len(list(remote.search(
       reviewer=reviewer,
       created_after=created_after,
       created_before=created_before,
-      keys_only=True)))
+      keys_only=True))))
 
 
 def get_previous_quarter(today):
@@ -354,12 +359,12 @@ def main():
   if options.reviewer is None:
     parser.error('$EMAIL_ADDRESS and $USER are not set, please use -r')
 
-  print >> sys.stderr, 'Searching for reviews by %s' % options.reviewer
+  print('Searching for reviews by %s' % options.reviewer, file=sys.stderr)
   if options.last_quarter:
     options.begin = begin
     options.end = end
-    print >> sys.stderr, 'Using range %s to %s' % (
-        options.begin, options.end)
+    print('Using range %s to %s' %
+        (options.begin, options.end), file=sys.stderr)
   else:
     if options.begin is None or options.end is None:
       parser.error('Please specify either --last_quarter or --begin and --end')

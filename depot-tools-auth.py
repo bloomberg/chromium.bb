@@ -11,6 +11,8 @@ Usage:
   depot-tools-auth logout codereview.chromium.org
 """
 
+from __future__ import print_function
+
 import logging
 import optparse
 import sys
@@ -39,7 +41,7 @@ def CMDlogout(parser, args):
   """Revokes cached authentication token and removes it from disk."""
   _, authenticator = parser.parse_args(args)
   done = authenticator.logout()
-  print 'Done.' if done else 'Already logged out.'
+  print('Done.' if done else 'Already logged out.')
   return 0
 
 
@@ -54,12 +56,12 @@ def CMDinfo(parser, args):
 
 def print_token_info(hostname, authenticator):
   token_info = authenticator.get_token_info()
-  print 'Logged in to %s as %s.' % (hostname, token_info['email'])
-  print ''
-  print 'To login with a different email run:'
-  print '  depot-tools-auth login %s' % hostname
-  print 'To logout and purge the authentication token run:'
-  print '  depot-tools-auth logout %s' % hostname
+  print('Logged in to %s as %s.' % (hostname, token_info['email']))
+  print('')
+  print('To login with a different email run:')
+  print('  depot-tools-auth login %s' % hostname)
+  print('To logout and purge the authentication token run:')
+  print('  depot-tools-auth logout %s' % hostname)
 
 
 class OptionParser(optparse.OptionParser):
@@ -89,7 +91,7 @@ def main(argv):
   try:
     return dispatcher.execute(OptionParser(), argv)
   except auth.AuthenticationError as e:
-    print >> sys.stderr, e
+    print(e, file=sys.stderr)
     return 1
 
 

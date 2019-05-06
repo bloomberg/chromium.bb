@@ -4,6 +4,8 @@
 
 """Google OAuth2 related functions."""
 
+from __future__ import print_function
+
 import BaseHTTPServer
 import collections
 import datetime

@@ -14,6 +14,8 @@ The following hypothesis are made:
   - A patch set cannot be modified
 """
 
+from __future__ import print_function
+
 import copy
 import errno
 import json
@@ -474,7 +476,7 @@ class Rietveld(object):
         # If reaching this line, loop again. Uses a small backoff.
         time.sleep(min(10, 1+retry*2))
     except urllib2.HTTPError as e:
-      print 'Request to %s failed: %s' % (e.geturl(), e.read())
+      print('Request to %s failed: %s' % (e.geturl(), e.read()))
       raise
     finally:
       upload.ErrorExit = old_error_exit

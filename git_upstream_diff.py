@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import argparse
 import sys
 
@@ -31,12 +33,12 @@ def main(args):
     opts.branch = current_branch
 
   if not opts.branch or opts.branch == 'HEAD':
-    print 'fatal: Cannot perform git-upstream-diff while not on a branch'
+    print('fatal: Cannot perform git-upstream-diff while not on a branch')
     return 1
 
   par = git.upstream(opts.branch)
   if not par:
-    print 'fatal: No upstream configured for branch \'%s\'' % opts.branch
+    print('fatal: No upstream configured for branch \'%s\'' % opts.branch)
     return 1
 
   cmd = [git.GIT_EXE, '-c', 'core.quotePath=false',

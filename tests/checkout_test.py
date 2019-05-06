@@ -5,6 +5,8 @@
 
 """Unit tests for checkout.py."""
 
+from __future__ import print_function
+
 import logging
 import os
 import shutil
@@ -275,7 +277,7 @@ class GitBaseTest(BaseTest):
     return tree
 
   def _test_prepare(self, co):
-    print co.prepare(None)
+    print(co.prepare(None))
 
 
 class GitCheckout(GitBaseTest):

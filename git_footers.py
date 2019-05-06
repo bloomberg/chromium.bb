@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import argparse
 import json
 import re
@@ -229,23 +231,23 @@ def main(args):
 
   if opts.key:
     for v in footers.get(normalize_name(opts.key), []):
-      print v
+      print(v)
   elif opts.position:
     pos = get_position(footers)
-    print '%s@{#%s}' % (pos[0], pos[1] or '?')
+    print('%s@{#%s}' % (pos[0], pos[1] or '?'))
   elif opts.position_ref:
-    print get_position(footers)[0]
+    print(get_position(footers)[0])
   elif opts.position_num:
     pos = get_position(footers)
     assert pos[1], 'No valid position for commit'
-    print pos[1]
+    print(pos[1])
   elif opts.json:
     with open(opts.json, 'w') as f:
       json.dump(footers, f)
   else:
     for k in footers.keys():
       for v in footers[k]:
-        print '%s: %s' % (k, v)
+        print('%s: %s' % (k, v))
   return 0
 
 

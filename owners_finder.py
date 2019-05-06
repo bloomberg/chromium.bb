@@ -4,6 +4,8 @@
 
 """Interactive tool for finding reviewers/owners for a change."""
 
+from __future__ import print_function
+
 import os
 import copy
 import owners as owners_module
@@ -354,7 +356,7 @@ class OwnersFinder(object):
     return '  ' * self.indentation
 
   def writeln(self, text=''):
-    print self.print_indent() + text
+    print(self.print_indent() + text)
 
   def hr(self):
     self.writeln('=====================')

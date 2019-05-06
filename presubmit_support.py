@@ -6,6 +6,8 @@
 """Enables directory-specific presubmit checks to run at upload and/or commit.
 """
 
+from __future__ import print_function
+
 __version__ = '1.8.0'
 
 # TODO(joi) Add caching where appropriate/needed. The API is designed to allow
@@ -1715,8 +1717,8 @@ def main(argv=None):
           options.parallel)
     return not results.should_continue()
   except PresubmitFailure, e:
-    print >> sys.stderr, e
-    print >> sys.stderr, 'Maybe your depot_tools is out of date?'
+    print(e, file=sys.stderr)
+    print('Maybe your depot_tools is out of date?', file=sys.stderr)
     return 2
 
 

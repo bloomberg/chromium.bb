@@ -12,6 +12,8 @@ To run `gclient sync --gclientfile=.gclient` and annotate got_v8_revision:
       sync --gclientfile=.gclient`
 """
 
+from __future__ import print_function
+
 import contextlib
 import json
 import optparse
@@ -31,7 +33,7 @@ def temp_filename(suffix='', prefix='tmp'):
   try:
     os.remove(output_file)
   except OSError as e:
-    print 'Error cleaning up temp file %s: %s' % (output_file, e)
+    print('Error cleaning up temp file %s: %s' % (output_file, e))
 
 
 def parse_got_revision(filename, revision_mapping):
@@ -51,7 +53,7 @@ def parse_got_revision(filename, revision_mapping):
 
 def emit_buildprops(got_revisions):
   for prop, revision in got_revisions.iteritems():
-    print '@@@SET_BUILD_PROPERTY@%s@%s@@@' % (prop, json.dumps(revision))
+    print('@@@SET_BUILD_PROPERTY@%s@%s@@@' % (prop, json.dumps(revision)))
 
 
 def main():

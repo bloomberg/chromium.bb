@@ -6,6 +6,8 @@
 """Display log of checkins of one particular developer since a particular
 date. Only works on git dependencies at the moment."""
 
+from __future__ import print_function
+
 import gclient_utils
 import optparse
 import os
@@ -25,8 +27,8 @@ def show_log(path, authors, since='1 week ago'):
                             stdout=subprocess.PIPE).communicate()[0].rstrip()
 
   if len(status.splitlines()) > 0:
-    print '---------- %s ----------' % path
-    print status
+    print('---------- %s ----------' % path)
+    print(status)
 
 
 def main():

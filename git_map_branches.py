@@ -24,6 +24,8 @@ Branches are colorized as follows:
     upstream, then you will see this.
 """
 
+from __future__ import print_function
+
 import argparse
 import collections
 import os
@@ -185,8 +187,8 @@ class BranchMapper(object):
       parent = self.__branches_info[cycle[-1]].upstream
       cycle.append(parent)
       if parent == branch:
-        print >> sys.stderr, 'Warning: Detected cycle in branches: {}'.format(
-            ' -> '.join(cycle))
+        print('Warning: Detected cycle in branches: {}'.format(
+            ' -> '.join(cycle)), file=sys.stderr)
         return True
     return False
 
@@ -312,11 +314,11 @@ def print_desc():
 def main(argv):
   setup_color.init()
   if get_git_version() < MIN_UPSTREAM_TRACK_GIT_VERSION:
-    print >> sys.stderr, (
+    print(
         'This tool will not show all tracking information for git version '
         'earlier than ' +
         '.'.join(str(x) for x in MIN_UPSTREAM_TRACK_GIT_VERSION) +
-        '. Please consider upgrading.')
+        '. Please consider upgrading.', file=sys.stderr)
 
   if '-h' in argv:
     print_desc()
@@ -342,7 +344,7 @@ def main(argv):
   mapper.maxjobs = opts.maxjobs
   mapper.show_subject = opts.show_subject
   mapper.start()
-  print mapper.output.as_formatted_string()
+  print(mapper.output.as_formatted_string())
   return 0
 
 if __name__ == '__main__':

@@ -5,6 +5,8 @@
 
 """Generate fake repositories for testing."""
 
+from __future__ import print_function
+
 import atexit
 import datetime
 import errno
@@ -931,7 +933,7 @@ class FakeReposTestBase(trial_dir.TestCase):
         result = result[1:]
       # The exception trace makes it hard to read so dump it too.
       if '\n' in result:
-        print result
+        print(result)
     self.assertEquals(expected, result, msg)
 
   def check(self, expected, results):
@@ -978,7 +980,7 @@ class FakeReposTestBase(trial_dir.TestCase):
 
 def main(argv):
   fake = FakeRepos()
-  print 'Using %s' % fake.root_dir
+  print('Using %s' % fake.root_dir)
   try:
     fake.set_up_git()
     print('Fake setup, press enter to quit or Ctrl-C to keep the checkouts.')

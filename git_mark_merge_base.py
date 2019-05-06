@@ -11,6 +11,8 @@ purposes of the chromium depot_tools git extensions. Passing no arguments will
 just print the effective merge base for the current branch.
 """
 
+from __future__ import print_function
+
 import argparse
 import sys
 
@@ -39,16 +41,16 @@ def main(argv):
     try:
       remove_merge_base(cur)
     except CalledProcessError:
-      print 'No merge base currently exists for %s.' % cur
+      print('No merge base currently exists for %s.' % cur)
     return 0
 
   if opts.merge_base:
     try:
       opts.merge_base = hash_one(opts.merge_base)
     except CalledProcessError:
-      print >> sys.stderr, (
-          'fatal: could not resolve %s as a commit' % (opts.merge_base)
-      )
+      print(
+          'fatal: could not resolve %s as a commit' % opts.merge_base,
+          file=sys.stderr)
       return 1
 
     manual_merge_base(cur, opts.merge_base, upstream(cur))
@@ -57,9 +59,9 @@ def main(argv):
   actual = get_or_create_merge_base(cur)
   if opts.merge_base and opts.merge_base != actual:
     ret = 1
-    print "Invalid merge_base %s" % opts.merge_base
+    print("Invalid merge_base %s" % opts.merge_base)
 
-  print "merge_base(%s): %s" % (cur, actual)
+  print("merge_base(%s): %s" % (cur, actual))
   return ret
 
 

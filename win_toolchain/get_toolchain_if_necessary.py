@@ -26,6 +26,8 @@ future when a hypothetical VS2015 is released, the 2013 script will be
 maintained, and a new 2015 script would be added.
 """
 
+from __future__ import print_function
+
 import hashlib
 import json
 import optparse
@@ -52,12 +54,12 @@ elif sys.platform == "cygwin":
   try:
     import cygwinreg as winreg
   except ImportError:
-    print ''
-    print 'CygWin does not natively support winreg but a replacement exists.'
-    print 'https://pypi.python.org/pypi/cygwinreg/'
-    print ''
-    print 'Try: easy_install cygwinreg'
-    print ''
+    print('')
+    print('CygWin does not natively support winreg but a replacement exists.')
+    print('https://pypi.python.org/pypi/cygwinreg/')
+    print('')
+    print('Try: easy_install cygwinreg')
+    print('')
     raise
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
@@ -144,25 +146,25 @@ def CalculateHash(root, expected_hash):
       timestamps_data_files.append(f[0])
     missing_files = [f for f in timestamps_data_files if f not in file_list]
     if len(missing_files):
-      print ('%d files missing from the %s version of the toolchain:' %
+      print('%d files missing from the %s version of the toolchain:' %
              (len(missing_files), expected_hash))
       for f in missing_files[:10]:
-        print '\t%s' % f
+        print('\t%s' % f)
       if len(missing_files) > 10:
-        print '\t...'
+        print('\t...')
     extra_files = [f for f in file_list if f not in timestamps_data_files]
     if len(extra_files):
-      print ('%d extra files in the %s version of the toolchain:' %
+      print('%d extra files in the %s version of the toolchain:' %
              (len(extra_files), expected_hash))
       for f in extra_files[:10]:
-        print '\t%s' % f
+        print('\t%s' % f)
       if len(extra_files) > 10:
-        print '\t...'
+        print('\t...')
   if matches:
     return timestamps_data['sha1']
 
   # Make long hangs when updating the toolchain less mysterious.
-  print 'Calculating hash of toolchain in %s. Please wait...' % full_root_path
+  print('Calculating hash of toolchain in %s. Please wait...' % full_root_path)
   sys.stdout.flush()
   digest = hashlib.sha1()
   for path in file_list:
@@ -189,7 +191,7 @@ def CalculateToolchainHashes(root, remove_corrupt_toolchains):
   for d in dir_list:
     toolchain_hash = CalculateHash(root, d)
     if toolchain_hash != d:
-      print ('The hash of a version of the toolchain has an unexpected value ('
+      print('The hash of a version of the toolchain has an unexpected value ('
              '%s instead of %s)%s.' % (toolchain_hash, d,
              ', removing it' if remove_corrupt_toolchains else ''))
       if remove_corrupt_toolchains:
@@ -259,23 +261,23 @@ def RequestGsAuthentication():
   Googler. This allows much faster downloads, and pulling (old) toolchains
   that match src/ revisions.
   """
-  print 'Access to gs://chrome-wintoolchain/ not configured.'
-  print '-----------------------------------------------------------------'
-  print
-  print 'You appear to be a Googler.'
-  print
-  print 'I\'m sorry for the hassle, but you need to do a one-time manual'
-  print 'authentication. Please run:'
-  print
-  print '    download_from_google_storage --config'
-  print
-  print 'and follow the instructions.'
-  print
-  print 'NOTE 1: Use your google.com credentials, not chromium.org.'
-  print 'NOTE 2: Enter 0 when asked for a "project-id".'
-  print
-  print '-----------------------------------------------------------------'
-  print
+  print('Access to gs://chrome-wintoolchain/ not configured.')
+  print('-----------------------------------------------------------------')
+  print()
+  print('You appear to be a Googler.')
+  print()
+  print('I\'m sorry for the hassle, but you need to do a one-time manual')
+  print('authentication. Please run:')
+  print()
+  print('    download_from_google_storage --config')
+  print()
+  print('and follow the instructions.')
+  print()
+  print('NOTE 1: Use your google.com credentials, not chromium.org.')
+  print('NOTE 2: Enter 0 when asked for a "project-id".')
+  print()
+  print('-----------------------------------------------------------------')
+  print()
   sys.stdout.flush()
   sys.exit(1)
 
@@ -289,7 +291,7 @@ def DelayBeforeRemoving(target_dir):
               '\rRemoving old toolchain in %ds... (Ctrl-C to cancel)' % i)
       sys.stdout.flush()
       time.sleep(1)
-    print
+    print()
 
 
 def DownloadUsingHttp(filename):
@@ -396,7 +398,7 @@ def RemoveUnusedToolchains(root):
       os.remove(full_path)
 
   for d in dirs_to_remove:
-    print ('Removing %s as it doesn\'t correspond to any known toolchain.' %
+    print('Removing %s as it doesn\'t correspond to any known toolchain.' %
            os.path.join(root, d))
     # Use the RemoveToolchain function to remove these directories as they might
     # contain an older version of the toolchain.
@@ -408,7 +410,7 @@ def RemoveUnusedToolchains(root):
   for toolchain in valid_toolchains:
     toolchain_age_in_sec = time.time() - toolchain[0]
     if toolchain_age_in_sec > toolchain_expiration_time:
-      print ('Removing version %s of the Win toolchain as it hasn\'t been used'
+      print('Removing version %s of the Win toolchain as it hasn\'t been used'
              ' in the past %d days.' % (toolchain[1],
                                         toolchain_age_in_sec / 60 / 60 / 24))
       RemoveToolchain(root, toolchain[1], True)
@@ -569,10 +571,10 @@ def main():
   if got_new_toolchain:
     current_hashes = CalculateToolchainHashes(target_dir, False)
     if desired_hash not in current_hashes:
-      print >> sys.stderr, (
+      print(
           'Got wrong hash after pulling a new toolchain. '
           'Wanted \'%s\', got one of \'%s\'.' % (
-              desired_hash, ', '.join(current_hashes)))
+              desired_hash, ', '.join(current_hashes)), file=sys.stderr)
       return 1
     SaveTimestampsAndHash(target_dir, desired_hash)
 

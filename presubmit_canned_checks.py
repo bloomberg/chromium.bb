@@ -4,6 +4,8 @@
 
 """Generic presubmit checks that can be reused by other presubmit checks."""
 
+from __future__ import print_function
+
 import os as _os
 _HERE = _os.path.dirname(_os.path.abspath(__file__))
 
@@ -1111,7 +1113,7 @@ def PanProjectChecks(input_api, output_api,
     if snapshot_memory:
       delta_ms = int(1000*(dt2 - snapshot_memory[0]))
       if delta_ms > 500:
-        print "  %s took a long time: %dms" % (snapshot_memory[1], delta_ms)
+        print("  %s took a long time: %dms" % (snapshot_memory[1], delta_ms))
     snapshot_memory[:] = (dt2, msg)
 
   snapshot("checking owners files format")

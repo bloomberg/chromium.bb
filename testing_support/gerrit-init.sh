@@ -72,6 +72,8 @@ curl --retry 30 --ssl-reqd -s $url | python <(cat <<EOF
 #
 # ...and prints the name and md5sum of the corresponding *.war file.
 
+from __future__ import print_function
+
 import json
 import re
 import sys
@@ -104,14 +106,14 @@ def _cmp(a, b):
 if requested_version:
   for info, version in items:
     if version == requested_version:
-      print '"%s" "%s"' % (info['name'], info['md5Hash'])
+      print('"%s" "%s"' % (info['name'], info['md5Hash']))
       sys.exit(0)
-  print >> sys.stderr, 'No such Gerrit version: %s' % requested_version
+  print('No such Gerrit version: %s' % requested_version, file=sys.stderr)
   sys.exit(1)
 
 items.sort(cmp=_cmp)
 for x in items:
-  print '"%s" "%s"' % (x[0]['name'], x[0]['md5Hash'])
+  print('"%s" "%s"' % (x[0]['name'], x[0]['md5Hash']))
   sys.exit(0)
 EOF
 ) "$version" | xargs | while read name md5; do

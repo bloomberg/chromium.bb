@@ -38,6 +38,8 @@ One gotcha: 'repo upload' will always attempt to use the ssh interface to talk
 to gerrit.
 """
 
+from __future__ import print_function
+
 import collections
 import errno
 import netrc
@@ -363,7 +365,7 @@ class GerritTestCase(unittest.TestCase):
       # Announce that gerrit didn't shut down cleanly.
       msg = 'Test gerrit server (pid=%d) did not shut down cleanly.' % (
           gerrit_instance.gerrit_pid)
-      print >> sys.stderr, msg
+      print(msg, file=sys.stderr)
 
   @classmethod
   def tearDownClass(cls):

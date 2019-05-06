@@ -17,6 +17,8 @@ the watchers for files given on the command line. This is useful to verify
 changes to WATCHLISTS files.
 """
 
+from __future__ import print_function
+
 import logging
 import os
 import re
@@ -126,12 +128,12 @@ class Watchlists(object):
 def main(argv):
   # Confirm that watchlists can be parsed and spew out the watchers
   if len(argv) < 2:
-    print "Usage (from the base of repo):"
-    print "  %s [file-1] [file-2] ...." % argv[0]
+    print("Usage (from the base of repo):")
+    print("  %s [file-1] [file-2] ...." % argv[0])
     return 1
   wl = Watchlists(os.getcwd())
   watchers = wl.GetWatchersForPaths(argv[1:])
-  print watchers
+  print(watchers)
 
 
 if __name__ == '__main__':

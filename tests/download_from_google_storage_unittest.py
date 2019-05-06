@@ -6,6 +6,8 @@
 
 """Unit tests for download_from_google_storage.py."""
 
+from __future__ import print_function
+
 import optparse
 import os
 import Queue
@@ -77,11 +79,11 @@ class ChangedWorkingDirectory(object):
 
   def __enter__(self):
     self._old_cwd = os.getcwd()
-    print "Enter directory = ", self._working_directory
+    print("Enter directory = ", self._working_directory)
     os.chdir(self._working_directory)
 
   def __exit__(self, *_):
-    print "Enter directory = ", self._old_cwd
+    print("Enter directory = ", self._old_cwd)
     os.chdir(self._old_cwd)
 
 

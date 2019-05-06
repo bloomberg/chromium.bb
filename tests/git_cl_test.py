@@ -1192,7 +1192,7 @@ class TestGitCl(TestCase):
           short_hostname=short_hostname,
           labels=labels)
     # Uncomment when debugging.
-    # print '\n'.join(map(lambda x: '%2i: %s' % x, enumerate(self.calls)))
+    # print('\n'.join(map(lambda x: '%2i: %s' % x, enumerate(self.calls))))
     git_cl.main(['upload'] + upload_args)
 
   def test_gerrit_upload_without_change_id(self):

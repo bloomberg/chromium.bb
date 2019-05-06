@@ -10,6 +10,8 @@ and safer, and avoids errors that can cause slow goma builds or swap-storms
 on non-goma builds.
 """
 
+from __future__ import print_function
+
 import multiprocessing
 import os
 import re
@@ -108,4 +110,4 @@ for i in range(len(args)):
   if (i == 0 and sys.platform.startswith('win')) or ' ' in args[i]:
     args[i] = '"%s"' % args[i].replace('"', '\\"')
 
-print ' '.join(args)
+print(' '.join(args))

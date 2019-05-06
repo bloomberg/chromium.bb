@@ -6,7 +6,7 @@
 setlocal
 
 REM Set unique build ID.
-FOR /f "usebackq tokens=*" %%a in (`python -c "import uuid; print uuid.uuid4()"`) do set AUTONINJA_BUILD_ID=%%a
+FOR /f "usebackq tokens=*" %%a in (`python -c "from __future__ import print_function; import uuid; print(uuid.uuid4())"`) do set AUTONINJA_BUILD_ID=%%a
 
 REM If a build performance summary has been requested then also set NINJA_STATUS
 REM to trigger more verbose status updates. In particular this makes it possible
