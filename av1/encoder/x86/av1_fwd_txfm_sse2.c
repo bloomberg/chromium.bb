@@ -359,7 +359,8 @@ static void fdct8x16_new_sse2(const __m128i *input, __m128i *output,
   output[15] = x6[15];
 }
 
-void fdct8x32_new_sse2(const __m128i *input, __m128i *output, int8_t cos_bit) {
+void av1_fdct8x32_new_sse2(const __m128i *input, __m128i *output,
+                           int8_t cos_bit) {
   const int32_t *cospi = cospi_arr(cos_bit);
   const __m128i __rounding = _mm_set1_epi32(1 << (cos_bit - 1));
 
@@ -682,7 +683,8 @@ void fdct8x32_new_sse2(const __m128i *input, __m128i *output, int8_t cos_bit) {
   output[31] = x8[31];
 }
 
-void fdct8x64_new_sse2(const __m128i *input, __m128i *output, int8_t cos_bit) {
+void av1_fdct8x64_new_sse2(const __m128i *input, __m128i *output,
+                           int8_t cos_bit) {
   const int32_t *cospi = cospi_arr(cos_bit);
   const __m128i __rounding = _mm_set1_epi32(1 << (cos_bit - 1));
 
@@ -2106,7 +2108,7 @@ static const transform_1d_sse2 row_txfm8x16_arr[TX_TYPES] = {
 };
 
 static const transform_1d_sse2 row_txfm8x32_arr[TX_TYPES] = {
-  fdct8x32_new_sse2,       // DCT_DCT
+  av1_fdct8x32_new_sse2,   // DCT_DCT
   NULL,                    // ADST_DCT
   NULL,                    // DCT_ADST
   NULL,                    // ADST_ADST
@@ -2117,7 +2119,7 @@ static const transform_1d_sse2 row_txfm8x32_arr[TX_TYPES] = {
   NULL,                    // FLIPADST_ADST
   fidentity8x32_new_sse2,  // IDTX
   fidentity8x32_new_sse2,  // V_DCT
-  fdct8x32_new_sse2,       // H_DCT
+  av1_fdct8x32_new_sse2,   // H_DCT
   NULL,                    // V_ADST
   NULL,                    // H_ADST
   NULL,                    // V_FLIPADST
@@ -2783,7 +2785,7 @@ void av1_lowbd_fwd_txfm2d_64x16_sse2(const int16_t *input, int32_t *output,
   const int width = tx_size_wide[tx_size];
   const int height = tx_size_high[tx_size];
   const transform_1d_sse2 col_txfm = fdct8x16_new_sse2;
-  const transform_1d_sse2 row_txfm = fdct8x64_new_sse2;
+  const transform_1d_sse2 row_txfm = av1_fdct8x64_new_sse2;
   const int width_div8 = (width >> 3);
   const int height_div8 = (height >> 3);
 
@@ -2824,7 +2826,7 @@ void av1_lowbd_fwd_txfm2d_16x64_sse2(const int16_t *input, int32_t *output,
   const int cos_bit_row = av1_fwd_cos_bit_row[txw_idx][txh_idx];
   const int width = tx_size_wide[tx_size];
   const int height = tx_size_high[tx_size];
-  const transform_1d_sse2 col_txfm = fdct8x64_new_sse2;
+  const transform_1d_sse2 col_txfm = av1_fdct8x64_new_sse2;
   const transform_1d_sse2 row_txfm = fdct8x16_new_sse2;
   const int width_div8 = (width >> 3);
   const int height_div8 = (height >> 3);

@@ -200,7 +200,7 @@ static void lowbd_fwd_txfm2d_64x64_sse4_1(const int16_t *input, int32_t *output,
   const int cos_bit_row = av1_fwd_cos_bit_row[txw_idx][txh_idx];
   const int width = tx_size_wide[tx_size];
   const int height = tx_size_high[tx_size];
-  const transform_1d_sse2 col_txfm = fdct8x64_new_sse2;
+  const transform_1d_sse2 col_txfm = av1_fdct8x64_new_sse2;
   const int width_div8 = (width >> 3);
   const int height_div8 = (height >> 3);
 
@@ -295,7 +295,7 @@ static void lowbd_fwd_txfm2d_32x64_sse4_1(const int16_t *input, int32_t *output,
   const int cos_bit_row = av1_fwd_cos_bit_row[txw_idx][txh_idx];
   const int width = tx_size_wide[tx_size];
   const int height = tx_size_high[tx_size];
-  const transform_1d_sse2 col_txfm = fdct8x64_new_sse2;
+  const transform_1d_sse2 col_txfm = av1_fdct8x64_new_sse2;
   const int width_div8 = (width >> 3);
   const int height_div8 = (height >> 3);
 
