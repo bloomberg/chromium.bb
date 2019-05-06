@@ -53,7 +53,7 @@ class CONTENT_EXPORT DisjointRangeLockManager : public ScopesLockManager {
   // * range disjoint from other lock ranges (which is an implementation
   //   invariant).
   bool AcquireLocks(base::flat_set<ScopeLockRequest> lock_requests,
-                    base::WeakPtr<ScopesLocksHolder> locks_receiever,
+                    base::WeakPtr<ScopesLocksHolder> locks_holder,
                     LocksAquiredCallback callback) override;
 
   // Remove the given lock range at the given level. The lock range must not be
@@ -61,16 +61,18 @@ class CONTENT_EXPORT DisjointRangeLockManager : public ScopesLockManager {
   void RemoveLockRange(int level, const ScopeLockRange& range);
 
  private:
-  using LockAquiredCallback = base::OnceCallback<void(ScopeLock)>;
   struct LockRequest {
    public:
     LockRequest();
     LockRequest(LockRequest&&) noexcept;
-    LockRequest(LockType type, LockAquiredCallback callback);
+    LockRequest(LockType type,
+                base::WeakPtr<ScopesLocksHolder> locks_holder,
+                base::OnceClosure callback);
     ~LockRequest();
 
     LockType requested_type = LockType::kShared;
-    LockAquiredCallback callback;
+    base::WeakPtr<ScopesLocksHolder> locks_holder;
+    base::OnceClosure acquired_callback;
   };
 
   // Represents a lock, which has a range and a level. To support shared access,
@@ -99,7 +101,9 @@ class CONTENT_EXPORT DisjointRangeLockManager : public ScopesLockManager {
 
   using LockLevelMap = base::flat_map<ScopeLockRange, Lock>;
 
-  bool AcquireLock(ScopeLockRequest request, LockAquiredCallback callback);
+  bool AcquireLock(ScopeLockRequest request,
+                   base::WeakPtr<ScopesLocksHolder> locks_holder,
+                   base::OnceClosure acquired_callback);
 
   void LockReleased(int level, ScopeLockRange range);
 

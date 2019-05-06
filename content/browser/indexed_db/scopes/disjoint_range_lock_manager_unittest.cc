@@ -234,6 +234,8 @@ TEST_F(DisjointRangeLockManagerTest, InvalidRequests) {
   ScopesLocksHolder locks_holder;
   ScopeLockRange range1 = {IntegerKey(0), IntegerKey(2)};
   ScopeLockRange range2 = {IntegerKey(1), IntegerKey(3)};
+
+  // Invalid because the ranges intersect.
   EXPECT_FALSE(lock_manager.AcquireLocks(
       {{0, range1, ScopesLockManager::LockType::kShared},
        {0, range2, ScopesLockManager::LockType::kShared}},
@@ -241,21 +243,27 @@ TEST_F(DisjointRangeLockManagerTest, InvalidRequests) {
   EXPECT_TRUE(locks_holder.locks.empty());
   EXPECT_EQ(0ll, lock_manager.LocksHeldForTesting());
   EXPECT_EQ(0ll, lock_manager.RequestsWaitingForTesting());
+
+  // Invalid level.
   EXPECT_FALSE(lock_manager.AcquireLocks(
       {{-1, range1, ScopesLockManager::LockType::kShared}},
       locks_holder.AsWeakPtr(), base::DoNothing::Once()));
   EXPECT_TRUE(locks_holder.locks.empty());
   EXPECT_EQ(0ll, lock_manager.LocksHeldForTesting());
   EXPECT_EQ(0ll, lock_manager.RequestsWaitingForTesting());
+
+  // Invalid level.
   EXPECT_FALSE(lock_manager.AcquireLocks(
       {{4, range1, ScopesLockManager::LockType::kShared}},
       locks_holder.AsWeakPtr(), base::DoNothing::Once()));
   EXPECT_TRUE(locks_holder.locks.empty());
   EXPECT_EQ(0ll, lock_manager.LocksHeldForTesting());
   EXPECT_EQ(0ll, lock_manager.RequestsWaitingForTesting());
+
+  // Invalid range.
   ScopeLockRange range3 = {IntegerKey(2), IntegerKey(1)};
   EXPECT_FALSE(lock_manager.AcquireLocks(
-      {{0, range1, ScopesLockManager::LockType::kShared}},
+      {{0, range3, ScopesLockManager::LockType::kShared}},
       locks_holder.AsWeakPtr(), base::DoNothing::Once()));
   EXPECT_TRUE(locks_holder.locks.empty());
   EXPECT_EQ(0ll, lock_manager.LocksHeldForTesting());
