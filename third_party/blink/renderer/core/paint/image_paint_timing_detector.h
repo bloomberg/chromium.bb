@@ -34,10 +34,8 @@ class ImageRecord : public base::SupportsWeakPtr<ImageRecord> {
   unsigned frame_index = 0;
   // The time of the first paint after fully loaded.
   base::TimeTicks paint_time = base::TimeTicks();
+  WeakPersistent<const ImageResourceContent> cached_image;
   bool loaded = false;
-#ifndef NDEBUG
-  String image_url = "";
-#endif
 };
 
 typedef std::pair<DOMNodeId, const ImageResourceContent*> BackgroundImageId;
@@ -64,12 +62,9 @@ class CORE_EXPORT ImageRecordsManager {
   void SetNodeReattachedIfNeeded(const DOMNodeId& visible_node_id);
 
   void RecordInvisibleNode(const DOMNodeId&);
-  void RecordVisibleNode(const DOMNodeId&,
-                         const uint64_t& visual_size,
-                         const String& url);
+  void RecordVisibleNode(const DOMNodeId&, const uint64_t& visual_size);
   void RecordVisibleNode(const BackgroundImageId& background_image_id,
-                         const uint64_t& visual_size,
-                         const String& url);
+                         const uint64_t& visual_size);
   size_t CountVisibleNodes() const { return visible_node_map_.size(); }
   size_t CountInvisibleNodes() const { return invisible_node_ids_.size(); }
   bool IsRecordedVisibleNode(const DOMNodeId& node_id) const {
@@ -113,8 +108,7 @@ class CORE_EXPORT ImageRecordsManager {
   std::unique_ptr<ImageRecord> CreateImageRecord(
       const DOMNodeId&,
       const ImageResourceContent* cached_image,
-      const uint64_t& visual_size,
-      const String& url);
+      const uint64_t& visual_size);
   void QueueToMeasurePaintTime(base::WeakPtr<ImageRecord>&,
                                unsigned current_frame_index);
   void SetLoaded(base::WeakPtr<ImageRecord>&);
