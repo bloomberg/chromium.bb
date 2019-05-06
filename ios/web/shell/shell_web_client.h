@@ -28,6 +28,7 @@ class ShellWebClient : public WebClient {
       int resource_id,
       ui::ScaleFactor scale_factor) const override;
   base::RefCountedMemory* GetDataResourceBytes(int resource_id) const override;
+  bool IsDataResourceGzipped(int resource_id) const override;
   std::unique_ptr<service_manager::Service> HandleServiceRequest(
       const std::string& service_name,
       service_manager::mojom::ServiceRequest request) override;

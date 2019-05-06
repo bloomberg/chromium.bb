@@ -85,6 +85,10 @@ base::RefCountedMemory* ShellWebClient::GetDataResourceBytes(
       resource_id);
 }
 
+bool ShellWebClient::IsDataResourceGzipped(int resource_id) const {
+  return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
+}
+
 std::unique_ptr<service_manager::Service> ShellWebClient::HandleServiceRequest(
     const std::string& service_name,
     service_manager::mojom::ServiceRequest request) {

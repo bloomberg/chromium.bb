@@ -34,6 +34,7 @@ class ChromeWebClient : public web::WebClient {
       int resource_id,
       ui::ScaleFactor scale_factor) const override;
   base::RefCountedMemory* GetDataResourceBytes(int resource_id) const override;
+  bool IsDataResourceGzipped(int resource_id) const override;
   base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
       base::StringPiece name) override;
   void GetAdditionalWebUISchemes(

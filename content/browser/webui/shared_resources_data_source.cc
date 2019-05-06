@@ -43,11 +43,7 @@ namespace content {
 
 namespace {
 
-struct IdrGzipped {
-  int idr;
-  bool gzipped;
-};
-using ResourcesMap = std::unordered_map<std::string, IdrGzipped>;
+using ResourcesMap = std::unordered_map<std::string, int>;
 
 #if defined(OS_CHROMEOS)
 const char kPolymerHtml[] = "polymer/v1_0/polymer/polymer.html";
@@ -191,10 +187,8 @@ bool ShouldIgnore(std::string resource) {
 
 void AddResource(const std::string& path,
                  int resource_id,
-                 bool gzipped,
                  ResourcesMap* resources_map) {
-  IdrGzipped idr_gzipped = {resource_id, gzipped};
-  if (!resources_map->insert(std::make_pair(path, idr_gzipped)).second)
+  if (!resources_map->insert(std::make_pair(path, resource_id)).second)
     NOTREACHED() << "Redefinition of '" << path << "'";
 }
 
@@ -210,14 +204,14 @@ void AddResourcesToMap(ResourcesMap* resources_map) {
       continue;
 #endif  // !defined(OS_ANDROID)
 
-    AddResource(resource.name, resource.value, resource.gzipped, resources_map);
+    AddResource(resource.name, resource.value, resources_map);
 
     for (auto it = aliases.begin(); it != aliases.end(); ++it) {
       if (base::StartsWith(resource.name, it->first,
                            base::CompareCase::SENSITIVE)) {
         std::string resource_name(resource.name);
         AddResource(it->second + resource_name.substr(it->first.length()),
-                    resource.value, resource.gzipped, resources_map);
+                    resource.value, resources_map);
       }
     }
   }
@@ -228,7 +222,7 @@ void AddResourcesToMap(ResourcesMap* resources_map) {
 // alias. Note that resources which do not have an alias will not be added.
 void AddAliasedResourcesToMap(
     const std::map<int, std::string>& resource_aliases,
-    const GzippedGritResourceMap resources[],
+    const GritResourceMap resources[],
     size_t resources_size,
     ResourcesMap* resources_map) {
   for (size_t i = 0; i < resources_size; ++i) {
@@ -238,7 +232,7 @@ void AddAliasedResourcesToMap(
     if (it == resource_aliases.end())
       continue;
 
-    AddResource(it->second, resource.value, resource.gzipped, resources_map);
+    AddResource(it->second, resource.value, resources_map);
   }
 }
 
@@ -266,7 +260,7 @@ const ResourcesMap& GetResourcesMap() {
 int GetIdrForPath(const std::string& path) {
   const ResourcesMap& resources_map = GetResourcesMap();
   auto it = resources_map.find(path);
-  return it != resources_map.end() ? it->second.idr : -1;
+  return it != resources_map.end() ? it->second : -1;
 }
 
 }  // namespace
@@ -409,9 +403,7 @@ SharedResourcesDataSource::GetAccessControlAllowOriginForOrigin(
 }
 
 bool SharedResourcesDataSource::IsGzipped(const std::string& path) const {
-  auto it = GetResourcesMap().find(path);
-  DCHECK(it != GetResourcesMap().end()) << "missing shared resource: " << path;
-  return it != GetResourcesMap().end() ? it->second.gzipped : false;
+  return GetContentClient()->IsDataResourceGzipped(GetIdrForPath(path));
 }
 
 #if defined(OS_CHROMEOS)

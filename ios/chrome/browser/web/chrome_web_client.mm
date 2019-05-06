@@ -151,6 +151,10 @@ base::RefCountedMemory* ChromeWebClient::GetDataResourceBytes(
       resource_id);
 }
 
+bool ChromeWebClient::IsDataResourceGzipped(int resource_id) const {
+  return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
+}
+
 base::Optional<service_manager::Manifest>
 ChromeWebClient::GetServiceManifestOverlay(base::StringPiece name) {
   if (name == web::mojom::kBrowserServiceName)
