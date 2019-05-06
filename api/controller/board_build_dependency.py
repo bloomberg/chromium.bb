@@ -14,8 +14,6 @@ from __future__ import print_function
 from chromite.lib import portage_util
 from chromite.service import dependency
 
-from google.protobuf import json_format
-
 
 def AugmentDepGraphProtoFromJsonMap(json_map, graph):
   """Augment package deps from |json_map| to graph object.
@@ -48,6 +46,7 @@ def AugmentDepGraphProtoFromJsonMap(json_map, graph):
       source_path = package_dep_info.dependency_source_paths.add()
       source_path.path = path
 
+
 def GetBuildDependencyGraph(input_proto, output_proto):
   """Create the build dependency graph.
 
@@ -56,18 +55,8 @@ def GetBuildDependencyGraph(input_proto, output_proto):
     output_proto (GetBuildDependencyGraphResponse): The empty output message.
   """
   board = input_proto.build_target.name
-  output_path = input_proto.output_path
 
   assert board, 'Missing build target name'
-  assert output_path, 'Missing output file'
-
 
   json_map = dependency.GetBuildDependency(board)
   AugmentDepGraphProtoFromJsonMap(json_map, output_proto.dep_graph)
-
-  with open(output_path, 'w') as f:
-    f.write(
-        json_format.MessageToJson(output_proto.dep_graph,
-                                  including_default_value_fields=True))
-
-  output_proto.build_dependency_graph_file = output_path
