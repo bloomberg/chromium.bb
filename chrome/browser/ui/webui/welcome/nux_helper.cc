@@ -52,6 +52,10 @@ bool CanShowGoogleAppModule(const policy::PolicyMap& policies) {
   return true;
 }
 
+bool CanShowGoogleAppModuleForTesting(const policy::PolicyMap& policies) {
+  return CanShowGoogleAppModule(policies);
+}
+
 bool CanShowNTPBackgroundModule(const policy::PolicyMap& policies,
                                 Profile* profile) {
   // We can't set the background if the NTP is something other than Google.
