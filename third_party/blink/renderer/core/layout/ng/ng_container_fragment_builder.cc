@@ -129,7 +129,8 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
     }
   }
 
-  if (child_offset.block_offset < LayoutUnit())
+  if (child_offset.block_offset < LayoutUnit() &&
+      !child->IsOutOfFlowPositioned())
     may_have_descendant_above_block_start_ = true;
 
   if (!IsParallelWritingMode(child->Style().GetWritingMode(),
