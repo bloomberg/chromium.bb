@@ -8,14 +8,15 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 
 class Browser;
-class ToolbarActionsBar;
+class ExtensionsContainer;
 
 // Button in the toolbar that provides access to the corresponding extensions
 // menu.
 class ExtensionsToolbarButton : public ToolbarButton,
                                 public views::ButtonListener {
  public:
-  ExtensionsToolbarButton(Browser* browser, ToolbarActionsBar* main_bar);
+  ExtensionsToolbarButton(Browser* browser,
+                          ExtensionsContainer* extensions_container);
 
   void UpdateIcon();
 
@@ -24,7 +25,7 @@ class ExtensionsToolbarButton : public ToolbarButton,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   Browser* const browser_;
-  ToolbarActionsBar* const main_bar_;
+  ExtensionsContainer* const extensions_container_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsToolbarButton);
 };

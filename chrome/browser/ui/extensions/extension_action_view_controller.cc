@@ -24,9 +24,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/accelerator_priority.h"
 #include "chrome/browser/ui/extensions/extension_action_platform_delegate.h"
+#include "chrome/browser/ui/extensions/extensions_container.h"
 #include "chrome/browser/ui/extensions/icon_with_badge_image_source.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
-#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/browser/extension_host.h"
@@ -46,13 +47,13 @@ ExtensionActionViewController::ExtensionActionViewController(
     const extensions::Extension* extension,
     Browser* browser,
     ExtensionAction* extension_action,
-    ToolbarActionsBar* main_bar,
+    ExtensionsContainer* extensions_container,
     bool in_overflow_mode)
     : extension_(extension),
       browser_(browser),
       in_overflow_mode_(in_overflow_mode),
       extension_action_(extension_action),
-      main_bar_(main_bar),
+      extensions_container_(extensions_container),
       popup_host_(nullptr),
       view_delegate_(nullptr),
       platform_delegate_(ExtensionActionPlatformDelegate::Create(this)),
@@ -61,7 +62,7 @@ ExtensionActionViewController::ExtensionActionViewController(
           extensions::ExtensionRegistry::Get(browser_->profile())),
       popup_host_observer_(this),
       weak_factory_(this) {
-  DCHECK(main_bar);
+  DCHECK(extensions_container);
   DCHECK(extension_action);
   DCHECK(extension_action->action_type() == ActionInfo::TYPE_PAGE ||
          extension_action->action_type() == ActionInfo::TYPE_BROWSER);
@@ -208,10 +209,10 @@ ui::MenuModel* ExtensionActionViewController::GetContextMenu() {
   // The extension visibility always refers to the corresponding action on the
   // main bar.
   ToolbarActionViewController* const action =
-      main_bar_->GetActionForId(GetId());
-  if (main_bar_->popped_out_action() == action) {
+      extensions_container_->GetActionForId(GetId());
+  if (extensions_container_->GetPoppedOutAction() == action) {
     visibility = extensions::ExtensionContextMenuModel::TRANSITIVELY_VISIBLE;
-  } else if (!main_bar_->IsActionVisibleOnMainBar(action)) {
+  } else if (!extensions_container_->IsActionVisibleOnToolbar(action)) {
     visibility = extensions::ExtensionContextMenuModel::OVERFLOWED;
   }
 
@@ -222,8 +223,8 @@ ui::MenuModel* ExtensionActionViewController::GetContextMenu() {
 }
 
 void ExtensionActionViewController::OnContextMenuClosed() {
-  if (main_bar_->popped_out_action() == this && !IsShowingPopup())
-    main_bar_->UndoPopOut();
+  if (extensions_container_->GetPoppedOutAction() == this && !IsShowingPopup())
+    extensions_container_->UndoPopOut();
 }
 
 bool ExtensionActionViewController::ExecuteAction(bool by_user) {
@@ -354,8 +355,12 @@ ExtensionActionViewController::GetIconImageSourceForTesting(
 
 ExtensionActionViewController*
 ExtensionActionViewController::GetPreferredPopupViewController() {
+  // TODO(pbos): Remove this guard when implementing GetActionForId() in
+  // ExtensionsToolbarContainer.
+  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
+    return this;
   return static_cast<ExtensionActionViewController*>(
-      main_bar_->GetActionForId(GetId()));
+      extensions_container_->GetActionForId(GetId()));
 }
 
 bool ExtensionActionViewController::TriggerPopupWithUrl(
@@ -369,7 +374,7 @@ bool ExtensionActionViewController::TriggerPopupWithUrl(
 
   // Always hide the current popup, even if it's not owned by this extension.
   // Only one popup should be visible at a time.
-  main_bar_->HideActivePopup();
+  extensions_container_->HideActivePopup();
 
   std::unique_ptr<extensions::ExtensionViewHost> host =
       extensions::ExtensionViewHostFactory::CreatePopupHost(popup_url,
@@ -379,11 +384,11 @@ bool ExtensionActionViewController::TriggerPopupWithUrl(
 
   popup_host_ = host.get();
   popup_host_observer_.Add(popup_host_);
-  main_bar_->SetPopupOwner(this);
+  extensions_container_->SetPopupOwner(this);
 
-  if (!main_bar_->IsActionVisibleOnMainBar(this)) {
-    main_bar_->CloseOverflowMenuIfOpen();
-    main_bar_->PopOutAction(
+  if (!extensions_container_->IsActionVisibleOnToolbar(this)) {
+    extensions_container_->CloseOverflowMenuIfOpen();
+    extensions_container_->PopOutAction(
         this, show_action == SHOW_POPUP_AND_INSPECT,
         base::Bind(&ExtensionActionViewController::ShowPopup,
                    weak_factory_.GetWeakPtr(), base::Passed(std::move(host)),
@@ -411,10 +416,10 @@ void ExtensionActionViewController::ShowPopup(
 void ExtensionActionViewController::OnPopupClosed() {
   popup_host_observer_.Remove(popup_host_);
   popup_host_ = nullptr;
-  main_bar_->SetPopupOwner(nullptr);
-  if (main_bar_->popped_out_action() == this &&
+  extensions_container_->SetPopupOwner(nullptr);
+  if (extensions_container_->GetPoppedOutAction() == this &&
       !view_delegate_->IsMenuRunning()) {
-    main_bar_->UndoPopOut();
+    extensions_container_->UndoPopOut();
   }
   view_delegate_->OnPopupClosed();
 }

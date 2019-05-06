@@ -41,6 +41,7 @@ class AvatarToolbarButton;
 class BrowserAppMenuButton;
 class Browser;
 class ExtensionsToolbarButton;
+class ExtensionsToolbarContainer;
 class HomeButton;
 class ReloadButton;
 class ToolbarButton;
@@ -129,9 +130,10 @@ class ToolbarView : public views::AccessiblePaneView,
   // Accessors.
   Browser* browser() const { return browser_; }
   BrowserActionsContainer* browser_actions() const { return browser_actions_; }
-  ExtensionsToolbarButton* extensions_button() const {
-    return extensions_button_;
+  ExtensionsToolbarContainer* extensions_container() const {
+    return extensions_container_;
   }
+  ExtensionsToolbarButton* GetExtensionsButton() const;
   ToolbarButton* back_button() const { return back_; }
   ReloadButton* reload_button() const { return reload_; }
   LocationBarView* location_bar() const { return location_bar_; }
@@ -260,7 +262,7 @@ class ToolbarView : public views::AccessiblePaneView,
   CustomTabBarView* custom_tab_bar_ = nullptr;
   LocationBarView* location_bar_ = nullptr;
   BrowserActionsContainer* browser_actions_ = nullptr;
-  ExtensionsToolbarButton* extensions_button_ = nullptr;
+  ExtensionsToolbarContainer* extensions_container_ = nullptr;
   media_router::CastToolbarButton* cast_ = nullptr;
   ToolbarPageActionIconContainerView* toolbar_page_action_container_ = nullptr;
   AvatarToolbarButton* avatar_ = nullptr;

@@ -37,7 +37,7 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
                                base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, 0);
     BrowserView::GetBrowserViewForBrowser(browser())
         ->toolbar()
-        ->extensions_button()
+        ->GetExtensionsButton()
         ->OnMousePressed(click_event);
   }
 

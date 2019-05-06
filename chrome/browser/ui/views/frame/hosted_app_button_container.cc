@@ -53,7 +53,7 @@ class HostedAppToolbarActionsBar : public ToolbarActionsBar {
   size_t GetIconCount() const override {
     // Only show an icon when an extension action is popped out due to
     // activation, and none otherwise.
-    return popped_out_action() ? 1 : 0;
+    return GetPoppedOutAction() ? 1 : 0;
   }
 
   int GetMinimumWidth() const override {

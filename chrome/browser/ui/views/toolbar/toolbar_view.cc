@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
+#include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
@@ -221,14 +222,10 @@ void ToolbarView::Init() {
   home_->Init();
   home_->SizeToPreferredSize();
 
-  // No master container for this one (it is master).
-  BrowserActionsContainer* main_container = nullptr;
-  browser_actions_ =
-      new BrowserActionsContainer(browser_, main_container, this);
-
   if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
-    extensions_button_ = new ExtensionsToolbarButton(
-        browser_, browser_actions_->toolbar_actions_bar());
+    extensions_container_ = new ExtensionsToolbarContainer(browser_);
+  } else {
+    browser_actions_ = new BrowserActionsContainer(browser_, nullptr, this);
   }
 
   if (media_router::MediaRouterEnabled(browser_->profile()))
@@ -266,10 +263,11 @@ void ToolbarView::Init() {
   AddChildView(reload_);
   AddChildView(home_);
   AddChildView(location_bar_);
-  AddChildView(browser_actions_);
+  if (browser_actions_)
+    AddChildView(browser_actions_);
 
-  if (extensions_button_)
-    AddChildView(extensions_button_);
+  if (extensions_container_)
+    AddChildView(extensions_container_);
 
   if (cast_)
     AddChildView(cast_);
@@ -328,6 +326,9 @@ void ToolbarView::Update(WebContents* tab) {
 
   if (browser_actions_)
     browser_actions_->RefreshToolbarActionViews();
+
+  if (extensions_container_)
+    extensions_container_->UpdateAllIcons();
 
   if (reload_)
     reload_->set_menu_enabled(chrome::IsDebuggerAttachedToCurrentTab(browser_));
@@ -421,6 +422,10 @@ AvatarToolbarButton* ToolbarView::GetAvatarToolbarButton() {
   return nullptr;
 }
 
+ExtensionsToolbarButton* ToolbarView::GetExtensionsButton() const {
+  return extensions_container_->extensions_button();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, views::MenuButtonListener implementation:
 
@@ -465,7 +470,8 @@ base::Optional<int> ToolbarView::GetMaxBrowserActionsWidth() const {
   // The browser actions container is allowed to grow, but only up until the
   // omnibox reaches its preferred size. So its maximum allowed width is its
   // current size, plus any that the omnibox could give up.
-  return std::max(0, browser_actions_->width() +
+  return std::max(0, (browser_actions_ ? browser_actions_->width()
+                                       : extensions_container_->width()) +
                          (location_bar_->width() -
                           location_bar_->GetPreferredSize().width()));
 }
@@ -657,8 +663,10 @@ void ToolbarView::OnTouchUiChanged() {
     layout_manager_->SetDefaultChildMargins(gfx::Insets(0, default_margin));
     *location_bar_->GetProperty(views::kMarginsKey) =
         gfx::Insets(0, location_bar_margin);
-    *browser_actions_->GetProperty(views::kInternalPaddingKey) =
-        gfx::Insets(0, location_bar_margin);
+    if (browser_actions_) {
+      *browser_actions_->GetProperty(views::kInternalPaddingKey) =
+          gfx::Insets(0, location_bar_margin);
+    }
 
     LoadImages();
     PreferredSizeChanged();
@@ -693,10 +701,13 @@ void ToolbarView::InitLayout() {
   location_bar_->SetProperty(views::kMarginsKey,
                              new gfx::Insets(0, location_bar_margin));
 
-  layout_manager_->SetFlexForView(browser_actions_, browser_actions_flex_rule);
-  browser_actions_->SetProperty(views::kMarginsKey, new gfx::Insets(0, 0));
-  browser_actions_->SetProperty(views::kInternalPaddingKey,
-                                new gfx::Insets(0, location_bar_margin));
+  if (browser_actions_) {
+    layout_manager_->SetFlexForView(browser_actions_,
+                                    browser_actions_flex_rule);
+    browser_actions_->SetProperty(views::kMarginsKey, new gfx::Insets(0, 0));
+    browser_actions_->SetProperty(views::kInternalPaddingKey,
+                                  new gfx::Insets(0, location_bar_margin));
+  }
 
   LayoutCommon();
 }
@@ -799,8 +810,10 @@ void ToolbarView::LoadImages() {
   const SkColor disabled_color =
       tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE);
 
-  browser_actions_->SetSeparatorColor(
-      tp->GetColor(ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR));
+  if (browser_actions_) {
+    browser_actions_->SetSeparatorColor(
+        tp->GetColor(ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR));
+  }
 
   const bool touch_ui = ui::MaterialDesignController::touch_ui();
 
@@ -823,8 +836,9 @@ void ToolbarView::LoadImages() {
   home_->SetImage(views::Button::STATE_NORMAL,
                   gfx::CreateVectorIcon(home_image, normal_color));
 
-  if (extensions_button_)
-    extensions_button_->UpdateIcon();
+  if (extensions_container_)
+    extensions_container_->UpdateAllIcons();
+
   if (cast_)
     cast_->UpdateIcon();
 

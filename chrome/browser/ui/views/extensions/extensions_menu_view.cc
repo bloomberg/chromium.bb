@@ -40,13 +40,14 @@ gfx::ImageSkia CreateVectorIcon(const gfx::VectorIcon& icon) {
 
 }  // namespace
 
-ExtensionsMenuView::ExtensionsMenuView(views::View* anchor_view,
-                                       Browser* browser,
-                                       ToolbarActionsBar* toolbar_actions_bar)
+ExtensionsMenuView::ExtensionsMenuView(
+    views::View* anchor_view,
+    Browser* browser,
+    ExtensionsContainer* extensions_container)
     : BubbleDialogDelegateView(anchor_view,
                                views::BubbleBorder::Arrow::TOP_RIGHT),
       browser_(browser),
-      toolbar_actions_bar_(toolbar_actions_bar),
+      extensions_container_(extensions_container),
       model_(ToolbarActionsModel::Get(browser_->profile())),
       model_observer_(this) {
   model_observer_.Add(model_);
@@ -120,7 +121,7 @@ ExtensionsMenuView::CreateExtensionButtonsContainer() {
   std::vector<std::unique_ptr<ToolbarActionViewController>> wants_access;
   std::vector<std::unique_ptr<ToolbarActionViewController>> accessing_site_data;
   for (auto action_id : model_->action_ids()) {
-    auto action = model_->CreateActionForId(browser_, toolbar_actions_bar_,
+    auto action = model_->CreateActionForId(browser_, extensions_container_,
                                             false, action_id);
     switch (action->GetPageInteractionStatus(web_contents)) {
       case ToolbarActionViewController::PageInteractionStatus::kNone:
@@ -227,10 +228,10 @@ void ExtensionsMenuView::OnToolbarModelInitialized() {
 // static
 void ExtensionsMenuView::ShowBubble(views::View* anchor_view,
                                     Browser* browser,
-                                    ToolbarActionsBar* toolbar_actions_bar) {
+                                    ExtensionsContainer* extensions_container) {
   DCHECK(!g_extensions_dialog);
   g_extensions_dialog =
-      new ExtensionsMenuView(anchor_view, browser, toolbar_actions_bar);
+      new ExtensionsMenuView(anchor_view, browser, extensions_container);
   views::BubbleDialogDelegateView::CreateBubble(g_extensions_dialog)->Show();
 }
 

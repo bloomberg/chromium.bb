@@ -74,7 +74,7 @@ views::FocusManager* ExtensionsMenuButton::GetFocusManagerForAccelerator() {
 views::View* ExtensionsMenuButton::GetReferenceViewForPopup() {
   return BrowserView::GetBrowserViewForBrowser(browser_)
       ->toolbar()
-      ->extensions_button();
+      ->GetExtensionsButton();
 }
 
 content::WebContents* ExtensionsMenuButton::GetCurrentWebContents() const {

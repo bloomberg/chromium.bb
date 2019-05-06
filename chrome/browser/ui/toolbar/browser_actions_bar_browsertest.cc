@@ -580,9 +580,9 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, RemovePoppedOutAction) {
   toolbar_actions_bar->PopOutAction(toolbar_actions_bar->GetActions()[2], false,
                                     closure);
   EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
-  ASSERT_TRUE(toolbar_actions_bar->popped_out_action());
+  ASSERT_TRUE(toolbar_actions_bar->GetPoppedOutAction());
   EXPECT_EQ(extension3->id(),
-            toolbar_actions_bar->popped_out_action()->GetId());
+            toolbar_actions_bar->GetPoppedOutAction()->GetId());
 
   // Remove extension 2 - there should still be one left in the overflow
   // (extension 2) and one left on the main bar (extension 1).
@@ -590,7 +590,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, RemovePoppedOutAction) {
       extension3->id(), extensions::UnloadedExtensionReason::DISABLE);
   EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(2, browser_actions_bar()->NumberOfBrowserActions());
-  EXPECT_FALSE(toolbar_actions_bar->popped_out_action());
+  EXPECT_FALSE(toolbar_actions_bar->GetPoppedOutAction());
 
   // Add back extension 3, and reduce visible size to 0.
   extension_service()->AddExtension(extension3.get());
@@ -603,16 +603,16 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, RemovePoppedOutAction) {
   toolbar_actions_bar->PopOutAction(toolbar_actions_bar->GetActions()[1], false,
                                     closure);
   EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
-  ASSERT_TRUE(toolbar_actions_bar->popped_out_action());
+  ASSERT_TRUE(toolbar_actions_bar->GetPoppedOutAction());
   EXPECT_EQ(extension2->id(),
-            toolbar_actions_bar->popped_out_action()->GetId());
+            toolbar_actions_bar->GetPoppedOutAction()->GetId());
 
   // Remove extension 2 - the remaining two should both be overflowed.
   extension_service()->UnloadExtension(
       extension2->id(), extensions::UnloadedExtensionReason::DISABLE);
   EXPECT_EQ(0, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(2, browser_actions_bar()->NumberOfBrowserActions());
-  EXPECT_FALSE(toolbar_actions_bar->popped_out_action());
+  EXPECT_FALSE(toolbar_actions_bar->GetPoppedOutAction());
 
   // Finally, set visible count to 1, pop out extension 1, and remove it. There
   // should only be one action left on the bar.
@@ -622,14 +622,14 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, RemovePoppedOutAction) {
   toolbar_actions_bar->PopOutAction(toolbar_actions_bar->GetActions()[1], false,
                                     closure);
   EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
-  ASSERT_TRUE(toolbar_actions_bar->popped_out_action());
+  ASSERT_TRUE(toolbar_actions_bar->GetPoppedOutAction());
   EXPECT_EQ(extension3->id(),
-            toolbar_actions_bar->popped_out_action()->GetId());
+            toolbar_actions_bar->GetPoppedOutAction()->GetId());
   extension_service()->UnloadExtension(
       extension3->id(), extensions::UnloadedExtensionReason::DISABLE);
   EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(1, browser_actions_bar()->NumberOfBrowserActions());
-  EXPECT_FALSE(toolbar_actions_bar->popped_out_action());
+  EXPECT_FALSE(toolbar_actions_bar->GetPoppedOutAction());
 }
 
 // A test that runs in incognito mode.
