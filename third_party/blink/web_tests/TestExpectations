@@ -314,6 +314,9 @@ crbug.com/363609 external/wpt/css/css-transforms/rotateY-180deg-with-overflow-sc
 crbug.com/954591 external/wpt/css/css-transforms/composited-under-rotateY-180deg.html [ Failure ]
 crbug.com/954591 external/wpt/css/css-transforms/composited-under-rotateY-180deg-clip.html [ Failure ]
 
+# LayoutNG fixes this
+crbug.com/408895 external/wpt/css/CSS2/floats/overhanging-float-paint-order.html [ Failure ]
+
 # ====== Paint team owned tests to here ======
 
 crbug.com/922249 virtual/android/fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure Pass ]
