@@ -550,9 +550,24 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
     case HandlerSigninReason::FORCED_SIGNIN_PRIMARY_ACCOUNT:
       flow = "enterprisefsi";
       break;
-    case HandlerSigninReason::FETCH_LST_ONLY:
+    case HandlerSigninReason::FETCH_LST_ONLY: {
+#if defined(OS_WIN)
+      // Treat a sign in request that specifies a gaia id that must be validated
+      // as a reauth request. We only get a gaia id from GCPW when trying to
+      // reauth an existing user on the system.
+      std::string validate_gaia_id;
+      net::GetValueForKeyInQuery(
+          current_url, credential_provider::kValidateGaiaIdSigninPromoParameter,
+          &validate_gaia_id);
+      if (validate_gaia_id.empty()) {
+        flow = "signin";
+      } else {
+        flow = "reauth";
+      }
+#else
       flow = "signin";
-      break;
+#endif
+    } break;
   }
   params.SetString("flow", flow);
 
