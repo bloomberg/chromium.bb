@@ -7770,6 +7770,28 @@ bool Document::IsLazyLoadPolicyEnforced() const {
              mojom::FeaturePolicyFeature::kLazyLoad);
 }
 
+bool Document::IsFocusAllowed() const {
+  if (frame_->IsMainFrame() || LocalFrame::HasTransientUserActivation(frame_))
+    return true;
+
+  // TODO(ekaramad): This method, for now, always returns true. The intent is
+  // for this method to eventually block programmatic focus in certain cases.
+  // The enforcement will be added after metrics are collected
+  // (https://crbug.com/954349).
+  WebFeature uma_type;
+  bool ad = frame_->IsAdSubframe();
+  if (IsSandboxed(WebSandboxFlags::kNavigation)) {
+    uma_type = ad ? WebFeature::kFocusWithoutUserActivationSandboxedAdFrame
+                  : WebFeature::kFocusWithoutUserActivationSandboxedNotAdFrame;
+  } else {
+    uma_type =
+        ad ? WebFeature::kFocusWithoutUserActivationNotSandboxedAdFrame
+           : WebFeature::kFocusWithoutUserActivationNotSandboxedNotAdFrame;
+  }
+  UseCounter::Count(*this, uma_type);
+  return true;
+}
+
 LazyLoadImageObserver& Document::EnsureLazyLoadImageObserver() {
   if (!lazy_load_image_observer_)
     lazy_load_image_observer_ = MakeGarbageCollected<LazyLoadImageObserver>();

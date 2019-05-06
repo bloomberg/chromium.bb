@@ -23046,6 +23046,10 @@ Called by update_net_error_codes.py.-->
   <int value="2879" label="HorizontalScrollbarThumbScrollingWithTouch"/>
   <int value="2880" label="SMSReceiverStart"/>
   <int value="2881" label="V8Animation_Pending_AttributeGetter"/>
+  <int value="2882" label="FocusWithoutUserActivationNotSandboxedNotAdFrame"/>
+  <int value="2883" label="FocusWithoutUserActivationNotSandboxedAdFrame"/>
+  <int value="2884" label="FocusWithoutUserActivationSandboxedNotAdFrame"/>
+  <int value="2885" label="FocusWithoutUserActivationSandboxedAdFrame"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
