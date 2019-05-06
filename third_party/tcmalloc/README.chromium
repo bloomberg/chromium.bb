@@ -119,3 +119,4 @@ Modifications:
 - Add thread-safe support to query and update the heap sampling period
 - Remove use of LINKER_INITIALIZED in page_heap_allocator.h, to enable the
   compiler to optimize away a static constructor
+- Include <atomic> in malloc_extension.h due to std::atomic usage
