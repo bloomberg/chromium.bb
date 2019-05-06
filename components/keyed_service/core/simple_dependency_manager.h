@@ -35,6 +35,11 @@ class KEYED_SERVICE_EXPORT SimpleDependencyManager : public DependencyManager {
   // ServiceIsNULLWhileTesting().
   void CreateServicesForTest(SimpleFactoryKey* key);
 
+  // Marks |context| as live (i.e., not stale).  This method can be called as a
+  // safeguard against |AssertContextWasntDestroyed()| checks going off due to
+  // |context| aliasing an instance from a prior construction.
+  void MarkContextLive(SimpleFactoryKey* key);
+
  private:
   ~SimpleDependencyManager() override;
 
