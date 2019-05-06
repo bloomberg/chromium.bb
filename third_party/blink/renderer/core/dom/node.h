@@ -700,11 +700,6 @@ class CORE_EXPORT Node : public EventTarget {
   }
   void ReattachLayoutTree(AttachContext&);
 
-  // TODO(futhark): Get rid of this method by replacing it with
-  // SetForceReattachLayoutTree + SetNeedsStyleRecalc, or DetachLayoutTree as
-  // appropriate.
-  void LazyReattachIfAttached();
-
   // ---------------------------------------------------------------------------
   // Inline ComputedStyle accessors
   //

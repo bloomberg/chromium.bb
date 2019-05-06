@@ -2095,18 +2095,6 @@ Node::InsertionNotificationRequest Element::InsertedInto(
 
 void Element::RemovedFrom(ContainerNode& insertion_point) {
   bool was_in_document = insertion_point.isConnected();
-  if (HasRareData()) {
-    // If we detached the layout tree with LazyReattachIfAttached, we might not
-    // have cleared the pseudo elements if we remove the element before calling
-    // AttachLayoutTree again. We don't clear pseudo elements on
-    // DetachLayoutTree() if we intend to attach again to avoid recreating the
-    // pseudo elements.
-    //
-    // TODO(futhark): This block can be removed when LazyReattachIfAttached is
-    // removed.
-    ElementRareData* rare_data = GetElementRareData();
-    rare_data->ClearPseudoElements();
-  }
 
   SetComputedStyle(nullptr);
 
@@ -2170,6 +2158,7 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
       GetDocument().EnsureIntersectionObserverController().RemoveTrackedTarget(
           *this);
     }
+    DCHECK(!data->HasPseudoElements());
   }
 
   if (GetDocument().GetFrame())

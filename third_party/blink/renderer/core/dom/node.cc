@@ -1436,25 +1436,6 @@ const ComputedStyle* Node::VirtualEnsureComputedStyle(
              : nullptr;
 }
 
-void Node::LazyReattachIfAttached() {
-  if (!InActiveDocument())
-    return;
-  if (!IsContainerNode() && !IsTextNode())
-    return;
-
-  AttachContext context;
-  context.performing_reattach = true;
-  DetachLayoutTree(context);
-
-  if (GetDocument().GetStyleEngine().InRebuildLayoutTree())
-    return;
-
-  SetFlag(kForceReattachLayoutTree);
-  SetNeedsStyleRecalc(
-      kSubtreeStyleChange,
-      StyleChangeReasonForTracing::Create(style_change_reason::kLazyReattach));
-}
-
 void Node::SetForceReattachLayoutTree() {
   DCHECK(!GetDocument().GetStyleEngine().InRebuildLayoutTree());
   if (GetForceReattachLayoutTree())

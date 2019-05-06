@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/html_element_or_long.h"
 #include "third_party/blink/renderer/bindings/core/v8/html_option_element_or_html_opt_group_element.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
@@ -303,8 +304,7 @@ void HTMLSelectElement::ParseAttribute(
       size_ = 0;
     SetNeedsValidityCheck();
     if (size_ != old_size) {
-      if (InActiveDocument())
-        LazyReattachIfAttached();
+      ChangeRendering();
       ResetToDefaultSelection();
       if (!UsesMenuList())
         SaveListboxActiveSelection();
@@ -1213,7 +1213,7 @@ void HTMLSelectElement::ParseMultipleAttribute(const AtomicString& value) {
   HTMLOptionElement* old_selected_option = SelectedOption();
   is_multiple_ = !value.IsNull();
   SetNeedsValidityCheck();
-  LazyReattachIfAttached();
+  ChangeRendering();
   // Restore selectedIndex after changing the multiple flag to preserve
   // selection as single-line and multi-line has different defaults.
   if (old_multiple != is_multiple_) {
@@ -2106,6 +2106,17 @@ void HTMLSelectElement::CloneNonAttributePropertiesFrom(
   const auto& source_element = static_cast<const HTMLSelectElement&>(source);
   user_has_edited_the_field_ = source_element.user_has_edited_the_field_;
   HTMLFormControlElement::CloneNonAttributePropertiesFrom(source, flag);
+}
+
+void HTMLSelectElement::ChangeRendering() {
+  if (!InActiveDocument())
+    return;
+  // TODO(futhark): SetForceReattachLayoutTree() should be the correct way to
+  // create a new layout tree, but the code for updating the selected index
+  // relies on the layout tree to be nuked.
+  DetachLayoutTree();
+  SetNeedsStyleRecalc(kLocalStyleChange, StyleChangeReasonForTracing::Create(
+                                             style_change_reason::kControl));
 }
 
 }  // namespace blink

@@ -325,27 +325,4 @@ TEST_F(NodeTest, appendChildCommentNoStyleRecalc) {
   EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
 }
 
-TEST_F(NodeTest, LazyReattachCommentAndPI) {
-  // TODO(futhark): Remove this test when LazyReattachIfAttached is removed.
-  SetBodyContent("<!-- -->");
-  HTMLElement* body = GetDocument().body();
-  ProcessingInstruction* pi =
-      ProcessingInstruction::Create(GetDocument(), "A", "B");
-  body->appendChild(pi, ASSERT_NO_EXCEPTION);
-  UpdateAllLifecyclePhasesForTest();
-
-  Node* comment = body->firstChild();
-  EXPECT_EQ(Node::kCommentNode, comment->getNodeType());
-
-  comment->LazyReattachIfAttached();
-  EXPECT_FALSE(body->ChildNeedsStyleRecalc());
-  EXPECT_FALSE(comment->GetForceReattachLayoutTree());
-  EXPECT_FALSE(comment->NeedsStyleRecalc());
-
-  pi->LazyReattachIfAttached();
-  EXPECT_FALSE(body->ChildNeedsStyleRecalc());
-  EXPECT_FALSE(pi->GetForceReattachLayoutTree());
-  EXPECT_FALSE(pi->NeedsStyleRecalc());
-}
-
 }  // namespace blink
