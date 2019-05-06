@@ -34,7 +34,7 @@ void LockFreeAddressHashSet::Insert(void* key) {
   subtle::NoBarrier_AtomicIncrement(&size_, 1);
   uint32_t h = Hash(key);
   subtle::AtomicWord* bucket_ptr = &buckets_[h & bucket_mask_];
-  Node* node = reinterpret_cast<Node*>(subtle::NoBarrier_Load(bucket_ptr));
+  Node* node = reinterpret_cast<Node*>(subtle::Acquire_Load(bucket_ptr));
   // First iterate over the bucket nodes and try to reuse an empty one if found.
   for (; node != nullptr; node = next_node(node)) {
     if (subtle::NoBarrier_CompareAndSwap(
@@ -46,7 +46,7 @@ void LockFreeAddressHashSet::Insert(void* key) {
   // There are no empty nodes to reuse in the bucket.
   // Create a new node and prepend it to the list.
   Node* new_node = new Node(key);
-  subtle::AtomicWord current_head = subtle::NoBarrier_Load(bucket_ptr);
+  subtle::AtomicWord current_head = subtle::Acquire_Load(bucket_ptr);
   subtle::AtomicWord expected_head;
   do {
     subtle::NoBarrier_Store(&new_node->next, current_head);

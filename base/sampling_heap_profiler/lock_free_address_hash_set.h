@@ -92,7 +92,7 @@ class BASE_EXPORT LockFreeAddressHashSet {
   Node* FindNode(void* key) const;
   Node* Bucket(void* key) const;
   static Node* next_node(Node* node) {
-    return reinterpret_cast<Node*>(subtle::NoBarrier_Load(&node->next));
+    return reinterpret_cast<Node*>(subtle::Acquire_Load(&node->next));
   }
 
   std::vector<subtle::AtomicWord> buckets_;
@@ -136,7 +136,7 @@ inline LockFreeAddressHashSet::Node* LockFreeAddressHashSet::Bucket(
   CHECK(key != nullptr);
   uint32_t h = Hash(key);
   return reinterpret_cast<Node*>(
-      subtle::NoBarrier_Load(&buckets_[h & bucket_mask_]));
+      subtle::Acquire_Load(&buckets_[h & bucket_mask_]));
 }
 
 // static
