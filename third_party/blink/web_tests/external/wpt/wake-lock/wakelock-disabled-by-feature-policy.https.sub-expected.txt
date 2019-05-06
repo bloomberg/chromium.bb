@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+FAIL Feature-Policy header {"wake-lock" : []} disallows the top-level document. assert_throws: function "() => new WakeLock("screen")" threw object "TypeError: Illegal constructor" that is not a DOMException NotAllowedError: property "code" is equal to undefined, expected 0
+PASS Feature-Policy header {"wake-lock" : []} disallows same-origin iframes.
+PASS Feature-Policy header {"wake-lock" : []} disallows cross-origin iframes.
+Harness: the test ran to completion.
+
