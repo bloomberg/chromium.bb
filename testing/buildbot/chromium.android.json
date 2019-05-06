@@ -21293,6 +21293,10 @@
     "isolated_scripts": [
       {
         "isolate_name": "monochrome_apk_checker",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "monochrome_apk_checker",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -24045,6 +24049,10 @@
       },
       {
         "isolate_name": "monochrome_apk_checker",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "monochrome_apk_checker",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -24063,6 +24071,10 @@
           "--device=android"
         ],
         "isolate_name": "telemetry_perf_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_perf_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,

@@ -818,6 +818,10 @@
     "isolated_scripts": [
       {
         "isolate_name": "blink_python_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "blink_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -828,6 +832,10 @@
           "--test-type=integration"
         ],
         "isolate_name": "chromedriver_py_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "chromedriver_py_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -835,6 +843,10 @@
       },
       {
         "isolate_name": "chromedriver_replay_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "chromedriver_replay_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -858,6 +870,10 @@
       },
       {
         "isolate_name": "content_shell_crash_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "content_shell_crash_test",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -865,6 +881,10 @@
       },
       {
         "isolate_name": "flatbuffers_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "flatbuffers_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -872,6 +892,10 @@
       },
       {
         "isolate_name": "mac_signing_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "mac_signing_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -879,6 +903,10 @@
       },
       {
         "isolate_name": "metrics_python_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "metrics_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -886,6 +914,10 @@
       },
       {
         "isolate_name": "telemetry_gpu_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_gpu_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -894,6 +926,10 @@
       },
       {
         "isolate_name": "telemetry_perf_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_perf_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -907,6 +943,10 @@
           "--extra-browser-args=--disable-gpu"
         ],
         "isolate_name": "telemetry_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -3995,6 +4035,10 @@
           "--xvfb"
         ],
         "isolate_name": "telemetry_perf_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_perf_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -4020,6 +4064,10 @@
           "--retry-limit=1"
         ],
         "isolate_name": "telemetry_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13238,6 +13286,10 @@
     "isolated_scripts": [
       {
         "isolate_name": "blink_python_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "blink_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13253,6 +13305,10 @@
           "--test-type=integration"
         ],
         "isolate_name": "chromedriver_py_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "chromedriver_py_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13265,6 +13321,10 @@
       },
       {
         "isolate_name": "chromedriver_replay_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "chromedriver_replay_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13277,6 +13337,10 @@
       },
       {
         "isolate_name": "content_shell_crash_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "content_shell_crash_test",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13289,6 +13353,10 @@
       },
       {
         "isolate_name": "devtools_closure_compile",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "devtools_closure_compile",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13301,6 +13369,10 @@
       },
       {
         "isolate_name": "devtools_eslint",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "devtools_eslint",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13313,6 +13385,10 @@
       },
       {
         "isolate_name": "flatbuffers_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "flatbuffers_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13325,6 +13401,10 @@
       },
       {
         "isolate_name": "metrics_python_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "metrics_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13364,6 +13444,10 @@
       },
       {
         "isolate_name": "telemetry_gpu_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_gpu_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13381,6 +13465,10 @@
           "--jobs=1"
         ],
         "isolate_name": "telemetry_perf_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_perf_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13399,6 +13487,10 @@
           "--extra-browser-args=--disable-gpu"
         ],
         "isolate_name": "telemetry_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13434,6 +13526,10 @@
       },
       {
         "isolate_name": "webdriver_wpt_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "webdriver_tests_suite",
         "results_handler": "layout tests",
         "swarming": {
@@ -14875,6 +14971,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "agc_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "agc_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -14883,6 +14983,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "android_crazy_linker_zip_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "android_crazy_linker_zip_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -14891,6 +14995,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "angle_translator_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "angle_translator_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -14899,6 +15007,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "apdu_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "apdu_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -14907,6 +15019,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "appcache_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "appcache_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -14915,6 +15031,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "appcache_manifest_parser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "appcache_manifest_parser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -14923,6 +15043,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "audio_decoder_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "audio_decoder_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -14931,6 +15055,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "audio_decoder_ilbc_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "audio_decoder_ilbc_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -14939,6 +15067,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "audio_decoder_isac_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "audio_decoder_isac_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -14947,6 +15079,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "audio_decoder_isac_incoming_packet_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "audio_decoder_isac_incoming_packet_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -14955,6 +15091,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "audio_decoder_isacfix_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "audio_decoder_isacfix_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -14963,6 +15103,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "audio_decoder_opus_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "audio_decoder_opus_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -14971,6 +15115,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "audio_decoder_opus_redundant_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "audio_decoder_opus_redundant_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -14979,6 +15127,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "audio_encoder_opus_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "audio_encoder_opus_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -14987,6 +15139,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "audio_processing_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "audio_processing_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -14995,6 +15151,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "autofill_phone_number_i18n_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "autofill_phone_number_i18n_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15003,6 +15163,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "ax_table_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "ax_table_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15011,6 +15175,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "ax_tree_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "ax_tree_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15019,6 +15187,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "base64_decode_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "base64_decode_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15027,6 +15199,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "base64_encode_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "base64_encode_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15035,6 +15211,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "base_json_correctness_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "base_json_correctness_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15043,6 +15223,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "base_json_reader_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "base_json_reader_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15051,6 +15235,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "base_json_string_escape_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "base_json_string_escape_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15059,6 +15247,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "bdict_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "bdict_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15067,6 +15259,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "blink_harfbuzz_shaper_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "blink_harfbuzz_shaper_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15075,6 +15271,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "blink_html_tokenizer_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "blink_html_tokenizer_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15083,6 +15283,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "blink_http_parsers_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "blink_http_parsers_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15091,6 +15295,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "blink_json_parser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "blink_json_parser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15099,6 +15307,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "blink_png_decoder_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "blink_png_decoder_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15107,6 +15319,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "blink_text_codec_UTF_8_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "blink_text_codec_UTF_8_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15115,6 +15331,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "blink_text_codec_WINDOWS_1252_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "blink_text_codec_WINDOWS_1252_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15123,6 +15343,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "boringssl_arm_cpuinfo_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "boringssl_arm_cpuinfo_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15131,6 +15355,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "boringssl_bn_div_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "boringssl_bn_div_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15139,6 +15367,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "boringssl_bn_mod_exp_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "boringssl_bn_mod_exp_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15147,6 +15379,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "boringssl_cert_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "boringssl_cert_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15155,6 +15391,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "boringssl_client_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "boringssl_client_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15163,6 +15403,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "boringssl_client_no_fuzzer_mode_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "boringssl_client_no_fuzzer_mode_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15171,6 +15415,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "boringssl_dtls_client_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "boringssl_dtls_client_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15179,6 +15427,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "boringssl_dtls_server_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "boringssl_dtls_server_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15187,6 +15439,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "boringssl_pkcs12_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "boringssl_pkcs12_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15195,6 +15451,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "boringssl_pkcs8_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "boringssl_pkcs8_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15203,6 +15463,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "boringssl_privkey_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "boringssl_privkey_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15211,6 +15475,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "boringssl_read_pem_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "boringssl_read_pem_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15219,6 +15487,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "boringssl_server_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "boringssl_server_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15227,6 +15499,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "boringssl_server_no_fuzzer_mode_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "boringssl_server_no_fuzzer_mode_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15235,6 +15511,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "boringssl_session_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "boringssl_session_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15243,6 +15523,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "boringssl_spki_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "boringssl_spki_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15251,6 +15535,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "boringssl_ssl_ctx_api_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "boringssl_ssl_ctx_api_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15259,6 +15547,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "brotli_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "brotli_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15267,6 +15559,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "cast_message_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "cast_message_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15275,6 +15571,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "cbcs_decryptor_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "cbcs_decryptor_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15283,6 +15583,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "cenc_decryptor_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "cenc_decryptor_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15291,6 +15595,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "clear_site_data_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "clear_site_data_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15299,6 +15607,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "color_transform_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "color_transform_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15307,6 +15619,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "comfort_noise_decoder_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "comfort_noise_decoder_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15315,6 +15631,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "compact_enc_det_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "compact_enc_det_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15323,6 +15643,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "congestion_controller_feedback_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "congestion_controller_feedback_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15331,6 +15655,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "content_security_policy_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "content_security_policy_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15339,6 +15667,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "convert_woff2ttf_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "convert_woff2ttf_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15347,6 +15679,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "courgette_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "courgette_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15355,6 +15691,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "css_parser_fast_paths_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "css_parser_fast_paths_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15363,6 +15703,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "css_parser_proto_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "css_parser_proto_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15371,6 +15715,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "csv_reader_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "csv_reader_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15379,6 +15727,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "ctap_response_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "ctap_response_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15387,6 +15739,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "dawn_spirv_cross_glsl_fast_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "dawn_spirv_cross_glsl_fast_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15395,6 +15751,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "dawn_spirv_cross_glsl_full_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "dawn_spirv_cross_glsl_full_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15403,6 +15763,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "dawn_spirv_cross_hlsl_fast_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "dawn_spirv_cross_hlsl_fast_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15411,6 +15775,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "dawn_spirv_cross_hlsl_full_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "dawn_spirv_cross_hlsl_full_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15419,6 +15787,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "dawn_spirv_cross_msl_fast_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "dawn_spirv_cross_msl_fast_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15427,6 +15799,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "dawn_spirv_cross_msl_full_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "dawn_spirv_cross_msl_full_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15435,6 +15811,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "dawn_wire_server_and_frontend_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "dawn_wire_server_and_frontend_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15443,6 +15823,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "edid_parser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "edid_parser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15451,6 +15835,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "empty_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "empty_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15459,6 +15847,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "expat_xml_parse_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "expat_xml_parse_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15467,6 +15859,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "feature_policy_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "feature_policy_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15475,6 +15871,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "fido_ble_frames_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "fido_ble_frames_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15483,6 +15883,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "fido_cable_handshake_handler_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "fido_cable_handshake_handler_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15491,6 +15895,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "fido_hid_message_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "fido_hid_message_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15499,6 +15907,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "fingerprint_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "fingerprint_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15507,6 +15919,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "flatbuffers_verifier_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "flatbuffers_verifier_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15515,6 +15931,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "flexfec_header_reader_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "flexfec_header_reader_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15523,6 +15943,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "flexfec_receiver_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "flexfec_receiver_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15531,6 +15955,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "flexfec_sender_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "flexfec_sender_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15539,6 +15967,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "form_structure_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "form_structure_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15547,6 +15979,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "form_structure_process_query_response_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "form_structure_process_query_response_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15555,6 +15991,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "forward_error_correction_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "forward_error_correction_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15563,6 +16003,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "frame_buffer2_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "frame_buffer2_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15571,6 +16015,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "gfx_png_image_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "gfx_png_image_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15579,6 +16027,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "gpu_angle_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "gpu_angle_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15587,6 +16039,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "gpu_angle_passthrough_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "gpu_angle_passthrough_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15595,6 +16051,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "gpu_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "gpu_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15603,6 +16063,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "gpu_raster_angle_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "gpu_raster_angle_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15611,6 +16075,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "gpu_raster_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "gpu_raster_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15619,6 +16087,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "gpu_raster_swiftshader_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "gpu_raster_swiftshader_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15627,6 +16099,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "gpu_swiftshader_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "gpu_swiftshader_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15635,6 +16111,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "gurl_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "gurl_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15643,6 +16123,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "h264_bitstream_parser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "h264_bitstream_parser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15651,6 +16135,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "h264_depacketizer_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "h264_depacketizer_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15659,6 +16147,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "harfbuzz_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "harfbuzz_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15667,6 +16159,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "hash_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "hash_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15675,6 +16171,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "hid_report_descriptor_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "hid_report_descriptor_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15683,6 +16183,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "hit_test_manager_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "hit_test_manager_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15691,6 +16195,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "hit_test_query_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "hit_test_query_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15699,6 +16207,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "html_preload_scanner_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "html_preload_scanner_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15707,6 +16219,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "http_structured_header_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "http_structured_header_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15715,6 +16231,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "hunspell_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "hunspell_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15723,6 +16243,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "icu_break_iterator_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "icu_break_iterator_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15731,6 +16255,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "icu_break_iterator_utf32_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "icu_break_iterator_utf32_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15739,6 +16267,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "icu_converter_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "icu_converter_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15747,6 +16279,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "icu_number_format_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "icu_number_format_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15755,6 +16291,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "icu_ucasemap_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "icu_ucasemap_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15763,6 +16303,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "icu_unicode_string_codepage_create_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "icu_unicode_string_codepage_create_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15771,6 +16315,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "icu_uregex_open_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "icu_uregex_open_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15779,6 +16327,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "indexed_ruleset_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "indexed_ruleset_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15787,6 +16339,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "javascript_parser_proto_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "javascript_parser_proto_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15795,6 +16351,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "language_detection_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "language_detection_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15803,6 +16363,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "leveldb_put_get_delete_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "leveldb_put_get_delete_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15811,6 +16375,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "libaddressinput_parse_address_fields_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "libaddressinput_parse_address_fields_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15819,6 +16387,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "libaddressinput_parse_format_rule_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "libaddressinput_parse_format_rule_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15827,6 +16399,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "libpng_progressive_read_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "libpng_progressive_read_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15835,6 +16411,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "libpng_read_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "libpng_read_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15843,6 +16423,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "libsrtp_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "libsrtp_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15851,6 +16435,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "libwebp_advanced_api_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "libwebp_advanced_api_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15859,6 +16447,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "libwebp_animation_api_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "libwebp_animation_api_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15867,6 +16459,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "libwebp_demux_api_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "libwebp_demux_api_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15875,6 +16471,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "libwebp_enc_dec_api_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "libwebp_enc_dec_api_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15883,6 +16483,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "libwebp_simple_api_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "libwebp_simple_api_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15891,6 +16495,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "libxml_xml_read_memory_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "libxml_xml_read_memory_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15899,6 +16507,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "lookup_affiliation_response_parser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "lookup_affiliation_response_parser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15907,6 +16519,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "mdns_parser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "mdns_parser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15915,6 +16531,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "media_bit_reader_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "media_bit_reader_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15923,6 +16543,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "media_container_names_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "media_container_names_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15931,6 +16555,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "media_h264_parser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "media_h264_parser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15939,6 +16567,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "media_pipeline_integration_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "media_pipeline_integration_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15947,6 +16579,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "media_vp8_parser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "media_vp8_parser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15955,6 +16591,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "media_vp9_parser_encrypted_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "media_vp9_parser_encrypted_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15963,6 +16603,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "media_vp9_parser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "media_vp9_parser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15971,6 +16615,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "media_vpx_video_decoder_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "media_vpx_video_decoder_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15979,6 +16627,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "media_webm_muxer_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "media_webm_muxer_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15987,6 +16639,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "mediasource_MP3_pipeline_integration_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "mediasource_MP3_pipeline_integration_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -15995,6 +16651,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "mediasource_MP4_AV1_pipeline_integration_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "mediasource_MP4_AV1_pipeline_integration_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16003,6 +16663,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "mediasource_MP4_FLAC_pipeline_integration_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "mediasource_MP4_FLAC_pipeline_integration_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16011,6 +16675,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "mediasource_MP4_OPUS_pipeline_integration_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "mediasource_MP4_OPUS_pipeline_integration_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16019,6 +16687,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "mediasource_WEBM_OPUS_VP9_pipeline_integration_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "mediasource_WEBM_OPUS_VP9_pipeline_integration_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16027,6 +16699,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "mediasource_WEBM_OPUS_pipeline_integration_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "mediasource_WEBM_OPUS_pipeline_integration_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16035,6 +16711,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "mediasource_WEBM_VORBIS_pipeline_integration_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "mediasource_WEBM_VORBIS_pipeline_integration_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16043,6 +16723,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "mediasource_WEBM_VP8_pipeline_integration_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "mediasource_WEBM_VP8_pipeline_integration_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16051,6 +16735,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "mediasource_WEBM_VP9_pipeline_integration_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "mediasource_WEBM_VP9_pipeline_integration_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16059,6 +16747,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "merkle_integrity_source_stream_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "merkle_integrity_source_stream_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16067,6 +16759,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "mhtml_parser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "mhtml_parser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16075,6 +16771,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "midi_message_queue_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "midi_message_queue_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16083,6 +16783,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "midi_webmidi_data_validator_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "midi_webmidi_data_validator_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16091,6 +16795,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "minidump_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "minidump_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16099,6 +16807,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "minizip_compress_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "minizip_compress_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16107,6 +16819,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "minizip_uncompress_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "minizip_uncompress_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16115,6 +16831,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "mojo_core_channel_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "mojo_core_channel_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16123,6 +16843,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "mojo_core_node_channel_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "mojo_core_node_channel_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16131,6 +16855,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "mojo_core_port_event_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "mojo_core_port_event_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16139,6 +16867,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "mojo_core_user_message_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "mojo_core_user_message_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16147,6 +16879,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "mojo_parse_message_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "mojo_parse_message_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16155,6 +16891,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "mojo_parse_message_proto_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "mojo_parse_message_proto_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16163,6 +16903,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_auth_challenge_tokenizer_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_auth_challenge_tokenizer_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16171,6 +16915,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_brotli_source_stream_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_brotli_source_stream_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16179,6 +16927,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_cert_normalize_name_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_cert_normalize_name_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16187,6 +16939,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_cert_parse_certificate_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_cert_parse_certificate_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16195,6 +16951,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_cert_verify_name_in_subtree_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_cert_verify_name_in_subtree_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16203,6 +16963,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_cert_verify_name_match_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_cert_verify_name_match_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16211,6 +16975,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_data_job_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_data_job_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16219,6 +16987,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_dns_hosts_parse_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_dns_hosts_parse_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16227,6 +16999,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_dns_query_parse_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_dns_query_parse_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16235,6 +17011,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_dns_record_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_dns_record_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16243,6 +17023,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_dns_response_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_dns_response_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16251,6 +17035,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_ftp_ctrl_response_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_ftp_ctrl_response_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16259,6 +17047,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_ftp_directory_listing_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_ftp_directory_listing_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16267,6 +17059,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_get_domain_and_registry_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_get_domain_and_registry_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16275,6 +17071,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_gzip_source_stream_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_gzip_source_stream_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16283,6 +17083,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_host_resolver_manager_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_host_resolver_manager_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16291,6 +17095,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_hpack_decoder_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_hpack_decoder_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16299,6 +17107,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_http2_frame_decoder_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_http2_frame_decoder_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16307,6 +17119,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_http_chunked_decoder_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_http_chunked_decoder_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16315,6 +17131,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_http_proxy_client_socket_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_http_proxy_client_socket_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16323,6 +17143,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_http_security_headers_expect_ct_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_http_security_headers_expect_ct_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16331,6 +17155,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_http_security_headers_hsts_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_http_security_headers_hsts_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16339,6 +17167,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_http_server_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_http_server_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16347,6 +17179,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_http_stream_parser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_http_stream_parser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16355,6 +17191,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_http_transport_security_state_static_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_http_transport_security_state_static_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16363,6 +17203,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_mime_sniffer_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_mime_sniffer_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16371,6 +17215,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_ntlm_ntlm_client_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_ntlm_ntlm_client_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16379,6 +17227,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_parse_cookie_line_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_parse_cookie_line_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16387,6 +17239,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_parse_data_url_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_parse_data_url_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16395,6 +17251,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_parse_ip_pattern_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_parse_ip_pattern_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16403,6 +17263,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_parse_proxy_bypass_rules_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_parse_proxy_bypass_rules_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16411,6 +17275,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_parse_proxy_list_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_parse_proxy_list_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16419,6 +17287,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_parse_proxy_list_pac_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_parse_proxy_list_pac_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16427,6 +17299,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_parse_proxy_rules_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_parse_proxy_rules_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16435,6 +17311,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_parse_url_hostname_to_address_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_parse_url_hostname_to_address_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16443,6 +17323,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_quic_crypto_framer_parse_message_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_quic_crypto_framer_parse_message_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16451,6 +17335,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_quic_stream_factory_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_quic_stream_factory_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16459,6 +17347,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_quic_transport_parameters_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_quic_transport_parameters_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16467,6 +17359,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_reporting_header_parser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_reporting_header_parser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16475,6 +17371,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_socks5_client_socket_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_socks5_client_socket_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16483,6 +17383,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_socks_client_socket_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_socks_client_socket_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16491,6 +17395,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_spdy_session_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_spdy_session_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16499,6 +17407,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_unescape_url_component_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_unescape_url_component_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16507,6 +17419,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_uri_template_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_uri_template_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16515,6 +17431,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_url_request_ftp_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_url_request_ftp_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16523,6 +17443,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_url_request_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_url_request_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16531,6 +17455,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_websocket_deflate_stream_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_websocket_deflate_stream_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16539,6 +17467,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_websocket_extension_parser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_websocket_extension_parser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16547,6 +17479,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "net_websocket_frame_parser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "net_websocket_frame_parser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16555,6 +17491,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "neteq_rtp_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "neteq_rtp_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16563,6 +17503,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "neteq_signal_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "neteq_signal_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16571,6 +17515,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "origin_policy_parser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "origin_policy_parser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16579,6 +17527,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "origin_trial_token_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "origin_trial_token_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16587,6 +17539,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "ots_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "ots_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16595,6 +17551,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "override_lite_runtime_plugin_test_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "override_lite_runtime_plugin_test_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16603,6 +17563,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "packet_buffer_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "packet_buffer_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16611,6 +17575,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "paint_op_buffer_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "paint_op_buffer_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16619,6 +17587,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "password_generator_proto_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "password_generator_proto_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16627,6 +17599,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "password_manager_form_parser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "password_manager_form_parser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16635,6 +17611,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "password_manager_form_parser_generic_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "password_manager_form_parser_generic_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16643,6 +17623,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "password_manager_form_parser_proto_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "password_manager_form_parser_proto_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16651,6 +17635,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "password_manager_form_parser_proto_generic_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "password_manager_form_parser_proto_generic_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16659,6 +17647,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "payment_method_manifest_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "payment_method_manifest_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16667,6 +17659,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "payment_web_app_manifest_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "payment_web_app_manifest_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16675,6 +17671,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "pdf_cjs_util_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "pdf_cjs_util_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16683,6 +17683,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "pdf_cmap_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "pdf_cmap_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16691,6 +17695,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "pdf_codec_a85_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "pdf_codec_a85_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16699,6 +17707,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "pdf_codec_fax_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "pdf_codec_fax_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16707,6 +17719,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "pdf_codec_icc_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "pdf_codec_icc_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16715,6 +17731,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "pdf_codec_jbig2_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "pdf_codec_jbig2_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16723,6 +17743,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "pdf_codec_rle_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "pdf_codec_rle_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16731,6 +17755,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "pdf_font_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "pdf_font_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16739,6 +17767,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "pdf_fx_date_helpers_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "pdf_fx_date_helpers_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16747,6 +17779,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "pdf_hint_table_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "pdf_hint_table_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16755,6 +17791,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "pdf_jpx_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "pdf_jpx_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16763,6 +17803,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "pdf_psengine_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "pdf_psengine_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16771,6 +17815,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "pdf_streamparser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "pdf_streamparser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16779,6 +17827,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "pdf_xml_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "pdf_xml_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16787,6 +17839,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "pdfium_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "pdfium_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16795,6 +17851,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "pickle_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "pickle_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16803,6 +17863,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "preg_parser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "preg_parser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16811,6 +17875,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "prtime_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "prtime_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16819,6 +17887,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "pseudotcp_parser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "pseudotcp_parser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16827,6 +17899,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "qcms_color_space_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "qcms_color_space_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16835,6 +17911,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "reader_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "reader_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16843,6 +17923,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "renderer_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "renderer_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16851,6 +17935,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "renderer_proto_tree_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "renderer_proto_tree_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16859,6 +17947,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "renderer_tree_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "renderer_tree_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16867,6 +17959,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "residual_echo_detector_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "residual_echo_detector_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16875,6 +17971,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "rtcp_receiver_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "rtcp_receiver_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16883,6 +17983,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "rtp_frame_reference_finder_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "rtp_frame_reference_finder_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16891,6 +17995,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "rtp_header_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "rtp_header_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16899,6 +18007,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "rtp_packet_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "rtp_packet_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16907,6 +18019,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "sandbox_ipc_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "sandbox_ipc_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16915,6 +18031,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "sdp_parser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "sdp_parser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16923,6 +18043,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "sequence_manager_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "sequence_manager_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16931,6 +18055,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "sfntly_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "sfntly_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16939,6 +18067,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "sha1_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "sha1_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16947,6 +18079,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "signed_exchange_certificate_chain_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "signed_exchange_certificate_chain_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16955,6 +18091,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "signed_exchange_envelope_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "signed_exchange_envelope_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16963,6 +18103,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "skia_image_filter_proto_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "skia_image_filter_proto_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16971,6 +18115,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "skia_path_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "skia_path_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16979,6 +18127,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "skia_pathop_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "skia_pathop_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16987,6 +18139,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "snappy_compress_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "snappy_compress_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -16995,6 +18151,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "snappy_uncompress_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "snappy_uncompress_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17003,6 +18163,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "spvtools_binary_parser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "spvtools_binary_parser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17011,6 +18175,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "spvtools_opt_legalization_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "spvtools_opt_legalization_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17019,6 +18187,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "spvtools_opt_performance_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "spvtools_opt_performance_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17027,6 +18199,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "spvtools_opt_size_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "spvtools_opt_size_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17035,6 +18211,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "spvtools_val_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "spvtools_val_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17043,6 +18223,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "sqlite3_fts3_lpm_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "sqlite3_fts3_lpm_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17051,6 +18235,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "sqlite3_lpm_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "sqlite3_lpm_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17059,6 +18247,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "sqlite3_ossfuzz_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "sqlite3_ossfuzz_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17067,6 +18259,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "sqlite3_select_expr_lpm_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "sqlite3_select_expr_lpm_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17075,6 +18271,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "sqlite3_select_printf_lpm_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "sqlite3_select_printf_lpm_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17083,6 +18283,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "sqlite3_select_strftime_lpm_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "sqlite3_select_strftime_lpm_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17091,6 +18295,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "string_number_conversions_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "string_number_conversions_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17099,6 +18307,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "string_tokenizer_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "string_tokenizer_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17107,6 +18319,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "stun_parser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "stun_parser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17115,6 +18331,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "stun_validator_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "stun_validator_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17123,6 +18343,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "stylesheet_contents_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "stylesheet_contents_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17131,6 +18355,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "swiftshader_vertex_routine_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "swiftshader_vertex_routine_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17139,6 +18367,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "template_url_parser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "template_url_parser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17147,6 +18379,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "test_config_and_dict",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "test_config_and_dict",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17155,6 +18391,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "test_config_and_seed_corpus",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "test_config_and_seed_corpus",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17163,6 +18403,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "test_config_and_seed_corpuses",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "test_config_and_seed_corpuses",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17171,6 +18415,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "test_config_only",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "test_config_only",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17179,6 +18427,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "test_dict_from_subdir",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "test_dict_from_subdir",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17187,6 +18439,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "test_dict_only",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "test_dict_only",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17195,6 +18451,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "text_resource_decoder_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "text_resource_decoder_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17203,6 +18463,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "third_party_re2_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "third_party_re2_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17211,6 +18475,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "transfer_cache_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "transfer_cache_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17219,6 +18487,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "transport_feedback_packet_loss_tracker_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "transport_feedback_packet_loss_tracker_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17227,6 +18499,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "turn_unwrap_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "turn_unwrap_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17235,6 +18511,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "ulpfec_generator_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "ulpfec_generator_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17243,6 +18523,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "ulpfec_header_reader_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "ulpfec_header_reader_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17251,6 +18535,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "ulpfec_receiver_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "ulpfec_receiver_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17259,6 +18547,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "url_parse_proto_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "url_parse_proto_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17267,6 +18559,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "usb_descriptors_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "usb_descriptors_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17275,6 +18571,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "usb_string_read_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "usb_string_read_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17283,6 +18583,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "usrsctp_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "usrsctp_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17291,6 +18595,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "utf_string_conversions_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "utf_string_conversions_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17299,6 +18607,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "v4_get_hash_protocol_manager_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "v4_get_hash_protocol_manager_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17307,6 +18619,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "v8_fully_instrumented_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "v8_fully_instrumented_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17315,6 +18631,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "v8_json_parser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "v8_json_parser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17323,6 +18643,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "v8_multi_return_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "v8_multi_return_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17331,6 +18655,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "v8_regexp_builtins_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "v8_regexp_builtins_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17339,6 +18667,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "v8_regexp_parser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "v8_regexp_parser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17347,6 +18679,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "v8_script_parser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "v8_script_parser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17355,6 +18691,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "v8_serialized_script_value_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "v8_serialized_script_value_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17363,6 +18703,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "v8_wasm_async_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "v8_wasm_async_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17371,6 +18715,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "v8_wasm_code_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "v8_wasm_code_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17379,6 +18727,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "v8_wasm_compile_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "v8_wasm_compile_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17387,6 +18739,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "v8_wasm_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "v8_wasm_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17395,6 +18751,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "vp8_depacketizer_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "vp8_depacketizer_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17403,6 +18763,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "vp8_qp_parser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "vp8_qp_parser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17411,6 +18775,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "vp9_depacketizer_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "vp9_depacketizer_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17419,6 +18787,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "vp9_qp_parser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "vp9_qp_parser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17427,6 +18799,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "web_icon_sizes_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "web_icon_sizes_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17435,6 +18811,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "webcrypto_ec_import_key_pkcs8_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "webcrypto_ec_import_key_pkcs8_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17443,6 +18823,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "webcrypto_ec_import_key_raw_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "webcrypto_ec_import_key_raw_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17451,6 +18835,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "webcrypto_ec_import_key_spki_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "webcrypto_ec_import_key_spki_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17459,6 +18847,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "webcrypto_rsa_import_key_pkcs8_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "webcrypto_rsa_import_key_pkcs8_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17467,6 +18859,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "webcrypto_rsa_import_key_spki_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "webcrypto_rsa_import_key_spki_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17501,6 +18897,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "webusb_descriptors_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "webusb_descriptors_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17509,6 +18909,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "xml_parser_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "xml_parser_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17517,6 +18921,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "zlib_deflate_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "zlib_deflate_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17525,6 +18933,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "zlib_deflate_set_dictionary_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "zlib_deflate_set_dictionary_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17533,6 +18945,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "zlib_inflate_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "zlib_inflate_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17541,6 +18957,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "zlib_uncompress_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "zlib_uncompress_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17549,6 +18969,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "zucchini_apply_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "zucchini_apply_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17557,6 +18981,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "zucchini_disassembler_dex_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "zucchini_disassembler_dex_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17565,6 +18993,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "zucchini_disassembler_win32_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "zucchini_disassembler_win32_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17573,6 +19005,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "zucchini_imposed_ensemble_matcher_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "zucchini_imposed_ensemble_matcher_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17581,6 +19017,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "zucchini_patch_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "zucchini_patch_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17589,6 +19029,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "zucchini_raw_gen_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "zucchini_raw_gen_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -17597,6 +19041,10 @@
       {
         "isolate_coverage_data": true,
         "isolate_name": "zucchini_ztf_gen_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "zucchini_ztf_gen_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -18958,6 +20406,10 @@
     "isolated_scripts": [
       {
         "isolate_name": "blink_python_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "blink_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -18973,6 +20425,10 @@
           "--test-type=integration"
         ],
         "isolate_name": "chromedriver_py_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "chromedriver_py_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -18985,6 +20441,10 @@
       },
       {
         "isolate_name": "chromedriver_replay_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "chromedriver_replay_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -18997,6 +20457,10 @@
       },
       {
         "isolate_name": "content_shell_crash_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "content_shell_crash_test",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19009,6 +20473,10 @@
       },
       {
         "isolate_name": "devtools_closure_compile",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "devtools_closure_compile",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19021,6 +20489,10 @@
       },
       {
         "isolate_name": "devtools_eslint",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "devtools_eslint",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19033,6 +20505,10 @@
       },
       {
         "isolate_name": "flatbuffers_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "flatbuffers_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19045,6 +20521,10 @@
       },
       {
         "isolate_name": "metrics_python_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "metrics_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19084,6 +20564,10 @@
       },
       {
         "isolate_name": "telemetry_gpu_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_gpu_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19101,6 +20585,10 @@
           "--jobs=1"
         ],
         "isolate_name": "telemetry_perf_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_perf_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19119,6 +20607,10 @@
           "--extra-browser-args=--disable-gpu"
         ],
         "isolate_name": "telemetry_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19154,6 +20646,10 @@
       },
       {
         "isolate_name": "webdriver_wpt_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "webdriver_tests_suite",
         "results_handler": "layout tests",
         "swarming": {
@@ -20581,6 +22077,10 @@
     "isolated_scripts": [
       {
         "isolate_name": "blink_python_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "blink_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20598,6 +22098,10 @@
           "--test-type=integration"
         ],
         "isolate_name": "chromedriver_py_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "chromedriver_py_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20612,6 +22116,10 @@
       },
       {
         "isolate_name": "chromedriver_replay_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "chromedriver_replay_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20649,6 +22157,10 @@
       },
       {
         "isolate_name": "content_shell_crash_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "content_shell_crash_test",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20663,6 +22175,10 @@
       },
       {
         "isolate_name": "flatbuffers_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "flatbuffers_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20677,6 +22193,10 @@
       },
       {
         "isolate_name": "mac_signing_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "mac_signing_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20691,6 +22211,10 @@
       },
       {
         "isolate_name": "metrics_python_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "metrics_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20705,6 +22229,10 @@
       },
       {
         "isolate_name": "telemetry_gpu_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_gpu_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20720,6 +22248,10 @@
       },
       {
         "isolate_name": "telemetry_perf_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_perf_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20740,6 +22272,10 @@
           "--extra-browser-args=--disable-gpu"
         ],
         "isolate_name": "telemetry_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,

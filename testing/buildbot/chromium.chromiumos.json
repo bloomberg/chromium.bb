@@ -480,6 +480,10 @@
           "--xvfb"
         ],
         "isolate_name": "telemetry_perf_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_perf_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -502,6 +506,10 @@
           "--remote-ssh-port=9222"
         ],
         "isolate_name": "telemetry_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,

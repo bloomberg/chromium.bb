@@ -6972,6 +6972,10 @@
     "isolated_scripts": [
       {
         "isolate_name": "monochrome_apk_checker",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "monochrome_apk_checker",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20184,6 +20188,10 @@
     "isolated_scripts": [
       {
         "isolate_name": "blink_python_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "blink_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -20194,6 +20202,10 @@
           "--test-type=integration"
         ],
         "isolate_name": "chromedriver_py_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "chromedriver_py_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -20201,6 +20213,10 @@
       },
       {
         "isolate_name": "chromedriver_replay_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "chromedriver_replay_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -20224,6 +20240,10 @@
       },
       {
         "isolate_name": "content_shell_crash_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "content_shell_crash_test",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -20231,6 +20251,10 @@
       },
       {
         "isolate_name": "flatbuffers_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "flatbuffers_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -20238,6 +20262,10 @@
       },
       {
         "isolate_name": "mac_signing_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "mac_signing_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -20245,6 +20273,10 @@
       },
       {
         "isolate_name": "metrics_python_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "metrics_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -20252,6 +20284,10 @@
       },
       {
         "isolate_name": "telemetry_gpu_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_gpu_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20260,6 +20296,10 @@
       },
       {
         "isolate_name": "telemetry_perf_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_perf_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20273,6 +20313,10 @@
           "--extra-browser-args=--disable-gpu"
         ],
         "isolate_name": "telemetry_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -22145,6 +22189,10 @@
     "isolated_scripts": [
       {
         "isolate_name": "blink_python_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "blink_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -22155,6 +22203,10 @@
           "--test-type=integration"
         ],
         "isolate_name": "chromedriver_py_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "chromedriver_py_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -22162,6 +22214,10 @@
       },
       {
         "isolate_name": "chromedriver_replay_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "chromedriver_replay_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -22185,6 +22241,10 @@
       },
       {
         "isolate_name": "content_shell_crash_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "content_shell_crash_test",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -22192,6 +22252,10 @@
       },
       {
         "isolate_name": "flatbuffers_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "flatbuffers_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -22199,6 +22263,10 @@
       },
       {
         "isolate_name": "mac_signing_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "mac_signing_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -22206,6 +22274,10 @@
       },
       {
         "isolate_name": "metrics_python_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "metrics_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -22213,6 +22285,10 @@
       },
       {
         "isolate_name": "telemetry_gpu_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_gpu_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -22221,6 +22297,10 @@
       },
       {
         "isolate_name": "telemetry_perf_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_perf_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -22234,6 +22314,10 @@
           "--extra-browser-args=--disable-gpu"
         ],
         "isolate_name": "telemetry_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,

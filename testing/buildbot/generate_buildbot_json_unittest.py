@@ -1129,6 +1129,10 @@ ISOLATED_SCRIPT_OUTPUT = """\
     "isolated_scripts": [
       {
         "isolate_name": "foo_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "foo_test",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -1299,6 +1303,10 @@ GPU_TELEMETRY_TEST_OUTPUT = """\
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "foo_tests",
         "should_retry_with_patch": false,
         "swarming": {
@@ -1336,6 +1344,10 @@ NVIDIA_GPU_TELEMETRY_TEST_OUTPUT = """\
           "1cb3"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "foo_tests",
         "should_retry_with_patch": false,
         "swarming": {
@@ -1373,6 +1385,10 @@ INTEL_GPU_TELEMETRY_TEST_OUTPUT = """\
           "5912"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "foo_tests",
         "should_retry_with_patch": false,
         "swarming": {
@@ -1584,6 +1600,10 @@ GPU_DIMENSIONS_WATERFALL_OUTPUT = """\
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "foo_test",
         "should_retry_with_patch": false,
         "swarming": {
@@ -3485,6 +3505,7 @@ class QueryTests(unittest.TestCase):
                                   waterfall_filters = [])
     fbb.query(fbb.args)
     query_json = json.loads("".join(fbb.printed_lines))
+    self.maxDiff = None
     self.assertEqual(query_json, TEST_QUERY_BOT_OUTPUT)
 
   def test_query_bot_invalid_id(self):

@@ -549,6 +549,14 @@ class BBJSONGenerator(object):
     result = self.update_and_cleanup_test(
         result, test_name, tester_name, tester_config, waterfall)
     self.add_common_test_properties(result, tester_config)
+
+    if not result.get('merge'):
+      # TODO(https://crbug.com/958376): Consider adding the ability to not have
+      # this default.
+      result['merge'] = {
+        'script': '//testing/merge_scripts/standard_isolated_script_merge.py',
+        'args': [],
+      }
     return result
 
   def generate_script_test(self, waterfall, tester_name, tester_config,
