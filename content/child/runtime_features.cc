@@ -490,6 +490,9 @@ void SetIndividualRuntimeFeatures(
 
   WebRuntimeFeatures::EnableStaleWhileRevalidate(
       base::FeatureList::IsEnabled(features::kStaleWhileRevalidate));
+
+  if (!base::FeatureList::IsEnabled(features::kSmsReceiver))
+    WebRuntimeFeatures::EnableSmsReceiver(false);
 }
 
 }  // namespace

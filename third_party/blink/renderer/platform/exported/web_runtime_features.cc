@@ -664,4 +664,8 @@ void WebRuntimeFeatures::EnableStaleWhileRevalidate(bool enable) {
   RuntimeEnabledFeatures::SetStaleWhileRevalidateEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableSmsReceiver(bool enable) {
+  RuntimeEnabledFeatures::SetSmsReceiverEnabled(enable);
+}
+
 }  // namespace blink

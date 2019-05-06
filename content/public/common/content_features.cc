@@ -179,7 +179,7 @@ const base::Feature kHistoryManipulationIntervention{
     "HistoryManipulationIntervention", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // This is intended as a kill switch for the Idle Detection feature. To enable
-// this feature,the experimental web platform features flag should be set,
+// this feature, the experimental web platform features flag should be set,
 // or the site should obtain an Origin Trial token.
 const base::Feature kIdleDetection{"IdleDetection",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
@@ -453,6 +453,12 @@ const base::Feature kSignedHTTPExchange{"SignedHTTPExchange",
 // Whether to send a ping to the inner URL upon navigation or not.
 const base::Feature kSignedHTTPExchangePingValidity{
     "SignedHTTPExchangePingValidity", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// This is intended as a kill switch for the SMS Receiver feature. To enable
+// this feature, the experimental web platform features flag should be set,
+// or the site should obtain an Origin Trial token.
+const base::Feature kSmsReceiver{"SmsReceiver",
+                                 base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether SpareRenderProcessHostManager tries to always have a warm
 // spare renderer process around for the most recently requested BrowserContext.
