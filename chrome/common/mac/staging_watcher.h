@@ -27,6 +27,17 @@ using StagingKeyChangedObserver = void (^)(BOOL stagingKeySet);
 // Returns a boolean indicating whether or not the staging key is set.
 - (BOOL)isStagingKeySet;
 
+// Returns a boolean indicating whether or not the staging key is set. This will
+// not return the correct answer in testing.
++ (BOOL)isStagingKeySet;
+
+// Returns the path to the staged update, or nil if there is no staging key set.
+- (NSString*)stagingLocation;
+
+// Returns the path to the staged update, or nil if there is no staging key set.
+// This will not return the correct answer in testing.
++ (NSString*)stagingLocation;
+
 // Sleeps until the staging key is clear. If there is no staging key set,
 // returns immediately.
 - (void)waitForStagingKeyToClear;
@@ -52,7 +63,8 @@ using StagingKeyChangedObserver = void (^)(BOOL stagingKeySet);
 - (BOOL)lastWaitWasBlockedForTesting;
 
 // Returns the NSUserDefaults key that is used to indicate staging. The value to
-// be used is an array of strings, each string being a file path to the bundle.
+// be used is a dictionary of strings, with the key being the file path to the
+// existing bundle, and the value being the file path to the staged bundle.
 + (NSString*)stagingKeyForTesting;
 
 @end

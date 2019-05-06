@@ -18,7 +18,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/cocoa/main_menu_builder.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/mac/staging_watcher.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/crash/content/app/crashpad.h"
 #include "components/metrics/metrics_service.h"
@@ -71,7 +72,8 @@ void EnsureMetadataNeverIndexFile(const base::FilePath& user_data_dir) {
       base::BindOnce(&EnsureMetadataNeverIndexFileOnFileThread, user_data_dir));
 }
 
-// Used for UMA; never alter existing values.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class FilesystemType {
   kUnknown,
   kOther,
@@ -157,20 +159,21 @@ void RecordFilesystemStats() {
   if (success)
     filesystem_type = FilesystemStringToType(is_ro_dmg, filesystem_type_string);
 
-  UMA_HISTOGRAM_ENUMERATION("OSX.InstallationFilesystem", filesystem_type);
+  base::UmaHistogramEnumeration("OSX.InstallationFilesystem", filesystem_type);
 }
 
 void RecordInstanceStats() {
   upgrade_util::ThisAndOtherUserCounts counts =
       upgrade_util::GetCountOfOtherInstancesOfThisBinary();
 
-  UMA_HISTOGRAM_COUNTS_100("OSX.OtherInstances.ThisUser",
-                           counts.this_user_count);
-  UMA_HISTOGRAM_COUNTS_100("OSX.OtherInstances.OtherUser",
-                           counts.other_user_count);
+  base::UmaHistogramCounts100("OSX.OtherInstances.ThisUser",
+                              counts.this_user_count);
+  base::UmaHistogramCounts100("OSX.OtherInstances.OtherUser",
+                              counts.other_user_count);
 }
 
-// Used for UMA; never alter existing values.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class FastUserSwitchEvent {
   kUserDidBecomeActiveEvent,
   kUserDidBecomeInactiveEvent,
@@ -178,7 +181,7 @@ enum class FastUserSwitchEvent {
 };
 
 void LogFastUserSwitchStat(FastUserSwitchEvent event) {
-  UMA_HISTOGRAM_ENUMERATION("OSX.FastUserSwitch", event);
+  base::UmaHistogramEnumeration("OSX.FastUserSwitch", event);
 }
 
 void InstallFastUserSwitchStatRecorder() {
@@ -234,7 +237,8 @@ bool IsOnSameFilesystemAsChromium(NSString* dir_path) {
          cr_fsid->val[1] == buf.f_fsid.val[1];
 }
 
-// Used for UMA; never alter existing values.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class StagingDirectoryStep {
   kFailedToFindDirectory,
   kItemReplacementDirectory,
@@ -247,7 +251,7 @@ enum class StagingDirectoryStep {
 };
 
 void LogStagingDirectoryLocation(StagingDirectoryStep step) {
-  UMA_HISTOGRAM_ENUMERATION("OSX.StagingDirectoryLocation2", step);
+  base::UmaHistogramEnumeration("OSX.StagingDirectoryLocation2", step);
 }
 
 void RecordStagingDirectoryStats() {
@@ -357,6 +361,31 @@ void RecordInstallationStats() {
   RecordStagingDirectoryStats();
 }
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class StartupUpdateState {
+  kUpdateKeyNotSet,
+  kUpdateKeySetAndStagedCopyPresent,
+  kUpdateKeySetAndStagedCopyNotPresent,
+  kMaxValue = kUpdateKeySetAndStagedCopyNotPresent,
+};
+
+// Records about the state of Chrome updates. This is pre-emptory data
+// gathering to make sure that a situation that the team thinks will be OK is
+// actually OK in the field.
+void RecordUpdateState() {
+  StartupUpdateState state = StartupUpdateState::kUpdateKeyNotSet;
+  NSString* staging_location = [CrStagingKeyWatcher stagingLocation];
+  if (staging_location) {
+    if ([[NSFileManager defaultManager] fileExistsAtPath:staging_location])
+      state = StartupUpdateState::kUpdateKeySetAndStagedCopyPresent;
+    else
+      state = StartupUpdateState::kUpdateKeySetAndStagedCopyNotPresent;
+  }
+
+  base::UmaHistogramEnumeration("OSX.StartupUpdateState", state);
+}
+
 }  // namespace
 
 // ChromeBrowserMainPartsMac ---------------------------------------------------
@@ -442,6 +471,8 @@ void ChromeBrowserMainPartsMac::PostMainMessageLoopStart() {
   ChromeBrowserMainPartsPosix::PostMainMessageLoopStart();
 
   RecordInstallationStats();
+
+  RecordUpdateState();
 }
 
 void ChromeBrowserMainPartsMac::PreProfileInit() {
