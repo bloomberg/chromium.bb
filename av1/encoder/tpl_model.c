@@ -570,7 +570,9 @@ static void init_gop_frames_for_tpl(AV1_COMP *cpi, GF_PICTURE *gf_picture,
   ++*tpl_group_frames;
 
   // Initialize frames in the GF group
-  for (frame_idx = 1; frame_idx <= gf_group->size; ++frame_idx) {
+  for (frame_idx = 1;
+       frame_idx <= AOMMIN(gf_group->size, MAX_LENGTH_TPL_FRAME_STATS - 1);
+       ++frame_idx) {
     if (frame_idx == 1) {
       gf_picture[frame_idx].frame = frame_input->source;
       frame_disp_idx = gf_group->frame_disp_idx[frame_idx];
@@ -598,38 +600,40 @@ static void init_gop_frames_for_tpl(AV1_COMP *cpi, GF_PICTURE *gf_picture,
     ++*tpl_group_frames;
   }
 
-  ++frame_disp_idx;
-  int extend_frame_count = 0;
-  const int gld_idx_next_gop = gf_group->size;
-  const int lst_idx_next_gop =
-      gf_picture[gld_idx_next_gop].ref_frame[REF_IDX(LAST_FRAME)];
-  const int lst2_idx_next_gop =
-      gf_picture[gld_idx_next_gop].ref_frame[REF_IDX(LAST2_FRAME)];
-  const int lst3_idx_next_gop =
-      gf_picture[gld_idx_next_gop].ref_frame[REF_IDX(LAST3_FRAME)];
-
-  // Extend two frames outside the current gf group.
-  for (; frame_idx < MAX_LENGTH_TPL_FRAME_STATS && extend_frame_count < 2;
-       ++frame_idx) {
-    struct lookahead_entry *buf =
-        av1_lookahead_peek(cpi->lookahead, frame_disp_idx - 1);
-
-    if (buf == NULL) break;
-
-    init_ref_frame_array(&gf_picture[frame_idx]);
-
-    gf_picture[frame_idx].frame = &buf->img;
-    gf_picture[frame_idx].base_qindex = pframe_qindex;
-    gf_picture[frame_idx].disp_frame = frame_disp_idx;
-
-    gf_picture[frame_idx].ref_frame[REF_IDX(GOLDEN_FRAME)] = gld_idx_next_gop;
-    gf_picture[frame_idx].ref_frame[REF_IDX(LAST_FRAME)] = lst_idx_next_gop;
-    gf_picture[frame_idx].ref_frame[REF_IDX(LAST2_FRAME)] = lst2_idx_next_gop;
-    gf_picture[frame_idx].ref_frame[REF_IDX(LAST3_FRAME)] = lst3_idx_next_gop;
-
-    ++*tpl_group_frames;
-    ++extend_frame_count;
+  if (frame_idx < MAX_LENGTH_TPL_FRAME_STATS) {
     ++frame_disp_idx;
+    int extend_frame_count = 0;
+    const int gld_idx_next_gop = gf_group->size;
+    const int lst_idx_next_gop =
+        gf_picture[gld_idx_next_gop].ref_frame[REF_IDX(LAST_FRAME)];
+    const int lst2_idx_next_gop =
+        gf_picture[gld_idx_next_gop].ref_frame[REF_IDX(LAST2_FRAME)];
+    const int lst3_idx_next_gop =
+        gf_picture[gld_idx_next_gop].ref_frame[REF_IDX(LAST3_FRAME)];
+
+    // Extend two frames outside the current gf group.
+    for (; frame_idx < MAX_LENGTH_TPL_FRAME_STATS && extend_frame_count < 2;
+         ++frame_idx) {
+      struct lookahead_entry *buf =
+          av1_lookahead_peek(cpi->lookahead, frame_disp_idx - 1);
+
+      if (buf == NULL) break;
+
+      init_ref_frame_array(&gf_picture[frame_idx]);
+
+      gf_picture[frame_idx].frame = &buf->img;
+      gf_picture[frame_idx].base_qindex = pframe_qindex;
+      gf_picture[frame_idx].disp_frame = frame_disp_idx;
+
+      gf_picture[frame_idx].ref_frame[REF_IDX(GOLDEN_FRAME)] = gld_idx_next_gop;
+      gf_picture[frame_idx].ref_frame[REF_IDX(LAST_FRAME)] = lst_idx_next_gop;
+      gf_picture[frame_idx].ref_frame[REF_IDX(LAST2_FRAME)] = lst2_idx_next_gop;
+      gf_picture[frame_idx].ref_frame[REF_IDX(LAST3_FRAME)] = lst3_idx_next_gop;
+
+      ++*tpl_group_frames;
+      ++extend_frame_count;
+      ++frame_disp_idx;
+    }
   }
 
   /*
