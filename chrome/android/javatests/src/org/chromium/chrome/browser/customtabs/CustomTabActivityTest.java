@@ -238,7 +238,10 @@ public class CustomTabActivityTest {
         // first, otherwise the UI is manipulated on a non-UI thread.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             if (getActivity() == null) return;
-            AppMenuHandler handler = getActivity().getAppMenuHandler();
+            AppMenuHandler handler = getActivity()
+                                             .getRootUiCoordinatorForTesting()
+                                             .getAppMenuCoordinatorForTesting()
+                                             .getAppMenuHandler();
             if (handler != null) handler.hideAppMenu();
         });
         mWebServer.shutdown();
@@ -730,10 +733,17 @@ public class CustomTabActivityTest {
 
         openAppMenuAndAssertMenuShown();
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
-            MenuItem item = getActivity().getAppMenuPropertiesDelegate().getMenuItemForTitle(
-                    TEST_MENU_TITLE);
+            MenuItem item = ((CustomTabAppMenuPropertiesDelegate) getActivity()
+                                     .getRootUiCoordinatorForTesting()
+                                     .getAppMenuCoordinatorForTesting()
+                                     .getAppMenuPropertiesDelegate())
+                                    .getMenuItemForTitle(TEST_MENU_TITLE);
             Assert.assertNotNull(item);
-            Assert.assertTrue(getActivity().onOptionsItemSelected(item));
+            getActivity()
+                    .getRootUiCoordinatorForTesting()
+                    .getAppMenuCoordinatorForTesting()
+                    .getAppMenuHandler()
+                    .onOptionsItemSelected(item);
         });
 
         onFinished.waitForCallback("Pending Intent was not sent.");
@@ -779,8 +789,13 @@ public class CustomTabActivityTest {
                 InstrumentationRegistry.getInstrumentation().addMonitor(filter, null, false);
         openAppMenuAndAssertMenuShown();
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
-            MenuItem item = getActivity().getAppMenuHandler().getAppMenu().getMenu().findItem(
-                    R.id.open_in_browser_id);
+            MenuItem item = getActivity()
+                                    .getRootUiCoordinatorForTesting()
+                                    .getAppMenuCoordinatorForTesting()
+                                    .getAppMenuHandler()
+                                    .getAppMenu()
+                                    .getMenu()
+                                    .findItem(R.id.open_in_browser_id);
             Assert.assertNotNull(item);
             getActivity().onMenuOrKeyboardAction(R.id.open_in_browser_id, false);
         });

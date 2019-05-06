@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.appmenu;
 
-import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
@@ -28,6 +27,7 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -60,13 +60,15 @@ public class AppMenuTest {
         /**
          * AppMenuHandler for intercepting options item selections.
          */
-        public AppMenuHandlerForTest(Activity activity, AppMenuPropertiesDelegate delegate,
-                int menuResourceId) {
-            super(activity, delegate, menuResourceId);
+        public AppMenuHandlerForTest(AppMenuPropertiesDelegate delegate,
+                AppMenuCoordinator.AppMenuDelegate appMenuDelegate, int menuResourceId,
+                View decorView, ActivityLifecycleDispatcher activityLifecycleDispatcher) {
+            super(delegate, appMenuDelegate, menuResourceId, decorView,
+                    activityLifecycleDispatcher);
         }
 
         @Override
-        void onOptionsItemSelected(MenuItem item) {
+        public void onOptionsItemSelected(MenuItem item) {
             mLastSelectedItemId = item.getItemId();
         }
     }
@@ -76,17 +78,22 @@ public class AppMenuTest {
         // We need list selection; ensure we are not in touch mode.
         InstrumentationRegistry.getInstrumentation().setInTouchMode(false);
 
-        ChromeActivity.setAppMenuHandlerFactoryForTesting(
-                (activity, delegate, menuResourceId) -> {
-                    mAppMenuHandler =
-                            new AppMenuHandlerForTest(activity, delegate, menuResourceId);
+        AppMenuCoordinator.setAppMenuHandlerFactoryForTesting(
+                (delegate, appMenuDelegate, menuResourceId, decorView,
+                        activityLifecycleDispatcher) -> {
+                    mAppMenuHandler = new AppMenuHandlerForTest(delegate, appMenuDelegate,
+                            menuResourceId, decorView, activityLifecycleDispatcher);
                     return mAppMenuHandler;
                 });
 
         mActivityTestRule.startMainActivityWithURL(TEST_URL);
 
         showAppMenuAndAssertMenuShown();
-        mAppMenu = mActivityTestRule.getActivity().getAppMenuHandler().getAppMenu();
+        mAppMenu = mActivityTestRule.getActivity()
+                           .getRootUiCoordinatorForTesting()
+                           .getAppMenuCoordinatorForTesting()
+                           .getAppMenuHandler()
+                           .getAppMenu();
         PostTask.runOrPostTask(
                 UiThreadTaskTraits.DEFAULT, () -> mAppMenu.getListView().setSelection(0));
         CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, () -> getCurrentFocusedRow()));

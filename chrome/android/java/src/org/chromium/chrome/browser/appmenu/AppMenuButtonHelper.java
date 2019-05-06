@@ -39,7 +39,7 @@ public class AppMenuButtonHelper extends AccessibilityDelegate implements OnTouc
     }
 
     /**
-     * @param menuShowsFromBottom Whether the menu shows from the bottom by default.
+     * @param showsFromBottom Whether the menu shows from the bottom by default.
      */
     public void setMenuShowsFromBottom(boolean showsFromBottom) {
         mMenuShowsFromBottom = showsFromBottom;
@@ -64,7 +64,6 @@ public class AppMenuButtonHelper extends AccessibilityDelegate implements OnTouc
      * Shows the app menu if it is not already shown.
      * @param view View that initiated showing this menu. Normally it is a menu button.
      * @param startDragging Whether dragging is started.
-     * @param showFromBottom Whether the menu should show from the bottom up.
      * @return Whether or not if the app menu is successfully shown.
      */
     private boolean showAppMenu(View view, boolean startDragging) {

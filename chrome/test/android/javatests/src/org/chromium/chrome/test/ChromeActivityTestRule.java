@@ -163,8 +163,11 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
 
     /** Retrieves the application Menu */
     public Menu getMenu() throws ExecutionException {
-        return TestThreadUtils.runOnUiThreadBlocking(
-                getActivity().getAppMenuHandler().getAppMenu()::getMenu);
+        return TestThreadUtils.runOnUiThreadBlocking(getActivity()
+                                                             .getRootUiCoordinatorForTesting()
+                                                             .getAppMenuCoordinatorForTesting()
+                                                             .getAppMenuHandler()
+                                                             .getAppMenu()::getMenu);
     }
 
     /**

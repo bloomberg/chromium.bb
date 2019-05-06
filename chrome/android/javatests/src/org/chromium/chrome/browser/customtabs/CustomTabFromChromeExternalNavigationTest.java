@@ -187,8 +187,12 @@ public class CustomTabFromChromeExternalNavigationTest {
                                    instanceof CustomTabNavigationDelegate);
 
         CustomTabsTestUtils.openAppMenuAndAssertMenuShown(mCustomTabActivityTestRule.getActivity());
-        Menu menu =
-                mCustomTabActivityTestRule.getActivity().getAppMenuHandler().getAppMenu().getMenu();
+        Menu menu = mCustomTabActivityTestRule.getActivity()
+                            .getRootUiCoordinatorForTesting()
+                            .getAppMenuCoordinatorForTesting()
+                            .getAppMenuHandler()
+                            .getAppMenu()
+                            .getMenu();
 
         Assert.assertTrue(menu.findItem(R.id.icon_row_menu_id).isVisible());
         Assert.assertTrue(menu.findItem(R.id.find_in_page_id).isVisible());

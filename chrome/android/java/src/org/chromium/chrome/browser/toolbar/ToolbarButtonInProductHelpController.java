@@ -100,18 +100,21 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
 
     // Attempts to show an IPH text bubble for data saver detail.
     private static void maybeShowDataSaverDetail(ChromeActivity activity) {
-        View anchorView = activity.getToolbarManager().getMenuButton();
+        View anchorView = activity.getToolbarManager().getMenuButtonView();
         if (anchorView == null) return;
 
+        // TODO(https://crbug.com/956260): Provide AppMenuHandler or interface with needed methods
+        // rather than pulling off ToolbarManager.
         setupAndMaybeShowIPHForFeature(FeatureConstants.DATA_SAVER_DETAIL_FEATURE,
                 getDataReductionMenuItemHighlight(), false, R.string.iph_data_saver_detail_text,
                 R.string.iph_data_saver_detail_accessibility_text, anchorView,
-                activity.getAppMenuHandler(), Profile.getLastUsedProfile(), activity, null);
+                activity.getToolbarManager().getAppMenuHandler(), Profile.getLastUsedProfile(),
+                activity, null);
     }
 
     // Attempts to show an IPH text bubble for data saver milestone promo.
     private static void maybeShowDataSaverMilestonePromo(ChromeActivity activity) {
-        View anchorView = activity.getToolbarManager().getMenuButton();
+        View anchorView = activity.getToolbarManager().getMenuButtonView();
         if (anchorView == null) return;
 
         final DataReductionSavingsMilestonePromo promo =
@@ -124,7 +127,7 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
         };
         setupAndMaybeShowIPHForFeature(FeatureConstants.DATA_SAVER_MILESTONE_PROMO_FEATURE,
                 getDataReductionMenuItemHighlight(), false, promo.getPromoText(),
-                promo.getPromoText(), anchorView, activity.getAppMenuHandler(),
+                promo.getPromoText(), anchorView, activity.getToolbarManager().getAppMenuHandler(),
                 Profile.getLastUsedProfile(), activity, dismissCallback);
     }
 
@@ -152,8 +155,9 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
         setupAndMaybeShowIPHForFeature(FeatureConstants.DOWNLOAD_HOME_FEATURE,
                 R.id.downloads_menu_id, true, R.string.iph_download_home_text,
                 R.string.iph_download_home_accessibility_text,
-                mActivity.getToolbarManager().getMenuButton(), mActivity.getAppMenuHandler(),
-                Profile.getLastUsedProfile(), mActivity, null);
+                mActivity.getToolbarManager().getMenuButtonView(),
+                mActivity.getToolbarManager().getAppMenuHandler(), Profile.getLastUsedProfile(),
+                mActivity, null);
     }
 
     private void maybeShowNTPButtonIPH() {
@@ -178,8 +182,8 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
                 R.id.downloads_menu_id, true,
                 R.string.iph_download_infobar_download_continuing_text,
                 R.string.iph_download_infobar_download_continuing_text,
-                activity.getToolbarManager().getMenuButton(), activity.getAppMenuHandler(), profile,
-                activity, null);
+                activity.getToolbarManager().getMenuButtonView(),
+                activity.getToolbarManager().getAppMenuHandler(), profile, activity, null);
     }
 
     private static void setupAndMaybeShowIPHForFeature(String featureName,

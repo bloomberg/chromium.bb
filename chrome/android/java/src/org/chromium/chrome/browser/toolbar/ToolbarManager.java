@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.ThemeColorProvider.ThemeColorObserver;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
+import org.chromium.chrome.browser.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuObserver;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
@@ -126,8 +127,8 @@ import java.util.List;
  * Contains logic for managing the toolbar visual component.  This class manages the interactions
  * with the rest of the application to ensure the toolbar is always visually up to date.
  */
-public class ToolbarManager
-        implements ScrimObserver, ToolbarTabController, UrlFocusChangeListener, ThemeColorObserver {
+public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlFocusChangeListener,
+                                       ThemeColorObserver, AppMenuCoordinator.MenuButtonDelegate {
     /**
      * Handle UI updates of menu icons. Only applicable for phones.
      */
@@ -231,17 +232,16 @@ public class ToolbarManager
 
     private boolean mIsBottomToolbarVisible;
 
+    private AppMenuHandler mAppMenuHandler;
+
     /**
      * Creates a ToolbarManager object.
      *
      * @param controlContainer The container of the toolbar.
-     * @param menuHandler The handler for interacting with the menu.
-     * @param appMenuPropertiesDelegate Delegate for interactions with the app level menu.
      * @param invalidator Handler for synchronizing invalidations across UI elements.
      * @param urlFocusChangedCallback The callback to be notified when the URL focus changes.
      */
     public ToolbarManager(ChromeActivity activity, ToolbarControlContainer controlContainer,
-            final AppMenuHandler menuHandler, AppMenuPropertiesDelegate appMenuPropertiesDelegate,
             Invalidator invalidator, Callback<Boolean> urlFocusChangedCallback,
             ThemeColorProvider themeColorProvider) {
         mActivity = activity;
@@ -315,17 +315,6 @@ public class ToolbarManager
         mActionModeController = new ActionModeController(mActivity, mActionBarDelegate);
         mActionModeController.setCustomSelectionActionModeCallback(mToolbarActionModeCallback);
 
-        MenuDelegatePhone menuDelegate = new MenuDelegatePhone() {
-            @Override
-            public void updateReloadButtonState(boolean isLoading) {
-                if (mAppMenuPropertiesDelegate != null) {
-                    mAppMenuPropertiesDelegate.loadingStateChanged(isLoading);
-                    menuHandler.menuItemContentChanged(R.id.icon_row_menu_id);
-                }
-            }
-        };
-        setMenuDelegatePhone(menuDelegate);
-
         mToolbar.setPaintInvalidator(invalidator);
         mActionModeController.setTabStripHeight(mToolbar.getTabStripHeight());
         mLocationBar = mToolbar.getLocationBar();
@@ -337,11 +326,8 @@ public class ToolbarManager
                 mActivity.getWindowAndroid(), mActivity.getActivityTabProvider());
         mLocationBar.addUrlFocusChangeListener(mLocationBarFocusObserver);
 
-        setMenuHandler(menuHandler);
-        mToolbar.initialize(mLocationBarModel, this, mAppMenuButtonHelper);
+        mToolbar.initialize(mLocationBarModel, this);
         mToolbar.addUrlExpansionObserver(activity.getStatusBarColorController());
-
-        mAppMenuPropertiesDelegate = appMenuPropertiesDelegate;
 
         mOmniboxStartupMetrics = new OmniboxStartupMetrics(activity);
 
@@ -717,6 +703,27 @@ public class ToolbarManager
                 mActivity.isTablet() ? mAppThemeColorProvider : mTabThemeColorProvider);
     }
 
+    /**
+     * Called when the app menu and related properties delegate are available.
+     * @param appMenuHandler The handler for interacting with the menu.
+     * @param propertiesDelegate Delegate for interactions with the app level menu.
+     */
+    public void onAppMenuInitialized(
+            AppMenuHandler appMenuHandler, AppMenuPropertiesDelegate propertiesDelegate) {
+        MenuDelegatePhone menuDelegate = new MenuDelegatePhone() {
+            @Override
+            public void updateReloadButtonState(boolean isLoading) {
+                if (mAppMenuPropertiesDelegate != null) {
+                    mAppMenuPropertiesDelegate.loadingStateChanged(isLoading);
+                    appMenuHandler.menuItemContentChanged(R.id.icon_row_menu_id);
+                }
+            }
+        };
+        setMenuDelegatePhone(menuDelegate);
+        setAppMenuHandler(appMenuHandler);
+        mAppMenuPropertiesDelegate = propertiesDelegate;
+    }
+
     @Override
     public void onScrimVisibilityChanged(boolean visible) {
         if (visible) {
@@ -827,23 +834,24 @@ public class ToolbarManager
         return mBottomControlsCoordinator;
     }
 
+    // TODO(https://crbug.com/865801): Remove this IPH code from toolbar manager.
     private void showMenuIPHTextBubble(ChromeActivity activity, Tracker tracker, String featureName,
             @StringRes int stringId, @StringRes int accessibilityStringId, Integer highlightItemId,
             boolean circleHighlight) {
-        ViewRectProvider rectProvider = new ViewRectProvider(getMenuButton());
+        ViewRectProvider rectProvider = new ViewRectProvider(getMenuButtonView());
         int yInsetPx = mActivity.getResources().getDimensionPixelOffset(
                 R.dimen.text_bubble_menu_anchor_y_inset);
         rectProvider.setInsetPx(0, 0, 0, yInsetPx);
         mTextBubble = new TextBubble(
-                mActivity, getMenuButton(), stringId, accessibilityStringId, rectProvider);
+                mActivity, getMenuButtonView(), stringId, accessibilityStringId, rectProvider);
         mTextBubble.setDismissOnTouchInteraction(true);
         mTextBubble.addOnDismissListener(() -> {
             mHandler.postDelayed(() -> {
                 tracker.dismissed(featureName);
-                activity.getAppMenuHandler().clearMenuHighlight();
+                mAppMenuHandler.clearMenuHighlight();
             }, ViewHighlighter.IPH_MIN_DELAY_BETWEEN_TWO_HIGHLIGHTS);
         });
-        activity.getAppMenuHandler().setMenuHighlight(highlightItemId, circleHighlight);
+        mAppMenuHandler.setMenuHighlight(highlightItemId, circleHighlight);
         mTextBubble.show();
     }
 
@@ -852,6 +860,7 @@ public class ToolbarManager
      * @param tab The current tab.
      * @param featureName The associated feature name.
      */
+    // TODO(https://crbug.com/865801): Remove feature specific IPH from toolbar manager.
     public void showDownloadPageTextBubble(final Tab tab, String featureName) {
         if (tab == null) return;
 
@@ -885,6 +894,7 @@ public class ToolbarManager
      * @param tab The current tab.
      * @param featureName The associated feature name.
      */
+    // TODO(https://crbug.com/865801): Remove feature specific IPH from toolbar manager.
     public void showTranslateMenuButtonTextBubble(final Tab tab, String featureName) {
         if (tab == null) return;
         ChromeActivity activity = tab.getActivity();
@@ -1083,14 +1093,27 @@ public class ToolbarManager
         return mInitializedWithNative;
     }
 
-    /**
-     * @return The view containing the pop up menu button.
-     */
-    public @Nullable View getMenuButton() {
+    @Override
+    public @Nullable View getMenuButtonView() {
         if (mBottomControlsCoordinator != null && isBottomToolbarVisible()) {
             return mBottomControlsCoordinator.getMenuButtonWrapper().getImageButton();
         }
         return mToolbar.getMenuButton();
+    }
+
+    @Override
+    public boolean isMenuFromBottom() {
+        return isBottomToolbarVisible();
+    }
+
+    /**
+     * TODO(https://crbug.com/956260): Remove this public method. Classes that need the app menu
+     *     handler should have the dependency passed in rather than retrieving it from the toolbar
+     *     manager.
+     * @return The AppMenuHandler for the menu button contained in the various toolbars.
+     */
+    public @Nullable AppMenuHandler getAppMenuHandler() {
+        return mAppMenuHandler;
     }
 
     /**
@@ -1281,16 +1304,23 @@ public class ToolbarManager
 
     /**
      * Sets the handler for any special case handling related with the menu button.
-     * @param menuHandler The handler to be used.
+     * @param appMenuHandler The handler to be used.
      */
-    private void setMenuHandler(AppMenuHandler menuHandler) {
-        menuHandler.addObserver(new AppMenuObserver() {
+    private void setAppMenuHandler(AppMenuHandler appMenuHandler) {
+        mAppMenuHandler = appMenuHandler;
+        mAppMenuHandler.addObserver(new AppMenuObserver() {
             @Override
             public void onMenuVisibilityChanged(boolean isVisible) {
                 if (isVisible) {
                     // Defocus here to avoid handling focus in multiple places, e.g., when the
                     // forward button is pressed. (see crbug.com/414219)
                     setUrlBarFocus(false);
+
+                    if (!mActivity.isInOverviewMode() && isShowingAppMenuUpdateBadge()) {
+                        // The app menu badge should be removed the first time the menu is opened.
+                        removeAppMenuUpdateBadge(true);
+                        mActivity.getCompositorViewHolder().requestRender();
+                    }
                 }
 
                 if (mControlsVisibilityDelegate != null) {
@@ -1326,7 +1356,7 @@ public class ToolbarManager
                 }
             }
         });
-        mAppMenuButtonHelper = new AppMenuButtonHelper(menuHandler);
+        mAppMenuButtonHelper = new AppMenuButtonHelper(mAppMenuHandler);
         mAppMenuButtonHelper.setMenuShowsFromBottom(isBottomToolbarVisible());
         mAppMenuButtonHelper.setOnAppMenuShownListener(() -> {
             RecordUserAction.record("MobileToolbarShowMenu");
@@ -1344,6 +1374,7 @@ public class ToolbarManager
                 tracker.notifyEvent(EventConstants.OVERFLOW_OPENED_WITH_DATA_SAVER_SHOWN);
             }
         });
+        mToolbar.setAppMenuButtonHelper(mAppMenuButtonHelper);
     }
 
     @Nullable

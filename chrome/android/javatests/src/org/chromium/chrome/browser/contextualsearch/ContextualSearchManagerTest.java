@@ -1871,6 +1871,8 @@ public class ContextualSearchManagerTest {
                     @Override
                     public Boolean call() {
                         return mActivityTestRule.getActivity()
+                                .getRootUiCoordinatorForTesting()
+                                .getAppMenuCoordinatorForTesting()
                                 .getAppMenuHandler()
                                 .isAppMenuShowing();
                     }

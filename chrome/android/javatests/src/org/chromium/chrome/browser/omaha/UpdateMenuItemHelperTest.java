@@ -147,6 +147,8 @@ public class UpdateMenuItemHelperTest {
         showAppMenuAndAssertMenuShown();
         Assert.assertTrue("Update menu item is not showing.",
                 mActivityTestRule.getActivity()
+                        .getRootUiCoordinatorForTesting()
+                        .getAppMenuCoordinatorForTesting()
                         .getAppMenuHandler()
                         .getAppMenu()
                         .getMenu()
@@ -163,6 +165,8 @@ public class UpdateMenuItemHelperTest {
         showAppMenuAndAssertMenuShown();
         Assert.assertFalse("Update menu item is showing.",
                 mActivityTestRule.getActivity()
+                        .getRootUiCoordinatorForTesting()
+                        .getAppMenuCoordinatorForTesting()
                         .getAppMenuHandler()
                         .getAppMenu()
                         .getMenu()
@@ -223,6 +227,8 @@ public class UpdateMenuItemHelperTest {
         showAppMenuAndAssertMenuShown();
         Assert.assertFalse("Update menu item is showing.",
                 mActivityTestRule.getActivity()
+                        .getRootUiCoordinatorForTesting()
+                        .getAppMenuCoordinatorForTesting()
                         .getAppMenuHandler()
                         .getAppMenu()
                         .getMenu()
@@ -232,23 +238,40 @@ public class UpdateMenuItemHelperTest {
 
     private void showAppMenuAndAssertMenuShown() {
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
-            mActivityTestRule.getActivity().getAppMenuHandler().showAppMenu(null, false, false);
+            mActivityTestRule.getActivity()
+                    .getRootUiCoordinatorForTesting()
+                    .getAppMenuCoordinatorForTesting()
+                    .getAppMenuHandler()
+                    .showAppMenu(null, false, false);
         });
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return mActivityTestRule.getActivity().getAppMenuHandler().isAppMenuShowing();
+                return mActivityTestRule.getActivity()
+                        .getRootUiCoordinatorForTesting()
+                        .getAppMenuCoordinatorForTesting()
+                        .getAppMenuHandler()
+                        .isAppMenuShowing();
             }
         });
     }
 
     private void hideAppMenuAndAssertMenuShown() {
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                () -> { mActivityTestRule.getActivity().getAppMenuHandler().hideAppMenu(); });
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            mActivityTestRule.getActivity()
+                    .getRootUiCoordinatorForTesting()
+                    .getAppMenuCoordinatorForTesting()
+                    .getAppMenuHandler()
+                    .hideAppMenu();
+        });
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return !mActivityTestRule.getActivity().getAppMenuHandler().isAppMenuShowing();
+                return !mActivityTestRule.getActivity()
+                                .getRootUiCoordinatorForTesting()
+                                .getAppMenuCoordinatorForTesting()
+                                .getAppMenuHandler()
+                                .isAppMenuShowing();
             }
         });
     }

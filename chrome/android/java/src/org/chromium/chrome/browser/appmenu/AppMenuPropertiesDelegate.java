@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v4.graphics.drawable.DrawableCompat;
@@ -16,26 +17,28 @@ import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.download.DownloadUtils;
-import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
+import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -47,32 +50,70 @@ import org.chromium.webapk.lib.client.WebApkValidator;
 public class AppMenuPropertiesDelegate {
     protected MenuItem mReloadMenuItem;
 
-    protected final ChromeActivity mActivity;
+    protected final Context mContext;
+    protected final boolean mIsTablet;
+    protected final ActivityTabProvider mActivityTabProvider;
+    protected final MultiWindowModeStateDispatcher mMultiWindowModeStateDispatcher;
+    protected final TabModelSelector mTabModelSelector;
+    protected final ToolbarManager mToolbarManager;
+    protected final View mDecorView;
 
+    protected @Nullable OverviewModeBehavior mOverviewModeBehavior;
     protected BookmarkBridge mBookmarkBridge;
 
-    public AppMenuPropertiesDelegate(ChromeActivity activity) {
-        mActivity = activity;
+    /**
+     * Construct a new {@link AppMenuPropertiesDelegate}.
+     * @param context The activity context.
+     * @param activityTabProvider The {@link ActivityTabProvider} for the containing activity.
+     * @param multiWindowModeStateDispatcher The {@link MultiWindowModeStateDispatcher} for the
+     *         containing activity.
+     * @param tabModelSelector The {@link TabModelSelector} for the containing activity.
+     * @param toolbarManager The {@link ToolbarManager} for the containing activity.
+     * @param decorView The decor {@link View}, e.g. from Window#getDecorView(), for the containing
+     *         activity.
+     */
+    public AppMenuPropertiesDelegate(Context context, ActivityTabProvider activityTabProvider,
+            MultiWindowModeStateDispatcher multiWindowModeStateDispatcher,
+            TabModelSelector tabModelSelector, ToolbarManager toolbarManager, View decorView) {
+        mContext = context;
+        mIsTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext);
+        mActivityTabProvider = activityTabProvider;
+        mMultiWindowModeStateDispatcher = multiWindowModeStateDispatcher;
+        mTabModelSelector = tabModelSelector;
+        mToolbarManager = toolbarManager;
+        mDecorView = decorView;
     }
 
     /**
-     * @return Whether the App Menu should be shown.
+     * Called when native initialization has finished to provide additional activity-scoped objects
+     * only available after native initialization.
+     *
+     * @param overviewModeBehavior The {@link OverviewModeBehavior} for the containing activity
+     *         if the current activity supports an overview mode, or null otherwise.
      */
-    public boolean shouldShowAppMenu() {
-        return mActivity.shouldShowAppMenu();
+    void onNativeInitialized(@Nullable OverviewModeBehavior overviewModeBehavior) {
+        mOverviewModeBehavior = overviewModeBehavior;
+    }
+
+    /**
+     * @return The resource id for the menu to use in {@link AppMenu}.
+     */
+    public int getAppMenuLayoutId() {
+        return R.menu.main_menu;
     }
 
     /**
      * @return Whether the app menu for a web page should be shown.
      */
-    public boolean shouldShowPageMenu() {
-        boolean isOverview = mActivity.isInOverviewMode();
+    protected boolean shouldShowPageMenu() {
+        boolean isOverview =
+                mOverviewModeBehavior != null && mOverviewModeBehavior.overviewVisible();
 
-        if (mActivity.isTablet()) {
-            boolean hasTabs = mActivity.getCurrentTabModel().getCount() != 0;
+        if (mIsTablet) {
+            boolean hasTabs = mTabModelSelector.getCurrentModel().getCount() != 0;
             return hasTabs && !isOverview;
         } else {
-            return !isOverview && mActivity.getActivityTab() != null;
+            return !isOverview && mActivityTabProvider.get() != null;
         }
     }
 
@@ -82,19 +123,20 @@ public class AppMenuPropertiesDelegate {
      * in the application menu (i.e. that the main menu has been inflated into it).
      * @param menu Menu that will be used as the source for the App Menu pop up.
      */
-    public void prepareMenu(Menu menu) {
+    protected void prepareMenu(Menu menu) {
         // Exactly one of these will be true, depending on the type of menu showing.
         boolean isPageMenu = shouldShowPageMenu();
         boolean isOverviewMenu;
         boolean isTabletEmptyModeMenu;
 
-        boolean isOverview = mActivity.isInOverviewMode();
-        boolean isIncognito = mActivity.getCurrentTabModel().isIncognito();
-        Tab currentTab = mActivity.getActivityTab();
+        boolean isOverview =
+                mOverviewModeBehavior != null && mOverviewModeBehavior.overviewVisible();
+        boolean isIncognito = mTabModelSelector.getCurrentModel().isIncognito();
+        Tab currentTab = mActivityTabProvider.get();
 
         // Determine which menu to show.
-        if (mActivity.isTablet()) {
-            boolean hasTabs = mActivity.getCurrentTabModel().getCount() != 0;
+        if (mIsTablet) {
+            boolean hasTabs = mTabModelSelector.getCurrentModel().getCount() != 0;
             isOverviewMenu = hasTabs && isOverview;
             isTabletEmptyModeMenu = !hasTabs;
         } else {
@@ -115,13 +157,12 @@ public class AppMenuPropertiesDelegate {
                     || url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX);
             boolean isFileScheme = url.startsWith(UrlConstants.FILE_URL_PREFIX);
             boolean isContentScheme = url.startsWith(UrlConstants.CONTENT_URL_PREFIX);
-            boolean shouldShowIconRow = !mActivity.isTablet()
-                    || mActivity.getWindow().getDecorView().getWidth()
-                            < DeviceFormFactor.getMinimumTabletWidthPx(
-                                      mActivity.getWindowAndroid().getDisplay());
+            boolean shouldShowIconRow = !mIsTablet
+                    || mDecorView.getWidth()
+                            < DeviceFormFactor.getNonMultiDisplayMinimumTabletWidthPx(mContext);
 
-            final boolean bottomToolbarVisible = mActivity.getToolbarManager() != null
-                    && mActivity.getToolbarManager().isBottomToolbarVisible();
+            final boolean bottomToolbarVisible =
+                    mToolbarManager != null && mToolbarManager.isBottomToolbarVisible();
             shouldShowIconRow &= !bottomToolbarVisible;
 
             // Update the icon row items (shown in narrow form factors).
@@ -133,10 +174,9 @@ public class AppMenuPropertiesDelegate {
 
                 mReloadMenuItem = menu.findItem(R.id.reload_menu_id);
                 Drawable icon =
-                        AppCompatResources.getDrawable(mActivity, R.drawable.btn_reload_stop);
+                        AppCompatResources.getDrawable(mContext, R.drawable.btn_reload_stop);
                 DrawableCompat.setTintList(icon,
-                        AppCompatResources.getColorStateList(
-                                mActivity, R.color.standard_mode_tint));
+                        AppCompatResources.getColorStateList(mContext, R.color.standard_mode_tint));
                 mReloadMenuItem.setIcon(icon);
                 loadingStateChanged(currentTab.isLoading());
 
@@ -153,24 +193,24 @@ public class AppMenuPropertiesDelegate {
             menu.findItem(R.id.update_menu_id)
                     .setVisible(UpdateMenuItemHelper.getInstance().getUiState().itemState != null);
 
-            boolean hasMoreThanOneTab = mActivity.getTabModelSelector().getTotalTabCount() > 1;
-            menu.findItem(R.id.move_to_other_window_menu_id).setVisible(
-                    MultiWindowUtils.getInstance().isOpenInOtherWindowSupported(mActivity)
-                    && hasMoreThanOneTab);
+            boolean hasMoreThanOneTab = mTabModelSelector.getTotalTabCount() > 1;
+            menu.findItem(R.id.move_to_other_window_menu_id)
+                    .setVisible(mMultiWindowModeStateDispatcher.isOpenInOtherWindowSupported()
+                            && hasMoreThanOneTab);
 
             MenuItem recentTabsMenuItem = menu.findItem(R.id.recent_tabs_menu_id);
             recentTabsMenuItem.setVisible(!isIncognito);
             recentTabsMenuItem.setTitle(R.string.menu_recent_tabs);
 
             MenuItem allBookmarksMenuItem = menu.findItem(R.id.all_bookmarks_menu_id);
-            allBookmarksMenuItem.setTitle(mActivity.getString(R.string.menu_bookmarks));
+            allBookmarksMenuItem.setTitle(mContext.getString(R.string.menu_bookmarks));
 
             // Don't allow either "chrome://" pages or interstitial pages to be shared.
             menu.findItem(R.id.share_row_menu_id)
                     .setVisible(!isChromeScheme && !currentTab.isShowingInterstitialPage());
 
             ShareHelper.configureDirectShareMenuItem(
-                    mActivity, menu.findItem(R.id.direct_share_menu_id));
+                    mContext, menu.findItem(R.id.direct_share_menu_id));
 
             // Disable find in page on the native NTP.
             menu.findItem(R.id.find_in_page_id).setVisible(
@@ -215,8 +255,8 @@ public class AppMenuPropertiesDelegate {
                 // Hide close incognito tabs item.
                 menu.findItem(R.id.close_all_incognito_tabs_menu_id).setVisible(false);
                 // Enable close all tabs if there are normal tabs or incognito tabs.
-                menu.findItem(R.id.close_all_tabs_menu_id).setEnabled(
-                        mActivity.getTabModelSelector().getTotalTabCount() > 0);
+                menu.findItem(R.id.close_all_tabs_menu_id)
+                        .setEnabled(mTabModelSelector.getTotalTabCount() > 0);
             }
         }
 
@@ -243,7 +283,6 @@ public class AppMenuPropertiesDelegate {
         disableEnableMenuItem(menu, R.id.new_incognito_tab_menu_id, true,
                 PrefServiceBridge.getInstance().isIncognitoModeEnabled(),
                 PrefServiceBridge.getInstance().isIncognitoModeManaged());
-        mActivity.prepareMenu(menu);
     }
 
     /**
@@ -287,6 +326,16 @@ public class AppMenuPropertiesDelegate {
     }
 
     /**
+     * Gets an optional bundle of extra data associated with the provided MenuItem.
+     *
+     * @param item The {@link MenuItem} for which to return the Bundle.
+     * @return A {@link Bundle} for the provided MenuItem containing extra data, or null.
+     */
+    protected @Nullable Bundle getBundleForMenuItem(MenuItem item) {
+        return null;
+    }
+
+    /**
      * Sets the visibility of the "Translate" menu item.
      */
     protected void prepareTranslateMenuItem(Menu menu, Tab currentTab) {
@@ -306,7 +355,7 @@ public class AppMenuPropertiesDelegate {
      */
     public void loadingStateChanged(boolean isLoading) {
         if (mReloadMenuItem != null) {
-            Resources resources = mActivity.getResources();
+            Resources resources = mContext.getResources();
             mReloadMenuItem.getIcon().setLevel(isLoading
                             ? resources.getInteger(R.integer.reload_button_level_stop)
                             : resources.getInteger(R.integer.reload_button_level_reload));
@@ -318,7 +367,7 @@ public class AppMenuPropertiesDelegate {
     /**
      * Notify the delegate that menu was dismissed.
      */
-    public void onMenuDismissed() {
+    void onMenuDismissed() {
         mReloadMenuItem = null;
     }
 
@@ -345,7 +394,7 @@ public class AppMenuPropertiesDelegate {
      *         is shown at a fixed position at the bottom the app menu. It is always visible and
      *         overlays other app menu items if necessary.
      */
-    public int getFooterResourceId() {
+    protected int getFooterResourceId() {
         return 0;
     }
 
@@ -354,17 +403,8 @@ public class AppMenuPropertiesDelegate {
      *         one. 0 otherwise. The header will be displayed as the first item in the app menu. It
      *         will be scrolled off as the menu scrolls.
      */
-    public int getHeaderResourceId() {
+    protected int getHeaderResourceId() {
         return 0;
-    }
-
-    /**
-     * @return The {@link OnClickListener} to notify when the header view is clicked. May be null if
-     *         nothing should happen when the header is clicked.
-     */
-    @Nullable
-    public OnClickListener getHeaderOnClickListener() {
-        return null;
     }
 
     /**
@@ -372,16 +412,16 @@ public class AppMenuPropertiesDelegate {
      * @param maxMenuHeight The maximum available height for the menu to draw.
      * @return Whether the footer, as specified in {@link #getFooterResourceId()}, should be shown.
      */
-    public boolean shouldShowFooter(int maxMenuHeight) {
+    protected boolean shouldShowFooter(int maxMenuHeight) {
         return true;
     }
 
     /**
      * Determines whether the header should be shown based on the maximum available menu height.
      * @param maxMenuHeight The maximum available height for the menu to draw.
-     * @return Whether the header, as specified in {@link #getHeaderView()}, should be shown.
+     * @return Whether the header, as specified in {@link #getHeaderResourceId()}, should be shown.
      */
-    public boolean shouldShowHeader(int maxMenuHeight) {
+    protected boolean shouldShowHeader(int maxMenuHeight) {
         return true;
     }
 
@@ -405,7 +445,7 @@ public class AppMenuPropertiesDelegate {
         if (currentTab.getBookmarkId() != Tab.INVALID_BOOKMARK_ID) {
             bookmarkMenuItem.setIcon(R.drawable.btn_star_filled);
             bookmarkMenuItem.setChecked(true);
-            bookmarkMenuItem.setTitleCondensed(mActivity.getString(R.string.edit_bookmark));
+            bookmarkMenuItem.setTitleCondensed(mContext.getString(R.string.edit_bookmark));
         } else {
             bookmarkMenuItem.setIcon(R.drawable.btn_star);
             bookmarkMenuItem.setChecked(false);
@@ -445,8 +485,8 @@ public class AppMenuPropertiesDelegate {
         // This title doesn't seem to be displayed by Android, but it is used to set up
         // accessibility text in {@link AppMenuAdapter#setupMenuButton}.
         requestMenuLabel.setTitleCondensed(isRds
-                        ? mActivity.getString(R.string.menu_request_desktop_site_on)
-                        : mActivity.getString(R.string.menu_request_desktop_site_off));
+                        ? mContext.getString(R.string.menu_request_desktop_site_on)
+                        : mContext.getString(R.string.menu_request_desktop_site_off));
     }
 
     /**
@@ -454,14 +494,14 @@ public class AppMenuPropertiesDelegate {
      * @param view The view that was inflated.
      * @param appMenu The menu the view is inside of.
      */
-    public void onHeaderViewInflated(AppMenu appMenu, View view) {}
+    protected void onHeaderViewInflated(AppMenu appMenu, View view) {}
 
     /**
      * A notification that the footer view has finished inflating.
      * @param view The view that was inflated.
      * @param appMenu The menu the view is inside of.
      */
-    public void onFooterViewInflated(AppMenu appMenu, View view) {}
+    protected void onFooterViewInflated(AppMenu appMenu, View view) {}
 
     /**
      * Returns true iff the translate menu item should be visible.

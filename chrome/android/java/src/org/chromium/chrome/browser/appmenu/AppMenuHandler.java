@@ -5,19 +5,27 @@
 package org.chromium.chrome.browser.appmenu;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
+import android.content.ComponentCallbacks;
+import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.Nullable;
 import android.view.ContextThemeWrapper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.PopupMenu;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 
 import java.util.ArrayList;
@@ -26,7 +34,8 @@ import java.util.ArrayList;
  * Object responsible for handling the creation, showing, hiding of the AppMenu and notifying the
  * AppMenuObservers about these actions.
  */
-public class AppMenuHandler {
+public class AppMenuHandler
+        implements StartStopWithNativeObserver, OverviewModeBehavior.OverviewModeObserver {
     private AppMenu mAppMenu;
     private AppMenuDragHelper mAppMenuDragHelper;
     private Menu mMenu;
@@ -35,7 +44,11 @@ public class AppMenuHandler {
     private final View mHardwareButtonMenuAnchor;
 
     private final AppMenuPropertiesDelegate mDelegate;
-    private final Activity mActivity;
+    private final AppMenuCoordinator.AppMenuDelegate mAppMenuDelegate;
+    private final View mDecorView;
+    private final ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
+    private final ComponentCallbacks mComponentCallbacks;
+    private OverviewModeBehavior mOverviewModeBehavior;
 
     /**
      * The resource id of the menu item to highlight when the menu next opens. A value of
@@ -51,20 +64,70 @@ public class AppMenuHandler {
 
     /**
      * Constructs an AppMenuHandler object.
-     * @param activity Activity that is using the AppMenu.
      * @param delegate Delegate used to check the desired AppMenu properties on show.
+     * @param appMenuDelegate The AppMenuDelegate to handle menu item selection.
      * @param menuResourceId Resource Id that should be used as the source for the menu items.
      *            It is assumed to have back_menu_id, forward_menu_id, bookmark_this_page_id.
+     * @param decorView The decor {@link View}, e.g. from Window#getDecorView(), for the containing
+     *            activity.
+     * @param activityLifecycleDispatcher The {@link ActivityLifecycleDispatcher} for the containing
+     *            activity.
      */
-    public AppMenuHandler(Activity activity, AppMenuPropertiesDelegate delegate,
-            int menuResourceId) {
-        mActivity = activity;
+    public AppMenuHandler(AppMenuPropertiesDelegate delegate,
+            AppMenuCoordinator.AppMenuDelegate appMenuDelegate, int menuResourceId, View decorView,
+            ActivityLifecycleDispatcher activityLifecycleDispatcher) {
+        mAppMenuDelegate = appMenuDelegate;
         mDelegate = delegate;
-        mObservers = new ArrayList<AppMenuObserver>();
+        mDecorView = decorView;
+        mObservers = new ArrayList<>();
         mMenuResourceId = menuResourceId;
-        mHardwareButtonMenuAnchor = activity.findViewById(R.id.menu_anchor_stub);
+        mHardwareButtonMenuAnchor = mDecorView.findViewById(R.id.menu_anchor_stub);
+
+        mActivityLifecycleDispatcher = activityLifecycleDispatcher;
+        mActivityLifecycleDispatcher.register(this);
+
+        mComponentCallbacks = new ComponentCallbacks() {
+            @Override
+            public void onConfigurationChanged(Configuration configuration) {
+                hideAppMenu();
+            }
+
+            @Override
+            public void onLowMemory() {}
+        };
+        mDecorView.getContext().registerComponentCallbacks(mComponentCallbacks);
+
         assert mHardwareButtonMenuAnchor != null
                 : "Using AppMenu requires to have menu_anchor_stub view";
+    }
+
+    /**
+     * Called when the containing activity is being destroyed.
+     */
+    void destroy() {
+        // Prevent the menu window from leaking.
+        hideAppMenu();
+
+        mActivityLifecycleDispatcher.unregister(this);
+        if (mOverviewModeBehavior != null) {
+            mOverviewModeBehavior.removeOverviewModeObserver(this);
+        }
+
+        mDecorView.getContext().unregisterComponentCallbacks(mComponentCallbacks);
+    }
+
+    /**
+     * Called when native initialization has finished to provide additional activity-scoped objects
+     * only available after native initialization.
+     *
+     * @param overviewModeBehavior The {@link OverviewModeBehavior} for the containing activity
+     *         if the current activity supports an overview mode, or null otherwise.
+     */
+    void onNativeInitialized(@Nullable OverviewModeBehavior overviewModeBehavior) {
+        if (overviewModeBehavior != null) {
+            mOverviewModeBehavior = overviewModeBehavior;
+            mOverviewModeBehavior.addOverviewModeObserver(this);
+        }
     }
 
     /**
@@ -117,18 +180,22 @@ public class AppMenuHandler {
      */
     // TODO(crbug.com/635567): Fix this properly.
     @SuppressLint("ResourceType")
+    @VisibleForTesting
     public boolean showAppMenu(View anchorView, boolean startDragging, boolean showFromBottom) {
-        if (!mDelegate.shouldShowAppMenu() || isAppMenuShowing()) return false;
+        if (!mAppMenuDelegate.shouldShowAppMenu() || isAppMenuShowing()) return false;
+
         TextBubble.dismissBubbles();
         boolean isByPermanentButton = false;
 
-        int rotation = mActivity.getWindowManager().getDefaultDisplay().getRotation();
+        Context context = mDecorView.getContext();
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        int rotation = wm.getDefaultDisplay().getRotation();
         if (anchorView == null) {
             // This fixes the bug where the bottom of the menu starts at the top of
             // the keyboard, instead of overlapping the keyboard as it should.
-            int displayHeight = mActivity.getResources().getDisplayMetrics().heightPixels;
+            int displayHeight = context.getResources().getDisplayMetrics().heightPixels;
             Rect rect = new Rect();
-            mActivity.getWindow().getDecorView().getWindowVisibleDisplayFrame(rect);
+            mDecorView.getWindowVisibleDisplayFrame(rect);
             int statusBarHeight = rect.top;
             mHardwareButtonMenuAnchor.setY((displayHeight - statusBarHeight));
 
@@ -141,14 +208,14 @@ public class AppMenuHandler {
         if (mMenu == null) {
             // Use a PopupMenu to create the Menu object. Note this is not the same as the
             // AppMenu (mAppMenu) created below.
-            PopupMenu tempMenu = new PopupMenu(mActivity, anchorView);
+            PopupMenu tempMenu = new PopupMenu(context, anchorView);
             tempMenu.inflate(mMenuResourceId);
             mMenu = tempMenu.getMenu();
         }
         mDelegate.prepareMenu(mMenu);
 
         ContextThemeWrapper wrapper =
-                new ContextThemeWrapper(mActivity, R.style.OverflowMenuThemeOverlay);
+                new ContextThemeWrapper(context, R.style.OverflowMenuThemeOverlay);
 
         if (mAppMenu == null) {
             TypedArray a = wrapper.obtainStyledAttributes(new int[]
@@ -158,23 +225,23 @@ public class AppMenuHandler {
             int itemDividerHeight = itemDivider != null ? itemDivider.getIntrinsicHeight() : 0;
             a.recycle();
             mAppMenu = new AppMenu(
-                    mMenu, itemRowHeight, itemDividerHeight, this, mActivity.getResources());
-            mAppMenuDragHelper = new AppMenuDragHelper(mActivity, mAppMenu, itemRowHeight);
+                    mMenu, itemRowHeight, itemDividerHeight, this, context.getResources());
+            mAppMenuDragHelper = new AppMenuDragHelper(context, mAppMenu, itemRowHeight);
         }
 
         // Get the height and width of the display.
         Rect appRect = new Rect();
-        mActivity.getWindow().getDecorView().getWindowVisibleDisplayFrame(appRect);
+        mDecorView.getWindowVisibleDisplayFrame(appRect);
 
         // Use full size of window for abnormal appRect.
         if (appRect.left < 0 && appRect.top < 0) {
             appRect.left = 0;
             appRect.top = 0;
-            appRect.right = mActivity.getWindow().getDecorView().getWidth();
-            appRect.bottom = mActivity.getWindow().getDecorView().getHeight();
+            appRect.right = mDecorView.getWidth();
+            appRect.bottom = mDecorView.getHeight();
         }
         Point pt = new Point();
-        mActivity.getWindowManager().getDefaultDisplay().getSize(pt);
+        wm.getDefaultDisplay().getSize(pt);
 
         int footerResourceId = 0;
         if (mDelegate.shouldShowFooter(appRect.height())) {
@@ -238,8 +305,36 @@ public class AppMenuHandler {
         mObservers.remove(observer);
     }
 
-    void onOptionsItemSelected(MenuItem item) {
-        mActivity.onOptionsItemSelected(item);
+    // StartStopWithNativeObserver implementation
+    @Override
+    public void onStartWithNative() {}
+
+    @Override
+    public void onStopWithNative() {
+        hideAppMenu();
+    }
+
+    // OverviewModeBehavior.OverviewModeObserver implementation
+    @Override
+    public void onOverviewModeStartedShowing(boolean showToolbar) {
+        hideAppMenu();
+    }
+
+    @Override
+    public void onOverviewModeFinishedShowing() {}
+
+    @Override
+    public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {
+        hideAppMenu();
+    }
+
+    @Override
+    public void onOverviewModeFinishedHiding() {}
+
+    @VisibleForTesting
+    public void onOptionsItemSelected(MenuItem item) {
+        mAppMenuDelegate.onOptionsItemSelected(
+                item.getItemId(), mDelegate.getBundleForMenuItem(item));
     }
 
     /**

@@ -65,7 +65,7 @@ public interface BrowserParts {
     void onStartupFailure();
 
     /**
-     * @return Whether the activity this delegate represents has been destoyed or is in the
+     * @return Whether the activity this delegate represents has been destroyed or is in the
      *         process of finishing.
      */
     boolean isActivityFinishingOrDestroyed();

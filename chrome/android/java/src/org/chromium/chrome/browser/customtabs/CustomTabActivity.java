@@ -16,6 +16,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.provider.Browser;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
@@ -25,7 +26,6 @@ import android.support.customtabs.CustomTabsSessionToken;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.view.KeyEvent;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -580,20 +580,14 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     }
 
     @Override
-    protected AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
-        return new CustomTabAppMenuPropertiesDelegate(this,
-                mIntentDataProvider.getUiType(),
-                mIntentDataProvider.getMenuTitles(),
-                mIntentDataProvider.isOpenedByChrome(),
+    public AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
+        return new CustomTabAppMenuPropertiesDelegate(this, getActivityTabProvider(),
+                getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
+                getWindow().getDecorView(), mIntentDataProvider.getUiType(),
+                mIntentDataProvider.getMenuTitles(), mIntentDataProvider.isOpenedByChrome(),
                 mIntentDataProvider.shouldShowShareMenuItem(),
                 mIntentDataProvider.shouldShowStarButton(),
-                mIntentDataProvider.shouldShowDownloadButton(),
-                mIntentDataProvider.isIncognito());
-    }
-
-    @Override
-    protected int getAppMenuLayoutId() {
-        return R.menu.custom_tabs_menu;
+                mIntentDataProvider.shouldShowDownloadButton(), mIntentDataProvider.isIncognito());
     }
 
     @Override
@@ -619,9 +613,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
     @Override
     public void finish() {
-        // Prevent the menu window from leaking.
-        if (getAppMenuHandler() != null) getAppMenuHandler().hideAppMenu();
-
         super.finish();
         if (mIntentDataProvider != null && mIntentDataProvider.shouldAnimateOnFinish()) {
             mShouldOverridePackage = true;
@@ -713,21 +704,17 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     }
 
     @Override
-    protected void showAppMenuForKeyboardEvent() {
-        if (!shouldShowAppMenu()) return;
-        super.showAppMenuForKeyboardEvent();
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int menuIndex = getAppMenuPropertiesDelegate().getIndexOfMenuItem(item);
+    public boolean onOptionsItemSelected(int itemId, @Nullable Bundle menuItemData) {
+        int menuIndex =
+                CustomTabAppMenuPropertiesDelegate.getIndexOfMenuItemFromBundle(menuItemData);
         if (menuIndex >= 0) {
             mIntentDataProvider.clickMenuItemWithUrlAndTitle(
                     this, menuIndex, getActivityTab().getUrl(), getActivityTab().getTitle());
             RecordUserAction.record("CustomTabsMenuCustomMenuItem");
             return true;
         }
-        return super.onOptionsItemSelected(item);
+
+        return super.onOptionsItemSelected(itemId, menuItemData);
     }
 
     @Override
@@ -789,22 +776,11 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         return false;
     }
 
-    /**
-     * @return The {@link AppMenuPropertiesDelegate} associated with this activity. For test
-     *         purposes only.
-     */
-    @VisibleForTesting
-    @Override
-    public CustomTabAppMenuPropertiesDelegate getAppMenuPropertiesDelegate() {
-        return (CustomTabAppMenuPropertiesDelegate) super.getAppMenuPropertiesDelegate();
-    }
-
     @Override
     public void onUpdateStateChanged() {}
 
     /**
-     * @return The {@link CustomTabIntentDataProvider} for this {@link CustomTabActivity}. For test
-     *         purposes only.
+     * @return The {@link CustomTabIntentDataProvider} for this {@link CustomTabActivity}.
      */
     @VisibleForTesting
     public CustomTabIntentDataProvider getIntentDataProvider() {

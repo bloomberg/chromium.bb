@@ -87,11 +87,17 @@ public class TopToolbarCoordinator implements Toolbar {
      * Initialize the external dependencies required for view interaction.
      * @param toolbarDataProvider The provider for toolbar data.
      * @param tabController       The controller that handles interactions with the tab.
+     */
+    public void initialize(
+            ToolbarDataProvider toolbarDataProvider, ToolbarTabController tabController) {
+        mToolbarLayout.initialize(toolbarDataProvider, tabController);
+    }
+
+    /**
      * @param appMenuButtonHelper The helper for managing menu button interactions.
      */
-    public void initialize(ToolbarDataProvider toolbarDataProvider,
-            ToolbarTabController tabController, AppMenuButtonHelper appMenuButtonHelper) {
-        mToolbarLayout.initialize(toolbarDataProvider, tabController, appMenuButtonHelper);
+    public void setAppMenuButtonHelper(AppMenuButtonHelper appMenuButtonHelper) {
+        mToolbarLayout.setAppMenuButtonHelper(appMenuButtonHelper);
         if (mTabSwitcherModeCoordinatorPhone != null) {
             mTabSwitcherModeCoordinatorPhone.setAppMenuButtonHelper(appMenuButtonHelper);
         }

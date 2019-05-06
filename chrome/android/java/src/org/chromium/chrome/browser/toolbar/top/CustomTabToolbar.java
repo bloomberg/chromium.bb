@@ -46,7 +46,6 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.WindowDelegate;
-import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.LocationBar;
@@ -198,9 +197,8 @@ public class CustomTabToolbar
     }
 
     @Override
-    void initialize(ToolbarDataProvider toolbarDataProvider, ToolbarTabController tabController,
-            AppMenuButtonHelper appMenuButtonHelper) {
-        super.initialize(toolbarDataProvider, tabController, appMenuButtonHelper);
+    void initialize(ToolbarDataProvider toolbarDataProvider, ToolbarTabController tabController) {
+        super.initialize(toolbarDataProvider, tabController);
         updateVisualsForState();
     }
 

@@ -64,7 +64,6 @@ public class PartnerDisableIncognitoModeIntegrationTest {
                 tempMenu.inflate(R.menu.main_menu);
                 Menu menu = tempMenu.getMenu();
 
-                mActivityTestRule.getActivity().prepareMenu(menu);
                 return menu;
             }
         });

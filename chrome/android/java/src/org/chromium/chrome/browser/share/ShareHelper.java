@@ -508,10 +508,10 @@ public class ShareHelper {
 
     /**
      * Set the icon and the title for the menu item used for direct share.
-     * @param activity Activity that is used to access the package manager.
+     * @param context The activity context used to retrieve resources.
      * @param item The menu item that is used for direct share
      */
-    public static void configureDirectShareMenuItem(Activity activity, MenuItem item) {
+    public static void configureDirectShareMenuItem(Context context, MenuItem item) {
         Intent shareIntent = getShareLinkAppCompatibilityIntent();
         Pair<Drawable, CharSequence> directShare = getShareableIconAndName(shareIntent, null);
         Drawable directShareIcon = directShare.first;
@@ -520,7 +520,7 @@ public class ShareHelper {
         item.setIcon(directShareIcon);
         if (directShareTitle != null) {
             item.setTitle(
-                    activity.getString(R.string.accessibility_menu_share_via, directShareTitle));
+                    context.getString(R.string.accessibility_menu_share_via, directShareTitle));
         }
     }
 

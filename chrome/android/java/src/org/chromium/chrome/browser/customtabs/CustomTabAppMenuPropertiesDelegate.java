@@ -4,25 +4,32 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.DefaultBrowserInfo;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
+import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.toolbar.ToolbarManager;
 
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +39,8 @@ import java.util.Map;
  * App menu properties delegate for {@link CustomTabActivity}.
  */
 public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegate {
+    private final static String CUSTOM_MENU_ITEM_ID_KEY = "CustomMenuItemId";
+
     private final @CustomTabsUiType int mUiType;
     private final boolean mShowShare;
     private final boolean mShowStar;
@@ -47,10 +56,14 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
     /**
      * Creates an {@link CustomTabAppMenuPropertiesDelegate} instance.
      */
-    public CustomTabAppMenuPropertiesDelegate(final ChromeActivity activity,
+    public CustomTabAppMenuPropertiesDelegate(Context context,
+            ActivityTabProvider activityTabProvider,
+            MultiWindowModeStateDispatcher multiWindowModeStateDispatcher,
+            TabModelSelector tabModelSelector, ToolbarManager toolbarManager, View decorView,
             @CustomTabsUiType final int uiType, List<String> menuEntries, boolean isOpenedByChrome,
             boolean showShare, boolean showStar, boolean showDownload, boolean isIncognito) {
-        super(activity);
+        super(context, activityTabProvider, multiWindowModeStateDispatcher, tabModelSelector,
+                toolbarManager, decorView);
         mUiType = uiType;
         mMenuEntries = menuEntries;
         mIsOpenedByChrome = isOpenedByChrome;
@@ -61,16 +74,21 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
     }
 
     @Override
-    public void prepareMenu(Menu menu) {
-        Tab currentTab = mActivity.getActivityTab();
+    public int getAppMenuLayoutId() {
+        return R.menu.custom_tabs_menu;
+    }
+
+    @Override
+    protected void prepareMenu(Menu menu) {
+        Tab currentTab = mActivityTabProvider.get();
         if (currentTab != null) {
             MenuItem forwardMenuItem = menu.findItem(R.id.forward_menu_id);
             forwardMenuItem.setEnabled(currentTab.canGoForward());
 
             mReloadMenuItem = menu.findItem(R.id.reload_menu_id);
-            Drawable icon = AppCompatResources.getDrawable(mActivity, R.drawable.btn_reload_stop);
+            Drawable icon = AppCompatResources.getDrawable(mContext, R.drawable.btn_reload_stop);
             DrawableCompat.setTintList(icon,
-                    AppCompatResources.getColorStateList(mActivity, R.color.standard_mode_tint));
+                    AppCompatResources.getColorStateList(mContext, R.color.standard_mode_tint));
             mReloadMenuItem.setIcon(icon);
             loadingStateChanged(currentTab.isLoading());
 
@@ -79,7 +97,7 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
             shareItem.setEnabled(mShowShare);
             if (mShowShare) {
                 ShareHelper.configureDirectShareMenuItem(
-                        mActivity, menu.findItem(R.id.direct_share_menu_id));
+                        mContext, menu.findItem(R.id.direct_share_menu_id));
             }
 
             boolean openInChromeItemVisible = true;
@@ -192,11 +210,23 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
      * @return The index that the given menu item should appear in the result of
      *         {@link CustomTabIntentDataProvider#getMenuTitles()}. Returns -1 if item not found.
      */
-    public int getIndexOfMenuItem(MenuItem menuItem) {
-        if (!mItemToIndexMap.containsKey(menuItem)) {
-            return -1;
+    public static int getIndexOfMenuItemFromBundle(Bundle menuItemData) {
+        if (menuItemData != null && menuItemData.containsKey(CUSTOM_MENU_ITEM_ID_KEY)) {
+            return menuItemData.getInt(CUSTOM_MENU_ITEM_ID_KEY);
         }
-        return mItemToIndexMap.get(menuItem).intValue();
+
+        return -1;
+    }
+
+    @Override
+    protected @Nullable Bundle getBundleForMenuItem(MenuItem item) {
+        if (!mItemToIndexMap.containsKey(item)) {
+            return null;
+        }
+
+        Bundle itemBundle = new Bundle();
+        itemBundle.putInt(CUSTOM_MENU_ITEM_ID_KEY, mItemToIndexMap.get(item).intValue());
+        return itemBundle;
     }
 
     @Override

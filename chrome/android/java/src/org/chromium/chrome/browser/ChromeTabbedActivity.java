@@ -54,8 +54,6 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler.IntentHandlerDelegate;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
-import org.chromium.chrome.browser.appmenu.AppMenu;
-import org.chromium.chrome.browser.appmenu.AppMenuIconRowFooter;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.browseractions.BrowserActionsService;
@@ -73,7 +71,6 @@ import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
 import org.chromium.chrome.browser.contextual_suggestions.PageViewTimer;
 import org.chromium.chrome.browser.cookies.CookiesFetcher;
 import org.chromium.chrome.browser.crypto.CipherFactory;
-import org.chromium.chrome.browser.datareduction.DataReductionMainMenuItem;
 import org.chromium.chrome.browser.datareduction.DataReductionPromoScreen;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
@@ -107,7 +104,6 @@ import org.chromium.chrome.browser.modaldialog.TabModalPresenter;
 import org.chromium.chrome.browser.multiwindow.MultiInstanceChromeTabbedActivity;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.native_page.NativePageAssassin;
-import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.omaha.OmahaBase;
@@ -129,6 +125,7 @@ import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate;
+import org.chromium.chrome.browser.tabbed_mode.TabbedAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
@@ -155,7 +152,6 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.OverviewListLayout;
-import org.chromium.chrome.browser.widget.emptybackground.EmptyBackgroundViewWrapper;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
@@ -1016,13 +1012,6 @@ public class ChromeTabbedActivity
 
             mLayoutManager.setToolbarManager(getToolbarManager());
 
-            if (isTablet()) {
-                EmptyBackgroundViewWrapper bgViewWrapper = new EmptyBackgroundViewWrapper(
-                        getTabModelSelector(), getTabCreator(false), ChromeTabbedActivity.this,
-                        getAppMenuHandler(), getSnackbarManager(), mOverviewModeController);
-                bgViewWrapper.initialize();
-            }
-
             mOverviewModeController.hideOverview(false);
 
             mScreenshotMonitor = new ScreenshotMonitor(ChromeTabbedActivity.this);
@@ -1649,78 +1638,10 @@ public class ChromeTabbedActivity
     }
 
     @Override
-    protected AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
-        return new AppMenuPropertiesDelegate(this) {
-            private boolean isMenuButtonInBottomToolbar() {
-                return getToolbarManager() != null && getToolbarManager().isBottomToolbarVisible();
-            }
-
-            private boolean shouldShowDataSaverMenuItem() {
-                return !isInOverviewMode()
-                        && DataReductionProxySettings.getInstance()
-                                   .shouldUseDataReductionMainMenuItem();
-            }
-
-            @Override
-            public int getFooterResourceId() {
-                if (isMenuButtonInBottomToolbar()) {
-                    return this.shouldShowPageMenu() ? R.layout.icon_row_menu_footer : 0;
-                }
-                return shouldShowDataSaverMenuItem() ? R.layout.data_reduction_main_menu_item : 0;
-            }
-
-            @Override
-            public void onFooterViewInflated(AppMenu menu, View view) {
-                if (view instanceof AppMenuIconRowFooter) {
-                    ((AppMenuIconRowFooter) view)
-                            .initialize(ChromeTabbedActivity.this, menu, mBookmarkBridge);
-                }
-            }
-
-            @Override
-            public int getHeaderResourceId() {
-                if (isMenuButtonInBottomToolbar()) {
-                    return shouldShowDataSaverMenuItem() ? R.layout.data_reduction_main_menu_item
-                                                         : 0;
-                }
-                return 0;
-            }
-
-            @Override
-            public void onHeaderViewInflated(AppMenu menu, View view) {
-                if (view instanceof DataReductionMainMenuItem) {
-                    view.findViewById(R.id.data_reduction_menu_divider).setVisibility(View.GONE);
-                }
-            }
-
-            @Override
-            public boolean shouldShowFooter(int maxMenuHeight) {
-                if (isMenuButtonInBottomToolbar()) return true;
-                if (shouldShowDataSaverMenuItem()) {
-                    return canShowDataReductionItem(maxMenuHeight);
-                }
-                return super.shouldShowFooter(maxMenuHeight);
-            }
-
-            @Override
-            public boolean shouldShowHeader(int maxMenuHeight) {
-                if (!isMenuButtonInBottomToolbar()) {
-                    return super.shouldShowHeader(maxMenuHeight);
-                }
-
-                if (DataReductionProxySettings.getInstance().shouldUseDataReductionMainMenuItem()) {
-                    return canShowDataReductionItem(maxMenuHeight);
-                }
-
-                return super.shouldShowHeader(maxMenuHeight);
-            }
-
-            private boolean canShowDataReductionItem(int maxMenuHeight) {
-                // TODO(twellington): Account for whether a different footer or header is showing.
-                return maxMenuHeight >= getResources().getDimension(
-                                                R.dimen.data_saver_menu_footer_min_show_height);
-            }
-        };
+    public AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
+        return new TabbedAppMenuPropertiesDelegate(this, getActivityTabProvider(),
+                getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
+                getWindow().getDecorView(), this);
     }
 
     @Override
@@ -2290,12 +2211,6 @@ public class ChromeTabbedActivity
     }
 
     @Override
-    protected void showAppMenuForKeyboardEvent() {
-        if (!mUIWithNativeInitialized) return;
-        super.showAppMenuForKeyboardEvent();
-    }
-
-    @Override
     public boolean isInOverviewMode() {
         return mOverviewModeController != null && mOverviewModeController.overviewVisible();
     }
@@ -2346,16 +2261,13 @@ public class ChromeTabbedActivity
     public void onOverviewModeStartedShowing(boolean showToolbar) {
         if (getFindToolbarManager() != null) getFindToolbarManager().hideToolbar();
         if (getAssistStatusHandler() != null) getAssistStatusHandler().updateAssistState();
-        if (getAppMenuHandler() != null) getAppMenuHandler().hideAppMenu();
     }
 
     @Override
     public void onOverviewModeFinishedShowing() {}
 
     @Override
-    public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {
-        if (getAppMenuHandler() != null) getAppMenuHandler().hideAppMenu();
-    }
+    public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {}
 
     @Override
     public void onOverviewModeFinishedHiding() {

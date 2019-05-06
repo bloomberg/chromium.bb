@@ -29,10 +29,8 @@ import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
 import android.util.Pair;
 import android.util.TypedValue;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.view.Window;
@@ -58,9 +56,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler.IntentHandlerDelegate;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
-import org.chromium.chrome.browser.appmenu.AppMenu;
-import org.chromium.chrome.browser.appmenu.AppMenuHandler;
-import org.chromium.chrome.browser.appmenu.AppMenuObserver;
+import org.chromium.chrome.browser.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
@@ -189,7 +185,9 @@ import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -201,18 +199,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         extends AsyncInitializationActivity
         implements TabCreatorManager, AccessibilityStateChangeListener, PolicyChangeListener,
                    ContextualSearchTabPromotionDelegate, SnackbarManageable, SceneChangeObserver,
-                   StatusBarColorController.StatusBarColorProvider {
-    /**
-     * Factory which creates the AppMenuHandler.
-     */
-    public interface AppMenuHandlerFactory {
-        /**
-         * @return AppMenuHandler for the given activity and menu resource id.
-         */
-        public AppMenuHandler get(Activity activity, AppMenuPropertiesDelegate delegate,
-                int menuResourceId);
-    }
-
+                   StatusBarColorController.StatusBarColorProvider,
+                   AppMenuCoordinator.AppMenuDelegate {
     /**
      * No control container to inflate during initialization.
      */
@@ -234,6 +222,22 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /**
+     * A handler for menu or keyboard actions. Register via
+     * {@link #registerMenuOrKeyboardActionHandler(MenuOrKeyboardActionHandler)}.
+     */
+    public interface MenuOrKeyboardActionHandler {
+        /**
+         * Handles menu item selection and keyboard shortcuts.
+         *
+         * @param id The ID of the selected menu item (defined in main_menu.xml) or
+         *           keyboard shortcut (defined in values.xml).
+         * @param fromMenu Whether this was triggered from the menu.
+         * @return Whether the action was handled.
+         */
+        boolean onMenuOrKeyboardAction(int id, boolean fromMenu);
+    }
+
+    /**
      * No toolbar layout to inflate during initialization.
      */
     static final int NO_TOOLBAR_LAYOUT = -1;
@@ -244,10 +248,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * Timeout in ms for reading PartnerBrowserCustomizations provider.
      */
     private static final int PARTNER_BROWSER_CUSTOMIZATIONS_TIMEOUT_MS = 10000;
-
-    private static AppMenuHandlerFactory sAppMenuHandlerFactory =
-            (activity, delegate, menuResourceId) -> new AppMenuHandler(activity, delegate,
-                    menuResourceId);
 
     private C mComponent;
 
@@ -293,8 +293,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private ContextualSearchManager mContextualSearchManager;
     protected ReaderModeManager mReaderModeManager;
     private SnackbarManager mSnackbarManager;
-    private AppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
-    private AppMenuHandler mAppMenuHandler;
     private ToolbarManager mToolbarManager;
     private FindToolbarManager mFindToolbarManager;
     private BottomSheetController mBottomSheetController;
@@ -347,12 +345,12 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private final Runnable mUpdateStateChangedListener = this::onUpdateStateChanged;
 
     /**
-     * @param factory The {@link AppMenuHandlerFactory} for creating {@link #mAppMenuHandler}
+     * The RootUiCoordinator associated with the activity. This variable is held to facilitate
+     * testing.
      */
-    @VisibleForTesting
-    public static void setAppMenuHandlerFactoryForTesting(AppMenuHandlerFactory factory) {
-        sAppMenuHandlerFactory = factory;
-    }
+    private RootUiCoordinator mRootUiCoordinator;
+
+    private List<MenuOrKeyboardActionHandler> mMenuActionHandlers = new ArrayList<>();
 
     @Override
     protected ActivityWindowAndroid createWindowAndroid() {
@@ -372,7 +370,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // to the RootUiCoordinator, passing the activity is an easy way to get access to a
         // number of objects that will ultimately be owned by the RootUiCoordinator. This is not
         // a recommended pattern.
-        RootUiCoordinator.create(this);
+        mRootUiCoordinator = new RootUiCoordinator(this);
 
         VrModuleProvider.getDelegate().doPreInflationStartup(this, getSavedInstanceState());
 
@@ -650,38 +648,12 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             final View controlContainer = findViewById(R.id.control_container);
             assert controlContainer != null;
             ToolbarControlContainer toolbarContainer = (ToolbarControlContainer) controlContainer;
-            mAppMenuPropertiesDelegate = createAppMenuPropertiesDelegate();
-            mAppMenuHandler = sAppMenuHandlerFactory.get(
-                    this, mAppMenuPropertiesDelegate, getAppMenuLayoutId());
             Callback<Boolean> urlFocusChangedCallback = hasFocus -> onOmniboxFocusChanged(hasFocus);
-            mToolbarManager = new ToolbarManager(this, toolbarContainer, mAppMenuHandler,
-                    mAppMenuPropertiesDelegate, getCompositorViewHolder().getInvalidator(),
-                    urlFocusChangedCallback, mTabThemeColorProvider);
+            mToolbarManager = new ToolbarManager(this, toolbarContainer,
+                    getCompositorViewHolder().getInvalidator(), urlFocusChangedCallback,
+                    mTabThemeColorProvider);
             mFindToolbarManager =
                     new FindToolbarManager(this, mToolbarManager.getActionModeControllerCallback());
-            mAppMenuHandler.addObserver(new AppMenuObserver() {
-                @Override
-                public void onMenuVisibilityChanged(boolean isVisible) {
-                    if (isVisible && !isInOverviewMode()) {
-                        // The app menu badge should be removed the first time the menu is opened.
-                        if (mToolbarManager.isShowingAppMenuUpdateBadge()) {
-                            mToolbarManager.removeAppMenuUpdateBadge(true);
-                            mCompositorViewHolder.requestRender();
-                        }
-                    }
-                    if (!isVisible) {
-                        mAppMenuPropertiesDelegate.onMenuDismissed();
-                        MenuItem updateMenuItem = mAppMenuHandler.getAppMenu().getMenu().findItem(
-                                R.id.update_menu_id);
-                        if (updateMenuItem != null && updateMenuItem.isVisible()) {
-                            UpdateMenuItemHelper.getInstance().onMenuDismissed();
-                        }
-                    }
-                }
-
-                @Override
-                public void onMenuHighlightChanged(boolean highlighting) {}
-            });
         }
     }
 
@@ -773,13 +745,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /**
-     * @return The resource id for the menu to use in {@link AppMenu}. Default is R.menu.main_menu.
-     */
-    protected int getAppMenuLayoutId() {
-        return R.menu.main_menu;
-    }
-
-    /**
      * Get the Chrome Home bottom sheet if it exists.
      * @return The bottom sheet or null.
      */
@@ -795,12 +760,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         return mScrimView;
     }
 
-    /**
-     * @return {@link AppMenuPropertiesDelegate} instance that the {@link AppMenuHandler}
-     *         should be using in this activity.
-     */
-    protected AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
-        return new AppMenuPropertiesDelegate(this);
+    @Override
+    public AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
+        return new AppMenuPropertiesDelegate(this, getActivityTabProvider(),
+                getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
+                getWindow().getDecorView());
     }
 
     /**
@@ -1033,7 +997,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             VrModuleProvider.getDelegate().onActivityHidden(this);
             if (tab != null) tab.onActivityHidden();
         }
-        if (mAppMenuHandler != null) mAppMenuHandler.hideAppMenu();
 
         if (GSAState.getInstance(this).isGsaAvailable() && !SysUtils.isLowEndDevice()) {
             GSAAccountChangeListener.getInstance().disconnect();
@@ -1534,10 +1497,15 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     @Override
+    public boolean onOptionsItemSelected(int itemId, @Nullable Bundle menuItemData) {
+        if (mManualFillingComponent != null) mManualFillingComponent.dismiss();
+        return onMenuOrKeyboardAction(itemId, true);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item != null) {
-            if (mManualFillingComponent != null) mManualFillingComponent.dismiss();
-            if (onMenuOrKeyboardAction(item.getItemId(), true)) return true;
+            if (onOptionsItemSelected(item.getItemId(), null)) return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -1562,10 +1530,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         return false;
     }
 
-    /**
-     * @return Whether the app menu should be shown.
-     */
     @CallSuper
+    @Override
     public boolean shouldShowAppMenu() {
         if (isActivityFinishingOrDestroyed()) return false;
 
@@ -1575,6 +1541,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (state != ActivityState.RESUMED && (!inMultiWindow || state != ActivityState.PAUSED)) {
             return false;
         }
+
+        // TODO(https://crbug.com/956260): Move UI state related logic out of ChromeActivity.
 
         // Do not show the menu if Contextual Search panel is opened.
         if (mContextualSearchManager != null && mContextualSearchManager.isSearchPanelOpened()) {
@@ -1591,26 +1559,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
 
         return true;
-    }
-
-    /**
-    * Shows the app menu (if possible) for a key press on the keyboard with the correct anchor view
-    * chosen depending on device configuration and the visible menu button to the user.
-    */
-    protected void showAppMenuForKeyboardEvent() {
-        if (getAppMenuHandler() == null) return;
-
-        boolean hasPermanentMenuKey = ViewConfiguration.get(this).hasPermanentMenuKey();
-        getAppMenuHandler().showAppMenu(
-                hasPermanentMenuKey ? null : getToolbarManager().getMenuButton(), false,
-                getToolbarManager().isBottomToolbarVisible());
-    }
-
-    /**
-     * Allows Activities that extend ChromeActivity to do additional hiding/showing of menu items.
-     * @param menu Menu that is going to be shown when the menu button is pressed.
-     */
-    public void prepareMenu(Menu menu) {
     }
 
     protected IntentHandlerDelegate createIntentHandlerDelegate() {
@@ -1958,7 +1906,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
-        if (mAppMenuHandler != null) mAppMenuHandler.hideAppMenu();
         super.onConfigurationChanged(newConfig);
 
         // We only handle VR UI mode and UI mode night changes. Any other changes should follow the
@@ -2118,22 +2065,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /**
-     * @return The {@link AppMenuHandler} associated with this activity.
-     */
-    @VisibleForTesting
-    public AppMenuHandler getAppMenuHandler() {
-        return mAppMenuHandler;
-    }
-
-    /**
-     * @return The {@link AppMenuPropertiesDelegate} associated with this activity.
-     */
-    @VisibleForTesting
-    public AppMenuPropertiesDelegate getAppMenuPropertiesDelegate() {
-        return mAppMenuPropertiesDelegate;
-    }
-
-    /**
      * Callback for when UpdateMenuItemHelper has a state change.
      */
     public void onUpdateStateChanged() {
@@ -2150,6 +2081,20 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /**
+     * @param handler A new {@link MenuOrKeyboardActionHandler} to register.
+     */
+    public void registerMenuOrKeyboardActionHandler(MenuOrKeyboardActionHandler handler) {
+        mMenuActionHandlers.add(handler);
+    }
+
+    /**
+     * @param handler A {@link MenuOrKeyboardActionHandler} to unregister.
+     */
+    public void unregisterMenuOrKeyboardActionHandler(MenuOrKeyboardActionHandler handler) {
+        mMenuActionHandlers.remove(handler);
+    }
+
+    /**
      * Handles menu item selection and keyboard shortcuts.
      *
      * @param id The ID of the selected menu item (defined in main_menu.xml) or
@@ -2158,11 +2103,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * @return Whether the action was handled.
      */
     public boolean onMenuOrKeyboardAction(int id, boolean fromMenu) {
+        for (MenuOrKeyboardActionHandler handler : mMenuActionHandlers) {
+            if (handler.onMenuOrKeyboardAction(id, fromMenu)) return true;
+        }
+
         if (id == R.id.preferences_id) {
             PreferencesLauncher.launchSettingsPage(this, null);
             RecordUserAction.record("MobileMenuSettings");
-        } else if (id == R.id.show_menu) {
-            showAppMenuForKeyboardEvent();
         } else if (id == R.id.find_in_page_id) {
             if (mFindToolbarManager == null) return false;
 
@@ -2644,5 +2591,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     @Nullable
     public BottomSheetController getBottomSheetController() {
         return mBottomSheetController;
+    }
+
+    @VisibleForTesting
+    public RootUiCoordinator getRootUiCoordinatorForTesting() {
+        return mRootUiCoordinator;
     }
 }

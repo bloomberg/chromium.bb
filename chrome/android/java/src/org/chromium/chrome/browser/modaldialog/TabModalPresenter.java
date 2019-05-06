@@ -289,7 +289,7 @@ public class TabModalPresenter
      * @param restricted Whether the browser controls access should be restricted.
      */
     private void setBrowserControlsAccess(boolean restricted) {
-        View menuButton = mChromeActivity.getToolbarManager().getMenuButton();
+        View menuButton = mChromeActivity.getToolbarManager().getMenuButtonView();
 
         if (restricted) {
             mActiveTab = mChromeActivity.getActivityTab();
@@ -317,8 +317,10 @@ public class TabModalPresenter
                 mDidClearTextControls = true;
             }
 
+            // TODO(https://crbug.com/956260): Provide AppMenuHandler or interface with needed
+            //  methods rather than pulling off ToolbarManager.
             // Hide app menu in case it is opened.
-            mChromeActivity.getAppMenuHandler().hideAppMenu();
+            mChromeActivity.getToolbarManager().getAppMenuHandler().hideAppMenu();
 
             // Force toolbar to show and disable overflow menu.
             onTabModalDialogStateChanged(true);
