@@ -244,10 +244,7 @@ void RemoveBrowsingDataForProfile(const base::FilePath& profile_path) {
   if (profile->IsGuestSession())
     profile = profile->GetOffTheRecordProfile();
 
-  content::BrowserContext::GetBrowsingDataRemover(profile)->Remove(
-      base::Time(), base::Time::Max(),
-      ChromeBrowsingDataRemoverDelegate::WIPE_PROFILE,
-      ChromeBrowsingDataRemoverDelegate::ALL_ORIGIN_TYPES);
+  profile->Wipe();
 }
 
 #if !defined(OS_CHROMEOS)

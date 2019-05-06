@@ -105,6 +105,10 @@ jboolean ProfileAndroid::IsChild(
   return profile_->IsChild();
 }
 
+void ProfileAndroid::Wipe(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+  profile_->Wipe();
+}
+
 // static
 ScopedJavaLocalRef<jobject> JNI_Profile_GetLastUsedProfile(JNIEnv* env) {
   return ProfileAndroid::GetLastUsedProfile(env);

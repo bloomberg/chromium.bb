@@ -8,6 +8,7 @@
 
 #include "base/path_service.h"
 #include "build/build_config.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/net/profile_network_context_service.h"
@@ -336,3 +337,10 @@ double Profile::GetDefaultZoomLevelForProfile() {
       ->GetDefaultZoomLevel();
 }
 #endif  // !defined(OS_ANDROID)
+
+void Profile::Wipe() {
+  content::BrowserContext::GetBrowsingDataRemover(this)->Remove(
+      base::Time(), base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::WIPE_PROFILE,
+      ChromeBrowsingDataRemoverDelegate::ALL_ORIGIN_TYPES);
+}
