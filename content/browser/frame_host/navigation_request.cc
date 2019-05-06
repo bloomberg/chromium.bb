@@ -644,7 +644,6 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
   // navigation just committed.
   navigation_request->state_ = RESPONSE_STARTED;
   navigation_request->render_frame_host_ = render_frame_host;
-  navigation_request->VerifyLoaderAndRenderFrameHostExpectations();
   navigation_request->CreateNavigationHandle(true);
   DCHECK(navigation_request->navigation_handle());
   return navigation_request;
@@ -829,23 +828,11 @@ NavigationRequest::~NavigationRequest() {
 }
 
 void NavigationRequest::BeginNavigation() {
-  DCHECK(!loader_);
-  DCHECK(!render_frame_host_);
-
-  // TODO(https://crbug.com/936962): Remove this when the bug is fixed.
-  if (loader_) {
-    FrameMsg_Navigate_Type::Value navigation_type =
-        common_params_.navigation_type;
-    base::debug::Alias(&navigation_type);
-    NavigationState state = state_;
-    base::debug::Alias(&state);
-    DEBUG_ALIAS_FOR_GURL(url, common_params_.url);
-    base::debug::DumpWithoutCrashing();
-    loader_.reset();
-  }
   DCHECK(state_ == NOT_STARTED || state_ == WAITING_FOR_RENDERER_RESPONSE);
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
                                "BeginNavigation");
+  DCHECK(!loader_);
+  DCHECK(!render_frame_host_);
 
   state_ = STARTED;
 
@@ -947,7 +934,6 @@ void NavigationRequest::BeginNavigation() {
   // Select an appropriate RenderFrameHost.
   render_frame_host_ =
       frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
-  VerifyLoaderAndRenderFrameHostExpectations();
   NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(render_frame_host_,
                                                            common_params_.url);
 
@@ -1395,7 +1381,6 @@ void NavigationRequest::OnResponseStarted(
   if (response_should_be_rendered_) {
     render_frame_host_ =
         frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
-    VerifyLoaderAndRenderFrameHostExpectations();
     NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
         render_frame_host_, common_params_.url);
   } else {
@@ -1595,15 +1580,8 @@ void NavigationRequest::OnRequestFailedInternal(
   // Sanity check that we haven't changed the RenderFrameHost picked for the
   // error page in OnRequestFailedInternal when running the WillFailRequest
   // checks.
-  // TODO(https://crbug.com/936962): Replace this by a CHECK when the bug is
-  // fixed.
-  DCHECK(!render_frame_host_ || render_frame_host_ == render_frame_host);
-  if (render_frame_host_ && render_frame_host_ != render_frame_host)
-    base::debug::DumpWithoutCrashing();
+  CHECK(!render_frame_host_ || render_frame_host_ == render_frame_host);
   render_frame_host_ = render_frame_host;
-  VerifyLoaderAndRenderFrameHostExpectations();
-
-  DCHECK(render_frame_host_);
 
   // The check for WebUI should be performed only if error page isolation is
   // enabled for this failed navigation. It is possible for subframe error page
@@ -1834,7 +1812,7 @@ void NavigationRequest::OnStartChecksComplete(
       std::move(navigation_ui_data),
       navigation_handle_->service_worker_handle(), appcache_handle_.get(),
       this);
-  VerifyLoaderAndRenderFrameHostExpectations();
+  DCHECK(!render_frame_host_);
 }
 
 void NavigationRequest::OnRedirectChecksComplete(
@@ -2407,18 +2385,6 @@ void NavigationRequest::IgnoreCommitInterfaceDisconnection() {
 
 bool NavigationRequest::IsSameDocument() const {
   return FrameMsg_Navigate_Type::IsSameDocument(common_params_.navigation_type);
-}
-
-void NavigationRequest::VerifyLoaderAndRenderFrameHostExpectations() {
-  if (!loader_ || !render_frame_host_)
-    return;
-  FrameMsg_Navigate_Type::Value navigation_type =
-      common_params_.navigation_type;
-  base::debug::Alias(&navigation_type);
-  NavigationState state = state_;
-  base::debug::Alias(&state);
-  DEBUG_ALIAS_FOR_GURL(url, common_params_.url);
-  base::debug::DumpWithoutCrashing();
 }
 
 int NavigationRequest::EstimateHistoryOffset() {
