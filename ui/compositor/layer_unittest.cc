@@ -1903,10 +1903,14 @@ TEST_F(LayerWithRealCompositorTest, CanvasDrawFadedString) {
   ASSERT_FALSE(bitmap.empty());
 
   std::string filename;
-  if (base::win::GetVersion() < base::win::Version::WIN10)
+  if (base::win::GetVersion() < base::win::Version::WIN10) {
     filename = "string_faded_win7.png";
-  else
+
+    // TODO(crbug.com/955128): Flaky.
+    return;
+  } else {
     filename = "string_faded_win10.png";
+  }
   base::FilePath ref_img = test_data_dir().AppendASCII(filename);
   // WritePNGFile(bitmap, ref_img, true);
 
