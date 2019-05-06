@@ -2037,6 +2037,8 @@ crbug.com/441840 external/wpt/css/css-shapes/shape-outside/values/shape-outside-
 crbug.com/441840 external/wpt/css/css-shapes/shape-outside/values/shape-outside-polygon-004.html [ Failure ]
 crbug.com/441840 [ Win ] external/wpt/css/css-shapes/shape-outside/values/shape-outside-shape-arguments-000.html [ Failure ]
 
+crbug.com/958672 [ Mac ] external/wpt/css/css-text/hyphens/hyphens-span-002.html [ Failure ]
+crbug.com/958672 external/wpt/css/css-text/hyphens/hyphens-span-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/letter-spacing/letter-spacing-control-chars-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-009.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-011.html [ Failure ]
@@ -2937,8 +2939,6 @@ crbug.com/626703 external/wpt/css/css-text/hyphens/hyphens-shaping-001.html [ Fa
 crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-shaping-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-shaping-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/line-break/line-break-shaping-001.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-text/hyphens/hyphens-span-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/hyphens/hyphens-span-001.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/webrtc/no-media-call.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vlr-table-001-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vlr-009-manual.html [ Skip ]
