@@ -26,7 +26,7 @@ macro(create_dummy_source_file basename extension out_file_list_var)
       "${dummy_source_file}" "// Generated file. DO NOT EDIT!\n"
       "// ${target_name} needs a ${extension} file to force link language, \n"
       "// or to silence a harmless CMake warning: Ignore me.\n"
-      "void ${target_name}_dummy_function(void) {}\n")
+      "void aom_${target_name}_dummy_function(void) {}\n")
   list(APPEND "${out_file_list_var}" "${dummy_source_file}")
 endmacro()
 
