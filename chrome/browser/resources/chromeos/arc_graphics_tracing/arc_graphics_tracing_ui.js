@@ -1051,6 +1051,13 @@ class EventBands {
       var eventAfter = sourceWithBounds.source.events[indexAfter];
       var factor =
           (eventTimestamp - eventBefore[1]) / (eventAfter[1] - eventBefore[1]);
+
+      if (!sourceWithBounds.smooth) {
+        // Clamp to before value.
+        if (factor < 1.0) {
+          factor = 0.0;
+        }
+      }
       var value = factor * eventAfter[2] + (1.0 - factor) * eventBefore[2];
 
       if (!contentAdded) {
