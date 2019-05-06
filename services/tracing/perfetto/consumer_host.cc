@@ -193,7 +193,8 @@ perfetto::TraceConfig ConsumerHost::AdjustTraceConfig(
   perfetto::TraceConfig trace_config_copy(trace_config);
   // Clock snapshotting is incompatible with chrome's process sandboxing.
   // Telemetry uses its own way of snapshotting clocks anyway.
-  trace_config_copy.set_disable_clock_snapshotting(true);
+  auto* builtin_data_sources = trace_config_copy.mutable_builtin_data_sources();
+  builtin_data_sources->set_disable_clock_snapshotting(true);
   return trace_config_copy;
 }
 

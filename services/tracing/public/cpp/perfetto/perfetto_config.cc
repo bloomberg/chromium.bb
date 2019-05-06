@@ -26,7 +26,8 @@ perfetto::TraceConfig GetDefaultPerfettoConfig(
 
   // Perfetto uses clock_gettime for its internal snapshotting, which gets
   // blocked by the sandboxed and isn't needed for Chrome regardless.
-  perfetto_config.set_disable_clock_snapshotting(true);
+  auto* builtin_data_sources = perfetto_config.mutable_builtin_data_sources();
+  builtin_data_sources->set_disable_clock_snapshotting(true);
 
   // Capture actual trace events.
   auto* trace_event_data_source = perfetto_config.add_data_sources();
