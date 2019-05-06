@@ -76,7 +76,6 @@ class CORE_EXPORT HTMLCollection : public ScriptWrappable,
     kDoesNotOverrideItemAfter,
   };
 
-  static HTMLCollection* Create(ContainerNode& base, CollectionType);
   HTMLCollection(ContainerNode& base,
                  CollectionType,
                  ItemAfterOverrideType = kDoesNotOverrideItemAfter);

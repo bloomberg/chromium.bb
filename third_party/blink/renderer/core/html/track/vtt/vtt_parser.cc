@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/html/track/vtt/vtt_element.h"
 #include "third_party/blink/renderer/core/html/track/vtt/vtt_region.h"
 #include "third_party/blink/renderer/core/html/track/vtt/vtt_scanner.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/segmented_string.h"
@@ -540,7 +541,7 @@ void VTTTreeBuilder::ConstructTreeFromToken(Document& document) {
       if (node_type == kVTTNodeTypeRubyText && current_type != kVTTNodeTypeRuby)
         break;
 
-      VTTElement* child = VTTElement::Create(node_type, &document);
+      auto* child = MakeGarbageCollected<VTTElement>(node_type, &document);
       if (!token_.Classes().IsEmpty())
         child->setAttribute(kClassAttr, token_.Classes());
 

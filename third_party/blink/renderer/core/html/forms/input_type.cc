@@ -84,27 +84,90 @@ using InputTypeFactoryMap = HashMap<AtomicString, InputTypeFactoryFunction>;
 static std::unique_ptr<InputTypeFactoryMap> CreateInputTypeFactoryMap() {
   std::unique_ptr<InputTypeFactoryMap> map =
       std::make_unique<InputTypeFactoryMap>();
-  map->insert(input_type_names::kButton, ButtonInputType::Create);
-  map->insert(input_type_names::kCheckbox, CheckboxInputType::Create);
-  map->insert(input_type_names::kColor, ColorInputType::Create);
-  map->insert(input_type_names::kDate, DateInputType::Create);
-  map->insert(input_type_names::kDatetimeLocal, DateTimeLocalInputType::Create);
-  map->insert(input_type_names::kEmail, EmailInputType::Create);
-  map->insert(input_type_names::kFile, FileInputType::Create);
-  map->insert(input_type_names::kHidden, HiddenInputType::Create);
-  map->insert(input_type_names::kImage, ImageInputType::Create);
-  map->insert(input_type_names::kMonth, MonthInputType::Create);
-  map->insert(input_type_names::kNumber, NumberInputType::Create);
-  map->insert(input_type_names::kPassword, PasswordInputType::Create);
-  map->insert(input_type_names::kRadio, RadioInputType::Create);
-  map->insert(input_type_names::kRange, RangeInputType::Create);
-  map->insert(input_type_names::kReset, ResetInputType::Create);
-  map->insert(input_type_names::kSearch, SearchInputType::Create);
-  map->insert(input_type_names::kSubmit, SubmitInputType::Create);
-  map->insert(input_type_names::kTel, TelephoneInputType::Create);
-  map->insert(input_type_names::kTime, TimeInputType::Create);
-  map->insert(input_type_names::kUrl, URLInputType::Create);
-  map->insert(input_type_names::kWeek, WeekInputType::Create);
+  map->insert(input_type_names::kButton,
+              [](HTMLInputElement& element) -> InputType* {
+                return MakeGarbageCollected<ButtonInputType>(element);
+              });
+  map->insert(input_type_names::kCheckbox,
+              [](HTMLInputElement& element) -> InputType* {
+                return MakeGarbageCollected<CheckboxInputType>(element);
+              });
+  map->insert(input_type_names::kColor,
+              [](HTMLInputElement& element) -> InputType* {
+                return MakeGarbageCollected<ColorInputType>(element);
+              });
+  map->insert(input_type_names::kDate,
+              [](HTMLInputElement& element) -> InputType* {
+                return MakeGarbageCollected<DateInputType>(element);
+              });
+  map->insert(input_type_names::kDatetimeLocal,
+              [](HTMLInputElement& element) -> InputType* {
+                return MakeGarbageCollected<DateTimeLocalInputType>(element);
+              });
+  map->insert(input_type_names::kEmail,
+              [](HTMLInputElement& element) -> InputType* {
+                return MakeGarbageCollected<EmailInputType>(element);
+              });
+  map->insert(input_type_names::kFile,
+              [](HTMLInputElement& element) -> InputType* {
+                return MakeGarbageCollected<FileInputType>(element);
+              });
+  map->insert(input_type_names::kHidden,
+              [](HTMLInputElement& element) -> InputType* {
+                return MakeGarbageCollected<HiddenInputType>(element);
+              });
+  map->insert(input_type_names::kImage,
+              [](HTMLInputElement& element) -> InputType* {
+                return MakeGarbageCollected<ImageInputType>(element);
+              });
+  map->insert(input_type_names::kMonth,
+              [](HTMLInputElement& element) -> InputType* {
+                return MakeGarbageCollected<MonthInputType>(element);
+              });
+  map->insert(input_type_names::kNumber,
+              [](HTMLInputElement& element) -> InputType* {
+                return MakeGarbageCollected<NumberInputType>(element);
+              });
+  map->insert(input_type_names::kPassword,
+              [](HTMLInputElement& element) -> InputType* {
+                return MakeGarbageCollected<PasswordInputType>(element);
+              });
+  map->insert(input_type_names::kRadio,
+              [](HTMLInputElement& element) -> InputType* {
+                return MakeGarbageCollected<RadioInputType>(element);
+              });
+  map->insert(input_type_names::kRange,
+              [](HTMLInputElement& element) -> InputType* {
+                return MakeGarbageCollected<RangeInputType>(element);
+              });
+  map->insert(input_type_names::kReset,
+              [](HTMLInputElement& element) -> InputType* {
+                return MakeGarbageCollected<ResetInputType>(element);
+              });
+  map->insert(input_type_names::kSearch,
+              [](HTMLInputElement& element) -> InputType* {
+                return MakeGarbageCollected<SearchInputType>(element);
+              });
+  map->insert(input_type_names::kSubmit,
+              [](HTMLInputElement& element) -> InputType* {
+                return MakeGarbageCollected<SubmitInputType>(element);
+              });
+  map->insert(input_type_names::kTel,
+              [](HTMLInputElement& element) -> InputType* {
+                return MakeGarbageCollected<TelephoneInputType>(element);
+              });
+  map->insert(input_type_names::kTime,
+              [](HTMLInputElement& element) -> InputType* {
+                return MakeGarbageCollected<TimeInputType>(element);
+              });
+  map->insert(input_type_names::kUrl,
+              [](HTMLInputElement& element) -> InputType* {
+                return MakeGarbageCollected<URLInputType>(element);
+              });
+  map->insert(input_type_names::kWeek,
+              [](HTMLInputElement& element) -> InputType* {
+                return MakeGarbageCollected<WeekInputType>(element);
+              });
   // No need to register "text" because it is the default type.
   return map;
 }

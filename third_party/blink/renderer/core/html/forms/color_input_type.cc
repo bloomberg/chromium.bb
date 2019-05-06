@@ -77,10 +77,6 @@ static bool IsValidColorString(const String& value) {
 ColorInputType::ColorInputType(HTMLInputElement& element)
     : InputType(element), KeyboardClickableInputTypeView(element) {}
 
-InputType* ColorInputType::Create(HTMLInputElement& element) {
-  return MakeGarbageCollected<ColorInputType>(element);
-}
-
 ColorInputType::~ColorInputType() = default;
 
 void ColorInputType::Trace(Visitor* visitor) {

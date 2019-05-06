@@ -278,7 +278,7 @@ TEST_F(RangeTest, ExpandNotCrash) {
 }
 
 TEST_F(RangeTest, ToPosition) {
-  Node& textarea = *HTMLTextAreaElement::Create(GetDocument());
+  auto& textarea = *MakeGarbageCollected<HTMLTextAreaElement>(GetDocument());
   Range& range = *Range::Create(GetDocument());
   const Position position = Position(&textarea, 0);
   range.setStart(position, ASSERT_NO_EXCEPTION);

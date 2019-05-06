@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/page/drag_data.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 
 namespace blink {
@@ -63,7 +64,7 @@ TEST(FileInputTypeTest, createFileList) {
 TEST(FileInputTypeTest, ignoreDroppedNonNativeFiles) {
   Document* document = Document::CreateForTest();
   auto* input = HTMLInputElement::Create(*document, CreateElementFlags());
-  InputType* file_input = FileInputType::Create(*input);
+  InputType* file_input = MakeGarbageCollected<FileInputType>(*input);
 
   DataObject* native_file_raw_drag_data = DataObject::Create();
   const DragData native_file_drag_data(native_file_raw_drag_data, FloatPoint(),
@@ -95,7 +96,7 @@ TEST(FileInputTypeTest, ignoreDroppedNonNativeFiles) {
 TEST(FileInputTypeTest, setFilesFromPaths) {
   Document* document = Document::CreateForTest();
   auto* input = HTMLInputElement::Create(*document, CreateElementFlags());
-  InputType* file_input = FileInputType::Create(*input);
+  InputType* file_input = MakeGarbageCollected<FileInputType>(*input);
   Vector<String> paths;
   paths.push_back("/native/path");
   paths.push_back("/native/path2");

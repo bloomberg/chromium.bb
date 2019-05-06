@@ -75,23 +75,17 @@ bool ThrowIfValidName(const AtomicString& name,
 
 }  // namespace
 
-CustomElementRegistry* CustomElementRegistry::Create(
-    const LocalDOMWindow* owner) {
-  CustomElementRegistry* registry =
-      MakeGarbageCollected<CustomElementRegistry>(owner);
-  Document* document = owner->document();
-  if (V0CustomElementRegistrationContext* v0 =
-          document ? document->RegistrationContext() : nullptr)
-    registry->Entangle(v0);
-  return registry;
-}
-
 CustomElementRegistry::CustomElementRegistry(const LocalDOMWindow* owner)
     : element_definition_is_running_(false),
       owner_(owner),
       v0_(MakeGarbageCollected<V0RegistrySet>()),
       upgrade_candidates_(MakeGarbageCollected<UpgradeCandidateMap>()),
-      reaction_stack_(&CustomElementReactionStack::Current()) {}
+      reaction_stack_(&CustomElementReactionStack::Current()) {
+  Document* document = owner->document();
+  if (V0CustomElementRegistrationContext* v0 =
+          document ? document->RegistrationContext() : nullptr)
+    Entangle(v0);
+}
 
 void CustomElementRegistry::Trace(Visitor* visitor) {
   visitor->Trace(definitions_);

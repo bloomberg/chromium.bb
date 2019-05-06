@@ -67,14 +67,10 @@ Vector<String> CollectAcceptTypes(const HTMLInputElement& input) {
 
 }  // namespace
 
-inline FileInputType::FileInputType(HTMLInputElement& element)
+FileInputType::FileInputType(HTMLInputElement& element)
     : InputType(element),
       KeyboardClickableInputTypeView(element),
       file_list_(MakeGarbageCollected<FileList>()) {}
-
-InputType* FileInputType::Create(HTMLInputElement& element) {
-  return MakeGarbageCollected<FileInputType>(element);
-}
 
 void FileInputType::Trace(Visitor* visitor) {
   visitor->Trace(file_list_);
