@@ -400,8 +400,10 @@ class FileSystemURLLoaderFactoryTest
     return client;
   }
 
-  std::unique_ptr<network::TestURLLoaderClient> TestLoadNoRun(const GURL& url) {
-    return TestLoadHelper(url, /*extra_headers=*/nullptr, file_system_context_);
+  std::unique_ptr<network::TestURLLoaderClient> TestLoadNoRun(
+      const GURL& url,
+      const net::HttpRequestHeaders* extra_headers = nullptr) {
+    return TestLoadHelper(url, extra_headers, file_system_context_);
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner() {
@@ -705,7 +707,10 @@ IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, FileTest) {
 IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest,
                        FileTestFullSpecifiedRange) {
   base::ScopedAllowBlockingForTesting allow_blocking;
-  const size_t buffer_size = 4000;
+  // Size should be larger than kDefaultFileSystemUrlPipeSize to test
+  // that large files are properly read in chunks and not entirely into
+  // memory.
+  const size_t buffer_size = 180'000;
   std::unique_ptr<char[]> buffer(new char[buffer_size]);
   FillBuffer(buffer.get(), buffer_size);
   WriteFile("bigfile", buffer.get(), buffer_size);
@@ -720,11 +725,12 @@ IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest,
       net::HttpRequestHeaders::kRange,
       net::HttpByteRange::Bounded(first_byte_position, last_byte_position)
           .GetHeaderValue());
-  auto client = TestLoadWithHeaders(CreateFileSystemURL("bigfile"), &headers);
-
+  auto client = TestLoadNoRun(CreateFileSystemURL("bigfile"), &headers);
+  client->RunUntilResponseBodyArrived();
   ASSERT_TRUE(client->has_received_response());
-  EXPECT_TRUE(client->has_received_completion());
   std::string response_text = ReadDataPipe(client->response_body_release());
+  client->RunUntilComplete();
+  EXPECT_TRUE(client->has_received_completion());
   EXPECT_TRUE(partial_buffer_string == response_text);
 }
 
