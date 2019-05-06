@@ -533,17 +533,6 @@ def _CalculatePadding(raw_symbols):
           'Found duplicate symbols:\n%r\n%r' % (prev_symbol, symbol))
 
     padding = symbol.address - prev_symbol.end_address
-    # These thresholds were found by experimenting with arm32 Chrome.
-    # E.g.: Set them to 0 and see what warnings get logged, then take max value.
-    # TODO(agrieve): See if these thresholds make sense for architectures
-    #     other than arm32.
-    if (not symbol.full_name.startswith('*') and
-        not symbol.IsStringLiteral() and (
-        symbol.section in 'rd' and padding >= 256 or
-        symbol.section in 't' and padding >= 64)):
-      # Should not happen.
-      logging.warning('Large padding of %d between:\n  A) %r\n  B) %r' % (
-                      padding, prev_symbol, symbol))
     symbol.padding = padding
     symbol.size += padding
     assert symbol.size >= 0, (
