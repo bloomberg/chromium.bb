@@ -905,6 +905,7 @@ test("content_browsertests") {
     "../browser/site_per_process_hit_test_browsertest.cc",
     "../browser/site_per_process_mac_browsertest.mm",
     "../browser/site_per_process_unload_browsertest.cc",
+    "../browser/sms/sms_browsertest.cc",
     "../browser/snapshot_browsertest.cc",
     "../browser/storage_partition_impl_browsertest.cc",
     "../browser/tracing/background_tracing_manager_browsertest.cc",
