@@ -556,10 +556,6 @@
     "label": "//chrome/chrome_cleaner:chrome_cleaner_unittests",
     "type": "console_test_launcher",
   },
-  "chrome_elf_import_unittests": {
-    "label": "//chrome_elf:chrome_elf_import_unittests",
-    "type": "raw",
-  },
   "chrome_elf_unittests": {
     "label": "//chrome_elf:chrome_elf_unittests",
     "type": "raw",
@@ -900,6 +896,10 @@
   "dbus_unittests": {
     "label": "//dbus:dbus_unittests",
     "type": "windowed_test_launcher",
+  },
+  "delayloads_unittests": {
+    "label": "//chrome/test:delayloads_unittests",
+    "type": "raw",
   },
   "device_junit_tests": {
     "label": "//device:device_junit_tests",

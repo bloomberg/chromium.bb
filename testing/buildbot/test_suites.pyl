@@ -4322,9 +4322,9 @@
 
     'win_specific_chromium_gtests': {
       'chrome_cleaner_unittests': {},
-      'chrome_elf_import_unittests': {},
       'chrome_elf_unittests': {},
       'courgette_unittests': {},
+      'delayloads_unittests': {},
       'elevation_service_unittests': {},
       'gcp_unittests': {},
       'install_static_unittests': {},
