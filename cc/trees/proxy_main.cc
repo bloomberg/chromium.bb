@@ -645,11 +645,12 @@ base::SingleThreadTaskRunner* ProxyMain::ImplThreadTaskRunner() {
   return task_runner_provider_->ImplThreadTaskRunner();
 }
 
-void ProxyMain::SetURLForUkm(const GURL& url) {
+void ProxyMain::SetSourceURL(ukm::SourceId source_id, const GURL& url) {
   DCHECK(IsMainThread());
   ImplThreadTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&ProxyImpl::SetURLForUkm,
-                                base::Unretained(proxy_impl_.get()), url));
+      FROM_HERE, base::BindOnce(&ProxyImpl::SetSourceURL,
+                                base::Unretained(proxy_impl_.get()),
+                                source_id, url));
 }
 
 void ProxyMain::ClearHistory() {

@@ -105,7 +105,7 @@ class CC_EXPORT ProxyMain : public Proxy {
                                   BrowserControlsState current,
                                   bool animate) override;
   void RequestBeginMainFrameNotExpected(bool new_state) override;
-  void SetURLForUkm(const GURL& url) override;
+  void SetSourceURL(ukm::SourceId source_id, const GURL& url) override;
   void ClearHistory() override;
   void SetRenderFrameObserver(
       std::unique_ptr<RenderFrameMetadataObserver> observer) override;

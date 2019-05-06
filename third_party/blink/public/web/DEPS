@@ -17,6 +17,7 @@ include_rules = [
     "+cc/trees/element_id.h",
     "+cc/trees/viewport_layers.h",
     "+mojo/public",
+    "+services/metrics/public/cpp/ukm_source_id.h",
     "+services/network/public/mojom/cors.mojom-shared.h",
     "+services/network/public/mojom/cors_origin_pattern.mojom-shared.h",
     "+services/network/public/mojom/referrer_policy.mojom-shared.h",

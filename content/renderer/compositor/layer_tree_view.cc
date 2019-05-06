@@ -462,8 +462,8 @@ void LayerTreeView::AddPresentationCallback(
   DCHECK_LE(presentation_callbacks_.size(), 25u);
 }
 
-void LayerTreeView::SetURLForUkm(const GURL& url) {
-  layer_tree_host_->SetURLForUkm(url);
+void LayerTreeView::SetSourceURL(ukm::SourceId source_id, const GURL& url) {
+  layer_tree_host_->SetSourceURL(source_id, url);
 }
 
 void LayerTreeView::ReleaseLayerTreeFrameSink() {

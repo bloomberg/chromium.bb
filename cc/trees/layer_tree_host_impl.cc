@@ -5882,7 +5882,7 @@ void LayerTreeHostImpl::InitializeUkm(
   ukm_manager_ = std::make_unique<UkmManager>(std::move(recorder));
 }
 
-void LayerTreeHostImpl::SetActiveURL(const GURL& url) {
+void LayerTreeHostImpl::SetActiveURL(const GURL& url, ukm::SourceId source_id) {
   tile_manager_.set_active_url(url);
 
   // The active tree might still be from content for the previous page when the
@@ -5891,8 +5891,10 @@ void LayerTreeHostImpl::SetActiveURL(const GURL& url) {
   // case. Also, since checkerboard stats are only recorded with user
   // interaction, it must be in progress when the navigation commits for this
   // case to occur.
-  if (ukm_manager_)
-    ukm_manager_->SetSourceURL(url);
+  if (ukm_manager_) {
+    // The source id has already been associated to the URL.
+    ukm_manager_->SetSourceId(source_id);
+  }
 }
 
 void LayerTreeHostImpl::OnLayerTreeLocalSurfaceIdAllocationChanged() {

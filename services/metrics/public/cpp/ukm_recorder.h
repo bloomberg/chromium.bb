@@ -115,7 +115,6 @@ class METRICS_EXPORT UkmRecorder {
   friend UkmBackgroundRecorderService;
   friend autofill::TestAutofillClient;
   friend blink::Document;
-  friend cc::UkmManager;
   friend content::CrossSiteDocumentResourceHandler;
   friend content::PluginServiceImpl;
   friend content::WebContentsImpl;

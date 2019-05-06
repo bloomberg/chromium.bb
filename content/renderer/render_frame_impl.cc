@@ -4627,13 +4627,13 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
   if (is_main_frame_) {
     GetLocalRootRenderWidget()->DidNavigate();
 
-    // Update the URL used to key Ukm metrics in the compositor if the
-    // navigation is not in the same document, which represents a new source
-    // URL.
+    // Update the URL and the document source id used to key UKM metrics in the
+    // compositor if the navigation is not in the same document, which
+    // represents a new UKM source.
     // Note that this is only done for the main frame since the metrics for all
     // frames are keyed to the main frame's URL.
-    GetLocalRootRenderWidget()->layer_tree_view()->SetURLForUkm(
-        GetLoadingUrl());
+    GetLocalRootRenderWidget()->layer_tree_view()->SetSourceURL(
+        frame_->GetDocument().GetUkmSourceId(), GetLoadingUrl());
   }
 
   service_manager::mojom::InterfaceProviderRequest

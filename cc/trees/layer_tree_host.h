@@ -685,7 +685,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   float recording_scale_factor() const { return recording_scale_factor_; }
 
-  void SetURLForUkm(const GURL& url);
+  void SetSourceURL(ukm::SourceId source_id, const GURL& url);
 
   void SetRenderFrameObserver(
       std::unique_ptr<RenderFrameMetadataObserver> observer);

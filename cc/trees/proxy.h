@@ -99,7 +99,7 @@ class CC_EXPORT Proxy {
   // Testing hooks
   virtual bool MainFrameWillHappenForTesting() = 0;
 
-  virtual void SetURLForUkm(const GURL& url) = 0;
+  virtual void SetSourceURL(ukm::SourceId source_id, const GURL& url) = 0;
 
   virtual void ClearHistory() = 0;
 

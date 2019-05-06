@@ -6355,7 +6355,7 @@ ukm::UkmRecorder* Document::UkmRecorder() {
   return ukm_recorder_.get();
 }
 
-int64_t Document::UkmSourceID() const {
+ukm::SourceId Document::UkmSourceID() const {
   return ukm_source_id_;
 }
 

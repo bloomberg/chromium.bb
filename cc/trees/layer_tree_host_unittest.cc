@@ -8758,11 +8758,11 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestImageDecodingHints);
 
 class LayerTreeHostTestCheckerboardUkm : public LayerTreeHostTest {
  public:
-  LayerTreeHostTestCheckerboardUkm() : url_(GURL("https://example.com")) {}
-
+  LayerTreeHostTestCheckerboardUkm() : url_(GURL("https://example.com")),
+                                       ukm_source_id_(123) {}
   void BeginTest() override {
     PostSetNeedsCommitToMainThread();
-    layer_tree_host()->SetURLForUkm(url_);
+    layer_tree_host()->SetSourceURL(ukm_source_id_, url_);
   }
 
   void SetupTree() override {
@@ -8798,6 +8798,9 @@ class LayerTreeHostTestCheckerboardUkm : public LayerTreeHostTest {
 
     auto* recorder = static_cast<ukm::TestUkmRecorder*>(
         impl->ukm_manager()->recorder_for_testing());
+    // Tie the source id to the URL. In production, this is already done in
+    // Document, and the source id is passed down to cc.
+    recorder->UpdateSourceURL(ukm_source_id_, url_);
 
     const auto& entries = recorder->GetEntriesByName(kUserInteraction);
     EXPECT_EQ(1u, entries.size());
@@ -8815,6 +8818,7 @@ class LayerTreeHostTestCheckerboardUkm : public LayerTreeHostTest {
 
  private:
   const GURL url_;
+  const ukm::SourceId ukm_source_id_;
   FakeContentLayerClient content_layer_client_;
 };
 

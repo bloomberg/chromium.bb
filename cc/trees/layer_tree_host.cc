@@ -1892,8 +1892,8 @@ void LayerTreeHost::RequestBeginMainFrameNotExpected(bool new_state) {
   proxy_->RequestBeginMainFrameNotExpected(new_state);
 }
 
-void LayerTreeHost::SetURLForUkm(const GURL& url) {
-  proxy_->SetURLForUkm(url);
+void LayerTreeHost::SetSourceURL(ukm::SourceId source_id, const GURL& url) {
+  proxy_->SetSourceURL(source_id, url);
 }
 
 void LayerTreeHost::SetRenderFrameObserver(

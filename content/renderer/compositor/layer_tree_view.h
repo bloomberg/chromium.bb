@@ -118,7 +118,7 @@ class CONTENT_EXPORT LayerTreeView
   void RequestNewLocalSurfaceId();
   void RequestForceSendMetadata();
   void SetViewportVisibleRect(const gfx::Rect& visible_rect);
-  void SetURLForUkm(const GURL& url);
+  void SetSourceURL(ukm::SourceId source_id, const GURL& url);
   // Call this if the compositor is becoming non-visible in a way that it won't
   // be used any longer. In this case, becoming visible is longer but this
   // releases more resources (such as its use of the GpuChannel).

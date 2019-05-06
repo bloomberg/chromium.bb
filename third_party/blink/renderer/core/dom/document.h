@@ -36,6 +36,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-blink.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
@@ -1421,7 +1422,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void releaseEvents() {}
 
   ukm::UkmRecorder* UkmRecorder();
-  int64_t UkmSourceID() const;
+  ukm::SourceId UkmSourceID() const;
 
   // May return nullptr.
   FrameOrWorkerScheduler* GetScheduler() override;

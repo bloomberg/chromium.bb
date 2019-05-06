@@ -747,7 +747,7 @@ class CC_EXPORT LayerTreeHostImpl
   void SetRenderFrameObserver(
       std::unique_ptr<RenderFrameMetadataObserver> observer);
 
-  void SetActiveURL(const GURL& url);
+  void SetActiveURL(const GURL& url, ukm::SourceId source_id);
 
   // Called when LayerTreeImpl's LocalSurfaceIdAllocation changes.
   void OnLayerTreeLocalSurfaceIdAllocationChanged();
