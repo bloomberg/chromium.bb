@@ -624,6 +624,15 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   ASSERT_HRESULT_SUCCEEDED(
       text_range_provider->ExpandToEnclosingUnit(TextUnit_Character));
   EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"");
+
+  // Move both endpoints to the position between the end of the first text
+  // anchor and before the start of the next anchor.
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ -9, &count));
+  ASSERT_EQ(-9, count);
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->ExpandToEnclosingUnit(TextUnit_Character));
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"m");
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,

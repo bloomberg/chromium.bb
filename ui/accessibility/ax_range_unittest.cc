@@ -383,5 +383,22 @@ TEST_F(AXRangeTest, AXRangeGetTextWithEmptyRanges) {
   AXRange<AXPosition<AXNodePosition, AXNode>> non_leaf_text_offset(
       start->Clone(), start->Clone());
   EXPECT_EQ(empty_string, non_leaf_text_offset.GetText());
+
+  // empty string with same position between two anchors, but different offsets
+  TestPositionType after_end = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, line_break_.id, 1 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  TestPositionType before_start = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, static_text2_.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+
+  AXRange<AXPosition<AXNodePosition, AXNode>>
+      same_position_different_anchors_forward(after_end->Clone(),
+                                              before_start->Clone());
+  EXPECT_EQ(empty_string, same_position_different_anchors_forward.GetText());
+  AXRange<AXPosition<AXNodePosition, AXNode>>
+      same_position_different_anchors_backward(before_start->Clone(),
+                                               after_end->Clone());
+  EXPECT_EQ(empty_string, same_position_different_anchors_backward.GetText());
 }
 }  // namespace ui

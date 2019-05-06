@@ -77,9 +77,8 @@ class AXRange {
   }
 
   base::string16 GetText() const {
-    base::string16 text;
-    if (IsNull())
-      return text;
+    if (IsNull() || *anchor_ == *focus_)
+      return base::string16();
 
     std::unique_ptr<AXPositionType> start, end;
     if (*anchor_ < *focus_) {
@@ -95,6 +94,7 @@ class AXRange {
     int end_offset = end->text_offset();
     DCHECK_GE(end_offset, 0);
 
+    base::string16 text;
     do {
       text += start->GetText();
       start = start->CreateNextTextAnchorPosition();
