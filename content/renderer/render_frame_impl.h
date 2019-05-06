@@ -1679,6 +1679,9 @@ class CONTENT_EXPORT RenderFrameImpl
   bool committed_first_load_ = false;
   bool name_changed_before_first_commit_ = false;
 
+  // This flag is true while browser process is processing a pending navigation,
+  // as a result of mojom::FrameHost::BeginNavigation call. It is reset when the
+  // navigation is either committed or cancelled.
   bool browser_side_navigation_pending_ = false;
   GURL browser_side_navigation_pending_url_;
 

@@ -535,7 +535,7 @@ void TestWebFrameClient::BeginNavigation(
     return;
   }
 
-  if (!frame_->CreatePlaceholderDocumentLoader(*info, nullptr /* extra_data */))
+  if (!frame_->WillStartNavigation(*info))
     return;
 
   navigation_callback_.Reset(

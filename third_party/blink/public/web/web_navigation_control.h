@@ -79,22 +79,21 @@ class WebNavigationControl : public WebLocalFrame {
   virtual void SetCommittedFirstRealLoad() = 0;
   virtual bool HasCommittedFirstRealLoad() = 0;
 
+  // Marks the frame as loading, before WebLocalFrameClient issues a navigation
+  // request through the browser process on behalf of the frame.
+  // This runs some JavaScript event listeners, which may cancel the navigation
+  // or detach the frame. In this case the method returns false and client
+  // should not proceed with the navigation.
+  virtual bool WillStartNavigation(const WebNavigationInfo&) = 0;
+
   // Informs the frame that the navigation it asked the client to do was
   // dropped.
-  virtual void ClientDroppedNavigation() = 0;
+  virtual void DidDropNavigation() = 0;
 
   // Marks the frame as loading, without performing any loading. Used for
   // initial history navigations in child frames, which may actually happen
   // in another process.
   virtual void MarkAsLoading() = 0;
-
-  // Marks the frame as loading and creates a placeholder document loader.
-  // This placeholder informs Blink that the navigation is ongoing, while it
-  // is actually being handled by the client.
-  // TODO(dgozman): remove this together with placeholder document loader.
-  virtual bool CreatePlaceholderDocumentLoader(
-      const WebNavigationInfo&,
-      std::unique_ptr<WebDocumentLoader::ExtraData>) = 0;
 
  protected:
   explicit WebNavigationControl(WebTreeScopeType scope)

@@ -3635,9 +3635,10 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
     // DidFailProvisionalLoad() notification.
     NotifyObserversOfFailedProvisionalLoad(error);
 
-    // Provisional document loader can be null in cases such as cross
-    // process failures, e.g. error pages.
-    if (frame_->GetProvisionalDocumentLoader()) {
+    // |browser_side_navigation_pending_| can be false if we are committing
+    // failed navigation in a different process than it was started, e.g.
+    // an error page which is isolated.
+    if (browser_side_navigation_pending_) {
       // TODO(dgozman): why do we need to notify browser in response
       // to it's own request?
       SendFailedProvisionalLoad(navigation_params->http_method.Ascii(), error,
@@ -4516,8 +4517,7 @@ void RenderFrameImpl::DidCreateDocumentLoader(
   DocumentState* document_state =
       DocumentState::FromDocumentLoader(document_loader);
   if (!document_state) {
-    // This is either a placeholder document loader or an initial empty
-    // document.
+    // This must be an initial empty document.
     document_loader->SetExtraData(BuildDocumentState());
     document_loader->SetServiceWorkerNetworkProvider(
         ServiceWorkerNetworkProviderForFrame::CreateInvalidInstance());
@@ -5688,7 +5688,7 @@ void RenderFrameImpl::OnStop() {
 void RenderFrameImpl::OnDroppedNavigation() {
   browser_side_navigation_pending_ = false;
   browser_side_navigation_pending_url_ = GURL();
-  frame_->ClientDroppedNavigation();
+  frame_->DidDropNavigation();
 }
 
 void RenderFrameImpl::OnCollapse(bool collapsed) {
@@ -6135,7 +6135,8 @@ blink::mojom::CommitResult RenderFrameImpl::PrepareForHistoryNavigationCommit(
   // started loading, or has committed, we should ignore the history item.
   bool interrupted_by_client_redirect =
       frame_->IsNavigationScheduledWithin(0) ||
-      frame_->GetProvisionalDocumentLoader() || !current_history_item_.IsNull();
+      frame_->GetProvisionalDocumentLoader() ||
+      browser_side_navigation_pending_ || !current_history_item_.IsNull();
   if (commit_params.is_history_navigation_in_new_child &&
       interrupted_by_client_redirect) {
     return blink::mojom::CommitResult::Aborted;
@@ -6334,8 +6335,8 @@ void RenderFrameImpl::BeginNavigation(
       if (!info->is_client_redirect) {
         OpenURL(std::move(info), /*is_history_navigation_in_new_child=*/true);
         // TODO(japhet): This case wants to flag the frame as loading and do
-        // nothing else. It'd be nice if it could go through the placeholder
-        // DocumentLoader path, too.
+        // nothing else. It'd be nice if it could go through the
+        // WillStartNavigation, too.
         frame_->MarkAsLoading();
         return;
       }
@@ -6446,7 +6447,7 @@ void RenderFrameImpl::BeginNavigation(
     // TODO(arthursonzogni): Remove this. Everything should use the default code
     // path and be driven by the browser process.
     if (use_archive || url == content::kAboutSrcDocURL) {
-      if (!frame_->CreatePlaceholderDocumentLoader(*info, BuildDocumentState()))
+      if (!frame_->WillStartNavigation(*info))
         return;
       // Only the first navigation in a frame to an empty document must be
       // handled synchronously, the others are required to happen
@@ -6988,12 +6989,9 @@ std::unique_ptr<base::DictionaryValue> GetDevToolsInitiator(
 
 void RenderFrameImpl::BeginNavigationInternal(
     std::unique_ptr<blink::WebNavigationInfo> info) {
-  std::unique_ptr<DocumentState> document_state_owned = BuildDocumentState();
-  DocumentState* document_state = document_state_owned.get();
-  if (!frame_->CreatePlaceholderDocumentLoader(
-          *info, std::move(document_state_owned))) {
+  std::unique_ptr<DocumentState> document_state = BuildDocumentState();
+  if (!frame_->WillStartNavigation(*info))
     return;
-  }
 
   browser_side_navigation_pending_ = true;
   browser_side_navigation_pending_url_ = info->url_request.Url();
@@ -7029,7 +7027,7 @@ void RenderFrameImpl::BeginNavigationInternal(
   WillSendRequestInternal(
       request,
       frame_->Parent() ? ResourceType::kSubFrame : ResourceType::kMainFrame,
-      document_state, transition_type);
+      document_state.get(), transition_type);
 
   if (!info->url_request.GetExtraData())
     info->url_request.SetExtraData(std::make_unique<RequestExtraData>());

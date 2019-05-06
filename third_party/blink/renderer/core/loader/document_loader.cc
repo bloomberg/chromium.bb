@@ -631,27 +631,12 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
     frame_->Owner()->RenderFallbackContent(frame_);
 
   WebHistoryCommitType history_commit_type = LoadTypeToCommitType(load_type_);
-  switch (state_) {
-    case kNotStarted:
-      state_ = kSentDidFinishLoad;
-      GetLocalFrameClient().DispatchDidFailProvisionalLoad(error, http_method_);
-      probe::DidFailProvisionalLoad(frame_);
-      if (frame_)
-        GetFrameLoader().DetachProvisionalDocumentLoader();
-      break;
-    case kCommitted:
-      if (frame_->GetDocument()->Parser())
-        frame_->GetDocument()->Parser()->StopParsing();
-      state_ = kSentDidFinishLoad;
-      GetLocalFrameClient().DispatchDidFailLoad(error, history_commit_type);
-      GetFrameLoader().DidFinishNavigation();
-      break;
-    case kSentDidFinishLoad:
-      FALLTHROUGH;
-    case kProvisional:
-      NOTREACHED();
-      break;
-  }
+  DCHECK_EQ(kCommitted, state_);
+  if (frame_->GetDocument()->Parser())
+    frame_->GetDocument()->Parser()->StopParsing();
+  state_ = kSentDidFinishLoad;
+  GetLocalFrameClient().DispatchDidFailLoad(error, history_commit_type);
+  GetFrameLoader().DidFinishNavigation();
   DCHECK_EQ(kSentDidFinishLoad, state_);
   params_ = nullptr;
 }
@@ -1023,6 +1008,8 @@ void DocumentLoader::CommitSameDocumentNavigationInternal(
   // If we have a provisional request for a different document, a fragment
   // scroll should cancel it.
   GetFrameLoader().DetachProvisionalDocumentLoader();
+  GetFrameLoader().CancelClientNavigation();
+  GetFrameLoader().DidFinishNavigation();
 
   if (!frame_->GetPage())
     return;

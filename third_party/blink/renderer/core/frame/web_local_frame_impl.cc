@@ -2126,19 +2126,8 @@ WebLocalFrameImpl::MaybeRenderFallbackContent(const WebURLError& error) const {
   if (!GetFrame()->Owner() || !GetFrame()->Owner()->CanRenderFallbackContent())
     return NoFallbackContent;
 
-  DocumentLoader* document_loader =
-      GetFrame()->Loader().GetProvisionalDocumentLoader();
-  // |document_loader| can be null if a navigation started and
-  // completed (e.g. about:blank) while waiting for the navigation that wants
-  // to show fallback content.
-  if (!document_loader)
-    return NoLoadInProgress;
-
-  // Don't send failure notification to the client, it already knows.
-  document_loader->SetSentDidFinishLoad();
-  GetFrame()->Owner()->RenderFallbackContent(GetFrame());
-  GetFrame()->Loader().DetachProvisionalDocumentLoader();
-  return FallbackRendered;
+  return GetFrame()->Loader().MaybeRenderFallbackContent() ? FallbackRendered
+                                                           : NoLoadInProgress;
 }
 
 void WebLocalFrameImpl::RenderFallbackContent() const {
@@ -2242,22 +2231,18 @@ void WebLocalFrameImpl::MixedContentFound(
       was_allowed, had_redirect, std::move(source));
 }
 
-void WebLocalFrameImpl::ClientDroppedNavigation() {
-  DCHECK(GetFrame());
-  GetFrame()->Loader().ClientDroppedNavigation();
+void WebLocalFrameImpl::DidDropNavigation() {
+  GetFrame()->Loader().DidDropNavigation();
 }
 
 void WebLocalFrameImpl::MarkAsLoading() {
   GetFrame()->Loader().MarkAsLoading();
 }
 
-bool WebLocalFrameImpl::CreatePlaceholderDocumentLoader(
-    const WebNavigationInfo& info,
-    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
+bool WebLocalFrameImpl::WillStartNavigation(const WebNavigationInfo& info) {
   DCHECK(!info.url_request.IsNull());
   DCHECK(!info.url_request.Url().ProtocolIs("javascript"));
-  return GetFrame()->Loader().CreatePlaceholderDocumentLoader(
-      info, std::move(extra_data));
+  return GetFrame()->Loader().WillStartNavigation(info);
 }
 
 void WebLocalFrameImpl::SendOrientationChangeEvent() {

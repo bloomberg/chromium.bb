@@ -331,11 +331,9 @@ class CORE_EXPORT WebLocalFrameImpl final
   void RenderFallbackContent() const override;
   void SetCommittedFirstRealLoad() override;
   bool HasCommittedFirstRealLoad() override;
-  void ClientDroppedNavigation() override;
+  void DidDropNavigation() override;
   void MarkAsLoading() override;
-  bool CreatePlaceholderDocumentLoader(
-      const WebNavigationInfo&,
-      std::unique_ptr<WebDocumentLoader::ExtraData>) override;
+  bool WillStartNavigation(const WebNavigationInfo&) override;
 
   void SetLifecycleState(mojom::FrameLifecycleState state) override;
   void WasHidden() override;

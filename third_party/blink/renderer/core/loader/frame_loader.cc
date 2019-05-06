@@ -399,6 +399,9 @@ void FrameLoader::FinishedParsing() {
   frame_->GetDocument()->CheckCompleted();
 }
 
+// TODO(dgozman): we are calling this method too often, hoping that it
+// does not do anything when navigation is in progress, or when loading
+// has finished already. We should call it at the right times.
 void FrameLoader::DidFinishNavigation() {
   // We should have either finished the provisional or committed navigation if
   // this is called. Only delcare the whole frame finished if neither is in
@@ -456,9 +459,6 @@ void FrameLoader::DetachDocumentLoader(Member<DocumentLoader>& loader,
                                        bool flush_microtask_queue) {
   if (!loader)
     return;
-
-  if (loader == provisional_document_loader_)
-    virtual_time_pauser_.UnpauseVirtualTime();
 
   FrameNavigationDisabler navigation_disabler(*frame_);
   loader->DetachFromFrame(flush_microtask_queue);
@@ -946,22 +946,14 @@ void FrameLoader::CommitNavigation(
   TakeObjectSnapshot();
 }
 
-bool FrameLoader::CreatePlaceholderDocumentLoader(
-    const WebNavigationInfo& info,
-    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
+bool FrameLoader::WillStartNavigation(const WebNavigationInfo& info) {
   if (!CancelProvisionalLoaderForNewNavigation(!info.form.IsNull()))
     return false;
 
   progress_tracker_->ProgressStarted();
-
-  auto navigation_params = std::make_unique<WebNavigationParams>();
-  navigation_params->url = info.url_request.Url();
-  navigation_params->frame_load_type = info.frame_load_type;
-  navigation_params->is_client_redirect = info.is_client_redirect;
-  navigation_params->navigation_timings.input_start = info.input_start;
-  provisional_document_loader_ = Client()->CreateDocumentLoader(
-      frame_, info.navigation_type, std::move(navigation_params),
-      std::move(extra_data));
+  client_navigation_ = std::make_unique<ClientNavigationState>();
+  client_navigation_->url = info.url_request.Url();
+  client_navigation_->http_method = info.url_request.HttpMethod();
   frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
   probe::DidStartProvisionalLoad(frame_);
   virtual_time_pauser_.PauseVirtualTime();
@@ -990,6 +982,7 @@ void FrameLoader::StopAllLoaders() {
   if (document_loader_)
     document_loader_->StopLoading();
   DetachDocumentLoader(provisional_document_loader_);
+  CancelClientNavigation();
   DidFinishNavigation();
 
   TakeObjectSnapshot();
@@ -1223,6 +1216,7 @@ void FrameLoader::Detach() {
     provisional_document_loader_->SetSentDidFinishLoad();
     DetachDocumentLoader(provisional_document_loader_);
   }
+  ClearClientNavigation();
   DidFinishNavigation();
 
   if (progress_tracker_) {
@@ -1235,9 +1229,30 @@ void FrameLoader::Detach() {
   virtual_time_pauser_.UnpauseVirtualTime();
 }
 
+bool FrameLoader::MaybeRenderFallbackContent() {
+  DCHECK(frame_->Owner() && frame_->Owner()->CanRenderFallbackContent());
+  // |client_navigation_| can be null here:
+  // 1. We asked client to navigation through BeginNavigation();
+  // 2. Meanwhile, another navigation has been started, e.g. to about:srcdoc.
+  //    This navigation has been processed, |client_navigation_| has been
+  //    reset, and browser process was informed about cancellation.
+  // 3. Before the cancellation reached the browser process, it decided that
+  //    first navigation has failed and asks to commit the failed navigation.
+  // 4. We come here, while |client_navigation_| is null.
+  // TODO(dgozman): shouldn't we abandon the commit of navigation failure
+  // because we've already notified the client about cancellation? This needs
+  // to be double-checked, perhaps this is dead code.
+  if (!client_navigation_)
+    return false;
+
+  frame_->Owner()->RenderFallbackContent(frame_);
+  ClearClientNavigation();
+  DidFinishNavigation();
+  return true;
+}
+
 void FrameLoader::DetachProvisionalDocumentLoader() {
   DetachDocumentLoader(provisional_document_loader_);
-  DidFinishNavigation();
 }
 
 bool FrameLoader::ShouldPerformFragmentNavigation(bool is_form_submission,
@@ -1349,11 +1364,14 @@ bool FrameLoader::ShouldClose(bool is_reload) {
   return true;
 }
 
-void FrameLoader::ClientDroppedNavigation() {
-  if (!provisional_document_loader_ || provisional_document_loader_->DidStart())
+void FrameLoader::DidDropNavigation() {
+  if (!client_navigation_)
     return;
+  // TODO(dgozman): should we ClearClientNavigation instead and not
+  // notify the client in response to its own call?
+  CancelClientNavigation();
+  DidFinishNavigation();
 
-  DetachProvisionalDocumentLoader();
   // Forcibly instantiate WindowProxy for initial frame document.
   // This is only required when frame navigation is aborted, e.g. due to
   // mixed content.
@@ -1369,7 +1387,7 @@ void FrameLoader::ClientDroppedNavigation() {
 
 void FrameLoader::MarkAsLoading() {
   // This should only be called for initial history navigation in child frame.
-  DCHECK(!provisional_document_loader_);
+  DCHECK(!provisional_document_loader_ && !client_navigation_);
   DCHECK(frame_->GetDocument()->IsLoadCompleted());
   DCHECK(frame_->GetDocument()->HasFinishedParsing());
   progress_tracker_->ProgressStarted();
@@ -1398,14 +1416,6 @@ bool FrameLoader::ShouldReuseDefaultView(const KURL& url,
 
 bool FrameLoader::CancelProvisionalLoaderForNewNavigation(
     bool is_form_submission) {
-  bool had_placeholder_client_document_loader =
-      provisional_document_loader_ && !provisional_document_loader_->DidStart();
-
-  // For placeholder DocumentLoaders, don't send failure callbacks
-  // for a placeholder simply being replaced with a new DocumentLoader.
-  if (had_placeholder_client_document_loader)
-    provisional_document_loader_->SetSentDidFinishLoad();
-
   // This seems to correspond to step 9 of the specification:
   // "9. Abort the active document of browsingContext."
   // https://html.spec.whatwg.org/C/#navigate
@@ -1422,7 +1432,29 @@ bool FrameLoader::CancelProvisionalLoaderForNewNavigation(
   // can be used to detach this frame.
   if (!frame_->GetPage())
     return false;
+
+  // For client navigations, don't send failure callbacks when simply
+  // replacing client navigation with a DocumentLoader.
+  ClearClientNavigation();
+
   return true;
+}
+
+void FrameLoader::ClearClientNavigation() {
+  if (!client_navigation_)
+    return;
+  client_navigation_.reset();
+  probe::DidFailProvisionalLoad(frame_);
+  virtual_time_pauser_.UnpauseVirtualTime();
+}
+
+void FrameLoader::CancelClientNavigation() {
+  if (!client_navigation_)
+    return;
+  ResourceError error = ResourceError::CancelledError(client_navigation_->url);
+  AtomicString http_method = client_navigation_->http_method;
+  ClearClientNavigation();
+  Client()->DispatchDidFailProvisionalLoad(error, http_method);
 }
 
 void FrameLoader::DispatchDocumentElementAvailable() {

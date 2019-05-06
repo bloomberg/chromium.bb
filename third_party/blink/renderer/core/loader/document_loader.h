@@ -167,12 +167,6 @@ class CORE_EXPORT DocumentLoader
 
   void FillNavigationParamsForErrorPage(WebNavigationParams*);
 
-  // Without PlzNavigate, this is only false for a narrow window during
-  // navigation start. For PlzNavigate, a navigation sent to the browser will
-  // leave a dummy DocumentLoader in the NotStarted state until the navigation
-  // is actually handled in the renderer.
-  bool DidStart() const { return state_ != kNotStarted; }
-
   void MarkAsCommitted();
   void SetSentDidFinishLoad() { state_ = kSentDidFinishLoad; }
   bool SentDidFinishLoad() const { return state_ == kSentDidFinishLoad; }

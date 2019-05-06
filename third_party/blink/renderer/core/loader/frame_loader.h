@@ -102,14 +102,9 @@ class CORE_EXPORT FrameLoader final {
       std::unique_ptr<WebNavigationParams> navigation_params,
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data);
 
-  // Called when the browser process is handling the navigation, to
-  // create a "placeholder" document loader and mark the frame as loading.
-  // This placeholder document loader will be later abandoned, and only
-  // lives temporarily so that the rest of Blink code knows the navigation
-  // is in place.
-  bool CreatePlaceholderDocumentLoader(
-      const WebNavigationInfo&,
-      std::unique_ptr<WebDocumentLoader::ExtraData>);
+  // Called before the browser process is asked to navigate this frame, to mark
+  // the frame as loading and save some navigation information for later use.
+  bool WillStartNavigation(const WebNavigationInfo&);
 
   // This runs the "stop document loading" algorithm in HTML:
   // https://html.spec.whatwg.org/C/browsing-the-web.html#stop-document-loading
@@ -200,20 +195,22 @@ class CORE_EXPORT FrameLoader final {
   void SaveScrollState();
   void RestoreScrollPositionAndViewState();
 
-  // Note: When a PlzNavigtate navigation is handled by the client, we will
-  // have created a dummy provisional DocumentLoader, so this will return true
-  // while the client handles the navigation.
   bool HasProvisionalNavigation() const {
-    return GetProvisionalDocumentLoader();
+    return client_navigation_.get() || GetProvisionalDocumentLoader();
   }
 
+  bool MaybeRenderFallbackContent();
+
+  // Like ClearClientNavigation, but also notifies the client to actually cancel
+  // the navigation.
+  void CancelClientNavigation();
   void DetachProvisionalDocumentLoader();
 
   void Trace(blink::Visitor*);
 
   static void SetReferrerForFrameRequest(FrameLoadRequest&);
 
-  void ClientDroppedNavigation();
+  void DidDropNavigation();
   void MarkAsLoading();
 
   ContentSecurityPolicy* GetLastOriginDocumentCSP() {
@@ -238,6 +235,9 @@ class CORE_EXPORT FrameLoader final {
   // Returns whether we should continue with new navigation.
   bool CancelProvisionalLoaderForNewNavigation(
       bool is_form_submission);
+
+  // Clears any information about client navigation, see client_navigation_.
+  void ClearClientNavigation();
 
   void RestoreScrollPositionAndViewState(WebFrameLoadType,
                                          bool is_same_document,
@@ -269,6 +269,15 @@ class CORE_EXPORT FrameLoader final {
   // certain settings on the new loader.
   Member<DocumentLoader> document_loader_;
   Member<DocumentLoader> provisional_document_loader_;
+
+  // This struct holds information about a navigation, which is being
+  // initiated by the client through the browser process, until the navigation
+  // is either committed or cancelled.
+  struct ClientNavigationState {
+    KURL url;
+    AtomicString http_method;
+  };
+  std::unique_ptr<ClientNavigationState> client_navigation_;
 
   bool in_restore_scroll_;
 

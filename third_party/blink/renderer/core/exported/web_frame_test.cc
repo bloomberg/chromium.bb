@@ -12481,7 +12481,7 @@ class TestFallbackWebFrameClient
       TestWebFrameClient::BeginNavigation(std::move(info));
       return;
     }
-    Frame()->CreatePlaceholderDocumentLoader(*info, nullptr /* extra_data */);
+    Frame()->WillStartNavigation(*info);
   }
 
  private:

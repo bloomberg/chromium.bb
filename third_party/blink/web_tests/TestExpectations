@@ -2435,6 +2435,10 @@ crbug.com/770028 external/wpt/pointerevents/extension/pointerevent_pointerrawupd
 crbug.com/770028 external/wpt/pointerevents/extension/pointerevent_predicted_events_attributes-manual.html [ Skip ]
 crbug.com/770028 external/wpt/pointerevents/extension/pointerevent_getPredictedEvents_when_pointerlocked-manual.html [ Skip ]
 
+# This test relies on racy should_send_resource_timing_info_to_parent() flag being sent between processes.
+crbug.com/957181 external/wpt/resource-timing/nested-context-navigations-iframe.html [ Pass Failure ]
+crbug.com/957181 virtual/omt-worker-fetch/external/wpt/resource-timing/nested-context-navigations-iframe.html [ Pass Failure ]
+
 # Chrome touch-action computation ignores div transforms.
 crbug.com/715148 external/wpt/pointerevents/pointerevent_touch-action-rotated-divs_touch-manual.html  [ Skip ]
 
