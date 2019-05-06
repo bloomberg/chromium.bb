@@ -6141,3 +6141,4 @@ crbug.com/959002 crbug.com/959042 http/tests/devtools/elements/styles-4/undo-add
 
 # Sheriff 2019-05-06
 crbug.com/959372 [ Win ] external/wpt/import-maps/fallback.sub.tentative.html [ Pass Timeout ]
+crbug.com/959129 [ Win ] http/tests/devtools/tracing/timeline-script-parse.js [ Pass Failure ]
