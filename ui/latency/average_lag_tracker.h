@@ -24,13 +24,30 @@ class AverageLagTracker {
 
  private:
   typedef struct LagAreaInFrame {
-    LagAreaInFrame(base::TimeTicks time, float rendered_pos = 0)
+    LagAreaInFrame(base::TimeTicks time,
+                   float rendered_pos = 0,
+                   float rendered_pos_no_prediction = 0)
         : frame_time(time),
           rendered_accumulated_delta(rendered_pos),
-          lag_area(0) {}
+          lag_area(0),
+          rendered_accumulated_delta_no_prediction(rendered_pos_no_prediction),
+          lag_area_no_prediction(0) {}
     base::TimeTicks frame_time;
+    // |rendered_accumulated_delta| is the cumulative delta that was swapped for
+    // this frame; this is based on the predicted delta, if prediction is
+    // enabled.
     float rendered_accumulated_delta;
+    // |lag_area| is computed once a future input is processed that occurs after
+    // the swap timestamp (so that we can compute how far the rendered delta
+    // was from the actual position at the swap time).
     float lag_area;
+    // |rendered_accumulated_delta_no_prediction| is the what would have been
+    // rendered if prediction was not taken into account, i.e., the actual delta
+    // from the input event.
+    float rendered_accumulated_delta_no_prediction;
+    // |lag_area_no_prediction| is computed the same as |lag_area| but using
+    // rendered_accumulated_delta_no_prediction as the rendered delta.
+    float lag_area_no_prediction;
   } LagAreaInFrame;
 
   // Calculate lag in 1 seconds intervals and report UMA.
@@ -41,7 +58,10 @@ class AverageLagTracker {
   float LagBetween(base::TimeTicks front_time,
                    base::TimeTicks back_time,
                    const LatencyInfo& latency,
-                   base::TimeTicks event_time);
+                   base::TimeTicks event_time,
+                   float rendered_accumulated_delta);
+
+  float LagForUnfinishedFrame(float rendered_accumulated_delta);
 
   std::deque<LagAreaInFrame> frame_lag_infos_;
 
@@ -69,6 +89,8 @@ class AverageLagTracker {
 
   // Accumulated lag area in the 1 second intervals.
   float accumulated_lag_ = 0;
+  // Accumulated lag not taking into account the predicted deltas.
+  float accumulated_lag_no_prediction_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(AverageLagTracker);
 };
