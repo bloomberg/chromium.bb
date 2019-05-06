@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
 
+#include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_constants.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_delegate.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -73,15 +74,20 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 @property(nonatomic, strong) UILabel* titleLabel;
 // UILabel displaying |self.subTitleText|.
 @property(nonatomic, strong) UILabel* subTitleLabel;
+// Used to build and record metrics.
+@property(nonatomic, strong) InfobarMetricsRecorder* metricsRecorder;
 
 @end
 
 @implementation InfobarBannerViewController
 
-- (instancetype)initWithDelegate:(id<InfobarBannerDelegate>)delegate {
+- (instancetype)initWithDelegate:(id<InfobarBannerDelegate>)delegate
+                            type:(InfobarType)infobarType {
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
     _delegate = delegate;
+    _metricsRecorder =
+        [[InfobarMetricsRecorder alloc] initWithType:infobarType];
   }
   return self;
 }
@@ -146,7 +152,7 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   [self.infobarButton setTitle:self.buttonText forState:UIControlStateNormal];
   self.infobarButton.titleLabel.font =
       [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
-  [self.infobarButton addTarget:self.delegate
+  [self.infobarButton addTarget:self
                          action:@selector(bannerInfobarButtonWasPressed:)
                forControlEvents:UIControlEventTouchUpInside];
   self.infobarButton.accessibilityIdentifier =
@@ -216,10 +222,22 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   [self.view addGestureRecognizer:longPressGestureRecognizer];
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+  [super viewDidAppear:animated];
+  [self.metricsRecorder recordBannerEvent:MobileMessagesBannerEvent::Presented];
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+  [self.metricsRecorder recordBannerEvent:MobileMessagesBannerEvent::Dismissed];
+  [super viewDidDisappear:animated];
+}
+
 #pragma mark - Public Methods
 
 - (void)dismissWhenInteractionIsFinished {
   if (!self.touchInProgress) {
+    [self.metricsRecorder
+        recordBannerDismissType:MobileMessagesBannerDismissType::TimedOut];
     [self.delegate dismissInfobarBanner:self animated:YES completion:nil];
   }
   self.shouldDismissAfterTouchesEnded = YES;
@@ -227,10 +245,16 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 
 #pragma mark - Private Methods
 
+- (void)bannerInfobarButtonWasPressed:(UIButton*)sender {
+  [self.metricsRecorder recordBannerEvent:MobileMessagesBannerEvent::Accepted];
+  [self.delegate bannerInfobarButtonWasPressed:sender];
+}
+
 - (void)handleGestures:(UILongPressGestureRecognizer*)gesture {
   CGPoint touchLocation = [gesture locationInView:self.view];
 
   if (gesture.state == UIGestureRecognizerStateBegan) {
+    [self.metricsRecorder recordBannerEvent:MobileMessagesBannerEvent::Handled];
     self.originalCenter = self.view.center;
     self.touchInProgress = YES;
     self.startingTouch = touchLocation;
@@ -245,6 +269,9 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
         (self.view.center.y - self.originalCenter.y >
          kChangeInPositionForTransition);
     if (dragDownExceededThreshold) {
+      [self.metricsRecorder
+          recordBannerDismissType:MobileMessagesBannerDismissType::
+                                      ExpandedToModal];
       [self.delegate presentInfobarModalFromBanner];
       // Since the modal has now been presented prevent any external dismissal.
       self.shouldDismissAfterTouchesEnded = NO;
@@ -263,8 +290,17 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
                                         kChangeInPositionForDismissal <
                                     0);
     if (dragUpExceededThreshold || self.shouldDismissAfterTouchesEnded) {
+      if (dragUpExceededThreshold) {
+        [self.metricsRecorder
+            recordBannerDismissType:MobileMessagesBannerDismissType::SwipedUp];
+      } else {
+        [self.metricsRecorder
+            recordBannerDismissType:MobileMessagesBannerDismissType::TimedOut];
+      }
       [self.delegate dismissInfobarBanner:self animated:YES completion:nil];
     } else {
+      [self.metricsRecorder
+          recordBannerEvent:MobileMessagesBannerEvent::ReturnedToOrigin];
       [self animateBannerToOriginalPosition];
     }
   }
@@ -335,10 +371,12 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 
 // A11y Custom actions selectors need to return a BOOL.
 - (BOOL)acceptInfobar {
-  [self.delegate bannerInfobarButtonWasPressed:nil];
+  [self bannerInfobarButtonWasPressed:nil];
   return NO;
 }
 - (BOOL)presentInfobarModal {
+  [self.metricsRecorder
+      recordBannerDismissType:MobileMessagesBannerDismissType::ExpandedToModal];
   [self.delegate presentInfobarModalFromBanner];
   return NO;
 }

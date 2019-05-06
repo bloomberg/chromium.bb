@@ -51,8 +51,9 @@
 
 - (void)start {
   self.started = YES;
-  self.bannerViewController =
-      [[InfobarBannerViewController alloc] initWithDelegate:self];
+  self.bannerViewController = [[InfobarBannerViewController alloc]
+      initWithDelegate:self
+                  type:InfobarType::kInfobarTypePassword];
   self.bannerViewController.titleText =
       base::SysUTF16ToNSString(self.passwordInfoBarDelegate->GetMessageText());
   NSString* username = self.passwordInfoBarDelegate->GetUserNameText();

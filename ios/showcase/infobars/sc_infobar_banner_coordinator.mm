@@ -4,6 +4,7 @@
 
 #import "ios/showcase/infobars/sc_infobar_banner_coordinator.h"
 
+#import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_delegate.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_delegate.h"
@@ -82,8 +83,9 @@ NSString* const kInfobarBannerPresentedModalLabel = @"Modal Infobar";
   containerView.backgroundColor = [UIColor whiteColor];
   self.containerViewController.title = @"Infobar Messages";
 
-  self.bannerViewController =
-      [[InfobarBannerViewController alloc] initWithDelegate:self];
+  self.bannerViewController = [[InfobarBannerViewController alloc]
+      initWithDelegate:self
+                  type:InfobarType::kInfobarTypeConfirm];
   self.bannerViewController.titleText = kInfobarBannerTitleLabel;
   self.bannerViewController.subTitleText = kInfobarBannerSubtitleLabel;
   self.bannerViewController.buttonText = kInfobarBannerButtonLabel;

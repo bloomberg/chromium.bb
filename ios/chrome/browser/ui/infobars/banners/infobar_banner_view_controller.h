@@ -7,13 +7,18 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/infobars/infobar_type.h"
+
 @protocol InfobarBannerDelegate;
 
 // ViewController that manages an InfobarBanner. It consists of a leading icon,
 // a title and optional subtitle, and a trailing button.
 @interface InfobarBannerViewController : UIViewController
 
+// Designated Initializer. |delegate| handles InfobarBannerVC actions, and
+// |infobarType| is used to know which Coordinator presented this VC.
 - (instancetype)initWithDelegate:(id<InfobarBannerDelegate>)delegate
+                            type:(InfobarType)infobarType
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithNibName:(NSString*)nibNameOrNil

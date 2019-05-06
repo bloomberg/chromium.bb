@@ -38020,6 +38020,20 @@ Called by update_use_counter_css.py.-->
   <int value="4" label="Infobar dismissed after tab closed"/>
 </enum>
 
+<enum name="MobileMessagesBannerDismissType">
+  <int value="0" label="TimedOut"/>
+  <int value="1" label="SwipedUp"/>
+  <int value="2" label="ExpandedToModal"/>
+</enum>
+
+<enum name="MobileMessagesBannerEvent">
+  <int value="0" label="Accepted"/>
+  <int value="1" label="Handled"/>
+  <int value="2" label="Dismissed"/>
+  <int value="3" label="Presented"/>
+  <int value="4" label="ReturnedToOrigin"/>
+</enum>
+
 <enum name="MobileSessionCallerApp">
   <int value="0" label="Google Search"/>
   <int value="1" label="Gmail"/>

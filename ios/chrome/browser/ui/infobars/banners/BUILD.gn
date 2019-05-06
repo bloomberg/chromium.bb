@@ -12,6 +12,7 @@ source_set("banners") {
   deps = [
     ":public",
     "//base",
+    "//ios/chrome/browser/infobars:public",
     "//ios/chrome/browser/ui/util",
   ]
 }
@@ -32,6 +33,7 @@ source_set("unit_tests") {
   ]
   deps = [
     ":banners",
+    "//ios/chrome/browser/infobars:public",
     "//ios/chrome/test:test_support",
     "//testing/gtest",
     "//third_party/ocmock",

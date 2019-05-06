@@ -45,8 +45,9 @@
 
 - (void)start {
   self.started = YES;
-  self.bannerViewController =
-      [[InfobarBannerViewController alloc] initWithDelegate:self];
+  self.bannerViewController = [[InfobarBannerViewController alloc]
+      initWithDelegate:self
+                  type:InfobarType::kInfobarTypeConfirm];
   self.bannerViewController.titleText =
       base::SysUTF16ToNSString(self.confirmInfobarDelegate->GetMessageText());
   self.bannerViewController.buttonText =
