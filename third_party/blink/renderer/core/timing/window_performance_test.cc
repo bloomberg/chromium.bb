@@ -252,28 +252,6 @@ TEST_F(WindowPerformanceTest, EventTimingBeforeOnLoad) {
   performance_->clearEventTimings();
 }
 
-TEST_F(WindowPerformanceTest, Expose100MsEvents) {
-  ScopedEventTimingForTest event_timing(true);
-  TimeTicks start_time = GetTimeOrigin() + TimeDelta::FromSeconds(1);
-  TimeTicks processing_start = start_time + TimeDelta::FromMilliseconds(10);
-  TimeTicks processing_end = processing_start + TimeDelta::FromMilliseconds(10);
-  performance_->RegisterEventTiming("mousedown", start_time, processing_start,
-                                    processing_end, false);
-
-  TimeTicks start_time2 = start_time + TimeDelta::FromMicroseconds(200);
-  performance_->RegisterEventTiming("click", start_time2, processing_start,
-                                    processing_end, false);
-
-  // The swap time is 100.1 ms after |start_time| but only 99.9 ms after
-  // |start_time2|.
-  TimeTicks swap_time = start_time + TimeDelta::FromMicroseconds(100100);
-  SimulateSwapPromise(swap_time);
-  // Only the longer event should have been reported.
-  EXPECT_EQ(1u, performance_->getEntriesByType("event").size());
-  EXPECT_EQ(1u, performance_->getEntriesByName("mousedown", "event").size());
-  EXPECT_EQ(0u, performance_->getEntriesByName("click", "event").size());
-}
-
 TEST_F(WindowPerformanceTest, EventTimingDuration) {
   ScopedEventTimingForTest event_timing(true);
 
@@ -292,7 +270,7 @@ TEST_F(WindowPerformanceTest, EventTimingDuration) {
   performance_->RegisterEventTiming("click", start_time, processing_start,
                                     processing_end, true);
   TimeTicks long_swap_time =
-      GetTimeOrigin() + TimeDelta::FromMilliseconds(2000);
+      GetTimeOrigin() + TimeDelta::FromMilliseconds(1100);
   SimulateSwapPromise(long_swap_time);
   EXPECT_EQ(1u, performance_->getEntriesByName("click", "event").size());
 
