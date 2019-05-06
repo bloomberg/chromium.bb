@@ -1,0 +1,69 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_RESULT_RANKER_SEARCH_RESULT_RANKER_H_
+#define CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_RESULT_RANKER_SEARCH_RESULT_RANKER_H_
+
+#include "base/containers/flat_map.h"
+#include "base/time/time.h"
+#include "chrome/browser/ui/app_list/search/mixer.h"
+
+class Profile;
+
+namespace app_list {
+
+class RecurrenceRanker;
+enum class RankingItemType;
+
+// SearchResultRanker re-ranks launcher search and zero-state results using a
+// collection of on-device models. It can be provided training signals via the
+// Train method, which are then forwarded to the appropriate model.
+// FetchRankings queries each model for ranking results. Rank modifies the
+// scores of provided search results, which are intended to be the output of a
+// search provider.
+class SearchResultRanker {
+ public:
+  explicit SearchResultRanker(Profile* profile);
+  ~SearchResultRanker();
+
+  // Queries each model contained with the SearchResultRanker for its results,
+  // and saves them for use on subsequent calls to Rank().
+  void FetchRankings();
+
+  // Modifies the scores of |results| using the saved rankings. This should be
+  // called after rankings have been queried with a call to FetchRankings().
+  // Only the scores of elements in |results| are modified, not the
+  // ChromeSearchResults themselves.
+  void Rank(Mixer::SortedResults& results);
+
+  // Forwards the given training signal to the relevant models contained within
+  // the SearchResultRanker. |id| is the string ID of an item that is launched
+  // from the launcher, eg. an app ID or a filepath, and is derived from the
+  // relevant ChromeSearchResult's ID.
+  void Train(const std::string& id, RankingItemType type);
+
+ private:
+  // Records the time of the last call to FetchRankings() and is used to
+  // limit the number of queries to the models within a short timespan.
+  base::Time time_of_last_fetch_;
+
+  // How much the scores produced by |results_list_group_ranker_| affect the
+  // final scores. Controlled by Finch.
+  float results_list_boost_coefficient_ = 0.0f;
+
+  // Stores the scores produced by |results_list_group_ranker_|.
+  base::flat_map<std::string, float> group_ranks_;
+
+  // A model that ranks groups (eg. 'file' and 'omnibox'), which is used to
+  // tweak the results shown in the search results list only. This does not
+  // affect apps.
+  std::unique_ptr<RecurrenceRanker> results_list_group_ranker_;
+
+  // TODO(931149): Move the AppSearchResultRanker instance and associated logic
+  // to here.
+};
+
+}  // namespace app_list
+
+#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_RESULT_RANKER_SEARCH_RESULT_RANKER_H_

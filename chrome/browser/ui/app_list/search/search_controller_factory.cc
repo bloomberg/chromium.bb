@@ -26,7 +26,7 @@
 #include "chrome/browser/ui/app_list/search/mixer.h"
 #include "chrome/browser/ui/app_list/search/omnibox_provider.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/search_result_ranker.h"
 #include "chrome/browser/ui/app_list/search/settings_shortcut/settings_shortcut_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -168,28 +168,8 @@ std::unique_ptr<SearchController> CreateSearchController(
         std::make_unique<CrostiniRepositorySearchProvider>(profile));
   }
 
-  if (app_list_features::IsAdaptiveResultRankerEnabled()) {
-    RecurrenceRankerConfigProto group_ranker_config;
-    group_ranker_config.set_min_seconds_between_saves(240u);
-    auto* predictor =
-        group_ranker_config.mutable_zero_state_frecency_predictor();
-    predictor->set_target_limit(base::GetFieldTrialParamByFeatureAsInt(
-        app_list_features::kEnableAdaptiveResultRanker, "target_limit", 200));
-    predictor->set_decay_coeff(base::GetFieldTrialParamByFeatureAsDouble(
-        app_list_features::kEnableAdaptiveResultRanker, "decay_coeff", 0.8f));
-    auto* fallback = group_ranker_config.mutable_fallback_predictor();
-    fallback->set_target_limit(base::GetFieldTrialParamByFeatureAsInt(
-        app_list_features::kEnableAdaptiveResultRanker, "fallback_target_limit",
-        200));
-    fallback->set_decay_coeff(base::GetFieldTrialParamByFeatureAsDouble(
-        app_list_features::kEnableAdaptiveResultRanker, "fallback_decay_coeff",
-        0.8f));
-
-    controller->SetRecurrenceRanker(std::make_unique<RecurrenceRanker>(
-        profile->GetPath().AppendASCII("adaptive_result_ranker.proto"),
-        group_ranker_config,
-        chromeos::ProfileHelper::IsEphemeralUserProfile(profile)));
-  }
+  controller->SetSearchResultRanker(
+      std::make_unique<SearchResultRanker>(profile));
 
   return controller;
 }

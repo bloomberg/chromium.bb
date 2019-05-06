@@ -23,7 +23,7 @@ class Profile;
 namespace app_list {
 
 class AppSearchResultRanker;
-class RecurrenceRanker;
+class SearchResultRanker;
 class SearchProvider;
 enum class RankingItemType;
 
@@ -54,8 +54,10 @@ class SearchController {
   ChromeSearchResult* FindSearchResult(const std::string& result_id);
   ChromeSearchResult* GetResultByTitleForTest(const std::string& title);
 
-  // Set a |RecurrenceRanker| to tweak search results.
-  void SetRecurrenceRanker(std::unique_ptr<RecurrenceRanker> ranker);
+  // Sets a SearchResultRanker to re-rank search results before they are
+  // published. The Mixer owned by the SearchController will take ownership of
+  // |ranker|.
+  void SetSearchResultRanker(std::unique_ptr<SearchResultRanker> ranker);
 
   // Sends training signal to each |providers_|
   void Train(const std::string& id, RankingItemType type);

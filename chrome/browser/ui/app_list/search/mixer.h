@@ -22,8 +22,8 @@ namespace test {
 FORWARD_DECLARE_TEST(MixerTest, Publish);
 }
 
-class RecurrenceRanker;
 class SearchProvider;
+class SearchResultRanker;
 enum class RankingItemType;
 
 // Mixer collects results from providers, sorts them and publishes them to the
@@ -49,14 +49,12 @@ class Mixer {
   // Collects the results, sorts and publishes them.
   void MixAndPublish(size_t num_max_results);
 
-  // Add a |RecurrenceRanker| to tweak mixing results.
-  void SetRecurrenceRanker(std::unique_ptr<RecurrenceRanker> ranker);
+  // Sets a SearchResultRanker to re-rank search results before they are
+  // published.
+  void SetSearchResultRanker(std::unique_ptr<SearchResultRanker> ranker);
 
   // Handle a training signal.
   void Train(const std::string& id, RankingItemType type);
-
- private:
-  FRIEND_TEST_ALL_PREFIXES(test::MixerTest, Publish);
 
   // Used for sorting and mixing results.
   struct SortData {
@@ -69,6 +67,9 @@ class Mixer {
     double score;
   };
   typedef std::vector<Mixer::SortData> SortedResults;
+
+ private:
+  FRIEND_TEST_ALL_PREFIXES(test::MixerTest, Publish);
 
   class Group;
   typedef std::vector<std::unique_ptr<Group>> Groups;
@@ -85,12 +86,8 @@ class Mixer {
 
   Groups groups_;
 
-  // Adaptive category ranking model, which tweaks the score of search results.
-  std::unique_ptr<RecurrenceRanker> ranker_;
-
-  // How much the scores produced by |ranker_| affect the final scores.
-  // Controlled by Finch.
-  float boost_coefficient_;
+  // Adaptive models used for re-ranking search results.
+  std::unique_ptr<SearchResultRanker> ranker_;
 
   DISALLOW_COPY_AND_ASSIGN(Mixer);
 };

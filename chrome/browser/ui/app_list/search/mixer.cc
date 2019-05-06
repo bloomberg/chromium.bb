@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/search_result_ranker.h"
 
 namespace app_list {
 
@@ -43,7 +43,7 @@ class Mixer::Group {
     providers_.emplace_back(provider);
   }
 
-  void FetchResults() {
+  void FetchResults(SearchResultRanker* ranker) {
     results_.clear();
 
     for (const SearchProvider* provider : providers_) {
@@ -59,6 +59,8 @@ class Mixer::Group {
       }
     }
 
+    if (ranker)
+      ranker->Rank(results_);
     std::sort(results_.begin(), results_.end());
   }
 
@@ -79,11 +81,7 @@ class Mixer::Group {
 };
 
 Mixer::Mixer(AppListModelUpdater* model_updater)
-    : model_updater_(model_updater),
-      boost_coefficient_(base::GetFieldTrialParamByFeatureAsDouble(
-          app_list_features::kEnableAdaptiveResultRanker,
-          "boost_coefficient",
-          0.1)) {}
+    : model_updater_(model_updater) {}
 Mixer::~Mixer() = default;
 
 size_t Mixer::AddGroup(size_t max_results, double multiplier, double boost) {
@@ -114,25 +112,6 @@ void Mixer::MixAndPublish(size_t num_max_results) {
   // number* will be kept (e.g., an app result takes priority over a web store
   // result with the same ID).
   RemoveDuplicates(&results);
-
-  // Tweak the rankings using the ranker if it exists.
-  if (app_list_features::IsAdaptiveResultRankerEnabled() && ranker_) {
-    base::flat_map<std::string, float> ranks = ranker_->Rank();
-
-    for (auto& result : results) {
-      RankingItemType type = RankingItemTypeFromSearchResult(*result.result);
-      const auto& rank_it = ranks.find(std::to_string(static_cast<int>(type)));
-      // The ranker only contains entries trained with types relating to files
-      // or the omnibox. This means scores for apps, app shortcuts, and answer
-      // cards will be unchanged.
-      if (rank_it != ranks.end())
-        // Ranker scores are guaranteed to be in [0,1]. But, enforce that the
-        // result of tweaking does not put the score above 3.0, as that may
-        // interfere with apps or answer cards.
-        result.score += std::min(rank_it->second * boost_coefficient_, 3.0f);
-    }
-  }
-
   std::sort(results.begin(), results.end());
 
   const size_t original_size = results.size();
@@ -177,26 +156,19 @@ void Mixer::RemoveDuplicates(SortedResults* results) {
 }
 
 void Mixer::FetchResults() {
+  if (ranker_)
+    ranker_->FetchRankings();
   for (const auto& group : groups_)
-    group->FetchResults();
+    group->FetchResults(ranker_.get());
 }
 
-void Mixer::SetRecurrenceRanker(std::unique_ptr<RecurrenceRanker> ranker) {
+void Mixer::SetSearchResultRanker(std::unique_ptr<SearchResultRanker> ranker) {
   ranker_ = std::move(ranker);
 }
 
 void Mixer::Train(const std::string& id, RankingItemType type) {
-  if (!ranker_)
-    return;
-
-  if (type == RankingItemType::kFile ||
-      type == RankingItemType::kOmniboxGeneric ||
-      type == RankingItemType::kOmniboxBookmark ||
-      type == RankingItemType::kOmniboxDocument ||
-      type == RankingItemType::kOmniboxHistory ||
-      type == RankingItemType::kOmniboxSearch) {
-    ranker_->Record(std::to_string(static_cast<int>(type)));
-  }
+  if (ranker_)
+    ranker_->Train(id, type);
 }
 
 }  // namespace app_list

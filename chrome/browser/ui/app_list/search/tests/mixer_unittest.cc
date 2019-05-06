@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "ash/public/cpp/app_list/app_list_config.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/files/scoped_temp_dir.h"
@@ -23,8 +22,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -39,8 +36,6 @@ using ResultType = ash::SearchResultType;
 const size_t kMaxAppsGroupResults = 4;
 const size_t kMaxOmniboxResults = 4;
 const size_t kMaxWebstoreResults = 2;
-
-const bool kEphemeralUser = false;
 
 class TestSearchResult : public ChromeSearchResult {
  public:
@@ -144,37 +139,8 @@ class MixerTest : public testing::Test {
         "webstore", ResultType::kWebStoreApp));
   }
 
-  void CreateMixer(bool use_adaptive_ranker,
-                   const std::map<std::string, std::string>& params = {}) {
-    if (use_adaptive_ranker) {
-      scoped_feature_list_.InitAndEnableFeatureWithParameters(
-          app_list_features::kEnableAdaptiveResultRanker, params);
-    } else {
-      scoped_feature_list_.InitWithFeatures(
-          {}, {app_list_features::kEnableAdaptiveResultRanker});
-    }
-
+  void CreateMixer() {
     mixer_ = std::make_unique<Mixer>(model_updater_.get());
-
-    if (use_adaptive_ranker) {
-      ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-
-      RecurrenceRankerConfigProto ranker_config;
-      ranker_config.set_min_seconds_between_saves(240u);
-      auto* predictor = ranker_config.mutable_zero_state_frecency_predictor();
-      predictor->set_target_limit(200u);
-      predictor->set_decay_coeff(0.8f);
-      auto* fallback = ranker_config.mutable_fallback_predictor();
-      fallback->set_target_limit(200u);
-      fallback->set_decay_coeff(0.8f);
-
-      std::unique_ptr<RecurrenceRanker> ranker =
-          std::make_unique<RecurrenceRanker>(
-              temp_dir_.GetPath().AppendASCII("ranker_model.proto"),
-              ranker_config, kEphemeralUser);
-      Wait();
-      mixer_->SetRecurrenceRanker(std::move(ranker));
-    }
 
     // TODO(warx): when fullscreen app list is default enabled, modify this test
     // to test answer card/apps group having relevance boost.
@@ -209,10 +175,6 @@ class MixerTest : public testing::Test {
     return result;
   }
 
-  void Train(const std::string& id, const RankingItemType& type) {
-    mixer_->Train(id, type);
-  }
-
   void Wait() { scoped_task_environment_.RunUntilIdle(); }
 
   Mixer* mixer() { return mixer_.get(); }
@@ -234,8 +196,7 @@ class MixerTest : public testing::Test {
 };
 
 TEST_F(MixerTest, Basic) {
-  // Create mixer without adaptive ranker.
-  CreateMixer(false);
+  CreateMixer();
 
   // Note: Some cases in |expected| have vastly more results than others, due to
   // the "at least 6" mechanism. If it gets at least 6 results from all
@@ -288,8 +249,7 @@ TEST_F(MixerTest, Basic) {
 }
 
 TEST_F(MixerTest, RemoveDuplicates) {
-  // Create mixer without adaptive ranker.
-  CreateMixer(false);
+  CreateMixer();
 
   const std::string dup = "dup";
 
@@ -309,41 +269,6 @@ TEST_F(MixerTest, RemoveDuplicates) {
 
   // Only three results with unique id are kept.
   EXPECT_EQ("dup0,dup1,dup2", GetResults());
-}
-
-TEST_F(MixerTest, RankerIsDisabledWithFlag) {
-  CreateMixer(false);
-
-  for (int i = 0; i < 20; ++i)
-    Train("omnibox2", RankingItemType::kOmniboxGeneric);
-
-  app_provider()->set_count(4);
-  app_provider()->set_small_relevance_range();
-  omnibox_provider()->set_count(4);
-  omnibox_provider()->set_small_relevance_range();
-  RunQuery();
-
-  // Expect training calls to have not affected rankings.
-  EXPECT_EQ(GetResults(),
-            "app0,omnibox0,app1,omnibox1,app2,omnibox2,app3,omnibox3");
-}
-
-TEST_F(MixerTest, RankerImprovesScores) {
-  CreateMixer(true, {{"boost_coefficient", "10.0"}});
-
-  for (int i = 0; i < 20; ++i)
-    Train("omnibox2", RankingItemType::kOmniboxGeneric);
-
-  app_provider()->set_count(4);
-  app_provider()->set_small_relevance_range();
-  omnibox_provider()->set_count(4);
-  omnibox_provider()->set_small_relevance_range();
-  RunQuery();
-
-  // Omnibox results exist in the ranker and should be up-weighted to the top of
-  // the list.
-  EXPECT_EQ(GetResults(),
-            "omnibox0,omnibox1,omnibox2,omnibox3,app0,app1,app2,app3");
 }
 
 }  // namespace test
