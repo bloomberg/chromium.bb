@@ -137,6 +137,20 @@ Bug(none) printing/webgl-repeated-printing-preservedrawingbuffer.html [ Failure 
 Bug(none) printing/webgl-repeated-printing.html [ Failure ]
 Bug(none) transforms/3d/general/background-visibility-layers.html [ Failure ]
 
+# Loading an image in a subframe.
+crbug.com/959936 http/tests/images/image-decode-in-frame.html [ Failure ]
+
+crbug.com/959941 virtual/fractional_scrolling_threaded/fast/scrolling/mouse-scrolling-over-standard-scrollbar.html [ Failure ]
+crbug.com/959941 virtual/threaded/fast/scrolling/mouse-scrolling-over-standard-scrollbar.html [ Failure ]
+
+crbug.com/907601 virtual/threaded/fast/scrolling/events/scrollend-event-fired-after-snap.html [ Skip ]
+
+crbug.com/959949 external/wpt/element-timing/invisible-images.html [ Failure Pass ]
+
+# Single pixel difference around one of the radiused borders.
+Bug(none) external/wpt/css/filter-effects/backdrop-filter-clip-rect.html [ Failure ]
+Bug(none) external/wpt/css/filter-effects/backdrop-filter-reference-filter.html [ Failure ]
+
 # Less invalidations or different invalidations without pixel failures.
 # Some might be good. Some might be under-invalidations for which under-invalidation
 # checking failed.
@@ -394,6 +408,7 @@ crbug.com/923429 css3/filters/backdrop-filter-browser-zoom.html [ Failure ]
 crbug.com/923429 css3/filters/backdrop-filter-border-radius.html [ Failure ]
 crbug.com/923429 css3/filters/backdrop-filter-rendering.html [ Failure ]
 crbug.com/923429 css3/filters/backdrop-filter-rendering-no-background.html [ Failure ]
+crbug.com/923429 css3/filters/backdrop-filter-transform.html [ Failure ]
 crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-basic-background-color.html [ Failure ]
 crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-basic-opacity-2.html [ Failure ]
 crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-basic.html [ Failure ]
