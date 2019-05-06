@@ -2616,6 +2616,8 @@ const char* ToString(ax::mojom::ImageAnnotationStatus status) {
   switch (status) {
     case ax::mojom::ImageAnnotationStatus::kNone:
       return "none";
+    case ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme:
+      return "kWillNotAnnotateDueToScheme";
     case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
       return "ineligibleForAnnotation";
     case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
@@ -2639,6 +2641,8 @@ ax::mojom::ImageAnnotationStatus ParseImageAnnotationStatus(
     const char* status) {
   if (0 == strcmp(status, "none"))
     return ax::mojom::ImageAnnotationStatus::kNone;
+  if (0 == strcmp(status, "kWillNotAnnotateDueToScheme"))
+    return ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme;
   if (0 == strcmp(status, "ineligibleForAnnotation"))
     return ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation;
   if (0 == strcmp(status, "eligibleForAnnotation"))

@@ -44,6 +44,8 @@
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/gfx/geometry/vector2d_f.h"
+#include "url/gurl.h"
+#include "url/url_constants.h"
 
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
@@ -1218,6 +1220,15 @@ void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject src,
       dst->relative_bounds.bounds.height() < kMinImageAnnotationHeight) {
     dst->SetImageAnnotationStatus(
         ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation);
+    return;
+  }
+
+  // Skip images in documents which are not http, https, file and data schemes.
+  GURL gurl = document().Url();
+  if (!(gurl.SchemeIsHTTPOrHTTPS() || gurl.SchemeIsFile() ||
+        gurl.SchemeIs(url::kDataScheme))) {
+    dst->SetImageAnnotationStatus(
+        ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme);
     return;
   }
 

@@ -951,6 +951,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_accName(VARIANT var_id, BSTR* name_bstr) {
   auto status = GetData().GetImageAnnotationStatus();
   switch (status) {
     case ax::mojom::ImageAnnotationStatus::kNone:
+    case ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme:
     case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
       break;
 

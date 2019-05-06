@@ -958,6 +958,10 @@ enum ImageAnnotationStatus {
   // Not an image, or image annotation feature not enabled.
   kNone,
 
+  // Not eligible due to the scheme of the page. Image annotations are only
+  // generated for images on http, https, file and data URLs.
+  kWillNotAnnotateDueToScheme,
+
   // Not loaded yet, already labeled by the author, or not eligible
   // due to size, type, etc.
   kIneligibleForAnnotation,

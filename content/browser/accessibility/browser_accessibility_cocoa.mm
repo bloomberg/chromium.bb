@@ -975,6 +975,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       break;
 
     case ax::mojom::ImageAnnotationStatus::kNone:
+    case ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme:
     case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
       break;
   }
@@ -1575,6 +1576,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       return true;
 
     case ax::mojom::ImageAnnotationStatus::kNone:
+    case ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme:
     case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
       break;
   }

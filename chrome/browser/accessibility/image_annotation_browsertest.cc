@@ -61,6 +61,15 @@ std::vector<std::string> DescribeNodesWithAnnotations(
   return descriptions;
 }
 
+bool HasNodeWithAnnotationStatus(const ui::AXTreeUpdate& tree_update,
+                                 ax::mojom::ImageAnnotationStatus status) {
+  for (auto node_data : tree_update.nodes) {
+    if (node_data.GetImageAnnotationStatus() == status)
+      return true;
+  }
+  return false;
+}
+
 // A fake implementation of the Annotator mojo interface that
 // returns predictable results based on the filename of the image
 // it's asked to annotate. Enables us to test the rest of the
@@ -409,4 +418,38 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, AnnotationLanguages) {
   content::WaitForAccessibilityTreeToContainNodeWithName(
       web_contents,
       "Appears to say: red.png Annotation. Appears to be: red.png 'fr' Label");
+}
+
+IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest,
+                       DoesntAnnotateInternalPages) {
+  FakeAnnotator::SetReturnLabelResults(true);
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://version"));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui::AXMode mode = ui::kAXModeComplete;
+  mode.set_mode(ui::AXMode::kLabelImages, true);
+  web_contents->SetAccessibilityMode(mode);
+  std::string svg_image =
+      "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'><circle "
+      "cx='50' cy='50' r='40' fill='yellow' /></svg>";
+  const std::string javascript =
+      "var image = document.createElement('img');"
+      "image.src = \"" +
+      svg_image +
+      "\";"
+      "var outer = document.getElementById('outer');"
+      "outer.insertBefore(image, outer.childNodes[0]);";
+  EXPECT_TRUE(content::ExecuteScript(web_contents, javascript));
+
+  ui::AXTreeUpdate snapshot =
+      content::GetAccessibilityTreeSnapshot(web_contents);
+  // Wait for the accessibility tree to contain an error that the image cannot
+  // be annotated due to the page url's scheme.
+  while (!HasNodeWithAnnotationStatus(
+      snapshot,
+      ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme)) {
+    content::WaitForAccessibilityTreeToChange(web_contents);
+    snapshot = content::GetAccessibilityTreeSnapshot(web_contents);
+  }
 }

@@ -206,6 +206,7 @@ AXImageAnnotator::ImageInfo::GetImageProcessor() {
 bool AXImageAnnotator::ImageInfo::HasAnnotation() const {
   switch (status_) {
     case ax::mojom::ImageAnnotationStatus::kNone:
+    case ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme:
     case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
     // The user hasn't requested an annotation yet, or a previously pending
     // annotation request had been cancelled.

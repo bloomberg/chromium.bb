@@ -1004,6 +1004,7 @@ void AutomationInternalCustomBindings::AddRoutes() {
         auto status = node->data().GetImageAnnotationStatus();
         switch (status) {
           case ax::mojom::ImageAnnotationStatus::kNone:
+          case ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme:
           case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
             break;
 
@@ -2030,6 +2031,7 @@ AutomationInternalCustomBindings::GetLocalizedStringForImageAnnotationStatus(
       message_id = IDS_AX_IMAGE_ANNOTATION_NO_DESCRIPTION;
       break;
     case ax::mojom::ImageAnnotationStatus::kNone:
+    case ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme:
     case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
     case ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded:
       return std::string();

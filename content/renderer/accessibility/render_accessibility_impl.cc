@@ -1145,6 +1145,7 @@ void RenderAccessibilityImpl::AddImageAnnotationDebuggingAttributes(
       bool should_set_attributes = false;
       switch (status) {
         case ax::mojom::ImageAnnotationStatus::kNone:
+        case ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme:
         case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
         case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
           break;
