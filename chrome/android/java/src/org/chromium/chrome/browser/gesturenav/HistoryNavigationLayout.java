@@ -47,7 +47,10 @@ public class HistoryNavigationLayout extends FrameLayout {
     @Override
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        if (mNavigationEnabled) mNavigationHandler.reset();
+        // TODO(jinsukkim): There are callsites enabling HistoryNavigationLayout but
+        //         failing to call |setNavigationDelegate| (or |setTab| before renaming).
+        //         Find when it can happen.
+        if (mNavigationHandler != null) mNavigationHandler.reset();
     }
 
     @Override
