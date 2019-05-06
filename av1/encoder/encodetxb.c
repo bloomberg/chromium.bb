@@ -23,6 +23,7 @@
 #include "av1/encoder/rdopt.h"
 #include "av1/encoder/tokenize.h"
 
+#if CONFIG_HTB_TRELLIS
 static int hbt_needs_init = 1;
 static CRC32C crc_calculator;
 static const int HBT_EOB = 16;            // also the length in opt_qcoeff
@@ -41,6 +42,7 @@ typedef struct OptTxbQcoeff {
 } OptTxbQcoeff;
 
 OptTxbQcoeff *hbt_hash_table;
+#endif  // CONFIG_HTB_TRELLIS
 
 typedef struct LevelDownStats {
   int update;
@@ -1013,6 +1015,7 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
   return update;
 }
 
+#if CONFIG_HTB_TRELLIS
 static void hbt_init() {
   hbt_hash_table =
       aom_malloc(sizeof(OptTxbQcoeff) * HBT_TABLE_SIZE * HBT_ARRAY_LENGTH);
@@ -1282,6 +1285,7 @@ static int hbt_create_hashes(TxbInfo *txb_info,
   return hbt_search_match(hbt_ctx_hash, hbt_qc_hash, txb_info, txb_costs,
                           txb_eob_costs, p, block, fast_mode, rate_cost);
 }
+#endif  // CONFIG_HTB_TRELLIS
 
 static AOM_FORCE_INLINE int get_two_coeff_cost_simple(
     int ci, tran_low_t abs_qc, int coeff_ctx,
@@ -1848,6 +1852,7 @@ int av1_optimize_txb(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
     scan_order, txb_ctx, rdmult,  iqmatrix, tx_type_cost,
   };
 
+#if CONFIG_HTB_TRELLIS
   // Hash based trellis (hbt) speed feature: avoid expensive optimize_txb calls
   // by storing the coefficient deltas in a hash table.
   // Currently disabled in speedfeatures.c
@@ -1855,7 +1860,9 @@ int av1_optimize_txb(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
     return hbt_create_hashes(&txb_info, txb_costs, &txb_eob_costs, p, block,
                              fast_mode, rate_cost);
   }
-
+#else
+  (void)fast_mode;
+#endif  // CONFIG_HTB_TRELLIS
   av1_txb_init_levels(qcoeff, width, height, levels);
 
   const int update =

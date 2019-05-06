@@ -135,6 +135,8 @@ set_aom_config_var(CONFIG_COLLECT_COMPONENT_TIMING 0 NUMBER
                    "Collect encoding component timing information.")
 set_aom_config_var(CONFIG_LPF_MASK 0 NUMBER
                    "Enable the use loop filter bitmasks for optimizations.")
+set_aom_config_var(CONFIG_HTB_TRELLIS 0 NUMBER
+                   "Enable the use of hash table for trellis optimizations.")
 #
 # Variables in this section control optional features of the build system.
 #
