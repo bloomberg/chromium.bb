@@ -9,6 +9,16 @@
 
 namespace base {
 
+ScopedSampleMetadata::ScopedSampleMetadata(base::StringPiece name,
+                                           int64_t value)
+    : name_hash_(HashMetricName(name)) {
+  GetSampleMetadataRecorder()->Set(name_hash_, value);
+}
+
+ScopedSampleMetadata::~ScopedSampleMetadata() {
+  GetSampleMetadataRecorder()->Remove(name_hash_);
+}
+
 void SetSampleMetadata(base::StringPiece name, int64_t value) {
   GetSampleMetadataRecorder()->Set(base::HashMetricName(name), value);
 }

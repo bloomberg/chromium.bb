@@ -2546,6 +2546,7 @@ test("base_unittests") {
     "process/process_unittest.cc",
     "process/process_util_unittest.cc",
     "profiler/metadata_recorder_unittest.cc",
+    "profiler/sample_metadata_unittest.cc",
     "profiler/stack_sampler_impl_unittest.cc",
     "profiler/stack_sampling_profiler_unittest.cc",
     "rand_util_unittest.cc",

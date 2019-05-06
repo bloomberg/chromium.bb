@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/profiler/sample_metadata.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
@@ -227,14 +228,25 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
                                           tick_clock_->NowTicks(),
                                           std::move(callback));
 
+  enum {
+    NO_SCROLL_PINCH = 0,
+    ONGOING_SCROLL_PINCH = 1,
+    SCROLL_PINCH = 2,
+  };
   // Note: Other input can race ahead of gesture input as they don't have to go
   // through the queue, but we believe it's OK to do so.
   if (!IsGestureScrollOrPinch(event_with_callback->event().GetType())) {
+    base::ScopedSampleMetadata metadata("Input.GestureScrollOrPinch",
+                                        NO_SCROLL_PINCH);
     DispatchSingleInputEvent(std::move(event_with_callback),
                              tick_clock_->NowTicks());
     return;
   }
 
+  base::ScopedSampleMetadata metadata("Input.GestureScrollOrPinch",
+                                      has_ongoing_compositor_scroll_or_pinch_
+                                          ? ONGOING_SCROLL_PINCH
+                                          : SCROLL_PINCH);
   if (has_ongoing_compositor_scroll_or_pinch_) {
     const auto& gesture_event = ToWebGestureEvent(event_with_callback->event());
     bool is_from_set_non_blocking_touch =

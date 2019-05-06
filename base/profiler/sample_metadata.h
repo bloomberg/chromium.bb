@@ -30,8 +30,37 @@
 //   void DidFinishLoad() {
 //     base::RemoveSampleMetadata("Renderer.IsLoading");
 //   }
+//
+// Alternatively, ScopedSampleMetadata can be used to ensure that the metadata
+// is removed correctly.
+//
+// For example:
+//
+//   void DoExpensiveWork() {
+//     base::ScopedSampleMetadata metadata("xyz", 1);
+//     if (...) {
+//       ...
+//       if (...) {
+//         ...
+//         return;
+//       }
+//     }
+//     ...
+//   }
 
 namespace base {
+
+class BASE_EXPORT ScopedSampleMetadata {
+ public:
+  ScopedSampleMetadata(base::StringPiece name, int64_t value);
+  ScopedSampleMetadata(const ScopedSampleMetadata&) = delete;
+  ~ScopedSampleMetadata();
+
+  ScopedSampleMetadata& operator=(const ScopedSampleMetadata&) = delete;
+
+ private:
+  const uint64_t name_hash_;
+};
 
 // Sets a name hash/value pair in the process global stack sampling profiler
 // metadata, overwriting any previous value set for that name hash.
