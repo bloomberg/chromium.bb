@@ -132,38 +132,6 @@ void GpuClient::EstablishGpuChannel(EstablishGpuChannelCallback callback) {
   // At most one channel should be requested. So clear previous request first.
   ClearCallback();
 
-  // TODO(crbug.com/874797): Gpu::EstablishGpuChannelSync() is blocking long
-  // enough that hung renderer detection code is killing the renderer. This
-  // UMA measures how long the request to establish a GPU channel takes after it
-  // arrives in the browser process. Remove this UMA after investigating.
-  if (callback) {
-    callback = base::BindOnce(
-        [](base::TimeTicks start_time, EstablishGpuChannelCallback callback,
-           int32_t client_id, mojo::ScopedMessagePipeHandle handle,
-           const gpu::GPUInfo& gpu_info,
-           const gpu::GpuFeatureInfo& gpu_feature_info) {
-          constexpr base::TimeDelta kMinTime =
-              base::TimeDelta::FromMilliseconds(1);
-          constexpr base::TimeDelta kMaxTime = base::TimeDelta::FromMinutes(10);
-          constexpr int kBuckets = 100;
-
-          base::TimeDelta delta = base::TimeTicks::Now() - start_time;
-          if (handle.is_valid()) {
-            UMA_HISTOGRAM_CUSTOM_TIMES(
-                "GPU.EstablishGpuChannelDuration.Success", delta, kMinTime,
-                kMaxTime, kBuckets);
-          } else {
-            UMA_HISTOGRAM_CUSTOM_TIMES(
-                "GPU.EstablishGpuChannelDuration.Failure", delta, kMinTime,
-                kMaxTime, kBuckets);
-          }
-
-          std::move(callback).Run(client_id, std::move(handle), gpu_info,
-                                  gpu_feature_info);
-        },
-        base::TimeTicks::Now(), std::move(callback));
-  }
-
   if (channel_handle_.is_valid()) {
     // If a channel has been pre-established and cached,
     //   1) if callback is valid, return it right away.
