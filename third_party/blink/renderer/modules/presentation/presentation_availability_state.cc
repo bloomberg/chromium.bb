@@ -99,31 +99,37 @@ void PresentationAvailabilityState::UpdateAvailability(
   listening_status->last_known_availability = availability;
 
   std::vector<AvailabilityListener*> modified_listeners;
-  for (auto& listener : availability_listeners_) {
-    if (!listener->urls.Contains<KURL>(url))
-      continue;
+  {
+    // Set |iterating_listeners_| so we know not to allow modifications
+    // to |availability_listeners_|.
+    base::AutoReset<bool> iterating(&iterating_listeners_, true);
+    for (auto& listener_ref : availability_listeners_) {
+      auto* listener = listener_ref.get();
+      if (!listener->urls.Contains<KURL>(url))
+        continue;
 
-    auto screen_availability = GetScreenAvailability(listener->urls);
-    DCHECK(screen_availability != mojom::blink::ScreenAvailability::UNKNOWN);
-    for (auto* observer : listener->availability_observers)
-      observer->AvailabilityChanged(screen_availability);
+      auto screen_availability = GetScreenAvailability(listener->urls);
+      DCHECK(screen_availability != mojom::blink::ScreenAvailability::UNKNOWN);
+      for (auto* observer : listener->availability_observers)
+        observer->AvailabilityChanged(screen_availability);
 
-    if (screen_availability == mojom::blink::ScreenAvailability::DISABLED) {
-      for (auto& callback_ptr : listener->availability_callbacks) {
-        callback_ptr->RejectAvailabilityNotSupported();
+      if (screen_availability == mojom::blink::ScreenAvailability::DISABLED) {
+        for (auto& callback_ptr : listener->availability_callbacks) {
+          callback_ptr->RejectAvailabilityNotSupported();
+        }
+      } else {
+        for (auto& callback_ptr : listener->availability_callbacks) {
+          callback_ptr->Resolve(screen_availability ==
+                                mojom::blink::ScreenAvailability::AVAILABLE);
+        }
       }
-    } else {
-      for (auto& callback_ptr : listener->availability_callbacks) {
-        callback_ptr->Resolve(screen_availability ==
-                              mojom::blink::ScreenAvailability::AVAILABLE);
-      }
+      listener->availability_callbacks.clear();
+
+      for (const auto& availability_url : listener->urls)
+        MaybeStopListeningToURL(availability_url);
+
+      modified_listeners.push_back(listener);
     }
-    listener->availability_callbacks.clear();
-
-    for (const auto& availability_url : listener->urls)
-      MaybeStopListeningToURL(availability_url);
-
-    modified_listeners.push_back(listener.get());
   }
 
   for (auto* listener : modified_listeners)
@@ -222,6 +228,9 @@ PresentationAvailabilityState::GetAvailabilityListener(
 
 void PresentationAvailabilityState::TryRemoveAvailabilityListener(
     AvailabilityListener* listener) {
+  if (iterating_listeners_)
+    return;
+
   // URL is still observed by some availability object.
   if (!listener->availability_callbacks.empty() ||
       !listener->availability_observers.empty()) {
