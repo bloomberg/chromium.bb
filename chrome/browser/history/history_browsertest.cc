@@ -620,6 +620,67 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, PushStateSetsTitle) {
   EXPECT_EQ(title, row1.title());
 }
 
+// Ensure that commits unrelated to the pending entry do not cause incorrect
+// updates to history.
+IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, BeforeUnloadCommitDuringPending) {
+  // Use the default embedded_test_server() for this test because replaceState
+  // requires a real, non-file URL.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url1(embedded_test_server()->GetURL("foo.com", "/title3.html"));
+  ui_test_utils::NavigateToURL(browser(), url1);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  base::string16 title1 = web_contents->GetTitle();
+
+  // Create a beforeunload handler that does a replaceState during navigation,
+  // unrelated to the destination URL (similar to Twitter).
+  ASSERT_TRUE(content::ExecuteScript(web_contents,
+                                     "window.onbeforeunload = function() {"
+                                     "history.replaceState({},'','test.html');"
+                                     "};"));
+  GURL url2(embedded_test_server()->GetURL("foo.com", "/test.html"));
+
+  // Start a cross-site navigation to trigger the beforeunload, but don't let
+  // the new URL commit yet.
+  GURL url3(embedded_test_server()->GetURL("bar.com", "/title2.html"));
+  content::TestNavigationManager manager(web_contents, url3);
+  web_contents->GetController().LoadURL(
+      url3, content::Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
+  EXPECT_TRUE(manager.WaitForRequestStart());
+
+  // The beforeunload commit should happen before request start, which should
+  // result in two history entries, with the newest in index 0. urls[0] was
+  // incorrectly url3 in https://crbug.com/956208.
+  {
+    std::vector<GURL> urls(GetHistoryContents());
+    ASSERT_EQ(2u, urls.size());
+    EXPECT_EQ(url2, urls[0]);
+    EXPECT_EQ(url1, urls[1]);
+  }
+
+  // After the pending navigation commits and the new title arrives, there
+  // should be another row with the new URL and title.
+  manager.WaitForNavigationFinished();
+  content::WaitForLoadStop(web_contents);
+  base::string16 title3 = web_contents->GetTitle();
+  EXPECT_NE(title1, title3);
+  {
+    std::vector<GURL> urls(GetHistoryContents());
+    ASSERT_EQ(3u, urls.size());
+    EXPECT_EQ(url3, urls[0]);
+    history::URLRow row0 = LookUpURLInHistory(urls[0]);
+    EXPECT_EQ(title3, row0.title());
+
+    EXPECT_EQ(url2, urls[1]);
+    history::URLRow row1 = LookUpURLInHistory(urls[1]);
+    EXPECT_EQ(title1, row1.title());
+
+    EXPECT_EQ(url1, urls[2]);
+    history::URLRow row2 = LookUpURLInHistory(urls[2]);
+    EXPECT_EQ(title1, row2.title());
+  }
+}
+
 // Verify that submitting form adds target page to history list.
 IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, SubmitFormAddsTargetPage) {
   GURL form = ui_test_utils::GetTestUrl(
