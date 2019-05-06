@@ -580,7 +580,8 @@ public class ContextualSearchPanel extends OverlayPanel {
     public void onSearchTermResolved(String searchTerm, String thumbnailUrl, String quickActionUri,
             int quickActionCategory, @CardTag int cardTagEnum) {
         mPanelMetrics.onSearchTermResolved();
-        if (cardTagEnum == CardTag.CT_DEFINITION) {
+        if (cardTagEnum == CardTag.CT_DEFINITION
+                || cardTagEnum == CardTag.CT_CONTEXTUAL_DEFINITION) {
             getSearchBarControl().updateForDictionaryDefinition(searchTerm);
             return;
         }

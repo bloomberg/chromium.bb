@@ -2983,6 +2983,35 @@ public class ContextualSearchManagerTest {
                 mActivityTestRule.getActivity().getActivityTab(), testUrl);
     }
 
+    private void runDictionaryCardTest(@CardTag int cardTag)
+            throws InterruptedException, TimeoutException {
+        // Simulate a tap to show the Bar, then set the quick action data.
+        simulateTapSearch("search");
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> mPanel.onSearchTermResolved("obscure · əbˈskyo͝or", null, null,
+                                QuickActionCategory.NONE, cardTag));
+
+        // Tap on the main portion of the bar.
+        clickPanelBar();
+
+        // The panel should just expand open.
+        waitForPanelToExpand();
+    }
+
+    /**
+     * Tests that the flow for showing dictionary definitions works, and that tapping in the
+     * bar just opens the panel instead of taking some action.
+     */
+    @Test
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    public void testDictionaryDefinitions() throws InterruptedException, TimeoutException {
+        runDictionaryCardTest(CardTag.CT_DEFINITION);
+        closePanel();
+        runDictionaryCardTest(CardTag.CT_CONTEXTUAL_DEFINITION);
+    }
+
     /**
      * Tests accessibility mode: Tap and Long-press don't activate CS.
      */

@@ -43,7 +43,7 @@ public class ContextualSearchCardIconControl extends ViewResourceInflater {
      *        dictionary icon here.
      * @param searchTerm The string that represents the search term to display.
      */
-    boolean canUpdateControlsForDefinition(ContextualSearchContextControl contextControl,
+    boolean didUpdateControlsForDefinition(ContextualSearchContextControl contextControl,
             ContextualSearchImageControl imageControl, String searchTerm) {
         // This middle-dot character is returned by the server and marks the beginning of the
         // pronunciation.

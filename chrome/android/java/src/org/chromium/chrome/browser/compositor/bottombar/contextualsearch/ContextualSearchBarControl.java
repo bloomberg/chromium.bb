@@ -254,7 +254,7 @@ public class ContextualSearchBarControl {
      * @param searchTerm The string that represents the search term to display.
      */
     public void updateForDictionaryDefinition(String searchTerm) {
-        if (!mCardIconControl.canUpdateControlsForDefinition(
+        if (!mCardIconControl.didUpdateControlsForDefinition(
                     mContextControl, mImageControl, searchTerm)) {
             // Can't style, just update with the text to display.
             setSearchTerm(searchTerm);
