@@ -478,8 +478,6 @@ android_library("chrome_java") {
 java_group("chrome_all_java") {
   deps = [
     ":chrome_java",
-    "//chrome/android/features/autofill_assistant:animated_poodle_java",
-    "//chrome/android/features/autofill_assistant:java",
     "//chrome/android/features/keyboard_accessory:internal_java",
     "//chrome/android/features/media_router:java",
   ]
@@ -2298,6 +2296,12 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
         },
       ]
     }
+    extra_modules += [
+      {
+        name = "autofill_assistant"
+        module_target = ":${target_name}__autofill_assistant_bundle_module"
+      },
+    ]
   }
 }
 
