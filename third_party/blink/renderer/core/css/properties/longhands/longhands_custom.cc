@@ -5561,17 +5561,16 @@ const CSSValue* ShapeOutside::ParseSingleValue(
           css_property_parser_helpers::ConsumeImageOrNone(range, &context))
     return image_value;
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  if (CSSValue* box_value = css_property_parser_helpers::ConsumeShapeBox(range))
-    list->Append(*box_value);
+  CSSValue* box_value = css_property_parser_helpers::ConsumeShapeBox(range);
   if (CSSValue* shape_value =
           css_parsing_utils::ConsumeBasicShape(range, context)) {
     list->Append(*shape_value);
-    if (list->length() < 2) {
-      if (CSSValue* box_value =
-              css_property_parser_helpers::ConsumeShapeBox(range))
-        list->Append(*box_value);
+    if (!box_value) {
+      box_value = css_property_parser_helpers::ConsumeShapeBox(range);
     }
   }
+  if (box_value)
+    list->Append(*box_value);
   if (!list->length())
     return nullptr;
   return list;
