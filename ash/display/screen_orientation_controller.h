@@ -12,7 +12,6 @@
 #include "ash/ash_export.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/public/interfaces/ash_window_manager.mojom.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"

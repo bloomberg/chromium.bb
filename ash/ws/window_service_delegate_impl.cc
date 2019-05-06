@@ -16,7 +16,6 @@
 #include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/window_finder.h"
 #include "ash/wm/window_util.h"
-#include "ash/ws/ash_window_manager.h"
 #include "base/bind.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
@@ -242,16 +241,6 @@ aura::Window* WindowServiceDelegateImpl::GetTopmostWindowAtPoint(
     const std::set<aura::Window*>& ignore,
     aura::Window** real_topmost) {
   return wm::GetTopmostWindowAtPoint(location_in_screen, ignore, real_topmost);
-}
-
-std::unique_ptr<ws::WindowManagerInterface>
-WindowServiceDelegateImpl::CreateWindowManagerInterface(
-    ws::WindowTree* tree,
-    const std::string& name,
-    mojo::ScopedInterfaceEndpointHandle handle) {
-  if (name == mojom::AshWindowManager::Name_)
-    return std::make_unique<AshWindowManager>(tree, std::move(handle));
-  return nullptr;
 }
 
 void WindowServiceDelegateImpl::ConnectToImeEngine(

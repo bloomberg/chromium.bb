@@ -1274,8 +1274,6 @@ component("ash") {
     "wm/workspace_controller.h",
     "ws/ash_gpu_interface_provider.cc",
     "ws/ash_gpu_interface_provider.h",
-    "ws/ash_window_manager.cc",
-    "ws/ash_window_manager.h",
     "ws/window_lookup.cc",
     "ws/window_service_delegate_impl.cc",
     "ws/window_service_delegate_impl.h",

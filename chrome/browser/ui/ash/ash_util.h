@@ -50,9 +50,7 @@ views::Widget::InitParams GetFramelessInitParams();
 // May be null in unit tests.
 service_manager::Connector* GetServiceManagerConnector();
 
-// Triggers the window bounce animation inside ash. Handled on the ash side so
-// the window frame is included in the bounce and to avoid sending IPCs for
-// window transform updates.
+// Triggers the window bounce animation.
 void BounceWindow(aura::Window* window);
 
 }  // namespace ash_util

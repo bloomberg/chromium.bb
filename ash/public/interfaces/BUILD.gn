@@ -25,7 +25,6 @@ mojom("interfaces_internal") {
     "arc_custom_tab.mojom",
     "ash_display_controller.mojom",
     "ash_message_center_controller.mojom",
-    "ash_window_manager.mojom",
     "assistant_controller.mojom",
     "assistant_image_downloader.mojom",
     "assistant_setup.mojom",
