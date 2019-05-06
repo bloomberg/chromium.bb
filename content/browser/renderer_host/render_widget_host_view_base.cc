@@ -31,7 +31,6 @@
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/content_switches_internal.h"
 #include "ui/base/layout.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -866,29 +865,20 @@ bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
   std::vector<viz::FrameSinkId> target_ancestors;
   target_ancestors.push_back(target_view->GetFrameSinkId());
 
-  // Optimization using |target_ancestors| does not work with Window Service
-  // because the top-level window's ClientRoot registers a frame sink id that
-  // could not be derived here. HisTestQuery::TransformLocationForTarget fails
-  // because of the missed chain in |target_ancestors|. Passing only the target
-  // if Window Service used and TransformLocationForTarget would fallback to
-  // use GetTransformToTarget.
-  // TODO(crbug.com/895029): Bring back |target_ancestors| optimization for WS.
-  if (!features::IsUsingWindowService()) {
-    RenderWidgetHostViewBase* cur_view = target_view;
-    while (cur_view->IsRenderWidgetHostViewChildFrame()) {
-      if (cur_view->IsRenderWidgetHostViewGuest()) {
-        cur_view = static_cast<RenderWidgetHostViewGuest*>(cur_view)
-                       ->GetOwnerRenderWidgetHostView();
-      } else {
-        cur_view = static_cast<RenderWidgetHostViewChildFrame*>(cur_view)
-                       ->GetParentView();
-      }
-      if (!cur_view)
-        return false;
-      target_ancestors.push_back(cur_view->GetFrameSinkId());
+  RenderWidgetHostViewBase* cur_view = target_view;
+  while (cur_view->IsRenderWidgetHostViewChildFrame()) {
+    if (cur_view->IsRenderWidgetHostViewGuest()) {
+      cur_view = static_cast<RenderWidgetHostViewGuest*>(cur_view)
+                     ->GetOwnerRenderWidgetHostView();
+    } else {
+      cur_view = static_cast<RenderWidgetHostViewChildFrame*>(cur_view)
+                     ->GetParentView();
     }
-    target_ancestors.push_back(root_frame_sink_id);
+    if (!cur_view)
+      return false;
+    target_ancestors.push_back(cur_view->GetFrameSinkId());
   }
+  target_ancestors.push_back(root_frame_sink_id);
 
   float device_scale_factor = original_view->GetDeviceScaleFactor();
   DCHECK_GT(device_scale_factor, 0.0f);

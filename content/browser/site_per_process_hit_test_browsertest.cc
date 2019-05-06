@@ -44,7 +44,6 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/test/mock_overscroll_observer.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -1803,14 +1802,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   MainThreadFrameObserver synchronize_threads(
       rwhv_nested->GetRenderWidgetHost());
   synchronize_threads.Wait();
-
-#if defined(USE_AURA)
-  // Allow the scroll gesture through under mash.
-  base::Optional<SystemEventRewriter::ScopedAllow> maybe_scoped_allow_events;
-  if (features::IsSingleProcessMash()) {
-    maybe_scoped_allow_events.emplace(&event_rewriter_);
-  }
-#endif
 
   SyntheticSmoothScrollGestureParams params;
   params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
@@ -6216,25 +6207,7 @@ class SitePerProcessHitTestDataGenerationBrowserTest
     device_scale_factor_ = rwhv_root->GetDeviceScaleFactor();
     DCHECK_GT(device_scale_factor_, 0);
 
-    auto hit_test_data = observer.GetHitTestData();
-    MaybeStripHitTestData(&hit_test_data);
-    return hit_test_data;
-  }
-
-  // Strip the ClientRoot frame sink id from |hit_test_data| when Window
-  // Service is used because tests are written without considering it and
-  // using a constant number index to access the data of the interested frame.
-  // Related to http://crbug.com/895029.
-  // Note the stripped data has wrong child count and should only be used to
-  // verify test expectations.
-  void MaybeStripHitTestData(
-      std::vector<viz::AggregatedHitTestRegion>* hit_test_data) {
-    if (!features::IsUsingWindowService())
-      return;
-
-    // There must be at least two frame sink ids: one root and one ClientRoot.
-    ASSERT_GE(hit_test_data->size(), 2u);
-    hit_test_data->erase(hit_test_data->begin() + 1);
+    return observer.GetHitTestData();
   }
 
   float current_device_scale_factor() const { return device_scale_factor_; }
@@ -6657,9 +6630,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
   HitTestRegionObserver observer(rwhv_root->GetRootFrameSinkId());
   observer.WaitForHitTestData();
   hit_test_data = observer.GetHitTestData();
-  MaybeStripHitTestData(&hit_test_data);
-
-  DCHECK(hit_test_data.size() == 4);
+  ASSERT_EQ(4u, hit_test_data.size());
   EXPECT_EQ(expected_region.ToString(), hit_test_data[2].rect.ToString());
   EXPECT_TRUE(
       expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));

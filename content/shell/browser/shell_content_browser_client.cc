@@ -335,16 +335,6 @@ void ShellContentBrowserClient::HandleServiceRequest(
         media::CreateMediaServiceForTesting(std::move(request)));
   }
 #endif
-
-#if defined(OS_CHROMEOS)
-  if (features::IsSingleProcessMash() &&
-      service_name == test_ws::mojom::kServiceName) {
-    service_manager::Service::RunAsyncUntilTermination(
-        ws::test::CreateInProcessWindowService(
-            GetContextFactory(), GetContextFactoryPrivate(),
-            CreateGpuInterfaceProvider(), std::move(request)));
-  }
-#endif
 }
 
 bool ShellContentBrowserClient::ShouldTerminateOnServiceQuit(

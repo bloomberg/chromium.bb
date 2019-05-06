@@ -1262,9 +1262,6 @@ int BrowserMainLoop::BrowserThreadsStarted() {
           &viz::GpuHostImpl::InitFontRenderParams,
           gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr)));
 
-  // If ash/ws is not hosting viz, then the browser must.
-  bool browser_is_viz_host = !features::IsMultiProcessMash();
-
   bool always_uses_gpu = true;
   bool established_gpu_channel = false;
 #if defined(OS_ANDROID)
@@ -1276,52 +1273,45 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   established_gpu_channel = true;
   if (parsed_command_line_.HasSwitch(switches::kDisableGpu) ||
       parsed_command_line_.HasSwitch(switches::kDisableGpuCompositing) ||
-      parsed_command_line_.HasSwitch(switches::kDisableGpuEarlyInit) ||
-      !browser_is_viz_host) {
+      parsed_command_line_.HasSwitch(switches::kDisableGpuEarlyInit)) {
     established_gpu_channel = always_uses_gpu = false;
   }
 
-  if (browser_is_viz_host) {
-    host_frame_sink_manager_ = std::make_unique<viz::HostFrameSinkManager>();
-    BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
-    compositing_mode_reporter_impl_ =
-        std::make_unique<viz::CompositingModeReporterImpl>();
+  host_frame_sink_manager_ = std::make_unique<viz::HostFrameSinkManager>();
+  BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
+  compositing_mode_reporter_impl_ =
+      std::make_unique<viz::CompositingModeReporterImpl>();
 
-    if (features::IsVizDisplayCompositorEnabled()) {
-      auto transport_factory = std::make_unique<VizProcessTransportFactory>(
-          BrowserGpuChannelHostFactory::instance(), GetResizeTaskRunner(),
-          compositing_mode_reporter_impl_.get());
-      transport_factory->ConnectHostFrameSinkManager();
-      ImageTransportFactory::SetFactory(std::move(transport_factory));
-    } else {
-      server_shared_bitmap_manager_ =
-          std::make_unique<viz::ServerSharedBitmapManager>();
-      viz::FrameSinkManagerImpl::InitParams params;
-      params.shared_bitmap_manager = server_shared_bitmap_manager_.get();
-      params.activation_deadline_in_frames =
-          switches::GetDeadlineToSynchronizeSurfaces();
-      frame_sink_manager_impl_ =
-          std::make_unique<viz::FrameSinkManagerImpl>(params);
+  if (features::IsVizDisplayCompositorEnabled()) {
+    auto transport_factory = std::make_unique<VizProcessTransportFactory>(
+        BrowserGpuChannelHostFactory::instance(), GetResizeTaskRunner(),
+        compositing_mode_reporter_impl_.get());
+    transport_factory->ConnectHostFrameSinkManager();
+    ImageTransportFactory::SetFactory(std::move(transport_factory));
+  } else {
+    server_shared_bitmap_manager_ =
+        std::make_unique<viz::ServerSharedBitmapManager>();
+    viz::FrameSinkManagerImpl::InitParams params;
+    params.shared_bitmap_manager = server_shared_bitmap_manager_.get();
+    params.activation_deadline_in_frames =
+        switches::GetDeadlineToSynchronizeSurfaces();
+    frame_sink_manager_impl_ =
+        std::make_unique<viz::FrameSinkManagerImpl>(params);
 
-      surface_utils::ConnectWithLocalFrameSinkManager(
-          host_frame_sink_manager_.get(), frame_sink_manager_impl_.get(),
-          base::ThreadTaskRunnerHandle::Get());
+    surface_utils::ConnectWithLocalFrameSinkManager(
+        host_frame_sink_manager_.get(), frame_sink_manager_impl_.get(),
+        base::ThreadTaskRunnerHandle::Get());
 
-      ImageTransportFactory::SetFactory(
-          std::make_unique<GpuProcessTransportFactory>(
-              BrowserGpuChannelHostFactory::instance(),
-              compositing_mode_reporter_impl_.get(),
-              server_shared_bitmap_manager_.get(), GetResizeTaskRunner()));
-    }
+    ImageTransportFactory::SetFactory(
+        std::make_unique<GpuProcessTransportFactory>(
+            BrowserGpuChannelHostFactory::instance(),
+            compositing_mode_reporter_impl_.get(),
+            server_shared_bitmap_manager_.get(), GetResizeTaskRunner()));
   }
 
 #if defined(USE_AURA)
-  // In single process mash mode the aura::Env created here uses the
-  // WindowService, and needs to use the context-factory from aura.
-  if (browser_is_viz_host && !features::IsSingleProcessMash()) {
-    env_->set_context_factory(GetContextFactory());
-    env_->set_context_factory_private(GetContextFactoryPrivate());
-  }
+  env_->set_context_factory(GetContextFactory());
+  env_->set_context_factory_private(GetContextFactoryPrivate());
 #endif  // defined(USE_AURA)
 #endif  // !defined(OS_ANDROID)
 
@@ -1448,7 +1438,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   ui::Clipboard::SetAllowedThreads(allowed_clipboard_threads);
 
   if (GpuDataManagerImpl::GetInstance()->GpuProcessStartAllowed() &&
-      !established_gpu_channel && always_uses_gpu && browser_is_viz_host) {
+      !established_gpu_channel && always_uses_gpu) {
     TRACE_EVENT_INSTANT0("gpu", "Post task to launch GPU process",
                          TRACE_EVENT_SCOPE_THREAD);
     base::PostTaskWithTraits(
@@ -1547,9 +1537,7 @@ bool BrowserMainLoop::InitializeToolkit() {
 
   // Env creates the compositor. Aura widgets need the compositor to be created
   // before they can be initialized by the browser.
-  env_ = aura::Env::CreateInstance(features::IsUsingWindowService()
-                                       ? aura::Env::Mode::MUS
-                                       : aura::Env::Mode::LOCAL);
+  env_ = aura::Env::CreateInstance();
 #endif  // defined(USE_AURA)
 
   if (parts_)
