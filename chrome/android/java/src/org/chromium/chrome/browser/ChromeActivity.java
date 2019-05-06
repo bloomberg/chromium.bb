@@ -1478,7 +1478,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             // TODO(yusufo): Unify initialization.
             initializeBottomSheet(
                     !ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON));
-            getComponent().resolveContextualSuggestionsCoordinator();
         }
         AppHooks.get().startMonitoringNetworkQuality();
     }

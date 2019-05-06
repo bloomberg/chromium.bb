@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.dependency_injection;
 
-import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsCoordinator;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModule;
 
 import dagger.Subcomponent;
@@ -16,7 +15,4 @@ import dagger.Subcomponent;
 @ActivityScope
 public interface ChromeActivityComponent {
     ChromeAppComponent getParent();
-
-    // Temporary getters for DI migration process.
-    ContextualSuggestionsCoordinator resolveContextualSuggestionsCoordinator();
 }
