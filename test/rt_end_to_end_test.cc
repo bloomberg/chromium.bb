@@ -136,7 +136,7 @@ TEST_P(RTEndToEndTest, EndtoEndPSNRTest) { DoTest(); }
 AV1_INSTANTIATE_TEST_CASE(RTEndToEndTestLarge,
                           ::testing::ValuesIn(kTestVectors),
                           ::testing::Range(0, 7),
-                          ::testing::Range<unsigned int>(0, 4));
+                          ::testing::Values<unsigned int>(0));
 
 AV1_INSTANTIATE_TEST_CASE(RTEndToEndTest, ::testing::Values(kTestVectors[0]),
                           ::testing::Range(7, 9),
