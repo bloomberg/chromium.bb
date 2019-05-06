@@ -2081,42 +2081,17 @@ blink::mojom::CommitResult WebLocalFrameImpl::CommitSameDocumentNavigation(
 
 void WebLocalFrameImpl::LoadJavaScriptURL(const WebURL& url) {
   DCHECK(GetFrame());
-  // This is copied from ScriptController::executeScriptIfJavaScriptURL.
-  // Unfortunately, we cannot just use that method since it is private, and
-  // it also doesn't quite behave as we require it to for bookmarklets. The
-  // key difference is that we need to suppress loading the string result
-  // from evaluating the JS URL if executing the JS URL resulted in a
-  // location change. We also allow a JS URL to be loaded even if scripts on
-  // the page are otherwise disabled.
-
-  Document* owner_document = GetFrame()->GetDocument();
-
-  if (!owner_document || !GetFrame()->GetPage())
-    return;
-
   // Protect privileged pages against bookmarklets and other javascript
   // manipulations.
   if (SchemeRegistry::ShouldTreatURLSchemeAsNotAllowingJavascriptURLs(
-          owner_document->Url().Protocol()))
+          GetFrame()->GetDocument()->Url().Protocol()))
     return;
 
-  String script = DecodeURLEscapeSequences(
-      static_cast<const KURL&>(url).GetString().Substring(
-          strlen("javascript:")),
-      DecodeURLMode::kUTF8OrIsomorphic);
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
       LocalFrame::NotifyUserActivation(GetFrame(),
                                        UserGestureToken::kNewGesture);
-  v8::HandleScope handle_scope(ToIsolate(GetFrame()));
-  v8::Local<v8::Value> result =
-      GetFrame()->GetScriptController().ExecuteScriptInMainWorldAndReturnValue(
-          ScriptSourceCode(script, ScriptSourceLocationType::kJavascriptUrl),
-          KURL(), SanitizeScriptErrors::kSanitize);
-  if (result.IsEmpty() || !result->IsString())
-    return;
-  String script_result = ToCoreString(v8::Local<v8::String>::Cast(result));
-  GetFrame()->Loader().ReplaceDocumentWhileExecutingJavaScriptURL(
-      script_result, owner_document);
+  GetFrame()->GetScriptController().ExecuteJavaScriptURL(
+      url, kDoNotCheckContentSecurityPolicy);
 }
 
 WebNavigationControl::FallbackContentResult

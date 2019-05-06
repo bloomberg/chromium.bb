@@ -7858,8 +7858,8 @@ void Document::ExecuteJavaScriptUrls() {
   urls_to_execute.swap(pending_javascript_urls_);
 
   for (auto& url_to_execute : urls_to_execute) {
-    frame_->GetScriptController().ExecuteScriptIfJavaScriptURL(
-        url_to_execute.url, nullptr, url_to_execute.disposition);
+    frame_->GetScriptController().ExecuteJavaScriptURL(
+        url_to_execute.url, url_to_execute.disposition);
     if (!frame_)
       break;
   }
@@ -7882,8 +7882,7 @@ void Document::ProcessJavaScriptUrl(
   // hacky.
   if (frame_->Loader().StateMachine()->IsDisplayingInitialEmptyDocument() &&
       (url == "javascript:''" || url == "javascript:\"\"")) {
-    frame_->GetScriptController().ExecuteScriptIfJavaScriptURL(url, nullptr,
-                                                               disposition);
+    frame_->GetScriptController().ExecuteJavaScriptURL(url, disposition);
     CheckCompleted();
     return;
   }
