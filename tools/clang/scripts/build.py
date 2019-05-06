@@ -126,7 +126,7 @@ def Checkout(name, url, dir):
   # output. Hence, pass `--quiet` on the first run and run an explicit command
   # to print the revision we got afterwards on the first attempt.
   if RunCommand(command + ['--quiet'], fail_hard=False):
-    RunCommand(['svn', 'info', '--show-item', 'revision'])
+    RunCommand(['svnversion', dir])
     return
 
   if os.path.isdir(dir):
