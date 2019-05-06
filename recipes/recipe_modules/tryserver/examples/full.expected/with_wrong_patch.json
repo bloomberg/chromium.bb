@@ -32,9 +32,7 @@
   },
   {
     "failure": {
-      "failure": {
-        "step": "fail"
-      },
+      "failure": {},
       "humanReason": "Step('fail') failed with return_code 1"
     },
     "name": "$result"

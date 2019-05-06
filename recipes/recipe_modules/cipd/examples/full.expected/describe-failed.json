@@ -74,9 +74,7 @@
   },
   {
     "failure": {
-      "failure": {
-        "step": "cipd describe public/package/linux-amd64"
-      },
+      "failure": {},
       "humanReason": "Step('cipd describe public/package/linux-amd64') failed with return_code 1"
     },
     "name": "$result"

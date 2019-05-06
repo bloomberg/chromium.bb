@@ -283,11 +283,6 @@
   },
   {
     "failure": {
-      "exception": {
-        "traceback": [
-          "<omitted by recipe engine>"
-        ]
-      },
       "humanReason": "Uncaught Exception: ValueError(\"path Path('start_dir', 'a','path','to','file.py') is not the package root Path('start_dir', 'some_subdir') and not a child thereof\",)"
     },
     "name": "$result"

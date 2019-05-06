@@ -219,11 +219,6 @@
   },
   {
     "failure": {
-      "exception": {
-        "traceback": [
-          "<omitted by recipe engine>"
-        ]
-      },
       "humanReason": "Infra Failure: Step('my repo rebase') returned 1"
     },
     "name": "$result"

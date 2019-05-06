@@ -283,11 +283,6 @@
   },
   {
     "failure": {
-      "exception": {
-        "traceback": [
-          "<omitted by recipe engine>"
-        ]
-      },
       "humanReason": "Uncaught Exception: ValueError(\"invalid value for install_mode: ''\",)"
     },
     "name": "$result"

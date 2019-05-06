@@ -175,11 +175,6 @@
   },
   {
     "failure": {
-      "exception": {
-        "traceback": [
-          "<omitted by recipe engine>"
-        ]
-      },
       "humanReason": "Infra Failure: Step('Patch failure') returned 1"
     },
     "name": "$result"

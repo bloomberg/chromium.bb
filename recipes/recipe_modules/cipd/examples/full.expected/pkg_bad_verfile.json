@@ -283,11 +283,6 @@
   },
   {
     "failure": {
-      "exception": {
-        "traceback": [
-          "<omitted by recipe engine>"
-        ]
-      },
       "humanReason": "Uncaught Exception: ValueError('add_version_file() may only be used once.',)"
     },
     "name": "$result"
