@@ -1750,11 +1750,7 @@ weston_output_damage(struct weston_output *output);
 void
 weston_compositor_schedule_repaint(struct weston_compositor *compositor);
 void
-weston_compositor_fade(struct weston_compositor *compositor, float tint);
-void
 weston_compositor_damage_all(struct weston_compositor *compositor);
-void
-weston_compositor_unlock(struct weston_compositor *compositor);
 void
 weston_compositor_wake(struct weston_compositor *compositor);
 void
