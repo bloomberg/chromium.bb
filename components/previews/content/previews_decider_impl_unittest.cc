@@ -1160,6 +1160,44 @@ TEST_F(PreviewsDeciderImplTest, LitePageRedirectDisallowedByServerBlacklist) {
       1);
 }
 
+TEST_F(PreviewsDeciderImplTest,
+       LitePageRedirectAllowedByServerBlacklistWithFlag) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kLitePageServerPreviews,
+       features::kOptimizationHints},
+      {});
+  InitializeUIService();
+  InitializeOptimizationGuideHints();
+
+  base::test::ScopedCommandLine scoped_command_line;
+  base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
+  command_line->AppendSwitch(
+      switches::kIgnoreLitePageRedirectOptimizationBlacklist);
+  ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kIgnoreLitePageRedirectOptimizationBlacklist));
+
+  base::HistogramTester histogram_tester;
+
+  PreviewsUserData user_data(kDefaultPageId);
+  // First verify preview allowed for non-whitelisted url.
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, GURL("https://www.google.com"), false,
+      PreviewsType::LITE_PAGE_REDIRECT));
+
+  histogram_tester.ExpectUniqueSample(
+      "Previews.EligibilityReason.LitePageRedirect",
+      static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
+
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, GURL("https://blacklisted.example.com"), false,
+      PreviewsType::LITE_PAGE_REDIRECT));
+
+  histogram_tester.ExpectUniqueSample(
+      "Previews.EligibilityReason.LitePageRedirect",
+      static_cast<int>(PreviewsEligibilityReason::ALLOWED), 2);
+}
+
 TEST_F(PreviewsDeciderImplTest, OptimizationGuidePreviewsAllowedWithoutHints) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
