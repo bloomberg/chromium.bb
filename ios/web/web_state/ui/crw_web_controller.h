@@ -17,19 +17,7 @@
 namespace web {
 
 enum class NavigationInitiationType;
-
-// Page load phases.
-enum LoadPhase {
-  // In the LOAD_REQUESTED phase, the system predicts a page change is going to
-  // happen but the page URL has not yet changed.
-  LOAD_REQUESTED = 0,
-  // In the PAGE_LOADING phase, the page URL has changed but the whole document
-  // may not be available for use.
-  PAGE_LOADING = 1,
-  // In the PAGE_LOADED phase, either the page had loaded and is available for
-  // use, the load was cancelled, or the UIWebView is new and ready for a load.
-  PAGE_LOADED = 2
-};
+enum class WKNavigationState;
 
 }  // namespace web
 
@@ -81,7 +69,7 @@ class WebStateImpl;
 @property(weak, nonatomic, readonly) UIView* viewForPrinting;
 
 // Returns the current page loading phase.
-@property(nonatomic, readonly) web::LoadPhase loadPhase;
+@property(nonatomic, readonly, assign) web::WKNavigationState navigationState;
 
 // The fraction of the page load that has completed as a number between 0.0
 // (nothing loaded) and 1.0 (fully loaded).

@@ -255,8 +255,6 @@ bool RequiresContentFilterBlockingWorkaround() {
   // TODO(crbug.com/549616): Remove this in favor of just updating the
   // navigation manager and treating that as authoritative.
   GURL _documentURL;
-  // Page loading phase.
-  web::LoadPhase _loadPhase;
   // The web::PageDisplayState recorded when the page starts loading.
   web::PageDisplayState _displayStateOnStartLoading;
   // Whether or not the page has zoomed since the current navigation has been
@@ -361,6 +359,9 @@ bool RequiresContentFilterBlockingWorkaround() {
 // changed.
 @property(weak, nonatomic, readonly) NSDictionary* WKWebViewObservers;
 
+// Current page navigation state.
+@property(nonatomic, readwrite, assign) web::WKNavigationState navigationState;
+
 // The web view's view of the current URL. During page transitions
 // this may not be the same as the session history's view of the current URL.
 // This method can change the state of the CRWWebController, as it will display
@@ -464,9 +465,9 @@ bool RequiresContentFilterBlockingWorkaround() {
 // may be called multiple times and thus must be idempotent.
 - (void)loadCompleteWithSuccess:(BOOL)loadSuccess
                      forContext:(web::NavigationContextImpl*)context;
-// Called after URL is finished loading and _loadPhase is set to PAGE_LOADED.
-// |context| contains information about the navigation associated with the URL.
-// It is nil if currentURL is invalid.
+// Called after URL is finished loading and self.navigationState is set to
+// FINISHED. |context| contains information about the navigation associated
+// with the URL. It is nil if currentURL is invalid.
 - (void)didFinishWithURL:(const GURL&)currentURL
              loadSuccess:(BOOL)loadSuccess
                  context:(nullable const web::NavigationContextImpl*)context;
@@ -606,7 +607,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     DCHECK(_webStateImpl);
     // Load phase when no WebView present is 'loaded' because this represents
     // the idle state.
-    _loadPhase = web::PAGE_LOADED;
+    _navigationState = web::WKNavigationState::FINISHED;
     // Content area is lazily instantiated.
     _defaultURL = GURL(url::kAboutBlankURL);
     _jsInjectionReceiver =
@@ -1198,7 +1199,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
   // Abort any outstanding page load. This ensures the delegate gets informed
   // about the outgoing page, and further messages from the page are suppressed.
-  if (_loadPhase != web::PAGE_LOADED)
+  if (self.navigationState != web::WKNavigationState::FINISHED)
     [self abortLoad];
 
   DCHECK(!_isHalted);
@@ -1262,7 +1263,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       self.webStateImpl, URL,
       /*has_user_gesture=*/true, item->GetTransitionType(),
       /*is_renderer_initiated=*/false);
-  _loadPhase = web::LOAD_REQUESTED;
+  self.navigationState = web::WKNavigationState::REQUESTED;
   navigationContext->SetNavigationItemUniqueID(item->GetUniqueID());
 
   item->SetNavigationInitiationType(
@@ -1301,7 +1302,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // Remove the transient content view.
   self.webStateImpl->ClearTransientContent();
 
-  _loadPhase = web::LOAD_REQUESTED;
+  self.navigationState = web::WKNavigationState::REQUESTED;
 
   // Web View should not be created for App Specific URLs.
   if (!web::GetWebClient()->IsAppSpecificURL(URL)) {
@@ -1463,7 +1464,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     context->SetIsSameDocument(true);
   } else {
     self.webStateImpl->SetIsLoading(true);
-    _loadPhase = web::LOAD_REQUESTED;
+    self.navigationState = web::WKNavigationState::REQUESTED;
   }
 
   web::WKBackForwardListItemHolder* holder =
@@ -1805,13 +1806,13 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
   bool redirect = transition & ui::PAGE_TRANSITION_IS_REDIRECT_MASK;
   if (!redirect) {
-    // Before changing phases, the delegate should be informed that any existing
-    // request is being cancelled before completion.
+    // Before changing navigation state, the delegate should be informed that
+    // any existing request is being cancelled before completion.
     [self loadCancelled];
-    DCHECK(_loadPhase == web::PAGE_LOADED);
+    DCHECK_EQ(web::WKNavigationState::FINISHED, self.navigationState);
   }
 
-  _loadPhase = web::LOAD_REQUESTED;
+  self.navigationState = web::WKNavigationState::REQUESTED;
 
   // Record the state of outgoing web view. Do nothing if native controller
   // exists, because in that case recordStateInHistory will record the state
@@ -2182,8 +2183,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 - (void)loadCancelled {
   // TODO(crbug.com/821995):  Check if this function should be removed.
-  if (_loadPhase != web::PAGE_LOADED) {
-    _loadPhase = web::PAGE_LOADED;
+  if (self.navigationState != web::WKNavigationState::FINISHED) {
+    self.navigationState = web::WKNavigationState::FINISHED;
     if (!_isHalted) {
       self.webStateImpl->SetIsLoading(false);
     }
@@ -2193,7 +2194,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)didFinishNavigation:(web::NavigationContextImpl*)context {
   // This can be called at multiple times after the document has loaded. Do
   // nothing if the document has already loaded.
-  if (_loadPhase == web::PAGE_LOADED)
+  if (self.navigationState == web::WKNavigationState::FINISHED)
     return;
 
   // Restore allowsBackForwardNavigationGestures once restoration is complete.
@@ -2213,12 +2214,12 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                      forContext:(web::NavigationContextImpl*)context {
   // The webView may have been torn down (or replaced by a native view). Be
   // safe and do nothing if that's happened.
-  if (_loadPhase != web::PAGE_LOADING)
+  if (self.navigationState != web::WKNavigationState::STARTED)
     return;
 
   const GURL currentURL([self currentURL]);
 
-  _loadPhase = web::PAGE_LOADED;
+  self.navigationState = web::WKNavigationState::FINISHED;
 
   [self optOutScrollsToTopForSubviews];
 
@@ -2235,7 +2236,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)didFinishWithURL:(const GURL&)currentURL
              loadSuccess:(BOOL)loadSuccess
                  context:(nullable const web::NavigationContextImpl*)context {
-  DCHECK(_loadPhase == web::PAGE_LOADED);
+  DCHECK_EQ(web::WKNavigationState::FINISHED, self.navigationState);
 
   [self restoreStateFromHistory];
 
@@ -2626,7 +2627,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     [self.nativeController setDelegate:self];
   }
 
-  _loadPhase = web::PAGE_LOADED;
+  self.navigationState = web::WKNavigationState::FINISHED;
   [self didFinishWithURL:targetURL loadSuccess:YES context:context.get()];
 }
 
@@ -3520,7 +3521,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   DCHECK(scrollState.IsValid());
   CGPoint contentOffset = scrollState.GetEffectiveContentOffsetForContentInset(
       self.webScrollView.contentInset);
-  if (_loadPhase == web::PAGE_LOADED) {
+  if (self.navigationState == web::WKNavigationState::FINISHED) {
     // If the page is loaded, update the scroll immediately.
     self.webScrollView.contentOffset = contentOffset;
   } else {
@@ -4409,7 +4410,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
     if (context->IsLoadingErrorPage()) {
       // This is loadHTMLString: navigation to display error page in web view.
-      _loadPhase = web::LOAD_REQUESTED;
+      self.navigationState = web::WKNavigationState::REQUESTED;
       return;
     }
 
@@ -4499,7 +4500,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   [_navigationStates setContext:std::move(navigationContext)
                   forNavigation:navigation];
   self.webStateImpl->OnNavigationStarted(navigationContextPtr);
-  DCHECK(self.loadPhase == web::LOAD_REQUESTED);
+  DCHECK_EQ(web::WKNavigationState::REQUESTED, self.navigationState);
 }
 
 - (void)webView:(WKWebView*)webView
@@ -5078,7 +5079,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // been registered for a non-document-changing URL change. Updates internal
 // state not specific to web pages.
 - (void)didStartLoading {
-  _loadPhase = web::PAGE_LOADING;
+  self.navigationState = web::WKNavigationState::STARTED;
   _displayStateOnStartLoading = self.pageDisplayState;
 
   self.userInteractionRegistered = NO;
@@ -5650,7 +5651,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Called when WKWebView certificateChain or hasOnlySecureContent property has
 // changed.
 - (void)webViewSecurityFeaturesDidChange {
-  if (self.loadPhase == web::LOAD_REQUESTED) {
+  if (self.navigationState == web::WKNavigationState::REQUESTED) {
     // Do not update SSL Status for pending load. It will be updated in
     // |webView:didCommitNavigation:| callback.
     return;
@@ -5689,7 +5690,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       IsRestoreSessionUrl(webViewURL)) {
     if (previousURLHasAboutScheme || is_back_forward_navigation) {
       [self.webView reload];
-      _loadPhase = web::LOAD_REQUESTED;
+      self.navigationState = web::WKNavigationState::REQUESTED;
       return;
     }
   }
@@ -5698,7 +5699,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // before committing the current navigation or resetting the web view's
   // |isLoading| property to NO.  If this is the first navigation for the web
   // view, this will result in an empty URL.
-  BOOL navigationWasCommitted = _loadPhase != web::LOAD_REQUESTED;
+  BOOL navigationWasCommitted =
+      self.navigationState != web::WKNavigationState::REQUESTED;
   if (!navigationWasCommitted &&
       (webViewURL.is_empty() || webViewURL == _documentURL)) {
     return;
@@ -5947,7 +5949,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       _documentURL.GetOrigin() != newURL.GetOrigin()) {
     return NO;
   }
-  if (self.loadPhase == web::LOAD_REQUESTED) {
+  if (self.navigationState == web::WKNavigationState::REQUESTED) {
     // Normally LOAD_REQUESTED indicates that this is a regular, pending
     // navigation, but it can also happen during a fast-back navigation across
     // a hash change, so that case is potentially a same-document navigation.

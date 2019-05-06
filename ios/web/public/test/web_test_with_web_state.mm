@@ -10,6 +10,7 @@
 #include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "ios/web/navigation/crw_wk_navigation_states.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/web_client.h"
@@ -128,7 +129,7 @@ bool WebTestWithWebState::LoadHtmlWithoutSubresources(const std::string& html) {
 void WebTestWithWebState::LoadHtml(NSString* html, const GURL& url) {
   // Initiate asynchronous HTML load.
   CRWWebController* web_controller = GetWebController(web_state());
-  ASSERT_EQ(PAGE_LOADED, web_controller.loadPhase);
+  ASSERT_EQ(web::WKNavigationState::FINISHED, web_controller.navigationState);
 
   // If the underlying WKWebView is empty, first load a placeholder to create a
   // WKBackForwardListItem to store the NavigationItem associated with the
@@ -141,17 +142,17 @@ void WebTestWithWebState::LoadHtml(NSString* html, const GURL& url) {
     NavigationManager::WebLoadParams params(placeholder_url);
     web_state()->GetNavigationManager()->LoadURLWithParams(params);
     ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-      return web_controller.loadPhase == PAGE_LOADED;
+      return web_controller.navigationState == web::WKNavigationState::FINISHED;
     }));
   }
 
   [web_controller loadHTML:html forURL:url];
-  ASSERT_EQ(LOAD_REQUESTED, web_controller.loadPhase);
+  ASSERT_EQ(web::WKNavigationState::REQUESTED, web_controller.navigationState);
 
   // Wait until the page is loaded.
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     base::RunLoop().RunUntilIdle();
-    return web_controller.loadPhase == PAGE_LOADED;
+    return web_controller.navigationState == web::WKNavigationState::FINISHED;
   }));
 
   // Wait until the script execution is possible. Script execution will fail if
