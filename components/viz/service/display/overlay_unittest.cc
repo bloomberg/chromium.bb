@@ -2238,15 +2238,12 @@ TEST_F(UnderlayCastTest, RoundContentBounds) {
   EXPECT_EQ(kOverlayRect, content_bounds_[0]);
 }
 
-TEST_F(UnderlayCastTest, PrimaryPlaneOverlayIsTransparentWithUnderlay) {
+TEST_F(UnderlayCastTest, PrimaryPlaneOverlayIsAlwaysTransparent) {
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
   gfx::Rect output_rect = pass->output_rect;
   CreateOpaqueQuadAt(resource_provider_.get(),
                      pass->shared_quad_state_list.back(), pass.get(),
                      output_rect, SK_ColorWHITE);
-
-  CreateVideoHoleDrawQuadAt(pass->shared_quad_state_list.back(), pass.get(),
-                            kOverlayRect);
 
   OverlayCandidateList candidate_list;
   OverlayCandidate candidate;
@@ -2264,8 +2261,7 @@ TEST_F(UnderlayCastTest, PrimaryPlaneOverlayIsTransparentWithUnderlay) {
       nullptr, nullptr, &damage_rect_, &content_bounds_);
 
   ASSERT_EQ(false, candidate_list[0].is_opaque);
-  EXPECT_EQ(1U, content_bounds_.size());
-  EXPECT_EQ(output_rect, content_bounds_[0]);
+  EXPECT_EQ(0U, content_bounds_.size());
 }
 
 TEST_F(UnderlayCastTest, NoOverlayPromotionWithoutProtectedContent) {
