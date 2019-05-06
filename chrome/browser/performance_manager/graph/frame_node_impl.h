@@ -12,6 +12,7 @@
 #include "base/unguessable_token.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
 #include "chrome/browser/performance_manager/observers/graph_observer.h"
+#include "chrome/browser/performance_manager/public/graph/frame_node.h"
 #include "url/gurl.h"
 
 namespace performance_manager {
@@ -42,7 +43,8 @@ class ProcessNodeImpl;
 // another process!) and commits, the frame will be swapped with the previously
 // active frame.
 class FrameNodeImpl
-    : public CoordinationUnitInterface<
+    : public FrameNode,
+      public CoordinationUnitInterface<
           FrameNodeImpl,
           resource_coordinator::mojom::DocumentCoordinationUnit,
           resource_coordinator::mojom::DocumentCoordinationUnitRequest> {

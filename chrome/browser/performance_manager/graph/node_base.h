@@ -14,9 +14,9 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
+#include "chrome/browser/performance_manager/graph/node_type.h"
 #include "chrome/browser/performance_manager/graph/properties.h"
 #include "chrome/browser/performance_manager/observers/graph_observer.h"
-#include "chrome/browser/performance_manager/public/graph/node_type.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -81,31 +81,34 @@ class NodeBase {
   DISALLOW_COPY_AND_ASSIGN(NodeBase);
 };
 
-template <class NodeClass>
+template <class NodeImplClass>
 class TypedNodeBase : public NodeBase {
  public:
-  using ObservedProperty = ObservedPropertyImpl<NodeClass, GraphObserver>;
+  using ObservedProperty = ObservedPropertyImpl<NodeImplClass, GraphObserver>;
 
   explicit TypedNodeBase(GraphImpl* graph)
-      : NodeBase(NodeClass::Type(), graph) {}
+      : NodeBase(NodeImplClass::Type(), graph) {}
 
-  static const NodeClass* FromNodeBase(const NodeBase* node) {
-    DCHECK_EQ(node->type(), NodeClass::Type());
-    return static_cast<const NodeClass*>(node);
+  static const NodeImplClass* FromNodeBase(const NodeBase* node) {
+    DCHECK_EQ(node->type(), NodeImplClass::Type());
+    return static_cast<const NodeImplClass*>(node);
   }
 
-  static NodeClass* FromNodeBase(NodeBase* node) {
-    DCHECK(node->type() == NodeClass::Type());
-    return static_cast<NodeClass*>(node);
+  static NodeImplClass* FromNodeBase(NodeBase* node) {
+    DCHECK(node->type() == NodeImplClass::Type());
+    return static_cast<NodeImplClass*>(node);
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TypedNodeBase);
 };
 
-template <class NodeClass, class MojoInterfaceClass, class MojoRequestClass>
-class CoordinationUnitInterface : public TypedNodeBase<NodeClass>,
+template <class NodeImplClass, class MojoInterfaceClass, class MojoRequestClass>
+class CoordinationUnitInterface : public TypedNodeBase<NodeImplClass>,
                                   public MojoInterfaceClass {
  public:
   explicit CoordinationUnitInterface(GraphImpl* graph)
-      : TypedNodeBase<NodeClass>(graph) {}
+      : TypedNodeBase<NodeImplClass>(graph) {}
 
   ~CoordinationUnitInterface() override = default;
 

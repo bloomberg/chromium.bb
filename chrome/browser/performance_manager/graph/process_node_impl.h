@@ -15,6 +15,7 @@
 #include "chrome/browser/performance_manager/graph/node_base.h"
 #include "chrome/browser/performance_manager/graph/properties.h"
 #include "chrome/browser/performance_manager/observers/graph_observer.h"
+#include "chrome/browser/performance_manager/public/graph/process_node.h"
 
 namespace performance_manager {
 
@@ -31,7 +32,8 @@ class FrameNodeImpl;
 // 3. Process died or falied to start, have exit status.
 // 4. Back to 2.
 class ProcessNodeImpl
-    : public CoordinationUnitInterface<
+    : public ProcessNode,
+      public CoordinationUnitInterface<
           ProcessNodeImpl,
           resource_coordinator::mojom::ProcessCoordinationUnit,
           resource_coordinator::mojom::ProcessCoordinationUnitRequest> {

@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "chrome/browser/performance_manager/public/graph/node_type.h"
+#include "chrome/browser/performance_manager/graph/node_type.h"
 
 namespace performance_manager {
 

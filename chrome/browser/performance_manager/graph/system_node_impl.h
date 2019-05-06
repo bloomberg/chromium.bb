@@ -13,6 +13,7 @@
 #include "base/process/process_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
+#include "chrome/browser/performance_manager/public/graph/system_node.h"
 
 namespace performance_manager {
 
@@ -45,7 +46,7 @@ struct ProcessResourceMeasurementBatch {
   std::vector<ProcessResourceMeasurement> measurements;
 };
 
-class SystemNodeImpl : public TypedNodeBase<SystemNodeImpl> {
+class SystemNodeImpl : public SystemNode, public TypedNodeBase<SystemNodeImpl> {
  public:
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kSystem; }
 

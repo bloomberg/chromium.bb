@@ -14,6 +14,7 @@
 #include "chrome/browser/performance_manager/graph/node_attached_data.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
 #include "chrome/browser/performance_manager/observers/graph_observer.h"
+#include "chrome/browser/performance_manager/public/graph/page_node.h"
 #include "chrome/browser/performance_manager/public/web_contents_proxy.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "url/gurl.h"
@@ -23,7 +24,7 @@ namespace performance_manager {
 class FrameNodeImpl;
 class ProcessNodeImpl;
 
-class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
+class PageNodeImpl : public PageNode, public TypedNodeBase<PageNodeImpl> {
  public:
   using LifecycleState = resource_coordinator::mojom::LifecycleState;
 

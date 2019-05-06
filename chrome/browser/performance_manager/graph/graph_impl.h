@@ -17,6 +17,7 @@
 #include "base/process/process_handle.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/performance_manager/graph/node_attached_data.h"
+#include "chrome/browser/performance_manager/public/graph/graph.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
@@ -32,12 +33,12 @@ class SystemNodeImpl;
 // Represents a graph of the nodes representing a single browser. Maintains a
 // set of nodes that can be retrieved in different ways, some indexed. Keeps
 // a list of observers that are notified of node addition and removal.
-class GraphImpl {
+class GraphImpl : public Graph {
  public:
   using NodeSet = std::unordered_set<NodeBase*>;
 
   GraphImpl();
-  ~GraphImpl();
+  ~GraphImpl() override;
 
   void set_ukm_recorder(ukm::UkmRecorder* ukm_recorder) {
     ukm_recorder_ = ukm_recorder;
