@@ -2183,7 +2183,6 @@
                       'stevenjb+watch@chromium.org'],
     'chromeos_login': ['achuith+watch@chromium.org',
                        'alemate+watch@chromium.org',
-                       'jdufault+watch@chromium.org',
                        'rsorokin+watch@chromium.org',
                        'tbarzic+watch@chromium.org'],
     'chromeos_net': ['azeemarshad+watch-network@chromium.org',
