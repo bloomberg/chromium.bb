@@ -53,9 +53,9 @@ class OverlayPresenterTest : public PlatformTest {
 // delegate is provided.
 TEST_F(OverlayPresenterTest, PresentAfterSettingUIDelegate) {
   // Add a WebState to the list and add a request to that WebState's queue.
-  web_state_list().InsertWebState(0, std::make_unique<web::TestWebState>(),
-                                  WebStateList::InsertionFlags::INSERT_ACTIVATE,
-                                  WebStateOpener());
+  web_state_list().InsertWebState(
+      /*index=*/0, std::make_unique<web::TestWebState>(),
+      WebStateList::InsertionFlags::INSERT_ACTIVATE, WebStateOpener());
   web::WebState* web_state = active_web_state();
   GetQueueForWebState(web_state)->AddRequest(
       OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr));
@@ -73,9 +73,9 @@ TEST_F(OverlayPresenterTest, PresentAfterSettingUIDelegate) {
 TEST_F(OverlayPresenterTest, PresentAfterRequestAddedToActiveQueue) {
   // Add a WebState to the list and add a request to that WebState's queue.
   presenter().SetUIDelegate(&ui_delegate());
-  web_state_list().InsertWebState(0, std::make_unique<web::TestWebState>(),
-                                  WebStateList::InsertionFlags::INSERT_ACTIVATE,
-                                  WebStateOpener());
+  web_state_list().InsertWebState(
+      /*index=*/0, std::make_unique<web::TestWebState>(),
+      WebStateList::InsertionFlags::INSERT_ACTIVATE, WebStateOpener());
   web::WebState* web_state = active_web_state();
   GetQueueForWebState(web_state)->AddRequest(
       OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr));
@@ -89,9 +89,9 @@ TEST_F(OverlayPresenterTest, PresentAfterRequestAddedToActiveQueue) {
 TEST_F(OverlayPresenterTest, ResetUIDelegate) {
   // Add a WebState to the list and add a request to that WebState's queue.
   presenter().SetUIDelegate(&ui_delegate());
-  web_state_list().InsertWebState(0, std::make_unique<web::TestWebState>(),
-                                  WebStateList::InsertionFlags::INSERT_ACTIVATE,
-                                  WebStateOpener());
+  web_state_list().InsertWebState(
+      /*index=*/0, std::make_unique<web::TestWebState>(),
+      WebStateList::InsertionFlags::INSERT_ACTIVATE, WebStateOpener());
   web::WebState* web_state = active_web_state();
   OverlayRequestQueueImpl* queue = GetQueueForWebState(web_state);
   queue->AddRequest(
@@ -124,9 +124,9 @@ TEST_F(OverlayPresenterTest, ResetUIDelegate) {
 TEST_F(OverlayPresenterTest, ChangeActiveWebStateWhileNotPresenting) {
   // Add a WebState to the list and activate it.
   presenter().SetUIDelegate(&ui_delegate());
-  web_state_list().InsertWebState(0, std::make_unique<web::TestWebState>(),
-                                  WebStateList::InsertionFlags::INSERT_ACTIVATE,
-                                  WebStateOpener());
+  web_state_list().InsertWebState(
+      /*index=*/0, std::make_unique<web::TestWebState>(),
+      WebStateList::InsertionFlags::INSERT_ACTIVATE, WebStateOpener());
   web::WebState* first_web_state = active_web_state();
   EXPECT_EQ(FakeOverlayUIDelegate::PresentationState::kNotPresented,
             ui_delegate().GetPresentationState(first_web_state));
@@ -139,7 +139,7 @@ TEST_F(OverlayPresenterTest, ChangeActiveWebStateWhileNotPresenting) {
   GetQueueForWebState(second_web_state)
       ->AddRequest(
           OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr));
-  web_state_list().InsertWebState(1, std::move(passed_web_state),
+  web_state_list().InsertWebState(/*index=*/1, std::move(passed_web_state),
                                   WebStateList::InsertionFlags::INSERT_ACTIVATE,
                                   WebStateOpener());
 
@@ -154,9 +154,9 @@ TEST_F(OverlayPresenterTest, ChangeActiveWebStateWhileNotPresenting) {
 TEST_F(OverlayPresenterTest, ChangeActiveWebStateWhilePresenting) {
   // Add a WebState to the list and add a request to that WebState's queue.
   presenter().SetUIDelegate(&ui_delegate());
-  web_state_list().InsertWebState(0, std::make_unique<web::TestWebState>(),
-                                  WebStateList::InsertionFlags::INSERT_ACTIVATE,
-                                  WebStateOpener());
+  web_state_list().InsertWebState(
+      /*index=*/0, std::make_unique<web::TestWebState>(),
+      WebStateList::InsertionFlags::INSERT_ACTIVATE, WebStateOpener());
   web::WebState* first_web_state = active_web_state();
   GetQueueForWebState(first_web_state)
       ->AddRequest(
@@ -172,7 +172,7 @@ TEST_F(OverlayPresenterTest, ChangeActiveWebStateWhilePresenting) {
   GetQueueForWebState(second_web_state)
       ->AddRequest(
           OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr));
-  web_state_list().InsertWebState(1, std::move(passed_web_state),
+  web_state_list().InsertWebState(/*index=*/1, std::move(passed_web_state),
                                   WebStateList::InsertionFlags::INSERT_ACTIVATE,
                                   WebStateOpener());
 
@@ -196,9 +196,9 @@ TEST_F(OverlayPresenterTest, ChangeActiveWebStateWhilePresenting) {
 TEST_F(OverlayPresenterTest, ReplaceActiveWebState) {
   // Add a WebState to the list and add a request to that WebState's queue.
   presenter().SetUIDelegate(&ui_delegate());
-  web_state_list().InsertWebState(0, std::make_unique<web::TestWebState>(),
-                                  WebStateList::InsertionFlags::INSERT_ACTIVATE,
-                                  WebStateOpener());
+  web_state_list().InsertWebState(
+      /*index=*/0, std::make_unique<web::TestWebState>(),
+      WebStateList::InsertionFlags::INSERT_ACTIVATE, WebStateOpener());
   web::WebState* first_web_state = active_web_state();
   GetQueueForWebState(first_web_state)
       ->AddRequest(
@@ -213,7 +213,7 @@ TEST_F(OverlayPresenterTest, ReplaceActiveWebState) {
   GetQueueForWebState(replacement_web_state)
       ->AddRequest(
           OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr));
-  web_state_list().ReplaceWebStateAt(0, std::move(passed_web_state));
+  web_state_list().ReplaceWebStateAt(/*index=*/0, std::move(passed_web_state));
 
   // Verify that the previously shown overlay is canceled and that the overlay
   // for the replacement WebState is presented.
@@ -227,9 +227,9 @@ TEST_F(OverlayPresenterTest, ReplaceActiveWebState) {
 TEST_F(OverlayPresenterTest, RemoveActiveWebState) {
   // Add a WebState to the list and add a request to that WebState's queue.
   presenter().SetUIDelegate(&ui_delegate());
-  web_state_list().InsertWebState(0, std::make_unique<web::TestWebState>(),
-                                  WebStateList::InsertionFlags::INSERT_ACTIVATE,
-                                  WebStateOpener());
+  web_state_list().InsertWebState(
+      /*index=*/0, std::make_unique<web::TestWebState>(),
+      WebStateList::InsertionFlags::INSERT_ACTIVATE, WebStateOpener());
   web::WebState* web_state = active_web_state();
   GetQueueForWebState(web_state)->AddRequest(
       OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr));
@@ -237,7 +237,7 @@ TEST_F(OverlayPresenterTest, RemoveActiveWebState) {
             ui_delegate().GetPresentationState(web_state));
 
   // Remove the WebState and verify that its overlay was cancelled.
-  web_state_list().CloseWebStateAt(0, 0);
+  web_state_list().CloseWebStateAt(/*index=*/0, /* close_flags= */ 0);
   EXPECT_EQ(FakeOverlayUIDelegate::PresentationState::kCancelled,
             ui_delegate().GetPresentationState(web_state));
 }
@@ -246,9 +246,9 @@ TEST_F(OverlayPresenterTest, RemoveActiveWebState) {
 TEST_F(OverlayPresenterTest, DismissForUserInteraction) {
   // Add a WebState to the list and add two request to that WebState's queue.
   presenter().SetUIDelegate(&ui_delegate());
-  web_state_list().InsertWebState(0, std::make_unique<web::TestWebState>(),
-                                  WebStateList::InsertionFlags::INSERT_ACTIVATE,
-                                  WebStateOpener());
+  web_state_list().InsertWebState(
+      /*index=*/0, std::make_unique<web::TestWebState>(),
+      WebStateList::InsertionFlags::INSERT_ACTIVATE, WebStateOpener());
   web::WebState* web_state = active_web_state();
   OverlayRequestQueueImpl* queue = GetQueueForWebState(web_state);
   std::unique_ptr<OverlayRequest> passed_request =

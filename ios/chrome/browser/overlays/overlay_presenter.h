@@ -55,7 +55,7 @@ class OverlayPresenter : public OverlayRequestQueueImplObserver,
   // Notifies this object that |ui_delegate| has finished dismissing the
   // overlay UI corresponding with |request| in |queue| for |reason|.  This
   // function is called when the OverlayDismissalCallback provided to the UI
-  // delegate is excuted.
+  // delegate is executed.
   void OverlayWasDismissed(OverlayUIDelegate* ui_delegate,
                            OverlayRequest* request,
                            OverlayRequestQueueImpl* queue,
