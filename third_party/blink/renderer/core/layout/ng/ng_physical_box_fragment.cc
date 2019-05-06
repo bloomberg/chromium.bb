@@ -198,7 +198,8 @@ void NGPhysicalBoxFragment::AddSelfOutlineRects(
   if (outline_type == NGOutlineType::kIncludeBlockVisualOverflow &&
       !HasOverflowClip() && !HasControlClip(*this)) {
     AddOutlineRectsForNormalChildren(outline_rects, additional_offset,
-                                     outline_type);
+                                     outline_type,
+                                     ToLayoutBoxModelObject(GetLayoutObject()));
 
     // TODO(kojii): LayoutBlock::AddOutlineRects handles positioned objects
     // here. Do we need it?

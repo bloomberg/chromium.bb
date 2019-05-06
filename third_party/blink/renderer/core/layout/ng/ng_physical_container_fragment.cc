@@ -56,7 +56,8 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
 void NGPhysicalContainerFragment::AddOutlineRectsForNormalChildren(
     Vector<LayoutRect>* outline_rects,
     const LayoutPoint& additional_offset,
-    NGOutlineType outline_type) const {
+    NGOutlineType outline_type,
+    const LayoutBoxModelObject* containing_block) const {
   for (const auto& child : Children()) {
     // Outlines of out-of-flow positioned descendants are handled in
     // NGPhysicalBoxFragment::AddSelfOutlineRects().
@@ -76,7 +77,7 @@ void NGPhysicalContainerFragment::AddOutlineRectsForNormalChildren(
     }
 
     AddOutlineRectsForDescendant(child, outline_rects, additional_offset,
-                                 outline_type);
+                                 outline_type, containing_block);
   }
 }
 
@@ -84,7 +85,8 @@ void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
     const NGLink& descendant,
     Vector<LayoutRect>* outline_rects,
     const LayoutPoint& additional_offset,
-    NGOutlineType outline_type) const {
+    NGOutlineType outline_type,
+    const LayoutBoxModelObject* containing_block) const {
   if (descendant->IsText() || descendant->IsListMarker())
     return;
 
@@ -97,9 +99,10 @@ void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
       Vector<LayoutRect> layer_outline_rects;
       descendant_box->AddSelfOutlineRects(&layer_outline_rects, LayoutPoint(),
                                           outline_type);
+
       descendant_layout_object->LocalToAncestorRects(
-          layer_outline_rects, ToLayoutBoxModelObject(GetLayoutObject()),
-          LayoutPoint(), additional_offset);
+          layer_outline_rects, containing_block, LayoutPoint(),
+          additional_offset);
       outline_rects->AppendVector(layer_outline_rects);
       return;
     }
@@ -132,7 +135,7 @@ void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
           DynamicTo<NGPhysicalLineBoxFragment>(descendant.get())) {
     descendant_line_box->AddOutlineRectsForNormalChildren(
         outline_rects, additional_offset + descendant.Offset().ToLayoutPoint(),
-        outline_type);
+        outline_type, containing_block);
 
     if (!descendant_line_box->Size().IsEmpty()) {
       outline_rects->emplace_back(additional_offset,
