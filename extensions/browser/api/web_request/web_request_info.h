@@ -42,45 +42,84 @@ namespace extensions {
 
 class ExtensionNavigationUIData;
 
+// Helper interface used to delegate event logging operations relevant to an
+// in-process web request. This is a transitional interface to move WebRequest
+// code away from direct coupling to NetLog and will be removed once event
+// logging is done through the tracing subsystem instead of through net.
+class WebRequestInfoLogger {
+ public:
+  virtual ~WebRequestInfoLogger() {}
+
+  virtual void LogEvent(net::NetLogEventType event_type,
+                        const std::string& extension_id) = 0;
+  virtual void LogBlockedBy(const std::string& blocker_info) = 0;
+  virtual void LogUnblocked() = 0;
+};
+
+// Helper struct to initialize WebRequestInfo.
+struct WebRequestInfoInitParams {
+  WebRequestInfoInitParams();
+  WebRequestInfoInitParams(WebRequestInfoInitParams&& other);
+  WebRequestInfoInitParams& operator=(WebRequestInfoInitParams&& other);
+
+  explicit WebRequestInfoInitParams(net::URLRequest* url_request);
+
+  // Initializes a WebRequestInfoInitParams from information provided over a
+  // URLLoaderFactory interface, for use with the Network Service.
+  WebRequestInfoInitParams(
+      uint64_t request_id,
+      int render_process_id,
+      int render_frame_id,
+      std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
+      int32_t routing_id,
+      content::ResourceContext* resource_context,
+      const network::ResourceRequest& request,
+      bool is_download,
+      bool is_async);
+
+  ~WebRequestInfoInitParams();
+
+  uint64_t id;
+  GURL url;
+  GURL site_for_cookies;
+  int render_process_id;
+  int routing_id = MSG_ROUTING_NONE;
+  int frame_id = -1;
+  std::string method;
+  bool is_browser_side_navigation = false;
+  base::Optional<url::Origin> initiator;
+  base::Optional<content::ResourceType> type;
+  WebRequestResourceType web_request_type = WebRequestResourceType::OTHER;
+  bool is_async = false;
+  net::HttpRequestHeaders extra_request_headers;
+  bool is_pac_request = false;
+  std::unique_ptr<base::DictionaryValue> request_body_data;
+  bool is_web_view = false;
+  int web_view_instance_id = -1;
+  int web_view_rules_registry_id = -1;
+  int web_view_embedder_process_id = -1;
+  std::unique_ptr<WebRequestInfoLogger> logger;
+  content::ResourceContext* resource_context = nullptr;
+  base::Optional<ExtensionApiFrameIdMap::FrameData> frame_data;
+
+ private:
+  void InitializeWebViewAndFrameData(
+      const ExtensionNavigationUIData* navigation_ui_data);
+
+  DISALLOW_COPY_AND_ASSIGN(WebRequestInfoInitParams);
+};
+
 // A URL request representation used by WebRequest API internals. This structure
 // carries information about an in-progress request.
 struct WebRequestInfo {
-  // Helper interface used to delegate event logging operations relevant to an
-  // in-process web request. This is a transitional interface to move WebRequest
-  // code away from direct coupling to NetLog and will be removed once event
-  // logging is done through the tracing subsystem instead of through //net.
-  class Logger {
-   public:
-    virtual ~Logger() {}
-
-    virtual void LogEvent(net::NetLogEventType event_type,
-                          const std::string& extension_id) = 0;
-    virtual void LogBlockedBy(const std::string& blocker_info) = 0;
-    virtual void LogUnblocked() = 0;
-  };
-
-  WebRequestInfo();
-  WebRequestInfo(WebRequestInfo&& other);
-  WebRequestInfo& operator=(WebRequestInfo&& other);
-
-  // Initializes a WebRequestInfo from a net::URLRequest. Should be used
-  // sparingly, as we are moving away from direct URLRequest usage and toward
-  // using Network Service. Prefer passing and referencing WebRequestInfo in
-  // lieu of exposing any new direct references to net::URLRequest throughout
-  // extensions WebRequest-related code.
+  // Initializes a WebRequestInfoInitParams from a net::URLRequest. Should be
+  // used sparingly, as we are moving away from direct URLRequest usage and
+  // toward using Network Service. Prefer passing and referencing
+  // WebRequestInfoInitParams in lieu of exposing any new direct references to
+  // net::URLRequest throughout extensions WebRequest-related code.
   explicit WebRequestInfo(net::URLRequest* url_request);
 
-  // Initializes a WebRequestInfo from information provided over a
-  // URLLoaderFactory interface, for use with the Network Service.
-  WebRequestInfo(uint64_t request_id,
-                 int render_process_id,
-                 int render_frame_id,
-                 std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
-                 int32_t routing_id,
-                 content::ResourceContext* resource_context,
-                 const network::ResourceRequest& request,
-                 bool is_download,
-                 bool is_async);
+  explicit WebRequestInfo(WebRequestInfoInitParams params);
 
   ~WebRequestInfo();
 
@@ -94,32 +133,32 @@ struct WebRequestInfo {
       const network::ResourceResponseHead& response);
 
   // A unique identifier for this request.
-  uint64_t id = 0;
+  const uint64_t id;
 
   // The URL of the request.
-  GURL url;
-  GURL site_for_cookies;
+  const GURL url;
+  const GURL site_for_cookies;
 
   // The ID of the render process which initiated the request, or -1 of not
   // applicable (i.e. if initiated by the browser).
-  int render_process_id = -1;
+  const int render_process_id;
 
   // The routing ID of the object which initiated the request, if applicable.
-  int routing_id = MSG_ROUTING_NONE;
+  const int routing_id = MSG_ROUTING_NONE;
 
   // The render frame ID of the frame which initiated this request, or -1 if
   // the request was not initiated by a frame.
-  int frame_id = -1;
+  const int frame_id;
 
   // The HTTP method used for the request, if applicable.
-  std::string method;
+  const std::string method;
 
   // Indicates whether the request is for a browser-side navigation.
-  bool is_browser_side_navigation = false;
+  const bool is_browser_side_navigation;
 
   // The origin of the context which initiated the request. May be null for
   // browser-initiated requests such as navigations.
-  base::Optional<url::Origin> initiator;
+  const base::Optional<url::Origin> initiator;
 
   // Extension API frame data corresponding to details of the frame which
   // initiate this request. May be null for renderer-initiated requests where
@@ -129,19 +168,19 @@ struct WebRequestInfo {
 
   // The type of the request (e.g. main frame, subresource, XHR, etc). May have
   // no value if the request did not originate from a ResourceDispatcher.
-  base::Optional<content::ResourceType> type;
+  const base::Optional<content::ResourceType> type;
 
   // A partially mirrored copy of |type| which is slightly less granular and
   // which also identifies WebSocket requests separately from other types.
-  WebRequestResourceType web_request_type = WebRequestResourceType::OTHER;
+  const WebRequestResourceType web_request_type = WebRequestResourceType::OTHER;
 
   // Indicates if this request is asynchronous.
-  bool is_async = false;
+  const bool is_async;
 
-  net::HttpRequestHeaders extra_request_headers;
+  const net::HttpRequestHeaders extra_request_headers;
 
   // Indicates if this request is for a PAC script.
-  bool is_pac_request = false;
+  const bool is_pac_request;
 
   // HTTP response code for this request if applicable. -1 if not.
   int response_code = -1;
@@ -163,21 +202,21 @@ struct WebRequestInfo {
   std::unique_ptr<base::DictionaryValue> request_body_data;
 
   // Indicates whether this request was initiated by a <webview> instance.
-  bool is_web_view = false;
+  const bool is_web_view;
 
   // If |is_web_view| is true, the instance ID, rules registry ID, and embedder
   // process ID pertaining to the webview instance. Note that for browser-side
   // navigation requests, |web_view_embedder_process_id| is always -1.
-  int web_view_instance_id = -1;
-  int web_view_rules_registry_id = -1;
-  int web_view_embedder_process_id = -1;
+  const int web_view_instance_id;
+  const int web_view_rules_registry_id;
+  const int web_view_embedder_process_id;
 
-  // Helper used to log events relevant to WebRequest processing. See definition
-  // of Logger above. This is always non-null.
-  std::unique_ptr<Logger> logger;
+  // Helper used to log events relevant to WebRequest processing. This is always
+  // non-null.
+  const std::unique_ptr<WebRequestInfoLogger> logger;
 
   // The ResourceContext associated with this request. May be null.
-  content::ResourceContext* resource_context = nullptr;
+  content::ResourceContext* const resource_context;
 
   // Headers to remove from the request. Used by the Declarative Net Request
   // API.
@@ -185,9 +224,6 @@ struct WebRequestInfo {
   std::vector<const char*> response_headers_to_remove;
 
  private:
-  void InitializeWebViewAndFrameData(
-      const ExtensionNavigationUIData* navigation_ui_data);
-
   DISALLOW_COPY_AND_ASSIGN(WebRequestInfo);
 };
 
