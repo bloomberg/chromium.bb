@@ -2762,6 +2762,15 @@ void RenderWidget::DidOverscroll(
       layer_tree_view_->layer_tree_host()->overscroll_behavior());
 }
 
+void RenderWidget::InjectGestureScrollEvent(
+    const blink::WebFloatSize& delta,
+    blink::WebScrollGranularity granularity,
+    cc::ElementId scrollable_area_element_id,
+    blink::WebInputEvent::Type injected_type) {
+  input_handler_->InjectGestureScrollEvent(
+      delta, granularity, scrollable_area_element_id, injected_type);
+}
+
 void RenderWidget::SetOverscrollBehavior(
     const cc::OverscrollBehavior& behavior) {
   layer_tree_view_->layer_tree_host()->SetOverscrollBehavior(behavior);

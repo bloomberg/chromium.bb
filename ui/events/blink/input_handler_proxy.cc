@@ -349,48 +349,25 @@ void InputHandlerProxy::InjectScrollbarGestureScroll(
     const blink::WebFloatPoint& position_in_widget,
     const cc::InputHandlerPointerResult& pointer_result,
     const LatencyInfo& latency_info,
-    const base::TimeTicks now) {
+    const base::TimeTicks original_timestamp) {
+  gfx::Vector2dF scroll_delta(pointer_result.scroll_offset.x(),
+                              pointer_result.scroll_offset.y());
   std::unique_ptr<WebGestureEvent> synthetic_gesture_event =
-      std::make_unique<WebGestureEvent>(type, WebInputEvent::kNoModifiers, now,
-                                        blink::WebGestureDevice::kScrollbar);
-
-  if (type == WebInputEvent::Type::kGestureScrollBegin) {
-    // GestureEvent(s) expect the scroll delta to be flipped. The reason being
-    // that gesture events scroll deltas are interpreted as the finger's delta
-    // in relation to the screen (which happens to be the reverse of the
-    // scrolling direction).
-    synthetic_gesture_event->data.scroll_begin.delta_x_hint =
-        -pointer_result.scroll_offset.x();
-    synthetic_gesture_event->data.scroll_begin.delta_y_hint =
-        -pointer_result.scroll_offset.y();
-    synthetic_gesture_event->data.scroll_begin.inertial_phase =
-        WebGestureEvent::kNonMomentumPhase;
-    synthetic_gesture_event->data.scroll_begin.delta_hint_units =
-        blink::WebScrollGranularity::kScrollByPixel;
-  } else if (type == WebInputEvent::Type::kGestureScrollUpdate) {
-    synthetic_gesture_event->data.scroll_update.delta_x =
-        -pointer_result.scroll_offset.x();
-    synthetic_gesture_event->data.scroll_update.delta_y =
-        -pointer_result.scroll_offset.y();
-    synthetic_gesture_event->data.scroll_update.inertial_phase =
-        WebGestureEvent::kNonMomentumPhase;
-    synthetic_gesture_event->data.scroll_update.delta_units =
-        blink::WebScrollGranularity::kScrollByPixel;
-  }
-
-  synthetic_gesture_event->SetPositionInWidget(position_in_widget);
-  synthetic_gesture_event->SetSourceDevice(blink::WebGestureDevice::kScrollbar);
+      GenerateInjectedScrollGesture(
+          type, original_timestamp, blink::WebGestureDevice::kScrollbar,
+          position_in_widget, scroll_delta,
+          blink::WebScrollGranularity::kScrollByPixel);
 
   WebScopedInputEvent web_scoped_gesture_event(
       synthetic_gesture_event.release());
-
   std::unique_ptr<EventWithCallback> gesture_event_with_callback_update =
       std::make_unique<EventWithCallback>(std::move(web_scoped_gesture_event),
-                                          latency_info, now, now, nullptr);
+                                          latency_info, original_timestamp,
+                                          original_timestamp, nullptr);
 
   bool needs_animate_input = compositor_event_queue_->empty();
   compositor_event_queue_->Queue(std::move(gesture_event_with_callback_update),
-                                 now);
+                                 original_timestamp);
 
   if (needs_animate_input)
     input_handler_->SetNeedsAnimateInput();

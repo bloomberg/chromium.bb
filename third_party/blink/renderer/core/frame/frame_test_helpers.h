@@ -208,6 +208,10 @@ class TestWebWidgetClient : public WebWidgetClient {
   void SetPageScaleFactorAndLimits(float page_scale_factor,
                                    float minimum,
                                    float maximum) override;
+  void InjectGestureScrollEvent(const blink::WebFloatSize& delta,
+                                blink::WebScrollGranularity granularity,
+                                cc::ElementId scrollable_area_element_id,
+                                WebInputEvent::Type injected_type) override;
 
   content::LayerTreeView* layer_tree_view() { return layer_tree_view_; }
   cc::LayerTreeHost* layer_tree_host() {
@@ -229,6 +233,9 @@ class TestWebWidgetClient : public WebWidgetClient {
   int FinishedLoadingLayoutCount() const {
     return finished_loading_layout_count_;
   }
+  int InjectedGestureScrollCount() const {
+    return injected_gesture_scroll_update_count_;
+  }
 
  private:
   content::LayerTreeView* layer_tree_view_ = nullptr;
@@ -238,6 +245,7 @@ class TestWebWidgetClient : public WebWidgetClient {
   int visually_non_empty_layout_count_ = 0;
   int finished_parsing_layout_count_ = 0;
   int finished_loading_layout_count_ = 0;
+  int injected_gesture_scroll_update_count_ = 0;
 };
 
 class TestWebViewClient : public WebViewClient {

@@ -1063,6 +1063,192 @@ TEST_F(EventHandlerNavigationTest, MouseButtonsDontNavigate) {
   EXPECT_EQ(0, Offset());
 }
 
+class InjectedGestureCapturingChromeClient : public EmptyChromeClient {
+ public:
+  InjectedGestureCapturingChromeClient() = default;
+
+  struct InjectedGestureData {
+    WebFloatSize delta;
+    blink::WebScrollGranularity granularity;
+    CompositorElementId scrollable_area_element_id;
+    WebInputEvent::Type type;
+  };
+
+  void InjectGestureScrollEvent(const WebFloatSize& delta,
+                                blink::WebScrollGranularity granularity,
+                                CompositorElementId scrollable_area_element_id,
+                                WebInputEvent::Type type) override {
+    InjectedGestureData data{delta, granularity, scrollable_area_element_id,
+                             type};
+    injected_data_.push_back(data);
+  }
+
+  const std::vector<InjectedGestureData>& GetInjectedData() const {
+    return injected_data_;
+  }
+
+ private:
+  std::vector<InjectedGestureData> injected_data_;
+};
+
+class EventHandlerScrollbarGestureInjectionTest : public EventHandlerTest {
+ public:
+  EventHandlerScrollbarGestureInjectionTest() = default;
+
+  void SetUp() override {
+    chrome_client_ =
+        MakeGarbageCollected<InjectedGestureCapturingChromeClient>();
+    Page::PageClients clients;
+    FillWithEmptyClients(clients);
+    clients.chrome_client = chrome_client_.Get();
+    SetupPageWithClients(&clients);
+  }
+
+  const std::vector<InjectedGestureCapturingChromeClient::InjectedGestureData>&
+  GetInjectedData() {
+    return chrome_client_->GetInjectedData();
+  }
+
+ private:
+  Persistent<InjectedGestureCapturingChromeClient> chrome_client_;
+};
+
+TEST_F(EventHandlerScrollbarGestureInjectionTest,
+       MouseUpOffScrollbarGeneratesScrollEnd) {
+  SetHtmlInnerHTML(
+      "<div style=\"height:1000px\">"
+      "Tall text to create viewport scrollbar</div>");
+  EXPECT_EQ(GetInjectedData().size(), 0ULL);
+
+  // PageTestBase sizes the page to 800x600. Click on the scrollbar
+  // track, move off, then release the mouse and verify that GestureScrollEnd
+  // was queued up.
+
+  // If the scrollbar theme does not allow hit testing, we should not get
+  // any injected gesture events. Mobile overlay scrollbar theme does not
+  // allow hit testing.
+  bool scrollbar_theme_allows_hit_test = GetPage().GetScrollbarTheme().AllowsHitTest();
+
+  const WebFloatPoint scrollbar_forward_track(795, 560);
+  WebMouseEvent mouse_down(WebInputEvent::kMouseDown, scrollbar_forward_track,
+                           scrollbar_forward_track,
+                           WebPointerProperties::Button::kLeft, 0,
+                           WebInputEvent::kNoModifiers, CurrentTimeTicks());
+  mouse_down.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(mouse_down);
+
+  // Mouse down on the scrollbar track should have generated GSB/GSU.
+  if (scrollbar_theme_allows_hit_test) {
+    EXPECT_EQ(GetInjectedData().size(), 2ULL);
+    EXPECT_EQ(GetInjectedData()[0].type, WebInputEvent::kGestureScrollBegin);
+    EXPECT_EQ(GetInjectedData()[1].type, WebInputEvent::kGestureScrollUpdate);
+  } else {
+    EXPECT_EQ(GetInjectedData().size(), 0ULL);
+  }
+
+  const WebFloatPoint middle_of_page(100, 100);
+  WebMouseEvent mouse_move(WebInputEvent::kMouseMove, middle_of_page,
+                           middle_of_page, WebPointerProperties::Button::kLeft,
+                           0, WebInputEvent::kNoModifiers, CurrentTimeTicks());
+  mouse_move.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
+      mouse_move, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
+
+  // Mouse move should not have generated any gestures.
+  if (scrollbar_theme_allows_hit_test) {
+    EXPECT_EQ(GetInjectedData().size(), 2ULL);
+  } else {
+    EXPECT_EQ(GetInjectedData().size(), 0ULL);
+  }
+
+  WebMouseEvent mouse_up(WebInputEvent::kMouseUp, middle_of_page,
+                         middle_of_page, WebPointerProperties::Button::kLeft, 0,
+                         WebInputEvent::kNoModifiers, CurrentTimeTicks());
+  mouse_up.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMouseReleaseEvent(mouse_up);
+
+  // Mouse up must generate GestureScrollEnd.
+  if (scrollbar_theme_allows_hit_test) {
+    EXPECT_EQ(GetInjectedData().size(), 3ULL);
+    EXPECT_EQ(GetInjectedData()[2].type, WebInputEvent::kGestureScrollEnd);
+  } else {
+    EXPECT_EQ(GetInjectedData().size(), 0ULL);
+  }
+}
+
+TEST_F(EventHandlerScrollbarGestureInjectionTest, MouseUpOnlyOnScrollbar) {
+  SetHtmlInnerHTML(
+      "<div style=\"height:1000px\">"
+      "Tall text to create viewport scrollbar</div>");
+  EXPECT_EQ(GetInjectedData().size(), 0ULL);
+
+  // Mouse down on the page, the move the mouse to the scrollbar and release.
+  // Validate that we don't inject a ScrollEnd (since no ScrollBegin was
+  // injected).
+
+  const WebFloatPoint middle_of_page(100, 100);
+  WebMouseEvent mouse_down(WebInputEvent::kMouseDown, middle_of_page,
+                           middle_of_page, WebPointerProperties::Button::kLeft,
+                           0, WebInputEvent::kNoModifiers, CurrentTimeTicks());
+  mouse_down.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(mouse_down);
+
+  // Mouse down on the page should not generate scroll gestures.
+  EXPECT_EQ(GetInjectedData().size(), 0ULL);
+
+  const WebFloatPoint scrollbar_forward_track(795, 560);
+  WebMouseEvent mouse_move(WebInputEvent::kMouseMove, scrollbar_forward_track,
+                           scrollbar_forward_track,
+                           WebPointerProperties::Button::kLeft, 0,
+                           WebInputEvent::kNoModifiers, CurrentTimeTicks());
+  mouse_move.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
+      mouse_move, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
+
+  // Mouse move should not have generated any gestures.
+  EXPECT_EQ(GetInjectedData().size(), 0ULL);
+
+  WebMouseEvent mouse_up(WebInputEvent::kMouseUp, scrollbar_forward_track,
+                         scrollbar_forward_track,
+                         WebPointerProperties::Button::kLeft, 0,
+                         WebInputEvent::kNoModifiers, CurrentTimeTicks());
+  mouse_up.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMouseReleaseEvent(mouse_up);
+
+  // Mouse up should not have generated any gestures.
+  EXPECT_EQ(GetInjectedData().size(), 0ULL);
+}
+
+TEST_F(EventHandlerScrollbarGestureInjectionTest, RightClickNoGestures) {
+  SetHtmlInnerHTML(
+      "<div style=\"height:1000px\">"
+      "Tall text to create viewport scrollbar</div>");
+  EXPECT_EQ(GetInjectedData().size(), 0ULL);
+
+  // PageTestBase sizes the page to 800x600. Right click on the scrollbar
+  // track, and release the mouse and verify that no gesture events are
+  // queued up (right click doesn't scroll scrollbars).
+
+  const WebFloatPoint scrollbar_forward_track(795, 560);
+  WebMouseEvent mouse_down(WebInputEvent::kMouseDown, scrollbar_forward_track,
+                           scrollbar_forward_track,
+                           WebPointerProperties::Button::kRight, 0,
+                           WebInputEvent::kNoModifiers, CurrentTimeTicks());
+  mouse_down.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(mouse_down);
+
+  EXPECT_EQ(GetInjectedData().size(), 0ULL);
+
+  WebMouseEvent mouse_up(WebInputEvent::kMouseUp, scrollbar_forward_track,
+                         scrollbar_forward_track,
+                         WebPointerProperties::Button::kRight, 0,
+                         WebInputEvent::kNoModifiers, CurrentTimeTicks());
+  mouse_up.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMouseReleaseEvent(mouse_up);
+
+  EXPECT_EQ(GetInjectedData().size(), 0ULL);
+}
+
 // Test that leaving a window leaves mouse position unknown.
 TEST_F(EventHandlerTest, MouseLeaveResetsUnknownState) {
   SetHtmlInnerHTML("<div></div>");

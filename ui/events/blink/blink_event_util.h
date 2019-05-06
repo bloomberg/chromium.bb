@@ -113,6 +113,21 @@ inline const blink::WebGestureEvent& ToWebGestureEvent(
 blink::WebGestureEvent ScrollBeginFromScrollUpdate(
     const blink::WebGestureEvent& scroll_update);
 
+// Generate a scroll gesture event (begin, update, or end), based on the
+// parameters passed in. Populates the data field of the created
+// WebGestureEvent based on the type.
+std::unique_ptr<blink::WebGestureEvent> GenerateInjectedScrollGesture(
+    blink::WebInputEvent::Type type,
+    base::TimeTicks timestamp,
+    blink::WebGestureDevice device,
+    blink::WebFloatPoint position_in_widget,
+    gfx::Vector2dF scroll_delta,
+    blink::WebScrollGranularity granularity);
+
+// Returns the position in the widget if it exists for the passed in event type
+blink::WebFloatPoint PositionInWidgetFromInputEvent(
+    const blink::WebInputEvent& event);
+
 #if defined(OS_ANDROID)
 // Convenience method that converts an instance to blink event.
 std::unique_ptr<blink::WebGestureEvent>

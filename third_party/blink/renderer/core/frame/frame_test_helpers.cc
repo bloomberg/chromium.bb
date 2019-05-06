@@ -648,6 +648,16 @@ void TestWebWidgetClient::SetPageScaleFactorAndLimits(float page_scale_factor,
                                                  maximum);
 }
 
+void TestWebWidgetClient::InjectGestureScrollEvent(
+    const blink::WebFloatSize& delta,
+    blink::WebScrollGranularity granularity,
+    cc::ElementId scrollable_area_element_id,
+    WebInputEvent::Type injected_type) {
+  if (injected_type == WebInputEvent::kGestureScrollUpdate) {
+    injected_gesture_scroll_update_count_++;
+  }
+}
+
 void TestWebWidgetClient::RegisterViewportLayers(
     const cc::ViewportLayers& layers) {
   layer_tree_host()->RegisterViewportLayers(layers);

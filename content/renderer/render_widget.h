@@ -79,10 +79,10 @@ namespace blink {
 namespace scheduler {
 class WebRenderWidgetSchedulingState;
 }
+enum class WebInjectedScrollSequenceType;
 struct WebDeviceEmulationParams;
 class WebDragData;
 class WebFrameWidget;
-class WebGestureEvent;
 class WebInputMethodController;
 class WebLocalFrame;
 class WebMouseEvent;
@@ -409,6 +409,11 @@ class CONTENT_EXPORT RenderWidget
                      const blink::WebFloatSize& accumulated_overscroll,
                      const blink::WebFloatPoint& position,
                      const blink::WebFloatSize& velocity) override;
+  void InjectGestureScrollEvent(
+      const blink::WebFloatSize& delta,
+      blink::WebScrollGranularity granularity,
+      cc::ElementId scrollable_area_element_id,
+      blink::WebInputEvent::Type injected_type) override;
   void SetOverscrollBehavior(const cc::OverscrollBehavior&) override;
   void ShowVirtualKeyboardOnElementFocus() override;
   void ConvertViewportToWindow(blink::WebRect* rect) override;

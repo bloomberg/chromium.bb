@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
+#include "cc/trees/element_id.h"
 #include "cc/trees/swap_promise_monitor.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "content/common/input/input_event_ack.h"
@@ -28,6 +29,7 @@
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_float_size.h"
+#include "third_party/blink/public/platform/web_gesture_device.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/blink/public/platform/web_keyboard_event.h"
 #include "third_party/blink/public/platform/web_mouse_wheel_event.h"
@@ -37,6 +39,7 @@
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_node.h"
+#include "ui/events/blink/event_with_callback.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -211,6 +214,7 @@ RenderWidgetInputHandler::RenderWidgetInputHandler(
       widget_(widget),
       handling_input_event_(false),
       handling_event_overscroll_(nullptr),
+      handling_injected_scroll_params_(nullptr),
       handling_event_type_(WebInputEvent::kUndefined),
       suppress_next_char_events_(false) {
   DCHECK(delegate);
@@ -312,6 +316,14 @@ void RenderWidgetInputHandler::HandleInputEvent(
   // the event ack.
   base::AutoReset<base::Optional<cc::TouchAction>>
       handling_touch_action_resetter(&handling_touch_action_, base::nullopt);
+
+  // Calls into |InjectGestureScrollEvent()| while handling this event
+  // will populate injected_scroll_params.
+  std::unique_ptr<std::vector<InjectScrollGestureParams>>
+      injected_scroll_params;
+  base::AutoReset<std::unique_ptr<std::vector<InjectScrollGestureParams>>*>
+      injected_scroll_resetter(&handling_injected_scroll_params_,
+                               &injected_scroll_params);
 
 #if defined(OS_ANDROID)
   ImeEventGuard guard(widget_);
@@ -425,6 +437,29 @@ void RenderWidgetInputHandler::HandleInputEvent(
                                       ? INPUT_EVENT_ACK_STATE_NOT_CONSUMED
                                       : INPUT_EVENT_ACK_STATE_CONSUMED;
 
+  // The handling of some input events on the main thread may require injecting
+  // scroll gestures back into blink, e.g., a mousedown on a scrollbar. We
+  // do this here so that we can attribute lateny information from the mouse as
+  // a scroll interaction, instead of just classifying as mouse input.
+  if (injected_scroll_params) {
+    // TODO(dlibby): Create a copy of latency_info with new type
+    // and set a new swap promise monitor.
+    WebFloatPoint position = ui::PositionInWidgetFromInputEvent(input_event);
+    for (const InjectScrollGestureParams& params : *injected_scroll_params) {
+      std::unique_ptr<WebGestureEvent> gesture_event =
+          ui::GenerateInjectedScrollGesture(
+              params.type, input_event.TimeStamp(), params.device, position,
+              params.scroll_delta, params.granularity);
+      if (params.type == WebInputEvent::Type::kGestureScrollBegin) {
+        gesture_event->data.scroll_begin.scrollable_area_element_id =
+            params.scrollable_area_element_id.GetInternalValue();
+      }
+
+      widget_->GetWebWidget()->HandleInputEvent(
+          blink::WebCoalescedInputEvent(*gesture_event.get()));
+    }
+  }
+
   // Send gesture scroll events and their dispositions to the compositor thread,
   // so that they can be used to produce the elastic overscroll effect on Mac.
   if (input_event.GetType() == WebInputEvent::kGestureScrollBegin ||
@@ -501,6 +536,71 @@ void RenderWidgetInputHandler::DidOverscrollFromBlink(
   }
 
   delegate_->OnDidOverscroll(*params);
+}
+
+void RenderWidgetInputHandler::InjectGestureScrollEvent(
+    const blink::WebFloatSize& delta,
+    blink::WebScrollGranularity granularity,
+    cc::ElementId scrollable_area_element_id,
+    WebInputEvent::Type injected_type) {
+  DCHECK(ui::IsGestureScroll(injected_type));
+  // If we're currently handling an input event, cache the appropriate
+  // parameters so we can dispatch the events directly once blink finishes
+  // handling the event.
+  // Otherwise, queue the event on the main thread event queue.
+  // The latter may occur when scrollbar scrolls are injected due to
+  // autoscroll timer - i.e. not within the handling of a mouse event.
+  // We don't always just enqueue events, since events queued to the
+  // MainThreadEventQueue in the middle of dispatch (which we are) won't
+  // be dispatched until the next time the queue gets to run. The side effect
+  // of that would be an extra frame of latency if we're injecting a scroll
+  // during the handling of a rAF aligned input event, such as mouse move.
+  if (handling_injected_scroll_params_) {
+    // Multiple gestures may be injected during the dispatch of a single
+    // input event (e.g. Begin/Update). Create a vector and append to the
+    // end of it - the gestures will subsequently be injected in order.
+    if (!*handling_injected_scroll_params_) {
+      *handling_injected_scroll_params_ =
+          std::make_unique<std::vector<InjectScrollGestureParams>>();
+    }
+
+    InjectScrollGestureParams params{blink::WebGestureDevice::kScrollbar, delta,
+                                     granularity, scrollable_area_element_id,
+                                     injected_type};
+    (*handling_injected_scroll_params_)->push_back(params);
+  } else {
+    base::TimeTicks now = base::TimeTicks::Now();
+    std::unique_ptr<WebGestureEvent> gesture_event =
+        ui::GenerateInjectedScrollGesture(
+            injected_type, now, blink::WebGestureDevice::kScrollbar,
+            WebFloatPoint(0, 0), delta, granularity);
+    if (injected_type == WebInputEvent::Type::kGestureScrollBegin) {
+      gesture_event->data.scroll_begin.scrollable_area_element_id =
+          scrollable_area_element_id.GetInternalValue();
+    }
+
+    ui::LatencyInfo latency_info;
+    ui::WebScopedInputEvent web_scoped_gesture_event(gesture_event.release());
+
+    // We have an empty callback since sending gestures through the
+    // system can generate overscroll params - if the user holds down the
+    // mouse on one of the arrows the autoscroll timer continues to fire to
+    // support infinite scrollers.
+    // For scrollbar, we ignore overscroll params, as scrollbar doesn't
+    // participate in overscroll.
+    // TODO(dlibby): Change blink to not propagate overscroll for scrollbar
+    // gestures and remove this callback. Currently non-blocking events are
+    // set up such that the callback is not propagated into the event queue,
+    // and we DCHECK when overscroll data is passed to the event handler.
+    HandledEventCallback handled_event = base::BindOnce(
+        [](InputEventAckState, const ui::LatencyInfo& latency_info,
+           std::unique_ptr<ui::DidOverscrollParams> overscroll_params,
+           base::Optional<cc::TouchAction> touch_action) {});
+    widget_->GetInputEventQueue()->HandleEvent(
+        std::move(web_scoped_gesture_event), latency_info,
+        DISPATCH_TYPE_BLOCKING, INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
+        std::move(handled_event));
+  }
 }
 
 bool RenderWidgetInputHandler::DidChangeCursor(const WebCursor& cursor) {

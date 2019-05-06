@@ -194,25 +194,16 @@ void Scrollbar::AutoscrollPressedPart(TimeDelta delay) {
     return;
   }
 
-  // Handle the arrows and track.
-  bool did_scroll =
-      scrollable_area_
-          ->UserScroll(PressedPartScrollGranularity(),
-                       ToScrollDelta(PressedPartScrollDirectionPhysical(), 1))
-          .DidScroll();
+  // Handle the arrows and track by injecting a scroll update.
+  InjectScrollGesture(WebInputEvent::kGestureScrollUpdate);
 
   // Always start timer when user press on button since scrollable area maybe
   // infinite scrolling.
   if (pressed_part_ == kBackButtonStartPart ||
       pressed_part_ == kForwardButtonStartPart ||
       pressed_part_ == kBackButtonEndPart ||
-      pressed_part_ == kForwardButtonEndPart) {
-    StartTimerIfNeeded(delay);
-    return;
-  }
-
-  if ((pressed_part_ == kBackTrackPart || pressed_part_ == kForwardTrackPart) &&
-      did_scroll) {
+      pressed_part_ == kForwardButtonEndPart ||
+      pressed_part_ == kBackTrackPart || pressed_part_ == kForwardTrackPart) {
     StartTimerIfNeeded(delay);
     return;
   }
@@ -484,6 +475,7 @@ void Scrollbar::MouseExited() {
 
 void Scrollbar::MouseUp(const WebMouseEvent& mouse_event) {
   bool is_captured = pressed_part_ == kThumbPart;
+  ScrollbarPart previous_pressed_part = pressed_part_;
   SetPressedPart(kNoPart, mouse_event.GetType());
   pressed_pos_ = 0;
   dragging_document_ = false;
@@ -500,6 +492,10 @@ void Scrollbar::MouseUp(const WebMouseEvent& mouse_event) {
       SetHoveredPart(kNoPart);
       scrollable_area_->MouseExitedScrollbar(*this);
     }
+
+    if (mouse_event.button != WebPointerProperties::Button::kRight &&
+        previous_pressed_part != kNoPart)
+      InjectScrollGesture(WebInputEvent::kGestureScrollEnd);
   }
 }
 
@@ -513,6 +509,9 @@ void Scrollbar::MouseDown(const WebMouseEvent& evt) {
   int pressed_pos = Orientation() == kHorizontalScrollbar
                         ? ConvertFromRootFrame(position).X()
                         : ConvertFromRootFrame(position).Y();
+
+  if (scrollable_area_ && pressed_part_ != kNoPart)
+    InjectScrollGesture(WebInputEvent::kGestureScrollBegin);
 
   if ((pressed_part_ == kBackTrackPart || pressed_part_ == kForwardTrackPart) &&
       GetTheme().ShouldCenterOnThumb(*this, evt)) {
@@ -538,6 +537,16 @@ void Scrollbar::MouseDown(const WebMouseEvent& evt) {
   pressed_pos_ = pressed_pos;
 
   AutoscrollPressedPart(GetTheme().InitialAutoscrollTimerDelay());
+}
+
+void Scrollbar::InjectScrollGesture(WebInputEvent::Type gesture_type) {
+  DCHECK(scrollable_area_);
+
+  ScrollGranularity granularity = PressedPartScrollGranularity();
+  ScrollOffset delta = ToScrollDelta(PressedPartScrollDirectionPhysical(), 1);
+  scrollable_area_->GetChromeClient()->InjectGestureScrollEvent(
+      delta, granularity, scrollable_area_->GetCompositorElementId(),
+      gesture_type);
 }
 
 void Scrollbar::SetScrollbarsHiddenIfOverlay(bool hidden) {

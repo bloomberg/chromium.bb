@@ -90,6 +90,10 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
                      const FloatSize& velocity_in_viewport) override;
   void SetOverscrollBehavior(LocalFrame& main_frame,
                              const cc::OverscrollBehavior&) override;
+  void InjectGestureScrollEvent(const WebFloatSize& delta,
+                                WebScrollGranularity granularity,
+                                CompositorElementId scrollable_area_element_id,
+                                WebInputEvent::Type injected_type) override;
   bool ShouldReportDetailedMessageForSource(LocalFrame&,
                                             const String&) override;
   void AddMessageToConsole(LocalFrame*,
