@@ -8,7 +8,9 @@ import android.graphics.Bitmap;
 import android.support.annotation.ColorRes;
 import android.text.TextUtils;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.DialogListItemProperties;
@@ -77,19 +79,27 @@ public class ConfirmInfoBar extends InfoBar {
 
         ArrayList<PropertyModel> options = new ArrayList<>();
         if (!TextUtils.isEmpty(mPrimaryButtonText)) {
-            options.add(new PropertyModel.Builder(DialogListItemProperties.ALL_KEYS)
-                                .with(DialogListItemProperties.TEXT, mPrimaryButtonText)
-                                .with(DialogListItemProperties.CLICK_LISTENER,
-                                        (v) -> onButtonClicked(true))
-                                .build());
+            options.add(
+                    new PropertyModel.Builder(DialogListItemProperties.ALL_KEYS)
+                            .with(DialogListItemProperties.TEXT, mPrimaryButtonText)
+                            .with(DialogListItemProperties.CLICK_LISTENER,
+                                    (v) -> onButtonClicked(true))
+                            .with(DialogListItemProperties.ICON,
+                                    ApiCompatibilityUtils.getDrawable(getContext().getResources(),
+                                            R.drawable.ic_check_circle))
+                            .build());
         }
 
         if (!TextUtils.isEmpty(mSecondaryButtonText)) {
-            options.add(new PropertyModel.Builder(DialogListItemProperties.ALL_KEYS)
-                                .with(DialogListItemProperties.TEXT, mSecondaryButtonText)
-                                .with(DialogListItemProperties.CLICK_LISTENER,
-                                        (v) -> onButtonClicked(false))
-                                .build());
+            options.add(
+                    new PropertyModel.Builder(DialogListItemProperties.ALL_KEYS)
+                            .with(DialogListItemProperties.TEXT, mSecondaryButtonText)
+                            .with(DialogListItemProperties.CLICK_LISTENER,
+                                    (v) -> onButtonClicked(false))
+                            .with(DialogListItemProperties.ICON,
+                                    ApiCompatibilityUtils.getDrawable(getContext().getResources(),
+                                            R.drawable.ic_cancel_circle))
+                            .build());
         }
 
         PropertyModel[] optionModels = new PropertyModel[options.size()];

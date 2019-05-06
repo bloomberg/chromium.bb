@@ -6,13 +6,13 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:paddingTop="12dp">
 
     <org.chromium.ui.widget.ChromeImageView
         android:id="@+id/touchless_dialog_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="8dp"
         android:layout_gravity="center"
         android:visibility="gone" />
 
@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:ellipsize="end"
-        android:padding="13dp"
+        android:padding="8dp"
         android:singleLine="true"
         android:textAppearance="@style/TextAppearance.BlackTitle1"
         android:visibility="gone" />
