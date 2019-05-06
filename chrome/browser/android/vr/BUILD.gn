@@ -84,6 +84,8 @@ static_library("vr_android") {
       "arcore_device/arcore_java_utils.h",
       "arcore_device/arcore_shim.cc",
       "arcore_device/arcore_shim.h",
+      "arcore_device/type_converters.cc",
+      "arcore_device/type_converters.h",
     ]
   }
 

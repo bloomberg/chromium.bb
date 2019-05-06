@@ -398,6 +398,12 @@ void ArCoreGl::GetFrameData(
   frame_data->buffer_holder = buffer_holder;
   frame_data->time_delta = base::TimeTicks::Now() - base::TimeTicks();
 
+  if (options && options->include_plane_data) {
+    frame_data->detected_planes = arcore_->GetDetectedPlanes();
+    DVLOG(3) << __func__ << ": detected planes size="
+             << frame_data->detected_planes.value().size();
+  }
+
   fps_meter_.AddFrame(base::TimeTicks::Now());
   TRACE_COUNTER1("gpu", "WebXR FPS", fps_meter_.GetFPS());
 

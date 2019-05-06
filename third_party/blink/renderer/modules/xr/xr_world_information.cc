@@ -32,12 +32,16 @@ void XRWorldInformation::ProcessPlaneInformation(
     const base::Optional<WTF::Vector<device::mojom::blink::XRPlaneDataPtr>>&
         detected_planes) {
   if (!detected_planes.has_value()) {
+    DVLOG(3) << __func__ << ": detected_planes is null";
+
     // We have received a nullopt - plane detection is not supported or
     // disabled. Mark detected_planes as null & clear stored planes.
     is_detected_planes_null_ = true;
     plane_ids_to_planes_.clear();
     return;
   }
+
+  DVLOG(3) << __func__ << ": detected_planes size=" << detected_planes->size();
 
   is_detected_planes_null_ = false;
 

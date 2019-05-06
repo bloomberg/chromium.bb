@@ -11,6 +11,8 @@
 #include "ui/gfx/buffer_types.h"
 #include "ui/gl/gl_image_ahardwarebuffer.h"
 
+namespace {}
+
 namespace device {
 
 FakeArCore::FakeArCore()
@@ -188,11 +190,11 @@ mojom::VRPosePtr FakeArCore::Update(bool* camera_updated) {
 
   // 1m up from the origin, neutral orientation facing forward.
   mojom::VRPosePtr pose = mojom::VRPose::New();
-  pose->orientation.emplace(4);
   pose->position.emplace(3);
   pose->position.value()[0] = 0;
   pose->position.value()[1] = 1;
   pose->position.value()[2] = 0;
+  pose->orientation.emplace(4);
   pose->orientation.value()[0] = 0;
   pose->orientation.value()[1] = 0;
   pose->orientation.value()[2] = 0;
@@ -214,6 +216,33 @@ bool FakeArCore::RequestHitTest(
   hit_results->push_back(std::move(hit));
 
   return true;
+}
+
+std::vector<mojom::XRPlaneDataPtr> FakeArCore::GetDetectedPlanes() {
+  std::vector<mojom::XRPlaneDataPtr> result;
+
+  // 1m ahead of the origin, neutral orientation facing forward.
+  mojom::VRPosePtr pose = mojom::VRPose::New();
+  pose->position.emplace(3);
+  pose->position.value()[0] = 0;
+  pose->position.value()[1] = 0;
+  pose->position.value()[2] = -1;
+  pose->orientation.emplace(4);
+  pose->orientation.value()[0] = 0;
+  pose->orientation.value()[1] = 0;
+  pose->orientation.value()[2] = 0;
+  pose->orientation.value()[3] = 1;
+
+  // some random triangle
+  std::vector<mojom::XRPlanePointDataPtr> vertices;
+  vertices.push_back(mojom::XRPlanePointData::New(-0.3, -0.3));
+  vertices.push_back(mojom::XRPlanePointData::New(0, 0.3));
+  vertices.push_back(mojom::XRPlanePointData::New(0.3, -0.3));
+
+  result.push_back(
+      mojom::XRPlaneData::New(1, device::mojom::XRPlaneOrientation::HORIZONTAL,
+                              std::move(pose), std::move(vertices)));
+  return result;
 }
 
 void FakeArCore::Pause() {

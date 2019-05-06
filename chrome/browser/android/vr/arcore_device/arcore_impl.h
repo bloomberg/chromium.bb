@@ -43,6 +43,25 @@ void inline ScopedGenericArObject<ArPose*>::Free(ArPose* ar_pose) {
 }
 
 template <>
+void inline ScopedGenericArObject<ArTrackable*>::Free(
+    ArTrackable* ar_trackable) {
+  ArTrackable_release(ar_trackable);
+}
+
+template <>
+void inline ScopedGenericArObject<ArPlane*>::Free(ArPlane* ar_plane) {
+  // ArPlane itself doesn't have a method to decrease refcount, but it is an
+  // instance of ArTrackable & we have to use ArTrackable_release.
+  ArTrackable_release(ArAsTrackable(ar_plane));
+}
+
+template <>
+void inline ScopedGenericArObject<ArTrackableList*>::Free(
+    ArTrackableList* ar_trackable_list) {
+  ArTrackableList_destroy(ar_trackable_list);
+}
+
+template <>
 void inline ScopedGenericArObject<ArCamera*>::Free(ArCamera* ar_camera) {
   // Do nothing - ArCamera has no destroy method and is managed by ArCore.
 }
@@ -79,6 +98,7 @@ class ArCoreImpl : public ArCore {
       const base::span<const float> uvs) override;
   gfx::Transform GetProjectionMatrix(float near, float far) override;
   mojom::VRPosePtr Update(bool* camera_updated) override;
+  std::vector<mojom::XRPlaneDataPtr> GetDetectedPlanes() override;
   void Pause() override;
   void Resume() override;
   bool RequestHitTest(const mojom::XRRayPtr& ray,
@@ -97,6 +117,15 @@ class ArCoreImpl : public ArCore {
   // multiple XRSessions.
   internal::ScopedArCoreObject<ArSession*> arcore_session_;
   internal::ScopedArCoreObject<ArFrame*> arcore_frame_;
+
+  // List of trackables - used for retrieving planes detected by ARCore. May be
+  // null.
+  internal::ScopedArCoreObject<ArTrackableList*> arcore_planes_;
+
+  int32_t next_id_ = 1;
+  std::unordered_map<void*, int32_t> ar_plane_address_to_id_;
+
+  int32_t CreateOrGetPlaneId(void* plane_address);
 
   // Must be last.
   base::WeakPtrFactory<ArCoreImpl> weak_ptr_factory_;
