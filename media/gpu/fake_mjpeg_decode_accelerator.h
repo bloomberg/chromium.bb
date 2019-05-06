@@ -41,7 +41,7 @@ class MEDIA_GPU_EXPORT FakeMjpegDecodeAccelerator
  private:
   void DecodeOnDecoderThread(const BitstreamBuffer& bitstream_buffer,
                              const scoped_refptr<VideoFrame>& video_frame,
-                             std::unique_ptr<WritableUnalignedMapping> src_shm);
+                             std::unique_ptr<UnalignedSharedMemory> src_shm);
   void NotifyError(int32_t bitstream_buffer_id, Error error);
   void NotifyErrorOnClientThread(int32_t bitstream_buffer_id, Error error);
   void OnDecodeDoneOnClientThread(int32_t input_buffer_id);

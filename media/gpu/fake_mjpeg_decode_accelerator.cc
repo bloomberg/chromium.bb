@@ -41,11 +41,10 @@ void FakeMjpegDecodeAccelerator::Decode(
     const scoped_refptr<VideoFrame>& video_frame) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
-  std::unique_ptr<WritableUnalignedMapping> src_shm(
-      new WritableUnalignedMapping(bitstream_buffer.handle(),
-                                   bitstream_buffer.size(),
-                                   bitstream_buffer.offset()));
-  if (!src_shm->IsValid()) {
+  auto src_shm = std::make_unique<UnalignedSharedMemory>(
+      bitstream_buffer.handle(), bitstream_buffer.size(),
+      false /* read_only */);
+  if (!src_shm->MapAt(bitstream_buffer.offset(), bitstream_buffer.size())) {
     DLOG(ERROR) << "Unable to map shared memory in FakeMjpegDecodeAccelerator";
     NotifyError(bitstream_buffer.id(),
                 MjpegDecodeAccelerator::UNREADABLE_INPUT);
@@ -63,7 +62,7 @@ void FakeMjpegDecodeAccelerator::Decode(
 void FakeMjpegDecodeAccelerator::DecodeOnDecoderThread(
     const BitstreamBuffer& bitstream_buffer,
     const scoped_refptr<VideoFrame>& video_frame,
-    std::unique_ptr<WritableUnalignedMapping> src_shm) {
+    std::unique_ptr<UnalignedSharedMemory> src_shm) {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
 
   // Do not actually decode the Jpeg data.
