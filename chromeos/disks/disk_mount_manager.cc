@@ -634,7 +634,6 @@ class DiskMountManagerImpl : public DiskMountManager,
     bool write_disabled_by_policy = access_mode != access_modes_.end()
         && access_mode->second == chromeos::MOUNT_ACCESS_MODE_READ_ONLY;
     Disk* disk = new Disk(disk_info, write_disabled_by_policy,
-                          FindSystemPathPrefix(disk_info.system_path()),
                           base_mount_path);
     disks_.insert(
         std::make_pair(disk_info.device_path(), base::WrapUnique(disk)));
@@ -726,12 +725,10 @@ class DiskMountManagerImpl : public DiskMountManager,
         break;
       }
       case CROS_DISKS_DEVICE_ADDED: {
-        system_path_prefixes_.insert(device_path);
         NotifyDeviceStatusUpdate(DEVICE_ADDED, device_path);
         break;
       }
       case CROS_DISKS_DEVICE_REMOVED: {
-        system_path_prefixes_.erase(device_path);
         NotifyDeviceStatusUpdate(DEVICE_REMOVED, device_path);
         break;
       }
@@ -782,20 +779,6 @@ class DiskMountManagerImpl : public DiskMountManager,
       observer.OnRenameEvent(event, error_code, device_path);
   }
 
-  // Finds system path prefix from |system_path|.
-  const std::string& FindSystemPathPrefix(const std::string& system_path) {
-    if (system_path.empty())
-      return base::EmptyString();
-    for (SystemPathPrefixSet::const_iterator it = system_path_prefixes_.begin();
-         it != system_path_prefixes_.end();
-         ++it) {
-      const std::string& prefix = *it;
-      if (base::StartsWith(system_path, prefix, base::CompareCase::SENSITIVE))
-        return prefix;
-    }
-    return base::EmptyString();
-  }
-
   // Mount event change observers.
   base::ObserverList<DiskMountManager::Observer>::Unchecked observers_;
 
@@ -805,9 +788,6 @@ class DiskMountManagerImpl : public DiskMountManager,
   DiskMountManager::DiskMap disks_;
 
   DiskMountManager::MountPointMap mount_points_;
-
-  typedef std::set<std::string> SystemPathPrefixSet;
-  SystemPathPrefixSet system_path_prefixes_;
 
   bool already_refreshed_;
   std::vector<EnsureMountInfoRefreshedCallback> refresh_callbacks_;

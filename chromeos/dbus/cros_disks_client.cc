@@ -639,6 +639,10 @@ DiskInfo::~DiskInfo() = default;
 //     variant       string "/sys/devices/pci0000:00/0000:00:1d.7/usb1/1-4/...
 //   }
 //   dict entry {
+//     string "StorageDevicePath"
+//     variant       string "/sys/devices/pci0000:00/0000:00:1d.7/usb1/1-4/...
+//   }
+//   dict entry {
 //     string "FileSystemType"
 //     variant       string "vfat"
 //   }
@@ -668,6 +672,8 @@ void DiskInfo::InitializeFromResponse(dbus::Response* response) {
                                              &is_auto_mountable_);
   properties->GetStringWithoutPathExpansion(
       cros_disks::kNativePath, &system_path_);
+  properties->GetStringWithoutPathExpansion(cros_disks::kStorageDevicePath,
+                                            &storage_device_path_);
   properties->GetStringWithoutPathExpansion(
       cros_disks::kDeviceFile, &file_path_);
   properties->GetStringWithoutPathExpansion(cros_disks::kVendorId, &vendor_id_);

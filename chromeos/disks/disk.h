@@ -23,7 +23,6 @@ class COMPONENT_EXPORT(CHROMEOS_DISKS) Disk {
        // Whether the device is mounted in read-only mode by the policy.
        // Valid only when the device mounted and mount_path_ is non-empty.
        bool write_disabled_by_policy,
-       const std::string& system_path_prefix,
        const std::string& base_mount_path);
 
   // For tests.
