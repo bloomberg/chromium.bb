@@ -534,8 +534,6 @@ static void init_gop_frames_for_tpl(AV1_COMP *cpi, GF_PICTURE *gf_picture,
   int frame_idx = 0;
   int frame_disp_idx = 0;
   RefCntBuffer *frame_bufs = cm->buffer_pool->frame_bufs;
-  int recon_frame_index[INTER_REFS_PER_FRAME + 1] = { -1, -1, -1, -1,
-                                                      -1, -1, -1, -1 };
   int pframe_qindex = 0;
 
   for (int i = 0; i < FRAME_BUFFERS && frame_idx < INTER_REFS_PER_FRAME + 1;
@@ -550,14 +548,8 @@ static void init_gop_frames_for_tpl(AV1_COMP *cpi, GF_PICTURE *gf_picture,
         aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                            "Failed to allocate frame buffer");
 
-      recon_frame_index[frame_idx] = i;
       ++frame_idx;
     }
-  }
-
-  for (int i = 0; i < INTER_REFS_PER_FRAME + 1; ++i) {
-    assert(recon_frame_index[i] >= 0);
-    cpi->tpl_recon_frames[i] = &frame_bufs[recon_frame_index[i]].buf;
   }
 
   *tpl_group_frames = 0;

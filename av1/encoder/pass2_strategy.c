@@ -1636,6 +1636,7 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
     define_gf_group(cpi, &this_frame, frame_params);
 
     rc->frames_till_gf_update_due = rc->baseline_gf_interval;
+    cpi->num_gf_group_show_frames = 0;
 
 #if ARF_STATS_OUTPUT
     {

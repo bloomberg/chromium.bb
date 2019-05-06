@@ -744,7 +744,6 @@ typedef struct AV1_COMP {
   YV12_BUFFER_CONFIG scaled_last_source;
 
   TplDepFrame tpl_stats[MAX_LENGTH_TPL_FRAME_STATS];
-  YV12_BUFFER_CONFIG *tpl_recon_frames[INTER_REFS_PER_FRAME + 1];
 
   // For a still frame, this flag is set to 1 to skip partition search.
   int partition_search_skippable_frame;
@@ -854,6 +853,13 @@ typedef struct AV1_COMP {
   uint64_t time_receive_data;
   uint64_t time_compress_data;
 #endif
+
+  // number of show frames encoded in current gf_group
+  int num_gf_group_show_frames;
+
+  // when two pass tpl model is used, set to 1 for the
+  // first pass, then 0 for the final pass.
+  int tpl_model_pass;
 
   TWO_PASS twopass;
 

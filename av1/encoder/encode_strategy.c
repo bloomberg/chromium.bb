@@ -1061,10 +1061,13 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     cm->using_qmatrix = cpi->oxcf.using_qm;
     cm->min_qmlevel = cpi->oxcf.qm_minlevel;
     cm->max_qmlevel = cpi->oxcf.qm_maxlevel;
-    if (cpi->twopass.gf_group.index == 1 && cpi->oxcf.enable_tpl_model) {
-      av1_configure_buffer_updates(cpi, &frame_params, frame_update_type, 0);
-      av1_set_frame_size(cpi, cm->width, cm->height);
-      av1_tpl_setup_stats(cpi, &frame_input);
+    if (oxcf->pass == 2) {
+      if (cpi->twopass.gf_group.index == 1 && cpi->oxcf.enable_tpl_model) {
+        av1_configure_buffer_updates(cpi, &frame_params, frame_update_type, 0);
+        av1_set_frame_size(cpi, cm->width, cm->height);
+        av1_tpl_setup_stats(cpi, &frame_input);
+        assert(cpi->num_gf_group_show_frames == 1);
+      }
     }
   }
 
@@ -1136,6 +1139,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
       AOM_CODEC_OK) {
     return AOM_CODEC_ERROR;
   }
+  if (oxcf->pass == 2) cpi->num_gf_group_show_frames += frame_params.show_frame;
 
   if (oxcf->pass == 0 || oxcf->pass == 2) {
     // First pass doesn't modify reference buffer assignment or produce frame
