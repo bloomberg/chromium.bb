@@ -225,6 +225,7 @@ RulesetManager::Action::Action(Action&&) = default;
 RulesetManager::Action& RulesetManager::Action::operator=(Action&&) = default;
 
 bool RulesetManager::Action::operator==(const Action& that) const {
+  // TODO(karandeepb): Have this include request/response headers.
   return type == that.type && redirect_url == that.redirect_url;
 }
 
@@ -329,10 +330,136 @@ void RulesetManager::UpdateAllowedPages(const ExtensionId& extension_id,
   ClearRendererCacheOnNavigation();
 }
 
-RulesetManager::Action RulesetManager::EvaluateRequest(
+const RulesetManager::Action& RulesetManager::EvaluateRequest(
     const WebRequestInfo& request,
     bool is_incognito_context) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Note: it's safe to cache the action on WebRequestInfo without worrying
+  // about |is_incognito_context| since a WebRequestInfo object will not be
+  // shared between different contexts. Hence the value of
+  // |is_incognito_context| will stay the same for a given |request|. This also
+  // assumes that the core state of the WebRequestInfo isn't changed between the
+  // different EvaluateRequest invocations.
+  if (!request.dnr_action)
+    request.dnr_action = EvaluateRequestInternal(request, is_incognito_context);
+
+  return *request.dnr_action;
+}
+
+bool RulesetManager::HasAnyExtraHeadersMatcher() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  for (const auto& ruleset : rulesets_) {
+    if (ruleset.matcher->HasAnyExtraHeadersMatcher())
+      return true;
+  }
+
+  return false;
+}
+
+bool RulesetManager::HasExtraHeadersMatcherForRequest(
+    const WebRequestInfo& request,
+    bool is_incognito_context) const {
+  const Action& action = EvaluateRequest(request, is_incognito_context);
+
+  // We only support removing a subset of extra headers currently. If that
+  // changes, the implementation here should change as well.
+  static_assert(flat::ActionIndex_count == 6,
+                "Modify this method to ensure HasExtraHeadersMatcherForRequest "
+                "is updated as new actions are added.");
+
+  return action.type == Action::Type::REMOVE_HEADERS;
+}
+
+void RulesetManager::SetObserverForTest(TestObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  test_observer_ = observer;
+}
+
+RulesetManager::ExtensionRulesetData::ExtensionRulesetData(
+    const ExtensionId& extension_id,
+    const base::Time& extension_install_time,
+    std::unique_ptr<CompositeMatcher> matcher,
+    URLPatternSet allowed_pages)
+    : extension_id(extension_id),
+      extension_install_time(extension_install_time),
+      matcher(std::move(matcher)),
+      allowed_pages(std::move(allowed_pages)) {}
+RulesetManager::ExtensionRulesetData::~ExtensionRulesetData() = default;
+RulesetManager::ExtensionRulesetData::ExtensionRulesetData(
+    ExtensionRulesetData&& other) = default;
+RulesetManager::ExtensionRulesetData& RulesetManager::ExtensionRulesetData::
+operator=(ExtensionRulesetData&& other) = default;
+
+bool RulesetManager::ExtensionRulesetData::operator<(
+    const ExtensionRulesetData& other) const {
+  // Sort based on *descending* installation time, using extension id to break
+  // ties.
+  return std::tie(extension_install_time, extension_id) >
+         std::tie(other.extension_install_time, other.extension_id);
+}
+
+base::Optional<RulesetManager::Action> RulesetManager::GetBlockOrCollapseAction(
+    const std::vector<const ExtensionRulesetData*>& rulesets,
+    const RequestParams& params) const {
+  for (const ExtensionRulesetData* ruleset : rulesets) {
+    if (ruleset->matcher->ShouldBlockRequest(params)) {
+      return ShouldCollapseResourceType(params.element_type)
+                 ? Action(Action::Type::COLLAPSE)
+                 : Action(Action::Type::BLOCK);
+    }
+  }
+  return base::nullopt;
+}
+
+base::Optional<RulesetManager::Action> RulesetManager::GetRedirectAction(
+    const std::vector<const ExtensionRulesetData*>& rulesets,
+    const RequestParams& params) const {
+  DCHECK(std::is_sorted(rulesets.begin(), rulesets.end(),
+                        [](const ExtensionRulesetData* a,
+                           const ExtensionRulesetData* b) { return *a < *b; }));
+
+  // Redirecting WebSocket handshake request is prohibited.
+  if (params.element_type == flat_rule::ElementType_WEBSOCKET)
+    return base::nullopt;
+
+  // This iterates in decreasing order of extension installation time. Hence
+  // more recently installed extensions get higher priority in choosing the
+  // redirect url.
+  for (const ExtensionRulesetData* ruleset : rulesets) {
+    GURL redirect_url;
+    if (ruleset->matcher->ShouldRedirectRequest(params, &redirect_url)) {
+      Action action(Action::Type::REDIRECT);
+      action.redirect_url = std::move(redirect_url);
+      return action;
+    }
+  }
+
+  return base::nullopt;
+}
+
+base::Optional<RulesetManager::Action> RulesetManager::GetRemoveHeadersAction(
+    const std::vector<const ExtensionRulesetData*>& rulesets,
+    const RequestParams& params) const {
+  uint8_t mask = 0;
+  for (const ExtensionRulesetData* ruleset : rulesets)
+    mask |= ruleset->matcher->GetRemoveHeadersMask(params, mask);
+
+  if (!mask)
+    return base::nullopt;
+
+  Action action(Action::Type::REMOVE_HEADERS);
+  PopulateHeadersFromMask(mask, &action.request_headers_to_remove,
+                          &action.response_headers_to_remove);
+  return action;
+}
+
+RulesetManager::Action RulesetManager::EvaluateRequestInternal(
+    const WebRequestInfo& request,
+    bool is_incognito_context) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!request.dnr_action);
 
   if (!ShouldEvaluateRequest(request))
     return Action(Action::Type::NONE);
@@ -427,117 +554,6 @@ RulesetManager::Action RulesetManager::EvaluateRequest(
     return std::move(*action);
 
   return Action(Action::Type::NONE);
-}
-
-bool RulesetManager::HasAnyExtraHeadersMatcher() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  for (const auto& ruleset : rulesets_) {
-    if (ruleset.matcher->HasAnyExtraHeadersMatcher())
-      return true;
-  }
-
-  return false;
-}
-
-bool RulesetManager::HasExtraHeadersMatcherForRequest(
-    const WebRequestInfo& request,
-    bool is_incognito_context) const {
-  // TODO(karandeepb): This causes multiple EvaluateRequest calls for a single
-  // network request. We should cache the value of Action so that we only ever
-  // evaluate the rulesets once for a request.
-  Action action = EvaluateRequest(request, is_incognito_context);
-
-  // We only support removing a subset of extra headers currently. If that
-  // changes, the implementation here should change as well.
-  static_assert(flat::ActionIndex_count == 6,
-                "Modify this method to ensure HasExtraHeadersMatcherForRequest "
-                "is updated as new actions are added.");
-
-  return action.type == Action::Type::REMOVE_HEADERS;
-}
-
-void RulesetManager::SetObserverForTest(TestObserver* observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  test_observer_ = observer;
-}
-
-RulesetManager::ExtensionRulesetData::ExtensionRulesetData(
-    const ExtensionId& extension_id,
-    const base::Time& extension_install_time,
-    std::unique_ptr<CompositeMatcher> matcher,
-    URLPatternSet allowed_pages)
-    : extension_id(extension_id),
-      extension_install_time(extension_install_time),
-      matcher(std::move(matcher)),
-      allowed_pages(std::move(allowed_pages)) {}
-RulesetManager::ExtensionRulesetData::~ExtensionRulesetData() = default;
-RulesetManager::ExtensionRulesetData::ExtensionRulesetData(
-    ExtensionRulesetData&& other) = default;
-RulesetManager::ExtensionRulesetData& RulesetManager::ExtensionRulesetData::
-operator=(ExtensionRulesetData&& other) = default;
-
-bool RulesetManager::ExtensionRulesetData::operator<(
-    const ExtensionRulesetData& other) const {
-  // Sort based on *descending* installation time, using extension id to break
-  // ties.
-  return std::tie(extension_install_time, extension_id) >
-         std::tie(other.extension_install_time, other.extension_id);
-}
-
-base::Optional<RulesetManager::Action> RulesetManager::GetBlockOrCollapseAction(
-    const std::vector<const ExtensionRulesetData*>& rulesets,
-    const RequestParams& params) const {
-  for (const ExtensionRulesetData* ruleset : rulesets) {
-    if (ruleset->matcher->ShouldBlockRequest(params)) {
-      return ShouldCollapseResourceType(params.element_type)
-                 ? Action(Action::Type::COLLAPSE)
-                 : Action(Action::Type::BLOCK);
-    }
-  }
-  return base::nullopt;
-}
-
-base::Optional<RulesetManager::Action> RulesetManager::GetRedirectAction(
-    const std::vector<const ExtensionRulesetData*>& rulesets,
-    const RequestParams& params) const {
-  DCHECK(std::is_sorted(rulesets.begin(), rulesets.end(),
-                        [](const ExtensionRulesetData* a,
-                           const ExtensionRulesetData* b) { return *a < *b; }));
-
-  // Redirecting WebSocket handshake request is prohibited.
-  if (params.element_type == flat_rule::ElementType_WEBSOCKET)
-    return base::nullopt;
-
-  // This iterates in decreasing order of extension installation time. Hence
-  // more recently installed extensions get higher priority in choosing the
-  // redirect url.
-  for (const ExtensionRulesetData* ruleset : rulesets) {
-    GURL redirect_url;
-    if (ruleset->matcher->ShouldRedirectRequest(params, &redirect_url)) {
-      Action action(Action::Type::REDIRECT);
-      action.redirect_url = std::move(redirect_url);
-      return action;
-    }
-  }
-
-  return base::nullopt;
-}
-
-base::Optional<RulesetManager::Action> RulesetManager::GetRemoveHeadersAction(
-    const std::vector<const ExtensionRulesetData*>& rulesets,
-    const RequestParams& params) const {
-  uint8_t mask = 0;
-  for (const ExtensionRulesetData* ruleset : rulesets)
-    mask |= ruleset->matcher->GetRemoveHeadersMask(params, mask);
-
-  if (!mask)
-    return base::nullopt;
-
-  Action action(Action::Type::REMOVE_HEADERS);
-  PopulateHeadersFromMask(mask, &action.request_headers_to_remove,
-                          &action.response_headers_to_remove);
-  return action;
 }
 
 bool RulesetManager::ShouldEvaluateRequest(
