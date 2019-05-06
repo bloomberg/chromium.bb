@@ -2269,7 +2269,8 @@ TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
 #define MAYBE_KeysWithManyCacheEntries KeysWithManyCacheEntries
 #endif
 TEST_P(CacheStorageCacheTestP, MAYBE_KeysWithManyCacheEntries) {
-  constexpr int kNumEntries = 1000;
+  // Use a smaller list in disk mode to reduce test runtime.
+  const int kNumEntries = MemoryOnly() ? 1000 : 250;
 
   std::vector<std::string> expected_keys;
   for (int i = 0; i < kNumEntries; ++i) {
@@ -2281,6 +2282,7 @@ TEST_P(CacheStorageCacheTestP, MAYBE_KeysWithManyCacheEntries) {
   }
 
   EXPECT_TRUE(Keys());
+  EXPECT_EQ(expected_keys.size(), callback_strings_.size());
   EXPECT_EQ(expected_keys, callback_strings_);
 }
 
