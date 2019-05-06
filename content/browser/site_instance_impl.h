@@ -320,6 +320,16 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
                                     const GURL& url,
                                     bool should_use_effective_urls);
 
+  // Returns true if pages loaded from |site_url| ought to be handled only by a
+  // renderer process isolated from other sites. If --site-per-process is used,
+  // this is true for all sites. In other site isolation modes, only a subset
+  // of sites will require dedicated processes.
+  // Note: Unlike DoesSiteRequireDedicatedProcess(), this method expects a site
+  // URL instead of a plain URL.
+  static bool DoesSiteURLRequireDedicatedProcess(
+      const IsolationContext& isolation_context,
+      const GURL& site_url);
+
   // An object used to construct RenderProcessHosts.
   static const RenderProcessHostFactory* g_render_process_host_factory_;
 

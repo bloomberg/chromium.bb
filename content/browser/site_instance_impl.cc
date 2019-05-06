@@ -354,7 +354,7 @@ bool SiteInstanceImpl::HasWrongProcessForURL(const GURL& url) {
     // destination site_url require dedicated processes, then it is safe to use
     // this SiteInstance.
     if (!RequiresDedicatedProcess() &&
-        !DoesSiteRequireDedicatedProcess(GetIsolationContext(), site_url)) {
+        !DoesSiteURLRequireDedicatedProcess(GetIsolationContext(), site_url)) {
       return false;
     }
 
@@ -373,7 +373,7 @@ bool SiteInstanceImpl::RequiresDedicatedProcess() {
   if (!has_site_)
     return false;
 
-  return DoesSiteRequireDedicatedProcess(GetIsolationContext(), site_);
+  return DoesSiteURLRequireDedicatedProcess(GetIsolationContext(), site_);
 }
 
 void SiteInstanceImpl::IncrementActiveFrameCount() {
@@ -690,6 +690,16 @@ bool SiteInstanceImpl::HasEffectiveURL(BrowserContext* browser_context,
 bool SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
     const IsolationContext& isolation_context,
     const GURL& url) {
+  return SiteIsolationPolicy::UseDedicatedProcessesForAllSites() ||
+         DoesSiteURLRequireDedicatedProcess(
+             isolation_context,
+             SiteInstanceImpl::GetSiteForURL(isolation_context, url));
+}
+
+// static
+bool SiteInstanceImpl::DoesSiteURLRequireDedicatedProcess(
+    const IsolationContext& isolation_context,
+    const GURL& site_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(isolation_context.browser_or_resource_context());
@@ -699,7 +709,6 @@ bool SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
     return true;
 
   // Always require a dedicated process for isolated origins.
-  GURL site_url = SiteInstanceImpl::GetSiteForURL(isolation_context, url);
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   if (policy->IsIsolatedOrigin(isolation_context,
                                url::Origin::Create(site_url)))
@@ -741,7 +750,7 @@ bool SiteInstanceImpl::ShouldLockToOrigin(
   if (RenderProcessHost::run_renderer_in_process())
     return false;
 
-  if (!DoesSiteRequireDedicatedProcess(isolation_context, site_url))
+  if (!DoesSiteURLRequireDedicatedProcess(isolation_context, site_url))
     return false;
 
   // Guest processes cannot be locked to their site because guests always have
