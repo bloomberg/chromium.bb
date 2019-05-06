@@ -44,6 +44,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_elider.h"
 #include "url/gurl.h"
@@ -66,6 +67,12 @@ v8::Local<v8::Value> RGBAColorToArray(v8::Isolate* isolate,
   color_array->CreateDataProperty(context, 3, v8::Int32::New(isolate, color.a))
       .Check();
   return color_array;
+}
+
+// Whether NTP background should be considered dark, so the colors of various
+// UI elements can be adjusted. Light text implies dark theme.
+bool IsNtpBackgroundDark(SkColor ntp_text) {
+  return !color_utils::IsDark(ntp_text);
 }
 
 }  // namespace internal
@@ -192,6 +199,11 @@ base::Optional<int> CoerceToInt(v8::Isolate* isolate, v8::Value* value) {
   return maybe_int.ToLocalChecked()->Value();
 }
 
+// Converts RGBAColor to SkColor.
+SkColor RGBAColorToSkColor(const RGBAColor& color) {
+  return SkColorSetARGB(color.a, color.r, color.g, color.b);
+}
+
 v8::Local<v8::Object> GenerateThemeBackgroundInfo(
     v8::Isolate* isolate,
     const ThemeBackgroundInfo& theme_info) {
@@ -210,11 +222,6 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
   // Value is always valid.
   builder.Set("backgroundColorRgba",
               internal::RGBAColorToArray(isolate, theme_info.background_color));
-
-  // Theme color for text as an array with the RGBA components in order.
-  // Value is always valid.
-  builder.Set("textColorRgba",
-              internal::RGBAColorToArray(isolate, theme_info.text_color));
 
   // Theme color for light text as an array with the RGBA components in order.
   // Value is always valid.
@@ -296,14 +303,13 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
   // Assume that a custom background has not been configured and then
   // override based on the condition below.
   builder.Set("customBackgroundConfigured", false);
+  RGBAColor ntp_text = theme_info.text_color;
 
   // If a custom background has been set provide the relevant information to the
   // page.
   if (!theme_info.custom_background_url.is_empty()) {
+    ntp_text = RGBAColor{255, 255, 255, 255};
     builder.Set("alternateLogo", true);
-    RGBAColor whiteTextRgba = RGBAColor{255, 255, 255, 255};
-    builder.Set("textColorRgba",
-                internal::RGBAColorToArray(isolate, whiteTextRgba));
     builder.Set("customBackgroundConfigured", true);
     builder.Set("imageUrl", theme_info.custom_background_url.spec());
     builder.Set("attributionActionUrl",
@@ -316,6 +322,13 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
     // a custom background is set.
     builder.Set("attributionUrl", std::string());
   }
+
+  // Theme color for text as an array with the RGBA components in order.
+  // Value is always valid.
+  builder.Set("textColorRgba", internal::RGBAColorToArray(isolate, ntp_text));
+
+  builder.Set("isNtpBackgroundDark",
+              internal::IsNtpBackgroundDark(RGBAColorToSkColor(ntp_text)));
 
   return builder.Build();
 }

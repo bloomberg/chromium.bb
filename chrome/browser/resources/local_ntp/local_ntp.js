@@ -361,33 +361,6 @@ function getThemeBackgroundInfo() {
 
 
 /**
- * Heuristic to determine whether a theme should be considered to be dark, so
- * the colors of various UI elements can be adjusted.
- *
- * The user theme/custom background will always take precedence over dark mode
- * when considering darkness. Therefore, dark mode should only be checked if
- * this is the default NTP. Dark mode is considered a dark theme if enabled.
- *
- * @return {boolean} Whether the theme is dark.
- * @private
- */
-function getIsThemeDark() {
-  const info = getThemeBackgroundInfo();
-  // Only check for dark mode if this is the default NTP (i.e. no theme or
-  // custom background set).
-  if (!info || info.usingDefaultTheme && !info.customBackgroundConfigured) {
-    // Dark mode is always considered a dark theme.
-    return isDarkModeEnabled;
-  }
-
-  // Heuristic: light text implies dark theme.
-  const rgba = info.textColorRgba;
-  const luminance = 0.3 * rgba[0] + 0.59 * rgba[1] + 0.11 * rgba[2];
-  return luminance >= 128;
-}
-
-
-/**
  * Determine whether dark chips should be used if dark mode is enabled. This is
  * is the case when dark mode is enabled and a background image (from a custom
  * background or user theme) is not set.
@@ -406,12 +379,12 @@ function getUseDarkChips(info) {
  * @private
  */
 function renderTheme() {
-  $(IDS.NTP_CONTENTS).classList.toggle(CLASSES.DARK, getIsThemeDark());
-
   const info = getThemeBackgroundInfo();
   if (!info) {
     return;
   }
+
+  $(IDS.NTP_CONTENTS).classList.toggle(CLASSES.DARK, info.isNtpBackgroundDark);
 
   // Update dark mode styling.
   isDarkModeEnabled = info.usingDarkMode;
@@ -506,17 +479,15 @@ function sendThemeInfoToMostVisitedIframe() {
     return;
   }
 
-  const isThemeDark = getIsThemeDark();
-
   const message = {cmd: 'updateTheme'};
-  message.isThemeDark = isThemeDark;
+  message.isThemeDark = info.isNtpBackgroundDark;
   message.isUsingTheme = !info.usingDefaultTheme;
   message.isDarkMode = getUseDarkChips(info);
 
   let titleColor = NTP_DESIGN.titleColor;
   if (!info.usingDefaultTheme && info.textColorRgba) {
     titleColor = info.textColorRgba;
-  } else if (isThemeDark) {
+  } else if (info.isNtpBackgroundDark) {
     titleColor = NTP_DESIGN.titleColorAgainstDark;
   }
   message.tileTitleColor = convertToRGBAColor(titleColor);
@@ -559,9 +530,8 @@ function renderOneGoogleBarTheme() {
     const oneGoogleBarApi = window.gbar.a;
     const oneGoogleBarPromise = oneGoogleBarApi.bf();
     oneGoogleBarPromise.then(function(oneGoogleBar) {
-      const isThemeDark = getIsThemeDark();
       const setForegroundStyle = oneGoogleBar.pc.bind(oneGoogleBar);
-      setForegroundStyle(isThemeDark ? 1 : 0);
+      setForegroundStyle(getThemeBackgroundInfo().isNtpBackgroundDark ? 1 : 0);
     });
   } catch (err) {
     console.log('Failed setting OneGoogleBar theme:\n' + err);
