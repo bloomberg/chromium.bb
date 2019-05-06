@@ -151,6 +151,7 @@ if (!is_mac) {
     deps = [
       ":browser",
       "//base",
+      "//base:i18n",
     ]
   }
 }
