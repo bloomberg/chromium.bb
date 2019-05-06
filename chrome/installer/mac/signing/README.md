@@ -14,13 +14,12 @@ signing-only aspects can be run without the DMG packaging by passing `--no-dmg`.
 
 ## Running Tests
 
-From within `//chrome/installer/mac`, run:
+Simply run the wrapper script at `//chrome/installer/mac/signing/run_mac_signing_tests.py`.
 
-    python -m unittest discover
+You can pass `--coverage` or `-c` to show coverage information. To generate a HTML coverage report
+and Python coverage package is available (via `pip install coverage`), run:
 
-If coverage is available (via `pip install coverage`), run:
-
-    coverage3 run -m unittest discover
+    coverage3 run -m unittest discover -p '*_test.py'
     coverage3 html
 
 ## Formatting
