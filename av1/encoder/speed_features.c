@@ -285,7 +285,7 @@ static void set_good_speed_features_framesize_independent(
   if (speed >= 2) {
     sf->gm_erroradv_type = GM_ERRORADV_TR_2;
 
-    sf->disable_sgr_ep_pruning = 0;
+    sf->enable_sgr_ep_pruning = 1;
     sf->selective_ref_frame = 3;
     sf->inter_tx_size_search_init_depth_rect = 1;
     sf->inter_tx_size_search_init_depth_sqr = 1;
@@ -722,7 +722,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->use_first_partition_pass_interintra_stats = 0;
   sf->disable_wedge_search_var_thresh = 0;
   sf->disable_loop_restoration_chroma = 0;
-  sf->disable_sgr_ep_pruning = 1;
+  sf->enable_sgr_ep_pruning = 0;
   sf->reduce_wiener_window_size = 0;
   sf->fast_wedge_sign_estimate = 0;
   sf->prune_wedge_pred_diff_based = 0;

@@ -636,7 +636,7 @@ typedef struct SPEED_FEATURES {
   int prune_motion_mode_level;
 
   // prune sgr ep using binary search like mechanism
-  int disable_sgr_ep_pruning;
+  int enable_sgr_ep_pruning;
 
   // Gate warp evaluation for motions of type IDENTITY,
   // TRANSLATION and AFFINE(based on number of warp neighbors)

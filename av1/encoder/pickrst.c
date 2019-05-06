@@ -593,7 +593,7 @@ static void get_best_error(int64_t *besterr, const int64_t err, const int *exqd,
 static SgrprojInfo search_selfguided_restoration(
     const uint8_t *dat8, int width, int height, int dat_stride,
     const uint8_t *src8, int src_stride, int use_highbitdepth, int bit_depth,
-    int pu_width, int pu_height, int32_t *rstbuf, int disable_sgr_ep_pruning) {
+    int pu_width, int pu_height, int32_t *rstbuf, int enable_sgr_ep_pruning) {
   int32_t *flt0 = rstbuf;
   int32_t *flt1 = flt0 + RESTORATION_UNITPELS_MAX;
   int ep, idx, bestep = 0;
@@ -604,7 +604,7 @@ static SgrprojInfo search_selfguided_restoration(
          pu_width == RESTORATION_PROC_UNIT_SIZE);
   assert(pu_height == (RESTORATION_PROC_UNIT_SIZE >> 1) ||
          pu_height == RESTORATION_PROC_UNIT_SIZE);
-  if (disable_sgr_ep_pruning) {
+  if (!enable_sgr_ep_pruning) {
     for (ep = 0; ep < SGRPROJ_PARAMS; ep++) {
       int64_t err;
       compute_sgrproj_err(dat8, width, height, dat_stride, src8, src_stride,
@@ -696,7 +696,7 @@ static void search_sgrproj(const RestorationTileLimits *limits,
       dgd_start, limits->h_end - limits->h_start,
       limits->v_end - limits->v_start, rsc->dgd_stride, src_start,
       rsc->src_stride, highbd, bit_depth, procunit_width, procunit_height,
-      tmpbuf, rsc->sf->disable_sgr_ep_pruning);
+      tmpbuf, rsc->sf->enable_sgr_ep_pruning);
 
   RestorationUnitInfo rui;
   rui.restoration_type = RESTORE_SGRPROJ;
