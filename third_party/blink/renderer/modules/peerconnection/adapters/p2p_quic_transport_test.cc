@@ -962,27 +962,6 @@ TEST_F(P2PQuicTransportTest, ServerConnectionFailureAfterConnected) {
   ExpectTransportsClosed();
 }
 
-// Tests that closing the connection with no ACK frame does not make any
-// difference in the closing procedure.
-TEST_F(P2PQuicTransportTest, ConnectionFailureNoAckFrame) {
-  Initialize();
-  Connect();
-  CallbackRunLoop run_loop(runner());
-  EXPECT_CALL(*client_peer()->quic_transport_delegate(),
-              OnConnectionFailed(_, _))
-      .WillOnce(FireCallback(run_loop.CreateCallback()));
-  EXPECT_CALL(*server_peer()->quic_transport_delegate(),
-              OnConnectionFailed(_, _))
-      .WillOnce(FireCallback(run_loop.CreateCallback()));
-
-  client_connection()->CloseConnection(
-      quic::QuicErrorCode::QUIC_INTERNAL_ERROR, "internal error",
-      quic::ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET_WITH_NO_ACK);
-  run_loop.RunUntilCallbacksFired();
-
-  ExpectTransportsClosed();
-}
-
 // Tests that a silent failure will only close on one side.
 TEST_F(P2PQuicTransportTest, ConnectionSilentFailure) {
   Initialize();
