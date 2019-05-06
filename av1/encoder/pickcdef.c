@@ -484,7 +484,8 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
     /* Count superblock signalling cost. */
     tot_mse += (uint64_t)(sb_count * lambda * i);
     /* Count header signalling cost. */
-    tot_mse += (uint64_t)(nb_strengths * lambda * CDEF_STRENGTH_BITS);
+    tot_mse += (uint64_t)(nb_strengths * lambda * CDEF_STRENGTH_BITS *
+                          (num_planes > 1 ? 2 : 1));
     if (tot_mse < best_tot_mse) {
       best_tot_mse = tot_mse;
       nb_strength_bits = i;
