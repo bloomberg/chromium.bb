@@ -58,7 +58,17 @@ struct CORE_EXPORT PhysicalRect {
   LayoutRect ToLayoutFlippedRect(const ComputedStyle&,
                                  const PhysicalSize&) const;
 
-  FloatRect ToFloatRect() const { return FloatRect(ToLayoutRect()); }
+  FloatRect ToFloatRect() const {
+    return FloatRect(offset.left, offset.top, size.width, size.height);
+  }
+
+  static PhysicalRect EnclosingRect(const FloatRect& rect) {
+    PhysicalOffset offset(LayoutUnit::FromFloatFloor(rect.X()),
+                          LayoutUnit::FromFloatFloor(rect.Y()));
+    PhysicalSize size(LayoutUnit::FromFloatCeil(rect.MaxX()) - offset.left,
+                      LayoutUnit::FromFloatCeil(rect.MaxY()) - offset.top);
+    return PhysicalRect(offset, size);
+  }
 
   String ToString() const;
 };
