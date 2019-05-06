@@ -1616,11 +1616,14 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
     const gfx::RRectF* backdrop_filter_bounds =
         BackdropFilterBoundsForPass(quad->render_pass_id);
     if (backdrop_filter_bounds) {
-      // Map this into the same coordinate system as the quad. It is almost
-      // there, barring the offset, which is equal to the difference in origins
-      // between the quad->rect and the render pass' output rect.
+      // Map this into the same coordinate system as the quad.
       // (See gl_renderer::GetBackdropBoundingBoxForRenderPassQuad)
       rpdq_params.backdrop_filter_bounds = *backdrop_filter_bounds;
+      // Scale by the filter's scale, but don't apply filter origin
+      rpdq_params.backdrop_filter_bounds->Scale(quad->filters_scale.x(),
+                                                quad->filters_scale.y());
+      // Offset by the difference in origins between the quad->rect and the
+      // render pass' output rect.
       rpdq_params.backdrop_filter_bounds->Offset(
           quad->rect.origin() -
           current_frame()->current_render_pass->output_rect.origin());
