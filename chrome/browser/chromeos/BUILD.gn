@@ -1497,6 +1497,8 @@ source_set("chromeos") {
     "platform_keys/platform_keys_service.h",
     "platform_keys/platform_keys_service_factory.cc",
     "platform_keys/platform_keys_service_factory.h",
+    "plugin_vm/plugin_vm_files.cc",
+    "plugin_vm/plugin_vm_files.h",
     "plugin_vm/plugin_vm_image_download_client.cc",
     "plugin_vm/plugin_vm_image_download_client.h",
     "plugin_vm/plugin_vm_image_manager.cc",
