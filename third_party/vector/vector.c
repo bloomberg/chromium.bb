@@ -474,10 +474,10 @@ Iterator aom_vector_iterator(Vector *vector, size_t index) {
   return iterator;
 }
 
-void *iterator_get(Iterator *iterator) { return iterator->pointer; }
+void *aom_iterator_get(Iterator *iterator) { return iterator->pointer; }
 
-int iterator_erase(Vector *vector, Iterator *iterator) {
-  size_t index = iterator_index(vector, iterator);
+int aom_iterator_erase(Vector *vector, Iterator *iterator) {
+  size_t index = aom_iterator_index(vector, iterator);
 
   if (aom_vector_erase(vector, index) == VECTOR_ERROR) {
     return VECTOR_ERROR;
@@ -488,50 +488,50 @@ int iterator_erase(Vector *vector, Iterator *iterator) {
   return VECTOR_SUCCESS;
 }
 
-void iterator_increment(Iterator *iterator) {
+void aom_iterator_increment(Iterator *iterator) {
   assert(iterator != NULL);
   // iterator->pointer += iterator->element_size;
   iterator->pointer =
       (unsigned char *)iterator->pointer + iterator->element_size;
 }
 
-void iterator_decrement(Iterator *iterator) {
+void aom_iterator_decrement(Iterator *iterator) {
   assert(iterator != NULL);
   // iterator->pointer -= iterator->element_size;
   iterator->pointer =
       (unsigned char *)iterator->pointer - iterator->element_size;
 }
 
-void *iterator_next(Iterator *iterator) {
+void *aom_iterator_next(Iterator *iterator) {
   void *current = iterator->pointer;
-  iterator_increment(iterator);
+  aom_iterator_increment(iterator);
 
   return current;
 }
 
-void *iterator_previous(Iterator *iterator) {
+void *aom_iterator_previous(Iterator *iterator) {
   void *current = iterator->pointer;
-  iterator_decrement(iterator);
+  aom_iterator_decrement(iterator);
 
   return current;
 }
 
-bool iterator_equals(Iterator *first, Iterator *second) {
+bool aom_iterator_equals(Iterator *first, Iterator *second) {
   assert(first->element_size == second->element_size);
   return first->pointer == second->pointer;
 }
 
-bool iterator_is_before(Iterator *first, Iterator *second) {
+bool aom_iterator_is_before(Iterator *first, Iterator *second) {
   assert(first->element_size == second->element_size);
   return first->pointer < second->pointer;
 }
 
-bool iterator_is_after(Iterator *first, Iterator *second) {
+bool aom_iterator_is_after(Iterator *first, Iterator *second) {
   assert(first->element_size == second->element_size);
   return first->pointer > second->pointer;
 }
 
-size_t iterator_index(Vector *vector, Iterator *iterator) {
+size_t aom_iterator_index(Vector *vector, Iterator *iterator) {
   assert(vector != NULL);
   assert(iterator != NULL);
   // return (iterator->pointer - vector->data) / vector->element_size;

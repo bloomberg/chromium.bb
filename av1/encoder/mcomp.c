@@ -2440,8 +2440,9 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
 
         Iterator iterator =
             av1_hash_get_first_iterator(ref_frame_hash, hash_value1);
-        for (int i = 0; i < count; i++, iterator_increment(&iterator)) {
-          block_hash ref_block_hash = *(block_hash *)(iterator_get(&iterator));
+        for (int i = 0; i < count; i++, aom_iterator_increment(&iterator)) {
+          block_hash ref_block_hash =
+              *(block_hash *)(aom_iterator_get(&iterator));
           if (hash_value2 == ref_block_hash.hash_value2) {
             // For intra, make sure the prediction is from valid area.
             if (intra) {
