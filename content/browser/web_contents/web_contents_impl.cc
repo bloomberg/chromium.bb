@@ -3634,6 +3634,8 @@ void WebContentsImpl::Paste() {
     return;
 
   focused_frame->GetFrameInputHandler()->Paste();
+  for (auto& observer : observers_)
+    observer.OnPaste();
   RecordAction(base::UserMetricsAction("Paste"));
 }
 
@@ -3643,6 +3645,8 @@ void WebContentsImpl::PasteAndMatchStyle() {
     return;
 
   focused_frame->GetFrameInputHandler()->PasteAndMatchStyle();
+  for (auto& observer : observers_)
+    observer.OnPaste();
   RecordAction(base::UserMetricsAction("PasteAndMatchStyle"));
 }
 

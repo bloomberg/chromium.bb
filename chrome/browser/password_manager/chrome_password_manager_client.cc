@@ -87,6 +87,13 @@
 #if defined(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
+#include "ui/base/clipboard/clipboard.h"
+#include "ui/events/keycodes/keyboard_codes.h"
+#endif
+
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -452,7 +459,7 @@ bool ChromePasswordManagerClient::IsIsolationForPasswordSitesEnabled() const {
   return SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled();
 }
 
-#if defined(FULL_SAFE_BROWSING)
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 void ChromePasswordManagerClient::CheckSafeBrowsingReputation(
     const GURL& form_action,
     const GURL& frame_url) {
@@ -548,14 +555,20 @@ void ChromePasswordManagerClient::RenderFrameCreated(
 }
 #endif
 
-#if !defined(OS_ANDROID)
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 void ChromePasswordManagerClient::OnInputEvent(
     const blink::WebInputEvent& event) {
   if (event.GetType() != blink::WebInputEvent::kChar)
     return;
   const blink::WebKeyboardEvent& key_event =
       static_cast<const blink::WebKeyboardEvent&>(event);
-  password_reuse_detection_manager_.OnKeyPressed(key_event.text);
+  // Key & 0x1f corresponds to the value of the key when either the control or
+  // command key is pressed. This detects CTRL+V, COMMAND+V, and CTRL+SHIFT+V.
+  if (key_event.windows_key_code == (ui::VKEY_V & 0x1f)) {
+    OnPaste();
+  } else {
+    password_reuse_detection_manager_.OnKeyPressed(key_event.text);
+  }
 }
 #endif
 
@@ -649,6 +662,16 @@ void ChromePasswordManagerClient::DidStartNavigation(
   // Logging has no sense on WebUI sites.
   log_manager_->SetSuspended(web_contents()->GetWebUI() != nullptr);
 }
+
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+void ChromePasswordManagerClient::OnPaste() {
+  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+  base::string16 text;
+  clipboard->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &text);
+  was_on_paste_called_ = true;
+  password_reuse_detection_manager_.OnPaste(std::move(text));
+}
+#endif
 
 gfx::RectF ChromePasswordManagerClient::GetBoundsInScreenSpace(
     const gfx::RectF& bounds) {
