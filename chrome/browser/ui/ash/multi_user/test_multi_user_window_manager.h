@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_MULTI_USER_TEST_MULTI_USER_WINDOW_MANAGER_CLIENT_H_
-#define CHROME_BROWSER_UI_ASH_MULTI_USER_TEST_MULTI_USER_WINDOW_MANAGER_CLIENT_H_
+#ifndef CHROME_BROWSER_UI_ASH_MULTI_USER_TEST_MULTI_USER_WINDOW_MANAGER_H_
+#define CHROME_BROWSER_UI_ASH_MULTI_USER_TEST_MULTI_USER_WINDOW_MANAGER_H_
 
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "base/macros.h"
@@ -61,4 +61,4 @@ class TestMultiUserWindowManager : public ash::MultiUserWindowManager {
   DISALLOW_COPY_AND_ASSIGN(TestMultiUserWindowManager);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_MULTI_USER_TEST_MULTI_USER_WINDOW_MANAGER_CLIENT_H_
+#endif  // CHROME_BROWSER_UI_ASH_MULTI_USER_TEST_MULTI_USER_WINDOW_MANAGER_H_

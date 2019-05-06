@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_MULTI_USER_MULTI_USER_WINDOW_MANAGER_CLIENT_IMPL_H_
-#define CHROME_BROWSER_UI_ASH_MULTI_USER_MULTI_USER_WINDOW_MANAGER_CLIENT_IMPL_H_
+#ifndef CHROME_BROWSER_UI_ASH_MULTI_USER_MULTI_PROFILE_SUPPORT_H_
+#define CHROME_BROWSER_UI_ASH_MULTI_USER_MULTI_PROFILE_SUPPORT_H_
 
 #include <map>
 #include <memory>
 
 #include "ash/public/cpp/multi_user_window_manager_delegate.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "components/account_id/account_id.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -90,4 +90,4 @@ class MultiProfileSupport : public ash::MultiUserWindowManagerDelegate,
   DISALLOW_COPY_AND_ASSIGN(MultiProfileSupport);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_MULTI_USER_MULTI_USER_WINDOW_MANAGER_CLIENT_IMPL_H_
+#endif  // CHROME_BROWSER_UI_ASH_MULTI_USER_MULTI_PROFILE_SUPPORT_H_
