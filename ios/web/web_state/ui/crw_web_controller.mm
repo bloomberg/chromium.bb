@@ -53,6 +53,7 @@
 #import "ios/web/interstitials/web_interstitial_impl.h"
 #import "ios/web/navigation/crw_navigation_item_holder.h"
 #import "ios/web/navigation/crw_pending_navigation_info.h"
+#import "ios/web/navigation/crw_wk_navigation_handler.h"
 #import "ios/web/navigation/crw_wk_navigation_states.h"
 #include "ios/web/navigation/error_retry_state_machine.h"
 #import "ios/web/navigation/navigation_context_impl.h"
@@ -308,12 +309,6 @@ bool RequiresContentFilterBlockingWorkaround() {
   // Referrer for the current page; does not include the fragment.
   NSString* _currentReferrerString;
 
-  // Pending information for an in-progress page navigation. The lifetime of
-  // this object starts at |decidePolicyForNavigationAction| where the info is
-  // extracted from the request, and ends at either |didCommitNavigation| or
-  // |didFailProvisionalNavigation|.
-  CRWPendingNavigationInfo* _pendingNavigationInfo;
-
   // Holds all WKNavigation objects and their states which are currently in
   // flight.
   CRWWKNavigationStates* _navigationStates;
@@ -344,6 +339,10 @@ bool RequiresContentFilterBlockingWorkaround() {
   // |didFailProvisionalNavigation:| delegate method.
   std::unique_ptr<CertVerificationErrorsCacheType> _certVerificationErrors;
 }
+
+// The WKNavigationDelegate handler class.
+@property(nonatomic, readonly, strong)
+    CRWWKNavigationHandler* navigationHandler;
 
 // If |contentView_| contains a web view, this is the web view it contains.
 // If not, it's nil. When setting the property, it performs basic setup.
@@ -629,6 +628,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
            selector:@selector(orientationDidChange)
                name:UIApplicationDidChangeStatusBarOrientationNotification
              object:nil];
+
+    _navigationHandler = [[CRWWKNavigationHandler alloc] init];
   }
   return self;
 }
@@ -1627,12 +1628,12 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 }
 
 - (BOOL)isCurrentNavigationItemPOST {
-  // |_pendingNavigationInfo| will be nil if the decidePolicy* delegate methods
-  // were not called.
+  // |self.navigationHandler.pendingNavigationInfo| will be nil if the
+  // decidePolicy* delegate methods were not called.
   NSString* HTTPMethod =
-      _pendingNavigationInfo
-          ? [_pendingNavigationInfo HTTPMethod]
-          : [self currentBackForwardListItemHolder]->http_method();
+      self.navigationHandler.pendingNavigationInfo
+          ? self.navigationHandler.pendingNavigationInfo.HTTPMethod
+          : [self currentBackForwardListItemHolder] -> http_method();
   if ([HTTPMethod isEqual:@"POST"]) {
     return YES;
   }
@@ -1727,8 +1728,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // Get the navigation type from the last main frame load request, and try to
   // map that to a PageTransition.
   WKNavigationType navigationType =
-      _pendingNavigationInfo ? [_pendingNavigationInfo navigationType]
-                             : WKNavigationTypeOther;
+      self.navigationHandler.pendingNavigationInfo
+          ? self.navigationHandler.pendingNavigationInfo.navigationType
+          : WKNavigationTypeOther;
   ui::PageTransition transition =
       [self pageTransitionFromNavigationType:navigationType];
 
@@ -2172,7 +2174,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 - (void)abortLoad {
   [self.webView stopLoading];
-  [_pendingNavigationInfo setCancelled:YES];
+  self.navigationHandler.pendingNavigationInfo.cancelled = YES;
   _certVerificationErrors->Clear();
   [self loadCancelled];
   _safeBrowsingWarningDetectionTimer.Stop();
@@ -4112,7 +4114,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
             } else {
               decisionHandler(WKNavigationActionPolicyCancel);
               if (action.targetFrame.mainFrame) {
-                [_pendingNavigationInfo setCancelled:YES];
+                self.navigationHandler.pendingNavigationInfo.cancelled = YES;
                 self.webStateImpl->SetIsLoading(false);
               }
             }
@@ -4225,7 +4227,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     }
   } else {
     if (action.targetFrame.mainFrame) {
-      [_pendingNavigationInfo setCancelled:YES];
+      self.navigationHandler.pendingNavigationInfo.cancelled = YES;
       // Discard the pending item to ensure that the current URL is not
       // different from what is displayed on the view. Discard only happens
       // if the last item was not a native view, to avoid ugly animation of
@@ -4370,7 +4372,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
   if (!shouldRenderResponse && WKResponse.canShowMIMEType &&
       WKResponse.forMainFrame) {
-    [_pendingNavigationInfo setCancelled:YES];
+    self.navigationHandler.pendingNavigationInfo.cancelled = YES;
   }
 
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
@@ -4443,7 +4445,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
         CreatePlaceholderUrlForUrl(webViewURL) ==
         net::GURLWithNSURL(webView.backForwardList.currentItem.URL);
     bool isBackForward =
-        _pendingNavigationInfo.navigationType == WKNavigationTypeBackForward;
+        self.navigationHandler.pendingNavigationInfo.navigationType ==
+        WKNavigationTypeBackForward;
     bool isRestoringSession =
         web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
         IsRestoreSessionUrl(_documentURL);
@@ -4486,7 +4489,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   std::unique_ptr<web::NavigationContextImpl> navigationContext =
       [self registerLoadRequestForURL:webViewURL
                sameDocumentNavigation:NO
-                       hasUserGesture:[_pendingNavigationInfo hasUserGesture]
+                       hasUserGesture:self.navigationHandler
+                                          .pendingNavigationInfo.hasUserGesture
                     rendererInitiated:YES
                 placeholderNavigation:IsPlaceholderUrl(webViewURL)];
   web::NavigationContextImpl* navigationContextPtr = navigationContext.get();
@@ -4550,7 +4554,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
   // Handle load cancellation for directly cancelled navigations without
   // handling their potential errors. Otherwise, handle the error.
-  if ([_pendingNavigationInfo cancelled]) {
+  if (self.navigationHandler.pendingNavigationInfo.cancelled) {
     [self handleCancelledError:error
                  forNavigation:navigation
                provisionalLoad:YES];
@@ -4570,7 +4574,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   [self removeAllWebFrames];
   // This must be reset at the end, since code above may need information about
   // the pending load.
-  _pendingNavigationInfo = nil;
+  self.navigationHandler.pendingNavigationInfo = nil;
   _certVerificationErrors->Clear();
   if (web::features::StorePendingItemInContext()) {
     // Remove the navigation to immediately get rid of pending item.
@@ -4638,8 +4642,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     webViewURL = currentWKItemURL;
   }
 
-  if (_pendingNavigationInfo.MIMEType)
-    context->SetMimeType(_pendingNavigationInfo.MIMEType);
+  if (self.navigationHandler.pendingNavigationInfo.MIMEType)
+    context->SetMimeType(self.navigationHandler.pendingNavigationInfo.MIMEType);
 
   // Don't show webview for placeholder navigation to avoid covering the native
   // content, which may have already been shown.
@@ -5246,7 +5250,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     if (error.code == web::kWebKitErrorFrameLoadInterruptedByPolicyChange) {
       // This method should not be called if the navigation was cancelled by
       // embedder.
-      DCHECK(_pendingNavigationInfo && ![_pendingNavigationInfo cancelled]);
+      DCHECK(self.navigationHandler.pendingNavigationInfo &&
+             !self.navigationHandler.pendingNavigationInfo.cancelled);
 
       // Handle Frame Load Interrupted errors from WebView. This block is
       // executed when web controller rejected the load inside
@@ -5421,14 +5426,17 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)updatePendingNavigationInfoFromNavigationAction:
     (WKNavigationAction*)action {
   if (action.targetFrame.mainFrame) {
-    _pendingNavigationInfo = [[CRWPendingNavigationInfo alloc] init];
-    [_pendingNavigationInfo
-        setReferrer:[self referrerFromNavigationAction:action]];
-    [_pendingNavigationInfo setNavigationType:action.navigationType];
-    [_pendingNavigationInfo setHTTPMethod:action.request.HTTPMethod];
-    BOOL hasUserGesture = web::GetNavigationActionInitiationType(action) ==
-                          web::NavigationActionInitiationType::kUserInitiated;
-    [_pendingNavigationInfo setHasUserGesture:hasUserGesture];
+    self.navigationHandler.pendingNavigationInfo =
+        [[CRWPendingNavigationInfo alloc] init];
+    self.navigationHandler.pendingNavigationInfo.referrer =
+        [self referrerFromNavigationAction:action];
+    self.navigationHandler.pendingNavigationInfo.navigationType =
+        action.navigationType;
+    self.navigationHandler.pendingNavigationInfo.HTTPMethod =
+        action.request.HTTPMethod;
+    self.navigationHandler.pendingNavigationInfo.hasUserGesture =
+        web::GetNavigationActionInitiationType(action) ==
+        web::NavigationActionInitiationType::kUserInitiated;
   }
 }
 
@@ -5439,22 +5447,25 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)updatePendingNavigationInfoFromNavigationResponse:
     (WKNavigationResponse*)response {
   if (response.isForMainFrame) {
-    if (!_pendingNavigationInfo) {
-      _pendingNavigationInfo = [[CRWPendingNavigationInfo alloc] init];
+    if (!self.navigationHandler.pendingNavigationInfo) {
+      self.navigationHandler.pendingNavigationInfo =
+          [[CRWPendingNavigationInfo alloc] init];
     }
-    [_pendingNavigationInfo setMIMEType:response.response.MIMEType];
+    self.navigationHandler.pendingNavigationInfo.MIMEType =
+        response.response.MIMEType;
   }
 }
 
 // Updates current state with any pending information. Should be called when a
 // navigation is committed.
 - (void)commitPendingNavigationInfo {
-  if ([_pendingNavigationInfo referrer]) {
-    _currentReferrerString = [[_pendingNavigationInfo referrer] copy];
+  if (self.navigationHandler.pendingNavigationInfo.referrer) {
+    _currentReferrerString =
+        [self.navigationHandler.pendingNavigationInfo.referrer copy];
   }
   [self updateCurrentBackForwardListItemHolder];
 
-  _pendingNavigationInfo = nil;
+  self.navigationHandler.pendingNavigationInfo = nil;
 }
 
 // Updates the WKBackForwardListItemHolder navigation item.
@@ -5469,18 +5480,21 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       [self currentBackForwardListItemHolder];
 
   WKNavigationType navigationType =
-      _pendingNavigationInfo ? [_pendingNavigationInfo navigationType]
-                             : WKNavigationTypeOther;
+      self.navigationHandler.pendingNavigationInfo
+          ? self.navigationHandler.pendingNavigationInfo.navigationType
+          : WKNavigationTypeOther;
   holder->set_back_forward_list_item(self.webView.backForwardList.currentItem);
   holder->set_navigation_type(navigationType);
-  holder->set_http_method([_pendingNavigationInfo HTTPMethod]);
+  holder->set_http_method(
+      self.navigationHandler.pendingNavigationInfo.HTTPMethod);
 
   // Only update the MIME type in the holder if there was MIME type information
   // as part of this pending load. It will be nil when doing a fast
   // back/forward navigation, for instance, because the callback that would
   // populate it is not called in that flow.
-  if ([_pendingNavigationInfo MIMEType])
-    holder->set_mime_type([_pendingNavigationInfo MIMEType]);
+  if (self.navigationHandler.pendingNavigationInfo.MIMEType)
+    holder->set_mime_type(
+        self.navigationHandler.pendingNavigationInfo.MIMEType);
 }
 
 // Returns context for pending navigation that has |URL|. null if there is no
@@ -5690,7 +5704,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     return;
   }
 
-  if (!navigationWasCommitted && ![_pendingNavigationInfo cancelled]) {
+  if (!navigationWasCommitted &&
+      !self.navigationHandler.pendingNavigationInfo.cancelled) {
     // A fast back-forward navigation does not call |didCommitNavigation:|, so
     // signal page change explicitly.
     DCHECK_EQ(_documentURL.GetOrigin(), webViewURL.GetOrigin());
@@ -5712,7 +5727,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       // TODO(crbug.com/792515): It is OK, but very brittle, to call
       // |didFinishNavigation:| here because the gating condition is mutually
       // exclusive with the condition below. Refactor this method after
-      // deprecating _pendingNavigationInfo.
+      // deprecating self.navigationHandler.pendingNavigationInfo.
       if (newContext->GetWKNavigationType() == WKNavigationTypeBackForward) {
         [self didFinishNavigation:newContext.get()];
       }
@@ -5813,7 +5828,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
       self.navigationManagerImpl->DiscardNonCommittedItems();
       self.webStateImpl->SetIsLoading(false);
-      _pendingNavigationInfo = nil;
+      self.navigationHandler.pendingNavigationInfo = nil;
       if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
         // Right after a history navigation that gets cancelled by a tap on
         // "Go Back", WKWebView's current back/forward list item will still be

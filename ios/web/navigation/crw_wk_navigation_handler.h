@@ -8,6 +8,8 @@
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
 
+@class CRWPendingNavigationInfo;
+
 // CRWWKNavigationHandler uses this protocol to interact with its owner.
 @protocol CRWWKNavigationHandlerDelegate <NSObject>
 
@@ -16,6 +18,12 @@
 // Handler class for WKNavigationDelegate, deals with navigation callbacks from
 // WKWebView and maintains page loading state.
 @interface CRWWKNavigationHandler : NSObject <WKNavigationDelegate>
+
+// Pending information for an in-progress page navigation. The lifetime of
+// this object starts at |decidePolicyForNavigationAction| where the info is
+// extracted from the request, and ends at either |didCommitNavigation| or
+// |didFailProvisionalNavigation|.
+@property(nonatomic, strong) CRWPendingNavigationInfo* pendingNavigationInfo;
 
 @end
 
