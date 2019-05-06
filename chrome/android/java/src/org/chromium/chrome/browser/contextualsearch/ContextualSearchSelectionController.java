@@ -328,9 +328,9 @@ public class ContextualSearchSelectionController {
                 mIsAdjustedSelection = false;
                 break;
             case SelectionEventType.SELECTION_HANDLES_CLEARED:
+                // Selection handles have been hidden, but there may still be a selection.
                 mAreSelectionHandlesShown = false;
                 mHandler.handleSelectionDismissal();
-                clearSelection();
                 resetAllStates();
                 break;
             case SelectionEventType.SELECTION_HANDLE_DRAG_STOPPED:
