@@ -271,6 +271,13 @@ NavigationSimulatorImpl::CreateFromPending(WebContents* contents) {
 
   FrameTreeNode* frame_tree_node =
       GetFrameTreeNodeForPendingEntry(contents_impl);
+  return NavigationSimulatorImpl::CreateFromPendingInFrame(frame_tree_node);
+}
+
+// static
+std::unique_ptr<NavigationSimulatorImpl>
+NavigationSimulatorImpl::CreateFromPendingInFrame(
+    FrameTreeNode* frame_tree_node) {
   CHECK(frame_tree_node);
   TestRenderFrameHost* test_frame_host =
       static_cast<TestRenderFrameHost*>(frame_tree_node->current_frame_host());
@@ -288,11 +295,8 @@ NavigationSimulatorImpl::CreateFromPending(WebContents* contents) {
     test_frame_host->SendBeforeUnloadACK(true /*proceed */);
 
   auto simulator = base::WrapUnique(new NavigationSimulatorImpl(
-      GURL(),
-      !contents_impl->GetController()
-           .GetPendingEntry()
-           ->is_renderer_initiated(),
-      static_cast<WebContentsImpl*>(contents), test_frame_host));
+      GURL(), request->browser_initiated(),
+      WebContentsImpl::FromFrameTreeNode(frame_tree_node), test_frame_host));
   simulator->frame_tree_node_ = frame_tree_node;
   simulator->InitializeFromStartedRequest(request);
   return simulator;
@@ -793,12 +797,22 @@ void NavigationSimulatorImpl::CommitSameDocument() {
 }
 
 void NavigationSimulatorImpl::SetTransition(ui::PageTransition transition) {
-  CHECK_EQ(INITIALIZATION, state_)
-      << "The transition cannot be set after the navigation has started";
-  CHECK_EQ(ReloadType::NONE, reload_type_)
-      << "The transition cannot be specified for reloads";
-  CHECK_EQ(0, session_history_offset_)
-      << "The transition cannot be specified for back/forward navigations";
+  if (frame_tree_node_ && !frame_tree_node_->IsMainFrame()) {
+    // Subframe case. The subframe page transition is only set at commit time in
+    // the navigation code, so it can be modified later in time.
+    CHECK(PageTransitionCoreTypeIs(transition,
+                                   ui::PAGE_TRANSITION_AUTO_SUBFRAME) ||
+          PageTransitionCoreTypeIs(transition,
+                                   ui::PAGE_TRANSITION_MANUAL_SUBFRAME))
+        << "The transition type is not appropriate for a subframe";
+  } else {
+    CHECK_EQ(INITIALIZATION, state_)
+        << "The transition cannot be set after the navigation has started";
+    CHECK_EQ(ReloadType::NONE, reload_type_)
+        << "The transition cannot be specified for reloads";
+    CHECK_EQ(0, session_history_offset_)
+        << "The transition cannot be specified for back/forward navigations";
+  }
   transition_ = transition;
 }
 

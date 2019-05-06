@@ -2179,69 +2179,27 @@ TEST_F(NavigationControllerTest, BackSubframe) {
       blink::WebTreeScopeType::kDocument, std::string(), unique_name, false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       FrameOwnerProperties(), blink::FrameOwnerElementType::kIframe);
-  TestRenderFrameHost* subframe = static_cast<TestRenderFrameHost*>(
-      contents()->GetFrameTree()->root()->child_at(0)->current_frame_host());
-  RenderFrameHostManager* subframe_rfhm =
-      subframe->frame_tree_node()->render_manager();
+  FrameTreeNode* subframe = contents()->GetFrameTree()->root()->child_at(0);
+  TestRenderFrameHost* subframe_rfh =
+      static_cast<TestRenderFrameHost*>(subframe->current_frame_host());
   const GURL subframe_url("http://foo1/subframe");
 
-  // Compute the sequence number assigned by Blink.
-  int64_t item_sequence_number1 = GenerateSequenceNumber();
-  int64_t document_sequence_number1 = GenerateSequenceNumber();
+  // Navigating should do nothing.
+  auto navigation1 =
+      NavigationSimulator::CreateRendererInitiated(subframe_url, subframe_rfh);
+  navigation1->SetTransition(ui::PAGE_TRANSITION_AUTO_SUBFRAME);
+  navigation1->Commit();
 
-  {
-    FrameHostMsg_DidCommitProvisionalLoad_Params params;
-    params.nav_entry_id = 0;
-    params.did_create_new_entry = false;
-    params.url = subframe_url;
-    params.origin = url::Origin::Create(subframe_url);
-    params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
-    params.should_update_history = false;
-    params.gesture = NavigationGestureUser;
-    params.method = "GET";
-    params.page_state = PageState::CreateForTestingWithSequenceNumbers(
-        subframe_url, item_sequence_number1, document_sequence_number1);
-    params.item_sequence_number = item_sequence_number1;
-    params.document_sequence_number = document_sequence_number1;
+  // We notify of a PageState update here rather than during UpdateState for
+  // auto subframe navigations.
+  EXPECT_EQ(1u, navigation_entry_changed_counter_);
 
-    // Navigating should do nothing.
-    subframe->SendRendererInitiatedNavigationRequest(subframe_url, false);
-    subframe->PrepareForCommit();
-    subframe->SendNavigateWithParams(&params, false);
-
-    // We notify of a PageState update here rather than during UpdateState for
-    // auto subframe navigations.
-    EXPECT_EQ(1u, navigation_entry_changed_counter_);
-  }
-
-  // First manual subframe navigation.
+  // First manual subframe_rfh navigation.
   const GURL url2("http://foo2");
-  int64_t item_sequence_number2 = GenerateSequenceNumber();
-  int64_t document_sequence_number2 = GenerateSequenceNumber();
-  FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  params.nav_entry_id = 0;
-  params.did_create_new_entry = true;
-  params.url = url2;
-  params.origin = url::Origin::Create(url2);
-  params.transition = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
-  params.should_update_history = false;
-  params.gesture = NavigationGestureUser;
-  params.method = "GET";
-  params.page_state = PageState::CreateForTestingWithSequenceNumbers(
-      url2, item_sequence_number2, document_sequence_number2);
-  params.item_sequence_number = item_sequence_number2;
-  params.document_sequence_number = document_sequence_number2;
-
-  // This should generate a new entry.
-  subframe->SendRendererInitiatedNavigationRequest(url2, false);
-  subframe->PrepareForCommit();
-  // If the navigation is cross-process, the commit comes from the speculative
-  // RenderFrame.
-  if (subframe_rfhm->speculative_frame_host()) {
-    subframe = static_cast<TestRenderFrameHost*>(
-        subframe_rfhm->speculative_frame_host());
-  }
-  subframe->SendNavigateWithParams(&params, false);
+  auto navigation2 =
+      NavigationSimulator::CreateRendererInitiated(url2, subframe_rfh);
+  navigation2->SetTransition(ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
+  navigation2->Commit();
   NavigationEntryImpl* entry2 = controller.GetLastCommittedEntry();
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
@@ -2253,24 +2211,12 @@ TEST_F(NavigationControllerTest, BackSubframe) {
 
   // Second manual subframe navigation should also make a new entry.
   const GURL url3("http://foo3");
-  int64_t item_sequence_number3 = GenerateSequenceNumber();
-  int64_t document_sequence_number3 = GenerateSequenceNumber();
-  params.nav_entry_id = 0;
-  params.did_create_new_entry = true;
-  params.url = url3;
-  params.origin = url::Origin::Create(url3);
-  params.transition = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
-  params.item_sequence_number = item_sequence_number3;
-  params.document_sequence_number = document_sequence_number3;
-  params.page_state = PageState::CreateForTestingWithSequenceNumbers(
-    url3, item_sequence_number3, document_sequence_number3);
-  subframe->SendRendererInitiatedNavigationRequest(url3, false);
-  subframe->PrepareForCommit();
-  if (subframe_rfhm->speculative_frame_host()) {
-    subframe = static_cast<TestRenderFrameHost*>(
-        subframe_rfhm->speculative_frame_host());
-  }
-  subframe->SendNavigateWithParams(&params, false);
+  subframe_rfh =
+      static_cast<TestRenderFrameHost*>(subframe->current_frame_host());
+  auto navigation3 =
+      NavigationSimulator::CreateRendererInitiated(url3, subframe_rfh);
+  navigation3->SetTransition(ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
+  navigation3->Commit();
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
   NavigationEntryImpl* entry3 = controller.GetLastCommittedEntry();
@@ -2283,21 +2229,10 @@ TEST_F(NavigationControllerTest, BackSubframe) {
 
   // Go back one.
   controller.GoToOffset(-1);
-  params.nav_entry_id = entry2->GetUniqueID();
-  params.did_create_new_entry = false;
-  params.url = url2;
-  params.origin = url::Origin::Create(url2);
-  params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
-  params.page_state = PageState::CreateForTestingWithSequenceNumbers(
-    url2, item_sequence_number2, document_sequence_number2);
-  params.item_sequence_number = item_sequence_number2;
-  params.document_sequence_number = document_sequence_number2;
-  subframe->PrepareForCommit();
-  if (subframe_rfhm->speculative_frame_host()) {
-    subframe = static_cast<TestRenderFrameHost*>(
-        subframe_rfhm->speculative_frame_host());
-  }
-  subframe->SendNavigateWithParams(&params, false);
+  auto back_navigation1 =
+      NavigationSimulatorImpl::CreateFromPendingInFrame(subframe);
+  back_navigation1->SetTransition(ui::PAGE_TRANSITION_AUTO_SUBFRAME);
+  back_navigation1->Commit();
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
   EXPECT_EQ(entry2, controller.GetLastCommittedEntry());
@@ -2308,21 +2243,10 @@ TEST_F(NavigationControllerTest, BackSubframe) {
 
   // Go back one more.
   controller.GoToOffset(-1);
-  params.nav_entry_id = entry1->GetUniqueID();
-  params.did_create_new_entry = false;
-  params.url = subframe_url;
-  params.origin = url::Origin::Create(subframe_url);
-  params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
-  params.page_state = PageState::CreateForTestingWithSequenceNumbers(
-    subframe_url, item_sequence_number1, document_sequence_number1);
-  params.item_sequence_number = item_sequence_number1;
-  params.document_sequence_number = document_sequence_number1;
-  subframe->PrepareForCommit();
-  if (subframe_rfhm->speculative_frame_host()) {
-    subframe = static_cast<TestRenderFrameHost*>(
-        subframe_rfhm->speculative_frame_host());
-  }
-  subframe->SendNavigateWithParams(&params, false);
+  auto back_navigation2 =
+      NavigationSimulatorImpl::CreateFromPendingInFrame(subframe);
+  back_navigation2->SetTransition(ui::PAGE_TRANSITION_AUTO_SUBFRAME);
+  back_navigation2->Commit();
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
   EXPECT_EQ(entry1, controller.GetLastCommittedEntry());
@@ -2434,7 +2358,7 @@ TEST_F(NavigationControllerTest, SameDocument) {
   EXPECT_TRUE(observer.is_same_document());
   EXPECT_EQ(2, controller.GetEntryCount());
   EXPECT_EQ(0, controller.GetCurrentEntryIndex());
-  EXPECT_EQ(back_params.url, controller.GetVisibleEntry()->GetURL());
+  EXPECT_EQ(back_params.url, controller.GetLastCommittedEntry()->GetURL());
 
   // Go forward.
   FrameHostMsg_DidCommitProvisionalLoad_Params forward_params(params);

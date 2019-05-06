@@ -58,6 +58,11 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   static std::unique_ptr<NavigationSimulatorImpl> CreateFromPending(
       WebContents* contents);
 
+  // Creates a NavigationSimulator for an already-started navigation happening
+  // in |frame_tree_node|. Can be used to drive the navigation to completion.
+  static std::unique_ptr<NavigationSimulatorImpl> CreateFromPendingInFrame(
+      FrameTreeNode* frame_tree_node);
+
   // NavigationSimulator implementation.
   void Start() override;
   void Redirect(const GURL& new_url) override;
