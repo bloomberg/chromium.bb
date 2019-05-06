@@ -1936,6 +1936,56 @@ TEST_F(WidgetTest, DestroyedWithCaptureViaEventMonitor) {
   EXPECT_TRUE(observer.widget_closed());
 }
 
+TEST_F(WidgetTest, LockPaintAsActive) {
+  WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
+  widget->ShowInactive();
+  EXPECT_FALSE(widget->ShouldPaintAsActive());
+
+  // First lock causes widget to paint as active.
+  auto lock = widget->LockPaintAsActive();
+  EXPECT_TRUE(widget->ShouldPaintAsActive());
+
+  // Second lock has no effect.
+  auto lock2 = widget->LockPaintAsActive();
+  EXPECT_TRUE(widget->ShouldPaintAsActive());
+
+  // Have to release twice to get back to inactive state.
+  lock2.reset();
+  EXPECT_TRUE(widget->ShouldPaintAsActive());
+  lock.reset();
+  EXPECT_FALSE(widget->ShouldPaintAsActive());
+}
+
+TEST_F(WidgetTest, LockPaintAsActive_AlreadyActive) {
+  WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
+  widget->Show();
+  EXPECT_TRUE(widget->ShouldPaintAsActive());
+
+  // Lock has no effect.
+  auto lock = widget->LockPaintAsActive();
+  EXPECT_TRUE(widget->ShouldPaintAsActive());
+
+  // Remove lock has no effect.
+  lock.reset();
+  EXPECT_TRUE(widget->ShouldPaintAsActive());
+}
+
+TEST_F(WidgetTest, LockPaintAsActive_BecomesActive) {
+  WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
+  widget->ShowInactive();
+  EXPECT_FALSE(widget->ShouldPaintAsActive());
+
+  // Lock toggles render mode.
+  auto lock = widget->LockPaintAsActive();
+  EXPECT_TRUE(widget->ShouldPaintAsActive());
+
+  widget->Activate();
+
+  // Remove lock has no effect.
+  lock.reset();
+  EXPECT_TRUE(widget->ShouldPaintAsActive());
+}
+
 // Widget used to destroy itself when OnNativeWidgetDestroyed is called.
 class TestNativeWidgetDestroyedWidget : public Widget {
  public:

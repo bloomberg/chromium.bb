@@ -4,6 +4,7 @@
 
 #include "ui/views/widget/widget.h"
 
+#include <set>
 #include <utility>
 
 #include "base/auto_reset.h"
@@ -115,6 +116,29 @@ class DefaultWidgetDelegate : public WidgetDelegate {
   Widget* widget_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultWidgetDelegate);
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// Widget, PaintAsActiveLock:
+
+Widget::PaintAsActiveLock::PaintAsActiveLock() = default;
+Widget::PaintAsActiveLock::~PaintAsActiveLock() = default;
+
+////////////////////////////////////////////////////////////////////////////////
+// Widget, PaintAsActiveLockImpl:
+
+class Widget::PaintAsActiveLockImpl : public Widget::PaintAsActiveLock {
+ public:
+  PaintAsActiveLockImpl(base::WeakPtr<Widget>&& widget) : widget_(widget) {}
+
+  ~PaintAsActiveLockImpl() override {
+    Widget* const widget = widget_.get();
+    if (widget)
+      widget->UnlockPaintAsActive();
+  }
+
+ private:
+  base::WeakPtr<Widget> widget_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1036,6 +1060,20 @@ std::string Widget::GetName() const {
   return native_widget_->GetName();
 }
 
+std::unique_ptr<Widget::PaintAsActiveLock> Widget::LockPaintAsActive() {
+  const bool was_paint_as_active = ShouldPaintAsActive();
+  ++paint_as_active_refcount_;
+  const bool paint_as_active = ShouldPaintAsActive();
+  if (paint_as_active != was_paint_as_active)
+    UpdatePaintAsActiveState(paint_as_active);
+  return std::make_unique<PaintAsActiveLockImpl>(
+      weak_ptr_factory_.GetWeakPtr());
+}
+
+bool Widget::ShouldPaintAsActive() const {
+  return native_widget_active_ || paint_as_active_refcount_;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, NativeWidgetDelegate implementation:
 
@@ -1051,10 +1089,6 @@ bool Widget::CanActivate() const {
   // This may be called after OnNativeWidgetDestroyed(), which sets
   // |widget_delegate_| to null.
   return widget_delegate_ && widget_delegate_->CanActivate();
-}
-
-bool Widget::IsAlwaysRenderAsActive() const {
-  return always_render_as_active_;
 }
 
 bool Widget::IsNativeWidgetInitialized() const {
@@ -1074,8 +1108,11 @@ bool Widget::OnNativeWidgetActivationChanged(bool active) {
   for (WidgetObserver& observer : observers_)
     observer.OnWidgetActivationChanged(this, active);
 
-  if (non_client_view())
-    non_client_view()->frame_view()->ActivationChanged(active);
+  const bool was_paint_as_active = ShouldPaintAsActive();
+  native_widget_active_ = active;
+  const bool paint_as_active = ShouldPaintAsActive();
+  if (paint_as_active != was_paint_as_active)
+    UpdatePaintAsActiveState(paint_as_active);
 
   return true;
 }
@@ -1495,19 +1532,6 @@ void Widget::OnDragComplete() {}
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, private:
 
-void Widget::SetAlwaysRenderAsActive(bool always_render_as_active) {
-  if (always_render_as_active_ == always_render_as_active)
-    return;
-
-  always_render_as_active_ = always_render_as_active;
-
-  // If active, the frame should already be painted. Otherwise,
-  // |always_render_as_active_| just changed, and the widget is inactive, so
-  // schedule a repaint.
-  if (non_client_view_ && !IsActive())
-    non_client_view_->frame_view()->SchedulePaint();
-}
-
 void Widget::SaveWindowPlacement() {
   // The window delegate does the actual saving for us. It seems like (judging
   // by go/crash) that in some circumstances we can end up here after
@@ -1609,6 +1633,22 @@ const View::Views& Widget::GetViewsWithLayers() {
     BuildViewsWithLayers(GetRootView(), &views_with_layers_);
   }
   return views_with_layers_;
+}
+
+void Widget::UnlockPaintAsActive() {
+  const bool was_paint_as_active = ShouldPaintAsActive();
+  DCHECK_GT(paint_as_active_refcount_, 0U);
+  --paint_as_active_refcount_;
+  const bool paint_as_active = ShouldPaintAsActive();
+  if (paint_as_active != was_paint_as_active)
+    UpdatePaintAsActiveState(paint_as_active);
+}
+
+void Widget::UpdatePaintAsActiveState(bool paint_as_active) {
+  if (non_client_view())
+    non_client_view()->frame_view()->PaintAsActiveChanged(paint_as_active);
+  if (widget_delegate())
+    widget_delegate()->OnPaintAsActiveChanged(paint_as_active);
 }
 
 namespace internal {

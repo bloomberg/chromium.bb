@@ -1128,7 +1128,7 @@ bool BridgedNativeWidgetHostImpl::GetCanWindowBecomeKey(
 bool BridgedNativeWidgetHostImpl::GetAlwaysRenderWindowAsKey(
     bool* always_render_as_key) {
   *always_render_as_key =
-      root_view_ ? root_view_->GetWidget()->IsAlwaysRenderAsActive() : false;
+      root_view_ ? root_view_->GetWidget()->ShouldPaintAsActive() : false;
   return true;
 }
 

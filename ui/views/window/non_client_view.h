@@ -84,8 +84,8 @@ class VIEWS_EXPORT NonClientFrameView : public View,
   // Whether the widget can be resized or maximized has changed.
   virtual void SizeConstraintsChanged() = 0;
 
-  // The widget's activation state has changed to |active|.
-  virtual void ActivationChanged(bool active);
+  // Called when whether the non-client view should paint as active has changed.
+  virtual void PaintAsActiveChanged(bool active);
 
   // View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
@@ -99,16 +99,7 @@ class VIEWS_EXPORT NonClientFrameView : public View,
   bool DoesIntersectRect(const View* target,
                          const gfx::Rect& rect) const override;
 
-  void set_active_state_override(bool* active_state_override) {
-    active_state_override_ = active_state_override;
-  }
-
  private:
-  // Used to force ShouldPaintAsActive() to treat the active state a particular
-  // way.  This is normally null; when non-null, its value will override the
-  // normal "active" value computed by the function.
-  bool* active_state_override_ = nullptr;
-
   DISALLOW_COPY_AND_ASSIGN(NonClientFrameView);
 };
 

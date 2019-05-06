@@ -1510,8 +1510,7 @@ bool HWNDMessageHandler::HasSystemFrame() const {
 void HWNDMessageHandler::OnActivateApp(BOOL active, DWORD thread_id) {
   if (delegate_->HasNonClientView() && !active &&
       thread_id != GetCurrentThreadId()) {
-    delegate_->HandleAppDeactivated();
-    // Also update the native frame if it is rendering the non-client area.
+    // Update the native frame if it is rendering the non-client area.
     if (HasSystemFrame())
       DefWindowProcWithRedrawLock(WM_NCACTIVATE, FALSE, 0);
   }
@@ -1984,7 +1983,7 @@ LRESULT HWNDMessageHandler::OnNCActivate(UINT message,
   // cleared before it is converted to BOOL.
   BOOL active = static_cast<BOOL>(LOWORD(w_param));
 
-  bool render_as_active = delegate_->IsAlwaysRenderAsActive();
+  const bool paint_as_active = delegate_->ShouldPaintAsActive();
 
   if (!delegate_->HasNonClientView()) {
     SetMsgHandled(FALSE);
@@ -1993,10 +1992,6 @@ LRESULT HWNDMessageHandler::OnNCActivate(UINT message,
 
   if (!delegate_->CanActivate())
     return TRUE;
-
-  // On activation, lift any prior restriction against rendering as inactive.
-  if (active && render_as_active)
-    delegate_->SetAlwaysRenderAsActive(false);
 
   if (delegate_->GetFrameMode() == FrameMode::CUSTOM_DRAWN) {
     // TODO(beng, et al): Hack to redraw this window and child windows
@@ -2024,8 +2019,8 @@ LRESULT HWNDMessageHandler::OnNCActivate(UINT message,
     return TRUE;
   }
 
-  return DefWindowProcWithRedrawLock(
-      WM_NCACTIVATE, render_as_active || active, 0);
+  return DefWindowProcWithRedrawLock(WM_NCACTIVATE, paint_as_active || active,
+                                     0);
 }
 
 LRESULT HWNDMessageHandler::OnNCCalcSize(BOOL mode, LPARAM l_param) {

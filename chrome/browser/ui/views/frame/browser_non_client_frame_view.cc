@@ -272,18 +272,10 @@ void BrowserNonClientFrameView::ChildPreferredSizeChanged(views::View* child) {
     Layout();
 }
 
-void BrowserNonClientFrameView::ActivationChanged(bool active) {
-  // On Windows, while deactivating the widget, this is called before the
-  // active HWND has actually been changed.  Since we want the state to reflect
-  // that the window is inactive, we force NonClientFrameView to see the
-  // "correct" state as an override.
-  set_active_state_override(&active);
-
+void BrowserNonClientFrameView::PaintAsActiveChanged(bool active) {
   // The toolbar top separator color (used as the stroke around the tabs and
   // the new tab button) needs to be recalculated.
   browser_view_->tabstrip()->FrameColorsChanged();
-
-  set_active_state_override(nullptr);
 
   if (hosted_app_button_container_)
     hosted_app_button_container_->SetPaintAsActive(active);

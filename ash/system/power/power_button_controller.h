@@ -17,15 +17,12 @@
 #include "base/timer/timer.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "ui/display/manager/display_configurator.h"
+#include "ui/views/widget/widget.h"
 
 namespace base {
 class TickClock;
 class TimeTicks;
 }  // namespace base
-
-namespace views {
-class Widget;
-}  // namespace views
 
 namespace ash {
 
@@ -153,7 +150,6 @@ class ASH_EXPORT PowerButtonController
   void OnLockStateEvent(LockStateObserver::EventType event) override;
 
  private:
-  class ActiveWindowWidgetController;
   friend class PowerButtonControllerTestApi;
 
   // Returns true if tablet power button behavior (i.e. tapping the button turns
@@ -285,8 +281,8 @@ class ASH_EXPORT PowerButtonController
 
   // Used to maintain active state of the active window that exists before
   // showing menu.
-  std::unique_ptr<ActiveWindowWidgetController>
-      active_window_widget_controller_;
+  std::unique_ptr<views::Widget::PaintAsActiveLock>
+      active_window_paint_as_active_lock_;
 
   base::WeakPtrFactory<PowerButtonController> weak_factory_;
 

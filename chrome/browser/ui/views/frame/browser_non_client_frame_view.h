@@ -147,7 +147,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // views::NonClientFrameView:
   void ChildPreferredSizeChanged(views::View* child) override;
-  void ActivationChanged(bool active) override;
+  void PaintAsActiveChanged(bool active) override;
   bool DoesIntersectRect(const views::View* target,
                          const gfx::Rect& rect) const override;
 

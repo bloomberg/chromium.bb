@@ -368,8 +368,8 @@ void BrowserNonClientFrameViewAsh::UpdateWindowTitle() {
 
 void BrowserNonClientFrameViewAsh::SizeConstraintsChanged() {}
 
-void BrowserNonClientFrameViewAsh::ActivationChanged(bool active) {
-  BrowserNonClientFrameView::ActivationChanged(active);
+void BrowserNonClientFrameViewAsh::PaintAsActiveChanged(bool active) {
+  BrowserNonClientFrameView::PaintAsActiveChanged(active);
 
   UpdateProfileIcons();
 

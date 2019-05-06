@@ -99,53 +99,6 @@ constexpr const char* PowerButtonController::kRightEdge;
 constexpr const char* PowerButtonController::kTopEdge;
 constexpr const char* PowerButtonController::kBottomEdge;
 
-// Maintain active state of the given |widget|. Sets |widget| to always render
-// as active if it's not already initially configured that way. Resets the
-// setting if |widget| still exists when this class is destroyed.
-class PowerButtonController::ActiveWindowWidgetController
-    : public views::WidgetObserver {
- public:
-  static std::unique_ptr<ActiveWindowWidgetController> Create(
-      views::Widget* widget) {
-    if (!widget || widget->IsAlwaysRenderAsActive())
-      return nullptr;
-
-    widget->SetAlwaysRenderAsActive(true);
-    return std::unique_ptr<ActiveWindowWidgetController>(
-        base::WrapUnique(new ActiveWindowWidgetController(widget)));
-  }
-
-  ~ActiveWindowWidgetController() override {
-    if (!widget_)
-      return;
-    widget_->SetAlwaysRenderAsActive(false);
-    widget_->RemoveObserver(this);
-  }
-
-  // views::WidgetObserver:
-  void OnWidgetClosing(views::Widget* widget) override {
-    DCHECK_EQ(widget_, widget);
-    widget_ = nullptr;
-    widget->RemoveObserver(this);
-  }
-
-  // views::WidgetObserver:
-  void OnWidgetDestroying(views::Widget* widget) override {
-    OnWidgetClosing(widget);
-  }
-
- private:
-  explicit ActiveWindowWidgetController(views::Widget* widget)
-      : widget_(widget) {
-    if (widget)
-      widget->AddObserver(this);
-  }
-
-  views::Widget* widget_ = nullptr;  // Not owned.
-
-  DISALLOW_COPY_AND_ASSIGN(ActiveWindowWidgetController);
-};
-
 PowerButtonController::PowerButtonController(
     BacklightsForcedOffSetter* backlights_forced_off_setter)
     : backlights_forced_off_setter_(backlights_forced_off_setter),
@@ -349,7 +302,7 @@ void PowerButtonController::DismissMenu() {
     menu_widget_->Hide();
 
   show_menu_animation_done_ = false;
-  active_window_widget_controller_.reset();
+  active_window_paint_as_active_lock_.reset();
 }
 
 void PowerButtonController::StopForcingBacklightsOff() {
@@ -480,8 +433,9 @@ void PowerButtonController::StartPowerMenuAnimation() {
   // window when the menu is activated.
   views::Widget* active_toplevel_widget =
       views::Widget::GetTopLevelWidgetForNativeView(wm::GetActiveWindow());
-  active_window_widget_controller_ =
-      ActiveWindowWidgetController::Create(active_toplevel_widget);
+  active_window_paint_as_active_lock_ =
+      active_toplevel_widget ? active_toplevel_widget->LockPaintAsActive()
+                             : nullptr;
 
   if (!menu_widget_)
     menu_widget_ = CreateMenuWidget();

@@ -161,8 +161,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   FrameMode GetFrameMode() const override;
   bool HasFrame() const override;
   void SchedulePaint() override;
-  void SetAlwaysRenderAsActive(bool always_render_as_active) override;
-  bool IsAlwaysRenderAsActive() override;
+  bool ShouldPaintAsActive() const override;
   bool CanResize() const override;
   bool CanMaximize() const override;
   bool CanMinimize() const override;
@@ -182,7 +181,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   gfx::Size DIPToScreenSize(const gfx::Size& dip_size) const override;
   void ResetWindowControls() override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
-  void HandleAppDeactivated() override;
   void HandleActivationChanged(bool active) override;
   bool HandleAppCommand(short command) override;
   void HandleCancelMode() override;

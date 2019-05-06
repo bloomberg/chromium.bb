@@ -250,9 +250,7 @@ View* NonClientView::TargetForRect(View* root, const gfx::Rect& rect) {
 NonClientFrameView::~NonClientFrameView() = default;
 
 bool NonClientFrameView::ShouldPaintAsActive() const {
-  return  GetWidget()->IsAlwaysRenderAsActive() ||
-         (active_state_override_ ? *active_state_override_
-                                 : GetWidget()->IsActive());
+  return GetWidget()->ShouldPaintAsActive();
 }
 
 int NonClientFrameView::GetHTComponentForFrame(const gfx::Point& point,
@@ -304,8 +302,7 @@ int NonClientFrameView::GetHTComponentForFrame(const gfx::Point& point,
   return can_resize ? component : HTBORDER;
 }
 
-void NonClientFrameView::ActivationChanged(bool active) {
-}
+void NonClientFrameView::PaintAsActiveChanged(bool active) {}
 
 void NonClientFrameView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kClient;

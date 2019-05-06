@@ -201,7 +201,7 @@ TEST_F(NativeWidgetMacInteractiveUITest, ParentWindowTrafficLights) {
 
   // Pop open a bubble on the parent Widget. When the visibility of Bubbles with
   // an anchor View changes, BubbleDialogDelegateView::HandleVisibilityChanged()
-  // updates Widget::SetAlwaysRenderAsActive(..) accordingly.
+  // updates Widget::ShouldPaintAsActive() accordingly.
   ShowKeyWindow(BubbleDialogDelegateView::CreateBubble(
       new TestBubbleView(parent_widget)));
 
@@ -219,7 +219,7 @@ TEST_F(NativeWidgetMacInteractiveUITest, ParentWindowTrafficLights) {
 
   // Verify that activating some other random window does change the button.
   // When the bubble loses activation, it will dismiss itself and update
-  // Widget::SetAlwaysRenderAsActive().
+  // Widget::ShouldPaintAsActive().
   Widget* other_widget = CreateTopLevelPlatformWidget();
   other_widget->SetBounds(gfx::Rect(200, 200, 100, 100));
   ShowKeyWindow(other_widget);

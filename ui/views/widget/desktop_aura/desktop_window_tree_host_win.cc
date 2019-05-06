@@ -664,13 +664,8 @@ void DesktopWindowTreeHostWin::SchedulePaint() {
   GetWidget()->GetRootView()->SchedulePaint();
 }
 
-void DesktopWindowTreeHostWin::SetAlwaysRenderAsActive(
-    bool always_render_as_active) {
-  native_widget_delegate_->SetAlwaysRenderAsActive(always_render_as_active);
-}
-
-bool DesktopWindowTreeHostWin::IsAlwaysRenderAsActive() {
-  return native_widget_delegate_->IsAlwaysRenderAsActive();
+bool DesktopWindowTreeHostWin::ShouldPaintAsActive() const {
+  return GetWidget()->ShouldPaintAsActive();
 }
 
 bool DesktopWindowTreeHostWin::CanResize() const {
@@ -767,10 +762,6 @@ gfx::NativeViewAccessible DesktopWindowTreeHostWin::GetNativeViewAccessible() {
   return GetWidget()->GetRootView()
              ? GetWidget()->GetRootView()->GetNativeViewAccessible()
              : nullptr;
-}
-
-void DesktopWindowTreeHostWin::HandleAppDeactivated() {
-  native_widget_delegate_->SetAlwaysRenderAsActive(false);
 }
 
 void DesktopWindowTreeHostWin::HandleActivationChanged(bool active) {

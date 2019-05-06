@@ -360,6 +360,21 @@ ax::mojom::Role BubbleDialogDelegateView::GetAccessibleWindowRole() {
   return ax::mojom::Role::kAlertDialog;
 }
 
+void BubbleDialogDelegateView::OnPaintAsActiveChanged(bool paint_as_active) {
+  if (!paint_as_active) {
+    paint_as_active_lock_.reset();
+    return;
+  }
+
+  if (!anchor_widget() || !anchor_widget()->GetTopLevelWidget())
+    return;
+
+  // When this bubble renders as active, its anchor widget should also render as
+  // active.
+  paint_as_active_lock_ =
+      anchor_widget()->GetTopLevelWidget()->LockPaintAsActive();
+}
+
 gfx::Size BubbleDialogDelegateView::GetMinimumSize() const {
   // Note that although BubbleDialogFrameView will never invoke this, a subclass
   // may override CreateNonClientFrameView() to provide a NonClientFrameView
@@ -386,10 +401,9 @@ void BubbleDialogDelegateView::SetAnchorView(View* anchor_view) {
   // change as well.
   if (!anchor_view || anchor_widget() != anchor_view->GetWidget()) {
     if (anchor_widget()) {
-      if (GetWidget() && GetWidget()->IsVisible()) {
-        UpdateAnchorWidgetRenderState(false);
+      if (GetWidget() && GetWidget()->IsVisible())
         UpdateHighlightedButton(false);
-      }
+      paint_as_active_lock_.reset();
       anchor_widget_->RemoveObserver(this);
       anchor_widget_ = nullptr;
     }
@@ -398,8 +412,14 @@ void BubbleDialogDelegateView::SetAnchorView(View* anchor_view) {
       if (anchor_widget_) {
         anchor_widget_->AddObserver(this);
         const bool visible = GetWidget() && GetWidget()->IsVisible();
-        UpdateAnchorWidgetRenderState(visible);
         UpdateHighlightedButton(visible);
+        // Have the anchor widget's paint-as-active state track this view's
+        // widget - lock is only required if the bubble widget is active.
+        if (anchor_widget_->GetTopLevelWidget() && GetWidget() &&
+            GetWidget()->ShouldPaintAsActive()) {
+          paint_as_active_lock_ =
+              anchor_widget_->GetTopLevelWidget()->LockPaintAsActive();
+        }
       }
     }
   }
@@ -470,10 +490,8 @@ void BubbleDialogDelegateView::EnableUpDownKeyboardAccelerators() {
 
 void BubbleDialogDelegateView::HandleVisibilityChanged(Widget* widget,
                                                        bool visible) {
-  if (widget == GetWidget()) {
-    UpdateAnchorWidgetRenderState(visible);
+  if (widget == GetWidget())
     UpdateHighlightedButton(visible);
-  }
 
   // Fire ax::mojom::Event::kAlert for bubbles marked as
   // ax::mojom::Role::kAlertDialog; this instructs accessibility tools to read
@@ -491,15 +509,6 @@ void BubbleDialogDelegateView::HandleVisibilityChanged(Widget* widget,
 void BubbleDialogDelegateView::OnDeactivate() {
   if (close_on_deactivate() && GetWidget())
     GetWidget()->CloseWithReason(views::Widget::ClosedReason::kLostFocus);
-}
-
-void BubbleDialogDelegateView::UpdateAnchorWidgetRenderState(bool visible) {
-  if (!anchor_widget() || !anchor_widget()->GetTopLevelWidget() ||
-      !CanActivate()) {
-    return;
-  }
-
-  anchor_widget()->GetTopLevelWidget()->SetAlwaysRenderAsActive(visible);
 }
 
 void BubbleDialogDelegateView::UpdateHighlightedButton(bool highlighted) {

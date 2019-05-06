@@ -148,6 +148,7 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
 
   // DialogDelegateView:
   ax::mojom::Role GetAccessibleWindowRole() override;
+  void OnPaintAsActiveChanged(bool paint_as_active) override;
 
   // Disallow overrides of GetMinimumSize and GetMaximumSize(). These would only
   // be called by the FrameView, but the BubbleFrameView ignores these. Bubbles
@@ -192,9 +193,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // Called when a deactivation is detected.
   void OnDeactivate();
 
-  // When a bubble is visible, the anchor widget should always render as active.
-  void UpdateAnchorWidgetRenderState(bool visible);
-
   // Update the button highlight, which may be the anchor view or an explicit
   // view set in |highlighted_button_tracker_|. This can be overridden to
   // provide different highlight effects.
@@ -208,6 +206,7 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // it from there. It will make sure that the view is still valid.
   std::unique_ptr<ViewTracker> anchor_view_tracker_;
   Widget* anchor_widget_;
+  std::unique_ptr<Widget::PaintAsActiveLock> paint_as_active_lock_;
 
   // Whether the |anchor_widget_| (or the |highlighted_button_tracker_|, when
   // provided) should be highlighted when this bubble is shown.

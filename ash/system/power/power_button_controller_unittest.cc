@@ -944,7 +944,7 @@ TEST_F(PowerButtonControllerTest, FormerlyActiveWindowInShowingMenu) {
   // The active window becomes inactive after menu is shown but it is still
   // painted as active to avoid frame color change.
   EXPECT_FALSE(widget->IsActive());
-  EXPECT_TRUE(widget->IsAlwaysRenderAsActive());
+  EXPECT_TRUE(widget->ShouldPaintAsActive());
   EXPECT_TRUE(widget->non_client_view()->frame_view()->ShouldPaintAsActive());
   EXPECT_TRUE(
       wm::IsActiveWindow(power_button_test_api_->GetPowerButtonMenuView()
@@ -953,23 +953,25 @@ TEST_F(PowerButtonControllerTest, FormerlyActiveWindowInShowingMenu) {
   // Should reset the previous painting as active setting of the active window
   // if dismissing the menu.
   TapToDismissPowerButtonMenu();
-  EXPECT_FALSE(widget->IsAlwaysRenderAsActive());
-  EXPECT_TRUE(widget->IsActive());
 
-  // Showing or dismissing menu should not change the original setting of the
-  // formerly-active window.
-  widget->SetAlwaysRenderAsActive(true);
+  // Focus may fall to the widget if it's the only remaining widget on the
+  // screen. Deactivate it to verify that it's no longer being forced to render
+  // as active.
+  widget->Deactivate();
+  EXPECT_FALSE(widget->ShouldPaintAsActive());
+
+  // A widget which is not the active widget is not affected by opening the
+  // power button menu.
   OpenPowerButtonMenu();
+  EXPECT_FALSE(widget->ShouldPaintAsActive());
   TapToDismissPowerButtonMenu();
-  EXPECT_TRUE(widget->IsAlwaysRenderAsActive());
-  widget->SetAlwaysRenderAsActive(false);
+
+  // If focus didn't fall to the widget after the menu was closed, focus it.
+  widget->Activate();
 
   // Dismiss menu should work well after the active window is closed between
   // showing and dismissing menu.
-  EXPECT_TRUE(widget->IsActive());
-  EXPECT_FALSE(widget->IsAlwaysRenderAsActive());
   OpenPowerButtonMenu();
-  EXPECT_TRUE(widget->IsAlwaysRenderAsActive());
   widget->Close();
   TapToDismissPowerButtonMenu();
 }
