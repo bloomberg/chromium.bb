@@ -123,7 +123,6 @@ OmniboxSuggestionIconType GetOmniboxSuggestionIconTypeForAutocompleteMatchType(
     case AutocompleteMatchType::HISTORY_KEYWORD:
     case AutocompleteMatchType::HISTORY_TITLE:
     case AutocompleteMatchType::HISTORY_URL:
-    case AutocompleteMatchType::SEARCH_HISTORY:
     case AutocompleteMatchType::TAB_SEARCH_DEPRECATED:
       return HISTORY;
     case AutocompleteMatchType::CONTACT_DEPRECATED:
@@ -138,6 +137,9 @@ OmniboxSuggestionIconType GetOmniboxSuggestionIconTypeForAutocompleteMatchType(
     case AutocompleteMatchType::CLIPBOARD_TEXT:
     case AutocompleteMatchType::CLIPBOARD_IMAGE:
       return SEARCH;
+    case AutocompleteMatchType::SEARCH_HISTORY:
+      return base::FeatureList::IsEnabled(kNewOmniboxPopupLayout) ? SEARCH
+                                                                  : HISTORY;
     case AutocompleteMatchType::CALCULATOR:
       return CALCULATOR;
     case AutocompleteMatchType::EXTENSION_APP_DEPRECATED:

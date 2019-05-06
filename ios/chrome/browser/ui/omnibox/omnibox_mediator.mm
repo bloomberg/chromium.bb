@@ -19,7 +19,7 @@
 #endif
 
 namespace {
-const CGFloat kOmniboxIconSize = 20;
+const CGFloat kOmniboxIconSize = 16;
 }  // namespace
 
 @interface OmniboxMediator () <SearchEngineObserving>

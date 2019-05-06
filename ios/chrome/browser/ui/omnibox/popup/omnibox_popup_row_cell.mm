@@ -52,7 +52,7 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
 // Answers have slightly different display requirements, like possibility of
 // multiple lines and truncating with ellipses instead of a fade gradient.
 @property(nonatomic, strong) UILabel* detailAnswerLabel;
-// Image view for the leading image (only appears on iPad).
+// Image view for the leading image.
 @property(nonatomic, strong) UIImageView* leadingImageView;
 // Trailing button for appending suggestion into omnibox or switching to open
 // tab.
@@ -256,10 +256,10 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
   [NSLayoutConstraint activateConstraints:@[
     [self.leadingImageView.centerXAnchor
         constraintEqualToAnchor:imageLayoutGuide.centerXAnchor],
-    [self.textStackView.leadingAnchor
-        constraintEqualToAnchor:textLayoutGuide.leadingAnchor],
     [self.leadingImageView.widthAnchor
         constraintEqualToAnchor:imageLayoutGuide.widthAnchor],
+    [self.textStackView.leadingAnchor
+        constraintEqualToAnchor:textLayoutGuide.leadingAnchor],
     stackViewToLayoutGuideLeading,
     stackViewToLayoutGuideTrailing,
     stackViewToCellTrailing,
