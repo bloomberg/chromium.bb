@@ -249,6 +249,12 @@ class DownloadManagerService
   // Helper method to reset the SimpleDownloadManagerCoordinator if needed.
   void ResetCoordinatorIfNeeded(Profile* profile);
 
+  // Helper method to reset the SimpleDownloadManagerCoordinator for a given
+  // profile type.
+  void UpdateCoordinator(
+      download::SimpleDownloadManagerCoordinator* coordinator,
+      bool is_off_the_record);
+
   service_manager::ServiceBinding service_binding_{this};
 
   // Reference to the Java object.

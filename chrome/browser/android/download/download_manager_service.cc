@@ -21,6 +21,7 @@
 #include "chrome/browser/android/download/download_utils.h"
 #include "chrome/browser/android/download/service/download_task_scheduler.h"
 #include "chrome/browser/android/feature_utilities.h"
+#include "chrome/browser/android/profile_key_startup_accessor.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/browser/download/simple_download_manager_coordinator_factory.h"
@@ -708,6 +709,11 @@ void DownloadManagerService::CreateInProgressDownloadManager() {
           factory->Clone()));
   in_progress_manager_->set_download_start_observer(
       DownloadControllerBase::Get());
+  download::SimpleDownloadManagerCoordinator* coordinator =
+      SimpleDownloadManagerCoordinatorFactory::GetForKey(
+          ProfileKeyStartupAccessor::GetInstance()->profile_key());
+  coordinator->SetSimpleDownloadManager(in_progress_manager_.get(), false);
+  UpdateCoordinator(coordinator, false);
 }
 
 void DownloadManagerService::OnPendingDownloadsLoaded() {
@@ -779,12 +785,17 @@ content::DownloadManager* DownloadManagerService::GetDownloadManager(
 }
 
 void DownloadManagerService::ResetCoordinatorIfNeeded(Profile* profile) {
-  auto*& coordinator = profile->IsOffTheRecord() ? off_the_record_coordinator_
-                                                 : original_coordinator_;
-
-  download::SimpleDownloadManagerCoordinator* new_coordinator =
+  download::SimpleDownloadManagerCoordinator* coordinator =
       SimpleDownloadManagerCoordinatorFactory::GetForKey(
           profile->GetProfileKey());
+  UpdateCoordinator(coordinator, profile->IsOffTheRecord());
+}
+
+void DownloadManagerService::UpdateCoordinator(
+    download::SimpleDownloadManagerCoordinator* new_coordinator,
+    bool is_off_the_record) {
+  auto*& coordinator =
+      is_off_the_record ? off_the_record_coordinator_ : original_coordinator_;
   if (!coordinator || coordinator != new_coordinator) {
     if (coordinator)
       coordinator->GetNotifier()->RemoveObserver(this);
