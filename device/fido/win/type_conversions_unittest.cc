@@ -119,7 +119,7 @@ TEST(TypeConversionsTest, ToAuthenticatorMakeCredentialResponse) {
               test.authenticator_data);
     EXPECT_EQ(
         response->attestation_object().attestation_statement().format_name(),
-        base::UTF16ToUTF8(test.format));
+        base::WideToUTF8(test.format));
     EXPECT_EQ(cbor::Writer::Write(cbor::Value(response->attestation_object()
                                                   .attestation_statement()
                                                   .GetAsCBORMap())),

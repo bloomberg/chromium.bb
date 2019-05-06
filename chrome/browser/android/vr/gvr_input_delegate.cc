@@ -23,11 +23,8 @@ constexpr gfx::Vector3dF kForwardVector = {0.0f, 0.0f, -1.0f};
 // device/gamepad, which will be consolidated. Is there a way to also remove
 // this duplicate even though this is in under chrome/browser instead of device?
 void CopyToUString(const base::string16& src,
-                   device::UChar* dest,
+                   base::char16* dest,
                    size_t dest_length) {
-  static_assert(sizeof(base::string16::value_type) == sizeof(device::UChar),
-                "Mismatched string16/UChar size.");
-
   const size_t copy_char_count = std::min(src.size(), dest_length - 1);
   src.copy(dest, copy_char_count);
   std::fill(dest + copy_char_count, dest + dest_length, 0);

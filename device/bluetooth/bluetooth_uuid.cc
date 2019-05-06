@@ -84,7 +84,7 @@ BluetoothUUID::BluetoothUUID(GUID uuid) {
   DCHECK_EQ('{', buffer[0]);
   DCHECK_EQ('}', buffer[37]);
 
-  GetCanonicalUuid(base::WideToUTF8(buffer.substr(1, 36)), &value_,
+  GetCanonicalUuid(base::UTF16ToUTF8(buffer.substr(1, 36)), &value_,
                    &canonical_value_, &format_);
   DCHECK_EQ(kFormat128Bit, format_);
 }
@@ -99,9 +99,10 @@ BluetoothUUID::~BluetoothUUID() = default;
 // static
 GUID BluetoothUUID::GetCanonicalValueAsGUID(base::StringPiece uuid) {
   DCHECK_EQ(36u, uuid.size());
-  base::string16 braced_uuid = L'{' + base::UTF8ToWide(uuid) + L'}';
+  base::string16 braced_uuid =
+      STRING16_LITERAL('{') + base::UTF8ToUTF16(uuid) + STRING16_LITERAL('}');
   GUID guid;
-  CHECK_EQ(NOERROR, ::CLSIDFromString(braced_uuid.data(), &guid));
+  CHECK_EQ(NOERROR, ::CLSIDFromString(base::as_wcstr(braced_uuid), &guid));
   return guid;
 }
 #endif  // defined(OS_WIN)

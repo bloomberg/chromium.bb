@@ -54,7 +54,7 @@ Gamepad GetWebGamepadInstance(GamepadTestDataType type) {
     wgp.angular_acceleration = wgv;
   }
 
-  UChar wch[Gamepad::kMappingLengthCap] = {
+  base::char16 wch[Gamepad::kMappingLengthCap] = {
       1,    8,    9,     127,   128,   1024,  1025,  1949,
       2047, 2048, 16383, 16384, 20000, 32767, 32768, 65535};
 

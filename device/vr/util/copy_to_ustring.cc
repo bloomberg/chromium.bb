@@ -10,10 +10,9 @@
 
 namespace device {
 
-void CopyToUString(const base::string16& src, UChar* dest, size_t dest_length) {
-  static_assert(sizeof(base::string16::value_type) == sizeof(UChar),
-                "Mismatched string16/UChar size.");
-
+void CopyToUString(const base::string16& src,
+                   base::char16* dest,
+                   size_t dest_length) {
   const size_t copy_char_count = std::min(src.size(), dest_length - 1);
   src.copy(dest, copy_char_count);
   std::fill(dest + copy_char_count, dest + dest_length, 0);

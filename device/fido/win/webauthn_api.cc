@@ -199,8 +199,8 @@ AuthenticatorMakeCredentialBlocking(WinWebAuthnApi* webauthn_api,
   base::string16 rp_name = base::UTF8ToUTF16(request.rp.rp_name().value_or(""));
   base::string16 rp_icon_url = OptionalGURLToUTF16(request.rp.rp_icon_url());
   WEBAUTHN_RP_ENTITY_INFORMATION rp_info{
-      WEBAUTHN_RP_ENTITY_INFORMATION_CURRENT_VERSION, rp_id.c_str(),
-      rp_name.c_str(), rp_icon_url.c_str()};
+      WEBAUTHN_RP_ENTITY_INFORMATION_CURRENT_VERSION, base::as_wcstr(rp_id),
+      base::as_wcstr(rp_name), base::as_wcstr(rp_icon_url)};
 
   base::string16 user_name = base::UTF8ToUTF16(request.user.name.value_or(""));
   base::string16 user_icon_url = OptionalGURLToUTF16(request.user.icon_url);
@@ -211,9 +211,9 @@ AuthenticatorMakeCredentialBlocking(WinWebAuthnApi* webauthn_api,
       WEBAUTHN_USER_ENTITY_INFORMATION_CURRENT_VERSION,
       user_id.size(),
       const_cast<unsigned char*>(user_id.data()),
-      user_name.c_str(),
-      user_icon_url.c_str(),
-      user_display_name.c_str(),  // This appears to be ignored.
+      base::as_wcstr(user_name),
+      base::as_wcstr(user_icon_url),
+      base::as_wcstr(user_display_name),  // This appears to be ignored.
   };
 
   std::vector<WEBAUTHN_COSE_CREDENTIAL_PARAMETER>
@@ -297,7 +297,7 @@ AuthenticatorMakeCredentialBlocking(WinWebAuthnApi* webauthn_api,
       &options, &credential_attestation);
   if (hresult != S_OK) {
     return {WinErrorNameToCtapDeviceResponseCode(
-                base::string16(webauthn_api->GetErrorName(hresult))),
+                base::as_u16cstr(webauthn_api->GetErrorName(hresult))),
             base::nullopt};
   }
   return {CtapDeviceResponseCode::kSuccess,
@@ -371,7 +371,7 @@ AuthenticatorGetAssertionBlocking(WinWebAuthnApi* webauthn_api,
       authenticator_attachment,
       ToWinUserVerificationRequirement(request.user_verification),
       /*dwFlags=*/0,
-      opt_app_id16 ? opt_app_id16->data() : nullptr,
+      opt_app_id16 ? base::as_wcstr(*opt_app_id16) : nullptr,
       opt_app_id16 ? &kUseAppIdTrue : &kUseAppIdFalse,
       &cancellation_id,
       &allow_credential_list,
@@ -384,10 +384,10 @@ AuthenticatorGetAssertionBlocking(WinWebAuthnApi* webauthn_api,
       });
 
   HRESULT hresult = webauthn_api->AuthenticatorGetAssertion(
-      h_wnd, rp_id16.data(), &client_data, &options, &assertion);
+      h_wnd, base::as_wcstr(rp_id16), &client_data, &options, &assertion);
   if (hresult != S_OK) {
     return {WinErrorNameToCtapDeviceResponseCode(
-                base::string16(webauthn_api->GetErrorName(hresult))),
+                base::as_u16cstr(webauthn_api->GetErrorName(hresult))),
             base::nullopt};
   }
   return {CtapDeviceResponseCode::kSuccess,

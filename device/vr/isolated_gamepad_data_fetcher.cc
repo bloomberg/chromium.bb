@@ -215,24 +215,29 @@ void IsolatedGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
     // a headset.  This doesn't change behavior, but the device/display naming
     // could be confusing here.
     if (this->source() == GAMEPAD_SOURCE_OPENVR) {
-      swprintf(dest.id, Gamepad::kIdLengthCap, L"OpenVR Gamepad");
+      swprintf(base::as_writable_wcstr(dest.id), Gamepad::kIdLengthCap,
+               L"OpenVR Gamepad");
     } else if (this->source() == GAMEPAD_SOURCE_OCULUS) {
       if (dest.hand == GamepadHand::kLeft) {
-        swprintf(dest.id, Gamepad::kIdLengthCap, L"Oculus Touch (Left)");
+        swprintf(base::as_writable_wcstr(dest.id), Gamepad::kIdLengthCap,
+                 L"Oculus Touch (Left)");
       } else if (dest.hand == GamepadHand::kRight) {
-        swprintf(dest.id, Gamepad::kIdLengthCap, L"Oculus Touch (Right)");
+        swprintf(base::as_writable_wcstr(dest.id), Gamepad::kIdLengthCap,
+                 L"Oculus Touch (Right)");
       } else {
-        swprintf(dest.id, Gamepad::kIdLengthCap, L"Oculus Remote");
+        swprintf(base::as_writable_wcstr(dest.id), Gamepad::kIdLengthCap,
+                 L"Oculus Remote");
       }
     } else if (this->source() == GAMEPAD_SOURCE_WIN_MR) {
       if (dest.hand == GamepadHand::kLeft) {
-        swprintf(dest.id, Gamepad::kIdLengthCap,
+        swprintf(base::as_writable_wcstr(dest.id), Gamepad::kIdLengthCap,
                  L"Windows Mixed Reality (Left)");
       } else if (dest.hand == GamepadHand::kRight) {
-        swprintf(dest.id, Gamepad::kIdLengthCap,
+        swprintf(base::as_writable_wcstr(dest.id), Gamepad::kIdLengthCap,
                  L"Windows Mixed Reality (Right)");
       } else {
-        swprintf(dest.id, Gamepad::kIdLengthCap, L"Windows Mixed Reality");
+        swprintf(base::as_writable_wcstr(dest.id), Gamepad::kIdLengthCap,
+                 L"Windows Mixed Reality");
       }
     }
 

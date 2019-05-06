@@ -44,34 +44,34 @@ float NormalizeXInputAxis(SHORT value) {
   return ((value + 32768.f) / 32767.5f) - 1.f;
 }
 
-const UChar* GamepadSubTypeName(BYTE sub_type) {
+const base::char16* GamepadSubTypeName(BYTE sub_type) {
   switch (sub_type) {
     case kDeviceSubTypeGamepad:
-      return L"GAMEPAD";
+      return STRING16_LITERAL("GAMEPAD");
     case kDeviceSubTypeWheel:
-      return L"WHEEL";
+      return STRING16_LITERAL("WHEEL");
     case kDeviceSubTypeArcadeStick:
-      return L"ARCADE_STICK";
+      return STRING16_LITERAL("ARCADE_STICK");
     case kDeviceSubTypeFlightStick:
-      return L"FLIGHT_STICK";
+      return STRING16_LITERAL("FLIGHT_STICK");
     case kDeviceSubTypeDancePad:
-      return L"DANCE_PAD";
+      return STRING16_LITERAL("DANCE_PAD");
     case kDeviceSubTypeGuitar:
-      return L"GUITAR";
+      return STRING16_LITERAL("GUITAR");
     case kDeviceSubTypeGuitarAlternate:
-      return L"GUITAR_ALTERNATE";
+      return STRING16_LITERAL("GUITAR_ALTERNATE");
     case kDeviceSubTypeDrumKit:
-      return L"DRUM_KIT";
+      return STRING16_LITERAL("DRUM_KIT");
     case kDeviceSubTypeGuitarBass:
-      return L"GUITAR_BASS";
+      return STRING16_LITERAL("GUITAR_BASS");
     case kDeviceSubTypeArcadePad:
-      return L"ARCADE_PAD";
+      return STRING16_LITERAL("ARCADE_PAD");
     default:
-      return L"<UNKNOWN>";
+      return STRING16_LITERAL("<UNKNOWN>");
   }
 }
 
-const UChar* XInputDllFileName() {
+const base::FilePath::CharType* XInputDllFileName() {
   // Xinput.h defines filename (XINPUT_DLL) on different Windows versions, but
   // Xinput.h specifies it in build time. Approach here uses the same values
   // and it is resolving dll filename based on Windows version it is running on.
@@ -134,10 +134,11 @@ void GamepadPlatformDataFetcherWin::EnumerateDevices() {
         pad.vibration_actuator.type = GamepadHapticActuatorType::kDualRumble;
         pad.vibration_actuator.not_null = true;
 
-        swprintf(pad.id, Gamepad::kIdLengthCap,
+        swprintf(base::as_writable_wcstr(pad.id), Gamepad::kIdLengthCap,
                  L"Xbox 360 Controller (XInput STANDARD %ls)",
                  GamepadSubTypeName(caps.SubType));
-        swprintf(pad.mapping, Gamepad::kMappingLengthCap, L"standard");
+        swprintf(base::as_writable_wcstr(pad.mapping),
+                 Gamepad::kMappingLengthCap, L"standard");
       }
     }
   }

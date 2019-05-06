@@ -7,8 +7,6 @@
 
 #include "base/strings/string16.h"
 
-class UChar;
-
 namespace device {
 
 // Cross-platform way of copying a string to fixed-length UTF-16 buffer. When
@@ -16,7 +14,9 @@ namespace device {
 // TODO(https://crbug.com/957806): Code that does the same thing is copied in
 // several places across device/vr. Consolidate them and this function into one
 // shared among device/gamepad and device/vr.
-void CopyToUString(const base::string16& src, UChar* dest, size_t dest_length);
+void CopyToUString(const base::string16& src,
+                   base::char16* dest,
+                   size_t dest_length);
 
 }  // namespace device
 

@@ -267,7 +267,7 @@ void BluetoothTestWin::InitWithFakeAdapter() {
   auto fake_bt_classic_wrapper =
       std::make_unique<win::BluetoothClassicWrapperFake>();
   fake_bt_classic_wrapper->SimulateARadio(
-      base::SysUTF8ToWide(kTestAdapterName),
+      base::UTF8ToUTF16(kTestAdapterName),
       CanonicalStringToBLUETOOTH_ADDRESS(kTestAdapterAddress));
 
   auto fake_bt_le_wrapper =
