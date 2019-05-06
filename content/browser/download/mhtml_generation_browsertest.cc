@@ -16,6 +16,7 @@
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/download/mhtml_file_writer.mojom.h"
@@ -456,7 +457,16 @@ IN_PROC_BROWSER_TEST_P(MHTMLGenerationTest, GenerateMHTML) {
 }
 
 // Regression test for the crash/race from https://crbug.com/612098.
-IN_PROC_BROWSER_TEST_P(MHTMLGenerationTest, GenerateMHTMLAndCloseConnection) {
+//
+// TODO(crbug.com/959435): Flaky on Android.
+#if defined(OS_ANDROID)
+#define MAYBE_GenerateMHTMLAndCloseConnection \
+  DISABLED_GenerateMHTMLAndCloseConnection
+#else
+#define MAYBE_GenerateMHTMLAndCloseConnection GenerateMHTMLAndCloseConnection
+#endif
+IN_PROC_BROWSER_TEST_P(MHTMLGenerationTest,
+                       MAYBE_GenerateMHTMLAndCloseConnection) {
   RespondAndDisconnectMockWriter mock_writer;
 
   NavigateToURL(shell(), embedded_test_server()->GetURL("/simple_page.html"));
