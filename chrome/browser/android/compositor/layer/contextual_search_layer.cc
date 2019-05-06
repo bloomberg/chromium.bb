@@ -43,6 +43,8 @@ void ContextualSearchLayer::SetProperties(
     int search_provider_icon_resource_id,
     int quick_action_icon_resource_id,
     int arrow_up_resource_id,
+    int drag_handlebar_resource_id,
+    int open_tab_icon_resource_id,
     int close_icon_resource_id,
     int progress_bar_background_resource_id,
     int progress_bar_resource_id,
@@ -66,6 +68,7 @@ void ContextualSearchLayer::SetProperties(
     float search_panel_width,
     float search_panel_height,
     float search_bar_margin_side,
+    float search_bar_margin_top,
     float search_bar_height,
     float search_context_opacity,
     float search_text_layer_min_height,
@@ -82,6 +85,7 @@ void ContextualSearchLayer::SetProperties(
     float custom_image_visibility_percentage,
     int bar_image_size,
     int icon_color,
+    int drag_handlebar_color,
     float arrow_icon_opacity,
     float arrow_icon_rotation,
     float close_icon_opacity,
@@ -108,6 +112,7 @@ void ContextualSearchLayer::SetProperties(
   OverlayPanelLayer::SetResourceIds(
       search_term_resource_id, panel_shadow_resource_id,
       search_bar_shadow_resource_id, search_provider_icon_resource_id,
+      drag_handlebar_resource_id, open_tab_icon_resource_id,
       close_icon_resource_id);
 
   float content_view_top = search_bar_bottom + search_promo_height;
@@ -120,9 +125,10 @@ void ContextualSearchLayer::SetProperties(
   OverlayPanelLayer::SetProperties(
       dp_to_px, content_layer, content_view_top, search_panel_x, search_panel_y,
       search_panel_width, search_panel_height, search_bar_background_color,
-      search_bar_margin_side, search_bar_height, search_bar_top,
-      search_term_opacity, should_render_bar_border, search_bar_border_height,
-      search_bar_shadow_visible, search_bar_shadow_opacity, icon_color,
+      search_bar_margin_side, search_bar_margin_top, search_bar_height,
+      search_bar_top, search_term_opacity, should_render_bar_border,
+      search_bar_border_height, search_bar_shadow_visible,
+      search_bar_shadow_opacity, icon_color, drag_handlebar_color,
       close_icon_opacity);
 
   bool is_rtl = l10n_util::IsLayoutRtl();

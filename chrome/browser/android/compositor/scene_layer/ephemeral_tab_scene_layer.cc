@@ -51,20 +51,19 @@ void EphemeralTabSceneLayer::SetResourceIds(JNIEnv* env,
                                             jint bar_background_resource_id,
                                             jint bar_shadow_resource_id,
                                             jint panel_icon_resource_id,
+                                            jint drag_handlebar_resource_id,
+                                            jint open_tab_icon_resource_id,
                                             jint close_icon_resource_id) {
   ephemeral_tab_layer_->SetResourceIds(
       text_resource_id, bar_background_resource_id, bar_shadow_resource_id,
-      panel_icon_resource_id, close_icon_resource_id);
+      panel_icon_resource_id, drag_handlebar_resource_id,
+      open_tab_icon_resource_id, close_icon_resource_id);
 }
 
 void EphemeralTabSceneLayer::Update(JNIEnv* env,
                                     const JavaParamRef<jobject>& object,
                                     jint title_view_resource_id,
-                                    jint caption_view_resource_id,
-                                    jfloat caption_animation_percentage,
                                     jfloat text_layer_min_height,
-                                    jfloat title_caption_spacing,
-                                    jboolean caption_visible,
                                     jint progress_bar_background_resource_id,
                                     jint progress_bar_resource_id,
                                     jfloat dp_to_px,
@@ -77,12 +76,14 @@ void EphemeralTabSceneLayer::Update(JNIEnv* env,
                                     jfloat panel_height,
                                     jint bar_background_color,
                                     jfloat bar_margin_side,
+                                    jfloat bar_margin_top,
                                     jfloat bar_height,
                                     jboolean bar_border_visible,
                                     jfloat bar_border_height,
                                     jboolean bar_shadow_visible,
                                     jfloat bar_shadow_opacity,
                                     jint icon_color,
+                                    jint drag_handlebar_color,
                                     jboolean progress_bar_visible,
                                     jfloat progress_bar_height,
                                     jfloat progress_bar_opacity,
@@ -107,13 +108,12 @@ void EphemeralTabSceneLayer::Update(JNIEnv* env,
   // Move the base page contents up.
   content_container_->SetPosition(gfx::PointF(0.0f, base_page_offset));
   ephemeral_tab_layer_->SetProperties(
-      title_view_resource_id, caption_view_resource_id,
-      caption_animation_percentage, text_layer_min_height,
-      title_caption_spacing, caption_visible,
+      title_view_resource_id, text_layer_min_height,
       progress_bar_background_resource_id, progress_bar_resource_id, dp_to_px,
       content_layer, panel_x, panel_y, panel_width, panel_height,
-      bar_background_color, bar_margin_side, bar_height, bar_border_visible,
-      bar_border_height, bar_shadow_visible, bar_shadow_opacity, icon_color,
+      bar_background_color, bar_margin_side, bar_margin_top, bar_height,
+      bar_border_visible, bar_border_height, bar_shadow_visible,
+      bar_shadow_opacity, icon_color, drag_handlebar_color,
       progress_bar_visible, progress_bar_height, progress_bar_opacity,
       progress_bar_completion);
   // Make the layer visible if it is not already.

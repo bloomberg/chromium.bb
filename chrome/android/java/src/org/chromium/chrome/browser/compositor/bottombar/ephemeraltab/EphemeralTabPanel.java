@@ -194,8 +194,8 @@ public class EphemeralTabPanel extends OverlayPanel {
     @Override
     public SceneOverlayLayer getUpdatedSceneOverlayTree(RectF viewport, RectF visibleViewport,
             LayerTitleCache layerTitleCache, ResourceManager resourceManager, float yOffset) {
-        mSceneLayer.update(resourceManager, this, getBarControl(),
-                getBarControl().getTitleControl(), getBarControl().getCaptionControl());
+        mSceneLayer.update(
+                resourceManager, this, getBarControl(), getBarControl().getTitleControl());
         return mSceneLayer;
     }
 
@@ -213,19 +213,22 @@ public class EphemeralTabPanel extends OverlayPanel {
         super.handleBarClick(x, y);
         if (isCoordinateInsideCloseButton(x)) {
             closePanel(StateChangeReason.CLOSE_BUTTON, true);
-        } else {
-            if (isPeeking()) {
-                maximizePanel(StateChangeReason.SEARCH_BAR_TAP);
-            } else if (canPromoteToNewTab() && mUrl != null) {
+        } else if (isCoordinateInsideOpenTabButton(x)) {
+            if (canPromoteToNewTab() && mUrl != null) {
                 closePanel(StateChangeReason.TAB_PROMOTION, false);
                 mActivity.getCurrentTabCreator().createNewTab(
                         new LoadUrlParams(mUrl, PageTransition.LINK), TabLaunchType.FROM_LINK,
                         mActivity.getActivityTabProvider().get());
             }
+        } else if (isPeeking()) {
+            maximizePanel(StateChangeReason.SEARCH_BAR_TAP);
         }
     }
 
-    boolean canPromoteToNewTab() {
+    /**
+     * @return Whether the panel content can be displayed in a new tab.
+     */
+    public boolean canPromoteToNewTab() {
         return !mActivity.isCustomTab();
     }
 
@@ -251,18 +254,6 @@ public class EphemeralTabPanel extends OverlayPanel {
     protected void onClosed(@StateChangeReason int reason) {
         super.onClosed(reason);
         if (mSceneLayer != null) mSceneLayer.hideTree();
-    }
-
-    @Override
-    protected void updatePanelForCloseOrPeek(float percentage) {
-        super.updatePanelForCloseOrPeek(percentage);
-        getBarControl().updateForCloseOrPeek(percentage);
-    }
-
-    @Override
-    protected void updatePanelForMaximization(float percentage) {
-        super.updatePanelForMaximization(percentage);
-        getBarControl().updateForMaximize(percentage);
     }
 
     /**

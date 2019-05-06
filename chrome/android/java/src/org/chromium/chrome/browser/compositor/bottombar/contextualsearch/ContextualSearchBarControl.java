@@ -147,8 +147,7 @@ public class ContextualSearchBarControl {
         mImageControl = new ContextualSearchImageControl(panel);
         mContextControl = new ContextualSearchContextControl(panel, context, container, loader);
         mSearchTermControl = new ContextualSearchTermControl(panel, context, container, loader);
-        mCaptionControl = new ContextualSearchCaptionControl(panel, context, container, loader,
-                mCanPromoteToNewTab);
+        mCaptionControl = new ContextualSearchCaptionControl(panel, context, container, loader);
         mQuickActionControl = new ContextualSearchQuickActionControl(context, loader);
         mCardIconControl = new ContextualSearchCardIconControl(context, loader);
 

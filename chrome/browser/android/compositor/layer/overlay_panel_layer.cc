@@ -48,11 +48,15 @@ void OverlayPanelLayer::SetResourceIds(int bar_text_resource_id,
                                        int panel_shadow_resource_id,
                                        int bar_shadow_resource_id,
                                        int panel_icon_resource_id,
+                                       int drag_handlebar_resource_id,
+                                       int open_tab_icon_resource_id,
                                        int close_icon_resource_id) {
   bar_text_resource_id_ = bar_text_resource_id;
   panel_shadow_resource_id_ = panel_shadow_resource_id;
   bar_shadow_resource_id_ = bar_shadow_resource_id;
   panel_icon_resource_id_ = panel_icon_resource_id;
+  drag_handlebar_resource_id_ = drag_handlebar_resource_id;
+  open_tab_icon_resource_id_ = open_tab_icon_resource_id;
   close_icon_resource_id_ = close_icon_resource_id;
 }
 
@@ -66,6 +70,7 @@ void OverlayPanelLayer::SetProperties(
     float panel_height,
     int bar_background_color,
     float bar_margin_side,
+    float bar_margin_top,
     float bar_height,
     float bar_offset_y,
     float bar_text_opacity,
@@ -74,7 +79,8 @@ void OverlayPanelLayer::SetProperties(
     bool bar_shadow_visible,
     float bar_shadow_opacity,
     int icon_tint,
-    float close_icon_opacity) {
+    int drag_handlebar_tint,
+    float icon_opacity) {
   // Grabs required static resources.
   ui::NinePatchResource* panel_shadow_resource =
       ui::NinePatchResource::From(resource_manager_->GetResource(
@@ -158,6 +164,22 @@ void OverlayPanelLayer::SetProperties(
   }
 
   // ---------------------------------------------------------------------------
+  // Drag Handlerbar
+  // ---------------------------------------------------------------------------
+  ui::Resource* drag_handlebar_resource =
+      resource_manager_->GetStaticResourceWithTint(drag_handlebar_resource_id_,
+                                                   drag_handlebar_tint);
+  drag_handlebar_->SetUIResourceId(
+      drag_handlebar_resource->ui_resource()->id());
+  drag_handlebar_->SetBounds(drag_handlebar_resource->size());
+  float drag_handlebar_left =
+      panel_width / 2 - drag_handlebar_resource->size().width() / 2;
+  float drag_handlebar_top =
+      bar_top + bar_margin_top - drag_handlebar_resource->size().height() / 2;
+  drag_handlebar_->SetPosition(
+      gfx::PointF(drag_handlebar_left, drag_handlebar_top));
+
+  // ---------------------------------------------------------------------------
   // Close Icon
   // ---------------------------------------------------------------------------
   // Grab the Close Icon resource.
@@ -182,7 +204,33 @@ void OverlayPanelLayer::SetProperties(
   close_icon_->SetBounds(close_icon_resource->size());
   close_icon_->SetPosition(
       gfx::PointF(close_icon_left, close_icon_top));
-  close_icon_->SetOpacity(close_icon_opacity);
+  close_icon_->SetOpacity(icon_opacity);
+
+  // ---------------------------------------------------------------------------
+  // Open Tab icon
+  // ---------------------------------------------------------------------------
+  if (open_tab_icon_resource_id_ != -1) {
+    ui::Resource* open_tab_icon_resource =
+        resource_manager_->GetStaticResourceWithTint(open_tab_icon_resource_id_,
+                                                     icon_tint);
+
+    // Positions the icon at the end of the bar.
+    float open_tab_top = close_icon_top;
+    float open_tab_left;
+    float margin_from_close_icon =
+        close_icon_resource->size().width() + bar_margin_side;
+    if (is_rtl) {
+      open_tab_left = close_icon_left + margin_from_close_icon;
+    } else {
+      open_tab_left = close_icon_left - margin_from_close_icon;
+    }
+
+    open_tab_icon_->SetUIResourceId(
+        open_tab_icon_resource->ui_resource()->id());
+    open_tab_icon_->SetBounds(open_tab_icon_resource->size());
+    open_tab_icon_->SetPosition(gfx::PointF(open_tab_left, open_tab_top));
+    open_tab_icon_->SetOpacity(icon_opacity);
+  }
 
   // ---------------------------------------------------------------------------
   // Content
@@ -315,6 +363,8 @@ OverlayPanelLayer::OverlayPanelLayer(ui::ResourceManager* resource_manager)
       bar_text_(cc::UIResourceLayer::Create()),
       bar_shadow_(cc::UIResourceLayer::Create()),
       panel_icon_(cc::UIResourceLayer::Create()),
+      drag_handlebar_(cc::UIResourceLayer::Create()),
+      open_tab_icon_(cc::UIResourceLayer::Create()),
       close_icon_(cc::UIResourceLayer::Create()),
       content_container_(cc::SolidColorLayer::Create()),
       text_container_(cc::Layer::Create()),
@@ -345,6 +395,14 @@ OverlayPanelLayer::OverlayPanelLayer(ui::ResourceManager* resource_manager)
 
   // The container that any text in the bar will be added to.
   text_container_->SetIsDrawable(true);
+
+  // Drag Handlebar
+  drag_handlebar_->SetIsDrawable(true);
+  layer_->AddChild(drag_handlebar_);
+
+  // Open Tab Icon
+  open_tab_icon_->SetIsDrawable(true);
+  layer_->AddChild(open_tab_icon_);
 
   // Close Icon
   close_icon_->SetIsDrawable(true);

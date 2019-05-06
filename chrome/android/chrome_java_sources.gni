@@ -206,7 +206,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/compositor/bottombar/contextualsearch/ContextualSearchQuickActionControl.java",
   "java/src/org/chromium/chrome/browser/compositor/bottombar/contextualsearch/ContextualSearchTermControl.java",
   "java/src/org/chromium/chrome/browser/compositor/bottombar/ephemeraltab/EphemeralTabBarControl.java",
-  "java/src/org/chromium/chrome/browser/compositor/bottombar/ephemeraltab/EphemeralTabCaptionControl.java",
   "java/src/org/chromium/chrome/browser/compositor/bottombar/ephemeraltab/EphemeralTabPanel.java",
   "java/src/org/chromium/chrome/browser/compositor/bottombar/ephemeraltab/EphemeralTabTitleControl.java",
   "java/src/org/chromium/chrome/browser/compositor/layouts/EmptyOverviewModeObserver.java",

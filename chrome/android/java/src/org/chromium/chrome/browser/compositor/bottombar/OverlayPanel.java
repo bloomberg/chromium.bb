@@ -650,6 +650,16 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     }
 
     /**
+     * @param x The x coordinate in dp.
+     * @return Whether the given |x| coordinate is inside the close button.
+     */
+    protected boolean isCoordinateInsideOpenTabButton(float x) {
+        float width = getOpenTabIconDimension() + CLOSE_BUTTON_TOUCH_SLOP_DP;
+        return getOpenTabIconX() - CLOSE_BUTTON_TOUCH_SLOP_DP <= x
+                && x <= getOpenTabIconX() + width;
+    }
+
+    /**
      * Handles the click gesture.
      *
      * @param x The x coordinate of the gesture.

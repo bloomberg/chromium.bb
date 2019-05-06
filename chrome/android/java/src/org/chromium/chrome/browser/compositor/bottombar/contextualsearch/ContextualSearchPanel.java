@@ -280,7 +280,7 @@ public class ContextualSearchPanel extends OverlayPanel {
         } else if (isExpanded() || isMaximized()) {
             if (isCoordinateInsideCloseButton(x)) {
                 closePanel(StateChangeReason.CLOSE_BUTTON, true);
-            } else if (canPromoteToNewTab()) {
+            } else if (isCoordinateInsideOpenTabButton(x) && canPromoteToNewTab()) {
                 mManagementDelegate.promoteToTab();
             }
         }
@@ -937,7 +937,7 @@ public class ContextualSearchPanel extends OverlayPanel {
     /**
      * @return Whether the panel content can be displayed in a new tab.
      */
-    boolean canPromoteToNewTab() {
+    public boolean canPromoteToNewTab() {
         return !mActivity.isCustomTab() && canDisplayContentInPanel();
     }
 

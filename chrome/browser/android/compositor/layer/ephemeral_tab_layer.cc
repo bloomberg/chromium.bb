@@ -20,11 +20,7 @@ scoped_refptr<EphemeralTabLayer> EphemeralTabLayer::Create(
 
 void EphemeralTabLayer::SetProperties(
     int title_view_resource_id,
-    int caption_view_resource_id,
-    jfloat caption_animation_percentage,
     jfloat text_layer_min_height,
-    jfloat title_caption_spacing,
-    jboolean caption_visible,
     int progress_bar_background_resource_id,
     int progress_bar_resource_id,
     float dp_to_px,
@@ -35,12 +31,14 @@ void EphemeralTabLayer::SetProperties(
     float panel_height,
     int bar_background_color,
     float bar_margin_side,
+    float bar_margin_top,
     float bar_height,
     bool bar_border_visible,
     float bar_border_height,
     bool bar_shadow_visible,
     float bar_shadow_opacity,
     int icon_color,
+    int drag_handlebar_color,
     bool progress_bar_visible,
     float progress_bar_height,
     float progress_bar_opacity,
@@ -50,19 +48,16 @@ void EphemeralTabLayer::SetProperties(
   float bar_top = 0.f;
   float bar_bottom = bar_top + bar_height;
 
-  // Title needs no rendering in the base layer as it can be rendered
-  // together with caption below. Make it invisible.
   float title_opacity = 0.f;
   OverlayPanelLayer::SetProperties(
       dp_to_px, content_layer, bar_height, panel_x, panel_y, panel_width,
-      panel_height, bar_background_color, bar_margin_side, bar_height, 0.0f,
-      title_opacity, bar_border_visible, bar_border_height, bar_shadow_visible,
-      bar_shadow_opacity, icon_color, 1.0f /* icon opacity */);
+      panel_height, bar_background_color, bar_margin_side, bar_margin_top,
+      bar_height, 0.0f, title_opacity, bar_border_visible, bar_border_height,
+      bar_shadow_visible, bar_shadow_opacity, icon_color, drag_handlebar_color,
+      1.0f /* icon opacity */);
 
   SetupTextLayer(bar_top, bar_height, text_layer_min_height,
-                 caption_view_resource_id, caption_animation_percentage,
-                 caption_visible, title_view_resource_id,
-                 title_caption_spacing);
+                 title_view_resource_id);
 
   OverlayPanelLayer::SetProgressBar(
       progress_bar_background_resource_id, progress_bar_resource_id,
@@ -73,17 +68,12 @@ void EphemeralTabLayer::SetProperties(
 void EphemeralTabLayer::SetupTextLayer(float bar_top,
                                        float bar_height,
                                        float text_layer_min_height,
-                                       int caption_resource_id,
-                                       float animation_percentage,
-                                       bool caption_visible,
-                                       int title_resource_id,
-                                       float title_caption_spacing) {
+                                       int title_resource_id) {
   // ---------------------------------------------------------------------------
   // Setup the Drawing Hierarchy
   // ---------------------------------------------------------------------------
 
   DCHECK(text_layer_.get());
-  DCHECK(caption_.get());
   DCHECK(title_.get());
 
   // Title
@@ -94,39 +84,13 @@ void EphemeralTabLayer::SetupTextLayer(float bar_top,
     title_->SetBounds(title_resource->size());
   }
 
-  // Caption
-  ui::Resource* caption_resource = nullptr;
-  if (caption_visible) {
-    // Grabs the dynamic Search Caption resource so we can get a snapshot.
-    caption_resource = resource_manager_->GetResource(
-        ui::ANDROID_RESOURCE_TYPE_DYNAMIC, caption_resource_id);
-  }
-
-  if (animation_percentage != 0.f) {
-    if (caption_->parent() != text_layer_) {
-      text_layer_->AddChild(caption_);
-    }
-    if (caption_resource) {
-      caption_->SetUIResourceId(caption_resource->ui_resource()->id());
-      caption_->SetBounds(caption_resource->size());
-    }
-  } else if (caption_->parent()) {
-    caption_->RemoveFromParent();
-  }
-
   // ---------------------------------------------------------------------------
   // Calculate Text Layer Size
   // ---------------------------------------------------------------------------
-  // The caption_ may not have had its resource set by this point, if so
-  // the bounds will be zero and everything will still work.
   float title_height = title_->bounds().height();
-  float caption_height = caption_->bounds().height();
 
-  float layer_height =
-      std::max(text_layer_min_height,
-               title_height + caption_height + title_caption_spacing);
-  float layer_width =
-      std::max(title_->bounds().width(), caption_->bounds().width());
+  float layer_height = std::max(text_layer_min_height, title_height);
+  float layer_width = title_->bounds().width();
 
   float layer_top = bar_top + (bar_height - layer_height) / 2;
   text_layer_->SetBounds(gfx::Size(layer_width, layer_height));
@@ -140,57 +104,23 @@ void EphemeralTabLayer::SetupTextLayer(float bar_top,
   //
   // ---Top of Text Layer--- <- layer_top
   //                         } remaining_height / 2
-  // Title                   } title_height
-  //                         } title_caption_spacing
-  // Caption                 } caption_height
-  //                         } remaining_height / 2
+  //      Title              } title_height
   // --Bottom of Text Layer-
   //
   // --Bottom of Panel Bar-
-  // If the Caption is not visible the Title is centered in this space, when
-  // the Caption becomes visible it is animated sliding up into it's position
-  // with the spacings determined by UI.
 
-  // If there is no caption, just vertically center the title.
   float title_top = (layer_height - title_height) / 2;
-
-  // If we aren't displaying the caption we're done.
-  if (animation_percentage == 0.f || !caption_resource) {
-    title_->SetPosition(gfx::PointF(0.f, title_top));
-    return;
-  }
-
-  // Calculate the positions for the Title and Caption when the Caption
-  // animation is complete.
-  float remaining_height =
-      layer_height - title_height - title_caption_spacing - caption_height;
-
-  float title_top_end = remaining_height / 2;
-  float caption_top_end = title_top_end + title_height + title_caption_spacing;
-
-  // Interpolate between the animation start and end positions (short cut
-  // if the animation is at the end or start).
-  title_top = title_top * (1.f - animation_percentage) +
-              title_top_end * animation_percentage;
-
-  // The Caption starts off the bottom of the Text Layer.
-  float caption_top = layer_height * (1.f - animation_percentage) +
-                      caption_top_end * animation_percentage;
-
   title_->SetPosition(gfx::PointF(0.f, title_top));
-  caption_->SetPosition(gfx::PointF(0.f, caption_top));
 }
 
 EphemeralTabLayer::EphemeralTabLayer(ui::ResourceManager* resource_manager)
     : OverlayPanelLayer(resource_manager),
       title_(cc::UIResourceLayer::Create()),
-      caption_(cc::UIResourceLayer::Create()),
       text_layer_(cc::UIResourceLayer::Create()) {
   // Content layer
   text_layer_->SetIsDrawable(true);
 
   title_->SetIsDrawable(true);
-  caption_->SetIsDrawable(true);
 
   AddBarTextLayer(text_layer_);
   text_layer_->AddChild(title_);

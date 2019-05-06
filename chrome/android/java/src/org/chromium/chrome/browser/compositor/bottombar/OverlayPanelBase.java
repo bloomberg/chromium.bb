@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.compositor.bottombar;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
 import android.view.ViewGroup;
@@ -26,6 +27,9 @@ import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 abstract class OverlayPanelBase {
     /** The side padding of Bar icons in dps. */
     private static final float BAR_ICON_SIDE_PADDING_DP = 12.f;
+
+    /** The top padding of Bar icons in dps. */
+    private static final float BAR_ICON_TOP_PADDING_DP = 10.f;
 
     /** The height of the Bar's border in dps. */
     private static final float BAR_BORDER_HEIGHT_DP = 1.f;
@@ -110,6 +114,9 @@ abstract class OverlayPanelBase {
     /** The tint used for icons (e.g. arrow icon, close icon). */
     private final @ColorInt int mIconColor;
 
+    /** The tint used for drag handlebar. */
+    private final @ColorInt int mDragHandlebarColor;
+
     /**
      * The Y coordinate to apply to the Base Page in order to keep the selection
      * in view when the Overlay Panel is in its EXPANDED state.
@@ -140,6 +147,7 @@ abstract class OverlayPanelBase {
         mBarHeightExpanded = Math.round((mBarHeightPeeking + mBarHeightMaximized) / 2.f);
 
         mBarMarginSide = BAR_ICON_SIDE_PADDING_DP;
+        mBarMarginTop = BAR_ICON_TOP_PADDING_DP;
         mProgressBarHeight = PROGRESS_BAR_HEIGHT_DP;
         mBarBorderHeight = BAR_BORDER_HEIGHT_DP;
 
@@ -149,6 +157,8 @@ abstract class OverlayPanelBase {
         mBarBackgroundColor = ApiCompatibilityUtils.getColor(
                 resources, R.color.overlay_panel_bar_background_color);
         mIconColor = ApiCompatibilityUtils.getColor(resources, R.color.default_icon_color);
+        mDragHandlebarColor =
+                ApiCompatibilityUtils.getColor(resources, R.color.drag_handlebar_color);
     }
 
     // ============================================================================================
@@ -396,6 +406,7 @@ abstract class OverlayPanelBase {
     // Panel Bar states
     // --------------------------------------------------------------------------------------------
     private float mBarMarginSide;
+    private float mBarMarginTop;
     private float mBarHeight;
     private boolean mIsBarBorderVisible;
     private float mBarBorderHeight;
@@ -408,11 +419,20 @@ abstract class OverlayPanelBase {
     private float mCloseIconOpacity;
     private float mCloseIconWidth;
 
+    private float mOpenTabIconWidth;
+
     /**
      * @return The side margin of the Bar.
      */
     public float getBarMarginSide() {
         return mBarMarginSide;
+    }
+
+    /**
+     * @return The top margin of the Bar.
+     */
+    public float getBarMarginTop() {
+        return mBarMarginTop;
     }
 
     /**
@@ -465,6 +485,13 @@ abstract class OverlayPanelBase {
     }
 
     /**
+     * @return The tint used for drag handlebar.
+     */
+    public int getDragHandlebarColor() {
+        return mDragHandlebarColor;
+    }
+
+    /**
      * @return The opacity of the arrow icon.
      */
     public float getArrowIconOpacity() {
@@ -504,6 +531,30 @@ abstract class OverlayPanelBase {
             return getOffsetX() + getBarMarginSide();
         } else {
             return getOffsetX() + getWidth() - getBarMarginSide() - getCloseIconDimension();
+        }
+    }
+
+    /**
+     * @return The width/height of the open tab icon.
+     */
+    public float getOpenTabIconDimension() {
+        if (mOpenTabIconWidth == 0) {
+            Drawable icon = ApiCompatibilityUtils.getDrawable(
+                    mContext.getResources(), R.drawable.open_in_new_tab);
+            mOpenTabIconWidth = icon.getIntrinsicWidth() * mPxToDp;
+        }
+        return mOpenTabIconWidth;
+    }
+
+    /**
+     * @return The left X coordinate of the open new tab icon.
+     */
+    public float getOpenTabIconX() {
+        float offset = getCloseIconDimension() + getBarMarginSide();
+        if (LocalizationUtils.isLayoutRtl()) {
+            return getCloseIconX() + offset;
+        } else {
+            return getCloseIconX() - offset;
         }
     }
 

@@ -57,7 +57,6 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayContentProgressOb
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchBarControl;
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchCaptionControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchImageControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchQuickActionControl;
@@ -932,14 +931,14 @@ public class ContextualSearchManagerTest {
         // TODO(pedrosimonetti): This is not reliable. Find a better approach.
         // This taps on the panel in an area that will be selected if the "intelligence" node has
         // been tap-selected, and that will cause it to be long-press selected.
-        // We use the far right side (x == 0.9f) to prevent simulating a tap on top of an
+        // We use the far right side (x == 0.95f) to prevent simulating a tap on top of an
         // existing long-press selection (the pins are a tap target). This might not work on RTL.
         // We are using y == 0.35f because otherwise it will fail for long press cases.
         // It might be better to get the position of the Panel and tap just about outside
         // the Panel. I suspect some Flaky tests are caused by this problem (ones involving
         // long press and trying to close with the bar peeking, with a long press selection
         // established).
-        tapBasePage(0.9f, 0.35f);
+        tapBasePage(0.95f, 0.35f);
         waitForPanelToClose();
     }
 
@@ -1032,16 +1031,13 @@ public class ContextualSearchManagerTest {
     }
 
     /**
-     * Force the Panel to handle a click in the Bar.
+     * Force the Panel to handle a click on open-in-a-new-tab icon.
      * @throws InterruptedException
      */
-    private void forcePanelToHandleBarClick() throws InterruptedException {
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                // TODO(donnd): provide better time and x,y data to make this more broadly useful.
-                mPanel.handleBarClick(0, 0);
-            }
+    private void forceOpenTabIconClick() throws InterruptedException {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            mPanel.handleBarClick(mPanel.getOpenTabIconX() + mPanel.getOpenTabIconDimension() / 2,
+                    mPanel.getBarHeight() / 2);
         });
     }
 
@@ -1599,13 +1595,13 @@ public class ContextualSearchManagerTest {
     }
 
     /*
-     * Test that tapping on the Search Bar before having a resolved search term does not
+     * Test that tapping on the open-new-tab icon before having a resolved search term does not
      * promote to a tab, and that after the resolution it does promote to a tab.
      */
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    public void testTapSearchBarPromotesToTab() throws InterruptedException, TimeoutException {
+    public void testPromotesToTab() throws InterruptedException, TimeoutException {
         // -------- SET UP ---------
         // Track Tab creation with this helper.
         final CallbackHelper tabCreatedHelper = new CallbackHelper();
@@ -1624,8 +1620,8 @@ public class ContextualSearchManagerTest {
         flingPanelUpToTop();
         waitForPanelToMaximize();
 
-        // A click in the Bar should not promote since we are still waiting to Resolve.
-        forcePanelToHandleBarClick();
+        // A click on the open-tab icon should not promote since we are still waiting to Resolve.
+        forceOpenTabIconClick();
 
         // Assert that the Panel is still maximized.
         waitForPanelToMaximize();
@@ -1633,8 +1629,8 @@ public class ContextualSearchManagerTest {
         // Let the Search Term Resolution finish.
         simulateSlowResolveFinished();
 
-        // Now a click in the Bar should promote to a separate tab.
-        forcePanelToHandleBarClick();
+        // Now a click on the icon should promote to a separate tab.
+        forceOpenTabIconClick();
 
         // The Panel should now be closed.
         waitForPanelToClose();
@@ -2904,11 +2900,7 @@ public class ContextualSearchManagerTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> mPanel.simulateTapOnEndButton());
         waitForPanelToExpand();
 
-        // Check that the expanded bar is showing the correct image and caption.
-        Assert.assertTrue(barControl.getCaptionVisible());
-        Assert.assertEquals(mActivityTestRule.getActivity().getResources().getString(
-                                    ContextualSearchCaptionControl.EXPANED_CAPTION_ID),
-                barControl.getCaptionText());
+        // Check that the expanded bar is showing the correct image.
         Assert.assertEquals(0.f, imageControl.getCustomImageVisibilityPercentage(), 0);
 
         // Go back to peeking.
