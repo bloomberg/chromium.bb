@@ -365,7 +365,7 @@ void WindowPerformance::ReportEventTimings(WebWidgetClient::SwapResult result,
 
   DOMHighResTimeStamp end_time = MonotonicTimeToDOMHighResTimeStamp(timestamp);
   for (const auto& entry : event_timings_) {
-    int duration_in_ms = std::ceil((end_time - entry->startTime()) / 8) * 8;
+    int duration_in_ms = std::round((end_time - entry->startTime()) / 8) * 8;
     entry->SetDuration(duration_in_ms);
     if (!first_input_timing_) {
       if (entry->name() == "pointerdown") {
