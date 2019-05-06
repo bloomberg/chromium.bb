@@ -59,16 +59,17 @@ void AXPlatformNodeTest::Init(
   Init(update);
 }
 
-AXNode* AXPlatformNodeTest::GetNodeFromTree(ui::AXTreeID tree_id,
-                                            int32_t node_id) {
+AXNode* AXPlatformNodeTest::GetNodeFromTree(const ui::AXTreeID tree_id,
+                                            const int32_t node_id) const {
   if (tree_->data().tree_id == tree_id)
     return tree_->GetFromId(node_id);
 
   return nullptr;
 }
 
-AXPlatformNodeDelegate* AXPlatformNodeTest::GetDelegate(ui::AXTreeID tree_id,
-                                                        int32_t node_id) {
+AXPlatformNodeDelegate* AXPlatformNodeTest::GetDelegate(
+    const ui::AXTreeID tree_id,
+    const int32_t node_id) const {
   AXNode* node = GetNodeFromTree(tree_id, node_id);
 
   if (node) {
@@ -77,6 +78,22 @@ AXPlatformNodeDelegate* AXPlatformNodeTest::GetDelegate(ui::AXTreeID tree_id,
 
     return wrapper;
   }
+
+  return nullptr;
+}
+
+AXPlatformNodeDelegate* AXPlatformNodeTest::GetRootDelegate(
+    const AXTreeID tree_id) const {
+  if (tree_->data().tree_id == tree_id) {
+    AXNode* root_node = GetRootNode();
+
+    if (root_node) {
+      TestAXNodeWrapper* wrapper =
+          TestAXNodeWrapper::GetOrCreate(tree_.get(), root_node);
+      return wrapper;
+    }
+  }
+
   return nullptr;
 }
 

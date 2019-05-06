@@ -17,6 +17,12 @@
       !end_->GetAnchor())                                            \
     return UIA_E_ELEMENTNOTAVAILABLE;
 
+// Validate bounds calculated by AXPlatformNodeDelegate. Degenerate bounds
+// indicate the interface is not yet supported on the platform.
+#define UIA_VALIDATE_BOUNDS(bounds)                           \
+  if (bounds.OffsetFromOrigin().IsZero() && bounds.IsEmpty()) \
+    return UIA_E_NOTSUPPORTED;
+
 namespace ui {
 
 AXPlatformNodeTextRangeProviderWin::AXPlatformNodeTextRangeProviderWin() {
@@ -611,7 +617,80 @@ AXPlatformNodeTextRangeProviderWin::RemoveFromSelection() {
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ScrollIntoView(
     BOOL align_to_top) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_SCROLLINTOVIEW);
-  return E_NOTIMPL;
+  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
+
+  const AXPositionInstance start_common_ancestor =
+      start_->LowestCommonAncestor(*end_);
+  const AXPositionInstance end_common_ancestor =
+      end_->LowestCommonAncestor(*start_);
+  if (start_common_ancestor->IsNullPosition() ||
+      end_common_ancestor->IsNullPosition())
+    return E_INVALIDARG;
+
+  const AXNode* common_ancestor_anchor = start_common_ancestor->GetAnchor();
+  DCHECK(common_ancestor_anchor == end_common_ancestor->GetAnchor());
+
+  const AXTreeID common_ancestor_tree_id = start_common_ancestor->tree_id();
+  const AXTreeManager* ax_tree_manager =
+      AXTreeManagerMap::GetInstance().GetManager(common_ancestor_tree_id);
+  DCHECK(ax_tree_manager);
+
+  const AXPlatformNodeDelegate* root_delegate =
+      ax_tree_manager->GetRootDelegate(common_ancestor_tree_id);
+  const gfx::Rect root_frame_bounds = root_delegate->GetBoundsRect(
+      AXCoordinateSystem::kFrame, AXClippingBehavior::kUnclipped);
+  UIA_VALIDATE_BOUNDS(root_frame_bounds);
+
+  AXPlatformNodeDelegate* common_ancestor_delegate =
+      ax_tree_manager->GetDelegate(common_ancestor_tree_id,
+                                   common_ancestor_anchor->id());
+  DCHECK(common_ancestor_delegate);
+  const gfx::Rect text_range_container_frame_bounds =
+      common_ancestor_delegate->GetBoundsRect(AXCoordinateSystem::kFrame,
+                                              AXClippingBehavior::kUnclipped);
+  UIA_VALIDATE_BOUNDS(text_range_container_frame_bounds);
+
+  gfx::Point target_point;
+  if (align_to_top) {
+    target_point = gfx::Point(root_frame_bounds.x(), root_frame_bounds.y());
+  } else {
+    target_point =
+        gfx::Point(root_frame_bounds.x(),
+                   root_frame_bounds.y() + root_frame_bounds.height());
+  }
+
+  if ((align_to_top && start_->GetAnchor()->IsText()) ||
+      (!align_to_top && end_->GetAnchor()->IsText())) {
+    const gfx::Rect text_range_frame_bounds =
+        common_ancestor_delegate->GetInnerTextRangeBoundsRect(
+            start_common_ancestor->text_offset(),
+            end_common_ancestor->text_offset(), AXCoordinateSystem::kFrame,
+            AXClippingBehavior::kUnclipped);
+    UIA_VALIDATE_BOUNDS(text_range_frame_bounds);
+
+    if (align_to_top) {
+      target_point.Offset(0, -(text_range_container_frame_bounds.height() -
+                               text_range_frame_bounds.height()));
+    } else {
+      target_point.Offset(0, -text_range_frame_bounds.height());
+    }
+  } else {
+    if (!align_to_top)
+      target_point.Offset(0, -text_range_container_frame_bounds.height());
+  }
+
+  const gfx::Rect root_screen_bounds = root_delegate->GetBoundsRect(
+      AXCoordinateSystem::kScreen, AXClippingBehavior::kUnclipped);
+  UIA_VALIDATE_BOUNDS(root_screen_bounds);
+  target_point += root_screen_bounds.OffsetFromOrigin();
+
+  ui::AXActionData action_data;
+  action_data.action = ax::mojom::Action::kScrollToPoint;
+  action_data.target_node_id = common_ancestor_anchor->id();
+  action_data.target_point = target_point;
+  if (!common_ancestor_delegate->AccessibilityPerformAction(action_data))
+    return E_FAIL;
+  return S_OK;
 }
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetChildren(

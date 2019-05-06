@@ -7,16 +7,13 @@
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_safearray.h"
 #include "base/win/scoped_variant.h"
+#include "content/browser/accessibility/accessibility_content_browsertest.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_com_win.h"
-#include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/test/content_browser_test.h"
-#include "content/public/test/content_browser_test_utils.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/accessibility_browser_test_utils.h"
-#include "net/base/escape.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
-#include "testing/gmock/include/gmock/gmock-matchers.h"
 
 using Microsoft::WRL::ComPtr;
 
@@ -53,71 +50,8 @@ namespace content {
   }
 
 class AXPlatformNodeTextRangeProviderWinBrowserTest
-    : public ContentBrowserTest {
+    : public AccessibilityContentBrowserTest {
  protected:
-  void LoadInitialAccessibilityTreeFromUrl(
-      const GURL& url,
-      ui::AXMode accessibility_mode = ui::kAXModeComplete) {
-    AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                           accessibility_mode,
-                                           ax::mojom::Event::kLoadComplete);
-    NavigateToURL(shell(), url);
-    waiter.WaitForNotification();
-  }
-
-  void LoadInitialAccessibilityTreeFromHtmlFilePath(
-      const std::string& html_file_path,
-      ui::AXMode accessibility_mode = ui::kAXModeComplete) {
-    if (!embedded_test_server()->Started())
-      ASSERT_TRUE(embedded_test_server()->Start());
-    ASSERT_TRUE(embedded_test_server()->Started());
-    LoadInitialAccessibilityTreeFromUrl(
-        embedded_test_server()->GetURL(html_file_path), accessibility_mode);
-  }
-
-  void LoadInitialAccessibilityTreeFromHtml(
-      const std::string& html,
-      ui::AXMode accessibility_mode = ui::kAXModeComplete) {
-    LoadInitialAccessibilityTreeFromUrl(
-        GURL("data:text/html," + net::EscapeQueryParamValue(html, false)),
-        accessibility_mode);
-  }
-
-  BrowserAccessibilityManager* GetManagerAndAssertNonNull() {
-    auto GetManagerAndAssertNonNull =
-        [this](BrowserAccessibilityManager** result) {
-          WebContentsImpl* web_contents_impl =
-              static_cast<WebContentsImpl*>(shell()->web_contents());
-          ASSERT_NE(nullptr, web_contents_impl);
-          BrowserAccessibilityManager* browser_accessibility_manager =
-              web_contents_impl->GetRootBrowserAccessibilityManager();
-          ASSERT_NE(nullptr, browser_accessibility_manager);
-          *result = browser_accessibility_manager;
-        };
-
-    BrowserAccessibilityManager* browser_accessibility_manager;
-    GetManagerAndAssertNonNull(&browser_accessibility_manager);
-    return browser_accessibility_manager;
-  }
-
-  BrowserAccessibility* GetRootAndAssertNonNull() {
-    auto GetRootAndAssertNonNull = [this](BrowserAccessibility** result) {
-      BrowserAccessibility* root_browser_accessibility =
-          GetManagerAndAssertNonNull()->GetRoot();
-      ASSERT_NE(nullptr, result);
-      *result = root_browser_accessibility;
-    };
-
-    BrowserAccessibility* root_browser_accessibility;
-    GetRootAndAssertNonNull(&root_browser_accessibility);
-    return root_browser_accessibility;
-  }
-
-  BrowserAccessibility* FindNode(ax::mojom::Role role,
-                                 const std::string& name_or_value) {
-    return FindNodeInSubtree(*GetRootAndAssertNonNull(), role, name_or_value);
-  }
-
   void GetTextRangeProviderFromTextNode(
       ComPtr<ITextRangeProvider>& text_range_provider,
       BrowserAccessibility* target_browser_accessibility) {
@@ -135,27 +69,234 @@ class AXPlatformNodeTextRangeProviderWinBrowserTest
     ASSERT_NE(nullptr, text_range_provider.Get());
   }
 
- private:
-  BrowserAccessibility* FindNodeInSubtree(BrowserAccessibility& node,
-                                          ax::mojom::Role role,
-                                          const std::string& name_or_value) {
-    const auto& name =
-        node.GetStringAttribute(ax::mojom::StringAttribute::kName);
-    const auto& value =
-        node.GetStringAttribute(ax::mojom::StringAttribute::kValue);
-    if (node.GetRole() == role &&
-        (name == name_or_value || value == name_or_value)) {
-      return &node;
-    }
+  // Run through ITextRangeProvider::ScrollIntoView top tests. It's assumed that
+  // the browser has already loaded an HTML document's accessibility tree.
+  // Assert the text range generated for an accessibility node is scrolled to be
+  // flush with the top of the viewport.
+  //   expected_start_role: the expected accessibility role of the text range
+  //                        start node under test
+  //   fstart:              the function to retrieve the accessibility text
+  //                        range start node under test from the root
+  //                        accessibility node
+  //   expected_end_role:   the expected accessibility role of the text range
+  //                        end node under test
+  //   fend:                the function to retrieve the accessibility text
+  //                        range end node under test from the root
+  //                        accessibility node
+  //   align_to_top:        true to test top viewport alignment, otherwise test
+  //                        bottom viewport alignment
+  void ScrollIntoViewBrowserTestTemplate(
+      const ax::mojom::Role expected_start_role,
+      BrowserAccessibility* (BrowserAccessibility::*fstart)() const,
+      const ax::mojom::Role expected_end_role,
+      BrowserAccessibility* (BrowserAccessibility::*fend)() const,
+      const bool align_to_top) {
+    BrowserAccessibility* root_browser_accessibility =
+        GetRootAndAssertNonNull();
 
-    for (unsigned int i = 0; i < node.PlatformChildCount(); ++i) {
-      BrowserAccessibility* result =
-          FindNodeInSubtree(*node.PlatformGetChild(i), role, name_or_value);
-      if (result)
-        return result;
-    }
+    BrowserAccessibility* browser_accessibility_start =
+        (root_browser_accessibility->*fstart)();
+    ASSERT_NE(nullptr, browser_accessibility_start);
+    ASSERT_EQ(expected_start_role, browser_accessibility_start->GetRole());
 
-    return nullptr;
+    BrowserAccessibility* browser_accessibility_end =
+        (root_browser_accessibility->*fend)();
+    ASSERT_NE(nullptr, browser_accessibility_end);
+    ASSERT_EQ(expected_end_role, browser_accessibility_end->GetRole());
+
+    AssertScrollIntoView(root_browser_accessibility,
+                         browser_accessibility_start, browser_accessibility_end,
+                         align_to_top);
+  }
+
+  // Run through ITextRangeProvider::ScrollIntoView top tests. It's assumed that
+  // the browser has already loaded an HTML document's accessibility tree.
+  // Assert the text range generated for an accessibility node is scrolled to be
+  // flush with the top of the viewport.
+  //   expected_start_role: the expected accessibility role of the text range
+  //                        start node under test
+  //   fstart:              the function to retrieve the accessibility text
+  //                        range start node under test from the root
+  //                        accessibility node
+  //   fstart_arg:          an index argument for fstart
+  //   expected_end_role:   the expected accessibility role of the text range
+  //                        end node under test
+  //   fend:                the function to retrieve the accessibility text
+  //                        range end node under test from the root
+  //                        accessibility node
+  //   fend_arg:            an index argument for fend
+  //   align_to_top:        true to test top viewport alignment, otherwise test
+  //                        bottom viewport alignment
+  void ScrollIntoViewBrowserTestTemplate(
+      const ax::mojom::Role expected_start_role,
+      BrowserAccessibility* (BrowserAccessibility::*fstart)(uint32_t) const,
+      const uint32_t fstart_arg,
+      const ax::mojom::Role expected_end_role,
+      BrowserAccessibility* (BrowserAccessibility::*fend)(uint32_t) const,
+      const uint32_t fend_arg,
+      const bool align_to_top) {
+    BrowserAccessibility* root_browser_accessibility =
+        GetRootAndAssertNonNull();
+
+    BrowserAccessibility* browser_accessibility_start =
+        (root_browser_accessibility->*fstart)(fstart_arg);
+    ASSERT_NE(nullptr, browser_accessibility_start);
+    ASSERT_EQ(expected_start_role, browser_accessibility_start->GetRole());
+
+    BrowserAccessibility* browser_accessibility_end =
+        (root_browser_accessibility->*fend)(fend_arg);
+    ASSERT_NE(nullptr, browser_accessibility_end);
+    ASSERT_EQ(expected_end_role, browser_accessibility_end->GetRole());
+
+    AssertScrollIntoView(root_browser_accessibility,
+                         browser_accessibility_start, browser_accessibility_end,
+                         align_to_top);
+  }
+
+  void ScrollIntoViewFromIframeBrowserTestTemplate(
+      const ax::mojom::Role expected_start_role,
+      BrowserAccessibility* (BrowserAccessibility::*fstart)() const,
+      const ax::mojom::Role expected_end_role,
+      BrowserAccessibility* (BrowserAccessibility::*fend)() const,
+      const bool align_to_top) {
+    BrowserAccessibility* root_browser_accessibility =
+        GetRootAndAssertNonNull();
+    BrowserAccessibility* leaf_iframe_browser_accessibility =
+        root_browser_accessibility->InternalDeepestLastChild();
+    ASSERT_NE(nullptr, leaf_iframe_browser_accessibility);
+    ASSERT_EQ(ax::mojom::Role::kIframe,
+              leaf_iframe_browser_accessibility->GetRole());
+
+    AXTreeID iframe_tree_id = AXTreeID::FromString(
+        leaf_iframe_browser_accessibility->GetStringAttribute(
+            ax::mojom::StringAttribute::kChildTreeId));
+    BrowserAccessibilityManager* iframe_browser_accessibility_manager =
+        BrowserAccessibilityManager::FromID(iframe_tree_id);
+    ASSERT_NE(nullptr, iframe_browser_accessibility_manager);
+    BrowserAccessibility* root_iframe_browser_accessibility =
+        iframe_browser_accessibility_manager->GetRoot();
+    ASSERT_NE(nullptr, root_iframe_browser_accessibility);
+    ASSERT_EQ(ax::mojom::Role::kRootWebArea,
+              root_iframe_browser_accessibility->GetRole());
+
+    BrowserAccessibility* browser_accessibility_start =
+        (root_iframe_browser_accessibility->*fstart)();
+    ASSERT_NE(nullptr, browser_accessibility_start);
+    ASSERT_EQ(expected_start_role, browser_accessibility_start->GetRole());
+
+    BrowserAccessibility* browser_accessibility_end =
+        (root_iframe_browser_accessibility->*fend)();
+    ASSERT_NE(nullptr, browser_accessibility_end);
+    ASSERT_EQ(expected_end_role, browser_accessibility_end->GetRole());
+
+    AssertScrollIntoView(root_iframe_browser_accessibility,
+                         browser_accessibility_start, browser_accessibility_end,
+                         align_to_top);
+  }
+
+  void AssertScrollIntoView(BrowserAccessibility* root_browser_accessibility,
+                            BrowserAccessibility* browser_accessibility_start,
+                            BrowserAccessibility* browser_accessibility_end,
+                            const bool align_to_top) {
+    ui::AXNodePosition::AXPositionInstance start =
+        browser_accessibility_start->CreateTextPositionAt(0);
+    ui::AXNodePosition::AXPositionInstance end =
+        browser_accessibility_end->CreateTextPositionAt(0)
+            ->CreatePositionAtEndOfAnchor();
+
+    BrowserAccessibilityComWin* start_browser_accessibility_com_win =
+        ToBrowserAccessibilityWin(browser_accessibility_start)->GetCOM();
+    ASSERT_NE(nullptr, start_browser_accessibility_com_win);
+
+    CComPtr<ITextRangeProvider> text_range_provider =
+        ui::AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
+            start_browser_accessibility_com_win, std::move(start),
+            std::move(end));
+    ASSERT_NE(nullptr, text_range_provider);
+
+    gfx::Rect previous_range_bounds =
+        align_to_top ? browser_accessibility_start->GetBoundsRect(
+                           ui::AXCoordinateSystem::kFrame,
+                           ui::AXClippingBehavior::kUnclipped)
+                     : browser_accessibility_end->GetBoundsRect(
+                           ui::AXCoordinateSystem::kFrame,
+                           ui::AXClippingBehavior::kUnclipped);
+
+    AccessibilityNotificationWaiter location_changed_waiter(
+        GetWebContentsAndAssertNonNull(), ui::kAXModeComplete,
+        ax::mojom::Event::kLocationChanged);
+    ASSERT_HRESULT_SUCCEEDED(text_range_provider->ScrollIntoView(align_to_top));
+    location_changed_waiter.WaitForNotification();
+
+    gfx::Rect root_page_bounds = root_browser_accessibility->GetBoundsRect(
+        ui::AXCoordinateSystem::kFrame, ui::AXClippingBehavior::kUnclipped);
+    if (align_to_top) {
+      gfx::Rect range_bounds = browser_accessibility_start->GetBoundsRect(
+          ui::AXCoordinateSystem::kFrame, ui::AXClippingBehavior::kUnclipped);
+      ASSERT_NE(previous_range_bounds.y(), range_bounds.y());
+      ASSERT_NEAR(root_page_bounds.y(), range_bounds.y(), 1);
+    } else {
+      gfx::Rect range_bounds = browser_accessibility_end->GetBoundsRect(
+          ui::AXCoordinateSystem::kFrame, ui::AXClippingBehavior::kUnclipped);
+      gfx::Size viewport_size =
+          gfx::Size(root_page_bounds.width(), root_page_bounds.height());
+      ASSERT_NE(previous_range_bounds.y(), range_bounds.y());
+      ASSERT_NEAR(root_page_bounds.y() + viewport_size.height(),
+                  range_bounds.y() + range_bounds.height(), 1);
+    }
+  }
+
+  void ScrollIntoViewTopBrowserTestTemplate(
+      const ax::mojom::Role expected_role,
+      BrowserAccessibility* (BrowserAccessibility::*f)() const) {
+    ScrollIntoViewBrowserTestTemplate(expected_role, f, expected_role, f, true);
+  }
+
+  void ScrollIntoViewTopBrowserTestTemplate(
+      const ax::mojom::Role expected_role_start,
+      BrowserAccessibility* (BrowserAccessibility::*fstart)() const,
+      const ax::mojom::Role expected_role_end,
+      BrowserAccessibility* (BrowserAccessibility::*fend)() const) {
+    ScrollIntoViewBrowserTestTemplate(expected_role_start, fstart,
+                                      expected_role_end, fend, true);
+  }
+
+  void ScrollIntoViewTopBrowserTestTemplate(
+      const ax::mojom::Role expected_role_start,
+      BrowserAccessibility* (BrowserAccessibility::*fstart)(uint32_t) const,
+      const uint32_t fstart_arg,
+      const ax::mojom::Role expected_role_end,
+      BrowserAccessibility* (BrowserAccessibility::*fend)(uint32_t) const,
+      const uint32_t fend_arg) {
+    ScrollIntoViewBrowserTestTemplate(expected_role_start, fstart, fstart_arg,
+                                      expected_role_end, fend, fend_arg, true);
+  }
+
+  void ScrollIntoViewBottomBrowserTestTemplate(
+      const ax::mojom::Role expected_role,
+      BrowserAccessibility* (BrowserAccessibility::*f)() const) {
+    ScrollIntoViewBrowserTestTemplate(expected_role, f, expected_role, f,
+                                      false);
+  }
+
+  void ScrollIntoViewBottomBrowserTestTemplate(
+      const ax::mojom::Role expected_role_start,
+      BrowserAccessibility* (BrowserAccessibility::*fstart)() const,
+      const ax::mojom::Role expected_role_end,
+      BrowserAccessibility* (BrowserAccessibility::*fend)() const) {
+    ScrollIntoViewBrowserTestTemplate(expected_role_start, fstart,
+                                      expected_role_end, fend, false);
+  }
+
+  void ScrollIntoViewBottomBrowserTestTemplate(
+      const ax::mojom::Role expected_role_start,
+      BrowserAccessibility* (BrowserAccessibility::*fstart)(uint32_t) const,
+      const uint32_t fstart_arg,
+      const ax::mojom::Role expected_role_end,
+      BrowserAccessibility* (BrowserAccessibility::*fend)(uint32_t) const,
+      const uint32_t fend_arg) {
+    ScrollIntoViewBrowserTestTemplate(expected_role_start, fstart, fstart_arg,
+                                      expected_role_end, fend, fend_arg, false);
   }
 };
 
@@ -203,4 +344,169 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
   EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(rectangles.Get(), expected_values);
 }
 
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       ScrollIntoViewTopStaticText) {
+  LoadInitialAccessibilityTreeFromHtmlFilePath(
+      "/accessibility/scrolling/text.html");
+  ScrollIntoViewTopBrowserTestTemplate(
+      ax::mojom::Role::kStaticText,
+      &BrowserAccessibility::PlatformDeepestFirstChild);
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       ScrollIntoViewBottomStaticText) {
+  LoadInitialAccessibilityTreeFromHtmlFilePath(
+      "/accessibility/scrolling/text.html");
+  ScrollIntoViewBottomBrowserTestTemplate(
+      ax::mojom::Role::kStaticText,
+      &BrowserAccessibility::PlatformDeepestFirstChild);
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       ScrollIntoViewTopEmbeddedText) {
+  LoadInitialAccessibilityTreeFromHtmlFilePath(
+      "/accessibility/scrolling/embedded-text.html");
+  ScrollIntoViewTopBrowserTestTemplate(
+      ax::mojom::Role::kStaticText,
+      &BrowserAccessibility::PlatformDeepestLastChild);
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       ScrollIntoViewBottomEmbeddedText) {
+  LoadInitialAccessibilityTreeFromHtmlFilePath(
+      "/accessibility/scrolling/embedded-text.html");
+  ScrollIntoViewBottomBrowserTestTemplate(
+      ax::mojom::Role::kStaticText,
+      &BrowserAccessibility::PlatformDeepestLastChild);
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       ScrollIntoViewTopEmbeddedTextCrossNode) {
+  LoadInitialAccessibilityTreeFromHtmlFilePath(
+      "/accessibility/scrolling/embedded-text.html");
+  ScrollIntoViewTopBrowserTestTemplate(
+      ax::mojom::Role::kStaticText,
+      &BrowserAccessibility::PlatformDeepestFirstChild,
+      ax::mojom::Role::kStaticText,
+      &BrowserAccessibility::PlatformDeepestLastChild);
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       ScrollIntoViewBottomEmbeddedTextCrossNode) {
+  LoadInitialAccessibilityTreeFromHtmlFilePath(
+      "/accessibility/scrolling/embedded-text.html");
+  ScrollIntoViewBottomBrowserTestTemplate(
+      ax::mojom::Role::kStaticText,
+      &BrowserAccessibility::PlatformDeepestFirstChild,
+      ax::mojom::Role::kStaticText,
+      &BrowserAccessibility::PlatformDeepestLastChild);
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       ScrollIntoViewTopTable) {
+  LoadInitialAccessibilityTreeFromHtmlFilePath(
+      "/accessibility/scrolling/table.html");
+  ScrollIntoViewTopBrowserTestTemplate(
+      ax::mojom::Role::kTable, &BrowserAccessibility::PlatformGetChild, 0,
+      ax::mojom::Role::kTable, &BrowserAccessibility::PlatformGetChild, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       ScrollIntoViewBottomTable) {
+  LoadInitialAccessibilityTreeFromHtmlFilePath(
+      "/accessibility/scrolling/table.html");
+  ScrollIntoViewBottomBrowserTestTemplate(
+      ax::mojom::Role::kTable, &BrowserAccessibility::PlatformGetChild, 0,
+      ax::mojom::Role::kTable, &BrowserAccessibility::PlatformGetChild, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       ScrollIntoViewTopTableText) {
+  LoadInitialAccessibilityTreeFromHtmlFilePath(
+      "/accessibility/scrolling/table.html");
+  ScrollIntoViewTopBrowserTestTemplate(
+      ax::mojom::Role::kStaticText,
+      &BrowserAccessibility::PlatformDeepestLastChild);
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       ScrollIntoViewBottomTableText) {
+  LoadInitialAccessibilityTreeFromHtmlFilePath(
+      "/accessibility/scrolling/table.html");
+  ScrollIntoViewBottomBrowserTestTemplate(
+      ax::mojom::Role::kStaticText,
+      &BrowserAccessibility::PlatformDeepestLastChild);
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       ScrollIntoViewTopLinkText) {
+  LoadInitialAccessibilityTreeFromHtmlFilePath(
+      "/accessibility/scrolling/link.html");
+  ScrollIntoViewTopBrowserTestTemplate(
+      ax::mojom::Role::kStaticText,
+      &BrowserAccessibility::PlatformDeepestLastChild);
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       ScrollIntoViewBottomLinkText) {
+  LoadInitialAccessibilityTreeFromHtmlFilePath(
+      "/accessibility/scrolling/link.html");
+  ScrollIntoViewBottomBrowserTestTemplate(
+      ax::mojom::Role::kStaticText,
+      &BrowserAccessibility::PlatformDeepestLastChild);
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       ScrollIntoViewTopLinkContainer) {
+  LoadInitialAccessibilityTreeFromHtmlFilePath(
+      "/accessibility/scrolling/link.html");
+  ScrollIntoViewTopBrowserTestTemplate(ax::mojom::Role::kGenericContainer,
+                                       &BrowserAccessibility::PlatformGetChild,
+                                       0, ax::mojom::Role::kGenericContainer,
+                                       &BrowserAccessibility::PlatformGetChild,
+                                       0);
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       ScrollIntoViewBottomLinkContainer) {
+  LoadInitialAccessibilityTreeFromHtmlFilePath(
+      "/accessibility/scrolling/link.html");
+  ScrollIntoViewBottomBrowserTestTemplate(
+      ax::mojom::Role::kGenericContainer,
+      &BrowserAccessibility::PlatformGetChild, 0,
+      ax::mojom::Role::kGenericContainer,
+      &BrowserAccessibility::PlatformGetChild, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       ScrollIntoViewTopTextFromIFrame) {
+  LoadInitialAccessibilityTreeFromHtmlFilePath(
+      "/accessibility/scrolling/iframe-text.html");
+  WaitForAccessibilityTreeToContainNodeWithName(
+      shell()->web_contents(),
+      "Game theory is \"the study of Mathematical model mathematical models of "
+      "conflict and cooperation between intelligent rational decision-makers."
+      "\"");
+  ScrollIntoViewFromIframeBrowserTestTemplate(
+      ax::mojom::Role::kStaticText,
+      &BrowserAccessibility::PlatformDeepestFirstChild,
+      ax::mojom::Role::kStaticText,
+      &BrowserAccessibility::PlatformDeepestLastChild, true);
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       ScrollIntoViewBottomTextFromIFrame) {
+  LoadInitialAccessibilityTreeFromHtmlFilePath(
+      "/accessibility/scrolling/iframe-text.html");
+  WaitForAccessibilityTreeToContainNodeWithName(
+      shell()->web_contents(),
+      "Game theory is \"the study of Mathematical model mathematical models of "
+      "conflict and cooperation between intelligent rational decision-makers."
+      "\"");
+  ScrollIntoViewFromIframeBrowserTestTemplate(
+      ax::mojom::Role::kStaticText,
+      &BrowserAccessibility::PlatformDeepestFirstChild,
+      ax::mojom::Role::kStaticText,
+      &BrowserAccessibility::PlatformDeepestLastChild, false);
+}
 }  // namespace content

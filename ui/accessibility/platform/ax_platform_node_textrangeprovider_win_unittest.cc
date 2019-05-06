@@ -3135,4 +3135,31 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   }
 }
 
+TEST_F(AXPlatformNodeTextRangeProviderTest, ElementNotAvailable) {
+  AXNodeData root_ax_node_data;
+  root_ax_node_data.id = 0;
+  root_ax_node_data.role = ax::mojom::Role::kRootWebArea;
+
+  Init(root_ax_node_data);
+
+  ComPtr<IRawElementProviderSimple> raw_element_provider_simple =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(GetRootNode());
+  ASSERT_NE(nullptr, raw_element_provider_simple.Get());
+
+  ComPtr<ITextProvider> text_provider;
+  ASSERT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_TextPatternId, &text_provider));
+  ASSERT_NE(nullptr, text_provider.Get());
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  ASSERT_HRESULT_SUCCEEDED(
+      text_provider->get_DocumentRange(&text_range_provider));
+  ASSERT_NE(nullptr, text_range_provider.Get());
+
+  tree_.reset(new AXTree());
+
+  BOOL bool_arg = FALSE;
+  ASSERT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            text_range_provider->ScrollIntoView(bool_arg));
+}
 }  // namespace ui

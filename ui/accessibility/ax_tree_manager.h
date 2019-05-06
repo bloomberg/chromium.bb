@@ -20,13 +20,18 @@ class AX_EXPORT AXTreeManager {
   // Exposes the mapping between AXTreeID's and AXNodes based on a node_id.
   // This allows for callers to access nodes outside of their own tree.
   // Returns nullptr if the AXTreeID or node_id is not found.
-  virtual AXNode* GetNodeFromTree(AXTreeID tree_id, int32_t node_id) = 0;
+  virtual AXNode* GetNodeFromTree(const AXTreeID tree_id,
+                                  const int32_t node_id) const = 0;
 
   // Exposes the mapping of AXPlatformNodeDelegate*'s from AXTreeID and
   // AXNodeID. This is non-static to allow for test code to override with
   // custom implementations.
-  virtual AXPlatformNodeDelegate* GetDelegate(AXTreeID tree_id,
-                                              int32_t node_id) = 0;
+  virtual AXPlatformNodeDelegate* GetDelegate(const AXTreeID tree_id,
+                                              const int32_t node_id) const = 0;
+
+  // Exposes the root AXPlatformNodeDelegate for the accessibility tree.
+  virtual AXPlatformNodeDelegate* GetRootDelegate(
+      const AXTreeID tree_id) const = 0;
 };
 
 }  // namespace ui

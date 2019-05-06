@@ -5,6 +5,7 @@
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 
 #include "base/win/scoped_variant.h"
+#include "content/browser/accessibility/accessibility_content_browsertest.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_com_win.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -13,78 +14,13 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/accessibility_browser_test_utils.h"
-#include "net/base/escape.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 
 using Microsoft::WRL::ComPtr;
 
 namespace content {
-class AXPlatformNodeWinBrowserTest : public ContentBrowserTest {
+class AXPlatformNodeWinBrowserTest : public AccessibilityContentBrowserTest {
  protected:
-  void LoadInitialAccessibilityTreeFromUrl(
-      const GURL& url,
-      ui::AXMode accessibility_mode = ui::kAXModeComplete) {
-    AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                           accessibility_mode,
-                                           ax::mojom::Event::kLoadComplete);
-    NavigateToURL(shell(), url);
-    waiter.WaitForNotification();
-  }
-
-  void LoadInitialAccessibilityTreeFromHtmlFilePath(
-      const std::string& html_file_path,
-      ui::AXMode accessibility_mode = ui::kAXModeComplete) {
-    if (!embedded_test_server()->Started())
-      ASSERT_TRUE(embedded_test_server()->Start());
-    ASSERT_TRUE(embedded_test_server()->Started());
-    LoadInitialAccessibilityTreeFromUrl(
-        embedded_test_server()->GetURL(html_file_path), accessibility_mode);
-  }
-
-  void LoadInitialAccessibilityTreeFromHtml(
-      const std::string& html,
-      ui::AXMode accessibility_mode = ui::kAXModeComplete) {
-    LoadInitialAccessibilityTreeFromUrl(
-        GURL("data:text/html," + net::EscapeQueryParamValue(html, false)),
-        accessibility_mode);
-  }
-
-  BrowserAccessibilityManager* GetManagerAndAssertNonNull() {
-    auto GetManagerAndAssertNonNull =
-        [this](BrowserAccessibilityManager** result) {
-          WebContentsImpl* web_contents_impl =
-              static_cast<WebContentsImpl*>(shell()->web_contents());
-          ASSERT_NE(nullptr, web_contents_impl);
-          BrowserAccessibilityManager* browser_accessibility_manager =
-              web_contents_impl->GetRootBrowserAccessibilityManager();
-          ASSERT_NE(nullptr, browser_accessibility_manager);
-          *result = browser_accessibility_manager;
-        };
-
-    BrowserAccessibilityManager* browser_accessibility_manager;
-    GetManagerAndAssertNonNull(&browser_accessibility_manager);
-    return browser_accessibility_manager;
-  }
-
-  BrowserAccessibility* GetRootAndAssertNonNull() {
-    auto GetRootAndAssertNonNull = [this](BrowserAccessibility** result) {
-      BrowserAccessibility* root_browser_accessibility =
-          GetManagerAndAssertNonNull()->GetRoot();
-      ASSERT_NE(nullptr, result);
-      *result = root_browser_accessibility;
-    };
-
-    BrowserAccessibility* root_browser_accessibility;
-    GetRootAndAssertNonNull(&root_browser_accessibility);
-    return root_browser_accessibility;
-  }
-
-  BrowserAccessibility* FindNode(ax::mojom::Role role,
-                                 const std::string& name_or_value) {
-    return FindNodeInSubtree(*GetRootAndAssertNonNull(), role, name_or_value);
-  }
-
   template <typename T>
   ComPtr<T> QueryInterfaceFromNode(
       BrowserAccessibility* browser_accessibility) {
@@ -189,29 +125,6 @@ class AXPlatformNodeWinBrowserTest : public ContentBrowserTest {
     } else {
       ASSERT_EQ(nullptr, window_provider.Get());
     }
-  }
-
- private:
-  BrowserAccessibility* FindNodeInSubtree(BrowserAccessibility& node,
-                                          ax::mojom::Role role,
-                                          const std::string& name_or_value) {
-    const auto& name =
-        node.GetStringAttribute(ax::mojom::StringAttribute::kName);
-    const auto& value =
-        node.GetStringAttribute(ax::mojom::StringAttribute::kValue);
-    if (node.GetRole() == role &&
-        (name == name_or_value || value == name_or_value)) {
-      return &node;
-    }
-
-    for (unsigned int i = 0; i < node.PlatformChildCount(); ++i) {
-      BrowserAccessibility* result =
-          FindNodeInSubtree(*node.PlatformGetChild(i), role, name_or_value);
-      if (result)
-        return result;
-    }
-
-    return nullptr;
   }
 };
 

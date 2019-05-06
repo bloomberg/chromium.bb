@@ -15,7 +15,7 @@
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 
 namespace ui {
-class __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
+class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
     AXPlatformNodeTextRangeProviderWin
     : public CComObjectRootEx<CComMultiThreadModel>,
       public ITextRangeProvider {

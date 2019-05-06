@@ -1234,8 +1234,9 @@ void BrowserAccessibilityManager::OnAtomicUpdateFinished(
     connected_to_parent_tree_node_ = false;
 }
 
-ui::AXNode* BrowserAccessibilityManager::GetNodeFromTree(ui::AXTreeID tree_id,
-                                                         int32_t node_id) {
+ui::AXNode* BrowserAccessibilityManager::GetNodeFromTree(
+    const ui::AXTreeID tree_id,
+    const int32_t node_id) const {
   auto* manager = BrowserAccessibilityManager::FromID(tree_id);
   if (!manager)
     return nullptr;
@@ -1248,8 +1249,8 @@ ui::AXNode* BrowserAccessibilityManager::GetNodeFromTree(ui::AXTreeID tree_id,
 }
 
 ui::AXPlatformNodeDelegate* BrowserAccessibilityManager::GetDelegate(
-    ui::AXTreeID tree_id,
-    int32_t node_id) {
+    const ui::AXTreeID tree_id,
+    const int32_t node_id) const {
   auto* manager = BrowserAccessibilityManager::FromID(tree_id);
   if (!manager)
     return nullptr;
@@ -1259,6 +1260,15 @@ ui::AXPlatformNodeDelegate* BrowserAccessibilityManager::GetDelegate(
     return wrapper;
 
   return nullptr;
+}
+
+ui::AXPlatformNodeDelegate* BrowserAccessibilityManager::GetRootDelegate(
+    const ui::AXTreeID tree_id) const {
+  auto* manager = BrowserAccessibilityManager::FromID(tree_id);
+  if (!manager)
+    return nullptr;
+
+  return manager->GetRoot();
 }
 
 BrowserAccessibilityManager* BrowserAccessibilityManager::GetRootManager() {
