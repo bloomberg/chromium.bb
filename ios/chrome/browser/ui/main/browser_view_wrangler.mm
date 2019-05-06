@@ -164,7 +164,8 @@
 
   // Follow loaded URLs in the main tab model to send those in case of
   // crashes.
-  breakpad::MonitorURLsForTabModel(self.mainBrowser->GetTabModel());
+  breakpad::MonitorURLsForWebStateList(
+      self.mainBrowser->GetTabModel().webStateList);
   ios::GetChromeBrowserProvider()->InitializeCastService(
       self.mainBrowser->GetTabModel());
 
@@ -239,7 +240,7 @@
   if (_mainBrowser.get()) {
     TabModel* tabModel = self.mainBrowser->GetTabModel();
     breakpad::StopMonitoringTabStateForTabModel(tabModel);
-    breakpad::StopMonitoringURLsForTabModel(tabModel);
+    breakpad::StopMonitoringURLsForWebStateList(tabModel.webStateList);
     [tabModel browserStateDestroyed];
     if (_tabModelObserver) {
       [tabModel removeObserver:_tabModelObserver];
