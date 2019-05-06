@@ -214,10 +214,17 @@ AutocompleteProvider::FixupReturn AutocompleteProvider::FixupUserInput(
   const size_t num_output_slashes =
       (last_output_nonslash == base::string16::npos) ?
       output.length() : (output.length() - 1 - last_output_nonslash);
-  if (num_output_slashes < num_input_slashes)
+  if (num_output_slashes < num_input_slashes) {
     output.append(num_input_slashes - num_output_slashes, '/');
-  else if (num_output_slashes > num_input_slashes)
+    // If we already have double-slash(//), do not append to double-slash.
+    // Restrict to case of "chrome://version" until we find other cases.
+    if (base::StartsWith(output, base::ASCIIToUTF16("chrome://version"),
+                         base::CompareCase::SENSITIVE) &&
+        output.substr(output.length() - 2) == base::ASCIIToUTF16("//"))
+      output.erase(output.length() - 1);
+  } else if (num_output_slashes > num_input_slashes) {
     output.erase(output.length() - num_output_slashes + num_input_slashes);
+  }
   if (output.empty())
     return failed;
 
