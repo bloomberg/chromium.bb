@@ -232,7 +232,10 @@ if (is_cros_chrome_sdk) {
   # To diagnose tast failures or disable tests, see go/tast-failures
   tast_test("chrome_all_tast_tests") {
     # To disable a specific test, add it the following list.
-    tast_disabled_tests = []
+    tast_disabled_tests = [
+      "ui.MashLogin",
+      "ui.SingleProcessMashLogin",
+    ]
   }
 
   group("cros_chrome_deploy") {
