@@ -7,6 +7,7 @@ test can query for whether each submitted frame used the correct pose.
 -->
 <html>
   <head>
+    <meta name="timeout" content="long">
     <link rel="stylesheet" type="text/css" href="../resources/webxr_e2e.css">
   </head>
   <body>
@@ -73,6 +74,7 @@ test can query for whether each submitted frame used the correct pose.
             assert_greater_than(invalid_poses, 0,
                 'No null poses posted in inline VR mode. Unusual!');
             finishJavaScriptStep();
+            return;
           }
 
           incrementCounters(pose);
