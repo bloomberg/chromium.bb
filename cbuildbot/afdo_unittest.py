@@ -15,20 +15,16 @@ from __future__ import print_function
 import collections
 import datetime
 import json
-import mock
 import os
 import time
 
+import mock
 from chromite.cbuildbot import afdo
-from chromite.lib import cros_build_lib
-from chromite.lib import cros_test_lib
-from chromite.lib import gs
-from chromite.lib import osutils
-from chromite.lib import path_util
-from chromite.lib import portage_util
-
+from chromite.lib import (cros_build_lib, cros_test_lib, gs, osutils,
+                          path_util, portage_util)
 
 MockGsFile = collections.namedtuple('MockGsFile', ['url', 'creation_time'])
+
 
 class AfdoTest(cros_test_lib.MockTempDirTestCase):
   """Unit test of afdo module."""
@@ -275,10 +271,11 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
     def MockList(*_args, **_kwargs):
       num_files = 7
       results = []
-      for i in range(1, num_files+1):
-        now = datetime.datetime(year=1990, month=1, day=1+i)
-        url = os.path.join(afdo.GSURL_BASE_BENCH, 'foo-%d%s%s' %
-                           (i, afdo.AFDO_SUFFIX, afdo.COMPRESSION_SUFFIX))
+      for i in range(1, num_files + 1):
+        now = datetime.datetime(year=1990, month=1, day=1 + i)
+        url = os.path.join(
+            afdo.GSURL_BASE_BENCH,
+            'foo-%d%s%s' % (i, afdo.AFDO_SUFFIX, afdo.COMPRESSION_SUFFIX))
         results.append(MockGsFile(url=url, creation_time=now))
 
       return results
@@ -290,16 +287,14 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
     compress_file = self.PatchObject(cros_build_lib, 'CompressFile')
     upload = self.PatchObject(afdo, 'GSUploadIfNotPresent')
     upload.return_value = upload_ok
-    merged_name, uploaded = afdo.CreateAndUploadMergedAFDOProfile(mock_gs,
-                                                                  '/buildroot',
-                                                                  **kwargs)
+    merged_name, uploaded = afdo.CreateAndUploadMergedAFDOProfile(
+        mock_gs, '/buildroot', **kwargs)
     return merged_name, uploaded, Mocks(
         gs_context=mock_gs,
         run_command=run_command,
         uncompress_file=uncompress_file,
         compress_file=compress_file,
-        upload=upload
-    )
+        upload=upload)
 
   def testCreateAndUploadMergedAFDOProfileWorksInTheHappyCase(self):
     merged_name, uploaded, mocks = \
@@ -336,7 +331,6 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
     def call_for(n):
       basis = '/buildroot/chroot/tmp/foo-%d%s' % (n, afdo.AFDO_SUFFIX)
       return mock.call(basis + afdo.COMPRESSION_SUFFIX, basis)
-
 
     mocks.uncompress_file.assert_has_calls(
         any_order=True, calls=[call_for(x) for x in range(3, 8)])
@@ -420,7 +414,6 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(mocks.gs_context.Copy.call_count, 3)
     self.assertEqual(mocks.uncompress_file.call_count, 3)
 
-
   def testMergeDoesntHappenIfNoProfilesAreMerged(self):
     runs = [
         self.runCreateAndUploadMergedAFDOProfileOnce(recent_to_merge=1),
@@ -436,27 +429,24 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
       mocks.compress_file.assert_not_called()
       mocks.upload.assert_not_called()
 
-
   def testFindLatestProfile(self):
     versions = [[1, 0, 0, 0], [1, 2, 3, 4], [2, 2, 2, 2]]
     self.assertEqual(afdo.FindLatestProfile([0, 0, 0, 0], versions), None)
-    self.assertEqual(afdo.FindLatestProfile([1, 0, 0, 0], versions),
-                     [1, 0, 0, 0])
-    self.assertEqual(afdo.FindLatestProfile([1, 2, 0, 0], versions),
-                     [1, 0, 0, 0])
-    self.assertEqual(afdo.FindLatestProfile([9, 9, 9, 9], versions),
-                     [2, 2, 2, 2])
+    self.assertEqual(
+        afdo.FindLatestProfile([1, 0, 0, 0], versions), [1, 0, 0, 0])
+    self.assertEqual(
+        afdo.FindLatestProfile([1, 2, 0, 0], versions), [1, 0, 0, 0])
+    self.assertEqual(
+        afdo.FindLatestProfile([9, 9, 9, 9], versions), [2, 2, 2, 2])
 
   def testPatchKernelEbuild(self):
     before = [
         'The following line contains the version:',
-        'AFDO_PROFILE_VERSION="R63-9901.21-1506581597"',
-        'It should be changed.'
+        'AFDO_PROFILE_VERSION="R63-9901.21-1506581597"', 'It should be changed.'
     ]
     after = [
         'The following line contains the version:',
-        'AFDO_PROFILE_VERSION="R12-3456.78-9876543210"',
-        'It should be changed.'
+        'AFDO_PROFILE_VERSION="R12-3456.78-9876543210"', 'It should be changed.'
     ]
     tf = os.path.join(self.tempdir, 'test.ebuild')
     osutils.WriteFile(tf, '\n'.join(before))
@@ -465,11 +455,14 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(after, x)
 
   def testGetAvailableKernelProfiles(self):
+
     def MockGsList(path):
-      unused = {'content_length':None,
-                'creation_time':None,
-                'generation':None,
-                'metageneration':None}
+      unused = {
+          'content_length': None,
+          'creation_time': None,
+          'generation': None,
+          'metageneration': None
+      }
       path = path.replace('*', '%s')
       return [
           gs.GSListResult(
@@ -478,8 +471,8 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
               url=(path % ('3.8', 'R61-9765.70-1506575230')), **unused),
       ]
 
-    self.PatchObject(gs.GSContext, 'List',
-                     lambda _, path, **kwargs: MockGsList(path))
+    self.PatchObject(gs.GSContext,
+                     'List', lambda _, path, **kwargs: MockGsList(path))
     profiles = afdo.GetAvailableKernelProfiles()
     self.assertIn([63, 9901, 21, 1506581597], profiles['4.4'])
     self.assertIn([61, 9765, 70, 1506575230], profiles['3.8'])
@@ -491,46 +484,43 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
     self.assertIn(('chromeos-kernel-3_8-9999.ebuild', '3.8'), ebuilds)
 
   def testProfileAge(self):
-    self.assertEqual(
-        0,
-        afdo.ProfileAge([0, 0, 0, int(time.time())])
-    )
-    self.assertEqual(
-        1,
-        afdo.ProfileAge([0, 0, 0, int(time.time() - 86400)])
-    )
+    self.assertEqual(0, afdo.ProfileAge([0, 0, 0, int(time.time())]))
+    self.assertEqual(1, afdo.ProfileAge([0, 0, 0, int(time.time() - 86400)]))
 
   def testGetCWPProfile(self):
-    profiles = ['R62-3202.43-320243.afdo.xz',
-                'R63-3223.0-233200.afdo.xz',
-                'R63-3239.20-323920.afdo.xz',
-                'R63-3239.42-323942.afdo.xz',
-                'R63-3239.50-323950.afdo.xz',
-                'R63-3239.50-323999.afdo.xz',
-                'R64-3280.5-328005.afdo.xz',
-                'R64-3282.41-328241.afdo.xz',
-                'R65-3299.0-329900.afdo.xz']
+    profiles = [
+        'R62-3202.43-320243.afdo.xz', 'R63-3223.0-233200.afdo.xz',
+        'R63-3239.20-323920.afdo.xz', 'R63-3239.42-323942.afdo.xz',
+        'R63-3239.50-323950.afdo.xz', 'R63-3239.50-323999.afdo.xz',
+        'R64-3280.5-328005.afdo.xz', 'R64-3282.41-328241.afdo.xz',
+        'R65-3299.0-329900.afdo.xz'
+    ]
 
     def MockGsList(path):
-      unused = {'content_length':None,
-                'creation_time':None,
-                'generation':None,
-                'metageneration':None}
-      return [gs.GSListResult(url=os.path.join(path, f),
-                              **unused) for f in profiles]
+      unused = {
+          'content_length': None,
+          'creation_time': None,
+          'generation': None,
+          'metageneration': None
+      }
+      return [
+          gs.GSListResult(url=os.path.join(path, f), **unused) for f in profiles
+      ]
 
-    self.PatchObject(gs.GSContext, 'List',
-                     lambda _, path, **kwargs: MockGsList(path))
+    self.PatchObject(gs.GSContext,
+                     'List', lambda _, path, **kwargs: MockGsList(path))
 
     def _test(version, idx):
-      unused = {'pv':None,
-                'package':None,
-                'version_no_rev':None,
-                'rev':None,
-                'category':None,
-                'cpv': None,
-                'cp': None,
-                'cpf': None}
+      unused = {
+          'pv': None,
+          'package': None,
+          'version_no_rev': None,
+          'rev': None,
+          'category': None,
+          'cpv': None,
+          'cp': None,
+          'cpf': None
+      }
       cpv = portage_util.CPV(version=version, **unused)
       profile = afdo.GetCWPProfile(cpv, 'silvermont', 'unused', gs.GSContext())
       # Expect the most recent profile on the same branch.
@@ -570,8 +560,7 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
         'AFDO_FILE["silvermont"]="R67-3360.42-153456789.afdo"',
         'AFDO_FILE["airmont"]="airmont_after.afdo"',
         'AFDO_FILE["haswell"]="haswell_after.afdo"',
-        'AFDO_FILE["broadwell"]="broadwell_after.afdo"',
-        'It should be changed.'
+        'AFDO_FILE["broadwell"]="broadwell_after.afdo"', 'It should be changed.'
     ]
 
     self.PatchObject(path_util, 'FromChrootPath', lambda x: x)
@@ -579,11 +568,12 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
     tf = os.path.join(self.tempdir, 'test.ebuild')
     osutils.WriteFile(tf, '\n'.join(before))
     afdo.PatchChromeEbuildAFDOFile(
-        tf,
-        {'benchmark': 'chromeos-chrome-amd64-67.0.3388.0_rc-r1.afdo',
-         'haswell': 'haswell_after.afdo',
-         'broadwell': 'broadwell_after.afdo',
-         'airmont': 'airmont_after.afdo',
-         'silvermont': 'R67-3360.42-153456789.afdo'})
+        tf, {
+            'benchmark': 'chromeos-chrome-amd64-67.0.3388.0_rc-r1.afdo',
+            'haswell': 'haswell_after.afdo',
+            'broadwell': 'broadwell_after.afdo',
+            'airmont': 'airmont_after.afdo',
+            'silvermont': 'R67-3360.42-153456789.afdo'
+        })
     x = osutils.ReadFile(tf).splitlines()
     self.assertEqual(after, x)
