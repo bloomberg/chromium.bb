@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/overlays/overlay_presenter.h"
 
 #include "base/logging.h"
-#import "ios/chrome/browser/overlays/overlay_request_queue_impl.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -192,10 +191,10 @@ void OverlayPresenter::CancelAllOverlayUI() {
   }
 }
 
-#pragma mark - OverlayRequestQueueImplObserver
+#pragma mark - OverlayRequestQueueImpl::Observer
 
-void OverlayPresenter::OnRequestAdded(OverlayRequestQueueImpl* queue,
-                                      OverlayRequest* request) {
+void OverlayPresenter::RequestAddedToQueue(OverlayRequestQueueImpl* queue,
+                                           OverlayRequest* request) {
   // If |queue| is active and the added request is the front request, trigger
   // the UI presentation for that request.
   if (queue == GetActiveQueue() && request == queue->front_request())

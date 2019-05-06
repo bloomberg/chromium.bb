@@ -22,7 +22,6 @@ source_set("overlays") {
     "overlay_request_impl.h",
     "overlay_request_queue_impl.h",
     "overlay_request_queue_impl.mm",
-    "overlay_request_queue_impl_observer.h",
     "overlay_response_impl.cc",
     "overlay_response_impl.h",
   ]

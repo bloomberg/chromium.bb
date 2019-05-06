@@ -46,6 +46,14 @@ OverlayRequestQueueImpl::~OverlayRequestQueueImpl() = default;
 
 #pragma mark Public
 
+void OverlayRequestQueueImpl::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void OverlayRequestQueueImpl::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void OverlayRequestQueueImpl::PopFrontRequest() {
   DCHECK(!requests_.empty());
   requests_.pop_front();
@@ -62,7 +70,7 @@ void OverlayRequestQueueImpl::AddRequest(
     std::unique_ptr<OverlayRequest> request) {
   requests_.push_back(std::move(request));
   for (auto& observer : observers_) {
-    observer.OnRequestAdded(this, requests_.back().get());
+    observer.RequestAddedToQueue(this, requests_.back().get());
   }
 }
 

@@ -6,7 +6,7 @@
 #define IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_PRESENTER_H_
 
 #include "base/memory/weak_ptr.h"
-#import "ios/chrome/browser/overlays/overlay_request_queue_impl_observer.h"
+#import "ios/chrome/browser/overlays/overlay_request_queue_impl.h"
 #import "ios/chrome/browser/overlays/public/overlay_modality.h"
 #import "ios/chrome/browser/overlays/public/overlay_ui_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
@@ -18,7 +18,7 @@ class OverlayUIDelegate;
 // - observes OverlayRequestQueue modifications for the active WebState and
 //   triggers the presentation for added requests using the UI delegate.
 // - manages hiding and showing overlays for active WebState changes.
-class OverlayPresenter : public OverlayRequestQueueImplObserver,
+class OverlayPresenter : public OverlayRequestQueueImpl::Observer,
                          public WebStateListObserver {
  public:
   OverlayPresenter(OverlayModality modality, WebStateList* web_state_list);
@@ -67,9 +67,9 @@ class OverlayPresenter : public OverlayRequestQueueImplObserver,
   // Cancels all overlays for the Browser.
   void CancelAllOverlayUI();
 
-  // OverlayRequestQueueImplObserver:
-  void OnRequestAdded(OverlayRequestQueueImpl* queue,
-                      OverlayRequest* request) override;
+  // OverlayRequestQueueImpl::Observer:
+  void RequestAddedToQueue(OverlayRequestQueueImpl* queue,
+                           OverlayRequest* request) override;
 
   // WebStateListObserver:
   void WebStateInsertedAt(WebStateList* web_state_list,

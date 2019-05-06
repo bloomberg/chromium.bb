@@ -10,7 +10,7 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/observer_list.h"
-#include "ios/chrome/browser/overlays/overlay_request_queue_impl_observer.h"
+#include "base/observer_list_types.h"
 #include "ios/chrome/browser/overlays/public/overlay_modality.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
@@ -38,13 +38,17 @@ class OverlayRequestQueueImpl : public OverlayRequestQueue {
     std::map<OverlayModality, std::unique_ptr<OverlayRequestQueueImpl>> queues_;
   };
 
+  // Observer class for the queue.
+  class Observer : public base::CheckedObserver {
+   public:
+    // Called after |request| has been added to |queue|.
+    virtual void RequestAddedToQueue(OverlayRequestQueueImpl* queue,
+                                     OverlayRequest* request) {}
+  };
+
   // Adds and removes observers.
-  void AddObserver(OverlayRequestQueueImplObserver* observer) {
-    observers_.AddObserver(observer);
-  }
-  void RemoveObserver(OverlayRequestQueueImplObserver* observer) {
-    observers_.RemoveObserver(observer);
-  }
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // The number of requests in the queue.
   size_t size() const { return requests_.size(); }
@@ -62,7 +66,7 @@ class OverlayRequestQueueImpl : public OverlayRequestQueue {
   // Private constructor called by container.
   OverlayRequestQueueImpl();
 
-  base::ObserverList<OverlayRequestQueueImplObserver>::Unchecked observers_;
+  base::ObserverList<Observer, /* check_empty= */ true> observers_;
   // The queue used to hold the received requests.  Stored as a circular dequeue
   // to allow performant pop events from the front of the queue.
   base::circular_deque<std::unique_ptr<OverlayRequest>> requests_;

@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/overlays/overlay_request_queue_impl.h"
 
-#include "ios/chrome/browser/overlays/overlay_request_queue_impl_observer.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 #include "ios/chrome/browser/overlays/test/fake_overlay_user_data.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -18,12 +17,13 @@
 namespace {
 // Mock queue observer.
 class MockOverlayRequestQueueImplObserver
-    : public OverlayRequestQueueImplObserver {
+    : public OverlayRequestQueueImpl::Observer {
  public:
   MockOverlayRequestQueueImplObserver() {}
   ~MockOverlayRequestQueueImplObserver() {}
 
-  MOCK_METHOD2(OnRequestAdded, void(OverlayRequestQueueImpl*, OverlayRequest*));
+  MOCK_METHOD2(RequestAddedToQueue,
+               void(OverlayRequestQueueImpl*, OverlayRequest*));
 };
 }  // namespace
 
@@ -62,10 +62,10 @@ TEST_F(OverlayRequestQueueImplTest, AddRequest) {
 
   // Add two requests and pop the first, verifying that the size and front
   // requests are updated.
-  EXPECT_CALL(observer(), OnRequestAdded(queue(), first_request_ptr));
+  EXPECT_CALL(observer(), RequestAddedToQueue(queue(), first_request_ptr));
   queue()->AddRequest(std::move(first_request));
 
-  EXPECT_CALL(observer(), OnRequestAdded(queue(), second_request_ptr));
+  EXPECT_CALL(observer(), RequestAddedToQueue(queue(), second_request_ptr));
   queue()->AddRequest(std::move(second_request));
 
   EXPECT_EQ(first_request_ptr, queue()->front_request());
@@ -79,19 +79,19 @@ TEST_F(OverlayRequestQueueImplTest, PopRequests) {
   std::unique_ptr<OverlayRequest> passed_request =
       OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
   OverlayRequest* first_request = passed_request.get();
-  EXPECT_CALL(observer(), OnRequestAdded(queue(), first_request));
+  EXPECT_CALL(observer(), RequestAddedToQueue(queue(), first_request));
   queue()->AddRequest(std::move(passed_request));
 
   passed_request =
       OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
   OverlayRequest* second_request = passed_request.get();
-  EXPECT_CALL(observer(), OnRequestAdded(queue(), second_request));
+  EXPECT_CALL(observer(), RequestAddedToQueue(queue(), second_request));
   queue()->AddRequest(std::move(passed_request));
 
   passed_request =
       OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
   OverlayRequest* third_request = passed_request.get();
-  EXPECT_CALL(observer(), OnRequestAdded(queue(), third_request));
+  EXPECT_CALL(observer(), RequestAddedToQueue(queue(), third_request));
   queue()->AddRequest(std::move(passed_request));
 
   ASSERT_EQ(first_request, queue()->front_request());
