@@ -121,8 +121,8 @@ void RestrictedCookieManager::GetAllForUrl(
   // TODO(https://crbug.com/925311): Wire initiator here.
   net::CookieOptions net_options;
   net_options.set_same_site_cookie_context(
-      net::cookie_util::ComputeSameSiteContext(url, site_for_cookies,
-                                               base::nullopt /*initiator*/));
+      net::cookie_util::ComputeSameSiteContextForScriptGet(
+          url, site_for_cookies, base::nullopt /*initiator*/));
 
   cookie_store_->GetCookieListWithOptionsAsync(
       url, net_options,
@@ -191,9 +191,9 @@ void RestrictedCookieManager::SetCanonicalCookie(
 
   // TODO(pwnall): source_scheme might depend on the renderer.
   net::CookieOptions options;
-  // TODO(https://crbug.com/925311): Wire initiator here.
-  options.set_same_site_cookie_context(net::cookie_util::ComputeSameSiteContext(
-      url, site_for_cookies, base::nullopt /*initiator*/));
+  options.set_same_site_cookie_context(
+      net::cookie_util::ComputeSameSiteContextForScriptSet(url,
+                                                           site_for_cookies));
   options.set_exclude_httponly();  // Default, but make it explicit here.
   cookie_store_->SetCanonicalCookieAsync(
       std::move(sanitized_cookie), origin_.scheme(), options,
@@ -214,8 +214,8 @@ void RestrictedCookieManager::AddChangeListener(
   // TODO(https://crbug.com/925311): Wire initiator here.
   net::CookieOptions net_options;
   net_options.set_same_site_cookie_context(
-      net::cookie_util::ComputeSameSiteContext(url, site_for_cookies,
-                                               base::nullopt /*initiator*/));
+      net::cookie_util::ComputeSameSiteContextForScriptGet(
+          url, site_for_cookies, base::nullopt /*initiator*/));
 
   auto listener = std::make_unique<Listener>(cookie_store_, url, net_options,
                                              std::move(mojo_listener));

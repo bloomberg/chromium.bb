@@ -550,6 +550,8 @@ DevToolsURLInterceptorRequestJob::DevToolsURLInterceptorRequestJob(
     : net::URLRequestJob(original_request, original_network_delegate),
       interceptor_(interceptor),
       request_details_(original_request->url(),
+                       original_request->site_for_cookies(),
+                       original_request->initiator(),
                        original_request->method(),
                        GetUploadData(original_request),
                        original_request->extra_request_headers(),
@@ -1029,6 +1031,11 @@ void DevToolsURLInterceptorRequestJob::ProcessInterceptionResponse(
     // Set cookies in the network stack.
     net::CookieOptions options;
     options.set_include_httponly();
+    options.set_same_site_cookie_context(
+        net::cookie_util::ComputeSameSiteContextForResponse(
+            request_details_.url, request_details_.site_for_cookies,
+            request_details_.initiator));
+
     base::Time response_date;
     if (!mock_response_details_->response_headers()->GetDateValue(
             &response_date)) {
@@ -1162,6 +1169,8 @@ void DevToolsURLInterceptorRequestJob::ContinueDespiteLastError() {
 
 DevToolsURLInterceptorRequestJob::RequestDetails::RequestDetails(
     const GURL& url,
+    const GURL& site_for_cookies,
+    base::Optional<url::Origin> initiator,
     const std::string& method,
     std::unique_ptr<net::UploadDataStream> post_data,
     const net::HttpRequestHeaders& extra_request_headers,
@@ -1170,6 +1179,8 @@ DevToolsURLInterceptorRequestJob::RequestDetails::RequestDetails(
     const net::RequestPriority& priority,
     const net::URLRequestContext* url_request_context)
     : url(url),
+      site_for_cookies(site_for_cookies),
+      initiator(std::move(initiator)),
       method(method),
       post_data(std::move(post_data)),
       extra_request_headers(extra_request_headers),

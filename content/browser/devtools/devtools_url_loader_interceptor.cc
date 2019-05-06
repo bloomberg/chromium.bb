@@ -1049,6 +1049,12 @@ void InterceptionJob::ProcessSetCookies(const net::HttpResponseHeaders& headers,
   size_t iter = 0;
   net::CookieOptions options;
   options.set_include_httponly();
+  options.set_same_site_cookie_context(
+      net::cookie_util::ComputeSameSiteContextForResponse(
+          create_loader_params_->request.url,
+          create_loader_params_->request.site_for_cookies,
+          create_loader_params_->request.request_initiator));
+
   std::vector<std::unique_ptr<net::CanonicalCookie>> cookies;
   base::Time response_date;
   if (headers.GetDateValue(&response_date))

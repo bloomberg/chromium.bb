@@ -72,6 +72,29 @@ bool SaturatedTimeFromUTCExploded(const base::Time::Exploded& exploded,
   return false;
 }
 
+bool MatchesSiteForCookies(const GURL& url, const GURL& site_for_cookies) {
+  return registry_controlled_domains::SameDomainOrHost(
+      url, site_for_cookies,
+      registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+}
+
+CookieOptions::SameSiteCookieContext ComputeSameSiteContext(
+    const GURL& url,
+    const GURL& site_for_cookies,
+    const base::Optional<url::Origin>& initiator) {
+  if (MatchesSiteForCookies(url, site_for_cookies)) {
+    if (!initiator ||
+        registry_controlled_domains::SameDomainOrHost(
+            url, initiator.value(),
+            registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+      return CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT;
+    } else {
+      return CookieOptions::SameSiteCookieContext::SAME_SITE_LAX;
+    }
+  }
+  return CookieOptions::SameSiteCookieContext::CROSS_SITE;
+}
+
 }  // namespace
 
 bool DomainIsHostOnly(const std::string& domain_string) {
@@ -370,25 +393,6 @@ std::string SerializeRequestCookieLine(
   return buffer;
 }
 
-CookieOptions::SameSiteCookieContext ComputeSameSiteContext(
-    const GURL& url,
-    const GURL& site_for_cookies,
-    const base::Optional<url::Origin>& initiator) {
-  if (registry_controlled_domains::SameDomainOrHost(
-          url, site_for_cookies,
-          registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-    if (!initiator ||
-        registry_controlled_domains::SameDomainOrHost(
-            url, initiator.value(),
-            registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-      return CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT;
-    } else {
-      return CookieOptions::SameSiteCookieContext::SAME_SITE_LAX;
-    }
-  }
-  return CookieOptions::SameSiteCookieContext::CROSS_SITE;
-}
-
 CookieOptions::SameSiteCookieContext ComputeSameSiteContextForRequest(
     const std::string& http_method,
     const GURL& url,
@@ -424,13 +428,43 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForRequest(
       ComputeSameSiteContext(url, site_for_cookies, initiator);
   if (same_site_context ==
       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX) {
-    if (attach_same_site_cookies)
+    if (attach_same_site_cookies) {
       same_site_context =
           CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT;
-    else if (!net::HttpUtil::IsMethodSafe(http_method))
+    } else if (!net::HttpUtil::IsMethodSafe(http_method)) {
       same_site_context = CookieOptions::SameSiteCookieContext::CROSS_SITE;
+    }
   }
   return same_site_context;
+}
+
+NET_EXPORT CookieOptions::SameSiteCookieContext
+ComputeSameSiteContextForScriptGet(
+    const GURL& url,
+    const GURL& site_for_cookies,
+    const base::Optional<url::Origin>& initiator) {
+  return ComputeSameSiteContext(url, site_for_cookies, initiator);
+}
+
+CookieOptions::SameSiteCookieContext ComputeSameSiteContextForResponse(
+    const GURL& url,
+    const GURL& site_for_cookies,
+    const base::Optional<url::Origin>& initiator) {
+  // |initiator| is here in case it'll be decided to ignore |site_for_cookies|
+  // for entirely browser-side requests (see https://crbug.com/958335).
+  if (MatchesSiteForCookies(url, site_for_cookies))
+    return CookieOptions::SameSiteCookieContext::SAME_SITE_LAX;
+  else
+    return CookieOptions::SameSiteCookieContext::CROSS_SITE;
+}
+
+CookieOptions::SameSiteCookieContext ComputeSameSiteContextForScriptSet(
+    const GURL& url,
+    const GURL& site_for_cookies) {
+  if (MatchesSiteForCookies(url, site_for_cookies))
+    return CookieOptions::SameSiteCookieContext::SAME_SITE_LAX;
+  else
+    return CookieOptions::SameSiteCookieContext::CROSS_SITE;
 }
 
 base::OnceCallback<void(const CookieList&, const CookieStatusList&)>

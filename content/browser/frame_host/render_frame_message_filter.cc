@@ -585,9 +585,9 @@ void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
   }
 
   net::CookieOptions options;
-  // TODO(https://crbug.com/925311): Wire initiator in here properly.
-  options.set_same_site_cookie_context(net::cookie_util::ComputeSameSiteContext(
-      url, site_for_cookies, base::nullopt));
+  options.set_same_site_cookie_context(
+      net::cookie_util::ComputeSameSiteContextForScriptSet(url,
+                                                           site_for_cookies));
   std::unique_ptr<net::CanonicalCookie> cookie = net::CanonicalCookie::Create(
       url, cookie_line, base::Time::Now(), options);
   if (!cookie) {
@@ -661,8 +661,9 @@ void RenderFrameMessageFilter::GetCookies(int render_frame_id,
 
   net::CookieOptions options;
   // TODO(https://crbug.com/925311): Wire initiator in here properly.
-  options.set_same_site_cookie_context(net::cookie_util::ComputeSameSiteContext(
-      url, site_for_cookies, base::nullopt));
+  options.set_same_site_cookie_context(
+      net::cookie_util::ComputeSameSiteContextForScriptGet(
+          url, site_for_cookies, base::nullopt));
 
   // If the embedder overrides the cookie store then always use it, even if
   // the network service is enabled, instead of the CookieManager associated

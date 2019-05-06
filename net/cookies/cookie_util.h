@@ -80,7 +80,9 @@ NET_EXPORT std::string SerializeRequestCookieLine(
     const ParsedRequestCookies& parsed_cookies);
 
 // Determines which of the cookies for |url| can be accessed, with respect to
-// the SameSite attribute.
+// the SameSite attribute. This applies to looking up existing cookies; for
+// setting new ones, see ComputeSameSiteContextForResponse and
+// ComputeSameSiteContextForScriptSet.
 //
 // |site_for_cookies| is the currently navigated to site that should be
 // considered "first-party" for cookies.
@@ -94,15 +96,10 @@ NET_EXPORT std::string SerializeRequestCookieLine(
 // or selecting a bookmark.
 //
 // See also documentation for corresponding methods on net::URLRequest.
-NET_EXPORT CookieOptions::SameSiteCookieContext ComputeSameSiteContext(
-    const GURL& url,
-    const GURL& site_for_cookies,
-    const base::Optional<url::Origin>& initiator);
-
-// As above, but applying to a request. |http_method| is used to enforce
-// the requirement that, in a context that's lax same-site but not strict
-// same-site, SameSite=lax cookies be only sent when the method is "safe" in the
-// RFC7231 section 4.2.1 sense.
+//
+// |http_method| is used to enforce the requirement that, in a context that's
+// lax same-site but not strict same-site, SameSite=lax cookies be only sent
+// when the method is "safe" in the RFC7231 section 4.2.1 sense.
 //
 // This also applies the net feature |URLRequest::site_for_cookies|, which
 // upgrades SameSite=Lax level access to Strict-level access if on.
@@ -112,6 +109,31 @@ ComputeSameSiteContextForRequest(const std::string& http_method,
                                  const GURL& site_for_cookies,
                                  const base::Optional<url::Origin>& initiator,
                                  bool attach_same_site_cookies);
+
+// As above, but applying for scripts. |initiator| here should be the initiator
+// used when fetching the document.
+NET_EXPORT CookieOptions::SameSiteCookieContext
+ComputeSameSiteContextForScriptGet(
+    const GURL& url,
+    const GURL& site_for_cookies,
+    const base::Optional<url::Origin>& initiator);
+
+// Determines which of the cookies for |url| can be set from a network response,
+// with respect to the SameSite attribute. This will only return CROSS_SITE or
+// SAME_SITE_LAX (cookie sets of SameSite=strict cookies are permitted in same
+// contexts that sets of SameSite=lax cookies are).
+NET_EXPORT CookieOptions::SameSiteCookieContext
+ComputeSameSiteContextForResponse(const GURL& url,
+                                  const GURL& site_for_cookies,
+                                  const base::Optional<url::Origin>& initiator);
+
+// Determines which of the cookies for |url| can be set from a script context,
+// with respect to the SameSite attribute. This will only return CROSS_SITE or
+// SAME_SITE_LAX (cookie sets of SameSite=strict cookies are permitted in same
+// contexts that sets of SameSite=lax cookies are).
+NET_EXPORT CookieOptions::SameSiteCookieContext
+ComputeSameSiteContextForScriptSet(const GURL& url,
+                                   const GURL& site_for_cookies);
 
 // Takes a OnceCallback with only a CookieList and binds it to a callback that
 // also accepts a CookieStatusList, making it compatible with
