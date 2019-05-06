@@ -92,20 +92,28 @@ std::vector<Suggestion> GetPrefixMatchedSuggestions(
             /* is_masked_server_card= */ false, &prefix_matched_suggestion)) {
       matched_profiles->push_back(profile);
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-      // If the field with which the user is interacting is a phone number or
-      // part of a phone number, then display it in the national format
-      // corresponding to the profile's country. For example, (508) 488-0800
-      // will be shown rather than 15084880800, 508 488 0800, or +15084880800
-      // for US phone numbers.
-      if (base::FeatureList::IsEnabled(
-              autofill::features::kAutofillUseImprovedLabelDisambiguation) &&
-          type.group() == PHONE_HOME) {
-        value = base::UTF8ToUTF16(i18n::FormatPhoneNationallyForDisplay(
-            base::UTF16ToUTF8(value), data_util::GetCountryCodeWithFallback(
-                                          *profile, comparator.app_locale())));
+      if (type.group() == PHONE_HOME) {
+        bool format_phone;
+
+#if defined(OS_ANDROID) || defined(OS_IOS)
+        format_phone = base::FeatureList::IsEnabled(
+            autofill::features::kAutofillUseMobileLabelDisambiguation);
+#else
+        format_phone = base::FeatureList::IsEnabled(
+            autofill::features::kAutofillUseImprovedLabelDisambiguation);
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+
+        if (format_phone) {
+          // Formats, e.g., the US phone numbers 15084880800, 508 488 0800, and
+          // +15084880800, as (508) 488-0800, and the Brazilian phone numbers
+          // 21987650000 and +55 11 2648-0254 as (21) 98765-0000 and
+          // (11) 2648-0254, respectively.
+          value = base::UTF8ToUTF16(i18n::FormatPhoneNationallyForDisplay(
+              base::UTF16ToUTF8(value),
+              data_util::GetCountryCodeWithFallback(*profile,
+                                                    comparator.app_locale())));
+        }
       }
-#endif
 
       suggestions.push_back(Suggestion(value));
       suggestions.back().backend_id = profile->guid();
