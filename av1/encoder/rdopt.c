@@ -1654,7 +1654,7 @@ static uint16_t prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
   }
   score_2D_average /= 16;
 
-  const int prune_aggr_table[2][2] = { { 6, 4 }, { 10, 7 } };
+  const int prune_aggr_table[2][2] = { { 7, 5 }, { 10, 7 } };
   int pruning_aggressiveness = 1;
   if (tx_set_type == EXT_TX_SET_ALL16) {
     score_2D_transform_pow8(scores_2D, (10 - score_2D_average));
