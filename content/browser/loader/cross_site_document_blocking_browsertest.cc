@@ -686,6 +686,65 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockFetches) {
   }
 }
 
+// Regression test for https://crbug.com/958421.
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BackToAboutBlank) {
+  embedded_test_server()->StartAcceptingConnections();
+
+  // Prepare to verify results of a fetch.
+  GURL resource_url("http://foo.com/title2.html");
+  const char* resource = "title2.html";
+  const char kFetchScriptTemplate[] = R"(
+      fetch($1, {mode: 'no-cors'}).then(response => 'ok');
+  )";
+  std::string fetch_script = JsReplace(kFetchScriptTemplate, resource_url);
+
+  // Navigate to the test page and open a popup via |window.open|, explicitly
+  // specifying 'about:blank' destination, so that we can go back to it later.
+  GURL initial_url("http://foo.com/title1.html");
+  EXPECT_TRUE(NavigateToURL(shell(), initial_url));
+  WebContentsAddedObserver popup_observer;
+  ASSERT_TRUE(ExecJs(shell(), "var popup = window.open('about:blank', '')"));
+  WebContents* popup = popup_observer.GetWebContents();
+  EXPECT_EQ(GURL(url::kAboutBlankURL),
+            popup->GetMainFrame()->GetLastCommittedURL());
+  EXPECT_EQ(shell()->web_contents()->GetMainFrame()->GetLastCommittedOrigin(),
+            popup->GetMainFrame()->GetLastCommittedOrigin());
+  EXPECT_EQ(url::Origin::Create(resource_url),
+            popup->GetMainFrame()->GetLastCommittedOrigin());
+
+  // Verify that CORB doesn't block same-origin request from the popup.
+  {
+    FetchHistogramsFromChildProcesses();
+    base::HistogramTester histograms;
+    ASSERT_EQ("ok", EvalJs(popup, fetch_script));
+    InspectHistograms(histograms, kShouldBeAllowedWithoutSniffing, resource,
+                      ResourceType::kXhr);
+  }
+
+  // Navigate the popup and then go back to the 'about:blank' URL.
+  TestNavigationObserver nav_observer(popup);
+  ASSERT_TRUE(ExecJs(shell(), "popup.location.href = '/title3.html'"));
+  nav_observer.WaitForNavigationFinished();
+  TestNavigationObserver back_observer(popup);
+  ASSERT_TRUE(ExecJs(shell(), "popup.history.back()"));
+  back_observer.WaitForNavigationFinished();
+  EXPECT_EQ(GURL(url::kAboutBlankURL),
+            popup->GetMainFrame()->GetLastCommittedURL());
+  EXPECT_EQ(shell()->web_contents()->GetMainFrame()->GetLastCommittedOrigin(),
+            popup->GetMainFrame()->GetLastCommittedOrigin());
+  EXPECT_EQ(url::Origin::Create(resource_url),
+            popup->GetMainFrame()->GetLastCommittedOrigin());
+
+  // Verify that CORB doesn't block same-origin request from the popup.
+  {
+    FetchHistogramsFromChildProcesses();
+    base::HistogramTester histograms;
+    ASSERT_EQ("ok", EvalJs(popup, fetch_script));
+    InspectHistograms(histograms, kShouldBeAllowedWithoutSniffing, resource,
+                      ResourceType::kXhr);
+  }
+}
+
 IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockForVariousTargets) {
   // This webpage loads a cross-site HTML page in different targets such as
   // <img>,<link>,<embed>, etc. Since the requested document is blocked, and one
