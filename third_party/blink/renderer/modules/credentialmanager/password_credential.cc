@@ -84,7 +84,8 @@ PasswordCredential* PasswordCredential::Create(const String& id,
                                                const String& password,
                                                const String& name,
                                                const KURL& icon_url) {
-  return MakeGarbageCollected<PasswordCredential>(id, password, name, icon_url);
+  return MakeGarbageCollected<PasswordCredential>(
+      id, password, name, icon_url.IsEmpty() ? blink::KURL() : icon_url);
 }
 
 PasswordCredential::PasswordCredential(const String& id,

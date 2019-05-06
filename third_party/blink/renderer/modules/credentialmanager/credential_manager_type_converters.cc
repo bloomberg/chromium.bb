@@ -301,7 +301,10 @@ TypeConverter<PublicKeyCredentialUserEntityPtr,
   entity->id = ConvertTo<Vector<uint8_t>>(user->id());
   entity->name = user->name();
   if (user->hasIcon()) {
-    entity->icon = blink::KURL(blink::KURL(), user->icon());
+    if (user->icon().IsEmpty())
+      entity->icon = blink::KURL();
+    else
+      entity->icon = blink::KURL(user->icon());
   }
   entity->display_name = user->displayName();
   return entity;
@@ -321,7 +324,10 @@ TypeConverter<PublicKeyCredentialRpEntityPtr,
   }
   entity->name = rp->name();
   if (rp->hasIcon()) {
-    entity->icon = blink::KURL(blink::KURL(), rp->icon());
+    if (rp->icon().IsEmpty())
+      entity->icon = blink::KURL();
+    else
+      entity->icon = blink::KURL(rp->icon());
   }
   return entity;
 }
