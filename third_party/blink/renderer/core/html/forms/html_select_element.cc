@@ -1997,7 +1997,7 @@ void HTMLSelectElement::HidePopup() {
 
 void HTMLSelectElement::DidRecalcStyle(const StyleRecalcChange change) {
   HTMLFormControlElementWithState::DidRecalcStyle(change);
-  if (PopupIsVisible())
+  if (!change.ReattachLayoutTree() && PopupIsVisible())
     popup_->UpdateFromElement(PopupMenu::kByStyleChange);
 }
 
