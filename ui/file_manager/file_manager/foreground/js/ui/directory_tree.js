@@ -1994,14 +1994,8 @@ class DirectoryTree extends cr.ui.Tree {
    */
   onFocus_(e) {
     if (this.selectedItem && this.selectedItem.labelElement) {
-      // Grab the current location to check if it needs to move
       const element = this.selectedItem.labelElement;
-      const originalPos = element.getBoundingClientRect();
       element.scrollIntoViewIfNeeded();
-      const newPos = element.getBoundingClientRect();
-      if (newPos.x !== originalPos.x || newPos.y !== originalPos.y) {
-        element.scrollIntoView({inline: 'start'});
-      }
     }
   }
 
