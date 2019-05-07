@@ -61,12 +61,11 @@ TEST_F(LogoutButtonTrayTest, Visibility) {
   EXPECT_TRUE(button->visible());
 
   // Locking the screen hides the button.
-  TestSessionControllerClient* const session = GetSessionControllerClient();
-  session->RequestLockScreen();
+  GetSessionControllerClient()->LockScreen();
   EXPECT_FALSE(button->visible());
 
   // Unlocking the screen shows the button.
-  session->UnlockScreen();
+  GetSessionControllerClient()->UnlockScreen();
   EXPECT_TRUE(button->visible());
 
   // Resetting the pref hides the button.
@@ -83,8 +82,6 @@ TEST_F(LogoutButtonTrayTest, ButtonPressed) {
                                      ->logout_button_tray_for_testing();
   ASSERT_TRUE(tray);
   views::MdTextButton* const button = tray->button_for_test();
-  SessionControllerImpl* const session_controller =
-      Shell::Get()->session_controller();
   TestSessionControllerClient* const session_client =
       GetSessionControllerClient();
   base::UserActionTester user_action_tester;
@@ -104,7 +101,7 @@ TEST_F(LogoutButtonTrayTest, ButtonPressed) {
   // Sign out immediately when duration is zero.
   pref_service->SetInteger(prefs::kLogoutDialogDurationMs, 0);
   tray->ButtonPressed(button, event);
-  session_controller->FlushMojoForTest();
+  session_client->FlushForTest();
   EXPECT_EQ(1, session_client->request_sign_out_count());
   EXPECT_EQ(0, user_action_tester.GetActionCount(kUserAction));
   EXPECT_EQ(0, Shell::Get()
@@ -115,7 +112,7 @@ TEST_F(LogoutButtonTrayTest, ButtonPressed) {
   // non-zero.
   pref_service->SetInteger(prefs::kLogoutDialogDurationMs, 1000);
   tray->ButtonPressed(button, event);
-  session_controller->FlushMojoForTest();
+  session_client->FlushForTest();
   EXPECT_EQ(1, session_client->request_sign_out_count());
   EXPECT_EQ(0, user_action_tester.GetActionCount(kUserAction));
   EXPECT_EQ(1, Shell::Get()
@@ -127,7 +124,7 @@ TEST_F(LogoutButtonTrayTest, ButtonPressed) {
   pref_service->SetInteger(prefs::kLogoutDialogDurationMs, 0);
   session_client->SetIsDemoSession();
   tray->ButtonPressed(button, event);
-  session_controller->FlushMojoForTest();
+  session_client->FlushForTest();
   EXPECT_EQ(2, session_client->request_sign_out_count());
   EXPECT_EQ(1, user_action_tester.GetActionCount(kUserAction));
   EXPECT_EQ(1, Shell::Get()

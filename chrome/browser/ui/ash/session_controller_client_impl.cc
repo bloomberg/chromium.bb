@@ -9,7 +9,8 @@
 #include <utility>
 
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/cpp/session_types.h"
+#include "ash/public/cpp/session/session_controller.h"
+#include "ash/public/cpp/session/session_types.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -171,8 +172,7 @@ struct EqualsTraits<gfx::ImageSkia> {
 
 }  // namespace mojo
 
-SessionControllerClientImpl::SessionControllerClientImpl()
-    : binding_(this), weak_ptr_factory_(this) {
+SessionControllerClientImpl::SessionControllerClientImpl() {
   SessionManager::Get()->AddObserver(this);
   UserManager::Get()->AddSessionStateObserver(this);
   UserManager::Get()->AddObserver(this);
@@ -219,10 +219,9 @@ SessionControllerClientImpl::~SessionControllerClientImpl() {
 }
 
 void SessionControllerClientImpl::Init() {
+  ash::SessionController::Get()->SetClient(this);
+
   ConnectToSessionController();
-  ash::mojom::SessionControllerClientPtr client;
-  binding_.Bind(mojo::MakeRequest(&client));
-  session_controller_->SetClient(std::move(client));
   SendSessionInfoIfChanged();
   SendSessionLengthLimit();
   // User sessions and their order will be sent via UserSessionStateObserver

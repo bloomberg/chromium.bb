@@ -245,9 +245,9 @@ class ShellTest : public AshTestBase {
 
     // Simulate real screen locker to change session state to LOCKED
     // when it is shown.
-    SessionControllerImpl* controller = Shell::Get()->session_controller();
-    controller->LockScreenAndFlushForTest();
+    GetSessionControllerClient()->LockScreen();
 
+    SessionControllerImpl* controller = Shell::Get()->session_controller();
     EXPECT_TRUE(controller->IsScreenLocked());
     EXPECT_TRUE(lock_widget->GetNativeView()->HasFocus());
 
@@ -378,7 +378,7 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
   EXPECT_TRUE(
       GetActiveDeskContainer()->Contains(widget->GetNativeWindow()->parent()));
 
-  Shell::Get()->session_controller()->LockScreenAndFlushForTest();
+  GetSessionControllerClient()->LockScreen();
   // Create a LockScreen window.
   views::Widget* lock_widget = CreateTestWindow(widget_params);
   Shell::GetContainer(Shell::GetPrimaryRootWindow(),
@@ -436,7 +436,7 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
 
 TEST_F(ShellTest, IsScreenLocked) {
   SessionControllerImpl* controller = Shell::Get()->session_controller();
-  controller->LockScreenAndFlushForTest();
+  GetSessionControllerClient()->LockScreen();
   EXPECT_TRUE(controller->IsScreenLocked());
   GetSessionControllerClient()->UnlockScreen();
   EXPECT_FALSE(controller->IsScreenLocked());

@@ -80,7 +80,7 @@ TEST_F(FirstRunHelperTest, ContainersAreHidden) {
 
 // Tests that screen lock cancels the tutorial.
 TEST_F(FirstRunHelperTest, ScreenLock) {
-  Shell::Get()->session_controller()->LockScreenAndFlushForTest();
+  GetSessionControllerClient()->LockScreen();
   helper()->FlushForTesting();
   EXPECT_EQ(cancelled_times(), 1);
 }

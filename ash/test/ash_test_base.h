@@ -11,6 +11,7 @@
 #include <string>
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/session/test_session_controller_client.h"
 #include "ash/wm/desks/desks_util.h"
 #include "base/macros.h"
 #include "base/threading/thread.h"
@@ -66,7 +67,6 @@ class AppListTestHelper;
 class AshTestHelper;
 class Shelf;
 class TestScreenshotDelegate;
-class TestSessionControllerClient;
 class UnifiedSystemTray;
 class WorkAreaInsets;
 

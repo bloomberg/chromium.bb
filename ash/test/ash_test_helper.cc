@@ -207,7 +207,7 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
 
   session_controller_client_.reset(
       new TestSessionControllerClient(shell->session_controller()));
-  session_controller_client_->InitializeAndBind();
+  session_controller_client_->InitializeAndSetClient();
 
   if (start_session)
     session_controller_client_->CreatePredefinedUserSessions(1);

@@ -8,11 +8,14 @@
 #include <string>
 
 #include "ash/login_status.h"
-#include "ash/public/cpp/session_types.h"
+#include "ash/public/cpp/session/session_types.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/session_manager/session_manager_types.h"
@@ -42,23 +45,21 @@ void TestSessionControllerClient::DisableAutomaticallyProvideSigninPref() {
 
 TestSessionControllerClient::TestSessionControllerClient(
     SessionControllerImpl* controller)
-    : controller_(controller), binding_(this) {
+    : controller_(controller) {
   DCHECK(controller_);
   Reset();
 }
 
 TestSessionControllerClient::~TestSessionControllerClient() = default;
 
-void TestSessionControllerClient::InitializeAndBind() {
+void TestSessionControllerClient::InitializeAndSetClient() {
   session_info_->can_lock_screen = controller_->CanLockScreen();
   session_info_->should_lock_screen_automatically =
       controller_->ShouldLockScreenAutomatically();
   session_info_->add_user_session_policy = controller_->GetAddUserPolicy();
   session_info_->state = controller_->GetSessionState();
 
-  ash::mojom::SessionControllerClientPtr client;
-  binding_.Bind(mojo::MakeRequest(&client));
-  controller_->SetClient(std::move(client));
+  controller_->SetClient(this);
 }
 
 void TestSessionControllerClient::Reset() {
@@ -174,12 +175,24 @@ void TestSessionControllerClient::ProvidePrefServiceForUser(
                                              std::move(pref_service));
 }
 
+void TestSessionControllerClient::LockScreen() {
+  RequestLockScreen();
+  FlushForTest();
+}
+
 void TestSessionControllerClient::UnlockScreen() {
   SetSessionState(session_manager::SessionState::ACTIVE);
 }
 
+void TestSessionControllerClient::FlushForTest() {
+  base::RunLoop().RunUntilIdle();
+}
+
 void TestSessionControllerClient::RequestLockScreen() {
-  SetSessionState(session_manager::SessionState::LOCKED);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&TestSessionControllerClient::SetSessionState,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                session_manager::SessionState::LOCKED));
 }
 
 void TestSessionControllerClient::RequestSignOut() {

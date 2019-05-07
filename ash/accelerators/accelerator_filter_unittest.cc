@@ -142,7 +142,7 @@ TEST_F(AcceleratorFilterTest, SearchKeyShortcutsAreAlwaysHandled) {
   // We can lock the screen (Search+L) if a window is not present.
   generator.PressKey(ui::VKEY_L, ui::EF_COMMAND_DOWN);
   generator.ReleaseKey(ui::VKEY_L, ui::EF_COMMAND_DOWN);
-  session_controller->FlushMojoForTest();  // LockScreen is an async mojo call.
+  GetSessionControllerClient()->FlushForTest();  // LockScreen is an async call.
   EXPECT_TRUE(session_controller->IsScreenLocked());
   UnblockUserSession();
   EXPECT_FALSE(session_controller->IsScreenLocked());
@@ -152,7 +152,7 @@ TEST_F(AcceleratorFilterTest, SearchKeyShortcutsAreAlwaysHandled) {
   GetAppListTestHelper()->CheckVisibility(false);
   generator.PressKey(ui::VKEY_L, ui::EF_COMMAND_DOWN);
   generator.ReleaseKey(ui::VKEY_L, ui::EF_COMMAND_DOWN);
-  session_controller->FlushMojoForTest();  // LockScreen is an async mojo call.
+  GetSessionControllerClient()->FlushForTest();  // LockScreen is an async call.
   EXPECT_TRUE(session_controller->IsScreenLocked());
   UnblockUserSession();
   EXPECT_FALSE(session_controller->IsScreenLocked());
@@ -164,7 +164,7 @@ TEST_F(AcceleratorFilterTest, SearchKeyShortcutsAreAlwaysHandled) {
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   generator.PressKey(ui::VKEY_L, ui::EF_COMMAND_DOWN);
   generator.ReleaseKey(ui::VKEY_L, ui::EF_COMMAND_DOWN);
-  session_controller->FlushMojoForTest();  // LockScreen is an async mojo call.
+  GetSessionControllerClient()->FlushForTest();  // LockScreen is an async call.
   EXPECT_TRUE(session_controller->IsScreenLocked());
   UnblockUserSession();
   EXPECT_FALSE(session_controller->IsScreenLocked());

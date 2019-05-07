@@ -1731,7 +1731,7 @@ TEST_F(SplitViewControllerTest, DoNotEndSplitViewInLockScreen) {
             SplitViewController::BOTH_SNAPPED);
 
   // Now lock the screen.
-  Shell::Get()->session_controller()->LockScreenAndFlushForTest();
+  GetSessionControllerClient()->LockScreen();
   // Change display configuration. Split view mode is still active.
   UpdateDisplay("400x800");
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());

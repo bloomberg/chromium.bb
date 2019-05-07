@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_PUBLIC_CPP_SESSION_TYPES_H_
-#define ASH_PUBLIC_CPP_SESSION_TYPES_H_
+#ifndef ASH_PUBLIC_CPP_SESSION_SESSION_TYPES_H_
+#define ASH_PUBLIC_CPP_SESSION_SESSION_TYPES_H_
 
 namespace ash {
 
@@ -31,4 +31,4 @@ enum class CycleUserDirection {
 
 }  // namespace ash
 
-#endif  // ASH_PUBLIC_CPP_SESSION_TYPES_H_
+#endif  // ASH_PUBLIC_CPP_SESSION_SESSION_TYPES_H_

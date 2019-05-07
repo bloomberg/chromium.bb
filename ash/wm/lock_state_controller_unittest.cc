@@ -440,7 +440,7 @@ TEST_F(LockStateControllerTest, LockButtonBasic) {
   ExpectPreLockAnimationStarted();
   Advance(SessionStateAnimator::ANIMATION_SPEED_UNDOABLE);
 
-  Shell::Get()->session_controller()->FlushMojoForTest();
+  GetSessionControllerClient()->FlushForTest();
   EXPECT_TRUE(Shell::Get()->session_controller()->IsScreenLocked());
 
   // Pressing the lock button while we have a pending lock request shouldn't do

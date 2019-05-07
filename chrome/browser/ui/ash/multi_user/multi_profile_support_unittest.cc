@@ -241,10 +241,11 @@ class MultiProfileSupportTest : public ChromeAshTestBase {
   // manager. This function gets the current user from it and also sets it to
   // the multi user window manager.
   AccountId GetAndValidateCurrentUserFromSessionStateObserver() {
-    SessionControllerImpl* session_controller =
-        Shell::Get()->session_controller();
-    session_controller->FlushMojoForTest();
-    return session_controller->GetUserSessions()[0]->user_info->account_id;
+    GetSessionControllerClient()->FlushForTest();
+    return Shell::Get()
+        ->session_controller()
+        ->GetUserSessions()[0]
+        ->user_info->account_id;
   }
 
   // Initiate a user transition.
@@ -1408,6 +1409,12 @@ TEST_F(MultiProfileSupportTest, MinimizedWindowActivatableTests) {
 
 // Test that teleported window can be activated by the presenting user.
 TEST_F(MultiProfileSupportTest, TeleportedWindowActivatableTests) {
+  // The synchronously SwitchActiveUser of session controller (and client)
+  // breaks the test as it tests the transient state in middle of user
+  // switching. Since the test itself does user switching, disable the one
+  // in session controller by resetting the client.
+  Shell::Get()->session_controller()->SetClient(nullptr);
+
   SetUpForThisManyWindows(2);
 
   const AccountId user1(AccountId::FromUserEmail("a@test.com"));

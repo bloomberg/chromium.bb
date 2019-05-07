@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/session/session_controller_client.h"
 #include "ash/public/interfaces/pref_connector.mojom.h"
 #include "ash/public/interfaces/user_info.mojom.h"
 #include "ash/session/multiprofiles_intro_dialog.h"
@@ -314,8 +315,7 @@ void SessionControllerImpl::RemoveObserver(SessionObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void SessionControllerImpl::SetClient(
-    mojom::SessionControllerClientPtr client) {
+void SessionControllerImpl::SetClient(SessionControllerClient* client) {
   client_ = std::move(client);
 }
 
@@ -505,15 +505,6 @@ void SessionControllerImpl::ClearUserSessionsForTest() {
   last_active_user_prefs_ = nullptr;
   active_session_id_ = 0u;
   primary_session_id_ = 0u;
-}
-
-void SessionControllerImpl::FlushMojoForTest() {
-  client_.FlushForTesting();
-}
-
-void SessionControllerImpl::LockScreenAndFlushForTest() {
-  LockScreen();
-  FlushMojoForTest();
 }
 
 void SessionControllerImpl::SetSigninScreenPrefServiceForTest(

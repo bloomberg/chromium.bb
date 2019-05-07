@@ -34,7 +34,7 @@ class LockScreenSessionControllerClient : public TestSessionControllerClient {
  public:
   explicit LockScreenSessionControllerClient(SessionControllerImpl* controller)
       : TestSessionControllerClient(controller) {
-    InitializeAndBind();
+    InitializeAndSetClient();
     CreatePredefinedUserSessions(1);
   }
   ~LockScreenSessionControllerClient() override = default;

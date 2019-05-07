@@ -511,7 +511,7 @@ TEST_F(PaletteTrayTestWithVoiceInteraction,
 
   // The barrel button should not work on the lock screen.
   highlighter_test_api_->DestroyPointerView();
-  GetSessionControllerClient()->RequestLockScreen();
+  GetSessionControllerClient()->LockScreen();
   EXPECT_FALSE(test_api_->palette_tool_manager()->IsToolActive(
       PaletteToolId::METALAYER));
   WaitDragAndAssertMetalayer("screen locked", origin, ui::EF_LEFT_MOUSE_BUTTON,
@@ -569,7 +569,7 @@ TEST_F(PaletteTrayTestWithInternalStylus, PaletteTrayOnLockScreenBehavior) {
 
   // Verify that when entering the lock screen, the palette tray button is
   // hidden, and the tool that was active is no longer active.
-  GetSessionControllerClient()->RequestLockScreen();
+  GetSessionControllerClient()->LockScreen();
   EXPECT_FALSE(manager->IsToolActive(PaletteToolId::LASER_POINTER));
   EXPECT_FALSE(palette_tray_->visible());
 

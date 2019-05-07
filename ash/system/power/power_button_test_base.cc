@@ -108,7 +108,7 @@ void PowerButtonTestBase::Initialize(
 
 void PowerButtonTestBase::LockScreen() {
   lock_state_controller_->OnLockStateChanged(true);
-  Shell::Get()->session_controller()->LockScreenAndFlushForTest();
+  GetSessionControllerClient()->LockScreen();
 }
 
 void PowerButtonTestBase::UnlockScreen() {

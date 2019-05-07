@@ -211,7 +211,7 @@ TEST_F(ZAuraSurfaceTest,
   // Simulate real screen locker to change session state to LOCKED
   // when it is shown.
   auto* controller = ash::Shell::Get()->session_controller();
-  controller->LockScreenAndFlushForTest();
+  GetSessionControllerClient()->LockScreen();
   lock_widget->Show();
   EXPECT_TRUE(controller->IsScreenLocked());
   EXPECT_TRUE(lock_widget->GetNativeView()->HasFocus());

@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/cpp/session/session_controller.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -19,7 +20,8 @@
 //
 // Note: A ServiceManagerConnection must be initialized before constructing this
 // object. Consider using content::TestServiceManagerContext on your tests.
-class TestSessionController : public ash::mojom::SessionController {
+class TestSessionController : public ash::SessionController,
+                              public ash::mojom::SessionController {
  public:
   TestSessionController();
   ~TestSessionController() override;
@@ -44,8 +46,10 @@ class TestSessionController : public ash::mojom::SessionController {
     return lock_animation_complete_call_count_;
   }
 
+  // ash::SessionController:
+  void SetClient(ash::SessionControllerClient* client) override;
+
   // ash::mojom::SessionController:
-  void SetClient(ash::mojom::SessionControllerClientPtr client) override;
   void SetSessionInfo(ash::mojom::SessionInfoPtr info) override;
   void UpdateUserSession(ash::mojom::UserSessionPtr user_session) override;
   void SetUserSessionOrder(

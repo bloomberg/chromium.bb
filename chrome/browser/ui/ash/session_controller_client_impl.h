@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "ash/public/cpp/session/session_controller_client.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
@@ -19,7 +20,6 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 class Profile;
 class PrefChangeRegistrar;
@@ -36,7 +36,7 @@ class User;
 // session related calls from ash.
 // TODO(xiyuan): Update when UserSessionStateObserver is gone.
 class SessionControllerClientImpl
-    : public ash::mojom::SessionControllerClient,
+    : public ash::SessionControllerClient,
       public user_manager::UserManager::UserSessionStateObserver,
       public user_manager::UserManager::Observer,
       public session_manager::SessionManagerObserver,
@@ -73,7 +73,7 @@ class SessionControllerClientImpl
   void ShowTeleportWarningDialog(
       base::OnceCallback<void(bool, bool)> on_accept);
 
-  // ash::mojom::SessionControllerClient:
+  // ash::SessionControllerClient:
   void RequestLockScreen() override;
   void RequestSignOut() override;
   void SwitchActiveUser(const AccountId& account_id) override;
@@ -157,9 +157,6 @@ class SessionControllerClientImpl
   // policy.
   void SendSessionLengthLimit();
 
-  // Binds to the client interface.
-  mojo::Binding<ash::mojom::SessionControllerClient> binding_;
-
   // SessionController interface in ash. Holding the interface pointer keeps the
   // pipe alive to receive mojo return values.
   ash::mojom::SessionControllerPtr session_controller_;
@@ -185,7 +182,7 @@ class SessionControllerClientImpl
   ash::mojom::SessionInfoPtr last_sent_session_info_;
   ash::mojom::UserSessionPtr last_sent_user_session_;
 
-  base::WeakPtrFactory<SessionControllerClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<SessionControllerClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SessionControllerClientImpl);
 };

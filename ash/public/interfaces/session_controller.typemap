@@ -4,7 +4,7 @@
 
 mojom = "//ash/public/interfaces/session_controller.mojom"
 public_headers = [
-  "//ash/public/cpp/session_types.h",
+  "//ash/public/cpp/session/session_types.h",
   "//components/session_manager/session_manager_types.h",
 ]
 traits_headers = [ "//ash/public/interfaces/session_controller_traits.h" ]

@@ -32,8 +32,7 @@ TestSessionController::~TestSessionController() {
           ash::mojom::SessionController::Name_);
 }
 
-void TestSessionController::SetClient(
-    ash::mojom::SessionControllerClientPtr client) {}
+void TestSessionController::SetClient(ash::SessionControllerClient* client) {}
 
 void TestSessionController::SetSessionInfo(ash::mojom::SessionInfoPtr info) {
   last_session_info_ = info->Clone();

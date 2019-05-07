@@ -54,10 +54,8 @@ class PowerEventObserverTest : public AshTestBase {
 
   bool GetLockedState() {
     // LockScreen is an async mojo call.
-    SessionControllerImpl* const session_controller =
-        Shell::Get()->session_controller();
-    session_controller->FlushMojoForTest();
-    return session_controller->IsScreenLocked();
+    GetSessionControllerClient()->FlushForTest();
+    return Shell::Get()->session_controller()->IsScreenLocked();
   }
 
   std::unique_ptr<PowerEventObserver> observer_;

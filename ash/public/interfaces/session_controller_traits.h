@@ -5,7 +5,7 @@
 #ifndef ASH_PUBLIC_INTERFACES_SESSION_CONTROLLER_TRAITS_H_
 #define ASH_PUBLIC_INTERFACES_SESSION_CONTROLLER_TRAITS_H_
 
-#include "ash/public/cpp/session_types.h"
+#include "ash/public/cpp/session/session_types.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
 #include "components/session_manager/session_manager_types.h"
 

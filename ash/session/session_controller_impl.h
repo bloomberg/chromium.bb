@@ -11,7 +11,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/login_status.h"
-#include "ash/public/cpp/session_types.h"
+#include "ash/public/cpp/session/session_controller.h"
+#include "ash/public/cpp/session/session_types.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
 #include "ash/session/session_activation_observer_holder.h"
 #include "base/callback.h"
@@ -30,12 +31,14 @@ class Connector;
 
 namespace ash {
 
+class SessionControllerClient;
 class SessionObserver;
 
 // Implements mojom::SessionController to cache session related info such as
 // session state, meta data about user sessions to support synchronous
 // queries for ash.
-class ASH_EXPORT SessionControllerImpl : public mojom::SessionController {
+class ASH_EXPORT SessionControllerImpl : public SessionController,
+                                         public mojom::SessionController {
  public:
   // |connector| is used to connect to other services for connecting to per-user
   // PrefServices. If |connector| is null, no per-user PrefService instances
@@ -188,8 +191,10 @@ class ASH_EXPORT SessionControllerImpl : public mojom::SessionController {
   // SessionState more closes matches the state in chrome.
   LoginStatus login_status() const { return login_status_; }
 
+  // SessionController
+  void SetClient(SessionControllerClient* client) override;
+
   // mojom::SessionController
-  void SetClient(mojom::SessionControllerClientPtr client) override;
   void SetSessionInfo(mojom::SessionInfoPtr info) override;
   void UpdateUserSession(mojom::UserSessionPtr user_session) override;
   void SetUserSessionOrder(
@@ -214,8 +219,6 @@ class ASH_EXPORT SessionControllerImpl : public mojom::SessionController {
 
   // Test helpers.
   void ClearUserSessionsForTest();
-  void FlushMojoForTest();
-  void LockScreenAndFlushForTest();
   void SetSigninScreenPrefServiceForTest(std::unique_ptr<PrefService> prefs);
   void ProvideUserPrefServiceForTest(const AccountId& account_id,
                                      std::unique_ptr<PrefService> pref_service);
@@ -264,7 +267,7 @@ class ASH_EXPORT SessionControllerImpl : public mojom::SessionController {
   mojo::BindingSet<mojom::SessionController> bindings_;
 
   // Client interface to session manager code (chrome).
-  mojom::SessionControllerClientPtr client_;
+  SessionControllerClient* client_ = nullptr;
 
   // Cached session info.
   bool can_lock_ = false;

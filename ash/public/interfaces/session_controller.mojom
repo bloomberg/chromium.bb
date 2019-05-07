@@ -114,9 +114,6 @@ struct SessionInfo {
 
 // Interface for ash client (e.g. Chrome) to set session info for ash.
 interface SessionController {
-  // Sets the client interface.
-  SetClient(SessionControllerClient client);
-
   // Sets the ash session info.
   SetSessionInfo(SessionInfo info);
 
@@ -187,29 +184,6 @@ interface SessionController {
   // immediately called for upon registration with the current status.
   AddSessionActivationObserverForAccountId(
     signin.mojom.AccountId account_id, SessionActivationObserver observer);
-};
-
-// Interface for ash to request session service from its client (e.g. Chrome).
-interface SessionControllerClient {
-  // Requests to lock screen.
-  RequestLockScreen();
-
-  // Requests signing out all users, ending the current session.
-  RequestSignOut();
-
-  // Switch to the active user with |account_id| (if the user has already signed
-  // in).
-  SwitchActiveUser(signin.mojom.AccountId account_id);
-
-  // Switch the active user to the next or previous user.
-  CycleActiveUser(CycleUserDirection direction);
-
-  // Show the multi-profile login UI to add another user to this session.
-  ShowMultiProfileLogin();
-
-  // Emits the ash-initialized upstart signal to start Chrome OS tasks that
-  // expect that Ash is listening to D-Bus signals they emit.
-  EmitAshInitialized();
 };
 
 // Interface for ash to notify client of sessions status for a specific
