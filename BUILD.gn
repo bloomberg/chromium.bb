@@ -871,8 +871,8 @@ if (is_chromeos) {
     deps = [
       "//chrome",
       "//chrome/test/chromedriver",
+      "//components/chromeos_camera:mjpeg_decode_accelerator_unittest",
       "//media:media_unittests",
-      "//media/gpu:jpeg_decode_accelerator_unittest",
       "//ppapi/examples/video_decode",
       "//sandbox/linux:chrome_sandbox",
       "//sandbox/linux:sandbox_linux_unittests",
@@ -885,6 +885,7 @@ if (is_chromeos) {
 
     if (use_v4l2_codec || use_vaapi) {
       deps += [
+        "//components/chromeos_camera:jpeg_encode_accelerator_unittest",
         "//media/gpu:video_decode_accelerator_perf_tests",
         "//media/gpu:video_decode_accelerator_tests",
 
@@ -893,9 +894,6 @@ if (is_chromeos) {
         "//media/gpu:video_decode_accelerator_unittest",
         "//media/gpu:video_encode_accelerator_unittest",
       ]
-    }
-    if (use_vaapi) {
-      deps += [ "//media/gpu:jpeg_encode_accelerator_unittest" ]
     }
   }
 }

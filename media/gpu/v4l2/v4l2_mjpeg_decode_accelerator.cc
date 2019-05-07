@@ -201,7 +201,8 @@ void V4L2MjpegDecodeAccelerator::PostNotifyError(int32_t bitstream_buffer_id,
                                 weak_ptr_, bitstream_buffer_id, error));
 }
 
-bool V4L2MjpegDecodeAccelerator::Initialize(Client* client) {
+bool V4L2MjpegDecodeAccelerator::Initialize(
+    chromeos_camera::MjpegDecodeAccelerator::Client* client) {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
   if (!device_->Open(V4L2Device::Type::kJpegDecoder, V4L2_PIX_FMT_JPEG)) {

@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_VIDEO_MJPEG_DECODE_ACCELERATOR_H_
-#define MEDIA_VIDEO_MJPEG_DECODE_ACCELERATOR_H_
+#ifndef COMPONENTS_CHROMEOS_CAMERA_MJPEG_DECODE_ACCELERATOR_H_
+#define COMPONENTS_CHROMEOS_CAMERA_MJPEG_DECODE_ACCELERATOR_H_
 
 #include <stdint.h>
 
 #include "media/base/bitstream_buffer.h"
-#include "media/base/media_export.h"
 #include "media/base/video_frame.h"
 
-namespace media {
+namespace chromeos_camera {
 
 // MJPEG decoder interface.
 // The input are JPEG images including headers (Huffman tables may be omitted).
@@ -23,7 +22,7 @@ namespace media {
 // from camera capture. It can also be used for normal still JPEG image
 // decoding, but normal JPEG images may use more JPEG features that may not be
 // supported by a particular accelerator implementation and/or platform.
-class MEDIA_EXPORT MjpegDecodeAccelerator {
+class MjpegDecodeAccelerator {
  public:
   // Callback for JPEG decoder initialization.
   typedef base::Callback<void(bool success)> InitCB;
@@ -55,7 +54,7 @@ class MEDIA_EXPORT MjpegDecodeAccelerator {
     MJDA_ERROR_CODE_MAX = PLATFORM_FAILURE,
   };
 
-  class MEDIA_EXPORT Client {
+  class Client {
    public:
     // Callback called after each successful Decode().
     // Parameters:
@@ -115,7 +114,7 @@ class MEDIA_EXPORT MjpegDecodeAccelerator {
   //  client. The client is not allowed to deallocate them before
   //  VideoFrameReady or NotifyError() is invoked for given id of
   //  |bitstream_buffer|, or destructor returns.
-  virtual void Decode(const BitstreamBuffer& bitstream_buffer,
+  virtual void Decode(const media::BitstreamBuffer& bitstream_buffer,
                       const scoped_refptr<media::VideoFrame>& video_frame) = 0;
 
   // Returns true when the JPEG decoder is supported. This can be called before
@@ -123,6 +122,6 @@ class MEDIA_EXPORT MjpegDecodeAccelerator {
   virtual bool IsSupported() = 0;
 };
 
-}  // namespace media
+}  // namespace chromeos_camera
 
-#endif  // MEDIA_VIDEO_MJPEG_DECODE_ACCELERATOR_H_
+#endif  // COMPONENTS_CHROMEOS_CAMERA_MJPEG_DECODE_ACCELERATOR_H_

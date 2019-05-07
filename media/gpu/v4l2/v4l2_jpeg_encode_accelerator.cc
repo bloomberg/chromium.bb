@@ -965,8 +965,9 @@ void V4L2JpegEncodeAccelerator::NotifyError(int32_t buffer_id, Status status) {
   client_->NotifyError(buffer_id, status);
 }
 
-JpegEncodeAccelerator::Status V4L2JpegEncodeAccelerator::Initialize(
-    Client* client) {
+chromeos_camera::JpegEncodeAccelerator::Status
+V4L2JpegEncodeAccelerator::Initialize(
+    chromeos_camera::JpegEncodeAccelerator::Client* client) {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
   std::unique_ptr<EncodedInstance> encoded_device(new EncodedInstance(this));

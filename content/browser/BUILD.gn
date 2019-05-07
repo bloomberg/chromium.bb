@@ -1998,7 +1998,7 @@ jumbo_source_set("browser") {
     ]
     deps += [
       "//chromeos/resources",
-      "//media/mojo/clients:cros_mjpeg_decode_accelerator",
+      "//components/chromeos_camera:mojo_mjpeg_decode_accelerator",
     ]
   } else {
     sources += [
