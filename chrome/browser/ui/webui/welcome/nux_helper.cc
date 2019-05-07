@@ -70,6 +70,10 @@ bool CanShowSetDefaultModule(const policy::PolicyMap& policies) {
   return !set_default_value || set_default_value->GetBool();
 }
 
+bool CanShowSetDefaultModuleForTesting(const policy::PolicyMap& policies) {
+  return CanShowSetDefaultModule(policies);
+}
+
 bool CanShowSigninModule(const policy::PolicyMap& policies) {
   const base::Value* browser_signin_value =
       policies.GetValue(policy::key::kBrowserSignin);
@@ -83,6 +87,10 @@ bool CanShowSigninModule(const policy::PolicyMap& policies) {
 
   return static_cast<policy::BrowserSigninMode>(int_browser_signin_value) !=
          policy::BrowserSigninMode::kDisabled;
+}
+
+bool CanShowSigninModuleForTesting(const policy::PolicyMap& policies) {
+  return CanShowSigninModule(policies);
 }
 
 // This feature flag is used to force the feature to be turned on for non-win
