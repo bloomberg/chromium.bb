@@ -46,6 +46,8 @@ base::DictionaryValue GetNuxOnboardingModules(Profile* profile);
 
 // Exposed for testing.
 bool CanShowGoogleAppModuleForTesting(const policy::PolicyMap& policies);
+bool CanShowNTPBackgroundModuleForTesting(const policy::PolicyMap& policies,
+                                          Profile* profile);
 bool CanShowSetDefaultModuleForTesting(const policy::PolicyMap& policies);
 bool CanShowSigninModuleForTesting(const policy::PolicyMap& policies);
 

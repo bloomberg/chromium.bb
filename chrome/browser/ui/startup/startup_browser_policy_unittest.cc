@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/policy/browser_signin_policy_handler.h"
+#include "chrome/browser/profile_resetter/profile_resetter_test_base.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/webui/welcome/nux_helper.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/policy/core/common/mock_policy_service.h"
@@ -109,4 +111,23 @@ TEST_F(StartupBrowserPolicyUnitTest, ForceEphemeralProfiles) {
 
   SetPolicy(policy_map, policy::key::kForceEphemeralProfiles, false);
   EXPECT_TRUE(nux::DoesOnboardingHaveModulesToShow(profile.get()));
+}
+
+TEST_F(StartupBrowserPolicyUnitTest, NewTabPageLocation) {
+  policy::PolicyMap policy_map;
+  TestingProfile::Builder builder;
+  builder.SetPolicyService(GetPolicyService(policy_map));
+  // Needed by the builder when building the profile.
+  content::TestBrowserThreadBundle thread_bundle;
+  auto profile = builder.Build();
+
+  TemplateURLServiceFactory::GetInstance()->SetTestingFactory(
+      profile.get(), base::BindRepeating(&CreateTemplateURLServiceForTesting));
+
+  EXPECT_TRUE(
+      nux::CanShowNTPBackgroundModuleForTesting(policy_map, profile.get()));
+
+  SetPolicy(policy_map, policy::key::kNewTabPageLocation, "https://crbug.com");
+  EXPECT_FALSE(
+      nux::CanShowNTPBackgroundModuleForTesting(policy_map, profile.get()));
 }

@@ -63,6 +63,11 @@ bool CanShowNTPBackgroundModule(const policy::PolicyMap& policies,
          search::DefaultSearchProviderIsGoogle(profile);
 }
 
+bool CanShowNTPBackgroundModuleForTesting(const policy::PolicyMap& policies,
+                                          Profile* profile) {
+  return CanShowNTPBackgroundModule(policies, profile);
+}
+
 bool CanShowSetDefaultModule(const policy::PolicyMap& policies) {
   const base::Value* set_default_value =
       policies.GetValue(policy::key::kDefaultBrowserSettingEnabled);
