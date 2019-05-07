@@ -343,8 +343,13 @@ void DeviceService::BindUsbDeviceManagerRequest(
 
 void DeviceService::BindUsbDeviceManagerTestRequest(
     mojom::UsbDeviceManagerTestRequest request) {
-  if (!usb_device_manager_test_)
-    usb_device_manager_test_ = std::make_unique<usb::DeviceManagerTest>();
+  if (!usb_device_manager_)
+    usb_device_manager_ = std::make_unique<usb::DeviceManagerImpl>();
+
+  if (!usb_device_manager_test_) {
+    usb_device_manager_test_ = std::make_unique<usb::DeviceManagerTest>(
+        usb_device_manager_->GetUsbService());
+  }
 
   usb_device_manager_test_->BindRequest(std::move(request));
 }

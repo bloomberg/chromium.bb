@@ -17,7 +17,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "device/base/mock_device_client.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_device_handle.h"
 #include "device/usb/mock_usb_service.h"
@@ -52,22 +51,16 @@ ACTION_P2(ExpectGuidAndThen, expected_guid, callback) {
 
 class USBDeviceManagerImplTest : public testing::Test {
  public:
-  USBDeviceManagerImplTest() : message_loop_(new base::MessageLoop) {}
+  USBDeviceManagerImplTest() : message_loop_(new base::MessageLoop) {
+    auto mock_usb_service = std::make_unique<MockUsbService>();
+    mock_usb_service_ = mock_usb_service.get();
+    device_manager_instance_ =
+        std::make_unique<DeviceManagerImpl>(std::move(mock_usb_service));
+  }
   ~USBDeviceManagerImplTest() override = default;
 
  protected:
-  UsbDeviceManagerPtr ConnectToDeviceManager() {
-    UsbDeviceManagerPtr device_manager;
-    if (!device_manager_instance_)
-      device_manager_instance_ = std::make_unique<DeviceManagerImpl>();
-
-    device_manager_instance_->AddBinding(mojo::MakeRequest(&device_manager));
-    return device_manager;
-  }
-
-  MockDeviceClient device_client_;
-
- private:
+  MockUsbService* mock_usb_service_;
   std::unique_ptr<DeviceManagerImpl> device_manager_instance_;
   std::unique_ptr<base::MessageLoop> message_loop_;
 };
@@ -120,11 +113,12 @@ TEST_F(USBDeviceManagerImplTest, GetDevices) {
   scoped_refptr<MockUsbDevice> device2 =
       new MockUsbDevice(0x1234, 0x567a, "ACME", "Frobinator Mk II", "MNOPQR");
 
-  device_client_.usb_service()->AddDevice(device0);
-  device_client_.usb_service()->AddDevice(device1);
-  device_client_.usb_service()->AddDevice(device2);
+  mock_usb_service_->AddDevice(device0);
+  mock_usb_service_->AddDevice(device1);
+  mock_usb_service_->AddDevice(device2);
 
-  UsbDeviceManagerPtr device_manager = ConnectToDeviceManager();
+  UsbDeviceManagerPtr device_manager;
+  device_manager_instance_->AddBinding(mojo::MakeRequest(&device_manager));
 
   auto filter = mojom::UsbDeviceFilter::New();
   filter->has_vendor_id = true;
@@ -149,9 +143,10 @@ TEST_F(USBDeviceManagerImplTest, GetDevice) {
   scoped_refptr<MockUsbDevice> mock_device =
       new MockUsbDevice(0x1234, 0x5678, "ACME", "Frobinator", "ABCDEF");
 
-  device_client_.usb_service()->AddDevice(mock_device);
+  mock_usb_service_->AddDevice(mock_device);
 
-  UsbDeviceManagerPtr device_manager = ConnectToDeviceManager();
+  UsbDeviceManagerPtr device_manager;
+  device_manager_instance_->AddBinding(mojo::MakeRequest(&device_manager));
 
   {
     base::RunLoop loop;
@@ -186,9 +181,11 @@ TEST_F(USBDeviceManagerImplTest, Client) {
   scoped_refptr<MockUsbDevice> device3 =
       new MockUsbDevice(0x1234, 0x567b, "ACME", "Frobinator Xtreme", "STUVWX");
 
-  device_client_.usb_service()->AddDevice(device0);
+  mock_usb_service_->AddDevice(device0);
 
-  UsbDeviceManagerPtr device_manager = ConnectToDeviceManager();
+  UsbDeviceManagerPtr device_manager;
+  device_manager_instance_->AddBinding(mojo::MakeRequest(&device_manager));
+
   MockDeviceManagerClient mock_client;
   device_manager->SetClient(mock_client.CreateInterfacePtrAndBind());
 
@@ -204,12 +201,12 @@ TEST_F(USBDeviceManagerImplTest, Client) {
     loop.Run();
   }
 
-  device_client_.usb_service()->AddDevice(device1);
-  device_client_.usb_service()->AddDevice(device2);
-  device_client_.usb_service()->RemoveDevice(device1);
-  device_client_.usb_service()->RemoveDevice(device0);
-  device_client_.usb_service()->RemoveDevice(device2);
-  device_client_.usb_service()->AddDevice(device3);
+  mock_usb_service_->AddDevice(device1);
+  mock_usb_service_->AddDevice(device2);
+  mock_usb_service_->RemoveDevice(device1);
+  mock_usb_service_->RemoveDevice(device0);
+  mock_usb_service_->RemoveDevice(device2);
+  mock_usb_service_->AddDevice(device3);
 
   {
     base::RunLoop loop;

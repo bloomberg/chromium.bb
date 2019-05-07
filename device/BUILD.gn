@@ -178,8 +178,6 @@ test("device_unittests") {
   # USB does not compile on iOS.
   if (!is_ios) {
     sources += [
-      "test/test_device_client.cc",
-      "test/test_device_client.h",
       "usb/mojo/device_impl_unittest.cc",
       "usb/mojo/device_manager_impl_unittest.cc",
       "usb/public/cpp/usb_utils_unittest.cc",
@@ -191,7 +189,6 @@ test("device_unittests") {
     deps += [
       ":usb_test_gadget",
       "//device/base",
-      "//device/base:mocks",
       "//device/usb",
       "//device/usb:test_support",
       "//device/usb/mojo",

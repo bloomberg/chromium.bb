@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "device/usb/public/mojom/device_manager_test.mojom.h"
+#include "device/usb/usb_service.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace device {
@@ -16,7 +17,10 @@ namespace usb {
 
 class DeviceManagerTest : public mojom::UsbDeviceManagerTest {
  public:
-  DeviceManagerTest();
+  // |usb_service| is owned by the USB DeviceManagerImpl instance in the
+  // DeviceService and once created it will keep alive until the UsbService
+  // is distroyed.
+  explicit DeviceManagerTest(UsbService* usb_service);
   ~DeviceManagerTest() override;
 
   void BindRequest(mojom::UsbDeviceManagerTestRequest request);
@@ -33,6 +37,7 @@ class DeviceManagerTest : public mojom::UsbDeviceManagerTest {
 
  private:
   mojo::BindingSet<mojom::UsbDeviceManagerTest> bindings_;
+  UsbService* usb_service_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceManagerTest);
 };

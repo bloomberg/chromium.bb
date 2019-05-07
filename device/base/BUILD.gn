@@ -43,17 +43,3 @@ component("base") {
     libs = [ "setupapi.lib" ]
   }
 }
-
-source_set("mocks") {
-  testonly = true
-
-  sources = [
-    "mock_device_client.cc",
-    "mock_device_client.h",
-  ]
-
-  deps = [
-    ":base",
-    "//device/usb:test_support",
-  ]
-}

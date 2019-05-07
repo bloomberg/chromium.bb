@@ -20,6 +20,7 @@
 #include "base/test/test_io_thread.h"
 #include "device/test/usb_test_gadget.h"
 #include "device/usb/usb_device.h"
+#include "device/usb/usb_service.h"
 #include "services/device/hid/hid_service.h"
 #include "services/device/public/mojom/hid.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -154,13 +155,15 @@ class HidConnectionTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    if (!UsbTestGadget::IsTestEnabled())
+    if (!UsbTestGadget::IsTestEnabled() || !usb_service_)
       return;
 
     service_ = HidService::Create();
     ASSERT_TRUE(service_);
 
-    test_gadget_ = UsbTestGadget::Claim(io_thread_.task_runner());
+    usb_service_ = UsbService::Create();
+    test_gadget_ =
+        UsbTestGadget::Claim(usb_service_.get(), io_thread_.task_runner());
     ASSERT_TRUE(test_gadget_);
     ASSERT_TRUE(test_gadget_->SetType(UsbTestGadget::HID_ECHO));
 
@@ -174,6 +177,7 @@ class HidConnectionTest : public testing::Test {
   base::TestIOThread io_thread_;
   std::unique_ptr<HidService> service_;
   std::unique_ptr<UsbTestGadget> test_gadget_;
+  std::unique_ptr<UsbService> usb_service_;
   std::string device_guid_;
 };
 

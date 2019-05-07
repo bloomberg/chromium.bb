@@ -11,7 +11,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_io_thread.h"
 #include "device/base/features.h"
-#include "device/test/test_device_client.h"
 #include "device/test/usb_test_gadget.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_device_handle.h"
@@ -27,12 +26,13 @@ class UsbServiceTest : public ::testing::Test {
   UsbServiceTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        usb_service_(UsbService::Create()),
         io_thread_(base::TestIOThread::kAutoStart) {}
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  std::unique_ptr<UsbService> usb_service_;
   base::TestIOThread io_thread_;
-  TestDeviceClient device_client_;
 };
 
 void OnGetDevices(const base::Closure& quit_closure,
@@ -47,10 +47,10 @@ void OnGetDevices(const base::Closure& quit_closure,
 
 TEST_F(UsbServiceTest, GetDevices) {
   // The USB service is not available on all platforms.
-  UsbService* service = DeviceClient::Get()->GetUsbService();
-  if (service) {
+  if (usb_service_) {
     base::RunLoop loop;
-    service->GetDevices(base::Bind(&OnGetDevices, loop.QuitClosure()));
+    usb_service_->GetDevices(
+        base::BindRepeating(&OnGetDevices, loop.QuitClosure()));
     loop.Run();
   }
 }
@@ -59,20 +59,23 @@ TEST_F(UsbServiceTest, GetDevices) {
 TEST_F(UsbServiceTest, GetDevicesNewBackend) {
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeature(device::kNewUsbBackend);
-  UsbService* service = DeviceClient::Get()->GetUsbService();
-  if (service) {
+
+  // The USB service is not available on all platforms.
+  if (usb_service_) {
     base::RunLoop loop;
-    service->GetDevices(base::Bind(&OnGetDevices, loop.QuitClosure()));
+    usb_service_->GetDevices(
+        base::BindRepeating(&OnGetDevices, loop.QuitClosure()));
     loop.Run();
   }
 }
 #endif  // defined(OS_WIN)
 
 TEST_F(UsbServiceTest, ClaimGadget) {
-  if (!UsbTestGadget::IsTestEnabled()) return;
+  if (!UsbTestGadget::IsTestEnabled() || !usb_service_)
+    return;
 
   std::unique_ptr<UsbTestGadget> gadget =
-      UsbTestGadget::Claim(io_thread_.task_runner());
+      UsbTestGadget::Claim(usb_service_.get(), io_thread_.task_runner());
   ASSERT_TRUE(gadget);
 
   scoped_refptr<UsbDevice> device = gadget->GetDevice();
@@ -82,11 +85,13 @@ TEST_F(UsbServiceTest, ClaimGadget) {
 }
 
 TEST_F(UsbServiceTest, DisconnectAndReconnect) {
-  if (!UsbTestGadget::IsTestEnabled()) return;
+  if (!UsbTestGadget::IsTestEnabled() || !usb_service_)
+    return;
 
   std::unique_ptr<UsbTestGadget> gadget =
-      UsbTestGadget::Claim(io_thread_.task_runner());
+      UsbTestGadget::Claim(usb_service_.get(), io_thread_.task_runner());
   ASSERT_TRUE(gadget);
+
   ASSERT_TRUE(gadget->Disconnect());
   ASSERT_TRUE(gadget->Reconnect());
 }

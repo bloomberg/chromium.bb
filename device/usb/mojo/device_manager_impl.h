@@ -34,9 +34,13 @@ class DeviceManagerImpl : public mojom::UsbDeviceManager,
                           public UsbService::Observer {
  public:
   DeviceManagerImpl();
+  // Mostly be used for testing.
+  explicit DeviceManagerImpl(std::unique_ptr<UsbService> usb_service);
   ~DeviceManagerImpl() override;
 
   void AddBinding(mojom::UsbDeviceManagerRequest request);
+
+  UsbService* GetUsbService() const { return usb_service_.get(); }
 
  private:
   // DeviceManager implementation:
@@ -88,7 +92,7 @@ class DeviceManagerImpl : public mojom::UsbDeviceManager,
 
   void MaybeRunDeviceChangesCallback();
 
-  UsbService* usb_service_;
+  std::unique_ptr<UsbService> usb_service_;
   ScopedObserver<UsbService, UsbService::Observer> observer_;
 
   mojo::BindingSet<mojom::UsbDeviceManager> bindings_;

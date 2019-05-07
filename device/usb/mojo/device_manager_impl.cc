@@ -13,7 +13,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "device/base/device_client.h"
 #include "device/usb/mojo/device_impl.h"
 #include "device/usb/mojo/type_converters.h"
 #include "device/usb/public/cpp/usb_utils.h"
@@ -31,10 +30,15 @@
 namespace device {
 namespace usb {
 
-DeviceManagerImpl::DeviceManagerImpl() : observer_(this), weak_factory_(this) {
-  usb_service_ = DeviceClient::Get()->GetUsbService();
+DeviceManagerImpl::DeviceManagerImpl()
+    : DeviceManagerImpl(UsbService::Create()) {}
+
+DeviceManagerImpl::DeviceManagerImpl(std::unique_ptr<UsbService> usb_service)
+    : usb_service_(std::move(usb_service)),
+      observer_(this),
+      weak_factory_(this) {
   if (usb_service_)
-    observer_.Add(usb_service_);
+    observer_.Add(usb_service_.get());
 }
 
 DeviceManagerImpl::~DeviceManagerImpl() = default;

@@ -18,6 +18,7 @@ class SingleThreadTaskRunner;
 namespace device {
 
 class UsbDevice;
+class UsbService;
 
 class UsbTestGadget {
  public:
@@ -33,6 +34,7 @@ class UsbTestGadget {
 
   static bool IsTestEnabled();
   static std::unique_ptr<UsbTestGadget> Claim(
+      UsbService* usb_service,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 
   virtual bool Unclaim() = 0;

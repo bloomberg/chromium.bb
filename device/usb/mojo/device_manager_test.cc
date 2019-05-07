@@ -7,10 +7,8 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "device/base/device_client.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_device_handle.h"
-#include "device/usb/usb_service.h"
 #include "device/usb/webusb_descriptors.h"
 #include "url/gurl.h"
 
@@ -59,7 +57,8 @@ TestUsbDevice::~TestUsbDevice() {}
 
 }  // namespace
 
-DeviceManagerTest::DeviceManagerTest() {}
+DeviceManagerTest::DeviceManagerTest(UsbService* usb_service)
+    : usb_service_(usb_service) {}
 
 DeviceManagerTest::~DeviceManagerTest() {}
 
@@ -73,15 +72,14 @@ void DeviceManagerTest::AddDeviceForTesting(
     const std::string& serial_number,
     const std::string& landing_page,
     AddDeviceForTestingCallback callback) {
-  UsbService* service = DeviceClient::Get()->GetUsbService();
-  if (service) {
+  if (usb_service_) {
     GURL landing_page_url(landing_page);
     if (!landing_page_url.is_valid()) {
       std::move(callback).Run(false, "Landing page URL is invalid.");
       return;
     }
 
-    service->AddDeviceForTesting(
+    usb_service_->AddDeviceForTesting(
         new TestUsbDevice(name, serial_number, landing_page_url));
     std::move(callback).Run(true, "Added.");
   } else {
@@ -92,17 +90,16 @@ void DeviceManagerTest::AddDeviceForTesting(
 void DeviceManagerTest::RemoveDeviceForTesting(
     const std::string& guid,
     RemoveDeviceForTestingCallback callback) {
-  UsbService* service = DeviceClient::Get()->GetUsbService();
-  if (service)
-    service->RemoveDeviceForTesting(guid);
+  if (usb_service_)
+    usb_service_->RemoveDeviceForTesting(guid);
+
   std::move(callback).Run();
 }
 
 void DeviceManagerTest::GetTestDevices(GetTestDevicesCallback callback) {
   std::vector<scoped_refptr<UsbDevice>> devices;
-  UsbService* service = DeviceClient::Get()->GetUsbService();
-  if (service)
-    service->GetTestDevices(&devices);
+  if (usb_service_)
+    usb_service_->GetTestDevices(&devices);
 
   std::vector<mojom::TestDeviceInfoPtr> result;
   result.reserve(devices.size());

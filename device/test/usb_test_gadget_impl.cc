@@ -28,7 +28,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "device/base/device_client.h"
 #include "device/test/usb_test_gadget.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_device_handle.h"
@@ -204,9 +203,12 @@ int SimplePOSTRequest(
 class UsbGadgetFactory : public UsbService::Observer,
                          public net::URLFetcherDelegate {
  public:
-  UsbGadgetFactory(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-      : observer_(this), weak_factory_(this) {
-    usb_service_ = DeviceClient::Get()->GetUsbService();
+  UsbGadgetFactory(UsbService* usb_service,
+                   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
+      : usb_service_(usb_service), observer_(this), weak_factory_(this) {
+    // Gadget tests shouldn't be enabled without available |usb_service|.
+    DCHECK(usb_service_);
+
     request_context_getter_ = new URLRequestContextGetter(io_task_runner);
 
     static uint32_t next_session_id;
@@ -528,20 +530,20 @@ bool UsbTestGadget::IsTestEnabled() {
 }
 
 std::unique_ptr<UsbTestGadget> UsbTestGadget::Claim(
+    UsbService* usb_service,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
-  UsbGadgetFactory gadget_factory(io_task_runner);
+  UsbGadgetFactory gadget_factory(usb_service, io_task_runner);
   return gadget_factory.WaitForDevice();
 }
 
 UsbTestGadgetImpl::UsbTestGadgetImpl(
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter_,
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     UsbService* usb_service,
     scoped_refptr<UsbDevice> device)
     : device_address_(base::UTF16ToUTF8(device->serial_number())),
       device_(device),
-      request_context_getter_(request_context_getter_),
-      usb_service_(usb_service) {
-}
+      request_context_getter_(request_context_getter),
+      usb_service_(usb_service) {}
 
 UsbTestGadgetImpl::~UsbTestGadgetImpl() {
   if (!device_address_.empty()) {
