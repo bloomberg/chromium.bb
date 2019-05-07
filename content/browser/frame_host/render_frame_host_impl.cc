@@ -76,6 +76,7 @@
 #include "content/browser/media/media_interface_proxy.h"
 #include "content/browser/media/session/media_session_service_impl.h"
 #include "content/browser/media/webaudio/audio_context_manager_impl.h"
+#include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/payments/payment_app_context_impl.h"
 #include "content/browser/permissions/permission_controller_impl.h"
@@ -4150,7 +4151,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
 
   file_system_manager_.reset(new FileSystemManagerImpl(
-      GetProcess()->GetID(), routing_id_,
+      GetProcess()->GetID(),
       GetProcess()->GetStoragePartition()->GetFileSystemContext(),
       ChromeBlobStorageContext::GetFor(GetProcess()->GetBrowserContext())));
   registry_->AddInterface(
@@ -4172,6 +4173,24 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 
   registry_->AddInterface(base::BindRepeating(
       &PictureInPictureServiceImpl::Create, base::Unretained(this)));
+
+  if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI)) {
+    registry_->AddInterface(base::BindRepeating(
+        [](RenderFrameHostImpl* frame,
+           blink::mojom::NativeFileSystemManagerRequest request) {
+          scoped_refptr<NativeFileSystemManagerImpl> manager =
+              static_cast<StoragePartitionImpl*>(
+                  frame->GetProcess()->GetStoragePartition())
+                  ->GetNativeFileSystemManager();
+          base::PostTaskWithTraits(
+              FROM_HERE, {BrowserThread::IO},
+              base::BindOnce(
+                  &NativeFileSystemManagerImpl::BindRequest, std::move(manager),
+                  frame->GetLastCommittedOrigin(), frame->GetProcess()->GetID(),
+                  frame->GetRoutingID(), std::move(request)));
+        },
+        base::Unretained(this)));
+  }
 }
 
 void RenderFrameHostImpl::ResetWaitingState() {

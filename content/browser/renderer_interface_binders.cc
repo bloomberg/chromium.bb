@@ -13,6 +13,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/cookie_store/cookie_store_context.h"
 #include "content/browser/locks/lock_manager.h"
+#include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/payments/payment_manager.h"
 #include "content/browser/permissions/permission_service_context.h"
@@ -36,8 +37,10 @@
 #include "services/shape_detection/public/mojom/constants.mojom.h"
 #include "services/shape_detection/public/mojom/facedetection_provider.mojom.h"
 #include "services/shape_detection/public/mojom/textdetection.mojom.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/cookie_store/cookie_store.mojom.h"
+#include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom.h"
 #include "third_party/blink/public/mojom/notifications/notification_service.mojom.h"
 #include "url/origin.h"
 
@@ -165,6 +168,23 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
         static_cast<RenderProcessHostImpl*>(host)->BindFileSystemManager(
             std::move(request));
       }));
+  if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI)) {
+    parameterized_binder_registry_.AddInterface(base::BindRepeating(
+        [](blink::mojom::NativeFileSystemManagerRequest request,
+           RenderProcessHost* host, const url::Origin& origin) {
+          auto* manager =
+              static_cast<StoragePartitionImpl*>(host->GetStoragePartition())
+                  ->GetNativeFileSystemManager();
+          // This code path is only for workers, hence always pass in
+          // MSG_ROUTING_NONE as frame ID. Frames themselves go through
+          // RenderFrameHostImpl instead.
+          base::PostTaskWithTraits(
+              FROM_HERE, {BrowserThread::IO},
+              base::BindOnce(&NativeFileSystemManagerImpl::BindRequest,
+                             base::Unretained(manager), origin, host->GetID(),
+                             MSG_ROUTING_NONE, std::move(request)));
+        }));
+  }
   parameterized_binder_registry_.AddInterface(
       base::Bind([](blink::mojom::PermissionServiceRequest request,
                     RenderProcessHost* host, const url::Origin& origin) {

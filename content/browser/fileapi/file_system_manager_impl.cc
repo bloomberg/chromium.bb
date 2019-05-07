@@ -25,7 +25,6 @@
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
-#include "content/browser/fileapi/file_system_chooser.h"
 #include "content/common/fileapi/webblob_messages.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -38,7 +37,6 @@
 #include "storage/browser/fileapi/file_observers.h"
 #include "storage/browser/fileapi/file_permission_policy.h"
 #include "storage/browser/fileapi/file_system_context.h"
-#include "storage/browser/fileapi/file_writer_impl.h"
 #include "storage/browser/fileapi/isolated_context.h"
 #include "storage/common/fileapi/file_system_info.h"
 #include "storage/common/fileapi/file_system_type_converters.h"
@@ -123,11 +121,9 @@ struct FileSystemManagerImpl::ReadDirectorySyncCallbackEntry {
 
 FileSystemManagerImpl::FileSystemManagerImpl(
     int process_id,
-    int frame_id,
     scoped_refptr<storage::FileSystemContext> file_system_context,
     scoped_refptr<ChromeBlobStorageContext> blob_storage_context)
     : process_id_(process_id),
-      frame_id_(frame_id),
       context_(std::move(file_system_context)),
       security_policy_(ChildProcessSecurityPolicyImpl::GetInstance()),
       blob_storage_context_(std::move(blob_storage_context)),
@@ -567,53 +563,6 @@ void FileSystemManagerImpl::GetPlatformPath(const GURL& path,
       FROM_HERE,
       base::BindOnce(&FileSystemManagerImpl::GetPlatformPathOnFileThread, path,
                      process_id_, context_, GetWeakPtr(), std::move(callback)));
-}
-
-void FileSystemManagerImpl::CreateWriter(const GURL& file_path,
-                                         CreateWriterCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (!base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI)) {
-    bindings_.ReportBadMessage("FileSystemManager.CreateWriter");
-    return;
-  }
-
-  FileSystemURL url(context_->CrackURL(file_path));
-  base::Optional<base::File::Error> opt_error = ValidateFileSystemURL(url);
-  if (opt_error) {
-    std::move(callback).Run(opt_error.value(), nullptr);
-    return;
-  }
-  if (!security_policy_->CanWriteFileSystemFile(process_id_, url)) {
-    std::move(callback).Run(base::File::FILE_ERROR_SECURITY, nullptr);
-    return;
-  }
-
-  blink::mojom::FileWriterPtr writer;
-  mojo::MakeStrongBinding(std::make_unique<storage::FileWriterImpl>(
-                              url, context_->CreateFileSystemOperationRunner(),
-                              blob_storage_context_->context()->AsWeakPtr()),
-                          MakeRequest(&writer));
-  std::move(callback).Run(base::File::FILE_OK, std::move(writer));
-}
-
-void FileSystemManagerImpl::ChooseEntry(
-    blink::mojom::ChooseFileSystemEntryType type,
-    std::vector<blink::mojom::ChooseFileSystemEntryAcceptsOptionPtr> accepts,
-    bool include_accepts_all,
-    ChooseEntryCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI)) {
-    bindings_.ReportBadMessage("FSMI_WRITABLE_FILES_DISABLED");
-    return;
-  }
-
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(
-          &FileSystemChooser::CreateAndShow, process_id_, frame_id_, type,
-          std::move(accepts), include_accepts_all, std::move(callback),
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})));
 }
 
 void FileSystemManagerImpl::Cancel(

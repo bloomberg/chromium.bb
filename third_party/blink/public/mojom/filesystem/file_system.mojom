@@ -12,7 +12,6 @@ import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/file_info.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/string16.mojom";
-import "third_party/blink/public/mojom/filesystem/file_writer.mojom";
 
 enum FileSystemType {
   kTemporary,
@@ -25,14 +24,6 @@ struct FileSystemInfo {
   string name;
   url.mojom.Url root_url;
   FileSystemType mount_type = kTemporary;
-};
-
-// Entries as returned by the ChooseEntry method below. Each entry is
-// represented by the ID of the isolated filesystem containing the entry and
-// the name of the file in that filesystem.
-struct FileSystemEntry {
-  string file_system_id;
-  string base_name;
 };
 
 // Interface for renderers to cancel running file system operations. A
@@ -72,23 +63,6 @@ interface FileSystemOperationListener {
 // with the result of the CreateSnapshotFile call.
 interface ReceivedSnapshotListener {
   DidReceiveSnapshotFile();
-};
-
-enum ChooseFileSystemEntryType {
-  kOpenFile,
-  kOpenMultipleFiles,
-  kSaveFile,
-  kOpenDirectory
-};
-
-// Struct to represent individual options for types of files that are accepted
-// by calls to ChooseEnrty. Each type has an optional description, and any
-// number of mime types and/or extensions.
-// Options with no extensions and no known mime types will be ignored.
-struct ChooseFileSystemEntryAcceptsOption {
-  mojo_base.mojom.String16 description;
-  array<string> mime_types;
-  array<string> extensions;
 };
 
 // Interface provided by the browser to the renderer to carry out filesystem
@@ -227,21 +201,4 @@ interface FileSystemManager {
   [Sync]
   GetPlatformPath(url.mojom.Url file_path) =>
       (mojo_base.mojom.FilePath platform_path);
-
-  // Creates a writer for the given file at |file_path|.
-  CreateWriter(url.mojom.Url file_path) =>
-      (mojo_base.mojom.FileError result,
-       blink.mojom.FileWriter? writer);
-
-  // Prompts the user to select a file from the native filesystem. Returns an
-  // error code if something failed, or a list of the selected entries on
-  // success.
-  // If |include_accepts_all| is true, a "all files" option is included in the
-  // dialog displayed to the user. If no valid options are present in |accepts|
-  // |include_accepts_all| is treated as if it was true.
-  ChooseEntry(ChooseFileSystemEntryType type,
-              array<ChooseFileSystemEntryAcceptsOption> accepts,
-              bool include_accepts_all) =>
-      (mojo_base.mojom.FileError error_code,
-       array<FileSystemEntry> entries);
 };

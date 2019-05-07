@@ -38,6 +38,7 @@
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
+#include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -751,6 +752,10 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
   partition->cookie_store_context_->Initialize(
       partition->service_worker_context_, base::DoNothing());
 
+  partition->native_file_system_manager_ =
+      base::MakeRefCounted<NativeFileSystemManagerImpl>(
+          partition->filesystem_context_, blob_context);
+
   if (base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache)) {
     GeneratedCodeCacheSettings settings =
         GetContentClient()->browser()->GetGeneratedCodeCacheSettings(context);
@@ -939,6 +944,11 @@ StoragePartitionImpl::GetDevToolsBackgroundServicesContext() {
   return devtools_background_services_context_.get();
 }
 
+NativeFileSystemManagerImpl*
+StoragePartitionImpl::GetNativeFileSystemManager() {
+  return native_file_system_manager_.get();
+}
+
 void StoragePartitionImpl::OpenLocalStorage(
     const url::Origin& origin,
     blink::mojom::StorageAreaRequest request) {
@@ -1033,14 +1043,14 @@ void StoragePartitionImpl::DeletionHelperDone(base::OnceClosure callback) {
   }
 }
 
-void StoragePartitionImpl::
-    QuotaManagedDataDeletionHelper::IncrementTaskCountOnIO() {
+void StoragePartitionImpl::QuotaManagedDataDeletionHelper::
+    IncrementTaskCountOnIO() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ++task_count_;
 }
 
-void StoragePartitionImpl::
-    QuotaManagedDataDeletionHelper::DecrementTaskCountOnIO() {
+void StoragePartitionImpl::QuotaManagedDataDeletionHelper::
+    DecrementTaskCountOnIO() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_GT(task_count_, 0);
   --task_count_;
@@ -1288,13 +1298,12 @@ void StoragePartitionImpl::ClearDataForOrigin(
                 base::Time(), base::Time::Max(), base::DoNothing());
 }
 
-void StoragePartitionImpl::ClearData(
-    uint32_t remove_mask,
-    uint32_t quota_storage_remove_mask,
-    const GURL& storage_origin,
-    const base::Time begin,
-    const base::Time end,
-    base::OnceClosure callback) {
+void StoragePartitionImpl::ClearData(uint32_t remove_mask,
+                                     uint32_t quota_storage_remove_mask,
+                                     const GURL& storage_origin,
+                                     const base::Time begin,
+                                     const base::Time end,
+                                     base::OnceClosure callback) {
   CookieDeletionFilterPtr deletion_filter = CookieDeletionFilter::New();
   if (!storage_origin.host().empty())
     deletion_filter->host_name = storage_origin.host();

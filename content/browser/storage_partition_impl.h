@@ -53,6 +53,7 @@ class CookieStoreContext;
 class BlobRegistryWrapper;
 class PrefetchURLLoaderService;
 class GeneratedCodeCacheContext;
+class NativeFileSystemManagerImpl;
 
 class CONTENT_EXPORT StoragePartitionImpl
     : public StoragePartition,
@@ -155,6 +156,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   PrefetchURLLoaderService* GetPrefetchURLLoaderService();
   CookieStoreContext* GetCookieStoreContext();
   DevToolsBackgroundServicesContext* GetDevToolsBackgroundServicesContext();
+  NativeFileSystemManagerImpl* GetNativeFileSystemManager();
 
   // blink::mojom::StoragePartitionService interface.
   void OpenLocalStorage(const url::Origin& origin,
@@ -344,6 +346,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   scoped_refptr<GeneratedCodeCacheContext> generated_code_cache_context_;
   scoped_refptr<DevToolsBackgroundServicesContext>
       devtools_background_services_context_;
+  scoped_refptr<NativeFileSystemManagerImpl> native_file_system_manager_;
 
   // BindingSet for StoragePartitionService, using the process id as the
   // binding context type. The process id can subsequently be used during

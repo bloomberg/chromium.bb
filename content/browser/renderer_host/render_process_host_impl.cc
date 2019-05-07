@@ -2092,8 +2092,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
                           base::Unretained(push_messaging_manager_.get())));
 
   file_system_manager_impl_.reset(new FileSystemManagerImpl(
-      GetID(), MSG_ROUTING_NONE,
-      storage_partition_impl_->GetFileSystemContext(),
+      GetID(), storage_partition_impl_->GetFileSystemContext(),
       ChromeBlobStorageContext::GetFor(GetBrowserContext())));
   // This interface is still exposed by the RenderProcessHost's registry so
   // that it can be accessed by PepperFileSystemHost. Blink accesses this
