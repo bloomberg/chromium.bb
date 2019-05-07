@@ -14,8 +14,8 @@ namespace autofill {
 // ToolbarPageActionContainerView once the status chip is fully
 // launched.
 
-// Update the state of credit card icon.
-void UpdateCreditCardIcon(PageActionIconType icon_type,
+// Update the state of related page action icon icon.
+void UpdatePageActionIcon(PageActionIconType icon_type,
                           content::WebContents* web_contents);
 
 }  // namespace autofill

@@ -270,7 +270,7 @@ void LocalCardMigrationDialogControllerImpl::OpenUrl(const GURL& url) {
 }
 
 void LocalCardMigrationDialogControllerImpl::UpdateLocalCardMigrationIcon() {
-  ::autofill::UpdateCreditCardIcon(PageActionIconType::kLocalCardMigration,
+  ::autofill::UpdatePageActionIcon(PageActionIconType::kLocalCardMigration,
                                    web_contents());
 }
 

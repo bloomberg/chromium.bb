@@ -16,7 +16,7 @@
 
 namespace autofill {
 
-void UpdateCreditCardIcon(PageActionIconType icon_type,
+void UpdatePageActionIcon(PageActionIconType icon_type,
                           content::WebContents* web_contents) {
 #if !defined(OS_ANDROID)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
@@ -46,8 +46,12 @@ void UpdateCreditCardIcon(PageActionIconType icon_type,
       case PageActionIconType::kSaveCard:
         location_bar->UpdateSaveCreditCardIcon();
         break;
-      case PageActionIconType::kFind:
       case PageActionIconType::kManagePasswords:
+        browser->window()
+            ->GetOmniboxPageActionIconContainer()
+            ->UpdatePageActionIcon(icon_type);
+        break;
+      case PageActionIconType::kFind:
       case PageActionIconType::kPwaInstall:
       case PageActionIconType::kSendTabToSelf:
       case PageActionIconType::kTranslate:

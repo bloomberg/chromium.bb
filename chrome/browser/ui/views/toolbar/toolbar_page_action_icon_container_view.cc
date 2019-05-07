@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/views/autofill/payments/save_card_icon_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
+#include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
@@ -19,6 +20,10 @@ ToolbarPageActionIconContainerView::ToolbarPageActionIconContainerView(
     CommandUpdater* command_updater,
     Browser* browser)
     : ToolbarIconContainerView(), browser_(browser) {
+  manage_passwords_icon_views_ =
+      new ManagePasswordsIconViews(command_updater, this);
+  page_action_icons_.push_back(manage_passwords_icon_views_);
+
   local_card_migration_icon_view_ = new autofill::LocalCardMigrationIconView(
       command_updater, browser, this,
       // TODO(crbug.com/932818): The font list and the icon color may not be
@@ -68,6 +73,8 @@ PageActionIconView* ToolbarPageActionIconContainerView::GetIconView(
       return local_card_migration_icon_view_;
     case PageActionIconType::kSaveCard:
       return save_card_icon_view_;
+    case PageActionIconType::kManagePasswords:
+      return manage_passwords_icon_views_;
     default:
       NOTREACHED();
       return nullptr;

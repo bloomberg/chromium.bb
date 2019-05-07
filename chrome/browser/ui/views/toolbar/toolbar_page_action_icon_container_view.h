@@ -13,6 +13,7 @@
 class AvatarToolbarButton;
 class Browser;
 class CommandUpdater;
+class ManagePasswordsIconViews;
 
 namespace autofill {
 class LocalCardMigrationIconView;
@@ -56,6 +57,10 @@ class ToolbarPageActionIconContainerView : public ToolbarIconContainerView,
     return save_card_icon_view_;
   }
 
+  ManagePasswordsIconViews* manage_passwords_icon_views() const {
+    return manage_passwords_icon_views_;
+  }
+
   AvatarToolbarButton* avatar_button() { return avatar_; }
 
  private:
@@ -64,6 +69,7 @@ class ToolbarPageActionIconContainerView : public ToolbarIconContainerView,
   autofill::LocalCardMigrationIconView* local_card_migration_icon_view_ =
       nullptr;
   autofill::SaveCardIconView* save_card_icon_view_ = nullptr;
+  ManagePasswordsIconViews* manage_passwords_icon_views_ = nullptr;
   AvatarToolbarButton* avatar_ = nullptr;
 
   std::vector<PageActionIconView*> page_action_icons_;

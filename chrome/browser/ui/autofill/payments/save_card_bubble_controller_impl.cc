@@ -613,7 +613,7 @@ void SaveCardBubbleControllerImpl::ShowIconOnly() {
 }
 
 void SaveCardBubbleControllerImpl::UpdateSaveCardIcon() {
-  ::autofill::UpdateCreditCardIcon(PageActionIconType::kSaveCard,
+  ::autofill::UpdatePageActionIcon(PageActionIconType::kSaveCard,
                                    web_contents());
 }
 
