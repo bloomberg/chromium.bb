@@ -23,6 +23,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/linear_animation.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -195,6 +196,61 @@ class TabHoverCardBubbleView::WidgetFadeAnimationDelegate
   DISALLOW_COPY_AND_ASSIGN(WidgetFadeAnimationDelegate);
 };
 
+class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
+    : public gfx::AnimationDelegate {
+ public:
+  explicit WidgetSlideAnimationDelegate(
+      TabHoverCardBubbleView* hover_card_delegate)
+      : bubble_delegate_(hover_card_delegate),
+        slide_animation_(std::make_unique<gfx::SlideAnimation>(this)) {
+    constexpr int kSlideDuration = 75;
+    slide_animation_->SetSlideDuration(kSlideDuration);
+  }
+  ~WidgetSlideAnimationDelegate() override {}
+
+  void AnimateToAnchorView(views::View* anchor_view) {
+    anchor_view_ = anchor_view;
+    gfx::Rect anchor_bounds = anchor_view->GetAnchorBoundsInScreen();
+
+    // If an animation is currently running we should start the next animation
+    // from where the previous left off.
+    if (slide_animation_->is_animating() && !current_bubble_bounds_.IsEmpty())
+      starting_bubble_bounds_ = current_bubble_bounds_;
+    else
+      starting_bubble_bounds_ = bubble_delegate_->GetBubbleBounds();
+
+    slide_animation_->Reset(0);
+
+    target_bubble_bounds_ =
+        bubble_delegate_->GetBubbleFrameView()->GetUpdatedWindowBounds(
+            anchor_bounds, bubble_delegate_->arrow(),
+            bubble_delegate_->GetWidget()->client_view()->GetPreferredSize(),
+            true);
+
+    slide_animation_->Show();
+  }
+
+ private:
+  void AnimationProgressed(const gfx::Animation* animation) override {
+    double value = gfx::Tween::CalculateValue(
+        gfx::Tween::FAST_OUT_SLOW_IN, slide_animation_->GetCurrentValue());
+    current_bubble_bounds_ = gfx::Tween::RectValueBetween(
+        value, starting_bubble_bounds_, target_bubble_bounds_);
+
+    if (current_bubble_bounds_ == target_bubble_bounds_) {
+      bubble_delegate_->SetAnchorView(anchor_view_);
+    }
+    bubble_delegate_->GetWidget()->SetBounds(current_bubble_bounds_);
+  }
+
+  TabHoverCardBubbleView* const bubble_delegate_;
+  std::unique_ptr<gfx::SlideAnimation> slide_animation_;
+  views::View* anchor_view_;
+  gfx::Rect starting_bubble_bounds_;
+  gfx::Rect target_bubble_bounds_;
+  gfx::Rect current_bubble_bounds_;
+};
+
 TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
     : BubbleDialogDelegateView(tab, views::BubbleBorder::TOP_LEFT) {
   // We'll do all of our own layout inside the bubble, so no need to inset this
@@ -248,16 +304,20 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
 
   widget_ = views::BubbleDialogDelegateView::CreateBubble(this);
   set_adjust_if_offscreen(true);
+
+  slide_animation_delegate_ =
+      std::make_unique<WidgetSlideAnimationDelegate>(this);
   fade_animation_delegate_ =
       std::make_unique<WidgetFadeAnimationDelegate>(widget_);
 
   GetBubbleFrameView()->set_preferred_arrow_adjustment(
       views::BubbleFrameView::PreferredArrowAdjustment::kOffset);
 
-  if (CustomShadowsSupported())
+  if (CustomShadowsSupported()) {
     GetBubbleFrameView()->SetCornerRadius(
         ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
             views::EMPHASIS_HIGH));
+  }
 }
 
 TabHoverCardBubbleView::~TabHoverCardBubbleView() = default;
@@ -268,7 +328,10 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
 
   UpdateCardContent(tab->data());
 
-  views::BubbleDialogDelegateView::SetAnchorView(tab);
+  if (widget_->IsVisible() && !disable_animations_for_testing_)
+    slide_animation_delegate_->AnimateToAnchorView(tab);
+  else
+    SetAnchorView(tab);
 
   fade_animation_delegate_->CancelFadeOut();
 

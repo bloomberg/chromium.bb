@@ -35,6 +35,8 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
   // Updates card content and anchoring and shows the tab hover card.
   void UpdateAndShow(Tab* tab);
 
+  void UpdateAnchorBounds(gfx::Rect anchor_bounds);
+
   void FadeOutToHide();
 
   bool IsFadingOut() const;
@@ -46,6 +48,7 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
   friend class TabHoverCardBubbleViewBrowserTest;
   friend class TabHoverCardBubbleViewInteractiveUiTest;
   class WidgetFadeAnimationDelegate;
+  class WidgetSlideAnimationDelegate;
 
   // Get delay in milliseconds based on tab width.
   base::TimeDelta GetDelay(int tab_width) const;
@@ -64,6 +67,8 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
   // Fade animations interfere with browser tests so we disable them in tests.
   static bool disable_animations_for_testing_;
   std::unique_ptr<WidgetFadeAnimationDelegate> fade_animation_delegate_;
+  // Used to animate the tab hover card's movement between tabs.
+  std::unique_ptr<WidgetSlideAnimationDelegate> slide_animation_delegate_;
 
   views::Widget* widget_ = nullptr;
   views::Label* title_label_ = nullptr;
