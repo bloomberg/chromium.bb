@@ -412,8 +412,8 @@ enum class AttestationConveyancePreference : uint8_t {
 // CredProtect enumerates the levels of credential protection specified by the
 // `credProtect` CTAP2 extension.
 enum class CredProtect : uint8_t {
-  kUVOrCredIDRequired = 1,
-  kUVRequired = 2,
+  kUVOrCredIDRequired = 2,
+  kUVRequired = 3,
 };
 
 }  // namespace device

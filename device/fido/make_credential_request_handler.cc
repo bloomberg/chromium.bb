@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/features.h"
@@ -21,6 +22,11 @@
 #include "device/fido/make_credential_task.h"
 #include "device/fido/pin.h"
 #include "services/service_manager/public/cpp/connector.h"
+
+#if defined(OS_WIN)
+#include "device/fido/win/authenticator.h"
+#include "third_party/microsoft_webauthn/webauthn.h"
+#endif
 
 namespace device {
 
@@ -64,24 +70,32 @@ FidoReturnCode IsCandidateAuthenticatorPostTouch(
     const AuthenticatorSelectionCriteria& authenticator_selection_criteria,
     const FidoRequestHandlerBase::Observer* observer) {
   const auto& opt_options = authenticator->Options();
-  if (!opt_options) {
+#if defined(OS_WIN)
+  if (authenticator->IsWinNativeApiAuthenticator()) {
     // This authenticator doesn't know its capabilities yet, so we need
     // to assume it can handle the request. This is the case for Windows,
     // where we proxy the request to the native API.
+    DCHECK(!opt_options);
+
+    if (request.cred_protect && request.cred_protect->second &&
+        !static_cast<WinWebAuthnApiAuthenticator*>(authenticator)
+             ->SupportsCredProtectExtension()) {
+      return FidoReturnCode::kAuthenticatorMissingResidentKeys;
+    }
+
     return FidoReturnCode::kSuccess;
   }
+#endif  // defined(OS_WIN)
+
+  DCHECK(opt_options);
 
   if (authenticator_selection_criteria.require_resident_key() &&
       !opt_options->supports_resident_key) {
     return FidoReturnCode::kAuthenticatorMissingResidentKeys;
   }
 
-  // TODO(martinkr): the Windows integration needs to be able to pass the
-  // credProtect information to the DLL, and to fail if the DLL version is too
-  // low to support credProtect.
   if (request.cred_protect && request.cred_protect->second &&
-      (!authenticator->Options() ||
-       !authenticator->Options()->supports_cred_protect)) {
+      !authenticator->Options()->supports_cred_protect) {
     return FidoReturnCode::kAuthenticatorMissingResidentKeys;
   }
 
@@ -179,6 +193,16 @@ void MakeCredentialRequestHandler::DispatchRequest(
   if (IsCandidateAuthenticatorPostTouch(
           request_, authenticator, authenticator_selection_criteria_,
           observer()) != FidoReturnCode::kSuccess) {
+#if defined(OS_WIN)
+    // If the Windows API cannot handle a request, just reject the request
+    // outright. There are no other authenticators to attempt, so calling
+    // GetTouch() would not make sense.
+    if (authenticator->IsWinNativeApiAuthenticator()) {
+      HandleInapplicableAuthenticator(authenticator);
+      return;
+    }
+#endif  // defined(OS_WIN)
+
     if (!base::FeatureList::IsEnabled(device::kWebAuthPINSupport)) {
       // Don't flash authenticator without PIN support. This maintains previous
       // behaviour and avoids adding UI unprotected by a feature flag without

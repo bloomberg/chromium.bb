@@ -67,16 +67,8 @@ CtapMakeCredentialRequest::EncodeAsCBOR(
   }
 
   if (request.cred_protect) {
-    int value;
-    switch (request.cred_protect->first) {
-      case CredProtect::kUVOrCredIDRequired:
-        value = 2;
-        break;
-      case CredProtect::kUVRequired:
-        value = 3;
-        break;
-    }
-    extensions.emplace(kExtensionCredProtect, value);
+    extensions.emplace(kExtensionCredProtect,
+                       static_cast<uint8_t>(request.cred_protect->first));
   }
 
   if (!extensions.empty()) {

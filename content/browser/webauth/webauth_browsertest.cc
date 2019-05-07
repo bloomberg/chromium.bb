@@ -1019,10 +1019,8 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest, WinMakeCredential) {
   NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html"));
 
   device::ScopedFakeWinWebAuthnApi fake_api;
-  fake_api.set_available(true);
   fake_api.set_is_uvpaa(true);
   fake_api.set_hresult(S_OK);
-  fake_api.enable_fake_attestation();
 
   base::Optional<std::string> result = ExecuteScriptAndExtractPrefixedString(
       shell()->web_contents(),
@@ -1036,10 +1034,8 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
   NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html"));
 
   device::ScopedFakeWinWebAuthnApi fake_api;
-  fake_api.set_available(true);
   fake_api.set_is_uvpaa(true);
   fake_api.set_hresult(E_FAIL);
-  fake_api.enable_fake_attestation();
 
   // The authenticator response was good but the return code indicated failure.
   base::Optional<std::string> result = ExecuteScriptAndExtractPrefixedString(
@@ -1053,10 +1049,8 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest, WinGetAssertion) {
   NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html"));
 
   device::ScopedFakeWinWebAuthnApi fake_api;
-  fake_api.set_available(true);
   fake_api.set_is_uvpaa(true);
   fake_api.set_hresult(S_OK);
-  fake_api.enable_fake_assertion();
 
   base::Optional<std::string> result = ExecuteScriptAndExtractPrefixedString(
       shell()->web_contents(), BuildGetCallWithParameters(GetParameters()),
@@ -1078,10 +1072,8 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
   NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html"));
 
   device::ScopedFakeWinWebAuthnApi fake_api;
-  fake_api.set_available(true);
   fake_api.set_is_uvpaa(true);
   fake_api.set_hresult(E_FAIL);
-  fake_api.enable_fake_assertion();
 
   // The authenticator response was good but the return code indicated failure.
   base::Optional<std::string> result = ExecuteScriptAndExtractPrefixedString(

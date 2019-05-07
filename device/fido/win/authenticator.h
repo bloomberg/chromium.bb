@@ -47,6 +47,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApiAuthenticator
                       MakeCredentialCallback callback) override;
   void GetAssertion(CtapGetAssertionRequest request,
                     GetAssertionCallback callback) override;
+  void GetTouch(base::OnceClosure callback) override;
   void Cancel() override;
   std::string GetId() const override;
   base::string16 GetDisplayName() const override;
@@ -56,6 +57,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApiAuthenticator
   base::Optional<FidoTransportProtocol> AuthenticatorTransport() const override;
   bool IsWinNativeApiAuthenticator() const override;
   base::WeakPtr<FidoAuthenticator> GetWeakPtr() override;
+
+  bool SupportsCredProtectExtension();
 
  private:
   void MakeCredentialDone(

@@ -45,6 +45,7 @@
 #include "device/fido/features.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/fido_test_data.h"
 #include "device/fido/hid/fake_hid_impl_for_testing.h"
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/scoped_virtual_fido_device.h"
@@ -3711,5 +3712,46 @@ TEST_F(ResidentKeyAuthenticatorImplTest, ProtectedNonResidentCreds) {
   EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
   EXPECT_TRUE(HasUV(callback_receiver));
 }
+
+#if defined(OS_WIN)
+// Requests with a credProtect extension that have |enforce_protection_policy|
+// set should be rejected if the Windows WebAuthn API doesn't support
+// credProtect.
+TEST_F(ResidentKeyAuthenticatorImplTest, WinCredProtectApiVersion) {
+  // The canned response returned by the Windows API fake is for acme.com.
+  NavigateAndCommit(GURL("https://acme.com"));
+  TestServiceManagerContext smc;
+  for (const bool supports_cred_protect : {false, true}) {
+    SCOPED_TRACE(testing::Message()
+                 << "supports_cred_protect: " << supports_cred_protect);
+
+    device::ScopedFakeWinWebAuthnApi fake_api;
+    fake_api.set_version(supports_cred_protect ? WEBAUTHN_API_VERSION_2
+                                               : WEBAUTHN_API_VERSION_1);
+
+    PublicKeyCredentialCreationOptionsPtr options = make_credential_options();
+    options->relying_party = PublicKeyCredentialRpEntity::New();
+    options->relying_party->id = device::test_data::kRelyingPartyId;
+    options->authenticator_selection->user_verification =
+        blink::mojom::UserVerificationRequirement::REQUIRED;
+    options->authenticator_selection->require_resident_key = true;
+    options->protection_policy =
+        blink::mojom::ProtectionPolicy::UV_OR_CRED_ID_REQUIRED;
+    options->enforce_protection_policy = true;
+    options->authenticator_selection->user_verification =
+        blink::mojom::UserVerificationRequirement::REQUIRED;
+
+    TestMakeCredentialCallback callback_receiver;
+    AuthenticatorPtr authenticator = ConnectToAuthenticator();
+    authenticator->MakeCredential(std::move(options),
+                                  callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+
+    EXPECT_EQ(callback_receiver.status(),
+              supports_cred_protect ? AuthenticatorStatus::SUCCESS
+                                    : AuthenticatorStatus::NOT_ALLOWED_ERROR);
+  }
+}
+#endif  // defined(OS_WIN)
 
 }  // namespace content

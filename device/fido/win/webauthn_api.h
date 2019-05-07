@@ -61,8 +61,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApi {
   virtual HRESULT CancelCurrentOperation(GUID* cancellation_id) = 0;
 
   virtual PCWSTR GetErrorName(HRESULT hr) = 0;
+
   virtual void FreeCredentialAttestation(PWEBAUTHN_CREDENTIAL_ATTESTATION) = 0;
+
   virtual void FreeAssertion(PWEBAUTHN_ASSERTION pWebAuthNAssertion) = 0;
+
+  virtual int Version() = 0;
 
  protected:
   WinWebAuthnApi();

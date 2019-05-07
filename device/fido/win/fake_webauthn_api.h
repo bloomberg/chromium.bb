@@ -21,15 +21,13 @@ class FakeWinWebAuthnApi : public WinWebAuthnApi {
   // Inject the return value for WinWebAuthnApi::IsAvailable().
   void set_available(bool available) { is_available_ = available; }
 
-  void enable_fake_attestation() { attestation_ = MakePackedAttestation(); }
-
-  void enable_fake_assertion() { assertion_ = MakeAssertion(); }
-
   void set_hresult(HRESULT result) { result_ = result; }
 
   // Inject the return value for
   // WinWebAuthnApi::IsUserverifyingPlatformAuthenticatorAvailable().
   void set_is_uvpaa(bool is_uvpaa) { is_uvpaa_ = is_uvpaa; }
+
+  void set_version(int version) { version_ = version; }
 
   // WinWebAuthnApi:
   bool IsAvailable() const override;
@@ -53,13 +51,12 @@ class FakeWinWebAuthnApi : public WinWebAuthnApi {
   PCWSTR GetErrorName(HRESULT hr) override;
   void FreeCredentialAttestation(PWEBAUTHN_CREDENTIAL_ATTESTATION) override;
   void FreeAssertion(PWEBAUTHN_ASSERTION pWebAuthNAssertion) override;
+  int Version() override;
 
  private:
-  WEBAUTHN_CREDENTIAL_ATTESTATION MakePackedAttestation();
-  WEBAUTHN_ASSERTION MakeAssertion();
-
   bool is_available_ = true;
   bool is_uvpaa_ = false;
+  int version_ = WEBAUTHN_API_VERSION_2;
   WEBAUTHN_CREDENTIAL_ATTESTATION attestation_;
   WEBAUTHN_ASSERTION assertion_;
   HRESULT result_ = S_OK;

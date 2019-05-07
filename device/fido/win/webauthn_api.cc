@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/device_event_log/device_event_log.h"
 #include "device/fido/win/type_conversions.h"
 
 namespace device {
@@ -27,11 +28,6 @@ base::string16 OptionalGURLToUTF16(const base::Optional<GURL>& in) {
 // timeout and cancel the operation when it expires, so this value simply needs
 // to be larger than the largest internal request timeout.
 constexpr uint32_t kWinWebAuthnTimeoutMilliseconds = 1000 * 60 * 5;
-
-// We do not integrate with older API versions of webauthn.dll because they
-// don't support BLE and direct device access to USB and BLE FIDO devices is
-// not yet blocked on those platforms.
-constexpr uint32_t kMinWinWebAuthnApiVersion = WEBAUTHN_API_VERSION_1;
 
 class WinWebAuthnApiImpl : public WinWebAuthnApi {
  public:
@@ -77,11 +73,15 @@ class WinWebAuthnApiImpl : public WinWebAuthnApi {
     BIND_FN(get_api_version_number_, webauthn_dll_,
             "WebAuthNGetApiVersionNumber");
     api_version_ = get_api_version_number_ ? get_api_version_number_() : 0;
+
+    FIDO_LOG(DEBUG) << "webauthn.dll version " << api_version_;
   }
+
+  ~WinWebAuthnApiImpl() override {}
 
   // WinWebAuthnApi:
   bool IsAvailable() const override {
-    return is_bound_ && (api_version_ >= kMinWinWebAuthnApiVersion);
+    return is_bound_ && (api_version_ >= WEBAUTHN_API_VERSION_1);
   }
 
   HRESULT IsUserVerifyingPlatformAuthenticatorAvailable(
@@ -130,12 +130,13 @@ class WinWebAuthnApiImpl : public WinWebAuthnApi {
     DCHECK(is_bound_);
     return free_credential_attestation_(attestation_ptr);
   }
+
   void FreeAssertion(PWEBAUTHN_ASSERTION assertion_ptr) override {
     DCHECK(is_bound_);
     return free_assertion_(assertion_ptr);
   }
 
-  ~WinWebAuthnApiImpl() override {}
+  int Version() override { return api_version_; }
 
  private:
   bool is_bound_ = false;
@@ -244,6 +245,26 @@ AuthenticatorMakeCredentialBlocking(WinWebAuthnApi* webauthn_api,
     extensions.emplace_back(
         WEBAUTHN_EXTENSION{WEBAUTHN_EXTENSIONS_IDENTIFIER_HMAC_SECRET,
                            sizeof(BOOL), static_cast<void*>(&kHMACSecretTrue)});
+  }
+
+  WEBAUTHN_CRED_PROTECT_EXTENSION_IN maybe_cred_protect_extension;
+  if (request.cred_protect) {
+    // MakeCredentialRequestHandler rejects a request with credProtect
+    // enforced=true if webauthn.dll does not support credProtect.
+    if (request.cred_protect->second &&
+        webauthn_api->Version() < WEBAUTHN_API_VERSION_2) {
+      NOTREACHED();
+      return {CtapDeviceResponseCode::kCtap2ErrNotAllowed, base::nullopt};
+    }
+    maybe_cred_protect_extension = WEBAUTHN_CRED_PROTECT_EXTENSION_IN{
+        /*dwCredProtect=*/static_cast<uint8_t>(request.cred_protect->first),
+        /*bRequireCredProtect=*/request.cred_protect->second,
+    };
+    extensions.emplace_back(WEBAUTHN_EXTENSION{
+        /*pwszExtensionIdentifier=*/WEBAUTHN_EXTENSIONS_IDENTIFIER_CRED_PROTECT,
+        /*cbExtension=*/sizeof(WEBAUTHN_CRED_PROTECT_EXTENSION_IN),
+        /*pvExtension=*/&maybe_cred_protect_extension,
+    });
   }
 
   uint32_t authenticator_attachment;
@@ -367,7 +388,7 @@ AuthenticatorGetAssertionBlocking(WinWebAuthnApi* webauthn_api,
       // pCredentials data.
       WEBAUTHN_CREDENTIALS{legacy_credentials.size(),
                            legacy_credentials.data()},
-      WEBAUTHN_EXTENSIONS{0, nullptr},  // None supported.
+      WEBAUTHN_EXTENSIONS{0, nullptr},
       authenticator_attachment,
       ToWinUserVerificationRequirement(request.user_verification),
       /*dwFlags=*/0,
@@ -392,6 +413,10 @@ AuthenticatorGetAssertionBlocking(WinWebAuthnApi* webauthn_api,
   }
   return {CtapDeviceResponseCode::kSuccess,
           ToAuthenticatorGetAssertionResponse(*assertion)};
+}
+
+bool SupportsCredProtectExtension(WinWebAuthnApi* api) {
+  return api->IsAvailable() && api->Version() >= WEBAUTHN_API_VERSION_2;
 }
 
 }  // namespace device

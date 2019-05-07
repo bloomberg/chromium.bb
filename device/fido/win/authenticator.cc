@@ -144,6 +144,10 @@ void WinWebAuthnApiAuthenticator::GetAssertionDone(
   std::move(callback).Run(result.first, std::move(result.second));
 }
 
+void WinWebAuthnApiAuthenticator::GetTouch(base::OnceClosure callback) {
+  NOTREACHED();
+}
+
 void WinWebAuthnApiAuthenticator::Cancel() {
   if (!is_pending_ || waiting_for_cancellation_)
     return;
@@ -192,6 +196,10 @@ WinWebAuthnApiAuthenticator::Options() const {
 
 base::WeakPtr<FidoAuthenticator> WinWebAuthnApiAuthenticator::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
+}
+
+bool WinWebAuthnApiAuthenticator::SupportsCredProtectExtension() {
+  return win_api_->Version() >= WEBAUTHN_API_VERSION_2;
 }
 
 }  // namespace device
