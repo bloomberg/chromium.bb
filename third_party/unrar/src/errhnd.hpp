@@ -1,8 +1,6 @@
 #ifndef _RAR_ERRHANDLER_
 #define _RAR_ERRHANDLER_
 
-namespace third_party_unrar {
-
 enum RAR_EXIT // RAR exit code.
 { 
   RARX_SUCCESS   =   0,
@@ -57,7 +55,7 @@ class ErrorHandler
     uint GetErrorCount() {return ErrCount;}
     void SetSignalHandlers(bool Enable);
     void Throw(RAR_EXIT Code);
-    void SetSilent(bool Mode) {Silent=Mode;}
+    void SetSilent(bool Mode) {Silent=Mode;};
     bool GetSysErrMsg(wchar *Msg,size_t Size);
     void SysErrMsg();
     int GetSystemErrorCode();
@@ -69,6 +67,5 @@ class ErrorHandler
     bool MainExit = false; // main() is completed.
 };
 
-}  // namespace third_party_unrar
 
 #endif

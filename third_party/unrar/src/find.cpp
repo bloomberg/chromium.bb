@@ -1,7 +1,5 @@
 #include "rar.hpp"
 
-namespace third_party_unrar {
-
 FindFile::FindFile()
 {
   *FindMask=0;
@@ -218,4 +216,3 @@ HANDLE FindFile::Win32Find(HANDLE hFind,const wchar *Mask,FindData *fd)
 }
 #endif
 
-}  // namespace third_party_unrar

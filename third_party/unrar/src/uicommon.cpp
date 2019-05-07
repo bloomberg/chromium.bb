@@ -1,5 +1,3 @@
-namespace third_party_unrar {
-
 static bool uiSoundEnabled;
 
 void uiInit(bool Sound)
@@ -65,5 +63,3 @@ UIASKREP_RESULT uiAskReplaceEx(RAROptions *Cmd,wchar *Name,size_t MaxNameSize,in
 #endif
   return Choice;
 }
-
-}  // namespace third_party_unrar

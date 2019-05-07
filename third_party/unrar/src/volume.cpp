@@ -1,7 +1,5 @@
 #include "rar.hpp"
 
-namespace third_party_unrar {
-
 #ifdef RARDLL
 static bool DllVolChange(RAROptions *Cmd,wchar *NextName,size_t NameSize);
 static bool DllVolNotify(RAROptions *Cmd,wchar *NextName);
@@ -21,7 +19,7 @@ bool MergeArchive(Archive &Arc,ComprDataIO *DataIO,bool ShowFileName,wchar Comma
   if (DataIO!=NULL && SplitHeader)
   {
     bool PackedHashPresent=Arc.Format==RARFMT50 || 
-         (hd->UnpVer>=20 && hd->FileHash.CRC32!=0xffffffff);
+         hd->UnpVer>=20 && hd->FileHash.CRC32!=0xffffffff;
     if (PackedHashPresent && 
         !DataIO->PackedDataHash.Cmp(&hd->FileHash,hd->UseHashKey ? hd->HashKey:NULL))
       uiMsg(UIERROR_CHECKSUMPACKED, Arc.FileName, hd->FileName);
@@ -288,5 +286,3 @@ bool DllVolNotify(RAROptions *Cmd,wchar *NextName)
 #pragma runtime_checks( "s", restore )
 #endif
 #endif
-
-}  // namespace third_party_unrar

@@ -1,8 +1,6 @@
 #ifndef _RAR_FILE_
 #define _RAR_FILE_
 
-namespace third_party_unrar {
-
 #define FILE_USE_OPEN
 
 #ifdef _WIN_ALL
@@ -105,7 +103,7 @@ class File
     void SetCloseFileTime(RarTime *ftm,RarTime *fta=NULL);
     static void SetCloseFileTimeByName(const wchar *Name,RarTime *ftm,RarTime *fta);
     void GetOpenFileTime(RarTime *ft);
-    virtual bool IsOpened() {return hFile!=FILE_BAD_HANDLE;} // 'virtual' for MultiFile class.
+    virtual bool IsOpened() {return hFile!=FILE_BAD_HANDLE;}; // 'virtual' for MultiFile class.
     int64 FileLength();
     void SetHandleType(FILE_HANDLETYPE Type) {HandleType=Type;}
     FILE_HANDLETYPE GetHandleType() {return HandleType;}
@@ -150,7 +148,5 @@ class File
 #endif
     }
 };
-
-}  // namespace third_party_unrar
 
 #endif

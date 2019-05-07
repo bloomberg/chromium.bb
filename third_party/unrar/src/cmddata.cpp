@@ -1,7 +1,5 @@
 #include "rar.hpp"
 
-namespace third_party_unrar {
-
 CommandData::CommandData()
 {
   Init();
@@ -768,11 +766,10 @@ void CommandData::ProcessSwitch(const wchar *Switch)
                   AlreadyBad=true;
                   break;
               };
-              if (!AlreadyBad) {
+              if (!AlreadyBad)
                 if (Switch[3]==0)
                   CommentCharset=FilelistCharset=ErrlogCharset=RedirectCharset=rch;
                 else
-                {
                   for (uint I=3;Switch[I]!=0 && !AlreadyBad;I++)
                     switch(toupperw(Switch[I]))
                     {
@@ -790,8 +787,6 @@ void CommandData::ProcessSwitch(const wchar *Switch)
                         AlreadyBad=true;
                         break;
                     }
-                }
-              }
               // Set it immediately when parsing the command line, so it also
               // affects messages issued while parsing the command line.
               SetConsoleRedirectCharset(RedirectCharset);
@@ -1210,7 +1205,7 @@ int CommandData::IsProcessFile(FileHeader &FileHead,bool *ExactMatch,int MatchTy
 #ifndef SFX_MODULE
   if (TimeCheck(FileHead.mtime))
     return 0;
-  if ((FileHead.FileAttr & ExclFileAttr)!=0 || (InclAttrSet && (FileHead.FileAttr & InclFileAttr)==0))
+  if ((FileHead.FileAttr & ExclFileAttr)!=0 || InclAttrSet && (FileHead.FileAttr & InclFileAttr)==0)
     return 0;
   if (!Dir && SizeCheck(FileHead.UnpSize))
     return 0;
@@ -1235,7 +1230,7 @@ void CommandData::ProcessCommand()
 #ifndef SFX_MODULE
 
   const wchar *SingleCharCommands=L"FUADPXETK";
-  if ((Command[0]!=0 && Command[1]!=0 && wcschr(SingleCharCommands,Command[0])!=NULL) || *ArcName==0)
+  if (Command[0]!=0 && Command[1]!=0 && wcschr(SingleCharCommands,Command[0])!=NULL || *ArcName==0)
     OutHelp(*Command==0 ? RARX_SUCCESS:RARX_USERERROR); // Return 'success' for 'rar' without parameters.
 
   const wchar *ArcExt=GetExt(ArcName);
@@ -1410,5 +1405,3 @@ void CommandData::ReportWrongSwitches(RARFORMAT Format)
   }
 }
 #endif
-
-}  // namespace third_party_unrar

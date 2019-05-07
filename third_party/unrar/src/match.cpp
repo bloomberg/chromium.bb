@@ -1,7 +1,5 @@
 #include "rar.hpp"
 
-namespace third_party_unrar {
-
 static bool match(const wchar *pattern,const wchar *string,bool ForceCase);
 static int mwcsicompc(const wchar *Str1,const wchar *Str2,bool ForceCase);
 static int mwcsnicompc(const wchar *Str1,const wchar *Str2,size_t N,bool ForceCase);
@@ -49,7 +47,6 @@ bool CmpName(const wchar *Wildcard,const wchar *Name,int CmpMode)
         mwcsicompc(Path1,Path2,ForceCase)!=0)
       return(false);
     if (CmpMode==MATCH_SUBPATH || CmpMode==MATCH_WILDSUBPATH)
-    {
       if (IsWildcard(Path1))
         return(match(Wildcard,Name,ForceCase));
       else
@@ -61,7 +58,6 @@ bool CmpName(const wchar *Wildcard,const wchar *Name,int CmpMode)
         else
           if (mwcsicompc(Path1,Path2,ForceCase)!=0)
             return(false);
-    }
   }
   wchar *Name1=PointToName(Wildcard);
   wchar *Name2=PointToName(Name);
@@ -147,5 +143,3 @@ int mwcsnicompc(const wchar *Str1,const wchar *Str2,size_t N,bool ForceCase)
   return wcsnicomp(Str1,Str2,N);
 #endif
 }
-
-}  // namespace third_party_unrar

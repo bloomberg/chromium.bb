@@ -1,7 +1,5 @@
 #include "rar.hpp"
 
-namespace third_party_unrar {
-
 wchar* PointToName(const wchar *Path)
 {
   for (int I=(int)wcslen(Path)-1;I>=0;I--)
@@ -348,7 +346,7 @@ void NextVolumeName(wchar *ArcName,uint MaxLength,bool OldNumbering)
     ChPtr=GetExt(ArcName);
   }
   else
-    if ((ChPtr[1]==0 && wcslen(ArcName)<MaxLength-3) || wcsicomp(ChPtr+1,L"exe")==0 || wcsicomp(ChPtr+1,L"sfx")==0)
+    if (ChPtr[1]==0 && wcslen(ArcName)<MaxLength-3 || wcsicomp(ChPtr+1,L"exe")==0 || wcsicomp(ChPtr+1,L"sfx")==0)
       wcscpy(ChPtr+1,L"rar");
   if (!OldNumbering)
   {
@@ -419,7 +417,7 @@ void MakeNameUsable(char *Name,bool Extended)
 #endif
   for (char *s=Name;*s!=0;s=charnext(s))
   {
-    if (strchr(Extended ? "?*<>|\"":"?*",*s)!=NULL || (Extended && (byte)*s<32))
+    if (strchr(Extended ? "?*<>|\"":"?*",*s)!=NULL || Extended && (byte)*s<32)
       *s='_';
 #ifdef _EMX
     if (*s=='=')
@@ -429,7 +427,7 @@ void MakeNameUsable(char *Name,bool Extended)
     if (s-Name>1 && *s==':')
       *s='_';
     // Remove ' ' and '.' before path separator, but allow .\ and ..\.
-    if ((*s==' ' || (*s=='.' && s>Name && !IsPathDiv(s[-1]) && s[-1]!='.')) && IsPathDiv(s[1]))
+    if ((*s==' ' || *s=='.' && s>Name && !IsPathDiv(s[-1]) && s[-1]!='.') && IsPathDiv(s[1]))
       *s='_';
 #endif
   }
@@ -440,7 +438,7 @@ void MakeNameUsable(wchar *Name,bool Extended)
 {
   for (wchar *s=Name;*s!=0;s++)
   {
-    if (wcschr(Extended ? L"?*<>|\"":L"?*",*s)!=NULL || (Extended && (uint)*s<32))
+    if (wcschr(Extended ? L"?*<>|\"":L"?*",*s)!=NULL || Extended && (uint)*s<32)
       *s='_';
 #ifndef _UNIX
     if (s-Name>1 && *s==':')
@@ -543,7 +541,7 @@ bool IsFullPath(const wchar *Path)
     return true;
 */
 #if defined(_WIN_ALL) || defined(_EMX)
-  return (Path[0]=='\\' && Path[1]=='\\') || (IsDriveLetter(Path) && IsPathDiv(Path[2]));
+  return Path[0]=='\\' && Path[1]=='\\' || IsDriveLetter(Path) && IsPathDiv(Path[2]);
 #else
   return IsPathDiv(Path[0]);
 #endif
@@ -724,12 +722,11 @@ static void GenArcName(wchar *ArcName,const wchar *GenerateMask,uint ArcNumber,b
 
   int WeekDay=rlt.wDay==0 ? 6:rlt.wDay-1;
   int StartWeekDay=rlt.yDay-WeekDay;
-  if (StartWeekDay<0) {
+  if (StartWeekDay<0)
     if (StartWeekDay<=-4)
       StartWeekDay+=IsLeapYear(rlt.Year-1) ? 366:365;
     else
       StartWeekDay=0;
-  }
   int CurWeek=StartWeekDay/7+1;
   if (StartWeekDay%7>=4)
     CurWeek++;
@@ -973,7 +970,7 @@ void MakeNameCompatible(wchar *Name)
       for (int I=Dest-1;I>0 && (Name[I]==' ' || Name[I]=='.');I--)
       {
         // Permit path1/./path2 and ../path1 paths.
-        if (Name[I]=='.' && (IsPathDiv(Name[I-1]) || (Name[I-1]=='.' && I==1)))
+        if (Name[I]=='.' && (IsPathDiv(Name[I-1]) || Name[I-1]=='.' && I==1))
           break;
         Dest--;
       }
@@ -985,5 +982,3 @@ void MakeNameCompatible(wchar *Name)
   }
 }
 #endif
-
-}  // namespace third_party_unrar

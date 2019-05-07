@@ -1,7 +1,5 @@
 #include "rar.hpp"
 
-namespace third_party_unrar {
-
 void RarTime::GetLocal(RarLocalTime *lt)
 {
 #ifdef _WIN_ALL
@@ -143,7 +141,7 @@ void RarTime::GetWinFT(FILETIME *ft)
 
 void RarTime::SetWinFT(FILETIME *ft)
 {
-  _ULARGE_INTEGER ul = {{ft->dwLowDateTime, ft->dwHighDateTime}};
+  _ULARGE_INTEGER ul = {ft->dwLowDateTime, ft->dwHighDateTime};
   SetWin(ul.QuadPart);
 }
 #endif
@@ -340,5 +338,3 @@ bool IsLeapYear(int Year)
 {
   return (Year&3)==0 && (Year%100!=0 || Year%400==0);
 }
-
-}  // namespace third_party_unrar

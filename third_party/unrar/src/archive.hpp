@@ -1,8 +1,6 @@
 #ifndef _RAR_ARCHIVE_
 #define _RAR_ARCHIVE_
 
-namespace third_party_unrar {
-
 class PPack;
 class RawRead;
 class RawWrite;
@@ -94,7 +92,7 @@ class Archive:public File
     void AddSubData(byte *SrcData,uint64 DataSize,File *SrcFile,
          const wchar *Name,uint Flags);
     bool ReadSubData(Array<byte> *UnpData,File *DestFile);
-    HEADER_TYPE GetHeaderType() {return CurHeaderType;}
+    HEADER_TYPE GetHeaderType() {return CurHeaderType;};
     RAROptions* GetRAROptions() {return Cmd;}
     void SetSilentOpen(bool Mode) {SilentOpen=Mode;}
 #if 0
@@ -160,6 +158,5 @@ class Archive:public File
     wchar FirstVolumeName[NM];
 };
 
-}  // namespace third_party_unrar
 
 #endif

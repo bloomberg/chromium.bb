@@ -1,5 +1,3 @@
-namespace third_party_unrar {
-
 void CryptData::SetKey30(bool Encrypt,SecPassword *Password,const wchar *PwdW,const byte *Salt)
 {
   byte AESKey[16],AESInit[16];
@@ -7,8 +5,8 @@ void CryptData::SetKey30(bool Encrypt,SecPassword *Password,const wchar *PwdW,co
   bool Cached=false;
   for (uint I=0;I<ASIZE(KDF3Cache);I++)
     if (KDF3Cache[I].Pwd==*Password &&
-        ((Salt==NULL && !KDF3Cache[I].SaltPresent) || (Salt!=NULL &&
-        KDF3Cache[I].SaltPresent && memcmp(KDF3Cache[I].Salt,Salt,SIZE_SALT30)==0)))
+        (Salt==NULL && !KDF3Cache[I].SaltPresent || Salt!=NULL &&
+        KDF3Cache[I].SaltPresent && memcmp(KDF3Cache[I].Salt,Salt,SIZE_SALT30)==0))
     {
       memcpy(AESKey,KDF3Cache[I].Key,sizeof(AESKey));
       SecHideData(AESKey,sizeof(AESKey),false,false);
@@ -68,4 +66,3 @@ void CryptData::SetKey30(bool Encrypt,SecPassword *Password,const wchar *PwdW,co
   cleandata(AESInit,sizeof(AESInit));
 }
 
-}  // namespace third_party_unrar

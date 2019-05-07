@@ -1,4 +1,4 @@
-namespace third_party_unrar {
+
 
 #if !defined(SFX_MODULE) && defined(_WIN_ALL)
 void ExtractStreams20(Archive &Arc,const wchar *FileName)
@@ -145,5 +145,3 @@ void GetStreamNameNTFS(Archive &Arc,wchar *StreamName,size_t MaxSize)
     UtfToWide(UtfString,StreamName,MaxSize);
   }
 }
-
-}  // namespace third_party_unrar

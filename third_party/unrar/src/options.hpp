@@ -1,8 +1,6 @@
 #ifndef _RAR_OPTIONS_
 #define _RAR_OPTIONS_
 
-namespace third_party_unrar {
-
 #define DEFAULT_RECOVERY     -3
 
 #define DEFAULT_RECVOLUMES  -10
@@ -194,7 +192,4 @@ class RAROptions
     PROCESSDATAPROC ProcessDataProc;
 #endif
 };
-
-}  // namespace third_party_unrar
-
 #endif

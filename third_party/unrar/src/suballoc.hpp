@@ -7,8 +7,6 @@
 #if !defined(_SUBALLOC_H_)
 #define _SUBALLOC_H_
 
-namespace third_party_unrar {
-
 #if defined(__GNUC__) && defined(ALLOW_MISALIGNED)
 #define RARPPM_PACK_ATTR __attribute__ ((packed))
 #else
@@ -79,11 +77,10 @@ class SubAllocator
     inline void* ExpandUnits(void* ptr,int OldNU);
     inline void* ShrinkUnits(void* ptr,int OldNU,int NewNU);
     inline void  FreeUnits(void* ptr,int OldNU);
-    long GetAllocatedMemory() {return(SubAllocatorSize);}
+    long GetAllocatedMemory() {return(SubAllocatorSize);};
 
     byte *pText, *UnitsStart,*HeapEnd,*FakeUnitsStart;
 };
 
-}  // namespace third_party_unrar
 
 #endif /* !defined(_SUBALLOC_H_) */

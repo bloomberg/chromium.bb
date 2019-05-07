@@ -1,8 +1,6 @@
 #ifndef _RAR_EXTRACT_
 #define _RAR_EXTRACT_
 
-namespace third_party_unrar {
-
 enum EXTRACT_ARC_CODE {EXTRACT_ARC_NEXT,EXTRACT_ARC_REPEAT};
 
 class CmdExtract
@@ -64,7 +62,5 @@ class CmdExtract
     int64 GetCurrentFileSize() { return DataIO.CurUnpWrite; }
 #endif
 };
-
-}  // namespace third_party_unrar
 
 #endif

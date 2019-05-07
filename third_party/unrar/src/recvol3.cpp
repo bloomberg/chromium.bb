@@ -1,5 +1,3 @@
-namespace third_party_unrar {
-
 // Buffer size for all volumes involved.
 static const size_t TotalBufferSize=0x4000000;
 
@@ -91,16 +89,12 @@ static bool IsNewStyleRev(const wchar *Name)
   if (Ext==NULL)
     return true;
   int DigitGroup=0;
-  for (Ext--;Ext>Name;Ext--) {
-    if (!IsDigit(*Ext)) {
-      if (*Ext=='_' && IsDigit(*(Ext-1))) {
+  for (Ext--;Ext>Name;Ext--)
+    if (!IsDigit(*Ext))
+      if (*Ext=='_' && IsDigit(*(Ext-1)))
         DigitGroup++;
-      }
-      else {
+      else
         break;
-      }
-    }
-  }
   return DigitGroup<2;
 }
 
@@ -234,7 +228,7 @@ bool RecVolumes3::Restore(RAROptions *Cmd,const wchar *Name,bool Silent)
     }
     if (P[1]+P[2]>255)
       continue;
-    if ((RecVolNumber!=0 && RecVolNumber!=P[1]) || (FileNumber!=0 && FileNumber!=P[2]))
+    if (RecVolNumber!=0 && RecVolNumber!=P[1] || FileNumber!=0 && FileNumber!=P[2])
     {
       uiMsg(UIERROR_RECVOLDIFFSETS,CurName,PrevName);
       return false;
@@ -547,5 +541,3 @@ void RecVolumes3::Test(RAROptions *Cmd,const wchar *Name)
     NextVolumeName(VolName,ASIZE(VolName),false);
   }
 }
-
-}  // namespace third_party_unrar

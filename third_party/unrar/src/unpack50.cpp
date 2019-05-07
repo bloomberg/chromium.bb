@@ -1,5 +1,3 @@
-namespace third_party_unrar {
-
 void Unpack::Unpack5(bool Solid)
 {
   FileExtracted=true;
@@ -13,7 +11,7 @@ void Unpack::Unpack5(bool Solid)
     // Check TablesRead5 to be sure that we read tables at least once
     // regardless of current block header TablePresent flag.
     // So we can safefly use these tables below.
-    if (!ReadBlockHeader(Inp,BlockHeader) ||
+    if (!ReadBlockHeader(Inp,BlockHeader) || 
         !ReadTables(Inp,BlockHeader,BlockTables) || !TablesRead5)
       return;
   }
@@ -28,9 +26,9 @@ void Unpack::Unpack5(bool Solid)
 
       // We use 'while', because for empty block containing only Huffman table,
       // we'll be on the block border once again just after reading the table.
-      while (Inp.InAddr>BlockHeader.BlockStart+BlockHeader.BlockSize-1 ||
-             (Inp.InAddr==BlockHeader.BlockStart+BlockHeader.BlockSize-1 &&
-             Inp.InBit>=BlockHeader.BlockBitSize))
+      while (Inp.InAddr>BlockHeader.BlockStart+BlockHeader.BlockSize-1 || 
+             Inp.InAddr==BlockHeader.BlockStart+BlockHeader.BlockSize-1 && 
+             Inp.InBit>=BlockHeader.BlockBitSize)
       {
         if (BlockHeader.LastBlockInFile)
         {
@@ -129,12 +127,10 @@ void Unpack::Unpack5(bool Solid)
     if (MainSlot==257)
     {
       if (LastLength!=0)
-      {
         if (Fragmented)
           FragWindow.CopyString(LastLength,OldDist[0],UnpPtr,MaxWinMask);
         else
           CopyString(LastLength,OldDist[0]);
-      }
       continue;
     }
     if (MainSlot<262)
@@ -393,8 +389,8 @@ void Unpack::UnpWriteBuf()
 
   // Choose the nearest among WriteBorder and WrPtr actual written border.
   // If border is equal to UnpPtr, it means that we have MaxWinSize data ahead.
-  if (WriteBorder==UnpPtr ||
-      (WrPtr!=UnpPtr && ((WrPtr-UnpPtr)&MaxWinMask)<((WriteBorder-UnpPtr)&MaxWinMask)))
+  if (WriteBorder==UnpPtr || 
+      WrPtr!=UnpPtr && ((WrPtr-UnpPtr)&MaxWinMask)<((WriteBorder-UnpPtr)&MaxWinMask))
     WriteBorder=WrPtr;
 }
 
@@ -540,11 +536,11 @@ bool Unpack::ReadBlockHeader(BitInput &Inp,UnpackBlockHeader &Header)
     if (!UnpReadBuf())
       return false;
   Inp.faddbits((8-Inp.InBit)&7);
-
+  
   byte BlockFlags=Inp.fgetbits()>>8;
   Inp.faddbits(8);
   uint ByteCount=((BlockFlags>>3)&3)+1; // Block size byte count.
-
+  
   if (ByteCount==4)
     return false;
 
@@ -685,5 +681,3 @@ void Unpack::InitFilters()
 {
   Filters.SoftReset();
 }
-
-}  // namespace third_party_unrar

@@ -1,12 +1,10 @@
 #include "rar.hpp"
 
-namespace third_party_unrar {
-
 static int SleepTime=0;
 
 void InitSystemOptions(int SleepTime)
 {
-  ::third_party_unrar::SleepTime=SleepTime;
+  ::SleepTime=SleepTime;
 }
 
 
@@ -182,5 +180,3 @@ SSE_VERSION GetSSEVersion()
   return SSE_NONE;
 }
 #endif
-
-}  // namespace third_party_unrar

@@ -1,8 +1,6 @@
 #ifndef _RAR_MATCH_
 #define _RAR_MATCH_
 
-namespace third_party_unrar {
-
 enum {
    MATCH_NAMES,        // Paths are ignored.
                        // Compares names only using wildcards.
@@ -32,7 +30,5 @@ enum {
 #define MATCH_FORCECASESENSITIVE 0x80000000
 
 bool CmpName(const wchar *Wildcard,const wchar *Name,int CmpMode);
-
-}  // namespace third_party_unrar
 
 #endif

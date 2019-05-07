@@ -1,8 +1,6 @@
 #ifndef _RAR_UI_
 #define _RAR_UI_
 
-namespace third_party_unrar {
-
 // UIERROR_ - error message;
 // UIMSG_   - informational message;
 // UIWAIT_  - message waiting for user confirmation;
@@ -162,7 +160,5 @@ template<class T1,class T2,class T3> void uiMsg(UIMESSAGE_CODE code,T1 a1,T2 a2,
   Store<<a1<<a2<<a3;
   Store.Msg();
 }
-
-}  // namespace third_party_unrar
 
 #endif

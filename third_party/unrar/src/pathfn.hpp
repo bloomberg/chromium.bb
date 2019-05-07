@@ -1,8 +1,6 @@
 #ifndef _RAR_PATHFN_
 #define _RAR_PATHFN_
 
-namespace third_party_unrar {
-
 wchar* PointToName(const wchar *Path);
 wchar* PointToLastChar(const wchar *Path);
 wchar* ConvertPath(const wchar *SrcPath,wchar *DestPath);
@@ -74,7 +72,5 @@ bool GetWinLongPath(const wchar *Src,wchar *Dest,size_t MaxSize);
 void ConvertToPrecomposed(wchar *Name,size_t NameSize);
 void MakeNameCompatible(wchar *Name);
 #endif
-
-}  // namespace third_party_unrar
 
 #endif

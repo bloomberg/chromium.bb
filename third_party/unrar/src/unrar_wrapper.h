@@ -10,13 +10,13 @@
 #include "base/files/platform_file.h"
 #include "base/memory/scoped_refptr.h"
 
-namespace third_party_unrar {
-
 // Forward declare the unrar symbols needed for extraction, so users of
 // RarReader don't need all the symbols from unrar.
 class Archive;
 class CmdExtract;
 class CommandData;
+
+namespace third_party_unrar {
 
 // This class is used for extracting RAR files, one entry at a time.
 class RarReader {

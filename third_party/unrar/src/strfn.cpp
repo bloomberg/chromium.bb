@@ -1,7 +1,5 @@
 #include "rar.hpp"
 
-namespace third_party_unrar {
-
 const char *NullToEmpty(const char *Str)
 {
   return Str==NULL ? "":Str;
@@ -194,7 +192,7 @@ bool IsSpace(int ch)
 // values, resulting in undefined behavior in standard function.
 bool IsAlpha(int ch)
 {
-  return (ch>='A' && ch<='Z') || (ch>='a' && ch<='z');
+  return ch>='A' && ch<='Z' || ch>='a' && ch<='z';
 }
 
 
@@ -470,5 +468,3 @@ void PrintfPrepareFmt(const wchar *Org,wchar *Cvt,size_t MaxSize)
   Cvt[Dest]=0;
 }
 #endif
-
-}
