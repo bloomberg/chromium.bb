@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "ui/views/widget/widget.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "url/gurl.h"
 
@@ -40,6 +41,9 @@ class SystemWebDialogDelegate : public ui::WebDialogDelegate {
   // By default returns gurl_.spec() which should be sufficient for dialogs
   // that only support a single instance.
   virtual const std::string& Id();
+
+  // Returns extra init params for the widget. By default returns empty params.
+  virtual views::Widget::InitParams GetInitParams();
 
   // Focuses the dialog window. Note: No-op for modal dialogs, see
   // implementation for details.

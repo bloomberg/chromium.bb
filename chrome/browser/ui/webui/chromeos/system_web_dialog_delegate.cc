@@ -75,6 +75,11 @@ const std::string& SystemWebDialogDelegate::Id() {
   return gurl_.spec();
 }
 
+views::Widget::InitParams SystemWebDialogDelegate::GetInitParams() {
+  views::Widget::InitParams params;
+  return params;
+}
+
 void SystemWebDialogDelegate::Focus() {
   // Focusing a modal dialog does not make it the topmost dialog and does not
   // enable interaction. It does however remove focus from the current dialog,
@@ -133,7 +138,7 @@ bool SystemWebDialogDelegate::ShouldShowDialogTitle() const {
 void SystemWebDialogDelegate::ShowSystemDialog(gfx::NativeWindow parent) {
   content::BrowserContext* browser_context =
       ProfileManager::GetActiveUserProfile();
-  views::Widget::InitParams extra_params;
+  views::Widget::InitParams extra_params = GetInitParams();
   // If unparented and not modal, keep it on top (see header comment).
   if (!parent && GetDialogModalType() == ui::MODAL_TYPE_NONE)
     extra_params.keep_on_top = true;

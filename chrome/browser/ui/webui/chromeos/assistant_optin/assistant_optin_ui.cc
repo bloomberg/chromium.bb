@@ -118,10 +118,7 @@ void AssistantOptInDialog::Show(
   AssistantOptInDialog* dialog =
       new AssistantOptInDialog(type, std::move(callback));
 
-  views::Widget::InitParams extra_params = ash_util::GetFramelessInitParams();
-  chrome::ShowWebDialogWithParams(nullptr /* parent */,
-                                  ProfileManager::GetActiveUserProfile(),
-                                  dialog, &extra_params);
+  dialog->ShowSystemDialog();
 }
 
 // static
@@ -140,6 +137,10 @@ AssistantOptInDialog::AssistantOptInDialog(
 
 AssistantOptInDialog::~AssistantOptInDialog() {
   is_active = false;
+}
+
+views::Widget::InitParams AssistantOptInDialog::GetInitParams() {
+  return ash_util::GetFramelessInitParams();
 }
 
 void AssistantOptInDialog::GetDialogSize(gfx::Size* size) const {

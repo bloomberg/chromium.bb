@@ -58,6 +58,9 @@ class AssistantOptInDialog : public SystemWebDialogDelegate {
       ash::mojom::AssistantSetup::StartAssistantOptInFlowCallback callback);
   ~AssistantOptInDialog() override;
 
+  // SystemWebDialogDelegate
+  views::Widget::InitParams GetInitParams() override;
+
   // ui::WebDialogDelegate
   void GetDialogSize(gfx::Size* size) const override;
   std::string GetDialogArgs() const override;
