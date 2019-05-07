@@ -115,7 +115,8 @@ class RTEndToEndTest
 
     ASSERT_NO_FATAL_FAILURE(RunLoop(video.get()));
     const double psnr = GetAveragePsnr();
-    EXPECT_GT(psnr, GetPsnrThreshold()) << "cpu used = " << cpu_used_;
+    EXPECT_GT(psnr, GetPsnrThreshold())
+        << "cpu used = " << cpu_used_ << " aq mode = " << aq_mode_;
   }
 
   TestVideoParam test_video_param_;
