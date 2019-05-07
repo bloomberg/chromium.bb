@@ -97,9 +97,9 @@ void ProtocolUtils::AddScript(const SupportedScriptProto& script_proto,
   script->priority = presentation.priority();
 
   if (script->handle.path.empty() || !script->precondition ||
-      (script->handle.name.empty() && !script->handle.interrupt)) {
-    LOG(ERROR) << "Ignored invalid or incomplete script '"
-               << script->handle.path << "'";
+      (script->handle.name.empty() &&
+       script->handle.chip_icon == ChipIcon::NO_ICON &&
+       !script->handle.interrupt)) {
     return;
   }
   scripts->emplace_back(std::move(script));
