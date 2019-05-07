@@ -7,12 +7,12 @@
 
 from __future__ import print_function
 
-import fnmatch
 import os
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import path_util
+from chromite.utils import matching
 
 
 class AutotestTarballBuilder(object):
@@ -59,9 +59,9 @@ class AutotestTarballBuilder(object):
       str - Path of the partial autotest control files tarball.
     """
     # Find the control files in autotest/.
-    input_list = _FindFilesWithPattern('control*', target='autotest',
-                                       cwd=self.archive_basedir,
-                                       exclude_dirs=['autotest/test_suites'])
+    input_list = matching.FindFilesMatching(
+        'control*', target='autotest', cwd=self.archive_basedir,
+        exclude_dirs=['autotest/test_suites'])
     tarball = os.path.join(self.output_directory, self._CONTROL_FILES_ARCHIVE)
     self._BuildTarball(input_list, tarball, compressed=False)
     return tarball
@@ -96,7 +96,7 @@ class AutotestTarballBuilder(object):
     """
     # Find all files in autotest excluding certain directories.
     tast_files, transforms = self._GetTastServerFilesAndTarTransforms()
-    autotest_files = _FindFilesWithPattern(
+    autotest_files = matching.FindFilesMatching(
         '*', target='autotest', cwd=self.archive_basedir,
         exclude_dirs=('autotest/packages', 'autotest/client/deps/',
                       'autotest/client/tests', 'autotest/client/site_tests'))
@@ -172,44 +172,3 @@ class AutotestTarballBuilder(object):
       files.append(os.path.join(constants.SOURCE_ROOT, filename))
 
     return files
-
-
-def _FindFilesWithPattern(pattern, target='./', cwd=os.curdir, exclude_dirs=()):
-  """Search the root directory recursively for matching filenames.
-
-  The |target| and |cwd| args allow manipulating how the found paths are
-  returned as well as specifying where the search needs to be executed.
-
-  If our filesystem only has /path/to/example.txt, and our pattern is '*.txt':
-  |target|='./', |cwd|='/path'    =>  ./to/example.txt
-  |target|='to', |cwd|='/path'    =>  to/example.txt
-  |target|='./', |cwd|='/path/to' =>  ./example.txt
-  |target|='/path'                =>  /path/to/example.txt
-  |target|='/path/to'             =>  /path/to/example.txt
-
-  Args:
-    pattern: the pattern used to match the filenames.
-    target: the target directory to search.
-    cwd: current working directory.
-    exclude_dirs: Directories to not include when searching.
-
-  Returns:
-    A list of paths of the matched files.
-  """
-  # Backup the current working directory before changing it
-  old_cwd = os.getcwd()
-  os.chdir(cwd)
-
-  matches = []
-  for directory, _, filenames in os.walk(target):
-    if any(directory.startswith(e) for e in exclude_dirs):
-      # Skip files in excluded directories.
-      continue
-
-    for filename in fnmatch.filter(filenames, pattern):
-      matches.append(os.path.join(directory, filename))
-
-  # Restore the working directory
-  os.chdir(old_cwd)
-
-  return matches
