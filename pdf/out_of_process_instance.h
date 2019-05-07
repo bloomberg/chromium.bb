@@ -156,6 +156,10 @@ class OutOfProcessInstance : public pp::Instance,
   void RotateClockwise();
   void RotateCounterclockwise();
 
+  // Creates a file name for saving a PDF file, given the source URL. Exposed
+  // for testing.
+  static std::string GetFileNameFromUrl(const std::string& url);
+
  private:
   void ResetRecentlySentFindUpdate(int32_t);
 
