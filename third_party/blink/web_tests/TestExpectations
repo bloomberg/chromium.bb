@@ -2945,7 +2945,6 @@ crbug.com/939181 virtual/not-site-per-process/external/wpt/html/browsers/origin/
 crbug.com/626703 external/wpt/css/css-contain/contain-size-replaced-003b.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/contain-size-replaced-003c.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/contain-size-replaced-003a.html [ Failure ]
-crbug.com/626703 [ Mac10.10 ] external/wpt/animation-worklet/worklet-animation-with-scroll-timeline.https.html [ Failure ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-and-display-none.https.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-and-display-none.https.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-shaping-002.html [ Failure ]
@@ -6151,3 +6150,4 @@ crbug.com/959129 [ Win ] http/tests/devtools/tracing/timeline-script-parse.js [ 
 
 # Sheriff 2019-05-07
 crbug.com/960346 inspector-protocol/debugger/domdebugger-set-instrumentation-breakpoint.js [ Pass Failure ]
+crbug.com/960443 [ Mac10.10 Mac10.11 ] external/wpt/animation-worklet/worklet-animation-with-scroll-timeline.https.html [ Failure Pass ]
