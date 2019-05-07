@@ -47,6 +47,7 @@
  *   INPUT_METHODS: (undefined|!settings.Route),
  *   INTERNET: (undefined|!settings.Route),
  *   INTERNET_NETWORKS: (undefined|!settings.Route),
+ *   KERBEROS_ACCOUNTS: (undefined|!settings.Route),
  *   KEYBOARD: (undefined|!settings.Route),
  *   KNOWN_NETWORKS: (undefined|!settings.Route),
  *   LANGUAGES: (undefined|!settings.Route),
@@ -314,6 +315,7 @@ cr.define('settings', function() {
       r.CHANGE_PICTURE = r.PEOPLE.createChild('/changePicture');
       r.ACCOUNTS = r.PEOPLE.createChild('/accounts');
       r.ACCOUNT_MANAGER = r.PEOPLE.createChild('/accountManager');
+      r.KERBEROS_ACCOUNTS = r.PEOPLE.createChild('/kerberosAccounts');
       r.LOCK_SCREEN = r.PEOPLE.createChild('/lockScreen');
       r.FINGERPRINT = r.LOCK_SCREEN.createChild('/lockScreen/fingerprint');
       // </if>

@@ -139,6 +139,18 @@ Polymer({
       },
       readOnly: true,
     },
+
+    /**
+     * True if Chrome OS Kerberos support is enabled.
+     * @private
+     */
+    isKerberosEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('isKerberosEnabled');
+      },
+      readOnly: true,
+    },
     // </if>
 
     /** @private {!Map<string, string>} */
@@ -181,6 +193,11 @@ Polymer({
           map.set(
               settings.routes.ACCOUNT_MANAGER.path,
               '#account-manager-subpage-trigger');
+        }
+        if (settings.routes.KERBEROS_ACCOUNTS) {
+          map.set(
+              settings.routes.KERBEROS_ACCOUNTS.path,
+              '#kerberos-accounts-subpage-trigger');
         }
         // </if>
         return map;
@@ -419,6 +436,14 @@ Polymer({
    */
   onAccountManagerTap_: function(e) {
     settings.navigateTo(settings.routes.ACCOUNT_MANAGER);
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onKerberosAccountsTap_: function(e) {
+    settings.navigateTo(settings.routes.KERBEROS_ACCOUNTS);
   },
 
   /** @private */

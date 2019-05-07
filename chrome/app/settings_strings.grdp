@@ -1529,6 +1529,7 @@
     Open certain file types automatically after downloading
   </message>
 
+  <!-- SMB File Shares -->
   <if expr="chromeos">
     <message name="IDS_SETTINGS_DOWNLOADS_SMB_SHARES" desc="In Downloads Settings, the title of the SMB shares setting section.">
       Network file shares
@@ -1581,8 +1582,41 @@
     <message name="IDS_SETTINGS_DOWNLOADS_ADD_SHARE_KERBEROS_AUTHENTICATION" desc="Authentication method option to use a users Kerberos ticket to authenticate. Only availible for Active Directory users.">
       SSO
     </message>
+  </if>
 
-    <!-- Date/Time Page -->
+  <!-- Kerberos Accounts -->
+  <if expr="chromeos">
+    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_SUBMENU_LABEL" desc="Label of Kerberos Accounts submenu in Settings page.">
+      Kerberos Accounts
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_PAGE_TITLE" desc="Title of Kerberos Accounts Settings page.">
+      Kerberos Accounts
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_DESCRIPTION" desc="Description of the Kerberos Accounts Settings page. Shown just below the title of the page.">
+      All Kerberos Accounts for single sign-on into certain apps and websites and file shares can be managed here.
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_LIST_HEADER" desc="List header for the account list on Kerberos Accounts Settings page.">
+      Accounts
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_ADD_ACCOUNT_LABEL" desc="Label of the Add account button on Kerberos Accounts Settings page.">
+      Add account
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_REMOVE_ACCOUNT_LABEL" desc="Label of the Remove account button on Kerberos Accounts Settings page.">
+      Remove account from this device
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_SIGNED_IN" desc="Text displayed if a Kerberos account is in signed-in state on Kerberos Accounts Settings page.">
+      Signed in
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_SIGNED_OUT" desc="Text displayed if a Kerberos account is in signed-out state on Kerberos Accounts Settings page.">
+      Sign in again
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_REAUTHENTICATION_LABEL" desc="Label of the re-authentication button on Kerberos Accounts Settings page.">
+      Sign in
+    </message>
+  </if>
+
+  <!-- Date/Time Page -->
+  <if expr="chromeos">
     <message name="IDS_SETTINGS_DATE_TIME" desc="Name of the settings page which displays date and time preferences.">
       Date and time
     </message>
@@ -1625,8 +1659,10 @@
     <message name="IDS_SETTINGS_SET_DATE_TIME" desc="Label for the button that shows the dialog for setting the system date and time.">
       Set date and time
     </message>
+  </if>
 
-    <!-- Easy Unlock Page -->
+  <!-- Easy Unlock Page -->
+  <if expr="chromeos">
     <message name="IDS_SETTINGS_EASY_UNLOCK_SECTION_TITLE" desc="The title of the Easy Unlock section on the settings page.">
       Smart Lock
     </message>
@@ -1687,8 +1723,10 @@
     <message name="IDS_SETTINGS_EASY_UNLOCK_UNLOCK_DEVICE_AND_ALLOW_SIGNIN" desc="This option lets the user unlock their Chromebook from their phone as well as log into their Chromebook without a password if their phone is nearby and unlocked.">
       Unlock device and sign in to Google Account
     </message>
+  </if>
 
-    <!-- Strings specific to the Settings Internet Page -->
+  <!-- Strings specific to the Settings Internet Page -->
+  <if expr="chromeos">
     <message name="IDS_SETTINGS_INTERNET" desc="Name of the settings page which displays internet preferences.">
       Network
     </message>
@@ -2091,8 +2129,10 @@
     <message name="IDS_SETTINGS_INTERNET_TOGGLE_WIMAX_ACCESSIBILITY_LABEL" desc="Accessibility only label for WiMAX enable/disable toggle .">
       WiMAX enable
     </message>
+  </if>
 
-     <!-- Network error strings. -->
+  <!-- Network error strings. -->
+  <if expr="chromeos">
     <message name="IDS_NETWORK_ERROR_CANNOT_CHANGE_SHARED_CONFIG" desc="Network error message shown when attempting to change a shared network configuration if the operation is not allowed">
       Changing shared network configurations is not allowed
     </message>
@@ -2108,9 +2148,11 @@
     <message name="IDS_NETWORK_ERROR_UNKNOWN" desc="Network error message shown for an unknown or unexpected network configuration error">
       Error configuring network
     </message>
+  </if>
 
-     <!-- Strings translating ONC (Open Network Configuration) properties -->
-     <!-- and translatable values. See onc_spec.html for more information. -->
+  <!-- Strings translating ONC (Open Network Configuration) properties -->
+  <!-- and translatable values. See onc_spec.html for more information. -->
+  <if expr="chromeos">
     <message name="IDS_ONC_IPV4_ADDRESS" desc="ONC Property label for ipv4-IPAddress">
       IP address
     </message>

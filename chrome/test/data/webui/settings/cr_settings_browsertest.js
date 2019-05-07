@@ -536,6 +536,33 @@ TEST_F('CrSettingsPeoplePageAccountManagerTest', 'All', function() {
   mocha.run();
 });
 
+/**
+ * Test fixture for
+ * chrome/browser/resources/settings/people_page/kerberos_accounts.html.
+ *
+ * This is ChromeOS only.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsPeoplePageKerberosAccountsTest() {}
+
+CrSettingsPeoplePageKerberosAccountsTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/people_page/kerberos_accounts.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../test_browser_proxy.js',
+    'people_page_kerberos_accounts_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsPeoplePageKerberosAccountsTest', 'All', function() {
+  mocha.run();
+});
+
 GEN('#else  // !defined(OS_CHROMEOS)');
 
 /**

@@ -19,38 +19,36 @@ cr.define('settings_people_page_account_manager', function() {
     getAccounts() {
       this.methodCalled('getAccounts');
 
-      return new Promise((resolve) => {
-        resolve([
-          {
-            id: '123',
-            accountType: 1,
-            isDeviceAccount: true,
-            isSignedIn: true,
-            fullName: 'Device Account',
-            email: 'admin@domain.com',
-            pic: 'data:image/png;base64,abc123',
-            organization: 'Family Link',
-          },
-          {
-            id: '456',
-            accountType: 1,
-            isDeviceAccount: false,
-            isSignedIn: true,
-            fullName: 'Secondary Account 1',
-            email: 'user1@example.com',
-            pic: '',
-          },
-          {
-            id: '789',
-            accountType: 1,
-            isDeviceAccount: false,
-            isSignedIn: false,
-            fullName: 'Secondary Account 2',
-            email: 'user2@example.com',
-            pic: '',
-          }
-        ]);
-      });
+      return Promise.resolve([
+        {
+          id: '123',
+          accountType: 1,
+          isDeviceAccount: true,
+          isSignedIn: true,
+          fullName: 'Device Account',
+          email: 'admin@domain.com',
+          pic: 'data:image/png;base64,abc123',
+          organization: 'Family Link',
+        },
+        {
+          id: '456',
+          accountType: 1,
+          isDeviceAccount: false,
+          isSignedIn: true,
+          fullName: 'Secondary Account 1',
+          email: 'user1@example.com',
+          pic: '',
+        },
+        {
+          id: '789',
+          accountType: 1,
+          isDeviceAccount: false,
+          isSignedIn: false,
+          fullName: 'Secondary Account 2',
+          email: 'user2@example.com',
+          pic: '',
+        }
+      ]);
     }
 
     /** @override */

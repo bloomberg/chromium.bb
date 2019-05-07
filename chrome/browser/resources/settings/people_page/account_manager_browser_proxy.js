@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview A helper object used from the "Google accounts" subsection of
+ * @fileoverview A helper object used from the "Google Accounts" subsection of
  * the "People" section of Settings, to interact with the browser. Chrome OS
  * only.
  */

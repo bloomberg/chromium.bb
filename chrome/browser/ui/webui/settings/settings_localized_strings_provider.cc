@@ -76,11 +76,13 @@
 #include "chrome/browser/ui/webui/chromeos/bluetooth_dialog_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_shares_localized_strings_provider.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/multidevice_setup/public/cpp/url_provider.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/chromeos/events/keyboard_layout_util.h"
@@ -1658,6 +1660,19 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"configurePinTooLong", IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_TOO_LONG},
     {"configurePinWeakPin", IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_WEAK_PIN},
     {"enableScreenlock", IDS_SETTINGS_PEOPLE_ENABLE_SCREENLOCK},
+    {"kerberosAccountsSubMenuLabel",
+     IDS_SETTINGS_KERBEROS_ACCOUNTS_SUBMENU_LABEL},
+    {"kerberosAccountsPageTitle", IDS_SETTINGS_KERBEROS_ACCOUNTS_PAGE_TITLE},
+    {"kerberosAccountsDescription", IDS_SETTINGS_KERBEROS_ACCOUNTS_DESCRIPTION},
+    {"kerberosAccountsListHeader", IDS_SETTINGS_KERBEROS_ACCOUNTS_LIST_HEADER},
+    {"kerberosAccountsAddAccountLabel",
+     IDS_SETTINGS_KERBEROS_ACCOUNTS_ADD_ACCOUNT_LABEL},
+    {"kerberosAccountsRemoveAccountLabel",
+     IDS_SETTINGS_KERBEROS_ACCOUNTS_REMOVE_ACCOUNT_LABEL},
+    {"kerberosAccountsSignedIn", IDS_SETTINGS_KERBEROS_ACCOUNTS_SIGNED_IN},
+    {"kerberosAccountsSignedOut", IDS_SETTINGS_KERBEROS_ACCOUNTS_SIGNED_OUT},
+    {"kerberosAccountsReauthenticationLabel",
+     IDS_SETTINGS_KERBEROS_ACCOUNTS_REAUTHENTICATION_LABEL},
     {"lockScreenAddFingerprint",
      IDS_SETTINGS_PEOPLE_LOCK_SCREEN_ADD_FINGERPRINT_BUTTON},
     {"lockScreenChangePinButton",
@@ -1933,10 +1948,14 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
       base::FeatureList::IsEnabled(omnibox::kDocumentProvider));
 
 #if defined(OS_CHROMEOS)
-  // Used to control the display of Chrome OS Account Manager submenu in the
-  // People section.
+  // Toggles the Chrome OS Account Manager submenu in the People section.
   html_source->AddBoolean("isAccountManagerEnabled",
                           chromeos::IsAccountManagerAvailable(profile));
+
+  // Toggles the Chrome OS Kerberos Accounts submenu in the People section.
+  html_source->AddBoolean(
+      "isKerberosEnabled",
+      g_browser_process->local_state()->GetBoolean(prefs::kKerberosEnabled));
 #endif
 }
 

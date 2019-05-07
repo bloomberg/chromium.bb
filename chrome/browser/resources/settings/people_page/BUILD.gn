@@ -14,6 +14,8 @@ js_type_check("closure_compile") {
     ":fingerprint_list",
     ":import_data_browser_proxy",
     ":import_data_dialog",
+    ":kerberos_accounts",
+    ":kerberos_accounts_browser_proxy",
     ":lock_screen",
     ":lock_screen_password_prompt_dialog",
     ":lock_state_behavior",
@@ -92,6 +94,22 @@ js_library("fingerprint_list") {
 }
 
 js_library("import_data_browser_proxy") {
+  deps = [
+    "//ui/webui/resources/js:cr",
+  ]
+}
+
+js_library("kerberos_accounts") {
+  deps = [
+    ":kerberos_accounts_browser_proxy",
+    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:i18n_behavior",
+    "//ui/webui/resources/js:icon",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
+  ]
+}
+
+js_library("kerberos_accounts_browser_proxy") {
   deps = [
     "//ui/webui/resources/js:cr",
   ]
