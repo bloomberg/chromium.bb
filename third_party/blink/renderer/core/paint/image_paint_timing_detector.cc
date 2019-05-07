@@ -80,7 +80,7 @@ void ImagePaintTimingDetector::PopulateTraceValue(
     unsigned candidate_index) const {
   value.SetInteger("DOMNodeId", static_cast<int>(first_image_paint.node_id));
 #ifndef NDEBUG
-  value.SetString("imageUrl", first_image_paint.cached_image->Url());
+  value.SetString("imageUrl", first_image_paint.image_url);
 #endif
   value.SetInteger("size", static_cast<int>(first_image_paint.first_size));
   value.SetInteger("candidateIndex", candidate_index);
@@ -265,7 +265,8 @@ void ImagePaintTimingDetector::RecordBackgroundImage(
     // are deemed as invisible.
     records_manager_.RecordInvisibleNode(node_id);
   } else {
-    records_manager_.RecordVisibleNode(background_image_id, rect_size);
+    records_manager_.RecordVisibleNode(background_image_id, rect_size,
+                                       cached_image->Url());
     if (cached_image->IsLoaded())
       records_manager_.OnImageLoaded(background_image_id, frame_index_);
   }
@@ -320,7 +321,7 @@ void ImagePaintTimingDetector::RecordImage(
   if (rect_size == 0) {
     records_manager_.RecordInvisibleNode(node_id);
   } else {
-    records_manager_.RecordVisibleNode(node_id, rect_size);
+    records_manager_.RecordVisibleNode(node_id, rect_size, cached_image->Url());
     if (is_loaded)
       records_manager_.OnImageLoaded(node_id, frame_index_);
   }
@@ -422,18 +423,20 @@ void ImageRecordsManager::RecordInvisibleNode(const DOMNodeId& node_id) {
 }
 
 void ImageRecordsManager::RecordVisibleNode(const DOMNodeId& node_id,
-                                            const uint64_t& visual_size) {
+                                            const uint64_t& visual_size,
+                                            const String& url) {
   std::unique_ptr<ImageRecord> record =
-      CreateImageRecord(node_id, nullptr, visual_size);
+      CreateImageRecord(node_id, nullptr, visual_size, url);
   size_ordered_set_.insert(record->AsWeakPtr());
   visible_node_map_.insert(node_id, std::move(record));
 }
 
 void ImageRecordsManager::RecordVisibleNode(
     const BackgroundImageId& background_image_id,
-    const uint64_t& visual_size) {
+    const uint64_t& visual_size,
+    const String& url) {
   std::unique_ptr<ImageRecord> record = CreateImageRecord(
-      background_image_id.first, background_image_id.second, visual_size);
+      background_image_id.first, background_image_id.second, visual_size, url);
   size_ordered_set_.insert(record->AsWeakPtr());
   visible_background_image_map_.insert(background_image_id, std::move(record));
 }
@@ -441,14 +444,17 @@ void ImageRecordsManager::RecordVisibleNode(
 std::unique_ptr<ImageRecord> ImageRecordsManager::CreateImageRecord(
     const DOMNodeId& node_id,
     const ImageResourceContent* cached_image,
-    const uint64_t& visual_size) {
+    const uint64_t& visual_size,
+    const String& url) {
   DCHECK(!RecordedTooManyNodes());
   DCHECK_GT(visual_size, 0u);
   std::unique_ptr<ImageRecord> record = std::make_unique<ImageRecord>();
   record->record_id = max_record_id_++;
   record->node_id = node_id;
   record->first_size = visual_size;
-  record->cached_image = cached_image;
+#ifndef NDEBUG
+  record->image_url = url;
+#endif
   return record;
 }
 
