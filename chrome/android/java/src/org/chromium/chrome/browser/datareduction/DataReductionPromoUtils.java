@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.datareduction;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge.AboutVersionStrings;
@@ -66,10 +65,6 @@ public class DataReductionPromoUtils {
      * @return Whether the any data reduction proxy promotion has been displayed.
      */
     public static boolean canShowPromos() {
-        // See http://crbug.com/946357
-        if (LocaleManager.getInstance().isSpecialUser()) {
-            return false;
-        }
         if (!DataReductionProxySettings.getInstance().isDataReductionProxyPromoAllowed()) {
             return false;
         }

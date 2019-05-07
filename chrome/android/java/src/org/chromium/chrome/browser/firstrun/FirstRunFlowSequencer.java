@@ -131,10 +131,6 @@ public abstract class FirstRunFlowSequencer  {
     }
 
     protected boolean shouldShowDataReductionPage() {
-        // See http://crbug.com/946357
-        if (LocaleManager.getInstance().isSpecialUser()) {
-            return false;
-        }
         return !DataReductionProxySettings.getInstance().isDataReductionProxyManaged()
                 && DataReductionProxySettings.getInstance().isDataReductionProxyFREPromoAllowed();
     }
