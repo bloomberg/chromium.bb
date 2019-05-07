@@ -92,8 +92,8 @@ public class SendTabToSelfAndroidBridgeTest {
     @Test
     @SmallTest
     public void testGetEntryByGUID() {
-        SendTabToSelfEntry expected = new SendTabToSelfEntry(
-                GUID, URL, TITLE, SHARE_TIME_MS, NAVIGATION_TIME_MS, DEVICE_NAME);
+        SendTabToSelfEntry expected = new SendTabToSelfEntry(GUID, URL, TITLE, SHARE_TIME_MS,
+                NAVIGATION_TIME_MS, DEVICE_NAME, TARGET_DEVICE_SYNC_CACHE_GUID);
         when(mNativeMock.getEntryByGUID(eq(mProfile), anyString())).thenReturn(expected);
         // Note that the GUID passed in this function does not match the GUID of the returned entry.
         // This is okay because the purpose of the test is to make sure that the JNI layer passes
@@ -106,6 +106,7 @@ public class SendTabToSelfAndroidBridgeTest {
         Assert.assertEquals(expected.sharedTime, actual.sharedTime);
         Assert.assertEquals(expected.originalNavigationTime, actual.originalNavigationTime);
         Assert.assertEquals(expected.deviceName, actual.deviceName);
+        Assert.assertEquals(expected.targetDeviceSyncCacheGuid, actual.targetDeviceSyncCacheGuid);
     }
 
     @Test
