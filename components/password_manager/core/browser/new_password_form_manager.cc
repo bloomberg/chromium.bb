@@ -393,8 +393,16 @@ void NewPasswordFormManager::PermanentlyBlacklist() {
 
   if (!new_blacklisted_) {
     new_blacklisted_ = std::make_unique<PasswordForm>();
-    new_blacklisted_->origin = observed_form_.url;
-    new_blacklisted_->signon_realm = GetSignonRealm(observed_form_.url);
+    if (IsHttpAuth()) {
+      new_blacklisted_->origin = observed_http_auth_digest_->origin;
+      // GetSignonRealm is not suitable for http auth credentials.
+      new_blacklisted_->signon_realm = observed_http_auth_digest_->signon_realm;
+      new_blacklisted_->scheme = observed_http_auth_digest_->scheme;
+    } else {
+      new_blacklisted_->origin = observed_form_.url;
+      new_blacklisted_->signon_realm = GetSignonRealm(observed_form_.url);
+      new_blacklisted_->scheme = PasswordForm::SCHEME_HTML;
+    }
     blacklisted_matches_.push_back(new_blacklisted_.get());
   }
   form_saver_->PermanentlyBlacklist(new_blacklisted_.get());
