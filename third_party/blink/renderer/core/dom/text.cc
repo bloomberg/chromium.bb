@@ -143,9 +143,8 @@ Text* Text::splitText(unsigned offset, ExceptionState& exception_state) {
 
 static const Text* EarliestLogicallyAdjacentTextNode(const Text* t) {
   for (const Node* n = t->previousSibling(); n; n = n->previousSibling()) {
-    Node::NodeType type = n->getNodeType();
-    if (type == Node::kTextNode || type == Node::kCdataSectionNode) {
-      t = ToText(n);
+    if (auto* text_node = DynamicTo<Text>(n)) {
+      t = text_node;
       continue;
     }
 
@@ -156,9 +155,8 @@ static const Text* EarliestLogicallyAdjacentTextNode(const Text* t) {
 
 static const Text* LatestLogicallyAdjacentTextNode(const Text* t) {
   for (const Node* n = t->nextSibling(); n; n = n->nextSibling()) {
-    Node::NodeType type = n->getNodeType();
-    if (type == Node::kTextNode || type == Node::kCdataSectionNode) {
-      t = ToText(n);
+    if (auto* text_node = DynamicTo<Text>(n)) {
+      t = text_node;
       continue;
     }
 
@@ -175,9 +173,10 @@ String Text::wholeText() const {
   unsigned result_length = 0;
   for (const Node* n = start_text; n != one_past_end_text;
        n = n->nextSibling()) {
-    if (!n->IsTextNode())
+    auto* text_node = DynamicTo<Text>(n);
+    if (!text_node)
       continue;
-    const String& data = ToText(n)->data();
+    const String& data = text_node->data();
     CHECK_GE(std::numeric_limits<unsigned>::max() - data.length(),
              result_length);
     result_length += data.length();
@@ -186,9 +185,10 @@ String Text::wholeText() const {
   result.ReserveCapacity(result_length);
   for (const Node* n = start_text; n != one_past_end_text;
        n = n->nextSibling()) {
-    if (!n->IsTextNode())
+    auto* text_node = DynamicTo<Text>(n);
+    if (!text_node)
       continue;
-    result.Append(ToText(n)->data());
+    result.Append(text_node->data());
   }
   DCHECK_EQ(result.length(), result_length);
 

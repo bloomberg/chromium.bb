@@ -1905,8 +1905,7 @@ void ReplaceSelectionCommand::MergeTextNodesAroundPosition(
         return;
     }
   }
-  if (text->nextSibling() && text->nextSibling()->IsTextNode()) {
-    Text* next = ToText(text->nextSibling());
+  if (auto* next = DynamicTo<Text>(text->nextSibling())) {
     if (!has_incomplete_surrogate && next->data().length() > kMergeSizeLimit)
       return;
     unsigned original_length = text->length();

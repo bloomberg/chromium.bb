@@ -2091,8 +2091,9 @@ String AXNodeObject::TextFromDescendants(AXObjectSet& visited,
 
   for (Node* child = LayoutTreeBuilderTraversal::FirstChild(*node_); child;
        child = LayoutTreeBuilderTraversal::NextSibling(*child)) {
-    if (child->IsTextNode() &&
-        ToText(child)->wholeText().ContainsOnlyWhitespaceOrEmpty()) {
+    auto* child_text_node = DynamicTo<Text>(child);
+    if (child_text_node &&
+        child_text_node->wholeText().ContainsOnlyWhitespaceOrEmpty()) {
       // skip over empty text nodes
       continue;
     }

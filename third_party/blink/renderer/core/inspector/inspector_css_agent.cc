@@ -2321,12 +2321,11 @@ void InspectorCSSAgent::GetBackgroundColors(Element* element,
                                             String* computed_font_weight) {
   // TODO: only support the single text child node here.
   // Follow up with a larger fix post-merge.
-  if (!element->firstChild() || !element->firstChild()->IsTextNode() ||
-      element->firstChild()->nextSibling()) {
+  auto* text_node = DynamicTo<Text>(element->firstChild());
+  if (!text_node || element->firstChild()->nextSibling()) {
     return;
   }
 
-  Text* text_node = ToText(element->firstChild());
   LayoutRect content_bounds(text_node->BoundingBox());
   LocalFrameView* view = text_node->GetDocument().View();
   if (!view)

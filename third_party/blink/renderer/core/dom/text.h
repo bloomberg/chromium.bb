@@ -86,8 +86,6 @@ class CORE_EXPORT Text : public CharacterData {
   virtual Text* CloneWithData(Document&, const String&) const;
 };
 
-DEFINE_NODE_TYPE_CASTS(Text, IsTextNode());
-
 template <>
 struct DowncastTraits<Text> {
   static bool AllowFrom(const Node& node) { return node.IsTextNode(); }

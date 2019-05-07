@@ -255,7 +255,7 @@ void InsertTextCommand::DoApply(EditingState* editing_state) {
         << start_position;
     if (placeholder.IsNotNull())
       RemovePlaceholderAt(placeholder);
-    Text* text_node = ToText(start_position.ComputeContainerNode());
+    auto* text_node = To<Text>(start_position.ComputeContainerNode());
     const unsigned offset = start_position.OffsetInContainerNode();
 
     InsertTextIntoNode(text_node, offset, text_);
@@ -325,7 +325,6 @@ Position InsertTextCommand::InsertTab(const Position& pos,
   if (!text_node) {
     InsertNodeAt(span_element, insert_pos, editing_state);
   } else {
-    Text* text_node = ToText(node);
     if (offset >= text_node->length()) {
       InsertNodeAfter(span_element, text_node, editing_state);
     } else {

@@ -1260,9 +1260,10 @@ bool IsTabHTMLSpanElement(const Node* node) {
   if (!IsHTMLSpanElement(node))
     return false;
   const Node* const first_child = NodeTraversal::FirstChild(*node);
-  if (!first_child || !first_child->IsTextNode())
+  auto* first_child_text_node = DynamicTo<Text>(first_child);
+  if (!first_child_text_node)
     return false;
-  if (!ToText(first_child)->data().Contains('\t'))
+  if (!first_child_text_node->data().Contains('\t'))
     return false;
   // TODO(editing-dev): Hoist the call of UpdateStyleAndLayoutTree to callers.
   // See crbug.com/590369 for details.
