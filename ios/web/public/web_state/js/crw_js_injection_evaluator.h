@@ -16,12 +16,6 @@
 - (void)executeJavaScript:(NSString*)script
         completionHandler:(void (^)(id, NSError*))completionHandler;
 
-// Asynchronously executes |javaScript| in the main frame's context,
-// registering user interaction. For security reasons, some implementations may
-// reject the request if the page has some elevated privileges.
-- (void)executeUserJavaScript:(NSString*)script
-            completionHandler:(void (^)(id, NSError*))completionHandler;
-
 // Checks to see if the script for a class has been injected into the
 // current page already.
 - (BOOL)scriptHasBeenInjectedForClass:(Class)injectionManagerClass;

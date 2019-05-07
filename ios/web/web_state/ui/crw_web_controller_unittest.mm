@@ -19,6 +19,7 @@
 #import "ios/web/common/crw_content_view.h"
 #import "ios/web/common/crw_web_view_content_view.h"
 #include "ios/web/common/features.h"
+#include "ios/web/navigation/block_universal_links_buildflags.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
@@ -49,8 +50,6 @@
 #include "ios/web/test/test_url_constants.h"
 #import "ios/web/test/web_test_with_web_controller.h"
 #import "ios/web/test/wk_web_view_crash_utils.h"
-#include "ios/web/web_state/ui/block_universal_links_buildflags.h"
-#import "ios/web/web_state/ui/crw_js_injector.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 #import "ios/web/web_state/ui/web_view_js_utils.h"
@@ -1204,7 +1203,7 @@ class ScriptExecutionTest : public ProgrammaticWebTestWithWebController {
     __block id script_result = nil;
     __block NSError* script_error = nil;
     __block bool script_executed = false;
-    [web_controller().jsInjector
+    [web_controller()
         executeUserJavaScript:java_script
             completionHandler:^(id local_result, NSError* local_error) {
               script_result = local_result;
@@ -1252,7 +1251,7 @@ TEST_P(ScriptExecutionTest, UserScriptOnAppSpecificPage) {
   EXPECT_FALSE(ExecuteUserJavaScript(@"window.w = 0;", &error));
   ASSERT_TRUE(error);
   EXPECT_NSEQ(kJSEvaluationErrorDomain, error.domain);
-  EXPECT_EQ(JS_EVALUATION_ERROR_CODE_REJECTED, error.code);
+  EXPECT_EQ(JS_EVALUATION_ERROR_CODE_NO_WEB_VIEW, error.code);
 
   EXPECT_FALSE(ExecuteJavaScript(@"window.w"));
 }

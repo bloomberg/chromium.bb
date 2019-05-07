@@ -40,7 +40,6 @@
 #include "ios/web/public/webui/web_ui_ios_controller.h"
 #include "ios/web/web_state/global_web_state_event_tracker.h"
 #import "ios/web/web_state/session_certificate_policy_cache_impl.h"
-#import "ios/web/web_state/ui/crw_js_injector.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 #import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"
@@ -639,33 +638,32 @@ void WebStateImpl::LoadData(NSData* data,
 }
 
 CRWJSInjectionReceiver* WebStateImpl::GetJSInjectionReceiver() const {
-  return [web_controller_.jsInjector JSInjectionReceiver];
+  return [web_controller_ jsInjectionReceiver];
 }
 
 void WebStateImpl::ExecuteJavaScript(const base::string16& javascript) {
-  [web_controller_.jsInjector
-      executeJavaScript:base::SysUTF16ToNSString(javascript)
-      completionHandler:nil];
+  [web_controller_ executeJavaScript:base::SysUTF16ToNSString(javascript)
+                   completionHandler:nil];
 }
 
 void WebStateImpl::ExecuteJavaScript(const base::string16& javascript,
                                      JavaScriptResultCallback callback) {
   __block JavaScriptResultCallback stack_callback = std::move(callback);
-  [web_controller_.jsInjector
-      executeJavaScript:base::SysUTF16ToNSString(javascript)
-      completionHandler:^(id value, NSError* error) {
-        if (error) {
-          DLOG(WARNING) << "Script execution has failed: "
-                        << base::SysNSStringToUTF16(
-                               error.userInfo[NSLocalizedDescriptionKey]);
-        }
-        std::move(stack_callback).Run(ValueResultFromWKResult(value).get());
-      }];
+  [web_controller_ executeJavaScript:base::SysUTF16ToNSString(javascript)
+                   completionHandler:^(id value, NSError* error) {
+                     if (error) {
+                       DLOG(WARNING)
+                           << "Script execution has failed: "
+                           << base::SysNSStringToUTF16(
+                                  error.userInfo[NSLocalizedDescriptionKey]);
+                     }
+                     std::move(stack_callback)
+                         .Run(ValueResultFromWKResult(value).get());
+                   }];
 }
 
 void WebStateImpl::ExecuteUserJavaScript(NSString* javaScript) {
-  [web_controller_.jsInjector executeUserJavaScript:javaScript
-                                  completionHandler:nil];
+  [web_controller_ executeUserJavaScript:javaScript completionHandler:nil];
 }
 
 const std::string& WebStateImpl::GetContentsMimeType() const {

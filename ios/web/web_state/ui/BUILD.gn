@@ -42,8 +42,6 @@ source_set("ui") {
   ]
 
   sources = [
-    "crw_js_injector.h",
-    "crw_js_injector.mm",
     "crw_swipe_recognizer_provider.h",
     "crw_touch_tracking_recognizer.h",
     "crw_touch_tracking_recognizer.mm",
