@@ -10,7 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
-#include "third_party/blink/renderer/platform/heap/sparse_heap_bitmap.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -106,23 +105,10 @@ class HeapCompact::MovableObjectFixups final {
     if (LIKELY(!relocatable_pages_.Contains(slot_page)))
       return;
 
-    // Interior slots are recorded as follows:
-    // - Storing it in the interior map, which maps the slot to its (eventual)
-    //   location. Initially nullptr.
-    // - Mark it as being interior pointer within the page's interior bitmap.
-    //   This bitmap is used when moving a backing store to check whether an
-    //   interior slot is to be redirected.
     auto interior_it = interior_fixups_.find(slot);
-    // Repeated registrations have been filtered above.
     CHECK(interior_fixups_.end() == interior_it);
     interior_fixups_.insert({slot, nullptr});
     LOG_HEAP_COMPACTION() << "Interior slot: " << slot;
-    Address slot_address = reinterpret_cast<Address>(slot);
-    if (!interiors_) {
-      interiors_ = std::make_unique<SparseHeapBitmap>(slot_address);
-      return;
-    }
-    interiors_->Add(slot_address);
   }
 
   void AddFixupCallback(MovableReference* slot,
@@ -134,47 +120,35 @@ class HeapCompact::MovableObjectFixups final {
   }
 
   void RelocateInteriorFixups(Address from, Address to, size_t size) {
-    SparseHeapBitmap* range = interiors_->HasRange(from, size);
-    if (LIKELY(!range))
+    // |from| is a valid address for a slot.
+    auto interior_it =
+        interior_fixups_.lower_bound(reinterpret_cast<MovableReference*>(from));
+    if (interior_it == interior_fixups_.end())
       return;
 
-    // Scan through the payload, looking for interior pointer slots
-    // to adjust. If the backing store of such an interior slot hasn't
-    // been moved already, update the slot -> real location mapping.
-    // When the backing store is eventually moved, it'll use that location.
-    for (size_t offset = 0; offset < size; offset += sizeof(void*)) {
-      MovableReference* slot =
-          reinterpret_cast<MovableReference*>(from + offset);
+    CHECK_GE(reinterpret_cast<Address>(interior_it->first), from);
+    size_t offset = reinterpret_cast<Address>(interior_it->first) - from;
+    while (offset < size) {
+      if (!interior_it->second) {
+        // Update the interior fixup value, so that when the object the slot is
+        // pointing to is moved, it can re-use this value.
+        Address fixup = to + offset;
+        interior_it->second = fixup;
 
-      // Early bailout.
-      if (!range->IsSet(reinterpret_cast<Address>(slot)))
-        continue;
-
-      auto it = interior_fixups_.find(slot);
-      if (it == interior_fixups_.end())
-        continue;
-
-      // If |slot|'s mapping is set, then the slot has been adjusted already.
-      if (it->second)
-        continue;
-
-      Address fixup = to + offset;
-      LOG_HEAP_COMPACTION() << "Range interior fixup: " << (from + offset)
-                            << " " << it->second << " " << fixup;
-      // Fill in the relocated location of the original slot at |slot|.
-      // when the backing store corresponding to |slot| is eventually
-      // moved/compacted, it'll update |to + offset| with a pointer to the
-      // moved backing store.
-      interior_fixups_[slot] = fixup;
-
-      // If the |slot|'s content is pointing into the region [from, from + size)
-      // we are dealing with an interior pointer that does not point to a valid
-      // HeapObjectHeader. Such references need to be fixed up immediately.
-      Address fixup_contents = *reinterpret_cast<Address*>(fixup);
-      if (fixup_contents > from && fixup_contents < (from + size)) {
-        *reinterpret_cast<Address*>(fixup) = fixup_contents - from + to;
-        continue;
+        // If the |slot|'s content is pointing into the region [from, from +
+        // size) we are dealing with an interior pointer that does not point to
+        // a valid HeapObjectHeader. Such references need to be fixed up
+        // immediately.
+        Address fixup_contents = *reinterpret_cast<Address*>(fixup);
+        if (fixup_contents > from && fixup_contents < (from + size)) {
+          *reinterpret_cast<Address*>(fixup) = fixup_contents - from + to;
+        }
       }
+
+      interior_it++;
+      if (interior_it == interior_fixups_.end())
+        return;
+      offset = reinterpret_cast<Address>(interior_it->first) - from;
     }
   }
 
@@ -208,12 +182,12 @@ class HeapCompact::MovableObjectFixups final {
     // If the object is referenced by a slot that is contained on a compacted
     // area itself, check whether it can be updated already.
     MovableReference* slot = reinterpret_cast<MovableReference*>(it->second);
-    auto interior = interior_fixups_.find(slot);
-    if (interior != interior_fixups_.end()) {
+    auto interior_it = interior_fixups_.find(slot);
+    if (interior_it != interior_fixups_.end()) {
       MovableReference* slot_location =
-          reinterpret_cast<MovableReference*>(interior->second);
+          reinterpret_cast<MovableReference*>(interior_it->second);
       if (!slot_location) {
-        interior_fixups_[slot] = to;
+        interior_it->second = to;
         slot_type = kInteriorSlotPreMove;
       } else {
         LOG_HEAP_COMPACTION()
@@ -252,7 +226,7 @@ class HeapCompact::MovableObjectFixups final {
       callback->value.second(callback->value.first, from, to, size);
     }
 
-    if (!interiors_)
+    if (interior_fixups_.empty())
       return;
 
     if (!size)
@@ -266,8 +240,7 @@ class HeapCompact::MovableObjectFixups final {
                           << " objects=" << fixups_.size()
                           << " callbacks=" << fixup_callbacks_.size()
                           << " interior-size="
-                          << (interiors_ ? interiors_->IntervalCount() : 0,
-                              interior_fixups_.size());
+                          << interior_fixups_.size());
   }
 #endif
 
@@ -289,15 +262,19 @@ class HeapCompact::MovableObjectFixups final {
   HashMap<MovableReference*, std::pair<void*, MovingObjectCallback>>
       fixup_callbacks_;
 
-  // Slot => relocated slot/final location.
-  std::unordered_map<MovableReference*, Address> interior_fixups_;
+  // Map of interior slots to their final location. Needs to be an ordered map
+  // as it is used to walk through slots starting at a given memory address.
+  // Requires log(n) lookup to make the early bailout reasonably fast. Currently
+  // only std::map fullfills those requirements.
+  //
+  // - The initial value for a given key is nullptr.
+  // - Upon moving a an object this value is adjusted accordingly.
+  std::map<MovableReference*, Address> interior_fixups_;
 
   // All pages that are being compacted. The set keeps references to
   // BasePage instances. The void* type was selected to allow to check
   // arbitrary addresses.
   HashSet<void*> relocatable_pages_;
-
-  std::unique_ptr<SparseHeapBitmap> interiors_;
 };
 
 void HeapCompact::MovableObjectFixups::VerifyUpdatedSlot(
