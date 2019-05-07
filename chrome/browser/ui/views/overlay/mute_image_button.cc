@@ -15,7 +15,7 @@
 
 namespace {
 
-const int kMuteImageSize = 18;
+const int kMuteImageSize = 22;
 
 constexpr SkColor kMuteIconColor = SK_ColorWHITE;
 

@@ -13,7 +13,7 @@
 
 namespace {
 
-const int kBackToTabImageSize = 12;
+const int kBackToTabImageSize = 14;
 
 constexpr SkColor kBackToTabIconColor = SK_ColorWHITE;
 

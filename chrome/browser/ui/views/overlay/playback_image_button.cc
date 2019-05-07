@@ -16,8 +16,6 @@ namespace {
 
 SkColor kPlaybackIconColor = SK_ColorWHITE;
 
-const double kPlaybackImageRatio = 9.0 / 10.0;
-
 }  // namespace
 
 namespace views {
@@ -38,14 +36,11 @@ PlaybackImageButton::PlaybackImageButton(ButtonListener* listener)
 
 void PlaybackImageButton::OnBoundsChanged(const gfx::Rect& rect) {
   play_image_ = gfx::CreateVectorIcon(vector_icons::kPlayArrowIcon,
-                                      size().width() * kPlaybackImageRatio,
-                                      kPlaybackIconColor);
-  pause_image_ = gfx::CreateVectorIcon(vector_icons::kPauseIcon,
-                                       size().width() * kPlaybackImageRatio,
+                                      size().width(), kPlaybackIconColor);
+  pause_image_ = gfx::CreateVectorIcon(vector_icons::kPauseIcon, size().width(),
                                        kPlaybackIconColor);
   replay_image_ = gfx::CreateVectorIcon(vector_icons::kReplayIcon,
-                                        size().width() * kPlaybackImageRatio,
-                                        kPlaybackIconColor);
+                                        size().width(), kPlaybackIconColor);
 
   UpdateImageAndTooltipText();
 }

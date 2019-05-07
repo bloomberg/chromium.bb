@@ -14,7 +14,7 @@
 
 namespace {
 
-const int kTrackImageSize = 18;
+const int kTrackImageSize = 24;
 
 constexpr SkColor kTrackIconColor = SK_ColorWHITE;
 
