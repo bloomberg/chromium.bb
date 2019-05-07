@@ -293,14 +293,15 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   layout->SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
   layout->SetCollapseMargins(true);
 
-  constexpr int kOuterMargin = 12;
+  constexpr int kHorizontalMargin = 12;
+  constexpr int kVerticalMargin = 18;
   constexpr int kLineSpacing = 0;
-  title_label_->SetProperty(
-      views::kMarginsKey,
-      new gfx::Insets(kOuterMargin, kOuterMargin, kLineSpacing, kOuterMargin));
+  title_label_->SetProperty(views::kMarginsKey,
+                            new gfx::Insets(kHorizontalMargin, kVerticalMargin,
+                                            kLineSpacing, kVerticalMargin));
   domain_label_->SetProperty(
-      views::kMarginsKey,
-      new gfx::Insets(kLineSpacing, kOuterMargin, kOuterMargin, kOuterMargin));
+      views::kMarginsKey, new gfx::Insets(kLineSpacing, kVerticalMargin,
+                                          kHorizontalMargin, kVerticalMargin));
 
   widget_ = views::BubbleDialogDelegateView::CreateBubble(this);
   set_adjust_if_offscreen(true);
