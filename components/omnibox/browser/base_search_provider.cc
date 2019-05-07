@@ -17,7 +17,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
@@ -109,9 +108,6 @@ SuggestionDeletionHandler::SuggestionDeletionHandler(
       client->IsOffTheRecord() ? variations::InIncognito::kYes
                                : variations::InIncognito::kNo,
       request.get());
-  // TODO(https://crbug.com/808498) re-add data use measurement once
-  // SimpleURLLoader supports it.
-  // data_use_measurement::DataUseUserData::OMNIBOX
   deletion_fetcher_ =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
   deletion_fetcher_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(

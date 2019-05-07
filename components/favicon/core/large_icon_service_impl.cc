@@ -21,7 +21,6 @@
 #include "base/task/post_task.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/favicon/core/favicon_server_fetcher_params.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/fallback_icon_style.h"

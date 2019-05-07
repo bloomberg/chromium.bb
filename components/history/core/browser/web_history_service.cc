@@ -17,7 +17,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/web_history_service_observer.h"
 #include "components/sync/driver/sync_util.h"
@@ -149,9 +148,6 @@ class RequestImpl : public WebHistoryService::Request {
       resource_request->headers.SetHeader(net::HttpRequestHeaders::kUserAgent,
                                           user_agent_);
     }
-    // TODO(https://crbug.com/808498): Re-add data use measurement once
-    // SimpleURLLoader supports it.
-    // ID=data_use_measurement::DataUseUserData::WEB_HISTORY_SERVICE
     simple_url_loader_ = network::SimpleURLLoader::Create(
         std::move(resource_request), traffic_annotation);
     if (post_data_) {

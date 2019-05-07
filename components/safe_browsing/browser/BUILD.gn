@@ -26,7 +26,6 @@ jumbo_source_set("browser") {
     "url_checker_delegate.h",
   ]
   deps = [
-    "//components/data_use_measurement/core:core",
     "//components/history/core/browser:browser",
     "//components/safe_browsing:csd_proto",
     "//components/safe_browsing:features",

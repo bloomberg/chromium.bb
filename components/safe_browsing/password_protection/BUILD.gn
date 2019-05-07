@@ -25,7 +25,6 @@ source_set("password_protection") {
       ":password_protection_metrics_util",
       "//base:base",
       "//components/content_settings/core/browser:browser",
-      "//components/data_use_measurement/core:core",
       "//components/history/core/browser:browser",
       "//components/password_manager/core/browser:browser",
       "//components/safe_browsing:csd_proto",

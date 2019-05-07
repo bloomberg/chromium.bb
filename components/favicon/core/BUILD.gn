@@ -34,7 +34,6 @@ static_library("core") {
   deps = [
     "//base",
     "//base:i18n",
-    "//components/data_use_measurement/core",
     "//components/favicon_base",
     "//components/history/core/browser",
     "//components/image_fetcher/core",

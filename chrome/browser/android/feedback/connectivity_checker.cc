@@ -13,7 +13,6 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "content/public/browser/storage_partition.h"
 #include "jni/ConnectivityChecker_jni.h"
 #include "net/base/load_flags.h"
@@ -134,9 +133,6 @@ void ConnectivityChecker::StartAsyncCheck() {
   request->url = url_;
   request->allow_credentials = false;
   request->load_flags = net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE;
-  // TODO(https://crbug.com/808498): Re-add data use measurement once
-  // SimpleURLLoader supports it.
-  // ID=data_use_measurement::DataUseUserData::FEEDBACK_UPLOADER
   url_loader_ = network::SimpleURLLoader::Create(std::move(request),
                                                  NO_TRAFFIC_ANNOTATION_YET);
   url_loader_->DownloadHeadersOnly(

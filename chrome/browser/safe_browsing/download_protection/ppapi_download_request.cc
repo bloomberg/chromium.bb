@@ -17,7 +17,6 @@
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/safe_browsing/common/utils.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "content/public/browser/browser_task_traits.h"

@@ -22,7 +22,6 @@
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/avatar_icon_util.h"

@@ -216,7 +216,6 @@ jumbo_static_library("browser") {
     ":in_memory_url_index_cache_proto",
     "//base:i18n",
     "//components/bookmarks/browser",
-    "//components/data_use_measurement/core",
     "//components/favicon/core",
     "//components/favicon_base",
     "//components/keyed_service/core",

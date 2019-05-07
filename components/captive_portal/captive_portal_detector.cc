@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -44,8 +43,6 @@ void CaptivePortalDetector::DetectCaptivePortal(
   resource_request->load_flags = net::LOAD_BYPASS_CACHE;
   resource_request->allow_credentials = false;
 
-  // TODO(jam): switch to using ServiceURLLoader to track data measurement once
-  // https://crbug.com/808498 is fixed.
   simple_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                     traffic_annotation);
   simple_loader_->SetAllowHttpErrorResults(true);

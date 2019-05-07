@@ -24,7 +24,6 @@
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/common/safe_browsing/download_type_util.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/safe_browsing/common/utils.h"
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"

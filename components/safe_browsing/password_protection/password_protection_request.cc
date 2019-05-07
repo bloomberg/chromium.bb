@@ -12,7 +12,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/db/whitelist_checker_client.h"

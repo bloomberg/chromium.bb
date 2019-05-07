@@ -12,7 +12,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/policy/core/common/cloud/dm_auth.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"

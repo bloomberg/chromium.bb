@@ -63,7 +63,6 @@ static_library("core") {
   ]
   deps = [
     "//base",
-    "//components/data_use_measurement/core",
     "//components/leveldb_proto",
     "//components/pref_registry",
     "//components/prefs",

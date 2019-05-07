@@ -29,7 +29,6 @@
 #include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -1043,9 +1042,6 @@ void PaymentsClient::StartRequest() {
             }
           }
         })");
-  // TODO(https://crbug.com/808498): Re-add data use measurement once
-  // SimpleURLLoader supports it.
-  // ID=data_use_measurement::DataUseUserData::AUTOFILL
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request_), traffic_annotation);
   simple_url_loader_->AttachStringForUpload(request_->GetRequestContent(),

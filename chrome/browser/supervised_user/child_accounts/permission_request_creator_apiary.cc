@@ -18,7 +18,6 @@
 #include "chrome/browser/supervised_user/child_accounts/kids_management_api.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -244,9 +243,6 @@ void PermissionRequestCreatorApiary::OnAccessTokenFetchComplete(
         kNumPermissionRequestRetries,
         network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
   }
-  // TODO(https://crbug.com/808498): Re-add data use measurement once
-  // SimpleURLLoader supports it.
-  // ID=data_use_measurement::DataUseUserData::SUPERVISED_USER
   (*it)->simple_url_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
       base::BindOnce(&PermissionRequestCreatorApiary::OnSimpleLoaderComplete,

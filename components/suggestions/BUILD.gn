@@ -27,7 +27,6 @@ static_library("suggestions") {
     "//url",
   ]
   deps = [
-    "//components/data_use_measurement/core",
     "//components/google/core/browser",
     "//components/keyed_service/core",
     "//components/pref_registry",

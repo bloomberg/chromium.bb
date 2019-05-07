@@ -13,7 +13,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/link_header_util/link_header_util.h"
 #include "components/payments/core/error_logger.h"
 #include "net/base/load_flags.h"

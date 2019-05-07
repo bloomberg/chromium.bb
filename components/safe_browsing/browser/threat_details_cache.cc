@@ -13,7 +13,6 @@
 #include "base/lazy_instance.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/safe_browsing/browser/threat_details_cache.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"

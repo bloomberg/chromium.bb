@@ -866,8 +866,7 @@ class TestHttpPostProviderInterface : public HttpPostProviderInterface {
 class TestHttpPostProviderFactory : public HttpPostProviderFactory {
  public:
   ~TestHttpPostProviderFactory() override {}
-  void Init(const std::string& user_agent,
-            const BindToTrackerCallback& bind_to_tracker_callback) override {}
+  void Init(const std::string& user_agent) override {}
   HttpPostProviderInterface* Create() override {
     return new TestHttpPostProviderInterface();
   }

@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -127,9 +126,6 @@ void ExternalPolicyDataFetcher::Job::Start(
       base::BindOnce(&ExternalPolicyDataFetcher::Job::OnResponseStarted,
                      base::Unretained(this)));
   url_loader_->DownloadAsStream(url_loader_factory, this);
-
-  // TODO(https://crbug.com/808498): Use ServiceURLLoader to flag data usage as
-  // data_use_measurement::DataUseUserData::POLICY.
 }
 
 void ExternalPolicyDataFetcher::Job::Cancel() {

@@ -78,7 +78,6 @@ std::unique_ptr<network::SimpleURLLoader> DistillerURLFetcher::CreateURLFetcher(
   resource_request->url = GURL(url);
   resource_request->method = "GET";
 
-  // TODO(crbug.com/808498): Restore the data use measurement when bug is fixed.
   auto url_loader = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
   static const int kMaxRetries = 5;

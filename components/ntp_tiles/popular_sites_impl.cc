@@ -19,7 +19,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/google/core/common/google_util.h"
 #include "components/ntp_tiles/constants.h"
 #include "components/ntp_tiles/pref_names.h"
@@ -447,9 +446,6 @@ void PopularSitesImpl::FetchPopularSites() {
   resource_request->url = pending_url_;
   resource_request->load_flags =
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
-  // TODO(https://crbug.com/808498): Re-add data use measurement once
-  // SimpleURLLoader supports it.
-  // ID=data_use_measurement::DataUseUserData::NTP_TILES
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
   simple_url_loader_->SetRetryOptions(

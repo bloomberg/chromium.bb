@@ -18,7 +18,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/google/core/common/google_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/suggestions/blacklist_store.h"
@@ -434,9 +433,6 @@ SuggestionsServiceImpl::CreateSuggestionsRequest(
         "Authorization", base::StrCat({"Bearer ", access_token}));
   }
 
-  // TODO(https://crbug.com/808498): re-add data use measurement once
-  // SimpleURLLoader supports it.
-  // ID=data_use_measurement::DataUseUserData::SUGGESTIONS
   auto loader = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  traffic_annotation);
 

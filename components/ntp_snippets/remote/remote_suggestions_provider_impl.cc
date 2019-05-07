@@ -21,7 +21,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
 #include "components/ntp_snippets/features.h"

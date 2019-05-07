@@ -1,5 +1,4 @@
 include_rules = [
-  "+components/data_use_measurement/core",
   "+components/favicon",
   "+components/favicon_base",
   "+components/google/core",
@@ -22,4 +21,3 @@ include_rules = [
   "+ui/gfx",
   "+ui/base",
 ]
-

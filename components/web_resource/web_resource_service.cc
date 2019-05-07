@@ -15,7 +15,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/google/core/common/google_util.h"
 #include "components/prefs/pref_service.h"
 #include "net/base/load_flags.h"
@@ -161,9 +160,6 @@ void WebResourceService::StartFetch() {
   resource_request->load_flags = net::LOAD_DISABLE_CACHE |
                                  net::LOAD_DO_NOT_SEND_COOKIES |
                                  net::LOAD_DO_NOT_SAVE_COOKIES;
-  // TODO(https://crbug.com/808498): Re-add data use measurement once
-  // SimpleURLLoader supports it.
-  // ID=data_use_measurement::DataUseUserData::WEB_RESOURCE_SERVICE
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation_);
   simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(

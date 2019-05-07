@@ -106,7 +106,6 @@ static_library("internals") {
     ":shared",
     ":signin_buildflags",
     "//base",
-    "//components/data_use_measurement/core",
     "//components/image_fetcher/core",
     "//components/keyed_service/core",
     "//components/prefs",
@@ -194,7 +193,6 @@ static_library("browser") {
   ]
   deps = [
     "//base:i18n",
-    "//components/data_use_measurement/core",
     "//components/google/core/browser",
     "//components/metrics",
     "//components/os_crypt",

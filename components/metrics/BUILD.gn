@@ -203,7 +203,6 @@ jumbo_static_library("net") {
 
   deps = [
     "//base",
-    "//components/data_use_measurement/core",
     "//components/encrypted_messages:encrypted_message_proto",
     "//components/encrypted_messages:encrypted_messages",
     "//components/variations",

@@ -64,7 +64,6 @@ jumbo_static_library("core") {
   deps = [
     "//base",
     "//components/autofill/core/browser",
-    "//components/data_use_measurement/core",
     "//components/keyed_service/core",
     "//components/link_header_util",
     "//components/payments/mojom",

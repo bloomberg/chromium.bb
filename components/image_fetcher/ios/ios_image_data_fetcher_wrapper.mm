@@ -49,9 +49,6 @@ void IOSImageDataFetcherWrapper::FetchImageDataWebpDecoded(
       referrer_policy, NO_TRAFFIC_ANNOTATION_YET, send_cookies);
 }
 
-void IOSImageDataFetcherWrapper::SetDataUseServiceName(
-    DataUseServiceName data_use_service_name) {}
-
 ImageDataFetcherCallback
 IOSImageDataFetcherWrapper::CallbackForImageDataFetcher(
     ImageDataFetcherBlock callback) {

@@ -12,7 +12,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/timer/timer.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/safe_browsing/db/safebrowsing.pb.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"

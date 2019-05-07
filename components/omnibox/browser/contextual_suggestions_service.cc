@@ -13,7 +13,6 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/omnibox/browser/base_search_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/common/omnibox_features.h"
@@ -245,9 +244,6 @@ void ContextualSuggestionsService::CreateDefaultRequest(
   request->attach_same_site_cookies = true;
   request->site_for_cookies = suggest_url;
   AddVariationHeaders(request.get());
-  // TODO(https://crbug.com/808498) re-add data use measurement once
-  // SimpleURLLoader supports it.
-  // data_use_measurement::DataUseUserData::OMNIBOX
   StartDownloadAndTransferLoader(std::move(request), std::string(),
                                  traffic_annotation, std::move(start_callback),
                                  std::move(completion_callback));
@@ -302,9 +298,6 @@ void ContextualSuggestionsService::CreateExperimentalRequest(
   AddVariationHeaders(request.get());
   request->load_flags =
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
-  // TODO(https://crbug.com/808498) re-add data use measurement once
-  // SimpleURLLoader supports it.
-  // data_use_measurement::DataUseUserData::OMNIBOX
 
   // If authentication services are unavailable or if this request is still
   // waiting for an oauth2 token, run the contextual service without access

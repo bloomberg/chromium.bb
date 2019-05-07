@@ -127,7 +127,6 @@ static_library("ntp_snippets") {
 
   deps = [
     ":explore_protos",
-    "//components/data_use_measurement/core",
     "//components/favicon/core",
     "//components/favicon_base",
     "//components/history/core/browser",

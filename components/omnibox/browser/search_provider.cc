@@ -23,7 +23,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/history/core/browser/in_memory_database.h"
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
@@ -962,10 +961,6 @@ std::unique_ptr<network::SimpleURLLoader> SearchProvider::CreateSuggestLoader(
       client()->IsOffTheRecord() ? variations::InIncognito::kYes
                                  : variations::InIncognito::kNo,
       request.get());
-
-  // TODO(https://crbug.com/808498) re-add data use measurement once
-  // SimpleURLLoader supports it.
-  // data_use_measurement::DataUseUserData::OMNIBOX
 
   std::unique_ptr<network::SimpleURLLoader> loader =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);

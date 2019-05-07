@@ -35,7 +35,6 @@ static_library("ukm") {
   deps = [
     "//base",
     "//components/crx_file",
-    "//components/data_use_measurement/core",
     "//components/metrics",
     "//components/prefs",
     "//components/variations",

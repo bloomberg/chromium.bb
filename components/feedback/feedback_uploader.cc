@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/feedback/feedback_report.h"
 #include "components/feedback/feedback_switches.h"
 #include "components/variations/net/variations_http_headers.h"
@@ -181,9 +180,6 @@ void FeedbackUploader::DispatchReport() {
                                            kProtoBufMimeType);
   auto it = uploads_in_progress_.insert(uploads_in_progress_.begin(),
                                         std::move(simple_url_loader));
-  // TODO(https://crbug.com/808498): Re-add data use measurement once
-  // SimpleURLLoader supports it.
-  // ID=data_use_measurement::DataUseUserData::FEEDBACK_UPLOADER
   simple_url_loader_ptr->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
       base::BindOnce(&FeedbackUploader::OnDispatchComplete,

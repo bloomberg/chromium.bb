@@ -16,7 +16,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/clock.h"
 #include "base/values.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/remote/request_params.h"
@@ -388,9 +387,6 @@ std::unique_ptr<network::SimpleURLLoader> JsonRequest::Builder::BuildURLLoader(
           << resource_request->headers.ToString() << "\n"
           << body;
 
-  // TODO(https://crbug.com/808498): Re-add data use measurement once
-  // SimpleURLLoader supports it.
-  // ID=data_use_measurement::DataUseUserData::NTP_SNIPPETS_SUGGESTIONS);
   auto loader = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  traffic_annotation);
   loader->AttachStringForUpload(body, "application/json");

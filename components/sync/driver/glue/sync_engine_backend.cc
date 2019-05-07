@@ -13,7 +13,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "components/sync/base/invalidation_adapter.h"
@@ -49,11 +48,6 @@ namespace syncer {
 class EngineComponentsFactory;
 
 namespace {
-
-void BindFetcherToDataTracker(net::URLFetcher* fetcher) {
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      fetcher, data_use_measurement::DataUseUserData::SYNC);
-}
 
 void RecordPerModelTypeInvalidation(int model_type, bool is_grouped) {
   UMA_HISTOGRAM_ENUMERATION("Sync.InvalidationPerModelType", model_type,
@@ -349,8 +343,7 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
                           .Run(&release_request_context_signal_);
   // Finish initializing the HttpBridgeFactory.  We do this here because
   // building the user agent may block on some platforms.
-  args.post_factory->Init(params.sync_user_agent,
-                          base::Bind(&BindFetcherToDataTracker));
+  args.post_factory->Init(params.sync_user_agent);
   registrar_->GetWorkers(&args.workers);
   args.extensions_activity = params.extensions_activity.get();
   args.change_delegate = registrar_.get();  // as SyncManager::ChangeDelegate

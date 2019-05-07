@@ -9,13 +9,7 @@
 
 #include "base/callback.h"
 
-namespace net {
-class URLFetcher;
-}
-
 namespace syncer {
-
-using BindToTrackerCallback = base::Callback<void(net::URLFetcher*)>;
 
 class HttpPostProviderInterface;
 
@@ -27,8 +21,7 @@ class HttpPostProviderFactory {
  public:
   virtual ~HttpPostProviderFactory() {}
 
-  virtual void Init(const std::string& user_agent,
-                    const BindToTrackerCallback& bind_to_tracker_callback) = 0;
+  virtual void Init(const std::string& user_agent) = 0;
 
   // Obtain a new HttpPostProviderInterface instance, owned by caller.
   virtual HttpPostProviderInterface* Create() = 0;

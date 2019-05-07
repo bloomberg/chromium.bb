@@ -22,7 +22,6 @@
 #include "base/time/tick_clock.h"
 #include "build/build_config.h"
 #include "components/client_update_protocol/ecdsa.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/network_time/network_time_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"

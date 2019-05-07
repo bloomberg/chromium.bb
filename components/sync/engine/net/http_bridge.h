@@ -50,8 +50,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   HttpBridge(const std::string& user_agent,
              std::unique_ptr<network::SharedURLLoaderFactoryInfo>
                  url_loader_factory_info,
-             const NetworkTimeUpdateCallback& network_time_update_callback,
-             const BindToTrackerCallback& bind_to_tracker_callback);
+             const NetworkTimeUpdateCallback& network_time_update_callback);
 
   // HttpPostProviderInterface implementation.
   void SetExtraRequestHeaders(const char* headers) override;
@@ -194,10 +193,6 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   // Callback for updating network time.
   NetworkTimeUpdateCallback network_time_update_callback_;
 
-  // A callback to tag Sync request to be able to record data use of this
-  // service by data_use_measurement component.
-  BindToTrackerCallback bind_to_tracker_callback_;
-
   DISALLOW_COPY_AND_ASSIGN(HttpBridge);
 };
 
@@ -212,8 +207,7 @@ class HttpBridgeFactory : public HttpPostProviderFactory,
   ~HttpBridgeFactory() override;
 
   // HttpPostProviderFactory:
-  void Init(const std::string& user_agent,
-            const BindToTrackerCallback& bind_to_tracker_callback) override;
+  void Init(const std::string& user_agent) override;
   HttpPostProviderInterface* Create() override;
   void Destroy(HttpPostProviderInterface* http) override;
 
@@ -231,10 +225,6 @@ class HttpBridgeFactory : public HttpPostProviderFactory,
 
   CancelationSignal* const cancelation_signal_;
   bool registered_for_cancelation_ = false;
-
-  // A callback to tag Sync request to be able to record data use of this
-  // service by data_use_measurement component.
-  BindToTrackerCallback bind_to_tracker_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpBridgeFactory);
 };

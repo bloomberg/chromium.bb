@@ -12,7 +12,6 @@
 #include "base/rand_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/encrypted_messages/encrypted_message.pb.h"
 #include "components/encrypted_messages/message_encrypter.h"
 #include "components/metrics/metrics_log_uploader.h"
@@ -243,8 +242,6 @@ void NetMetricsLogUploader::UploadLogToURL(
     const ReportingInfo& reporting_info,
     const GURL& url) {
   DCHECK(!log_hash.empty());
-
-  // TODO(crbug.com/808498): Restore the data use measurement when bug is fixed.
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = url;

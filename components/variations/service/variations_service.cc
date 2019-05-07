@@ -29,7 +29,6 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "build/build_config.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/encrypted_messages/encrypted_message.pb.h"
 #include "components/encrypted_messages/message_encrypter.h"
 #include "components/metrics/clean_exit_beacon.h"
@@ -554,9 +553,6 @@ bool VariationsService::DoFetchFromURL(const GURL& url, bool is_http_retry) {
   const char* supported_im = enable_deltas ? "x-bm,gzip" : "gzip";
   resource_request->headers.SetHeader("A-IM", supported_im);
 
-  // TODO(https://crbug.com/808498): Re-add data use measurement once
-  // SimpleURLLoader supports it.
-  // ID=data_use_measurement::DataUseUserData::VARIATIONS
   pending_seed_request_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
   // Ensure our callback is called even with "304 Not Modified" responses.

@@ -320,7 +320,6 @@ jumbo_static_library("browser") {
     "proto:legacy_proto_bridge",
     "//base",
     "//base:i18n",
-    "//components/data_use_measurement/core",
     "//components/google/core/common",
     "//components/history/core/browser",
     "//components/infobars/core",

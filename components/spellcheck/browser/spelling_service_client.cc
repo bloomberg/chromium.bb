@@ -21,7 +21,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/prefs/pref_service.h"
 #include "components/spellcheck/browser/pref_names.h"
 #include "components/spellcheck/common/spellcheck_common.h"
@@ -187,9 +186,6 @@ bool SpellingServiceClient::RequestTextCheck(
           ? url_loader_factory_for_testing_
           : content::BrowserContext::GetDefaultStoragePartition(context)
                 ->GetURLLoaderFactoryForBrowserProcess();
-  // TODO(https://crbug.com/808498): Re-add data use measurement once
-  // SimpleURLLoader supports it.
-  // ID=data_use_measurement::DataUseUserData::SPELL_CHECKER
   loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory.get(),
       base::BindOnce(&SpellingServiceClient::OnSimpleLoaderComplete,

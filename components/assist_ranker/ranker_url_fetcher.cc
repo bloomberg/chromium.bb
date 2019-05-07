@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -80,9 +79,6 @@ bool RankerURLFetcher::Request(
   resource_request->url = url_;
   resource_request->load_flags =
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
-  // TODO(https://crbug.com/808498): Re-add data use measurement once
-  // SimpleURLLoader supports it.
-  // ID=data_use_measurement::DataUseUserData::MACHINE_INTELLIGENCE
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
   if (max_retry_on_5xx_ > 0) {

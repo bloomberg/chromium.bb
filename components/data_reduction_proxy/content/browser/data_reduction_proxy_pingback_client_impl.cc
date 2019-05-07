@@ -21,7 +21,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/previews/core/previews_lite_page_redirect.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "content/public/common/child_process_host.h"
@@ -453,9 +452,6 @@ void DataReductionProxyPingbackClientImpl::CreateLoaderForDataAndStart() {
   variations::AppendVariationsHeader(
       pingback_url_, variations::InIncognito::kNo, variations::SignedIn::kNo,
       resource_request.get());
-  // TODO(https://crbug.com/808498): Re-add data use measurement once
-  // SimpleURLLoader supports it.
-  // ID=data_use_measurement::DataUseUserData::DATA_REDUCTION_PROXY
   current_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
   current_loader_->AttachStringForUpload(serialized_request,

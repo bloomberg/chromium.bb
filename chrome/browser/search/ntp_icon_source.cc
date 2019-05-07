@@ -27,7 +27,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/platform_locale_settings.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/favicon/core/fallback_url_util.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_types.h"

@@ -22,7 +22,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/ubertoken_fetcher_impl.h"
@@ -364,8 +363,6 @@ GaiaCookieManagerService::ExternalCcResultFetcher::CreateAndStartLoader(
   request->url = url;
   request->load_flags =
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
-  // TODO(https://crbug.com/808498) re-add data use measurement once
-  // SimpleURLLoader supports it: data_use_measurement::DataUseUserData::SIGNIN
 
   std::unique_ptr<network::SimpleURLLoader> loader =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);

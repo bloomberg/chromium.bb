@@ -16,7 +16,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/common/safe_browsing/client_model.pb.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "components/variations/variations_associated_data.h"

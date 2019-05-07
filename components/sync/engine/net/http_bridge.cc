@@ -79,19 +79,15 @@ HttpBridgeFactory::~HttpBridgeFactory() {
   }
 }
 
-void HttpBridgeFactory::Init(
-    const std::string& user_agent,
-    const BindToTrackerCallback& bind_to_tracker_callback) {
+void HttpBridgeFactory::Init(const std::string& user_agent) {
   user_agent_ = user_agent;
-  bind_to_tracker_callback_ = bind_to_tracker_callback;
 }
 
 HttpPostProviderInterface* HttpBridgeFactory::Create() {
   DCHECK(url_loader_factory_);
 
-  scoped_refptr<HttpBridge> http =
-      new HttpBridge(user_agent_, url_loader_factory_->Clone(),
-                     network_time_update_callback_, bind_to_tracker_callback_);
+  scoped_refptr<HttpBridge> http = new HttpBridge(
+      user_agent_, url_loader_factory_->Clone(), network_time_update_callback_);
   http->AddRef();
   return http.get();
 }
@@ -122,8 +118,7 @@ HttpBridge::HttpBridge(
     const std::string& user_agent,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         url_loader_factory_info,
-    const NetworkTimeUpdateCallback& network_time_update_callback,
-    const BindToTrackerCallback& bind_to_tracker_callback)
+    const NetworkTimeUpdateCallback& network_time_update_callback)
     : user_agent_(user_agent),
       http_post_completed_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                            base::WaitableEvent::InitialState::NOT_SIGNALED),
@@ -132,8 +127,7 @@ HttpBridge::HttpBridge(
           g_io_capable_task_runner_for_tests.Get()
               ? g_io_capable_task_runner_for_tests.Get()
               : base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})),
-      network_time_update_callback_(network_time_update_callback),
-      bind_to_tracker_callback_(bind_to_tracker_callback) {}
+      network_time_update_callback_(network_time_update_callback) {}
 
 HttpBridge::~HttpBridge() {}
 
@@ -286,15 +280,6 @@ void HttpBridge::MakeAsynchronousPost() {
   fetch_state_.url_loader = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
   network::SimpleURLLoader* url_loader = fetch_state_.url_loader.get();
-
-  // TODO(https://crbug.com/808498): Re-add data use measurement once
-  // SimpleURLLoader supports it.
-  //
-  // This calls |BindFetcherToDataTracker| in
-  // components/sync/driver/glue/sync_engine_backend.cc which used to
-  // data_use_measurement::DataUseUserData::AttachToFetcher.
-  // if (!bind_to_tracker_callback_.is_null())
-  //  bind_to_tracker_callback_.Run(fetch_state_.url_poster);
 
   std::string request_to_send;
   compression::GzipCompress(request_content_, &request_to_send);

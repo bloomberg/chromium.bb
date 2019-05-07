@@ -51,7 +51,6 @@ static_library("browser") {
     "//base:i18n",
     "//components/assist_ranker",
     "//components/assist_ranker/proto",
-    "//components/data_use_measurement/core",
     "//components/keyed_service/core",
     "//components/language/core/browser",
     "//components/language/core/common",

@@ -21,7 +21,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
 #include "components/data_reduction_proxy/core/browser/db_data_owner.h"
 #include "components/data_use_measurement/core/data_use_measurement.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/nqe/effective_connection_type.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/network_quality_tracker.h"

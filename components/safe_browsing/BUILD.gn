@@ -54,7 +54,6 @@ static_library("ping_manager") {
 
   deps = [
     "//base:base",
-    "//components/data_use_measurement/core:core",
     "//components/safe_browsing/db:hit_report",
     "//components/safe_browsing/db:util",
     "//content/public/browser:browser",
