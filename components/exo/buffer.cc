@@ -20,6 +20,7 @@
 #include "base/trace_event/traced_value.h"
 #include "components/exo/frame_sink_resource_manager.h"
 #include "components/exo/wm_helper.h"
+#include "components/viz/common/gpu/context_lost_observer.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/resource_format_utils.h"
@@ -50,18 +51,20 @@ constexpr char kBufferInUse[] = "BufferInUse";
 // Buffer::Texture
 
 // Encapsulates the state and logic needed to bind a buffer to a SharedImage.
-class Buffer::Texture : public ui::ContextFactoryObserver {
+class Buffer::Texture : public viz::ContextLostObserver {
  public:
-  Texture(ui::ContextFactory* context_factory, const gfx::Size& size);
-  Texture(ui::ContextFactory* context_factory,
+  Texture(scoped_refptr<viz::RasterContextProvider> context_provider,
+          const gfx::Size& size);
+  Texture(scoped_refptr<viz::RasterContextProvider> context_provider,
+          gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
           gfx::GpuMemoryBuffer* gpu_memory_buffer,
           unsigned texture_target,
           unsigned query_type,
           base::TimeDelta wait_for_release_time);
   ~Texture() override;
 
-  // Overridden from ui::ContextFactoryObserver:
-  void OnLostSharedContext() override;
+  // Overridden from viz::ContextLostObserver:
+  void OnContextLost() override;
 
   // Returns true if the RasterInterface context has been lost.
   bool IsLost();
@@ -101,7 +104,6 @@ class Buffer::Texture : public ui::ContextFactoryObserver {
 
   gfx::GpuMemoryBuffer* const gpu_memory_buffer_;
   const gfx::Size size_;
-  ui::ContextFactory* context_factory_;
   scoped_refptr<viz::RasterContextProvider> context_provider_;
   const unsigned texture_target_;
   const unsigned query_type_;
@@ -116,13 +118,12 @@ class Buffer::Texture : public ui::ContextFactoryObserver {
   DISALLOW_COPY_AND_ASSIGN(Texture);
 };
 
-Buffer::Texture::Texture(ui::ContextFactory* context_factory,
-                         const gfx::Size& size)
+Buffer::Texture::Texture(
+    scoped_refptr<viz::RasterContextProvider> context_provider,
+    const gfx::Size& size)
     : gpu_memory_buffer_(nullptr),
       size_(size),
-      context_factory_(context_factory),
-      context_provider_(
-          context_factory->SharedMainThreadRasterContextProvider()),
+      context_provider_(std::move(context_provider)),
       texture_target_(GL_TEXTURE_2D),
       query_type_(GL_COMMANDS_COMPLETED_CHROMIUM),
       weak_ptr_factory_(this) {
@@ -137,19 +138,19 @@ Buffer::Texture::Texture(ui::ContextFactory* context_factory,
   ri->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
 
   // Provides a notification when |context_provider_| is lost.
-  context_factory_->AddObserver(this);
+  context_provider_->AddObserver(this);
 }
 
-Buffer::Texture::Texture(ui::ContextFactory* context_factory,
-                         gfx::GpuMemoryBuffer* gpu_memory_buffer,
-                         unsigned texture_target,
-                         unsigned query_type,
-                         base::TimeDelta wait_for_release_delay)
+Buffer::Texture::Texture(
+    scoped_refptr<viz::RasterContextProvider> context_provider,
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    gfx::GpuMemoryBuffer* gpu_memory_buffer,
+    unsigned texture_target,
+    unsigned query_type,
+    base::TimeDelta wait_for_release_delay)
     : gpu_memory_buffer_(gpu_memory_buffer),
       size_(gpu_memory_buffer->GetSize()),
-      context_factory_(context_factory),
-      context_provider_(
-          context_factory->SharedMainThreadRasterContextProvider()),
+      context_provider_(std::move(context_provider)),
       texture_target_(texture_target),
       query_type_(query_type),
       wait_for_release_delay_(wait_for_release_delay),
@@ -160,30 +161,27 @@ Buffer::Texture::Texture(ui::ContextFactory* context_factory,
                          gpu::SHARED_IMAGE_USAGE_SCANOUT;
 
   mailbox_ = sii->CreateSharedImage(
-      gpu_memory_buffer_, context_factory_->GetGpuMemoryBufferManager(),
-      gfx::ColorSpace(), usage);
+      gpu_memory_buffer_, gpu_memory_buffer_manager, gfx::ColorSpace(), usage);
   DCHECK(!mailbox_.IsZero());
   gpu::raster::RasterInterface* ri = context_provider_->RasterInterface();
   ri->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
   ri->GenQueriesEXT(1, &query_id_);
 
   // Provides a notification when |context_provider_| is lost.
-  context_factory_->AddObserver(this);
+  context_provider_->AddObserver(this);
 }
 
 Buffer::Texture::~Texture() {
   DestroyResources();
-  if (context_factory_)
-    context_factory_->RemoveObserver(this);
+  if (context_provider_)
+    context_provider_->RemoveObserver(this);
 }
 
-void Buffer::Texture::OnLostSharedContext() {
+void Buffer::Texture::OnContextLost() {
   DestroyResources();
-  context_factory_->RemoveObserver(this);
-  context_provider_ = nullptr;
-  context_factory_ = nullptr;
+  context_provider_->RemoveObserver(this);
+  context_provider_.reset();
 }
-
 
 bool Buffer::Texture::IsLost() {
   if (context_provider_) {
@@ -409,7 +407,8 @@ bool Buffer::ProduceTransferableResource(
   // |texture| using a call to CopyTexImage.
   if (!contents_texture_) {
     contents_texture_ = std::make_unique<Texture>(
-        context_factory, gpu_memory_buffer_.get(), texture_target_, query_type_,
+        context_provider, context_factory->GetGpuMemoryBufferManager(),
+        gpu_memory_buffer_.get(), texture_target_, query_type_,
         wait_for_release_delay_);
   }
   Texture* contents_texture = contents_texture_.get();
@@ -445,7 +444,7 @@ bool Buffer::ProduceTransferableResource(
 
   // Create a mailbox texture that we copy the buffer contents to.
   if (!texture_) {
-    texture_ = std::make_unique<Texture>(context_factory,
+    texture_ = std::make_unique<Texture>(context_provider,
                                          gpu_memory_buffer_->GetSize());
   }
   Texture* texture = texture_.get();
