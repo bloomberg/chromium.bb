@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom.h"
@@ -57,7 +58,7 @@ class CONTENT_EXPORT CodeCacheHostImpl : public blink::mojom::CodeCacheHost {
   void DidGenerateCacheableMetadata(blink::mojom::CodeCacheType cache_type,
                                     const GURL& url,
                                     base::Time expected_response_time,
-                                    const std::vector<uint8_t>& data) override;
+                                    mojo_base::BigBuffer data) override;
   void FetchCachedCode(blink::mojom::CodeCacheType cache_type,
                        const GURL& url,
                        FetchCachedCodeCallback) override;
@@ -66,7 +67,7 @@ class CONTENT_EXPORT CodeCacheHostImpl : public blink::mojom::CodeCacheHost {
   void DidGenerateCacheableMetadataInCacheStorage(
       const GURL& url,
       base::Time expected_response_time,
-      const std::vector<uint8_t>& data,
+      mojo_base::BigBuffer data,
       const url::Origin& cache_storage_origin,
       const std::string& cache_storage_cache_name) override;
 
@@ -86,7 +87,7 @@ class CONTENT_EXPORT CodeCacheHostImpl : public blink::mojom::CodeCacheHost {
       int render_process_id,
       const GURL& url,
       base::Time expected_response_time,
-      const std::vector<uint8_t>& data);
+      mojo_base::BigBuffer data);
 
   // Our render process host ID, used to bind to the correct render process.
   const int render_process_id_;

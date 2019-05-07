@@ -31,6 +31,7 @@
 
 #include <memory>
 #include <vector>
+#include "base/containers/span.h"
 #include "base/gtest_prod_util.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -144,7 +145,7 @@ class PLATFORM_EXPORT ResourceLoader final
                int64_t decoded_body_length) override;
 
   blink::mojom::CodeCacheType GetCodeCacheType() const;
-  void SendCachedCodeToResource(const char* data, int size);
+  void SendCachedCodeToResource(base::span<const uint8_t> data);
   void ClearCachedCode();
 
   void HandleError(const ResourceError&);

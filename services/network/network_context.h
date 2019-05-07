@@ -24,6 +24,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "net/cert/cert_verifier.h"
@@ -197,7 +198,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void WriteCacheMetadata(const GURL& url,
                           net::RequestPriority priority,
                           base::Time expected_response_time,
-                          const std::vector<uint8_t>& data) override;
+                          mojo_base::BigBuffer data) override;
   void ClearHostCache(mojom::ClearDataFilterPtr filter,
                       ClearHostCacheCallback callback) override;
   void ClearHttpAuthCache(base::Time start_time,

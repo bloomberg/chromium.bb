@@ -115,8 +115,8 @@ class CONTENT_EXPORT NavigationBodyLoader
       mojo::ScopedDataPipeConsumerHandle handle) override;
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
-  void CodeCacheReceived(const base::Time& response_time,
-                         const std::vector<uint8_t>& data);
+  void CodeCacheReceived(base::Time response_time,
+                         base::span<const uint8_t> data);
   void BindURLLoaderAndContinue();
   void OnConnectionClosed();
   void OnReadable(MojoResult unused);

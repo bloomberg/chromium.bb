@@ -33,6 +33,7 @@
 
 #include <memory>
 
+#include "base/containers/span.h"
 #include "base/files/file.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/user_metrics_action.h"
@@ -380,10 +381,11 @@ class BLINK_PLATFORM_EXPORT Platform {
                              size_t data_size) {}
 
   // A request to fetch contents associated with this URL from metadata cache.
-  virtual void FetchCachedCode(
-      blink::mojom::CodeCacheType cache_type,
-      const GURL&,
-      base::OnceCallback<void(base::Time, const std::vector<uint8_t>&)>) {}
+  using FetchCachedCodeCallback =
+      base::OnceCallback<void(base::Time, base::span<const uint8_t>)>;
+  virtual void FetchCachedCode(blink::mojom::CodeCacheType cache_type,
+                               const GURL&,
+                               FetchCachedCodeCallback) {}
   virtual void ClearCodeCacheEntry(blink::mojom::CodeCacheType cache_type,
                                    const GURL&) {}
 

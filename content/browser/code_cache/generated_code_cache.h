@@ -8,6 +8,7 @@
 #include <queue>
 
 #include "base/containers/queue.h"
+#include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -90,7 +91,7 @@ class CONTENT_EXPORT GeneratedCodeCache {
   void WriteData(const GURL& resource_url,
                  const GURL& origin_lock,
                  const base::Time& response_time,
-                 const std::vector<uint8_t>& data);
+                 base::span<const uint8_t> data);
 
   // Fetch entry corresponding to <resource_url, origin_lock> from the cache
   // and return it using the ReadDataCallback.

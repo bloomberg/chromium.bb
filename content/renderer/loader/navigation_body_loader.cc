@@ -191,8 +191,8 @@ void NavigationBodyLoader::StartLoadingBody(
   }
 }
 
-void NavigationBodyLoader::CodeCacheReceived(const base::Time& response_time,
-                                             const std::vector<uint8_t>& data) {
+void NavigationBodyLoader::CodeCacheReceived(base::Time response_time,
+                                             base::span<const uint8_t> data) {
   if (head_.response_time == response_time && client_) {
     base::WeakPtr<NavigationBodyLoader> weak_self = weak_factory_.GetWeakPtr();
     client_->BodyCodeCacheReceived(data);

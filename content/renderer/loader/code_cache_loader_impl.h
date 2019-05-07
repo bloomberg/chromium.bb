@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_LOADER_CODE_CACHE_LOADER_IMPL_H_
 #define CONTENT_RENDERER_LOADER_CODE_CACHE_LOADER_IMPL_H_
 
+#include "base/containers/span.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/synchronization/waitable_event_watcher.h"
@@ -44,9 +45,9 @@ class CodeCacheLoaderImpl : public blink::CodeCacheLoader {
   void OnReceiveCachedCode(FetchCodeCacheCallback callback,
                            base::WaitableEvent* event,
                            base::Time response_time,
-                           const std::vector<uint8_t>& data);
-  void ReceiveDataForSynchronousFetch(const base::Time& response_time,
-                                      const std::vector<uint8_t>& data);
+                           base::span<const uint8_t> data);
+  void ReceiveDataForSynchronousFetch(base::Time response_time,
+                                      base::span<const uint8_t> data);
   void OnTerminate(base::WaitableEvent* fetch_event,
                    base::WaitableEvent* terminate_event);
 

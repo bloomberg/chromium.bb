@@ -75,6 +75,7 @@
 #include "media/audio/audio_output_device.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/filters/stream_parser_factory.h"
+#include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -411,18 +412,24 @@ void RendererBlinkPlatformImpl::CacheMetadata(
     // Let the browser know we generated cacheable metadata for this resource.
     // The browser may cache it and return it on subsequent responses to speed
     // the processing of this resource.
-    std::vector<uint8_t> copy(data, data + size);
-    GetCodeCacheHost().DidGenerateCacheableMetadata(cache_type, url,
-                                                    response_time, copy);
+    GetCodeCacheHost().DidGenerateCacheableMetadata(
+        cache_type, url, response_time,
+        mojo_base::BigBuffer(base::make_span(data, size)));
   }
 }
 
 void RendererBlinkPlatformImpl::FetchCachedCode(
     blink::mojom::CodeCacheType cache_type,
     const GURL& url,
-    base::OnceCallback<void(base::Time, const std::vector<uint8_t>&)>
-        callback) {
-  GetCodeCacheHost().FetchCachedCode(cache_type, url, std::move(callback));
+    FetchCachedCodeCallback callback) {
+  GetCodeCacheHost().FetchCachedCode(
+      cache_type, url,
+      base::BindOnce(
+          [](FetchCachedCodeCallback callback, base::Time time,
+             mojo_base::BigBuffer data) {
+            std::move(callback).Run(time, data);
+          },
+          std::move(callback)));
 }
 
 void RendererBlinkPlatformImpl::ClearCodeCacheEntry(
@@ -441,10 +448,9 @@ void RendererBlinkPlatformImpl::CacheMetadataInCacheStorage(
   // Let the browser know we generated cacheable metadata for this resource in
   // CacheStorage. The browser may cache it and return it on subsequent
   // responses to speed the processing of this resource.
-  std::vector<uint8_t> copy(data, data + size);
   GetCodeCacheHost().DidGenerateCacheableMetadataInCacheStorage(
-      url, response_time, copy, cacheStorageOrigin,
-      cacheStorageCacheName.Utf8());
+      url, response_time, mojo_base::BigBuffer(base::make_span(data, size)),
+      cacheStorageOrigin, cacheStorageCacheName.Utf8());
 }
 
 WebString RendererBlinkPlatformImpl::DefaultLocale() {

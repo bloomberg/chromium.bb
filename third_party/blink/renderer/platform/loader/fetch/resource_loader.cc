@@ -199,17 +199,17 @@ class ResourceLoader::CodeCacheRequest {
 
   // Callback to receive data from CodeCacheLoader.
   void DidReceiveCachedCode(ResourceLoader* loader,
-                            const base::Time& response_time,
-                            const std::vector<uint8_t>& data);
+                            base::Time response_time,
+                            base::span<const uint8_t> data);
 
   // Process the response from code cache.
   void ProcessCodeCacheResponse(const base::Time& response_time,
-                                const std::vector<uint8_t>& data,
+                                base::span<const uint8_t> data,
                                 ResourceLoader* resource_loader);
 
   // Send |cache_code| if we got a response from code_cache_loader and the
   // web_url_loader.
-  void MaybeSendCachedCode(const std::vector<uint8_t>& cached_code,
+  void MaybeSendCachedCode(base::span<const uint8_t> cached_code,
                            ResourceLoader* resource_loader);
 
   CodeCacheRequestStatus status_;
@@ -287,8 +287,8 @@ bool ResourceLoader::CodeCacheRequest::SetDefersLoading(bool defers) {
 
 void ResourceLoader::CodeCacheRequest::DidReceiveCachedCode(
     ResourceLoader* resource_loader,
-    const base::Time& response_time,
-    const std::vector<uint8_t>& data) {
+    base::Time response_time,
+    base::span<const uint8_t> data) {
   ProcessCodeCacheResponse(response_time, data, resource_loader);
   // Reset the deferred value to its original state.
   DCHECK(resource_loader);
@@ -300,7 +300,7 @@ void ResourceLoader::CodeCacheRequest::DidReceiveCachedCode(
 // will be processed when the response is received from the URLLoader.
 void ResourceLoader::CodeCacheRequest::ProcessCodeCacheResponse(
     const base::Time& response_time,
-    const std::vector<uint8_t>& data,
+    base::span<const uint8_t> data,
     ResourceLoader* resource_loader) {
   status_ = kReceivedResponse;
   cached_code_response_time_ = response_time;
@@ -309,7 +309,7 @@ void ResourceLoader::CodeCacheRequest::ProcessCodeCacheResponse(
     // Wait for the response before we can send the cached code.
     // TODO(crbug.com/866889): Pass this as a handle to avoid the overhead of
     // copying this data.
-    cached_code_ = data;
+    cached_code_.assign(data.begin(), data.end());
     return;
   }
 
@@ -317,7 +317,7 @@ void ResourceLoader::CodeCacheRequest::ProcessCodeCacheResponse(
 }
 
 void ResourceLoader::CodeCacheRequest::MaybeSendCachedCode(
-    const std::vector<uint8_t>& cached_code,
+    base::span<const uint8_t> cached_code,
     ResourceLoader* resource_loader) {
   if (status_ != kReceivedResponse || cached_code_response_time_.is_null() ||
       resource_response_time_.is_null()) {
@@ -333,10 +333,8 @@ void ResourceLoader::CodeCacheRequest::MaybeSendCachedCode(
     return;
   }
 
-  if (!cached_code.empty()) {
-    resource_loader->SendCachedCodeToResource(
-        reinterpret_cast<const char*>(cached_code.data()), cached_code.size());
-  }
+  if (!cached_code.empty())
+    resource_loader->SendCachedCodeToResource(cached_code);
 }
 
 ResourceLoader::ResourceLoader(ResourceFetcher* fetcher,
@@ -853,9 +851,8 @@ blink::mojom::CodeCacheType ResourceLoader::GetCodeCacheType() const {
   return Resource::ResourceTypeToCodeCacheType(resource_->GetType());
 }
 
-void ResourceLoader::SendCachedCodeToResource(const char* data, int length) {
-  resource_->SetSerializedCachedMetadata(reinterpret_cast<const uint8_t*>(data),
-                                         length);
+void ResourceLoader::SendCachedCodeToResource(base::span<const uint8_t> data) {
+  resource_->SetSerializedCachedMetadata(data.data(), data.size());
 }
 
 void ResourceLoader::ClearCachedCode() {

@@ -153,7 +153,7 @@ class TestNetworkContext : public mojom::NetworkContext {
   void WriteCacheMetadata(const GURL& url,
                           net::RequestPriority priority,
                           base::Time expected_response_time,
-                          const std::vector<uint8_t>& data) override {}
+                          mojo_base::BigBuffer data) override {}
   void VerifyCertForSignedExchange(
       const scoped_refptr<net::X509Certificate>& certificate,
       const GURL& url,

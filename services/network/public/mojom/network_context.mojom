@@ -4,6 +4,7 @@
 
 module network.mojom;
 
+import "mojo/public/mojom/base/big_buffer.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
@@ -583,7 +584,7 @@ interface NetworkContext {
   WriteCacheMetadata(url.mojom.Url url,
                      RequestPriority priority,
                      mojo_base.mojom.Time expected_response_time,
-                     array<uint8> data);
+                     mojo_base.mojom.BigBuffer data);
 
   // Clears the host cache. This will affect all NetworkContexts that share the
   // same HostResolved as the NetworkContext this is called on.

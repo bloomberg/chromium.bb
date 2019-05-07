@@ -1388,7 +1388,7 @@ void NetworkContext::NotifyExternalCacheHit(
 void NetworkContext::WriteCacheMetadata(const GURL& url,
                                         net::RequestPriority priority,
                                         base::Time expected_response_time,
-                                        const std::vector<uint8_t>& data) {
+                                        mojo_base::BigBuffer data) {
   net::HttpCache* cache =
       url_request_context_->http_transaction_factory()->GetCache();
   if (!cache)

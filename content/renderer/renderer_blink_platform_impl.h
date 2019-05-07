@@ -88,11 +88,9 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
                      base::Time,
                      const uint8_t*,
                      size_t) override;
-  void FetchCachedCode(
-      blink::mojom::CodeCacheType cache_type,
-      const GURL&,
-      base::OnceCallback<void(base::Time, const std::vector<uint8_t>&)>)
-      override;
+  void FetchCachedCode(blink::mojom::CodeCacheType cache_type,
+                       const GURL&,
+                       FetchCachedCodeCallback) override;
   void ClearCodeCacheEntry(blink::mojom::CodeCacheType cache_type,
                            const GURL&) override;
   void CacheMetadataInCacheStorage(

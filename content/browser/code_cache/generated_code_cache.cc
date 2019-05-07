@@ -209,7 +209,7 @@ void GeneratedCodeCache::GetBackend(GetBackendCallback callback) {
 void GeneratedCodeCache::WriteData(const GURL& url,
                                    const GURL& origin_lock,
                                    const base::Time& response_time,
-                                   const std::vector<uint8_t>& data) {
+                                   base::span<const uint8_t> data) {
   // Silently ignore the requests.
   if (backend_state_ == kFailed) {
     CollectStatistics(CacheEntryStatus::kError);
@@ -225,8 +225,7 @@ void GeneratedCodeCache::WriteData(const GURL& url,
       response_time.ToDeltaSinceWindowsEpoch().InMicroseconds();
   memcpy(buffer->data(), &serialized_time, kResponseTimeSizeInBytes);
   if (!data.empty())
-    memcpy(buffer->data() + kResponseTimeSizeInBytes, &data.front(),
-           data.size());
+    memcpy(buffer->data() + kResponseTimeSizeInBytes, data.data(), data.size());
 
   std::string key = GetCacheKey(url, origin_lock);
   // If there is an in progress operation corresponding to this key. Enqueue it
