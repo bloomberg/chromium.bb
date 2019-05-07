@@ -6,6 +6,7 @@
 
 #include <gtest/gtest.h>
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/shadow_root_init.h"
@@ -14,7 +15,13 @@
 
 namespace blink {
 
-class WhitespaceAttacherTest : public PageTestBase {};
+class WhitespaceAttacherTest : public PageTestBase {
+ protected:
+  void AdvanceToRebuildLayoutTree() {
+    GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+    GetDocument().GetStyleEngine().in_layout_tree_rebuild_ = true;
+  }
+};
 
 TEST_F(WhitespaceAttacherTest, WhitespaceAfterReattachedBlock) {
   GetDocument().body()->SetInnerHTMLFromString("<div id=block></div> ");
@@ -24,7 +31,7 @@ TEST_F(WhitespaceAttacherTest, WhitespaceAfterReattachedBlock) {
   auto* text = To<Text>(div->nextSibling());
   EXPECT_FALSE(text->GetLayoutObject());
 
-  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  AdvanceToRebuildLayoutTree();
 
   // Force LayoutText to see that the reattach works.
   text->SetLayoutObject(text->CreateTextLayoutObject(
@@ -44,7 +51,7 @@ TEST_F(WhitespaceAttacherTest, WhitespaceAfterReattachedInline) {
   auto* text = To<Text>(span->nextSibling());
   EXPECT_TRUE(text->GetLayoutObject());
 
-  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  AdvanceToRebuildLayoutTree();
 
   // Clear LayoutText to see that the reattach works.
   text->SetLayoutObject(nullptr);
@@ -67,7 +74,7 @@ TEST_F(WhitespaceAttacherTest, WhitespaceAfterReattachedWhitespace) {
   EXPECT_TRUE(first_whitespace->GetLayoutObject());
   EXPECT_FALSE(second_whitespace->GetLayoutObject());
 
-  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  AdvanceToRebuildLayoutTree();
 
   // Force LayoutText on the second whitespace to see that the reattach works.
   second_whitespace->SetLayoutObject(second_whitespace->CreateTextLayoutObject(
@@ -90,7 +97,7 @@ TEST_F(WhitespaceAttacherTest, VisitBlockAfterReattachedWhitespace) {
   auto* text = To<Text>(div->nextSibling());
   EXPECT_FALSE(text->GetLayoutObject());
 
-  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  AdvanceToRebuildLayoutTree();
 
   WhitespaceAttacher attacher;
   attacher.DidReattachText(text);
@@ -108,7 +115,7 @@ TEST_F(WhitespaceAttacherTest, VisitInlineAfterReattachedWhitespace) {
   auto* text = To<Text>(span->nextSibling());
   EXPECT_TRUE(text->GetLayoutObject());
 
-  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  AdvanceToRebuildLayoutTree();
 
   // Clear LayoutText to see that the reattach works.
   text->SetLayoutObject(nullptr);
@@ -130,7 +137,7 @@ TEST_F(WhitespaceAttacherTest, VisitTextAfterReattachedWhitespace) {
   EXPECT_TRUE(text->GetLayoutObject());
   EXPECT_TRUE(whitespace->GetLayoutObject());
 
-  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  AdvanceToRebuildLayoutTree();
 
   // Clear LayoutText to see that the reattach works.
   whitespace->SetLayoutObject(nullptr);
@@ -152,7 +159,7 @@ TEST_F(WhitespaceAttacherTest, ReattachWhitespaceInsideBlockExitingScope) {
   auto* text = To<Text>(div->firstChild());
   EXPECT_FALSE(text->GetLayoutObject());
 
-  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  AdvanceToRebuildLayoutTree();
 
   {
     WhitespaceAttacher attacher;
@@ -174,7 +181,7 @@ TEST_F(WhitespaceAttacherTest, ReattachWhitespaceInsideInlineExitingScope) {
   auto* text = To<Text>(span->firstChild());
   EXPECT_TRUE(text->GetLayoutObject());
 
-  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  AdvanceToRebuildLayoutTree();
 
   // Clear LayoutText to see that the reattach works.
   text->SetLayoutObject(nullptr);
@@ -201,7 +208,7 @@ TEST_F(WhitespaceAttacherTest, SlottedWhitespaceAfterReattachedBlock) {
   auto* text = To<Text>(host->firstChild());
   EXPECT_FALSE(text->GetLayoutObject());
 
-  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  AdvanceToRebuildLayoutTree();
 
   // Force LayoutText to see that the reattach works.
   text->SetLayoutObject(text->CreateTextLayoutObject(host->ComputedStyleRef(),
@@ -229,7 +236,7 @@ TEST_F(WhitespaceAttacherTest, SlottedWhitespaceAfterReattachedInline) {
   auto* text = To<Text>(host->firstChild());
   EXPECT_TRUE(text->GetLayoutObject());
 
-  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  AdvanceToRebuildLayoutTree();
 
   // Clear LayoutText to see that the reattach works.
   text->SetLayoutObject(nullptr);
@@ -254,7 +261,7 @@ TEST_F(WhitespaceAttacherTest,
   EXPECT_FALSE(contents->GetLayoutObject());
   EXPECT_FALSE(text->GetLayoutObject());
 
-  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  AdvanceToRebuildLayoutTree();
 
   // Force LayoutText to see that the reattach works.
   text->SetLayoutObject(text->CreateTextLayoutObject(
@@ -280,7 +287,7 @@ TEST_F(WhitespaceAttacherTest,
   EXPECT_FALSE(contents->GetLayoutObject());
   EXPECT_TRUE(text->GetLayoutObject());
 
-  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  AdvanceToRebuildLayoutTree();
 
   // Clear LayoutText to see that the reattach works.
   text->SetLayoutObject(nullptr);
@@ -305,7 +312,7 @@ TEST_F(WhitespaceAttacherTest,
   EXPECT_FALSE(contents->GetLayoutObject());
   EXPECT_FALSE(text->GetLayoutObject());
 
-  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  AdvanceToRebuildLayoutTree();
 
   // Force LayoutText to see that the reattach works.
   text->SetLayoutObject(text->CreateTextLayoutObject(
@@ -333,7 +340,7 @@ TEST_F(WhitespaceAttacherTest,
   EXPECT_FALSE(contents->GetLayoutObject());
   EXPECT_FALSE(text->GetLayoutObject());
 
-  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  AdvanceToRebuildLayoutTree();
 
   // Force LayoutText to see that the reattach works.
   text->SetLayoutObject(text->CreateTextLayoutObject(
@@ -360,7 +367,7 @@ TEST_F(WhitespaceAttacherTest, WhitespaceDeepInsideDisplayContents) {
   auto* text = To<Text>(GetDocument().getElementById("inner")->firstChild());
   EXPECT_TRUE(text->GetLayoutObject());
 
-  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  AdvanceToRebuildLayoutTree();
 
   // Clear LayoutText to see that the reattach works.
   text->SetLayoutObject(nullptr);
@@ -388,7 +395,7 @@ TEST_F(WhitespaceAttacherTest, MultipleDisplayContents) {
   auto* text = To<Text>(last_contents->firstChild());
   EXPECT_TRUE(text->GetLayoutObject());
 
-  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  AdvanceToRebuildLayoutTree();
 
   // Clear LayoutText to see that the reattach works.
   text->SetLayoutObject(nullptr);
@@ -420,7 +427,7 @@ TEST_F(WhitespaceAttacherTest, SlottedWhitespaceInsideDisplayContents) {
   auto* text = To<Text>(host->firstChild());
   EXPECT_TRUE(text->GetLayoutObject());
 
-  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  AdvanceToRebuildLayoutTree();
 
   // Clear LayoutText to see that the reattach works.
   text->SetLayoutObject(nullptr);

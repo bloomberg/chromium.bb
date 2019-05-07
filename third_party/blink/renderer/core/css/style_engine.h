@@ -548,7 +548,9 @@ class CORE_EXPORT StyleEngine final
   // preferred color scheme, and the ForceDarkMode setting.
   ColorScheme color_scheme_ = ColorScheme::kLight;
 
+  friend class NodeTest;
   friend class StyleEngineTest;
+  friend class WhitespaceAttacherTest;
 };
 
 }  // namespace blink

@@ -1408,6 +1408,8 @@ void Node::ReattachLayoutTree(AttachContext& context) {
 void Node::AttachLayoutTree(AttachContext& context) {
   DCHECK(GetDocument().InStyleRecalc() || IsDocumentNode());
   DCHECK(!GetDocument().Lifecycle().InDetach());
+  DCHECK(!context.performing_reattach ||
+         GetDocument().GetStyleEngine().InRebuildLayoutTree());
 
   LayoutObject* layout_object = GetLayoutObject();
   DCHECK(!layout_object ||
@@ -1422,6 +1424,8 @@ void Node::AttachLayoutTree(AttachContext& context) {
 
 void Node::DetachLayoutTree(const AttachContext& context) {
   DCHECK(GetDocument().Lifecycle().StateAllowsDetach());
+  DCHECK(!context.performing_reattach ||
+         GetDocument().GetStyleEngine().InRebuildLayoutTree());
   DocumentLifecycle::DetachScope will_detach(GetDocument().Lifecycle());
   if (GetLayoutObject())
     GetLayoutObject()->DestroyAndCleanupAnonymousWrappers();

@@ -674,6 +674,8 @@ class CORE_EXPORT Node : public EventTarget {
     // we don't need to backtrack past display:none/contents and out of flow
     // objects when we need to do whitespace re-attachment.
     LayoutObject* previous_in_flow = nullptr;
+    // Set to true if the Attach/DetachLayoutTree is done as part of the
+    // RebuildLayoutTree pass.
     bool performing_reattach = false;
     // True if the previous_in_flow member is up-to-date, even if it is nullptr.
     bool use_previous_in_flow = false;
