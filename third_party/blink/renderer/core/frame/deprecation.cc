@@ -587,23 +587,23 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                   MilestoneString(kM72))};
 
     case WebFeature::kNoSysexWebMIDIWithoutPermission:
-      return {"NoSysexWebMIDIWithoutPermission", kM75,
+      return {"NoSysexWebMIDIWithoutPermission", kM76,
               String::Format(
                   "Web MIDI will ask a permission to use even if the sysex is "
                   "not specified in the MIDIOptions since %s. See "
                   "https://www.chromestatus.com/feature/5138066234671104 for "
                   "more details.",
-                  MilestoneString(kM75))};
+                  MilestoneString(kM76))};
 
     case WebFeature::kNoSysexWebMIDIOnInsecureOrigin:
-      return {"NoSysexWebMIDIOnInsecureOrigin", kM75,
+      return {"NoSysexWebMIDIOnInsecureOrigin", kM76,
               String::Format(
                   "Web MIDI will be deprecated on insecure origins since %s. "
                   "You should consider switching your application to a secure "
                   "origin, such as HTTPS. See "
                   "https://www.chromestatus.com/feature/5138066234671104 for "
                   "more details.",
-                  MilestoneString(kM75))};
+                  MilestoneString(kM76))};
 
     case WebFeature::kCustomCursorIntersectsViewport:
       return {
