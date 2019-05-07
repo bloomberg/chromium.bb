@@ -70,4 +70,7 @@ class TestCase(unittest.TestCase, AutoStubMixIn):
 
   def has_failed(self):
     """Returns True if the test has failed."""
+    if not self._resultForDoCleanups:
+      # Maybe skipped.
+      return False
     return not self._resultForDoCleanups.wasSuccessful()
