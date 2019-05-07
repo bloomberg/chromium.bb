@@ -58521,6 +58521,56 @@ Full version information for the fingerprint enum values:
   <int value="5" label="Unknown"/>
 </enum>
 
+<enum name="WebRequest.RequestHeader">
+  <int value="0" label="kNone"/>
+  <int value="1" label="kOther"/>
+  <int value="2" label="kAccept"/>
+  <int value="3" label="kAcceptCharset"/>
+  <int value="4" label="kAcceptEncoding"/>
+  <int value="5" label="kAcceptLanguage"/>
+  <int value="6" label="kAccessControlRequestHeaders"/>
+  <int value="7" label="kAccessControlRequestMethod"/>
+  <int value="8" label="kAuthorization"/>
+  <int value="9" label="kCacheControl"/>
+  <int value="10" label="kConnection"/>
+  <int value="11" label="kContentEncoding"/>
+  <int value="12" label="kContentLanguage"/>
+  <int value="13" label="kContentLength"/>
+  <int value="14" label="kContentLocation"/>
+  <int value="15" label="kContentType"/>
+  <int value="16" label="kCookie"/>
+  <int value="17" label="kDate"/>
+  <int value="18" label="kDnt"/>
+  <int value="19" label="kEarlyData"/>
+  <int value="20" label="kExpect"/>
+  <int value="21" label="kForwarded"/>
+  <int value="22" label="kFrom"/>
+  <int value="23" label="kHost"/>
+  <int value="24" label="kIfMatch"/>
+  <int value="25" label="kIfModifiedSince"/>
+  <int value="26" label="kIfNoneMatch"/>
+  <int value="27" label="kIfRange"/>
+  <int value="28" label="kIfUnmodifiedSince"/>
+  <int value="29" label="kKeepAlive"/>
+  <int value="30" label="kOrigin"/>
+  <int value="31" label="kPragma"/>
+  <int value="32" label="kProxyAuthorization"/>
+  <int value="33" label="kProxyConnection"/>
+  <int value="34" label="kRange"/>
+  <int value="35" label="kReferer"/>
+  <int value="36" label="kSecOriginPolicy"/>
+  <int value="37" label="kTe"/>
+  <int value="38" label="kTransferEncoding"/>
+  <int value="39" label="kUpgrade"/>
+  <int value="40" label="kUpgradeInsecureRequests"/>
+  <int value="41" label="kUserAgent"/>
+  <int value="42" label="kVia"/>
+  <int value="43" label="kWarning"/>
+  <int value="44" label="kXForwardedFor"/>
+  <int value="45" label="kXForwardedHost"/>
+  <int value="46" label="kXForwardedProto"/>
+</enum>
+
 <enum name="WebRequestEventListenerFlag">
   <int value="0" label="Total"/>
   <int value="1" label="None"/>

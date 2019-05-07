@@ -41,6 +41,59 @@ namespace extension_web_request_api_helpers {
 using ResponseHeader = std::pair<std::string, std::string>;
 using ResponseHeaders = std::vector<ResponseHeader>;
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class RequestHeaderType {
+  kNone = 0,
+  kOther = 1,
+  kAccept = 2,
+  kAcceptCharset = 3,
+  kAcceptEncoding = 4,
+  kAcceptLanguage = 5,
+  kAccessControlRequestHeaders = 6,
+  kAccessControlRequestMethod = 7,
+  kAuthorization = 8,
+  kCacheControl = 9,
+  kConnection = 10,
+  kContentEncoding = 11,
+  kContentLanguage = 12,
+  kContentLength = 13,
+  kContentLocation = 14,
+  kContentType = 15,
+  kCookie = 16,
+  kDate = 17,
+  kDnt = 18,
+  kEarlyData = 19,
+  kExpect = 20,
+  kForwarded = 21,
+  kFrom = 22,
+  kHost = 23,
+  kIfMatch = 24,
+  kIfModifiedSince = 25,
+  kIfNoneMatch = 26,
+  kIfRange = 27,
+  kIfUnmodifiedSince = 28,
+  kKeepAlive = 29,
+  kOrigin = 30,
+  kPragma = 31,
+  kProxyAuthorization = 32,
+  kProxyConnection = 33,
+  kRange = 34,
+  kReferer = 35,
+  kSecOriginPolicy = 36,
+  kTe = 37,
+  kTransferEncoding = 38,
+  kUpgrade = 39,
+  kUpgradeInsecureRequests = 40,
+  kUserAgent = 41,
+  kVia = 42,
+  kWarning = 43,
+  kXForwardedFor = 44,
+  kXForwardedHost = 45,
+  kXForwardedProto = 46,
+  kMaxValue = kXForwardedProto,
+};
+
 struct IgnoredAction {
   IgnoredAction(extensions::ExtensionId extension_id,
                 extensions::api::web_request::IgnoredActionType action_type);
@@ -54,19 +107,6 @@ struct IgnoredAction {
 };
 
 using IgnoredActions = std::vector<IgnoredAction>;
-
-// Mirrors the histogram enum of the same name. DO NOT REORDER THESE VALUES OR
-// CHANGE THEIR MEANING.
-enum class WebRequestSpecialRequestHeaderModification {
-  kNone,
-  kAcceptLanguage,
-  kAcceptEncoding,
-  kUserAgent,
-  kCookie,
-  kReferer,
-  kMultiple,
-  kMaxValue = kMultiple,
-};
 
 // Internal representation of the extraInfoSpec parameter on webRequest
 // events, used to specify extra information to be included with network

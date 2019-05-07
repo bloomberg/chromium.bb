@@ -113,9 +113,6 @@ using content::WebContents;
 
 namespace extensions {
 
-using extension_web_request_api_helpers::
-    WebRequestSpecialRequestHeaderModification;
-
 namespace {
 
 class CancelLoginDialog : public content::NotificationObserver {
@@ -2435,6 +2432,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestMockedClockTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, ChangeHeaderUMAs) {
+  using RequestHeaderType =
+      extension_web_request_api_helpers::RequestHeaderType;
+
   ASSERT_TRUE(embedded_test_server()->Start());
 
   TestExtensionDir test_dir;
@@ -2454,6 +2454,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, ChangeHeaderUMAs) {
               break;
             }
           }
+          headers.push({name: 'Foo1', value: 'Bar1'});
+          headers.push({name: 'Foo2', value: 'Bar2'});
+          headers.push({name: 'DNT', value: '0'});
           return {requestHeaders: headers};
         }, {urls: ['*://*/set-cookie*']},
         ['blocking', 'requestHeaders', 'extraHeaders']);
@@ -2482,21 +2485,32 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, ChangeHeaderUMAs) {
       browser(), embedded_test_server()->GetURL("/set-cookie?Foo=Bar"));
 
   // Changed histograms should record kUserAgent and true.
-  tester.ExpectUniqueSample(
-      "Extensions.WebRequest.SpecialRequestHeadersChanged",
-      WebRequestSpecialRequestHeaderModification::kUserAgent, 1);
+  tester.ExpectUniqueSample("Extensions.WebRequest.RequestHeaderChanged",
+                            RequestHeaderType::kUserAgent, 1);
   tester.ExpectUniqueSample(
       "Extensions.WebRequest.SetCookieResponseHeaderChanged", true, 1);
 
+  // Added histogram should record kOther and kDNT.
+  EXPECT_THAT(tester.GetAllSamples("Extensions.WebRequest.RequestHeaderAdded"),
+              ::testing::UnorderedElementsAre(
+                  base::Bucket(static_cast<base::HistogramBase::Sample>(
+                                   RequestHeaderType::kDnt),
+                               1),
+                  base::Bucket(static_cast<base::HistogramBase::Sample>(
+                                   RequestHeaderType::kOther),
+                               2)));
+
   // Removed histograms should record kNone and false.
-  tester.ExpectUniqueSample(
-      "Extensions.WebRequest.SpecialRequestHeadersRemoved",
-      WebRequestSpecialRequestHeaderModification::kNone, 1);
+  tester.ExpectUniqueSample("Extensions.WebRequest.RequestHeaderRemoved",
+                            RequestHeaderType::kNone, 1);
   tester.ExpectUniqueSample(
       "Extensions.WebRequest.SetCookieResponseHeaderRemoved", false, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, RemoveHeaderUMAs) {
+  using RequestHeaderType =
+      extension_web_request_api_helpers::RequestHeaderType;
+
   ASSERT_TRUE(embedded_test_server()->Start());
 
   TestExtensionDir test_dir;
@@ -2544,18 +2558,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, RemoveHeaderUMAs) {
       browser(), embedded_test_server()->GetURL("/set-cookie?Foo=Bar"));
 
   // Removed histograms should record kUserAgent and true.
-  tester.ExpectUniqueSample(
-      "Extensions.WebRequest.SpecialRequestHeadersRemoved",
-      WebRequestSpecialRequestHeaderModification::kUserAgent, 1);
+  tester.ExpectUniqueSample("Extensions.WebRequest.RequestHeaderRemoved",
+                            RequestHeaderType::kUserAgent, 1);
   tester.ExpectUniqueSample(
       "Extensions.WebRequest.SetCookieResponseHeaderRemoved", true, 1);
 
   // Changed histograms should record kNone and false.
-  tester.ExpectUniqueSample(
-      "Extensions.WebRequest.SpecialRequestHeadersChanged",
-      WebRequestSpecialRequestHeaderModification::kNone, 1);
+  tester.ExpectUniqueSample("Extensions.WebRequest.RequestHeaderChanged",
+                            RequestHeaderType::kNone, 1);
   tester.ExpectUniqueSample(
       "Extensions.WebRequest.SetCookieResponseHeaderChanged", false, 1);
+
+  // Added histograms should record kNone.
+  tester.ExpectUniqueSample("Extensions.WebRequest.RequestHeaderAdded",
+                            RequestHeaderType::kNone, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, ServiceWorkerFetch) {
