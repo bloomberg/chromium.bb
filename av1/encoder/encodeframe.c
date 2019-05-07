@@ -3734,7 +3734,7 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
       if (row >= cpi->common.mi_rows || col >= cpi->common.mi_cols) continue;
 
       intra_cost += this_stats->intra_cost;
-      mc_dep_cost += this_stats->mc_dep_cost;
+      mc_dep_cost += this_stats->intra_cost + this_stats->mc_flow;
     }
   }
 
@@ -3787,7 +3787,7 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
       TplDepStats *this_stats = &tpl_stats[row * tpl_stride + col];
       if (row >= cm->mi_rows || col >= cm->mi_cols) continue;
       intra_cost += this_stats->intra_cost;
-      mc_dep_cost += this_stats->mc_dep_cost;
+      mc_dep_cost += this_stats->intra_cost + this_stats->mc_flow;
       mc_count += this_stats->mc_count;
       mc_saved += this_stats->mc_saved;
       mi_count++;
@@ -4986,7 +4986,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
       for (col = 0; col < cm->mi_cols; ++col) {
         TplDepStats *this_stats = &tpl_stats[row * tpl_stride + col];
         intra_cost_base += this_stats->intra_cost;
-        mc_dep_cost_base += this_stats->mc_dep_cost;
+        mc_dep_cost_base += this_stats->intra_cost + this_stats->mc_flow;
         mc_count_base += this_stats->mc_count;
         mc_saved_base += this_stats->mc_saved;
       }
