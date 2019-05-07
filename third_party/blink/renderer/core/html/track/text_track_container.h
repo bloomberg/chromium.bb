@@ -31,6 +31,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_TEXT_TRACK_CONTAINER_H_
 
 #include "third_party/blink/renderer/core/html/html_div_element.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -64,7 +65,12 @@ class TextTrackContainer final : public HTMLDivElement {
   float default_font_size_;
 };
 
-DEFINE_ELEMENT_TYPE_CASTS(TextTrackContainer, IsTextTrackContainer());
+template <>
+struct DowncastTraits<TextTrackContainer> {
+  static bool AllowFrom(const Node& node) {
+    return node.IsTextTrackContainer();
+  }
+};
 
 }  // namespace blink
 

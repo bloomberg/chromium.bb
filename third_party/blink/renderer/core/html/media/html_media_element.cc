@@ -3651,15 +3651,16 @@ TextTrackContainer& HTMLMediaElement::EnsureTextTrackContainer() {
   AssertShadowRootChildren(shadow_root);
 
   Node* first_child = shadow_root.firstChild();
-  if (first_child && first_child->IsTextTrackContainer())
-    return ToTextTrackContainer(*first_child);
+  if (auto* first_child_text_track = DynamicTo<TextTrackContainer>(first_child))
+    return *first_child_text_track;
   Node* to_be_inserted = first_child;
 
   if (first_child && (first_child->IsMediaRemotingInterstitial() ||
                       first_child->IsPictureInPictureInterstitial())) {
     Node* second_child = first_child->nextSibling();
-    if (second_child && second_child->IsTextTrackContainer())
-      return ToTextTrackContainer(*second_child);
+    if (auto* second_child_text_track =
+            DynamicTo<TextTrackContainer>(second_child))
+      return *second_child_text_track;
     to_be_inserted = second_child;
   }
 
