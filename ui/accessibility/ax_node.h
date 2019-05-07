@@ -297,7 +297,7 @@ class AX_EXPORT AXNode final {
 
   // This should only be called by the LabelLanguageForSubtree and is used as
   // part of the language detection feature.
-  void SetLanguageInfo(AXLanguageInfo* lang_info);
+  void SetLanguageInfo(std::unique_ptr<AXLanguageInfo> lang_info);
 
  private:
   // Computes the text offset where each line starts by traversing all child

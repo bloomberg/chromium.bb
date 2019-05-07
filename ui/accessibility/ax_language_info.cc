@@ -126,8 +126,9 @@ static void DetectLanguageForSubtreeInternal(AXNode* node, class AXTree* tree) {
       // destruction of the containing node, this is due to us treating AXNode
       // as otherwise read-only and so we store any detected language
       // information on lang info.
-      lang_info = new AXLanguageInfo();
-      node->SetLanguageInfo(lang_info);
+
+      node->SetLanguageInfo(std::make_unique<AXLanguageInfo>());
+      lang_info = node->GetLanguageInfo();
     } else {
       lang_info->detected_languages.clear();
     }

@@ -193,8 +193,8 @@ AXLanguageInfo* AXNode::GetLanguageInfo() {
   return language_info_.get();
 }
 
-void AXNode::SetLanguageInfo(AXLanguageInfo* lang_info) {
-  language_info_.reset(lang_info);
+void AXNode::SetLanguageInfo(std::unique_ptr<AXLanguageInfo> lang_info) {
+  language_info_ = std::move(lang_info);
 }
 
 std::string AXNode::GetLanguage() {
