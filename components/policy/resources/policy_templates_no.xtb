@@ -1623,29 +1623,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis denne innstillingen angis som sann eller ikke angis, kan brukere innløse tilbud via Chrome OS-registrering.
 
       Hvis denne innstillingen angis som usann, kan ikke brukeren innløse tilbud.</translation>
-<translation id="4008233182078913897">Spesifiserer en liste over apper og utvidelser som installeres stille,
-          uten brukerinteraksjon, og som ikke kan avinstalleres eller
-          deaktiveres av brukere. Det er underforstått at alle tillatelser
-          appene/utvidelsene ber om, gis uten brukerinteraksjon. Dette gjelder
-          også eventuelle tillatelser fremtidige versjoner av appen/utvidelsen
-          ber om. Tillatelser gis også for utvidelses-API-ene
-          enterprise.deviceAttributes og enterprise.platformKeys.
-          (Disse to API-ene er ikke tilgjengelige for apper/utvidelser som
-          ikke er administratorinstallert.)
-
-          Denne regelen prioriteres foran eventuelle regler for <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> hvis de er i konflikt med hverandre. Hvis apper eller utvidelser som tidligere var administratorinstallert, blir fjernet fra listen, blir de automatisk avinstallert av <ph name="PRODUCT_NAME" />.
-
-          For Windows-forekomster som ikke er tilknyttet noe <ph name="MS_AD_NAME" />-domene, er administratorinstallasjon begrenset til apper og utvidelser som står oppført i Chrome Nettmarked.
-
-         Vær oppmerksom på at kildekoden for utvidelsene kan endres av brukere via utviklerverktøy (noe som potensielt kan føre til at utvidelsene ikke fungerer). Hvis dette kan bli et problem, bør du angi regelen <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Hvert av elementene i listen er en streng som inneholder en utvidelses-ID og eventuelt (valgfritt) en oppdateringsadresse, atskilt med semikolon (<ph name="SEMICOLON" />). Utvidelses-ID-en er strengen på 32 tegn du for eksempel finner i <ph name="CHROME_EXTENSIONS_LINK" /> når du er i utviklermodus. Oppdateringsadressen skal være til et oppdateringsmanifest i XML-format, som beskrevet her: <ph name="LINK_TO_EXTENSION_DOC1" />. Oppdateringsadressen for Chrome Nettmarked brukes som standard (og for øyeblikket er den «https://clients2.google.com/service/update2/crx»). Vær oppmerksom på at oppdateringsadressen som angis i denne regelen, bare brukes for den første installasjonen. Påfølgende oppdateringer av utvidelsen bruker oppdateringsadressen som er beskrevet i utvidelsens manifest. Vær også oppmerksom på at det var uttrykkelig påkrevd å angi oppdateringsadressen i <ph name="PRODUCT_NAME" />-versjoner opptil og inkludert 67.
-
-          For eksempel installerer <ph name="EXTENSION_POLICY_EXAMPLE" /> utvidelsen med ID-en <ph name="EXTENSION_ID_SAMPLE" /> fra den oppdateringsadressen som er standard for Chrome Nettmarked. Gå til <ph name="LINK_TO_EXTENSION_DOC2" /> for å finne ut mer om verter for utvidelser.
-
-          Hvis denne regelen ikke er angitt, blir ingen apper eller utvidelser installert automatisk, og brukere kan avinstallere hvilke som helst apper og utvidelser i <ph name="PRODUCT_NAME" />.
-
-          Vær oppmerksom på at denne regelen ikke gjelder for inkognitomodus.</translation>
 <translation id="4008507541867797979">Hvis denne regelen er angitt som «true» (sant) eller ikke er konfigurert, viser <ph name="PRODUCT_OS_NAME" /> eksisterende brukere på påloggingsskjermen og tillater valg av én av dem.
 
       Hvis denne regelen er angitt som «false» (usant), viser ikke <ph name="PRODUCT_OS_NAME" /> eksisterende brukere på påloggingsskjermen. Den vanlige påloggingsskjermen (der brukere blir bedt om e-postadresse og passord eller telefonnummer) eller SAML-skjermen for interstitial-annonser (hvis dette er slått på i regelen <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) vises, med mindre en administrert økt er konfigurert. Når en administrert økt er konfigurert, vises kun kontoene i den administrerte økten, og én av dem kan velges.

@@ -1619,29 +1619,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă politica este activată sau nu este configurată, utilizatorii pot valorifica oferte prin înregistrarea sistemului de operare Chrome.
 
       Dacă politica nu este activată, utilizatorii nu vor putea valorifica oferte.</translation>
-<translation id="4008233182078913897">Specifică o listă de aplicații și extensii instalate în fundal,
-          fără intervenția utilizatorului și care nu pot fi dezinstalate sau
-          dezactivate de acesta. Toate permisiunile solicitate de
-          aplicații/extensii sunt acordate în mod prestabilit, fără intervenția utilizatorului,
-          inclusiv orice permisiune suplimentară solicitată de viitoarele versiuni ale
-          aplicației/extensiei. În plus, permisiunile sunt acordate pentru
-          API-urile extensiei
-          enterprise.deviceAttributes și enterprise.platformKeys. (Aceste două API-uri nu sunt disponibile pentru aplicațiile/extensiile care
-          nu sunt instalate forțat.)
-
-          Această politică are prioritate față de o politică <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> care poate crea conflicte. Dacă o aplicație sau o extensie care a fost instalată forțat anterior este eliminată din listă, aceasta este dezinstalată automat de <ph name="PRODUCT_NAME" />.
-
-          Pentru instanțele Windows neasociate unui domeniu <ph name="MS_AD_NAME" />, instalarea forțată se limitează la aplicațiile și extensiile afișate în Magazinul web Chrome.
-
-          Reține că utilizatorii pot să modifice codul sursă al oricărei extensii cu ajutorul Developer Tools (ceea ce poate face extensia nefuncțională). Dacă acest aspect creează probleme, trebuie să se seteze politica <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Fiecare element din lista politicii este un șir care include un ID al extensiei și, opțional, o adresă URL de „actualizare”, separate prin punct și virgulă (<ph name="SEMICOLON" />). ID-ul extensiei este un șir alcătuit din 32 de litere și se găsește, de exemplu, la <ph name="CHROME_EXTENSIONS_LINK" /> în modul pentru dezvoltatori. Adresa URL de „actualizare”, dacă este specificată, trebuie să trimită la un document XML cu manifestul de actualizare, conform descrierii de la <ph name="LINK_TO_EXTENSION_DOC1" />. În mod prestabilit, se folosește adresa URL de actualizare a Magazinului web Chrome (care acum este „https://clients2.google.com/service/update2/crx”). Reține că adresa URL de „actualizare” setată în această politică este folosită numai la instalarea inițială. Actualizările ulterioare ale extensiei vor folosi adresa URL de actualizare indicată în manifestul extensiei. Reține și că specificarea explicită a adresei URL de „actualizare” era obligatorie în versiunile <ph name="PRODUCT_NAME" /> de până la 67, inclusiv.
-
-          De exemplu, <ph name="EXTENSION_POLICY_EXAMPLE" /> instalează aplicația <ph name="EXTENSION_ID_SAMPLE" /> de la adresa URL standard de „actualizare” din Magazinul web Chrome. Pentru mai multe informații despre găzduirea extensiilor, accesează <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Dacă politica nu este setată, nicio aplicație sau extensie nu va fi instalată automat, iar utilizatorul poate dezinstala orice aplicație sau extensie din <ph name="PRODUCT_NAME" />.
-
-          Reține că politica nu se aplică modului incognito.</translation>
 <translation id="4008507541867797979">Dacă această politică este activată sau nu este configurată, <ph name="PRODUCT_OS_NAME" /> va afișa utilizatorii existenți pe ecranul de conectare și va permite alegerea unuia.
 
       Dacă politica este dezactivată, <ph name="PRODUCT_OS_NAME" /> nu va afișa utilizatorii existenți pe ecranul de conectare. Se va afișa ecranul de conectare normal (care solicită adresa de e-mail și parola sau numărul de telefon al utilizatorului) sau ecranul interstițial SAML (dacă este activat prin politica <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), cu excepția cazului în care s-a configurat o sesiune gestionată, caz în care se vor afișa numai conturile pentru sesiuni gestionate și se va permite alegerea unuia.

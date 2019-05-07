@@ -361,6 +361,11 @@
       Kapag nakatakda sa False ang patakarang ito, hindi kukuha ng data ng mga extension at plugin.
 
       May bisa lang ang patakarang ito kapag naka-enable ang <ph name="CHROME_REPORTING_EXTENSION_NAME" />, at naka-enroll ang machine sa <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="1560205870554624777">Kinokontrol kung naka-enable ang functionality ng Kerberos. Ang Kerberos ay isang protocol sa pag-authenticate na puwedeng gamitin para mag-authenticate sa mga web app at file share.
+
+          Kung naka-enable ang patakarang ito, naka-enable ang functionality ng Kerberos. Puwedeng idagdag ang mga Kerberos account sa pamamagitan ng patakarang 'I-configure ang mga Kerberos account' o sa pamamagitan ng mga setting ng Mga Kerberos Account sa page ng mga setting ng Mga Tao.
+
+          Kung naka-disable o hindi nakatakda ang patakarang ito, naka-disable ang mga setting ng Mga Kerberos Account. Walang maidaragdag na Kerberos account at hindi magagamit ang pag-authenticate ng Kerberos. Ide-delete ang lahat ng kasalukuyang Kerberos account, ide-delete ang lahat ng naka-store na password.</translation>
 <translation id="1561424797596341174">Mga pag-override ng patakaran para sa Mga build sa pag-debug ng host ng malayuang access</translation>
 <translation id="1561967320164410511">U2F kasama ang mga extension para sa pagpapatunay ng indibidwal</translation>
 <translation id="1574554504290354326">Hindi na ginagamit ang setting na ito, gamitin na lang ang SafeBrowsingExtendedReportingEnabled. Katumbas ng pag-enable o pag-disable ng SafeBrowsingExtendedReportingEnabled ang pagtakda ng SafeBrowsingExtendedReportingOptInAllowed sa False.
@@ -445,6 +450,12 @@
 
       Dapat itakda ang patakaran sa isang URL kung saan maaaring i-download ng <ph name="PRODUCT_OS_NAME" /> ang Mga Tuntunin ng Serbisyo. Dapat ay plain text ang Mga Tuntunin ng Serbisyo, na ihahatid bilang MIME type text/plain. Hindi pinapayagan ang markup.</translation>
 <translation id="1750315445671978749">I-block ang lahat ng pag-download</translation>
+<translation id="1762072363876276024">
+      Nalalapat ang patakarang ito sa screen sa pag-sign in. Pakitingnan din ang patakarang <ph name="SITE_PER_PROCESS_POLICY_NAME" /> na nalalapat sa session ng user. Inirerekomendang itakda ang parehong patakaran sa parehong value. Kung hindi magkatugma ang mga value, puwedeng magkaroon ng pagkaantala kapag pumapasok sa session ng user habang inilalapat ang value na tinukoy ng patakaran ng user.
+      Ang setting na ito, DeviceLoginScreenSitePerProcess, ay magagamit para huwag payagan ang mga user na mag-opt out sa default na gawi ng pag-isolate ng lahat ng site. Tandaang puwede ring maging kapaki-pakinabang ang patakarang DeviceLoginScreenIsolateOrigins sa pag-isolate ng karagdagang mas mahuhusay na pinagmulan.
+      Kung naka-enable ang patakaran, hindi makakapag-opt out ang mga user sa default na gawi kung saan tumatakbo ang bawat site sa sarili nitong proseso.
+      Kung hindi naka-configure o naka-disable ang patakaran, mababago ng user ang setting na ito (hal. paggamit ng entry na "I-disable ang pag-isolate ng site" sa chrome://flags).
+      </translation>
 <translation id="1781356041596378058">Kinokontrol ng patakarang ito ang access sa Mga Opsyon ng Developer sa Android. Kung itatakda mo ang patakarang ito sa true, hindi maa-access ng mga user ang Mga Opsyon ng Developer. Kung itatakda mo ang patakarang ito sa false o iiwan itong hindi nakatakda, maa-access ng mga user ang Mga Opsyon ng Developer sa pamamagitan ng pag-tap nang pitong beses sa app na Mga setting ng Android.</translation>
 <translation id="1793346220873697538">I-disable ang pag-print gamit ang PIN bilang default</translation>
 <translation id="1797233582739332495">Magpakita sa user ng umuulit na prompt na nagsasaad na kinakailangan ang muling paglulunsad</translation>
@@ -880,6 +891,11 @@
 
       Kung iiwanang hindi nakatakda ang patakarang ito, magiging available ang feature  na proxy ng compression ng data upang makapili ang user kung gagamitin ba ito o hindi.</translation>
 <translation id="257788512393330403">Kinakailangan ang paglalagay ng password kada anim na oras</translation>
+<translation id="2586162458524426376">
+      Nalalapat ang patakarang ito sa screen sa pag-sign in. Pakitingnan din ang patakarang <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> na nalalapat sa session ng user.
+      Kung naka-enable ang patakaran, ang bawat may pangalang pinagmulan sa comma-separated list ay tatakbo sa sarili nitong proseso. Ia-isolate din nito ang mga pinagmulang pinangalanan ng mga subdomain; hal. ang pagtukoy sa https://example.com/ ay mag-a-isolate din sa https://foo.example.com/ bilang bahagi ng site na https://example.com/.
+      Kung hindi naka-configure o naka-disable ang patakaran, gagamitin ang mga setting ng pag-isolate ng site na default sa platform para sa screen sa pag-sign in.
+      </translation>
 <translation id="2587719089023392205">Itakda ang <ph name="PRODUCT_NAME" /> bilang Default na Browser</translation>
 <translation id="2592091433672667839">Tagal ng kawalan ng aktibidad bago ipakita ang screen saver sa screen sa pag-sign-in sa mode ng retail</translation>
 <translation id="2592162121850992309">Kung itatakda ang patakarang ito sa true o hahayaan itong hindi nakatakda, mae-enable ang hardware acceleration maliban na lang kung maba-blacklist ang isang partikular na feature ng GPU.
@@ -890,6 +906,7 @@
           Sinusuportahan ng lahat ng kamakailang bersyon ng mga server ng Samba at Windows ang NTLMv2. Dapat lang itong i-disable para sa backwards compatibility at binabawasan nito ang seguridad ng pag-authenticate.
 
           Kung hindi nakatakda ang patakarang ito, ang default ay true at naka-enable ang NTLMv2.</translation>
+<translation id="26023406105317310">I-configure ang mga Kerberos account</translation>
 <translation id="2604182581880595781">I-configure ang mga patakarang nauugnay sa File Share sa Network.</translation>
 <translation id="2623014935069176671">Maghintay sa paunang aktibidad ng user</translation>
 <translation id="262740370354162807">Paganahin ang pagsusumite ng mga dokumento sa <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1224,6 +1241,7 @@
 <translation id="3159375329008977062">Naka-enable ang user na mag-export / mag-import ng mga Crostini container sa pamamagitan ng UI</translation>
 <translation id="3165808775394012744">Isinama rito ang mga patakarang ito para gawing mas madaling alisin ang mga ito.</translation>
 <translation id="316778957754360075">Hindi na ginagamit ang setting na ito simula sa <ph name="PRODUCT_NAME" /> bersyon 29. Ang inirerekumendang paraan upang mag-set up ng mga koleksyon ng extension/app na hino-host ng samahan ay ang pagsama sa pag-host sa site sa mga CRX package sa ExtensionInstallSources at paglagay ng direktang link sa pag-download sa mga package sa isang web page.Maaaring gawin ang isang launcher para sa web page na iyon gamit ang patakaran na ExtensionInstallForcelist.</translation>
+<translation id="3168968618972302728">Mga patakarang nauugnay sa pag-authenticate ng Kerberos.</translation>
 <translation id="3171369832001535378">Template ng hostname ng network ng device</translation>
 <translation id="3172512016079904926">Ine-enable ang pag-install sa antas ng user ng mga host ng Native na Pagmemensahe.
 
@@ -1421,6 +1439,7 @@
 <translation id="3631099945620529777">Kung itatakda ito sa false, madi-disable ang button na 'Tapusin ang proseso' sa Task Manager.
 
       Kung itatakda ito sa true o kung hindi ito iko-configure, puwedeng tapusin ng user ang mga proseso sa Task Manager.</translation>
+<translation id="3643284063603988867">I-enable ang feature na 'Tandaan ang password.'</translation>
 <translation id="3646859102161347133">Itakda ang uri ng magnifier sa screen</translation>
 <translation id="3653237928288822292">Default na icon ng provider ng paghahanap</translation>
 <translation id="3660510274595679517">
@@ -1641,29 +1660,6 @@
       Kung itinakda sa true o iniwang hindi nakatakda ang patakarang ito, makakakuha ng mga alok ang mga user sa pamamagitan ng Pagpaparehistro ng Chrome OS.
 
       Kung itinakda sa false ang patakarang ito, hindi makakakuha ng mga alok ang user.</translation>
-<translation id="4008233182078913897">Tumutukoy ng listahan ng mga app at extension na na-install nang hindi napapansin,
-          nang walang pakikipag-ugnayan sa user, at hindi maa-uninstall o 
-          madi-disable ng user. Ang lahat ng pahintulot
-          na hiniling ng mga app/extension ay ibinibigay nang hindi hayagan, nang walang pakikipag-ugnayan sa user,
-          kabilang ang anumang karagdagang pahintulot na hiniling ng mga bersyon sa
-          hinaharap ng app/extension. Bukod pa rito, ibinibigay ang mga pahintulot para sa
-          enterprise.deviceAttributes at enterprise.platformKeys na extension
-          API. (Hindi available ang dalawang API na ito sa mga app/extension na
-          hindi sapilitang na-install.)
-
-          Mangingibabaw ang patakarang ito sa posibleng salungat na patakarang <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Kung may inalis na app o extension sa listahang ito na kamakailang sapilitang na-install, awtomatiko itong ia-uninstall ng <ph name="PRODUCT_NAME" />.
-
-          Para sa mga sitwasyon ng Windows na hindi kasali sa isang <ph name="MS_AD_NAME" /> na domain, para lang sa mga app at extension na nakalista sa Chrome Web Store ang sapilitang pag-install.
-
-          Tandaang puwedeng mabago ng mga user ang source code ng anumang extension sa pamamagitan ng Mga Tool ng Developer (na maaaring humantong sa maling paggana ng extension). Kung isa itong alalahanin, dapat itakda ang patakarang <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Ang bawat item sa listahan ng patakaran ay isang string na may extension ID at, bilang opsyon, isang URL ng "update" na hinihiwalay ng semicolon (<ph name="SEMICOLON" />). Ang extension ID ay ang 32 titik na string na makikita halimbawa sa <ph name="CHROME_EXTENSIONS_LINK" /> kapag nasa developer mode. Dapat ay nakadirekta ang URL ng "update," kung tutukuyin, sa isang dokumentong Update Manifest XML gaya ng nakasaad sa <ph name="LINK_TO_EXTENSION_DOC1" />. Bilang default, ginagamit ang URL ng update ng Chrome Web Store (na kasalukuyang "https://clients2.google.com/service/update2/crx"). Tandaang ginagamit lang ang nakatakdang URL ng "update" sa patakarang ito para sa paunang pag-install; gagamitin ng mga susunod na pag-update ng extension ang URL ng update na nakasaad sa manifest ng extension. Tandaan ding mandatoryo ang hayagang pagtukoy sa URL ng "update" sa mga bersyon ng <ph name="PRODUCT_NAME" /> hanggang sa at kabilang ang 67.
-
-          Halimbawa, ini-install ng <ph name="EXTENSION_POLICY_EXAMPLE" /> ang extension na may id na <ph name="EXTENSION_ID_SAMPLE" /> mula sa karaniwang URL ng "update" ng Chrome Web Store. Para sa higit pang impormasyon tungkol sa pag-host ng mga extension, tingnan ang: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Kung hahayaang hindi nakatakda ang patakarang ito, walang app o extension ang awtomatikong ii-install at makakapag-uninstall ng anumang app o extension ang user sa <ph name="PRODUCT_NAME" />.
-
-          Tandaang hindi nalalapat sa incognito mode ang patakarang ito.</translation>
 <translation id="4008507541867797979">Kung itatakda sa true o hindi naka-configure ang patakarang ito, ipapakita ng <ph name="PRODUCT_OS_NAME" /> sa screen ng pag-log in ang mga kasalukuyang user at papayag itong pumili ng isa.
 
       Kung itatakda sa false ang patakarang ito, hindi ipapakita ng <ph name="PRODUCT_OS_NAME" /> sa screen ng pag-log in ang mga kasalukuyang user. Ipapakita ang karaniwang screen ng pag-sign in (na nagpo-prompt para sa email at password o telepono ng user) o ang interstitial na screen ng SAML (kung ie-enable sa pamamagitan ng patakaran ng <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), maliban na lang kung may naka-configure na Pinapamahalaang Session. Kapag may naka-configure na Pinapamahalaang Session, ang mga Pinapamahalaang Account lang ang ipapakita na nagbibigay-daang makapili ng isa sa mga ito.
@@ -1776,6 +1772,15 @@
           Mao-override ng setting na ito ang RemoteAccessHostClientDomain, kung mayroon man.
 
           Tingnan din ang RemoteAccessHostDomainList.</translation>
+<translation id="4164601239783385546">I-enable ang feature ng pagiging naa-access na mga sticky key.
+
+          Kung nakatakda ang patakarang ito sa true, palaging naka-enable ang mga sticky key.
+
+          Kung nakatakda ang patakarang ito sa false, palaging naka-disable ang mga sticky key.
+
+          Kung itatakda mo ang patakarang ito, hindi ito mababago o mao-override ng mga user.
+
+          Kung hahayaang hindi nakatakda ang patakarang ito, naka-disable sa simula ang mga sticky key pero puwede ito i-enable ng user anumang oras.</translation>
 <translation id="4183229833636799228">Default na setting ng <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL para sa pagva-validate ng token ng pagpapatotoo ng client sa malayuang pag-access</translation>
 <translation id="4197038214024763371">Kung hindi itatakda ang patakarang ito o kung ie-enable ito, papayagan ang user na gamitin ang spellcheck.
@@ -1970,6 +1975,7 @@
 <translation id="4578912515887794133">Kung naka-enable ang setting na ito, ihahambing ng host ng remote na access ang pangalan ng lokal na user (kung saan nauugnay ang host) at ang pangalan ng Google account na nakarehistro bilang may-ari ng host (ibig sabihin, "johndoe" kung pagmamay-ari ng Google account na "johndoe@example.com" ang host).  Hindi magsisimula ang host ng remote na access kung magkaiba ang pangalan ng may-ari ng host at ang pangalan ng lokal na user kung saan nauugnay ang host.  Dapat gamitin ang patakarang RemoteAccessHostMatchUsername kasama ng RemoteAccessHostDomain para ipatupad din na nauugnay ang Google account ng may-ari ng host sa isang partikular na domain (ibig sabihin, "example.com").
 
           Kung idi-disable o hindi itatakda ang setting na ito, puwedeng iugnay ang host ng remote na access sa anumang lokal na user.</translation>
+<translation id="4591366717022345234">Magbigay sa mga user ng Quick Fix Build</translation>
 <translation id="4600786265870346112">I-enable ang malaking cursor</translation>
 <translation id="4604931264910482931">I-configure ang blacklist ng native na pagmemensahe</translation>
 <translation id="4613508646038788144">Kung nakatakda sa false ang patakarang ito, papayagan ang third party software na magpasok ng executable code sa mga proseso ng Chrome. Kung hindi nakatakda ang patakaran o kung nakatakda ito sa true, pipigilan ang third party software sa pagpasok ng executable code sa mga proseso ng Chrome.</translation>
@@ -2056,6 +2062,7 @@
 <translation id="487460824085252184">Awtomatikong nagma-migrate, hindi humihingi ng pahintulot mula sa user.</translation>
 <translation id="4874982543810021567">I-block ang WebUSB sa mga site na ito</translation>
 <translation id="4876805738539874299">Naka-enable ang maximum na bersyon ng SSL</translation>
+<translation id="4887274746092315609">Nag-e-enable ng page para sa pagbago ng password habang nasa session para sa mga user ng SAML</translation>
 <translation id="4897928009230106190">Tinutukoy ang mga parameter na ginamit kapag gumagawa ng paghahanap ng mungkahi gamit ang POST. Binubuo ito ng mga pares ng pangalan/value na pinaghihiwalay ng kuwit. Kung isang parameter ng template ang isang value, tulad ng {searchTerms} sa halimbawa sa itaas, papalitan ito ng data ng tunay na mga termino para sa paghahanap.
 
           Opsyonal ang patakarang ito. Kung hindi nakatakda, ipapadala ang mga kahilingan sa paghahanap ng mungkahi gamit ang GET na paraan.
@@ -2277,6 +2284,7 @@
       Kung nakatakda ang patakaran sa 'Legacy,' ang uri ng RC4 encryption lang ang papayagan. Hindi secure ang opsyong ito at dapat lang kailanganin sa mga napakapartikular na sitwasyon.
 
       Tingnan din ang https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
+<translation id="5249453807420671499">Puwedeng magdagdag ang mga user ng mga Kerberos account</translation>
 <translation id="5255162913209987122">Maaaring Irekomenda</translation>
 <translation id="527237119693897329">Nagbibigay-daan sa iyong tukuyin kung alin sa mga host ng native na pagmemensahe ang hindi dapat i-load.
 
@@ -2419,6 +2427,7 @@
 lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Dapat tukuyin sa milliseconds ang halaga ng patakaran.</translation>
+<translation id="5508307164752647432">I-enable ang functionality ng Kerberos</translation>
 <translation id="5511702823008968136">Paganahin ang Bookmark Bar</translation>
 <translation id="5512418063782665071">URL ng home page</translation>
 <translation id="551639594034811656">Nakasaad sa patakarang ito ang listahan ng mga porsyentong maglalarawan sa bahagi ng mga <ph name="PRODUCT_OS_NAME" /> device sa OU para mag-update bawat araw simula sa araw na unang matuklasan ang update. Ang oras ng pagtuklas ay pagkatapos ng oras ng pag-publish ng update, dahil maaaring medyo matagalan ang palugit sa pagitan ng pag-publish ng update at pagtingin ng update ng device.
@@ -2440,6 +2449,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Tandaan na kung sinusuportahan ng platform ang mga notification ng patakaran, itatakda ang pagkaantala ng pag-refresh sa 24 na oras (nang hindi pinapansin ang lahat ng default at value ng patakarang ito) dahil inaasahan na ang mga notification ng patakaran ay magpipilit ng awtomatikong pag-refresh sa tuwing magbabago ang patakaran, kaya hindi na kailangang madalas na mag-refresh.</translation>
 <translation id="5530347722229944744">I-block ang mga potensyal na mapanganib na pag-download</translation>
 <translation id="5535973522252703021">Whitelist ng server ng paglalaan ng Kerberos</translation>
+<translation id="554903022911579950">Kerberos</translation>
 <translation id="555077880566103058">Pahintulutan ang lahat ng site na awtomatikong patakbuhin ang plugin na <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">Walang epekto ang patakarang ito sa mga Android app.</translation>
 <translation id="5560039246134246593">Magdagdag ng parameter sa pagkuha ng seed ng Mga Variation sa <ph name="PRODUCT_NAME" />.
@@ -2551,6 +2561,12 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung itatakda ang patakarang ito, hindi ito mababago o mao-override ng user.</translation>
 <translation id="5708969689202733975">Kino-configure ang mga pinapayagang mode ng mabilisang pag-unlock</translation>
+<translation id="5711016543513883877">
+      Kung naka-enable ang patakaran, ang bawat may pangalang pinagmulan sa comma-separated list ay tatakbo sa sarili nitong proseso. Ia-isolate din nito ang mga pinagmulang pinangalanan ng mga subdomain; hal. ang pagtukoy sa https://example.com/ ay mag-a-isolate din sa https://foo.example.com/ bilang bahagi ng site na https://example.com/.
+      Kung hindi naka-configure o naka-disable ang patakaran, mababago ng user ang setting na ito.
+
+      TANDAAN: Hindi nalalapat ang patakarang ito sa Android. Para i-enable ang IsolateOrigins sa Android, gamitin ang setting ng patakarang IsolateOriginsAndroid.
+      </translation>
 <translation id="572155275267014074">Mga setting ng Android</translation>
 <translation id="5722934961007828462">Kapag naka-enable ang setting na ito, palaging magsasagawa ang <ph name="PRODUCT_NAME" /> ng pagsusuri sa pagbawi para sa mga server certificate na matagumpay na nagpapatotoo at nilagdaan ng mga lokal na naka-install na CA certificate.
 
@@ -3489,6 +3505,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7433714841194914373">Paganahin ang Instant</translation>
 <translation id="7434202861148928348">Kino-configure ang mga kinakailangang domain name para sa mga client na may remote na access</translation>
 <translation id="7443616896860707393">Mga prompt ng Cross-origin HTTP Basic Auth</translation>
+<translation id="7454519673779830548">Nagdaragdag ng mga na-prefill na Kerberos account. Kung tumutugma ang mga kredensyal ng Kerberos sa mga kredensyal sa pag-log in, puwedeng mag-configure ng account para muling gamitin ang mga kredensyal sa pag-log in sa pamamagitan ng pagtukoy sa '${{LOGIN_EMAIL}}' at '${{PASSWORD}}' para sa principal at password, nang naaayon, para awtomatikong mabawi ang ticket ng Kerberos maliban kung naka-configure ang two-factor authentication. Hindi mababago ng mga user ang mga account na naidagdag sa pamamagitan ng patakarang ito.
+
+          Kung naka-enable ang patakarang ito, idaragdag ang listahan ng mga account na tinukoy ng patakaran sa mga setting ng Mga Kerberos Account.
+
+          Kung naka-disable o hindi nakatakda ang patakarang ito, walang account na idaragdag sa mga setting ng Mga Kerberos Account at aalisin ang lahat ng account na dating naidagdag gamit ang patakarang ito. Puwede pa ring manual na magdagdag ang mga user ng mga acount kung naka-enable ang patakarang 'Puwedeng magdagdag ang mga user ng mga Kerberos account.'</translation>
 <translation id="7458437477941640506">Huwag mag-roll back sa target na bersyon kung mas bago ang bersyon ng OS kaysa sa target. Naka-disable din ang mga update.</translation>
 <translation id="7464991223784276288">Limitahan ang cookies sa pagtutugma ng mga URL sa kasalukuyang session</translation>
 <translation id="7469554574977894907">Paganahin ang mga suhestiyon sa paghahanap</translation>
@@ -3627,6 +3648,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7687943045976362719">Kung itatakda ang patakarang ito, papangasiwaan ng <ph name="PRODUCT_FRAME_NAME" /> ang mga nakasaad na uri ng content.
 
           Kung hindi itatakda ang patakarang ito, gagamitin ang default na renderer para sa lahat ng site. (Puwedeng gamitin ang patakarang <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> para i-configure ang default na renderer.)</translation>
+<translation id="7694245791806617022">Kinokontrol kung naka-enable ang feature na 'Tandaan ang password' sa dialog sa pag-authenticate ng Kerberos. Ang mga password ay naka-store nang naka-encrypt sa disk, maa-access lang sa system daemon ng Kerberos at habang nasa session ng user.
+
+          Kung naka-enable o hindi nakatakda ang patakarang ito, makakapagpasya ang mga user kung tatandaan ang mga password, para hindi na muling ilagay ang mga ito. Awtomatikong kinukuha ang mga ticket ng Kerberos maliban kung kailangan ng karagdagang pag-authenticate (two-factor authentication).
+
+          Kung naka-disable ang patakarang ito, hindi kailanman tatandaan ang mga password at aalisin ang lahat ng dating naka-store na password. Kailangang ilagay ng mga user ang kanilang password sa tuwing kailangan nilang mag-authenticate sa system ng Kerberos. Depende sa mga setting ng servcer, kadalasan itong nangyayari mula bawat 8 oras hanggang ilang buwan.</translation>
 <translation id="7694807474048279351">Mag-schedule ng awtomatikong reboot pagkatapos mailapat ang isang update sa <ph name="PRODUCT_OS_NAME" />.
 
       Kapag nakatakda sa true ang patakarang ito, ise-schedule ang isang awtomatikong reboot kapag nailapat ang isang update sa <ph name="PRODUCT_OS_NAME" /> uat kinakailangan ang isang reboot upang kumpletuhin ang proseso ng pag-update. Naka-schedule kaagad ang reboot ngunit maaaring maantala sa device nang hanggang sa 24 oras kung kasalukuyang ginagamit ng isang user ang device.
@@ -3661,6 +3687,15 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Layunin ng patakarang ito na bigyan ang mga enterprise ng pagkakataong alisin ang mga kasalukuyang server sa HTTP/0.9 at aalisin ito sa hinaharap.
 
       Kung hindi itatakda ang patakarang ito, idi-disable ang HTTP/0.9 sa mga hindi default na port.</translation>
+<translation id="7726421241038987229">
+      Ang setting na ito, SitePerProcess, ay magagamit para huwag payagan ang mga user na mag-opt out sa default na gawi ng pag-isolate ng lahat ng site. Tandaang puwede ring maging kapaki-pakinabang ang patakarang IsolateOrigins sa pag-isolate ng karagdagang mas mahuhusay na pinagmulan.
+      Kung naka-enable ang patakaran, hindi makakapag-opt out ang mga user sa default na gawi kung saan tumatakbo ang bawat site sa sarili nitong proseso.
+      Kung hindi naka-configure o naka-disable ang patakaran, makakapag-opt out ang user sa pag-isolate ng site
+      (hal. paggamit ng entry na "I-disable ang pag-isolate ng site" sa chrome://flags).  Ang pagtakda ng patakaran sa naka-disable at/o hindi pag-configure ng patakaran ay hindi mag-o-off sa Pag-isolate ng Site.
+      Sa <ph name="PRODUCT_OS_NAME" />, inirerekomendang itakda rin ang patakaran ng device na <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> sa parehong value. Kung hindi magkatugma ang mga value na tinukoy ng dalawang patakaran, puwedeng magkaroon ng pagkaantala kapag pumapasok sa session ng user habang inilalapat ang value na tinukoy ng patakaran ng user.
+
+      TANDAAN: Hindi nalalapat ang patakarang ito sa Android. Para i-enable ang SitePerProcess sa Android, gamitin ang setting ng patakarang SitePerProcessAndroid.
+      </translation>
 <translation id="7747447585227954402">Payagan ang mga device na gumamit ng <ph name="PLUGIN_VM_NAME" /> sa <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Pinapagana ang pagpapatotoong may dalawang salik para sa mga host ng malayuang pag-access sa halip na isang PIN na tinukoy ng user.
 
@@ -3726,6 +3761,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Tinutukoy ang id ng extension na gagamitin bilang isang screen saver sa screen sa pag-sign-in. Ang extension ay dapat na bahagi ng AppPack na naka-configure para sa domain na ito sa pamamagitan ng patakarang AppPacks.</translation>
 <translation id="7882857838942884046">Kapag na-disable ang Google Sync, hindi gagana nang maayos ang Pag-back up at Pag-restore sa Android.</translation>
 <translation id="7882890448959833986">Pigilan ang babala ng hindi sinusuportahang OS</translation>
+<translation id="7889788745439330797">Kinokontrol kung puwedeng magdagdag ang mga user ng mga Kerberos account.
+
+          Kung ang patakarang ito ay naka-enable o hindi nakatakda, puwedeng magdagdag ang mga user ng mga Kerberos account sa pamamagitan ng mga setting ng Mga Kerberos Account sa page ng mga setting ng Mga Tao. May ganap na kontrol ang mga user sa mga account na idinagdag nila at puwede nilang baguhin o alisin ang mga ito.
+
+          Kung naka-disable ang patakarang ito, hindi puwedeng magdagdag ang mga user ng mga Kerberos account. Puwede lang magdagdag ng mga account sa pamamagitan ng patakarang 'I-configure ang mga Kerberos account.' Epektibo itong paraan para mag-lock down ng mga account.</translation>
 <translation id="7895553628261067384">Malayuang pag-access</translation>
 <translation id="7902255855035461275">Itutugma ang mga pattern sa listahang ito sa security
       origin ng humihiling na URL.  Kung makakakita ng katugma, magbibigay ng access sa mga device na nagka-capture ng video

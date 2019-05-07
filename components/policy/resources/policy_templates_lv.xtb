@@ -1627,28 +1627,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja šai politikai ir iestatīta vērtība Patiesa vai politika nav iestatīta, lietotāji var izpirkt piedāvājumus, izmantojot operētājsistēmas Chrome OS reģistrāciju.
 
       Ja šai politikai ir iestatīta vērtība Nepatiesa, lietotāji nevar izpirkt piedāvājumus.</translation>
-<translation id="4008233182078913897">Norāda sarakstu ar lietotnēm un paplašinājumiem, kas tiek instalēti klusajā režīmā 
-          bez lietotāja iejaukšanās un ko lietotājs nevar atinstalēt vai atspējot. 
-          Visas lietotņu/paplašinājumu pieprasītās atļaujas, tostarp visas konkrētās 
-          lietotnes/paplašinājuma turpmāko versiju pieprasītās papildu atļaujas, tiek
-          piešķirtas tieši bez lietotāja iejaukšanās. Turklāt atļaujas tiek piešķirtas
-          paplašinājumu saskarnēm API enterprise.deviceAttributes un
-          enterprise.platformKeys. (Šīs divas saskarnes API nav pieejamas
-          lietotnēm/paplašinājumiem, kas nav instalēti piespiedu kārtā.)
-
-          Šīs politikas prioritāte ir lielāka par iespējami konfliktējošās politikas <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> prioritāti. Ja lietotne vai paplašinājums, kas iepriekš tika instalēts piespiedu kārtā, tiek noņemts no šī saraksta, <ph name="PRODUCT_NAME" /> to automātiski atinstalē.
-
-          Windows instancēs, kas nav pievienotas <ph name="MS_AD_NAME" /> domēnam, piespiedu instalēšana attiecas tikai uz lietotnēm un paplašinājumiem, kas norādīti Chrome interneta veikalā.
-
-          Ņemiet vērā, ka lietotāji var mainīt jebkura paplašinājuma pirmkodu, izmantojot izstrādātāja rīkus (potenciāli padarot paplašinājuma darbību neiespējamu). Ja tas rada problēmas, ir jāiestata politika <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Katrs politikas saraksta vienums ir virkne, kas ietver paplašinājuma ID un pēc vēlēšanās atjaunināšanas URL, kuri atdalīti ar semikolu (<ph name="SEMICOLON" />). Paplašinājuma ID ir 32 burtu virkne, kas ir redzama, piemēram, lapā <ph name="CHROME_EXTENSIONS_LINK" /> izstrādātāja režīmā. Atjaunināšanas vietrādim URL (ja tas ir norādīts) ir jānovirza uz atjauninājuma manifesta XML dokumentu, kā norādīts šeit: <ph name="LINK_TO_EXTENSION_DOC1" />. Pēc noklusējuma tiek izmantots Chrome interneta veikala atjaunināšanas URL (šobrīd: "https://clients2.google.com/service/update2/crx"). Ņemiet vērā, ka šajā politikā iestatītais atjaunināšanas URL tiek izmantots tikai sākotnējai instalācijai; nākamajiem paplašinājuma atjauninājumiem tiek izmantots paplašinājuma manifestā norādītais atjaunināšanas URL. Turklāt ņemiet vērā, ka atjaunināšanas URL tieša norādīšana bija obligāta visās vecākajās <ph name="PRODUCT_NAME" /> versijās līdz pat versijai 67 (ieskaitot).
-
-          Piemēram, <ph name="EXTENSION_POLICY_EXAMPLE" /> instalē paplašinājumu ar ID <ph name="EXTENSION_ID_SAMPLE" />, izmantojot Chrome interneta veikala standarta atjaunināšanas URL. Plašāku informāciju par paplašinājumu mitināšanu skatiet šeit: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Ja šī politika nav iestatīta, neviena lietotne un paplašinājums netiek instalēts automātiski un lietotājs var atinstalēt jebkuru <ph name="PRODUCT_NAME" /> pārlūkā esošu lietotni vai paplašinājumu.
-
-          Ņemiet vērā, ka šī politika neattiecas uz inkognito režīmu.</translation>
 <translation id="4008507541867797979">Ja šai politikai ir iestatīta vērtība “True” vai tā nav konfigurēta, <ph name="PRODUCT_OS_NAME" /> pieteikšanās ekrānā būs redzami esošie lietotāji un būs atļauts vienu izvēlēties.
 
       Ja šai politikai ir iestatīta vērtība “False”, <ph name="PRODUCT_OS_NAME" /> pieteikšanās ekrānā esošie lietotāji būs redzami. Tiks parādīts parastais pierakstīšanās ekrāns (vaicājot lietotāja e-pasta adresi un paroli vai tālruni) vai SAML starpposma ekrāns (ja tas ir iespējots, izmantojot <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" /> politiku), ja vien nav konfigurēta pārvaldītā sesija. Ja pārvaldītā sesija ir konfigurēta, tiks parādīti tikai pārvaldītās sesijas konti, ļaujot izvēlēties vienu no tiem.

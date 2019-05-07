@@ -60,6 +60,7 @@
 <translation id="2908441821576996758">Veuillez saisir une liste d'adresses e-mail séparées par une virgule.</translation>
 <translation id="2940813599313844715">objet</translation>
 <translation id="2942448076852699108">contenu en surbrillance</translation>
+<translation id="2983835398644161987">Quitter le mode PIP (Picture-in-Picture)</translation>
 <translation id="3040011195152428237">Lien</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> Mo</translation>
 <translation id="3075154866155599887">Veuillez saisir une valeur valide. Le champ n'est pas complet ou contient une date non valide.</translation>
@@ -79,6 +80,7 @@
 <translation id="3822383571486410024">Veuillez allonger ce texte pour qu'il comporte au moins <ph name="MIN_CHARACTERS" /> caractères. Il en compte actuellement <ph name="CURRENT_LENGTH" />.</translation>
 <translation id="383465348367842624">La partie suivie du symbole "<ph name="ATSIGN" />" ne doit pas contenir le caractère "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="3846214748874656680">Quitter le mode plein écran</translation>
+<translation id="3904511540324382638">Quitter le mode PIP (Picture-in-Picture)</translation>
 <translation id="3920932319529768807">conclusion</translation>
 <translation id="3924558731517983934">application</translation>
 <translation id="3944740393230681990">prologue</translation>

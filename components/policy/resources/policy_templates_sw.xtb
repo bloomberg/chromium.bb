@@ -1633,30 +1633,6 @@ Sera hii isipowekwa, mtumiaji bado anaweza kusakinisha kiendelezi chochote katik
       Iwapo sera hii itawekwa kuwa ndivyo au kuachwa bila kuwekwa, watumiaji wataweza kukomboa matoleo kupitia Usajili wa Chrome OS.
 
       Iwapo sera hii itawekwa kuwa sivyo, mtumiaji hataweza kukomboa matoleo.</translation>
-<translation id="4008233182078913897">Hubainisha orodha ya programu na viendelezi vinavyosakinishwa chinichini,
-          bila kumhusisha mtumiaji, na ambavyo haviwezi kuondolewa au
-          kuzimwa na mtumiaji. Ruhusa zote zinazoombwa na
-          programu au viendelezi zitatolewa kwa njia
-fiche, bila mtumiaji kuhusishwa
-          ikijumuisha ruhusa zozote za ziada zinazoombwa na matoleo ya baadaye ya
-          programu au kiendelezi. Zaidi ya hayo, ruhusa za
-          API za viendelezi vya enterprise.deviceAttributes na enterprise.platformKeys zinatolewa
-          (API hizi mbili zinapatikana kwenye programu au viendelezi ambavyo
-          havisakinishwi kwa lazima.)
-
-          Sera hii inapewa kipaumbele ikiwa kuna sera inayoweza kukinzana ya <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Ikiwa programu au kiendelezi kilichosakinishwa hapo awali kwa lazima kitaondolewa kwenye orodha hii, kitaondolewa kiotomatiki na <ph name="PRODUCT_NAME" />.
-
-          Katika matukio ya Windows ambayo hayajaunganishwa kwenye kikoa cha <ph name="MS_AD_NAME" />, usakinishaji wa lazima unatumiwa tu na programu na viendelezi vilivyoorodheshwa katika Duka la Chrome kwenye Wavuti.
-          Kumbuka kuwa msimbo wa kiendelezi chochote unaweza kubadilishwa na mtumiaji kupitia Zana za Wasanidi Programu (hali hii inaweza kuzuia kiendelezi kufanya kazi vizuri). Ikiwa jambo hili litatokea, sera ya <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> inapaswa kuwekwa.
-
-           Kila kipengee cha orodha ya sera ni kifungu ambacho kinajumuisha kitambulisho cha kiendelezi na URL ya "sasisho" isiyo ya lazima inayotenganishwa kwa nukta mkato (<ph name="SEMICOLON" />). Kitambulisho cha kiendelezi ni kifungu cha herufi 32 kinachopatikana (kwa mfano) kwenye <ph name="CHROME_EXTENSIONS_LINK" /> ikiwa katika hali ya msanidi programu. URL ya "sasisho" , ikiwa imebainishwa, inapaswa kuashiria hati ya XML ya faili ya Maelezo ya Sasisho kama ilivyofafanuliwa katika <ph name="LINK_TO_EXTENSION_DOC1" />. Kwa chaguomsingi, URL ya sasisho ya Duka la Chrome kwenye Wavuti inatumika (ambayo kwa sasa ni "https://clients2.google.com/service/update2/crx"). Kumbuka kuwa URL ya "sasisho" iliyowekwa kwenye sera hii itatumiwa tu kwenye usanikishaji wa mwanzo; masasisho yanayofuata ya kiendelezi yatatumia URL ya sasisho inayoonyeshwa katika faili ya maelezo ya kiendelezi. Kumbuka pia kuwa hali ya kubainisha URL ya "sasisho" kwa njia bayana ilikuwa lazima katika matoleo ya <ph name="PRODUCT_NAME" /> na mapya zaidi ikiwa ni pamoja na toleo la 67.
-
-          Kwa mfano, <ph name="EXTENSION_POLICY_EXAMPLE" /> inasakinisha programu ya <ph name="EXTENSION_ID_SAMPLE" /> kutoka URL ya "sasisho" la
-kawaida la Duka la Chrome kwenye Wavuti. Kwa maelezo zaidi kuhusu jinsi ya kupangisha viendelezi, angalia: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Ikiwa sera hii haijawekwa, hakuna programu au viendelezi vitakavyosakinishwa kiotomatiki na mtumiaji anaweza kuondoa programu au kiendelezi chochote katika <ph name="PRODUCT_NAME" />.
-
-          Kumbukakwamba sera hii haitumiki katika hali fiche.</translation>
 <translation id="4008507541867797979">Sera hii ikiwekwa kuwa ndivyo au mipangilio isipowekwa, <ph name="PRODUCT_OS_NAME" /> itaonyesha watumiaji waliopo kwenye skrini ya kuingia katika akaunti na kukuruhusu uteue mmoja.
 
       Sera hii ikiwekwa kuwa sivyo, <ph name="PRODUCT_OS_NAME" /> haitaonyesha watumiaji waliopo kwenye skrini ya kuingia katika akaunti. Skrini ya kawaida ya kuingia katika akaunti (inayomdokezea mtumiaji kuweka anwani yake ya barua pepe na nenosiri au simu) au skrini ya ukurasa wenye maelezo yanayomwelekeza mtumiaji kuendelea na uthibitishaji kupitia SAML (kama imewashwa kupitia sera ya <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) itaonyeshwa, isipokuwa katika hali ambapo mipangilio ya Kipindi Kilichodhibitiwa imewashwa. Wakati mipangllio ya Kipindi kilichodhibitiwa imewekwa, ni akaunti za kipindi kilichodhibitiwa pekee zitakazoonyeshwa, hali inayokuruhusu kuteua moja.
@@ -2554,7 +2530,7 @@ Sera hii ikiwekwa kuwa ndivyo au isipowekwa, kipindi cha mgeni kinachodhibitiwa 
       vyanzo vilivyotajwa na vikoa vidogo; k.m. kubainisha https://example.com/
       kutasababisha pia https://foo.example.com/ kutenganishwa isiwe sehemu ya tovuti ya
       https://example.com/.
-      Ikiwa mipangilio ya sera haijawekwa au imezimwa, mtumiaji ataweza kubadlisha mipangilio hii.
+      Ikiwa mipangilio ya sera haijawekwa au imezimwa, mtumiaji ataweza kubadilisha mipangilio hii.
 
       DOKEZO: Sera hii haitumiki kwenye Android. Ili uwashe IsolateOrigins kwenye Android, tumia mipangilio ya sera ya IsolateOriginsAndroid.
       </translation>
@@ -3670,7 +3646,7 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
       Mipangilio hii, SitePerProcess, inaweza kutumika kuwazuia watumiaji wasijiondoe kwenye utendaji chaguomsingi wa kutenga tovuti zote. Kumbuka kwamba sera ya IsolateOrigins huenda pia ikatumika kutenga vyanzo laini vya ziada.
       Sera ikiwashwa, watumiaji wataweza kujiondoa kwenye utendaji chaguomsingi ambapo kila tovuti hutumia mchakato wake wenyewe.
       Mipangilio ya sera hii isipowekwa au ikizimwa, mtumiaji ataweza kujiondoa kwenye utengaji wa tovuti
-      (kwa mfano, kwa kutumia maelezo ya "Zima utengaji wa tovuti" katika chrome://flags).  Hatu ya kuweka sera hii kuwa imezimwa na/au kukosa kuiweka, haizimi kipengele cha Utengaji wa Tovuti.
+      (kwa mfano, kwa kutumia maelezo ya "Zima utengaji wa tovuti" katika chrome://flags).  Hatua ya kuweka sera hii kuwa imezimwa na/au kukosa kuiweka, haizimi kipengele cha Utengaji wa Tovuti.
       Kwenye <ph name="PRODUCT_OS_NAME" />, inapendekezwa pia uweke sera ya kifaa ya <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> kuwa na thamani sawa. Ikiwa thamani zilizobainishwa na sera hizo mbili hazilingani, ucheleweshaji unaweza kutokea wakati wa kuingia katika kipindi cha mtumiaji wakati thamani inayobainishwa na sera ya mtumiaji inatumika.
 
       DOKEZO: Sera hii haitumiki kwenye Android. Ili uwashe SitePerProcess kwenye Android, tumia mipangilio ya sera ya SitePerProcessAndroid.
@@ -3744,7 +3720,7 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 
           Sera hii ikiwashwa au ikiwa haijawekwa, watumiaji wanaweza kuongeza akaunti za Kerberos kupitia mipangilio ya Akaunti za Kerberos katika ukurasa wa mipangilio ya Watu. Watumiaji wanaweza kuwa na udhibiti kamili wa akaunti ambazo wameongeza na wanaweza kuzibadilisha au kuziondoa.
 
-          Mipangilio ikizimwa, huenda watumiaji hawataweza kuongeza akaunti za Kerberos. Akaunti zinaweza kuongezwa tu kupitia sera ya 'Weka mipangalio ya akaunti za Kerberos'. Hii ni njia nzuri ya kufunga akaunti.</translation>
+          Mipangilio ikizimwa, huenda watumiaji hawataweza kuongeza akaunti za Kerberos. Akaunti zinaweza kuongezwa tu kupitia sera ya 'Weka mipangilio ya akaunti za Kerberos'. Hii ni njia nzuri ya kufunga akaunti.</translation>
 <translation id="7895553628261067384">Ufikiaji wa mbali</translation>
 <translation id="7902255855035461275">Michoro katika orodha hii italinganishwa na ya asili ya usalama wa ombi la URL.  Ikilingana, idhini ya kufikia vifaa vya kurekodi video itatolewa bila ombi. KUMBUKA: Kabla ya toleo la 45, sera hii ilitumika katika hali ya Skrini nzima pekee.</translation>
 <translation id="7912255076272890813">Sanidi aina za programu/viendelezi zinazoruhusiwa</translation>

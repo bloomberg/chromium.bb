@@ -1660,29 +1660,6 @@
       Jei ši politika galioja arba nėra nustatyta, naudotojai galės išpirkti pasiūlymus vykdydami „Chrome“ OS registraciją.
 
       Jei ši politika negalioja, naudotojas negalės išpirkti pasiūlymų.</translation>
-<translation id="4008233182078913897">Nurodomas programų ir plėtinių, kurie įdiegiami automatiškai,
-          naudotojui neatliekant jokių veiksmų, ir kurių naudotojas negali pašalinti ar
-          išjungti, sąrašas. Visi programų / plėtinių prašomi
-          leidimai suteikiami netiesiogiai, naudotojui neatliekant jokių veiksmų,
-          įskaitant visus papildomus leidimus, kurių bus prašoma naudojant būsimos versijos
-          programą / plėtinį. Be to, leidimai suteikiami plėtinių API
-          „enterprise.deviceAttributes“ ir „enterprise.platformKeys“.
-          (Abi šios API nepasiekiamos programoms / plėtiniams, kurie
-          nėra priverstinai įdiegiami.)
-
-          Šiai politikai teikiama pirmenybė prieš potencialiai nesuderinamą politiką „<ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />“. Jei programa ar plėtinys, kuris anksčiau buvo priverstinai įdiegtas, pašalinamas iš šio sąrašo, „<ph name="PRODUCT_NAME" />“ jį automatiškai pašalina.
-
-          „Windows“ objektų, kurie neprijungti prie „<ph name="MS_AD_NAME" />“ domeno, priverstinis diegimas ribojamas naudojant programas ir plėtinius, nurodytus „Chrome“ internetinėje parduotuvėje.
-
-          Atminkite, kad naudotojai gali keisti bet kurio plėtinio šaltinio kodą, naudodami kūrėjo įrankius (tai gali sutrikdyti plėtinio pateikimą). Jei tai kelia rūpesčių, reikia nustatyti politiką „<ph name="DEVELOPER_TOOLS_POLICY_NAME" />“.
-
-          Kiekvienas politikos sąrašo elementas yra eilutė, kurioje yra plėtinio ID ir „naujinio“ URL, atskirti kabliataškiu (<ph name="SEMICOLON" />). Plėtinio ID yra 32 raidžių eilutė, aptinkama, pvz. <ph name="CHROME_EXTENSIONS_LINK" />, dirbant kūrėjo režimu. „Naujinio“ URL (jei nurodytas) turėtų nurodyti naujinio aprašo XML dokumentą, kaip aprašyta <ph name="LINK_TO_EXTENSION_DOC1" />. Pagal numatytuosius nustatymus naudojamas „Chrome“ internetinės parduotuvės naujinio URL (kuris šiuo metu yra „https://clients2.google.com/service/update2/crx“). Atminkite, kad šioje politikoje nustatytas „naujinio“ URL naudojamas tik atliekant pirminį diegimą. Tolesni plėtinio naujiniai naudos naujinio URL, nurodytą plėtinio apraše. Be to, atminkite, kad buvo būtina aiškiai nurodyti „naujinio“ URL 67 ir ankstesnių versijų „<ph name="PRODUCT_NAME" />“.
-
-          Pavyzdžiui, <ph name="EXTENSION_POLICY_EXAMPLE" /> įdiegia plėtinį, kurio ID <ph name="EXTENSION_ID_SAMPLE" />, iš standartinio „Chrome“ internetinės parduotuvės „naujinio“ URL. Jei reikia daugiau informacijos apie plėtinių priglobimą, žr. <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Nenustačius šios politikos, jokios programos ar plėtiniai neįdiegiami automatiškai, o naudotojas gali pašalinti bet kurią programą ar plėtinį naudodamas „<ph name="PRODUCT_NAME" />“.
-
-          Atminkite, kad ši politika netaikoma inkognito režimu.</translation>
 <translation id="4008507541867797979">Jei ši politika nustatyta kaip „Tiesa“ arba nesukonfigūruota, „<ph name="PRODUCT_OS_NAME" />“ rodomi esami naudotojai prisijungimo ekrane ir leidžiama juos pasirinkti.
 
       Jei ši politika nustatyta kaip „Netiesa“, „<ph name="PRODUCT_OS_NAME" />“ nerodomi esami naudotojais prisijungimo ekrane. Bus rodomas įprastas prisijungimo ekranas (kuriame bus raginama įvesti naudotojo el. pašto adresą ir slaptažodį arba telefono numerį) arba SAML tarpinio puslapio ekranas (jei įgalinta taikant „<ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />“ politiką), nebent sukonfigūruota valdoma sesija. Kai sukonfigūruota valdoma sesija, rodomos tik valdomos sesijos paskyros, leidžiant pasirinkti vieną iš jų.

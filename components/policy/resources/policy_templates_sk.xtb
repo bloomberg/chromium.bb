@@ -1635,22 +1635,6 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
       Ak je toto pravidlo nastavené na hodnotu true alebo je ponechané bez nastavenia, používatelia si pri registrácii OS Chrome budú môcť uplatniť ponuky.
 
       Ak je toto pravidlo nastavené na hodnotu false, používatelia si nebudú môcť uplatniť ponuky.</translation>
-<translation id="4008233182078913897">Umožňuje určiť zoznam aplikácií a rozšírení, ktoré sa inštalujú potichu bez interakcie používateľa a používateľ ich nemôže odinštalovať ani zakázať. Všetky povolenia vyžadované aplikáciami alebo rozšíreniami sú bezpodmienečne udelené bez interakcie s používateľom, a to vrátane všetkých ďalších povolení vyžiadaných budúcimi verziami daných aplikácií alebo rozšírení. 
-Ďalej sa udeľujú povolenia pre rozhrania API rozšírení enterprise.deviceAttributes a enterprise.platformKeys. (Tieto dve rozhrania sú k dispozícii iba pre aplikácie alebo rozšírenia, ktorých inštalácia bola vynútená.)
-
-          Toto pravidlo má prednosť v prípade potenciálneho konfliktu s pravidlom <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Ak je z tohto zoznamu odstránená aplikácia alebo rozšírenie, ktorého inštalácia bola v minulosti vynútená, <ph name="PRODUCT_NAME" /> ich automaticky odinštaluje.
-
-          V prípade inštancií systému Windows nepripojených k doméne <ph name="MS_AD_NAME" /> sa vynucuje iba inštalácia aplikácií a rozšírení uvedených v Internetovom obchode Chrome.
-
-          Všimnite si, že zdrojový kód jednotlivých rozšírení je možné pozmeniť pomocou nástrojov pre vývojárov (t. j. potenciálne tým znefunkčniť dané rozšírenie). Ak sa toho obávate, nastavte pravidlo <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Každá položka zoznamu je reťazec s identifikátorom rozšírenia a webovou adresou aktualizácie oddelenou bodkočiarkou (<ph name="SEMICOLON" />). Identifikátor rozšírenia je reťazec pozostávajúci z 32 písmen a nájdete ho napríklad v adrese <ph name="CHROME_EXTENSIONS_LINK" />, keď prejdete do režimu pre vývojárov. Ak je určená webová adresa aktualizácie, mala by odkazovať na dokument XML manifestu aktualizácie tak, ako je to uvedené na <ph name="LINK_TO_EXTENSION_DOC1" />. Predvolene sa použije webová adresa aktualizácie z Internetového obchodu Chrome (ktorá je momentálne https://clients2.google.com/service/update2/crx). Upozorňujeme, že webová adresa aktualizácie nastavená v tomto pravidle sa použije iba pri prvej inštalácii. Následné inštalácie rozšírenia používajú webovú adresu aktualizácie uvedenú v manifeste príslušného rozšírenia. Zreteľné uvedenie webovej adresy aktualizácie bolo v prehliadači <ph name="PRODUCT_NAME" /> do verzie 67 (vrátane) povinné.
-
-          <ph name="EXTENSION_POLICY_EXAMPLE" /> napríklad nainštaluje aplikáciu <ph name="EXTENSION_ID_SAMPLE" /> zo štandardnej webovej adresy aktualizácie v Internetovom obchode Chrome. Ďalšie informácie o hostení rozšírení nájdete na <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Ak toto pravidlo nenastavíte, nebudú sa automaticky inštalovať žiadne aplikácie ani rozšírenia a používateľ môže odinštalovať ľubovoľnú aplikáciu alebo rozšírenie v prehliadači <ph name="PRODUCT_NAME" />.
-
-          Upozorňujeme, že toto pravidlo neplatí v režime inkognito.</translation>
 <translation id="4008507541867797979">Ak toto pravidlo nastavíte na hodnotu true alebo ho nenakonfigurujete, <ph name="PRODUCT_OS_NAME" /> bude zobrazovať existujúcich používateľov na prihlasovacej obrazovke a umožní jedného z nich vybrať.
 
       Ak ho nastavíte na hodnotu false, <ph name="PRODUCT_OS_NAME" /> nebude zobrazovať existujúcich používateľov na prihlasovacej obrazovke. Zobrazí sa normálna prihlasovacia obrazovka (s výzvou na zadanie e‑mailu a hesla či telefónu používateľa) alebo intersticiálna obrazovka SAML (ak je povolená pravidlom <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />). Nezobrazí sa, ak nakonfigurujete spravovanú reláciu. Keď ju nakonfigurujete, budú sa zobrazovať iba účty spravovanej relácie, pričom bude možné vybrať jeden z nich.

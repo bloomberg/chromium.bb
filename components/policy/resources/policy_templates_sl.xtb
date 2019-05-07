@@ -1662,29 +1662,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če je vrednost pravilnika nastavljena na »true« ali pravilnik ni nastavljen, lahko uporabniki unovčijo ponudbe prek registracije sistema Chrome OS.
 
       Če je vrednost pravilnika nastavljena na »false«, uporabniki ne morejo unovčiti ponudb.</translation>
-<translation id="4008233182078913897">Določa seznam aplikacij in razširitev, ki so nameščene brez obveščanja
-          in posegov uporabnika ter jih uporabnik ne more odstraniti ali
-          onemogočiti. Vsa dovoljenja, ki jih zahtevajo aplikacije/razširitve,
-          so implicitno odobrena brez posegov uporabnika,
-          vključno z morebitnimi dodatnimi dovoljenji, ki jih bodo zahtevale
-          prihodnje različice aplikacije/razširitve. Prav tako so odobrena dovoljenja
-          za razširitvena API-ja enterprise.deviceAttributes in enterprise.platformKeys.
-          (Ta API-ja nista na voljo aplikacijam/razširitvam,
-          ki niso vsiljeno nameščene.)
-
-          Ta pravilnik ima prednost pred pravilnikom <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> v primeru njunega spora. Če je aplikacija ali razširitev, ki je bila vsiljeno nameščena, odstranjena s tega seznama, jo brskalnik <ph name="PRODUCT_NAME" /> samodejno odstrani.
-
-          Za primerke sistema Windows, ki niso pridruženi v domeno <ph name="MS_AD_NAME" />, je vsiljeno nameščanje omejeno na aplikacije in razširitve, navedene v Spletni trgovini Chrome.
-
-          Upoštevajte, da lahko uporabniki spremenijo izvorno kodo katere koli razširitve z orodji za razvijalce (s čimer razširitev morda izgubi funkcionalnost). Če imate glede tega pomisleke, nastavite pravilnik <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Vsak element na seznamu pravilnika je niz, ki vsebuje ID razširitve in (neobvezno) URL za »posodobitev«, ločen s podpičjem (<ph name="SEMICOLON" />). ID razširitve je 32-mestni črkovni niz, ki ga je mogoče v načinu za razvijalce najti na primer na <ph name="CHROME_EXTENSIONS_LINK" />. Če je URL za »posodobitev« naveden, mora kazati na dokument XML manifesta za posodobitev, kot je opisano na <ph name="LINK_TO_EXTENSION_DOC1" />. Privzeto se uporabi URL za posodobitev v Spletni trgovini Chrome (ki je trenutno »https://clients2.google.com/service/update2/crx«). Upoštevajte, da se URL za »posodobitev«, nastavljen v tem pravilniku, uporabi samo pri začetni namestitvi; pri vseh nadaljnjih posodobitvah razširitve je uporabljen URL, naveden v manifestu razširitve. Upoštevajte tudi, da je bila izrecna navedba URL-ja za »posodobitev« obvezna v različicah brskalnika <ph name="PRODUCT_NAME" /> do vključno različice 67.
-
-          <ph name="EXTENSION_POLICY_EXAMPLE" /> namesti na primer razširitev z ID-jem <ph name="EXTENSION_ID_SAMPLE" /> s standardnega URL-ja za »posodobitev« v Spletni trgovini Chrome. Več informacij o gostovanju razširitev je na voljo tukaj: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Če ta pravilnik ni nastavljen, nobena aplikacija ali razširitev ni nameščena samodejno in uporabnik lahko odstrani katero koli aplikacijo ali razširitev v brskalniku <ph name="PRODUCT_NAME" />.
-
-          Upoštevajte, da se ta pravilnik ne uporablja za način brez beleženja zgodovine.</translation>
 <translation id="4008507541867797979">Če je ta pravilnik omogočen ali ni konfiguriran, bo operacijski sistem <ph name="PRODUCT_OS_NAME" /> na zaslonu za prijavo prikazal obstoječe uporabnike in omogočal izbiro enega.
 
       Če ta pravilnik ni omogočen, operacijski sistem <ph name="PRODUCT_OS_NAME" /> na zaslonu za prijavo ne bo prikazal obstoječih uporabnikov. Prikazan bo zaslon za običajno prijavo (s pozivom za vnos uporabniškega imena in gesla ali telefonske številke) ali vmesni zaslon za prijavo SAML (če je omogočena s pravilnikom <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), razen če je konfigurirana upravljana seja. Če je konfigurirana upravljana seja, bodo prikazani samo računi upravljane seje in mogoče bo izbrati enega izmed njih.
@@ -2682,7 +2659,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="5893553533827140852">Če je ta nastavitev omogočena, bodo zahteve za preverjanje pristnosti »gnubby« posredovane prek povezave z oddaljenim gostiteljem.
 
           Če je ta nastavitev onemogočena ali ni konfigurirana, zahteve za preverjanje pristnosti »gnubby« ne bodo posredovane.</translation>
-<translation id="5897913798715600338">Polnjenje baterije akumulatorja s tehnologijo hitrega polnjenja.</translation>
+<translation id="5897913798715600338">Polnjenje akumulatorja s tehnologijo hitrega polnjenja.</translation>
 <translation id="5898486742390981550">Če je prijavljenih več uporabnikov, lahko aplikacije za Android uporablja samo primarni uporabnik.</translation>
 <translation id="5901427587865226597">Samo obojestransko tiskanje</translation>
 <translation id="5903898512448364160">

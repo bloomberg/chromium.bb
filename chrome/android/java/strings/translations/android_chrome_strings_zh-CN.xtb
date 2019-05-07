@@ -95,6 +95,7 @@
 <translation id="1671236975893690980">正在等待下载…</translation>
 <translation id="1672586136351118594">不再显示</translation>
 <translation id="1692118695553449118">同步功能已开启</translation>
+<translation id="169515064810179024">禁止网站使用动态传感器</translation>
 <translation id="1709438864123551175">流量节省程序</translation>
 <translation id="1717218214683051432">动态传感器</translation>
 <translation id="1718835860248848330">过去一小时</translation>
@@ -248,6 +249,7 @@
 <translation id="2777555524387840389">还剩 <ph name="SECONDS" /> 秒</translation>
 <translation id="2779651927720337254">失败</translation>
 <translation id="2781151931089541271">还剩 1 秒</translation>
+<translation id="2801022321632964776">更新即可在最新版本的 Chrome 中使用您的语言</translation>
 <translation id="2810645512293415242">简化版网页不仅可节省数据流量，还可更快速地进行加载。</translation>
 <translation id="281504910091592009">查看和管理您的 <ph name="BEGIN_LINK" />Google 帐号<ph name="END_LINK" />中保存的密码</translation>
 <translation id="2818669890320396765">要将您的书签同步到您的所有设备上，请登录您的帐号并开启同步功能</translation>
@@ -309,6 +311,7 @@
 <translation id="3259831549858767975">缩小网页上的所有内容</translation>
 <translation id="3269093882174072735">加载图片</translation>
 <translation id="3269956123044984603">要访问您在其他设备上的标签页，请在 Android 帐号设置部分开启“自动同步数据”。</translation>
+<translation id="3277252321222022663">允许网站使用传感器（推荐）</translation>
 <translation id="3282568296779691940">登录 Chrome</translation>
 <translation id="3288003805934695103">重新加载网页</translation>
 <translation id="32895400574683172">允许显示通知</translation>
@@ -549,6 +552,7 @@
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">允许</translation>
 <translation id="5040262127954254034">隐私设置</translation>
+<translation id="5048398596102334565">允许网站使用动态传感器（推荐）</translation>
 <translation id="5063480226653192405">使用情况</translation>
 <translation id="5073204694187207510">隐藏“全屏网格状视图”按钮</translation>
 <translation id="5082793167783849073">通过分组快速比较网页。为此，请先轻触并按住某个链接。</translation>
@@ -741,6 +745,7 @@
 <translation id="6406506848690869874">同步</translation>
 <translation id="641643625718530986">打印…</translation>
 <translation id="6416782512398055893">已下载 <ph name="MBS" /> MB</translation>
+<translation id="6427112570124116297">翻译网页</translation>
 <translation id="6433501201775827830">选择您的搜索引擎</translation>
 <translation id="6437478888915024427">网页信息</translation>
 <translation id="6441734959916820584">名称太长</translation>
@@ -856,6 +861,7 @@
 <translation id="7189598951263744875">分享...</translation>
 <translation id="7191430249889272776">标签页已在后台打开。</translation>
 <translation id="723171743924126238">选择图片</translation>
+<translation id="7233236755231902816">若要使用您的语言查看网页，请获取最新版本的 Chrome</translation>
 <translation id="7243308994586599757">选项在靠近屏幕底部的位置</translation>
 <translation id="7250468141469952378">已选择 <ph name="ITEM_COUNT" /> 项</translation>
 <translation id="7253272406652746122">请在设备的“设置”应用中，通过“帐号”页面添加 Google 帐号。</translation>
@@ -1010,6 +1016,7 @@
 <translation id="8310344678080805313">标准标签页</translation>
 <translation id="8313455859591948645">修改启动页</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> 及更多网站</translation>
+<translation id="8327155640814342956">要获得最好的浏览体验，请打开 Chrome 以进行更新</translation>
 <translation id="8339163506404995330">系统不会自动翻译源语言为<ph name="LANGUAGE" />的网页</translation>
 <translation id="8349013245300336738">按已使用的数据流量排序</translation>
 <translation id="8372893542064058268">允许特定网站进行后台同步。</translation>
@@ -1068,6 +1075,7 @@
 <translation id="8788968922598763114">重新打开上次关闭的标签页</translation>
 <translation id="8801436777607969138">禁止特定网站运行 JavaScript。</translation>
 <translation id="8812260976093120287">在某些网站上，您可以使用自己的设备通过上述支持的付款应用付款。</translation>
+<translation id="8816026460808729765">禁止网站使用传感器</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" />将在 Chrome 中打开。继续操作即表示您同意 Chrome 的<ph name="BEGIN_LINK1" />服务条款<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />隐私权声明<ph name="END_LINK2" />，以及<ph name="BEGIN_LINK3" />针对通过 Family Link 管理的 Google 帐号的隐私权声明<ph name="END_LINK3" />。</translation>
 <translation id="8820817407110198400">书签</translation>
 <translation id="8833831881926404480">网站正在共享您的屏幕</translation>

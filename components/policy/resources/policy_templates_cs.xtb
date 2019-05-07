@@ -333,6 +333,11 @@ Pokud je toto nastavení zakázáno nebo není nakonfigurováno, firemní uživa
       Pokud je tato zásada nastavená na hodnotu False, údaje o rozšířeních a pluginech se neshromažďují.
 
       Tato zásada je účinná pouze v případě, že je zapnutá zásada <ph name="CHROME_REPORTING_EXTENSION_NAME" /> a počítač je zaregistrován pomocí zásady <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="1560205870554624777">Určuje, zda je povolena funkce Kerberos. Kerberos je ověřovací protokol, který lze použít k ověření ve webových aplikacích a sdílených úložištích.
+
+          Pokud je tato zásada aktivovaná, je funkce Kerberos povolena. Účty Kerberos lze přidat pomocí zásady Konfigurovat účty Kerberos na stránce Nastavení lidí.
+
+          Pokud je tato zásada deaktivovaná nebo není nastavená, je nastavení účtů Kerberos zakázáno. Nelze přidat žádné účty Kerberos a ověření pomocí protokolu Kerberos nelze použít. Všechny existující účty Kerberos a všechna uložená hesla jsou smazány.</translation>
 <translation id="1561424797596341174">Přepsání zásad pro ladicí sestavení hostitele vzdáleného přístupu</translation>
 <translation id="1561967320164410511">U2F plus rozšíření pro individuální atestaci</translation>
 <translation id="1574554504290354326">Podpora tohoto nastavení byla ukončena, použijte namísto něj zásadu SafeBrowsingExtendedReportingEnabled. Povolení nebo zakázání zásady SafeBrowsingExtendedReportingEnabled je ekvivalentní k nastavení zásady SafeBrowsingExtendedReportingOptInAllowed na hodnotu False.
@@ -415,6 +420,12 @@ Pokud je toto nastavení zakázáno nebo není nakonfigurováno, firemní uživa
 
       Jako hodnotu této zásady zadejte adresu URL, ze které může systém <ph name="PRODUCT_OS_NAME" /> smluvní podmínky stáhnout. Smluvní podmínky musejí být uloženy ve formátu prostého textu s typem MIME „text/plain“. Nejsou povoleny žádné značky.</translation>
 <translation id="1750315445671978749">Blokovat veškerá stahování</translation>
+<translation id="1762072363876276024">
+      Tato zásada platí pro přihlašovací obrazovku. Prostudujte si také zásadu <ph name="SITE_PER_PROCESS_POLICY_NAME" />, která platí pro uživatelskou relaci. Obě zásady doporučujeme nastavit na stejnou hodnotu. Obě zásady doporučujeme nastavit na stejnou hodnotu. Pokud se hodnoty neshodují, může při zahajování uživatelské návštěvy dojít ke zpoždění způsobenému používáním hodnoty zadané v zásadě pro uživatele.
+      Pomocí tohoto nastavení (DeviceLoginScreenSitePerProcess) lze uživatelům zakázat odhlášení z výchozího chování, při němž jsou všechny weby izolovány. K izolaci dalších (podrobněji určených) zdrojů může být užitečná také zásada DeviceLoginScreenIsolateOrigins.
+      Pokud je tato zásada aktivovaná, uživatelé se nebudou moci odhlásit z výchozího chování, v němž je každý web spuštěn v samostatném procesu.
+      Pokud tato zásada není nakonfigurovaná nebo je deaktivovaná, uživatel toto nastavení bude moci změnit (např. pomocí možnosti Disable site isolation (Vypnout izolaci webů) na stránce chrome://flags).
+      </translation>
 <translation id="1781356041596378058">Tato zásada také ovládá přístup k možnostem Pro vývojáře v systému Android. Pokud tuto zásadu nastavíte na hodnotu True, uživatelé nebudou mít přístup k sekci Pro vývojáře. Pokud tuto zásadu nastavíte na hodnotu False nebo ji nenastavíte, uživatelé budou moci možnosti Pro vývojáře otevřít tak, že v aplikaci Nastavení Android sedmkrát klepnou na číslo sestavení.</translation>
 <translation id="1793346220873697538">Ve výchozím nastavení vypnout tisk s kódem PIN</translation>
 <translation id="1797233582739332495">Zobrazovat uživateli opakovaně výzvu s oznámením, že je vyžadován restart</translation>
@@ -841,6 +852,11 @@ Pokud toto nastavení deaktivujete, je to stejné, jako kdybyste ho nenastavili.
 
       Pokud zásadu nenastavíte, bude na uživatelích, aby zvolili, zda funkci datové komprese proxy serveru chtějí nebo nechtějí použít.</translation>
 <translation id="257788512393330403">Heslo je třeba zadat každých šest hodin</translation>
+<translation id="2586162458524426376">
+      Tato zásada platí pro přihlašovací obrazovku. Prostudujte si také zásadu <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, která platí pro uživatelskou relaci. Obě zásady doporučujeme nastavit na stejnou hodnotu.
+      Pokud tuto zásadu povolíte, každý ze zdrojů uvedených v seznamu odděleném čárkami se bude spouštět ve vlastním procesu. Budou izolovány i zdroje uvedené pomocí subdomén – např. pokud zadáte web https://example.com/, bude v rámci něj izolována i subdoména https://foo.example.com/.
+      Pokud tuto zásadu ponecháte nenakonfigurovanou, použije se pro přihlašovací obrazovku výchozí nastavení platformy týkající se izolace webů.
+      </translation>
 <translation id="2587719089023392205">Nastavit <ph name="PRODUCT_NAME" /> jako výchozí prohlížeč</translation>
 <translation id="2592091433672667839">Doba nečinnosti před zobrazením spořiče obrazovky na přihlašovací obrazovce v režimu pro obchody</translation>
 <translation id="2592162121850992309">Pokud je tato zásada nastavená na hodnotu true nebo ponechána nenastavená, bude hardwarová akcelerace povolena (pokud se určitá funkce GPU nenachází na seznamu zakázaných položek).
@@ -851,6 +867,7 @@ Pokud toto nastavení deaktivujete, je to stejné, jako kdybyste ho nenastavili.
           Všechny verze serverů Samba a Windows z poslední doby protokol NTLMv2 podporují. Jeho zakázání snižuje bezpečnost ověřování a měli byste k němu přistupovat jen v případě, že potřebujete zajistit zpětnou kompatibilitu.
 
           Pokud tato zásada není nastavena, použije se výchozí nastavení true a protokol NTLMv2 bude povolen.</translation>
+<translation id="26023406105317310">Nakonfigurovat účty Kerberos</translation>
 <translation id="2604182581880595781">Konfigurace zásad souvisejících se sdílenými síťovými složkami.</translation>
 <translation id="2623014935069176671">Počkat na první aktivitu uživatele</translation>
 <translation id="262740370354162807">Povolí odesílání dokumentů do služby <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1181,6 +1198,7 @@ Pokud je tato zásada zakázána nebo není nakonfigurována, funkce WebDriver n
 <translation id="3159375329008977062">Uživatel může exportovat a importovat kontejnery Crostini prostřednictvím uživatelského rozhraní</translation>
 <translation id="3165808775394012744">Tyto zásady zde jsou zahrnuty, aby je bylo možné snadno odstranit.</translation>
 <translation id="316778957754360075">V prohlížečích <ph name="PRODUCT_NAME" /> verze 29 a novějších bylo toto nastavení zrušeno. Doporučený způsob, jak nastavit sbírky rozšíření nebo aplikací hostovaných organizací, je zahrnout web hostující balíčky CRX do seznamu ExtensionInstallSources a na webovou stránku umístit přímé odkazy pro stažení balíčků. Spouštěč pro danou webovou stránku lze vytvořit pomocí zásady ExtensionInstallForcelist.</translation>
+<translation id="3168968618972302728">Zásady související s ověřením Kerberos.</translation>
 <translation id="3171369832001535378">Šablona názvu hostitelské sítě zařízení</translation>
 <translation id="3172512016079904926">Umožňuje instalaci hostitelů zasílání nativních zpráv na úrovni uživatele.
 
@@ -1373,6 +1391,7 @@ Tuto zásadu lze nastavit pouze jako doporučenou. Zásada slouží k přesunut
 <translation id="3631099945620529777">Pokud je tato zásada nastavena na hodnotu false, je tlačítko Ukončit proces ve Správci úloh deaktivováno.
 
       Pokud je tato zásada nastavena na hodnotu true nebo není nakonfigurována, uživatel může ve Správci úloh ukončovat procesy.</translation>
+<translation id="3643284063603988867">Povolit funkci Zapamatovat heslo</translation>
 <translation id="3646859102161347133">Nastavení typu lupy</translation>
 <translation id="3653237928288822292">Ikona výchozího poskytovatele vyhledávání</translation>
 <translation id="3660510274595679517">
@@ -1590,21 +1609,6 @@ Existující nepřihlášené profily po zapnutí této zásady budou uzamčeny 
       Pokud je tato zásada nastavena na hodnotu true nebo ponechána bez nastavení, uživatelé budou moci při registraci systému Chrome OS uplatňovat zvláštní nabídky.
 
       Pokud je tato zásada nastavena na hodnotu false, uživatelé zvláštní nabídky nebudou moci uplatnit.</translation>
-<translation id="4008233182078913897">Určuje seznam aplikací a rozšíření, které se instalují na pozadí bez zásahu uživatele a které uživatel nemůže odinstalovat ani deaktivovat. Všechna oprávnění požadovaná aplikacemi nebo rozšířeními jsou udělována implicitně bez zásahu uživatele, a to včetně všech dodatečných oprávnění požadovaných budoucími verzemi aplikace nebo rozšíření. Kromě toho jsou udělována také oprávnění k používání těchto rozhraní API pro rozšíření: enterprise.deviceAttributes a enterprise.platformKeys. (Tato rozhraní API jsou k dispozici pouze u aplikací/rozšíření, jejichž instalace je vynucena.)
-
-Tato zásada má přednost před potenciálně konfliktní zásadou <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Bude-li aplikace nebo rozšíření, které bylo dříve vynuceně nainstalováno, z tohoto seznamu odebráno, <ph name="PRODUCT_NAME" /> je automaticky odinstaluje.
-
-U instancí systému Windows, které nejsou propojeny s doménou <ph name="MS_AD_NAME" />, je vynucená instalace omezena pouze na aplikace a rozšíření z Internetového obchodu Chrome.
-
-Zdrojový kód libovolného rozšíření mohou uživatelé pomocí Nástrojů pro vývojáře upravit (což může způsobit, že rozšíření nebude fungovat). Pokud je to problém, nastavte zásadu <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-Každá položka v seznamu zásady představuje řetězec, který obsahuje ID rozšíření a volitelně také adresu URL pro aktualizaci oddělené středníkem (<ph name="SEMICOLON" />). ID rozšíření je řetězec s 32 písmeny a naleznete jej například zde: <ph name="CHROME_EXTENSIONS_LINK" /> (v režimu pro vývojáře). Pokud je zadána adresa URL pro aktualizaci, měla by odkazovat na dokument XML manifestu aktualizace (viz <ph name="LINK_TO_EXTENSION_DOC1" />). Ve výchozím nastavení se použije adresa URL pro aktualizaci Internetového obchodu Chrome (v současné době https://clients2.google.com/service/update2/crx). Adresa URL pro aktualizaci nastavená v této zásadě slouží pouze k počáteční instalaci. Další aktualizace rozšíření budou používat adresu URL pro aktualizaci uvedenou v manifestu rozšíření. Upozorňujeme, že až do verze 67 prohlížeče <ph name="PRODUCT_NAME" /> bylo explicitní zadání adresy URL pro aktualizaci povinné.
-
-Například <ph name="EXTENSION_POLICY_EXAMPLE" /> nainstaluje rozšíření s ID <ph name="EXTENSION_ID_SAMPLE" /> ze standardní adresy URL pro aktualizaci z Internetového obchodu Chrome. Další informace o hostování rozšíření viz <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-Je-li tato zásada ponechána nenastavená, žádné aplikace ani rozšíření se automaticky neinstalují a uživatel v prohlížeči <ph name="PRODUCT_NAME" /> může kteroukoliv aplikaci nebo rozšíření odinstalovat.
-
-Tato zásada se nevztahuje na anonymní režim.</translation>
 <translation id="4008507541867797979">Pokud je tato zásada nastavena na hodnotu true nebo není nakonfigurována, bude <ph name="PRODUCT_OS_NAME" /> na přihlašovací obrazovce ukazovat existující uživatele a umožní vybrat si z nich.
 
       Pokud je tato zásada nastavena na hodnotu false, <ph name="PRODUCT_OS_NAME" /> na přihlašovací obrazovce existující uživatele zobrazovat nebude. Jestliže není nakonfigurována spravovaná návštěvy, zobrazí se běžná přihlašovací obrazovka (vyzývající k zadání e‑mailu a hesla nebo telefonu uživatele) nebo vsunutá obrazovka SAML (pokud je zapnuta pomocí zásady <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />). Když je nakonfigurována spravovaná návštěvy, budou se zobrazovat jen účty spravované návštěvy a bude si z nich možné vybrat.
@@ -1717,6 +1721,15 @@ K dispozici jsou také samostatná nastavení pro napájení ze sítě a z bater
           Pokud je zadáno nastavení RemoteAccessHostClientDomain, toto nastavení ho přepíše.
 
           Viz také RemoteAccessHostDomainList.</translation>
+<translation id="4164601239783385546">Umožňuje zapnout funkci Jedním prstem (funkce pro usnadnění přístupu).
+
+          Pokud je tato zásada nastavená na hodnotu true, bude funkce Jedním prstem vždy zapnutá.
+
+          Pokud je tato zásada nastavená na hodnotu false, bude funkce Jedním prstem vždy vypnutá.
+
+          Pokud tuto zásadu nastavíte, uživatelé ji nebudou moci změnit ani přepsat.
+
+          Pokud ji ponecháte nenastavenou, bude funkce Jedním prsem ve výchozím nastavení vypnutá, ale uživatel ji bude moci kdykoli zapnout.</translation>
 <translation id="4183229833636799228">Výchozí nastavení pluginu <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">Adresa URL k potvrzení ověřovacího tokenu klienta vzdáleného připojení</translation>
 <translation id="4197038214024763371">Pokud tato zásada není nastavena nebo je povolena, má uživatel dovoleno používat kontrolu pravopisu.
@@ -1910,6 +1923,7 @@ Samotná zásada je na výše uvedených platformách podporována. Funkce, kter
 <translation id="4578912515887794133">Pokud je toto nastavení aktivováno, hostitel vzdáleného přístupu porovná jméno místního uživatele (k němuž je hostitel přidružen) a název účtu Google, který je registrován jako vlastník hostitele (je-li hostitel vlastněn například účtem Google jannovak@example.com, bude tímto názvem „jannovak“).  Pokud se název vlastníka hostitele liší od jména místního uživatele, k němuž je hostitel přidružen, hostitel vzdáleného přístupu se nespustí.  Zásadu RemoteAccessHostMatchUsername doporučujeme používat společně se zásadou RemoteAccessHostDomain, protože tak lze vynutit konkrétní doménu účtu Google vlastníka hostitele (např. example.com).
 
           Pokud je toto nastavení deaktivováno nebo není nakonfigurováno, lze hostitele vzdáleného přístupu přidružit k libovolnému místnímu uživateli.</translation>
+<translation id="4591366717022345234">Poskytnout uživatelům sestavení Quick Fix Build</translation>
 <translation id="4600786265870346112">Aktivovat velký kurzor</translation>
 <translation id="4604931264910482931">Konfigurace seznamu zakázaných položek zasílání nativních zpráv</translation>
 <translation id="4613508646038788144">Je-li tato zásada nastavena na hodnotu false, bude software třetích stran moci vkládat spustitelný kód do procesů prohlížeče Chrome. Pokud tato zásada není nastavena nebo je nastavena na hodnotu true, bude mít software třetích stran vkládání spustitelného kódu do procesů prohlížeče Chrome zakázáno.</translation>
@@ -1996,6 +2010,7 @@ Pokud ji ponecháte nenastavenou, velký kurzor bude ve výchozím nastavení de
 <translation id="487460824085252184">Migrovat automaticky, nežádat uživatele o souhlas.</translation>
 <translation id="4874982543810021567">Blokovat rozhraní WebUSB na těchto webech</translation>
 <translation id="4876805738539874299">Maximální povolená verze SSL</translation>
+<translation id="4887274746092315609">Povoluje stránku pro změnu hesla během relace pro uživatele SAML</translation>
 <translation id="4897928009230106190">Udává parametry, které se použijí při vyhledávání s našeptávačem pomocí metody POST. Sestává z párů název–hodnota oddělených čárkou. Pokud je hodnotou parametr šablony (např. {searchTerms} v příkladu výše), bude nahrazen skutečnými údaji vyhledávacích dotazů.
           Tato zásada je nepovinná. Pokud není nastavena, požadavek na vyhledávání s našeptávačem bude odeslán pomocí metody GET.
 
@@ -2215,6 +2230,7 @@ Pokud tuto zásadu nenastavíte, bude aktivován výchozí poskytovatel vyhledá
       Je-li tato zásada nastavena na hodnotu Starší, je povolen pouze typ šifrování RC4. Tato možnost není bezpečná a měla by se používat pouze za velmi specifických okolností.
 
       Viz také https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
+<translation id="5249453807420671499">Uživatelé mohou přidávat účty Kerberos</translation>
 <translation id="5255162913209987122">Doporučuje se</translation>
 <translation id="527237119693897329">Umožňuje zadat, kteří hostitelé zasílání nativních zpráv se nemají načítat.
 
@@ -2351,6 +2367,7 @@ Pokud tuto zásadu nenastavíte, bude aktivován výchozí poskytovatel vyhledá
       Je-li hodnota zásady nastavena a nerovná se 0, aktuálně přihlášený uživatel ukázky bude automaticky odhlášen po uplynutí zadané délky nečinnosti.
 
       Hodnota zásady musí být zadána v milisekundách.</translation>
+<translation id="5508307164752647432">Povolit funkci Kerberos</translation>
 <translation id="5511702823008968136">Aktivovat panel záložek</translation>
 <translation id="5512418063782665071">Adresa URL domovské stránky</translation>
 <translation id="551639594034811656">Tato zásada určuje seznam procentuálních podílů zařízení se systémem <ph name="PRODUCT_OS_NAME" /> v organizační jednotce, která se aktualizují každý den ode dne prvního objevení aktualizace. Čas objevení je pozdější než čas publikování aktualizace, protože zařízení může dostupnost aktualizací zkontrolovat až nějakou dobu po publikování aktualizace.
@@ -2372,6 +2389,7 @@ Tato zásada se nevztahuje na přepínání mezi kanály.</translation>
       Upozorňujeme, že pokud platforma podporuje oznámení o zásadách, budou všechna výchozí nastavení i hodnota této zásady ignorovány a interval aktualizací bude nastaven na 24 hodin. Očekává se totiž, že při změně zásad bude aktualizace vynucena automaticky prostřednictvím oznámení.</translation>
 <translation id="5530347722229944744">Blokovat potenciálně nebezpečná stahování</translation>
 <translation id="5535973522252703021">Seznam povolených serverů pro delegování ověření protokolu Kerberos</translation>
+<translation id="554903022911579950">Kerberos</translation>
 <translation id="555077880566103058">Povolit všem webům automatické spouštění pluginu <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">Tato zásada nemá vliv na aplikace Android.</translation>
 <translation id="5560039246134246593">Přidá parametr k načítání počáteční hodnoty variace v prohlížeči <ph name="PRODUCT_NAME" />.
@@ -2479,6 +2497,12 @@ Pokud tuto zásadu ponecháte nenastavenou, uživatelé budou moci nastavit auto
 
       Pokud je tato zásada nastavena, uživatel ji nemůže změnit ani přepsat.</translation>
 <translation id="5708969689202733975">Konfigurace povolených režimů odemknutí</translation>
+<translation id="5711016543513883877">
+      Pokud tuto zásadu povolíte, bude se každý z uvedených zdrojů v seznamu odděleném čárkami spouštět ve vlastním procesu. Budou izolovány i zdroje uvedené pomocí subdomén – např. pokud zadáte web https://example.com/, bude v rámci něj izolována i subdoména https://foo.example.com/.
+      Pokud tato zásada není nakonfigurovaná nebo je deaktivovaná, uživatel toto nastavení bude moci změnit.
+
+      POZNÁMKA: Tato zásada se nevztahuje na systém Android. K aktivaci zásady IsolateOrigins v systému Android použijte zásadu IsolateOriginsAndroid.
+      </translation>
 <translation id="572155275267014074">Nastavení zařízení Android</translation>
 <translation id="5722934961007828462">Pokud je toto nastavení aktivní, prohlížeč <ph name="PRODUCT_NAME" /> vždy provede kontrolu odvolání u certifikátů serveru, které budou úspěšně ověřeny a podepsány místně nainstalovanými certifikáty CA.
 
@@ -3393,6 +3417,11 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, optimaliz
 <translation id="7433714841194914373">Aktivovat Dynamický režim</translation>
 <translation id="7434202861148928348">Konfigurace povinného názvu domény pro klienty vzdáleného přístupu</translation>
 <translation id="7443616896860707393">Požadavky typu cross-origin standardu HTTP Basic Auth</translation>
+<translation id="7454519673779830548">Přidává předvyplněné účty Kerberos. Pokud identifikační údaje Kerberos odpovídají přihlašovací identifikačním údajům, u účtu lze nakonfigurovat opětovné použití přihlašovacích identifikačních údajů zadáním objektu zabezpečení ${{LOGIN_EMAIL}} a hesla ${{PASSWORD}}, aby lístek Kerberos bylo možné načíst automaticky (jestliže není nakonfigurováno dvoufázové ověření). Účty přidané pomocí této zásady uživatelé nemohou upravovat.
+
+          Pokud je tato zásada aktivovaná, v ní nakonfigurovaný seznam účtů se přidá do nastavení účtů Kerberos.
+
+          Pokud je tato zásada deaktivovaná nebo není nastavená, do nastavení účtů Kerberos se žádné účty nepřidají a všechny účty, které pomocí této zásady byly přidány dříve, budou odstraněny. Pokud je aktivovaná zásada „Uživatelé mohou přidávat účty Kerberos“, uživatelé účty mohou ručně přidávat i nadále.</translation>
 <translation id="7458437477941640506">Pokud je verze operačního systému novější než cílová verze, nevracet se k cílové verzi. Jsou zakázány i aktualizace.</translation>
 <translation id="7464991223784276288">Omezit soubory cookie z odpovídajících adres URL na aktuální relaci</translation>
 <translation id="7469554574977894907">Aktivovat návrhy pro vyhledávání</translation>
@@ -3530,6 +3559,11 @@ Další informace o Bezpečném prohlížení najdete na stránce https://devel
 <translation id="7687943045976362719">Pokud je tato zásada nastavená, zadané typy obsahu zpracovává <ph name="PRODUCT_FRAME_NAME" />.
 
           Pokud tato zásada není nastavená, používá se pro všechny weby výchozí vykreslovač. (Výchozí vykreslovač lze nakonfigurovat pomocí zásady <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" />.)</translation>
+<translation id="7694245791806617022">Určuje, zda je v dialogovém okně ověření Kerberos povolená možnost Zapamatovat heslo. Hesla se na disk ukládají zašifrovaná a má k nim přístup pouze systémový proces démon Kerberos, a to pouze během uživatelské relace.
+
+          Pokud je tato zásada aktivovaná nebo není nastavená, uživatelé mohou zvolit, zda se hesla Kerberos mají ukládat, aby je nebylo nutné zadávat znovu. Pokud není vyžadováno další ověření (dvoufázové ověření), načítají se lístky Kerberos automaticky.
+
+          Pokud tuto zásadu deaktivujete, hesla se nikdy ukládat nebudou a všechna dříve uložená hesla budou odstraněna. Uživatelé budou muset heslo zadat při každém ověření pomocí systému Kerberos. V závislosti na nastavení serveru k tomu obvykle dochází v intervalu osmi hodin až několika měsíců.</translation>
 <translation id="7694807474048279351">Naplánuje automatický restart po použití aktualizace systému <ph name="PRODUCT_OS_NAME" />.
 
 Pokud je tato zásada nastavena na hodnotu true, bude v případě, že je použita aktualizace <ph name="PRODUCT_OS_NAME" /> a k dokončení procesu je potřeba restart, naplánován automatický restart. Restart bude naplánován na zvolený čas, ale pokud bude uživatel zařízení používat, bude možné automatický restart odložit až o 24 hodin.
@@ -3563,6 +3597,14 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
       Účelem této zásady je poskytnout organizacím čas k migraci existujících serverů na jiný protokol než HTTP/0.9 a v budoucnu bude odstraněna.
 
       Pokud tato zásada není nastavena, protokol HTTP/0.9 bude na jiných než výchozích portech zakázán.</translation>
+<translation id="7726421241038987229">
+      Pomocí tohoto nastavení (SitePerProcess) lze uživatelům zakázat odhlášení z výchozího chování, při kterém jsou všechny weby izolovány. K izolaci dalších (podrobněji určených) zdrojů může být užitečná také zásada IsolateOrigins.
+      Pokud je tato zásada aktivovaná, uživatelé se nebudou moci odhlásit z výchozího chování, v němž je každý web spuštěn v samostatném procesu.
+      Pokud tato zásada není nakonfigurovaná nebo je deaktivovaná, uživatelé se z izolace webů budou moci odhlásit (např. pomocí možnosti Disable site isolation (Vypnout izolaci webů) na stránce chrome://flags).  Tím, že tuto zásadu deaktivujete nebo že ji nenakonfigurujete, izolaci webů nevypnete.
+      V systému <ph name="PRODUCT_OS_NAME" /> doporučujeme nastavit na stejnou hodnotu také zásadu zařízení <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Pokud se hodnoty těchto dvou zásad neshodují, při vstupu do uživatelské relace může dojít k prodlevě způsobené používáním hodnoty zadané v zásadě pro uživatele.
+
+      POZNÁMKA: Tato zásada se nevztahuje na systém Android. K aktivaci zásady SitePerProcess v systému Android použijte zásadu SitePerProcessAndroid.
+      </translation>
 <translation id="7747447585227954402">Povolit zařízení používat v systému <ph name="PRODUCT_OS_NAME" /> plugin <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="7749402620209366169">Namísto kódu PIN zadaného uživatelem aktivuje dvoufázové ověření hostitelů vzdáleného přístupu.
 
@@ -3626,6 +3668,11 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
       Určuje ID rozšíření, které se použije jako spořič obrazovky na přihlašovací obrazovce. Rozšíření musí být součásti balíčku AppPack, který je pro tuto doménu nakonfigurován v rámci zásady DeviceAppPack.</translation>
 <translation id="7882857838942884046">Deaktivace služby Google Sync způsobí, že zálohování a obnovení systému Android nebude fungovat správně.</translation>
 <translation id="7882890448959833986">Potlačit upozornění ohledně nepodporovaného operačního systému</translation>
+<translation id="7889788745439330797">Určuje, zda uživatelé mohou přidávat účty Kerberos.
+
+          Pokud je tato zásada aktivovaná nebo není nastavená, uživatelé mohou přidávat účty Kerberos pomocí nastavení účtů Kerberos na stránce Nastavení lidí. Nad účty, které sami přidali, mají uživatelé plnou kontrolu a mohou je upravit či odstranit.
+
+          Pokud je tato zásada deaktivovaná, uživatelé účty Kerberos přidávat nemohou. Účty lze přidávat pouze pomocí zásady Nakonfigurovat účty Kerberos. Jedná se o účinný způsob uzamknutí účtů.</translation>
 <translation id="7895553628261067384">Vzdálený přístup</translation>
 <translation id="7902255855035461275">Vzory v tomto seznamu budou porovnány s žádající adresou URL. Pokud bude nalezena shoda, přístup k zařízením pro záznam videa bude udělen bez zobrazení výzvy.
 

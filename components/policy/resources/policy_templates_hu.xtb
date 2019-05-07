@@ -1624,29 +1624,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha a házirend értéke igaz, vagy ha nincs beállítva, a felhasználók beválthatnak ajánlatokat Chrome OS-regisztráció útján.
 
       Ha a házirend értéke hamis, a felhasználók nem válthatnak be ajánlatokat.</translation>
-<translation id="4008233182078913897">Azon alkalmazások és bővítmények listája, melyek telepítése a háttérben,
-          felhasználói beavatkozás nélkül történik, és melyeket a felhasználó
-          nem távolíthat el és tilthat le. A rendszer implicit módon, felhasználói
-          beavatkozás nélkül megadja az alkalmazások/bővítmények által kért
-          összes engedélyt, beleértve az alkalmazás/bővítmény jövőbeli verziói
-          által kért további engedélyeket is. Ezenkívül megkapják az engedélyeket
-          az enterprise.deviceAttributes és az enterprise.platformKeys bővítmény-
-          API-k is. (Ez a két API nem áll rendelkezésre a nem kényszerítve
-          telepített alkalmazások és bővítmények esetében.)
-
-          Ez a házirend elsőbbséget élvez az esetlegesen ütköző <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> házirenddel szemben. Ha egy korábban kényszerítve telepített alkalmazást vagy bővítményt töröl erről a listáról, a <ph name="PRODUCT_NAME" /> automatikusan eltávolítja.
-
-          Azon Windows-példányokon, amelyek nem csatlakoztak valamely <ph name="MS_AD_NAME" />-domainhez, a kényszerített telepítés csak a Chrome Internetes áruházban megtalálható alkalmazások és bővítmények esetében alkalmazható.
-
-          Felhívjuk figyelmét, hogy a felhasználók bármelyik bővítmény forráskódját módosíthatják a fejlesztői eszközök segítségével (és esetleg működésképtelenné tehetik a bővítményt). Ha ez problémát jelent, állítsa be a <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> házirendet.
-
-          A házirend listájában lévő összes elem olyan karakterlánc, amely egy bővítményazonosítót és tetszőlegesen egy pontosvesszővel (<ph name="SEMICOLON" />) elválasztott „frissítési” URL-t tartalmaz. A bővítményazonosító az a 32 betűből álló karakterlánc, amelyet például itt tekinthet meg fejlesztői módban: <ph name="CHROME_EXTENSIONS_LINK" />. Ha megadja a „frissítési” URL-t, annak frissítési manifest XML-dokumentumra kell mutatnia, melynek leírását itt találja: <ph name="LINK_TO_EXTENSION_DOC1" />. A böngésző alapértelmezés szerint a Chrome Internetes áruház frissítési URL-jét használja (jelenleg: „https://clients2.google.com/service/update2/crx”). Felhívjuk figyelmét, hogy a jelen házirendben megadott „frissítési” URL csak az első telepítéshez használatos; a bővítmény további frissítései a bővítmény manifestfájljában feltüntetett URL-en keresztül történnek. A „frissítési” URL kifejezett megadása a <ph name="PRODUCT_NAME" /> 67-es verziójáig bezárólag volt kötelező.
-
-          Például a(z) <ph name="EXTENSION_POLICY_EXAMPLE" /> karakterlánc a(z) <ph name="EXTENSION_ID_SAMPLE" /> azonosítójú bővítményt telepíti a Chrome Internetes áruház általános „frissítési” URL-jéről. A bővítmények tárolásával kapcsolatban itt talál további információt: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Ha a házirend nincs beállítva, akkor a rendszer egyetlen alkalmazást vagy bővítményt sem telepít automatikusan, a felhasználó pedig törölheti a <ph name="PRODUCT_NAME" /> bármely telepített alkalmazását és bővítményét.
-
-          Fontos, hogy ez a házirend nem vonatkozik az inkognitómódra.</translation>
 <translation id="4008507541867797979">Ha házirend nincs beállítva, vagy értéke igaz, akkor a <ph name="PRODUCT_OS_NAME" /> megjeleníti a meglévő felhasználókat a bejelentkezési képernyőn, és lehetővé teszi a választást közülük.
 
       Ha a házirend értéke hamis, akkor a <ph name="PRODUCT_OS_NAME" /> nem jeleníti meg a meglévő felhasználókat a bejelentkezési képernyőn. A szokványos bejelentkezési képernyő (e-mail-cím és jelszó, vagy telefonszám) vagy a SAML közbeiktatott képernyő (ha engedélyezve van: <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" /> házirend) jelenik meg, kivéve felügyelt munkamenet esetén. Felügyelt munkamenet beállításakor csak a felügyelt munkamenethez tartozó fiókok jelennek meg választási lehetőségekként.

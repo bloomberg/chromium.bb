@@ -945,7 +945,7 @@
 <translation id="7641134354185483015">Ni prejšnjega naslova na ravni 3.</translation>
 <translation id="7659376057562985921">Polje za besedilo z vrednostjo <ph name="VALUE" /> in imenom <ph name="NAME" /></translation>
 <translation id="7663318257180412551">Naslov 2</translation>
-<translation id="7668307052366682650">{COUNT,plural, =1{ura}one{ure}two{uri}few{ur}other{ure}}</translation>
+<translation id="7668307052366682650">{COUNT,plural, =1{ura}one{ura}two{uri}few{ure}other{ur}}</translation>
 <translation id="7674576868851035240">Naslednja povezava</translation>
 <translation id="7674768236845044097">oznk</translation>
 <translation id="7684431668231950609">Urejanje besedila, vnos URL-ja</translation>

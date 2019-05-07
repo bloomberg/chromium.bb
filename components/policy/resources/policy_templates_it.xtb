@@ -54,13 +54,13 @@
 <translation id="1049138910114524876">Consente di configurare la lingua da utilizzare per la schermata di accesso di <ph name="PRODUCT_OS_NAME" />.
 
       Se questa norma viene impostata, la schermata di accesso verrà sempre visualizzata nella lingua stabilita dal primo valore di questa norma (la norma viene definita come elenco per la compatibilità con le versioni successive). Se la norma non viene impostata o se viene impostato un elenco vuoto, la schermata di accesso verrà visualizzata nella lingua dell'ultima sessione utente. Se la norma viene impostata su un valore non corrispondente a una lingua valida, la schermata di accesso verrà visualizzata in una lingua di riserva (attualmente en-US).</translation>
-<translation id="1052499923181221200">Questo criterio non ha effetti a meno che SamlInSessionPasswordChangeEnabled sia impostato su true.
-      Se quel criterio è impostato su true e questo criterio è impostato su (ad esempio) 14, significa che gli utenti SAML riceveranno una notifica che li informa con 14 giorni di anticipo che la password scadrà in una determinata data.
+<translation id="1052499923181221200">Questa norma non ha effetti a meno che SamlInSessionPasswordChangeEnabled sia impostata su true.
+      Se quella norma è impostata su true e questa norma è impostata su (ad esempio) 14, significa che gli utenti SAML riceveranno una notifica che li informa con 14 giorni di anticipo che la password scadrà in una determinata data.
       Quindi, gli utenti possono organizzarsi immediatamente, modificare la password all'interno della sessione e aggiornarla prima della scadenza.
       Tuttavia, queste notifiche verranno mostrate solo se le informazioni sulla scadenza della password vengono inviate al dispositivo dal provider di identità SAML durante il flusso di accesso SAML.
-      Se imposti il criterio su zero, gli utenti non riceveranno nessuna notifica in anticipo, ma verranno avvisati una volta che la password è scaduta.
+      Se imposti la norma su zero, gli utenti non riceveranno nessuna notifica in anticipo, ma verranno avvisati una volta che la password è scaduta.
 
-      Se questo criterio viene impostato, l'utente non può modificarlo o ignorarlo.</translation>
+      Se questa norma viene impostata, l'utente non può modificarla o ignorarla.</translation>
 <translation id="1062011392452772310">Attivazione dell'attestazione da remoto per il dispositivo</translation>
 <translation id="1062407476771304334">Sostituisci</translation>
 <translation id="1079801999187584280">Non consentire l'utilizzo degli Strumenti per sviluppatori</translation>
@@ -305,11 +305,12 @@ Se la norma non viene impostata, la modalità ad alto contrasto viene disattivat
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Attiva blocco inserimento da software di terze parti</translation>
 <translation id="1504431521196476721">Attestazione da remoto</translation>
-<translation id="1507382822467487898">Consente di configurare quale indirizzo MAC (media access control) verrà utilizzato quando il dispositivo è inserito in un dock.
+<translation id="1507382822467487898">
+          Consente di configurare quale indirizzo MAC (media access control) verrà utilizzato quando il dispositivo è inserito in un dock.
 
-          Quando alcuni modelli di dispositivi vengono inseriti in un dock, per impostazione predefinita l'indirizzo MAC designato per il dispositivo viene utilizzato per identificare il dispositivo su Ethernet. Questo criterio consente all'amministratore di modificare l'origine dell'indirizzo MAC mentre il dispositivo è inserito nel dock.
+          Quando alcuni modelli di dispositivi vengono inseriti in un dock, per impostazione predefinita l'indirizzo MAC designato per il dispositivo viene utilizzato per identificare il dispositivo su Ethernet. Questa norma consente all'amministratore di modificare l'origine dell'indirizzo MAC mentre il dispositivo è inserito nel dock.
 
-          Se "DeviceDockMacAddress" è selezionato o se il criterio non è impostato, verrà utilizzato l'indirizzo MAC designato del dock.
+          Se "DeviceDockMacAddress" è selezionato o se la norma non è impostata, verrà utilizzato l'indirizzo MAC designato del dock.
 
           Se "DeviceNicMacAddress" è selezionato, verrà utilizzato l'indirizzo MAC NIC (network interface controller).
 
@@ -728,17 +729,17 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2303795211377219696">Attiva la Compilazione automatica per le carte di credito</translation>
 <translation id="2309390639296060546">Impostazione di geolocalizzazione predefinita</translation>
 <translation id="2327252517317514801">Definisci i domini autorizzati ad accedere a G Suite</translation>
-<translation id="2356878440219553005">Consente di specificare il criterio di gestione della modalità di ricarica della batteria.
+<translation id="2356878440219553005">Consente di specificare la norma di gestione della modalità di ricarica della batteria.
 
           Controlla in modo dinamico la carica della batteria per minimizzarne l'usura dovuta alle sollecitazioni dell'utilizzo e aumentarne la durata.
 
           Se la modalità di ricarica personalizzata della batteria è selezionata, è necessario specificare DeviceBatteryChargeCustomStartCharging e DeviceBatteryChargeCustomStopCharging.
 
-          Se questo criterio è impostato, la modalità di ricarica della batteria verrà applicata se supportata sul dispositivo.
+          Se questa norma è impostata, la modalità di ricarica della batteria verrà applicata se supportata sul dispositivo.
 
-          Se questo criterio non viene impostato ed è supportato sul dispositivo, verrà applicata la modalità di ricarica standard della batteria e l'impostazione non potrà essere modificata dall'utente.
+          Se questa norma non viene impostata ed è supportata sul dispositivo, verrà applicata la modalità di ricarica standard della batteria e l'impostazione non potrà essere modificata dall'utente.
 
-          Nota: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> sostituisce questo criterio se il primo è specificato.</translation>
+          Nota: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> sostituisce questa norma se la prima è specificata.</translation>
 <translation id="237494535617297575">Consente di impostare un elenco di pattern URL che specificano i siti autorizzati a visualizzare notifiche. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultNotificationsSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="2386362615870139244">Consenti Wakelock dello schermo</translation>
 <translation id="2411817661175306360">L'avviso di protezione tramite password non è attivo</translation>
@@ -1151,17 +1152,17 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3077183141551274418">Abilita o disabilita i cicli di vita delle schede</translation>
 <translation id="3079417254871857650">Consente di specificare l'azione che deve essere eseguita quando la home directory dell'utente è stata creata con la crittografia ecryptfs.
 
-      Se imposti questo criterio su "DisallowArc", le app Android verranno disattivate per l'utente e non verrà eseguita nessuna migrazione dalla crittografia ecryptfs alla crittografia ext4. Alle app Android non verrà impedita l'esecuzione quando la home directory è già criptata con ext4.
+      Se imposti questa norma su "DisallowArc", le app Android verranno disattivate per l'utente e non verrà eseguita nessuna migrazione dalla crittografia ecryptfs alla crittografia ext4. Alle app Android non verrà impedita l'esecuzione quando la home directory è già criptata con ext4.
 
-      Se imposti questo criterio su "Migrate", all'accesso le home directory criptate con ecryptfs migreranno automaticamente alla crittografia ext4 senza chiedere l'autorizzazione dell'utente.
+      Se imposti questa norma su "Migrate", all'accesso le home directory criptate con ecryptfs migreranno automaticamente alla crittografia ext4 senza chiedere l'autorizzazione dell'utente.
 
-      Se imposti questo criterio su "Wipe", le home directory criptate con ecryptfs saranno eliminate all'accesso e al loro posto verranno create nuove home directory criptate con ext4. Avviso: questa operazione rimuove i dati locali dell'utente.
+      Se imposti questa norma su "Wipe", le home directory criptate con ecryptfs saranno eliminate all'accesso e al loro posto verranno create nuove home directory criptate con ext4. Avviso: questa operazione rimuove i dati locali dell'utente.
 
-      Se imposti questo criterio su "MinimalMigrate", le home directory criptate con ecryptfs saranno eliminate all'accesso e al loro posto verranno create nuove home directory criptate con ext4. Tuttavia, si cercherà di mantenere i token di accesso per evitare all'utente di dover accedere di nuovo. Avviso: questa operazione rimuove i dati locali dell'utente.
+      Se imposti questa norma su "MinimalMigrate", le home directory criptate con ecryptfs saranno eliminate all'accesso e al loro posto verranno create nuove home directory criptate con ext4. Tuttavia, si cercherà di mantenere i token di accesso per evitare all'utente di dover accedere di nuovo. Avviso: questa operazione rimuove i dati locali dell'utente.
 
-      Se imposti questo criterio su un'opzione non più supportata ("AskUser" o "AskForEcryptfsArcUsers"), verrà trattata come se avessi selezionato "Migrate".
+      Se imposti questa norma su un'opzione non più supportata ("AskUser" o "AskForEcryptfsArcUsers"), verrà trattata come se avessi selezionato "Migrate".
 
-      Questo criterio non si applica agli utenti kiosk. Se questo criterio non è impostato, il dispositivo si comporterà come se fosse stato scelto "DisallowArc".</translation>
+      Questa norma non si applica agli utenti kiosk. Se questa norma non è impostata, il dispositivo si comporterà come se fosse stato scelto "DisallowArc".</translation>
 <translation id="3086995894968271156">Consente di configurare Cast Receiver in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3088796212846734853">Questa norma consente di impostare un elenco di pattern URL che specificano i siti in cui è consentita la visualizzazione di immagini.
 
@@ -1229,10 +1230,10 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
       Se l'impostazione è disattivata, gli utenti non possono attivare il proxy e il computer non può condividere le stampanti con <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="3312206664202507568">Consente di attivare una pagina su chrome://password-change che permette agli utenti SAML di cambiare le loro password SAML all'interno della sessione, il che assicura che le password SAML e quelle per la schermata di blocco rimangano sincronizzate.
 
-      Questo criterio inoltre consente le notifiche che avvisano gli utenti SAML se le loro password SAML stanno per scadere, in modo che possano organizzarsi immediatamente ed effettuare una modifica della password all'interno della sessione.
+      Questa norma inoltre consente le notifiche che avvisano gli utenti SAML se le loro password SAML stanno per scadere, in modo che possano organizzarsi immediatamente ed effettuare una modifica della password all'interno della sessione.
       Tuttavia, queste notifiche verranno mostrate solo se le informazioni sulla scadenza della password vengono inviate al dispositivo dal provider di identità SAML durante il flusso di accesso SAML.
 
-      Se questo criterio viene impostato, l'utente non può modificarlo o ignorarlo.</translation>
+      Se questa norma viene impostata, l'utente non può modificarla o ignorarla.</translation>
 <translation id="3322771899429619102">Consente di impostare un elenco di pattern URL che specificano i siti in cui è consentito l'utilizzo della generazione di chiavi. Se un pattern URL è indicato nella norma "KeygenBlockedForUrls", quest'ultima ha la precedenza su queste eccezioni.
 
           Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultKeygenSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
@@ -1361,7 +1362,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
       Se questa norma viene impostata su "DeveloperToolsAllowed" (valore 1), gli Strumenti per sviluppatori e la console JavaScript saranno accessibili e utilizzabili in tutti i contesti, incluso il contesto delle estensioni installate in base a norme aziendali.
       Se questa norma viene impostata su "DeveloperToolsDisallowed" (valore 2), gli Strumenti per sviluppatori non saranno accessibili e non sarà più possibile esaminare gli elementi del sito web. Le eventuali scorciatoie da tastiera e le voci dei menu contestuali o di altri menu che consentono di aprire gli Strumenti per sviluppatori o la console JavaScript verranno disattivate.</translation>
 <translation id="3547954654003013442">Impostazioni proxy</translation>
-<translation id="3550875587920006460">Permette di impostare un programma personalizzato per il controllo degli aggiornamenti. La scelta è valida per tutti gli utenti e per tutte le interfacce sul dispositivo. Dopo aver impostato il criterio, il dispositivo controllerà la presenza di aggiornamenti in base al programma. Il criterio deve essere rimosso per annullare ulteriori controlli degli aggiornamenti programmati.</translation>
+<translation id="3550875587920006460">Consente di impostare una pianificazione personalizzata per verificare la presenza di aggiornamenti. La scelta è valida per tutti gli utenti e per tutte le interfacce sul dispositivo. Dopo aver impostato la norma, il dispositivo controllerà se ci sono aggiornamenti disponibili in base alla pianificazione. La norma deve essere rimossa per annullare ulteriori controlli pianificati della disponibilità di aggiornamenti.</translation>
 <translation id="355118380775352753">Siti web da aprire in un browser alternativo</translation>
 <translation id="3554984410014457319">Consente all'Assistente Google di ascoltare la frase di attivazione vocale</translation>
 <translation id="356579196325389849">Gli utenti possono configurare il canale di rilascio di Chrome OS</translation>
@@ -1469,16 +1470,16 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
           Se questa norma non viene impostata, inizialmente la tastiera sullo schermo è disattivata, ma l'utente la può attivare in qualsiasi momento.</translation>
 <translation id="382476126209906314">Configura il prefisso TalkGadget per gli host di accesso remoto</translation>
 <translation id="3824972131618513497">Consente di controllare le impostazioni relative alla gestione dell'alimentazione e al riavvio.</translation>
-<translation id="3826475866868158882">Servizi di geolocalizzazione di Google abilitati</translation>
-<translation id="3831054243924627613">Questo criterio controlla lo stato iniziale del backup e ripristino di Android.
+<translation id="3826475866868158882">Servizi di geolocalizzazione di Google attivi</translation>
+<translation id="3831054243924627613">Questa norma controlla lo stato iniziale del backup e ripristino di Android.
 
-      Se questo criterio non è configurato o non è impostato su <ph name="BR_DISABLED" />, il backup e ripristino di Android viene inizialmente disattivato.
+      Se questa norma non è configurata o non è impostata su <ph name="BR_DISABLED" />, il backup e ripristino di Android viene inizialmente disattivato.
 
-      Se il criterio è impostato su <ph name="BR_ENABLED" />, il backup e ripristino di Android viene inizialmente attivato.
+      Se la norma è impostata su <ph name="BR_ENABLED" />, il backup e ripristino di Android viene inizialmente attivato.
 
-      Se il criterio è impostato su <ph name="BR_UNDER_USER_CONTROL" />, all'utente viene chiesto di scegliere se utilizzare il backup e ripristino di Android. Se l'utente attiva il backup e ripristino, i dati delle app Android vengono caricati sui server di backup di Android e ripristinati dai server per le app compatibili durante la fase di reinstallazione.
+      Se la norma è impostata su <ph name="BR_UNDER_USER_CONTROL" />, all'utente viene chiesto di scegliere se utilizzare il backup e ripristino di Android. Se l'utente attiva il backup e ripristino, i dati delle app Android vengono caricati sui server di backup di Android e ripristinati dai server per le app compatibili durante la fase di reinstallazione.
 
-      Tieni presente che questo criterio controlla lo stato di backup e ripristino di Android solo durante la configurazione iniziale. L'utente può aprire le impostazioni di Android in un secondo momento e attivare o disattivare il backup e ripristino di Android.</translation>
+      Tieni presente che questa norma controlla lo stato di backup e ripristino di Android solo durante la configurazione iniziale. L'utente può aprire le impostazioni di Android in un secondo momento e attivare o disattivare il backup e ripristino di Android.</translation>
 <translation id="3831376478177535007">Se questa impostazione viene attivata, <ph name="PRODUCT_NAME" /> consente di ritenere attendibili i certificati emessi dal team addetto alle operazioni dell'infrastruttura PKI precedente di Symantec Corporation se sono correttamente convalidati e collegati a un certificato CA riconosciuto.
 
       Tieni presente che questa norma dipende dal riconoscimento da parte del sistema operativo dei certificati dell'infrastruttura precedente di Symantec. Se un aggiornamento del sistema operativo cambia la modalità di gestione di tali certificati da parte del sistema, questa norma non viene più applicata. Inoltre, questa norma è intesa come soluzione alternativa temporanea per dare alle aziende più tempo per ritirare i certificati Symantec precedenti. Questa norma verrà rimossa il 1° gennaio 2019 o in una data successiva.
@@ -1563,9 +1564,9 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
 
           DeviceBatteryChargeCustomStartCharging deve essere inferiore a DeviceBatteryChargeCustomStopCharging.
 
-          Questo criterio viene utilizzato unicamente quando DeviceBatteryChargeMode è impostato su personalizzato.
+          Questa norma viene utilizzata unicamente quando DeviceBatteryChargeMode è impostato su personalizzato.
 
-          Se questo criterio non è configurato o non è impostato, verrà applicata la modalità di ricarica standard della batteria.</translation>
+          Se questa norma non è configurata o non è impostata, verrà applicata la modalità di ricarica standard della batteria.</translation>
 <translation id="3925377537407648234">Imposta fattore di scala e risoluzione del display</translation>
 <translation id="3939893074578116847">Invia pacchetti di rete al server di gestione per monitorare lo stato online, per consentire
       al server di rilevare se il dispositivo è offline.
@@ -1594,29 +1595,6 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
       Se questa norma viene impostata su true o non viene impostata, gli utenti potranno utilizzare le offerte tramite la registrazione a Chrome OS.
 
       Se questa norma viene impostata su false, gli utenti non potranno utilizzare le offerte.</translation>
-<translation id="4008233182078913897">Consente di specificare un elenco di app ed estensioni che vengono installate automaticamente,
-          senza l'interazione dell'utente, e che non possono essere disinstallate né
-          disattivate dall'utente. Tutte le autorizzazioni richieste dalle 
-          app/estensioni vengono concesse implicitamente, senza interazione dell'utente,
-          comprese le eventuali autorizzazioni aggiuntive richieste dalle future versioni delle 
-          app/estensioni. Inoltre, le autorizzazioni sono concesse
-          per le API delle estensioni enterprise.deviceAttributes ed enterprise.platformKeys.
-          (Queste due API non sono disponibili per le app/estensioni
-          prive di installazione forzata).
-
-          Questo criterio ha precedenza su un criterio <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> potenzialmente in conflitto. Se un'app o un'estensione con installazione forzata viene rimossa da questo elenco, tale app o estensione viene disinstallata automaticamente da <ph name="PRODUCT_NAME" />.
-
-          Per le istanze di Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />, l'installazione forzata è limitata alle app e alle estensioni elencate nel Chrome Web Store.
-
-          Tieni presente che il codice sorgente delle estensioni può essere modificato dagli utenti tramite Strumenti per sviluppatori (causando potenzialmente il malfunzionamento dell'estensione). Per evitare un problema di questo tipo, è consigliabile impostare il criterio <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Ogni voce del criterio è una stringa contenente un ID estensione e, facoltativamente, un URL "di aggiornamento" separati da punto e virgola (<ph name="SEMICOLON" />). L'ID estensione è la stringa di 32 lettere che si trova, ad esempio, all'indirizzo <ph name="CHROME_EXTENSIONS_LINK" /> quando è attivata la modalità sviluppatore. L'URL "di aggiornamento", se specificato, deve indirizzare a un documento XML manifest di aggiornamento, come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC1" />. Per impostazione predefinita, viene utilizzato l'URL di aggiornamento del Chrome Web Store (che attualmente è "https://clients2.google.com/service/update2/crx"). Tieni presente che l'URL "di aggiornamento" impostato in questo criterio viene utilizzato esclusivamente per l'installazione iniziale; per i successivi aggiornamenti dell'estensione viene utilizzato l'URL di aggiornamento indicato nel file manifest dell'estensione. Inoltre, specificare l'URL "di aggiornamento" in modo esplicito era obbligatorio nelle versioni di <ph name="PRODUCT_NAME" /> fino alla 67 inclusa.
-
-          Ad esempio, <ph name="EXTENSION_POLICY_EXAMPLE" /> installa l'estensione con ID <ph name="EXTENSION_ID_SAMPLE" /> dall'URL "di aggiornamento" del Chrome Web Store standard. Informazioni sulle estensioni in hosting sono disponibili all'indirizzo <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Se questo criterio non è impostato, le app e le estensioni non vengono installate automaticamente e l'utente può disinstallare qualsiasi app o estensione in <ph name="PRODUCT_NAME" />.
-
-          Tieni presente che questo criterio non si applica alla modalità di navigazione in incognito.</translation>
 <translation id="4008507541867797979">Se questa norma viene impostata su True o non viene configurata, nella schermata di accesso di <ph name="PRODUCT_OS_NAME" /> verranno visualizzati gli utenti esistenti tra cui sarà possibile selezionare un utente.
 
       Se la norma è impostata su False, nella schermata di accesso di <ph name="PRODUCT_OS_NAME" /> non verranno visualizzati gli utenti esistenti. Verrà visualizzata la normale schermata di accesso (richiesta di email utente e password o telefono) o la schermata interstiziale SAML (se attivata tramite la norma <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), a meno che non sia stata configurata una sessione gestita. Quando viene configurata una sessione gestita, verranno visualizzati solo gli account della sessione gestita, consentendo di selezionarne uno.
@@ -1804,7 +1782,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Tieni presente che l'esistenza dell'ID di un'app nella norma non implica necessariamente che l'utente potrà attivare l'app in questione come app per scrivere note nella schermata di blocco. Ad esempio, su Chrome 61, il gruppo di app disponibili è limitato ulteriormente dalla piattaforma.
 
       Se la norma non viene impostata, non ci saranno limitazioni relative al gruppo di app che l'utente potrà attivare nella schermata di blocco.</translation>
-<translation id="4313767483634435271">Indirizzo MAC designato del dock</translation>
+<translation id="4313767483634435271">Indirizzo MAC designato del dock del dispositivo</translation>
 <translation id="4322842393287974810">Consenti all'app kiosk avviata automaticamente senza ritardo di controllare la versione di <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Aggiungi un pulsante di uscita all'area di notifica</translation>
 <translation id="4332177773549877617">Registra eventi per le installazioni di app Android</translation>
@@ -1836,7 +1814,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="4360826270668210664">Se questa norma viene impostata, l'host di accesso remoto richiederà che i client di autenticazione ottengano un token di autenticazione da questo URL per consentire la connessione. Deve essere utilizzata insieme a RemoteAccessHostTokenValidationUrl.
 
           Questa funzione è attualmente disattivata lato server.</translation>
-<translation id="4363057787588706121">Unisci i criteri relativi all'elenco provenienti da diverse origini</translation>
+<translation id="4363057787588706121">Consenti l'unione delle norme nell'elenco provenienti da origini diverse</translation>
 <translation id="436581050240847513">Riporta interfacce di rete del dispositivo</translation>
 <translation id="4372704773119750918">Non permettere all'utente aziendale di far parte del profilo multiplo (principale o secondario)</translation>
 <translation id="4377599627073874279">Consenti la visualizzazione di tutte le immagini in tutti i siti</translation>
@@ -2117,9 +2095,9 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
       A differenza della norma <ph name="URL_LIST_POLICY_NAME" />, le regole vengono applicate in entrambe le direzioni. In altre parole, quando il componente aggiuntivo Internet Explorer è presente e attivato, la norma stabilisce se <ph name="IE_PRODUCT_NAME" /> deve aprire questi URL in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Attiva avvio tramite CA (corrente alternata)</translation>
-<translation id="5131211790949066746">Consente di unire i criteri relativi all'elenco di installazione delle estensioni <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> e <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
+<translation id="5131211790949066746">Consente di unire le norme relative all'elenco di installazione delle estensioni <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> e <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 
-      Se attivi questa impostazione, i valori dei criteri relativi alla piattaforma del computer, al cloud del computer e alla piattaforma dell'utente vengono uniti in un unico elenco e usati in toto; in questo modo non vengono usati soltanto i valori di una singola origine con la massima priorità.
+      Se attivi questa impostazione, i valori delle norme relative alla piattaforma del computer, al cloud del computer e alla piattaforma dell'utente vengono uniti in un unico elenco e usati in toto; in questo modo non vengono usati soltanto i valori di una singola origine con la massima priorità.
 
       Se disattivi questa impostazione o non la imposti, vengono recuperate soltanto le voci dell'elenco dell'origine con la massima priorità e tutte le altre origini risultano in conflitto, ma vengono ignorate.</translation>
 <translation id="5141670636904227950">Impostazione tipo di ingrandimento dello schermo predefinito attivato nella schermata di accesso</translation>
@@ -2440,17 +2418,17 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
           Se attivi questa norma o non la imposti, gli utenti potranno visualizzare le loro password in testo non criptato in Gestione password.</translation>
 <translation id="5620392548325769024">Attiva la visualizzazione della pagina di benvenuto al primo avvio del browser successivo all'upgrade del sistema operativo</translation>
 <translation id="5630352020869108293">Ripristina l'ultima sessione</translation>
-<translation id="5643906875497889108">Controlla quali tipi di app/estensioni possono essere installati e limita l'accesso in fase di esecuzione.
+<translation id="5643906875497889108">Consente di stabilire quali tipi di app/estensioni possono essere installati e di limitare l'accesso in fase di esecuzione.
 
-          Questa impostazione autorizza i tipi consentiti di estensioni/app che possono essere installati in <ph name="PRODUCT_NAME" /> e gli host con cui possono interagire. Il valore è un elenco di stringhe, ognuna delle quali deve corrispondere a una delle seguenti: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Per ulteriori informazioni su questi tipi, consulta la documentazione sulle estensioni di <ph name="PRODUCT_NAME" />.
+          Questa impostazione autorizza i tipi consentiti di estensioni/app che è possibile installare in <ph name="PRODUCT_NAME" /> e gli host con cui possono interagire. Il valore è un elenco di stringhe, ognuna delle quali deve corrispondere a una delle seguenti: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Per ulteriori informazioni su questi tipi, consulta la documentazione sulle estensioni di <ph name="PRODUCT_NAME" />.
 
-          Tieni presente che questo criterio riguarda anche le estensioni e le app con installazione forzata tramite ExtensionInstallForcelist.
+          Tieni presente che questa norma riguarda anche le estensioni e le app con installazione forzata tramite ExtensionInstallForcelist.
 
-          Se l'impostazione è configurata, le estensioni/app con un tipo che non è in elenco non verranno installate.
+          Se questa impostazione viene configurata, le estensioni/app con un tipo non presente nell'elenco non verranno installate.
 
-          Se l'impostazione non è configurata, non vengono imposte restrizioni sui tipi di estensioni/app accettabili.
+          Se questa impostazione non viene configurata, non vengono imposte restrizioni sui tipi di estensioni/app accettabili.
 
-          Nelle versioni precedenti alla 75, l'utilizzo di ID estensioni separati da virgola non è supportato e verrà ignorato. Il resto del criterio continuerà a essere applicato.</translation>
+          Nelle versioni precedenti alla 75, l'utilizzo di diversi ID estensione separati da virgole non è supportato e verrà ignorato. Il resto della norma continuerà a essere applicato.</translation>
 <translation id="5645779841392247734">Consenti i cookie in questi siti</translation>
 <translation id="5689430183304951538">Dimensioni predefinite delle pagine di stampa</translation>
 <translation id="5693469654327063861">Consenti migrazione dei dati</translation>
@@ -2566,10 +2544,10 @@ Se la norma non viene impostata, la lettura vocale viene disattivata alla prima 
 <translation id="5898486742390981550">Quando più utenti eseguono l'accesso, solo l'utente principale può utilizzare le app Android.</translation>
 <translation id="5901427587865226597">Solo stampa fronte/retro</translation>
 <translation id="5903898512448364160">
-      Se il criterio è impostato su true, in caso di conflitto il criterio relativo al cloud prevale sul criterio relativo alla piattaforma.
-      Se il criterio è impostato su false o non è configurato, in caso di conflitto il criterio relativo alla piattaforma prevale sul criterio relativo al cloud.
+      Se la norma viene impostata su true, in caso di conflitto la norma relativa al cloud prevale sulla norma relativa alla piattaforma.
+      Se la norma viene impostata su false o non viene configurata, in caso di conflitto la norma relativa alla piattaforma prevale sulla norma relativa al cloud.
 
-      Questo criterio è disponibile solo come criterio obbligatorio relativo alla piattaforma del computer e interessa unicamente i criteri relativi al cloud in ambito computer.
+      Questa norma è disponibile soltanto come norma obbligatoria relativa alla piattaforma del computer e interessa unicamente le norme relative al cloud in ambito computer.
       </translation>
 <translation id="5905473632148429217">Attiva controlli OCSP/CRL online</translation>
 <translation id="5906199912611534122">Consente di attivare o disattivare la limitazione della larghezza di banda.
@@ -2596,7 +2574,7 @@ Se la norma non viene impostata, il puntatore grande viene disattivato alla prim
 
       Se disattivi l'impostazione o non imposti un valore, l'utilizzo di SafeSearch non viene forzato in Ricerca Google.</translation>
 <translation id="5946082169633555022">Canale Beta</translation>
-<translation id="5946329690214660966">Imposta un programma personalizzato per verificare la presenza di aggiornamenti</translation>
+<translation id="5946329690214660966">Imposta una pianificazione personalizzata per verificare la presenza di aggiornamenti</translation>
 <translation id="5950205771952201658">Alla luce del fatto che i controlli della revoca online soft-fail non offrono un effettivo vantaggio per la sicurezza, sono disattivati per impostazione predefinita nella versione 19 e nelle versioni successive di <ph name="PRODUCT_NAME" />. Se questa norma viene impostata su true, viene ripristinato il comportamento precedente e vengono effettuati controlli OCSP/CRL online.
 
       Se la norma non viene impostata o viene impostata su false, <ph name="PRODUCT_NAME" /> non effettuerà controlli della revoca online in <ph name="PRODUCT_NAME" /> 19 e nelle versioni successive.</translation>
@@ -2663,7 +2641,7 @@ Se la norma non viene impostata, il puntatore grande viene disattivato alla prim
 <translation id="6034341625190551415">Consente di controllare tipi di account kiosk e sessioni pubbliche.</translation>
 <translation id="6034603289689965535">Consente a una pagina di mostrare i popup durante l'unload.</translation>
 <translation id="6036523166753287175">Abilita attraversamento firewall da host di accesso remoto</translation>
-<translation id="605475635122964053">Consente di limitare la modalità di stampa PIN. Se il criterio non viene impostato non vengono applicate limitazioni. Se la modalità non è disponibile, questo criterio viene ignorato. Tieni presente che la funzionalità di stampa PIN è attiva solo per le stampanti che usano uno dei protocolli IPPS, USB o IPP-over-USB </translation>
+<translation id="605475635122964053">Consente di limitare la modalità di stampa PIN. Se la norma non viene impostata non vengono applicate limitazioni. Se la modalità non è disponibile, questa norma viene ignorata. Tieni presente che la funzionalità di stampa PIN viene attivata solo per le stampanti che usano uno dei protocolli IPPS, USB o IPP-over-USB. </translation>
 <translation id="6070667616071269965">Layout da tastiera della schermata di accesso del dispositivo</translation>
 <translation id="6074963268421707432">Non consentire la visualizzazione di notifiche desktop da parte dei siti</translation>
 <translation id="6074964551275531965">Imposta il periodo di tempo per le notifiche relative agli aggiornamenti</translation>
@@ -2692,17 +2670,17 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="6111936128861357925">Attiva il gioco del dinosauro</translation>
 <translation id="6114416803310251055">obsoleto</translation>
 <translation id="6133088669883929098">Consenti a tutti i siti di utilizzare la generazione di chiavi</translation>
-<translation id="6136537398661737682">Questo criterio consente di controllare lo stato iniziale dei servizi di geolocalizzazione di Google.
+<translation id="6136537398661737682">Questa norma consente di controllare lo stato iniziale dei servizi di geolocalizzazione di Google.
 
-      Se questo criterio non è configurato o è impostato su <ph name="GLS_DISABLED" />, i servizi di geolocalizzazione di Google sono inizialmente disattivati.
+      Se questa norma non viene configurata o viene impostata su <ph name="GLS_DISABLED" />, i servizi di geolocalizzazione di Google sono inizialmente disattivati.
 
-      Se questo criterio è impostato su <ph name="GLS_ENABLED" />, i servizi di geolocalizzazione di Google sono inizialmente attivati.
+      Se questa norma viene impostata su <ph name="GLS_ENABLED" />, i servizi di geolocalizzazione di Google sono inizialmente attivati.
 
-      Se questo criterio è impostato su <ph name="GLS_UNDER_USER_CONTROL" />, all'utente viene chiesto di scegliere se utilizzare o meno i servizi di geolocalizzazione di Google. Questo consente alle app Android di usare i servizi per inviare query sulla posizione del dispositivo; inoltre, consentirà l'invio a Google di dati sulla posizione anonimi.
+      Se questa norma viene impostata su <ph name="GLS_UNDER_USER_CONTROL" />, all'utente viene chiesto di scegliere se utilizzare o meno i servizi di geolocalizzazione di Google. In questo modo le app Android potranno usare i servizi per inviare query sulla posizione del dispositivo; inoltre, verrà attivato l'invio a Google di dati sulla posizione anonimi.
 
-      Tieni presente che questo criterio controlla lo stato dei servizi di geolocalizzazione di Google solo durante la configurazione iniziale. L'utente può aprire le impostazioni di Android in un secondo momento e attivare o disattivare i servizi di geolocalizzazione di Google.
+      Tieni presente che questa norma consente di controllare lo stato dei servizi di geolocalizzazione di Google solo durante la configurazione iniziale. L'utente può aprire le impostazioni di Android in un secondo momento e attivare o disattivare i servizi di geolocalizzazione di Google.
 
-      Tieni presente che questo criterio viene ignorato e i servizi di geolocalizzazione di Google vengono sempre disattivati quando il criterio <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> è impostato su <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
+      Tieni presente che questa norma viene ignorata e i servizi di geolocalizzazione di Google vengono sempre disattivati se la norma <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> è impostata su <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="6141402445226505817">Utilizza sempre il rilevamento approssimativo del fuso orario</translation>
 <translation id="6145799962557135888">Consente di impostare un elenco di pattern URL che specificano i siti in cui è consentita l'esecuzione di JavaScript. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultJavaScriptSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="614662973812186053">Questa norma controlla anche la raccolta dei dati diagnostici e sull'utilizzo di Android.</translation>
@@ -2774,17 +2752,17 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
       Se viene disattivata, i dati della compilazione automatica dei moduli non vengono importati.
 
       Se non viene impostata, all'utente potrebbe essere chiesto se desidera importare i dati oppure l'importazione potrebbe avvenire automaticamente.</translation>
-<translation id="6221175752766085998">Consenti i certificati emessi dai trust anchor locali senza estensione subjectAlternativeName</translation>
+<translation id="6221175752766085998">Consenti i certificati privi dell'estensione subjectAlternativeName emessi dai trust anchor locali</translation>
 <translation id="6224304369267200483">URL/domini per cui è consentita automaticamente l'attestazione diretta dei token di sicurezza</translation>
 <translation id="6233173491898450179">Imposta directory di download</translation>
 <translation id="6244210204546589761">Pagine da aprire all'avvio</translation>
-<translation id="6255387031094435995">Consente ai criteri selezionati di essere uniti quando provengono da origini diverse, con stesso ambito e livello.
+<translation id="6255387031094435995">Consente di unire le norme selezionate quando provengono da origini diverse, con stesso ambito e livello.
 
-        Se un criterio è nell'elenco, nel caso ci sia conflitto tra due origini, purché abbiano lo stesso ambito e lo stesso livello, i valori verranno uniti nel nuovo elenco dei criteri.
+        Se una norma è nell'elenco, nel caso ci sia conflitto tra due origini, purché abbiano lo stesso ambito e lo stesso livello, i valori verranno uniti nel nuovo elenco delle norme.
 
-        Se un criterio è nell'elenco, nel caso ci sia conflitto tra due origini, ma anche tra ambito e/o livello, verrà applicato il criterio con la priorità massima.
+        Se una norma è nell'elenco, nel caso ci sia conflitto tra due origini, ma anche tra ambito e/o livello, verrà applicata la norma con la priorità massima.
 
-        Se un criterio non si trova nell'elenco, nel caso in cui ci siano conflitti tra origine, ambito e/o livello, verrà applicato il criterio con la priorità massima.</translation>
+        Se una norma non si trova nell'elenco, nel caso in cui ci siano conflitti tra origine, ambito e/o livello, verrà applicata la norma con la priorità massima.</translation>
 <translation id="6258193603492867656">Consente di specificare se il Kerberos SPN generato deve includere una porta non standard. Se attivi questa impostazione e specifichi una porta non standard (cioè una porta diversa da 80 o 443), la porta verrà inclusa nel Kerberos SPN generato. Se disattivi l'impostazione o non la imposti, il Kerberos SPN generato non includerà in nessun caso una porta.</translation>
 <translation id="6261643884958898336">Segnala informazioni di identificazione dei computer</translation>
 <translation id="6281043242780654992">Consente di configurare le norme per i messaggi nativi. Gli host di messaggi nativi non autorizzati non saranno consentiti se non vengono aggiunti alla whitelist.</translation>
@@ -3115,17 +3093,17 @@ Se la norma non viene configurata, la lettura vocale viene inizialmente disattiv
 
 Quando lo schermo sta per essere oscurato, il modello di oscuramento smart valuta se posticipare l'azione. In tal caso, il tempo prima che lo schermo venga oscurato viene effettivamente prolungato e il ritardo di inattività, la disattivazione dello schermo e il blocco dello schermo vengono regolati in modo da rispettare gli intervalli di tempo rispetto al ritardo oscuramento schermo configurati in precedenza.
 Se questa norma è impostata su True o non è impostata, il modello di oscuramento smart verrà attivato e la quantità di tempo prima che lo schermo venga oscurato verrà estesa. Se questa norma è impostata su False, il modello di oscuramento smart non inciderà sull'oscuramento dello schermo.</translation>
-<translation id="6967394885063085697">Consente di attivare il criterio di gestione della modalità di ricarica avanzata della batteria.
+<translation id="6967394885063085697">Consente di attivare la norma di gestione della modalità di ricarica avanzata della batteria.
 
           La modalità di ricarica avanzata della batteria consente all'utente di massimizzare le condizioni della batteria. In modalità di ricarica avanzata, il sistema utilizza un algoritmo di ricarica standard e altre tecniche durante gli orari non di lavoro per massimizzare le condizioni della batteria. Durante gli orari di lavoro viene utilizzata una ricarica express. La ricarica express permette di ricaricare la batteria in modo più rapido; perciò, la carica completa avviene in tempi minori. Per ogni giorno, il tempo in cui il sistema viene usato con maggiore frequenza è specificato da ora di inizio e durata.
 
-          Se questo criterio è impostato su true e DeviceAdvancedBatteryChargeModeDayConfig è impostato, la modalità di ricarica avanzata della batteria verrà sempre attivata se supportata sul dispositivo.
+          Se questa norma è impostata su true e DeviceAdvancedBatteryChargeModeDayConfig è impostato, la modalità di ricarica avanzata della batteria verrà sempre attivata se supportata sul dispositivo.
 
-          Se questo criterio è impostato su false, la modalità di ricarica avanzata della batteria è sempre disattivata.
+          Se questa norma è impostata su false, la modalità di ricarica avanzata della batteria è sempre disattivata.
 
-          Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
+          Se imposti questa norma, gli utenti non potranno modificarla o ignorarla.
 
-          Se questo criterio non è impostato, la modalità di ricarica avanzata della batteria è disattivata e non può essere attivata dall'utente.</translation>
+          Se questa norma non è impostata, la modalità di ricarica avanzata della batteria è disattivata e non può essere attivata dall'utente.</translation>
 <translation id="6972540544240464302">Seleziona configurazione programma di pianificazione attività</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6994082778848658360">Consente di specificare in che modo è possibile usare l'hardware degli elementi di sicurezza su scheda per fornire l'autenticazione a due fattori, se compatibile con questa funzione. Il tasto di accensione del computer viene usato per rilevare la presenza fisica dell'utente.
@@ -3190,17 +3168,17 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
       Se questa impostazione viene attivata o disattivata, gli utenti non potranno modificarla o eseguirne l'override.
 
       Se la norma non viene impostata, gli utenti potranno scegliere se impostare o meno la richiesta della password per lo sblocco del dispositivo.</translation>
-<translation id="7107148737865880402">Consente di attivare il criterio di gestione per la condivisione dell'alimentazione USB.
+<translation id="7107148737865880402">Consente di attivare la norma di gestione per la condivisione dell'alimentazione USB.
 
-          Alcuni dispositivi presentano una specifica porta USB contrassegnata con l'icona di un fulmine o di una batteria e che può essere utilizzata per ricaricare i dispositivi, ad esempio un cellulare, tramite la batteria di sistema. Questo criterio influisce sul comportamento di ricarica della porta mentre il sistema è in modalità di sospensione o spento. Questo criterio non influisce su altre porte USB e sul comportamento di ricarica mentre il sistema è attivo.
+          Alcuni dispositivi presentano una specifica porta USB contrassegnata con l'icona di un fulmine o di una batteria e che può essere utilizzata per ricaricare i dispositivi, ad esempio un cellulare, tramite la batteria di sistema. Questa norma influisce sul comportamento di ricarica della porta mentre il sistema è in modalità di sospensione o spento. Questa norma non influisce su altre porte USB e sul comportamento di ricarica mentre il sistema è attivo.
 
           Quando il sistema è attivo, la porta USB fornisce sempre energia.
 
-          Quando il sistema è in modalità di sospensione, se il criterio è impostato su true, verrà fornita energia alla porta USB quando il dispositivo è collegato alla corrente o se il livello della batteria è &gt; 50%. In caso contrario, non viene fornita energia.
+          Quando il sistema è in modalità di sospensione, se la norma è impostata su true, verrà fornita energia alla porta USB quando il dispositivo è collegato alla corrente o se il livello della batteria è &gt; 50%. In caso contrario, non viene fornita energia.
 
-          Quando il sistema è spento, se il criterio è impostato su true, viene fornita energia alla porta USB quando il dispositivo è collegato alla corrente. In caso contrario, non viene fornita energia.
+          Quando il sistema è spento, se la norma è impostata su true, viene fornita energia alla porta USB quando il dispositivo è collegato alla corrente. In caso contrario, non viene fornita energia.
 
-          Se questo criterio non viene impostato, il criterio è attivato e non può essere disattivato dall'utente.</translation>
+          Se questa norma non viene impostata, la norma è attivata e non può essere disattivata dall'utente.</translation>
 <translation id="7115494316187648452">Consente di stabilire se un processo di <ph name="PRODUCT_NAME" /> è stato avviato all'accesso al sistema operativo e se resta in esecuzione dopo la chiusura dell'ultima finestra del browser, consentendo di tenere attive le applicazioni in background e la sessione di navigazione corrente, compresi eventuali cookie di sessione. Nella barra delle applicazioni viene visualizzata un'icona per il processo in background che consente di chiudere il processo in qualsiasi momento.
 
       Se questa norma viene impostata su true, la modalità in background viene attivata e non può essere controllata dall'utente tramite le impostazioni del browser.
@@ -3460,7 +3438,7 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
 
           Questo criterio viene utilizzato unicamente quando DeviceBatteryChargeMode è impostato su personalizzato.
 
-          Se questo criterio non è configurato o non è impostato, verrà applicata la modalità di ricarica standard della batteria.</translation>
+          Se questa norma non è configurata o non è impostata, verrà applicata la modalità di ricarica standard della batteria.</translation>
 <translation id="759957074386651883">Impostazioni di Navigazione sicura</translation>
 <translation id="7604169113182304895">Le app Android potrebbero decidere volontariamente se rispettare o meno questo elenco. Non è possibile imporre il rispetto dell'elenco.</translation>
 <translation id="7612157962821894603">Contrassegni a livello di sistema da applicare all'avvio di <ph name="PRODUCT_NAME" /></translation>
@@ -3543,13 +3521,13 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
 <translation id="7715711044277116530">Percentuale di regolazione del ritardo di oscuramento dello schermo in modalità di presentazione</translation>
 <translation id="7716781462866245042">Consente di impostare la configurazione giornaliera per la modalità di ricarica avanzata della batteria.
 
-          Questo criterio viene utilizzato solo se l'opzione DevicePowerPeakShiftEnabled è impostata su true.
+          Questa norma viene usata soltanto se la norma DeviceAdvancedBatteryChargeModeEnabled è impostata su true.
 
-          Se questo criterio non è configurato o non è impostato, la modalità di ricarica avanzata della batteria sarà sempre disattivata.
+          Se questa norma non viene configurata o non viene impostata, la modalità di ricarica avanzata della batteria sarà sempre disattivata.
 
-          Nota: <ph name="CHARGE_START_TIME_FIELD_NAME" /> deve essere inferiore a <ph name="CHARGE_END_TIME_FIELD_NAME" />.
+          Nota: il valore del campo <ph name="CHARGE_START_TIME_FIELD_NAME" /> deve essere inferiore a quello del campo <ph name="CHARGE_END_TIME_FIELD_NAME" />.
 
-          Nota: i valori consentiti per il campo <ph name="MINUTE_FIELD_NAME" /> in <ph name="CHARGE_START_TIME_FIELD_NAME" /> e <ph name="CHARGE_END_TIME_FIELD_NAME" /> sono 0, 15, 30, 45.</translation>
+          Nota: i valori consentiti per il campo <ph name="MINUTE_FIELD_NAME" /> in <ph name="CHARGE_START_TIME_FIELD_NAME" /> e <ph name="CHARGE_END_TIME_FIELD_NAME" /> sono 0, 15, 30 e 45.</translation>
 <translation id="7717938661004793600">Configura le funzioni di accessibilità di <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7724994675283793633">La norma consente di attivare HTTP/0.9 sulle porte diverse da 80 per HTTP e 443 per HTTPS.
 
@@ -3655,7 +3633,7 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
 
       Le impostazioni della pagina iniziale dell'utente sono completamente bloccate se hai selezionato la pagina iniziale come pagina Nuova scheda oppure se hai specificato un URL che funga da pagina iniziale. Se non specifichi l'URL della pagina iniziale, l'utente può ancora impostare la pagina iniziale come pagina Nuova scheda se specifica "chrome://newtab".
 
-      Il criterio "URL da aprire all'avvio" viene ignorato a meno che non selezioni "Apri un elenco di URL" in "Azione all'avvio".</translation>
+      La norma "URL da aprire all'avvio" viene ignorata a meno che non selezioni "Apri un elenco di URL" in "Azione all'avvio".</translation>
 <translation id="7952958573604504839">La norma è obsoleta in M48 in favore di <ph name="NETWORK_PREDICTION_OPTIONS_POLICY_NAME" /> ed è rimossa in M54.
 
       Attiva la previsione di rete in <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare questa impostazione.
@@ -3984,7 +3962,7 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
       Se la norma non viene impostata, viene usato il periodo predefinito di 345600000 millisecondi (quattro giorni) per <ph name="PRODUCT_OS_NAME" /> e di 604800000 millisecondi (una settimana) per <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">L'avviso di protezione tramite password viene attivato se vengono riutilizzate password</translation>
 <translation id="8693243869659262736">Utilizza client DNS integrato</translation>
-<translation id="8698286761337647563">Stabilisci con quanti giorni di anticipo avvisare gli utenti SAML quando la loro password sta per scadere</translation>
+<translation id="8698286761337647563">Numero di giorni di anticipo con cui avvisare gli utenti SAML quando la loro password sta per scadere</translation>
 <translation id="8703488928438047864">Segnala lo stato della scheda</translation>
 <translation id="8703872185032220081">Consente di impostare la configurazione giornaliera della variazione dei picchi energetici.
 
@@ -4029,7 +4007,7 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
       Se questa impostazione è disattivata o non configurata, il servizio di protezione tramite password indirizzerà gli utenti alla pagina https://myaccounts.google.com per modificare la loro password.
       Questa norma è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.</translation>
 <translation id="8798099450830957504">Predefinito</translation>
-<translation id="8800453707696044281">Imposta il valore personalizzato espresso in percentuale raggiunto il quale la batteria interrompe la ricarica</translation>
+<translation id="8800453707696044281">Imposta il valore percentuale personalizzato raggiunto il quale viene interrotta la ricarica della batteria</translation>
 <translation id="8801680448782904838">Consente di inviare a un utente una notifica che comunica che è consigliato o necessario eseguire un riavvio del browser o del dispositivo</translation>
 <translation id="8818173863808665831">Consente di segnalare la posizione geografica del dispositivo.
 
@@ -4143,9 +4121,9 @@ https://www.w3.org/TR/secure-contexts/
       Il valore della norma deve essere specificato in secondi.</translation>
 <translation id="9018338365267278833">Consente di rimuovere le estensioni visualizzate in <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> o quelle visualizzate in <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> la cui modalità di installazione è impostata sul blocco ed elimina tutti i relativi dati utente locali.  Consulta le norme sulla privacy per le estensioni o le norme sulla conservazione dei dati per sapere cosa può accadere se i dati utente non vengono archiviati in locale.
 
-      Se il criterio è attivato, le estensioni che rientrano negli elenchi sopra indicati (se già installati su una macchina) verranno rimosse completamente dalla macchina (inclusi i dati utente locali).
+      Se la norma è attivata, le estensioni che rientrano negli elenchi sopra indicati (se già installati su una macchina) verranno rimosse completamente dalla macchina (inclusi i dati utente locali).
 
-      Se il criterio è disattivato o non è impostato, le estensioni che rientrano negli elenchi sopra indicati (se già installati su una macchina e presenti nella lista nera <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) verranno disattivate sulla macchina e non installate.</translation>
+      Se la norma è disattivata o non è impostata, le estensioni che rientrano negli elenchi sopra indicati (se già installati su una macchina e presenti nella lista nera <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) verranno disattivate sulla macchina e non installate.</translation>
 <translation id="9027787254195333560">Questa norma consente di configurare l'immagine avatar che rappresenta l'utente sulla schermata di accesso. La norma viene impostata specificando l'URL da cui <ph name="PRODUCT_OS_NAME" /> può scaricare l'immagine e un hash crittografico per verificare l'integrità del download. L'immagine deve essere in formato JPEG e avere dimensioni non superiori a 512 kB. L'URL deve essere accessibile senza nessuna autenticazione.
 
       L'immagine avatar viene scaricata e memorizzata nella cache. Verrà scaricata nuovamente ogni volta che l'URL o l'hash vengono modificati.

@@ -1662,19 +1662,6 @@
       Om policyn är inställd på sant eller inte är inställd kan användarna utnyttja erbjudanden via registrering i Chrome OS.
 
       Om policyn är inställd på falskt kan användarna inte utnyttja erbjudanden.</translation>
-<translation id="4008233182078913897">Anger en lista med appar och tillägg som installeras tyst, utan att användaren gör något, och som användaren inte kan avinstallera eller inaktivera. Alla behörigheter som apparna eller tilläggen behöver beviljas implicit utan att användaren blir tillfrågad. Det gäller även nya behörigheter som tillkommer i framtida versioner av appen eller tillägget. Dessutom beviljas behörighet för tilläggs-API:erna enterprise.deviceAttributes och enterprise.platformKeys. (Dessa API:er är inte tillgängliga för appar eller tillägg som inte tvångsinstallerats.)
-
-          Den här principen har företräde framför en <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />-princip vid en eventuell konflikt. Om en app eller ett tillägg som tidigare har tvångsinstallerats tas bort från den här listan avinstalleras den/det automatiskt i <ph name="PRODUCT_NAME" />. På Windows-domäner som inte har anslutits till en <ph name="MS_AD_NAME" />-domän kan bara appar och tillägg som finns på Chrome Web Store tvångsinstalleras.
-
-          Observera att användarna kan ändra i källkoden till vilket tillägg som helst med hjälp av verktygen för utvecklare (vilket kan leda till att tillägget slutar fungera). Om detta är ett problem bör principen <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> ställas in.
-
-          Varje listpost i principen är en sträng med ett tilläggs-id och eventuellt en ”uppdateringsadress” med semikolon (<ph name="SEMICOLON" />) som avgränsare. Tilläggs-id:t är den sträng med 32 tecken som visas exempelvis på <ph name="CHROME_EXTENSIONS_LINK" /> i utvecklarläget. Om en ”uppdateringsadress” anges ska den peka på ett uppdateringsmanifest i XML-format enligt beskrivningen på <ph name="LINK_TO_EXTENSION_DOC1" />. Som standard används uppdateringsadressen på Chrome Web Store (som för närvarande är https://clients2.google.com/service/update2/crx). Observera att den ”uppdateringsadress” som anges i den här principen bara används vid den första installationen. För senare uppdateringar av tillägget används uppdateringsadressen i tilläggets manifestfil. Observera även att det var obligatoriskt att ange ”uppdateringsadressen” explicit i version 67 och äldre versioner av <ph name="PRODUCT_NAME" />.
-
-          Med <ph name="EXTENSION_POLICY_EXAMPLE" /> installeras t.ex. tillägget med id <ph name="EXTENSION_ID_SAMPLE" /> från den vanliga ”uppdateringsadressen” på Chrome Web Store. Mer information om att stå värd för tillägg finns här: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-           Om den här principen lämnas utan inställning installeras inga appar eller tillägg automatiskt och användaren får avinstallera alla appar och tillägg i <ph name="PRODUCT_NAME" />.
-
-          Observera att principen inte gäller i inkognitoläge.</translation>
 <translation id="4008507541867797979">Om den här principen är inställd på sant eller har lämnats utan inställning visas befintliga användare på inloggningsskärmen i <ph name="PRODUCT_OS_NAME" /> och det går att välja en.
 
       Om principen är inställd på falskt visas befintliga användare inte på inloggningsskärmen i <ph name="PRODUCT_OS_NAME" />. Den vanliga inloggningsskärmen (där användaren uppmanas att ange e-postadress och lösenord eller telefonnummer) eller mellansidan för SAML (om detta har aktiverats via principen <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) visas, såvida inte en hanterad session har konfigurerats. Om en hanterad session har konfigurerats visas bara kontona för den hanterade sessionen och användaren kan välja ett av dem.

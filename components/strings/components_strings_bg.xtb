@@ -223,6 +223,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Карта</translation>
 <translation id="2114841414352855701">Бе пренебрегнато, защото бе отменено от <ph name="POLICY_NAME" />.</translation>
+<translation id="2129079103035905234">Сензори за движение</translation>
 <translation id="213826338245044447">Мобилни отметки</translation>
 <translation id="214556005048008348">Анулиране на плащането</translation>
 <translation id="2147827593068025794">Синхронизиране на заден план</translation>
@@ -525,7 +526,7 @@
 <translation id="3761718714832595332">Скриване на състоянието</translation>
 <translation id="3765032636089507299">Страницата на Безопасно сърфиране е в процес на разработка.</translation>
 <translation id="3778403066972421603">Искате ли тази карта да се запази на устройството и в профила ви в Google?</translation>
-<translation id="3779973883630527594">Фирмата, учебното заведение или организацията, която управлява този профил:</translation>
+<translation id="3779973883630527594">Фирмата, учебното заведение или организацията, които управляват този профил:</translation>
 <translation id="3781428340399460090">ярко розово</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Изтича на <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>

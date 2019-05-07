@@ -218,6 +218,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">信用卡</translation>
 <translation id="2114841414352855701">由于已被 <ph name="POLICY_NAME" /> 替换，该政策已忽略。</translation>
+<translation id="2129079103035905234">动态传感器</translation>
 <translation id="213826338245044447">移动设备书签</translation>
 <translation id="214556005048008348">取消付款</translation>
 <translation id="2147827593068025794">后台同步</translation>
@@ -1234,7 +1235,7 @@
 <translation id="780301667611848630">不用了，谢谢</translation>
 <translation id="7805768142964895445">状态</translation>
 <translation id="7806344367022510803">在 Chrome 中更改搜索引擎设置</translation>
-<translation id="7810209002420871817">作为您帐号的管理器，<ph name="ACCOUNT_DOMAIN" />：</translation>
+<translation id="7810209002420871817">作为您帐号的管理员，<ph name="ACCOUNT_DOMAIN" />：</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">从 Chrome 中移除表单建议？</translation>
 <translation id="7815407501681723534">找到了 <ph name="NUMBER_OF_RESULTS" /> 个与“<ph name="SEARCH_STRING" />”相符的<ph name="SEARCH_RESULTS" /></translation>

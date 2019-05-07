@@ -1631,29 +1631,6 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
       Jos käytännön arvoksi on asetettu tosi tai sille ei aseteta mitään arvoa, käyttäjät voivat lunastaa tarjouksia Chrome-käyttöjärjestelmän rekisteröitymisen kautta.
 
       Jos käytännön arvoksi on asetettu epätosi, käyttäjät eivät voi lunastaa tarjouksia.</translation>
-<translation id="4008233182078913897">Määrittää luettelon sovelluksista ja laajennuksista, jotka asennetaan hiljaisesti
-          ilman käyttäjän toimenpiteitä ja joita käyttäjä ei voi poistaa käytöstä tai
-          poistaa kokonaan. Kaikki sovellusten/laajennusten pyytämät käyttöluvat
-          myönnetään implisiittisesti ilman käyttäjän toimenpiteitä.
-          Tämä koskee myös uusia käyttölupia, joita sovelluksen/laajennuksen
-          myöhemmät versiot voivat pyytää. Lisäksi myönnetään
-          enterprise.deviceAttributes- ja enterprise.platformKeys-laajennussovellusliittymien
-          käyttöoikeus. (Näitä kahta sovellusliittymää voivat käyttää vain sovellukset/laajennukset, jotka
-          asennetaan pakollisina.)
-
-          Tätä käytäntöä sovelletaan ensisijaisesti, jos <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> on sen kanssa ristiriidassa. Jos sovellus tai laajennus on aiemmin asennettu pakollisena ja poistetaan tästä luettelosta, <ph name="PRODUCT_NAME" /> poistaa sen automaattisesti.
-
-          Jos Windows-asennusta ei ole liitetty <ph name="MS_AD_NAME" /> ‑verkkotunnukseen, pakollinen asennus koskee vain Chrome Web Storesta saatavia sovelluksia ja laajennuksia.
-
-          Huomaa, että käyttäjät voivat muokata laajennusten lähdekoodia Kehittäjätyökaluilla (mikä voi häiritä laajennuksen toimintaa). Jos tämä mahdollisuus on huomioitava, käytäntö <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> tulee määrittää.
-
-          Käytännön jokainen luettelokohde on merkkijono, joka sisältää laajennuksen tunnuksen sekä valinnaisesti myös puolipisteellä (<ph name="SEMICOLON" />) erotetun URL-osoitteen, jota käytetään päivitykseen. Laajennuksen tunnus on 32-kirjaiminen merkkijono, joka on nähtävissä kehittäjätilassa esimerkiksi täällä: <ph name="CHROME_EXTENSIONS_LINK" />. Laajennuksen mahdollisen päivitysosoitteen tulee johtaa XML-päivitysluetteloasiakirjaan, kuten osoitteessa <ph name="LINK_TO_EXTENSION_DOC1" /> on kuvattu. Oletusarvoisesti käytetään Chrome Web Storen päivitysosoitetta (joka on tällä hetkellä "https://clients2.google.com/service/update2/crx"). Huomaa, että tässä käytännössä määritettyä päivitysosoitetta käytetään vain ensimmäiseen asennukseen. Laajennuksen myöhempiin päivityksiin käytetään laajennuksen luettelossa ilmoitettua päivitysosoitetta. Päivitysosoitteen ilmoittaminen oli pakollista vielä tuotteen <ph name="PRODUCT_NAME" /> versiossa 67.
-
-          Esimerkki: <ph name="EXTENSION_POLICY_EXAMPLE" /> asentaa laajennuksen <ph name="EXTENSION_ID_SAMPLE" /> Chrome Web Storen tavallisen päivitysosoitteen kautta. Jos haluat lisätietoja laajennusten isännöinnistä, katso <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Jos tätä käytäntöä ei aseteta, mitään sovelluksia tai laajennuksia ei asenneta automaattisesti, ja käyttäjä voi poistaa minkä tahansa sovelluksen tai laajennuksen tuotteesta <ph name="PRODUCT_NAME" />.
-
-          Tätä käytäntöä ei sovelleta incognito-tilaan.</translation>
 <translation id="4008507541867797979">Jos tämän käytännön arvo on tosi tai sitä ei määritetä, <ph name="PRODUCT_OS_NAME" /> näyttää aiemmin lisätyt käyttäjät valittavina kirjautumisnäkymässä.
 
       Jos tämän käytännön arvo on epätosi, <ph name="PRODUCT_OS_NAME" /> ei näytä kirjautumisnäkymässä käyttäjiä. Sen sijaan näytetään tavallinen kirjautumisnäkymä, jossa pyydetään sähköpostiosoitetta ja salasanaa tai puhelinnumeroa, tai SAML-välinäkymä (jos <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" /> on käytössä), paitsi jos hallinnoitu istunto on määritetty. Tässä tapauksessa hallinnoitujen istuntojen käyttäjät näytetään ja yksi niistä voidaan valita.

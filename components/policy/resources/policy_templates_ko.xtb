@@ -1643,28 +1643,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책이 true로 설정되어 있거나 설정되어 있지 않으면 사용자는 Chrome OS 등록을 통해 쿠폰을 사용할 수 있습니다.
 
       이 정책이 false로 설정되어 있으면 사용자는 쿠폰을 사용할 수 없습니다.</translation>
-<translation id="4008233182078913897">사용자가 개입하지 않아도 자동으로 설치되고 사용자가 제거하거나
-          사용 중지할 수 없는 앱 및 확장 프로그램의 목록을 지정합니다.
-          앱/확장 프로그램의 향후 버전에서 요청하는 추가 권한을 포함하여
-          앱/확장 프로그램에서 요청하는 모든 권한은 사용자의 개입 없이
-          암묵적으로 허용됩니다. 또한 enterprise.deviceAttributes
-          및 enterprise.platformKeys 확장 프로그램 API에 권한이 부여됩니다
-          (이 두 API는 강제 설치되지 않은 앱/확장 프로그램에는
-          사용할 수 없음).
-
-          이 정책은 잠재적으로 충돌할 수 있는 <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> 정책보다 우선합니다. 이전에 강제 설치된 앱 또는 확장 프로그램이 목록에서 삭제되면 <ph name="PRODUCT_NAME" />에 의해 자동으로 제거됩니다.
-
-         <ph name="MS_AD_NAME" /> 도메인에 가입되지 않은 Windows 인스턴스는 Chrome 웹 스토어에 등록된 앱/확장 프로그램으로만 강제 설치가 제한됩니다.
-
-          모든 확장 프로그램의 소스 코드는 사용자가 개발자 도구를 통해 변경할 수 있습니다(확장 프로그램의 오작동을 야기할 수 있음). 이 부분이 걱정된다면 <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> 정책을 설정해야 합니다.
-
-          정책의 각 항목은 확장 프로그램 ID 및 선택적으로 ‘업데이트’ URL을 세미콜론(<ph name="SEMICOLON" />)으로 구분해 놓은 문자열입니다. 확장 프로그램 ID는 개발자 모드일 때 <ph name="CHROME_EXTENSIONS_LINK" />에서 확인되는 것과 같은 32자의 문자열입니다. ‘업데이트’ URL은 지정된 경우 <ph name="LINK_TO_EXTENSION_DOC1" />에서 설명한 것처럼 업데이트 매니페스트 XML 문서로 연결되어야 합니다. 기본적으로 Chrome 웹 스토어의 업데이트 URL(현재 ‘https://clients2.google.com/service/update2/crx’)이 사용됩니다. 이 정책에서 설정된 ‘업데이트’ URL은 초기 설치용으로만 사용되며, 이후 확장 프로그램의 업데이트는 확장 프로그램의 매니페스트에 있는 업데이트 URL을 사용합니다. 또한 ‘업데이트’ URL을 명시적으로 지정하는 것은 <ph name="PRODUCT_NAME" /> 버전 67 이상에서 필수입니다.
-
-          예를 들어 <ph name="EXTENSION_POLICY_EXAMPLE" />은(는) 표준 Chrome 웹 스토어 ‘업데이트’ URL에서 <ph name="EXTENSION_ID_SAMPLE" /> ID로 확장 프로그램을 설치합니다. 확장 프로그램 호스팅에 관한 정보는 <ph name="LINK_TO_EXTENSION_DOC2" /> 페이지를 참조하세요.
-
-          이 정책이 설정되지 않으면 어떠한 앱 또는 확장 프로그램도 자동 설치되지 않고 사용자는 <ph name="PRODUCT_NAME" />의 모든 앱 또는 확장 프로그램을 제거할 수 있습니다.
-
-          이 정책은 시크릿 모드에는 적용되지 않습니다.</translation>
 <translation id="4008507541867797979">이 정책을 True로 설정하거나 구성하지 않으면 <ph name="PRODUCT_OS_NAME" />은(는) 기존의 사용자 이름을 로그인 화면에 표시하여 선택할 수 있도록 합니다.
 
       이 정책이 False로 설정되어 있으면 <ph name="PRODUCT_OS_NAME" />은(는) 로그인 화면에서 기존 사용자를 표시하지 않습니다. 관리 세션이 구성되어 있지 않으면 정상적인 로그인 화면(사용자 이메일 및 비밀번호/휴대전화 번호 요청) 또는 SAML 전면 광고 화면(<ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" /> 정책을 통해 사용 설정된 경우)이 표시됩니다. 관리 세션이 구성되어 있으면 관리 세션 계정만 표시되어 그중 하나를 선택할 수 있습니다.

@@ -413,7 +413,7 @@
 <translation id="7280856130494094142">Чтобы включить синхронизацию, введите кодовую фразу</translation>
 <translation id="7285236536143823449">ОК</translation>
 <translation id="7291368939935408496">Подготовка паролей…</translation>
-<translation id="7293171162284876153">Чтобы начать ее, нажмите "Синхронизировать данные Chrome".</translation>
+<translation id="7293171162284876153">Чтобы начать синхронизацию, нажмите "Синхронизировать данные Chrome".</translation>
 <translation id="7336264872878993241">Скачивается: <ph name="PERCENT" />%</translation>
 <translation id="7346909386216857016">ОК</translation>
 <translation id="7348502496356775519">Закладка</translation>
@@ -482,7 +482,7 @@
 <translation id="850600235656508448">Открыть в режиме инкогнито</translation>
 <translation id="8517375800490286174">Лицензии открытого ПО</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" />, вкладки между <ph name="FIRST_VISIBLE_TAB" /> и <ph name="LAST_VISIBLE_TAB" />, всего <ph name="NUMBER_OF_OPEN_TABS" /></translation>
-<translation id="8529767659511976195">Новое</translation>
+<translation id="8529767659511976195">Новинка</translation>
 <translation id="8532105204136943229">Год</translation>
 <translation id="8534481786647257214">Опубликовано в Google+.</translation>
 <translation id="8548878600947630424">Найти на странице…</translation>

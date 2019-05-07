@@ -1477,21 +1477,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Si aquesta política es configura com a "true" o si no es configura, els usuaris podran bescanviar ofertes mitjançant el registre de Chrome OS.
 
       Si aquesta política es configura com a "false", l'usuari no podrà bescanviar ofertes.</translation>
-<translation id="4008233182078913897">Especifica una llista d'aplicacions i d'extensions que s'instal·len silenciosament, sense la interacció de l'usuari, i que l'usuari no pot desinstal·lar ni desactivar. Tots els permisos que les aplicacions o les extensions sol·liciten es concedeixen de manera implícita, sense cap interacció de l'usuari, inclosos els permisos addicionals que sol·licitin les versions futures de l'aplicació o l'extensió. A més, es concedeixen permisos a les API de les extensions enterprise.deviceAttributes i enterprise.platformKeys. Aquestes dues API no estan disponibles per a les aplicacions ni les extensions que no s'instal·lin a la força.
-
-          Aquesta política preval sobre una política <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> amb què pugui entrar en conflicte. Si se suprimeix d'aquesta llista una aplicació o una extensió que prèviament s'havia instal·lat a la força, <ph name="PRODUCT_NAME" /> la desinstal·larà automàticament.
-
-          En les instàncies de Windows que no formin part d'un domini que pertanyi a <ph name="MS_AD_NAME" />, la instal·lació forçada es limita a les aplicacions i les extensions incloses a Chrome Web Store.
-
-          Tingues en compte que els usuaris poden modificar el codi font de qualsevol extensió amb les Eines per a desenvolupadors (la qual cosa podria provocar problemes de funcionament de l'extensió). Si et preocupa aquesta possibilitat, defineix la política <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Cada element de la llista de la política és una cadena que conté un identificador d'extensió i, opcionalment, un URL d'actualització separats per punt i coma (<ph name="SEMICOLON" />). L'identificador d'extensió és la cadena de 32 lletres que, per exemple, es troba a <ph name="CHROME_EXTENSIONS_LINK" /> quan el mode de desenvolupador està activat. L'URL d'actualització, si s'especifica, ha de dirigir a un document XML de manifest d'actualització, tal com es descriu a <ph name="LINK_TO_EXTENSION_DOC1" />. De manera predeterminada, s'utilitza l'URL d'actualització de Chrome Web Store, que actualment és "https://clients2.google.com/service/update2/crx". Tingues en compte que l'URL d'actualització definit en aquesta política només s'utilitza per a la instal·lació inicial; les properes actualitzacions de l'extensió faran servir l'URL d'actualització indicat al fitxer de manifest de l'extensió. Recorda que, fins a la versió 67 (inclosa) de <ph name="PRODUCT_NAME" />, també calia especificar de manera obligatòria i explícita l'URL d'actualització.
-
-          Per exemple, <ph name="EXTENSION_POLICY_EXAMPLE" /> instal·la l'extensió amb l'identificador <ph name="EXTENSION_ID_SAMPLE" /> des de l'URL d'actualització de Chrome Web Store estàndard. Per obtenir més informació sobre com s'allotgen les extensions, consulta: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Si aquesta política es deixa sense establir, no s'instal·larà automàticament cap aplicació ni cap extensió i l'usuari podrà desinstal·lar-ne qualsevol a <ph name="PRODUCT_NAME" />.
-
-          Tingues en compte que aquesta política no s'aplica al mode d'incògnit.</translation>
 <translation id="4008507541867797979">Si aquesta política s'estableix en "true" o no es configura, <ph name="PRODUCT_OS_NAME" /> mostrarà els usuaris existents a la pantalla d'inici de sessió i permetrà triar-ne un.
 
       Si aquesta política s'estableix en "false", <ph name="PRODUCT_OS_NAME" /> no mostrarà els usuaris existents a la pantalla d'inici de sessió. Es mostrarà la pantalla d'inici de sessió normal (on es demana el telèfon o l'adreça electrònica i la contrasenya de l'usuari) o la intersticial SAML (si s'activa mitjançant la política <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), tret que es configuri una sessió gestionada. En aquest últim cas, només es mostraran els comptes de sessió gestiona i es permetrà triar-ne un.

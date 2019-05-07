@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
-<translation id="1001338328714563407">Как администратор устройства и аккаунта домен <ph name="ENROLLMENT_DOMAIN" />:</translation>
+<translation id="1001338328714563407">Как администратор вашего устройства и аккаунта домен <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="1008557486741366299">Не сейчас</translation>
 <translation id="1010200102790553230">Загрузить страницу позже</translation>
 <translation id="1015730422737071372">Сообщить дополнительную информацию</translation>
@@ -218,6 +218,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Карта</translation>
 <translation id="2114841414352855701">Игнорируется, так как правило <ph name="POLICY_NAME" /> имеет приоритет.</translation>
+<translation id="2129079103035905234">Датчики движения</translation>
 <translation id="213826338245044447">Закладки на мобильном</translation>
 <translation id="214556005048008348">Отменить оплату</translation>
 <translation id="2147827593068025794">Фоновая синхронизация</translation>
@@ -516,7 +517,7 @@
 <translation id="3761718714832595332">Скрыть статус</translation>
 <translation id="3765032636089507299">Страница безопасного просмотра находится в разработке.</translation>
 <translation id="3778403066972421603">Хотите сохранить карту в аккаунте Google и на этом устройстве?</translation>
-<translation id="3779973883630527594">Компания, организация или учебное заведение, которое управляет этим аккаунтом:</translation>
+<translation id="3779973883630527594">Компания, учебное заведение или другая организация, которая управляет этим аккаунтом:</translation>
 <translation id="3781428340399460090">Ярко-розовый</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Срок действия: до <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -688,7 +689,7 @@
 <translation id="4758311279753947758">Добавить контактные данные</translation>
 <translation id="4764776831041365478">Веб-страница по адресу <ph name="URL" />, возможно, временно недоступна или постоянно перемещена по новому адресу.</translation>
 <translation id="4771973620359291008">Произошла неизвестная ошибка.</translation>
-<translation id="4780900888022378816">Ваше устройство находится под управлением домена <ph name="ENROLLMENT_DOMAIN" />, а аккаунт – <ph name="ACCOUNT_DOMAIN" />.</translation>
+<translation id="4780900888022378816">Ваше устройство находится под управлением домена <ph name="ENROLLMENT_DOMAIN" />, а аккаунт – под управлением домена <ph name="ACCOUNT_DOMAIN" />.</translation>
 <translation id="4785689107224900852">Переключиться на эту вкладку</translation>
 <translation id="4798078619018708837">Введите срок действия и CVC-код карты <ph name="CREDIT_CARD" />. После этого ее реквизиты из аккаунта Google будут переданы сайту.</translation>
 <translation id="4800132727771399293">Проверьте срок действия и CVC-код, а затем повторите попытку</translation>

@@ -1616,21 +1616,6 @@ Jeśli ta zasada jest wyłączona, informacje o sesji nie będą przesyłane. Je
       Jeśli nie skonfigurujesz tej zasady lub ustawisz dla niej wartość prawda, użytkownicy będą mogli wykorzystywać oferty przy rejestracji systemu operacyjnego Chrome.
 
       Jeśli ustawisz tu wartość fałsz, użytkownicy nie będą mogli wykorzystywać ofert.</translation>
-<translation id="4008233182078913897">Określa listę aplikacji i rozszerzeń, które zostaną zainstalowane dyskretnie, bez interakcji z użytkownikiem, a użytkownik nie będzie mógł ich odinstalować ani wyłączyć. Aplikacje/rozszerzenia bez interakcji z użytkownikiem otrzymają wszystkie uprawnienia, o które proszą, w tym wszelkie dodatkowe uprawnienia, o które będą prosić przyszłe ich wersje. Otrzymają też uprawnienia do interfejsów API dla rozszerzeń enterprise.deviceAttributes i enterprise.platformKeys. (Te dwa interfejsy API nie są dostępne dla aplikacji/rozszerzeń, których instalacja nie jest wymuszana).
-
-Ta zasada ma pierwszeństwo przed potencjalnie powodującą konflikt zasadą <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Jeśli z tej listy zostaną usunięte aplikacja lub rozszerzenie, których instalacja została wymuszona wcześniej, <ph name="PRODUCT_NAME" /> automatycznie je odinstaluje.
-
-W przypadku systemów Windows niepodłączonych do domeny <ph name="MS_AD_NAME" /> wymuszona instalacja jest ograniczona do aplikacji i rozszerzeń dostępnych w Chrome Web Store.
-
-Pamiętaj, że kod źródłowy każdego rozszerzenia można zmodyfikować za pomocą Narzędzi dla programistów (potencjalnie zakłócając jego działanie). Jeśli jest to problemem, ustaw zasadę <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator rozszerzenia i opcjonalnie URL „aktualizacji” oddzielone średnikiem (<ph name="SEMICOLON" />). Identyfikator rozszerzenia to ciąg 32 znaków, który znajdziesz np. na <ph name="CHROME_EXTENSIONS_LINK" /> w trybie programisty. URL „aktualizacji” powinien wskazywać plik manifestu aktualizacji w postaci dokumentu XML, zgodnie z opisem na <ph name="LINK_TO_EXTENSION_DOC1" />. Domyślnie używany jest URL aktualizacji Chrome Web Store (obecnie to „https://clients2.google.com/service/update2/crx”). Uwaga: URL „aktualizacji” ustawiony przez tę zasadę jest używany tylko podczas pierwszej instalacji. Późniejsze aktualizacje rozszerzenia korzystają z adresu URL aktualizacji wskazanego w pliku manifestu. Pamiętaj też, że podanie adresu URL „aktualizacji” było obowiązkowe w <ph name="PRODUCT_NAME" /> do wersji 67 włącznie.
-
-Na przykład <ph name="EXTENSION_POLICY_EXAMPLE" /> instaluje rozszerzenie o identyfikatorze <ph name="EXTENSION_ID_SAMPLE" /> ze standardowego adresu URL „aktualizacji” Chrome Web Store. Więcej informacji o hostowaniu rozszerzeń znajdziesz na <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-Jeśli ta zasada nie jest ustawiona, aplikacje ani rozszerzenia nie są instalowane automatycznie, a użytkownik może odinstalować dowolne z nich w <ph name="PRODUCT_NAME" />.
-
-Uwaga: ta zasada nie jest stosowana do trybu incognito.</translation>
 <translation id="4008507541867797979">Gdy ta zasada ma wartość prawda lub jest nieskonfigurowana, <ph name="PRODUCT_OS_NAME" /> będzie wyświetlać istniejących użytkowników na ekranie logowania i umożliwiać wybranie jednego z nich.
 
       Gdy zasada ma wartość fałsz, <ph name="PRODUCT_OS_NAME" /> nie będzie wyświetlać istniejących użytkowników na ekranie logowania. Wyświetlony zostanie normalny ekran logowania (umożliwiający wpisanie adresu e-mail i hasła lub numeru telefonu użytkownika) lub ekran SAML (jeśli jest włączony przy użyciu zasady <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), chyba że skonfigurowana jest sesja zarządzania – w takim przypadku wyświetlane będą tylko konta z sesją zarządzaną i będzie można wybrać jedno z nich.

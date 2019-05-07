@@ -1616,29 +1616,6 @@
       Ako je ovo pravilo postavljeno na istinito ili ako nije postavljeno, korisnici će moći iskoristiti ponude registracijom OS-a Chrome.
 
       Ako je pravilo postavljeno na neistinito, korisnici neće moći iskoristiti ponude.</translation>
-<translation id="4008233182078913897">Određuje popis aplikacija i proširenja koja se instaliraju u pozadini,
-          bez interakcije s korisnikom, i koje korisnik ne može deinstalirati
-          niti onemogućiti. Sva dopuštenja koje aplikacije/proširenja
-          zahtijevaju dodjeljuju se implicitno, bez interakcije s korisnikom,
-          uključujući sva dodatna dopuštenja koja bi buduće verzije
-          aplikacije/proširenja mogle tražiti. Osim toga, dopuštenja se dodjeljuju
-          za API-je proširenja enterprise.deviceAttributes i enterprise.platformKeys extension.
-          (Ta dva API-ja nisu dostupna aplikacijama/proširenjima koji nisu prisilno
-          instalirani.)
-
-          To pravilo ima prednost pred pravilom <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> s kojim potencijalno može biti u sukobu. Ako se s popisa ukloni aplikacija ili proširenje koje su prethodno bili prisilno instalirani, <ph name="PRODUCT_NAME" /> automatski će ih deinstalirati.
-
-          Za instance Windowsa koje nisu pridružene domeni <ph name="MS_AD_NAME" /> prisilna instalacija ograničena je na aplikacije i proširenja navedene u Chrome web-trgovini.
-
-          Korisnici mogu izmijeniti izvorni kôd proširenja pomoću Alata za razvojne programere (zbog čega proširenje može prestati funkcionirati). Ako to predstavlja problem, postavite pravilo <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Svaka stavka pravila niz je koji sadrži ID proširenja i URL za "ažuriranje" odvojene točkom sa zarezom (<ph name="SEMICOLON" />). ID proširenja niz je od 32 slova koji se primjerice može pronaći na <ph name="CHROME_EXTENSIONS_LINK" /> u načinu rada razvojnog programera. URL za "ažuriranje", ako se navede, treba usmjeravati na XML dokument manifesta ažuriranja kako je opisano u dokumentu <ph name="LINK_TO_EXTENSION_DOC1" />. Prema zadanim postavkama, upotrebljava se URL za ažuriranje Chrome web-trgovine (koji je trenutačno "https://clients2.google.com/service/update2/crx"). URL za "ažuriranje" postavljen u ovom pravilu upotrebljava se samo za prvo instaliranje, dok će se za daljnja ažuriranja proširenja upotrebljavati URL ažuriranja naveden u manifestu proširenja. Napominjemo i da je eksplicitno navođenje URL-a za "ažuriranje" bilo obavezno u verzijama preglednika <ph name="PRODUCT_NAME" /> zaključno s verzijom 67.
-
-          Na primjer, <ph name="EXTENSION_POLICY_EXAMPLE" /> instalira proširenje s ID-om <ph name="EXTENSION_ID_SAMPLE" /> sa standardnog URL-a za "ažuriranje" Chrome web-trgovine. Više informacija o hostingu proširenja potražite ovdje: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Ako se to pravilo ne postavi, aplikacije ili proširenja neće se instalirati automatski i korisnik može deinstalirati bilo koju aplikaciju ili proširenje u pregledniku <ph name="PRODUCT_NAME" />.
-
-          To se pravilo ne primjenjuje u anonimnom načinu.</translation>
 <translation id="4008507541867797979">Ako se to pravilo postavi na True ili se ne konfigurira, sustav <ph name="PRODUCT_OS_NAME" /> na zaslonu za prijavu prikazivat će postojeće korisnike i omogućivati odabir korisnika.
 
       Ako se pravilo postavi na False, <ph name="PRODUCT_OS_NAME" /> neće prikazivati postojeće korisnike na zaslonu za prijavu. Prikazivat će se obični zaslon za prijavu (na kojem se unose korisnička e-adresa i zaporka ili telefon) ili SAML međuprostorni zaslon (ako se omogući pravilom <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) osim ako se konfigurira upravljana sesija. Ako se konfigurira upravljana sesija, prikazivat će se samo računi upravljane sesije od kojih je moguće odabrati jedan.
@@ -2633,7 +2610,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 
       Ako onemogućite tu postavku ili ne odredite njenu vrijednost, Sigurno pretraživanje u Google pretraživanju neće biti primijenjeno.</translation>
 <translation id="5946082169633555022">Beta kanal</translation>
-<translation id="5946329690214660966">Postavite prilagođeni raspored za traženje ažuriranja</translation>
+<translation id="5946329690214660966">Postavi prilagođeni raspored za traženje ažuriranja</translation>
 <translation id="5950205771952201658">Budući da "soft-fail", mrežne provjere opoziva ne pružaju učinkovitu zaštitu sigurnosti, onemogućuju se prema zadanim postavkama u pregledniku <ph name="PRODUCT_NAME" /> verzije 19 i novijih verzija. Postavljanjem tog pravila na točno prethodno se ponašanje vraća i izvršit će se mrežne provjere OCSP/CRL.
 
       Ako to pravilo nije postavljeno ili je postavljeno na netočno, <ph name="PRODUCT_NAME" /> neće vršiti mrežne provjere opoziva u pregledniku <ph name="PRODUCT_NAME" /> 19 i novijim verzijama.</translation>

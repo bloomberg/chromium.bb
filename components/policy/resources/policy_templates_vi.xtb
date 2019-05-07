@@ -54,7 +54,7 @@
 <translation id="1049138910114524876">Định cấu hình ngôn ngữ được thực thi trên màn hình đăng nhập <ph name="PRODUCT_OS_NAME" />.
 
       Nếu chính sách này được đặt, màn hình đăng nhập sẽ luôn được hiển thị bằng ngôn ngữ được cung cấp theo giá trị đầu tiên của chính sách (chính sách được định nghĩa là danh sách về khả năng tương thích chuyển tiếp).  Nếu chính sách này chưa được đặt hoặc được đặt thành danh sách trống, màn hình đăng nhập sẽ được hiển thị bằng ngôn ngữ của phiên người dùng cuối cùng.  Nếu chính sách này được đặt thành giá trị không phải là ngôn ngữ hợp lệ, màn hình đăng nhập sẽ được hiển thị bằng ngôn ngữ dự phòng (hiện tại là en-US).</translation>
-<translation id="1052499923181221200">Chính sách này không có hiệu lực trừ khi SamlInSessionPasswordChangeEnabled là true.
+<translation id="1052499923181221200">Chính sách này không có hiệu lực trừ khi chính sách SamlInSessionPasswordChangeEnabled là true.
       Nếu chính sách đó là true và chính sách này được đặt thành 14 chẳng hạn, thì điều đó có nghĩa là người dùng SAML sẽ nhận được thông báo trước 14 ngày rằng mật khẩu của họ sắp hết hạn vào một ngày nhất định.
       Sau đó, họ có thể giải quyết ngay vấn đề này bằng cách đổi mật khẩu ngay trong phiên đăng nhập và cập nhật mật khẩu trước khi hết hạn.
       Tuy nhiên, các thông báo này sẽ chỉ hiển thị nếu nhà cung cấp danh tính SAML gửi thông tin hết hạn mật khẩu tới thiết bị trong quy trình đăng nhập SAML.
@@ -361,6 +361,11 @@
       Khi bạn đặt chính sách này thành False, thì dữ liệu về tiện ích và plugin sẽ không được thu thập.
 
       Chính sách này chỉ có hiệu lực khi bật <ph name="CHROME_REPORTING_EXTENSION_NAME" /> và đăng ký máy với <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="1560205870554624777">Kiểm soát việc có bật chức năng Kerberos hay không. Kerberos là một giao thức xác thực có thể dùng để xác thực cho các ứng dụng web và các mục chia sẻ tệp.
+
+          Nếu bạn bật chính sách này thì chức năng Kerberos sẽ bật. Người dùng có thể thêm các tài khoản Kerberos thông qua chính sách 'Định cấu hình các tài khoản Kerberos' hoặc thông qua phần cài đặt của Tài khoản Kerberos trên trang cài đặt Mọi người.
+
+          Nếu bạn tắt hoặc không đặt chính sách này, thì các tùy chọn cài đặt của Tài khoản Kerberos sẽ tắt. Người dùng không thể thêm các tài khoản Kerberos và sử dụng tính năng xác thực Kerberos. Tất cả các tài khoản Kerberos hiện có và mọi mật khẩu đã lưu trữ sẽ bị xóa.</translation>
 <translation id="1561424797596341174">Chính sách ghi đè dành cho bản dựng Gỡ lỗi của máy chủ truy cập từ xa</translation>
 <translation id="1561967320164410511">Tiện ích U2F+ để chứng thực cá nhân</translation>
 <translation id="1574554504290354326">Cài đặt này không còn được dùng nữa, hãy sử dụng cài đặt SafeBrowsingExtendedReportingEnabled thay vào đó. Việc bật hoặc tắt cài đặt SafeBrowsingExtendedReportingEnabled cũng giống với thao tác đặt SafeBrowsingExtendedReportingOptInAllowed thành False.
@@ -447,6 +452,12 @@
 
       Phải đặt chính sách thành một URL nơi <ph name="PRODUCT_OS_NAME" /> có thể tải xuống Điều khoản dịch vụ. Điều khoản dịch vụ phải là văn bản thuần túy, được phân phối dưới dạng văn bản/thuần túy loại MIME. Không cho phép đánh dấu.</translation>
 <translation id="1750315445671978749">Chặn tất cả các mục tải xuống</translation>
+<translation id="1762072363876276024">
+      Chính sách này áp dụng cho màn hình đăng nhập. Vui lòng xem cả chính sách <ph name="SITE_PER_PROCESS_POLICY_NAME" /> áp dụng cho phiên người dùng. Bạn nên đặt cả hai chính sách về cùng một giá trị. Nếu các giá trị không khớp nhau, thì có thể xảy ra tình trạng chậm trễ khi vào một phiên người dùng mặc dù đang áp dụng giá trị do chính sách người dùng chỉ định.
+      Tùy chọn cài đặt DeviceLoginScreenSitePerProcess này có thể dùng để không cho phép người dùng chọn không sử dụng hoạt động mặc định là cách ly tất cả trang web. Xin lưu ý rằng chính sách DeviceLoginScreenIsolateOrigins cũng có thể hữu ích cho việc cách ly các nguồn gốc bổ sung không dễ thấy.
+      Nếu bạn bật chính sách này, thì người dùng sẽ không thể chọn không sử dụng hoạt động mặc định, trong đó mỗi trang web chạy ở quy trình riêng.
+      Nếu bạn tắt hoặc không định cấu hình chính sách này, thì người dùng có thể thay đổi tùy chọn cài đặt này (ví dụ như sử dụng mục "Tắt tính năng cách ly trang web" trong chrome://flags).
+      </translation>
 <translation id="1781356041596378058">Chính sách này cũng kiểm soát quyền truy cập vào Tùy chọn của nhà phát triển Android. Nếu bạn đặt chính sách này thành true, người dùng sẽ không thể truy cập vào Tùy chọn của nhà phát triển. Nếu bạn đặt chính sách này thành false hoặc không đặt chính sách này thì người dùng có thể truy cập Tùy chọn của nhà phát triển bằng cách nhấn bảy lần trên số bản dựng trong ứng dụng cài đặt Android.</translation>
 <translation id="1793346220873697538">Tắt tính năng in mã PIN theo mặc định</translation>
 <translation id="1797233582739332495">Hiển thị lời nhắc định kỳ cho người dùng cho biết bắt buộc phải chạy lại</translation>
@@ -875,6 +886,11 @@
 
       Nếu chính sách này không được đặt, sẽ có tính năng proxy nén dữ liệu để người dùng chọn có sử dụng hay không.</translation>
 <translation id="257788512393330403">Yêu cầu cứ 6 giờ nhập mật khẩu một lần</translation>
+<translation id="2586162458524426376">
+      Chính sách này áp dụng cho màn hình đăng nhập. Vui lòng xem cả chính sách <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> áp dụng cho phiên người dùng.
+      Nếu bạn bật chính sách này, thì mỗi nguồn gốc có tên trong danh sách được phân tách bằng dấu phẩy sẽ chạy ở quy trình riêng. Điều này cũng sẽ cách ly các nguồn gốc được đặt tên theo miền phụ. Ví dụ: việc chỉ định https://example.com/ cũng sẽ khiến https://foo.example.com/ bị cách ly dưới dạng một phần của trang web https://example.com/.
+      Nếu bạn tắt hoặc không định cấu hình chính sách này, thì các tùy chọn cài đặt cách ly trang web mặc định của nền tảng sẽ được dùng cho màn hình đăng nhập.
+      </translation>
 <translation id="2587719089023392205">Đặt <ph name="PRODUCT_NAME" /> làm trình duyệt mặc định</translation>
 <translation id="2592091433672667839">Khoảng thời gian không hoạt động trước khi trình bảo vệ màn hình hiển thị trên màn hình đăng nhập ở chế độ bán lẻ</translation>
 <translation id="2592162121850992309">Nếu bạn không đặt chính sách này hoặc đặt thành true, tính năng tăng tốc phần cứng sẽ được bật trừ khi bạn đưa một tính năng GPU (Đơn vị xử lý đồ họa) nhất định vào danh sách cấm.
@@ -885,6 +901,7 @@
           Tất cả phiên bản gần đây của máy chủ Samba và Windows đều hỗ trợ NTLMv2. Chỉ nên tắt cài đặt này trong trường hợp muốn có khả năng tương thích ngược và giảm tính bảo mật của quá trình xác thực.
 
           Nếu bạn chưa đặt chính sách này thì mặc định sẽ là true và NTLMv2 được bật.</translation>
+<translation id="26023406105317310">Định cấu hình các tài khoản Kerberos</translation>
 <translation id="2604182581880595781">Định cấu hình các chính sách liên quan đến tính năng Chia sẻ tệp trong mạng.</translation>
 <translation id="2623014935069176671">Đợi hoạt động người dùng đầu tiên</translation>
 <translation id="262740370354162807">Cho phép gửi tài liệu tới <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1191,7 +1208,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu bạn đặt chính sách này thành 'MinimalMigrate', thì các thư mục gốc đã mã hóa ecryptfs sẽ bị xóa khi đăng nhập. Thay vào đó, các thư mục gốc mới đã mã hóa ext4 sẽ được tạo. Tuy nhiên, hệ thống sẽ cố bảo toàn mã thông báo đăng nhập để người dùng không phải đăng nhập lại. Cảnh báo: Thao tác này sẽ xóa dữ liệu trên máy của người dùng.
 
-      Nếu bạn đặt chính sách này thành một tùy chọn không còn hỗ trợ nữa ('AskUser' hoặc 'AskForEcryptfsArcUsers'), thì chính sách này sẽ được xử lý như thể bạn đã chọn 'Migrate'.
+      Nếu bạn đặt chính sách này thành một tùy chọn không được hỗ trợ nữa ('AskUser' hoặc 'AskForEcryptfsArcUsers'), thì chính sách này sẽ được xử lý như thể bạn đã chọn 'Migrate'.
 
       Chính sách này không áp dụng cho người dùng kiosk. Nếu bạn không đặt chính sách này, thì thiết bị sẽ hoạt động như thể bạn đã chọn 'DisallowArc'.</translation>
 <translation id="3086995894968271156">Định cấu hình Bộ thu Google Cast trong <ph name="PRODUCT_NAME" />.</translation>
@@ -1218,6 +1235,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3159375329008977062">Người dùng được phép xuất/nhập các vùng chứa Crostini qua giao diện người dùng</translation>
 <translation id="3165808775394012744">Những chính sách này được đưa vào đây để dễ xóa.</translation>
 <translation id="316778957754360075">Cài đặt này đã bị xóa kể từ phiên bản <ph name="PRODUCT_NAME" /> 29. Phương thức được đề xuất để thiết lập bộ sưu tập tiện ích/ứng dụng được tổ chức lưu trữ là đưa trang web lưu trữ gói CRX vào ExtensionInstallSources và đặt liên kết tải xuống trực tiếp vào trong các gói trên trang web. Có thể tạo trình chạy cho trang web đó bằng chính sách ExtensionInstallForcelist.</translation>
+<translation id="3168968618972302728">Các chính sách liên quan đến việc xác thực Kerberos.</translation>
 <translation id="3171369832001535378">Mẫu tên máy chủ của mạng thiết bị</translation>
 <translation id="3172512016079904926">Cho phép cài đặt máy chủ Nhắn tin gốc ở cấp người dùng.
 
@@ -1415,6 +1433,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3631099945620529777">Nếu bạn đặt chính sách này thành false thì nút 'Kết thúc quá trình' sẽ bị tắt trong Trình quản lý tác vụ.
 
       Nếu bạn không định cấu hình hoặc nếu bạn đặt chính sách này thành true, người dùng có thể kết thúc các quá trình trong Trình quản lý tác vụ.</translation>
+<translation id="3643284063603988867">Bật tính năng 'Nhớ mật khẩu'</translation>
 <translation id="3646859102161347133">Đặt loại kính lúp màn hình</translation>
 <translation id="3653237928288822292">Biểu tượng nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="3660510274595679517">
@@ -1600,7 +1619,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3915395663995367577">URL tới một tệp .pac proxy</translation>
 <translation id="3920892052017026701">Đặt mức phần trăm bắt đầu sạc pin tùy chỉnh.
 
-          Pin bắt đầu sạc khi xuống mức giá trị bắt đầu sạc pin tùy chỉnh.
+          Pin bắt đầu sạc khi lượng pin còn lại thấp hơn giá trị bắt đầu sạc pin tùy chỉnh này.
 
           DeviceBatteryChargeCustomStartCharging phải nhỏ hơn DeviceBatteryChargeCustomStopCharging.
 
@@ -1635,29 +1654,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu chính sách này được đặt thành true hoặc không được đặt, người dùng sẽ có thể đổi phiếu mua hàng thông qua Đăng ký Chrome OS.
 
       Nếu chính sách này được đặt thành false, người dùng sẽ không thể đổi phiếu mua hàng.</translation>
-<translation id="4008233182078913897">Chỉ định danh sách các ứng dụng và tiện ích được cài đặt tự động mà không
-          có sự tương tác của người dùng, cũng như các ứng dụng và tiện ích mà người dùng không thể gỡ cài đặt
-          hoặc vô hiệu hóa. Tất cả các quyền truy cập do ứng dụng/tiện ích
-          yêu cầu được cấp trực tiếp mà không có sự tương tác của
-          người dùng, kể cả mọi quyền truy cập bổ sung mà các phiên bản trong tương lai
-          của ứng dụng/tiện ích đó yêu cầu. Ngoài ra, các quyền truy cập được cấp
-          cho các API tiện ích enterprise.deviceAttributes và 
-          enterprise.platformKeys. (Không sử dụng được 2 API này cho các
-          ứng dụng/tiện ích không buộc cài đặt.)
-
-          Chính sách này được ưu tiên hơn trong trường hợp xung đột với chính sách <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Nếu một ứng dụng hoặc tiện ích bị buộc cài đặt trước đây hiện đã bị xóa khỏi danh sách này, thì <ph name="PRODUCT_NAME" /> sẽ tự động gỡ cài đặt ứng dụng hoặc tiện ích đó.
-
-          Đối với các phiên bản Windows không tham gia miền <ph name="MS_AD_NAME" />, thì việc buộc cài đặt sẽ bị giới hạn ở các ứng dụng và tiện ích trong Cửa hàng Chrome trực tuyến.
-
-          Xin lưu ý rằng người dùng có thể thay đổi mã nguồn của bất cứ tiện ích nào thông qua Công cụ dành cho nhà phát triển (điều này có thể khiến tiện ích hoạt động không chính xác). Nếu bạn lo ngại về điều này thì cần phải đặt chính sách <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Mỗi mục danh sách của chính sách là một chuỗi chứa một mã tiện ích và một URL "cập nhật" (không bắt buộc) phân tách bằng dấu chấm phẩy (<ph name="SEMICOLON" />). Mã tiện ích là một chuỗi gồm 32 chữ cái, chẳng hạn như trên <ph name="CHROME_EXTENSIONS_LINK" /> khi ở chế độ nhà phát triển. URL "cập nhật", nếu được chỉ định, phải trỏ tới tài liệu XML của tệp kê khai cập nhật như mô tả tại <ph name="LINK_TO_EXTENSION_DOC1" />. Theo mặc định, URL cập nhật của Cửa hàng Chrome trực tuyến sẽ được sử dụng (hiện là "https://clients2.google.com/service/update2/crx"). Xin lưu ý rằng URL "cập nhật" được đặt trong chính sách này chỉ dùng cho lần cài đặt ban đầu; các lần cập nhật tiện ích tiếp theo sẽ sử dụng URL cập nhật nêu trong tệp kê khai của tiện ích. Ngoài ra, xin lưu ý rằng bạn bắt buộc phải chỉ định URL "cập nhật" một cách rõ ràng trong các phiên bản <ph name="PRODUCT_NAME" /> bao gồm cả phiên bản 67.
-
-          Ví dụ: <ph name="EXTENSION_POLICY_EXAMPLE" /> cài đặt tiện ích có mã <ph name="EXTENSION_ID_SAMPLE" /> từ URL "cập nhật" tiêu chuẩn của Cửa hàng Chrome trực tuyến. Để biết thêm thông tin về việc lưu trữ tiện ích, hãy xem: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Nếu bạn không đặt chính sách này, thì sẽ không có ứng dụng hoặc tiện ích nào được cài đặt tự động và người dùng có thể gỡ cài đặt mọi ứng dụng hoặc tiện ích trong <ph name="PRODUCT_NAME" />.
-
-          Xin lưu ý rằng chính sách này không áp dụng cho chế độ ẩn danh.</translation>
 <translation id="4008507541867797979">Nếu đặt chính sách này thành true hoặc không định cấu hình chính sách này, thì <ph name="PRODUCT_OS_NAME" /> sẽ hiển thị người dùng hiện có trên màn hình đăng nhập và cho phép chọn một người dùng.
 
       Nếu đặt chính sách này thành false, <ph name="PRODUCT_OS_NAME" /> sẽ không hiển thị người dùng hiện có trên màn hình đăng nhập. Thay vào đó, màn hình đăng nhập thông thường (nhắc người dùng nhập email và mật khẩu hoặc số điện thoại) hoặc màn hình SAML xem kẽ (nếu đã bật qua chính sách <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) sẽ hiển thị, trừ khi đã định cấu hình phiên được quản lý. Khi đã định cấu hình phiên được quản lý, thì chỉ có các tài khoản của phiên được quản lý hiển thị, cho phép bạn chọn một trong số các tài khoản đó.
@@ -1770,6 +1766,15 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Tùy chọn cài đặt này sẽ ghi đè RemoteAccessHostClientDomain, nếu có.
 
           Hãy xem thêm RemoteAccessHostDomainList.</translation>
+<translation id="4164601239783385546">Bật tính năng hỗ trợ tiếp cận đối với các phím cố định.
+
+          Nếu bạn đặt chính sách này thành true, thì các phím cố định sẽ luôn bật.
+
+          Nếu bạn đặt chính sách này thành false, thì các phím cố định sẽ luôn tắt.
+
+          Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hoặc ghi đè chính sách.
+
+          Nếu bạn không đặt chính sách này, thì ban đầu, các phím cố định sẽ tắt nhưng người dùng có thể bật bất cứ lúc nào.</translation>
 <translation id="4183229833636799228">Cài đặt <ph name="FLASH_PLUGIN_NAME" /> mặc định</translation>
 <translation id="4192388905594723944">URL để xác thực mã thông báo xác thực ứng dụng truy cập từ xa</translation>
 <translation id="4197038214024763371">Nếu bạn không đặt hoặc nếu bạn bật chính sách này, người dùng sẽ được phép sử dụng tính năng kiểm tra chính tả.
@@ -1963,6 +1968,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4578912515887794133">Nếu bạn bật tùy chọn cài đặt này, máy chủ truy cập từ xa sẽ so sánh tên của người dùng trên máy (liên kết với máy chủ) và tên tài khoản Google được đăng ký làm chủ sở hữu máy chủ (ví dụ như "johndoe" nếu tài khoản Google "johndoe@example.com" sở hữu máy chủ này).  Máy chủ truy cập từ xa sẽ không khởi động nếu tên của chủ sở hữu máy chủ khác với tên của người dùng trên máy được liên kết với máy chủ.  Bạn nên sử dụng chính sách RemoteAccessHostMatchUsername cùng với chính sách RemoteAccessHostDomain để đồng thời buộc tài khoản Google của chủ sở hữu máy chủ liên kết với một miền cụ thể (ví dụ như "example.com").
 
           Nếu bạn tắt hoặc không đặt tùy chọn cài đặt này, máy chủ truy cập từ xa có thể liên kết với bất kỳ người dùng nào trên máy.</translation>
+<translation id="4591366717022345234">Cung cấp Bản dựng Quick Fix cho người dùng</translation>
 <translation id="4600786265870346112">Bật con trỏ lớn</translation>
 <translation id="4604931264910482931">Định cấu hình danh sách cấm nhắn tin gốc</translation>
 <translation id="4613508646038788144">Nếu bạn đặt chính sách thành false thì phần mềm của bên thứ ba sẽ được phép đưa mã thực thi vào các quy trình của Chrome. Nếu bạn không đặt hoặc đặt chính sách thành true thì phần mềm của bên thứ ba sẽ không được đưa đoạn mã thực thi vào các quy trình của Chrome.</translation>
@@ -2048,6 +2054,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="487460824085252184">Tự động di chuyển, không cần yêu cầu sự chấp thuận của người dùng.</translation>
 <translation id="4874982543810021567">Chặn WebUSB trên các trang web này</translation>
 <translation id="4876805738539874299">Đã bật phiên bản SSL tối đa</translation>
+<translation id="4887274746092315609">Cho phép người dùng SAML đổi mật khẩu của một trang ngay trong phiên đăng nhập</translation>
 <translation id="4897928009230106190">Chỉ định tham số được dùng khi thực hiện tìm kiếm theo đề xuất với POST. Tham số này bao gồm các cặp tên/giá trị phân tách bằng dấu phẩy. Nếu một giá trị là tham số mẫu như {searchTerms} trong ví dụ trên, tham số đó sẽ được thay thế bằng dữ liệu cụm từ tìm kiếm thực.
 
           Chính sách này là tùy chọn. Nếu không đặt, yêu cầu tìm kiếm theo đề xuất sẽ được gửi bằng phương thức GET.
@@ -2269,6 +2276,7 @@ Không giống như <ph name="URL_LIST_POLICY_NAME" />, các quy tắc áp dụn
       Nếu chính sách được đặt thành 'Legacy' (cũ) thì chỉ loại mã hóa RC4 được phép. Tùy chọn này không an toàn và chỉ cần thiết trong rất ít trường hợp cụ thể.
 
       Ngoài ra, hãy truy cập vào https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
+<translation id="5249453807420671499">Người dùng có thể thêm các tài khoản Kerberos</translation>
 <translation id="5255162913209987122">Có thể được đề xuất</translation>
 <translation id="527237119693897329">Cho phép bạn chỉ định máy chủ nhắn tin gốc nào không được tải.
 
@@ -2411,6 +2419,7 @@ Không giống như <ph name="URL_LIST_POLICY_NAME" />, các quy tắc áp dụn
       Khi giá trị của chính sách này được đặt và giá trị đó khác 0, người dùng hiện được đăng nhập vào bản trình diễn sẽ tự động bị đăng xuất sau khi thời gian không hoạt động của khoảng thời gian đã chỉ định trôi qua.
 
       Giá trị của chính sách này sẽ được chỉ định theo mili giây.</translation>
+<translation id="5508307164752647432">Bật chức năng Kerberos</translation>
 <translation id="5511702823008968136">Bật Thanh dấu trang</translation>
 <translation id="5512418063782665071">URL trang chủ</translation>
 <translation id="551639594034811656">Chính sách này xác định danh sách tỷ lệ phần trăm cho biết số lượng thiết bị <ph name="PRODUCT_OS_NAME" /> trong đơn vị tổ chức sẽ được cập nhật mỗi ngày, bắt đầu từ ngày bản cập nhật được phát hiện lần đầu tiên. Vì thiết bị có thể kiểm tra các bản cập nhật sau một khoảng thời gian sau khi bản cập nhật được phát hành, nên thời điểm phát hiện sẽ muộn hơn thời điểm phát hành bản cập nhật.
@@ -2432,6 +2441,7 @@ Không giống như <ph name="URL_LIST_POLICY_NAME" />, các quy tắc áp dụn
       Xin lưu ý rằng nếu nền tảng hỗ trợ thông báo chính sách, độ trễ làm mới sẽ được đặt thành 24 giờ (bỏ qua tất cả các cài đặt mặc định và giá trị của chính sách này) vì thông báo chính sách được kỳ vọng sẽ bắt buộc làm mới tự động bất cứ khi nào chính sách thay đổi, giúp việc làm mới thường xuyên hơn trở nên không cần thiết.</translation>
 <translation id="5530347722229944744">Chặn các mục tải xuống có thể gây nguy hiểm</translation>
 <translation id="5535973522252703021">Danh sách trắng máy chủ ủy quyền Kerberos</translation>
+<translation id="554903022911579950">Kerberos</translation>
 <translation id="555077880566103058">Cho phép tất cả các trang web tự động chạy plugin <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">Chính sách này không ảnh hưởng đến các ứng dụng Android.</translation>
 <translation id="5560039246134246593">Thêm thông số cho quá trình tìm nạp khởi đầu Biến thể trong <ph name="PRODUCT_NAME" />.
@@ -2543,6 +2553,16 @@ Không giống như <ph name="URL_LIST_POLICY_NAME" />, các quy tắc áp dụn
 
       Nếu bạn đặt chính sách này, thì người dùng không thể thay đổi hoặc ghi đè chính sách này.</translation>
 <translation id="5708969689202733975">Định cấu hình chế độ mở khóa nhanh được phép</translation>
+<translation id="5711016543513883877">
+      Nếu bạn bật chính sách này, thì mỗi nguồn gốc có tên trong danh sách
+      phân tách bằng dấu phẩy sẽ chạy ở quy trình riêng. Điều này cũng sẽ cách ly
+      các nguồn gốc được đặt tên theo miền phụ. Ví dụ: việc chỉ định https://example.com/
+      cũng sẽ khiến https://foo.example.com/ bị cách ly dưới dạng một phần của trang web
+      https://example.com/.
+      Nếu bạn tắt hoặc không định cấu hình chính sách này, thì người dùng có thể thay đổi tùy chọn cài đặt này.
+
+      LƯU Ý: Chính sách này không áp dụng trên Android. Để bật IsolateOrigins trên Android, hãy dùng tùy chọn cài đặt chính sách IsolateOriginsAndroid.
+      </translation>
 <translation id="572155275267014074">Cài đặt Android</translation>
 <translation id="5722934961007828462">Khi bật cài đặt này, <ph name="PRODUCT_NAME" /> sẽ luôn thực hiện quá trình kiểm tra thu hồi cho chứng chỉ máy chủ đã xác thực thành công và ký theo chứng chỉ CA được cài đặt cục bộ.
 
@@ -2636,7 +2656,7 @@ Không giống như <ph name="URL_LIST_POLICY_NAME" />, các quy tắc áp dụn
 
       Chính sách này chỉ có ở dạng chính sách nền tảng bắt buộc trên máy và chỉ ảnh hưởng đến chính sách đám mây trong phạm vi máy.
       </translation>
-<translation id="5905473632148429217">Bật kiểm tra OCSP/CRL trực tuyến</translation>
+<translation id="5905473632148429217">Bật tính năng kiểm tra OCSP/CRL trực tuyến</translation>
 <translation id="5906199912611534122">Cho phép bật hoặc tắt điều chỉnh mạng.
       Tùy chọn này áp dụng cho tất cả người dùng và tất cả giao diện trên thiết bị. Sau khi được đặt,
       tính năng điều chỉnh sẽ tiếp tục cho đến khi chính sách này được thay đổi thành tắt tính năng điều chỉnh.
@@ -3282,7 +3302,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Nếu không đặt chính sách này, người dùng có thể chọn liệu họ có muốn được yêu cầu cung cấp mật khẩu để mở khóa thiết bị hay không.</translation>
 <translation id="7107148737865880402">Bật chính sách quản lý nguồn cho tính năng sạc pin qua USB.
 
-          Một số thiết bị có cổng USB đặc trưng được đánh dấu bằng biểu tượng pin hoặc tia chớp. Cổng USB này có thể dùng để sạc các thiết bị như điện thoại di động sử dụng pin hệ thống. Chính sách này ảnh hưởng đến hoạt động sạc của cổng này khi hệ thống ở chế độ ngủ và tắt. Chính sách này không ảnh hưởng đến các cổng USB khác và hoạt động sạc khi hệ thống ở chế độ bật.
+          Một số thiết bị có cổng USB đặc trưng được đánh dấu bằng biểu tượng pin hoặc tia chớp. Có thể dùng cổng USB này để sạc các thiết bị như điện thoại di động sử dụng pin hệ thống. Chính sách này ảnh hưởng đến hoạt động sạc của cổng này khi hệ thống ở chế độ ngủ và tắt. Chính sách này không ảnh hưởng đến các cổng USB khác và hoạt động sạc khi hệ thống ở chế độ bật.
 
           Khi ở chế độ bật, cổng USB sẽ luôn cấp nguồn điện.
 
@@ -3479,6 +3499,11 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="7433714841194914373">Bật chế độ Instant</translation>
 <translation id="7434202861148928348">Định cấu hình tên miền bắt buộc cho ứng dụng truy cập từ xa</translation>
 <translation id="7443616896860707393">Lời nhắc xác thực cơ bản HTTP giữa các gốc</translation>
+<translation id="7454519673779830548">Thêm các tài khoản Kerberos đã điền trước. Nếu thông tin xác thực Kerberos khớp với thông tin đăng nhập, thì bạn có thể định cấu hình một tài khoản để sử dụng lại thông tin đăng nhập bằng cách chỉ định '${{LOGIN_EMAIL}}' và '${{PASSWORD}}' tương ứng với tài khoản chính và mật khẩu. Nhờ vậy, hệ thống có thể tự động truy xuất các phiếu Kerberos, trừ khi bạn định cấu hình tính năng xác thực hai yếu tố. Người dùng không thể sửa đổi các tài khoản đã thêm thông qua chính sách này.
+
+          Nếu bạn bật chính sách này, thì danh sách các tài khoản do chính sách xác định sẽ được thêm vào phần cài đặt của Tài khoản Kerberos.
+
+          Nếu bạn tắt hoặc không đặt chính sách này, thì sẽ không có tài khoản nào được thêm vào phần cài đặt của Tài khoản Kerberos. Đồng thời mọi tài khoản mà người dùng đã thêm trước đây bằng chính sách này đều bị xóa. Người dùng vẫn có thể thêm tài khoản theo cách thủ công nếu bạn bật chính sách 'Người dùng có thể thêm các tài khoản Kerberos'.</translation>
 <translation id="7458437477941640506">Không thể khôi phục về phiên bản đích nếu phiên bản hệ điều hành mới hơn phiên bản đích. Các bản cập nhật cũng sẽ bị tắt.</translation>
 <translation id="7464991223784276288">Hạn chế cookie so khớp các URL với phiên hiện tại</translation>
 <translation id="7469554574977894907">Bật đề xuất tìm kiếm</translation>
@@ -3613,6 +3638,11 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="7687943045976362719">Nếu bạn đặt chính sách này, <ph name="PRODUCT_FRAME_NAME" /> sẽ xử lý các loại nội dung được chỉ định.
 
           Nếu bạn không đặt chính sách này, trình kết xuất mặc định sẽ được sử dụng cho tất cả các trang web. (Chính sách <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> có thể dùng để định cấu hình trình kết xuất mặc định).</translation>
+<translation id="7694245791806617022">Kiểm soát việc có bật tính năng 'Nhớ mật khẩu' trong hộp thoại xác thực Kerberos hay không. Các mật khẩu được lưu trữ dưới dạng mã hóa trên ổ đĩa. Chỉ có daemon hệ thống Kerberos mới có thể truy cập vào những mật khẩu này trong phiên người dùng.
+
+          Nếu bạn bật hoặc không đặt chính sách này, thì người dùng có thể quyết định xem có ghi nhớ các mật khẩu Kerberos để không phải nhập lại hay không. Hệ thống sẽ tự động tìm nạp các phiếu Kerberos trừ khi cần có bước xác thực bổ sung (xác thực hai yếu tố).
+
+          Nếu bạn tắt chính sách này, thì hệ thống sẽ không bao giờ ghi nhớ mật khẩu và mọi mật khẩu đã lưu trữ trước đây đều bị xóa. Người dùng phải nhập mật khẩu của mình mỗi khi cần xác thực với hệ thống Kerberos. Tùy thuộc vào các tùy chọn cài đặt của máy chủ, điều này thường diễn ra từ 8 giờ một lần đến vài tháng một lần.</translation>
 <translation id="7694807474048279351">Lên lịch tự động khởi động lại sau khi áp dụng cập nhật <ph name="PRODUCT_OS_NAME" />.
       Khi chính sách này được đặt thành true, tự động khởi động lại được lên lịch khi áp dụng cập nhật <ph name="PRODUCT_OS_NAME" /> và yêu cầu khởi động lại để hoàn thành quy trình cập nhật. Khởi động lại được lên lịch ngay lập tức nhưng có thể bị trễ trên thiết bị tới 24 giờ nếu người dùng hiện đang sử dụng thiết bị.
       Khi chính sách này được đặt thành false, tự động khởi động lại không được lên lịch sau khi áp dụng cập nhật <ph name="PRODUCT_OS_NAME" />. Quy trình cập nhật hoàn thành khi người dùng khởi động lại thiết bị vào lần tiếp theo.
@@ -3643,6 +3673,15 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Chính sách này nhằm cung cấp cho doanh nghiệp cơ hội để di chuyển các máy chủ hiện có khỏi HTTP/0.9 và sẽ bị xóa trong tương lai.
 
       Nếu bạn không đặt chính sách này, HTTP/0.9 sẽ bị tắt trên cổng không phải là cổng mặc định.</translation>
+<translation id="7726421241038987229">
+      Tùy chọn cài đặt SitePerProcess này có thể dùng để không cho phép người dùng chọn không sử dụng hoạt động mặc định là cách ly tất cả trang web. Xin lưu ý rằng chính sách IsolateOrigins cũng có thể hữu ích cho việc cách ly các nguồn gốc bổ sung không dễ thấy.
+      Nếu bạn bật chính sách này, thì người dùng sẽ không thể chọn không sử dụng hoạt động mặc định, trong đó mỗi trang web chạy ở quy trình riêng.
+      Nếu bạn tắt hoặc không định cấu hình chính sách này, thì người dùng có thể chọn không sử dụng tính năng cách ly trang web
+      (ví dụ như sử dụng mục "Tắt tính năng cách ly trang web" trong chrome://flags).  Việc tắt và/hoặc không định cấu hình chính sách này sẽ không tắt tính năng Cách ly trang web.
+      Trên <ph name="PRODUCT_OS_NAME" />, bạn cũng nên đặt chính sách thiết bị <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> về cùng giá trị. Nếu các giá trị do 2 chính sách này chỉ định không khớp nhau, thì có thể xảy ra tình trạng chậm trễ khi vào một phiên người dùng mặc dù đang áp dụng giá trị do chính sách người dùng chỉ định.
+
+      LƯU Ý: Chính sách này không áp dụng trên Android. Để bật SitePerProcess trên Android, hãy dùng tùy chọn cài đặt chính sách SitePerProcessAndroid.
+      </translation>
 <translation id="7747447585227954402">Cho phép thiết bị sử dụng một <ph name="PLUGIN_VM_NAME" /> trên <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Bật xác thực hai bước cho máy chủ truy cập từ xa thay vì mã PIN do người dùng chỉ định.
 
@@ -3708,6 +3747,11 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Xác định id của tiện ích được sử dụng làm trình bảo vệ màn hình trên màn hình đăng nhập. Tiện ích phải thuộc AppPack được định cấu hình cho miền này thông qua chính sách DeviceAppPack.</translation>
 <translation id="7882857838942884046">Việc tắt Google Sync sẽ khiến Sao lưu và khôi phục trên Android không hoạt động bình thường.</translation>
 <translation id="7882890448959833986">Ẩn cảnh báo hệ điều hành không được hỗ trợ</translation>
+<translation id="7889788745439330797">Kiểm soát việc người dùng có thể thêm các tài khoản Kerberos hay không.
+
+          Nếu bạn bật hoặc không đặt chính sách này, thì người dùng có thể thêm các tài khoản Kerberos thông qua phần cài đặt của Tài khoản Kerberos trên trang cài đặt Mọi người. Người dùng có toàn quyền kiểm soát các tài khoản mà họ đã thêm, cũng như có thể sửa đổi hoặc xóa các tài khoản này.
+
+          Nếu bạn tắt chính sách này, thì người dùng có thể không thêm được các tài khoản Kerberos. Người dùng chỉ có thể thêm các tài khoản thông qua chính sách 'Định cấu hình các tài khoản Kerberos'. Đây là một cách hiệu quả để khóa các tài khoản.</translation>
 <translation id="7895553628261067384">Truy cập từ xa</translation>
 <translation id="7902255855035461275">Các mẫu trong danh sách này sẽ được so khớp dựa trên nguồn gốc bảo mật
       của URL yêu cầu. Nếu tìm thấy mẫu phù hợp, quyền truy cập

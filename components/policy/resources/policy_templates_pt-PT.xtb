@@ -1632,29 +1632,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política estiver definida como verdadeira ou não estiver definida, os utilizadores poderão resgatar ofertas através do Registo no Chrome OS.
 
       Se esta política estiver definida como falsa, os utilizadores não poderão resgatar ofertas.</translation>
-<translation id="4008233182078913897">Especifica uma lista de aplicações e extensões que são instaladas em silêncio,
-          sem interação do utilizador, e que não podem ser desinstaladas nem
-          desativadas pelo utilizador. Todas as autorizações solicitadas pelas
-          aplicações/extensões são concedidas implicitamente, sem a interação do utilizador,
-          incluindo quaisquer autorizações adicionais obrigatórias para as versões futuras
-          da aplicação/extensão. Além disso, as autorizações são concedidas às
-          APIs de extensão enterprise.deviceAttributes e
-          enterprise.platformKeys. (Estas duas APIs não estão disponíveis para aplicações/extensões cuja
-          instalação não é forçada.)
-
-          Esta política tem prioridade sobre uma política <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> potencialmente conflituosa. Se uma aplicação ou extensão previamente instalada de forma forçada for removida desta lista, é automaticamente desinstalada pelo <ph name="PRODUCT_NAME" />.
-
-          Em instâncias do Windows que não façam parte de um domínio <ph name="MS_AD_NAME" />, a instalação forçada está limitada a aplicações e extensões apresentadas na Web Store do Chrome.
-
-          Tenha em atenção que o código-fonte de qualquer extensão pode ser alterado pelos utilizadores através das Ferramentas para programadores (o que pode resultar no funcionamento incorreto da extensão). Se pretender evitar esta situação, defina a política <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Cada item de lista da política é uma string que contém um ID de extensão e, opcionalmente, um URL de "atualização" separado por ponto e vírgula (<ph name="SEMICOLON" />). O ID da extensão é a string de 32 letras encontrada, por exemplo, em <ph name="CHROME_EXTENSIONS_LINK" /> no modo de programador. O URL de "atualização", se especificado, deve apontar para um documento XML de Atualização do manifesto conforme descrito em <ph name="LINK_TO_EXTENSION_DOC1" />. Por predefinição, utiliza-se o URL de atualização da Web Store do Chrome (que, atualmente, é "https://clients2.google.com/service/update2/crx"). Tenha em atenção que o URL de "atualização" definido nesta política apenas é utilizado para a instalação inicial e as atualizações subsequentes da extensão utilizam o URL de atualização indicado no manifesto da extensão. Tenha também em atenção que era obrigatório especificar explicitamente o URL de "atualização" até à versão 67 do <ph name="PRODUCT_NAME" />, inclusive.
-
-          Por exemplo, a política <ph name="EXTENSION_POLICY_EXAMPLE" /> instala a extensão com o ID <ph name="EXTENSION_ID_SAMPLE" /> a partir do URL de "atualização" padrão da Web Store do Chrome. Para mais informações acerca do alojamento de extensões, consulte: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Se esta política não estiver definida, não é efetuada a instalação automática de aplicações ou de extensões e o utilizador pode desinstalar qualquer aplicação ou extensão no <ph name="PRODUCT_NAME" />.
-
-          Tenha em consideração que esta política não se aplica ao modo de navegação anónima.</translation>
 <translation id="4008507541867797979">Se esta política estiver definida como verdadeira ou não estiver configurada, o <ph name="PRODUCT_OS_NAME" /> apresenta os utilizadores existentes no ecrã de início de sessão e permite selecionar um.
 
       Se esta política estiver definida como falsa, o <ph name="PRODUCT_OS_NAME" /> não apresenta os utilizadores existentes no ecrã de início de sessão. É apresentado o ecrã de início de sessão normal (que solicita o email e a palavra-passe ou o número de telefone do utilizador) ou o ecrã intercalar em SAML (se ativado através da política <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), exceto se configurar uma sessão gerida. Quando configura uma sessão gerida, são apenas apresentadas as contas da sessão gerida para que selecione uma.

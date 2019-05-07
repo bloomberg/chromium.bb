@@ -1661,28 +1661,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Kui see reegel määratakse tõeseks või seda ei määrata, saavad kasutajad pakkumisi lunastada Chrome OS-i registreerimise abil.
 
       Kui see reegel määratakse valeks, ei saa kasutajad pakkumisi lunastada.</translation>
-<translation id="4008233182078913897">Määrab loendi rakendustest ja laiendustest, mis installitakse märkamatult,
-          ilma et kasutaja peaks sekkuma, ning mida kasutaja ei saa
-          desinstallida ega keelata. Kõik rakenduste taotletud load antakse vaikimisi
-      ning kasutaja sekkumiseta (sh kõik lisaload,
-      mida rakenduse tulevased versioonid taotlevad). Lisaks antakse load laienduste
-          enterprise.deviceAttributes ja enterprise.platformKeys
-          API-dele. (Need API-d ei ole saadaval rakenduste/laienduste jaoks, mis
-          ei ole sundinstallitud.)
-
-          See reegel seatakse ettepoole potentsiaalselt konfliktsest reeglist <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Kui varem sundinstallitud rakendus või laiendus sellest loendist eemaldatakse, desinstallib teenus <ph name="PRODUCT_NAME" /> selle automaatselt.
-
-          Windowsi eksemplaride puhul, mis ei ole ühendatud domeeniga <ph name="MS_AD_NAME" />, saab sundinstallida vaid Chrome’i veebipoes olevaid rakendusi ja laiendusi.
-
-          Pange tähele, et arendaja tööriistadega saavad kasutajad muuta iga laienduse lähtekoodi (mis võib põhjustada laienduse väärtalitlust). Kui see on probleem, tuleb määrata reegel <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja „värskenduse” URL-i, mis on eraldatud semikooloniga (<ph name="SEMICOLON" />). Laienduse ID on 32-täheline string, mis kuvatakse näiteks arendajarežiimis aadressil <ph name="CHROME_EXTENSIONS_LINK" />. Värskenduse URL peab viitama XML-dokumendi värskendusmanifestile, nagu on kirjeldatud jaotises<ph name="LINK_TO_EXTENSION_DOC1" />. Vaikimisi kasutatakse Chrome'i veebipoe värskenduse URL-i (praegu „https://clients2.google.com/service/update2/crx”). Pange tähele, et reeglis määratud värskenduse URL-i kasutatakse vaid algsel installimisel ja laienduse tulevased värskendused kasutavad laienduse manifestis märgitud värskenduse URL-i. Samuti pange tähele, et selgesõnalise värskenduse URL-i määramine oli kuni rakenduse <ph name="PRODUCT_NAME" /> 67. versioonini kohustuslik.
-
-          Näiteks reegel <ph name="EXTENSION_POLICY_EXAMPLE" /> installib laienduse ID-ga <ph name="EXTENSION_ID_SAMPLE" /> standardselt Chrome'i veebipoe värskenduse URL-ilt. Lisateavet laienduste hostimise kohta leiate siit: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Kui see reegel jäetakse määramata, ei installita automaatselt ühtki rakendust ega laiendust ja kasutaja saab iga rakenduse või laienduse desinstallida teenuses <ph name="PRODUCT_NAME" />.
-
-          Pange tähele, et reegel ei kehti inkognito režiimis.</translation>
 <translation id="4008507541867797979">Kui reegel on määratud väärtusele Tõene või seadistamata, kuvab <ph name="PRODUCT_OS_NAME" /> olemasolevad kasutajad sisselogimiskuval ja võimaldab ühe neist valida.
 
       Kui reegel on määratud väärtusele Väär, ei kuva <ph name="PRODUCT_OS_NAME" /> sisselogimiskuval olemasolevaid kasutajaid. Kuvatakse tavapärane sisselogimisekraan (kus palutakse kasutajal sisestada e-posti aadress ja parool või telefoninumber) või SAML-i vaheekraan (kui see on reegliga <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" /> lubatud), v.a juhul, kui hallatud seanss on seadistatud. Kui hallatud seanss on seadistatud, kuvatakse ainult hallatud seansi kontod, mille hulgast saab valida soovitud konto.

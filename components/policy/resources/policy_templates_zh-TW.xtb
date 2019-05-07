@@ -1605,21 +1605,6 @@
       如果將這項政策設為 True 或未設定這項政策，使用者將可透過註冊 Chrome 作業系統來兌換優惠。
 
       如果將這項政策設為 False，使用者將無法兌換優惠。</translation>
-<translation id="4008233182078913897">指定要以無訊息方式 (使用者無需操作) 安裝的應用程式和擴充功能清單；使用者無法解除安裝或停用這些應用程式和擴充功能。系統會直接授予這些應用程式/擴充功能要求的所有權限 (使用者無需操作)，包括日後新版應用程式/擴充功能要求的任何其他權限。系統會直接授予這些應用程式/擴充功能要求的所有權限 (使用者無需操作)，包括日後新版應用程式/擴充功能要求的任何其他權限(這兩個 API 不適用於非強制安裝的應用程式/擴充功能)。
-
-          這項政策的優先順序高於可能發生衝突的 <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> 政策。如果從這份清單移除先前強制安裝的應用程式或擴充功能，<ph name="PRODUCT_NAME" /> 就會自動將其解除安裝。
-
-          如果 Windows 執行個體未加入 <ph name="MS_AD_NAME" /> 網域，系統只會強制安裝 Chrome 線上應用程式商店列出的應用程式和擴充功能。
-
-          請注意，使用者可透過開發人員工具變更擴充功能的原始碼 (這或許會造成擴充功能無法正常運作)。如果你對此有所顧慮，建議你設定 <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> 政策。
-
-          這項政策的每個清單項目都是一行字串，其中包含以分號 (<ph name="SEMICOLON" />) 區隔的擴充功能 ID 和「更新」網址 (選用)。擴充功能 ID 為 32 個字母的字串，如需查看範例，請在開發人員模式下前往 <ph name="CHROME_EXTENSIONS_LINK" />。「更新」網址 (如有指定) 應指向更新資訊清單 XML 文件，如 <ph name="LINK_TO_EXTENSION_DOC1" /> 所述。根據預設，系統會使用 Chrome 線上應用程式商店的更新網址 (目前為「https://clients2.google.com/service/update2/crx」)。請注意，這項政策設定的「更新」網址僅適用於初次安裝，後續的擴充功能更新將採用擴充功能資訊清單指定的更新網址。另請注意，自 67 版起，你必須在 <ph name="PRODUCT_NAME" /> 中明確指定「更新」網址。
-
-          舉例來說，<ph name="EXTENSION_POLICY_EXAMPLE" /> 會透過標準 Chrome 線上應用程式商店「更新」網址安裝 ID 為 <ph name="EXTENSION_ID_SAMPLE" /> 的擴充功能。如要進一步瞭解如何代管擴充功能，請參閱以下連結：<ph name="LINK_TO_EXTENSION_DOC2" />。
-
-          如果未設定這項政策，則系統不會自動安裝任何應用程式或擴充功能，且使用者可以在 <ph name="PRODUCT_NAME" /> 中解除安裝任何應用程式或擴充功能。
-
-          請注意，這項政策不適用於無痕模式。</translation>
 <translation id="4008507541867797979">如果將這項政策設為 true 或不予設定，<ph name="PRODUCT_OS_NAME" /> 會在登入畫面上顯示現有使用者並允許從中擇一登入。
 
       如果這項政策設為 false，除非已設定受管理工作階段，否則 <ph name="PRODUCT_OS_NAME" /> 不會在登入畫面上顯示現有使用者，而是顯示一般登入畫面 (提示輸入使用者電子郵件地址，以及密碼或電話號碼) 或 SAML 插頁式畫面 (如果透過 <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" /> 政策啟用的話)。設定受管理工作階段後，系統便只會顯示受管理工作階段帳戶並允許從中擇一登入。
