@@ -317,6 +317,10 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
   self.suggestion = suggestion;
   self.incognito = incognito;
 
+  self.separator.backgroundColor = self.incognito
+                                       ? [MDCPalette.cr_greyPalette tint700]
+                                       : [MDCPalette.cr_greyPalette tint200];
+
   self.textTruncatingLabel.attributedText = self.suggestion.text;
 
   // URLs have have special layout requirements.
