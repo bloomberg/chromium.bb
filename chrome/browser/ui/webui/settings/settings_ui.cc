@@ -208,23 +208,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   // no Chrome OS settings in the browser settings page.
   InitOSWebUIHandlers(profile, web_ui, html_source);
 
-  // TODO(jamescook): Sort out how account management is split between Chrome OS
-  // and browser settings.
-  if (chromeos::IsAccountManagerAvailable(profile)) {
-    chromeos::AccountManagerFactory* factory =
-        g_browser_process->platform_part()->GetAccountManagerFactory();
-    chromeos::AccountManager* account_manager =
-        factory->GetAccountManager(profile->GetPath().value());
-    DCHECK(account_manager);
-
-    AddSettingsPageUIHandler(
-        std::make_unique<chromeos::settings::AccountManagerUIHandler>(
-            account_manager, IdentityManagerFactory::GetForProfile(profile)));
-    html_source->AddBoolean(
-        "secondaryGoogleAccountSigninAllowed",
-        profile->GetPrefs()->GetBoolean(
-            chromeos::prefs::kSecondaryGoogleAccountSigninAllowed));
-  }
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::ChangePictureHandler>());
 #else
@@ -378,6 +361,24 @@ void SettingsUI::DocumentOnLoadCompletedInMainFrame() {
 void SettingsUI::InitOSWebUIHandlers(Profile* profile,
                                      content::WebUI* web_ui,
                                      content::WebUIDataSource* html_source) {
+  // TODO(jamescook): Sort out how account management is split between Chrome OS
+  // and browser settings.
+  if (chromeos::IsAccountManagerAvailable(profile)) {
+    chromeos::AccountManagerFactory* factory =
+        g_browser_process->platform_part()->GetAccountManagerFactory();
+    chromeos::AccountManager* account_manager =
+        factory->GetAccountManager(profile->GetPath().value());
+    DCHECK(account_manager);
+
+    web_ui->AddMessageHandler(
+        std::make_unique<chromeos::settings::AccountManagerUIHandler>(
+            account_manager, IdentityManagerFactory::GetForProfile(profile)));
+    html_source->AddBoolean(
+        "secondaryGoogleAccountSigninAllowed",
+        profile->GetPrefs()->GetBoolean(
+            chromeos::prefs::kSecondaryGoogleAccountSigninAllowed));
+  }
+
   web_ui->AddMessageHandler(
       std::make_unique<chromeos::settings::AccessibilityHandler>(web_ui));
   web_ui->AddMessageHandler(

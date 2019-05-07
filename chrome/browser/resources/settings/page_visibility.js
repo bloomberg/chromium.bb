@@ -19,7 +19,7 @@
  *   internet: (boolean|undefined),
  *   multidevice: (boolean|undefined),
  *   onStartup: (boolean|undefined),
- *   people: (boolean|undefined),
+ *   people: (boolean|undefined|PeoplePageVisibility),
  *   privacy: (boolean|undefined|PrivacyPageVisibility),
  *   reset:(boolean|undefined),
  * }}
@@ -43,6 +43,15 @@ let AppearancePageVisibility;
  * }}
  */
 let DownloadsPageVisibility;
+
+/**
+ * @typedef {{
+ *   googleAccounts: boolean,
+ *   lockScreen: boolean,
+ *   manageUsers: boolean,
+ * }}
+ */
+let PeoplePageVisibility;
 
 /**
  * @typedef {{
@@ -118,7 +127,11 @@ cr.define('settings', function() {
       bluetooth: showOSSettings,
       multidevice: showOSSettings,
       autofill: true,
-      people: true,
+      people: {
+        lockScreen: showOSSettings,
+        googleAccounts: showOSSettings,
+        manageUsers: showOSSettings,
+      },
       onStartup: true,
       reset: true,
       appearance: {

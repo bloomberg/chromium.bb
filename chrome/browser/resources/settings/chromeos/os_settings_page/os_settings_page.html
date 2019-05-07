@@ -3,10 +3,10 @@
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="../os_people_page/os_people_page.html">
 <link rel="import" href="../personalization_page/personalization_page.html">
 <link rel="import" href="../../change_password_page/change_password_page.html">
 <link rel="import" href="../../controls/settings_idle_load.html">
-<link rel="import" href="../../people_page/people_page.html">
 <link rel="import" href="../../reset_page/reset_profile_banner.html">
 <link rel="import" href="../../search_page/search_page.html">
 <link rel="import" href="../../settings_page/main_page_behavior.html">
@@ -123,9 +123,9 @@
         <template is="dom-if" if="[[showPage_(pageVisibility.people)]]" restamp>
           <settings-section page-title="$i18n{peoplePageTitle}"
               section="people">
-            <settings-people-page prefs="{{prefs}}"
+            <os-settings-people-page prefs="{{prefs}}"
                 page-visibility="[[pageVisibility]]">
-            </settings-people-page>
+            </os-settings-people-page>
           </settings-section>
         </template>
         <!-- TODO(hsuregan): Change from appearance to personalization once
