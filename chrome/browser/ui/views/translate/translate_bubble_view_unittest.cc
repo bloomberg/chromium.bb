@@ -342,7 +342,8 @@ TEST_F(TranslateBubbleViewTest, DoneButton) {
       TranslateBubbleView::COMBOBOX_ID_TARGET_LANGUAGE);
   PressButton(TranslateBubbleView::BUTTON_ID_DONE);
   EXPECT_TRUE(mock_model_->translate_called_);
-  EXPECT_EQ(10, mock_model_->original_language_index_);
+  // Expected value is (set id - 1) because user selected id is actual id + 1
+  EXPECT_EQ(9, mock_model_->original_language_index_);
   EXPECT_EQ(20, mock_model_->target_language_index_);
 }
 

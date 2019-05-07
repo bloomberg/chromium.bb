@@ -515,11 +515,12 @@ void TranslateBubbleView::HandleComboboxPerformAction(
   switch (sender_id) {
     case COMBOBOX_ID_SOURCE_LANGUAGE: {
       if (model_->GetOriginalLanguageIndex() ==
-          source_language_combobox_->GetSelectedIndex()) {
+          // Selected Index is increased by 1 because we added "UNKNOWN".
+          source_language_combobox_->GetSelectedIndex() - 1) {
         break;
       }
       model_->UpdateOriginalLanguageIndex(
-          source_language_combobox_->GetSelectedIndex());
+          source_language_combobox_->GetSelectedIndex() - 1);
       UpdateAdvancedView();
       translate::ReportUiAction(translate::SOURCE_LANGUAGE_MENU_CLICKED);
       break;
@@ -756,9 +757,11 @@ views::View* TranslateBubbleView::CreateViewAdvanced() {
   views::Label* target_language_label = new views::Label(
       l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_TRANSLATION_LANGUAGE));
 
-  int source_default_index = model_->GetOriginalLanguageIndex();
+  // Index + 1 because GetOriginalLanguageIndex() returns the actual index - 1
+  // to accomodate added label "UNKNOWN". (crbug/721600)
+  int source_default_index = model_->GetOriginalLanguageIndex() + 1;
   source_language_combobox_model_.reset(
-      new LanguageComboboxModel(source_default_index, model_.get()));
+      new SourceLanguageComboboxModel(source_default_index, model_.get()));
   source_language_combobox_ =
       new views::Combobox(source_language_combobox_model_.get());
 
@@ -767,7 +770,7 @@ views::View* TranslateBubbleView::CreateViewAdvanced() {
 
   int target_default_index = model_->GetTargetLanguageIndex();
   target_language_combobox_model_.reset(
-      new LanguageComboboxModel(target_default_index, model_.get()));
+      new TargetLanguageComboboxModel(target_default_index, model_.get()));
   target_language_combobox_ =
       new views::Combobox(target_language_combobox_model_.get());
 
