@@ -32,13 +32,28 @@ KeyParams KeystoreKeyParams(const std::string& key) {
   return Pbkdf2KeyParams(std::move(encoded_key));
 }
 
+class MockNigoriLocalChangeProcessor : public NigoriLocalChangeProcessor {
+ public:
+  MockNigoriLocalChangeProcessor() = default;
+  ~MockNigoriLocalChangeProcessor() = default;
+
+  MOCK_METHOD2(ModelReadyToSync, void(NigoriSyncBridge*, NigoriMetadataBatch));
+  MOCK_METHOD1(Put, void(std::unique_ptr<EntityData>));
+  MOCK_METHOD0(GetMetadata, NigoriMetadataBatch());
+  MOCK_METHOD1(ReportError, void(const ModelError&));
+};
+
 class NigoriSyncBridgeImplTest : public testing::Test {
  protected:
   NigoriSyncBridgeImplTest() {
-    bridge_ = std::make_unique<NigoriSyncBridgeImpl>(&encryptor_);
+    auto processor = std::make_unique<MockNigoriLocalChangeProcessor>();
+    processor_ = processor.get();
+    bridge_ = std::make_unique<NigoriSyncBridgeImpl>(std::move(processor),
+                                                     &encryptor_);
   }
 
   NigoriSyncBridgeImpl* bridge() { return bridge_.get(); }
+  MockNigoriLocalChangeProcessor* processor() { return processor_; }
 
   // Builds NigoriSpecifics with following fields:
   // 1. encryption_keybag contains all keys derived from |keybag_keys_params|
@@ -78,9 +93,11 @@ class NigoriSyncBridgeImplTest : public testing::Test {
   }
 
  private:
-  // Don't change the order. |bridge_| should outlive |encryptor_|.
+  // Don't change the order. |encryptor_| should outlive |bridge_|.
   FakeEncryptor encryptor_;
   std::unique_ptr<NigoriSyncBridgeImpl> bridge_;
+  // Ownership transferred to |bridge_|.
+  MockNigoriLocalChangeProcessor* processor_;
 };
 
 MATCHER_P(CanDecryptWith, key_params, "") {
@@ -114,6 +131,22 @@ MATCHER_P(HasDefaultKeyDerivedFrom, key_params, "") {
   EXPECT_TRUE(expected_default_nigori.Permute(
       Nigori::Type::Password, kNigoriKeyName, &expected_default_key_name));
   return cryptographer.GetDefaultNigoriKeyName() == expected_default_key_name;
+}
+
+MATCHER(HasKeystoreNigori, "") {
+  const std::unique_ptr<EntityData>& entity_data = arg;
+  if (!entity_data || !entity_data->specifics.has_nigori()) {
+    return false;
+  }
+  const sync_pb::NigoriSpecifics& specifics = entity_data->specifics.nigori();
+  if (ProtoPassphraseTypeToEnum(specifics.passphrase_type()) !=
+      PassphraseType::KEYSTORE_PASSPHRASE) {
+    return false;
+  }
+  return !specifics.encryption_keybag().blob().empty() &&
+         !specifics.keystore_decryptor_token().blob().empty() &&
+         specifics.keybag_is_frozen() &&
+         specifics.has_keystore_migration_time();
 }
 
 // Simplest case of keystore Nigori: we have only one keystore key and no old
@@ -215,6 +248,31 @@ TEST_F(NigoriSyncBridgeImplTest,
     EXPECT_THAT(cryptographer, CanDecryptWith(key_params));
   }
   EXPECT_THAT(cryptographer, HasDefaultKeyDerivedFrom(kCurrentKeyParams));
+}
+
+// Tests that we build keystore Nigori, put it to processor and initialize
+// the cryptographer, when the default Nigori is received.
+TEST_F(NigoriSyncBridgeImplTest,
+       ShouldPutAndMakeCryptographerReadyOnDefaultNigori) {
+  const std::string kRawKeystoreKey = "raw_keystore_key";
+  const KeyParams kKeystoreKeyParams = KeystoreKeyParams(kRawKeystoreKey);
+
+  EntityData default_entity_data;
+  *default_entity_data.specifics.mutable_nigori() =
+      sync_pb::NigoriSpecifics::default_instance();
+  EXPECT_TRUE(bridge()->SetKeystoreKeys({kRawKeystoreKey}));
+
+  // We don't verify entire NigoriSpecifics here, because it requires too
+  // complex matcher (NigoriSpecifics is not determenistic).
+  EXPECT_CALL(*processor(), Put(HasKeystoreNigori()));
+  EXPECT_THAT(bridge()->MergeSyncData(std::move(default_entity_data)),
+              Eq(base::nullopt));
+
+  const Cryptographer& cryptographer = bridge()->GetCryptographerForTesting();
+  EXPECT_THAT(cryptographer, CanDecryptWith(kKeystoreKeyParams));
+  EXPECT_THAT(cryptographer, HasDefaultKeyDerivedFrom(kKeystoreKeyParams));
+  // TODO(crbug.com/922900): verify that passphrase type is equal to
+  // KeystorePassphrase once passphrase type support is implemented.
 }
 
 }  // namespace

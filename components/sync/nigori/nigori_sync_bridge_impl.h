@@ -17,6 +17,7 @@
 #include "components/sync/model/conflict_resolution.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/nigori/keystore_keys_handler.h"
+#include "components/sync/nigori/nigori_local_change_processor.h"
 #include "components/sync/nigori/nigori_sync_bridge.h"
 
 namespace syncer {
@@ -37,7 +38,8 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
  public:
   // |encryptor| must not be null and must outlive this object and any copies
   // of the Cryptographer exposed by this object.
-  explicit NigoriSyncBridgeImpl(Encryptor* encryptor);
+  NigoriSyncBridgeImpl(std::unique_ptr<NigoriLocalChangeProcessor> processor,
+                       Encryptor* encryptor);
   ~NigoriSyncBridgeImpl() override;
 
   // SyncEncryptionHandler implementation.
@@ -55,9 +57,9 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
 
   // NigoriSyncBridge implementation.
   base::Optional<ModelError> MergeSyncData(
-      const base::Optional<EntityData>& data) override;
+      base::Optional<EntityData> data) override;
   base::Optional<ModelError> ApplySyncChanges(
-      const base::Optional<EntityData>& data) override;
+      base::Optional<EntityData> data) override;
   std::unique_ptr<EntityData> GetData() override;
   ConflictResolution ResolveConflict(const EntityData& local_data,
                                      const EntityData& remote_data) override;
@@ -69,6 +71,14 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   const Cryptographer& GetCryptographerForTesting() const;
 
  private:
+  // Updates state of |cryptographer_| according to given |specifics|.
+  // TODO(crbug.com/922900): update the comment above once more fields are
+  // supported.
+  base::Optional<ModelError> UpdateLocalState(
+      const sync_pb::NigoriSpecifics& specifics);
+
+  const std::unique_ptr<NigoriLocalChangeProcessor> processor_;
+
   // Base64 encoded keystore keys. The last element is the current keystore
   // key. These keys are not a part of Nigori node and are persisted
   // separately. Should be encrypted with OSCrypt before persisting.

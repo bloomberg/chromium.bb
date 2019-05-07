@@ -88,12 +88,10 @@ class MockNigoriSyncBridge : public NigoriSyncBridge {
   MockNigoriSyncBridge() = default;
   ~MockNigoriSyncBridge() = default;
 
-  MOCK_METHOD1(
-      MergeSyncData,
-      base::Optional<ModelError>(const base::Optional<EntityData>& data));
-  MOCK_METHOD1(
-      ApplySyncChanges,
-      base::Optional<ModelError>(const base::Optional<EntityData>& data));
+  MOCK_METHOD1(MergeSyncData,
+               base::Optional<ModelError>(base::Optional<EntityData> data));
+  MOCK_METHOD1(ApplySyncChanges,
+               base::Optional<ModelError>(base::Optional<EntityData> data));
   MOCK_METHOD0(GetData, std::unique_ptr<EntityData>());
   MOCK_METHOD2(ResolveConflict,
                ConflictResolution(const EntityData& local_data,
