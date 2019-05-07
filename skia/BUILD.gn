@@ -814,9 +814,16 @@ group("test_fonts_resources") {
 
 source_set("test_fonts") {
   testonly = true
+
   sources = [
     "ext/test_fonts.h",
   ]
+  deps = [
+    ":test_fonts_resources",
+    "//base/test:test_support",
+    "//skia",
+  ]
+
   if (is_android) {
     sources += [ "ext/test_fonts_android.cc" ]
   }
@@ -825,6 +832,7 @@ source_set("test_fonts") {
       "ext/test_fonts_fuchsia.cc",
       "ext/test_fonts_fuchsia.h",
     ]
+    deps += [ "//third_party/fuchsia-sdk/sdk:sys" ]
   }
   if (is_linux) {
     sources += [ "ext/test_fonts_linux.cc" ]
@@ -832,12 +840,6 @@ source_set("test_fonts") {
   if (is_mac) {
     sources += [ "ext/test_fonts_mac.mm" ]
   }
-
-  deps = [
-    ":test_fonts_resources",
-    "//base/test:test_support",
-    "//skia",
-  ]
 }
 
 test("skia_unittests") {
