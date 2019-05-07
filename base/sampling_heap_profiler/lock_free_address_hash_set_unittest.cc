@@ -5,6 +5,7 @@
 #include "base/sampling_heap_profiler/lock_free_address_hash_set.h"
 
 #include <stdlib.h>
+#include <atomic>
 #include <cinttypes>
 #include <memory>
 
@@ -18,13 +19,14 @@ namespace base {
 
 class LockFreeAddressHashSetTest : public ::testing::Test {
  public:
-  static bool Subset(const LockFreeAddressHashSet& superset,
-                     const LockFreeAddressHashSet& subset) {
-    for (subtle::AtomicWord bucket : subset.buckets_) {
+  static bool IsSubset(const LockFreeAddressHashSet& superset,
+                       const LockFreeAddressHashSet& subset) {
+    for (const std::atomic<LockFreeAddressHashSet::Node*>& bucket :
+         subset.buckets_) {
       for (LockFreeAddressHashSet::Node* node =
-               reinterpret_cast<LockFreeAddressHashSet::Node*>(bucket);
+               bucket.load(std::memory_order_acquire);
            node; node = LockFreeAddressHashSet::next_node(node)) {
-        void* key = reinterpret_cast<void*>(node->key);
+        void* key = node->key.load(std::memory_order_relaxed);
         if (key && !superset.Contains(key))
           return false;
       }
@@ -34,13 +36,13 @@ class LockFreeAddressHashSetTest : public ::testing::Test {
 
   static bool Equals(const LockFreeAddressHashSet& set1,
                      const LockFreeAddressHashSet& set2) {
-    return Subset(set1, set2) && Subset(set2, set1);
+    return IsSubset(set1, set2) && IsSubset(set2, set1);
   }
 
   static size_t BucketSize(const LockFreeAddressHashSet& set, size_t bucket) {
     size_t count = 0;
     LockFreeAddressHashSet::Node* node =
-        reinterpret_cast<LockFreeAddressHashSet::Node*>(set.buckets_[bucket]);
+        set.buckets_[bucket].load(std::memory_order_acquire);
     for (; node; node = set.next_node(node))
       ++count;
     return count;
@@ -110,17 +112,18 @@ TEST_F(LockFreeAddressHashSetTest, Copy) {
   EXPECT_FALSE(Equals(set, set3));
   EXPECT_TRUE(Equals(set2, set3));
 
-  EXPECT_TRUE(Subset(set, set2));
-  EXPECT_FALSE(Subset(set2, set));
+  EXPECT_TRUE(IsSubset(set, set2));
+  EXPECT_FALSE(IsSubset(set2, set));
 }
 
 class WriterThread : public SimpleThread {
  public:
-  WriterThread(LockFreeAddressHashSet* set, subtle::Atomic32* cancel)
+  WriterThread(LockFreeAddressHashSet* set, std::atomic_bool* cancel)
       : SimpleThread("ReaderThread"), set_(set), cancel_(cancel) {}
 
   void Run() override {
-    for (size_t value = 42; !subtle::Acquire_Load(cancel_); ++value) {
+    for (size_t value = 42; !cancel_->load(std::memory_order_acquire);
+         ++value) {
       void* ptr = reinterpret_cast<void*>(value);
       set_->Insert(ptr);
       EXPECT_TRUE(set_->Contains(ptr));
@@ -133,7 +136,7 @@ class WriterThread : public SimpleThread {
 
  private:
   LockFreeAddressHashSet* set_;
-  subtle::Atomic32* cancel_;
+  std::atomic_bool* cancel_;
 };
 
 #if defined(THREAD_SANITIZER)
@@ -145,7 +148,7 @@ TEST_F(LockFreeAddressHashSetTest, DISABLE_ON_TSAN(ConcurrentAccess)) {
   // The purpose of this test is to make sure adding/removing keys concurrently
   // does not disrupt the state of other keys.
   LockFreeAddressHashSet set(16);
-  subtle::Atomic32 cancel = 0;
+  std::atomic_bool cancel(false);
   auto thread = std::make_unique<WriterThread>(&set, &cancel);
   thread->Start();
   for (size_t i = 1; i <= 20; ++i)
@@ -158,7 +161,7 @@ TEST_F(LockFreeAddressHashSetTest, DISABLE_ON_TSAN(ConcurrentAccess)) {
       EXPECT_EQ(i < 16, set.Contains(reinterpret_cast<void*>(i)));
     }
   }
-  subtle::Release_Store(&cancel, 1);
+  cancel.store(true, std::memory_order_release);
   thread->Join();
 
   EXPECT_TRUE(set.Contains(reinterpret_cast<void*>(0x1337)));

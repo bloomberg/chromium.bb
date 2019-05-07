@@ -5,10 +5,10 @@
 #ifndef BASE_SAMPLING_HEAP_PROFILER_LOCK_FREE_ADDRESS_HASH_SET_H_
 #define BASE_SAMPLING_HEAP_PROFILER_LOCK_FREE_ADDRESS_HASH_SET_H_
 
+#include <atomic>
 #include <cstdint>
 #include <vector>
 
-#include "base/atomicops.h"
 #include "base/logging.h"
 
 namespace base {
@@ -70,9 +70,7 @@ class BASE_EXPORT LockFreeAddressHashSet {
   void Copy(const LockFreeAddressHashSet& other);
 
   size_t buckets_count() const { return buckets_.size(); }
-  size_t size() const {
-    return static_cast<size_t>(subtle::NoBarrier_Load(&size_));
-  }
+  size_t size() const { return size_.load(std::memory_order_relaxed); }
 
   // Returns the average bucket utilization.
   float load_factor() const { return 1.f * size() / buckets_.size(); }
@@ -81,28 +79,26 @@ class BASE_EXPORT LockFreeAddressHashSet {
   friend class LockFreeAddressHashSetTest;
 
   struct Node {
-    Node() : key(0), next(0) {}
     explicit Node(void* key);
-
-    subtle::AtomicWord key;
-    subtle::AtomicWord next;
+    std::atomic<void*> key;
+    std::atomic<Node*> next;
   };
 
   static uint32_t Hash(void* key);
   Node* FindNode(void* key) const;
-  Node* Bucket(void* key) const;
   static Node* next_node(Node* node) {
-    return reinterpret_cast<Node*>(subtle::Acquire_Load(&node->next));
+    return node->next.load(std::memory_order_acquire);
   }
 
-  std::vector<subtle::AtomicWord> buckets_;
-  size_t bucket_mask_;
-  subtle::AtomicWord size_ = 0;
+  std::vector<std::atomic<Node*>> buckets_;
+  std::atomic_int size_{0};
+  const size_t bucket_mask_;
 };
 
 inline LockFreeAddressHashSet::Node::Node(void* a_key) {
-  subtle::NoBarrier_Store(&key, reinterpret_cast<subtle::AtomicWord>(a_key));
-  subtle::NoBarrier_Store(&next, 0);
+  key.store(a_key, std::memory_order_relaxed);
+  // |next| field is initiailized later, right before the node is inserted
+  // into the linked list.
 }
 
 inline bool LockFreeAddressHashSet::Contains(void* key) const {
@@ -111,32 +107,25 @@ inline bool LockFreeAddressHashSet::Contains(void* key) const {
 
 inline void LockFreeAddressHashSet::Remove(void* key) {
   Node* node = FindNode(key);
-  // TODO(alph): Replace with DCHECK.
-  CHECK(node != nullptr);
+  DCHECK_NE(node, nullptr);
   // We can never delete the node, nor detach it from the current bucket
   // as there may always be another thread currently iterating over it.
   // Instead we just mark it as empty, so |Insert| can reuse it later.
-  subtle::NoBarrier_Store(&node->key, 0);
-  subtle::NoBarrier_AtomicIncrement(&size_, -1);
+  node->key.store(nullptr, std::memory_order_relaxed);
+  size_.fetch_add(-1, std::memory_order_relaxed);
 }
 
 inline LockFreeAddressHashSet::Node* LockFreeAddressHashSet::FindNode(
     void* key) const {
-  for (Node* node = Bucket(key); node != nullptr; node = next_node(node)) {
-    void* k = reinterpret_cast<void*>(subtle::NoBarrier_Load(&node->key));
+  DCHECK_NE(key, nullptr);
+  const std::atomic<Node*>& bucket = buckets_[Hash(key) & bucket_mask_];
+  for (Node* node = bucket.load(std::memory_order_acquire); node != nullptr;
+       node = next_node(node)) {
+    void* k = node->key.load(std::memory_order_relaxed);
     if (k == key)
       return node;
   }
   return nullptr;
-}
-
-inline LockFreeAddressHashSet::Node* LockFreeAddressHashSet::Bucket(
-    void* key) const {
-  // TODO(alph): Replace with DCHECK.
-  CHECK(key != nullptr);
-  uint32_t h = Hash(key);
-  return reinterpret_cast<Node*>(
-      subtle::Acquire_Load(&buckets_[h & bucket_mask_]));
 }
 
 // static
