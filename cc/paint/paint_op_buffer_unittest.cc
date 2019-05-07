@@ -2856,78 +2856,6 @@ MATCHER_P2(MatchesShader, flags, scale, "") {
   return true;
 }
 
-TEST(PaintOpBufferTest, RasterPaintWorkletImage1) {
-  sk_sp<PaintOpBuffer> paint_worklet_buffer = sk_make_sp<PaintOpBuffer>();
-  PaintFlags noop_flags;
-  SkRect savelayer_rect = SkRect::MakeXYWH(0, 0, 100, 100);
-  paint_worklet_buffer->push<TranslateOp>(8.0f, 8.0f);
-  paint_worklet_buffer->push<SaveLayerOp>(&savelayer_rect, &noop_flags);
-  PaintFlags draw_flags;
-  draw_flags.setColor(0u);
-  SkRect rect = SkRect::MakeXYWH(0, 0, 100, 100);
-  paint_worklet_buffer->push<DrawRectOp>(rect, draw_flags);
-
-  MockImageProvider provider;
-  provider.SetRecord(paint_worklet_buffer);
-
-  PaintOpBuffer blink_buffer;
-  scoped_refptr<TestPaintWorkletInput> input =
-      base::MakeRefCounted<TestPaintWorkletInput>(gfx::SizeF(100, 100));
-  PaintImage image = CreatePaintWorkletPaintImage(input);
-  blink_buffer.push<DrawImageOp>(image, 0.0f, 0.0f, nullptr);
-
-  testing::StrictMock<MockCanvas> canvas;
-  testing::Sequence s;
-
-  EXPECT_CALL(canvas, willSave()).InSequence(s);
-  EXPECT_CALL(canvas, didConcat(SkMatrix::MakeTrans(8.0f, 8.0f)));
-  EXPECT_CALL(canvas, OnSaveLayer()).InSequence(s);
-  EXPECT_CALL(canvas, OnDrawRectWithColor(0u));
-  EXPECT_CALL(canvas, willRestore()).InSequence(s);
-  EXPECT_CALL(canvas, willRestore()).InSequence(s);
-
-  blink_buffer.Playback(&canvas, PlaybackParams(&provider));
-}
-
-TEST(PaintOpBufferTest, RasterPaintWorkletImage2) {
-  sk_sp<PaintOpBuffer> paint_worklet_buffer = sk_make_sp<PaintOpBuffer>();
-  PaintFlags noop_flags;
-  SkRect savelayer_rect = SkRect::MakeXYWH(0, 0, 10, 10);
-  paint_worklet_buffer->push<SaveLayerOp>(&savelayer_rect, &noop_flags);
-  PaintFlags draw_flags;
-  draw_flags.setFilterQuality(kLow_SkFilterQuality);
-  PaintImage paint_image = CreateDiscardablePaintImage(gfx::Size(10, 10));
-  paint_worklet_buffer->push<DrawImageOp>(paint_image, 0.0f, 0.0f, &draw_flags);
-
-  std::vector<SkSize> src_rect_offset = {SkSize::MakeEmpty()};
-  std::vector<SkSize> scale_adjustment = {SkSize::Make(0.2f, 0.2f)};
-  std::vector<SkFilterQuality> quality = {kHigh_SkFilterQuality};
-  MockImageProvider provider(src_rect_offset, scale_adjustment, quality);
-  provider.SetRecord(paint_worklet_buffer);
-
-  PaintOpBuffer blink_buffer;
-  scoped_refptr<TestPaintWorkletInput> input =
-      base::MakeRefCounted<TestPaintWorkletInput>(gfx::SizeF(100, 100));
-  PaintImage image = CreatePaintWorkletPaintImage(input);
-  blink_buffer.push<DrawImageOp>(image, 5.0f, 7.0f, nullptr);
-
-  testing::StrictMock<MockCanvas> canvas;
-  testing::Sequence s;
-
-  EXPECT_CALL(canvas, willSave()).InSequence(s);
-  EXPECT_CALL(canvas, didConcat(SkMatrix::MakeTrans(5.0f, 7.0f)));
-  EXPECT_CALL(canvas, OnSaveLayer()).InSequence(s);
-  EXPECT_CALL(canvas, willSave()).InSequence(s);
-  EXPECT_CALL(canvas, didConcat(MatchesInvScale(scale_adjustment[0])));
-  EXPECT_CALL(canvas, onDrawImage(NonLazyImage(), 0.0f, 0.0f,
-                                  MatchesQuality(quality[0])));
-  EXPECT_CALL(canvas, willRestore()).InSequence(s);
-  EXPECT_CALL(canvas, willRestore()).InSequence(s);
-  EXPECT_CALL(canvas, willRestore()).InSequence(s);
-
-  blink_buffer.Playback(&canvas, PlaybackParams(&provider));
-}
-
 TEST(PaintOpBufferTest, RasterPaintWorkletImageRectBasicCase) {
   sk_sp<PaintOpBuffer> paint_worklet_buffer = sk_make_sp<PaintOpBuffer>();
   PaintFlags noop_flags;
@@ -2955,10 +2883,12 @@ TEST(PaintOpBufferTest, RasterPaintWorkletImageRectBasicCase) {
   testing::Sequence s;
 
   EXPECT_CALL(canvas, willSave()).InSequence(s);
+  EXPECT_CALL(canvas, OnSaveLayer()).InSequence(s);
   EXPECT_CALL(canvas, willSave()).InSequence(s);
   EXPECT_CALL(canvas, didConcat(SkMatrix::MakeTrans(8.0f, 8.0f)));
   EXPECT_CALL(canvas, OnSaveLayer()).InSequence(s);
   EXPECT_CALL(canvas, OnDrawRectWithColor(0u));
+  EXPECT_CALL(canvas, willRestore()).InSequence(s);
   EXPECT_CALL(canvas, willRestore()).InSequence(s);
   EXPECT_CALL(canvas, willRestore()).InSequence(s);
   EXPECT_CALL(canvas, willRestore()).InSequence(s);
@@ -2996,11 +2926,13 @@ TEST(PaintOpBufferTest, RasterPaintWorkletImageRectTranslated) {
 
   EXPECT_CALL(canvas, willSave()).InSequence(s);
   EXPECT_CALL(canvas, OnSaveLayer()).InSequence(s);
+  EXPECT_CALL(canvas, OnSaveLayer()).InSequence(s);
   EXPECT_CALL(canvas, didConcat(SkMatrix::MakeTrans(5.0f, 7.0f)));
   EXPECT_CALL(canvas, willSave()).InSequence(s);
   EXPECT_CALL(canvas, didConcat(MatchesInvScale(scale_adjustment[0])));
   EXPECT_CALL(canvas, onDrawImage(NonLazyImage(), 0.0f, 0.0f,
                                   MatchesQuality(quality[0])));
+  EXPECT_CALL(canvas, willRestore()).InSequence(s);
   EXPECT_CALL(canvas, willRestore()).InSequence(s);
   EXPECT_CALL(canvas, willRestore()).InSequence(s);
   EXPECT_CALL(canvas, willRestore()).InSequence(s);
@@ -3038,11 +2970,13 @@ TEST(PaintOpBufferTest, RasterPaintWorkletImageRectScaled) {
 
   EXPECT_CALL(canvas, willSave()).InSequence(s);
   EXPECT_CALL(canvas, OnSaveLayer()).InSequence(s);
+  EXPECT_CALL(canvas, OnSaveLayer()).InSequence(s);
   EXPECT_CALL(canvas, didConcat(SkMatrix::MakeScale(2.f, 1.5f)));
   EXPECT_CALL(canvas, willSave()).InSequence(s);
   EXPECT_CALL(canvas, didConcat(MatchesInvScale(scale_adjustment[0])));
   EXPECT_CALL(canvas, onDrawImage(NonLazyImage(), 0.0f, 0.0f,
                                   MatchesQuality(quality[0])));
+  EXPECT_CALL(canvas, willRestore()).InSequence(s);
   EXPECT_CALL(canvas, willRestore()).InSequence(s);
   EXPECT_CALL(canvas, willRestore()).InSequence(s);
   EXPECT_CALL(canvas, willRestore()).InSequence(s);
@@ -3083,10 +3017,12 @@ TEST(PaintOpBufferTest, RasterPaintWorkletImageRectClipped) {
 
   EXPECT_CALL(canvas, willSave()).InSequence(s);
   EXPECT_CALL(canvas, OnSaveLayer()).InSequence(s);
+  EXPECT_CALL(canvas, OnSaveLayer()).InSequence(s);
   EXPECT_CALL(canvas, willSave()).InSequence(s);
   EXPECT_CALL(canvas, didConcat(MatchesInvScale(scale_adjustment[0])));
   EXPECT_CALL(canvas, onDrawImage(NonLazyImage(), 0.0f, 0.0f,
                                   MatchesQuality(quality[0])));
+  EXPECT_CALL(canvas, willRestore()).InSequence(s);
   EXPECT_CALL(canvas, willRestore()).InSequence(s);
   EXPECT_CALL(canvas, willRestore()).InSequence(s);
   EXPECT_CALL(canvas, willRestore()).InSequence(s);

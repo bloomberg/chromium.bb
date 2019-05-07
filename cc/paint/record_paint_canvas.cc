@@ -246,6 +246,7 @@ void RecordPaintCanvas::drawImage(const PaintImage& image,
                                   SkScalar left,
                                   SkScalar top,
                                   const PaintFlags* flags) {
+  DCHECK(!image.IsPaintWorklet());
   list_->push<DrawImageOp>(image, left, top, flags);
 }
 
