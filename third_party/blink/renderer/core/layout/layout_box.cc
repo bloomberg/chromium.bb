@@ -473,8 +473,10 @@ void LayoutBox::UpdateScrollSnapMappingAfterStyleChange(
   cc::ScrollSnapType new_snap_type = new_style && allows_snap_container
                                          ? new_style->GetScrollSnapType()
                                          : cc::ScrollSnapType();
-  if (old_snap_type != new_snap_type)
-    snap_coordinator->SnapContainerDidChange(*this, new_snap_type);
+  if (old_snap_type != new_snap_type) {
+    snap_coordinator->SnapContainerDidChange(*this,
+                                             !new_style /* is_removed */);
+  }
 
   cc::ScrollSnapAlign old_snap_align =
       old_style ? old_style->GetScrollSnapAlign() : cc::ScrollSnapAlign();
