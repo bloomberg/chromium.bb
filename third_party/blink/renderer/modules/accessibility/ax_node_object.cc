@@ -2088,9 +2088,17 @@ String AXNodeObject::TextFromDescendants(AXObjectSet& visited,
 
   HeapVector<Member<AXObject>> owned_children;
   ComputeAriaOwnsChildren(owned_children);
-  for (AXObject* obj = RawFirstChild(); obj; obj = obj->RawNextSibling()) {
-    if (!AXObjectCache().IsAriaOwned(obj))
-      children.push_back(obj);
+
+  for (Node* child = LayoutTreeBuilderTraversal::FirstChild(*node_); child;
+       child = LayoutTreeBuilderTraversal::NextSibling(*child)) {
+    if (child->IsTextNode() &&
+        ToText(child)->wholeText().ContainsOnlyWhitespaceOrEmpty()) {
+      // skip over empty text nodes
+      continue;
+    }
+    AXObject* child_obj = AXObjectCache().GetOrCreate(child);
+    if (child_obj && !AXObjectCache().IsAriaOwned(child_obj))
+      children.push_back(child_obj);
   }
   for (const auto& owned_child : owned_children)
     children.push_back(owned_child);
