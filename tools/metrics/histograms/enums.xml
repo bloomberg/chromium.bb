@@ -23050,6 +23050,10 @@ Called by update_net_error_codes.py.-->
   <int value="2883" label="FocusWithoutUserActivationNotSandboxedAdFrame"/>
   <int value="2884" label="FocusWithoutUserActivationSandboxedNotAdFrame"/>
   <int value="2885" label="FocusWithoutUserActivationSandboxedAdFrame"/>
+  <int value="2886"
+      label="V8RTCRtpReceiver_JitterBufferDelayHint_AttributeGetter"/>
+  <int value="2887"
+      label="V8RTCRtpReceiver_JitterBufferDelayHint_AttributeSetter"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
