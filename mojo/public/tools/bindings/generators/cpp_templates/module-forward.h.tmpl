@@ -39,9 +39,11 @@ namespace {{variant}} {
 #ifndef {{header_guard}}
 #define {{header_guard}}
 
+{% if structs|length -%}
 #include "mojo/public/cpp/bindings/struct_ptr.h"
+{%- endif %}
 
-{% if not disallow_interfaces -%}
+{% if not disallow_interfaces and interfaces|length -%}
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
@@ -54,9 +56,11 @@ namespace {{variant}} {
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/raw_ptr_impl_ref_traits.h"
 #include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
+{%- else %}
+#include "mojo/public/cpp/bindings/lib/buffer.h"
 {%- endif %}
 
-{% if not disallow_native_types %}
+{% if not disallow_native_types and structs|length %}
 #include "mojo/public/cpp/bindings/lib/native_enum_serialization.h"
 #include "mojo/public/cpp/bindings/lib/native_struct_serialization.h"
 {%- endif %}
