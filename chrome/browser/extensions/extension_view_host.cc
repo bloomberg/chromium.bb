@@ -24,6 +24,7 @@
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
@@ -86,6 +87,18 @@ ExtensionViewHost::ExtensionViewHost(
   if (performance_manager::PerformanceManager::GetInstance()) {
     performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
         host_contents());
+  }
+
+  // The popup itself cannot be zoomed, but we must specify a zoom level to use.
+  // Otherwise, if a user zooms a page of the same extension, the popup would
+  // use the per-origin zoom level.
+  if (host_type == VIEW_TYPE_EXTENSION_POPUP) {
+    content::HostZoomMap* zoom_map =
+        content::HostZoomMap::GetForWebContents(host_contents());
+    zoom_map->SetTemporaryZoomLevel(
+        host_contents()->GetRenderViewHost()->GetProcess()->GetID(),
+        host_contents()->GetRenderViewHost()->GetRoutingID(),
+        zoom_map->GetDefaultZoomLevel());
   }
 }
 
