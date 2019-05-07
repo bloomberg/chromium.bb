@@ -40,7 +40,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerMac
   void FireGeneratedEvent(ui::AXEventGenerator::Event event_type,
                           BrowserAccessibility* node) override;
 
-  void OnAccessibilityEvents(
+  bool OnAccessibilityEvents(
       const AXEventNotificationDetails& details) override;
 
   id GetParentView();

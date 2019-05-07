@@ -3227,10 +3227,8 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
       }
     }
 
-    if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs)) {
-      if (browser_accessibility_manager_)
-        browser_accessibility_manager_->OnAccessibilityEvents(details);
-    }
+    if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs))
+      SendAccessibilityEventsToManager(details);
 
     delegate_->AccessibilityEventReceived(details);
 
@@ -3255,6 +3253,15 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
 
   // Always send an ACK or the renderer can be in a bad state.
   Send(new AccessibilityMsg_EventBundle_ACK(routing_id_, ack_token));
+}
+
+void RenderFrameHostImpl::SendAccessibilityEventsToManager(
+    const AXEventNotificationDetails& details) {
+  if (browser_accessibility_manager_ &&
+      !browser_accessibility_manager_->OnAccessibilityEvents(details)) {
+    // OnAccessibilityEvents returns false in IPC error conditions
+    AccessibilityFatalError();
+  }
 }
 
 void RenderFrameHostImpl::OnAccessibilityLocationChanges(
@@ -5320,9 +5327,7 @@ void RenderFrameHostImpl::UpdateAXTreeData() {
   detail.updates[0].has_tree_data = true;
   AXContentTreeDataToAXTreeData(&detail.updates[0].tree_data);
 
-  if (browser_accessibility_manager_)
-    browser_accessibility_manager_->OnAccessibilityEvents(detail);
-
+  SendAccessibilityEventsToManager(detail);
   delegate_->AccessibilityEventReceived(detail);
 }
 

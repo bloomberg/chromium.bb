@@ -174,10 +174,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
   int max_iterations = RenderFrameHostImpl::kMaxAccessibilityResets;
 
   for (int iteration = 0; iteration < max_iterations; iteration++) {
-    // Send the browser accessibility the bad message.
-    BrowserAccessibilityManager* manager =
-        frame->GetOrCreateBrowserAccessibilityManager();
-    manager->OnAccessibilityEvents(bad_accessibility_event);
+    // Make sure the manager has been created.
+    frame->GetOrCreateBrowserAccessibilityManager();
+    ASSERT_NE(nullptr, frame->browser_accessibility_manager());
+
+    // Send the bad message to the manager.
+    frame->SendAccessibilityEventsToManager(bad_accessibility_event);
 
     // Now the frame should have deleted the BrowserAccessibilityManager.
     ASSERT_EQ(nullptr, frame->browser_accessibility_manager());

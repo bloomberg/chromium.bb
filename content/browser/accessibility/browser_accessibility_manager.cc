@@ -373,7 +373,7 @@ bool BrowserAccessibilityManager::UseRootScrollOffsetsWhenComputingBounds() {
   return true;
 }
 
-void BrowserAccessibilityManager::OnAccessibilityEvents(
+bool BrowserAccessibilityManager::OnAccessibilityEvents(
     const AXEventNotificationDetails& details) {
   TRACE_EVENT0("accessibility",
                "BrowserAccessibilityManager::OnAccessibilityEvents");
@@ -391,13 +391,14 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
   // Process all changes to the accessibility tree first.
   for (uint32_t index = 0; index < tree_updates->size(); ++index) {
     if (!tree_->Unserialize((*tree_updates)[index])) {
+      // This is a fatal error, but if there is a delegate, it will handle the
+      // error result and recover by re-creating the manager.
       if (delegate_) {
         LOG(ERROR) << tree_->error();
-        delegate_->AccessibilityFatalError();
       } else {
         CHECK(false) << tree_->error();
       }
-      return;
+      return false;
     }
   }
 
@@ -405,7 +406,7 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
   BrowserAccessibilityManager* root_manager = GetRootManager();
   if (root_manager->hidden_by_interstitial_page()) {
     event_generator_.ClearEvents();
-    return;
+    return true;
   }
 
   // If the root's parent is in another accessibility tree but it wasn't
@@ -465,6 +466,7 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
 
   // Allow derived classes to do event post-processing.
   FinalizeAccessibilityEvents();
+  return true;
 }
 
 void BrowserAccessibilityManager::FinalizeAccessibilityEvents() {}

@@ -277,6 +277,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       PrepareForInnerWebContentsAttachCallback callback) override;
   void UpdateSubresourceLoaderFactories() override;
   blink::FrameOwnerElementType GetFrameOwnerElementType() override;
+  void SendAccessibilityEventsToManager(
+      const AXEventNotificationDetails& details);
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;

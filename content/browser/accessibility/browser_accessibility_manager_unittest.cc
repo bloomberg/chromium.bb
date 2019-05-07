@@ -259,7 +259,7 @@ TEST_F(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects) {
   notification.updates.resize(1);
   notification.updates[0].nodes.push_back(tree2_root);
   notification.updates[0].nodes.push_back(tree2_child0);
-  manager->OnAccessibilityEvents(notification);
+  ASSERT_TRUE(manager->OnAccessibilityEvents(notification));
 
   // There should be 5 objects now: the 4 from the new tree, plus the
   // reference to child3 we kept.
@@ -420,7 +420,7 @@ TEST_F(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
   notification.updates[0].nodes.push_back(tree2_container);
   notification.updates[0].nodes.push_back(tree2_child0);
   notification.updates[0].nodes.push_back(tree2_grandchild0);
-  manager->OnAccessibilityEvents(notification);
+  ASSERT_TRUE(manager->OnAccessibilityEvents(notification));
 
   // There should be 9 objects now: the 8 from the new tree, plus the
   // reference to child3 we kept.
@@ -515,7 +515,7 @@ TEST_F(BrowserAccessibilityManagerTest, TestMoveChildUp) {
   notification.updates[0].nodes.push_back(tree2_4);
   notification.updates[0].nodes.push_back(tree2_5);
   notification.updates[0].nodes.push_back(tree2_6);
-  manager->OnAccessibilityEvents(notification);
+  ASSERT_TRUE(manager->OnAccessibilityEvents(notification));
 
   // There should be 4 objects now.
   EXPECT_EQ(4, CountedBrowserAccessibility::global_obj_count_);
@@ -1600,7 +1600,7 @@ TEST_F(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash) {
   AXEventNotificationDetails events2;
   events2.updates.resize(1);
   events2.updates[0] = MakeAXTreeUpdate(root2);
-  manager->OnAccessibilityEvents(events2);
+  ASSERT_TRUE(manager->OnAccessibilityEvents(events2));
 
   // Make sure that the focused node was updated to the new root and
   // that this doesn't crash.
@@ -1647,7 +1647,7 @@ TEST_F(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash2) {
   events2.updates.resize(1);
   events2.updates[0] = MakeAXTreeUpdate(root2);
   events2.updates[0].node_id_to_clear = 1;
-  manager->OnAccessibilityEvents(events2);
+  ASSERT_TRUE(manager->OnAccessibilityEvents(events2));
 
   // Make sure that the focused node was updated to the new root and
   // that this doesn't crash.
@@ -1690,7 +1690,7 @@ TEST_F(BrowserAccessibilityManagerTest, TreeUpdatesAreMergedWhenPossible) {
   events.updates[0].nodes[0].role = ax::mojom::Role::kMenuItemCheckBox;
   events.updates[1].nodes[0].role = ax::mojom::Role::kMenuItemRadio;
   events.updates[2].nodes[0].role = ax::mojom::Role::kMenuItem;
-  manager->OnAccessibilityEvents(events);
+  ASSERT_TRUE(manager->OnAccessibilityEvents(events));
 
   // These should have been merged into a single tree update.
   EXPECT_EQ(1, observer.update_count());

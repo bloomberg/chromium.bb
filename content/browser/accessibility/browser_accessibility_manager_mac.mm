@@ -429,12 +429,10 @@ void BrowserAccessibilityManagerMac::FireNativeMacNotification(
   NSAccessibilityPostNotification(native_node, mac_notification);
 }
 
-void BrowserAccessibilityManagerMac::OnAccessibilityEvents(
+bool BrowserAccessibilityManagerMac::OnAccessibilityEvents(
     const AXEventNotificationDetails& details) {
   text_edits_.clear();
-  // Call the base method last as it might delete the tree if it receives an
-  // invalid message.
-  BrowserAccessibilityManager::OnAccessibilityEvents(details);
+  return BrowserAccessibilityManager::OnAccessibilityEvents(details);
 }
 
 void BrowserAccessibilityManagerMac::OnAtomicUpdateFinished(

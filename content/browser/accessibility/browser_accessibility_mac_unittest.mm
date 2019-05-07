@@ -115,7 +115,7 @@ class BrowserAccessibilityMacTest : public ui::CocoaTest {
     AXEventNotificationDetails event_bundle;
     event_bundle.updates.resize(1);
     event_bundle.updates[0].nodes.push_back(root_);
-    manager_->OnAccessibilityEvents(event_bundle);
+    ASSERT_TRUE(manager_->OnAccessibilityEvents(event_bundle));
   }
 
   ui::AXNodeData root_;
