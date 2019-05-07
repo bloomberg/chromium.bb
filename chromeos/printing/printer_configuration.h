@@ -25,6 +25,10 @@ class UriComponents;
 CHROMEOS_EXPORT base::Optional<UriComponents> ParseUri(
     const std::string& printer_uri);
 
+// Classes of printers tracked.  See doc/cups_printer_management.md for
+// details on what these mean.
+enum class PrinterClass { kEnterprise, kAutomatic, kDiscovered, kSaved };
+
 class CHROMEOS_EXPORT Printer {
  public:
   // Information needed to find the PPD file for this printer.

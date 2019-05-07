@@ -173,7 +173,7 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
                                     bool is_automatic);
 
   // CupsPrintersManager::Observer override:
-  void OnPrintersChanged(CupsPrintersManager::PrinterClass printer_class,
+  void OnPrintersChanged(PrinterClass printer_class,
                          const std::vector<Printer>& printers) override;
 
   // ui::SelectFileDialog::Listener override:

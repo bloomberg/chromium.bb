@@ -14,6 +14,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/printing/printers_map.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -32,6 +33,7 @@ namespace {
 
 using chromeos::CupsPrintersManager;
 using chromeos::Printer;
+using chromeos::PrinterClass;
 using chromeos::PrinterConfigurer;
 using chromeos::PrinterSetupCallback;
 using chromeos::PrinterSetupResult;
@@ -72,13 +74,13 @@ Printer CreateEnterprisePrinter(const std::string& id,
 
 class FakeCupsPrintersManager : public CupsPrintersManager {
  public:
-  FakeCupsPrintersManager() : printers_(kNumPrinterClasses) {}
+  FakeCupsPrintersManager() = default;
+  ~FakeCupsPrintersManager() override = default;
 
   std::vector<Printer> GetPrinters(PrinterClass printer_class) const override {
-    return printers_[printer_class];
+    return printers_.Get(printer_class);
   }
 
-  void RemoveUnavailablePrinters(std::vector<Printer>*) const override {}
   void UpdateSavedPrinter(const Printer& printer) override {}
   void RemoveSavedPrinter(const std::string& printer_id) override {}
   void AddObserver(CupsPrintersManager::Observer* observer) override {}
@@ -91,29 +93,19 @@ class FakeCupsPrintersManager : public CupsPrintersManager {
   }
 
   base::Optional<Printer> GetPrinter(const std::string& id) const override {
-    // Search through each class of printers and find a printer with a
-    // matching id.
-    for (const std::vector<Printer>& v : printers_) {
-      auto iter = std::find_if(
-          v.begin(), v.end(), [&id](const Printer& p) { return p.id() == id; });
-      if (iter != v.end()) {
-        return *iter;
-      }
-    }
-    return base::nullopt;
+    return printers_.Get(id);
   }
 
   // Add |printer| to the corresponding list in |printers_| bases on the given
   // |printer_class|.
   void AddPrinter(const Printer& printer, PrinterClass printer_class) {
-    ASSERT_LT(printer_class, printers_.size());
-    printers_[printer_class].push_back(printer);
+    printers_.Insert(printer_class, printer);
   }
 
   void InstallPrinter(const std::string& id) { installed_.insert(id); }
 
  private:
-  std::vector<std::vector<Printer>> printers_;
+  chromeos::PrintersMap printers_;
   base::flat_set<std::string> installed_;
 };
 
@@ -174,11 +166,9 @@ TEST_F(LocalPrinterHandlerChromeosTest, GetPrinters) {
       CreateEnterprisePrinter("printer2", "enterprise");
   Printer automatic_printer = CreateTestPrinter("printer3", "automatic");
 
-  printers_manager_.AddPrinter(saved_printer, CupsPrintersManager::kSaved);
-  printers_manager_.AddPrinter(enterprise_printer,
-                               CupsPrintersManager::kEnterprise);
-  printers_manager_.AddPrinter(automatic_printer,
-                               CupsPrintersManager::kAutomatic);
+  printers_manager_.AddPrinter(saved_printer, PrinterClass::kSaved);
+  printers_manager_.AddPrinter(enterprise_printer, PrinterClass::kEnterprise);
+  printers_manager_.AddPrinter(automatic_printer, PrinterClass::kAutomatic);
 
   local_printer_handler_->StartGetPrinters(
       base::BindRepeating(&RecordPrinterList, &call_count, &printers),
@@ -233,7 +223,7 @@ TEST_F(LocalPrinterHandlerChromeosTest, GetPrinters) {
 // successful.
 TEST_F(LocalPrinterHandlerChromeosTest, StartGetCapabilityValidPrinter) {
   Printer saved_printer = CreateTestPrinter("printer1", "saved");
-  printers_manager_.AddPrinter(saved_printer, CupsPrintersManager::kSaved);
+  printers_manager_.AddPrinter(saved_printer, PrinterClass::kSaved);
   printers_manager_.InstallPrinter("printer1");
 
   // Add printer capabilities to |test_backend_|.
@@ -260,8 +250,7 @@ TEST_F(LocalPrinterHandlerChromeosTest, StartGetCapabilityPrinterNotInstalled) {
   Printer discovered_printer = CreateTestPrinter("printer1", "discovered");
   // NOTE: The printer |discovered_printer| is not installed using
   // InstallPrinter.
-  printers_manager_.AddPrinter(discovered_printer,
-                               CupsPrintersManager::kDiscovered);
+  printers_manager_.AddPrinter(discovered_printer, PrinterClass::kDiscovered);
 
   // Add printer capabilities to |test_backend_|.
   PrinterSemanticCapsAndDefaults caps;

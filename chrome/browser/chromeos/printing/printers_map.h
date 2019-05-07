@@ -16,18 +16,6 @@
 
 namespace chromeos {
 
-// Classes of printers tracked.  See doc/cups_printer_management.md for
-// details on what these mean.
-// TODO(baileyberro): Put this somewhere common once PrintersMap is used by
-// CupsPrintersManager.
-enum class PrinterClass {
-  kEnterprise,
-  kAutomatic,
-  kDiscovered,
-  kSaved,
-  kNumPrinterClasses
-};
-
 // PrintersMap stores printers, categorized by class.
 class PrintersMap {
  public:

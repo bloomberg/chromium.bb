@@ -86,6 +86,8 @@
 namespace extensions {
 namespace {
 
+using chromeos::PrinterClass;
+
 constexpr char kCrostiniNotAvailableForCurrentUserError[] =
     "Crostini is not available for the current user";
 
@@ -161,15 +163,15 @@ std::unique_ptr<base::DictionaryValue> MakeDictionaryFromNotification(
   return result;
 }
 
-std::string GetPrinterType(chromeos::CupsPrintersManager::PrinterClass type) {
+std::string GetPrinterType(PrinterClass type) {
   switch (type) {
-    case chromeos::CupsPrintersManager::PrinterClass::kSaved:
+    case PrinterClass::kSaved:
       return "configured";
-    case chromeos::CupsPrintersManager::PrinterClass::kEnterprise:
+    case PrinterClass::kEnterprise:
       return "enterprise";
-    case chromeos::CupsPrintersManager::PrinterClass::kAutomatic:
+    case PrinterClass::kAutomatic:
       return "automatic";
-    case chromeos::CupsPrintersManager::PrinterClass::kDiscovered:
+    case PrinterClass::kDiscovered:
       return "discovered";
     default:
       return "unknown";
@@ -1193,13 +1195,15 @@ void AutotestPrivateGetPrinterListFunction::RespondWithSuccess() {
 }
 
 void AutotestPrivateGetPrinterListFunction::OnEnterprisePrintersInitialized() {
+  constexpr PrinterClass kClassesToFetch[] = {
+      PrinterClass::kEnterprise,
+      PrinterClass::kSaved,
+      PrinterClass::kAutomatic,
+  };
+
   // We are ready to get the list of printers and finish.
-  std::vector<chromeos::CupsPrintersManager::PrinterClass> printer_type = {
-      chromeos::CupsPrintersManager::PrinterClass::kSaved,
-      chromeos::CupsPrintersManager::PrinterClass::kEnterprise,
-      chromeos::CupsPrintersManager::PrinterClass::kAutomatic};
   base::Value::ListStorage& vresults = results_->GetList();
-  for (const auto& type : printer_type) {
+  for (const auto& type : kClassesToFetch) {
     std::vector<chromeos::Printer> printer_list =
         printers_manager_->GetPrinters(type);
     for (const auto& printer : printer_list) {

@@ -41,6 +41,7 @@ namespace {
 
 using chromeos::CupsPrintersManager;
 using chromeos::CupsPrintersManagerFactory;
+using chromeos::PrinterClass;
 
 // We only support sending username for named users but just in case.
 const char kUsernamePlaceholder[] = "chronos";
@@ -163,14 +164,12 @@ void LocalPrinterHandlerChromeos::StartGetPrinters(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   PrinterList printer_list;
-  AddPrintersToList(printers_manager_->GetPrinters(CupsPrintersManager::kSaved),
+  AddPrintersToList(printers_manager_->GetPrinters(PrinterClass::kSaved),
                     &printer_list);
-  AddPrintersToList(
-      printers_manager_->GetPrinters(CupsPrintersManager::kEnterprise),
-      &printer_list);
-  AddPrintersToList(
-      printers_manager_->GetPrinters(CupsPrintersManager::kAutomatic),
-      &printer_list);
+  AddPrintersToList(printers_manager_->GetPrinters(PrinterClass::kEnterprise),
+                    &printer_list);
+  AddPrintersToList(printers_manager_->GetPrinters(PrinterClass::kAutomatic),
+                    &printer_list);
 
   ConvertPrinterListForCallback(added_printers_callback,
                                 std::move(done_callback), printer_list);

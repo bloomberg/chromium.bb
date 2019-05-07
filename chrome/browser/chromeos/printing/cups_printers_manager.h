@@ -31,16 +31,6 @@ class SyncedPrintersManager;
 // in this class must be called from a sequenced context.
 class CupsPrintersManager : public KeyedService {
  public:
-  // Classes of printers tracked.  See doc/cups_printer_management.md for
-  // details on what these mean.
-  enum PrinterClass {
-    kEnterprise,
-    kAutomatic,
-    kDiscovered,
-    kSaved,
-    kNumPrinterClasses
-  };
-
   class Observer {
    public:
     // The list of printers in this class has changed to the given printers.
@@ -76,13 +66,6 @@ class CupsPrintersManager : public KeyedService {
   // Get the known printers in the given class.
   virtual std::vector<Printer> GetPrinters(
       PrinterClass printer_class) const = 0;
-
-  // Remove any printer from printers that we know we cannot currently
-  // talk to.  Examples would be USB printers that are not currently
-  // plugged in, or Zeroconf printers that have not been detected this
-  // session.
-  virtual void RemoveUnavailablePrinters(
-      std::vector<Printer>* printers) const = 0;
 
   // Update or save a printer as a saved printer.  If this is the same as
   // an existing saved printer, the entry will be updated.  If the printer

@@ -378,7 +378,7 @@ void CupsPrintersHandler::HandleGetCupsPrintersList(
   CHECK(args->GetString(0, &callback_id));
 
   std::vector<Printer> printers =
-      printers_manager_->GetPrinters(CupsPrintersManager::kSaved);
+      printers_manager_->GetPrinters(PrinterClass::kSaved);
 
   auto response = BuildCupsPrintersList(printers);
   ResolveJavascriptCallback(base::Value(callback_id), response);
@@ -934,12 +934,10 @@ void CupsPrintersHandler::VerifyPpdContents(const base::FilePath& path,
 void CupsPrintersHandler::HandleStartDiscovery(const base::ListValue* args) {
   PRINTER_LOG(DEBUG) << "Start printer discovery";
   discovery_active_ = true;
-  OnPrintersChanged(
-      CupsPrintersManager::kAutomatic,
-      printers_manager_->GetPrinters(CupsPrintersManager::kAutomatic));
-  OnPrintersChanged(
-      CupsPrintersManager::kDiscovered,
-      printers_manager_->GetPrinters(CupsPrintersManager::kDiscovered));
+  OnPrintersChanged(PrinterClass::kAutomatic,
+                    printers_manager_->GetPrinters(PrinterClass::kAutomatic));
+  OnPrintersChanged(PrinterClass::kDiscovered,
+                    printers_manager_->GetPrinters(PrinterClass::kDiscovered));
   UMA_HISTOGRAM_COUNTS_100(
       "Printing.CUPS.PrintersDiscovered",
       discovered_printers_.size() + automatic_printers_.size());
@@ -970,24 +968,23 @@ void CupsPrintersHandler::HandleSetUpCancel(const base::ListValue* args) {
 }
 
 void CupsPrintersHandler::OnPrintersChanged(
-    CupsPrintersManager::PrinterClass printer_class,
+    PrinterClass printer_class,
     const std::vector<Printer>& printers) {
   switch (printer_class) {
-    case CupsPrintersManager::kAutomatic:
+    case PrinterClass::kAutomatic:
       automatic_printers_ = printers;
       UpdateDiscoveredPrinters();
       break;
-    case CupsPrintersManager::kDiscovered:
+    case PrinterClass::kDiscovered:
       discovered_printers_ = printers;
       UpdateDiscoveredPrinters();
       break;
-    case CupsPrintersManager::kSaved: {
+    case PrinterClass::kSaved: {
       auto printers_list = BuildCupsPrintersList(printers);
       FireWebUIListener("on-printers-changed", printers_list);
       break;
     }
-    case CupsPrintersManager::kEnterprise:
-    case CupsPrintersManager::kNumPrinterClasses:
+    case PrinterClass::kEnterprise:
       // These classes are not shown.
       return;
   }

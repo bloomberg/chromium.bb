@@ -52,10 +52,12 @@ namespace {
 class PrintJobHostImpl;
 class PrinterDiscoverySessionHostImpl;
 
-constexpr chromeos::CupsPrintersManager::PrinterClass kClassesToFetch[] = {
-    chromeos::CupsPrintersManager::kEnterprise,
-    chromeos::CupsPrintersManager::kSaved,
-    chromeos::CupsPrintersManager::kAutomatic,
+using chromeos::PrinterClass;
+
+constexpr PrinterClass kClassesToFetch[] = {
+    PrinterClass::kEnterprise,
+    PrinterClass::kSaved,
+    PrinterClass::kAutomatic,
 };
 
 class ArcPrintServiceImpl : public ArcPrintService,
@@ -270,7 +272,7 @@ class PrinterDiscoverySessionHostImpl
 
   // chromeos::CupsPrintersManager::Observer:
   void OnPrintersChanged(
-      chromeos::CupsPrintersManager::PrinterClass printer_class,
+      PrinterClass printer_class,
       const std::vector<chromeos::Printer>& printers) override {
     // TODO(vkuzkokov) remove missing printers and only add new ones.
     std::vector<mojom::PrinterInfoPtr> arc_printers;
