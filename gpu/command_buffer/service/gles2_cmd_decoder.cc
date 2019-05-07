@@ -9978,6 +9978,10 @@ bool GLES2DecoderImpl::ValidateAndAdjustDrawBuffers(const char* func_name) {
   if (!state_.current_program.get() || !framebuffer) {
     return true;
   }
+  if (!state_.color_mask_red && !state_.color_mask_green &&
+      !state_.color_mask_blue && !state_.color_mask_alpha) {
+    return true;
+  }
   uint32_t fragment_output_type_mask =
       state_.current_program->fragment_output_type_mask();
   uint32_t fragment_output_written_mask =
