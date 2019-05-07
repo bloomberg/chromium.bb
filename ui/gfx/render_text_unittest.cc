@@ -73,6 +73,19 @@ enum {
   UNDERLINE_MASK = 1 << TEXT_STYLE_UNDERLINE,
 };
 
+bool IsFontsSmoothingEnabled() {
+#if defined(OS_WIN)
+  BOOL antialiasing = TRUE;
+  BOOL result = SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &antialiasing, 0);
+  if (result == FALSE) {
+    ADD_FAILURE() << "Failed to retrieve font aliasing configuration.";
+  }
+  return antialiasing;
+#else
+  return true;
+#endif
+}
+
 // Checks whether |range| contains |index|. This is not the same as calling
 // range.Contains(Range(index)), which returns true if |index| == |range.end()|.
 bool IndexInRange(const Range& range, size_t index) {
@@ -4496,6 +4509,11 @@ TEST_F(RenderTextTest, StylePropagated) {
 
 // Ensure the painter adheres to RenderText::subpixel_rendering_suppressed().
 TEST_F(RenderTextTest, SubpixelRenderingSuppressed) {
+  ASSERT_TRUE(IsFontsSmoothingEnabled())
+      << "The test requires that fonts smoothing (anti-aliasing) is activated. "
+         "If this assert is failing you need to manually activate the flag in "
+         "your system fonts settings.";
+
   RenderText* render_text = GetRenderText();
   render_text->SetText(UTF8ToUTF16("x"));
 
