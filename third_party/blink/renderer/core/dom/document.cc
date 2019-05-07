@@ -2766,6 +2766,9 @@ void Document::Shutdown() {
   if (SvgExtensions())
     AccessSVGExtensions().PauseAnimations();
 
+  CancelPendingJavaScriptUrls();
+  http_refresh_scheduler_->Cancel();
+
   if (layout_view_)
     layout_view_->SetIsInWindow(false);
 
@@ -7874,8 +7877,7 @@ int Document::LockedDisplayLockCount() const {
 }
 
 void Document::ExecuteJavaScriptUrls() {
-  if (!frame_)
-    return;
+  DCHECK(frame_);
   Vector<PendingJavascriptUrl> urls_to_execute;
   urls_to_execute.swap(pending_javascript_urls_);
 
