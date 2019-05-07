@@ -197,6 +197,7 @@ TEST_F(PaintWorkletTest, NativeAndCustomProperties) {
   EXPECT_NE(generator, nullptr);
   EXPECT_EQ(generator->NativeInvalidationProperties().size(), 3u);
   EXPECT_EQ(generator->CustomInvalidationProperties().size(), 2u);
+  EXPECT_TRUE(generator->HasAlpha());
 }
 
 }  // namespace blink

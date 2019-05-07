@@ -128,6 +128,12 @@ CSSPaintImageGeneratorImpl::CustomInvalidationProperties() const {
 }
 
 bool CSSPaintImageGeneratorImpl::HasAlpha() const {
+  if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
+    MainThreadDocumentPaintDefinition* definition;
+    if (!GetValidMainThreadDocumentDefinition(definition))
+      return false;
+    return definition->alpha();
+  }
   DocumentPaintDefinition* definition;
   if (!GetValidDocumentDefinition(definition))
     return false;

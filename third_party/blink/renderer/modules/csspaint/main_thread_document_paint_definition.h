@@ -27,7 +27,7 @@ class MODULES_EXPORT MainThreadDocumentPaintDefinition {
   explicit MainThreadDocumentPaintDefinition(
       const Vector<CSSPropertyID>& native_invalidation_properties,
       const Vector<String>& custom_invalidation_properties,
-      double alpha);
+      bool alpha);
   virtual ~MainThreadDocumentPaintDefinition();
 
   const Vector<CSSPropertyID>& NativeInvalidationProperties() const {
@@ -38,12 +38,12 @@ class MODULES_EXPORT MainThreadDocumentPaintDefinition {
     return custom_invalidation_properties_;
   }
 
-  double alpha() const { return alpha_; }
+  bool alpha() const { return alpha_; }
 
  private:
   Vector<CSSPropertyID> native_invalidation_properties_;
   Vector<AtomicString> custom_invalidation_properties_;
-  double alpha_;
+  bool alpha_;
 };
 
 }  // namespace blink
