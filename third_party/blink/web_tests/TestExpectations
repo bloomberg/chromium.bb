@@ -6142,5 +6142,4 @@ crbug.com/959372 [ Win ] external/wpt/import-maps/fallback.sub.tentative.html [ 
 crbug.com/959129 [ Win ] http/tests/devtools/tracing/timeline-script-parse.js [ Pass Failure ]
 
 # Sheriff 2019-05-07
-crbug.com/960346 inspector-protocol/debugger/domdebugger-set-instrumentation-breakpoint.js [ Pass Failure ]
 crbug.com/960443 [ Mac10.10 Mac10.11 ] external/wpt/animation-worklet/worklet-animation-with-scroll-timeline.https.html [ Failure Pass ]
