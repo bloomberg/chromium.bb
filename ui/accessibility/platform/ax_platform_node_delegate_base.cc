@@ -282,10 +282,6 @@ bool AXPlatformNodeDelegateBase::IsOffscreen() const {
   return false;
 }
 
-bool AXPlatformNodeDelegateBase::IsMinimized() const {
-  return false;
-}
-
 bool AXPlatformNodeDelegateBase::IsWebContent() const {
   return false;
 }

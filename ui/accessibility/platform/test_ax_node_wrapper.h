@@ -43,7 +43,6 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   ~TestAXNodeWrapper() override;
 
   AXPlatformNode* ax_platform_node() const { return platform_node_; }
-  void set_minimized(bool minimized) { minimized_ = minimized; }
 
   void BuildAllWrappers(AXTree* tree, AXNode* node);
 
@@ -74,7 +73,6 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
       AXOffscreenResult* offscreen_result) const override;
   gfx::NativeViewAccessible HitTestSync(int x, int y) override;
   gfx::NativeViewAccessible GetFocus() override;
-  bool IsMinimized() const override;
   AXPlatformNode* GetFromNodeID(int32_t id) override;
   int GetIndexInParent() const override;
   bool IsTable() const override;
@@ -144,7 +142,6 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   AXNode* node_;
   ui::AXUniqueId unique_id_;
   AXPlatformNode* platform_node_;
-  bool minimized_ = false;
 };
 
 }  // namespace ui

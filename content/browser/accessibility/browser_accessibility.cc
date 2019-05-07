@@ -1130,10 +1130,6 @@ bool BrowserAccessibility::IsOffscreen() const {
   return offscreen_result == ui::AXOffscreenResult::kOffscreen;
 }
 
-bool BrowserAccessibility::IsMinimized() const {
-  return false;
-}
-
 bool BrowserAccessibility::IsWebContent() const {
   return true;
 }

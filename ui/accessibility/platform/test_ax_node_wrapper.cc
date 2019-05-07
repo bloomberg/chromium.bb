@@ -238,10 +238,6 @@ gfx::NativeViewAccessible TestAXNodeWrapper::GetFocus() {
   return nullptr;
 }
 
-bool TestAXNodeWrapper::IsMinimized() const {
-  return minimized_;
-}
-
 // Walk the AXTree and ensure that all wrappers are created
 void TestAXNodeWrapper::BuildAllWrappers(AXTree* tree, AXNode* node) {
   for (int i = 0; i < node->child_count(); i++) {
