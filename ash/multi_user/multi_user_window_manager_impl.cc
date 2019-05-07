@@ -207,9 +207,7 @@ void MultiUserWindowManagerImpl::SetWindowOwner(aura::Window* window,
 void MultiUserWindowManagerImpl::ShowWindowForUser(
     aura::Window* window,
     const AccountId& account_id) {
-  if (!window)
-    return;
-
+  DCHECK(window);
   const AccountId previous_owner(GetUserPresentingWindow(window));
   if (!ShowWindowForUserIntern(window, account_id))
     return;

@@ -2663,9 +2663,6 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   // Create a browser item in the LauncherController.
   InitLauncherController();
 
-  ash::MultiUserWindowManager* window_manager =
-      MultiUserWindowManagerHelper::GetWindowManager();
-
   // First create an app when the user is active.
   std::string user2 = "user2";
   TestingProfile* profile2 = CreateMultiUserProfile(user2);
@@ -2677,11 +2674,6 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
     // Create a "windowed gmail app".
     std::unique_ptr<V1App> v1_app(CreateRunningV1App(
         profile(), extension_misc::kGmailAppId, kGmailLaunchURL));
-    EXPECT_EQ(4, model_->item_count());
-
-    // Transfer the app to the other screen and switch users.
-    window_manager->ShowWindowForUser(
-        v1_app->browser()->window()->GetNativeWindow(), account_id2);
     EXPECT_EQ(4, model_->item_count());
     SwitchActiveUser(account_id2);
     EXPECT_EQ(3, model_->item_count());
