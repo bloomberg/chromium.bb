@@ -2093,20 +2093,19 @@ def ExtractBuildDepsGraph(buildroot, board):
   with osutils.TempDir(base_dir=chroot_tmp) as tmpdir:
     input_proto_file = os.path.join(tmpdir, 'input.json')
     output_proto_file = os.path.join(tmpdir, 'output.json')
-    depgraph_file = os.path.join(tmpdir, 'depgraph.json')
     with open(input_proto_file, 'w') as f:
       input_proto = {
           'build_target': {
               'name': board,
           },
-          'output_path': path_util.ToChrootPath(depgraph_file),
       }
       json.dump(input_proto, f)
     cmd += ['--input-json', path_util.ToChrootPath(input_proto_file),
             '--output-json', path_util.ToChrootPath(output_proto_file)]
     RunBuildScript(buildroot, cmd, enter_chroot=True, chromite_cmd=True,
                    redirect_stdout=True)
-    return json.loads(osutils.ReadFile(depgraph_file))
+    output = json.loads(osutils.ReadFile(output_proto_file))
+    return output['depGraph']
 
 
 def GenerateCPEExport(buildroot, board, useflags=None):
