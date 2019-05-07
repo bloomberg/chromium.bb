@@ -277,6 +277,22 @@ void AppListPresenterImpl::SetExpandArrowViewVisibility(bool show) {
   }
 }
 
+void AppListPresenterImpl::OnTabletModeChanged(bool started) {
+  if (started) {
+    if (GetTargetVisibility()) {
+      DCHECK(IsVisible());
+      view_->OnTabletModeChanged(true);
+    }
+    home_launcher_shown_ = GetWindow() && GetWindow()->HasFocus();
+
+  } else {
+    if (IsVisible())
+      view_->OnTabletModeChanged(false);
+
+    home_launcher_shown_ = false;
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AppListPresenterImpl, private:
 

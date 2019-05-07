@@ -701,6 +701,11 @@ class ASH_EXPORT ShelfView : public views::View,
   // before AppListViewState changes.
   ash::mojom::AppListViewState recorded_app_list_view_state_;
 
+  // Whether home launcher was shown before a button press, used to record app
+  // launching metrics. This is recorded in case home_launcher_shown_ is changed
+  // before the metric is recorded.
+  bool recorded_home_launcher_shown_ = false;
+
   base::WeakPtrFactory<ShelfView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfView);

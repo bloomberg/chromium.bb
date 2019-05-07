@@ -304,7 +304,8 @@ class ASH_EXPORT AppListControllerImpl
       StateTransitionAnimationCallback callback);
 
   void RecordShelfAppLaunched(
-      base::Optional<mojom::AppListViewState> recorded_app_list_view_state);
+      base::Optional<mojom::AppListViewState> recorded_app_list_view_state,
+      base::Optional<bool> home_launcher_shown);
 
  private:
   // HomeScreenDelegate:
