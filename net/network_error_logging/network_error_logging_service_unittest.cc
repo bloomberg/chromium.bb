@@ -27,8 +27,8 @@ namespace net {
 namespace {
 
 // The tests are parametrized on a boolean value which represents whether or not
-// to use a MockPersistentNELStore.
-// If a MockPersistentNELStore is used, then calls to
+// to use a MockPersistentNelStore.
+// If a MockPersistentNelStore is used, then calls to
 // NetworkErrorLoggingService::OnHeader(), OnRequest(),
 // QueueSignedExchangeReport(), RemoveBrowsingData(), and
 // RemoveAllBrowsingData() will block until the store finishes loading.
@@ -39,7 +39,7 @@ class NetworkErrorLoggingServiceTest : public ::testing::TestWithParam<bool> {
  protected:
   NetworkErrorLoggingServiceTest() {
     if (GetParam()) {
-      store_ = std::make_unique<MockPersistentNELStore>();
+      store_ = std::make_unique<MockPersistentNelStore>();
     } else {
       store_.reset(nullptr);
     }
@@ -98,7 +98,7 @@ class NetworkErrorLoggingServiceTest : public ::testing::TestWithParam<bool> {
     return details;
   }
   NetworkErrorLoggingService* service() { return service_.get(); }
-  MockPersistentNELStore* store() { return store_.get(); }
+  MockPersistentNelStore* store() { return store_.get(); }
   const std::vector<TestReportingService::Report>& reports() {
     return reporting_service_->reports();
   }
@@ -108,11 +108,11 @@ class NetworkErrorLoggingServiceTest : public ::testing::TestWithParam<bool> {
     return url::Origin::Create(url);
   }
 
-  NetworkErrorLoggingService::NELPolicy MakePolicyForOrigin(
+  NetworkErrorLoggingService::NelPolicy MakePolicyForOrigin(
       url::Origin origin,
       base::Time expires = base::Time(),
       base::Time last_used = base::Time()) {
-    NetworkErrorLoggingService::NELPolicy policy;
+    NetworkErrorLoggingService::NelPolicy policy;
     policy.origin = std::move(origin);
     policy.expires = expires;
     policy.last_used = last_used;
@@ -176,7 +176,7 @@ class NetworkErrorLoggingServiceTest : public ::testing::TestWithParam<bool> {
   const GURL kReferrer_ = GURL("https://referrer.com/");
 
   // |store_| needs to outlive |service_|.
-  std::unique_ptr<MockPersistentNELStore> store_;
+  std::unique_ptr<MockPersistentNelStore> store_;
   std::unique_ptr<NetworkErrorLoggingService> service_;
   std::unique_ptr<TestReportingService> reporting_service_;
 };
@@ -1220,39 +1220,39 @@ TEST_P(NetworkErrorLoggingServiceTest, SendsCommandsToStoreSynchronous) {
   if (!store())
     return;
 
-  MockPersistentNELStore::CommandList expected_commands;
-  NetworkErrorLoggingService::NELPolicy policy1 = MakePolicyForOrigin(kOrigin_);
-  NetworkErrorLoggingService::NELPolicy policy2 =
+  MockPersistentNelStore::CommandList expected_commands;
+  NetworkErrorLoggingService::NelPolicy policy1 = MakePolicyForOrigin(kOrigin_);
+  NetworkErrorLoggingService::NelPolicy policy2 =
       MakePolicyForOrigin(kOriginDifferentHost_);
-  std::vector<NetworkErrorLoggingService::NELPolicy> prestored_policies = {
+  std::vector<NetworkErrorLoggingService::NelPolicy> prestored_policies = {
       policy1, policy2};
   store()->SetPrestoredPolicies(std::move(prestored_policies));
 
   // The first call to any of the public methods triggers a load.
   service()->OnHeader(kOrigin_, kServerIP_, kHeader_);
   expected_commands.emplace_back(
-      MockPersistentNELStore::Command::Type::LOAD_NEL_POLICIES);
+      MockPersistentNelStore::Command::Type::LOAD_NEL_POLICIES);
   EXPECT_TRUE(store()->VerifyCommands(expected_commands));
 
   // Make the rest of the test run synchronously.
   FinishLoading(true /* load_success */);
   // DoOnHeader() should now execute.
   expected_commands.emplace_back(
-      MockPersistentNELStore::Command::Type::DELETE_NEL_POLICY, policy1);
+      MockPersistentNelStore::Command::Type::DELETE_NEL_POLICY, policy1);
   expected_commands.emplace_back(
-      MockPersistentNELStore::Command::Type::ADD_NEL_POLICY, policy1);
+      MockPersistentNelStore::Command::Type::ADD_NEL_POLICY, policy1);
   EXPECT_TRUE(store()->VerifyCommands(expected_commands));
 
   service()->OnRequest(
       MakeRequestDetails(kOrigin_.GetURL(), ERR_CONNECTION_REFUSED));
   expected_commands.emplace_back(
-      MockPersistentNELStore::Command::Type::UPDATE_NEL_POLICY, policy1);
+      MockPersistentNelStore::Command::Type::UPDATE_NEL_POLICY, policy1);
   EXPECT_TRUE(store()->VerifyCommands(expected_commands));
 
   service()->QueueSignedExchangeReport(MakeSignedExchangeReportDetails(
       false, "sxg.failed", kUrl_, kInnerUrl_, kCertUrl_, kServerIP_));
   expected_commands.emplace_back(
-      MockPersistentNELStore::Command::Type::UPDATE_NEL_POLICY, policy1);
+      MockPersistentNelStore::Command::Type::UPDATE_NEL_POLICY, policy1);
   EXPECT_TRUE(store()->VerifyCommands(expected_commands));
 
   // Removes policy1 but not policy2.
@@ -1262,15 +1262,15 @@ TEST_P(NetworkErrorLoggingServiceTest, SendsCommandsToStoreSynchronous) {
         return origin.host() == "example.com";
       }));
   expected_commands.emplace_back(
-      MockPersistentNELStore::Command::Type::DELETE_NEL_POLICY, policy1);
-  expected_commands.emplace_back(MockPersistentNELStore::Command::Type::FLUSH);
+      MockPersistentNelStore::Command::Type::DELETE_NEL_POLICY, policy1);
+  expected_commands.emplace_back(MockPersistentNelStore::Command::Type::FLUSH);
   EXPECT_EQ(1, store()->StoredPoliciesCount());
   EXPECT_TRUE(store()->VerifyCommands(expected_commands));
 
   service()->RemoveAllBrowsingData();
   expected_commands.emplace_back(
-      MockPersistentNELStore::Command::Type::DELETE_NEL_POLICY, policy2);
-  expected_commands.emplace_back(MockPersistentNELStore::Command::Type::FLUSH);
+      MockPersistentNelStore::Command::Type::DELETE_NEL_POLICY, policy2);
+  expected_commands.emplace_back(MockPersistentNelStore::Command::Type::FLUSH);
   EXPECT_EQ(0, store()->StoredPoliciesCount());
   EXPECT_TRUE(store()->VerifyCommands(expected_commands));
 }
@@ -1281,18 +1281,18 @@ TEST_P(NetworkErrorLoggingServiceTest, SendsCommandsToStoreDeferred) {
   if (!store())
     return;
 
-  MockPersistentNELStore::CommandList expected_commands;
-  NetworkErrorLoggingService::NELPolicy policy1 = MakePolicyForOrigin(kOrigin_);
-  NetworkErrorLoggingService::NELPolicy policy2 =
+  MockPersistentNelStore::CommandList expected_commands;
+  NetworkErrorLoggingService::NelPolicy policy1 = MakePolicyForOrigin(kOrigin_);
+  NetworkErrorLoggingService::NelPolicy policy2 =
       MakePolicyForOrigin(kOriginDifferentHost_);
-  std::vector<NetworkErrorLoggingService::NELPolicy> prestored_policies = {
+  std::vector<NetworkErrorLoggingService::NelPolicy> prestored_policies = {
       policy1, policy2};
   store()->SetPrestoredPolicies(std::move(prestored_policies));
 
   // The first call to any of the public methods triggers a load.
   service()->OnHeader(kOrigin_, kServerIP_, kHeader_);
   expected_commands.emplace_back(
-      MockPersistentNELStore::Command::Type::LOAD_NEL_POLICIES);
+      MockPersistentNelStore::Command::Type::LOAD_NEL_POLICIES);
   EXPECT_TRUE(store()->VerifyCommands(expected_commands));
 
   service()->OnRequest(
@@ -1320,23 +1320,23 @@ TEST_P(NetworkErrorLoggingServiceTest, SendsCommandsToStoreDeferred) {
   FinishLoading(true /* load_success */);
   // DoOnHeader()
   expected_commands.emplace_back(
-      MockPersistentNELStore::Command::Type::DELETE_NEL_POLICY, policy1);
+      MockPersistentNelStore::Command::Type::DELETE_NEL_POLICY, policy1);
   expected_commands.emplace_back(
-      MockPersistentNELStore::Command::Type::ADD_NEL_POLICY, policy1);
+      MockPersistentNelStore::Command::Type::ADD_NEL_POLICY, policy1);
   // DoOnRequest()
   expected_commands.emplace_back(
-      MockPersistentNELStore::Command::Type::UPDATE_NEL_POLICY, policy1);
+      MockPersistentNelStore::Command::Type::UPDATE_NEL_POLICY, policy1);
   // DoQueueSignedExchangeReport()
   expected_commands.emplace_back(
-      MockPersistentNELStore::Command::Type::UPDATE_NEL_POLICY, policy1);
+      MockPersistentNelStore::Command::Type::UPDATE_NEL_POLICY, policy1);
   // DoRemoveBrowsingData()
   expected_commands.emplace_back(
-      MockPersistentNELStore::Command::Type::DELETE_NEL_POLICY, policy1);
-  expected_commands.emplace_back(MockPersistentNELStore::Command::Type::FLUSH);
+      MockPersistentNelStore::Command::Type::DELETE_NEL_POLICY, policy1);
+  expected_commands.emplace_back(MockPersistentNelStore::Command::Type::FLUSH);
   // DoRemoveAllBrowsingData()
   expected_commands.emplace_back(
-      MockPersistentNELStore::Command::Type::DELETE_NEL_POLICY, policy2);
-  expected_commands.emplace_back(MockPersistentNELStore::Command::Type::FLUSH);
+      MockPersistentNelStore::Command::Type::DELETE_NEL_POLICY, policy2);
+  expected_commands.emplace_back(MockPersistentNelStore::Command::Type::FLUSH);
   EXPECT_TRUE(store()->VerifyCommands(expected_commands));
 }
 
@@ -1347,18 +1347,18 @@ TEST_P(NetworkErrorLoggingServiceTest,
   if (!store())
     return;
 
-  MockPersistentNELStore::CommandList expected_commands;
-  NetworkErrorLoggingService::NELPolicy policy1 = MakePolicyForOrigin(kOrigin_);
-  NetworkErrorLoggingService::NELPolicy policy2 =
+  MockPersistentNelStore::CommandList expected_commands;
+  NetworkErrorLoggingService::NelPolicy policy1 = MakePolicyForOrigin(kOrigin_);
+  NetworkErrorLoggingService::NelPolicy policy2 =
       MakePolicyForOrigin(kOriginDifferentHost_);
-  std::vector<NetworkErrorLoggingService::NELPolicy> prestored_policies = {
+  std::vector<NetworkErrorLoggingService::NelPolicy> prestored_policies = {
       policy1, policy2};
   store()->SetPrestoredPolicies(std::move(prestored_policies));
 
   // The first call to any of the public methods triggers a load.
   service()->OnHeader(kOrigin_, kServerIP_, kHeader_);
   expected_commands.emplace_back(
-      MockPersistentNELStore::Command::Type::LOAD_NEL_POLICIES);
+      MockPersistentNelStore::Command::Type::LOAD_NEL_POLICIES);
   EXPECT_TRUE(store()->VerifyCommands(expected_commands));
 
   // Make the rest of the test run synchronously.
@@ -1367,20 +1367,20 @@ TEST_P(NetworkErrorLoggingServiceTest,
   // Because the load failed, there will be no policies in memory, so the store
   // is not told to delete anything.
   expected_commands.emplace_back(
-      MockPersistentNELStore::Command::Type::ADD_NEL_POLICY, policy1);
+      MockPersistentNelStore::Command::Type::ADD_NEL_POLICY, policy1);
   EXPECT_TRUE(store()->VerifyCommands(expected_commands));
   LOG(INFO) << store()->GetDebugString();
 
   service()->OnRequest(
       MakeRequestDetails(kOrigin_.GetURL(), ERR_CONNECTION_REFUSED));
   expected_commands.emplace_back(
-      MockPersistentNELStore::Command::Type::UPDATE_NEL_POLICY, policy1);
+      MockPersistentNelStore::Command::Type::UPDATE_NEL_POLICY, policy1);
   EXPECT_TRUE(store()->VerifyCommands(expected_commands));
 
   service()->QueueSignedExchangeReport(MakeSignedExchangeReportDetails(
       false, "sxg.failed", kUrl_, kInnerUrl_, kCertUrl_, kServerIP_));
   expected_commands.emplace_back(
-      MockPersistentNELStore::Command::Type::UPDATE_NEL_POLICY, policy1);
+      MockPersistentNelStore::Command::Type::UPDATE_NEL_POLICY, policy1);
   EXPECT_TRUE(store()->VerifyCommands(expected_commands));
 
   // Removes policy1 but not policy2.
@@ -1389,14 +1389,14 @@ TEST_P(NetworkErrorLoggingServiceTest,
         return origin.host() == "example.com";
       }));
   expected_commands.emplace_back(
-      MockPersistentNELStore::Command::Type::DELETE_NEL_POLICY, policy1);
-  expected_commands.emplace_back(MockPersistentNELStore::Command::Type::FLUSH);
+      MockPersistentNelStore::Command::Type::DELETE_NEL_POLICY, policy1);
+  expected_commands.emplace_back(MockPersistentNelStore::Command::Type::FLUSH);
   EXPECT_TRUE(store()->VerifyCommands(expected_commands));
 
   service()->RemoveAllBrowsingData();
   // We failed to load policy2 from the store, so there is nothing to remove
   // here.
-  expected_commands.emplace_back(MockPersistentNELStore::Command::Type::FLUSH);
+  expected_commands.emplace_back(MockPersistentNelStore::Command::Type::FLUSH);
   EXPECT_TRUE(store()->VerifyCommands(expected_commands));
 }
 
@@ -1404,18 +1404,18 @@ TEST_P(NetworkErrorLoggingServiceTest, SendsCommandsToStoreDeferredLoadFailed) {
   if (!store())
     return;
 
-  MockPersistentNELStore::CommandList expected_commands;
-  NetworkErrorLoggingService::NELPolicy policy1 = MakePolicyForOrigin(kOrigin_);
-  NetworkErrorLoggingService::NELPolicy policy2 =
+  MockPersistentNelStore::CommandList expected_commands;
+  NetworkErrorLoggingService::NelPolicy policy1 = MakePolicyForOrigin(kOrigin_);
+  NetworkErrorLoggingService::NelPolicy policy2 =
       MakePolicyForOrigin(kOriginDifferentHost_);
-  std::vector<NetworkErrorLoggingService::NELPolicy> prestored_policies = {
+  std::vector<NetworkErrorLoggingService::NelPolicy> prestored_policies = {
       policy1, policy2};
   store()->SetPrestoredPolicies(std::move(prestored_policies));
 
   // The first call to any of the public methods triggers a load.
   service()->OnHeader(kOrigin_, kServerIP_, kHeader_);
   expected_commands.emplace_back(
-      MockPersistentNELStore::Command::Type::LOAD_NEL_POLICIES);
+      MockPersistentNelStore::Command::Type::LOAD_NEL_POLICIES);
   EXPECT_TRUE(store()->VerifyCommands(expected_commands));
 
   service()->OnRequest(
@@ -1441,51 +1441,51 @@ TEST_P(NetworkErrorLoggingServiceTest, SendsCommandsToStoreDeferredLoadFailed) {
   // Because the load failed, there will be no policies in memory, so the store
   // is not told to delete anything.
   expected_commands.emplace_back(
-      MockPersistentNELStore::Command::Type::ADD_NEL_POLICY, policy1);
+      MockPersistentNelStore::Command::Type::ADD_NEL_POLICY, policy1);
   // DoOnRequest()
   expected_commands.emplace_back(
-      MockPersistentNELStore::Command::Type::UPDATE_NEL_POLICY, policy1);
+      MockPersistentNelStore::Command::Type::UPDATE_NEL_POLICY, policy1);
   // DoQueueSignedExchangeReport()
   expected_commands.emplace_back(
-      MockPersistentNELStore::Command::Type::UPDATE_NEL_POLICY, policy1);
+      MockPersistentNelStore::Command::Type::UPDATE_NEL_POLICY, policy1);
   // DoRemoveBrowsingData()
   expected_commands.emplace_back(
-      MockPersistentNELStore::Command::Type::DELETE_NEL_POLICY, policy1);
-  expected_commands.emplace_back(MockPersistentNELStore::Command::Type::FLUSH);
+      MockPersistentNelStore::Command::Type::DELETE_NEL_POLICY, policy1);
+  expected_commands.emplace_back(MockPersistentNelStore::Command::Type::FLUSH);
   // DoRemoveAllBrowsingData()
   // We failed to load policy2 from the store, so there is nothing to remove
   // here.
-  expected_commands.emplace_back(MockPersistentNELStore::Command::Type::FLUSH);
+  expected_commands.emplace_back(MockPersistentNelStore::Command::Type::FLUSH);
   EXPECT_TRUE(store()->VerifyCommands(expected_commands));
 }
 
 TEST_P(NetworkErrorLoggingServiceTest, FlushesStoreOnDestruction) {
-  auto store = std::make_unique<MockPersistentNELStore>();
+  auto store = std::make_unique<MockPersistentNelStore>();
   std::unique_ptr<NetworkErrorLoggingService> service =
       NetworkErrorLoggingService::Create(store.get());
 
-  MockPersistentNELStore::CommandList expected_commands;
+  MockPersistentNelStore::CommandList expected_commands;
 
   service->OnHeader(kOrigin_, kServerIP_, kHeader_);
   expected_commands.emplace_back(
-      MockPersistentNELStore::Command::Type::LOAD_NEL_POLICIES);
+      MockPersistentNelStore::Command::Type::LOAD_NEL_POLICIES);
   EXPECT_TRUE(store->VerifyCommands(expected_commands));
 
   store->FinishLoading(false /* load_success */);
   expected_commands.emplace_back(
-      MockPersistentNELStore::Command::Type::ADD_NEL_POLICY,
+      MockPersistentNelStore::Command::Type::ADD_NEL_POLICY,
       MakePolicyForOrigin(kOrigin_));
   EXPECT_TRUE(store->VerifyCommands(expected_commands));
 
   // Store should be flushed on destruction of service.
   service.reset();
-  expected_commands.emplace_back(MockPersistentNELStore::Command::Type::FLUSH);
+  expected_commands.emplace_back(MockPersistentNelStore::Command::Type::FLUSH);
   EXPECT_TRUE(store->VerifyCommands(expected_commands));
 }
 
 TEST_P(NetworkErrorLoggingServiceTest,
        DoesntFlushStoreOnDestructionBeforeLoad) {
-  auto store = std::make_unique<MockPersistentNELStore>();
+  auto store = std::make_unique<MockPersistentNelStore>();
   std::unique_ptr<NetworkErrorLoggingService> service =
       NetworkErrorLoggingService::Create(store.get());
 
@@ -1497,12 +1497,12 @@ TEST_P(NetworkErrorLoggingServiceTest, DoNothingIfShutDown) {
   if (!store())
     return;
 
-  MockPersistentNELStore::CommandList expected_commands;
+  MockPersistentNelStore::CommandList expected_commands;
 
   // The first call to any of the public methods triggers a load.
   service()->OnHeader(kOrigin_, kServerIP_, kHeader_);
   expected_commands.emplace_back(
-      MockPersistentNELStore::Command::Type::LOAD_NEL_POLICIES);
+      MockPersistentNelStore::Command::Type::LOAD_NEL_POLICIES);
   EXPECT_TRUE(store()->VerifyCommands(expected_commands));
 
   service()->OnRequest(

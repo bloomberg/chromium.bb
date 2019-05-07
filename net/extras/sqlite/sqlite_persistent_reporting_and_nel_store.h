@@ -22,24 +22,24 @@ class SequencedTaskRunner;
 
 namespace net {
 
-class COMPONENT_EXPORT(NET_EXTRAS) SQLitePersistentReportingAndNELStore
-    : public PersistentReportingAndNELStore {
+class COMPONENT_EXPORT(NET_EXTRAS) SQLitePersistentReportingAndNelStore
+    : public PersistentReportingAndNelStore {
  public:
-  SQLitePersistentReportingAndNELStore(
+  SQLitePersistentReportingAndNelStore(
       const base::FilePath& path,
       const scoped_refptr<base::SequencedTaskRunner>& client_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner);
 
-  ~SQLitePersistentReportingAndNELStore() override;
+  ~SQLitePersistentReportingAndNelStore() override;
 
-  // NetworkErrorLoggingService::PersistentNELStore implementation
-  void LoadNELPolicies(NELPoliciesLoadedCallback loaded_callback) override;
-  void AddNELPolicy(
-      const NetworkErrorLoggingService::NELPolicy& policy) override;
-  void UpdateNELPolicyAccessTime(
-      const NetworkErrorLoggingService::NELPolicy& policy) override;
-  void DeleteNELPolicy(
-      const NetworkErrorLoggingService::NELPolicy& policy) override;
+  // NetworkErrorLoggingService::PersistentNelStore implementation
+  void LoadNelPolicies(NelPoliciesLoadedCallback loaded_callback) override;
+  void AddNelPolicy(
+      const NetworkErrorLoggingService::NelPolicy& policy) override;
+  void UpdateNelPolicyAccessTime(
+      const NetworkErrorLoggingService::NelPolicy& policy) override;
+  void DeleteNelPolicy(
+      const NetworkErrorLoggingService::NelPolicy& policy) override;
 
   // ReportingCache::PersistentReportingStore implementation
   void LoadReportingClients(
@@ -65,9 +65,9 @@ class COMPONENT_EXPORT(NET_EXTRAS) SQLitePersistentReportingAndNELStore
   class Backend;
 
   // Calls |callback| with the loaded |policies|.
-  void CompleteLoadNELPolicies(
-      NELPoliciesLoadedCallback callback,
-      std::vector<NetworkErrorLoggingService::NELPolicy> policies);
+  void CompleteLoadNelPolicies(
+      NelPoliciesLoadedCallback callback,
+      std::vector<NetworkErrorLoggingService::NelPolicy> policies);
 
   // Calls |callback| with the loaded |endpoints| and |endpoint_groups|.
   void CompleteLoadReportingClients(
@@ -77,9 +77,9 @@ class COMPONENT_EXPORT(NET_EXTRAS) SQLitePersistentReportingAndNELStore
 
   const scoped_refptr<Backend> backend_;
 
-  base::WeakPtrFactory<SQLitePersistentReportingAndNELStore> weak_factory_;
+  base::WeakPtrFactory<SQLitePersistentReportingAndNelStore> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(SQLitePersistentReportingAndNELStore);
+  DISALLOW_COPY_AND_ASSIGN(SQLitePersistentReportingAndNelStore);
 };
 
 }  // namespace net

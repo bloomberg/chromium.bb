@@ -35,7 +35,7 @@ const int kCurrentVersionNumber = 1;
 const int kCompatibleVersionNumber = 1;
 }  // namespace
 
-class SQLitePersistentReportingAndNELStore::Backend
+class SQLitePersistentReportingAndNelStore::Backend
     : public SQLitePersistentStoreBackendBase {
  public:
   Backend(
@@ -51,11 +51,11 @@ class SQLitePersistentReportingAndNELStore::Backend
             client_task_runner),
         num_pending_(0) {}
 
-  void LoadNELPolicies(NELPoliciesLoadedCallback loaded_callback);
-  void AddNELPolicy(const NetworkErrorLoggingService::NELPolicy& policy);
-  void UpdateNELPolicyAccessTime(
-      const NetworkErrorLoggingService::NELPolicy& policy);
-  void DeleteNELPolicy(const NetworkErrorLoggingService::NELPolicy& policy);
+  void LoadNelPolicies(NelPoliciesLoadedCallback loaded_callback);
+  void AddNelPolicy(const NetworkErrorLoggingService::NelPolicy& policy);
+  void UpdateNelPolicyAccessTime(
+      const NetworkErrorLoggingService::NelPolicy& policy);
+  void DeleteNelPolicy(const NetworkErrorLoggingService::NelPolicy& policy);
 
   void LoadReportingClients(ReportingClientsLoadedCallback loaded_callback);
   void AddReportingEndpoint(const ReportingEndpoint& endpoint);
@@ -89,7 +89,7 @@ class SQLitePersistentReportingAndNELStore::Backend
       std::vector<std::unique_ptr<PendingOperation<DataType>>>;
 
   // A copy of the information relevant to a NEL policy.
-  struct NELPolicyInfo;
+  struct NelPolicyInfo;
   // A copy of the information relevant to a Reporting endpoint.
   struct ReportingEndpointInfo;
   // A copy of the information relevant to a Reporting endpoint group.
@@ -113,7 +113,7 @@ class SQLitePersistentReportingAndNELStore::Backend
   void DoCommit() override;
 
   // Commit a pending operation pertaining to a NEL policy.
-  void CommitNELPolicyOperation(PendingOperation<NELPolicyInfo>* op);
+  void CommitNelPolicyOperation(PendingOperation<NelPolicyInfo>* op);
   // Commit a pending operation pertaining to a Reporting endpoint.
   void CommitReportingEndpointOperation(
       PendingOperation<ReportingEndpointInfo>* op);
@@ -150,14 +150,14 @@ class SQLitePersistentReportingAndNELStore::Backend
   // Loads NEL policies into a vector in the background, then posts a
   // task to the client task runner to call |loaded_callback| with the loaded
   // NEL policies.
-  void LoadNELPoliciesAndNotifyInBackground(
-      NELPoliciesLoadedCallback loaded_callback);
+  void LoadNelPoliciesAndNotifyInBackground(
+      NelPoliciesLoadedCallback loaded_callback);
 
   // Calls |loaded_callback| with the loaded NEL policies (which may be empty if
   // loading was unsuccessful). If loading was successful, also report metrics.
-  void CompleteLoadNELPoliciesAndNotifyInForeground(
-      NELPoliciesLoadedCallback loaded_callback,
-      std::vector<NetworkErrorLoggingService::NELPolicy> loaded_policies,
+  void CompleteLoadNelPoliciesAndNotifyInForeground(
+      NelPoliciesLoadedCallback loaded_callback,
+      std::vector<NetworkErrorLoggingService::NelPolicy> loaded_policies,
       bool load_success);
 
   // Loads Reporting endpoints and endpoint groups into two vectors in the
@@ -180,7 +180,7 @@ class SQLitePersistentReportingAndNELStore::Backend
   size_t num_pending_ GUARDED_BY(lock_);
 
   // Queue of pending operations pertaining to NEL policies, keyed on origin.
-  QueueType<url::Origin, NELPolicyInfo> nel_policy_pending_ops_
+  QueueType<url::Origin, NelPolicyInfo> nel_policy_pending_ops_
       GUARDED_BY(lock_);
   // Queue of pending operations pertaining to Reporting endpoints, keyed on
   // origin, group name, and url.
@@ -201,7 +201,7 @@ class SQLitePersistentReportingAndNELStore::Backend
 
 namespace {
 
-bool CreateV1NELPoliciesSchema(sql::Database* db) {
+bool CreateV1NelPoliciesSchema(sql::Database* db) {
   DCHECK(!db->DoesTableExist("nel_policies"));
 
   std::string stmt =
@@ -264,7 +264,7 @@ bool CreateV1ReportingEndpointGroupsSchema(sql::Database* db) {
 }  // namespace
 
 template <typename DataType>
-class SQLitePersistentReportingAndNELStore::Backend::PendingOperation {
+class SQLitePersistentReportingAndNelStore::Backend::PendingOperation {
  public:
   enum class Type { ADD, UPDATE_ACCESS_TIME, UPDATE_DETAILS, DELETE };
 
@@ -279,10 +279,10 @@ class SQLitePersistentReportingAndNELStore::Backend::PendingOperation {
   const DataType data_;
 };
 
-// Makes a copy of the relevant information about a NELPolicy, stored in a
+// Makes a copy of the relevant information about a NelPolicy, stored in a
 // form suitable for adding to the database.
-struct SQLitePersistentReportingAndNELStore::Backend::NELPolicyInfo {
-  NELPolicyInfo(const NetworkErrorLoggingService::NELPolicy& nel_policy)
+struct SQLitePersistentReportingAndNelStore::Backend::NelPolicyInfo {
+  NelPolicyInfo(const NetworkErrorLoggingService::NelPolicy& nel_policy)
       : origin_scheme(nel_policy.origin.scheme()),
         origin_host(nel_policy.origin.host()),
         origin_port(nel_policy.origin.port()),
@@ -318,7 +318,7 @@ struct SQLitePersistentReportingAndNELStore::Backend::NELPolicyInfo {
 
 // Makes a copy of the relevant information about a ReportingEndpoint, stored in
 // a form suitable for adding to the database.
-struct SQLitePersistentReportingAndNELStore::Backend::ReportingEndpointInfo {
+struct SQLitePersistentReportingAndNelStore::Backend::ReportingEndpointInfo {
   ReportingEndpointInfo(const ReportingEndpoint& endpoint)
       : origin_scheme(endpoint.group_key.origin.scheme()),
         origin_host(endpoint.group_key.origin.host()),
@@ -342,7 +342,7 @@ struct SQLitePersistentReportingAndNELStore::Backend::ReportingEndpointInfo {
   int weight = ReportingEndpoint::EndpointInfo::kDefaultWeight;
 };
 
-struct SQLitePersistentReportingAndNELStore::Backend::
+struct SQLitePersistentReportingAndNelStore::Backend::
     ReportingEndpointGroupInfo {
   ReportingEndpointGroupInfo(const CachedReportingEndpointGroup& group)
       : origin_scheme(group.group_key.origin.scheme()),
@@ -371,36 +371,36 @@ struct SQLitePersistentReportingAndNELStore::Backend::
   int64_t last_access_us_since_epoch = 0;
 };
 
-void SQLitePersistentReportingAndNELStore::Backend::LoadNELPolicies(
-    NELPoliciesLoadedCallback loaded_callback) {
+void SQLitePersistentReportingAndNelStore::Backend::LoadNelPolicies(
+    NelPoliciesLoadedCallback loaded_callback) {
   PostBackgroundTask(
-      FROM_HERE, base::BindOnce(&Backend::LoadNELPoliciesAndNotifyInBackground,
+      FROM_HERE, base::BindOnce(&Backend::LoadNelPoliciesAndNotifyInBackground,
                                 this, std::move(loaded_callback)));
 }
 
-void SQLitePersistentReportingAndNELStore::Backend::AddNELPolicy(
-    const NetworkErrorLoggingService::NELPolicy& policy) {
-  auto po = std::make_unique<PendingOperation<NELPolicyInfo>>(
-      PendingOperation<NELPolicyInfo>::Type::ADD, NELPolicyInfo(policy));
+void SQLitePersistentReportingAndNelStore::Backend::AddNelPolicy(
+    const NetworkErrorLoggingService::NelPolicy& policy) {
+  auto po = std::make_unique<PendingOperation<NelPolicyInfo>>(
+      PendingOperation<NelPolicyInfo>::Type::ADD, NelPolicyInfo(policy));
   BatchOperation(policy.origin, std::move(po), &nel_policy_pending_ops_);
 }
 
-void SQLitePersistentReportingAndNELStore::Backend::UpdateNELPolicyAccessTime(
-    const NetworkErrorLoggingService::NELPolicy& policy) {
-  auto po = std::make_unique<PendingOperation<NELPolicyInfo>>(
-      PendingOperation<NELPolicyInfo>::Type::UPDATE_ACCESS_TIME,
-      NELPolicyInfo(policy));
+void SQLitePersistentReportingAndNelStore::Backend::UpdateNelPolicyAccessTime(
+    const NetworkErrorLoggingService::NelPolicy& policy) {
+  auto po = std::make_unique<PendingOperation<NelPolicyInfo>>(
+      PendingOperation<NelPolicyInfo>::Type::UPDATE_ACCESS_TIME,
+      NelPolicyInfo(policy));
   BatchOperation(policy.origin, std::move(po), &nel_policy_pending_ops_);
 }
 
-void SQLitePersistentReportingAndNELStore::Backend::DeleteNELPolicy(
-    const NetworkErrorLoggingService::NELPolicy& policy) {
-  auto po = std::make_unique<PendingOperation<NELPolicyInfo>>(
-      PendingOperation<NELPolicyInfo>::Type::DELETE, NELPolicyInfo(policy));
+void SQLitePersistentReportingAndNelStore::Backend::DeleteNelPolicy(
+    const NetworkErrorLoggingService::NelPolicy& policy) {
+  auto po = std::make_unique<PendingOperation<NelPolicyInfo>>(
+      PendingOperation<NelPolicyInfo>::Type::DELETE, NelPolicyInfo(policy));
   BatchOperation(policy.origin, std::move(po), &nel_policy_pending_ops_);
 }
 
-void SQLitePersistentReportingAndNELStore::Backend::LoadReportingClients(
+void SQLitePersistentReportingAndNelStore::Backend::LoadReportingClients(
     ReportingClientsLoadedCallback loaded_callback) {
   PostBackgroundTask(
       FROM_HERE,
@@ -408,7 +408,7 @@ void SQLitePersistentReportingAndNELStore::Backend::LoadReportingClients(
                      std::move(loaded_callback)));
 }
 
-void SQLitePersistentReportingAndNELStore::Backend::AddReportingEndpoint(
+void SQLitePersistentReportingAndNelStore::Backend::AddReportingEndpoint(
     const ReportingEndpoint& endpoint) {
   auto po = std::make_unique<PendingOperation<ReportingEndpointInfo>>(
       PendingOperation<ReportingEndpointInfo>::Type::ADD,
@@ -419,7 +419,7 @@ void SQLitePersistentReportingAndNELStore::Backend::AddReportingEndpoint(
                  &reporting_endpoint_pending_ops_);
 }
 
-void SQLitePersistentReportingAndNELStore::Backend::AddReportingEndpointGroup(
+void SQLitePersistentReportingAndNelStore::Backend::AddReportingEndpointGroup(
     const CachedReportingEndpointGroup& group) {
   auto po = std::make_unique<PendingOperation<ReportingEndpointGroupInfo>>(
       PendingOperation<ReportingEndpointGroupInfo>::Type::ADD,
@@ -428,7 +428,7 @@ void SQLitePersistentReportingAndNELStore::Backend::AddReportingEndpointGroup(
                  &reporting_endpoint_group_pending_ops_);
 }
 
-void SQLitePersistentReportingAndNELStore::Backend::
+void SQLitePersistentReportingAndNelStore::Backend::
     UpdateReportingEndpointGroupAccessTime(
         const CachedReportingEndpointGroup& group) {
   auto po = std::make_unique<PendingOperation<ReportingEndpointGroupInfo>>(
@@ -438,7 +438,7 @@ void SQLitePersistentReportingAndNELStore::Backend::
                  &reporting_endpoint_group_pending_ops_);
 }
 
-void SQLitePersistentReportingAndNELStore::Backend::
+void SQLitePersistentReportingAndNelStore::Backend::
     UpdateReportingEndpointDetails(const ReportingEndpoint& endpoint) {
   auto po = std::make_unique<PendingOperation<ReportingEndpointInfo>>(
       PendingOperation<ReportingEndpointInfo>::Type::UPDATE_DETAILS,
@@ -449,7 +449,7 @@ void SQLitePersistentReportingAndNELStore::Backend::
                  &reporting_endpoint_pending_ops_);
 }
 
-void SQLitePersistentReportingAndNELStore::Backend::
+void SQLitePersistentReportingAndNelStore::Backend::
     UpdateReportingEndpointGroupDetails(
         const CachedReportingEndpointGroup& group) {
   auto po = std::make_unique<PendingOperation<ReportingEndpointGroupInfo>>(
@@ -459,7 +459,7 @@ void SQLitePersistentReportingAndNELStore::Backend::
                  &reporting_endpoint_group_pending_ops_);
 }
 
-void SQLitePersistentReportingAndNELStore::Backend::DeleteReportingEndpoint(
+void SQLitePersistentReportingAndNelStore::Backend::DeleteReportingEndpoint(
     const ReportingEndpoint& endpoint) {
   auto po = std::make_unique<PendingOperation<ReportingEndpointInfo>>(
       PendingOperation<ReportingEndpointInfo>::Type::DELETE,
@@ -470,7 +470,7 @@ void SQLitePersistentReportingAndNELStore::Backend::DeleteReportingEndpoint(
                  &reporting_endpoint_pending_ops_);
 }
 
-void SQLitePersistentReportingAndNELStore::Backend::
+void SQLitePersistentReportingAndNelStore::Backend::
     DeleteReportingEndpointGroup(const CachedReportingEndpointGroup& group) {
   auto po = std::make_unique<PendingOperation<ReportingEndpointGroupInfo>>(
       PendingOperation<ReportingEndpointGroupInfo>::Type::DELETE,
@@ -479,7 +479,7 @@ void SQLitePersistentReportingAndNELStore::Backend::
                  &reporting_endpoint_group_pending_ops_);
 }
 
-size_t SQLitePersistentReportingAndNELStore::Backend::GetQueueLengthForTesting()
+size_t SQLitePersistentReportingAndNelStore::Backend::GetQueueLengthForTesting()
     const {
   size_t count = 0;
   {
@@ -497,9 +497,9 @@ size_t SQLitePersistentReportingAndNELStore::Backend::GetQueueLengthForTesting()
   return count;
 }
 
-bool SQLitePersistentReportingAndNELStore::Backend::CreateDatabaseSchema() {
+bool SQLitePersistentReportingAndNelStore::Backend::CreateDatabaseSchema() {
   if (!db()->DoesTableExist("nel_policies") &&
-      !CreateV1NELPoliciesSchema(db())) {
+      !CreateV1NelPoliciesSchema(db())) {
     return false;
   }
 
@@ -519,7 +519,7 @@ bool SQLitePersistentReportingAndNELStore::Backend::CreateDatabaseSchema() {
 }
 
 base::Optional<int>
-SQLitePersistentReportingAndNELStore::Backend::DoMigrateDatabaseSchema() {
+SQLitePersistentReportingAndNelStore::Backend::DoMigrateDatabaseSchema() {
   int cur_version = meta_table()->GetVersionNumber();
   if (cur_version != 1)
     return base::nullopt;
@@ -529,8 +529,8 @@ SQLitePersistentReportingAndNELStore::Backend::DoMigrateDatabaseSchema() {
   return base::make_optional(cur_version);
 }
 
-void SQLitePersistentReportingAndNELStore::Backend::DoCommit() {
-  QueueType<url::Origin, NELPolicyInfo> nel_policy_ops;
+void SQLitePersistentReportingAndNelStore::Backend::DoCommit() {
+  QueueType<url::Origin, NelPolicyInfo> nel_policy_ops;
   QueueType<ReportingEndpointKey, ReportingEndpointInfo> reporting_endpoint_ops;
   QueueType<ReportingEndpointGroupKey, ReportingEndpointGroupInfo>
       reporting_endpoint_group_ops;
@@ -553,11 +553,11 @@ void SQLitePersistentReportingAndNELStore::Backend::DoCommit() {
 
   // Commit all the NEL policy operations.
   for (const auto& origin_and_nel_policy_ops : nel_policy_ops) {
-    const PendingOperationsVector<NELPolicyInfo>& ops_for_origin =
+    const PendingOperationsVector<NelPolicyInfo>& ops_for_origin =
         origin_and_nel_policy_ops.second;
-    for (const std::unique_ptr<PendingOperation<NELPolicyInfo>>& nel_policy_op :
+    for (const std::unique_ptr<PendingOperation<NelPolicyInfo>>& nel_policy_op :
          ops_for_origin) {
-      CommitNELPolicyOperation(nel_policy_op.get());
+      CommitNelPolicyOperation(nel_policy_op.get());
     }
   }
 
@@ -587,8 +587,8 @@ void SQLitePersistentReportingAndNELStore::Backend::DoCommit() {
   transaction.Commit();
 }
 
-void SQLitePersistentReportingAndNELStore::Backend::CommitNELPolicyOperation(
-    PendingOperation<NELPolicyInfo>* op) {
+void SQLitePersistentReportingAndNelStore::Backend::CommitNelPolicyOperation(
+    PendingOperation<NelPolicyInfo>* op) {
   DCHECK_EQ(1, db()->transaction_nesting());
 
   sql::Statement add_smt(db()->GetCachedStatement(
@@ -614,10 +614,10 @@ void SQLitePersistentReportingAndNELStore::Backend::CommitNELPolicyOperation(
   if (!del_smt.is_valid())
     return;
 
-  const NELPolicyInfo& nel_policy_info = op->data();
+  const NelPolicyInfo& nel_policy_info = op->data();
 
   switch (op->type()) {
-    case PendingOperation<NELPolicyInfo>::Type::ADD:
+    case PendingOperation<NelPolicyInfo>::Type::ADD:
       add_smt.Reset(true);
       add_smt.BindString(0, nel_policy_info.origin_scheme);
       add_smt.BindString(1, nel_policy_info.origin_host);
@@ -633,7 +633,7 @@ void SQLitePersistentReportingAndNELStore::Backend::CommitNELPolicyOperation(
         DLOG(WARNING) << "Could not add a NEL policy to the DB.";
       break;
 
-    case PendingOperation<NELPolicyInfo>::Type::UPDATE_ACCESS_TIME:
+    case PendingOperation<NelPolicyInfo>::Type::UPDATE_ACCESS_TIME:
       update_access_smt.Reset(true);
       update_access_smt.BindInt64(0,
                                   nel_policy_info.last_access_us_since_epoch);
@@ -646,7 +646,7 @@ void SQLitePersistentReportingAndNELStore::Backend::CommitNELPolicyOperation(
       }
       break;
 
-    case PendingOperation<NELPolicyInfo>::Type::DELETE:
+    case PendingOperation<NelPolicyInfo>::Type::DELETE:
       del_smt.Reset(true);
       del_smt.BindString(0, nel_policy_info.origin_scheme);
       del_smt.BindString(1, nel_policy_info.origin_host);
@@ -664,7 +664,7 @@ void SQLitePersistentReportingAndNELStore::Backend::CommitNELPolicyOperation(
   }
 }
 
-void SQLitePersistentReportingAndNELStore::Backend::
+void SQLitePersistentReportingAndNelStore::Backend::
     CommitReportingEndpointOperation(
         PendingOperation<ReportingEndpointInfo>* op) {
   DCHECK_EQ(1, db()->transaction_nesting());
@@ -743,7 +743,7 @@ void SQLitePersistentReportingAndNELStore::Backend::
   }
 }
 
-void SQLitePersistentReportingAndNELStore::Backend::
+void SQLitePersistentReportingAndNelStore::Backend::
     CommitReportingEndpointGroupOperation(
         PendingOperation<ReportingEndpointGroupInfo>* op) {
   DCHECK_EQ(1, db()->transaction_nesting());
@@ -849,7 +849,7 @@ void SQLitePersistentReportingAndNELStore::Backend::
 }
 
 template <typename KeyType, typename DataType>
-void SQLitePersistentReportingAndNELStore::Backend::BatchOperation(
+void SQLitePersistentReportingAndNelStore::Backend::BatchOperation(
     KeyType key,
     std::unique_ptr<PendingOperation<DataType>> po,
     QueueType<KeyType, DataType>* queue) {
@@ -879,7 +879,7 @@ void SQLitePersistentReportingAndNELStore::Backend::BatchOperation(
 }
 
 template <typename DataType>
-void SQLitePersistentReportingAndNELStore::Backend::MaybeCoalesceOperations(
+void SQLitePersistentReportingAndNelStore::Backend::MaybeCoalesceOperations(
     PendingOperationsVector<DataType>* ops_for_key,
     PendingOperation<DataType>* new_op) {
   DCHECK(!ops_for_key->empty());
@@ -921,7 +921,7 @@ void SQLitePersistentReportingAndNELStore::Backend::MaybeCoalesceOperations(
   }
 }
 
-void SQLitePersistentReportingAndNELStore::Backend::OnOperationBatched(
+void SQLitePersistentReportingAndNelStore::Backend::OnOperationBatched(
     size_t num_pending) {
   DCHECK(!background_task_runner()->RunsTasksInCurrentSequence());
   // Commit every 30 seconds.
@@ -944,16 +944,16 @@ void SQLitePersistentReportingAndNELStore::Backend::OnOperationBatched(
 
 // TODO(chlily): Discard expired policies when loading, discard and record
 // problem if loaded policy is malformed.
-void SQLitePersistentReportingAndNELStore::Backend::
-    LoadNELPoliciesAndNotifyInBackground(
-        NELPoliciesLoadedCallback loaded_callback) {
+void SQLitePersistentReportingAndNelStore::Backend::
+    LoadNelPoliciesAndNotifyInBackground(
+        NelPoliciesLoadedCallback loaded_callback) {
   DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
 
-  std::vector<NetworkErrorLoggingService::NELPolicy> loaded_policies;
+  std::vector<NetworkErrorLoggingService::NelPolicy> loaded_policies;
   if (!InitializeDatabase()) {
     PostClientTask(
         FROM_HERE,
-        base::BindOnce(&Backend::CompleteLoadNELPoliciesAndNotifyInForeground,
+        base::BindOnce(&Backend::CompleteLoadNelPoliciesAndNotifyInForeground,
                        this, std::move(loaded_callback),
                        std::move(loaded_policies), false /* load_success */));
     return;
@@ -967,7 +967,7 @@ void SQLitePersistentReportingAndNELStore::Backend::
     Reset();
     PostClientTask(
         FROM_HERE,
-        base::BindOnce(&Backend::CompleteLoadNELPoliciesAndNotifyInForeground,
+        base::BindOnce(&Backend::CompleteLoadNelPoliciesAndNotifyInForeground,
                        this, std::move(loaded_callback),
                        std::move(loaded_policies), false /* load_success */));
     return;
@@ -975,7 +975,7 @@ void SQLitePersistentReportingAndNELStore::Backend::
 
   while (smt.Step()) {
     // Reconstitute a NEL policy from the fields stored in the database.
-    NetworkErrorLoggingService::NELPolicy policy;
+    NetworkErrorLoggingService::NelPolicy policy;
     policy.origin = url::Origin::CreateFromNormalizedTuple(
         /* origin_scheme = */ smt.ColumnString(0),
         /* origin_host = */ smt.ColumnString(1),
@@ -996,15 +996,15 @@ void SQLitePersistentReportingAndNELStore::Backend::
 
   PostClientTask(
       FROM_HERE,
-      base::BindOnce(&Backend::CompleteLoadNELPoliciesAndNotifyInForeground,
+      base::BindOnce(&Backend::CompleteLoadNelPoliciesAndNotifyInForeground,
                      this, std::move(loaded_callback),
                      std::move(loaded_policies), true /* load_success */));
 }
 
-void SQLitePersistentReportingAndNELStore::Backend::
-    CompleteLoadNELPoliciesAndNotifyInForeground(
-        NELPoliciesLoadedCallback loaded_callback,
-        std::vector<NetworkErrorLoggingService::NELPolicy> loaded_policies,
+void SQLitePersistentReportingAndNelStore::Backend::
+    CompleteLoadNelPoliciesAndNotifyInForeground(
+        NelPoliciesLoadedCallback loaded_callback,
+        std::vector<NetworkErrorLoggingService::NelPolicy> loaded_policies,
         bool load_success) {
   DCHECK(client_task_runner()->RunsTasksInCurrentSequence());
 
@@ -1017,7 +1017,7 @@ void SQLitePersistentReportingAndNELStore::Backend::
   std::move(loaded_callback).Run(std::move(loaded_policies));
 }
 
-void SQLitePersistentReportingAndNELStore::Backend::
+void SQLitePersistentReportingAndNelStore::Backend::
     LoadReportingClientsAndNotifyInBackground(
         ReportingClientsLoadedCallback loaded_callback) {
   DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
@@ -1097,7 +1097,7 @@ void SQLitePersistentReportingAndNELStore::Backend::
           std::move(loaded_endpoint_groups), true /* load_success */));
 }
 
-void SQLitePersistentReportingAndNELStore::Backend::
+void SQLitePersistentReportingAndNelStore::Backend::
     CompleteLoadReportingClientsAndNotifyInForeground(
         ReportingClientsLoadedCallback loaded_callback,
         std::vector<ReportingEndpoint> loaded_endpoints,
@@ -1116,99 +1116,99 @@ void SQLitePersistentReportingAndNELStore::Backend::
       .Run(std::move(loaded_endpoints), std::move(loaded_endpoint_groups));
 }
 
-SQLitePersistentReportingAndNELStore::SQLitePersistentReportingAndNELStore(
+SQLitePersistentReportingAndNelStore::SQLitePersistentReportingAndNelStore(
     const base::FilePath& path,
     const scoped_refptr<base::SequencedTaskRunner>& client_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner)
     : backend_(new Backend(path, client_task_runner, background_task_runner)),
       weak_factory_(this) {}
 
-SQLitePersistentReportingAndNELStore::~SQLitePersistentReportingAndNELStore() {
+SQLitePersistentReportingAndNelStore::~SQLitePersistentReportingAndNelStore() {
   backend_->Close();
 }
 
-void SQLitePersistentReportingAndNELStore::LoadNELPolicies(
-    NELPoliciesLoadedCallback loaded_callback) {
+void SQLitePersistentReportingAndNelStore::LoadNelPolicies(
+    NelPoliciesLoadedCallback loaded_callback) {
   DCHECK(!loaded_callback.is_null());
-  backend_->LoadNELPolicies(base::BindOnce(
-      &SQLitePersistentReportingAndNELStore::CompleteLoadNELPolicies,
+  backend_->LoadNelPolicies(base::BindOnce(
+      &SQLitePersistentReportingAndNelStore::CompleteLoadNelPolicies,
       weak_factory_.GetWeakPtr(), std::move(loaded_callback)));
 }
 
-void SQLitePersistentReportingAndNELStore::AddNELPolicy(
-    const NetworkErrorLoggingService::NELPolicy& policy) {
-  backend_->AddNELPolicy(policy);
+void SQLitePersistentReportingAndNelStore::AddNelPolicy(
+    const NetworkErrorLoggingService::NelPolicy& policy) {
+  backend_->AddNelPolicy(policy);
 }
 
-void SQLitePersistentReportingAndNELStore::UpdateNELPolicyAccessTime(
-    const NetworkErrorLoggingService::NELPolicy& policy) {
-  backend_->UpdateNELPolicyAccessTime(policy);
+void SQLitePersistentReportingAndNelStore::UpdateNelPolicyAccessTime(
+    const NetworkErrorLoggingService::NelPolicy& policy) {
+  backend_->UpdateNelPolicyAccessTime(policy);
 }
 
-void SQLitePersistentReportingAndNELStore::DeleteNELPolicy(
-    const NetworkErrorLoggingService::NELPolicy& policy) {
-  backend_->DeleteNELPolicy(policy);
+void SQLitePersistentReportingAndNelStore::DeleteNelPolicy(
+    const NetworkErrorLoggingService::NelPolicy& policy) {
+  backend_->DeleteNelPolicy(policy);
 }
 
-void SQLitePersistentReportingAndNELStore::LoadReportingClients(
+void SQLitePersistentReportingAndNelStore::LoadReportingClients(
     ReportingClientsLoadedCallback loaded_callback) {
   DCHECK(!loaded_callback.is_null());
   backend_->LoadReportingClients(base::BindOnce(
-      &SQLitePersistentReportingAndNELStore::CompleteLoadReportingClients,
+      &SQLitePersistentReportingAndNelStore::CompleteLoadReportingClients,
       weak_factory_.GetWeakPtr(), std::move(loaded_callback)));
 }
 
-void SQLitePersistentReportingAndNELStore::AddReportingEndpoint(
+void SQLitePersistentReportingAndNelStore::AddReportingEndpoint(
     const ReportingEndpoint& endpoint) {
   backend_->AddReportingEndpoint(endpoint);
 }
 
-void SQLitePersistentReportingAndNELStore::AddReportingEndpointGroup(
+void SQLitePersistentReportingAndNelStore::AddReportingEndpointGroup(
     const CachedReportingEndpointGroup& group) {
   backend_->AddReportingEndpointGroup(group);
 }
 
-void SQLitePersistentReportingAndNELStore::
+void SQLitePersistentReportingAndNelStore::
     UpdateReportingEndpointGroupAccessTime(
         const CachedReportingEndpointGroup& group) {
   backend_->UpdateReportingEndpointGroupAccessTime(group);
 }
 
-void SQLitePersistentReportingAndNELStore::UpdateReportingEndpointDetails(
+void SQLitePersistentReportingAndNelStore::UpdateReportingEndpointDetails(
     const ReportingEndpoint& endpoint) {
   backend_->UpdateReportingEndpointDetails(endpoint);
 }
 
-void SQLitePersistentReportingAndNELStore::UpdateReportingEndpointGroupDetails(
+void SQLitePersistentReportingAndNelStore::UpdateReportingEndpointGroupDetails(
     const CachedReportingEndpointGroup& group) {
   backend_->UpdateReportingEndpointGroupDetails(group);
 }
 
-void SQLitePersistentReportingAndNELStore::DeleteReportingEndpoint(
+void SQLitePersistentReportingAndNelStore::DeleteReportingEndpoint(
     const ReportingEndpoint& endpoint) {
   backend_->DeleteReportingEndpoint(endpoint);
 }
 
-void SQLitePersistentReportingAndNELStore::DeleteReportingEndpointGroup(
+void SQLitePersistentReportingAndNelStore::DeleteReportingEndpointGroup(
     const CachedReportingEndpointGroup& group) {
   backend_->DeleteReportingEndpointGroup(group);
 }
 
-void SQLitePersistentReportingAndNELStore::Flush() {
+void SQLitePersistentReportingAndNelStore::Flush() {
   backend_->Flush(base::DoNothing());
 }
 
-size_t SQLitePersistentReportingAndNELStore::GetQueueLengthForTesting() const {
+size_t SQLitePersistentReportingAndNelStore::GetQueueLengthForTesting() const {
   return backend_->GetQueueLengthForTesting();
 }
 
-void SQLitePersistentReportingAndNELStore::CompleteLoadNELPolicies(
-    NELPoliciesLoadedCallback callback,
-    std::vector<NetworkErrorLoggingService::NELPolicy> policies) {
+void SQLitePersistentReportingAndNelStore::CompleteLoadNelPolicies(
+    NelPoliciesLoadedCallback callback,
+    std::vector<NetworkErrorLoggingService::NelPolicy> policies) {
   std::move(callback).Run(std::move(policies));
 }
 
-void SQLitePersistentReportingAndNELStore::CompleteLoadReportingClients(
+void SQLitePersistentReportingAndNelStore::CompleteLoadReportingClients(
     ReportingClientsLoadedCallback callback,
     std::vector<ReportingEndpoint> endpoints,
     std::vector<CachedReportingEndpointGroup> endpoint_groups) {

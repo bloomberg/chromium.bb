@@ -1362,7 +1362,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveReportingCache_NoService) {
 }
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveNetworkErrorLogging) {
-  auto store = std::make_unique<net::MockPersistentNELStore>();
+  auto store = std::make_unique<net::MockPersistentNelStore>();
   std::unique_ptr<net::NetworkErrorLoggingService> logging_service =
       net::NetworkErrorLoggingService::Create(store.get());
   BrowserContext::GetDefaultStoragePartition(GetBrowserContext())
@@ -1387,11 +1387,11 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveNetworkErrorLogging) {
   EXPECT_EQ(0, store->StoredPoliciesCount());
 
   // Check that the persistent store was told to delete the policy.
-  net::NetworkErrorLoggingService::NELPolicy deleted_policy;
+  net::NetworkErrorLoggingService::NelPolicy deleted_policy;
   deleted_policy.origin = url::Origin::Create(domain);
   EXPECT_THAT(store->GetAllCommands(),
-              testing::Contains(net::MockPersistentNELStore::Command(
-                  net::MockPersistentNELStore::Command::Type::DELETE_NEL_POLICY,
+              testing::Contains(net::MockPersistentNelStore::Command(
+                  net::MockPersistentNelStore::Command::Type::DELETE_NEL_POLICY,
                   deleted_policy)));
 }
 
@@ -1420,7 +1420,7 @@ TEST_F(BrowsingDataRemoverImplTest,
 }
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveNetworkErrorLogging_SpecificOrigins) {
-  auto store = std::make_unique<net::MockPersistentNELStore>();
+  auto store = std::make_unique<net::MockPersistentNelStore>();
   std::unique_ptr<net::NetworkErrorLoggingService> logging_service =
       net::NetworkErrorLoggingService::Create(store.get());
   BrowserContext::GetDefaultStoragePartition(GetBrowserContext())
@@ -1467,17 +1467,17 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveNetworkErrorLogging_SpecificOrigins) {
   EXPECT_EQ(2, store->StoredPoliciesCount());
 
   // Check that the persistent store was told to delete the policies.
-  net::NetworkErrorLoggingService::NELPolicy deleted_policy1;
+  net::NetworkErrorLoggingService::NelPolicy deleted_policy1;
   deleted_policy1.origin = url::Origin::Create(domain1);
-  net::NetworkErrorLoggingService::NELPolicy deleted_policy2;
+  net::NetworkErrorLoggingService::NelPolicy deleted_policy2;
   deleted_policy2.origin = url::Origin::Create(domain3);
   EXPECT_THAT(store->GetAllCommands(),
-              testing::Contains(net::MockPersistentNELStore::Command(
-                  net::MockPersistentNELStore::Command::Type::DELETE_NEL_POLICY,
+              testing::Contains(net::MockPersistentNelStore::Command(
+                  net::MockPersistentNelStore::Command::Type::DELETE_NEL_POLICY,
                   deleted_policy1)));
   EXPECT_THAT(store->GetAllCommands(),
-              testing::Contains(net::MockPersistentNELStore::Command(
-                  net::MockPersistentNELStore::Command::Type::DELETE_NEL_POLICY,
+              testing::Contains(net::MockPersistentNelStore::Command(
+                  net::MockPersistentNelStore::Command::Type::DELETE_NEL_POLICY,
                   deleted_policy2)));
 }
 

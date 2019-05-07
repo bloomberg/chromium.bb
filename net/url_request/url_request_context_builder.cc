@@ -561,7 +561,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
 
   // TODO(chlily): Use a real one to enable persistent storage. (This is just a
   // placeholder for now.)
-  PersistentReportingAndNELStore* store = nullptr;
+  PersistentReportingAndNelStore* store = nullptr;
 
   if (reporting_policy_) {
     storage->set_reporting_service(

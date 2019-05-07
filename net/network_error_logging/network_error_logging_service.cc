@@ -181,7 +181,7 @@ void RecordSignedExchangeRequestOutcome(
 
 class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
  public:
-  explicit NetworkErrorLoggingServiceImpl(PersistentNELStore* store)
+  explicit NetworkErrorLoggingServiceImpl(PersistentNelStore* store)
       : store_(store),
         started_loading_policies_(false),
         initialized_(false),
@@ -305,7 +305,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
  private:
   // Map from origin to origin's (owned) policy.
   // Would be unordered_map, but url::Origin has no hash.
-  using PolicyMap = std::map<url::Origin, NELPolicy>;
+  using PolicyMap = std::map<url::Origin, NelPolicy>;
 
   // Wildcard policies are policies for which the include_subdomains flag is
   // set.
@@ -318,7 +318,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
   //
   // Policies in the map are unowned; they are pointers to the original in the
   // PolicyMap.
-  using WildcardPolicyMap = std::map<std::string, std::set<const NELPolicy*>>;
+  using WildcardPolicyMap = std::map<std::string, std::set<const NelPolicy*>>;
 
   PolicyMap policies_;
   WildcardPolicyMap wildcard_policies_;
@@ -327,7 +327,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
   // null. If |store_| is null, then NEL policies will be in-memory only.
   // The store is owned by the URLRequestContext because Reporting also needs
   // access to it.
-  PersistentNELStore* store_;
+  PersistentNelStore* store_;
 
   // Set to true when we have told the store to load NEL policies. This is to
   // make sure we don't try to load policies multiple times.
@@ -337,7 +337,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
   // initialization is complete, commands to the NEL service (i.e. public
   // method calls) are stashed away in |task_backlog_|, to be executed once
   // initialization is complete. Initialization is complete automatically if
-  // there is no PersistentNELStore. If there is a store, then initialization is
+  // there is no PersistentNelStore. If there is a store, then initialization is
   // complete when the NEL policies have finished being loaded from the store
   // (either successfully or unsuccessfully).
   bool initialized_;
@@ -381,7 +381,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
                   base::Time header_received_time) {
     DCHECK(initialized_);
 
-    NELPolicy policy;
+    NelPolicy policy;
     policy.origin = origin;
     policy.received_ip_address = received_ip_address;
     policy.last_used = header_received_time;
@@ -418,7 +418,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     DCHECK(initialized_);
 
     auto report_origin = url::Origin::Create(details.uri);
-    const NELPolicy* policy = FindPolicyForOrigin(report_origin);
+    const NelPolicy* policy = FindPolicyForOrigin(report_origin);
     if (!policy) {
       RecordRequestOutcome(RequestOutcome::kDiscardedNoOriginPolicy);
       return;
@@ -501,7 +501,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     DCHECK(reporting_service_);
 
     const auto report_origin = url::Origin::Create(details.outer_url);
-    const NELPolicy* policy = FindPolicyForOrigin(report_origin);
+    const NelPolicy* policy = FindPolicyForOrigin(report_origin);
     if (!policy) {
       RecordSignedExchangeRequestOutcome(
           RequestOutcome::kDiscardedNoOriginPolicy);
@@ -560,9 +560,9 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
   void DoRemoveAllBrowsingData() {
     DCHECK(initialized_);
     if (PoliciesArePersisted()) {
-      // TODO(chlily): Add a DeleteAllNELPolicies command to PersistentNELStore.
+      // TODO(chlily): Add a DeleteAllNelPolicies command to PersistentNelStore.
       for (auto origin_and_policy : policies_) {
-        store_->DeleteNELPolicy(origin_and_policy.second);
+        store_->DeleteNelPolicy(origin_and_policy.second);
       }
       store_->Flush();
     }
@@ -573,7 +573,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
 
   HeaderOutcome ParseHeader(const std::string& json_value,
                             base::Time now,
-                            NELPolicy* policy_out) const {
+                            NelPolicy* policy_out) const {
     DCHECK(policy_out);
 
     if (json_value.size() > kMaxJsonSize)
@@ -634,7 +634,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     }
   }
 
-  const NELPolicy* FindPolicyForOrigin(const url::Origin& origin) const {
+  const NelPolicy* FindPolicyForOrigin(const url::Origin& origin) const {
     DCHECK(initialized_);
 
     auto it = policies_.find(origin);
@@ -642,7 +642,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
       return &it->second;
 
     std::string domain = origin.host();
-    const NELPolicy* wildcard_policy = nullptr;
+    const NelPolicy* wildcard_policy = nullptr;
     while (!wildcard_policy && !domain.empty()) {
       wildcard_policy = FindWildcardPolicyForDomain(domain);
       domain = GetSuperdomain(domain);
@@ -651,7 +651,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     return wildcard_policy;
   }
 
-  const NELPolicy* FindWildcardPolicyForDomain(
+  const NelPolicy* FindWildcardPolicyForDomain(
       const std::string& domain) const {
     DCHECK(!domain.empty());
 
@@ -678,25 +678,25 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
 
   // There must be no pre-existing policy for |policy.origin|. Returns iterator
   // to the inserted policy.
-  PolicyMap::iterator AddPolicy(NELPolicy policy) {
+  PolicyMap::iterator AddPolicy(NelPolicy policy) {
     // If |initialized_| is false, then we are calling this from
     // OnPoliciesLoaded(), which means we don't want to add the given policy to
     // the store because we have just loaded it from there.
     if (PoliciesArePersisted() && initialized_)
-      store_->AddNELPolicy(policy);
+      store_->AddNelPolicy(policy);
 
     auto iter_and_result =
         policies_.insert(std::make_pair(policy.origin, std::move(policy)));
     DCHECK(iter_and_result.second);
 
-    const NELPolicy& inserted_policy = iter_and_result.first->second;
+    const NelPolicy& inserted_policy = iter_and_result.first->second;
     MaybeAddWildcardPolicy(inserted_policy.origin, &inserted_policy);
 
     return iter_and_result.first;
   }
 
   void MaybeAddWildcardPolicy(const url::Origin& origin,
-                              const NELPolicy* policy) {
+                              const NelPolicy* policy) {
     DCHECK(policy);
     DCHECK_EQ(policy, &policies_[origin]);
 
@@ -711,16 +711,16 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
   // Returns the iterator to the next element.
   PolicyMap::iterator RemovePolicy(PolicyMap::iterator policy_it) {
     DCHECK(policy_it != policies_.end());
-    NELPolicy* policy = &policy_it->second;
+    NelPolicy* policy = &policy_it->second;
     MaybeRemoveWildcardPolicy(policy);
 
     if (PoliciesArePersisted() && initialized_)
-      store_->DeleteNELPolicy(*policy);
+      store_->DeleteNelPolicy(*policy);
 
     return policies_.erase(policy_it);
   }
 
-  void MaybeRemoveWildcardPolicy(const NELPolicy* policy) {
+  void MaybeRemoveWildcardPolicy(const NelPolicy* policy) {
     DCHECK(policy);
 
     if (!policy->include_subdomains)
@@ -738,10 +738,10 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
       wildcard_policies_.erase(wildcard_it);
   }
 
-  void MarkPolicyUsed(const NELPolicy* policy, base::Time time_used) const {
+  void MarkPolicyUsed(const NelPolicy* policy, base::Time time_used) const {
     policy->last_used = time_used;
     if (PoliciesArePersisted() && initialized_)
-      store_->UpdateNELPolicyAccessTime(*policy);
+      store_->UpdateNelPolicyAccessTime(*policy);
   }
 
   void RemoveAllExpiredPolicies() {
@@ -816,13 +816,13 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     return std::move(body);
   }
 
-  bool IsMismatchingSubdomainReport(const NELPolicy& policy,
+  bool IsMismatchingSubdomainReport(const NelPolicy& policy,
                                     const url::Origin& report_origin) const {
     return policy.include_subdomains && (policy.origin != report_origin);
   }
 
   // Returns a valid value of matching fraction iff the event should be sampled.
-  base::Optional<double> SampleAndReturnFraction(const NELPolicy& policy,
+  base::Optional<double> SampleAndReturnFraction(const NelPolicy& policy,
                                                  bool success) const {
     const double sampling_fraction =
         success ? policy.success_fraction : policy.failure_fraction;
@@ -851,7 +851,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     DCHECK(PoliciesArePersisted());
     DCHECK(!initialized_);
 
-    store_->LoadNELPolicies(
+    store_->LoadNelPolicies(
         base::BindOnce(&NetworkErrorLoggingServiceImpl::OnPoliciesLoaded,
                        weak_factory_.GetWeakPtr()));
   }
@@ -859,15 +859,15 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
   // This is called when loading from the store is complete, regardless of
   // success or failure.
   // DB initialization may have failed, in which case we will receive an empty
-  // vector from the PersistentNELStore. This is indistinguishable from a
+  // vector from the PersistentNelStore. This is indistinguishable from a
   // successful load that happens to not yield any policies, but in
   // either case we still want to go through the task backlog.
-  void OnPoliciesLoaded(std::vector<NELPolicy> loaded_policies) {
+  void OnPoliciesLoaded(std::vector<NelPolicy> loaded_policies) {
     DCHECK(PoliciesArePersisted());
     DCHECK(!initialized_);
 
     // TODO(chlily): Toss any expired policies we encounter.
-    for (NELPolicy& policy : loaded_policies) {
+    for (NelPolicy& policy : loaded_policies) {
       AddPolicy(std::move(policy));
     }
     initialized_ = true;
@@ -877,12 +877,12 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
 
 }  // namespace
 
-NetworkErrorLoggingService::NELPolicy::NELPolicy() = default;
+NetworkErrorLoggingService::NelPolicy::NelPolicy() = default;
 
-NetworkErrorLoggingService::NELPolicy::NELPolicy(const NELPolicy& other) =
+NetworkErrorLoggingService::NelPolicy::NelPolicy(const NelPolicy& other) =
     default;
 
-NetworkErrorLoggingService::NELPolicy::~NELPolicy() = default;
+NetworkErrorLoggingService::NelPolicy::~NelPolicy() = default;
 
 NetworkErrorLoggingService::RequestDetails::RequestDetails() = default;
 
@@ -979,7 +979,7 @@ void NetworkErrorLoggingService::RecordRequestDiscardedForInsecureOrigin() {
 
 // static
 std::unique_ptr<NetworkErrorLoggingService> NetworkErrorLoggingService::Create(
-    PersistentNELStore* store) {
+    PersistentNelStore* store) {
   return std::make_unique<NetworkErrorLoggingServiceImpl>(store);
 }
 

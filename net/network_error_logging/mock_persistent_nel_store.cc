@@ -8,82 +8,82 @@
 
 namespace net {
 
-MockPersistentNELStore::Command::Command(
+MockPersistentNelStore::Command::Command(
     Type type,
-    NELPoliciesLoadedCallback loaded_callback)
+    NelPoliciesLoadedCallback loaded_callback)
     : type(type), loaded_callback(std::move(loaded_callback)) {}
 
-MockPersistentNELStore::Command::Command(
+MockPersistentNelStore::Command::Command(
     Type type,
-    const NetworkErrorLoggingService::NELPolicy& policy)
+    const NetworkErrorLoggingService::NelPolicy& policy)
     : type(type), origin(policy.origin) {}
 
-MockPersistentNELStore::Command::Command(Type type) : type(type) {}
+MockPersistentNelStore::Command::Command(Type type) : type(type) {}
 
-MockPersistentNELStore::Command::Command(const Command& other)
+MockPersistentNelStore::Command::Command(const Command& other)
     : type(other.type), origin(other.origin) {}
 
-MockPersistentNELStore::Command::Command(Command&& other) = default;
+MockPersistentNelStore::Command::Command(Command&& other) = default;
 
-MockPersistentNELStore::Command::~Command() = default;
+MockPersistentNelStore::Command::~Command() = default;
 
-bool operator==(const MockPersistentNELStore::Command& lhs,
-                const MockPersistentNELStore::Command& rhs) {
+bool operator==(const MockPersistentNelStore::Command& lhs,
+                const MockPersistentNelStore::Command& rhs) {
   if (lhs.type != rhs.type)
     return false;
   switch (lhs.type) {
     // For LOAD_NEL_POLICIES and FLUSH, just check the type.
-    case MockPersistentNELStore::Command::Type::LOAD_NEL_POLICIES:
-    case MockPersistentNELStore::Command::Type::FLUSH:
+    case MockPersistentNelStore::Command::Type::LOAD_NEL_POLICIES:
+    case MockPersistentNelStore::Command::Type::FLUSH:
       return true;
     // For ADD_NEL_POLICY, UPDATE_NEL_POLICY, and DELETE_NEL_POLICY,
     // additionally check the policy's origin.
-    case MockPersistentNELStore::Command::Type::ADD_NEL_POLICY:
-    case MockPersistentNELStore::Command::Type::UPDATE_NEL_POLICY:
-    case MockPersistentNELStore::Command::Type::DELETE_NEL_POLICY:
+    case MockPersistentNelStore::Command::Type::ADD_NEL_POLICY:
+    case MockPersistentNelStore::Command::Type::UPDATE_NEL_POLICY:
+    case MockPersistentNelStore::Command::Type::DELETE_NEL_POLICY:
       return (lhs.origin == rhs.origin);
   }
 }
 
-bool operator!=(const MockPersistentNELStore::Command& lhs,
-                const MockPersistentNELStore::Command& rhs) {
+bool operator!=(const MockPersistentNelStore::Command& lhs,
+                const MockPersistentNelStore::Command& rhs) {
   return !(lhs == rhs);
 }
 
-MockPersistentNELStore::MockPersistentNELStore()
+MockPersistentNelStore::MockPersistentNelStore()
     : load_started_(false), policy_count_(0), queued_policy_count_delta_(0) {}
 
-MockPersistentNELStore::~MockPersistentNELStore() = default;
+MockPersistentNelStore::~MockPersistentNelStore() = default;
 
-void MockPersistentNELStore::LoadNELPolicies(
-    NELPoliciesLoadedCallback loaded_callback) {
+void MockPersistentNelStore::LoadNelPolicies(
+    NelPoliciesLoadedCallback loaded_callback) {
   DCHECK(!load_started_);
   command_list_.emplace_back(Command::Type::LOAD_NEL_POLICIES,
                              std::move(loaded_callback));
   load_started_ = true;
 }
 
-void MockPersistentNELStore::AddNELPolicy(
-    const NetworkErrorLoggingService::NELPolicy& policy) {
+void MockPersistentNelStore::AddNelPolicy(
+    const NetworkErrorLoggingService::NelPolicy& policy) {
   DCHECK(load_started_);
   command_list_.emplace_back(Command::Type::ADD_NEL_POLICY, policy);
   ++queued_policy_count_delta_;
 }
 
-void MockPersistentNELStore::UpdateNELPolicyAccessTime(
-    const NetworkErrorLoggingService::NELPolicy& policy) {
+void MockPersistentNelStore::UpdateNelPolicyAccessTime(
+    const NetworkErrorLoggingService::NelPolicy& policy) {
   DCHECK(load_started_);
   command_list_.emplace_back(Command::Type::UPDATE_NEL_POLICY, policy);
 }
 
-void MockPersistentNELStore::DeleteNELPolicy(
-    const NetworkErrorLoggingService::NELPolicy& policy) {
+void MockPersistentNelStore::DeleteNelPolicy(
+    const NetworkErrorLoggingService::NelPolicy& policy) {
   DCHECK(load_started_);
   command_list_.emplace_back(Command::Type::DELETE_NEL_POLICY, policy);
   --queued_policy_count_delta_;
 }
 
-void MockPersistentNELStore::Flush() {
+void MockPersistentNelStore::Flush() {
   // Can be called before |load_started_| is true, if the
   // NetworkErrorLoggingService is destroyed before getting a chance to load.
   command_list_.emplace_back(Command::Type::FLUSH);
@@ -91,15 +91,15 @@ void MockPersistentNELStore::Flush() {
   queued_policy_count_delta_ = 0;
 }
 
-void MockPersistentNELStore::SetPrestoredPolicies(
-    std::vector<NetworkErrorLoggingService::NELPolicy> policies) {
+void MockPersistentNelStore::SetPrestoredPolicies(
+    std::vector<NetworkErrorLoggingService::NelPolicy> policies) {
   DCHECK(!load_started_);
   DCHECK_EQ(0, policy_count_);
   policy_count_ += policies.size();
   prestored_policies_.swap(policies);
 }
 
-void MockPersistentNELStore::FinishLoading(bool load_success) {
+void MockPersistentNelStore::FinishLoading(bool load_success) {
   DCHECK(load_started_);
   for (size_t i = 0; i < command_list_.size(); ++i) {
     Command& command = command_list_[i];
@@ -112,7 +112,7 @@ void MockPersistentNELStore::FinishLoading(bool load_success) {
         std::move(command.loaded_callback).Run(std::move(prestored_policies_));
       } else {
         std::move(command.loaded_callback)
-            .Run(std::vector<NetworkErrorLoggingService::NELPolicy>());
+            .Run(std::vector<NetworkErrorLoggingService::NelPolicy>());
       }
     }
     if (i > 0) {
@@ -122,17 +122,17 @@ void MockPersistentNELStore::FinishLoading(bool load_success) {
   }
 }
 
-bool MockPersistentNELStore::VerifyCommands(
+bool MockPersistentNelStore::VerifyCommands(
     const CommandList& expected_commands) const {
   return command_list_ == expected_commands;
 }
 
-MockPersistentNELStore::CommandList MockPersistentNELStore::GetAllCommands()
+MockPersistentNelStore::CommandList MockPersistentNelStore::GetAllCommands()
     const {
   return command_list_;
 }
 
-std::string MockPersistentNELStore::GetDebugString() const {
+std::string MockPersistentNelStore::GetDebugString() const {
   std::ostringstream s;
 
   for (const Command& command : command_list_) {

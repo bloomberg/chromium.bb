@@ -84,13 +84,13 @@ const std::vector<TestCase> kCoalescingTestcasesForUpdateDetails = {
 
 }  // namespace
 
-class SQLitePersistentReportingAndNELStoreTest
+class SQLitePersistentReportingAndNelStoreTest
     : public TestWithScopedTaskEnvironment {
  public:
-  SQLitePersistentReportingAndNELStoreTest() {}
+  SQLitePersistentReportingAndNelStoreTest() {}
 
   void CreateStore() {
-    store_ = std::make_unique<SQLitePersistentReportingAndNELStore>(
+    store_ = std::make_unique<SQLitePersistentReportingAndNelStore>(
         temp_dir_.GetPath().Append(kReportingAndNELStoreFilename),
         client_task_runner_, background_task_runner_);
   }
@@ -104,8 +104,8 @@ class SQLitePersistentReportingAndNELStoreTest
 
   // Call this on a brand new database that should have nothing stored in it.
   void InitializeStore() {
-    std::vector<NetworkErrorLoggingService::NELPolicy> nel_policies;
-    LoadNELPolicies(&nel_policies);
+    std::vector<NetworkErrorLoggingService::NelPolicy> nel_policies;
+    LoadNelPolicies(&nel_policies);
     EXPECT_EQ(0u, nel_policies.size());
 
     // One load should be sufficient to initialize the database, but we might as
@@ -117,19 +117,19 @@ class SQLitePersistentReportingAndNELStoreTest
     EXPECT_EQ(0u, groups.size());
   }
 
-  void LoadNELPolicies(
-      std::vector<NetworkErrorLoggingService::NELPolicy>* policies_out) {
+  void LoadNelPolicies(
+      std::vector<NetworkErrorLoggingService::NelPolicy>* policies_out) {
     base::RunLoop run_loop;
-    store_->LoadNELPolicies(base::BindRepeating(
-        &SQLitePersistentReportingAndNELStoreTest::OnNELPoliciesLoaded,
+    store_->LoadNelPolicies(base::BindRepeating(
+        &SQLitePersistentReportingAndNelStoreTest::OnNelPoliciesLoaded,
         base::Unretained(this), &run_loop, policies_out));
     run_loop.Run();
   }
 
-  void OnNELPoliciesLoaded(
+  void OnNelPoliciesLoaded(
       base::RunLoop* run_loop,
-      std::vector<NetworkErrorLoggingService::NELPolicy>* policies_out,
-      std::vector<NetworkErrorLoggingService::NELPolicy> policies) {
+      std::vector<NetworkErrorLoggingService::NelPolicy>* policies_out,
+      std::vector<NetworkErrorLoggingService::NelPolicy> policies) {
     policies_out->swap(policies);
     run_loop->Quit();
   }
@@ -139,7 +139,7 @@ class SQLitePersistentReportingAndNELStoreTest
       std::vector<CachedReportingEndpointGroup>* groups_out) {
     base::RunLoop run_loop;
     store_->LoadReportingClients(base::BindRepeating(
-        &SQLitePersistentReportingAndNELStoreTest::OnReportingClientsLoaded,
+        &SQLitePersistentReportingAndNelStoreTest::OnReportingClientsLoaded,
         base::Unretained(this), &run_loop, endpoints_out, groups_out));
     run_loop.Run();
   }
@@ -179,9 +179,9 @@ class SQLitePersistentReportingAndNELStoreTest
 
   void TearDown() override { DestroyStore(); }
 
-  NetworkErrorLoggingService::NELPolicy MakeNELPolicy(url::Origin origin,
+  NetworkErrorLoggingService::NelPolicy MakeNelPolicy(url::Origin origin,
                                                       base::Time last_used) {
-    NetworkErrorLoggingService::NELPolicy policy;
+    NetworkErrorLoggingService::NelPolicy policy;
     policy.origin = origin;
     policy.received_ip_address = IPAddress::IPv4Localhost();
     policy.report_to = "group";
@@ -219,14 +219,14 @@ class SQLitePersistentReportingAndNELStoreTest
 
  protected:
   base::ScopedTempDir temp_dir_;
-  std::unique_ptr<SQLitePersistentReportingAndNELStore> store_;
+  std::unique_ptr<SQLitePersistentReportingAndNelStore> store_;
   const scoped_refptr<base::SequencedTaskRunner> client_task_runner_ =
       base::ThreadTaskRunnerHandle::Get();
   const scoped_refptr<base::SequencedTaskRunner> background_task_runner_ =
       base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
 };
 
-TEST_F(SQLitePersistentReportingAndNELStoreTest, CreateDBAndTables) {
+TEST_F(SQLitePersistentReportingAndNelStoreTest, CreateDBAndTables) {
   CreateStore();
   InitializeStore();
   EXPECT_NE(nullptr, store_.get());
@@ -237,20 +237,20 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest, CreateDBAndTables) {
   EXPECT_NE(std::string::npos, contents.find("reporting_endpoint_groups"));
 }
 
-TEST_F(SQLitePersistentReportingAndNELStoreTest, PersistNELPolicy) {
+TEST_F(SQLitePersistentReportingAndNelStoreTest, PersistNelPolicy) {
   CreateStore();
   InitializeStore();
   base::Time now = base::Time::Now();
-  NetworkErrorLoggingService::NELPolicy policy = MakeNELPolicy(kOrigin1, now);
-  store_->AddNELPolicy(policy);
+  NetworkErrorLoggingService::NelPolicy policy = MakeNelPolicy(kOrigin1, now);
+  store_->AddNelPolicy(policy);
 
   // Close and reopen the database.
   DestroyStore();
   CreateStore();
 
   // Load the stored policy.
-  std::vector<NetworkErrorLoggingService::NELPolicy> policies;
-  LoadNELPolicies(&policies);
+  std::vector<NetworkErrorLoggingService::NelPolicy> policies;
+  LoadNelPolicies(&policies);
   ASSERT_EQ(1u, policies.size());
   EXPECT_EQ(policy.origin, policies[0].origin);
   EXPECT_EQ(policy.received_ip_address, policies[0].received_ip_address);
@@ -262,12 +262,12 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest, PersistNELPolicy) {
   EXPECT_TRUE(WithinOneMicrosecond(policy.last_used, policies[0].last_used));
 }
 
-TEST_F(SQLitePersistentReportingAndNELStoreTest, LoadFailed) {
+TEST_F(SQLitePersistentReportingAndNelStoreTest, LoadFailed) {
   // Inject a db initialization failure by creating a directory where the db
   // file should be.
   ASSERT_TRUE(base::CreateDirectory(
       temp_dir_.GetPath().Append(kReportingAndNELStoreFilename)));
-  store_ = std::make_unique<SQLitePersistentReportingAndNELStore>(
+  store_ = std::make_unique<SQLitePersistentReportingAndNelStore>(
       temp_dir_.GetPath().Append(kReportingAndNELStoreFilename),
       client_task_runner_, background_task_runner_);
 
@@ -277,90 +277,90 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest, LoadFailed) {
   InitializeStore();
 }
 
-TEST_F(SQLitePersistentReportingAndNELStoreTest, UpdateNELPolicyAccessTime) {
+TEST_F(SQLitePersistentReportingAndNelStoreTest, UpdateNelPolicyAccessTime) {
   CreateStore();
   InitializeStore();
   base::Time now = base::Time::Now();
-  NetworkErrorLoggingService::NELPolicy policy = MakeNELPolicy(kOrigin1, now);
-  store_->AddNELPolicy(policy);
+  NetworkErrorLoggingService::NelPolicy policy = MakeNelPolicy(kOrigin1, now);
+  store_->AddNelPolicy(policy);
 
   policy.last_used = now + base::TimeDelta::FromDays(1);
-  store_->UpdateNELPolicyAccessTime(policy);
+  store_->UpdateNelPolicyAccessTime(policy);
 
   // Close and reopen the database.
   DestroyStore();
   CreateStore();
 
   // Load the stored policy.
-  std::vector<NetworkErrorLoggingService::NELPolicy> policies;
-  LoadNELPolicies(&policies);
+  std::vector<NetworkErrorLoggingService::NelPolicy> policies;
+  LoadNelPolicies(&policies);
   ASSERT_EQ(1u, policies.size());
   EXPECT_EQ(policy.origin, policies[0].origin);
   EXPECT_TRUE(WithinOneMicrosecond(policy.last_used, policies[0].last_used));
 }
 
-TEST_F(SQLitePersistentReportingAndNELStoreTest, DeleteNELPolicy) {
+TEST_F(SQLitePersistentReportingAndNelStoreTest, DeleteNelPolicy) {
   CreateStore();
   InitializeStore();
   base::Time now = base::Time::Now();
-  NetworkErrorLoggingService::NELPolicy policy1 = MakeNELPolicy(kOrigin1, now);
-  NetworkErrorLoggingService::NELPolicy policy2 = MakeNELPolicy(kOrigin2, now);
-  store_->AddNELPolicy(policy1);
-  store_->AddNELPolicy(policy2);
+  NetworkErrorLoggingService::NelPolicy policy1 = MakeNelPolicy(kOrigin1, now);
+  NetworkErrorLoggingService::NelPolicy policy2 = MakeNelPolicy(kOrigin2, now);
+  store_->AddNelPolicy(policy1);
+  store_->AddNelPolicy(policy2);
 
-  store_->DeleteNELPolicy(policy1);
+  store_->DeleteNelPolicy(policy1);
 
   // Close and reopen the database.
   DestroyStore();
   CreateStore();
 
   // |policy1| is no longer in the database but |policy2| remains.
-  std::vector<NetworkErrorLoggingService::NELPolicy> policies;
-  LoadNELPolicies(&policies);
+  std::vector<NetworkErrorLoggingService::NelPolicy> policies;
+  LoadNelPolicies(&policies);
   ASSERT_EQ(1u, policies.size());
   EXPECT_EQ(policy2.origin, policies[0].origin);
 
   // Delete after having closed and reopened.
-  store_->DeleteNELPolicy(policy2);
+  store_->DeleteNelPolicy(policy2);
   DestroyStore();
   CreateStore();
 
   // |policy2| is also gone.
   policies.clear();
-  LoadNELPolicies(&policies);
+  LoadNelPolicies(&policies);
   EXPECT_EQ(0u, policies.size());
 }
 
-TEST_F(SQLitePersistentReportingAndNELStoreTest,
-       NELPolicyUniquenessConstraint) {
+TEST_F(SQLitePersistentReportingAndNelStoreTest,
+       NelPolicyUniquenessConstraint) {
   CreateStore();
   InitializeStore();
   base::Time now = base::Time::Now();
-  NetworkErrorLoggingService::NELPolicy policy1 = MakeNELPolicy(kOrigin1, now);
+  NetworkErrorLoggingService::NelPolicy policy1 = MakeNelPolicy(kOrigin1, now);
   // Different NEL policy (different last_used) with the same origin.
-  NetworkErrorLoggingService::NELPolicy policy2 =
-      MakeNELPolicy(kOrigin1, now + base::TimeDelta::FromDays(1));
+  NetworkErrorLoggingService::NelPolicy policy2 =
+      MakeNelPolicy(kOrigin1, now + base::TimeDelta::FromDays(1));
 
-  store_->AddNELPolicy(policy1);
+  store_->AddNelPolicy(policy1);
   // Adding a policy with the same origin should trigger a warning and fail to
   // execute.
-  store_->AddNELPolicy(policy2);
+  store_->AddNelPolicy(policy2);
 
   // Close and reopen the database.
   DestroyStore();
   CreateStore();
 
-  std::vector<NetworkErrorLoggingService::NELPolicy> policies;
-  LoadNELPolicies(&policies);
+  std::vector<NetworkErrorLoggingService::NelPolicy> policies;
+  LoadNelPolicies(&policies);
   // Only the first policy we added should be in the store.
   ASSERT_EQ(1u, policies.size());
   EXPECT_EQ(policy1.origin, policies[0].origin);
   EXPECT_TRUE(WithinOneMicrosecond(policy1.last_used, policies[0].last_used));
 }
 
-TEST_F(SQLitePersistentReportingAndNELStoreTest, CoalesceNELPolicyOperations) {
-  NetworkErrorLoggingService::NELPolicy policy =
-      MakeNELPolicy(kOrigin1, base::Time::Now());
+TEST_F(SQLitePersistentReportingAndNelStoreTest, CoalesceNelPolicyOperations) {
+  NetworkErrorLoggingService::NelPolicy policy =
+      MakeNelPolicy(kOrigin1, base::Time::Now());
 
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -368,8 +368,8 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest, CoalesceNELPolicyOperations) {
   for (const TestCase& testcase : kCoalescingTestcases) {
     CreateStore();
     base::RunLoop run_loop;
-    store_->LoadNELPolicies(base::BindLambdaForTesting(
-        [&](std::vector<NetworkErrorLoggingService::NELPolicy>) {
+    store_->LoadNelPolicies(base::BindLambdaForTesting(
+        [&](std::vector<NetworkErrorLoggingService::NelPolicy>) {
           run_loop.Quit();
         }));
     run_loop.Run();
@@ -378,22 +378,22 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest, CoalesceNELPolicyOperations) {
     // queue.
     background_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&SQLitePersistentReportingAndNELStoreTest::WaitOnEvent,
+        base::BindOnce(&SQLitePersistentReportingAndNelStoreTest::WaitOnEvent,
                        base::Unretained(this), &event));
 
     // Now run the ops, and check how much gets queued.
     for (const Op op : testcase.operations) {
       switch (op) {
         case Op::kAdd:
-          store_->AddNELPolicy(policy);
+          store_->AddNelPolicy(policy);
           break;
 
         case Op::kDelete:
-          store_->DeleteNELPolicy(policy);
+          store_->DeleteNelPolicy(policy);
           break;
 
         case Op::kUpdate:
-          store_->UpdateNELPolicyAccessTime(policy);
+          store_->UpdateNelPolicyAccessTime(policy);
           break;
 
         default:
@@ -410,14 +410,14 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest, CoalesceNELPolicyOperations) {
   }
 }
 
-TEST_F(SQLitePersistentReportingAndNELStoreTest,
-       DontCoalesceUnrelatedNELPolicies) {
+TEST_F(SQLitePersistentReportingAndNelStoreTest,
+       DontCoalesceUnrelatedNelPolicies) {
   CreateStore();
   InitializeStore();
 
   base::Time now = base::Time::Now();
-  NetworkErrorLoggingService::NELPolicy policy1 = MakeNELPolicy(kOrigin1, now);
-  NetworkErrorLoggingService::NELPolicy policy2 = MakeNELPolicy(kOrigin2, now);
+  NetworkErrorLoggingService::NelPolicy policy1 = MakeNelPolicy(kOrigin1, now);
+  NetworkErrorLoggingService::NelPolicy policy2 = MakeNelPolicy(kOrigin2, now);
 
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -426,26 +426,26 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
   // queue.
   background_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&SQLitePersistentReportingAndNELStoreTest::WaitOnEvent,
+      base::BindOnce(&SQLitePersistentReportingAndNelStoreTest::WaitOnEvent,
                      base::Unretained(this), &event));
 
   // Delete on |policy2| should not cancel addition of unrelated |policy1|.
-  store_->AddNELPolicy(policy1);
-  store_->DeleteNELPolicy(policy2);
+  store_->AddNelPolicy(policy1);
+  store_->DeleteNelPolicy(policy2);
   EXPECT_EQ(2u, store_->GetQueueLengthForTesting());
 
   event.Signal();
   RunUntilIdle();
 }
 
-// These tests test that a SQLitePersistentReportingAndNELStore
+// These tests test that a SQLitePersistentReportingAndNelStore
 // can be used by a NetworkErrorLoggingService to persist NEL policies.
-class SQLitePersistNELTest : public SQLitePersistentReportingAndNELStoreTest {
+class SQLitePersistNelTest : public SQLitePersistentReportingAndNelStoreTest {
  public:
-  SQLitePersistNELTest() {}
+  SQLitePersistNelTest() {}
 
   void SetUp() override {
-    SQLitePersistentReportingAndNELStoreTest::SetUp();
+    SQLitePersistentReportingAndNelStoreTest::SetUp();
     SetUpNetworkErrorLoggingService();
   }
 
@@ -453,7 +453,7 @@ class SQLitePersistNELTest : public SQLitePersistentReportingAndNELStoreTest {
     service_->OnShutdown();
     service_.reset();
     reporting_service_.reset();
-    SQLitePersistentReportingAndNELStoreTest::TearDown();
+    SQLitePersistentReportingAndNelStoreTest::TearDown();
   }
 
   void SetUpNetworkErrorLoggingService() {
@@ -493,7 +493,7 @@ class SQLitePersistNELTest : public SQLitePersistentReportingAndNELStoreTest {
   std::unique_ptr<TestReportingService> reporting_service_;
 };
 
-TEST_F(SQLitePersistNELTest, AddAndRetrieveNELPolicy) {
+TEST_F(SQLitePersistNelTest, AddAndRetrieveNelPolicy) {
   service_->OnHeader(kOrigin1, kServerIP, kHeader);
   RunUntilIdle();
 
@@ -509,7 +509,7 @@ TEST_F(SQLitePersistNELTest, AddAndRetrieveNELPolicy) {
               testing::ElementsAre(ReportUrlIs(kUrl1)));
 }
 
-TEST_F(SQLitePersistNELTest, AddAndDeleteNELPolicy) {
+TEST_F(SQLitePersistNelTest, AddAndDeleteNelPolicy) {
   service_->OnHeader(kOrigin1, kServerIP, kHeader);
   RunUntilIdle();
 
@@ -530,7 +530,7 @@ TEST_F(SQLitePersistNELTest, AddAndDeleteNELPolicy) {
   EXPECT_EQ(0u, reporting_service_->reports().size());
 }
 
-TEST_F(SQLitePersistNELTest, ExpirationTimeIsPersisted) {
+TEST_F(SQLitePersistNelTest, ExpirationTimeIsPersisted) {
   service_->OnHeader(kOrigin1, kServerIP, kHeader);
   RunUntilIdle();
 
@@ -556,7 +556,7 @@ TEST_F(SQLitePersistNELTest, ExpirationTimeIsPersisted) {
               testing::ElementsAre(ReportUrlIs(kUrl1)));
 }
 
-TEST_F(SQLitePersistNELTest, OnRequestUpdatesAccessTime) {
+TEST_F(SQLitePersistNelTest, OnRequestUpdatesAccessTime) {
   service_->OnHeader(kOrigin1, kServerIP, kHeader);
   RunUntilIdle();
 
@@ -573,15 +573,15 @@ TEST_F(SQLitePersistNELTest, OnRequestUpdatesAccessTime) {
   SimulateRestart();
   // Check that the policy's access time has been updated.
   base::Time now = clock_.Now();
-  NetworkErrorLoggingService::NELPolicy policy = MakeNELPolicy(kOrigin1, now);
-  std::vector<NetworkErrorLoggingService::NELPolicy> policies;
-  LoadNELPolicies(&policies);
+  NetworkErrorLoggingService::NelPolicy policy = MakeNelPolicy(kOrigin1, now);
+  std::vector<NetworkErrorLoggingService::NelPolicy> policies;
+  LoadNelPolicies(&policies);
   ASSERT_EQ(1u, policies.size());
   EXPECT_EQ(policy.origin, policies[0].origin);
   EXPECT_TRUE(WithinOneMicrosecond(policy.last_used, policies[0].last_used));
 }
 
-TEST_F(SQLitePersistNELTest, RemoveSomeBrowsingData) {
+TEST_F(SQLitePersistNelTest, RemoveSomeBrowsingData) {
   service_->OnHeader(kOrigin1, kServerIP, kHeader);
   service_->OnHeader(kOrigin2, kServerIP, kHeader);
   RunUntilIdle();
@@ -616,7 +616,7 @@ TEST_F(SQLitePersistNELTest, RemoveSomeBrowsingData) {
   EXPECT_EQ(0u, reporting_service_->reports().size());
 }
 
-TEST_F(SQLitePersistNELTest, RemoveAllBrowsingData) {
+TEST_F(SQLitePersistNelTest, RemoveAllBrowsingData) {
   service_->OnHeader(kOrigin1, kServerIP, kHeader);
   service_->OnHeader(kOrigin2, kServerIP, kHeader);
   RunUntilIdle();
@@ -650,7 +650,7 @@ TEST_F(SQLitePersistNELTest, RemoveAllBrowsingData) {
   EXPECT_EQ(0u, reporting_service_->reports().size());
 }
 
-TEST_F(SQLitePersistentReportingAndNELStoreTest, PersistReportingClients) {
+TEST_F(SQLitePersistentReportingAndNelStoreTest, PersistReportingClients) {
   CreateStore();
   InitializeStore();
   base::Time now = base::Time::Now();
@@ -684,7 +684,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest, PersistReportingClients) {
   EXPECT_TRUE(WithinOneMicrosecond(group.last_used, groups[0].last_used));
 }
 
-TEST_F(SQLitePersistentReportingAndNELStoreTest,
+TEST_F(SQLitePersistentReportingAndNelStoreTest,
        UpdateReportingEndpointGroupAccessTime) {
   CreateStore();
   InitializeStore();
@@ -710,7 +710,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
   EXPECT_TRUE(WithinOneMicrosecond(group.last_used, groups[0].last_used));
 }
 
-TEST_F(SQLitePersistentReportingAndNELStoreTest,
+TEST_F(SQLitePersistentReportingAndNelStoreTest,
        UpdateReportingEndpointDetails) {
   CreateStore();
   InitializeStore();
@@ -738,7 +738,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
   EXPECT_EQ(endpoint.info.weight, endpoints[0].info.weight);
 }
 
-TEST_F(SQLitePersistentReportingAndNELStoreTest,
+TEST_F(SQLitePersistentReportingAndNelStoreTest,
        UpdateReportingEndpointGroupDetails) {
   CreateStore();
   InitializeStore();
@@ -768,7 +768,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
   EXPECT_TRUE(WithinOneMicrosecond(group.last_used, groups[0].last_used));
 }
 
-TEST_F(SQLitePersistentReportingAndNELStoreTest, DeleteReportingEndpoint) {
+TEST_F(SQLitePersistentReportingAndNelStoreTest, DeleteReportingEndpoint) {
   CreateStore();
   InitializeStore();
   ReportingEndpoint endpoint1 =
@@ -800,7 +800,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest, DeleteReportingEndpoint) {
   EXPECT_EQ(0u, endpoints.size());
 }
 
-TEST_F(SQLitePersistentReportingAndNELStoreTest, DeleteReportingEndpointGroup) {
+TEST_F(SQLitePersistentReportingAndNelStoreTest, DeleteReportingEndpointGroup) {
   CreateStore();
   InitializeStore();
   base::Time now = base::Time::Now();
@@ -833,7 +833,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest, DeleteReportingEndpointGroup) {
   EXPECT_EQ(0u, groups.size());
 }
 
-TEST_F(SQLitePersistentReportingAndNELStoreTest,
+TEST_F(SQLitePersistentReportingAndNelStoreTest,
        ReportingEndpointUniquenessConstraint) {
   CreateStore();
   InitializeStore();
@@ -862,7 +862,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
   EXPECT_EQ(endpoint1.info.weight, endpoints[0].info.weight);
 }
 
-TEST_F(SQLitePersistentReportingAndNELStoreTest,
+TEST_F(SQLitePersistentReportingAndNelStoreTest,
        ReportingEndpointGroupUniquenessConstraint) {
   CreateStore();
   InitializeStore();
@@ -894,7 +894,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
   EXPECT_TRUE(WithinOneMicrosecond(group1.last_used, groups[0].last_used));
 }
 
-TEST_F(SQLitePersistentReportingAndNELStoreTest,
+TEST_F(SQLitePersistentReportingAndNelStoreTest,
        CoalesceReportingEndpointOperations) {
   ReportingEndpoint endpoint =
       MakeReportingEndpoint(kOrigin1, kGroupName1, kEndpoint1);
@@ -914,7 +914,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
     // queue.
     background_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&SQLitePersistentReportingAndNELStoreTest::WaitOnEvent,
+        base::BindOnce(&SQLitePersistentReportingAndNelStoreTest::WaitOnEvent,
                        base::Unretained(this), &event));
 
     // Now run the ops, and check how much gets queued.
@@ -948,7 +948,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
   }
 }
 
-TEST_F(SQLitePersistentReportingAndNELStoreTest,
+TEST_F(SQLitePersistentReportingAndNelStoreTest,
        DontCoalesceUnrelatedReportingEndpoints) {
   CreateStore();
   InitializeStore();
@@ -965,7 +965,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
   // queue.
   background_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&SQLitePersistentReportingAndNELStoreTest::WaitOnEvent,
+      base::BindOnce(&SQLitePersistentReportingAndNelStoreTest::WaitOnEvent,
                      base::Unretained(this), &event));
 
   // Delete on |endpoint2| should not cancel addition of unrelated |endpoint1|.
@@ -977,7 +977,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
   RunUntilIdle();
 }
 
-TEST_F(SQLitePersistentReportingAndNELStoreTest,
+TEST_F(SQLitePersistentReportingAndNelStoreTest,
        CoalesceReportingEndpointGroupOperations) {
   base::Time now = base::Time::Now();
   CachedReportingEndpointGroup group =
@@ -998,7 +998,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
     // queue.
     background_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&SQLitePersistentReportingAndNELStoreTest::WaitOnEvent,
+        base::BindOnce(&SQLitePersistentReportingAndNelStoreTest::WaitOnEvent,
                        base::Unretained(this), &event));
 
     // Now run the ops, and check how much gets queued.
@@ -1042,7 +1042,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
     // queue.
     background_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&SQLitePersistentReportingAndNELStoreTest::WaitOnEvent,
+        base::BindOnce(&SQLitePersistentReportingAndNelStoreTest::WaitOnEvent,
                        base::Unretained(this), &event));
 
     // Now run the ops, and check how much gets queued.
@@ -1074,7 +1074,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
   }
 }
 
-TEST_F(SQLitePersistentReportingAndNELStoreTest,
+TEST_F(SQLitePersistentReportingAndNelStoreTest,
        DontCoalesceUnrelatedReportingEndpointGroups) {
   CreateStore();
   InitializeStore();
@@ -1092,7 +1092,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
   // queue.
   background_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&SQLitePersistentReportingAndNELStoreTest::WaitOnEvent,
+      base::BindOnce(&SQLitePersistentReportingAndNelStoreTest::WaitOnEvent,
                      base::Unretained(this), &event));
 
   // Delete on |group2| should not cancel addition of unrelated |group2|.
