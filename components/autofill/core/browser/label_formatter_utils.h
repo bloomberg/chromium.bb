@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_LABEL_FORMATTER_UTILS_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_LABEL_FORMATTER_UTILS_H_
 
+#include <list>
 #include <string>
 #include <vector>
 
@@ -13,6 +14,29 @@
 #include "components/autofill/core/browser/field_types.h"
 
 namespace autofill {
+
+// Adds |part| to the front of |parts| if |part| is not an empty string.
+void AddLabelPartToFrontIfNotEmpty(const base::string16& part,
+                                   std::list<base::string16>* parts);
+
+// Adds |part| to the end of |parts| if |part| is not an empty string.
+void AddLabelPartIfNotEmpty(const base::string16& part,
+                            std::list<base::string16>* parts);
+
+// Adds |part| to the end of |parts| if |part| is not an empty string.
+void AddLabelPartIfNotEmpty(const base::string16& part,
+                            std::vector<base::string16>* parts);
+
+// Returns the text to show to the user. If there is more than one element in
+// |parts|, then a separator, |IDS_AUTOFILL_SUGGESTION_LABEL_SEPARATOR|, is
+// inserted between them.
+base::string16 ConstructLabelLine(const std::vector<base::string16>& parts);
+
+// Returns the text to show to the user. If there is more than one element in
+// |parts|, then a separator, |IDS_AUTOFILL_ADDRESS_SUMMARY_SEPARATOR|, is
+// inserted between them.
+base::string16 ConstructLabelLineFromList(
+    const std::list<base::string16>& parts);
 
 // Returns true if |type| is a component of a street address.
 bool IsStreetAddressPart(ServerFieldType type);
@@ -33,15 +57,6 @@ std::vector<ServerFieldType> ExtractSpecifiedAddressFieldTypes(
 // ADDRESS_HOME or ADDRESS_BILLING FieldTypeGroups.
 std::vector<ServerFieldType> ExtractAddressFieldTypes(
     const std::vector<ServerFieldType>& types);
-
-// Adds |part| to |parts| if |part| is not an empty string.
-void AddLabelPartIfNotEmpty(const base::string16& part,
-                            std::vector<base::string16>* parts);
-
-// Returns the text to show to the user. If there is more than one element in
-// |parts|, then a separator, |IDS_AUTOFILL_SUGGESTION_LABEL_SEPARATOR|, is
-// inserted between them.
-base::string16 ConstructLabelLine(const std::vector<base::string16>& parts);
 
 // Returns a pared down copy of |profile|. The copy has the same guid, origin,
 // country and language codes, and |field_types| as |profile|.
@@ -74,11 +89,11 @@ base::string16 GetLabelForFocusedAddress(
     const std::string& app_locale,
     const std::vector<ServerFieldType>& types);
 
-// If |form_has_street_address_| is true and if |profile| is associated with a
-// street address, then returns the street address, e.g. 24 Beacon St.
+// If |use_street_address| is true and if |profile| is associated with a street
+// address, then returns the street address, e.g. 24 Beacon St.
 //
-// If |form_has_street_address_| is false and |profile| is associated with
-// address fields other than street addresses, then returns the non-street-
+// If |use_street_address| is false and |profile| is associated with address
+// fields other than street addresses, then returns the non-street-
 // address-related data corresponding to |types|.
 base::string16 GetLabelAddress(bool use_street_address,
                                const AutofillProfile& profile,

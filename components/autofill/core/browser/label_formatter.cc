@@ -19,7 +19,6 @@
 
 namespace autofill {
 
-using data_util::DetermineGroups;
 using data_util::bit_field_type_groups::kAddress;
 using data_util::bit_field_type_groups::kEmail;
 using data_util::bit_field_type_groups::kName;

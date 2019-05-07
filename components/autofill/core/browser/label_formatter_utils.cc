@@ -29,6 +29,41 @@ const int kStreetAddressFieldTypes[] = {
     ADDRESS_HOME_STREET_ADDRESS, ADDRESS_BILLING_STREET_ADDRESS,
     ADDRESS_HOME_LINE3,          ADDRESS_BILLING_LINE3};
 
+void AddLabelPartToFrontIfNotEmpty(const base::string16& part,
+                                   std::list<base::string16>* parts) {
+  if (!part.empty()) {
+    parts->emplace_front(part);
+  }
+}
+
+void AddLabelPartIfNotEmpty(const base::string16& part,
+                            std::list<base::string16>* parts) {
+  if (!part.empty()) {
+    parts->emplace_back(part);
+  }
+}
+
+void AddLabelPartIfNotEmpty(const base::string16& part,
+                            std::vector<base::string16>* parts) {
+  if (!part.empty()) {
+    parts->push_back(part);
+  }
+}
+
+base::string16 ConstructLabelLine(const std::vector<base::string16>& parts) {
+  return base::JoinString(parts, l10n_util::GetStringUTF16(
+                                     IDS_AUTOFILL_SUGGESTION_LABEL_SEPARATOR));
+}
+
+base::string16 ConstructLabelLineFromList(
+    const std::list<base::string16>& parts) {
+  const std::vector<base::string16> parts_as_vector{std::begin(parts),
+                                                    std::end(parts)};
+  return base::JoinString(
+      parts_as_vector,
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_SUMMARY_SEPARATOR));
+}
+
 bool IsStreetAddressPart(ServerFieldType type) {
   return std::find(std::begin(kStreetAddressFieldTypes),
                    std::end(kStreetAddressFieldTypes),
@@ -71,18 +106,6 @@ std::vector<ServerFieldType> ExtractAddressFieldTypes(
                ADDRESS_HOME;
       });
   return only_address_types;
-}
-
-void AddLabelPartIfNotEmpty(const base::string16& part,
-                            std::vector<base::string16>* parts) {
-  if (!part.empty()) {
-    parts->push_back(part);
-  }
-}
-
-base::string16 ConstructLabelLine(const std::vector<base::string16>& parts) {
-  return base::JoinString(parts, l10n_util::GetStringUTF16(
-                                     IDS_AUTOFILL_SUGGESTION_LABEL_SEPARATOR));
 }
 
 AutofillProfile MakeTrimmedProfile(const AutofillProfile& profile,
