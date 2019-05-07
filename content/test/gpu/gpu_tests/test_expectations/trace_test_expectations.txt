@@ -30,3 +30,6 @@ crbug.com/930343 [ win intel ] VideoPathTraceTest_DirectComposition_Video_VP9_Fu
 
 # Complex overlays test is flaky on Nvidia probably due to its small size.
 crbug.com/937545 [ win10 nvidia ] VideoPathTraceTest_DirectComposition_ComplexOverlays [ RetryOnFailure ]
+
+# Flaky for unknown reason.
+crbug.com/960007 [ win10 nvidia ] OverlayModeTraceTest_DirectComposition_Nonroot [ RetryOnFailure ]
