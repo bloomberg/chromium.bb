@@ -106,7 +106,7 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest, AcceptTransformHeaderSet) {
                                                manager.get());
   network::ResourceRequest request;
   request.url = GURL("http://example.com");
-  request.resource_type = content::ResourceType::kMedia;
+  request.resource_type = static_cast<int>(content::ResourceType::kMedia);
   bool defer = false;
 
   throttle.WillStartRequest(&request, &defer);
@@ -125,7 +125,7 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest,
                                                manager.get());
   network::ResourceRequest request;
   request.url = GURL("http://example.com");
-  request.resource_type = content::ResourceType::kMainFrame;
+  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.previews_state = content::SERVER_LITE_PAGE_ON;
   bool defer = false;
 
@@ -162,7 +162,7 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest, UseAlternateProxyList) {
   DataReductionProxyURLLoaderThrottle throttle((net::HttpRequestHeaders()),
                                                manager.get());
   network::ResourceRequest request;
-  request.resource_type = content::ResourceType::kMedia;
+  request.resource_type = static_cast<int>(content::ResourceType::kMedia);
   request.url = GURL("http://example.com");
   bool defer = false;
 
@@ -176,7 +176,7 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest, DontUseAlternateProxyList) {
   DataReductionProxyURLLoaderThrottle throttle((net::HttpRequestHeaders()),
                                                manager.get());
   network::ResourceRequest request;
-  request.resource_type = content::ResourceType::kMainFrame;
+  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.url = GURL("http://example.com");
   bool defer = false;
 
@@ -197,7 +197,7 @@ void RestartBypassProxyAndCacheHelper(
   throttle.set_delegate(&delegate);
 
   network::ResourceRequest request;
-  request.resource_type = content::ResourceType::kMainFrame;
+  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.url = GURL("http://example.com/");
   bool defer = false;
 
@@ -259,7 +259,7 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest,
   throttle.set_delegate(&delegate);
 
   network::ResourceRequest request;
-  request.resource_type = content::ResourceType::kMainFrame;
+  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.url = GURL("http://example.com/");
   bool defer = false;
 
@@ -291,7 +291,7 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest, MarkProxyAsBadAndRestart) {
   throttle.set_delegate(&delegate);
 
   network::ResourceRequest request;
-  request.resource_type = content::ResourceType::kMainFrame;
+  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.url = GURL("http://www.example.com/");
   bool defer = false;
 

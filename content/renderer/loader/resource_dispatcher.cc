@@ -503,7 +503,7 @@ int ResourceDispatcher::StartAsync(
   CheckSchemeForReferrerPolicy(*request);
 
 #if defined(OS_ANDROID)
-  if (request->resource_type != ResourceType::kMainFrame &&
+  if (request->resource_type != static_cast<int>(ResourceType::kMainFrame) &&
       request->has_user_gesture) {
     NotifyUpdateUserGestureCarryoverInfo(request->render_frame_id);
   }
@@ -528,9 +528,10 @@ int ResourceDispatcher::StartAsync(
   pending_request->previews_state = request->previews_state;
 
   if (override_url_loader) {
-    DCHECK(request->resource_type == ResourceType::kWorker ||
-           request->resource_type == ResourceType::kSharedWorker)
-        << static_cast<int>(request->resource_type);
+    DCHECK(request->resource_type == static_cast<int>(ResourceType::kWorker) ||
+           request->resource_type ==
+               static_cast<int>(ResourceType::kSharedWorker))
+        << request->resource_type;
 
     // Redirect checks are handled by NavigationURLLoaderImpl, so it's safe to
     // pass true for |bypass_redirect_checks|.

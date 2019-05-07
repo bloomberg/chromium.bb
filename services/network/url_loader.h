@@ -26,7 +26,6 @@
 #include "services/network/cross_origin_read_blocking.h"
 #include "services/network/initiator_lock_compatibility.h"
 #include "services/network/keepalive_statistics_recorder.h"
-#include "services/network/public/cpp/resource_type.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -116,10 +115,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   net::LoadState GetLoadStateForTesting() const;
 
-  // TODO(dcheng): These should also be ints.
   uint32_t GetRenderFrameId() const;
   uint32_t GetProcessId() const;
-  ResourceType GetResourceType() const;
+  uint32_t GetResourceType() const;
 
   // Whether this URLLoader should allow sending/setting cookies for requests
   // with |url| and |site_for_cookies|. This decision is based on the options
@@ -233,7 +231,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   DeleteCallback delete_callback_;
 
   int32_t options_;
-  ResourceType resource_type_;
+  int resource_type_;
   bool is_load_timing_enabled_;
 
   // URLLoaderFactory is guaranteed to outlive URLLoader, so it is safe to

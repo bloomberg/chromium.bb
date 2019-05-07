@@ -69,7 +69,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
     ServiceWorkerNavigationLoader* MaybeCreateLoader() {
       network::ResourceRequest resource_request;
       resource_request.url = request_->url();
-      resource_request.resource_type = resource_type_;
+      resource_request.resource_type = static_cast<int>(resource_type_);
       resource_request.headers = request()->extra_request_headers();
       handler_->MaybeCreateLoader(resource_request, nullptr,
                                   base::DoNothing(), base::DoNothing());

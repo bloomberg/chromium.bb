@@ -42,7 +42,8 @@ bool MergeSessionLoaderThrottle::MaybeDeferForMergeSession(
 void MergeSessionLoaderThrottle::WillStartRequest(
     network::ResourceRequest* request,
     bool* defer) {
-  is_xhr_ = request->resource_type == content::ResourceType::kXhr;
+  is_xhr_ =
+      request->resource_type == static_cast<int>(content::ResourceType::kXhr);
   if (is_xhr_ && request->url.SchemeIsHTTPOrHTTPS() &&
       MaybeDeferForMergeSession(
           request->url,

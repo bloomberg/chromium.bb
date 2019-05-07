@@ -99,7 +99,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
     return request.plugin_child_id;
   }
   static int32_t resource_type(const network::ResourceRequest& request) {
-    return static_cast<int32_t>(request.resource_type);
+    return request.resource_type;
   }
   static net::RequestPriority priority(
       const network::ResourceRequest& request) {

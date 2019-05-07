@@ -93,9 +93,11 @@ ServiceWorkerRequestHandler::CreateForWorker(
     const network::ResourceRequest& resource_request,
     ServiceWorkerProviderHost* host) {
   DCHECK(host);
-  DCHECK(resource_request.resource_type == ResourceType::kWorker ||
-         resource_request.resource_type == ResourceType::kSharedWorker)
-      << static_cast<int>(resource_request.resource_type);
+  DCHECK(resource_request.resource_type ==
+             static_cast<int>(ResourceType::kWorker) ||
+         resource_request.resource_type ==
+             static_cast<int>(ResourceType::kSharedWorker))
+      << resource_request.resource_type;
 
   // Create the handler even for insecure HTTP since it's used in the
   // case of redirect to HTTPS.
@@ -110,7 +112,7 @@ ServiceWorkerRequestHandler::CreateForWorker(
       resource_request.fetch_redirect_mode, resource_request.fetch_integrity,
       resource_request.keepalive,
       static_cast<ResourceType>(resource_request.resource_type),
-      resource_request.resource_type == ResourceType::kWorker
+      resource_request.resource_type == static_cast<int>(ResourceType::kWorker)
           ? blink::mojom::RequestContextType::WORKER
           : blink::mojom::RequestContextType::SHARED_WORKER,
       resource_request.fetch_frame_type, resource_request.request_body,

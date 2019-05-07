@@ -36,7 +36,8 @@ bool ShouldCreateLoader(const network::ResourceRequest& resource_request) {
   if (!(resource_request.previews_state & content::LITE_PAGE_REDIRECT_ON))
     return false;
 
-  DCHECK_EQ(resource_request.resource_type, content::ResourceType::kMainFrame);
+  DCHECK_EQ(resource_request.resource_type,
+            static_cast<int>(content::ResourceType::kMainFrame));
   DCHECK(resource_request.url.SchemeIsHTTPOrHTTPS());
   DCHECK_EQ(resource_request.method, "GET");
 

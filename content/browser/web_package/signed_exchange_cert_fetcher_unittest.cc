@@ -262,7 +262,7 @@ TEST_F(SignedExchangeCertFetcherTest, Simple) {
   ASSERT_TRUE(mock_loader_factory_.client_ptr());
   ASSERT_TRUE(mock_loader_factory_.url_request());
   EXPECT_EQ(url_, mock_loader_factory_.url_request()->url);
-  EXPECT_EQ(ResourceType::kSubResource,
+  EXPECT_EQ(static_cast<int>(ResourceType::kSubResource),
             mock_loader_factory_.url_request()->resource_type);
   EXPECT_FALSE(mock_loader_factory_.url_request()->allow_credentials);
   EXPECT_TRUE(mock_loader_factory_.url_request()->request_initiator->opaque());
@@ -318,7 +318,7 @@ TEST_F(SignedExchangeCertFetcherTest, ForceFetchAndFail) {
 
   ASSERT_TRUE(mock_loader_factory_.url_request());
   EXPECT_EQ(url_, mock_loader_factory_.url_request()->url);
-  EXPECT_EQ(ResourceType::kSubResource,
+  EXPECT_EQ(static_cast<int>(ResourceType::kSubResource),
             mock_loader_factory_.url_request()->resource_type);
   EXPECT_EQ(net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_CACHE,
             mock_loader_factory_.url_request()->load_flags);

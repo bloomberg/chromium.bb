@@ -111,8 +111,7 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
   resource_request->url = osdd_url;
   resource_request->request_initiator = initiator;
   resource_request->render_frame_id = render_frame_id;
-  resource_request->resource_type =
-      static_cast<network::ResourceType>(resource_type);
+  resource_request->resource_type = resource_type;
   resource_request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES;
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), kTrafficAnnotation);

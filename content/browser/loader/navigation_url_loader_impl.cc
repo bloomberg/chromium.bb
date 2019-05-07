@@ -217,9 +217,9 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->headers.AddHeadersFromString(
       request_info->begin_params->headers);
 
-  new_request->resource_type = request_info->is_main_frame
-                                   ? ResourceType::kMainFrame
-                                   : ResourceType::kSubFrame;
+  new_request->resource_type =
+      static_cast<int>(request_info->is_main_frame ? ResourceType::kMainFrame
+                                                   : ResourceType::kSubFrame);
   if (request_info->is_main_frame)
     new_request->update_first_party_url_on_redirect = true;
 
@@ -890,7 +890,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         bool handled = GetContentClient()->browser()->HandleExternalProtocol(
             resource_request_->url, web_contents_getter_,
             ChildProcessHost::kInvalidUniqueID, navigation_ui_data_.get(),
-            resource_request_->resource_type == ResourceType::kMainFrame,
+            resource_request_->resource_type ==
+                static_cast<int>(ResourceType::kMainFrame),
             static_cast<ui::PageTransition>(resource_request_->transition_type),
             resource_request_->has_user_gesture, resource_request_->method,
             resource_request_->headers, &proxied_factory_request_,
@@ -948,8 +949,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       }
     }
     url_chain_.push_back(resource_request_->url);
-    *out_options = GetURLLoaderOptions(resource_request_->resource_type ==
-                                       ResourceType::kMainFrame);
+    *out_options =
+        GetURLLoaderOptions(resource_request_->resource_type ==
+                            static_cast<int>(ResourceType::kMainFrame));
     return factory;
   }
 

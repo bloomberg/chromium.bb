@@ -130,7 +130,6 @@ jumbo_component("cpp_base") {
     "resource_response.h",
     "resource_response_info.cc",
     "resource_response_info.h",
-    "resource_type.h",
     "url_loader_completion_status.cc",
     "url_loader_completion_status.h",
     "url_request_mojom_traits.cc",

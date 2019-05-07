@@ -536,7 +536,8 @@ void ServiceWorkerNavigationLoader::RecordTimingMetrics(bool handled) {
   DCHECK(!completion_time_.is_null());
 
   // We only record these metrics for top-level navigation.
-  if (resource_request_.resource_type != ResourceType::kMainFrame)
+  if (resource_request_.resource_type !=
+      static_cast<int>(ResourceType::kMainFrame))
     return;
 
   // |fetch_event_timing_| is recorded in renderer so we can get reasonable

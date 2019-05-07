@@ -827,7 +827,8 @@ AwContentBrowserClient::CreateURLLoaderThrottles(
     }
   }
 
-  if (request.resource_type == content::ResourceType::kMainFrame) {
+  if (request.resource_type ==
+      static_cast<int>(content::ResourceType::kMainFrame)) {
     const bool is_load_url =
         request.transition_type & ui::PAGE_TRANSITION_FROM_API;
     const bool is_go_back_forward =

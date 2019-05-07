@@ -85,7 +85,7 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
 
   network::ResourceRequest request;
   request.url = GURL("https://google.com");
-  request.resource_type = content::ResourceType::kMainFrame;
+  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.method = "GET";
 
   SetFakeResponse(
@@ -133,7 +133,7 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest, InterceptRequestRedirect) {
   base::HistogramTester histogram_tester;
   network::ResourceRequest request;
   request.url = GURL("https://google.com");
-  request.resource_type = content::ResourceType::kMainFrame;
+  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.method = "GET";
   request.previews_state = content::LITE_PAGE_REDIRECT_ON;
   SetFakeResponse(
@@ -158,7 +158,7 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
   base::HistogramTester histogram_tester;
   network::ResourceRequest request;
   request.url = GURL("https://google.com");
-  request.resource_type = content::ResourceType::kMainFrame;
+  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.method = "GET";
   request.previews_state = content::LITE_PAGE_REDIRECT_ON;
   SetFakeResponse(
@@ -184,7 +184,7 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
   base::HistogramTester histogram_tester;
   network::ResourceRequest request;
   request.url = GURL("https://google.com");
-  request.resource_type = content::ResourceType::kMainFrame;
+  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.method = "GET";
   request.previews_state = content::LITE_PAGE_REDIRECT_ON;
   SetFakeResponse(
@@ -208,7 +208,7 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest, NetStackError) {
   base::HistogramTester histogram_tester;
   network::ResourceRequest request;
   request.url = GURL("https://google.com");
-  request.resource_type = content::ResourceType::kMainFrame;
+  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.method = "GET";
   request.previews_state = content::LITE_PAGE_REDIRECT_ON;
   SetFakeResponse(

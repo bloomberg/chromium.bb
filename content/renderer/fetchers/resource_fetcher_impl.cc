@@ -320,7 +320,8 @@ void ResourceFetcherImpl::Start(
     SetHeader(kAccessControlAllowOriginHeader,
               blink::WebSecurityOrigin::CreateUnique().ToString().Ascii());
   }
-  request_.resource_type = RequestContextToResourceType(request_context);
+  request_.resource_type =
+      static_cast<int>(RequestContextToResourceType(request_context));
 
   client_ = std::make_unique<ClientImpl>(
       this, std::move(callback), maximum_download_size,

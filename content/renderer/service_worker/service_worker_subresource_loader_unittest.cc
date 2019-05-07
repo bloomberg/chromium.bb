@@ -555,7 +555,7 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
     network::ResourceRequest request;
     request.url = url;
     request.method = "GET";
-    request.resource_type = ResourceType::kSubResource;
+    request.resource_type = static_cast<int>(ResourceType::kSubResource);
     return request;
   }
 

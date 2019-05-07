@@ -188,7 +188,7 @@ bool StructTraits<
   out->load_flags = data.load_flags();
   out->allow_credentials = data.allow_credentials();
   out->plugin_child_id = data.plugin_child_id();
-  out->resource_type = static_cast<network::ResourceType>(data.resource_type());
+  out->resource_type = data.resource_type();
   out->appcache_host_id = data.appcache_host_id();
   out->should_reset_appcache = data.should_reset_appcache();
   out->is_external_request = data.is_external_request();

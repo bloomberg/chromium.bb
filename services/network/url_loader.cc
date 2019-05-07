@@ -393,8 +393,7 @@ URLLoader::URLLoader(
                             std::make_unique<UnownedPointer>(this));
 
   is_nocors_corb_excluded_request_ =
-      static_cast<int>(resource_type_) ==
-          factory_params_->corb_excluded_resource_type &&
+      resource_type_ == factory_params_->corb_excluded_resource_type &&
       request.fetch_request_mode == mojom::FetchRequestMode::kNoCors &&
       CrossOriginReadBlocking::ShouldAllowForPlugin(
           factory_params_->process_id);
@@ -758,7 +757,7 @@ void URLLoader::OnAuthRequired(net::URLRequest* url_request,
   network_service_client_->OnAuthRequired(
       factory_params_->process_id, render_frame_id_, request_id_,
       url_request_->url(), url_request_->site_for_cookies(),
-      first_auth_attempt_, auth_info, static_cast<int>(resource_type_), head,
+      first_auth_attempt_, auth_info, resource_type_, head,
       std::move(auth_challenge_responder));
 
   first_auth_attempt_ = false;
@@ -806,8 +805,7 @@ void URLLoader::OnSSLCertificateError(net::URLRequest* request,
   }
   network_service_client_->OnSSLCertificateError(
       factory_params_->process_id, render_frame_id_, request_id_,
-      static_cast<int>(resource_type_), url_request_->url(), net_error,
-      ssl_info, fatal,
+      resource_type_, url_request_->url(), net_error, ssl_info, fatal,
       base::Bind(&URLLoader::OnSSLCertificateErrorResponse,
                  weak_ptr_factory_.GetWeakPtr(), ssl_info));
 }
@@ -1126,7 +1124,7 @@ void URLLoader::SetAllowReportingRawHeaders(bool allow) {
   report_raw_headers_ = want_raw_headers_ && allow;
 }
 
-ResourceType URLLoader::GetResourceType() const {
+uint32_t URLLoader::GetResourceType() const {
   return resource_type_;
 }
 
@@ -1418,8 +1416,7 @@ URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
   // Tell the real URLLoaderClient that the response has been completed.
   bool should_report_corb_blocking =
       corb_analyzer_->ShouldReportBlockedResponse();
-  if (static_cast<int>(resource_type_) ==
-      factory_params_->corb_detachable_resource_type) {
+  if (resource_type_ == factory_params_->corb_detachable_resource_type) {
     // TODO(lukasza): https://crbug.com/827633#c5: Consider passing net::ERR_OK
     // instead.  net::ERR_ABORTED was chosen for consistency with the old CORB
     // implementation that used to go through DetachableResourceHandler.
@@ -1432,8 +1429,7 @@ URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
   // If the factory is asking to complete requests of this type, then we need to
   // continue processing the response to make sure the network cache is
   // populated.  Otherwise we can cancel the request.
-  if (static_cast<int>(resource_type_) ==
-      factory_params_->corb_detachable_resource_type) {
+  if (resource_type_ == factory_params_->corb_detachable_resource_type) {
     // Discard any remaining callbacks or data by rerouting the pipes to
     // EmptyURLLoaderClient (deleting |self_ptr| when the URL request
     // completes).

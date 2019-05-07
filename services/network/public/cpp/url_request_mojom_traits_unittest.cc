@@ -61,7 +61,7 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.load_flags = 3;
   original.allow_credentials = true;
   original.plugin_child_id = 5;
-  original.resource_type = static_cast<ResourceType>(2);
+  original.resource_type = 2;
   original.priority = net::IDLE;
   original.appcache_host_id = 3;
   original.should_reset_appcache = true;

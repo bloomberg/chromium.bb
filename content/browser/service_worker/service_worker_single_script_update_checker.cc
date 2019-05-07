@@ -82,8 +82,8 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
       weak_factory_(this) {
   network::ResourceRequest resource_request;
   resource_request.url = url;
-  resource_request.resource_type =
-      is_main_script ? ResourceType::kServiceWorker : ResourceType::kScript;
+  resource_request.resource_type = static_cast<int>(
+      is_main_script ? ResourceType::kServiceWorker : ResourceType::kScript);
   resource_request.do_not_prompt_for_login = true;
   if (is_main_script)
     resource_request.headers.SetHeader("Service-Worker", "script");

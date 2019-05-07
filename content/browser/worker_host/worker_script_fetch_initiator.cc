@@ -95,7 +95,7 @@ void WorkerScriptFetchInitiator::Start(
     resource_request->url = script_url;
     resource_request->site_for_cookies = script_url;
     resource_request->request_initiator = request_initiator;
-    resource_request->resource_type = resource_type;
+    resource_request->resource_type = static_cast<int>(resource_type);
 
     AddAdditionalRequestHeaders(resource_request.get(), browser_context);
   }

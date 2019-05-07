@@ -61,8 +61,10 @@ void WorkerScriptLoaderFactory::CreateLoaderAndStart(
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     // Handle only the main script. Import scripts (ResourceType::kScript)
     // should go to the network loader or controller.
-    if (resource_request.resource_type != ResourceType::kWorker &&
-        resource_request.resource_type != ResourceType::kSharedWorker) {
+    if (resource_request.resource_type !=
+            static_cast<int>(ResourceType::kWorker) &&
+        resource_request.resource_type !=
+            static_cast<int>(ResourceType::kSharedWorker)) {
       mojo::ReportBadMessage(
           "WorkerScriptLoaderFactory should only get requests for worker "
           "scripts");
@@ -74,9 +76,11 @@ void WorkerScriptLoaderFactory::CreateLoaderAndStart(
       return;
     }
   }
-  DCHECK(resource_request.resource_type == ResourceType::kWorker ||
-         resource_request.resource_type == ResourceType::kSharedWorker)
-      << static_cast<int>(resource_request.resource_type);
+  DCHECK(resource_request.resource_type ==
+             static_cast<int>(ResourceType::kWorker) ||
+         resource_request.resource_type ==
+             static_cast<int>(ResourceType::kSharedWorker))
+      << resource_request.resource_type;
   DCHECK(!script_loader_);
 
   // Create a WorkerScriptLoader to load the script.

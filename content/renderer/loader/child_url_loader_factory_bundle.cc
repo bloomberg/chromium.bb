@@ -221,7 +221,7 @@ void ChildURLLoaderFactoryBundle::CreateLoaderAndStart(
   // special prefetch handling.
   // TODO(horo): Move this routing logic to network service, when we will have
   // the special prefetch handling in network service.
-  if ((request.resource_type == ResourceType::kPrefetch) &&
+  if ((request.resource_type == static_cast<int>(ResourceType::kPrefetch)) &&
       prefetch_loader_factory_) {
     prefetch_loader_factory_->CreateLoaderAndStart(
         std::move(loader), routing_id, request_id, options, request,

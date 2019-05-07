@@ -16,7 +16,6 @@
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
-#include "services/network/public/cpp/resource_type.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
@@ -54,7 +53,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   int load_flags = 0;
   bool allow_credentials = true;
   int plugin_child_id = -1;
-  ResourceType resource_type = {};
+  int resource_type = 0;
   net::RequestPriority priority = net::IDLE;
   int appcache_host_id = 0;
   bool should_reset_appcache = false;

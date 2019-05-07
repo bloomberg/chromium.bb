@@ -83,7 +83,8 @@ DetachedResourceRequest::DetachedResourceRequest(
   resource_request->referrer_policy = referrer_policy;
   resource_request->site_for_cookies = site_for_cookies_;
   resource_request->request_initiator = url::Origin::Create(site_for_cookies_);
-  resource_request->resource_type = content::ResourceType::kSubResource;
+  resource_request->resource_type =
+      static_cast<int>(content::ResourceType::kSubResource);
   resource_request->do_not_prompt_for_login = true;
   resource_request->render_frame_id = -1;
   resource_request->enable_load_timing = false;

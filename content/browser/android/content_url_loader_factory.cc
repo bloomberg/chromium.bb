@@ -73,7 +73,8 @@ void GetMimeType(const network::ResourceRequest& request,
   out_mime_type->clear();
 
   std::string intent_type_header;
-  if ((request.resource_type == content::ResourceType::kMainFrame) &&
+  if ((request.resource_type ==
+       static_cast<int>(content::ResourceType::kMainFrame)) &&
       request.headers.GetHeader("X-Chrome-intent-type", &intent_type_header)) {
     *out_mime_type = intent_type_header;
   }

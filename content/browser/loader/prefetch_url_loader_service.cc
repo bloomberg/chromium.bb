@@ -106,7 +106,8 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
     scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
     base::RepeatingCallback<int(void)> frame_tree_node_id_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK_EQ(ResourceType::kPrefetch, resource_request.resource_type);
+  DCHECK_EQ(static_cast<int>(ResourceType::kPrefetch),
+            resource_request.resource_type);
   DCHECK(resource_context_);
 
   if (prefetch_load_callback_for_testing_)

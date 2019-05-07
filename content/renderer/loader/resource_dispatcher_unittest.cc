@@ -118,7 +118,7 @@ class ResourceDispatcherTest : public testing::Test,
     request->url = GURL(kTestPageUrl);
     request->site_for_cookies = GURL(kTestPageUrl);
     request->referrer_policy = Referrer::GetDefaultReferrerPolicy();
-    request->resource_type = ResourceType::kSubResource;
+    request->resource_type = static_cast<int>(ResourceType::kSubResource);
     request->priority = net::LOW;
     request->fetch_request_mode = network::mojom::FetchRequestMode::kNoCors;
     request->fetch_frame_type = network::mojom::RequestContextFrameType::kNone;

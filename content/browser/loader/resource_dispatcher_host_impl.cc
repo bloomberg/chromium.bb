@@ -915,7 +915,7 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
       &request_context);
 
   // All PREFETCH requests should be GETs, but be defensive about it.
-  if (request_data.resource_type == ResourceType::kPrefetch &&
+  if (request_data.resource_type == static_cast<int>(ResourceType::kPrefetch) &&
       request_data.method != "GET") {
     AbortRequestBeforeItStarts(requester_info->filter(), request_id,
                                std::move(url_loader_client));
@@ -1103,7 +1103,7 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
           url_loader_options);
 
   // Prefetches outlive their child process.
-  if (request_data.resource_type == ResourceType::kPrefetch) {
+  if (request_data.resource_type == static_cast<int>(ResourceType::kPrefetch)) {
     auto detachable_handler = std::make_unique<DetachableResourceHandler>(
         request,
         base::TimeDelta::FromMilliseconds(kDefaultDetachableCancelDelayMs),

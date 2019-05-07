@@ -243,9 +243,9 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
     network::ResourceRequest request;
     request.url = url;
     request.method = "GET";
-    request.resource_type = (url == version_->script_url())
-                                ? ResourceType::kServiceWorker
-                                : ResourceType::kScript;
+    request.resource_type = static_cast<int>((url == version_->script_url())
+                                                 ? ResourceType::kServiceWorker
+                                                 : ResourceType::kScript);
 
     *out_client = std::make_unique<network::TestURLLoaderClient>();
     if (type == ServiceWorkerNewScriptLoader::Type::kResume) {

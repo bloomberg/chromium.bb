@@ -278,7 +278,7 @@ class ServiceWorkerProviderContextTest : public testing::Test {
                     const GURL& url) {
     network::ResourceRequest request;
     request.url = url;
-    request.resource_type = ResourceType::kSubResource;
+    request.resource_type = static_cast<int>(ResourceType::kSubResource);
     network::mojom::URLLoaderPtr loader;
     network::TestURLLoaderClient loader_client;
     factory->CreateLoaderAndStart(

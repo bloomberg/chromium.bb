@@ -54,7 +54,8 @@ AwWebResourceRequest::AwWebResourceRequest(
     const network::ResourceRequest& request)
     : url(request.url.spec()),
       method(request.method),
-      is_main_frame(request.resource_type == content::ResourceType::kMainFrame),
+      is_main_frame(request.resource_type ==
+                    static_cast<int>(content::ResourceType::kMainFrame)),
       has_user_gesture(request.has_user_gesture),
       is_renderer_initiated(ui::PageTransitionIsWebTriggerable(
           static_cast<ui::PageTransition>(request.transition_type))) {

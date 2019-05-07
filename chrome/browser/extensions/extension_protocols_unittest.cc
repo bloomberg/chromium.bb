@@ -142,7 +142,7 @@ network::ResourceRequest CreateResourceRequest(const std::string& method,
   request.request_initiator =
       url::Origin::Create(url);  // ensure initiator set.
   request.referrer_policy = content::Referrer::GetDefaultReferrerPolicy();
-  request.resource_type = resource_type;
+  request.resource_type = static_cast<int>(resource_type);
   request.is_main_frame = resource_type == content::ResourceType::kMainFrame;
   request.allow_download = true;
   return request;

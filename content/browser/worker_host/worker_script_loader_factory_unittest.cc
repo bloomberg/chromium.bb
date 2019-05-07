@@ -120,7 +120,8 @@ class WorkerScriptLoaderFactoryTest : public testing::Test {
     network::mojom::URLLoaderPtr loader;
     network::ResourceRequest resource_request;
     resource_request.url = url;
-    resource_request.resource_type = ResourceType::kSharedWorker;
+    resource_request.resource_type =
+        static_cast<int>(ResourceType::kSharedWorker);
     factory->CreateLoaderAndStart(
         mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
         network::mojom::kURLLoadOptionNone, resource_request,

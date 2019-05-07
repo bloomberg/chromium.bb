@@ -99,7 +99,8 @@ void PrerenderURLLoaderThrottle::WillStartRequest(
     }
   }
 
-  if (request->resource_type != content::ResourceType::kMainFrame &&
+  if (request->resource_type !=
+          static_cast<int>(content::ResourceType::kMainFrame) &&
       !DoesSubresourceURLHaveValidScheme(request->url)) {
     // Destroying the prerender for unsupported scheme only for non-main
     // resource to allow chrome://crash to actually crash in the
@@ -115,7 +116,8 @@ void PrerenderURLLoaderThrottle::WillStartRequest(
   }
 
 #if defined(OS_ANDROID)
-  if (request->resource_type == content::ResourceType::kFavicon) {
+  if (request->resource_type ==
+      static_cast<int>(content::ResourceType::kFavicon)) {
     // Delay icon fetching until the contents are getting swapped in
     // to conserve network usage in mobile devices.
     *defer = true;

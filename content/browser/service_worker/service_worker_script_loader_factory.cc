@@ -172,13 +172,14 @@ bool ServiceWorkerScriptLoaderFactory::CheckIfScriptRequestIsValid(
 
   // Handle only the service worker main script (ResourceType::kServiceWorker)
   // or importScripts() (ResourceType::kScript).
-  if (resource_request.resource_type != ResourceType::kServiceWorker &&
-      resource_request.resource_type != ResourceType::kScript) {
+  if (resource_request.resource_type !=
+          static_cast<int>(ResourceType::kServiceWorker) &&
+      resource_request.resource_type !=
+          static_cast<int>(ResourceType::kScript)) {
     static auto* key = base::debug::AllocateCrashKeyString(
         "swslf_bad_type", base::debug::CrashKeySize::Size32);
     base::debug::SetCrashKeyString(
-        key,
-        base::NumberToString(static_cast<int>(resource_request.resource_type)));
+        key, base::NumberToString(resource_request.resource_type));
     mojo::ReportBadMessage("SWSLF_BAD_RESOURCE_TYPE");
     return false;
   }

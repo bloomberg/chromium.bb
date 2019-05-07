@@ -112,7 +112,8 @@ SignedExchangeCertFetcher::SignedExchangeCertFetcher(
   // |request_initiator| is used for cookie checks, but cert requests don't use
   // cookies. So just set an opaque Origin.
   resource_request_->request_initiator = url::Origin();
-  resource_request_->resource_type = ResourceType::kSubResource;
+  resource_request_->resource_type =
+      static_cast<int>(ResourceType::kSubResource);
   // Cert requests should not send credential informartion, because the default
   // credentials mode of Fetch is "omit".
   resource_request_->allow_credentials = false;

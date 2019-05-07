@@ -107,7 +107,7 @@ static network::ResourceRequest CreateResourceRequest(const char* method,
   request.referrer_policy = Referrer::GetDefaultReferrerPolicy();
   request.load_flags = 0;
   request.plugin_child_id = -1;
-  request.resource_type = type;
+  request.resource_type = static_cast<int>(type);
   request.appcache_host_id = blink::mojom::kAppCacheNoHostId;
   request.should_reset_appcache = false;
   request.render_frame_id = 0;
