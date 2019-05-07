@@ -204,9 +204,9 @@ class DesktopLinuxBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
 TEST_F(DesktopLinuxBrowserFrameViewLayoutTest, NativeNavButtons) {
   std::vector<views::FrameButton> leading_buttons;
   std::vector<views::FrameButton> trailing_buttons;
-  leading_buttons.push_back(views::FRAME_BUTTON_CLOSE);
-  leading_buttons.push_back(views::FRAME_BUTTON_MAXIMIZE);
-  leading_buttons.push_back(views::FRAME_BUTTON_MINIMIZE);
+  leading_buttons.push_back(views::FrameButton::kClose);
+  leading_buttons.push_back(views::FrameButton::kMaximize);
+  leading_buttons.push_back(views::FrameButton::kMinimize);
   layout_manager_->SetButtonOrdering(leading_buttons, trailing_buttons);
   ResetNativeNavButtonImagesFromButtonProvider();
 

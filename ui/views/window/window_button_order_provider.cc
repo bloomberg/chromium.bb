@@ -23,9 +23,9 @@ WindowButtonOrderProvider* WindowButtonOrderProvider::GetInstance() {
 // WindowButtonOrderProvider, protected:
 
 WindowButtonOrderProvider::WindowButtonOrderProvider() {
-  trailing_buttons_.push_back(views::FRAME_BUTTON_MINIMIZE);
-  trailing_buttons_.push_back(views::FRAME_BUTTON_MAXIMIZE);
-  trailing_buttons_.push_back(views::FRAME_BUTTON_CLOSE);
+  trailing_buttons_.push_back(views::FrameButton::kMinimize);
+  trailing_buttons_.push_back(views::FrameButton::kMaximize);
+  trailing_buttons_.push_back(views::FrameButton::kClose);
 }
 
 WindowButtonOrderProvider::~WindowButtonOrderProvider() = default;

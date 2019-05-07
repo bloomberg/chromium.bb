@@ -169,13 +169,13 @@ void ParseButtonLayout(const std::string& button_string,
       base::StringPiece token = tokenizer.token_piece();
       if (token == "minimize") {
         (left_side ? leading_buttons : trailing_buttons)
-            ->push_back(views::FRAME_BUTTON_MINIMIZE);
+            ->push_back(views::FrameButton::kMinimize);
       } else if (token == "maximize") {
         (left_side ? leading_buttons : trailing_buttons)
-            ->push_back(views::FRAME_BUTTON_MAXIMIZE);
+            ->push_back(views::FrameButton::kMaximize);
       } else if (token == "close") {
         (left_side ? leading_buttons : trailing_buttons)
-            ->push_back(views::FRAME_BUTTON_CLOSE);
+            ->push_back(views::FrameButton::kClose);
       }
     }
   }

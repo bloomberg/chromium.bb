@@ -600,7 +600,7 @@ ImageButton* CustomFrameView::InitWindowCaptionButton(
 ImageButton* CustomFrameView::GetImageButton(views::FrameButton frame_button) {
   ImageButton* button = nullptr;
   switch (frame_button) {
-    case views::FRAME_BUTTON_MINIMIZE: {
+    case views::FrameButton::kMinimize: {
       button = minimize_button_;
       // If we should not show the minimize button, then we return NULL as we
       // don't want this button to become visible and to be laid out.
@@ -611,7 +611,7 @@ ImageButton* CustomFrameView::GetImageButton(views::FrameButton frame_button) {
 
       break;
     }
-    case views::FRAME_BUTTON_MAXIMIZE: {
+    case views::FrameButton::kMaximize: {
       bool is_restored = !frame_->IsMaximized() && !frame_->IsMinimized();
       button = is_restored ? maximize_button_ : restore_button_;
       // If we should not show the maximize/restore button, then we return
@@ -624,7 +624,7 @@ ImageButton* CustomFrameView::GetImageButton(views::FrameButton frame_button) {
 
       break;
     }
-    case views::FRAME_BUTTON_CLOSE: {
+    case views::FrameButton::kClose: {
       button = close_button_;
       break;
     }

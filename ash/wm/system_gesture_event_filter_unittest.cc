@@ -116,9 +116,9 @@ class SystemGestureEventFilterTest : public AshTestBase {
     // positions to be consistent across tests.
     std::vector<views::FrameButton> leading;
     std::vector<views::FrameButton> trailing;
-    trailing.push_back(views::FRAME_BUTTON_MINIMIZE);
-    trailing.push_back(views::FRAME_BUTTON_MAXIMIZE);
-    trailing.push_back(views::FRAME_BUTTON_CLOSE);
+    trailing.push_back(views::FrameButton::kMinimize);
+    trailing.push_back(views::FrameButton::kMaximize);
+    trailing.push_back(views::FrameButton::kClose);
     views::WindowButtonOrderProvider::GetInstance()->SetWindowButtonOrder(
         leading, trailing);
 

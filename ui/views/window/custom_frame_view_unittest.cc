@@ -150,9 +150,9 @@ TEST_F(CustomFrameViewTest, DefaultButtons) {
   const std::vector<views::FrameButton>& trailing = trailing_buttons();
   EXPECT_EQ(trailing.size(), 3u);
   EXPECT_TRUE(leading_buttons().empty());
-  EXPECT_EQ(trailing[0], FRAME_BUTTON_MINIMIZE);
-  EXPECT_EQ(trailing[1], FRAME_BUTTON_MAXIMIZE);
-  EXPECT_EQ(trailing[2], FRAME_BUTTON_CLOSE);
+  EXPECT_EQ(trailing[0], views::FrameButton::kMinimize);
+  EXPECT_EQ(trailing[1], views::FrameButton::kMaximize);
+  EXPECT_EQ(trailing[2], views::FrameButton::kClose);
 }
 
 // Tests that layout places the buttons in order, that the restore button is
@@ -178,9 +178,9 @@ TEST_F(CustomFrameViewTest, LeadingButtonLayout) {
   CustomFrameView* view = custom_frame_view();
 
   std::vector<views::FrameButton> leading;
-  leading.push_back(views::FRAME_BUTTON_CLOSE);
-  leading.push_back(views::FRAME_BUTTON_MINIMIZE);
-  leading.push_back(views::FRAME_BUTTON_MAXIMIZE);
+  leading.push_back(views::FrameButton::kClose);
+  leading.push_back(views::FrameButton::kMinimize);
+  leading.push_back(views::FrameButton::kMaximize);
 
   std::vector<views::FrameButton> trailing;
 
@@ -262,10 +262,10 @@ TEST_F(CustomFrameViewTest, LargerEdgeButtonsWhenMaximized) {
 
   // Custom ordering to have a button on each edge.
   std::vector<views::FrameButton> leading;
-  leading.push_back(views::FRAME_BUTTON_CLOSE);
-  leading.push_back(views::FRAME_BUTTON_MAXIMIZE);
+  leading.push_back(views::FrameButton::kClose);
+  leading.push_back(views::FrameButton::kMaximize);
   std::vector<views::FrameButton> trailing;
-  trailing.push_back(views::FRAME_BUTTON_MINIMIZE);
+  trailing.push_back(views::FrameButton::kMinimize);
   SetWindowButtonOrder(leading, trailing);
 
   view->Init(parent);
