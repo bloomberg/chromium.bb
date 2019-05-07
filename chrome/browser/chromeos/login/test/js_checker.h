@@ -114,7 +114,14 @@ class JSChecker {
   void ExpectHasNoClass(const std::string& css_class,
                         std::initializer_list<base::StringPiece> element_ids);
 
-  // Tap on indicated UI element.
+  // Fires a native 'click' event on the indicated UI element. Prefer using
+  // native 'click' event as it works on both polymer and native UI elements.
+  void ClickOnPath(std::initializer_list<base::StringPiece> element_ids);
+  void ClickOn(const std::string& element_id);
+
+  // Fires a synthetic 'tap' event on the indicated UI element. Provided as
+  // backwards compatibility with some OOBE UI elements that only listen to
+  // tap events.
   void TapOnPath(std::initializer_list<base::StringPiece> element_ids);
   void TapOn(const std::string& element_id);
 

@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/webview_content_extractor.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
@@ -123,19 +124,6 @@ class EulaTest : public OobeBaseTest {
     LoginDisplayHost::default_host()->StartWizard(EulaView::kScreenId);
     OverrideOnlineEulaUrl();
     OobeScreenWaiter(EulaView::kScreenId).Wait();
-  }
-
-  std::string GetLoadedEulaAsText() {
-    // Wait the contents to load.
-    WebContentsLoadFinishedWaiter(FindEulaContents()).Wait();
-
-    std::string eula_text;
-    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        FindEulaContents(),
-        "window.domAutomationController.send(document.body.textContent);",
-        &eula_text));
-
-    return eula_text;
   }
 
   void set_allow_online_eula(bool allow) { allow_online_eula_ = allow; }
@@ -249,7 +237,8 @@ IN_PROC_BROWSER_TEST_F(EulaTest, DISABLED_LoadOnline) {
   set_allow_online_eula(true);
   ShowEulaScreen();
 
-  EXPECT_TRUE(GetLoadedEulaAsText().find(kFakeOnlineEula) != std::string::npos);
+  EXPECT_TRUE(test::GetWebViewContents({"oobe-eula-md", "crosEulaFrame"})
+                  .find(kFakeOnlineEula) != std::string::npos);
 }
 
 // Tests that offline version is shown when the online version is not
@@ -267,8 +256,8 @@ IN_PROC_BROWSER_TEST_F(EulaTest, LoadOffline) {
     WebContentsLoadFinishedWaiter(eula_contents).Wait();
   }
 
-  EXPECT_TRUE(GetLoadedEulaAsText().find(kOfflineEULAWarning) !=
-              std::string::npos);
+  EXPECT_TRUE(test::GetWebViewContents({"oobe-eula-md", "crosEulaFrame"})
+                  .find(kOfflineEULAWarning) != std::string::npos);
 }
 
 // Tests that clicking on "System security settings" button opens a dialog

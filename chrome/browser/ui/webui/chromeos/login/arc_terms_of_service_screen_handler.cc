@@ -318,7 +318,7 @@ bool ArcTermsOfServiceScreenHandler::NeedDispatchEventOnAction() {
 
 void ArcTermsOfServiceScreenHandler::RecordConsents(
     const std::string& tos_content,
-    bool record_tos_content,
+    bool record_tos_consent,
     bool tos_accepted,
     bool record_backup_consent,
     bool backup_accepted,
@@ -336,7 +336,7 @@ void ArcTermsOfServiceScreenHandler::RecordConsents(
                                        : UserConsentTypes::NOT_GIVEN);
   play_consent.set_confirmation_grd_id(IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT);
   play_consent.set_consent_flow(ArcPlayTermsOfServiceConsent::SETUP);
-  if (record_tos_content) {
+  if (record_tos_consent) {
     play_consent.set_play_terms_of_service_text_length(tos_content.length());
     play_consent.set_play_terms_of_service_hash(
         base::SHA1HashString(tos_content));

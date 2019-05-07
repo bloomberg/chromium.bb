@@ -11,7 +11,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     EXTERNAL_API: [
       'setMetricsMode', 'setBackupAndRestoreMode', 'setLocationServicesMode',
       'loadPlayStoreToS', 'setArcManaged', 'hideSkipButton', 'setupForDemoMode',
-      'clearDemoMode', 'setTosForTesting'
+      'clearDemoMode', 'setTosForTesting', 'setTosHostNameForTesting'
     ],
 
     /** @override */
@@ -19,7 +19,12 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       this.countryCode_ = null;
       this.language_ = null;
       this.pageReady_ = false;
+
+      /* The hostname of the url where the terms of service will be fetched.
+       * Overwritten by tests to load terms of service from local test server.*/
+      this.termsOfServiceHostName_ = 'https://play.google.com';
     },
+
 
     /**
      * Returns current language that can be updated in OOBE flow. If OOBE flow
@@ -73,7 +78,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
 
       termsView.addContentScripts([{
         name: 'postProcess',
-        matches: ['https://play.google.com/*'],
+        matches: [this.getTermsOfServiceHostNameForMatchPattern_() + '/*'],
         css: {files: ['playstore.css']},
         js: {files: ['playstore.js']},
         run_at: 'document_end'
@@ -223,10 +228,11 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       scriptSetParameters += 'document.viewMode = \'large-view\';';
 
       var termsView = this.getElement_('arc-tos-view');
+
       termsView.removeContentScripts(['preProcess']);
       termsView.addContentScripts([{
         name: 'preProcess',
-        matches: ['https://play.google.com/*'],
+        matches: [this.getTermsOfServiceHostNameForMatchPattern_() + '/*'],
         js: {code: scriptSetParameters},
         run_at: 'document_start'
       }]);
@@ -255,6 +261,26 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       this.tosContent_ = terms;
       this.usingOfflineTerms_ = true;
       this.setTermsViewContentLoadedState_();
+    },
+
+    /**
+     * Sets Play Store hostname url used to fetch terms of service for testing.
+     * @param {string} hostname hostname used to fetch terms of service.
+     */
+    setTosHostNameForTesting: function(hostname) {
+      this.termsOfServiceHostName_ = hostname;
+
+      // Enable loading content script 'playstore.js' when fetching ToS from
+      // the test server.
+      var termsView = this.getElement_('arc-tos-view');
+      termsView.removeContentScripts(['postProcess']);
+      termsView.addContentScripts([{
+        name: 'postProcess',
+        matches: [this.getTermsOfServiceHostNameForMatchPattern_() + '/*'],
+        css: {files: ['playstore.css']},
+        js: {files: ['playstore.js']},
+        run_at: 'document_end'
+      }]);
     },
 
     /**
@@ -429,7 +455,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       this.termsError = false;
       this.usingOfflineTerms_ = false;
       var termsView = this.getElement_('arc-tos-view');
-      termsView.src = 'https://play.google.com/about/play-terms.html';
+      termsView.src = this.termsOfServiceHostName_ + '/about/play-terms.html';
       this.removeClass_('arc-tos-loaded');
       this.removeClass_('error');
       this.addClass_('arc-tos-loading');
@@ -482,6 +508,17 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       return $('arc-tos-root')
           .getElement('arc-tos-dialog')
           .classList.contains(className);
+    },
+
+    /**
+     * Returns a match pattern compatible version of termsOfServiceHostName_ by
+     * stripping the port number part of the hostname. During tests
+     * termsOfServiceHostName_ will contain a port number part.
+     * @return {string}
+     * @private
+     */
+    getTermsOfServiceHostNameForMatchPattern_: function() {
+      return this.termsOfServiceHostName_.replace(/:[0-9]+/, '');
     },
 
     /**
