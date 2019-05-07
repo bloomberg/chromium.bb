@@ -16,7 +16,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/suggestions/blacklist_store.h"
-#include "components/suggestions/features.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/suggestions/suggestions_store.h"
 #include "components/sync/driver/sync_service.h"
@@ -311,28 +310,6 @@ TEST_F(SuggestionsServiceTest, DoesNotFetchOnStartup) {
   // Wait for eventual (but unexpected) network requests.
   scoped_task_environment_.RunUntilIdle();
   EXPECT_FALSE(suggestions_service()->HasPendingRequestForTesting());
-}
-
-TEST_F(SuggestionsServiceTest, BuildUrlWithDefaultMinZeroParamForFewFeature) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kUseSuggestionsEvenIfFewFeature);
-
-  EXPECT_CALL(*blacklist_store(), FilterSuggestions(_));
-  EXPECT_CALL(*blacklist_store(), GetTimeUntilReadyForUpload(_))
-      .WillOnce(Return(false));
-
-  // Send the request. The data should be returned to the callback.
-  suggestions_service()->FetchSuggestionsData();
-
-  // Wait for the eventual network request.
-  scoped_task_environment_.RunUntilIdle();
-  ASSERT_TRUE(GetCurrentlyQueriedUrl().is_valid());
-  EXPECT_EQ(GetCurrentlyQueriedUrl().path(), kSuggestionsUrlPath);
-  std::string min_suggestions;
-  EXPECT_TRUE(net::GetValueForKeyInQuery(GetCurrentlyQueriedUrl(), "num",
-                                         &min_suggestions));
-  EXPECT_EQ(min_suggestions, "0");
-  ASSERT_TRUE(RespondToFetchWithProfile(CreateSuggestionsProfile()));
 }
 
 TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncNotInitializedEnabled) {

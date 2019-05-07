@@ -1957,12 +1957,6 @@ const char kUserActivationV2Description[] =
     "Enable simple user activation for APIs that are otherwise controlled by "
     "user gesture tokens.";
 
-const char kUseSuggestionsEvenIfFewFeatureName[] =
-    "Disable minimum for server-side tile suggestions on NTP.";
-const char kUseSuggestionsEvenIfFewFeatureDescription[] =
-    "Request server-side suggestions even if there are only very few of them "
-    "and use them for tiles on the New Tab Page.";
-
 const char kV8CacheOptionsName[] = "V8 caching mode.";
 const char kV8CacheOptionsDescription[] =
     "Caching mode for the V8 JavaScript engine.";

@@ -94,7 +94,6 @@
 #include "components/signin/core/browser/signin_switches.h"
 #include "components/spellcheck/common/spellcheck_features.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
-#include "components/suggestions/features.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "components/translate/core/browser/translate_prefs.h"
@@ -2654,11 +2653,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxMaterialDesignWeatherIconsDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxMaterialDesignWeatherIcons)},
-
-    {"use-suggestions-even-if-few",
-     flag_descriptions::kUseSuggestionsEvenIfFewFeatureName,
-     flag_descriptions::kUseSuggestionsEvenIfFewFeatureDescription, kOsAll,
-     FEATURE_VALUE_TYPE(suggestions::kUseSuggestionsEvenIfFewFeature)},
 
     {"use-new-accept-language-header",
      flag_descriptions::kUseNewAcceptLanguageHeaderName,

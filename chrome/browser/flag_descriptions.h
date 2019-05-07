@@ -1168,9 +1168,6 @@ extern const char kUsePdfCompositorServiceDescription[];
 extern const char kUserActivationV2Name[];
 extern const char kUserActivationV2Description[];
 
-extern const char kUseSuggestionsEvenIfFewFeatureName[];
-extern const char kUseSuggestionsEvenIfFewFeatureDescription[];
-
 extern const char kV8CacheOptionsName[];
 extern const char kV8CacheOptionsDescription[];
 extern const char kV8CacheOptionsParse[];
