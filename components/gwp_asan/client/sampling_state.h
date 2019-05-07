@@ -20,7 +20,6 @@ namespace internal {
 
 enum ParentAllocator {
   MALLOC = 0,
-  PARTITIONALLOC = 1,
 };
 
 // Class that encapsulates the current sampling state. Sampling is performed

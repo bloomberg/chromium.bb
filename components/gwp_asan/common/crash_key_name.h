@@ -9,9 +9,8 @@ namespace gwp_asan {
 namespace internal {
 
 // The name of the crash key used to convey the address of the AllocatorState
-// for the malloc/PartitionAlloc hooks to the crash handler.
+// for the malloc hooks to the crash handler.
 const char kMallocCrashKey[] = "gwp-asan-malloc";
-const char kPartitionAllocCrashKey[] = "gwp-asan-partitionalloc";
 
 }  // namespace internal
 }  // namespace gwp_asan
