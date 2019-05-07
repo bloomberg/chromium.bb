@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/keyed_service/core/service_access_type.h"
@@ -13,6 +14,7 @@
 #include "components/sync/driver/mock_sync_service.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/pref_service_syncable.h"
+#include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #include "ios/chrome/browser/content_settings/cookie_settings_factory.h"
@@ -37,8 +39,6 @@
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #import "services/identity/public/cpp/identity_test_environment.h"
-
-#include "base/bind.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -284,6 +284,13 @@ TEST_F(AuthenticationServiceTest, TestSetPromptForSignIn) {
 }
 
 TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncSetupCompleted) {
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    // Authentication Service does not force sign the user our during its
+    // initialization when Unified Consent feature is enabled. So this tests
+    // is meaningless when Unfied Consent is enabled.
+    return;
+  }
+
   // Sign in.
   SetExpectationsForSignIn();
   authentication_service_->SignIn(identity_, std::string());
@@ -299,6 +306,13 @@ TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncSetupCompleted) {
 }
 
 TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncDisabled) {
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    // Authentication Service does not force sign the user our during its
+    // initialization when Unified Consent feature is enabled. So this tests
+    // is meaningless when Unfied Consent is enabled.
+    return;
+  }
+
   // Sign in.
   SetExpectationsForSignIn();
   authentication_service_->SignIn(identity_, std::string());
@@ -318,11 +332,17 @@ TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncDisabled) {
 }
 
 TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncNotConfigured) {
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    // Authentication Service does not force sign the user our when the app
+    // enters when Unified Consent feature is enabled. So this tests
+    // is meaningless when Unfied Consent is enabled.
+    return;
+  }
+
   // Sign in.
   SetExpectationsForSignIn();
   authentication_service_->SignIn(identity_, std::string());
 
-  // User is signed out if sync initial setup isn't completed.
   EXPECT_CALL(*sync_setup_service_mock_, HasFinishedInitialSetup())
       .WillOnce(Return(false));
   // Expect a call to disable sync as part of the sign out process.
@@ -330,6 +350,7 @@ TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncNotConfigured) {
 
   CreateAuthenticationService();
 
+  // User is signed out if sync initial setup isn't completed.
   EXPECT_EQ("", identity_manager()->GetPrimaryAccountInfo().email);
   EXPECT_FALSE(authentication_service_->GetAuthenticatedIdentity());
 }
