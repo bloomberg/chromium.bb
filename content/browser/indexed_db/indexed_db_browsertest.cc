@@ -762,17 +762,9 @@ std::unique_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
       std::string escaped_value(
           request_query.substr(value_pos.begin, value_pos.len));
 
-      std::string key = net::UnescapeURLComponent(
-          escaped_key,
-          net::UnescapeRule::NORMAL | net::UnescapeRule::SPACES |
-              net::UnescapeRule::PATH_SEPARATORS |
-              net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
+      std::string key = net::UnescapeBinaryURLComponent(escaped_key);
 
-      std::string value = net::UnescapeURLComponent(
-          escaped_value,
-          net::UnescapeRule::NORMAL | net::UnescapeRule::SPACES |
-              net::UnescapeRule::PATH_SEPARATORS |
-              net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
+      std::string value = net::UnescapeBinaryURLComponent(escaped_value);
 
       if (key == "method")
         fail_method = value;
