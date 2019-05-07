@@ -4,8 +4,6 @@
 
 #include "ios/chrome/browser/metrics/ios_chrome_metrics_service_accessor.h"
 
-#include "base/base_switches.h"
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -39,16 +37,6 @@ TEST_F(IOSChromeMetricsServiceAccessorTest, MetricsReportingEnabled) {
   EXPECT_TRUE(
       IOSChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
   GetLocalState()->ClearPref(pref);
-  EXPECT_FALSE(
-      IOSChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
-
-  // If field trials are forced, metrics should always be disabled, regardless
-  // of the value of the pref.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kForceFieldTrials);
-  EXPECT_FALSE(
-      IOSChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
-  GetLocalState()->SetBoolean(pref, true);
   EXPECT_FALSE(
       IOSChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
 #else
