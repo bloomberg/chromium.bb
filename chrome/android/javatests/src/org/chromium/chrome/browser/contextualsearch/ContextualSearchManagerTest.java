@@ -98,9 +98,6 @@ import org.chromium.ui.test.util.UiDisableIf;
 import org.chromium.ui.test.util.UiRestriction;
 import org.chromium.ui.touch_selection.SelectionEventType;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
@@ -141,36 +138,6 @@ public class ContextualSearchManagerTest {
     // The number of ms to delay startup for all tests.
     private static final int ACTIVITY_STARTUP_DELAY_MS = 1000;
 
-    // Ranker data that's expected to be logged.
-    // Integer values should contain @Feature values only.
-    private static final Set<Integer> EXPECTED_RANKER_OUTCOMES;
-    static {
-        // Integer values should contain @Feature values only.
-        Set<Integer> expectedOutcomes =
-                new HashSet<Integer>(ContextualSearchRankerLoggerImpl.OUTCOMES.keySet());
-        // We don't log whether the quick action was clicked unless we actually have a quick action.
-        expectedOutcomes.remove(
-                ContextualSearchInteractionRecorder.Feature.OUTCOME_WAS_QUICK_ACTION_CLICKED);
-        EXPECTED_RANKER_OUTCOMES = Collections.unmodifiableSet(expectedOutcomes);
-    }
-    // Integer values should contain @Feature values only.
-    private static final Set<Integer> EXPECTED_RANKER_FEATURES;
-    static {
-        // Integer values should contain @Feature values only.
-        Set<Integer> expectedFeatures =
-                new HashSet<Integer>(ContextualSearchRankerLoggerImpl.FEATURES.keySet());
-        // We don't log previous user impressions and CTR if not available for the current user.
-        expectedFeatures.remove(
-                ContextualSearchInteractionRecorder.Feature.PREVIOUS_WEEK_CTR_PERCENT);
-        expectedFeatures.remove(
-                ContextualSearchInteractionRecorder.Feature.PREVIOUS_WEEK_IMPRESSIONS_COUNT);
-        expectedFeatures.remove(
-                ContextualSearchInteractionRecorder.Feature.PREVIOUS_28DAY_CTR_PERCENT);
-        expectedFeatures.remove(
-                ContextualSearchInteractionRecorder.Feature.PREVIOUS_28DAY_IMPRESSIONS_COUNT);
-        EXPECTED_RANKER_FEATURES = Collections.unmodifiableSet(expectedFeatures);
-    }
-
     private ActivityMonitor mActivityMonitor;
     private ContextualSearchFakeServer mFakeServer;
     private ContextualSearchManager mManager;
@@ -183,6 +150,45 @@ public class ContextualSearchManagerTest {
 
     // State for an individual test.
     FakeSlowResolveSearch mLatestSlowResolveSearch;
+
+    /**
+     * Gets the name of the given outcome when it's expected to be logged.
+     * @param feature A feature whose name we want.
+     * @return The name of the outcome if the give parameter is an outcome, or {@code null} if it's
+     *         not.
+     */
+    private final static String expectedOutcomeName(
+            @ContextualSearchInteractionRecorder.Feature int feature) {
+        switch (feature) {
+                // We don't log whether the quick action was clicked unless we actually have a
+                // quick action.
+            case ContextualSearchInteractionRecorder.Feature.OUTCOME_WAS_QUICK_ACTION_CLICKED:
+                return null;
+            default:
+                return ContextualSearchRankerLoggerImpl.outcomeName(feature);
+        }
+    }
+
+    /**
+     * Gets the name of the given feature when it's expected to be logged.
+     * @param feature An outcome that might have been expected to be logged.
+     * @return The name of the outcome if it's expected to be logged, or {@code null} if it's not
+     *         expected to be logged.
+     */
+    private final static String expectedFeatureName(
+            @ContextualSearchInteractionRecorder.Feature int feature) {
+        switch (feature) {
+            // We don't log previous user impressions and CTR if not available for the
+            // current user.
+            case ContextualSearchInteractionRecorder.Feature.PREVIOUS_WEEK_CTR_PERCENT:
+            case ContextualSearchInteractionRecorder.Feature.PREVIOUS_WEEK_IMPRESSIONS_COUNT:
+            case ContextualSearchInteractionRecorder.Feature.PREVIOUS_28DAY_CTR_PERCENT:
+            case ContextualSearchInteractionRecorder.Feature.PREVIOUS_28DAY_IMPRESSIONS_COUNT:
+                return null;
+            default:
+                return ContextualSearchRankerLoggerImpl.featureName(feature);
+        }
+    }
 
     @Before
     public void setUp() throws Exception {
@@ -1076,18 +1082,20 @@ public class ContextualSearchManagerTest {
 
     /** Asserts that all the expected features have been logged to Ranker. **/
     private void assertLoggedAllExpectedFeaturesToRanker() {
-        for (@ContextualSearchInteractionRecorder.Feature Integer feature :
-                EXPECTED_RANKER_FEATURES) {
-            Assert.assertNotNull(loggedToRanker(feature));
+        for (int feature = 0; feature < ContextualSearchInteractionRecorder.Feature.NUM_ENTRIES;
+                feature++) {
+            if (expectedFeatureName(feature) != null) Assert.assertNotNull(loggedToRanker(feature));
         }
     }
 
     /** Asserts that all the expected outcomes have been logged to Ranker. **/
     private void assertLoggedAllExpectedOutcomesToRanker() {
-        for (@ContextualSearchInteractionRecorder.Feature Integer feature :
-                EXPECTED_RANKER_OUTCOMES) {
-            Assert.assertNotNull("Expected this outcome to be logged: " + feature,
-                    getRankerLogger().getOutcomesLogged().get(feature));
+        for (int feature = 0; feature < ContextualSearchInteractionRecorder.Feature.NUM_ENTRIES;
+                feature++) {
+            if (expectedOutcomeName(feature) != null) {
+                Assert.assertNotNull("Expected this outcome to be logged: " + feature,
+                        getRankerLogger().getOutcomesLogged().get(feature));
+            }
         }
     }
 
