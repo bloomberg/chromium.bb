@@ -3889,6 +3889,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAllowPopupsDuringPageUnloadDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kAllowPopupsDuringPageUnload)},
 
+    {"enable-forbid-sync-xhr-in-page-dismissal",
+     flag_descriptions::kForbidSyncXHRInPageDismissalName,
+     flag_descriptions::kForbidSyncXHRInPageDismissalDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kForbidSyncXHRInPageDismissal)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

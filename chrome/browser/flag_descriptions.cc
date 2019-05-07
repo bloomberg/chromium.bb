@@ -1007,6 +1007,12 @@ const char kFillOnAccountSelectHttpDescription[] =
     "Filling of passwords when an account is explicitly selected by the user "
     "rather than autofilling credentials on page load on HTTP origins.";
 
+const char kForbidSyncXHRInPageDismissalName[] =
+    "Forbid synchronous XHR requests in page dismissal";
+const char kForbidSyncXHRInPageDismissalDescription[] =
+    "Disallow synchronous XHR requests during page dismissal when the page is "
+    "being navigated away or closed by the user.";
+
 const char kForceTextDirectionName[] = "Force text direction";
 const char kForceTextDirectionDescription[] =
     "Explicitly force the per-character directionality of UI text to "

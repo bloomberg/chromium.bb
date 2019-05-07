@@ -1087,6 +1087,11 @@
     "expiry_milestone": 78
   },
   {
+    "name": "enable-forbid-sync-xhr-in-page-dismissal",
+    "owners": [ "kdillon@chromium.org" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "enable-fs-nosymfollow",
     "owners": [ "mortonm@chromium.org" ],
     "expiry_milestone": 76
