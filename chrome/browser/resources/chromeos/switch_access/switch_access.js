@@ -174,6 +174,7 @@ class SwitchAccess {
 
   /**
    * Handle a change in user preferences.
+   * @override
    * @param {!Object} changes
    */
   onPreferencesChanged(changes) {
