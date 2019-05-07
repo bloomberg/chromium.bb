@@ -4,8 +4,11 @@
 
 #include "chrome/browser/policy/browser_signin_policy_handler.h"
 #include "chrome/browser/ui/webui/welcome/nux_helper.h"
+#include "chrome/test/base/testing_profile.h"
+#include "components/policy/core/common/mock_policy_service.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class StartupBrowserPolicyUnitTest : public testing::Test {
@@ -13,13 +16,28 @@ class StartupBrowserPolicyUnitTest : public testing::Test {
   StartupBrowserPolicyUnitTest() = default;
   ~StartupBrowserPolicyUnitTest() override = default;
 
+  std::unique_ptr<policy::MockPolicyService> GetPolicyService(
+      policy::PolicyMap& policy_map) {
+    auto policy_service = std::make_unique<policy::MockPolicyService>();
+    ON_CALL(*policy_service.get(), GetPolicies(testing::_))
+        .WillByDefault(testing::ReturnRef(policy_map));
+    return policy_service;
+  }
+
+  template <typename... Args>
+  void SetPolicy(policy::PolicyMap& policy_map,
+                 const std::string& policy,
+                 Args... args) {
+    policy_map.Set(policy, policy::POLICY_LEVEL_MANDATORY,
+                   policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+                   std::make_unique<base::Value>(args...), nullptr);
+  }
+
   template <typename... Args>
   std::unique_ptr<policy::PolicyMap> MakePolicy(const std::string& policy,
                                                 Args... args) {
     auto policy_map = std::make_unique<policy::PolicyMap>();
-    policy_map->Set(policy, policy::POLICY_LEVEL_MANDATORY,
-                    policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-                    std::make_unique<base::Value>(args...), nullptr);
+    SetPolicy(*policy_map.get(), policy, args...);
     return policy_map;
   }
 
@@ -74,4 +92,21 @@ TEST_F(StartupBrowserPolicyUnitTest, BrowserSignin) {
       MakePolicy(policy::key::kBrowserSignin,
                  static_cast<int>(policy::BrowserSigninMode::kDisabled));
   EXPECT_FALSE(nux::CanShowSigninModuleForTesting(*policy_map));
+}
+
+TEST_F(StartupBrowserPolicyUnitTest, ForceEphemeralProfiles) {
+  policy::PolicyMap policy_map;
+  TestingProfile::Builder builder;
+  builder.SetPolicyService(GetPolicyService(policy_map));
+  // Needed by the builder when building the profile.
+  content::TestBrowserThreadBundle thread_bundle;
+  auto profile = builder.Build();
+
+  EXPECT_TRUE(nux::DoesOnboardingHaveModulesToShow(profile.get()));
+
+  SetPolicy(policy_map, policy::key::kForceEphemeralProfiles, true);
+  EXPECT_FALSE(nux::DoesOnboardingHaveModulesToShow(profile.get()));
+
+  SetPolicy(policy_map, policy::key::kForceEphemeralProfiles, false);
+  EXPECT_TRUE(nux::DoesOnboardingHaveModulesToShow(profile.get()));
 }
