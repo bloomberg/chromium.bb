@@ -66,10 +66,10 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
     // TODO(crbug.com/946515): Break dependency on LayoutObject.
     const LayoutObject& layout_object =
         static_cast<const LayoutObject&>(client);
-    // TODO(crbug.com/946519): Pass in actual properties. This requires us to
-    // support the DocumentPaintDefinition map cross-thread.
-    Vector<CSSPropertyID> native_properties;
-    Vector<AtomicString> custom_properties;
+    Vector<CSSPropertyID> native_properties =
+        generator_->NativeInvalidationProperties();
+    Vector<AtomicString> custom_properties =
+        generator_->CustomInvalidationProperties();
     float zoom = layout_object.StyleRef().EffectiveZoom();
     PaintWorkletStylePropertyMap::CrossThreadData style_data =
         PaintWorkletStylePropertyMap::BuildCrossThreadData(

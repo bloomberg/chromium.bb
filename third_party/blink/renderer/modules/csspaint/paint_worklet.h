@@ -63,7 +63,14 @@ class MODULES_EXPORT PaintWorklet : public Worklet,
   // |MainThreadDocumentPaintDefinition| for the same |name|.
   void RegisterMainThreadDocumentPaintDefinition(
       const String& name,
-      std::unique_ptr<MainThreadDocumentPaintDefinition>);
+      Vector<CSSPropertyID> native_properties,
+      Vector<String> custom_properties,
+      double alpha);
+  typedef HashMap<String, std::unique_ptr<MainThreadDocumentPaintDefinition>>
+      MainThreadDocumentDefinitionMap;
+  const MainThreadDocumentDefinitionMap& GetMainThreadDocumentDefinitionMap() {
+    return main_thread_document_definition_map_;
+  }
 
  protected:
   // Since paint worklet has more than one global scope, we MUST override this

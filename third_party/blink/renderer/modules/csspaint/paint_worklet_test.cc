@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_global_scope.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_global_scope_proxy.h"
 #include "third_party/blink/renderer/platform/graphics/paint_generated_image.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 class TestPaintWorklet : public PaintWorklet {
@@ -171,6 +172,31 @@ TEST_F(PaintWorkletTest, GlobalScopeSelection) {
 
   // Delete the page & associated objects.
   Terminate();
+}
+
+TEST_F(PaintWorkletTest, NativeAndCustomProperties) {
+  ScopedOffMainThreadCSSPaintForTest off_main_thread_css_paint(true);
+  Vector<CSSPropertyID> native_invalidation_properties = {
+      CSSPropertyID::kColor,
+      CSSPropertyID::kZoom,
+      CSSPropertyID::kTop,
+  };
+  Vector<String> custom_invalidation_properties = {
+      "--my-property",
+      "--another-property",
+  };
+
+  TestPaintWorklet* paint_worklet_to_test = GetTestPaintWorklet();
+  paint_worklet_to_test->RegisterMainThreadDocumentPaintDefinition(
+      "foo", native_invalidation_properties, custom_invalidation_properties,
+      true);
+
+  CSSPaintImageGeneratorImpl* generator =
+      MakeGarbageCollected<CSSPaintImageGeneratorImpl>(paint_worklet_to_test,
+                                                       "foo");
+  EXPECT_NE(generator, nullptr);
+  EXPECT_EQ(generator->NativeInvalidationProperties().size(), 3u);
+  EXPECT_EQ(generator->CustomInvalidationProperties().size(), 2u);
 }
 
 }  // namespace blink

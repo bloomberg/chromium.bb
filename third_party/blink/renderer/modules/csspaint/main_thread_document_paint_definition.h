@@ -7,17 +7,15 @@
 
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
-class CSSPaintDefinition;
-
 // MainThreadDocumentPaintDefinition is a version of DocumentPaintDefinition for
-// the OffMainThreadCSSPaint project. It is created on the worklet thread and
-// then sent to the main thread, so makes a copy of the input CSSPaintDefinition
-// data when created.
+// the OffMainThreadCSSPaint project. It is created on the main thread, using a
+// copied version of native and custom invalidation properties.
 //
 // MainThreadDocumentPaintDefinition consists of:
 //   * A input properties which is a list of DOMStrings.
@@ -26,13 +24,17 @@ class CSSPaintDefinition;
 //   * A context alpha flag.
 class MODULES_EXPORT MainThreadDocumentPaintDefinition {
  public:
-  explicit MainThreadDocumentPaintDefinition(CSSPaintDefinition*);
+  explicit MainThreadDocumentPaintDefinition(
+      const Vector<CSSPropertyID>& native_invalidation_properties,
+      const Vector<String>& custom_invalidation_properties,
+      double alpha);
   virtual ~MainThreadDocumentPaintDefinition();
 
   const Vector<CSSPropertyID>& NativeInvalidationProperties() const {
     return native_invalidation_properties_;
   }
-  const Vector<String>& CustomInvalidationProperties() const {
+  // Use AtomicString so that it is consistent with CSSPaintImageGeneratorImpl.
+  const Vector<AtomicString>& CustomInvalidationProperties() const {
     return custom_invalidation_properties_;
   }
 
@@ -40,7 +42,7 @@ class MODULES_EXPORT MainThreadDocumentPaintDefinition {
 
  private:
   Vector<CSSPropertyID> native_invalidation_properties_;
-  Vector<String> custom_invalidation_properties_;
+  Vector<AtomicString> custom_invalidation_properties_;
   double alpha_;
 };
 

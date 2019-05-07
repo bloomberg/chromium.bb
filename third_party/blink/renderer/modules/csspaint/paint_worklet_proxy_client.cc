@@ -103,14 +103,20 @@ void PaintWorkletProxyClient::RegisterCSSPaintDefinition(
   // named paint definition (with the same definition as well).
   if (document_definition->GetRegisteredDefinitionCount() ==
       PaintWorklet::kNumGlobalScopes) {
-    auto main_thread_definition =
-        std::make_unique<MainThreadDocumentPaintDefinition>(definition);
+    const Vector<AtomicString>& custom_properties =
+        definition->CustomInvalidationProperties();
+    // AtomicString cannot be passed cross thread, which is why we need to make
+    // a String copy of it.
+    Vector<String> passed_custom_properties;
+    for (const auto& property : custom_properties)
+      passed_custom_properties.push_back(property.GetString());
     PostCrossThreadTask(
         *main_thread_runner_, FROM_HERE,
         CrossThreadBind(
             &PaintWorklet::RegisterMainThreadDocumentPaintDefinition,
-            paint_worklet_, name,
-            WTF::Passed(std::move(main_thread_definition))));
+            paint_worklet_, name, definition->NativeInvalidationProperties(),
+            WTF::Passed(std::move(passed_custom_properties)),
+            definition->GetPaintRenderingContext2DSettings()->alpha()));
   }
 }
 
@@ -149,9 +155,11 @@ sk_sp<PaintRecord> PaintWorkletProxyClient::Paint(
   PaintWorkletInput* input = static_cast<PaintWorkletInput*>(compositor_input);
   CSSPaintDefinition* definition =
       global_scope->FindDefinition(input->NameCopy());
+  PaintWorkletStylePropertyMap* style_map =
+      MakeGarbageCollected<PaintWorkletStylePropertyMap>(input->StyleMapData());
 
   return definition->Paint(FloatSize(input->GetSize()), input->EffectiveZoom(),
-                           nullptr, nullptr);
+                           style_map, nullptr);
 }
 
 // static

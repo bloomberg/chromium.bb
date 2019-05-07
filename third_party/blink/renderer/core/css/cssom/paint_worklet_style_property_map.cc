@@ -177,7 +177,6 @@ PaintWorkletStylePropertyMap::StartIteration(ScriptState* script_state,
                                              ExceptionState& exception_state) {
   // TODO(xidachen): implement this function. Note that the output should be
   // sorted.
-  NOTREACHED();
   HeapVector<PaintWorkletStylePropertyMap::StylePropertyMapEntry> result;
   return MakeGarbageCollected<PaintWorkletStylePropertyMapIterationSource>(
       result);

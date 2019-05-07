@@ -147,8 +147,12 @@ void PaintWorklet::Trace(blink::Visitor* visitor) {
 
 void PaintWorklet::RegisterMainThreadDocumentPaintDefinition(
     const String& name,
-    std::unique_ptr<MainThreadDocumentPaintDefinition> definition) {
+    Vector<CSSPropertyID> native_properties,
+    Vector<String> custom_properties,
+    double alpha) {
   DCHECK(!main_thread_document_definition_map_.Contains(name));
+  auto definition = std::make_unique<MainThreadDocumentPaintDefinition>(
+      std::move(native_properties), std::move(custom_properties), alpha);
   main_thread_document_definition_map_.insert(name, std::move(definition));
   pending_generator_registry_->NotifyGeneratorReady(name);
 }

@@ -9,21 +9,15 @@
 namespace blink {
 
 MainThreadDocumentPaintDefinition::MainThreadDocumentPaintDefinition(
-    CSSPaintDefinition* definition)
-    : native_invalidation_properties_(
-          definition->NativeInvalidationProperties()),
-      alpha_(definition->GetPaintRenderingContext2DSettings()->alpha()) {
-  // MainThreadDocumentPaintDefinition is sent cross-thread from the
-  // PaintWorklet thread to the main thread, so we have to make isolated copies
-  // of the custom properties.
-  const Vector<AtomicString>& custom_invalidation_properties =
-      definition->CustomInvalidationProperties();
+    const Vector<CSSPropertyID>& native_invalidation_properties,
+    const Vector<String>& custom_invalidation_properties,
+    double alpha)
+    : native_invalidation_properties_(native_invalidation_properties),
+      alpha_(alpha) {
   custom_invalidation_properties_.ReserveInitialCapacity(
       custom_invalidation_properties.size());
-  for (const AtomicString& property : custom_invalidation_properties) {
-    custom_invalidation_properties_.push_back(
-        property.GetString().IsolatedCopy());
-  }
+  for (const String& property : custom_invalidation_properties)
+    custom_invalidation_properties_.push_back(AtomicString(property));
 }
 
 MainThreadDocumentPaintDefinition::~MainThreadDocumentPaintDefinition() =

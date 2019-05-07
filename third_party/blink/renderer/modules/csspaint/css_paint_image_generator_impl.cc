@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/csspaint/css_paint_definition.h"
 #include "third_party/blink/renderer/modules/csspaint/document_paint_definition.h"
+#include "third_party/blink/renderer/modules/csspaint/main_thread_document_paint_definition.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 
@@ -76,6 +77,15 @@ bool CSSPaintImageGeneratorImpl::GetValidDocumentDefinition(
   return definition != kInvalidDocumentPaintDefinition;
 }
 
+bool CSSPaintImageGeneratorImpl::GetValidMainThreadDocumentDefinition(
+    MainThreadDocumentPaintDefinition*& definition) const {
+  if (!paint_worklet_->GetMainThreadDocumentDefinitionMap().Contains(name_))
+    return false;
+  definition = paint_worklet_->GetMainThreadDocumentDefinitionMap().at(name_);
+  DCHECK(definition);
+  return true;
+}
+
 unsigned CSSPaintImageGeneratorImpl::GetRegisteredDefinitionCountForTesting()
     const {
   if (!HasDocumentDefinition())
@@ -90,6 +100,12 @@ unsigned CSSPaintImageGeneratorImpl::GetRegisteredDefinitionCountForTesting()
 const Vector<CSSPropertyID>&
 CSSPaintImageGeneratorImpl::NativeInvalidationProperties() const {
   DEFINE_STATIC_LOCAL(Vector<CSSPropertyID>, empty_vector, ());
+  if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
+    MainThreadDocumentPaintDefinition* definition;
+    if (!GetValidMainThreadDocumentDefinition(definition))
+      return empty_vector;
+    return definition->NativeInvalidationProperties();
+  }
   DocumentPaintDefinition* definition;
   if (!GetValidDocumentDefinition(definition))
     return empty_vector;
@@ -99,6 +115,12 @@ CSSPaintImageGeneratorImpl::NativeInvalidationProperties() const {
 const Vector<AtomicString>&
 CSSPaintImageGeneratorImpl::CustomInvalidationProperties() const {
   DEFINE_STATIC_LOCAL(Vector<AtomicString>, empty_vector, ());
+  if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
+    MainThreadDocumentPaintDefinition* definition;
+    if (!GetValidMainThreadDocumentDefinition(definition))
+      return empty_vector;
+    return definition->CustomInvalidationProperties();
+  }
   DocumentPaintDefinition* definition;
   if (!GetValidDocumentDefinition(definition))
     return empty_vector;
