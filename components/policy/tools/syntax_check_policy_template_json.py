@@ -76,6 +76,11 @@ LEGACY_EMBEDDED_JSON_WHITELIST = [
 # profiles not having enough space on the device.
 TOTAL_DEVICE_POLICY_EXTERNAL_DATA_MAX_SIZE = 1024 * 1024 * 100
 
+# Each policy must have a description message shorter than 4096 characters in
+# all its translations (ADM format limitation). However, translations of the
+# description might exceed this limit, so a lower limit of is used instead.
+POLICY_DESCRIPTION_LENGTH_SOFT_LIMIT = 3500
+
 
 class PolicyTemplateChecker(object):
 
@@ -350,19 +355,18 @@ class PolicyTemplateChecker(object):
     # Each policy must have a caption message.
     self._CheckContains(policy, 'caption', str)
 
-    # Each policy must have a description message shorter than 4096 characters
-    # in all its translations (ADM format limitation).
+    # Each policy's description should be within the limit.
     desc = self._CheckContains(policy, 'desc', str)
-    if len(desc.decode("UTF-8")) > 4096:
+    if len(desc.decode("UTF-8")) > POLICY_DESCRIPTION_LENGTH_SOFT_LIMIT:
       self._Error(
-          'The length of the description is more than the limit of 4096'
-          ' characters long', 'policy', policy.get('name'))
-    # Warning length picked right above the largest existing policy.
-    elif len(desc.decode("UTF-8")) > 3100:
-      self.warning_count += 1
-      print('In policy %s: Warning: Length of description is more than 3100 '
-            'characters. It might exceed limit of 4096 characters in one of '
-            'its translations.' % (policy.get('name')))
+          'Length of description is more than %d characters, which might '
+          'exceed the limit of 4096 characters in one of its '
+          'translations. If there is no alternative to reducing the length '
+          'of the description, it is recommended to add a page under %s '
+          'instead and provide a link to it.' %
+          (POLICY_DESCRIPTION_LENGTH_SOFT_LIMIT,
+           'https://www.chromium.org/administrators'), 'policy',
+          policy.get('name'))
 
     # If 'label' is present, it must be a string.
     self._CheckContains(policy, 'label', str, True)
