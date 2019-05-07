@@ -86,6 +86,16 @@
   (subpath "/System/Library/Video/Plug-Ins")
 )
 
-; A temporary test to diagnose a hang.
+; A temporary test to diagnose a hang - crbug.com/871280
 (if (string=? (param bundle-id) "com.google.Chrome.canary")
-  (allow mach-lookup))
+  (begin
+    (deny (with no-log) mach-lookup
+      (global-name "com.apple.cfprefsd.daemon")
+      (global-name "com.apple.GameController.gamecontrollerd")
+      (global-name "com.apple.bsd.dirhelper")
+      (global-name "com.apple.system.opendirectoryd.membership")
+      (global-name "com.apple.powerlog.plxpclogger.xpc")
+      (global-name "com.apple.PowerManagement.control")
+    )
+    (deny mach-lookup (with send-signal SIGFPE)))
+)
