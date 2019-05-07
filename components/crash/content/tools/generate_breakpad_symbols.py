@@ -64,16 +64,31 @@ def GetSharedLibraryDependenciesLinux(binary):
   """Return absolute paths to all shared library dependencies of the binary.
 
   This implementation assumes that we're running on a Linux system."""
-  # TODO(thakis): Figure out how to make this work for android
-  # (https://crbug.com/849904) and use check_output().
-  p = subprocess.Popen(['ldd', binary], stdout=subprocess.PIPE)
-  ldd = p.communicate()[0]
+  ldd = subprocess.check_output(['ldd', binary])
   lib_re = re.compile('\t.* => (.+) \(.*\)$')
   result = []
   for line in ldd.splitlines():
     m = lib_re.match(line)
     if m:
       result.append(os.path.abspath(m.group(1)))
+  return result
+
+
+def GetSharedLibraryDependenciesAndroid(binary):
+  """Return absolute paths to all shared library dependencies of the binary.
+
+  This implementation assumes that we're running on a Linux system, but
+  compiled for Android."""
+  readelf = subprocess.check_output(['readelf', '-d', binary])
+  lib_re = re.compile('Shared library: \[(.+)\]$')
+  result = []
+  binary_path = os.path.dirname(os.path.abspath(binary))
+  for line in readelf.splitlines():
+    m = lib_re.search(line)
+    if m:
+      lib = os.path.join(binary_path, m.group(1))
+      if os.access(lib, os.X_OK):
+        result.append(lib)
   return result
 
 
@@ -167,9 +182,11 @@ def GetSharedLibraryDependenciesMac(binary, exe_path):
 def GetSharedLibraryDependencies(options, binary, exe_path):
   """Return absolute paths to all shared library dependencies of the binary."""
   deps = []
-  if sys.platform.startswith('linux'):
+  if options.platform == 'linux2':
     deps = GetSharedLibraryDependenciesLinux(binary)
-  elif sys.platform == 'darwin':
+  elif options.platform == 'android':
+    deps = GetSharedLibraryDependenciesAndroid(binary)
+  elif options.platform == 'darwin':
     deps = GetSharedLibraryDependenciesMac(binary, exe_path)
   else:
     print "Platform not supported."
@@ -189,12 +206,12 @@ def GetTransitiveDependencies(options):
      dependencies of the binary, along with the binary itself."""
   binary = os.path.abspath(options.binary)
   exe_path = os.path.dirname(binary)
-  if sys.platform.startswith('linux'):
+  if options.platform == 'linux2':
     # 'ldd' returns all transitive dependencies for us.
     deps = set(GetSharedLibraryDependencies(options, binary, exe_path))
     deps.add(binary)
     return list(deps)
-  if sys.platform == 'darwin':
+  elif options.platform == 'darwin' or options.platform == 'android':
     binaries = set([binary])
     queue = [binary]
     while queue:
@@ -224,6 +241,18 @@ def GetBinaryInfoFromHeaderInfo(header_info):
   if len(info_split) != 5 or info_split[0] != 'MODULE':
     return None
   return BINARY_INFO(*info_split[1:])
+
+
+def CreateSymbolDir(options, output_dir):
+  """Create the directory to store breakpad symbols in. On Android, we also
+     create a symlink in case the hash in the binary is missing."""
+  mkdir_p(output_dir)
+  if options.platform == 'android':
+    try:
+      os.symlink(output_dir, os.path.join(os.path.dirname(output_dir),
+                 '000000000000000000000000000000000'))
+    except:
+      pass
 
 
 def GenerateSymbols(options, binaries):
@@ -256,8 +285,9 @@ def GenerateSymbols(options, binaries):
           break
 
         # See if the output file already exists.
-        output_path = os.path.join(options.symbols_dir, binary_info.name,
-                                   binary_info.hash, binary_info.name + '.sym')
+        output_dir = os.path.join(options.symbols_dir, binary_info.name,
+                                  binary_info.hash)
+        output_path = os.path.join(output_dir, binary_info.name + '.sym')
         if os.path.isfile(output_path):
           should_dump_syms = False
           reason = "Symbol file already found."
@@ -269,7 +299,7 @@ def GenerateSymbols(options, binaries):
           with open(potential_symbol_file, 'rt') as f:
             symbol_info = GetBinaryInfoFromHeaderInfo(f.readline())
           if symbol_info == binary_info:
-            mkdir_p(os.path.dirname(output_path))
+            CreateSymbolDir(options, output_dir)
             shutil.copyfile(potential_symbol_file, output_path)
             should_dump_syms = False
             reason = "Found local symbol file."
@@ -286,7 +316,7 @@ def GenerateSymbols(options, binaries):
         with print_lock:
           print "Generating symbols for %s" % binary
 
-      mkdir_p(os.path.dirname(output_path))
+      CreateSymbolDir(options, output_dir)
       try:
         with open(output_path, 'wb') as f:
           subprocess.check_call([dump_syms, '-r', binary], stdout=f)
@@ -323,6 +353,8 @@ def main():
                     type='int', help='Number of parallel tasks to run.')
   parser.add_option('-v', '--verbose', action='store_true',
                     help='Print verbose status output.')
+  parser.add_option('', '--platform', default=sys.platform,
+                    help='Target platform of the binary.')
 
   (options, _) = parser.parse_args()
 
