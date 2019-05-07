@@ -179,6 +179,7 @@ class WizardController : public BaseScreenDelegate {
   void ShowHIDDetectionScreen();
   void ShowDeviceDisabledScreen();
   void ShowEncryptionMigrationScreen();
+  void ShowSupervisionOnboardingScreen();
   void ShowSupervisionTransitionScreen();
   void ShowUpdateRequiredScreen();
   void ShowAssistantOptInFlowScreen();
@@ -227,6 +228,7 @@ class WizardController : public BaseScreenDelegate {
   void OnMultiDeviceSetupScreenExit();
   void OnResetScreenExit();
   void OnDeviceModificationCanceled();
+  void OnSupervisionOnboardingScreenExit();
   void OnSupervisionTransitionScreenExit();
   void OnOobeFlowFinished();
 

@@ -67,6 +67,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/supervision_onboarding_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/supervision_transition_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/sync_consent_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
@@ -415,6 +416,9 @@ void OobeUI::ConfigureOobeDisplay() {
       std::make_unique<DeviceDisabledScreenHandler>(js_calls_container_.get()));
 
   AddScreenHandler(std::make_unique<EncryptionMigrationScreenHandler>(
+      js_calls_container_.get()));
+
+  AddScreenHandler(std::make_unique<SupervisionOnboardingScreenHandler>(
       js_calls_container_.get()));
 
   AddScreenHandler(std::make_unique<SupervisionTransitionScreenHandler>(

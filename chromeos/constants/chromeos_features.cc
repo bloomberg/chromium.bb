@@ -67,6 +67,11 @@ const base::Feature kMojoDBusRelay{"MojoDBusRelay",
 const base::Feature kMyFilesVolume{"MyFilesVolume",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
+// If enabled, will display screens responsible for additional setup for
+// supervised users.
+const base::Feature kEnableSupervisionOnboardingScreens{
+    "EnableSupervisionOnboardingScreens", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, will display blocking screens during re-authentication after a
 // supervision transition occurred.
 const base::Feature kEnableSupervisionTransitionScreens{

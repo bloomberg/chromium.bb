@@ -64,6 +64,7 @@
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps_screen.h"
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
+#include "chrome/browser/chromeos/login/screens/supervision_onboarding_screen.h"
 #include "chrome/browser/chromeos/login/screens/supervision_transition_screen.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_required_screen.h"
@@ -115,6 +116,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/supervision_onboarding_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/supervision_transition_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/sync_consent_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
@@ -507,6 +509,10 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
       oobe_ui->GetView<DeviceDisabledScreenHandler>()));
   append(std::make_unique<EncryptionMigrationScreen>(
       oobe_ui->GetView<EncryptionMigrationScreenHandler>()));
+  append(std::make_unique<SupervisionOnboardingScreen>(
+      oobe_ui->GetView<SupervisionOnboardingScreenHandler>(),
+      base::BindRepeating(&WizardController::OnSupervisionOnboardingScreenExit,
+                          weak_factory_.GetWeakPtr())));
   append(std::make_unique<SupervisionTransitionScreen>(
       oobe_ui->GetView<SupervisionTransitionScreenHandler>(),
       base::BindRepeating(&WizardController::OnSupervisionTransitionScreenExit,
@@ -671,6 +677,10 @@ void WizardController::ShowDeviceDisabledScreen() {
 
 void WizardController::ShowEncryptionMigrationScreen() {
   SetCurrentScreen(GetScreen(EncryptionMigrationScreenView::kScreenId));
+}
+
+void WizardController::ShowSupervisionOnboardingScreen() {
+  SetCurrentScreen(GetScreen(SupervisionOnboardingScreenView::kScreenId));
 }
 
 void WizardController::ShowSupervisionTransitionScreen() {
@@ -1110,7 +1120,7 @@ void WizardController::OnAssistantOptInFlowScreenExit() {
 void WizardController::OnMultiDeviceSetupScreenExit() {
   OnScreenExit(MultiDeviceSetupScreenView::kScreenId, 0 /* exit_code */);
 
-  OnOobeFlowFinished();
+  ShowSupervisionOnboardingScreen();
 }
 
 void WizardController::OnResetScreenExit() {
@@ -1136,6 +1146,12 @@ void WizardController::OnDeviceModificationCanceled() {
   } else {
     ShowLoginScreen(LoginScreenContext());
   }
+}
+
+void WizardController::OnSupervisionOnboardingScreenExit() {
+  OnScreenExit(SupervisionOnboardingScreenView::kScreenId, 0 /* exit_code */);
+
+  OnOobeFlowFinished();
 }
 
 void WizardController::OnSupervisionTransitionScreenExit() {
@@ -1451,6 +1467,8 @@ void WizardController::AdvanceToScreen(OobeScreenId screen) {
     ShowFingerprintSetupScreen();
   } else if (screen == MarketingOptInScreenView::kScreenId) {
     ShowMarketingOptInScreen();
+  } else if (screen == SupervisionOnboardingScreenView::kScreenId) {
+    ShowSupervisionOnboardingScreen();
   } else if (screen == SupervisionTransitionScreenView::kScreenId) {
     ShowSupervisionTransitionScreen();
   } else if (screen != OobeScreen::SCREEN_TEST_NO_WINDOW) {
