@@ -332,7 +332,7 @@ TEST_F(GetPagesTaskTest, OrderDescendingCreationTime) {
             ordered_task_result());
 }
 
-TEST_F(GetPagesTaskTest, OrderAscendingAccessTime) {
+TEST_F(GetPagesTaskTest, OrderAccessTime) {
   generator()->SetNamespace(kCCTNamespace);
   OfflinePageItem item1 = generator()->CreateItem();
   item1.last_access_time = base::Time();
@@ -344,10 +344,15 @@ TEST_F(GetPagesTaskTest, OrderAscendingAccessTime) {
   InsertItems({item1, item2, item3});
 
   PageCriteria criteria;
+
   criteria.result_order = PageCriteria::kAscendingAccessTime;
   RunTask(CreateTask(criteria));
-
   EXPECT_EQ(std::vector<OfflinePageItem>({item1, item3, item2}),
+            ordered_task_result());
+
+  criteria.result_order = PageCriteria::kDescendingAccessTime;
+  RunTask(CreateTask(criteria));
+  EXPECT_EQ(std::vector<OfflinePageItem>({item2, item3, item1}),
             ordered_task_result());
 }
 

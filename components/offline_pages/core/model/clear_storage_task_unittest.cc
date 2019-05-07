@@ -5,6 +5,8 @@
 #include "components/offline_pages/core/model/clear_storage_task.h"
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
@@ -167,7 +169,6 @@ void ClearStorageTaskTest::AddPages(const PageSettings& setting) {
                                      ->GetPolicy(setting.name_space)
                                      .lifetime_policy.expiration_period);
   for (int i = 0; i < setting.expired_page_count; ++i) {
-    // Make the pages expired.
     AddPage();
   }
 }

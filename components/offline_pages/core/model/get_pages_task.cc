@@ -222,12 +222,20 @@ ReadResult GetPagesTask::ReadPagesWithCriteriaSync(
   statement.BindString(param++, url_pattern);
 
   // ORDER BY criteria.
-  statement.BindInt64(
-      param++,
-      criteria.result_order == PageCriteria::kDescendingCreationTime ? -1 : 0);
-  statement.BindInt64(
-      param++,
-      criteria.result_order == PageCriteria::kAscendingAccessTime ? 1 : 0);
+  switch (criteria.result_order) {
+    case PageCriteria::kDescendingCreationTime:
+      statement.BindInt64(param++, -1);
+      statement.BindInt64(param++, 0);
+      break;
+    case PageCriteria::kAscendingAccessTime:
+      statement.BindInt64(param++, 0);
+      statement.BindInt64(param++, 1);
+      break;
+    case PageCriteria::kDescendingAccessTime:
+      statement.BindInt64(param++, 0);
+      statement.BindInt64(param++, -1);
+      break;
+  }
 
   while (statement.Step()) {
     // Initially, read just the client ID to avoid creating the offline item
@@ -244,7 +252,12 @@ ReadResult GetPagesTask::ReadPagesWithCriteriaSync(
     if (criteria.maximum_matches == result.pages.size())
       break;
   }
-  result.success = true;
+
+  result.success = statement.Succeeded();
+  if (!result.success) {
+    DLOG(ERROR) << "ReadPagesWithCriteriaSync: statement.Succeeded()=false";
+    result.pages.clear();
+  }
   return result;
 }
 

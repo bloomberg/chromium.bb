@@ -30,6 +30,7 @@ struct PageCriteria {
   enum Order {
     kDescendingCreationTime,
     kAscendingAccessTime,
+    kDescendingAccessTime,
   };
 
   // If non-empty, the page must match this URL. The provided URL
@@ -62,7 +63,8 @@ struct PageCriteria {
   // If set, the page's offline_id must match.
   base::Optional<std::vector<int64_t>> offline_ids;
   // If non-null, this function is executed for each matching item. If it
-  // returns false, the item will not be returned.
+  // returns false, the item will not be returned. This is evaluated last, and
+  // only for pages that otherwise meet all other criteria.
   base::RepeatingCallback<bool(const OfflinePageItem&)> additional_criteria;
   // If > 0, returns at most this many pages.
   size_t maximum_matches = 0;

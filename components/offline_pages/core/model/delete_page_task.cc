@@ -66,11 +66,10 @@ bool DeleteArchiveSync(const base::FilePath& file_path) {
   return base::DeleteFile(file_path, false);
 }
 
-// Deletes pages by DeletedPageInfoWrapper. This will return a
-// DeletePageTaskResult which contains the infos of the deleted pages (which are
-// successfully deleted from the disk and the store) and a DeletePageResult.
-// For each DeletedPageInfoWrapper to be deleted, the deletion will delete the
-// archive file first, then database entry, in order to avoid the potential
+// Deletes pages. This will return a DeletePageTaskResult which contains the
+// deleted pages (which are successfully deleted from the disk and the store)
+// and a DeletePageResult. For each page to be deleted, the deletion will delete
+// the archive file first, then database entry, in order to avoid the potential
 // issue of leaving archive files behind (and they may be imported later).
 // Since the database entry will only be deleted while the associated archive
 // file is deleted successfully, there will be no such issue.
