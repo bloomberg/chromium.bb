@@ -38,6 +38,11 @@ namespace {
 using ::payments::mojom::CanMakePaymentQueryResult;
 using ::payments::mojom::HasEnrolledInstrumentQueryResult;
 
+bool IsGooglePaymentMethodInstrumentSelected(const std::string& method_name) {
+  return method_name == kGooglePayMethodName ||
+         method_name == kAndroidPayMethodName;
+}
+
 mojom::PaymentMethodChangeResponsePtr ConvertToPaymentMethodChangeResponse(
     const mojom::PaymentDetailsPtr& details,
     const PaymentInstrument& invoked_app) {
@@ -551,6 +556,28 @@ void PaymentRequest::OnPaymentResponseAvailable(
     return;
   }
 
+  // Log the correct "selected instrument" metric according to its type and
+  // the method name in response.
+  DCHECK(state_->selected_instrument());
+  JourneyLogger::Event selected_event =
+      JourneyLogger::Event::EVENT_SELECTED_OTHER;
+  switch (state_->selected_instrument()->type()) {
+    case PaymentInstrument::Type::AUTOFILL:
+      selected_event = JourneyLogger::Event::EVENT_SELECTED_CREDIT_CARD;
+      break;
+    case PaymentInstrument::Type::SERVICE_WORKER_APP: {
+      selected_event =
+          IsGooglePaymentMethodInstrumentSelected(response->method_name)
+              ? JourneyLogger::Event::EVENT_SELECTED_GOOGLE
+              : JourneyLogger::Event::EVENT_SELECTED_OTHER;
+      break;
+    }
+    case PaymentInstrument::Type::NATIVE_MOBILE_APP:
+      NOTREACHED();
+      break;
+  }
+  journey_logger_.SetEventOccurred(selected_event);
+
   // If currently interactive, show the processing spinner. Autofill payment
   // instruments request a CVC, so they are always interactive at this point. A
   // payment handler may elect to be non-interactive by not showing a
@@ -621,25 +648,11 @@ void PaymentRequest::OnConnectionTerminated() {
 
 void PaymentRequest::Pay() {
   journey_logger_.SetEventOccurred(JourneyLogger::EVENT_PAY_CLICKED);
-
-  // Log the correct "selected instrument" metric according to type.
   DCHECK(state_->selected_instrument());
-  JourneyLogger::Event selected_event =
-      JourneyLogger::Event::EVENT_SELECTED_OTHER;
-  switch (state_->selected_instrument()->type()) {
-    case PaymentInstrument::Type::AUTOFILL:
-      selected_event = JourneyLogger::Event::EVENT_SELECTED_CREDIT_CARD;
-      break;
-    case PaymentInstrument::Type::SERVICE_WORKER_APP:
-      selected_event = JourneyLogger::Event::EVENT_SELECTED_OTHER;
-      BindPaymentHandlerHost();
-      break;
-    case PaymentInstrument::Type::NATIVE_MOBILE_APP:
-      NOTREACHED();
-      break;
+  if (state_->selected_instrument()->type() ==
+      PaymentInstrument::Type::SERVICE_WORKER_APP) {
+    BindPaymentHandlerHost();
   }
-  journey_logger_.SetEventOccurred(selected_event);
-
   state_->GeneratePaymentResponse();
 }
 
