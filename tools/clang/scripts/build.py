@@ -387,6 +387,7 @@ def main():
                      '-DLLVM_ENABLE_ASSERTIONS=%s' %
                          ('OFF' if args.disable_asserts else 'ON'),
                      '-DLLVM_ENABLE_PIC=OFF',
+                     '-DLLVM_ENABLE_UNWIND_TABLES=OFF',
                      '-DLLVM_ENABLE_TERMINFO=OFF',
                      '-DLLVM_TARGETS_TO_BUILD=' + targets,
                      # Statically link MSVCRT to avoid DLL dependencies.
@@ -520,11 +521,8 @@ def main():
   CreateChromeToolsShim()
 
   cmake_args = []
-  # TODO(thakis): Unconditionally append this to base_cmake_args instead once
-  # compiler-rt can build with clang-cl on Windows (http://llvm.org/PR23698)
-  cc_args = base_cmake_args if sys.platform != 'win32' else cmake_args
-  if cc is not None:  cc_args.append('-DCMAKE_C_COMPILER=' + cc)
-  if cxx is not None: cc_args.append('-DCMAKE_CXX_COMPILER=' + cxx)
+  if cc is not None:  base_cmake_args.append('-DCMAKE_C_COMPILER=' + cc)
+  if cxx is not None: base_cmake_args.append('-DCMAKE_CXX_COMPILER=' + cxx)
   default_tools = ['plugins', 'blink_gc_plugin', 'translation_unit']
   chrome_tools = list(set(default_tools + args.extra_tools))
   cmake_args += base_cmake_args + [
@@ -546,7 +544,6 @@ def main():
   RmCmakeCache('.')
   RunCommand(['cmake'] + cmake_args + [LLVM_DIR],
              msvc_arch='x64', env=deployment_env)
-  # FIXME: are compiler-rt, fuzzer part of the default target?
   RunCommand(['ninja'], msvc_arch='x64')
 
   # Copy in the threaded versions of lld and other tools.
@@ -584,12 +581,10 @@ def main():
       RmTree(COMPILER_RT_BUILD_DIR)
     os.makedirs(COMPILER_RT_BUILD_DIR)
     os.chdir(COMPILER_RT_BUILD_DIR)
-    # TODO(thakis): Add this once compiler-rt can build with clang-cl (see
-    # above).
-    #if args.bootstrap and sys.platform == 'win32':
+    if args.bootstrap and sys.platform == 'win32':
       # The bootstrap compiler produces 64-bit binaries by default.
-      #cflags += ['-m32']
-      #cxxflags += ['-m32']
+      cflags += ['-m32']
+      cxxflags += ['-m32']
     compiler_rt_args = base_cmake_args + [
         '-DLLVM_ENABLE_THREADS=OFF',
         '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
