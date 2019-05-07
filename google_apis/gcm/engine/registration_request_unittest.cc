@@ -164,10 +164,7 @@ TEST_F(GCMRegistrationRequestTest, RequestRegistrationWithMultipleSenderIds) {
     continue;
 
   ASSERT_TRUE(data_tokenizer.GetNext());
-  std::string senders(net::UnescapeURLComponent(
-      data_tokenizer.token(),
-      net::UnescapeRule::PATH_SEPARATORS |
-          net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS));
+  std::string senders(net::UnescapeBinaryURLComponent(data_tokenizer.token()));
   base::StringTokenizer sender_tokenizer(senders, ",");
   ASSERT_TRUE(sender_tokenizer.GetNext());
   EXPECT_EQ("sender1", sender_tokenizer.token());
