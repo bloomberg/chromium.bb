@@ -2372,10 +2372,12 @@ void InspectorCSSAgent::GetBackgroundColors(Element* element,
       MakeGarbageCollected<CSSComputedStyleDeclaration>(element, true);
   const CSSValue* font_size =
       computed_style_info->GetPropertyCSSValue(GetCSSPropertyFontSize());
-  *computed_font_size = font_size->CssText();
+  if (font_size)
+    *computed_font_size = font_size->CssText();
   const CSSValue* font_weight =
       computed_style_info->GetPropertyCSSValue(GetCSSPropertyFontWeight());
-  *computed_font_weight = font_weight->CssText();
+  if (font_weight)
+    *computed_font_weight = font_weight->CssText();
 }
 
 void InspectorCSSAgent::SetCoverageEnabled(bool enabled) {
