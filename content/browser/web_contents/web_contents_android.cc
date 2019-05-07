@@ -615,6 +615,11 @@ jint WebContentsAndroid::GetThemeColor(JNIEnv* env,
   return web_contents_->GetThemeColor().value_or(SK_ColorTRANSPARENT);
 }
 
+jint WebContentsAndroid::GetLoadProgress(JNIEnv* env,
+                                         const JavaParamRef<jobject>& obj) {
+  return web_contents_->GetLoadProgress() * 100;
+}
+
 void WebContentsAndroid::RequestSmartClipExtract(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

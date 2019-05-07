@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.tab;
 import android.graphics.Bitmap;
 import android.view.ContextMenu;
 
+import org.chromium.chrome.browser.findinpage.FindMatchRectsDetails;
+import org.chromium.chrome.browser.findinpage.FindNotificationDetails;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
@@ -152,4 +154,10 @@ public class EmptyTabObserver implements TabObserver {
 
     @Override
     public void didReloadLoFiImages(Tab tab) {}
+
+    @Override
+    public void onFindResultAvailable(FindNotificationDetails result) {}
+
+    @Override
+    public void onFindMatchRectsAvailable(FindMatchRectsDetails result) {}
 }

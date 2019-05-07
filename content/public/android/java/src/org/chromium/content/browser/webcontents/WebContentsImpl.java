@@ -632,6 +632,12 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
+    public int getLoadProgress() {
+        checkNotDestroyed();
+        return nativeGetLoadProgress(mNativeWebContentsAndroid);
+    }
+
+    @Override
     public void requestSmartClipExtract(int x, int y, int width, int height) {
         if (mSmartClipCallback == null) return;
         checkNotDestroyed();
@@ -1004,6 +1010,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     private native boolean nativeHasAccessedInitialDocument(
             long nativeWebContentsAndroid);
     private native int nativeGetThemeColor(long nativeWebContentsAndroid);
+    private native int nativeGetLoadProgress(long nativeWebContentsAndroid);
     private native void nativeRequestSmartClipExtract(long nativeWebContentsAndroid,
             SmartClipCallback callback, int x, int y, int width, int height);
     private native void nativeRequestAccessibilitySnapshot(

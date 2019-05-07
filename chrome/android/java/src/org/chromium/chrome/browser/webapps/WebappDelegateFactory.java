@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.Build;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.SingleTabActivity;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
@@ -36,6 +37,11 @@ public class WebappDelegateFactory extends TabDelegateFactory {
         public WebappWebContentsDelegateAndroid(WebappActivity activity, Tab tab) {
             super(tab);
             mActivity = activity;
+        }
+
+        @Override
+        protected @WebDisplayMode int getDisplayMode() {
+            return mActivity.getWebappInfo().displayMode();
         }
 
         @Override

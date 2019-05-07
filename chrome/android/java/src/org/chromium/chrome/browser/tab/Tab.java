@@ -613,10 +613,7 @@ public class Tab
      * @return a value between 0 and 100 reflecting what percentage of the page load is complete.
      */
     public int getProgress() {
-        if (!isLoading()) return 100;
-
-        TabWebContentsDelegateAndroid delegate = getTabWebContentsDelegateAndroid();
-        return delegate != null ? delegate.getMostRecentProgress() : 0;
+        return !isLoading() ? 100 : mWebContents.getLoadProgress();
     }
 
     void notifyThemeColorChanged(int themeColor) {
@@ -1375,7 +1372,7 @@ public class Tab
      * @param progress The current percentage of progress.
      */
     protected void notifyLoadProgress(int progress) {
-        for (TabObserver observer : mObservers) observer.onLoadProgressChanged(Tab.this, progress);
+        for (TabObserver observer : mObservers) observer.onLoadProgressChanged(this, progress);
     }
 
     private void notifyFaviconChanged() {

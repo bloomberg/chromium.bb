@@ -30,7 +30,6 @@ import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.webapk.lib.client.WebApkValidator;
 import org.chromium.webapk.lib.common.WebApkConstants;
@@ -82,9 +81,7 @@ public class WebappLauncherActivity extends Activity {
         WeakReference<WebappActivity> webappActivity =
                 WebappActivity.findWebappActivityWithTabId(tabId);
         if (webappActivity == null || webappActivity.get() == null) return false;
-
-        Tab tab = webappActivity.get().getActivityTab();
-        tab.getTabWebContentsDelegateAndroid().activateContents();
+        webappActivity.get().getActivityTab().getTabWebContentsDelegateAndroid().activateContents();
         return true;
     }
 

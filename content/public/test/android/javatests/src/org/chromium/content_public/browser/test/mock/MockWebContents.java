@@ -198,6 +198,11 @@ public class MockWebContents implements WebContents {
     }
 
     @Override
+    public int getLoadProgress() {
+        return 0;
+    }
+
+    @Override
     public void requestSmartClipExtract(int x, int y, int width, int height) {}
 
     @Override

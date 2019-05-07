@@ -238,9 +238,6 @@ public class WebappActivity extends SingleTabActivity {
     protected void initializeUI(Bundle savedInstanceState) {
         Tab tab = getActivityTab();
 
-        // Make display mode available before page load.
-        tab.getTabWebContentsDelegateAndroid().setDisplayMode(mWebappInfo.displayMode());
-
         // We do not load URL when restoring from saved instance states. However, it's possible that
         // we saved instance state before loading a URL, so even after restoring from
         // SavedInstanceState we might not have a URL and should initialize from the intent.

@@ -60,20 +60,6 @@ import org.chromium.ui.mojom.WindowOpenDisposition;
  * {@link TabObserver}s.
  */
 public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
-    /**
-     * Listener to be notified when a find result is received.
-     */
-    public interface FindResultListener {
-        public void onFindResult(FindNotificationDetails result);
-    }
-
-    /**
-     * Listener to be notified when the rects corresponding to find matches are received.
-     */
-    public interface FindMatchRectsListener {
-        public void onFindMatchRects(FindMatchRectsDetails result);
-    }
-
     /** Used for logging. */
     private static final String TAG = "WebContentsDelegate";
 
@@ -83,9 +69,6 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
     private final ArrayMap<WebContents, String> mWebContentsUrlMapping = new ArrayMap<>();
 
     protected Handler mHandler;
-    private FindResultListener mFindResultListener;
-    private FindMatchRectsListener mFindMatchRectsListener;
-    private @WebDisplayMode int mDisplayMode = WebDisplayMode.BROWSER;
 
     public TabWebContentsDelegateAndroid(Tab tab) {
         mTab = tab;
@@ -98,23 +81,15 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
         };
     }
 
-    /**
-     * Sets the current display mode which can be queried using media queries.
-     */
-    public void setDisplayMode(@WebDisplayMode int displayMode) {
-        mDisplayMode = displayMode;
-    }
-
     @CalledByNative
-    private @WebDisplayMode int getDisplayMode() {
-        return mDisplayMode;
+    protected @WebDisplayMode int getDisplayMode() {
+        return WebDisplayMode.BROWSER;
     }
 
     @CalledByNative
     private void onFindResultAvailable(FindNotificationDetails result) {
-        if (mFindResultListener != null) {
-            mFindResultListener.onFindResult(result);
-        }
+        RewindableIterator<TabObserver> observers = mTab.getTabObservers();
+        while (observers.hasNext()) observers.next().onFindResultAvailable(result);
     }
 
     @Override
@@ -125,19 +100,8 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
 
     @CalledByNative
     private void onFindMatchRectsAvailable(FindMatchRectsDetails result) {
-        if (mFindMatchRectsListener != null) {
-            mFindMatchRectsListener.onFindMatchRects(result);
-        }
-    }
-
-    /** Register to receive the results of startFinding calls. */
-    public void setFindResultListener(FindResultListener listener) {
-        mFindResultListener = listener;
-    }
-
-    /** Register to receive the results of requestFindMatchRects calls. */
-    public void setFindMatchRectsListener(FindMatchRectsListener listener) {
-        mFindMatchRectsListener = listener;
+        RewindableIterator<TabObserver> observers = mTab.getTabObservers();
+        while (observers.hasNext()) observers.next().onFindMatchRectsAvailable(result);
     }
 
     // Helper functions used to create types that are part of the public interface
@@ -173,8 +137,9 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
 
     @Override
     public void onLoadProgressChanged(int progress) {
+        // TODO(jinsukkim): Move this interface to WebContentsObserver.
         if (!mTab.isLoading()) return;
-        mTab.notifyLoadProgress(mTab.getProgress());
+        mTab.notifyLoadProgress(progress);
     }
 
     @Override
