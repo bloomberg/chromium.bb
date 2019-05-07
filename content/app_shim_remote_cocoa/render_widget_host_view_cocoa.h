@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_COCOA_H_
-#define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_COCOA_H_
+#ifndef CONTENT_APP_SHIM_REMOTE_COCOA_RENDER_WIDGET_HOST_VIEW_COCOA_H_
+#define CONTENT_APP_SHIM_REMOTE_COCOA_RENDER_WIDGET_HOST_VIEW_COCOA_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -277,4 +277,4 @@ struct DidOverscrollParams;
 - (void)processedOverscroll:(const ui::DidOverscrollParams&)params;
 @end
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_COCOA_H_
+#endif  // CONTENT_APP_SHIM_REMOTE_COCOA_RENDER_WIDGET_HOST_VIEW_COCOA_H_

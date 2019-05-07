@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_POPUP_WINDOW_MAC_H_
-#define CONTENT_BROWSER_RENDERER_HOST_POPUP_WINDOW_MAC_H_
+#ifndef CONTENT_APP_SHIM_REMOTE_COCOA_POPUP_WINDOW_MAC_H_
+#define CONTENT_APP_SHIM_REMOTE_COCOA_POPUP_WINDOW_MAC_H_
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
@@ -37,4 +37,4 @@ class PopupWindowMac {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_POPUP_WINDOW_MAC_H_
+#endif  // CONTENT_APP_SHIM_REMOTE_COCOA_POPUP_WINDOW_MAC_H_

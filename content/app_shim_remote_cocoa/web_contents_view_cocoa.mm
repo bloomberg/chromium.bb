@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "content/browser/web_contents/web_contents_view_cocoa.h"
+#import "content/app_shim_remote_cocoa/web_contents_view_cocoa.h"
 
 #import "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
+#import "content/app_shim_remote_cocoa/web_drag_source_mac.h"
 #import "content/browser/web_contents/web_drag_dest_mac.h"
-#import "content/browser/web_contents/web_drag_source_mac.h"
 #include "content/public/common/web_contents_ns_view_bridge.mojom.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/clipboard/clipboard_constants.h"

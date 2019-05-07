@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "content/browser/renderer_host/render_widget_host_ns_view_bridge_local.h"
+#import "content/app_shim_remote_cocoa/render_widget_host_ns_view_bridge_local.h"
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
-#include "content/browser/renderer_host/render_widget_host_ns_view_client_helper.h"
+#include "content/app_shim_remote_cocoa/render_widget_host_ns_view_client_helper.h"
 #include "content/common/cursors/webcursor.h"
 #import "skia/ext/skia_utils_mac.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"

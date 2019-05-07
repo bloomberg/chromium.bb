@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_COCOA_H_
-#define CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_COCOA_H_
+#ifndef CONTENT_APP_SHIM_REMOTE_COCOA_WEB_CONTENTS_VIEW_COCOA_H_
+#define CONTENT_APP_SHIM_REMOTE_COCOA_WEB_CONTENTS_VIEW_COCOA_H_
 
 #include "base/mac/scoped_nsobject.h"
 #include "content/common/content_export.h"
@@ -58,4 +58,4 @@ CONTENT_EXPORT
 - (void)viewDidBecomeFirstResponder:(NSNotification*)notification;
 @end
 
-#endif  // CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_COCOA_H_
+#endif  // CONTENT_APP_SHIM_REMOTE_COCOA_WEB_CONTENTS_VIEW_COCOA_H_

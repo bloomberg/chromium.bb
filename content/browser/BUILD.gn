@@ -283,6 +283,8 @@ jumbo_source_set("browser") {
     "$target_gen_dir/devtools/protocol/tethering.h",
     "$target_gen_dir/devtools/protocol/tracing.cc",
     "$target_gen_dir/devtools/protocol/tracing.h",
+    "../app_shim_remote_cocoa/web_drag_source_mac.h",
+    "../app_shim_remote_cocoa/web_drag_source_mac.mm",
     "../common/service_manager/child_connection.cc",
     "../common/service_manager/child_connection.h",
     "about_url_loader_factory.cc",
@@ -1868,8 +1870,6 @@ jumbo_source_set("browser") {
     "web_contents/web_contents_view_mac.mm",
     "web_contents/web_drag_dest_mac.h",
     "web_contents/web_drag_dest_mac.mm",
-    "web_contents/web_drag_source_mac.h",
-    "web_contents/web_drag_source_mac.mm",
     "web_contents/web_drag_utils_win.cc",
     "web_contents/web_drag_utils_win.h",
     "web_package/http_structured_header.cc",
@@ -2049,14 +2049,14 @@ jumbo_source_set("browser") {
 
   if (is_mac) {
     sources += [
+      "../app_shim_remote_cocoa/web_contents_ns_view_bridge.h",
+      "../app_shim_remote_cocoa/web_contents_ns_view_bridge.mm",
       "gpu/ca_transaction_gpu_coordinator.cc",
       "gpu/ca_transaction_gpu_coordinator.h",
       "media/now_playing_info_center_notifier.cc",
       "media/now_playing_info_center_notifier.h",
       "sandbox_support_mac_impl.h",
       "sandbox_support_mac_impl.mm",
-      "web_contents/web_contents_ns_view_bridge.h",
-      "web_contents/web_contents_ns_view_bridge.mm",
     ]
     deps += [ "//ui/events:dom_keyboard_layout" ]
   }
@@ -2511,17 +2511,17 @@ jumbo_source_set("browser") {
       "IOSurface.framework",
     ]
     sources += [
+      "../app_shim_remote_cocoa/ns_view_bridge_factory_impl.mm",
+      "../app_shim_remote_cocoa/popup_window_mac.h",
+      "../app_shim_remote_cocoa/popup_window_mac.mm",
+      "../app_shim_remote_cocoa/render_widget_host_ns_view_bridge_local.h",
+      "../app_shim_remote_cocoa/render_widget_host_ns_view_bridge_local.mm",
+      "../app_shim_remote_cocoa/render_widget_host_ns_view_client_helper.h",
+      "../app_shim_remote_cocoa/render_widget_host_view_cocoa.h",
+      "../app_shim_remote_cocoa/render_widget_host_view_cocoa.mm",
+      "../app_shim_remote_cocoa/web_contents_view_cocoa.h",
+      "../app_shim_remote_cocoa/web_contents_view_cocoa.mm",
       "ns_view_bridge_factory_host.mm",
-      "ns_view_bridge_factory_impl.mm",
-      "renderer_host/popup_window_mac.h",
-      "renderer_host/popup_window_mac.mm",
-      "renderer_host/render_widget_host_ns_view_bridge_local.h",
-      "renderer_host/render_widget_host_ns_view_bridge_local.mm",
-      "renderer_host/render_widget_host_ns_view_client_helper.h",
-      "renderer_host/render_widget_host_view_cocoa.h",
-      "renderer_host/render_widget_host_view_cocoa.mm",
-      "web_contents/web_contents_view_cocoa.h",
-      "web_contents/web_contents_view_cocoa.mm",
     ]
   }
 
