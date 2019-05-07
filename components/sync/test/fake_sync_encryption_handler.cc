@@ -124,4 +124,8 @@ PassphraseType FakeSyncEncryptionHandler::GetPassphraseType(
   return passphrase_type_;
 }
 
+base::Time FakeSyncEncryptionHandler::GetKeystoreMigrationTime() const {
+  return base::Time();
+}
+
 }  // namespace syncer

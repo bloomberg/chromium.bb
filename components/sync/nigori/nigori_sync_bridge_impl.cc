@@ -147,6 +147,12 @@ bool NigoriSyncBridgeImpl::IsEncryptEverythingEnabled() const {
   return false;
 }
 
+base::Time NigoriSyncBridgeImpl::GetKeystoreMigrationTime() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  NOTIMPLEMENTED();
+  return base::Time();
+}
+
 bool NigoriSyncBridgeImpl::NeedKeystoreKey() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // We explicitly ask the server for keystore keys iff it's first-time sync,

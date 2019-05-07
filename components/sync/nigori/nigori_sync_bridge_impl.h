@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/model/conflict_resolution.h"
@@ -50,6 +51,7 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   void SetDecryptionPassphrase(const std::string& passphrase) override;
   void EnableEncryptEverything() override;
   bool IsEncryptEverythingEnabled() const override;
+  base::Time GetKeystoreMigrationTime() const override;
 
   // KeystoreKeysHandler implementation.
   bool NeedKeystoreKey() const override;

@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/fake_encryptor.h"
 #include "components/sync/engine/sync_encryption_handler.h"
@@ -41,6 +42,7 @@ class FakeSyncEncryptionHandler : public KeystoreKeysHandler,
   bool IsEncryptEverythingEnabled() const override;
   PassphraseType GetPassphraseType(
       syncable::BaseTransaction* const trans) const override;
+  base::Time GetKeystoreMigrationTime() const override;
 
   // NigoriHandler implemenation.
   void ApplyNigoriUpdate(const sync_pb::NigoriSpecifics& nigori,

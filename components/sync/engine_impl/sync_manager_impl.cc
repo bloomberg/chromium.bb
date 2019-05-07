@@ -410,7 +410,7 @@ void SyncManagerImpl::OnCryptographerStateChanged(
   allstatus_.SetCryptographerReady(cryptographer->is_ready());
   allstatus_.SetCryptoHasPendingKeys(cryptographer->has_pending_keys());
   allstatus_.SetKeystoreMigrationTime(
-      sync_encryption_handler_->migration_time());
+      sync_encryption_handler_->GetKeystoreMigrationTime());
 }
 
 void SyncManagerImpl::OnPassphraseTypeChanged(
@@ -418,7 +418,7 @@ void SyncManagerImpl::OnPassphraseTypeChanged(
     base::Time explicit_passphrase_time) {
   allstatus_.SetPassphraseType(type);
   allstatus_.SetKeystoreMigrationTime(
-      sync_encryption_handler_->migration_time());
+      sync_encryption_handler_->GetKeystoreMigrationTime());
 }
 
 void SyncManagerImpl::StartSyncingNormally(

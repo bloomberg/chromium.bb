@@ -738,6 +738,11 @@ bool SyncEncryptionHandlerImpl::IsEncryptEverythingEnabled() const {
   return encrypt_everything_;
 }
 
+base::Time SyncEncryptionHandlerImpl::GetKeystoreMigrationTime() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return keystore_migration_time_;
+}
+
 // Note: this is called from within a syncable transaction, so we need to post
 // tasks if we want to do any work that creates a new sync_api transaction.
 void SyncEncryptionHandlerImpl::ApplyNigoriUpdate(
@@ -881,10 +886,6 @@ bool SyncEncryptionHandlerImpl::MigratedToKeystore() {
   return IsNigoriMigratedToKeystore(nigori_node.GetNigoriSpecifics());
 }
 
-base::Time SyncEncryptionHandlerImpl::migration_time() const {
-  return migration_time_;
-}
-
 base::Time SyncEncryptionHandlerImpl::custom_passphrase_time() const {
   return custom_passphrase_time_;
 }
@@ -996,7 +997,8 @@ bool SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
   bool is_nigori_migrated = IsNigoriMigratedToKeystore(nigori);
   PassphraseType* passphrase_type = &UnlockVaultMutable(trans)->passphrase_type;
   if (is_nigori_migrated) {
-    migration_time_ = ProtoTimeToTime(nigori.keystore_migration_time());
+    keystore_migration_time_ =
+        ProtoTimeToTime(nigori.keystore_migration_time());
     PassphraseType nigori_passphrase_type =
         ProtoPassphraseTypeToEnum(nigori.passphrase_type());
 
@@ -1747,9 +1749,11 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
     return false;
   }
 
-  if (migration_time_.is_null())
-    migration_time_ = base::Time::Now();
-  migrated_nigori.set_keystore_migration_time(TimeToProtoTime(migration_time_));
+  if (keystore_migration_time_.is_null()) {
+    keystore_migration_time_ = base::Time::Now();
+  }
+  migrated_nigori.set_keystore_migration_time(
+      TimeToProtoTime(keystore_migration_time_));
 
   if (!custom_passphrase_time_.is_null()) {
     migrated_nigori.set_custom_passphrase_time(
@@ -1950,7 +1954,7 @@ bool SyncEncryptionHandlerImpl::DecryptPendingKeysWithKeystoreKey(
 base::Time SyncEncryptionHandlerImpl::GetExplicitPassphraseTime(
     PassphraseType passphrase_type) const {
   if (passphrase_type == PassphraseType::FROZEN_IMPLICIT_PASSPHRASE)
-    return migration_time();
+    return GetKeystoreMigrationTime();
   else if (passphrase_type == PassphraseType::CUSTOM_PASSPHRASE)
     return custom_passphrase_time();
   return base::Time();

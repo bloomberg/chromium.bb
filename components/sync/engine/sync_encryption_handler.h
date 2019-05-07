@@ -167,6 +167,11 @@ class SyncEncryptionHandler {
   // types are encrypted.
   virtual bool IsEncryptEverythingEnabled() const = 0;
 
+  // Returns the time when Nigori was migrated to keystore or when it was
+  // initialized in case it happens after migration was introduced. Returns
+  // base::Time() in case migration isn't completed.
+  virtual base::Time GetKeystoreMigrationTime() const = 0;
+
   // The set of types that are always encrypted.
   static ModelTypeSet SensitiveTypes();
 };

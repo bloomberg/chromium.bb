@@ -1011,7 +1011,8 @@ TEST_F(SyncEncryptionHandlerImplTest, MigrateOnDecryptCustomPass) {
   EXPECT_FALSE(encryption_handler()->MigratedToKeystore());
   encryption_handler()->SetDecryptionPassphrase(kOtherKey);
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
-  const base::Time migration_time = encryption_handler()->migration_time();
+  const base::Time migration_time =
+      encryption_handler()->GetKeystoreMigrationTime();
   VerifyPassphraseType(PassphraseType::CUSTOM_PASSPHRASE);
   VerifyMigratedNigori(PassphraseType::CUSTOM_PASSPHRASE, kOtherKey,
                        {KeyDerivationParams::CreateForPbkdf2()});
@@ -1084,7 +1085,8 @@ TEST_F(SyncEncryptionHandlerImplTest,
   Mock::VerifyAndClearExpectations(observer());
 
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
-  const base::Time migration_time = encryption_handler()->migration_time();
+  const base::Time migration_time =
+      encryption_handler()->GetKeystoreMigrationTime();
   VerifyPassphraseType(PassphraseType::FROZEN_IMPLICIT_PASSPHRASE);
   EXPECT_TRUE(encryption_handler()->IsEncryptEverythingEnabled());
   VerifyMigratedNigori(PassphraseType::FROZEN_IMPLICIT_PASSPHRASE, kCurKey,
@@ -1142,7 +1144,8 @@ TEST_F(SyncEncryptionHandlerImplTest,
   Mock::VerifyAndClearExpectations(observer());
 
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
-  const base::Time migration_time = encryption_handler()->migration_time();
+  const base::Time migration_time =
+      encryption_handler()->GetKeystoreMigrationTime();
   VerifyPassphraseType(PassphraseType::CUSTOM_PASSPHRASE);
   EXPECT_TRUE(encryption_handler()->IsEncryptEverythingEnabled());
   VerifyMigratedNigori(PassphraseType::CUSTOM_PASSPHRASE, kCurKey,
@@ -1190,7 +1193,8 @@ TEST_F(SyncEncryptionHandlerImplTest,
   // The actual migration gets posted, so run all pending tasks.
   PumpLoop();
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
-  const base::Time migration_time = encryption_handler()->migration_time();
+  const base::Time migration_time =
+      encryption_handler()->GetKeystoreMigrationTime();
   VerifyPassphraseType(PassphraseType::CUSTOM_PASSPHRASE);
   EXPECT_TRUE(encryption_handler()->IsEncryptEverythingEnabled());
   VerifyMigratedNigori(PassphraseType::CUSTOM_PASSPHRASE, kCurKey,
@@ -2276,7 +2280,8 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysUnmigratedCustomPassphrase) {
   VerifyMigratedNigori(PassphraseType::CUSTOM_PASSPHRASE, kCustomPass,
                        {KeyDerivationParams::CreateForPbkdf2()});
 
-  const base::Time migration_time = encryption_handler()->migration_time();
+  const base::Time migration_time =
+      encryption_handler()->GetKeystoreMigrationTime();
   VerifyRestoreAfterExplicitPaspshrase(
       TimeToProtoTime(migration_time), kCustomPass, captured_bootstrap_token,
       captured_nigori_state, PassphraseType::CUSTOM_PASSPHRASE,
