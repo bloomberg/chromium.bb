@@ -362,8 +362,7 @@ void WebSharedWorkerImpl::ContinueStartWorkerContext() {
         std::make_unique<WorkerSettings>(document->GetFrame()->GetSettings()),
         kV8CacheOptionsDefault, nullptr /* worklet_module_response_map */,
         std::move(pending_interface_provider_), BeginFrameProviderParams(),
-        nullptr /* parent_feature_policy */, base::UnguessableToken(),
-        GlobalScopeCSPApplyMode::kUseResponseCSP);
+        nullptr /* parent_feature_policy */, base::UnguessableToken());
     StartWorkerThread(std::move(creation_params), script_request_url_,
                       String() /* source_code */, *outside_settings_object);
     return;

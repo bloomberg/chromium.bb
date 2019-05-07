@@ -428,8 +428,7 @@ WorkerGlobalScope::WorkerGlobalScope(
               creation_params->begin_frame_provider_params)),
       agent_cluster_id_(creation_params->agent_cluster_id.is_empty()
                             ? base::UnguessableToken::Create()
-                            : creation_params->agent_cluster_id),
-      csp_apply_mode_(creation_params->csp_apply_mode) {
+                            : creation_params->agent_cluster_id) {
   InstanceCounters::IncrementCounter(
       InstanceCounters::kWorkerGlobalScopeCounter);
   scoped_refptr<SecurityOrigin> security_origin =

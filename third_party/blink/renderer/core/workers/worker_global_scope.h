@@ -217,8 +217,6 @@ class CORE_EXPORT WorkerGlobalScope
 
   mojom::ScriptType GetScriptType() const { return script_type_; }
 
-  GlobalScopeCSPApplyMode GetCSPApplyMode() const { return csp_apply_mode_; }
-
  private:
   void SetWorkerSettings(std::unique_ptr<WorkerSettings>);
 
@@ -261,8 +259,6 @@ class CORE_EXPORT WorkerGlobalScope
   const base::UnguessableToken agent_cluster_id_;
 
   HttpsState https_state_;
-
-  GlobalScopeCSPApplyMode csp_apply_mode_;
 };
 
 template <>

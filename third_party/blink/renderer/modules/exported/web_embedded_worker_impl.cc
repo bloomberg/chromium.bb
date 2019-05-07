@@ -466,15 +466,6 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   global_scope_creation_params->v8_cache_options =
       kV8CacheOptionsFullCodeWithoutHeatCheck;
 
-  // When the script is fetched on the worker thread, CSP will come from the
-  // response of the script. Otherwise, CSP is passed as a parameter of
-  // GlobalScopeCreationParams.
-  global_scope_creation_params->csp_apply_mode =
-      off_main_thread_fetch_option ==
-              OffMainThreadWorkerScriptFetchOption::kEnabled
-          ? GlobalScopeCSPApplyMode::kUseResponseCSP
-          : GlobalScopeCSPApplyMode::kUseCreationParamsCSP;
-
   worker_thread_ = std::make_unique<ServiceWorkerThread>(
       ServiceWorkerGlobalScopeProxy::Create(*this, *worker_context_client_),
       std::move(installed_scripts_manager_), std::move(cache_storage_info_));
