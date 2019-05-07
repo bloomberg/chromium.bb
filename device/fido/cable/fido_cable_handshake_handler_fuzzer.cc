@@ -9,8 +9,6 @@
 
 #include "base/containers/span.h"
 #include "base/memory/ref_counted.h"
-#include "base/no_destructor.h"
-#include "base/test/scoped_task_environment.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/fido/cable/fido_cable_device.h"
 #include "device/fido/cable/fido_cable_handshake_handler.h"
@@ -35,7 +33,6 @@ constexpr char kTestDeviceAddress[] = "Fake_Address";
 }  // namespace
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* raw_data, size_t size) {
-  static const base::NoDestructor<base::test::ScopedTaskEnvironment> task_env;
   auto data_span = base::make_span(raw_data, size);
   auto adapter =
       base::MakeRefCounted<::testing::NiceMock<device::MockBluetoothAdapter>>();

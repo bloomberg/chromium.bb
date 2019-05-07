@@ -615,7 +615,12 @@ void BluetoothDeviceWinrt::OnGattDiscoveryComplete(bool success) {
 }
 
 void BluetoothDeviceWinrt::ClearGattServices() {
-  gatt_services_.clear();
+  // Clearing |gatt_services_| can trigger callbacks. Move the existing
+  // objects into a local variable to avoid re-entrancy into clear().
+  GattServiceMap temp_gatt_services;
+  temp_gatt_services.swap(gatt_services_);
+  temp_gatt_services.clear();
+
   device_uuids_.ClearServiceUUIDs();
   SetGattServicesDiscoveryComplete(false);
 }

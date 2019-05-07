@@ -3334,6 +3334,44 @@ TEST_F(
             last_gatt_error_code_);
 }
 
+// Tests that closing the GATT connection when a characteristic value write
+// fails due to a disconnect is safe.
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#define MAYBE_WriteWithoutResponseOnlyCharacteristic_CloseConnectionDuringDisconnect \
+  WriteWithoutResponseOnlyCharacteristic_CloseConnectionDuringDisconnect
+#else
+#define MAYBE_WriteWithoutResponseOnlyCharacteristic_CloseConnectionDuringDisconnect \
+  DISABLED_WriteWithoutResponseOnlyCharacteristic_CloseConnectionDuringDisconnect
+#endif
+#if defined(OS_WIN)
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrtOnly,
+       WriteWithoutResponseOnlyCharacteristic_CloseConnectionDuringDisconnect) {
+#else
+TEST_F(
+    BluetoothRemoteGattCharacteristicTest,
+    MAYBE_WriteWithoutResponseOnlyCharacteristic_CloseConnectionDuringDisconnect) {
+#endif
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
+      BluetoothRemoteGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE));
+
+  base::RunLoop loop;
+  characteristic1_->WriteRemoteCharacteristic(
+      std::vector<uint8_t>(), GetCallback(Call::NOT_EXPECTED),
+      base::BindLambdaForTesting(
+          [&](BluetoothGattService::GattErrorCode error_code) {
+            EXPECT_EQ(BluetoothRemoteGattService::GATT_ERROR_FAILED,
+                      error_code);
+            gatt_connections_[0]->Disconnect();
+            loop.Quit();
+          }));
+  SimulateDeviceBreaksConnection(adapter_->GetDevices()[0]);
+  loop.Run();
+}
+
 #if defined(OS_MACOSX)
 #define MAYBE_WriteWithoutResponseOnlyCharacteristic_DisconnectCalledDuringWriteRemoteCharacteristic \
   WriteWithoutResponseOnlyCharacteristic_DisconnectCalledDuringWriteRemoteCharacteristic
