@@ -549,6 +549,7 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
         xcode_path=xcode_path,
         xctest=False
     )
+    self.set_up()
     self.erase_all_simulators()
     self._init_sharding_data()
     self.logs = collections.OrderedDict()
