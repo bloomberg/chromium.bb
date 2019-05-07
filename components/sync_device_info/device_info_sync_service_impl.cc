@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/device_info/device_info_sync_service_impl.h"
+#include "components/sync_device_info/device_info_sync_service_impl.h"
 
 #include <utility>
 
 #include "base/bind_helpers.h"
 #include "components/sync/base/report_unrecoverable_error.h"
-#include "components/sync/device_info/device_info.h"
-#include "components/sync/device_info/device_info_sync_bridge.h"
-#include "components/sync/device_info/device_info_tracker.h"
-#include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
+#include "components/sync_device_info/device_info.h"
+#include "components/sync_device_info/device_info_sync_bridge.h"
+#include "components/sync_device_info/device_info_tracker.h"
+#include "components/sync_device_info/local_device_info_provider.h"
 
 namespace syncer {
 

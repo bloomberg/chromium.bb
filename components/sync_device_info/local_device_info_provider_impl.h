@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "components/sync/device_info/device_info.h"
-#include "components/sync/device_info/local_device_info_provider.h"
+#include "components/sync_device_info/device_info.h"
+#include "components/sync_device_info/local_device_info_provider.h"
 #include "components/version_info/version_info.h"
 
 namespace syncer {

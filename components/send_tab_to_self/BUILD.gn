@@ -28,7 +28,7 @@ static_library("send_tab_to_self") {
     "//components/keyed_service/core",
     "//components/send_tab_to_self/proto:send_tab_to_self_proto",
     "//components/sync",
-    "//components/sync/device_info",
+    "//components/sync_device_info",
     "//components/version_info",
     "//google_apis",
     "//url",
@@ -70,7 +70,7 @@ source_set("unit_tests") {
     "//components/history/core/browser",
     "//components/send_tab_to_self/proto:send_tab_to_self_proto",
     "//components/sync:test_support",
-    "//components/sync/device_info",
+    "//components/sync_device_info",
     "//testing/gtest",
     "//url",
   ]

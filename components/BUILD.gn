@@ -155,6 +155,7 @@ test("components_unittests") {
     "//components/supervised_user_error_page:unit_tests",
     "//components/sync:unit_tests",
     "//components/sync_bookmarks:unit_tests",
+    "//components/sync_device_info:unit_tests",
     "//components/sync_preferences:unit_tests",
     "//components/sync_sessions:unit_tests",
     "//components/sync_user_events:unit_tests",

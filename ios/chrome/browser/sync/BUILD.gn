@@ -54,7 +54,7 @@ source_set("sync") {
     "//components/sessions",
     "//components/signin/core/browser",
     "//components/sync",
-    "//components/sync/device_info",
+    "//components/sync_device_info",
     "//components/sync_preferences",
     "//components/sync_sessions",
     "//components/sync_user_events",

@@ -60,6 +60,7 @@ source_set("unit_tests") {
     "//components/sync",
     "//components/sync:test_support",
     "//components/sync_bookmarks",
+    "//components/sync_device_info",
     "//components/sync_preferences",
     "//components/sync_preferences:test_support",
     "//components/sync_sessions",

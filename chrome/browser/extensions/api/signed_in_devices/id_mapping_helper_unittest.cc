@@ -9,7 +9,7 @@
 
 #include "base/guid.h"
 #include "base/values.h"
-#include "components/sync/device_info/device_info.h"
+#include "components/sync_device_info/device_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

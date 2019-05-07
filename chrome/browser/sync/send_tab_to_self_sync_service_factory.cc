@@ -14,8 +14,8 @@
 #include "chrome/common/channel_info.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
-#include "components/sync/device_info/device_info_sync_service.h"
 #include "components/sync/model/model_type_store_service.h"
+#include "components/sync_device_info/device_info_sync_service.h"
 
 // static
 send_tab_to_self::SendTabToSelfSyncService*

@@ -51,7 +51,7 @@ static_library("sync_sessions") {
   public_deps = [
     "//components/sessions",
     "//components/sync",
-    "//components/sync/device_info",
+    "//components/sync_device_info",
   ]
 
   deps = [

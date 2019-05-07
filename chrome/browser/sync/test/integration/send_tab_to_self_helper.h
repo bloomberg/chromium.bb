@@ -10,7 +10,7 @@
 
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
 #include "components/send_tab_to_self/send_tab_to_self_model_observer.h"
-#include "components/sync/device_info/device_info_tracker.h"
+#include "components/sync_device_info/device_info_tracker.h"
 #include "url/gurl.h"
 
 namespace send_tab_to_self {

@@ -16,11 +16,11 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "components/sync/device_info/device_info_tracker.h"
-#include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_store.h"
 #include "components/sync/model/model_type_sync_bridge.h"
+#include "components/sync_device_info/device_info_tracker.h"
+#include "components/sync_device_info/local_device_info_provider.h"
 
 namespace sync_pb {
 class DeviceInfoSpecifics;

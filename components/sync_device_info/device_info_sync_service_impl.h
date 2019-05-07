@@ -8,8 +8,8 @@
 #include <memory>
 #include <string>
 
-#include "components/sync/device_info/device_info_sync_service.h"
 #include "components/sync/model/model_type_store.h"
+#include "components/sync_device_info/device_info_sync_service.h"
 
 namespace syncer {
 

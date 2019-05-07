@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/device_info/local_device_info_provider_impl.h"
+#include "components/sync_device_info/local_device_info_provider_impl.h"
 
 #include "base/bind.h"
 #include "components/sync/base/sync_prefs.h"
-#include "components/sync/device_info/local_device_info_util.h"
 #include "components/sync/driver/sync_util.h"
+#include "components/sync_device_info/local_device_info_util.h"
 
 namespace syncer {
 

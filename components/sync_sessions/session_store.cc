@@ -20,12 +20,12 @@
 #include "base/trace_event/trace_event.h"
 #include "components/sync/base/get_session_name.h"
 #include "components/sync/base/time.h"
-#include "components/sync/device_info/local_device_info_util.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "components/sync_device_info/local_device_info_util.h"
 #include "components/sync_sessions/session_sync_prefs.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 

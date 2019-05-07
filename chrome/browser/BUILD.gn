@@ -1818,7 +1818,7 @@ jumbo_split_static_library("browser") {
     "//components/nacl/common:buildflags",
     "//components/payments/core",
     "//components/sync",
-    "//components/sync/device_info",
+    "//components/sync_device_info",
     "//content/public/browser",
     "//ipc",
     "//sql",

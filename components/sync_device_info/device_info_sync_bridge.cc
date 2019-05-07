@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/device_info/device_info_sync_bridge.h"
+#include "components/sync_device_info/device_info_sync_bridge.h"
 
 #include <stdint.h>
 
@@ -17,13 +17,13 @@
 #include "base/strings/string_util.h"
 #include "components/sync/base/get_session_name.h"
 #include "components/sync/base/time.h"
-#include "components/sync/device_info/device_info_util.h"
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "components/sync_device_info/device_info_util.h"
 
 namespace syncer {
 
@@ -279,7 +279,7 @@ std::unique_ptr<DeviceInfo> DeviceInfoSyncBridge::GetDeviceInfo(
     const std::string& client_id) const {
   const ClientIdToSpecifics::const_iterator iter = all_data_.find(client_id);
   if (iter == all_data_.end()) {
-    return std::unique_ptr<DeviceInfo>();
+    return nullptr;
   }
   return SpecificsToModel(*iter->second);
 }

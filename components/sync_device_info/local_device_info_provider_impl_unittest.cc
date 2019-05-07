@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/device_info/local_device_info_provider_impl.h"
+#include "components/sync_device_info/local_device_info_provider_impl.h"
 
 #include "base/test/mock_callback.h"
 #include "components/sync/driver/sync_util.h"
@@ -32,9 +32,7 @@ class LocalDeviceInfoProviderImplTest : public testing::Test {
         send_tab_to_self_receiving_enabled_callback_.Get());
   }
 
-  void TearDown() override {
-    provider_.reset();
-  }
+  void TearDown() override { provider_.reset(); }
 
  protected:
   void InitializeProvider() { InitializeProvider(kLocalDeviceGuid); }

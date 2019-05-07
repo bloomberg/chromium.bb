@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/device_info/device_count_metrics_provider.h"
+#include "components/sync_device_info/device_count_metrics_provider.h"
 
 #include <algorithm>
 
 #include "base/metrics/histogram_functions.h"
-#include "components/sync/device_info/device_info_tracker.h"
+#include "components/sync_device_info/device_info_tracker.h"
 
 namespace syncer {
 

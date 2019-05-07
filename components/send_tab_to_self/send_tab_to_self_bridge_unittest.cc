@@ -18,8 +18,6 @@
 #include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/proto/send_tab_to_self.pb.h"
 #include "components/send_tab_to_self/target_device_info.h"
-#include "components/sync/device_info/device_info.h"
-#include "components/sync/device_info/device_info_tracker.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/mock_model_type_change_processor.h"
@@ -27,6 +25,8 @@
 #include "components/sync/model_impl/in_memory_metadata_change_list.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/test/test_matchers.h"
+#include "components/sync_device_info/device_info.h"
+#include "components/sync_device_info/device_info_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

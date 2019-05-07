@@ -27,8 +27,8 @@ class DeviceInfoTracker;
 // would be much trickier.
 class DeviceCountMetricsProvider : public metrics::MetricsProvider {
  public:
-  using ProvideTrackersCallback =
-      base::Callback<void(std::vector<const DeviceInfoTracker*>* trackers)>;
+  using ProvideTrackersCallback = base::RepeatingCallback<void(
+      std::vector<const DeviceInfoTracker*>* trackers)>;
 
   explicit DeviceCountMetricsProvider(
       const ProvideTrackersCallback& provide_trackers);

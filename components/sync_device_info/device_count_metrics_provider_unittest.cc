@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/device_info/device_count_metrics_provider.h"
+#include "components/sync_device_info/device_count_metrics_provider.h"
 
 #include <string>
 
 #include "base/bind.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "components/sync/device_info/device_info.h"
-#include "components/sync/device_info/device_info_tracker.h"
+#include "components/sync_device_info/device_info.h"
+#include "components/sync_device_info/device_info_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -44,8 +44,8 @@ class DeviceCountMetricsProviderTest : public testing::Test {
  public:
   DeviceCountMetricsProviderTest()
       : metrics_provider_(
-            base::Bind(&DeviceCountMetricsProviderTest::GetTrackers,
-                       base::Unretained(this))) {}
+            base::BindRepeating(&DeviceCountMetricsProviderTest::GetTrackers,
+                                base::Unretained(this))) {}
 
   void AddTracker(const int count) {
     trackers_.push_back(

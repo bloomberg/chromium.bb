@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "components/sync/device_info/device_info.h"
+#include "components/sync_device_info/device_info.h"
 
 namespace syncer {
 

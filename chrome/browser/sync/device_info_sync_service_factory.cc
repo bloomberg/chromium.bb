@@ -21,9 +21,9 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/sync/base/sync_prefs.h"
-#include "components/sync/device_info/device_info_sync_service_impl.h"
-#include "components/sync/device_info/local_device_info_provider_impl.h"
 #include "components/sync/model/model_type_store_service.h"
+#include "components/sync_device_info/device_info_sync_service_impl.h"
+#include "components/sync_device_info/local_device_info_provider_impl.h"
 
 // static
 syncer::DeviceInfoSyncService* DeviceInfoSyncServiceFactory::GetForProfile(

@@ -14,9 +14,9 @@
 #include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
-#include "components/sync/device_info/device_info.h"
-#include "components/sync/device_info/device_info_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync_device_info/device_info.h"
+#include "components/sync_device_info/device_info_sync_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 
