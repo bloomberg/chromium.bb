@@ -355,7 +355,8 @@ void BaseWebUIBrowserTest::BrowsePrintPreload(const GURL& browse_to) {
 #endif
 }
 
-const char BaseWebUIBrowserTest::kDummyURL[] = "chrome://DummyURL";
+const std::string BaseWebUIBrowserTest::kDummyURL =
+    content::GetWebUIURLString("DummyURL");
 
 BaseWebUIBrowserTest::BaseWebUIBrowserTest()
     : libraries_preloaded_(false), override_selected_web_ui_(nullptr) {}

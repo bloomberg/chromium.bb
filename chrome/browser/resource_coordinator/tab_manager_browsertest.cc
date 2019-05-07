@@ -396,7 +396,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_TabManagerBasics) {
   WindowedNotificationObserver load5(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
-  OpenURLParams open5(GURL("chrome://dns"), content::Referrer(),
+  OpenURLParams open5(content::GetWebUIURL("dns"), content::Referrer(),
                       WindowOpenDisposition::CURRENT_TAB,
                       ui::PAGE_TRANSITION_TYPED, false);
   browser()->OpenURL(open5);
@@ -470,7 +470,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_TabManagerBasics) {
   // Select the third tab. It should reload.
   WindowedNotificationObserver reload2(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      base::Bind(&ObserveNavEntryCommitted, GURL("chrome://dns")));
+      base::Bind(&ObserveNavEntryCommitted, content::GetWebUIURL("dns")));
   chrome::SelectNumberedTab(browser(), 2);
   reload2.Wait();
   EXPECT_EQ(2, tsm()->active_index());

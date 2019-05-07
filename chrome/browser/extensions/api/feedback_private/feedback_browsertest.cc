@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/content_switches.h"
@@ -251,8 +252,8 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_ShowFeedbackFromAssistant) {
 IN_PROC_BROWSER_TEST_F(FeedbackTest, GetTargetTabUrl) {
   const std::pair<std::string, std::string> test_cases[] = {
       {"https://www.google.com/", "https://www.google.com/"},
-      {"about://version/", "chrome://version/"},
-      {"chrome://bookmarks/", "chrome://bookmarks/"},
+      {"about://version/", chrome::kChromeUIVersionURL},
+      {chrome::kChromeUIBookmarksURL, chrome::kChromeUIBookmarksURL},
   };
 
   for (const auto& test_case : test_cases) {

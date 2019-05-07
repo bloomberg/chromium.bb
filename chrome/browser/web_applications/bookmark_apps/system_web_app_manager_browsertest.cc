@@ -26,6 +26,7 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -155,7 +156,7 @@ SystemWebAppManagerBrowserTest::CreateWebAppProvider(Profile* profile) {
 
   base::flat_map<SystemAppType, GURL> system_apps;
   system_apps[SystemAppType::SETTINGS] =
-      GURL("chrome://test-system-app/pwa.html");
+      content::GetWebUIURL("test-system-app/pwa.html");
   test_system_web_app_manager_->SetSystemApps(std::move(system_apps));
 
   // Start registry and all dependent subsystems:
@@ -189,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest, Install) {
 
   // The app should be a PWA.
   EXPECT_EQ(extensions::util::GetInstalledPwaForUrl(
-                browser()->profile(), GURL("chrome://test-system-app/")),
+                browser()->profile(), content::GetWebUIURL("test-system-app/")),
             app);
   // The app should be retrievable from the Web Apps system.
   EXPECT_EQ(app->id(),

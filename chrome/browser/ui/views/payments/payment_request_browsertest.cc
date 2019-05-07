@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -481,8 +482,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestSettingsLinkTest, ClickSettingsLink) {
   content::WebContents* new_tab_contents =
       web_contents_added_observer.GetWebContents();
 
-  EXPECT_EQ("chrome://settings/payments",
-            new_tab_contents->GetVisibleURL().spec());
+  EXPECT_EQ(
+      std::string(chrome::kChromeUISettingsURL) + chrome::kPaymentsSubPage,
+      new_tab_contents->GetVisibleURL().spec());
 }
 
 }  // namespace payments

@@ -893,15 +893,15 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SingletonIncognitoLeak) {
   Browser* orig_browser;
 
   // Navigate to a site.
-  orig_browser = NavigateHelper(GURL("chrome://version"), browser(),
+  orig_browser = NavigateHelper(GURL(chrome::kChromeUIVersionURL), browser(),
                                 WindowOpenDisposition::CURRENT_TAB, true);
 
   // Open about for (not) finding later.
-  NavigateHelper(GURL("chrome://about"), orig_browser,
+  NavigateHelper(GURL(chrome::kChromeUIAboutURL), orig_browser,
                  WindowOpenDisposition::NEW_FOREGROUND_TAB, true);
 
   // Also open settings for finding later.
-  NavigateHelper(GURL("chrome://settings"), orig_browser,
+  NavigateHelper(GURL(chrome::kChromeUISettingsURL), orig_browser,
                  WindowOpenDisposition::NEW_FOREGROUND_TAB, false);
 
   EXPECT_EQ(3, browser()->tab_strip_model()->count());
@@ -911,8 +911,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SingletonIncognitoLeak) {
   {
     Browser* incognito_browser = CreateIncognitoBrowser();
 
-    test_browser = NavigateHelper(GURL("chrome://downloads"), incognito_browser,
-                                  WindowOpenDisposition::OFF_THE_RECORD, true);
+    test_browser =
+        NavigateHelper(GURL(chrome::kChromeUIDownloadsURL), incognito_browser,
+                       WindowOpenDisposition::OFF_THE_RECORD, true);
     // Sanity check where OTR tab landed.
     EXPECT_EQ(incognito_browser, test_browser);
 
@@ -921,20 +922,23 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SingletonIncognitoLeak) {
 
     // Open about singleton. Should not find in regular browser and
     // open locally.
-    test_browser = NavigateHelper(GURL("chrome://about"), incognito_browser,
-                                  WindowOpenDisposition::SINGLETON_TAB, true);
+    test_browser =
+        NavigateHelper(GURL(chrome::kChromeUIAboutURL), incognito_browser,
+                       WindowOpenDisposition::SINGLETON_TAB, true);
     EXPECT_NE(orig_browser, test_browser);
 
     // Open settings. Should switch to non-incognito profile to do so.
-    test_browser = NavigateHelper(GURL("chrome://settings"), incognito_browser,
-                                  WindowOpenDisposition::SINGLETON_TAB, false);
+    test_browser =
+        NavigateHelper(GURL(chrome::kChromeUISettingsURL), incognito_browser,
+                       WindowOpenDisposition::SINGLETON_TAB, false);
     EXPECT_EQ(orig_browser, test_browser);
   }
 
   // Open downloads singleton. Should not search OTR browser and
   // should open in regular browser.
-  test_browser = NavigateHelper(GURL("chrome://downloads"), orig_browser,
-                                WindowOpenDisposition::SINGLETON_TAB, true);
+  test_browser =
+      NavigateHelper(GURL(chrome::kChromeUIDownloadsURL), orig_browser,
+                     WindowOpenDisposition::SINGLETON_TAB, true);
   EXPECT_EQ(browser(), test_browser);
 }
 
@@ -944,15 +948,15 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SwitchToTabIncognitoLeak) {
   Browser* orig_browser;
 
   // Navigate to a site.
-  orig_browser = NavigateHelper(GURL("chrome://version"), browser(),
+  orig_browser = NavigateHelper(GURL(chrome::kChromeUIVersionURL), browser(),
                                 WindowOpenDisposition::CURRENT_TAB, true);
 
   // Also open settings for finding later.
-  NavigateHelper(GURL("chrome://settings"), orig_browser,
+  NavigateHelper(GURL(chrome::kChromeUISettingsURL), orig_browser,
                  WindowOpenDisposition::NEW_FOREGROUND_TAB, false);
 
   // Also open about for searching too.
-  NavigateHelper(GURL("chrome://about"), orig_browser,
+  NavigateHelper(GURL(chrome::kChromeUIAboutURL), orig_browser,
                  WindowOpenDisposition::NEW_FOREGROUND_TAB, true);
 
   EXPECT_EQ(3, browser()->tab_strip_model()->count());
@@ -962,8 +966,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SwitchToTabIncognitoLeak) {
   {
     Browser* incognito_browser = CreateIncognitoBrowser();
 
-    test_browser = NavigateHelper(GURL("chrome://downloads"), incognito_browser,
-                                  WindowOpenDisposition::OFF_THE_RECORD, true);
+    test_browser =
+        NavigateHelper(GURL(chrome::kChromeUIDownloadsURL), incognito_browser,
+                       WindowOpenDisposition::OFF_THE_RECORD, true);
     // Sanity check where OTR tab landed.
     EXPECT_EQ(incognito_browser, test_browser);
 
@@ -972,20 +977,23 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SwitchToTabIncognitoLeak) {
 
     // Try to open the original chrome://about via switch-to-tab. Should not
     // find copy in regular browser, and open new tab in incognito.
-    test_browser = NavigateHelper(GURL("chrome://about"), incognito_browser,
-                                  WindowOpenDisposition::SWITCH_TO_TAB, true);
+    test_browser =
+        NavigateHelper(GURL(chrome::kChromeUIAboutURL), incognito_browser,
+                       WindowOpenDisposition::SWITCH_TO_TAB, true);
     EXPECT_EQ(incognito_browser, test_browser);
 
     // Open settings. Should switch to non-incognito profile to do so.
-    test_browser = NavigateHelper(GURL("chrome://settings"), incognito_browser,
-                                  WindowOpenDisposition::SWITCH_TO_TAB, false);
+    test_browser =
+        NavigateHelper(GURL(chrome::kChromeUISettingsURL), incognito_browser,
+                       WindowOpenDisposition::SWITCH_TO_TAB, false);
     EXPECT_EQ(orig_browser, test_browser);
   }
 
   // Switch-to-tab shouldn't find the incognito tab, and open new one in
   // current browser.
-  test_browser = NavigateHelper(GURL("chrome://downloads"), orig_browser,
-                                WindowOpenDisposition::SWITCH_TO_TAB, true);
+  test_browser =
+      NavigateHelper(GURL(chrome::kChromeUIDownloadsURL), orig_browser,
+                     WindowOpenDisposition::SWITCH_TO_TAB, true);
   EXPECT_EQ(browser(), test_browser);
 }
 

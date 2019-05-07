@@ -336,7 +336,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   // The new browser should have exactly one tab (not the startup URLs).
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(1, tab_strip->count());
-  EXPECT_EQ("chrome://newtab/",
+  EXPECT_EQ(chrome::kChromeUINewTabURL,
             tab_strip->GetWebContentsAt(0)->GetURL().possibly_invalid_spec());
 }
 
@@ -1260,7 +1260,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, WelcomePages) {
 #endif
   if (IsWindows10OrNewer() && !is_navi_enabled) {
     ASSERT_EQ(1, tab_strip->count());
-    EXPECT_EQ("chrome://welcome-win10/",
+    EXPECT_EQ(chrome::kChromeUIWelcomeWin10URL,
               tab_strip->GetWebContentsAt(0)->GetURL().possibly_invalid_spec());
 
     browser = CloseBrowserAndOpenNew(browser, profile1);
@@ -1271,7 +1271,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, WelcomePages) {
   // Ensure that the standard Welcome page appears on second run on Win 10, and
   // on first run on all other platforms.
   ASSERT_EQ(1, tab_strip->count());
-  EXPECT_EQ("chrome://welcome/",
+  EXPECT_EQ(chrome::kChromeUIWelcomeURL,
             tab_strip->GetWebContentsAt(0)->GetURL().possibly_invalid_spec());
 
   browser = CloseBrowserAndOpenNew(browser, profile1);
@@ -1280,7 +1280,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, WelcomePages) {
 
   // Ensure that the new tab page appears on subsequent runs.
   ASSERT_EQ(1, tab_strip->count());
-  EXPECT_EQ("chrome://newtab/",
+  EXPECT_EQ(chrome::kChromeUINewTabURL,
             tab_strip->GetWebContentsAt(0)->GetURL().possibly_invalid_spec());
 }
 

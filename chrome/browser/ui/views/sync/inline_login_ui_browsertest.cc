@@ -135,8 +135,6 @@ class FooWebUIProvider
                                                          const GURL& url));
 };
 
-const char kFooWebUIURL[] = "chrome://foo/";
-
 bool AddToSet(std::set<content::WebContents*>* set,
               content::WebContents* web_contents) {
   set->insert(web_contents);
@@ -772,12 +770,12 @@ class InlineLoginUISafeIframeBrowserTest : public InProcessBrowserTest {
         ChromeWebUIControllerFactory::GetInstance());
     test_factory_ = std::make_unique<TestChromeWebUIControllerFactory>();
     content::WebUIControllerFactory::RegisterFactory(test_factory_.get());
-    test_factory_->AddFactoryOverride(GURL(kFooWebUIURL).host(),
+    test_factory_->AddFactoryOverride(content::GetWebUIURL("foo/").host(),
                                       &foo_provider_);
   }
 
   void TearDownOnMainThread() override {
-    test_factory_->RemoveFactoryOverride(GURL(kFooWebUIURL).host());
+    test_factory_->RemoveFactoryOverride(content::GetWebUIURL("foo/").host());
     content::WebUIControllerFactory::UnregisterFactoryForTesting(
         test_factory_.get());
     test_factory_.reset();
@@ -791,10 +789,10 @@ class InlineLoginUISafeIframeBrowserTest : public InProcessBrowserTest {
 // Make sure that the foo webui handler is working properly and that it gets
 // created when navigated to normally.
 IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest, Basic) {
-  const GURL kUrl(kFooWebUIURL);
+  const GURL kUrl(content::GetWebUIURL("foo/"));
   EXPECT_CALL(foo_provider(), NewWebUI(_, ::testing::Eq(kUrl)))
       .WillOnce(ReturnNewWebUI());
-  ui_test_utils::NavigateToURL(browser(), GURL(kFooWebUIURL));
+  ui_test_utils::NavigateToURL(browser(), content::GetWebUIURL("foo/"));
 }
 
 // Make sure that the foo webui handler does not get created when we try to

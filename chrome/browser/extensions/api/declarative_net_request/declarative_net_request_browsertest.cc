@@ -52,6 +52,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -1303,7 +1304,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, ChromeURLS) {
   // Have the extension block all chrome:// urls.
   TestRule rule = CreateGenericRule();
-  rule.condition->url_filter = std::string("chrome://");
+  rule.condition->url_filter =
+      std::string(content::kChromeUIScheme) + url::kStandardSchemeSeparator;
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({rule}));
 
   std::vector<const char*> test_urls = {

@@ -99,7 +99,7 @@ class BaseWebUIBrowserTest : public JavaScriptBrowserTest {
 
  protected:
   // URL to dummy WebUI page for testing framework.
-  static const char kDummyURL[];
+  static const std::string kDummyURL;
 
   BaseWebUIBrowserTest();
 

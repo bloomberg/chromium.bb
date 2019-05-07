@@ -526,7 +526,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(FILE_PATH_LITERAL("title1.html"))));
   // Any page that will yield a 200 status code will work here.
-  GURL url2("chrome://version");
+  GURL url2(chrome::kChromeUIVersionURL);
   GURL url3(ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(FILE_PATH_LITERAL("title3.html"))));
@@ -1008,7 +1008,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreWebUI) {
 #define MAYBE_RestoreWebUISettings RestoreWebUISettings
 #endif
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, MAYBE_RestoreWebUISettings) {
-  const GURL webui_url("chrome://settings");
+  const GURL webui_url(chrome::kChromeUISettingsURL);
   ui_test_utils::NavigateToURL(browser(), webui_url);
   content::WebContents* old_tab =
       browser()->tab_strip_model()->GetActiveWebContents();

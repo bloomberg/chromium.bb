@@ -48,6 +48,7 @@
 #include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/download/public/common/download_features.h"
@@ -2396,7 +2397,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ContextMenuLanguageSettings) {
 
   // Verify that a new WebContents has been created that is at the Language
   // Settings page.
-  EXPECT_EQ(GURL("chrome://settings/languages"),
+  EXPECT_EQ(GURL(std::string(chrome::kChromeUISettingsURL) +
+                 chrome::kLanguageOptionsSubPage),
             new_contents->GetVisibleURL());
 }
 

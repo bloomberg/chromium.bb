@@ -41,6 +41,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/download/public/common/download_item.h"
@@ -825,8 +826,9 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkPermissions) {
 
   // chrome://favicon links should be allowed for PDFs, while chrome://settings
   // links should not.
-  GURL valid_link_url("chrome://favicon/https://www.google.ca/");
-  GURL invalid_link_url("chrome://settings");
+  GURL valid_link_url(std::string(chrome::kChromeUIFaviconURL) +
+                      "https://www.google.ca/");
+  GURL invalid_link_url(chrome::kChromeUISettingsURL);
 
   GURL unfiltered_valid_link_url(valid_link_url);
   content::RenderProcessHost* rph =

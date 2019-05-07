@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
@@ -444,15 +445,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
   update_tab_function->set_extension(extension.get());
   update_tab_function->set_include_incognito_information(true);
 
-  static const char kArgsWithNonIncognitoUrl[] =
-      "[null, {\"url\": \"chrome://extensions/configureCommands\"}]";
   std::string error = extension_function_test_utils::RunFunctionAndReturnError(
-      update_tab_function.get(), kArgsWithNonIncognitoUrl,
+      update_tab_function.get(),
+      std::string("[null, {\"url\": \"") + chrome::kChromeUIExtensionsURL +
+          chrome::kExtensionConfigureCommandsSubPage + "\"}]",
       incognito,  // incognito doesn't have any tabs.
       api_test_utils::NONE);
   EXPECT_EQ(ErrorUtils::FormatErrorMessage(
                 tabs_constants::kURLsNotAllowedInIncognitoError,
-                "chrome://extensions/configureCommands"),
+                std::string(chrome::kChromeUIExtensionsURL) +
+                    chrome::kExtensionConfigureCommandsSubPage),
             error);
 
   // Ensure the tab was not updated. It should stay as the new tab page.
