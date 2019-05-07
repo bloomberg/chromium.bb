@@ -784,11 +784,6 @@
 // https://cs.chromium.org/chromium/src/third_party/icu/patches/data.build.patch?rcl=797b7c
     "unames": {
       "filterType": "exclude"
-    },
-// Based on the --disable-layout mentioned in
-// https://cs.chromium.org/chromium/src/third_party/icu/README.chromium?rcl=797b7c
-    "ulayout": {
-      "filterType": "exclude"
     }
   },
 // Based on the ICU63 version of

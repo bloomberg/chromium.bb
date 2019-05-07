@@ -19,6 +19,7 @@ source "${TOPSRC}/scripts/data_common.sh"
 
 function copy_common {
   DATA_PREFIX="data/out/tmp/icudt${VERSION}"
+  TZRES_PREFIX="data/out/build/icudt${VERSION}l"
 
   echo "Generating the big endian data bundle"
   LD_LIBRARY_PATH=lib bin/icupkg -tb "${DATA_PREFIX}l.dat" "${DATA_PREFIX}b.dat"
@@ -27,6 +28,12 @@ function copy_common {
   for endian in l b
   do
     cp "${DATA_PREFIX}${endian}.dat" "${TOPSRC}/common/icudt${endian}.dat"
+  done
+
+  echo "Copying metaZones.res, timezoneTypes.res, zoneinfo64.res"
+  for tzfile in metaZones timezoneTypes zoneinfo64
+  do
+    cp "${TZRES_PREFIX}/${tzfile}.res" "${TOPSRC}/tzres/${tzfile}.res"
   done
 
   echo "Done with copying pre-built ICU data files."
