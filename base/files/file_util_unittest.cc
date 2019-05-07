@@ -2477,14 +2477,7 @@ TEST_F(FileUtilTest, GetUniquePathTest) {
   }
 }
 
-#if defined(OS_FUCHSIA)
-// TODO(crbug.com/851747): Re-enable when the Fuchsia-side fix for fdopen has
-// been rolled into Chromium.
-#define MAYBE_FileToFILE DISABLED_FileToFILE
-#else
-#define MAYBE_FileToFILE FileToFILE
-#endif
-TEST_F(FileUtilTest, MAYBE_FileToFILE) {
+TEST_F(FileUtilTest, FileToFILE) {
   File file;
   FILE* stream = FileToFILE(std::move(file), "w");
   EXPECT_FALSE(stream);
