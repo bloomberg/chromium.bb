@@ -59,8 +59,11 @@ public class RootUiCoordinator implements Destroyable, NativeInitObserver, Infla
     public void onPostInflationStartup() {
         mAppMenuCoordinator = new AppMenuCoordinator(mActivity, mActivity.getLifecycleDispatcher(),
                 mActivity.getToolbarManager(), mActivity, mActivity.getWindow().getDecorView());
-        mActivity.getToolbarManager().onAppMenuInitialized(mAppMenuCoordinator.getAppMenuHandler(),
-                mAppMenuCoordinator.getAppMenuPropertiesDelegate());
+        if (mActivity.getToolbarManager() != null) {
+            mActivity.getToolbarManager().onAppMenuInitialized(
+                    mAppMenuCoordinator.getAppMenuHandler(),
+                    mAppMenuCoordinator.getAppMenuPropertiesDelegate());
+        }
 
         mImmersiveModeManager = AppHooks.get().createImmersiveModeManager(
                 mActivity.getWindow().getDecorView().findViewById(android.R.id.content));
@@ -68,7 +71,7 @@ public class RootUiCoordinator implements Destroyable, NativeInitObserver, Infla
                 new SystemUiCoordinator(mActivity.getWindow(), mActivity.getTabModelSelector(),
                         mImmersiveModeManager, mActivity.getActivityType());
 
-        if (mImmersiveModeManager != null) {
+        if (mImmersiveModeManager != null && mActivity.getToolbarManager() != null) {
             mActivity.getToolbarManager().setImmersiveModeManager(mImmersiveModeManager);
         }
     }

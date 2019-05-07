@@ -293,6 +293,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private ContextualSearchManager mContextualSearchManager;
     protected ReaderModeManager mReaderModeManager;
     private SnackbarManager mSnackbarManager;
+    @Nullable
     private ToolbarManager mToolbarManager;
     private FindToolbarManager mFindToolbarManager;
     private BottomSheetController mBottomSheetController;
@@ -724,8 +725,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     protected abstract Pair<? extends TabCreator, ? extends TabCreator> createTabCreators();
 
     /**
-     * @return {@link ToolbarManager} that belongs to this activity.
+     * @return {@link ToolbarManager} that belongs to this activity or null if the current activity
+     *         does not support a toolbar.
      */
+    @Nullable
     public ToolbarManager getToolbarManager() {
         return mToolbarManager;
     }
