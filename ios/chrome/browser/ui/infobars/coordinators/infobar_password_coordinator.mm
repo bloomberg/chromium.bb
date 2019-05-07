@@ -50,24 +50,26 @@
 #pragma mark - ChromeCoordinator
 
 - (void)start {
-  self.started = YES;
-  self.bannerViewController = [[InfobarBannerViewController alloc]
-      initWithDelegate:self
-                  type:InfobarType::kInfobarTypePassword];
-  self.bannerViewController.titleText =
-      base::SysUTF16ToNSString(self.passwordInfoBarDelegate->GetMessageText());
-  NSString* username = self.passwordInfoBarDelegate->GetUserNameText();
-  NSString* password = self.passwordInfoBarDelegate->GetPasswordText();
-  password = [@"" stringByPaddingToLength:[password length]
-                               withString:@"•"
-                          startingAtIndex:0];
-  self.bannerViewController.subTitleText =
-      [NSString stringWithFormat:@"%@ %@", username, password];
-  self.bannerViewController.buttonText =
-      base::SysUTF16ToNSString(self.passwordInfoBarDelegate->GetButtonLabel(
-          ConfirmInfoBarDelegate::BUTTON_OK));
-  self.bannerViewController.iconImage =
-      [UIImage imageNamed:@"infobar_passwords_icon"];
+  if (!self.started) {
+    self.started = YES;
+    self.bannerViewController = [[InfobarBannerViewController alloc]
+        initWithDelegate:self
+                    type:InfobarType::kInfobarTypePassword];
+    self.bannerViewController.titleText = base::SysUTF16ToNSString(
+        self.passwordInfoBarDelegate->GetMessageText());
+    NSString* username = self.passwordInfoBarDelegate->GetUserNameText();
+    NSString* password = self.passwordInfoBarDelegate->GetPasswordText();
+    password = [@"" stringByPaddingToLength:[password length]
+                                 withString:@"•"
+                            startingAtIndex:0];
+    self.bannerViewController.subTitleText =
+        [NSString stringWithFormat:@"%@ %@", username, password];
+    self.bannerViewController.buttonText =
+        base::SysUTF16ToNSString(self.passwordInfoBarDelegate->GetButtonLabel(
+            ConfirmInfoBarDelegate::BUTTON_OK));
+    self.bannerViewController.iconImage =
+        [UIImage imageNamed:@"infobar_passwords_icon"];
+  }
 }
 
 - (void)stop {

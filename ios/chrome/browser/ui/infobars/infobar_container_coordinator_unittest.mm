@@ -73,10 +73,16 @@ class InfobarContainerCoordinatorTest : public PlatformTest {
                                     WebStateList::INSERT_NO_FLAGS,
                                     WebStateOpener());
     web_state_list_->ActivateWebStateAt(0);
+    std::unique_ptr<web::TestWebState> second_web_state =
+        std::make_unique<web::TestWebState>();
+    web_state_list_->InsertWebState(1, std::move(second_web_state),
+                                    WebStateList::INSERT_NO_FLAGS,
+                                    WebStateOpener());
 
     // Setup InfobarBadgeTabHelper and InfoBarManager
     InfobarBadgeTabHelper::CreateForWebState(
         web_state_list_->GetActiveWebState());
+    InfobarBadgeTabHelper::CreateForWebState(web_state_list_->GetWebStateAt(1));
     InfoBarManagerImpl::CreateForWebState(web_state_list_->GetActiveWebState());
 
     // Setup the InfobarContainerCoordinator.
@@ -163,7 +169,7 @@ class InfobarContainerCoordinatorTest : public PlatformTest {
 // presented.
 TEST_F(InfobarContainerCoordinatorTest, TestIsPresentingInfobarBanner) {
   EXPECT_FALSE([infobar_container_coordinator_ isPresentingInfobarBanner]);
-  this->AddInfobar();
+  AddInfobar();
   ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForUIElementTimeout, ^bool {
         return [infobar_container_coordinator_ isPresentingInfobarBanner];
@@ -176,7 +182,7 @@ TEST_F(InfobarContainerCoordinatorTest, TestIsPresentingInfobarBanner) {
 TEST_F(InfobarContainerCoordinatorTest, TestAutomaticInfobarBannerDismissal) {
   EXPECT_FALSE([infobar_container_coordinator_ isPresentingInfobarBanner]);
 
-  this->AddInfobar();
+  AddInfobar();
 
   EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForUIElementTimeout, ^bool {
@@ -196,7 +202,7 @@ TEST_F(InfobarContainerCoordinatorTest, TestAutomaticInfobarBannerDismissal) {
 TEST_F(InfobarContainerCoordinatorTest, TestInfobarBannerDismissal) {
   EXPECT_FALSE([infobar_container_coordinator_ isPresentingInfobarBanner]);
 
-  this->AddInfobar();
+  AddInfobar();
 
   EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForUIElementTimeout, ^bool {
@@ -219,7 +225,7 @@ TEST_F(InfobarContainerCoordinatorTest, TestLegacyInfobarPresentation) {
   EXPECT_FALSE([infobar_container_coordinator_
       isInfobarPresentingForWebState:web_state_list_->GetActiveWebState()]);
   EXPECT_FALSE([infobar_container_coordinator_ isPresentingInfobarBanner]);
-  this->AddLegacyInfobar();
+  AddLegacyInfobar();
   EXPECT_FALSE([infobar_container_coordinator_ isPresentingInfobarBanner]);
   EXPECT_TRUE([infobar_container_coordinator_
       isInfobarPresentingForWebState:web_state_list_->GetActiveWebState()]);
@@ -230,13 +236,13 @@ TEST_F(InfobarContainerCoordinatorTest, TestLegacyInfobarPresentation) {
 TEST_F(InfobarContainerCoordinatorTest,
        TestInfobarBannerPresentationBeforeLegacyPresentation) {
   EXPECT_FALSE([infobar_container_coordinator_ isPresentingInfobarBanner]);
-  this->AddInfobar();
+  AddInfobar();
   ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForUIElementTimeout, ^bool {
         return [infobar_container_coordinator_ isPresentingInfobarBanner];
       }));
   ASSERT_TRUE([infobar_container_coordinator_ isPresentingInfobarBanner]);
-  this->AddLegacyInfobar();
+  AddLegacyInfobar();
   EXPECT_TRUE([infobar_container_coordinator_ isPresentingInfobarBanner]);
 }
 
@@ -246,14 +252,79 @@ TEST_F(InfobarContainerCoordinatorTest,
        TestInfobarBannerPresentationAfterLegacyPresentation) {
   EXPECT_FALSE([infobar_container_coordinator_
       isInfobarPresentingForWebState:web_state_list_->GetActiveWebState()]);
-  this->AddLegacyInfobar();
+  AddLegacyInfobar();
   ASSERT_TRUE([infobar_container_coordinator_
       isInfobarPresentingForWebState:web_state_list_->GetActiveWebState()]);
   ASSERT_FALSE([infobar_container_coordinator_ isPresentingInfobarBanner]);
-  this->AddInfobar();
+  AddInfobar();
   ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForUIElementTimeout, ^bool {
         return [infobar_container_coordinator_ isPresentingInfobarBanner];
       }));
   ASSERT_TRUE([infobar_container_coordinator_ isPresentingInfobarBanner]);
+}
+
+// Tests that the InfobarBanner is dismissed when changing Webstates.
+TEST_F(InfobarContainerCoordinatorTest,
+       TestInfobarBannerDismissAtWebStateChange) {
+  AddInfobar();
+
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^bool {
+        return [infobar_container_coordinator_ isPresentingInfobarBanner];
+      }));
+  ASSERT_TRUE([infobar_container_coordinator_ isPresentingInfobarBanner]);
+
+  web_state_list_->ActivateWebStateAt(1);
+
+  ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^bool {
+        return ![infobar_container_coordinator_ isPresentingInfobarBanner];
+      }));
+  ASSERT_FALSE([infobar_container_coordinator_ isPresentingInfobarBanner]);
+}
+
+// Tests that the InfobarBanner is not presented again after returning from a
+// different Webstate.
+TEST_F(InfobarContainerCoordinatorTest,
+       TestInfobarBannerNotPresentAfterWebStateChange) {
+  AddInfobar();
+
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^bool {
+        return [infobar_container_coordinator_ isPresentingInfobarBanner];
+      }));
+  ASSERT_TRUE([infobar_container_coordinator_ isPresentingInfobarBanner]);
+
+  web_state_list_->ActivateWebStateAt(1);
+
+  ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^bool {
+        return ![infobar_container_coordinator_ isPresentingInfobarBanner];
+      }));
+  ASSERT_FALSE([infobar_container_coordinator_ isPresentingInfobarBanner]);
+
+  web_state_list_->ActivateWebStateAt(0);
+  // Wait for any potential presentation.
+  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(1));
+
+  ASSERT_FALSE([infobar_container_coordinator_ isPresentingInfobarBanner]);
+}
+
+// Tests isPresentingInfobarBanner is NO once an InfobarBanner has been
+// dismissed directly by its base VC.
+TEST_F(InfobarContainerCoordinatorTest, TestInfobarBannerDismissalByBaseVC) {
+  AddInfobar();
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^bool {
+        return [infobar_container_coordinator_ isPresentingInfobarBanner];
+      }));
+  ASSERT_TRUE([infobar_container_coordinator_ isPresentingInfobarBanner]);
+
+  [base_view_controller_ dismissViewControllerAnimated:NO completion:nil];
+  ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^bool {
+        return ![infobar_container_coordinator_ isPresentingInfobarBanner];
+      }));
+  ASSERT_FALSE([infobar_container_coordinator_ isPresentingInfobarBanner]);
 }

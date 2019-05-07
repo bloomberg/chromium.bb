@@ -130,6 +130,10 @@ NSString* const kInfobarBannerPresentedModalLabel = @"Modal Infobar";
                                               completion:nil];
 }
 
+- (void)infobarBannerWasDismissed {
+  self.bannerViewController = nil;
+}
+
 #pragma mark InfobarModalDelegate
 
 - (void)modalInfobarButtonWasAccepted:(id)sender {

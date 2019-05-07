@@ -44,15 +44,17 @@
 #pragma mark - ChromeCoordinator
 
 - (void)start {
-  self.started = YES;
-  self.bannerViewController = [[InfobarBannerViewController alloc]
-      initWithDelegate:self
-                  type:InfobarType::kInfobarTypeConfirm];
-  self.bannerViewController.titleText =
-      base::SysUTF16ToNSString(self.confirmInfobarDelegate->GetMessageText());
-  self.bannerViewController.buttonText =
-      base::SysUTF16ToNSString(self.confirmInfobarDelegate->GetButtonLabel(
-          ConfirmInfoBarDelegate::BUTTON_OK));
+  if (!self.started) {
+    self.started = YES;
+    self.bannerViewController = [[InfobarBannerViewController alloc]
+        initWithDelegate:self
+                    type:InfobarType::kInfobarTypeConfirm];
+    self.bannerViewController.titleText =
+        base::SysUTF16ToNSString(self.confirmInfobarDelegate->GetMessageText());
+    self.bannerViewController.buttonText =
+        base::SysUTF16ToNSString(self.confirmInfobarDelegate->GetButtonLabel(
+            ConfirmInfoBarDelegate::BUTTON_OK));
+  }
 }
 
 - (void)stop {

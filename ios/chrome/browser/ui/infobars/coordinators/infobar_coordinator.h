@@ -88,6 +88,9 @@ class InfoBarDelegate;
 @property(nonatomic, assign, getter=isPresentingInfobarBanner)
     BOOL presentingInfobarBanner;
 
+// YES if the banner has ever been presented for this Coordinator.
+@property(nonatomic, assign, readonly) BOOL bannerWasPresented;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_INFOBARS_COORDINATORS_INFOBAR_COORDINATOR_H_

@@ -176,7 +176,8 @@
   infobarCoordinator.browserState = self.browserState;
   infobarCoordinator.baseViewController = self.baseViewController;
   infobarCoordinator.dispatcher = self.dispatcher;
-  [infobarCoordinator presentInfobarBannerAnimated:YES completion:nil];
+  if (!infobarCoordinator.bannerWasPresented)
+    [infobarCoordinator presentInfobarBannerAnimated:YES completion:nil];
   self.infobarViewController = infobarCoordinator.bannerViewController;
   [self.childCoordinators addObject:infobarCoordinator];
 

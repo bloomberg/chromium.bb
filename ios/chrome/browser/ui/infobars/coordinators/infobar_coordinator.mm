@@ -41,6 +41,8 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
 // nil if no Modal is being presented.
 @property(nonatomic, strong)
     InfobarModalTransitionDriver* modalTransitionDriver;
+// Readwrite redefinition.
+@property(nonatomic, assign, readwrite) BOOL bannerWasPresented;
 
 @end
 
@@ -84,10 +86,12 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
   self.bannerTransitionDriver = [[InfobarBannerTransitionDriver alloc] init];
   self.bannerTransitionDriver.bannerPositioner = self;
   self.bannerViewController.transitioningDelegate = self.bannerTransitionDriver;
+  __weak __typeof(self) weakSelf = self;
   [self.baseViewController presentViewController:self.bannerViewController
                                         animated:animated
                                       completion:^{
-                                        self.presentingInfobarBanner = YES;
+                                        weakSelf.presentingInfobarBanner = YES;
+                                        weakSelf.bannerWasPresented = YES;
                                         if (completion)
                                           completion();
                                       }];
@@ -158,15 +162,9 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
                   completion:(void (^)())completion {
   DCHECK(self.baseViewController);
   if (self.baseViewController.presentedViewController) {
-    __weak __typeof(self) weakSelf = self;
     [self.baseViewController
         dismissViewControllerAnimated:animated
                            completion:^{
-                             weakSelf.presentingInfobarBanner = NO;
-                             [weakSelf.badgeDelegate infobarBannerWasDismissed];
-                             weakSelf.bannerTransitionDriver = nil;
-                             animatedFullscreenDisabler_ = nullptr;
-                             [weakSelf infobarWasDismissed];
                              if (completion)
                                completion();
                            }];
@@ -174,6 +172,14 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
     if (completion)
       completion();
   }
+}
+
+- (void)infobarBannerWasDismissed {
+  self.presentingInfobarBanner = NO;
+  [self.badgeDelegate infobarBannerWasDismissed];
+  self.bannerTransitionDriver = nil;
+  animatedFullscreenDisabler_ = nullptr;
+  [self infobarWasDismissed];
 }
 
 #pragma mark InfobarBannerPositioner

@@ -229,6 +229,7 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 
 - (void)viewDidDisappear:(BOOL)animated {
   [self.metricsRecorder recordBannerEvent:MobileMessagesBannerEvent::Dismissed];
+  [self.delegate infobarBannerWasDismissed];
   [super viewDidDisappear:animated];
 }
 
