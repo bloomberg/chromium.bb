@@ -211,6 +211,14 @@ void SurfaceTreeHost::OnLostSharedContext() {
 
 void SurfaceTreeHost::SubmitCompositorFrame() {
   DCHECK(root_surface_);
+
+  if (layer_tree_frame_sink_holder_->is_lost()) {
+    // We can immediately delete the old LayerTreeFrameSinkHolder because all of
+    // it's resources are lost anyways.
+    layer_tree_frame_sink_holder_ = std::make_unique<LayerTreeFrameSinkHolder>(
+        this, host_window_->CreateLayerTreeFrameSink());
+  }
+
   viz::CompositorFrame frame;
   frame.metadata.begin_frame_ack =
       viz::BeginFrameAck::CreateManualAckWithDamage();

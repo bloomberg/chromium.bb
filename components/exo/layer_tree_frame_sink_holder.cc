@@ -20,8 +20,7 @@ LayerTreeFrameSinkHolder::LayerTreeFrameSinkHolder(
     SurfaceTreeHost* surface_tree_host,
     std::unique_ptr<cc::LayerTreeFrameSink> frame_sink)
     : surface_tree_host_(surface_tree_host),
-      frame_sink_(std::move(frame_sink)),
-      weak_ptr_factory_(this) {
+      frame_sink_(std::move(frame_sink)) {
   frame_sink_->BindToClient(this);
 }
 
@@ -36,6 +35,10 @@ LayerTreeFrameSinkHolder::~LayerTreeFrameSinkHolder() {
 // static
 void LayerTreeFrameSinkHolder::DeleteWhenLastResourceHasBeenReclaimed(
     std::unique_ptr<LayerTreeFrameSinkHolder> holder) {
+  // Delete immediately if LayerTreeFrameSink was already lost.
+  if (holder->is_lost_)
+    return;
+
   if (holder->last_frame_size_in_pixels_.IsEmpty()) {
     // Delete sink holder immediately if no frame has been submitted.
     DCHECK(holder->last_frame_resources_.empty());
@@ -82,6 +85,8 @@ void LayerTreeFrameSinkHolder::DeleteWhenLastResourceHasBeenReclaimed(
 
 void LayerTreeFrameSinkHolder::SubmitCompositorFrame(
     viz::CompositorFrame frame) {
+  DCHECK(!is_lost_);
+
   last_frame_size_in_pixels_ = frame.size_in_pixels();
   last_frame_device_scale_factor_ = frame.metadata.device_scale_factor;
   last_local_surface_id_allocation_time_ =
@@ -96,11 +101,8 @@ void LayerTreeFrameSinkHolder::SubmitCompositorFrame(
 
 void LayerTreeFrameSinkHolder::DidNotProduceFrame(
     const viz::BeginFrameAck& ack) {
+  DCHECK(!is_lost_);
   frame_sink_->DidNotProduceFrame(ack);
-}
-
-base::WeakPtr<LayerTreeFrameSinkHolder> LayerTreeFrameSinkHolder::GetWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -141,6 +143,7 @@ void LayerTreeFrameSinkHolder::DidPresentCompositorFrame(
 void LayerTreeFrameSinkHolder::DidLoseLayerTreeFrameSink() {
   last_frame_resources_.clear();
   resource_manager_.ClearAllCallbacks();
+  is_lost_ = true;
 
   if (lifetime_manager_)
     ScheduleDelete();

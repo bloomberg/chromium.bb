@@ -143,11 +143,16 @@ void WindowPortLocal::OnPropertyChanged(
 
 std::unique_ptr<cc::LayerTreeFrameSink>
 WindowPortLocal::CreateLayerTreeFrameSink() {
-  DCHECK(!frame_sink_id_.is_valid());
   auto* context_factory_private = window_->env()->context_factory_private();
   auto* host_frame_sink_manager =
       context_factory_private->GetHostFrameSinkManager();
-  frame_sink_id_ = context_factory_private->AllocateFrameSinkId();
+
+  if (!frame_sink_id_.is_valid()) {
+    frame_sink_id_ = context_factory_private->AllocateFrameSinkId();
+    host_frame_sink_manager->RegisterFrameSinkId(
+        frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kYes);
+    window_->SetEmbedFrameSinkId(frame_sink_id_);
+  }
 
   // For creating a async frame sink which connects to the viz display
   // compositor.
@@ -157,9 +162,6 @@ WindowPortLocal::CreateLayerTreeFrameSink() {
   viz::mojom::CompositorFrameSinkClientPtr client;
   viz::mojom::CompositorFrameSinkClientRequest client_request =
       mojo::MakeRequest(&client);
-  host_frame_sink_manager->RegisterFrameSinkId(
-      frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kYes);
-  window_->SetEmbedFrameSinkId(frame_sink_id_);
   host_frame_sink_manager->CreateCompositorFrameSink(
       frame_sink_id_, std::move(sink_request), std::move(client));
 
