@@ -3409,26 +3409,6 @@
             ]
         }
     ],
-    "OomIntervention": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Intervention_R9",
-                    "params": {
-                        "navigate_ads": "true",
-                        "pause_renderer": "true",
-                        "renderer_workload_threshold_percentage": "16"
-                    },
-                    "enable_features": [
-                        "OomIntervention"
-                    ]
-                }
-            ]
-        }
-    ],
     "OriginTypePriorityExperiment": [
         {
             "platforms": [
