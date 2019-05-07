@@ -545,12 +545,23 @@ void NGLineBreaker::HandleText(const NGInlineItem& item,
     return HandleOverflow(line_info);
   }
 
-  // Add the whole item if !auto_wrap. The previous line should not have wrapped
-  // in the middle of nowrap item.
-  DCHECK_EQ(item_result->start_offset, item.StartOffset());
+  // Add until the end of the item if !auto_wrap. In most cases, it's the whole
+  // item.
   DCHECK_EQ(item_result->end_offset, item.EndOffset());
-  item_result->inline_size = shape_result.SnappedWidth().ClampNegativeToZero();
-  item_result->shape_result = ShapeResultView::Create(&shape_result);
+  if (item_result->start_offset == item.StartOffset()) {
+    item_result->inline_size =
+        shape_result.SnappedWidth().ClampNegativeToZero();
+    item_result->shape_result = ShapeResultView::Create(&shape_result);
+  } else {
+    // <wbr> can wrap even if !auto_wrap. Spaces after that will be leading
+    // spaces and thus be collapsed.
+    DCHECK(trailing_whitespace_ == WhitespaceState::kLeading &&
+           item_result->start_offset >= item.StartOffset());
+    item_result->shape_result = ShapeResultView::Create(
+        &shape_result, item_result->start_offset, item_result->end_offset);
+    item_result->inline_size =
+        item_result->shape_result->SnappedWidth().ClampNegativeToZero();
+  }
 
   DCHECK(!item_result->may_break_inside);
   DCHECK(!item_result->can_break_after);
