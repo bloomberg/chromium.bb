@@ -274,7 +274,10 @@ jumbo_component("gl") {
       "//build/config/linux:xext",
     ]
 
-    deps += [ "//ui/gfx/x" ]
+    deps += [
+      "//ui/base/x",
+      "//ui/gfx/x",
+    ]
   }
   if (is_win) {
     sources += [
