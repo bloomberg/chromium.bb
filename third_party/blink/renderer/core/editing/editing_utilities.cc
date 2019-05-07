@@ -99,19 +99,7 @@ InputEvent::EventCancelable InputTypeIsCancelable(
     InputEvent::InputType input_type) {
   using InputType = InputEvent::InputType;
   switch (input_type) {
-    case InputType::kInsertText:
-    case InputType::kInsertLineBreak:
-    case InputType::kInsertParagraph:
     case InputType::kInsertCompositionText:
-    case InputType::kInsertReplacementText:
-    case InputType::kDeleteWordBackward:
-    case InputType::kDeleteWordForward:
-    case InputType::kDeleteSoftLineBackward:
-    case InputType::kDeleteSoftLineForward:
-    case InputType::kDeleteHardLineBackward:
-    case InputType::kDeleteHardLineForward:
-    case InputType::kDeleteContentBackward:
-    case InputType::kDeleteContentForward:
       return InputEvent::EventCancelable::kNotCancelable;
     default:
       return InputEvent::EventCancelable::kIsCancelable;
