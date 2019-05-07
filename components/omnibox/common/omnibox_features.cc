@@ -103,12 +103,11 @@ const base::Feature kOmniboxShortBookmarkSuggestions{
 const base::Feature kOmniboxTailSuggestions{
     "OmniboxTailSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used to force on the experiment of showing a button for suggestions
-// whose URL is open in another tab, with the ability to switch to that tab,
-// currently only used on desktop and iOS platforms.
+// Feature that enables the tab-switch button on suggestions corresponding to an
+// open tab. Enabled by default on Desktop and iOS.
 const base::Feature kOmniboxTabSwitchSuggestions{
   "OmniboxTabSwitchSuggestions",
-#if defined(OS_IOS) || defined(OS_ANDROID)
+#if defined(OS_ANDROID)
       base::FEATURE_DISABLED_BY_DEFAULT
 #else
       base::FEATURE_ENABLED_BY_DEFAULT

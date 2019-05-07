@@ -273,11 +273,6 @@ extern const char kOfflineVersionWithoutNativeContentDescription[];
 extern const char kOmniboxPopupShortcutIconsInZeroStateName[];
 extern const char kOmniboxPopupShortcutIconsInZeroStateDescription[];
 
-// Title and description for the flag to enable the "switch to this tab" option
-// in the omnibox suggestion. It doesn't add new suggestions.
-extern const char kOmniboxTabSwitchSuggestionsName[];
-extern const char kOmniboxTabSwitchSuggestionsDescription[];
-
 // Title and description for the flag to change the max number of autocomplete
 // matches in the omnibox popup.
 extern const char kOmniboxUIMaxAutocompleteMatchesName[];

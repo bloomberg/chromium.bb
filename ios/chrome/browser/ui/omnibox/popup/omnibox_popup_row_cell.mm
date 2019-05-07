@@ -410,13 +410,7 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
         kOmniboxPopupRowSwitchTabAccessibilityIdentifier;
   } else {
     int trailingButtonResourceID = 0;
-    if (base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions)) {
-      trailingButtonResourceID = IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND;
-    } else {
-      trailingButtonResourceID =
-          self.incognito ? IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND_INCOGNITO
-                         : IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND;
-    }
+    trailingButtonResourceID = IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND;
     trailingButtonImage = NativeReversableImage(trailingButtonResourceID, YES);
   }
   trailingButtonImage = [trailingButtonImage
@@ -424,15 +418,9 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
 
   [self.trailingButton setImage:trailingButtonImage
                        forState:UIControlStateNormal];
-  if (base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions)) {
-    self.trailingButton.tintColor = self.incognito
-                                        ? [UIColor whiteColor]
-                                        : UIColorFromRGB(kLocationBarTintBlue);
-  } else {
-    self.trailingButton.tintColor = self.incognito
-                                        ? [UIColor colorWithWhite:1 alpha:0.5]
-                                        : [UIColor colorWithWhite:0 alpha:0.3];
-  }
+  self.trailingButton.tintColor = self.incognito
+                                      ? [UIColor whiteColor]
+                                      : UIColorFromRGB(kLocationBarTintBlue);
 }
 
 - (NSString*)accessibilityLabel {

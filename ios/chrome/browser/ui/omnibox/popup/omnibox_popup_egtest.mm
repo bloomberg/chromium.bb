@@ -7,8 +7,6 @@
 
 #include "base/bind.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
-#include "components/omnibox/common/omnibox_features.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_egtest_util.h"
@@ -92,9 +90,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 }  //  namespace
 
-@interface OmniboxPopupTestCase : ChromeTestCase {
-  base::test::ScopedFeatureList _featureList;
-}
+@interface OmniboxPopupTestCase : ChromeTestCase
 
 @end
 
@@ -102,8 +98,6 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 - (void)setUp {
   [super setUp];
-  // Enable the Switch to Open Tab flag.
-  _featureList.InitAndEnableFeature(omnibox::kOmniboxTabSwitchSuggestions);
 
   // Start a server to be able to navigate to a web page.
   self.testServer->RegisterRequestHandler(
