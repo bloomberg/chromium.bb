@@ -1400,9 +1400,9 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       where_clauses.append('date(start_time) <= date("%s")' %
                            end_date.strftime(self._DATE_FORMAT))
     if starting_build_id is not None:
-      where_clauses.append('id >= %d' % starting_build_id)
+      where_clauses.append('id >= %d' % int(starting_build_id))
     if ending_build_id is not None:
-      where_clauses.append('id <= %d' % ending_build_id)
+      where_clauses.append('id <= %d' % int(ending_build_id))
     if ignore_build_id is not None:
       where_clauses.append('buildbucket_id != %s' % ignore_build_id)
     if branch is not None:
