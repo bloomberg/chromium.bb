@@ -54,6 +54,11 @@ class LoginManagerMixin : public InProcessBrowserTestMixin {
   // Should be called before mixin SetUp() is called to take effect.
   void set_session_restore_enabled() { session_restore_enabled_ = true; }
 
+  // By default, LoginManagerMixin will set up user session manager not to
+  // launch browser as part of user session setup - use this to override that
+  // behavior.
+  void set_should_launch_browser(bool value) { should_launch_browser_ = value; }
+
   // Sets the list of default policy switches to be added to command line on the
   // login screen.
   void SetDefaultLoginSwitches(
@@ -95,6 +100,10 @@ class LoginManagerMixin : public InProcessBrowserTestMixin {
   // browser tests).
   bool session_restore_enabled_ = false;
   test::SessionFlagsManager session_flags_manager_;
+
+  // Whether the user session manager should skip browser launch steps for
+  // testing.
+  bool should_launch_browser_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(LoginManagerMixin);
 };

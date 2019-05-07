@@ -119,7 +119,8 @@ void LoginManagerMixin::CreatedBrowserMainParts(
 void LoginManagerMixin::SetUpOnMainThread() {
   test::UserSessionManagerTestApi session_manager_test_api(
       UserSessionManager::GetInstance());
-  session_manager_test_api.SetShouldLaunchBrowserInTests(false);
+  session_manager_test_api.SetShouldLaunchBrowserInTests(
+      should_launch_browser_);
   session_manager_test_api.SetShouldObtainTokenHandleInTests(false);
 }
 
