@@ -47,6 +47,7 @@
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/log_receiver.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
+#include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
@@ -208,6 +209,12 @@ bool ChromePasswordManagerClient::IsPasswordManagementEnabledForCurrentPage(
   // VR.
   if (vr::VrTabHelper::IsUiSuppressedInVr(
           web_contents(), vr::UiSuppressedElement::kPasswordManager)) {
+    is_enabled = false;
+  }
+
+  // The password manager is disabled on Google Password Manager page.
+  if (url.GetOrigin() ==
+      GURL(password_manager::kPasswordManagerAccountDashboardURL)) {
     is_enabled = false;
   }
 

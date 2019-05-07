@@ -419,6 +419,15 @@ TEST_F(ChromePasswordManagerClientTest, SavingAndFillingDisabledForAboutBlank) {
   EXPECT_FALSE(GetClient()->IsFillingFallbackEnabled(kUrl));
 }
 
+TEST_F(ChromePasswordManagerClientTest,
+       IsFillingAndSavingOnGooglePasswordPage) {
+  PasswordManagerClient* client = GetClient();
+  EXPECT_FALSE(client->IsSavingAndFillingEnabled(
+      GURL("https://passwords.google.com/path?query=1")));
+  EXPECT_FALSE(client->IsFillingEnabled(
+      GURL("https://passwords.google.com/path?query=1")));
+}
+
 namespace {
 
 struct SchemeTestCase {
