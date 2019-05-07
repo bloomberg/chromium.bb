@@ -111,8 +111,12 @@ class PropertyTreeManager {
   // effect, i.e. applying the clip as a mask.
   int SwitchToEffectNodeWithSynthesizedClip(
       const EffectPaintPropertyNode& next_effect,
-      const ClipPaintPropertyNode& next_clip,
-      bool layer_draws_content);
+      const ClipPaintPropertyNode& next_clip);
+
+  void ClearPendingSyntheticMaskLayers() {
+    pending_synthetic_mask_layers_.clear();
+  }
+
   // Expected to be invoked after emitting the last layer. This will exit all
   // effects on the effect stack, generating clip mask layers for all the
   // unclosed synthesized clips.

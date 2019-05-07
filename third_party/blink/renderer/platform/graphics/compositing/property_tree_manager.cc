@@ -675,8 +675,7 @@ void PropertyTreeManager::CloseCcEffect() {
 
 int PropertyTreeManager::SwitchToEffectNodeWithSynthesizedClip(
     const EffectPaintPropertyNode& next_effect,
-    const ClipPaintPropertyNode& next_clip,
-    bool layer_draws_content) {
+    const ClipPaintPropertyNode& next_clip) {
   // This function is expected to be invoked right before emitting each layer.
   // It keeps track of the nesting of clip and effects, output a composited
   // effect node whenever an effect is entered, or a non-trivial clip is
@@ -731,9 +730,6 @@ int PropertyTreeManager::SwitchToEffectNodeWithSynthesizedClip(
 
   BuildEffectNodesRecursively(next_effect);
   SynthesizeCcEffectsForClipsIfNeeded(next_clip, SkBlendMode::kSrcOver);
-
-  if (layer_draws_content)
-    pending_synthetic_mask_layers_.clear();
 
   return current_.effect_id;
 }
