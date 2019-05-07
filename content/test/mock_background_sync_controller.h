@@ -36,6 +36,8 @@ class MockBackgroundSyncController : public BackgroundSyncController {
       int num_attempts,
       blink::mojom::BackgroundSyncType sync_type,
       BackgroundSyncParameters* parameters) const override;
+  std::unique_ptr<BackgroundSyncController::BackgroundSyncEventKeepAlive>
+  CreateBackgroundSyncEventKeepAlive() override;
 
   int registration_count() const { return registration_count_; }
   const url::Origin& registration_origin() const {

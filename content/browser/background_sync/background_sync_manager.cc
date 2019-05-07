@@ -239,6 +239,24 @@ std::string GetEventStatusString(blink::ServiceWorkerStatusCode status_code) {
   }
 }
 
+// This prevents the browser process from shutting down when the last browser
+// window is closed and there are one-shot Background Sync events ready to fire.
+std::unique_ptr<BackgroundSyncController::BackgroundSyncEventKeepAlive>
+CreateBackgroundSyncEventKeepAliveOnUIThread(
+    scoped_refptr<ServiceWorkerContextWrapper> sw_context_wrapper,
+    const blink::mojom::BackgroundSyncRegistrationInfo& registration_info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  BackgroundSyncController* controller =
+      GetBackgroundSyncControllerOnUIThread(sw_context_wrapper);
+  if (!controller ||
+      registration_info.sync_type != BackgroundSyncType::ONE_SHOT) {
+    return nullptr;
+  }
+
+  return controller->CreateBackgroundSyncEventKeepAlive();
+}
+
 }  // namespace
 
 BackgroundSyncManager::BackgroundSyncRegistrations::
@@ -880,7 +898,20 @@ void BackgroundSyncManager::DidResolveRegistrationImpl(
   }
 
   registration->set_resolved();
-  FireReadyEvents(MakeEmptyCompletion());
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&CreateBackgroundSyncEventKeepAliveOnUIThread,
+                     service_worker_context_, std::move(*registration_info)),
+      base::BindOnce(
+          &BackgroundSyncManager::ResolveRegistrationDidCreateKeepAlive,
+          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void BackgroundSyncManager::ResolveRegistrationDidCreateKeepAlive(
+    std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  FireReadyEvents(MakeEmptyCompletion(), std::move(keepalive));
   op_scheduler_.CompleteOperationAndRunNext();
 }
 
@@ -1103,7 +1134,8 @@ void BackgroundSyncManager::RunInBackgroundIfNecessary() {
   if (!soonest_wakeup_delta.is_max() && !soonest_wakeup_delta.is_zero()) {
     delayed_sync_task_.Reset(
         base::BindOnce(&BackgroundSyncManager::FireReadyEvents,
-                       weak_ptr_factory_.GetWeakPtr(), MakeEmptyCompletion()));
+                       weak_ptr_factory_.GetWeakPtr(), MakeEmptyCompletion(),
+                       /* keepalive= */ nullptr));
     ScheduleDelayedTask(delayed_sync_task_.callback(), soonest_wakeup_delta);
   }
 
@@ -1114,7 +1146,9 @@ void BackgroundSyncManager::RunInBackgroundIfNecessary() {
       base::BindOnce(RunInBackgroundOnUIThread, service_worker_context_));
 }
 
-void BackgroundSyncManager::FireReadyEvents(base::OnceClosure callback) {
+void BackgroundSyncManager::FireReadyEvents(
+    base::OnceClosure callback,
+    std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (disabled_)
@@ -1123,10 +1157,13 @@ void BackgroundSyncManager::FireReadyEvents(base::OnceClosure callback) {
   op_scheduler_.ScheduleOperation(
       CacheStorageSchedulerOp::kBackgroundSync,
       base::BindOnce(&BackgroundSyncManager::FireReadyEventsImpl,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     std::move(keepalive)));
 }
 
-void BackgroundSyncManager::FireReadyEventsImpl(base::OnceClosure callback) {
+void BackgroundSyncManager::FireReadyEventsImpl(
+    base::OnceClosure callback,
+    std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (disabled_) {
@@ -1197,12 +1234,14 @@ void BackgroundSyncManager::FireReadyEventsImpl(base::OnceClosure callback) {
         base::BindOnce(
             &BackgroundSyncManager::FireReadyEventsDidFindRegistration,
             weak_ptr_factory_.GetWeakPtr(), std::move(registration_info),
-            events_fired_barrier_closure, events_completed_barrier_closure));
+            std::move(keepalive), events_fired_barrier_closure,
+            events_completed_barrier_closure));
   }
 }
 
 void BackgroundSyncManager::FireReadyEventsDidFindRegistration(
     blink::mojom::BackgroundSyncRegistrationInfoPtr registration_info,
+    std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive,
     base::OnceClosure event_fired_callback,
     base::OnceClosure event_completed_callback,
     blink::ServiceWorkerStatusCode service_worker_status,
@@ -1264,10 +1303,10 @@ void BackgroundSyncManager::FireReadyEventsDidFindRegistration(
   DispatchSyncEvent(
       registration->options()->tag,
       service_worker_registration->active_version(), last_chance,
-      base::BindOnce(&BackgroundSyncManager::EventComplete,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     service_worker_registration, std::move(registration_info),
-                     std::move(event_completed_callback)));
+      base::BindOnce(
+          &BackgroundSyncManager::EventComplete, weak_ptr_factory_.GetWeakPtr(),
+          service_worker_registration, std::move(registration_info),
+          std::move(keepalive), std::move(event_completed_callback)));
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, std::move(event_fired_callback));
@@ -1286,6 +1325,7 @@ void BackgroundSyncManager::FireReadyEventsAllEventsFiring(
 void BackgroundSyncManager::EventComplete(
     scoped_refptr<ServiceWorkerRegistration> service_worker_registration,
     blink::mojom::BackgroundSyncRegistrationInfoPtr registration_info,
+    std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive,
     base::OnceClosure callback,
     blink::ServiceWorkerStatusCode status_code) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -1309,12 +1349,14 @@ void BackgroundSyncManager::EventComplete(
       CacheStorageSchedulerOp::kBackgroundSync,
       base::BindOnce(&BackgroundSyncManager::EventCompleteImpl,
                      weak_ptr_factory_.GetWeakPtr(),
-                     std::move(registration_info), status_code, origin,
+                     std::move(registration_info), std::move(keepalive),
+                     status_code, origin,
                      op_scheduler_.WrapCallbackToRunNext(std::move(callback))));
 }
 
 void BackgroundSyncManager::EventCompleteImpl(
     blink::mojom::BackgroundSyncRegistrationInfoPtr registration_info,
+    std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive,
     blink::ServiceWorkerStatusCode status_code,
     const url::Origin& origin,
     base::OnceClosure callback) {
