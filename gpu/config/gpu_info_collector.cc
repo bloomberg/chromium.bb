@@ -341,24 +341,22 @@ void FillGPUInfoFromSystemInfo(GPUInfo* gpu_info,
   if (system_info->gpus.empty()) {
     return;
   }
-  if (system_info->primaryGPUIndex < 0) {
-    system_info->primaryGPUIndex = 0;
+  if (system_info->activeGPUIndex < 0) {
+    system_info->activeGPUIndex = 0;
   }
 
-  angle::GPUDeviceInfo* primary =
-      &system_info->gpus[system_info->primaryGPUIndex];
+  angle::GPUDeviceInfo* active =
+      &system_info->gpus[system_info->activeGPUIndex];
 
-  gpu_info->gpu.vendor_id = primary->vendorId;
-  gpu_info->gpu.device_id = primary->deviceId;
-  gpu_info->gpu.driver_vendor = std::move(primary->driverVendor);
-  gpu_info->gpu.driver_version = std::move(primary->driverVersion);
-  gpu_info->gpu.driver_date = std::move(primary->driverDate);
-  if (system_info->primaryGPUIndex == system_info->activeGPUIndex) {
-    gpu_info->gpu.active = true;
-  }
+  gpu_info->gpu.vendor_id = active->vendorId;
+  gpu_info->gpu.device_id = active->deviceId;
+  gpu_info->gpu.driver_vendor = std::move(active->driverVendor);
+  gpu_info->gpu.driver_version = std::move(active->driverVersion);
+  gpu_info->gpu.driver_date = std::move(active->driverDate);
+  gpu_info->gpu.active = true;
 
   for (size_t i = 0; i < system_info->gpus.size(); i++) {
-    if (static_cast<int>(i) == system_info->primaryGPUIndex) {
+    if (static_cast<int>(i) == system_info->activeGPUIndex) {
       continue;
     }
 
@@ -368,9 +366,6 @@ void FillGPUInfoFromSystemInfo(GPUInfo* gpu_info,
     device.driver_vendor = std::move(system_info->gpus[i].driverVendor);
     device.driver_version = std::move(system_info->gpus[i].driverVersion);
     device.driver_date = std::move(system_info->gpus[i].driverDate);
-    if (static_cast<int>(i) == system_info->activeGPUIndex) {
-      device.active = true;
-    }
 
     gpu_info->secondary_gpus.push_back(device);
   }
