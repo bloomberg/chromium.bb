@@ -868,6 +868,8 @@ void ScrollingCoordinator::ComputeShouldHandleScrollGestureOnMainThreadRegion(
     return;
   }
 
+  LocalFrameView* local_root_view = frame->LocalFrameRoot().View();
+
   if (const LocalFrameView::ScrollableAreaSet* scrollable_areas =
           frame_view->ScrollableAreas()) {
     for (const ScrollableArea* scrollable_area : *scrollable_areas) {
@@ -875,12 +877,12 @@ void ScrollingCoordinator::ComputeShouldHandleScrollGestureOnMainThreadRegion(
       if (scrollable_area->UsesCompositedScrolling())
         continue;
 
-      Region* region = ScrollsWithRootFrame(scrollable_area->GetLayoutBox())
-                           ? scrolling_region
-                           : fixed_region;
-
-      IntRect box = scrollable_area->ScrollableAreaBoundingBox();
-      region->Unite(box);
+      if (ScrollsWithRootFrame(scrollable_area->GetLayoutBox())) {
+        scrolling_region->Unite(scrollable_area->ScrollableAreaBoundingBox());
+      } else {
+        fixed_region->Unite(local_root_view->DocumentToFrame(
+            scrollable_area->ScrollableAreaBoundingBox()));
+      }
     }
   }
 
@@ -894,20 +896,22 @@ void ScrollingCoordinator::ComputeShouldHandleScrollGestureOnMainThreadRegion(
       PaintLayerScrollableArea* scrollable_area =
           box->Layer()->GetScrollableArea();
 
-      Region* region = ScrollsWithRootFrame(scrollable_area->GetLayoutBox())
-                           ? scrolling_region
-                           : fixed_region;
+      IntRect bounds_in_frame = box->AbsoluteBoundingBoxRect();
+      IntRect corner_in_frame =
+          scrollable_area->ResizerCornerRect(bounds_in_frame, kResizerForTouch);
 
-      IntRect bounds = box->AbsoluteBoundingBoxRect();
-      // Get the corner in local coords.
-      IntRect corner =
-          scrollable_area->ResizerCornerRect(bounds, kResizerForTouch);
-      // Map corner to top-frame coords.
-      corner = scrollable_area->GetLayoutBox()
-                   ->LocalToAbsoluteQuad(FloatRect(corner),
-                                         kTraverseDocumentBoundaries)
-                   .EnclosingBoundingBox();
-      region->Unite(corner);
+      IntRect corner_in_root_frame =
+          scrollable_area->GetLayoutBox()
+              ->LocalToAbsoluteQuad(FloatRect(corner_in_frame),
+                                    kTraverseDocumentBoundaries)
+              .EnclosingBoundingBox();
+
+      if (ScrollsWithRootFrame(scrollable_area->GetLayoutBox())) {
+        scrolling_region->Unite(
+            local_root_view->FrameToDocument(corner_in_root_frame));
+      } else {
+        fixed_region->Unite(corner_in_root_frame);
+      }
     }
   }
 
@@ -918,13 +922,13 @@ void ScrollingCoordinator::ComputeShouldHandleScrollGestureOnMainThreadRegion(
     if (!element->GetLayoutObject())
       continue;
 
-    Region* region = ScrollsWithRootFrame(element->GetLayoutObject())
-                         ? scrolling_region
-                         : fixed_region;
-
     if (plugin->WantsWheelEvents()) {
       IntRect box = frame_view->ConvertToRootFrame(plugin->FrameRect());
-      region->Unite(box);
+      if (ScrollsWithRootFrame(element->GetLayoutObject())) {
+        scrolling_region->Unite(local_root_view->FrameToDocument(box));
+      } else {
+        fixed_region->Unite(box);
+      }
     }
   }
 

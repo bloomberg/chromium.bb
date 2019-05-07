@@ -1499,11 +1499,7 @@ TEST_P(ScrollingCoordinatorTest, NestedFixedIFramesMainThreadScrollingRegion) {
                                       "main frame is scrolled, it should "
                                       "not be placed in the scrolling region.";
 
-  // TODO(bokan): We have a bug in calculating the fixed rects, we use document
-  // coordinates but we should be using frame coordinates since they go on the
-  // inner viewport scroll layer which doesn't scroll with the document.
-  // EXPECT_EQ(fixed.Rects().at(0), IntRect(0, 20, 75, 75));
-  EXPECT_EQ(fixed.Bounds(), IntRect(0, 1020, 75, 75))
+  EXPECT_EQ(fixed.Bounds(), IntRect(0, 20, 75, 75))
       << "Since the DIV not move when the main frame is scrolled, it should be "
          "placed in the scrolling region.";
 }

@@ -541,11 +541,15 @@ class CORE_EXPORT LocalFrameView final
   IntRect RootFrameToDocument(const IntRect&);
   IntPoint RootFrameToDocument(const IntPoint&);
   FloatPoint RootFrameToDocument(const FloatPoint&);
-  DoublePoint DocumentToFrame(const DoublePoint&) const;
+  IntPoint DocumentToFrame(const IntPoint&) const;
   FloatPoint DocumentToFrame(const FloatPoint&) const;
+  DoublePoint DocumentToFrame(const DoublePoint&) const;
   LayoutPoint DocumentToFrame(const LayoutPoint&) const;
+  IntRect DocumentToFrame(const IntRect&) const;
   LayoutRect DocumentToFrame(const LayoutRect&) const;
+  IntPoint FrameToDocument(const IntPoint&) const;
   LayoutPoint FrameToDocument(const LayoutPoint&) const;
+  IntRect FrameToDocument(const IntRect&) const;
   LayoutRect FrameToDocument(const LayoutRect&) const;
 
   // Normally a LocalFrameView synchronously paints during full lifecycle

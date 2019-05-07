@@ -273,7 +273,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual bool ScrollbarsCanBeActive() const = 0;
 
   // Returns the bounding box of this scrollable area, in the coordinate system
-  // of the top-level FrameView.
+  // of the top-level FrameView's Document.
   virtual IntRect ScrollableAreaBoundingBox() const = 0;
 
   virtual CompositorElementId GetCompositorElementId() const = 0;
