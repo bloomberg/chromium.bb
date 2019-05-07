@@ -238,6 +238,36 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   }
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       TestAtkTextGetTextCrash) {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+      <body>
+        <ul><li>Text</li></ul>
+      </body>
+      </html>)HTML");
+
+  // Retrieve the AtkObject interface for the document node.
+  AtkObject* document = GetRendererAccessible();
+  EXPECT_EQ(1, atk_object_get_n_accessible_children(document));
+  AtkObject* list = atk_object_ref_accessible_child(document, 0);
+
+  EXPECT_TRUE(ATK_IS_TEXT(list));
+
+  // There should be no crash when atk_text_get_text_at_offset returns an
+  // empty value.
+  int start_offset = -1, end_offset = -1;
+  gchar* text = atk_text_get_text_at_offset(ATK_TEXT(list), 0,
+                                            ATK_TEXT_BOUNDARY_WORD_START,
+                                            &start_offset, &end_offset);
+  ASSERT_EQ(text, nullptr);
+  ASSERT_EQ(start_offset, -1);
+  ASSERT_EQ(end_offset, -1);
+
+  g_object_unref(list);
+}
+
 #if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 30, 0)
 #define ATK_230
 #endif

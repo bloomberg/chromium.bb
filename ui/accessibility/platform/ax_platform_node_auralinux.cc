@@ -1053,6 +1053,8 @@ char* GetTextWithBoundaryType(AtkText* atk_text,
   int start_offset =
       obj->FindTextBoundary(boundary, offset, BACKWARDS_DIRECTION);
   int end_offset = obj->FindTextBoundary(boundary, offset, FORWARDS_DIRECTION);
+  if (start_offset < 0 || end_offset < 0)
+    return nullptr;
 
   DCHECK_LE(start_offset, end_offset)
       << "Start offset should be less than or equal the end offset.";
