@@ -20,9 +20,10 @@ namespace ui {
 namespace {
 
 uint32_t GetPresentationKindFlags(uint32_t flags) {
-  uint32_t presentation_flags = 0;
-  if (flags & WP_PRESENTATION_FEEDBACK_KIND_VSYNC)
-    presentation_flags |= gfx::PresentationFeedback::kVSync;
+  // Wayland spec has different meaning of VSync. In Chromium, VSync means to
+  // update the begin frame vsync timing based on presentation feedback.
+  uint32_t presentation_flags = gfx::PresentationFeedback::kVSync;
+
   if (flags & WP_PRESENTATION_FEEDBACK_KIND_HW_CLOCK)
     presentation_flags |= gfx::PresentationFeedback::kHWClock;
   if (flags & WP_PRESENTATION_FEEDBACK_KIND_HW_COMPLETION)
