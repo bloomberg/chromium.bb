@@ -426,6 +426,17 @@ void ShelfLayoutManager::ProcessGestureEventOfAutoHideShelf(
         event->type() == ui::ET_GESTURE_TAP) {
       UpdateAutoHideState();
     }
+
+    // Complete gesture drag when Shelf is visible in auto-hide mode. It is
+    // called when swiping Shelf up to show.
+    if (is_shelf_window && !IsStatusAreaWindow(target) &&
+        visibility_state() == SHELF_AUTO_HIDE &&
+        state_.auto_hide_state == SHELF_AUTO_HIDE_SHOWN &&
+        event->type() == ui::ET_GESTURE_END &&
+        gesture_drag_status_ != GESTURE_DRAG_NONE) {
+      CompleteGestureDrag(*event);
+    }
+
     return;
   }
 
