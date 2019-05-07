@@ -25,24 +25,28 @@ ScrollbarController::ScrollbarController(
 InputHandlerPointerResult ScrollbarController::HandleMouseDown(
     const gfx::PointF position_in_widget) {
   InputHandlerPointerResult scroll_result;
-  currently_captured_scrollbar_ = static_cast<const ScrollbarLayerImplBase*>(
-      GetLayerHitByPoint(position_in_widget));
-  if (currently_captured_scrollbar_ &&
-      currently_captured_scrollbar_->is_scrollbar()) {
-    scroll_result.type = PointerResultType::kScrollbarScroll;
-    layer_tree_host_impl_->active_tree()->UpdateScrollbarGeometries();
-    scroll_result.scroll_offset =
-        GetScrollDeltaFromPointerDown(position_in_widget);
-    previous_pointer_position_ = position_in_widget;
-    scrollbar_scroll_is_active_ = true;
-    if (thumb_drag_in_progress_) {
-      scroll_result.scroll_units = ScrollUnitType::kPrecisePixel;
-    } else {
-      // TODO(arakeri): This needs to be updated to kLine once cc implements
-      // handling it. crbug.com/959441
-      scroll_result.scroll_units = ScrollUnitType::kPixel;
-    }
+  LayerImpl* layer_impl = GetLayerHitByPoint(position_in_widget);
+
+  // If a non-custom scrollbar layer was not found, we return early as there is
+  // no point in setting additional state in the ScrollbarController.
+  if (!(layer_impl && layer_impl->ToScrollbarLayer()))
+    return scroll_result;
+
+  currently_captured_scrollbar_ = layer_impl->ToScrollbarLayer();
+  scroll_result.type = PointerResultType::kScrollbarScroll;
+  layer_tree_host_impl_->active_tree()->UpdateScrollbarGeometries();
+  scroll_result.scroll_offset =
+      GetScrollDeltaFromPointerDown(position_in_widget);
+  previous_pointer_position_ = position_in_widget;
+  scrollbar_scroll_is_active_ = true;
+  if (thumb_drag_in_progress_) {
+    scroll_result.scroll_units = ScrollUnitType::kPrecisePixel;
+  } else {
+    // TODO(arakeri): This needs to be updated to kLine once cc implements
+    // handling it. crbug.com/959441
+    scroll_result.scroll_units = ScrollUnitType::kPixel;
   }
+
   return scroll_result;
 }
 
