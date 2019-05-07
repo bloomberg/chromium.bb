@@ -1190,8 +1190,16 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 // release in (15, 10) same as the touch move in root frame. Before the fix the
 // touch end would pass (15, 10) to subframe which should be (15, 15) in
 // subframe.
+// https://crbug.com/959848: Flaky on Linux MSAN bots
+#if defined(OS_LINUX)
+#define MAYBE_TouchAndGestureEventPositionChange \
+  DISABLED_TouchAndGestureEventPositionChange
+#else
+#define MAYBE_TouchAndGestureEventPositionChange \
+  TouchAndGestureEventPositionChange
+#endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       TouchAndGestureEventPositionChange) {
+                       MAYBE_TouchAndGestureEventPositionChange) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_tall_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
