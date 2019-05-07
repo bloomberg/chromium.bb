@@ -234,10 +234,10 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
       DataListAncestorState::kUnknown;
 };
 
-CORE_EXPORT HTMLElement* ToHTMLElement(ListedElement*);
-CORE_EXPORT HTMLElement& ToHTMLElement(ListedElement&);
-CORE_EXPORT const HTMLElement* ToHTMLElement(const ListedElement*);
-CORE_EXPORT const HTMLElement& ToHTMLElement(const ListedElement&);
+CORE_EXPORT HTMLElement* ListedElementToHTMLElement(ListedElement*);
+CORE_EXPORT HTMLElement& ListedElementToHTMLElement(ListedElement&);
+CORE_EXPORT const HTMLElement* ListedElementToHTMLElement(const ListedElement*);
+CORE_EXPORT const HTMLElement& ListedElementToHTMLElement(const ListedElement&);
 
 }  // namespace blink
 

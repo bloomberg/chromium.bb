@@ -70,7 +70,7 @@ static unsigned FindListedElement(const ListedElement::List& listed_elements,
   for (; i < listed_elements.size(); ++i) {
     ListedElement* listed_element = listed_elements[i];
     if (listed_element->IsEnumeratable() &&
-        ToHTMLElement(listed_element) == element)
+        ListedElementToHTMLElement(listed_element) == element)
       break;
   }
   return i;
@@ -90,7 +90,7 @@ HTMLElement* HTMLFormControlsCollection::VirtualItemAfter(
   for (unsigned i = offset; i < listed_elements.size(); ++i) {
     ListedElement* listed_element = listed_elements[i];
     if (listed_element->IsEnumeratable()) {
-      cached_element_ = ToHTMLElement(listed_element);
+      cached_element_ = ListedElementToHTMLElement(listed_element);
       cached_element_offset_in_array_ = i;
       return cached_element_;
     }
@@ -110,7 +110,7 @@ static HTMLElement* FirstNamedItem(const ListedElement::List& elements_array,
   DCHECK(attr_name == kIdAttr || attr_name == kNameAttr);
 
   for (const auto& listed_element : elements_array) {
-    HTMLElement* element = ToHTMLElement(listed_element);
+    HTMLElement* element = ListedElementToHTMLElement(listed_element);
     if (listed_element->IsEnumeratable() &&
         element->FastGetAttribute(attr_name) == name)
       return element;
@@ -139,7 +139,7 @@ void HTMLFormControlsCollection::UpdateIdNameCache() const {
 
   for (const auto& listed_element : ListedElements()) {
     if (listed_element->IsEnumeratable()) {
-      HTMLElement* element = ToHTMLElement(listed_element);
+      HTMLElement* element = ListedElementToHTMLElement(listed_element);
       const AtomicString& id_attr_val = element->GetIdAttribute();
       const AtomicString& name_attr_val = element->GetNameAttribute();
       if (!id_attr_val.IsEmpty()) {

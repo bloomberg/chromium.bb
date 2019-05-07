@@ -48,8 +48,9 @@ inline HTMLFormElement* OwnerFormForState(const ListedElement& control) {
   // Assume controls with form attribute have no owners because we restore
   // state during parsing and form owners of such controls might be
   // indeterminate.
-  return ToHTMLElement(control).FastHasAttribute(kFormAttr) ? nullptr
-                                                            : control.Form();
+  return ListedElementToHTMLElement(control).FastHasAttribute(kFormAttr)
+             ? nullptr
+             : control.Form();
 }
 
 const AtomicString& ControlType(const ListedElement& control) {
@@ -450,7 +451,7 @@ Vector<String> DocumentState::ToStateVector() {
   std::unique_ptr<SavedFormStateMap> state_map =
       base::WrapUnique(new SavedFormStateMap);
   for (auto& control : form_controls_) {
-    DCHECK(ToHTMLElement(control)->isConnected());
+    DCHECK(ListedElementToHTMLElement(control)->isConnected());
     if (!control->ShouldSaveAndRestoreFormControlState())
       continue;
     SavedFormStateMap::AddResult result =

@@ -89,7 +89,7 @@ ValidityState* ListedElement::validity() {
 }
 
 void ListedElement::DidMoveToNewDocument(Document& old_document) {
-  HTMLElement* element = ToHTMLElement(this);
+  HTMLElement* element = ListedElementToHTMLElement(this);
   if (element->FastHasAttribute(kFormAttr))
     SetFormAttributeTargetObserver(nullptr);
 }
@@ -106,7 +106,7 @@ void ListedElement::InsertedInto(ContainerNode& insertion_point) {
           NodeTraversal::HighestAncestorOrSelf(*form_.Get()))
     ResetFormOwner();
 
-  HTMLElement* element = ToHTMLElement(this);
+  HTMLElement* element = ListedElementToHTMLElement(this);
   if (insertion_point.isConnected()) {
     if (element->FastHasAttribute(kFormAttr))
       ResetFormAttributeTargetObserver();
@@ -135,7 +135,7 @@ void ListedElement::RemovedFrom(ContainerNode& insertion_point) {
   data_list_ancestor_state_ = DataListAncestorState::kUnknown;
   UpdateWillValidateCache();
 
-  HTMLElement* element = ToHTMLElement(this);
+  HTMLElement* element = ListedElementToHTMLElement(this);
   if (insertion_point.isConnected() && element->FastHasAttribute(kFormAttr)) {
     SetFormAttributeTargetObserver(nullptr);
     ResetFormOwner();
@@ -183,7 +183,8 @@ HTMLFormElement* ListedElement::FindAssociatedForm(
 
 void ListedElement::FormRemovedFromTree(const Node& form_root) {
   DCHECK(form_);
-  if (NodeTraversal::HighestAncestorOrSelf(ToHTMLElement(*this)) == form_root)
+  if (NodeTraversal::HighestAncestorOrSelf(ListedElementToHTMLElement(*this)) ==
+      form_root)
     return;
   ResetFormOwner();
 }
@@ -217,7 +218,7 @@ void ListedElement::WillChangeForm() {
 
 void ListedElement::DidChangeForm() {
   if (!form_was_set_by_parser_ && form_ && form_->isConnected()) {
-    HTMLElement* element = ToHTMLElement(this);
+    HTMLElement* element = ListedElementToHTMLElement(this);
     element->GetDocument().DidAssociateFormControl(element);
   }
   FormOwnerSetNeedsValidityCheck();
@@ -246,7 +247,7 @@ void ListedElement::FieldSetAncestorsSetNeedsValidityCheck(Node* node) {
 
 void ListedElement::ResetFormOwner() {
   form_was_set_by_parser_ = false;
-  HTMLElement* element = ToHTMLElement(this);
+  HTMLElement* element = ListedElementToHTMLElement(this);
   const AtomicString& form_id(element->FastGetAttribute(kFormAttr));
   HTMLFormElement* nearest_form = element->FindFormAncestor();
   // 1. If the element's form owner is not null, and either the element is not
@@ -265,7 +266,7 @@ void ListedElement::FormAttributeChanged() {
 }
 
 bool ListedElement::RecalcWillValidate() const {
-  const HTMLElement& element = ToHTMLElement(*this);
+  const HTMLElement& element = ListedElementToHTMLElement(*this);
   if (data_list_ancestor_state_ == DataListAncestorState::kUnknown) {
     if (Traversal<HTMLDataListElement>::FirstAncestor(element))
       data_list_ancestor_state_ = DataListAncestorState::kInsideDataList;
@@ -316,7 +317,7 @@ void ListedElement::UpdateWillValidateCache() {
 }
 
 bool ListedElement::CustomError() const {
-  const HTMLElement* element = ToHTMLElement(this);
+  const HTMLElement* element = ListedElementToHTMLElement(this);
   return element->willValidate() && !custom_validation_message_.IsEmpty();
 }
 
@@ -392,13 +393,15 @@ void ListedElement::FindCustomValidationMessageTextDirection(
     TextDirection& sub_message_dir) {
   message_dir = DetermineDirectionality(message);
   if (!sub_message.IsEmpty()) {
-    sub_message_dir =
-        ToHTMLElement(*this).GetLayoutObject()->Style()->Direction();
+    sub_message_dir = ListedElementToHTMLElement(*this)
+                          .GetLayoutObject()
+                          ->Style()
+                          ->Direction();
   }
 }
 
 void ListedElement::UpdateVisibleValidationMessage() {
-  HTMLElement& element = ToHTMLElement(*this);
+  HTMLElement& element = ListedElementToHTMLElement(*this);
   Page* page = element.GetDocument().GetPage();
   if (!page || !page->IsPageVisible() || element.GetDocument().UnloadStarted())
     return;
@@ -428,20 +431,22 @@ void ListedElement::HideVisibleValidationMessage() {
     return;
 
   if (auto* client = GetValidationMessageClient())
-    client->HideValidationMessage(ToHTMLElement(*this));
+    client->HideValidationMessage(ListedElementToHTMLElement(*this));
 }
 
 bool ListedElement::IsValidationMessageVisible() const {
   if (!has_validation_message_)
     return false;
 
-  if (auto* client = GetValidationMessageClient())
-    return client->IsValidationMessageVisible(ToHTMLElement(*this));
+  if (auto* client = GetValidationMessageClient()) {
+    return client->IsValidationMessageVisible(
+        ListedElementToHTMLElement(*this));
+  }
   return false;
 }
 
 ValidationMessageClient* ListedElement::GetValidationMessageClient() const {
-  if (Page* page = ToHTMLElement(*this).GetDocument().GetPage())
+  if (Page* page = ListedElementToHTMLElement(*this).GetDocument().GetPage())
     return &page->GetValidationMessageClient();
   return nullptr;
 }
@@ -449,7 +454,7 @@ ValidationMessageClient* ListedElement::GetValidationMessageClient() const {
 bool ListedElement::checkValidity(List* unhandled_invalid_controls) {
   if (IsNotCandidateOrValid())
     return true;
-  HTMLElement& element = ToHTMLElement(*this);
+  HTMLElement& element = ListedElementToHTMLElement(*this);
   Document* original_document = &element.GetDocument();
   DispatchEventResult dispatch_result = element.DispatchEvent(
       *Event::CreateCancelable(event_type_names::kInvalid));
@@ -461,7 +466,7 @@ bool ListedElement::checkValidity(List* unhandled_invalid_controls) {
 }
 
 void ListedElement::ShowValidationMessage() {
-  HTMLElement& element = ToHTMLElement(*this);
+  HTMLElement& element = ListedElementToHTMLElement(*this);
   element.scrollIntoViewIfNeeded(false);
   element.focus();
   UpdateVisibleValidationMessage();
@@ -476,7 +481,7 @@ bool ListedElement::reportValidity() {
   DCHECK_EQ(unhandled_invalid_controls[0].Get(), this);
   // Update layout now before calling IsFocusable(), which has
   // !LayoutObject()->NeedsLayout() assertion.
-  HTMLElement& element = ToHTMLElement(*this);
+  HTMLElement& element = ListedElementToHTMLElement(*this);
   element.GetDocument().UpdateStyleAndLayout();
   if (element.IsFocusable()) {
     ShowValidationMessage();
@@ -508,11 +513,11 @@ bool ListedElement::IsValidElement() {
 bool ListedElement::IsNotCandidateOrValid() {
   // Apply Element::willValidate(), not ListedElement::WillValidate(), because
   // some elements override willValidate().
-  return !ToHTMLElement(this)->willValidate() || IsValidElement();
+  return !ListedElementToHTMLElement(this)->willValidate() || IsValidElement();
 }
 
 void ListedElement::SetNeedsValidityCheck() {
-  HTMLElement& element = ToHTMLElement(*this);
+  HTMLElement& element = ListedElementToHTMLElement(*this);
   if (!validity_is_dirty_) {
     validity_is_dirty_ = true;
     FormOwnerSetNeedsValidityCheck();
@@ -535,7 +540,7 @@ void ListedElement::SetNeedsValidityCheck() {
 
 void ListedElement::DisabledAttributeChanged() {
   UpdateWillValidateCache();
-  HTMLElement& element = ToHTMLElement(*this);
+  HTMLElement& element = ListedElementToHTMLElement(*this);
   element.PseudoStateChanged(CSSSelector::kPseudoDisabled);
   element.PseudoStateChanged(CSSSelector::kPseudoEnabled);
   DisabledStateMightBeChanged();
@@ -551,8 +556,8 @@ void ListedElement::UpdateAncestorDisabledState() const {
   // target element.
   HTMLFieldSetElement* disabled_fieldset_ancestor = nullptr;
   ContainerNode* last_legend_ancestor = nullptr;
-  for (HTMLElement* ancestor =
-           Traversal<HTMLElement>::FirstAncestor(ToHTMLElement(*this));
+  for (HTMLElement* ancestor = Traversal<HTMLElement>::FirstAncestor(
+           ListedElementToHTMLElement(*this));
        ancestor; ancestor = Traversal<HTMLElement>::FirstAncestor(*ancestor)) {
     if (IsHTMLLegendElement(*ancestor)) {
       last_legend_ancestor = ancestor;
@@ -580,7 +585,8 @@ void ListedElement::AncestorDisabledStateWasChanged() {
 }
 
 bool ListedElement::IsActuallyDisabled() const {
-  if (ToHTMLElement(*this).FastHasAttribute(html_names::kDisabledAttr))
+  if (ListedElementToHTMLElement(*this).FastHasAttribute(
+          html_names::kDisabledAttr))
     return true;
   if (ancestor_disabled_state_ == AncestorDisabledState::kUnknown)
     UpdateAncestorDisabledState();
@@ -602,7 +608,7 @@ FormControlState ListedElement::SaveFormControlState() const {
 void ListedElement::RestoreFormControlState(const FormControlState& state) {}
 
 void ListedElement::NotifyFormStateChanged() {
-  Document& doc = ToHTMLElement(*this).GetDocument();
+  Document& doc = ListedElementToHTMLElement(*this).GetDocument();
   // This can be called during fragment parsing as a result of option
   // selection before the document is active (or even in a frame).
   if (!doc.IsActive())
@@ -612,7 +618,7 @@ void ListedElement::NotifyFormStateChanged() {
 
 void ListedElement::TakeStateAndRestore() {
   if (ClassSupportsStateRestore()) {
-    ToHTMLElement(*this)
+    ListedElementToHTMLElement(*this)
         .GetDocument()
         .GetFormController()
         .RestoreControlStateFor(*this);
@@ -627,7 +633,7 @@ void ListedElement::SetFormAttributeTargetObserver(
 }
 
 void ListedElement::ResetFormAttributeTargetObserver() {
-  HTMLElement* element = ToHTMLElement(this);
+  HTMLElement* element = ListedElementToHTMLElement(this);
   const AtomicString& form_id(element->FastGetAttribute(kFormAttr));
   if (!form_id.IsNull() && element->isConnected()) {
     SetFormAttributeTargetObserver(
@@ -642,7 +648,8 @@ void ListedElement::FormAttributeTargetChanged() {
 }
 
 const AtomicString& ListedElement::GetName() const {
-  const AtomicString& name = ToHTMLElement(this)->GetNameAttribute();
+  const AtomicString& name =
+      ListedElementToHTMLElement(this)->GetNameAttribute();
   return name.IsNull() ? g_empty_atom : name;
 }
 
@@ -667,7 +674,8 @@ ListedElement* ListedElement::From(Element& element) {
   return nullptr;
 }
 
-const HTMLElement& ToHTMLElement(const ListedElement& listed_element) {
+const HTMLElement& ListedElementToHTMLElement(
+    const ListedElement& listed_element) {
   if (listed_element.IsFormControlElement())
     return ToHTMLFormControlElement(listed_element);
   if (listed_element.IsElementInternals())
@@ -675,26 +683,28 @@ const HTMLElement& ToHTMLElement(const ListedElement& listed_element) {
   return ToHTMLObjectElementFromListedElement(listed_element);
 }
 
-const HTMLElement* ToHTMLElement(const ListedElement* listed_element) {
+const HTMLElement* ListedElementToHTMLElement(
+    const ListedElement* listed_element) {
   DCHECK(listed_element);
-  return &ToHTMLElement(*listed_element);
+  return &ListedElementToHTMLElement(*listed_element);
 }
 
-HTMLElement* ToHTMLElement(ListedElement* listed_element) {
-  return const_cast<HTMLElement*>(
-      ToHTMLElement(static_cast<const ListedElement*>(listed_element)));
+HTMLElement* ListedElementToHTMLElement(ListedElement* listed_element) {
+  return const_cast<HTMLElement*>(ListedElementToHTMLElement(
+      static_cast<const ListedElement*>(listed_element)));
 }
 
-HTMLElement& ToHTMLElement(ListedElement& listed_element) {
-  return const_cast<HTMLElement&>(
-      ToHTMLElement(static_cast<const ListedElement&>(listed_element)));
+HTMLElement& ListedElementToHTMLElement(ListedElement& listed_element) {
+  return const_cast<HTMLElement&>(ListedElementToHTMLElement(
+      static_cast<const ListedElement&>(listed_element)));
 }
 
 FormAttributeTargetObserver::FormAttributeTargetObserver(const AtomicString& id,
                                                          ListedElement* element)
-    : IdTargetObserver(
-          ToHTMLElement(element)->GetTreeScope().GetIdTargetObserverRegistry(),
-          id),
+    : IdTargetObserver(ListedElementToHTMLElement(element)
+                           ->GetTreeScope()
+                           .GetIdTargetObserverRegistry(),
+                       id),
       element_(element) {}
 
 void FormAttributeTargetObserver::Trace(Visitor* visitor) {

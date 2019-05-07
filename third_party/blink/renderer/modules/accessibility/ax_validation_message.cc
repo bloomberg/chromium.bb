@@ -44,7 +44,7 @@ void AXValidationMessage::GetRelativeBounds(AXObject** out_container,
   if (!listed_element)
     return;
 
-  HTMLElement* form_control = ToHTMLElement(listed_element);
+  HTMLElement* form_control = ListedElementToHTMLElement(listed_element);
   if (!form_control || !form_control->GetLayoutObject())
     return;
 
