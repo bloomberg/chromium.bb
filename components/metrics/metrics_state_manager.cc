@@ -164,10 +164,6 @@ MetricsStateManager::MetricsStateManager(
 #endif  // !defined(OS_WIN)
   }
 
-  // Delete the cache used by CachingPermutedEntropyProvider, which was removed.
-  // TODO(crbug/912368): Remove this after it's been deleted from most installs.
-  local_state_->ClearPref(::variations::prefs::kVariationsPermutedEntropyCache);
-
   DCHECK(!instance_exists_);
   instance_exists_ = true;
 }
@@ -324,10 +320,6 @@ void MetricsStateManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterInt64Pref(prefs::kInstallDate, 0);
 
   ClonedInstallDetector::RegisterPrefs(registry);
-
-  // TODO(crbug/912368): Remove this after it's been deleted from most installs.
-  registry->RegisterStringPref(
-      ::variations::prefs::kVariationsPermutedEntropyCache, std::string());
 }
 
 // static

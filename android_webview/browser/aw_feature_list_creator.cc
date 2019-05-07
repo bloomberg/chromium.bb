@@ -53,9 +53,6 @@ const char* const kPersistentPrefsWhitelist[] = {
     // Random seed values for variation's entropy providers, used to assign
     // experiment groups.
     metrics::prefs::kMetricsLowEntropySource,
-    // Used by CachingPermutedEntropyProvider to cache generated values.
-    // TODO(crbug/912368): Remove this.
-    variations::prefs::kVariationsPermutedEntropyCache,
 };
 
 // Shows notifications which correspond to PersistentPrefStore's reading errors.

@@ -213,7 +213,6 @@ const char* const kPersistentPrefNames[] = {
     variations::prefs::kVariationsFailedToFetchSeedStreak,
     variations::prefs::kVariationsLastFetchTime,
     variations::prefs::kVariationsPermanentConsistencyCountry,
-    variations::prefs::kVariationsPermutedEntropyCache,
     variations::prefs::kVariationsRestrictParameter,
     variations::prefs::kVariationsSafeCompressedSeed,
     variations::prefs::kVariationsSafeSeedDate,
