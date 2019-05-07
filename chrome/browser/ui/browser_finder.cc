@@ -185,6 +185,7 @@ Browser* FindBrowserWithTabbedOrAnyType(
     Profile* profile,
     bool match_tabbed,
     bool match_original_profiles,
+    bool match_current_workspace,
     int64_t display_id = display::kInvalidDisplayId) {
   BrowserList* browser_list_impl = BrowserList::GetInstance();
   if (!browser_list_impl)
@@ -197,7 +198,8 @@ Browser* FindBrowserWithTabbedOrAnyType(
   if (display_id != display::kInvalidDisplayId)
     match_types |= kMatchDisplayId;
 #if defined(OS_WIN)
-  match_types |= kMatchCurrentWorkspace;
+  if (match_current_workspace)
+    match_types |= kMatchCurrentWorkspace;
 #endif
   Browser* browser =
       FindBrowserMatching(browser_list_impl->begin_last_active(),
@@ -234,16 +236,18 @@ Browser* FindTabbedBrowser(Profile* profile,
                            bool match_original_profiles,
                            int64_t display_id) {
   return FindBrowserWithTabbedOrAnyType(profile, true, match_original_profiles,
+                                        /*match_current_workspace=*/true,
                                         display_id);
 }
 
 Browser* FindAnyBrowser(Profile* profile, bool match_original_profiles) {
-  return FindBrowserWithTabbedOrAnyType(profile, false,
-                                        match_original_profiles);
+  return FindBrowserWithTabbedOrAnyType(profile, false, match_original_profiles,
+                                        /*match_current_workspace=*/false);
 }
 
 Browser* FindBrowserWithProfile(Profile* profile) {
-  return FindBrowserWithTabbedOrAnyType(profile, false, false);
+  return FindBrowserWithTabbedOrAnyType(profile, false, false,
+                                        /*match_current_workspace=*/false);
 }
 
 Browser* FindBrowserWithID(SessionID desired_id) {
