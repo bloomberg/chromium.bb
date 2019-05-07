@@ -290,4 +290,57 @@ TEST_F(PrintersMapTest, ReplacePrintersInClassOverwritesPrinters) {
   EXPECT_EQ(2u, restored_printers.size());
 }
 
+TEST_F(PrintersMapTest, RemoveSucceedsOnPrinterInClass) {
+  PrintersMap printers_map;
+
+  const std::string printer_id = "id1";
+
+  printers_map.Insert(PrinterClass::kEnterprise, Printer(printer_id));
+
+  auto printer = printers_map.Get(printer_id);
+  EXPECT_TRUE(printer);
+  EXPECT_EQ(printer_id, printer->id());
+
+  printers_map.Remove(PrinterClass::kEnterprise, printer_id);
+
+  printer = printers_map.Get(printer_id);
+  EXPECT_FALSE(printer);
+}
+
+TEST_F(PrintersMapTest, RemoveDoesNothingOnPrinterNotInClass) {
+  PrintersMap printers_map;
+
+  const std::string printer_id = "id1";
+
+  printers_map.Insert(PrinterClass::kEnterprise, Printer(printer_id));
+
+  auto printer = printers_map.Get(printer_id);
+  EXPECT_TRUE(printer);
+  EXPECT_EQ(printer_id, printer->id());
+
+  // Call remove using a different class, same printer_id and verify the printer
+  // is not rmemoved.
+  printers_map.Remove(PrinterClass::kDiscovered, printer_id);
+
+  printer = printers_map.Get(printer_id);
+  EXPECT_TRUE(printer);
+  EXPECT_EQ(printer_id, printer->id());
+}
+
+TEST_F(PrintersMapTest, RemoveDoesNothingOnUnknownPrinter) {
+  PrintersMap printers_map;
+
+  const std::string printer_id = "id";
+
+  printers_map.Insert(PrinterClass::kEnterprise, Printer(printer_id));
+
+  EXPECT_TRUE(printers_map.Get(printer_id));
+
+  // Call remove using a printer that does not exist in any class and verify the
+  // other printers are not changed.
+  printers_map.Remove(PrinterClass::kDiscovered, "random_id");
+
+  EXPECT_TRUE(printers_map.Get(printer_id));
+}
+
 }  // namespace chromeos

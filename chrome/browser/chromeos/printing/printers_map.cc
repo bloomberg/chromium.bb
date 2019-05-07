@@ -114,6 +114,16 @@ std::vector<Printer> PrintersMap::GetSecurePrinters(
   return result;
 }
 
+void PrintersMap::Remove(PrinterClass printer_class,
+                         const std::string& printer_id) {
+  if (!IsPrinterInClass(printer_class, printer_id)) {
+    return;
+  }
+  printers_[printer_class].erase(printer_id);
+
+  DCHECK(!IsExistingPrinter(printer_id));
+}
+
 bool PrintersMap::HasPrintersInClass(PrinterClass printer_class) const {
   return base::ContainsKey(printers_, printer_class);
 }

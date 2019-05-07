@@ -52,6 +52,10 @@ class PrintersMap {
   void ReplacePrintersInClass(PrinterClass printer_class,
                               const std::vector<Printer>& printers);
 
+  // Removes printer with |printer_id| from |printer_class|. This is a no-op if
+  // |printer_id| doesn't exist in printer_class.
+  void Remove(PrinterClass printer_class, const std::string& printer_id);
+
  private:
   // Returns true if |printer_class| exists and contains at least 1 printer.
   bool HasPrintersInClass(PrinterClass printer_class) const;
