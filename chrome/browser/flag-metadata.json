@@ -1256,8 +1256,8 @@
   },
   {
     "name": "enable-lock-screen-notification",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "tengs" ],
+    "expiry_milestone": 80
   },
   {
     "name": "enable-logging-js-console-messages",
