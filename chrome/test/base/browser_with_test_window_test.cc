@@ -38,8 +38,6 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "content/public/browser/context_factory.h"
 #include "ui/aura/mus/window_tree_client.h"
-#include "ui/aura/test/env_test_helper.h"
-#include "ui/views/mus/mus_client.h"
 #else
 #include "ui/views/test/test_views_delegate.h"
 #endif
@@ -57,8 +55,6 @@ void BrowserWithTestWindowTest::SetUp() {
 #if defined(OS_CHROMEOS)
   ash_test_helper_.SetUp(true);
   ash_test_helper_.SetRunningOutsideAsh();
-  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS)
-    ash_test_helper_.CreateMusClient();
 #elif defined(TOOLKIT_VIEWS)
   views_test_helper_.reset(new views::ScopedViewsTestHelper());
 #endif

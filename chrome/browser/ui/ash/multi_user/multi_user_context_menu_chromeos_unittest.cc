@@ -21,7 +21,6 @@
 #include "components/user_manager/scoped_user_manager.h"
 #include "ui/aura/window.h"
 #include "ui/base/models/menu_model.h"
-#include "ui/base/ui_base_features.h"
 
 namespace ash {
 
@@ -66,11 +65,6 @@ class MultiUserContextMenuChromeOSTest : public ChromeAshTestBase {
 
 void MultiUserContextMenuChromeOSTest::SetUp() {
   ChromeAshTestBase::SetUp();
-
-  // MultiUserWindowManager assumes there is a MusClient in single-process mash
-  // mode.
-  if (features::IsUsingWindowService())
-    ash_test_helper()->CreateMusClient();
 
   window_ = CreateTestWindowInShellWithId(0);
   window_->Show();

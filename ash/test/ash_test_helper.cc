@@ -24,7 +24,6 @@
 #include "ash/test/ash_test_views_delegate.h"
 #include "ash/test_shell_delegate.h"
 #include "ash/wm/overview/overview_controller.h"
-#include "ash/ws/window_service_owner.h"
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/run_loop.h"
@@ -42,13 +41,9 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/identity.h"
-#include "services/service_manager/public/cpp/service.h"
 #include "services/ws/public/cpp/host/gpu_interface_provider.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "services/ws/public/mojom/gpu.mojom.h"
-#include "services/ws/window_service.h"
 #include "ui/aura/env.h"
 #include "ui/aura/input_state_lookup.h"
 #include "ui/aura/test/env_test_helper.h"
@@ -67,7 +62,6 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
-#include "ui/views/mus/mus_client.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/core/wm_state.h"
@@ -225,8 +219,6 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
 
   app_list_test_helper_ = std::make_unique<AppListTestHelper>();
 
-  CreateWindowService();
-
   // Create the test keyboard controller observer to respond to
   // OnLoadKeyboardContentsRequested().
   test_keyboard_controller_observer_ =
@@ -239,9 +231,6 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
 }
 
 void AshTestHelper::TearDown() {
-  mus_client_.reset();
-  window_tree_client_setter_.reset();
-
   test_keyboard_controller_observer_.reset();
   app_list_test_helper_.reset();
 
@@ -322,42 +311,6 @@ aura::Window* AshTestHelper::CurrentContext() {
 
 display::Display AshTestHelper::GetSecondaryDisplay() {
   return Shell::Get()->display_manager()->GetSecondaryDisplay();
-}
-
-service_manager::Connector* AshTestHelper::GetWindowServiceConnector() {
-  return window_service_connector_.get();
-}
-
-void AshTestHelper::CreateMusClient() {
-  DCHECK(!mus_client_);
-  // Set aura::Env's WindowTreeClient to null. This is necessary as code such
-  // as AshTestBase may have already installed a WindowTreeClient.
-  window_tree_client_setter_ =
-      std::make_unique<aura::test::EnvWindowTreeClientSetter>(nullptr);
-  // As EnvWindowTreeClientSetter sets aura::Env's WindowTreeClient to null, it
-  // also sets Env::in_mus_shutdown_ to false. Env isn't in shutdown at this
-  // point, so force it to false.
-  aura::test::EnvTestHelper().SetInMusShutdown(false);
-
-  // Configure views backed by mus.
-  views::MusClient::InitParams mus_client_init_params;
-  mus_client_init_params.connector = GetWindowServiceConnector();
-  mus_client_init_params.create_wm_state = false;
-  mus_client_init_params.running_in_ws_process = true;
-  mus_client_ = std::make_unique<views::MusClient>(mus_client_init_params);
-}
-
-void AshTestHelper::CreateWindowService() {
-  Shell::Get()->window_service_owner()->BindWindowService(
-      test_connector_factory_.RegisterInstance(ws::mojom::kServiceName));
-
-  // WindowService::OnStart() is not immediately called (it happens async over
-  // mojo). If this becomes a problem we could run the MessageLoop here.
-  // Surprisingly running the MessageLooop results in some test failures. These
-  // failures seem to be because spinning the messageloop causes some timers to
-  // fire (perhaps animations too) the results in a slightly different Shell
-  // state.
-  window_service_connector_ = test_connector_factory_.CreateConnector();
 }
 
 void AshTestHelper::CreateShell() {

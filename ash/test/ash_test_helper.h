@@ -13,15 +13,11 @@
 #include "ash/session/test_session_controller_client.h"
 #include "base/macros.h"
 #include "base/test/scoped_command_line.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 
 class PrefService;
 
 namespace aura {
 class Window;
-namespace test {
-class EnvWindowTreeClientSetter;
-}
 }
 
 namespace chromeos {
@@ -34,17 +30,9 @@ namespace display {
 class Display;
 }
 
-namespace service_manager {
-class Connector;
-}
-
 namespace ui {
 class ScopedAnimationDurationScaleMode;
 class TestContextFactories;
-}
-
-namespace views {
-class MusClient;
 }
 
 namespace wm {
@@ -115,18 +103,7 @@ class AshTestHelper {
 
   void reset_commandline() { command_line_.reset(); }
 
-  // Creates a MusClient. aura::Env's *must* be set to Mode::MUS. Easiest way
-  // to ensure that is by subclassing SingleProcessMashTestBase.
-  void CreateMusClient();
-
-  // Gets a Connector that talks directly to the WindowService.
-  service_manager::Connector* GetWindowServiceConnector();
-
  private:
-  // Forces creation of the WindowService. The WindowService is normally created
-  // on demand, this force the creation.
-  void CreateWindowService();
-
   // Called when running in ash to create Shell.
   void CreateShell();
 
@@ -153,15 +130,6 @@ class AshTestHelper {
 
   std::unique_ptr<TestKeyboardControllerObserver>
       test_keyboard_controller_observer_;
-
-  service_manager::TestConnectorFactory test_connector_factory_;
-  std::unique_ptr<service_manager::Connector> window_service_connector_;
-
-  // |window_tree_client_setter_| and |mus_client_| are created by
-  // CreateMusClient(). See it for details.
-  std::unique_ptr<aura::test::EnvWindowTreeClientSetter>
-      window_tree_client_setter_;
-  std::unique_ptr<views::MusClient> mus_client_;
 
   DISALLOW_COPY_AND_ASSIGN(AshTestHelper);
 };

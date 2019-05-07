@@ -37,7 +37,6 @@ class GURL;
 
 #if defined(TOOLKIT_VIEWS)
 namespace views {
-class MusClient;
 class TestViewsDelegate;
 }  // namespace views
 #endif
@@ -76,13 +75,13 @@ class BrowserWithTestWindowTest : public testing::Test {
   struct HostedApp {};
 
   struct ValidTraits {
-    ValidTraits(content::TestBrowserThreadBundle::ValidTraits);
-    ValidTraits(HostedApp);
-    ValidTraits(Browser::Type);
+    explicit ValidTraits(content::TestBrowserThreadBundle::ValidTraits);
+    explicit ValidTraits(HostedApp);
+    explicit ValidTraits(Browser::Type);
 
     // TODO(alexclarke): Make content::TestBrowserThreadBundle::ValidTraits
     // imply this.
-    ValidTraits(base::test::ScopedTaskEnvironment::ValidTrait);
+    explicit ValidTraits(base::test::ScopedTaskEnvironment::ValidTrait);
   };
 
   // Creates a BrowserWithTestWindowTest with zero or more traits. By default
@@ -219,7 +218,6 @@ class BrowserWithTestWindowTest : public testing::Test {
 
 #if defined(OS_CHROMEOS)
   ash::AshTestHelper ash_test_helper_;
-  std::unique_ptr<views::MusClient> mus_client_;
 #elif defined(TOOLKIT_VIEWS)
   std::unique_ptr<views::ScopedViewsTestHelper> views_test_helper_;
 #endif
