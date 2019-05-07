@@ -65,6 +65,11 @@
 
 namespace blink {
 
+// Special locale for retrieving the color emoji font based on the proposed
+// changes in UTR #51 for introducing an Emoji script code:
+// https://unicode.org/reports/tr51/#Emoji_Script
+static const char kColorEmojiLocale[] = "und-Zsye";
+
 SkFontMgr* FontCache::static_font_manager_ = nullptr;
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
@@ -459,6 +464,28 @@ sk_sp<SkTypeface> FontCache::CreateTypefaceFromUniqueName(
     return uniquely_identified_font;
   }
   return nullptr;
+}
+
+// static
+FontCache::Bcp47Vector FontCache::GetBcp47LocaleForRequest(
+    const FontDescription& font_description,
+    FontFallbackPriority fallback_priority) {
+  Bcp47Vector result;
+
+  // Fill in the list of locales in the reverse priority order.
+  // Skia expects the highest array index to be the first priority.
+  const LayoutLocale* content_locale = font_description.Locale();
+  if (const LayoutLocale* han_locale =
+          LayoutLocale::LocaleForHan(content_locale)) {
+    result.push_back(han_locale->LocaleForHanForSkFontMgr());
+  }
+  result.push_back(LayoutLocale::GetDefault().LocaleForSkFontMgr());
+  if (content_locale)
+    result.push_back(content_locale->LocaleForSkFontMgr());
+
+  if (fallback_priority == FontFallbackPriority::kEmojiEmoji)
+    result.push_back(kColorEmojiLocale);
+  return result;
 }
 
 }  // namespace blink
