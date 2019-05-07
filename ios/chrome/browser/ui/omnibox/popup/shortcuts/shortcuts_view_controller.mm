@@ -79,9 +79,16 @@ const CGFloat kTopInset = 10;
        withTransitionCoordinator:
            (id<UIViewControllerTransitionCoordinator>)coordinator {
   [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-  [self configureLayout:base::mac::ObjCCastStrict<UICollectionViewFlowLayout>(
-                            self.collectionViewLayout)
-             targetSize:size];
+
+  [coordinator
+      animateAlongsideTransition:^(
+          id<UIViewControllerTransitionCoordinatorContext> context) {
+        [self configureLayout:base::mac::ObjCCastStrict<
+                                  UICollectionViewFlowLayout>(
+                                  self.collectionViewLayout)
+                   targetSize:self.view.bounds.size];
+      }
+                      completion:nil];
 }
 
 #pragma mark - ShortcutsConsumer
