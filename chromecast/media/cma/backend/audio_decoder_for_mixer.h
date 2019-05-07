@@ -5,6 +5,7 @@
 #ifndef CHROMECAST_MEDIA_CMA_BACKEND_AUDIO_DECODER_FOR_MIXER_H_
 #define CHROMECAST_MEDIA_CMA_BACKEND_AUDIO_DECODER_FOR_MIXER_H_
 
+#include <cstdint>
 #include <memory>
 
 #include "base/bind.h"
@@ -72,10 +73,11 @@ class AudioDecoderForMixer : public MediaPipelineBackend::AudioDecoder,
   struct RateShifterInfo {
     explicit RateShifterInfo(float playback_rate);
 
-    double rate;
-    double input_frames;
-    int64_t output_frames;
-    int64_t base_pts;
+    const double rate;
+    double input_frames = 0;
+    int64_t output_frames = 0;
+    // Tracks the PTS of the end of data pushed at this rate.
+    int64_t end_pts = INT64_MIN;
   };
 
   // BufferingMixerSource::Delegate implementation:
@@ -105,14 +107,15 @@ class AudioDecoderForMixer : public MediaPipelineBackend::AudioDecoder,
 
   MediaPipelineBackendForMixer* const backend_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  MediaPipelineBackend::Decoder::Delegate* delegate_;
+  MediaPipelineBackend::Decoder::Delegate* delegate_ = nullptr;
 
   Statistics stats_;
 
-  bool pending_buffer_complete_;
-  bool got_eos_;
-  bool pushed_eos_;
-  bool mixer_error_;
+  bool pending_buffer_complete_ = false;
+  bool got_eos_ = false;
+  bool pushed_eos_ = false;
+  bool mixer_error_ = false;
+  bool paused_ = false;
 
   AudioConfig config_;
   std::unique_ptr<CastAudioDecoder> decoder_;
@@ -121,17 +124,14 @@ class AudioDecoderForMixer : public MediaPipelineBackend::AudioDecoder,
   base::circular_deque<RateShifterInfo> rate_shifter_info_;
   std::unique_ptr<::media::AudioBus> rate_shifter_output_;
 
-  int64_t first_push_pts_;
-  int64_t last_push_pts_;
-  int64_t last_push_timestamp_;
-  int64_t last_push_pts_length_;
-  int64_t paused_pts_;
-
   std::unique_ptr<BufferingMixerSource, BufferingMixerSource::Deleter>
       mixer_input_;
   RenderingDelay last_mixer_delay_;
-  int64_t pending_output_frames_;
-  float volume_multiplier_;
+  int64_t pending_output_frames_ = -1;
+  float volume_multiplier_ = 1.0f;
+
+  int64_t last_push_pts_ = INT64_MIN;
+  int64_t last_push_playout_timestamp_ = INT64_MIN;
 
   scoped_refptr<::media::AudioBufferMemoryPool> pool_;
 

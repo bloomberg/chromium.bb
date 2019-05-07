@@ -52,7 +52,7 @@ MediaPipelineBackendForMixer::CreateAudioDecoder() {
     return nullptr;
   audio_decoder_ = std::make_unique<AudioDecoderForMixer>(this);
   if (video_decoder_ && !av_sync_ && !IsIgnorePtsMode()) {
-    av_sync_ = AvSync::Create(GetTaskRunner(), this);
+    av_sync_ = AvSync::Create(this);
   }
   return audio_decoder_.get();
 }
@@ -66,7 +66,7 @@ MediaPipelineBackendForMixer::CreateVideoDecoder() {
   video_decoder_->SetObserver(this);
   DCHECK(video_decoder_.get());
   if (audio_decoder_ && !av_sync_ && !IsIgnorePtsMode()) {
-    av_sync_ = AvSync::Create(GetTaskRunner(), this);
+    av_sync_ = AvSync::Create(this);
   }
   return video_decoder_.get();
 }

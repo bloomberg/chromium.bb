@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/media/cma/backend/stream_mixer.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
@@ -44,6 +45,10 @@ const int kDefaultAudioReadyForPlaybackThresholdMs = 70;
 // issues with voice calling.
 const int64_t kCommsInputQueueMs = 200;
 const int64_t kCommsStartThresholdMs = 150;
+
+// Maximum amount that we can be late for starting playback (if a start time
+// is specified).
+constexpr base::TimeDelta kMaxStartDelay = base::TimeDelta::FromSeconds(5);
 
 std::string AudioContentTypeToString(media::AudioContentType type) {
   switch (type) {
@@ -106,19 +111,13 @@ BufferingMixerSource::LockedMembers::Members::Members(
     BufferingMixerSource* source,
     int input_samples_per_second,
     int num_channels,
-    int64_t playback_start_timestamp)
-    : state_(State::kUninitialized),
-      paused_(false),
-      mixer_error_(false),
-      queued_frames_(0),
-      extra_delay_frames_(0),
-      current_buffer_offset_(0),
-      fader_(source,
+    int64_t playback_start_timestamp,
+    int64_t playback_start_pts)
+    : fader_(source,
              num_channels,
              MsToSamples(kFadeTimeMs, input_samples_per_second)),
-      zero_fader_frames_(false),
-      started_(false),
-      playback_start_timestamp_(playback_start_timestamp) {}
+      playback_start_timestamp_(playback_start_timestamp),
+      playback_start_pts_(playback_start_pts) {}
 
 BufferingMixerSource::LockedMembers::Members::~Members() = default;
 
@@ -144,11 +143,13 @@ BufferingMixerSource::LockedMembers::LockedMembers(
     BufferingMixerSource* source,
     int input_samples_per_second,
     int num_channels,
-    int64_t playback_start_timestamp)
+    int64_t playback_start_timestamp,
+    int64_t playback_start_pts)
     : members_(source,
                input_samples_per_second,
                num_channels,
-               playback_start_timestamp) {}
+               playback_start_timestamp,
+               playback_start_pts) {}
 
 BufferingMixerSource::LockedMembers::~LockedMembers() = default;
 
@@ -182,11 +183,11 @@ BufferingMixerSource::BufferingMixerSource(Delegate* delegate,
       max_queued_frames_(MaxQueuedFrames(device_id, input_samples_per_second)),
       start_threshold_frames_(
           StartThreshold(device_id, input_samples_per_second)),
-      playback_start_pts_(playback_start_pts),
       locked_members_(this,
                       input_samples_per_second,
                       num_channels_,
-                      start_playback_asap ? INT64_MIN : INT64_MAX),
+                      start_playback_asap ? INT64_MIN : INT64_MAX,
+                      playback_start_pts),
       weak_factory_(this) {
   LOG(INFO) << "Create " << device_id_ << " (" << this
             << "), content type = " << AudioContentTypeToString(content_type_)
@@ -219,29 +220,38 @@ void BufferingMixerSource::RestartPlaybackAt(int64_t timestamp, int64_t pts) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   LOG(INFO) << __func__ << " timestamp=" << timestamp << " pts=" << pts;
-
-  bool post_pcm_completion = false;
   {
     auto locked = locked_members_.Lock();
     DCHECK(locked->started_);
 
-    playback_start_pts_ = pts;
-
+    locked->playback_start_pts_ = pts;
     locked->playback_start_timestamp_ = timestamp;
     locked->started_ = false;
-
-    locked->queue_.clear();
+    locked->queued_frames_ += locked->current_buffer_offset_;
     locked->current_buffer_offset_ = 0;
-    locked->queued_frames_ = 0;
-    locked->mixer_rendering_delay_ = RenderingDelay();
-    if (locked->pending_data_) {
-      locked->pending_data_.reset();
-      post_pcm_completion = true;
+
+    while (!locked->queue_.empty()) {
+      DecoderBufferBase* data = locked->queue_.front().get();
+      int64_t frames = DataToFrames(data->data_size());
+      if (data->timestamp() +
+              SamplesToMicroseconds(frames, input_samples_per_second_) >=
+          pts) {
+        break;
+      }
+
+      locked->queued_frames_ -= frames;
+      locked->queue_.pop_front();
     }
   }
-  if (post_pcm_completion) {
-    POST_TASK_TO_CALLER_THREAD(PostPcmCompletion, RenderingDelay());
-  }
+}
+
+void BufferingMixerSource::SetMediaPlaybackRate(double rate) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+  LOG(INFO) << __func__ << " rate=" << rate;
+  DCHECK_GT(rate, 0);
+
+  auto locked = locked_members_.Lock();
+  locked->playback_rate_ = rate;
 }
 
 float BufferingMixerSource::SetAvSyncPlaybackRate(float rate) {
@@ -304,38 +314,23 @@ BufferingMixerSource::RenderingDelay BufferingMixerSource::QueueData(
     if (!locked->started_ && locked->playback_start_timestamp_ != INT64_MIN) {
       POST_TASK_TO_CALLER_THREAD(PostAudioReadyForPlayback);
     }
-  } else {
-    // TODO(almasrymina): this drops 1 more buffer than necessary. What we
-    // should do here is only drop if the playback_start_pts_ is not found in
-    // the buffer, and use current_buffer_offset_ to effectively drop the
-    // partial buffer.
-    if (!locked->started_ && data->timestamp() < playback_start_pts_) {
-      DCHECK(locked->queue_.empty());
-      DVLOG(4) << "Dropping buffer with ts=" << data->timestamp()
-               << ", playback_start_pts=" << playback_start_pts_
-               << " difference=" << playback_start_pts_ - data->timestamp();
-    } else {
-      LOG_IF(INFO, (!locked->started_ &&
-                    (data->timestamp() - playback_start_pts_) < 100000 &&
-                    locked->playback_start_timestamp_ != INT64_MIN))
-          << "Queueing pts diff=" << data->timestamp() - playback_start_pts_
-          << " locked->queued_frames_=" << locked->queued_frames_
-          << " start_threshold_frames_=" << start_threshold_frames_;
+  } else if (locked->started_ ||
+             data->timestamp() +
+                     SamplesToMicroseconds(DataToFrames(data->data_size()),
+                                           input_samples_per_second_) >=
+                 locked->playback_start_pts_) {
+    scoped_refptr<DecoderBufferBase> buffer =
+        locked->audio_resampler_.ResampleBuffer(std::move(data));
+    locked->queued_frames_ += DataToFrames(buffer->data_size());
+    locked->queue_.push_back(std::move(buffer));
 
-      scoped_refptr<DecoderBufferBase> buffer =
-          locked->audio_resampler_.ResampleBuffer(std::move(data));
-
-      const int frames = DataToFrames(buffer->data_size());
-      locked->queued_frames_ += frames;
-      locked->queue_.push_back(std::move(buffer));
-
-      if (!locked->started_ &&
-          locked->queued_frames_ >= start_threshold_frames_ &&
-          locked->playback_start_timestamp_ != INT64_MIN) {
-        POST_TASK_TO_CALLER_THREAD(PostAudioReadyForPlayback);
-      }
+    if (!locked->started_ &&
+        locked->queued_frames_ >= start_threshold_frames_ &&
+        locked->playback_start_timestamp_ != INT64_MIN) {
+      POST_TASK_TO_CALLER_THREAD(PostAudioReadyForPlayback);
     }
   }
+  // Otherwise, drop |data| since it is before the start PTS.
 
   RenderingDelay delay;
   if (locked->started_ && !locked->paused_) {
@@ -401,57 +396,98 @@ void BufferingMixerSource::CheckAndStartPlaybackIfNecessary(
        (locked->queued_frames_ >= start_threshold_frames_ &&
         locked->queued_frames_ >=
             locked->fader_.FramesNeededFromSource(num_frames)));
-  if (have_enough_queued_frames &&
-      (locked->playback_start_timestamp_ == INT64_MIN ||
-       playback_absolute_timestamp +
-               SamplesToMicroseconds(num_frames, input_samples_per_second_) >=
-           locked->playback_start_timestamp_)) {
-    // - playback_start_timestamp_ == INT64_MIN indicates the playback should
-    // start ASAP.
-    // - playback start timestamp_ == INT64_MAX indicates playback is AV
-    // sync'd, but we don't have a timestamp to start playback at.
-    //
-    // We do not queue silence in either of those cases.
-    if (!locked->started_ && locked->playback_start_timestamp_ != INT64_MIN &&
-        locked->playback_start_timestamp_ != INT64_MAX) {
-      DCHECK(!locked->queue_.empty()) << "We were supposed to start playback "
-                                         "now but the queue is empty...";
+  if (!have_enough_queued_frames) {
+    return;
+  }
 
-      // - We should start playing at PTS playback_start_pts_, but we will
-      // actually be starting at front()->timestamp().
-      //
-      // - We want the playback_start_pts_ sample to play out at
-      // playback_start_timestamp_.
-      //
-      // - Therefore, we should start playing the data that we have (that
-      // doesn't necessarily have the desired PTS) at:
-      //
-      // playback_start_timestamp_ +
-      // (front()->timestamp() - playback_start_pts_)
-      //
-      // so that the sample at playback_start_pts_ plays out at exactly (ie,
-      // the PTS of the first buffer we play might not match
-      // playback_start_pts_).
-      uint64_t pts_corrected_playback_start_timestamp =
-          locked->playback_start_timestamp_ +
-          (locked->queue_.front()->timestamp() - playback_start_pts_);
+  remaining_silence_frames_ = 0;
+  if (locked->playback_start_timestamp_ == INT64_MIN ||
+      (locked->queue_.empty() && locked->state_ == State::kGotEos)) {
+    // No start timestamp, so start as soon as there are enough queued frames.
+    locked->started_ = true;
+    return;
+  }
 
-      int64_t silence_duration =
-          pts_corrected_playback_start_timestamp - playback_absolute_timestamp;
+  if (playback_absolute_timestamp +
+          SamplesToMicroseconds(num_frames, input_samples_per_second_) <
+      locked->playback_start_timestamp_) {
+    // Haven't reached the start timestamp yet.
+    return;
+  }
 
-      if (silence_duration <= 0) {
-        DropAudio(::media::AudioTimestampHelper::TimeToFrames(
-            base::TimeDelta::FromMicroseconds(-silence_duration),
-            input_samples_per_second_));
-      } else {
-        LOG(INFO) << "Adding silence. Duration=" << silence_duration;
-        remaining_silence_frames_ = ::media::AudioTimestampHelper::TimeToFrames(
-            base::TimeDelta::FromMicroseconds(silence_duration),
-            input_samples_per_second_);
-      }
+  DCHECK(!locked->queue_.empty());
+  // Reset the current buffer offset to 0 so we can ignore it below. We need to
+  // do this here because we may not have started playback even after dropping
+  // all necessary frames the last time we checked.
+  locked->queued_frames_ += locked->current_buffer_offset_;
+  locked->current_buffer_offset_ = 0;
+
+  int64_t desired_pts_now =
+      locked->playback_start_pts_ +
+      (playback_absolute_timestamp - locked->playback_start_timestamp_) *
+          locked->playback_rate_;
+  int64_t actual_pts_now = locked->queue_.front()->timestamp();
+  int64_t drop_us = (desired_pts_now - actual_pts_now) / locked->playback_rate_;
+
+  if (drop_us >= 0) {
+    LOG(INFO) << "Dropping audio, duration = " << drop_us;
+    DropAudio(::media::AudioTimestampHelper::TimeToFrames(
+        base::TimeDelta::FromMicroseconds(drop_us), input_samples_per_second_));
+    // Only start if we still have enough data to do so.
+    locked->started_ = (locked->queued_frames_ >= start_threshold_frames_ &&
+                        locked->queued_frames_ >=
+                            locked->fader_.FramesNeededFromSource(num_frames));
+
+    // Error out if we have taken too long to start.
+    if (!locked->started_ &&
+        playback_absolute_timestamp - locked->playback_start_timestamp_ >
+            kMaxStartDelay.InMicroseconds()) {
+      LOG(ERROR) << "Took too long to start playing";
+      POST_TASK_TO_CALLER_THREAD(PostError, MixerError::kInternalError);
     }
 
+    if (locked->started_) {
+      int64_t start_pts = locked->queue_.front()->timestamp() +
+                          SamplesToMicroseconds(locked->current_buffer_offset_,
+                                                input_samples_per_second_) *
+                              locked->playback_rate_;
+      LOG(INFO) << "Start playback of PTS " << start_pts << " at "
+                << playback_absolute_timestamp;
+    }
+  } else {
+    int64_t silence_duration = -drop_us;
+    LOG(INFO) << "Adding silence. Duration = " << silence_duration;
+    remaining_silence_frames_ = ::media::AudioTimestampHelper::TimeToFrames(
+        base::TimeDelta::FromMicroseconds(silence_duration),
+        input_samples_per_second_);
     locked->started_ = true;
+    LOG(INFO) << "Should start playback of PTS "
+              << locked->queue_.front()->timestamp() << " at "
+              << (playback_absolute_timestamp + silence_duration);
+  }
+}
+
+void BufferingMixerSource::DropAudio(int64_t frames_to_drop) {
+  auto locked = locked_members_.AssertAcquired();
+  DCHECK_EQ(locked->current_buffer_offset_, 0);
+
+  while (frames_to_drop && !locked->queue_.empty()) {
+    int64_t first_buffer_frames =
+        DataToFrames(locked->queue_.front()->data_size());
+    if (first_buffer_frames > frames_to_drop) {
+      locked->current_buffer_offset_ = frames_to_drop;
+      locked->queued_frames_ -= frames_to_drop;
+      frames_to_drop = 0;
+      break;
+    }
+
+    locked->queued_frames_ -= first_buffer_frames;
+    frames_to_drop -= first_buffer_frames;
+    locked->queue_.pop_front();
+  }
+
+  if (frames_to_drop > 0) {
+    LOG(INFO) << "Still need to drop " << frames_to_drop << " frames";
   }
 }
 
@@ -486,7 +522,7 @@ int BufferingMixerSource::FillAudioPlaybackFrames(
     if (locked->state_ == State::kNormalPlayback && locked->started_ &&
         locked->queued_frames_ <
             locked->fader_.FramesNeededFromSource(num_frames)) {
-      LOG_IF(INFO, locked->started_ && !locked->zero_fader_frames_)
+      LOG_IF(INFO, !locked->zero_fader_frames_)
           << "Stream underrun for " << device_id_ << " (" << this << ")";
       locked->zero_fader_frames_ = true;
     } else {
@@ -551,49 +587,8 @@ int BufferingMixerSource::FillAudioPlaybackFrames(
   return filled;
 }
 
-bool BufferingMixerSource::CanDropFrames(int64_t frames_to_drop) {
-  auto locked = locked_members_.AssertAcquired();
-  return locked->queued_frames_ - frames_to_drop >=
-         start_threshold_frames_;
-}
-
 int64_t BufferingMixerSource::DataToFrames(int64_t size_in_bytes) {
   return size_in_bytes / (num_channels_ * sizeof(float));
-}
-
-void BufferingMixerSource::DropAudio(int64_t frames_to_drop) {
-  auto locked = locked_members_.AssertAcquired();
-
-  LOG(INFO) << "Dropping audio duration="
-            << SamplesToMicroseconds(frames_to_drop, input_samples_per_second_);
-
-  DCHECK(!locked->queue_.empty());
-
-  int64_t first_buffer_frames =
-      DataToFrames(locked->queue_.front()->data_size());
-  while (frames_to_drop >= first_buffer_frames &&
-         CanDropFrames(first_buffer_frames)) {
-    locked->queued_frames_ -= first_buffer_frames;
-    frames_to_drop -= first_buffer_frames;
-
-    locked->queue_.pop_front();
-    DCHECK(!locked->queue_.empty());
-    first_buffer_frames = DataToFrames(locked->queue_.front()->data_size());
-  }
-
-  if (CanDropFrames(frames_to_drop)) {
-    locked->current_buffer_offset_ += frames_to_drop;
-    locked->queued_frames_ -= frames_to_drop;
-  } else {
-    LOG(WARNING) << "Starting audio with error="
-                 << SamplesToMicroseconds(frames_to_drop,
-                                          input_samples_per_second_);
-  }
-
-  DCHECK(!locked->queue_.empty());
-  DCHECK(locked->current_buffer_offset_ <=
-         DataToFrames(locked->queue_.front()->data_size()));
-  DCHECK(locked->queued_frames_ >= 0);
 }
 
 int BufferingMixerSource::FillFaderFrames(::media::AudioBus* dest,
