@@ -157,7 +157,7 @@ TEST_F(FFmpegGlueTest, Read) {
   EXPECT_CALL(*protocol_, Read(kBufferSize, buffer))
       .WillOnce(Return(kBufferSize));
   EXPECT_CALL(*protocol_, Read(kBufferSize, buffer))
-      .WillOnce(Return(DataSource::kReadError));
+      .WillOnce(Return(AVERROR(EIO)));
 
   EXPECT_EQ(0, ReadPacket(0, buffer));
   EXPECT_EQ(kBufferSize, ReadPacket(kBufferSize, buffer));
