@@ -130,7 +130,7 @@ bool AuthenticatorRequestDialogView::Close() {
   // This should not be a problem as the native widget will never synchronously
   // close and hence not synchronously destroy the model while it's iterating
   // over observers in SetCurrentStep().
-  if (!model_->is_request_complete())
+  if (!model_->should_dialog_be_closed())
     Cancel();
 
   return true;
