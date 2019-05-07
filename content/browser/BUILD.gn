@@ -2550,7 +2550,6 @@ jumbo_source_set("browser") {
 
   if (use_aura) {
     deps += [
-      "//services/ws/public/cpp",
       "//services/ws/public/cpp/host",
       "//services/ws/public/mojom",
       "//ui/aura",

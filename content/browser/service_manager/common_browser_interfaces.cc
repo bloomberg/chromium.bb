@@ -28,7 +28,6 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/ws/public/mojom/gpu.mojom.h"
-#include "ui/base/ui_base_features.h"
 
 #if defined(OS_WIN)
 #include "content/browser/renderer_host/dwrite_font_proxy_impl_win.h"
@@ -55,21 +54,19 @@ class ConnectionFilterImpl : public ConnectionFilter {
         base::BindRepeating(&SandboxSupportMacImpl::BindRequest,
                             base::Owned(new SandboxSupportMacImpl)));
 #endif
-    if (!features::IsMultiProcessMash()) {
-      // For mus, the mojom::discardable_memory::DiscardableSharedMemoryManager
-      // is exposed from ui::Service. So we don't need bind the interface here.
-      auto* browser_main_loop = BrowserMainLoop::GetInstance();
-      if (browser_main_loop) {
-        auto* manager = browser_main_loop->discardable_shared_memory_manager();
-        if (manager) {
-          registry_.AddInterface(base::BindRepeating(
-              &discardable_memory::DiscardableSharedMemoryManager::Bind,
-              base::Unretained(manager)));
-        }
+    // For mus, the mojom::discardable_memory::DiscardableSharedMemoryManager
+    // is exposed from ui::Service. So we don't need bind the interface here.
+    auto* browser_main_loop = BrowserMainLoop::GetInstance();
+    if (browser_main_loop) {
+      auto* manager = browser_main_loop->discardable_shared_memory_manager();
+      if (manager) {
+        registry_.AddInterface(base::BindRepeating(
+            &discardable_memory::DiscardableSharedMemoryManager::Bind,
+            base::Unretained(manager)));
       }
-      registry_.AddInterface(base::BindRepeating(
-          &ConnectionFilterImpl::BindGpuRequest, base::Unretained(this)));
     }
+    registry_.AddInterface(base::BindRepeating(
+        &ConnectionFilterImpl::BindGpuRequest, base::Unretained(this)));
   }
 
   ~ConnectionFilterImpl() override { DCHECK_CURRENTLY_ON(BrowserThread::IO); }

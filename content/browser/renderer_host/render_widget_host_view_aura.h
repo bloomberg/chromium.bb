@@ -94,10 +94,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   //
   // TODO(lazyboy): Remove |is_guest_view_hack| once BrowserPlugin has migrated
   // to use RWHVChildFrame (http://crbug.com/330264).
-  // |is_mus_browser_plugin_guest| can be removed at the same time.
-  RenderWidgetHostViewAura(RenderWidgetHost* host,
-                           bool is_guest_view_hack,
-                           bool is_mus_browser_plugin_guest);
+  RenderWidgetHostViewAura(RenderWidgetHost* host, bool is_guest_view_hack);
 
   // RenderWidgetHostView implementation.
   void InitAsChild(gfx::NativeView parent_view) override;
@@ -585,8 +582,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // Called to process a display metrics change.
   void ProcessDisplayMetricsChanged();
-
-  const bool is_mus_browser_plugin_guest_;
 
   // NOTE: this is null if |is_mus_browser_plugin_guest_| is true.
   aura::Window* window_;

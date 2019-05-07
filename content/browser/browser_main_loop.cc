@@ -145,7 +145,6 @@
 #include "skia/ext/skia_memory_dump_provider.h"
 #include "sql/sql_memory_dump_provider.h"
 #include "ui/base/clipboard/clipboard.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/display/display_features.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/switches.h"
@@ -752,15 +751,13 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
         base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}));
   }
 
-  if (!features::IsMultiProcessMash()) {
-    discardable_shared_memory_manager_ =
-        std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
-    // TODO(boliu): kSingleProcess check is a temporary workaround for
-    // in-process Android WebView. crbug.com/503724 tracks proper fix.
-    if (!parsed_command_line_.HasSwitch(switches::kSingleProcess)) {
-      base::DiscardableMemoryAllocator::SetInstance(
-          discardable_shared_memory_manager_.get());
-    }
+  discardable_shared_memory_manager_ =
+      std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
+  // TODO(boliu): kSingleProcess check is a temporary workaround for
+  // in-process Android WebView. crbug.com/503724 tracks proper fix.
+  if (!parsed_command_line_.HasSwitch(switches::kSingleProcess)) {
+    base::DiscardableMemoryAllocator::SetInstance(
+        discardable_shared_memory_manager_.get());
   }
 
   if (parts_)
@@ -1199,12 +1196,6 @@ void BrowserMainLoop::GetCompositingModeReporter(
   // CompositingModeReporter.
   return;
 #else
-  if (features::IsMultiProcessMash()) {
-    // Mash == ChromeOS, which doesn't support software compositing, so no need
-    // to report compositing mode.
-    return;
-  }
-
   compositing_mode_reporter_impl_->BindRequest(std::move(request));
 #endif
 }

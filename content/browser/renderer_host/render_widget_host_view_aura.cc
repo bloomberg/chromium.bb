@@ -330,10 +330,8 @@ class RenderWidgetHostViewAura::WindowAncestorObserver
 
 RenderWidgetHostViewAura::RenderWidgetHostViewAura(
     RenderWidgetHost* widget_host,
-    bool is_guest_view_hack,
-    bool is_mus_browser_plugin_guest)
+    bool is_guest_view_hack)
     : RenderWidgetHostViewBase(widget_host),
-      is_mus_browser_plugin_guest_(is_mus_browser_plugin_guest),
       window_(nullptr),
       in_shutdown_(false),
       in_bounds_changed_(false),
@@ -356,8 +354,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(
       frame_sink_id_(is_guest_view_hack_ ? AllocateFrameSinkIdForGuestViewHack()
                                          : host()->GetFrameSinkId()),
       weak_ptr_factory_(this) {
-  if (!is_mus_browser_plugin_guest_)
-    CreateDelegatedFrameHostClient();
+  CreateDelegatedFrameHostClient();
 
   if (!is_guest_view_hack_)
     host()->SetView(this);
@@ -391,8 +388,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(
 
 void RenderWidgetHostViewAura::InitAsChild(gfx::NativeView parent_view) {
   DCHECK_EQ(widget_type_, WidgetType::kFrame);
-  if (is_mus_browser_plugin_guest_)
-    return;
   CreateAuraWindow(aura::client::WINDOW_TYPE_CONTROL);
 
   if (parent_view)
@@ -405,8 +400,6 @@ void RenderWidgetHostViewAura::InitAsPopup(
     RenderWidgetHostView* parent_host_view,
     const gfx::Rect& bounds_in_screen) {
   DCHECK_EQ(widget_type_, WidgetType::kPopup);
-  // Popups never have |is_mus_browser_plugin_guest_| set to true.
-  DCHECK(!is_mus_browser_plugin_guest_);
 
   popup_parent_host_view_ =
       static_cast<RenderWidgetHostViewAura*>(parent_host_view);
@@ -456,9 +449,6 @@ void RenderWidgetHostViewAura::InitAsPopup(
 void RenderWidgetHostViewAura::InitAsFullscreen(
     RenderWidgetHostView* reference_host_view) {
   DCHECK_EQ(widget_type_, WidgetType::kFrame);
-  // Webview Fullscreen doesn't go through InitAsFullscreen(), so
-  // |is_mus_browser_plugin_guest_| is always false.
-  DCHECK(!is_mus_browser_plugin_guest_);
   is_fullscreen_ = true;
   CreateAuraWindow(aura::client::WINDOW_TYPE_NORMAL);
   window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
@@ -482,9 +472,6 @@ void RenderWidgetHostViewAura::InitAsFullscreen(
 }
 
 void RenderWidgetHostViewAura::Show() {
-  if (is_mus_browser_plugin_guest_)
-    return;
-
   // If the viz::LocalSurfaceIdAllocation is invalid, we may have been evicted,
   // and no other visual properties have since been changed. Allocate a new id
   // and start synchronizing.
@@ -499,15 +486,11 @@ void RenderWidgetHostViewAura::Show() {
 }
 
 void RenderWidgetHostViewAura::Hide() {
-  if (is_mus_browser_plugin_guest_)
-    return;
-
   window_->Hide();
   WasOccluded();
 }
 
 void RenderWidgetHostViewAura::SetSize(const gfx::Size& size) {
-  DCHECK(!is_mus_browser_plugin_guest_);
   // For a SetSize operation, we don't care what coordinate system the origin
   // of the window is in, it's only important to make sure that the origin
   // remains constant after the operation.
@@ -515,7 +498,6 @@ void RenderWidgetHostViewAura::SetSize(const gfx::Size& size) {
 }
 
 void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
-  DCHECK(!is_mus_browser_plugin_guest_);
   gfx::Point relative_origin(rect.origin());
 
   // RenderWidgetHostViewAura::SetBounds() takes screen coordinates, but
@@ -534,7 +516,6 @@ void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
 }
 
 gfx::NativeView RenderWidgetHostViewAura::GetNativeView() {
-  DCHECK(!is_mus_browser_plugin_guest_);
   return window_;
 }
 
@@ -2040,7 +2021,6 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
 
 void RenderWidgetHostViewAura::CreateAuraWindow(aura::client::WindowType type) {
   DCHECK(!window_);
-  DCHECK(!is_mus_browser_plugin_guest_);
   window_ = new aura::Window(this);
   window_->SetName("RenderWidgetHostViewAura");
   event_handler_->set_window(window_);
@@ -2080,9 +2060,6 @@ void RenderWidgetHostViewAura::CreateDelegatedFrameHostClient() {
 }
 
 void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
-  if (is_mus_browser_plugin_guest_)
-    return;
-
   if (host()->GetProcess()->FastShutdownStarted())
     return;
 

@@ -45,9 +45,7 @@ class MockPointerLockRenderWidgetHostView : public RenderWidgetHostViewAura {
  public:
   MockPointerLockRenderWidgetHostView(RenderWidgetHost* host,
                                       bool is_guest_view_hack)
-      : RenderWidgetHostViewAura(host,
-                                 is_guest_view_hack,
-                                 false /* is_mus_browser_plugin_guest */),
+      : RenderWidgetHostViewAura(host, is_guest_view_hack),
         host_(RenderWidgetHostImpl::From(host)) {}
   ~MockPointerLockRenderWidgetHostView() override {
     if (IsMouseLocked())

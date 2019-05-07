@@ -79,10 +79,6 @@
 // TODO(https://crbug.com/784179): Remove nogncheck.
 #include "content/public/browser/context_factory.h"
 #include "content/public/browser/gpu_interface_provider_factory.h"
-#include "services/ws/public/mojom/constants.mojom.h"         // nogncheck
-#include "services/ws/test_ws/test_manifest.h"                // nogncheck
-#include "services/ws/test_ws/test_window_service_factory.h"  // nogncheck
-#include "services/ws/test_ws/test_ws.mojom.h"                // nogncheck
 #endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
@@ -169,10 +165,6 @@ const service_manager::Manifest& GetContentBrowserOverlayManifest() {
                 mojom::WebTestBluetoothFakeAdapterSetter,
                 bluetooth::mojom::FakeBluetooth>())
         .RequireCapability(echo::mojom::kServiceName, "echo")
-#if defined(OS_CHROMEOS)
-        .RequireCapability(ws::mojom::kServiceName, "test")
-        .RequireCapability("test_ws", "test")
-#endif
         .ExposeInterfaceFilterCapability_Deprecated(
             "navigation:frame", "renderer",
             service_manager::Manifest::InterfaceList<
@@ -195,9 +187,6 @@ const service_manager::Manifest& GetContentPackagedServicesOverlayManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest {
     service_manager::ManifestBuilder()
         .PackageService(echo::GetManifest())
-#if defined(OS_CHROMEOS)
-        .PackageService(test_ws::GetManifest())
-#endif
         .Build()
   };
   return *manifest;
@@ -318,12 +307,6 @@ void ShellContentBrowserClient::RegisterOutOfProcessServices(
       base::BindRepeating(&base::ASCIIToUTF16, "Test Service");
   (*services)[echo::mojom::kServiceName] =
       base::BindRepeating(&base::ASCIIToUTF16, "Echo Service");
-#if defined(OS_CHROMEOS)
-  if (features::IsMultiProcessMash()) {
-    (*services)[test_ws::mojom::kServiceName] =
-        base::BindRepeating(&base::ASCIIToUTF16, "Test Window Service");
-  }
-#endif
 }
 
 void ShellContentBrowserClient::HandleServiceRequest(
@@ -394,15 +377,6 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
           switches::kBrowserTest)) {
     command_line->AppendSwitch(switches::kBrowserTest);
   }
-#endif
-}
-
-void ShellContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
-    const service_manager::Identity& identity,
-    base::CommandLine* command_line) {
-#if defined(OS_CHROMEOS)
-  if (identity.name() == test_ws::mojom::kServiceName)
-    command_line->AppendSwitch(switches::kMessageLoopTypeUi);
 #endif
 }
 

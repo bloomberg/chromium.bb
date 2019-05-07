@@ -72,7 +72,6 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/screen.h"
@@ -635,10 +634,7 @@ void WebContentsViewAura::InstallCreateHookForTests(
 
 WebContentsViewAura::WebContentsViewAura(WebContentsImpl* web_contents,
                                          WebContentsViewDelegate* delegate)
-    : is_mus_browser_plugin_guest_(web_contents->GetBrowserPluginGuest() !=
-                                       nullptr &&
-                                   features::IsMultiProcessMash()),
-      web_contents_(web_contents),
+    : web_contents_(web_contents),
       delegate_(delegate),
       current_drag_op_(blink::kWebDragOperationNone),
       drag_dest_delegate_(nullptr),
@@ -755,32 +751,17 @@ bool WebContentsViewAura::IsValidDragTarget(
 // WebContentsViewAura, WebContentsView implementation:
 
 gfx::NativeView WebContentsViewAura::GetNativeView() const {
-  if (!is_mus_browser_plugin_guest_)
-    return window_.get();
-  DCHECK(web_contents_->GetOuterWebContents());
-  return web_contents_->GetOuterWebContents()->GetView()->GetNativeView();
+  return window_.get();
 }
 
 gfx::NativeView WebContentsViewAura::GetContentNativeView() const {
-  if (!is_mus_browser_plugin_guest_) {
-    RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
-    return rwhv ? rwhv->GetNativeView() : nullptr;
-  }
-  DCHECK(web_contents_->GetOuterWebContents());
-  return web_contents_->GetOuterWebContents()
-      ->GetView()
-      ->GetContentNativeView();
+  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
+  return rwhv ? rwhv->GetNativeView() : nullptr;
 }
 
 gfx::NativeWindow WebContentsViewAura::GetTopLevelNativeWindow() const {
-  if (!is_mus_browser_plugin_guest_) {
-    gfx::NativeWindow window = window_->GetToplevelWindow();
-    return window ? window : delegate_->GetNativeWindow();
-  }
-  DCHECK(web_contents_->GetOuterWebContents());
-  return web_contents_->GetOuterWebContents()
-      ->GetView()
-      ->GetTopLevelNativeWindow();
+  gfx::NativeWindow window = window_->GetToplevelWindow();
+  return window ? window : delegate_->GetNativeWindow();
 }
 
 void WebContentsViewAura::GetContainerBounds(gfx::Rect* out) const {
@@ -923,8 +904,7 @@ void WebContentsViewAura::CreateView(const gfx::Size& initial_size,
   // if the bookmark bar is not shown and you create a new tab). The right
   // value is set shortly after this, so its safe to ignore.
 
-  if (!is_mus_browser_plugin_guest_)
-    CreateAuraWindow(context);
+  CreateAuraWindow(context);
 
   // delegate_->GetDragDestDelegate() creates a new delegate on every call.
   // Hence, we save a reference to it locally. Similar model is used on other
@@ -950,8 +930,8 @@ RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForWidget(
       g_create_render_widget_host_view
           ? g_create_render_widget_host_view(render_widget_host,
                                              is_guest_view_hack)
-          : new RenderWidgetHostViewAura(render_widget_host, is_guest_view_hack,
-                                         is_mus_browser_plugin_guest_);
+          : new RenderWidgetHostViewAura(render_widget_host,
+                                         is_guest_view_hack);
   view->InitAsChild(GetRenderWidgetHostViewParent());
 
   RenderWidgetHostImpl* host_impl =
@@ -959,9 +939,6 @@ RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForWidget(
 
   if (!host_impl->is_hidden())
     view->Show();
-
-  if (is_mus_browser_plugin_guest_)
-    return view;
 
   // We listen to drag drop events in the newly created view's window.
   aura::client::SetDragDropDelegate(view->GetNativeView(), this);
@@ -977,20 +954,14 @@ RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForWidget(
 
 RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForChildWidget(
     RenderWidgetHost* render_widget_host) {
-  // Popups are not created as embedded windows in mus, so
-  // |is_mus_browser_plugin_guest| is always false for them.
-  const bool is_mus_browser_plugin_guest = false;
-  return new RenderWidgetHostViewAura(render_widget_host, false,
-                                      is_mus_browser_plugin_guest);
+  return new RenderWidgetHostViewAura(render_widget_host, false);
 }
 
 void WebContentsViewAura::SetPageTitle(const base::string16& title) {
-  if (!is_mus_browser_plugin_guest_) {
-    window_->SetTitle(title);
-    aura::Window* child_window = GetContentNativeView();
-    if (child_window)
-      child_window->SetTitle(title);
-  }
+  window_->SetTitle(title);
+  aura::Window* child_window = GetContentNativeView();
+  if (child_window)
+    child_window->SetTitle(title);
 }
 
 void WebContentsViewAura::RenderViewCreated(RenderViewHost* host) {

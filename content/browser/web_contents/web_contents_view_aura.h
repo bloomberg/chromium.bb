@@ -226,9 +226,6 @@ class CONTENT_EXPORT WebContentsViewAura
 #endif
   DropCallbackForTesting drop_callback_for_testing_;
 
-  const bool is_mus_browser_plugin_guest_;
-
-  // NOTE: this is null when running in mus and |is_mus_browser_plugin_guest_|.
   std::unique_ptr<aura::Window> window_;
 
   std::unique_ptr<WindowObserver> window_observer_;

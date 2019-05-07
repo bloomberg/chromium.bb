@@ -51,7 +51,6 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_reply_thread_registrar.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ws/public/mojom/constants.mojom.h"
 #include "third_party/blink/public/web/blink.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/ui_base_features.h"
@@ -122,17 +121,8 @@ PpapiThread::PpapiThread(base::RepeatingClosure quit_closure,
   // allocator.
   if (!command_line.HasSwitch(switches::kSingleProcess)) {
     discardable_memory::mojom::DiscardableSharedMemoryManagerPtr manager_ptr;
-    if (features::IsMultiProcessMash()) {
-#if defined(USE_AURA)
-      GetServiceManagerConnection()->GetConnector()->BindInterface(
-          ws::mojom::kServiceName, &manager_ptr);
-#else
-      NOTREACHED();
-#endif
-    } else {
-      ChildThread::Get()->GetConnector()->BindInterface(
-          mojom::kBrowserServiceName, mojo::MakeRequest(&manager_ptr));
-    }
+    ChildThread::Get()->GetConnector()->BindInterface(
+        mojom::kBrowserServiceName, mojo::MakeRequest(&manager_ptr));
     discardable_shared_memory_manager_ = std::make_unique<
         discardable_memory::ClientDiscardableSharedMemoryManager>(
         std::move(manager_ptr), GetIOTaskRunner());

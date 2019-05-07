@@ -25,13 +25,6 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/test/echo/echo_service.h"
 
-#if defined(OS_CHROMEOS)
-// TODO(https://crbug.com/784179): Remove nogncheck.
-#include "services/ws/test_ws/test_window_service_factory.h"  // nogncheck
-#include "services/ws/test_ws/test_ws.mojom.h"                // nogncheck
-#include "ui/base/ui_base_features.h"
-#endif
-
 namespace content {
 
 namespace {
@@ -122,12 +115,6 @@ bool ShellContentUtilityClient::HandleServiceRequest(
   } else if (service_name == kTestServiceUrl) {
     service = std::make_unique<TestService>(std::move(request));
   }
-#if defined(OS_CHROMEOS)
-  else if (features::IsMultiProcessMash() &&
-           service_name == test_ws::mojom::kServiceName) {
-    service = ws::test::CreateOutOfProcessWindowService(std::move(request));
-  }
-#endif
 
   if (service) {
     service_manager::Service::RunAsyncUntilTermination(
