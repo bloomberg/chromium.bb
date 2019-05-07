@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/inspector_protocol/encoding/encoding.h"
@@ -86,10 +87,10 @@ class DevToolsSession::IOSession : public mojom::blink::DevToolsSession {
         inspector_task_runner_(inspector_task_runner),
         session_(std::move(session)),
         binding_(this) {
-    io_task_runner->PostTask(
-        FROM_HERE, ConvertToBaseCallback(CrossThreadBind(
-                       &IOSession::BindInterface, CrossThreadUnretained(this),
-                       WTF::Passed(std::move(request)))));
+    PostCrossThreadTask(
+        *io_task_runner, FROM_HERE,
+        CrossThreadBind(&IOSession::BindInterface, CrossThreadUnretained(this),
+                        WTF::Passed(std::move(request))));
   }
 
   ~IOSession() override {}
