@@ -1229,6 +1229,7 @@ test("content_browsertests") {
       "../browser/host_zoom_map_impl_browsertest.cc",
       "../browser/serial/serial_browsertest.cc",
       "../browser/speech/speech_recognition_browsertest.cc",
+      "../browser/speech/tts_ssml_browsertest.cc",
       "../browser/zoom_browsertest.cc",
     ]
     deps += [ "//content/browser/speech/proto" ]

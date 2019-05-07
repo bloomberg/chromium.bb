@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/containers/queue.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram_macros.h"
@@ -16,6 +17,11 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/data_decoder/public/cpp/safe_xml_parser.h"
+#include "services/data_decoder/public/mojom/constants.mojom.h"
+#include "services/data_decoder/public/mojom/xml_parser.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/platform/web_speech_synthesis_constants.h"
 
 namespace content {
@@ -476,6 +482,83 @@ TtsControllerDelegate* TtsControllerImpl::GetTtsControllerDelegate() {
     return delegate_;
   }
   return nullptr;
+}
+
+void TtsControllerImpl::StripSSML(
+    const std::string& utterance,
+    base::OnceCallback<void(std::string)> on_ssml_parsed) {
+  // Skip parsing and return if not xml.
+  if (utterance.find("<?xml") == std::string::npos) {
+    std::move(on_ssml_parsed).Run(utterance);
+    return;
+  }
+
+  // Get ServiceManagerConnection and Connector.
+  ServiceManagerConnection* service_manager_connection =
+      ServiceManagerConnection::GetForProcess();
+  CHECK(service_manager_connection);
+  service_manager::Connector* connector =
+      service_manager_connection->GetConnector();
+  CHECK(connector);
+
+  // Parse using safe, out-of-process Xml Parser.
+  data_decoder::ParseXml(connector, utterance,
+                         base::BindOnce(&TtsControllerImpl::StripSSMLHelper,
+                                        utterance, std::move(on_ssml_parsed)));
+}
+
+// Called when ParseXml finishes.
+// Uses parsed xml to build parsed utterance text.
+void TtsControllerImpl::StripSSMLHelper(
+    const std::string& utterance,
+    base::OnceCallback<void(std::string)> on_ssml_parsed,
+    std::unique_ptr<base::Value> value,
+    const base::Optional<std::string>& error_message) {
+  // Error checks.
+  // If invalid xml, return original utterance text.
+  if (!value || error_message) {
+    std::move(on_ssml_parsed).Run(utterance);
+    return;
+  }
+
+  std::string root_tag_name;
+  data_decoder::GetXmlElementTagName(*value, &root_tag_name);
+  // Root element must be <speak>.
+  if (root_tag_name.compare("speak") != 0) {
+    std::move(on_ssml_parsed).Run(utterance);
+    return;
+  }
+
+  std::string parsed_text = "";
+  // Change from unique_ptr to base::Value* so recursion will work.
+  PopulateParsedText(&parsed_text, &(*value));
+
+  // Run with parsed_text.
+  std::move(on_ssml_parsed).Run(parsed_text);
+}
+
+void TtsControllerImpl::PopulateParsedText(std::string* parsed_text,
+                                           const base::Value* element) {
+  DCHECK(parsed_text);
+  if (!element)
+    return;
+  // Add element's text if present.
+  // Note: We don't use data_decoder::GetXmlElementText because it gets the text
+  // of element's first child, not text of current element.
+  const base::Value* text_value = element->FindKeyOfType(
+      data_decoder::mojom::XmlParser::kTextKey, base::Value::Type::STRING);
+  if (text_value)
+    *parsed_text += text_value->GetString();
+
+  const base::Value* children = data_decoder::GetXmlElementChildren(*element);
+  if (!children || !children->is_list())
+    return;
+
+  for (size_t i = 0; i < children->GetList().size(); ++i) {
+    // We need to iterate over all children because some text elements are
+    // nested within other types of elements, such as <emphasis> tags.
+    PopulateParsedText(parsed_text, &children->GetList()[i]);
+  }
 }
 
 }  // namespace content
