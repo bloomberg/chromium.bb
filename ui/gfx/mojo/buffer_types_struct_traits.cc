@@ -42,7 +42,6 @@ bool StructTraits<
   out->stride = data.stride();
   out->offset = data.offset();
   out->size = data.size();
-  out->modifier = data.modifier();
 
   mojo::PlatformHandle handle =
       mojo::UnwrapPlatformHandle(data.TakeBufferHandle());
@@ -68,6 +67,8 @@ bool StructTraits<
     return false;
   out->buffer_index = data.buffer_index();
 #endif
+
+  out->modifier = data.modifier();
   return data.ReadPlanes(&out->planes);
 }
 #endif  // defined(OS_LINUX) || defined(USE_OZONE)

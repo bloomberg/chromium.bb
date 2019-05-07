@@ -22,18 +22,17 @@ class NativePixmapDmaBufTest
       gfx::Size image_size,
       const gfx::BufferFormat format) {
     gfx::NativePixmapHandle handle;
+    handle.modifier = 1;
     const int num_planes = gfx::NumberOfPlanesForBufferFormat(format);
     for (int i = 0; i < num_planes; ++i) {
       // These values are arbitrarily chosen to be different from each other.
       const int stride = (i + 1) * image_size.width();
       const int offset = i * image_size.width() * image_size.height();
       const uint64_t size = stride * image_size.height();
-      const uint64_t modifiers = 1;
       base::ScopedFD fd(open("/dev/zero", O_RDONLY));
       EXPECT_TRUE(fd.is_valid());
 
-      handle.planes.emplace_back(stride, offset, size, std::move(fd),
-                                 modifiers);
+      handle.planes.emplace_back(stride, offset, size, std::move(fd));
     }
 
     return handle;
@@ -59,7 +58,8 @@ TEST_P(NativePixmapDmaBufTest, Convert) {
   scoped_refptr<gfx::NativePixmap> native_pixmap_dmabuf(
       new gfx::NativePixmapDmaBuf(image_size, format, std::move(handle)));
   EXPECT_TRUE(native_pixmap_dmabuf->AreDmaBufFdsValid());
-
+  EXPECT_EQ(native_pixmap_dmabuf->GetBufferFormatModifier(),
+            handle_clone.modifier);
   // NativePixmap to NativePixmapHandle.
   const size_t num_planes = gfx::NumberOfPlanesForBufferFormat(
       native_pixmap_dmabuf->GetBufferFormat());
@@ -68,8 +68,6 @@ TEST_P(NativePixmapDmaBufTest, Convert) {
               handle_clone.planes[i].stride);
     EXPECT_EQ(native_pixmap_dmabuf->GetDmaBufOffset(i),
               handle_clone.planes[i].offset);
-    EXPECT_EQ(native_pixmap_dmabuf->GetBufferFormatModifier(),
-              handle_clone.planes[i].modifier);
   }
 }
 

@@ -78,7 +78,7 @@ TEST(V4L2DeviceTest, V4L2FormatToVideoFrameLayoutNV12) {
   ASSERT_TRUE(layout.has_value());
   EXPECT_EQ(PIXEL_FORMAT_NV12, layout->format());
   EXPECT_EQ(gfx::Size(300, 180), layout->coded_size());
-  constexpr uint64_t kNoModifier = gfx::NativePixmapPlane::kNoModifier;
+  constexpr uint64_t kNoModifier = gfx::NativePixmapHandle::kNoModifier;
   std::vector<VideoFrameLayout::Plane> expected_planes(
       {{320, 0u, kNoModifier}, {320, 57600u, kNoModifier}});
   EXPECT_EQ(expected_planes, layout->planes());
@@ -103,7 +103,7 @@ TEST(V4L2DeviceTest, V4L2FormatToVideoFrameLayoutYUV420) {
   ASSERT_TRUE(layout.has_value());
   EXPECT_EQ(PIXEL_FORMAT_I420, layout->format());
   EXPECT_EQ(gfx::Size(300, 180), layout->coded_size());
-  constexpr uint64_t kNoModifier = gfx::NativePixmapPlane::kNoModifier;
+  constexpr uint64_t kNoModifier = gfx::NativePixmapHandle::kNoModifier;
   std::vector<VideoFrameLayout::Plane> expected_planes(
       {{320, 0u, kNoModifier},
        {160, 57600u, kNoModifier},

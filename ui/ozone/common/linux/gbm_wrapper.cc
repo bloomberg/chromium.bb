@@ -217,7 +217,7 @@ std::unique_ptr<Buffer> CreateBufferForBO(struct gbm_bo* bo,
 
     handle.planes.emplace_back(
         gbm_bo_get_stride_for_plane(bo, i), gbm_bo_get_offset(bo, i),
-        GetSizeOfPlane(bo, format, size, i), std::move(fd), modifier);
+        GetSizeOfPlane(bo, format, size, i), std::move(fd));
   }
   return std::make_unique<Buffer>(bo, format, flags, modifier, size,
                                   std::move(handle));
@@ -280,15 +280,13 @@ class Device final : public ui::GbmDevice {
     fd_data.height = size.height();
     fd_data.format = format;
     fd_data.num_fds = handle.planes.size();
-    fd_data.modifier = handle.planes[0].modifier;
+    fd_data.modifier = handle.modifier;
 
     DCHECK_LE(handle.planes.size(), 3u);
     for (size_t i = 0; i < handle.planes.size(); ++i) {
       fd_data.fds[i] = handle.planes[i < handle.planes.size() ? i : 0].fd.get();
       fd_data.strides[i] = handle.planes[i].stride;
       fd_data.offsets[i] = handle.planes[i].offset;
-      // Make sure the modifier is the same for all the planes.
-      DCHECK_EQ(fd_data.modifier, handle.planes[i].modifier);
     }
 
     // The fd passed to gbm_bo_import is not ref-counted and need to be
@@ -299,9 +297,8 @@ class Device final : public ui::GbmDevice {
       return nullptr;
     }
 
-    return std::make_unique<Buffer>(bo, format, gbm_flags,
-                                    handle.planes[0].modifier, size,
-                                    std::move(handle));
+    return std::make_unique<Buffer>(bo, format, gbm_flags, handle.modifier,
+                                    size, std::move(handle));
   }
 
  private:
