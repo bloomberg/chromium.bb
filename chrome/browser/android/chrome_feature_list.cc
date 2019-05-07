@@ -206,6 +206,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &password_manager::features::kGooglePasswordManager,
     &password_manager::features::kPasswordsKeyboardAccessory,
     &previews::features::kDataSaverLiteModeRebranding,
+    &safe_browsing::kCaptureSafetyNetId,
     &signin::kMiceFeature,
     &switches::kSyncSendTabToSelf,
     &translate::kTranslateMobileManualTrigger,
