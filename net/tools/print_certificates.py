@@ -121,8 +121,7 @@ def decode_netlog_hexdump(netlog_text):
   lines = netlog_text.splitlines()
 
   # Skip the text preceeding the actual hexdump.
-  # TODO(eroman): New logs name this field "bytes" and it is Base64 encoded.
-  while lines and 'hex_encoded_bytes' not in lines[0]:
+  while lines and 'bytes =' not in lines[0]:
     del lines[0]
   if not lines:
     return None
