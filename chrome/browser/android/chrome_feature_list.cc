@@ -188,7 +188,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &payments::features::kWebPaymentsSingleAppUiSkip,
     &language::kExplicitLanguageAsk,
     &ntp_snippets::kArticleSuggestionsFeature,
-    &ntp_tiles::kSiteExplorationUiFeature,
     &offline_pages::kOfflineIndicatorFeature,
     &offline_pages::kOfflineIndicatorAlwaysHttpProbeFeature,
     &offline_pages::kOfflinePagesCTFeature,    // See crbug.com/620421.

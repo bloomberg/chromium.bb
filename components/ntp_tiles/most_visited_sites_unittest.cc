@@ -877,51 +877,6 @@ TEST_P(MostVisitedSitesTest, ShouldInformSuggestionSourcesWhenBlacklisting) {
                                                  /*add_url=*/false);
 }
 
-TEST_P(MostVisitedSitesTest, ShouldContainSiteExplorationsWhenFeatureEnabled) {
-  base::test::ScopedFeatureList feature_list;
-  std::map<SectionType, NTPTilesVector> sections;
-  feature_list.InitAndEnableFeature(kSiteExplorationUiFeature);
-  pref_service_.SetString(prefs::kPopularSitesOverrideVersion, "6");
-  RecreateMostVisitedSites();  // Refills cache with version 6 popular sites.
-  DisableRemoteSuggestions();
-  EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_))
-      .WillRepeatedly(InvokeCallbackArgument<0>(
-          MostVisitedURLList{MakeMostVisitedURL("Site 1", "http://site1/")}));
-  EXPECT_CALL(*mock_top_sites_, SyncWithHistory());
-  EXPECT_CALL(mock_observer_, OnURLsAvailable(_))
-      .WillOnce(SaveArg<0>(&sections));
-
-  most_visited_sites_->SetMostVisitedURLsObserver(&mock_observer_,
-                                                  /*num_sites=*/3);
-  base::RunLoop().RunUntilIdle();
-
-  if (!IsPopularSitesFeatureEnabled()) {
-    EXPECT_THAT(
-        sections,
-        Contains(Pair(SectionType::PERSONALIZED,
-                      ElementsAre(MatchesTile("Site 1", "http://site1/",
-                                              TileSource::TOP_SITES)))));
-    return;
-  }
-  const auto& expected_sections =
-      most_visited_sites_->popular_sites()->sections();
-  ASSERT_THAT(expected_sections.size(), Ge(2ul));
-  EXPECT_THAT(sections.size(), Eq(expected_sections.size()));
-  EXPECT_THAT(
-      sections,
-      AllOf(Contains(Pair(
-                SectionType::PERSONALIZED,
-                ElementsAre(MatchesTile("Site 1", "http://site1/",
-                                        TileSource::TOP_SITES),
-                            MatchesTile("PopularSite1", "http://popularsite1/",
-                                        TileSource::POPULAR),
-                            MatchesTile("PopularSite2", "http://popularsite2/",
-                                        TileSource::POPULAR)))),
-            Contains(Pair(SectionType::NEWS, SizeIs(2ul))),
-            Contains(Pair(SectionType::SOCIAL, SizeIs(1ul))),
-            Contains(Pair(_, IsEmpty()))));
-}
-
 TEST_P(MostVisitedSitesTest,
        ShouldDeduplicatePopularSitesWithMostVisitedIffHostAndTitleMatches) {
   pref_service_.SetString(prefs::kPopularSitesOverrideCountry, "US");

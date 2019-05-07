@@ -531,10 +531,7 @@ TEST_F(PopularSitesTest, ShouldOverrideDirectory) {
   EXPECT_THAT(sites.size(), Eq(1u));
 }
 
-TEST_F(PopularSitesTest, DoesNotFetchExplorationSitesWithoutFeature) {
-  base::test::ScopedFeatureList override_features;
-  override_features.InitAndDisableFeature(kSiteExplorationUiFeature);
-
+TEST_F(PopularSitesTest, DoesNotFetchExplorationSites) {
   SetCountryAndVersion("ZZ", "6");
   RespondWithV6JSON(
       "https://www.gstatic.com/chrome/ntp/suggested_sites_ZZ_6.json",
@@ -547,47 +544,6 @@ TEST_F(PopularSitesTest, DoesNotFetchExplorationSitesWithoutFeature) {
 
   // The fetched news section should not be propagated without enabled feature.
   EXPECT_THAT(sections, Not(Contains(Pair(SectionType::NEWS, _))));
-}
-
-TEST_F(PopularSitesTest, FetchesExplorationSitesWithFeature) {
-  base::test::ScopedFeatureList override_features;
-  override_features.InitAndEnableFeature(kSiteExplorationUiFeature);
-  SetCountryAndVersion("ZZ", "6");
-  RespondWithV6JSON(
-      "https://www.gstatic.com/chrome/ntp/suggested_sites_ZZ_6.json",
-      {{SectionType::PERSONALIZED, {kChromium}},
-       {SectionType::ENTERTAINMENT, {kWikipedia, kYouTube}},
-       {SectionType::NEWS, {kYouTube}},
-       {SectionType::TOOLS, TestPopularSiteVector{}}});
-
-  std::map<SectionType, PopularSites::SitesVector> sections;
-  EXPECT_THAT(FetchAllSections(/*force_download=*/false, &sections),
-              Eq(base::Optional<bool>(true)));
-
-  EXPECT_THAT(sections, ElementsAre(Pair(SectionType::PERSONALIZED, SizeIs(1)),
-                                    Pair(SectionType::ENTERTAINMENT, SizeIs(2)),
-                                    Pair(SectionType::NEWS, SizeIs(1)),
-                                    Pair(SectionType::TOOLS, IsEmpty())));
-}
-
-TEST_F(PopularSitesTest, FetchesExplorationSitesIgnoreUnknownSections) {
-  base::test::ScopedFeatureList override_features;
-  override_features.InitAndEnableFeature(kSiteExplorationUiFeature);
-
-  SetCountryAndVersion("ZZ", "6");
-  RespondWithV6JSON(
-      "https://www.gstatic.com/chrome/ntp/suggested_sites_ZZ_6.json",
-      {{SectionType::UNKNOWN, {kChromium}},
-       {SectionType::NEWS, {kYouTube}},
-       {SectionType::UNKNOWN, {kWikipedia, kYouTube}}});
-
-  std::map<SectionType, PopularSites::SitesVector> sections;
-  EXPECT_THAT(FetchAllSections(/*force_download=*/false, &sections),
-              Eq(base::Optional<bool>(true)));
-
-  // Expect that there are four sections, none of which is empty.
-  EXPECT_THAT(sections, ElementsAre(Pair(SectionType::PERSONALIZED, SizeIs(0)),
-                                    Pair(SectionType::NEWS, SizeIs(1))));
 }
 
 }  // namespace

@@ -55,11 +55,9 @@ const char* kKnownGenericPagePrefixes[] = {
     ""};  // The no-www domain matches domains on same level .
 
 // Determine whether we need any tiles from PopularSites to fill up a grid of
-// |num_tiles| tiles. If exploration sections are used, we need popular sites
-// regardless of how many tiles we already have.
+// |num_tiles| tiles.
 bool NeedPopularSites(const PrefService* prefs, int num_tiles) {
-  return base::FeatureList::IsEnabled(kSiteExplorationUiFeature) ||
-         prefs->GetInteger(prefs::kNumPersonalTiles) < num_tiles;
+  return prefs->GetInteger(prefs::kNumPersonalTiles) < num_tiles;
 }
 
 bool AreURLsEquivalent(const GURL& url1, const GURL& url2) {

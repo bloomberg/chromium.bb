@@ -23,10 +23,6 @@ extern const base::Feature kPopularSitesBakedInContentFeature;
 // Likely tiles on the New Tab Page.
 extern const base::Feature kNtpMostLikelyFaviconsFromServerFeature;
 
-// Feature to provide site exploration tiles in addition to personal tiles.
-// TODO(https://crbug.com/957297): Remove this.
-extern const base::Feature kSiteExplorationUiFeature;
-
 // If this feature is enabled, we enable popular sites in the suggestions UI.
 extern const base::Feature kUsePopularSitesSuggestions;
 

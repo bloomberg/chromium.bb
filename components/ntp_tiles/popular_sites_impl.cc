@@ -172,9 +172,10 @@ std::map<SectionType, PopularSites::SitesVector> ParseVersion6OrAbove(
                    << "invalid ID (" << section << ")";
       continue;
     }
+    // Non-personalized site exploration tiles are no longer supported, so
+    // ignore all other section types.
     SectionType section_type = static_cast<SectionType>(section);
-    if (section_type == SectionType::UNKNOWN) {
-      LOG(WARNING) << "Dropped an unknown section in SitesExploration list.";
+    if (section_type != SectionType::PERSONALIZED) {
       continue;
     }
     const base::ListValue* sites_list;
@@ -182,12 +183,6 @@ std::map<SectionType, PopularSites::SitesVector> ParseVersion6OrAbove(
       continue;
     }
     sections[section_type] = ParseSiteList(*sites_list);
-  }
-  if (!base::FeatureList::IsEnabled(kSiteExplorationUiFeature)) {
-    // New versions of popular sites that should act like old versions will
-    // mimic having only the personalized list.
-    return {std::make_pair(SectionType::PERSONALIZED,
-                           std::move(sections[SectionType::PERSONALIZED]))};
   }
   return sections;
 }
