@@ -84,10 +84,21 @@ MULTIPROCESS_TEST_MAIN(CrashingProcess) {
   CHECK(!directory.empty());
   std::string test_name = cmd_line->GetSwitchValueASCII("test-name");
   CHECK(!test_name.empty());
+  std::string allocator = cmd_line->GetSwitchValueASCII("allocator");
+
+  const char* annotation_name;
+  if (allocator == "malloc") {
+    annotation_name = kMallocCrashKey;
+  } else if (allocator == "partitionalloc") {
+    annotation_name = kPartitionAllocCrashKey;
+  } else {
+    LOG(ERROR) << "Unknown allocator";
+    return kSuccess;
+  }
 
   std::string gpa_addr = gpa->GetCrashKey();
   static crashpad::Annotation gpa_annotation(
-      crashpad::Annotation::Type::kString, kMallocCrashKey,
+      crashpad::Annotation::Type::kString, annotation_name,
       const_cast<char*>(gpa_addr.c_str()));
   gpa_annotation.SetSize(gpa_addr.size());
 
@@ -159,16 +170,25 @@ MULTIPROCESS_TEST_MAIN(CrashingProcess) {
   return kSuccess;
 }
 
-class CrashHandlerTest : public base::MultiProcessTest {
+class CrashHandlerTest : public base::MultiProcessTest,
+                         public testing::WithParamInterface<const char*> {
  protected:
+  CrashHandlerTest() : allocator_(GetParam()) {}
+
   // Launch a child process and wait for it to crash. Set |gwp_asan_found_| if a
   // GWP-ASan data was found and if so, read it into |proto_|.
   void SetUp() final {
     base::ScopedTempDir database_dir;
     ASSERT_TRUE(database_dir.CreateUniqueTempDir());
-    ASSERT_TRUE(runTestProcess(
-        database_dir.GetPath(),
-        ::testing::UnitTest::GetInstance()->current_test_info()->name()));
+
+    // Remove the parameterized test suffix from the test name.
+    std::string test_name(
+        testing::UnitTest::GetInstance()->current_test_info()->name());
+    size_t separator = test_name.find("/");
+    ASSERT_NE(separator, std::string::npos);
+    test_name.erase(separator);
+
+    ASSERT_TRUE(runTestProcess(database_dir.GetPath(), test_name.c_str()));
 
     bool minidump_found;
     readGwpAsanStreamFromCrash(database_dir.GetPath(), &minidump_found,
@@ -185,6 +205,7 @@ class CrashHandlerTest : public base::MultiProcessTest {
         base::GetMultiProcessTestChildBaseCommandLine();
     cmd_line.AppendSwitchPath("directory", database_dir);
     cmd_line.AppendSwitchASCII("test-name", test_name);
+    cmd_line.AppendSwitchASCII("allocator", allocator_);
 
     base::LaunchOptions options;
 #if defined(OS_WIN)
@@ -269,9 +290,18 @@ class CrashHandlerTest : public base::MultiProcessTest {
 
     EXPECT_TRUE(proto_.has_missing_metadata());
     EXPECT_FALSE(proto_.missing_metadata());
+
+    EXPECT_TRUE(proto_.has_allocator());
+    if (allocator_ == "malloc")
+      EXPECT_EQ(proto_.allocator(), Crash_Allocator_MALLOC);
+    else if (allocator_ == "partitionalloc")
+      EXPECT_EQ(proto_.allocator(), Crash_Allocator_PARTITIONALLOC);
+    else
+      ASSERT_TRUE(false) << "Unknown allocator name";
   }
 
   gwp_asan::Crash proto_;
+  std::string allocator_;
   bool gwp_asan_found_;
 };
 
@@ -282,33 +312,33 @@ class CrashHandlerTest : public base::MultiProcessTest {
 #define MAYBE_DISABLED(name) name
 #endif  // defined(ADDRESS_SANITIZER) && defined(OS_WIN)
 
-TEST_F(CrashHandlerTest, MAYBE_DISABLED(UseAfterFree)) {
+TEST_P(CrashHandlerTest, MAYBE_DISABLED(UseAfterFree)) {
   ASSERT_TRUE(gwp_asan_found_);
   checkProto(Crash_ErrorType_USE_AFTER_FREE, true);
 }
 
-TEST_F(CrashHandlerTest, MAYBE_DISABLED(DoubleFree)) {
+TEST_P(CrashHandlerTest, MAYBE_DISABLED(DoubleFree)) {
   ASSERT_TRUE(gwp_asan_found_);
   checkProto(Crash_ErrorType_DOUBLE_FREE, true);
 }
 
-TEST_F(CrashHandlerTest, MAYBE_DISABLED(Underflow)) {
+TEST_P(CrashHandlerTest, MAYBE_DISABLED(Underflow)) {
   ASSERT_TRUE(gwp_asan_found_);
   checkProto(Crash_ErrorType_BUFFER_UNDERFLOW, false);
 }
 
-TEST_F(CrashHandlerTest, MAYBE_DISABLED(Overflow)) {
+TEST_P(CrashHandlerTest, MAYBE_DISABLED(Overflow)) {
   ASSERT_TRUE(gwp_asan_found_);
   checkProto(Crash_ErrorType_BUFFER_OVERFLOW, false);
 }
 
-TEST_F(CrashHandlerTest, MAYBE_DISABLED(FreeInvalidAddress)) {
+TEST_P(CrashHandlerTest, MAYBE_DISABLED(FreeInvalidAddress)) {
   ASSERT_TRUE(gwp_asan_found_);
   checkProto(Crash_ErrorType_FREE_INVALID_ADDRESS, false);
   EXPECT_TRUE(proto_.has_free_invalid_address());
 }
 
-TEST_F(CrashHandlerTest, MAYBE_DISABLED(MissingMetadata)) {
+TEST_P(CrashHandlerTest, MAYBE_DISABLED(MissingMetadata)) {
   ASSERT_TRUE(gwp_asan_found_);
 
   ASSERT_TRUE(proto_.has_missing_metadata());
@@ -324,9 +354,13 @@ TEST_F(CrashHandlerTest, MAYBE_DISABLED(MissingMetadata)) {
   EXPECT_TRUE(proto_.has_region_size());
 }
 
-TEST_F(CrashHandlerTest, MAYBE_DISABLED(UnrelatedException)) {
+TEST_P(CrashHandlerTest, MAYBE_DISABLED(UnrelatedException)) {
   ASSERT_FALSE(gwp_asan_found_);
 }
+
+INSTANTIATE_TEST_SUITE_P(VaryAllocator,
+                         CrashHandlerTest,
+                         testing::Values("malloc", "partitionalloc"));
 
 }  // namespace
 

@@ -73,6 +73,17 @@ const char* ErrorToString(Crash_ErrorType type) {
   }
 }
 
+const char* AllocatorToString(Crash_Allocator allocator) {
+  switch (allocator) {
+    case Crash::MALLOC:
+      return "malloc";
+    case Crash::PARTITIONALLOC:
+      return "partitionalloc";
+    default:
+      return "unexpected allocator type";
+  }
+}
+
 std::unique_ptr<crashpad::MinidumpUserExtensionStreamDataSource>
 HandleException(const crashpad::ProcessSnapshot& snapshot) {
   gwp_asan::Crash proto;
@@ -85,7 +96,8 @@ HandleException(const crashpad::ProcessSnapshot& snapshot) {
     LOG(ERROR) << "Detected GWP-ASan crash with missing metadata.";
   } else {
     LOG(ERROR) << "Detected GWP-ASan crash for allocation at 0x" << std::hex
-               << proto.allocation_address() << std::dec << " of type "
+               << proto.allocation_address() << std::dec << " ("
+               << AllocatorToString(proto.allocator()) << ") of type "
                << ErrorToString(proto.error_type());
   }
 

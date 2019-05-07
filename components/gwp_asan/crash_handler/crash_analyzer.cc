@@ -33,9 +33,12 @@ using GetMetadataReturnType = AllocatorState::GetMetadataReturnType;
 bool CrashAnalyzer::GetExceptionInfo(
     const crashpad::ProcessSnapshot& process_snapshot,
     gwp_asan::Crash* proto) {
-  crashpad::VMAddress gpa_ptr = GetAllocatorAddress(process_snapshot);
-  // If the annotation wasn't present, GWP-ASan wasn't enabled.
-  if (!gpa_ptr)
+  crashpad::VMAddress malloc_key =
+      GetAllocatorAddress(process_snapshot, kMallocCrashKey);
+  crashpad::VMAddress partitionalloc_key =
+      GetAllocatorAddress(process_snapshot, kPartitionAllocCrashKey);
+  // If the annotations weren't present, GWP-ASan wasn't enabled.
+  if (!malloc_key && !partitionalloc_key)
     return false;
 
   const crashpad::ExceptionSnapshot* exception = process_snapshot.Exception();
@@ -65,15 +68,31 @@ bool CrashAnalyzer::GetExceptionInfo(
     return false;
   }
 
-  return AnalyzeCrashedAllocator(*process_snapshot.Memory(), *exception,
-                                 gpa_ptr, proto);
+  if (malloc_key) {
+    if (AnalyzeCrashedAllocator(*process_snapshot.Memory(), *exception,
+                                malloc_key, proto)) {
+      proto->set_allocator(Crash_Allocator_MALLOC);
+      return true;
+    }
+  }
+
+  if (partitionalloc_key) {
+    if (AnalyzeCrashedAllocator(*process_snapshot.Memory(), *exception,
+                                partitionalloc_key, proto)) {
+      proto->set_allocator(Crash_Allocator_PARTITIONALLOC);
+      return true;
+    }
+  }
+
+  return false;
 }
 
 crashpad::VMAddress CrashAnalyzer::GetAllocatorAddress(
-    const crashpad::ProcessSnapshot& process_snapshot) {
+    const crashpad::ProcessSnapshot& process_snapshot,
+    const char* annotation_name) {
   for (auto* module : process_snapshot.Modules()) {
     for (auto annotation : module->AnnotationObjects()) {
-      if (annotation.name != kMallocCrashKey)
+      if (annotation.name != annotation_name)
         continue;
 
       if (annotation.type !=

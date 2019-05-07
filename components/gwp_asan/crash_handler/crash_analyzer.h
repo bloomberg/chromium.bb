@@ -79,9 +79,10 @@ class CrashAnalyzer {
       const crashpad::ExceptionSnapshot& exception);
 
   // If the allocator annotation is present in the given snapshot, then return
-  // the address for the GuardedPageAllocator in the crashing process.
+  // the address for the AllocatorState in the crashing process.
   static crashpad::VMAddress GetAllocatorAddress(
-      const crashpad::ProcessSnapshot& process_snapshot);
+      const crashpad::ProcessSnapshot& process_snapshot,
+      const char* annotation_name);
 
   // This method implements the underlying logic for GetExceptionInfo(). It
   // analyzes the AllocatorState of the crashing process, if the exception is
