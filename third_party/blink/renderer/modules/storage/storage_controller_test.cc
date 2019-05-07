@@ -79,7 +79,7 @@ TEST(StorageControllerTest, CacheLimit) {
   cached_area1->SetItem(kKey, kValue, source_area);
   const auto* area1_ptr = cached_area1.get();
   size_t expected_total = (kKey.length() + kValue.length()) * 2;
-  EXPECT_EQ(expected_total, cached_area1->memory_used());
+  EXPECT_EQ(expected_total, cached_area1->quota_used());
   EXPECT_EQ(expected_total, controller.TotalCacheSize());
   cached_area1 = nullptr;
 
@@ -87,14 +87,14 @@ TEST(StorageControllerTest, CacheLimit) {
   cached_area2->RegisterSource(source_area);
   cached_area2->SetItem(kKey, kValue, source_area);
   // Area for kOrigin should still be alive.
-  EXPECT_EQ(2 * cached_area2->memory_used(), controller.TotalCacheSize());
+  EXPECT_EQ(2 * cached_area2->quota_used(), controller.TotalCacheSize());
   EXPECT_EQ(area1_ptr, controller.GetLocalStorageArea(kOrigin.get()));
 
   String long_value(Vector<UChar>(kTestCacheLimit, 'a'));
   cached_area2->SetItem(kKey, long_value, source_area);
   // Cache is cleared when a new area is opened.
   auto cached_area3 = controller.GetLocalStorageArea(kOrigin3.get());
-  EXPECT_EQ(cached_area2->memory_used(), controller.TotalCacheSize());
+  EXPECT_EQ(cached_area2->quota_used(), controller.TotalCacheSize());
 }
 
 TEST(StorageControllerTest, CacheLimitSessionStorage) {
@@ -143,7 +143,7 @@ TEST(StorageControllerTest, CacheLimitSessionStorage) {
   cached_area1->SetItem(kKey, kValue, source_area);
   const auto* area1_ptr = cached_area1.get();
   size_t expected_total = (kKey.length() + kValue.length()) * 2;
-  EXPECT_EQ(expected_total, cached_area1->memory_used());
+  EXPECT_EQ(expected_total, cached_area1->quota_used());
   EXPECT_EQ(expected_total, controller.TotalCacheSize());
   cached_area1 = nullptr;
 
@@ -151,14 +151,14 @@ TEST(StorageControllerTest, CacheLimitSessionStorage) {
   cached_area2->RegisterSource(source_area);
   cached_area2->SetItem(kKey, kValue, source_area);
   // Area for kOrigin should still be alive.
-  EXPECT_EQ(2 * cached_area2->memory_used(), controller.TotalCacheSize());
+  EXPECT_EQ(2 * cached_area2->quota_used(), controller.TotalCacheSize());
   EXPECT_EQ(area1_ptr, ns1->GetCachedArea(kOrigin.get()));
 
   String long_value(Vector<UChar>(kTestCacheLimit, 'a'));
   cached_area2->SetItem(kKey, long_value, source_area);
   // Cache is cleared when a new area is opened.
   auto cached_area3 = ns1->GetCachedArea(kOrigin3.get());
-  EXPECT_EQ(cached_area2->memory_used(), controller.TotalCacheSize());
+  EXPECT_EQ(cached_area2->quota_used(), controller.TotalCacheSize());
 
   int32_t opens = 0;
   {

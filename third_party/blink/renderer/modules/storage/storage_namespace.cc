@@ -140,7 +140,7 @@ void StorageNamespace::CloneTo(const String& target) {
 size_t StorageNamespace::TotalCacheSize() const {
   size_t total = 0;
   for (const auto& it : cached_areas_)
-    total += it.value->memory_used();
+    total += it.value->quota_used();
   return total;
 }
 

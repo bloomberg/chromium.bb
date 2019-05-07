@@ -86,7 +86,8 @@ class MODULES_EXPORT CachedStorageArea
   // Returns the (unique) id allocated for this source for testing purposes.
   String RegisterSource(Source* source);
 
-  size_t memory_used() const { return map_ ? map_->quota_used() : 0; }
+  size_t quota_used() const { return map_ ? map_->quota_used() : 0; }
+  size_t memory_used() const { return map_ ? map_->memory_used() : 0; }
 
   // Only public to allow tests to parametrize on this type.
   enum class FormatOption {
