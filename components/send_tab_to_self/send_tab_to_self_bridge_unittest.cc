@@ -333,6 +333,46 @@ TEST_F(SendTabToSelfBridgeTest, ApplySyncChangesOneDeletion) {
   EXPECT_EQ(0ul, bridge()->GetAllGuids().size());
 }
 
+// Tests that the send tab to self entry is correctly removed.
+TEST_F(SendTabToSelfBridgeTest, LocalHistoryDeletion) {
+  InitializeBridge();
+  SendTabToSelfEntry entry1("guid1", GURL("http://www.example.com/"), "title",
+                            AdvanceAndGetTime(), AdvanceAndGetTime(), "device",
+                            kLocalDeviceCacheGuid);
+
+  SendTabToSelfEntry entry2("guid2", GURL("http://www.example2.com/"), "title2",
+                            AdvanceAndGetTime(), AdvanceAndGetTime(), "device2",
+                            kLocalDeviceCacheGuid);
+
+  SendTabToSelfEntry entry3("guid3", GURL("http://www.example3.com/"), "title3",
+                            AdvanceAndGetTime(), AdvanceAndGetTime(), "device3",
+                            kLocalDeviceCacheGuid);
+
+  syncer::EntityChangeList add_changes;
+
+  add_changes.push_back(
+      syncer::EntityChange::CreateAdd("guid1", MakeEntityData(entry1)));
+  add_changes.push_back(
+      syncer::EntityChange::CreateAdd("guid2", MakeEntityData(entry2)));
+  add_changes.push_back(
+      syncer::EntityChange::CreateAdd("guid3", MakeEntityData(entry3)));
+
+  bridge()->ApplySyncChanges(bridge()->CreateMetadataChangeList(),
+                             std::move(add_changes));
+
+  ASSERT_EQ(3ul, bridge()->GetAllGuids().size());
+
+  history::URLRows urls_to_remove;
+  urls_to_remove.push_back(history::URLRow(GURL("http://www.example.com/")));
+  urls_to_remove.push_back(history::URLRow(GURL("http://www.example2.com/")));
+
+  EXPECT_CALL(*mock_observer(), EntriesRemovedRemotely(SizeIs(2)));
+
+  bridge()->OnURLsDeleted(nullptr, history::DeletionInfo::ForUrls(
+                                       urls_to_remove, std::set<GURL>()));
+  EXPECT_EQ(1ul, bridge()->GetAllGuids().size());
+}
+
 TEST_F(SendTabToSelfBridgeTest, ApplySyncChangesEmpty) {
   InitializeBridge();
   EXPECT_CALL(*mock_observer(), EntriesAddedRemotely(_)).Times(0);

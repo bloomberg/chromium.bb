@@ -343,18 +343,10 @@ void SendTabToSelfBridge::DeleteEntry(const std::string& guid) {
     return;
   }
 
-  DCHECK(change_processor()->IsTrackingMetadata());
-
   std::unique_ptr<ModelTypeStore::WriteBatch> batch =
       store_->CreateWriteBatch();
-  change_processor()->Delete(guid, batch->GetMetadataChangeList());
 
-  if (mru_entry_ && mru_entry_->GetGUID() == guid) {
-    mru_entry_ = nullptr;
-  }
-
-  entries_.erase(guid);
-  batch->DeleteData(guid);
+  DeleteEntryWithBatch(guid, batch.get());
 
   Commit(std::move(batch));
 }
@@ -378,11 +370,22 @@ void SendTabToSelfBridge::OnURLsDeleted(
     history::HistoryService* history_service,
     const history::DeletionInfo& deletion_info) {
   // We only care about actual user (or sync) deletions.
+
+  if (!change_processor()->IsTrackingMetadata()) {
+    return;  // Sync processor not yet ready, don't sync.
+  }
+
   if (deletion_info.is_from_expiration())
     return;
 
   if (!deletion_info.IsAllHistory()) {
-    // TODO(crbug.com/938102) remove the specific entries that were deleted.
+    std::vector<GURL> urls;
+
+    for (const history::URLRow& row : deletion_info.deleted_rows()) {
+      urls.push_back(row.url());
+    }
+
+    DeleteEntries(urls);
     return;
   }
 
@@ -605,6 +608,51 @@ void SendTabToSelfBridge::SetTargetDeviceNameToCacheInfoMap() {
     target_device_name_to_cache_info_.emplace(device->client_name(),
                                               device_info_for_ui);
     oldest_device_cache_guid_ = device->guid();
+  }
+}
+
+void SendTabToSelfBridge::DeleteEntryWithBatch(
+    const std::string& guid,
+    ModelTypeStore::WriteBatch* batch) {
+  // Assure that an entry with that guid exists.
+  DCHECK(GetEntryByGUID(guid) != nullptr);
+  DCHECK(change_processor()->IsTrackingMetadata());
+
+  change_processor()->Delete(guid, batch->GetMetadataChangeList());
+
+  if (mru_entry_ && mru_entry_->GetGUID() == guid) {
+    mru_entry_ = nullptr;
+  }
+
+  entries_.erase(guid);
+  batch->DeleteData(guid);
+}
+
+void SendTabToSelfBridge::DeleteEntries(const std::vector<GURL>& urls) {
+  std::unique_ptr<ModelTypeStore::WriteBatch> batch =
+      store_->CreateWriteBatch();
+
+  std::vector<std::string> removed_guids;
+
+  for (const GURL url : urls) {
+    auto entry = entries_.begin();
+    while (entry != entries_.end()) {
+      bool to_delete = (url == entry->second->GetURL());
+
+      std::string guid = entry->first;
+      entry++;
+      if (to_delete) {
+        removed_guids.push_back(guid);
+        DeleteEntryWithBatch(guid, batch.get());
+      }
+    }
+  }
+  Commit(std::move(batch));
+  if (!removed_guids.empty()) {
+    // To err on the side of completeness this notifies all clients that these
+    // entries have been removed. Regardless of if these entries were removed
+    // "remotely".
+    NotifyRemoteSendTabToSelfEntryDeleted(removed_guids);
   }
 }
 

@@ -26,6 +26,8 @@ class SendTabToSelfUrlChecker
     : public StatusChangeChecker,
       public send_tab_to_self::SendTabToSelfModelObserver {
  public:
+  // The caller must ensure that |service| is not null and will outlive this
+  // object.
   SendTabToSelfUrlChecker(send_tab_to_self::SendTabToSelfSyncService* service,
                           const GURL& url);
   ~SendTabToSelfUrlChecker() override;
@@ -55,6 +57,8 @@ class SendTabToSelfModelEqualityChecker
     : public StatusChangeChecker,
       public send_tab_to_self::SendTabToSelfModelObserver {
  public:
+  // The caller must ensure that |service0| and |service1| are not null and
+  // will outlive this object.
   SendTabToSelfModelEqualityChecker(
       send_tab_to_self::SendTabToSelfSyncService* service0,
       send_tab_to_self::SendTabToSelfSyncService* service1);
@@ -84,6 +88,8 @@ class SendTabToSelfActiveChecker
     : public StatusChangeChecker,
       public send_tab_to_self::SendTabToSelfModelObserver {
  public:
+  // The caller must ensure that |service| is not null and will outlive this
+  // object.
   explicit SendTabToSelfActiveChecker(
       send_tab_to_self::SendTabToSelfSyncService* service);
   ~SendTabToSelfActiveChecker() override;
@@ -124,6 +130,36 @@ class SendTabToSelfMultiDeviceActiveChecker
  private:
   syncer::DeviceInfoTracker* const tracker_;
   DISALLOW_COPY_AND_ASSIGN(SendTabToSelfMultiDeviceActiveChecker);
+};
+
+class SendTabToSelfUrlDeletedChecker
+    : public StatusChangeChecker,
+      public send_tab_to_self::SendTabToSelfModelObserver {
+ public:
+  // The caller must ensure that |service| is not null and will outlive this
+  // object.
+  SendTabToSelfUrlDeletedChecker(
+      send_tab_to_self::SendTabToSelfSyncService* service,
+      const GURL& url);
+  ~SendTabToSelfUrlDeletedChecker() override;
+
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied() override;
+  std::string GetDebugMessage() const override;
+
+  // SendTabToSelfModelObserver implementation.
+  void SendTabToSelfModelLoaded() override;
+  void EntriesAddedRemotely(
+      const std::vector<const send_tab_to_self::SendTabToSelfEntry*>&
+          new_entries) override;
+  void EntriesRemovedRemotely(
+      const std::vector<std::string>& guids_removed) override;
+
+ private:
+  const GURL url_;
+  send_tab_to_self::SendTabToSelfSyncService* const service_;
+
+  DISALLOW_COPY_AND_ASSIGN(SendTabToSelfUrlDeletedChecker);
 };
 
 }  // namespace send_tab_to_self_helper

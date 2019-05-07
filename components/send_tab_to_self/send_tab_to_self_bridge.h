@@ -103,7 +103,7 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
       const std::vector<const SendTabToSelfEntry*>& new_entries);
 
   // Notify all observers when the entries with |guids| have been removed from
-  // the model via sync.
+  // the model via sync or via history deletion.
   void NotifyRemoteSendTabToSelfEntryDeleted(
       const std::vector<std::string>& guids);
 
@@ -135,6 +135,14 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
 
   // Sets the target device name to cache guid map.
   void SetTargetDeviceNameToCacheInfoMap();
+
+  // Remove entry with |guid| from entries, but doesn't call Commit on provided
+  // |batch|. This allows multiple for deletions without duplicate batch calls.
+  void DeleteEntryWithBatch(const std::string& guid,
+                            syncer::ModelTypeStore::WriteBatch* batch);
+
+  // Delete all of the entries that match the URLs provided.
+  void DeleteEntries(const std::vector<GURL>& urls);
 
   // |entries_| is keyed by GUIDs.
   SendTabToSelfEntries entries_;
