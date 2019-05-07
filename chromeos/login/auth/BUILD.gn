@@ -59,6 +59,8 @@ component("auth") {
     "login_event_recorder.h",
     "login_performer.cc",
     "login_performer.h",
+    "saml_password_attributes.cc",
+    "saml_password_attributes.h",
     "stub_authenticator.cc",
     "stub_authenticator.h",
     "stub_authenticator_builder.cc",
@@ -119,6 +121,8 @@ source_set("unit_tests") {
     "//chromeos/dbus/auth_policy:authpolicy_proto",
     "//chromeos/dbus/cryptohome",
     "//chromeos/tpm:test_support",
+    "//components/prefs",
+    "//components/prefs:test_support",
     "//net",
     "//net:test_support",
     "//testing/gmock",
@@ -128,5 +132,6 @@ source_set("unit_tests") {
   sources = [
     "challenge_response/cert_utils_unittest.cc",
     "key_unittest.cc",
+    "saml_password_attributes_unittest.cc",
   ]
 }

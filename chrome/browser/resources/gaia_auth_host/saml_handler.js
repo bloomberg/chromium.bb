@@ -385,7 +385,7 @@ cr.define('cr.login', function() {
 
       const attr = samlPasswordAttributes.readPasswordAttributes(samlResponse);
       chrome.send('updatePasswordAttributes', [
-        attr.modifiedTimestamp, attr.expirationTimestamp, attr.passwordChangeUrl
+        attr.modifiedTime, attr.expirationTime, attr.passwordChangeUrl
       ]);
     }
 

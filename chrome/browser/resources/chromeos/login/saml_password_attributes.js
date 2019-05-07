@@ -112,15 +112,17 @@ cr.define('samlPasswordAttributes', function() {
    * Timestamps are in JS time - the number of ms since 1 January 1970 - but
    * are also formatted as strings, since this struct is sent from JS into C++,
    * and strings travel easier than int64s across this boundary.
+   * If this struct is changed, SamlPasswordAttributes::FromJS in
+   * saml_password_attributes.cc must also be changed.
    * @export @final
    */
   class PasswordAttributes {
-    constructor(modifiedTimestamp, expirationTimestamp, passwordChangeUrl) {
+    constructor(modifiedTime, expirationTime, passwordChangeUrl) {
       /** @type {string} Password last-modified timestamp. */
-      this.modifiedTimestamp = modifiedTimestamp;
+      this.modifiedTime = modifiedTime;
 
       /** @type {string} Password expiration timestamp. */
-      this.expirationTimestamp = expirationTimestamp;
+      this.expirationTime = expirationTime;
 
       /** @type {string} Password-change URL. */
       this.passwordChangeUrl = passwordChangeUrl;

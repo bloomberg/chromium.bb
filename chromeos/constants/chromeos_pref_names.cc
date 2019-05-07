@@ -52,5 +52,17 @@ const char kDeviceWiFiFastTransitionEnabled[] =
 const char kSecondaryGoogleAccountSigninAllowed[] =
     "account_manager.secondary_google_account_signin_allowed";
 
+// The following SAML-related prefs are not settings that the domain admin can
+// set, but information that the SAML Identity Provider can send us:
+
+// A time pref - when the SAML password was last set, according to the SAML IdP.
+const char kSamlPasswordModifiedTime[] = "saml.password_modified_time";
+// A time pref - when the SAML password did expire, or will expire, according to
+// the SAML IDP.
+const char kSamlPasswordExpirationTime[] = "saml.password_expiration_time";
+// A string pref - the URL where the user can update their password, according
+// to the SAML IdP.
+const char kSamlPasswordChangeUrl[] = "saml.password_change_url";
+
 }  // namespace prefs
 }  // namespace chromeos
