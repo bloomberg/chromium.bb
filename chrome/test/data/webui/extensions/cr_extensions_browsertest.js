@@ -524,6 +524,7 @@ CrExtensionsManagerTestWithMultipleExtensionTypesInstalled =
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
+      '../settings/test_util.js',
       'manager_test.js',
     ]);
   }
