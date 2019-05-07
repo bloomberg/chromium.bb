@@ -70,8 +70,6 @@ class MODULES_EXPORT PictureInPictureControllerImpl
   bool IsExitAutoPictureInPictureAllowed() const;
 
   // Implementation of PictureInPictureController.
-  void EnterPictureInPicture(HTMLVideoElement*,
-                             ScriptPromiseResolver*) override;
   void EnterPictureInPicture(HTMLElement*,
                              PictureInPictureOptions*,
                              ScriptPromiseResolver*) override;

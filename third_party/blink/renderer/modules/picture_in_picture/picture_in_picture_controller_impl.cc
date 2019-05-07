@@ -111,11 +111,23 @@ PictureInPictureControllerImpl::IsElementAllowed(
 }
 
 void PictureInPictureControllerImpl::EnterPictureInPicture(
-    HTMLVideoElement* element,
+    HTMLElement* element,
+    PictureInPictureOptions* options,
     ScriptPromiseResolver* resolver) {
-  DCHECK(element->GetWebMediaPlayer());
+  if (!IsVideoElement(*element)) {
+    // TODO(https://crbug.com/953957): Support element level pip.
+    if (resolver)
+      resolver->Resolve();
 
-  if (picture_in_picture_element_ == element) {
+    return;
+  }
+
+  HTMLVideoElement* video_element = static_cast<HTMLVideoElement*>(element);
+
+  DCHECK(video_element->GetWebMediaPlayer());
+  DCHECK(!options);
+
+  if (picture_in_picture_element_ == video_element) {
     if (resolver)
       resolver->Resolve(picture_in_picture_window_);
 
@@ -125,29 +137,20 @@ void PictureInPictureControllerImpl::EnterPictureInPicture(
   if (!EnsureService())
     return;
 
-  if (element->DisplayType() == WebMediaPlayer::DisplayType::kFullscreen)
+  if (video_element->DisplayType() == WebMediaPlayer::DisplayType::kFullscreen)
     Fullscreen::ExitFullscreen(*GetSupplementable());
 
-  element->GetWebMediaPlayer()->OnRequestPictureInPicture();
+  video_element->GetWebMediaPlayer()->OnRequestPictureInPicture();
 
   picture_in_picture_service_->StartSession(
-      element->GetWebMediaPlayer()->GetDelegateId(),
-      element->GetWebMediaPlayer()->GetSurfaceId(),
-      element->GetWebMediaPlayer()->NaturalSize(),
-      ShouldShowPlayPauseButton(*element), ShouldShowMuteButton(*element),
+      video_element->GetWebMediaPlayer()->GetDelegateId(),
+      video_element->GetWebMediaPlayer()->GetSurfaceId(),
+      video_element->GetWebMediaPlayer()->NaturalSize(),
+      ShouldShowPlayPauseButton(*video_element),
+      ShouldShowMuteButton(*video_element),
       WTF::Bind(&PictureInPictureControllerImpl::OnEnteredPictureInPicture,
-                WrapPersistent(this), WrapPersistent(element),
+                WrapPersistent(this), WrapPersistent(video_element),
                 WrapPersistent(resolver)));
-}
-
-void PictureInPictureControllerImpl::EnterPictureInPicture(
-    HTMLElement* element,
-    PictureInPictureOptions* options,
-    ScriptPromiseResolver* resolver) {
-  DCHECK(!IsVideoElement(*element));
-
-  // TODO(https://crbug.com/953957): Support element level pip.
-  resolver->Resolve();
 }
 
 void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
@@ -331,7 +334,8 @@ void PictureInPictureControllerImpl::PageVisibilityChanged() {
   // If page becomes hidden and entering Auto Picture-in-Picture is allowed,
   // enter Picture-in-Picture.
   if (GetSupplementable()->hidden() && IsEnterAutoPictureInPictureAllowed()) {
-    EnterPictureInPicture(AutoPictureInPictureElement(), nullptr /* promise */);
+    EnterPictureInPicture(AutoPictureInPictureElement(), nullptr /* options */,
+                          nullptr /* promise */);
   }
 }
 

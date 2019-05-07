@@ -28,7 +28,7 @@ ScriptPromise HTMLVideoElementPictureInPicture::requestPictureInPicture(
   auto promise = resolver->Promise();
 
   PictureInPictureControllerImpl::From(element.GetDocument())
-      .EnterPictureInPicture(&element, resolver);
+      .EnterPictureInPicture(&element, nullptr /* options */, resolver);
 
   return promise;
 }

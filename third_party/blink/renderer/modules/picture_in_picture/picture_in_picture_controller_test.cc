@@ -9,7 +9,10 @@
 #include "third_party/blink/public/mojom/picture_in_picture/picture_in_picture.mojom-blink.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/web/web_media_player_action.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/media/html_media_test_helper.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
@@ -168,7 +171,8 @@ TEST_F(PictureInPictureControllerTest, EnterPictureInPictureFiresEvent) {
   EXPECT_CALL(Service(), SetDelegate(_));
 
   PictureInPictureControllerImpl::From(GetDocument())
-      .EnterPictureInPicture(Video(), nullptr);
+      .EnterPictureInPicture(Video(), nullptr /* options */,
+                             nullptr /* promise */);
 
   MakeGarbageCollected<WaitForEvent>(Video(),
                                      event_type_names::kEnterpictureinpicture);
@@ -192,12 +196,15 @@ TEST_F(PictureInPictureControllerTest, ExitPictureInPictureFiresEvent) {
   EXPECT_CALL(Service(), SetDelegate(_));
 
   PictureInPictureControllerImpl::From(GetDocument())
-      .EnterPictureInPicture(Video(), nullptr);
+      .EnterPictureInPicture(Video(), nullptr /* options */,
+                             nullptr /* promise */);
+
   MakeGarbageCollected<WaitForEvent>(Video(),
                                      event_type_names::kEnterpictureinpicture);
 
   PictureInPictureControllerImpl::From(GetDocument())
       .ExitPictureInPicture(Video(), nullptr);
+
   MakeGarbageCollected<WaitForEvent>(Video(),
                                      event_type_names::kLeavepictureinpicture);
 
@@ -217,7 +224,8 @@ TEST_F(PictureInPictureControllerTest, StartObserving) {
   EXPECT_CALL(Service(), SetDelegate(_));
 
   PictureInPictureControllerImpl::From(GetDocument())
-      .EnterPictureInPicture(Video(), nullptr);
+      .EnterPictureInPicture(Video(), nullptr /* options */,
+                             nullptr /* promise */);
 
   MakeGarbageCollected<WaitForEvent>(Video(),
                                      event_type_names::kEnterpictureinpicture);
@@ -243,7 +251,8 @@ TEST_F(PictureInPictureControllerTest, StopObserving) {
   EXPECT_CALL(Service(), SetDelegate(_));
 
   PictureInPictureControllerImpl::From(GetDocument())
-      .EnterPictureInPicture(Video(), nullptr);
+      .EnterPictureInPicture(Video(), nullptr /* options */,
+                             nullptr /* promise */);
   MakeGarbageCollected<WaitForEvent>(Video(),
                                      event_type_names::kEnterpictureinpicture);
 
@@ -270,7 +279,8 @@ TEST_F(PictureInPictureControllerTest, PlayPauseButton_InfiniteDuration) {
   EXPECT_CALL(Service(), SetDelegate(_));
 
   PictureInPictureControllerImpl::From(GetDocument())
-      .EnterPictureInPicture(Video(), nullptr);
+      .EnterPictureInPicture(Video(), nullptr /* options */,
+                             nullptr /* promise */);
 
   MakeGarbageCollected<WaitForEvent>(Video(),
                                      event_type_names::kEnterpictureinpicture);
@@ -293,13 +303,33 @@ TEST_F(PictureInPictureControllerTest, PlayPauseButton_MediaSource) {
   EXPECT_CALL(Service(), SetDelegate(_));
 
   PictureInPictureControllerImpl::From(GetDocument())
-      .EnterPictureInPicture(Video(), nullptr);
+      .EnterPictureInPicture(Video(), nullptr /* options */,
+                             nullptr /* promise */);
 
   MakeGarbageCollected<WaitForEvent>(Video(),
                                      event_type_names::kEnterpictureinpicture);
 
   // `SetDelegate()` may or may not have been called yet. Waiting a bit for it.
   test::RunPendingTasks();
+}
+
+TEST_F(PictureInPictureControllerTest, PerformMediaPlayerAction) {
+  frame_test_helpers::WebViewHelper helper;
+  helper.Initialize();
+
+  WebLocalFrameImpl* frame = helper.LocalMainFrame();
+  Document* document = frame->GetFrame()->GetDocument();
+
+  Persistent<HTMLVideoElement> video =
+      MakeGarbageCollected<HTMLVideoElement>(*document);
+  document->body()->AppendChild(video);
+
+  IntPoint bounds = video->BoundsInViewport().Center();
+
+  frame->PerformMediaPlayerAction(
+      WebPoint(bounds.X(), bounds.Y()),
+      WebMediaPlayerAction(WebMediaPlayerAction::Type::kPictureInPicture,
+                           true));
 }
 
 }  // namespace blink
