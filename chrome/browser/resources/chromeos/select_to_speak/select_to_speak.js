@@ -11,24 +11,24 @@ var RoleType = chrome.automation.RoleType;
 const SELECT_TO_SPEAK_TRAY_CLASS_NAME =
     'tray/TrayBackgroundView/SelectToSpeakTray';
 
-// Matches one of the known Drive apps which need the clipboard to find and read
-// selected text. Includes sandbox and non-sandbox versions.
-const DRIVE_APP_REGEXP =
+// Matches one of the known GSuite apps which need the clipboard to find and
+// read selected text. Includes sandbox and non-sandbox versions.
+const GSUITE_APP_REGEXP =
     /^https:\/\/docs\.(?:sandbox\.)?google\.com\/(?:(?:presentation)|(?:document)|(?:spreadsheets)|(?:drawings)){1}\//;
 
 /**
- * Determines if a node is in one of the known Google Drive apps that needs
- * special case treatment for speaking selected text. Not all Google Drive pages
- * are included, because some are not known to have a problem with selection:
- * Forms is not included since it's relatively similar to any HTML page, for
- * example.
+ * Determines if a node is in one of the known Google GSuite apps that needs
+ * special case treatment for speaking selected text. Not all Google GSuite
+ * pages are included, because some are not known to have a problem with
+ * selection: Forms is not included since it's relatively similar to any HTML
+ * page, for example.
  * @param {AutomationNode=}  node The node to check
- * @return {?AutomationNode} The Drive App root node, or null if none is
+ * @return {?AutomationNode} The root node of the GSuite app, or null if none is
  *     found.
  */
-function getDriveAppRoot(node) {
+function getGSuiteAppRoot(node) {
   while (node !== undefined && node.root !== undefined) {
-    if (node.root.url !== undefined && DRIVE_APP_REGEXP.exec(node.root.url))
+    if (node.root.url !== undefined && GSUITE_APP_REGEXP.exec(node.root.url))
       return node.root;
     node = node.root.parent;
   }
@@ -312,19 +312,19 @@ SelectToSpeak.prototype = {
       MetricsUtils.recordStartEvent(
           MetricsUtils.StartSpeechMethod.KEYSTROKE, this.prefsManager_);
     } else {
-      let driveAppRootNode = getDriveAppRoot(focusedNode);
-      if (!driveAppRootNode)
+      let gsuiteAppRootNode = getGSuiteAppRoot(focusedNode);
+      if (!gsuiteAppRootNode)
         return;
       chrome.tabs.query({active: true}, (tabs) => {
-        // Closure doesn't realize that we did a !driveAppRootNode earlier
+        // Closure doesn't realize that we did a !gsuiteAppRootNode earlier
         // so we check again here.
-        if (tabs.length == 0 || !driveAppRootNode) {
+        if (tabs.length == 0 || !gsuiteAppRootNode) {
           return;
         }
         let tab = tabs[0];
         this.inputHandler_.onRequestReadClipboardData();
         this.currentNode_ =
-            new ParagraphUtils.NodeGroupItem(driveAppRootNode, 0, false);
+            new ParagraphUtils.NodeGroupItem(gsuiteAppRootNode, 0, false);
         chrome.tabs.executeScript(tab.id, {
           allFrames: true,
           matchAboutBlank: true,
