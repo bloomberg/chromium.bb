@@ -1582,8 +1582,10 @@ TEST_F(WebContentsImplTest,
   EXPECT_EQ(1, controller().GetEntryCount());
 
   // Initiate a browser navigation that will trigger the interstitial
-  controller().LoadURL(GURL("http://www.evil.com"), Referrer(),
-                        ui::PAGE_TRANSITION_TYPED, std::string());
+  GURL evil_url = GURL("http://www.evil.com");
+  auto navigation =
+      NavigationSimulator::CreateBrowserInitiated(evil_url, contents());
+  navigation->Start();
 
   // Show an interstitial.
   TestInterstitialPage::InterstitialState state =
@@ -1619,15 +1621,13 @@ TEST_F(WebContentsImplTest,
 
   // Simulate the navigation to the page, that's when the interstitial gets
   // hidden.
-  GURL url3("http://www.thepage.com/two");
-  main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigate(0, true, url3);
+  navigation->Commit();
 
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
   EXPECT_EQ(nullptr, contents()->GetInterstitialPage());
   entry = controller().GetVisibleEntry();
   ASSERT_NE(nullptr, entry);
-  EXPECT_TRUE(entry->GetURL() == url3);
+  EXPECT_EQ(evil_url, entry->GetURL());
 
   EXPECT_EQ(2, controller().GetEntryCount());
 
@@ -2094,7 +2094,8 @@ TEST_F(WebContentsImplTest, ShowInterstitialOnInterstitial) {
   // Let's make sure interstitial2 is working as intended.
   interstitial2->Proceed();
   GURL landing_url("http://www.thepage.com/two");
-  main_test_rfh()->SendNavigate(0, true, landing_url);
+  NavigationSimulator::NavigateAndCommitFromDocument(landing_url,
+                                                     main_test_rfh());
 
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
   EXPECT_EQ(nullptr, contents()->GetInterstitialPage());
@@ -2153,7 +2154,8 @@ TEST_F(WebContentsImplTest, ShowInterstitialProceedShowInterstitial) {
   // Let's make sure interstitial2 is working as intended.
   interstitial2->Proceed();
   GURL landing_url("http://www.thepage.com/two");
-  main_test_rfh()->SendNavigate(0, true, landing_url);
+  NavigationSimulator::NavigateAndCommitFromDocument(landing_url,
+                                                     main_test_rfh());
 
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(deleted2);
