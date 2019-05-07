@@ -1351,7 +1351,7 @@
   },
   {
     "name": "enable-nostate-prefetch",
-    // "owners": [ "your-team" ],
+    "owners": [ "ryansturm" ],
     "expiry_milestone": 76
   },
   {
