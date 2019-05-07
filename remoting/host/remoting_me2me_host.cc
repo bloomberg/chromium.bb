@@ -191,8 +191,8 @@ const char kWindowIdSwitchName[] = "window-id";
 // Command line switch used to send a custom offline reason and exit.
 const char kReportOfflineReasonSwitchName[] = "report-offline-reason";
 
-// Command line switch used to enable signaling through FTL services.
-const char kEnableFtlSignalingSwitchName[] = "enable-ftl-signaling";
+// Command line switch used to disable signaling through FTL services.
+const char kDisableFtlSignalingSwitchName[] = "disable-ftl-signaling";
 
 // Maximum time to wait for clean shutdown to occur, before forcing termination
 // of the process.
@@ -602,7 +602,7 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
     }
   }
 
-  enable_ftl_signaling_ = cmd_line->HasSwitch(kEnableFtlSignalingSwitchName);
+  enable_ftl_signaling_ = !cmd_line->HasSwitch(kDisableFtlSignalingSwitchName);
   return true;
 }
 
