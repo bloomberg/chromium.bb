@@ -23,7 +23,7 @@ declare_args() {
   use_uncompressed_dex = false
 
   # Enable language splits in the Chrome bundles.
-  enable_chrome_language_splits = android_channel == "default"
+  enable_chrome_language_splits = true
 }
 
 default_chrome_public_jinja_variables = [
