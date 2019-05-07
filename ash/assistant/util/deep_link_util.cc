@@ -150,12 +150,8 @@ base::Optional<std::string> GetDeepLinkParam(
   const std::string& key = kDeepLinkParamKeys.at(param);
   const auto it = params.find(key);
   return it != params.end()
-             ? base::Optional<std::string>(net::UnescapeURLComponent(
-                   it->second,
-                   net::UnescapeRule::PATH_SEPARATORS |
-                       net::UnescapeRule::REPLACE_PLUS_WITH_SPACE |
-                       net::UnescapeRule::
-                           URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS))
+             ? base::Optional<std::string>(net::UnescapeBinaryURLComponent(
+                   it->second, net::UnescapeRule::REPLACE_PLUS_WITH_SPACE))
              : base::nullopt;
 }
 
