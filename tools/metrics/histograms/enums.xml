@@ -33971,6 +33971,8 @@ from previous Chrome versions.
   <int value="109577361" label="ForbidSyncXHRInPageDismissal:enabled"/>
   <int value="115915570"
       label="OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRef:enabled"/>
+  <int value="116287989"
+      label="ignore-litepage-redirect-optimization-blacklist"/>
   <int value="118991027" label="enable-accelerated-fixed-root-background"/>
   <int value="119185738"
       label="OmniboxUIExperimentMaxAutocompleteMatches:disabled"/>

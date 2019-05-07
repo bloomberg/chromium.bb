@@ -2132,6 +2132,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "ignore-litepage-redirect-optimization-blacklist",
+    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
+    "expiry_milestone": 79
+  },
+  {
     "name": "in-product-help-demo-mode-choice",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

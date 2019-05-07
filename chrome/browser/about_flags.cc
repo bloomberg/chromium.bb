@@ -1669,6 +1669,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIgnorePreviewsBlacklistName,
      flag_descriptions::kIgnorePreviewsBlacklistDescription, kOsAll,
      SINGLE_VALUE_TYPE(previews::switches::kIgnorePreviewsBlacklist)},
+    {"ignore-litepage-redirect-optimization-blacklist",
+     flag_descriptions::kIgnoreLitePageRedirectHintsBlacklistName,
+     flag_descriptions::kIgnoreLitePageRedirectHintsBlacklistDescription,
+     kOsAll,
+     SINGLE_VALUE_TYPE(
+         previews::switches::kIgnoreLitePageRedirectOptimizationBlacklist)},
     {"enable-data-reduction-proxy-server-experiment",
      flag_descriptions::kEnableDataReductionProxyServerExperimentName,
      flag_descriptions::kEnableDataReductionProxyServerExperimentDescription,

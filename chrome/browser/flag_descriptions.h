@@ -669,6 +669,9 @@ extern const char kIgnoreGpuBlacklistDescription[];
 extern const char kIgnorePreviewsBlacklistName[];
 extern const char kIgnorePreviewsBlacklistDescription[];
 
+extern const char kIgnoreLitePageRedirectHintsBlacklistName[];
+extern const char kIgnoreLitePageRedirectHintsBlacklistDescription[];
+
 extern const char kCompositorThreadedScrollbarScrollingName[];
 extern const char kCompositorThreadedScrollbarScrollingDescription[];
 

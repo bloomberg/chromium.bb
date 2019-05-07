@@ -1092,6 +1092,12 @@ const char kIgnorePreviewsBlacklistName[] = "Ignore Previews Blocklist";
 const char kIgnorePreviewsBlacklistDescription[] =
     "Ignore decisions made by the PreviewsBlockList";
 
+const char kIgnoreLitePageRedirectHintsBlacklistName[] =
+    "Ignore Lite Page Redirect Preview Optimization Hints Blacklist";
+const char kIgnoreLitePageRedirectHintsBlacklistDescription[] =
+    "Ignore blacklist decisions made by Optimization Hints for Lite Page "
+    "Redirect previews";
+
 const char kImprovedGeoLanguageDataName[] = "Improved Geo-language Data";
 const char kImprovedGeoLanguageDataDescription[] =
     "Makes the GeoLanguageModel use higher quality, more refined ULP "
