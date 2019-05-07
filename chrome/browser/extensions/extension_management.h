@@ -172,10 +172,6 @@ class ExtensionManagement : public KeyedService {
   bool CheckMinimumVersion(const Extension* extension,
                            std::string* required_version) const;
 
-  // Returns true if there is a policy setting that explicitly uninstalls
-  // blacklisted extensions that are installed
-  bool ShouldUninstallPolicyBlacklistedExtensions() const;
-
  private:
   using SettingsIdMap =
       std::unordered_map<ExtensionId,

@@ -459,9 +459,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kExtensionAllowInsecureUpdates,
     extensions::pref_names::kInsecureExtensionUpdatesEnabled,
     base::Value::Type::BOOLEAN },
-  { key::kUninstallBlacklistedExtensions,
-    extensions::pref_names::kUninstallBlacklistedExtensions,
-    base::Value::Type::BOOLEAN },
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)

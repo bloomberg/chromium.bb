@@ -16739,7 +16739,6 @@ Called by update_net_error_codes.py.-->
   <int value="543" label="DeviceQuickFixBuildToken"/>
   <int value="544" label="ExtensionInstallListsMergeEnabled"/>
   <int value="545" label="SamlInSessionPasswordChangeEnabled"/>
-  <int value="546" label="UninstallBlacklistedExtensions"/>
   <int value="547" label="DeviceDockMacAddressSource"/>
   <int value="548" label="DeviceAdvancedBatteryChargeModeEnabled"/>
   <int value="549" label="DeviceAdvancedBatteryChargeModeDayConfig"/>

@@ -1873,8 +1873,6 @@ void ExtensionPrefs::RegisterProfilePrefs(
   registry->RegisterIntegerPref(kCorruptedDisableCount, 0);
   registry->RegisterBooleanPref(pref_names::kInsecureExtensionUpdatesEnabled,
                                 false);
-  registry->RegisterBooleanPref(pref_names::kUninstallBlacklistedExtensions,
-                                false);
 
 #if !defined(OS_MACOSX)
   registry->RegisterBooleanPref(pref_names::kAppFullscreenAllowed, true);
