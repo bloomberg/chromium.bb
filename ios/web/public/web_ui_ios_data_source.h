@@ -55,7 +55,6 @@ class WebUIIOSDataSource : public base::SupportsUserData {
 
   // The following map to methods on URLDataSource. See the documentation there.
   virtual void DisableDenyXFrameOptions() = 0;
-  virtual void UseGzip() = 0;
 };
 
 }  // namespace web

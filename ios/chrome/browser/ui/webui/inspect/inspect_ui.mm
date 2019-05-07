@@ -64,7 +64,6 @@ web::WebUIIOSDataSource* CreateInspectUIHTMLSource() {
   source->SetJsonPath("strings.js");
   source->AddResourcePath("inspect.js", IDR_IOS_INSPECT_JS);
   source->SetDefaultResource(IDR_IOS_INSPECT_HTML);
-  source->UseGzip();
   return source;
 }
 

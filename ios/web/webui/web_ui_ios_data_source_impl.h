@@ -34,7 +34,6 @@ class WebUIIOSDataSourceImpl : public URLDataSourceIOSImpl,
   void AddResourcePath(const std::string& path, int resource_id) override;
   void SetDefaultResource(int resource_id) override;
   void DisableDenyXFrameOptions() override;
-  void UseGzip() override;
   const ui::TemplateReplacements* GetReplacements() const override;
 
  protected:
@@ -62,6 +61,10 @@ class WebUIIOSDataSourceImpl : public URLDataSourceIOSImpl,
   void StartDataRequest(const std::string& path,
                         const URLDataSourceIOS::GotDataCallback& callback);
 
+  int PathToIdrOrDefault(const std::string& path) const;
+
+  bool IsGzipped(const std::string& path) const;
+
   // The name of this source.
   // E.g., for favicons, this could be "favicon", which results in paths for
   // specific resources like "favicon/34" getting sent to this source.
@@ -78,7 +81,6 @@ class WebUIIOSDataSourceImpl : public URLDataSourceIOSImpl,
   bool deny_xframe_options_;
   bool load_time_data_defaults_added_;
   bool replace_existing_source_;
-  bool use_gzip_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIIOSDataSourceImpl);
 };

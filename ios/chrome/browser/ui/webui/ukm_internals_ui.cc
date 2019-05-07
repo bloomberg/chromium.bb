@@ -28,7 +28,6 @@ web::WebUIIOSDataSource* CreateUkmInternalsUIHTMLSource() {
 
   source->AddResourcePath("ukm_internals.js", IDR_IOS_UKM_INTERNALS_JS);
   source->SetDefaultResource(IDR_IOS_UKM_INTERNALS_HTML);
-  source->UseGzip();
   return source;
 }
 

@@ -57,8 +57,7 @@ class WebUIIOSDataSourceImpl::InternalDataSource : public URLDataSourceIOS {
     return parent_->deny_xframe_options_;
   }
   bool IsGzipped(const std::string& path) const override {
-    return parent_->use_gzip_ &&
-           (parent_->json_path_.empty() || path != parent_->json_path_);
+    return parent_->IsGzipped(path);
   }
 
  private:
@@ -122,10 +121,6 @@ void WebUIIOSDataSourceImpl::DisableDenyXFrameOptions() {
   deny_xframe_options_ = false;
 }
 
-void WebUIIOSDataSourceImpl::UseGzip() {
-  use_gzip_ = true;
-}
-
 const ui::TemplateReplacements* WebUIIOSDataSourceImpl::GetReplacements()
     const {
   return &replacements_;
@@ -175,11 +170,7 @@ void WebUIIOSDataSourceImpl::StartDataRequest(
     return;
   }
 
-  int resource_id = default_resource_;
-  std::map<std::string, int>::iterator result;
-  result = path_to_idr_map_.find(path);
-  if (result != path_to_idr_map_.end())
-    resource_id = result->second;
+  int resource_id = PathToIdrOrDefault(path);
   DCHECK_NE(resource_id, -1);
   scoped_refptr<base::RefCountedMemory> response(
       GetWebClient()->GetDataResourceBytes(resource_id));
@@ -191,6 +182,19 @@ void WebUIIOSDataSourceImpl::SendLocalizedStringsAsJSON(
   std::string template_data;
   webui::AppendJsonJS(&localized_strings_, &template_data);
   callback.Run(base::RefCountedString::TakeString(&template_data));
+}
+
+int WebUIIOSDataSourceImpl::PathToIdrOrDefault(const std::string& path) const {
+  auto it = path_to_idr_map_.find(path);
+  return it == path_to_idr_map_.end() ? default_resource_ : it->second;
+}
+
+bool WebUIIOSDataSourceImpl::IsGzipped(const std::string& path) const {
+  if (!json_path_.empty() && path == json_path_) {
+    return false;
+  }
+
+  return GetWebClient()->IsDataResourceGzipped(PathToIdrOrDefault(path));
 }
 
 }  // namespace web
