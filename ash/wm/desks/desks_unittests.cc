@@ -82,21 +82,54 @@ class TestObserver : public DesksController::Observer {
   // DesksController::Observer:
   void OnDeskAdded(const Desk* desk) override {
     desks_.emplace_back(desk);
-    EXPECT_TRUE(DesksController::Get()->are_desks_being_modified());
+    EXPECT_TRUE(DesksController::Get()->AreDesksBeingModified());
   }
   void OnDeskRemoved(const Desk* desk) override {
     base::Erase(desks_, desk);
-    EXPECT_TRUE(DesksController::Get()->are_desks_being_modified());
+    EXPECT_TRUE(DesksController::Get()->AreDesksBeingModified());
   }
   void OnDeskActivationChanged(const Desk* activated,
                                const Desk* deactivated) override {
-    EXPECT_TRUE(DesksController::Get()->are_desks_being_modified());
+    EXPECT_TRUE(DesksController::Get()->AreDesksBeingModified());
+  }
+  void OnDeskSwitchAnimationFinished() override {
+    EXPECT_FALSE(DesksController::Get()->AreDesksBeingModified());
   }
 
  private:
   std::vector<const Desk*> desks_;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
+};
+
+// Used for waiting for the desk switch animations on all root windows to
+// complete.
+class DeskSwitchAnimationWaiter : public DesksController::Observer {
+ public:
+  DeskSwitchAnimationWaiter() { DesksController::Get()->AddObserver(this); }
+
+  ~DeskSwitchAnimationWaiter() override {
+    DesksController::Get()->RemoveObserver(this);
+  }
+
+  void Wait() {
+    auto* controller = DesksController::Get();
+    EXPECT_TRUE(controller->AreDesksBeingModified());
+    run_loop_.Run();
+    EXPECT_FALSE(controller->AreDesksBeingModified());
+  }
+
+  // DesksController::Observer:
+  void OnDeskAdded(const Desk* desk) override {}
+  void OnDeskRemoved(const Desk* desk) override {}
+  void OnDeskActivationChanged(const Desk* activated,
+                               const Desk* deactivated) override {}
+  void OnDeskSwitchAnimationFinished() override { run_loop_.Quit(); }
+
+ private:
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeskSwitchAnimationWaiter);
 };
 
 class DesksTest : public AshTestBase {
@@ -109,6 +142,14 @@ class DesksTest : public AshTestBase {
     scoped_feature_list_.InitAndEnableFeature(features::kVirtualDesks);
 
     AshTestBase::SetUp();
+  }
+
+  void ActivateDesk(const Desk* desk) {
+    ASSERT_FALSE(desk->is_active());
+    DeskSwitchAnimationWaiter waiter;
+    DesksController::Get()->ActivateDesk(desk);
+    waiter.Wait();
+    ASSERT_TRUE(desk->is_active());
   }
 
  private:
@@ -242,7 +283,7 @@ TEST_F(DesksTest, DeskActivation) {
   EXPECT_EQ(desks_util::GetActiveDeskContainerForRoot(root),
             desk_1->GetDeskContainerForRoot(root));
 
-  // Create three new desks, and activate the one in the middle.
+  // Create three new desks, and activate one of the middle ones.
   controller->NewDesk();
   controller->NewDesk();
   controller->NewDesk();
@@ -250,9 +291,9 @@ TEST_F(DesksTest, DeskActivation) {
   const Desk* desk_2 = controller->desks()[1].get();
   const Desk* desk_3 = controller->desks()[2].get();
   const Desk* desk_4 = controller->desks()[3].get();
-  EXPECT_FALSE(controller->are_desks_being_modified());
-  controller->ActivateDesk(desk_2);
-  EXPECT_FALSE(controller->are_desks_being_modified());
+  EXPECT_FALSE(controller->AreDesksBeingModified());
+  ActivateDesk(desk_2);
+  EXPECT_FALSE(controller->AreDesksBeingModified());
   EXPECT_EQ(desk_2, controller->active_desk());
   EXPECT_FALSE(desk_1->is_active());
   EXPECT_TRUE(desk_2->is_active());
@@ -265,9 +306,9 @@ TEST_F(DesksTest, DeskActivation) {
 
   // Remove the active desk, which is in the middle, activation should move to
   // the left, so desk 1 should be activated.
-  EXPECT_FALSE(controller->are_desks_being_modified());
+  EXPECT_FALSE(controller->AreDesksBeingModified());
   controller->RemoveDesk(desk_2);
-  EXPECT_FALSE(controller->are_desks_being_modified());
+  EXPECT_FALSE(controller->AreDesksBeingModified());
   ASSERT_EQ(3u, controller->desks().size());
   EXPECT_EQ(desk_1, controller->active_desk());
   EXPECT_TRUE(desk_1->is_active());
@@ -279,15 +320,55 @@ TEST_F(DesksTest, DeskActivation) {
 
   // Remove the active desk, it's the first one on the left, so desk_3 (on the
   // right) will be activated.
-  EXPECT_FALSE(controller->are_desks_being_modified());
+  EXPECT_FALSE(controller->AreDesksBeingModified());
   controller->RemoveDesk(desk_1);
-  EXPECT_FALSE(controller->are_desks_being_modified());
+  EXPECT_FALSE(controller->AreDesksBeingModified());
   ASSERT_EQ(2u, controller->desks().size());
   EXPECT_EQ(desk_3, controller->active_desk());
   EXPECT_TRUE(desk_3->is_active());
   EXPECT_FALSE(desk_4->is_active());
   EXPECT_TRUE(desk_3->GetDeskContainerForRoot(root)->IsVisible());
   EXPECT_FALSE(desk_4->GetDeskContainerForRoot(root)->IsVisible());
+}
+
+// This test makes sure we have coverage for that desk switch animation when run
+// with multiple displays.
+TEST_F(DesksTest, DeskActivationDualDisplay) {
+  UpdateDisplay("600x600,400x500");
+
+  auto* controller = DesksController::Get();
+  ASSERT_EQ(1u, controller->desks().size());
+  const Desk* desk_1 = controller->desks()[0].get();
+  EXPECT_EQ(desk_1, controller->active_desk());
+  EXPECT_TRUE(desk_1->is_active());
+
+  // Create three new desks, and activate one of the middle ones.
+  controller->NewDesk();
+  controller->NewDesk();
+  controller->NewDesk();
+  ASSERT_EQ(4u, controller->desks().size());
+  const Desk* desk_2 = controller->desks()[1].get();
+  const Desk* desk_3 = controller->desks()[2].get();
+  const Desk* desk_4 = controller->desks()[3].get();
+  EXPECT_FALSE(controller->AreDesksBeingModified());
+  ActivateDesk(desk_2);
+  EXPECT_FALSE(controller->AreDesksBeingModified());
+  EXPECT_EQ(desk_2, controller->active_desk());
+  EXPECT_FALSE(desk_1->is_active());
+  EXPECT_TRUE(desk_2->is_active());
+  EXPECT_FALSE(desk_3->is_active());
+  EXPECT_FALSE(desk_4->is_active());
+
+  auto roots = Shell::GetAllRootWindows();
+  ASSERT_EQ(2u, roots.size());
+  EXPECT_FALSE(desk_1->GetDeskContainerForRoot(roots[0])->IsVisible());
+  EXPECT_FALSE(desk_1->GetDeskContainerForRoot(roots[1])->IsVisible());
+  EXPECT_TRUE(desk_2->GetDeskContainerForRoot(roots[0])->IsVisible());
+  EXPECT_TRUE(desk_2->GetDeskContainerForRoot(roots[1])->IsVisible());
+  EXPECT_FALSE(desk_3->GetDeskContainerForRoot(roots[0])->IsVisible());
+  EXPECT_FALSE(desk_3->GetDeskContainerForRoot(roots[1])->IsVisible());
+  EXPECT_FALSE(desk_4->GetDeskContainerForRoot(roots[0])->IsVisible());
+  EXPECT_FALSE(desk_4->GetDeskContainerForRoot(roots[1])->IsVisible());
 }
 
 TEST_F(DesksTest, TransientWindows) {
@@ -315,7 +396,7 @@ TEST_F(DesksTest, TransientWindows) {
   controller->NewDesk();
   const Desk* desk_2 = controller->desks()[1].get();
   EXPECT_TRUE(desk_2->windows().empty());
-  controller->ActivateDesk(desk_2);
+  ActivateDesk(desk_2);
   EXPECT_FALSE(desk_1->is_active());
   EXPECT_TRUE(desk_2->is_active());
 
@@ -365,7 +446,7 @@ TEST_F(DesksTest, WindowActivation) {
 
   // Activate the newly-added desk. Expect that the tracked windows per each
   // desk will remain the same.
-  controller->ActivateDesk(desk_2);
+  ActivateDesk(desk_2);
   EXPECT_EQ(desk_2, controller->active_desk());
   EXPECT_EQ(3u, desk_1->windows().size());
   EXPECT_TRUE(desk_2->windows().empty());
@@ -397,7 +478,7 @@ TEST_F(DesksTest, WindowActivation) {
   EXPECT_EQ(win3.get(), wm::GetActiveWindow());
 
   // Switch back to `desk_1`. Now we can activate its windows.
-  controller->ActivateDesk(desk_1);
+  ActivateDesk(desk_1);
   EXPECT_EQ(desk_1, controller->active_desk());
   EXPECT_TRUE(wm::CanActivateWindow(win1.get()));
   EXPECT_TRUE(wm::CanActivateWindow(win2.get()));
@@ -463,7 +544,9 @@ TEST_F(DesksTest, ActivateDeskFromOverview) {
       mini_view->GetBoundsInScreen().CenterPoint();
   auto* event_generator = GetEventGenerator();
   event_generator->MoveMouseTo(mini_view_center);
+  DeskSwitchAnimationWaiter waiter;
   event_generator->ClickLeftButton();
+  waiter.Wait();
 
   // Expect that desk_4 is now active, and overview mode exited.
   EXPECT_TRUE(desk_4->is_active());
@@ -494,6 +577,49 @@ TEST_F(DesksTest, ActivateDeskFromOverview) {
   EXPECT_EQ(win2.get(), wm::GetActiveWindow());
 }
 
+// This test makes sure we have coverage for that desk switch animation when run
+// with multiple displays while overview mode is active.
+TEST_F(DesksTest, ActivateDeskFromOverviewDualDisplay) {
+  UpdateDisplay("600x600,400x500");
+
+  auto* controller = DesksController::Get();
+
+  // Create three desks other than the default initial desk.
+  controller->NewDesk();
+  controller->NewDesk();
+  controller->NewDesk();
+  ASSERT_EQ(4u, controller->desks().size());
+
+  // Enter overview mode.
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->ToggleOverview();
+  EXPECT_TRUE(overview_controller->IsSelecting());
+
+  auto roots = Shell::GetAllRootWindows();
+  ASSERT_EQ(2u, roots.size());
+  // Use secondary display grid.
+  const auto* overview_grid = GetOverviewGridForRoot(roots[1]);
+  const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
+  ASSERT_TRUE(desks_bar_view);
+  ASSERT_EQ(4u, desks_bar_view->mini_views().size());
+
+  // Activate desk_4 (last one on the right) by clicking on its mini view.
+  const Desk* desk_4 = controller->desks()[3].get();
+  EXPECT_FALSE(desk_4->is_active());
+  const auto* mini_view = desks_bar_view->mini_views().back().get();
+  const gfx::Point mini_view_center =
+      mini_view->GetBoundsInScreen().CenterPoint();
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(mini_view_center);
+  DeskSwitchAnimationWaiter waiter;
+  event_generator->ClickLeftButton();
+  waiter.Wait();
+
+  // Expect that desk_4 is now active, and overview mode exited.
+  EXPECT_TRUE(desk_4->is_active());
+  EXPECT_FALSE(overview_controller->IsSelecting());
+}
+
 TEST_F(DesksTest, RemoveInactiveDeskFromOverview) {
   auto* controller = DesksController::Get();
 
@@ -512,7 +638,7 @@ TEST_F(DesksTest, RemoveInactiveDeskFromOverview) {
   // Active desk_4 and enter overview mode. Expect that the grid is currently
   // empty.
   const Desk* desk_4 = controller->desks()[3].get();
-  controller->ActivateDesk(desk_4);
+  ActivateDesk(desk_4);
   auto* overview_controller = Shell::Get()->overview_controller();
   overview_controller->ToggleOverview();
   EXPECT_TRUE(overview_controller->IsSelecting());
@@ -561,7 +687,7 @@ TEST_F(DesksTest, RemoveActiveDeskFromOverview) {
 
   // Activate desk_2 and create one more window.
   const Desk* desk_2 = controller->desks()[1].get();
-  controller->ActivateDesk(desk_2);
+  ActivateDesk(desk_2);
   auto win2 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
   wm::ActivateWindow(win2.get());
   EXPECT_EQ(win2.get(), wm::GetActiveWindow());

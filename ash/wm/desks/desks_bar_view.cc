@@ -152,7 +152,6 @@ void DesksBarView::ButtonPressed(views::Button* sender,
   for (auto& mini_view : mini_views_) {
     if (mini_view.get() == sender) {
       controller->ActivateDesk(mini_view->desk());
-      Shell::Get()->overview_controller()->OnSelectionEnded();
       return;
     }
   }
@@ -204,6 +203,8 @@ void DesksBarView::OnDeskActivationChanged(const Desk* activated,
       mini_view->UpdateActivationState();
   }
 }
+
+void DesksBarView::OnDeskSwitchAnimationFinished() {}
 
 void DesksBarView::UpdateNewDeskButtonState() {
   new_desk_button_->SetEnabled(DesksController::Get()->CanCreateDesks());

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/wm/desks/root_window_desk_switch_animator.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 
@@ -23,7 +24,8 @@ class Desk;
 
 // Defines a controller for creating, destroying and managing virtual desks and
 // their windows.
-class ASH_EXPORT DesksController {
+class ASH_EXPORT DesksController
+    : public RootWindowDeskSwitchAnimator::Delegate {
  public:
   class Observer {
    public:
@@ -41,12 +43,15 @@ class ASH_EXPORT DesksController {
     virtual void OnDeskActivationChanged(const Desk* activated,
                                          const Desk* deactivated) = 0;
 
+    // Called when the desk switch animations on all root windows finish.
+    virtual void OnDeskSwitchAnimationFinished() = 0;
+
    protected:
     virtual ~Observer() = default;
   };
 
   DesksController();
-  ~DesksController();
+  ~DesksController() override;
 
   // Convenience method for returning the DesksController instance. The actual
   // instance is created and owned by Shell.
@@ -56,10 +61,13 @@ class ASH_EXPORT DesksController {
 
   const Desk* active_desk() const { return active_desk_; }
 
-  bool are_desks_being_modified() const { return are_desks_being_modified_; }
-
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+
+  // Returns true if desks are being modified due to desk creation, removal, or
+  // activation. It also returns true while the desk switch animation is in
+  // progress.
+  bool AreDesksBeingModified() const;
 
   // Returns true if we haven't reached the maximum allowed number of desks.
   bool CanCreateDesks() const;
@@ -75,10 +83,11 @@ class ASH_EXPORT DesksController {
   // CanRemoveDesks() must be checked before this.
   void RemoveDesk(const Desk* desk);
 
-  // Activates the given |desk| and deactivates the currently active one. |desk|
-  // has to be an existing desk. The active window on the currently active desk
-  // will be deactivated, and the most-recently used window from the
-  // newly-activated desk will be activated.
+  // Performs the desk switch animation on all root windows to activate the
+  // given |desk| and to deactivate the currently active one. |desk| has to be
+  // an existing desk. The active window on the currently active desk will be
+  // deactivated, and the most-recently used window from the newly-activated
+  // desk will be activated.
   void ActivateDesk(const Desk* desk);
 
   // Called explicitly by the RootWindowController when a root window has been
@@ -86,8 +95,15 @@ class ASH_EXPORT DesksController {
   void OnRootWindowAdded(aura::Window* root_window);
   void OnRootWindowClosing(aura::Window* root_window);
 
+  // RootWindowDeskSwitchAnimator::Delegate:
+  void OnStartingDeskScreenshotTaken(const Desk* ending_desk) override;
+  void OnEndingDeskScreenshotTaken() override;
+  void OnDeskSwitchAnimationFinished() override;
+
  private:
   bool HasDesk(const Desk* desk) const;
+
+  int GetDeskIndex(const Desk* desk) const;
 
   // Activates the given |desk| and deactivates the currently active one. |desk|
   // has to be an existing desk. If |update_window_activation| is true,
@@ -108,6 +124,11 @@ class ASH_EXPORT DesksController {
   // This can be checked when overview mode is active to avoid exiting overview
   // mode as a result of desks modifications.
   bool are_desks_being_modified_ = false;
+
+  // An animator object per each root. Once all the animations are complete,
+  // this list is cleared.
+  std::vector<std::unique_ptr<RootWindowDeskSwitchAnimator>>
+      desk_switch_animators_;
 
   // A free list of desk container IDs to be used for newly-created desks. New
   // desks pops from this queue and removed desks's associated container IDs are

@@ -304,7 +304,8 @@ void OverviewSession::Shutdown() {
   for (std::unique_ptr<OverviewGrid>& overview_grid : grid_list_) {
     // During shutdown, do not animate all windows in overview if we need to
     // animate the snapped window.
-    if (overview_grid->should_animate_when_exiting()) {
+    if (overview_grid->should_animate_when_exiting() &&
+        enter_exit_overview_type_ != EnterExitOverviewType::kImmediateExit) {
       overview_grid->CalculateWindowListAnimationStates(
           selected_item_ &&
                   selected_item_->overview_grid() == overview_grid.get()
@@ -704,7 +705,7 @@ void OverviewSession::OnWindowActivating(
     return;
 
   if (features::IsVirtualDesksEnabled() &&
-      DesksController::Get()->are_desks_being_modified()) {
+      DesksController::Get()->AreDesksBeingModified()) {
     // Activating a desk from its mini view will activate its most-recently used
     // window, but this should not result in ending overview mode now.
     // DesksBarView will end it explicitly. This will become significant when
@@ -807,7 +808,7 @@ void OverviewSession::OnWindowHierarchyChanged(
   // of that desk to the associated container of another desk. This is a window
   // hierarchy change that shouldn't result in exiting overview mode.
   if (features::IsVirtualDesksEnabled() &&
-      DesksController::Get()->are_desks_being_modified()) {
+      DesksController::Get()->AreDesksBeingModified()) {
     return;
   }
 

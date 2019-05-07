@@ -10,11 +10,14 @@
 #include "ash/shell.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_util.h"
+#include "ash/wm/desks/root_window_desk_switch_animator.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
 #include "base/logging.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/compositor/compositor.h"
 
 namespace ash {
 
@@ -77,6 +80,10 @@ void DesksController::AddObserver(Observer* observer) {
 
 void DesksController::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+bool DesksController::AreDesksBeingModified() const {
+  return are_desks_being_modified_ || !desk_switch_animators_.empty();
 }
 
 bool DesksController::CanCreateDesks() const {
@@ -176,7 +183,27 @@ void DesksController::RemoveDesk(const Desk* desk) {
 }
 
 void DesksController::ActivateDesk(const Desk* desk) {
-  ActivateDeskInternal(desk, /*update_window_activation=*/true);
+  DCHECK(HasDesk(desk));
+
+  if (desk == active_desk_)
+    return;
+
+  // New desks are always added at the end of the list to the right of existing
+  // desks. Therefore, desks at lower indices are located on the left of desks
+  // with higher indices.
+  const bool move_left = GetDeskIndex(active_desk_) < GetDeskIndex(desk);
+  for (auto* root : Shell::GetAllRootWindows()) {
+    desk_switch_animators_.emplace_back(
+        std::make_unique<RootWindowDeskSwitchAnimator>(root, desk, this,
+                                                       move_left));
+  }
+
+  // Once all animators are created, start them all by taking the starting desk
+  // screenshots. This is to avoid any potential race conditions that might
+  // happen if one animator finished phase (1) of the animation while other
+  // animators are still being constructed.
+  for (auto& animator : desk_switch_animators_)
+    animator->TakeStartingDeskScreenshot();
 }
 
 void DesksController::OnRootWindowAdded(aura::Window* root_window) {
@@ -189,11 +216,91 @@ void DesksController::OnRootWindowClosing(aura::Window* root_window) {
     desk->OnRootWindowClosing(root_window);
 }
 
+void DesksController::OnStartingDeskScreenshotTaken(const Desk* ending_desk) {
+  DCHECK(!desk_switch_animators_.empty());
+
+  // Once all starting desk screenshots on all roots are taken and placed on the
+  // screens, do the actual desk activation logic.
+  for (const auto& animator : desk_switch_animators_) {
+    if (!animator->starting_desk_screenshot_taken())
+      return;
+  }
+
+  // Extend the compositors' timeouts in order to prevents any repaints until
+  // the desks are switched and overview mode exits.
+  const auto roots = Shell::GetAllRootWindows();
+  for (auto* root : roots)
+    root->GetHost()->compositor()->SetAllowLocksToExtendTimeout(true);
+
+  const bool is_selecting = Shell::Get()->overview_controller()->IsSelecting();
+
+  ActivateDeskInternal(ending_desk, /*update_window_activation=*/true);
+
+  // Activating a desk should not change the overview mode state.
+  DCHECK_EQ(is_selecting, Shell::Get()->overview_controller()->IsSelecting());
+
+  if (is_selecting) {
+    // Exit overview mode immediately without any animations before taking the
+    // ending desk screenshot. This makes sure that the ending desk
+    // screenshot will only show the windows in that desk, not overview stuff.
+    Shell::Get()->overview_controller()->ToggleOverview(
+        OverviewSession::EnterExitOverviewType::kImmediateExit);
+  }
+
+  for (auto* root : roots)
+    root->GetHost()->compositor()->SetAllowLocksToExtendTimeout(false);
+
+  // Continue the second phase of the animation by taking the ending desk
+  // screenshot and actually animating the layers.
+  for (auto& animator : desk_switch_animators_)
+    animator->TakeEndingDeskScreenshot();
+}
+
+void DesksController::OnEndingDeskScreenshotTaken() {
+  DCHECK(!desk_switch_animators_.empty());
+
+  // Once all ending desk screenshots on all roots are taken, start the
+  // animation on all roots at the same time, so that they look synchrnoized.
+  for (const auto& animator : desk_switch_animators_) {
+    if (!animator->ending_desk_screenshot_taken())
+      return;
+  }
+
+  for (auto& animator : desk_switch_animators_)
+    animator->StartAnimation();
+}
+
+void DesksController::OnDeskSwitchAnimationFinished() {
+  DCHECK(!desk_switch_animators_.empty());
+
+  // Once all desk switch animations on all roots finish, destroy all the
+  // animators.
+  for (const auto& animator : desk_switch_animators_) {
+    if (!animator->animation_finished())
+      return;
+  }
+
+  desk_switch_animators_.clear();
+
+  for (auto& observer : observers_)
+    observer.OnDeskSwitchAnimationFinished();
+}
+
 bool DesksController::HasDesk(const Desk* desk) const {
   auto iter = std::find_if(
       desks_.begin(), desks_.end(),
       [desk](const std::unique_ptr<Desk>& d) { return d.get() == desk; });
   return iter != desks_.end();
+}
+
+int DesksController::GetDeskIndex(const Desk* desk) const {
+  for (size_t i = 0; i < desks_.size(); ++i) {
+    if (desk == desks_[i].get())
+      return i;
+  }
+
+  NOTREACHED();
+  return -1;
 }
 
 void DesksController::ActivateDeskInternal(const Desk* desk,
@@ -218,8 +325,6 @@ void DesksController::ActivateDeskInternal(const Desk* desk,
 
   for (auto& observer : observers_)
     observer.OnDeskActivationChanged(active_desk_, old_active);
-
-  // TODO(afakhry): Do desk activation animation.
 }
 
 }  // namespace ash

@@ -63,6 +63,7 @@ class ASH_EXPORT DesksBarView : public views::View,
   void OnDeskRemoved(const Desk* desk) override;
   void OnDeskActivationChanged(const Desk* activated,
                                const Desk* deactivated) override;
+  void OnDeskSwitchAnimationFinished() override;
 
  private:
   // This is called on initialization or when a new desk is created to create

@@ -22,6 +22,7 @@
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/wm_event.h"
 #include "base/no_destructor.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/scoped_canvas.h"
@@ -120,7 +121,8 @@ void FadeOutWidgetAndMaybeSlideOnExit(std::unique_ptr<views::Widget> widget,
 }
 
 void ImmediatelyCloseWidgetOnExit(std::unique_ptr<views::Widget> widget) {
-  ScopedAnimationDisabler animation_disabler(widget->GetNativeWindow());
+  widget->GetNativeWindow()->SetProperty(aura::client::kAnimationsDisabledKey,
+                                         true);
   widget->Close();
   widget.reset();
 }
