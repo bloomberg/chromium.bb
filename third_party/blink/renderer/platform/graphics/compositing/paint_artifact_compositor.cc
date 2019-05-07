@@ -34,42 +34,6 @@
 
 namespace blink {
 
-namespace {
-
-// Returns true if the given element namespace is one of the ones needed for
-// running animations on the compositor. These are the only element_ids the
-// compositor needs to track existence of in the element id set.
-bool IsAnimationNamespace(CompositorElementIdNamespace element_namespace) {
-  return element_namespace == CompositorElementIdNamespace::kPrimaryTransform ||
-         element_namespace == CompositorElementIdNamespace::kPrimaryEffect ||
-         element_namespace == CompositorElementIdNamespace::kEffectFilter;
-}
-
-// Inserts the element ids of the given node and all of its ancestors into the
-// given |composited_element_ids| set. Filters out specifically element ids
-// which are needed for animations. Returns once it finds an id which already
-// exists as this implies that all of those ancestor nodes have already been
-// inserted.
-template <typename NodeType>
-void InsertAncestorElementIdsForAnimation(
-    const NodeType& node,
-    CompositorElementIdSet& composited_element_ids) {
-  for (const auto* n = &node; n; n = SafeUnalias(n->Parent())) {
-    const CompositorElementId& element_id = n->GetCompositorElementId();
-    if (element_id && n->RequiresCompositingForAnimation() &&
-        IsAnimationNamespace(NamespaceFromCompositorElementId(element_id))) {
-      if (composited_element_ids.count(element_id)) {
-        // Once we reach a node already counted we can stop traversing the
-        // parent chain.
-        return;
-      }
-      composited_element_ids.insert(element_id);
-    }
-  }
-}
-
-}  // namespace
-
 // cc property trees make use of a sequence number to identify when tree
 // topology changes. For now we naively increment the sequence number each time
 // we update the property trees. We should explore optimizing our management of
@@ -886,7 +850,7 @@ void PaintArtifactCompositor::DecompositeTransforms() {
 
 void PaintArtifactCompositor::Update(
     scoped_refptr<const PaintArtifact> paint_artifact,
-    CompositorElementIdSet& composited_element_ids,
+    CompositorElementIdSet& animation_element_ids,
     const ViewportProperties& viewport_properties,
     const Settings& settings) {
   DCHECK(NeedsUpdate());
@@ -913,9 +877,9 @@ void PaintArtifactCompositor::Update(
       g_s_property_tree_sequence_number);
 
   LayerListBuilder layer_list_builder;
-  PropertyTreeManager property_tree_manager(*this, *host->property_trees(),
-                                            *root_layer_, layer_list_builder,
-                                            g_s_property_tree_sequence_number);
+  PropertyTreeManager property_tree_manager(
+      *this, *host->property_trees(), *root_layer_, layer_list_builder,
+      animation_element_ids, g_s_property_tree_sequence_number);
   CollectPendingLayers(*paint_artifact, settings);
 
   UpdateCompositorViewportProperties(viewport_properties, property_tree_manager,
@@ -936,7 +900,7 @@ void PaintArtifactCompositor::Update(
   DecompositeTransforms();
 
   // Clear prior frame ids before inserting new ones.
-  composited_element_ids.clear();
+  animation_element_ids.clear();
   for (auto& pending_layer : pending_layers_) {
     const auto& property_state = pending_layer.property_tree_state;
     const auto& transform = property_state.Transform();
@@ -998,11 +962,8 @@ void PaintArtifactCompositor::Update(
         pending_layer.FirstPaintChunk(*paint_artifact).id.client.OwnerNodeId());
     // TODO(wangxianzhu): cc_picture_layer_->set_compositing_reasons(...);
 
-    InsertAncestorElementIdsForAnimation(property_state.Effect(),
-                                         composited_element_ids);
-    InsertAncestorElementIdsForAnimation(transform, composited_element_ids);
     if (layer->scrollable())
-      composited_element_ids.insert(layer->element_id());
+      animation_element_ids.insert(layer->element_id());
 
     // If the property tree state has changed between the layer and the root, we
     // need to inform the compositor so damage can be calculated.
@@ -1040,7 +1001,7 @@ void PaintArtifactCompositor::Update(
   root_layer_->SetChildLayerList(std::move(layers));
 
   // Update the host's active registered element ids.
-  host->SetActiveRegisteredElementIds(composited_element_ids);
+  host->SetActiveRegisteredElementIds(animation_element_ids);
 
   // Mark the property trees as having been rebuilt.
   host->property_trees()->needs_rebuild = false;

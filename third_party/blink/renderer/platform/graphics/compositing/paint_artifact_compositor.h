@@ -131,10 +131,10 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
   // Updates the layer tree to match the provided paint artifact.
   //
-  // Populates |composited_element_ids| with the CompositorElementId of all
+  // Populates |animation_element_ids| with the CompositorElementId of all
   // animations for which we saw a paint chunk and created a layer.
   void Update(scoped_refptr<const PaintArtifact>,
-              CompositorElementIdSet& composited_element_ids,
+              CompositorElementIdSet& animation_element_ids,
               const ViewportProperties& viewport_properties,
               const Settings& settings);
 

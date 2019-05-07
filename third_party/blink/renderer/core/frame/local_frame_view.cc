@@ -265,7 +265,6 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
           base::WrapUnique(g_initial_track_all_paint_invalidations
                                ? new Vector<ObjectPaintInvalidation>
                                : nullptr)),
-      composited_element_ids_(CompositorElementIdSet()),
       main_thread_scrolling_reasons_(0),
       forced_layout_stack_depth_(0),
       forced_layout_start_time_(TimeTicks()),
@@ -2465,16 +2464,14 @@ void LocalFrameView::RunPaintLifecyclePhase() {
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
       RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
     if (!print_mode_enabled) {
-      auto& composited_element_ids = composited_element_ids_;
       bool needed_update = !paint_artifact_compositor_ ||
                            paint_artifact_compositor_->NeedsUpdate();
-      PushPaintArtifactToCompositor(composited_element_ids.value());
-      ForAllNonThrottledLocalFrameViews(
-          [&composited_element_ids](LocalFrameView& frame_view) {
-            DocumentAnimations::UpdateAnimations(
-                frame_view.GetLayoutView()->GetDocument(),
-                DocumentLifecycle::kPaintClean, composited_element_ids);
-          });
+      PushPaintArtifactToCompositor();
+      ForAllNonThrottledLocalFrameViews([this](LocalFrameView& frame_view) {
+        DocumentAnimations::UpdateAnimations(
+            frame_view.GetLayoutView()->GetDocument(),
+            DocumentLifecycle::kPaintClean, animation_element_ids_);
+      });
 
       // Initialize animation properties in the newly created paint property
       // nodes according to the current animation state. This is mainly for
@@ -2730,8 +2727,7 @@ const cc::Layer* LocalFrameView::RootCcLayer() const {
   return nullptr;
 }
 
-void LocalFrameView::PushPaintArtifactToCompositor(
-    CompositorElementIdSet& composited_element_ids) {
+void LocalFrameView::PushPaintArtifactToCompositor() {
   TRACE_EVENT0("blink", "LocalFrameView::pushPaintArtifactToCompositor");
 
   DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
@@ -2811,7 +2807,7 @@ void LocalFrameView::PushPaintArtifactToCompositor(
   }
 
   paint_artifact_compositor_->Update(
-      paint_controller_->GetPaintArtifactShared(), composited_element_ids,
+      paint_controller_->GetPaintArtifactShared(), animation_element_ids_,
       viewport_properties, settings);
 
   probe::LayerTreePainted(&GetFrame());
