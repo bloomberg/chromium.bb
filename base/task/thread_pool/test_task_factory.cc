@@ -19,7 +19,7 @@ namespace internal {
 namespace test {
 
 TestTaskFactory::TestTaskFactory(scoped_refptr<TaskRunner> task_runner,
-                                 ExecutionMode execution_mode)
+                                 TaskSourceExecutionMode execution_mode)
     : cv_(&lock_),
       task_runner_(std::move(task_runner)),
       execution_mode_(execution_mode) {
@@ -57,18 +57,18 @@ void TestTaskFactory::RunTaskCallback(size_t task_index,
 
   // Verify TaskRunnerHandles are set as expected in the task's scope.
   switch (execution_mode_) {
-    case ExecutionMode::PARALLEL:
+    case TaskSourceExecutionMode::kParallel:
       EXPECT_FALSE(ThreadTaskRunnerHandle::IsSet());
       EXPECT_FALSE(SequencedTaskRunnerHandle::IsSet());
       break;
-    case ExecutionMode::SEQUENCED:
+    case TaskSourceExecutionMode::kSequenced:
       EXPECT_FALSE(ThreadTaskRunnerHandle::IsSet());
       EXPECT_TRUE(SequencedTaskRunnerHandle::IsSet());
       EXPECT_EQ(task_runner_, SequencedTaskRunnerHandle::Get());
       break;
-    case ExecutionMode::SINGLE_THREADED:
+    case TaskSourceExecutionMode::kSingleThread:
       // SequencedTaskRunnerHandle inherits from ThreadTaskRunnerHandle so
-      // both are expected to be "set" in the SINGLE_THREADED case.
+      // both are expected to be "set" in the kSingleThread case.
       EXPECT_TRUE(ThreadTaskRunnerHandle::IsSet());
       EXPECT_TRUE(SequencedTaskRunnerHandle::IsSet());
       EXPECT_EQ(task_runner_, ThreadTaskRunnerHandle::Get());
@@ -81,13 +81,13 @@ void TestTaskFactory::RunTaskCallback(size_t task_index,
 
     DCHECK_LE(task_index, num_posted_tasks_);
 
-    if ((execution_mode_ == ExecutionMode::SINGLE_THREADED ||
-         execution_mode_ == ExecutionMode::SEQUENCED) &&
+    if ((execution_mode_ == TaskSourceExecutionMode::kSingleThread ||
+         execution_mode_ == TaskSourceExecutionMode::kSequenced) &&
         task_index != ran_tasks_.size()) {
       ADD_FAILURE() << "A task didn't run in the expected order.";
     }
 
-    if (execution_mode_ == ExecutionMode::SINGLE_THREADED)
+    if (execution_mode_ == TaskSourceExecutionMode::kSingleThread)
       EXPECT_TRUE(thread_checker_.CalledOnValidThread());
 
     if (ran_tasks_.find(task_index) != ran_tasks_.end())

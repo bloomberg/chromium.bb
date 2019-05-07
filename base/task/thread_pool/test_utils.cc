@@ -57,14 +57,14 @@ scoped_refptr<Sequence> CreateSequenceWithTask(
 }
 
 scoped_refptr<TaskRunner> CreateTaskRunnerWithExecutionMode(
-    test::ExecutionMode execution_mode,
+    TaskSourceExecutionMode execution_mode,
     MockPooledTaskRunnerDelegate* mock_pooled_task_runner_delegate,
     const TaskTraits& traits) {
   switch (execution_mode) {
-    case test::ExecutionMode::PARALLEL:
+    case TaskSourceExecutionMode::kParallel:
       return CreateTaskRunnerWithTraits(traits,
                                         mock_pooled_task_runner_delegate);
-    case test::ExecutionMode::SEQUENCED:
+    case TaskSourceExecutionMode::kSequenced:
       return CreateSequencedTaskRunnerWithTraits(
           traits, mock_pooled_task_runner_delegate);
     default:

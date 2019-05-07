@@ -61,12 +61,12 @@ namespace {
 
 struct ThreadPoolImplTestParams {
   ThreadPoolImplTestParams(const TaskTraits& traits,
-                           test::ExecutionMode execution_mode,
+                           TaskSourceExecutionMode execution_mode,
                            test::PoolType pool_type)
       : traits(traits), execution_mode(execution_mode), pool_type(pool_type) {}
 
   TaskTraits traits;
-  test::ExecutionMode execution_mode;
+  TaskSourceExecutionMode execution_mode;
   test::PoolType pool_type;
 };
 
@@ -166,15 +166,15 @@ void VerifyOrderAndTaskEnvironmentAndSignalEvent(
 scoped_refptr<TaskRunner> CreateTaskRunnerWithTraitsAndExecutionMode(
     ThreadPool* thread_pool,
     const TaskTraits& traits,
-    test::ExecutionMode execution_mode,
+    TaskSourceExecutionMode execution_mode,
     SingleThreadTaskRunnerThreadMode default_single_thread_task_runner_mode =
         SingleThreadTaskRunnerThreadMode::SHARED) {
   switch (execution_mode) {
-    case test::ExecutionMode::PARALLEL:
+    case TaskSourceExecutionMode::kParallel:
       return thread_pool->CreateTaskRunnerWithTraits(traits);
-    case test::ExecutionMode::SEQUENCED:
+    case TaskSourceExecutionMode::kSequenced:
       return thread_pool->CreateSequencedTaskRunnerWithTraits(traits);
-    case test::ExecutionMode::SINGLE_THREADED: {
+    case TaskSourceExecutionMode::kSingleThread: {
       return thread_pool->CreateSingleThreadTaskRunnerWithTraits(
           traits, default_single_thread_task_runner_mode);
     }
@@ -190,7 +190,7 @@ class ThreadPostingTasks : public SimpleThread {
   ThreadPostingTasks(ThreadPoolImpl* thread_pool,
                      const TaskTraits& traits,
                      test::PoolType pool_type,
-                     test::ExecutionMode execution_mode)
+                     TaskSourceExecutionMode execution_mode)
       : SimpleThread("ThreadPostingTasks"),
         traits_(traits),
         pool_type_(pool_type),
@@ -224,9 +224,9 @@ class ThreadPostingTasks : public SimpleThread {
 std::vector<ThreadPoolImplTestParams> GetThreadPoolImplTestParams() {
   std::vector<ThreadPoolImplTestParams> params;
 
-  const test::ExecutionMode execution_modes[] = {
-      test::ExecutionMode::PARALLEL, test::ExecutionMode::SEQUENCED,
-      test::ExecutionMode::SINGLE_THREADED};
+  const TaskSourceExecutionMode execution_modes[] = {
+      TaskSourceExecutionMode::kParallel, TaskSourceExecutionMode::kSequenced,
+      TaskSourceExecutionMode::kSingleThread};
 
   const test::PoolType pool_types[] = {
     test::PoolType::GENERIC,
@@ -236,7 +236,7 @@ std::vector<ThreadPoolImplTestParams> GetThreadPoolImplTestParams() {
   };
 
   for (test::PoolType pool_type : pool_types) {
-    for (test::ExecutionMode execution_mode : execution_modes) {
+    for (TaskSourceExecutionMode execution_mode : execution_modes) {
       for (size_t priority_index = static_cast<size_t>(TaskPriority::LOWEST);
            priority_index <= static_cast<size_t>(TaskPriority::HIGHEST);
            ++priority_index) {

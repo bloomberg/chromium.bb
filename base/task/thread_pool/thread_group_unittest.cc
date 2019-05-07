@@ -61,7 +61,7 @@ constexpr size_t kNumTasksPostedPerThread = 150;
 
 struct PoolExecutionType {
   test::PoolType pool_type;
-  test::ExecutionMode execution_mode;
+  TaskSourceExecutionMode execution_mode;
 };
 
 using PostNestedTask = test::TestTaskFactory::PostNestedTask;
@@ -74,7 +74,7 @@ class ThreadPostingTasks : public SimpleThread {
   // task when it runs.
   ThreadPostingTasks(
       test::MockPooledTaskRunnerDelegate* mock_pooled_task_runner_delegate_,
-      test::ExecutionMode execution_mode,
+      TaskSourceExecutionMode execution_mode,
       PostNestedTask post_nested_task)
       : SimpleThread("ThreadPostingTasks"),
         post_nested_task_(post_nested_task),
@@ -357,7 +357,7 @@ TEST_P(ThreadGroupTest, CanRunPolicyUpdatedBeforeRun) {
   StartThreadGroup();
   // This test only works with SequencedTaskRunner become it assumes
   // ordered execution of 2 posted tasks.
-  if (GetParam().execution_mode != test::ExecutionMode::SEQUENCED)
+  if (GetParam().execution_mode != TaskSourceExecutionMode::kSequenced)
     return;
   test::TestCanRunPolicyChangedBeforeRun(
       thread_group_.get(),
@@ -497,24 +497,24 @@ INSTANTIATE_TEST_SUITE_P(GenericParallel,
                          ThreadGroupTest,
                          ::testing::Values(PoolExecutionType{
                              test::PoolType::GENERIC,
-                             test::ExecutionMode::PARALLEL}));
+                             TaskSourceExecutionMode::kParallel}));
 INSTANTIATE_TEST_SUITE_P(GenericSequenced,
                          ThreadGroupTest,
                          ::testing::Values(PoolExecutionType{
                              test::PoolType::GENERIC,
-                             test::ExecutionMode::SEQUENCED}));
+                             TaskSourceExecutionMode::kSequenced}));
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 INSTANTIATE_TEST_SUITE_P(NativeParallel,
                          ThreadGroupTest,
                          ::testing::Values(PoolExecutionType{
                              test::PoolType::NATIVE,
-                             test::ExecutionMode::PARALLEL}));
+                             TaskSourceExecutionMode::kParallel}));
 INSTANTIATE_TEST_SUITE_P(NativeSequenced,
                          ThreadGroupTest,
                          ::testing::Values(PoolExecutionType{
                              test::PoolType::NATIVE,
-                             test::ExecutionMode::SEQUENCED}));
+                             TaskSourceExecutionMode::kSequenced}));
 #endif
 
 }  // namespace internal

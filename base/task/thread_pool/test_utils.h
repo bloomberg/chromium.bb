@@ -68,11 +68,6 @@ class MockPooledTaskRunnerDelegate : public PooledTaskRunnerDelegate {
   ThreadGroup* thread_group_ = nullptr;
 };
 
-// An enumeration of possible thread pool TaskRunner types. Used to
-// parametrize relevant thread_pool tests.
-// TODO(etiennep): Migrate to TaskSourceExecutionMode.
-enum class ExecutionMode { PARALLEL, SEQUENCED, SINGLE_THREADED };
-
 // An enumeration of possible thread pool types. Used to parametrize relevant
 // thread_pool tests.
 enum class PoolType {
@@ -94,9 +89,9 @@ scoped_refptr<Sequence> CreateSequenceWithTask(
 
 // Creates a TaskRunner that posts tasks to the thread group owned by
 // |pooled_task_runner_delegate| with the |execution_mode|.
-// Caveat: this does not support ExecutionMode::SINGLE_THREADED.
+// Caveat: this does not support TaskSourceExecutionMode::kSingleThread.
 scoped_refptr<TaskRunner> CreateTaskRunnerWithExecutionMode(
-    test::ExecutionMode execution_mode,
+    TaskSourceExecutionMode execution_mode,
     MockPooledTaskRunnerDelegate* mock_pooled_task_runner_delegate,
     const TaskTraits& traits = TaskTraits());
 

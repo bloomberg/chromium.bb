@@ -28,11 +28,11 @@ namespace test {
 // - The RunsTasksInCurrentSequence() method of the TaskRunner returns false on
 //   a thread on which a Task is run.
 // - The TaskRunnerHandles set in the context of the task don't match what's
-//   expected for the tested ExecutionMode.
-// - The ExecutionMode of the TaskRunner is SEQUENCED or SINGLE_THREADED and
-//   Tasks don't run in posting order.
-// - The ExecutionMode of the TaskRunner is SINGLE_THREADED and Tasks don't run
-//   on the same thread.
+//   expected for the tested TaskSourceExecutionMode.
+// - The TaskSourceExecutionMode of the TaskRunner is kSequenced or
+//   kSingleThread and Tasks don't run in posting order.
+// - The TaskSourceExecutionMode of the TaskRunner is kSingleThread and Tasks
+//   don't run on the same thread.
 // - A Task runs more than once.
 class TestTaskFactory {
  public:
@@ -42,9 +42,9 @@ class TestTaskFactory {
   };
 
   // Constructs a TestTaskFactory that posts tasks to |task_runner|.
-  // |execution_mode| is the ExecutionMode of |task_runner|.
+  // |execution_mode| is the TaskSourceExecutionMode of |task_runner|.
   TestTaskFactory(scoped_refptr<TaskRunner> task_runner,
-                  ExecutionMode execution_mode);
+                  TaskSourceExecutionMode execution_mode);
 
   ~TestTaskFactory();
 
@@ -77,7 +77,7 @@ class TestTaskFactory {
   const scoped_refptr<TaskRunner> task_runner_;
 
   // Execution mode of |task_runner_|.
-  const ExecutionMode execution_mode_;
+  const TaskSourceExecutionMode execution_mode_;
 
   // Number of tasks posted by PostTask().
   size_t num_posted_tasks_ = 0;

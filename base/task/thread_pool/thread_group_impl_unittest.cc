@@ -151,7 +151,7 @@ class ThreadGroupImplImplTest : public ThreadGroupImplImplTestBase,
 
 class ThreadGroupImplImplTestParam
     : public ThreadGroupImplImplTestBase,
-      public testing::TestWithParam<test::ExecutionMode> {
+      public testing::TestWithParam<TaskSourceExecutionMode> {
  protected:
   ThreadGroupImplImplTestParam() = default;
 
@@ -173,7 +173,7 @@ class ThreadPostingTasksWaitIdle : public SimpleThread {
   ThreadPostingTasksWaitIdle(
       ThreadGroupImpl* thread_group,
       test::MockPooledTaskRunnerDelegate* mock_pooled_task_runner_delegate_,
-      test::ExecutionMode execution_mode)
+      TaskSourceExecutionMode execution_mode)
       : SimpleThread("ThreadPostingTasksWaitIdle"),
         thread_group_(thread_group),
         factory_(CreateTaskRunnerWithExecutionMode(
@@ -292,10 +292,11 @@ TEST_P(ThreadGroupImplImplTestParam, Saturate) {
 
 INSTANTIATE_TEST_SUITE_P(Parallel,
                          ThreadGroupImplImplTestParam,
-                         ::testing::Values(test::ExecutionMode::PARALLEL));
-INSTANTIATE_TEST_SUITE_P(Sequenced,
-                         ThreadGroupImplImplTestParam,
-                         ::testing::Values(test::ExecutionMode::SEQUENCED));
+                         ::testing::Values(TaskSourceExecutionMode::kParallel));
+INSTANTIATE_TEST_SUITE_P(
+    Sequenced,
+    ThreadGroupImplImplTestParam,
+    ::testing::Values(TaskSourceExecutionMode::kSequenced));
 
 namespace {
 
@@ -448,7 +449,7 @@ TEST_F(ThreadGroupImplCheckTlsReuse, CheckCleanupWorkers) {
     factories.push_back(std::make_unique<test::TestTaskFactory>(
         test::CreateTaskRunnerWithTraits({WithBaseSyncPrimitives()},
                                          &mock_pooled_task_runner_delegate_),
-        test::ExecutionMode::PARALLEL));
+        TaskSourceExecutionMode::kParallel));
     ASSERT_TRUE(factories.back()->PostTask(
         PostNestedTask::NO,
         Bind(&ThreadGroupImplCheckTlsReuse::SetTlsValueAndWait,
