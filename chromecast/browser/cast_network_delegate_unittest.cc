@@ -58,8 +58,9 @@ class MockCastNetworkRequestInterceptor : public CastNetworkRequestInterceptor {
 class CastNetworkDelegateTest : public testing::Test {
  public:
   CastNetworkDelegateTest()
-      : task_env_(base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-                  base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED),
+      : task_env_(
+            base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
+            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED),
         context_(true) {
     context_.Init();
     std::unique_ptr<MockCastNetworkRequestInterceptor>
