@@ -1823,11 +1823,13 @@ template("ios_xctest_test") {
       }
     }
 
-    # Xcode needs those two framework installed in the application (and signed)
-    # for the XCTest to run, so install them using extra_system_frameworks.
+    # Xcode needs the following frameworks installed in the application (and
+    # signed) for the XCTest to run, so install them using
+    # extra_system_frameworks.
     _ios_platform_library = "$ios_sdk_platform_path/Developer/Library"
     extra_system_frameworks = [
       "$_ios_platform_library/Frameworks/XCTest.framework",
+      "$ios_sdk_platform_path/Developer/Library/PrivateFrameworks/XCTAutomationSupport.framework",
       "$ios_sdk_platform_path/Developer/usr/lib/libXCTestBundleInject.dylib",
     ]
 
