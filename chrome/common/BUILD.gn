@@ -753,7 +753,7 @@ mojom("mojo_bindings") {
   ]
 
   if (is_mac) {
-    public_deps += [ "//ui/views_bridge_mac:mojo" ]
+    public_deps += [ "//components/remote_cocoa/common:mojo" ]
   }
 
   if (safe_browsing_mode == 1) {

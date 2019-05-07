@@ -6,8 +6,8 @@
 
 #import <AppKit/AppKit.h>
 
+#include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
 #include "ui/views_bridge_mac/bridged_native_widget_impl.h"
-#include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 
 @interface NSWindow (PrivateBrowserNativeWidgetAPI)
 + (Class)frameViewClassForStyleMask:(NSUInteger)windowStyle;

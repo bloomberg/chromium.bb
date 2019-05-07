@@ -8,9 +8,9 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
+#include "components/remote_cocoa/common/alert.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/gfx/text_elider.h"
-#include "ui/views_bridge_mac/mojo/alert.mojom.h"
 #include "ui/views_bridge_mac/views_bridge_mac_export.h"
 
 @class AlertBridgeHelper;

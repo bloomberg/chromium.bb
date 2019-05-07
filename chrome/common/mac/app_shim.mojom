@@ -4,9 +4,9 @@
 
 module chrome.mojom;
 
+import "components/remote_cocoa/common/bridge_factory.mojom";
 import "content/public/common/ns_view_bridge_factory.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
-import "ui/views_bridge_mac/mojo/bridge_factory.mojom";
 
 [Native]
 enum AppShimLaunchType;

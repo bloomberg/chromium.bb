@@ -5,11 +5,11 @@
 #ifndef UI_VIEWS_BRIDGE_MAC_BRIDGE_FACTORY_IMPL_H_
 #define UI_VIEWS_BRIDGE_MAC_BRIDGE_FACTORY_IMPL_H_
 
+#include "components/remote_cocoa/common/alert.mojom.h"
+#include "components/remote_cocoa/common/bridge_factory.mojom.h"
+#include "components/remote_cocoa/common/bridged_native_widget.mojom.h"
+#include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "ui/views_bridge_mac/mojo/alert.mojom.h"
-#include "ui/views_bridge_mac/mojo/bridge_factory.mojom.h"
-#include "ui/views_bridge_mac/mojo/bridged_native_widget.mojom.h"
-#include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 #include "ui/views_bridge_mac/views_bridge_mac_export.h"
 
 // TODO(ccameron): This file is to be moved to /ui/views_bridge_mac when

@@ -8,11 +8,11 @@ mojom("mojo") {
   assert(is_mac)
 
   sources = [
-    "mojo/alert.mojom",
-    "mojo/bridge_factory.mojom",
-    "mojo/bridged_native_widget.mojom",
-    "mojo/bridged_native_widget_host.mojom",
-    "mojo/text_input_host.mojom",
+    "alert.mojom",
+    "bridge_factory.mojom",
+    "bridged_native_widget.mojom",
+    "bridged_native_widget_host.mojom",
+    "text_input_host.mojom",
   ]
 
   public_deps = [

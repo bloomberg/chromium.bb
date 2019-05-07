@@ -778,7 +778,7 @@ jumbo_component("views") {
       "//ui/accelerated_widget_mac",
       "//ui/events:dom_keycode_converter",
     ]
-    public_deps += [ "//ui/views_bridge_mac:mojo" ]
+    public_deps += [ "//components/remote_cocoa/common:mojo" ]
     libs = [
       "AppKit.framework",
       "CoreGraphics.framework",

@@ -11,13 +11,13 @@
 #include "base/logging.h"
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
+#include "components/remote_cocoa/common/bridge_factory.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/ns_view_bridge_factory_host.h"
 #include "content/public/common/ns_view_bridge_factory.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/views/cocoa/bridge_factory_host.h"
-#include "ui/views_bridge_mac/mojo/bridge_factory.mojom.h"
 
 namespace {
 // Start counting host ids at 1000 to help in debugging.

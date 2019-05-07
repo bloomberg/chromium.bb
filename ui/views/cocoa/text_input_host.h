@@ -6,9 +6,9 @@
 #define UI_VIEWS_COCOA_TEXT_INPUT_HOST_H_
 
 #include "base/macros.h"
+#include "components/remote_cocoa/common/text_input_host.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "ui/views/views_export.h"
-#include "ui/views_bridge_mac/mojo/text_input_host.mojom.h"
 
 namespace ui {
 class TextInputClient;

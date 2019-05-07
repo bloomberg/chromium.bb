@@ -11,6 +11,7 @@
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
 #import "ui/base/cocoa/appkit_utils.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -32,7 +33,6 @@
 #include "ui/views_bridge_mac/bridged_native_widget_host_helper.h"
 #import "ui/views_bridge_mac/bridged_native_widget_impl.h"
 #import "ui/views_bridge_mac/drag_drop_client.h"
-#include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 
 namespace {
 

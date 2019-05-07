@@ -8,10 +8,10 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
 #import "ui/views_bridge_mac/bridged_content_view.h"
 #include "ui/views_bridge_mac/bridged_native_widget_host_helper.h"
 #import "ui/views_bridge_mac/bridged_native_widget_impl.h"
-#include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 
 @implementation ViewsNSWindowDelegate
 

@@ -6,12 +6,12 @@
 
 #include "base/logging.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
+#include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "ui/base/accelerators/accelerator_manager.h"
 #include "ui/content_accelerators/accelerator_util.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views_bridge_mac/bridged_native_widget_impl.h"
-#include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 
 @implementation ChromeCommandDispatcherDelegate
 

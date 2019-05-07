@@ -13,10 +13,10 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
 #include "content/public/browser/web_contents.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/views_bridge_mac/bridged_native_widget_impl.h"
-#include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 
 namespace {
 

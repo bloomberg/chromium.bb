@@ -3,6 +3,7 @@ include_rules = [
   "+chrome/browser/ui/cocoa",
   "+chrome/installer/launcher_support",
   "+components/crash/content/app",
+  "+components/remote_cocoa/common",
   "+content/public/browser",
   "+mojo/core/embedder",
 ]

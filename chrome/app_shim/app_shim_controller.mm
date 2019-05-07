@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/cocoa/browser_window_command_handler.h"
 #include "chrome/browser/ui/cocoa/chrome_command_dispatcher_delegate.h"
 #include "chrome/browser/ui/cocoa/main_menu_builder.h"
+#include "components/remote_cocoa/common/bridge_factory.mojom.h"
 #include "content/public/browser/ns_view_bridge_factory_impl.h"
 #include "content/public/common/ns_view_bridge_factory.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -31,7 +32,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views_bridge_mac/bridge_factory_impl.h"
 #include "ui/views_bridge_mac/bridged_native_widget_impl.h"
-#include "ui/views_bridge_mac/mojo/bridge_factory.mojom.h"
 
 namespace {
 // The maximum amount of time to wait for Chrome's AppShimHostManager to be

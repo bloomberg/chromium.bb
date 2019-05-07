@@ -12,6 +12,8 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#include "components/remote_cocoa/common/bridged_native_widget.mojom.h"
+#include "components/remote_cocoa/common/text_input_host.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "ui/accelerated_widget_mac/ca_transaction_observer.h"
 #include "ui/accelerated_widget_mac/display_ca_layer_tree.h"
@@ -20,8 +22,6 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/display/display_observer.h"
 #import "ui/views_bridge_mac/cocoa_mouse_capture_delegate.h"
-#include "ui/views_bridge_mac/mojo/bridged_native_widget.mojom.h"
-#include "ui/views_bridge_mac/mojo/text_input_host.mojom.h"
 #include "ui/views_bridge_mac/views_bridge_mac_export.h"
 
 @class BridgedContentView;

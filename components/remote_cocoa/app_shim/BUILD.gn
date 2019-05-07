@@ -51,13 +51,13 @@ component("app_shim") {
     "//base",
     "//base:i18n",
     "//components/crash/core/common",
+    "//components/remote_cocoa/common:mojo",
     "//mojo/public/cpp/bindings",
     "//ui/accelerated_widget_mac",
     "//ui/base",
     "//ui/base/ime:ime",
     "//ui/events",
     "//ui/gfx",
-    "//ui/views_bridge_mac:mojo",
   ]
   libs = [
     "Cocoa.framework",

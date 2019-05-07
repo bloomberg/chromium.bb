@@ -4,10 +4,10 @@
 
 module views_bridge_mac.mojom;
 
-import "ui/views_bridge_mac/mojo/alert.mojom";
-import "ui/views_bridge_mac/mojo/bridged_native_widget.mojom";
-import "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom";
-import "ui/views_bridge_mac/mojo/text_input_host.mojom";
+import "components/remote_cocoa/common/alert.mojom";
+import "components/remote_cocoa/common/bridged_native_widget.mojom";
+import "components/remote_cocoa/common/bridged_native_widget_host.mojom";
+import "components/remote_cocoa/common/text_input_host.mojom";
 
 // The interface through which a bridge is created and connected to its host.
 interface BridgeFactory {

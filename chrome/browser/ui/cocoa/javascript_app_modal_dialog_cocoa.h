@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/app_modal/native_app_modal_dialog.h"
+#include "components/remote_cocoa/common/alert.mojom.h"
 #include "ui/views_bridge_mac/alert.h"
-#include "ui/views_bridge_mac/mojo/alert.mojom.h"
 
 class PopunderPreventer;
 

@@ -7,9 +7,9 @@
 #import <Cocoa/Cocoa.h>
 
 #import "chrome/browser/ui/cocoa/apps/titlebar_background_view.h"
+#include "components/remote_cocoa/common/bridged_native_widget.mojom.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #import "ui/base/cocoa/window_size_constants.h"
-#include "ui/views_bridge_mac/mojo/bridged_native_widget.mojom.h"
 #import "ui/views_bridge_mac/native_widget_mac_nswindow.h"
 
 AppWindowNativeWidgetMac::AppWindowNativeWidgetMac(

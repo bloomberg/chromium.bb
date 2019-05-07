@@ -7,8 +7,8 @@
 
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
+#include "components/remote_cocoa/common/bridge_factory.mojom.h"
 #include "ui/views/views_export.h"
-#include "ui/views_bridge_mac/mojo/bridge_factory.mojom.h"
 
 namespace views {
 
