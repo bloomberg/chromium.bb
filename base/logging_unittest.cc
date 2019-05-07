@@ -7,6 +7,8 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/sanitizer_buildflags.h"
 #include "base/strings/string_piece.h"
 #include "base/test/scoped_feature_list.h"
@@ -31,6 +33,9 @@
 #endif  // OS_WIN
 
 #if defined(OS_FUCHSIA)
+#include <fuchsia/logger/cpp/fidl.h>
+#include <fuchsia/logger/cpp/fidl_test_base.h>
+#include <lib/fidl/cpp/binding.h>
 #include <lib/zx/event.h>
 #include <lib/zx/port.h>
 #include <lib/zx/process.h>
@@ -41,7 +46,8 @@
 #include <zircon/syscalls/port.h>
 #include <zircon/types.h>
 #include "base/fuchsia/fuchsia_logging.h"
-#endif
+#include "base/fuchsia/service_directory_client.h"
+#endif  // OS_FUCHSIA
 
 namespace logging {
 
@@ -81,6 +87,7 @@ class LogStateSaver {
 
 class LoggingTest : public testing::Test {
  private:
+  base::MessageLoopForIO message_loop_;
   LogStateSaver log_state_saver_;
 };
 
@@ -781,6 +788,64 @@ TEST_F(LoggingTest, ConfigurableDCheckFeature) {
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
 
 #if defined(OS_FUCHSIA)
+
+class TestLogListener : public fuchsia::logger::testing::LogListener_TestBase {
+ public:
+  TestLogListener() = default;
+  ~TestLogListener() override = default;
+
+  void RunUntilDone() {
+    base::RunLoop loop;
+    dump_logs_done_quit_closure_ = loop.QuitClosure();
+    loop.Run();
+  }
+
+  bool DidReceiveString(base::StringPiece message) {
+    if (log_messages_.find(message.as_string()) != std::string::npos) {
+      return true;
+    }
+    return false;
+  }
+
+  // LogListener implementation.
+  void LogMany(std::vector<fuchsia::logger::LogMessage> log) override {
+    for (const auto& current_message : log) {
+      log_messages_.append(current_message.msg);
+      log_messages_.append("\n");
+    }
+  }
+
+  void Done() override { std::move(dump_logs_done_quit_closure_).Run(); }
+
+  void NotImplemented_(const std::string& name) override {}
+
+ private:
+  fuchsia::logger::LogListenerPtr log_listener_;
+  std::string log_messages_;
+  base::OnceClosure dump_logs_done_quit_closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestLogListener);
+};
+
+// Verifies that calling the log macro goes to the Fuchsia system logs.
+TEST_F(LoggingTest, FuchsiaSystemLogging) {
+  const char kLogMessage[] = "system log!";
+  LOG(ERROR) << kLogMessage;
+
+  TestLogListener listener;
+  fidl::Binding<fuchsia::logger::LogListener> binding(&listener);
+  do {
+    std::unique_ptr<fuchsia::logger::LogFilterOptions> options =
+        std::make_unique<fuchsia::logger::LogFilterOptions>();
+    options->tags = {"base_unittests__exec"};
+    fuchsia::logger::LogPtr logger =
+        base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
+            ->ConnectToService<fuchsia::logger::Log>();
+    logger->DumpLogs(binding.NewBinding(), std::move(options));
+    listener.RunUntilDone();
+  } while (!listener.DidReceiveString(kLogMessage));
+}
+
 TEST_F(LoggingTest, FuchsiaLogging) {
   MockLogSource mock_log_source;
   EXPECT_CALL(mock_log_source, Log())

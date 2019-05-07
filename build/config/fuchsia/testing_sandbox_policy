@@ -7,6 +7,8 @@
   "dev": ["null", "zero"],
   "services": [
       "fuchsia.fonts.Provider",
+      "fuchsia.logger.Log",
+      "fuchsia.logger.LogSink",
       "fuchsia.media.Audio",
       "fuchsia.mediacodec.CodecFactory",
       "fuchsia.net.SocketProvider",

@@ -1553,6 +1553,7 @@ jumbo_component("base") {
       "//third_party/fuchsia-sdk/sdk:fidl",
       "//third_party/fuchsia-sdk/sdk:svc",
       "//third_party/fuchsia-sdk/sdk:sys",
+      "//third_party/fuchsia-sdk/sdk:syslog",
     ]
   }
 
@@ -2926,6 +2927,7 @@ test("base_unittests") {
       "//third_party/fuchsia-sdk/sdk:async",
       "//third_party/fuchsia-sdk/sdk:async_default",
       "//third_party/fuchsia-sdk/sdk:fdio",
+      "//third_party/fuchsia-sdk/sdk:logger",
       "//third_party/fuchsia-sdk/sdk:sys",
     ]
   }

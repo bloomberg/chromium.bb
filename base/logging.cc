@@ -56,6 +56,8 @@ typedef HANDLE MutexHandle;
 #endif
 
 #if defined(OS_FUCHSIA)
+#include <lib/syslog/global.h>
+#include <lib/syslog/logger.h>
 #include <zircon/process.h>
 #include <zircon/syscalls.h>
 #endif
@@ -96,6 +98,7 @@ typedef pthread_mutex_t* MutexHandle;
 #include "base/debug/stack_trace.h"
 #include "base/debug/task_trace.h"
 #include "base/lazy_instance.h"
+#include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -439,6 +442,9 @@ bool BaseInitLoggingImpl(const LoggingSettings& settings) {
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
   LoggingLock::Init(settings.lock_log, settings.log_file);
   LoggingLock logging_lock;
+#endif
+#if defined(OS_FUCHSIA)
+  fx_log_init();
 #endif
 
   // Calling InitLogging twice or after some log call has already opened the
@@ -807,7 +813,31 @@ LogMessage::~LogMessage() {
     // The Android system may truncate the string if it's too long.
     __android_log_write(priority, kAndroidLogTag, str_newline.c_str());
 #endif
-#endif  // OS_ANDROID
+#elif defined(OS_FUCHSIA)
+    fx_log_severity_t severity = FX_LOG_INFO;
+    switch (severity) {
+      case LOG_INFO:
+        severity = FX_LOG_INFO;
+        break;
+      case LOG_WARNING:
+        severity = FX_LOG_WARNING;
+        break;
+      case LOG_ERROR:
+        severity = FX_LOG_ERROR;
+        break;
+      case LOG_FATAL:
+        severity = FX_LOG_FATAL;
+        break;
+    }
+
+    fx_logger_t* logger = fx_log_get_logger();
+    if (logger) {
+      base::FilePath path;
+      base::PathService::Get(base::FILE_EXE, &path);
+      fx_logger_log(logger, severity, path.BaseName().value().c_str(),
+                    str_newline.c_str());
+    }
+#endif  // OS_FUCHSIA
     ignore_result(fwrite(str_newline.data(), str_newline.size(), 1, stderr));
     fflush(stderr);
   } else if (severity_ >= kAlwaysPrintErrorLevel) {

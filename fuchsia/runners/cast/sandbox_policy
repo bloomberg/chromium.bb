@@ -3,6 +3,7 @@
   "services": [
       "chromium.cast.ApplicationConfigManager",
       "fuchsia.fonts.Provider",
+      "fuchsia.logger.LogSink",
       "fuchsia.media.Audio",
       "fuchsia.net.SocketProvider",
       "fuchsia.netstack.Netstack",
