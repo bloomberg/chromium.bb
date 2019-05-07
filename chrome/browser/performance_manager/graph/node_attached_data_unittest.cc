@@ -55,6 +55,9 @@ class DummyData : public NodeAttachedDataImpl<DummyData> {
                   public NodeAttachedDataOwnedByNodeType<DummyNode> {};
 
   DummyData() = default;
+  explicit DummyData(const PageNodeImpl* page_node) {}
+  explicit DummyData(const ProcessNodeImpl* process_node) {}
+  explicit DummyData(const DummyNode* dummy_node) {}
   ~DummyData() override = default;
 
   // Provides access to storage on DummyNodes.
@@ -75,6 +78,8 @@ class FooData : public NodeAttachedDataImpl<FooData> {
                   public NodeAttachedDataInternalOnNodeType<DummyNode> {};
 
   FooData() = default;
+  explicit FooData(const PageNodeImpl* page_node) {}
+  explicit FooData(const DummyNode* dummy_node) {}
   ~FooData() override = default;
 
   // Provides access to storage on DummyNodes.
@@ -118,26 +123,6 @@ TEST_F(NodeAttachedDataTest, UserDataKey) {
   EXPECT_EQ(data->key(), DummyData::UserDataKey());
 }
 
-TEST_F(NodeAttachedDataTest, CanAttach) {
-  EXPECT_FALSE(DummyData::CanAttachToNodeType<FrameNodeImpl>());
-  EXPECT_TRUE(DummyData::CanAttachToNodeType<PageNodeImpl>());
-  EXPECT_TRUE(DummyData::CanAttachToNodeType<ProcessNodeImpl>());
-  EXPECT_FALSE(DummyData::CanAttachToNodeType<SystemNodeImpl>());
-
-  EXPECT_FALSE(DummyData::CanAttachToNodeType(NodeTypeEnum::kInvalidType));
-  EXPECT_FALSE(DummyData::CanAttachToNodeType(FrameNodeImpl::Type()));
-  EXPECT_TRUE(DummyData::CanAttachToNodeType(PageNodeImpl::Type()));
-  EXPECT_TRUE(DummyData::CanAttachToNodeType(ProcessNodeImpl::Type()));
-  EXPECT_FALSE(DummyData::CanAttachToNodeType(SystemNodeImpl::Type()));
-
-  std::unique_ptr<NodeAttachedData> data = std::make_unique<DummyData>();
-  EXPECT_FALSE(data->CanAttach(NodeTypeEnum::kInvalidType));
-  EXPECT_FALSE(data->CanAttach(FrameNodeImpl::Type()));
-  EXPECT_TRUE(data->CanAttach(PageNodeImpl::Type()));
-  EXPECT_TRUE(data->CanAttach(ProcessNodeImpl::Type()));
-  EXPECT_FALSE(data->CanAttach(SystemNodeImpl::Type()));
-}
-
 TEST_F(NodeAttachedDataTest, RawAttachDetach) {
   MockSinglePageInSingleProcessGraph mock_graph(graph());
   auto* page_node = mock_graph.page.get();
@@ -163,15 +148,6 @@ TEST_F(NodeAttachedDataTest, RawAttachDetach) {
   EXPECT_EQ(0u, graph()->GetNodeAttachedDataCountForTesting(nullptr, nullptr));
   EXPECT_EQ(raw_base, base_data.get());
   EXPECT_EQ(kNull, GetFromMap(page_node, raw_data->key()));
-}
-
-TEST_F(NodeAttachedDataTest, RawAttachExplodesOnWrongNodeType) {
-  MockSinglePageInSingleProcessGraph mock_graph(graph());
-  auto* frame_node = mock_graph.frame.get();
-
-  // Trying to attach a DummyData to a FrameNode should explode with a CHECK.
-  std::unique_ptr<DummyData> data = std::make_unique<DummyData>();
-  EXPECT_CHECK_DEATH(AttachInMap(frame_node, std::move(data)));
 }
 
 TEST_F(NodeAttachedDataTest, TypedAttachDetach) {

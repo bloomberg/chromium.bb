@@ -27,11 +27,6 @@ class NodeAttachedData {
   // to be unique per data type or bad things happen.
   virtual const void* key() const = 0;
 
-  // Returns true if the implementation is able to be attached to a node of the
-  // given type.
-  virtual bool CanAttach(NodeTypeEnum node_type) const = 0;
-  bool CanAttach(const NodeBase* node) const;
-
  protected:
   friend class NodeAttachedDataTest;
 

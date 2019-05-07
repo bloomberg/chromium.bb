@@ -53,7 +53,8 @@ class FrozenDataImpl : public FrozenFrameAggregator::Data,
   struct Traits : public NodeAttachedDataInternalOnNodeType<PageNodeImpl>,
                   public NodeAttachedDataInternalOnNodeType<ProcessNodeImpl> {};
 
-  FrozenDataImpl() = default;
+  explicit FrozenDataImpl(const PageNodeImpl* page_node) {}
+  explicit FrozenDataImpl(const ProcessNodeImpl* process_node) {}
   ~FrozenDataImpl() override = default;
 
   static StorageType* GetInternalStorage(PageNodeImpl* page_node) {

@@ -35,7 +35,7 @@ class DataImpl : public PageAlmostIdleDecorator::Data,
  public:
   struct Traits : public NodeAttachedDataOwnedByNodeType<PageNodeImpl> {};
 
-  DataImpl() = default;
+  explicit DataImpl(const PageNodeImpl* page_node) {}
   ~DataImpl() override = default;
 
   static std::unique_ptr<NodeAttachedData>* GetUniquePtrStorage(

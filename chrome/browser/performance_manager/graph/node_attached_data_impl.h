@@ -64,7 +64,13 @@ namespace performance_manager {
 //         // in the ProcessNodeImpl.
 //         public NodeAttachedDataInternalOnNodeType<ProcessNodeImpl> {};
 //
+//   // For each node type that is supported a matching constructor must be
+//   // available.
+//   explicit Foo(const PageNodeImpl* page_node);
+//   explicit Foo(const FrameNodeImpl* frame_node);
+//   explicit Foo(const ProcessNodeImpl* process_node);
 //   ~Foo() override;
+//
 //
 //  private:
 //   // Make the impl our friend so it can access the constructor and any
@@ -183,20 +189,8 @@ class NodeAttachedDataImpl : public NodeAttachedData {
 
   static const void* UserDataKey() { return &DataType::kUserDataKey; }
 
-  static bool CanAttachToNodeType(NodeTypeEnum node_type);
-
-  template <typename NodeType>
-  static bool CanAttachToNodeType() {
-    static_assert(std::is_base_of<NodeBase, NodeType>::value,
-                  "NodeType must be descended from NodeBase");
-    return CanAttachToNodeType(NodeType::Type());
-  }
-
   // NodeAttachedData implementation:
   const void* key() const override { return UserDataKey(); }
-  bool CanAttach(NodeTypeEnum node_type) const override {
-    return CanAttachToNodeType(node_type);
-  }
 
  private:
   // Uses implicit conversion of the traits to get the appropriate mixin class
@@ -251,39 +245,6 @@ constexpr int NodeAttachedDataImpl<DataType>::kUserDataKey;
 // Everything below this point is implementation detail! //
 ///////////////////////////////////////////////////////////
 
-// Implementation of NodeAttachedDataImpl.
-
-// static
-template <typename DataType>
-bool NodeAttachedDataImpl<DataType>::CanAttachToNodeType(
-    NodeTypeEnum node_type) {
-  switch (node_type) {
-    case NodeTypeEnum::kInvalidType: {
-      return false;
-    }
-    case NodeTypeEnum::kFrame: {
-      return std::is_base_of<
-          NodeAttachedDataPermittedByNodeTypeEnum<NodeTypeEnum::kFrame>,
-          typename DataType::Traits>::value;
-    }
-    case NodeTypeEnum::kPage: {
-      return std::is_base_of<
-          NodeAttachedDataPermittedByNodeTypeEnum<NodeTypeEnum::kPage>,
-          typename DataType::Traits>::value;
-    }
-    case NodeTypeEnum::kProcess: {
-      return std::is_base_of<
-          NodeAttachedDataPermittedByNodeTypeEnum<NodeTypeEnum::kProcess>,
-          typename DataType::Traits>::value;
-    }
-    case NodeTypeEnum::kSystem: {
-      return std::is_base_of<
-          NodeAttachedDataPermittedByNodeTypeEnum<NodeTypeEnum::kSystem>,
-          typename DataType::Traits>::value;
-    }
-  }
-}
-
 // Helper class allowing access to internals of
 // InternalNodeAttachedDataStorage<>.
 class InternalNodeAttachedDataStorageAccess {
@@ -311,7 +272,7 @@ NodeAttachedDataImpl<DataType>::NodeAttachedDataInMap<NodeType>::GetOrCreate(
     DCHECK_EQ(DataType::UserDataKey(), base_data->key());
     return static_cast<DataType*>(base_data);
   }
-  std::unique_ptr<DataType> data = base::WrapUnique(new DataType());
+  std::unique_ptr<DataType> data = base::WrapUnique(new DataType(node));
   DataType* raw_data = data.get();
   NodeAttachedData::AttachInMap(node, std::move(data));
   return raw_data;
@@ -347,7 +308,7 @@ DataType* NodeAttachedDataImpl<DataType>::NodeAttachedDataOwnedByNodeType<
   std::unique_ptr<NodeAttachedData>* storage =
       DataType::GetUniquePtrStorage(const_cast<NodeType*>(node));
   if (!storage->get())
-    *storage = base::WrapUnique(new DataType());
+    *storage = base::WrapUnique(new DataType(node));
   DCHECK_EQ(DataType::UserDataKey(), storage->get()->key());
   return static_cast<DataType*>(storage->get());
 }
@@ -389,7 +350,7 @@ DataType* NodeAttachedDataImpl<DataType>::NodeAttachedDataInternalOnNodeType<
   InternalNodeAttachedDataStorage<sizeof(DataType)>* storage =
       DataType::GetInternalStorage(const_cast<NodeType*>(node));
   if (!storage->Get()) {
-    NodeAttachedData* data = new (storage->buffer()) DataType();
+    NodeAttachedData* data = new (storage->buffer()) DataType(node);
     InternalNodeAttachedDataStorageAccess::Set(storage, data);
   }
   DCHECK_EQ(DataType::UserDataKey(), storage->Get()->key());
