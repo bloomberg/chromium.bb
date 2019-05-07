@@ -209,6 +209,10 @@ enum class TaskType : unsigned char {
   // The following task types are only for thread-local queues.
   ///////////////////////////////////////
 
+  // The following task types are internal-use only, escpecially for annotations
+  // like UMA of per-thread task queues. Do not specify these task types when to
+  // get a task queue/runner.
+
   kMainThreadTaskQueueV8 = 37,
   kMainThreadTaskQueueCompositor = 38,
   kMainThreadTaskQueueDefault = 39,
