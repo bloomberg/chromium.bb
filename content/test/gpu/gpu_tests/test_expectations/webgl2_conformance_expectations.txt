@@ -55,6 +55,13 @@ crbug.com/874620 [ opengl win nvidia ] conformance2/glsl3/const-struct-from-arra
 crbug.com/927908 conformance2/rendering/draw-buffers.html [ Failure ]
 crbug.com/927908 conformance2/rendering/fs-color-type-mismatch-color-buffer-type.html [ Failure ]
 
+# Unsuppress after both
+# https://chromium-review.googlesource.com/1558678 and
+# https://github.com/KhronosGroup/WebGL/pull/2878 land and are rolled
+# in.
+# TODO(kbr): this is actually crbug.com/angleproject/3285 .
+crbug.com/3285 conformance/glsl/misc/shaders-with-invariance.html [ Failure ]
+
 # Too slow (take about one hour to run)
 crbug.com/619403 deqp/functional/gles3/builtinprecision/* [ Skip ]
 
@@ -590,7 +597,8 @@ crbug.com/680675 [ linux intel ] conformance/extensions/webgl-compressed-texture
 # It looks like AMD shader compiler rejects many valid ES3 semantics.
 crbug.com/844311 [ linux amd ] conformance/glsl/misc/fragcolor-fragdata-invariant.html [ Failure ]
 crbug.com/766776 [ linux amd ] conformance2/attribs/gl-vertex-attrib-normalized-int.html [ Failure ]
-crbug.com/483282 [ linux amd ] conformance/glsl/misc/shaders-with-invariance.html [ Failure ]
+# TODO(kbr): re-add after global suppression is removed.
+# crbug.com/483282 [ linux amd ] conformance/glsl/misc/shaders-with-invariance.html [ Failure ]
 crbug.com/709351 [ linux amd ] conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html [ Failure ]
 crbug.com/617290 [ linux amd ] deqp/functional/gles3/multisample.html [ Failure ]
 crbug.com/483282 [ linux amd ] deqp/data/gles3/shaders/conversions.html [ Failure ]
