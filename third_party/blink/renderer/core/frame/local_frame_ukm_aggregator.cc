@@ -145,8 +145,12 @@ void LocalFrameUkmAggregator::RecordEndOfFrameMetrics(TimeTicks start,
   // Any of the early out's in LocalFrameView::UpdateLifecyclePhases
   // will mean we are not in a main frame update. Recording is triggered
   // higher in the stack, so we cannot know to avoid calling this method.
-  if (!in_main_frame_update_)
+  if (!in_main_frame_update_) {
+    // Reset for the next frame to start the next recording period with
+    // clear counters, even when we did not record anything this frame.
+    ResetAllMetrics();
     return;
+  }
   in_main_frame_update_ = false;
 
   TimeDelta duration = end - start;
