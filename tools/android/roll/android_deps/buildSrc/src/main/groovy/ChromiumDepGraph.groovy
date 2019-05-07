@@ -58,6 +58,7 @@ class ChromiumDepGraph {
     ]
 
     Project project
+    boolean skipLicenses
 
     void collectDependencies() {
         def compileConfig = project.configurations.getByName('compile').resolvedConfiguration
@@ -84,7 +85,8 @@ class ChromiumDepGraph {
         }
 
         compileConfig.resolvedArtifacts.each { artifact ->
-            def dep = dependencies.get(makeModuleId(artifact))
+            def id = makeModuleId(artifact)
+            def dep = dependencies.get(id)
             assert dep != null : "No dependency collected for artifact ${artifact.name}"
             dep.supportsAndroid = true
             dep.testOnly = false
@@ -149,9 +151,11 @@ class ChromiumDepGraph {
                                 List<String> childModules) {
         def pom = getPomFromArtifact(artifact.id.componentIdentifier).file
         def pomContent = new XmlSlurper(false, false).parse(pom)
-        String licenseName
-        String licenseUrl
-        (licenseName, licenseUrl) = resolveLicenseInformation(id, pomContent)
+        String licenseName = ''
+        String licenseUrl = ''
+        if (!skipLicenses) {
+            (licenseName, licenseUrl) = resolveLicenseInformation(id, pomContent)
+        }
 
         // Get rid of irrelevant indent that might be present in the XML file.
         def description = pomContent.description?.text()?.trim()?.replaceAll(/\s+/, " ")
@@ -205,6 +209,15 @@ class ChromiumDepGraph {
                     dep.url = fallbackProperties.url
                 }
                 dep.licenseAndroidCompatible = fallbackProperties.licenseAndroidCompatible
+            }
+        }
+
+        if (skipLicenses) {
+            dep.licenseName = ''
+            dep.licensePath = ''
+            dep.licenseUrl = ''
+            if (dep.id?.endsWith('license')) {
+                dep.exclude = true
             }
         }
 
