@@ -26,16 +26,16 @@ namespace media_router {
 class CastActivityRecord;
 class DataDecoder;
 
-// TODO(jrw): Rename
-//   CastSessionClientBase -> CastSessionClient
-//   CastSessionClient -> CastSessionClientImpl
-// and likewise for CastActivity{Manager,Record}.
-class CastSessionClientBase : public blink::mojom::PresentationConnection {
+// Represents a Cast SDK client connection to a Cast session. This class
+// contains PresentationConnection Mojo pipes to send and receive messages
+// from/to the corresponding SDK client hosted in a presentation controlling
+// frame in Blink.
+class CastSessionClient {
  public:
-  CastSessionClientBase(const std::string& client_id,
-                        const url::Origin& origin,
-                        int tab_id);
-  ~CastSessionClientBase() override;
+  CastSessionClient(const std::string& client_id,
+                    const url::Origin& origin,
+                    int tab_id);
+  virtual ~CastSessionClient();
 
   const std::string& client_id() const { return client_id_; }
   const base::Optional<std::string>& session_id() const { return session_id_; }
@@ -100,27 +100,25 @@ class CastSessionClientBase : public blink::mojom::PresentationConnection {
 
 class CastSessionClientFactoryForTest {
  public:
-  virtual std::unique_ptr<CastSessionClientBase> MakeClientForTest(
+  virtual std::unique_ptr<CastSessionClient> MakeClientForTest(
       const std::string& client_id,
       const url::Origin& origin,
       int tab_id) = 0;
 };
 
-// Represents a Cast SDK client connection to a Cast session. This class
-// contains PresentationConnection Mojo pipes to send and receive messages
-// from/to the corresponding SDK client hosted in a presentation controlling
-// frame in Blink.
-class CastSessionClient : public CastSessionClientBase {
+// TODO(jrw): Move to a separate file.
+class CastSessionClientImpl : public CastSessionClient,
+                              public blink::mojom::PresentationConnection {
  public:
-  CastSessionClient(const std::string& client_id,
-                    const url::Origin& origin,
-                    int tab_id,
-                    AutoJoinPolicy auto_join_policy,
-                    DataDecoder* data_decoder,
-                    CastActivityRecord* activity);
-  ~CastSessionClient() override;
+  CastSessionClientImpl(const std::string& client_id,
+                        const url::Origin& origin,
+                        int tab_id,
+                        AutoJoinPolicy auto_join_policy,
+                        DataDecoder* data_decoder,
+                        CastActivityRecord* activity);
+  ~CastSessionClientImpl() override;
 
-  // CastSessionClientBase implementation
+  // CastSessionClient implementation
   mojom::RoutePresentationConnectionPtr Init() override;
   // TODO(jrw): Remove redundant "ToClient" in the name of this and other
   // methods.
@@ -186,8 +184,8 @@ class CastSessionClient : public CastSessionClientBase {
   // initiate state changes.
   blink::mojom::PresentationConnectionPtr connection_;
 
-  base::WeakPtrFactory<CastSessionClient> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(CastSessionClient);
+  base::WeakPtrFactory<CastSessionClientImpl> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(CastSessionClientImpl);
 };
 
 }  // namespace media_router

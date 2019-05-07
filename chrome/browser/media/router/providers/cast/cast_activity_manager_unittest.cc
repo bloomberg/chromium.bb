@@ -130,7 +130,7 @@ class CastActivityManagerTest : public testing::Test,
     CastActivityManager::SetActitivyRecordFactoryForTest(nullptr);
   }
 
-  std::unique_ptr<CastActivityRecordBase> MakeCastActivityRecord(
+  std::unique_ptr<CastActivityRecord> MakeCastActivityRecord(
       const MediaRoute& route,
       const std::string& app_id) override {
     auto activity = std::make_unique<MockCastActivityRecord>(route, app_id);

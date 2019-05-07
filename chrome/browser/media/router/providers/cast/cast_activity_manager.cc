@@ -167,7 +167,7 @@ void CastActivityManager::LaunchSessionAfterTerminatingExisting(
   DoLaunchSession(std::move(params));
 }
 
-bool CastActivityManager::CanJoinSession(const CastActivityRecordBase& activity,
+bool CastActivityManager::CanJoinSession(const CastActivityRecord& activity,
                                          const CastMediaSource& cast_source,
                                          bool incognito) const {
   if (!cast_source.ContainsApp(activity.app_id()))
@@ -182,7 +182,7 @@ bool CastActivityManager::CanJoinSession(const CastActivityRecordBase& activity,
   return true;
 }
 
-CastActivityRecordBase* CastActivityManager::FindActivityForSessionJoin(
+CastActivityRecord* CastActivityManager::FindActivityForSessionJoin(
     const CastMediaSource& cast_source,
     const std::string& presentation_id) {
   // We only allow joining by session ID. The Cast SDK uses
@@ -207,7 +207,7 @@ CastActivityRecordBase* CastActivityManager::FindActivityForSessionJoin(
   return it == activities_.end() ? nullptr : it->second.get();
 }
 
-CastActivityRecordBase* CastActivityManager::FindActivityForAutoJoin(
+CastActivityRecord* CastActivityManager::FindActivityForAutoJoin(
     const CastMediaSource& cast_source,
     const url::Origin& origin,
     int tab_id) {
@@ -223,7 +223,7 @@ CastActivityRecordBase* CastActivityManager::FindActivityForAutoJoin(
       activities_.begin(), activities_.end(),
       [&cast_source, &origin, tab_id](const auto& activity) {
         AutoJoinPolicy policy = cast_source.auto_join_policy();
-        const CastActivityRecordBase* record = activity.second.get();
+        const CastActivityRecord* record = activity.second.get();
         if (!record->route().is_local())
           return false;
         if (!cast_source.ContainsApp(record->app_id()))
@@ -248,7 +248,7 @@ void CastActivityManager::JoinSession(
     mojom::MediaRouteProvider::JoinRouteCallback callback) {
   DVLOG(2) << "JoinSession: source / presentation ID: "
            << cast_source.source_id() << ", " << presentation_id;
-  CastActivityRecordBase* activity = nullptr;
+  CastActivityRecord* activity = nullptr;
   if (presentation_id == kAutoJoinPresentationId) {
     activity = FindActivityForAutoJoin(cast_source, origin, tab_id);
     if (!activity && cast_source.default_action_policy() !=
@@ -390,16 +390,16 @@ CastActivityManager::FindActivityBySink(const MediaSinkInternal& sink) {
       });
 }
 
-CastActivityRecordBase* CastActivityManager::AddActivityRecord(
+CastActivityRecord* CastActivityManager::AddActivityRecord(
     const MediaRoute& route,
     const std::string& app_id) {
-  std::unique_ptr<CastActivityRecordBase> activity;
+  std::unique_ptr<CastActivityRecord> activity;
   if (activity_record_factory_) {
     activity = activity_record_factory_->MakeCastActivityRecord(route, app_id);
   } else {
-    activity.reset(new CastActivityRecord(route, app_id, media_sink_service_,
-                                          message_handler_, session_tracker_,
-                                          data_decoder_.get(), this));
+    activity.reset(new CastActivityRecordImpl(
+        route, app_id, media_sink_service_, message_handler_, session_tracker_,
+        data_decoder_.get(), this));
   }
   auto* activity_ptr = activity.get();
   activities_.emplace(route.media_route_id(), std::move(activity));
@@ -417,7 +417,7 @@ void CastActivityManager::OnAppMessage(
     return;
   }
 
-  CastActivityRecordBase* activity = it->second.get();
+  CastActivityRecord* activity = it->second.get();
   const auto& session_id = activity->session_id();
   if (!session_id) {
     DVLOG(2) << "No session associated with activity!";
@@ -448,7 +448,7 @@ void CastActivityManager::OnSessionAddedOrUpdated(const MediaSinkInternal& sink,
     return;
   }
 
-  CastActivityRecordBase* activity = activity_it->second.get();
+  CastActivityRecord* activity = activity_it->second.get();
   DCHECK(activity->route().media_sink_id() == sink.sink().id());
 
   DVLOG(2) << "Receiver status: update/replace activity: "

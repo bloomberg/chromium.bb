@@ -233,7 +233,7 @@ void CastMediaRouteProvider::StopListeningForRouteMessages(
 
 void CastMediaRouteProvider::DetachRoute(const std::string& route_id) {
   // DetachRoute() isn't implemented. Instead, a presentation connection
-  // associated with the route will call DidClose(). See CastSessionClient.
+  // associated with the route will call DidClose(). See CastSessionClientImpl.
   NOTIMPLEMENTED();
 }
 

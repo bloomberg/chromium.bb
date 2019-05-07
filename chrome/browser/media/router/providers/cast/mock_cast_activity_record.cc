@@ -8,7 +8,7 @@ namespace media_router {
 
 MockCastActivityRecord::MockCastActivityRecord(const MediaRoute& route,
                                                const std::string& app_id)
-    : CastActivityRecordBase(route, app_id) {}
+    : CastActivityRecord(route, app_id) {}
 
 MockCastActivityRecord::~MockCastActivityRecord() = default;
 

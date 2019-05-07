@@ -28,7 +28,7 @@ class CastMessage;
 
 namespace media_router {
 
-class CastActivityRecordBase;
+class CastActivityRecord;
 class CastActivityRecordFactory;
 class CastSession;
 class DataDecoder;
@@ -121,7 +121,7 @@ class CastActivityManager : public CastActivityManagerBase,
  private:
   friend class CastActivityManagerTest;
   using ActivityMap =
-      base::flat_map<MediaRoute::Id, std::unique_ptr<CastActivityRecordBase>>;
+      base::flat_map<MediaRoute::Id, std::unique_ptr<CastActivityRecord>>;
 
   // Bundle of parameters for DoLaunchSession().
   struct DoLaunchSessionParams {
@@ -195,18 +195,18 @@ class CastActivityManager : public CastActivityManagerBase,
       mojom::MediaRouteProvider::TerminateRouteCallback callback,
       cast_channel::Result result);
 
-  CastActivityRecordBase* FindActivityForAutoJoin(
+  CastActivityRecord* FindActivityForAutoJoin(
       const CastMediaSource& cast_source,
       const url::Origin& origin,
       int tab_id);
-  bool CanJoinSession(const CastActivityRecordBase& activity,
+  bool CanJoinSession(const CastActivityRecord& activity,
                       const CastMediaSource& cast_source,
                       bool incognito) const;
-  CastActivityRecordBase* FindActivityForSessionJoin(
+  CastActivityRecord* FindActivityForSessionJoin(
       const CastMediaSource& cast_source,
       const std::string& presentation_id);
 
-  // Creates and stores a CastActivityRecordBase representing a non-local
+  // Creates and stores a CastActivityRecord representing a non-local
   // activity.
   void AddNonLocalActivityRecord(const MediaSinkInternal& sink,
                                  const CastSession& session);
@@ -218,8 +218,8 @@ class CastActivityManager : public CastActivityManagerBase,
   ActivityMap::iterator FindActivityByChannelId(int channel_id);
   ActivityMap::iterator FindActivityBySink(const MediaSinkInternal& sink);
 
-  CastActivityRecordBase* AddActivityRecord(const MediaRoute& route,
-                                            const std::string& app_id);
+  CastActivityRecord* AddActivityRecord(const MediaRoute& route,
+                                        const std::string& app_id);
 
   static CastActivityRecordFactory* activity_record_factory_;
 

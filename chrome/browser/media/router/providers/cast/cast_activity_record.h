@@ -19,26 +19,29 @@
 namespace media_router {
 
 class CastActivityManagerBase;
-class CastActivityRecord;
+class CastActivityRecordImpl;
 class CastInternalMessage;
 class CastSession;
-class CastSessionClientBase;
+class CastSessionClient;
 class CastSessionClientFactoryForTest;
 class CastSessionTracker;
 class DataDecoder;
 class MediaSinkServiceBase;
 class MediaRoute;
 
-// TODO(jrw): Rename
-//   CastActivityRecordBase -> CastActivityRecord
-//   CastActivityRecord -> CastActivityRecordImpl
-class CastActivityRecordBase {
+// Represents an ongoing or launching Cast application on a Cast receiver.
+// It keeps track of the set of Cast SDK clients connected to the application.
+// Note that we do not keep track of 1-UA mode presentations here. Instead, they
+// are handled by LocalPresentationManager.
+//
+// Instances of this class are associated with a specific session and app.
+class CastActivityRecord {
  public:
   using ClientMap =
-      base::flat_map<std::string, std::unique_ptr<CastSessionClientBase>>;
+      base::flat_map<std::string, std::unique_ptr<CastSessionClient>>;
 
-  CastActivityRecordBase(const MediaRoute& route, const std::string& app_id);
-  virtual ~CastActivityRecordBase();
+  CastActivityRecord(const MediaRoute& route, const std::string& app_id);
+  virtual ~CastActivityRecord();
 
   const MediaRoute& route() const { return route_; }
   const std::string& app_id() const { return app_id_; }
@@ -119,22 +122,17 @@ class CastActivityRecordBase {
 
 class CastActivityRecordFactory {
  public:
-  virtual std::unique_ptr<CastActivityRecordBase> MakeCastActivityRecord(
+  virtual std::unique_ptr<CastActivityRecord> MakeCastActivityRecord(
       const MediaRoute& route,
       const std::string& app_id) = 0;
 };
 
-// Represents an ongoing or launching Cast application on a Cast receiver.
-// It keeps track of the set of Cast SDK clients connected to the application.
-// Note that we do not keep track of 1-UA mode presentations here. Instead, they
-// are handled by LocalPresentationManager.
-//
-// Instances of this class are associated with a specific session and app.
-class CastActivityRecord : public CastActivityRecordBase {
+// TODO(jrw): Move to a separate file.
+class CastActivityRecordImpl : public CastActivityRecord {
  public:
-  ~CastActivityRecord() override;
+  ~CastActivityRecordImpl() override;
 
-  // CastActivityRecordBase implementation
+  // CastActivityRecord implementation
   cast_channel::Result SendAppMessageToReceiver(
       const CastInternalMessage& cast_message) override;
   base::Optional<int> SendMediaRequestToReceiver(
@@ -173,23 +171,23 @@ class CastActivityRecord : public CastActivityRecordBase {
   }
 
  private:
-  friend class CastSessionClient;
+  friend class CastSessionClientImpl;
   friend class CastActivityManager;
-  friend class CastActivityRecordTest;
+  friend class CastActivityRecordImplTest;
 
   // Creates a new record owned by |owner|.
-  CastActivityRecord(const MediaRoute& route,
-                     const std::string& app_id,
-                     MediaSinkServiceBase* media_sink_service,
-                     cast_channel::CastMessageHandler* message_handler,
-                     CastSessionTracker* session_tracker,
-                     DataDecoder* data_decoder,
-                     CastActivityManagerBase* owner);
+  CastActivityRecordImpl(const MediaRoute& route,
+                         const std::string& app_id,
+                         MediaSinkServiceBase* media_sink_service,
+                         cast_channel::CastMessageHandler* message_handler,
+                         CastSessionTracker* session_tracker,
+                         DataDecoder* data_decoder,
+                         CastActivityManagerBase* owner);
 
   CastSession* GetSession();
   int GetCastChannelId();
 
-  CastSessionClientBase* GetClient(const std::string& client_id) {
+  CastSessionClient* GetClient(const std::string& client_id) {
     auto it = connected_clients_.find(client_id);
     return it == connected_clients_.end() ? nullptr : it->second.get();
   }
@@ -205,7 +203,7 @@ class CastActivityRecord : public CastActivityRecordBase {
   DataDecoder* const data_decoder_;
   CastActivityManagerBase* const activity_manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(CastActivityRecord);
+  DISALLOW_COPY_AND_ASSIGN(CastActivityRecordImpl);
 };
 
 }  // namespace media_router

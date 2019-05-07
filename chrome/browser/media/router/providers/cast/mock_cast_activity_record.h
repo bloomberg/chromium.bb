@@ -11,7 +11,7 @@
 
 namespace media_router {
 
-class MockCastActivityRecord : public CastActivityRecordBase {
+class MockCastActivityRecord : public CastActivityRecord {
  public:
   MockCastActivityRecord(const MediaRoute& route, const std::string& app_id);
   ~MockCastActivityRecord() override;

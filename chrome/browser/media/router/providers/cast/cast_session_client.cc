@@ -30,29 +30,29 @@ void ReportClientMessageParseError(const MediaRoute::Id& route_id,
 
 }  // namespace
 
-CastSessionClientBase::CastSessionClientBase(const std::string& client_id,
-                                             const url::Origin& origin,
-                                             int tab_id)
-    : client_id_(client_id), origin_(origin), tab_id_(tab_id) {}
-
-CastSessionClientBase::~CastSessionClientBase() = default;
-
 CastSessionClient::CastSessionClient(const std::string& client_id,
                                      const url::Origin& origin,
-                                     int tab_id,
-                                     AutoJoinPolicy auto_join_policy,
-                                     DataDecoder* data_decoder,
-                                     CastActivityRecord* activity)
-    : CastSessionClientBase(client_id, origin, tab_id),
+                                     int tab_id)
+    : client_id_(client_id), origin_(origin), tab_id_(tab_id) {}
+
+CastSessionClient::~CastSessionClient() = default;
+
+CastSessionClientImpl::CastSessionClientImpl(const std::string& client_id,
+                                             const url::Origin& origin,
+                                             int tab_id,
+                                             AutoJoinPolicy auto_join_policy,
+                                             DataDecoder* data_decoder,
+                                             CastActivityRecord* activity)
+    : CastSessionClient(client_id, origin, tab_id),
       auto_join_policy_(auto_join_policy),
       data_decoder_(data_decoder),
       activity_(activity),
       connection_binding_(this),
       weak_ptr_factory_(this) {}
 
-CastSessionClient::~CastSessionClient() = default;
+CastSessionClientImpl::~CastSessionClientImpl() = default;
 
-mojom::RoutePresentationConnectionPtr CastSessionClient::Init() {
+mojom::RoutePresentationConnectionPtr CastSessionClientImpl::Init() {
   PresentationConnectionPtrInfo renderer_connection;
   connection_binding_.Bind(mojo::MakeRequest(&renderer_connection));
   auto connection_request = mojo::MakeRequest(&connection_);
@@ -61,12 +61,12 @@ mojom::RoutePresentationConnectionPtr CastSessionClient::Init() {
                                                  std::move(connection_request));
 }
 
-void CastSessionClient::SendMessageToClient(
+void CastSessionClientImpl::SendMessageToClient(
     PresentationConnectionMessagePtr message) {
   connection_->OnMessage(std::move(message));
 }
 
-void CastSessionClient::SendMediaStatusToClient(
+void CastSessionClientImpl::SendMediaStatusToClient(
     const base::Value& media_status,
     base::Optional<int> request_id) {
   // Look up if there is a pending request from this client associated with this
@@ -87,8 +87,8 @@ void CastSessionClient::SendMediaStatusToClient(
       CreateV2Message(client_id(), media_status, sequence_number));
 }
 
-bool CastSessionClient::MatchesAutoJoinPolicy(url::Origin other_origin,
-                                              int other_tab_id) const {
+bool CastSessionClientImpl::MatchesAutoJoinPolicy(url::Origin other_origin,
+                                                  int other_tab_id) const {
   switch (auto_join_policy_) {
     case AutoJoinPolicy::kPageScoped:
       return false;
@@ -99,25 +99,26 @@ bool CastSessionClient::MatchesAutoJoinPolicy(url::Origin other_origin,
   }
 }
 
-void CastSessionClient::OnMessage(PresentationConnectionMessagePtr message) {
+void CastSessionClientImpl::OnMessage(
+    PresentationConnectionMessagePtr message) {
   if (!message->is_message())
     return;
 
   data_decoder_->ParseJson(
       message->get_message(),
-      base::BindRepeating(&CastSessionClient::HandleParsedClientMessage,
+      base::BindRepeating(&CastSessionClientImpl::HandleParsedClientMessage,
                           weak_ptr_factory_.GetWeakPtr()),
       base::BindRepeating(&ReportClientMessageParseError,
                           activity_->route().media_route_id()));
 }
 
-void CastSessionClient::DidClose(PresentationConnectionCloseReason reason) {
+void CastSessionClientImpl::DidClose(PresentationConnectionCloseReason reason) {
   // TODO(https://crbug.com/809249): Implement close connection with this
   // method once we make sure Blink calls this on navigation and on
   // PresentationConnection::close().
 }
 
-void CastSessionClient::SendErrorCodeToClient(
+void CastSessionClientImpl::SendErrorCodeToClient(
     int sequence_number,
     CastInternalMessage::ErrorCode error_code,
     base::Optional<std::string> description) {
@@ -129,13 +130,13 @@ void CastSessionClient::SendErrorCodeToClient(
   SendErrorToClient(sequence_number, std::move(message));
 }
 
-void CastSessionClient::SendErrorToClient(int sequence_number,
-                                          base::Value error) {
+void CastSessionClientImpl::SendErrorToClient(int sequence_number,
+                                              base::Value error) {
   SendMessageToClient(
       CreateErrorMessage(client_id(), std::move(error), sequence_number));
 }
 
-void CastSessionClient::HandleParsedClientMessage(
+void CastSessionClientImpl::HandleParsedClientMessage(
     std::unique_ptr<base::Value> message) {
   std::unique_ptr<CastInternalMessage> cast_message =
       CastInternalMessage::From(std::move(*message));
@@ -188,7 +189,7 @@ void CastSessionClient::HandleParsedClientMessage(
   }
 }
 
-void CastSessionClient::HandleV2ProtocolMessage(
+void CastSessionClientImpl::HandleV2ProtocolMessage(
     const CastInternalMessage& cast_message) {
   const std::string& type_str = cast_message.v2_message_type();
   cast_channel::V2MessageType type =
@@ -215,7 +216,7 @@ void CastSessionClient::HandleV2ProtocolMessage(
     DVLOG(2) << "Got volume command from client";
     DCHECK(cast_message.sequence_number());
     activity_->SendSetVolumeRequestToReceiver(
-        cast_message, base::BindOnce(&CastSessionClient::SendResultResponse,
+        cast_message, base::BindOnce(&CastSessionClientImpl::SendResultResponse,
                                      weak_ptr_factory_.GetWeakPtr(),
                                      *cast_message.sequence_number()));
   } else if (type == cast_channel::V2MessageType::kStop) {
@@ -226,8 +227,8 @@ void CastSessionClient::HandleV2ProtocolMessage(
   }
 }
 
-void CastSessionClient::SendResultResponse(int sequence_number,
-                                           cast_channel::Result result) {
+void CastSessionClientImpl::SendResultResponse(int sequence_number,
+                                               cast_channel::Result result) {
   if (result == cast_channel::Result::kOk) {
     // Send an empty message to let the client know the request succeeded.
     SendMessageToClient(
@@ -242,7 +243,7 @@ void CastSessionClient::SendResultResponse(int sequence_number,
   }
 }
 
-void CastSessionClient::CloseConnection(
+void CastSessionClientImpl::CloseConnection(
     PresentationConnectionCloseReason close_reason) {
   if (connection_)
     connection_->DidClose(close_reason);
@@ -250,7 +251,7 @@ void CastSessionClient::CloseConnection(
   TearDownPresentationConnection();
 }
 
-void CastSessionClient::TerminateConnection() {
+void CastSessionClientImpl::TerminateConnection() {
   if (connection_) {
     connection_->DidChangeState(PresentationConnectionState::TERMINATED);
   }
@@ -258,7 +259,7 @@ void CastSessionClient::TerminateConnection() {
   TearDownPresentationConnection();
 }
 
-void CastSessionClient::TearDownPresentationConnection() {
+void CastSessionClientImpl::TearDownPresentationConnection() {
   connection_.reset();
   connection_binding_.Close();
 }
