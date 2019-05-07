@@ -348,14 +348,15 @@ void ProfileMenuViewBase::AddViewItem(std::unique_ptr<views::View> view) {
 void ProfileMenuViewBase::RepopulateViewFromMenuItems() {
   RemoveAllChildViews(true);
 
-  std::unique_ptr<views::View> main_view = std::make_unique<views::View>();
-  main_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+  // Create a view to keep menu contents.
+  auto contents_view = std::make_unique<views::View>();
+  contents_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets()));
 
   for (MenuItems& group : menu_item_groups_) {
     if (group.items.empty()) {
       // An empty group represents a separator.
-      main_view->AddChildView(new views::Separator());
+      contents_view->AddChildView(new views::Separator());
     } else {
       views::View* sub_view = new views::View();
       GroupMarginSize top_margin;
@@ -396,31 +397,29 @@ void ProfileMenuViewBase::RepopulateViewFromMenuItems() {
       for (std::unique_ptr<views::View>& item : group.items)
         sub_view->AddChildView(std::move(item));
 
-      main_view->AddChildView(sub_view);
+      contents_view->AddChildView(sub_view);
     }
   }
 
   menu_item_groups_.clear();
 
-  // TODO(https://crbug.com/934689): Simplify. This part is only done to set
-  // the menu width.
+  // Create a scroll view to hold contents view.
+  auto scroll_view = std::make_unique<views::ScrollView>();
+  scroll_view->set_hide_horizontal_scrollbar(true);
+  // TODO(https://crbug.com/871762): it's a workaround for the crash.
+  scroll_view->set_draw_overflow_indicator(false);
+  scroll_view->ClipHeightTo(0, GetMaxHeight());
+  scroll_view->SetContents(std::move(contents_view));
+
+  // Create a grid layout to set the menu width.
   views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>(this));
   views::ColumnSet* columns = layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                      views::GridLayout::kFixedSize, views::GridLayout::FIXED,
                      menu_width_, menu_width_);
-
-  views::ScrollView* scroll_view = new views::ScrollView;
-  scroll_view->set_hide_horizontal_scrollbar(true);
-
-  // TODO(https://crbug.com/871762): it's a workaround for the crash.
-  scroll_view->set_draw_overflow_indicator(false);
-  scroll_view->ClipHeightTo(0, GetMaxHeight());
-  scroll_view->SetContents(std::move(main_view));
-
   layout->StartRow(1.0, 0);
-  layout->AddView(scroll_view);
+  layout->AddView(scroll_view.release());
   if (GetBubbleFrameView()) {
     SizeToContents();
     // SizeToContents() will perform a layout, but only if the size changed.
