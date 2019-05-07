@@ -13,8 +13,10 @@
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/label.h"
@@ -37,13 +39,14 @@ ConfirmBubbleViews::ConfirmBubbleViews(
                 kMaxMessageWidth, false);
 
   // Add the message label.
-  views::Label* label = new views::Label(model_->GetMessageText());
+  auto label = std::make_unique<views::Label>(model_->GetMessageText());
+  label_ = label.get();
   DCHECK(!label->text().empty());
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetMultiLine(true);
   label->SizeToFit(kMaxMessageWidth);
   layout->StartRow(views::GridLayout::kFixedSize, 0);
-  layout->AddView(label);
+  layout->AddView(label.release());
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CONFIRM_BUBBLE);
 }
@@ -113,6 +116,15 @@ void ConfirmBubbleViews::ButtonPressed(views::Button* sender,
     model_->OpenHelpPage();
     GetWidget()->Close();
   }
+}
+
+void ConfirmBubbleViews::ViewHierarchyChanged(
+    const views::ViewHierarchyChangedDetails& details) {
+  if (details.is_add && details.child == this && GetWidget()) {
+    GetWidget()->GetRootView()->GetViewAccessibility().OverrideDescribedBy(
+        label_);
+  }
+  DialogDelegateView::ViewHierarchyChanged(details);
 }
 
 namespace chrome {

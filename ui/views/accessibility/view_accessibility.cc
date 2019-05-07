@@ -166,10 +166,18 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
       ax::mojom::IntAttribute::kPosInSet,
       ax::mojom::IntAttribute::kSetSize,
   };
-
   for (auto attribute : kOverridableIntAttributes) {
     if (custom_data_.HasIntAttribute(attribute))
       data->AddIntAttribute(attribute, custom_data_.GetIntAttribute(attribute));
+  }
+
+  static const ax::mojom::IntListAttribute kOverridableIntListAttributes[]{
+      ax::mojom::IntListAttribute::kDescribedbyIds,
+  };
+  for (auto attribute : kOverridableIntListAttributes) {
+    if (custom_data_.HasIntListAttribute(attribute))
+      data->AddIntListAttribute(attribute,
+                                custom_data_.GetIntListAttribute(attribute));
   }
 
   if (!data->HasStringAttribute(ax::mojom::StringAttribute::kDescription)) {
@@ -242,6 +250,13 @@ void ViewAccessibility::OverrideIsIgnored(bool value) {
 
 void ViewAccessibility::OverrideBounds(const gfx::RectF& bounds) {
   custom_data_.relative_bounds.bounds = bounds;
+}
+
+void ViewAccessibility::OverrideDescribedBy(View* described_by_view) {
+  int described_by_id =
+      described_by_view->GetViewAccessibility().GetUniqueId().Get();
+  custom_data_.AddIntListAttribute(ax::mojom::IntListAttribute::kDescribedbyIds,
+                                   {described_by_id});
 }
 
 void ViewAccessibility::OverridePosInSet(int pos_in_set, int set_size) {
