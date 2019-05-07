@@ -879,4 +879,24 @@ TEST_F(MediaNotificationViewTest,
   EXPECT_FALSE(expand_button_enabled());
 }
 
+TEST_F(MediaNotificationViewTest, ActionButtonRowSizeAndAlignment) {
+  EnableAction(MediaSessionAction::kPlay);
+
+  views::Button* button = GetButtonForAction(MediaSessionAction::kPlay);
+  int button_x = button->GetBoundsInScreen().x();
+
+  // When collapsed the button row should be a fixed width.
+  EXPECT_FALSE(IsActuallyExpanded());
+  EXPECT_EQ(124, button_row()->width());
+
+  EnableAllActions();
+  view()->SetExpanded(true);
+
+  // When expanded the button row should be wider and the play button should
+  // have shifted to the left.
+  EXPECT_TRUE(IsActuallyExpanded());
+  EXPECT_LT(124, button_row()->width());
+  EXPECT_GT(button_x, button->GetBoundsInScreen().x());
+}
+
 }  // namespace ash

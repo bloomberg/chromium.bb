@@ -54,6 +54,8 @@ constexpr gfx::Insets kMediaTitleArtistInsets = gfx::Insets(8, 8, 0, 8);
 constexpr int kMediaNotificationHeaderTopInset = 6;
 constexpr int kMediaNotificationHeaderRightInset = 6;
 constexpr int kMediaNotificationHeaderInset = 0;
+constexpr gfx::Size kMediaNotificationButtonRowSize =
+    gfx::Size(124, kMediaButtonSize.height());
 
 // The action buttons in order of preference. If there is not enough space to
 // show all the action buttons then this is used to determine which will be
@@ -161,10 +163,9 @@ MediaNotificationView::MediaNotificationView(
       button_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::kHorizontal, gfx::Insets(),
           kMediaButtonRowSeparator));
-  button_row_layout->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   button_row_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+  button_row_->SetPreferredSize(kMediaNotificationButtonRowSize);
   main_row_->AddChildView(button_row_);
 
   CreateMediaButton(MediaSessionAction::kPreviousTrack,
@@ -385,6 +386,9 @@ void MediaNotificationView::UpdateViewForExpandedState() {
   // notification is expanded then the buttons should be below the title/artist
   // information. If it is collapsed then the buttons will be to the right.
   if (expanded) {
+    static_cast<views::BoxLayout*>(button_row_->GetLayoutManager())
+        ->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+
     main_row_
         ->SetLayoutManager(std::make_unique<views::BoxLayout>(
             views::BoxLayout::kVertical,
@@ -394,13 +398,16 @@ void MediaNotificationView::UpdateViewForExpandedState() {
             kDefaultMarginSize))
         ->SetDefaultFlex(1);
   } else {
+    static_cast<views::BoxLayout*>(button_row_->GetLayoutManager())
+        ->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+
     main_row_
         ->SetLayoutManager(std::make_unique<views::BoxLayout>(
             views::BoxLayout::kHorizontal,
             gfx::Insets(0, kDefaultMarginSize, 14,
                         has_artwork_ ? kRightMarginSize : kDefaultMarginSize),
             kDefaultMarginSize, true))
-        ->SetDefaultFlex(1);
+        ->SetFlexForView(title_artist_row_, 1);
   }
 
   main_row_->Layout();
