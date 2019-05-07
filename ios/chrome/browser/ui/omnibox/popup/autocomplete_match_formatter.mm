@@ -88,7 +88,11 @@ bool ShouldUseNewFormatting() {
 }
 
 - (BOOL)hasImage {
-  return self.hasAnswer && _match.answer->second_line().image_url().is_valid();
+  BOOL hasAnswerImage =
+      self.hasAnswer && _match.answer->second_line().image_url().is_valid();
+  BOOL hasRichEntityImage =
+      ShouldUseNewFormatting() && !_match.image_url.empty();
+  return hasAnswerImage || hasRichEntityImage;
 }
 
 - (BOOL)isURL {
@@ -211,7 +215,11 @@ bool ShouldUseNewFormatting() {
 }
 
 - (GURL)imageURL {
-  return _match.answer->second_line().image_url();
+  if (self.hasAnswer && _match.answer->second_line().image_url().is_valid()) {
+    return _match.answer->second_line().image_url();
+  } else {
+    return GURL(_match.image_url);
+  }
 }
 
 - (GURL)faviconPageURL {

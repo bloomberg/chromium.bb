@@ -52,13 +52,9 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
 // Answers have slightly different display requirements, like possibility of
 // multiple lines and truncating with ellipses instead of a fade gradient.
 @property(nonatomic, strong) UILabel* detailAnswerLabel;
-// Image view for the leading image.
-@property(nonatomic, strong) UIImageView* leadingImageView;
 // Trailing button for appending suggestion into omnibox or switching to open
 // tab.
 @property(nonatomic, strong) ExtendedTouchTargetButton* trailingButton;
-// Trailing image view for images from suggestions (e.g. weather).
-@property(nonatomic, strong) UIImageView* answerImageView;
 // Separator line for adjacent cells.
 @property(nonatomic, strong) UIView* separator;
 
@@ -98,6 +94,7 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
     _trailingButton =
         [ExtendedTouchTargetButton buttonWithType:UIButtonTypeCustom];
     _trailingButton.translatesAutoresizingMaskIntoConstraints = NO;
+    _trailingButton.isAccessibilityElement = NO;
     [_trailingButton addTarget:self
                         action:@selector(trailingButtonTapped)
               forControlEvents:UIControlEventTouchUpInside];
@@ -431,6 +428,10 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
   return self.detailTruncatingLabel.hidden
              ? self.detailAnswerLabel.attributedText.string
              : self.detailTruncatingLabel.attributedText.string;
+}
+
+- (NSString*)accessibilityIdentifier {
+  return self.textTruncatingLabel.attributedText.string;
 }
 
 - (void)trailingButtonTapped {

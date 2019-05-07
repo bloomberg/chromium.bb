@@ -53,6 +53,11 @@ const CGFloat kOmniboxPopupCellMinimumHeight = 58;
 // tableView's separatorInsets can't be calculated.
 @property(nonatomic, assign) BOOL showsSeparator;
 
+// Image view for the leading image.
+@property(nonatomic, strong, readonly) UIImageView* leadingImageView;
+// Trailing image view for images from suggestions (e.g. weather).
+@property(nonatomic, strong, readonly) UIImageView* answerImageView;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_POPUP_OMNIBOX_POPUP_ROW_CELL_H_
