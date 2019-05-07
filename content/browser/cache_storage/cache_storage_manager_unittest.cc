@@ -26,6 +26,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/cache_storage/cache_storage.h"
 #include "content/browser/cache_storage/cache_storage.pb.h"
@@ -1503,7 +1504,14 @@ TEST_P(CacheStorageManagerTestP, GetAllOriginsUsageDifferentOwners) {
   }
 }
 
-TEST_F(CacheStorageManagerTest, GetAllOriginsUsageWithOldIndex) {
+// TODO(crbug.com/960227): Flaky on Fuchsia.
+#if defined(OS_FUCHSIA)
+#define MAYBE_GetAllOriginsUsageWithOldIndex \
+  DISABLED_GetAllOriginsUsageWithOldIndex
+#else
+#define MAYBE_GetAllOriginsUsageWithOldIndex GetAllOriginsUsageWithOldIndex
+#endif
+TEST_F(CacheStorageManagerTest, MAYBE_GetAllOriginsUsageWithOldIndex) {
   // Write a single value (V1) to the cache.
   const GURL kFooURL = origin1_.GetURL().Resolve("foo");
   const std::string kCacheName = "foo";
