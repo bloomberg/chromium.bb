@@ -1665,6 +1665,20 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, testKeyEventUnhandled) {
   CloseDevToolsWindow();
 }
 
+// Test that showing a certificate in devtools does not crash the process.
+// Disabled on windows as this opens a modal in its own thread, which leads to a
+// test timeout.
+#if defined(OS_WIN)
+#define MAYBE_testShowCertificate DISABLED_testShowCertificate
+#else
+#define MAYBE_testShowCertificate testShowCertificate
+#endif
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_testShowCertificate) {
+  OpenDevToolsWindow("about:blank", true);
+  RunTestFunction(window_, "testShowCertificate");
+  CloseDevToolsWindow();
+}
+
 // Tests that settings are stored in profile correctly.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestSettings) {
   OpenDevToolsWindow("about:blank", true);

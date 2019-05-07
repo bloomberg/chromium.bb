@@ -32,7 +32,7 @@ class DevToolsDeviceDiscovery {
     RemotePage(scoped_refptr<AndroidDeviceManager::Device> device,
                const std::string& browser_id,
                const std::string& browser_version,
-               const base::DictionaryValue& dict);
+               base::Value dict);
 
     virtual ~RemotePage();
 
@@ -40,7 +40,7 @@ class DevToolsDeviceDiscovery {
     std::string browser_id_;
     std::string browser_version_;
     std::string frontend_url_;
-    std::unique_ptr<base::DictionaryValue> dict_;
+    base::Value dict_;
     scoped_refptr<content::DevToolsAgentHost> agent_host_;
 
     DISALLOW_COPY_AND_ASSIGN(RemotePage);
