@@ -415,5 +415,24 @@ TEST_F(DelegatedFrameHostAndroidSurfaceSynchronizationOnlyTest,
   EXPECT_FALSE(request->has_result_selection());
 }
 
+TEST_F(DelegatedFrameHostAndroidLegacyNonVizTest, EvictWhileVisible) {
+  // Create a frame and mark it visible.
+  gfx::Size size(10, 10);
+  SetUpValidFrame(size);
+  auto id = allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+  frame_host_->WasShown(id, size);
+  EXPECT_TRUE(frame_host_->HasSavedFrame());
+
+  // Evict, which should do nothing as the frame is still visible.
+  frame_host_->EvictDelegatedFrame();
+  EXPECT_TRUE(frame_host_->HasSavedFrame());
+
+  // Hide frame and evict again, now it should release the frame.
+  EXPECT_CALL(client_, WasEvicted());
+  frame_host_->WasHidden();
+  frame_host_->EvictDelegatedFrame();
+  EXPECT_FALSE(frame_host_->HasSavedFrame());
+}
+
 }  // namespace
 }  // namespace ui

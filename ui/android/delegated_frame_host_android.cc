@@ -188,13 +188,13 @@ bool DelegatedFrameHostAndroid::CanCopyFromCompositingSurface() const {
 }
 
 void DelegatedFrameHostAndroid::EvictDelegatedFrame() {
-  if (!content_layer_)
-    return;
-  content_layer_->SetSurfaceId(viz::SurfaceId(),
-                               cc::DeadlinePolicy::UseDefaultDeadline());
-  if (!enable_surface_synchronization_) {
-    content_layer_->RemoveFromParent();
-    content_layer_ = nullptr;
+  if (content_layer_) {
+    content_layer_->SetSurfaceId(viz::SurfaceId(),
+                                 cc::DeadlinePolicy::UseDefaultDeadline());
+    if (!enable_surface_synchronization_) {
+      content_layer_->RemoveFromParent();
+      content_layer_ = nullptr;
+    }
   }
   if (!HasSavedFrame() || frame_evictor_->visible())
     return;
