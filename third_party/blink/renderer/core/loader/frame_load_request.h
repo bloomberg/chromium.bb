@@ -65,9 +65,7 @@ struct CORE_EXPORT FrameLoadRequest {
   }
 
   const AtomicString& FrameName() const { return frame_name_; }
-  void SetFrameName(const AtomicString& frame_name) {
-    frame_name_ = frame_name;
-  }
+  void ClearFrameName() { frame_name_ = AtomicString(); }
 
   ClientRedirectPolicy ClientRedirect() const { return client_redirect_; }
 

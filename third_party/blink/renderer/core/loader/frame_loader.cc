@@ -621,9 +621,6 @@ bool FrameLoader::PrepareRequestForThisFrame(FrameLoadRequest& request) {
         "Not allowed to load local resource: " + url.ElidedString()));
     return false;
   }
-
-  if (request.FrameName().IsEmpty())
-    request.SetFrameName(frame_->GetDocument()->BaseTarget());
   return true;
 }
 
@@ -701,7 +698,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
       return;
     if (target_frame != frame_) {
       bool was_in_same_page = target_frame->GetPage() == frame_->GetPage();
-      request.SetFrameName("_self");
+      request.ClearFrameName();
       target_frame->Navigate(request, frame_load_type);
       Page* page = target_frame->GetPage();
       if (!was_in_same_page && page)

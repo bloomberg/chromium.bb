@@ -300,9 +300,9 @@ FrameLoadRequest FormSubmission::CreateFrameLoadRequest(
     }
   }
 
-  FrameLoadRequest frame_request(origin_document, resource_request);
-  if (!target_.IsEmpty())
-    frame_request.SetFrameName(target_);
+  FrameLoadRequest frame_request(
+      origin_document, resource_request,
+      target_.IsEmpty() ? origin_document->BaseTarget() : target_);
   frame_request.SetClientRedirectReason(reason);
   frame_request.SetForm(form_);
   frame_request.SetTriggeringEventInfo(triggering_event_info_);

@@ -1537,7 +1537,7 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   if ((!completed_url.IsEmpty() || result.new_window) &&
       !result.frame->DomWindow()->IsInsecureScriptAccess(*incumbent_window,
                                                          completed_url)) {
-    frame_request.SetFrameName("_self");
+    frame_request.ClearFrameName();
     frame_request.SetNavigationPolicy(kNavigationPolicyCurrentTab);
     result.frame->Navigate(frame_request, WebFrameLoadType::kStandard);
   }
