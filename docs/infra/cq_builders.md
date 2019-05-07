@@ -72,11 +72,6 @@ These builders must pass before a CL may land.
 
 * [win_chromium_compile_dbg_ng](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win_chromium_compile_dbg_ng) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/win_chromium_compile_dbg_ng)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+win_chromium_compile_dbg_ng))
 
-  TODO(crbug.com/960100): Add win7-rel back after it's recovered.
-  builders {
-  name: "chromium/try/win7-rel"
-  }
-
 
 ## Optional builders
 
@@ -318,6 +313,13 @@ as required builders.
   https://crbug.com/855319
 
   * Experimental percentage: 40
+
+* [win7-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win7-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/win7-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+win7-rel))
+
+  TODO(crbug.com/960100): Promote win7-rel out of experimental if things
+  are stable.
+
+  * Experimental percentage: 100
 
 * [win7_chromium_rel_loc_exp](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win7_chromium_rel_loc_exp) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/win7_chromium_rel_loc_exp)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+win7_chromium_rel_loc_exp))
 
