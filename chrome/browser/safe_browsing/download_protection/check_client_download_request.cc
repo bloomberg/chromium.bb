@@ -37,38 +37,18 @@
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "url/url_constants.h"
 
 namespace safe_browsing {
 
 namespace {
 
 const char kDownloadExtensionUmaName[] = "SBClientDownload.DownloadExtensions";
-const char kUnsupportedSchemeUmaPrefix[] = "SBClientDownload.UnsupportedScheme";
 
 void RecordFileExtensionType(const std::string& metric_name,
                              const base::FilePath& file) {
   base::UmaHistogramSparse(
       metric_name, FileTypePolicies::GetInstance()->UmaValueForFile(file));
-}
-
-std::string GetUnsupportedSchemeName(const GURL& download_url) {
-  if (download_url.SchemeIs(url::kContentScheme))
-    return "ContentScheme";
-  if (download_url.SchemeIs(url::kContentIDScheme))
-    return "ContentIdScheme";
-  if (download_url.SchemeIsFile())
-    return download_url.has_host() ? "RemoteFileScheme" : "LocalFileScheme";
-  if (download_url.SchemeIsFileSystem())
-    return "FileSystemScheme";
-  if (download_url.SchemeIs(url::kFtpScheme))
-    return "FtpScheme";
-  if (download_url.SchemeIs(url::kGopherScheme))
-    return "GopherScheme";
-  if (download_url.SchemeIs(url::kJavaScriptScheme))
-    return "JavaScriptScheme";
-  if (download_url.SchemeIsWSOrWSS())
-    return "WSOrWSSScheme";
-  return "OtherUnsupportedScheme";
 }
 
 bool CheckUrlAgainstWhitelist(
@@ -394,11 +374,6 @@ void CheckClientDownloadRequest::AnalyzeFile() {
         FinishRequest(DownloadCheckResult::UNKNOWN, reason);
         return;
       case REASON_UNSUPPORTED_URL_SCHEME:
-        RecordFileExtensionType(
-            base::StringPrintf(
-                "%s.%s", kUnsupportedSchemeUmaPrefix,
-                GetUnsupportedSchemeName(item_->GetUrlChain().back()).c_str()),
-            item_->GetTargetFilePath());
         FinishRequest(DownloadCheckResult::UNKNOWN, reason);
         return;
       case REASON_NOT_BINARY_FILE:
