@@ -1890,6 +1890,8 @@ test("browser_tests") {
         "../browser/chromeos/login/screens/mock_wrong_hwid_screen.cc",
         "../browser/chromeos/login/screens/mock_wrong_hwid_screen.h",
         "../browser/chromeos/login/screens/network_screen_browsertest.cc",
+        "../browser/chromeos/login/screens/recommend_apps/scoped_test_recommend_apps_fetcher_factory.cc",
+        "../browser/chromeos/login/screens/recommend_apps/scoped_test_recommend_apps_fetcher_factory.h",
         "../browser/chromeos/login/screens/recommend_apps_screen_browsertest.cc",
         "../browser/chromeos/login/screens/update_screen_browsertest.cc",
         "../browser/chromeos/login/screens/user_selection_screen_browsertest.cc",

@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher_delegate.h"
+#include "chrome/browser/chromeos/login/screens/recommend_apps/scoped_test_recommend_apps_fetcher_factory.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -109,11 +110,11 @@ class RecommendAppsScreenTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     ShowLoginWizard(OobeScreen::SCREEN_TEST_NO_WINDOW);
 
-    fetcher_factory_callback_ = base::BindRepeating(
-        &RecommendAppsScreenTest::CreateRecommendAppsFetcher,
-        base::Unretained(this));
-    RecommendAppsFetcher::SetFactoryCallbackForTesting(
-        &fetcher_factory_callback_);
+    recommend_apps_fetcher_factory_ =
+        std::make_unique<ScopedTestRecommendAppsFetcherFactory>(
+            base::BindRepeating(
+                &RecommendAppsScreenTest::CreateRecommendAppsFetcher,
+                base::Unretained(this)));
 
     // Delete initial screen before we create the new screen, as the screen ctor
     // will bind to the handler.
@@ -132,9 +133,8 @@ class RecommendAppsScreenTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUpOnMainThread();
   }
   void TearDownOnMainThread() override {
-    RecommendAppsFetcher::SetFactoryCallbackForTesting(nullptr);
-    fetcher_factory_callback_.Reset();
     recommend_apps_fetcher_ = nullptr;
+    recommend_apps_fetcher_factory_.reset();
 
     InProcessBrowserTest::TearDownOnMainThread();
   }
@@ -224,10 +224,8 @@ class RecommendAppsScreenTest : public InProcessBrowserTest {
     return fetcher;
   }
 
-  // The callback passed to
-  // RecommendAppsFetcher::SetFactoryCallbackForTesting(). Bound to
-  // CreateRecommendAppsFetcher().
-  RecommendAppsFetcher::FactoryCallback fetcher_factory_callback_;
+  std::unique_ptr<ScopedTestRecommendAppsFetcherFactory>
+      recommend_apps_fetcher_factory_;
 
   base::OnceClosure screen_exit_callback_;
 };

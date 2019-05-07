@@ -1051,8 +1051,6 @@ void WizardController::OnArcTermsOfServiceScreenExit(
 }
 
 void WizardController::OnArcTermsOfServiceSkipped() {
-  DCHECK(!arc::IsArcTermsOfServiceOobeNegotiationNeeded());
-
   if (is_in_session_oobe_) {
     OnOobeFlowFinished();
     return;
