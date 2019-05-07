@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/chromeos_camera/fake_mjpeg_decode_accelerator.h"
+#include "media/gpu/fake_mjpeg_decode_accelerator.h"
 
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/unaligned_shared_memory.h"
 
-namespace chromeos_camera {
+namespace media {
 
 FakeMjpegDecodeAccelerator::FakeMjpegDecodeAccelerator(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
@@ -37,11 +37,11 @@ bool FakeMjpegDecodeAccelerator::Initialize(
 }
 
 void FakeMjpegDecodeAccelerator::Decode(
-    const media::BitstreamBuffer& bitstream_buffer,
-    const scoped_refptr<media::VideoFrame>& video_frame) {
+    const BitstreamBuffer& bitstream_buffer,
+    const scoped_refptr<VideoFrame>& video_frame) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
-  auto src_shm = std::make_unique<media::UnalignedSharedMemory>(
+  auto src_shm = std::make_unique<UnalignedSharedMemory>(
       bitstream_buffer.handle(), bitstream_buffer.size(),
       false /* read_only */);
   if (!src_shm->MapAt(bitstream_buffer.offset(), bitstream_buffer.size())) {
@@ -60,15 +60,15 @@ void FakeMjpegDecodeAccelerator::Decode(
 }
 
 void FakeMjpegDecodeAccelerator::DecodeOnDecoderThread(
-    const media::BitstreamBuffer& bitstream_buffer,
-    const scoped_refptr<media::VideoFrame>& video_frame,
-    std::unique_ptr<media::UnalignedSharedMemory> src_shm) {
+    const BitstreamBuffer& bitstream_buffer,
+    const scoped_refptr<VideoFrame>& video_frame,
+    std::unique_ptr<UnalignedSharedMemory> src_shm) {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
 
   // Do not actually decode the Jpeg data.
   // Instead, just fill the output buffer with zeros.
-  size_t allocation_size = media::VideoFrame::AllocationSize(
-      media::PIXEL_FORMAT_I420, video_frame->coded_size());
+  size_t allocation_size =
+      VideoFrame::AllocationSize(PIXEL_FORMAT_I420, video_frame->coded_size());
   memset(video_frame->data(0), 0, allocation_size);
 
   client_task_runner_->PostTask(
@@ -102,4 +102,4 @@ void FakeMjpegDecodeAccelerator::OnDecodeDoneOnClientThread(
   client_->VideoFrameReady(input_buffer_id);
 }
 
-}  // namespace chromeos_camera
+}  // namespace media

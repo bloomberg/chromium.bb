@@ -52,8 +52,14 @@ component("gpu") {
   sources = [
     "command_buffer_helper.cc",
     "command_buffer_helper.h",
+    "fake_mjpeg_decode_accelerator.cc",
+    "fake_mjpeg_decode_accelerator.h",
     "gles2_decoder_helper.cc",
     "gles2_decoder_helper.h",
+    "gpu_jpeg_encode_accelerator_factory.cc",
+    "gpu_jpeg_encode_accelerator_factory.h",
+    "gpu_mjpeg_decode_accelerator_factory.cc",
+    "gpu_mjpeg_decode_accelerator_factory.h",
     "gpu_video_accelerator_util.cc",
     "gpu_video_accelerator_util.h",
     "gpu_video_decode_accelerator_factory.cc",
@@ -495,6 +501,79 @@ if (use_v4l2_codec || use_vaapi || is_mac || is_win) {
     sources = [
       "video_encode_accelerator_unittest.cc",
     ]
+    if (use_x11) {
+      deps += [ "//ui/gfx/x" ]
+    }
+    if (use_ozone) {
+      deps += [ "//ui/ozone" ]
+    }
+  }
+}
+
+if (use_v4l2_codec || use_vaapi) {
+  test("jpeg_encode_accelerator_unittest") {
+    deps = [
+      "test:helpers",
+      "//base",
+      "//base/test:test_support",
+      "//media:test_support",
+      "//media/gpu",
+      "//mojo/core/embedder",
+      "//testing/gtest",
+      "//third_party:jpeg",
+      "//third_party/libyuv",
+      "//ui/base",
+      "//ui/gfx",
+      "//ui/gfx:test_support",
+      "//ui/gfx/geometry",
+      "//ui/gl",
+      "//ui/gl:test_support",
+    ]
+    configs += [ "//third_party/libyuv:libyuv_config" ]
+    sources = [
+      "jpeg_encode_accelerator_unittest.cc",
+    ]
+    if (use_x11) {
+      deps += [ "//ui/gfx/x" ]
+    }
+    if (use_ozone) {
+      deps += [ "//ui/ozone" ]
+    }
+  }
+}
+
+if (is_chromeos || is_linux) {
+  test("jpeg_decode_accelerator_unittest") {
+    deps = [
+      "test:helpers",
+      "//base",
+      "//media:test_support",
+      "//media/gpu",
+      "//media/mojo/services",
+      "//mojo/core/embedder",
+      "//testing/gtest",
+      "//third_party/libyuv",
+      "//ui/base",
+      "//ui/gfx",
+      "//ui/gfx:test_support",
+      "//ui/gfx/geometry",
+      "//ui/gl",
+      "//ui/gl:test_support",
+    ]
+    configs += [ "//third_party/libyuv:libyuv_config" ]
+    sources = [
+      "jpeg_decode_accelerator_unittest.cc",
+    ]
+    data = [
+      "//media/test/data/peach_pi-1280x720.jpg",
+      "//media/test/data/peach_pi-40x23.jpg",
+      "//media/test/data/peach_pi-41x22.jpg",
+      "//media/test/data/peach_pi-41x23.jpg",
+    ]
+    if (use_vaapi) {
+      deps += [ "//media/gpu/vaapi:jpeg_decoder_unit_test" ]
+      data += [ "//media/test/data/pixel-1280x720.jpg" ]
+    }
     if (use_x11) {
       deps += [ "//ui/gfx/x" ]
     }

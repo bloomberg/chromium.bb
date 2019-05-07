@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CHROMEOS_CAMERA_MOJO_MJPEG_DECODE_ACCELERATOR_H_
-#define COMPONENTS_CHROMEOS_CAMERA_MOJO_MJPEG_DECODE_ACCELERATOR_H_
+#ifndef MEDIA_MOJO_CLIENTS_CROS_MOJO_MJPEG_DECODE_ACCELERATOR_H_
+#define MEDIA_MOJO_CLIENTS_CROS_MOJO_MJPEG_DECODE_ACCELERATOR_H_
 
 #include <stdint.h>
 
@@ -11,31 +11,31 @@
 
 #include "base/macros.h"
 #include "components/chromeos_camera/common/mjpeg_decode_accelerator.mojom.h"
-#include "components/chromeos_camera/mjpeg_decode_accelerator.h"
+#include "media/video/mjpeg_decode_accelerator.h"
 
 namespace base {
 class SequencedTaskRunner;
 }
 
-namespace chromeos_camera {
+namespace media {
 
 // A MjpegDecodeAccelerator, for use in the browser process, that proxies to a
 // chromeos_camera::mojom::MjpegDecodeAccelerator. Created on the owner's
 // thread, otherwise operating and deleted on |io_task_runner|.
-class MojoMjpegDecodeAccelerator : public MjpegDecodeAccelerator {
+class CrOSMojoMjpegDecodeAccelerator : public MjpegDecodeAccelerator {
  public:
-  MojoMjpegDecodeAccelerator(
+  CrOSMojoMjpegDecodeAccelerator(
       scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       chromeos_camera::mojom::MjpegDecodeAcceleratorPtrInfo jpeg_decoder);
-  ~MojoMjpegDecodeAccelerator() override;
+  ~CrOSMojoMjpegDecodeAccelerator() override;
 
   // MjpegDecodeAccelerator implementation.
   // |client| is called on the IO thread, but is never called into after the
-  // MojoMjpegDecodeAccelerator is destroyed.
+  // CrOSMojoMjpegDecodeAccelerator is destroyed.
   bool Initialize(Client* client) override;
   void InitializeAsync(Client* client, InitCB init_cb) override;
-  void Decode(const media::BitstreamBuffer& bitstream_buffer,
-              const scoped_refptr<media::VideoFrame>& video_frame) override;
+  void Decode(const BitstreamBuffer& bitstream_buffer,
+              const scoped_refptr<VideoFrame>& video_frame) override;
   bool IsSupported() override;
 
  private:
@@ -43,7 +43,7 @@ class MojoMjpegDecodeAccelerator : public MjpegDecodeAccelerator {
                         MjpegDecodeAccelerator::Client* client,
                         bool success);
   void OnDecodeAck(int32_t bitstream_buffer_id,
-                   MjpegDecodeAccelerator::Error error);
+                   ::media::MjpegDecodeAccelerator::Error error);
   void OnLostConnectionToJpegDecoder();
 
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
@@ -58,9 +58,9 @@ class MojoMjpegDecodeAccelerator : public MjpegDecodeAccelerator {
 
   chromeos_camera::mojom::MjpegDecodeAcceleratorPtr jpeg_decoder_;
 
-  DISALLOW_COPY_AND_ASSIGN(MojoMjpegDecodeAccelerator);
+  DISALLOW_COPY_AND_ASSIGN(CrOSMojoMjpegDecodeAccelerator);
 };
 
-}  // namespace chromeos_camera
+}  // namespace media
 
-#endif  // COMPONENTS_CHROMEOS_CAMERA_MOJO_MJPEG_DECODE_ACCELERATOR_H_
+#endif  // MEDIA_MOJO_CLIENTS_CROS_MOJO_MJPEG_DECODE_ACCELERATOR_H_

@@ -37,6 +37,10 @@ source_set("v4l2") {
     "v4l2_h264_accelerator.h",
     "v4l2_image_processor.cc",
     "v4l2_image_processor.h",
+    "v4l2_jpeg_encode_accelerator.cc",
+    "v4l2_jpeg_encode_accelerator.h",
+    "v4l2_mjpeg_decode_accelerator.cc",
+    "v4l2_mjpeg_decode_accelerator.h",
     "v4l2_slice_video_decode_accelerator.cc",
     "v4l2_slice_video_decode_accelerator.h",
     "v4l2_video_decode_accelerator.cc",
@@ -78,20 +82,6 @@ source_set("v4l2") {
 
   if (use_v4lplugin) {
     deps += [ ":libv4l2_stubs" ]
-  }
-
-  if (is_chromeos) {
-    sources += [
-      "v4l2_jpeg_encode_accelerator.cc",
-      "v4l2_jpeg_encode_accelerator.h",
-      "v4l2_mjpeg_decode_accelerator.cc",
-      "v4l2_mjpeg_decode_accelerator.h",
-    ]
-
-    deps += [
-      "//components/chromeos_camera:jpeg_encode_accelerator",
-      "//components/chromeos_camera:mjpeg_decode_accelerator",
-    ]
   }
 }
 

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/chromeos_camera/jpeg_encode_accelerator.h"
+#include "media/video/jpeg_encode_accelerator.h"
 
-namespace chromeos_camera {
+namespace media {
 
 JpegEncodeAccelerator::~JpegEncodeAccelerator() = default;
 
-}  // namespace chromeos_camera
+}  // namespace media

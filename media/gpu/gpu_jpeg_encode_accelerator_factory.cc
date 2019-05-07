@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/chromeos_camera/gpu_jpeg_encode_accelerator_factory.h"
+#include "media/gpu/gpu_jpeg_encode_accelerator_factory.h"
 
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
@@ -24,22 +24,21 @@
 #include "media/gpu/v4l2/v4l2_jpeg_encode_accelerator.h"
 #endif
 
-namespace chromeos_camera {
+namespace media {
 
 namespace {
 
 #if defined(USE_V4L2_JEA)
 std::unique_ptr<JpegEncodeAccelerator> CreateV4L2JEA(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
-  return std::make_unique<media::V4L2JpegEncodeAccelerator>(
-      std::move(io_task_runner));
+  return std::make_unique<V4L2JpegEncodeAccelerator>(std::move(io_task_runner));
 }
 #endif
 
 #if BUILDFLAG(USE_VAAPI)
 std::unique_ptr<JpegEncodeAccelerator> CreateVaapiJEA(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
-  return std::make_unique<media::VaapiJpegEncodeAccelerator>(
+  return std::make_unique<VaapiJpegEncodeAccelerator>(
       std::move(io_task_runner));
 }
 #endif
@@ -66,4 +65,4 @@ GpuJpegEncodeAcceleratorFactory::GetAcceleratorFactories() {
   return result;
 }
 
-}  // namespace chromeos_camera
+}  // namespace media

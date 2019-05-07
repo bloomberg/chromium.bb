@@ -17,17 +17,17 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
-#include "components/chromeos_camera/mjpeg_decode_accelerator.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/unaligned_shared_memory.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/v4l2/v4l2_device.h"
+#include "media/video/mjpeg_decode_accelerator.h"
 
 namespace media {
 
 class MEDIA_GPU_EXPORT V4L2MjpegDecodeAccelerator
-    : public chromeos_camera::MjpegDecodeAccelerator {
+    : public MjpegDecodeAccelerator {
  public:
   V4L2MjpegDecodeAccelerator(
       const scoped_refptr<V4L2Device>& device,
@@ -35,8 +35,7 @@ class MEDIA_GPU_EXPORT V4L2MjpegDecodeAccelerator
   ~V4L2MjpegDecodeAccelerator() override;
 
   // MjpegDecodeAccelerator implementation.
-  bool Initialize(
-      chromeos_camera::MjpegDecodeAccelerator::Client* client) override;
+  bool Initialize(Client* client) override;
   void Decode(const BitstreamBuffer& bitstream_buffer,
               const scoped_refptr<VideoFrame>& video_frame) override;
   bool IsSupported() override;
@@ -147,7 +146,7 @@ class MEDIA_GPU_EXPORT V4L2MjpegDecodeAccelerator
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // The client of this class.
-  chromeos_camera::MjpegDecodeAccelerator::Client* client_;
+  Client* client_;
 
   // The V4L2Device this class is operating upon.
   scoped_refptr<V4L2Device> device_;
