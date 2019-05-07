@@ -20,59 +20,6 @@
 
 namespace base {
 
-namespace {
-
-// If the value at |pointer| points to the original stack, rewrite it to point
-// to the corresponding location in the copied stack. NO HEAP ALLOCATIONS.
-// static
-uintptr_t RewritePointerIfInOriginalStack(
-    const uintptr_t* original_stack_bottom,
-    const uintptr_t* original_stack_top,
-    const uintptr_t* stack_copy_bottom,
-    uintptr_t pointer) {
-  auto original_stack_bottom_uint =
-      reinterpret_cast<uintptr_t>(original_stack_bottom);
-  auto original_stack_top_uint =
-      reinterpret_cast<uintptr_t>(original_stack_top);
-  auto stack_copy_bottom_uint = reinterpret_cast<uintptr_t>(stack_copy_bottom);
-
-  if (pointer < original_stack_bottom_uint ||
-      pointer >= original_stack_top_uint)
-    return pointer;
-
-  return stack_copy_bottom_uint + (pointer - original_stack_bottom_uint);
-}
-
-// Copies the stack to a buffer while rewriting possible pointers to locations
-// within the stack to point to the corresponding locations in the copy. This is
-// necessary to handle stack frames with dynamic stack allocation, where a
-// pointer to the beginning of the dynamic allocation area is stored on the
-// stack and/or in a non-volatile register.
-//
-// Eager rewriting of anything that looks like a pointer to the stack, as done
-// in this function, does not adversely affect the stack unwinding. The only
-// other values on the stack the unwinding depends on are return addresses,
-// which should not point within the stack memory. The rewriting is guaranteed
-// to catch all pointers because the stacks are guaranteed by the ABI to be
-// sizeof(uintptr_t*) aligned.
-//
-// NO HEAP ALLOCATIONS.
-//
-// static
-NO_SANITIZE("address")
-void CopyStackContentsAndRewritePointers(const uintptr_t* original_stack_bottom,
-                                         const uintptr_t* original_stack_top,
-                                         uintptr_t* stack_copy_bottom) {
-  const uintptr_t* src = original_stack_bottom;
-  uintptr_t* dst = stack_copy_bottom;
-  for (; src < original_stack_top; ++src, ++dst) {
-    *dst = RewritePointerIfInOriginalStack(
-        original_stack_bottom, original_stack_top, stack_copy_bottom, *src);
-  }
-}
-
-}  // namespace
-
 StackSamplerImpl::StackSamplerImpl(
     std::unique_ptr<ThreadDelegate> thread_delegate,
     std::unique_ptr<Unwinder> native_unwinder,
@@ -216,6 +163,55 @@ std::vector<Frame> StackSamplerImpl::WalkStack(ModuleCache* module_cache,
            stack.size() > prior_stack_size);
 
   return stack;
+}
+
+// If the value at |pointer| points to the original stack, rewrite it to point
+// to the corresponding location in the copied stack. NO HEAP ALLOCATIONS.
+// static
+uintptr_t RewritePointerIfInOriginalStack(
+    const uintptr_t* original_stack_bottom,
+    const uintptr_t* original_stack_top,
+    const uintptr_t* stack_copy_bottom,
+    uintptr_t pointer) {
+  auto original_stack_bottom_uint =
+      reinterpret_cast<uintptr_t>(original_stack_bottom);
+  auto original_stack_top_uint =
+      reinterpret_cast<uintptr_t>(original_stack_top);
+  auto stack_copy_bottom_uint = reinterpret_cast<uintptr_t>(stack_copy_bottom);
+
+  if (pointer < original_stack_bottom_uint ||
+      pointer >= original_stack_top_uint)
+    return pointer;
+
+  return stack_copy_bottom_uint + (pointer - original_stack_bottom_uint);
+}
+
+// Copies the stack to a buffer while rewriting possible pointers to locations
+// within the stack to point to the corresponding locations in the copy. This is
+// necessary to handle stack frames with dynamic stack allocation, where a
+// pointer to the beginning of the dynamic allocation area is stored on the
+// stack and/or in a non-volatile register.
+//
+// Eager rewriting of anything that looks like a pointer to the stack, as done
+// in this function, does not adversely affect the stack unwinding. The only
+// other values on the stack the unwinding depends on are return addresses,
+// which should not point within the stack memory. The rewriting is guaranteed
+// to catch all pointers because the stacks are guaranteed by the ABI to be
+// sizeof(uintptr_t*) aligned.
+//
+// NO HEAP ALLOCATIONS.
+//
+// static
+NO_SANITIZE("address")
+void CopyStackContentsAndRewritePointers(const uintptr_t* original_stack_bottom,
+                                         const uintptr_t* original_stack_top,
+                                         uintptr_t* stack_copy_bottom) {
+  const uintptr_t* src = original_stack_bottom;
+  uintptr_t* dst = stack_copy_bottom;
+  for (; src < original_stack_top; ++src, ++dst) {
+    *dst = RewritePointerIfInOriginalStack(
+        original_stack_bottom, original_stack_top, stack_copy_bottom, *src);
+  }
 }
 
 }  // namespace base

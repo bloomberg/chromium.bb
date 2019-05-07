@@ -10,6 +10,7 @@
 #include "base/profiler/thread_delegate.h"
 #include "base/profiler/unwinder.h"
 #include "base/sampling_heap_profiler/module_cache.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -224,6 +225,45 @@ class FakeTestUnwinder : public Unwinder {
 };
 
 }  // namespace
+
+TEST(StackSamplerImplTest, RewritePointerIfInOriginalStack_InStack) {
+  uintptr_t original_stack[4];
+  uintptr_t stack_copy[4];
+  EXPECT_EQ(
+      reinterpret_cast<uintptr_t>(&stack_copy[2]),
+      RewritePointerIfInOriginalStack(
+          &original_stack[0], &original_stack[0] + base::size(original_stack),
+          &stack_copy[0], reinterpret_cast<uintptr_t>(&original_stack[2])));
+}
+
+TEST(StackSamplerImplTest, RewritePointerIfInOriginalStack_NotInStack) {
+  // We use this variable only for its address, which is outside of
+  // original_stack.
+  uintptr_t non_stack_location;
+  uintptr_t original_stack[4];
+  uintptr_t stack_copy[4];
+
+  EXPECT_EQ(
+      reinterpret_cast<uintptr_t>(&non_stack_location),
+      RewritePointerIfInOriginalStack(
+          &original_stack[0], &original_stack[0] + size(original_stack),
+          &stack_copy[0], reinterpret_cast<uintptr_t>(&non_stack_location)));
+}
+
+TEST(StackSamplerImplTest, CopyStackContentsAndRewritePointers) {
+  uintptr_t original_stack[4] = {1, 2, 0, 4};
+  original_stack[2] = reinterpret_cast<uintptr_t>(&original_stack[1]);
+  uintptr_t stack_copy[4];
+
+  CopyStackContentsAndRewritePointers(&original_stack[0],
+                                      &original_stack[0] + size(original_stack),
+                                      &stack_copy[0]);
+
+  EXPECT_EQ(original_stack[0], stack_copy[0]);
+  EXPECT_EQ(original_stack[1], stack_copy[1]);
+  EXPECT_EQ(reinterpret_cast<uintptr_t>(&stack_copy[1]), stack_copy[2]);
+  EXPECT_EQ(original_stack[3], stack_copy[3]);
+}
 
 TEST(StackSamplerImplTest, CopyStack) {
   ModuleCache module_cache;
