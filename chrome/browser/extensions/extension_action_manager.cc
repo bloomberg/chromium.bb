@@ -92,7 +92,6 @@ namespace {
 ExtensionAction* GetOrCreateOrNull(
     std::map<std::string, std::unique_ptr<ExtensionAction>>* map,
     const Extension& extension,
-    ActionInfo::Type action_type,
     const ActionInfo* action_info,
     Profile* profile) {
   auto it = map->find(extension.id());
@@ -109,8 +108,7 @@ ExtensionAction* GetOrCreateOrNull(
     return nullptr;
   }
 
-  auto action =
-      std::make_unique<ExtensionAction>(extension, action_type, *action_info);
+  auto action = std::make_unique<ExtensionAction>(extension, *action_info);
 
   if (action->default_icon()) {
     action->SetDefaultIconImage(std::make_unique<IconImage>(
@@ -129,7 +127,6 @@ ExtensionAction* GetOrCreateOrNull(
 ExtensionAction* ExtensionActionManager::GetPageAction(
     const Extension& extension) const {
   return GetOrCreateOrNull(&page_actions_, extension,
-                           ActionInfo::TYPE_PAGE,
                            ActionInfo::GetPageActionInfo(&extension),
                            profile_);
 }
@@ -137,7 +134,6 @@ ExtensionAction* ExtensionActionManager::GetPageAction(
 ExtensionAction* ExtensionActionManager::GetBrowserAction(
     const Extension& extension) const {
   return GetOrCreateOrNull(&browser_actions_, extension,
-                           ActionInfo::TYPE_BROWSER,
                            ActionInfo::GetBrowserActionInfo(&extension),
                            profile_);
 }

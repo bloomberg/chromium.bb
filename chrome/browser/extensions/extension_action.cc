@@ -85,15 +85,14 @@ gfx::Image ExtensionAction::FallbackIcon() {
 const int ExtensionAction::kDefaultTabId = -1;
 
 ExtensionAction::ExtensionAction(const extensions::Extension& extension,
-                                 extensions::ActionInfo::Type action_type,
                                  const extensions::ActionInfo& manifest_data)
     : extension_id_(extension.id()),
       extension_name_(extension.name()),
-      action_type_(action_type) {
+      action_type_(manifest_data.type) {
   // Page/script actions are hidden/disabled by default, and browser actions are
   // visible/enabled by default.
   SetIsVisible(kDefaultTabId,
-               action_type == extensions::ActionInfo::TYPE_BROWSER);
+               action_type_ == extensions::ActionInfo::TYPE_BROWSER);
   Populate(extension, manifest_data);
 }
 

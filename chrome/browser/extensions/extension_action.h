@@ -53,7 +53,6 @@ class ExtensionAction {
   static const int kDefaultTabId;
 
   ExtensionAction(const extensions::Extension& extension,
-                  extensions::ActionInfo::Type action_type,
                   const extensions::ActionInfo& manifest_data);
   ~ExtensionAction();
 

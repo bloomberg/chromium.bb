@@ -201,6 +201,12 @@ void ExtensionActionAPI::DispatchExtensionActionClicked(
   events::HistogramValue histogram_value = events::UNKNOWN;
   const char* event_name = NULL;
   switch (extension_action.action_type()) {
+    case ActionInfo::TYPE_ACTION:
+      // TODO(https://crbug.com/893373): Add testing for this API (currently
+      // restricted to trunk).
+      histogram_value = events::ACTION_ON_CLICKED;
+      event_name = "action.onClicked";
+      break;
     case ActionInfo::TYPE_BROWSER:
       histogram_value = events::BROWSER_ACTION_ON_CLICKED;
       event_name = "browserAction.onClicked";

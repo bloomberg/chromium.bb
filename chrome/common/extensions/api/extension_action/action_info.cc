@@ -49,7 +49,7 @@ static const ActionInfo* GetActionInfo(const Extension* extension,
 
 }  // namespace
 
-ActionInfo::ActionInfo() : synthesized(false) {}
+ActionInfo::ActionInfo(Type type) : type(type), synthesized(false) {}
 
 ActionInfo::ActionInfo(const ActionInfo& other) = default;
 
@@ -58,9 +58,10 @@ ActionInfo::~ActionInfo() {
 
 // static
 std::unique_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
+                                             Type type,
                                              const base::DictionaryValue* dict,
                                              base::string16* error) {
-  std::unique_ptr<ActionInfo> result(new ActionInfo());
+  auto result = std::make_unique<ActionInfo>(type);
 
   // Read the page action |default_icon| (optional).
   // The |default_icon| value can be either dictionary {icon size -> icon path}

@@ -458,6 +458,9 @@ void ParameterizedShowActionDeclarativeContentApiTest::TestShowAction(
       case ActionInfo::TYPE_PAGE:
         action_key = R"("page_action": {},)";
         break;
+      case ActionInfo::TYPE_ACTION:
+        action_key = R"("action": {},)";
+        break;
     }
   }
 
@@ -536,6 +539,13 @@ IN_PROC_BROWSER_TEST_P(ParameterizedShowActionDeclarativeContentApiTest,
                        BrowserActionInManifest) {
   TestShowAction(ActionInfo::TYPE_BROWSER);
 }
+
+// TODO(https://crbug.com/893373): Enable this when ExtensionActionManager knows
+// about ActionInfo::Type::TYPE_ACTION.
+// IN_PROC_BROWSER_TEST_P(ParameterizedShowActionDeclarativeContentApiTest,
+//                        ActionInManifest) {
+//   TestShowAction(ActionInfo::TYPE_ACTION);
+// }
 
 // Tests that rules from manifest are added and evaluated properly.
 IN_PROC_BROWSER_TEST_P(ParameterizedShowActionDeclarativeContentApiTest,

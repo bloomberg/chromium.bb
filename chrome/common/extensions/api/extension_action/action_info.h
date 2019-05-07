@@ -22,12 +22,9 @@ namespace extensions {
 class Extension;
 
 struct ActionInfo {
-  ActionInfo();
-  ActionInfo(const ActionInfo& other);
-  ~ActionInfo();
-
   // The types of extension actions.
   enum Type {
+    TYPE_ACTION,
     TYPE_BROWSER,
     TYPE_PAGE,
   };
@@ -37,8 +34,13 @@ struct ActionInfo {
     STATE_DISABLED,
   };
 
+  explicit ActionInfo(Type type);
+  ActionInfo(const ActionInfo& other);
+  ~ActionInfo();
+
   // Loads an ActionInfo from the given DictionaryValue.
   static std::unique_ptr<ActionInfo> Load(const Extension* extension,
+                                          Type type,
                                           const base::DictionaryValue* dict,
                                           base::string16* error);
 
@@ -73,10 +75,16 @@ struct ActionInfo {
   // of its page action.
   static bool IsVerboseInstallMessage(const Extension* extension);
 
+  // The key this action corresponds to. NOTE: You should only use this if you
+  // care about the actual manifest key. Use the other members (like
+  // |default_state| for querying general info.
+  const Type type;
+
   // Empty implies the key wasn't present.
   ExtensionIconSet default_icon;
   std::string default_title;
   GURL default_popup_url;
+
   // Specifies if the action applies to all web pages ("enabled") or
   // only specific pages ("disabled"). Only applies to the "action" key.
   DefaultState default_state;

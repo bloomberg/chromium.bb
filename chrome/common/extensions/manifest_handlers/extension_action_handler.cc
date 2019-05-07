@@ -29,9 +29,11 @@ bool ExtensionActionHandler::Parse(Extension* extension,
                                    base::string16* error) {
   const char* key = nullptr;
   const char* error_key = nullptr;
+  ActionInfo::Type type = ActionInfo::TYPE_ACTION;
   if (extension->manifest()->HasKey(manifest_keys::kAction)) {
     key = manifest_keys::kAction;
     error_key = manifest_errors::kInvalidAction;
+    // type ACTION is correct.
   }
 
   if (extension->manifest()->HasKey(manifest_keys::kPageAction)) {
@@ -42,6 +44,7 @@ bool ExtensionActionHandler::Parse(Extension* extension,
     }
     key = manifest_keys::kPageAction;
     error_key = manifest_errors::kInvalidPageAction;
+    type = ActionInfo::TYPE_PAGE;
   }
 
   if (extension->manifest()->HasKey(manifest_keys::kBrowserAction)) {
@@ -52,6 +55,7 @@ bool ExtensionActionHandler::Parse(Extension* extension,
     }
     key = manifest_keys::kBrowserAction;
     error_key = manifest_errors::kInvalidBrowserAction;
+    type = ActionInfo::TYPE_BROWSER;
   }
 
   if (key) {
@@ -62,7 +66,7 @@ bool ExtensionActionHandler::Parse(Extension* extension,
     }
 
     std::unique_ptr<ActionInfo> action_info =
-        ActionInfo::Load(extension, dict, error);
+        ActionInfo::Load(extension, type, dict, error);
     if (!action_info)
       return false;  // Failed to parse extension action definition.
 
@@ -94,7 +98,7 @@ bool ExtensionActionHandler::Parse(Extension* extension,
 
     // Set an empty page action. We use a page action (instead of a browser
     // action) because the action should not be seen as enabled on every page.
-    std::unique_ptr<ActionInfo> action_info(new ActionInfo());
+    auto action_info = std::make_unique<ActionInfo>(ActionInfo::TYPE_PAGE);
     action_info->synthesized = true;
     ActionInfo::SetPageActionInfo(extension, std::move(action_info));
   }

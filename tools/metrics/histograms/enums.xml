@@ -17851,6 +17851,7 @@ Called by update_net_error_codes.py.-->
   <int value="435" label="ACCESSIBILITY_PRIVATE_ON_ANNOUNCE_FOR_ACCESSIBILITY"/>
   <int value="436" label="MIME_HANDLER_PRIVATE_SAVE"/>
   <int value="437" label="RUNTIME_ON_CONNECT_NATIVE"/>
+  <int value="438" label="ACTION_ON_CLICKED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
