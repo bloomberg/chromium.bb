@@ -60,6 +60,7 @@ Polymer({
     error: {
       type: Number,
       notify: true,
+      observer: 'onErrorChanged_',
     },
 
     /** @type {!print_preview.State} */
@@ -283,7 +284,15 @@ Polymer({
         break;
     }
     this.error = errorType;
-    this.destinationState = print_preview.DestinationState.ERROR;
+  },
+
+  /** @private */
+  onErrorChanged_: function() {
+    if (this.error == print_preview.Error.INVALID_PRINTER ||
+        this.error == print_preview.Error.UNSUPPORTED_PRINTER ||
+        this.error == print_preview.Error.NO_DESTINATIONS) {
+      this.destinationState = print_preview.DestinationState.ERROR;
+    }
   },
 
   /**

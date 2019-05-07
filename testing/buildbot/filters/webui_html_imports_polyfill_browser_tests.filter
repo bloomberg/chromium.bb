@@ -75,6 +75,7 @@ PrintPreviewPagesSettingsTest.*
 PrintPreviewPagesPerSheetSettingsTest.*
 PrintPreviewPinSettingsTest.*
 PrintPreviewPolicyTest.*
+PrintPreviewPreviewAreaTest.*
 PrintPreviewPreviewGenerationTest.*
 PrintPreviewPrintButtonTest.*
 PrintPreviewRestoreStateTest.*

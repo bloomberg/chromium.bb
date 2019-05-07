@@ -780,6 +780,34 @@ TEST_F('PrintPreviewAdvancedDialogTest', 'AdvancedSettingsFilter', function() {
   this.runMochaTest(advanced_dialog_test.TestNames.AdvancedSettingsFilter);
 });
 
+PrintPreviewPreviewAreaTest = class extends PrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/ui/preview_area.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../settings/test_util.js',
+      '../test_browser_proxy.js',
+      'native_layer_stub.js',
+      'plugin_stub.js',
+      'print_preview_test_utils.js',
+      'preview_area_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return preview_area_test.suiteName;
+  }
+};
+
+TEST_F('PrintPreviewPreviewAreaTest', 'StateChanges', function() {
+  this.runMochaTest(preview_area_test.TestNames.StateChanges);
+});
+
 PrintPreviewCustomMarginsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {

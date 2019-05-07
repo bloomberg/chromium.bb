@@ -6,8 +6,10 @@ cr.define('print_preview', function() {
   /**
    * Test version of the PluginProxy.
    */
-  class PDFPluginStub {
+  class PDFPluginStub extends TestBrowserProxy {
     constructor() {
+      super(['loadPreviewPage']);
+
       /** @type {?Function} The callback to call on load. */
       this.loadCallback_ = null;
 
@@ -85,6 +87,9 @@ cr.define('print_preview', function() {
      * @param {number} index The preview index.
      */
     loadPreviewPage(previewUid, pageIndex, index) {
+      this.methodCalled(
+          'loadPreviewPage',
+          {previewUid: previewUid, pageIndex: pageIndex, index: index});
       if (this.loadCallback_) {
         this.loadCallback_(true);
       }

@@ -189,6 +189,10 @@ cr.define('invalid_settings_browsertest', function() {
             // Verify that the print button is disabled
             assertTrue(printButton.disabled);
 
+            // Select should still be enabled so that the user can select a new
+            // printer.
+            assertFalse(destinationSettings.$.destinationSelect.disabled);
+
             // Reset
             nativeLayer.reset();
 

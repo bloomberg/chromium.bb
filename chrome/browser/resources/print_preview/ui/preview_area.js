@@ -61,10 +61,7 @@ Polymer({
     },
 
     /** @type {!print_preview.State} */
-    state: {
-      type: Number,
-      observer: 'onStateChange_',
-    },
+    state: Number,
 
     /** @private {boolean} Whether the plugin is loaded */
     pluginLoaded_: {
@@ -93,6 +90,7 @@ Polymer({
 
   observers: [
     'pluginOrDocumentStatusChanged_(pluginLoaded_, documentReady_)',
+    'onStateOrErrorChange_(state, error)',
   ],
 
   /** @private {?print_preview.NativeLayer} */
@@ -735,7 +733,7 @@ Polymer({
   },
 
   /** @private */
-  onStateChange_: function() {
+  onStateOrErrorChange_: function() {
     if ((this.state === print_preview.State.ERROR ||
          this.state === print_preview.State.FATAL_ERROR) &&
         this.getErrorMessage_() !== '') {
