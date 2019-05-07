@@ -7,8 +7,12 @@
 #include <queue>
 
 #include "ash/accelerators/accelerator_controller.h"
+#include "ash/events/event_rewriter_controller.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_view.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/unified/unified_system_tray.h"
@@ -90,6 +94,11 @@ void LoggedInSpokenFeedbackTest::SendKeyPressWithSearchAndShift(
 void LoggedInSpokenFeedbackTest::SendKeyPressWithSearch(ui::KeyboardCode key) {
   ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
       nullptr, key, false, false, false, true)));
+}
+
+void LoggedInSpokenFeedbackTest::SendMouseMoveTo(const gfx::Point& location) {
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_controls::SendMouseMove(location.x(), location.y())));
 }
 
 void LoggedInSpokenFeedbackTest::RunJavaScriptInChromeVoxBackgroundPage(
@@ -360,6 +369,80 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ShelfIconFocusForward) {
   EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), title));
   EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "Button"));
   EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "*"));
+}
+
+// Verifies that speaking text under mouse works for Shelf button and voice
+// announcements should not be stacked when mouse goes over many Shelf buttons
+// (see https://crbug.com/958120 and https://crbug.com/921182).
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, SpeakingTextUnderMouseForShelfItem) {
+  // Add the ShelfItem to the ShelfModel after enabling the ChromeVox. Because
+  // when an extension is enabled, the ShelfItems which are not recorded as
+  // pinned apps in user preference will be removed.
+  EnableChromeVox();
+
+  // Add three Shelf buttons. Wait for the change on ShelfModel to reach ash.
+  ChromeLauncherController* controller = ChromeLauncherController::instance();
+  const int base_index = controller->shelf_model()->item_count();
+  const std::string title("MockApp");
+  const std::string id("FakeApp");
+  const int insert_app_num = 3;
+  for (int i = 0; i < insert_app_num; i++) {
+    std::string app_title = title + base::NumberToString(i);
+    std::string app_id = id + base::NumberToString(i);
+    controller->CreateAppShortcutLauncherItem(
+        ash::ShelfID(app_id), base_index + i, base::ASCIIToUTF16(app_title));
+  }
+  base::RunLoop().RunUntilIdle();
+
+  // Enable the function of speaking text under mouse.
+  ash::Shell::Get()->event_rewriter_controller()->SetSendMouseEventsToDelegate(
+      true);
+
+  // Focus on the Shelf because voice text for focusing on Shelf is fixed. Wait
+  // until voice announcements are finished.
+  EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
+  while (true) {
+    std::string utterance = speech_monitor_.GetNextUtterance();
+    if (base::MatchPattern(utterance, "Launcher"))
+      break;
+  }
+  ASSERT_EQ("Button", speech_monitor_.GetNextUtterance());
+  ASSERT_EQ("Shelf", speech_monitor_.GetNextUtterance());
+  ASSERT_EQ("Tool bar", speech_monitor_.GetNextUtterance());
+  ASSERT_EQ(", window", speech_monitor_.GetNextUtterance());
+  ASSERT_EQ("Press Search plus Space to activate.",
+            speech_monitor_.GetNextUtterance());
+
+  // Hover mouse on the Shelf button. Verifies that text under mouse is spoken.
+  ash::ShelfView* shelf_view =
+      ash::Shelf::ForWindow(ash::Shell::Get()->GetPrimaryRootWindow())
+          ->shelf_widget()
+          ->shelf_view_for_testing();
+  const int first_app_index =
+      shelf_view->model()->GetItemIndexForType(ash::TYPE_PINNED_APP);
+  SendMouseMoveTo(shelf_view->view_model()
+                      ->view_at(first_app_index)
+                      ->GetBoundsInScreen()
+                      .CenterPoint());
+  EXPECT_TRUE(
+      base::MatchPattern(speech_monitor_.GetNextUtterance(), "MockApp0"));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "Button"));
+
+  // Move mouse to the third Shelf button through the second one. Verifies that
+  // only the last Shelf button is announced by ChromeVox.
+  const int second_app_index = first_app_index + 1;
+  SendMouseMoveTo(shelf_view->view_model()
+                      ->view_at(second_app_index)
+                      ->GetBoundsInScreen()
+                      .CenterPoint());
+  const int third_app_index = first_app_index + 2;
+  SendMouseMoveTo(shelf_view->view_model()
+                      ->view_at(third_app_index)
+                      ->GetBoundsInScreen()
+                      .CenterPoint());
+  EXPECT_TRUE(
+      base::MatchPattern(speech_monitor_.GetNextUtterance(), "MockApp2"));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "Button"));
 }
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OpenStatusTray) {

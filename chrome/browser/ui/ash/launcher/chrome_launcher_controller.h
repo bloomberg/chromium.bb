@@ -59,6 +59,7 @@ class BaseWindow;
 
 namespace chromeos {
 FORWARD_DECLARE_TEST(SpokenFeedbackTest, ShelfIconFocusForward);
+FORWARD_DECLARE_TEST(SpokenFeedbackTest, SpeakingTextUnderMouseForShelfItem);
 }
 
 // ChromeLauncherController helps manage Ash's shelf for Chrome prefs and apps.
@@ -266,6 +267,8 @@ class ChromeLauncherController
   friend class TestChromeLauncherController;
 
   FRIEND_TEST_ALL_PREFIXES(chromeos::SpokenFeedbackTest, ShelfIconFocusForward);
+  FRIEND_TEST_ALL_PREFIXES(chromeos::SpokenFeedbackTest,
+                           SpeakingTextUnderMouseForShelfItem);
 
   using WebContentsToAppIDMap = std::map<content::WebContents*, std::string>;
 
