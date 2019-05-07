@@ -2049,6 +2049,7 @@ crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-009.html 
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-011.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-ic-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-ic-003.html [ Failure ]
+crbug.com/921318 external/wpt/css/css-text/tab-size/tab-size-spacing-001.html [ Failure ]
 crbug.com/626703 [ Win10 ] external/wpt/css/css-text/text-align/text-align-justify-004.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/text-transform-capitalize-026.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/text-transform-capitalize-028.html [ Failure ]
@@ -2117,9 +2118,10 @@ crbug.com/6122 external/wpt/css/css-text/text-transform/text-transform-shaping-0
 crbug.com/6122 external/wpt/css/css-text/text-transform/text-transform-shaping-002.html [ Failure ]
 crbug.com/6122 external/wpt/css/css-text/text-transform/text-transform-shaping-003.html [ Failure ]
 
-
 # These are added to W3CImportExpectations as Skip, remove when next import is done.
 crbug.com/666657 external/wpt/css/css-text/hanging-punctuation [ Skip ]
+
+crbug.com/909597 external/wpt/css/css-ui/text-overflow-ruby.html [ Failure ]
 
 crbug.com/505151 external/wpt/css/css-writing-modes/abs-pos-non-replaced-icb-vlr-003.xht [ Failure ]
 crbug.com/505151 external/wpt/css/css-writing-modes/abs-pos-non-replaced-icb-vlr-005.xht [ Failure ]
@@ -3225,7 +3227,6 @@ crbug.com/626703 external/wpt/css/css-values/ic-unit-012.html [ Failure ]
 crbug.com/626703 external/wpt/html/semantics/document-metadata/the-link-element/stylesheet-not-removed-until-next-stylesheet-loads.html [ Timeout ]
 crbug.com/626703 external/wpt/svg/interact/manual/event-attribute-001-manual.svg [ Skip ]
 crbug.com/626703 [ Retina ] virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/async_005.htm [ Timeout ]
-crbug.com/626703 external/wpt/css/css-text/tab-size/tab-size-spacing-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-values/vh-support-atviewport.html [ Failure ]
 crbug.com/626703 external/wpt/css/CSS2/text/white-space-nowrap-attribute-001.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/white-space/white-space-intrinsic-size-004.html [ Failure ]
@@ -3272,7 +3273,6 @@ crbug.com/626703 [ Retina ] external/wpt/html/semantics/embedded-content/media-e
 crbug.com/626703 [ Win ] external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay-hidden.optional.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay-hidden.optional.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay-hidden.optional.html [ Failure Timeout ]
-crbug.com/626703 external/wpt/css/css-ui/text-overflow-ruby.html [ Failure ]
 crbug.com/626703 external/wpt/fetch/content-type/response.window.html [ Timeout ]
 crbug.com/626703 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/no-active-script-manual-module.html [ Timeout ]
 crbug.com/626703 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/no-active-script-manual-classic.html [ Timeout ]
