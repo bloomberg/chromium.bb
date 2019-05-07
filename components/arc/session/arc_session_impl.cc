@@ -37,7 +37,6 @@
 #include "mojo/public/cpp/platform/platform_handle.h"
 #include "mojo/public/cpp/platform/socket_utils_posix.h"
 #include "mojo/public/cpp/system/invitation.h"
-#include "ui/base/ui_base_features.h"
 
 namespace arc {
 
@@ -374,7 +373,6 @@ void ArcSessionImpl::OnLcdDensity(int32_t lcd_density) {
       base::FeatureList::IsEnabled(arc::kFilePickerExperimentFeature));
   // Enable Custom Tabs only on Dev and Cannary, and only when Mash is enabled.
   const bool is_custom_tab_enabled =
-      base::FeatureList::IsEnabled(features::kSingleProcessMash) &&
       base::FeatureList::IsEnabled(arc::kCustomTabsExperimentFeature) &&
       delegate_->GetChannel() != version_info::Channel::STABLE &&
       delegate_->GetChannel() != version_info::Channel::BETA;
