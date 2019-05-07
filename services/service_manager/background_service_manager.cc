@@ -16,7 +16,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/simple_thread.h"
-#include "services/service_manager/connect_params.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/service_manager.h"
 

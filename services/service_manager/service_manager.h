@@ -7,15 +7,16 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <vector>
 
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/process/process.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "base/token.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/service_manager/catalog.h"
-#include "services/service_manager/connect_params.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -25,9 +26,12 @@
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
+#include "services/service_manager/service_instance_registry.h"
 #include "services/service_manager/service_process_launcher_factory.h"
 
 namespace service_manager {
+
+class ServiceInstance;
 
 class ServiceManager : public Service {
  public:
@@ -73,59 +77,66 @@ class ServiceManager : public Service {
   // Completes a connection between a source and target application as defined
   // by |params|. If no existing instance of the target service is running, one
   // will be loaded.
-  void Connect(std::unique_ptr<ConnectParams> params);
+  void Connect(const ServiceFilter& partial_target_filter,
+               const Identity& source_identity,
+               const base::Optional<std::string>& interface_name,
+               mojo::ScopedMessagePipeHandle receiving_pipe,
+               mojo::PendingRemote<mojom::Service> service_remote,
+               mojo::PendingReceiver<mojom::PIDReceiver> pid_receiver,
+               mojom::BindInterfacePriority priority,
+               mojom::Connector::BindInterfaceCallback callback);
+
+  // Variant of the above when no Service remote or PIDReceiver is provided by
+  // the caller.
+  void Connect(const ServiceFilter& partial_target_filter,
+               const Identity& source_identity,
+               const std::string& interface_name,
+               mojo::ScopedMessagePipeHandle receiving_pipe,
+               mojom::BindInterfacePriority priority,
+               mojom::Connector::BindInterfaceCallback callback);
+
+  // Variant of the above where no interface name, receiving pipe, Service
+  // remote, or PIDReceiver is provided by the caller.
+  void Connect(const ServiceFilter& partial_target_filter,
+               const Identity& source_identity,
+               mojom::Connector::BindInterfaceCallback callback);
+
+  // Variant of the above where no interface name or receiving pipe is provided
+  // by the caller, but a Service remote and PIDReceiver are provided.
+  void Connect(const ServiceFilter& partial_target_filter,
+               const Identity& source_identity,
+               mojo::PendingRemote<mojom::Service> service_remote,
+               mojo::PendingReceiver<mojom::PIDReceiver> pid_receiver,
+               mojom::Connector::BindInterfaceCallback callback);
 
  private:
-  class Instance;
-  class IdentityToInstanceMap;
-  class ServiceImpl;
+  friend class ServiceInstance;
 
-  // Used in CreateInstance to specify how an instance should be shared between
-  // various identities.
-  enum class InstanceType {
-    // All fields of the instance's identity are relevant, so instances are
-    // generally isolated to their own instance group, and there may be multiple
-    // instances of the service within each instance group.
-    kRegular,
+  // Erases |instance| from the instance registry. Following this call it is
+  // impossible for any call to GetExistingInstance() to return |instance| even
+  // though the instance may continue to exist and send requests to the Service
+  // Manager.
+  void MakeInstanceUnreachable(ServiceInstance* instance);
 
-    // There may be multiple instances of the service qualified by instance ID,
-    // but all such instances are shared across instance group boundaries. The
-    // instance group is therefore effectively ignored when resolving an
-    // Identity to a running instance.
-    kSharedAcrossInstanceGroups,
+  // Called when |instance| no longer has any connections to the remote service
+  // instance, or when some other fatal error is encountered in managing the
+  // instance. Deletes |instance|.
+  void DestroyInstance(ServiceInstance* instance);
 
-    // A single instance of the service exists globally. For all connections to
-    // the service, both instance group and instance ID are ignored when
-    // resolving the Identity.
-    kSingleton,
-  };
-
-  // Called when |instance| encounters an error. Deletes |instance|.
-  void OnInstanceError(Instance* instance);
-
-  // Called when |instance| becomes unreachable to new connections because it
-  // no longer has any pipes to the ServiceManager.
-  void OnInstanceUnreachable(Instance* instance);
-
-  // Called by an Instance as it's being destroyed.
+  // Called by a ServiceInstance as it's being destroyed.
   void OnInstanceStopped(const Identity& identity);
 
   // Returns a running instance identified by |identity|.
-  Instance* GetExistingInstance(const Identity& identity) const;
+  ServiceInstance* GetExistingInstance(const Identity& identity) const;
 
-  // Erases any identities mapping to |instance|. Following this call it is
-  // impossible for any call to GetExistingInstance() to return |instance|.
-  void EraseInstanceIdentity(Instance* instance);
-
-  void NotifyServiceCreated(Instance* instance);
+  void NotifyServiceCreated(ServiceInstance* instance);
   void NotifyServiceStarted(const Identity& identity, base::ProcessId pid);
   void NotifyServiceFailedToStart(const Identity& identity);
 
   void NotifyServicePIDReceived(const Identity& identity, base::ProcessId pid);
 
-  Instance* CreateInstance(const Identity& identity,
-                           InstanceType instance_type,
-                           const Manifest& manifest);
+  ServiceInstance* CreateServiceInstance(const Identity& identity,
+                                         const Manifest& manifest);
 
   // Called from the instance implementing mojom::ServiceManager.
   void AddListener(mojom::ServiceManagerListenerPtr listener);
@@ -140,35 +151,33 @@ class ServiceManager : public Service {
   mojom::ServiceFactory* GetServiceFactory(const ServiceFilter& filter);
   void OnServiceFactoryLost(const ServiceFilter& which);
 
-  base::WeakPtr<ServiceManager> GetWeakPtr();
-
   // Service:
   void OnBindInterface(const BindSourceInfo& source_info,
                        const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override;
+                       mojo::ScopedMessagePipeHandle receiving_pipe) override;
 
   ServiceBinding service_binding_{this};
 
-  // Ownership of all Instances.
-  using InstanceMap = std::map<Instance*, std::unique_ptr<Instance>>;
+  // Ownership of all ServiceInstances.
+  using InstanceMap =
+      std::set<std::unique_ptr<ServiceInstance>, base::UniquePtrComparator>;
   InstanceMap instances_;
 
   Catalog catalog_;
 
-  // Maps service identities to reachable instances. Note that the Instance
-  // values stored in that map are NOT owned by this map.
-  std::unique_ptr<IdentityToInstanceMap> identity_to_instance_;
+  // Maps service identities to reachable instances, allowing for lookup of
+  // running instances by ServiceFilter.
+  ServiceInstanceRegistry instance_registry_;
 
   // Always points to the ServiceManager's own Instance. Note that this
-  // Instance still has an entry in |instances_|.
-  Instance* service_manager_instance_;
+  // ServiceInstance still has an entry in |instances_|.
+  ServiceInstance* service_manager_instance_;
 
   std::map<ServiceFilter, mojom::ServiceFactoryPtr> service_factories_;
   mojo::InterfacePtrSet<mojom::ServiceManagerListener> listeners_;
   base::Callback<void(const Identity&)> instance_quit_callback_;
   std::unique_ptr<ServiceProcessLauncherFactory>
       service_process_launcher_factory_;
-  base::WeakPtrFactory<ServiceManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceManager);
 };

@@ -423,9 +423,17 @@ TEST_F(ConnectTest, ConnectWithGloballyUniqueId) {
   // instance. This request should not be seen by the new instance, and |proxy|
   // should be disconnected when the Service Manager drops the request.
   base::RunLoop wait_for_error_loop;
+  base::RunLoop wait_for_connect_loop;
   target->CallOnNextBindInterface(base::BindOnce([] { NOTREACHED(); }));
-  connector()->BindInterface(specific_identity, &proxy);
+  connector()->BindInterface(
+      specific_identity, mojo::MakeRequest(&proxy),
+      base::BindLambdaForTesting([&](mojom::ConnectResult result,
+                                     const base::Optional<Identity>& identity) {
+        EXPECT_EQ(mojom::ConnectResult::ACCESS_DENIED, result);
+        wait_for_connect_loop.Quit();
+      }));
   proxy.set_connection_error_handler(wait_for_error_loop.QuitClosure());
+  wait_for_connect_loop.Run();
   wait_for_error_loop.Run();
 }
 

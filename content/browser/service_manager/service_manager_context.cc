@@ -74,7 +74,6 @@
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
 #include "services/resource_coordinator/resource_coordinator_service.h"
-#include "services/service_manager/connect_params.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/manifest.h"
