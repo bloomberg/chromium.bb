@@ -15,6 +15,7 @@ config("root_config_overrides") {
 # source_sets).
 group("gn_all") {
   deps = [
+    "cast/common/mdns",
     "osp",
     "osp/msgs",
     "osp_base",
