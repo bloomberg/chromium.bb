@@ -247,6 +247,12 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   request->allow_download = true;
   request->is_main_frame = true;
 
+  // Downloads should be treated as navigations from Fetch spec perspective.
+  // See also:
+  // - https://crbug.com/952834
+  // - https://github.com/whatwg/fetch/issues/896#issuecomment-484423278
+  request->fetch_request_mode = network::mojom::FetchRequestMode::kNavigate;
+
   bool has_upload_data = false;
   if (params->post_body()) {
     request->request_body = params->post_body();

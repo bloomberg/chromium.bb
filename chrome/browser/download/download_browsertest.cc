@@ -488,6 +488,9 @@ class DownloadTest : public InProcessBrowserTest {
         base::BindOnce(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
     ASSERT_TRUE(InitialSetup());
     host_resolver()->AddRule("www.a.com", "127.0.0.1");
+    host_resolver()->AddRule("foo.com", "127.0.0.1");
+    host_resolver()->AddRule("bar.com", "127.0.0.1");
+    content::SetupCrossSiteRedirector(embedded_test_server());
   }
 
   void TearDownOnMainThread() override {
@@ -3006,6 +3009,73 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SaveLinkAsReferrerPolicyOrigin) {
   std::string expected_contents =
       embedded_test_server()->GetURL(std::string("/")).spec();
   EXPECT_TRUE(VerifyFile(file, expected_contents, expected_contents.length()));
+}
+
+// This test ensures that Cross-Origin-Resource-Policy response header doesn't
+// apply to download requests initiated via Save Link As context menu (such
+// requests are considered browser-initiated).  See also
+// https://crbug.com/952834.
+IN_PROC_BROWSER_TEST_F(DownloadTest, SaveLinkAsVsCrossOriginResourcePolicy) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EnableFileChooser(true);
+
+  // Test's sanity check that initially there are no download items.
+  std::vector<DownloadItem*> download_items;
+  GetDownloads(browser(), &download_items);
+  ASSERT_TRUE(download_items.empty());
+
+  // Read the origin file now so that we can compare the downloaded files to it
+  // later.
+  base::FilePath origin(OriginFile(base::FilePath(FILE_PATH_LITERAL(
+      "downloads/cross-origin-resource-policy-resource.txt"))));
+  int64_t origin_file_size = 0;
+  std::string original_contents;
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    ASSERT_TRUE(base::PathExists(origin));
+    EXPECT_TRUE(base::GetFileSize(origin, &origin_file_size));
+    EXPECT_TRUE(base::ReadFileToString(origin, &original_contents));
+  }
+
+  // Navigate to the test page.
+  GURL url = embedded_test_server()->GetURL(
+      "foo.com", "/downloads/cross-origin-resource-policy-test.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Right-click on the link and choose Save Link As. This will download the
+  // link target.
+  std::unique_ptr<content::DownloadTestObserver> download_waiter(
+      new content::DownloadTestObserverTerminal(
+          DownloadManagerForBrowser(browser()), 1,
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+  ContextMenuNotificationObserver context_menu_observer(
+      IDC_CONTENT_CONTEXT_SAVELINKAS);
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  blink::WebMouseEvent mouse_event(
+      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  mouse_event.button = blink::WebMouseEvent::Button::kRight;
+  mouse_event.SetPositionInWidget(15, 15);
+  mouse_event.click_count = 1;
+  tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
+  mouse_event.SetType(blink::WebInputEvent::kMouseUp);
+  tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
+
+  download_waiter->WaitForFinished();
+  EXPECT_EQ(1u,
+            download_waiter->NumDownloadsSeenInState(DownloadItem::COMPLETE));
+  CheckDownloadStates(1, DownloadItem::COMPLETE);
+
+  // Validate that the correct file was downloaded.
+  GetDownloads(browser(), &download_items);
+  ASSERT_EQ(1u, download_items.size());
+  GURL expected_original_url = embedded_test_server()->GetURL(
+      "foo.com",
+      "/cross-site/bar.com/downloads/"
+      "cross-origin-resource-policy-resource.txt");
+  EXPECT_EQ(expected_original_url, download_items[0]->GetOriginalUrl());
+  EXPECT_TRUE(VerifyFile(download_items[0]->GetTargetFilePath(),
+                         original_contents, origin_file_size));
 }
 
 // This test ensures that the Referer header is properly sanitized when
