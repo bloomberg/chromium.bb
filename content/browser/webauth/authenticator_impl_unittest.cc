@@ -3572,8 +3572,10 @@ TEST_F(ResidentKeyAuthenticatorImplTest, CredProtectRegistration) {
     {  false,   false,   UNSPECIFIED, true,  false,   kNonsense, UNSPECIFIED},
     {  false,   false,   NONE,        false, false,   kNonsense, UNSPECIFIED},
     {  false,   false,   NONE,        true,  false,   kNonsense, UNSPECIFIED},
-    {  false,   false,   UV_OR_CRED,  false, false,   kNonsense, UNSPECIFIED},
-    {  false,   false,   UV_OR_CRED,  true,  false,   kNonsense, UNSPECIFIED},
+    {  false,   false,   UV_OR_CRED,  false, false,   kOk,       NONE},
+    {  false,   false,   UV_OR_CRED,  true,  false,   kNotAllow, UNSPECIFIED},
+    {  false,   false,   UV_OR_CRED,  false, true,    kOk,       NONE},
+    {  false,   false,   UV_OR_CRED,  true,  true,    kNotAllow, UNSPECIFIED},
     {  false,   false,   UV_REQ,      false, false,   kNonsense, UNSPECIFIED},
     {  false,   false,   UV_REQ,      false, true,    kOk,       NONE},
     {  false,   false,   UV_REQ,      true,  false,   kNonsense, UNSPECIFIED},
@@ -3594,6 +3596,10 @@ TEST_F(ResidentKeyAuthenticatorImplTest, CredProtectRegistration) {
     // authenticator support is irrelevant. Therefore these are just the non-
     // kNonsense cases from the prior block.
     {  true,    false,   UNSPECIFIED, false, false,   kOk,       NONE},
+    {  true,    false,   UV_OR_CRED,  false, false,   kOk,       UV_OR_CRED},
+    {  true,    false,   UV_OR_CRED,  true,  false,   kOk,       UV_OR_CRED},
+    {  true,    false,   UV_OR_CRED,  false, true,    kOk,       UV_OR_CRED},
+    {  true,    false,   UV_OR_CRED,  true,  true,    kOk,       UV_OR_CRED},
     {  true,    false,   UV_REQ,      false, true,    kOk,       UV_REQ},
     {  true,    false,   UV_REQ,      true,  true,    kOk,       UV_REQ},
     {  true,    true,    UNSPECIFIED, false, false,   kOk,       UV_OR_CRED},

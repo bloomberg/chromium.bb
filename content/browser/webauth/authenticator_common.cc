@@ -663,12 +663,12 @@ void AuthenticatorCommon::MakeCredential(
        (options->protection_policy ==
             blink::mojom::ProtectionPolicy::UNSPECIFIED ||
         options->protection_policy == blink::mojom::ProtectionPolicy::NONE)) ||
-      // For non-resident keys the only protection that makes sense is
-      // UV_REQUIRED (or UNSPECIFIED).
+      // For non-resident keys, NONE doesn't make sense. (UV_OR_CRED_ID_REQUIRED
+      // does because, with CTAP 2.0, just because a resident key isn't
+      // _required_ doesn't mean that one won't be created and an RP might want
+      // credProtect to take effect if that happens.)
       (!resident_key &&
-       (options->protection_policy == blink::mojom::ProtectionPolicy::NONE ||
-        options->protection_policy ==
-            blink::mojom::ProtectionPolicy::UV_OR_CRED_ID_REQUIRED)) ||
+       options->protection_policy == blink::mojom::ProtectionPolicy::NONE) ||
       // UV_REQUIRED only makes sense if UV is required overall.
       (options->protection_policy ==
            blink::mojom::ProtectionPolicy::UV_REQUIRED &&
