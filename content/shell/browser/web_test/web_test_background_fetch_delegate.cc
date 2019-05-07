@@ -4,6 +4,9 @@
 
 #include "content/shell/browser/web_test/web_test_background_fetch_delegate.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -12,6 +15,7 @@
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/download/content/factory/download_service_factory_helper.h"
+#include "components/download/public/background_service/blob_context_getter_factory.h"
 #include "components/download/public/background_service/clients.h"
 #include "components/download/public/background_service/download_metadata.h"
 #include "components/download/public/background_service/download_params.h"
@@ -31,6 +35,26 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace content {
+
+// Provides BlobContextGetter from a BrowserContext.
+class TestBlobContextGetterFactory : public download::BlobContextGetterFactory {
+ public:
+  TestBlobContextGetterFactory(content::BrowserContext* browser_context)
+      : browser_context_(browser_context) {}
+  ~TestBlobContextGetterFactory() override = default;
+
+ private:
+  // download::BlobContextGetterFactory implementation.
+  void RetrieveBlobContextGetter(
+      download::BlobContextGetterCallback callback) override {
+    auto blob_context_getter =
+        content::BrowserContext::GetBlobStorageContext(browser_context_);
+    std::move(callback).Run(blob_context_getter);
+  }
+
+  content::BrowserContext* browser_context_;
+  DISALLOW_COPY_AND_ASSIGN(TestBlobContextGetterFactory);
+};
 
 // Implementation of a Download Service client that will be servicing
 // Background Fetch requests when running web tests.
@@ -256,7 +280,7 @@ void WebTestBackgroundFetchDelegate::CreateDownloadJob(
           base::WrapUnique(download::BuildInMemoryDownloadService(
               simple_key, std::move(clients), GetNetworkConnectionTracker(),
               base::FilePath(),
-              BrowserContext::GetBlobStorageContext(browser_context_),
+              std::make_unique<TestBlobContextGetterFactory>(browser_context_),
               base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
               url_loader_factory));
     }

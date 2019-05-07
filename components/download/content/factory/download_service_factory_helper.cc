@@ -135,14 +135,14 @@ DownloadService* BuildInMemoryDownloadService(
     std::unique_ptr<DownloadClientMap> clients,
     network::NetworkConnectionTracker* network_connection_tracker,
     const base::FilePath& storage_dir,
-    BlobTaskProxy::BlobContextGetter blob_context_getter,
+    BlobContextGetterFactoryPtr blob_context_getter_factory,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   auto config = Configuration::CreateFromFinch();
   auto download_factory = std::make_unique<InMemoryDownloadFactory>(
-      url_loader_factory.get(), blob_context_getter, io_task_runner);
-  auto driver =
-      std::make_unique<InMemoryDownloadDriver>(std::move(download_factory));
+      url_loader_factory.get(), io_task_runner);
+  auto driver = std::make_unique<InMemoryDownloadDriver>(
+      std::move(download_factory), std::move(blob_context_getter_factory));
   auto store = std::make_unique<NoopStore>();
   auto task_scheduler = std::make_unique<EmptyTaskScheduler>();
 

@@ -22,9 +22,11 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/transition_manager/full_browser_transition_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/download/content/factory/download_service_factory_helper.h"
 #include "components/download/content/factory/navigation_monitor_factory.h"
+#include "components/download/public/background_service/blob_context_getter_factory.h"
 #include "components/download/public/background_service/clients.h"
 #include "components/download/public/background_service/download_service.h"
 #include "components/download/public/background_service/features.h"
@@ -61,6 +63,37 @@ std::unique_ptr<download::Client> CreatePluginVmImageDownloadClient(
   return std::make_unique<plugin_vm::PluginVmImageDownloadClient>(profile);
 }
 #endif
+
+// Called on profile created to retrieve the BlobStorageContextGetter.
+void OnProfileCreated(download::BlobContextGetterCallback callback,
+                      Profile* profile) {
+  auto blob_context_getter =
+      content::BrowserContext::GetBlobStorageContext(profile);
+  DCHECK(callback);
+  std::move(callback).Run(blob_context_getter);
+}
+
+// Provides BlobContextGetter from Chrome asynchronously.
+class DownloadBlobContextGetterFactory
+    : public download::BlobContextGetterFactory {
+ public:
+  explicit DownloadBlobContextGetterFactory(ProfileKey* profile_key)
+      : profile_key_(profile_key) {
+    DCHECK(profile_key_);
+  }
+  ~DownloadBlobContextGetterFactory() override = default;
+
+ private:
+  // download::BlobContextGetterFactory implementation.
+  void RetrieveBlobContextGetter(
+      download::BlobContextGetterCallback callback) override {
+    FullBrowserTransitionManager::Get()->RegisterCallbackOnProfileCreation(
+        profile_key_, base::BindOnce(&OnProfileCreated, std::move(callback)));
+  }
+
+  ProfileKey* profile_key_;
+  DISALLOW_COPY_AND_ASSIGN(DownloadBlobContextGetterFactory);
+};
 
 }  // namespace
 
@@ -122,8 +155,9 @@ KeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
   // Build in memory download service for incognito profile.
   if (context->IsOffTheRecord() &&
       base::FeatureList::IsEnabled(download::kDownloadServiceIncognito)) {
-    content::BrowserContext::BlobContextGetter blob_context_getter =
-        content::BrowserContext::GetBlobStorageContext(context);
+    auto blob_context_getter_factory =
+        std::make_unique<DownloadBlobContextGetterFactory>(
+            profile->GetProfileKey());
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
         base::CreateSingleThreadTaskRunnerWithTraits(
             {content::BrowserThread::IO});
@@ -133,7 +167,8 @@ KeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
     return download::BuildInMemoryDownloadService(
         profile->GetProfileKey(), std::move(clients),
         content::GetNetworkConnectionTracker(), base::FilePath(),
-        blob_context_getter, io_task_runner, url_loader_factory);
+        std::move(blob_context_getter_factory), io_task_runner,
+        url_loader_factory);
   } else {
     // Build download service for normal profile.
     base::FilePath storage_dir;

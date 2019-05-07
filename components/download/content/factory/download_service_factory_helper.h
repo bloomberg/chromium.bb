@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "components/download/internal/background_service/blob_task_proxy.h"
+#include "components/download/public/background_service/blob_context_getter_factory.h"
 #include "components/download/public/background_service/clients.h"
 
 class SimpleFactoryKey;
@@ -55,7 +55,7 @@ DownloadService* BuildInMemoryDownloadService(
     std::unique_ptr<DownloadClientMap> clients,
     network::NetworkConnectionTracker* network_connection_tracker,
     const base::FilePath& storage_dir,
-    BlobTaskProxy::BlobContextGetter blob_context_getter,
+    BlobContextGetterFactoryPtr blob_context_getter_factory,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
