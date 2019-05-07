@@ -114,11 +114,8 @@ CaptionContainerView::CaptionContainerView(EventDelegate* event_delegate,
           kHorizontalLabelPaddingDp));
   AddChildWithLayer(this, header_view_);
 
-  // Prefer kAppIconSmallKey (set by the client in Mash), then kAppIconKey and
-  // kWindowIconKey (set for client windows in classic Ash but not Mash).
-  gfx::ImageSkia* icon = window->GetProperty(aura::client::kAppIconSmallKey);
-  if (!icon || icon->size().IsEmpty())
-    icon = window->GetProperty(aura::client::kAppIconKey);
+  // Prefer kAppIconKey over kWindowIconKey as the app icon is typically larger.
+  gfx::ImageSkia* icon = window->GetProperty(aura::client::kAppIconKey);
   if (!icon || icon->size().IsEmpty())
     icon = window->GetProperty(aura::client::kWindowIconKey);
   if (icon && !icon->size().IsEmpty()) {

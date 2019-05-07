@@ -72,10 +72,6 @@ PropertyConverter::CreateAcceptAnyValueCallback() {
 
 PropertyConverter::PropertyConverter() {
   // Add known aura properties with associated mus properties.
-  RegisterImageSkiaProperty(client::kAppIconLargeKey,
-                            ws::mojom::WindowManager::kAppIconLarge_Property);
-  RegisterImageSkiaProperty(client::kAppIconSmallKey,
-                            ws::mojom::WindowManager::kAppIconSmall_Property);
   RegisterImageSkiaProperty(client::kAvatarIconKey,
                             ws::mojom::WindowManager::kAvatarIcon_Property);
   RegisterPrimitiveProperty(client::kAlwaysOnTopKey,

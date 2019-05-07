@@ -63,12 +63,6 @@ interface WindowManager {
   // A boolean determining whether animations are disabled for the window.
   const string kAnimationsDisabled_Property = "prop:animations-disabled";
 
-  // A large version of the application icon. Type: SkBitmap
-  const string kAppIconLarge_Property = "prop:app-icon-large";
-
-  // A small version of the application icon. Type: SkBitmap
-  const string kAppIconSmall_Property = "prop:app-icon-small";
-
   // The avatar icon to display in the frame header, if any. Type: SkBitmap
   const string kAvatarIcon_Property = "prop:avatar-icon";
 

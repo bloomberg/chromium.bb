@@ -78,13 +78,12 @@ views::NativeWidget* ChromeViewsDelegate::CreateNativeWidget(
   if (params->context)
     params->context = params->context->GetRootWindow();
 
-  // Classic ash requires a parent or a context that it can use to look up a
-  // root window to find a WindowParentingClient. Mash handles window parenting
-  // inside ash, see ash::CreateAndParentTopLevelWindow().
-  if (!features::IsUsingWindowService() && !params->parent && !params->context)
+  // Ash requires a parent or a context that it can use to look up a root window
+  // to find a WindowParentingClient.
+  if (!params->parent && !params->context)
     params->context = ash::Shell::GetRootWindowForNewWindows();
 
   // By returning null Widget creates the default NativeWidget implementation,
-  // which for chromeos is NativeWidgetAura.
+  // which for Chrome OS is NativeWidgetAura.
   return nullptr;
 }

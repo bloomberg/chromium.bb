@@ -874,22 +874,7 @@ void DesktopWindowTreeHostMus::SetAspectRatio(const gfx::SizeF& aspect_ratio) {
 }
 
 void DesktopWindowTreeHostMus::SetWindowIcons(const gfx::ImageSkia& window_icon,
-                                              const gfx::ImageSkia& app_icon) {
-  // In Ash, the app icon is always used in preference to the window icon, so
-  // ignore the window icon. The max size that ash needs is 24dip, which is
-  // kIconSize in caption_container_view.cc.
-  constexpr gfx::Size kMaxUsefulAppIconSize(24, 24);
-  DCHECK_EQ(app_icon.width(), app_icon.height());
-  gfx::ImageSkia app_icon_resized =
-      app_icon.width() > kMaxUsefulAppIconSize.width()
-          ? gfx::ImageSkiaOperations::CreateResizedImage(
-                app_icon, skia::ImageOperations::RESIZE_BEST,
-                kMaxUsefulAppIconSize)
-          : app_icon;
-
-  window()->GetRootWindow()->SetProperty(aura::client::kAppIconSmallKey,
-                                         new gfx::ImageSkia(app_icon_resized));
-}
+                                              const gfx::ImageSkia& app_icon) {}
 
 void DesktopWindowTreeHostMus::InitModalType(ui::ModalType modal_type) {
   // See comment in Init() related to |InitParams::parent| as to why this DCHECK

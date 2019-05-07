@@ -66,9 +66,7 @@ void UpdateShelfItemForWindow(ShelfItem* item, aura::Window* window) {
   }
 
   // Prefer app icons over window icons, they're typically larger.
-  gfx::ImageSkia* image = window->GetProperty(aura::client::kAppIconLargeKey);
-  if (!image || image->isNull())
-    image = window->GetProperty(aura::client::kAppIconKey);
+  gfx::ImageSkia* image = window->GetProperty(aura::client::kAppIconKey);
   if (!image || image->isNull())
     image = window->GetProperty(aura::client::kWindowIconKey);
   if (!image || image->isNull()) {
@@ -137,8 +135,7 @@ void ShelfWindowWatcher::UserWindowObserver::OnWindowPropertyChanged(
         ShelfID::Deserialize(window->GetProperty(kShelfIDKey)));
   }
 
-  if (key == aura::client::kAppIconLargeKey ||
-      key == aura::client::kAppIconKey || key == aura::client::kWindowIconKey ||
+  if (key == aura::client::kAppIconKey || key == aura::client::kWindowIconKey ||
       key == aura::client::kDrawAttentionKey || key == kShelfItemTypeKey ||
       key == kShelfIDKey) {
     window_watcher_->OnUserWindowPropertyChanged(window);
