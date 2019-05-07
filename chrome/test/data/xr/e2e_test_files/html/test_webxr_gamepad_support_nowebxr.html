@@ -16,7 +16,7 @@ circumstances. Does not have WebXR code.
       // always null.
       window.addEventListener("gamepadconnected", function(e) {});
 
-      function stepAssertNumGamepadsMatchesExpectation(numExpectedGamepads) {
+      function assertNumNavigatorGamepadsMatchesExpectation(numExpectedGamepads) {
         var numGamepads = 0;
         for (gamepad of navigator.getGamepads()) {
           if (gamepad !== null) {
@@ -25,7 +25,6 @@ circumstances. Does not have WebXR code.
         }
         assert_equals(numGamepads, numExpectedGamepads,
             "Number of returned gamepads matches expectation");
-        done();
       }
     </script>
   </body>

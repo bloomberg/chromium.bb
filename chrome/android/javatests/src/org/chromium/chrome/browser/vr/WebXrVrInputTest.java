@@ -706,8 +706,10 @@ public class WebXrVrInputTest {
             spamScreenTaps(presentationView, x, y, numIterations);
         }
 
-        mWebXrVrTestFramework.executeStepAndWait("stepAssertNumGamepadsMatchesExpectation("
-                + String.valueOf(numExpectedGamepads) + ")");
+        mWebXrVrTestFramework.runJavaScriptOrFail("assertNumNavigatorGamepadsMatchesExpectation("
+                        + String.valueOf(numExpectedGamepads) + ")",
+                POLL_TIMEOUT_SHORT_MS);
+        mWebVrTestFramework.runJavaScriptOrFail("done()", POLL_TIMEOUT_SHORT_MS);
         mWebXrVrTestFramework.endTest();
     }
 
