@@ -137,7 +137,24 @@ Polymer({
       return;
     }
 
-    this.click();
+    if (e.key == 'Enter') {
+      this.click();
+    }
+  },
+
+  /**
+   * @param {!KeyboardEvent} e
+   * @private
+   */
+  onKeyUp_: function(e) {
+    if (e.key == ' ' || e.key == 'Enter') {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    if (e.key == ' ') {
+      this.click();
+    }
   },
 
   /** @private */

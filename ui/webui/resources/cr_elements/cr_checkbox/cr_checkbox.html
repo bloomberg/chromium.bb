@@ -154,8 +154,9 @@ List of customizable styles:
       }
     </style>
     <div id="checkbox" tabindex$="[[tabIndex]]" role="checkbox"
-        on-keydown="onKeyDown_" aria-disabled="false" aria-checked="false"
-        aria-labelledby="label-container" aria-describedby="ariaDescription">
+        on-keydown="onKeyDown_" on-keyup="onKeyUp_" aria-disabled="false"
+        aria-checked="false" aria-labelledby="label-container"
+        aria-describedby="ariaDescription">
       <span id="checkmark"></span>
     </div>
     <div id="label-container"><slot></slot></div>

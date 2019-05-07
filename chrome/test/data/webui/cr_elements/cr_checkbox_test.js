@@ -153,6 +153,18 @@ suite('cr-checkbox', function() {
     setTimeout(done);
   });
 
+  test('space key down does not toggle', () => {
+    assertNotChecked();
+    MockInteractions.keyDownOn(checkbox.$.checkbox, null, undefined, ' ');
+    assertNotChecked();
+  });
+
+  test('space key up toggles', () => {
+    assertNotChecked();
+    MockInteractions.keyUpOn(checkbox.$.checkbox, null, undefined, ' ');
+    assertChecked();
+  });
+
   test('InitializingWithTabindex', function() {
     PolymerTest.clearBody();
     document.body.innerHTML = `
