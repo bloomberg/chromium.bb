@@ -10,6 +10,7 @@ from __future__ import print_function
 import os
 import shutil
 
+from chromite.lib import autotest_util
 from chromite.lib import build_target_util
 from chromite.lib import chroot_lib
 from chromite.lib import constants
@@ -18,6 +19,54 @@ from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import sysroot_lib
 from chromite.service import artifacts
+
+
+class BundleAutotestFilesTest(cros_test_lib.MockTempDirTestCase):
+  """Test the Bundle Autotest Files function."""
+
+  def setUp(self):
+    self.output_dir = os.path.join(self.tempdir, 'output_dir')
+    self.archive_dir = os.path.join(self.tempdir, 'archive_base_dir')
+
+    sysroot_path = os.path.join(self.tempdir, 'sysroot')
+    sysroot_dne = os.path.join(self.tempdir, 'sysroot_DNE')
+    self.sysroot = sysroot_lib.Sysroot(sysroot_path)
+    self.sysroot_dne = sysroot_lib.Sysroot(sysroot_dne)
+
+    # Make sure we have the valid paths.
+    osutils.SafeMakedirs(self.output_dir)
+    osutils.SafeMakedirs(sysroot_path)
+
+  def testInvalidOutputDirectory(self):
+    """Test invalid output directory."""
+    with self.assertRaises(AssertionError):
+      artifacts.BundleAutotestFiles(self.sysroot, None)
+
+  def testInvalidSysroot(self):
+    """Test sysroot that does not exist."""
+    with self.assertRaises(AssertionError):
+      artifacts.BundleAutotestFiles(self.sysroot_dne, self.output_dir)
+
+  def testArchiveDirectoryDoesNotExist(self):
+    """Test archive directory that does not exist causes error."""
+    with self.assertRaises(artifacts.ArchiveBaseDirNotFound):
+      artifacts.BundleAutotestFiles(self.sysroot, self.output_dir)
+
+  def testSuccess(self):
+    """Test a successful call handling."""
+    ab_path = os.path.join(self.sysroot.path, constants.AUTOTEST_BUILD_PATH)
+    osutils.SafeMakedirs(ab_path)
+
+    # Makes all of the individual calls to build out each of the tarballs work
+    # nicely with a single patch.
+    self.PatchObject(autotest_util.AutotestTarballBuilder, '_BuildTarball',
+                     side_effect=lambda _, path, **kwargs: osutils.Touch(path))
+
+    result = artifacts.BundleAutotestFiles(self.sysroot, self.output_dir)
+
+    for archive in result.values():
+      self.assertStartsWith(archive, self.output_dir)
+      self.assertExists(archive)
 
 
 class ArchiveChromeEbuildEnvTest(cros_test_lib.MockTempDirTestCase):

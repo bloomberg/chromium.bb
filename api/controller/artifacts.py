@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import os
 
+from chromite.api.controller import controller_util
 from chromite.cbuildbot import commands
 from chromite.cbuildbot.stages import vm_test_stages
 from chromite.lib import build_target_util
@@ -108,18 +109,42 @@ def BundleAutotestFiles(input_proto, output_proto):
     input_proto (BundleRequest): The input proto.
     output_proto (BundleResponse): The output proto.
   """
-  target = input_proto.build_target.name
   output_dir = input_proto.output_dir
-  build_root = constants.SOURCE_ROOT
-  cwd = os.path.join(build_root, 'chroot/build', target, 'usr/local/build')
+  if not output_dir:
+    cros_build_lib.Die('output_dir is required.')
 
-  # Note that unlike the functions below, this returns the full path
-  # to *multiple* tarballs.
-  # TODO(crbug.com/954289): Replace with a chromite/service implementation.
-  archives = commands.BuildAutotestTarballsForHWTest(build_root, cwd,
-                                                     output_dir)
+  target = input_proto.build_target.name
+  if target:
+    # Legacy call, build out sysroot path from default source root and the
+    # build target.
+    target = input_proto.build_target.name
+    build_root = constants.SOURCE_ROOT
+    sysroot_path = os.path.join(build_root, constants.DEFAULT_CHROOT_DIR,
+                                'build', target)
+    sysroot = sysroot_lib.Sysroot(sysroot_path)
+  else:
+    # New style call, use chroot and sysroot.
+    chroot = controller_util.ParseChroot(input_proto.chroot)
 
-  for archive in archives:
+    sysroot_path = input_proto.sysroot.path
+    if not sysroot_path:
+      cros_build_lib.Die('sysroot.path is required.')
+
+    # Since we're staying outside the chroot, prepend the chroot path to the
+    # sysroot path so we have a valid full path to the sysroot.
+    sysroot = sysroot_lib.Sysroot(os.path.join(chroot.path,
+                                               sysroot_path.lstrip(os.sep)))
+
+  if not sysroot.Exists():
+    cros_build_lib.Die('Sysroot path must exist: %s', sysroot.path)
+
+  try:
+    # Note that this returns the full path to *multiple* tarballs.
+    archives = artifacts.BundleAutotestFiles(sysroot, output_dir)
+  except artifacts.Error as e:
+    cros_build_lib.Die(e.message)
+
+  for archive in archives.values():
     output_proto.artifacts.add().path = archive
 
 

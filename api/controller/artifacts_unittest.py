@@ -18,6 +18,7 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+from chromite.lib import sysroot_lib
 from chromite.service import artifacts as artifacts_svc
 
 
@@ -31,6 +32,61 @@ class BundleTestCase(cros_test_lib.MockTestCase):
     self.output_proto = artifacts_pb2.BundleResponse()
 
     self.PatchObject(constants, 'SOURCE_ROOT', new='/cros')
+
+
+class BundleTempDirTestCase(cros_test_lib.MockTempDirTestCase):
+  """Basic setup for artifacts unittests that need a tempdir."""
+
+  def _GetRequest(self, chroot=None, sysroot=None, build_target=None,
+                  output_dir=None):
+    """Helper to create a request message instance.
+
+    Args:
+      chroot (str): The chroot path.
+      sysroot (str): The sysroot path.
+      build_target (str): The build target name.
+      output_dir (str): The output directory.
+    """
+    return artifacts_pb2.BundleRequest(
+        sysroot={'path': sysroot, 'build_target': {'name': build_target}},
+        chroot={'path': chroot}, output_dir=output_dir)
+
+  def _GetResponse(self):
+    return artifacts_pb2.BundleResponse()
+
+  def setUp(self):
+    self.output_dir = os.path.join(self.tempdir, 'artifacts')
+    osutils.SafeMakedirs(self.output_dir)
+
+    # Old style paths.
+    self.old_sysroot_path = os.path.join(self.tempdir, 'cros', 'chroot',
+                                         'build', 'target')
+    self.old_sysroot = sysroot_lib.Sysroot(self.old_sysroot_path)
+    osutils.SafeMakedirs(self.old_sysroot_path)
+
+    # Old style proto.
+    self.input_proto = artifacts_pb2.BundleRequest()
+    self.input_proto.build_target.name = 'target'
+    self.input_proto.output_dir = self.output_dir
+    self.output_proto = artifacts_pb2.BundleResponse()
+
+    source_root = os.path.join(self.tempdir, 'cros')
+    self.PatchObject(constants, 'SOURCE_ROOT', new=source_root)
+
+    # New style paths.
+    self.chroot_path = os.path.join(self.tempdir, 'cros', 'chroot')
+    self.sysroot_path = '/build/target'
+    self.full_sysroot_path = os.path.join(self.chroot_path,
+                                          self.sysroot_path.lstrip(os.sep))
+    self.sysroot = sysroot_lib.Sysroot(self.full_sysroot_path)
+    osutils.SafeMakedirs(self.full_sysroot_path)
+
+    # New style proto.
+    self.request = artifacts_pb2.BundleRequest()
+    self.request.output_dir = self.output_dir
+    self.request.chroot.path = self.chroot_path
+    self.request.sysroot.path = self.sysroot_path
+    self.response = artifacts_pb2.BundleResponse()
 
 
 class BundleImageZipTest(BundleTestCase):
@@ -56,26 +112,84 @@ class BundleImageZipTest(BundleTestCase):
       artifacts.BundleImageZip(self.input_proto, self.output_proto)
 
 
-class BundleAutotestFilesTest(BundleTestCase):
+class BundleAutotestFilesTest(BundleTempDirTestCase):
   """Unittests for BundleAutotestFiles."""
 
-  def testBundleAutotestFiles(self):
-    """BundleAutotestFiles calls cbuildbot/commands with correct args."""
-    build_autotest_tarballs = self.PatchObject(
-        commands,
-        'BuildAutotestTarballsForHWTest',
-        return_value=[
-            '/tmp/artifacts/autotest-a.tar.gz',
-            '/tmp/artifacts/autotest-b.tar.gz',
-        ])
+  def testBundleAutotestFilesLegacy(self):
+    """BundleAutotestFiles calls service correctly with legacy args."""
+    files = {
+        artifacts_svc.ARCHIVE_CONTROL_FILES: '/tmp/artifacts/autotest-a.tar.gz',
+        artifacts_svc.ARCHIVE_PACKAGES: '/tmp/artifacts/autotest-b.tar.gz',
+    }
+    patch = self.PatchObject(artifacts_svc, 'BundleAutotestFiles',
+                             return_value=files)
+
+    sysroot_patch = self.PatchObject(sysroot_lib, 'Sysroot',
+                                     return_value=self.old_sysroot)
     artifacts.BundleAutotestFiles(self.input_proto, self.output_proto)
-    self.assertItemsEqual([
-        artifact.path for artifact in self.output_proto.artifacts
-    ], ['/tmp/artifacts/autotest-a.tar.gz', '/tmp/artifacts/autotest-b.tar.gz'])
-    self.assertEqual(build_autotest_tarballs.call_args_list, [
-        mock.call('/cros', '/cros/chroot/build/target/usr/local/build',
-                  '/tmp/artifacts')
-    ])
+
+    # Verify the sysroot is being built out correctly.
+    sysroot_patch.assert_called_with(self.old_sysroot_path)
+
+    # Verify the arguments are being passed through.
+    patch.assert_called_with(self.old_sysroot, self.output_dir)
+
+    # Verify the output proto is being populated correctly.
+    self.assertTrue(self.output_proto.artifacts)
+    paths = [artifact.path for artifact in self.output_proto.artifacts]
+    self.assertItemsEqual(files.values(), paths)
+
+  def testBundleAutotestFiles(self):
+    """BundleAutotestFiles calls service correctly."""
+    files = {
+        artifacts_svc.ARCHIVE_CONTROL_FILES: '/tmp/artifacts/autotest-a.tar.gz',
+        artifacts_svc.ARCHIVE_PACKAGES: '/tmp/artifacts/autotest-b.tar.gz',
+    }
+    patch = self.PatchObject(artifacts_svc, 'BundleAutotestFiles',
+                             return_value=files)
+
+    sysroot_patch = self.PatchObject(sysroot_lib, 'Sysroot',
+                                     return_value=self.sysroot)
+    artifacts.BundleAutotestFiles(self.request, self.response)
+
+    # Verify the sysroot is being built out correctly.
+    sysroot_patch.assert_called_with(self.full_sysroot_path)
+
+    # Verify the arguments are being passed through.
+    patch.assert_called_with(self.sysroot, self.output_dir)
+
+    # Verify the output proto is being populated correctly.
+    self.assertTrue(self.response.artifacts)
+    paths = [artifact.path for artifact in self.response.artifacts]
+    self.assertItemsEqual(files.values(), paths)
+
+  def testInvalidOutputDir(self):
+    """Test invalid output directory argument."""
+    request = self._GetRequest(chroot=self.chroot_path,
+                               sysroot=self.sysroot_path)
+    response = self._GetResponse()
+
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      artifacts.BundleAutotestFiles(request, response)
+
+  def testInvalidSysroot(self):
+    """Test no sysroot directory."""
+    request = self._GetRequest(chroot=self.chroot_path,
+                               output_dir=self.output_dir)
+    response = self._GetResponse()
+
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      artifacts.BundleAutotestFiles(request, response)
+
+  def testSysrootDoesNotExist(self):
+    """Test dies when no sysroot does not exist."""
+    request = self._GetRequest(chroot=self.chroot_path,
+                               sysroot='/does/not/exist',
+                               output_dir=self.output_dir)
+    response = self._GetResponse()
+
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      artifacts.BundleAutotestFiles(request, response)
 
 
 class BundleTastFilesTest(BundleTestCase):
@@ -380,7 +494,6 @@ class BundleVmFilesTest(cros_test_lib.MockTestCase):
 
     with self.assertRaises(cros_build_lib.DieSystemExit):
       artifacts.BundleVmFiles(in_proto, out_proto)
-
 
   def testTestResultsDirMissing(self):
     """Test error handling for missing test results directory."""
