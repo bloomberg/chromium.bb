@@ -112,15 +112,23 @@ Polymer({
   },
 
   /**
-   * Updates the dialog after a connect attempt.
-   * @param {!chrome.bluetooth.Device} device The device connected to
-   * @param {!{message: string}} lastError chrome.runtime.lastError
+   * Updates the dialog after a connection attempt.
+   * @param {!chrome.bluetooth.Device} device The device connected to.
+   * @param {!boolean} wasPairing True if the device required pairing before
+   *     connecting.
+   * @param {!{message: string}} lastError chrome.runtime.lastError.
    * @param {chrome.bluetoothPrivate.ConnectResultType} result The connect
-   *     result
+   *     result.
    * @return {boolean} True if the dialog considers this a fatal error and
    *     is displaying an error message.
    */
-  handleError: function(device, lastError, result) {
+  endConnectionAttempt: function(device, wasPairing, lastError, result) {
+    if (wasPairing) {
+      const transport = device.transport ? device.transport :
+                                           chrome.bluetooth.Transport.INVALID;
+      this.recordPairingMetrics_(transport, lastError, result);
+    }
+
     let error;
     if (lastError) {
       error = lastError.message;
@@ -489,5 +497,43 @@ Polymer({
       }
     }
     return cssClass;
+  },
+
+  /**
+   * Record metrics for pairing attempt results.
+   * @param {!chrome.bluetooth.Transport} transport The transport type of the
+   *     device.
+   * @param {!{message: string}} lastError chrome.runtime.lastError.
+   * @param {!chrome.bluetoothPrivate.ConnectResultType} result The connection
+   *     result.
+   * @private
+   */
+  recordPairingMetrics_: function(transport, lastError, result) {
+    // TODO(crbug.com/953149): Also create metrics which break down the simple
+    // boolean success/failure metric with error reasons, including |lastError|.
+
+    let success;
+    if (lastError) {
+      success = false;
+    } else {
+      switch (result) {
+        case chrome.bluetoothPrivate.ConnectResultType.SUCCESS:
+          success = true;
+          break;
+        case chrome.bluetoothPrivate.ConnectResultType.IN_PROGRESS:
+        case chrome.bluetoothPrivate.ConnectResultType.ALREADY_CONNECTED:
+        case chrome.bluetoothPrivate.ConnectResultType.AUTH_CANCELED:
+        case chrome.bluetoothPrivate.ConnectResultType.AUTH_REJECTED:
+          // Cases like this do not reflect success or failure to pair,
+          // particularly AUTH_CANCELED or AUTH_REJECTED. Do not emit to
+          // metrics.
+          return;
+        default:
+          success = false;
+          break;
+      }
+    }
+
+    chrome.bluetooth.recordPairing(success, transport);
   },
 });

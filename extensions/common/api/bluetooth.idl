@@ -157,6 +157,9 @@ namespace bluetooth {
     // Stop discovery.
     // |callback| : Called to indicate success or failure.
     static void stopDiscovery(optional StopDiscoveryCallback callback);
+
+    // Record that a pairing attempt finished. Do not record cancellations.
+    static void recordPairing(boolean success, Transport transport);
   };
 
   interface Events {

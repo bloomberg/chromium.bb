@@ -147,6 +147,25 @@ class BluetoothStopDiscoveryFunction : public BluetoothExtensionFunction {
   void OnErrorCallback();
 };
 
+class BluetoothRecordPairingFunction : public BluetoothExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("bluetooth.recordPairing", BLUETOOTH_RECORDPAIRING)
+
+  BluetoothRecordPairingFunction();
+
+ protected:
+  ~BluetoothRecordPairingFunction() override;
+
+  // BluetoothExtensionFunction:
+  bool CreateParams() override;
+  void DoWork(scoped_refptr<device::BluetoothAdapter> adapter) override;
+
+ private:
+  std::unique_ptr<bluetooth::RecordPairing::Params> params_;
+
+  DISALLOW_COPY_AND_ASSIGN(BluetoothRecordPairingFunction);
+};
+
 }  // namespace api
 }  // namespace extensions
 

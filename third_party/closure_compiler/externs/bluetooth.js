@@ -161,6 +161,14 @@ chrome.bluetooth.startDiscovery = function(callback) {};
 chrome.bluetooth.stopDiscovery = function(callback) {};
 
 /**
+ * Record that a pairing attempt finished. Do not record cancellations.
+ * @param {boolean} success
+ * @param {!chrome.bluetooth.Transport} transport
+ * @see https://developer.chrome.com/extensions/bluetooth#method-recordPairing
+ */
+chrome.bluetooth.recordPairing = function(success, transport) {};
+
+/**
  * Fired when the state of the Bluetooth adapter changes.
  * @type {!ChromeEvent}
  * @see https://developer.chrome.com/extensions/bluetooth#event-onAdapterStateChanged

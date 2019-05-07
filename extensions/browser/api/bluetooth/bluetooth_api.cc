@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_functions.h"
 #include "components/device_event_log/device_event_log.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -37,6 +38,18 @@ namespace GetDevices = extensions::api::bluetooth::GetDevices;
 
 namespace {
 
+// This enum is tied directly to a UMA enum defined in
+// //tools/metrics/histograms/enums.xml, and should always reflect it (do not
+// change one without changing the other).
+enum BluetoothTransportType {
+  kUnknown = 0,
+  kClassic = 1,
+  kLE = 2,
+  kDual = 3,
+  kInvalid = 4,
+  kMaxValue
+};
+
 const char kInvalidDevice[] = "Invalid device";
 const char kStartDiscoveryFailed[] = "Starting discovery failed";
 const char kStopDiscoveryFailed[] = "Failed to stop discovery";
@@ -45,6 +58,53 @@ extensions::BluetoothEventRouter* GetEventRouter(BrowserContext* context) {
   // Note: |context| is valid on UI thread only.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return extensions::BluetoothAPI::Get(context)->event_router();
+}
+
+void RecordPairingResult(bool success, bluetooth::Transport transport) {
+  std::string transport_histogram_name;
+  switch (transport) {
+    case bluetooth::Transport::TRANSPORT_CLASSIC:
+      transport_histogram_name = "Classic";
+      break;
+    case bluetooth::Transport::TRANSPORT_LE:
+      transport_histogram_name = "BLE";
+      break;
+    case bluetooth::Transport::TRANSPORT_DUAL:
+      transport_histogram_name = "Dual";
+      break;
+    default:
+      // A transport type of INVALID or other is unexpected, and no success
+      // metric for it exists.
+      return;
+  }
+
+  base::UmaHistogramBoolean("Bluetooth.ChromeOS.Pairing.Result", success);
+  base::UmaHistogramBoolean(
+      "Bluetooth.ChromeOS.Pairing.Result." + transport_histogram_name, success);
+}
+
+void RecordPairingTransport(bluetooth::Transport transport) {
+  BluetoothTransportType type;
+  switch (transport) {
+    case bluetooth::Transport::TRANSPORT_CLASSIC:
+      type = BluetoothTransportType::kClassic;
+      break;
+    case bluetooth::Transport::TRANSPORT_LE:
+      type = BluetoothTransportType::kLE;
+      break;
+    case bluetooth::Transport::TRANSPORT_DUAL:
+      type = BluetoothTransportType::kDual;
+      break;
+    case bluetooth::Transport::TRANSPORT_INVALID:
+      type = BluetoothTransportType::kInvalid;
+      break;
+    default:
+      type = BluetoothTransportType::kUnknown;
+      break;
+  }
+
+  base::UmaHistogramEnumeration("Bluetooth.ChromeOS.Pairing.TransportType",
+                                type);
 }
 
 }  // namespace
@@ -223,6 +283,21 @@ void BluetoothStopDiscoveryFunction::DoWork(
           adapter.get(), GetExtensionId(),
           base::Bind(&BluetoothStopDiscoveryFunction::OnSuccessCallback, this),
           base::Bind(&BluetoothStopDiscoveryFunction::OnErrorCallback, this));
+}
+
+BluetoothRecordPairingFunction::BluetoothRecordPairingFunction() = default;
+
+BluetoothRecordPairingFunction::~BluetoothRecordPairingFunction() = default;
+
+bool BluetoothRecordPairingFunction::CreateParams() {
+  params_ = bluetooth::RecordPairing::Params::Create(*args_);
+  return params_ != nullptr;
+}
+
+void BluetoothRecordPairingFunction::DoWork(
+    scoped_refptr<BluetoothAdapter> adapter) {
+  RecordPairingResult(params_->success, params_->transport);
+  RecordPairingTransport(params_->transport);
 }
 
 }  // namespace api

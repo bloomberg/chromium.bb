@@ -1397,6 +1397,7 @@ enum HistogramValue {
   FILEMANAGERPRIVATE_SELECTANDROIDPICKERAPP = 1334,
   AUTOTESTPRIVATE_GETSHELFALIGNMENT = 1335,
   AUTOTESTPRIVATE_SETSHELFALIGNMENT = 1336,
+  BLUETOOTH_RECORDPAIRING = 1337,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

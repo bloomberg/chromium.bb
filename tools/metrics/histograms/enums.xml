@@ -5027,6 +5027,14 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="Unknown"/>
 </enum>
 
+<enum name="BluetoothTransportType">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Classic"/>
+  <int value="2" label="Low Energy"/>
+  <int value="3" label="Dual"/>
+  <int value="4" label="Invalid"/>
+</enum>
+
 <enum name="BlueZReasonOfDisconnection">
   <int value="1" label="Disconnected by local host"/>
   <int value="2" label="Disconnected by remote device"/>
@@ -19242,6 +19250,7 @@ Called by update_net_error_codes.py.-->
   <int value="1334" label="FILEMANAGERPRIVATE_SELECTANDROIDPICKERAPP"/>
   <int value="1335" label="AUTOTESTPRIVATE_GETSHELFALIGNMENT"/>
   <int value="1336" label="AUTOTESTPRIVATE_SETSHELFALIGNMENT"/>
+  <int value="1337" label="BLUETOOTH_RECORDPAIRING"/>
 </enum>
 
 <enum name="ExtensionIconState">

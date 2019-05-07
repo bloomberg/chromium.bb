@@ -381,7 +381,8 @@ Polymer({
    */
   connectDevice_: function(device) {
     // If the device is not paired, show the pairing dialog before connecting.
-    if (!device.paired) {
+    const isPairing = !device.paired;
+    if (isPairing) {
       this.pairingDevice_ = device;
       this.openDialog_();
     }
@@ -394,7 +395,9 @@ Polymer({
       }
       // Let the dialog handle any errors, otherwise close the dialog.
       const dialog = this.$.deviceDialog;
-      if (dialog.handleError(device, chrome.runtime.lastError, result)) {
+      if (dialog.endConnectionAttempt(
+              device, isPairing /* wasPairing */, chrome.runtime.lastError,
+              result)) {
         this.openDialog_();
       } else if (
           result != chrome.bluetoothPrivate.ConnectResultType.IN_PROGRESS) {
