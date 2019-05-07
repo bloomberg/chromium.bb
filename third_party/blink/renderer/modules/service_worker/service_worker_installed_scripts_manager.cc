@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_thread.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -251,10 +252,10 @@ ServiceWorkerInstalledScriptsManager::ServiceWorkerInstalledScriptsManager(
   // worker thread later, so make a deep copy of |url| as key.
   for (const KURL& url : installed_urls)
     installed_urls_.insert(url.Copy());
-  io_task_runner->PostTask(
-      FROM_HERE, ConvertToBaseCallback(CrossThreadBind(
-                     &Internal::Create, script_container_,
-                     WTF::Passed(std::move(manager_request)), io_task_runner)));
+  PostCrossThreadTask(
+      *io_task_runner, FROM_HERE,
+      CrossThreadBind(&Internal::Create, script_container_,
+                      WTF::Passed(std::move(manager_request)), io_task_runner));
 }
 
 bool ServiceWorkerInstalledScriptsManager::IsScriptInstalled(
