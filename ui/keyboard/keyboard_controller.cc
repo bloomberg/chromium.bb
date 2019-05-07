@@ -389,17 +389,19 @@ void KeyboardController::MoveToParentContainer(aura::Window* parent) {
 void KeyboardController::NotifyKeyboardBoundsChanging(
     const gfx::Rect& new_bounds_in_root) {
   visual_bounds_in_root_ = new_bounds_in_root;
+  gfx::Rect occluded_bounds_in_screen = GetWorkspaceOccludedBoundsInScreen();
+
   aura::Window* window = GetKeyboardWindow();
   if (window && window->IsVisible()) {
-    const gfx::Rect occluded_bounds_in_root = GetWorkspaceOccludedBounds();
+    // TODO(https://crbug.com/943446): Use screen bounds for visual bounds.
     notification_manager_.SendNotifications(
         container_behavior_->OccludedBoundsAffectWorkspaceLayout(),
-        new_bounds_in_root, occluded_bounds_in_root, observer_list_);
+        new_bounds_in_root, occluded_bounds_in_screen, observer_list_);
   } else {
     visual_bounds_in_root_ = gfx::Rect();
   }
 
-  EnsureCaretInWorkArea(GetWorkspaceOccludedBounds());
+  EnsureCaretInWorkArea(occluded_bounds_in_screen);
 }
 
 void KeyboardController::SetKeyboardWindowBounds(
@@ -785,8 +787,8 @@ ui::InputMethod* KeyboardController::GetInputMethodForTest() {
 }
 
 void KeyboardController::EnsureCaretInWorkAreaForTest(
-    const gfx::Rect& occluded_bounds_in_root) {
-  EnsureCaretInWorkArea(occluded_bounds_in_root);
+    const gfx::Rect& occluded_bounds_in_screen) {
+  EnsureCaretInWorkArea(occluded_bounds_in_screen);
 }
 
 // ContainerBehavior::Delegate overrides
@@ -1041,14 +1043,17 @@ void KeyboardController::ReportLingeringState() {
                             state_, KeyboardControllerState::COUNT);
 }
 
-gfx::Rect KeyboardController::GetWorkspaceOccludedBounds() const {
+gfx::Rect KeyboardController::GetWorkspaceOccludedBoundsInScreen() const {
   if (!ui_)
     return gfx::Rect();
 
   const gfx::Rect visual_bounds_in_window(visual_bounds_in_root_.size());
-  const gfx::Rect occluded_bounds_in_window =
+
+  gfx::Rect occluded_bounds_in_screen =
       container_behavior_->GetOccludedBounds(visual_bounds_in_window);
-  return occluded_bounds_in_window + visual_bounds_in_root_.OffsetFromOrigin();
+  ::wm::ConvertRectToScreen(GetKeyboardWindow(), &occluded_bounds_in_screen);
+
+  return occluded_bounds_in_screen;
 }
 
 gfx::Rect KeyboardController::GetKeyboardLockScreenOffsetBounds() const {
@@ -1179,15 +1184,12 @@ void KeyboardController::UpdateInputMethodObserver() {
 }
 
 void KeyboardController::EnsureCaretInWorkArea(
-    const gfx::Rect& occluded_bounds_in_root) {
+    const gfx::Rect& occluded_bounds_in_screen) {
   ui::InputMethod* ime = ui_->GetInputMethod();
   if (!ime)
     return;
 
   TRACE_EVENT0("vk", "EnsureCaretInWorkArea");
-
-  // TODO(https://crbug.com/943446): Convert root window bounds to screen.
-  auto occluded_bounds_in_screen = occluded_bounds_in_root;
 
   if (IsOverscrollAllowed()) {
     ime->SetOnScreenKeyboardBounds(occluded_bounds_in_screen);

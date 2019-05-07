@@ -2863,13 +2863,14 @@ class ShelfLayoutManagerKeyboardTest : public AshTestBase {
 
   void NotifyKeyboardChanging(ShelfLayoutManager* layout_manager,
                               bool is_locked,
-                              const gfx::Rect& bounds) {
+                              const gfx::Rect& bounds_in_screen) {
     WorkAreaInsets* work_area_insets = GetPrimaryWorkAreaInsets();
     keyboard::KeyboardStateDescriptor state;
-    state.visual_bounds = bounds;
-    state.occluded_bounds = bounds;
-    state.displaced_bounds = is_locked ? bounds : gfx::Rect();
-    state.is_visible = !bounds.IsEmpty();
+    state.visual_bounds = bounds_in_screen;
+    state.occluded_bounds_in_screen = bounds_in_screen;
+    state.displaced_bounds_in_screen =
+        is_locked ? bounds_in_screen : gfx::Rect();
+    state.is_visible = !bounds_in_screen.IsEmpty();
     work_area_insets->OnKeyboardVisibilityStateChanged(state.is_visible);
     work_area_insets->OnKeyboardAppearanceChanged(state);
   }

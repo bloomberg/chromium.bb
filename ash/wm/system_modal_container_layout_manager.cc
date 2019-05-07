@@ -131,11 +131,12 @@ void SystemModalContainerLayoutManager::OnWindowPropertyChanged(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// SystemModalContainerLayoutManager, Keyboard::KeybaordControllerObserver
+// SystemModalContainerLayoutManager, Keyboard::KeyboardControllerObserver
 // implementation:
 
 void SystemModalContainerLayoutManager::
-    OnKeyboardWorkspaceOccludedBoundsChanged(const gfx::Rect& new_bounds) {
+    OnKeyboardWorkspaceOccludedBoundsChanged(
+        const gfx::Rect& new_bounds_in_screen) {
   PositionDialogsAfterWorkAreaResize();
 }
 
@@ -258,7 +259,8 @@ gfx::Rect SystemModalContainerLayoutManager::GetUsableDialogArea() const {
   keyboard::KeyboardController* keyboard_controller =
       keyboard::KeyboardController::Get();
   if (keyboard_controller->IsEnabled()) {
-    gfx::Rect bounds = keyboard_controller->GetWorkspaceOccludedBounds();
+    gfx::Rect bounds =
+        keyboard_controller->GetWorkspaceOccludedBoundsInScreen();
     valid_bounds.set_height(
         std::max(0, valid_bounds.height() - bounds.height()));
   }

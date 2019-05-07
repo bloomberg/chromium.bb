@@ -327,15 +327,15 @@ void Shelf::SetVirtualKeyboardBoundsForTesting(const gfx::Rect& bounds) {
   keyboard::KeyboardStateDescriptor state;
   state.is_visible = !bounds.IsEmpty();
   state.visual_bounds = bounds;
-  state.occluded_bounds = bounds;
-  state.displaced_bounds = gfx::Rect();
+  state.occluded_bounds_in_screen = bounds;
+  state.displaced_bounds_in_screen = gfx::Rect();
   WorkAreaInsets* work_area_insets = GetWorkAreaInsets();
   work_area_insets->OnKeyboardVisibilityStateChanged(state.is_visible);
   work_area_insets->OnKeyboardVisibleBoundsChanged(state.visual_bounds);
   work_area_insets->OnKeyboardWorkspaceOccludedBoundsChanged(
-      state.occluded_bounds);
+      state.occluded_bounds_in_screen);
   work_area_insets->OnKeyboardWorkspaceDisplacingBoundsChanged(
-      state.displaced_bounds);
+      state.displaced_bounds_in_screen);
   work_area_insets->OnKeyboardAppearanceChanged(state);
 }
 

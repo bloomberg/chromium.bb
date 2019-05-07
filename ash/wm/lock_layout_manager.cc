@@ -117,7 +117,7 @@ void LockLayoutManager::WillChangeVisibilityState(
 }
 
 void LockLayoutManager::OnKeyboardWorkspaceOccludedBoundsChanged(
-    const gfx::Rect& new_bounds) {
+    const gfx::Rect& new_bounds_in_screen) {
   OnWindowResized();
 }
 

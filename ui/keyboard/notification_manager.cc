@@ -51,8 +51,8 @@ void NotificationManager::SendNotifications(
   KeyboardStateDescriptor state;
   state.is_visible = is_visible;
   state.visual_bounds = visual_bounds;
-  state.occluded_bounds = occluded_bounds;
-  state.displaced_bounds = workspace_layout_offset_region;
+  state.occluded_bounds_in_screen = occluded_bounds;
+  state.displaced_bounds_in_screen = workspace_layout_offset_region;
 
   for (KeyboardControllerObserver& observer : observers) {
     if (send_visibility_notification)

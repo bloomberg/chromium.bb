@@ -606,7 +606,7 @@ int AppListFolderView::GetYOffsetForFolder() {
   // This view should be on top of on-screen keyboard to prevent the folder
   // title from being blocked.
   const gfx::Rect occluded_bounds =
-      keyboard_controller->GetWorkspaceOccludedBounds();
+      keyboard_controller->GetWorkspaceOccludedBoundsInScreen();
   if (!occluded_bounds.IsEmpty()) {
     gfx::Point keyboard_top_right = occluded_bounds.top_right();
     ConvertPointFromScreen(parent(), &keyboard_top_right);

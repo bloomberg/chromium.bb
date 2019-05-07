@@ -476,7 +476,7 @@ TEST_F(AshKeyboardControllerTest, ChangingSessionRebuildsKeyboard) {
 }
 
 TEST_F(AshKeyboardControllerTest, VisualBoundsInMultipleDisplays) {
-  UpdateDisplay("800x600,800x600");
+  UpdateDisplay("800x600,1024x768");
 
   test_client()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
 
@@ -489,6 +489,21 @@ TEST_F(AshKeyboardControllerTest, VisualBoundsInMultipleDisplays) {
   EXPECT_EQ(0, root_bounds.x());
 
   gfx::Rect screen_bounds = keyboard_controller()->GetVisualBoundsInScreen();
+  EXPECT_EQ(800, screen_bounds.x());
+}
+
+TEST_F(AshKeyboardControllerTest, OccludedBoundsInMultipleDisplays) {
+  UpdateDisplay("800x600,1024x768");
+
+  test_client()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
+
+  // Show the keyboard in the second display.
+  keyboard_controller()->ShowKeyboardInDisplay(
+      Shell::Get()->display_manager()->GetSecondaryDisplay());
+  ASSERT_TRUE(keyboard::WaitUntilShown());
+
+  gfx::Rect screen_bounds =
+      keyboard_controller()->GetWorkspaceOccludedBoundsInScreen();
   EXPECT_EQ(800, screen_bounds.x());
 }
 

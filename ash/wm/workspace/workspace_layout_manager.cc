@@ -222,7 +222,7 @@ void WorkspaceLayoutManager::OnKeyboardVisibleBoundsChanged(
 }
 
 void WorkspaceLayoutManager::OnKeyboardWorkspaceDisplacingBoundsChanged(
-    const gfx::Rect& new_bounds) {
+    const gfx::Rect& new_bounds_in_screen) {
   aura::Window* window = wm::GetActiveWindow();
   if (!window)
     return;
@@ -235,7 +235,7 @@ void WorkspaceLayoutManager::OnKeyboardWorkspaceDisplacingBoundsChanged(
   if (window_state->ignore_keyboard_bounds_change())
     return;
 
-  if (!new_bounds.IsEmpty()) {
+  if (!new_bounds_in_screen.IsEmpty()) {
     // Store existing bounds to be restored before resizing for keyboard if it
     // is not already stored.
     if (!window_state->HasRestoreBounds())
@@ -244,7 +244,7 @@ void WorkspaceLayoutManager::OnKeyboardWorkspaceDisplacingBoundsChanged(
     gfx::Rect window_bounds(window->GetTargetBounds());
     ::wm::ConvertRectToScreen(window_, &window_bounds);
     int vertical_displacement =
-        std::max(0, window_bounds.bottom() - new_bounds.y());
+        std::max(0, window_bounds.bottom() - new_bounds_in_screen.y());
     int shift = std::min(vertical_displacement,
                          window_bounds.y() - work_area_in_parent_.y());
     if (shift > 0) {

@@ -39,6 +39,7 @@
 #include "ui/keyboard/test/test_keyboard_layout_delegate.h"
 #include "ui/keyboard/test/test_keyboard_ui_factory.h"
 #include "ui/wm/core/default_activation_client.h"
+#include "ui/wm/core/default_screen_position_client.h"
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
@@ -153,8 +154,12 @@ class KeyboardControllerTest : public aura::test::AuraTestBase,
     ui::SetUpInputMethodFactoryForTesting();
     aura::test::AuraTestBase::SetUp();
     new wm::DefaultActivationClient(root_window());
-    focus_controller_.reset(new TestFocusController(root_window()));
-    layout_delegate_.reset(new TestKeyboardLayoutDelegate(root_window()));
+    focus_controller_ = std::make_unique<TestFocusController>(root_window());
+    layout_delegate_ =
+        std::make_unique<TestKeyboardLayoutDelegate>(root_window());
+
+    aura::client::SetScreenPositionClient(root_window(),
+                                          &screen_position_client_);
 
     // Force enable the virtual keyboard.
     controller_.Initialize(
@@ -272,6 +277,7 @@ class KeyboardControllerTest : public aura::test::AuraTestBase,
   std::unique_ptr<KeyboardLayoutDelegate> layout_delegate_;
   std::unique_ptr<ui::TextInputClient> test_text_input_client_;
   bool keyboard_disabled_;
+  wm::DefaultScreenPositionClient screen_position_client_;
   DISALLOW_COPY_AND_ASSIGN(KeyboardControllerTest);
 };
 

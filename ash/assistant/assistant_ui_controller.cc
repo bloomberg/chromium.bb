@@ -470,24 +470,26 @@ void AssistantUiController::UpdateUiMode(
 }
 
 void AssistantUiController::OnKeyboardWorkspaceOccludedBoundsChanged(
-    const gfx::Rect& new_bounds) {
+    const gfx::Rect& new_bounds_in_screen) {
   DCHECK(container_view_);
 
   // Check the display for root window and where the keyboard shows to handle
   // the case when there are multiple monitors and the virtual keyboard is shown
   // on a different display other than Assistant UI.
+  // TODO(https://crbug.com/943446): Directly compare with the root window of
+  // the virtual keyboard controller.
   aura::Window* root_window =
       container_view_->GetWidget()->GetNativeWindow()->GetRootWindow();
   display::Display keyboard_display =
-      display::Screen::GetScreen()->GetDisplayMatching(new_bounds);
-  if (!new_bounds.IsEmpty() &&
+      display::Screen::GetScreen()->GetDisplayMatching(new_bounds_in_screen);
+  if (!new_bounds_in_screen.IsEmpty() &&
       root_window !=
           Shell::Get()->GetRootWindowForDisplayId(keyboard_display.id())) {
     return;
   }
 
   // Cache the keyboard workspace occluded bounds.
-  keyboard_workspace_occluded_bounds_ = new_bounds;
+  keyboard_workspace_occluded_bounds_ = new_bounds_in_screen;
 
   // This keyboard event handles the Assistant UI change when:
   // 1. accessibility keyboard or normal virtual keyboard pops up or
@@ -534,7 +536,7 @@ void AssistantUiController::OnEvent(const ui::Event& event) {
   const gfx::Rect screen_bounds =
       container_view_->GetWidget()->GetWindowBoundsInScreen();
   const gfx::Rect keyboard_bounds =
-      keyboard::KeyboardController::Get()->GetWorkspaceOccludedBounds();
+      keyboard::KeyboardController::Get()->GetWorkspaceOccludedBoundsInScreen();
 
   // Pressed events outside our widget bounds should result in hiding of the
   // Assistant UI. The exception to this rule is if the user is interacting
@@ -589,7 +591,7 @@ void AssistantUiController::CreateContainerView() {
 
   // Retrieve the current keyboard occluded bounds.
   keyboard_workspace_occluded_bounds_ =
-      keyboard::KeyboardController::Get()->GetWorkspaceOccludedBounds();
+      keyboard::KeyboardController::Get()->GetWorkspaceOccludedBoundsInScreen();
 
   // Set the initial usable work area for Assistant views.
   aura::Window* root_window =

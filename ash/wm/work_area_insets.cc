@@ -38,13 +38,13 @@ gfx::Insets CalculateWorkAreaInsets(const gfx::Insets accessibility_insets,
 // parameters.
 gfx::Rect CalculateWorkAreaBounds(const gfx::Insets accessibility_insets,
                                   const gfx::Rect shelf_bounds,
-                                  const gfx::Rect keyboard_bounds,
+                                  const gfx::Rect keyboard_bounds_in_screen,
                                   aura::Window* window) {
   gfx::Rect work_area_bounds = screen_util::GetDisplayBoundsWithShelf(window);
   work_area_bounds.Inset(accessibility_insets);
-  work_area_bounds.Subtract(keyboard_bounds);
   work_area_bounds.Subtract(shelf_bounds);
   ::wm::ConvertRectToScreen(window, &work_area_bounds);
+  work_area_bounds.Subtract(keyboard_bounds_in_screen);
   return work_area_bounds;
 }
 
@@ -105,8 +105,8 @@ void WorkAreaInsets::OnKeyboardAppearanceChanged(
     const keyboard::KeyboardStateDescriptor& state) {
   aura::Window* window = root_window_controller_->GetRootWindow();
 
-  keyboard_occluded_bounds_ = state.occluded_bounds;
-  keyboard_displaced_bounds_ = state.displaced_bounds;
+  keyboard_occluded_bounds_ = state.occluded_bounds_in_screen;
+  keyboard_displaced_bounds_ = state.displaced_bounds_in_screen;
 
   UpdateWorkArea();
   Shell::Get()->NotifyUserWorkAreaInsetsChanged(window);

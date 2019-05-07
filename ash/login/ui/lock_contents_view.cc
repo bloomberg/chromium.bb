@@ -1337,7 +1337,7 @@ void LockContentsView::DoLayout() {
   gfx::Size preferred_size = display.size();
   preferred_size.set_height(preferred_size.height() -
                             keyboard::KeyboardController::Get()
-                                ->GetWorkspaceOccludedBounds()
+                                ->GetWorkspaceOccludedBoundsInScreen()
                                 .height());
   SetPreferredSize(preferred_size);
 

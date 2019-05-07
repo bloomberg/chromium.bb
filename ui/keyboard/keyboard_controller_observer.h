@@ -25,11 +25,11 @@ struct KeyboardStateDescriptor {
   // keyboard. For example, the docked keyboard's occluded bounds is the same as
   // the visual bounds, but the floating keyboard has no occluded bounds (as the
   // window is small and moveable).
-  gfx::Rect occluded_bounds;
+  gfx::Rect occluded_bounds_in_screen;
 
   // The bounds of the area on the screen that is considered "unusable" because
   // it is blocked by the keyboard. This is used by the accessibility keyboard.
-  gfx::Rect displaced_bounds;
+  gfx::Rect displaced_bounds_in_screen;
 };
 
 // Observers to the KeyboardController are notified of significant events that

@@ -188,8 +188,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // Returns the current bounds that affect the workspace layout. If the
   // keyboard is not shown or if the keyboard mode should not affect the usable
   // region of the screen, an empty rectangle will be returned. Bounds are
-  // relative to the root window.
-  gfx::Rect GetWorkspaceOccludedBounds() const;
+  // relative to the screen.
+  gfx::Rect GetWorkspaceOccludedBoundsInScreen() const;
 
   // Returns the current bounds that affect the window layout of the various
   // lock screens. Bounds are relative to the root window.
@@ -403,7 +403,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
   // Ensures caret in current work area (not occluded by virtual keyboard
   // window).
-  void EnsureCaretInWorkArea(const gfx::Rect& occluded_bounds_in_root);
+  void EnsureCaretInWorkArea(const gfx::Rect& occluded_bounds_in_screen);
 
   // Marks that the keyboard load has started. This is used to measure the time
   // it takes to fully load the keyboard. This should be called before
