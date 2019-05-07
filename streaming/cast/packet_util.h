@@ -22,12 +22,6 @@ inline Integer ConsumeField(absl::Span<const uint8_t>* in) {
   in->remove_prefix(sizeof(Integer));
   return result;
 }
-template <>
-inline uint8_t ConsumeField(absl::Span<const uint8_t>* in) {
-  const uint8_t result = (*in)[0];
-  in->remove_prefix(sizeof(uint8_t));
-  return result;
-}
 
 // Writes a field at the start of the given span and advances the span to point
 // just after the field.
@@ -35,11 +29,6 @@ template <typename Integer>
 inline void AppendField(Integer value, absl::Span<uint8_t>* out) {
   WriteBigEndian<Integer>(value, out->data());
   out->remove_prefix(sizeof(Integer));
-}
-template <>
-inline void AppendField(uint8_t value, absl::Span<uint8_t>* out) {
-  (*out)[0] = value;
-  out->remove_prefix(sizeof(uint8_t));
 }
 
 // Performs a quick-scan of the packet data for the purposes of routing it to an

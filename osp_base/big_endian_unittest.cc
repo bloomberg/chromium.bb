@@ -18,6 +18,11 @@ TEST(BigEndianTest, ReadValues) {
       0xff, 0xfe, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe,
   };
 
+  EXPECT_EQ(UINT8_C(0x05), ReadBigEndian<uint8_t>(kInput + 5));
+  EXPECT_EQ(UINT8_C(0xff), ReadBigEndian<uint8_t>(kInput + 16));
+  EXPECT_EQ(7, ReadBigEndian<int8_t>(kInput + 7));
+  EXPECT_EQ(-1, ReadBigEndian<int8_t>(kInput + 17));
+
   EXPECT_EQ(UINT16_C(0x0001), ReadBigEndian<uint16_t>(kInput));
   EXPECT_EQ(UINT16_C(0x0102), ReadBigEndian<uint16_t>(kInput + 1));
   EXPECT_EQ(UINT16_C(0x0203), ReadBigEndian<uint16_t>(kInput + 2));
@@ -42,6 +47,15 @@ TEST(BigEndianTest, ReadValues) {
 // WriteBigEndian() is working.
 TEST(BigEndianTest, WriteValues) {
   uint8_t scratch[16];
+
+  WriteBigEndian<uint8_t>(0x07, scratch);
+  EXPECT_EQ(UINT8_C(0x07), ReadBigEndian<uint8_t>(scratch));
+  WriteBigEndian<uint8_t>(0xf0, scratch + 1);
+  EXPECT_EQ(UINT8_C(0xf0), ReadBigEndian<uint8_t>(scratch + 1));
+  WriteBigEndian<int8_t>(23, scratch + 2);
+  EXPECT_EQ(23, ReadBigEndian<int8_t>(scratch + 2));
+  WriteBigEndian<int8_t>(-25, scratch + 3);
+  EXPECT_EQ(-25, ReadBigEndian<int8_t>(scratch + 3));
 
   WriteBigEndian<uint16_t>(0x0102, scratch);
   EXPECT_EQ(UINT16_C(0x0102), ReadBigEndian<uint16_t>(scratch));

@@ -31,6 +31,11 @@ inline bool IsBigEndianArchitecture() {
 template <typename Integer>
 Integer ByteSwap(Integer x);
 
+template <>
+inline uint8_t ByteSwap(uint8_t x) {
+  return x;
+}
+
 #if defined(__clang__) || defined(__GNUC__)
 
 template <>

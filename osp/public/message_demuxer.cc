@@ -34,7 +34,7 @@ ErrorOr<uint64_t> MessageTypeDecoder::DecodeVarUint(
 
   switch (num_type_bytes) {
     case 0:
-      return buffer[0] & ~0xC0;
+      return ReadBigEndian<uint8_t>(&buffer[0]) & ~0xC0;
     case 1:
       return ReadBigEndian<uint16_t>(&buffer[0]) & ~(0xC0 << 8);
     case 2:
