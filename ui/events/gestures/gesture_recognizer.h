@@ -10,14 +10,13 @@
 #include <memory>
 #include <vector>
 
-#include "base/observer_list.h"
+#include "base/macros.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/events_export.h"
 #include "ui/events/gestures/gesture_types.h"
 #include "ui/gfx/geometry/point_f.h"
 
 namespace ui {
-class GestureRecognizerObserver;
 
 // A GestureRecognizer is an abstract base class for conversion of touch events
 // into gestures.
@@ -95,17 +94,7 @@ class EVENTS_EXPORT GestureRecognizer {
   // and must be cleaned up appropriately by the caller.
   virtual void RemoveGestureEventHelper(GestureEventHelper* helper) = 0;
 
-  void AddObserver(GestureRecognizerObserver* observer);
-  void RemoveObserver(GestureRecognizerObserver* observer);
-
- protected:
-  const base::ObserverList<GestureRecognizerObserver>& observers() {
-    return observers_;
-  }
-
  private:
-  base::ObserverList<GestureRecognizerObserver> observers_;
-
   DISALLOW_COPY_AND_ASSIGN(GestureRecognizer);
 };
 

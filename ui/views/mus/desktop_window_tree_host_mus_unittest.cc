@@ -29,8 +29,6 @@
 #include "ui/display/display_switches.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
-#include "ui/events/gestures/gesture_recognizer.h"
-#include "ui/events/gestures/gesture_recognizer_observer.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/mus/mus_client_test_api.h"
@@ -773,94 +771,6 @@ TEST_F(DesktopWindowTreeHostMusTest, FullscreenTopViewInset) {
 
   EXPECT_EQ(before_fullscreen_client_bounds, after_fullscreen_client_bounds);
   EXPECT_NE(fullscreen_client_bounds, after_fullscreen_client_bounds);
-}
-
-// TransferTouchEventsCounter observes the GestureRecognizer and counts how many
-// times TransferEventsTo() is invoked for testing.
-class TransferTouchEventsCounter : public ui::GestureRecognizerObserver {
- public:
-  TransferTouchEventsCounter() {
-    aura::Env::GetInstance()->gesture_recognizer()->AddObserver(this);
-  }
-  ~TransferTouchEventsCounter() override {
-    aura::Env::GetInstance()->gesture_recognizer()->RemoveObserver(this);
-  }
-
-  int GetTransferCount(ui::GestureConsumer* source,
-                       ui::GestureConsumer* dest) const {
-    return std::count(transfers_.begin(), transfers_.end(),
-                      std::make_pair(source, dest));
-  }
-
-  int GetTotalCount() const { return transfers_.size(); }
-
- private:
-  // ui::GestureRecognizerObserver:
-  void OnActiveTouchesCanceledExcept(
-      ui::GestureConsumer* not_cancelled) override {}
-  void OnEventsTransferred(
-      ui::GestureConsumer* current_consumer,
-      ui::GestureConsumer* new_consumer,
-      ui::TransferTouchesBehavior transfer_touches_behavior) override {
-    transfers_.push_back(std::make_pair(current_consumer, new_consumer));
-  }
-  void OnActiveTouchesCanceled(ui::GestureConsumer* consumer) override {}
-
-  std::vector<std::pair<ui::GestureConsumer*, ui::GestureConsumer*>> transfers_;
-
-  DISALLOW_COPY_AND_ASSIGN(TransferTouchEventsCounter);
-};
-
-TEST_F(DesktopWindowTreeHostMusTest, WindowMoveTransfersTouchEvent) {
-  std::unique_ptr<Widget> widget(CreateWidget());
-  widget->Show();
-
-  TransferTouchEventsCounter counter;
-  aura::Window* window = widget->GetNativeWindow();
-  aura::Window* root = window->GetRootWindow();
-
-  auto runner = base::ThreadTaskRunnerHandle::Get();
-  runner->PostTask(FROM_HERE, base::BindLambdaForTesting([&]() {
-                     EXPECT_EQ(1, counter.GetTransferCount(window, root));
-                     EXPECT_EQ(1, counter.GetTotalCount());
-                   }));
-  runner->PostTask(FROM_HERE, base::BindOnce(&Widget::EndMoveLoop,
-                                             base::Unretained(widget.get())));
-
-  widget->RunMoveLoop(gfx::Vector2d(), Widget::MOVE_LOOP_SOURCE_TOUCH,
-                      Widget::MOVE_LOOP_ESCAPE_BEHAVIOR_DONT_HIDE);
-
-  EXPECT_EQ(1, counter.GetTransferCount(root, window));
-  EXPECT_EQ(2, counter.GetTotalCount());
-}
-
-TEST_F(DesktopWindowTreeHostMusTest, WindowMoveShouldNotTransfersBack) {
-  std::unique_ptr<Widget> widget(CreateWidget());
-  widget->Show();
-  std::unique_ptr<Widget> widget2(CreateWidget());
-  widget2->Show();
-
-  TransferTouchEventsCounter counter;
-  aura::Window* window = widget->GetNativeWindow();
-  aura::Window* root = window->GetRootWindow();
-  aura::Window* window2 = widget2->GetNativeWindow();
-
-  auto runner = base::ThreadTaskRunnerHandle::Get();
-  runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &ui::GestureRecognizer::TransferEventsTo,
-          base::Unretained(aura::Env::GetInstance()->gesture_recognizer()),
-          root, window2, ui::TransferTouchesBehavior::kDontCancel));
-  runner->PostTask(FROM_HERE, base::BindOnce(&Widget::EndMoveLoop,
-                                             base::Unretained(widget.get())));
-
-  widget->RunMoveLoop(gfx::Vector2d(), Widget::MOVE_LOOP_SOURCE_TOUCH,
-                      Widget::MOVE_LOOP_ESCAPE_BEHAVIOR_DONT_HIDE);
-
-  EXPECT_EQ(0, counter.GetTransferCount(root, window));
-  EXPECT_EQ(1, counter.GetTransferCount(root, window2));
-  EXPECT_EQ(2, counter.GetTotalCount());
 }
 
 TEST_F(DesktopWindowTreeHostMusTest, ShowWindowFromServerDoesntActivate) {

@@ -23,7 +23,6 @@
 #include "ui/base/hit_test.h"
 #include "ui/display/screen.h"
 #include "ui/events/gestures/gesture_recognizer.h"
-#include "ui/events/gestures/gesture_recognizer_observer.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/image/image_skia_operations.h"

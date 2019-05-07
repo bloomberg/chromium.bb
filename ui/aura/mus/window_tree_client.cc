@@ -44,7 +44,6 @@
 #include "ui/aura/mus/embed_root_delegate.h"
 #include "ui/aura/mus/focus_synchronizer.h"
 #include "ui/aura/mus/gesture_recognizer_impl_mus.h"
-#include "ui/aura/mus/gesture_synchronizer.h"
 #include "ui/aura/mus/in_flight_change.h"
 #include "ui/aura/mus/input_method_mus.h"
 #include "ui/aura/mus/mus_context_factory.h"
@@ -564,7 +563,6 @@ void WindowTreeClient::WindowTreeConnectionEstablished(
   focus_synchronizer_ = std::make_unique<FocusSynchronizer>(this, tree_);
   Env::GetInstance()->SetGestureRecognizer(
       std::make_unique<GestureRecognizerImplMus>(this));
-  gesture_synchronizer_ = std::make_unique<GestureSynchronizer>(tree_);
   client_side_window_move_handler_ =
       std::make_unique<ClientSideWindowMoveHandler>(Env::GetInstance(), this);
 }

@@ -30,7 +30,6 @@
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/gestures/gesture_recognizer.h"
-#include "ui/events/gestures/gesture_recognizer_observer.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/platform_window/stub/stub_window.h"
 
@@ -91,7 +90,7 @@ class RemainingGestureEventHandler : public ui::EventHandler, WindowObserver {
 // However this transferring back to the original shouldn't happen if the client
 // wants to continue the dragging on another window (like attaching the dragged
 // tab to another window).
-class ScopedTouchTransferController : public ui::GestureRecognizerObserver {
+class ScopedTouchTransferController {
  public:
   ScopedTouchTransferController(Window* source, Window* dest)
       : tracker_({source, dest}),
@@ -99,10 +98,8 @@ class ScopedTouchTransferController : public ui::GestureRecognizerObserver {
         gesture_recognizer_(source->env()->gesture_recognizer()) {
     gesture_recognizer_->TransferEventsTo(
         source, dest, ui::TransferTouchesBehavior::kDontCancel);
-    gesture_recognizer_->AddObserver(this);
   }
-  ~ScopedTouchTransferController() override {
-    gesture_recognizer_->RemoveObserver(this);
+  ~ScopedTouchTransferController() {
     if (tracker_.windows().size() == 2) {
       Window* source = tracker_.Pop();
       Window* dest = tracker_.Pop();
@@ -112,21 +109,6 @@ class ScopedTouchTransferController : public ui::GestureRecognizerObserver {
   }
 
  private:
-  // ui::GestureRecognizerObserver:
-  void OnActiveTouchesCanceledExcept(
-      ui::GestureConsumer* not_cancelled) override {}
-  void OnEventsTransferred(
-      ui::GestureConsumer* current_consumer,
-      ui::GestureConsumer* new_consumer,
-      ui::TransferTouchesBehavior transfer_touches_behavior) override {
-    if (tracker_.windows().size() <= 1)
-      return;
-    Window* dest = tracker_.windows()[1];
-    if (current_consumer == dest)
-      tracker_.Remove(dest);
-  }
-  void OnActiveTouchesCanceled(ui::GestureConsumer* consumer) override {}
-
   WindowTracker tracker_;
   RemainingGestureEventHandler remaining_gesture_event_handler_;
   ui::GestureRecognizer* gesture_recognizer_;

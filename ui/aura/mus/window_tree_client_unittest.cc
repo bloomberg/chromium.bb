@@ -2873,32 +2873,6 @@ TEST_F(WindowTreeClientTest, PerformWindowMoveDoneAfterDelete) {
   EXPECT_TRUE(last_result);
 }
 
-TEST_F(WindowTreeClientTest, PerformWindowMoveTransferEvents) {
-  int call_count = 0;
-  bool last_result = false;
-
-  aura::Window* window = CreateNormalWindow(10, host()->window(), nullptr);
-  WindowTreeHostMus* host_mus = static_cast<WindowTreeHostMus*>(host());
-  window->SetCapture();
-  host_mus->PerformWindowMove(
-      window, ws::mojom::MoveLoopSource::TOUCH, gfx::Point(), HTCAPTION,
-      base::BindOnce(&OnWindowMoveDone, &call_count, &last_result));
-  EXPECT_EQ(0, call_count);
-  EXPECT_EQ(WindowPortMus::Get(window)->server_id(),
-            window_tree()->last_transfer_current());
-  EXPECT_EQ(WindowPortMus::Get(host_mus->window())->server_id(),
-            window_tree()->last_transfer_new());
-  EXPECT_FALSE(window->HasCapture());
-
-  window_tree()->AckAllChanges();
-  EXPECT_EQ(1, call_count);
-  EXPECT_TRUE(last_result);
-  EXPECT_EQ(WindowPortMus::Get(host_mus->window())->server_id(),
-            window_tree()->last_transfer_current());
-  EXPECT_EQ(WindowPortMus::Get(window)->server_id(),
-            window_tree()->last_transfer_new());
-}
-
 TEST_F(WindowTreeClientTest, SecondPerformWindowMoveIsNotAllowed) {
   int call_count = 0;
   bool last_result = false;
