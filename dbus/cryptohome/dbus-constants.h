@@ -13,11 +13,12 @@ const char kCryptohomeInterface[] = "org.chromium.CryptohomeInterface";
 const char kCryptohomeServicePath[] = "/org/chromium/Cryptohome";
 const char kCryptohomeServiceName[] = "org.chromium.Cryptohome";
 
-const char kUserDataAuthInterface[] = "org.chromium.UserDataAuthInterface";
-// Note that UserDataAuthInterface is only one of the interfaces in the
-// service name org.chromium.UserDataAuth.
 const char kUserDataAuthServiceName[] = "org.chromium.UserDataAuth";
 const char kUserDataAuthServicePath[] = "/org/chromium/UserDataAuth";
+
+const char kUserDataAuthInterface[] = "org.chromium.UserDataAuthInterface";
+const char kCryptohomePkcs11Interface[] =
+    "org.chromium.CryptohomePkcs11Interface";
 
 // Methods of the |kCryptohomeInterface| interface:
 const char kCryptohomeMigrateKey[] = "MigrateKey";

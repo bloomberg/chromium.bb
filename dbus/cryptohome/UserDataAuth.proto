@@ -376,3 +376,58 @@ message GetCurrentSpaceForGidRequest {
 message GetCurrentSpaceForGidReply {
   int64 cur_space = 1;
 }
+
+// Represents the information about a token in PKCS#11, used by
+// Pkcs11GetTpmTokeInfo()
+message TpmTokenInfo {
+  // The label of the token.
+  string label = 1;
+
+  // The pin that is used to access the token.
+  // Note that in most cases this is a default well known value.
+  string user_pin = 2;
+
+  // The slot number of the token.
+  int32 slot = 3;
+}
+
+// Input parameters to Pkcs11IsTpmTokenReady()
+message Pkcs11IsTpmTokenReadyRequest {
+  // Nothing at the moment.
+}
+
+// Output parameters for Pkcs11IsTpmTokenReady()
+message Pkcs11IsTpmTokenReadyReply {
+  // True if the TPM-backed token store for all mount is ready for access.
+  // That is, every TPM-backed token store associated with a mount is in an
+  // initialized state.
+  bool ready = 1;
+}
+
+// Input parameters to Pkcs11GetTpmTokenInfo()
+message Pkcs11GetTpmTokeInfoRequest {
+  // If username is empty or not set, then the information regarding system TPM
+  // token is returned. Otherwise, the user TPM token is returned.
+  string username = 1;
+}
+
+// Output parameters for Pkcs11GetTpmTokenInfo()
+message Pkcs11GetTpmTokeInfoReply {
+  // The TPM Token information, generally it's the stuffs required to access
+  // the TPM token.
+  TpmTokenInfo token_info = 1;
+}
+
+// Input parameters to Pkcs11Terminate()
+message Pkcs11TerminateRequest {
+  // This call will remove all PKCS#11 token store that is associated with a
+  // mount.
+
+  // Username is currently unused.
+  string username = 1;
+}
+
+// Output parameters for Pkcs11Terminate()
+message Pkcs11TerminateReply {
+  // Nothing at the moment.
+}
