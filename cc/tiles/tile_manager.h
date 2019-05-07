@@ -212,7 +212,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
       }
       bool exported = resource_pool_->PrepareForExport(resource);
       DCHECK(exported);
-      draw_info.SetResource(std::move(resource), false, false, false);
+      draw_info.SetResource(std::move(resource), false, false);
       draw_info.set_resource_ready_for_draw();
     }
   }

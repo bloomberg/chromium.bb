@@ -229,8 +229,7 @@ void FuzzedCompositorFrameBuilder::TryAddTileDrawQuad(
       shared_quad_state, rect, visible_rect,
       quad_spec.tile_quad().needs_blending(), transferable_resource.id,
       gfx::RectF(GetRectFromProtobuf(quad_spec.tile_quad().tex_coord_rect())),
-      tile_size, quad_spec.tile_quad().swizzle_contents(),
-      quad_spec.tile_quad().is_premultiplied(),
+      tile_size, quad_spec.tile_quad().is_premultiplied(),
       quad_spec.tile_quad().nearest_neighbor(),
       quad_spec.tile_quad().force_anti_aliasing_off());
 

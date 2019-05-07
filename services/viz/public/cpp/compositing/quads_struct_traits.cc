@@ -164,7 +164,6 @@ bool StructTraits<viz::mojom::TileQuadStateDataView, viz::DrawQuad>::Read(
     return false;
   }
 
-  quad->swizzle_contents = data.swizzle_contents();
   quad->is_premultiplied = data.is_premultiplied();
   quad->nearest_neighbor = data.nearest_neighbor();
   quad->force_anti_aliasing_off = data.force_anti_aliasing_off();

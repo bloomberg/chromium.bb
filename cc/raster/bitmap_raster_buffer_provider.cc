@@ -131,13 +131,6 @@ viz::ResourceFormat BitmapRasterBufferProvider::GetResourceFormat() const {
   return viz::RGBA_8888;
 }
 
-bool BitmapRasterBufferProvider::IsResourceSwizzleRequired() const {
-  // This value only used by gpu compositing. Software compositing resources
-  // are all in the native skia byte ordering, and the display compositor will
-  // do its drawing in the same order.
-  return false;
-}
-
 bool BitmapRasterBufferProvider::IsResourcePremultiplied() const {
   return true;
 }

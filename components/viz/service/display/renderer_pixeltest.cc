@@ -893,18 +893,6 @@ using SoftwareRendererTypes =
                      cc::SoftwareRendererWithExpandedViewport>;
 TYPED_TEST_SUITE(SoftwareRendererPixelTest, SoftwareRendererTypes);
 
-// TODO(weiliangc): Move these tests to normal RendererPixelTest as they pass
-// with SkiaRenderer. Failed test list recorded in crbug.com/821176.
-template <typename RendererType>
-class NonSkiaRendererPixelTest : public cc::RendererPixelTest<RendererType> {};
-
-using NonSkiaRendererTypes =
-    ::testing::Types<GLRenderer,
-                     SoftwareRenderer,
-                     cc::GLRendererWithExpandedViewport,
-                     cc::SoftwareRendererWithExpandedViewport>;
-TYPED_TEST_SUITE(NonSkiaRendererPixelTest, NonSkiaRendererTypes);
-
 // Test GLRenderer as well as SkiaRenderer.
 template <typename RendererType>
 class GLCapableRendererPixelTest : public cc::RendererPixelTest<RendererType> {
@@ -3307,7 +3295,6 @@ TYPED_TEST(GLCapableRendererPixelTest, TileDrawQuadForceAntiAliasingOff) {
       CreateTestRenderPass(id, rect, transform_to_root);
   pass->has_transparent_background = false;
 
-  bool swizzle_contents = true;
   bool contents_premultiplied = true;
   bool needs_blending = false;
   bool nearest_neighbor = true;
@@ -3320,7 +3307,7 @@ TYPED_TEST(GLCapableRendererPixelTest, TileDrawQuadForceAntiAliasingOff) {
       hole_quad_to_target_transform, rect, pass.get(), gfx::RRectF());
   TileDrawQuad* hole = pass->CreateAndAppendDrawQuad<TileDrawQuad>();
   hole->SetNew(hole_shared_state, rect, rect, needs_blending, mapped_resource,
-               gfx::RectF(gfx::Rect(tile_size)), tile_size, swizzle_contents,
+               gfx::RectF(gfx::Rect(tile_size)), tile_size,
                contents_premultiplied, nearest_neighbor,
                force_anti_aliasing_off);
 
@@ -3694,17 +3681,19 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNearestNeighbor) {
 
 // This disables filtering by setting |nearest_neighbor| on the
 // TileDrawQuad.
-// TODO(crbug.com/939442): Enable this test for SkiaRenderer.
-TYPED_TEST(NonSkiaRendererPixelTest, TileDrawQuadNearestNeighbor) {
+TYPED_TEST(RendererPixelTest, TileDrawQuadNearestNeighbor) {
+  constexpr bool contents_premultiplied = true;
+  constexpr bool needs_blending = true;
+  constexpr bool nearest_neighbor = true;
+  constexpr bool force_anti_aliasing_off = false;
+  constexpr ResourceFormat resource_format = RGBA_8888;
   gfx::Rect viewport(this->device_viewport_size_);
-  bool swizzle_contents = true;
-  bool contents_premultiplied = true;
-  bool needs_blending = true;
-  bool nearest_neighbor = true;
-  bool force_anti_aliasing_off = false;
 
+  SkColorType ct =
+      ResourceFormatToClosestSkColorType(this->use_gpu(), resource_format);
+  SkImageInfo info = SkImageInfo::Make(2, 2, ct, kPremul_SkAlphaType);
   SkBitmap bitmap;
-  bitmap.allocN32Pixels(2, 2);
+  bitmap.allocPixels(info);
   SkCanvas canvas(bitmap);
   draw_point_color(&canvas, 0, 0, SK_ColorGREEN);
   draw_point_color(&canvas, 0, 1, SK_ColorBLUE);
@@ -3740,7 +3729,7 @@ TYPED_TEST(NonSkiaRendererPixelTest, TileDrawQuadNearestNeighbor) {
   auto* quad = pass->CreateAndAppendDrawQuad<TileDrawQuad>();
   quad->SetNew(shared_state, viewport, viewport, needs_blending,
                mapped_resource, gfx::RectF(gfx::Rect(tile_size)), tile_size,
-               swizzle_contents, contents_premultiplied, nearest_neighbor,
+               contents_premultiplied, nearest_neighbor,
                force_anti_aliasing_off);
 
   RenderPassList pass_list;
@@ -4232,7 +4221,6 @@ TYPED_TEST(GLCapableRendererPixelTest, TextureQuadBatching) {
 
 TYPED_TEST(GLCapableRendererPixelTest, TileQuadClamping) {
   gfx::Rect viewport(this->device_viewport_size_);
-  bool swizzle_contents = true;
   bool contents_premultiplied = true;
   bool needs_blending = true;
   bool nearest_neighbor = false;
@@ -4286,8 +4274,7 @@ TYPED_TEST(GLCapableRendererPixelTest, TileQuadClamping) {
   auto* quad = pass->CreateAndAppendDrawQuad<TileDrawQuad>();
   quad->SetNew(quad_shared, gfx::Rect(layer_size), gfx::Rect(layer_size),
                needs_blending, mapped_resource, tex_coord_rect, tile_size,
-               swizzle_contents, contents_premultiplied, nearest_neighbor,
-               use_aa);
+               contents_premultiplied, nearest_neighbor, use_aa);
 
   // Green background.
   SharedQuadState* background_shared = CreateTestSharedQuadState(

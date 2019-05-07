@@ -204,10 +204,6 @@ viz::ResourceFormat ZeroCopyRasterBufferProvider::GetResourceFormat() const {
   return tile_format_;
 }
 
-bool ZeroCopyRasterBufferProvider::IsResourceSwizzleRequired() const {
-  return !viz::PlatformColor::SameComponentOrder(GetResourceFormat());
-}
-
 bool ZeroCopyRasterBufferProvider::IsResourcePremultiplied() const {
   return true;
 }

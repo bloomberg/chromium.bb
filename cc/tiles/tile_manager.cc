@@ -1305,11 +1305,10 @@ void TileManager::OnRasterTaskCompleted(
 
   TileDrawInfo& draw_info = tile->draw_info();
   if (exported) {
-    bool needs_swizzle = raster_buffer_provider_->IsResourceSwizzleRequired();
     bool is_premultiplied = raster_buffer_provider_->IsResourcePremultiplied();
     draw_info.SetResource(std::move(resource),
                           raster_task_was_scheduled_with_checker_images,
-                          needs_swizzle, is_premultiplied);
+                          is_premultiplied);
   } else {
     resource_pool_->ReleaseResource(std::move(resource));
     draw_info.set_oom();

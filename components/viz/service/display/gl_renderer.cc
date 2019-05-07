@@ -2023,7 +2023,6 @@ void GLRenderer::DrawContentQuadAA(const ContentDrawQuadBase* quad,
 
   SetUseProgram(
       ProgramKey::Tile(tex_coord_precision, sampler, USE_AA,
-                       quad->swizzle_contents ? DO_SWIZZLE : NO_SWIZZLE,
                        quad->is_premultiplied ? PREMULTIPLIED_ALPHA
                                               : NON_PREMULTIPLIED_ALPHA,
                        false, false, tint_gl_composited_content_,
@@ -2120,7 +2119,6 @@ void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
                                 settings_->highp_threshold_min, texture_size);
   SetUseProgram(
       ProgramKey::Tile(tex_coord_precision, sampler, NO_AA,
-                       quad->swizzle_contents ? DO_SWIZZLE : NO_SWIZZLE,
                        quad->is_premultiplied ? PREMULTIPLIED_ALPHA
                                               : NON_PREMULTIPLIED_ALPHA,
                        !quad->ShouldDrawWithBlending(), has_tex_clamp_rect,

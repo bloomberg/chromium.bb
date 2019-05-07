@@ -368,33 +368,29 @@ TEST(DrawQuadTest, CopyTileDrawQuad) {
   unsigned resource_id = 104;
   gfx::RectF tex_coord_rect(31.f, 12.f, 54.f, 20.f);
   gfx::Size texture_size(85, 32);
-  bool swizzle_contents = true;
   bool contents_premultiplied = true;
   bool nearest_neighbor = true;
   bool force_anti_aliasing_off = false;
   CREATE_SHARED_STATE();
 
   CREATE_QUAD_NEW(TileDrawQuad, visible_rect, needs_blending, resource_id,
-                  tex_coord_rect, texture_size, swizzle_contents,
-                  contents_premultiplied, nearest_neighbor,
-                  force_anti_aliasing_off);
+                  tex_coord_rect, texture_size, contents_premultiplied,
+                  nearest_neighbor, force_anti_aliasing_off);
   EXPECT_EQ(DrawQuad::Material::kTiledContent, copy_quad->material);
   EXPECT_EQ(visible_rect, copy_quad->visible_rect);
   EXPECT_EQ(needs_blending, copy_quad->needs_blending);
   EXPECT_EQ(resource_id, copy_quad->resource_id());
   EXPECT_EQ(tex_coord_rect, copy_quad->tex_coord_rect);
   EXPECT_EQ(texture_size, copy_quad->texture_size);
-  EXPECT_EQ(swizzle_contents, copy_quad->swizzle_contents);
   EXPECT_EQ(nearest_neighbor, copy_quad->nearest_neighbor);
 
   CREATE_QUAD_ALL(TileDrawQuad, resource_id, tex_coord_rect, texture_size,
-                  swizzle_contents, contents_premultiplied, nearest_neighbor,
+                  contents_premultiplied, nearest_neighbor,
                   force_anti_aliasing_off);
   EXPECT_EQ(DrawQuad::Material::kTiledContent, copy_quad->material);
   EXPECT_EQ(resource_id, copy_quad->resource_id());
   EXPECT_EQ(tex_coord_rect, copy_quad->tex_coord_rect);
   EXPECT_EQ(texture_size, copy_quad->texture_size);
-  EXPECT_EQ(swizzle_contents, copy_quad->swizzle_contents);
   EXPECT_EQ(nearest_neighbor, copy_quad->nearest_neighbor);
 }
 
@@ -641,16 +637,14 @@ TEST_F(DrawQuadIteratorTest, TileDrawQuad) {
   unsigned resource_id = 104;
   gfx::RectF tex_coord_rect(31.f, 12.f, 54.f, 20.f);
   gfx::Size texture_size(85, 32);
-  bool swizzle_contents = true;
   bool contents_premultiplied = true;
   bool nearest_neighbor = true;
   bool force_anti_aliasing_off = false;
 
   CREATE_SHARED_STATE();
   CREATE_QUAD_NEW(TileDrawQuad, visible_rect, needs_blending, resource_id,
-                  tex_coord_rect, texture_size, swizzle_contents,
-                  contents_premultiplied, nearest_neighbor,
-                  force_anti_aliasing_off);
+                  tex_coord_rect, texture_size, contents_premultiplied,
+                  nearest_neighbor, force_anti_aliasing_off);
   EXPECT_EQ(resource_id, quad_new->resource_id());
   EXPECT_EQ(1, IterateAndCount(quad_new));
   EXPECT_EQ(resource_id + 1, quad_new->resource_id());

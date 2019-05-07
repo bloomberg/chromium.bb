@@ -48,7 +48,6 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
       uint64_t previous_content_id) override;
   void Flush() override;
   viz::ResourceFormat GetResourceFormat() const override;
-  bool IsResourceSwizzleRequired() const override;
   bool IsResourcePremultiplied() const override;
   bool CanPartialRasterIntoProvidedResource() const override;
   bool IsResourceReadyToDraw(

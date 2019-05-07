@@ -413,11 +413,6 @@ struct StructTraits<viz::mojom::TileQuadStateDataView, viz::DrawQuad> {
     return quad->texture_size;
   }
 
-  static bool swizzle_contents(const viz::DrawQuad& input) {
-    const viz::TileDrawQuad* quad = viz::TileDrawQuad::MaterialCast(&input);
-    return quad->swizzle_contents;
-  }
-
   static bool is_premultiplied(const viz::DrawQuad& input) {
     const viz::TileDrawQuad* quad = viz::TileDrawQuad::MaterialCast(&input);
     return quad->is_premultiplied;

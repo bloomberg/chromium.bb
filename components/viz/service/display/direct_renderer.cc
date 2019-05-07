@@ -233,7 +233,7 @@ const TileDrawQuad* DirectRenderer::CanPassBeDrawnDirectly(
   if (tile_quad->tex_coord_rect != gfx::RectF(tile_quad->rect))
     return nullptr;
   // Tile quad features not supported in render pass shaders.
-  if (tile_quad->swizzle_contents || tile_quad->nearest_neighbor)
+  if (tile_quad->nearest_neighbor)
     return nullptr;
   // BUG=skia:3868, Skia currently doesn't support texture rectangle inputs.
   // See also the DCHECKs about GL_TEXTURE_2D in DrawRenderPassQuad.

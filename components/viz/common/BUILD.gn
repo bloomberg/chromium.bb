@@ -315,7 +315,6 @@ viz_source_set("unit_tests") {
     "pausable_elapsed_timer_unittest.cc",
     "quads/draw_quad_unittest.cc",
     "quads/render_pass_unittest.cc",
-    "resources/platform_color_unittest.cc",
     "resources/resource_sizes_unittest.cc",
     "surfaces/child_local_surface_id_allocator_unittest.cc",
     "surfaces/local_surface_id_unittest.cc",

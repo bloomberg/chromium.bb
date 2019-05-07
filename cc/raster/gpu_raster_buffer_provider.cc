@@ -386,11 +386,6 @@ viz::ResourceFormat GpuRasterBufferProvider::GetResourceFormat() const {
   return tile_format_;
 }
 
-bool GpuRasterBufferProvider::IsResourceSwizzleRequired() const {
-  // This doesn't require a swizzle because we rasterize to the correct format.
-  return false;
-}
-
 bool GpuRasterBufferProvider::IsResourcePremultiplied() const {
   return !ShouldUnpremultiplyAndDitherResource(GetResourceFormat());
 }
