@@ -7,10 +7,8 @@
 
 #include <stdint.h>
 
-#include <map>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/wm/desks/desks_util.h"
@@ -61,12 +59,6 @@ namespace views {
 class Widget;
 class WidgetDelegate;
 }
-
-namespace ws {
-class TestWindowTreeClient;
-class WindowTree;
-class WindowTreeTestHelper;
-}  // namespace ws
 
 namespace ash {
 
@@ -123,21 +115,13 @@ class AshTestBase : public testing::Test {
       const gfx::Rect& bounds = gfx::Rect(),
       bool show = true);
 
-  // Returns the set of properties for creating a proxy window.
-  std::map<std::string, std::vector<uint8_t>> CreatePropertiesForProxyWindow(
-      const gfx::Rect& bounds_in_screen = gfx::Rect(),
-      aura::client::WindowType type = aura::client::WINDOW_TYPE_NORMAL);
-
   // Creates a visible window in the appropriate container. If
   // |bounds_in_screen| is empty the window is added to the primary root
   // window, otherwise the window is added to the display matching
   // |bounds_in_screen|. |shell_window_id| is the shell window id to give to
   // the new window.
-  //
-  // This function simulates creating a window as a client of Ash would. That
-  // is, it goes through the WindowService.
-  //
-  // TODO(sky): convert existing CreateTestWindow() functions into this one.
+  // If |type| is WINDOW_TYPE_NORMAL this creates a views::Widget, otherwise
+  // this creates an aura::Window.
   std::unique_ptr<aura::Window> CreateTestWindow(
       const gfx::Rect& bounds_in_screen = gfx::Rect(),
       aura::client::WindowType type = aura::client::WINDOW_TYPE_NORMAL,
@@ -268,10 +252,6 @@ class AshTestBase : public testing::Test {
   display::Display GetPrimaryDisplay();
   display::Display GetSecondaryDisplay();
 
-  // Returns the WindowTreeTestHelper, creating if necessary.
-  ws::WindowTreeTestHelper* GetWindowTreeTestHelper();
-  ws::WindowTree* GetWindowTree();
-
  private:
   void CreateWindowTreeIfNecessary();
 
@@ -285,10 +265,6 @@ class AshTestBase : public testing::Test {
   std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
   std::unique_ptr<AshTestHelper> ash_test_helper_;
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
-
-  std::unique_ptr<ws::TestWindowTreeClient> window_tree_client_;
-  std::unique_ptr<ws::WindowTree> window_tree_;
-  std::unique_ptr<ws::WindowTreeTestHelper> window_tree_test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(AshTestBase);
 };

@@ -1677,7 +1677,6 @@ test("ash_unittests") {
     "home_screen/home_screen_controller_unittest.cc",
     "ime/ime_controller_unittest.cc",
     "ime/ime_engine_factory_registry_unittest.cc",
-    "ime/ime_focus_handler_unittest.cc",
     "keyboard/arc/arc_input_method_surface_manager_unittest.cc",
     "keyboard/ash_keyboard_controller_unittest.cc",
     "keyboard/virtual_keyboard_controller_unittest.cc",

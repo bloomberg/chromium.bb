@@ -2263,18 +2263,18 @@ TEST_F(OverviewSessionTest, WindowItemTitleCloseVisibilityOnDrag) {
 TEST_F(OverviewSessionTest, OverviewWidgetStackingOrder) {
   base::HistogramTester histogram_tester;
   // Create three windows, including one minimized.
-  std::unique_ptr<aura::Window> window(CreateTestWindow());
   std::unique_ptr<aura::Window> minimized(CreateTestWindow());
   wm::GetWindowState(minimized.get())->Minimize();
+  std::unique_ptr<aura::Window> window(CreateTestWindow());
   std::unique_ptr<aura::Window> window3(CreateTestWindow());
 
   aura::Window* parent = window->parent();
-  DCHECK_EQ(parent, minimized->parent());
+  EXPECT_EQ(parent, minimized->parent());
 
   EnterTabletMode();
   ToggleOverview();
-  OverviewItem* item1 = GetWindowItemForWindow(0, window.get());
-  OverviewItem* item2 = GetWindowItemForWindow(0, minimized.get());
+  OverviewItem* item1 = GetWindowItemForWindow(0, minimized.get());
+  OverviewItem* item2 = GetWindowItemForWindow(0, window.get());
   OverviewItem* item3 = GetWindowItemForWindow(0, window3.get());
 
   views::Widget* widget1 = item_widget(item1);
@@ -2282,7 +2282,7 @@ TEST_F(OverviewSessionTest, OverviewWidgetStackingOrder) {
   views::Widget* widget3 = item_widget(item3);
 
   // The original order of stacking is determined by the order the associated
-  // window was activated (created in this case).
+  // window was activated.
   EXPECT_GT(IndexOf(widget3->GetNativeWindow(), parent),
             IndexOf(widget2->GetNativeWindow(), parent));
   EXPECT_GT(IndexOf(widget2->GetNativeWindow(), parent),
@@ -2290,9 +2290,9 @@ TEST_F(OverviewSessionTest, OverviewWidgetStackingOrder) {
 
   // Verify that the item widget is stacked below the window.
   EXPECT_LT(IndexOf(widget1->GetNativeWindow(), parent),
-            IndexOf(window.get(), parent));
-  EXPECT_LT(IndexOf(widget2->GetNativeWindow(), parent),
             IndexOf(minimized.get(), parent));
+  EXPECT_LT(IndexOf(widget2->GetNativeWindow(), parent),
+            IndexOf(window.get(), parent));
   EXPECT_LT(IndexOf(widget3->GetNativeWindow(), parent),
             IndexOf(window3.get(), parent));
 

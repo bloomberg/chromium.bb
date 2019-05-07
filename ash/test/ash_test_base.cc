@@ -44,17 +44,9 @@
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ws/public/cpp/input_devices/input_device_client.h"
 #include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
-#include "services/ws/public/cpp/property_type_converters.h"
-#include "services/ws/public/mojom/window_manager.mojom.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
-#include "services/ws/test_window_tree_client.h"
-#include "services/ws/window_service.h"
-#include "services/ws/window_tree.h"
-#include "services/ws/window_tree_test_helper.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/mus/property_converter.h"
 #include "ui/aura/test/aura_test_utils.h"
 #include "ui/aura/test/event_generator_delegate_aura.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -100,31 +92,25 @@ class AshEventGeneratorDelegate
   DISALLOW_COPY_AND_ASSIGN(AshEventGeneratorDelegate);
 };
 
-ws::mojom::WindowType MusWindowTypeFromWindowType(
-    aura::client::WindowType window_type) {
-  switch (window_type) {
-    case aura::client::WINDOW_TYPE_UNKNOWN:
-      break;
+// WidgetDelegate that is resizable and creates ash's NonClientFrameView
+// implementation.
+class TestWidgetDelegate : public views::WidgetDelegateView {
+ public:
+  TestWidgetDelegate() = default;
+  ~TestWidgetDelegate() override = default;
 
-    case aura::client::WINDOW_TYPE_NORMAL:
-      return ws::mojom::WindowType::WINDOW;
-
-    case aura::client::WINDOW_TYPE_POPUP:
-      return ws::mojom::WindowType::POPUP;
-
-    case aura::client::WINDOW_TYPE_CONTROL:
-      return ws::mojom::WindowType::CONTROL;
-
-    case aura::client::WINDOW_TYPE_MENU:
-      return ws::mojom::WindowType::MENU;
-
-    case aura::client::WINDOW_TYPE_TOOLTIP:
-      return ws::mojom::WindowType::TOOLTIP;
+  // views::WidgetDelegateView:
+  views::NonClientFrameView* CreateNonClientFrameView(
+      views::Widget* widget) override {
+    return Shell::Get()->CreateDefaultNonClientFrameView(widget);
   }
+  bool CanResize() const override { return true; }
+  bool CanMaximize() const override { return true; }
+  bool CanMinimize() const override { return true; }
 
-  NOTREACHED();
-  return ws::mojom::WindowType::CONTROL;
-}
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestWidgetDelegate);
+};
 
 }  // namespace
 
@@ -175,11 +161,6 @@ void AshTestBase::SetUp() {
 void AshTestBase::TearDown() {
   teardown_called_ = true;
   Shell::Get()->session_controller()->NotifyChromeTerminating();
-
-  // These depend upon WindowService, which is owned by Shell, so they must
-  // be destroyed before the Shell (owned by AshTestHelper).
-  window_tree_test_helper_.reset();
-  window_tree_.reset();
 
   // Flush the message loop to finish pending release tasks.
   base::RunLoop().RunUntilIdle();
@@ -270,42 +251,28 @@ std::unique_ptr<views::Widget> AshTestBase::CreateTestWidget(
   return widget;
 }
 
-std::map<std::string, std::vector<uint8_t>>
-AshTestBase::CreatePropertiesForProxyWindow(const gfx::Rect& bounds_in_screen,
-                                            aura::client::WindowType type) {
-  // The following simulates what happens when a client creates a window.
-  std::map<std::string, std::vector<uint8_t>> properties;
-  if (!bounds_in_screen.IsEmpty()) {
-    properties[ws::mojom::WindowManager::kBounds_InitProperty] =
-        mojo::ConvertTo<std::vector<uint8_t>>(bounds_in_screen);
-  }
-
-  properties[ws::mojom::WindowManager::kResizeBehavior_Property] =
-      mojo::ConvertTo<std::vector<uint8_t>>(
-          static_cast<aura::PropertyConverter::PrimitiveType>(
-              ws::mojom::kResizeBehaviorCanResize |
-              ws::mojom::kResizeBehaviorCanMaximize |
-              ws::mojom::kResizeBehaviorCanMinimize));
-
-  const ws::mojom::WindowType mus_window_type =
-      MusWindowTypeFromWindowType(type);
-  properties[ws::mojom::WindowManager::kWindowType_InitProperty] =
-      mojo::ConvertTo<std::vector<uint8_t>>(
-          static_cast<int32_t>(mus_window_type));
-  return properties;
-}
-
 std::unique_ptr<aura::Window> AshTestBase::CreateTestWindow(
     const gfx::Rect& bounds_in_screen,
     aura::client::WindowType type,
     int shell_window_id) {
-  // WindowTreeTestHelper maps 0 to a unique id.
-  std::unique_ptr<aura::Window> window(
-      GetWindowTreeTestHelper()->NewTopLevelWindow(mojo::MapToFlatMap(
-          CreatePropertiesForProxyWindow(bounds_in_screen, type))));
-  window->set_id(shell_window_id);
-  window->Show();
-  return window;
+  if (type != aura::client::WINDOW_TYPE_NORMAL) {
+    return base::WrapUnique(CreateTestWindowInShellWithDelegateAndType(
+        nullptr, type, shell_window_id, bounds_in_screen));
+  }
+
+  // |widget| is configured to be owned by the underlying window.
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params;
+  // TestWidgetDelegate is owned by |widget|.
+  params.delegate = new TestWidgetDelegate();
+  params.ownership = views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
+  params.bounds =
+      bounds_in_screen.IsEmpty() ? gfx::Rect(0, 0, 300, 300) : bounds_in_screen;
+  params.context = Shell::GetPrimaryRootWindow();
+  widget->Init(params);
+  widget->GetNativeWindow()->set_id(shell_window_id);
+  widget->Show();
+  return base::WrapUnique(widget->GetNativeWindow());
 }
 
 std::unique_ptr<aura::Window> AshTestBase::CreateToplevelTestWindow(
@@ -552,30 +519,6 @@ display::Display AshTestBase::GetPrimaryDisplay() {
 
 display::Display AshTestBase::GetSecondaryDisplay() {
   return ash_test_helper_->GetSecondaryDisplay();
-}
-
-ws::WindowTreeTestHelper* AshTestBase::GetWindowTreeTestHelper() {
-  CreateWindowTreeIfNecessary();
-  return window_tree_test_helper_.get();
-}
-
-ws::WindowTree* AshTestBase::GetWindowTree() {
-  CreateWindowTreeIfNecessary();
-  return window_tree_.get();
-}
-
-void AshTestBase::CreateWindowTreeIfNecessary() {
-  if (window_tree_client_)
-    return;
-
-  // Lazily create a single client.
-  window_tree_client_ = std::make_unique<ws::TestWindowTreeClient>();
-  window_tree_ =
-      Shell::Get()->window_service_owner()->window_service()->CreateWindowTree(
-          window_tree_client_.get());
-  window_tree_->InitFromFactory();
-  window_tree_test_helper_ =
-      std::make_unique<ws::WindowTreeTestHelper>(window_tree_.get());
 }
 
 }  // namespace ash

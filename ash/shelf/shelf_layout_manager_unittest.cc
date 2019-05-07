@@ -2847,8 +2847,10 @@ TEST_F(ShelfLayoutManagerTest, A11yAlertOnWorkspaceState) {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
   controller->SetClient(client.CreateInterfacePtrAndBind());
-  std::unique_ptr<aura::Window> window1(AshTestBase::CreateTestWindow());
-  std::unique_ptr<aura::Window> window2(AshTestBase::CreateTestWindow());
+  std::unique_ptr<aura::Window> window1(
+      AshTestBase::CreateToplevelTestWindow());
+  std::unique_ptr<aura::Window> window2(
+      AshTestBase::CreateToplevelTestWindow());
   EXPECT_NE(mojom::AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_ENTERED,
             client.last_a11y_alert());
 
