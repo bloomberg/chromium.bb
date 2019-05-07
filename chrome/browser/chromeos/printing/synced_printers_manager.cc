@@ -18,7 +18,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/printing/enterprise_printers_provider.h"
-#include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
 #include "chrome/browser/chromeos/printing/specifics_translation.h"
 #include "chrome/browser/profiles/profile.h"
@@ -84,6 +83,9 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
 
   void UpdateSavedPrinter(const Printer& printer) override {
     base::AutoLock l(lock_);
+    if (IsEnterprisePrinter(printer.id())) {
+      return;
+    }
     UpdateSavedPrinterLocked(printer);
   }
 
@@ -97,26 +99,6 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
 
   void RemoveObserver(SyncedPrintersManager::Observer* observer) override {
     observers_->RemoveObserver(observer);
-  }
-
-  void PrinterInstalled(const Printer& printer) override {
-    base::AutoLock l(lock_);
-    installed_printer_fingerprints_[printer.id()] =
-        PrinterConfigurer::SetupFingerprint(printer);
-
-    // Register this printer if it's the first time we're using it.
-    if (!IsPrinterRegistered(printer.id())) {
-      UpdateSavedPrinterLocked(printer);
-    }
-  }
-
-  bool IsConfigurationCurrent(const Printer& printer) const override {
-    base::AutoLock l(lock_);
-    auto found = installed_printer_fingerprints_.find(printer.id());
-    if (found == installed_printer_fingerprints_.end())
-      return false;
-
-    return found->second == PrinterConfigurer::SetupFingerprint(printer);
   }
 
   PrintersSyncBridge* GetSyncBridge() override { return sync_bridge_.get(); }
@@ -156,12 +138,8 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
     return printer.has_value() ? SpecificsToPrinter(*printer) : nullptr;
   }
 
-  // Determines whether or not the printer with the given |printer_id| has
-  // already been registered.
-  bool IsPrinterRegistered(const std::string& printer_id) {
-    return enterprise_printers_.find(printer_id) !=
-               enterprise_printers_.end() ||
-           sync_bridge_->HasPrinter(printer_id);
+  bool IsEnterprisePrinter(const std::string& printer_id) const {
+    return enterprise_printers_.find(printer_id) != enterprise_printers_.end();
   }
 
   void UpdateSavedPrinterLocked(const Printer& printer_arg) {
@@ -201,10 +179,6 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
   std::unordered_map<std::string, Printer> enterprise_printers_;
   // This flag is set to true if all enterprise policies were loaded.
   bool enterprise_printers_are_ready_ = false;
-
-  // Map of printer ids to PrinterConfigurer setup fingerprints at the time
-  // the printers was last installed with CUPS.
-  std::map<std::string, std::string> installed_printer_fingerprints_;
 
   scoped_refptr<base::ObserverListThreadSafe<SyncedPrintersManager::Observer>>
       observers_;

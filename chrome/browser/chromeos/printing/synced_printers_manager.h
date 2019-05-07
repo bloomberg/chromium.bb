@@ -60,9 +60,9 @@ class SyncedPrintersManager : public KeyedService {
   virtual std::unique_ptr<Printer> GetPrinter(
       const std::string& printer_id) const = 0;
 
-  // Adds or updates a printer in profile preferences.  The |printer| is
-  // identified by its id field.  Those with an empty id are treated as new
-  // printers.
+  // Updates a printer in profile preferences.  The |printer| is
+  // identified by its id field. If |printer| is *not* a saved printer,
+  // |printer| will become a saved printer.
   virtual void UpdateSavedPrinter(const Printer& printer) = 0;
 
   // Remove printer from preferences with the id |printer_id|.  Returns true if
@@ -82,14 +82,6 @@ class SyncedPrintersManager : public KeyedService {
   // Returns a ModelTypeSyncBridge for the sync client.
   virtual PrintersSyncBridge* GetSyncBridge() = 0;
 
-  // Registers that the printer was installed in CUPS.  If |printer| is not an
-  // already known printer (either a saved printer or an enterprise
-  // printer), this will have the side effect of saving |printer| as a
-  // saved printer.
-  virtual void PrinterInstalled(const Printer& printer) = 0;
-
-  // Returns true if |printer| is currently installed in CUPS.
-  virtual bool IsConfigurationCurrent(const Printer& printer) const = 0;
 };
 
 }  // namespace chromeos

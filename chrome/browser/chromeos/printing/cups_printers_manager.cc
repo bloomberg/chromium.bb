@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
 #include "chrome/browser/chromeos/printing/ppd_resolution_tracker.h"
+#include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chrome/browser/chromeos/printing/printer_event_tracker_factory.h"
 #include "chrome/browser/chromeos/printing/printers_map.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager.h"
@@ -163,13 +164,20 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
       return;
     }
     MaybeRecordInstallation(printer, is_automatic);
-    synced_printers_manager_->PrinterInstalled(printer);
+    MarkPrinterInstalledWithCups(printer);
+
+    synced_printers_manager_->UpdateSavedPrinter(printer);
   }
 
   // Public API function.
   bool IsPrinterInstalled(const Printer& printer) const override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
-    return synced_printers_manager_->IsConfigurationCurrent(printer);
+    const auto found = installed_printer_fingerprints_.find(printer.id());
+    if (found == installed_printer_fingerprints_.end()) {
+      return false;
+    }
+
+    return found->second == PrinterConfigurer::SetupFingerprint(printer);
   }
 
   // Public API function.
@@ -420,6 +428,13 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
     RebuildDetectedLists();
   }
 
+  // Records that |printer| has been installed in CUPS.
+  void MarkPrinterInstalledWithCups(const Printer& printer) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
+    installed_printer_fingerprints_[printer.id()] =
+        PrinterConfigurer::SetupFingerprint(printer);
+  }
+
   SEQUENCE_CHECKER(sequence_);
 
   // Source lists for detected printers.
@@ -450,6 +465,10 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   // Tracks PpdReference resolution. Also stores USB manufacturer string if
   // available.
   PpdResolutionTracker ppd_resolution_tracker_;
+
+  // Map of printer ids to PrinterConfigurer setup fingerprints at the time
+  // the printers was last installed with CUPS.
+  std::map<std::string, std::string> installed_printer_fingerprints_;
 
   base::ObserverList<CupsPrintersManager::Observer>::Unchecked observer_list_;
 

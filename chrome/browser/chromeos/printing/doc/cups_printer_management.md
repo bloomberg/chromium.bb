@@ -117,12 +117,7 @@ Additionally, although recreating the same print queue with the same options is
 theoretically a null operation, cupsd can get somewhat unhappy if you attempt to
 create the same destination too many times quickly.  Thus, we need to cache
 which destinations have been created in the current session.
-
-This responsibility is given to `SyncedPrintersManager` because it is the only
-long-lived piece of the printer management system.  (NOTE: Is there any sort of
-session-persistent key-value store that can be used in the browser?  If so, we
-can and should shift this responsibility to `CupsPrintersManager` directly.  It
-appears the KeyedService is the preferred way to do this sort of thing.)
+This responsibility is given to  `CupsPrintersManager`.
 
 ### PrinterDetectors
 

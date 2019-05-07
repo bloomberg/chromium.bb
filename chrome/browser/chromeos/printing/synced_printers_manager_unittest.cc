@@ -144,7 +144,6 @@ TEST_F(SyncedPrintersManagerTest, AddPrinter) {
 
 TEST_F(SyncedPrintersManagerTest, UpdatePrinterAssignsId) {
   manager_->UpdateSavedPrinter(Printer());
-
   auto printers = manager_->GetSavedPrinters();
   ASSERT_EQ(1U, printers.size());
   EXPECT_FALSE(printers[0].id().empty());
@@ -228,20 +227,9 @@ TEST_F(SyncedPrintersManagerTest, GetEnterprisePrinter) {
   EXPECT_EQ(Printer::Source::SRC_POLICY, from_list.source());
 }
 
-TEST_F(SyncedPrintersManagerTest, PrinterNotInstalled) {
-  Printer printer(kTestPrinterId);
-  EXPECT_FALSE(manager_->IsConfigurationCurrent(printer));
-}
-
-TEST_F(SyncedPrintersManagerTest, PrinterIsInstalled) {
-  Printer printer(kTestPrinterId);
-  manager_->PrinterInstalled(printer);
-  EXPECT_TRUE(manager_->IsConfigurationCurrent(printer));
-}
-
-// Test that PrinterInstalled saves a printer if it doesn't appear in the
+// Test that UpdateSavedPrinter saves a printer if it doesn't appear in the
 // enterprise or saved printer lists.
-TEST_F(SyncedPrintersManagerTest, PrinterInstalledSavesPrinter) {
+TEST_F(SyncedPrintersManagerTest, UpdateSavedPrinterSavesPrinter) {
   // Set up an enterprise printer.
   auto value = std::make_unique<base::ListValue>();
   value->AppendString(kColorLaserJson);
@@ -259,54 +247,19 @@ TEST_F(SyncedPrintersManagerTest, PrinterInstalledSavesPrinter) {
 
   // Install |saved| printer.
   manager_->UpdateSavedPrinter(saved);
-
-  // Installing |saved| should *not* update it.
-  saved.set_display_name("display name");
-  manager_->PrinterInstalled(saved);
   auto found_printer = manager_->GetPrinter(kTestPrinterId);
   ASSERT_TRUE(found_printer);
   EXPECT_TRUE(found_printer->display_name().empty());
 
-  // Installing the enterprise printer should *not* generate a configuration
+  // Saving the enterprise printer should *not* generate a configuration
   // update.
-  manager_->PrinterInstalled(Printer(enterprise_id));
+  manager_->UpdateSavedPrinter(Printer(enterprise_id));
   EXPECT_EQ(1U, manager_->GetSavedPrinters().size());
 
-  // Installing a printer we don't know about *should* generate a configuration
+  // Saving a printer we don't know about *should* generate a configuration
   // update.
-  manager_->PrinterInstalled(Printer(kTestPrinterId2));
+  manager_->UpdateSavedPrinter(Printer(kTestPrinterId2));
   EXPECT_EQ(2U, manager_->GetSavedPrinters().size());
-}
-
-// Test that we detect that the configuration is stale when any of the relevant
-// fields change.
-TEST_F(SyncedPrintersManagerTest, UpdatedPrinterConfiguration) {
-  Printer printer(kTestPrinterId);
-  manager_->PrinterInstalled(printer);
-
-  Printer updated(printer);
-  updated.set_uri("different value");
-  EXPECT_FALSE(manager_->IsConfigurationCurrent(updated));
-
-  updated = printer;
-  updated.mutable_ppd_reference()->autoconf = true;
-  EXPECT_FALSE(manager_->IsConfigurationCurrent(updated));
-
-  updated = printer;
-  updated.mutable_ppd_reference()->user_supplied_ppd_url = "different value";
-  EXPECT_FALSE(manager_->IsConfigurationCurrent(updated));
-
-  updated = printer;
-  updated.mutable_ppd_reference()->effective_make_and_model = "different value";
-  EXPECT_FALSE(manager_->IsConfigurationCurrent(updated));
-
-  updated = printer;
-  updated.mutable_ppd_reference()->autoconf = true;
-  EXPECT_FALSE(manager_->IsConfigurationCurrent(updated));
-
-  // Sanity check, configuration for the original printers should still be
-  // current.
-  EXPECT_TRUE(manager_->IsConfigurationCurrent(printer));
 }
 
 }  // namespace
