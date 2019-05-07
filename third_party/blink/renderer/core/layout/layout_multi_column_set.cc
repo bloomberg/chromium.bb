@@ -185,8 +185,6 @@ bool LayoutMultiColumnSet::NewFragmentainerGroupsAllowed() const {
 LayoutUnit LayoutMultiColumnSet::NextLogicalTopForUnbreakableContent(
     LayoutUnit flow_thread_offset,
     LayoutUnit content_logical_height) const {
-  DCHECK(flow_thread_offset.MightBeSaturated() ||
-         PageLogicalTopForOffset(flow_thread_offset) == flow_thread_offset);
   if (!MultiColumnFlowThread()->EnclosingFragmentationContext()) {
     // If there's no enclosing fragmentation context, there'll ever be only one
     // row, and all columns there will have the same height.

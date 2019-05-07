@@ -489,10 +489,6 @@ void MinimumSpaceShortageFinder::ExamineLine(const RootInlineBox& line) {
     pending_strut_ = LayoutUnit::Min();
     return;
   }
-  DCHECK(IsFirstAfterBreak(line_top_in_flow_thread) ||
-         !line.PaginationStrut() ||
-         !IsLogicalTopWithinBounds(line_top_in_flow_thread -
-                                   line.PaginationStrut()));
   if (IsFirstAfterBreak(line_top_in_flow_thread))
     RecordSpaceShortage(line_height - line.PaginationStrut());
 
