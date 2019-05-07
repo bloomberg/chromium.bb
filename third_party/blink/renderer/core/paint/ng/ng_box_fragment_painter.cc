@@ -765,8 +765,10 @@ void NGBoxFragmentPainter::PaintInlineChildren(
     NGPaintFragment::ChildList inline_children,
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset) {
-  // TODO(kojii): kOutline should go |PaintInlineChildrenOutlines()|, which is
-  // more efficien. This DCHECK can then match to |InlineFlowBoxPainter::Paint|.
+  // TODO(kojii): Move kOutline painting into a |PaintInlineChildrenOutlines()|
+  // method instead as it would be more efficient. Would require repeating some
+  // of the code below though.
+  // This DCHECK can then match to |InlineFlowBoxPainter::Paint|.
   DCHECK_NE(paint_info.phase, PaintPhase::kDescendantOutlinesOnly);
 
   for (const NGPaintFragment* child : inline_children) {
@@ -796,13 +798,6 @@ void NGBoxFragmentPainter::PaintInlineChildren(
       NOTREACHED();
     }
   }
-}
-
-void NGBoxFragmentPainter::PaintInlineChildrenOutlines(
-    NGPaintFragment::ChildList line_boxes,
-    const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset) {
-  // TODO(layout-dev): Implement.
 }
 
 void NGBoxFragmentPainter::PaintAtomicInlineChild(const NGPaintFragment& child,

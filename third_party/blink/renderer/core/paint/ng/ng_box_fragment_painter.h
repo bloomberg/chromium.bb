@@ -82,9 +82,6 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   void PaintInlineChildren(NGPaintFragment::ChildList,
                            const PaintInfo&,
                            const LayoutPoint& paint_offset);
-  void PaintInlineChildrenOutlines(NGPaintFragment::ChildList,
-                                   const PaintInfo&,
-                                   const LayoutPoint& paint_offset);
   void PaintInlineChildBoxUsingLegacyFallback(const NGPhysicalFragment&,
                                               const PaintInfo&);
   void PaintBlockFlowContents(const PaintInfo&,
