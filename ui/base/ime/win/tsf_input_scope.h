@@ -35,7 +35,8 @@ std::vector<InputScope> GetInputScopes(TextInputType text_input_type,
 // reference count.
 COMPONENT_EXPORT(UI_BASE_IME_WIN)
 ITfInputScope* CreateInputScope(TextInputType text_input_type,
-                                TextInputMode text_input_mode);
+                                TextInputMode text_input_mode,
+                                bool should_do_learning);
 
 // A wrapper of the SetInputScopes API exported by msctf.dll.
 // http://msdn.microsoft.com/en-us/library/windows/desktop/ms629026.aspx
