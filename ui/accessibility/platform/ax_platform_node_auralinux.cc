@@ -1140,6 +1140,10 @@ gboolean SetCaretOffset(AtkText* atk_text, gint offset) {
   // Orca expects atk_text_set_caret_offset to scroll to the target element.
   obj->ScrollToNode(AXPlatformNodeBase::ScrollType::Anywhere);
 
+  // Orca expects atk_text_set_caret_offset to either focus the target element
+  // or set the sequential focus navigation starting point there.
+  obj->GrabFocusOrSetSequentialFocusNavigationStartingPoint();
+
   return TRUE;
 }
 
@@ -3554,6 +3558,19 @@ AXPlatformNodeAuraLinux::HitTestSync(gint x, gint y, AtkCoordType coord_type) {
 bool AXPlatformNodeAuraLinux::GrabFocus() {
   AXActionData action_data;
   action_data.action = ax::mojom::Action::kFocus;
+  return delegate_->AccessibilityPerformAction(action_data);
+}
+
+bool AXPlatformNodeAuraLinux::
+    GrabFocusOrSetSequentialFocusNavigationStartingPoint() {
+  if (GetData().HasState(ax::mojom::State::kFocusable) ||
+      SelectionAndFocusAreTheSame()) {
+    return GrabFocus();
+  }
+
+  AXActionData action_data;
+  action_data.action =
+      ax::mojom::Action::kSetSequentialFocusNavigationStartingPoint;
   return delegate_->AccessibilityPerformAction(action_data);
 }
 

@@ -1536,6 +1536,9 @@ bool BrowserAccessibility::AccessibilityPerformAction(
     case ax::mojom::Action::kSetValue:
       manager_->SetValue(*this, data.value);
       return true;
+    case ax::mojom::Action::kSetSequentialFocusNavigationStartingPoint:
+      manager_->SetSequentialFocusNavigationStartingPoint(*this);
+      return true;
     case ax::mojom::Action::kShowContextMenu:
       manager_->ShowContextMenu(*this);
       return true;

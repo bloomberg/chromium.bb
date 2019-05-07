@@ -618,6 +618,18 @@ void BrowserAccessibilityManager::SetFocus(const BrowserAccessibility& node) {
   delegate_->AccessibilityPerformAction(action_data);
 }
 
+void BrowserAccessibilityManager::SetSequentialFocusNavigationStartingPoint(
+    const BrowserAccessibility& node) {
+  if (!delegate_)
+    return;
+
+  ui::AXActionData action_data;
+  action_data.action =
+      ax::mojom::Action::kSetSequentialFocusNavigationStartingPoint;
+  action_data.target_node_id = node.GetId();
+  delegate_->AccessibilityPerformAction(action_data);
+}
+
 void BrowserAccessibilityManager::SetFocusLocallyForTesting(
     BrowserAccessibility* node) {
   ui::AXTreeData data = GetTreeData();

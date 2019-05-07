@@ -710,4 +710,52 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestAtkTextListItem) {
   g_object_unref(list_item);
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       TestSetCaretSetsSequentialFocusNavigationStartingPoint) {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+      <body>
+        <a href="http://google.com">0</a>
+        <div>1</div>
+        <a href="http://google.com">2</a>
+        <div>3</div>
+        <a href="http://google.com">4</a>
+      </body>
+      </html>)HTML");
+
+  // Retrieve the AtkObject interface for the document node.
+  AtkObject* document = GetRendererAccessible();
+  ASSERT_TRUE(ATK_IS_COMPONENT(document));
+
+  AtkObject* child_3 = atk_object_ref_accessible_child(document, 3);
+  AtkObject* child_4 = atk_object_ref_accessible_child(document, 4);
+
+  // Move the caret to the "3" div. This should also set the sequential
+  // focus navigation starting point.
+  atk_text_set_caret_offset(ATK_TEXT(child_3), 0);
+
+  auto waiter = std::make_unique<AccessibilityNotificationWaiter>(
+      shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kFocus);
+
+  // Now send two tab presses to advance the focus.
+  // TODO(mrobinson): For some reason, in the test harness two tabs are
+  // necessary to advance focus after setting the selection (caret). This isn't
+  // necessary when running interactively.
+  SimulateKeyPress(shell()->web_contents(), ui::DomKey::TAB, ui::DomCode::TAB,
+                   ui::VKEY_TAB, false, false, false, false);
+  waiter->WaitForNotification();
+
+  SimulateKeyPress(shell()->web_contents(), ui::DomKey::TAB, ui::DomCode::TAB,
+                   ui::VKEY_TAB, false, false, false, false);
+  waiter->WaitForNotification();
+
+  AtkStateSet* state_set = atk_object_ref_state_set(child_4);
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_FOCUSED));
+  g_object_unref(state_set);
+
+  g_object_unref(child_3);
+  g_object_unref(child_4);
+}
+
 }  // namespace content
