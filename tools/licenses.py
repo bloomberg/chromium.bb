@@ -534,14 +534,15 @@ def GetThirdPartyDepsFromGNDepsOutput(gn_deps, target_os):
         relative_build_dep = os.path.relpath(
             absolute_build_dep, _REPOSITORY_ROOT)
         m = re.search(
-            r'^((.+/)?third_party/[^/]+/)(.+/)?BUILD\.gn$', relative_build_dep)
+            r'^((.+[/\\])?third_party[/\\][^/\\]+[/\\])(.+[/\\])?BUILD\.gn$',
+            relative_build_dep)
         if not m:
             continue
         third_party_path = m.group(1)
-        if any(third_party_path.startswith(p + '/') for p in PRUNE_PATHS):
+        if any(third_party_path.startswith(p + os.sep) for p in PRUNE_PATHS):
             continue
         if (target_os == 'ios' and
-            any(third_party_path.startswith(p + '/')
+            any(third_party_path.startswith(p + os.sep)
                 for p in KNOWN_NON_IOS_LIBRARIES)):
             # Skip over files that are known not to be used on iOS.
             continue
@@ -736,7 +737,7 @@ def GenerateLicenseFile(output_file, gn_out_dir, gn_target, target_os):
         metadata = ParseDir(
             directory, _REPOSITORY_ROOT, require_license_file=True)
         content.append('-' * 20)
-        content.append(directory.split('/')[-1])
+        content.append(directory.split(os.sep)[-1])
         content.append('-' * 20)
         license_file = metadata['License File']
         if license_file and license_file != NOT_SHIPPED:
