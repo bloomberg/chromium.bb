@@ -184,8 +184,6 @@ void WebAppInstallTask::OnDidPerformInstallableCheck(
                                         ? ForInstallableSite::kYes
                                         : ForInstallableSite::kNo;
 
-  // TODO(loyso): Implement UpdateShareTargetInPrefs installation logic.
-
   UpdateWebAppInfoFromManifest(manifest, web_app_info.get(),
                                for_installable_site);
 
