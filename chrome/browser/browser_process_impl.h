@@ -231,7 +231,6 @@ class BrowserProcessImpl : public BrowserProcess,
   void CreateGCMDriver();
   void CreatePhysicalWebDataSource();
 
-  void ApplyAllowCrossOriginAuthPromptPolicy();
   void ApplyDefaultBrowserPolicy();
 
   void CacheDefaultWebClientState();

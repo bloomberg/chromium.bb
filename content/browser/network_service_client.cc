@@ -349,6 +349,14 @@ BrowserContext* GetBrowserContextFromIds(int process_id, int routing_id) {
   return nullptr;
 }
 
+bool IsMainFrameRequest(int process_id, int routing_id) {
+  if (process_id != network::mojom::kBrowserProcessId)
+    return false;
+
+  auto* frame_tree_node = FrameTreeNode::GloballyFindByID(routing_id);
+  return frame_tree_node && frame_tree_node->IsMainFrame();
+}
+
 void OnCertificateRequestedContinuation(
     uint32_t process_id,
     uint32_t routing_id,
@@ -431,10 +439,8 @@ void NetworkServiceClient::OnAuthRequired(
     uint32_t routing_id,
     uint32_t request_id,
     const GURL& url,
-    const GURL& site_for_cookies,
     bool first_auth_attempt,
     const net::AuthChallengeInfo& auth_info,
-    int32_t resource_type,
     const base::Optional<network::ResourceResponseHead>& head,
     network::mojom::AuthChallengeResponderPtr auth_challenge_responder) {
   base::Callback<WebContents*(void)> web_contents_getter =
@@ -445,14 +451,7 @@ void NetworkServiceClient::OnAuthRequired(
     return;
   }
 
-  if (ResourceDispatcherHostImpl::Get()->DoNotPromptForLogin(
-          static_cast<ResourceType>(resource_type), url, site_for_cookies)) {
-    std::move(auth_challenge_responder)->OnAuthCredentials(base::nullopt);
-    return;
-  }
-
-  bool is_request_for_main_frame =
-      static_cast<ResourceType>(resource_type) == ResourceType::kMainFrame;
+  bool is_request_for_main_frame = IsMainFrameRequest(process_id, routing_id);
   new LoginHandlerDelegate(std::move(auth_challenge_responder),
                            std::move(web_contents_getter), auth_info,
                            is_request_for_main_frame, process_id, routing_id,
@@ -494,12 +493,7 @@ void NetworkServiceClient::OnSSLCertificateError(
       new SSLErrorDelegate(std::move(response));  // deletes self
   base::Callback<WebContents*(void)> web_contents_getter =
       base::BindRepeating(GetWebContents, process_id, routing_id);
-  bool is_main_frame_request = false;
-  if (process_id == network::mojom::kBrowserProcessId) {
-    auto* frame_tree_node = FrameTreeNode::GloballyFindByID(routing_id);
-    if (frame_tree_node)
-      is_main_frame_request = frame_tree_node->IsMainFrame();
-  }
+  bool is_main_frame_request = IsMainFrameRequest(process_id, routing_id);
   SSLManager::OnSSLCertificateError(
       delegate->GetWeakPtr(), is_main_frame_request, url,
       std::move(web_contents_getter), net_error, ssl_info, fatal);

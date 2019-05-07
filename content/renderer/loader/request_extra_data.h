@@ -77,6 +77,12 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
   scoped_refptr<FrameRequestBlocker> frame_request_blocker() {
     return frame_request_blocker_;
   }
+  bool allow_cross_origin_auth_prompt() const {
+    return allow_cross_origin_auth_prompt_;
+  }
+  void set_allow_cross_origin_auth_prompt(bool allow_cross_origin_auth_prompt) {
+    allow_cross_origin_auth_prompt_ = allow_cross_origin_auth_prompt;
+  }
 
   void CopyToResourceRequest(network::ResourceRequest* request) const;
 
@@ -87,6 +93,7 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
   bool block_mixed_plugin_content_ = false;
   std::vector<std::unique_ptr<URLLoaderThrottle>> url_loader_throttles_;
   scoped_refptr<FrameRequestBlocker> frame_request_blocker_;
+  bool allow_cross_origin_auth_prompt_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(RequestExtraData);
 };

@@ -374,7 +374,6 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
           kMaxOutstandingRequestsCostPerProcess),
       delegate_(nullptr),
       loader_delegate_(nullptr),
-      allow_cross_origin_auth_prompt_(false),
       create_download_handler_intercept_(download_handler_intercept),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_thread_task_runner_(io_thread_runner),
@@ -416,10 +415,6 @@ ResourceDispatcherHostImpl* ResourceDispatcherHostImpl::Get() {
 void ResourceDispatcherHostImpl::SetDelegate(
     ResourceDispatcherHostDelegate* delegate) {
   delegate_ = delegate;
-}
-
-void ResourceDispatcherHostImpl::SetAllowCrossOriginAuthPrompt(bool value) {
-  allow_cross_origin_auth_prompt_ = value;
 }
 
 void ResourceDispatcherHostImpl::CancelRequestsForContext(
@@ -903,7 +898,6 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
   }
   int child_id = requester_info->child_id();
   storage::BlobStorageContext* blob_context = nullptr;
-  bool do_not_prompt_for_login = false;
   bool report_raw_headers = false;
   bool report_security_info = false;
   int load_flags = request_data.load_flags;
@@ -970,8 +964,6 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
             .get()));
   }
 
-  do_not_prompt_for_login = request_data.do_not_prompt_for_login;
-
   // Raw headers are sensitive, as they include Cookie/Set-Cookie, so only
   // allow requesting them if requester has ReadRawCookies permission.
   ChildProcessSecurityPolicyImpl* policy =
@@ -993,20 +985,6 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
   if (report_raw_headers &&
       !policy->CanAccessDataForOrigin(child_id, request_data.url)) {
     report_raw_headers = false;
-  }
-
-  if (DoNotPromptForLogin(static_cast<ResourceType>(request_data.resource_type),
-                          request_data.url, request_data.site_for_cookies)) {
-    // Prevent third-party image content from prompting for login, as this
-    // is often a scam to extract credentials for another domain from the
-    // user. Only block image loads, as the attack applies largely to the
-    // "src" property of the <img> tag. It is common for web properties to
-    // allow untrusted values for <img src>; this is considered a fair thing
-    // for an HTML sanitizer to do. Conversely, any HTML sanitizer that didn't
-    // filter sources for <script>, <link>, <embed>, <object>, <iframe> tags
-    // would be considered vulnerable in and of itself.
-    do_not_prompt_for_login = true;
-    load_flags |= net::LOAD_DO_NOT_USE_EMBEDDED_IDENTITY;
   }
 
   // Sync loads should have maximum priority and should be the only
@@ -1040,7 +1018,7 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
       false,  // is stream
       ResourceInterceptPolicy::kAllowNone, request_data.has_user_gesture,
       request_data.enable_load_timing, request_data.enable_upload_progress,
-      do_not_prompt_for_login, request_data.keepalive,
+      request_data.do_not_prompt_for_login, request_data.keepalive,
       Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
           request_data.referrer_policy),
       request_data.is_prerendering, resource_context, report_raw_headers,
@@ -1858,18 +1836,6 @@ void ResourceDispatcherHostImpl::CancelRequestFromRenderer(
   loader->CancelRequest(true);
 }
 
-bool ResourceDispatcherHostImpl::DoNotPromptForLogin(
-    ResourceType resource_type,
-    const GURL& url,
-    const GURL& site_for_cookies) {
-  if (resource_type == ResourceType::kImage &&
-      HTTP_AUTH_RELATION_BLOCKED_CROSS ==
-          HttpAuthRelationTypeOf(url, site_for_cookies)) {
-    return true;
-  }
-  return false;
-}
-
 void ResourceDispatcherHostImpl::StartLoading(
     ResourceRequestInfoImpl* info,
     std::unique_ptr<ResourceLoader> loader) {
@@ -2065,35 +2031,6 @@ void ResourceDispatcherHostImpl::ProcessBlockedRequestsForRoute(
       StartLoading(info, std::move(loader));
     }
   }
-}
-
-ResourceDispatcherHostImpl::HttpAuthRelationType
-ResourceDispatcherHostImpl::HttpAuthRelationTypeOf(
-    const GURL& request_url,
-    const GURL& first_party) {
-  if (!first_party.is_valid())
-    return HTTP_AUTH_RELATION_TOP;
-
-  if (net::registry_controlled_domains::SameDomainOrHost(
-          first_party, request_url,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-    // If the first party is secure but the subresource is not, this is
-    // mixed-content. Do not allow the image.
-    if (!allow_cross_origin_auth_prompt() && IsOriginSecure(first_party) &&
-        !IsOriginSecure(request_url)) {
-      return HTTP_AUTH_RELATION_BLOCKED_CROSS;
-    }
-    return HTTP_AUTH_RELATION_SAME_DOMAIN;
-  }
-
-  if (allow_cross_origin_auth_prompt())
-    return HTTP_AUTH_RELATION_ALLOWED_CROSS;
-
-  return HTTP_AUTH_RELATION_BLOCKED_CROSS;
-}
-
-bool ResourceDispatcherHostImpl::allow_cross_origin_auth_prompt() {
-  return allow_cross_origin_auth_prompt_;
 }
 
 ResourceLoader* ResourceDispatcherHostImpl::GetLoader(

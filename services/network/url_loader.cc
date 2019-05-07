@@ -756,8 +756,7 @@ void URLLoader::OnAuthRequired(net::URLRequest* url_request,
     head.headers = url_request->response_headers();
   network_service_client_->OnAuthRequired(
       factory_params_->process_id, render_frame_id_, request_id_,
-      url_request_->url(), url_request_->site_for_cookies(),
-      first_auth_attempt_, auth_info, resource_type_, head,
+      url_request_->url(), first_auth_attempt_, auth_info, head,
       std::move(auth_challenge_responder));
 
   first_auth_attempt_ = false;

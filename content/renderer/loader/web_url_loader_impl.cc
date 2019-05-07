@@ -46,6 +46,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/ct_sct_to_string.h"
 #include "net/cert/x509_certificate.h"
@@ -315,6 +316,50 @@ void SetSecurityStyleAndDetails(const GURL& url,
       ssl_info.cert->valid_expiry().ToDoubleT(), web_cert, sct_list);
 
   response->SetSecurityDetails(webSecurityDetails);
+}
+
+// Relationship of resource being authenticated with the top level page.
+enum HttpAuthRelationType {
+  HTTP_AUTH_RELATION_TOP,            // Top-level page itself
+  HTTP_AUTH_RELATION_SAME_DOMAIN,    // Sub-content from same domain
+  HTTP_AUTH_RELATION_BLOCKED_CROSS,  // Blocked Sub-content from cross domain
+  HTTP_AUTH_RELATION_ALLOWED_CROSS,  // Allowed Sub-content per command line
+  HTTP_AUTH_RELATION_LAST
+};
+
+HttpAuthRelationType HttpAuthRelationTypeOf(
+    network::ResourceRequest* resource_request,
+    const WebURLRequest& request) {
+  auto& request_url = resource_request->url;
+  auto& first_party = resource_request->site_for_cookies;
+
+  if (!first_party.is_valid())
+    return HTTP_AUTH_RELATION_TOP;
+
+  bool allow_cross_origin_auth_prompt = false;
+  if (request.GetExtraData()) {
+    RequestExtraData* extra_data =
+        static_cast<RequestExtraData*>(request.GetExtraData());
+    allow_cross_origin_auth_prompt =
+        extra_data->allow_cross_origin_auth_prompt();
+  }
+
+  if (net::registry_controlled_domains::SameDomainOrHost(
+          first_party, request_url,
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+    // If the first party is secure but the subresource is not, this is
+    // mixed-content. Do not allow the image.
+    if (!allow_cross_origin_auth_prompt && IsOriginSecure(first_party) &&
+        !IsOriginSecure(request_url)) {
+      return HTTP_AUTH_RELATION_BLOCKED_CROSS;
+    }
+    return HTTP_AUTH_RELATION_SAME_DOMAIN;
+  }
+
+  if (allow_cross_origin_auth_prompt)
+    return HTTP_AUTH_RELATION_ALLOWED_CROSS;
+
+  return HTTP_AUTH_RELATION_BLOCKED_CROSS;
 }
 
 }  // namespace
@@ -691,6 +736,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
         WebString(request.GetPurposeHeader()).Utf8());
   }
 
+  resource_request->load_flags = request.GetLoadFlagsForWebUrlRequest();
+
   if (resource_request->resource_type ==
           static_cast<int>(ResourceType::kPrefetch) ||
       resource_request->resource_type ==
@@ -698,7 +745,28 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     resource_request->do_not_prompt_for_login = true;
   }
 
-  resource_request->load_flags = request.GetLoadFlagsForWebUrlRequest();
+  if (request.GetRequestContext() ==
+          blink::mojom::RequestContextType::XML_HTTP_REQUEST &&
+      (resource_request->url.has_username() ||
+       resource_request->url.has_password())) {
+    resource_request->do_not_prompt_for_login = true;
+  }
+
+  if (resource_request->resource_type ==
+          static_cast<int>(ResourceType::kImage) &&
+      HTTP_AUTH_RELATION_BLOCKED_CROSS ==
+          HttpAuthRelationTypeOf(resource_request.get(), request)) {
+    // Prevent third-party image content from prompting for login, as this
+    // is often a scam to extract credentials for another domain from the
+    // user. Only block image loads, as the attack applies largely to the
+    // "src" property of the <img> tag. It is common for web properties to
+    // allow untrusted values for <img src>; this is considered a fair thing
+    // for an HTML sanitizer to do. Conversely, any HTML sanitizer that didn't
+    // filter sources for <script>, <link>, <embed>, <object>, <iframe> tags
+    // would be considered vulnerable in and of itself.
+    resource_request->do_not_prompt_for_login = true;
+    resource_request->load_flags |= net::LOAD_DO_NOT_USE_EMBEDDED_IDENTITY;
+  }
 
   // |plugin_child_id| only needs to be non-zero if the request originates
   // outside the render process, so we can use requestorProcessID even
@@ -727,12 +795,6 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   resource_request->has_user_gesture = request.HasUserGesture();
   resource_request->enable_load_timing = true;
   resource_request->enable_upload_progress = request.ReportUploadProgress();
-  GURL gurl(url_);
-  if (request.GetRequestContext() ==
-          blink::mojom::RequestContextType::XML_HTTP_REQUEST &&
-      (gurl.has_username() || gurl.has_password())) {
-    resource_request->do_not_prompt_for_login = true;
-  }
   resource_request->report_raw_headers = request.ReportRawHeaders();
   // TODO(ryansturm): Remove resource_request->previews_state once it is no
   // longer used in a network delegate. https://crbug.com/842233

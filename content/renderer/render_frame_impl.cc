@@ -5263,6 +5263,8 @@ void RenderFrameImpl::WillSendRequestInternal(
   extra_data->set_initiated_in_secure_context(frame_document.IsSecureContext());
   extra_data->set_attach_same_site_cookies(attach_same_site_cookies);
   extra_data->set_frame_request_blocker(frame_request_blocker_);
+  extra_data->set_allow_cross_origin_auth_prompt(
+      render_view_->renderer_preferences().allow_cross_origin_auth_prompt);
 
   request.SetDownloadToNetworkCacheOnly(
       is_for_no_state_prefetch && resource_type != ResourceType::kMainFrame);

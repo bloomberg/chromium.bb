@@ -72,10 +72,8 @@ interface NetworkServiceClient {
                  uint32 routing_id,
                  uint32 request_id,
                  url.mojom.Url url,
-                 url.mojom.Url site_for_cookies,
                  bool first_auth_attempt,
                  AuthChallengeInfo auth_info,
-                 int32 resource_type,
                  URLResponseHead? head,
                  AuthChallengeResponder auth_challenge_responder);
   // Called when an SSL certificate requested message is received for client

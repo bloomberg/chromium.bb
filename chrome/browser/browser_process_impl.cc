@@ -1101,12 +1101,6 @@ void BrowserProcessImpl::ResourceDispatcherHostCreated() {
       std::make_unique<ChromeResourceDispatcherHostDelegate>();
   ResourceDispatcherHost::Get()->SetDelegate(
       resource_dispatcher_host_delegate_.get());
-
-  pref_change_registrar_.Add(
-      prefs::kAllowCrossOriginAuthPrompt,
-      base::Bind(&BrowserProcessImpl::ApplyAllowCrossOriginAuthPromptPolicy,
-                 base::Unretained(this)));
-  ApplyAllowCrossOriginAuthPromptPolicy();
 }
 
 void BrowserProcessImpl::OnKeepAliveStateChanged(bool is_keeping_alive) {
@@ -1414,11 +1408,6 @@ void BrowserProcessImpl::ApplyDefaultBrowserPolicy() {
     set_browser_worker->set_interactive_permitted(false);
     set_browser_worker->StartSetAsDefault();
   }
-}
-
-void BrowserProcessImpl::ApplyAllowCrossOriginAuthPromptPolicy() {
-  bool value = local_state()->GetBoolean(prefs::kAllowCrossOriginAuthPrompt);
-  ResourceDispatcherHost::Get()->SetAllowCrossOriginAuthPrompt(value);
 }
 
 void BrowserProcessImpl::CacheDefaultWebClientState() {

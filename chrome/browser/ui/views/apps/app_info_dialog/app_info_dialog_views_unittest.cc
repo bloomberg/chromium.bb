@@ -110,6 +110,16 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
     chrome_launcher_controller_.reset();
     shelf_model_.reset();
 #endif
+
+    // The Browser class had dependencies on LocalState, which is owned by
+    // |extension_environment_|.
+    auto* browser = release_browser();
+    if (browser) {
+      browser->tab_strip_model()->CloseAllTabs();
+      delete browser;
+    }
+    extension_environment_.DeleteProfile();
+
     BrowserWithTestWindowTest::TearDown();
   }
 
