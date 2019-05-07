@@ -1026,6 +1026,10 @@ const char kForceUiDirectionDescription[] =
     "Explicitly force the UI to left-to-right (LTR) or right-to-left (RTL) "
     "mode, overriding the default direction of the UI language.";
 
+const char kFormControlsRefreshName[] = "Web Platform Controls updated UI";
+const char kFormControlsRefreshDescription[] =
+    "If enabled, HTML forms elements will be rendered using an updated style.";
+
 const char kGpuRasterizationName[] = "GPU rasterization";
 const char kGpuRasterizationDescription[] =
     "Use GPU to rasterize web content. Requires impl-side painting.";

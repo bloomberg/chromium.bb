@@ -3894,6 +3894,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kForbidSyncXHRInPageDismissalDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kForbidSyncXHRInPageDismissal)},
 
+    {"form-controls-refresh", flag_descriptions::kFormControlsRefreshName,
+     flag_descriptions::kFormControlsRefreshDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kFormControlsRefresh)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

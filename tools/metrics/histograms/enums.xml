@@ -32684,6 +32684,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1860481724" label="ChromeHomeExpandButton:enabled"/>
   <int value="-1859095876" label="Previews:disabled"/>
   <int value="-1856902397" label="LoadingWithMojo:enabled"/>
+  <int value="-1855347512" label="FormControlsRefresh:disabled"/>
   <int value="-1854432127" label="ChromeHomePullToRefreshIphAtTop:disabled"/>
   <int value="-1854372227" label="VrBrowsingExperimentalFeatures:enabled"/>
   <int value="-1849706663" label="enable-password-force-saving:disabled"/>
@@ -33824,6 +33825,7 @@ from previous Chrome versions.
   <int value="-115834377" label="EnableUnifiedMultiDeviceSetup:disabled"/>
   <int value="-114768488" label="ImmersiveFullscreen:enabled"/>
   <int value="-112459802" label="WebXrRenderPath:enabled"/>
+  <int value="-112335255" label="FormControlsRefresh:enabled"/>
   <int value="-110756896"
       label="NTPArticleSuggestionsExpandableHeader:enabled"/>
   <int value="-110726049" label="KeyboardLockAPI:disabled"/>
