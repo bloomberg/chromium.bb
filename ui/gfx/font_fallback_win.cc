@@ -26,7 +26,6 @@
 #include "base/win/scoped_gdi_object.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_fallback.h"
-#include "ui/gfx/platform_font_win.h"
 #include "ui/gfx/win/direct_write.h"
 #include "ui/gfx/win/text_analysis_source.h"
 
@@ -261,6 +260,42 @@ int CALLBACK MetaFileEnumProc(HDC hdc,
   return 1;
 }
 
+// Retrieve the font family name for the DWrite font |mapped_font|. The font
+// family name is the non-localized name. On failure, returns false.
+bool GetFontFamilyNameFromDWriteFont(IDWriteFont* mapped_font,
+                                     std::string* result) {
+  Microsoft::WRL::ComPtr<IDWriteFontFamily> font_family;
+  HRESULT hr = mapped_font->GetFontFamily(&font_family);
+  if (FAILED(hr))
+    return false;
+
+  Microsoft::WRL::ComPtr<IDWriteLocalizedStrings> family_names;
+  hr = font_family->GetFamilyNames(&family_names);
+  if (FAILED(hr))
+    return false;
+
+  // Index zero is the non localized family name.
+  constexpr UINT32 locale_index = 0;
+
+  // Retrieve the family name string length.
+  UINT32 name_length = 0;
+  hr = family_names->GetStringLength(locale_index, &name_length);
+  if (FAILED(hr))
+    return false;
+
+  // Size of the string must include the ending NUL character.
+  name_length += 1;
+
+  std::unique_ptr<wchar_t[]> family_name_for_locale(new wchar_t[name_length]);
+  hr = family_names->GetString(locale_index, family_name_for_locale.get(),
+                               name_length);
+  if (FAILED(hr))
+    return false;
+
+  *result = base::WideToUTF8(family_name_for_locale.get());
+  return true;
+}
+
 }  // namespace
 
 namespace internal {
@@ -480,19 +515,18 @@ bool GetFallbackFont(const Font& font,
   if (FAILED(fallback->MapCharacters(
           text_analysis.Get(), 0, text_length, nullptr, original_name.c_str(),
           static_cast<DWRITE_FONT_WEIGHT>(font.GetWeight()), font_style,
-          DWRITE_FONT_STRETCH_NORMAL, &mapped_length,
-          mapped_font.GetAddressOf(), &scale))) {
+          DWRITE_FONT_STRETCH_NORMAL, &mapped_length, &mapped_font, &scale))) {
     return false;
   }
+  if (!mapped_font)
+    return false;
 
-  if (mapped_font) {
-    base::string16 name;
-    if (FAILED(GetFamilyNameFromDirectWriteFont(mapped_font.Get(), &name)))
-      return false;
-    *result = Font(base::UTF16ToUTF8(name), font.GetFontSize() * scale);
-    return true;
-  }
-  return false;
+  std::string family_name;
+  if (!GetFontFamilyNameFromDWriteFont(mapped_font.Get(), &family_name))
+    return false;
+
+  *result = Font(family_name, font.GetFontSize() * scale);
+  return true;
 }
 
 }  // namespace gfx
