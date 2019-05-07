@@ -15,7 +15,6 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetPrope
 
 import android.support.annotation.Nullable;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import org.chromium.ui.modelutil.PropertyKey;
@@ -32,15 +31,12 @@ class TabGridSheetViewBinder {
         public final TabGroupUiToolbarView toolbarView;
         public final View contentView;
         @Nullable
-        public ViewGroup parentView;
-        @Nullable
         public TabGridDialogParent dialogView;
 
         ViewHolder(TabGroupUiToolbarView toolbarView, View contentView,
-                @Nullable ViewGroup parentView, @Nullable TabGridDialogParent dialogView) {
+                @Nullable TabGridDialogParent dialogView) {
             this.toolbarView = toolbarView;
             this.contentView = contentView;
-            this.parentView = parentView;
             this.dialogView = dialogView;
         }
     }
@@ -71,8 +67,8 @@ class TabGridSheetViewBinder {
             viewHolder.dialogView.setScrimViewObserver(model.get(SCRIMVIEW_OBSERVER));
         } else if (IS_DIALOG_VISIBLE == propertyKey) {
             if (model.get(IS_DIALOG_VISIBLE)) {
-                viewHolder.dialogView.updateDialog(viewHolder.toolbarView, viewHolder.contentView);
-                viewHolder.dialogView.showDialog(viewHolder.parentView);
+                viewHolder.dialogView.resetDialog(viewHolder.toolbarView, viewHolder.contentView);
+                viewHolder.dialogView.showDialog();
             } else {
                 viewHolder.dialogView.hideDialog();
             }

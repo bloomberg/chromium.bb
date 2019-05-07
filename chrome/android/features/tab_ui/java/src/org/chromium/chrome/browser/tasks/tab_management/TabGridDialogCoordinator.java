@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
-import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
@@ -30,7 +29,6 @@ public class TabGridDialogCoordinator {
     private final TabGridDialogMediator mMediator;
     private final PropertyModel mToolbarPropertyModel;
     private TabGridSheetToolbarCoordinator mToolbarCoordinator;
-    private ViewGroup mParentView;
     private TabGridDialogParent mParentLayout;
 
     TabGridDialogCoordinator(Context context, TabModelSelector tabModelSelector,
@@ -49,9 +47,7 @@ public class TabGridDialogCoordinator {
         mMediator = new TabGridDialogMediator(context, this::resetWithListOfTabs,
                 mToolbarPropertyModel, tabModelSelector, tabCreatorManager, resetHandler);
 
-        mParentView = compositorViewHolder;
-
-        mParentLayout = new TabGridDialogParent(context);
+        mParentLayout = new TabGridDialogParent(context, compositorViewHolder);
     }
 
     /**
@@ -60,13 +56,14 @@ public class TabGridDialogCoordinator {
     public void destroy() {
         mTabListCoordinator.destroy();
         mMediator.destroy();
+        mParentLayout.destroy();
     }
 
     private void updateDialogContent(List<Tab> tabs) {
         if (tabs != null) {
             TabListRecyclerView recyclerView = mTabListCoordinator.getContainerView();
             mToolbarCoordinator = new TabGridSheetToolbarCoordinator(
-                    mContext, recyclerView, mToolbarPropertyModel, mParentView, mParentLayout);
+                    mContext, recyclerView, mToolbarPropertyModel, mParentLayout);
         } else {
             if (mToolbarCoordinator != null) {
                 mToolbarCoordinator.destroy();

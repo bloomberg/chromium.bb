@@ -33,16 +33,15 @@ class TabGridSheetToolbarCoordinator implements Destroyable {
      */
     TabGridSheetToolbarCoordinator(
             Context context, ViewGroup contentView, PropertyModel toolbarPropertyModel) {
-        this(context, contentView, toolbarPropertyModel, null, null);
+        this(context, contentView, toolbarPropertyModel, null);
     }
 
     TabGridSheetToolbarCoordinator(Context context, ViewGroup contentView,
-            PropertyModel toolbarPropertyModel, ViewGroup parentView, TabGridDialogParent dialog) {
+            PropertyModel toolbarPropertyModel, TabGridDialogParent dialog) {
         mToolbarView = (TabGroupUiToolbarView) LayoutInflater.from(context).inflate(
                 R.layout.bottom_tab_grid_toolbar, contentView, false);
         mModelChangeProcessor = PropertyModelChangeProcessor.create(toolbarPropertyModel,
-                new TabGridSheetViewBinder.ViewHolder(
-                        mToolbarView, contentView, parentView, dialog),
+                new TabGridSheetViewBinder.ViewHolder(mToolbarView, contentView, dialog),
                 TabGridSheetViewBinder::bind);
     }
 
