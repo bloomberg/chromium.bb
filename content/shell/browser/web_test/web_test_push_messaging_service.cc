@@ -10,11 +10,11 @@
 #include "base/stl_util.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/permission_type.h"
-#include "content/public/common/push_messaging_status.mojom.h"
 #include "content/public/common/push_subscription_options.h"
 #include "content/shell/browser/web_test/web_test_browser_context.h"
 #include "content/shell/browser/web_test/web_test_content_browser_client.h"
 #include "content/shell/browser/web_test/web_test_permission_manager.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
@@ -91,12 +91,12 @@ void WebTestPushMessagingService::SubscribeFromWorker(
     subscribed_service_worker_registration_ = service_worker_registration_id;
     std::move(callback).Run(
         "layoutTestRegistrationId", p256dh, auth,
-        mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE);
+        blink::mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE);
   } else {
-    std::move(callback).Run("registration_id",
-                            std::vector<uint8_t>() /* p256dh */,
-                            std::vector<uint8_t>() /* auth */,
-                            mojom::PushRegistrationStatus::PERMISSION_DENIED);
+    std::move(callback).Run(
+        "registration_id", std::vector<uint8_t>() /* p256dh */,
+        std::vector<uint8_t>() /* auth */,
+        blink::mojom::PushRegistrationStatus::PERMISSION_DENIED);
   }
 }
 
@@ -119,7 +119,7 @@ bool WebTestPushMessagingService::SupportNonVisibleMessages() {
 }
 
 void WebTestPushMessagingService::Unsubscribe(
-    mojom::PushUnregistrationReason reason,
+    blink::mojom::PushUnregistrationReason reason,
     const GURL& requesting_origin,
     int64_t service_worker_registration_id,
     const std::string& sender_id,
@@ -131,8 +131,9 @@ void WebTestPushMessagingService::Unsubscribe(
           std::move(callback),
           service_worker_registration_id ==
                   subscribed_service_worker_registration_
-              ? mojom::PushUnregistrationStatus::SUCCESS_UNREGISTERED
-              : mojom::PushUnregistrationStatus::SUCCESS_WAS_NOT_REGISTERED));
+              ? blink::mojom::PushUnregistrationStatus::SUCCESS_UNREGISTERED
+              : blink::mojom::PushUnregistrationStatus::
+                    SUCCESS_WAS_NOT_REGISTERED));
   if (service_worker_registration_id ==
       subscribed_service_worker_registration_) {
     subscribed_service_worker_registration_ =

@@ -53,9 +53,9 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/push_messaging_status.mojom.h"
 #include "content/public/common/push_subscription_options.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
@@ -87,11 +87,11 @@ const char kSilentPushUnsupportedMessage[] =
     "pushManager.subscribe({userVisibleOnly: true}) instead. See "
     "https://goo.gl/yqv4Q4 for more details.";
 
-void RecordDeliveryStatus(content::mojom::PushDeliveryStatus status) {
+void RecordDeliveryStatus(blink::mojom::PushDeliveryStatus status) {
   UMA_HISTOGRAM_ENUMERATION("PushMessaging.DeliveryStatus", status);
 }
 
-void RecordUnsubscribeReason(content::mojom::PushUnregistrationReason reason) {
+void RecordUnsubscribeReason(blink::mojom::PushUnregistrationReason reason) {
   UMA_HISTOGRAM_ENUMERATION("PushMessaging.UnregistrationReason", reason);
 }
 
@@ -123,7 +123,7 @@ blink::mojom::PermissionStatus ToPermissionStatus(
 
 void UnregisterCallbackToClosure(
     base::OnceClosure closure,
-    content::mojom::PushUnregistrationStatus status) {
+    blink::mojom::PushUnregistrationStatus status) {
   DCHECK(closure);
   std::move(closure).Run();
 }
@@ -202,7 +202,7 @@ void PushMessagingServiceImpl::OnStoreReset() {
   // Delete all cached subscriptions, since they are now invalid.
   for (const auto& identifier : PushMessagingAppIdentifier::GetAll(profile_)) {
     RecordUnsubscribeReason(
-        content::mojom::PushUnregistrationReason::GCM_STORE_RESET);
+        blink::mojom::PushUnregistrationReason::GCM_STORE_RESET);
     // Clear all the subscriptions in parallel, to reduce risk that shutdown
     // occurs before we finish clearing them.
     ClearPushSubscriptionId(profile_, identifier.origin(),
@@ -249,16 +249,15 @@ void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
     DeliverMessageCallback(app_id, GURL::EmptyGURL(),
                            -1 /* kInvalidServiceWorkerRegistrationId */,
                            message, message_handled_closure,
-                           content::mojom::PushDeliveryStatus::UNKNOWN_APP_ID);
+                           blink::mojom::PushDeliveryStatus::UNKNOWN_APP_ID);
     return;
   }
   // Drop message and unregister if |origin| has lost push permission.
   if (!IsPermissionSet(app_identifier.origin())) {
-    DeliverMessageCallback(
-        app_id, app_identifier.origin(),
-        app_identifier.service_worker_registration_id(), message,
-        message_handled_closure,
-        content::mojom::PushDeliveryStatus::PERMISSION_DENIED);
+    DeliverMessageCallback(app_id, app_identifier.origin(),
+                           app_identifier.service_worker_registration_id(),
+                           message, message_handled_closure,
+                           blink::mojom::PushDeliveryStatus::PERMISSION_DENIED);
     return;
   }
 
@@ -296,7 +295,7 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
     int64_t service_worker_registration_id,
     const gcm::IncomingMessage& message,
     const base::Closure& message_handled_closure,
-    content::mojom::PushDeliveryStatus status) {
+    blink::mojom::PushDeliveryStatus status) {
   DCHECK_GE(in_flight_message_deliveries_.count(app_id), 1u);
 
   RecordDeliveryStatus(status);
@@ -309,8 +308,8 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
   base::ScopedClosureRunner completion_closure_runner(completion_closure);
 
   // A reason to automatically unsubscribe. UNKNOWN means do not unsubscribe.
-  content::mojom::PushUnregistrationReason unsubscribe_reason =
-      content::mojom::PushUnregistrationReason::UNKNOWN;
+  blink::mojom::PushUnregistrationReason unsubscribe_reason =
+      blink::mojom::PushUnregistrationReason::UNKNOWN;
 
   // TODO(mvanouwerkerk): Show a warning in the developer console of the
   // Service Worker corresponding to app_id (and/or on an internals page).
@@ -320,9 +319,9 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
     // the Service Worker JavaScript, even if the website's event handler failed
     // (to prevent sites deliberately failing in order to avoid having to show
     // notifications).
-    case content::mojom::PushDeliveryStatus::SUCCESS:
-    case content::mojom::PushDeliveryStatus::EVENT_WAITUNTIL_REJECTED:
-    case content::mojom::PushDeliveryStatus::TIMEOUT:
+    case blink::mojom::PushDeliveryStatus::SUCCESS:
+    case blink::mojom::PushDeliveryStatus::EVENT_WAITUNTIL_REJECTED:
+    case blink::mojom::PushDeliveryStatus::TIMEOUT:
       // Only enforce the user visible requirements if this is currently running
       // as the delivery callback for the last in-flight message, and silent
       // push has not been enabled through a command line flag.
@@ -334,24 +333,24 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
             completion_closure_runner.Release());
       }
       break;
-    case content::mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR:
+    case blink::mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR:
       // Do nothing, and hope the error is transient.
       break;
-    case content::mojom::PushDeliveryStatus::UNKNOWN_APP_ID:
+    case blink::mojom::PushDeliveryStatus::UNKNOWN_APP_ID:
       unsubscribe_reason =
-          content::mojom::PushUnregistrationReason::DELIVERY_UNKNOWN_APP_ID;
+          blink::mojom::PushUnregistrationReason::DELIVERY_UNKNOWN_APP_ID;
       break;
-    case content::mojom::PushDeliveryStatus::PERMISSION_DENIED:
+    case blink::mojom::PushDeliveryStatus::PERMISSION_DENIED:
       unsubscribe_reason =
-          content::mojom::PushUnregistrationReason::DELIVERY_PERMISSION_DENIED;
+          blink::mojom::PushUnregistrationReason::DELIVERY_PERMISSION_DENIED;
       break;
-    case content::mojom::PushDeliveryStatus::NO_SERVICE_WORKER:
+    case blink::mojom::PushDeliveryStatus::NO_SERVICE_WORKER:
       unsubscribe_reason =
-          content::mojom::PushUnregistrationReason::DELIVERY_NO_SERVICE_WORKER;
+          blink::mojom::PushUnregistrationReason::DELIVERY_NO_SERVICE_WORKER;
       break;
   }
 
-  if (unsubscribe_reason != content::mojom::PushUnregistrationReason::UNKNOWN) {
+  if (unsubscribe_reason != blink::mojom::PushUnregistrationReason::UNKNOWN) {
     PushMessagingAppIdentifier app_identifier =
         PushMessagingAppIdentifier::FindByAppId(profile_, app_id);
     UnsubscribeInternal(
@@ -443,9 +442,8 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
 
   if (push_subscription_count_ + pending_push_subscription_count_ >=
       kMaxRegistrations) {
-    SubscribeEndWithError(
-        std::move(callback),
-        content::mojom::PushRegistrationStatus::LIMIT_REACHED);
+    SubscribeEndWithError(std::move(callback),
+                          blink::mojom::PushRegistrationStatus::LIMIT_REACHED);
     return;
   }
 
@@ -463,7 +461,7 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
 
     SubscribeEndWithError(
         std::move(callback),
-        content::mojom::PushRegistrationStatus::PERMISSION_DENIED);
+        blink::mojom::PushRegistrationStatus::PERMISSION_DENIED);
     return;
   }
 
@@ -494,9 +492,8 @@ void PushMessagingServiceImpl::SubscribeFromWorker(
 
   if (push_subscription_count_ + pending_push_subscription_count_ >=
       kMaxRegistrations) {
-    SubscribeEndWithError(
-        std::move(register_callback),
-        content::mojom::PushRegistrationStatus::LIMIT_REACHED);
+    SubscribeEndWithError(std::move(register_callback),
+                          blink::mojom::PushRegistrationStatus::LIMIT_REACHED);
     return;
   }
 
@@ -506,7 +503,7 @@ void PushMessagingServiceImpl::SubscribeFromWorker(
   if (permission_status != blink::mojom::PermissionStatus::GRANTED) {
     SubscribeEndWithError(
         std::move(register_callback),
-        content::mojom::PushRegistrationStatus::PERMISSION_DENIED);
+        blink::mojom::PushRegistrationStatus::PERMISSION_DENIED);
     return;
   }
 
@@ -542,7 +539,7 @@ void PushMessagingServiceImpl::DoSubscribe(
   if (content_setting != CONTENT_SETTING_ALLOW) {
     SubscribeEndWithError(
         std::move(register_callback),
-        content::mojom::PushRegistrationStatus::PERMISSION_DENIED);
+        blink::mojom::PushRegistrationStatus::PERMISSION_DENIED);
     return;
   }
 
@@ -564,13 +561,13 @@ void PushMessagingServiceImpl::SubscribeEnd(
     const std::string& subscription_id,
     const std::vector<uint8_t>& p256dh,
     const std::vector<uint8_t>& auth,
-    content::mojom::PushRegistrationStatus status) {
+    blink::mojom::PushRegistrationStatus status) {
   std::move(callback).Run(subscription_id, p256dh, auth, status);
 }
 
 void PushMessagingServiceImpl::SubscribeEndWithError(
     RegisterCallback callback,
-    content::mojom::PushRegistrationStatus status) {
+    blink::mojom::PushRegistrationStatus status) {
   SubscribeEnd(std::move(callback), std::string() /* subscription_id */,
                std::vector<uint8_t>() /* p256dh */,
                std::vector<uint8_t>() /* auth */, status);
@@ -584,8 +581,8 @@ void PushMessagingServiceImpl::DidSubscribe(
     InstanceID::Result result) {
   DecreasePushSubscriptionCount(1, true /* was_pending */);
 
-  content::mojom::PushRegistrationStatus status =
-      content::mojom::PushRegistrationStatus::SERVICE_ERROR;
+  blink::mojom::PushRegistrationStatus status =
+      blink::mojom::PushRegistrationStatus::SERVICE_ERROR;
 
   switch (result) {
     case InstanceID::SUCCESS:
@@ -606,10 +603,10 @@ void PushMessagingServiceImpl::DidSubscribe(
     case InstanceID::UNKNOWN_ERROR:
       DLOG(ERROR) << "Push messaging subscription failed; InstanceID::Result = "
                   << result;
-      status = content::mojom::PushRegistrationStatus::SERVICE_ERROR;
+      status = blink::mojom::PushRegistrationStatus::SERVICE_ERROR;
       break;
     case InstanceID::NETWORK_ERROR:
-      status = content::mojom::PushRegistrationStatus::NETWORK_ERROR;
+      status = blink::mojom::PushRegistrationStatus::NETWORK_ERROR;
       break;
   }
 
@@ -625,7 +622,7 @@ void PushMessagingServiceImpl::DidSubscribeWithEncryptionInfo(
   if (p256dh.empty()) {
     SubscribeEndWithError(
         std::move(callback),
-        content::mojom::PushRegistrationStatus::PUBLIC_KEY_UNAVAILABLE);
+        blink::mojom::PushRegistrationStatus::PUBLIC_KEY_UNAVAILABLE);
     return;
   }
 
@@ -633,11 +630,10 @@ void PushMessagingServiceImpl::DidSubscribeWithEncryptionInfo(
 
   IncreasePushSubscriptionCount(1, false /* is_pending */);
 
-  SubscribeEnd(
-      std::move(callback), subscription_id,
-      std::vector<uint8_t>(p256dh.begin(), p256dh.end()),
-      std::vector<uint8_t>(auth_secret.begin(), auth_secret.end()),
-      content::mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE);
+  SubscribeEnd(std::move(callback), subscription_id,
+               std::vector<uint8_t>(p256dh.begin(), p256dh.end()),
+               std::vector<uint8_t>(auth_secret.begin(), auth_secret.end()),
+               blink::mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE);
 }
 
 // GetSubscriptionInfo methods -------------------------------------------------
@@ -703,7 +699,7 @@ void PushMessagingServiceImpl::DidGetEncryptionInfo(
 // Unsubscribe methods ---------------------------------------------------------
 
 void PushMessagingServiceImpl::Unsubscribe(
-    content::mojom::PushUnregistrationReason reason,
+    blink::mojom::PushUnregistrationReason reason,
     const GURL& requesting_origin,
     int64_t service_worker_registration_id,
     const std::string& sender_id,
@@ -719,7 +715,7 @@ void PushMessagingServiceImpl::Unsubscribe(
 }
 
 void PushMessagingServiceImpl::UnsubscribeInternal(
-    content::mojom::PushUnregistrationReason reason,
+    blink::mojom::PushUnregistrationReason reason,
     const GURL& origin,
     int64_t service_worker_registration_id,
     const std::string& app_id,
@@ -747,7 +743,7 @@ void PushMessagingServiceImpl::UnsubscribeInternal(
 }
 
 void PushMessagingServiceImpl::DidClearPushSubscriptionId(
-    content::mojom::PushUnregistrationReason reason,
+    blink::mojom::PushUnregistrationReason reason,
     const std::string& app_id,
     const std::string& sender_id,
     UnregisterCallback callback) {
@@ -755,7 +751,7 @@ void PushMessagingServiceImpl::DidClearPushSubscriptionId(
     // Without an |app_id|, we can neither delete the subscription from the
     // PushMessagingAppIdentifier map, nor unsubscribe with the GCM Driver.
     std::move(callback).Run(
-        content::mojom::PushUnregistrationStatus::SUCCESS_WAS_NOT_REGISTERED);
+        blink::mojom::PushUnregistrationStatus::SUCCESS_WAS_NOT_REGISTERED);
     return;
   }
 
@@ -778,9 +774,8 @@ void PushMessagingServiceImpl::DidClearPushSubscriptionId(
   // eventually reach GCM servers even if this particular attempt fails.
   std::move(callback).Run(
       was_subscribed
-          ? content::mojom::PushUnregistrationStatus::SUCCESS_UNREGISTERED
-          : content::mojom::PushUnregistrationStatus::
-                SUCCESS_WAS_NOT_REGISTERED);
+          ? blink::mojom::PushUnregistrationStatus::SUCCESS_UNREGISTERED
+          : blink::mojom::PushUnregistrationStatus::SUCCESS_WAS_NOT_REGISTERED);
 
   if (PushMessagingAppIdentifier::UseInstanceID(app_id)) {
     GetInstanceIDDriver()->GetInstanceID(app_id)->DeleteID(
@@ -863,7 +858,7 @@ void PushMessagingServiceImpl::DidDeleteServiceWorkerRegistration(
   // Android from GCM, as that requires a sender_id. (Ideally we'd fetch it
   // from the SWDB in some "before_unregistered" SWObserver event.)
   UnsubscribeInternal(
-      content::mojom::PushUnregistrationReason::SERVICE_WORKER_UNREGISTERED,
+      blink::mojom::PushUnregistrationReason::SERVICE_WORKER_UNREGISTERED,
       origin, service_worker_registration_id, app_identifier.app_id(),
       std::string() /* sender_id */,
       base::Bind(&UnregisterCallbackToClosure,
@@ -894,7 +889,7 @@ void PushMessagingServiceImpl::DidDeleteServiceWorkerDatabase() {
     // Android from GCM, as that requires a sender_id. We can't fetch those from
     // the Service Worker database anymore as it's been deleted.
     UnsubscribeInternal(
-        content::mojom::PushUnregistrationReason::SERVICE_WORKER_DATABASE_WIPED,
+        blink::mojom::PushUnregistrationReason::SERVICE_WORKER_DATABASE_WIPED,
         app_identifier.origin(),
         app_identifier.service_worker_registration_id(),
         app_identifier.app_id(), std::string() /* sender_id */,
@@ -958,7 +953,7 @@ void PushMessagingServiceImpl::OnContentSettingChanged(
               base::Bind(&UnregisterCallbackToClosure, barrier_closure)));
     } else {
       UnsubscribeInternal(
-          content::mojom::PushUnregistrationReason::PERMISSION_REVOKED,
+          blink::mojom::PushUnregistrationReason::PERMISSION_REVOKED,
           app_identifier.origin(),
           app_identifier.service_worker_registration_id(),
           app_identifier.app_id(), std::string() /* sender_id */,
@@ -981,7 +976,7 @@ void PushMessagingServiceImpl::UnsubscribeBecausePermissionRevoked(
   // messages.
   // TODO(johnme): Auto-unregister before SW DB is cleared (crbug.com/402458).
   UnsubscribeInternal(
-      content::mojom::PushUnregistrationReason::PERMISSION_REVOKED,
+      blink::mojom::PushUnregistrationReason::PERMISSION_REVOKED,
       app_identifier.origin(), app_identifier.service_worker_registration_id(),
       app_identifier.app_id(), sender_id, std::move(callback));
 }

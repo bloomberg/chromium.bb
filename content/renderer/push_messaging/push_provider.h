@@ -21,20 +21,21 @@
 class GURL;
 
 namespace blink {
-struct WebPushSubscriptionOptions;
-}
-
-namespace content {
 
 namespace mojom {
 enum class PushGetRegistrationStatus;
 enum class PushRegistrationStatus;
 }  // namespace mojom
 
+struct WebPushSubscriptionOptions;
+}  // namespace blink
+
+namespace content {
+
 struct PushSubscriptionOptions;
 
 blink::WebPushError PushRegistrationStatusToWebPushError(
-    mojom::PushRegistrationStatus status);
+    blink::mojom::PushRegistrationStatus status);
 
 class PushProvider : public blink::WebPushProvider,
                      public WorkerThread::Observer {
@@ -69,7 +70,7 @@ class PushProvider : public blink::WebPushProvider,
 
   void DidSubscribe(
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
-      mojom::PushRegistrationStatus status,
+      blink::mojom::PushRegistrationStatus status,
       const base::Optional<GURL>& endpoint,
       const base::Optional<PushSubscriptionOptions>& options,
       const base::Optional<std::vector<uint8_t>>& p256dh,
@@ -83,7 +84,7 @@ class PushProvider : public blink::WebPushProvider,
 
   void DidGetSubscription(
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
-      mojom::PushGetRegistrationStatus status,
+      blink::mojom::PushGetRegistrationStatus status,
       const base::Optional<GURL>& endpoint,
       const base::Optional<PushSubscriptionOptions>& options,
       const base::Optional<std::vector<uint8_t>>& p256dh,

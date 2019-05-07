@@ -8,14 +8,18 @@
 #include "content/common/push_messaging.mojom.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_error.h"
 
-namespace content {
+namespace blink {
 
 namespace mojom {
 enum class PushRegistrationStatus;
 }  // namespace mojom
 
+}  // namespace blink
+
+namespace content {
+
 blink::WebPushError PushRegistrationStatusToWebPushError(
-    mojom::PushRegistrationStatus status);
+    blink::mojom::PushRegistrationStatus status);
 
 }  // namespace content
 

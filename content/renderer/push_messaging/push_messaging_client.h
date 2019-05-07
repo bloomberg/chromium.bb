@@ -20,15 +20,16 @@
 class GURL;
 
 namespace blink {
+
+namespace mojom {
+enum class PushRegistrationStatus;
+}
+
 struct Manifest;
 struct WebPushSubscriptionOptions;
 }
 
 namespace content {
-
-namespace mojom {
-enum class PushRegistrationStatus;
-}
 
 struct PushSubscriptionOptions;
 
@@ -65,7 +66,7 @@ class PushMessagingClient : public RenderFrameObserver,
 
   void DidSubscribe(
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
-      mojom::PushRegistrationStatus status,
+      blink::mojom::PushRegistrationStatus status,
       const base::Optional<GURL>& endpoint,
       const base::Optional<PushSubscriptionOptions>& options,
       const base::Optional<std::vector<uint8_t>>& p256dh,

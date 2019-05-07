@@ -13,11 +13,11 @@
 #include "base/threading/thread_local.h"
 #include "content/child/child_thread_impl.h"
 #include "content/public/common/child_process_host.h"
-#include "content/public/common/push_messaging_status.mojom.h"
 #include "content/public/common/push_subscription_options.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/renderer/push_messaging/push_messaging_utils.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription_options.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -95,17 +95,18 @@ void PushProvider::Subscribe(
 
 void PushProvider::DidSubscribe(
     std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
-    mojom::PushRegistrationStatus status,
+    blink::mojom::PushRegistrationStatus status,
     const base::Optional<GURL>& endpoint,
     const base::Optional<PushSubscriptionOptions>& options,
     const base::Optional<std::vector<uint8_t>>& p256dh,
     const base::Optional<std::vector<uint8_t>>& auth) {
   DCHECK(callbacks);
 
-  if (status == mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE ||
-      status == mojom::PushRegistrationStatus::
+  if (status ==
+          blink::mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE ||
+      status == blink::mojom::PushRegistrationStatus::
                     SUCCESS_NEW_SUBSCRIPTION_FROM_PUSH_SERVICE ||
-      status == mojom::PushRegistrationStatus::SUCCESS_FROM_CACHE) {
+      status == blink::mojom::PushRegistrationStatus::SUCCESS_FROM_CACHE) {
     DCHECK(endpoint);
     DCHECK(options);
     DCHECK(p256dh);
@@ -164,14 +165,14 @@ void PushProvider::GetSubscription(
 
 void PushProvider::DidGetSubscription(
     std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
-    mojom::PushGetRegistrationStatus status,
+    blink::mojom::PushGetRegistrationStatus status,
     const base::Optional<GURL>& endpoint,
     const base::Optional<PushSubscriptionOptions>& options,
     const base::Optional<std::vector<uint8_t>>& p256dh,
     const base::Optional<std::vector<uint8_t>>& auth) {
   DCHECK(callbacks);
 
-  if (status == mojom::PushGetRegistrationStatus::SUCCESS) {
+  if (status == blink::mojom::PushGetRegistrationStatus::SUCCESS) {
     DCHECK(endpoint);
     DCHECK(options);
     DCHECK(p256dh);

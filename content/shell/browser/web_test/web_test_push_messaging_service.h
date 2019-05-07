@@ -41,7 +41,7 @@ class WebTestPushMessagingService : public PushMessagingService {
                            const std::string& subscription_id,
                            const SubscriptionInfoCallback& callback) override;
   bool SupportNonVisibleMessages() override;
-  void Unsubscribe(mojom::PushUnregistrationReason reason,
+  void Unsubscribe(blink::mojom::PushUnregistrationReason reason,
                    const GURL& requesting_origin,
                    int64_t service_worker_registration_id,
                    const std::string& sender_id,

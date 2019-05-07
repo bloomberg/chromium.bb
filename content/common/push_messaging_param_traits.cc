@@ -4,8 +4,6 @@
 
 #include "content/common/push_messaging_param_traits.h"
 
-#include "content/public/common/push_messaging_status.mojom.h"
-
 namespace mojo {
 
 // PushErrorType

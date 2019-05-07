@@ -8,8 +8,8 @@
 #include <stddef.h>
 
 #include "content/common/push_messaging.mojom.h"
-#include "content/public/common/push_messaging_status.mojom.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 
 namespace mojo {
 

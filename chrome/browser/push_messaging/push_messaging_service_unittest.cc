@@ -27,10 +27,10 @@
 #include "components/gcm_driver/fake_gcm_client_factory.h"
 #include "components/gcm_driver/fake_gcm_profile_service.h"
 #include "components/gcm_driver/gcm_profile_service.h"
-#include "content/public/common/push_messaging_status.mojom.h"
 #include "content/public/common/push_subscription_options.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "components/gcm_driver/instance_id/instance_id_android.h"
@@ -111,8 +111,8 @@ class PushMessagingServiceTest : public ::testing::Test {
                    const std::string& registration_id,
                    const std::vector<uint8_t>& p256dh,
                    const std::vector<uint8_t>& auth,
-                   content::mojom::PushRegistrationStatus status) {
-    EXPECT_EQ(content::mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE,
+                   blink::mojom::PushRegistrationStatus status) {
+    EXPECT_EQ(blink::mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE,
               status);
 
     *subscription_id_out = registration_id;

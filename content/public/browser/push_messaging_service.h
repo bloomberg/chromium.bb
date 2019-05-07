@@ -16,16 +16,13 @@
 namespace blink {
 namespace mojom {
 enum class PermissionStatus;
-}
-}  // namespace blink
-
-namespace content {
-
-namespace mojom {
 enum class PushRegistrationStatus;
 enum class PushUnregistrationReason;
 enum class PushUnregistrationStatus;
 }  // namespace mojom
+}  // namespace blink
+
+namespace content {
 
 class BrowserContext;
 struct PushSubscriptionOptions;
@@ -38,9 +35,9 @@ class CONTENT_EXPORT PushMessagingService {
       base::OnceCallback<void(const std::string& registration_id,
                               const std::vector<uint8_t>& p256dh,
                               const std::vector<uint8_t>& auth,
-                              mojom::PushRegistrationStatus status)>;
+                              blink::mojom::PushRegistrationStatus status)>;
   using UnregisterCallback =
-      base::OnceCallback<void(mojom::PushUnregistrationStatus)>;
+      base::OnceCallback<void(blink::mojom::PushUnregistrationStatus)>;
   using SubscriptionInfoCallback =
       base::Callback<void(bool is_valid,
                           const std::vector<uint8_t>& p256dh,
@@ -95,7 +92,7 @@ class CONTENT_EXPORT PushMessagingService {
   // Unsubscribe the given |sender_id| from the push messaging service. Locally
   // deactivates the subscription, then runs |callback|, then asynchronously
   // attempts to unsubscribe with the push service.
-  virtual void Unsubscribe(mojom::PushUnregistrationReason reason,
+  virtual void Unsubscribe(blink::mojom::PushUnregistrationReason reason,
                            const GURL& requesting_origin,
                            int64_t service_worker_registration_id,
                            const std::string& sender_id,

@@ -54,13 +54,13 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/push_messaging_status.mojom.h"
 #include "content/public/common/push_subscription_options.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/message_center/public/cpp/notification.h"
 
@@ -108,8 +108,8 @@ void DidRegister(base::Closure done_callback,
                  const std::string& registration_id,
                  const std::vector<uint8_t>& p256dh,
                  const std::vector<uint8_t>& auth,
-                 content::mojom::PushRegistrationStatus status) {
-  EXPECT_EQ(content::mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE,
+                 blink::mojom::PushRegistrationStatus status) {
+  EXPECT_EQ(blink::mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE,
             status);
   done_callback.Run();
 }
@@ -1110,7 +1110,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventSuccess) {
       0 /* SERVICE_WORKER_OK */, 1);
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.DeliveryStatus",
-      static_cast<int>(content::mojom::PushDeliveryStatus::SUCCESS), 1);
+      static_cast<int>(blink::mojom::PushDeliveryStatus::SUCCESS), 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventOnShutdown) {
@@ -1212,15 +1212,14 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoServiceWorker) {
       "PushMessaging.DeliveryStatus.ServiceWorkerEvent", 0);
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.DeliveryStatus",
-      static_cast<int>(content::mojom::PushDeliveryStatus::NO_SERVICE_WORKER),
-      1);
+      static_cast<int>(blink::mojom::PushDeliveryStatus::NO_SERVICE_WORKER), 1);
 
   // Missing Service Workers should trigger an automatic unsubscription attempt.
   EXPECT_EQ(app_id, gcm_driver_->last_deletetoken_app_id());
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.UnregistrationReason",
       static_cast<int>(
-          content::mojom::PushUnregistrationReason::DELIVERY_NO_SERVICE_WORKER),
+          blink::mojom::PushUnregistrationReason::DELIVERY_NO_SERVICE_WORKER),
       1);
 
   // |app_identifier| should no longer be stored in prefs.
@@ -1245,8 +1244,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, NoSubscription) {
   EXPECT_EQ("unsubscribe result: true", script_result);
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.UnregistrationReason",
-      static_cast<int>(
-          content::mojom::PushUnregistrationReason::JAVASCRIPT_API),
+      static_cast<int>(blink::mojom::PushUnregistrationReason::JAVASCRIPT_API),
       1);
 
   gcm::IncomingMessage message;
@@ -1266,14 +1264,14 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, NoSubscription) {
       "PushMessaging.DeliveryStatus.ServiceWorkerEvent", 0);
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.DeliveryStatus",
-      static_cast<int>(content::mojom::PushDeliveryStatus::UNKNOWN_APP_ID), 1);
+      static_cast<int>(blink::mojom::PushDeliveryStatus::UNKNOWN_APP_ID), 1);
 
   // Missing subscriptions should trigger an automatic unsubscription attempt.
   EXPECT_EQ(app_identifier.app_id(), gcm_driver_->last_deletetoken_app_id());
   histogram_tester_.ExpectBucketCount(
       "PushMessaging.UnregistrationReason",
       static_cast<int>(
-          content::mojom::PushUnregistrationReason::DELIVERY_UNKNOWN_APP_ID),
+          blink::mojom::PushUnregistrationReason::DELIVERY_UNKNOWN_APP_ID),
       1);
 }
 
@@ -1317,8 +1315,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventWithoutPermission) {
       "PushMessaging.DeliveryStatus.ServiceWorkerEvent", 0);
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.DeliveryStatus",
-      static_cast<int>(content::mojom::PushDeliveryStatus::PERMISSION_DENIED),
-      1);
+      static_cast<int>(blink::mojom::PushDeliveryStatus::PERMISSION_DENIED), 1);
 
   // Missing permission should trigger an automatic unsubscription attempt.
   EXPECT_EQ(app_identifier.app_id(), gcm_driver_->last_deletetoken_app_id());
@@ -1332,7 +1329,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventWithoutPermission) {
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.UnregistrationReason",
       static_cast<int>(
-          content::mojom::PushUnregistrationReason::DELIVERY_PERMISSION_DENIED),
+          blink::mojom::PushUnregistrationReason::DELIVERY_PERMISSION_DENIED),
       1);
 }
 
@@ -1664,8 +1661,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnsubscribeSuccess) {
   EXPECT_EQ("unsubscribe result: true", script_result);
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.UnregistrationReason",
-      static_cast<int>(
-          content::mojom::PushUnregistrationReason::JAVASCRIPT_API),
+      static_cast<int>(blink::mojom::PushUnregistrationReason::JAVASCRIPT_API),
       1);
 
   // Resolves false if there was no longer a subscription.
@@ -1673,8 +1669,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnsubscribeSuccess) {
   EXPECT_EQ("unsubscribe result: false", script_result);
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.UnregistrationReason",
-      static_cast<int>(
-          content::mojom::PushUnregistrationReason::JAVASCRIPT_API),
+      static_cast<int>(blink::mojom::PushUnregistrationReason::JAVASCRIPT_API),
       2);
 
   // TODO(johnme): Test that doesn't reject if there was a network error (should
@@ -1696,8 +1691,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnsubscribeSuccess) {
   EXPECT_EQ("unsubscribe result: true", script_result);
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.UnregistrationReason",
-      static_cast<int>(
-          content::mojom::PushUnregistrationReason::JAVASCRIPT_API),
+      static_cast<int>(blink::mojom::PushUnregistrationReason::JAVASCRIPT_API),
       3);
 
   // Unsubscribing (with an existing reference to a PushSubscription), after
@@ -1720,8 +1714,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnsubscribeSuccess) {
   // Unregistering should have triggered an automatic unsubscribe.
   histogram_tester_.ExpectBucketCount(
       "PushMessaging.UnregistrationReason",
-      static_cast<int>(content::mojom::PushUnregistrationReason::
-                           SERVICE_WORKER_UNREGISTERED),
+      static_cast<int>(
+          blink::mojom::PushUnregistrationReason::SERVICE_WORKER_UNREGISTERED),
       1);
   histogram_tester_.ExpectTotalCount("PushMessaging.UnregistrationReason", 4);
 
@@ -1753,8 +1747,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   EXPECT_EQ("unsubscribe result: true", script_result);
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.UnregistrationReason",
-      static_cast<int>(
-          content::mojom::PushUnregistrationReason::JAVASCRIPT_API),
+      static_cast<int>(blink::mojom::PushUnregistrationReason::JAVASCRIPT_API),
       1);
 
   // Resolves false if there was no longer a subscription.
@@ -1762,8 +1755,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   EXPECT_EQ("unsubscribe result: false", script_result);
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.UnregistrationReason",
-      static_cast<int>(
-          content::mojom::PushUnregistrationReason::JAVASCRIPT_API),
+      static_cast<int>(blink::mojom::PushUnregistrationReason::JAVASCRIPT_API),
       2);
 
   // Doesn't reject if there was a network error (deactivates subscription
@@ -1776,8 +1768,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   EXPECT_EQ("unsubscribe result: true", script_result);
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.UnregistrationReason",
-      static_cast<int>(
-          content::mojom::PushUnregistrationReason::JAVASCRIPT_API),
+      static_cast<int>(blink::mojom::PushUnregistrationReason::JAVASCRIPT_API),
       3);
   ASSERT_TRUE(RunScript("hasSubscription()", &script_result));
   EXPECT_EQ("false - not subscribed", script_result);
@@ -1794,8 +1785,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   EXPECT_EQ("unsubscribe result: true", script_result);
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.UnregistrationReason",
-      static_cast<int>(
-          content::mojom::PushUnregistrationReason::JAVASCRIPT_API),
+      static_cast<int>(blink::mojom::PushUnregistrationReason::JAVASCRIPT_API),
       4);
 
   // Unsubscribing (with an existing reference to a PushSubscription), after
@@ -1814,8 +1804,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   EXPECT_EQ("unsubscribe result: true", script_result);
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.UnregistrationReason",
-      static_cast<int>(
-          content::mojom::PushUnregistrationReason::JAVASCRIPT_API),
+      static_cast<int>(blink::mojom::PushUnregistrationReason::JAVASCRIPT_API),
       5);
 
   // Unsubscribing (with an existing reference to a PushSubscription), after
@@ -1840,8 +1829,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   // Unregistering should have triggered an automatic unsubscribe.
   histogram_tester_.ExpectBucketCount(
       "PushMessaging.UnregistrationReason",
-      static_cast<int>(content::mojom::PushUnregistrationReason::
-                           SERVICE_WORKER_UNREGISTERED),
+      static_cast<int>(
+          blink::mojom::PushUnregistrationReason::SERVICE_WORKER_UNREGISTERED),
       1);
   histogram_tester_.ExpectTotalCount("PushMessaging.UnregistrationReason", 6);
 
@@ -1866,8 +1855,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnsubscribeOffline) {
   EXPECT_EQ("unsubscribe result: true", script_result);
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.UnregistrationReason",
-      static_cast<int>(
-          content::mojom::PushUnregistrationReason::JAVASCRIPT_API),
+      static_cast<int>(blink::mojom::PushUnregistrationReason::JAVASCRIPT_API),
       1);
 
   // Since the service is offline, the network request to GCM is still being
@@ -1900,8 +1888,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   // This should have unregistered the push subscription.
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.UnregistrationReason",
-      static_cast<int>(content::mojom::PushUnregistrationReason::
-                           SERVICE_WORKER_UNREGISTERED),
+      static_cast<int>(
+          blink::mojom::PushUnregistrationReason::SERVICE_WORKER_UNREGISTERED),
       1);
 
   // We should not be able to look up the app id.
@@ -1934,7 +1922,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   // This should have unregistered the push subscription.
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.UnregistrationReason",
-      static_cast<int>(content::mojom::PushUnregistrationReason::
+      static_cast<int>(blink::mojom::PushUnregistrationReason::
                            SERVICE_WORKER_DATABASE_WIPED),
       1);
 
@@ -1975,7 +1963,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   // This should have unsubscribed the push subscription.
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.UnregistrationReason",
-      static_cast<int>(content::mojom::PushUnregistrationReason::
+      static_cast<int>(blink::mojom::PushUnregistrationReason::
                            GET_SUBSCRIPTION_STORAGE_CORRUPT),
       1);
   // We should no longer be able to look up the app id.
@@ -2017,7 +2005,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.UnregistrationReason",
       static_cast<int>(
-          content::mojom::PushUnregistrationReason::PERMISSION_REVOKED),
+          blink::mojom::PushUnregistrationReason::PERMISSION_REVOKED),
       1);
 }
 
@@ -2055,7 +2043,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.UnregistrationReason",
       static_cast<int>(
-          content::mojom::PushUnregistrationReason::PERMISSION_REVOKED),
+          blink::mojom::PushUnregistrationReason::PERMISSION_REVOKED),
       1);
 }
 
@@ -2093,7 +2081,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.UnregistrationReason",
       static_cast<int>(
-          content::mojom::PushUnregistrationReason::PERMISSION_REVOKED),
+          blink::mojom::PushUnregistrationReason::PERMISSION_REVOKED),
       1);
 }
 
@@ -2128,7 +2116,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.UnregistrationReason",
       static_cast<int>(
-          content::mojom::PushUnregistrationReason::PERMISSION_REVOKED),
+          blink::mojom::PushUnregistrationReason::PERMISSION_REVOKED),
       1);
 }
 
@@ -2166,7 +2154,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.UnregistrationReason",
       static_cast<int>(
-          content::mojom::PushUnregistrationReason::PERMISSION_REVOKED),
+          blink::mojom::PushUnregistrationReason::PERMISSION_REVOKED),
       1);
 }
 
@@ -2204,7 +2192,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.UnregistrationReason",
       static_cast<int>(
-          content::mojom::PushUnregistrationReason::PERMISSION_REVOKED),
+          blink::mojom::PushUnregistrationReason::PERMISSION_REVOKED),
       1);
 }
 
@@ -2327,7 +2315,7 @@ IN_PROC_BROWSER_TEST_F(
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.UnregistrationReason",
       static_cast<int>(
-          content::mojom::PushUnregistrationReason::PERMISSION_REVOKED),
+          blink::mojom::PushUnregistrationReason::PERMISSION_REVOKED),
       1);
 
   base::RunLoop().RunUntilIdle();

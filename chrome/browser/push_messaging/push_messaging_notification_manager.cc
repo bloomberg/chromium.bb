@@ -33,11 +33,11 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/push_messaging_status.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/blink/public/common/notifications/notification_resources.h"
 #include "third_party/blink/public/mojom/notifications/notification.mojom-shared.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -64,7 +64,7 @@ using content::ServiceWorkerContext;
 using content::WebContents;
 
 namespace {
-void RecordUserVisibleStatus(content::mojom::PushUserVisibleStatus status) {
+void RecordUserVisibleStatus(blink::mojom::PushUserVisibleStatus status) {
   UMA_HISTOGRAM_ENUMERATION("PushMessaging.UserVisibleStatus", status);
 }
 
@@ -189,13 +189,13 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
 
   if (notification_needed && notification_shown) {
     RecordUserVisibleStatus(
-        content::mojom::PushUserVisibleStatus::REQUIRED_AND_SHOWN);
+        blink::mojom::PushUserVisibleStatus::REQUIRED_AND_SHOWN);
   } else if (!notification_needed && !notification_shown) {
     RecordUserVisibleStatus(
-        content::mojom::PushUserVisibleStatus::NOT_REQUIRED_AND_NOT_SHOWN);
+        blink::mojom::PushUserVisibleStatus::NOT_REQUIRED_AND_NOT_SHOWN);
   } else {
     RecordUserVisibleStatus(
-        content::mojom::PushUserVisibleStatus::NOT_REQUIRED_BUT_SHOWN);
+        blink::mojom::PushUserVisibleStatus::NOT_REQUIRED_BUT_SHOWN);
   }
 
   std::move(message_handled_closure).Run();
@@ -243,13 +243,13 @@ void PushMessagingNotificationManager::ProcessSilentPush(
 
   // If the origin was allowed to issue a silent push, just return.
   if (silent_push_allowed) {
-    RecordUserVisibleStatus(content::mojom::PushUserVisibleStatus::
-                                REQUIRED_BUT_NOT_SHOWN_USED_GRACE);
+    RecordUserVisibleStatus(
+        blink::mojom::PushUserVisibleStatus::REQUIRED_BUT_NOT_SHOWN_USED_GRACE);
     std::move(message_handled_closure).Run();
     return;
   }
 
-  RecordUserVisibleStatus(content::mojom::PushUserVisibleStatus::
+  RecordUserVisibleStatus(blink::mojom::PushUserVisibleStatus::
                               REQUIRED_BUT_NOT_SHOWN_GRACE_EXCEEDED);
   rappor::SampleDomainAndRegistryFromGURL(
       g_browser_process->rappor_service(),

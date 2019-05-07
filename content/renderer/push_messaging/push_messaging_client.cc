@@ -12,11 +12,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/push_messaging.mojom.h"
-#include "content/public/common/push_messaging_status.mojom.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/renderer/push_messaging/push_messaging_utils.h"
 #include "content/renderer/render_frame_impl.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_error.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription_options.h"
@@ -84,9 +84,10 @@ void PushMessagingClient::DidGetManifest(
   // Get the sender_info from the manifest since it wasn't provided by
   // the caller.
   if (manifest.IsEmpty()) {
-    DidSubscribe(std::move(callbacks),
-                 mojom::PushRegistrationStatus::MANIFEST_EMPTY_OR_MISSING,
-                 base::nullopt, base::nullopt, base::nullopt, base::nullopt);
+    DidSubscribe(
+        std::move(callbacks),
+        blink::mojom::PushRegistrationStatus::MANIFEST_EMPTY_OR_MISSING,
+        base::nullopt, base::nullopt, base::nullopt, base::nullopt);
     return;
   }
 
@@ -108,8 +109,8 @@ void PushMessagingClient::DoSubscribe(
     std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks) {
   if (options.sender_info.empty()) {
     DidSubscribe(std::move(callbacks),
-                 mojom::PushRegistrationStatus::NO_SENDER_ID, base::nullopt,
-                 base::nullopt, base::nullopt, base::nullopt);
+                 blink::mojom::PushRegistrationStatus::NO_SENDER_ID,
+                 base::nullopt, base::nullopt, base::nullopt, base::nullopt);
     return;
   }
 
@@ -124,17 +125,18 @@ void PushMessagingClient::DoSubscribe(
 
 void PushMessagingClient::DidSubscribe(
     std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
-    mojom::PushRegistrationStatus status,
+    blink::mojom::PushRegistrationStatus status,
     const base::Optional<GURL>& endpoint,
     const base::Optional<PushSubscriptionOptions>& options,
     const base::Optional<std::vector<uint8_t>>& p256dh,
     const base::Optional<std::vector<uint8_t>>& auth) {
   DCHECK(callbacks);
 
-  if (status == mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE ||
-      status == mojom::PushRegistrationStatus::
+  if (status ==
+          blink::mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE ||
+      status == blink::mojom::PushRegistrationStatus::
                     SUCCESS_NEW_SUBSCRIPTION_FROM_PUSH_SERVICE ||
-      status == mojom::PushRegistrationStatus::SUCCESS_FROM_CACHE) {
+      status == blink::mojom::PushRegistrationStatus::SUCCESS_FROM_CACHE) {
     DCHECK(endpoint);
     DCHECK(options);
     DCHECK(p256dh);

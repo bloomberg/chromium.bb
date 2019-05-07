@@ -23,6 +23,7 @@
 #include "services/network/public/mojom/cors_origin_pattern.mojom-forward.h"
 #include "services/service_manager/public/mojom/service.mojom-forward.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-forward.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom-forward.h"
 
 #if !defined(OS_ANDROID)
 #include "content/public/browser/zoom_level_delegate.h"
@@ -181,7 +182,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       const GURL& origin,
       int64_t service_worker_registration_id,
       base::Optional<std::string> payload,
-      const base::Callback<void(mojom::PushDeliveryStatus)>& callback);
+      const base::Callback<void(blink::mojom::PushDeliveryStatus)>& callback);
 
   static void NotifyWillBeDestroyed(BrowserContext* browser_context);
 

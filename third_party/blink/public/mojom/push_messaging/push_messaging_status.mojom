@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module content.mojom;
+module blink.mojom;
 
 // Push message event success/error codes for internal use & reporting in UMA.
 // Enum values can be added, but must never be renumbered or deleted and reused.

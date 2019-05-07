@@ -19,12 +19,14 @@
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "url/gurl.h"
 
-namespace content {
-
+namespace blink {
 namespace mojom {
 enum class PushRegistrationStatus;
 enum class PushUnregistrationStatus;
 }  // namespace mojom
+}  // namespace blink
+
+namespace content {
 
 class PushMessagingService;
 class ServiceWorkerContextWrapper;
@@ -77,22 +79,22 @@ class PushMessagingManager : public mojom::PushMessaging {
                                const std::string& push_subscription_id,
                                const std::vector<uint8_t>& p256dh,
                                const std::vector<uint8_t>& auth,
-                               mojom::PushRegistrationStatus status);
+                               blink::mojom::PushRegistrationStatus status);
 
   void DidPersistRegistrationOnIO(
       RegisterData data,
       const std::string& push_subscription_id,
       const std::vector<uint8_t>& p256dh,
       const std::vector<uint8_t>& auth,
-      mojom::PushRegistrationStatus push_registration_status,
+      blink::mojom::PushRegistrationStatus push_registration_status,
       blink::ServiceWorkerStatusCode service_worker_status);
 
   // Called both from IO thread, and via PostTask from UI thread.
   void SendSubscriptionError(RegisterData data,
-                             mojom::PushRegistrationStatus status);
+                             blink::mojom::PushRegistrationStatus status);
   // Called both from IO thread, and via PostTask from UI thread.
   void SendSubscriptionSuccess(RegisterData data,
-                               mojom::PushRegistrationStatus status,
+                               blink::mojom::PushRegistrationStatus status,
                                const std::string& push_subscription_id,
                                const std::vector<uint8_t>& p256dh,
                                const std::vector<uint8_t>& auth);
@@ -105,8 +107,9 @@ class PushMessagingManager : public mojom::PushMessaging {
       blink::ServiceWorkerStatusCode service_worker_status);
 
   // Called both from IO thread, and via PostTask from UI thread.
-  void DidUnregister(UnsubscribeCallback callback,
-                     mojom::PushUnregistrationStatus unregistration_status);
+  void DidUnregister(
+      UnsubscribeCallback callback,
+      blink::mojom::PushUnregistrationStatus unregistration_status);
 
   void DidGetSubscription(
       GetSubscriptionCallback callback,

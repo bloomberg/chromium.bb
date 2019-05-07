@@ -4,7 +4,7 @@
 
 module content.mojom;
 
-import "content/public/common/push_messaging_status.mojom";
+import "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom";
 import "url/mojom/url.mojom";
 
 // TODO(heke): The type-mapping struct and enums are duplicately defined. Need
@@ -30,7 +30,7 @@ interface PushMessaging {
             int64 service_worker_registration_id,
             PushSubscriptionOptions options,
             bool user_gesture)
-           => (PushRegistrationStatus status,
+           => (blink.mojom.PushRegistrationStatus status,
                url.mojom.Url? endpoint,
                PushSubscriptionOptions? options,
                array<uint8>? p256dh,
@@ -45,7 +45,7 @@ interface PushMessaging {
                  string? error_message);
 
   GetSubscription(int64 service_worker_registration_id)
-                 => (PushGetRegistrationStatus status,
+                 => (blink.mojom.PushGetRegistrationStatus status,
                      url.mojom.Url? endpoint,
                      PushSubscriptionOptions? options,
                      array<uint8>? p256dh,

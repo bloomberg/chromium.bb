@@ -16,8 +16,8 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/push_messaging_status.mojom.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 
 namespace content {
 
@@ -25,7 +25,7 @@ namespace {
 
 void RunDeliverCallback(
     const PushMessagingRouter::DeliverMessageCallback& deliver_message_callback,
-    mojom::PushDeliveryStatus delivery_status) {
+    blink::mojom::PushDeliveryStatus delivery_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
@@ -82,12 +82,12 @@ void PushMessagingRouter::FindServiceWorkerRegistrationCallback(
                             service_worker_status);
   if (service_worker_status == blink::ServiceWorkerStatusCode::kErrorNotFound) {
     RunDeliverCallback(deliver_message_callback,
-                       mojom::PushDeliveryStatus::NO_SERVICE_WORKER);
+                       blink::mojom::PushDeliveryStatus::NO_SERVICE_WORKER);
     return;
   }
   if (service_worker_status != blink::ServiceWorkerStatusCode::kOk) {
     RunDeliverCallback(deliver_message_callback,
-                       mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR);
+                       blink::mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR);
     return;
   }
 
@@ -138,17 +138,18 @@ void PushMessagingRouter::DeliverMessageEnd(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   UMA_HISTOGRAM_ENUMERATION("PushMessaging.DeliveryStatus.ServiceWorkerEvent",
                             service_worker_status);
-  mojom::PushDeliveryStatus delivery_status =
-      mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR;
+  blink::mojom::PushDeliveryStatus delivery_status =
+      blink::mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR;
   switch (service_worker_status) {
     case blink::ServiceWorkerStatusCode::kOk:
-      delivery_status = mojom::PushDeliveryStatus::SUCCESS;
+      delivery_status = blink::mojom::PushDeliveryStatus::SUCCESS;
       break;
     case blink::ServiceWorkerStatusCode::kErrorEventWaitUntilRejected:
-      delivery_status = mojom::PushDeliveryStatus::EVENT_WAITUNTIL_REJECTED;
+      delivery_status =
+          blink::mojom::PushDeliveryStatus::EVENT_WAITUNTIL_REJECTED;
       break;
     case blink::ServiceWorkerStatusCode::kErrorTimeout:
-      delivery_status = mojom::PushDeliveryStatus::TIMEOUT;
+      delivery_status = blink::mojom::PushDeliveryStatus::TIMEOUT;
       break;
     case blink::ServiceWorkerStatusCode::kErrorFailed:
     case blink::ServiceWorkerStatusCode::kErrorAbort:
@@ -160,7 +161,7 @@ void PushMessagingRouter::DeliverMessageEnd(
     case blink::ServiceWorkerStatusCode::kErrorDiskCache:
     case blink::ServiceWorkerStatusCode::kErrorRedundant:
     case blink::ServiceWorkerStatusCode::kErrorDisallowed:
-      delivery_status = mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR;
+      delivery_status = blink::mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR;
       break;
     case blink::ServiceWorkerStatusCode::kErrorExists:
     case blink::ServiceWorkerStatusCode::kErrorInstallWorkerFailed:
@@ -172,7 +173,7 @@ void PushMessagingRouter::DeliverMessageEnd(
       NOTREACHED() << "Got unexpected error code: "
                    << static_cast<uint32_t>(service_worker_status) << " "
                    << blink::ServiceWorkerStatusToString(service_worker_status);
-      delivery_status = mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR;
+      delivery_status = blink::mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR;
       break;
   }
   RunDeliverCallback(deliver_message_callback, delivery_status);

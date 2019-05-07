@@ -30,7 +30,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/push_messaging_status.mojom.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 #include "url/gurl.h"
@@ -319,7 +319,7 @@ Response ServiceWorkerHandler::DeliverPushMessage(
     payload = data;
   BrowserContext::DeliverPushMessage(
       browser_context_, GURL(origin), id, std::move(payload),
-      base::BindRepeating([](mojom::PushDeliveryStatus status) {}));
+      base::BindRepeating([](blink::mojom::PushDeliveryStatus status) {}));
 
   return Response::OK();
 }

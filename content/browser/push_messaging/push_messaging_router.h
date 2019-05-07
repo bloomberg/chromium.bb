@@ -14,11 +14,13 @@
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "url/gurl.h"
 
-namespace content {
-
+namespace blink {
 namespace mojom {
 enum class PushDeliveryStatus;
 }
+}  // namespace blink
+
+namespace content {
 
 class BrowserContext;
 class ServiceWorkerContextWrapper;
@@ -28,7 +30,7 @@ class ServiceWorkerVersion;
 class PushMessagingRouter {
  public:
   using DeliverMessageCallback =
-      base::Callback<void(mojom::PushDeliveryStatus)>;
+      base::Callback<void(blink::mojom::PushDeliveryStatus)>;
 
   // Delivers a push message with |data| to the Service Worker identified by
   // |origin| and |service_worker_registration_id|. Must be called on the UI
