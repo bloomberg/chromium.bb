@@ -245,6 +245,9 @@ _OS_NEGATIVE_FILTER['android:chromedriver_webview_shell'] = (
 
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2376
         'ImplicitWaitTest.testShouldRetainImplicitlyWaitFromTheReturnedWebDriverOfFrameSwitchTo',
+
+        # ChromeDriverWebViewShell doesn't support local storage
+        'LocalStorageTest.*',
     ]
 )
 
