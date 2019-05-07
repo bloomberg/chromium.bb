@@ -1504,7 +1504,7 @@ TEST_P(CacheStorageManagerTestP, GetAllOriginsUsageDifferentOwners) {
   }
 }
 
-// TODO(crbug.com/960227): Flaky on Fuchsia.
+// TODO(crbug.com/760687): Flaky on Fuchsia.
 #if defined(OS_FUCHSIA)
 #define MAYBE_GetAllOriginsUsageWithOldIndex \
   DISABLED_GetAllOriginsUsageWithOldIndex
@@ -1573,7 +1573,13 @@ TEST_F(CacheStorageManagerTest, MAYBE_GetAllOriginsUsageWithOldIndex) {
   EXPECT_FALSE(usage[0].last_modified.is_null());
 }
 
-TEST_F(CacheStorageManagerTest, GetOriginSizeWithOldIndex) {
+// TODO(crbug.com/760687): Flaky on Fuchsia.
+#if defined(OS_FUCHSIA)
+#define MAYBE_GetOriginSizeWithOldIndex DISABLED_GetOriginSizeWithOldIndex
+#else
+#define MAYBE_GetOriginSizeWithOldIndex GetOriginSizeWithOldIndex
+#endif
+TEST_F(CacheStorageManagerTest, MAYBE_GetOriginSizeWithOldIndex) {
   // Write a single value (V1) to the cache.
   const GURL kFooURL = origin1_.GetURL().Resolve("foo");
   const std::string kCacheName = "foo";
