@@ -15,7 +15,7 @@ Install piexwasm project components
   npm install
 ```
 
-Build piexwasm code: piex.wasm
+Build piexwasm code: piex.js.wasm piex.wasm
 
 ```shell
   npm run build
@@ -27,7 +27,7 @@ Run tests: they must PASS
   npm run test
 ```
 
-Release: submit piex.wasm to the Chromium repository
+Release: submit piex.js.wasm piex.wasm to the Chromium repository
 
 ```shell
   git commit -a -m "Release piexwasm ..."

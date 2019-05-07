@@ -15,7 +15,6 @@ INCS = -I $(PIEX) -I .
 WASM = -s WASM=1 -fno-exceptions -Wall
 WOPT = -Os --llvm-opts 3 \
   -s STRICT=1 \
-  -s SINGLE_FILE=1 \
   -s ALLOW_MEMORY_GROWTH=1 \
   -s ENVIRONMENT='web' \
   -s NO_DYNAMIC_EXECUTION=1 \
@@ -36,9 +35,9 @@ piex.src.bc: $(PSRC) Makefile
 	em++ --bind --std=c++11 $(WASM) $(WOPT) $(INCS) $(PSRC) -o $@
 
 release:
-	$(shell cp piex.out.js piex.wasm)
-	$(shell cp piex.wasm extension)
+	$(shell cp piex.out.js piex.js.wasm)
+	$(shell cp piex*wasm extension)
 
 clean:
-	$(shell rm -f tests.{result*,log} package-lock* *.bc piex.out*)
-	$(shell rm -f piex.wasm extension/piex.wasm)
+	$(shell rm -f tests.{result*,log} package-lock* *.bc piex.out.js)
+	$(shell rm -f piex*wasm extension/piex*wasm)
