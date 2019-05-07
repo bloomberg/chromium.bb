@@ -38,6 +38,7 @@ namespace blink {
 
 namespace {
 
+const char kDetachedBuffer[] = "The data buffer has been detached.";
 const char kDeviceStateChangeInProgress[] =
     "An operation that changes the device state is in progress.";
 const char kDeviceDisconnected[] = "The device was disconnected.";
@@ -91,19 +92,32 @@ String ConvertTransferStatus(const UsbTransferStatus& status) {
   }
 }
 
-Vector<uint8_t> ConvertBufferSource(
-    const ArrayBufferOrArrayBufferView& buffer) {
-  DCHECK(!buffer.IsNull());
-  Vector<uint8_t> vector;
-  if (buffer.IsArrayBuffer()) {
-    vector.Append(static_cast<uint8_t*>(buffer.GetAsArrayBuffer()->Data()),
-                  buffer.GetAsArrayBuffer()->ByteLength());
+bool ConvertBufferSource(const ArrayBufferOrArrayBufferView& buffer_source,
+                         Vector<uint8_t>* vector,
+                         ScriptPromiseResolver* resolver) {
+  DCHECK(!buffer_source.IsNull());
+  if (buffer_source.IsArrayBuffer()) {
+    ArrayBuffer* array_buffer = buffer_source.GetAsArrayBuffer()->Buffer();
+    if (array_buffer->IsNeutered()) {
+      resolver->Reject(DOMException::Create(
+          DOMExceptionCode::kInvalidStateError, kDetachedBuffer));
+      return false;
+    }
+
+    vector->Append(static_cast<uint8_t*>(array_buffer->Data()),
+                   array_buffer->ByteLength());
   } else {
-    vector.Append(static_cast<uint8_t*>(
-                      buffer.GetAsArrayBufferView().View()->BaseAddress()),
-                  buffer.GetAsArrayBufferView().View()->byteLength());
+    ArrayBufferView* view = buffer_source.GetAsArrayBufferView().View()->View();
+    if (!view->Buffer() || view->Buffer()->IsNeutered()) {
+      resolver->Reject(DOMException::Create(
+          DOMExceptionCode::kInvalidStateError, kDetachedBuffer));
+      return false;
+    }
+
+    vector->Append(static_cast<uint8_t*>(view->BaseAddress()),
+                   view->ByteLength());
   }
-  return vector;
+  return true;
 }
 
 }  // namespace
@@ -367,18 +381,23 @@ ScriptPromise USBDevice::controlTransferOut(
     const ArrayBufferOrArrayBufferView& data) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
-  if (EnsureDeviceConfigured(resolver)) {
-    auto parameters = ConvertControlTransferParameters(setup, resolver);
-    if (parameters) {
-      Vector<uint8_t> buffer = ConvertBufferSource(data);
-      unsigned transfer_length = buffer.size();
-      device_requests_.insert(resolver);
-      device_->ControlTransferOut(
-          std::move(parameters), buffer, 0,
-          WTF::Bind(&USBDevice::AsyncControlTransferOut, WrapPersistent(this),
-                    transfer_length, WrapPersistent(resolver)));
-    }
-  }
+  if (!EnsureDeviceConfigured(resolver))
+    return promise;
+
+  auto parameters = ConvertControlTransferParameters(setup, resolver);
+  if (!parameters)
+    return promise;
+
+  Vector<uint8_t> buffer;
+  if (!ConvertBufferSource(data, &buffer, resolver))
+    return promise;
+
+  unsigned transfer_length = buffer.size();
+  device_requests_.insert(resolver);
+  device_->ControlTransferOut(
+      std::move(parameters), buffer, 0,
+      WTF::Bind(&USBDevice::AsyncControlTransferOut, WrapPersistent(this),
+                transfer_length, WrapPersistent(resolver)));
   return promise;
 }
 
@@ -416,15 +435,19 @@ ScriptPromise USBDevice::transferOut(ScriptState* script_state,
                                      const ArrayBufferOrArrayBufferView& data) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
-  if (EnsureEndpointAvailable(false /* out */, endpoint_number, resolver)) {
-    Vector<uint8_t> buffer = ConvertBufferSource(data);
-    unsigned transfer_length = buffer.size();
-    device_requests_.insert(resolver);
-    device_->GenericTransferOut(
-        endpoint_number, buffer, 0,
-        WTF::Bind(&USBDevice::AsyncTransferOut, WrapPersistent(this),
-                  transfer_length, WrapPersistent(resolver)));
-  }
+  if (!EnsureEndpointAvailable(false /* out */, endpoint_number, resolver))
+    return promise;
+
+  Vector<uint8_t> buffer;
+  if (!ConvertBufferSource(data, &buffer, resolver))
+    return promise;
+
+  unsigned transfer_length = buffer.size();
+  device_requests_.insert(resolver);
+  device_->GenericTransferOut(
+      endpoint_number, buffer, 0,
+      WTF::Bind(&USBDevice::AsyncTransferOut, WrapPersistent(this),
+                transfer_length, WrapPersistent(resolver)));
   return promise;
 }
 
@@ -451,13 +474,18 @@ ScriptPromise USBDevice::isochronousTransferOut(
     Vector<unsigned> packet_lengths) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
-  if (EnsureEndpointAvailable(false /* out */, endpoint_number, resolver)) {
-    device_requests_.insert(resolver);
-    device_->IsochronousTransferOut(
-        endpoint_number, ConvertBufferSource(data), packet_lengths, 0,
-        WTF::Bind(&USBDevice::AsyncIsochronousTransferOut, WrapPersistent(this),
-                  WrapPersistent(resolver)));
-  }
+  if (!EnsureEndpointAvailable(false /* out */, endpoint_number, resolver))
+    return promise;
+
+  Vector<uint8_t> buffer;
+  if (!ConvertBufferSource(data, &buffer, resolver))
+    return promise;
+
+  device_requests_.insert(resolver);
+  device_->IsochronousTransferOut(
+      endpoint_number, buffer, packet_lengths, 0,
+      WTF::Bind(&USBDevice::AsyncIsochronousTransferOut, WrapPersistent(this),
+                WrapPersistent(resolver)));
   return promise;
 }
 
