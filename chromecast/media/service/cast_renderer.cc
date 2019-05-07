@@ -195,6 +195,8 @@ void CastRenderer::OnGetMultiroomInfo(
   params.multiroom = multiroom_info->multiroom;
   params.audio_channel = multiroom_info->audio_channel;
   params.output_delay_us = multiroom_info->output_delay.InMicroseconds();
+  params.pass_through_audio_support_desired =
+      !application_media_info->mixer_audio_enabled;
 
   if (audio_device_id_ == kTtsAudioDeviceId ||
       audio_device_id_ ==
