@@ -499,8 +499,8 @@ void Label::OnPaint(gfx::Canvas* canvas) {
     PaintFocusRing(canvas);
 }
 
-void Label::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  UpdateColorsFromTheme(theme);
+void Label::OnThemeChanged() {
+  UpdateColorsFromTheme();
 }
 
 gfx::NativeCursor Label::GetCursor(const ui::MouseEvent& event) {
@@ -813,7 +813,7 @@ void Label::Init(const base::string16& text,
   auto_color_readability_ = true;
   multi_line_ = false;
   max_lines_ = 0;
-  UpdateColorsFromTheme(GetNativeTheme());
+  UpdateColorsFromTheme();
   handles_tooltips_ = true;
   collapse_when_hidden_ = false;
   fixed_width_ = 0;
@@ -905,7 +905,8 @@ void Label::ApplyTextColors() const {
   display_text_->set_subpixel_rendering_suppressed(!subpixel_rendering_enabled);
 }
 
-void Label::UpdateColorsFromTheme(const ui::NativeTheme* theme) {
+void Label::UpdateColorsFromTheme() {
+  ui::NativeTheme* theme = GetNativeTheme();
   if (!enabled_color_set_) {
     requested_enabled_color_ =
         style::GetColor(*this, text_context_, style::STYLE_PRIMARY);

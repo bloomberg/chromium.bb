@@ -612,6 +612,9 @@ void ToolbarView::OnPaintBackground(gfx::Canvas* canvas) {
 }
 
 void ToolbarView::OnThemeChanged() {
+  if (!initialized_)
+    return;
+
   if (display_mode_ == DisplayMode::NORMAL)
     LoadImages();
 }

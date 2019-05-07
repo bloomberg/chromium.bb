@@ -47,7 +47,7 @@ class ToolbarPageActionIconContainerView : public ToolbarIconContainerView,
   content::WebContents* GetWebContentsForPageActionIconView() override;
 
   // views::View:
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnThemeChanged() override;
 
   autofill::LocalCardMigrationIconView* local_card_migration_icon_view() const {
     return local_card_migration_icon_view_;

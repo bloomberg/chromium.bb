@@ -44,7 +44,7 @@ class VIEWS_EXPORT TableHeader : public views::View {
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnMouseCaptureLost() override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnThemeChanged() override;
 
  private:
   // Used to track the column being resized.

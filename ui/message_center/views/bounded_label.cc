@@ -90,7 +90,7 @@ InnerBoundedLabel::~InnerBoundedLabel() {
 
 void InnerBoundedLabel::SetNativeTheme(const ui::NativeTheme* theme) {
   ClearCaches();
-  OnNativeThemeChanged(theme);
+  OnThemeChanged();
 }
 
 int InnerBoundedLabel::GetLinesForWidthAndLimit(int width, int limit) {
@@ -367,8 +367,8 @@ void BoundedLabel::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   views::View::OnBoundsChanged(previous_bounds);
 }
 
-void BoundedLabel::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  label_->SetNativeTheme(theme);
+void BoundedLabel::OnThemeChanged() {
+  label_->SetNativeTheme(GetNativeTheme());
 }
 
 base::string16 BoundedLabel::GetWrappedTextForTest(int width, int lines) {

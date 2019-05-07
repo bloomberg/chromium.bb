@@ -96,12 +96,8 @@ void PageActionIconView::ViewHierarchyChanged(
     UpdateIconImage();
 }
 
-void PageActionIconView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  IconLabelBubbleView::OnNativeThemeChanged(theme);
-  UpdateIconImage();
-}
-
 void PageActionIconView::OnThemeChanged() {
+  IconLabelBubbleView::OnThemeChanged();
   UpdateIconImage();
 }
 

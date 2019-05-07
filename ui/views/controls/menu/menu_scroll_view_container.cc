@@ -243,8 +243,7 @@ void MenuScrollViewContainer::Layout() {
   scroll_view_->Layout();
 }
 
-void MenuScrollViewContainer::OnNativeThemeChanged(
-    const ui::NativeTheme* theme) {
+void MenuScrollViewContainer::OnThemeChanged() {
   if (!HasBubbleBorder())
     CreateDefaultBorder();
 }

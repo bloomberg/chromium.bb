@@ -190,8 +190,8 @@ void Link::SetText(const base::string16& text) {
   ConfigureFocus();
 }
 
-void Link::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  Label::OnNativeThemeChanged(theme);
+void Link::OnThemeChanged() {
+  Label::OnThemeChanged();
   Label::SetEnabledColor(GetColor());
 }
 

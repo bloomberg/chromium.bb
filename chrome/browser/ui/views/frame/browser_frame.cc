@@ -235,9 +235,11 @@ void BrowserFrame::OnNativeWidgetWorkspaceChanged() {
   Widget::OnNativeWidgetWorkspaceChanged();
 }
 
-void BrowserFrame::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
-  views::Widget::OnNativeThemeUpdated(observed_theme);
-  browser_view_->NativeThemeUpdated(observed_theme);
+void BrowserFrame::PropagateNativeThemeChanged() {
+  // Instead of immediately propagating the native theme change to the root
+  // view, use BrowserView's custom handling, which may regenerate the frame
+  // first, then propgate the theme change to the root view automatically.
+  browser_view_->UserChangedTheme(BrowserThemeChangeType::kNativeTheme);
 }
 
 void BrowserFrame::ShowContextMenuForViewImpl(views::View* source,

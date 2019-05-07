@@ -548,9 +548,6 @@ class BrowserView : public BrowserWindow,
     return fullscreen_control_host_.get();
   }
 
-  // Called by BrowserFrame during theme changes.
-  void NativeThemeUpdated(const ui::NativeTheme* theme);
-
   // Gets the amount to vertically shift the placement of the icons on the
   // bookmark bar so the icons appear centered relative to the views above and
   // below them.
@@ -781,10 +778,6 @@ class BrowserView : public BrowserWindow,
 
   // True if we have already been initialized.
   bool initialized_ = false;
-
-  // True if we're currently handling a theme change (i.e. inside
-  // OnThemeChanged()).
-  bool handling_theme_changed_ = false;
 
   // True if (as of the last time it was checked) the frame type is native.
   bool using_native_frame_ = true;

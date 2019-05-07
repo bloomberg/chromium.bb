@@ -15,10 +15,6 @@
 class AuthenticatorRequestSheetModel;
 class NonAccessibleImageView;
 
-namespace ui {
-class NativeTheme;
-}
-
 // Defines the basic structure of sheets shown in the authenticator request
 // dialog. Each sheet corresponds to a given step of the authentication flow,
 // and encapsulates the controls above the Ok/Cancel buttons, namely:
@@ -95,7 +91,7 @@ class AuthenticatorRequestSheetView : public views::View,
   void UpdateIconImageFromModel();
 
   // views::View:
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnThemeChanged() override;
 
   std::unique_ptr<AuthenticatorRequestSheetModel> model_;
   bool in_dark_mode_;

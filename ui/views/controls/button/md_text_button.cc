@@ -90,8 +90,8 @@ void MdTextButton::OnPaintBackground(gfx::Canvas* canvas) {
   }
 }
 
-void MdTextButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  LabelButton::OnNativeThemeChanged(theme);
+void MdTextButton::OnThemeChanged() {
+  LabelButton::OnThemeChanged();
   UpdateColors();
 }
 

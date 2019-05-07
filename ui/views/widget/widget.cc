@@ -1507,11 +1507,15 @@ void Widget::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
     observer_manager_.Add(current_native_theme);
   }
 
-  root_view_->PropagateNativeThemeChanged(current_native_theme);
+  PropagateNativeThemeChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, protected:
+
+void Widget::PropagateNativeThemeChanged() {
+  root_view_->PropagateThemeChanged();
+}
 
 internal::RootView* Widget::CreateRootView() {
   return new internal::RootView(this);

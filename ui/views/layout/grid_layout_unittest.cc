@@ -65,7 +65,7 @@ class LayoutOnAddView : public View {
       return;
 
     // Contrive a realistic thing that a View might what to do, but which would
-    // break the layout machinery. Note an override of OnNativeThemeChanged()
+    // break the layout machinery. Note an override of OnThemeChanged()
     // would be more compelling, but there is no Widget in this test harness.
     SetPreferredSize(target_size_);
     PreferredSizeChanged();

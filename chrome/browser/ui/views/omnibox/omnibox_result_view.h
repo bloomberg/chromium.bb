@@ -97,7 +97,7 @@ class OmniboxResultView : public views::View,
   void OnMouseExited(const ui::MouseEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   gfx::Size CalculatePreferredSize() const override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnThemeChanged() override;
 
   // views::ContextMenuController:
   void ShowContextMenuForViewImpl(views::View* source,

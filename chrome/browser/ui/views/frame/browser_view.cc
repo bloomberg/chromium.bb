@@ -1499,6 +1499,21 @@ void BrowserView::ConfirmBrowserCloseWithPendingDownloads(
 }
 
 void BrowserView::UserChangedTheme(BrowserThemeChangeType theme_change_type) {
+  // When the browser theme changes, the NativeTheme may also change.
+  // In Incognito, the usage of dark or normal hinges on the browser theme.
+  if (theme_change_type == BrowserThemeChangeType::kBrowserTheme &&
+      !IsRegularOrGuestSession()) {
+#if defined(USE_AURA)
+    ui::NativeThemeDarkAura::instance()->NotifyObservers();
+#endif
+    ui::NativeTheme::GetInstanceForNativeUi()->NotifyObservers();
+
+    // Early exit. A native theme change will update all the
+    // NativeThemeObservers, and then BrowserFrame will re-enter this method
+    // with |theme_change_type| == kNativeTheme, doing all the below things.
+    return;
+  }
+
   // When the native theme changes in a way that doesn't change the frame type
   // required, we can skip a frame regeneration. Frame regeneration can cause
   // visible flicker (see crbug/945138) so it's best avoided if all that has
@@ -1957,22 +1972,6 @@ base::string16 BrowserView::GetAccessibleTabLabel(bool include_app_name,
 
   NOTREACHED();
   return base::string16();
-}
-
-void BrowserView::NativeThemeUpdated(const ui::NativeTheme* theme) {
-  // We don't handle theme updates in OnThemeChanged() as that function is
-  // called while views are being iterated over. Please see
-  // View::PropagateNativeThemeChanged() for details. The theme update
-  // handling in UserChangedTheme() can cause views to be nuked or created
-  // which is a bad thing during iteration.
-
-  // Do not handle native theme changes before the browser view is initialized.
-  if (!initialized_)
-    return;
-  // Don't infinitely recurse.
-  if (!handling_theme_changed_)
-    UserChangedTheme(BrowserThemeChangeType::kNativeTheme);
-  MaybeShowInvertBubbleView(this);
 }
 
 int BrowserView::GetBookmarkBarContentVerticalOffset() const {
@@ -2459,21 +2458,13 @@ void BrowserView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void BrowserView::OnThemeChanged() {
-  if (!IsRegularOrGuestSession()) {
-    // When the theme changes, the native theme may also change (in Incognito,
-    // the usage of dark or normal hinges on the browser theme), so we have to
-    // propagate both kinds of change.
-    base::AutoReset<bool> reset(&handling_theme_changed_, true);
-#if defined(USE_AURA)
-    ui::NativeThemeDarkAura::instance()->NotifyObservers();
-#endif
-    ui::NativeTheme::GetInstanceForNativeUi()->NotifyObservers();
-  }
+  if (!initialized_)
+    return;
 
   if (status_bubble_)
     status_bubble_->OnThemeChanged();
 
-  views::View::OnThemeChanged();
+  MaybeShowInvertBubbleView(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -202,7 +202,7 @@ views::Widget* CandidateWindowView::InitWidget() {
 
   GetBubbleFrameView()->SetBubbleBorder(
       std::make_unique<CandidateWindowBorder>());
-  GetBubbleFrameView()->OnNativeThemeChanged(widget->GetNativeTheme());
+  GetBubbleFrameView()->OnThemeChanged();
   return widget;
 }
 
@@ -317,7 +317,7 @@ void CandidateWindowView::UpdateCandidates(
     else
       border->set_offset(0);
     GetBubbleFrameView()->SetBubbleBorder(std::move(border));
-    GetBubbleFrameView()->OnNativeThemeChanged(GetNativeTheme());
+    GetBubbleFrameView()->OnThemeChanged();
   }
   // Update the current candidate window. We'll use candidate_window_ from here.
   // Note that SelectCandidateAt() uses candidate_window_.

@@ -290,7 +290,7 @@ class VIEWS_EXPORT Textfield : public View,
   void OnFocus() override;
   void OnBlur() override;
   gfx::Point GetKeyboardContextMenuLocation() override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnThemeChanged() override;
 
   // TextfieldModel::Delegate overrides:
   void OnCompositionTextConfirmedOrCleared() override;

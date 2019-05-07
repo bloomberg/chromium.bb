@@ -195,7 +195,7 @@ void ToggleButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   UpdateThumb();
 }
 
-void ToggleButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+void ToggleButton::OnThemeChanged() {
   SchedulePaint();
 }
 

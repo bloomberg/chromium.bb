@@ -67,7 +67,7 @@ class MESSAGE_CENTER_EXPORT BoundedLabel : public views::View {
  protected:
   // Overridden from views::View.
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnThemeChanged() override;
 
  private:
   friend class test::BoundedLabelTest;

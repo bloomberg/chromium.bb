@@ -231,9 +231,9 @@ void TableHeader::OnGestureEvent(ui::GestureEvent* event) {
   event->SetHandled();
 }
 
-void TableHeader::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  SetBackground(CreateSolidBackground(
-      theme->GetSystemColor(ui::NativeTheme::kColorId_TableHeaderBackground)));
+void TableHeader::OnThemeChanged() {
+  SetBackground(CreateSolidBackground(GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_TableHeaderBackground)));
 }
 
 void TableHeader::ResizeColumnViaKeyboard(

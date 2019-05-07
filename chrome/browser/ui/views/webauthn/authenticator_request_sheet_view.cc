@@ -194,8 +194,8 @@ AuthenticatorRequestSheetView::CreateContentsBelowIllustration() {
   return contents;
 }
 
-void AuthenticatorRequestSheetView::OnNativeThemeChanged(
-    const ui::NativeTheme* theme) {
+void AuthenticatorRequestSheetView::OnThemeChanged() {
+  ui::NativeTheme* theme = GetNativeTheme();
   if (theme != ui::NativeTheme::GetInstanceForNativeUi())
     return;
   bool in_dark_mode = theme->SystemDarkModeEnabled();

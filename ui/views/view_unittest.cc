@@ -259,7 +259,7 @@ class TestView : public View {
   void SchedulePaintInRect(const gfx::Rect& rect) override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
-  void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
+  void OnThemeChanged() override;
 
   void OnAccessibilityEvent(ax::mojom::Event event_type) override;
 
@@ -4693,11 +4693,11 @@ TEST_F(ViewTest, FocusableAssertions) {
 // NativeTheme
 ////////////////////////////////////////////////////////////////////////////////
 
-void TestView::OnNativeThemeChanged(const ui::NativeTheme* native_theme) {
-  native_theme_ = native_theme;
+void TestView::OnThemeChanged() {
+  native_theme_ = GetNativeTheme();
 }
 
-TEST_F(ViewTest, OnNativeThemeChanged) {
+TEST_F(ViewTest, OnThemeChanged) {
   TestView* test_view = new TestView();
   EXPECT_FALSE(test_view->native_theme_);
 
@@ -4796,17 +4796,17 @@ class WidgetWithCustomTheme : public Widget {
 };
 
 // See comment above test for details.
-class ViewThatAddsViewInOnNativeThemeChanged : public View {
+class ViewThatAddsViewInOnThemeChanged : public View {
  public:
-  ViewThatAddsViewInOnNativeThemeChanged() { SetPaintToLayer(); }
-  ~ViewThatAddsViewInOnNativeThemeChanged() override = default;
+  ViewThatAddsViewInOnThemeChanged() { SetPaintToLayer(); }
+  ~ViewThatAddsViewInOnThemeChanged() override = default;
 
   bool on_native_theme_changed_called() const {
     return on_native_theme_changed_called_;
   }
 
   // View:
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
+  void OnThemeChanged() override {
     on_native_theme_changed_called_ = true;
     GetWidget()->GetRootView()->AddChildView(std::make_unique<View>());
   }
@@ -4814,7 +4814,7 @@ class ViewThatAddsViewInOnNativeThemeChanged : public View {
  private:
   bool on_native_theme_changed_called_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(ViewThatAddsViewInOnNativeThemeChanged);
+  DISALLOW_COPY_AND_ASSIGN(ViewThatAddsViewInOnThemeChanged);
 };
 
 // Creates and adds a new child view to |parent| that has a layer.
@@ -4825,13 +4825,12 @@ void AddViewWithChildLayer(View* parent) {
 
 // This test does the following:
 // . creates a couple of views with layers added to the root.
-// . Add a view that overrides OnNativeThemeChanged(). In
-//   OnNativeThemeChanged() another view is added.
-// This sequence triggered DCHECKs or crashes previously. This tests verifies
-// that doesn't happen. Reason for crash was OnNativeThemeChanged() was called
-// before the layer hierarchy was updated. OnNativeThemeChanged() should be
+// . Add a view that overrides OnThemeChanged(). In OnThemeChanged() another
+// view is added. This sequence triggered DCHECKs or crashes previously. This
+// tests verifies that doesn't happen. Reason for crash was OnThemeChanged() was
+// called before the layer hierarchy was updated. OnThemeChanged() should be
 // called after the layer hierarchy matches the view hierarchy.
-TEST_F(ViewTest, CrashOnAddFromFromOnNativeThemeChanged) {
+TEST_F(ViewTest, CrashOnAddFromFromOnThemeChanged) {
   ui::TestNativeTheme theme;
   WidgetWithCustomTheme widget(&theme);
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
@@ -4840,9 +4839,8 @@ TEST_F(ViewTest, CrashOnAddFromFromOnNativeThemeChanged) {
   widget.Init(params);
 
   AddViewWithChildLayer(widget.GetRootView());
-  ViewThatAddsViewInOnNativeThemeChanged* v =
-      widget.GetRootView()->AddChildView(
-          std::make_unique<ViewThatAddsViewInOnNativeThemeChanged>());
+  ViewThatAddsViewInOnThemeChanged* v = widget.GetRootView()->AddChildView(
+      std::make_unique<ViewThatAddsViewInOnThemeChanged>());
   EXPECT_TRUE(v->on_native_theme_changed_called());
 }
 

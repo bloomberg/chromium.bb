@@ -939,7 +939,7 @@ void View::SetNativeTheme(ui::NativeTheme* theme) {
   ui::NativeTheme* original_native_theme = GetNativeTheme();
   native_theme_ = theme;
   if (native_theme_ != original_native_theme)
-    PropagateNativeThemeChanged(theme);
+    PropagateThemeChanged();
 }
 
 // RTL painting ----------------------------------------------------------------
@@ -2057,7 +2057,7 @@ void View::AddChildViewAtImpl(View* view, int index) {
   if (widget) {
     const ui::NativeTheme* new_theme = view->GetNativeTheme();
     if (new_theme != old_theme)
-      view->PropagateNativeThemeChanged(new_theme);
+      view->PropagateThemeChanged();
   }
 
   ViewHierarchyChangedDetails details(true, this, view, parent);
@@ -2203,20 +2203,6 @@ void View::ViewHierarchyChangedImpl(
     observer.OnViewHierarchyChanged(this, details);
 
   details.parent->needs_layout_ = true;
-}
-
-void View::PropagateNativeThemeChanged(const ui::NativeTheme* theme) {
-  if (native_theme_ && native_theme_ != theme)
-    return;
-
-  {
-    internal::ScopedChildrenLock lock(this);
-    for (auto* child : children_)
-      child->PropagateNativeThemeChanged(theme);
-  }
-  OnNativeThemeChanged(theme);
-  for (ViewObserver& observer : observers_)
-    observer.OnViewNativeThemeChanged(this);
 }
 
 // Size and disposition --------------------------------------------------------
@@ -2648,6 +2634,8 @@ void View::PropagateThemeChanged() {
       child->PropagateThemeChanged();
   }
   OnThemeChanged();
+  for (ViewObserver& observer : observers_)
+    observer.OnViewThemeChanged(this);
 }
 
 void View::PropagateDeviceScaleFactorChanged(float old_device_scale_factor,

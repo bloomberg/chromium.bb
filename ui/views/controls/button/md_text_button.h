@@ -40,7 +40,7 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   void set_corner_radius(float radius);
 
   // LabelButton:
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnThemeChanged() override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
   SkColor GetInkDropBaseColor() const override;

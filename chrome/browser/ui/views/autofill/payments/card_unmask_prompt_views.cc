@@ -234,9 +234,9 @@ void CardUnmaskPromptViews::AddedToWidget() {
       std::make_unique<TitleWithIconAndSeparatorView>(GetWindowTitle()));
 }
 
-void CardUnmaskPromptViews::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  SkColor bg_color =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
+void CardUnmaskPromptViews::OnThemeChanged() {
+  SkColor bg_color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_DialogBackground);
   overlay_->SetBackground(views::CreateSolidBackground(bg_color));
   if (overlay_label_)
     overlay_label_->SetBackgroundColor(bg_color);

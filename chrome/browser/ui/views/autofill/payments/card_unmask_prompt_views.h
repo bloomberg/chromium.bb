@@ -57,7 +57,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   // views::View
   gfx::Size CalculatePreferredSize() const override;
   void AddedToWidget() override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnThemeChanged() override;
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
   void DeleteDelegate() override;

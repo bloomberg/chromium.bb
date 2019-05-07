@@ -36,7 +36,7 @@ class MenuScrollViewContainer : public View {
   void Layout() override;
   void OnPaintBackground(gfx::Canvas* canvas) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnThemeChanged() override;
 
  protected:
   // View override.

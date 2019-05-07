@@ -625,22 +625,20 @@ void LocationBarView::Layout() {
 }
 
 void LocationBarView::OnThemeChanged() {
-  tint_ = GetTint();
-  SkColor icon_color = GetColor(OmniboxPart::RESULTS_ICON);
-  omnibox_page_action_icon_container_view_->SetIconColor(icon_color);
-  for (PageActionIconView* icon_view : page_action_icons_)
-    icon_view->SetIconColor(icon_color);
-  for (ContentSettingImageView* image_view : content_setting_views_)
-    image_view->SetIconColor(icon_color);
-}
-
-void LocationBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   // ToolbarView::Init() adds |this| to the view hierarchy before initializing,
   // which will trigger an early theme change.
   if (!IsInitialized())
     return;
 
   tint_ = GetTint();
+
+  SkColor icon_color = GetColor(OmniboxPart::RESULTS_ICON);
+  omnibox_page_action_icon_container_view_->SetIconColor(icon_color);
+  for (PageActionIconView* icon_view : page_action_icons_)
+    icon_view->SetIconColor(icon_color);
+  for (ContentSettingImageView* image_view : content_setting_views_)
+    image_view->SetIconColor(icon_color);
+
   RefreshBackground();
 
   // When the native theme changes, so can the colors used for emphasized text.

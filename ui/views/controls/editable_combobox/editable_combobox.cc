@@ -347,8 +347,8 @@ void EditableCombobox::Layout() {
   }
 }
 
-void EditableCombobox::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  textfield_->OnNativeThemeChanged(theme);
+void EditableCombobox::OnThemeChanged() {
+  textfield_->OnThemeChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

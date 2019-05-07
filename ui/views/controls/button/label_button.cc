@@ -349,7 +349,7 @@ void LabelButton::OnBlur() {
   SchedulePaint();
 }
 
-void LabelButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+void LabelButton::OnThemeChanged() {
   ResetColorsFromNativeTheme();
   UpdateThemedBorder();
   ResetLabelEnabledColor();

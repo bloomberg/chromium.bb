@@ -118,7 +118,7 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // View:
   void OnFocus() override;
   void OnBlur() override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnThemeChanged() override;
 
   // Button:
   void StateChanged(ButtonState old_state) override;

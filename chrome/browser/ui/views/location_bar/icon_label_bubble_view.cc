@@ -275,11 +275,10 @@ bool IconLabelBubbleView::OnMousePressed(const ui::MouseEvent& event) {
   return LabelButton::OnMousePressed(event);
 }
 
-void IconLabelBubbleView::OnNativeThemeChanged(
-    const ui::NativeTheme* native_theme) {
-  LabelButton::OnNativeThemeChanged(native_theme);
+void IconLabelBubbleView::OnThemeChanged() {
+  LabelButton::OnThemeChanged();
 
-  // LabelButton::OnNativeThemeChanged() sets a views::Background on the label
+  // LabelButton::OnThemeChanged() sets a views::Background on the label
   // under certain conditions. We don't want that, so unset the background.
   label()->SetBackground(nullptr);
 

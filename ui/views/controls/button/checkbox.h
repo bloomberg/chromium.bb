@@ -49,7 +49,7 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
  protected:
   // LabelButton:
   const char* GetClassName() const override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnThemeChanged() override;
   std::unique_ptr<InkDrop> CreateInkDrop() override;
   std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<InkDropMask> CreateInkDropMask() const override;

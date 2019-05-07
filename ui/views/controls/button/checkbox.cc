@@ -101,8 +101,8 @@ void Checkbox::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   }
 }
 
-void Checkbox::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  LabelButton::OnNativeThemeChanged(theme);
+void Checkbox::OnThemeChanged() {
+  LabelButton::OnThemeChanged();
   UpdateImage();
 }
 

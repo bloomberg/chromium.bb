@@ -157,7 +157,7 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   gfx::Size GetMinimumSize() const final;
   gfx::Size GetMaximumSize() const final;
 
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnThemeChanged() override;
 
   // Perform view initialization on the contents for bubble sizing.
   virtual void Init();
@@ -184,8 +184,8 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, CreateDelegate);
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, NonClientHitTest);
 
-  // Update the bubble color from |theme|, unless it was explicitly set.
-  void UpdateColorsFromTheme(const ui::NativeTheme* theme);
+  // Update the bubble color from the NativeTheme unless it was explicitly set.
+  void UpdateColorsFromTheme();
 
   // Handles widget visibility changes.
   void HandleVisibilityChanged(Widget* widget, bool visible);

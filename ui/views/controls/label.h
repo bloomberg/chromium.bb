@@ -252,7 +252,7 @@ class VIEWS_EXPORT Label : public View,
   void OnPaint(gfx::Canvas* canvas) override;
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                   float new_device_scale_factor) override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnThemeChanged() override;
   gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
   void OnFocus() override;
   void OnBlur() override;
@@ -332,7 +332,7 @@ class VIEWS_EXPORT Label : public View,
   void ApplyTextColors() const;
 
   // Updates any colors that have not been explicitly set from the theme.
-  void UpdateColorsFromTheme(const ui::NativeTheme* theme);
+  void UpdateColorsFromTheme();
 
   bool ShouldShowDefaultTooltip() const;
 

@@ -331,10 +331,10 @@ void Combobox::Layout() {
   arrow_button_->SetBounds(0, 0, width(), height());
 }
 
-void Combobox::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+void Combobox::OnThemeChanged() {
   SetBackground(
       CreateBackgroundFromPainter(Painter::CreateSolidRoundRectPainter(
-          theme->GetSystemColor(
+          GetNativeTheme()->GetSystemColor(
               ui::NativeTheme::kColorId_TextfieldDefaultBackground),
           FocusableBorder::kCornerRadiusDp)));
 }

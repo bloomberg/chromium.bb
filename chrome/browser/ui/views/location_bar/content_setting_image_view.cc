@@ -105,10 +105,9 @@ bool ContentSettingImageView::OnKeyPressed(const ui::KeyEvent& event) {
   return Button::OnKeyPressed(event);
 }
 
-void ContentSettingImageView::OnNativeThemeChanged(
-    const ui::NativeTheme* native_theme) {
+void ContentSettingImageView::OnThemeChanged() {
   UpdateImage();
-  IconLabelBubbleView::OnNativeThemeChanged(native_theme);
+  IconLabelBubbleView::OnThemeChanged();
 }
 
 SkColor ContentSettingImageView::GetTextColor() const {

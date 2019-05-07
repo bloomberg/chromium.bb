@@ -191,7 +191,7 @@ void LocationIconView::UpdateTextVisibility(bool suppress_animations) {
     AnimateOut();
 
   // The label text color may have changed.
-  OnNativeThemeChanged(GetNativeTheme());
+  OnThemeChanged();
 }
 
 void LocationIconView::UpdateIcon() {

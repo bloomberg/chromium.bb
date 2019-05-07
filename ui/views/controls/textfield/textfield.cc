@@ -1143,7 +1143,7 @@ gfx::Point Textfield::GetKeyboardContextMenuLocation() {
   return GetCaretBounds().bottom_right();
 }
 
-void Textfield::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+void Textfield::OnThemeChanged() {
   gfx::RenderText* render_text = GetRenderText();
   render_text->SetColor(GetTextColor());
   UpdateBackgroundColor();

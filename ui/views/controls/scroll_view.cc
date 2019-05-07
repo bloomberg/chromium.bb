@@ -627,7 +627,7 @@ const char* ScrollView::GetClassName() const {
   return kViewClassName;
 }
 
-void ScrollView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+void ScrollView::OnThemeChanged() {
   UpdateBorder();
   if (use_color_id_)
     UpdateBackground();

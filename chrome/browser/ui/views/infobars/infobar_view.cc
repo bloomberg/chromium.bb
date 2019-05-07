@@ -226,13 +226,6 @@ void InfoBarView::OnThemeChanged() {
         label->SetEnabledColor(text_color);
     }
   }
-}
-
-void InfoBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  // The constructor could not set initial colors correctly, since the
-  // ThemeProvider wasn't available yet.  When this function is called, the view
-  // has been added to a Widget, so that ThemeProvider is now present.
-  OnThemeChanged();
 
   // Native theme changes can affect font sizes.
   RecalculateHeight();
@@ -383,7 +376,7 @@ int InfoBarView::GetSeparatorHeightDip() const {
 SkColor InfoBarView::GetColor(int id) const {
   const auto* theme_provider = GetThemeProvider();
   // When there's no theme provider, this color will never be used; it will be
-  // reset due to the OnNativeThemeChanged() override.
+  // reset due to the OnThemeChanged() override.
   return theme_provider ? theme_provider->GetColor(id) : gfx::kPlaceholderColor;
 }
 

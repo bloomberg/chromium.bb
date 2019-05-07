@@ -331,7 +331,7 @@ BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
   title_margins_ = provider->GetInsetsMetric(INSETS_DIALOG_TITLE);
   if (anchor_view)
     SetAnchorView(anchor_view);
-  UpdateColorsFromTheme(GetNativeTheme());
+  UpdateColorsFromTheme();
   UMA_HISTOGRAM_BOOLEAN("Dialog.BubbleDialogDelegateView.Create", true);
 }
 
@@ -386,9 +386,8 @@ gfx::Size BubbleDialogDelegateView::GetMaximumSize() const {
   return gfx::Size();
 }
 
-void BubbleDialogDelegateView::OnNativeThemeChanged(
-    const ui::NativeTheme* theme) {
-  UpdateColorsFromTheme(theme);
+void BubbleDialogDelegateView::OnThemeChanged() {
+  UpdateColorsFromTheme();
 }
 
 void BubbleDialogDelegateView::Init() {}
@@ -467,10 +466,10 @@ BubbleFrameView* BubbleDialogDelegateView::GetBubbleFrameView() const {
   return view ? static_cast<BubbleFrameView*>(view->frame_view()) : nullptr;
 }
 
-void BubbleDialogDelegateView::UpdateColorsFromTheme(
-    const ui::NativeTheme* theme) {
+void BubbleDialogDelegateView::UpdateColorsFromTheme() {
   if (!color_explicitly_set_)
-    color_ = theme->GetSystemColor(ui::NativeTheme::kColorId_BubbleBackground);
+    color_ = GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_BubbleBackground);
   BubbleFrameView* frame_view = GetBubbleFrameView();
   if (frame_view)
     frame_view->SetBackgroundColor(color());

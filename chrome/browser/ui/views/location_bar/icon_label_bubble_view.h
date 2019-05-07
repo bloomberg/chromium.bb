@@ -129,7 +129,7 @@ class IconLabelBubbleView : public views::InkDropObserver,
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
-  void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
+  void OnThemeChanged() override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   SkColor GetInkDropBaseColor() const override = 0;
   bool IsTriggerableEvent(const ui::Event& event) override;

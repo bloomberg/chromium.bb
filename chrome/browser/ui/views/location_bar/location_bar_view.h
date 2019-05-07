@@ -211,7 +211,6 @@ class LocationBarView : public LocationBar,
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
   void OnThemeChanged() override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   void ChildPreferredSizeChanged(views::View* child) override;
 
   // ChromeOmniboxEditController:

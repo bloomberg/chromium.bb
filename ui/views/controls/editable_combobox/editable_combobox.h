@@ -26,7 +26,6 @@ class Range;
 namespace ui {
 class ComboboxModel;
 class Event;
-class NativeTheme;
 }  // namespace ui
 
 namespace views {
@@ -124,7 +123,7 @@ class VIEWS_EXPORT EditableCombobox : public View,
   // Overridden from View:
   const char* GetClassName() const override;
   void Layout() override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnThemeChanged() override;
 
   // Overridden from TextfieldController:
   void ContentsChanged(Textfield* sender,

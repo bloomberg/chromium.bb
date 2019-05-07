@@ -417,7 +417,7 @@ gfx::Size OmniboxResultView::CalculatePreferredSize() const {
   return suggestion_view_->CalculatePreferredSize();
 }
 
-void OmniboxResultView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+void OmniboxResultView::OnThemeChanged() {
   Invalidate();
   SchedulePaint();
 }

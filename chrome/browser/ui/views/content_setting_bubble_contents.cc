@@ -417,11 +417,10 @@ int ContentSettingBubbleContents::GetSelectedRadioOption() {
   return 0;
 }
 
-void ContentSettingBubbleContents::OnNativeThemeChanged(
-    const ui::NativeTheme* theme) {
-  views::BubbleDialogDelegateView::OnNativeThemeChanged(theme);
+void ContentSettingBubbleContents::OnThemeChanged() {
+  views::BubbleDialogDelegateView::OnThemeChanged();
   if (learn_more_button_)
-    StyleLearnMoreButton(theme);
+    StyleLearnMoreButton();
 }
 
 base::string16 ContentSettingBubbleContents::GetWindowTitle() const {
@@ -553,7 +552,7 @@ views::View* ContentSettingBubbleContents::CreateExtraView() {
     learn_more_button->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_LEARN_MORE));
     learn_more_button_ = learn_more_button.get();
-    StyleLearnMoreButton(GetNativeTheme());
+    StyleLearnMoreButton();
     extra_views.push_back(std::move(learn_more_button));
   }
   // Optionally add a "Manage" button if the view wants to use a button to
@@ -604,11 +603,10 @@ base::string16 ContentSettingBubbleContents::GetDialogButtonLabel(
   return done_text.empty() ? l10n_util::GetStringUTF16(IDS_DONE) : done_text;
 }
 
-void ContentSettingBubbleContents::StyleLearnMoreButton(
-    const ui::NativeTheme* theme) {
+void ContentSettingBubbleContents::StyleLearnMoreButton() {
   DCHECK(learn_more_button_);
-  SkColor text_color =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor);
+  SkColor text_color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_LabelEnabledColor);
   views::SetImageFromVectorIcon(learn_more_button_,
                                 vector_icons::kHelpOutlineIcon, text_color);
 }

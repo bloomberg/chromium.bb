@@ -30,7 +30,7 @@ class VIEWS_EXPORT LabelButtonLabel : public Label {
 
  protected:
   // Label:
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnThemeChanged() override;
 
  private:
   void OnEnabledChanged();

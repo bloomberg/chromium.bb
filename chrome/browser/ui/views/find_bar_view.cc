@@ -500,7 +500,8 @@ const char* FindBarView::GetClassName() const {
   return "FindBarView";
 }
 
-void FindBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+void FindBarView::OnThemeChanged() {
+  ui::NativeTheme* theme = GetNativeTheme();
   SkColor bg_color =
       SkColorSetA(theme->GetSystemColor(
                       ui::NativeTheme::kColorId_TextfieldDefaultBackground),
@@ -515,8 +516,8 @@ void FindBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   SetBackground(std::make_unique<views::BubbleBackground>(border.get()));
   SetBorder(std::move(border));
 
-  const SkColor base_foreground_color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldDefaultColor);
+  const SkColor base_foreground_color =
+      theme->GetSystemColor(ui::NativeTheme::kColorId_TextfieldDefaultColor);
 
   match_count_text_->SetBackgroundColor(bg_color);
   match_count_text_->SetEnabledColor(

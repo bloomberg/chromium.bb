@@ -106,8 +106,7 @@ ToolbarPageActionIconContainerView::GetWebContentsForPageActionIconView() {
   return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
-void ToolbarPageActionIconContainerView::OnNativeThemeChanged(
-    const ui::NativeTheme* theme) {
+void ToolbarPageActionIconContainerView::OnThemeChanged() {
   // Update icon color.
   UpdateAllIcons();
 }

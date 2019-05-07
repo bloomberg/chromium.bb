@@ -103,7 +103,6 @@ class PageActionIconView : public IconLabelBubbleView {
   base::string16 GetTooltipText(const gfx::Point& p) const override;
   void ViewHierarchyChanged(
       const views::ViewHierarchyChangedDetails& details) override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   void OnThemeChanged() override;
   SkColor GetInkDropBaseColor() const override;
   bool ShouldShowSeparator() const final;

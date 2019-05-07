@@ -71,7 +71,7 @@ class VIEWS_EXPORT Link : public Label {
   void OnBlur() override;
   void SetFontList(const gfx::FontList& font_list) override;
   void SetText(const base::string16& text) override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnThemeChanged() override;
   void SetEnabledColor(SkColor color) override;
   bool IsSelectionSupported() const override;
 

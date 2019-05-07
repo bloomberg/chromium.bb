@@ -161,9 +161,8 @@ ax::mojom::Role ProfileMenuViewBase::GetAccessibleWindowRole() {
   return ax::mojom::Role::kDialog;
 }
 
-void ProfileMenuViewBase::OnNativeThemeChanged(
-    const ui::NativeTheme* native_theme) {
-  views::BubbleDialogDelegateView::OnNativeThemeChanged(native_theme);
+void ProfileMenuViewBase::OnThemeChanged() {
+  views::BubbleDialogDelegateView::OnThemeChanged();
   SetBackground(views::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DialogBackground)));
 }

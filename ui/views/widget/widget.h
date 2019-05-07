@@ -890,6 +890,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   void OnNativeThemeUpdated(ui::NativeTheme* observed_theme) override;
 
  protected:
+  // Call this to propagate native theme changes to the root view. Subclasses
+  // may override this to customize how native theme updates are propagated.
+  virtual void PropagateNativeThemeChanged();
+
   // Creates the RootView to be used within this Widget. Subclasses may override
   // to create custom RootViews that do specialized event processing.
   // TODO(beng): Investigate whether or not this is needed.

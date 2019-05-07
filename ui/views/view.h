@@ -843,7 +843,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // GetNativeTheme() on the Widget this View is in, or provides a default
   // theme if there's no widget, or returns |native_theme_| if that's
   // set. Warning: the default theme might not be correct; you should probably
-  // override OnNativeThemeChanged().
+  // override OnThemeChanged().
   ui::NativeTheme* GetNativeTheme() {
     return const_cast<ui::NativeTheme*>(
         const_cast<const View*>(this)->GetNativeTheme());
@@ -1518,9 +1518,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // System events -------------------------------------------------------------
 
-  // Called when the UI theme (not the NativeTheme) has changed, overriding
+  // Called when either the UI theme or the NativeTheme associated with this
+  // View changes. This is also called when the NativeTheme first becomes
+  // available (after the view is added to a widget hierarchy). Overriding
   // allows individual Views to do special cleanup and processing (such as
-  // dropping resource caches).  To dispatch a theme changed notification, call
+  // dropping resource caches). To dispatch a theme changed notification, call
   // Widget::ThemeChanged().
   virtual void OnThemeChanged() {}
 
@@ -1547,13 +1549,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // used by the public static method ExceededDragThreshold().
   static int GetHorizontalDragThreshold();
   static int GetVerticalDragThreshold();
-
-  // NativeTheme ---------------------------------------------------------------
-
-  // Invoked when the NativeTheme associated with this View changes, including
-  // when one first becomes available (after the view is added to a widget
-  // hierarchy).
-  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) {}
 
   // Property Support ----------------------------------------------------------
 
@@ -1657,9 +1652,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // |register_accelerators| true and calls ViewHierarchyChanged().
   void ViewHierarchyChangedImpl(bool register_accelerators,
                                 const ViewHierarchyChangedDetails& details);
-
-  // Invokes OnNativeThemeChanged() on this and all descendants.
-  void PropagateNativeThemeChanged(const ui::NativeTheme* theme);
 
   // Size and disposition ------------------------------------------------------
 
@@ -1805,8 +1797,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // System events -------------------------------------------------------------
 
-  // Used to propagate theme changed notifications from the root view to all
-  // views in the hierarchy.
+  // Used to propagate UI theme changed or NativeTheme changed notifications
+  // from the root view to all views in the hierarchy.
   void PropagateThemeChanged();
 
   // Used to propagate device scale factor changed notifications from the root
