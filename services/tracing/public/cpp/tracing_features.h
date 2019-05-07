@@ -21,6 +21,9 @@ extern const COMPONENT_EXPORT(TRACING_CPP) base::Feature
 extern const COMPONENT_EXPORT(TRACING_CPP) base::Feature
     kTracingServiceInProcess;
 
+extern const COMPONENT_EXPORT(TRACING_CPP) base::Feature
+    kBackgroundTracingProtoOutput;
+
 }  // namespace features
 
 namespace tracing {

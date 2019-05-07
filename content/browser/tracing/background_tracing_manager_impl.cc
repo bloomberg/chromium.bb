@@ -162,18 +162,19 @@ bool BackgroundTracingManagerImpl::HasActiveScenario() {
 }
 
 bool BackgroundTracingManagerImpl::HasTraceToUpload() {
-  // TODO(oysteine): This should return the collected trace once we have the new
-  // coordinator API to collect protos. https://crbug.com/925142.
-  // Note: This can be called on any thread and needs to be thread safe.
-  return !trace_to_upload_for_testing_.empty();
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return !trace_to_upload_.empty();
 }
 
 std::string BackgroundTracingManagerImpl::GetLatestTraceToUpload() {
-  // TODO(oysteine): This should return the collected trace once we have the new
-  // coordinator API to collect protos. https://crbug.com/925142.
-  // Note: This can be called on any thread and needs to be thread safe.
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::string ret;
-  ret.swap(trace_to_upload_for_testing_);
+  ret.swap(trace_to_upload_);
+
+  if (active_scenario_) {
+    active_scenario_->OnFinalizeComplete(true);
+  }
+
   return ret;
 }
 
@@ -241,8 +242,18 @@ bool BackgroundTracingManagerImpl::IsTracingForTesting() {
 }
 
 void BackgroundTracingManagerImpl::SetTraceToUploadForTesting(
-    base::StringPiece data) {
-  trace_to_upload_for_testing_ = data.data();
+    std::unique_ptr<std::string> trace_data) {
+  SetTraceToUpload(std::move(trace_data));
+}
+
+void BackgroundTracingManagerImpl::SetTraceToUpload(
+    std::unique_ptr<std::string> trace_data) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (trace_data) {
+    trace_to_upload_.swap(*trace_data);
+  } else {
+    trace_to_upload_.clear();
+  }
 }
 
 void BackgroundTracingManagerImpl::ValidateStartupScenario() {
@@ -315,7 +326,6 @@ BackgroundTracingManagerImpl::RegisterTriggerType(const char* trigger_name) {
 
   return static_cast<TriggerHandle>(trigger_handle_ids_);
 }
-
 bool BackgroundTracingManagerImpl::IsTriggerHandleValid(
     BackgroundTracingManager::TriggerHandle handle) const {
   return trigger_handles_.find(handle) != trigger_handles_.end();
@@ -366,6 +376,10 @@ BackgroundTracingManagerImpl::GenerateMetadataDict() {
   }
 
   return metadata_dict;
+}
+
+void BackgroundTracingManagerImpl::AbortScenarioForTesting() {
+  AbortScenario();
 }
 
 void BackgroundTracingManagerImpl::AbortScenario() {

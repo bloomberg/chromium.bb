@@ -15,7 +15,8 @@
 namespace tracing {
 
 perfetto::TraceConfig GetDefaultPerfettoConfig(
-    const base::trace_event::TraceConfig& chrome_config) {
+    const base::trace_event::TraceConfig& chrome_config,
+    bool privacy_filtering_enabled) {
   perfetto::TraceConfig perfetto_config;
 
   size_t size_limit = chrome_config.GetTraceBufferSizeInKb();
@@ -52,6 +53,7 @@ perfetto::TraceConfig GetDefaultPerfettoConfig(
   trace_event_config->set_target_buffer(0);
   auto* chrome_proto_config = trace_event_config->mutable_chrome_config();
   chrome_proto_config->set_trace_config(chrome_config_string);
+  chrome_proto_config->set_privacy_filtering_enabled(privacy_filtering_enabled);
 
 // Capture system trace events if supported and enabled. The datasources will
 // only emit events if system tracing is enabled in |chrome_config|.
@@ -62,6 +64,8 @@ perfetto::TraceConfig GetDefaultPerfettoConfig(
   system_trace_config->set_target_buffer(0);
   auto* system_chrome_config = system_trace_config->mutable_chrome_config();
   system_chrome_config->set_trace_config(chrome_config_string);
+  system_chrome_config->set_privacy_filtering_enabled(
+      privacy_filtering_enabled);
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -70,6 +74,7 @@ perfetto::TraceConfig GetDefaultPerfettoConfig(
   arc_trace_config->set_target_buffer(0);
   auto* arc_chrome_config = arc_trace_config->mutable_chrome_config();
   arc_chrome_config->set_trace_config(chrome_config_string);
+  arc_chrome_config->set_privacy_filtering_enabled(privacy_filtering_enabled);
 #endif
 
   // Also capture global metadata.
@@ -79,7 +84,8 @@ perfetto::TraceConfig GetDefaultPerfettoConfig(
   trace_metadata_config->set_target_buffer(0);
   auto* metadata_chrome_config = trace_metadata_config->mutable_chrome_config();
   metadata_chrome_config->set_trace_config(chrome_config_string);
-  // TODO(ssid): Also set privacy_filtering_enabled here.
+  metadata_chrome_config->set_privacy_filtering_enabled(
+      privacy_filtering_enabled);
 
   return perfetto_config;
 }

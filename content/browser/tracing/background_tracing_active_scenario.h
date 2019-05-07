@@ -11,7 +11,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/tracing/background_tracing_config_impl.h"
+#include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/browser/background_tracing_manager.h"
+#include "services/tracing/public/mojom/perfetto_service.mojom.h"
 
 namespace base {
 class RefCountedString;
@@ -24,13 +26,14 @@ class BackgroundTracingConfigImpl;
 class BackgroundTracingActiveScenario {
  public:
   enum class State { kIdle, kTracing, kFinalizing, kUploading, kAborted };
+  class TracingSession;
 
   BackgroundTracingActiveScenario(
       std::unique_ptr<const BackgroundTracingConfigImpl> config,
       bool requires_anonymized_data,
       BackgroundTracingManager::ReceiveCallback receive_callback,
       base::OnceClosure on_aborted_callback);
-  ~BackgroundTracingActiveScenario();
+  virtual ~BackgroundTracingActiveScenario();
 
   void StartTracingIfConfigNeedsIt();
   void AbortScenario();
@@ -39,6 +42,7 @@ class BackgroundTracingActiveScenario {
   void GenerateMetadataDict(base::DictionaryValue* metadata_dict);
   State state() const { return scenario_state_; }
   bool requires_anonymized_data() const { return requires_anonymized_data_; }
+  base::WeakPtr<BackgroundTracingActiveScenario> GetWeakPtr();
 
   void TriggerNamedEvent(
       BackgroundTracingManager::TriggerHandle handle,
@@ -48,6 +52,16 @@ class BackgroundTracingActiveScenario {
       const BackgroundTracingRule* triggered_rule,
       BackgroundTracingManager::StartedFinalizingCallback callback);
 
+  // Called by LegacyTracingSession when the final trace data is ready.
+  void OnJSONDataComplete(std::unique_ptr<const base::DictionaryValue> metadata,
+                          base::RefCountedString*);
+  // Called by the PerfettoTracingSession when the proto trace is ready.
+  void OnProtoDataComplete(std::unique_ptr<std::string> proto_trace);
+
+  // Called when the finalized trace data has been uploaded/transferred away
+  // from the background tracing system.
+  void OnFinalizeComplete(bool success);
+
   // For testing
   CONTENT_EXPORT void FireTimerForTesting();
   CONTENT_EXPORT void SetRuleTriggeredCallbackForTesting(
@@ -56,20 +70,15 @@ class BackgroundTracingActiveScenario {
  private:
   void StartTracing(BackgroundTracingConfigImpl::CategoryPreset,
                     base::trace_event::TraceRecordMode);
-
   void BeginFinalizing(
       BackgroundTracingManager::StartedFinalizingCallback callback);
-  void OnTracingStopped(base::RepeatingClosure started_finalizing_closure,
-                        std::unique_ptr<const base::DictionaryValue> metadata,
-                        base::RefCountedString*);
-
-  void OnFinalizeComplete(bool success);
 
   BackgroundTracingRule* GetRuleAbleToTriggerTracing(
       const std::string& trigger_name);
 
   void SetState(State new_state);
 
+  std::unique_ptr<TracingSession> tracing_session_;
   std::unique_ptr<const BackgroundTracingConfigImpl> config_;
   bool requires_anonymized_data_;
   State scenario_state_;
@@ -78,6 +87,7 @@ class BackgroundTracingActiveScenario {
   BackgroundTracingManager::ReceiveCallback receive_callback_;
   BackgroundTracingManager::TriggerHandle triggered_named_event_handle_;
   base::OnceClosure on_aborted_callback_;
+  base::OnceClosure started_finalizing_closure_;
 
   class TracingTimer;
   std::unique_ptr<TracingTimer> tracing_timer_;
