@@ -43,6 +43,10 @@ void SimpleDependencyManager::CreateServicesForTest(SimpleFactoryKey* key) {
   DependencyManager::CreateContextServices(key, true);
 }
 
+void SimpleDependencyManager::MarkContextLive(SimpleFactoryKey* key) {
+  DependencyManager::MarkContextLive(key);
+}
+
 SimpleDependencyManager::SimpleDependencyManager() = default;
 
 SimpleDependencyManager::~SimpleDependencyManager() = default;
