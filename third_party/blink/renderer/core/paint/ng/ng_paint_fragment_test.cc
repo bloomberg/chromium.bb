@@ -465,6 +465,31 @@ TEST_F(NGPaintFragmentTest, FlippedBlock) {
   EXPECT_EQ(IntRect(180, 40, 10, 30), text3.VisualRect());
 }
 
+// Test that OOF should not create a NGPaintFragment.
+TEST_F(NGPaintFragmentTest, OutOfFlow) {
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    div {
+      position: relative;
+    }
+    span {
+      position: absolute;
+    }
+    </style>
+    <body>
+      <div id="container">
+        text
+        <span>XXX</span>
+      </div>
+    </body>
+  )HTML");
+  const NGPaintFragment* container = GetPaintFragmentByElementId("container");
+  EXPECT_EQ(1u, container->Children().size());
+  auto lines = ToList(container->Children());
+  EXPECT_EQ(1u, lines[0]->Children().size());
+}
+
 TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByRemoveBr) {
   SetBodyInnerHTML(
       "<div id=container>line 1<br>line 2<br id=target>line 3<br>"

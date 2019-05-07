@@ -362,6 +362,10 @@ void NGPaintFragment::PopulateDescendants(
       !box_physical_fragment || box_physical_fragment->ChildrenInline();
 
   for (const NGLink& child_fragment : container.Children()) {
+    // OOF objects are not needed because they always have self painting layer.
+    if (UNLIKELY(child_fragment->IsOutOfFlowPositioned()))
+      continue;
+
     bool populate_children = child_fragment->IsContainer() &&
                              !child_fragment->IsBlockFormattingContextRoot();
     scoped_refptr<NGPaintFragment> previous_child;
@@ -374,8 +378,8 @@ void NGPaintFragment::PopulateDescendants(
                       std::move(previous_child), &populate_children);
 
     if (children_are_inline) {
-      if (!child_fragment->IsFloatingOrOutOfFlowPositioned() &&
-          !child_fragment->IsListMarker()) {
+      DCHECK(!child_fragment->IsOutOfFlowPositioned());
+      if (!child_fragment->IsFloating() && !child_fragment->IsListMarker()) {
         if (LayoutObject* layout_object = child_fragment->GetLayoutObject())
           child->AssociateWithLayoutObject(layout_object, last_fragment_map);
 

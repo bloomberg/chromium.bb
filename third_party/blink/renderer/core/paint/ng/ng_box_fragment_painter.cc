@@ -725,7 +725,8 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
 
   for (const NGPaintFragment* line : line_boxes) {
     const NGPhysicalFragment& child_fragment = line->PhysicalFragment();
-    if (child_fragment.IsFloatingOrOutOfFlowPositioned())
+    DCHECK(!child_fragment.IsOutOfFlowPositioned());
+    if (child_fragment.IsFloating())
       continue;
 
     // Check if CullRect intersects with this child, only in block direction
