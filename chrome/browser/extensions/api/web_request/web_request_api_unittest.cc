@@ -100,7 +100,6 @@ using helpers::ResponseHeader;
 using helpers::ResponseHeaders;
 using helpers::StringToCharList;
 using testing::ElementsAre;
-using Action = extensions::declarative_net_request::RulesetManager::Action;
 
 namespace extensions {
 
@@ -2079,7 +2078,6 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   WebRequestInfoInitParams info_params;
   info_params.logger = std::make_unique<TestLogger>();
   WebRequestInfo info(std::move(info_params));
-  info.dnr_action.emplace(Action::Type::NONE);
   // Take a reference to TestLogger to simplify accessing TestLogger methods.
   TestLogger& logger = static_cast<TestLogger&>(*info.logger);
   MergeOnBeforeSendHeadersResponses(info, deltas, &headers0, &ignored_actions,
@@ -2197,8 +2195,7 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   bool request_headers_modified4 = false;
   net::HttpRequestHeaders headers4;
   headers4.MergeFrom(base_headers);
-  info.dnr_action.emplace(Action::Type::REMOVE_HEADERS);
-  info.dnr_action->request_headers_to_remove = {"key5"};
+  info.request_headers_to_remove = {"key5"};
   MergeOnBeforeSendHeadersResponses(info, deltas, &headers4, &ignored_actions,
                                     &ignore1, &ignore2,
                                     &request_headers_modified4);
@@ -2247,7 +2244,6 @@ TEST(ExtensionWebRequestHelpersTest,
   WebRequestInfoInitParams info_params;
   info_params.logger = std::make_unique<TestLogger>();
   WebRequestInfo info(std::move(info_params));
-  info.dnr_action.emplace(Action::Type::NONE);
   helpers::IgnoredActions ignored_actions;
   std::set<std::string> removed_headers, set_headers;
   bool request_headers_modified = false;
@@ -2602,7 +2598,6 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
   info_params.url = GURL(kExampleUrl);
   info_params.logger = std::make_unique<TestLogger>();
   WebRequestInfo info(std::move(info_params));
-  info.dnr_action.emplace(Action::Type::NONE);
   // Take a reference to TestLogger to simplify accessing TestLogger methods.
   TestLogger& logger = static_cast<TestLogger&>(*info.logger);
 
@@ -2689,8 +2684,7 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
 
   // Ensure headers removed by Declarative Net Request API can't be added by web
   // request extensions and result in a conflict.
-  info.dnr_action.emplace(Action::Type::REMOVE_HEADERS);
-  info.dnr_action->response_headers_to_remove = {"key3"};
+  info.response_headers_to_remove = {"key3"};
   ignored_actions.clear();
   logger.clear();
   bool response_headers_modified3 = false;
@@ -2748,7 +2742,6 @@ TEST(ExtensionWebRequestHelpersTest,
   info_params.url = GURL(kExampleUrl);
   info_params.logger = std::make_unique<TestLogger>();
   WebRequestInfo info(std::move(info_params));
-  info.dnr_action.emplace(Action::Type::NONE);
   // Take a reference to TestLogger to simplify accessing TestLogger methods.
   TestLogger& logger = static_cast<TestLogger&>(*info.logger);
 

@@ -1069,34 +1069,31 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
   // the diffierent network request stages. A redirect should cause another
   // OnBeforeRequest call.
   // |extension_info_map| is null for system level requests.
-  {
+  if (extension_info_map) {
     using Action = declarative_net_request::RulesetManager::Action;
-    if (extension_info_map) {
-      const Action& action =
-          extension_info_map->GetRulesetManager()->EvaluateRequest(
-              *request, is_incognito_context);
-      switch (action.type) {
-        case Action::Type::NONE:
-          break;
-        case Action::Type::BLOCK:
-          return net::ERR_BLOCKED_BY_CLIENT;
-        case Action::Type::COLLAPSE:
-          *should_collapse_initiator = true;
-          return net::ERR_BLOCKED_BY_CLIENT;
-        case Action::Type::REDIRECT:
-          DCHECK(action.redirect_url);
-          *new_url = action.redirect_url.value();
-          return net::OK;
-        case Action::Type::REMOVE_HEADERS:
-          // Unlike other actions, allow web request extensions to intercept the
-          // request here. The headers will be removed during subsequent request
-          // stages.
-          DCHECK(request->dnr_action.has_value());
-          DCHECK_EQ(request->dnr_action->type, Action::Type::REMOVE_HEADERS);
-          break;
-      }
-    } else {
-      request->dnr_action.emplace(Action::Type::NONE);
+
+    Action action = extension_info_map->GetRulesetManager()->EvaluateRequest(
+        *request, is_incognito_context);
+    switch (action.type) {
+      case Action::Type::NONE:
+        break;
+      case Action::Type::BLOCK:
+        return net::ERR_BLOCKED_BY_CLIENT;
+      case Action::Type::COLLAPSE:
+        *should_collapse_initiator = true;
+        return net::ERR_BLOCKED_BY_CLIENT;
+      case Action::Type::REDIRECT:
+        DCHECK(action.redirect_url);
+        *new_url = action.redirect_url.value();
+        return net::OK;
+      case Action::Type::REMOVE_HEADERS:
+        request->request_headers_to_remove =
+            std::move(action.request_headers_to_remove);
+        request->response_headers_to_remove =
+            std::move(action.response_headers_to_remove);
+        // Unlike other actions, allow web request extensions to intercept the
+        // request here.
+        break;
     }
   }
 
@@ -1152,9 +1149,8 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
   // Remove request headers for the Declarative Net Request API. It is given
   // preference over the Web Request API and this also hides the removed headers
   // from extensions using the Web Request API.
-  DCHECK(request->dnr_action.has_value());
   std::set<std::string> removed_headers;
-  for (const char* header : request->dnr_action->request_headers_to_remove) {
+  for (const char* header : request->request_headers_to_remove) {
     if (!headers->HasHeader(header))
       continue;
 
@@ -1251,11 +1247,10 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
   // Handle header removal by the Declarative Net Request API. We filter these
   // headers so that headers removed by Declarative Net Request API are not
   // visible to web request extensions.
-  DCHECK(request->dnr_action.has_value());
   bool headers_filtered = false;
   scoped_refptr<const net::HttpResponseHeaders> filtered_response_headers =
       FilterResponseHeaders(original_response_headers,
-                            request->dnr_action->response_headers_to_remove,
+                            request->response_headers_to_remove,
                             &headers_filtered);
   if (headers_filtered) {
     // Create a deep copy to ensure |filtered_response_headers| and
