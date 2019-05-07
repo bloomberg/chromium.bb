@@ -8,8 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/values.h"
-
 namespace credential_provider {
 
 // The the UI process can exit with the following exit code.
