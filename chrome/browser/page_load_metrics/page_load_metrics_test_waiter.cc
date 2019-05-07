@@ -68,6 +68,11 @@ void PageLoadMetricsTestWaiter::AddMinimumNetworkBytesExpectation(
   expected_minimum_network_bytes_ = expected_minimum_network_bytes;
 }
 
+void PageLoadMetricsTestWaiter::AddMinimumAggregateCpuTimeExpectation(
+    base::TimeDelta minimum) {
+  expected_minimum_aggregate_cpu_time_ = minimum;
+}
+
 bool PageLoadMetricsTestWaiter::DidObserveInPage(TimingField field) const {
   return observed_page_fields_.IsSet(field);
 }
@@ -104,6 +109,16 @@ void PageLoadMetricsTestWaiter::OnTimingUpdated(
     page_expected_fields_.ClearMatching(matched_bits);
     observed_page_fields_.Merge(matched_bits);
   }
+  if (ExpectationsSatisfied() && run_loop_)
+    run_loop_->Quit();
+}
+
+void PageLoadMetricsTestWaiter::OnCpuTimingUpdated(
+    content::RenderFrameHost* subframe_rfh,
+    const page_load_metrics::mojom::CpuTiming& timing) {
+  if (ExpectationsSatisfied())
+    return;
+  current_aggregate_cpu_time_ += timing.task_time;
   if (ExpectationsSatisfied() && run_loop_)
     run_loop_->Quit();
 }
@@ -243,6 +258,10 @@ void PageLoadMetricsTestWaiter::OnCommit(
   did_add_observer_ = true;
 }
 
+bool PageLoadMetricsTestWaiter::CpuTimeExpectationsSatisfied() const {
+  return current_aggregate_cpu_time_ >= expected_minimum_aggregate_cpu_time_;
+}
+
 bool PageLoadMetricsTestWaiter::ResourceUseExpectationsSatisfied() const {
   return (expected_minimum_complete_resources_ == 0 ||
           current_complete_resources_ >=
@@ -270,7 +289,7 @@ bool PageLoadMetricsTestWaiter::ExpectationsSatisfied() const {
          ResourceUseExpectationsSatisfied() &&
          WebFeaturesExpectationsSatisfied() &&
          SubframeNavigationExpectationsSatisfied() &&
-         expected_frame_sizes_.empty();
+         expected_frame_sizes_.empty() && CpuTimeExpectationsSatisfied();
 }
 
 PageLoadMetricsTestWaiter::WaiterMetricsObserver::~WaiterMetricsObserver() {}
@@ -285,6 +304,13 @@ void PageLoadMetricsTestWaiter::WaiterMetricsObserver::OnTimingUpdate(
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   if (waiter_)
     waiter_->OnTimingUpdated(subframe_rfh, timing, extra_info);
+}
+
+void PageLoadMetricsTestWaiter::WaiterMetricsObserver::OnCpuTimingUpdate(
+    content::RenderFrameHost* subframe_rfh,
+    const page_load_metrics::mojom::CpuTiming& timing) {
+  if (waiter_)
+    waiter_->OnCpuTimingUpdated(subframe_rfh, timing);
 }
 
 void PageLoadMetricsTestWaiter::WaiterMetricsObserver::OnLoadedResource(

@@ -69,6 +69,9 @@ const char kAdFrameSizeInterventionMediaStatusHistogramId[] =
     "PageLoad.Clients.Ads.FrameCounts.AdFrames.PerFrame."
     "SizeIntervention.MediaStatus";
 
+const char kAggregateCpuPercentHistogramId[] =
+    "PageLoad.Clients.Ads.Cpu.FullPage.PercentUsage";
+
 }  // namespace
 
 class AdsPageLoadMetricsObserverBrowserTest
@@ -92,7 +95,9 @@ class AdsPageLoadMetricsObserverBrowserTest
     SubresourceFilterBrowserTest::SetUpOnMainThread();
     SetRulesetWithRules(
         {subresource_filter::testing::CreateSuffixRule("ad_iframe_writer.js"),
-         subresource_filter::testing::CreateSuffixRule("ad_script.js")});
+         subresource_filter::testing::CreateSuffixRule("ad_script.js"),
+         subresource_filter::testing::CreateSuffixRule(
+             "expensive_animation_frame.html*")});
   }
 
  private:
@@ -927,4 +932,139 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   EXPECT_GT(*ukm_recorder.GetEntryMetric(
                 entries.front(), ukm::builders::AdPageLoad::kAdVideoBytesName),
             0);
+}
+
+void WaitForRAF(content::DOMMessageQueue* message_queue) {
+  std::string message;
+  while (message_queue->WaitForMessage(&message)) {
+    if (message == "\"RAF DONE\"")
+      break;
+  }
+  EXPECT_EQ("\"RAF DONE\"", message);
+}
+
+// Test that rAF events are measured as part of the cpu metrics.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
+                       FrameRAFTriggersCpuUpdate) {
+  base::HistogramTester histogram_tester;
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+
+  // Navigate to the page and set up the waiter.
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/iframe_blank.html"));
+  waiter->AddMinimumAggregateCpuTimeExpectation(
+      base::TimeDelta::FromMilliseconds(200));
+
+  // Navigate the iframe to a page with a delayed rAF, waiting for it to
+  // complete. Long enough to guarantee the frame client sees a cpu time
+  // update. (See: LocalFrame::AddTaskTime kTaskDurationSendThreshold).
+  NavigateIframeToURL(
+      web_contents(), "test",
+      embedded_test_server()->GetURL(
+          "a.com", "/ads_observer/expensive_animation_frame.html?delay=200"));
+
+  // Wait until we've received the cpu update and navigate away.
+  waiter->Wait();
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+  // The elapsed_time is an upper bound on the overall page time, as it runs
+  // from just before to just after activation.  The task itself is guaranteed
+  // to have run at least 200ms, so we can derive a minimum percent of cpu time
+  // that the task should have taken.
+  base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time;
+  EXPECT_GE(elapsed_time.InMilliseconds(), 200);
+
+  // Ensure that there is a single entry that is at least the percent specified.
+  int min_percent = 100 * 200 / elapsed_time.InMilliseconds();
+  auto samples =
+      histogram_tester.GetAllSamples(kAggregateCpuPercentHistogramId);
+  EXPECT_EQ(1u, samples.size());
+  EXPECT_EQ(1, samples.front().count);
+  EXPECT_LE(min_percent, samples.front().min);
+}
+
+// Test that rAF events are measured as part of the cpu metrics.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
+                       TwoRAFFramesTriggerCpuUpdates) {
+  base::HistogramTester histogram_tester;
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+
+  // Navigate to the page and set up the waiter.
+  content::DOMMessageQueue message_queue(web_contents());
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("/ads_observer/two_raf_frames.html"));
+
+  // Wait for both RAF calls to finish
+  WaitForRAF(&message_queue);
+  WaitForRAF(&message_queue);
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+  // The elapsed_time is an upper bound on the overall page time, as it runs
+  // from just before to just after activation.  The task itself is guaranteed
+  // to have run at least 200ms, so we can derive a minimum percent of cpu time
+  // that the task should have taken.
+  base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time;
+  EXPECT_GE(elapsed_time.InMilliseconds(), 200);
+
+  // Ensure that there is a single entry that is at least the percent specified.
+  int min_percent = 100 * 200 / elapsed_time.InMilliseconds();
+  auto samples =
+      histogram_tester.GetAllSamples(kAggregateCpuPercentHistogramId);
+  EXPECT_EQ(1u, samples.size());
+  EXPECT_EQ(1, samples.front().count);
+  EXPECT_LE(min_percent, samples.front().min);
+}
+
+// Test that cpu time aggregation across a subframe navigation is cumulative.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
+                       CpuTimesCumulativeOverSubframeNavigate) {
+  base::HistogramTester histogram_tester;
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+
+  // Navigate to the page and set up the waiter.
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/iframe_blank.html"));
+  waiter->AddMinimumAggregateCpuTimeExpectation(
+      base::TimeDelta::FromMilliseconds(100));
+
+  // Navigate twice to a page delaying 50ms.  The first and second navigations
+  // by themselves aren't enough to trigger a cpu update, but when combined an
+  // update fires. (See: LocalFrame::AddTaskTime kTaskDurationSendThreshold).
+  // Navigate the first time, waiting for it to complete so that the work is
+  // observed, then renavigate.
+  content::DOMMessageQueue message_queue(web_contents());
+  NavigateIframeToURL(
+      web_contents(), "test",
+      embedded_test_server()->GetURL(
+          "a.com", "/ads_observer/expensive_animation_frame.html?delay=50"));
+  WaitForRAF(&message_queue);
+  NavigateIframeToURL(
+      web_contents(), "test",
+      embedded_test_server()->GetURL(
+          "a.com", "/ads_observer/expensive_animation_frame.html?delay=50"));
+
+  // Wait until we've received the cpu update and navigate away.
+  waiter->Wait();
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+  // The elapsed_time is an upper bound on the overall page time, as it runs
+  // from just before to just after activation.  The tasks themselves are
+  // guaranteed to have run at least 50+50=100ms, so we can derive a minimum
+  // percent of cpu time that the task should have taken.  Each event by itself
+  // would not be enough to trigger an update, but together, they should for the
+  // subframe.
+  base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time;
+  EXPECT_GE(elapsed_time.InMilliseconds(), 100);
+
+  // Ensure that there is a single entry that is at least the percent specified.
+  int min_percent = 100 * 100 / elapsed_time.InMilliseconds();
+  auto samples =
+      histogram_tester.GetAllSamples(kAggregateCpuPercentHistogramId);
+  EXPECT_EQ(1u, samples.size());
+  EXPECT_EQ(1, samples.front().count);
+  EXPECT_LE(min_percent, samples.front().min);
 }

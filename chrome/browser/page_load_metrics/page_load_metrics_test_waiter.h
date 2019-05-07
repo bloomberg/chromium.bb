@@ -60,6 +60,9 @@ class PageLoadMetricsTestWaiter
   // Add aggregate received resource bytes expectation.
   void AddMinimumNetworkBytesExpectation(int expected_minimum_network_bytes);
 
+  // Add aggregate time spent in cpu for page expectation.
+  void AddMinimumAggregateCpuTimeExpectation(base::TimeDelta minimum);
+
   // Whether the given TimingField was observed in the page.
   bool DidObserveInPage(TimingField field) const;
 
@@ -102,6 +105,10 @@ class PageLoadMetricsTestWaiter
         content::RenderFrameHost* subframe_rfh,
         const page_load_metrics::mojom::PageLoadTiming& timing,
         const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+
+    void OnCpuTimingUpdate(
+        content::RenderFrameHost* subframe_rfh,
+        const page_load_metrics::mojom::CpuTiming& timing) override;
 
     void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
                               extra_request_complete_info) override;
@@ -174,6 +181,12 @@ class PageLoadMetricsTestWaiter
                        const page_load_metrics::mojom::PageLoadTiming& timing,
                        const page_load_metrics::PageLoadExtraInfo& extra_info);
 
+  // Updates observed page fields when a timing update is received by the
+  // MetricsWebContentsObserver. Stops waiting if expectations are satsfied
+  // after update.
+  void OnCpuTimingUpdated(content::RenderFrameHost* subframe_rfh,
+                          const page_load_metrics::mojom::CpuTiming& timing);
+
   // Updates observed page fields when a resource load is observed by
   // MetricsWebContentsObserver.  Stops waiting if expectations are satsfied
   // after update.
@@ -204,6 +217,8 @@ class PageLoadMetricsTestWaiter
 
   void OnCommit(page_load_metrics::PageLoadTracker* tracker) override;
 
+  bool CpuTimeExpectationsSatisfied() const;
+
   bool ResourceUseExpectationsSatisfied() const;
 
   bool WebFeaturesExpectationsSatisfied() const;
@@ -233,6 +248,10 @@ class PageLoadMetricsTestWaiter
   int64_t current_network_body_bytes_ = 0;
   int expected_minimum_complete_resources_ = 0;
   int expected_minimum_network_bytes_ = 0;
+
+  // Total time spent int the cpu aggregated across the frames on the page.
+  base::TimeDelta current_aggregate_cpu_time_;
+  base::TimeDelta expected_minimum_aggregate_cpu_time_;
 
   bool attach_on_tracker_creation_ = false;
   bool did_add_observer_ = false;

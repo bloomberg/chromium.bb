@@ -94,6 +94,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   bool IsAdFrame() const override;
 
   void TraceUrlChange(const String& url) override;
+  void AddTaskTime(base::TimeDelta time) override;
   FrameScheduler::FrameType GetFrameType() const override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
 
@@ -151,10 +152,6 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   void OnTaskQueueCreated(
       MainThreadTaskQueue*,
       base::sequence_manager::TaskQueue::QueueEnabledVoter*) override;
-
-  // Adds the time for the task to a running tally, then forwards it on when
-  // the total time exceeds the threshold (100ms).
-  void AddTaskTime(base::TimeDelta time);
 
   using FrameTaskTypeToQueueTraitsArray =
       std::array<base::Optional<MainThreadTaskQueue::QueueTraits>,
