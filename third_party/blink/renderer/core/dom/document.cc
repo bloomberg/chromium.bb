@@ -7774,8 +7774,13 @@ bool Document::IsLazyLoadPolicyEnforced() const {
 }
 
 bool Document::IsFocusAllowed() const {
-  if (frame_->IsMainFrame() || LocalFrame::HasTransientUserActivation(frame_))
+  if (!frame_ || frame_->IsMainFrame() ||
+      LocalFrame::HasTransientUserActivation(frame_)) {
+    // 'autofocus' runs Element::focus asynchronously at which point the
+    // document might actually does not have a frame (see
+    // https://crbug.com/960224).
     return true;
+  }
 
   // TODO(ekaramad): This method, for now, always returns true. The intent is
   // for this method to eventually block programmatic focus in certain cases.
