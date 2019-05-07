@@ -21,7 +21,11 @@ TestBrowser::TestBrowser(ios::ChromeBrowserState* browser_state,
                          WebStateList* web_state_list)
     : browser_state_(browser_state), web_state_list_(web_state_list) {}
 
-TestBrowser::~TestBrowser() {}
+TestBrowser::~TestBrowser() {
+  for (auto& observer : observers_) {
+    observer.BrowserDestroyed(this);
+  }
+}
 
 ios::ChromeBrowserState* TestBrowser::GetBrowserState() const {
   return browser_state_;
