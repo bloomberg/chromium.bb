@@ -1324,14 +1324,13 @@ void NetworkContext::CreateHostResolver(
     // now, much easier to create entirely separate net::HostResolver instances.
     net::HostResolver::ManagerOptions options;
     options.dns_client_enabled = true;
+    options.dns_config_overrides = config_overrides.value();
     private_internal_resolver =
         network_service_->host_resolver_factory()->CreateStandaloneResolver(
             url_request_context_->net_log(), std::move(options),
             "" /* host_mapping_rules */, false /* enable_caching */);
     private_internal_resolver->SetRequestContext(url_request_context_);
     internal_resolver = private_internal_resolver.get();
-
-    internal_resolver->SetDnsConfigOverrides(config_overrides.value());
   }
 
   host_resolvers_.emplace(

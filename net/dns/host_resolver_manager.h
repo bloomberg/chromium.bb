@@ -151,6 +151,8 @@ class NET_EXPORT HostResolverManager
   void SetNoIPv6OnWifi(bool no_ipv6_on_wifi);
   bool GetNoIPv6OnWifi();
 
+  // Sets overriding configuration that will replace or add to configuration
+  // read from the system for DnsClient resolution.
   void SetDnsConfigOverrides(const DnsConfigOverrides& overrides);
 
   // Support for invalidating HostCaches on changes to network or DNS

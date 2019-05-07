@@ -20,6 +20,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/request_priority.h"
 #include "net/dns/dns_config.h"
+#include "net/dns/dns_config_overrides.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver_source.h"
 #include "net/dns/public/dns_query_type.h"
@@ -134,6 +135,10 @@ class NET_EXPORT HostResolver {
     // enabled or disabled. See HostResolverManager::SetDnsClientEnabled() for
     // details.
     bool dns_client_enabled = false;
+
+    // Initial configuration overrides for the built-in asynchronous DnsClient.
+    // See HostResolverManager::SetDnsConfigOverrides() for details.
+    DnsConfigOverrides dns_config_overrides;
   };
 
   // Factory class. Useful for classes that need to inject and override resolver
@@ -287,10 +292,6 @@ class NET_EXPORT HostResolver {
   // connection. See https://crbug.com/696569 for further context.
   virtual void SetNoIPv6OnWifi(bool no_ipv6_on_wifi);
   virtual bool GetNoIPv6OnWifi();
-
-  // Sets overriding configuration that will replace or add to configuration
-  // read from the system for DnsClient resolution.
-  virtual void SetDnsConfigOverrides(const DnsConfigOverrides& overrides);
 
   // Set the associated URLRequestContext, generally expected to be called by
   // URLRequestContextBuilder on passing ownership of |this| to a context. May
