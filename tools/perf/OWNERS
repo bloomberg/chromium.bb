@@ -1,10 +1,12 @@
-charliea@chromium.org
 crouleau@chromium.org
-eyaich@chromium.org
-sullivan@chromium.org
 
 # For changes related to ChromeOS.
 achuith@chromium.org
+
+# For system health stories and bot health sheriffing.
+charliea@chromium.org
+eyaich@chromium.org
+sullivan@chromium.org
 
 # For system health memory benchmarks & memory-infra related changes.
 perezju@chromium.org
