@@ -153,6 +153,12 @@ class CORE_EXPORT ScrollingCoordinator final
   // outputs a separate region for areas that scroll with the viewport and
   // those that are fixed to it since these regions will need to go on separate
   // layers.
+  // |scrolling_region| is for rects that scroll with the main frame. Since
+  // they they will be stored on the root frame's scrolling contents layer,
+  // they must be specified in the root frame's document coordinates.
+  // |fixed_region| is for rects that are fixed to the main frame. Since they
+  // are stored on the visual viewport's scrolling contents layer, they must be
+  // specified in root frame coordinates.
   void ComputeShouldHandleScrollGestureOnMainThreadRegion(
       const LocalFrame*,
       Region* scrolling_region,

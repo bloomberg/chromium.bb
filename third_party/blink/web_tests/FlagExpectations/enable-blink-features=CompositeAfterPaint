@@ -53,7 +53,6 @@ Bug(none) compositing/geometry/limit-layer-bounds-positioned-transition.html [ F
 Bug(none) compositing/geometry/limit-layer-bounds-positioned.html [ Failure ]
 Bug(none) compositing/geometry/limit-layer-bounds-transformed.html [ Failure ]
 Bug(none) compositing/iframes/become-composited-nested-iframes.html [ Failure ]
-Bug(none) compositing/iframes/iframe-composited-scrolling-hide-and-show.html [ Failure ]
 Bug(none) compositing/layer-creation/overlap-animation-clipping.html [ Failure ]
 Bug(none) compositing/layer-creation/overlap-animation-container.html [ Failure ]
 Bug(none) compositing/layer-creation/overlap-animation.html [ Failure ]
