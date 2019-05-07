@@ -148,9 +148,6 @@ class UpdateScreen : public BaseScreen,
   // Checks that screen is shown, shows if not.
   void MakeSureScreenIsShown();
 
-  // Returns an instance of the error screen.
-  ErrorScreen* GetErrorScreen();
-
   void StartUpdateCheck();
   void ShowErrorMessage();
   void HideErrorMessage();
