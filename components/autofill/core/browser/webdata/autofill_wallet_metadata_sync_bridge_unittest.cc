@@ -1034,9 +1034,9 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest,
                                    EqualsSpecifics(remote_card)));
 }
 
-// Test that remote deletions are properly propagated into the local database.
+// Test that remote deletions are ignored.
 TEST_F(AutofillWalletMetadataSyncBridgeTest,
-       RemoteDeletion_ShouldDeleteExistingLocalData) {
+       RemoteDeletion_ShouldNotDeleteExistingLocalData) {
   // Perform initial sync to create sync data & metadata.
   ResetBridge(/*initial_sync_done=*/false);
   WalletMetadataSpecifics profile =
@@ -1053,87 +1053,19 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest,
   ASSERT_THAT(GetLocalSyncMetadataStorageKeys(),
               UnorderedElementsAre(kAddr1StorageKey, kCard1StorageKey));
 
-  // Now delete the profile. Changes should happen in the local database.
+  // Now delete the profile.
+  // We still need to commit the updated progress marker and sync metadata.
   EXPECT_CALL(*backend(), CommitChanges());
-  EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
-  ReceiveTombstones({profile, card});
-
-  // Verify that both data and sync metadata is gone.
-  EXPECT_FALSE(real_processor()->IsTrackingEntityForTest(kAddr1StorageKey));
-  EXPECT_FALSE(real_processor()->IsTrackingEntityForTest(kCard1StorageKey));
-  EXPECT_THAT(GetLocalSyncMetadataStorageKeys(), IsEmpty());
-  EXPECT_THAT(GetAllLocalDataInclRestart(), IsEmpty());
-}
-
-// Test that remote deletions are properly handled even when the local data is
-// already deleted. We should still delete sync metadata both from the DB and
-// from the processor internal memory.
-TEST_F(AutofillWalletMetadataSyncBridgeTest,
-       RemoteDeletion_ShouldNotNotifyChangesWhenLocalDataIsGone) {
-  // Perform initial sync to create sync data & metadata.
-  ResetBridge(/*initial_sync_done=*/false);
-  WalletMetadataSpecifics profile =
-      CreateWalletMetadataSpecificsForAddressWithDetails(
-          kAddr1SpecificsId, /*use_count=*/10, /*use_date=*/20);
-  WalletMetadataSpecifics card =
-      CreateWalletMetadataSpecificsForCardWithDetails(
-          kCard1SpecificsId, /*use_count=*/30, /*use_date=*/40);
-  StartSyncing({profile, card});
-
-  // Clear the data from the local DB, sync metadata stays untouched both in the
-  // processor and in the local DB.
-  table()->SetServerProfiles({});
-  table()->SetServerCreditCards({});
-  ASSERT_TRUE(real_processor()->IsTrackingEntityForTest(kAddr1StorageKey));
-  ASSERT_TRUE(real_processor()->IsTrackingEntityForTest(kCard1StorageKey));
-  ASSERT_THAT(GetLocalSyncMetadataStorageKeys(),
-              UnorderedElementsAre(kAddr1StorageKey, kCard1StorageKey));
-
-  // Send deletions from the server. We should commit to write the new progress
-  // marker down.
-  EXPECT_CALL(*backend(), CommitChanges());
-  // Since the data is already deleted, it should not notify about changes. The
-  // entities should however get deleted from the processor.
+  // Changes should _not_ happen in the local autofill database.
   EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges()).Times(0);
   ReceiveTombstones({profile, card});
 
-  // Verify that sync metadata is gone from both the processor and local DB.
+  // Verify that even though the processor does not track these entities any
+  // more and the sync metadata is gone, the actual data entities still exist in
+  // the local DB.
   EXPECT_FALSE(real_processor()->IsTrackingEntityForTest(kAddr1StorageKey));
   EXPECT_FALSE(real_processor()->IsTrackingEntityForTest(kCard1StorageKey));
   EXPECT_THAT(GetLocalSyncMetadataStorageKeys(), IsEmpty());
-  EXPECT_THAT(GetAllLocalDataInclRestart(), IsEmpty());
-}
-
-// Test that remote deletions are ignored if there is no sync metadata for the
-// entity.
-TEST_F(AutofillWalletMetadataSyncBridgeTest,
-       RemoteDeletion_ShouldNotDeleteLocalDataWithoutSyncMetadata) {
-  WalletMetadataSpecifics profile =
-      CreateWalletMetadataSpecificsForAddressWithDetails(
-          kAddr1SpecificsId, /*use_count=*/10, /*use_date=*/20);
-  WalletMetadataSpecifics card =
-      CreateWalletMetadataSpecificsForCardWithDetails(
-          kCard1SpecificsId, /*use_count=*/30, /*use_date=*/40);
-
-  table()->SetServerProfiles({CreateServerProfileFromSpecifics(profile)});
-  table()->SetServerCreditCards({CreateServerCreditCardFromSpecifics(card)});
-
-  // Do not perform initial sync. This way, no sync metadata gets created, the
-  // processor does not know about the entities and thus, it should not delete
-  // them.
-  ResetBridge(/*initial_sync_done=*/true);
-  StartSyncing({});
-  ASSERT_FALSE(real_processor()->IsTrackingEntityForTest(kAddr1StorageKey));
-  ASSERT_FALSE(real_processor()->IsTrackingEntityForTest(kCard1StorageKey));
-  ASSERT_THAT(GetLocalSyncMetadataStorageKeys(), IsEmpty());
-
-  // Send deletions from the server. We should commit to write the new progress
-  // marker down.
-  EXPECT_CALL(*backend(), CommitChanges());
-  // The actual deletion should get ignored.
-  EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges()).Times(0);
-  ReceiveTombstones({profile, card});
-
   EXPECT_THAT(
       GetAllLocalDataInclRestart(),
       UnorderedElementsAre(EqualsSpecifics(profile), EqualsSpecifics(card)));

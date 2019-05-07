@@ -60,7 +60,8 @@ class TwoClientWalletSyncTest : public UssWalletSwitchToggler, public SyncTest {
   }
   ~TwoClientWalletSyncTest() override {}
 
-  bool TestUsesSelfNotifications() override { return false; }
+  // Needed for AwaitQuiescence().
+  bool TestUsesSelfNotifications() override { return true; }
 
   bool SetupSync() override {
     test_clock_.SetNow(kArbitraryDefaultTime);
@@ -514,6 +515,9 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
        CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
        CreateDefaultSyncPaymentsCustomerData()});
   ASSERT_TRUE(SetupSync());
+  // Wait until sync settles (for the wallet metadata) before we change the
+  // data again.
+  ASSERT_TRUE(AwaitQuiescence());
 
   // Grab the current address on the first client.
   std::vector<AutofillProfile*> server_addresses = GetServerProfiles(0);
@@ -562,6 +566,9 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
        CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
        CreateDefaultSyncPaymentsCustomerData()});
   ASSERT_TRUE(SetupSync());
+  // Wait until sync settles (for the wallet metadata) before we change the
+  // data again.
+  ASSERT_TRUE(AwaitQuiescence());
 
   // Grab the current card on the first client.
   std::vector<CreditCard*> credit_cards = GetServerCreditCards(0);
