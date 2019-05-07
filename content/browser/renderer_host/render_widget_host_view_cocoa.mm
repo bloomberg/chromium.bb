@@ -1444,7 +1444,7 @@ void ExtractUnderlines(NSAttributedString* string,
     return [NSArray arrayWithObjects:root_element, nil];
   } else if ([attribute isEqualToString:NSAccessibilityParentAttribute] &&
              accessibilityParent_) {
-    return accessibilityParent_;
+    return NSAccessibilityUnignoredAncestor(accessibilityParent_);
   } else if ([attribute isEqualToString:NSAccessibilityRoleAttribute]) {
     return NSAccessibilityScrollAreaRole;
   }
