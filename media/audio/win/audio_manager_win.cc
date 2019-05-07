@@ -149,9 +149,9 @@ AudioManagerWin::AudioManagerWin(std::unique_ptr<AudioThread> audio_thread,
                                  AudioLogFactory* audio_log_factory)
     : AudioManagerBase(std::move(audio_thread), audio_log_factory) {
   // |CoreAudioUtil::IsSupported()| uses static variables to avoid doing
-  // multiple initializations. This is thread safe but call it here explicitly
-  // to ensure initialization is done on the main thread and before we do any
-  // other work.
+  // multiple initializations.  This is however not thread safe.
+  // So, here we call it explicitly before we kick off the audio thread
+  // or do any other work.
   CoreAudioUtil::IsSupported();
 
   SetMaxOutputStreamsAllowed(kMaxOutputStreams);
