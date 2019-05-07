@@ -24,8 +24,6 @@ UNDOCUMENTED_BENCHMARKS = {
   'octane',
   'passthrough_command_buffer_perftests',
   'performance_browser_tests',
-  'rasterize_and_record_micro.partial_invalidation',
-  'rasterize_and_record_micro.top_25',
   'sizes (mac)',
   'sizes (win)',
   'speedometer',
