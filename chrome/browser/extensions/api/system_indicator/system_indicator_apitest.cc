@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
 #include "chrome/browser/extensions/api/system_indicator/system_indicator_manager.h"
 #include "chrome/browser/extensions/api/system_indicator/system_indicator_manager_factory.h"
 #include "chrome/browser/extensions/extension_action.h"
@@ -46,7 +47,13 @@ class SystemIndicatorApiTest : public ExtensionApiTest {
   DISALLOW_COPY_AND_ASSIGN(SystemIndicatorApiTest);
 };
 
-IN_PROC_BROWSER_TEST_F(SystemIndicatorApiTest, SystemIndicator) {
+// https://crbug.com/960363: Test crashes on ChromeOS.
+#if defined(OS_CHROMEOS)
+#define MAYBE_SystemIndicator DISABLED_SystemIndicator_CrOS
+#else
+#define MAYBE_SystemIndicator SystemIndicator
+#endif
+IN_PROC_BROWSER_TEST_F(SystemIndicatorApiTest, MAYBE_SystemIndicator) {
   ASSERT_TRUE(RunExtensionTest("system_indicator/basics")) << message_;
 }
 
