@@ -55,7 +55,12 @@ const CGFloat kEditIconLength = 18;
     cell.textLabel.backgroundColor = styler.tableViewBackgroundColor;
     cell.textField.backgroundColor = styler.tableViewBackgroundColor;
   }
+
   cell.textField.enabled = self.textFieldEnabled;
+  // If the TextField is enabled, the cell shouldn't be an A11y element in order
+  // to make its TextField accessible to voice over.
+  cell.isAccessibilityElement = !self.textFieldEnabled;
+
   if (self.hideEditIcon) {
     cell.textField.textColor =
         self.textFieldEnabled
@@ -284,6 +289,7 @@ const CGFloat kEditIconLength = 18;
   self.textField.autocapitalizationType = UITextAutocapitalizationTypeWords;
   self.textField.autocorrectionType = UITextAutocorrectionTypeNo;
   self.textField.clearButtonMode = UITextFieldViewModeWhileEditing;
+  self.isAccessibilityElement = YES;
   self.textField.accessibilityIdentifier = nil;
   self.textField.enabled = NO;
   self.textField.delegate = nil;
