@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/manifest/manifest_fetcher.h"
 
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 
@@ -56,7 +57,14 @@ void ManifestFetcher::DidReceiveData(const char* data, unsigned length) {
   if (!length)
     return;
 
-  data_.Append(data, length);
+  if (!decoder_) {
+    String encoding = response_.TextEncodingName();
+    decoder_ = std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
+        TextResourceDecoderOptions::kPlainTextContent,
+        encoding.IsEmpty() ? UTF8Encoding() : WTF::TextEncoding(encoding)));
+  }
+
+  data_.Append(decoder_->Decode(data, length));
 }
 
 void ManifestFetcher::DidFinishLoading(uint64_t) {
