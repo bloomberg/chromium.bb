@@ -807,7 +807,14 @@ bool LayoutBlockFlow::PositionAndLayoutOnceIfNeeded(
   SetLogicalTopForChild(child, new_logical_top);
 
   SubtreeLayoutScope layout_scope(child);
-  if (!child.NeedsLayout()) {
+  auto child_needs_layout = [&child] {
+    if (!child.NeedsLayout())
+      return false;
+    return child.SelfNeedsLayout() ||
+           !child.LayoutBlockedByDisplayLock(DisplayLockContext::kChildren);
+  };
+
+  if (!child_needs_layout()) {
     // Like in MarkDescendantsWithFloatsForLayoutIfNeeded, we only need
     // to mark this object for layout if it actually is affected by a float
     if (new_logical_top != old_logical_top && child.ShrinkToAvoidFloats() &&
@@ -821,7 +828,7 @@ bool LayoutBlockFlow::PositionAndLayoutOnceIfNeeded(
     }
   }
 
-  bool needed_layout = child.NeedsLayout();
+  bool needed_layout = child_needs_layout();
   if (needed_layout)
     child.UpdateLayout();
   if (View()->GetLayoutState()->IsPaginated())
