@@ -125,8 +125,8 @@ crbug.com/782254 [ d3d11 win nvidia-0x1cb3 ] conformance2/rendering/attrib-type-
 # WIN / OpenGL / NVIDIA failures
 crbug.com/781668 [ opengl win nvidia-0x1cb3 ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgb565-rgb-unsigned_byte.html [ Failure ]
 crbug.com/921055 [ opengl win passthrough nvidia-0x1cb3 ] conformance2/textures/image_bitmap_from_image_data/tex-2d-rgb9_e5-rgb-float.html [ RetryOnFailure ]
-crbug.com/715001 [ opengl win nvidia-0x1cb3 ] conformance/limits/gl-max-texture-dimensions.html [ Failure ]
-crbug.com/703779 [ opengl win nvidia-0x1cb3 ] conformance/textures/misc/texture-size.html [ Failure ]
+crbug.com/715001 [ opengl win nvidia ] conformance/limits/gl-max-texture-dimensions.html [ Failure ]
+crbug.com/703779 [ opengl win nvidia ] conformance/textures/misc/texture-size.html [ Failure ]
 crbug.com/830046 [ opengl win passthrough nvidia ] conformance2/rendering/blitframebuffer-size-overflow.html [ Skip ]
 crbug.com/832238 [ opengl win no-passthrough nvidia ] conformance2/transform_feedback/switching-objects.html [ RetryOnFailure ]
 crbug.com/887578 [ opengl win passthrough nvidia ] deqp/data/gles3/shaders/conversions.html [ RetryOnFailure ]

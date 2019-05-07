@@ -208,8 +208,8 @@ crbug.com/674572 [ win d3d9 ] conformance/glsl/misc/large-loop-compile.html [ Sk
 crbug.com/956134 [ win d3d9 ] conformance/extensions/webgl-depth-texture.html [ Skip ]
 
 # WIN / OpenGL / NVIDIA failures
-crbug.com/715001 [ win nvidia-0x1cb3 opengl passthrough ] conformance/limits/gl-max-texture-dimensions.html [ Failure ]
-crbug.com/703779 [ win nvidia-0x1cb3 opengl ] conformance/textures/misc/texture-size.html [ Failure ]
+crbug.com/715001 [ win nvidia opengl passthrough ] conformance/limits/gl-max-texture-dimensions.html [ Failure ]
+crbug.com/703779 [ win nvidia opengl ] conformance/textures/misc/texture-size.html [ Failure ]
 
 # Mark ANGLE's OpenGL as flaky on Windows Nvidia
 crbug.com/582083 [ win nvidia opengl ] conformance/* [ RetryOnFailure ]
