@@ -243,7 +243,3 @@ def CheckChangeOnCommit(input_api, output_api):
       errs.extend(CheckModesMatch(input_api, output_api))
 
   return errs
-
-# Run this script directly to dump its keys, for debugging.
-if __name__ == '__main__':
-  print json.dumps(GetEnumsFromFile(AX_MOJOM), sort_keys=True, indent=4)
