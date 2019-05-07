@@ -771,6 +771,7 @@ if (enable_me2me_host) {
         "host_main.h",
       ]
       deps = [
+        "//base",
         "//base:debugging_buildflags",
       ]
     }
@@ -791,6 +792,7 @@ if (enable_me2me_host) {
 
         deps = [
           ":remoting_me2me_host_static",
+          "//base",
           "//remoting/base:breakpad",
           "//remoting/host/installer:credits",
           "//remoting/resources",
