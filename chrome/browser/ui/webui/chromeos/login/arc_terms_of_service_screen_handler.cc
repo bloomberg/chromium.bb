@@ -277,7 +277,8 @@ void ArcTermsOfServiceScreenHandler::DoShow() {
 
   // Hide the Skip button if the ToS screen can not be skipped during OOBE.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableArcOobeOptinNoSkip)) {
+          chromeos::switches::kEnableArcOobeOptinNoSkip) ||
+      arc::IsArcPlayStoreEnabledPreferenceManagedForProfile(profile)) {
     CallJS("login.ArcTermsOfServiceScreen.hideSkipButton");
   }
 

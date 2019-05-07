@@ -128,8 +128,7 @@ void ArcProvisionNotificationService::OnArcOptInManagementCheckStarted() {
   // showing the notification if the opt-in flow happens silently (due to the
   // managed prefs), or ensure that no notification is shown otherwise.
   Profile* profile = Profile::FromBrowserContext(context_);
-  if (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile) &&
-      AreArcAllOptInPreferencesIgnorableForProfile(profile)) {
+  if (ShouldStartArcSilentlyForManagedProfile(profile)) {
     ShowNotification();
   } else {
     HideNotification();

@@ -65,6 +65,10 @@ ArcSessionManager* g_arc_session_manager = nullptr;
 // Allows the session manager to skip creating UI in unit tests.
 bool g_ui_enabled = true;
 
+// Allows the session manager to create ArcTermsOfServiceOobeNegotiator in
+// tests, even when the tests are set to skip creating UI.
+bool g_enable_arc_terms_of_service_oobe_negotiator_in_tests = false;
+
 base::Optional<bool> g_enable_check_android_management_in_tests;
 
 // Maximum amount of time we'll wait for ARC to finish booting up. Once this
@@ -91,7 +95,7 @@ void MaybeUpdateOptInCancelUMA(const ArcSupportHost* support_host) {
 //   kiosk app and device is not needed for opt-in;
 // * In Public Session mode, because Play Store will be hidden from users
 //   and only apps configured by policy should be installed.
-// * When ARC is managed and all OptIn preferences are managed/unused, too,
+// * When ARC is managed, and user does not go through OOBE opt-in,
 //   because the whole OptIn flow should happen as seamless as possible for
 //   the user.
 // For Active Directory users we always show a page notifying them that they
@@ -116,10 +120,8 @@ bool ShouldLaunchPlayStoreApp(Profile* profile,
   if (IsArcOptInVerificationDisabled())
     return false;
 
-  if (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile) &&
-      AreArcAllOptInPreferencesIgnorableForProfile(profile)) {
+  if (ShouldStartArcSilentlyForManagedProfile(profile))
     return false;
-  }
 
   return true;
 }
@@ -236,6 +238,12 @@ ArcSessionManager* ArcSessionManager::Get() {
 // static
 void ArcSessionManager::SetUiEnabledForTesting(bool enable) {
   g_ui_enabled = enable;
+}
+
+// static
+void ArcSessionManager::SetArcTermsOfServiceOobeNegotiatorEnabledForTesting(
+    bool enable) {
+  g_enable_arc_terms_of_service_oobe_negotiator_in_tests = enable;
 }
 
 // static
@@ -811,9 +819,12 @@ void ArcSessionManager::MaybeStartTermsOfServiceNegotiation() {
   }
 
   if (IsArcOobeOptInActive()) {
-    VLOG(1) << "Use OOBE negotiator.";
-    terms_of_service_negotiator_ =
-        std::make_unique<ArcTermsOfServiceOobeNegotiator>();
+    if (g_enable_arc_terms_of_service_oobe_negotiator_in_tests ||
+        g_ui_enabled) {
+      VLOG(1) << "Use OOBE negotiator.";
+      terms_of_service_negotiator_ =
+          std::make_unique<ArcTermsOfServiceOobeNegotiator>();
+    }
   } else if (support_host_) {
     VLOG(1) << "Use default negotiator.";
     terms_of_service_negotiator_ =
@@ -822,9 +833,18 @@ void ArcSessionManager::MaybeStartTermsOfServiceNegotiation() {
   }
 
   if (!terms_of_service_negotiator_) {
-    // The only case reached here is when g_ui_enabled is false so ARC support
-    // host is not created in SetProfile(), for testing purpose.
-    DCHECK(!g_ui_enabled) << "Negotiator is not created on production.";
+    // The only case reached here is when g_ui_enabled is false so
+    // 1. ARC support host is not created in SetProfile(), and
+    // 2. ArcTermsOfServiceOobeNegotiator is not created with OOBE test setup
+    // unless test explicitly called
+    // SetArcTermsOfServiceOobeNegotiatorEnabledForTesting(true).
+    if (IsArcOobeOptInActive()) {
+      DCHECK(!g_enable_arc_terms_of_service_oobe_negotiator_in_tests &&
+             !g_ui_enabled)
+          << "OOBE negotiator is not created on production.";
+    } else {
+      DCHECK(!g_ui_enabled) << "Negotiator is not created on production.";
+    }
     return;
   }
 

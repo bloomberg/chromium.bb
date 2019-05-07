@@ -946,7 +946,8 @@ TEST_F(ArcSessionManagerArcAlwaysStartTest, BaseWorkflow) {
 
 class ArcSessionManagerPolicyTest
     : public ArcSessionManagerTestBase,
-      public testing::WithParamInterface<std::tuple<bool, bool, int, int>> {
+      public testing::WithParamInterface<
+          std::tuple<bool, bool, bool, int, int>> {
  public:
   void SetUp() override {
     ArcSessionManagerTestBase::SetUp();
@@ -960,14 +961,28 @@ class ArcSessionManagerPolicyTest
     }
     GetFakeUserManager()->AddUser(account_id);
     GetFakeUserManager()->LoginUser(account_id);
+    // Mocks OOBE environment so that IsArcOobeOptInActive() returns true.
+    if (is_oobe_optin()) {
+      GetFakeUserManager()->set_current_user_new(true);
+      CreateLoginDisplayHost();
+    }
+  }
+
+  void TearDown() override {
+    if (is_oobe_optin()) {
+      fake_login_display_host_.reset();
+    }
+    ArcSessionManagerTestBase::TearDown();
   }
 
   bool arc_enabled_pref_managed() const { return std::get<0>(GetParam()); }
 
   bool is_active_directory_user() const { return std::get<1>(GetParam()); }
 
+  bool is_oobe_optin() const { return std::get<2>(GetParam()); }
+
   base::Value backup_restore_pref_value() const {
-    switch (std::get<2>(GetParam())) {
+    switch (std::get<3>(GetParam())) {
       case 0:
         return base::Value();
       case 1:
@@ -980,7 +995,7 @@ class ArcSessionManagerPolicyTest
   }
 
   base::Value location_service_pref_value() const {
-    switch (std::get<3>(GetParam())) {
+    switch (std::get<4>(GetParam())) {
       case 0:
         return base::Value();
       case 1:
@@ -991,6 +1006,14 @@ class ArcSessionManagerPolicyTest
     NOTREACHED();
     return base::Value();
   }
+
+ private:
+  void CreateLoginDisplayHost() {
+    fake_login_display_host_ =
+        std::make_unique<chromeos::FakeLoginDisplayHost>();
+  }
+
+  std::unique_ptr<chromeos::FakeLoginDisplayHost> fake_login_display_host_;
 };
 
 TEST_P(ArcSessionManagerPolicyTest, SkippingTerms) {
@@ -1026,31 +1049,45 @@ TEST_P(ArcSessionManagerPolicyTest, SkippingTerms) {
   arc_session_manager()->Initialize();
   arc_session_manager()->RequestEnable();
 
-  // Terms of Service are skipped iff ARC is enabled by policy and both policies
+  // Terms of Service are skipped if ARC is enabled by policy and both policies
   // are either managed or unused (for Active Directory users a LaForge
   // account is created, not a full Dasher account, where the policies have no
   // meaning).
+  // Terms of Service are skipped if ARC is enabled by policy and if it's in
+  // session opt-in.
   const bool prefs_unused = is_active_directory_user();
   const bool backup_managed = backup_restore_pref_value().is_bool();
   const bool location_managed = location_service_pref_value().is_bool();
+  const bool is_arc_oobe_optin = is_oobe_optin();
   const bool expected_terms_skipping =
-      (arc_enabled_pref_managed() &&
-       ((backup_managed && location_managed) || prefs_unused));
+      arc_enabled_pref_managed() && ((backup_managed && location_managed) ||
+                                     prefs_unused || !is_arc_oobe_optin);
   EXPECT_EQ(expected_terms_skipping
                 ? ArcSessionManager::State::CHECKING_ANDROID_MANAGEMENT
                 : ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
             arc_session_manager()->state());
+  EXPECT_EQ(IsArcOobeOptInActive(), is_arc_oobe_optin);
 
   // Complete provisioning if it's not done yet.
   if (!expected_terms_skipping)
     arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
+
   arc_session_manager()->StartArcForTesting();
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
 
-  // Play Store app is launched unless the Terms screen was suppressed.
-  EXPECT_NE(expected_terms_skipping,
+  // Play Store app is launched unless the Terms screen was suppressed or Tos is
+  // accepted during OOBE.
+  EXPECT_NE(expected_terms_skipping || is_arc_oobe_optin,
             arc_session_manager()->IsPlaystoreLaunchRequestedForTesting());
+
+  // In case Tos is skipped, B&R and GLS should not be set if not managed.
+  if (expected_terms_skipping) {
+    if (!backup_managed)
+      EXPECT_FALSE(prefs->GetBoolean(prefs::kArcBackupRestoreEnabled));
+    if (!location_managed)
+      EXPECT_FALSE(prefs->GetBoolean(prefs::kArcLocationServiceEnabled));
+  }
 
   // Managed values for the prefs are unset.
   prefs->RemoveManagedPref(prefs::kArcBackupRestoreEnabled);
@@ -1067,33 +1104,6 @@ TEST_P(ArcSessionManagerPolicyTest, SkippingTerms) {
   arc_session_manager()->Shutdown();
 }
 
-TEST_P(ArcSessionManagerPolicyTest, ReenableManagedArc) {
-  sync_preferences::TestingPrefServiceSyncable* const prefs =
-      profile()->GetTestingPrefService();
-
-  // Set ARC to be managed.
-  prefs->SetManagedPref(prefs::kArcEnabled,
-                        std::make_unique<base::Value>(true));
-  EXPECT_TRUE(arc::IsArcPlayStoreEnabledForProfile(profile()));
-
-  arc_session_manager()->SetProfile(profile());
-  arc_session_manager()->Initialize();
-  arc_session_manager()->RequestEnable();
-  EXPECT_TRUE(arc_session_manager()->enable_requested());
-
-  // Simulate close OptIn. Session manager should stop.
-  SetArcPlayStoreEnabledForProfile(profile(), false);
-  EXPECT_TRUE(arc::IsArcPlayStoreEnabledForProfile(profile()));
-  EXPECT_FALSE(arc_session_manager()->enable_requested());
-
-  // Restart ARC again
-  SetArcPlayStoreEnabledForProfile(profile(), true);
-  EXPECT_TRUE(arc::IsArcPlayStoreEnabledForProfile(profile()));
-  EXPECT_TRUE(arc_session_manager()->enable_requested());
-
-  arc_session_manager()->Shutdown();
-}
-
 INSTANTIATE_TEST_SUITE_P(
     ,
     ArcSessionManagerPolicyTest,
@@ -1101,6 +1111,7 @@ INSTANTIATE_TEST_SUITE_P(
     // as a proxy for base::Value.
     testing::Combine(testing::Bool() /* arc_enabled_pref_managed */,
                      testing::Bool() /* is_active_directory_user */,
+                     testing::Bool() /* is_oobe_optin */,
                      /* backup_restore_pref_value */
                      testing::Values(0,   // base::Value()
                                      1,   // base::Value(false)
@@ -1192,6 +1203,8 @@ class ArcSessionOobeOptInNegotiatorTest
   void SetUp() override {
     ArcSessionManagerTest::SetUp();
 
+    ArcSessionManager::SetArcTermsOfServiceOobeNegotiatorEnabledForTesting(
+        true);
     ArcTermsOfServiceOobeNegotiator::SetArcTermsOfServiceScreenViewForTesting(
         this);
 
@@ -1222,6 +1235,8 @@ class ArcSessionOobeOptInNegotiatorTest
 
     ArcTermsOfServiceOobeNegotiator::SetArcTermsOfServiceScreenViewForTesting(
         nullptr);
+    ArcSessionManager::SetArcTermsOfServiceOobeNegotiatorEnabledForTesting(
+        false);
 
     ArcSessionManagerTest::TearDown();
   }
