@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "services/service_manager/public/cpp/identity.h"
+#include "services/tracing/perfetto/consumer_host.h"
 #include "services/tracing/public/cpp/perfetto/task_runner.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 
@@ -20,8 +21,6 @@ class TracingService;
 }  // namespace perfetto
 
 namespace tracing {
-
-class ConsumerHost;
 
 // This class serves two purposes: It wraps the use of the system-wide
 // perfetto::TracingService instance, and serves as the main Mojo interface for
@@ -45,10 +44,10 @@ class PerfettoService : public mojom::PerfettoService {
 
   perfetto::TracingService* GetService() const;
 
-  // Called when a ConsumerHost is created/destroyed (i.e. when a consumer
-  // connects/disconnects).
-  void RegisterConsumerHost(ConsumerHost* consumer_host);
-  void UnregisterConsumerHost(ConsumerHost* consumer_host);
+  // Called when a ConsumerHost::TracingSession is created/destroyed (i.e. when
+  // a consumer starts/finishes tracing.
+  void RegisterTracingSession(ConsumerHost::TracingSession* consumer_host);
+  void UnregisterTracingSession(ConsumerHost::TracingSession* consumer_host);
 
   // Called by TracingService to notify the perfetto service of the PIDs of
   // actively running services (whenever a service starts or stops).
@@ -72,7 +71,7 @@ class PerfettoService : public mojom::PerfettoService {
   std::unique_ptr<perfetto::TracingService> service_;
   mojo::BindingSet<mojom::PerfettoService, uint32_t> bindings_;
   mojo::StrongBindingSet<mojom::ProducerHost> producer_bindings_;
-  std::set<ConsumerHost*> consumer_hosts_;  // Not owned.
+  std::set<ConsumerHost::TracingSession*> tracing_sessions_;  // Not owned.
   std::set<base::ProcessId> active_service_pids_;
   bool active_service_pids_initialized_ = false;
 

@@ -36,6 +36,16 @@ namespace {
 
 const int32_t kEnableTracingTimeoutSeconds = 10;
 
+perfetto::TraceConfig AdjustTraceConfig(
+    const perfetto::TraceConfig& trace_config) {
+  perfetto::TraceConfig trace_config_copy(trace_config);
+  // Clock snapshotting is incompatible with chrome's process sandboxing.
+  // Telemetry uses its own way of snapshotting clocks anyway.
+  auto* builtin_data_sources = trace_config_copy.mutable_builtin_data_sources();
+  builtin_data_sources->set_disable_clock_snapshotting(true);
+  return trace_config_copy;
+}
+
 }  // namespace
 
 class ConsumerHost::StreamWriter {
@@ -48,7 +58,7 @@ class ConsumerHost::StreamWriter {
   }
 
   StreamWriter(mojo::ScopedDataPipeProducerHandle stream,
-               ReadBuffersCallback callback,
+               TracingSession::ReadBuffersCallback callback,
                base::OnceClosure disconnect_callback,
                scoped_refptr<base::SequencedTaskRunner> callback_task_runner)
       : stream_(std::move(stream)),
@@ -95,43 +105,27 @@ class ConsumerHost::StreamWriter {
 
  private:
   mojo::ScopedDataPipeProducerHandle stream_;
-  ReadBuffersCallback read_buffers_callback_;
+  TracingSession::ReadBuffersCallback read_buffers_callback_;
   base::OnceClosure disconnect_callback_;
   scoped_refptr<base::SequencedTaskRunner> callback_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamWriter);
 };
 
-// static
-void ConsumerHost::BindConsumerRequest(
-    PerfettoService* service,
-    mojom::ConsumerHostRequest request,
-    const service_manager::BindSourceInfo& source_info) {
-  mojo::MakeStrongBinding(std::make_unique<ConsumerHost>(service),
-                          std::move(request));
-}
+ConsumerHost::TracingSession::TracingSession(
+    ConsumerHost* host,
+    mojom::TracingSessionHostRequest tracing_session_host,
+    mojom::TracingSessionClientPtr tracing_session_client,
+    const perfetto::TraceConfig& trace_config)
+    : host_(host),
+      tracing_session_client_(std::move(tracing_session_client)),
+      binding_(this, std::move(tracing_session_host)) {
+  host_->service()->RegisterTracingSession(this);
 
-ConsumerHost::ConsumerHost(PerfettoService* service)
-    : service_(service), weak_factory_(this) {
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-  consumer_endpoint_ =
-      service_->GetService()->ConnectConsumer(this, 0 /*uid_t*/);
-  consumer_endpoint_->ObserveEvents(
-      perfetto::TracingService::ConsumerEndpoint::ObservableEventType::
-          kDataSourceInstances);
-  service_->RegisterConsumerHost(this);
-}
-
-ConsumerHost::~ConsumerHost() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  service_->UnregisterConsumerHost(this);
-}
-
-void ConsumerHost::EnableTracing(mojom::TracingSessionPtr tracing_session,
-                                 const perfetto::TraceConfig& trace_config) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  tracing_session_ = std::move(tracing_session);
+  tracing_session_client_.set_connection_error_handler(base::BindOnce(
+      &ConsumerHost::DestructTracingSession, base::Unretained(host)));
+  binding_.set_connection_error_handler(base::BindOnce(
+      &ConsumerHost::DestructTracingSession, base::Unretained(host)));
 
   privacy_filtering_enabled_ = false;
   for (const auto& data_source : trace_config.data_sources()) {
@@ -162,11 +156,11 @@ void ConsumerHost::EnableTracing(mojom::TracingSessionPtr tracing_session,
     }
   }
 
-  pending_enable_tracing_ack_pids_ = service_->active_service_pids();
+  pending_enable_tracing_ack_pids_ = host_->service()->active_service_pids();
   base::EraseIf(*pending_enable_tracing_ack_pids_,
                 [this](base::ProcessId pid) { return !IsExpectedPid(pid); });
 
-  consumer_endpoint_->EnableTracing(trace_config_copy);
+  host_->consumer_endpoint()->EnableTracing(trace_config_copy);
   MaybeSendEnableTracingAck();
 
   if (pending_enable_tracing_ack_pids_) {
@@ -176,172 +170,19 @@ void ConsumerHost::EnableTracing(mojom::TracingSessionPtr tracing_session,
     // case.
     enable_tracing_ack_timer_.Start(
         FROM_HERE, base::TimeDelta::FromSeconds(kEnableTracingTimeoutSeconds),
-        this, &ConsumerHost::OnEnableTracingTimeout);
+        this, &ConsumerHost::TracingSession::OnEnableTracingTimeout);
   }
 }
 
-void ConsumerHost::ChangeTraceConfig(
-    const perfetto::TraceConfig& trace_config) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  perfetto::TraceConfig trace_config_copy = AdjustTraceConfig(trace_config);
-  consumer_endpoint_->ChangeTraceConfig(trace_config_copy);
-}
-
-perfetto::TraceConfig ConsumerHost::AdjustTraceConfig(
-    const perfetto::TraceConfig& trace_config) {
-  perfetto::TraceConfig trace_config_copy(trace_config);
-  // Clock snapshotting is incompatible with chrome's process sandboxing.
-  // Telemetry uses its own way of snapshotting clocks anyway.
-  auto* builtin_data_sources = trace_config_copy.mutable_builtin_data_sources();
-  builtin_data_sources->set_disable_clock_snapshotting(true);
-  return trace_config_copy;
-}
-
-void ConsumerHost::DisableTracing() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  consumer_endpoint_->DisableTracing();
-}
-
-void ConsumerHost::Flush(uint32_t timeout,
-                         base::OnceCallback<void(bool)> callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  flush_callback_ = std::move(callback);
-  base::WeakPtr<ConsumerHost> weak_this = weak_factory_.GetWeakPtr();
-  consumer_endpoint_->Flush(timeout, [weak_this](bool success) {
-    if (!weak_this) {
-      return;
-    }
-
-    if (weak_this->flush_callback_) {
-      std::move(weak_this->flush_callback_).Run(success);
-    }
-  });
-}
-
-void ConsumerHost::ReadBuffers(mojo::ScopedDataPipeProducerHandle stream,
-                               ReadBuffersCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  read_buffers_stream_writer_ = base::SequenceBound<StreamWriter>(
-      StreamWriter::CreateTaskRunner(), std::move(stream), std::move(callback),
-      base::BindOnce(&ConsumerHost::OnConsumerClientDisconnected,
-                     weak_factory_.GetWeakPtr()),
-      base::SequencedTaskRunnerHandle::Get());
-
-  consumer_endpoint_->ReadBuffers();
-}
-
-void ConsumerHost::DisableTracingAndEmitJson(
-    const std::string& agent_label_filter,
-    mojo::ScopedDataPipeProducerHandle stream,
-    DisableTracingAndEmitJsonCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!read_buffers_stream_writer_);
-
-  read_buffers_stream_writer_ = base::SequenceBound<StreamWriter>(
-      StreamWriter::CreateTaskRunner(), std::move(stream), std::move(callback),
-      base::BindOnce(&ConsumerHost::OnConsumerClientDisconnected,
-                     weak_factory_.GetWeakPtr()),
-      base::SequencedTaskRunnerHandle::Get());
-
-  // In legacy backend, the trace event agent sets the predicate used by
-  // TraceLog. For perfetto backend, ensure that predicate is always set
-  // before creating the exporter. The agent can be created later than this
-  // point.
-  if (base::trace_event::TraceLog::GetInstance()
-          ->GetArgumentFilterPredicate()
-          .is_null()) {
-    base::trace_event::TraceLog::GetInstance()->SetArgumentFilterPredicate(
-        base::BindRepeating(&IsTraceEventArgsWhitelisted));
-    base::trace_event::TraceLog::GetInstance()->SetMetadataFilterPredicate(
-        base::BindRepeating(&IsMetadataWhitelisted));
-  }
-
-  JSONTraceExporter::ArgumentFilterPredicate arg_filter_predicate;
-  JSONTraceExporter::MetadataFilterPredicate metadata_filter_predicate;
-  if (privacy_filtering_enabled_) {
-    auto* trace_log = base::trace_event::TraceLog::GetInstance();
-    arg_filter_predicate = trace_log->GetArgumentFilterPredicate();
-    metadata_filter_predicate = trace_log->GetMetadataFilterPredicate();
-  }
-  json_trace_exporter_ = std::make_unique<TrackEventJSONExporter>(
-      std::move(arg_filter_predicate), std::move(metadata_filter_predicate),
-      base::BindRepeating(&ConsumerHost::OnJSONTraceData,
-                          base::Unretained(this)));
-
-  json_trace_exporter_->set_label_filter(agent_label_filter);
-
-  consumer_endpoint_->DisableTracing();
-}
-
-void ConsumerHost::FreeBuffers() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  consumer_endpoint_->FreeBuffers();
-}
-
-void ConsumerHost::RequestBufferUsage(RequestBufferUsageCallback callback) {
-  if (!request_buffer_usage_callback_.is_null()) {
-    std::move(callback).Run(false, 0);
-    return;
-  }
-
-  request_buffer_usage_callback_ = std::move(callback);
-  consumer_endpoint_->GetTraceStats();
-}
-
-void ConsumerHost::OnConnect() {}
-
-void ConsumerHost::OnDisconnect() {}
-
-void ConsumerHost::OnTracingDisabled() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(tracing_session_);
-
-  if (enable_tracing_ack_timer_.IsRunning()) {
-    enable_tracing_ack_timer_.FireNow();
-  }
-  DCHECK(!pending_enable_tracing_ack_pids_);
-
-  tracing_session_.reset();
-
-  if (json_trace_exporter_) {
-    consumer_endpoint_->ReadBuffers();
+ConsumerHost::TracingSession::~TracingSession() {
+  host_->service()->UnregisterTracingSession(this);
+  if (host_->consumer_endpoint()) {
+    host_->consumer_endpoint()->FreeBuffers();
   }
 }
 
-void ConsumerHost::OnTraceData(std::vector<perfetto::TracePacket> packets,
-                               bool has_more) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (json_trace_exporter_) {
-    json_trace_exporter_->OnTraceData(std::move(packets), has_more);
-    if (!has_more) {
-      json_trace_exporter_.reset();
-    }
-    return;
-  }
-
-  auto copy = std::make_unique<StreamWriter::Slices>();
-  for (auto& packet : packets) {
-    char* data;
-    size_t size;
-    std::tie(data, size) = packet.GetProtoPreamble();
-    copy->emplace_back(data, size);
-    auto& slices = packet.slices();
-    for (auto& slice : slices) {
-      copy->emplace_back(static_cast<const char*>(slice.start), slice.size);
-    }
-  }
-  read_buffers_stream_writer_.Post(FROM_HERE, &StreamWriter::WriteToStream,
-                                   std::move(copy), has_more);
-  if (!has_more) {
-    read_buffers_stream_writer_.Reset();
-  }
-}
-
-void ConsumerHost::OnObservableEvents(
+void ConsumerHost::TracingSession::OnPerfettoEvents(
     const perfetto::ObservableEvents& events) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!pending_enable_tracing_ack_pids_) {
     return;
   }
@@ -369,14 +210,16 @@ void ConsumerHost::OnObservableEvents(
   MaybeSendEnableTracingAck();
 }
 
-void ConsumerHost::OnActiveServicePidAdded(base::ProcessId pid) {
+void ConsumerHost::TracingSession::OnActiveServicePidAdded(
+    base::ProcessId pid) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (pending_enable_tracing_ack_pids_ && IsExpectedPid(pid)) {
     pending_enable_tracing_ack_pids_->insert(pid);
   }
 }
 
-void ConsumerHost::OnActiveServicePidRemoved(base::ProcessId pid) {
+void ConsumerHost::TracingSession::OnActiveServicePidRemoved(
+    base::ProcessId pid) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (pending_enable_tracing_ack_pids_) {
     pending_enable_tracing_ack_pids_->erase(pid);
@@ -384,41 +227,184 @@ void ConsumerHost::OnActiveServicePidRemoved(base::ProcessId pid) {
   }
 }
 
-void ConsumerHost::OnActiveServicePidsInitialized() {
+void ConsumerHost::TracingSession::OnActiveServicePidsInitialized() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   MaybeSendEnableTracingAck();
 }
 
-void ConsumerHost::OnEnableTracingTimeout() {
+void ConsumerHost::TracingSession::OnEnableTracingTimeout() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!pending_enable_tracing_ack_pids_) {
     return;
   }
-  DCHECK(tracing_session_);
-  tracing_session_->OnTracingEnabled();
+  DCHECK(tracing_session_client_);
+  tracing_session_client_->OnTracingEnabled();
   pending_enable_tracing_ack_pids_.reset();
 }
 
-void ConsumerHost::MaybeSendEnableTracingAck() {
+void ConsumerHost::TracingSession::MaybeSendEnableTracingAck() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!pending_enable_tracing_ack_pids_ ||
       !pending_enable_tracing_ack_pids_->empty() ||
-      !service_->active_service_pids_initialized()) {
+      !host_->service()->active_service_pids_initialized()) {
     return;
   }
 
-  DCHECK(tracing_session_);
-  tracing_session_->OnTracingEnabled();
+  DCHECK(tracing_session_client_);
+  tracing_session_client_->OnTracingEnabled();
   pending_enable_tracing_ack_pids_.reset();
   enable_tracing_ack_timer_.Stop();
 }
 
-bool ConsumerHost::IsExpectedPid(base::ProcessId pid) const {
+bool ConsumerHost::TracingSession::IsExpectedPid(base::ProcessId pid) const {
   return filtered_pids_.empty() || base::ContainsKey(filtered_pids_, pid);
 }
 
-void ConsumerHost::OnTraceStats(bool success,
-                                const perfetto::TraceStats& stats) {
+void ConsumerHost::TracingSession::ChangeTraceConfig(
+    const perfetto::TraceConfig& trace_config) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  perfetto::TraceConfig trace_config_copy = AdjustTraceConfig(trace_config);
+  host_->consumer_endpoint()->ChangeTraceConfig(trace_config_copy);
+}
+
+void ConsumerHost::TracingSession::DisableTracing() {
+  host_->consumer_endpoint()->DisableTracing();
+}
+
+void ConsumerHost::TracingSession::OnTracingDisabled() {
+  DCHECK(tracing_session_client_);
+
+  if (enable_tracing_ack_timer_.IsRunning()) {
+    enable_tracing_ack_timer_.FireNow();
+  }
+  DCHECK(!pending_enable_tracing_ack_pids_);
+
+  tracing_session_client_->OnTracingDisabled();
+
+  if (json_trace_exporter_) {
+    host_->consumer_endpoint()->ReadBuffers();
+  }
+}
+
+void ConsumerHost::TracingSession::OnConsumerClientDisconnected() {
+  // The TracingSession will be deleted after this point.
+  host_->DestructTracingSession();
+}
+
+void ConsumerHost::TracingSession::ReadBuffers(
+    mojo::ScopedDataPipeProducerHandle stream,
+    ReadBuffersCallback callback) {
+  read_buffers_stream_writer_ = base::SequenceBound<StreamWriter>(
+      StreamWriter::CreateTaskRunner(), std::move(stream), std::move(callback),
+      base::BindOnce(&TracingSession::OnConsumerClientDisconnected,
+                     weak_factory_.GetWeakPtr()),
+      base::SequencedTaskRunnerHandle::Get());
+
+  host_->consumer_endpoint()->ReadBuffers();
+}
+
+void ConsumerHost::TracingSession::RequestBufferUsage(
+    RequestBufferUsageCallback callback) {
+  if (!request_buffer_usage_callback_.is_null()) {
+    std::move(callback).Run(false, 0);
+    return;
+  }
+
+  request_buffer_usage_callback_ = std::move(callback);
+  host_->consumer_endpoint()->GetTraceStats();
+}
+
+void ConsumerHost::TracingSession::DisableTracingAndEmitJson(
+    const std::string& agent_label_filter,
+    mojo::ScopedDataPipeProducerHandle stream,
+    DisableTracingAndEmitJsonCallback callback) {
+  DCHECK(!read_buffers_stream_writer_);
+
+  read_buffers_stream_writer_ = base::SequenceBound<StreamWriter>(
+      StreamWriter::CreateTaskRunner(), std::move(stream), std::move(callback),
+      base::BindOnce(&TracingSession::OnConsumerClientDisconnected,
+                     weak_factory_.GetWeakPtr()),
+      base::SequencedTaskRunnerHandle::Get());
+
+  // In legacy backend, the trace event agent sets the predicate used by
+  // TraceLog. For perfetto backend, ensure that predicate is always set
+  // before creating the exporter. The agent can be created later than this
+  // point.
+  if (base::trace_event::TraceLog::GetInstance()
+          ->GetArgumentFilterPredicate()
+          .is_null()) {
+    base::trace_event::TraceLog::GetInstance()->SetArgumentFilterPredicate(
+        base::BindRepeating(&IsTraceEventArgsWhitelisted));
+    base::trace_event::TraceLog::GetInstance()->SetMetadataFilterPredicate(
+        base::BindRepeating(&IsMetadataWhitelisted));
+  }
+
+  JSONTraceExporter::ArgumentFilterPredicate arg_filter_predicate;
+  JSONTraceExporter::MetadataFilterPredicate metadata_filter_predicate;
+  if (privacy_filtering_enabled_) {
+    auto* trace_log = base::trace_event::TraceLog::GetInstance();
+    arg_filter_predicate = trace_log->GetArgumentFilterPredicate();
+    metadata_filter_predicate = trace_log->GetMetadataFilterPredicate();
+  }
+  json_trace_exporter_ = std::make_unique<TrackEventJSONExporter>(
+      std::move(arg_filter_predicate), std::move(metadata_filter_predicate),
+      base::BindRepeating(&ConsumerHost::TracingSession::OnJSONTraceData,
+                          base::Unretained(this)));
+
+  json_trace_exporter_->set_label_filter(agent_label_filter);
+
+  DisableTracing();
+}
+
+void ConsumerHost::TracingSession::OnJSONTraceData(
+    std::string* json,
+    base::DictionaryValue* metadata,
+    bool has_more) {
+  auto slices = std::make_unique<StreamWriter::Slices>();
+  slices->push_back(std::string());
+  slices->back().swap(*json);
+  read_buffers_stream_writer_.Post(FROM_HERE, &StreamWriter::WriteToStream,
+                                   std::move(slices), has_more);
+
+  if (!has_more) {
+    read_buffers_stream_writer_.Reset();
+  }
+}
+
+void ConsumerHost::TracingSession::OnTraceData(
+    std::vector<perfetto::TracePacket> packets,
+    bool has_more) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (json_trace_exporter_) {
+    json_trace_exporter_->OnTraceData(std::move(packets), has_more);
+    if (!has_more) {
+      json_trace_exporter_.reset();
+    }
+    return;
+  }
+
+  auto copy = std::make_unique<StreamWriter::Slices>();
+  for (auto& packet : packets) {
+    char* data;
+    size_t size;
+    std::tie(data, size) = packet.GetProtoPreamble();
+    copy->emplace_back(data, size);
+    auto& slices = packet.slices();
+    for (auto& slice : slices) {
+      copy->emplace_back(static_cast<const char*>(slice.start), slice.size);
+    }
+  }
+  read_buffers_stream_writer_.Post(FROM_HERE, &StreamWriter::WriteToStream,
+                                   std::move(copy), has_more);
+  if (!has_more) {
+    read_buffers_stream_writer_.Reset();
+  }
+}
+
+void ConsumerHost::TracingSession::OnTraceStats(
+    bool success,
+    const perfetto::TraceStats& stats) {
   if (!request_buffer_usage_callback_) {
     return;
   }
@@ -439,23 +425,97 @@ void ConsumerHost::OnTraceStats(bool success,
   std::move(request_buffer_usage_callback_).Run(true, percent_full);
 }
 
-void ConsumerHost::OnJSONTraceData(std::string* json,
-                                   base::DictionaryValue* metadata,
-                                   bool has_more) {
-  auto slices = std::make_unique<StreamWriter::Slices>();
-  slices->push_back(std::string());
-  slices->back().swap(*json);
-  read_buffers_stream_writer_.Post(FROM_HERE, &StreamWriter::WriteToStream,
-                                   std::move(slices), has_more);
+void ConsumerHost::TracingSession::Flush(
+    uint32_t timeout,
+    base::OnceCallback<void(bool)> callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  flush_callback_ = std::move(callback);
+  base::WeakPtr<TracingSession> weak_this = weak_factory_.GetWeakPtr();
+  host_->consumer_endpoint()->Flush(timeout, [weak_this](bool success) {
+    if (!weak_this) {
+      return;
+    }
 
-  if (!has_more) {
-    read_buffers_stream_writer_.Reset();
+    if (weak_this->flush_callback_) {
+      std::move(weak_this->flush_callback_).Run(success);
+    }
+  });
+}
+
+// static
+void ConsumerHost::BindConsumerRequest(
+    PerfettoService* service,
+    mojom::ConsumerHostRequest request,
+    const service_manager::BindSourceInfo& source_info) {
+  mojo::MakeStrongBinding(std::make_unique<ConsumerHost>(service),
+                          std::move(request));
+}
+
+ConsumerHost::ConsumerHost(PerfettoService* service) : service_(service) {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+  consumer_endpoint_ =
+      service_->GetService()->ConnectConsumer(this, 0 /*uid_t*/);
+  consumer_endpoint_->ObserveEvents(
+      perfetto::TracingService::ConsumerEndpoint::ObservableEventType::
+          kDataSourceInstances);
+}
+
+ConsumerHost::~ConsumerHost() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Make sure the tracing_session is destroyed first, as it keeps a pointer to
+  // the ConsumerHost parent and accesses it on destruction.
+  tracing_session_.reset();
+}
+
+void ConsumerHost::EnableTracing(
+    mojom::TracingSessionHostRequest tracing_session_host,
+    mojom::TracingSessionClientPtr tracing_session_client,
+    const perfetto::TraceConfig& trace_config) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!tracing_session_);
+
+  tracing_session_ = std::make_unique<TracingSession>(
+      this, std::move(tracing_session_host), std::move(tracing_session_client),
+      trace_config);
+}
+
+void ConsumerHost::OnConnect() {}
+
+void ConsumerHost::OnDisconnect() {}
+
+void ConsumerHost::OnTracingDisabled() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (tracing_session_) {
+    tracing_session_->OnTracingDisabled();
   }
 }
 
-void ConsumerHost::OnConsumerClientDisconnected() {
-  // Bail out; destination handle got closed.
-  consumer_endpoint_->FreeBuffers();
+void ConsumerHost::OnTraceData(std::vector<perfetto::TracePacket> packets,
+                               bool has_more) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (tracing_session_) {
+    tracing_session_->OnTraceData(std::move(packets), has_more);
+  }
+}
+
+void ConsumerHost::OnObservableEvents(
+    const perfetto::ObservableEvents& events) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (tracing_session_) {
+    tracing_session_->OnPerfettoEvents(events);
+  }
+}
+
+void ConsumerHost::OnTraceStats(bool success,
+                                const perfetto::TraceStats& stats) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (tracing_session_) {
+    tracing_session_->OnTraceStats(success, stats);
+  }
+}
+
+void ConsumerHost::DestructTracingSession() {
+  tracing_session_.reset();
 }
 
 }  // namespace tracing

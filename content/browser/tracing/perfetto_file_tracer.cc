@@ -85,9 +85,7 @@ PerfettoFileTracer::PerfettoFileTracer()
     : background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
-      background_drainer_(background_task_runner_),
-      binding_(this),
-      weak_factory_(this) {
+      background_drainer_(background_task_runner_) {
   ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
       tracing::mojom::kServiceName, &consumer_host_);
 
@@ -113,12 +111,13 @@ PerfettoFileTracer::PerfettoFileTracer()
   // We just need a single global trace buffer, for our data.
   trace_config.mutable_buffers()->front().set_size_kb(32 * 1024);
 
-  tracing::mojom::TracingSessionPtr tracing_session;
-  binding_.Bind(mojo::MakeRequest(&tracing_session));
+  tracing::mojom::TracingSessionClientPtr tracing_session_client;
+  binding_.Bind(mojo::MakeRequest(&tracing_session_client));
   binding_.set_connection_error_handler(base::BindOnce(
       &PerfettoFileTracer::OnTracingSessionEnded, base::Unretained(this)));
 
-  consumer_host_->EnableTracing(std::move(tracing_session),
+  consumer_host_->EnableTracing(mojo::MakeRequest(&tracing_session_host_),
+                                std::move(tracing_session_client),
                                 std::move(trace_config));
 
   ReadBuffers();
@@ -127,6 +126,10 @@ PerfettoFileTracer::PerfettoFileTracer()
 PerfettoFileTracer::~PerfettoFileTracer() = default;
 
 void PerfettoFileTracer::OnTracingEnabled() {}
+
+void PerfettoFileTracer::OnTracingDisabled() {
+  has_been_disabled_ = true;
+}
 
 void PerfettoFileTracer::OnNoMorePackets(bool queued_after_disable) {
   DCHECK(consumer_host_);
@@ -151,7 +154,7 @@ void PerfettoFileTracer::ReadBuffers() {
   DCHECK(consumer_host_);
 
   mojo::DataPipe data_pipe;
-  consumer_host_->ReadBuffers(
+  tracing_session_host_->ReadBuffers(
       std::move(data_pipe.producer_handle),
       base::BindOnce(
           [](PerfettoFileTracer* file_tracing, bool queued_after_disable) {
@@ -164,7 +167,8 @@ void PerfettoFileTracer::ReadBuffers() {
 }
 
 void PerfettoFileTracer::OnTracingSessionEnded() {
-  has_been_disabled_ = true;
+  binding_.Close();
+  tracing_session_host_.reset();
 }
 
 }  // namespace content

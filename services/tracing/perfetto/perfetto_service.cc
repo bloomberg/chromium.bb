@@ -99,31 +99,33 @@ void PerfettoService::ConnectToProducerHost(
 
 void PerfettoService::AddActiveServicePid(base::ProcessId pid) {
   active_service_pids_.insert(pid);
-  for (auto* consumer_host : consumer_hosts_) {
-    consumer_host->OnActiveServicePidAdded(pid);
+  for (auto* tracing_session : tracing_sessions_) {
+    tracing_session->OnActiveServicePidAdded(pid);
   }
 }
 
 void PerfettoService::RemoveActiveServicePid(base::ProcessId pid) {
   active_service_pids_.erase(pid);
-  for (auto* consumer_host : consumer_hosts_) {
-    consumer_host->OnActiveServicePidRemoved(pid);
+  for (auto* tracing_session : tracing_sessions_) {
+    tracing_session->OnActiveServicePidRemoved(pid);
   }
 }
 
 void PerfettoService::SetActiveServicePidsInitialized() {
   active_service_pids_initialized_ = true;
-  for (auto* consumer_host : consumer_hosts_) {
-    consumer_host->OnActiveServicePidsInitialized();
+  for (auto* tracing_session : tracing_sessions_) {
+    tracing_session->OnActiveServicePidsInitialized();
   }
 }
 
-void PerfettoService::RegisterConsumerHost(ConsumerHost* consumer_host) {
-  consumer_hosts_.insert(consumer_host);
+void PerfettoService::RegisterTracingSession(
+    ConsumerHost::TracingSession* tracing_session) {
+  tracing_sessions_.insert(tracing_session);
 }
 
-void PerfettoService::UnregisterConsumerHost(ConsumerHost* consumer_host) {
-  consumer_hosts_.erase(consumer_host);
+void PerfettoService::UnregisterTracingSession(
+    ConsumerHost::TracingSession* tracing_session) {
+  tracing_sessions_.erase(tracing_session);
 }
 
 }  // namespace tracing
