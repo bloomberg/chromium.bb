@@ -88,6 +88,14 @@ constexpr char kCrostiniAvailableDiskSuccess[] =
 constexpr char kCrostiniAvailableDiskCancel[] = "Crostini.AvailableDiskCancel";
 constexpr char kCrostiniAvailableDiskError[] = "Crostini.AvailableDiskError";
 
+// Generates a Google Help URL which includes a "board type" parameter. Some
+// help pages need to be adjusted depending on the type of CrOS device that is
+// accessing the page.
+base::string16 GetHelpUrlWithBoard(const std::string& original_url) {
+  return base::ASCIIToUTF16(original_url +
+                            "&b=" + base::SysInfo::GetLsbReleaseBoard());
+}
+
 void RecordTimeFromDeviceSetupToInstallMetric() {
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
@@ -318,8 +326,9 @@ gfx::Size CrostiniInstallerView::CalculatePreferredSize() const {
 void CrostiniInstallerView::LinkClicked(views::Link* source, int event_flags) {
   DCHECK_EQ(source, learn_more_link_);
 
-  NavigateParams params(profile_, GURL(chrome::kLinuxAppsLearnMoreURL),
-                        ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(
+      profile_, GURL(GetHelpUrlWithBoard(chrome::kLinuxAppsLearnMoreURL)),
+      ui::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   Navigate(&params);
 }
