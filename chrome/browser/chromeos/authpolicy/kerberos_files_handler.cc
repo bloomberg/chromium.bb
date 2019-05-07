@@ -162,6 +162,7 @@ void KerberosFilesHandler::SetFilesChangedForTesting(
     base::OnceClosure callback) {
   files_changed_for_testing_ = std::move(callback);
 }
+
 void KerberosFilesHandler::OnDisabledAuthNegotiateCnameLookupChanged() {
   // Refresh kerberos files to adjust config for changed pref.
   get_kerberos_files_.Run();

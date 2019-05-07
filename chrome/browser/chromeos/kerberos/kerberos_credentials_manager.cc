@@ -11,10 +11,7 @@
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/authpolicy/data_pipe_utils.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/components/account_manager/account_manager.h"
-#include "chromeos/components/account_manager/account_manager_factory.h"
 #include "chromeos/dbus/kerberos/kerberos_client.h"
 #include "chromeos/dbus/kerberos/kerberos_service.pb.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
@@ -34,19 +31,6 @@ constexpr char kDefaultKerberosConfigFmt[] = R"(
   permitted_enctypes = aes256-cts-hmac-sha1-96 aes128-cts-hmac-sha1-96
   default_realm = %s
 )";
-
-AccountManager* GetAccountManager(Profile* profile) {
-  DCHECK(profile);
-  AccountManagerFactory* factory =
-      g_browser_process->platform_part()->GetAccountManagerFactory();
-  return factory->GetAccountManager(profile->GetPath().value());
-}
-
-AccountManager::AccountKey GetAccountKey(const std::string& principal_name) {
-  return AccountManager::AccountKey{
-      principal_name,
-      account_manager::AccountType::ACCOUNT_TYPE_ACTIVE_DIRECTORY};
-}
 
 // If |principal_name| is "UsEr@realm.com", sets |principal_name| to
 // "user@REALM.COM". Returns false if the given name has no @ or one of the
@@ -255,9 +239,12 @@ class KerberosAddAccountRunner {
   DISALLOW_COPY_AND_ASSIGN(KerberosAddAccountRunner);
 };
 
-KerberosCredentialsManager::KerberosCredentialsManager(Profile* profile)
-    : profile_(profile),
-      kerberos_files_handler_(
+KerberosCredentialsManager::Observer::Observer() = default;
+
+KerberosCredentialsManager::Observer::~Observer() = default;
+
+KerberosCredentialsManager::KerberosCredentialsManager()
+    : kerberos_files_handler_(
           base::BindRepeating(&KerberosCredentialsManager::GetKerberosFiles,
                               base::Unretained(this))) {
   // Connect to a signal that indicates when Kerberos files change.
@@ -269,6 +256,12 @@ KerberosCredentialsManager::KerberosCredentialsManager(Profile* profile)
 KerberosCredentialsManager::~KerberosCredentialsManager() = default;
 
 // static
+KerberosCredentialsManager& KerberosCredentialsManager::Get() {
+  static base::NoDestructor<KerberosCredentialsManager> instance;
+  return *instance;
+}
+
+// static
 void KerberosCredentialsManager::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kKerberosRememberPasswordEnabled, true);
@@ -276,11 +269,20 @@ void KerberosCredentialsManager::RegisterProfilePrefs(
   registry->RegisterDictionaryPref(prefs::kKerberosAccounts);
 }
 
+// static
 void KerberosCredentialsManager::RegisterLocalStatePrefs(
     PrefRegistrySimple* registry) {
   // Kerberos enabled is used by SystemNetworkContextManager, which reads prefs
   // off of local state.
   registry->RegisterBooleanPref(prefs::kKerberosEnabled, false);
+}
+
+void KerberosCredentialsManager::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void KerberosCredentialsManager::RemoveObserver(const Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void KerberosCredentialsManager::AddAccountAndAuthenticate(
@@ -315,17 +317,15 @@ void KerberosCredentialsManager::OnAddAccountRunnerDone(
 
   LogError("AddAccountAndAuthenticate", error);
   if (Succeeded(error)) {
-    // Add it to the account manager if it's not already there.
-    GetAccountManager(profile_)->UpsertAccount(
-        GetAccountKey(normalized_principal), normalized_principal,
-        AccountManager::kActiveDirectoryDummyToken);
-
     // Set active account.
     // TODO(https://crbug.com/948121): Wait until the files have been saved.
     // This is important when this code is triggered directly through a page
     // that requires Kerberos auth.
     active_principal_name_ = normalized_principal;
     GetKerberosFiles();
+
+    // Bring the merry news to the observers.
+    NotifyAccountsChanged();
   }
 
   std::move(callback).Run(error);
@@ -356,8 +356,8 @@ void KerberosCredentialsManager::OnRemoveAccount(
       active_principal_name_.clear();
     }
 
-    // Remove from account manager.
-    GetAccountManager(profile_)->RemoveAccount(GetAccountKey(principal_name));
+    // Express our condolence to the observers.
+    NotifyAccountsChanged();
   }
 
   std::move(callback).Run(response.error());
@@ -454,6 +454,11 @@ void KerberosCredentialsManager::OnKerberosFilesChanged(
   // Only listen to the active account.
   if (principal_name == active_principal_name_)
     GetKerberosFiles();
+}
+
+void KerberosCredentialsManager::NotifyAccountsChanged() {
+  for (auto& observer : observers_)
+    observer.OnAccountsChanged();
 }
 
 }  // namespace chromeos
