@@ -75,7 +75,8 @@ def _RunGitCommand(directory, command):
                             stderr=subprocess.PIPE,
                             cwd=directory,
                             shell=(sys.platform=='win32'))
-    stdout, stderr = proc.communicate()
+    stdout, stderr = tuple(x.decode(encoding='utf_8')
+                           for x in proc.communicate())
     stdout = stdout.strip()
     logging.debug("returncode: %d", proc.returncode)
     logging.debug("stdout: %s", stdout)
