@@ -124,7 +124,8 @@ class TextInputTest : public test::ExoTestBase {
     t.text = base::UTF8ToUTF16(utf8);
     t.selection = gfx::Range(1u);
     t.ime_text_spans.push_back(
-        ui::ImeTextSpan(0, t.text.size(), ui::ImeTextSpan::Thickness::kThick));
+        ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, 0, t.text.size(),
+                        ui::ImeTextSpan::Thickness::kThick));
     EXPECT_CALL(*delegate(), SetCompositionText(t)).Times(1);
     text_input()->SetCompositionText(t);
   }
