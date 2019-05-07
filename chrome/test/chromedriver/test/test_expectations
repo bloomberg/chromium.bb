@@ -228,10 +228,6 @@ _OS_NEGATIVE_FILTER['android:chrome_beta'] = (
 )
 _OS_NEGATIVE_FILTER['android:chromium'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2580
-    'LocalStorageTest.*',
-    'LocationContextTest.*',
-    'SessionStorageTest.*',
     ]
 )
 _OS_NEGATIVE_FILTER['android:chromedriver_webview_shell'] = (
