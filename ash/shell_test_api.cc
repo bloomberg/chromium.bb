@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "ash/accelerators/accelerator_commands.h"
-#include "ash/accelerometer/accelerometer_reader.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
@@ -197,7 +196,6 @@ void ShellTestApi::IsSystemModalWindowOpen(IsSystemModalWindowOpenCallback cb) {
 }
 
 void ShellTestApi::EnableTabletModeWindowManager(bool enable) {
-  AccelerometerReader::GetInstance()->DisableForTest();
   shell_->tablet_mode_controller()->EnableTabletModeWindowManager(enable);
 }
 
