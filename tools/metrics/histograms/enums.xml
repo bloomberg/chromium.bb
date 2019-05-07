@@ -42501,6 +42501,10 @@ Called by update_net_trust_anchors.py.-->
   <int value="46" label="Yandex"/>
   <int value="47" label="Zoznam"/>
   <int value="48" label="360"/>
+  <int value="49" label="CocCoc"/>
+  <int value="50" label="DuckDuckGo"/>
+  <int value="51" label="Parsijoo"/>
+  <int value="52" label="Qwant"/>
 </enum>
 
 <enum name="OmniboxSuggestRequests">
