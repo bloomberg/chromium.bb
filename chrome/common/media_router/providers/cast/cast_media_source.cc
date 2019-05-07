@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/media_router/media_source_helper.h"
 #include "components/cast_channel/enum_table.h"
+#include "net/base/escape.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
@@ -115,12 +116,15 @@ base::flat_map<std::string, std::string> MakeQueryMap(const GURL& url) {
   base::flat_map<std::string, std::string> result;
   for (net::QueryIterator query_it(url); !query_it.IsAtEnd();
        query_it.Advance()) {
-    result[query_it.GetKey()] = query_it.GetValue();
+    result[query_it.GetKey()] = query_it.GetUnescapedValue();
   }
   return result;
 }
 
-// TODO(imcheng): Move to common utils?
+// TODO(jrw): Move to common utils?
+//
+// TODO(jrw): Should this use net::UnescapeURLComponent instead of
+// url::DecodeURLEscapeSequences?
 std::string DecodeURLComponent(const std::string& encoded) {
   url::RawCanonOutputT<base::char16> unescaped;
   std::string output;
@@ -227,6 +231,13 @@ std::unique_ptr<CastMediaSource> ParseLegacyCastUrl(
     const GURL& url) {
   base::StringPairs params;
   base::SplitStringIntoKeyValuePairs(url.ref(), '=', '/', &params);
+  for (auto& pair : params) {
+    pair.second = net::UnescapeURLComponent(
+        pair.second,
+        net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
+            net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
+            net::UnescapeRule::REPLACE_PLUS_WITH_SPACE);
+  }
 
   // Legacy URLs can specify multiple apps.
   std::vector<std::string> app_id_params;
