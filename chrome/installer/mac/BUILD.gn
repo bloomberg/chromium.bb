@@ -117,10 +117,14 @@ copy("copies") {
 group("mac_signing_tests") {
   data = [
     "signing/__init__.py",
+    "signing/commands.py",
     "signing/config.py.in",
     "signing/model.py",
     "signing/model_test.py",
+    "signing/signing.py",
+    "signing/signing_test.py",
     "signing/run_mac_signing_tests.py",
+    "signing/test_common.py",
     "signing/test_config.py",
 
     # The run_isolated_script_test.py script and its dependencies.
