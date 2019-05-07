@@ -966,6 +966,12 @@ void LocalNtpSource::StartDataRequest(
         base::UTF16ToUTF8(l10n_util::GetStringUTF16(IDS_NTP_CUSTOM_BG_CANCEL));
     replacements["doneButton"] =
         base::UTF16ToUTF8(l10n_util::GetStringUTF16(IDS_NTP_CUSTOM_LINKS_DONE));
+    replacements["backgroundsOption"] = base::UTF16ToUTF8(
+        l10n_util::GetStringUTF16(IDS_NTP_CUSTOMIZE_MENU_BACKGROUNDS_LABEL));
+    replacements["shortcutsOption"] = base::UTF16ToUTF8(
+        l10n_util::GetStringUTF16(IDS_NTP_CUSTOMIZE_MENU_SHORTCUTS_LABEL));
+    replacements["colorsOption"] = base::UTF16ToUTF8(
+        l10n_util::GetStringUTF16(IDS_NTP_CUSTOMIZE_MENU_COLORS_LABEL));
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     base::StringPiece html = bundle.GetRawDataResource(IDR_LOCAL_NTP_HTML);
