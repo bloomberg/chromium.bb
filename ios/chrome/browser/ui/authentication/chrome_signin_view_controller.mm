@@ -1237,7 +1237,8 @@ enum AuthenticationState {
 
 - (void)unifiedConsentCoordinatorNeedPrimaryButtonUpdate:
     (UnifiedConsentCoordinator*)coordinator {
-  [self updatePrimaryButtonForIdentityPickerState];
+  if (_currentState == IDENTITY_PICKER_STATE)
+    [self updatePrimaryButtonForIdentityPickerState];
 }
 
 @end
