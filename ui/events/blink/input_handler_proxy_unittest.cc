@@ -156,7 +156,10 @@ class MockInputHandler : public cc::InputHandler {
 
   void MouseLeave() override {}
 
-  void MouseMoveAt(const gfx::Point& mouse_position) override {}
+  cc::InputHandlerPointerResult MouseMoveAt(
+      const gfx::Point& mouse_position) override {
+    return cc::InputHandlerPointerResult();
+  }
 
   MOCK_CONST_METHOD2(IsCurrentlyScrollingLayerAt,
                      bool(const gfx::Point& point,

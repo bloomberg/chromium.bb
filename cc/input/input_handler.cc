@@ -10,6 +10,7 @@ InputHandlerScrollResult::InputHandlerScrollResult()
     : did_scroll(false), did_overscroll_root(false) {
 }
 
-InputHandlerPointerResult::InputHandlerPointerResult() : type(kUnhandled) {}
+InputHandlerPointerResult::InputHandlerPointerResult()
+    : type(kUnhandled), scroll_units(kUnknown) {}
 
 }  // namespace cc

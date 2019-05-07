@@ -266,7 +266,8 @@ class CC_EXPORT LayerTreeHostImpl
   InputHandlerPointerResult MouseDown(
       const gfx::PointF& viewport_point) override;
   InputHandlerPointerResult MouseUp(const gfx::PointF& viewport_point) override;
-  void MouseMoveAt(const gfx::Point& viewport_point) override;
+  InputHandlerPointerResult MouseMoveAt(
+      const gfx::Point& viewport_point) override;
   void MouseLeave() override;
 
   void PinchGestureBegin() override;

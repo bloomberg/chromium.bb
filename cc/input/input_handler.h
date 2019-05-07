@@ -34,12 +34,23 @@ namespace cc {
 class ScrollElasticityHelper;
 
 enum PointerResultType { kUnhandled = 0, kScrollbarScroll };
+enum ScrollUnitType {
+  kUnknown = 0,
+  kPrecisePixel,
+  kPixel,
+  kPage,
+  kLine,
+  kDocument
+};
 
 struct CC_EXPORT InputHandlerPointerResult {
   InputHandlerPointerResult();
   // Tells what type of processing occurred in the input handler as a result of
   // the pointer event.
   PointerResultType type;
+
+  // Tells what scroll_units should be used.
+  ScrollUnitType scroll_units;
 
   // If the input handler processed the event as a scrollbar scroll, it will
   // return a gfx::ScrollOffset that produces the necessary scroll. However,
@@ -48,9 +59,6 @@ struct CC_EXPORT InputHandlerPointerResult {
   // pointer event (due to the latency attribution that happens at the
   // InputHandlerProxy level).
   gfx::ScrollOffset scroll_offset;
-
-  // TODO(arakeri): Extend this structure to contain scroll_units and
-  // element_id. For now, assume kPrecisePixels and root layer scroll.
 };
 
 struct CC_EXPORT InputHandlerScrollResult {
@@ -188,7 +196,8 @@ class CC_EXPORT InputHandler {
   // ScrollBegin() returned SCROLL_STARTED.
   virtual InputHandlerScrollResult ScrollBy(ScrollState* scroll_state) = 0;
 
-  virtual void MouseMoveAt(const gfx::Point& mouse_position) = 0;
+  virtual InputHandlerPointerResult MouseMoveAt(
+      const gfx::Point& mouse_position) = 0;
   virtual InputHandlerPointerResult MouseDown(
       const gfx::PointF& mouse_position) = 0;
   virtual InputHandlerPointerResult MouseUp(

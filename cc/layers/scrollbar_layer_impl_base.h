@@ -66,6 +66,8 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
 
   virtual LayerTreeSettings::ScrollbarAnimator GetScrollbarAnimator() const;
 
+  virtual float TrackLength() const = 0;
+  virtual int ThumbLength() const = 0;
   virtual gfx::Rect BackButtonRect() const;
   virtual gfx::Rect ForwardButtonRect() const;
   virtual ScrollbarPart IdentifyScrollbarPart(
@@ -82,8 +84,6 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
                          bool is_overlay);
   ~ScrollbarLayerImplBase() override;
 
-  virtual int ThumbLength() const = 0;
-  virtual float TrackLength() const = 0;
   virtual int TrackStart() const = 0;
   // Indicates whether the thumb length can be changed without going back to the
   // main thread.

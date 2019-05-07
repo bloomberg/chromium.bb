@@ -4780,11 +4780,17 @@ InputHandlerPointerResult LayerTreeHostImpl::MouseUp(
   return result;
 }
 
-void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
+InputHandlerPointerResult LayerTreeHostImpl::MouseMoveAt(
+    const gfx::Point& viewport_point) {
+  InputHandlerPointerResult result;
+  if (settings().compositor_threaded_scrollbar_scrolling)
+    result =
+        scrollbar_controller_->HandleMouseMove(gfx::PointF(viewport_point));
+
   // Early out if there are no animation controllers and avoid the hit test.
   // This happens on platforms without animated scrollbars.
   if (scrollbar_animation_controllers_.empty())
-    return;
+    return result;
 
   gfx::PointF device_viewport_point = gfx::ScalePoint(
       gfx::PointF(viewport_point), active_tree_->device_scale_factor());
@@ -4831,9 +4837,11 @@ void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
   }
 
   if (!new_animation_controller)
-    return;
+    return result;
 
   new_animation_controller->DidMouseMove(device_viewport_point);
+
+  return result;
 }
 
 void LayerTreeHostImpl::MouseLeave() {

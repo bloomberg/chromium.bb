@@ -113,6 +113,25 @@ cc::InputHandler::ScrollInputType GestureScrollInputType(
   return cc::InputHandler::SCROLL_INPUT_UNKNOWN;
 }
 
+blink::WebScrollGranularity GestureScrollGranularity(
+    cc::ScrollUnitType cc_scroll_units) {
+  switch (cc_scroll_units) {
+    case cc::ScrollUnitType::kPixel:
+      return blink::WebScrollGranularity::kScrollByPixel;
+    case cc::ScrollUnitType::kPage:
+      return blink::WebScrollGranularity::kScrollByPage;
+    case cc::ScrollUnitType::kLine:
+      return blink::WebScrollGranularity::kScrollByLine;
+    case cc::ScrollUnitType::kDocument:
+      return blink::WebScrollGranularity::kScrollByDocument;
+    case cc::ScrollUnitType::kPrecisePixel:
+    case cc::ScrollUnitType::kUnknown:
+      // If the type is not set, always assume precise pixels.
+      return blink::WebScrollGranularity::kScrollByPrecisePixel;
+      break;
+  }
+}
+
 cc::SnapFlingController::GestureScrollType GestureScrollEventType(
     WebInputEvent::Type web_event_type) {
   switch (web_event_type) {
@@ -356,7 +375,7 @@ void InputHandlerProxy::InjectScrollbarGestureScroll(
       GenerateInjectedScrollGesture(
           type, original_timestamp, blink::WebGestureDevice::kScrollbar,
           position_in_widget, scroll_delta,
-          blink::WebScrollGranularity::kScrollByPixel);
+          GestureScrollGranularity(pointer_result.scroll_units));
 
   WebScopedInputEvent web_scoped_gesture_event(
       synthetic_gesture_event.release());
@@ -500,8 +519,22 @@ InputHandlerProxy::RouteToTypeSpecificHandler(const WebInputEvent& event,
       // TODO(davemoore): This should never happen, but bug #326635 showed some
       // surprising crashes.
       CHECK(input_handler_);
-      input_handler_->MouseMoveAt(gfx::Point(mouse_event.PositionInWidget().x,
-                                             mouse_event.PositionInWidget().y));
+      cc::InputHandlerPointerResult pointer_result =
+          input_handler_->MouseMoveAt(
+              gfx::Point(mouse_event.PositionInWidget().x,
+                         mouse_event.PositionInWidget().y));
+      if (pointer_result.type == cc::PointerResultType::kScrollbarScroll) {
+        // Generate a GSU event and add it to the CompositorThreadEventQueue.
+        InjectScrollbarGestureScroll(WebInputEvent::Type::kGestureScrollUpdate,
+                                     mouse_event.PositionInWidget(),
+                                     pointer_result, latency_info,
+                                     mouse_event.TimeStamp());
+
+        // Drop the mousemove for now as the gesture event equivalent for this
+        // has already been added to the CompositorThreadEventQueue and will
+        // be dispatched at the vsync boundary.
+        return DROP_EVENT;
+      }
       return DID_NOT_HANDLE;
     }
     case WebInputEvent::kMouseLeave: {

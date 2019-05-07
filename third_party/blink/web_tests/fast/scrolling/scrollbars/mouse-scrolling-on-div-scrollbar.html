@@ -1,8 +1,9 @@
-<!DOCTYPE>
-<title>Clicking on a non-custom scrollbar should scroll its scroller</title>
+<!DOCTYPE html>
+<title>Tests mouse interactions on a non-custom composited div scrollbar.</title>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/gesture-util.js"></script>
+<script src="../../../resources/scrollbar-util.js"></script>
 <style>
 .mouseDiv {
   width: 100px;
@@ -34,11 +35,14 @@ if (window.internals)
 window.onload = () => {
   const divFast = document.querySelector('.fast');
   const rectFast = divFast.getBoundingClientRect();
-  const BUTTON_WIDTH = 15;
-  const SCROLL_CORNER = BUTTON_WIDTH;
+  const TRACK_WIDTH = calculateScrollbarThickness();
+  const BUTTON_WIDTH = TRACK_WIDTH;
+  const SCROLL_CORNER = TRACK_WIDTH;
+  const SCROLL_DELTA = 50;
 
   promise_test (async () => {
     await waitForCompositorCommit();
+    resetScrollOffset(divFast);
 
     // Click on the Down arrow for rectFast.
     let x = rectFast.right - BUTTON_WIDTH / 2;
@@ -63,6 +67,49 @@ window.onload = () => {
     y = rectFast.bottom - BUTTON_WIDTH / 2;
 	await mouseClickOn(x, y);
     assert_equals(divFast.scrollLeft, 0, "Pressing the left arrow didn't scroll.");
-  }, "Test mouse click on non-custom scrollbars.");
+  }, "Test mouse click on non-custom composited div scrollbar arrows.");
+
+  promise_test (async () => {
+    await waitForCompositorCommit();
+    resetScrollOffset(divFast);
+
+    // Testing the vertical scrollbar thumb.
+    let x = rectFast.right - TRACK_WIDTH / 2;
+    let y = rectFast.top + BUTTON_WIDTH + 5;
+
+    await mouseMoveTo(x, y);
+    await mouseDownAt(x, y);
+    assert_equals(divFast.scrollTop, 0, "Mousedown on vertical scrollbar thumb is not expected to scroll.");
+
+    y += SCROLL_DELTA;
+    await mouseMoveTo(x, y);
+    assert_equals(divFast.scrollTop, 915, "Vertical thumb drag downwards did not scroll as expected.");
+
+    y -= SCROLL_DELTA;
+    await mouseMoveTo(x, y);
+    assert_equals(divFast.scrollTop, 0, "Vertical thumb drag upwards did not scroll as expected.");
+
+    await mouseUpAt(x, y);
+    assert_equals(divFast.scrollTop, 0, "Mouseup on vertical scrollbar thumb is not expected to scroll.");
+
+    // Testing the horizontal scrollbar thumb.
+    x = rectFast.left + BUTTON_WIDTH + 5;
+    y = rectFast.bottom - TRACK_WIDTH / 2;
+
+    await mouseMoveTo(x, y);
+    await mouseDownAt(x, y);
+    assert_equals(divFast.scrollLeft, 0, "Mousedown on horizontal scrollbar thumb is not expected to scroll.");
+
+    x += SCROLL_DELTA;
+    await mouseMoveTo(x, y);
+    assert_equals(divFast.scrollLeft, 915, "Horizontal thumb drag towards the right did not scroll as expected.");
+
+    x -= SCROLL_DELTA;
+    await mouseMoveTo(x, y);
+    assert_equals(divFast.scrollLeft, 0, "Horizontal thumb drag towards the left did not scroll as expected.");
+
+    await mouseUpAt(x, y);
+    assert_equals(divFast.scrollLeft, 0, "Mouseup on horizontal scrollbar thumb is not expected to scroll.");
+  }, "Test mouse drags on non-custom composited div scrollbar thumb.");
 }
 </script>

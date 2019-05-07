@@ -300,6 +300,8 @@ ScrollbarPart ScrollbarLayerImplBase::IdentifyScrollbarPart(
     return ScrollbarPart::BACK_BUTTON;
   if (ForwardButtonRect().Contains(pointer_location))
     return ScrollbarPart::FORWARD_BUTTON;
+  if (ComputeThumbQuadRect().Contains(pointer_location))
+    return ScrollbarPart::THUMB;
 
   // TODO(arakeri): Once crbug.com/952314 is fixed, add a DCHECK to verify that
   // the point that is passed in is within the TrackRect. Also, please note that
