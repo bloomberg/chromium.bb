@@ -49,6 +49,9 @@ extern const char kAcceleratedVideoDecodeDescription[];
 extern const char kAllowInsecureLocalhostName[];
 extern const char kAllowInsecureLocalhostDescription[];
 
+extern const char kAllowPopupsDuringPageUnloadName[];
+extern const char kAllowPopupsDuringPageUnloadDescription[];
+
 extern const char kAllowSignedHTTPExchangeCertsWithoutExtensionName[];
 extern const char kAllowSignedHTTPExchangeCertsWithoutExtensionDescription[];
 

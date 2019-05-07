@@ -54,6 +54,12 @@
     "expiry_milestone": 76
   },
   {
+    "name": "allow-popups-during-page-unload",
+    "owners": [ "avi", "pastarmovj" ],
+    // Bound to the timelene of the AllowPopupsDuringPageUnload policy.
+    "expiry_milestone": 82
+  },
+  {
     "name": "allow-previews",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     "expiry_milestone": 76
