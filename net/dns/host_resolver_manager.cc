@@ -2306,10 +2306,13 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
 
 HostResolverManager::HostResolverManager(
     const HostResolver::ManagerOptions& options,
-    NetLog* net_log)
+    NetLog* net_log,
+    DnsClientFactory dns_client_factory_for_testing)
     : max_queued_jobs_(0),
       proc_params_(nullptr, options.max_system_retry_attempts),
       net_log_(net_log),
+      dns_client_factory_for_testing_(
+          std::move(dns_client_factory_for_testing)),
       received_dns_config_(false),
       num_dns_failures_(0),
       assume_ipv6_failure_on_wifi_(false),
@@ -2349,6 +2352,8 @@ HostResolverManager::HostResolverManager(
 
   OnConnectionTypeChanged(NetworkChangeNotifier::GetConnectionType());
 
+  SetDnsClientEnabled(options.dns_client_enabled);
+
   {
     DnsConfig dns_config = GetBaseDnsConfig(false);
     // Conservatively assume local IPv6 is needed when DnsConfig is not valid.
@@ -2370,27 +2375,6 @@ HostResolverManager::~HostResolverManager() {
   NetworkChangeNotifier::RemoveIPAddressObserver(this);
   NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
   NetworkChangeNotifier::RemoveDNSObserver(this);
-}
-
-void HostResolverManager::SetDnsClient(std::unique_ptr<DnsClient> dns_client) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  // DnsClient and config must be updated before aborting DnsTasks, since doing
-  // so may start new jobs.
-  dns_client_ = std::move(dns_client);
-  if (dns_client_ && !dns_client_->GetConfig() &&
-      num_dns_failures_ < kMaximumDnsFailures) {
-    dns_client_->SetConfig(GetBaseDnsConfig(false));
-    num_dns_failures_ = 0;
-  }
-
-  AbortDnsTasks(ERR_NETWORK_CHANGED, false /* fallback_only */);
-  DnsConfig dns_config;
-  if (!HaveDnsConfig())
-    // UpdateModeForHistogram() needs to know the DnsConfig when
-    // !HaveDnsConfig()
-    dns_config = GetBaseDnsConfig(false);
-  UpdateModeForHistogram(dns_config);
 }
 
 std::unique_ptr<HostResolverManager::CancellableRequest>
@@ -2437,13 +2421,21 @@ HostResolverManager::CreateMdnsListener(const HostPortPair& host,
 
 void HostResolverManager::SetDnsClientEnabled(bool enabled) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-#if defined(ENABLE_BUILT_IN_DNS)
+
   if (enabled && !dns_client_) {
-    SetDnsClient(DnsClient::CreateClient(net_log_));
-  } else if (!enabled && dns_client_) {
+    if (dns_client_factory_for_testing_) {
+      SetDnsClient(dns_client_factory_for_testing_.Run(net_log_));
+    } else {
+#if defined(ENABLE_BUILT_IN_DNS)
+      SetDnsClient(DnsClient::CreateClient(net_log_));
+#endif
+    }
+    return;
+  }
+
+  if (!enabled && dns_client_) {
     SetDnsClient(nullptr);
   }
-#endif
 }
 
 std::unique_ptr<base::Value> HostResolverManager::GetDnsConfigAsValue() const {
@@ -2537,6 +2529,14 @@ void HostResolverManager::SetBaseDnsConfigForTesting(
     const DnsConfig& base_config) {
   test_base_config_ = base_config;
   UpdateDNSConfig(true);
+}
+
+void HostResolverManager::SetDnsClientForTesting(
+    std::unique_ptr<DnsClient> dns_client) {
+  // Use SetDnsClientEnabled(false) to disable.
+  DCHECK(dns_client);
+
+  SetDnsClient(std::move(dns_client));
 }
 
 void HostResolverManager::SetTaskRunnerForTesting(
@@ -3042,6 +3042,28 @@ void HostResolverManager::AbortAllInProgressJobs() {
 
   if (self)
     dispatcher_->SetLimits(limits);
+}
+
+void HostResolverManager::SetDnsClient(std::unique_ptr<DnsClient> dns_client) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // DnsClient and config must be updated before aborting DnsTasks, since doing
+  // so may start new jobs.
+  dns_client_ = std::move(dns_client);
+  if (dns_client_ && !dns_client_->GetConfig() &&
+      num_dns_failures_ < kMaximumDnsFailures) {
+    dns_client_->SetConfig(GetBaseDnsConfig(false));
+    num_dns_failures_ = 0;
+  }
+
+  AbortDnsTasks(ERR_NETWORK_CHANGED, false /* fallback_only */);
+  DnsConfig dns_config;
+  if (!HaveDnsConfig()) {
+    // UpdateModeForHistogram() needs to know the DnsConfig when
+    // !HaveDnsConfig()
+    dns_config = GetBaseDnsConfig(false);
+  }
+  UpdateModeForHistogram(dns_config);
 }
 
 void HostResolverManager::AbortDnsTasks(int error, bool fallback_only) {

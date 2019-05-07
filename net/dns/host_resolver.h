@@ -129,6 +129,11 @@ class NET_EXPORT HostResolver {
     // system resolver. No effect when the system resolver is not used.
     // |kDefaultRetryAttempts| for the resolver to choose a default value.
     size_t max_system_retry_attempts = kDefaultRetryAttempts;
+
+    // Initial setting for whether the built-in asynchronous DnsClient is
+    // enabled or disabled. See HostResolverManager::SetDnsClientEnabled() for
+    // details.
+    bool dns_client_enabled = false;
   };
 
   // Factory class. Useful for classes that need to inject and override resolver
@@ -257,9 +262,6 @@ class NET_EXPORT HostResolver {
   virtual std::unique_ptr<MdnsListener> CreateMdnsListener(
       const HostPortPair& host,
       DnsQueryType query_type);
-
-  // Enable or disable the built-in asynchronous DnsClient.
-  virtual void SetDnsClientEnabled(bool enabled);
 
   // Returns the HostResolverCache |this| uses, or NULL if there isn't one.
   // Used primarily to clear the cache and for getting debug information.

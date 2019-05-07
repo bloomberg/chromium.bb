@@ -3198,7 +3198,8 @@ TEST_F(NetworkContextTest, CreateHostResolverWithConfigOverrides) {
   auto mock_dns_client =
       std::make_unique<net::MockDnsClient>(net::DnsConfig(), std::move(rules));
   auto* mock_dns_client_ptr = mock_dns_client.get();
-  internal_resolver->SetDnsClientForTesting(std::move(mock_dns_client));
+  internal_resolver->GetManagerForTesting()->SetDnsClientForTesting(
+      std::move(mock_dns_client));
 
   // Force the base configuration to ensure consistent overriding.
   net::DnsConfig base_configuration;

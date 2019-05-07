@@ -50,8 +50,6 @@ std::unique_ptr<HostResolver::MdnsListener> HostResolver::CreateMdnsListener(
   return nullptr;
 }
 
-void HostResolver::SetDnsClientEnabled(bool enabled) {}
-
 HostCache* HostResolver::GetHostCache() {
   return nullptr;
 }

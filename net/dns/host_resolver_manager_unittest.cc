@@ -76,13 +76,6 @@ namespace {
 const size_t kMaxJobs = 10u;
 const size_t kMaxRetryAttempts = 4u;
 
-HostResolver::ManagerOptions DefaultOptions() {
-  HostResolver::ManagerOptions options;
-  options.max_concurrent_resolves = kMaxJobs;
-  options.max_system_retry_attempts = kMaxRetryAttempts;
-  return options;
-}
-
 ProcTaskParams DefaultParams(HostResolverProc* resolver_proc) {
   return ProcTaskParams(resolver_proc, kMaxRetryAttempts);
 }
@@ -424,10 +417,12 @@ class TestHostResolverManager : public HostResolverManager {
                           NetLog* net_log)
       : TestHostResolverManager(options, net_log, true) {}
 
-  TestHostResolverManager(const HostResolver::ManagerOptions& options,
-                          NetLog* net_log,
-                          bool ipv6_reachable)
-      : HostResolverManager(options, net_log),
+  TestHostResolverManager(
+      const HostResolver::ManagerOptions& options,
+      NetLog* net_log,
+      bool ipv6_reachable,
+      DnsClientFactory dns_client_factory_for_testing = base::NullCallback())
+      : HostResolverManager(options, net_log, dns_client_factory_for_testing),
         ipv6_reachable_(ipv6_reachable) {}
 
   ~TestHostResolverManager() override = default;
@@ -511,15 +506,34 @@ class HostResolverManagerTest : public TestWithScopedTaskEnvironment {
     EXPECT_FALSE(proc_->HasBlockedRequests());
   }
 
-  virtual void CreateResolverWithLimitsAndParams(size_t max_concurrent_resolves,
-                                                 const ProcTaskParams& params,
-                                                 bool ipv6_reachable) {
-    DestroyResolver();
-
+  void CreateResolverWithLimitsAndParams(size_t max_concurrent_resolves,
+                                         const ProcTaskParams& params,
+                                         bool ipv6_reachable) {
     HostResolver::ManagerOptions options = DefaultOptions();
     options.max_concurrent_resolves = max_concurrent_resolves;
-    resolver_.reset(
-        new TestHostResolverManager(options, nullptr, ipv6_reachable));
+
+    CreateResolverWithOptionsAndParams(std::move(options), params,
+                                       ipv6_reachable);
+  }
+
+  virtual HostResolver::ManagerOptions DefaultOptions() {
+    HostResolver::ManagerOptions options;
+    options.max_concurrent_resolves = kMaxJobs;
+    options.max_system_retry_attempts = kMaxRetryAttempts;
+    return options;
+  }
+
+  virtual void CreateResolverWithOptionsAndParams(
+      HostResolver::ManagerOptions options,
+      const ProcTaskParams& params,
+      bool ipv6_reachable) {
+    // Use HostResolverManagerDnsTest if enabling DNS client.
+    DCHECK(!options.dns_client_enabled);
+
+    DestroyResolver();
+
+    resolver_ = std::make_unique<TestHostResolverManager>(
+        options, nullptr /* net_log */, ipv6_reachable);
     resolver_->set_proc_params_for_test(params);
 
     if (host_cache_)
@@ -3361,17 +3375,32 @@ class HostResolverManagerDnsTest : public HostResolverManagerTest {
   }
 
   // HostResolverManagerTest implementation:
-  void CreateResolverWithLimitsAndParams(size_t max_concurrent_resolves,
-                                         const ProcTaskParams& params,
-                                         bool ipv6_reachable) override {
+  HostResolver::ManagerOptions DefaultOptions() override {
+    HostResolver::ManagerOptions options =
+        HostResolverManagerTest::DefaultOptions();
+    options.dns_client_enabled = true;
+    return options;
+  }
+
+  // Implements HostResolverManager::DnsClientFactory to create a MockDnsClient
+  // with empty config and default rules.
+  std::unique_ptr<DnsClient> CreateMockClient(NetLog* net_log) {
+    auto dns_client =
+        std::make_unique<MockDnsClient>(DnsConfig(), CreateDefaultDnsRules());
+    dns_client_ = dns_client.get();
+    return dns_client;
+  }
+
+  void CreateResolverWithOptionsAndParams(HostResolver::ManagerOptions options,
+                                          const ProcTaskParams& params,
+                                          bool ipv6_reachable) override {
     DestroyResolver();
 
-    HostResolver::ManagerOptions options = DefaultOptions();
-    options.max_concurrent_resolves = max_concurrent_resolves;
-    resolver_.reset(
-        new TestHostResolverManager(options, nullptr, ipv6_reachable));
+    resolver_ = std::make_unique<TestHostResolverManager>(
+        options, nullptr /* net_log */, ipv6_reachable,
+        base::BindRepeating(&HostResolverManagerDnsTest::CreateMockClient,
+                            base::Unretained(this)));
     resolver_->set_proc_params_for_test(params);
-    UseMockDnsClient(DnsConfig(), CreateDefaultDnsRules());
 
     if (host_cache_)
       resolver_->AddHostCacheInvalidator(host_cache_->invalidator());
@@ -3385,7 +3414,7 @@ class HostResolverManagerDnsTest : public HostResolverManagerTest {
     auto dns_client =
         std::make_unique<MockDnsClient>(DnsConfig(), std::move(rules));
     dns_client_ = dns_client.get();
-    resolver_->SetDnsClient(std::move(dns_client));
+    resolver_->SetDnsClientForTesting(std::move(dns_client));
     if (!config.Equals(DnsConfig()))
       ChangeDnsConfig(config);
   }
@@ -3523,6 +3552,33 @@ class HostResolverManagerDnsTest : public HostResolverManagerTest {
   // Owned by |resolver_|.
   MockDnsClient* dns_client_;
 };
+
+TEST_F(HostResolverManagerDnsTest, DisableAndEnableDnsClient) {
+  // Disable fallback to allow testing how requests are initially handled.
+  set_allow_fallback_to_proctask(false);
+
+  ChangeDnsConfig(CreateValidDnsConfig());
+  proc_->AddRuleForAllFamilies("nx_succeed", "192.168.2.47");
+  proc_->SignalMultiple(1u);
+
+  resolver_->SetDnsClientEnabled(false);
+  ResolveHostResponseHelper response_proc(resolver_->CreateRequest(
+      HostPortPair("nx_succeed", 1212), NetLogWithSource(), base::nullopt,
+      request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(response_proc.result_error(), IsOk());
+  EXPECT_THAT(response_proc.request()->GetAddressResults().value().endpoints(),
+              testing::ElementsAre(CreateExpected("192.168.2.47", 1212)));
+
+  resolver_->SetDnsClientEnabled(true);
+  ResolveHostResponseHelper response_dns_client(resolver_->CreateRequest(
+      HostPortPair("ok_fail", 1212), NetLogWithSource(), base::nullopt,
+      request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(response_dns_client.result_error(), IsOk());
+  EXPECT_THAT(
+      response_dns_client.request()->GetAddressResults().value().endpoints(),
+      testing::UnorderedElementsAre(CreateExpected("::1", 1212),
+                                    CreateExpected("127.0.0.1", 1212)));
+}
 
 // RFC 6761 localhost names should always resolve to loopback.
 TEST_F(HostResolverManagerDnsTest, LocalhostLookup) {
@@ -3788,7 +3844,7 @@ TEST_F(HostResolverManagerDnsTest, FallbackOnAbortBySource_Any) {
 
   // Simulate the case when the preference or policy has disabled the DNS client
   // causing AbortDnsTasks.
-  resolver_->SetDnsClient(nullptr);
+  resolver_->SetDnsClientEnabled(false);
 
   // All requests should fallback to proc resolver.
   EXPECT_THAT(response0.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
@@ -3821,7 +3877,7 @@ TEST_F(HostResolverManagerDnsTest, FallbackOnAbortBySource_Dns) {
 
   // Simulate the case when the preference or policy has disabled the DNS client
   // causing AbortDnsTasks.
-  resolver_->SetDnsClient(nullptr);
+  resolver_->SetDnsClientEnabled(false);
 
   // No fallback expected.  All requests should fail.
   EXPECT_THAT(response0.result_error(), IsError(ERR_NETWORK_CHANGED));
@@ -4240,7 +4296,7 @@ TEST_F(HostResolverManagerDnsTest, DualFamilyLocalhost) {
   proc_->AddRuleForAllFamilies(std::string(), std::string());
 
   // Try without DnsClient.
-  resolver_->SetDnsClient(nullptr);
+  resolver_->SetDnsClientEnabled(false);
   ResolveHostResponseHelper system_response(resolver_->CreateRequest(
       HostPortPair("localhost", 80), NetLogWithSource(), base::nullopt,
       request_context_.get(), host_cache_.get()));
@@ -4922,7 +4978,7 @@ TEST_F(HostResolverManagerDnsTest,
 
   // Clear DnsClient.  The two in-progress jobs should fall back to a ProcTask,
   // and the next one should be started with a ProcTask.
-  resolver_->SetDnsClient(std::unique_ptr<DnsClient>());
+  resolver_->SetDnsClientEnabled(false);
 
   // All three in-progress requests should now be running a ProcTask.
   EXPECT_EQ(3u, num_running_dispatcher_jobs());
@@ -4942,7 +4998,40 @@ TEST_F(HostResolverManagerDnsTest,
 // When explicitly requesting source=DNS, no fallback allowed, so doing so with
 // DnsClient disabled should result in an error.
 TEST_F(HostResolverManagerDnsTest, DnsCallsWithDisabledDnsClient) {
+  ChangeDnsConfig(CreateValidDnsConfig());
   resolver_->SetDnsClientEnabled(false);
+
+  HostResolver::ResolveHostParameters params;
+  params.source = HostResolverSource::DNS;
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("host", 80), NetLogWithSource(), params,
+      request_context_.get(), host_cache_.get()));
+
+  EXPECT_THAT(response.result_error(), IsError(ERR_FAILED));
+}
+
+TEST_F(HostResolverManagerDnsTest,
+       DnsCallsWithDisabledDnsClient_DisabledAtConstruction) {
+  HostResolver::ManagerOptions options = DefaultOptions();
+  options.dns_client_enabled = false;
+  CreateResolverWithOptionsAndParams(std::move(options),
+                                     DefaultParams(proc_.get()),
+                                     true /* ipv6_reachable */);
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  HostResolver::ResolveHostParameters params;
+  params.source = HostResolverSource::DNS;
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("host", 80), NetLogWithSource(), params,
+      request_context_.get(), host_cache_.get()));
+
+  EXPECT_THAT(response.result_error(), IsError(ERR_FAILED));
+}
+
+// Same as DnsClient disabled, requests with source=DNS and no usable DnsConfig
+// should result in an error.
+TEST_F(HostResolverManagerDnsTest, DnsCallsWithNoDnsConfig) {
+  ChangeDnsConfig(DnsConfig());
 
   HostResolver::ResolveHostParameters params;
   params.source = HostResolverSource::DNS;
@@ -5772,7 +5861,7 @@ TEST_F(HostResolverManagerDnsTest, ModeForHistogram) {
   }
 
   // Test system resolver is detected.
-  resolver_->SetDnsClient(nullptr);
+  resolver_->SetDnsClientEnabled(false);
   ChangeDnsConfig(CreateValidDnsConfig());
   EXPECT_EQ(resolver_->mode_for_histogram_,
             HostResolverManager::MODE_FOR_HISTOGRAM_SYSTEM);

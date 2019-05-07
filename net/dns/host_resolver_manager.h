@@ -14,6 +14,8 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -87,6 +89,8 @@ class NET_EXPORT HostResolverManager
   using MdnsListener = HostResolver::MdnsListener;
   using ResolveHostRequest = HostResolver::ResolveHostRequest;
   using ResolveHostParameters = HostResolver::ResolveHostParameters;
+  using DnsClientFactory =
+      base::RepeatingCallback<std::unique_ptr<DnsClient>(NetLog*)>;
 
   class CancellableRequest : public ResolveHostRequest {
    public:
@@ -107,19 +111,19 @@ class NET_EXPORT HostResolverManager
   // outstanding DNS transactions (not counting retransmissions and retries).
   //
   // |net_log| must remain valid for the life of the HostResolverManager.
-  HostResolverManager(const HostResolver::ManagerOptions& options,
-                      NetLog* net_log);
+  //
+  // |dns_client_factory_for_testing| may be used to inject a factory to be used
+  // for ManagerOptions::dns_client_enabled and SetDnsClientEnabled(). If not
+  // set, standard DnsClient::CreateClient() will be used.
+  HostResolverManager(
+      const HostResolver::ManagerOptions& options,
+      NetLog* net_log,
+      DnsClientFactory dns_client_factory_for_testing = base::NullCallback());
 
   // If any completion callbacks are pending when the resolver is destroyed,
   // the host resolutions are cancelled, and the completion callbacks will not
   // be called.
   ~HostResolverManager() override;
-
-  // Set the DnsClient to be used for resolution. In case of failure, the
-  // HostResolverProc from ProcTaskParams will be queried. If the DnsClient is
-  // not pre-configured with a valid DnsConfig, a new config is fetched from
-  // NetworkChangeNotifier.
-  void SetDnsClient(std::unique_ptr<DnsClient> dns_client);
 
   // If |host_cache| is non-null, its HostCache::Invalidator must have already
   // been added (via AddHostCacheInvalidator()).
@@ -131,7 +135,16 @@ class NET_EXPORT HostResolverManager
       HostCache* host_cache);
   std::unique_ptr<MdnsListener> CreateMdnsListener(const HostPortPair& host,
                                                    DnsQueryType query_type);
-  void SetDnsClientEnabled(bool enabled);
+
+  // Enables or disables the built-in asynchronous DnsClient. If enabled, by
+  // default (when no |ResolveHostParameters::source| is specified), the
+  // DnsClient will be used for resolves and, in case of failure, resolution
+  // will fallback to the system resolver (HostResolverProc from
+  // ProcTaskParams). If the DnsClient is not pre-configured with a valid
+  // DnsConfig, a new config is fetched from NetworkChangeNotifier.
+  //
+  // Setting to |true| has no effect if |ENABLE_BUILT_IN_DNS| not defined.
+  virtual void SetDnsClientEnabled(bool enabled);
 
   std::unique_ptr<base::Value> GetDnsConfigAsValue() const;
 
@@ -174,6 +187,10 @@ class NET_EXPORT HostResolverManager
   void SetMdnsClientForTesting(std::unique_ptr<MDnsClient> client);
 
   void SetBaseDnsConfigForTesting(const DnsConfig& base_config);
+
+  // Similar to SetDnsClientEnabled(true) except allows setting |dns_client|
+  // as the instance to be used.
+  void SetDnsClientForTesting(std::unique_ptr<DnsClient> dns_client);
 
   // Allows the tests to catch slots leaking out of the dispatcher.  One
   // HostResolverManager::Job could occupy multiple PrioritizedDispatcher job
@@ -331,6 +348,8 @@ class NET_EXPORT HostResolverManager
   // requests. Might start new jobs.
   void AbortAllInProgressJobs();
 
+  void SetDnsClient(std::unique_ptr<DnsClient> dns_client);
+
   // Aborts all in progress DnsTasks. In-progress jobs will fall back to
   // ProcTasks if able and otherwise abort with |error|. Might start new jobs,
   // if any jobs were taking up two dispatcher slots.
@@ -393,6 +412,9 @@ class NET_EXPORT HostResolverManager
   ProcTaskParams proc_params_;
 
   NetLog* net_log_;
+
+  // If set, used for construction of DnsClients for SetDnsClientEnabled().
+  const DnsClientFactory dns_client_factory_for_testing_;
 
   // If present, used by DnsTask and ServeFromHosts to resolve requests.
   std::unique_ptr<DnsClient> dns_client_;
