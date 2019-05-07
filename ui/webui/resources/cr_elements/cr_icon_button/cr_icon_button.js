@@ -70,7 +70,7 @@ Polymer({
   /** @private */
   showRipple_: function() {
     if (!this.noink && !this.disabled) {
-      this.getRipple().holdDown = true;
+      this.getRipple().showAndHoldDown();
     }
   },
 
