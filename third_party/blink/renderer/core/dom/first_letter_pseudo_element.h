@@ -66,11 +66,6 @@ class CORE_EXPORT FirstLetterPseudoElement final : public PseudoElement {
 };
 
 template <>
-inline bool IsElementOfType<const FirstLetterPseudoElement>(const Node& node) {
-  return node.IsFirstLetterPseudoElement();
-}
-
-template <>
 struct DowncastTraits<FirstLetterPseudoElement> {
   static bool AllowFrom(const Node& node) {
     return node.IsFirstLetterPseudoElement();

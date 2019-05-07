@@ -81,11 +81,6 @@ inline Element& SliderThumbElement::CloneWithoutAttributesAndChildren(
 
 // FIXME: There are no ways to check if a node is a SliderThumbElement.
 template <>
-inline bool IsElementOfType<const SliderThumbElement>(const Node& node) {
-  return node.IsHTMLElement();
-}
-
-template <>
 struct DowncastTraits<SliderThumbElement> {
   static bool AllowFrom(const Node& node) { return node.IsHTMLElement(); }
 };

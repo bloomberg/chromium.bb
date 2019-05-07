@@ -86,11 +86,6 @@ class VTTElement final : public Element {
 };
 
 template <>
-inline bool IsElementOfType<const VTTElement>(const Node& node) {
-  return node.IsVTTElement();
-}
-
-template <>
 struct DowncastTraits<VTTElement> {
   static bool AllowFrom(const Node& node) { return node.IsVTTElement(); }
 };

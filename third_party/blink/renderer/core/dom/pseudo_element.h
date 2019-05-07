@@ -80,11 +80,6 @@ const QualifiedName& PseudoElementTagName();
 bool PseudoElementLayoutObjectIsNeeded(const ComputedStyle*);
 
 template <>
-inline bool IsElementOfType<const PseudoElement>(const Node& node) {
-  return node.IsPseudoElement();
-}
-
-template <>
 struct DowncastTraits<PseudoElement> {
   static bool AllowFrom(const Node& node) { return node.IsPseudoElement(); }
 };
