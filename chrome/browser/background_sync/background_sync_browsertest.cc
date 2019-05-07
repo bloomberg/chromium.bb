@@ -73,8 +73,6 @@ class BackgroundSyncBrowserTest : public InProcessBrowserTest {
       const net::test_server::HttpRequest& request) {
     if (request.GetURL().query() == "syncreceived") {
       time_when_sync_event_received_ = base::Time::Now();
-      if (sync_event_closure_)
-        std::move(sync_event_closure_).Run();
     }
 
     // The default handlers will take care of this request.
@@ -100,7 +98,6 @@ class BackgroundSyncBrowserTest : public InProcessBrowserTest {
 
  protected:
   base::Time time_when_sync_event_received_;
-  base::OnceClosure sync_event_closure_;
 
  private:
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
@@ -110,18 +107,9 @@ class BackgroundSyncBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, VerifyShutdownBehavior) {
   EXPECT_FALSE(HasTag(kTagName));
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&chrome::CloseAllBrowsers));
-
-  base::RunLoop run_loop;
-  sync_event_closure_ = run_loop.QuitClosure();
-  run_loop.Run();
-
-// Waiting for the browser to shut down normally on Mac causes the test to
-// time out. This is because the browser process isn't killed right away on Mac.
-#if !defined(OS_MACOSX)
+  chrome::CloseAllBrowsers();
+  chrome::AttemptExit();
   RunUntilBrowserProcessQuits();
-#endif
 
   EXPECT_LE(time_when_sync_event_received_, base::Time::Now());
 }
