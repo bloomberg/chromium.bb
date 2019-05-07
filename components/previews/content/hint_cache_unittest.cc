@@ -21,7 +21,6 @@
 #include "url/gurl.h"
 
 namespace previews {
-
 namespace {
 
 std::string GetHostDomainOrg(int index) {
@@ -539,7 +538,6 @@ TEST_F(HintCacheTest, ParseEmptyFetchedHints) {
       UpdateFetchedHints(std::move(get_hints_response), base::Time().Now()));
   EXPECT_FALSE(are_fetched_hints_updated());
 }
-
 }  // namespace
 
 }  // namespace previews

@@ -41,16 +41,17 @@ HintUpdateData::HintUpdateData(base::Optional<base::Version> component_version,
 
     // Add a component metadata entry for the component's version.
     previews::proto::StoreEntry metadata_component_entry;
+
+    metadata_component_entry.set_entry_type(
+        static_cast<previews::proto::StoreEntryType>(
+            HintCacheStore::StoreEntryType::kMetadata));
     metadata_component_entry.set_version(component_version_->GetString());
     entries_to_save_->emplace_back(
         HintCacheStore::GetMetadataTypeEntryKey(
             HintCacheStore::MetadataType::kComponent),
         std::move(metadata_component_entry));
   } else if (fetch_update_time_.has_value()) {
-    hint_entry_key_prefix_ =
-        // TODO(dougarnett): Merge in new call once landed:
-        // HintCacheStore::GetFetchedHintEntryKeyPrefix();
-        "3_";
+    hint_entry_key_prefix_ = HintCacheStore::GetFetchedHintEntryKeyPrefix();
 
     // TODO(dougarnett): add metadata entry for Fetch update?
   } else {
@@ -74,6 +75,13 @@ void HintUpdateData::MoveHintIntoUpdateData(
   // To avoid any unnecessary copying, the hint is moved into proto::StoreEntry.
   HintCacheStore::EntryKey hint_entry_key = hint_entry_key_prefix_ + hint.key();
   previews::proto::StoreEntry entry_proto;
+  if (component_version()) {
+    entry_proto.set_entry_type(static_cast<previews::proto::StoreEntryType>(
+        HintCacheStore::StoreEntryType::kComponentHint));
+  } else if (fetch_update_time()) {
+    entry_proto.set_entry_type(static_cast<previews::proto::StoreEntryType>(
+        HintCacheStore::StoreEntryType::kFetchedHint));
+  }
   entry_proto.set_allocated_hint(
       new optimization_guide::proto::Hint(std::move(hint)));
   entries_to_save_->emplace_back(std::move(hint_entry_key),

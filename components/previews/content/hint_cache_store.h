@@ -64,6 +64,28 @@ class HintCacheStore {
     kMaxValue = kFailed,
   };
 
+  // Store entry types within the store appear at the start of the keys of
+  // entries. These values are converted into strings within the key: a key
+  // starting with "1_" signifies a metadata entry and one starting with "2_"
+  // signifies a component hint entry. Adding this to the start of the key
+  // allows the store to quickly perform operations on all entries of a specific
+  // key type. Given that store entry type comparisons may be performed many
+  // times, the entry type string is kept as small as possible.
+  //  Example metadata entry type key:
+  //   "[StoreEntryType::kMetadata]_[MetadataType::kSchema]"    ==> "1_1"
+  //  Example component hint store entry type key:
+  //   "[StoreEntryType::kComponentHint]_[component_version]_[host]"
+  //     ==> "2_55_foo.com"
+  // NOTE: The order and value of the existing store entry types within the enum
+  // cannot be changed, but new types can be added to the end.
+  enum class StoreEntryType {
+    kEmpty = 0,
+    kMetadata = 1,
+    kComponentHint = 2,
+    kFetchedHint = 3,
+    kMaxValue = kFetchedHint
+  };
+
   HintCacheStore(leveldb_proto::ProtoDatabaseProvider* database_provider,
                  const base::FilePath& database_dir,
                  scoped_refptr<base::SequencedTaskRunner> store_task_runner);
@@ -114,10 +136,11 @@ class HintCacheStore {
   void UpdateFetchedHints(std::unique_ptr<HintUpdateData> fetched_hints_data,
                           base::OnceClosure callback);
 
-  // Finds a hint entry key associated with the specified host suffix. Returns
+  // Finds the most specific hint entry key for the specified host. Returns
   // true if a hint entry key is found, in which case |out_hint_entry_key| is
-  // populated with the key.
-  bool FindHintEntryKey(const std::string& host_suffix,
+  // populated with the key. All keys for kFetched hints are considered before
+  // kComponent hints as they are updated more frequently.
+  bool FindHintEntryKey(const std::string& host,
                         EntryKey* out_hint_entry_key) const;
 
   // Loads the hint specified by |hint_entry_key|.
@@ -142,32 +165,12 @@ class HintCacheStore {
       leveldb_proto::ProtoDatabase<previews::proto::StoreEntry>::KeyEntryVector;
   using EntryMap = std::map<EntryKey, previews::proto::StoreEntry>;
 
-  // Entry types within the store appear at the start of the keys of entries.
-  // These values are converted into strings within the key: a key starting with
-  // "1_" signifies a metadata entry and one starting with "2_" signifies a
-  // component hint entry. Adding this to the start of the key allows the store
-  // to quickly perform operations on all entries of a specific key type. Given
-  // that entry type comparisons may be performed many times, the entry type
-  // string is kept as small as possible.
-  //  Example metadata entry type key:
-  //   "[EntryType::kMetadata]_[MetadataType::kSchema]"    ==> "1_1"
-  //  Example component hint entry type key:
-  //   "[EntryType::kComponentHint]_[component_version]_[host]"
-  //     ==> "2_55_foo.com"
-  // NOTE: The order and value of the existing entry types within the enum
-  // cannot be changed, but new types can be added to the end.
-  enum class EntryType {
-    kMetadata = 1,
-    kComponentHint = 2,
-    kFetchedHint = 3,
-  };
-
   // Metadata types within the store. The metadata type appears at the end of
   // metadata entry keys. These values are converted into strings within the
   // key.
   //  Example metadata type keys:
-  //   "[EntryType::kMetadata]_[MetadataType::kSchema]"    ==> "1_1"
-  //   "[EntryType::kMetadata]_[MetadataType::kComponent]" ==> "1_2"
+  //   "[StoreEntryType::kMetadata]_[MetadataType::kSchema]"    ==> "1_1"
+  //   "[StoreEntryType::kMetadata]_[MetadataType::kComponent]" ==> "1_2"
   // NOTE: The order and value of the existing metadata types within the enum
   // cannot be changed, but new types can be added to the end.
   enum class MetadataType {
@@ -229,6 +232,15 @@ class HintCacheStore {
   // Returns the total hint entry keys contained within the store.
   size_t GetHintEntryKeyCount() const;
 
+  // Finds the most specific host suffix of the host name that the store has an
+  // hint with the provided prefix, |hint_entry_key_prefix|. |out_entry_key| is
+  // populated with the entry key for the corresponding hint. Returns true if a
+  // hint was successsfully found.
+  bool FindHintEntryKeyForHostWithPrefix(
+      const std::string& host,
+      EntryKey* out_entry_key,
+      const EntryKeyPrefix& hint_entry_key_prefix) const;
+
   // Callback that runs after the database finishes being initialized. If
   // |purge_existing_data| is true, then unconditionally purges the database;
   // otherwise, triggers loading of the metadata.
@@ -288,6 +300,7 @@ class HintCacheStore {
   // via SetComponentVersion(), which ensures that both |component_version_|
   // and |component_hint_key_prefix_| are updated at the same time.
   base::Optional<base::Version> component_version_;
+
   // The current entry key prefix shared by all component hints containd within
   // the store. While this could be generated on the fly using
   // |component_version_|, it is retaind separately as an optimization, as it

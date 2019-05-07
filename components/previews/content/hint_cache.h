@@ -113,12 +113,6 @@ class HintCache {
                        const HintCacheStore::EntryKey& store_hint_entry_key,
                        std::unique_ptr<optimization_guide::proto::Hint> hint);
 
-  // Finds the most specific host suffix of the host name for which the store
-  // has a hint and populates |out_hint_entry_key| with the hint's corresponding
-  // entry key. Returns true if a hint was successfully found.
-  bool FindHintEntryKey(const std::string& host,
-                        HintCacheStore::EntryKey* out_hint_entry_key) const;
-
   // The backing store used with this hint cache. Set during construction.
   const std::unique_ptr<HintCacheStore> hint_store_;
 

@@ -17,6 +17,12 @@ namespace previews {
 
 namespace {
 
+// Enforce that StoreEntryType enum is synced with the StoreEntryType proto
+// (components/previews/content/proto/hint_cache.proto)
+static_assert(proto::StoreEntryType_MAX ==
+                  static_cast<int>(HintCacheStore::StoreEntryType::kMaxValue),
+              "mismatched StoreEntryType enums");
+
 // The folder where the data will be stored on disk.
 constexpr char kHintCacheStoreFolder[] = "previews_hint_cache_store";
 
@@ -26,9 +32,12 @@ constexpr size_t kDatabaseWriteBufferSizeBytes = 128 * 1024;
 
 // Delimiter that appears between the sections of a store entry key.
 //  Examples:
-//    "[EntryType::kMetadata]_[MetadataType]"
-//    "[EntryType::kComponentHint]_[component_version]_[host]"
+//    "[StoreEntryType::kMetadata]_[MetadataType]"
+//    "[StoreEntryType::kComponentHint]_[component_version]_[host]"
 constexpr char kKeySectionDelimiter = '_';
+
+// Realistic minimum length of a host suffix.
+const int kMinHostSuffix = 6;  // eg., abc.tv
 
 // Enumerates the possible outcomes of loading metadata. Used in UMA histograms,
 // so the order of enumerators should not be changed.
@@ -243,18 +252,52 @@ void HintCacheStore::UpdateFetchedHints(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-bool HintCacheStore::FindHintEntryKey(const std::string& host_suffix,
+bool HintCacheStore::FindHintEntryKey(const std::string& host,
                                       EntryKey* out_hint_entry_key) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Search for kFetched hint entry keys first, fetched hints should be
+  // fresher and preferred.
+  if (FindHintEntryKeyForHostWithPrefix(host, out_hint_entry_key,
+                                        GetFetchedHintEntryKeyPrefix())) {
+    return true;
+  }
+
+  // Search for kComponent hint entry keys next.
   DCHECK(!component_version_.has_value() ||
          component_hint_entry_key_prefix_ ==
              GetComponentHintEntryKeyPrefix(component_version_.value()));
-
-  // Search for a component hint entry with the host suffix.
-  *out_hint_entry_key = component_hint_entry_key_prefix_ + host_suffix;
-  if (hint_entry_keys_ &&
-      hint_entry_keys_->find(*out_hint_entry_key) != hint_entry_keys_->end()) {
+  if (FindHintEntryKeyForHostWithPrefix(host, out_hint_entry_key,
+                                        component_hint_entry_key_prefix_))
     return true;
+
+  return false;
+}
+
+bool HintCacheStore::FindHintEntryKeyForHostWithPrefix(
+    const std::string& host,
+    EntryKey* out_hint_entry_key,
+    const EntryKeyPrefix& hint_entry_key_prefix) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(out_hint_entry_key);
+
+  // Look for longest host name suffix that has a hint. No need to continue
+  // lookups and substring work once get to a root domain like ".com" or
+  // ".co.in" (MinHostSuffix length check is a heuristic for that).
+  std::string host_suffix(host);
+  while (host_suffix.length() >= kMinHostSuffix) {
+    // Attempt to find a hint entry key associated with the current host suffix.
+    *out_hint_entry_key = hint_entry_key_prefix + host_suffix;
+    if (hint_entry_keys_ && hint_entry_keys_->find(*out_hint_entry_key) !=
+                                hint_entry_keys_->end()) {
+      return true;
+    }
+
+    size_t pos = host_suffix.find_first_of('.');
+    if (pos == std::string::npos) {
+      break;
+    }
+    host_suffix = host_suffix.substr(pos + 1);
   }
   return false;
 }
@@ -287,7 +330,8 @@ const char HintCacheStore::kStoreSchemaVersion[] = "1";
 
 // static
 HintCacheStore::EntryKeyPrefix HintCacheStore::GetMetadataEntryKeyPrefix() {
-  return std::to_string(static_cast<int>(EntryType::kMetadata)) +
+  return std::to_string(
+             static_cast<int>(HintCacheStore::StoreEntryType::kMetadata)) +
          kKeySectionDelimiter;
 }
 
@@ -301,7 +345,8 @@ HintCacheStore::EntryKey HintCacheStore::GetMetadataTypeEntryKey(
 // static
 HintCacheStore::EntryKeyPrefix
 HintCacheStore::GetComponentHintEntryKeyPrefixWithoutVersion() {
-  return std::to_string(static_cast<int>(EntryType::kComponentHint)) +
+  return std::to_string(
+             static_cast<int>(HintCacheStore::StoreEntryType::kComponentHint)) +
          kKeySectionDelimiter;
 }
 
@@ -314,7 +359,8 @@ HintCacheStore::EntryKeyPrefix HintCacheStore::GetComponentHintEntryKeyPrefix(
 
 // static
 HintCacheStore::EntryKeyPrefix HintCacheStore::GetFetchedHintEntryKeyPrefix() {
-  return base::NumberToString(static_cast<int>(EntryType::kFetchedHint)) +
+  return base::NumberToString(
+             static_cast<int>(HintCacheStore::StoreEntryType::kFetchedHint)) +
          kKeySectionDelimiter;
 }
 
@@ -480,8 +526,8 @@ void HintCacheStore::OnLoadMetadata(
     return;
   }
 
-  // If the schema version in the DB is not the current version, then purge the
-  // database.
+  // If the schema version in the DB is not the current version, then purge
+  // the database.
   auto schema_entry =
       metadata_entries->find(GetMetadataTypeEntryKey(MetadataType::kSchema));
   if (schema_entry == metadata_entries->end() ||
@@ -575,9 +621,9 @@ void HintCacheStore::OnLoadHintEntryKeys(
   }
 
   // If the store was set to unavailable after the request was started, or if
-  // there's an in-flight component data update, which means the keys are about
-  // to be invalidated, then the loaded keys should not be considered valid.
-  // Reset the keys so that they are cleared.
+  // there's an in-flight component data update, which means the keys are
+  // about to be invalidated, then the loaded keys should not be considered
+  // valid. Reset the keys so that they are cleared.
   if (!IsAvailable() || data_update_in_flight_) {
     hint_entry_keys.reset();
   }
@@ -595,9 +641,9 @@ void HintCacheStore::OnLoadHint(
 
   // If either the request failed, the store was set to unavailable after the
   // request was started, or there's an in-flight component data update, which
-  // means the entry is about to be invalidated, then the loaded hint should not
-  // be considered valid. Reset the entry so that no hint is returned to the
-  // requester.
+  // means the entry is about to be invalidated, then the loaded hint should
+  // not be considered valid. Reset the entry so that no hint is returned to
+  // the requester.
   if (!success || !IsAvailable() || data_update_in_flight_) {
     entry.reset();
   }

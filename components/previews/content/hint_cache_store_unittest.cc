@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "components/previews/content/hint_update_data.h"
@@ -91,6 +92,8 @@ class HintCacheStoreTest : public testing::Test {
       for (size_t i = 0; i < component_hint_count.value(); ++i) {
         std::string host_suffix = GetHostSuffix(i);
         StoreEntry& entry = db_store_[component_hint_key_prefix + host_suffix];
+        entry.set_entry_type(static_cast<previews::proto::StoreEntryType>(
+            HintCacheStore::StoreEntryType::kComponentHint));
         optimization_guide::proto::Hint* hint = entry.mutable_hint();
         hint->set_key(host_suffix);
         hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
@@ -107,8 +110,8 @@ class HintCacheStoreTest : public testing::Test {
   }
 
   // Moves the specified number of component hints into the update data.
-  void SeedUpdateData(HintUpdateData* update_data,
-                      size_t component_hint_count) {
+  void SeedComponentUpdateData(HintUpdateData* update_data,
+                               size_t component_hint_count) {
     for (size_t i = 0; i < component_hint_count; ++i) {
       std::string host_suffix = GetHostSuffix(i);
       optimization_guide::proto::Hint hint;
@@ -116,6 +119,19 @@ class HintCacheStoreTest : public testing::Test {
       hint.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
       optimization_guide::proto::PageHint* page_hint = hint.add_page_hints();
       page_hint->set_page_pattern("page pattern " + std::to_string(i));
+      update_data->MoveHintIntoUpdateData(std::move(hint));
+    }
+  }
+  // Moves the specified number of component hints into the update data.
+  void SeedFetchedUpdateData(HintUpdateData* update_data,
+                             size_t fetched_hint_count) {
+    for (size_t i = 0; i < fetched_hint_count; ++i) {
+      std::string host_suffix = GetHostSuffix(i);
+      optimization_guide::proto::Hint hint;
+      hint.set_key(host_suffix);
+      hint.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+      optimization_guide::proto::PageHint* page_hint = hint.add_page_hints();
+      page_hint->set_page_pattern("page pattern " + base::NumberToString(i));
       update_data->MoveHintIntoUpdateData(std::move(hint));
     }
   }
@@ -165,12 +181,28 @@ class HintCacheStoreTest : public testing::Test {
   void UpdateComponentHints(std::unique_ptr<HintUpdateData> component_data,
                             bool update_success = true,
                             bool load_hint_entry_keys_success = true) {
-    EXPECT_CALL(*this, OnUpdateComponentHints());
+    EXPECT_CALL(*this, OnUpdateHints());
     hint_store()->UpdateComponentHints(
         std::move(component_data),
-        base::BindOnce(&HintCacheStoreTest::OnUpdateComponentHints,
+        base::BindOnce(&HintCacheStoreTest::OnUpdateHints,
                        base::Unretained(this)));
-    // OnUpdateComponentHints callback
+    // OnUpdateHints callback
+    db()->UpdateCallback(update_success);
+    if (update_success) {
+      // OnLoadHintEntryKeys callback
+      db()->LoadCallback(load_hint_entry_keys_success);
+    }
+  }
+
+  void UpdateFetchedHints(std::unique_ptr<HintUpdateData> fetched_data,
+                          bool update_success = true,
+                          bool load_hint_entry_keys_success = true) {
+    EXPECT_CALL(*this, OnUpdateHints());
+    hint_store()->UpdateFetchedHints(
+        std::move(fetched_data),
+        base::BindOnce(&HintCacheStoreTest::OnUpdateHints,
+                       base::Unretained(this)));
+    // OnUpdateHints callback
     db()->UpdateCallback(update_success);
     if (update_success) {
       // OnLoadHintEntryKeys callback
@@ -263,7 +295,7 @@ class HintCacheStoreTest : public testing::Test {
   }
 
   MOCK_METHOD0(OnInitialized, void());
-  MOCK_METHOD0(OnUpdateComponentHints, void());
+  MOCK_METHOD0(OnUpdateHints, void());
 
  private:
   FakeDB<previews::proto::StoreEntry>* db_;
@@ -812,7 +844,7 @@ TEST_F(HintCacheStoreTest, UpdateComponentHintsUpdateEntriesFails) {
       hint_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
-  SeedUpdateData(update_data.get(), 5);
+  SeedComponentUpdateData(update_data.get(), 5);
 
   UpdateComponentHints(std::move(update_data), false /*update_success*/);
 
@@ -831,7 +863,7 @@ TEST_F(HintCacheStoreTest, UpdateComponentHintsGetKeysFails) {
       hint_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
-  SeedUpdateData(update_data.get(), 5);
+  SeedComponentUpdateData(update_data.get(), 5);
 
   UpdateComponentHints(std::move(update_data), true /*update_success*/,
                        false /*load_hints_keys_success*/);
@@ -854,7 +886,7 @@ TEST_F(HintCacheStoreTest, UpdateComponentHints) {
       hint_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
-  SeedUpdateData(update_data.get(), update_hint_count);
+  SeedComponentUpdateData(update_data.get(), update_hint_count);
   UpdateComponentHints(std::move(update_data));
 
   // When the component update succeeds, the store should contain the schema
@@ -877,7 +909,7 @@ TEST_F(HintCacheStoreTest, UpdateComponentHintsAfterInitializationDataPurge) {
       hint_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
-  SeedUpdateData(update_data.get(), update_hint_count);
+  SeedComponentUpdateData(update_data.get(), update_hint_count);
   UpdateComponentHints(std::move(update_data));
 
   // When the component update succeeds, the store should contain the schema
@@ -900,7 +932,7 @@ TEST_F(HintCacheStoreTest, CreateComponentDataWithAlreadyUpdatedVersionFails) {
       hint_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
-  SeedUpdateData(update_data.get(), update_hint_count);
+  SeedComponentUpdateData(update_data.get(), update_hint_count);
   UpdateComponentHints(std::move(update_data));
 
   // HintUpdateData for the component update should not be created for a second
@@ -926,18 +958,18 @@ TEST_F(HintCacheStoreTest, UpdateComponentHintsWithUpdatedVersionFails) {
       hint_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data_1);
-  SeedUpdateData(update_data_1.get(), update_hint_count_1);
+  SeedComponentUpdateData(update_data_1.get(), update_hint_count_1);
   ASSERT_TRUE(update_data_2);
-  SeedUpdateData(update_data_2.get(), update_hint_count_2);
+  SeedComponentUpdateData(update_data_2.get(), update_hint_count_2);
 
   // Update the component data with the same component version twice:
   // first with |update_data_1| and then with |update_data_2|.
   UpdateComponentHints(std::move(update_data_1));
 
-  EXPECT_CALL(*this, OnUpdateComponentHints());
+  EXPECT_CALL(*this, OnUpdateHints());
   hint_store()->UpdateComponentHints(
       std::move(update_data_2),
-      base::BindOnce(&HintCacheStoreTest::OnUpdateComponentHints,
+      base::BindOnce(&HintCacheStoreTest::OnUpdateHints,
                      base::Unretained(this)));
 
   // Verify that the store is populated with the component data from
@@ -1030,7 +1062,7 @@ TEST_F(HintCacheStoreTest, LoadHintSuccessUpdateData) {
       hint_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
-  SeedUpdateData(update_data.get(), update_hint_count);
+  SeedComponentUpdateData(update_data.get(), update_hint_count);
   UpdateComponentHints(std::move(update_data));
 
   // Verify that all component hints within a successful component update can
@@ -1102,7 +1134,7 @@ TEST_F(HintCacheStoreTest, FindHintEntryKeyUpdateData) {
       hint_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
-  SeedUpdateData(update_data.get(), update_hint_count);
+  SeedComponentUpdateData(update_data.get(), update_hint_count);
   UpdateComponentHints(std::move(update_data));
 
   // Verify that all hints contained within the component update are reported
@@ -1124,5 +1156,83 @@ TEST_F(HintCacheStoreTest, FetchedHintsMetadataStored) {
   InitializeStore(schema_state);
 
   ExpectFetchedMetadata(update_time);
+}
+
+TEST_F(HintCacheStoreTest, FindHintEntryKeyForFetchedHints) {
+  MetadataSchemaState schema_state = MetadataSchemaState::kValid;
+  size_t update_hint_count = 5;
+  base::Time update_time = base::Time().Now();
+  SeedInitialData(schema_state, 0);
+  CreateDatabase();
+  InitializeStore(schema_state);
+
+  std::unique_ptr<HintUpdateData> update_data =
+      hint_store()->CreateUpdateDataForFetchedHints(update_time);
+  ASSERT_TRUE(update_data);
+  SeedFetchedUpdateData(update_data.get(), update_hint_count);
+  UpdateFetchedHints(std::move(update_data));
+
+  for (size_t i = 0; i < update_hint_count; ++i) {
+    std::string host_suffix = GetHostSuffix(i);
+    HintCacheStore::EntryKey hint_entry_key;
+    bool success = hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key);
+    EXPECT_EQ(success, i < update_hint_count);
+  }
+}
+
+TEST_F(HintCacheStoreTest, FindHintEntryKeyCheckFetchedBeforeComponentHints) {
+  base::HistogramTester histogram_tester;
+  MetadataSchemaState schema_state = MetadataSchemaState::kValid;
+  size_t initial_hint_count = 10;
+  base::Time update_time = base::Time().Now();
+  SeedInitialData(schema_state, initial_hint_count);
+  CreateDatabase();
+  InitializeStore(schema_state);
+
+  base::Version version("2.0.0");
+  std::unique_ptr<HintUpdateData> update_data =
+      hint_store()->MaybeCreateUpdateDataForComponentHints(
+          base::Version(kUpdateComponentVersion));
+  ASSERT_TRUE(update_data);
+
+  optimization_guide::proto::Hint hint1;
+  hint1.set_key("domain1.org");
+  hint1.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  update_data->MoveHintIntoUpdateData(std::move(hint1));
+  optimization_guide::proto::Hint hint2;
+  hint2.set_key("host.domain2.org");
+  hint2.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  update_data->MoveHintIntoUpdateData(std::move(hint2));
+
+  UpdateComponentHints(std::move(update_data));
+
+  // Add fetched hints to the store that overlap with the same hosts as the
+  // initial set.
+  update_data = hint_store()->CreateUpdateDataForFetchedHints(update_time);
+
+  optimization_guide::proto::Hint hint;
+  hint.set_key("domain2.org");
+  hint.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  update_data->MoveHintIntoUpdateData(std::move(hint));
+
+  UpdateFetchedHints(std::move(update_data));
+
+  // Hint for host.domain2.org should be a fetched hint ("3_" prefix)
+  // as fetched hints take priority.
+  std::string host_suffix = "host.domain2.org";
+  HintCacheStore::EntryKey hint_entry_key;
+  if (!hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
+    FAIL() << "Hint entry not found for host suffix: " << host_suffix;
+  }
+
+  EXPECT_EQ(hint_entry_key, "3_domain2.org");
+
+  host_suffix = "subdomain.domain1.org";
+
+  if (!hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
+    FAIL() << "Hint entry not found for host suffix: " << host_suffix;
+  }
+
+  EXPECT_EQ(hint_entry_key, "2_2.0.0_domain1.org");
 }
 }  // namespace previews
