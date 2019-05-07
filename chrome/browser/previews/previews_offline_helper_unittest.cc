@@ -239,3 +239,28 @@ TEST_F(PreviewsOfflineHelperTest, TestMaxPrefSize) {
   EXPECT_TRUE(
       helper->ShouldAttemptOfflinePreview(GURL("http://test.second.com")));
 }
+
+TEST_F(PreviewsOfflineHelperTest, TestUpdateAllPrefEntries) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      previews::features::kOfflinePreviewsFalsePositivePrevention);
+
+  PreviewsOfflineHelper* helper = NewHelper();
+  base::Time now = base::Time::Now();
+  base::Time expired = now -
+                       previews::params::OfflinePreviewFreshnessDuration() -
+                       base::TimeDelta::FromHours(1);
+
+  helper->OfflinePageAdded(nullptr,
+                           MakeAddedPageItem("http://cleared.com", "", now));
+  EXPECT_TRUE(helper->ShouldAttemptOfflinePreview(GURL("http://cleared.com")));
+
+  helper->UpdateAllPrefEntries(
+      {MakeAddedPageItem("http://new.com", "", now),
+       MakeAddedPageItem("http://new2.com", "", now),
+       MakeAddedPageItem("http://expired.com", "", expired)});
+  EXPECT_FALSE(helper->ShouldAttemptOfflinePreview(GURL("http://cleared.com")));
+  EXPECT_TRUE(helper->ShouldAttemptOfflinePreview(GURL("http://new.com")));
+  EXPECT_TRUE(helper->ShouldAttemptOfflinePreview(GURL("http://new2.com")));
+  EXPECT_FALSE(helper->ShouldAttemptOfflinePreview(GURL("http://expired.com")));
+}

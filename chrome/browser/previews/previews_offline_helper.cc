@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/hash/hash.h"
 #include "base/optional.h"
@@ -92,13 +93,29 @@ void RemoveStaleOfflinePageEntries(base::DictionaryValue* dict) {
   }
 }
 
+void AddSingleOfflineItemEntry(
+    base::DictionaryValue* available_pages,
+    const offline_pages::OfflinePageItem& added_page) {
+  available_pages->SetKey(
+      HashURL(added_page.url),
+      base::Value(TimeToDictionaryValue(added_page.creation_time)));
+
+  // Also remember the original url (pre-redirects) if one exists.
+  if (!added_page.original_url_if_different.is_empty()) {
+    available_pages->SetKey(
+        HashURL(added_page.original_url_if_different),
+        base::Value(TimeToDictionaryValue(added_page.creation_time)));
+  }
+}
+
 }  // namespace
 
 PreviewsOfflineHelper::PreviewsOfflineHelper(
     content::BrowserContext* browser_context)
     : pref_service_(nullptr),
       available_pages_(std::make_unique<base::DictionaryValue>()),
-      offline_page_model_(nullptr) {
+      offline_page_model_(nullptr),
+      weak_factory_(this) {
   if (!browser_context || browser_context->IsOffTheRecord())
     return;
 
@@ -116,8 +133,12 @@ PreviewsOfflineHelper::PreviewsOfflineHelper(
   offline_page_model_ =
       offline_pages::OfflinePageModelFactory::GetForBrowserContext(
           browser_context);
-  if (offline_page_model_)
+  if (offline_page_model_) {
     offline_page_model_->AddObserver(this);
+    offline_page_model_->GetAllPages(
+        base::BindOnce(&PreviewsOfflineHelper::UpdateAllPrefEntries,
+                       weak_factory_.GetWeakPtr()));
+  }
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 }
 
@@ -174,28 +195,29 @@ void PreviewsOfflineHelper::Shutdown() {
   }
 }
 
+void PreviewsOfflineHelper::UpdateAllPrefEntries(
+    const offline_pages::MultipleOfflinePageItemResult& pages) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Totally reset the pref with the given vector. We presume that the given
+  // |pages| are a full result from a Offline DB query which we take as the
+  // source of truth.
+  available_pages_->Clear();
+  for (const offline_pages::OfflinePageItem& page : pages)
+    AddSingleOfflineItemEntry(available_pages_.get(), page);
+  RemoveStaleOfflinePageEntries(available_pages_.get());
+  UpdatePref();
+}
+
 void PreviewsOfflineHelper::OfflinePageModelLoaded(
     offline_pages::OfflinePageModel* model) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(robertogden): Implement.
+  // Ignored.
 }
 
 void PreviewsOfflineHelper::OfflinePageAdded(
     offline_pages::OfflinePageModel* model,
     const offline_pages::OfflinePageItem& added_page) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  available_pages_->SetKey(
-      HashURL(added_page.url),
-      base::Value(TimeToDictionaryValue(added_page.creation_time)));
-
-  // Also remember the original url (pre-redirects) if one exists.
-  if (!added_page.original_url_if_different.is_empty()) {
-    available_pages_->SetKey(
-        HashURL(added_page.original_url_if_different),
-        base::Value(TimeToDictionaryValue(added_page.creation_time)));
-  }
-
+  AddSingleOfflineItemEntry(available_pages_.get(), added_page);
   RemoveStaleOfflinePageEntries(available_pages_.get());
   UpdatePref();
 }

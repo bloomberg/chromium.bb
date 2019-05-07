@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/values.h"
 #include "components/offline_pages/core/offline_page_model.h"
@@ -40,6 +41,11 @@ class PreviewsOfflineHelper : public offline_pages::OfflinePageModel::Observer {
   // Removes |this| as an observer from offline pages.
   void Shutdown();
 
+  // Updates all entries in the pref with the given result from an offline page
+  // database query.
+  void UpdateAllPrefEntries(
+      const offline_pages::MultipleOfflinePageItemResult& pages);
+
   // offline_pages::OfflinePageModel::Observer:
   void OfflinePageModelLoaded(offline_pages::OfflinePageModel* model) override;
   void OfflinePageAdded(
@@ -65,6 +71,8 @@ class PreviewsOfflineHelper : public offline_pages::OfflinePageModel::Observer {
   offline_pages::OfflinePageModel* offline_page_model_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<PreviewsOfflineHelper> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsOfflineHelper);
 };
