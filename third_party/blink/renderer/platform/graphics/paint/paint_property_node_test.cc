@@ -114,6 +114,11 @@ class PaintPropertyNodeTest : public testing::Test {
     ExpectUnchangedState(effect);
   }
 
+  template <typename NodeType>
+  PaintPropertyChangeType NodeChanged(const NodeType& node) {
+    return node.NodeChanged();
+  }
+
   Tree<TransformPaintPropertyNode> transform;
   Tree<ClipPaintPropertyNode> clip;
   Tree<EffectPaintPropertyNode> effect;
@@ -610,6 +615,54 @@ TEST_F(PaintPropertyNodeTest, EffectLocalTransformSpaceChange) {
 
   ResetAllChanged();
   ExpectUnchangedState();
+}
+
+TEST_F(PaintPropertyNodeTest, TransformChange2dAxisAlignment) {
+  auto t = Create2DTranslation(t0(), 10, 20);
+  EXPECT_EQ(PaintPropertyChangeType::kNodeAddedOrRemoved, NodeChanged(*t));
+  t->ClearChangedToRoot();
+  EXPECT_EQ(PaintPropertyChangeType::kUnchanged, NodeChanged(*t));
+
+  // Translation doesn't affect 2d axis alignment.
+  t->Update(t0(), TransformPaintPropertyNode::State{FloatSize(30, 40)});
+  EXPECT_EQ(PaintPropertyChangeType::kChangedOnlySimpleValues, NodeChanged(*t));
+  t->ClearChangedToRoot();
+  EXPECT_EQ(PaintPropertyChangeType::kUnchanged, NodeChanged(*t));
+
+  // Scale doesn't affect 2d axis alignment.
+  t->Update(t0(), TransformPaintPropertyNode::State{
+                      TransformationMatrix().Scale3d(2, 3, 4)});
+  EXPECT_EQ(PaintPropertyChangeType::kChangedOnlySimpleValues, NodeChanged(*t));
+  t->ClearChangedToRoot();
+  EXPECT_EQ(PaintPropertyChangeType::kUnchanged, NodeChanged(*t));
+
+  // Rotation affects 2d axis alignment.
+  t->Update(t0(), TransformPaintPropertyNode::State{
+                      TransformationMatrix(t->Matrix()).Rotate(45)});
+  EXPECT_EQ(PaintPropertyChangeType::kChangedOnlyValues, NodeChanged(*t));
+  t->ClearChangedToRoot();
+  EXPECT_EQ(PaintPropertyChangeType::kUnchanged, NodeChanged(*t));
+
+  // Changing scale but keeping original rotation doesn't change 2d axis
+  // alignment and is treated as simple.
+  t->Update(t0(), TransformPaintPropertyNode::State{
+                      TransformationMatrix(t->Matrix()).Scale3d(3, 4, 5)});
+  EXPECT_EQ(PaintPropertyChangeType::kChangedOnlySimpleValues, NodeChanged(*t));
+  t->ClearChangedToRoot();
+  EXPECT_EQ(PaintPropertyChangeType::kUnchanged, NodeChanged(*t));
+
+  // Change rotation rotation again changes 2d axis alignment.
+  t->Update(t0(), TransformPaintPropertyNode::State{
+                      TransformationMatrix(t->Matrix()).Rotate(10)});
+  EXPECT_EQ(PaintPropertyChangeType::kChangedOnlyValues, NodeChanged(*t));
+  t->ClearChangedToRoot();
+  EXPECT_EQ(PaintPropertyChangeType::kUnchanged, NodeChanged(*t));
+
+  // Reset the transform back to simple translation changes 2d axis alignment.
+  t->Update(t0(), TransformPaintPropertyNode::State{FloatSize(1, 2)});
+  EXPECT_EQ(PaintPropertyChangeType::kChangedOnlyValues, NodeChanged(*t));
+  t->ClearChangedToRoot();
+  EXPECT_EQ(PaintPropertyChangeType::kUnchanged, NodeChanged(*t));
 }
 
 }  // namespace blink

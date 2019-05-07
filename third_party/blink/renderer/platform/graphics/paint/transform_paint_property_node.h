@@ -95,6 +95,17 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
                matrix_and_origin_->matrix == other.matrix_and_origin_->matrix));
     }
 
+    bool ChangePreserves2dAxisAlignment(const TransformAndOrigin& other) const {
+      if (IsIdentityOr2DTranslation() && other.IsIdentityOr2DTranslation())
+        return true;
+      if (IsIdentityOr2DTranslation())
+        return other.Matrix().Preserves2dAxisAlignment();
+      if (other.IsIdentityOr2DTranslation())
+        return Matrix().Preserves2dAxisAlignment();
+      // TODO(crbug.com/960481): Consider more rare corner cases.
+      return (Matrix().Inverse() * other.Matrix()).Preserves2dAxisAlignment();
+    }
+
    private:
     struct MatrixAndOrigin {
       TransformationMatrix matrix;
@@ -148,19 +159,15 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
         transform_has_simple_change = false;
       } else if (animation_state.is_running_animation_on_compositor) {
         transform_has_simple_change = false;
-      } else if (matrix_changed) {
+      } else if (matrix_changed &&
+                 !transform_and_origin.ChangePreserves2dAxisAlignment(
+                     other.transform_and_origin)) {
         // An additional cc::EffectNode may be required if
         // blink::TransformPaintPropertyNode is not axis-aligned (see:
         // PropertyTreeManager::NeedsSyntheticEffect). Changes to axis alignment
-        // are therefore treated as non-simple. By ensuring both |this| and
-        // |other| preserve axis alignment, this check is more conservative than
-        // PropertyTreeManager. We do not need to set
-        // transform_has_simple_change = false if the origin changes because
-        // axis alignment is not affected by transform origin.
-        if (!TransformPreservesAxisAlignment(transform_and_origin) ||
-            !TransformPreservesAxisAlignment(other.transform_and_origin)) {
-          transform_has_simple_change = false;
-        }
+        // are therefore treated as non-simple. We do not need to check origin
+        // because axis alignment is not affected by transform origin.
+        transform_has_simple_change = false;
       }
 
       // If the transform changed, and it's not simple then we need to report
@@ -195,15 +202,6 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
         return true;
       return sticky_constraint && other.sticky_constraint &&
              *sticky_constraint == *other.sticky_constraint;
-    }
-
-   private:
-    // Returns true if the given transform preserves axis alignment.
-    static bool TransformPreservesAxisAlignment(
-        const TransformAndOrigin& transform) {
-      return transform.IsIdentityOr2DTranslation() ||
-             (transform.Matrix().Is2dTransform() &&
-              transform.Matrix().Preserves2dAxisAlignment());
     }
   };
 
