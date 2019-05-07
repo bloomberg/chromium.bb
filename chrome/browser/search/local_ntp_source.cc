@@ -534,6 +534,29 @@ std::string GetErrorDict(const ErrorInfo& error) {
   return js_text;
 }
 
+// Return the URL that the custom background should be loaded from.
+// Either chrome-search://local-ntp/background.jpg or a valid, secure URL.
+GURL GetCustomBackgroundURL(PrefService* pref_service) {
+  if (pref_service->GetBoolean(prefs::kNtpCustomBackgroundLocalToDevice))
+    return GURL(chrome::kChromeSearchLocalNtpBackgroundUrl);
+
+  const base::DictionaryValue* background_info =
+      pref_service->GetDictionary(prefs::kNtpCustomBackgroundDict);
+  if (!background_info)
+    return GURL();
+
+  const base::Value* background_url =
+      background_info->FindKey("background_url");
+  if (!background_url)
+    return GURL();
+
+  GURL url(background_url->GetString());
+  if (!url.is_valid() || !url.SchemeIs(url::kHttpsScheme))
+    return GURL();
+
+  return url;
+}
+
 }  // namespace
 
 // Keeps the search engine configuration data to be included on the Local NTP,
@@ -972,6 +995,14 @@ void LocalNtpSource::StartDataRequest(
         l10n_util::GetStringUTF16(IDS_NTP_CUSTOMIZE_MENU_SHORTCUTS_LABEL));
     replacements["colorsOption"] = base::UTF16ToUTF8(
         l10n_util::GetStringUTF16(IDS_NTP_CUSTOMIZE_MENU_COLORS_LABEL));
+
+    replacements["bgPreloader"] = "";
+    GURL custom_background_url = GetCustomBackgroundURL(profile_->GetPrefs());
+    if (custom_background_url.is_valid()) {
+      replacements["bgPreloader"] = "<link rel=\"preload\" href=\"" +
+                                    custom_background_url.spec() +
+                                    "\" as=\"image\">";
+    }
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     base::StringPiece html = bundle.GetRawDataResource(IDR_LOCAL_NTP_HTML);
