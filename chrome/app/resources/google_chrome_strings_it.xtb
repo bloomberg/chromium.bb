@@ -25,7 +25,7 @@
 <translation id="1585657529869845941">Fai clic su <ph name="BEGIN_BOLD" />Switch anyway<ph name="END_BOLD" /> (Passa comunque) se viene visualizzato</translation>
 <translation id="1587223624401073077">Google Chrome sta utilizzando la videocamera.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> è pericoloso, pertanto è stato bloccato da Chrome.</translation>
-<translation id="1590588151039584890">Per aggiornarsi, Chrome deve essere chiuso su questo computer. Questo potrebbe causare la perdita di modifiche non salvate per altri utenti che hanno eseguito l'accesso a questo computer.</translation>
+<translation id="1590588151039584890">Per aggiornarsi, Chrome deve essere chiuso su questo computer. Questo potrebbe causare la perdita di modifiche non salvate di altri utenti che hanno eseguito l'accesso a questo computer.</translation>
 <translation id="1619887657840448962">Per rendere Chrome più sicuro, abbiamo disattivato la seguente estensione non presente nel <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> che potrebbe essere stata aggiunta a tua insaputa.</translation>
 <translation id="1628000112320670027">Ricevi assistenza per Chrome</translation>
 <translation id="1662639173275167396">La realizzazione di Chrome OS è stata possibile grazie a <ph name="BEGIN_LINK_CROS_OSS" />software open source<ph name="END_LINK_CROS_OSS" /> aggiuntivo, come <ph name="BEGIN_LINK_LINUX_OSS" />Linux (beta)<ph name="END_LINK_LINUX_OSS" />.</translation>

@@ -95,6 +95,7 @@
 <translation id="1671236975893690980">Предстои изтегляне…</translation>
 <translation id="1672586136351118594">Да не се показва отново</translation>
 <translation id="1692118695553449118">Синхронизирането е включено</translation>
+<translation id="169515064810179024">Блокиране на достъпа на сайтовете до сензорите за движение</translation>
 <translation id="1709438864123551175">Икономия на данни</translation>
 <translation id="1717218214683051432">Сензори за движение</translation>
 <translation id="1718835860248848330">Последния час</translation>
@@ -194,7 +195,7 @@
 <translation id="2359808026110333948">Напред</translation>
 <translation id="2369533728426058518">отваряне на раздели</translation>
 <translation id="2387895666653383613">Мащабиране на текста</translation>
-<translation id="2394602618534698961">Файловете, които изтегляте, се показват тук</translation>
+<translation id="2394602618534698961">Изтеглените от вас файлове се показват тук</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> МБ</translation>
 <translation id="2410754283952462441">Изберете профил</translation>
 <translation id="2414886740292270097">Тъмно</translation>
@@ -249,6 +250,7 @@
 <translation id="2777555524387840389">Остават <ph name="SECONDS" /> сек</translation>
 <translation id="2779651927720337254">неуспешно</translation>
 <translation id="2781151931089541271">Остава 1 сек</translation>
+<translation id="2801022321632964776">Актуализирайте, за да получите своя език в най-новата версия на Chrome</translation>
 <translation id="2803478378562657435">Запазените пароли и опциите за пароли са показани</translation>
 <translation id="2810645512293415242">Страницата е опростена с цел пестене на данни и по-бързо зареждане.</translation>
 <translation id="281504910091592009">Преглеждайте и управлявайте запазените пароли в <ph name="BEGIN_LINK" />профила си в Google<ph name="END_LINK" /></translation>
@@ -311,6 +313,7 @@
 <translation id="3259831549858767975">Смаляване на всички елементи на страницата</translation>
 <translation id="3269093882174072735">Зареждане на изображението</translation>
 <translation id="3269956123044984603">Включете „Авт. синхронизиране на данните“ от „Профили“ в настройките на Android, за да получите разделите си от другите си устройства.</translation>
+<translation id="3277252321222022663">Разрешаване на достъпа на сайтовете до сензорите (препоръчително)</translation>
 <translation id="3282568296779691940">Вход в Chrome</translation>
 <translation id="3288003805934695103">Презаредете страницата.</translation>
 <translation id="32895400574683172">Известията са разрешени</translation>
@@ -551,6 +554,7 @@
 <translation id="5016205925109358554">Серифен</translation>
 <translation id="5039804452771397117">Разрешаване</translation>
 <translation id="5040262127954254034">Поверителност</translation>
+<translation id="5048398596102334565">Разрешаване на достъпа на сайтовете до сензорите за движение (препоръчително)</translation>
 <translation id="5063480226653192405">Употреба</translation>
 <translation id="5073204694187207510">Скриване на решетката на цял екран</translation>
 <translation id="5082793167783849073">Сравнявайте бързо страници, като създадете група. За да започнете, докоснете и задръжте дадена връзка.</translation>
@@ -744,6 +748,7 @@
 <translation id="6406506848690869874">Синхронизиранe</translation>
 <translation id="641643625718530986">Печат…</translation>
 <translation id="6416782512398055893">Изтеглено: <ph name="MBS" /> МБ</translation>
+<translation id="6427112570124116297">Превод на всичко в мрежата</translation>
 <translation id="6433501201775827830">Изберете машина за търсене</translation>
 <translation id="6437478888915024427">Информация за страницата</translation>
 <translation id="6441734959916820584">Името е твърде дълго</translation>
@@ -859,6 +864,7 @@
 <translation id="7189598951263744875">Споделяне...</translation>
 <translation id="7191430249889272776">Разделът е отворен на заден план.</translation>
 <translation id="723171743924126238">Избиране на изображения</translation>
+<translation id="7233236755231902816">За да виждате съдържанието в мрежата на своя език, изтеглете най-новата версия на Chrome</translation>
 <translation id="7243308994586599757">Опциите са в долната част на екрана</translation>
 <translation id="7250468141469952378">Избрани: <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Добавете профил в Google от страницата „Профили“ в приложението Настройки на устройството ви.</translation>
@@ -1010,10 +1016,11 @@
 <translation id="8266862848225348053">Местоположение за изтеглянията</translation>
 <translation id="8274165955039650276">Преглед на изтеглянията</translation>
 <translation id="8283853025636624853">Синхронизира се със: <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
-<translation id="8300705686683892304">Управлявани от приложението</translation>
+<translation id="8300705686683892304">Управлявани от приложение</translation>
 <translation id="8310344678080805313">Стандартни раздели</translation>
 <translation id="8313455859591948645">Редактиране на страницата при стартиране</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> и още сайтове</translation>
+<translation id="8327155640814342956">За оптимално сърфиране отворете, за да актуализирате Chrome</translation>
 <translation id="8339163506404995330">Страниците на <ph name="LANGUAGE" /> няма да се превеждат</translation>
 <translation id="8349013245300336738">Сортиране по количеството използвани данни</translation>
 <translation id="8372893542064058268">Разрешаване на синхронизирането на заден план за конкретен сайт.</translation>
@@ -1073,6 +1080,7 @@
 <translation id="8788968922598763114">Повторно отваряне на последно затворения раздел</translation>
 <translation id="8801436777607969138">Блокиране на JavaScript за конкретен сайт.</translation>
 <translation id="8812260976093120287">На някои уебсайтове можете да извършвате плащания чрез посочените по-горе поддържани приложения за плащане на устройството ви.</translation>
+<translation id="8816026460808729765">Блокиране на достъпа на сайтовете до сензорите</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> ще се отвори в Chrome. С продължаването си приемате <ph name="BEGIN_LINK1" />Общите условия<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Съобщението за поверителност<ph name="END_LINK2" /> на браузъра, както и <ph name="BEGIN_LINK3" />Съобщението за поверителност за профили в Google, управлявани чрез Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Отметки</translation>
 <translation id="8833831881926404480">Сайт споделя екрана ви</translation>

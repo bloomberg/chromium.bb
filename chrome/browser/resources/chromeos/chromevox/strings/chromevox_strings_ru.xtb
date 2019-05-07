@@ -214,7 +214,7 @@
 <translation id="2626530649491650971">clickable</translation>
 <translation id="2628764385451019380">Предыдущего поля со списком нет.</translation>
 <translation id="2637227747952042642">Math</translation>
-<translation id="2638785836053527382">Скачивание файла <ph name="FILE_NAME" /> возобновлено</translation>
+<translation id="2638785836053527382">Скачивание файла "<ph name="FILE_NAME" />" возобновлено</translation>
 <translation id="2639750663247012216">Модификатор ChromeVox.</translation>
 <translation id="2644542693584024604">misspelled</translation>
 <translation id="2661530546602071611">Примечание</translation>
@@ -960,7 +960,7 @@
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">autolst</translation>
-<translation id="7763537600611320912">Началось скачивание файла <ph name="FILE_NAME" /></translation>
+<translation id="7763537600611320912">Началось скачивание файла "<ph name="FILE_NAME" />"</translation>
 <translation id="7770823902658038748">Поле для ввода пароля "<ph name="NAME" />" со значением "<ph name="VALUE" />"</translation>
 <translation id="7776293189010177726">Открыть меню ChromeVox</translation>
 <translation id="7800558923657349506">Эпилог</translation>
@@ -1155,7 +1155,7 @@
 <translation id="8743786158317878347">Ввести структурированное содержание, например таблицу</translation>
 <translation id="8747966237988593539">Нумерованный список.</translation>
 <translation id="8749988712346667988">Серебристый</translation>
-<translation id="875769700429317857">Файл <ph name="FILE_NAME" /> скачан</translation>
+<translation id="875769700429317857">Файл "<ph name="FILE_NAME" />" скачан</translation>
 <translation id="8759334257841767240">Следующей ссылки нет.</translation>
 <translation id="8767968232364267681">Перейти к следующему заголовку четвертого уровня</translation>
 <translation id="8770473310765924354">Закончить ввод структурированного содержания, например таблицы</translation>

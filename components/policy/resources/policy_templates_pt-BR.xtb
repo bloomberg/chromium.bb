@@ -2572,12 +2572,10 @@ Se esta política não for definida, qualquer plug-in que corresponder aos padr�
       Se a política não estiver configurada, as configurações padrão de isolamento de sites da plataforma serão usadas para a tela de login.
       </translation>
 <translation id="5901427587865226597">Apenas impressão duplex</translation>
-<translation id="5903898512448364160">
-      Se a política for definida como verdadeira, a política da nuvem terá precedência caso haja conflito com a da plataforma.
+<translation id="5903898512448364160">Se a política for definida como verdadeira, a política da nuvem terá precedência caso haja conflito com a da plataforma.
       Se a política for definida como falsa ou não for configurada, a política da plataforma terá precedência caso haja conflito com a política da nuvem.
 
-      Esta política está disponível apenas como uma política de plataforma de máquina obrigatória e afeta apenas as políticas da nuvem no escopo da máquina.
-      </translation>
+      Esta política está disponível apenas como uma política de plataforma de máquina obrigatória e só afeta as políticas da nuvem no escopo da máquina.</translation>
 <translation id="5905473632148429217">Ativar verificações OCSP/CRL on-line</translation>
 <translation id="5906199912611534122">Permite ativar ou desativar a limitação da rede.
       Essa opção se aplica a todos os usuários e todas as interfaces no dispositivo. Depois que a política é definida,
