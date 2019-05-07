@@ -414,18 +414,19 @@ void AutofillWalletMetadataSyncBridge::ApplyStopSyncChanges(
   // disabled, so we want to delete the data as well (i.e. the wallet metadata
   // entities).
   if (delete_metadata_change_list) {
-    bool is_any_local_modified = false;
     for (const std::pair<std::string, AutofillMetadata>& pair : cache_) {
       TypeAndMetadataId parsed_storage_key =
           ParseWalletMetadataStorageKey(pair.first);
-      is_any_local_modified |=
-          RemoveServerMetadata(GetAutofillTable(), parsed_storage_key.type,
-                               parsed_storage_key.metadata_id);
+      RemoveServerMetadata(GetAutofillTable(), parsed_storage_key.type,
+                           parsed_storage_key.metadata_id);
     }
     cache_.clear();
-    if (is_any_local_modified) {
-      web_data_backend_->NotifyOfMultipleAutofillChanges();
-    }
+
+    // We do not notify the change to the UI because the data bridge will notify
+    // anyway and notifying on metadata deletion potentially before the data
+    // deletion is risky. This can cause another conversion of server addresses
+    // to local addresses as we lack the metadata (that it has been converted
+    // already).
 
     // Commit the transaction to make sure the sync data (deleted here) and the
     // sync metadata and the progress marker (deleted by the processor via

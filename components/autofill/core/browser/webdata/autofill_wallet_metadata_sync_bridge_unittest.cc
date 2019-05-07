@@ -583,9 +583,10 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest,
           kCard1SpecificsId, /*use_count=*/30, /*use_date=*/40);
   StartSyncing({profile, card});
 
-  // Now stop sync. This should wipe the data and notify the backend.
+  // Now stop sync. This should wipe the data but not notify the backend (as the
+  // data bridge will do that).
   EXPECT_CALL(*backend(), CommitChanges());
-  EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
+  EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges()).Times(0);
   StopSyncing();
 
   EXPECT_THAT(GetAllLocalDataInclRestart(), IsEmpty());
