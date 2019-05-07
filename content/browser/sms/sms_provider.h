@@ -9,16 +9,18 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 
 namespace content {
-
-using SmsCallback = base::OnceCallback<void(const std::string&)>;
 
 // This class wraps the platform-specific functions and allows tests to
 // inject custom providers.
 class SmsProvider {
  public:
+  using SmsCallback =
+      base::OnceCallback<void(bool, base::Optional<std::string>)>;
+
   SmsProvider() = default;
   virtual ~SmsProvider() = default;
 

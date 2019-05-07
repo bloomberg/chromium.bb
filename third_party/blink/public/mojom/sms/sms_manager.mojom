@@ -8,7 +8,17 @@ import "mojo/public/mojom/base/time.mojom";
 
 // Implementation of the proposed "Sms Detection API".
 //
-// Proposal: https://github.com/sso-google/sms-otp-retrieval
+// Proposal: https://github.com/samuelgoto/sms-receiver
+enum SmsStatus {
+  kSuccess,
+  kTimeout
+};
+
+struct SmsMessage {
+  SmsStatus status;
+  // Only set if status == kSuccess.
+  string? content;
+};
 
 // This interface is created per storage partition but its execution is context
 // associated: there is an origin associated with a request that is multiplexed
@@ -17,5 +27,5 @@ interface SmsManager {
   // Retrieves the next SMS message that arrives on the phone that is addressed
   // to the caller's origin.
   // Returns the raw content of the received SMS.
-  GetNextMessage(mojo_base.mojom.TimeDelta timeout) => (string sms);
+  GetNextMessage(mojo_base.mojom.TimeDelta timeout) => (SmsMessage sms);
 };

@@ -48,8 +48,9 @@ class SMSReceiver final : public EventTargetWithInlineData,
   void stop();
   SMS* sms() const;
   DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(timeout, kTimeout)
 
-  void OnGetNextMessage(const WTF::String&);
+  void OnGetNextMessage(mojom::blink::SmsMessagePtr sms);
 
   void Trace(blink::Visitor*) override;
 

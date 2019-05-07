@@ -40,7 +40,13 @@ void SmsProviderAndroid::OnReceive(
     const base::android::JavaParamRef<jobject>& obj,
     jstring message) {
   std::string sms = ConvertJavaStringToUTF8(env, message);
-  std::move(callback_).Run(sms);
+  std::move(callback_).Run(true, sms);
+}
+
+void SmsProviderAndroid::OnError(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  std::move(callback_).Run(false, base::nullopt);
 }
 
 }  // namespace content

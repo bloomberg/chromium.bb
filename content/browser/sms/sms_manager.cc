@@ -34,7 +34,19 @@ void SmsManager::GetNextMessage(base::TimeDelta timeout,
     return;
   }
 
-  sms_provider_->Retrieve(timeout, std::move(callback));
+  sms_provider_->Retrieve(
+      timeout, base::BindOnce(
+                   [](GetNextMessageCallback callback, bool success,
+                      base::Optional<std::string> sms) {
+                     if (!success) {
+                       std::move(callback).Run(blink::mojom::SmsMessage::New(
+                           blink::mojom::SmsStatus::kTimeout, base::nullopt));
+                       return;
+                     }
+                     std::move(callback).Run(blink::mojom::SmsMessage::New(
+                         blink::mojom::SmsStatus::kSuccess, std::move(sms)));
+                   },
+                   std::move(callback)));
 }
 
 void SmsManager::SetSmsProviderForTest(

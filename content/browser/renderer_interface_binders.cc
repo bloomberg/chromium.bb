@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/no_destructor.h"
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -24,6 +25,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/vibration_manager.mojom.h"
@@ -184,13 +186,17 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
             ->GetIdleManager()
             ->CreateService(std::move(request), origin);
       }));
-  parameterized_binder_registry_.AddInterface(base::BindRepeating(
-      [](blink::mojom::SmsManagerRequest request, RenderProcessHost* host,
-         const url::Origin& origin) {
-        static_cast<StoragePartitionImpl*>(host->GetStoragePartition())
-            ->GetSmsManager()
-            ->CreateService(std::move(request), origin);
-      }));
+  if (base::FeatureList::IsEnabled(features::kSmsReceiver) &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures)) {
+    parameterized_binder_registry_.AddInterface(base::BindRepeating(
+        [](blink::mojom::SmsManagerRequest request, RenderProcessHost* host,
+           const url::Origin& origin) {
+          static_cast<StoragePartitionImpl*>(host->GetStoragePartition())
+              ->GetSmsManager()
+              ->CreateService(std::move(request), origin);
+        }));
+  }
   parameterized_binder_registry_.AddInterface(
       base::Bind([](blink::mojom::NotificationServiceRequest request,
                     RenderProcessHost* host, const url::Origin& origin) {

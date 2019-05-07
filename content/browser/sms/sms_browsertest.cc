@@ -5,6 +5,7 @@
 #include "base/time/time.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -42,6 +43,8 @@ class SmsTest : public ContentBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII("enable-blink-features", "SmsReceiver");
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
   }
 };
 
@@ -72,11 +75,10 @@ IN_PROC_BROWSER_TEST_F(SmsTest, Start) {
 
   EXPECT_CALL(*mock_sms_provider,
               DoRetrieve(base::TimeDelta::FromSeconds(60), _))
-      .WillOnce(
-          Invoke([](base::TimeDelta timeout,
-                    base::OnceCallback<void(const std::string&)>* callback) {
-            std::move(*callback).Run("hello");
-          }));
+      .WillOnce(Invoke(
+          [](base::TimeDelta timeout,
+             base::OnceCallback<void(bool, base::Optional<std::string>)>*
+                 callback) { std::move(*callback).Run(true, "hello"); }));
 
   sms_mgr->SetSmsProviderForTest(std::move(mock_sms_provider));
 

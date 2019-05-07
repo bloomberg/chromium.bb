@@ -89,8 +89,12 @@ void SMSReceiver::StartMonitoring() {
                                                WrapPersistent(this)));
 }
 
-void SMSReceiver::OnGetNextMessage(const WTF::String& sms) {
-  sms_ = MakeGarbageCollected<SMS>(std::move(sms));
+void SMSReceiver::OnGetNextMessage(mojom::blink::SmsMessagePtr sms) {
+  if (sms->status == mojom::blink::SmsStatus::kTimeout) {
+    DispatchEvent(*Event::Create(event_type_names::kTimeout));
+    return;
+  }
+  sms_ = MakeGarbageCollected<blink::SMS>(std::move(sms->content));
   DispatchEvent(*Event::Create(event_type_names::kChange));
 }
 

@@ -25,6 +25,7 @@ class SmsProviderAndroid : public SmsProvider {
   void OnReceive(JNIEnv* env,
                  const base::android::JavaParamRef<jobject>& obj,
                  jstring message);
+  void OnError(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
   base::android::ScopedJavaGlobalRef<jobject> j_sms_receiver_;
   SmsCallback callback_;

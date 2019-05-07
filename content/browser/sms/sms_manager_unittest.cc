@@ -68,7 +68,6 @@ TEST_F(SmsManagerTest, AddMonitor) {
   GURL url("http://google.com");
   impl->CreateService(mojo::MakeRequest(&service_ptr),
                       url::Origin::Create(url));
-
   base::RunLoop loop;
 
   service_ptr.set_connection_error_handler(base::BindLambdaForTesting([&]() {
@@ -78,19 +77,19 @@ TEST_F(SmsManagerTest, AddMonitor) {
   }));
 
   EXPECT_CALL(*mock, DoRetrieve(base::TimeDelta::FromSeconds(10), _))
-      .WillOnce(
-          Invoke([](base::TimeDelta timeout,
-                    base::OnceCallback<void(const std::string&)>* callback) {
-            std::move(*callback).Run("hi");
-          }));
+      .WillOnce(Invoke(
+          [](base::TimeDelta timeout,
+             base::OnceCallback<void(bool, base::Optional<std::string> sms)>*
+                 callback) { std::move(*callback).Run(true, "hi"); }));
 
   impl->SetSmsProviderForTest(std::move(mock));
 
   service_ptr->GetNextMessage(
       base::TimeDelta::FromSeconds(10),
-      base::BindLambdaForTesting([&](const std::string& sms) {
+      base::BindLambdaForTesting([&](blink::mojom::SmsMessagePtr sms) {
         // The initial state of the status of the user is to be active.
-        EXPECT_EQ("hi", sms);
+        EXPECT_EQ("hi", sms->content);
+        EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, sms->status);
         loop.Quit();
       }));
 
@@ -105,7 +104,6 @@ TEST_F(SmsManagerTest, InvalidArguments) {
   GURL url("http://google.com");
   impl->CreateService(mojo::MakeRequest(&service_ptr),
                       url::Origin::Create(url));
-
   service_ptr->GetNextMessage(base::TimeDelta::FromSeconds(-1),
                               base::NullCallback());
 

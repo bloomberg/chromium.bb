@@ -14,7 +14,6 @@ import com.google.android.gms.auth.api.phone.SmsRetrieverClient;
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
 import org.chromium.base.ContextUtils;
@@ -99,6 +98,7 @@ public class SmsReceiver extends BroadcastReceiver {
                 break;
             case CommonStatusCodes.TIMEOUT:
                 if (DEBUG) Log.d(TAG, "Timeout");
+                nativeOnError(mSmsReceiverAndroid);
                 break;
         }
     }
@@ -110,22 +110,15 @@ public class SmsReceiver extends BroadcastReceiver {
         SmsRetrieverClient client = SmsRetriever.getClient(context);
         Task<Void> task = client.startSmsRetriever();
 
-        if (DEBUG) {
-            task.addOnSuccessListener(new OnSuccessListener<Void>() {
-                @Override
-                public void onSuccess(Void aVoid) {
-                    if (DEBUG) Log.d(TAG, "Successfully started retriever.");
-                }
-            });
-
-            task.addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(Exception e) {
-                    if (DEBUG) Log.d(TAG, "Failed to install the retriever.");
-                }
-            });
-        }
+        task.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(Exception e) {
+                if (DEBUG) Log.d(TAG, "Failed to install the retriever.");
+                nativeOnError(mSmsReceiverAndroid);
+            }
+        });
     }
 
     private native static void nativeOnReceive(long nativeSmsReceiverAndroid, String sms);
+    private native static void nativeOnError(long nativeSmsReceiverAndroid);
 }
