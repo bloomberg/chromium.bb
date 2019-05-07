@@ -78,7 +78,6 @@
     "chrome/app/resources/locale_settings_linux.grd": "Not UI strings; localized separately",
     "chrome/app/resources/locale_settings_mac.grd": "Not UI strings; localized separately",
     "chrome/app/resources/locale_settings_win.grd": "Not UI strings; localized separately",
-    "chrome/browser/resources/kiosk_next_internal_resources.grd": "Internal resources; localized separately.",
     "chromecast/app/resources/chromecast_settings.grd": "Not UI strings; localized separately",
     "cloud_print/virtual_driver/win/install/virtual_driver_setup_resources.grd": "Separate release process",
     "components/components_locale_settings.grd": "Not UI strings; localized separately",
@@ -95,4 +94,9 @@
     "ui/base/test/ui_base_test_resources.grd": "Test data",
     "ui/strings/app_locale_settings.grd": "Not UI strings; localized separately",
   },
+  # Internal grds that contain parts not available publicly and thus should
+  # not be checked by translation script.
+  "internal_grds": [
+    "chrome/browser/resources/kiosk_next_internal_resources.grd",
+  ],
 }
