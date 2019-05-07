@@ -68,7 +68,7 @@ class WaylandKeyboardTest : public WaylandTest {
     memcpy(shared_keymap.memory(), keymap_string.get(), keymap_size);
     wl_keyboard_send_keymap(
         keyboard_->resource(), WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1,
-        platform_shared_keymap.PassPlatformHandle().fd.release(), keymap_size);
+        platform_shared_keymap.GetPlatformHandle().fd, keymap_size);
 #endif
   }
 

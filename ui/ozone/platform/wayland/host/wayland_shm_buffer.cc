@@ -49,8 +49,7 @@ void WaylandShmBuffer::Initialize(wl_shm* shm) {
           std::move(shared_memory_region));
 
   wl::Object<wl_shm_pool> pool(wl_shm_create_pool(
-      shm, platform_shared_memory.PassPlatformHandle().fd.release(),
-      buffer_size));
+      shm, platform_shared_memory.GetPlatformHandle().fd, buffer_size));
 
   auto* new_buffer = wl_shm_pool_create_buffer(
       pool.get(), 0, size_.width(), size_.height(), stride, kShmFormat);

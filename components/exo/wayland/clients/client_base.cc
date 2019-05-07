@@ -754,10 +754,8 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer(
         base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
             std::move(shared_memory_region));
 
-    // wl_shm_create_pool takes ownership of the file descriptor being passed.
     buffer->shm_pool.reset(wl_shm_create_pool(
-        globals_.shm.get(),
-        platform_shared_memory.PassPlatformHandle().fd.release(),
+        globals_.shm.get(), platform_shared_memory.GetPlatformHandle().fd,
         buffer->shared_memory_mapping.size()));
 
     buffer->buffer.reset(static_cast<wl_buffer*>(
