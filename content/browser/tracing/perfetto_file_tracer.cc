@@ -116,10 +116,10 @@ PerfettoFileTracer::PerfettoFileTracer()
   binding_.set_connection_error_handler(base::BindOnce(
       &PerfettoFileTracer::OnTracingSessionEnded, base::Unretained(this)));
 
-  consumer_host_->EnableTracing(mojo::MakeRequest(&tracing_session_host_),
-                                std::move(tracing_session_client),
-                                std::move(trace_config));
-
+  consumer_host_->EnableTracing(
+      mojo::MakeRequest(&tracing_session_host_),
+      std::move(tracing_session_client), std::move(trace_config),
+      tracing::mojom::TracingClientPriority::kBackground);
   ReadBuffers();
 }
 

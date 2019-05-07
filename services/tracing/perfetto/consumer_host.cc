@@ -116,10 +116,12 @@ ConsumerHost::TracingSession::TracingSession(
     ConsumerHost* host,
     mojom::TracingSessionHostRequest tracing_session_host,
     mojom::TracingSessionClientPtr tracing_session_client,
-    const perfetto::TraceConfig& trace_config)
+    const perfetto::TraceConfig& trace_config,
+    mojom::TracingClientPriority priority)
     : host_(host),
       tracing_session_client_(std::move(tracing_session_client)),
-      binding_(this, std::move(tracing_session_host)) {
+      binding_(this, std::move(tracing_session_host)),
+      tracing_priority_(priority) {
   host_->service()->RegisterTracingSession(this);
 
   tracing_session_client_.set_connection_error_handler(base::BindOnce(
@@ -232,6 +234,13 @@ void ConsumerHost::TracingSession::OnActiveServicePidsInitialized() {
   MaybeSendEnableTracingAck();
 }
 
+void ConsumerHost::TracingSession::RequestDisableTracing(
+    base::OnceClosure on_disabled_callback) {
+  DCHECK(!on_disabled_callback_);
+  on_disabled_callback_ = std::move(on_disabled_callback);
+  DisableTracing();
+}
+
 void ConsumerHost::TracingSession::OnEnableTracingTimeout() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!pending_enable_tracing_ack_pids_) {
@@ -284,6 +293,12 @@ void ConsumerHost::TracingSession::OnTracingDisabled() {
 
   if (json_trace_exporter_) {
     host_->consumer_endpoint()->ReadBuffers();
+  }
+
+  tracing_enabled_ = false;
+
+  if (on_disabled_callback_) {
+    std::move(on_disabled_callback_).Run();
   }
 }
 
@@ -470,13 +485,32 @@ ConsumerHost::~ConsumerHost() {
 void ConsumerHost::EnableTracing(
     mojom::TracingSessionHostRequest tracing_session_host,
     mojom::TracingSessionClientPtr tracing_session_client,
-    const perfetto::TraceConfig& trace_config) {
+    const perfetto::TraceConfig& trace_config,
+    mojom::TracingClientPriority priority) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!tracing_session_);
 
-  tracing_session_ = std::make_unique<TracingSession>(
-      this, std::move(tracing_session_host), std::move(tracing_session_client),
-      trace_config);
+  // We create our new TracingSession async, if the PerfettoService allows
+  // us to, after it's stopped any currently running lower or equal priority
+  // tracing sessions.
+  service_->RequestTracingSession(
+      priority,
+      base::BindOnce(
+          [](base::WeakPtr<ConsumerHost> weak_this,
+             mojom::TracingSessionHostRequest tracing_session_host,
+             mojom::TracingSessionClientPtr tracing_session_client,
+             const perfetto::TraceConfig& trace_config,
+             mojom::TracingClientPriority priority) {
+            if (!weak_this) {
+              return;
+            }
+
+            weak_this->tracing_session_ = std::make_unique<TracingSession>(
+                weak_this.get(), std::move(tracing_session_host),
+                std::move(tracing_session_client), trace_config, priority);
+          },
+          weak_factory_.GetWeakPtr(), std::move(tracing_session_host),
+          std::move(tracing_session_client), trace_config, priority));
 }
 
 void ConsumerHost::OnConnect() {}

@@ -316,9 +316,10 @@ class TracingHandler::PerfettoTracingSession
                        base::Unretained(this)));
 
     on_recording_enabled_callback_ = std::move(on_recording_enabled_callback);
-    consumer_host_->EnableTracing(mojo::MakeRequest(&tracing_session_host_),
-                                  std::move(tracing_session_client),
-                                  std::move(perfetto_config));
+    consumer_host_->EnableTracing(
+        mojo::MakeRequest(&tracing_session_host_),
+        std::move(tracing_session_client), std::move(perfetto_config),
+        tracing::mojom::TracingClientPriority::kUserInitiated);
 
     tracing_session_host_.set_connection_error_handler(
         base::BindOnce(&PerfettoTracingSession::OnTracingSessionFailed,

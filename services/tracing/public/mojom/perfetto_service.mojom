@@ -159,6 +159,16 @@ struct TraceConfig {
   uint32 duration_ms;
 };
 
+// The priority of the incoming EnableTracing request, used to determine
+// whether the session should take precedence over another existing session,
+// and/or whether a later session should abort the current one. Ordered in
+// ascending priority.
+enum TracingClientPriority {
+  kUnknown,
+  kBackground,
+  kUserInitiated
+};
+
 // The ConsumerHost interface is a privileged interface which is implemented
 // within the tracing service, and connected to by privileged services
 // (i.e. content_browser) to receive tracing data.
@@ -169,10 +179,14 @@ interface ConsumerHost {
   // closing it will disable tracing and free the session's trace buffers.
   // Note: Right now only a single concurrent tracing session is supported,
   // as there's no support for multiplexing enabled trace events to multiple
-  // consumers.
+  // consumers. If a new tracing session is attempted while there's an existing
+  // one in progress, the relative priorities will be used to figure out which
+  // one to be able to (keep) tracing; if the priorities are the same, the new
+  // session will take precedence.
   EnableTracing(TracingSessionHost& tracing_session_host,
                 TracingSessionClient tracing_session_client,
-                TraceConfig config);
+                TraceConfig config,
+                TracingClientPriority priority);
 };
 
 // Represents the host side of an active tracing session. Closing this
