@@ -231,8 +231,9 @@ Output.ROLE_INFO_ = {
   },
   inputTime: {msgId: 'input_type_time', inherits: 'abstractContainer'},
   link: {msgId: 'role_link', earconId: 'LINK'},
-  list: {msgId: 'role_list'},
-  listBox: {msgId: 'role_listbox', earconId: 'LISTBOX'},
+  list: {msgId: 'role_list', inherits: 'abstractList'},
+  listBox:
+      {msgId: 'role_listbox', earconId: 'LISTBOX', inherits: 'abstractList'},
   listBoxOption: {msgId: 'role_listitem', earconId: 'LIST_ITEM'},
   listGrid: {msgId: 'role_list_grid', inherits: 'table'},
   listItem:
@@ -377,6 +378,10 @@ Output.RULES = {
           $if($posInSet, @describe_index($posInSet, $setSize))
           $description $restriction`
     },
+    abstractList: {
+      enter: `$nameFromNode $role @@list_with_items($setSize)
+          $restriction $description`
+    },
     abstractNameFromContents: {
       speak: `$nameOrDescendants $node(activeDescendant) $value $state
           $restriction $role $description`,
@@ -464,13 +469,8 @@ Output.RULES = {
           $if($inPageLinkTarget, @internal_link, $role) $description`,
     },
     list: {
-      enter: `$role @@list_with_items($setSize)`,
       speak: `$nameFromNode $descendants $role
           @@list_with_items($setSize) $description $state`
-    },
-    listBox: {
-      enter: `$nameFromNode $role @@list_with_items($setSize)
-          $restriction $description`
     },
     listBoxOption: {
       speak: `$state $name $role @describe_index($posInSet, $setSize)
