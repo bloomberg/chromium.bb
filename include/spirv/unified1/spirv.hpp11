@@ -49,12 +49,12 @@ namespace spv {
 
 typedef unsigned int Id;
 
-#define SPV_VERSION 0x10300
-#define SPV_REVISION 7
+#define SPV_VERSION 0x10400
+#define SPV_REVISION 1
 
 static const unsigned int MagicNumber = 0x07230203;
-static const unsigned int Version = 0x00010300;
-static const unsigned int Revision = 7;
+static const unsigned int Version = 0x00010400;
+static const unsigned int Revision = 1;
 static const unsigned int OpCodeMask = 0xffff;
 static const unsigned int WordCountShift = 16;
 
@@ -309,6 +309,8 @@ enum class ImageOperandsShift : unsigned {
     MakeTexelVisibleKHR = 9,
     NonPrivateTexelKHR = 10,
     VolatileTexelKHR = 11,
+    SignExtend = 12,
+    ZeroExtend = 13,
     Max = 0x7fffffff,
 };
 
@@ -326,6 +328,8 @@ enum class ImageOperandsMask : unsigned {
     MakeTexelVisibleKHR = 0x00000200,
     NonPrivateTexelKHR = 0x00000400,
     VolatileTexelKHR = 0x00000800,
+    SignExtend = 0x00001000,
+    ZeroExtend = 0x00002000,
 };
 
 enum class FPFastMathModeShift : unsigned {
@@ -406,6 +410,7 @@ enum class Decoration : unsigned {
     NonWritable = 24,
     NonReadable = 25,
     Uniform = 26,
+    UniformId = 27,
     SaturatedConversion = 28,
     Stream = 29,
     Location = 30,
@@ -440,8 +445,10 @@ enum class Decoration : unsigned {
     NonUniformEXT = 5300,
     RestrictPointerEXT = 5355,
     AliasedPointerEXT = 5356,
+    CounterBuffer = 5634,
     HlslCounterBufferGOOGLE = 5634,
     HlslSemanticGOOGLE = 5635,
+    UserSemantic = 5635,
     Max = 0x7fffffff,
 };
 
@@ -564,6 +571,11 @@ enum class LoopControlShift : unsigned {
     DontUnroll = 1,
     DependencyInfinite = 2,
     DependencyLength = 3,
+    MinIterations = 4,
+    MaxIterations = 5,
+    IterationMultiple = 6,
+    PeelCount = 7,
+    PartialCount = 8,
     Max = 0x7fffffff,
 };
 
@@ -573,6 +585,11 @@ enum class LoopControlMask : unsigned {
     DontUnroll = 0x00000002,
     DependencyInfinite = 0x00000004,
     DependencyLength = 0x00000008,
+    MinIterations = 0x00000010,
+    MaxIterations = 0x00000020,
+    IterationMultiple = 0x00000040,
+    PeelCount = 0x00000080,
+    PartialCount = 0x00000100,
 };
 
 enum class FunctionControlShift : unsigned {
@@ -1163,6 +1180,10 @@ enum class Op : unsigned {
     OpGroupNonUniformLogicalXor = 364,
     OpGroupNonUniformQuadBroadcast = 365,
     OpGroupNonUniformQuadSwap = 366,
+    OpCopyLogical = 400,
+    OpPtrEqual = 401,
+    OpPtrNotEqual = 402,
+    OpPtrDiff = 403,
     OpSubgroupBallotKHR = 4421,
     OpSubgroupFirstInvocationKHR = 4422,
     OpSubgroupAllKHR = 4428,
@@ -1203,7 +1224,9 @@ enum class Op : unsigned {
     OpSubgroupImageBlockWriteINTEL = 5578,
     OpSubgroupImageMediaBlockReadINTEL = 5580,
     OpSubgroupImageMediaBlockWriteINTEL = 5581,
+    OpDecorateString = 5632,
     OpDecorateStringGOOGLE = 5632,
+    OpMemberDecorateString = 5633,
     OpMemberDecorateStringGOOGLE = 5633,
     OpVmeImageINTEL = 5699,
     OpTypeVmeImageINTEL = 5700,
@@ -1671,6 +1694,10 @@ inline void HasResultAndType(Op opcode, bool *hasResult, bool *hasResultType) {
     case Op::OpGroupNonUniformLogicalXor: *hasResult = true; *hasResultType = true; break;
     case Op::OpGroupNonUniformQuadBroadcast: *hasResult = true; *hasResultType = true; break;
     case Op::OpGroupNonUniformQuadSwap: *hasResult = true; *hasResultType = true; break;
+    case Op::OpCopyLogical: *hasResult = true; *hasResultType = true; break;
+    case Op::OpPtrEqual: *hasResult = true; *hasResultType = true; break;
+    case Op::OpPtrNotEqual: *hasResult = true; *hasResultType = true; break;
+    case Op::OpPtrDiff: *hasResult = true; *hasResultType = true; break;
     case Op::OpSubgroupBallotKHR: *hasResult = true; *hasResultType = true; break;
     case Op::OpSubgroupFirstInvocationKHR: *hasResult = true; *hasResultType = true; break;
     case Op::OpSubgroupAllKHR: *hasResult = true; *hasResultType = true; break;
@@ -1711,7 +1738,9 @@ inline void HasResultAndType(Op opcode, bool *hasResult, bool *hasResultType) {
     case Op::OpSubgroupImageBlockWriteINTEL: *hasResult = false; *hasResultType = false; break;
     case Op::OpSubgroupImageMediaBlockReadINTEL: *hasResult = true; *hasResultType = true; break;
     case Op::OpSubgroupImageMediaBlockWriteINTEL: *hasResult = false; *hasResultType = false; break;
+    case Op::OpDecorateString: *hasResult = false; *hasResultType = false; break;
     case Op::OpDecorateStringGOOGLE: *hasResult = false; *hasResultType = false; break;
+    case Op::OpMemberDecorateString: *hasResult = false; *hasResultType = false; break;
     case Op::OpMemberDecorateStringGOOGLE: *hasResult = false; *hasResultType = false; break;
     case Op::OpVmeImageINTEL: *hasResult = true; *hasResultType = true; break;
     case Op::OpTypeVmeImageINTEL: *hasResult = true; *hasResultType = false; break;
