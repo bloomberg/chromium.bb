@@ -25,11 +25,14 @@ namespace {
 const int kAutoclickMenuWidth = 321;
 }  // namespace
 
-AutoclickMenuBubbleController::AutoclickMenuBubbleController() {}
+AutoclickMenuBubbleController::AutoclickMenuBubbleController() {
+  Shell::Get()->locale_update_controller()->AddObserver(this);
+}
 
 AutoclickMenuBubbleController::~AutoclickMenuBubbleController() {
   if (bubble_widget_ && !bubble_widget_->IsClosed())
     bubble_widget_->CloseNow();
+  Shell::Get()->locale_update_controller()->RemoveObserver(this);
 }
 
 void AutoclickMenuBubbleController::SetEventType(
@@ -40,15 +43,24 @@ void AutoclickMenuBubbleController::SetEventType(
 }
 
 void AutoclickMenuBubbleController::SetPosition(
-    mojom::AutoclickMenuPosition position) {
+    mojom::AutoclickMenuPosition new_position) {
   if (!menu_view_ || !bubble_view_ || !bubble_widget_)
     return;
 
-  // No need to update the menu view's UX if it's already in the right
-  // AutoclickMenuPosition.
-  if (position_ != position) {
-    menu_view_->UpdatePosition(position);
-    position_ = position;
+  // Update the menu view's UX if the position has changed, or if it's not the
+  // default position (because that can change with language direction).
+  if (position_ != new_position ||
+      new_position == mojom::AutoclickMenuPosition::kSystemDefault) {
+    menu_view_->UpdatePosition(new_position);
+  }
+  position_ = new_position;
+
+  // If this is the default system position, pick the position based on the
+  // language direction.
+  if (new_position == mojom::AutoclickMenuPosition::kSystemDefault) {
+    new_position = base::i18n::IsRTL()
+                       ? mojom::AutoclickMenuPosition::kBottomLeft
+                       : mojom::AutoclickMenuPosition::kBottomRight;
   }
 
   // Calculates the ideal bounds.
@@ -58,7 +70,7 @@ void AutoclickMenuBubbleController::SetPosition(
   gfx::Rect work_area =
       WorkAreaInsets::ForWindow(window)->user_work_area_bounds();
   gfx::Rect new_bounds;
-  switch (position) {
+  switch (new_position) {
     case mojom::AutoclickMenuPosition::kBottomRight:
       new_bounds = gfx::Rect(work_area.right(), work_area.bottom(), 0, 0);
       break;
@@ -73,6 +85,8 @@ void AutoclickMenuBubbleController::SetPosition(
       // Setting the top to 1 instead of 0 so that the view is drawn on screen.
       new_bounds = gfx::Rect(work_area.right(), 1, 0, 0);
       break;
+    case mojom::AutoclickMenuPosition::kSystemDefault:
+      return;
   }
 
   // Update the preferred bounds based on other system windows.
@@ -170,6 +184,13 @@ void AutoclickMenuBubbleController::BubbleViewDestroyed() {
   bubble_view_ = nullptr;
   bubble_widget_ = nullptr;
   menu_view_ = nullptr;
+}
+
+void AutoclickMenuBubbleController::OnLocaleChanged() {
+  // Layout update is needed when language changes between LTR and RTL, if the
+  // position is the system default.
+  if (position_ == mojom::AutoclickMenuPosition::kSystemDefault)
+    SetPosition(position_);
 }
 
 }  // namespace ash

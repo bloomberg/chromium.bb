@@ -6,6 +6,7 @@
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/autoclick/autoclick_controller.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
@@ -189,6 +190,28 @@ TEST_F(AutoclickMenuBubbleControllerTest, CanChangePosition) {
           kMenuViewBoundsBuffer);
     }
   }
+}
+
+TEST_F(AutoclickMenuBubbleControllerTest, DefaultChangesWithTextDirection) {
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  gfx::Rect window_bounds = Shell::GetPrimaryRootWindow()->bounds();
+
+  // RTL should position the menu on the bottom left.
+  base::i18n::SetRTLForTesting(true);
+  // Force a layout.
+  controller->UpdateAutoclickMenuBoundsIfNeeded();
+  EXPECT_LT(
+      GetMenuViewBounds().ManhattanDistanceToPoint(window_bounds.bottom_left()),
+      kMenuViewBoundsBuffer);
+
+  // LTR should position the menu on the bottom right.
+  base::i18n::SetRTLForTesting(false);
+  // Force a layout.
+  controller->UpdateAutoclickMenuBoundsIfNeeded();
+  EXPECT_LT(GetMenuViewBounds().ManhattanDistanceToPoint(
+                window_bounds.bottom_right()),
+            kMenuViewBoundsBuffer);
 }
 
 }  // namespace ash

@@ -5,7 +5,7 @@
 #ifndef ASH_PUBLIC_CPP_ASH_CONSTANTS_H_
 #define ASH_PUBLIC_CPP_ASH_CONSTANTS_H_
 
-#include "ash/public/interfaces/accessibility_controller.mojom.h"
+#include "ash/public/interfaces/accessibility_controller_enums.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_palette.h"
 
@@ -49,7 +49,7 @@ constexpr int kDefaultAutoclickMovementThreshold = 20;
 
 // The default automatic click menu position.
 constexpr mojom::AutoclickMenuPosition kDefaultAutoclickMenuPosition =
-    mojom::AutoclickMenuPosition::kBottomRight;
+    mojom::AutoclickMenuPosition::kSystemDefault;
 
 // The default frame color.
 constexpr SkColor kDefaultFrameColor = SkColorSetRGB(0xFD, 0xFE, 0xFF);

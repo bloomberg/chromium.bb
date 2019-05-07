@@ -7,12 +7,14 @@
 
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/system/accessibility/autoclick_menu_view.h"
+#include "ash/system/locale/locale_update_controller.h"
 #include "ash/system/tray/tray_bubble_view.h"
 
 namespace ash {
 
 // Manages the bubble which contains an AutoclickMenuView.
-class AutoclickMenuBubbleController : public TrayBubbleView::Delegate {
+class AutoclickMenuBubbleController : public TrayBubbleView::Delegate,
+                                      public LocaleChangeObserver {
  public:
   AutoclickMenuBubbleController();
   ~AutoclickMenuBubbleController() override;
@@ -37,6 +39,9 @@ class AutoclickMenuBubbleController : public TrayBubbleView::Delegate {
 
   // TrayBubbleView::Delegate:
   void BubbleViewDestroyed() override;
+
+  // LocaleChangeObserver:
+  void OnLocaleChanged() override;
 
  private:
   friend class AutoclickMenuBubbleControllerTest;
