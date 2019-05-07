@@ -306,9 +306,9 @@ public class CompositorView
     public void surfaceChanged(Surface surface, int format, int width, int height) {
         if (mNativeCompositorView == 0) return;
 
-        boolean backedBySurfaceTexture = mIsInVr;
+        boolean canBeUsedWithSurfaceControl = !mIsInVr;
         nativeSurfaceChanged(
-                mNativeCompositorView, format, width, height, backedBySurfaceTexture, surface);
+                mNativeCompositorView, format, width, height, canBeUsedWithSurfaceControl, surface);
         mRenderHost.onSurfaceResized(width, height);
     }
 

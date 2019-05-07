@@ -85,8 +85,6 @@ gpu::ContextCreationAttribs CreateAttributes(
   }
 
   attributes.enable_swap_timestamps_if_supported = true;
-  attributes.backed_by_surface_texture =
-      renderer_settings.backed_by_surface_texture;
 #endif  // defined(OS_ANDROID)
 
   return attributes;

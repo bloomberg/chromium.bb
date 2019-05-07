@@ -52,8 +52,10 @@ void MojoAndroidOverlay::OnSurfaceReady(uint64_t surface_key) {
   received_surface_ = true;
 
   // Get the surface and notify our client.
-  surface_ =
-      gpu::GpuSurfaceLookup::GetInstance()->AcquireJavaSurface(surface_key);
+  bool can_be_used_with_surface_control = false;
+  surface_ = gpu::GpuSurfaceLookup::GetInstance()->AcquireJavaSurface(
+      surface_key, &can_be_used_with_surface_control);
+  DCHECK(!can_be_used_with_surface_control);
 
   // If no surface was returned, then fail instead.
   if (surface_.IsEmpty()) {

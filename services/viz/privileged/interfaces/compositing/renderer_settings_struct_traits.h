@@ -95,10 +95,6 @@ struct StructTraits<viz::mojom::RendererSettingsDataView,
   static gfx::ColorSpace color_space(const viz::RendererSettings& input) {
     return input.color_space;
   }
-
-  static bool backed_by_surface_texture(const viz::RendererSettings& input) {
-    return input.backed_by_surface_texture;
-  }
 #endif
 
 #if defined(USE_OZONE)

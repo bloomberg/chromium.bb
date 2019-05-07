@@ -229,7 +229,8 @@ void MailboxToSurfaceBridge::CreateSurface(
   surface_ = std::make_unique<gl::ScopedJavaSurface>(surface_texture);
   surface_handle_ =
       tracker->AddSurfaceForNativeWidget(gpu::GpuSurfaceTracker::SurfaceRecord(
-          window, surface_->j_surface().obj()));
+          window, surface_->j_surface().obj(),
+          false /* can_be_used_with_surface_control */));
   // Unregistering happens in the destructor.
   ANativeWindow_release(window);
 }

@@ -432,13 +432,8 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
         base::ThreadTaskRunnerHandle::Get());
   }
 
-  gpu::GpuFeatureInfo gpu_feature_info = task_executor_->gpu_feature_info();
-  if (params.attribs.backed_by_surface_texture) {
-    gpu_feature_info.status_values[GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] =
-        kGpuFeatureStatusDisabled;
-  }
-  auto feature_info =
-      base::MakeRefCounted<gles2::FeatureInfo>(workarounds, gpu_feature_info);
+  auto feature_info = base::MakeRefCounted<gles2::FeatureInfo>(
+      workarounds, task_executor_->gpu_feature_info());
   context_group_ = base::MakeRefCounted<gles2::ContextGroup>(
       task_executor_->gpu_preferences(),
       gles2::PassthroughCommandDecoderSupported(),

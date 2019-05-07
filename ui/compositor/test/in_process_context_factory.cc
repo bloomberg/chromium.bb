@@ -437,7 +437,7 @@ InProcessContextFactory::CreatePerCompositorData(ui::Compositor* compositor) {
             // If we ever provide a valid surface here, then GpuSurfaceTracker
             // can be more strict about enforcing it.
             ,
-            nullptr
+            nullptr, false /* can_be_used_with_surface_control */
 #endif
             ));
 #endif

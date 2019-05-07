@@ -213,16 +213,19 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
       output_surface = std::make_unique<GLOutputSurfaceWin>(
           std::move(context_provider), use_overlays);
 #elif defined(OS_ANDROID)
-      const bool surface_control_enabled =
+      // When SurfaceControl is enabled, any resource backed by an
+      // AHardwareBuffer can be marked as an overlay candidate but it requires
+      // that we use a SurfaceControl backed GLSurface. If we're creating a
+      // native window backed GLSurface, the overlay processing code will
+      // incorrectly assume these resources can be overlayed. So we disable all
+      // overlay processing for this OutputSurface.
+      const bool allow_overlays =
           task_executor_->gpu_feature_info()
-              .status_values[gpu::GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] ==
+              .status_values[gpu::GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] !=
           gpu::kGpuFeatureStatusEnabled;
-      DCHECK(!surface_control_enabled ||
-             renderer_settings.backed_by_surface_texture);
 
       output_surface = std::make_unique<GLOutputSurfaceAndroid>(
-          std::move(context_provider),
-          !surface_control_enabled /* allow_overlays */);
+          std::move(context_provider), allow_overlays);
 #else
       output_surface =
           std::make_unique<GLOutputSurface>(std::move(context_provider));

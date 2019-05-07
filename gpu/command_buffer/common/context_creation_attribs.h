@@ -65,7 +65,6 @@ struct GPU_EXPORT ContextCreationAttribs {
   bool enable_raster_interface = false;
   bool enable_oop_rasterization = false;
   bool enable_swap_timestamps_if_supported = false;
-  bool backed_by_surface_texture = false;
 
   ContextType context_type = CONTEXT_TYPE_OPENGLES2;
   ColorSpace color_space = COLOR_SPACE_UNSPECIFIED;

@@ -42,6 +42,8 @@ source_set("common") {
     "android/gin_java_bridge_value.h",
     "android/hash_set.cc",
     "android/hash_set.h",
+    "android/surface_wrapper.cc",
+    "android/surface_wrapper.h",
     "android/sync_compositor_statics.cc",
     "android/sync_compositor_statics.h",
     "android/use_zoom_for_dsf_policy_android.cc",

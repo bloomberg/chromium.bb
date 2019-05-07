@@ -102,7 +102,8 @@ class CONTENT_EXPORT CompositorImpl
   // Compositor implementation.
   void SetRootWindow(gfx::NativeWindow root_window) override;
   void SetRootLayer(scoped_refptr<cc::Layer> root) override;
-  void SetSurface(jobject surface, bool backed_by_surface_texture) override;
+  void SetSurface(jobject surface,
+                  bool can_be_used_with_surface_control) override;
   void SetBackgroundColor(int color) override;
   void SetWindowBounds(const gfx::Size& size) override;
   void SetRequiresAlphaChannel(bool flag) override;
@@ -235,7 +236,6 @@ class CONTENT_EXPORT CompositorImpl
 
   ANativeWindow* window_;
   gpu::SurfaceHandle surface_handle_;
-  bool backed_by_surface_texture_ = false;
 
   CompositorClient* client_;
 

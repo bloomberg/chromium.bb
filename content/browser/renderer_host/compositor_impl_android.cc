@@ -683,7 +683,7 @@ void CompositorImpl::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
 }
 
 void CompositorImpl::SetSurface(jobject surface,
-                                bool backed_by_surface_texture) {
+                                bool can_be_used_with_surface_control) {
   JNIEnv* env = base::android::AttachCurrentThread();
   gpu::GpuSurfaceTracker* tracker = gpu::GpuSurfaceTracker::Get();
 
@@ -694,7 +694,6 @@ void CompositorImpl::SetSurface(jobject surface,
     ANativeWindow_release(window_);
     window_ = NULL;
     surface_handle_ = gpu::kNullSurfaceHandle;
-    backed_by_surface_texture_ = false;
   }
 
   ANativeWindow* window = NULL;
@@ -708,11 +707,11 @@ void CompositorImpl::SetSurface(jobject surface,
 
   if (window) {
     window_ = window;
-    backed_by_surface_texture_ = backed_by_surface_texture;
     ANativeWindow_acquire(window);
     // Register first, SetVisible() might create a LayerTreeFrameSink.
     surface_handle_ = tracker->AddSurfaceForNativeWidget(
-        gpu::GpuSurfaceTracker::SurfaceRecord(window, surface));
+        gpu::GpuSurfaceTracker::SurfaceRecord(
+            window, surface, can_be_used_with_surface_control));
     SetVisible(true);
     ANativeWindow_release(window);
   }
@@ -1227,7 +1226,6 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
           .GetSizeInPixel();
   renderer_settings.use_skia_renderer = features::IsUsingSkiaRenderer();
   renderer_settings.color_space = display_color_space_;
-  renderer_settings.backed_by_surface_texture = backed_by_surface_texture_;
 
   root_params->frame_sink_id = frame_sink_id_;
   root_params->widget = surface_handle_;

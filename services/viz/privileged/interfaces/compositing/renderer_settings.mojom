@@ -32,9 +32,6 @@ struct RendererSettings {
   [EnableIf=is_android]
   gfx.mojom.ColorSpace color_space;
 
-  [EnableIf=is_android]
-  bool backed_by_surface_texture;
-
   [EnableIf=use_ozone]
   array<OverlayStrategy> overlay_strategies;
 };

@@ -83,9 +83,10 @@ gfx::SwapResponse SkiaOutputDeviceVulkan::SwapBuffers(
 void SkiaOutputDeviceVulkan::CreateVulkanSurface() {
   gfx::AcceleratedWidget accelerated_widget = gfx::kNullAcceleratedWidget;
 #if defined(OS_ANDROID)
+  bool can_be_used_with_surface_control = false;
   accelerated_widget =
       gpu::GpuSurfaceLookup::GetInstance()->AcquireNativeWidget(
-          surface_handle_);
+          surface_handle_, &can_be_used_with_surface_control);
 #else
   accelerated_widget = surface_handle_;
 #endif

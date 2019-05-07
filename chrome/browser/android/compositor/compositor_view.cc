@@ -178,12 +178,12 @@ void CompositorView::SurfaceChanged(JNIEnv* env,
                                     jint format,
                                     jint width,
                                     jint height,
-                                    bool backed_by_surface_texture,
+                                    bool can_be_used_with_surface_control,
                                     const JavaParamRef<jobject>& surface) {
   DCHECK(surface);
   if (current_surface_format_ != format) {
     current_surface_format_ = format;
-    compositor_->SetSurface(surface, backed_by_surface_texture);
+    compositor_->SetSurface(surface, can_be_used_with_surface_control);
   }
   gfx::Size size = gfx::Size(width, height);
   compositor_->SetWindowBounds(size);

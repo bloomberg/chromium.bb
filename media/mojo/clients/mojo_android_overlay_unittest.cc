@@ -135,8 +135,9 @@ class MojoAndroidOverlayTest : public ::testing::Test {
     surface_texture_ = gl::SurfaceTexture::Create(0);
     surface_ = gl::ScopedJavaSurface(surface_texture_.get());
     surface_key_ = gpu::GpuSurfaceTracker::Get()->AddSurfaceForNativeWidget(
-        gpu::GpuSurfaceTracker::SurfaceRecord(gfx::kNullAcceleratedWidget,
-                                              surface_.j_surface().obj()));
+        gpu::GpuSurfaceTracker::SurfaceRecord(
+            gfx::kNullAcceleratedWidget, surface_.j_surface().obj(),
+            false /* can_be_used_with_surface_control */));
 
     mock_provider_.client_->OnSurfaceReady(surface_key_);
     base::RunLoop().RunUntilIdle();

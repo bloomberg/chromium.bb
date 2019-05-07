@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/unguessable_token.h"
 #include "content/child/child_thread_impl.h"
+#include "content/common/android/surface_wrapper.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/ipc/common/android/scoped_surface_request_conduit.h"
@@ -59,14 +60,19 @@ class ChildProcessSurfaceManager : public gpu::ScopedSurfaceRequestConduit,
   }
 
   // Overridden from GpuSurfaceLookup:
-  gfx::AcceleratedWidget AcquireNativeWidget(int surface_id) override {
+  gfx::AcceleratedWidget AcquireNativeWidget(
+      int surface_id,
+      bool* can_be_used_with_surface_control) override {
     JNIEnv* env = base::android::AttachCurrentThread();
-    gl::ScopedJavaSurface surface(
+    base::android::ScopedJavaLocalRef<jobject> surface_wrapper =
         content::Java_ContentChildProcessServiceDelegate_getViewSurface(
-            env, service_impl_, surface_id));
+            env, service_impl_, surface_id);
+    if (!surface_wrapper)
+      return gfx::kNullAcceleratedWidget;
 
-    if (surface.j_surface().is_null())
-      return NULL;
+    gl::ScopedJavaSurface surface(
+        content::JNI_SurfaceWrapper_getSurface(env, surface_wrapper));
+    DCHECK(!surface.j_surface().is_null());
 
     // Note: This ensures that any local references used by
     // ANativeWindow_fromSurface are released immediately. This is needed as a
@@ -75,15 +81,31 @@ class ChildProcessSurfaceManager : public gpu::ScopedSurfaceRequestConduit,
     ANativeWindow* native_window =
         ANativeWindow_fromSurface(env, surface.j_surface().obj());
 
+    *can_be_used_with_surface_control =
+        content::JNI_SurfaceWrapper_canBeUsedWithSurfaceControl(
+            env, surface_wrapper);
     return native_window;
   }
 
   // Overridden from GpuSurfaceLookup:
-  gl::ScopedJavaSurface AcquireJavaSurface(int surface_id) override {
+  gl::ScopedJavaSurface AcquireJavaSurface(
+      int surface_id,
+      bool* can_be_used_with_surface_control) override {
     JNIEnv* env = base::android::AttachCurrentThread();
-    return gl::ScopedJavaSurface(
+    base::android::ScopedJavaLocalRef<jobject> surface_wrapper =
         content::Java_ContentChildProcessServiceDelegate_getViewSurface(
-            env, service_impl_, surface_id));
+            env, service_impl_, surface_id);
+    if (!surface_wrapper)
+      return gl::ScopedJavaSurface();
+
+    gl::ScopedJavaSurface surface(
+        content::JNI_SurfaceWrapper_getSurface(env, surface_wrapper));
+    DCHECK(!surface.j_surface().is_null());
+
+    *can_be_used_with_surface_control =
+        content::JNI_SurfaceWrapper_canBeUsedWithSurfaceControl(
+            env, surface_wrapper);
+    return surface;
   }
 
  private:
