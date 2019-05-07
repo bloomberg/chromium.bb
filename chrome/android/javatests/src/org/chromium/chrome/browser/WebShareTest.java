@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -122,32 +123,17 @@ public class WebShareTest {
 
     /**
      * Verify WebShare fails if share is called from a user gesture, and canceled.
+     * This test tests functionality that is only available post Lollipop MR1.
      * @throws Exception
      */
     @Test
     @MediumTest
     @Feature({"WebShare"})
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP_MR1)
     public void testWebShareCancel() throws Exception {
-        // This test tests functionality that is only available post Lollipop MR1.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP_MR1) return;
-
         // Set up ShareHelper to ignore the intent (without showing a picker). This simulates the
         // user canceling the dialog.
-        ShareHelper.setFakeIntentReceiverForTesting(new ShareHelper.FakeIntentReceiver() {
-            @Override
-            public void setIntentToSendBack(Intent intent) {}
-
-            @Override
-            public void onCustomChooserShown(AlertDialog dialog) {}
-
-            @Override
-            public void fireIntent(Context context, Intent intent) {
-                // Click again to start another share. This is necessary to work around
-                // https://crbug.com/636274 (callback is not canceled until next share is
-                // initiated). This also serves as a regression test for https://crbug.com/640324.
-                TouchCommon.singleClickView(mTab.getView());
-            }
-        });
+        ShareHelper.setFakeIntentReceiverForTesting(new FakeIntentReceiverPostLMR1(false));
 
         mActivityTestRule.loadUrl(mUrl);
         // Click (instead of directly calling the JavaScript function) to simulate a user gesture.
@@ -187,39 +173,16 @@ public class WebShareTest {
 
     /**
      * Verify WebShare succeeds if share is called from a user gesture, and app chosen.
+     * This test tests functionality that is only available post Lollipop MR1.
      * @throws Exception
      */
     @Test
     @MediumTest
     @Feature({"WebShare"})
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP_MR1)
     public void testWebShareSuccess() throws Exception {
-        // This test tests functionality that is only available post Lollipop MR1.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP_MR1) return;
-
         // Set up ShareHelper to immediately succeed (without showing a picker).
-        ShareHelper.setFakeIntentReceiverForTesting(new ShareHelper.FakeIntentReceiver() {
-            private Intent mIntentToSendBack;
-
-            @Override
-            public void setIntentToSendBack(Intent intent) {
-                mIntentToSendBack = intent;
-            }
-
-            @Override
-            public void onCustomChooserShown(AlertDialog dialog) {}
-
-            @Override
-            public void fireIntent(Context context, Intent intent) {
-                mReceivedIntent = intent;
-
-                if (context == null) return;
-
-                // Send the intent back, which indicates that the user made a choice. (Normally,
-                // this would have EXTRA_CHOSEN_COMPONENT set, but for the test, we do not set any
-                // chosen target app.)
-                context.sendBroadcast(mIntentToSendBack);
-            }
-        });
+        ShareHelper.setFakeIntentReceiverForTesting(new FakeIntentReceiverPostLMR1(true));
 
         mActivityTestRule.loadUrl(mUrl);
         // Click (instead of directly calling the JavaScript function) to simulate a user gesture.
@@ -230,14 +193,7 @@ public class WebShareTest {
         // intent.
         Assert.assertNotNull(mReceivedIntent);
         Assert.assertTrue(mReceivedIntent.hasExtra(Intent.EXTRA_INTENT));
-        Intent innerIntent = mReceivedIntent.getParcelableExtra(Intent.EXTRA_INTENT);
-        Assert.assertNotNull(innerIntent);
-        Assert.assertEquals(Intent.ACTION_SEND, innerIntent.getAction());
-        Assert.assertTrue(innerIntent.hasExtra(Intent.EXTRA_SUBJECT));
-        Assert.assertEquals("Test Title", innerIntent.getStringExtra(Intent.EXTRA_SUBJECT));
-        Assert.assertTrue(innerIntent.hasExtra(Intent.EXTRA_TEXT));
-        Assert.assertEquals(
-                "Test Text https://test.url/", innerIntent.getStringExtra(Intent.EXTRA_TEXT));
+        verifyDeliveredIntent(mReceivedIntent.getParcelableExtra(Intent.EXTRA_INTENT));
     }
 
     /**
@@ -251,19 +207,7 @@ public class WebShareTest {
     @MediumTest
     @Feature({"WebShare"})
     public void testWebShareCancelPreLMR1() throws Exception {
-        ShareHelper.setFakeIntentReceiverForTesting(new ShareHelper.FakeIntentReceiver() {
-            @Override
-            public void setIntentToSendBack(Intent intent) {}
-
-            @Override
-            public void onCustomChooserShown(AlertDialog dialog) {
-                // Cancel the chooser dialog.
-                dialog.dismiss();
-            }
-
-            @Override
-            public void fireIntent(Context context, Intent intent) {}
-        });
+        ShareHelper.setFakeIntentReceiverForTesting(new FakeIntentReceiverPreLMR1(false));
 
         ShareHelper.setForceCustomChooserForTesting(true);
 
@@ -284,37 +228,94 @@ public class WebShareTest {
     @MediumTest
     @Feature({"WebShare"})
     public void testWebShareSuccessPreLMR1() throws Exception {
-        ShareHelper.setFakeIntentReceiverForTesting(new ShareHelper.FakeIntentReceiver() {
-            @Override
-            public void setIntentToSendBack(Intent intent) {}
-
-            @Override
-            public void onCustomChooserShown(AlertDialog dialog) {
-                // Click on an app (it doesn't matter which, because we will hook the intent).
-                Assert.assertTrue(dialog.getListView().getCount() > 0);
-                dialog
-                    .getListView()
-                    .performItemClick(null, 0, dialog.getListView().getItemIdAtPosition(0));
-            }
-
-            @Override
-            public void fireIntent(Context context, Intent intent) {
-                mReceivedIntent = intent;
-            }
-        });
+        ShareHelper.setFakeIntentReceiverForTesting(new FakeIntentReceiverPreLMR1(true));
 
         ShareHelper.setForceCustomChooserForTesting(true);
         mActivityTestRule.loadUrl(mUrl);
         // Click (instead of directly calling the JavaScript function) to simulate a user gesture.
         TouchCommon.singleClickView(mTab.getView());
         Assert.assertEquals("Success", mUpdateWaiter.waitForUpdate());
+        verifyDeliveredIntent(mReceivedIntent);
+    }
 
-        Assert.assertNotNull(mReceivedIntent);
-        Assert.assertEquals(Intent.ACTION_SEND, mReceivedIntent.getAction());
-        Assert.assertTrue(mReceivedIntent.hasExtra(Intent.EXTRA_SUBJECT));
-        Assert.assertEquals("Test Title", mReceivedIntent.getStringExtra(Intent.EXTRA_SUBJECT));
-        Assert.assertTrue(mReceivedIntent.hasExtra(Intent.EXTRA_TEXT));
+    private static void verifyDeliveredIntent(Intent intent) {
+        Assert.assertNotNull(intent);
+        Assert.assertEquals(Intent.ACTION_SEND, intent.getAction());
+        Assert.assertTrue(intent.hasExtra(Intent.EXTRA_SUBJECT));
+        Assert.assertEquals("Test Title", intent.getStringExtra(Intent.EXTRA_SUBJECT));
+        Assert.assertTrue(intent.hasExtra(Intent.EXTRA_TEXT));
         Assert.assertEquals(
-                "Test Text https://test.url/", mReceivedIntent.getStringExtra(Intent.EXTRA_TEXT));
+                "Test Text https://test.url/", intent.getStringExtra(Intent.EXTRA_TEXT));
+    }
+
+    // Uses intent picker functionality that is only available since Lollipop MR1.
+    private class FakeIntentReceiverPostLMR1 implements ShareHelper.FakeIntentReceiver {
+        private final boolean mProceed;
+        private Intent mIntentToSendBack;
+
+        FakeIntentReceiverPostLMR1(boolean proceed) {
+            Assert.assertTrue(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1);
+            mProceed = proceed;
+        }
+
+        @Override
+        public void setIntentToSendBack(Intent intent) {
+            mIntentToSendBack = intent;
+        }
+
+        @Override
+        public void onCustomChooserShown(AlertDialog dialog) {}
+
+        @Override
+        public void fireIntent(Context context, Intent intent) {
+            mReceivedIntent = intent;
+
+            if (!mProceed) {
+                // Click again to start another share, which cancels the current share.
+                // This is necessary to work around https://crbug.com/636274 (callback
+                // is not canceled until next share is initiated).
+                // This also serves as a regression test for https://crbug.com/640324.
+                TouchCommon.singleClickView(mTab.getView());
+                return;
+            }
+
+            if (context == null) return;
+
+            // Send the intent back, which indicates that the user made a choice. (Normally,
+            // this would have EXTRA_CHOSEN_COMPONENT set, but for the test, we do not set any
+            // chosen target app.)
+            context.sendBroadcast(mIntentToSendBack);
+        }
+    }
+
+    // Uses intent picker functionality that is available before Lollipop MR1.
+    private class FakeIntentReceiverPreLMR1 implements ShareHelper.FakeIntentReceiver {
+        private final boolean mProceed;
+
+        FakeIntentReceiverPreLMR1(boolean proceed) {
+            mProceed = proceed;
+        }
+
+        @Override
+        public void setIntentToSendBack(Intent intent) {}
+
+        @Override
+        public void onCustomChooserShown(AlertDialog dialog) {
+            if (!mProceed) {
+                // Cancel the chooser dialog.
+                dialog.dismiss();
+                return;
+            }
+
+            // Click on an app (it doesn't matter which, because we will hook the intent).
+            Assert.assertTrue(dialog.getListView().getCount() > 0);
+            dialog.getListView().performItemClick(
+                    null, 0, dialog.getListView().getItemIdAtPosition(0));
+        }
+
+        @Override
+        public void fireIntent(Context context, Intent intent) {
+            mReceivedIntent = intent;
+        }
     }
 }
