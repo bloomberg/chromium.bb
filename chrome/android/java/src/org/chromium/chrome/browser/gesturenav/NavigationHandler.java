@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 
+import org.chromium.base.Supplier;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.AppHooks;
 
@@ -39,9 +40,13 @@ public class NavigationHandler {
         int NONE = 0;
         int STARTED = 1;
         int DRAGGED = 2;
+        int GLOW = 3;
     }
 
     private final ViewGroup mParentView;
+    private final Supplier<NavigationGlow> mGlowEffectSupplier;
+
+    private NavigationGlow mGlowEffect;
 
     private @GestureState int mState = GestureState.NONE;
 
@@ -79,9 +84,11 @@ public class NavigationHandler {
     }
     private final ActionDelegate mDelegate;
 
-    public NavigationHandler(ViewGroup parentView, ActionDelegate delegate) {
+    public NavigationHandler(ViewGroup parentView, ActionDelegate delegate,
+            Supplier<NavigationGlow> glowEffectSupplier) {
         mParentView = parentView;
         mDelegate = delegate;
+        mGlowEffectSupplier = glowEffectSupplier;
         mEdgeWidthPx = EDGE_WIDTH_DP * parentView.getResources().getDisplayMetrics().density;
         parentView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
@@ -119,6 +126,8 @@ public class NavigationHandler {
         if (action == MotionEvent.ACTION_UP) {
             if (mState == GestureState.DRAGGED && mSideSlideLayout != null) {
                 mSideSlideLayout.release(true);
+            } else if (mState == GestureState.GLOW && mGlowEffect != null) {
+                mGlowEffect.release();
             }
         }
     }
@@ -149,12 +158,16 @@ public class NavigationHandler {
                 boolean forward = distanceX > 0;
                 if (mDelegate.canNavigate(forward)) {
                     showArrowWidget(forward);
-                    mState = GestureState.DRAGGED;
+                } else {
+                    // |forward| should be true if we get here, since navigating back
+                    // is always possible.
+                    assert forward;
+                    showGlow(endX, endY);
                 }
             }
-            if (mState != GestureState.DRAGGED) mState = GestureState.NONE;
+            if (!isActive()) mState = GestureState.NONE;
         }
-        if (mState == GestureState.DRAGGED) mSideSlideLayout.pull(-distanceX);
+        pull(-distanceX);
         return true;
     }
 
@@ -163,13 +176,31 @@ public class NavigationHandler {
                 && (sX < mEdgeWidthPx || (mParentView.getWidth() - mEdgeWidthPx) < sX);
     }
 
+    /**
+     * Start showing arrow widget for navigation back/forward.
+     * @param forward {@code true} if navigating forward.
+     */
     public void showArrowWidget(boolean forward) {
+        if (mState != GestureState.STARTED) reset();
         if (mSideSlideLayout == null) createLayout();
         mSideSlideLayout.setEnabled(true);
         mSideSlideLayout.setDirection(forward);
         mSideSlideLayout.setEnableCloseIndicator(shouldShowCloseIndicator(forward));
         attachLayoutIfNecessary();
         mSideSlideLayout.start();
+        mState = GestureState.DRAGGED;
+    }
+
+    /**
+     * Start showing edge glow effect.
+     * @param startX X coordinate of the touch event at the beginning.
+     * @param startY Y coordinate of the touch event at the beginning.
+     */
+    public void showGlow(float startX, float startY) {
+        if (mState != GestureState.STARTED) reset();
+        if (mGlowEffect == null) mGlowEffect = mGlowEffectSupplier.get();
+        mGlowEffect.prepare(startX, startY);
+        mState = GestureState.GLOW;
     }
 
     private boolean shouldShowCloseIndicator(boolean forward) {
@@ -184,14 +215,19 @@ public class NavigationHandler {
      *         negative if left).
      */
     public void pull(float delta) {
-        if (mSideSlideLayout != null) mSideSlideLayout.pull(delta);
+        if (mState == GestureState.DRAGGED && mSideSlideLayout != null) {
+            mSideSlideLayout.pull(delta);
+        } else if (mState == GestureState.GLOW && mGlowEffect != null) {
+            mGlowEffect.onScroll(-delta);
+        }
     }
 
     /**
-     * @return {@code true} if navigation was triggered, and its UI is in action.
+     * @return {@code true} if navigation was triggered and its UI is in action, or
+     *         edge glow effect is visible.
      */
     public boolean isActive() {
-        return mState == GestureState.DRAGGED;
+        return mState == GestureState.DRAGGED || mState == GestureState.GLOW;
     }
 
     /**
@@ -208,9 +244,11 @@ public class NavigationHandler {
      *         the navigation action and animation sequence.
      */
     public void release(boolean allowNav) {
-        if (mSideSlideLayout != null) {
+        if (mState == GestureState.DRAGGED && mSideSlideLayout != null) {
             cancelStopNavigatingRunnable();
             mSideSlideLayout.release(allowNav);
+        } else if (mState == GestureState.GLOW && mGlowEffect != null) {
+            mGlowEffect.release();
         }
     }
 
@@ -218,11 +256,20 @@ public class NavigationHandler {
      * Reset navigation UI in action.
      */
     public void reset() {
-        if (mSideSlideLayout != null) {
+        if (mState == GestureState.DRAGGED && mSideSlideLayout != null) {
             cancelStopNavigatingRunnable();
             mSideSlideLayout.reset();
+        } else if (mState == GestureState.GLOW && mGlowEffect != null) {
+            mGlowEffect.reset();
         }
         mState = GestureState.NONE;
+    }
+
+    /**
+     * Performs cleanup upon destruction.
+     */
+    public void destroy() {
+        if (mGlowEffect != null) mGlowEffect.destroy();
     }
 
     private void cancelStopNavigatingRunnable() {

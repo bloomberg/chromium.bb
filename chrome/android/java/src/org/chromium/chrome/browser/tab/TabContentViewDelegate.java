@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tab;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 
+import org.chromium.chrome.browser.gesturenav.NavigationGlowFactory;
 import org.chromium.chrome.browser.gesturenav.NavigationHandler;
 import org.chromium.chrome.browser.gesturenav.TabbedActionDelegate;
 import org.chromium.components.embedder_support.view.ContentView;
@@ -56,12 +57,16 @@ public class TabContentViewDelegate
         ContentView parent = (ContentView) mTab.getContentView();
         parent.setTouchEventDelegate(this);
         mGestureDetector = new GestureDetector(parent.getContext(), new SideNavGestureListener());
-        mNavigationHandler = new NavigationHandler(parent, new TabbedActionDelegate(mTab));
+        mNavigationHandler = new NavigationHandler(parent, new TabbedActionDelegate(mTab),
+                NavigationGlowFactory.forRenderedPage(parent, mTab.getWebContents()));
     }
 
     @Override
     public void cleanupWebContents(WebContents webContents) {
-        mNavigationHandler = null;
+        if (mNavigationHandler != null) {
+            mNavigationHandler.destroy();
+            mNavigationHandler = null;
+        }
         mGestureDetector = null;
     }
 

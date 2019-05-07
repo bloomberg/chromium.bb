@@ -15,6 +15,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.gesturenav.NavigationGlowFactory;
 import org.chromium.chrome.browser.gesturenav.NavigationHandler;
 import org.chromium.chrome.browser.gesturenav.TabbedActionDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -159,7 +160,10 @@ public class SwipeRefreshHandler
     public void cleanupWebContents(WebContents webContents) {
         if (mSwipeRefreshLayout != null) detachSwipeRefreshLayoutIfNecessary();
         mContainerView = null;
-        mNavigationHandler = null;
+        if (mNavigationHandler != null) {
+            mNavigationHandler.destroy();
+            mNavigationHandler = null;
+        }
         setEnabled(false);
     }
 
@@ -184,7 +188,8 @@ public class SwipeRefreshHandler
     }
 
     @Override
-    public boolean start(@OverscrollAction int type, boolean navigateForward) {
+    public boolean start(
+            @OverscrollAction int type, float startX, float startY, boolean navigateForward) {
         if (mTab.getActivity() != null && mTab.getActivity().getBottomSheet() != null) {
             Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
             tracker.notifyEvent(EventConstants.PULL_TO_REFRESH);
@@ -198,12 +203,19 @@ public class SwipeRefreshHandler
         } else if (type == OverscrollAction.HISTORY_NAVIGATION && mNavigationEnabled) {
             if (mNavigationHandler == null) {
                 mNavigationHandler =
-                        new NavigationHandler(mContainerView, new TabbedActionDelegate(mTab));
+                        new NavigationHandler(mContainerView, new TabbedActionDelegate(mTab),
+                                NavigationGlowFactory.forRenderedPage(
+                                        mContainerView, mTab.getWebContents()));
             }
             boolean navigable = navigateForward ? mTab.canGoForward() : mTab.canGoBack();
-            boolean shouldStart = navigable || !navigateForward;
-            if (shouldStart) mNavigationHandler.showArrowWidget(navigateForward);
-            return shouldStart;
+            boolean showGlow = navigateForward && !mTab.canGoForward();
+            mNavigationHandler.onDown(); // Simulates the initial onDown event.
+            if (navigable) {
+                mNavigationHandler.showArrowWidget(navigateForward);
+            } else if (showGlow) {
+                mNavigationHandler.showGlow(startX, startY);
+            }
+            return navigable || showGlow;
         }
         mSwipeType = OverscrollAction.NONE;
         return false;

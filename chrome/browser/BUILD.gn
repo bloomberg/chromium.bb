@@ -2202,6 +2202,8 @@ jumbo_split_static_library("browser") {
       "android/compositor/layer/toolbar_layer.h",
       "android/compositor/layer_title_cache.cc",
       "android/compositor/layer_title_cache.h",
+      "android/compositor/navigation_glow.cc",
+      "android/compositor/navigation_glow.h",
       "android/compositor/resources/resource_factory.cc",
       "android/compositor/resources/resource_factory.h",
       "android/compositor/resources/toolbar_resource.cc",

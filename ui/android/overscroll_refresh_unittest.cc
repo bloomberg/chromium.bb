@@ -20,7 +20,10 @@ class OverscrollRefreshTest : public OverscrollRefreshHandler,
   OverscrollRefreshTest() : OverscrollRefreshHandler(nullptr) {}
 
   // OverscrollRefreshHandler implementation.
-  bool PullStart(OverscrollAction type, bool navigateForward) override {
+  bool PullStart(OverscrollAction type,
+                 float startx,
+                 float starty,
+                 bool navigateForward) override {
     started_ = true;
     return true;
   }

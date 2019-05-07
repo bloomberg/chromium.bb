@@ -39,6 +39,7 @@ import org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.TabListSceneLayer;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.gesturenav.NavigationGlowFactory;
 import org.chromium.chrome.browser.gesturenav.NavigationHandler;
 import org.chromium.chrome.browser.gesturenav.TabSwitcherActionDelegate;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
@@ -530,13 +531,12 @@ public abstract class StackLayoutBase extends Layout {
             }
         };
         if (mNavigationEnabled && mNavigationHandler == null) {
+            Tab currentTab = mTabModelSelector.getCurrentTab();
             mNavigationHandler = new NavigationHandler(mViewContainer,
-                    new TabSwitcherActionDelegate(mTabModelSelector::getCurrentTab));
+                    new TabSwitcherActionDelegate(mTabModelSelector::getCurrentTab),
+                    NavigationGlowFactory.forSceneLayer(mViewContainer, mSceneLayer,
+                            currentTab.getActivity().getWindowAndroid()));
         }
-    }
-
-    private Tab currentTab() {
-        return TabModelUtils.getCurrentTab(mTabModelSelector.getCurrentModel());
     }
 
     /**
@@ -1675,6 +1675,12 @@ public abstract class StackLayoutBase extends Layout {
                 animationIterator.remove();
             }
         }
+    }
+
+    @Override
+    public void destroy() {
+        if (mNavigationHandler != null) mNavigationHandler.destroy();
+        super.destroy();
     }
 
     @Override

@@ -56,6 +56,7 @@ void OverscrollRefresh::Reset() {
 
 void OverscrollRefresh::OnScrollBegin(const gfx::PointF& pos) {
   scroll_begin_x_ = pos.x();
+  scroll_begin_y_ = pos.y();
   top_at_scroll_start_ = scrolled_to_top_;
   ReleaseWithoutActivation();
   scroll_consumption_state_ = AWAITING_SCROLL_UPDATE_ACK;
@@ -98,7 +99,10 @@ void OverscrollRefresh::OnOverscrolled(const cc::OverscrollBehavior& behavior) {
 
   if (type != OverscrollAction::NONE) {
     scroll_consumption_state_ =
-        handler_->PullStart(type, navigate_forward) ? ENABLED : DISABLED;
+        handler_->PullStart(type, scroll_begin_x_, scroll_begin_y_,
+                            navigate_forward)
+            ? ENABLED
+            : DISABLED;
   }
 }
 

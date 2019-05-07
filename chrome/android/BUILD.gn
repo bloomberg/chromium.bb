@@ -2480,6 +2480,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/feedback/ScreenshotTask.java",
     "java/src/org/chromium/chrome/browser/feedback/SystemInfoFeedbackSource.java",
     "java/src/org/chromium/chrome/browser/findinpage/FindInPageBridge.java",
+    "java/src/org/chromium/chrome/browser/gesturenav/CompositorNavigationGlow.java",
     "java/src/org/chromium/chrome/browser/history/BrowsingHistoryBridge.java",
     "java/src/org/chromium/chrome/browser/historyreport/HistoryReportJniBridge.java",
     "java/src/org/chromium/chrome/browser/image_fetcher/ImageFetcherBridge.java",

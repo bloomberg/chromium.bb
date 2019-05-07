@@ -41,7 +41,8 @@ public class HistoryNavigationLayout extends FrameLayout {
         if (!mNavigationEnabled) return;
         mDelegateSwipes = delegate.delegateSwipes();
         mDetector = new GestureDetector(getContext(), new SideNavGestureListener());
-        mNavigationHandler = new NavigationHandler(this, delegate.createActionDelegate());
+        mNavigationHandler = new NavigationHandler(
+                this, delegate.createActionDelegate(), NavigationGlowFactory.forJavaLayer(this));
     }
 
     @Override
