@@ -15,10 +15,14 @@ import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
+import java.util.Collections;
+
 /**
  * Coordinator for the header of the Autofill Assistant.
  */
 public class AssistantHeaderCoordinator {
+    private ProfileDataCache mProfileCache;
+
     public AssistantHeaderCoordinator(
             Context context, ViewGroup bottomBarView, AssistantHeaderModel model) {
         // Create the poodle and insert it before the status message. We have to create a view
@@ -31,7 +35,8 @@ public class AssistantHeaderCoordinator {
                         R.dimen.autofill_assistant_poodle_size));
         addPoodle(bottomBarView, poodle.getView());
 
-        setProfileImage(bottomBarView, context);
+        mProfileCache = new ProfileDataCache(context, R.dimen.autofill_assistant_profile_size);
+        setupProfileImage(bottomBarView);
 
         // Bind view and mediator through the model.
         AssistantHeaderViewBinder.ViewHolder viewHolder =
@@ -50,15 +55,19 @@ public class AssistantHeaderCoordinator {
     }
 
     // TODO(b/130415092): Use image from AGSA if chrome is not signed in.
-    private void setProfileImage(ViewGroup root, Context context) {
+    private void setupProfileImage(ViewGroup root) {
         String signedInAccountName = ChromeSigninController.get().getSignedInAccountName();
         if (signedInAccountName != null) {
-            ProfileDataCache profileCache =
-                    new ProfileDataCache(context, R.dimen.autofill_assistant_profile_size);
-            DisplayableProfileData profileData =
-                    profileCache.getProfileDataOrDefault(signedInAccountName);
-            ImageView profileView = root.findViewById(R.id.profile_image);
-            profileView.setImageDrawable(profileData.getImage());
+            mProfileCache.addObserver(account -> {
+                if (!signedInAccountName.equals(account)) {
+                    return;
+                }
+                DisplayableProfileData profileData =
+                        mProfileCache.getProfileDataOrDefault(signedInAccountName);
+                ImageView profileView = root.findViewById(R.id.profile_image);
+                profileView.setImageDrawable(profileData.getImage());
+            });
+            mProfileCache.update(Collections.singletonList(signedInAccountName));
         }
     }
 }
