@@ -41,7 +41,7 @@ static constexpr int kPeriodicScriptCheckCount = 10;
 
 // The initial progress to set when autostarting and showing the "Loading..."
 // message.
-static constexpr int kAutostartInitialProgress = 10;
+static constexpr int kAutostartInitialProgress = 5;
 
 // Cookie experiment name.
 // TODO(crbug.com/806868): Introduce a dedicated experiment extra parameter to

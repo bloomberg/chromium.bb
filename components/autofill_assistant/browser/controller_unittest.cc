@@ -568,9 +568,9 @@ TEST_F(ControllerTest, CookieExperimentEnabled) {
 
 TEST_F(ControllerTest, ProgressIncreasesAtStart) {
   EXPECT_EQ(0, controller_->GetProgress());
-  EXPECT_CALL(mock_ui_controller_, OnProgressChanged(10));
+  EXPECT_CALL(mock_ui_controller_, OnProgressChanged(5));
   Start();
-  EXPECT_EQ(10, controller_->GetProgress());
+  EXPECT_EQ(5, controller_->GetProgress());
 }
 
 TEST_F(ControllerTest, SetProgress) {
