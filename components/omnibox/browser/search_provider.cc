@@ -375,11 +375,14 @@ void SearchProvider::OnTemplateURLServiceChanged() {
   if (!template_url) {
     CancelLoader(&default_loader_);
     default_results_.Clear();
-    providers_.set(client()
-                       ->GetTemplateURLService()
-                       ->GetDefaultSearchProvider()
-                       ->keyword(),
-                   providers_.keyword_provider());
+
+    base::string16 default_provider;
+    const TemplateURL* default_provider_template_url =
+        client()->GetTemplateURLService()->GetDefaultSearchProvider();
+    if (default_provider_template_url)
+      default_provider = default_provider_template_url->keyword();
+
+    providers_.set(default_provider, providers_.keyword_provider());
   }
   template_url = providers_.GetKeywordProviderURL();
   if (!providers_.keyword_provider().empty() && !template_url) {
