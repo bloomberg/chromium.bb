@@ -351,10 +351,6 @@ class HttpStreamFactory::Job
   // code is simply returned.
   int ReconsiderProxyAfterError(int error);
 
-  // Called to handle a certificate error.  Stores the certificate in the
-  // allowed_bad_certs list. Returns the error code.
-  int HandleCertificateError(int error);
-
   ClientSocketPoolManager::SocketGroupType GetSocketGroup() const;
 
   void MaybeCopyConnectionAttemptsFromSocketOrHandle();

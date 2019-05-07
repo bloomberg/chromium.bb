@@ -933,8 +933,8 @@ int HttpStreamFactory::Job::DoInitConnectionComplete(int result) {
   bool ssl_started = using_ssl_ && (result == OK || connection_->socket() ||
                                     connection_->is_ssl_error());
 
-  if (ssl_started && (result == OK || IsCertificateError(result))) {
-    if (using_quic_ && result == OK) {
+  if (ssl_started && result == OK) {
+    if (using_quic_) {
       was_alpn_negotiated_ = true;
       negotiated_protocol_ = kProtoQUIC;
     } else {
@@ -1011,7 +1011,16 @@ int HttpStreamFactory::Job::DoInitConnectionComplete(int result) {
   if (using_ssl_) {
     DCHECK(ssl_started);
     if (IsCertificateError(result)) {
-      result = HandleCertificateError(result);
+      SSLInfo ssl_info;
+      GetSSLInfo(&ssl_info);
+      if (ssl_info.cert) {
+        // Add the bad certificate to the set of allowed certificates in the
+        // SSL config object. This data structure will be consulted after
+        // calling RestartIgnoringLastError(). And the user will be asked
+        // interactively before RestartIgnoringLastError() is ever called.
+        server_ssl_config_.allowed_bad_certs.emplace_back(ssl_info.cert,
+                                                          ssl_info.cert_status);
+      }
     }
     if (result < 0)
       return result;
@@ -1229,29 +1238,6 @@ int HttpStreamFactory::Job::ReconsiderProxyAfterError(int error) {
   }
 
   should_reconsider_proxy_ = true;
-  return error;
-}
-
-int HttpStreamFactory::Job::HandleCertificateError(int error) {
-  DCHECK(using_ssl_);
-  DCHECK(IsCertificateError(error));
-
-  SSLInfo ssl_info;
-  GetSSLInfo(&ssl_info);
-
-  if (!ssl_info.cert) {
-    // If the server's certificate could not be parsed, there is no way
-    // to gracefully recover this, so just pass the error up.
-    return error;
-  }
-
-  // Add the bad certificate to the set of allowed certificates in the
-  // SSL config object. This data structure will be consulted after calling
-  // RestartIgnoringLastError(). And the user will be asked interactively
-  // before RestartIgnoringLastError() is ever called.
-  server_ssl_config_.allowed_bad_certs.emplace_back(ssl_info.cert,
-                                                    ssl_info.cert_status);
-
   return error;
 }
 
