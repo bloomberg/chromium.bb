@@ -3842,6 +3842,14 @@ def ApplyCustomOverrides(site_config):
           'paygen': False,
       },
 
+      'scarlet-paladin': {
+          'useflags': config_lib.append_useflags(['-chrome_internal']),
+      },
+
+      'scarlet-postsubmit': {
+          'useflags': config_lib.append_useflags(['-chrome_internal']),
+      },
+
       'peach_pit-release': {
           'useflags': config_lib.append_useflags(['cfi']),
       },
