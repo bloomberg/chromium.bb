@@ -34,45 +34,6 @@ typedef struct GF_PICTURE {
   int ref_frame[INTER_REFS_PER_FRAME];
 } GF_PICTURE;
 
-/*
-static void get_quantize_error(MACROBLOCK *x, int plane, tran_low_t *coeff,
-                               tran_low_t *qcoeff, tran_low_t *dqcoeff,
-                               TX_SIZE tx_size, int64_t *recon_error,
-                               int64_t *sse) {
-  const struct macroblock_plane *const p = &x->plane[plane];
-  const SCAN_ORDER *const scan_order = &av1_default_scan_orders[tx_size];
-  uint16_t eob;
-  int pix_num = 1 << num_pels_log2_lookup[txsize_to_bsize[tx_size]];
-  const int shift = tx_size == TX_64X64 ? -2 : (tx_size == TX_32X32 ? 0 : 2);
-
-  if (tx_size == TX_64X64)
-    av1_quantize_fp_64x64(coeff, pix_num, p->zbin_QTX, p->round_fp_QTX,
-                          p->quant_fp_QTX, p->quant_shift_QTX, qcoeff, dqcoeff,
-                          p->dequant_QTX, &eob, scan_order->scan,
-                          scan_order->iscan);
-  else if (tx_size == TX_32X32)
-    av1_quantize_fp_32x32(coeff, pix_num, p->zbin_QTX, p->round_fp_QTX,
-                          p->quant_fp_QTX, p->quant_shift_QTX, qcoeff, dqcoeff,
-                          p->dequant_QTX, &eob, scan_order->scan,
-                          scan_order->iscan);
-  else
-    av1_quantize_fp(coeff, pix_num, p->zbin_QTX, p->round_fp_QTX,
-                    p->quant_fp_QTX, p->quant_shift_QTX, qcoeff, dqcoeff,
-                    p->dequant_QTX, &eob, scan_order->scan, scan_order->iscan);
-  if (shift)
-    *recon_error = av1_block_error(coeff, dqcoeff, pix_num, sse) >> shift;
-  else
-    *recon_error = av1_block_error(coeff, dqcoeff, pix_num, sse) << (-shift);
-  *recon_error = AOMMAX(*recon_error, 1);
-
-  if (shift)
-    *sse = (*sse) >> shift;
-  else
-    *sse = (*sse) << (-shift);
-  *sse = AOMMAX(*sse, 1);
-}
-*/
-
 static void wht_fwd_txfm(int16_t *src_diff, int bw, tran_low_t *coeff,
                          TX_SIZE tx_size) {
   switch (tx_size) {
@@ -86,8 +47,9 @@ static void wht_fwd_txfm(int16_t *src_diff, int bw, tran_low_t *coeff,
 static uint32_t motion_compensated_prediction(AV1_COMP *cpi, ThreadData *td,
                                               uint8_t *cur_frame_buf,
                                               uint8_t *ref_frame_buf,
-                                              int stride, BLOCK_SIZE bsize,
-                                              int mi_row, int mi_col) {
+                                              int stride, int stride_ref,
+                                              BLOCK_SIZE bsize, int mi_row,
+                                              int mi_col) {
   AV1_COMMON *cm = &cpi->common;
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -111,7 +73,7 @@ static uint32_t motion_compensated_prediction(AV1_COMP *cpi, ThreadData *td,
   x->plane[0].src.buf = cur_frame_buf;
   x->plane[0].src.stride = stride;
   xd->plane[0].pre[0].buf = ref_frame_buf;
-  xd->plane[0].pre[0].stride = stride;
+  xd->plane[0].pre[0].stride = stride_ref;
 
   step_param = mv_sf->reduce_first_step_size;
   step_param = AOMMIN(step_param, MAX_MVSEARCH_STEPS - 2);
@@ -140,10 +102,9 @@ static uint32_t motion_compensated_prediction(AV1_COMP *cpi, ThreadData *td,
 static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
                             struct scale_factors *sf, GF_PICTURE *gf_picture,
                             int frame_idx, int16_t *src_diff, tran_low_t *coeff,
-                            tran_low_t *qcoeff, tran_low_t *dqcoeff, int mi_row,
-                            int mi_col, BLOCK_SIZE bsize, TX_SIZE tx_size,
-                            YV12_BUFFER_CONFIG *ref_frame[], uint8_t *predictor,
-                            TplDepStats *tpl_stats) {
+                            int mi_row, int mi_col, BLOCK_SIZE bsize,
+                            TX_SIZE tx_size, YV12_BUFFER_CONFIG *ref_frame[],
+                            uint8_t *predictor, TplDepStats *tpl_stats) {
   AV1_COMMON *cm = &cpi->common;
   ThreadData *td = &cpi->td;
   const GF_GROUP *gf_group = &cpi->twopass.gf_group;
@@ -226,19 +187,24 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
     int q_ref = gf_group->q_val[gf_picture[frame_idx].ref_frame[rf_idx]];
     double delta_q = (double)(q_ref - q_current);
 
-    motion_compensated_prediction(cpi, td, xd->cur_buf->y_buffer + mb_y_offset,
-                                  ref_frame[rf_idx]->y_buffer + mb_y_offset,
-                                  xd->cur_buf->y_stride, bsize, mi_row, mi_col);
+    int mb_y_offset_ref =
+        mi_row * MI_SIZE * ref_frame[rf_idx]->y_stride + mi_col * MI_SIZE;
+
+    motion_compensated_prediction(
+        cpi, td, xd->cur_buf->y_buffer + mb_y_offset,
+        ref_frame[rf_idx]->y_buffer + mb_y_offset_ref, xd->cur_buf->y_stride,
+        ref_frame[rf_idx]->y_stride, bsize, mi_row, mi_col);
 
     ConvolveParams conv_params = get_conv_params(0, 0, xd->bd);
     WarpTypesAllowed warp_types;
     memset(&warp_types, 0, sizeof(WarpTypesAllowed));
 
-    av1_build_inter_predictor(
-        ref_frame[rf_idx]->y_buffer + mb_y_offset, ref_frame[rf_idx]->y_stride,
-        &predictor[0], bw, &x->best_mv.as_mv, sf, bw, bh, &conv_params, kernel,
-        &warp_types, mi_col * MI_SIZE, mi_row * MI_SIZE, 0, 0, MV_PRECISION_Q3,
-        mi_col * MI_SIZE, mi_row * MI_SIZE, xd, 0);
+    av1_build_inter_predictor(ref_frame[rf_idx]->y_buffer + mb_y_offset_ref,
+                              ref_frame[rf_idx]->y_stride, &predictor[0], bw,
+                              &x->best_mv.as_mv, sf, bw, bh, &conv_params,
+                              kernel, &warp_types, mi_col * MI_SIZE,
+                              mi_row * MI_SIZE, 0, 0, MV_PRECISION_Q3,
+                              mi_col * MI_SIZE, mi_row * MI_SIZE, xd, 0);
     if (is_cur_buf_hbd(xd)) {
       aom_highbd_subtract_block(
           bh, bw, src_diff, bw, xd->cur_buf->y_buffer + mb_y_offset,
@@ -259,15 +225,9 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
                  : (1.0 + weight_factor * (1.0 - exp(-delta_q / 16)))) +
         0.5);
     if (inter_cost_weighted < best_inter_cost_weighted) {
-      // int64_t recon_error, sse;
-      (void)coeff;
-      (void)qcoeff;
-      (void)dqcoeff;
       best_rf_idx = rf_idx;
       best_inter_cost_weighted = inter_cost_weighted;
       best_mv.as_int = x->best_mv.as_int;
-      // get_quantize_error(x, 0, coeff, qcoeff, dqcoeff, tx_size, &recon_error,
-      //                    &sse);
     }
   }
   best_intra_cost = AOMMAX(best_intra_cost, 1);
@@ -456,8 +416,6 @@ static void mc_flow_dispenser(AV1_COMP *cpi, GF_PICTURE *gf_picture,
   uint8_t *predictor;
   DECLARE_ALIGNED(32, int16_t, src_diff[MC_FLOW_NUM_PELS]);
   DECLARE_ALIGNED(32, tran_low_t, coeff[MC_FLOW_NUM_PELS]);
-  DECLARE_ALIGNED(32, tran_low_t, qcoeff[MC_FLOW_NUM_PELS]);
-  DECLARE_ALIGNED(32, tran_low_t, dqcoeff[MC_FLOW_NUM_PELS]);
 
   const TX_SIZE tx_size = max_txsize_lookup[bsize];
   const int mi_height = mi_size_high[bsize];
@@ -503,8 +461,8 @@ static void mc_flow_dispenser(AV1_COMP *cpi, GF_PICTURE *gf_picture,
     for (mi_col = 0; mi_col < cm->mi_cols; mi_col += mi_width) {
       TplDepStats tpl_stats;
       mode_estimation(cpi, x, xd, &sf, gf_picture, frame_idx, src_diff, coeff,
-                      qcoeff, dqcoeff, mi_row, mi_col, bsize, tx_size,
-                      ref_frame, predictor, &tpl_stats);
+                      mi_row, mi_col, bsize, tx_size, ref_frame, predictor,
+                      &tpl_stats);
 
       // Motion flow dependency dispenser.
       tpl_model_store(tpl_frame->tpl_stats_ptr, mi_row, mi_col, bsize,
