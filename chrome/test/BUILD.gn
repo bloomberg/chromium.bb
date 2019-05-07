@@ -5286,6 +5286,7 @@ if (!is_android) {
         "../browser/ui/ash/launcher_drag_interactive_uitest.cc",
         "../browser/ui/ash/overview_animations_interactive_uitest.cc",
         "../browser/ui/ash/overview_window_drag_interactive_uitest.cc",
+        "../browser/ui/ash/screen_rotation_interactive_uitest.cc",
         "../browser/ui/ash/split_view_interactive_uitest.cc",
         "base/perf/drag_event_generator.cc",
         "base/perf/drag_event_generator.h",
