@@ -231,6 +231,11 @@ INSTANTIATE_TEST_SUITE_P(
     DumpAccessibilityEventsTestPassToString());
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaAtomicChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-atomic-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsAriaBusyChanged) {
   RunEventTest(FILE_PATH_LITERAL("aria-busy-changed.html"));
 }
@@ -248,6 +253,21 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsAriaControlsChanged) {
   RunEventTest(FILE_PATH_LITERAL("aria-controls-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaHasPopupChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-haspopup-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaInvalidChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-invalid-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaMultilineChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-multiline-changed.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
@@ -412,11 +432,6 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsInputTypeTextValueChanged) {
   RunEventTest(FILE_PATH_LITERAL("input-type-text-value-changed.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       AccessibilityEventsInvalidStatusChange) {
-  RunEventTest(FILE_PATH_LITERAL("invalid-status-change.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,

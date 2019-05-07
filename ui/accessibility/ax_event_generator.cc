@@ -165,6 +165,9 @@ void AXEventGenerator::OnStateChanged(AXTree* tree,
         AddEvent(unignored_parent, Event::CHILDREN_CHANGED);
       break;
     }
+    case ax::mojom::State::kMultiline:
+      AddEvent(node, Event::MULTILINE_STATE_CHANGED);
+      break;
     case ax::mojom::State::kMultiselectable:
       AddEvent(node, Event::MULTISELECTABLE_STATE_CHANGED);
       break;
@@ -267,6 +270,9 @@ void AXEventGenerator::OnIntAttributeChanged(AXTree* tree,
     case ax::mojom::IntAttribute::kCheckedState:
       AddEvent(node, Event::CHECKED_STATE_CHANGED);
       break;
+    case ax::mojom::IntAttribute::kHasPopup:
+      AddEvent(node, Event::HASPOPUP_CHANGED);
+      break;
     case ax::mojom::IntAttribute::kHierarchicalLevel:
       AddEvent(node, Event::HIERARCHICAL_LEVEL_CHANGED);
       break;
@@ -345,10 +351,13 @@ void AXEventGenerator::OnBoolAttributeChanged(AXTree* tree,
 
   switch (attr) {
     case ax::mojom::BoolAttribute::kBusy:
+      AddEvent(node, Event::BUSY_CHANGED);
       // Fire an 'invalidated' event when aria-busy becomes false
       if (!new_value)
         AddEvent(node, Event::LAYOUT_INVALIDATED);
-      AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
+      break;
+    case ax::mojom::BoolAttribute::kLiveAtomic:
+      AddEvent(node, Event::ATOMIC_CHANGED);
       break;
     case ax::mojom::BoolAttribute::kSelected: {
       AddEvent(node, Event::SELECTED_CHANGED);

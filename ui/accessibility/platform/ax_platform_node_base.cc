@@ -873,7 +873,6 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
       case ax::mojom::HasPopup::kGrid:
         AddAttributeToList("haspopup", "grid", attributes);
         break;
-        break;
       case ax::mojom::HasPopup::kDialog:
         AddAttributeToList("haspopup", "dialog", attributes);
         break;

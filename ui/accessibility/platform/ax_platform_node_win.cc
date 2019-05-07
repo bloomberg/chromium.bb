@@ -5655,8 +5655,28 @@ base::string16 AXPlatformNodeWin::ComputeUIAProperties() {
   // TODO(crbug.com/865101) Use
   // data.HasState(ax::mojom::State::kAutofillAvailable) instead of
   // IsFocusedInputWithSuggestions()
-  if (data.HasIntAttribute(ax::mojom::IntAttribute::kHasPopup)) {
-    properties.push_back(L"haspopup=true");
+  switch (static_cast<ax::mojom::HasPopup>(
+      data.GetIntAttribute(ax::mojom::IntAttribute::kHasPopup))) {
+    case ax::mojom::HasPopup::kFalse:
+      break;
+    case ax::mojom::HasPopup::kTrue:
+      properties.push_back(L"haspopup=true");
+      break;
+    case ax::mojom::HasPopup::kMenu:
+      properties.push_back(L"haspopup=menu");
+      break;
+    case ax::mojom::HasPopup::kListbox:
+      properties.push_back(L"haspopup=listbox");
+      break;
+    case ax::mojom::HasPopup::kTree:
+      properties.push_back(L"haspopup=tree");
+      break;
+    case ax::mojom::HasPopup::kGrid:
+      properties.push_back(L"haspopup=grid");
+      break;
+    case ax::mojom::HasPopup::kDialog:
+      properties.push_back(L"haspopup=dialog");
+      break;
   }
 
   if (IsInvisibleOrIgnored())
