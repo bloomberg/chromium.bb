@@ -19,6 +19,8 @@
 #include "base/compiler_specific.h"
 #include "base/containers/adapters.h"
 #include "base/containers/flat_map.h"
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/read_only_shared_memory_region.h"
@@ -636,6 +638,19 @@ void LayerTreeHostImpl::StartPageScaleAnimation(
     bool anchor_point,
     float page_scale,
     base::TimeDelta duration) {
+  // Temporary crash logging for https://crbug.com/845097.
+  static bool has_dumped_without_crashing = false;
+  if (settings().is_layer_tree_for_subframe && !has_dumped_without_crashing) {
+    has_dumped_without_crashing = true;
+    static auto* psf_oopif_animation_error =
+        base::debug::AllocateCrashKeyString("psf_oopif_animation_error",
+                                            base::debug::CrashKeySize::Size32);
+    base::debug::SetCrashKeyString(
+        psf_oopif_animation_error,
+        base::StringPrintf("%p", InnerViewportScrollNode()));
+    base::debug::DumpWithoutCrashing();
+  }
+
   if (!InnerViewportScrollNode())
     return;
 
