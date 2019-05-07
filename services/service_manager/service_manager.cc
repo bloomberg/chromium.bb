@@ -115,14 +115,20 @@ void ServiceManager::SetInstanceQuitCallback(
   instance_quit_callback_ = std::move(callback);
 }
 
-ServiceInstance* ServiceManager::FindOrCreateMatchingTargetInstance(
-    const ServiceInstance& source_instance,
-    const ServiceFilter& partial_target_filter) {
+void ServiceManager::Connect(
+    const ServiceFilter& partial_target_filter,
+    const Identity& source_identity,
+    const base::Optional<std::string>& interface_name,
+    mojo::ScopedMessagePipeHandle receiving_pipe,
+    mojo::PendingRemote<mojom::Service> service_remote,
+    mojo::PendingReceiver<mojom::PIDReceiver> pid_receiver,
+    mojom::BindInterfacePriority priority,
+    mojom::Connector::BindInterfaceCallback callback) {
   TRACE_EVENT_INSTANT1("service_manager", "ServiceManager::Connect",
                        TRACE_EVENT_SCOPE_THREAD, "original_name",
                        partial_target_filter.service_name());
+  DCHECK(source_identity.IsValid());
 
-  const Identity& source_identity = source_instance.identity();
   ServiceFilter target_filter = partial_target_filter;
 
   // If the target filter does not specify an instance group, we assume the
@@ -134,29 +140,66 @@ ServiceInstance* ServiceManager::FindOrCreateMatchingTargetInstance(
   if (!target_filter.instance_id())
     target_filter.set_instance_id(base::Token());
 
-  // Use an existing instance if possible.
-  ServiceInstance* target_instance =
-      instance_registry_.FindMatching(target_filter);
-  if (target_instance)
-    return target_instance;
+  if (!service_remote) {
+    // Connect to an existing matching instance, if possible.
+    ServiceInstance* instance = instance_registry_.FindMatching(target_filter);
+    if (instance) {
+      if (interface_name) {
+        DCHECK(receiving_pipe.is_valid());
+        instance->AuthorizeAndForwardConnectionRequestFromOtherService(
+            source_identity, interface_name.value(), std::move(receiving_pipe),
+            priority, std::move(callback));
+      } else {
+        // This is a StartService request and the instance is already running.
+        // Make sure the response identity is properly resolved.
+        std::move(callback).Run(mojom::ConnectResult::SUCCEEDED,
+                                instance->identity());
+      }
+      return;
+    }
+
+    // If there was no existing instance but the request specified a specific
+    // globally unique ID for the target, ignore the request. That instance is
+    // obviously no longer running.
+    if (target_filter.globally_unique_id()) {
+      std::move(callback).Run(mojom::ConnectResult::ACCESS_DENIED,
+                              base::nullopt);
+      return;
+    }
+  }
+
+  // Beyond this point, in order to fulfill the connection request we need to
+  // start a new instance of the target service.
 
   const service_manager::Manifest* manifest =
       catalog_.GetManifest(target_filter.service_name());
   if (!manifest) {
     LOG(ERROR) << "Failed to resolve service name: "
                << target_filter.service_name();
-    return nullptr;
+    std::move(callback).Run(mojom::ConnectResult::INVALID_ARGUMENT,
+                            base::nullopt);
+    return;
   }
 
-  // If there was no existing instance but the caller is requesting a specific
-  // globally unique ID for the target, ignore the request. That instance is
-  // obviously no longer running, and globally unique IDs are never reused.
-  if (target_filter.globally_unique_id())
-    return nullptr;
-
+  // Services that use |kSharedAcrossGroups| sharing policy are allowed to
+  // handle connection requests from instances in any instance group. They also
+  // run with a synthetic group ID generated below and the group provided by
+  // |target_filter| is ignored.
   Identity new_instance_identity;
-  if (manifest->options.instance_sharing_policy ==
-      Manifest::InstanceSharingPolicy::kSingleton) {
+  if (service_remote) {
+    // This is a service instance registration, so we should use the exact
+    // Identity given by the caller.
+    if (!target_filter.globally_unique_id() ||
+        target_filter.globally_unique_id()->is_zero()) {
+      std::move(callback).Run(mojom::ConnectResult::INVALID_ARGUMENT,
+                              base::nullopt);
+      return;
+    }
+    new_instance_identity = Identity(
+        target_filter.service_name(), *target_filter.instance_group(),
+        *target_filter.instance_id(), *target_filter.globally_unique_id());
+  } else if (manifest->options.instance_sharing_policy ==
+             Manifest::InstanceSharingPolicy::kSingleton) {
     // For singleton instances, we generate a random group ID along with the
     // random GUID.
     new_instance_identity =
@@ -164,10 +207,9 @@ ServiceInstance* ServiceManager::FindOrCreateMatchingTargetInstance(
                  base::Token{}, base::Token::CreateRandom());
   } else if (manifest->options.instance_sharing_policy ==
              Manifest::InstanceSharingPolicy::kSharedAcrossGroups) {
-    // Services that use |kSharedAcrossGroups| sharing policy are allowed to
-    // match ServiceFilters targeting any instance group. They run with a
-    // random group ID generated here, and the group provided by |target_filter|
-    // is ignored. The instance ID from |target_filter| is still used.
+    // For services shared across instance groups, we respect the target
+    // instance ID but still generate a random group ID along with the random
+    // GUID.
     new_instance_identity =
         Identity(target_filter.service_name(), base::Token::CreateRandom(),
                  *target_filter.instance_id(), base::Token::CreateRandom());
@@ -179,8 +221,19 @@ ServiceInstance* ServiceManager::FindOrCreateMatchingTargetInstance(
                  *target_filter.instance_id(), base::Token::CreateRandom());
   }
 
-  DCHECK(!target_instance);
-  target_instance = CreateServiceInstance(new_instance_identity, *manifest);
+  ServiceInstance* instance =
+      CreateServiceInstance(new_instance_identity, *manifest);
+
+  if (service_remote) {
+    // If this is a service registration via |RegisterService()| or
+    // |Connector.RegisterServiceInstance()|, we'll have a valid
+    // |service_remote| already and that's enough to be done.
+    instance->StartWithRemote(std::move(service_remote),
+                              std::move(pid_receiver));
+    std::move(callback).Run(mojom::ConnectResult::SUCCEEDED,
+                            instance->identity());
+    return;
+  }
 
   const service_manager::Manifest* parent_manifest =
       catalog_.GetParentManifest(manifest->service_name);
@@ -196,7 +249,7 @@ ServiceInstance* ServiceManager::FindOrCreateMatchingTargetInstance(
     //
     // TODO(https://crbug.com/904240): This is super weird and hard to
     // rationalize. Maybe it's the wrong thing to do.
-    target_instance->set_identity(
+    instance->set_identity(
         Identity(new_instance_identity.name(), *target_filter.instance_group(),
                  new_instance_identity.instance_id(),
                  new_instance_identity.globally_unique_id()));
@@ -209,36 +262,72 @@ ServiceInstance* ServiceManager::FindOrCreateMatchingTargetInstance(
     auto pid_receiver_request = mojo::MakeRequest(&pid_receiver);
 
     mojo::PendingRemote<mojom::Service> remote;
-    auto* factory = GetServiceFactory(factory_filter);
-    if (!factory) {
-      DestroyInstance(target_instance);
-      return nullptr;
-    }
-
-    factory->CreateService(remote.InitWithNewPipeAndPassReceiver(),
-                           target_filter.service_name(),
-                           std::move(pid_receiver));
-    target_instance->StartWithRemote(std::move(remote),
-                                     std::move(pid_receiver_request));
+    CreateServiceWithFactory(factory_filter, target_filter.service_name(),
+                             remote.InitWithNewPipeAndPassReceiver(),
+                             std::move(pid_receiver));
+    instance->StartWithRemote(std::move(remote),
+                              std::move(pid_receiver_request));
   } else {
     base::FilePath service_exe_root;
     CHECK(base::PathService::Get(base::DIR_ASSETS, &service_exe_root));
-    if (!target_instance->StartWithExecutablePath(
+    if (!instance->StartWithExecutablePath(
             service_exe_root.AppendASCII(manifest->service_name +
                                          kServiceExecutableExtension),
             UtilitySandboxTypeFromString(manifest->options.sandbox_type))) {
-      DestroyInstance(target_instance);
-      return nullptr;
+      DestroyInstance(instance);
+      std::move(callback).Run(mojom::ConnectResult::INVALID_ARGUMENT,
+                              base::nullopt);
+      return;
     }
   }
 
-  return target_instance;
+  if (interface_name) {
+    DCHECK(receiving_pipe);
+    instance->AuthorizeAndForwardConnectionRequestFromOtherService(
+        source_identity, interface_name.value(), std::move(receiving_pipe),
+        priority, std::move(callback));
+    return;
+  }
+
+  std::move(callback).Run(mojom::ConnectResult::SUCCEEDED,
+                          instance->identity());
+}
+
+void ServiceManager::Connect(const ServiceFilter& partial_target_filter,
+                             const Identity& source_identity,
+                             const std::string& interface_name,
+                             mojo::ScopedMessagePipeHandle receiving_pipe,
+                             mojom::BindInterfacePriority priority,
+                             mojom::Connector::BindInterfaceCallback callback) {
+  Connect(partial_target_filter, source_identity, interface_name,
+          std::move(receiving_pipe), mojo::NullRemote(), mojo::NullReceiver(),
+          priority, std::move(callback));
+}
+
+void ServiceManager::Connect(const ServiceFilter& partial_target_filter,
+                             const Identity& source_identity,
+                             mojom::Connector::BindInterfaceCallback callback) {
+  Connect(partial_target_filter, source_identity,
+          base::nullopt /* interface_name */, mojo::ScopedMessagePipeHandle(),
+          mojo::NullRemote(), mojo::NullReceiver(),
+          mojom::BindInterfacePriority::kBestEffort, std::move(callback));
+}
+
+void ServiceManager::Connect(
+    const ServiceFilter& partial_target_filter,
+    const Identity& source_identity,
+    mojo::PendingRemote<mojom::Service> service_remote,
+    mojo::PendingReceiver<mojom::PIDReceiver> pid_receiver,
+    mojom::Connector::BindInterfaceCallback callback) {
+  Connect(partial_target_filter, source_identity,
+          base::nullopt /* interface_name */, mojo::ScopedMessagePipeHandle(),
+          std::move(service_remote), std::move(pid_receiver),
+          mojom::BindInterfacePriority::kImportant, std::move(callback));
 }
 
 void ServiceManager::StartService(const std::string& service_name) {
-  FindOrCreateMatchingTargetInstance(
-      *service_manager_instance_,
-      ServiceFilter::ByNameInGroup(service_name, kSystemInstanceGroup));
+  Connect(ServiceFilter::ByNameInGroup(service_name, kSystemInstanceGroup),
+          GetServiceManagerInstanceIdentity(), base::DoNothing());
 }
 
 bool ServiceManager::QueryCatalog(const std::string& service_name,
@@ -251,30 +340,20 @@ bool ServiceManager::QueryCatalog(const std::string& service_name,
   return true;
 }
 
-bool ServiceManager::RegisterService(
+void ServiceManager::RegisterService(
     const Identity& identity,
     mojom::ServicePtr service,
     mojom::PIDReceiverRequest pid_receiver_request) {
-  if (!identity.IsValid())
-    return false;
-
-  const service_manager::Manifest* manifest =
-      catalog_.GetManifest(identity.name());
-  if (!manifest) {
-    LOG(ERROR) << "Failed to resolve service name: " << identity.name();
-    return false;
-  }
-
   if (!pid_receiver_request.is_pending()) {
     mojo::Remote<mojom::PIDReceiver> pid_receiver;
     pid_receiver_request = pid_receiver.BindNewPipeAndPassReceiver();
     pid_receiver->SetPID(GetCurrentPid());
   }
 
-  ServiceInstance* instance = CreateServiceInstance(identity, *manifest);
-  instance->StartWithRemote(service.PassInterface(),
-                            std::move(pid_receiver_request));
-  return true;
+  DCHECK(identity.IsValid());
+  Connect(ServiceFilter::ForExactIdentity(identity), identity,
+          service.PassInterface(), std::move(pid_receiver_request),
+          base::DoNothing());
 }
 
 void ServiceManager::MakeInstanceUnreachable(ServiceInstance* instance) {
@@ -308,8 +387,8 @@ ServiceInstance* ServiceManager::GetExistingInstance(
       ServiceFilter::ForExactIdentity(identity));
 }
 
-void ServiceManager::NotifyServiceCreated(const ServiceInstance& instance) {
-  mojom::RunningServiceInfoPtr info = instance.CreateRunningServiceInfo();
+void ServiceManager::NotifyServiceCreated(ServiceInstance* instance) {
+  mojom::RunningServiceInfoPtr info = instance->CreateRunningServiceInfo();
   listeners_.ForAllPtrs([&info](mojom::ServiceManagerListener* listener) {
     listener->OnServiceCreated(info.Clone());
   });
@@ -364,6 +443,15 @@ void ServiceManager::AddListener(mojom::ServiceManagerListenerPtr listener) {
   listeners_.AddPtr(std::move(listener));
 }
 
+void ServiceManager::CreateServiceWithFactory(
+    const ServiceFilter& service_factory_filter,
+    const std::string& name,
+    mojom::ServiceRequest request,
+    mojom::PIDReceiverPtr pid_receiver) {
+  mojom::ServiceFactory* factory = GetServiceFactory(service_factory_filter);
+  factory->CreateService(std::move(request), name, std::move(pid_receiver));
+}
+
 mojom::ServiceFactory* ServiceManager::GetServiceFactory(
     const ServiceFilter& filter) {
   auto it = service_factories_.find(filter);
@@ -371,15 +459,10 @@ mojom::ServiceFactory* ServiceManager::GetServiceFactory(
     return it->second.get();
 
   mojom::ServiceFactoryPtr factory;
-  ServiceInstance* factory_instance =
-      FindOrCreateMatchingTargetInstance(*service_manager_instance_, filter);
-  if (!factory_instance)
-    return nullptr;
-
-  factory_instance->MaybeAcceptConnectionRequest(
-      *service_manager_instance_, mojom::ServiceFactory::Name_,
-      mojo::MakeRequest(&factory).PassMessagePipe(),
-      mojom::BindInterfacePriority::kImportant);
+  Connect(filter, GetServiceManagerInstanceIdentity(),
+          mojom::ServiceFactory::Name_,
+          mojo::MakeRequest(&factory).PassMessagePipe(),
+          mojom::BindInterfacePriority::kImportant, base::DoNothing());
 
   mojom::ServiceFactory* factory_interface = factory.get();
   factory.set_connection_error_handler(base::BindOnce(

@@ -64,9 +64,7 @@ class ServiceManager : public Service {
   //
   // |pid_receiver_request| may be null, in which case the service manager
   // assumes the new service is running in this process.
-  //
-  // Returns |true| if registration succeeded, or |false| otherwise.
-  bool RegisterService(const Identity& identity,
+  void RegisterService(const Identity& identity,
                        mojom::ServicePtr service,
                        mojom::PIDReceiverRequest pid_receiver_request);
 
@@ -76,17 +74,40 @@ class ServiceManager : public Service {
                     const base::Token& instance_group,
                     std::string* sandbox_type);
 
-  // Attempts to locate a ServiceInstance as a target for a connection request
-  // from |source_instance| by matching against |partial_target_filter|. If
-  // a suitable instance exists it is returned, otherwise the Service Manager
-  // attempts to create a new suitable instance.
-  //
-  // Returns null if a matching instance did not exist and could not be created,
-  // otherwise returns a valid ServiceInstance which matches
-  // |partial_target_filter| from |source_instance|'s perspective.
-  ServiceInstance* FindOrCreateMatchingTargetInstance(
-      const ServiceInstance& source_instance,
-      const ServiceFilter& partial_target_filter);
+  // Completes a connection between a source and target application as defined
+  // by |params|. If no existing instance of the target service is running, one
+  // will be loaded.
+  void Connect(const ServiceFilter& partial_target_filter,
+               const Identity& source_identity,
+               const base::Optional<std::string>& interface_name,
+               mojo::ScopedMessagePipeHandle receiving_pipe,
+               mojo::PendingRemote<mojom::Service> service_remote,
+               mojo::PendingReceiver<mojom::PIDReceiver> pid_receiver,
+               mojom::BindInterfacePriority priority,
+               mojom::Connector::BindInterfaceCallback callback);
+
+  // Variant of the above when no Service remote or PIDReceiver is provided by
+  // the caller.
+  void Connect(const ServiceFilter& partial_target_filter,
+               const Identity& source_identity,
+               const std::string& interface_name,
+               mojo::ScopedMessagePipeHandle receiving_pipe,
+               mojom::BindInterfacePriority priority,
+               mojom::Connector::BindInterfaceCallback callback);
+
+  // Variant of the above where no interface name, receiving pipe, Service
+  // remote, or PIDReceiver is provided by the caller.
+  void Connect(const ServiceFilter& partial_target_filter,
+               const Identity& source_identity,
+               mojom::Connector::BindInterfaceCallback callback);
+
+  // Variant of the above where no interface name or receiving pipe is provided
+  // by the caller, but a Service remote and PIDReceiver are provided.
+  void Connect(const ServiceFilter& partial_target_filter,
+               const Identity& source_identity,
+               mojo::PendingRemote<mojom::Service> service_remote,
+               mojo::PendingReceiver<mojom::PIDReceiver> pid_receiver,
+               mojom::Connector::BindInterfaceCallback callback);
 
  private:
   friend class ServiceInstance;
@@ -108,7 +129,7 @@ class ServiceManager : public Service {
   // Returns a running instance identified by |identity|.
   ServiceInstance* GetExistingInstance(const Identity& identity) const;
 
-  void NotifyServiceCreated(const ServiceInstance& instance);
+  void NotifyServiceCreated(ServiceInstance* instance);
   void NotifyServiceStarted(const Identity& identity, base::ProcessId pid);
   void NotifyServiceFailedToStart(const Identity& identity);
 
@@ -119,6 +140,11 @@ class ServiceManager : public Service {
 
   // Called from the instance implementing mojom::ServiceManager.
   void AddListener(mojom::ServiceManagerListenerPtr listener);
+
+  void CreateServiceWithFactory(const ServiceFilter& service_factory_filter,
+                                const std::string& name,
+                                mojom::ServiceRequest request,
+                                mojom::PIDReceiverPtr pid_receiver);
 
   // Returns a running ServiceFactory for |filter|. If there is not one running,
   // one is started.

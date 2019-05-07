@@ -73,14 +73,14 @@ class ServiceInstance : public mojom::Connector,
   bool StartWithExecutablePath(const base::FilePath& path,
                                SandboxType sandbox_type);
 
-  // Forwards a BindInterface request from |source_instance| to this instance,
-  // iff it should be allowed based on manifest constraints. Returns |true| if
-  // the request was allowed, or |false| otherwise.
-  bool MaybeAcceptConnectionRequest(
-      const ServiceInstance& source_instance,
+  // Forwards a BindInterface request to the service instance, iff it should be
+  // allowed based on manifest constraints.
+  void AuthorizeAndForwardConnectionRequestFromOtherService(
+      const Identity& source_identity,
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle receiving_pipe,
-      mojom::BindInterfacePriority priority);
+      mojom::BindInterfacePriority priority,
+      mojom::Connector::BindInterfaceCallback callback);
 
   // Stops receiving any new messages from the service instance and renders the
   // instance permanently unreachable. Note that this does NOT make any attempt
@@ -112,11 +112,10 @@ class ServiceInstance : public mojom::Connector,
 
   // Examines an interface connection request coming from this service instance
   // and determines whether it should be allowed to reach any designated target
-  // instance. Returns |true| if so, or |false| otherwise.
-  //
-  // If |target_interface_name| is null, it is sufficient for this (the source)
-  // service to have access to *any* arbitrary interface on the target service.
-  bool CanConnectToOtherInstance(
+  // instance. A return value of |mojom::ConnectResult::SUCCESS| indicates that
+  // the request can be processed further. Any other result means the request
+  // should be rejected.
+  mojom::ConnectResult ValidateConnectionRequestToOtherService(
       const ServiceFilter& target_filter,
       const base::Optional<std::string>& target_interface_name);
 
