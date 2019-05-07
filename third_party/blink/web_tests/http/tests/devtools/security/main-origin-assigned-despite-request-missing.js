@@ -11,7 +11,7 @@
       .dispatchEventToListeners(
           Security.SecurityModel.Events.SecurityStateChanged,
           new Security.PageSecurityState(
-              Protocol.Security.SecurityState.Secure, true, [], null));
+              Protocol.Security.SecurityState.Secure, [], null));
 
   const page_url = TestRunner.resourceTreeModel.mainFrame.url;
   const page_origin = Common.ParsedURL.extractOrigin(page_url);

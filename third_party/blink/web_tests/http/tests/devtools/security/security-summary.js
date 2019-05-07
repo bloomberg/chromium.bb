@@ -11,7 +11,7 @@
       .dispatchEventToListeners(
           Security.SecurityModel.Events.SecurityStateChanged,
           new Security.PageSecurityState(
-              Protocol.Security.SecurityState.Secure, true, [], 'Test: Summary Override Text'));
+              Protocol.Security.SecurityState.Secure, [], 'Test: Summary Override Text'));
 
   TestRunner.dumpDeepInnerHTML(
       Security.SecurityPanel._instance()._mainView.contentElement.getElementsByClassName('security-summary-text')[0]);
