@@ -49,7 +49,6 @@ class FakeBaseTabStripController : public TabStripController {
                              ui::MenuSourceType source_type) override;
   int HasAvailableDragActions() const override;
   void OnDropIndexUpdate(int index, bool drop_before) override;
-  bool IsCompatibleWith(TabStrip* other) const override;
   void CreateNewTab() override;
   void CreateNewTabWithLocation(const base::string16& loc) override;
   void StackedLayoutMaybeChanged() override;

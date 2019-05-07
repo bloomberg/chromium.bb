@@ -140,10 +140,6 @@ void FakeBaseTabStripController::OnDropIndexUpdate(int index,
                                                    bool drop_before) {
 }
 
-bool FakeBaseTabStripController::IsCompatibleWith(TabStrip* other) const {
-  return false;
-}
-
 void FakeBaseTabStripController::CreateNewTab() {
   AddTab(num_tabs_, true);
 }

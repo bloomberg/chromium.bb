@@ -79,10 +79,10 @@ bool DetermineTabStripLayoutStacked(PrefService* prefs, bool* adjust_layout) {
 // Gets the source browser view during a tab dragging. Returns nullptr if there
 // is none.
 BrowserView* GetSourceBrowserViewInTabDragging() {
-  TabStrip* source_tabstrip = TabDragController::GetSourceTabStrip();
-  if (source_tabstrip) {
+  auto* source_context = TabDragController::GetSourceContext();
+  if (source_context) {
     gfx::NativeWindow source_window =
-        source_tabstrip->GetWidget()->GetNativeWindow();
+        source_context->AsView()->GetWidget()->GetNativeWindow();
     if (source_window)
       return BrowserView::GetBrowserViewForNativeWindow(source_window);
   }
@@ -314,11 +314,6 @@ void BrowserTabStripController::OnDropIndexUpdate(int index,
   } else {
     hover_tab_selector_.CancelTabTransition();
   }
-}
-
-bool BrowserTabStripController::IsCompatibleWith(TabStrip* other) const {
-  Profile* other_profile = other->controller()->GetProfile();
-  return other_profile == GetProfile();
 }
 
 void BrowserTabStripController::CreateNewTab() {

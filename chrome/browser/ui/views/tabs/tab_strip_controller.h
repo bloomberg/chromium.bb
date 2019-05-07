@@ -91,10 +91,6 @@ class TabStripController {
   // Notifies controller of a drop index update.
   virtual void OnDropIndexUpdate(int index, bool drop_before) = 0;
 
-  // Return true if this tab strip is compatible with the provided tab strip.
-  // Compatible tab strips can transfer tabs during drag and drop.
-  virtual bool IsCompatibleWith(TabStrip* other) const = 0;
-
   // Creates the new tab.
   virtual void CreateNewTab() = 0;
 

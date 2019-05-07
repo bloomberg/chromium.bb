@@ -216,6 +216,8 @@ class TabStripTest : public ChromeViewsTestBase,
     return &tab_strip_->bounds_animator_;
   }
 
+  int GetInactiveTabWidth() { return tab_strip_->GetInactiveTabWidth(); }
+
   // End any outstanding drag and animate tabs back to their ideal bounds.
   void StopDraggingTab(Tab* tab) {
     // Passing false for |is_first_tab| results in running the post-drag
@@ -797,7 +799,7 @@ TEST_P(TabStripTest, ActiveTabWidthWhenTabsAreTiny) {
 
   // Create a lot of tabs in order to make inactive tabs tiny.
   const int min_inactive_width = TabStyleViews::GetMinimumInactiveWidth();
-  while (tab_strip_->InactiveTabWidth() != min_inactive_width)
+  while (GetInactiveTabWidth() != min_inactive_width)
     controller_->CreateNewTab();
 
   int active_index = controller_->GetActiveIndex();
@@ -827,8 +829,7 @@ TEST_P(TabStripTest, InactiveTabWidthWhenTabsAreTiny) {
   // tab but not the minimum.
   const int min_inactive_width = TabStyleViews::GetMinimumInactiveWidth();
   const int min_active_width = TabStyleViews::GetMinimumActiveWidth();
-  while (tab_strip_->InactiveTabWidth() >=
-         (min_inactive_width + min_active_width) / 2) {
+  while (GetInactiveTabWidth() >= (min_inactive_width + min_active_width) / 2) {
     controller_->CreateNewTab();
   }
 
@@ -839,10 +840,10 @@ TEST_P(TabStripTest, InactiveTabWidthWhenTabsAreTiny) {
   // remaining one will be active and there will be no inactive tabs,
   // so we stop at 2.
   while (tab_strip_->tab_count() > 2) {
-    const int last_inactive_width = tab_strip_->InactiveTabWidth();
+    const int last_inactive_width = GetInactiveTabWidth();
     tab_strip_->CloseTab(tab_strip_->tab_at(controller_->GetActiveIndex()),
                          CLOSE_TAB_FROM_MOUSE);
-    EXPECT_GE(tab_strip_->InactiveTabWidth(), last_inactive_width);
+    EXPECT_GE(GetInactiveTabWidth(), last_inactive_width);
   }
 }
 
@@ -853,7 +854,7 @@ TEST_P(TabStripTest, ResetBoundsForDraggedTabs) {
 
   // Create a lot of tabs in order to make inactive tabs tiny.
   const int min_inactive_width = TabStyleViews::GetMinimumInactiveWidth();
-  while (tab_strip_->InactiveTabWidth() != min_inactive_width)
+  while (GetInactiveTabWidth() != min_inactive_width)
     controller_->CreateNewTab();
 
   const int min_active_width = TabStyleViews::GetMinimumActiveWidth();
