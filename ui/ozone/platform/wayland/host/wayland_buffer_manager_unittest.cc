@@ -20,8 +20,7 @@ namespace ui {
 
 namespace {
 
-constexpr uint32_t kWidth = 1024;
-constexpr uint32_t kHeight = 768;
+constexpr gfx::Size kDefaultSize(1024, 768);
 
 }  // namespace
 
@@ -46,8 +45,7 @@ class WaylandBufferManagerTest : public WaylandTest {
 TEST_P(WaylandBufferManagerTest, ValidateDataFromGpu) {
   struct InputData {
     bool has_file = false;
-    uint32_t width = 0;
-    uint32_t height = 0;
+    gfx::Size size;
     uint32_t planes_count = 0;
     std::vector<uint32_t> strides;
     std::vector<uint32_t> offsets;
@@ -59,13 +57,15 @@ TEST_P(WaylandBufferManagerTest, ValidateDataFromGpu) {
   constexpr uint32_t kExistingBufferId = 1;
   constexpr uint32_t kNonExistingBufferId = 2;
 
-  // Create a buffer through the connection's interface so it gets
-  // registered with the given ID.
+  WaylandBufferManager* manager = connection_->buffer_manager();
+  ASSERT_TRUE(manager);
+
+  // Create a buffer so it gets registered with the given ID.
   // This must be the only buffer that is asked to be created.
   EXPECT_CALL(*server_.zwp_linux_dmabuf_v1(), CreateParams(_, _, _)).Times(1);
-
-  connection_->CreateZwpLinuxDmabuf(MakeTempFile(), kWidth, kHeight, {1}, {2},
-                                    DRM_FORMAT_R8, {3}, 1, kExistingBufferId);
+  const gfx::AcceleratedWidget widget = window_->GetWidget();
+  manager->CreateBuffer(widget, MakeTempFile(), kDefaultSize, {1}, {2}, {3},
+                        DRM_FORMAT_R8, 1, kExistingBufferId);
   Sync();
 
   const InputData kBadInputs[] = {
@@ -74,48 +74,39 @@ TEST_P(WaylandBufferManagerTest, ValidateDataFromGpu) {
       // Valid file but zeros everywhereelse.
       {true},
       // Valid file, invalid size, zeros elsewhere.
-      {true, kWidth},
-      {true, 0, kHeight},
+      {true, {kDefaultSize.width(), 0}},
+      {true, {0, kDefaultSize.height()}},
       // Valid file and size but zeros in other fields.
-      {true, kWidth, kHeight},
+      {true, kDefaultSize},
       // Vectors have different lengths.
-      {true, kWidth, kHeight, 1, {1}, {2, 3}, {4, 5, 6}},
+      {true, kDefaultSize, 1, {1}, {2, 3}, {4, 5, 6}},
       // Vectors have same lengths but strides have a zero.
-      {true, kWidth, kHeight, 1, {0}, {2}, {6}},
+      {true, kDefaultSize, 1, {0}, {2}, {6}},
       // Vectors are valid but buffer format is not.
-      {true, kWidth, kHeight, 1, {1}, {2}, {6}},
+      {true, kDefaultSize, 1, {1}, {2}, {6}},
       // Everything is correct but the buffer ID is zero.
-      {true, kWidth, kHeight, 1, {1}, {2}, {6}, DRM_FORMAT_R8},
+      {true, kDefaultSize, 1, {1}, {2}, {6}, DRM_FORMAT_R8},
       // Everything is correct but the buffer ID .
-      {true,
-       kWidth,
-       kHeight,
-       1,
-       {1},
-       {2},
-       {6},
-       DRM_FORMAT_R8,
-       kExistingBufferId},
+      {true, kDefaultSize, 1, {1}, {2}, {6}, DRM_FORMAT_R8, kExistingBufferId},
   };
 
-  WaylandBufferManager* manager = connection_->buffer_manager();
-  ASSERT_TRUE(manager);
-
-  auto temp_file = MakeTempFile();
   for (const auto& bad : kBadInputs) {
+    EXPECT_CALL(*server_.zwp_linux_dmabuf_v1(), CreateParams(_, _, _)).Times(0);
     base::File dummy;
-    EXPECT_FALSE(manager->ValidateDataFromGpu(
-        bad.has_file ? temp_file : dummy, bad.width, bad.height, bad.strides,
-        bad.offsets, bad.format, bad.modifiers, bad.planes_count,
+    EXPECT_FALSE(manager->CreateBuffer(
+        widget, bad.has_file ? MakeTempFile() : std::move(dummy), bad.size,
+        bad.strides, bad.offsets, bad.modifiers, bad.format, bad.planes_count,
         bad.buffer_id));
     EXPECT_FALSE(manager->error_message().empty());
   }
 
-  EXPECT_TRUE(manager->ValidateDataFromGpu(temp_file, kWidth, kHeight, {1}, {2},
-                                           DRM_FORMAT_R8, {3}, 1,
-                                           kNonExistingBufferId));
+  EXPECT_CALL(*server_.zwp_linux_dmabuf_v1(), CreateParams(_, _, _)).Times(1);
+  EXPECT_TRUE(manager->CreateBuffer(widget, MakeTempFile(), kDefaultSize, {1},
+                                    {2}, {3}, DRM_FORMAT_R8, 1,
+                                    kNonExistingBufferId));
 
-  connection_->DestroyZwpLinuxDmabuf(kExistingBufferId);
+  EXPECT_TRUE(manager->DestroyBuffer(widget, kNonExistingBufferId));
+  EXPECT_TRUE(manager->DestroyBuffer(widget, kExistingBufferId));
 }
 
 TEST_P(WaylandBufferManagerTest, CreateAndDestroyBuffer) {
@@ -127,18 +118,20 @@ TEST_P(WaylandBufferManagerTest, CreateAndDestroyBuffer) {
 
   EXPECT_CALL(*server_.zwp_linux_dmabuf_v1(), CreateParams(_, _, _)).Times(2);
 
-  EXPECT_TRUE(manager->CreateBuffer(MakeTempFile(), kWidth, kHeight, {1}, {2},
-                                    DRM_FORMAT_R8, {3}, 1, kBufferId1));
-  EXPECT_FALSE(manager->CreateBuffer(MakeTempFile(), kWidth, kHeight, {1}, {2},
-                                     DRM_FORMAT_R8, {3}, 1, kBufferId1));
-  EXPECT_FALSE(manager->DestroyBuffer(kBufferId2));
-  EXPECT_TRUE(manager->CreateBuffer(MakeTempFile(), kWidth, kHeight, {1}, {2},
-                                    DRM_FORMAT_R8, {3}, 1, kBufferId2));
+  const gfx::AcceleratedWidget widget = window_->GetWidget();
 
-  EXPECT_TRUE(manager->DestroyBuffer(kBufferId1));
-  EXPECT_FALSE(manager->DestroyBuffer(kBufferId1));
-  EXPECT_TRUE(manager->DestroyBuffer(kBufferId2));
-  EXPECT_FALSE(manager->DestroyBuffer(kBufferId2));
+  EXPECT_TRUE(manager->CreateBuffer(widget, MakeTempFile(), kDefaultSize, {1},
+                                    {2}, {3}, DRM_FORMAT_R8, 1, kBufferId1));
+  EXPECT_FALSE(manager->CreateBuffer(widget, MakeTempFile(), kDefaultSize, {1},
+                                     {2}, {3}, DRM_FORMAT_R8, 1, kBufferId1));
+  EXPECT_FALSE(manager->DestroyBuffer(widget, kBufferId2));
+  EXPECT_TRUE(manager->CreateBuffer(widget, MakeTempFile(), kDefaultSize, {1},
+                                    {2}, {3}, DRM_FORMAT_R8, 1, kBufferId2));
+
+  EXPECT_TRUE(manager->DestroyBuffer(widget, kBufferId1));
+  EXPECT_FALSE(manager->DestroyBuffer(widget, kBufferId1));
+  EXPECT_TRUE(manager->DestroyBuffer(widget, kBufferId2));
+  EXPECT_FALSE(manager->DestroyBuffer(widget, kBufferId2));
 }
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,

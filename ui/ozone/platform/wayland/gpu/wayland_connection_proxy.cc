@@ -69,6 +69,7 @@ void WaylandConnectionProxy::OnPresentation(
 }
 
 void WaylandConnectionProxy::CreateZwpLinuxDmabuf(
+    gfx::AcceleratedWidget widget,
     base::File file,
     gfx::Size size,
     const std::vector<uint32_t>& strides,
@@ -83,13 +84,14 @@ void WaylandConnectionProxy::CreateZwpLinuxDmabuf(
   gpu_thread_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WaylandConnectionProxy::CreateZwpLinuxDmabufInternal,
-                     base::Unretained(this), std::move(file), std::move(size),
-                     std::move(strides), std::move(offsets),
+                     base::Unretained(this), widget, std::move(file),
+                     std::move(size), std::move(strides), std::move(offsets),
                      std::move(modifiers), current_format, planes_count,
                      buffer_id));
 }
 
 void WaylandConnectionProxy::CreateZwpLinuxDmabufInternal(
+    gfx::AcceleratedWidget widget,
     base::File file,
     gfx::Size size,
     const std::vector<uint32_t>& strides,
@@ -107,9 +109,9 @@ void WaylandConnectionProxy::CreateZwpLinuxDmabufInternal(
 
   DCHECK(gpu_thread_runner_->BelongsToCurrentThread());
   DCHECK(wc_ptr_);
-  wc_ptr_->CreateZwpLinuxDmabuf(std::move(file), size.width(), size.height(),
-                                strides, offsets, current_format, modifiers,
-                                planes_count, buffer_id);
+  wc_ptr_->CreateZwpLinuxDmabuf(widget, std::move(file), size, strides, offsets,
+                                modifiers, current_format, planes_count,
+                                buffer_id);
 }
 
 void WaylandConnectionProxy::DestroyZwpLinuxDmabuf(
@@ -131,17 +133,16 @@ void WaylandConnectionProxy::DestroyZwpLinuxDmabufInternal(
   DCHECK(gpu_thread_runner_->BelongsToCurrentThread());
   DCHECK(wc_ptr_);
 
-  wc_ptr_->DestroyZwpLinuxDmabuf(buffer_id);
+  wc_ptr_->DestroyZwpLinuxDmabuf(widget, buffer_id);
 }
 
-void WaylandConnectionProxy::ScheduleBufferSwap(
-    gfx::AcceleratedWidget widget,
-    uint32_t buffer_id,
-    const gfx::Rect& damage_region) {
+void WaylandConnectionProxy::CommitBuffer(gfx::AcceleratedWidget widget,
+                                          uint32_t buffer_id,
+                                          const gfx::Rect& damage_region) {
   DCHECK(gpu_thread_runner_->BelongsToCurrentThread());
   DCHECK(wc_ptr_);
 
-  wc_ptr_->ScheduleBufferSwap(widget, buffer_id, damage_region);
+  wc_ptr_->CommitBuffer(widget, buffer_id, damage_region);
 }
 
 void WaylandConnectionProxy::CreateShmBufferForWidget(

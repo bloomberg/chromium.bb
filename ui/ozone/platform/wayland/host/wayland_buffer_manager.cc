@@ -7,6 +7,8 @@
 #include <presentation-time-client-protocol.h>
 #include <memory>
 
+#include "base/i18n/number_formatting.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/ozone/common/linux/drm_util_linux.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
@@ -40,166 +42,432 @@ base::TimeTicks GetPresentationFeedbackTimeStamp(uint32_t tv_sec_hi,
   return base::TimeTicks() + base::TimeDelta::FromMicroseconds(microseconds);
 }
 
+std::string NumberToString(uint32_t number) {
+  return base::UTF16ToUTF8(base::FormatNumber(number));
+}
+
 }  // namespace
 
-WaylandBufferManager::Buffer::Buffer(const gfx::Size& buffer_size,
-                                     uint32_t buffer_id)
-    : size(buffer_size), buffer_id(buffer_id) {}
-WaylandBufferManager::Buffer::~Buffer() = default;
+class WaylandBufferManager::Surface {
+ public:
+  Surface(WaylandWindow* window, WaylandConnection* connection)
+      : window_(window), connection_(connection) {}
+  ~Surface() = default;
+
+  bool CommitBuffer(uint32_t buffer_id, const gfx::Rect& damage_region) {
+    DCHECK(!submitted_buffer_);
+
+    WaylandBuffer* buffer = GetBuffer(buffer_id);
+    if (!buffer)
+      return false;
+
+    // This request may come earlier than the Wayland compositor has imported a
+    // wl_buffer. Wait until the buffer is created. The wait takes place only
+    // once. Though, the case when a request to attach a buffer comes earlier
+    // than the wl_buffer is created does not happen often. 1) Depending on the
+    // zwp linux dmabuf protocol version, the wl_buffer can be created
+    // immediately without asynchronous wait 2) the wl_buffer can have been
+    // created by this time.
+    while (!buffer->wl_buffer) {
+      // If the wl_buffer has been attached, but the wl_buffer still has been
+      // null, it means the Wayland server failed to create the buffer and we
+      // have to fail here.
+      if (buffer->attached ||
+          wl_display_roundtrip(connection_->display()) == -1)
+        return false;
+    }
+
+    AttachAndDamageBuffer(buffer, damage_region);
+
+    SetupFrameCallback();
+    SetupPresentationFeedback(buffer_id);
+
+    CommitSurface();
+
+    connection_->ScheduleFlush();
+    return true;
+  }
+
+  bool CreateBuffer(const gfx::Size& size, uint32_t buffer_id) {
+    auto result = buffers_.insert(std::make_pair(
+        buffer_id, std::make_unique<WaylandBuffer>(size, buffer_id)));
+    return result.second;
+  }
+
+  size_t DestroyBuffer(uint32_t buffer_id) {
+    if (submitted_buffer_ && submitted_buffer_->buffer_id == buffer_id)
+      submitted_buffer_ = nullptr;
+    auto result = buffers_.erase(buffer_id);
+    return result;
+  }
+
+  void AttachWlBuffer(uint32_t buffer_id, wl::Object<wl_buffer> new_buffer) {
+    WaylandBuffer* buffer = GetBuffer(buffer_id);
+    // It can happen that the buffer was destroyed by the client while the
+    // Wayland compositor was processing the request to create a wl_buffer.
+    if (!buffer)
+      return;
+
+    DCHECK(!buffer->wl_buffer);
+    buffer->wl_buffer = std::move(new_buffer);
+    buffer->attached = true;
+  }
+
+  void ClearState() {
+    buffers_.clear();
+    wl_frame_callback_.reset();
+    presentation_feedbacks_ = PresentationFeedbackQueue();
+  }
+
+ private:
+  using PresentationFeedbackQueue = base::queue<
+      std::pair<uint32_t, wl::Object<struct wp_presentation_feedback>>>;
+
+  // This is an internal helper representation of a wayland buffer object, which
+  // the GPU process creates when CreateBuffer is called. It's used for
+  // asynchronous buffer creation and stores |params| parameter to find out,
+  // which Buffer the wl_buffer corresponds to when CreateSucceeded is called.
+  // What is more, the Buffer stores such information as a widget it is attached
+  // to, its buffer id for simpler buffer management and other members specific
+  // to this Buffer object on run-time.
+  struct WaylandBuffer {
+    WaylandBuffer() = delete;
+    WaylandBuffer(const gfx::Size& size, uint32_t buffer_id);
+    ~WaylandBuffer();
+
+    // Actual buffer size.
+    const gfx::Size size;
+
+    // The id of this buffer.
+    const uint32_t buffer_id;
+
+    // A wl_buffer backed by a dmabuf created on the GPU side.
+    wl::Object<struct wl_buffer> wl_buffer;
+    // Tells if the buffer has the wl_buffer attached. This can be used to
+    // identify potential problems, when the Wayland compositor fails to create
+    // wl_buffers.
+    bool attached = false;
+
+    gfx::PresentationFeedback feedback;
+
+    bool swapped = false;
+    bool presented = false;
+
+    DISALLOW_COPY_AND_ASSIGN(WaylandBuffer);
+  };
+
+  void AttachAndDamageBuffer(WaylandBuffer* buffer,
+                             const gfx::Rect& damage_region) {
+    gfx::Rect pending_damage_region = damage_region;
+    // If the size of the damage region is empty, wl_surface_damage must be
+    // supplied with the actual size of the buffer, which is going to be
+    // committed.
+    if (pending_damage_region.size().IsEmpty())
+      pending_damage_region.set_size(buffer->size);
+    DCHECK(!pending_damage_region.size().IsEmpty());
+
+    auto* surface = window_->surface();
+    wl_surface_damage_buffer(
+        surface, pending_damage_region.x(), pending_damage_region.y(),
+        pending_damage_region.width(), pending_damage_region.height());
+    wl_surface_attach(surface, buffer->wl_buffer.get(), 0, 0);
+
+    submitted_buffer_ = buffer;
+  }
+
+  void CommitSurface() { wl_surface_commit(window_->surface()); }
+
+  void SetupFrameCallback() {
+    static const wl_callback_listener frame_listener = {
+        &Surface::FrameCallbackDone};
+
+    DCHECK(!wl_frame_callback_);
+    wl_frame_callback_.reset(wl_surface_frame(window_->surface()));
+    wl_callback_add_listener(wl_frame_callback_.get(), &frame_listener, this);
+  }
+
+  void SetupPresentationFeedback(uint32_t buffer_id) {
+    // Set up presentation feedback.
+    if (!connection_->presentation())
+      return;
+
+    static const wp_presentation_feedback_listener feedback_listener = {
+        &Surface::FeedbackSyncOutput, &Surface::FeedbackPresented,
+        &Surface::FeedbackDiscarded};
+
+    presentation_feedbacks_.push(std::make_pair(
+        buffer_id,
+        wl::Object<struct wp_presentation_feedback>(wp_presentation_feedback(
+            connection_->presentation(), window_->surface()))));
+    wp_presentation_feedback_add_listener(
+        presentation_feedbacks_.back().second.get(), &feedback_listener, this);
+  }
+
+  WaylandBuffer* GetBuffer(uint32_t buffer_id) {
+    auto it = buffers_.find(buffer_id);
+    return it != buffers_.end() ? it->second.get() : nullptr;
+  }
+
+  void OnFrameCallback(struct wl_callback* callback) {
+    DCHECK(wl_frame_callback_.get() == callback);
+    wl_frame_callback_.reset();
+
+    if (!submitted_buffer_)
+      return;
+
+    // TODO(msisov): remove these once pending buffers logic goes to the
+    // manager as long as it will always notify about successful swap once the
+    // surface is committed.
+    DCHECK(submitted_buffer_);
+    WaylandBuffer* buffer = submitted_buffer_;
+    submitted_buffer_ = nullptr;
+
+    buffer->swapped = true;
+    DCHECK(connection_);
+    connection_->OnSubmission(window_->GetWidget(), buffer->buffer_id,
+                              gfx::SwapResult::SWAP_ACK);
+
+    // If presentation feedback is not supported, use a fake feedback. This
+    // literally means there are no presentation feedback callbacks created.
+    if (!connection_->presentation()) {
+      DCHECK(presentation_feedbacks_.empty() && !buffer->presented);
+      OnPresentation(
+          buffer->buffer_id,
+          gfx::PresentationFeedback(base::TimeTicks::Now(), base::TimeDelta(),
+                                    GetPresentationKindFlags(0)));
+    } else if (buffer->presented) {
+      // If the buffer has been presented before the frame callback aka
+      // completion callback (in the future, release callback is going to be
+      // used), present the feedback to the GPU.
+      OnPresentation(buffer->buffer_id, buffer->feedback);
+    } else {
+      DCHECK(!presentation_feedbacks_.empty());
+    }
+  }
+
+  // wl_callback_listener
+  static void FrameCallbackDone(void* data,
+                                struct wl_callback* callback,
+                                uint32_t time) {
+    Surface* self = static_cast<Surface*>(data);
+    DCHECK(self);
+    self->OnFrameCallback(callback);
+  }
+
+  void OnPresentation(uint32_t buffer_id,
+                      const gfx::PresentationFeedback& feedback) {
+    WaylandBuffer* buffer = GetBuffer(buffer_id);
+    DCHECK(buffer);
+
+    if (buffer->swapped) {
+      DCHECK(connection_);
+      connection_->OnPresentation(window_->GetWidget(), buffer_id, feedback);
+
+      buffer->swapped = false;
+      buffer->presented = false;
+    } else {
+      buffer->presented = true;
+      buffer->feedback = feedback;
+    }
+  }
+
+  // wp_presentation_feedback_listener
+  static void FeedbackSyncOutput(
+      void* data,
+      struct wp_presentation_feedback* wp_presentation_feedback,
+      struct wl_output* output) {}
+
+  static void FeedbackPresented(
+      void* data,
+      struct wp_presentation_feedback* wp_presentation_feedback,
+      uint32_t tv_sec_hi,
+      uint32_t tv_sec_lo,
+      uint32_t tv_nsec,
+      uint32_t refresh,
+      uint32_t seq_hi,
+      uint32_t seq_lo,
+      uint32_t flags) {
+    Surface* self = static_cast<Surface*>(data);
+    DCHECK(self);
+    auto presentation = std::move(self->presentation_feedbacks_.front());
+    DCHECK(presentation.second.get() == wp_presentation_feedback);
+    self->presentation_feedbacks_.pop();
+    self->OnPresentation(
+        presentation.first,
+        gfx::PresentationFeedback(
+            GetPresentationFeedbackTimeStamp(tv_sec_hi, tv_sec_lo, tv_nsec),
+            base::TimeDelta::FromNanoseconds(refresh),
+            GetPresentationKindFlags(flags)));
+  }
+
+  static void FeedbackDiscarded(
+      void* data,
+      struct wp_presentation_feedback* wp_presentation_feedback) {
+    Surface* self = static_cast<Surface*>(data);
+    DCHECK(self);
+    auto presentation = std::move(self->presentation_feedbacks_.front());
+    DCHECK(presentation.second.get() == wp_presentation_feedback);
+    self->presentation_feedbacks_.pop();
+    self->OnPresentation(presentation.first,
+                         gfx::PresentationFeedback::Failure());
+  }
+
+  // Widget this helper surface backs and has 1:1 relationship with the
+  // WaylandWindow.
+
+  // Non-owned. The window this helper surface stores and submits buffers for.
+  const WaylandWindow* const window_;
+
+  // Non-owned pointer to the connection.
+  WaylandConnection* const connection_;
+
+  // A buffer the surface has committed. Reset on frame callback.
+  WaylandBuffer* submitted_buffer_ = nullptr;
+
+  // A container of created buffers.
+  base::flat_map<uint32_t, std::unique_ptr<WaylandBuffer>> buffers_;
+
+  // A Wayland callback, which is triggered once wl_buffer has been committed
+  // and it is right time to notify the GPU that it can start a new drawing
+  // operation.
+  wl::Object<wl_callback> wl_frame_callback_;
+
+  // A presentation feedback provided by the Wayland server once frame is
+  // shown.
+  PresentationFeedbackQueue presentation_feedbacks_;
+
+  DISALLOW_COPY_AND_ASSIGN(Surface);
+};
+
+WaylandBufferManager::Surface::WaylandBuffer::WaylandBuffer(
+    const gfx::Size& size,
+    uint32_t buffer_id)
+    : size(size), buffer_id(buffer_id) {}
+WaylandBufferManager::Surface::WaylandBuffer::~WaylandBuffer() = default;
 
 WaylandBufferManager::WaylandBufferManager(WaylandConnection* connection)
     : connection_(connection), weak_factory_(this) {}
 
 WaylandBufferManager::~WaylandBufferManager() {
-  DCHECK(buffers_.empty());
+  DCHECK(surfaces_.empty());
 }
 
-bool WaylandBufferManager::CreateBuffer(base::File file,
-                                        uint32_t width,
-                                        uint32_t height,
+void WaylandBufferManager::OnWindowAdded(WaylandWindow* window) {
+  DCHECK(window);
+  surfaces_[window->GetWidget()] =
+      std::make_unique<Surface>(window, connection_);
+}
+
+void WaylandBufferManager::OnWindowRemoved(WaylandWindow* window) {
+  DCHECK(window);
+  DCHECK(surfaces_.erase(window->GetWidget()));
+}
+
+bool WaylandBufferManager::CreateBuffer(gfx::AcceleratedWidget widget,
+                                        base::File file,
+                                        const gfx::Size& size,
                                         const std::vector<uint32_t>& strides,
                                         const std::vector<uint32_t>& offsets,
-                                        uint32_t format,
                                         const std::vector<uint64_t>& modifiers,
+                                        uint32_t format,
                                         uint32_t planes_count,
                                         uint32_t buffer_id) {
   TRACE_EVENT2("wayland", "WaylandBufferManager::CreateZwpLinuxDmabuf",
                "Format", format, "Buffer id", buffer_id);
 
-  if (!ValidateDataFromGpu(file, width, height, strides, offsets, format,
-                           modifiers, planes_count, buffer_id)) {
+  if (!ValidateDataFromGpu(widget, file, size, strides, offsets, modifiers,
+                           format, planes_count, buffer_id)) {
     // base::File::Close() has an assertion that checks if blocking operations
     // are allowed. Thus, manually close the fd here.
     base::ScopedFD deleter(file.TakePlatformFile());
     return false;
   }
 
-  std::unique_ptr<Buffer> buffer =
-      std::make_unique<Buffer>(gfx::Size(width, height), buffer_id);
-  buffers_.insert(std::make_pair(buffer_id, std::move(buffer)));
+  WaylandBufferManager::Surface* surface = GetSurface(widget);
+  DCHECK(surface);
 
+  if (!surface->CreateBuffer(size, buffer_id)) {
+    error_message_ =
+        "A buffer with id= " + NumberToString(buffer_id) + " already exists";
+    return false;
+  }
+
+  // Create wl_buffer associated with the internal Buffer.
   auto callback = base::BindOnce(&WaylandBufferManager::OnCreateBufferComplete,
-                                 weak_factory_.GetWeakPtr(), buffer_id);
-  connection_->zwp_dmabuf()->CreateBuffer(
-      std::move(file), gfx::Size(width, height), strides, offsets, modifiers,
-      format, planes_count, std::move(callback));
+                                 weak_factory_.GetWeakPtr(), widget, buffer_id);
+  connection_->zwp_dmabuf()->CreateBuffer(std::move(file), size, strides,
+                                          offsets, modifiers, format,
+                                          planes_count, std::move(callback));
   return true;
 }
 
-bool WaylandBufferManager::ScheduleBufferSwap(gfx::AcceleratedWidget widget,
-                                              uint32_t buffer_id,
-                                              const gfx::Rect& damage_region) {
+bool WaylandBufferManager::CommitBuffer(gfx::AcceleratedWidget widget,
+                                        uint32_t buffer_id,
+                                        const gfx::Rect& damage_region) {
   TRACE_EVENT1("wayland", "WaylandBufferManager::ScheduleSwapBuffer",
                "Buffer id", buffer_id);
 
-  if (!ValidateDataFromGpu(widget, buffer_id))
-    return false;
-
-  auto it = buffers_.find(buffer_id);
-  if (it == buffers_.end()) {
-    error_message_ =
-        "Buffer with " + std::to_string(buffer_id) + " id does not exist";
-    return false;
+  if (ValidateDataFromGpu(widget, buffer_id)) {
+    Surface* surface = GetSurface(widget);
+    if (!surface) {
+      error_message_ = "Surface does not exist";
+    } else if (!surface->CommitBuffer(buffer_id, damage_region)) {
+      error_message_ = "Buffer with " + NumberToString(buffer_id) +
+                       " id does not exist or failed to be created.";
+    }
   }
-
-  Buffer* buffer = it->second.get();
-  DCHECK(buffer);
-  DCHECK(!buffer->swapped && !buffer->presented);
-
-  // Assign a widget to this buffer, which is used to find a corresponding
-  // WaylandWindow.
-  buffer->widget = widget;
-  buffer->damage_region = damage_region;
-
-  if (buffer->wl_buffer) {
-    // A wl_buffer might not exist by this time. Silently return.
-    // TODO: check this.
-    return SwapBuffer(buffer);
-  }
-  return true;
+  return error_message_.empty();
 }
 
-bool WaylandBufferManager::DestroyBuffer(uint32_t buffer_id) {
+bool WaylandBufferManager::DestroyBuffer(gfx::AcceleratedWidget widget,
+                                         uint32_t buffer_id) {
   TRACE_EVENT1("wayland", "WaylandBufferManager::DestroyZwpLinuxDmabuf",
                "Buffer id", buffer_id);
 
-  auto it = buffers_.find(buffer_id);
-  if (it == buffers_.end()) {
-    error_message_ = "Trying to destroy non-existing buffer";
+  Surface* surface = GetSurface(widget);
+  // On browser shutdown, the surface might have already been destroyed.
+  if (!surface)
+    return true;
+
+  if (surface->DestroyBuffer(buffer_id) != 1u) {
+    error_message_ =
+        "Buffer with " + NumberToString(buffer_id) + " id does not exist";
     return false;
   }
-
-  buffers_.erase(it);
 
   connection_->ScheduleFlush();
   return true;
 }
 
 void WaylandBufferManager::ClearState() {
-  buffers_.clear();
+  for (auto& surface_pair : surfaces_)
+    surface_pair.second->ClearState();
 }
 
-// TODO(msisov): handle buffer swap failure or success.
-bool WaylandBufferManager::SwapBuffer(Buffer* buffer) {
-  WaylandWindow* window = connection_->GetWindow(buffer->widget);
-  if (!window) {
-    error_message_ = "A WaylandWindow with current widget does not exist";
-    return false;
-  }
-
-  gfx::Rect damage_region = buffer->damage_region;
-  // If the size of the damage region is empty, wl_surface_damage must be
-  // supplied with the actual size of the buffer, which is going to be
-  // committed.
-  if (damage_region.size().IsEmpty())
-    damage_region.set_size(buffer->size);
-
-  wl_surface_damage_buffer(window->surface(), damage_region.x(),
-                           damage_region.y(), damage_region.width(),
-                           damage_region.height());
-  wl_surface_attach(window->surface(), buffer->wl_buffer.get(), 0, 0);
-
-  static const wl_callback_listener frame_listener = {
-      WaylandBufferManager::FrameCallbackDone};
-  DCHECK(!buffer->wl_frame_callback);
-  buffer->wl_frame_callback.reset(wl_surface_frame(window->surface()));
-  wl_callback_add_listener(buffer->wl_frame_callback.get(), &frame_listener,
-                           this);
-
-  // Set up presentation feedback.
-  static const wp_presentation_feedback_listener feedback_listener = {
-      WaylandBufferManager::FeedbackSyncOutput,
-      WaylandBufferManager::FeedbackPresented,
-      WaylandBufferManager::FeedbackDiscarded};
-  if (connection_->presentation()) {
-    DCHECK(!buffer->wp_presentation_feedback);
-    buffer->wp_presentation_feedback.reset(wp_presentation_feedback(
-        connection_->presentation(), window->surface()));
-    wp_presentation_feedback_add_listener(
-        buffer->wp_presentation_feedback.get(), &feedback_listener, this);
-  }
-
-  wl_surface_commit(window->surface());
-
-  connection_->ScheduleFlush();
-  return true;
+WaylandBufferManager::Surface* WaylandBufferManager::GetSurface(
+    gfx::AcceleratedWidget widget) const {
+  auto it = surfaces_.find(widget);
+  return it != surfaces_.end() ? it->second.get() : nullptr;
 }
 
 bool WaylandBufferManager::ValidateDataFromGpu(
+    const gfx::AcceleratedWidget& widget,
     const base::File& file,
-    uint32_t width,
-    uint32_t height,
+    const gfx::Size& size,
     const std::vector<uint32_t>& strides,
     const std::vector<uint32_t>& offsets,
-    uint32_t format,
     const std::vector<uint64_t>& modifiers,
+    uint32_t format,
     uint32_t planes_count,
     uint32_t buffer_id) {
+  if (!ValidateDataFromGpu(widget, buffer_id))
+    return false;
+
   std::string reason;
   if (!file.IsValid())
     reason = "Buffer fd is invalid";
 
-  if (width == 0 || height == 0)
+  if (size.IsEmpty())
     reason = "Buffer size is invalid";
 
   if (planes_count < 1)
@@ -207,11 +475,11 @@ bool WaylandBufferManager::ValidateDataFromGpu(
 
   if (planes_count != strides.size() || planes_count != offsets.size() ||
       planes_count != modifiers.size()) {
-    reason = "Number of strides(" + std::to_string(strides.size()) +
-             ")/offsets(" + std::to_string(offsets.size()) + ")/modifiers(" +
-             std::to_string(modifiers.size()) +
+    reason = "Number of strides(" + NumberToString(strides.size()) +
+             ")/offsets(" + NumberToString(offsets.size()) + ")/modifiers(" +
+             NumberToString(modifiers.size()) +
              ") does not correspond to the number of planes(" +
-             std::to_string(planes_count) + ")";
+             NumberToString(planes_count) + ")";
   }
 
   for (auto stride : strides) {
@@ -221,15 +489,6 @@ bool WaylandBufferManager::ValidateDataFromGpu(
 
   if (!IsValidBufferFormat(format))
     reason = "Buffer format is invalid";
-
-  if (buffer_id < 1)
-    reason = "Invalid buffer id: " + std::to_string(buffer_id);
-
-  auto it = buffers_.find(buffer_id);
-  if (it != buffers_.end()) {
-    reason = "A buffer with " + std::to_string(buffer_id) +
-             " id has already existed";
-  }
 
   if (!reason.empty()) {
     error_message_ = std::move(reason);
@@ -242,12 +501,11 @@ bool WaylandBufferManager::ValidateDataFromGpu(
     const gfx::AcceleratedWidget& widget,
     uint32_t buffer_id) {
   std::string reason;
-
   if (widget == gfx::kNullAcceleratedWidget)
     reason = "Invalid accelerated widget";
 
   if (buffer_id < 1)
-    reason = "Invalid buffer id: " + std::to_string(buffer_id);
+    reason = "Invalid buffer id: " + NumberToString(buffer_id);
 
   if (!reason.empty()) {
     error_message_ = std::move(reason);
@@ -258,133 +516,15 @@ bool WaylandBufferManager::ValidateDataFromGpu(
 }
 
 void WaylandBufferManager::OnCreateBufferComplete(
+    gfx::AcceleratedWidget widget,
     uint32_t buffer_id,
     wl::Object<struct wl_buffer> new_buffer) {
-  auto it = buffers_.find(buffer_id);
-  // It can happen that buffer was destroyed by a client while the Wayland
-  // compositor was processing a request to create a wl_buffer.
-  if (it == buffers_.end())
+  Surface* surface = GetSurface(widget);
+  // A surface can have been destroyed if it does not have buffers left.
+  if (!surface)
     return;
 
-  Buffer* buffer = it->second.get();
-  buffer->wl_buffer = std::move(new_buffer);
-
-  if (buffer->widget != gfx::kNullAcceleratedWidget)
-    SwapBuffer(buffer);
-}
-
-void WaylandBufferManager::OnSubmission(Buffer* buffer,
-                                        const gfx::SwapResult& swap_result) {
-  DCHECK(!buffer->swapped);
-
-  buffer->wl_frame_callback.reset();
-  buffer->swapped = true;
-  connection_->OnSubmission(buffer->widget, buffer->buffer_id,
-                            gfx::SwapResult::SWAP_ACK);
-
-  // If presentation feedback is not supported, use a fake feedback.
-  if (!connection_->presentation()) {
-    DCHECK(!buffer->wp_presentation_feedback && !buffer->presented);
-    OnPresentation(buffer, gfx::PresentationFeedback(base::TimeTicks::Now(),
-                                                     base::TimeDelta(), 0));
-  } else if (buffer->presented) {
-    DCHECK(!buffer->wp_presentation_feedback);
-    // If the buffer has been presented before the frame callback aka
-    // completion callback (in the future, release callback is going to be
-    // used), present the feedback to the GPU.
-    OnPresentation(buffer, buffer->feedback);
-  } else {
-    DCHECK(buffer->wp_presentation_feedback);
-  }
-}
-
-void WaylandBufferManager::OnPresentation(
-    Buffer* buffer,
-    const gfx::PresentationFeedback& feedback) {
-  buffer->presented = true;
-  buffer->feedback = feedback;
-
-  // If buffer has already been swapped, we can safely notify about the
-  // presentation as well.
-  if (buffer->swapped) {
-    connection_->OnPresentation(buffer->widget, buffer->buffer_id,
-                                buffer->feedback);
-
-    // Reset the status so that DCHECK passes in ::ScheduleBufferSwap call.
-    buffer->presented = false;
-    buffer->swapped = false;
-  }
-}
-
-// static
-void WaylandBufferManager::FrameCallbackDone(void* data,
-                                             wl_callback* callback,
-                                             uint32_t time) {
-  WaylandBufferManager* self = static_cast<WaylandBufferManager*>(data);
-  DCHECK(self);
-
-  for (auto& item : self->buffers_) {
-    Buffer* buffer = item.second.get();
-    if (buffer->wl_frame_callback.get() == callback) {
-      buffer->wl_frame_callback.reset();
-      self->OnSubmission(buffer, gfx::SwapResult::SWAP_ACK);
-      return;
-    }
-  }
-}
-
-// static
-void WaylandBufferManager::FeedbackSyncOutput(
-    void* data,
-    struct wp_presentation_feedback* wp_presentation_feedback,
-    struct wl_output* output) {
-  NOTIMPLEMENTED_LOG_ONCE();
-}
-
-// static
-void WaylandBufferManager::FeedbackPresented(
-    void* data,
-    struct wp_presentation_feedback* wp_presentation_feedback,
-    uint32_t tv_sec_hi,
-    uint32_t tv_sec_lo,
-    uint32_t tv_nsec,
-    uint32_t refresh,
-    uint32_t seq_hi,
-    uint32_t seq_lo,
-    uint32_t flags) {
-  WaylandBufferManager* self = static_cast<WaylandBufferManager*>(data);
-  DCHECK(self);
-  for (auto& item : self->buffers_) {
-    Buffer* buffer = item.second.get();
-    if (buffer->wp_presentation_feedback.get() == wp_presentation_feedback) {
-      DCHECK(!buffer->presented);
-      buffer->wp_presentation_feedback.reset();
-      self->OnPresentation(
-          buffer,
-          gfx::PresentationFeedback(
-              GetPresentationFeedbackTimeStamp(tv_sec_hi, tv_sec_lo, tv_nsec),
-              base::TimeDelta::FromNanoseconds(refresh),
-              GetPresentationKindFlags(flags)));
-      return;
-    }
-  }
-}
-
-// static
-void WaylandBufferManager::FeedbackDiscarded(
-    void* data,
-    struct wp_presentation_feedback* wp_presentation_feedback) {
-  WaylandBufferManager* self = static_cast<WaylandBufferManager*>(data);
-  DCHECK(self);
-  for (auto& item : self->buffers_) {
-    Buffer* buffer = item.second.get();
-    if (buffer->wp_presentation_feedback.get() == wp_presentation_feedback) {
-      DCHECK(!buffer->presented);
-      buffer->wp_presentation_feedback.reset();
-      self->OnPresentation(buffer, gfx::PresentationFeedback::Failure());
-      return;
-    }
-  }
+  surface->AttachWlBuffer(buffer_id, std::move(new_buffer));
 }
 
 }  // namespace ui

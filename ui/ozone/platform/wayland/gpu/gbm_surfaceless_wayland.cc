@@ -216,8 +216,8 @@ void GbmSurfacelessWayland::SubmitFrame() {
     }
 
     submitted_frame_->buffer_id = planes_.back().pixmap->GetUniqueId();
-    connection_->ScheduleBufferSwap(widget_, submitted_frame_->buffer_id,
-                                    submitted_frame_->damage_region_);
+    connection_->CommitBuffer(widget_, submitted_frame_->buffer_id,
+                              submitted_frame_->damage_region_);
 
     planes_.clear();
   }
@@ -256,6 +256,7 @@ void GbmSurfacelessWayland::OnSubmission(uint32_t buffer_id,
 void GbmSurfacelessWayland::OnPresentation(
     uint32_t buffer_id,
     const gfx::PresentationFeedback& feedback) {
+  DCHECK(!pending_presentation_frames_.empty());
   auto* frame = pending_presentation_frames_.front().get();
   DCHECK_EQ(frame->buffer_id, buffer_id);
   std::move(frame->presentation_callback).Run(feedback);

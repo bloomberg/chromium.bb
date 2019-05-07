@@ -179,9 +179,9 @@ void GbmPixmapWayland::CreateZwpLinuxDmabuf() {
   base::File file(fd.release());
 
   // Asks Wayland to create a wl_buffer based on the |file| fd.
-  connection_->CreateZwpLinuxDmabuf(std::move(file), GetBufferSize(), strides,
-                                    offsets, modifiers, gbm_bo_->GetFormat(),
-                                    plane_count, GetUniqueId());
+  connection_->CreateZwpLinuxDmabuf(
+      widget_, std::move(file), GetBufferSize(), strides, offsets, modifiers,
+      gbm_bo_->GetFormat(), plane_count, GetUniqueId());
 }
 
 }  // namespace ui

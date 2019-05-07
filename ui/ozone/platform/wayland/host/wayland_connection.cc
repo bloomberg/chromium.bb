@@ -160,12 +160,19 @@ WaylandWindow* WaylandConnection::GetCurrentKeyboardFocusedWindow() const {
 
 void WaylandConnection::AddWindow(gfx::AcceleratedWidget widget,
                                   WaylandWindow* window) {
+  DCHECK(buffer_manager_);
+  buffer_manager_->OnWindowAdded(window);
+
   window_map_[widget] = window;
 }
 
 void WaylandConnection::RemoveWindow(gfx::AcceleratedWidget widget) {
   if (touch_)
     touch_->RemoveTouchPoints(window_map_[widget]);
+
+  DCHECK(buffer_manager_);
+  buffer_manager_->OnWindowRemoved(window_map_[widget]);
+
   window_map_.erase(widget);
 }
 
@@ -189,41 +196,42 @@ void WaylandConnection::SetWaylandConnectionClient(
 }
 
 void WaylandConnection::CreateZwpLinuxDmabuf(
+    gfx::AcceleratedWidget widget,
     base::File file,
-    uint32_t width,
-    uint32_t height,
+    const gfx::Size& size,
     const std::vector<uint32_t>& strides,
     const std::vector<uint32_t>& offsets,
-    uint32_t format,
     const std::vector<uint64_t>& modifiers,
+    uint32_t format,
     uint32_t planes_count,
     uint32_t buffer_id) {
   DCHECK(base::MessageLoopCurrentForUI::IsSet());
 
   DCHECK(buffer_manager_);
-  if (!buffer_manager_->CreateBuffer(std::move(file), width, height, strides,
-                                     offsets, format, modifiers, planes_count,
+  if (!buffer_manager_->CreateBuffer(widget, std::move(file), size, strides,
+                                     offsets, modifiers, format, planes_count,
                                      buffer_id)) {
     TerminateGpuProcess(buffer_manager_->error_message());
   }
 }
 
-void WaylandConnection::DestroyZwpLinuxDmabuf(uint32_t buffer_id) {
+void WaylandConnection::DestroyZwpLinuxDmabuf(gfx::AcceleratedWidget widget,
+                                              uint32_t buffer_id) {
   DCHECK(base::MessageLoopCurrentForUI::IsSet());
 
   DCHECK(buffer_manager_);
-  if (!buffer_manager_->DestroyBuffer(buffer_id)) {
+  if (!buffer_manager_->DestroyBuffer(widget, buffer_id)) {
     TerminateGpuProcess(buffer_manager_->error_message());
   }
 }
 
-void WaylandConnection::ScheduleBufferSwap(gfx::AcceleratedWidget widget,
-                                           uint32_t buffer_id,
-                                           const gfx::Rect& damage_region) {
+void WaylandConnection::CommitBuffer(gfx::AcceleratedWidget widget,
+                                     uint32_t buffer_id,
+                                     const gfx::Rect& damage_region) {
   DCHECK(base::MessageLoopCurrentForUI::IsSet());
 
   CHECK(buffer_manager_);
-  if (!buffer_manager_->ScheduleBufferSwap(widget, buffer_id, damage_region))
+  if (!buffer_manager_->CommitBuffer(widget, buffer_id, damage_region))
     TerminateGpuProcess(buffer_manager_->error_message());
 }
 
@@ -349,6 +357,7 @@ void WaylandConnection::OnFileCanReadWithoutBlocking(int fd) {
 void WaylandConnection::OnFileCanWriteWithoutBlocking(int fd) {}
 
 void WaylandConnection::TerminateGpuProcess(std::string reason) {
+  DCHECK(!reason.empty());
   std::move(terminate_gpu_cb_).Run(std::move(reason));
   // The GPU process' failure results in calling ::OnChannelDestroyed.
 }

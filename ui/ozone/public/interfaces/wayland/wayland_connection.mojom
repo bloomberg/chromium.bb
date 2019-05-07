@@ -19,23 +19,38 @@ interface WaylandConnection {
 
   // Methods used for hardware accelerated rendering:
   //
-  // Asks Wayland to create a wl_buffer based on the dmabuf |file| descriptor.
-  CreateZwpLinuxDmabuf(mojo_base.mojom.File file,
-                            uint32 width,
-                            uint32 height,
-                            array<uint32> strides,
-                            array<uint32> offsets,
-                            uint32 format,
-                            array<uint64> modifiers,
-                            uint32 planes_count,
-                            uint32 buffer_id);
+  // Asks Wayland to create a wl_buffer based on the dmabuf |file| descriptor
+  // for the WaylandWindow, which has the following |widget|. The |size|
+  // is the size of the buffer, the |strides|, |offsets| and |modifiers|
+  // are the descriptions of the drm buffer object. The |format| describes
+  // the buffer format (check gfx::BufferFormat) in fourcc form. The
+  // |planes_count| says how many planes the buffer, backed by the |file|
+  // descriptor has. And the |buffer_id| is a unique id for the buffer, which
+  // is used to identify imported wl_buffers on the browser process side and
+  // map them with the buffer objects on the gpu process side.
+  CreateZwpLinuxDmabuf(gfx.mojom.AcceleratedWidget widget,
+                       mojo_base.mojom.File file,
+                       gfx.mojom.Size size,
+                       array<uint32> strides,
+                       array<uint32> offsets,
+                       array<uint64> modifiers,
+                       uint32 format,
+                       uint32 planes_count,
+                       uint32 buffer_id);
 
-  // Destroys a wl_buffer created by WaylandConnection based on the |buffer_id|.
-  DestroyZwpLinuxDmabuf(uint32 buffer_id);
+  // Destroys a wl_buffer created by WaylandConnection based on the |buffer_id|
+  // for the WaylandWindow, which has the following |widget|. The |buffer_id|
+  // is the unique id of the buffer objects being destroyed on the browser
+  // process side.
+  DestroyZwpLinuxDmabuf(gfx.mojom.AcceleratedWidget widget, uint32 buffer_id);
 
-  // Swaps wl_buffers for a WaylandWindow with the following |widget|.
-  ScheduleBufferSwap(gfx.mojom.AcceleratedWidget widget, uint32 buffer_id,
-                     gfx.mojom.Rect damage_region);
+  // Attaches a wl_buffer to a WaylandWindow's surface with the following
+  // |widget|. The |damage_region| describes changed the region of the buffer.
+  // The |buffer_id| is a unique id for the buffer, which is used to
+  // identify imported wl_buffers on the browser process side mapped with
+  // the ones on the gpu process.
+  CommitBuffer(gfx.mojom.AcceleratedWidget widget, uint32 buffer_id,
+               gfx.mojom.Rect damage_region);
 
   // Methods used for software rendering:
   //

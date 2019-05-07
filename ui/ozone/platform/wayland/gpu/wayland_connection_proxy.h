@@ -64,7 +64,8 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
   //
   // Asks Wayland to create a wl_buffer based on a shared buffer file
   // descriptor backed (gbm_bo).
-  void CreateZwpLinuxDmabuf(base::File file,
+  void CreateZwpLinuxDmabuf(gfx::AcceleratedWidget widget,
+                            base::File file,
                             gfx::Size size,
                             const std::vector<uint32_t>& strides,
                             const std::vector<uint32_t>& offsets,
@@ -76,8 +77,8 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
   // Asks Wayland to destroy a wl_buffer.
   void DestroyZwpLinuxDmabuf(gfx::AcceleratedWidget widget, uint32_t buffer_id);
 
-  // Asks Wayland to find a wl_buffer with the |buffer_id| and schedule a
-  // buffer swap for a WaylandWindow, which backs the following |widget|.
+  // Asks Wayland to find a wl_buffer with the |buffer_id| and attach the
+  // buffer to the WaylandWindow's surface, which backs the following |widget|.
   // Once the buffer is submitted and presented, the OnSubmission and
   // OnPresentation are called. Note, it's not guaranteed the OnPresentation
   // will follow the OnSubmission immediately, but the OnPresentation must never
@@ -86,9 +87,9 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
   // logic as well. This call must not be done twice for the same |widget| until
   // the OnSubmission is called (which actually means the client can continue
   // sending buffer swap requests).
-  void ScheduleBufferSwap(gfx::AcceleratedWidget widget,
-                          uint32_t buffer_id,
-                          const gfx::Rect& damage_region);
+  void CommitBuffer(gfx::AcceleratedWidget widget,
+                    uint32_t buffer_id,
+                    const gfx::Rect& damage_region);
 
 #if defined(WAYLAND_GBM)
   // Returns a gbm_device based on a DRM render node.
@@ -137,7 +138,8 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
   WaylandConnection* connection() const { return connection_; }
 
  private:
-  void CreateZwpLinuxDmabufInternal(base::File file,
+  void CreateZwpLinuxDmabufInternal(gfx::AcceleratedWidget widget,
+                                    base::File file,
                                     gfx::Size size,
                                     const std::vector<uint32_t>& strides,
                                     const std::vector<uint32_t>& offsets,
@@ -178,7 +180,7 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
   // needed to ensure mojo calls happen on a right sequence. What is more, it
   // makes it possible to use a frame callback (when it is implemented) in the
   // browser process, which calls back to a right sequence after a
-  // ScheduleBufferSwap call.
+  // CommitBuffer call.
   scoped_refptr<base::SingleThreadTaskRunner> gpu_thread_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandConnectionProxy);

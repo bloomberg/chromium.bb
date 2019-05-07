@@ -55,24 +55,25 @@ class WaylandConnection : public PlatformEventSource,
   //
   // Called by the GPU and asks to import a wl_buffer based on a gbm file
   // descriptor.
-  void CreateZwpLinuxDmabuf(base::File file,
-                            uint32_t width,
-                            uint32_t height,
+  void CreateZwpLinuxDmabuf(gfx::AcceleratedWidget widget,
+                            base::File file,
+                            const gfx::Size& size,
                             const std::vector<uint32_t>& strides,
                             const std::vector<uint32_t>& offsets,
-                            uint32_t format,
                             const std::vector<uint64_t>& modifiers,
+                            uint32_t format,
                             uint32_t planes_count,
                             uint32_t buffer_id) override;
   // Called by the GPU to destroy the imported wl_buffer with a |buffer_id|.
-  void DestroyZwpLinuxDmabuf(uint32_t buffer_id) override;
+  void DestroyZwpLinuxDmabuf(gfx::AcceleratedWidget widget,
+                             uint32_t buffer_id) override;
   // Called by the GPU and asks to attach a wl_buffer with a |buffer_id| to a
   // WaylandWindow with the specified |widget|.
   // Calls OnSubmission and OnPresentation on successful swap and pixels
   // presented.
-  void ScheduleBufferSwap(gfx::AcceleratedWidget widget,
-                          uint32_t buffer_id,
-                          const gfx::Rect& damage_region) override;
+  void CommitBuffer(gfx::AcceleratedWidget widget,
+                    uint32_t buffer_id,
+                    const gfx::Rect& damage_region) override;
   // These overridden methods below are invoked by the GPU when hardware
   // accelerated rendering is not used. Check comments in the
   // ui/ozone/public/interfaces/wayland/wayland_connection.mojom.
