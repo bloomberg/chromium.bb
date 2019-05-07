@@ -265,7 +265,13 @@ void HTMLPlugInElement::AttachLayoutTree(AttachContext& context) {
   // up blank then).
   const Frame* content_frame = ContentFrame();
   if (content_frame && !dispose_view_) {
-    SetEmbeddedContentView(content_frame->View());
+    // We should only re-use the frame if we're actually re-attaching as
+    // LayoutEmbeddedContent. We may for instance have become an image, without
+    // having triggered a plugin reload, and that this layout object type change
+    // happens now "for free" for completely different reasons (e.g. CSS display
+    // type change).
+    if (layout_object->IsLayoutEmbeddedContent())
+      SetEmbeddedContentView(content_frame->View());
   } else if (!IsImageType() && NeedsPluginUpdate() &&
              GetLayoutEmbeddedObject() &&
              !GetLayoutEmbeddedObject()->ShowsUnavailablePluginIndicator() &&
