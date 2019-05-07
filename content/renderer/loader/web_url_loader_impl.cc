@@ -835,6 +835,16 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
         std::make_unique<WebURLLoaderImpl::RequestPeerImpl>(this, discard_body);
   }
 
+  if (resource_request->resource_type ==
+      static_cast<int>(ResourceType::kPrefetch)) {
+    resource_request->corb_detachable = true;
+  }
+
+  if (resource_request->resource_type ==
+      static_cast<int>(ResourceType::kPluginResource)) {
+    resource_request->corb_excluded = true;
+  }
+
   auto throttles = extra_data->TakeURLLoaderThrottles();
   // The frame request blocker is only for a frame's subresources.
   if (extra_data->frame_request_blocker() &&

@@ -2601,12 +2601,12 @@ TEST_F(URLLoaderTest, CorbEffectiveWithCors) {
   request.resource_type = kResourceType;
   request.fetch_request_mode = mojom::FetchRequestMode::kCors;
   request.request_initiator = url::Origin::Create(GURL("http://foo.com/"));
+  request.corb_excluded = true;
 
   base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
-  params.corb_excluded_resource_type = kResourceType;
   url_loader = std::make_unique<URLLoader>(
       context(), nullptr /* network_service_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
@@ -2624,7 +2624,7 @@ TEST_F(URLLoaderTest, CorbEffectiveWithCors) {
 
   // Blocked because this is a cross-origin request made with a CORS request
   // header, but without a valid CORS response header.
-  // params.corb_excluded_resource_type does not apply in that case.
+  // request.corb_excluded does not apply in that case.
   ASSERT_EQ(std::string(), body);
 }
 
@@ -2637,12 +2637,12 @@ TEST_F(URLLoaderTest, CorbExcludedWithNoCors) {
   request.resource_type = kResourceType;
   request.fetch_request_mode = mojom::FetchRequestMode::kNoCors;
   request.request_initiator = url::Origin::Create(GURL("http://foo.com/"));
+  request.corb_excluded = true;
 
   base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
-  params.corb_excluded_resource_type = kResourceType;
   params.process_id = 123;
   CrossOriginReadBlocking::AddExceptionForPlugin(123);
   url_loader = std::make_unique<URLLoader>(
@@ -2677,12 +2677,12 @@ TEST_F(URLLoaderTest, CorbEffectiveWithNoCorsWhenNoActualPlugin) {
   request.resource_type = kResourceType;
   request.fetch_request_mode = mojom::FetchRequestMode::kNoCors;
   request.request_initiator = url::Origin::Create(GURL("http://foo.com/"));
+  request.corb_excluded = true;
 
   base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
-  params.corb_excluded_resource_type = kResourceType;
   params.process_id = 234;
   // No call to CrossOriginReadBlocking::AddExceptionForPlugin(123) - this is
   // what we primarily want to cover in this test.

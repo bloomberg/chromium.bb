@@ -62,6 +62,8 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
       mojom::CorsPreflightPolicy::kConsiderPreflight;
   bool originated_from_service_worker = false;
   bool skip_service_worker = false;
+  bool corb_detachable = false;
+  bool corb_excluded = false;
   mojom::FetchRequestMode fetch_request_mode = mojom::FetchRequestMode::kNoCors;
   mojom::FetchCredentialsMode fetch_credentials_mode =
       mojom::FetchCredentialsMode::kInclude;

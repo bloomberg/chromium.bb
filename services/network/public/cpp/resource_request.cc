@@ -38,6 +38,8 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
          originated_from_service_worker ==
              request.originated_from_service_worker &&
          skip_service_worker == request.skip_service_worker &&
+         corb_detachable == request.corb_detachable &&
+         corb_excluded == request.corb_excluded &&
          fetch_request_mode == request.fetch_request_mode &&
          fetch_credentials_mode == request.fetch_credentials_mode &&
          fetch_redirect_mode == request.fetch_redirect_mode &&

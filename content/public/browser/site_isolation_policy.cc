@@ -80,10 +80,6 @@ void SiteIsolationPolicy::PopulateURLLoaderFactoryParamsPtrForCORB(
   }
 
   params->is_corb_enabled = true;
-  params->corb_detachable_resource_type =
-      static_cast<int>(ResourceType::kPrefetch);
-  params->corb_excluded_resource_type =
-      static_cast<int>(ResourceType::kPluginResource);
 }
 
 // static

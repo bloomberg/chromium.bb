@@ -194,6 +194,8 @@ bool StructTraits<
   out->is_external_request = data.is_external_request();
   out->originated_from_service_worker = data.originated_from_service_worker();
   out->skip_service_worker = data.skip_service_worker();
+  out->corb_detachable = data.corb_detachable();
+  out->corb_excluded = data.corb_excluded();
   out->fetch_request_context_type = data.fetch_request_context_type();
   out->keepalive = data.keepalive();
   out->has_user_gesture = data.has_user_gesture();

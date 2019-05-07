@@ -231,6 +231,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   DeleteCallback delete_callback_;
 
   int32_t options_;
+  bool corb_detachable_;
   int resource_type_;
   bool is_load_timing_enabled_;
 

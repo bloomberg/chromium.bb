@@ -317,6 +317,7 @@ URLLoader::URLLoader(
       network_service_client_(network_service_client),
       delete_callback_(std::move(delete_callback)),
       options_(options),
+      corb_detachable_(request.corb_detachable),
       resource_type_(request.resource_type),
       is_load_timing_enabled_(request.enable_load_timing),
       factory_params_(factory_params),
@@ -393,7 +394,7 @@ URLLoader::URLLoader(
                             std::make_unique<UnownedPointer>(this));
 
   is_nocors_corb_excluded_request_ =
-      resource_type_ == factory_params_->corb_excluded_resource_type &&
+      request.corb_excluded &&
       request.fetch_request_mode == mojom::FetchRequestMode::kNoCors &&
       CrossOriginReadBlocking::ShouldAllowForPlugin(
           factory_params_->process_id);
@@ -1415,7 +1416,7 @@ URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
   // Tell the real URLLoaderClient that the response has been completed.
   bool should_report_corb_blocking =
       corb_analyzer_->ShouldReportBlockedResponse();
-  if (resource_type_ == factory_params_->corb_detachable_resource_type) {
+  if (corb_detachable_) {
     // TODO(lukasza): https://crbug.com/827633#c5: Consider passing net::ERR_OK
     // instead.  net::ERR_ABORTED was chosen for consistency with the old CORB
     // implementation that used to go through DetachableResourceHandler.
@@ -1428,7 +1429,7 @@ URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
   // If the factory is asking to complete requests of this type, then we need to
   // continue processing the response to make sure the network cache is
   // populated.  Otherwise we can cancel the request.
-  if (resource_type_ == factory_params_->corb_detachable_resource_type) {
+  if (corb_detachable_) {
     // Discard any remaining callbacks or data by rerouting the pipes to
     // EmptyURLLoaderClient (deleting |self_ptr| when the URL request
     // completes).

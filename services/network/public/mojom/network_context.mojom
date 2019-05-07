@@ -462,20 +462,6 @@ struct URLLoaderFactoryParams {
 
   // Cross-origin read blocking (CORB) configuration.
   bool is_corb_enabled = true;
-  // TODO(lukasza): The field below in practice is always set to
-  // ResourceType::kPrefetch by the //content layer, but in the long-term we
-  // want to avoid using resource types (even as an opaque int) in
-  // //services/network.  See also the TODO comment for
-  // network::ResourceRequest::resource_type.
-  int32 corb_detachable_resource_type = -1;
-  // TODO(lukasza): https://crbug.com/846339: Remove the field below and instead
-  // make plugins use a separate URLoaderFactory. Note requests of this type are
-  // only excluded if ResourceRequest::fetch_request_mode is kNoCors. The field
-  // below in practice is always set to ResourceType::kPluginResource by the
-  //  content layer, but in the long-term we want to avoid using resource types
-  // (even as an opaque int) in //services/network.  See also the TODO comment
-  // for network::ResourceRequest::resource_type.
-  int32 corb_excluded_resource_type = -1;
 
   // True if web related security (e.g., CORS) should be disabled. This is
   // mainly used by people testing their sites, via a command line switch.
