@@ -51,6 +51,7 @@ public class ProgressBarView extends RelativeLayout {
         mUrlTextView = findViewById(R.id.notouch_url_text_view);
 
         mProgressBar.setMax(MAX_PROGRESS);
+        setVisibility(false);
     }
 
     void setProgress(float progressFraction) {
