@@ -88,7 +88,7 @@ base::Value NetLogExtensionIdCallback(const std::string& extension_id,
 // Implements Logger using NetLog, mirroring the logging facilities used prior
 // to the introduction of WebRequestInfo.
 // TODO(crbug.com/721414): Transition away from using NetLog.
-class NetLogLogger : public WebRequestInfoLogger {
+class NetLogLogger : public WebRequestInfo::Logger {
  public:
   explicit NetLogLogger(net::URLRequest* request) : request_(request) {}
   ~NetLogLogger() override = default;
@@ -117,7 +117,7 @@ class NetLogLogger : public WebRequestInfoLogger {
 
 // TODO(https://crbug.com/721414): Need a real implementation here to support
 // the Network Service case. For now this is only to prevent crashing.
-class NetworkServiceLogger : public WebRequestInfoLogger {
+class NetworkServiceLogger : public WebRequestInfo::Logger {
  public:
   NetworkServiceLogger() = default;
   ~NetworkServiceLogger() override = default;
@@ -232,13 +232,11 @@ std::unique_ptr<base::DictionaryValue> CreateRequestBodyData(
 
 }  // namespace
 
-WebRequestInfoInitParams::WebRequestInfoInitParams() = default;
-WebRequestInfoInitParams::WebRequestInfoInitParams(
-    WebRequestInfoInitParams&& other) = default;
-WebRequestInfoInitParams& WebRequestInfoInitParams::operator=(
-    WebRequestInfoInitParams&& other) = default;
+WebRequestInfo::WebRequestInfo() = default;
+WebRequestInfo::WebRequestInfo(WebRequestInfo&& other) = default;
+WebRequestInfo& WebRequestInfo::operator=(WebRequestInfo&& other) = default;
 
-WebRequestInfoInitParams::WebRequestInfoInitParams(net::URLRequest* url_request)
+WebRequestInfo::WebRequestInfo(net::URLRequest* url_request)
     : id(url_request->identifier()),
       url(url_request->url()),
       site_for_cookies(url_request->site_for_cookies()),
@@ -302,7 +300,7 @@ WebRequestInfoInitParams::WebRequestInfoInitParams(net::URLRequest* url_request)
   }
 }
 
-WebRequestInfoInitParams::WebRequestInfoInitParams(
+WebRequestInfo::WebRequestInfo(
     uint64_t request_id,
     int render_process_id,
     int render_frame_id,
@@ -346,9 +344,26 @@ WebRequestInfoInitParams::WebRequestInfoInitParams(
   // |is_pac_request|.
 }
 
-WebRequestInfoInitParams::~WebRequestInfoInitParams() = default;
+WebRequestInfo::~WebRequestInfo() = default;
 
-void WebRequestInfoInitParams::InitializeWebViewAndFrameData(
+void WebRequestInfo::AddResponseInfoFromURLRequest(
+    net::URLRequest* url_request) {
+  response_code = url_request->GetResponseCode();
+  response_headers = url_request->response_headers();
+  response_ip = url_request->GetResponseRemoteEndpoint().ToStringWithoutPort();
+  response_from_cache = url_request->was_cached();
+}
+
+void WebRequestInfo::AddResponseInfoFromResourceResponse(
+    const network::ResourceResponseHead& response) {
+  response_headers = response.headers;
+  if (response_headers)
+    response_code = response_headers->response_code();
+  response_ip = response.remote_endpoint.ToStringWithoutPort();
+  response_from_cache = response.was_fetched_via_cache;
+}
+
+void WebRequestInfo::InitializeWebViewAndFrameData(
     const ExtensionNavigationUIData* navigation_ui_data) {
   if (navigation_ui_data) {
     is_web_view = navigation_ui_data->is_web_view();
@@ -380,52 +395,6 @@ void WebRequestInfoInitParams::InitializeWebViewAndFrameData(
     if (was_cached)
       frame_data = data;
   }
-}
-
-WebRequestInfo::WebRequestInfo(net::URLRequest* url_request)
-    : WebRequestInfo(WebRequestInfoInitParams(url_request)) {}
-
-WebRequestInfo::WebRequestInfo(WebRequestInfoInitParams params)
-    : id(params.id),
-      url(std::move(params.url)),
-      site_for_cookies(std::move(params.site_for_cookies)),
-      render_process_id(params.render_process_id),
-      routing_id(params.routing_id),
-      frame_id(params.frame_id),
-      method(std::move(params.method)),
-      is_browser_side_navigation(params.is_browser_side_navigation),
-      initiator(std::move(params.initiator)),
-      frame_data(std::move(params.frame_data)),
-      type(params.type),
-      web_request_type(params.web_request_type),
-      is_async(params.is_async),
-      extra_request_headers(std::move(params.extra_request_headers)),
-      is_pac_request(params.is_pac_request),
-      request_body_data(std::move(params.request_body_data)),
-      is_web_view(params.is_web_view),
-      web_view_instance_id(params.web_view_instance_id),
-      web_view_rules_registry_id(params.web_view_rules_registry_id),
-      web_view_embedder_process_id(params.web_view_embedder_process_id),
-      logger(std::move(params.logger)),
-      resource_context(params.resource_context) {}
-
-WebRequestInfo::~WebRequestInfo() = default;
-
-void WebRequestInfo::AddResponseInfoFromURLRequest(
-    net::URLRequest* url_request) {
-  response_code = url_request->GetResponseCode();
-  response_headers = url_request->response_headers();
-  response_ip = url_request->GetResponseRemoteEndpoint().ToStringWithoutPort();
-  response_from_cache = url_request->was_cached();
-}
-
-void WebRequestInfo::AddResponseInfoFromResourceResponse(
-    const network::ResourceResponseHead& response) {
-  response_headers = response.headers;
-  if (response_headers)
-    response_code = response_headers->response_code();
-  response_ip = response.remote_endpoint.ToStringWithoutPort();
-  response_from_cache = response.was_fetched_via_cache;
 }
 
 }  // namespace extensions

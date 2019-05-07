@@ -101,15 +101,12 @@ class RulesetManagerTest : public DNRTestBase {
     return last_loaded_extension_.get();
   }
 
-  // Returns renderer-initiated request params for the given |url|.
-  WebRequestInfoInitParams GetRequestParamsForURL(
-      base::StringPiece url,
-      base::Optional<url::Origin> initiator = base::nullopt) {
+  // Returns a renderer-initiated request to the given |url|.
+  WebRequestInfo GetRequestForURL(base::StringPiece url) {
     const int kRendererId = 1;
-    WebRequestInfoInitParams info;
+    WebRequestInfo info;
     info.url = GURL(url);
     info.render_process_id = kRendererId;
-    info.initiator = std::move(initiator);
     return info;
   }
 
@@ -141,9 +138,9 @@ TEST_P(RulesetManagerTest, MultipleRulesets) {
   RulesetManager* manager = info_map()->GetRulesetManager();
   ASSERT_TRUE(manager);
 
-  WebRequestInfo request_one_info(GetRequestParamsForURL("http://one.com"));
-  WebRequestInfo request_two_info(GetRequestParamsForURL("http://two.com"));
-  WebRequestInfo request_three_info(GetRequestParamsForURL("http://three.com"));
+  WebRequestInfo request_one_info = GetRequestForURL("http://one.com");
+  WebRequestInfo request_two_info = GetRequestForURL("http://two.com");
+  WebRequestInfo request_three_info = GetRequestForURL("http://three.com");
 
   auto should_block_request = [manager](const WebRequestInfo& request) {
     return manager->EvaluateRequest(request, false /*is_incognito_context*/) ==
@@ -209,7 +206,7 @@ TEST_P(RulesetManagerTest, IncognitoRequests) {
   manager->AddRuleset(last_loaded_extension()->id(), std::move(matcher),
                       URLPatternSet());
 
-  WebRequestInfo request_info(GetRequestParamsForURL("http://example.com"));
+  WebRequestInfo request_info = GetRequestForURL("http://example.com");
 
   // By default, the extension is disabled in incognito mode. So requests from
   // incognito contexts should not be evaluated.
@@ -242,10 +239,8 @@ TEST_P(RulesetManagerTest, TotalEvaluationTimeHistogram) {
   RulesetManager* manager = info_map()->GetRulesetManager();
   ASSERT_TRUE(manager);
 
-  WebRequestInfo example_com_request(
-      GetRequestParamsForURL("http://example.com"));
-  WebRequestInfo google_com_request(
-      GetRequestParamsForURL("http://google.com"));
+  WebRequestInfo example_com_request = GetRequestForURL("http://example.com");
+  WebRequestInfo google_com_request = GetRequestForURL("http://google.com");
   bool is_incognito_context = false;
   const char* kHistogramName =
       "Extensions.DeclarativeNetRequest.EvaluateRequestTime.AllExtensions2";
@@ -303,31 +298,29 @@ TEST_P(RulesetManagerTest, Redirect) {
   // Create a request to "example.com" with an empty initiator. It should be
   // redirected to "google.com".
   const bool is_incognito_context = false;
-  const char* kExampleURL = "http://example.com";
-  WebRequestInfo request_1(GetRequestParamsForURL(kExampleURL, base::nullopt));
-  Action action = manager->EvaluateRequest(request_1, is_incognito_context);
+  WebRequestInfo request = GetRequestForURL("http://example.com");
+  request.initiator = base::nullopt;
+  Action action = manager->EvaluateRequest(request, is_incognito_context);
   EXPECT_EQ(ActionType::REDIRECT, action.type);
   EXPECT_EQ(GURL("http://google.com"), action.redirect_url);
 
   // Change the initiator to "xyz.com". It should not be redirected since we
   // don't have host permissions to the request initiator.
-  WebRequestInfo request_2(GetRequestParamsForURL(
-      kExampleURL, url::Origin::Create(GURL("http://xyz.com"))));
-  action = manager->EvaluateRequest(request_2, is_incognito_context);
+  request.initiator = url::Origin::Create(GURL("http://xyz.com"));
+  action = manager->EvaluateRequest(request, is_incognito_context);
   EXPECT_EQ(Action(ActionType::NONE), action);
 
   // Change the initiator to "abc.com". It should be redirected since we have
   // the required host permissions.
-  WebRequestInfo request_3(GetRequestParamsForURL(
-      kExampleURL, url::Origin::Create(GURL("http://abc.com"))));
-  action = manager->EvaluateRequest(request_3, is_incognito_context);
+  request.initiator = url::Origin::Create(GURL("http://abc.com"));
+  action = manager->EvaluateRequest(request, is_incognito_context);
   EXPECT_EQ(ActionType::REDIRECT, action.type);
   EXPECT_EQ(GURL("http://google.com"), action.redirect_url);
 
   // Ensure web-socket requests are not redirected.
-  WebRequestInfo request_4(
-      GetRequestParamsForURL("ws://example.com", base::nullopt));
-  action = manager->EvaluateRequest(request_4, is_incognito_context);
+  request = GetRequestForURL("ws://example.com");
+  request.initiator = base::nullopt;
+  action = manager->EvaluateRequest(request, is_incognito_context);
   EXPECT_EQ(Action(ActionType::NONE), action);
 }
 
@@ -373,38 +366,32 @@ TEST_P(RulesetManagerTest, ExtensionScheme) {
 
   // Ensure that "http://example.com" will be blocked (with blocking taking
   // priority over redirection).
-  WebRequestInfo request_1(GetRequestParamsForURL("http://example.com"));
-  EXPECT_EQ(
-      Action(ActionType::BLOCK),
-      manager->EvaluateRequest(request_1, false /*is_incognito_context*/));
+  WebRequestInfo request = GetRequestForURL("http://example.com");
+  EXPECT_EQ(Action(ActionType::BLOCK),
+            manager->EvaluateRequest(request, false /*is_incognito_context*/));
 
   // Ensure that the background page for |extension_1| won't be blocked or
   // redirected.
   GURL background_page_url_1 = BackgroundInfo::GetBackgroundURL(extension_1);
   EXPECT_TRUE(!background_page_url_1.is_empty());
-  WebRequestInfo request_2(
-      GetRequestParamsForURL(background_page_url_1.spec()));
-  EXPECT_EQ(
-      Action(ActionType::NONE),
-      manager->EvaluateRequest(request_2, false /*is_incognito_context*/));
+  request = GetRequestForURL(background_page_url_1.spec());
+  EXPECT_EQ(Action(ActionType::NONE),
+            manager->EvaluateRequest(request, false /*is_incognito_context*/));
 
   // Ensure that the background page for |extension_2| won't be blocked or
   // redirected.
   GURL background_page_url_2 = BackgroundInfo::GetBackgroundURL(extension_2);
   EXPECT_TRUE(!background_page_url_2.is_empty());
-  WebRequestInfo request_3(
-      GetRequestParamsForURL(background_page_url_2.spec()));
-  EXPECT_EQ(
-      Action(ActionType::NONE),
-      manager->EvaluateRequest(request_3, false /*is_incognito_context*/));
+  request = GetRequestForURL(background_page_url_2.spec());
+  EXPECT_EQ(Action(ActionType::NONE),
+            manager->EvaluateRequest(request, false /*is_incognito_context*/));
 
   // Also ensure that an arbitrary url on the chrome extension scheme is also
   // not blocked or redirected.
-  WebRequestInfo request_4(GetRequestParamsForURL(base::StringPrintf(
-      "%s://%s/%s", kExtensionScheme, "extension_id", "path")));
-  EXPECT_EQ(
-      Action(ActionType::NONE),
-      manager->EvaluateRequest(request_4, false /*is_incognito_context*/));
+  request = GetRequestForURL(base::StringPrintf("%s://%s/%s", kExtensionScheme,
+                                                "extension_id", "path"));
+  EXPECT_EQ(Action(ActionType::NONE),
+            manager->EvaluateRequest(request, false /*is_incognito_context*/));
 }
 
 TEST_P(RulesetManagerTest, PageAllowingAPI) {
@@ -540,31 +527,30 @@ TEST_P(RulesetManagerTest, PageAllowingAPI) {
     SCOPED_TRACE(base::StringPrintf("Testing case number %zu with url %s",
                                     i + 1, test_case.url.c_str()));
 
-    WebRequestInfoInitParams params = GetRequestParamsForURL(test_case.url);
-    ASSERT_TRUE(params.url.is_valid());
-    params.type = test_case.type;
+    WebRequestInfo info = GetRequestForURL(test_case.url);
+    ASSERT_TRUE(info.url.is_valid());
+    info.type = test_case.type;
 
     if (test_case.initiator)
-      params.initiator = url::Origin::Create(GURL(*test_case.initiator));
+      info.initiator = url::Origin::Create(GURL(*test_case.initiator));
 
-    params.frame_id = test_case.frame_routing_id;
+    info.frame_id = test_case.frame_routing_id;
 
     if (test_case.frame_data_params) {
-      const FrameDataParams& frame_params = *test_case.frame_data_params;
-      params.frame_data = ExtensionApiFrameIdMap::FrameData(
-          frame_params.frame_id, frame_params.parent_frame_id, kDummyTabId,
-          kDummyWindowId, GURL(frame_params.last_committed_main_frame_url));
-      if (frame_params.pending_main_frame_url)
-        params.frame_data->pending_main_frame_url =
-            GURL(*frame_params.pending_main_frame_url);
+      const FrameDataParams& params = *test_case.frame_data_params;
+      info.frame_data = ExtensionApiFrameIdMap::FrameData(
+          params.frame_id, params.parent_frame_id, kDummyTabId, kDummyWindowId,
+          GURL(params.last_committed_main_frame_url));
+      if (params.pending_main_frame_url)
+        info.frame_data->pending_main_frame_url =
+            GURL(*params.pending_main_frame_url);
     }
 
     Action expected_action = test_case.expect_blocked_with_allowed_pages
                                  ? Action(ActionType::BLOCK)
                                  : Action(ActionType::NONE);
     EXPECT_EQ(expected_action,
-              manager->EvaluateRequest(WebRequestInfo(std::move(params)),
-                                       false /*is_incognito_context*/));
+              manager->EvaluateRequest(info, false /*is_incognito_context*/));
   }
 }
 
@@ -637,7 +623,8 @@ TEST_P(RulesetManagerTest, HostPermissionForInitiator) {
         "Url-%s initiator-%s", url.c_str(),
         initiator ? initiator->Serialize().c_str() : "empty"));
 
-    WebRequestInfo request(GetRequestParamsForURL(url, initiator));
+    WebRequestInfo request = GetRequestForURL(url);
+    request.initiator = initiator;
 
     bool is_incognito_context = false;
     EXPECT_EQ(expected_action,

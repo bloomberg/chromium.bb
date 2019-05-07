@@ -20,7 +20,6 @@
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
-#include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/api/web_request/web_request_permissions.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"

@@ -98,12 +98,12 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
   // https://developer.chrome.com/extensions/webRequest#event-onBeforeRequest.
   network::ResourceRequest request_for_info = request_;
   request_for_info.request_initiator = original_initiator_;
-  info_.emplace(WebRequestInfoInitParams(
+  info_.emplace(
       request_id_, factory_->render_process_id_, request_.render_frame_id,
       factory_->navigation_ui_data_ ? factory_->navigation_ui_data_->DeepCopy()
                                     : nullptr,
       routing_id_, factory_->resource_context_, request_for_info, is_download_,
-      !(options_ & network::mojom::kURLLoadOptionSynchronous)));
+      !(options_ & network::mojom::kURLLoadOptionSynchronous));
 
   current_request_uses_header_client_ =
       factory_->url_loader_header_client_binding_ &&

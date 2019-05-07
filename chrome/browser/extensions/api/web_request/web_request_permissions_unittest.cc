@@ -27,12 +27,11 @@
 #include "chromeos/login/login_state/login_state.h"
 #endif  // defined(OS_CHROMEOS)
 
-using extension_test_util::LoadManifestUnchecked;
 using extensions::Extension;
 using extensions::Manifest;
 using extensions::PermissionsData;
 using extensions::WebRequestInfo;
-using extensions::WebRequestInfoInitParams;
+using extension_test_util::LoadManifestUnchecked;
 
 class ExtensionWebRequestHelpersTestWithThreadsTest : public testing::Test {
  public:
@@ -106,23 +105,23 @@ void ExtensionWebRequestHelpersTestWithThreadsTest::SetUp() {
 // extensions.
 TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest,
        BlacklistUpdateUrlsHidden) {
-  auto create_request_params = [](const std::string& url) {
+  auto create_request = [](const std::string& url) {
     const int kRendererProcessId = 2;
-    WebRequestInfoInitParams request;
+    WebRequestInfo request;
     request.url = GURL(url);
     request.render_process_id = kRendererProcessId;
     return request;
   };
 
-  WebRequestInfo request_1(create_request_params(
-      "http://www.gstatic.com/chrome/extensions/blacklist"));
+  WebRequestInfo request =
+      create_request("http://www.gstatic.com/chrome/extensions/blacklist");
   EXPECT_TRUE(
-      WebRequestPermissions::HideRequest(extension_info_map_.get(), request_1));
+      WebRequestPermissions::HideRequest(extension_info_map_.get(), request));
 
-  WebRequestInfo request_2(create_request_params(
-      "https://www.gstatic.com/chrome/extensions/blacklist"));
+  request =
+      create_request("https://www.gstatic.com/chrome/extensions/blacklist");
   EXPECT_TRUE(
-      WebRequestPermissions::HideRequest(extension_info_map_.get(), request_2));
+      WebRequestPermissions::HideRequest(extension_info_map_.get(), request));
 }
 
 // Ensure requests made by the local NTP are hidden from extensions. Regression
@@ -130,44 +129,30 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest,
 TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, LocalNTPRequests) {
   const GURL example_com("http://example.com");
 
-  auto create_request_params =
-      [&example_com](const url::Origin& initiator, content::ResourceType type,
-                     extensions::WebRequestResourceType web_request_type,
-                     bool is_browser_side_navigation) {
-        WebRequestInfoInitParams info_params;
-        info_params.url = example_com;
-        info_params.initiator = initiator;
-        info_params.render_process_id = -1;
-        info_params.type = type;
-        info_params.web_request_type = web_request_type;
-        info_params.is_browser_side_navigation = is_browser_side_navigation;
-        return info_params;
-      };
-
-  url::Origin ntp_origin =
-      url::Origin::Create(GURL(chrome::kChromeSearchLocalNtpUrl));
+  WebRequestInfo info;
+  info.url = example_com;
+  info.initiator = url::Origin::Create(GURL(chrome::kChromeSearchLocalNtpUrl));
+  info.render_process_id = -1;
 
   // Sub-resource browser initiated requests are hidden from extensions.
-  WebRequestInfoInitParams info_params_1 =
-      create_request_params(ntp_origin, content::ResourceType::kSubResource,
-                            extensions::WebRequestResourceType::OTHER, false);
-  EXPECT_TRUE(WebRequestPermissions::HideRequest(
-      extension_info_map_.get(), WebRequestInfo(std::move(info_params_1))));
+  info.type = content::ResourceType::kSubResource;
+  info.web_request_type = extensions::WebRequestResourceType::OTHER;
+  info.is_browser_side_navigation = false;
+  EXPECT_TRUE(
+      WebRequestPermissions::HideRequest(extension_info_map_.get(), info));
 
   // Sub-frame navigations initiated from the local ntp should be hidden.
-  WebRequestInfoInitParams info_params_2 = create_request_params(
-      ntp_origin, content::ResourceType::kSubFrame,
-      extensions::WebRequestResourceType::SUB_FRAME, true);
-  EXPECT_TRUE(WebRequestPermissions::HideRequest(
-      extension_info_map_.get(), WebRequestInfo(std::move(info_params_2))));
+  info.type = content::ResourceType::kSubFrame;
+  info.web_request_type = extensions::WebRequestResourceType::SUB_FRAME;
+  info.is_browser_side_navigation = true;
+  EXPECT_TRUE(
+      WebRequestPermissions::HideRequest(extension_info_map_.get(), info));
 
   // Sub-frame navigations initiated from a non-sensitive domain should not be
   // hidden.
-  WebRequestInfoInitParams info_params_3 = create_request_params(
-      url::Origin::Create(example_com), content::ResourceType::kSubFrame,
-      extensions::WebRequestResourceType::SUB_FRAME, true);
-  EXPECT_FALSE(WebRequestPermissions::HideRequest(
-      extension_info_map_.get(), WebRequestInfo(std::move(info_params_3))));
+  info.initiator = url::Origin::Create(example_com);
+  EXPECT_FALSE(
+      WebRequestPermissions::HideRequest(extension_info_map_.get(), info));
 }
 
 TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest,

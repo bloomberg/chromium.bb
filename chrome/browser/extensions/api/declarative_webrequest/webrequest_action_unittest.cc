@@ -155,9 +155,8 @@ bool WebRequestActionWithThreadsTest::ActionWorksOnRequest(
   EventResponseDeltas deltas;
   scoped_refptr<net::HttpResponseHeaders> headers(
       new net::HttpResponseHeaders(""));
-  WebRequestInfoInitParams request_params(regular_request.get());
-  request_params.render_process_id = kRendererId;
-  WebRequestInfo request_info(std::move(request_params));
+  WebRequestInfo request_info(regular_request.get());
+  request_info.render_process_id = kRendererId;
   WebRequestData request_data(&request_info, stage, headers.get());
   std::set<std::string> ignored_tags;
   WebRequestAction::ApplyInfo apply_info = { extension_info_map_.get(),

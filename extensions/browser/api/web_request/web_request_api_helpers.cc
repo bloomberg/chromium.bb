@@ -31,7 +31,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
-#include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -558,7 +557,7 @@ EventResponseDelta CalculateOnAuthRequiredDelta(
 
 void MergeCancelOfResponses(const EventResponseDeltas& deltas,
                             bool* canceled,
-                            extensions::WebRequestInfoLogger* logger) {
+                            extensions::WebRequestInfo::Logger* logger) {
   for (const auto& delta : deltas) {
     if (delta.cancel) {
       *canceled = true;
@@ -581,7 +580,7 @@ static bool MergeRedirectUrlOfResponsesHelper(
     const EventResponseDeltas& deltas,
     GURL* new_url,
     IgnoredActions* ignored_actions,
-    extensions::WebRequestInfoLogger* logger,
+    extensions::WebRequestInfo::Logger* logger,
     bool consider_only_cancel_scheme_urls) {
   // Redirecting WebSocket handshake request is prohibited.
   if (url.SchemeIsWSOrWSS())
@@ -619,7 +618,7 @@ void MergeRedirectUrlOfResponses(const GURL& url,
                                  const EventResponseDeltas& deltas,
                                  GURL* new_url,
                                  IgnoredActions* ignored_actions,
-                                 extensions::WebRequestInfoLogger* logger) {
+                                 extensions::WebRequestInfo::Logger* logger) {
   // First handle only redirects to data:// URLs and about:blank. These are a
   // special case as they represent a way of cancelling a request.
   if (MergeRedirectUrlOfResponsesHelper(url, deltas, new_url, ignored_actions,
@@ -638,7 +637,7 @@ void MergeOnBeforeRequestResponses(const GURL& url,
                                    const EventResponseDeltas& deltas,
                                    GURL* new_url,
                                    IgnoredActions* ignored_actions,
-                                   extensions::WebRequestInfoLogger* logger) {
+                                   extensions::WebRequestInfo::Logger* logger) {
   MergeRedirectUrlOfResponses(url, deltas, new_url, ignored_actions, logger);
 }
 
@@ -768,7 +767,7 @@ void MergeCookiesInOnBeforeSendHeadersResponses(
     const GURL& url,
     const EventResponseDeltas& deltas,
     net::HttpRequestHeaders* request_headers,
-    extensions::WebRequestInfoLogger* logger) {
+    extensions::WebRequestInfo::Logger* logger) {
   // Skip all work if there are no registered cookie modifications.
   bool cookie_modifications_exist = false;
   for (const auto& delta : deltas) {
@@ -1146,7 +1145,7 @@ void MergeCookiesInOnHeadersReceivedResponses(
     const EventResponseDeltas& deltas,
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
-    extensions::WebRequestInfoLogger* logger) {
+    extensions::WebRequestInfo::Logger* logger) {
   // Skip all work if there are no registered cookie modifications.
   bool cookie_modifications_exist = false;
   for (const auto& delta : base::Reversed(deltas)) {
@@ -1324,7 +1323,7 @@ void MergeOnHeadersReceivedResponses(
 bool MergeOnAuthRequiredResponses(const EventResponseDeltas& deltas,
                                   net::AuthCredentials* auth_credentials,
                                   IgnoredActions* ignored_actions,
-                                  extensions::WebRequestInfoLogger* logger) {
+                                  extensions::WebRequestInfo::Logger* logger) {
   CHECK(auth_credentials);
   bool credentials_set = false;
 
