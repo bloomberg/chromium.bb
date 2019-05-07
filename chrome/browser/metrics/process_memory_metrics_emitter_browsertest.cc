@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -27,6 +28,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source.h"
+#include "services/network/public/cpp/features.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/os_metrics.h"
 #include "url/gurl.h"
@@ -246,6 +248,19 @@ void CheckStableMemoryMetrics(const base::HistogramTester& histogram_tester,
     CheckMemoryMetric("Memory.Extension.PrivateSwapFootprint", histogram_tester,
                       count_for_private_swap_footprint, ValueRestriction::NONE,
                       number_of_extension_processes);
+  }
+
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    CheckMemoryMetric("Memory.NetworkService.ResidentSet", histogram_tester,
+                      count_for_resident_set, ValueRestriction::ABOVE_ZERO, 1);
+    CheckMemoryMetric("Memory.NetworkService.PrivateMemoryFootprint",
+                      histogram_tester, count, ValueRestriction::ABOVE_ZERO, 1);
+    // Shared memory footprint can be below 1 MB, which is reported as zero.
+    CheckMemoryMetric("Memory.NetworkService.SharedMemoryFootprint",
+                      histogram_tester, count, ValueRestriction::NONE, 1);
+    CheckMemoryMetric("Memory.NetworkService.PrivateSwapFootprint",
+                      histogram_tester, count_for_private_swap_footprint,
+                      ValueRestriction::NONE, 1);
   }
 
   CheckMemoryMetric("Memory.Total.ResidentSet", histogram_tester,

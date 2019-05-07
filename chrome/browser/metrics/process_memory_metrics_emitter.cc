@@ -9,6 +9,7 @@
 #include "base/containers/flat_set.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "build/build_config.h"
@@ -470,6 +471,20 @@ void EmitAudioServiceMemoryMetrics(
   builder.Record(ukm_recorder);
 }
 
+void EmitNetworkServiceMemoryMetrics(
+    const GlobalMemoryDump::ProcessDump& pmd,
+    ukm::SourceId ukm_source_id,
+    ukm::UkmRecorder* ukm_recorder,
+    const base::Optional<base::TimeDelta>& uptime,
+    bool record_uma) {
+  Memory_Experimental builder(ukm_source_id);
+  builder.SetProcessType(static_cast<int64_t>(
+      memory_instrumentation::mojom::ProcessType::UTILITY));
+  EmitProcessUmaAndUkm(pmd, "NetworkService", uptime, record_uma, &builder);
+
+  builder.Record(ukm_recorder);
+}
+
 }  // namespace
 
 ProcessMemoryMetricsEmitter::ProcessMemoryMetricsEmitter()
@@ -700,6 +715,11 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
       case memory_instrumentation::mojom::ProcessType::UTILITY: {
         if (pmd.pid() == content::GetProcessIdForAudioService()) {
           EmitAudioServiceMemoryMetrics(
+              pmd, ukm::UkmRecorder::GetNewSourceID(), GetUkmRecorder(),
+              GetProcessUptime(now, pmd.pid()), emit_metrics_for_all_processes);
+        } else if (base::ContainsValue(pmd.service_names(),
+                                       content::mojom::kNetworkServiceName)) {
+          EmitNetworkServiceMemoryMetrics(
               pmd, ukm::UkmRecorder::GetNewSourceID(), GetUkmRecorder(),
               GetProcessUptime(now, pmd.pid()), emit_metrics_for_all_processes);
         } else {
