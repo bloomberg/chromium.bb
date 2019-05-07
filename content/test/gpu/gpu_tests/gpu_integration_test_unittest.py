@@ -29,6 +29,7 @@ from gpu_tests import webgl_test_util
 
 from py_utils import discover
 from typ import expectations_parser
+from typ import json_results
 
 path_util.AddDirToPathIfNeeded(path_util.GetChromiumSrcDir(), 'tools', 'perf')
 from chrome_telemetry_build import chromium_config
@@ -41,6 +42,8 @@ MAC_CONDITIONS = ['leopard', 'snowleopard', 'lion', 'mountainlion',
                   'mavericks', 'yosemite', 'sierra', 'highsierra', 'mojave']
 # These aren't expanded out into "lollipop", "marshmallow", etc.
 ANDROID_CONDITIONS = ['l', 'm', 'n', 'o', 'p', 'q']
+GENERIC_CONDITIONS = OS_CONDITIONS + GPU_CONDITIONS
+
 GENERIC_CONDITIONS = OS_CONDITIONS + GPU_CONDITIONS
 
 _map_specific_to_generic = {sos:'win' for sos in WIN_CONDITIONS}
@@ -56,6 +59,8 @@ VENDOR_INTEL = 0x8086
 
 VENDOR_STRING_IMAGINATION = 'Imagination Technologies'
 DEVICE_STRING_SGX = 'PowerVR SGX 554'
+
+ResultType = json_results.ResultType
 
 class MockPlatform(object):
   def __init__(self, os_name, os_version_name=None):
@@ -194,34 +199,104 @@ def _checkTestExpectationsAreForExistingTests(
       _trie = _trie[l]
 
 
-def _checkTestExpectationsForCollision(expectations, file_name):
-  parser = expectations_parser.TaggedTestListParser(expectations)
+def is_collision(s1, s2):
+  # s1 collides with s2 when s1 is a subset of s2
+  # A tag is in both sets if its a generic tag
+  # and its in one set while a specifc tag covered by the generic tag is in
+  # the other set.
+  for tag in s1:
+    if (not tag in s2 and not (
+        tag in GENERIC_CONDITIONS and
+        any(_map_specific_to_generic.get(t, t) == tag for t in s2)) and
+        not _map_specific_to_generic.get(tag, tag) in s2):
+      return False
+  return True
 
-  def is_collision(s1, s2):
-    # s1 collides with s2 when s1 is a subset of s2
-    # A tag is in both sets if its a generic tag
-    # and its in one set while a specific tag covered by the generic tag is in
-    # the other set.
-    for tag in s1:
-      if (not tag in s2 and not (
-          tag in GENERIC_CONDITIONS and
-          any(_map_specific_to_generic.get(t, t) == tag for t in s2)) and
-          not _map_specific_to_generic.get(tag, tag) in s2):
-        return False
-    return True
 
-  for tag_set in parser.tag_sets:
+def _glob_conflicts_with_exp(possible_collision, exp):
+  reason_template = (
+      'Pattern \'%s\' on line %d has the %s expectation however the '
+      'the pattern on \'%s\' line %d has the Pass expectation')
+  if (ResultType.Skip in possible_collision.results and
+      ResultType.Failure not in exp.results and
+      ResultType.Skip not in exp.results):
+    return (reason_template %
+            (possible_collision.test, possible_collision.lineno, 'Skip',
+            exp.test, exp.lineno))
+  if (ResultType.Failure in possible_collision.results and
+      ResultType.Failure not in exp.results and
+      ResultType.Skip not in exp.results):
+    return (reason_template %
+            (possible_collision.test, possible_collision.lineno, 'Failure',
+            exp.test, exp.lineno))
+  return ''
+
+
+def _map_gpu_devices_to_vendors(tag_sets):
+  for tag_set in tag_sets:
     if any(gpu in tag_set for gpu in GPU_CONDITIONS):
       _map_specific_to_generic.update(
           {t[0]: t[1] for t in
            itertools.permutations(tag_set, 2) if (t[0] + '-').startswith(t[1])})
       break
+
+
+def _checkTestExpectationGlobsForCollision(expectations, file_name):
+  master_conflicts_found = False
+  error_msg = ''
+  trie = {}
+  parser = expectations_parser.TaggedTestListParser(expectations)
+  globs_to_expectations = defaultdict(list)
+
+  _map_gpu_devices_to_vendors(parser.tag_sets)
+
+  for exp in parser.expectations:
+    _trie = trie.setdefault(exp.test[0], {})
+    for l in exp.test[1:]:
+      _trie = _trie.setdefault(l, {})
+    _trie.setdefault('$', []).append(exp)
+
+  for exp in parser.expectations:
+    _trie = trie
+    glob = ''
+    for l in exp.test:
+      if '*' in _trie:
+        globs_to_expectations[glob + '*'].append(exp)
+      glob += l
+      if l in _trie:
+        _trie = _trie[l]
+      else:
+        break
+    if '*' in _trie:
+      globs_to_expectations[glob + '*'].append(exp)
+
+  for glob, expectations in globs_to_expectations.items():
+    conflicts_found = False
+    globs_to_match = [e for e in expectations if e.test == glob]
+    matched_to_globs = [e for e in expectations if e.test != glob]
+    for match in matched_to_globs:
+      for possible_collision in globs_to_match:
+        reason = _glob_conflicts_with_exp(possible_collision, match)
+        if (reason and
+            is_collision(possible_collision.tags, match.tags)):
+          if not conflicts_found:
+            error_msg += ('\n\nFound conflicts for pattern %s in %s:\n' %
+                          (glob, file_name))
+          master_conflicts_found = conflicts_found = True
+          error_msg += ('  line %d conflicts with line %d: %s\n' %
+                        (possible_collision.lineno, match.lineno, reason))
+  assert not master_conflicts_found, error_msg
+
+
+def _checkTestExpectationsForCollision(expectations, file_name):
+  parser = expectations_parser.TaggedTestListParser(expectations)
   tests_to_exps = defaultdict(list)
   master_conflicts_found = False
-  for exp in parser.expectations:
-    if not exp.test.endswith('*'):
-      tests_to_exps[exp.test].append(exp)
   error_msg = ''
+  _map_gpu_devices_to_vendors(parser.tag_sets)
+
+  for exp in parser.expectations:
+    tests_to_exps[exp.test].append(exp)
   for pattern, exps in tests_to_exps.items():
     conflicts_found = False
     for e1, e2 in itertools.combinations(exps, 2):
@@ -333,6 +408,16 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     with self.assertRaises(AssertionError):
       _checkTestExpectationsForCollision(test_expectations, 'test.txt')
 
+  def testCollisionInTestExpectationsWithGpuVendorAndDeviceTags2(self):
+    test_expectations = '''# tags: [ mac win linux xp win7 ]
+    # tags: [ intel amd nvidia nvidia-0x01 nvidia-0x02 ]
+    # tags: [ debug release ]
+    [ nvidia-0x01 win ] a/b/c/d [ Failure ]
+    [ nvidia win7 debug ] a/b/c/d [ Skip ]
+    '''
+    with self.assertRaises(AssertionError):
+      _checkTestExpectationsForCollision(test_expectations, 'test.txt')
+
   def testNoCollisionBetweenGpuDeviceTags(self):
     test_expectations = '''# tags: [ mac win linux xp win7 ]
     # tags: [ intel amd nvidia nvidia-0x01 nvidia-0x02 ]
@@ -381,6 +466,60 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     self.assertNotIn("Found conflicts for test a/b/c in test.txt:",
       str(context.exception))
 
+  def testCollisionWithGlobsWithFailureExpectation(self):
+    test_expectations = '''# tags: [ mac win linux ]
+    # tags: [ intel amd nvidia ]
+    # tags: [ debug release ]
+    [ intel debug ] a/b/c/d* [ Failure ]
+    [ intel debug mac ] a/b/c/d [ RetryOnFailure ]
+    [ intel debug mac ] a/b/c/d/e [ Failure ]
+    '''
+    with self.assertRaises(AssertionError) as context:
+      _checkTestExpectationGlobsForCollision(test_expectations, 'test.txt')
+    self.assertIn('Found conflicts for pattern a/b/c/d* in test.txt:',
+        str(context.exception))
+    self.assertIn('line 4 conflicts with line 5',
+        str(context.exception))
+    self.assertNotIn('line 4 conflicts with line 6',
+        str(context.exception))
+
+  def testNoCollisionWithGlobsWithFailureExpectation(self):
+    test_expectations = '''# tags: [ mac win linux ]
+    # tags: [ intel amd nvidia ]
+    # tags: [ debug release ]
+    [ intel debug mac ] a/b/c/* [ Failure ]
+    [ intel debug ] a/b/c/d [ Failure ]
+    [ intel debug ] a/b/c/d [ Skip ]
+    '''
+    _checkTestExpectationGlobsForCollision(test_expectations, 'test.txt')
+
+  def testCollisionWithGlobsWithSkipExpectation(self):
+    test_expectations = '''# tags: [ mac win linux ]
+    # tags: [ intel amd nvidia ]
+    # tags: [ debug release ]
+    [ intel debug ] a/b/c/d* [ Skip ]
+    [ intel debug mac ] a/b/c/d [ Failure ]
+    [ intel debug mac ] a/b/c/d/e [ RetryOnFailure ]
+    '''
+    with self.assertRaises(AssertionError) as context:
+      _checkTestExpectationGlobsForCollision(test_expectations, 'test.txt')
+    self.assertIn('Found conflicts for pattern a/b/c/d* in test.txt:',
+        str(context.exception))
+    self.assertNotIn('line 4 conflicts with line 5',
+        str(context.exception))
+    self.assertIn('line 4 conflicts with line 6',
+        str(context.exception))
+
+  def testNoCollisionWithGlobsWithSkipExpectation(self):
+    test_expectations = '''# tags: [ mac win linux ]
+    # tags: [ intel amd nvidia ]
+    # tags: [ debug release ]
+    [ intel debug mac ] a/b/c/* [ Skip ]
+    [ intel debug ] a/b/c/d [ Skip ]
+    [ intel debug ] a/b/c/d [ Skip ]
+    '''
+    _checkTestExpectationGlobsForCollision(test_expectations, 'test.txt')
+
   def testNoCollisionInTestExpectations(self):
     test_expectations = '''# tags: [ mac win linux ]
     # tags: [ intel amd nvidia ]
@@ -391,7 +530,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     '''
     _checkTestExpectationsForCollision(test_expectations, 'test.txt')
 
-  def testNoCollisionsInGpuTestExpectations(self):
+  def testNoCollisionsWithGlobsInGpuTestExpectations(self):
     webgl_conformance_test_class = (
         webgl_conformance_integration_test.WebGLConformanceIntegrationTest)
     for test_case in _FindTestCases():
@@ -402,6 +541,19 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
           if test_case.ExpectationsFiles():
             with open(test_case.ExpectationsFiles()[0]) as f:
               _checkTestExpectationsForCollision(f.read(),
+              os.path.basename(f.name))
+
+  def testNoCollisionsForSamePatternsInGpuTestExpectations(self):
+    webgl_conformance_test_class = (
+        webgl_conformance_integration_test.WebGLConformanceIntegrationTest)
+    for test_case in _FindTestCases():
+      if 'gpu_tests.gpu_integration_test_unittest' not in test_case.__module__:
+        for i in xrange(1, 2 + (test_case == webgl_conformance_test_class)):
+          _ = list(test_case.GenerateGpuTests(
+              MockArgs(webgl_version=('%d.0.0' % i))))
+          if test_case.ExpectationsFiles():
+            with open(test_case.ExpectationsFiles()[0]) as f:
+              _checkTestExpectationGlobsForCollision(f.read(),
               os.path.basename(f.name))
 
   def testGpuTestExpectationsAreForExistingTests(self):
@@ -568,7 +720,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
       ['expected_skip'],
       ['--retry-only-retry-on-failure', '--retry-limit=3',
       '--test-name-prefix=unittest_data.integration_tests.SimpleTest.'])
-    # TODO(rmhasan): Re-enable check below after pushing crrev.com/c/1594272
+    # TODO(rmhasan): re-enable assertion after landing crrev.com/c/1594272
     # The number of browser starts include the one call to StartBrowser at the
     # beginning of the run of the test suite and for each RestartBrowser call
     # which happens after every failure
