@@ -16,7 +16,8 @@
 namespace blink {
 
 class XRPose;
-class XRSpace;
+class XRSession;
+class XRReferenceSpace;
 
 class XRPlane : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -24,13 +25,16 @@ class XRPlane : public ScriptWrappable {
  public:
   enum Orientation { kHorizontal, kVertical };
 
-  explicit XRPlane(const device::mojom::blink::XRPlaneDataPtr& plane_data);
-  XRPlane(const base::Optional<Orientation>& orientation,
+  XRPlane(XRSession* session,
+          const device::mojom::blink::XRPlaneDataPtr& plane_data);
+  XRPlane(XRSession* session,
+          const base::Optional<Orientation>& orientation,
           const TransformationMatrix& pose_matrix,
           const HeapVector<Member<DOMPointReadOnly>>& polygon);
 
   // Returns a pose expressed in passed in reference space.
-  XRPose* getPose(XRSpace*) const;
+  XRPose* getPose(XRReferenceSpace* reference_space) const;
+
   String orientation() const;
   HeapVector<Member<DOMPointReadOnly>> polygon() const;
 
@@ -44,7 +48,11 @@ class XRPlane : public ScriptWrappable {
  private:
   HeapVector<Member<DOMPointReadOnly>> polygon_;
   base::Optional<Orientation> orientation_;
+
+  // Plane center's pose in device (mojo) space.
   TransformationMatrix pose_matrix_;
+
+  Member<XRSession> session_;
 };
 
 }  // namespace blink

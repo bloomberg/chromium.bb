@@ -10,11 +10,13 @@
 
 namespace blink {
 
+class XRSession;
+
 class XRWorldInformation : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  XRWorldInformation();
+  XRWorldInformation(XRSession* session);
 
   // Returns vector containing detected planes, |is_null| will be set to true
   // if plane detection is not enabled.
@@ -35,6 +37,8 @@ class XRWorldInformation : public ScriptWrappable {
   // last `ProcessPlaneInformation()` was called with base::nullopt.
   bool is_detected_planes_null_ = true;
   HeapHashMap<int32_t, Member<XRPlane>> plane_ids_to_planes_;
+
+  Member<XRSession> session_;
 };
 
 }  // namespace blink

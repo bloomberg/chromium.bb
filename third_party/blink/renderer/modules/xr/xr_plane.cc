@@ -4,25 +4,37 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_plane.h"
 #include "third_party/blink/renderer/modules/xr/type_converters.h"
+#include "third_party/blink/renderer/modules/xr/xr_pose.h"
+#include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
+#include "third_party/blink/renderer/modules/xr/xr_session.h"
 
 namespace blink {
 
-XRPlane::XRPlane(const device::mojom::blink::XRPlaneDataPtr& plane_data)
-    : XRPlane(mojo::ConvertTo<base::Optional<blink::XRPlane::Orientation>>(
+XRPlane::XRPlane(XRSession* session,
+                 const device::mojom::blink::XRPlaneDataPtr& plane_data)
+    : XRPlane(session,
+              mojo::ConvertTo<base::Optional<blink::XRPlane::Orientation>>(
                   plane_data->orientation),
               mojo::ConvertTo<blink::TransformationMatrix>(plane_data->pose),
               mojo::ConvertTo<HeapVector<Member<DOMPointReadOnly>>>(
                   plane_data->polygon)) {}
 
-XRPlane::XRPlane(const base::Optional<Orientation>& orientation,
+XRPlane::XRPlane(XRSession* session,
+                 const base::Optional<Orientation>& orientation,
                  const TransformationMatrix& pose_matrix,
                  const HeapVector<Member<DOMPointReadOnly>>& polygon)
-    : polygon_(polygon), orientation_(orientation), pose_matrix_(pose_matrix) {
+    : polygon_(polygon),
+      orientation_(orientation),
+      pose_matrix_(pose_matrix),
+      session_(session) {
   DVLOG(3) << __func__;
 }
 
-XRPose* XRPlane::getPose(XRSpace*) const {
-  return nullptr;
+XRPose* XRPlane::getPose(XRReferenceSpace* reference_space) const {
+  return MakeGarbageCollected<XRPose>(
+      reference_space->GetViewerPoseMatrix(
+          std::make_unique<TransformationMatrix>(pose_matrix_)),
+      session_->EmulatedPosition());
 }
 
 String XRPlane::orientation() const {
@@ -57,6 +69,7 @@ void XRPlane::Update(const device::mojom::blink::XRPlaneDataPtr& plane_data) {
 
 void XRPlane::Trace(blink::Visitor* visitor) {
   visitor->Trace(polygon_);
+  visitor->Trace(session_);
   ScriptWrappable::Trace(visitor);
 }
 

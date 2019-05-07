@@ -120,7 +120,7 @@ XRSession::XRSession(
       mode_(mode),
       environment_integration_(mode == kModeImmersiveAR),
       world_tracking_state_(MakeGarbageCollected<XRWorldTrackingState>()),
-      world_information_(MakeGarbageCollected<XRWorldInformation>()),
+      world_information_(MakeGarbageCollected<XRWorldInformation>(this)),
       client_binding_(this, std::move(client_request)),
       callback_collection_(
           MakeGarbageCollected<XRFrameRequestCallbackCollection>(

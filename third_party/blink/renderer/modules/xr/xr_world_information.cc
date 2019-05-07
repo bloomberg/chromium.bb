@@ -4,17 +4,23 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_world_information.h"
 
+#include "third_party/blink/renderer/modules/xr/xr_session.h"
+
 namespace blink {
 
-XRWorldInformation::XRWorldInformation() {}
+XRWorldInformation::XRWorldInformation(XRSession* session)
+    : session_(session) {}
 
 void XRWorldInformation::Trace(blink::Visitor* visitor) {
   visitor->Trace(plane_ids_to_planes_);
+  visitor->Trace(session_);
   ScriptWrappable::Trace(visitor);
 }
 
 HeapVector<Member<XRPlane>> XRWorldInformation::detectedPlanes(
     bool& is_null) const {
+  DVLOG(3) << __func__;
+
   HeapVector<Member<XRPlane>> result;
 
   is_null = is_detected_planes_null_;
@@ -52,7 +58,8 @@ void XRWorldInformation::ProcessPlaneInformation(
       updated_planes.insert(plane->id, it->value);
       it->value->Update(plane);
     } else {
-      updated_planes.insert(plane->id, MakeGarbageCollected<XRPlane>(plane));
+      updated_planes.insert(plane->id,
+                            MakeGarbageCollected<XRPlane>(session_, plane));
     }
   }
 
