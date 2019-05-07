@@ -41,14 +41,12 @@
 
 #include <fcntl.h>
 #include <stddef.h>   // for ptrdiff_t
+#include <atomic>
 
-#include "base/atomicops.h"  // for MemoryBarrier
 #include "base/linux_syscall_support.h"
 #include "base/logging.h"
 #include "base/dynamic_annotations.h"
 #include "base/basictypes.h"  // for COMPILE_ASSERT
-
-using base::subtle::MemoryBarrier;
 
 #ifndef AT_SYSINFO_EHDR
 #define AT_SYSINFO_EHDR 33
@@ -118,7 +116,7 @@ const void *VDSOSupport::Init() {
   }
   // Subtle: this code runs outside of any locks; prevent compiler
   // from assigning to getcpu_fn_ more than once.
-  base::subtle::MemoryBarrier();
+  std::atomic_thread_fence(std::memory_order_seq_cst);
   getcpu_fn_ = fn;
   return vdso_base_;
 }

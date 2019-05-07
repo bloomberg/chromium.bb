@@ -6,6 +6,7 @@
 
 #include <errno.h>
 
+#include <atomic>
 #include <new>
 
 #include "base/atomicops.h"
@@ -100,11 +101,11 @@ void InsertAllocatorDispatch(AllocatorDispatch* dispatch) {
 
     // This function guarantees to be thread-safe w.r.t. concurrent
     // insertions. It also has to guarantee that all the threads always
-    // see a consistent chain, hence the MemoryBarrier() below.
+    // see a consistent chain, hence the atomic_thread_fence() below.
     // InsertAllocatorDispatch() is NOT a fastpath, as opposite to malloc(), so
     // we don't really want this to be a release-store with a corresponding
     // acquire-load during malloc().
-    subtle::MemoryBarrier();
+    std::atomic_thread_fence(std::memory_order_seq_cst);
     subtle::AtomicWord old_value =
         reinterpret_cast<subtle::AtomicWord>(chain_head);
     // Set the chain head to the new dispatch atomically. If we lose the race,

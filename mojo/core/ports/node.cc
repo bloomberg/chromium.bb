@@ -7,10 +7,10 @@
 #include <string.h>
 
 #include <algorithm>
+#include <atomic>
 #include <utility>
 #include <vector>
 
-#include "base/atomicops.h"
 #include "base/containers/stack_container.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -157,7 +157,7 @@ int Node::GetPort(const PortName& port_name, PortRef* port_ref) {
 
 #if defined(OS_ANDROID) && defined(ARCH_CPU_ARM64)
   // Workaround for https://crbug.com/665869.
-  base::subtle::MemoryBarrier();
+  std::atomic_thread_fence(std::memory_order_seq_cst);
 #endif
 
   *port_ref = PortRef(port_name, iter->second);

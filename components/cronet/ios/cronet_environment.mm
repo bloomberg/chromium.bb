@@ -4,9 +4,9 @@
 
 #include "components/cronet/ios/cronet_environment.h"
 
+#include <atomic>
 #include <utility>
 
-#include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -267,7 +267,7 @@ void CronetEnvironment::Start() {
 
   main_context_getter_ = new CronetURLRequestContextGetter(
       this, CronetEnvironment::GetNetworkThreadTaskRunner());
-  base::subtle::MemoryBarrier();
+  std::atomic_thread_fence(std::memory_order_seq_cst);
   PostToNetworkThread(FROM_HERE,
                       base::Bind(&CronetEnvironment::InitializeOnNetworkThread,
                                  base::Unretained(this)));
