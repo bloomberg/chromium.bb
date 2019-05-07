@@ -42,14 +42,14 @@ class CastChannelBindingsTest : public cr_fuchsia::WebEngineBrowserTest,
     cr_fuchsia::WebEngineBrowserTest::SetUpOnMainThread();
     base::ScopedAllowBlockingForTesting allow_blocking;
     frame_ = WebEngineBrowserTest::CreateFrame(&navigation_listener_);
-    connector_ = std::make_unique<NamedMessagePortConnector>();
+    connector_ = std::make_unique<NamedMessagePortConnector>(frame_.get());
   }
 
   void OnBeforeAckHook(
       const fuchsia::web::NavigationState& change,
       fuchsia::web::NavigationEventListener::OnNavigationStateChangedCallback
           callback) {
-    connector_->NotifyPageLoad(frame_.get());
+    connector_->OnPageLoad();
     if (navigate_run_loop_)
       navigate_run_loop_->Quit();
     callback();

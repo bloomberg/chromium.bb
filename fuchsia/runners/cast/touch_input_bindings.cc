@@ -37,8 +37,7 @@ TouchInputBindings::TouchInputBindings(TouchInputPolicy policy,
 
   connector_->Register(kMessagePortName,
                        base::BindRepeating(&TouchInputBindings::OnPortReceived,
-                                           base::Unretained(this)),
-                       frame_);
+                                           base::Unretained(this)));
 
   base::FilePath bindings_js_path;
   CHECK(base::PathService::Get(base::DIR_ASSETS, &bindings_js_path));
@@ -54,11 +53,12 @@ TouchInputBindings::TouchInputBindings(TouchInputPolicy policy,
 }
 
 TouchInputBindings::~TouchInputBindings() {
-  connector_->Unregister(frame_, kMessagePortName);
+  connector_->Unregister(kMessagePortName);
 }
 
-void TouchInputBindings::OnPortReceived(fuchsia::web::MessagePortPtr port) {
-  port_ = std::move(port);
+void TouchInputBindings::OnPortReceived(
+    fidl::InterfaceHandle<fuchsia::web::MessagePort> port) {
+  port_ = port.Bind();
   ReadNextMessage();
 }
 

@@ -43,8 +43,7 @@ CastChannelBindings::CastChannelBindings(
   connector->Register(
       kMessagePortName,
       base::BindRepeating(&CastChannelBindings::OnMasterPortReceived,
-                          base::Unretained(this)),
-      frame_);
+                          base::Unretained(this)));
 
   base::FilePath assets_path;
   CHECK(base::PathService::Get(base::DIR_ASSETS, &assets_path));
@@ -60,7 +59,7 @@ CastChannelBindings::CastChannelBindings(
 }
 
 CastChannelBindings::~CastChannelBindings() {
-  connector_->Unregister(frame_, kMessagePortName);
+  connector_->Unregister(kMessagePortName);
 }
 
 void CastChannelBindings::OnMasterPortError() {
@@ -68,10 +67,10 @@ void CastChannelBindings::OnMasterPortError() {
 }
 
 void CastChannelBindings::OnMasterPortReceived(
-    fuchsia::web::MessagePortPtr port) {
+    fidl::InterfaceHandle<fuchsia::web::MessagePort> port) {
   DCHECK(port);
 
-  master_port_ = std::move(port);
+  master_port_ = port.Bind();
   master_port_.set_error_handler([this](zx_status_t status) {
     ZX_LOG_IF(WARNING, status != ZX_ERR_PEER_CLOSED, status)
         << "Cast Channel master port disconnected.";

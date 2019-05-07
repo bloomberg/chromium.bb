@@ -32,7 +32,7 @@ class TouchInputBindings {
 
  private:
   // Receives a MessagePort from the API.
-  void OnPortReceived(fuchsia::web::MessagePortPtr port);
+  void OnPortReceived(fidl::InterfaceHandle<fuchsia::web::MessagePort> port);
 
   // Processes setTouchInputEnabled() calls.
   void OnControlMessageReceived(fuchsia::web::WebMessage message);

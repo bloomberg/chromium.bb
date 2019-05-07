@@ -50,6 +50,7 @@ CastComponent::CastComponent(
       application_config_(std::move(application_config)),
       touch_input_policy_(
           TouchInputPolicyFromApplicationConfig(application_config_)),
+      connector_(frame()),
       navigation_listener_binding_(this) {
   base::AutoReset<bool> constructor_active_reset(&constructor_active_, true);
 
@@ -73,7 +74,7 @@ void CastComponent::OnNavigationStateChanged(
     fuchsia::web::NavigationState change,
     OnNavigationStateChangedCallback callback) {
   if (change.has_url())
-    connector_.NotifyPageLoad(frame());
+    connector_.OnPageLoad();
   callback();
 }
 

@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
 // Implementation of the cast.__platform__.channel API which uses MessagePort
 // IPC to communicate with an actual Cast Channel implementation provided by
 // the content embedder. There is at most one channel which may be opened (able
 // to send & receive messages) or closed.
 cast.__platform__.channel = new class {
   constructor() {
-    this.master_port_ = cast.__platform__.connector.bind(
-        'cast.__platform__.channel',
-        function(ignored) {
-          // |master_port_| is send-only, so ignore all incoming messages.
-        });
+    this.master_port_ = cast.__platform__.PortConnector.bind(
+        'cast.__platform__.channel');
   }
 
   // Signals to the peer that the Cast Channel is opened.
@@ -34,7 +33,7 @@ cast.__platform__.channel = new class {
 
     // Create the MessageChannel for Cast Channel and distribute its ports.
     var channel = new MessageChannel();
-    this.master_port_.sendMessage('', [channel.port1]);
+    this.master_port_.postMessage('', [channel.port1]);
 
     this.current_port_ = channel.port2;
     this.current_port_.onmessage = function(message) {

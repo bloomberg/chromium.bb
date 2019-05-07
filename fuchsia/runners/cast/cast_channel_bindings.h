@@ -36,7 +36,8 @@ class CastChannelBindings {
 
  private:
   // Receives a port used for receiving new Cast Channel ports.
-  void OnMasterPortReceived(fuchsia::web::MessagePortPtr port);
+  void OnMasterPortReceived(
+      fidl::InterfaceHandle<fuchsia::web::MessagePort> port);
 
   // Receives a message containing a newly opened Cast Channel from
   // |master_port_|.

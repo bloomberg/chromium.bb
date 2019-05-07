@@ -25,7 +25,7 @@ class QueryableDataBindingsTest : public cr_fuchsia::WebEngineBrowserTest {
     set_test_server_root(base::FilePath("fuchsia/runners/cast/testdata"));
   }
 
-  ~QueryableDataBindingsTest() override = default;
+  ~QueryableDataBindingsTest() override { connector_->Unregister("testQuery"); }
 
   void SetUpOnMainThread() override {
     cr_fuchsia::WebEngineBrowserTest::SetUpOnMainThread();
@@ -38,11 +38,11 @@ class QueryableDataBindingsTest : public cr_fuchsia::WebEngineBrowserTest {
     navigation_listener_.SetBeforeAckHook(base::BindRepeating(
         &QueryableDataBindingsTest::OnBeforeAckHook, base::Unretained(this)));
 
-    connector_.Register(
+    connector_ = std::make_unique<NamedMessagePortConnector>(frame_.get());
+    connector_->Register(
         "testQuery",
         base::BindRepeating(&QueryableDataBindingsTest::ReceiveMessagePort,
-                            base::Unretained(this)),
-        frame_.get());
+                            base::Unretained(this)));
   }
 
   // Blocks test execution until the page has indicated that it's processed the
@@ -97,8 +97,9 @@ class QueryableDataBindingsTest : public cr_fuchsia::WebEngineBrowserTest {
     return response_string;
   }
 
-  void ReceiveMessagePort(fuchsia::web::MessagePortPtr port) {
-    query_port_ = std::move(port);
+  void ReceiveMessagePort(
+      fidl::InterfaceHandle<fuchsia::web::MessagePort> port) {
+    query_port_ = port.Bind();
     if (on_query_port_received_cb_)
       std::move(on_query_port_received_cb_).Run();
   }
@@ -109,7 +110,7 @@ class QueryableDataBindingsTest : public cr_fuchsia::WebEngineBrowserTest {
       fuchsia::web::NavigationEventListener::OnNavigationStateChangedCallback
           callback) {
     if (change.has_url())
-      connector_.NotifyPageLoad(frame_.get());
+      connector_->OnPageLoad();
 
     callback();
   }
@@ -117,7 +118,7 @@ class QueryableDataBindingsTest : public cr_fuchsia::WebEngineBrowserTest {
   fuchsia::web::FramePtr frame_;
 
   GURL test_url_;
-  NamedMessagePortConnector connector_;
+  std::unique_ptr<NamedMessagePortConnector> connector_;
   FakeQueryableData queryable_data_service_;
   cr_fuchsia::TestNavigationListener navigation_listener_;
   fidl::Binding<chromium::cast::QueryableData> queryable_data_service_binding_;

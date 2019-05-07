@@ -2,17 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
 cast.__platform__.__touchInput__ = new class {
   constructor() {
-    this.port_ = cast.__platform__.connector.bind(
-        'cast.__platform__.__touchInput__',
-        function(response) {
-          var responseParsed = JSON.parse(response);
+    this.port_ = cast.__platform__.PortConnector.bind(
+        'cast.__platform__.__touchInput__');
+
+    this.port_.onmessage = function(message) {
+          var responseParsed = JSON.parse(message.data);
           if (responseParsed) {
             this.onAck(responseParsed.requestId,
                 responseParsed.displayControls);
           }
-        }.bind(this));
+        }.bind(this);
   }
 
   // Receives an acknowledgement from the native bindings layer and relays the
@@ -46,7 +49,7 @@ cast.__platform__.__touchInput__ = new class {
         'resolve': resolve,
         'reject': reject,
       };
-      this.port_.sendMessage(JSON.stringify({
+      this.port_.postMessage(JSON.stringify({
         'requestId': requestId,
         'touchEnabled': touchEnabled,
       }));
