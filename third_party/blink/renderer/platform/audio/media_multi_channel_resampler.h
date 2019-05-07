@@ -11,6 +11,7 @@
 #include "media/base/multi_channel_resampler.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace media {
 class AudioBus;
@@ -29,7 +30,8 @@ class PLATFORM_EXPORT MediaMultiChannelResampler {
   // to be completely filled with data upon return; zero padded if not enough
   // frames are available to satisfy the request.  |frame_delay| is the number
   // of output frames already processed and can be used to estimate delay.
-  typedef base::RepeatingCallback<void(int frame_delay, AudioBus* audio_bus)>
+  typedef WTF::CrossThreadRepeatingFunction<void(int frame_delay,
+                                                 AudioBus* audio_bus)>
       ReadCB;
 
  public:
@@ -40,7 +42,7 @@ class PLATFORM_EXPORT MediaMultiChannelResampler {
   MediaMultiChannelResampler(int channels,
                              double io_sample_rate_ratio,
                              size_t request_frames,
-                             const ReadCB& read_cb);
+                             ReadCB read_cb);
 
   // Resamples |frames| of data from |read_cb_| into AudioBus.
   void Resample(int frames, media::AudioBus* audio_bus);

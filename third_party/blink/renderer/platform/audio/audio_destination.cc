@@ -109,9 +109,9 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
 
     resampler_.reset(new MediaMultiChannelResampler(
         MaxChannelCount(), scale_factor, audio_utilities::kRenderQuantumFrames,
-        ConvertToBaseCallback(
-            CrossThreadBind(&AudioDestination::ProvideResamplerInput,
-                            CrossThreadUnretained(this)))));
+
+        CrossThreadBind(&AudioDestination::ProvideResamplerInput,
+                        CrossThreadUnretained(this))));
     resampler_bus_ =
         media::AudioBus::CreateWrapper(render_bus_->NumberOfChannels());
     for (unsigned int i = 0; i < render_bus_->NumberOfChannels(); ++i) {
