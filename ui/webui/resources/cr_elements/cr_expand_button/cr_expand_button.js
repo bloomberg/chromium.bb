@@ -83,6 +83,7 @@ Polymer({
     event.stopPropagation();
     event.preventDefault();
 
+    this.scrollIntoViewIfNeeded();
     this.expanded = !this.expanded;
     cr.ui.focusWithoutInk(this.$.icon);
   },
