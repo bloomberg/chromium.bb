@@ -127,7 +127,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
             e.stopPropagation();
           });
       $('error-message-md-ok-button').addEventListener('tap', function(e) {
-        chrome.send('cancelOnReset');
+        chrome.send('login.ResetScreen.userActed', ['cancel-reset']);
         e.stopPropagation();
       });
       $('error-message-md-powerwash-button')

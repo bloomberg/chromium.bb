@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
@@ -32,6 +33,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_launcher.h"
+#include "content/public/test/test_utils.h"
 
 namespace chromeos {
 
@@ -409,17 +411,29 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
   EXPECT_EQ(0, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
   EXPECT_EQ(0, update_engine_client_->rollback_call_count());
   test::OobeJS().ExpectHasNoClass("revert-promise-view", {"reset"});
+
   InvokeRollbackOption();
   ClickToConfirmButton();
   ClickResetButton();
+
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(0, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
   EXPECT_EQ(1, update_engine_client_->rollback_call_count());
   test::OobeJS().ExpectHasClass("revert-promise-view", {"reset"});
+
   UpdateEngineClient::Status error_update_status;
   error_update_status.status = UpdateEngineClient::UPDATE_STATUS_ERROR;
   update_engine_client_->NotifyObserversThatStatusChanged(error_update_status);
   OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
+
+  // Clicking 'ok' on the error screen will either show the previous OOBE screen
+  // or show the login screen. Here login screen should appear because there's
+  // no previous screen.
+  content::WindowedNotificationObserver login_screen_waiter(
+      chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+      content::NotificationService::AllSources());
+  test::OobeJS().TapOnPath({"error-message-md-ok-button"});
+  login_screen_waiter.Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
