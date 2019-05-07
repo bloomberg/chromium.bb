@@ -13,7 +13,7 @@
 #endif
 
 @implementation CRWJSInjectionReceiver {
-  // Used to evaluate JavaScripts.
+  // Used to evaluate JavaScript.
   __weak id<CRWJSInjectionEvaluator> _evaluator;
 
   // Map from a CRWJSInjectionManager class to its instance created for this
@@ -37,6 +37,11 @@
 - (void)executeJavaScript:(NSString*)script
         completionHandler:(void (^)(id, NSError*))completionHandler {
   [_evaluator executeJavaScript:script completionHandler:completionHandler];
+}
+
+- (void)executeUserJavaScript:(NSString*)script
+            completionHandler:(void (^)(id, NSError*))completionHandler {
+  [_evaluator executeUserJavaScript:script completionHandler:completionHandler];
 }
 
 - (BOOL)scriptHasBeenInjectedForClass:(Class)injectionManagerClass {

@@ -77,8 +77,6 @@
 #import "ios/web/public/url_scheme_util.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/context_menu_params.h"
-#import "ios/web/public/web_state/js/crw_js_injection_manager.h"
-#import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/page_display_state.h"
 #import "ios/web/public/web_state/ui/crw_context_menu_delegate.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
@@ -92,10 +90,10 @@
 #import "ios/web/public/web_state/web_state_policy_decider.h"
 #include "ios/web/public/webui/web_ui_ios.h"
 #import "ios/web/web_state/error_translation_util.h"
-#import "ios/web/web_state/js/crw_js_window_id_manager.h"
 #import "ios/web/web_state/page_viewport_state.h"
 #import "ios/web/web_state/session_certificate_policy_cache_impl.h"
 #import "ios/web/web_state/ui/crw_context_menu_controller.h"
+#import "ios/web/web_state/ui/crw_js_injector.h"
 #import "ios/web/web_state/ui/crw_swipe_recognizer_provider.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
@@ -230,6 +228,7 @@ bool RequiresContentFilterBlockingWorkaround() {
 
 @interface CRWWebController () <BrowsingDataRemoverObserver,
                                 CRWContextMenuDelegate,
+                                CRWJSInjectorDelegate,
                                 CRWNativeContentDelegate,
                                 CRWSSLStatusUpdaterDataSource,
                                 CRWSSLStatusUpdaterDelegate,
@@ -287,19 +286,6 @@ bool RequiresContentFilterBlockingWorkaround() {
   // Set to YES when a hashchange event is manually dispatched for same-document
   // history navigations.
   BOOL _dispatchingSameDocumentHashChangeEvent;
-
-  // A set of script managers whose scripts have been injected into the current
-  // page.
-  // TODO(stuartmorgan): Revisit this approach; it's intended only as a stopgap
-  // measure to make all the existing script managers work. Longer term, there
-  // should probably be a couple of points where managers can register to have
-  // things happen automatically based on page lifecycle, and if they don't want
-  // to use one of those fixed points, they should make their scripts internally
-  // idempotent.
-  NSMutableSet* _injectedScriptManagers;
-
-  // Script manager for setting the windowID.
-  CRWJSWindowIDManager* _windowIDJSManager;
 
   // Backs up property with the same name.
   std::unique_ptr<web::MojoFacade> _mojoFacade;
@@ -476,9 +462,6 @@ bool RequiresContentFilterBlockingWorkaround() {
              senderFrame:(web::WebFrame*)senderFrame;
 // Called when web controller receives a new message from the web page.
 - (void)didReceiveScriptMessage:(WKScriptMessage*)message;
-// Returns a new script which wraps |script| with windowID check so |script| is
-// not evaluated on windowID mismatch.
-- (NSString*)scriptByAddingWindowIDCheckForScript:(NSString*)script;
 // Attempts to handle a script message. Returns YES on success, NO otherwise.
 - (BOOL)respondToWKScriptMessage:(WKScriptMessage*)scriptMessage;
 // Handles frame became available message.
@@ -606,8 +589,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     _navigationState = web::WKNavigationState::FINISHED;
     // Content area is lazily instantiated.
     _defaultURL = GURL(url::kAboutBlankURL);
-    _jsInjectionReceiver =
-        [[CRWJSInjectionReceiver alloc] initWithEvaluator:self];
+    _jsInjector = [[CRWJSInjector alloc] initWithDelegate:self];
     _webViewProxy = [[CRWWebViewProxyImpl alloc] initWithWebController:self];
     [[_webViewProxy scrollViewProxy] addObserver:self];
     _pendingLoadCompleteActions = [[NSMutableArray alloc] init];
@@ -740,11 +722,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
         }
                            name:kFrameBecameUnavailableMessageName
                         webView:webView];
-
-    _windowIDJSManager = [[CRWJSWindowIDManager alloc] initWithWebView:webView];
-  } else {
-    _windowIDJSManager = nil;
   }
+  [_jsInjector setWebView:webView];
   [_webView setNavigationDelegate:self];
   [_webView setUIDelegate:self];
   for (NSString* keyPath in self.WKWebViewObservers) {
@@ -752,7 +731,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   }
   _webView.allowsBackForwardNavigationGestures =
       _allowsBackForwardNavigationGestures;
-  _injectedScriptManagers = [[NSMutableSet alloc] init];
   [self setDocumentURL:_defaultURL context:nullptr];
 }
 
@@ -1347,28 +1325,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                                         forNavigation:navigation];
 }
 
-- (void)executeUserJavaScript:(NSString*)script
-            completionHandler:(void (^)(id, NSError*))completion {
-  // For security reasons, executing JavaScript on pages with app-specific URLs
-  // is not allowed, because those pages may have elevated privileges.
-  GURL lastCommittedURL = self.webState->GetLastCommittedURL();
-  if (web::GetWebClient()->IsAppSpecificURL(lastCommittedURL)) {
-    if (completion) {
-      dispatch_async(dispatch_get_main_queue(), ^{
-        NSError* error = [[NSError alloc]
-            initWithDomain:web::kJSEvaluationErrorDomain
-                      code:web::JS_EVALUATION_ERROR_CODE_NO_WEB_VIEW
-                  userInfo:nil];
-        completion(nil, error);
-      });
-    }
-    return;
-  }
-
-  [self touched:YES];
-  [self executeJavaScript:script completionHandler:completion];
-}
-
 - (void)requirePageReconstruction {
   // TODO(crbug.com/736103): Removing web view will destroy session history for
   // WKBasedNavigationManager.
@@ -1518,29 +1474,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                       completion(snapshot);
                     }
                   }];
-}
-
-#pragma mark - CRWJSInjectionEvaluator (Public)
-
-- (void)executeJavaScript:(NSString*)script
-        completionHandler:(void (^)(id, NSError*))completionHandler {
-  NSString* safeScript = [self scriptByAddingWindowIDCheckForScript:script];
-  web::ExecuteJavaScript(self.webView, safeScript, completionHandler);
-}
-
-- (BOOL)scriptHasBeenInjectedForClass:(Class)injectionManagerClass {
-  return [_injectedScriptManagers containsObject:injectionManagerClass];
-}
-
-- (void)injectScript:(NSString*)script forClass:(Class)JSInjectionManagerClass {
-  DCHECK(script.length);
-  // Script execution is an asynchronous operation which may pass sensitive
-  // data to the page. executeJavaScript:completionHandler makes sure that
-  // receiver page did not change by checking its window id.
-  // |[self.webView executeJavaScript:completionHandler:]| is not used here
-  // because it does not check that page is the same.
-  [self executeJavaScript:script completionHandler:nil];
-  [_injectedScriptManagers addObject:JSInjectionManagerClass];
 }
 
 #pragma mark - CRWSessionControllerDelegate (Public)
@@ -2531,7 +2464,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     [script appendString:[self javaScriptToDispatchHashChangeWithOldURL:oldURL
                                                                  newURL:URL]];
   }
-  [self executeJavaScript:script completionHandler:nil];
+  [_jsInjector executeJavaScript:script completionHandler:nil];
 }
 
 #pragma mark - Native Content
@@ -2756,12 +2689,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   if (![self respondToWKScriptMessage:message]) {
     DLOG(WARNING) << "Message from JS not handled due to invalid format";
   }
-}
-
-- (NSString*)scriptByAddingWindowIDCheckForScript:(NSString*)script {
-  NSString* kTemplate = @"if (__gCrWeb['windowId'] === '%@') { %@; }";
-  return [NSString
-      stringWithFormat:kTemplate, [_windowIDJSManager windowID], script];
 }
 
 - (BOOL)respondToWKScriptMessage:(WKScriptMessage*)scriptMessage {
@@ -3085,14 +3012,14 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   NSString* replaceWebViewJS = [self javaScriptToReplaceWebViewURL:pushURL
                                                    stateObjectJSON:stateObject];
   __weak CRWWebController* weakSelf = self;
-  [self executeJavaScript:replaceWebViewJS
-        completionHandler:^(id, NSError*) {
-          CRWWebController* strongSelf = weakSelf;
-          if (strongSelf && !strongSelf->_isBeingDestroyed) {
-            [strongSelf optOutScrollsToTopForSubviews];
-            [strongSelf didFinishNavigation:nullptr];
-          }
-        }];
+  [_jsInjector executeJavaScript:replaceWebViewJS
+               completionHandler:^(id, NSError*) {
+                 CRWWebController* strongSelf = weakSelf;
+                 if (strongSelf && !strongSelf->_isBeingDestroyed) {
+                   [strongSelf optOutScrollsToTopForSubviews];
+                   [strongSelf didFinishNavigation:nullptr];
+                 }
+               }];
   return YES;
 }
 
@@ -3145,13 +3072,13 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   NSString* replaceStateJS = [self javaScriptToReplaceWebViewURL:replaceURL
                                                  stateObjectJSON:stateObject];
   __weak CRWWebController* weakSelf = self;
-  [self executeJavaScript:replaceStateJS
-        completionHandler:^(id, NSError*) {
-          CRWWebController* strongSelf = weakSelf;
-          if (!strongSelf || strongSelf->_isBeingDestroyed)
-            return;
-          [strongSelf didFinishNavigation:nullptr];
-        }];
+  [_jsInjector executeJavaScript:replaceStateJS
+               completionHandler:^(id, NSError*) {
+                 CRWWebController* strongSelf = weakSelf;
+                 if (!strongSelf || strongSelf->_isBeingDestroyed)
+                   return;
+                 [strongSelf didFinishNavigation:nullptr];
+               }];
   return YES;
 }
 
@@ -3377,15 +3304,17 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // window.scrollTo while user is scrolling. See crbug.com/554257
 - (void)webViewScrollViewWillBeginDragging:
     (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
-  [self executeJavaScript:@"__gCrWeb.setWebViewScrollViewIsDragging(true)"
-        completionHandler:nil];
+  [_jsInjector
+      executeJavaScript:@"__gCrWeb.setWebViewScrollViewIsDragging(true)"
+      completionHandler:nil];
 }
 
 - (void)webViewScrollViewDidEndDragging:
             (CRWWebViewScrollViewProxy*)webViewScrollViewProxy
                          willDecelerate:(BOOL)decelerate {
-  [self executeJavaScript:@"__gCrWeb.setWebViewScrollViewIsDragging(false)"
-        completionHandler:nil];
+  [_jsInjector
+      executeJavaScript:@"__gCrWeb.setWebViewScrollViewIsDragging(false)"
+      completionHandler:nil];
 }
 
 #pragma mark - Page State
@@ -3408,17 +3337,17 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
        "viewport ? viewport.content : '';";
   __weak CRWWebController* weakSelf = self;
   int itemID = currentItem->GetUniqueID();
-  [self executeJavaScript:kViewportContentQuery
-        completionHandler:^(id viewportContent, NSError*) {
-          web::NavigationItem* item = [weakSelf currentNavItem];
-          if (item && item->GetUniqueID() == itemID) {
-            web::PageViewportState viewportState(
-                base::mac::ObjCCast<NSString>(viewportContent));
-            completion(&viewportState);
-          } else {
-            completion(nullptr);
-          }
-        }];
+  [_jsInjector executeJavaScript:kViewportContentQuery
+               completionHandler:^(id viewportContent, NSError*) {
+                 web::NavigationItem* item = [weakSelf currentNavItem];
+                 if (item && item->GetUniqueID() == itemID) {
+                   web::PageViewportState viewportState(
+                       base::mac::ObjCCast<NSString>(viewportContent));
+                   completion(&viewportState);
+                 } else {
+                   completion(nullptr);
+                 }
+               }];
 }
 
 - (void)orientationDidChange {
@@ -4736,13 +4665,13 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // |loadHTMLString:baseURL| navigation is committed.
   if (!web::GetWebClient()->IsSlimNavigationManagerEnabled() ||
       !IsPlaceholderUrl(webViewURL)) {
-    _injectedScriptManagers = [[NSMutableSet alloc] init];
+    [_jsInjector resetInjectedScriptSet];
     if ([self contentIsHTML] || [self contentIsImage] ||
         self.webState->GetContentsMimeType().empty()) {
       // In unit tests MIME type will be empty, because loadHTML:forURL: does
       // not notify web view delegate about received response, so web controller
       // does not get a chance to properly update MIME type.
-      [_windowIDJSManager inject];
+      [_jsInjector injectWindowID];
       web::WebFramesManagerImpl::FromWebState(self.webState)
           ->RegisterExistingFrames();
     }
@@ -5630,7 +5559,18 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)webView:(WKWebView*)webView
     executeJavaScript:(NSString*)javaScript
     completionHandler:(void (^)(id, NSError*))completionHandler {
-  [self executeJavaScript:javaScript completionHandler:completionHandler];
+  [_jsInjector executeJavaScript:javaScript
+               completionHandler:completionHandler];
+}
+
+#pragma mark - CRWJSInjectorDelegate methods
+
+- (GURL)lastCommittedURLForJSInjector:(CRWJSInjector*)injector {
+  return self.webState->GetLastCommittedURL();
+}
+
+- (void)willExecuteUserScriptForJSInjector:(CRWJSInjector*)injector {
+  [self touched:YES];
 }
 
 #pragma mark - CRWNativeContentDelegate methods

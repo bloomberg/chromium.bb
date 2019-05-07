@@ -37,6 +37,11 @@
   web::ExecuteJavaScript(_webView, script, completionHandler);
 }
 
+- (void)executeUserJavaScript:(NSString*)script
+            completionHandler:(void (^)(id, NSError*))completionHandler {
+  web::ExecuteJavaScript(_webView, script, completionHandler);
+}
+
 - (BOOL)scriptHasBeenInjectedForClass:(Class)injectionManagerClass {
   return [_injectedScriptManagers containsObject:injectionManagerClass];
 }

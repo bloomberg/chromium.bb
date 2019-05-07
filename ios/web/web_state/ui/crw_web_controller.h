@@ -8,7 +8,6 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/web/navigation/crw_session_controller.h"
-#import "ios/web/public/web_state/js/crw_js_injection_evaluator.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/web_state/ui/crw_touch_tracking_recognizer.h"
@@ -21,7 +20,7 @@ enum class WKNavigationState;
 
 }  // namespace web
 
-@class CRWJSInjectionReceiver;
+@class CRWJSInjector;
 @protocol CRWNativeContent;
 @protocol CRWNativeContentProvider;
 @protocol CRWSwipeRecognizerProvider;
@@ -41,9 +40,8 @@ class WebStateImpl;
 // web view.
 // This is an abstract class which must not be instantiated directly.
 // TODO(stuartmorgan): Move all of the navigation APIs out of this class.
-@interface CRWWebController : NSObject <CRWJSInjectionEvaluator,
-                                        CRWSessionControllerDelegate,
-                                        CRWTouchTrackingDelegate>
+@interface CRWWebController
+    : NSObject <CRWSessionControllerDelegate, CRWTouchTrackingDelegate>
 
 // Whether or not a UIWebView is allowed to exist in this CRWWebController.
 // Defaults to NO; this should be enabled before attempting to access the view.
@@ -86,9 +84,8 @@ class WebStateImpl;
 // back-forward list navigations.
 @property(nonatomic) BOOL allowsBackForwardNavigationGestures;
 
-// The receiver of JavaScripts.
-@property(nonatomic, strong, readonly)
-    CRWJSInjectionReceiver* jsInjectionReceiver;
+// JavaScript injector.
+@property(nonatomic, strong, readonly) CRWJSInjector* jsInjector;
 
 // Whether the WebController should attempt to keep the render process alive.
 @property(nonatomic, assign, getter=shouldKeepRenderProcessAlive)
@@ -165,13 +162,6 @@ class WebStateImpl;
 
 // Stops loading the page.
 - (void)stopLoading;
-
-// Executes |script| in the web view, registering user interaction.
-// |result| will be backed up by different classes depending on resulting JS
-// type: NSString (string), NSNumber (number or boolean), NSDictionary (object),
-// NSArray (array), NSNull (null), NSDate (Date), nil (undefined).
-- (void)executeUserJavaScript:(NSString*)script
-            completionHandler:(void (^)(id result, NSError*))completion;
 
 // Requires that the next load rebuild the web view. This is expensive, and
 // should be used only in the case where something has changed that the web view
