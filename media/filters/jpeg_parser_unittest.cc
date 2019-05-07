@@ -77,7 +77,30 @@ TEST(JpegParserTest, Parsing) {
   EXPECT_EQ(3, result.scan.components[2].component_selector);
   EXPECT_EQ(1, result.scan.components[2].dc_selector);
   EXPECT_EQ(1, result.scan.components[2].ac_selector);
-  EXPECT_EQ(121150u, result.data_size);
+  EXPECT_EQ(121148u, result.data_size);
+  EXPECT_EQ(121358u, result.image_size);
+}
+
+TEST(JpegParserTest, TrailingZerosShouldBeIgnored) {
+  base::FilePath data_dir;
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &data_dir));
+  base::FilePath file_path =
+      data_dir.AppendASCII("media")
+          .AppendASCII("test")
+          .AppendASCII("data")
+          .AppendASCII("pixel-1280x720-trailing-zeros.jpg");
+
+  base::MemoryMappedFile stream;
+  ASSERT_TRUE(stream.Initialize(file_path))
+      << "Couldn't open stream file: " << file_path.MaybeAsASCII();
+
+  JpegParseResult result;
+  ASSERT_TRUE(ParseJpegPicture(stream.data(), stream.length(), &result));
+
+  // Verify selected fields
+
+  // SOS fields
+  EXPECT_EQ(121148u, result.data_size);
   EXPECT_EQ(121358u, result.image_size);
 }
 

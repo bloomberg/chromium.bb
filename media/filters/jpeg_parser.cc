@@ -352,11 +352,17 @@ static bool ParseSOS(const char* buffer,
   return true;
 }
 
-// |eoi_ptr| will point to the end of image (after EOI marker) after search
-// succeeds. Returns true on EOI marker found, or false.
-static bool SearchEOI(const char* buffer, size_t length, const char** eoi_ptr) {
+// |eoi_begin_ptr| will point to the beginning of the EOI marker (the FF byte)
+// and |eoi_end_ptr| will point to the end of image (right after the end of the
+// EOI marker) after search succeeds. Returns true on EOI marker found, or false
+// otherwise.
+static bool SearchEOI(const char* buffer,
+                      size_t length,
+                      const char** eoi_begin_ptr,
+                      const char** eoi_end_ptr) {
   DCHECK(buffer);
-  DCHECK(eoi_ptr);
+  DCHECK(eoi_begin_ptr);
+  DCHECK(eoi_end_ptr);
   BigEndianReader reader(buffer, length);
   uint8_t marker2;
 
@@ -386,7 +392,8 @@ static bool SearchEOI(const char* buffer, size_t length, const char** eoi_ptr) {
       case JPEG_RST7:
         break;
       case JPEG_EOI:
-        *eoi_ptr = reader.ptr();
+        *eoi_begin_ptr = marker1_ptr;
+        *eoi_end_ptr = reader.ptr();
         return true;
       default:
         // Skip for other markers.
@@ -515,9 +522,6 @@ static bool ParseSOI(const char* buffer,
   // Scan data follows scan header immediately.
   result->data = reader.ptr();
   result->data_size = reader.remaining();
-  const size_t kSoiSize = 2;
-  result->image_size = length + kSoiSize;
-
   return true;
 }
 
@@ -537,28 +541,34 @@ bool ParseJpegPicture(const uint8_t* buffer,
     return false;
   }
 
-  return ParseSOI(reader.ptr(), reader.remaining(), result);
+  if (!ParseSOI(reader.ptr(), reader.remaining(), result))
+    return false;
+
+  // Update the sizes: |result->data_size| should not include the EOI marker or
+  // beyond.
+  BigEndianReader eoi_reader(result->data, result->data_size);
+  const char* eoi_begin_ptr = nullptr;
+  const char* eoi_end_ptr = nullptr;
+  if (!SearchEOI(eoi_reader.ptr(), eoi_reader.remaining(), &eoi_begin_ptr,
+                 &eoi_end_ptr)) {
+    DLOG(ERROR) << "SearchEOI failed";
+    return false;
+  }
+  DCHECK(eoi_begin_ptr);
+  DCHECK(eoi_end_ptr);
+  result->data_size = eoi_begin_ptr - result->data;
+  result->image_size = eoi_end_ptr - reinterpret_cast<const char*>(buffer);
+  return true;
 }
 
+// TODO(andrescj): this function no longer seems necessary. Fix call sites to
+// use ParseJpegPicture() directly.
 bool ParseJpegStream(const uint8_t* buffer,
                      size_t length,
                      JpegParseResult* result) {
   DCHECK(buffer);
   DCHECK(result);
-  if (!ParseJpegPicture(buffer, length, result))
-    return false;
-
-  BigEndianReader reader(
-      reinterpret_cast<const char*>(result->data), result->data_size);
-  const char* eoi_ptr = nullptr;
-  if (!SearchEOI(reader.ptr(), reader.remaining(), &eoi_ptr)) {
-    DLOG(ERROR) << "SearchEOI failed";
-    return false;
-  }
-  DCHECK(eoi_ptr);
-  result->data_size = eoi_ptr - result->data;
-  result->image_size = eoi_ptr - reinterpret_cast<const char*>(buffer);
-  return true;
+  return ParseJpegPicture(buffer, length, result);
 }
 
 }  // namespace media
