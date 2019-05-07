@@ -725,6 +725,17 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
   frames.push_back(ack_frame);
   DVLOG(1) << "Adding frame: " << frames.back();
 
+  size_t max_plaintext_size =
+      framer.GetMaxPlaintextSize(quic::kDefaultMaxPacketSize);
+  size_t ack_frame_length = framer.GetSerializedFrameLength(
+      ack_frame, max_plaintext_size, /*first_frame*/ true, /*last_frame*/ false,
+      header.packet_number_length);
+  const size_t min_plaintext_size = 7;
+  if (version_.HasHeaderProtection() && ack_frame_length < min_plaintext_size) {
+    size_t padding_length = min_plaintext_size - ack_frame_length;
+    frames.push_back(quic::QuicFrame(quic::QuicPaddingFrame(padding_length)));
+  }
+
   std::unique_ptr<quic::QuicPacket> packet(
       quic::test::BuildUnsizedDataPacket(&framer, header, frames));
   char buffer[quic::kMaxOutgoingPacketSize];
@@ -1221,10 +1232,32 @@ QuicTestPacketMaker::MakeMultipleFramesPacket(
   if (data_producer != nullptr) {
     framer.set_data_producer(data_producer);
   }
+  quic::QuicFrames frames_copy = frames;
   size_t max_plaintext_size =
       framer.GetMaxPlaintextSize(quic::kDefaultMaxPacketSize);
+  if (version_.HasHeaderProtection()) {
+    size_t packet_size =
+        quic::GetPacketHeaderSize(version_.transport_version, header);
+    size_t frames_size = 0;
+    for (size_t i = 0; i < frames.size(); ++i) {
+      bool first_frame = i == 0;
+      bool last_frame = i == frames.size() - 1;
+      const size_t frame_size = framer.GetSerializedFrameLength(
+          frames[i], max_plaintext_size - packet_size, first_frame, last_frame,
+          header.packet_number_length);
+      packet_size += frame_size;
+      frames_size += frame_size;
+    }
+    // This should be done by calling QuicPacketCreator::MinPlaintextPacketSize.
+    const size_t min_plaintext_size = 7;
+    if (frames_size < min_plaintext_size) {
+      size_t padding_length = min_plaintext_size - frames_size;
+      frames_copy.push_back(
+          quic::QuicFrame(quic::QuicPaddingFrame(padding_length)));
+    }
+  }
   std::unique_ptr<quic::QuicPacket> packet(quic::test::BuildUnsizedDataPacket(
-      &framer, header, frames, max_plaintext_size));
+      &framer, header, frames_copy, max_plaintext_size));
   char buffer[quic::kMaxOutgoingPacketSize];
   size_t encrypted_size =
       framer.EncryptPayload(quic::ENCRYPTION_INITIAL, header.packet_number,
