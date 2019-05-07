@@ -13,40 +13,41 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "content/common/push_messaging.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom.h"
 #include "url/gurl.h"
 
 namespace blink {
 namespace mojom {
+class PushMessagingService;
 enum class PushRegistrationStatus;
 enum class PushUnregistrationStatus;
 }  // namespace mojom
+
+struct PushSubscriptionOptionsParams;
 }  // namespace blink
 
 namespace content {
 
-class PushMessagingService;
 class ServiceWorkerContextWrapper;
-struct PushSubscriptionOptions;
 
 // Documented at definition.
 extern const char kPushSenderIdServiceWorkerKey[];
 extern const char kPushRegistrationIdServiceWorkerKey[];
 
-class PushMessagingManager : public mojom::PushMessaging {
+class PushMessagingManager : public blink::mojom::PushMessaging {
  public:
   PushMessagingManager(int render_process_id,
                        ServiceWorkerContextWrapper* service_worker_context);
 
-  void BindRequest(mojom::PushMessagingRequest request);
+  void BindRequest(blink::mojom::PushMessagingRequest request);
 
-  // mojom::PushMessaging impl, run on IO thread.
+  // blink::mojom::PushMessaging impl, run on IO thread.
   void Subscribe(int32_t render_frame_id,
                  int64_t service_worker_registration_id,
-                 const PushSubscriptionOptions& options,
+                 const blink::PushSubscriptionOptionsParams& options,
                  bool user_gesture,
                  SubscribeCallback callback) override;
   void Unsubscribe(int64_t service_worker_registration_id,
@@ -139,7 +140,7 @@ class PushMessagingManager : public mojom::PushMessaging {
   GURL default_endpoint_;
   GURL web_push_protocol_endpoint_;
 
-  mojo::BindingSet<mojom::PushMessaging> bindings_;
+  mojo::BindingSet<blink::mojom::PushMessaging> bindings_;
 
   base::WeakPtrFactory<PushMessagingManager> weak_factory_io_to_io_;
 

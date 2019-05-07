@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_PUSH_SUBSCRIPTION_OPTIONS_H_
-#define CONTENT_PUBLIC_COMMON_PUSH_SUBSCRIPTION_OPTIONS_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_PUSH_MESSAGING_PUSH_SUBSCRIPTION_OPTIONS_PARAMS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_PUSH_MESSAGING_PUSH_SUBSCRIPTION_OPTIONS_PARAMS_H_
 
 #include <string>
 
-#include "content/common/content_export.h"
+#include "third_party/blink/public/common/common_export.h"
 
-namespace content {
+namespace blink {
 
 // Structure to hold the options provided from the web app developer as
 // part of asking for a new push subscription.
-struct CONTENT_EXPORT PushSubscriptionOptions {
-  PushSubscriptionOptions() {}
-  ~PushSubscriptionOptions() {}
+struct BLINK_COMMON_EXPORT PushSubscriptionOptionsParams {
+  PushSubscriptionOptionsParams() {}
+  ~PushSubscriptionOptionsParams() {}
 
   // Whether or not the app developer agrees to provide user visible
   // notifications whenever they receive a push message.
@@ -27,6 +27,6 @@ struct CONTENT_EXPORT PushSubscriptionOptions {
   std::string sender_info;
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_PUBLIC_COMMON_CONTENT_PUSH_SUBSCRIPTION_OPTIONS_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_PUSH_MESSAGING_PUSH_SUBSCRIPTION_OPTIONS_PARAMS_H_

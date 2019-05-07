@@ -13,9 +13,11 @@
 #include "base/macros.h"
 #include "content/public/browser/push_messaging_service.h"
 
-namespace content {
+namespace blink {
+struct PushSubscriptionOptionsParams;
+}  // namespace blink
 
-struct PushSubscriptionOptions;
+namespace content {
 
 class WebTestPushMessagingService : public PushMessagingService {
  public:
@@ -24,16 +26,17 @@ class WebTestPushMessagingService : public PushMessagingService {
 
   // PushMessagingService implementation:
   GURL GetEndpoint(bool standard_protocol) const override;
-  void SubscribeFromDocument(const GURL& requesting_origin,
-                             int64_t service_worker_registration_id,
-                             int renderer_id,
-                             int render_frame_id,
-                             const PushSubscriptionOptions& options,
-                             bool user_gesture,
-                             RegisterCallback callback) override;
+  void SubscribeFromDocument(
+      const GURL& requesting_origin,
+      int64_t service_worker_registration_id,
+      int renderer_id,
+      int render_frame_id,
+      const blink::PushSubscriptionOptionsParams& options,
+      bool user_gesture,
+      RegisterCallback callback) override;
   void SubscribeFromWorker(const GURL& requesting_origin,
                            int64_t service_worker_registration_id,
-                           const PushSubscriptionOptions& options,
+                           const blink::PushSubscriptionOptionsParams& options,
                            RegisterCallback callback) override;
   void GetSubscriptionInfo(const GURL& origin,
                            int64_t service_worker_registration_id,

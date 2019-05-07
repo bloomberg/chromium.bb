@@ -21,7 +21,6 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_storage.h"
-#include "content/common/push_messaging.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/permission_type.h"
@@ -30,8 +29,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
+#include "third_party/blink/public/common/push_messaging/push_subscription_options_params.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 
 namespace content {
@@ -138,7 +139,7 @@ struct PushMessagingManager::RegisterData {
   GURL requesting_origin;
   int64_t service_worker_registration_id;
   base::Optional<std::string> existing_subscription_id;
-  PushSubscriptionOptions options;
+  blink::PushSubscriptionOptionsParams options;
   SubscribeCallback callback;
 
   // The following member should only be read if FromDocument() is true.
@@ -290,7 +291,7 @@ PushMessagingManager::PushMessagingManager(
 PushMessagingManager::~PushMessagingManager() {}
 
 void PushMessagingManager::BindRequest(
-    mojom::PushMessagingRequest request) {
+    blink::mojom::PushMessagingRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
@@ -298,11 +299,12 @@ void PushMessagingManager::BindRequest(
 // PushMessagingManager and Core.
 // -----------------------------------------------------------------------------
 
-void PushMessagingManager::Subscribe(int32_t render_frame_id,
-                                     int64_t service_worker_registration_id,
-                                     const PushSubscriptionOptions& options,
-                                     bool user_gesture,
-                                     SubscribeCallback callback) {
+void PushMessagingManager::Subscribe(
+    int32_t render_frame_id,
+    int64_t service_worker_registration_id,
+    const blink::PushSubscriptionOptionsParams& options,
+    bool user_gesture,
+    SubscribeCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(mvanouwerkerk): Validate arguments?
   RegisterData data;
@@ -472,7 +474,7 @@ void PushMessagingManager::Core::RegisterOnUI(
 
   int64_t registration_id = data.service_worker_registration_id;
   GURL requesting_origin = data.requesting_origin;
-  PushSubscriptionOptions options = data.options;
+  blink::PushSubscriptionOptionsParams options = data.options;
   int render_frame_id = data.render_frame_id;
   if (data.FromDocument()) {
     push_service->SubscribeFromDocument(
@@ -847,7 +849,7 @@ void PushMessagingManager::Core::GetSubscriptionDidGetInfoOnUI(
     const std::vector<uint8_t>& auth) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (is_valid) {
-    PushSubscriptionOptions options;
+    blink::PushSubscriptionOptionsParams options;
     // Chrome rejects subscription requests with userVisibleOnly false, so it
     // must have been true. TODO(harkness): If Chrome starts accepting silent
     // push subscriptions with userVisibleOnly false, the bool will need to be

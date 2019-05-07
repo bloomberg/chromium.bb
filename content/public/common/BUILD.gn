@@ -178,7 +178,6 @@ jumbo_source_set("common_sources") {
     "process_type.h",
     "profiling.cc",
     "profiling.h",
-    "push_subscription_options.h",
     "referrer.cc",
     "referrer.h",
     "referrer_type_converters.cc",

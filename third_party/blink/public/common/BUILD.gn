@@ -95,6 +95,7 @@ source_set("headers") {
     "page/launching_process_state.h",
     "prerender/prerender_rel_type.h",
     "privacy_preferences.h",
+    "push_messaging/push_subscription_options_params.h",
     "scheduler/web_scheduler_tracked_feature.h",
     "screen_orientation/web_screen_orientation_lock_type.h",
     "screen_orientation/web_screen_orientation_type.h",

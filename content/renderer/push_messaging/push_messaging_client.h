@@ -12,9 +12,9 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "content/common/push_messaging.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_client.h"
 
 class GURL;
@@ -26,12 +26,11 @@ enum class PushRegistrationStatus;
 }
 
 struct Manifest;
+struct PushSubscriptionOptionsParams;
 struct WebPushSubscriptionOptions;
-}
+}  // namespace blink
 
 namespace content {
-
-struct PushSubscriptionOptions;
 
 class PushMessagingClient : public RenderFrameObserver,
                             public blink::WebPushClient {
@@ -60,7 +59,7 @@ class PushMessagingClient : public RenderFrameObserver,
 
   void DoSubscribe(
       int64_t service_worker_registration_id,
-      const PushSubscriptionOptions& options,
+      const blink::PushSubscriptionOptionsParams& options,
       bool user_gesture,
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks);
 
@@ -68,11 +67,11 @@ class PushMessagingClient : public RenderFrameObserver,
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
       blink::mojom::PushRegistrationStatus status,
       const base::Optional<GURL>& endpoint,
-      const base::Optional<PushSubscriptionOptions>& options,
+      const base::Optional<blink::PushSubscriptionOptionsParams>& options,
       const base::Optional<std::vector<uint8_t>>& p256dh,
       const base::Optional<std::vector<uint8_t>>& auth);
 
-  mojom::PushMessagingPtr push_messaging_manager_;
+  blink::mojom::PushMessagingPtr push_messaging_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingClient);
 };

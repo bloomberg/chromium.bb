@@ -5,7 +5,6 @@
 #ifndef CONTENT_RENDERER_PUSH_MESSAGING_PUSH_MESSAGING_UTILS_H_
 #define CONTENT_RENDERER_PUSH_MESSAGING_PUSH_MESSAGING_UTILS_H_
 
-#include "content/common/push_messaging.mojom.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_error.h"
 
 namespace blink {

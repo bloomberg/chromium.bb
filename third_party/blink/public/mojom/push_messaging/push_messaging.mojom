@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module content.mojom;
+module blink.mojom;
 
 import "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom";
 import "url/mojom/url.mojom";
@@ -30,7 +30,7 @@ interface PushMessaging {
             int64 service_worker_registration_id,
             PushSubscriptionOptions options,
             bool user_gesture)
-           => (blink.mojom.PushRegistrationStatus status,
+           => (PushRegistrationStatus status,
                url.mojom.Url? endpoint,
                PushSubscriptionOptions? options,
                array<uint8>? p256dh,
@@ -45,7 +45,7 @@ interface PushMessaging {
                  string? error_message);
 
   GetSubscription(int64 service_worker_registration_id)
-                 => (blink.mojom.PushGetRegistrationStatus status,
+                 => (PushGetRegistrationStatus status,
                      url.mojom.Url? endpoint,
                      PushSubscriptionOptions? options,
                      array<uint8>? p256dh,

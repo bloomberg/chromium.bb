@@ -20,12 +20,12 @@ enum class PushRegistrationStatus;
 enum class PushUnregistrationReason;
 enum class PushUnregistrationStatus;
 }  // namespace mojom
+struct PushSubscriptionOptionsParams;
 }  // namespace blink
 
 namespace content {
 
 class BrowserContext;
-struct PushSubscriptionOptions;
 
 // A push service-agnostic interface that the Push API uses for talking to
 // push messaging services like GCM. Must only be used on the UI thread.
@@ -58,23 +58,25 @@ class CONTENT_EXPORT PushMessagingService {
   // displayed to the user. It's safe to call this method multiple times for
   // the same registration information, in which case the existing subscription
   // will be returned by the server.
-  virtual void SubscribeFromDocument(const GURL& requesting_origin,
-                                     int64_t service_worker_registration_id,
-                                     int renderer_id,
-                                     int render_frame_id,
-                                     const PushSubscriptionOptions& options,
-                                     bool user_gesture,
-                                     RegisterCallback callback) = 0;
+  virtual void SubscribeFromDocument(
+      const GURL& requesting_origin,
+      int64_t service_worker_registration_id,
+      int renderer_id,
+      int render_frame_id,
+      const blink::PushSubscriptionOptionsParams& options,
+      bool user_gesture,
+      RegisterCallback callback) = 0;
 
   // Subscribe the given |options.sender_info| with the push messaging service.
   // The frame is not known so if permission was not previously granted by the
   // user this request should fail. It's safe to call this method multiple times
   // for the same registration information, in which case the existing
   // subscription will be returned by the server.
-  virtual void SubscribeFromWorker(const GURL& requesting_origin,
-                                   int64_t service_worker_registration_id,
-                                   const PushSubscriptionOptions& options,
-                                   RegisterCallback callback) = 0;
+  virtual void SubscribeFromWorker(
+      const GURL& requesting_origin,
+      int64_t service_worker_registration_id,
+      const blink::PushSubscriptionOptionsParams& options,
+      RegisterCallback callback) = 0;
 
   // Retrieves the subscription associated with |origin| and
   // |service_worker_registration_id|, validates that the provided

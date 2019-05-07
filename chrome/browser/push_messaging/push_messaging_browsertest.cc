@@ -54,12 +54,12 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/push_subscription_options.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/push_messaging/push_subscription_options_params.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -383,7 +383,7 @@ void PushMessagingBrowserTest::SetupOrphanedPushSubscription(
   // registration id (they increment from 0).
   const int64_t service_worker_registration_id = 1234LL;
 
-  content::PushSubscriptionOptions options;
+  blink::PushSubscriptionOptionsParams options;
   options.user_visible_only = true;
   options.sender_info = GetTestApplicationServerKey();
   base::RunLoop run_loop;

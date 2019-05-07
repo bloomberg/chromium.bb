@@ -13,8 +13,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "content/common/push_messaging.mojom.h"
 #include "content/public/renderer/worker_thread.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_error.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_provider.h"
 
@@ -27,12 +27,11 @@ enum class PushGetRegistrationStatus;
 enum class PushRegistrationStatus;
 }  // namespace mojom
 
+struct PushSubscriptionOptionsParams;
 struct WebPushSubscriptionOptions;
 }  // namespace blink
 
 namespace content {
-
-struct PushSubscriptionOptions;
 
 blink::WebPushError PushRegistrationStatusToWebPushError(
     blink::mojom::PushRegistrationStatus status);
@@ -66,13 +65,13 @@ class PushProvider : public blink::WebPushProvider,
   explicit PushProvider(const scoped_refptr<base::SingleThreadTaskRunner>&
                             main_thread_task_runner);
 
-  static void GetInterface(mojom::PushMessagingRequest request);
+  static void GetInterface(blink::mojom::PushMessagingRequest request);
 
   void DidSubscribe(
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
       blink::mojom::PushRegistrationStatus status,
       const base::Optional<GURL>& endpoint,
-      const base::Optional<PushSubscriptionOptions>& options,
+      const base::Optional<blink::PushSubscriptionOptionsParams>& options,
       const base::Optional<std::vector<uint8_t>>& p256dh,
       const base::Optional<std::vector<uint8_t>>& auth);
 
@@ -86,11 +85,11 @@ class PushProvider : public blink::WebPushProvider,
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
       blink::mojom::PushGetRegistrationStatus status,
       const base::Optional<GURL>& endpoint,
-      const base::Optional<PushSubscriptionOptions>& options,
+      const base::Optional<blink::PushSubscriptionOptionsParams>& options,
       const base::Optional<std::vector<uint8_t>>& p256dh,
       const base::Optional<std::vector<uint8_t>>& auth);
 
-  mojom::PushMessagingPtr push_messaging_manager_;
+  blink::mojom::PushMessagingPtr push_messaging_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(PushProvider);
 };

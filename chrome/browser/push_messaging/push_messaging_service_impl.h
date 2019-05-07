@@ -35,13 +35,14 @@ class Profile;
 class PushMessagingAppIdentifier;
 class PushMessagingServiceTest;
 class ScopedKeepAlive;
-struct PushSubscriptionOptions;
 
 namespace blink {
 namespace mojom {
 enum class PushDeliveryStatus;
 enum class PushRegistrationStatus;
 }  // namespace mojom
+
+struct PushSubscriptionOptionsParams;
 }  // namespace blink
 
 namespace gcm {
@@ -82,16 +83,17 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   // content::PushMessagingService implementation:
   GURL GetEndpoint(bool standard_protocol) const override;
-  void SubscribeFromDocument(const GURL& requesting_origin,
-                             int64_t service_worker_registration_id,
-                             int renderer_id,
-                             int render_frame_id,
-                             const content::PushSubscriptionOptions& options,
-                             bool user_gesture,
-                             RegisterCallback callback) override;
+  void SubscribeFromDocument(
+      const GURL& requesting_origin,
+      int64_t service_worker_registration_id,
+      int renderer_id,
+      int render_frame_id,
+      const blink::PushSubscriptionOptionsParams& options,
+      bool user_gesture,
+      RegisterCallback callback) override;
   void SubscribeFromWorker(const GURL& requesting_origin,
                            int64_t service_worker_registration_id,
-                           const content::PushSubscriptionOptions& options,
+                           const blink::PushSubscriptionOptionsParams& options,
                            RegisterCallback callback) override;
   void GetSubscriptionInfo(const GURL& origin,
                            int64_t service_worker_registration_id,
@@ -156,7 +158,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   // Subscribe methods ---------------------------------------------------------
 
   void DoSubscribe(const PushMessagingAppIdentifier& app_identifier,
-                   const content::PushSubscriptionOptions& options,
+                   const blink::PushSubscriptionOptionsParams& options,
                    RegisterCallback callback,
                    ContentSetting permission_status);
 

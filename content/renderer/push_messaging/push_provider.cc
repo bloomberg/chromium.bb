@@ -13,10 +13,10 @@
 #include "base/threading/thread_local.h"
 #include "content/child/child_thread_impl.h"
 #include "content/public/common/child_process_host.h"
-#include "content/public/common/push_subscription_options.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/renderer/push_messaging/push_messaging_utils.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/common/push_messaging/push_subscription_options_params.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription_options.h"
@@ -59,7 +59,7 @@ PushProvider* PushProvider::ThreadSpecificInstance(
 }
 
 // static
-void PushProvider::GetInterface(mojom::PushMessagingRequest request) {
+void PushProvider::GetInterface(blink::mojom::PushMessagingRequest request) {
   if (ChildThreadImpl::current()) {
     ChildThreadImpl::current()->GetConnector()->BindInterface(
         mojom::kBrowserServiceName, std::move(request));
@@ -77,7 +77,7 @@ void PushProvider::Subscribe(
     std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks) {
   DCHECK(callbacks);
 
-  PushSubscriptionOptions content_options;
+  blink::PushSubscriptionOptionsParams content_options;
   content_options.user_visible_only = options.user_visible_only;
 
   // Just treat the server key as a string of bytes and pass it to the push
@@ -97,7 +97,7 @@ void PushProvider::DidSubscribe(
     std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
     blink::mojom::PushRegistrationStatus status,
     const base::Optional<GURL>& endpoint,
-    const base::Optional<PushSubscriptionOptions>& options,
+    const base::Optional<blink::PushSubscriptionOptionsParams>& options,
     const base::Optional<std::vector<uint8_t>>& p256dh,
     const base::Optional<std::vector<uint8_t>>& auth) {
   DCHECK(callbacks);
@@ -167,7 +167,7 @@ void PushProvider::DidGetSubscription(
     std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
     blink::mojom::PushGetRegistrationStatus status,
     const base::Optional<GURL>& endpoint,
-    const base::Optional<PushSubscriptionOptions>& options,
+    const base::Optional<blink::PushSubscriptionOptionsParams>& options,
     const base::Optional<std::vector<uint8_t>>& p256dh,
     const base::Optional<std::vector<uint8_t>>& auth) {
   DCHECK(callbacks);

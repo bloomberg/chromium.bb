@@ -53,7 +53,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/push_subscription_options.h"
+#include "third_party/blink/public/common/push_messaging/push_subscription_options_params.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -426,7 +426,7 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
     int64_t service_worker_registration_id,
     int renderer_id,
     int render_frame_id,
-    const content::PushSubscriptionOptions& options,
+    const blink::PushSubscriptionOptionsParams& options,
     bool user_gesture,
     RegisterCallback callback) {
   PushMessagingAppIdentifier app_identifier =
@@ -477,7 +477,7 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
 void PushMessagingServiceImpl::SubscribeFromWorker(
     const GURL& requesting_origin,
     int64_t service_worker_registration_id,
-    const content::PushSubscriptionOptions& options,
+    const blink::PushSubscriptionOptionsParams& options,
     RegisterCallback register_callback) {
   PushMessagingAppIdentifier app_identifier =
       PushMessagingAppIdentifier::FindByServiceWorker(
@@ -533,7 +533,7 @@ bool PushMessagingServiceImpl::SupportNonVisibleMessages() {
 
 void PushMessagingServiceImpl::DoSubscribe(
     const PushMessagingAppIdentifier& app_identifier,
-    const content::PushSubscriptionOptions& options,
+    const blink::PushSubscriptionOptionsParams& options,
     RegisterCallback register_callback,
     ContentSetting content_setting) {
   if (content_setting != CONTENT_SETTING_ALLOW) {
