@@ -10,6 +10,7 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 
 class GURL;
+class Profile;
 
 namespace web_app {
 
@@ -20,7 +21,7 @@ class AppRegistrar {
   void AddObserver(AppRegistrarObserver* observer);
   void RemoveObserver(const AppRegistrarObserver* observer);
 
-  AppRegistrar();
+  explicit AppRegistrar(Profile* profile);
   virtual ~AppRegistrar();
 
   virtual void Init(base::OnceClosure callback) = 0;
@@ -54,6 +55,15 @@ class AppRegistrar {
   virtual GURL GetScopeUrlForApp(const AppId& app_id) const = 0;
 
  protected:
+  Profile* profile() const { return profile_; }
+
+  void NotifyWebAppInstalled(const AppId& app_id);
+  void NotifyWebAppUninstalled(const AppId& app_id);
+  void NotifyAppRegistrarShutdown();
+
+ private:
+  Profile* profile_;
+
   base::ObserverList<AppRegistrarObserver> observers_;
 };
 

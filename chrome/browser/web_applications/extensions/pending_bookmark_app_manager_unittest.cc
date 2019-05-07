@@ -208,7 +208,7 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    registrar_ = std::make_unique<web_app::TestAppRegistrar>();
+    registrar_ = std::make_unique<web_app::TestAppRegistrar>(profile());
     ui_delegate_ = std::make_unique<web_app::TestWebAppUiDelegate>();
     install_finalizer_ = std::make_unique<web_app::TestInstallFinalizer>();
 

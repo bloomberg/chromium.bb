@@ -20,7 +20,7 @@ class WebApp;
 
 class WebAppRegistrar : public AppRegistrar {
  public:
-  explicit WebAppRegistrar(AbstractWebAppDatabase* database);
+  explicit WebAppRegistrar(Profile* profile, AbstractWebAppDatabase* database);
   ~WebAppRegistrar() override;
 
   void RegisterApp(std::unique_ptr<WebApp> web_app);

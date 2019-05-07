@@ -14,7 +14,7 @@ namespace web_app {
 
 class TestAppRegistrar : public AppRegistrar {
  public:
-  TestAppRegistrar();
+  explicit TestAppRegistrar(Profile* profile);
   ~TestAppRegistrar() override;
 
   // Adds |app_id| to the map of installed apps.

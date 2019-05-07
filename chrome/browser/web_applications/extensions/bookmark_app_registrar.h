@@ -44,8 +44,6 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
  private:
   const Extension* GetExtension(const web_app::AppId& app_id) const;
 
-  Profile* profile_;
-
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_observer_{this};
 };

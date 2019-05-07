@@ -15,8 +15,9 @@
 
 namespace web_app {
 
-WebAppRegistrar::WebAppRegistrar(AbstractWebAppDatabase* database)
-    : database_(database) {
+WebAppRegistrar::WebAppRegistrar(Profile* profile,
+                                 AbstractWebAppDatabase* database)
+    : AppRegistrar(profile), database_(database) {
   DCHECK(database_);
 }
 

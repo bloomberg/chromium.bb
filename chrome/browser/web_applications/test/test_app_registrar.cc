@@ -10,7 +10,7 @@
 
 namespace web_app {
 
-TestAppRegistrar::TestAppRegistrar() = default;
+TestAppRegistrar::TestAppRegistrar(Profile* profile) : AppRegistrar(profile) {}
 
 TestAppRegistrar::~TestAppRegistrar() = default;
 

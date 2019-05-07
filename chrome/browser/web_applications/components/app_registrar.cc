@@ -8,7 +8,7 @@
 
 namespace web_app {
 
-AppRegistrar::AppRegistrar() = default;
+AppRegistrar::AppRegistrar(Profile* profile) : profile_(profile) {}
 
 AppRegistrar::~AppRegistrar() = default;
 
@@ -18,6 +18,21 @@ void AppRegistrar::AddObserver(AppRegistrarObserver* observer) {
 
 void AppRegistrar::RemoveObserver(const AppRegistrarObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void AppRegistrar::NotifyWebAppInstalled(const AppId& app_id) {
+  for (AppRegistrarObserver& observer : observers_)
+    observer.OnWebAppInstalled(app_id);
+}
+
+void AppRegistrar::NotifyWebAppUninstalled(const AppId& app_id) {
+  for (AppRegistrarObserver& observer : observers_)
+    observer.OnWebAppUninstalled(app_id);
+}
+
+void AppRegistrar::NotifyAppRegistrarShutdown() {
+  for (AppRegistrarObserver& observer : observers_)
+    observer.OnAppRegistrarShutdown();
 }
 
 }  // namespace web_app

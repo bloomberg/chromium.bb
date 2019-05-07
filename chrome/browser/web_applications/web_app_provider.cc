@@ -107,7 +107,8 @@ WebAppUiDelegate& WebAppProvider::ui_delegate() {
 void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
   database_factory_ = std::make_unique<WebAppDatabaseFactory>(profile);
   database_ = std::make_unique<WebAppDatabase>(database_factory_.get());
-  auto web_app_registrar = std::make_unique<WebAppRegistrar>(database_.get());
+  auto web_app_registrar =
+      std::make_unique<WebAppRegistrar>(profile, database_.get());
   icon_manager_ = std::make_unique<WebAppIconManager>(
       profile, std::make_unique<FileUtilsWrapper>());
 

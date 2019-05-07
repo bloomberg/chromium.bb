@@ -104,7 +104,7 @@ class WebAppInstallTaskTest : public WebAppTest {
     WebAppTest::SetUp();
 
     database_ = std::make_unique<TestWebAppDatabase>();
-    registrar_ = std::make_unique<WebAppRegistrar>(database_.get());
+    registrar_ = std::make_unique<WebAppRegistrar>(profile(), database_.get());
 
     auto file_utils = std::make_unique<TestFileUtils>();
     file_utils_ = file_utils.get();
