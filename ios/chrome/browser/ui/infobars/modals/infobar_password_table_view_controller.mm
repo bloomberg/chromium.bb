@@ -37,7 +37,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeCancel,
 };
 
-@interface InfobarPasswordTableViewController ()
+@interface InfobarPasswordTableViewController () <UITextFieldDelegate>
 // Item that holds the Username TextField information.
 @property(nonatomic, strong) TableViewTextEditItem* usernameItem;
 // Item that holds the Password TextField information.
@@ -110,6 +110,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.usernameItem.textFieldName =
       l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_USERNAME);
   self.usernameItem.textFieldValue = self.username;
+  self.usernameItem.returnKeyType = UIReturnKeyDone;
   self.usernameItem.textFieldEnabled = !self.currentCredentialsSaved;
   self.usernameItem.autoCapitalizationType = UITextAutocapitalizationTypeNone;
   [model addItem:self.usernameItem
@@ -180,6 +181,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [editCell.textField addTarget:self
                              action:@selector(updateSaveCredentialsButtonState)
                    forControlEvents:UIControlEventEditingChanged];
+      editCell.textField.delegate = self;
       break;
     }
     case ItemTypeURL:
@@ -187,6 +189,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 
   return cell;
+}
+
+#pragma mark - UITextFieldDelegate
+
+- (BOOL)textFieldShouldReturn:(UITextField*)textField {
+  [textField resignFirstResponder];
+  return YES;
 }
 
 #pragma mark - Private Methods
