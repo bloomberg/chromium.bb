@@ -672,13 +672,24 @@ void BridgedNativeWidgetHostImpl::SetParent(
         std::find(parent_->children_.begin(), parent_->children_.end(), this);
     DCHECK(found != parent_->children_.end());
     parent_->children_.erase(found);
+    parent_ = nullptr;
+  }
+
+  // We can only re-parent to another Widget if that Widget is hosted in the
+  // same process that we were already hosted by. If this is not the case, just
+  // close the Widget.
+  // https://crbug.com/957927
+  BridgeFactoryHost* new_bridge_factory_host =
+      new_parent ? new_parent->bridge_factory_host() : bridge_factory_host_;
+  if (new_bridge_factory_host != bridge_factory_host_) {
+    DLOG(ERROR) << "Cannot migrate views::NativeWidget to another process, "
+                   "closing it instead.";
+    bridge()->CloseWindow();
+    return;
   }
 
   parent_ = new_parent;
   if (parent_) {
-    // We can only re-parent to another Widget if that Widget is hosted in the
-    // same process that we were already hosted by.
-    CHECK_EQ(bridge_factory_host_, parent_->bridge_factory_host());
     parent_->children_.push_back(this);
     bridge()->SetParent(parent_->bridged_native_widget_id());
   } else {
