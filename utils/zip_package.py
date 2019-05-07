@@ -31,7 +31,7 @@ EXCLUDE_LIST = (
 
 
 # Temporary files extracted by extract_resource. Removed in atexit hook.
-_extracted_files = set()
+_extracted_files = []
 _extracted_files_lock = threading.Lock()
 
 
@@ -257,31 +257,28 @@ def get_main_script_path():
     return path.decode(sys.getfilesystemencoding())
 
 
-def _atomically_confirm(filepath, data):
-  """Confirms that the file was present and with the expected content, otherwise
-  tries to create it.
-
-  Returns:
-    tuple of bool: was present, is expected content.
-  """
+def _write_temp_data(name, data, temp_dir):
+  """Writes content-addressed file in `temp_dir` if relevant."""
+  filename = '%s-%s' % (hashlib.sha256(data).hexdigest(), name)
+  filepath = os.path.join(temp_dir, filename)
   if os.path.isfile(filepath):
     with open(filepath, 'rb') as f:
       if f.read() == data:
-        # Was present, good.
-        return True, True
-    # Was present, bad.
-    return True, False
+        # It already exists.
+        return filepath
+    # It's different, can't use it.
+    return None
 
   try:
     fd = os.open(filepath, os.O_WRONLY|os.O_CREAT|os.O_EXCL, 0600)
     with os.fdopen(fd, 'wb') as f:
       f.write(data)
-    return False, True
+    return filepath
   except (IOError, OSError):
-    return False, False
+    return None
 
 
-def extract_resource(package, resource, dst):
+def extract_resource(package, resource, temp_dir=None):
   """Returns real file system path to a |resource| file from a |package|.
 
   If it's inside a zip package, will extract it first into a file. Such file is
@@ -290,68 +287,57 @@ def extract_resource(package, resource, dst):
   Arguments:
     package: is a python module object that represents a package.
     resource: should be a relative filename, using '/'' as the path separator.
-    dst: it will extra the file in this directory with the filename
-        being the hash of the content.
+    temp_dir: if set, it will extra the file in this directory with the filename
+        being the hash of the content. Otherwise, it uses tempfile.mkstemp().
 
-  Raises IOError or ValueError if no such resource.
+  Raises ValueError if no such resource.
   """
   # For regular non-zip packages just construct an absolute path.
   if not is_zipped_module(package):
     # Package's __file__ attribute is always an absolute path.
     ppath = package.__file__.decode(sys.getfilesystemencoding())
-    path = os.path.join(os.path.dirname(ppath), resource.replace('/', os.sep))
-    if not os.path.isfile(path):
+    path = os.path.join(os.path.dirname(ppath),
+        resource.replace('/', os.sep))
+    if not os.path.exists(path):
       raise ValueError('No such resource in %s: %s' % (package, resource))
     return path
 
   # For zipped packages extract the resource into a temp file.
-  # Can raise IOError
   data = pkgutil.get_data(package.__name__, resource)
   if data is None:
     raise ValueError('No such resource in zipped %s: %s' % (package, resource))
 
-  filename = '.zip_pkg-%s-%s' % (
-      hashlib.sha256(data).hexdigest(), os.path.basename(resource))
-  filepath = os.path.join(dst, filename)
-  was_present, good_content = _atomically_confirm(filepath, data)
-  if not good_content:
-    # Try again with a deterministic filename in /tmp.
-    filepath = os.path.join(tempfile.gettempdir(), filename)
-    was_present, good_content = _atomically_confirm(filepath, data)
-  if not good_content:
-    # Try again with a non deterministic filename in /tmp.
-    try:
-      fd, filepath = tempfile.mkstemp(prefix=filename)
-      with os.fdopen(fd, 'wb') as f:
-        f.write(data)
-      was_present = False
-      good_content = True
-    except (IOError, OSError):
-      pass
-  if not good_content:
-    # Disk is probably full.
-    return None
+  if temp_dir:
+    filepath = _write_temp_data(os.path.basename(resource), data, temp_dir)
+    if filepath:
+      return filepath
 
-  # Register it for removal when process dies, but only if we did create the
-  # file.
-  if not was_present:
-    with _extracted_files_lock:
-      _extracted_files.add(filepath)
-      # First extracted file -> register atexit hook that cleans them all.
-      if len(_extracted_files) == 1:
-        atexit.register(_cleanup_extracted_resources)
+  fd, filepath = tempfile.mkstemp(
+      prefix=u'.zip_pkg-',
+      suffix=u'-' + os.path.basename(resource),
+      dir=temp_dir)
+  with os.fdopen(fd, 'wb') as stream:
+    stream.write(data)
+
+  # Register it for removal when process dies.
+  with _extracted_files_lock:
+    _extracted_files.append(filepath)
+    # First extracted file -> register atexit hook that cleans them all.
+    if len(_extracted_files) == 1:
+      atexit.register(cleanup_extracted_resources)
+
   return filepath
 
 
-def _cleanup_extracted_resources():
+def cleanup_extracted_resources():
   """Removes all temporary files created by extract_resource.
 
   Executed as atexit hook.
   """
   with _extracted_files_lock:
-    for f in _extracted_files:
+    while _extracted_files:
       try:
-        os.remove(f)
+        os.remove(_extracted_files.pop())
       except OSError:
         pass
 

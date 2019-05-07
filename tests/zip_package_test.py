@@ -4,7 +4,6 @@
 # that can be found in the LICENSE file.
 
 import cStringIO as StringIO
-import hashlib
 import os
 import subprocess
 import sys
@@ -250,28 +249,24 @@ class ZipPackageTest(unittest.TestCase):
   def test_extract_resource(self):
     pkg = zip_package.ZipPackage(self.temp_dir)
     pkg.add_directory(os.path.join(test_env.CLIENT_DIR, 'utils'), 'utils')
-    cert = 'Certificate\n'
-    digest = hashlib.sha256(cert).hexdigest()
-    pkg.add_buffer('cert.pem', cert)
+    pkg.add_buffer('cert.pem', 'Certificate\n')
     pkg.add_buffer('__main__.py', '\n'.join([
-      'import os, sys',
+      'import sys',
       'from utils import zip_package',
-      'print zip_package.extract_resource(',
-      '  sys.modules[__name__], \'cert.pem\', os.getcwd())',
+      'print zip_package.extract_resource(sys.modules[__name__], \'cert.pem\')',
     ]))
     zip_file = os.path.join(self.temp_dir, 'out.zip')
     pkg.zip_into_file(zip_file)
-    actual = check_output([sys.executable, zip_file], cwd=self.temp_dir).strip()
-    # self.temp_dir may be a symlink on macOS.
-    self.assertEqual(os.path.realpath(self.temp_dir), os.path.dirname(actual))
-    self.assertEqual('.zip_pkg-%s-cert.pem' % digest, os.path.basename(actual))
+    actual = check_output([sys.executable, zip_file]).strip()
+    self.assertEqual(tempfile.gettempdir(), os.path.dirname(actual))
+    basename = os.path.basename(actual)
+    self.assertTrue(basename.startswith('.zip_pkg-'), actual)
+    self.assertTrue(basename.endswith('-cert.pem'), actual)
 
   def test_extract_resource_temp_dir(self):
     pkg = zip_package.ZipPackage(self.temp_dir)
     pkg.add_directory(os.path.join(test_env.CLIENT_DIR, 'utils'), 'utils')
-    cert = 'Certificate\n'
-    digest = hashlib.sha256(cert).hexdigest()
-    pkg.add_buffer('cert.pem', cert)
+    pkg.add_buffer('cert.pem', 'Certificate\n')
     pkg.add_buffer('__main__.py', '\n'.join([
       'import sys',
       'from utils import zip_package',
@@ -281,7 +276,10 @@ class ZipPackageTest(unittest.TestCase):
     zip_file = os.path.join(self.temp_dir, 'out.zip')
     pkg.zip_into_file(zip_file)
     actual = check_output([sys.executable, zip_file]).strip()
-    expected = os.path.join(self.temp_dir, '.zip_pkg-%s-cert.pem' % digest)
+    expected = os.path.join(
+        self.temp_dir,
+        'e47a41780d9cb4a1234e4915b14443bdaa8fae9f821b00f0f2fed719661572f6-cert.'
+            'pem')
     self.assertEqual(expected, actual)
 
 
