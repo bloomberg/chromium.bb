@@ -160,12 +160,17 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
       prefs->GetBoolean(prefs::kOpenPdfDownloadInSystemReader);
 #endif
 
-  // If the download path is dangerous we forcefully reset it. But if we do
-  // so we set a flag to make sure we only do it once, to avoid fighting
-  // the user if they really want it on an unsafe place such as the desktop.
-  if (!prefs->GetBoolean(prefs::kDownloadDirUpgraded)) {
-    base::FilePath current_download_dir = prefs->GetFilePath(
-        prefs::kDownloadDefaultDirectory);
+  base::FilePath current_download_dir =
+      prefs->GetFilePath(prefs::kDownloadDefaultDirectory);
+  if (!current_download_dir.IsAbsolute()) {
+    // If we have a relative path or an empty path, we should reset to a safe,
+    // well-known path.
+    prefs->SetFilePath(prefs::kDownloadDefaultDirectory,
+                       GetDefaultDownloadDirectoryForProfile());
+  } else if (!prefs->GetBoolean(prefs::kDownloadDirUpgraded)) {
+    // If the download path is dangerous we forcefully reset it. But if we do
+    // so we set a flag to make sure we only do it once, to avoid fighting
+    // the user if they really want it on an unsafe place such as the desktop.
     if (DownloadPathIsDangerous(current_download_dir)) {
       prefs->SetFilePath(prefs::kDownloadDefaultDirectory,
                          GetDefaultDownloadDirectoryForProfile());
@@ -499,7 +504,14 @@ base::FilePath DownloadPrefs::SanitizeDownloadTargetPath(
   // Fall back to the default download directory for all other paths.
   return GetDefaultDownloadDirectoryForProfile();
 #endif
-  return path;
+  // If the stored download directory is an absolute path, we presume it's
+  // correct; there's not really much more validation we can do here.
+  if (path.IsAbsolute())
+    return path;
+
+  // When the default download directory is *not* an absolute path, we use the
+  // profile directory as a safe default.
+  return GetDefaultDownloadDirectoryForProfile();
 }
 
 bool DownloadPrefs::AutoOpenCompareFunctor::operator()(
