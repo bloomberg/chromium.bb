@@ -78,6 +78,8 @@ class WebAppTabHelperBase
  private:
   friend class WebAppAudioFocusBrowserTest;
 
+  void SetAudioFocusIdMap(WebAppAudioFocusIdMap* audio_focus_id_map);
+
   // AppRegistrarObserver:
   void OnWebAppInstalled(const AppId& installed_app_id) override;
   void OnWebAppUninstalled(const AppId& uninstalled_app_id) override;
