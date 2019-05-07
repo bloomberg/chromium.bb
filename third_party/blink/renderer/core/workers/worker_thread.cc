@@ -258,7 +258,7 @@ void WorkerThread::WillProcessTask(const base::PendingTask& pending_task) {
 
 void WorkerThread::DidProcessTask(const base::PendingTask& pending_task) {
   DCHECK(IsCurrentThread());
-  Microtask::PerformCheckpoint(GetIsolate());
+  // TODO(tzik): Move rejected promise handling to EventLoop.
   GlobalScope()->ScriptController()->GetRejectedPromises()->ProcessQueue();
   if (GlobalScope()->IsClosing()) {
     // This WorkerThread will eventually be requested to terminate.

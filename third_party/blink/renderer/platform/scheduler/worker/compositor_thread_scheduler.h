@@ -29,10 +29,11 @@ class PLATFORM_EXPORT CompositorThreadScheduler
 
   // NonMainThreadSchedulerImpl:
   scoped_refptr<NonMainThreadTaskQueue> DefaultTaskQueue() override;
-  void OnTaskCompleted(NonMainThreadTaskQueue* worker_task_queue,
-                       const base::sequence_manager::Task& task,
-                       const base::sequence_manager::TaskQueue::TaskTiming&
-                           task_timing) override;
+  void OnTaskCompleted(
+      NonMainThreadTaskQueue* worker_task_queue,
+      const base::sequence_manager::Task& task,
+      base::sequence_manager::TaskQueue::TaskTiming* task_timing,
+      base::sequence_manager::LazyNow* lazy_now) override;
 
   // WebThreadScheduler:
   scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() override;

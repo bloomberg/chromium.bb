@@ -868,9 +868,9 @@ TEST_F(PageSchedulerImplTest, NestedMessageLoop_DETERMINISTIC_LOADING) {
 
   scheduler_->OnExitNestedRunLoop();
   EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
-  scheduler_->OnTaskCompleted(
-      nullptr, FakeTask(),
-      FakeTaskTiming(base::TimeTicks(), scheduler_->real_time_domain()->Now()));
+  FakeTaskTiming task_timing(base::TimeTicks(),
+                             scheduler_->real_time_domain()->Now());
+  scheduler_->OnTaskCompleted(nullptr, FakeTask(), &task_timing, nullptr);
 }
 
 TEST_F(PageSchedulerImplTest, PauseTimersWhileVirtualTimeIsPaused) {

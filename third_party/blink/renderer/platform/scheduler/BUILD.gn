@@ -169,6 +169,8 @@ jumbo_source_set("test_support") {
     "test/fake_page_scheduler.h",
     "test/fake_task_runner.cc",
     "test/fake_task_runner.h",
+    "test/recording_task_time_observer.cc",
+    "test/recording_task_time_observer.h",
     "test/renderer_scheduler_test_support.cc",
     "test/test_queueing_time_estimator_client.cc",
     "test/test_queueing_time_estimator_client.h",

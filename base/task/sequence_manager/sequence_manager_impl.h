@@ -359,7 +359,8 @@ class BASE_EXPORT SequenceManagerImpl
 
   void RemoveAllCanceledTasksFromFrontOfWorkQueues();
 
-  bool ShouldRecordTaskTiming(const internal::TaskQueueImpl* task_queue);
+  TaskQueue::TaskTiming::TimeRecordingPolicy ShouldRecordTaskTiming(
+      const internal::TaskQueueImpl* task_queue);
   bool ShouldRecordCPUTimeForTask();
   void RecordCrashKeys(const PendingTask&);
 

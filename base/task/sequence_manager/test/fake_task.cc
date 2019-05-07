@@ -28,6 +28,7 @@ FakeTaskTiming::FakeTaskTiming(TimeTicks start, TimeTicks end)
   has_wall_time_ = true;
   start_time_ = start;
   end_time_ = end;
+  state_ = State::Finished;
 }
 
 FakeTaskTiming::FakeTaskTiming(TimeTicks start,
@@ -38,6 +39,7 @@ FakeTaskTiming::FakeTaskTiming(TimeTicks start,
   has_thread_time_ = true;
   start_thread_time_ = thread_start;
   end_thread_time_ = thread_end;
+  state_ = State::Finished;
 }
 
 }  // namespace sequence_manager

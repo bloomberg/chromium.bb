@@ -1056,9 +1056,12 @@ void TaskQueueImpl::SetOnTaskCompletedHandler(
 }
 
 void TaskQueueImpl::OnTaskCompleted(const Task& task,
-                                    const TaskQueue::TaskTiming& task_timing) {
-  if (!main_thread_only().on_task_completed_handler.is_null())
-    main_thread_only().on_task_completed_handler.Run(task, task_timing);
+                                    TaskQueue::TaskTiming* task_timing,
+                                    LazyNow* lazy_now) {
+  if (!main_thread_only().on_task_completed_handler.is_null()) {
+    main_thread_only().on_task_completed_handler.Run(task, task_timing,
+                                                     lazy_now);
+  }
 }
 
 bool TaskQueueImpl::RequiresTaskTiming() const {

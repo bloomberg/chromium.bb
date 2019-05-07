@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/task_type_names.h"
+#include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -1057,6 +1058,11 @@ void MainThreadSchedulerImpl::SetHaveSeenABlockingGestureForTesting(
     bool status) {
   base::AutoLock lock(any_thread_lock_);
   any_thread().have_seen_a_blocking_gesture = status;
+}
+
+void MainThreadSchedulerImpl::PerformMicrotaskCheckpoint() {
+  if (isolate())
+    EventLoop::PerformIsolateGlobalMicrotasksCheckpoint(isolate());
 }
 
 // static
@@ -2374,16 +2380,23 @@ void MainThreadSchedulerImpl::OnTaskStarted(
 }
 
 void MainThreadSchedulerImpl::OnTaskCompleted(
-    MainThreadTaskQueue* queue,
+    base::WeakPtr<MainThreadTaskQueue> queue,
     const base::sequence_manager::Task& task,
-    const TaskQueue::TaskTiming& task_timing) {
-  DCHECK_LE(task_timing.start_time(), task_timing.end_time());
+    TaskQueue::TaskTiming* task_timing,
+    base::sequence_manager::LazyNow* lazy_now) {
+  // Microtasks may detach the task queue and invalidate |queue|.
+  PerformMicrotaskCheckpoint();
+
+  task_timing->RecordTaskEnd(lazy_now);
+
+  DCHECK_LE(task_timing->start_time(), task_timing->end_time());
   DCHECK(!main_thread_only().running_queues.empty());
-  DCHECK(!queue || main_thread_only().running_queues.top().get() == queue);
-  if (task_timing.has_wall_time() && queue && queue->GetFrameScheduler())
-    queue->GetFrameScheduler()->AddTaskTime(task_timing.wall_duration());
+  DCHECK(!queue ||
+         main_thread_only().running_queues.top().get() == queue.get());
+  if (task_timing->has_wall_time() && queue && queue->GetFrameScheduler())
+    queue->GetFrameScheduler()->AddTaskTime(task_timing->wall_duration());
   main_thread_only().running_queues.pop();
-  queueing_time_estimator_.OnExecutionStopped(task_timing.end_time());
+  queueing_time_estimator_.OnExecutionStopped(task_timing->end_time());
   if (main_thread_only().nested_runloop)
     return;
 
@@ -2391,13 +2404,14 @@ void MainThreadSchedulerImpl::OnTaskCompleted(
 
   if (queue) {
     task_queue_throttler()->OnTaskRunTimeReported(
-        queue, task_timing.start_time(), task_timing.end_time());
+        queue.get(), task_timing->start_time(), task_timing->end_time());
   }
 
-  main_thread_only().compositing_experiment.OnTaskCompleted(queue);
+  main_thread_only().compositing_experiment.OnTaskCompleted(queue.get());
 
   // TODO(altimin): Per-page metrics should also be considered.
-  main_thread_only().metrics_helper.RecordTaskMetrics(queue, task, task_timing);
+  main_thread_only().metrics_helper.RecordTaskMetrics(queue.get(), task,
+                                                      *task_timing);
   main_thread_only().has_safepoint = false;
 
   main_thread_only().task_description_for_tracing = base::nullopt;
@@ -2405,7 +2419,7 @@ void MainThreadSchedulerImpl::OnTaskCompleted(
   // Unset the state of |task_priority_for_tracing|.
   main_thread_only().task_priority_for_tracing = base::nullopt;
 
-  RecordTaskUkm(queue, task, task_timing);
+  RecordTaskUkm(queue.get(), task, *task_timing);
 }
 
 void MainThreadSchedulerImpl::RecordTaskUkm(

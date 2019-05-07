@@ -83,6 +83,9 @@ BASE_EXPORT std::unique_ptr<SequenceManager> CreateFunneledSequenceManager(
 
 namespace internal {
 
+using TimeRecordingPolicy =
+    base::sequence_manager::TaskQueue::TaskTiming::TimeRecordingPolicy;
+
 namespace {
 
 constexpr TimeDelta kLongTaskTraceEventThreshold =
@@ -646,17 +649,21 @@ void SequenceManagerImpl::WillQueueTask(Task* pending_task,
 
 TaskQueue::TaskTiming SequenceManagerImpl::InitializeTaskTiming(
     internal::TaskQueueImpl* task_queue) {
-  bool records_wall_time = ShouldRecordTaskTiming(task_queue);
+  bool records_wall_time =
+      ShouldRecordTaskTiming(task_queue) == TimeRecordingPolicy::DoRecord;
   bool records_thread_time = records_wall_time && ShouldRecordCPUTimeForTask();
   return TaskQueue::TaskTiming(records_wall_time, records_thread_time);
 }
 
-bool SequenceManagerImpl::ShouldRecordTaskTiming(
+TimeRecordingPolicy SequenceManagerImpl::ShouldRecordTaskTiming(
     const internal::TaskQueueImpl* task_queue) {
   if (task_queue->RequiresTaskTiming())
-    return true;
-  return main_thread_only().nesting_depth == 0 &&
-         main_thread_only().task_time_observers.might_have_observers();
+    return TimeRecordingPolicy::DoRecord;
+  if (main_thread_only().nesting_depth == 0 &&
+      main_thread_only().task_time_observers.might_have_observers()) {
+    return TimeRecordingPolicy::DoRecord;
+  }
+  return TimeRecordingPolicy::DoNotRecord;
 }
 
 void SequenceManagerImpl::NotifyWillProcessTask(ExecutingTask* executing_task,
@@ -669,8 +676,9 @@ void SequenceManagerImpl::NotifyWillProcessTask(ExecutingTask* executing_task,
   if (executing_task->task_queue->GetQuiescenceMonitored())
     main_thread_only().task_was_run_on_quiescence_monitored_queue = true;
 
-  bool record_task_timing = ShouldRecordTaskTiming(executing_task->task_queue);
-  if (record_task_timing)
+  TimeRecordingPolicy recording_policy =
+      ShouldRecordTaskTiming(executing_task->task_queue);
+  if (recording_policy == TimeRecordingPolicy::DoRecord)
     executing_task->task_timing.RecordTaskStart(time_before_task);
 
   if (!executing_task->task_queue->GetShouldNotifyObservers())
@@ -690,7 +698,7 @@ void SequenceManagerImpl::NotifyWillProcessTask(ExecutingTask* executing_task,
         executing_task->pending_task);
   }
 
-  if (!record_task_timing)
+  if (recording_policy != TimeRecordingPolicy::DoRecord)
     return;
 
   if (main_thread_only().nesting_depth == 0) {
@@ -715,13 +723,22 @@ void SequenceManagerImpl::NotifyDidProcessTask(ExecutingTask* executing_task,
   if (!executing_task->task_queue->GetShouldNotifyObservers())
     return;
 
-  bool record_task_timing = ShouldRecordTaskTiming(executing_task->task_queue);
+  TaskQueue::TaskTiming& task_timing = executing_task->task_timing;
 
+  {
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
+                 "SequenceManager.QueueOnTaskCompleted");
+    if (task_timing.has_wall_time()) {
+      executing_task->task_queue->OnTaskCompleted(
+          executing_task->pending_task, &task_timing, time_after_task);
+    }
+  }
+
+  TimeRecordingPolicy recording_policy =
+      ShouldRecordTaskTiming(executing_task->task_queue);
   // Record end time ASAP to avoid bias due to the overhead of observers.
-  if (record_task_timing)
-    executing_task->task_timing.RecordTaskEnd(time_after_task);
-
-  const TaskQueue::TaskTiming& task_timing = executing_task->task_timing;
+  if (recording_policy == TimeRecordingPolicy::DoRecord)
+    task_timing.RecordTaskEnd(time_after_task);
 
   if (task_timing.has_wall_time() && main_thread_only().nesting_depth == 0) {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
@@ -745,16 +762,9 @@ void SequenceManagerImpl::NotifyDidProcessTask(ExecutingTask* executing_task,
         executing_task->pending_task);
   }
 
-  {
-    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
-                 "SequenceManager.QueueOnTaskCompleted");
-    if (task_timing.has_wall_time())
-      executing_task->task_queue->OnTaskCompleted(executing_task->pending_task,
-                                                  task_timing);
-  }
-
   // TODO(altimin): Move this back to blink.
   if (task_timing.has_wall_time() &&
+      recording_policy == TimeRecordingPolicy::DoRecord &&
       task_timing.wall_duration() > kLongTaskTraceEventThreshold &&
       main_thread_only().nesting_depth == 0) {
     TRACE_EVENT_INSTANT1("blink", "LongTask", TRACE_EVENT_SCOPE_THREAD,

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -16,6 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/common/process_state.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_frame_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/test/recording_task_time_observer.h"
 
 using testing::ElementsAreArray;
 
@@ -73,6 +75,19 @@ class WorkerThreadSchedulerForTest : public WorkerThreadScheduler {
   using WorkerThreadScheduler::SetUkmRecorderForTest;
   using WorkerThreadScheduler::SetUkmTaskSamplingRateForTest;
 
+  void AddTaskTimeObserver(base::sequence_manager::TaskTimeObserver* observer) {
+    helper()->AddTaskTimeObserver(observer);
+  }
+
+  void RemoveTaskTimeObserver(
+      base::sequence_manager::TaskTimeObserver* observer) {
+    helper()->RemoveTaskTimeObserver(observer);
+  }
+
+  void set_on_microtask_checkpoint(base::OnceClosure cb) {
+    on_microtask_checkpoint_ = std::move(cb);
+  }
+
  private:
   bool CanEnterLongIdlePeriod(
       base::TimeTicks now,
@@ -93,8 +108,14 @@ class WorkerThreadSchedulerForTest : public WorkerThreadScheduler {
     WorkerThreadScheduler::IsNotQuiescent();
   }
 
+  void PerformMicrotaskCheckpoint() override {
+    if (on_microtask_checkpoint_)
+      std::move(on_microtask_checkpoint_).Run();
+  }
+
   const base::TickClock* clock_;        // Not owned.
   std::vector<std::string>* timeline_;  // Not owned.
+  base::OnceClosure on_microtask_checkpoint_;
 };
 
 class WorkerThreadSchedulerTest : public testing::Test {
@@ -388,6 +409,32 @@ TEST_F(WorkerThreadSchedulerTest, TestLongIdlePeriodTimeline) {
   EXPECT_THAT(timeline_, ElementsAreArray(expected_timeline));
 }
 
+TEST_F(WorkerThreadSchedulerTest, TestMicrotaskCheckpointTiming) {
+  const base::TimeDelta kTaskTime = base::TimeDelta::FromMilliseconds(100);
+  const base::TimeDelta kMicrotaskTime = base::TimeDelta::FromMilliseconds(200);
+
+  base::TimeTicks start_time = task_environment_.NowTicks();
+  default_task_runner_->PostTask(
+      FROM_HERE, WTF::Bind(&base::test::ScopedTaskEnvironment::FastForwardBy,
+                           base::Unretained(&task_environment_), kTaskTime));
+  scheduler_->set_on_microtask_checkpoint(
+      WTF::Bind(&base::test::ScopedTaskEnvironment::FastForwardBy,
+                base::Unretained(&task_environment_), kMicrotaskTime));
+
+  RecordingTaskTimeObserver observer;
+
+  scheduler_->AddTaskTimeObserver(&observer);
+  RunUntilIdle();
+  scheduler_->RemoveTaskTimeObserver(&observer);
+
+  // Expect that the duration of microtask is counted as a part of the preceding
+  // task.
+  ASSERT_EQ(1u, observer.result().size());
+  EXPECT_EQ(start_time, observer.result().back().first);
+  EXPECT_EQ(start_time + kTaskTime + kMicrotaskTime,
+            observer.result().back().second);
+}
+
 namespace {
 
 class FrameSchedulerDelegateWithUkmSourceId : public FrameScheduler::Delegate {
@@ -483,7 +530,7 @@ TEST_F(WorkerThreadSchedulerWithProxyTest, UkmTaskRecording) {
       base::ThreadTicks() + base::TimeDelta::FromMilliseconds(250),
       base::ThreadTicks() + base::TimeDelta::FromMilliseconds(500));
 
-  scheduler_->OnTaskCompleted(nullptr, task, task_timing);
+  scheduler_->OnTaskCompleted(nullptr, task, &task_timing, nullptr);
 
   auto entries = ukm_recorder->GetEntriesByName("RendererSchedulerTask");
 

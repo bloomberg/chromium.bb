@@ -369,9 +369,10 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
 
   void OnTaskCompleted(
-      MainThreadTaskQueue* queue,
+      base::WeakPtr<MainThreadTaskQueue> queue,
       const base::sequence_manager::Task& task,
-      const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
+      base::sequence_manager::TaskQueue::TaskTiming* task_timing,
+      base::sequence_manager::LazyNow* lazy_now);
 
   bool IsAudioPlaying() const;
 
@@ -409,6 +410,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   }
 
   void SetHaveSeenABlockingGestureForTesting(bool status);
+
+  virtual void PerformMicrotaskCheckpoint();
 
  private:
   friend class WebRenderWidgetSchedulingState;

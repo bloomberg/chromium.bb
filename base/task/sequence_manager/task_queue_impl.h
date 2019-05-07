@@ -92,7 +92,7 @@ class BASE_EXPORT TaskQueueImpl {
   using OnTaskStartedHandler =
       RepeatingCallback<void(const Task&, const TaskQueue::TaskTiming&)>;
   using OnTaskCompletedHandler =
-      RepeatingCallback<void(const Task&, const TaskQueue::TaskTiming&)>;
+      RepeatingCallback<void(const Task&, TaskQueue::TaskTiming*, LazyNow*)>;
 
   // May be called from any thread.
   scoped_refptr<SingleThreadTaskRunner> CreateTaskRunner(
@@ -198,9 +198,16 @@ class BASE_EXPORT TaskQueueImpl {
   void SetOnTaskStartedHandler(OnTaskStartedHandler handler);
   void OnTaskStarted(const Task& task,
                      const TaskQueue::TaskTiming& task_timing);
+
+  // |task_timing| may be passed in Running state and may not have the end time,
+  // so that the handler can run an additional task that is counted as a part of
+  // the main task.
+  // The handler can call TaskTiming::RecordTaskEnd, which is optional, to
+  // finalize the task, and use the resulting timing.
   void SetOnTaskCompletedHandler(OnTaskCompletedHandler handler);
   void OnTaskCompleted(const Task& task,
-                       const TaskQueue::TaskTiming& task_timing);
+                       TaskQueue::TaskTiming* task_timing,
+                       LazyNow* lazy_now);
   bool RequiresTaskTiming() const;
 
   WeakPtr<SequenceManagerImpl> GetSequenceManagerWeakPtr();

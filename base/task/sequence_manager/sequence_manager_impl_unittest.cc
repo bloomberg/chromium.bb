@@ -3387,8 +3387,8 @@ void SetOnTaskHandlers(scoped_refptr<TestTaskQueue> task_queue,
          const TaskQueue::TaskTiming& task_timing) { ++(*counter); },
       start_counter));
   task_queue->GetTaskQueueImpl()->SetOnTaskCompletedHandler(BindRepeating(
-      [](int* counter, const Task& task,
-         const TaskQueue::TaskTiming& task_timing) { ++(*counter); },
+      [](int* counter, const Task& task, TaskQueue::TaskTiming* task_timing,
+         LazyNow* lazy_now) { ++(*counter); },
       complete_counter));
 }
 
@@ -3396,7 +3396,7 @@ void UnsetOnTaskHandlers(scoped_refptr<TestTaskQueue> task_queue) {
   task_queue->GetTaskQueueImpl()->SetOnTaskStartedHandler(
       internal::TaskQueueImpl::OnTaskStartedHandler());
   task_queue->GetTaskQueueImpl()->SetOnTaskCompletedHandler(
-      internal::TaskQueueImpl::OnTaskStartedHandler());
+      internal::TaskQueueImpl::OnTaskCompletedHandler());
 }
 }  // namespace
 

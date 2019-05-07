@@ -46,6 +46,9 @@ class UkmRecorder;
 }
 
 namespace blink {
+
+class MainThreadSchedulerTest;
+
 namespace scheduler {
 
 class MainThreadSchedulerImpl;
@@ -203,6 +206,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   friend class frame_scheduler_impl_unittest::FrameSchedulerImplTest;
   friend class page_scheduler_impl_unittest::PageSchedulerImplTest;
   friend class ResourceLoadingTaskRunnerHandleImpl;
+  friend class ::blink::MainThreadSchedulerTest;
 
   // A class that adds and removes itself from the passed in weak pointer. While
   // one exists, resource loading is paused.

@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_task_queue_controller.h"
+#include "third_party/blink/renderer/platform/scheduler/test/recording_task_time_observer.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "v8/include/v8.h"
 
@@ -293,9 +294,15 @@ class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
     return expected_queueing_times_;
   }
 
+  void PerformMicrotaskCheckpoint() override {
+    if (on_microtask_checkpoint_)
+      std::move(on_microtask_checkpoint_).Run();
+  }
+
   int update_policy_count_;
   std::vector<std::string> use_cases_;
   std::vector<base::TimeDelta> expected_queueing_times_;
+  base::OnceClosure on_microtask_checkpoint_;
 };
 
 // Lets gtest print human readable Policy values.
@@ -654,8 +661,9 @@ class MainThreadSchedulerImplTest : public testing::Test {
                               FakeTaskTiming(start, base::TimeTicks()));
     std::move(task).Run();
     base::TimeTicks end = Now();
-    scheduler_->OnTaskCompleted(fake_queue.get(), FakeTask(),
-                                FakeTaskTiming(start, end));
+    FakeTaskTiming task_timing(start, end);
+    scheduler_->OnTaskCompleted(fake_queue->weak_ptr_factory_.GetWeakPtr(),
+                                FakeTask(), &task_timing, nullptr);
   }
 
   void RunSlowCompositorTask() {
@@ -3537,6 +3545,33 @@ TEST_F(MainThreadSchedulerImplTest, TaskQueueReferenceClearedOnShutdown) {
   // nothing should change for queue1 because it was shut down.
   EXPECT_EQ(queue1->GetTimeDomain(), scheduler_->real_time_domain());
   EXPECT_EQ(queue2->GetTimeDomain(), scheduler_->GetVirtualTimeDomain());
+}
+
+TEST_F(MainThreadSchedulerImplTest, MicrotaskCheckpointTiming) {
+  base::RunLoop().RunUntilIdle();
+
+  base::TimeTicks start_time = Now();
+  RecordingTaskTimeObserver observer;
+
+  const base::TimeDelta kTaskTime = base::TimeDelta::FromMilliseconds(100);
+  const base::TimeDelta kMicrotaskTime = base::TimeDelta::FromMilliseconds(200);
+  default_task_runner_->PostTask(
+      FROM_HERE, WTF::Bind(&MainThreadSchedulerImplTest::AdvanceMockTickClockBy,
+                           base::Unretained(this), kTaskTime));
+  scheduler_->on_microtask_checkpoint_ =
+      WTF::Bind(&MainThreadSchedulerImplTest::AdvanceMockTickClockBy,
+                base::Unretained(this), kMicrotaskTime);
+
+  scheduler_->AddTaskTimeObserver(&observer);
+  base::RunLoop().RunUntilIdle();
+  scheduler_->RemoveTaskTimeObserver(&observer);
+
+  // Expect that the duration of microtask is counted as a part of the preceding
+  // task.
+  ASSERT_EQ(1u, observer.result().size());
+  EXPECT_EQ(start_time, observer.result().front().first);
+  EXPECT_EQ(start_time + kTaskTime + kMicrotaskTime,
+            observer.result().front().second);
 }
 
 }  // namespace main_thread_scheduler_impl_unittest
