@@ -189,7 +189,7 @@ ANDROID_PIXEL2_WEBVIEW = PerfPlatform(
 
 ANDROID_NEXUS5X_PERF_FYI =  PerfPlatform(
     'android-nexus5x-perf-fyi', 'Android MMB29Q', is_fyi=True,
-    num_shards=4, benchmarks_names_to_run={
+    num_shards=3, benchmarks_names_to_run={
       'heap_profiling.mobile.disabled',
       'heap_profiling.mobile.native',
       'heap_profiling.mobile.pseudo',

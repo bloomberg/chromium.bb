@@ -95,7 +95,7 @@ FYI_BUILDERS = {
           '--output-format=histograms',
           '--test-shard-map-filename=android-nexus5x-perf-fyi_map.json',
         ],
-        'num_shards': 4
+        'num_shards': 3
       }
     ],
     'platform': 'android-chrome',
