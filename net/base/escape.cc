@@ -460,11 +460,6 @@ std::string UnescapeURLComponent(base::StringPiece escaped_text,
   return UnescapeURLWithAdjustmentsImpl(escaped_text, rules, nullptr);
 }
 
-base::string16 UnescapeAndDecodeUTF8URLComponent(base::StringPiece text,
-                                                 UnescapeRule::Type rules) {
-  return UnescapeAndDecodeUTF8URLComponentWithAdjustments(text, rules, nullptr);
-}
-
 base::string16 UnescapeAndDecodeUTF8URLComponentWithAdjustments(
     base::StringPiece text,
     UnescapeRule::Type rules,
@@ -529,6 +524,26 @@ std::string UnescapeBinaryURLComponent(base::StringPiece escaped_text,
   DCHECK_LE(output_index, unescaped_text.size());
   unescaped_text.resize(output_index);
   return unescaped_text;
+}
+
+bool UnescapeBinaryURLComponentSafe(base::StringPiece escaped_text,
+                                    bool fail_on_path_separators,
+                                    std::string* unescaped_text) {
+  unescaped_text->clear();
+
+  std::set<unsigned char> illegal_encoded_bytes;
+  for (char c = '\x00'; c < '\x20'; ++c) {
+    illegal_encoded_bytes.insert(c);
+  }
+  if (fail_on_path_separators) {
+    illegal_encoded_bytes.insert('/');
+    illegal_encoded_bytes.insert('\\');
+  }
+  if (ContainsEncodedBytes(escaped_text, illegal_encoded_bytes))
+    return false;
+
+  *unescaped_text = UnescapeBinaryURLComponent(escaped_text);
+  return true;
 }
 
 base::string16 UnescapeForHTML(base::StringPiece16 input) {

@@ -290,21 +290,12 @@ int FtpNetworkTransaction::Start(
     if (pos != std::string::npos)
       gurl_path.resize(pos);
 
-    // If the path contains characters not considered safe to unescape, fail the
-    // request.
-    std::set<unsigned char> illegal_encoded_bytes{'/', '\\'};
-    // Null shouldn't be needed, since GURLs with nulls in the path aren't
-    // considered valid, but can't hurt. Note that this range includes CRs and
-    // LFs.
-    for (char c = '\x00'; c < '\x20'; ++c) {
-      illegal_encoded_bytes.insert(c);
-    }
-    if (ContainsEncodedBytes(gurl_path, illegal_encoded_bytes))
-      return ERR_INVALID_URL;
-
     // This may unescape to non-ASCII characters, but we allow that. See the
     // comment for IsValidFTPCommandSubstring.
-    unescaped_path_ = UnescapeBinaryURLComponent(gurl_path);
+    if (!UnescapeBinaryURLComponentSafe(
+            gurl_path, true /* fail_on_path_separators*/, &unescaped_path_)) {
+      return ERR_INVALID_URL;
+    }
   }
 
   next_state_ = STATE_CTRL_RESOLVE_HOST;

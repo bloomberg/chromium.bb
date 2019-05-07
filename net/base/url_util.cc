@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "net/base/escape.h"
 #include "net/base/ip_address.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -35,6 +36,23 @@ bool IsHostCharAlphanumeric(char c) {
 
 bool IsNormalizedLocalhostTLD(const std::string& host) {
   return base::EndsWith(host, ".localhost", base::CompareCase::SENSITIVE);
+}
+
+// Helper function used by GetIdentityFromURL. If |escaped_text| can be "safely
+// unescaped" to a valid UTF-8 string, return that string, as UTF-16. Otherwise,
+// convert it as-is to UTF-16. "Safely unescaped" is defined as having no
+// escaped character between '0x00' and '0x1F', inclusive.
+base::string16 UnescapeIdentityString(base::StringPiece escaped_text) {
+  std::string unescaped_text;
+  if (UnescapeBinaryURLComponentSafe(
+          escaped_text, false /* fail_on_path_separators */, &unescaped_text)) {
+    base::string16 result;
+    if (base::UTF8ToUTF16(unescaped_text.data(), unescaped_text.length(),
+                          &result)) {
+      return result;
+    }
+  }
+  return base::UTF8ToUTF16(escaped_text);
 }
 
 }  // namespace
@@ -384,11 +402,8 @@ GURL ChangeWebSocketSchemeToHttpScheme(const GURL& url) {
 void GetIdentityFromURL(const GURL& url,
                         base::string16* username,
                         base::string16* password) {
-  UnescapeRule::Type flags =
-      UnescapeRule::SPACES | UnescapeRule::PATH_SEPARATORS |
-      UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS;
-  *username = UnescapeAndDecodeUTF8URLComponent(url.username(), flags);
-  *password = UnescapeAndDecodeUTF8URLComponent(url.password(), flags);
+  *username = UnescapeIdentityString(url.username());
+  *password = UnescapeIdentityString(url.password());
 }
 
 bool HasGoogleHost(const GURL& url) {
