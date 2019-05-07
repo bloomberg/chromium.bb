@@ -21,6 +21,8 @@ commit's entire history, this script caches all calculated data inside the git
 repo that it operates on in the ref 'refs/number/commits'.
 """
 
+from __future__ import print_function
+
 import binascii
 import collections
 import logging
@@ -278,7 +280,7 @@ def main():  # pragma: no cover
   if not opts.no_cache:
     finalize(targets)
 
-  print '\n'.join(map(str, map(get_num, targets)))
+  print('\n'.join(map(str, map(get_num, targets))))
   return 0
 
 
