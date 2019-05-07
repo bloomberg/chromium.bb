@@ -39,37 +39,99 @@ PropertyTreeManager::EffectState::Transform() const {
                                               : clip->LocalTransformSpace();
 }
 
-PropertyTreeManager::PropertyTreeManager(PropertyTreeManagerClient& client)
-    : client_(client) {}
-
-void PropertyTreeManager::Initialize(cc::PropertyTrees* property_trees,
-                                     LayerListBuilder* layer_list_builder,
-                                     int new_sequence_number) {
-  DCHECK(root_layer_);
-  property_trees_ = property_trees;
-  layer_list_builder_ = layer_list_builder;
-  new_sequence_number_ = new_sequence_number;
-
+PropertyTreeManager::PropertyTreeManager(PropertyTreeManagerClient& client,
+                                         cc::PropertyTrees& property_trees,
+                                         cc::Layer& root_layer,
+                                         LayerListBuilder& layer_list_builder,
+                                         int new_sequence_number)
+    : client_(client),
+      property_trees_(property_trees),
+      root_layer_(root_layer),
+      layer_list_builder_(layer_list_builder),
+      new_sequence_number_(new_sequence_number) {
   SetupRootTransformNode();
   SetupRootClipNode();
   SetupRootEffectNode();
   SetupRootScrollNode();
-#if DCHECK_IS_ON()
-  DCHECK(!initialized_);
-  initialized_ = true;
-#endif
+}
+
+PropertyTreeManager::~PropertyTreeManager() {
+  DCHECK(!effect_stack_.size()) << "PropertyTreeManager::Finalize() must be "
+                                   "called at the end of tree conversion.";
 }
 
 void PropertyTreeManager::Finalize() {
   while (effect_stack_.size())
     CloseCcEffect();
   DCHECK(effect_stack_.IsEmpty());
-  property_trees_ = nullptr;
-  layer_list_builder_ = nullptr;
-#if DCHECK_IS_ON()
-  DCHECK(initialized_);
-  initialized_ = false;
-#endif
+}
+
+static void UpdateCcTransformLocalMatrix(
+    cc::TransformNode& compositor_node,
+    const TransformPaintPropertyNode& transform_node) {
+  if (transform_node.GetStickyConstraint()) {
+    // The sticky offset on the blink transform node is pre-computed and stored
+    // to the local matrix. Cc applies sticky offset dynamically on top of the
+    // local matrix. We should not set the local matrix on cc node if it is a
+    // sticky node because the sticky offset would be applied twice otherwise.
+    DCHECK(compositor_node.local.IsIdentity());
+    DCHECK(compositor_node.pre_local.IsIdentity());
+    DCHECK(compositor_node.post_local.IsIdentity());
+  } else if (transform_node.IsIdentityOr2DTranslation()) {
+    auto translation = transform_node.Translation2D();
+    if (transform_node.ScrollNode()) {
+      // Blink creates a 2d transform node just for scroll offset whereas cc's
+      // transform node has a special scroll offset field.
+      compositor_node.scroll_offset =
+          gfx::ScrollOffset(-translation.Width(), -translation.Height());
+      DCHECK(compositor_node.local.IsIdentity());
+      DCHECK(compositor_node.pre_local.IsIdentity());
+      DCHECK(compositor_node.post_local.IsIdentity());
+    } else {
+      compositor_node.local.matrix().setTranslate(translation.Width(),
+                                                  translation.Height(), 0);
+      DCHECK_EQ(FloatPoint3D(), transform_node.Origin());
+      compositor_node.pre_local.matrix().setIdentity();
+      compositor_node.post_local.matrix().setIdentity();
+    }
+  } else {
+    DCHECK(!transform_node.ScrollNode());
+    FloatPoint3D origin = transform_node.Origin();
+    compositor_node.pre_local.matrix().setTranslate(-origin.X(), -origin.Y(),
+                                                    -origin.Z());
+    compositor_node.local.matrix() =
+        TransformationMatrix::ToSkMatrix44(transform_node.Matrix());
+    compositor_node.post_local.matrix().setTranslate(origin.X(), origin.Y(),
+                                                     origin.Z());
+  }
+  compositor_node.needs_local_transform_update = true;
+  compositor_node.transform_changed = true;
+}
+
+static void AdjustPageScaleToUsePostLocal(cc::TransformNode& page_scale) {
+  // The page scale node is special because its transform matrix is assumed to
+  // be in the post_local matrix by the compositor. There should be no
+  // translation from the origin so we clear the other matrices.
+  DCHECK(page_scale.local.IsScale2d());
+  DCHECK(page_scale.pre_local.IsIdentity());
+  page_scale.post_local.matrix() = page_scale.local.matrix();
+  page_scale.pre_local.matrix().setIdentity();
+  page_scale.local.matrix().setIdentity();
+  page_scale.transform_changed = true;
+}
+
+static void SetTransformTreePageScaleFactor(
+    cc::TransformTree* transform_tree,
+    cc::TransformNode* page_scale_node) {
+  // |AdjustPageScaleToUsePostLocal| should have been called already so that the
+  // scale component is in the post_local transform.
+  DCHECK(page_scale_node->local.IsIdentity());
+  DCHECK(page_scale_node->pre_local.IsIdentity());
+
+  DCHECK(page_scale_node->post_local.IsScale2d());
+  auto page_scale = page_scale_node->post_local.Scale2d();
+  DCHECK_EQ(page_scale.x(), page_scale.y());
+  transform_tree->set_page_scale_factor(page_scale.x());
 }
 
 bool PropertyTreeManager::DirectlyUpdateCompositedOpacityValue(
@@ -163,27 +225,27 @@ bool PropertyTreeManager::DirectlyUpdatePageScaleTransform(
 }
 
 cc::TransformTree& PropertyTreeManager::GetTransformTree() {
-  return property_trees_->transform_tree;
+  return property_trees_.transform_tree;
 }
 
 cc::ClipTree& PropertyTreeManager::GetClipTree() {
-  return property_trees_->clip_tree;
+  return property_trees_.clip_tree;
 }
 
 cc::EffectTree& PropertyTreeManager::GetEffectTree() {
-  return property_trees_->effect_tree;
+  return property_trees_.effect_tree;
 }
 
 cc::ScrollTree& PropertyTreeManager::GetScrollTree() {
-  return property_trees_->scroll_tree;
+  return property_trees_.scroll_tree;
 }
 
 void PropertyTreeManager::SetupRootTransformNode() {
   // cc is hardcoded to use transform node index 1 for device scale and
   // transform.
-  cc::TransformTree& transform_tree = property_trees_->transform_tree;
+  cc::TransformTree& transform_tree = property_trees_.transform_tree;
   transform_tree.clear();
-  property_trees_->element_id_to_transform_node_index.clear();
+  property_trees_.element_id_to_transform_node_index.clear();
   cc::TransformNode& transform_node = *transform_tree.Node(
       transform_tree.Insert(cc::TransformNode(), kRealRootNodeId));
   DCHECK_EQ(transform_node.id, kSecondaryRootNodeId);
@@ -193,7 +255,7 @@ void PropertyTreeManager::SetupRootTransformNode() {
   // transform node here. They should be set while updating transform tree in
   // cc.
   float device_scale_factor =
-      root_layer_->layer_tree_host()->device_scale_factor();
+      root_layer_.layer_tree_host()->device_scale_factor();
   transform_tree.set_device_scale_factor(device_scale_factor);
   gfx::Transform to_screen;
   to_screen.Scale(device_scale_factor, device_scale_factor);
@@ -206,12 +268,12 @@ void PropertyTreeManager::SetupRootTransformNode() {
 
   TransformPaintPropertyNode::Root().SetCcNodeId(new_sequence_number_,
                                                  transform_node.id);
-  root_layer_->SetTransformTreeIndex(transform_node.id);
+  root_layer_.SetTransformTreeIndex(transform_node.id);
 }
 
 void PropertyTreeManager::SetupRootClipNode() {
   // cc is hardcoded to use clip node index 1 for viewport clip.
-  cc::ClipTree& clip_tree = property_trees_->clip_tree;
+  cc::ClipTree& clip_tree = property_trees_.clip_tree;
   clip_tree.clear();
   cc::ClipNode& clip_node =
       *clip_tree.Node(clip_tree.Insert(cc::ClipNode(), kRealRootNodeId));
@@ -223,18 +285,18 @@ void PropertyTreeManager::SetupRootClipNode() {
   // tree builder should probably be the one to create the property tree state
   // and have this created in the same way as other layers.
   clip_node.clip = gfx::RectF(
-      gfx::SizeF(root_layer_->layer_tree_host()->device_viewport_size()));
+      gfx::SizeF(root_layer_.layer_tree_host()->device_viewport_size()));
   clip_node.transform_id = kRealRootNodeId;
 
   ClipPaintPropertyNode::Root().SetCcNodeId(new_sequence_number_, clip_node.id);
-  root_layer_->SetClipTreeIndex(clip_node.id);
+  root_layer_.SetClipTreeIndex(clip_node.id);
 }
 
 void PropertyTreeManager::SetupRootEffectNode() {
   // cc is hardcoded to use effect node index 1 for root render surface.
-  cc::EffectTree& effect_tree = property_trees_->effect_tree;
+  cc::EffectTree& effect_tree = property_trees_.effect_tree;
   effect_tree.clear();
-  property_trees_->element_id_to_effect_node_index.clear();
+  property_trees_.element_id_to_effect_node_index.clear();
   cc::EffectNode& effect_node =
       *effect_tree.Node(effect_tree.Insert(cc::EffectNode(), kInvalidNodeId));
   DCHECK_EQ(effect_node.id, kSecondaryRootNodeId);
@@ -246,7 +308,7 @@ void PropertyTreeManager::SetupRootEffectNode() {
   effect_node.transform_id = kRealRootNodeId;
   effect_node.clip_id = kSecondaryRootNodeId;
   effect_node.render_surface_reason = cc::RenderSurfaceReason::kRoot;
-  root_layer_->SetEffectTreeIndex(effect_node.id);
+  root_layer_.SetEffectTreeIndex(effect_node.id);
 
   EffectPaintPropertyNode::Root().SetCcNodeId(new_sequence_number_,
                                               effect_node.id);
@@ -256,9 +318,9 @@ void PropertyTreeManager::SetupRootEffectNode() {
 }
 
 void PropertyTreeManager::SetupRootScrollNode() {
-  cc::ScrollTree& scroll_tree = property_trees_->scroll_tree;
+  cc::ScrollTree& scroll_tree = property_trees_.scroll_tree;
   scroll_tree.clear();
-  property_trees_->element_id_to_scroll_node_index.clear();
+  property_trees_.element_id_to_scroll_node_index.clear();
   cc::ScrollNode& scroll_node =
       *scroll_tree.Node(scroll_tree.Insert(cc::ScrollNode(), kRealRootNodeId));
   DCHECK_EQ(scroll_node.id, kSecondaryRootNodeId);
@@ -266,7 +328,7 @@ void PropertyTreeManager::SetupRootScrollNode() {
 
   ScrollPaintPropertyNode::Root().SetCcNodeId(new_sequence_number_,
                                               scroll_node.id);
-  root_layer_->SetScrollTreeIndex(scroll_node.id);
+  root_layer_.SetScrollTreeIndex(scroll_node.id);
 }
 
 static bool TransformsToAncestorHaveActiveAnimation(
@@ -394,7 +456,7 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
 
   auto compositor_element_id = transform_node.GetCompositorElementId();
   if (compositor_element_id) {
-    property_trees_->element_id_to_transform_node_index[compositor_element_id] =
+    property_trees_.element_id_to_transform_node_index[compositor_element_id] =
         id;
     compositor_node.element_id = compositor_element_id;
   }
@@ -428,48 +490,6 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   return id;
 }
 
-void PropertyTreeManager::UpdateCcTransformLocalMatrix(
-    cc::TransformNode& compositor_node,
-    const TransformPaintPropertyNode& transform_node) {
-  if (transform_node.GetStickyConstraint()) {
-    // The sticky offset on the blink transform node is pre-computed and stored
-    // to the local matrix. Cc applies sticky offset dynamically on top of the
-    // local matrix. We should not set the local matrix on cc node if it is a
-    // sticky node because the sticky offset would be applied twice otherwise.
-    DCHECK(compositor_node.local.IsIdentity());
-    DCHECK(compositor_node.pre_local.IsIdentity());
-    DCHECK(compositor_node.post_local.IsIdentity());
-  } else if (transform_node.IsIdentityOr2DTranslation()) {
-    auto translation = transform_node.Translation2D();
-    if (transform_node.ScrollNode()) {
-      // Blink creates a 2d transform node just for scroll offset whereas cc's
-      // transform node has a special scroll offset field.
-      compositor_node.scroll_offset =
-          gfx::ScrollOffset(-translation.Width(), -translation.Height());
-      DCHECK(compositor_node.local.IsIdentity());
-      DCHECK(compositor_node.pre_local.IsIdentity());
-      DCHECK(compositor_node.post_local.IsIdentity());
-    } else {
-      compositor_node.local.matrix().setTranslate(translation.Width(),
-                                                  translation.Height(), 0);
-      DCHECK_EQ(FloatPoint3D(), transform_node.Origin());
-      compositor_node.pre_local.matrix().setIdentity();
-      compositor_node.post_local.matrix().setIdentity();
-    }
-  } else {
-    DCHECK(!transform_node.ScrollNode());
-    FloatPoint3D origin = transform_node.Origin();
-    compositor_node.pre_local.matrix().setTranslate(-origin.X(), -origin.Y(),
-                                                    -origin.Z());
-    compositor_node.local.matrix() =
-        TransformationMatrix::ToSkMatrix44(transform_node.Matrix());
-    compositor_node.post_local.matrix().setTranslate(origin.X(), origin.Y(),
-                                                     origin.Z());
-  }
-  compositor_node.needs_local_transform_update = true;
-  compositor_node.transform_changed = true;
-}
-
 int PropertyTreeManager::EnsureCompositorPageScaleTransformNode(
     const TransformPaintPropertyNode& node) {
   DCHECK(!node.IsInSubtreeOfPageScale());
@@ -481,33 +501,6 @@ int PropertyTreeManager::EnsureCompositorPageScaleTransformNode(
   SetTransformTreePageScaleFactor(&GetTransformTree(), &compositor_node);
   GetTransformTree().set_needs_update(true);
   return id;
-}
-
-void PropertyTreeManager::AdjustPageScaleToUsePostLocal(
-    cc::TransformNode& page_scale) {
-  // The page scale node is special because its transform matrix is assumed to
-  // be in the post_local matrix by the compositor. There should be no
-  // translation from the origin so we clear the other matrices.
-  DCHECK(page_scale.local.IsScale2d());
-  DCHECK(page_scale.pre_local.IsIdentity());
-  page_scale.post_local.matrix() = page_scale.local.matrix();
-  page_scale.pre_local.matrix().setIdentity();
-  page_scale.local.matrix().setIdentity();
-  page_scale.transform_changed = true;
-}
-
-void PropertyTreeManager::SetTransformTreePageScaleFactor(
-    cc::TransformTree* transform_tree,
-    cc::TransformNode* page_scale_node) {
-  // |AdjustPageScaleToUsePostLocal| should have been called already so that the
-  // scale component is in the post_local transform.
-  DCHECK(page_scale_node->local.IsIdentity());
-  DCHECK(page_scale_node->pre_local.IsIdentity());
-
-  DCHECK(page_scale_node->post_local.IsScale2d());
-  auto page_scale = page_scale_node->post_local.Scale2d();
-  DCHECK_EQ(page_scale.x(), page_scale.y());
-  transform_tree->set_page_scale_factor(page_scale.x());
 }
 
 int PropertyTreeManager::EnsureCompositorClipNode(
@@ -573,8 +566,7 @@ void PropertyTreeManager::CreateCompositorScrollNode(
   auto compositor_element_id = scroll_node.GetCompositorElementId();
   if (compositor_element_id) {
     compositor_node.element_id = compositor_element_id;
-    property_trees_->element_id_to_scroll_node_index[compositor_element_id] =
-        id;
+    property_trees_.element_id_to_scroll_node_index[compositor_element_id] = id;
   }
 
   compositor_node.transform_id = scroll_offset_translation.id;
@@ -629,9 +621,9 @@ void PropertyTreeManager::EmitClipMaskLayer() {
   cc::Layer* mask_layer = clip.Layer();
 
   const auto& clip_space = current_.clip->LocalTransformSpace();
-  layer_list_builder_->Add(mask_layer);
+  layer_list_builder_.Add(mask_layer);
   mask_layer->set_property_tree_sequence_number(
-      root_layer_->property_tree_sequence_number());
+      root_layer_.property_tree_sequence_number());
   mask_layer->SetTransformTreeIndex(EnsureCompositorTransformNode(clip_space));
   // TODO(pdr): This could be a performance issue because it crawls up the
   // transform tree for each pending layer. If this is on profiles, we should
@@ -982,10 +974,9 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
   CompositorElementId compositor_element_id =
       next_effect.GetCompositorElementId();
   if (compositor_element_id) {
-    DCHECK(property_trees_->element_id_to_effect_node_index.find(
-               compositor_element_id) ==
-           property_trees_->element_id_to_effect_node_index.end());
-    property_trees_->element_id_to_effect_node_index[compositor_element_id] =
+    DCHECK(!property_trees_.element_id_to_effect_node_index.contains(
+        compositor_element_id));
+    property_trees_.element_id_to_effect_node_index[compositor_element_id] =
         effect_node.id;
   }
 

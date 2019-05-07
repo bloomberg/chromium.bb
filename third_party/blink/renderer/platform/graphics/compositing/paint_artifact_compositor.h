@@ -319,8 +319,6 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
   Vector<scoped_refptr<cc::Layer>> scroll_hit_test_layers_;
 
-  PropertyTreeManager property_tree_manager_;
-
   Vector<PendingLayer, 0> pending_layers_;
 
   bool extra_data_for_testing_enabled_ = false;

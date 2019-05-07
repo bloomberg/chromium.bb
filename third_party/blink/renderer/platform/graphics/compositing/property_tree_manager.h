@@ -49,20 +49,12 @@ class PropertyTreeManager {
   DISALLOW_NEW();
 
  public:
-  PropertyTreeManager(PropertyTreeManagerClient&);
-  ~PropertyTreeManager() {
-    DCHECK(!effect_stack_.size()) << "PropertyTreeManager::Finalize() must be "
-                                     "called at the end of tree conversion.";
-  }
-
-  void Initialize(cc::PropertyTrees* property_trees,
-                  LayerListBuilder* layer_list_builder,
-                  int new_sequence_number);
-
-  void SetRootLayer(cc::Layer* root_layer) {
-    DCHECK(!root_layer_) << "We can only set root layer once.";
-    root_layer_ = root_layer;
-  }
+  PropertyTreeManager(PropertyTreeManagerClient&,
+                      cc::PropertyTrees& property_trees,
+                      cc::Layer& root_layer,
+                      LayerListBuilder& layer_list_builder,
+                      int new_sequence_number);
+  ~PropertyTreeManager();
 
   // A brief discourse on cc property tree nodes, identifiers, and current and
   // future design evolution envisioned:
@@ -125,14 +117,17 @@ class PropertyTreeManager {
   // unclosed synthesized clips.
   void Finalize();
 
-  bool DirectlyUpdateCompositedOpacityValue(cc::PropertyTrees*,
-                                            const EffectPaintPropertyNode&);
-  bool DirectlyUpdateScrollOffsetTransform(cc::PropertyTrees*,
-                                           const TransformPaintPropertyNode&);
-  bool DirectlyUpdateTransform(cc::PropertyTrees*,
-                               const TransformPaintPropertyNode&);
-  bool DirectlyUpdatePageScaleTransform(cc::PropertyTrees*,
-                                        const TransformPaintPropertyNode&);
+  static bool DirectlyUpdateCompositedOpacityValue(
+      cc::PropertyTrees*,
+      const EffectPaintPropertyNode&);
+  static bool DirectlyUpdateScrollOffsetTransform(
+      cc::PropertyTrees*,
+      const TransformPaintPropertyNode&);
+  static bool DirectlyUpdateTransform(cc::PropertyTrees*,
+                                      const TransformPaintPropertyNode&);
+  static bool DirectlyUpdatePageScaleTransform(
+      cc::PropertyTrees*,
+      const TransformPaintPropertyNode&);
 
  private:
   void SetupRootTransformNode();
@@ -220,17 +215,6 @@ class PropertyTreeManager {
                             int output_clip_id,
                             SkBlendMode);
 
-  void UpdateCcTransformLocalMatrix(cc::TransformNode&,
-                                    const TransformPaintPropertyNode&);
-  // Move the page scale from the local matrix to the post_local matrix. The
-  // compositor has an assumption that the page scale is in the post_local
-  // matrix but |UpdateCcTransformLocalMatrix| uses the local matrix.
-  void AdjustPageScaleToUsePostLocal(cc::TransformNode&);
-  // Sets |cc::TransformNode::page_scale_factor_| from the scale in the page
-  // scale node.
-  void SetTransformTreePageScaleFactor(cc::TransformTree*,
-                                       cc::TransformNode* page_scale_node);
-
   bool IsCurrentCcEffectSynthetic() const { return current_.effect_type; }
   bool IsCurrentCcEffectSyntheticForNonTrivialClip() const {
     return current_.effect_type & CcEffectType::kSyntheticForNonTrivialClip;
@@ -261,16 +245,16 @@ class PropertyTreeManager {
   PropertyTreeManagerClient& client_;
 
   // Property trees which should be updated by the manager.
-  cc::PropertyTrees* property_trees_ = nullptr;
+  cc::PropertyTrees& property_trees_;
 
   // The special layer which is the parent of every other layers.
   // This is where clip mask layers we generated for synthesized clips are
   // appended into.
-  cc::Layer* root_layer_ = nullptr;
+  cc::Layer& root_layer_;
 
-  LayerListBuilder* layer_list_builder_ = nullptr;
+  LayerListBuilder& layer_list_builder_;
 
-  int new_sequence_number_ = -1;
+  int new_sequence_number_;
 
   // The current effect state. Virtually it's the top of the effect stack if
   // it and effect_stack_ are treated as a whole stack.
@@ -286,10 +270,6 @@ class PropertyTreeManager {
   // A set of synthetic clips masks which will be applied if a layer under them
   // is encountered which draws content (and thus necessitates the mask).
   HashSet<int> pending_synthetic_mask_layers_;
-
-#if DCHECK_IS_ON()
-  bool initialized_ = false;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(PropertyTreeManager);
 };

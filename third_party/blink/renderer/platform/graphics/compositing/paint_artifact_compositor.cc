@@ -82,13 +82,11 @@ PaintArtifactCompositor::PaintArtifactCompositor(
                                  const cc::ElementId&)> scroll_callback)
     : scroll_callback_(std::move(scroll_callback)),
       tracks_raster_invalidations_(false),
-      needs_update_(true),
-      property_tree_manager_(*this) {
+      needs_update_(true) {
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
       !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
     return;
   root_layer_ = cc::Layer::Create();
-  property_tree_manager_.SetRootLayer(root_layer_.get());
 }
 
 PaintArtifactCompositor::~PaintArtifactCompositor() {
@@ -915,13 +913,13 @@ void PaintArtifactCompositor::Update(
       g_s_property_tree_sequence_number);
 
   LayerListBuilder layer_list_builder;
-
-  property_tree_manager_.Initialize(host->property_trees(), &layer_list_builder,
-                                    g_s_property_tree_sequence_number);
+  PropertyTreeManager property_tree_manager(*this, *host->property_trees(),
+                                            *root_layer_, layer_list_builder,
+                                            g_s_property_tree_sequence_number);
   CollectPendingLayers(*paint_artifact, settings);
 
-  UpdateCompositorViewportProperties(viewport_properties,
-                                     property_tree_manager_, host);
+  UpdateCompositorViewportProperties(viewport_properties, property_tree_manager,
+                                     host);
 
   Vector<std::unique_ptr<ContentLayerClientImpl>> new_content_layer_clients;
   new_content_layer_clients.ReserveCapacity(pending_layers_.size());
@@ -971,11 +969,10 @@ void PaintArtifactCompositor::Update(
     layer->SetLayerTreeHost(root_layer_->layer_tree_host());
 
     int transform_id =
-        property_tree_manager_.EnsureCompositorTransformNode(transform);
-    int clip_id = property_tree_manager_.EnsureCompositorClipNode(clip);
-    int effect_id =
-        property_tree_manager_.SwitchToEffectNodeWithSynthesizedClip(
-            property_state.Effect(), clip, layer->DrawsContent());
+        property_tree_manager.EnsureCompositorTransformNode(transform);
+    int clip_id = property_tree_manager.EnsureCompositorClipNode(clip);
+    int effect_id = property_tree_manager.SwitchToEffectNodeWithSynthesizedClip(
+        property_state.Effect(), clip, layer->DrawsContent());
     blink_effects.resize(effect_id + 1);
     blink_effects[effect_id] = &property_state.Effect();
     // The compositor scroll node is not directly stored in the property tree
@@ -983,7 +980,7 @@ void PaintArtifactCompositor::Update(
     const auto& scroll_translation =
         ScrollTranslationForPendingLayer(*paint_artifact, pending_layer);
     int scroll_id =
-        property_tree_manager_.EnsureCompositorScrollNode(scroll_translation);
+        property_tree_manager.EnsureCompositorScrollNode(scroll_translation);
 
     layer_list_builder.Add(layer);
 
@@ -1017,7 +1014,7 @@ void PaintArtifactCompositor::Update(
       root_layer_->SetNeedsCommit();
     }
   }
-  property_tree_manager_.Finalize();
+  property_tree_manager.Finalize();
   content_layer_clients_.swap(new_content_layer_clients);
   scroll_hit_test_layers_.swap(new_scroll_hit_test_layers);
 
@@ -1086,7 +1083,7 @@ cc::PropertyTrees* PaintArtifactCompositor::GetPropertyTreesForDirectUpdate() {
 bool PaintArtifactCompositor::DirectlyUpdateCompositedOpacityValue(
     const EffectPaintPropertyNode& effect) {
   if (auto* property_trees = GetPropertyTreesForDirectUpdate()) {
-    return property_tree_manager_.DirectlyUpdateCompositedOpacityValue(
+    return PropertyTreeManager::DirectlyUpdateCompositedOpacityValue(
         property_trees, effect);
   }
   return false;
@@ -1095,7 +1092,7 @@ bool PaintArtifactCompositor::DirectlyUpdateCompositedOpacityValue(
 bool PaintArtifactCompositor::DirectlyUpdateScrollOffsetTransform(
     const TransformPaintPropertyNode& transform) {
   if (auto* property_trees = GetPropertyTreesForDirectUpdate()) {
-    return property_tree_manager_.DirectlyUpdateScrollOffsetTransform(
+    return PropertyTreeManager::DirectlyUpdateScrollOffsetTransform(
         property_trees, transform);
   }
   return false;
@@ -1104,8 +1101,8 @@ bool PaintArtifactCompositor::DirectlyUpdateScrollOffsetTransform(
 bool PaintArtifactCompositor::DirectlyUpdateTransform(
     const TransformPaintPropertyNode& transform) {
   if (auto* property_trees = GetPropertyTreesForDirectUpdate()) {
-    return property_tree_manager_.DirectlyUpdateTransform(property_trees,
-                                                          transform);
+    return PropertyTreeManager::DirectlyUpdateTransform(property_trees,
+                                                        transform);
   }
   return false;
 }
@@ -1113,8 +1110,8 @@ bool PaintArtifactCompositor::DirectlyUpdateTransform(
 bool PaintArtifactCompositor::DirectlyUpdatePageScaleTransform(
     const TransformPaintPropertyNode& transform) {
   if (auto* property_trees = GetPropertyTreesForDirectUpdate()) {
-    return property_tree_manager_.DirectlyUpdatePageScaleTransform(
-        property_trees, transform);
+    return PropertyTreeManager::DirectlyUpdatePageScaleTransform(property_trees,
+                                                                 transform);
   }
   return false;
 }
