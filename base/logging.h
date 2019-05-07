@@ -18,6 +18,7 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/debug/debugger.h"
+#include "base/logging_buildflags.h"
 #include "base/macros.h"
 #include "base/scoped_clear_last_error.h"
 #include "base/strings/string_piece_forward.h"
@@ -943,7 +944,7 @@ const LogSeverity LOG_DCHECK = LOG_FATAL;
 #define DCHECK_GE(val1, val2) DCHECK_OP(GE, >=, val1, val2)
 #define DCHECK_GT(val1, val2) DCHECK_OP(GT, > , val1, val2)
 
-#if !DCHECK_IS_ON() && defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_LOG_ERROR_NOT_REACHED)
 // Implement logging of NOTREACHED() as a dedicated function to get function
 // call overhead down to a minimum.
 void LogErrorNotReached(const char* file, int line);
