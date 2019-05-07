@@ -18,8 +18,4 @@ const base::Feature kV8FlushBytecode{"V8FlushBytecode",
 const base::Feature kV8MemoryReducerForSmallHeaps{
     "V8MemoryReducerForSmallHeaps", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Increase V8 heap size to 4GB if the physical memory is bigger than 16 GB.
-const base::Feature kV8HugeMaxOldGenerationSize{
-    "V8HugeMaxOldGenerationSize", base::FEATURE_DISABLED_BY_DEFAULT};
-
 }  // namespace features

@@ -232,13 +232,6 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode) {
                                sizeof(no_memory_reducer) - 1);
   }
 
-  if (base::FeatureList::IsEnabled(features::kV8HugeMaxOldGenerationSize)) {
-    static const char huge_max_old_generation_size[] =
-        "--huge_max_old_generation_size";
-    v8::V8::SetFlagsFromString(huge_max_old_generation_size,
-                               sizeof(huge_max_old_generation_size) - 1);
-  }
-
   if (IsolateHolder::kStrictMode == mode) {
     static const char use_strict[] = "--use_strict";
     v8::V8::SetFlagsFromString(use_strict, sizeof(use_strict) - 1);
