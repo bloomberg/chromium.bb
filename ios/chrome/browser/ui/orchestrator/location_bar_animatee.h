@@ -25,8 +25,13 @@
 // See comment for -resetEditViewOffsetAndOffsetSteadyViewToMatch.
 - (void)resetSteadyViewOffsetAndOffsetEditViewToMatch;
 
+// Hides leading button for steady view.
+- (void)hideSteadyViewLeadingButton;
+// Call this after calling -hideSteadyViewLeadingButton. Restores the displayed
+// state of the leading button of the steady view.
+- (void)showSteadyViewLeadingButtonIfNeeded;
+
 - (void)setSteadyViewFaded:(BOOL)hidden;
-- (void)setSteadyViewLeadingButtonHidden:(BOOL)hidden;
 - (void)setEditViewFaded:(BOOL)hidden;
 - (void)setEditViewHidden:(BOOL)hidden;
 - (void)setSteadyViewHidden:(BOOL)hidden;

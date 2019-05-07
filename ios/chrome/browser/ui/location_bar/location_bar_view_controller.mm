@@ -59,6 +59,10 @@ typedef NS_ENUM(int, TrailingButtonState) {
 // icon (in iPad multitasking).
 @property(nonatomic, assign) BOOL shareButtonEnabled;
 
+// Keeps the status of the leading button of the location bar steady view. Used
+// to preserve leading button visibility during animations.
+@property(nonatomic, assign) BOOL shouldShowLeadingButton;
+
 // Starts voice search, updating the NamedGuide to be constrained to the
 // trailing button.
 - (void)startVoiceSearch;
@@ -249,6 +253,7 @@ typedef NS_ENUM(int, TrailingButtonState) {
 }
 
 - (void)displayInfobarButton:(BOOL)display {
+  self.shouldShowLeadingButton = display;
   [self.locationBarSteadyView.leadingButton displayBadge:display animated:YES];
 }
 
@@ -282,8 +287,14 @@ typedef NS_ENUM(int, TrailingButtonState) {
   self.locationBarSteadyView.alpha = hidden ? 0 : 1;
 }
 
-- (void)setSteadyViewLeadingButtonHidden:(BOOL)hidden {
-  [self.locationBarSteadyView.leadingButton displayBadge:!hidden animated:NO];
+- (void)hideSteadyViewLeadingButton {
+  [self.locationBarSteadyView.leadingButton displayBadge:NO animated:NO];
+}
+
+- (void)showSteadyViewLeadingButtonIfNeeded {
+  [self.locationBarSteadyView.leadingButton
+      displayBadge:self.shouldShowLeadingButton
+          animated:NO];
 }
 
 - (void)setEditViewFaded:(BOOL)hidden {
