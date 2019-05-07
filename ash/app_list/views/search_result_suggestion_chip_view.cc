@@ -142,6 +142,12 @@ void SearchResultSuggestionChipView::OnPaintBackground(gfx::Canvas* canvas) {
   // Background.
   flags.setColor(kBackgroundColor);
   canvas->DrawRoundRect(bounds, height() / 2, flags);
+
+  // Focus Ring should only be visible when keyboard traversal is occurring.
+  if (view_delegate_->KeyboardTraversalEngaged())
+    focus_ring()->SetColor(kFocusRingColor);
+  else
+    focus_ring()->SetColor(SkColorSetA(kFocusRingColor, 0));
 }
 
 void SearchResultSuggestionChipView::OnFocus() {

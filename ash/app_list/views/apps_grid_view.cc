@@ -477,7 +477,6 @@ void AppsGridView::SetSelectedView(AppListItemView* view) {
 
 void AppsGridView::ClearSelectedView(AppListItemView* view) {
   if (view && IsSelectedView(view)) {
-    selected_view_->SchedulePaint();
     selected_view_ = nullptr;
   }
 }

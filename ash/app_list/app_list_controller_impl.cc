@@ -47,6 +47,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
@@ -714,6 +715,26 @@ void AppListControllerImpl::Back() {
   presenter_.GetView()->Back();
 }
 
+void AppListControllerImpl::SetKeyboardTraversalMode(bool engaged) {
+  if (keyboard_traversal_engaged_ == engaged)
+    return;
+
+  keyboard_traversal_engaged_ = engaged;
+
+  views::View* focused_view =
+      presenter_.GetView()->GetFocusManager()->GetFocusedView();
+
+  if (!focused_view)
+    return;
+
+  // When the search box has focus, it is actually the textfield that has focus.
+  // As such, the |SearchBoxView| must be told to repaint directly.
+  if (focused_view == presenter_.GetView()->search_box_view()->search_box())
+    presenter_.GetView()->search_box_view()->SchedulePaint();
+  else
+    focused_view->SchedulePaint();
+}
+
 ash::ShelfAction AppListControllerImpl::OnAppListButtonPressed(
     int64_t display_id,
     app_list::AppListShowSource show_source,
@@ -933,6 +954,9 @@ void AppListControllerImpl::ViewShown(int64_t display_id) {
   UpdateAssistantVisibility();
   if (client_)
     client_->ViewShown(display_id);
+
+  // Ensure search box starts fresh with no ring each time it opens.
+  keyboard_traversal_engaged_ = false;
 }
 
 void AppListControllerImpl::ViewClosing() {
@@ -1024,6 +1048,10 @@ bool AppListControllerImpl::ProcessHomeLauncherGesture(
 
   NOTREACHED();
   return false;
+}
+
+bool AppListControllerImpl::KeyboardTraversalEngaged() {
+  return keyboard_traversal_engaged_;
 }
 
 bool AppListControllerImpl::CanProcessEventsOnApplistViews() {

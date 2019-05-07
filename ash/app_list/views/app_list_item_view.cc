@@ -20,6 +20,7 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "cc/paint/paint_flags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
@@ -530,14 +531,23 @@ void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
   if (apps_grid_view_->IsDraggedView(this))
     return;
 
-  if (apps_grid_view_->IsSelectedView(this)) {
+  // TODO(ginko) focus and selection should be unified.
+  if ((apps_grid_view_->IsSelectedView(this) || HasFocus()) &&
+      (delegate_->KeyboardTraversalEngaged() ||
+       (context_menu_ && context_menu_->IsShowingMenu()))) {
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
-    flags.setColor(apps_grid_view_->is_in_folder()
-                       ? kFolderGridFocusRingColor
-                       : AppListConfig::instance().grid_selected_color());
-    flags.setStyle(cc::PaintFlags::kStroke_Style);
-    flags.setStrokeWidth(kFocusRingWidth);
+    if (delegate_->KeyboardTraversalEngaged()) {
+      flags.setColor(apps_grid_view_->is_in_folder()
+                         ? kFolderGridFocusRingColor
+                         : AppListConfig::instance().grid_selected_color());
+      flags.setStyle(cc::PaintFlags::kStroke_Style);
+      flags.setStrokeWidth(kFocusRingWidth);
+    } else {
+      // If a context menu is open, we should instead use a grey selection.
+      flags.setColor(SkColorSetA(gfx::kGoogleGrey100, 31));
+      flags.setStyle(cc::PaintFlags::kFill_Style);
+    }
     gfx::Rect selection_highlight_bounds = GetContentsBounds();
     AdaptBoundsForSelectionHighlight(&selection_highlight_bounds);
     canvas->DrawRoundRect(gfx::RectF(selection_highlight_bounds),
@@ -658,6 +668,7 @@ void AppListItemView::OnFocus() {
 }
 
 void AppListItemView::OnBlur() {
+  SchedulePaint();
   apps_grid_view_->ClearSelectedView(this);
 }
 

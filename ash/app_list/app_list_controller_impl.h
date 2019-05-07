@@ -198,6 +198,7 @@ class ASH_EXPORT AppListControllerImpl
                                 ui::MenuSourceType source_type) override;
   bool ProcessHomeLauncherGesture(ui::GestureEvent* event,
                                   const gfx::Point& screen_location) override;
+  bool KeyboardTraversalEngaged() override;
   bool CanProcessEventsOnApplistViews() override;
   void GetNavigableContentsFactory(
       mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)
@@ -273,6 +274,8 @@ class ASH_EXPORT AppListControllerImpl
 
   // Performs the 'back' action for the active page.
   void Back();
+
+  void SetKeyboardTraversalMode(bool engaged);
 
   // Handles app list button press event. (Search key should trigger the same
   // behavior.) All three parameters are only used in clamshell mode.
@@ -350,8 +353,11 @@ class ASH_EXPORT AppListControllerImpl
   // Bindings for the AppListController interface.
   mojo::BindingSet<mojom::AppListController> bindings_;
 
-  // Whether the on-screen keyboard is shown.
+  // True if the on-screen keyboard is shown.
   bool onscreen_keyboard_shown_ = false;
+
+  // True if the most recent event handled by |presenter_| was a key event.
+  bool keyboard_traversal_engaged_ = false;
 
   // True if Shutdown() has been called.
   bool is_shutdown_ = false;
