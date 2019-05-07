@@ -894,6 +894,7 @@ test("browser_tests") {
       "../browser/ui/blocked_content/safe_browsing_triggered_popup_blocker_browsertest.cc",
       "../browser/ui/blocked_content/tab_under_blocker_browsertest.cc",
       "../browser/ui/managed_ui_browsertest.cc",
+      "../browser/ui/manifest_web_app_browsertest.cc",
       "../browser/ui/passwords/google_password_manager_navigation_throttle_browsertest.cc",
       "../browser/ui/tabs/pinned_tab_service_browsertest.cc",
       "../browser/ui/views/tabs/tab_hover_card_bubble_view_browsertest.cc",
