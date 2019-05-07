@@ -1007,7 +1007,8 @@ void FrameLoader::CommitNavigation(
 
   if (!CancelProvisionalLoaderForNewNavigation(
           false /* cancel_scheduled_navigations */,
-          DocumentLoader::WillLoadUrlAsEmpty(navigation_params->url))) {
+          DocumentLoader::WillLoadUrlAsEmpty(navigation_params->url),
+          false /* is_form_submission */)) {
     return;
   }
 
@@ -1097,7 +1098,7 @@ bool FrameLoader::CreatePlaceholderDocumentLoader(
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   if (!CancelProvisionalLoaderForNewNavigation(
           true /* cancel_scheduled_navigations */,
-          false /* is_starting_blank_navigation */)) {
+          false /* is_starting_blank_navigation */, !info.form.IsNull())) {
     return false;
   }
 
@@ -1560,7 +1561,8 @@ bool FrameLoader::ShouldReuseDefaultView(const KURL& url,
 
 bool FrameLoader::CancelProvisionalLoaderForNewNavigation(
     bool cancel_scheduled_navigations,
-    bool is_starting_blank_navigation) {
+    bool is_starting_blank_navigation,
+    bool is_form_submission) {
   bool had_placeholder_client_document_loader =
       provisional_document_loader_ && !provisional_document_loader_->DidStart();
 
@@ -1572,7 +1574,7 @@ bool FrameLoader::CancelProvisionalLoaderForNewNavigation(
   // This seems to correspond to step 9 of the specification:
   // "9. Abort the active document of browsingContext."
   // https://html.spec.whatwg.org/C/#navigate
-  frame_->GetDocument()->Abort();
+  frame_->GetDocument()->Abort(is_form_submission);
   // document.onreadystatechange can fire in Abort(), which can:
   // 1) Detach this frame.
   // 2) Stop the provisional DocumentLoader (i.e window.stop()).
