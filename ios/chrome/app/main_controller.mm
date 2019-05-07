@@ -445,8 +445,6 @@ enum class EnterTabSwitcherSnapshotResult {
 - (void)showTabSwitcher;
 // Starts a voice search on the current BVC.
 - (void)startVoiceSearchInCurrentBVC;
-// Loads the query from startup parameters in the current BVC.
-- (void)loadStartupQueryInCurrentBVC;
 // Dismisses |signinInteractionCoordinator|.
 - (void)dismissSigninInteractionCoordinator;
 // Called when the last incognito tab was closed.
@@ -1820,35 +1818,6 @@ enum class EnterTabSwitcherSnapshotResult {
     [self.currentBVC startVoiceSearch];
 }
 
-- (void)loadStartupQueryInCurrentBVC {
-  NSString* query = self.startupParameters.textQuery;
-
-  TemplateURLService* templateURLService =
-      ios::TemplateURLServiceFactory::GetForBrowserState(_mainBrowserState);
-  const TemplateURL* defaultURL =
-      templateURLService->GetDefaultSearchProvider();
-  DCHECK(!defaultURL->url().empty());
-  DCHECK(
-      defaultURL->url_ref().IsValid(templateURLService->search_terms_data()));
-  base::string16 queryString = base::SysNSStringToUTF16(query);
-  TemplateURLRef::SearchTermsArgs search_args(queryString);
-
-  GURL result(defaultURL->url_ref().ReplaceSearchTerms(
-      search_args, templateURLService->search_terms_data()));
-  UrlLoadParams params = UrlLoadParams::InCurrentTab(result);
-  params.web_params.transition_type = ui::PAGE_TRANSITION_TYPED;
-  UrlLoadingServiceFactory::GetForBrowserState([self.currentBVC browserState])
-      ->Load(params);
-}
-
-// Loads the image from startup parameters as search-by-image in the current
-// BVC.
-- (void)loadStartupImageQueryInCurrentBVC {
-  NSData* query = self.startupParameters.imageSearchData;
-
-  [self.currentBVC.dispatcher searchByImage:[UIImage imageWithData:query]];
-}
-
 #pragma mark - Preferences Management
 
 - (void)onPreferenceChanged:(const std::string&)preferenceName {
@@ -2321,14 +2290,6 @@ enum class EnterTabSwitcherSnapshotResult {
     case FOCUS_OMNIBOX:
       return ^{
         [self.currentBVC.dispatcher focusOmnibox];
-      };
-    case SEARCH_TEXT:
-      return ^{
-        [self loadStartupQueryInCurrentBVC];
-      };
-    case SEARCH_IMAGE:
-      return ^{
-        [self loadStartupImageQueryInCurrentBVC];
       };
     default:
       return nil;
