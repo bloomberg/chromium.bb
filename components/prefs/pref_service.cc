@@ -153,11 +153,9 @@ bool PrefService::GetBoolean(const std::string& path) const {
 
   bool result = false;
 
-  const base::Value* value = GetPreferenceValue(path);
-  if (!value) {
-    NOTREACHED() << "Trying to read an unregistered pref: " << path;
+  const base::Value* value = GetPreferenceValueChecked(path);
+  if (!value)
     return result;
-  }
   bool rv = value->GetAsBoolean(&result);
   DCHECK(rv);
   return result;
@@ -168,11 +166,9 @@ int PrefService::GetInteger(const std::string& path) const {
 
   int result = 0;
 
-  const base::Value* value = GetPreferenceValue(path);
-  if (!value) {
-    NOTREACHED() << "Trying to read an unregistered pref: " << path;
+  const base::Value* value = GetPreferenceValueChecked(path);
+  if (!value)
     return result;
-  }
   bool rv = value->GetAsInteger(&result);
   DCHECK(rv);
   return result;
@@ -183,11 +179,9 @@ double PrefService::GetDouble(const std::string& path) const {
 
   double result = 0.0;
 
-  const base::Value* value = GetPreferenceValue(path);
-  if (!value) {
-    NOTREACHED() << "Trying to read an unregistered pref: " << path;
+  const base::Value* value = GetPreferenceValueChecked(path);
+  if (!value)
     return result;
-  }
   bool rv = value->GetAsDouble(&result);
   DCHECK(rv);
   return result;
@@ -198,11 +192,9 @@ std::string PrefService::GetString(const std::string& path) const {
 
   std::string result;
 
-  const base::Value* value = GetPreferenceValue(path);
-  if (!value) {
-    NOTREACHED() << "Trying to read an unregistered pref: " << path;
+  const base::Value* value = GetPreferenceValueChecked(path);
+  if (!value)
     return result;
-  }
   bool rv = value->GetAsString(&result);
   DCHECK(rv);
   return result;
@@ -213,11 +205,9 @@ base::FilePath PrefService::GetFilePath(const std::string& path) const {
 
   base::FilePath result;
 
-  const base::Value* value = GetPreferenceValue(path);
-  if (!value) {
-    NOTREACHED() << "Trying to read an unregistered pref: " << path;
+  const base::Value* value = GetPreferenceValueChecked(path);
+  if (!value)
     return base::FilePath(result);
-  }
   bool rv = base::GetValueAsFilePath(*value, &result);
   DCHECK(rv);
   return result;
@@ -316,11 +306,9 @@ bool PrefService::IsUserModifiablePreference(
 const base::Value* PrefService::Get(const std::string& path) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const base::Value* value = GetPreferenceValue(path);
-  if (!value) {
-    NOTREACHED() << "Trying to read an unregistered pref: " << path;
+  const base::Value* value = GetPreferenceValueChecked(path);
+  if (!value)
     return nullptr;
-  }
   return value;
 }
 
@@ -328,11 +316,9 @@ const base::DictionaryValue* PrefService::GetDictionary(
     const std::string& path) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const base::Value* value = GetPreferenceValue(path);
-  if (!value) {
-    NOTREACHED() << "Trying to read an unregistered pref: " << path;
+  const base::Value* value = GetPreferenceValueChecked(path);
+  if (!value)
     return nullptr;
-  }
   if (value->type() != base::Value::Type::DICTIONARY) {
     NOTREACHED();
     return nullptr;
@@ -383,11 +369,9 @@ const base::Value* PrefService::GetDefaultPrefValue(
 const base::ListValue* PrefService::GetList(const std::string& path) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const base::Value* value = GetPreferenceValue(path);
-  if (!value) {
-    NOTREACHED() << "Trying to read an unregistered pref: " << path;
+  const base::Value* value = GetPreferenceValueChecked(path);
+  if (!value)
     return nullptr;
-  }
   if (value->type() != base::Value::Type::LIST) {
     NOTREACHED();
     return nullptr;
@@ -512,11 +496,9 @@ void PrefService::SetInt64(const std::string& path, int64_t value) {
 int64_t PrefService::GetInt64(const std::string& path) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const base::Value* value = GetPreferenceValue(path);
-  if (!value) {
-    NOTREACHED() << "Trying to read an unregistered pref: " << path;
+  const base::Value* value = GetPreferenceValueChecked(path);
+  if (!value)
     return 0;
-  }
   std::string result("0");
   bool rv = value->GetAsString(&result);
   DCHECK(rv);
@@ -534,11 +516,9 @@ void PrefService::SetUint64(const std::string& path, uint64_t value) {
 uint64_t PrefService::GetUint64(const std::string& path) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const base::Value* value = GetPreferenceValue(path);
-  if (!value) {
-    NOTREACHED() << "Trying to read an unregistered pref: " << path;
+  const base::Value* value = GetPreferenceValueChecked(path);
+  if (!value)
     return 0;
-  }
   std::string result("0");
   bool rv = value->GetAsString(&result);
   DCHECK(rv);
@@ -647,9 +627,7 @@ PrefService::Preference::Preference(const PrefService* service,
       pref_service_(service) {}
 
 const base::Value* PrefService::Preference::GetValue() const {
-  const base::Value* result = pref_service_->GetPreferenceValue(name_);
-  DCHECK(result) << "Must register pref before getting its value";
-  return result;
+  return pref_service_->GetPreferenceValueChecked(name_);
 }
 
 const base::Value* PrefService::Preference::GetRecommendedValue() const {
@@ -731,4 +709,11 @@ const base::Value* PrefService::GetPreferenceValue(
   }
 
   return nullptr;
+}
+
+const base::Value* PrefService::GetPreferenceValueChecked(
+    const std::string& path) const {
+  const base::Value* value = GetPreferenceValue(path);
+  DCHECK(value) << "Trying to read an unregistered pref: " << path;
+  return value;
 }

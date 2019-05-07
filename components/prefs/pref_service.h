@@ -446,11 +446,12 @@ class COMPONENTS_PREFS_EXPORT PrefService {
                                   base::Value::Type type);
 
   // GetPreferenceValue is the equivalent of FindPreference(path)->GetValue(),
-  // it has been added for performance. If is faster because it does
+  // it has been added for performance. It is faster because it does
   // not need to find or create a Preference object to get the
   // value (GetValue() calls back though the preference service to
   // actually get the value.).
   const base::Value* GetPreferenceValue(const std::string& path) const;
+  const base::Value* GetPreferenceValueChecked(const std::string& path) const;
 
   const scoped_refptr<PrefRegistry> pref_registry_;
 
