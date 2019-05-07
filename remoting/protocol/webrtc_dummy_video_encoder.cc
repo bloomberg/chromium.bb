@@ -45,8 +45,6 @@ bool GetRTPFragmentationHeaderH264(webrtc::RTPFragmentationHeader* header,
   for (size_t i = 0; i < nalu_vector.size(); ++i) {
     header->fragmentationOffset[i] = nalu_vector[i].data - data;
     header->fragmentationLength[i] = nalu_vector[i].size;
-    header->fragmentationPlType[i] = 0;
-    header->fragmentationTimeDiff[i] = 0;
   }
   return true;
 }
