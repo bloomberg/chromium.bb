@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "content/common/content_export.h"
@@ -46,8 +47,22 @@ class CONTENT_EXPORT MediaExperimentManager {
   struct PlayerState {
     Client* client = nullptr;
     bool is_playing = false;
-    bool is_full_screen = false;
+    bool is_fullscreen = false;
     bool is_pip = false;
+  };
+
+  class CONTENT_EXPORT ScopedPlayerState {
+   public:
+    ScopedPlayerState(base::OnceClosure destruction_cb, PlayerState* state);
+    ScopedPlayerState(ScopedPlayerState&&);
+    ~ScopedPlayerState();
+
+    PlayerState* operator->() { return state_; }
+
+   private:
+    PlayerState* state_;
+    base::OnceClosure destruction_cb_;
+    DISALLOW_COPY_AND_ASSIGN(ScopedPlayerState);
   };
 
   MediaExperimentManager();
@@ -70,7 +85,10 @@ class CONTENT_EXPORT MediaExperimentManager {
   // error if |client| has no active players.
   virtual void ClientDestroyed(Client* client);
 
-  // TODO(liberato): Allow clients to update the player's state.
+  // Update the player state.  When the returned ScopedMediaPlayerState is
+  // destroyed, we will process the changes.  One may not create or destroy
+  // players while the ScopedMediaPlayerState exists.
+  virtual ScopedPlayerState GetPlayerState(const MediaPlayerId& player);
 
   // Return the number of players total.
   size_t GetPlayerCountForTesting() const;

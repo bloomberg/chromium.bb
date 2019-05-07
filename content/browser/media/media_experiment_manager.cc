@@ -4,7 +4,27 @@
 
 #include "content/browser/media/media_experiment_manager.h"
 
+#include <utility>
+
+#include "base/bind_helpers.h"
+
 namespace content {
+
+MediaExperimentManager::ScopedPlayerState::ScopedPlayerState(
+    base::OnceClosure destruction_cb,
+    PlayerState* state)
+    : state_(state), destruction_cb_(std::move(destruction_cb)) {}
+
+MediaExperimentManager::ScopedPlayerState::ScopedPlayerState(
+    ScopedPlayerState&& rhs) {
+  destruction_cb_ = std::move(rhs.destruction_cb_);
+  state_ = rhs.state_;
+}
+
+MediaExperimentManager::ScopedPlayerState::~ScopedPlayerState() {
+  if (destruction_cb_)
+    std::move(destruction_cb_).Run();
+}
 
 MediaExperimentManager::MediaExperimentManager() = default;
 
@@ -21,6 +41,15 @@ void MediaExperimentManager::PlayerCreated(const MediaPlayerId& player_id,
 
 void MediaExperimentManager::PlayerDestroyed(const MediaPlayerId& player_id) {
   ErasePlayersInternal({player_id});
+}
+
+MediaExperimentManager::ScopedPlayerState
+MediaExperimentManager::GetPlayerState(const MediaPlayerId& player_id) {
+  auto iter = players_.find(player_id);
+  DCHECK(iter != players_.end());
+  // TODO(liberato): Replace this callback with something that checks the
+  // experiment state, to see if an experiment has started / stopped.
+  return ScopedPlayerState(base::DoNothing(), &iter->second);
 }
 
 void MediaExperimentManager::ClientDestroyed(Client* client) {
