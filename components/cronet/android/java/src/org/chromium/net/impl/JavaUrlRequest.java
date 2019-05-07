@@ -450,6 +450,7 @@ final class JavaUrlRequest extends UrlRequestBase {
                 public void run() throws Exception {
                     if (mOutputChannel == null) {
                         mAdditionalStatusDetails = Status.CONNECTING;
+                        mUrlConnection.setDoOutput(true);
                         mUrlConnection.connect();
                         mAdditionalStatusDetails = Status.SENDING_REQUEST;
                         mUrlConnectionOutputStream = mUrlConnection.getOutputStream();
