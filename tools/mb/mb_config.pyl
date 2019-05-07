@@ -898,7 +898,8 @@
     ],
 
     'android_binary_size': [
-      'android', 'android_config_check', 'chrome_with_codecs', 'goma', 'minimal_symbols', 'official_optimize',
+      'android', 'android_config_check', 'chrome_with_codecs', 'goma',
+      'minimal_symbols', 'official_optimize', 'stable_channel',
     ],
 
     'android_cast_debug_static_bot': [
@@ -2362,6 +2363,10 @@
 
     'resource_whitelisting': {
       'gn_args': 'enable_resource_whitelist_generation=true',
+    },
+
+    'stable_channel': {
+      'gn_args': 'android_channel="stable"',
     },
 
     'tsan': {

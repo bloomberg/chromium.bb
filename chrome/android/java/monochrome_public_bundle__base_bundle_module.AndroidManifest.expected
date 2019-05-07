@@ -26,7 +26,6 @@
   <uses-permission android:name="android.permission.WAKE_LOCK"/>
   <uses-permission android:name="android.permission.VIBRATE"/>
   <uses-permission android:name="android.permission.USE_CREDENTIALS"/>
-  <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
   <uses-permission android:name="android.permission.RECORD_AUDIO"/>
   <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
   <uses-permission android:name="android.permission.READ_SYNC_STATS"/>
@@ -1117,7 +1116,6 @@
         <category android:name="android.intent.category.BROWSABLE"/>
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.LAUNCHER"/>
-        <category android:name="android.intent.category.MULTIWINDOW_LAUNCHER"/>
       </intent-filter>
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -1204,7 +1202,6 @@
     <meta-data
         android:name="com.samsung.android.sdk.multiwindow.penwindow.enable"
         android:value="true"/>
-    <meta-data android:name="com.sec.android.support.multiwindow" android:value="true"/>
     <meta-data
         android:name="ipc.invalidation.ticl.gcm_upstream_service_class"
         android:value="org.chromium.chrome.browser.services.gcm.InvalidationGcmUpstreamSender"/>
@@ -1337,10 +1334,6 @@
         <action android:name="android.intent.action.PACKAGE_DATA_CLEARED"/>
         <action android:name="android.intent.action.PACKAGE_FULLY_REMOVED"/>
         <data android:scheme="package"/>
-      </intent-filter>
-      <intent-filter>
-        <action
-            android:name="org.chromium.chrome.browser.browserservices.ClientAppBroadcastReceiver.DEBUG"/>
       </intent-filter>
     </receiver>
     <receiver

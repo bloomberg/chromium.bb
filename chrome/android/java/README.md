@@ -81,6 +81,7 @@ attention or the expected file needs updating.
    ```
    enable_chrome_android_internal = false
    is_java_debug = false
+   android_channel = "stable"
    ```
 
    * Your local branch is up-to-date with master
