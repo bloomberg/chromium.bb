@@ -37,10 +37,6 @@ extern const base::Feature kPasswordProtectionForSignedInUsers;
 // Controls the daily quota for the suspicious site trigger.
 extern const base::Feature kSuspiciousSiteTriggerQuotaFeature;
 
-// Controls whether we collect and send the referrer chain and other information
-// for APK downloads on Android.
-extern const base::Feature kTelemetryForApkDownloads;
-
 // Specifies which non-resource HTML Elements to collect based on their tag and
 // attributes. It's a single param containing a comma-separated list of pairs.
 // For example: "tag1,id,tag1,height,tag2,foo" - this will collect elements with

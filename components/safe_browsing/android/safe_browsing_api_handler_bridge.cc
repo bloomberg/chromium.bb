@@ -12,6 +12,7 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/containers/flat_set.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
@@ -226,8 +227,7 @@ bool SafeBrowsingApiHandlerBridge::CheckApiIsSupported() {
 
 std::string SafeBrowsingApiHandlerBridge::GetSafetyNetId() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  bool feature_enabled =
-      base::FeatureList::IsEnabled(kTelemetryForApkDownloads);
+  bool feature_enabled = base::FeatureList::IsEnabled(kCaptureSafetyNetId);
   DCHECK(feature_enabled);
 
   static std::string safety_net_id;

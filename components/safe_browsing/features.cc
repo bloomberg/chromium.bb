@@ -45,9 +45,6 @@ const base::Feature kPasswordProtectionForSignedInUsers{
 const base::Feature kSuspiciousSiteTriggerQuotaFeature{
     "SafeBrowsingSuspiciousSiteTriggerQuota", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kTelemetryForApkDownloads{
-    "SafeBrowsingTelemetryForApkDownloads", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kThreatDomDetailsTagAndAttributeFeature{
     "ThreatDomDetailsTagAttributes", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -79,7 +76,6 @@ constexpr struct {
     {&kCommittedSBInterstitials, true},
     {&kPasswordProtectionForSignedInUsers, true},
     {&kSuspiciousSiteTriggerQuotaFeature, true},
-    {&kTelemetryForApkDownloads, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kTriggerThrottlerDailyQuotaFeature, false},
     {&kUseLocalBlacklistsV2, true},
