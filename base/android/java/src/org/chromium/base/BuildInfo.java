@@ -9,7 +9,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Build;
-import android.os.Build.VERSION;
 import android.text.TextUtils;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -202,17 +201,14 @@ public class BuildInfo {
      * @return {@code true} if Q APIs are available for use, {@code false} otherwise
      */
     public static boolean isAtLeastQ() {
-        return VERSION.CODENAME.length() == 1 && VERSION.CODENAME.charAt(0) >= 'Q'
-                && VERSION.CODENAME.charAt(0) <= 'Z';
+        return Build.VERSION.SDK_INT >= 29;
     }
 
     /**
      * Checks if the application targets pre-release SDK Q
      */
     public static boolean targetsAtLeastQ() {
-        return isAtLeastQ()
-                && ContextUtils.getApplicationContext().getApplicationInfo().targetSdkVersion
-                == Build.VERSION_CODES.CUR_DEVELOPMENT;
+        return ContextUtils.getApplicationContext().getApplicationInfo().targetSdkVersion >= 29;
     }
 
     public static void setFirebaseAppId(String id) {
