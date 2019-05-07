@@ -63,6 +63,7 @@
 #include "ui/events/blink/blink_features.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
+#include "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/latency/latency_info.h"
 
 using testing::_;
@@ -2281,6 +2282,23 @@ TEST_F(RenderWidgetHostViewMacTest, AccessibilityParentTest) {
 
   rwhv_mac_->SetParentAccessibilityElement(nil);
   EXPECT_NSEQ([view accessibilityParent], parent_view);
+}
+
+// Tests that when entering mouse lock, the cursor will lock to window center.
+TEST_F(RenderWidgetHostViewMacTest, PointerLockCenterPosition) {
+  NSView* view = rwhv_mac_->cocoa_view();
+
+  NSRect bound = NSMakeRect(123, 234, 456, 678);
+  [view setFrame:bound];
+
+  EXPECT_EQ(gfx::Rect([view bounds]), gfx::Rect(0, 0, 456, 678));
+
+  rwhv_mac_->LockMouse();
+  EXPECT_TRUE(rwhv_mac_->IsMouseLocked());
+
+  gfx::Point mouse_pos =
+      gfx::Point([window_ mouseLocationOutsideOfEventStream]);
+  EXPECT_EQ(mouse_pos, gfx::Point(228, 339));
 }
 
 }  // namespace content
