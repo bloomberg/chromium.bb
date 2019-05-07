@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -19,6 +20,7 @@
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/common/page_zoom.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/web_preferences.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -146,6 +148,26 @@ IN_PROC_BROWSER_TEST_F(SystemWebDialogTest, FontSize) {
                                              ->GetWebkitPreferences();
   EXPECT_EQ(kDefaultFontSize, dialog_prefs.default_font_size);
   EXPECT_EQ(kDefaultFixedFontSize, dialog_prefs.default_fixed_font_size);
+}
+
+IN_PROC_BROWSER_TEST_F(SystemWebDialogTest, PageZoom) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(features::kSplitSettings);
+
+  // Set the default browser page zoom to 150%.
+  double level = content::ZoomFactorToZoomLevel(1.5);
+  browser()->profile()->GetZoomLevelPrefs()->SetDefaultZoomLevelPref(level);
+
+  // Open a system dialog.
+  MockSystemWebDialog* dialog = new MockSystemWebDialog();
+  dialog->ShowSystemDialog();
+
+  // Dialog page zoom is still 100%.
+  auto* web_contents = dialog->GetWebUIForTest()->GetWebContents();
+  double dialog_level = content::HostZoomMap::GetZoomLevel(web_contents);
+  EXPECT_TRUE(content::ZoomValuesEqual(dialog_level,
+                                       content::ZoomFactorToZoomLevel(1.0)))
+      << dialog_level;
 }
 
 }  // namespace chromeos

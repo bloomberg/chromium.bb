@@ -11,8 +11,15 @@
 #include "base/stl_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/chrome_web_dialog_view.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/host_zoom_map.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
+#include "content/public/common/page_zoom.h"
 #include "ui/aura/window.h"
 
 namespace chromeos {
@@ -120,6 +127,18 @@ void SystemWebDialogDelegate::OnDialogShown(
     content::WebUI* webui,
     content::RenderViewHost* render_view_host) {
   webui_ = webui;
+
+  if (features::IsSplitSettingsEnabled()) {
+    // System dialogs don't use the browser's default page zoom. Their contents
+    // stay at 100% to match the size of app list, shelf, status area, etc.
+    auto* web_contents = webui_->GetWebContents();
+    auto* rvh = web_contents->GetRenderViewHost();
+    auto* zoom_map = content::HostZoomMap::GetForWebContents(web_contents);
+    // Temporary means the lifetime of the WebContents.
+    zoom_map->SetTemporaryZoomLevel(rvh->GetProcess()->GetID(),
+                                    rvh->GetRoutingID(),
+                                    content::ZoomFactorToZoomLevel(1.0));
+  }
 }
 
 void SystemWebDialogDelegate::OnDialogClosed(const std::string& json_retval) {
