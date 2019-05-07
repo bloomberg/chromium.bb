@@ -206,8 +206,7 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
-#include "device/usb/mock_usb_device.h"
-#include "device/usb/mojo/type_converters.h"
+#include "device/usb/public/cpp/fake_usb_device_info.h"
 #include "extensions/browser/api/messaging/messaging_delegate.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
@@ -6468,15 +6467,15 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbDefault) {
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbAllowDevicesForUrls) {
   const auto kTestOrigin = url::Origin::Create(GURL("https://foo.com:443"));
-  scoped_refptr<device::UsbDevice> device =
-      base::MakeRefCounted<device::MockUsbDevice>(0, 0, "Google", "Gizmo",
-                                                  "123ABC");
-  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
+  scoped_refptr<device::FakeUsbDeviceInfo> device =
+      base::MakeRefCounted<device::FakeUsbDeviceInfo>(0, 0, "Google", "Gizmo",
+                                                      "123ABC");
+  const auto& device_info = device->GetDeviceInfo();
 
   // Expect the default permission value to be empty.
   auto* context = UsbChooserContextFactory::GetForProfile(browser()->profile());
   EXPECT_FALSE(
-      context->HasDevicePermission(kTestOrigin, kTestOrigin, *device_info));
+      context->HasDevicePermission(kTestOrigin, kTestOrigin, device_info));
 
   // Update policy to add an entry to the permission value to allow
   // |kTestOrigin| to access the device described by |device_info|.
@@ -6504,7 +6503,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbAllowDevicesForUrls) {
   UpdateProviderPolicy(policies);
 
   EXPECT_TRUE(
-      context->HasDevicePermission(kTestOrigin, kTestOrigin, *device_info));
+      context->HasDevicePermission(kTestOrigin, kTestOrigin, device_info));
 
   // Remove the policy to ensure that it can be dynamically updated.
   SetPolicy(&policies, key::kWebUsbAllowDevicesForUrls,
@@ -6512,7 +6511,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbAllowDevicesForUrls) {
   UpdateProviderPolicy(policies);
 
   EXPECT_FALSE(
-      context->HasDevicePermission(kTestOrigin, kTestOrigin, *device_info));
+      context->HasDevicePermission(kTestOrigin, kTestOrigin, device_info));
 }
 
 // Handler for embedded http-server, returns a small page with javascript

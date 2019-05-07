@@ -511,8 +511,6 @@ jumbo_split_static_library("ui") {
     "//content/app/resources",
     "//content/public/common",
     "//crypto",
-    "//device/base",
-    "//device/usb",
     "//extensions/buildflags",
     "//gpu/config",
     "//media",
@@ -764,7 +762,6 @@ jumbo_split_static_library("ui") {
       "//components/navigation_interception",
       "//components/subresource_filter/core/browser",
       "//crypto:platform",
-      "//device/usb/mojo",
       "//device/usb/public/cpp",
       "//device/usb/public/mojom",
       "//device/vr/buildflags",
@@ -3648,7 +3645,10 @@ jumbo_split_static_library("ui") {
       "webui/print_preview/sticky_settings.cc",
       "webui/print_preview/sticky_settings.h",
     ]
-    deps += [ "//device/usb/mojo:mojo" ]
+    deps += [
+      "//device/usb/public/cpp",
+      "//device/usb/public/mojom",
+    ]
 
     if (is_chromeos) {
       sources += [

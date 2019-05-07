@@ -37,7 +37,6 @@
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_child_process_watcher.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/chrome_device_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/component_updater/chrome_component_updater_configurator.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
@@ -272,8 +271,6 @@ void BrowserProcessImpl::Init() {
 #if defined(OS_MACOSX)
   ui::InitIdleMonitor();
 #endif
-
-  device_client_ = std::make_unique<ChromeDeviceClient>();
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::AppWindowClient::Set(ChromeAppWindowClient::GetInstance());

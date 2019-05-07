@@ -36,7 +36,6 @@
 #include "services/network/public/mojom/network_service.mojom-forward.h"
 
 class ChromeChildProcessWatcher;
-class ChromeDeviceClient;
 class ChromeFeatureListCreator;
 class ChromeMetricsServicesManagerClient;
 class ChromeResourceDispatcherHostDelegate;
@@ -409,8 +408,6 @@ class BrowserProcessImpl : public BrowserProcess,
   std::unique_ptr<gcm::GCMDriver> gcm_driver_;
 
   std::unique_ptr<ChromeChildProcessWatcher> child_process_watcher_;
-
-  std::unique_ptr<ChromeDeviceClient> device_client_;
 
   shell_integration::DefaultWebClientState cached_default_web_client_state_ =
       shell_integration::UNKNOWN_DEFAULT;

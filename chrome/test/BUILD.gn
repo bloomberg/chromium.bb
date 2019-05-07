@@ -1159,7 +1159,6 @@ test("browser_tests") {
       "//crypto:platform",
       "//crypto:test_support",
       "//device/bluetooth:mocks",
-      "//device/usb:test_support",
       "//device/usb/public/cpp:test_support",
       "//google_apis:test_support",
       "//media:test_support",
