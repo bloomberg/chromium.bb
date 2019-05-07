@@ -9506,7 +9506,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
         Find the 6-digit PIN on the back of your security key
       </message>
       <message name="IDS_WEBAUTHN_BLE_PIN_ENTRY_PIN_LABEL" desc="Label text. Displayed next to a text box where the user enters the PIN code (a 6-digit number) to pair a Bluetooth device.">
-        Pin
+        PIN
       </message>
       <message name="IDS_WEBAUTHN_BLE_PIN_ENTRY_NEXT" desc="Button text. The user clicks this button once they have entered the PIN code (a 6-digit number) into a text vbox, so that the pairing of the Bluetooth device can continue.">
         Next
