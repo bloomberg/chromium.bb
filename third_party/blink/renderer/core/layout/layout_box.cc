@@ -5772,8 +5772,8 @@ LayoutRect LayoutBox::LayoutOverflowRectForPropagation(
 
     LayoutSize container_offset;
 
-    if (IsInFlowPositioned())
-      container_offset = OffsetForInFlowPosition();
+    if (IsRelPositioned())
+      container_offset = RelativePositionOffset();
 
     if (ShouldUseTransformFromContainer(container)) {
       TransformationMatrix t;
