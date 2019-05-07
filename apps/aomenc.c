@@ -421,7 +421,8 @@ static const arg_def_t tile_rows =
     ARG_DEF(NULL, "tile-rows", 1, "Number of tile rows to use, log2");
 static const arg_def_t enable_tpl_model =
     ARG_DEF(NULL, "enable-tpl-model", 1,
-            "RDO modulation based on frame temporal dependency");
+            "RDO based on frame temporal dependency "
+            "(0: off, 1: backward source based, 2: forward 2-pass");
 static const arg_def_t tile_width =
     ARG_DEF(NULL, "tile-width", 1, "Tile widths (comma separated)");
 static const arg_def_t tile_height =

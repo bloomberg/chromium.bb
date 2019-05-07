@@ -854,14 +854,14 @@ static aom_codec_err_t set_encoder_config(
   }
 
   oxcf->enable_tpl_model =
-      extra_cfg->enable_tpl_model && (oxcf->superres_mode == SUPERRES_NONE);
+      (oxcf->superres_mode == SUPERRES_NONE) ? extra_cfg->enable_tpl_model : 0;
 
   oxcf->aq_mode = extra_cfg->aq_mode;
   oxcf->deltaq_mode = extra_cfg->deltaq_mode;
   // Turn on tpl model for deltaq_mode == DELTA_Q_OBJECTIVE and no
   // superres. If superres is being used on the other hand, turn
   // delta_q off.
-  if (oxcf->deltaq_mode == DELTA_Q_OBJECTIVE) {
+  if (oxcf->deltaq_mode == DELTA_Q_OBJECTIVE && !oxcf->enable_tpl_model) {
     if (oxcf->superres_mode == SUPERRES_NONE)
       oxcf->enable_tpl_model = 1;
     else
