@@ -111,7 +111,8 @@ class DataReductionProxyPingbackClientImplTest : public testing::Test {
   DataReductionProxyPingbackClientImplTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::ExecutionMode::ASYNC) {}
+            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::ASYNC) {
+  }
 
   TestDataReductionProxyPingbackClientImpl* pingback_client() const {
     return pingback_client_.get();
