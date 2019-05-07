@@ -36,12 +36,19 @@ class ThreadPoolWorkerGlobalScope final : public WorkerGlobalScope {
   }
 
   // WorkerGlobalScope
-  void Initialize(const KURL& response_url,
-                  network::mojom::ReferrerPolicy response_referrer_policy,
-                  mojom::IPAddressSpace response_address_space) override {
+  void Initialize(
+      const KURL& response_url,
+      network::mojom::ReferrerPolicy response_referrer_policy,
+      mojom::IPAddressSpace response_address_space,
+      const Vector<CSPHeaderAndType>& response_csp_headers) override {
     InitializeURL(response_url);
     SetReferrerPolicy(response_referrer_policy);
     SetAddressSpace(response_address_space);
+
+    // These should be called after SetAddressSpace() to correctly override the
+    // address space by the "treat-as-public-address" CSP directive.
+    InitContentSecurityPolicyFromVector(response_csp_headers);
+    BindContentSecurityPolicyToExecutionContext();
   }
   void FetchAndRunClassicScript(
       const KURL& script_url,

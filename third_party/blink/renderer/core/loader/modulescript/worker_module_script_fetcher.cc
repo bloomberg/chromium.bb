@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/network/content_security_policy_response_headers.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
@@ -107,13 +108,15 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
     if (SecurityOrigin::Create(response_url)->IsLocalhost())
       response_address_space = mojom::IPAddressSpace::kLocal;
 
-    // Step 12.3-12.5 are implemented in Initialize().
-    global_scope_->Initialize(response_url, response_referrer_policy,
-                              response_address_space);
+    auto* response_content_security_policy =
+        MakeGarbageCollected<ContentSecurityPolicy>();
+    response_content_security_policy->DidReceiveHeaders(
+        ContentSecurityPolicyResponseHeaders(resource->GetResponse()));
 
-    // Step 12.6. "Execute the Initialize a global object's CSP list algorithm
-    // on worker global scope and response. [CSP]" [spec text]
-    // This is done in the constructor of WorkerGlobalScope.
+    // Step 12.3-12.6 are implemented in Initialize().
+    global_scope_->Initialize(response_url, response_referrer_policy,
+                              response_address_space,
+                              response_content_security_policy->Headers());
   }
 
   ModuleScriptCreationParams params(

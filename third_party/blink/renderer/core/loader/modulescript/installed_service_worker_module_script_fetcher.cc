@@ -55,10 +55,17 @@ void InstalledServiceWorkerModuleScriptFetcher::Fetch(
           kDoNotSupportReferrerPolicyLegacyKeywords, &response_referrer_policy);
     }
 
-    global_scope_->Initialize(response_url, response_referrer_policy,
-                              script_data->GetResponseAddressSpace());
+    // Construct a ContentSecurityPolicy object to convert
+    // ContentSecurityPolicyResponseHeaders to CSPHeaderAndType.
+    // TODO(nhiroki): Find an efficient way to do this.
+    auto* response_content_security_policy =
+        MakeGarbageCollected<ContentSecurityPolicy>();
+    response_content_security_policy->DidReceiveHeaders(
+        script_data->GetContentSecurityPolicyResponseHeaders());
 
-    // TODO(nhiroki): Set CSP etc (https://crbug.com/937757).
+    global_scope_->Initialize(response_url, response_referrer_policy,
+                              script_data->GetResponseAddressSpace(),
+                              response_content_security_policy->Headers());
   }
 
   ModuleScriptCreationParams params(

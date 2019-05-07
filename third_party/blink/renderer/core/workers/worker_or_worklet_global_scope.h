@@ -155,6 +155,10 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   void TasksWerePaused() override;
   void TasksWereUnpaused() override;
 
+  const Vector<CSPHeaderAndType>& OutsideContentSecurityPolicyHeaders() const {
+    return outside_content_security_policy_headers_;
+  }
+
  private:
   void InitializeWebFetchContextIfNeeded();
   ResourceFetcher* CreateFetcherInternal(const FetchClientSettingsObject&,

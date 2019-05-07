@@ -77,8 +77,10 @@ DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::Create(
       *creation_params->response_address_space;
   auto* global_scope = MakeGarbageCollected<DedicatedWorkerGlobalScope>(
       std::move(creation_params), thread, time_origin);
+  // A dummy CSP headers is passed here as it is superseded by outside's CSP
+  // headers in Initialize().
   global_scope->Initialize(response_script_url, response_referrer_policy,
-                           response_address_space);
+                           response_address_space, Vector<CSPHeaderAndType>());
   return global_scope;
 }
 
@@ -98,7 +100,8 @@ const AtomicString& DedicatedWorkerGlobalScope::InterfaceName() const {
 void DedicatedWorkerGlobalScope::Initialize(
     const KURL& response_url,
     network::mojom::ReferrerPolicy response_referrer_policy,
-    mojom::IPAddressSpace response_address_space) {
+    mojom::IPAddressSpace response_address_space,
+    const Vector<CSPHeaderAndType>& /* not used */) {
   // Step 12.3. "Set worker global scope's url to response's url."
   InitializeURL(response_url);
 
@@ -113,8 +116,13 @@ void DedicatedWorkerGlobalScope::Initialize(
   // https://wicg.github.io/cors-rfc1918/#integration-html
   SetAddressSpace(response_address_space);
 
-  // TODO(nhiroki): Move the step 12.6 from DidFetchClassicScript() to this
-  // function.
+  // Step 12.6. "Execute the Initialize a global object's CSP list algorithm
+  // on worker global scope and response. [CSP]"
+  // DedicatedWorkerGlobalScope inherits the outside's CSP instead of the passed
+  // CSP. These should be called after SetAddressSpace() to correctly override
+  // the address space by the "treat-as-public-address" CSP directive.
+  InitContentSecurityPolicyFromVector(OutsideContentSecurityPolicyHeaders());
+  BindContentSecurityPolicyToExecutionContext();
 }
 
 // https://html.spec.whatwg.org/C/#worker-processing-model
@@ -251,14 +259,12 @@ void DedicatedWorkerGlobalScope::DidFetchClassicScript(
         kDoNotSupportReferrerPolicyLegacyKeywords, &response_referrer_policy);
   }
 
-  // Step 12.3-12.5 are implemented in Initialize().
+  // Step 12.3-12.6 are implemented in Initialize().
+  // A dummy CSP headers is passed here as it is superseded by outside's CSP
+  // headers in Initialize().
   Initialize(classic_script_loader->ResponseURL(), response_referrer_policy,
-             classic_script_loader->ResponseAddressSpace());
-
-  // Step 12.6. "Execute the Initialize a global object's CSP list algorithm
-  // on worker global scope and response. [CSP]"
-  // This is done in the constructor of WorkerGlobalScope.
-  DCHECK_EQ(GlobalScopeCSPApplyMode::kUseCreationParamsCSP, GetCSPApplyMode());
+             classic_script_loader->ResponseAddressSpace(),
+             Vector<CSPHeaderAndType>());
 
   // Step 12.7. "Asynchronously complete the perform the fetch steps with
   // response."

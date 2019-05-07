@@ -448,16 +448,10 @@ WorkerGlobalScope::WorkerGlobalScope(
 
   SetOutsideContentSecurityPolicyHeaders(
       creation_params->outside_content_security_policy_headers);
-  if (csp_apply_mode_ == GlobalScopeCSPApplyMode::kUseCreationParamsCSP) {
-    InitContentSecurityPolicyFromVector(
-        creation_params->outside_content_security_policy_headers);
-    BindContentSecurityPolicyToExecutionContext();
-  }
-
   SetWorkerSettings(std::move(creation_params->worker_settings));
-
   OriginTrialContext::AddTokens(this,
                                 creation_params->origin_trial_tokens.get());
+
   // TODO(sammc): Require a valid |creation_params->interface_provider| once all
   // worker types provide a valid |creation_params->interface_provider|.
   if (creation_params->interface_provider.is_valid()) {

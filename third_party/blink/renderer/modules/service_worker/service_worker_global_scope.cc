@@ -133,11 +133,18 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
       creation_params->referrer_policy;
   mojom::IPAddressSpace response_address_space =
       *creation_params->response_address_space;
+  // Contrary to the name, |outside_content_security_policy_headers| contains
+  // worker script's response CSP headers in this case.
+  // TODO(nhiroki): Introduce inside's csp headers field in
+  // GlobalScopeCreationParams or deprecate this code path by enabling
+  // off-the-main-thread worker script fetch by default.
+  Vector<CSPHeaderAndType> response_csp_headers =
+      creation_params->outside_content_security_policy_headers;
   auto* global_scope = MakeGarbageCollected<ServiceWorkerGlobalScope>(
       std::move(creation_params), thread, std::move(cache_storage_info),
       time_origin);
   global_scope->Initialize(response_url, response_referrer_policy,
-                           response_address_space);
+                           response_address_space, response_csp_headers);
   return global_scope;
 }
 
@@ -428,7 +435,8 @@ void ServiceWorkerGlobalScope::DidFetchClassicScript(
 void ServiceWorkerGlobalScope::Initialize(
     const KURL& response_url,
     network::mojom::ReferrerPolicy response_referrer_policy,
-    mojom::IPAddressSpace response_address_space) {
+    mojom::IPAddressSpace response_address_space,
+    const Vector<CSPHeaderAndType>& response_csp_headers) {
   // Step 4.5. "Set workerGlobalScope's url to serviceWorker's script url."
   InitializeURL(response_url);
 
@@ -443,8 +451,24 @@ void ServiceWorkerGlobalScope::Initialize(
   // https://wicg.github.io/cors-rfc1918/#integration-html
   SetAddressSpace(response_address_space);
 
-  // TODO(nhiroki): Move the step 4.8-4.12 from RunClassicScript() to this
-  // function.
+  // This is quoted from the "Content Security Policy" algorithm in the service
+  // workers spec:
+  // "Whenever a user agent invokes Run Service Worker algorithm with a service
+  // worker serviceWorker:
+  // - If serviceWorker's script resource was delivered with a
+  //   Content-Security-Policy HTTP header containing the value policy, the
+  //   user agent must enforce policy for serviceWorker.
+  // - If serviceWorker's script resource was delivered with a
+  //   Content-Security-Policy-Report-Only HTTP header containing the value
+  //   policy, the user agent must monitor policy for serviceWorker."
+  //
+  // These should be called after SetAddressSpace() to correctly override the
+  // address space by the "treat-as-public-address" CSP directive.
+  InitContentSecurityPolicyFromVector(response_csp_headers);
+  BindContentSecurityPolicyToExecutionContext();
+
+  // TODO(nhiroki): Clarify mappings between the steps 4.8-4.11 and
+  // implementation.
 }
 
 // https://w3c.github.io/ServiceWorker/#run-service-worker-algorithm
@@ -456,23 +480,9 @@ void ServiceWorkerGlobalScope::RunClassicScript(
     const String& source_code,
     std::unique_ptr<Vector<uint8_t>> cached_meta_data,
     const v8_inspector::V8StackTraceId& stack_id) {
-  // Step 4.5-4.7 are implemented in Initialize().
-  Initialize(response_url, response_referrer_policy, response_address_space);
-
-  // TODO(nhiroki): Clarify mappings between the steps 4.8-4.11 and
-  // implementation.
-
-  // This is quoted from the "Content Security Policy" algorithm:
-  // "Whenever a user agent invokes Run Service Worker algorithm with a service
-  // worker serviceWorker:
-  // - If serviceWorker's script resource was delivered with a
-  //   Content-Security-Policy HTTP header containing the value policy, the
-  //   user agent must enforce policy for serviceWorker.
-  // - If serviceWorker's script resource was delivered with a
-  //   Content-Security-Policy-Report-Only HTTP header containing the value
-  //   policy, the user agent must monitor policy for serviceWorker."
-  InitContentSecurityPolicyFromVector(response_csp_headers);
-  BindContentSecurityPolicyToExecutionContext();
+  // Step 4.5-4.11 are implemented in Initialize().
+  Initialize(response_url, response_referrer_policy, response_address_space,
+             response_csp_headers);
 
   // Step 4.12. "Let evaluationStatus be the result of running the classic
   // script script if script is a classic script, otherwise, the result of

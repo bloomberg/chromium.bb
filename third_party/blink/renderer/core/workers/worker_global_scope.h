@@ -150,7 +150,8 @@ class CORE_EXPORT WorkerGlobalScope
   virtual void Initialize(
       const KURL& response_url,
       network::mojom::ReferrerPolicy response_referrer_policy,
-      mojom::IPAddressSpace response_address_space) = 0;
+      mojom::IPAddressSpace response_address_space,
+      const Vector<CSPHeaderAndType>& response_csp_headers) = 0;
 
   // These methods should be called in the scope of a pausable
   // task runner. ie. They should not be called when the context
