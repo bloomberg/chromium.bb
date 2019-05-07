@@ -29,6 +29,7 @@
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_util.h"
+#include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
@@ -71,10 +72,6 @@ bool HasNoSniffHeader(const network::ResourceResponseHead& response) {
                                     &content_type_options);
   return base::LowerCaseEqualsASCII(content_type_options, kNoSniffHeaderValue);
 }
-
-// The buffer size of DataPipe which is used to send the body to the renderer.
-// Use the same size as regular resource loading.
-constexpr static int kDefaultBufferSize = 512 * 1024;
 
 SignedExchangeHandlerFactory* g_signed_exchange_factory_for_testing_ = nullptr;
 
@@ -364,12 +361,22 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
   // Currently we always assume that we have body.
   // TODO(https://crbug.com/80374): Add error handling and bail out
   // earlier if there's an error.
-
-  mojo::DataPipe data_pipe(kDefaultBufferSize);
-  pending_body_consumer_ = std::move(data_pipe.consumer_handle);
-
+  mojo::ScopedDataPipeProducerHandle producer_handle;
+  mojo::ScopedDataPipeConsumerHandle consumer_handle;
+  MojoCreateDataPipeOptions options;
+  options.struct_size = sizeof(MojoCreateDataPipeOptions);
+  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
+  options.element_num_bytes = 1;
+  options.capacity_num_bytes = network::kDataPipeDefaultAllocationSize;
+  if (mojo::CreateDataPipe(&options, &producer_handle, &consumer_handle) !=
+      MOJO_RESULT_OK) {
+    forwarding_client_->OnComplete(
+        network::URLLoaderCompletionStatus(net::ERR_INSUFFICIENT_RESOURCES));
+    return;
+  }
+  pending_body_consumer_ = std::move(consumer_handle);
   body_data_pipe_adapter_ = std::make_unique<SourceStreamToDataPipe>(
-      std::move(payload_stream), std::move(data_pipe.producer_handle),
+      std::move(payload_stream), std::move(producer_handle),
       base::BindOnce(&SignedExchangeLoader::FinishReadingBody,
                      base::Unretained(this)));
 

@@ -48,6 +48,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_filter.h"
+#include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -110,7 +111,7 @@ class URLLoaderFactoryImplTest : public ::testing::TestWithParam<size_t> {
     rdh_.CancelRequestsForProcess(resource_message_filter_->child_id());
     base::RunLoop().RunUntilIdle();
     MojoAsyncResourceHandler::SetAllocationSizeForTesting(
-        MojoAsyncResourceHandler::kDefaultAllocationSize);
+        network::kDataPipeDefaultAllocationSize);
   }
 
   void GetContexts(ResourceType resource_type,

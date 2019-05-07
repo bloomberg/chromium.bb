@@ -40,6 +40,7 @@
 #include "services/network/empty_url_loader_client.h"
 #include "services/network/loader_util.h"
 #include "services/network/network_usage_accumulator.h"
+#include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -52,7 +53,6 @@
 namespace network {
 
 namespace {
-constexpr size_t kDefaultAllocationSize = 512 * 1024;
 
 // Cannot use 0, because this means "default" in
 // mojo::core::Core::CreateDataPipe
@@ -825,7 +825,7 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
   options.struct_size = sizeof(MojoCreateDataPipeOptions);
   options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
   options.element_num_bytes = 1;
-  options.capacity_num_bytes = kDefaultAllocationSize;
+  options.capacity_num_bytes = kDataPipeDefaultAllocationSize;
   MojoResult result =
       mojo::CreateDataPipe(&options, &response_body_stream_, &consumer_handle_);
   if (result != MOJO_RESULT_OK) {

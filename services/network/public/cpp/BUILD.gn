@@ -16,6 +16,7 @@ jumbo_component("cpp") {
   output_name = "network_cpp"
 
   sources = [
+    "constants.h",
     "cors/cors.cc",
     "cors/cors.h",
     "cors/origin_access_entry.cc",

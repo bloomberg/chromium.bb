@@ -55,6 +55,7 @@
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -344,7 +345,7 @@ class MojoAsyncResourceHandlerTestBase {
 
   virtual ~MojoAsyncResourceHandlerTestBase() {
     MojoAsyncResourceHandler::SetAllocationSizeForTesting(
-        MojoAsyncResourceHandler::kDefaultAllocationSize);
+        network::kDataPipeDefaultAllocationSize);
     base::RunLoop().RunUntilIdle();
   }
 

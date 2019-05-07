@@ -17,15 +17,12 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
+#include "services/network/public/cpp/constants.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_url_request_job.h"
 #include "storage/browser/blob/mojo_blob_reader.h"
 
 namespace storage {
-
-namespace {
-constexpr size_t kDefaultAllocationSize = 512 * 1024;
-}
 
 // static
 void BlobURLLoader::CreateAndStart(
@@ -87,13 +84,23 @@ void BlobURLLoader::Start(const network::ResourceRequest& request) {
       }
     }
   }
-
-  mojo::DataPipe data_pipe(kDefaultAllocationSize);
-  response_body_consumer_handle_ = std::move(data_pipe.consumer_handle);
+  mojo::ScopedDataPipeProducerHandle producer_handle;
+  mojo::ScopedDataPipeConsumerHandle consumer_handle;
+  MojoCreateDataPipeOptions options;
+  options.struct_size = sizeof(MojoCreateDataPipeOptions);
+  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
+  options.element_num_bytes = 1;
+  options.capacity_num_bytes = network::kDataPipeDefaultAllocationSize;
+  if (mojo::CreateDataPipe(&options, &producer_handle, &consumer_handle) !=
+      MOJO_RESULT_OK) {
+    OnComplete(net::ERR_INSUFFICIENT_RESOURCES, 0);
+    delete this;
+    return;
+  }
+  response_body_consumer_handle_ = std::move(consumer_handle);
 
   MojoBlobReader::Create(blob_handle_.get(), byte_range_,
-                         base::WrapUnique(this),
-                         std::move(data_pipe.producer_handle));
+                         base::WrapUnique(this), std::move(producer_handle));
 }
 
 void BlobURLLoader::FollowRedirect(

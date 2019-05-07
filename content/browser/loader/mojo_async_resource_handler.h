@@ -97,7 +97,6 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
       std::unique_ptr<base::OneShotTimer> timer);
   void OnWritableForTesting();
   static void SetAllocationSizeForTesting(size_t size);
-  static constexpr size_t kDefaultAllocationSize = 512 * 1024;
 
  protected:
   // These functions can be overriden only for tests.
