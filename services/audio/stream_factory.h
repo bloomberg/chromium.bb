@@ -13,6 +13,7 @@
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "media/mojo/interfaces/audio_logging.mojom.h"
 #include "media/mojo/interfaces/audio_output_stream.mojom.h"
@@ -116,6 +117,8 @@ class StreamFactory final : public mojom::StreamFactory {
 
   // TODO(crbug.com/888478): Remove this after diagnosis.
   volatile uint32_t magic_bytes_;
+
+  base::WeakPtrFactory<StreamFactory> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(StreamFactory);
 };
