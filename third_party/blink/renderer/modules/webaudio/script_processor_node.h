@@ -87,7 +87,6 @@ class ScriptProcessorHandler final : public AudioHandler {
   double TailTime() const override;
   double LatencyTime() const override;
   bool RequiresTailProcessing() const final;
-  bool PropagatesSilence() const final;
 
   void FireProcessEvent(uint32_t);
   void FireProcessEventForOfflineAudioContext(uint32_t, base::WaitableEvent*);
