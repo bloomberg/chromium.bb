@@ -111,8 +111,6 @@ interface NetworkServiceClient {
   // request is resumed. Otherwise it's cancelled with the given error.
   OnSSLCertificateError(uint32 process_id,
                         uint32 routing_id,
-                        uint32 request_id,
-                        int32 resource_type,
                         url.mojom.Url url,
                         int32 net_error,
                         SSLInfo ssl_info,

@@ -2248,7 +2248,7 @@ class FakeSSLPrivateKeyImpl : public network::mojom::SSLPrivateKey {
 // A mock NetworkServiceClient that does the following:
 // 1. Responds auth challenges with previously set credentials.
 // 2. Responds certificate request with previously set responses.
-class MockNetworkServiceClient : public mojom::NetworkServiceClient {
+class MockNetworkServiceClient : public TestNetworkServiceClient {
  public:
   MockNetworkServiceClient() = default;
   ~MockNetworkServiceClient() override = default;
@@ -2335,76 +2335,6 @@ class MockNetworkServiceClient : public mojom::NetworkServiceClient {
     }
     ++on_certificate_requested_counter_;
   }
-
-  void OnSSLCertificateError(uint32_t process_id,
-                             uint32_t routing_id,
-                             uint32_t request_id,
-                             int32_t resource_type,
-                             const GURL& url,
-                             int net_error,
-                             const net::SSLInfo& ssl_info,
-                             bool fatal,
-                             OnSSLCertificateErrorCallback response) override {
-    NOTREACHED();
-  }
-  void OnCookiesRead(int process_id,
-                     int routing_id,
-                     const GURL& url,
-                     const GURL& first_party_url,
-                     const net::CookieList& cookie_list,
-                     bool blocked_by_policy) override {
-    NOTREACHED();
-  }
-  void OnCookieChange(int process_id,
-                      int routing_id,
-                      const GURL& url,
-                      const GURL& first_party_url,
-                      const net::CanonicalCookie& cookie,
-                      bool blocked_by_policy) override {
-    NOTREACHED();
-  }
-
-#if defined(OS_CHROMEOS)
-  void OnTrustAnchorUsed(const std::string& username_hash) override {
-    NOTREACHED();
-  }
-#endif
-
-  void OnFileUploadRequested(uint32_t process_id,
-                             bool async,
-                             const std::vector<base::FilePath>& file_paths,
-                             OnFileUploadRequestedCallback callback) override {
-    NOTREACHED();
-  }
-
-  void OnLoadingStateUpdate(std::vector<mojom::LoadInfoPtr> infos,
-                            OnLoadingStateUpdateCallback callback) override {
-    NOTREACHED();
-  }
-
-  void OnClearSiteData(int process_id,
-                       int routing_id,
-                       const GURL& url,
-                       const std::string& header_value,
-                       int load_flags,
-                       OnClearSiteDataCallback callback) override {
-    NOTREACHED();
-  }
-
-  void OnDataUseUpdate(int32_t network_traffic_annotation_id_hash,
-                       int64_t recv_bytes,
-                       int64_t sent_bytes) override {}
-
-#if defined(OS_ANDROID)
-  void OnGenerateHttpNegotiateAuthToken(
-      const std::string& server_auth_token,
-      bool can_delegate,
-      const std::string& auth_negotiate_android_account_type,
-      const std::string& spn,
-      OnGenerateHttpNegotiateAuthTokenCallback callback) override {
-    NOTREACHED();
-  }
-#endif
 
   void set_credentials_response(CredentialsResponse credentials_response) {
     credentials_response_ = credentials_response;

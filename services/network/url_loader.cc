@@ -804,8 +804,8 @@ void URLLoader::OnSSLCertificateError(net::URLRequest* request,
     return;
   }
   network_service_client_->OnSSLCertificateError(
-      factory_params_->process_id, render_frame_id_, request_id_,
-      resource_type_, url_request_->url(), net_error, ssl_info, fatal,
+      factory_params_->process_id, render_frame_id_, url_request_->url(),
+      net_error, ssl_info, fatal,
       base::Bind(&URLLoader::OnSSLCertificateErrorResponse,
                  weak_ptr_factory_.GetWeakPtr(), ssl_info));
 }

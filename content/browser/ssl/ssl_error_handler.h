@@ -13,7 +13,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
-#include "content/public/common/resource_type.h"
 #include "net/ssl/ssl_info.h"
 #include "url/gurl.h"
 
@@ -51,7 +50,7 @@ class SSLErrorHandler {
   SSLErrorHandler(WebContents* web_contents,
                   const base::WeakPtr<Delegate>& delegate,
                   BrowserThread::ID delegate_thread,
-                  ResourceType resource_type,
+                  bool is_main_frame_request,
                   const GURL& url,
                   int net_error,
                   const net::SSLInfo& ssl_info,
@@ -63,7 +62,7 @@ class SSLErrorHandler {
 
   const GURL& request_url() const { return request_url_; }
 
-  ResourceType resource_type() const { return resource_type_; }
+  bool is_main_frame_request() const { return is_main_frame_request_; }
 
   WebContents* web_contents() const { return web_contents_; }
 
@@ -95,9 +94,8 @@ class SSLErrorHandler {
   // The URL for the request that generated the error.
   const GURL request_url_;
 
-  // What kind of resource is associated with the request that generated
-  // the error.
-  const ResourceType resource_type_;
+  // Whether this request is for the main frame's html.
+  const bool is_main_frame_request_;
 
   // The net::SSLInfo associated with the request that generated the error.
   const net::SSLInfo ssl_info_;

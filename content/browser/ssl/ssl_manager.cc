@@ -108,15 +108,15 @@ void HandleSSLErrorOnUI(
     const base::Callback<WebContents*(void)>& web_contents_getter,
     const base::WeakPtr<SSLErrorHandler::Delegate>& delegate,
     BrowserThread::ID delegate_thread,
-    const ResourceType resource_type,
+    bool is_main_frame_request,
     const GURL& url,
     int net_error,
     const net::SSLInfo& ssl_info,
     bool fatal) {
   content::WebContents* web_contents = web_contents_getter.Run();
-  std::unique_ptr<SSLErrorHandler> handler(
-      new SSLErrorHandler(web_contents, delegate, delegate_thread,
-                          resource_type, url, net_error, ssl_info, fatal));
+  std::unique_ptr<SSLErrorHandler> handler(new SSLErrorHandler(
+      web_contents, delegate, delegate_thread, is_main_frame_request, url,
+      net_error, ssl_info, fatal));
 
   if (!web_contents) {
     // Requests can fail to dispatch because they don't have a WebContents. See
@@ -152,7 +152,7 @@ void LogMixedContentMetrics(MixedContentType type,
 // static
 void SSLManager::OnSSLCertificateError(
     const base::WeakPtr<SSLErrorHandler::Delegate>& delegate,
-    const ResourceType resource_type,
+    bool is_main_frame_request,
     const GURL& url,
     const base::Callback<WebContents*(void)>& web_contents_getter,
     int net_error,
@@ -160,13 +160,12 @@ void SSLManager::OnSSLCertificateError(
     bool fatal) {
   DCHECK(delegate.get());
   DVLOG(1) << "OnSSLCertificateError() cert_error: " << net_error
-           << " resource_type: " << static_cast<int>(resource_type)
            << " url: " << url.spec() << " cert_status: " << std::hex
            << ssl_info.cert_status;
 
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     HandleSSLErrorOnUI(web_contents_getter, delegate, BrowserThread::UI,
-                       resource_type, url, net_error, ssl_info, fatal);
+                       is_main_frame_request, url, net_error, ssl_info, fatal);
     return;
   }
 
@@ -175,8 +174,8 @@ void SSLManager::OnSSLCertificateError(
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&HandleSSLErrorOnUI, web_contents_getter, delegate,
-                     BrowserThread::IO, resource_type, url, net_error, ssl_info,
-                     fatal));
+                     BrowserThread::IO, is_main_frame_request, url, net_error,
+                     ssl_info, fatal));
 }
 
 // static
@@ -188,7 +187,7 @@ void SSLManager::OnSSLCertificateSubresourceError(
     int net_error,
     const net::SSLInfo& ssl_info,
     bool fatal) {
-  OnSSLCertificateError(delegate, ResourceType::kSubResource, url,
+  OnSSLCertificateError(delegate, false, url,
                         base::Bind(&WebContentsImpl::FromRenderFrameHostID,
                                    render_process_id, render_frame_id),
                         net_error, ssl_info, fatal);
@@ -394,7 +393,7 @@ void SSLManager::OnCertErrorInternal(std::unique_ptr<SSLErrorHandler> handler,
   int cert_error = handler->cert_error();
   const net::SSLInfo& ssl_info = handler->ssl_info();
   const GURL& request_url = handler->request_url();
-  ResourceType resource_type = handler->resource_type();
+  bool is_main_frame_request = handler->is_main_frame_request();
   bool fatal = handler->fatal();
 
   base::Callback<void(bool, content::CertificateRequestResultType)> callback =
@@ -409,8 +408,8 @@ void SSLManager::OnCertErrorInternal(std::unique_ptr<SSLErrorHandler> handler,
   }
 
   GetContentClient()->browser()->AllowCertificateError(
-      web_contents, cert_error, ssl_info, request_url, resource_type, fatal,
-      expired_previous_decision,
+      web_contents, cert_error, ssl_info, request_url, is_main_frame_request,
+      fatal, expired_previous_decision,
       base::Bind(&OnAllowCertificateWithRecordDecision, true,
                  std::move(callback)));
 }

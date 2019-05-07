@@ -448,7 +448,8 @@ void ResourceLoader::OnSSLCertificateError(net::URLRequest* request,
   ResourceRequestInfoImpl* info = GetRequestInfo();
 
   SSLManager::OnSSLCertificateError(
-      weak_ptr_factory_.GetWeakPtr(), info->GetResourceType(), request_->url(),
+      weak_ptr_factory_.GetWeakPtr(),
+      info->GetResourceType() == ResourceType::kMainFrame, request_->url(),
       info->GetWebContentsGetterForRequest(), net_error, ssl_info, fatal);
 }
 

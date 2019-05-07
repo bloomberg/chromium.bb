@@ -44,17 +44,8 @@ class WebSocketFactory::Delegate final : public WebSocket::Delegate {
     callbacks_ = std::move(callbacks);
 
     NetworkService* network_service = factory_->context_->network_service();
-    // See content::ResourceType defined in
-    // content/public/common/resource_type.h. This is
-    // ResourceType::kSubResource.
-    constexpr int resource_type = 6;
-    // We need to provide a request ID which we don't have. Provide an
-    // invalid ID.
-    constexpr uint32_t request_id = static_cast<uint32_t>(-1);
-
     network_service->client()->OnSSLCertificateError(
-        process_id, render_frame_id, request_id, resource_type, url, net_error,
-        ssl_info, fatal,
+        process_id, render_frame_id, url, net_error, ssl_info, fatal,
         base::BindRepeating(&Delegate::OnSSLCertificateErrorResponse,
                             weak_factory_.GetWeakPtr(), ssl_info));
   }

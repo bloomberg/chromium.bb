@@ -10,6 +10,7 @@
 #include "base/unguessable_token.h"
 #include "content/browser/browsing_data/clear_site_data_handler.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_error_handler.h"
@@ -484,8 +485,6 @@ void NetworkServiceClient::OnCertificateRequested(
 void NetworkServiceClient::OnSSLCertificateError(
     uint32_t process_id,
     uint32_t routing_id,
-    uint32_t request_id,
-    int32_t resource_type,
     const GURL& url,
     int net_error,
     const net::SSLInfo& ssl_info,
@@ -495,8 +494,14 @@ void NetworkServiceClient::OnSSLCertificateError(
       new SSLErrorDelegate(std::move(response));  // deletes self
   base::Callback<WebContents*(void)> web_contents_getter =
       base::BindRepeating(GetWebContents, process_id, routing_id);
+  bool is_main_frame_request = false;
+  if (process_id == network::mojom::kBrowserProcessId) {
+    auto* frame_tree_node = FrameTreeNode::GloballyFindByID(routing_id);
+    if (frame_tree_node)
+      is_main_frame_request = frame_tree_node->IsMainFrame();
+  }
   SSLManager::OnSSLCertificateError(
-      delegate->GetWeakPtr(), static_cast<ResourceType>(resource_type), url,
+      delegate->GetWeakPtr(), is_main_frame_request, url,
       std::move(web_contents_getter), net_error, ssl_info, fatal);
 }
 

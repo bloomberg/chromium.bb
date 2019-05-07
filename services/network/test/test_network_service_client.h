@@ -49,8 +49,6 @@ class TestNetworkServiceClient : public network::mojom::NetworkServiceClient {
       override;
   void OnSSLCertificateError(uint32_t process_id,
                              uint32_t routing_id,
-                             uint32_t request_id,
-                             int32_t resource_type,
                              const GURL& url,
                              int net_error,
                              const net::SSLInfo& ssl_info,
