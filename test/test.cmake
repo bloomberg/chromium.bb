@@ -116,6 +116,7 @@ if(NOT BUILD_SHARED_LIBS)
                 "${AOM_ROOT}/test/av1_ext_tile_test.cc"
                 "${AOM_ROOT}/test/binary_codes_test.cc"
                 "${AOM_ROOT}/test/boolcoder_test.cc"
+                "${AOM_ROOT}/test/cnn_test.cc"
                 "${AOM_ROOT}/test/coding_path_sync.cc"
                 "${AOM_ROOT}/test/decode_multithreaded_test.cc"
                 "${AOM_ROOT}/test/divu_small_test.cc"
