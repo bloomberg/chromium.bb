@@ -220,7 +220,7 @@ void ServiceInstance::StartWithRemote(
                            base::BindOnce(&ServiceInstance::OnStartCompleted,
                                           base::Unretained(this)));
 
-  service_manager_->NotifyServiceCreated(this);
+  service_manager_->NotifyServiceCreated(*this);
 }
 
 bool ServiceInstance::StartWithExecutablePath(const base::FilePath& path,
@@ -246,30 +246,24 @@ bool ServiceInstance::StartWithExecutablePath(const base::FilePath& path,
 #endif
 }
 
-void ServiceInstance::AuthorizeAndForwardConnectionRequestFromOtherService(
-    const Identity& source_identity,
+bool ServiceInstance::MaybeAcceptConnectionRequest(
+    const ServiceInstance& source_instance,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle receiving_pipe,
-    mojom::BindInterfacePriority priority,
-    mojom::Connector::BindInterfaceCallback callback) {
-  ServiceInstance* const source =
-      service_manager_->GetExistingInstance(source_identity);
-  if (!source || state_ == mojom::InstanceState::kUnreachable) {
-    std::move(callback).Run(mojom::ConnectResult::ACCESS_DENIED, identity_);
-    return;
-  }
+    mojom::BindInterfacePriority priority) {
+  if (state_ == mojom::InstanceState::kUnreachable)
+    return false;
 
-  const Manifest& source_manifest = source->manifest();
+  const Manifest& source_manifest = source_instance.manifest();
   const bool bindable_on_any_service = base::ContainsKey(
       source_manifest.interfaces_bindable_on_any_service, interface_name);
   const bool allowed_by_capabilities =
       AllowsInterface(source_manifest.required_capabilities, identity_.name(),
                       manifest_.exposed_capabilities, interface_name);
   if (!bindable_on_any_service && !allowed_by_capabilities) {
-    ReportBlockedInterface(source_identity.name(), identity_.name(),
+    ReportBlockedInterface(source_instance.identity().name(), identity_.name(),
                            interface_name);
-    std::move(callback).Run(mojom::ConnectResult::ACCESS_DENIED, identity_);
-    return;
+    return false;
   }
 
   base::OnceClosure on_bind_interface_complete;
@@ -280,13 +274,14 @@ void ServiceInstance::AuthorizeAndForwardConnectionRequestFromOtherService(
   }
 
   service_remote_->OnBindInterface(
-      BindSourceInfo(source_identity, GetRequiredCapabilities(
-                                          source_manifest.required_capabilities,
-                                          identity_.name())),
+      BindSourceInfo(
+          source_instance.identity(),
+          GetRequiredCapabilities(source_manifest.required_capabilities,
+                                  identity_.name())),
       interface_name, std::move(receiving_pipe),
       std::move(on_bind_interface_complete));
 
-  std::move(callback).Run(mojom::ConnectResult::SUCCEEDED, identity_);
+  return true;
 }
 
 void ServiceInstance::Stop() {
@@ -379,12 +374,12 @@ void ServiceInstance::HandleServiceOrConnectorDisconnection() {
   }
 }
 
-mojom::ConnectResult ServiceInstance::ValidateConnectionRequestToOtherService(
+bool ServiceInstance::CanConnectToOtherInstance(
     const ServiceFilter& target_filter,
     const base::Optional<std::string>& target_interface_name) {
   if (target_filter.service_name().empty()) {
     DLOG(ERROR) << "ServiceFilter has no service name.";
-    return mojom::ConnectResult::INVALID_ARGUMENT;
+    return false;
   }
 
   bool skip_instance_group_check =
@@ -402,7 +397,7 @@ mojom::ConnectResult ServiceInstance::ValidateConnectionRequestToOtherService(
                << "group " << target_filter.instance_group()->ToString()
                << " without |can_connect_to_instances_in_any_group| set to "
                << "|true|.";
-    return mojom::ConnectResult::ACCESS_DENIED;
+    return false;
   }
   if (target_filter.instance_id() && !target_filter.instance_id()->is_zero() &&
       !manifest_.options.can_connect_to_instances_with_any_id) {
@@ -411,14 +406,14 @@ mojom::ConnectResult ServiceInstance::ValidateConnectionRequestToOtherService(
                << " with instance ID "
                << target_filter.instance_id()->ToString() << " without "
                << "|can_connect_to_instances_with_any_id| set to |true|.";
-    return mojom::ConnectResult::ACCESS_DENIED;
+    return false;
   }
 
   if (can_contact_all_services_ ||
       !manifest_.interfaces_bindable_on_any_service.empty() ||
       manifest_.required_capabilities.find(target_filter.service_name()) !=
           manifest_.required_capabilities.end()) {
-    return mojom::ConnectResult::SUCCEEDED;
+    return true;
   }
 
   if (target_interface_name) {
@@ -428,7 +423,7 @@ mojom::ConnectResult ServiceInstance::ValidateConnectionRequestToOtherService(
     ReportBlockedStartService(identity_.name(), target_filter.service_name());
   }
 
-  return mojom::ConnectResult::ACCESS_DENIED;
+  return false;
 }
 
 void ServiceInstance::BindInterface(
@@ -437,16 +432,25 @@ void ServiceInstance::BindInterface(
     mojo::ScopedMessagePipeHandle receiving_pipe,
     mojom::BindInterfacePriority priority,
     BindInterfaceCallback callback) {
-  mojom::ConnectResult result =
-      ValidateConnectionRequestToOtherService(target_filter, interface_name);
-  if (result != mojom::ConnectResult::SUCCEEDED) {
-    std::move(callback).Run(result, base::nullopt);
+  if (!CanConnectToOtherInstance(target_filter, interface_name)) {
+    std::move(callback).Run(mojom::ConnectResult::ACCESS_DENIED, base::nullopt);
     return;
   }
 
-  service_manager_->Connect(target_filter, identity_, interface_name,
-                            std::move(receiving_pipe), priority,
-                            std::move(callback));
+  ServiceInstance* target_instance =
+      service_manager_->FindOrCreateMatchingTargetInstance(*this,
+                                                           target_filter);
+  bool allowed =
+      target_instance &&
+      target_instance->MaybeAcceptConnectionRequest(
+          *this, interface_name, std::move(receiving_pipe), priority);
+  if (!allowed) {
+    std::move(callback).Run(mojom::ConnectResult::ACCESS_DENIED, base::nullopt);
+    return;
+  }
+
+  std::move(callback).Run(mojom::ConnectResult::SUCCEEDED,
+                          target_instance->identity());
 }
 
 void ServiceInstance::QueryService(const std::string& service_name,
@@ -462,14 +466,22 @@ void ServiceInstance::QueryService(const std::string& service_name,
 
 void ServiceInstance::WarmService(const ServiceFilter& target_filter,
                                   WarmServiceCallback callback) {
-  mojom::ConnectResult result = ValidateConnectionRequestToOtherService(
-      target_filter, base::nullopt /* interface_name */);
-  if (result != mojom::ConnectResult::SUCCEEDED) {
-    std::move(callback).Run(result, base::nullopt);
+  if (!CanConnectToOtherInstance(target_filter,
+                                 base::nullopt /* interface_name */)) {
+    std::move(callback).Run(mojom::ConnectResult::ACCESS_DENIED, base::nullopt);
     return;
   }
 
-  service_manager_->Connect(target_filter, identity_, std::move(callback));
+  ServiceInstance* target_instance =
+      service_manager_->FindOrCreateMatchingTargetInstance(*this,
+                                                           target_filter);
+  if (!target_instance) {
+    std::move(callback).Run(mojom::ConnectResult::ACCESS_DENIED, base::nullopt);
+    return;
+  }
+
+  std::move(callback).Run(mojom::ConnectResult::SUCCEEDED,
+                          target_instance->identity());
 }
 
 void ServiceInstance::RegisterServiceInstance(
@@ -477,6 +489,13 @@ void ServiceInstance::RegisterServiceInstance(
     mojo::ScopedMessagePipeHandle service_remote_handle,
     mojom::PIDReceiverRequest pid_receiver_request,
     RegisterServiceInstanceCallback callback) {
+  auto target_filter = ServiceFilter::ForExactIdentity(identity);
+  if (!CanConnectToOtherInstance(target_filter,
+                                 base::nullopt /* interface_name */)) {
+    std::move(callback).Run(mojom::ConnectResult::ACCESS_DENIED);
+    return;
+  }
+
   mojo::PendingRemote<mojom::Service> service_remote(
       std::move(service_remote_handle), 0);
 
@@ -495,23 +514,13 @@ void ServiceInstance::RegisterServiceInstance(
     return;
   }
 
-  auto target_filter = ServiceFilter::ForExactIdentity(identity);
-  mojom::ConnectResult result = ValidateConnectionRequestToOtherService(
-      target_filter, base::nullopt /* interface_name */);
-  if (result != mojom::ConnectResult::SUCCEEDED) {
-    std::move(callback).Run(result);
-    return;
+  mojom::ServicePtr service(std::move(service_remote));
+  if (!service_manager_->RegisterService(identity, std::move(service),
+                                         std::move(pid_receiver_request))) {
+    std::move(callback).Run(mojom::ConnectResult::ACCESS_DENIED);
   }
 
-  service_manager_->Connect(target_filter, identity_, std::move(service_remote),
-                            std::move(pid_receiver_request),
-                            base::BindOnce(
-                                [](RegisterServiceInstanceCallback callback,
-                                   mojom::ConnectResult result,
-                                   const base::Optional<Identity>& identity) {
-                                  std::move(callback).Run(result);
-                                },
-                                std::move(callback)));
+  std::move(callback).Run(mojom::ConnectResult::SUCCEEDED);
 }
 
 void ServiceInstance::Clone(mojom::ConnectorRequest request) {
