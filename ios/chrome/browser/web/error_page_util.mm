@@ -17,6 +17,7 @@
 #include "ios/chrome/browser/application_context.h"
 #import "ios/net/protocol_handler_util.h"
 #include "net/base/net_errors.h"
+#include "third_party/zlib/google/compression_utils.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/scale_factor.h"
 #include "ui/base/webui/jstemplate_builder.h"
@@ -58,9 +59,17 @@ NSString* GetErrorPage(const GURL& url,
   ui::ScaleFactor scale_factor =
       ui::ResourceBundle::GetSharedInstance().GetMaxScaleFactor();
 
-  const base::StringPiece template_html(
+  std::string extracted_string;
+  base::StringPiece template_html(
       ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
           IDR_NET_ERROR_HTML, scale_factor));
+  if (ui::ResourceBundle::GetSharedInstance().IsGzipped(IDR_NET_ERROR_HTML)) {
+    base::StringPiece compressed_html = template_html;
+    extracted_string.resize(compression::GetUncompressedSize(compressed_html));
+    template_html.set(extracted_string.data(), extracted_string.size());
+    bool success = compression::GzipUncompress(compressed_html, template_html);
+    DCHECK(success);
+  }
   if (template_html.empty())
     NOTREACHED() << "unable to load template. ID: " << IDR_NET_ERROR_HTML;
   return base::SysUTF8ToNSString(webui::GetTemplatesHtml(

@@ -59,6 +59,7 @@
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_history_item.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/zlib/google/compression_utils.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "url/gurl.h"
@@ -381,8 +382,16 @@ LocalizedError::PageState NetErrorHelper::GenerateLocalizedErrorPage(
   error_html->clear();
 
   int resource_id = IDR_NET_ERROR_HTML;
-  const base::StringPiece template_html(
+  std::string extracted_string;
+  base::StringPiece template_html(
       ui::ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id));
+  if (ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id)) {
+    base::StringPiece compressed_html = template_html;
+    extracted_string.resize(compression::GetUncompressedSize(compressed_html));
+    template_html.set(extracted_string.data(), extracted_string.size());
+    bool success = compression::GzipUncompress(compressed_html, template_html);
+    DCHECK(success);
+  }
 
   LocalizedError::PageState page_state = LocalizedError::GetPageState(
       error.reason(), error.domain(), error.url(), is_failed_post,
