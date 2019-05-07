@@ -62,7 +62,8 @@
   {
     "name": "allow-previews",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    "expiry_milestone": 76
+    // This flag is used for frequent manual testing and should not be removed.
+    "expiry_milestone": -1
   },
   {
     "name": "allow-remote-context-for-notifications",
@@ -492,7 +493,8 @@
   {
     "name": "data-saver-server-previews",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    "expiry_milestone": 76
+    // This flag is used for frequent manual testing and should not be removed.
+    "expiry_milestone": -1
   },
   {
     "name": "dcheck-is-fatal",
@@ -612,7 +614,8 @@
   {
     "name": "disallow-doc-written-script-loads",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    "expiry_milestone": 76
+    // This is a web-developer facing flag and should not be removed.
+    "expiry_milestone": -1
   },
   {
     "name": "disallow-unsafe-http-downloads",
@@ -967,12 +970,13 @@
   {
     "name": "enable-data-reduction-proxy-server-experiment",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    "expiry_milestone": 76
+    // This flag is used for frequent manual testing and should not be removed.
+    "expiry_milestone": -1
   },
   {
     "name": "enable-data-reduction-proxy-with-network-service",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 79
   },
   {
     "name": "enable-desktop-pwas",
@@ -1227,22 +1231,23 @@
   {
     "name": "enable-lazy-frame-loading",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 79
   },
   {
     "name": "enable-lazy-image-loading",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 79
   },
   {
     "name": "enable-lite-page-server-previews",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    "expiry_milestone": 76
+    // This flag is used for frequent manual testing and should not be removed.
+    "expiry_milestone": -1
   },
   {
     "name": "enable-url-loader-lite-page-server-previews",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 79
   },
   {
     "name": "enable-lock-screen-notification",
@@ -1347,7 +1352,8 @@
   {
     "name": "enable-noscript-previews",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    "expiry_milestone": 76
+    // This flag is used for frequent manual testing and should not be removed.
+    "expiry_milestone": -1
   },
   {
     "name": "enable-nostate-prefetch",
@@ -1392,7 +1398,8 @@
   {
     "name": "enable-offline-previews",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    "expiry_milestone": 76
+    // This flag is used for frequent manual testing and should not be removed.
+    "expiry_milestone": -1
   },
   {
     "name": "enable-oobe-recommend-apps-screen",
@@ -1489,7 +1496,8 @@
   {
     "name": "enable-resource-loading-hints",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    "expiry_milestone": 76
+    // This flag is used for frequent manual testing and should not be removed.
+    "expiry_milestone": -1
   },
   {
     "name": "enable-revamped-context-menu",
@@ -1504,7 +1512,8 @@
   {
     "name": "enable-save-data",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    "expiry_milestone": 77
+    // This flag is used for frequent manual testing and should not be removed.
+    "expiry_milestone": -1
   },
   {
     "name": "enable-scroll-anchor-serialization",
