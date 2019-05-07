@@ -1945,11 +1945,6 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
 
   static const int kContextMenuMargin = 1;
 
-#if defined(OS_WIN)
-  int right_aligned = ::GetSystemMetrics(SM_MENUDROPALIGNMENT);
-#else
-  int right_aligned = 0;
-#endif
   IntPoint location_in_root_frame;
 
   Element* focused_element =
@@ -1964,7 +1959,7 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
         FirstRectForRange(selection.ComputeVisibleSelectionInDOMTree()
                               .ToNormalizedEphemeralRange());
 
-    int x = right_aligned ? first_rect.MaxX() : first_rect.X();
+    int x = first_rect.X();
     // In a multiline edit, firstRect.maxY() would end up on the next line, so
     // take the midpoint.
     int y = (first_rect.MaxY() + first_rect.Y()) / 2;
@@ -1975,10 +1970,7 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
         visual_viewport.ViewportToRootFrame(clipped_rect.Center());
   } else {
     location_in_root_frame = IntPoint(
-        right_aligned
-            ? visual_viewport.VisibleRect(kIncludeScrollbars).MaxX() -
-                  kContextMenuMargin
-            : visual_viewport.GetScrollOffset().Width() + kContextMenuMargin,
+        visual_viewport.GetScrollOffset().Width() + kContextMenuMargin,
         visual_viewport.GetScrollOffset().Height() + kContextMenuMargin);
   }
 
