@@ -57,7 +57,7 @@ inline HANDLE Uint32ToHandle(uint32_t h) {
 
 // Returns the string representing the current user sid. Does not modify
 // |user_sid| on failure.
-BASE_EXPORT bool GetUserSidString(std::wstring* user_sid);
+BASE_EXPORT bool GetUserSidString(string16* user_sid);
 
 // Returns false if user account control (UAC) has been disabled with the
 // EnableLUA registry flag. Returns true if user account control is enabled.
@@ -77,7 +77,7 @@ BASE_EXPORT bool SetBooleanValueForPropertyStore(
 BASE_EXPORT bool SetStringValueForPropertyStore(
     IPropertyStore* property_store,
     const PROPERTYKEY& property_key,
-    const wchar_t* property_string_value);
+    const char16* property_string_value);
 
 // Sets the CLSID value for a given key in a given IPropertyStore.
 BASE_EXPORT bool SetClsidForPropertyStore(IPropertyStore* property_store,
@@ -88,7 +88,7 @@ BASE_EXPORT bool SetClsidForPropertyStore(IPropertyStore* property_store,
 // for tagging application/chromium shortcut, browser window and jump list for
 // Win7.
 BASE_EXPORT bool SetAppIdForPropertyStore(IPropertyStore* property_store,
-                                          const wchar_t* app_id);
+                                          const char16* app_id);
 
 // Adds the specified |command| using the specified |name| to the AutoRun key.
 // |root_key| could be HKCU or HKLM or the root of any user hive.

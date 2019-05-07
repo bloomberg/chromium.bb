@@ -43,7 +43,7 @@ TEST(BaseWinUtilTest, TestIsUACEnabled) {
 }
 
 TEST(BaseWinUtilTest, TestGetUserSidString) {
-  std::wstring user_sid;
+  string16 user_sid;
   EXPECT_TRUE(GetUserSidString(&user_sid));
   EXPECT_TRUE(!user_sid.empty());
 }
@@ -69,18 +69,18 @@ TEST(BaseWinUtilTest, TestGetLoadedModulesSnapshot) {
   const char16 dll_name[] = FILE_PATH_LITERAL("zipfldr.dll");
   ASSERT_EQ(NULL, ::GetModuleHandle(as_wcstr(dll_name)));
 
-  base::ScopedNativeLibrary new_dll((base::FilePath(dll_name)));
+  ScopedNativeLibrary new_dll((FilePath(dll_name)));
   ASSERT_NE(static_cast<HMODULE>(NULL), new_dll.get());
   ASSERT_TRUE(GetLoadedModulesSnapshot(::GetCurrentProcess(), &snapshot));
   ASSERT_GT(snapshot.size(), original_snapshot_size);
-  ASSERT_TRUE(base::ContainsValue(snapshot, new_dll.get()));
+  ASSERT_TRUE(ContainsValue(snapshot, new_dll.get()));
 }
 
 TEST(BaseWinUtilTest, TestUint32ToInvalidHandle) {
   // Ensure that INVALID_HANDLE_VALUE is preserved when going to a 32-bit value
   // and back on 64-bit platforms.
-  uint32_t invalid_handle = base::win::HandleToUint32(INVALID_HANDLE_VALUE);
-  EXPECT_EQ(INVALID_HANDLE_VALUE, base::win::Uint32ToHandle(invalid_handle));
+  uint32_t invalid_handle = HandleToUint32(INVALID_HANDLE_VALUE);
+  EXPECT_EQ(INVALID_HANDLE_VALUE, Uint32ToHandle(invalid_handle));
 }
 
 TEST(BaseWinUtilTest, String16FromGUID) {

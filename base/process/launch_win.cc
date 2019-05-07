@@ -304,11 +304,11 @@ Process LaunchProcess(const string16& cmdline,
       return Process();
     }
   } else {
-    wchar_t* new_environment = nullptr;
+    char16* new_environment = nullptr;
     string16 env_storage;
     if (options.clear_environment || !options.environment.empty()) {
       if (options.clear_environment) {
-        static const wchar_t kEmptyEnvironment[] = {0};
+        static const char16 kEmptyEnvironment[] = {0};
         env_storage =
             internal::AlterEnvironment(kEmptyEnvironment, options.environment);
       } else {
@@ -317,17 +317,18 @@ Process LaunchProcess(const string16& cmdline,
           DPLOG(ERROR);
           return Process();
         }
-        env_storage =
-            internal::AlterEnvironment(old_environment, options.environment);
+        env_storage = internal::AlterEnvironment(as_u16cstr(old_environment),
+                                                 options.environment);
         FreeEnvironmentStrings(old_environment);
       }
-      new_environment = const_cast<wchar_t*>(env_storage.data());
+      new_environment = data(env_storage);
       flags |= CREATE_UNICODE_ENVIRONMENT;
     }
 
     if (!CreateProcess(nullptr, as_writable_wcstr(writable_cmdline), nullptr,
-                       nullptr, inherit_handles, flags, new_environment,
-                       current_directory, startup_info, &temp_process_info)) {
+                       nullptr, inherit_handles, flags,
+                       as_writable_wcstr(new_environment), current_directory,
+                       startup_info, &temp_process_info)) {
       DPLOG(ERROR) << "Command line:" << std::endl
                    << UTF16ToUTF8(cmdline) << std::endl;
       return Process();

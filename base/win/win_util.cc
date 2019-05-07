@@ -369,7 +369,7 @@ void GetNonClientMetrics(NONCLIENTMETRICS_XP* metrics) {
   DCHECK(success);
 }
 
-bool GetUserSidString(std::wstring* user_sid) {
+bool GetUserSidString(string16* user_sid) {
   // Get the current token.
   HANDLE token = NULL;
   if (!::OpenProcessToken(::GetCurrentProcess(), TOKEN_QUERY, &token))
@@ -391,7 +391,7 @@ bool GetUserSidString(std::wstring* user_sid) {
   if (!::ConvertSidToStringSid(user->User.Sid, &sid_string))
     return false;
 
-  *user_sid = sid_string;
+  *user_sid = as_u16cstr(sid_string);
 
   ::LocalFree(sid_string);
 
@@ -435,9 +435,9 @@ bool SetBooleanValueForPropertyStore(IPropertyStore* property_store,
 
 bool SetStringValueForPropertyStore(IPropertyStore* property_store,
                                     const PROPERTYKEY& property_key,
-                                    const wchar_t* property_string_value) {
+                                    const char16* property_string_value) {
   ScopedPropVariant property_value;
-  if (FAILED(InitPropVariantFromString(property_string_value,
+  if (FAILED(InitPropVariantFromString(as_wcstr(property_string_value),
                                        property_value.Receive()))) {
     return false;
   }
@@ -461,11 +461,12 @@ bool SetClsidForPropertyStore(IPropertyStore* property_store,
 }
 
 bool SetAppIdForPropertyStore(IPropertyStore* property_store,
-                              const wchar_t* app_id) {
+                              const char16* app_id) {
   // App id should be less than 64 chars and contain no space. And recommended
   // format is CompanyName.ProductName[.SubProduct.ProductNumber].
   // See http://msdn.microsoft.com/en-us/library/dd378459%28VS.85%29.aspx
-  DCHECK(lstrlen(app_id) < 64 && wcschr(app_id, L' ') == NULL);
+  DCHECK_LT(lstrlen(as_wcstr(app_id)), 64);
+  DCHECK_EQ(wcschr(as_wcstr(app_id), L' '), nullptr);
 
   return SetStringValueForPropertyStore(property_store,
                                         PKEY_AppUserModel_ID,

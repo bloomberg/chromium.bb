@@ -150,7 +150,7 @@ bool CreateOrUpdateShortcutLink(const FilePath& shortcut_path,
       return false;
 
     if (has_app_id && !SetAppIdForPropertyStore(property_store.Get(),
-                                                as_wcstr(properties.app_id))) {
+                                                properties.app_id.c_str())) {
       return false;
     }
     if (has_dual_mode &&

@@ -17,7 +17,6 @@
 #include <vector>
 
 #include "base/base_export.h"
-#include "base/bit_cast.h"
 #include "base/compiler_specific.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -229,37 +228,45 @@ BASE_EXPORT void TruncateUTF8ToByteSize(const std::string& input,
 #if defined(WCHAR_T_IS_UTF16)
 // Utility functions to access the underlying string buffer as a wide char
 // pointer.
+//
+// Note: These functions violate strict aliasing when char16 and wchar_t are
+// unrelated types. We thus pass -fno-strict-aliasing to the compiler on
+// non-Windows platforms [1], and rely on it being off in Clang's CL mode [2].
+//
+// [1] https://crrev.com/b9a0976622/build/config/compiler/BUILD.gn#244
+// [2]
+// https://github.com/llvm/llvm-project/blob/1e28a66/clang/lib/Driver/ToolChains/Clang.cpp#L3949
 inline wchar_t* as_writable_wcstr(char16* str) {
-  return bit_cast<wchar_t*>(str);
+  return reinterpret_cast<wchar_t*>(str);
 }
 
 inline wchar_t* as_writable_wcstr(string16& str) {
-  return bit_cast<wchar_t*>(data(str));
+  return reinterpret_cast<wchar_t*>(data(str));
 }
 
 inline const wchar_t* as_wcstr(const char16* str) {
-  return bit_cast<const wchar_t*>(str);
+  return reinterpret_cast<const wchar_t*>(str);
 }
 
 inline const wchar_t* as_wcstr(StringPiece16 str) {
-  return bit_cast<const wchar_t*>(str.data());
+  return reinterpret_cast<const wchar_t*>(str.data());
 }
 
 // Utility functions to access the underlying string buffer as a char16 pointer.
 inline char16* as_writable_u16cstr(wchar_t* str) {
-  return bit_cast<char16*>(str);
+  return reinterpret_cast<char16*>(str);
 }
 
 inline char16* as_writable_u16cstr(std::wstring& str) {
-  return bit_cast<char16*>(data(str));
+  return reinterpret_cast<char16*>(data(str));
 }
 
 inline const char16* as_u16cstr(const wchar_t* str) {
-  return bit_cast<const char16*>(str);
+  return reinterpret_cast<const char16*>(str);
 }
 
 inline const char16* as_u16cstr(WStringPiece str) {
-  return bit_cast<const char16*>(str.data());
+  return reinterpret_cast<const char16*>(str.data());
 }
 #endif  // defined(WCHAR_T_IS_UTF16)
 
