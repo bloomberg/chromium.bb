@@ -33,6 +33,7 @@
 #include "ui/views/examples/menu_example.h"
 #include "ui/views/examples/message_box_example.h"
 #include "ui/views/examples/multiline_example.h"
+#include "ui/views/examples/native_theme_example.h"
 #include "ui/views/examples/progress_bar_example.h"
 #include "ui/views/examples/radio_button_example.h"
 #include "ui/views/examples/scroll_view_example.h"
@@ -75,6 +76,7 @@ ExampleVector CreateExamples() {
   examples.push_back(std::make_unique<MenuExample>());
   examples.push_back(std::make_unique<MessageBoxExample>());
   examples.push_back(std::make_unique<MultilineExample>());
+  examples.push_back(std::make_unique<NativeThemeExample>());
   examples.push_back(std::make_unique<ProgressBarExample>());
   examples.push_back(std::make_unique<RadioButtonExample>());
   examples.push_back(std::make_unique<ScrollViewExample>());
