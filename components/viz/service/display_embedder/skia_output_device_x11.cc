@@ -20,7 +20,7 @@ SkiaOutputDeviceX11::SkiaOutputDeviceX11(
     gfx::AcceleratedWidget widget,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
     : SkiaOutputDeviceOffscreen(gr_context,
-                                false /* flipped */,
+                                true /* flipped */,
                                 true /* has_alpha */,
                                 did_swap_buffer_complete_callback),
       display_(gfx::GetXDisplay()),
@@ -32,8 +32,9 @@ SkiaOutputDeviceX11::SkiaOutputDeviceX11(
   bpp_ = gfx::BitsPerPixelForPixmapDepth(display_, attributes_.depth);
   support_rendr_ = ui::QueryRenderSupport(display_);
 
-  capabilities_.flipped_output_surface = false;
-  capabilities_.supports_post_sub_buffer = true;
+  // |capabilities_| should be set by SkiaOutputDeviceOffscreen.
+  DCHECK(capabilities_.flipped_output_surface);
+  DCHECK(capabilities_.supports_post_sub_buffer);
 }
 
 SkiaOutputDeviceX11::~SkiaOutputDeviceX11() {
