@@ -157,6 +157,7 @@ source_set("base") {
     "internal/sysinfo.cc",
     "internal/thread_identity.cc",
     "internal/unscaledcycleclock.cc",
+    "log_severity.cc",
   ]
   public = [
     "call_once.h",
@@ -179,6 +180,7 @@ source_set("base") {
     ":core_headers",
     ":dynamic_annotations",
     ":spinlock_wait",
+    "../meta:type_traits",
   ]
 }
 

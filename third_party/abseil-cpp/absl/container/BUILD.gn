@@ -61,6 +61,7 @@ source_set("inlined_vector_internal") {
     "internal/inlined_vector.h",
   ]
   deps = [
+    ":compressed_tuple",
     "../meta:type_traits",
   ]
 }

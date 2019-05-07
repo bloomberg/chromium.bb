@@ -18,11 +18,18 @@
 #include <cstddef>
 #include <iterator>
 #include <memory>
+#include <utility>
 
+#include "absl/container/internal/compressed_tuple.h"
 #include "absl/meta/type_traits.h"
 
 namespace absl {
 namespace inlined_vector_internal {
+
+template <typename Iterator>
+using IsAtLeastForwardIterator = std::is_convertible<
+    typename std::iterator_traits<Iterator>::iterator_category,
+    std::forward_iterator_tag>;
 
 template <typename InlinedVector>
 class Storage;
@@ -44,80 +51,93 @@ class Storage<InlinedVector<T, N, A>> {
   using const_iterator = const_pointer;
   using reverse_iterator = std::reverse_iterator<iterator>;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+  using AllocatorTraits = std::allocator_traits<allocator_type>;
 
-  explicit Storage(const allocator_type& a) : allocator_and_tag_(a) {}
+  explicit Storage(const allocator_type& alloc)
+      : metadata_(alloc, /* empty and inlined */ 0) {}
 
-  // TODO(johnsoncj): Make the below types and members private after migration
+  size_type GetSize() const { return GetSizeAndIsAllocated() >> 1; }
 
-  // Holds whether the vector is allocated or not in the lowest bit and the size
-  // in the high bits:
-  //   `size_ = (size << 1) | is_allocated;`
-  class Tag {
-    size_type size_;
+  bool GetIsAllocated() const { return GetSizeAndIsAllocated() & 1; }
 
-   public:
-    Tag() : size_(0) {}
-    size_type size() const { return size_ / 2; }
-    void add_size(size_type n) { size_ += n * 2; }
-    void set_inline_size(size_type n) { size_ = n * 2; }
-    void set_allocated_size(size_type n) { size_ = (n * 2) + 1; }
-    bool allocated() const { return size_ % 2; }
+  pointer GetInlinedData() {
+    return reinterpret_cast<pointer>(
+        std::addressof(data_.inlined.inlined_data[0]));
+  }
+
+  const_pointer GetInlinedData() const {
+    return reinterpret_cast<const_pointer>(
+        std::addressof(data_.inlined.inlined_data[0]));
+  }
+
+  pointer GetAllocatedData() { return data_.allocated.allocated_data; }
+
+  const_pointer GetAllocatedData() const {
+    return data_.allocated.allocated_data;
+  }
+
+  size_type GetAllocatedCapacity() const {
+    return data_.allocated.allocated_capacity;
+  }
+
+  allocator_type& GetAllocator() { return metadata_.template get<0>(); }
+
+  const allocator_type& GetAllocator() const {
+    return metadata_.template get<0>();
+  }
+
+  void SetAllocatedSize(size_type size) {
+    GetSizeAndIsAllocated() = (size << 1) | static_cast<size_type>(1);
+  }
+
+  void SetInlinedSize(size_type size) { GetSizeAndIsAllocated() = size << 1; }
+
+  void AddSize(size_type count) { GetSizeAndIsAllocated() += count << 1; }
+
+  void SetAllocatedData(pointer data) { data_.allocated.allocated_data = data; }
+
+  void SetAllocatedCapacity(size_type capacity) {
+    data_.allocated.allocated_capacity = capacity;
+  }
+
+  void SwapSizeAndIsAllocated(Storage* other) {
+    using std::swap;
+    swap(GetSizeAndIsAllocated(), other->GetSizeAndIsAllocated());
+  }
+
+  void SwapAllocatedSizeAndCapacity(Storage* other) {
+    using std::swap;
+    swap(data_.allocated, other->data_.allocated);
+  }
+
+ private:
+  size_type& GetSizeAndIsAllocated() { return metadata_.template get<1>(); }
+
+  const size_type& GetSizeAndIsAllocated() const {
+    return metadata_.template get<1>();
+  }
+
+  using Metadata =
+      container_internal::CompressedTuple<allocator_type, size_type>;
+
+  struct Allocated {
+    pointer allocated_data;
+    size_type allocated_capacity;
   };
 
-  // Derives from `allocator_type` to use the empty base class optimization.
-  // If the `allocator_type` is stateless, we can store our instance for free.
-  class AllocatorAndTag : private allocator_type {
-    Tag tag_;
-
-   public:
-    explicit AllocatorAndTag(const allocator_type& a) : allocator_type(a) {}
-    Tag& tag() { return tag_; }
-    const Tag& tag() const { return tag_; }
-    allocator_type& allocator() { return *this; }
-    const allocator_type& allocator() const { return *this; }
-  };
-
-  class Allocation {
-    size_type capacity_;
-    pointer buffer_;
-
-   public:
-    Allocation(allocator_type& a, size_type capacity)
-        : capacity_(capacity), buffer_(Create(a, capacity)) {}
-    void Dealloc(allocator_type& a) {
-      std::allocator_traits<allocator_type>::deallocate(a, buffer_, capacity_);
-    }
-    size_type capacity() const { return capacity_; }
-    const_pointer buffer() const { return buffer_; }
-    pointer buffer() { return buffer_; }
-    static pointer Create(allocator_type& a, size_type n) {
-      return std::allocator_traits<allocator_type>::allocate(a, n);
-    }
-  };
-
-  // Stores either the inlined or allocated representation
-  union Rep {
-    using ValueTypeBuffer =
+  struct Inlined {
+    using InlinedDataElement =
         absl::aligned_storage_t<sizeof(value_type), alignof(value_type)>;
-    using AllocationBuffer =
-        absl::aligned_storage_t<sizeof(Allocation), alignof(Allocation)>;
-
-    // Structs wrap the buffers to perform indirection that solves a bizarre
-    // compilation error on Visual Studio (all known versions).
-    struct InlinedRep {
-      ValueTypeBuffer inlined[N];
-    };
-
-    struct AllocatedRep {
-      AllocationBuffer allocation;
-    };
-
-    InlinedRep inlined_storage;
-    AllocatedRep allocation_storage;
+    InlinedDataElement inlined_data[N];
   };
 
-  AllocatorAndTag allocator_and_tag_;
-  Rep rep_;
+  union Data {
+    Allocated allocated;
+    Inlined inlined;
+  };
+
+  Metadata metadata_;
+  Data data_;
 };
 
 }  // namespace inlined_vector_internal

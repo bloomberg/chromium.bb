@@ -87,6 +87,9 @@ source_set("span") {
   public = [
     "span.h",
   ]
+  sources = [
+    "internal/span.h",
+  ]
   deps = [
     "../algorithm",
     "../base:core_headers",
@@ -103,13 +106,14 @@ source_set("optional") {
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
   sources = [
-    "optional.cc",
+    "internal/optional.h",
   ]
   public = [
     "optional.h",
   ]
   deps = [
     ":bad_optional_access",
+    "../base:base_internal",
     "../base:config",
     "../base:core_headers",
     "../memory",

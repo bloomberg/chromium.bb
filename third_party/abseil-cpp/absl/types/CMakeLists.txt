@@ -114,6 +114,8 @@ absl_cc_library(
     span
   HDRS
     "span.h"
+  SRCS
+    "internal/span.h"
   COPTS
     ${ABSL_DEFAULT_COPTS}
   DEPS
@@ -173,11 +175,12 @@ absl_cc_library(
   HDRS
     "optional.h"
   SRCS
-    "optional.cc"
+    "internal/optional.h"
   COPTS
     ${ABSL_DEFAULT_COPTS}
   DEPS
     absl::bad_optional_access
+    absl::base_internal
     absl::config
     absl::core_headers
     absl::memory
@@ -297,7 +300,8 @@ absl_cc_test(
 )
 
 # TODO(cohenjon,zhangxy) Figure out why this test is failing on gcc 4.8
-if(CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.9)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9)
+else()
 absl_cc_test(
   NAME
     variant_exception_safety_test
