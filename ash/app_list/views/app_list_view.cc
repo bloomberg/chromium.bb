@@ -259,7 +259,10 @@ void AppListView::StateAnimationMetricsReporter::Report(int value) {
 
 void AppListView::StateAnimationMetricsReporter::RecordMetricsInTablet(
     int value) {
-  DCHECK(tablet_transition_.has_value());
+  // It can't ensure the target transition is properly set. Simply give up
+  // reporting per-state metrics in that case. See https://crbug.com/954907.
+  if (!tablet_transition_)
+    return;
   switch (*tablet_transition_) {
     case TabletModeAnimationTransition::kDragReleaseShow:
       UMA_HISTOGRAM_PERCENTAGE(
@@ -311,7 +314,10 @@ void AppListView::StateAnimationMetricsReporter::RecordMetricsInTablet(
 
 void AppListView::StateAnimationMetricsReporter::RecordMetricsInClamshell(
     int value) {
-  DCHECK(target_state_.has_value());
+  // It can't ensure the target transition is properly set. Simply give up
+  // reporting per-state metrics in that case. See https://crbug.com/954907.
+  if (!target_state_)
+    return;
   switch (*target_state_) {
     case ash::mojom::AppListViewState::kClosed:
       UMA_HISTOGRAM_PERCENTAGE(
