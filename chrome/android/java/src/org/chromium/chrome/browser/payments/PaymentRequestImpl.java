@@ -1627,6 +1627,13 @@ public class PaymentRequestImpl
 
         // Go back to the payment sheet
         mUI.onPayButtonProcessingCancelled();
+        if (!TextUtils.isEmpty(errors.error)) {
+            mUI.setRetryErrorMessage(errors.error);
+        } else {
+            ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
+            mUI.setRetryErrorMessage(
+                    activity.getResources().getString(R.string.payments_error_message));
+        }
 
         if (mRequestShipping && hasShippingAddressError(errors.shippingAddress)) {
             mRetryQueue.add(() -> {

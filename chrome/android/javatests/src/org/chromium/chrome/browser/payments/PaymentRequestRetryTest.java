@@ -9,6 +9,7 @@ import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.IMMEDI
 
 import android.support.test.filters.MediumTest;
 
+import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,6 +61,55 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
                 "" /* serverId */));
 
         mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+    }
+
+    /**
+     * Test for retry() with default error message
+     */
+    @Test
+    @MediumTest
+    @Feature({"Payments"})
+    public void testRetryWithDefaultError()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
+        mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
+                R.id.card_unmask_input, "123", mPaymentRequestTestRule.getReadyToUnmask());
+        mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
+                ModalDialogProperties.ButtonType.POSITIVE,
+                mPaymentRequestTestRule.getPaymentResponseReady());
+
+        mPaymentRequestTestRule.retryPaymentRequest("{}", mPaymentRequestTestRule.getReadyToPay());
+
+        Assert.assertEquals(
+                mPaymentRequestTestRule.getActivity().getString(R.string.payments_error_message),
+                mPaymentRequestTestRule.getRetryErrorMessage());
+    }
+
+    /**
+     * Test for retry() with custom error message.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Payments"})
+    public void testRetryWithCustomError()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
+        mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
+                R.id.card_unmask_input, "123", mPaymentRequestTestRule.getReadyToUnmask());
+        mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
+                ModalDialogProperties.ButtonType.POSITIVE,
+                mPaymentRequestTestRule.getPaymentResponseReady());
+
+        mPaymentRequestTestRule.retryPaymentRequest("{"
+                        + "  error: 'ERROR'"
+                        + "}",
+                mPaymentRequestTestRule.getReadyToPay());
+
+        Assert.assertEquals("ERROR", mPaymentRequestTestRule.getRetryErrorMessage());
     }
 
     /**

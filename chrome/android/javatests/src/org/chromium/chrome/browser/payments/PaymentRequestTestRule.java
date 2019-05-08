@@ -394,6 +394,14 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
         helper.waitForCallback(callCount);
     }
 
+    /** Gets the retry error message. */
+    protected String getRetryErrorMessage() {
+        return ThreadUtils.runOnUiThreadBlockingNoException(
+                () -> ((TextView) mUI.getDialogForTest().findViewById(R.id.retry_error))
+                        .getText()
+                        .toString());
+    }
+
     /** Gets the button state for the shipping summary section. */
     protected int getShippingAddressSectionButtonState() throws ExecutionException {
         return ThreadUtils.runOnUiThreadBlocking(

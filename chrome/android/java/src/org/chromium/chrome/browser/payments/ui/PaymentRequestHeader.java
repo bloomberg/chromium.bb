@@ -9,9 +9,11 @@ import android.graphics.Bitmap;
 import android.support.annotation.ColorInt;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.widget.FrameLayout;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -23,7 +25,7 @@ import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 
 /** This class represents a bar to display at the top of the payment request UI. */
-public class PaymentRequestHeader extends FrameLayout {
+public class PaymentRequestHeader extends LinearLayout {
     private final @ColorInt int mBackgroundColor;
     private Context mContext;
 
@@ -79,6 +81,21 @@ public class PaymentRequestHeader extends FrameLayout {
             // Remove left padding to align left compound drawable with the title. Note that the
             // left compound drawable has transparent boundary.
             hostName.setPaddingRelative(0, 0, 0, 0);
+        }
+    }
+
+    /**
+     * Sets the retry error message on the header.
+     *
+     * @param error The error message to display on the header.
+     */
+    public void setRetryErrorMessage(String error) {
+        TextView errorMessageView = (TextView) findViewById(R.id.retry_error);
+        errorMessageView.setText(error);
+        if (TextUtils.isEmpty(error)) {
+            errorMessageView.setVisibility(View.GONE);
+        } else {
+            errorMessageView.setVisibility(View.VISIBLE);
         }
     }
 }
