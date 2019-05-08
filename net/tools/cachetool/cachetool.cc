@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
+#include "base/hash/md5.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -24,7 +25,6 @@
 #include "net/http/http_cache.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
-#include "third_party/boringssl/src/include/openssl/sha.h"
 
 using disk_cache::Backend;
 using disk_cache::Entry;
@@ -367,7 +367,7 @@ bool GetResponseInfoForEntry(disk_cache::Entry* entry,
   return false;
 }
 
-std::string GetSHA256ForResponseBody(disk_cache::Entry* entry) {
+std::string GetMD5ForResponseBody(disk_cache::Entry* entry) {
   if (entry->GetDataSize(kResponseContentIndex) == 0)
     return "";
 
@@ -376,8 +376,8 @@ std::string GetSHA256ForResponseBody(disk_cache::Entry* entry) {
       base::MakeRefCounted<net::IOBufferWithSize>(kInitBufferSize);
   net::TestCompletionCallback cb;
 
-  SHA256_CTX ctx;
-  SHA256_Init(&ctx);
+  base::MD5Context ctx;
+  base::MD5Init(&ctx);
 
   int bytes_read = 0;
   while (true) {
@@ -390,14 +390,13 @@ std::string GetSHA256ForResponseBody(disk_cache::Entry* entry) {
     }
 
     if (rv == 0) {
-      uint8_t digest[SHA256_DIGEST_LENGTH];
-      SHA256_Final(digest, &ctx);
-      return base::HexEncode(digest, sizeof(digest));
+      base::MD5Digest digest;
+      base::MD5Final(&digest, &ctx);
+      return base::MD5DigestToBase16(digest);
     }
 
     bytes_read += rv;
-    auto const hash_input = base::StringPiece(buffer->data(), rv);
-    SHA256_Update(&ctx, hash_input.data(), hash_input.size());
+    MD5Update(&ctx, base::StringPiece(buffer->data(), rv));
   }
 
   NOTREACHED();
@@ -426,7 +425,7 @@ void ListDups(CommandMarshal* command_marshal) {
       continue;
     }
 
-    std::string hash = GetSHA256ForResponseBody(entry);
+    std::string hash = GetMD5ForResponseBody(entry);
     if (hash.empty()) {
       // Sparse entries and empty bodies are skipped.
       entry->Close();

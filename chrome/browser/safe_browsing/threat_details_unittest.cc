@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/hash/md5.h"
 #include "base/macros.h"
 #include "base/pickle.h"
 #include "base/run_loop.h"
