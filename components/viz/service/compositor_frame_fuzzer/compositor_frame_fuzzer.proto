@@ -4,7 +4,7 @@
 
 syntax = "proto2";
 
-package content.fuzzing.proto;
+package viz.proto;
 
 message RenderPass {
   required Rect output_rect = 1;

@@ -12,12 +12,17 @@
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
+#include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace viz {
-
 namespace {
+
+// Limit on number of bytes of memory to allocate (e.g. for referenced
+// bitmaps) in association with a single CompositorFrame. Currently 0.5 GiB;
+// reduce this if bots are running out of memory.
+constexpr uint64_t kMaxTextureMemory = 1 << 29;
 
 // Handles inf / NaN by setting to 0.
 double MakeNormal(double x) {
@@ -33,18 +38,18 @@ float Normalize(uint32_t x) {
   return static_cast<float>(x) / std::numeric_limits<uint32_t>::max();
 }
 
-gfx::Size GetSizeFromProtobuf(const content::fuzzing::proto::Size& proto_size) {
+gfx::Size GetSizeFromProtobuf(const proto::Size& proto_size) {
   return gfx::Size(proto_size.width(), proto_size.height());
 }
 
-gfx::Rect GetRectFromProtobuf(const content::fuzzing::proto::Rect& proto_rect) {
+gfx::Rect GetRectFromProtobuf(const proto::Rect& proto_rect) {
   return gfx::Rect(proto_rect.x(), proto_rect.y(), proto_rect.width(),
                    proto_rect.height());
 }
 
 gfx::Transform GetTransformFromProtobuf(
-    const content::fuzzing::proto::Transform& proto_transform) {
-  gfx::Transform transform = gfx::Transform();
+    const proto::Transform& proto_transform) {
+  gfx::Transform transform;
 
   // Note: There are no checks here that disallow a non-invertible transform
   // (for instance, if |scale_x| or |scale_y| is 0).
@@ -90,24 +95,64 @@ void ExpandToMinSize(gfx::Rect* rect, int min_size) {
   }
 }
 
-}  // namespace
+class FuzzedCompositorFrameBuilder {
+ public:
+  FuzzedCompositorFrameBuilder() = default;
+  ~FuzzedCompositorFrameBuilder() = default;
 
-FuzzedBitmap::FuzzedBitmap(SharedBitmapId id,
-                           gfx::Size size,
-                           base::ReadOnlySharedMemoryRegion shared_region)
-    : id(id), size(size), shared_region(std::move(shared_region)) {}
-FuzzedBitmap::~FuzzedBitmap() = default;
-FuzzedBitmap::FuzzedBitmap(FuzzedBitmap&& other) noexcept = default;
+  FuzzedData Build(const proto::RenderPass& render_pass_spec);
 
-FuzzedData::FuzzedData() = default;
-FuzzedData::~FuzzedData() = default;
-FuzzedData::FuzzedData(FuzzedData&& other) noexcept = default;
+ private:
+  RenderPassId AddRenderPass(const proto::RenderPass& render_pass_spec);
 
-FuzzedCompositorFrameBuilder::FuzzedCompositorFrameBuilder() = default;
-FuzzedCompositorFrameBuilder::~FuzzedCompositorFrameBuilder() = default;
+  // Helper methods for AddRenderPass. Try* methods may return before
+  // creating the quad in order to adhere to memory limits.
+  void AddSolidColorDrawQuad(RenderPass* pass,
+                             const gfx::Rect& rect,
+                             const gfx::Rect& visible_rect,
+                             const proto::DrawQuad& quad_spec);
+  void TryAddTileDrawQuad(RenderPass* pass,
+                          const gfx::Rect& rect,
+                          const gfx::Rect& visible_rect,
+                          const proto::DrawQuad& quad_spec);
+  void TryAddRenderPassDrawQuad(RenderPass* pass,
+                                const gfx::Rect& rect,
+                                const gfx::Rect& visible_rect,
+                                const proto::DrawQuad& quad_spec);
+
+  // Configure the SharedQuadState to match the specifications in the protobuf,
+  // if they are defined for this quad. Otherwise, use sensible defaults: match
+  // the |rect| and |visible_rect| of the corresponding quad, and apply an
+  // identity transform.
+  void ConfigureSharedQuadState(SharedQuadState* shared_quad_state,
+                                const proto::DrawQuad& quad_spec);
+
+  // Records the intention to allocate enough memory for a bitmap of size
+  // |size|, or returns false if the allocation would not be possible (the size
+  // is 0 or the allocation would exceed kMaxMappedMemory).
+  //
+  // Should be called before AllocateFuzzedBitmap.
+  bool TryReserveBitmapBytes(const gfx::Size& size);
+
+  // Allocate and map memory for a bitmap filled with |color| and appends it to
+  // |allocated_bitmaps|. Performs no checks to ensure that the bitmap will fit
+  // in memory (see TryReserveBitmapBytes).
+  FuzzedBitmap* AllocateFuzzedBitmap(const gfx::Size& size, SkColor color);
+
+  // Number of bytes that have already been reserved for the allocation of
+  // specific bitmaps/textures.
+  uint64_t reserved_bytes_ = 0;
+
+  RenderPassId next_pass_id_ = 1;
+
+  // Frame and data being built.
+  FuzzedData data_;
+
+  DISALLOW_COPY_AND_ASSIGN(FuzzedCompositorFrameBuilder);
+};
 
 FuzzedData FuzzedCompositorFrameBuilder::Build(
-    const content::fuzzing::proto::RenderPass& render_pass_spec) {
+    const proto::RenderPass& render_pass_spec) {
   data_.frame.metadata.begin_frame_ack.source_id =
       BeginFrameArgs::kManualSourceId;
   data_.frame.metadata.begin_frame_ack.sequence_number =
@@ -124,7 +169,7 @@ FuzzedData FuzzedCompositorFrameBuilder::Build(
 }
 
 RenderPassId FuzzedCompositorFrameBuilder::AddRenderPass(
-    const content::fuzzing::proto::RenderPass& render_pass_spec) {
+    const proto::RenderPass& render_pass_spec) {
   std::unique_ptr<RenderPass> pass = RenderPass::Create();
   gfx::Rect rp_output_rect =
       GetRectFromProtobuf(render_pass_spec.output_rect());
@@ -146,10 +191,8 @@ RenderPassId FuzzedCompositorFrameBuilder::AddRenderPass(
   pass->SetNew(next_pass_id_++, rp_output_rect, rp_damage_rect,
                transform_to_root_target);
 
-  for (const content::fuzzing::proto::DrawQuad& quad_spec :
-       render_pass_spec.quad_list()) {
-    if (quad_spec.quad_case() ==
-        content::fuzzing::proto::DrawQuad::QUAD_NOT_SET) {
+  for (const proto::DrawQuad& quad_spec : render_pass_spec.quad_list()) {
+    if (quad_spec.quad_case() == proto::DrawQuad::QUAD_NOT_SET) {
       continue;
     }
 
@@ -163,21 +206,21 @@ RenderPassId FuzzedCompositorFrameBuilder::AddRenderPass(
     quad_visible_rect.AdjustToFit(quad_rect);
 
     switch (quad_spec.quad_case()) {
-      case content::fuzzing::proto::DrawQuad::kSolidColorQuad: {
+      case proto::DrawQuad::kSolidColorQuad: {
         AddSolidColorDrawQuad(pass.get(), quad_rect, quad_visible_rect,
                               quad_spec);
         break;
       }
-      case content::fuzzing::proto::DrawQuad::kTileQuad: {
+      case proto::DrawQuad::kTileQuad: {
         TryAddTileDrawQuad(pass.get(), quad_rect, quad_visible_rect, quad_spec);
         break;
       }
-      case content::fuzzing::proto::DrawQuad::kRenderPassQuad: {
+      case proto::DrawQuad::kRenderPassQuad: {
         TryAddRenderPassDrawQuad(pass.get(), quad_rect, quad_visible_rect,
                                  quad_spec);
         break;
       }
-      case content::fuzzing::proto::DrawQuad::QUAD_NOT_SET: {
+      case proto::DrawQuad::QUAD_NOT_SET: {
         NOTREACHED();
       }
     }
@@ -190,7 +233,7 @@ void FuzzedCompositorFrameBuilder::AddSolidColorDrawQuad(
     RenderPass* pass,
     const gfx::Rect& rect,
     const gfx::Rect& visible_rect,
-    const content::fuzzing::proto::DrawQuad& quad_spec) {
+    const proto::DrawQuad& quad_spec) {
   auto* shared_quad_state = pass->CreateAndAppendSharedQuadState();
   ConfigureSharedQuadState(shared_quad_state, quad_spec);
   auto* quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
@@ -203,7 +246,7 @@ void FuzzedCompositorFrameBuilder::TryAddTileDrawQuad(
     RenderPass* pass,
     const gfx::Rect& rect,
     const gfx::Rect& visible_rect,
-    const content::fuzzing::proto::DrawQuad& quad_spec) {
+    const proto::DrawQuad& quad_spec) {
   gfx::Size tile_size =
       GetSizeFromProtobuf(quad_spec.tile_quad().texture_size());
 
@@ -240,7 +283,7 @@ void FuzzedCompositorFrameBuilder::TryAddRenderPassDrawQuad(
     RenderPass* pass,
     const gfx::Rect& rect,
     const gfx::Rect& visible_rect,
-    const content::fuzzing::proto::DrawQuad& quad_spec) {
+    const proto::DrawQuad& quad_spec) {
   // Since child RenderPasses are allocated as textures, skip
   // RenderPasses that would overflow our limit on allocated memory for
   // this CompositorFrame.
@@ -296,7 +339,7 @@ void FuzzedCompositorFrameBuilder::TryAddRenderPassDrawQuad(
 
 void FuzzedCompositorFrameBuilder::ConfigureSharedQuadState(
     SharedQuadState* shared_quad_state,
-    const content::fuzzing::proto::DrawQuad& quad_spec) {
+    const proto::DrawQuad& quad_spec) {
   if (quad_spec.has_sqs()) {
     shared_quad_state->SetAll(
         GetTransformFromProtobuf(quad_spec.sqs().transform()),
@@ -309,8 +352,7 @@ void FuzzedCompositorFrameBuilder::ConfigureSharedQuadState(
   } else {
     gfx::Transform transform;
 
-    if (quad_spec.quad_case() ==
-            content::fuzzing::proto::DrawQuad::kRenderPassQuad &&
+    if (quad_spec.quad_case() == proto::DrawQuad::kRenderPassQuad &&
         quad_spec.render_pass_quad()
             .render_pass()
             .has_transform_to_root_target()) {
@@ -357,6 +399,24 @@ FuzzedBitmap* FuzzedCompositorFrameBuilder::AllocateFuzzedBitmap(
       {shared_bitmap_id, size, std::move(shm.region)});
 
   return &data_.allocated_bitmaps.back();
+}
+
+}  // namespace
+
+FuzzedBitmap::FuzzedBitmap(const SharedBitmapId& id,
+                           const gfx::Size& size,
+                           base::ReadOnlySharedMemoryRegion shared_region)
+    : id(id), size(size), shared_region(std::move(shared_region)) {}
+FuzzedBitmap::~FuzzedBitmap() = default;
+FuzzedBitmap::FuzzedBitmap(FuzzedBitmap&& other) noexcept = default;
+
+FuzzedData::FuzzedData() = default;
+FuzzedData::~FuzzedData() = default;
+FuzzedData::FuzzedData(FuzzedData&& other) noexcept = default;
+
+FuzzedData BuildFuzzedCompositorFrame(
+    const proto::RenderPass& render_pass_spec) {
+  return FuzzedCompositorFrameBuilder().Build(render_pass_spec);
 }
 
 }  // namespace viz
