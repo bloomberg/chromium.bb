@@ -330,6 +330,21 @@ public class ChromePreferenceManager {
             "service_manager_for_background_prefetch";
 
     /**
+     * Key for whether DownloadResumptionBackgroundTask should load native in service manager only
+     * mode.
+     * Default value is false.
+     */
+    public static final String SERVICE_MANAGER_FOR_DOWNLOAD_RESUMPTION_KEY =
+            "service_manager_for_download_resumption";
+
+    /**
+     * Key for whether it allows to start in service manager only mode.
+     * Default value is false.
+     */
+    public static final String ALLOW_STARTING_SERVICE_MANAGER_ONLY_KEY =
+            "allow_starting_service_manager_only";
+
+    /**
      * Deprecated keys for Chrome Home.
      */
     private static final String CHROME_HOME_USER_ENABLED_KEY = "chrome_home_user_enabled";

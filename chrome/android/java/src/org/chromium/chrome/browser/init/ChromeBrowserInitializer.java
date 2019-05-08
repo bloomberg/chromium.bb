@@ -403,7 +403,6 @@ public class ChromeBrowserInitializer {
 
         mNativeInitializationComplete = true;
         ContentUriUtils.setFileProviderUtil(new FileProviderHelper());
-        ServiceManagerStartupUtils.registerEnabledFeatures();
 
         // When a child process crashes, search for the most recent minidump for the child's process
         // ID and attach a logcat to it. Then upload it to the crash server. Note that the logcat
@@ -431,6 +430,9 @@ public class ChromeBrowserInitializer {
             for (Runnable r : mTasksToRunWithNative) r.run();
             mTasksToRunWithNative = null;
         }
+
+        // TODO(crbug.com/960767): Remove this in M77.
+        ServiceManagerStartupUtils.cleanupSharedPreferences();
     }
 
     private ActivityStateListener createActivityStateListener() {

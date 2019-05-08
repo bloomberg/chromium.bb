@@ -44,7 +44,6 @@ import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.OfflineItemWrapper;
 import org.chromium.chrome.browser.feature_engagement.ScreenshotTabObserver;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.init.ServiceManagerStartupUtils;
 import org.chromium.chrome.browser.media.MediaViewerUtils;
 import org.chromium.chrome.browser.offlinepages.DownloadUiActionFlags;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
@@ -84,11 +83,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * A class containing some utility static methods.
@@ -1026,14 +1023,6 @@ public class DownloadUtils {
                 helper.getDownloadSharedPreferenceEntry(item.getContentId());
         return entry != null && item.getDownloadInfo().state() == DownloadState.INTERRUPTED
                 && entry.isAutoResumable;
-    }
-
-    /** @return Whether we should start service manager only, based off the features enabled. */
-    public static boolean shouldStartServiceManagerOnly() {
-        Set<String> features = new HashSet<String>();
-        features.add(ChromeFeatureList.SERVICE_MANAGER_FOR_DOWNLOAD);
-        features.add(ChromeFeatureList.NETWORK_SERVICE);
-        return ServiceManagerStartupUtils.canStartServiceManager(features);
     }
 
     /**
