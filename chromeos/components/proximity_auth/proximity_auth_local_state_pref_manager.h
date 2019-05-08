@@ -45,7 +45,6 @@ class ProximityAuthLocalStatePrefManager : public ProximityAuthPrefManager {
   bool IsEasyUnlockAllowed() const override;
   bool IsEasyUnlockEnabled() const override;
   bool IsEasyUnlockEnabledStateSet() const override;
-  ProximityThreshold GetProximityThreshold() const override;
   bool IsChromeOSLoginAllowed() const override;
   bool IsChromeOSLoginEnabled() const override;
 
@@ -57,7 +56,6 @@ class ProximityAuthLocalStatePrefManager : public ProximityAuthPrefManager {
   int64_t GetLastPromotionCheckTimestampMs() const override;
   void SetPromotionShownCount(int count) override;
   int GetPromotionShownCount() const override;
-  void SetProximityThreshold(ProximityThreshold value) override;
   void SetIsChromeOSLoginEnabled(bool is_enabled) override;
 
   const base::DictionaryValue* GetActiveUserPrefsDictionary() const;

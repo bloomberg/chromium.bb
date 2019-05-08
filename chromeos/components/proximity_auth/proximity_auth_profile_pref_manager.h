@@ -62,8 +62,6 @@ class ProximityAuthProfilePrefManager
   int64_t GetLastPromotionCheckTimestampMs() const override;
   void SetPromotionShownCount(int count) override;
   int GetPromotionShownCount() const override;
-  void SetProximityThreshold(ProximityThreshold value) override;
-  ProximityThreshold GetProximityThreshold() const override;
   bool IsChromeOSLoginAllowed() const override;
   void SetIsChromeOSLoginEnabled(bool is_enabled) override;
   bool IsChromeOSLoginEnabled() const override;

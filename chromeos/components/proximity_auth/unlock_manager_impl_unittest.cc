@@ -98,7 +98,7 @@ class TestUnlockManager : public UnlockManagerImpl {
  public:
   TestUnlockManager(ProximityAuthSystem::ScreenlockType screenlock_type,
                     ProximityAuthClient* proximity_auth_client)
-      : UnlockManagerImpl(screenlock_type, proximity_auth_client, nullptr) {}
+      : UnlockManagerImpl(screenlock_type, proximity_auth_client) {}
   ~TestUnlockManager() override {}
 
   using UnlockManager::OnAuthAttempted;
@@ -113,8 +113,7 @@ class TestUnlockManager : public UnlockManagerImpl {
 
  private:
   std::unique_ptr<ProximityMonitor> CreateProximityMonitor(
-      RemoteDeviceLifeCycle* life_cycle,
-      ProximityAuthPrefManager* pref_manager) override {
+      RemoteDeviceLifeCycle* life_cycle) override {
     std::unique_ptr<MockProximityMonitor> proximity_monitor(
         new NiceMock<MockProximityMonitor>(
             base::BindOnce(&TestUnlockManager::OnProximityMonitorDestroyed,

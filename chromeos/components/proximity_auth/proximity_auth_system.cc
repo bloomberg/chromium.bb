@@ -18,9 +18,8 @@ ProximityAuthSystem::ProximityAuthSystem(
     chromeos::secure_channel::SecureChannelClient* secure_channel_client)
     : secure_channel_client_(secure_channel_client),
       unlock_manager_(
-          new UnlockManagerImpl(screenlock_type,
-                                proximity_auth_client,
-                                proximity_auth_client->GetPrefManager())),
+          std::make_unique<UnlockManagerImpl>(screenlock_type,
+                                              proximity_auth_client)),
       suspended_(false),
       started_(false) {}
 

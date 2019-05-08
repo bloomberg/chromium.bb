@@ -17,7 +17,6 @@
 #include "chromeos/components/proximity_auth/messenger.h"
 #include "chromeos/components/proximity_auth/metrics.h"
 #include "chromeos/components/proximity_auth/proximity_auth_client.h"
-#include "chromeos/components/proximity_auth/proximity_auth_pref_manager.h"
 #include "chromeos/components/proximity_auth/proximity_monitor_impl.h"
 #include "chromeos/services/secure_channel/public/cpp/client/client_channel.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -106,12 +105,10 @@ void RecordAuthResultFailure(
 
 UnlockManagerImpl::UnlockManagerImpl(
     ProximityAuthSystem::ScreenlockType screenlock_type,
-    ProximityAuthClient* proximity_auth_client,
-    ProximityAuthPrefManager* pref_manager)
+    ProximityAuthClient* proximity_auth_client)
     : screenlock_type_(screenlock_type),
       life_cycle_(nullptr),
       proximity_auth_client_(proximity_auth_client),
-      pref_manager_(pref_manager),
       is_attempting_auth_(false),
       is_performing_initial_scan_(false),
       screenlock_state_(ScreenlockState::INACTIVE),
@@ -185,7 +182,7 @@ void UnlockManagerImpl::OnLifeCycleStateChanged() {
     DCHECK(life_cycle_->GetChannel());
     DCHECK(GetMessenger());
     if (!proximity_monitor_) {
-      proximity_monitor_ = CreateProximityMonitor(life_cycle_, pref_manager_);
+      proximity_monitor_ = CreateProximityMonitor(life_cycle_);
       proximity_monitor_->AddObserver(this);
       proximity_monitor_->Start();
     }
@@ -388,10 +385,9 @@ void UnlockManagerImpl::CancelConnectionAttempt() {
 }
 
 std::unique_ptr<ProximityMonitor> UnlockManagerImpl::CreateProximityMonitor(
-    RemoteDeviceLifeCycle* life_cycle,
-    ProximityAuthPrefManager* pref_manager) {
-  return std::make_unique<ProximityMonitorImpl>(
-      life_cycle->GetRemoteDevice(), life_cycle->GetChannel(), pref_manager);
+    RemoteDeviceLifeCycle* life_cycle) {
+  return std::make_unique<ProximityMonitorImpl>(life_cycle->GetRemoteDevice(),
+                                                life_cycle->GetChannel());
 }
 
 void UnlockManagerImpl::SendSignInChallenge() {

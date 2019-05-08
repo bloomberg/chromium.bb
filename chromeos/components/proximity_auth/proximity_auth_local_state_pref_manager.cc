@@ -66,11 +66,6 @@ int ProximityAuthLocalStatePrefManager::GetPromotionShownCount() const {
   return 0;
 }
 
-void ProximityAuthLocalStatePrefManager::SetProximityThreshold(
-    ProximityThreshold value) {
-  NOTREACHED();
-}
-
 bool ProximityAuthLocalStatePrefManager::IsEasyUnlockAllowed() const {
   bool pref_value;
   const base::DictionaryValue* user_prefs = GetActiveUserPrefsDictionary();
@@ -98,18 +93,6 @@ bool ProximityAuthLocalStatePrefManager::IsEasyUnlockEnabled() const {
 bool ProximityAuthLocalStatePrefManager::IsEasyUnlockEnabledStateSet() const {
   NOTREACHED();
   return false;
-}
-
-ProximityAuthLocalStatePrefManager::ProximityThreshold
-ProximityAuthLocalStatePrefManager::GetProximityThreshold() const {
-  int pref_value;
-  const base::DictionaryValue* user_prefs = GetActiveUserPrefsDictionary();
-  if (!user_prefs || !user_prefs->GetIntegerWithoutPathExpansion(
-                         prefs::kEasyUnlockProximityThreshold, &pref_value)) {
-    PA_LOG(ERROR) << "Failed to get proximity_threshold.";
-    return ProximityThreshold::kClose;
-  }
-  return static_cast<ProximityThreshold>(pref_value);
 }
 
 bool ProximityAuthLocalStatePrefManager::IsChromeOSLoginAllowed() const {
