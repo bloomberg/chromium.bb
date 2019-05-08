@@ -3003,41 +3003,22 @@
             ],
             "experiments": [
                 {
-                    "name": "RecordMetrics_1",
+                    "name": "Preconnect_60_20190502",
                     "params": {
                         "area_rank_scale": "0",
                         "contains_image_scale": "50",
                         "is_in_iframe_scale": "0",
                         "is_same_host_scale": "0",
                         "is_url_incremented_scale": "100",
+                        "preconnect_skip_link_scores": "true",
                         "ratio_area_scale": "100",
                         "same_origin_preconnecting_allowed": "true",
                         "source_engagement_score_scale": "100",
-                        "target_engagement_score_scale": "100"
-                    },
-                    "enable_features": [
-                        "NavigationPredictor"
-                    ]
-                }
-            ]
-        }
-    ],
-    "NetUnusedIdleSocketTimeout": [
-        {
-            "platforms": [
-                "android",
-                "windows",
-                "mac",
-                "chromeos",
-                "linux"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_60_seconds_20190408",
-                    "params": {
+                        "target_engagement_score_scale": "100",
                         "unused_idle_socket_timeout_seconds": "60"
                     },
                     "enable_features": [
+                        "NavigationPredictor",
                         "NetUnusedIdleSocketTimeout"
                     ]
                 }
