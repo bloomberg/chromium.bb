@@ -1526,15 +1526,17 @@ static void score_2D_transform_pow8(float *scores_2D, float shift) {
   float sum = 0.0f;
   int i;
   for (i = 0; i < 16; i++) {
-    const float v = AOMMIN(AOMMAX(scores_2D[i] + shift, 0.0f), 100.0f);
+    const float v = AOMMIN(AOMMAX(scores_2D[i] + shift, 1e-3f), 100.0f);
     const float v2 = v * v;
     const float v4 = v2 * v2;
     scores_2D[i] = v4 * v4;
     sum += scores_2D[i];
   }
   for (i = 0; i < 16; i++) {
-    if (scores_2D[i] < sum * 1e-4)
+    if (scores_2D[i] * 10000 < sum)
       scores_2D[i] = 0.0f;
+    else if (sum < 1e-16f)
+      scores_2D[i] *= 1e16f;
     else
       scores_2D[i] /= sum;
   }
