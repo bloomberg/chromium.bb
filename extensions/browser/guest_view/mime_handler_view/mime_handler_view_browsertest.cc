@@ -406,16 +406,16 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Abort) {
   RunTest("testAbort.csv");
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, NonAsciiHeaders) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, NonAsciiHeaders) {
   RunTest("testNonAsciiHeaders.csv");
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, DataUrl) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, DataUrl) {
   const char* kDataUrlCsv = "data:text/csv;base64,Y29udGVudCB0byByZWFkCg==";
   RunTestWithUrl(GURL(kDataUrlCsv));
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, EmbeddedDataUrlObject) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, EmbeddedDataUrlObject) {
   RunTest("test_embedded_data_url_object.html");
 }
 
