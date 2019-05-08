@@ -4,7 +4,6 @@
 
 #include "ash/keyboard/ash_keyboard_controller.h"
 
-#include "ash/keyboard/ash_keyboard_ui.h"
 #include "ash/keyboard/virtual_keyboard_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
@@ -23,25 +22,6 @@ using keyboard::mojom::KeyboardConfigPtr;
 using keyboard::mojom::KeyboardEnableFlag;
 
 namespace ash {
-
-namespace {
-
-class AshKeyboardUIFactory : public keyboard::KeyboardUIFactory {
- public:
-  explicit AshKeyboardUIFactory(AshKeyboardController* controller)
-      : controller_(controller) {}
-
-  // keyboard::KeyboardUIFactory:
-  std::unique_ptr<keyboard::KeyboardUI> CreateKeyboardUI() override {
-    return std::make_unique<AshKeyboardUI>(controller_);
-  }
-
- private:
-  AshKeyboardController* controller_;
-  DISALLOW_COPY_AND_ASSIGN(AshKeyboardUIFactory);
-};
-
-}  // namespace
 
 AshKeyboardController::AshKeyboardController(
     SessionControllerImpl* session_controller)
@@ -65,13 +45,10 @@ void AshKeyboardController::BindRequest(
 
 void AshKeyboardController::CreateVirtualKeyboard(
     std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory) {
-  DCHECK(keyboard_ui_factory || features::IsUsingWindowService())
-      << "keyboard_ui_factory can be null only when window service is used.";
+  DCHECK(keyboard_ui_factory);
   virtual_keyboard_controller_ = std::make_unique<VirtualKeyboardController>();
-  keyboard_controller_->Initialize(
-      keyboard_ui_factory ? std::move(keyboard_ui_factory)
-                          : std::make_unique<AshKeyboardUIFactory>(this),
-      virtual_keyboard_controller_.get());
+  keyboard_controller_->Initialize(std::move(keyboard_ui_factory),
+                                   virtual_keyboard_controller_.get());
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           keyboard::switches::kEnableVirtualKeyboard)) {
