@@ -226,7 +226,7 @@ class TestIPCSender : public IPC::Sender {
   SentMessages sent_messages_;
 };
 
-class TestLogger : public WebRequestInfo::Logger {
+class TestLogger : public WebRequestInfoLogger {
  public:
   TestLogger() = default;
   ~TestLogger() override = default;
@@ -2075,8 +2075,9 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   std::set<std::string> ignore1, ignore2;
   net::HttpRequestHeaders headers0;
   headers0.MergeFrom(base_headers);
-  WebRequestInfo info;
-  info.logger = std::make_unique<TestLogger>();
+  WebRequestInfoInitParams info_params;
+  info_params.logger = std::make_unique<TestLogger>();
+  WebRequestInfo info(std::move(info_params));
   // Take a reference to TestLogger to simplify accessing TestLogger methods.
   TestLogger& logger = static_cast<TestLogger&>(*info.logger);
   MergeOnBeforeSendHeadersResponses(info, deltas, &headers0, &ignored_actions,
@@ -2240,8 +2241,9 @@ TEST(ExtensionWebRequestHelpersTest,
 
   deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
 
-  WebRequestInfo info;
-  info.logger = std::make_unique<TestLogger>();
+  WebRequestInfoInitParams info_params;
+  info_params.logger = std::make_unique<TestLogger>();
+  WebRequestInfo info(std::move(info_params));
   helpers::IgnoredActions ignored_actions;
   std::set<std::string> removed_headers, set_headers;
   bool request_headers_modified = false;
@@ -2316,8 +2318,9 @@ TEST(ExtensionWebRequestHelpersTest,
   headers1.MergeFrom(base_headers);
   ignored_actions.clear();
 
-  WebRequestInfo info;
-  info.logger = std::make_unique<TestLogger>();
+  WebRequestInfoInitParams info_params;
+  info_params.logger = std::make_unique<TestLogger>();
+  WebRequestInfo info(std::move(info_params));
   // Take a reference to TestLogger to simplify accessing TestLogger methods.
   TestLogger& logger = static_cast<TestLogger&>(*info.logger);
   MergeOnBeforeSendHeadersResponses(info, deltas, &headers1, &ignored_actions,
@@ -2591,9 +2594,10 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
   bool response_headers_modified0;
   scoped_refptr<net::HttpResponseHeaders> new_headers0;
   GURL allowed_unsafe_redirect_url0;
-  WebRequestInfo info;
-  info.url = GURL(kExampleUrl);
-  info.logger = std::make_unique<TestLogger>();
+  WebRequestInfoInitParams info_params;
+  info_params.url = GURL(kExampleUrl);
+  info_params.logger = std::make_unique<TestLogger>();
+  WebRequestInfo info(std::move(info_params));
   // Take a reference to TestLogger to simplify accessing TestLogger methods.
   TestLogger& logger = static_cast<TestLogger&>(*info.logger);
 
@@ -2734,9 +2738,10 @@ TEST(ExtensionWebRequestHelpersTest,
   scoped_refptr<net::HttpResponseHeaders> new_headers1;
   GURL allowed_unsafe_redirect_url1;
 
-  WebRequestInfo info;
-  info.url = GURL(kExampleUrl);
-  info.logger = std::make_unique<TestLogger>();
+  WebRequestInfoInitParams info_params;
+  info_params.url = GURL(kExampleUrl);
+  info_params.logger = std::make_unique<TestLogger>();
+  WebRequestInfo info(std::move(info_params));
   // Take a reference to TestLogger to simplify accessing TestLogger methods.
   TestLogger& logger = static_cast<TestLogger&>(*info.logger);
 
@@ -2786,9 +2791,10 @@ TEST(ExtensionWebRequestHelpersTest,
   scoped_refptr<net::HttpResponseHeaders> new_headers0;
   GURL allowed_unsafe_redirect_url0;
 
-  WebRequestInfo info;
-  info.url = GURL(kExampleUrl);
-  info.logger = std::make_unique<TestLogger>();
+  WebRequestInfoInitParams info_params;
+  info_params.url = GURL(kExampleUrl);
+  info_params.logger = std::make_unique<TestLogger>();
+  WebRequestInfo info(std::move(info_params));
   // Take a reference to TestLogger to simplify accessing TestLogger methods.
   TestLogger& logger = static_cast<TestLogger&>(*info.logger);
 
