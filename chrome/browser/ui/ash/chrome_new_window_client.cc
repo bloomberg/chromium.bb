@@ -104,7 +104,7 @@ std::string GetPathAndQuery(const GURL& url) {
 // Implementation of CustomTabSession interface.
 class CustomTabSessionImpl : public arc::mojom::CustomTabSession {
  public:
-  static arc::mojom::CustomTabSessionPtr CreateForClassic(
+  static arc::mojom::CustomTabSessionPtr Create(
       Profile* profile,
       const GURL& url,
       std::unique_ptr<ash::ArcCustomTab> custom_tab) {
@@ -458,8 +458,8 @@ void ChromeNewWindowClient::OpenArcCustomTab(
   GURL url_to_open = ConvertArcUrlToExternalFileUrlIfNeeded(url);
   Profile* profile = ProfileManager::GetActiveUserProfile();
   auto custom_tab = ash::ArcCustomTab::Create(task_id, surface_id, top_margin);
-  std::move(callback).Run(CustomTabSessionImpl::CreateForClassic(
-      profile, url, std::move(custom_tab)));
+  std::move(callback).Run(
+      CustomTabSessionImpl::Create(profile, url, std::move(custom_tab)));
 }
 
 content::WebContents* ChromeNewWindowClient::OpenUrlImpl(

@@ -70,8 +70,8 @@ std::unique_ptr<ArcCustomTab> ArcCustomTab::Create(int32_t task_id,
     return nullptr;
   }
   auto* parent = widget->widget_delegate()->GetContentsView();
-  auto view = std::make_unique<ArcCustomTabViewClassic>(arc_app_window,
-                                                        surface_id, top_margin);
+  auto view = std::make_unique<ArcCustomTabView>(arc_app_window, surface_id,
+                                                 top_margin);
   parent->AddChildView(view.get());
   parent->SetLayoutManager(std::make_unique<views::FillLayout>());
   parent->Layout();
@@ -79,9 +79,9 @@ std::unique_ptr<ArcCustomTab> ArcCustomTab::Create(int32_t task_id,
   return std::move(view);
 }
 
-ArcCustomTabViewClassic::ArcCustomTabViewClassic(aura::Window* arc_app_window,
-                                                 int32_t surface_id,
-                                                 int32_t top_margin)
+ArcCustomTabView::ArcCustomTabView(aura::Window* arc_app_window,
+                                   int32_t surface_id,
+                                   int32_t top_margin)
     : host_(new views::NativeViewHost()),
       arc_app_window_(arc_app_window),
       surface_id_(surface_id),
@@ -92,7 +92,7 @@ ArcCustomTabViewClassic::ArcCustomTabViewClassic(aura::Window* arc_app_window,
   set_owned_by_client();
 }
 
-ArcCustomTabViewClassic::~ArcCustomTabViewClassic() {
+ArcCustomTabView::~ArcCustomTabView() {
   for (auto* window : observed_surfaces_)
     window->RemoveObserver(this);
   arc_app_window_->RemoveObserver(this);
@@ -103,7 +103,7 @@ ArcCustomTabViewClassic::~ArcCustomTabViewClassic() {
     native_view_container_->RemoveObserver(this);
 }
 
-void ArcCustomTabViewClassic::Attach(gfx::NativeView view) {
+void ArcCustomTabView::Attach(gfx::NativeView view) {
   DCHECK(view);
   DCHECK(!host_->native_view());
   host_->Attach(view);
@@ -114,15 +114,14 @@ void ArcCustomTabViewClassic::Attach(gfx::NativeView view) {
   native_view_container_->AddObserver(this);
 }
 
-void ArcCustomTabViewClassic::OnBoundsChanged(
-    const gfx::Rect& previous_bounds) {
+void ArcCustomTabView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   if (previous_bounds.size() != size()) {
     InvalidateLayout();
     host_->InvalidateLayout();
   }
 }
 
-void ArcCustomTabViewClassic::Layout() {
+void ArcCustomTabView::Layout() {
   exo::Surface* surface = FindSurface();
   if (!surface)
     return;
@@ -144,7 +143,7 @@ void ArcCustomTabViewClassic::Layout() {
   host_->SetBoundsRect(bounds);
 }
 
-void ArcCustomTabViewClassic::OnWindowHierarchyChanged(
+void ArcCustomTabView::OnWindowHierarchyChanged(
     const HierarchyChangeParams& params) {
   if (params.receiver == arc_app_window_) {
     auto* surface = exo::Surface::AsSurface(params.target);
@@ -156,20 +155,19 @@ void ArcCustomTabViewClassic::OnWindowHierarchyChanged(
   }
 }
 
-void ArcCustomTabViewClassic::OnWindowBoundsChanged(
-    aura::Window* window,
-    const gfx::Rect& old_bounds,
-    const gfx::Rect& new_bounds,
-    ui::PropertyChangeReason reason) {
+void ArcCustomTabView::OnWindowBoundsChanged(aura::Window* window,
+                                             const gfx::Rect& old_bounds,
+                                             const gfx::Rect& new_bounds,
+                                             ui::PropertyChangeReason reason) {
   if (window == surface_window_ && old_bounds.size() != new_bounds.size()) {
     InvalidateLayout();
     host_->InvalidateLayout();
   }
 }
 
-void ArcCustomTabViewClassic::OnWindowPropertyChanged(aura::Window* window,
-                                                      const void* key,
-                                                      intptr_t old) {
+void ArcCustomTabView::OnWindowPropertyChanged(aura::Window* window,
+                                               const void* key,
+                                               intptr_t old) {
   if (observed_surfaces_.contains(window)) {
     if (key == exo::kClientSurfaceIdKey) {
       // Client surface ID was updated. Try to find the surface again.
@@ -178,7 +176,7 @@ void ArcCustomTabViewClassic::OnWindowPropertyChanged(aura::Window* window,
   }
 }
 
-void ArcCustomTabViewClassic::OnWindowStackingChanged(aura::Window* window) {
+void ArcCustomTabView::OnWindowStackingChanged(aura::Window* window) {
   if (window != host_->GetNativeViewContainer() || reorder_scheduled_)
     return;
   reorder_scheduled_ = true;
@@ -188,11 +186,11 @@ void ArcCustomTabViewClassic::OnWindowStackingChanged(aura::Window* window) {
   // window/layer ordering and causes weird graphical effects.
   // TODO(hashimoto): fix the views ordering and remove this handling.
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&ArcCustomTabViewClassic::EnsureWindowOrders,
+      FROM_HERE, base::BindOnce(&ArcCustomTabView::EnsureWindowOrders,
                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ArcCustomTabViewClassic::OnWindowDestroying(aura::Window* window) {
+void ArcCustomTabView::OnWindowDestroying(aura::Window* window) {
   if (observed_surfaces_.contains(window)) {
     window->RemoveObserver(this);
     observed_surfaces_.erase(window);
@@ -207,20 +205,20 @@ void ArcCustomTabViewClassic::OnWindowDestroying(aura::Window* window) {
   }
 }
 
-void ArcCustomTabViewClassic::EnsureWindowOrders() {
+void ArcCustomTabView::EnsureWindowOrders() {
   reorder_scheduled_ = false;
   if (native_view_container_)
     native_view_container_->parent()->StackChildAtTop(native_view_container_);
 }
 
-void ArcCustomTabViewClassic::ConvertPointFromWindow(aura::Window* window,
-                                                     gfx::Point* point) {
+void ArcCustomTabView::ConvertPointFromWindow(aura::Window* window,
+                                              gfx::Point* point) {
   aura::Window::ConvertPointToTarget(window, GetWidget()->GetNativeWindow(),
                                      point);
   views::View::ConvertPointFromWidget(parent(), point);
 }
 
-exo::Surface* ArcCustomTabViewClassic::FindSurface() {
+exo::Surface* ArcCustomTabView::FindSurface() {
   std::vector<exo::Surface*> surfaces;
   EnumerateSurfaces(arc_app_window_, &surfaces);
 

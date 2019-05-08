@@ -25,15 +25,14 @@ namespace ash {
 
 // A view-based implementation of ArcCustomTab which works in the classic
 // environment.
-// TODO(hashimoto): rename this to ArcCustomTabView.
-class ArcCustomTabViewClassic : public ArcCustomTab,
-                                public views::View,
-                                public aura::WindowObserver {
+class ArcCustomTabView : public ArcCustomTab,
+                         public views::View,
+                         public aura::WindowObserver {
  public:
-  ArcCustomTabViewClassic(aura::Window* arc_app_window,
-                          int32_t surface_id,
-                          int32_t top_margin);
-  ~ArcCustomTabViewClassic() override;
+  ArcCustomTabView(aura::Window* arc_app_window,
+                   int32_t surface_id,
+                   int32_t top_margin);
+  ~ArcCustomTabView() override;
 
  private:
   // ArcCustomTab:
@@ -73,9 +72,9 @@ class ArcCustomTabViewClassic : public ArcCustomTab,
 
   bool reorder_scheduled_ = false;
 
-  base::WeakPtrFactory<ArcCustomTabViewClassic> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcCustomTabView> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ArcCustomTabViewClassic);
+  DISALLOW_COPY_AND_ASSIGN(ArcCustomTabView);
 };
 
 }  // namespace ash
