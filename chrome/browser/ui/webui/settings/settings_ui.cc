@@ -202,9 +202,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   // TODO(950007): Remove this when SplitSettings is the default and there are
   // no Chrome OS settings in the browser settings page.
   InitOSWebUIHandlers(profile, web_ui, html_source);
-
-  AddSettingsPageUIHandler(
-      std::make_unique<chromeos::settings::ChangePictureHandler>());
 #else
   AddSettingsPageUIHandler(std::make_unique<DefaultBrowserHandler>());
   AddSettingsPageUIHandler(std::make_unique<ManageProfileHandler>(profile));
@@ -363,6 +360,9 @@ void SettingsUI::InitOSWebUIHandlers(Profile* profile,
         profile->GetPrefs()->GetBoolean(
             chromeos::prefs::kSecondaryGoogleAccountSigninAllowed));
   }
+
+  web_ui->AddMessageHandler(
+      std::make_unique<chromeos::settings::ChangePictureHandler>());
 
   web_ui->AddMessageHandler(
       std::make_unique<chromeos::settings::AccessibilityHandler>(web_ui));

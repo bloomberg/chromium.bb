@@ -216,8 +216,8 @@ void ProcessMirrorHeaderUIThread(
     if (!chrome::FindBrowserWithWebContents(web_contents))
       return;
 
-    chrome::SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
-        profile, GURL("chrome://settings/accountManager"));
+    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+        profile, chrome::kAccountManagerSubPage);
     return;
   }
 

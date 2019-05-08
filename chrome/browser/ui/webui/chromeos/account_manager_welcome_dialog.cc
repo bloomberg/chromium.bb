@@ -65,9 +65,8 @@ bool AccountManagerWelcomeDialog::ShowIfRequired() {
 
 void AccountManagerWelcomeDialog::OnDialogClosed(
     const std::string& json_retval) {
-  chrome::SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
-      ProfileManager::GetActiveUserProfile(),
-      GURL("chrome://settings/accountManager"));
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+      ProfileManager::GetActiveUserProfile(), chrome::kAccountManagerSubPage);
 
   SystemWebDialogDelegate::OnDialogClosed(json_retval);
 }

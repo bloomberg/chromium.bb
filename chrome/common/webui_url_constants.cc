@@ -348,6 +348,7 @@ const char kTriggeredResetProfileSettingsSubPage[] =
 #if defined(OS_CHROMEOS)
 // NOTE: Add new OS settings to IsOSSettingsSubPage() below.
 const char kAccessibilitySubPage[] = "accessibility";
+const char kAccountManagerSubPage[] = "accountManager";
 const char kAndroidAppsDetailsSubPage[] = "androidApps/details";
 const char kAssistantSubPage[] = "googleAssistant";
 const char kBluetoothSubPage[] = "bluetoothDevices";

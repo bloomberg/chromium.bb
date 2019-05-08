@@ -312,6 +312,7 @@ extern const char kTriggeredResetProfileSettingsSubPage[];
 #if defined(OS_CHROMEOS)
 // Entry points for OS settings sub-pages.
 extern const char kAccessibilitySubPage[];
+extern const char kAccountManagerSubPage[];
 extern const char kAndroidAppsDetailsSubPage[];
 extern const char kAssistantSubPage[];
 extern const char kBluetoothSubPage[];

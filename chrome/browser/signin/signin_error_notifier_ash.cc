@@ -194,8 +194,9 @@ void SigninErrorNotifier::HandleSecondaryAccountReauthNotificationClick(
     // times already). Take users to Account Manager UI directly.
     // Note: If the welcome dialog was shown, we don't need to do anything.
     // Closing that dialog takes users to Account Manager UI.
-    chrome::SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
-        profile_, GURL("chrome://settings/accountManager"));
+
+    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+        profile_, chrome::kAccountManagerSubPage);
   }
 }
 
