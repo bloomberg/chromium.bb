@@ -17,10 +17,6 @@
 
 namespace content {
 
-namespace {
-const char* const kDefaultInstanceSiteURL = "http://unisolated.invalid";
-}  // namespace
-
 // Start the BrowsingInstance ID counter from 1 to avoid a conflict with the
 // invalid BrowsingInstanceId value, which is 0 in its underlying IdType32.
 int BrowsingInstance::next_browsing_instance_id_ = 1;
@@ -123,7 +119,7 @@ scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURLHelper(
     DCHECK(!default_process_);
     if (!default_site_instance_) {
       default_site_instance_ = new SiteInstanceImpl(this);
-      default_site_instance_->SetSite(GURL(kDefaultInstanceSiteURL));
+      default_site_instance_->SetSite(SiteInstanceImpl::GetDefaultSiteURL());
     }
     return default_site_instance_;
   }

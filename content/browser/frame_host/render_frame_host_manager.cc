@@ -1737,6 +1737,7 @@ bool RenderFrameHostManager::IsCurrentlySameSite(RenderFrameHostImpl* candidate,
   // |dest_url| should end up in |candidate|'s SiteInstance.
   // This is used to keep same-site scripting working for hosted apps.
   bool should_compare_effective_urls =
+      candidate->GetSiteInstance()->IsDefaultSiteInstance() ||
       GetContentClient()
           ->browser()
           ->ShouldCompareEffectiveURLsForSiteInstanceSelection(
@@ -1744,8 +1745,10 @@ bool RenderFrameHostManager::IsCurrentlySameSite(RenderFrameHostImpl* candidate,
               frame_tree_node_->IsMainFrame(),
               candidate->GetSiteInstance()->original_url(), dest_url);
 
-  bool src_has_effective_url = SiteInstanceImpl::HasEffectiveURL(
-      browser_context, candidate->GetSiteInstance()->original_url());
+  bool src_has_effective_url =
+      !candidate->GetSiteInstance()->IsDefaultSiteInstance() &&
+      SiteInstanceImpl::HasEffectiveURL(
+          browser_context, candidate->GetSiteInstance()->original_url());
   bool dest_has_effective_url =
       SiteInstanceImpl::HasEffectiveURL(browser_context, dest_url);
 
@@ -1772,10 +1775,8 @@ bool RenderFrameHostManager::IsCurrentlySameSite(RenderFrameHostImpl* candidate,
   // original_url() and not the site URL, so that we can do this comparison
   // without the effective URL resolution if needed.
   if (candidate->last_successful_url().is_empty()) {
-    return SiteInstanceImpl::IsSameWebSite(
-        candidate->GetSiteInstance()->GetIsolationContext(),
-        candidate->GetSiteInstance()->original_url(), dest_url,
-        should_compare_effective_urls);
+    return candidate->GetSiteInstance()->IsOriginalUrlSameSite(
+        dest_url, should_compare_effective_urls);
   }
 
   // In the common case, we use the RenderFrameHost's last successful URL. Thus,
@@ -1807,10 +1808,8 @@ bool RenderFrameHostManager::IsCurrentlySameSite(RenderFrameHostImpl* candidate,
   // against the site URL.
   if (candidate->last_successful_url().IsAboutBlank() &&
       candidate->GetLastCommittedOrigin().opaque() &&
-      SiteInstanceImpl::IsSameWebSite(
-          candidate->GetSiteInstance()->GetIsolationContext(),
-          candidate->GetSiteInstance()->original_url(), dest_url,
-          should_compare_effective_urls)) {
+      candidate->GetSiteInstance()->IsOriginalUrlSameSite(
+          dest_url, should_compare_effective_urls)) {
     return true;
   }
 

@@ -121,7 +121,16 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
 
   // Returns the URL which was used to set the |site_| for this SiteInstance.
   // May be empty if this SiteInstance does not have a |site_|.
-  const GURL& original_url() { return original_url_; }
+  const GURL& original_url() {
+    DCHECK(!IsDefaultSiteInstance());
+    return original_url_;
+  }
+
+  // Returns true if |original_url()| is the same site as
+  // |dest_url| or this object is a default SiteInstance and can be
+  // considered the same site as |dest_url|.
+  bool IsOriginalUrlSameSite(const GURL& dest_url,
+                             bool should_compare_effective_urls);
 
   // Returns the URL which should be used in a LockToOrigin call for this
   // SiteInstance's process.  This is the same as |site_| except for cases
@@ -220,6 +229,9 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // - SiteInstanceImpl::CanAssociateWithSpareProcess().
   void PreventAssociationWithSpareProcess();
 
+  // Returns the special site URL used by the default SiteInstance.
+  static const GURL& GetDefaultSiteURL();
+
   // Get the effective URL for the given actual URL.  This allows the
   // ContentBrowserClient to override the SiteInstance's site for certain URLs.
   // For example, Chrome uses this to replace hosted app URLs with extension
@@ -316,9 +328,12 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // |should_use_effective_urls| specifies whether to resolve |url| to an
   // effective URL (via ContentBrowserClient::GetEffectiveURL()) before
   // determining the site.
+  // |allow_default_site_url| specifies whether the default SiteInstance site
+  // URL is allowed to be returned.
   static GURL GetSiteForURLInternal(const IsolationContext& isolation_context,
                                     const GURL& url,
-                                    bool should_use_effective_urls);
+                                    bool should_use_effective_urls,
+                                    bool allow_default_site_url);
 
   // Returns true if pages loaded from |site_url| ought to be handled only by a
   // renderer process isolated from other sites. If --site-per-process is used,

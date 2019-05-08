@@ -440,11 +440,13 @@ TEST_F(SiteInstanceTest, ProcessLockDoesNotUseEffectiveURL) {
   GURL expected_app_site_url(app_url.spec() + "#" + nonapp_site_url.spec());
   {
     GURL site_url = SiteInstanceImpl::GetSiteForURLInternal(
-        isolation_context, test_url, false /* use_effective_urls */);
+        isolation_context, test_url, false /* use_effective_urls */,
+        false /* allow_default_site_url */);
     EXPECT_EQ(nonapp_site_url, site_url);
 
     site_url = SiteInstanceImpl::GetSiteForURLInternal(
-        isolation_context, test_url, true /* use_effective_urls */);
+        isolation_context, test_url, true /* use_effective_urls */,
+        false /* allow_default_site_url */);
     EXPECT_EQ(expected_app_site_url, site_url);
   }
 
