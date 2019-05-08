@@ -278,22 +278,27 @@ different settings listed above, including different link settings and -j
 values? Have you asked on the chromium-dev mailing list to see if your build is
 slower than expected for your machine's specifications?
 
-The next step is to gather some data. There are several options. Setting
-[NINJA_STATUS](https://ninja-build.org/manual.html#_environment_variables) lets
-you configure Ninja's output so that, for instance, you can see how many
-processes are running at any given time, how long the build has been running,
-etc., as shown here:
+The next step is to gather some data. If you set the ``NINJA_SUMMARIZE_BUILD``
+environment variable to 1 then ``autoninja`` will do a couple of things. First,
+it will set the [NINJA_STATUS](https://ninja-build.org/manual.html#_environment_variables)
+environment variable so that ninja will print additional information while
+building Chrome. It will show how many build processes are running at any given
+time, how many build steps have completed, how many build steps have completed
+per second, and how long the build has been running, as shown here:
 
 ```shell
-$ set NINJA_STATUS=[%r processes, %f/%t @ %o/s : %es ] 
+$ set NINJA_SUMMARIZE_BUILD=1
 $ autoninja -C out\Default base
 ninja: Entering directory `out\Default'
 [1 processes, 86/86 @ 2.7/s : 31.785s ] LINK(DLL) base.dll base.dll.lib base.dll.pdb
 ```
 
-In addition, if you set the ``NINJA_SUMMARIZE_BUILD`` environment variable to 1 then
-autoninja will print a build performance summary when the build completes,
-showing the slowest build steps and build-step types, as shown here:
+This makes slow process creation immediately obvious and lets you tell quickly
+if a build is running more slowly than normal.
+
+In addition, setting ``NINJA_SUMMARIZE_BUILD=1`` tells ``autoninja`` to print a
+build performance summary when the build completes, showing the slowest build
+steps and slowest build-step types, as shown here:
 
 ```shell
 $ set NINJA_SUMMARIZE_BUILD=1
