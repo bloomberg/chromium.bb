@@ -7,6 +7,7 @@
 #include <windows.h>
 #include <winternl.h>
 
+#include "base/logging.h"
 #include "base/profiler/native_unwinder_win.h"
 #include "build/build_config.h"
 
@@ -26,6 +27,14 @@ struct TEB {
   NT_TIB Tib;
   // Rest of struct is ignored.
 };
+
+win::ScopedHandle GetThreadHandle(PlatformThreadId thread_id) {
+  win::ScopedHandle handle(::OpenThread(
+      THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME | THREAD_QUERY_INFORMATION,
+      FALSE, thread_id));
+  CHECK(handle.IsValid());
+  return handle;
+}
 
 // Returns the thread environment block pointer for |thread_handle|.
 const TEB* GetThreadEnvironmentBlock(HANDLE thread_handle) {
@@ -148,10 +157,7 @@ bool ThreadDelegateWin::ScopedSuspendThread::WasSuccessful() const {
 // ThreadDelegateWin ----------------------------------------------------------
 
 ThreadDelegateWin::ThreadDelegateWin(PlatformThreadId thread_id)
-    : thread_handle_(::OpenThread(
-          THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME | THREAD_QUERY_INFORMATION,
-          FALSE,
-          thread_id)),
+    : thread_handle_(GetThreadHandle(thread_id)),
       thread_stack_base_address_(reinterpret_cast<uintptr_t>(
           GetThreadEnvironmentBlock(thread_handle_.Get())->Tib.StackBase)) {}
 
