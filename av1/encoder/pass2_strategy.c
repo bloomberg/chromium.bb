@@ -741,7 +741,7 @@ static void assign_q_and_bounds_q_mode(AV1_COMP *cpi) {
   int bottom_index, top_index;
   int q;
 
-  for (int cur_index = 0; cur_index <= gf_group->size; ++cur_index) {
+  for (int cur_index = 0; cur_index < gf_group->size; ++cur_index) {
     const FRAME_UPDATE_TYPE cur_update_type = gf_group->update_type[cur_index];
     int arf_q = -1;  // Initialize to invalid value, for sanity check later.
 
