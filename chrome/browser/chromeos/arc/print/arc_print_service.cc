@@ -255,7 +255,7 @@ class PrinterDiscoverySessionHostImpl
       return;
     }
     if (printers_manager_->IsPrinterInstalled(*printer)) {
-      PrinterInstalled(*printer, chromeos::kSuccess);
+      FetchCapabilities(*printer);
       return;
     }
     configurer_->SetUpPrinter(
@@ -297,10 +297,13 @@ class PrinterDiscoverySessionHostImpl
       return;
     }
     printers_manager_->PrinterInstalled(printer, true /*is_automatic*/);
-    const std::string& printer_id = printer.id();
+    FetchCapabilities(printer);
+  }
+
+  void FetchCapabilities(const chromeos::Printer& printer) {
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {base::MayBlock()},
-        base::BindOnce(&FetchCapabilitiesOnBlockingTaskRunner, printer_id),
+        base::BindOnce(&FetchCapabilitiesOnBlockingTaskRunner, printer.id()),
         base::BindOnce(&PrinterDiscoverySessionHostImpl::CapabilitiesReceived,
                        weak_ptr_factory_.GetWeakPtr(), printer));
   }

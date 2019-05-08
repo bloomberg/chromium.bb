@@ -202,9 +202,22 @@ void LocalPrinterHandlerChromeos::StartGetCapability(
   }
 
   printer_configurer_->SetUpPrinter(
-      *printer, base::BindOnce(&LocalPrinterHandlerChromeos::HandlePrinterSetup,
-                               weak_factory_.GetWeakPtr(), *printer,
-                               std::move(cb), printer->IsUsbProtocol()));
+      *printer,
+      base::BindOnce(&LocalPrinterHandlerChromeos::OnPrinterInstalled,
+                     weak_factory_.GetWeakPtr(), *printer, std::move(cb)));
+}
+
+void LocalPrinterHandlerChromeos::OnPrinterInstalled(
+    const chromeos::Printer& printer,
+    GetCapabilityCallback cb,
+    chromeos::PrinterSetupResult result) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (result == chromeos::PrinterSetupResult::kSuccess) {
+    printers_manager_->PrinterInstalled(printer, true /*is_automatic*/);
+  }
+
+  HandlePrinterSetup(printer, std::move(cb), printer.IsUsbProtocol(), result);
 }
 
 void LocalPrinterHandlerChromeos::HandlePrinterSetup(
@@ -223,7 +236,6 @@ void LocalPrinterHandlerChromeos::HandlePrinterSetup(
         chromeos::PrinterConfigurer::RecordUsbPrinterSetupSource(
             chromeos::UsbPrinterSetupSource::kPrintPreview);
       }
-      printers_manager_->PrinterInstalled(printer, true /*is_automatic*/);
       // fetch settings on the blocking pool and invoke callback.
       FetchCapabilities(printer, GetNativePrinterPolicies(), std::move(cb));
       return;

@@ -63,7 +63,7 @@ class FakeCupsPrintersManager : public CupsPrintersManager {
     return {};
   }
 
-  void UpdateSavedPrinter(const Printer& printer) override {}
+  void SavePrinter(const Printer& printer) override {}
   void RemoveSavedPrinter(const std::string& printer_id) override {}
   void AddObserver(CupsPrintersManager::Observer* observer) override {}
   void RemoveObserver(CupsPrintersManager::Observer* observer) override {}

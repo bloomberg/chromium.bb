@@ -67,11 +67,9 @@ class CupsPrintersManager : public KeyedService {
   virtual std::vector<Printer> GetPrinters(
       PrinterClass printer_class) const = 0;
 
-  // Update or save a printer as a saved printer.  If this is the same as
-  // an existing saved printer, the entry will be updated.  If the printer
-  // appears in a class other than saved, it will be moved to the
-  // saved class.
-  virtual void UpdateSavedPrinter(const Printer& printer) = 0;
+  // Saves |printer|. If |printer| already exists in the saved class, it will
+  // be overwritten.
+  virtual void SavePrinter(const Printer& printer) = 0;
 
   // Remove the saved printer with the given id.  This is a NOP if
   // the printer_id is not that of a saved printer.
@@ -83,9 +81,7 @@ class CupsPrintersManager : public KeyedService {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
-  // Record that the given printers has been installed in CUPS for usage.  If
-  // |printer| is not a saved or enterprise printer, this will have the
-  // side effect of moving |printer| into the saved class.
+  // Record that the given printers has been installed in CUPS for usage.
   // Parameter |is_automatic| should be set to true if the printer was
   // saved automatically (without requesting additional information
   // from the user).

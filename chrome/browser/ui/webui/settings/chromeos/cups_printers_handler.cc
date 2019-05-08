@@ -725,6 +725,7 @@ void CupsPrintersHandler::OnAddedOrEditedPrinterCommon(
                                 printer.GetProtocol(), Printer::kProtocolMax);
       PRINTER_LOG(USER) << "Performing printer setup";
       printers_manager_->PrinterInstalled(printer, is_automatic);
+      printers_manager_->SavePrinter(printer);
       if (printer.IsUsbProtocol()) {
         // Record UMA for USB printer setup source.
         PrinterConfigurer::RecordUsbPrinterSetupSource(
@@ -733,7 +734,7 @@ void CupsPrintersHandler::OnAddedOrEditedPrinterCommon(
       return;
     case PrinterSetupResult::kEditSuccess:
       PRINTER_LOG(USER) << "Printer updated";
-      printers_manager_->UpdateSavedPrinter(printer);
+      printers_manager_->SavePrinter(printer);
       return;
     case PrinterSetupResult::kPpdNotFound:
       PRINTER_LOG(ERROR) << "Could not locate requested PPD";

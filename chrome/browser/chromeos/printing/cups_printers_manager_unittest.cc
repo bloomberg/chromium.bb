@@ -200,6 +200,7 @@ class FakePrinterDetector : public PrinterDetector {
                        });
 
     detections_.resize(new_end - detections_.begin());
+    on_printers_found_callback_.Run(detections_);
   }
 
  private:
@@ -426,8 +427,10 @@ TEST_F(CupsPrintersManagerTest, SyncedPrintersTrumpDetections) {
   // classes.
   manager_->PrinterInstalled(Printer("DiscoveredPrinter0"),
                              true /* is_automatic */);
+  manager_->SavePrinter(Printer("DiscoveredPrinter0"));
   manager_->PrinterInstalled(Printer("AutomaticPrinter0"),
                              true /* is_automatic */);
+  manager_->SavePrinter(Printer("AutomaticPrinter0"));
   scoped_task_environment_.RunUntilIdle();
   ExpectPrintersInClassAre(PrinterClass::kDiscovered, {"DiscoveredPrinter1"});
   ExpectPrintersInClassAre(PrinterClass::kAutomatic, {"AutomaticPrinter1"});
@@ -439,7 +442,7 @@ TEST_F(CupsPrintersManagerTest, SyncedPrintersTrumpDetections) {
 // should propagate.  Updates of printers in other classes should result in
 // those printers becoming saved.  Updates of unknown printers should
 // result in a new saved printer.
-TEST_F(CupsPrintersManagerTest, UpdateSavedPrinter) {
+TEST_F(CupsPrintersManagerTest, SavePrinter) {
   // Start with a printer in each class named after the class it's in, except
   // Enterprise which is not relevant to this test.
   Printer existing_saved("Saved");
@@ -456,7 +459,7 @@ TEST_F(CupsPrintersManagerTest, UpdateSavedPrinter) {
   // Update the existing saved printer.  Check that the new display name
   // propagated.
   existing_saved.set_display_name("New Display Name");
-  manager_->UpdateSavedPrinter(existing_saved);
+  manager_->SavePrinter(existing_saved);
   scoped_task_environment_.RunUntilIdle();
   ExpectPrintersInClassAre(PrinterClass::kSaved, {"Saved"});
   EXPECT_EQ(manager_->GetPrinters(PrinterClass::kSaved)[0].display_name(),
@@ -465,19 +468,19 @@ TEST_F(CupsPrintersManagerTest, UpdateSavedPrinter) {
   // Do the same thing for the Automatic and Discovered printers.
   // Create a configuration for the zeroconf printer, which should shift it
   // into the saved category.
-  manager_->PrinterInstalled(Printer("Automatic"), true /* is_automatic */);
+  manager_->SavePrinter(Printer("Automatic"));
   scoped_task_environment_.RunUntilIdle();
   ExpectPrintersInClassAre(PrinterClass::kAutomatic, {});
   ExpectPrintersInClassAre(PrinterClass::kSaved, {"Automatic", "Saved"});
 
-  manager_->PrinterInstalled(Printer("Discovered"), true /* is_automatic */);
+  manager_->SavePrinter(Printer("Discovered"));
   scoped_task_environment_.RunUntilIdle();
   ExpectPrintersInClassAre(PrinterClass::kDiscovered, {});
   ExpectPrintersInClassAre(PrinterClass::kSaved,
                            {"Automatic", "Saved", "Discovered"});
 
-  // Update a printer we haven't seen before, which should just add it.
-  manager_->PrinterInstalled(Printer("NewFangled"), true /* is_automatic */);
+  // Save a printer we haven't seen before, which should just add it to kSaved.
+  manager_->SavePrinter(Printer("NewFangled"));
   scoped_task_environment_.RunUntilIdle();
   ExpectPrintersInClassAre(PrinterClass::kSaved,
                            {"Automatic", "Saved", "Discovered", "NewFangled"});
@@ -534,8 +537,8 @@ TEST_F(CupsPrintersManagerTest, GetPrintersUserNativePrintersDisabled) {
 }
 
 // Test that if |UserNativePrintersAllowed| pref is set to false, then
-// UpdateSavedPrinter() will simply do nothing.
-TEST_F(CupsPrintersManagerTest, UpdateSavedPrinterUserNativePrintersDisabled) {
+// SavePrinter() will simply do nothing.
+TEST_F(CupsPrintersManagerTest, SavePrinterUserNativePrintersDisabled) {
   // Start by installing a saved printer to be used to test than any
   // changes made to the printer will not be propogated.
   Printer existing_saved("Saved");
@@ -555,7 +558,7 @@ TEST_F(CupsPrintersManagerTest, UpdateSavedPrinterUserNativePrintersDisabled) {
   // Update the existing saved printer. Verify that the changes did not
   // progogate.
   existing_saved.set_display_name("New Display Name");
-  manager_->UpdateSavedPrinter(existing_saved);
+  manager_->SavePrinter(existing_saved);
   scoped_task_environment_.RunUntilIdle();
 
   // Reenable user printers in order to do checking.
@@ -566,14 +569,14 @@ TEST_F(CupsPrintersManagerTest, UpdateSavedPrinterUserNativePrintersDisabled) {
 
   // Attempt to update the Automatic and Discovered printers. In both cases
   // check that the printers do not move into the saved category.
-  manager_->UpdateSavedPrinter(Printer("Automatic"));
+  manager_->SavePrinter(Printer("Automatic"));
   scoped_task_environment_.RunUntilIdle();
   UpdatePolicyValue(prefs::kUserNativePrintersAllowed, true);
   ExpectPrintersInClassAre(PrinterClass::kAutomatic, {"Automatic"});
   ExpectPrintersInClassAre(PrinterClass::kSaved, {"Saved"});
   UpdatePolicyValue(prefs::kUserNativePrintersAllowed, false);
 
-  manager_->UpdateSavedPrinter(Printer("Discovered"));
+  manager_->SavePrinter(Printer("Discovered"));
   scoped_task_environment_.RunUntilIdle();
   UpdatePolicyValue(prefs::kUserNativePrintersAllowed, true);
   ExpectPrintersInClassAre(PrinterClass::kDiscovered, {"Discovered"});
@@ -582,7 +585,7 @@ TEST_F(CupsPrintersManagerTest, UpdateSavedPrinterUserNativePrintersDisabled) {
 
   // Attempt to update a printer that we haven't seen before, check that nothing
   // changed.
-  manager_->UpdateSavedPrinter(Printer("NewFangled"));
+  manager_->SavePrinter(Printer("NewFangled"));
   scoped_task_environment_.RunUntilIdle();
   UpdatePolicyValue(prefs::kUserNativePrintersAllowed, true);
   ExpectPrintersInClassAre(PrinterClass::kSaved, {"Saved"});
@@ -676,24 +679,46 @@ TEST_F(CupsPrintersManagerTest, UpdatedPrinterConfiguration) {
   EXPECT_TRUE(manager_->IsPrinterInstalled(printer));
 }
 
-// Test that calling PrinterInstalled when printer configuration change updates
-// the saved printer.
-TEST_F(CupsPrintersManagerTest,
-       PrinterInstalledUpdatesPreviouslyInstalledPrinter) {
+// Test that we can save non-discovered printers.
+TEST_F(CupsPrintersManagerTest, SavePrinterSucceedsOnManualPrinter) {
+  Printer printer(kPrinterId);
+  printer.set_uri("manual uri");
+  manager_->SavePrinter(printer);
+
+  auto saved_printers = manager_->GetPrinters(PrinterClass::kSaved);
+  ASSERT_EQ(1u, saved_printers.size());
+  EXPECT_EQ(printer.uri(), saved_printers[0].uri());
+}
+
+// Test that installing a printer does not put it in the saved class.
+TEST_F(CupsPrintersManagerTest, PrinterInstalledDoesNotSavePrinter) {
   Printer printer(kPrinterId);
   manager_->PrinterInstalled(printer, false /* is_automatic */);
+
+  auto saved_printers = manager_->GetPrinters(PrinterClass::kSaved);
+  EXPECT_EQ(0u, saved_printers.size());
+}
+
+// Test that calling SavePrinter() when printer configuration change updates
+// the saved printer but does not install the updated printer.
+TEST_F(CupsPrintersManagerTest, SavePrinterUpdatesPreviouslyInstalledPrinter) {
+  Printer printer(kPrinterId);
+  manager_->PrinterInstalled(printer, false /* is_automatic */);
+  manager_->SavePrinter(printer);
   EXPECT_TRUE(manager_->IsPrinterInstalled(printer));
 
   Printer updated(printer);
   updated.set_uri("different value");
   EXPECT_FALSE(manager_->IsPrinterInstalled(updated));
 
-  manager_->PrinterInstalled(updated, false /* is_automatic */);
-
-  // The printer in saved should have the new uri, not the old uri.
+  manager_->SavePrinter(updated);
   auto saved_printers = manager_->GetPrinters(PrinterClass::kSaved);
-  EXPECT_EQ(1u, saved_printers.size());
+  ASSERT_EQ(1u, saved_printers.size());
   EXPECT_EQ(updated.uri(), saved_printers[0].uri());
+
+  // Even though the updated printer was saved, it still needs to be marked as
+  // installed again.
+  EXPECT_FALSE(manager_->IsPrinterInstalled(updated));
 }
 
 }  // namespace

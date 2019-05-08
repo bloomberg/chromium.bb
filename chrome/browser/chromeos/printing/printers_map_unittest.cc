@@ -343,4 +343,22 @@ TEST_F(PrintersMapTest, RemoveDoesNothingOnUnknownPrinter) {
   EXPECT_TRUE(printers_map.Get(printer_id));
 }
 
+TEST_F(PrintersMapTest, IsPrinterInClass) {
+  PrintersMap printers_map;
+
+  const std::string printer_id = "id";
+
+  // Returns false for non-existent printers.
+  EXPECT_FALSE(
+      printers_map.IsPrinterInClass(PrinterClass::kEnterprise, "random_id"));
+
+  // Add an enterprise printer. It can be found as an enterprise printer, but
+  // not as a discovered printer.
+  printers_map.Insert(PrinterClass::kEnterprise, Printer(printer_id));
+  EXPECT_TRUE(
+      printers_map.IsPrinterInClass(PrinterClass::kEnterprise, printer_id));
+  EXPECT_FALSE(
+      printers_map.IsPrinterInClass(PrinterClass::kDiscovered, printer_id));
+}
+
 }  // namespace chromeos

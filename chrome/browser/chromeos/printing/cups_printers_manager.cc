@@ -114,15 +114,13 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   }
 
   // Public API function.
-  void UpdateSavedPrinter(const Printer& printer) override {
+  void SavePrinter(const Printer& printer) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     if (!native_printers_allowed_.GetValue()) {
-      LOG(WARNING) << "UpdateSavedPrinter() called when "
+      LOG(WARNING) << "SavePrinter() called when "
                       "UserNativePrintersAllowed is set to false";
       return;
     }
-    // If this is an 'add' instead of just an update, record the event.
-    MaybeRecordInstallation(printer, false /* is_automatic_installation */);
     synced_printers_manager_->UpdateSavedPrinter(printer);
     // Note that we will rebuild our lists when we get the observer
     // callback from |synced_printers_manager_|.
@@ -165,8 +163,6 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
     }
     MaybeRecordInstallation(printer, is_automatic);
     MarkPrinterInstalledWithCups(printer);
-
-    synced_printers_manager_->UpdateSavedPrinter(printer);
   }
 
   // Public API function.
@@ -322,9 +318,9 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     for (const PrinterDetector::DetectedPrinter& detected : detected_list) {
       const std::string& detected_printer_id = detected.printer.id();
-      if (printers_.Get(PrinterClass::kSaved, detected_printer_id)) {
-        // It's already in the configured class, don't need to do anything
-        // else here.
+      if (printers_.IsPrinterInClass(PrinterClass::kSaved,
+                                     detected_printer_id)) {
+        // It's already in the saved class, don't need to do anything else here.
         continue;
       }
 

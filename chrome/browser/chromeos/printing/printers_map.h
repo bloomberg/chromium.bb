@@ -56,13 +56,13 @@ class PrintersMap {
   // |printer_id| doesn't exist in printer_class.
   void Remove(PrinterClass printer_class, const std::string& printer_id);
 
- private:
-  // Returns true if |printer_class| exists and contains at least 1 printer.
-  bool HasPrintersInClass(PrinterClass printer_class) const;
-
   // Returns true if the printer |printer_id| exists in |printer_class|.
   bool IsPrinterInClass(PrinterClass printer_class,
                         const std::string& printer_id) const;
+
+ private:
+  // Returns true if |printer_class| exists and contains at least 1 printer.
+  bool HasPrintersInClass(PrinterClass printer_class) const;
 
   // Returns true if |printer_id| exists in any class. Used only for DCHECKs.
   bool IsExistingPrinter(const std::string& printer_id) const;

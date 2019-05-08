@@ -1258,7 +1258,7 @@ ExtensionFunction::ResponseAction AutotestPrivateUpdatePrinterFunction::Run() {
   }
   auto printers_manager = chromeos::CupsPrintersManager::Create(
       Profile::FromBrowserContext(browser_context()));
-  printers_manager->UpdateSavedPrinter(printer);
+  printers_manager->SavePrinter(printer);
   return RespondNow(NoArguments());
 }
 
