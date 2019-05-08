@@ -89,15 +89,15 @@ class AssistantActionsDecoration extends RecyclerView.ItemDecoration {
     @Override
     public void onDrawOver(@NonNull Canvas canvas, @NonNull RecyclerView parent,
             @NonNull RecyclerView.State state) {
-        if (parent.getChildCount() <= 1 || !mLayoutManager.canScrollHorizontally()) {
+        if (parent.getChildCount() <= 1) {
             return;
         }
 
         View lastChild = parent.getChildAt(parent.getChildCount() - 1);
-        mLastChildRect.left = lastChild.getLeft();
-        mLastChildRect.top = lastChild.getTop();
-        mLastChildRect.right = lastChild.getRight();
-        mLastChildRect.bottom = lastChild.getBottom();
+        mLastChildRect.left = lastChild.getLeft() + lastChild.getTranslationX();
+        mLastChildRect.top = lastChild.getTop() + lastChild.getTranslationY();
+        mLastChildRect.right = lastChild.getRight() + lastChild.getTranslationX();
+        mLastChildRect.bottom = lastChild.getBottom() + lastChild.getTranslationY();
 
         canvas.save();
 
@@ -112,7 +112,8 @@ class AssistantActionsDecoration extends RecyclerView.ItemDecoration {
         float lastChildRight = orientationHelper.getDecoratedEnd(lastChild);
         for (int i = parent.getChildCount() - 2; i >= 0; i--) {
             View child = parent.getChildAt(i);
-            int left = orientationHelper.getDecoratedStart(child);
+            int left = Math.round(
+                    orientationHelper.getDecoratedStart(child) + lastChild.getTranslationX());
             if (left >= lastChildRight) {
                 break;
             }
@@ -120,10 +121,10 @@ class AssistantActionsDecoration extends RecyclerView.ItemDecoration {
             int alpha = Math.round(
                     getBoundedLinearValue(left, 0, lastChildRight, OVERLAYS_MAX_OPACITY * 255, 0));
             mOverlayPaint.setColor(getColorWithAlpha(mOverlayPaint.getColor(), alpha));
-            mChildRect.left = child.getLeft();
-            mChildRect.right = child.getRight();
-            mChildRect.top = child.getTop();
-            mChildRect.bottom = child.getBottom();
+            mChildRect.left = child.getLeft() + child.getTranslationX();
+            mChildRect.right = child.getRight() + child.getTranslationX();
+            mChildRect.top = child.getTop() + child.getTranslationY();
+            mChildRect.bottom = child.getBottom() + child.getTranslationY();
             canvas.drawRect(mChildRect, mOverlayPaint);
         }
 
@@ -132,6 +133,12 @@ class AssistantActionsDecoration extends RecyclerView.ItemDecoration {
         mGradientDrawable.draw(canvas);
 
         canvas.restore();
+
+        // Don't draw shadow around the last if it's animated.
+        if (orientationHelper.getDecoratedStart(lastChild) != 0
+                || lastChild.getTranslationX() != 0) {
+            return;
+        }
 
         // Draw shadow composed of 4 layers of colors around the last child. We multiply the
         // original alpha of the shadow color by alphaRatio to hide the shadow when there is no
