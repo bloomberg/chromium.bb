@@ -2706,11 +2706,6 @@ const char kOmniboxTabSwitchSuggestionsName[] =
 const char kOmniboxTabSwitchSuggestionsDescription[] =
     "Enable suggestions for switching to open tabs within the Omnibox.";
 
-const char kOmniboxTailSuggestionsName[] = "Omnibox tail suggestions";
-const char kOmniboxTailSuggestionsDescription[] =
-    "Enable receiving tail suggestions, a type of search suggestion based on "
-    "the last few words in the query, for the Omnibox.";
-
 const char kProactiveTabFreezeAndDiscardName[] =
     "Proactive Tab Freeze and Discard";
 const char kProactiveTabFreezeAndDiscardDescription[] =

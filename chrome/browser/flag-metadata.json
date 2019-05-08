@@ -2509,11 +2509,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "omnibox-tail-suggestions",
-    "owners": [ "krb", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "omnibox-ui-cues-for-search-history-matches",
     "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 80
