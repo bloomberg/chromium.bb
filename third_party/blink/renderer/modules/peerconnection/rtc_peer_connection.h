@@ -486,6 +486,8 @@ class MODULES_EXPORT RTCPeerConnection final
   void MaybeWarnAboutUnsafeSdp(
       const RTCSessionDescriptionInit* session_description_init) const;
 
+  std::set<RTCIceTransport*> ActiveIceTransports() const;
+
   webrtc::PeerConnectionInterface::SignalingState signaling_state_;
   webrtc::PeerConnectionInterface::IceGatheringState ice_gathering_state_;
   webrtc::PeerConnectionInterface::IceConnectionState ice_connection_state_;
@@ -509,6 +511,8 @@ class MODULES_EXPORT RTCPeerConnection final
   // A map of all webrtc::DtlsTransports that have a corresponding
   // RTCDtlsTransport object. Garbage collection will remove map entries
   // when they are no longer in use.
+  // Note: Transports may exist in the map even if they are not currently
+  // in use, since garbage collection only happens when needed.
   HeapHashMap<webrtc::DtlsTransportInterface*, WeakMember<RTCDtlsTransport>>
       dtls_transports_by_native_transport_;
   // The same kind of map for webrtc::IceTransports.
