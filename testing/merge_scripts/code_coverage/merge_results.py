@@ -51,43 +51,11 @@ def main():
   parser = _MergeAPIArgumentParser(description=desc)
   params = parser.parse_args()
 
-  logging.info('Merging %d test results', len(params.jsons_to_merge))
-
-  failed = False
-
-  # If given, always run the additional merge script, even if we only have one
-  # output json. Merge scripts sometimes upload artifacts to cloud storage, or
-  # do other processing which can be needed even if there's only one output.
-  if params.additional_merge_script:
-    new_args = [
-        '--build-properties', params.build_properties,
-        '--summary-json', params.summary_json,
-        '--task-output-dir', params.task_output_dir,
-        '--output-json', params.output_json,
-    ]
-    if params.additional_merge_script_args:
-      new_args += json.loads(params.additional_merge_script_args)
-
-    new_args += params.jsons_to_merge
-
-    args = [
-        sys.executable, params.additional_merge_script] + new_args
-    rc = subprocess.call(args)
-    if rc != 0:
-      failed = True
-      logging.warning('Additional merge script %s exited with %s' % (
-          params.additional_merge_script, rc
-      ))
-  elif len(params.jsons_to_merge) == 1:
-    logging.info("Only one output needs to be merged; directly copying it.")
-    with open(params.jsons_to_merge[0]) as f_read:
-      with open(params.output_json, 'w') as f_write:
-        f_write.write(f_read.read())
-  else:
-      logging.warning(
-          "This script was told to merge %d test results, but no additional "
-          "merge script was given.")
-
+  # NOTE: The coverage data merge script must make sure that the profraw files
+  # are deleted from the task output directory after merging, otherwise, other
+  # test results merge script such as layout tests will treat them as json test
+  # results files and result in errors.
+  logging.info('Merging code coverage profraw data')
   invalid_profiles = coverage_merger.merge_profiles(
       params.task_output_dir,
       os.path.join(params.profdata_dir, 'default.profdata'), '.profraw',
@@ -96,6 +64,44 @@ def main():
     with open(os.path.join(params.profdata_dir, 'invalid_profiles.json'),
               'w') as f:
       json.dump(invalid_profiles, f)
+
+  logging.info('Merging %d test results', len(params.jsons_to_merge))
+  failed = False
+
+  # If given, always run the additional merge script, even if we only have one
+  # output json. Merge scripts sometimes upload artifacts to cloud storage, or
+  # do other processing which can be needed even if there's only one output.
+  if params.additional_merge_script:
+    new_args = [
+        '--build-properties',
+        params.build_properties,
+        '--summary-json',
+        params.summary_json,
+        '--task-output-dir',
+        params.task_output_dir,
+        '--output-json',
+        params.output_json,
+    ]
+    if params.additional_merge_script_args:
+      new_args += json.loads(params.additional_merge_script_args)
+
+    new_args += params.jsons_to_merge
+
+    args = [sys.executable, params.additional_merge_script] + new_args
+    rc = subprocess.call(args)
+    if rc != 0:
+      failed = True
+      logging.warning('Additional merge script %s exited with %s' %
+                      (params.additional_merge_script, rc))
+  elif len(params.jsons_to_merge) == 1:
+    logging.info("Only one output needs to be merged; directly copying it.")
+    with open(params.jsons_to_merge[0]) as f_read:
+      with open(params.output_json, 'w') as f_write:
+        f_write.write(f_read.read())
+  else:
+    logging.warning(
+        "This script was told to merge %d test results, but no additional "
+        "merge script was given.")
 
   return 1 if (failed or bool(invalid_profiles)) else 0
 
