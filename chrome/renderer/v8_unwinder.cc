@@ -11,15 +11,6 @@
 
 namespace {
 
-// Synthetic build ids to use for V8 modules. The difference is in the digit
-// after the leading 5's.
-// clang-format off
-const char kV8EmbeddedCodeRangeBuildId[] =
-    "5555555507284E1E874EFA4EB754964B999";
-const char kV8CodeRangeBuildId[] =
-    "5555555517284E1E874EFA4EB754964B999";
-// clang-format on
-
 class V8Module : public base::ModuleCache::Module {
  public:
   V8Module(const v8::MemoryRange& memory_range,
@@ -110,3 +101,12 @@ base::UnwindResult V8Unwinder::TryUnwind(
 
   return base::UnwindResult::UNRECOGNIZED_FRAME;
 }
+
+// Synthetic build ids to use for V8 modules. The difference is in the digit
+// after the leading 5's.
+// clang-format off
+const char V8Unwinder::kV8EmbeddedCodeRangeBuildId[] =
+    "5555555507284E1E874EFA4EB754964B999";
+const char V8Unwinder::kV8CodeRangeBuildId[] =
+    "5555555517284E1E874EFA4EB754964B999";
+// clang-format on

@@ -4,10 +4,13 @@
 
 #include "base/profiler/stack_sampling_profiler_test_util.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/profiler/stack_sampling_profiler.h"
+#include "base/profiler/unwinder.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -149,7 +152,8 @@ void WithTargetThread(UnwindScenario* scenario,
 }
 
 std::vector<Frame> SampleScenario(UnwindScenario* scenario,
-                                  ModuleCache* module_cache) {
+                                  ModuleCache* module_cache,
+                                  UnwinderFactory aux_unwinder_factory) {
   StackSamplingProfiler::SamplingParams params;
   params.sampling_interval = TimeDelta::FromMilliseconds(0);
   params.samples_per_profile = 1;
@@ -169,6 +173,8 @@ std::vector<Frame> SampleScenario(UnwindScenario* scenario,
                   sample = std::move(result_sample);
                   sampling_thread_completed.Signal();
                 })));
+        if (aux_unwinder_factory)
+          profiler.AddAuxUnwinder(std::move(aux_unwinder_factory).Run());
         profiler.Start();
         sampling_thread_completed.Wait();
       }));

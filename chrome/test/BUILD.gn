@@ -3039,6 +3039,7 @@ test("unit_tests") {
     "../renderer/page_load_metrics/page_timing_metrics_sender_unittest.cc",
     "../renderer/plugins/plugin_uma_unittest.cc",
     "../renderer/prerender/prerender_dispatcher_unittest.cc",
+    "../renderer/v8_unwinder_unittest.cc",
     "../test/base/chrome_render_view_test.cc",
     "../test/base/chrome_render_view_test.h",
     "../test/base/menu_model_test.cc",
@@ -3137,6 +3138,7 @@ test("unit_tests") {
   deps = [
     ":test_support",
     ":test_support_unit",
+    "//base:base_stack_sampling_profiler_test_util",
     "//base/test:test_support",
     "//chrome:browser_dependencies",
     "//chrome:child_dependencies",

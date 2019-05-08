@@ -5,6 +5,7 @@
 #ifndef BASE_PROFILER_STACK_SAMPLING_PROFILER_TEST_UTIL_H_
 #define BASE_PROFILER_STACK_SAMPLING_PROFILER_TEST_UTIL_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
@@ -13,6 +14,8 @@
 #include "base/threading/platform_thread.h"
 
 namespace base {
+
+class Unwinder;
 
 // A thread to target for profiling that will run the supplied closure.
 class TargetThread : public PlatformThread::Delegate {
@@ -96,9 +99,13 @@ using ProfileCallback = OnceCallback<void(PlatformThreadId)>;
 void WithTargetThread(UnwindScenario* scenario,
                       ProfileCallback profile_callback);
 
+using UnwinderFactory = OnceCallback<std::unique_ptr<Unwinder>()>;
+
 // Returns the sample seen when taking one sample of |scenario|.
-std::vector<Frame> SampleScenario(UnwindScenario* scenario,
-                                  ModuleCache* module_cache);
+std::vector<Frame> SampleScenario(
+    UnwindScenario* scenario,
+    ModuleCache* module_cache,
+    UnwinderFactory aux_unwinder_factory = UnwinderFactory());
 
 // Formats a sample into a string that can be output for test diagnostics.
 std::string FormatSampleForDiagnosticOutput(const std::vector<Frame>& sample);
