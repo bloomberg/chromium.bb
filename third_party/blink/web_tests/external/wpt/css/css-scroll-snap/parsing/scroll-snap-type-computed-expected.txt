@@ -1,0 +1,11 @@
+This is a testharness.js-based test.
+PASS Property scroll-snap-type value 'none' computes to 'none'
+FAIL Property scroll-snap-type value 'x' computes to 'x' assert_equals: expected "x" but got "x proximity"
+FAIL Property scroll-snap-type value 'y' computes to 'y' assert_equals: expected "y" but got "y proximity"
+FAIL Property scroll-snap-type value 'block' computes to 'block' assert_equals: expected "block" but got "block proximity"
+FAIL Property scroll-snap-type value 'inline' computes to 'inline' assert_equals: expected "inline" but got "inline proximity"
+FAIL Property scroll-snap-type value 'both' computes to 'both' assert_equals: expected "both" but got "both proximity"
+PASS Property scroll-snap-type value 'y mandatory' computes to 'y mandatory'
+FAIL Property scroll-snap-type value 'inline proximity' computes to 'inline' assert_equals: expected "inline" but got "inline proximity"
+Harness: the test ran to completion.
+
