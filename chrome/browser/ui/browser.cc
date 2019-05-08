@@ -1003,29 +1003,29 @@ void Browser::OnTabStripModelChanged(TabStripModel* tab_strip_model,
   TRACE_EVENT0("ui", "Browser::OnTabStripModelChanged");
   switch (change.type()) {
     case TabStripModelChange::kInserted: {
-      for (const auto& delta : change.deltas())
-        OnTabInsertedAt(delta.insert.contents, delta.insert.index);
+      for (const auto& contents : change.GetInsert()->contents)
+        OnTabInsertedAt(contents.contents, contents.index);
       break;
     }
     case TabStripModelChange::kRemoved: {
-      for (const auto& delta : change.deltas()) {
-        if (delta.remove.will_be_deleted)
-          OnTabClosing(delta.remove.contents);
-
-        OnTabDetached(delta.remove.contents,
-                      delta.remove.contents == selection.old_contents);
+      const bool will_be_deleted = change.GetRemove()->will_be_deleted;
+      for (const auto& contents : change.GetRemove()->contents) {
+        if (will_be_deleted)
+          OnTabClosing(contents.contents);
+        OnTabDetached(contents.contents,
+                      contents.contents == selection.old_contents);
       }
       break;
     }
     case TabStripModelChange::kMoved: {
-      for (const auto& delta : change.deltas())
-        OnTabMoved(delta.move.from_index, delta.move.to_index);
+      auto* move = change.GetMove();
+      OnTabMoved(move->from_index, move->to_index);
       break;
     }
     case TabStripModelChange::kReplaced: {
-      for (const auto& delta : change.deltas())
-        OnTabReplacedAt(delta.replace.old_contents, delta.replace.new_contents,
-                        delta.replace.index);
+      auto* replace = change.GetReplace();
+      OnTabReplacedAt(replace->old_contents, replace->new_contents,
+                      replace->index);
       break;
     }
     case TabStripModelChange::kGroupChanged:

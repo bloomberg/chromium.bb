@@ -158,11 +158,11 @@ void WebAppBrowserController::OnTabStripModelChanged(
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {
   if (change.type() == TabStripModelChange::kInserted) {
-    for (const auto& delta : change.deltas())
-      OnTabInserted(delta.insert.contents);
+    for (const auto& contents : change.GetInsert()->contents)
+      OnTabInserted(contents.contents);
   } else if (change.type() == TabStripModelChange::kRemoved) {
-    for (const auto& delta : change.deltas())
-      OnTabRemoved(delta.remove.contents);
+    for (const auto& contents : change.GetRemove()->contents)
+      OnTabRemoved(contents.contents);
   }
 }
 

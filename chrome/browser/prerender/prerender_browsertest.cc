@@ -422,20 +422,19 @@ class NavigationOrSwapObserver : public WebContentsObserver,
     if (change.type() != TabStripModelChange::kReplaced)
       return;
 
-    for (const auto& delta : change.deltas()) {
-      if (delta.replace.old_contents != web_contents())
-        continue;
+    auto* replace = change.GetReplace();
+    if (replace->old_contents != web_contents())
+      return;
 
-      // Switch to observing the new WebContents.
-      Observe(delta.replace.new_contents);
-      if (delta.replace.new_contents->IsLoading()) {
-        // If the new WebContents is still loading, wait for it to complete.
-        // Only one load post-swap is supported.
-        did_start_loading_ = true;
-        number_of_loads_ = 1;
-      } else {
-        loop_.Quit();
-      }
+    // Switch to observing the new WebContents.
+    Observe(replace->new_contents);
+    if (replace->new_contents->IsLoading()) {
+      // If the new WebContents is still loading, wait for it to complete.
+      // Only one load post-swap is supported.
+      did_start_loading_ = true;
+      number_of_loads_ = 1;
+    } else {
+      loop_.Quit();
     }
   }
 

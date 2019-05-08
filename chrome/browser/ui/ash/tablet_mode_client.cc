@@ -105,8 +105,8 @@ void TabletModeClient::OnTabStripModelChanged(
   // don't want those to shrink down and resize to fit the width of their
   // windows like webpages on mobile do. So this behavior is limited to webpages
   // in tabs and packaged apps.
-  for (const auto& delta : change.deltas())
-    delta.insert.contents->NotifyPreferencesChanged();
+  for (const auto& contents : change.GetInsert()->contents)
+    contents.contents->NotifyPreferencesChanged();
 }
 
 void TabletModeClient::FlushForTesting() {

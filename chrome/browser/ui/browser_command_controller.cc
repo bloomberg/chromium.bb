@@ -758,28 +758,32 @@ void BrowserCommandController::OnTabStripModelChanged(
     TabStripModel* tab_strip_model,
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {
-  if (change.type() != TabStripModelChange::kInserted &&
-      change.type() != TabStripModelChange::kReplaced &&
-      change.type() != TabStripModelChange::kRemoved)
-    return;
+  std::vector<content::WebContents*> new_contents;
+  std::vector<content::WebContents*> old_contents;
 
-  for (const auto& delta : change.deltas()) {
-    content::WebContents* new_contents = nullptr;
-    content::WebContents* old_contents = nullptr;
-    if (change.type() == TabStripModelChange::kInserted) {
-      new_contents = delta.insert.contents;
-    } else if (change.type() == TabStripModelChange::kReplaced) {
-      new_contents = delta.replace.new_contents;
-      old_contents = delta.replace.old_contents;
-    } else {
-      old_contents = delta.remove.contents;
+  switch (change.type()) {
+    case TabStripModelChange::kInserted:
+      for (const auto& contents : change.GetInsert()->contents)
+        new_contents.push_back(contents.contents);
+      break;
+    case TabStripModelChange::kReplaced: {
+      auto* replace = change.GetReplace();
+      new_contents.push_back(replace->new_contents);
+      old_contents.push_back(replace->old_contents);
+      break;
     }
-
-    if (old_contents)
-      RemoveInterstitialObservers(old_contents);
-    if (new_contents)
-      AddInterstitialObservers(new_contents);
+    case TabStripModelChange::kRemoved:
+      for (const auto& contents : change.GetRemove()->contents)
+        old_contents.push_back(contents.contents);
+      break;
+    default:
+      break;
   }
+
+  for (auto* contents : old_contents)
+    RemoveInterstitialObservers(contents);
+  for (auto* contents : new_contents)
+    AddInterstitialObservers(contents);
 }
 
 void BrowserCommandController::TabBlockedStateChanged(

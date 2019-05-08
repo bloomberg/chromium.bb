@@ -209,43 +209,38 @@ class MockTabStripModelObserver : public TabStripModelObserver {
       const TabStripSelectionChange& selection) override {
     switch (change.type()) {
       case TabStripModelChange::kInserted: {
-        for (const auto& delta : change.deltas()) {
-          PushInsertState(delta.insert.contents, delta.insert.index,
-                          selection.new_contents == delta.insert.contents);
+        for (const auto& contents : change.GetInsert()->contents) {
+          PushInsertState(contents.contents, contents.index,
+                          selection.new_contents == contents.contents);
         }
         break;
       }
       case TabStripModelChange::kRemoved: {
-        for (const auto& delta : change.deltas()) {
-          if (delta.remove.will_be_deleted)
-            PushCloseState(delta.remove.contents, delta.remove.index);
-
-          PushDetachState(delta.remove.contents, delta.remove.index,
-                          selection.old_contents == delta.remove.contents);
+        const bool will_be_deleted = change.GetRemove()->will_be_deleted;
+        for (const auto& contents : change.GetRemove()->contents) {
+          if (will_be_deleted)
+            PushCloseState(contents.contents, contents.index);
+          PushDetachState(contents.contents, contents.index,
+                          selection.old_contents == contents.contents);
         }
         break;
       }
       case TabStripModelChange::kReplaced: {
-        for (const auto& delta : change.deltas()) {
-          PushReplaceState(delta.replace.old_contents,
-                           delta.replace.new_contents, delta.replace.index);
-        }
+        auto* replace = change.GetReplace();
+        PushReplaceState(replace->old_contents, replace->new_contents,
+                         replace->index);
         break;
       }
       case TabStripModelChange::kMoved: {
-        for (const auto& delta : change.deltas()) {
-          PushMoveState(delta.move.contents, delta.move.from_index,
-                        delta.move.to_index);
-        }
+        auto* move = change.GetMove();
+        PushMoveState(move->contents, move->from_index, move->to_index);
         break;
       }
       case TabStripModelChange::kGroupChanged: {
-        for (const auto& delta : change.deltas()) {
-          PushGroupChangeState(delta.group_change.contents,
-                               delta.group_change.index,
-                               delta.group_change.old_group_data,
-                               delta.group_change.new_group_data);
-        }
+        auto* group_change = change.GetGroupChange();
+        PushGroupChangeState(group_change->contents, group_change->index,
+                             group_change->old_group_data,
+                             group_change->new_group_data);
         break;
       }
       case TabStripModelChange::kSelectionOnly:
@@ -2565,10 +2560,10 @@ class TabBlockedStateTestBrowser
     if (change.type() != TabStripModelChange::kInserted)
       return;
 
-    for (const auto& delta : change.deltas()) {
+    for (const auto& contents : change.GetInsert()->contents) {
       web_modal::WebContentsModalDialogManager* manager =
           web_modal::WebContentsModalDialogManager::FromWebContents(
-              delta.insert.contents);
+              contents.contents);
       if (manager)
         manager->SetDelegate(this);
     }

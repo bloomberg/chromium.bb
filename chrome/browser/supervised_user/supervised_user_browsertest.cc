@@ -269,11 +269,14 @@ class TabClosingObserver : public TabStripModelObserver {
     if (change.type() != TabStripModelChange::kRemoved)
       return;
 
-    for (const auto& delta : change.deltas()) {
-      if (delta.remove.will_be_deleted && contents_ == delta.remove.contents) {
+    auto* remove = change.GetRemove();
+    if (!remove->will_be_deleted)
+      return;
+
+    for (const auto& contents : remove->contents) {
+      if (contents_ == contents.contents) {
         if (run_loop_.running())
           run_loop_.Quit();
-
         contents_ = nullptr;
         return;
       }

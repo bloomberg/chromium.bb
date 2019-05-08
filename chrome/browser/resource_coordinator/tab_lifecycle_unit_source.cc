@@ -282,20 +282,20 @@ void TabLifecycleUnitSource::OnTabStripModelChanged(
     const TabStripSelectionChange& selection) {
   switch (change.type()) {
     case TabStripModelChange::kInserted: {
-      for (const auto& delta : change.deltas()) {
-        OnTabInserted(tab_strip_model, delta.insert.contents,
-                      selection.new_contents == delta.insert.contents);
+      for (const auto& contents : change.GetInsert()->contents) {
+        OnTabInserted(tab_strip_model, contents.contents,
+                      selection.new_contents == contents.contents);
       }
       break;
     }
     case TabStripModelChange::kRemoved: {
-      for (const auto& delta : change.deltas())
-        OnTabDetached(delta.remove.contents);
+      for (const auto& contents : change.GetRemove()->contents)
+        OnTabDetached(contents.contents);
       break;
     }
     case TabStripModelChange::kReplaced: {
-      for (const auto& delta : change.deltas())
-        OnTabReplaced(delta.replace.old_contents, delta.replace.new_contents);
+      auto* replace = change.GetReplace();
+      OnTabReplaced(replace->old_contents, replace->new_contents);
       break;
     }
     case TabStripModelChange::kMoved:

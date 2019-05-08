@@ -453,10 +453,8 @@ void TabManager::OnTabStripModelChanged(
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {
   if (change.type() == TabStripModelChange::kReplaced) {
-    for (const auto& delta : change.deltas()) {
-      WebContentsData::CopyState(delta.replace.old_contents,
-                                 delta.replace.new_contents);
-    }
+    auto* replace = change.GetReplace();
+    WebContentsData::CopyState(replace->old_contents, replace->new_contents);
   }
 
   if (selection.active_tab_changed() && !tab_strip_model->empty())

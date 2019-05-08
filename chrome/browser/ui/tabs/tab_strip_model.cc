@@ -364,9 +364,11 @@ std::unique_ptr<content::WebContents> TabStripModel::ReplaceWebContentsAt(
     selection.reason = TabStripModelObserver::CHANGE_REASON_REPLACED;
   }
 
-  TabStripModelChange change(TabStripModelChange::kReplaced,
-                             TabStripModelChange::CreateReplaceDelta(
-                                 old_contents.get(), raw_new_contents, index));
+  TabStripModelChange::Replace replace;
+  replace.old_contents = old_contents.get();
+  replace.new_contents = raw_new_contents;
+  replace.index = index;
+  TabStripModelChange change(replace);
   for (auto& observer : observers_)
     observer.OnTabStripModelChanged(this, change, selection);
 
@@ -455,11 +457,14 @@ void TabStripModel::SendDetachWebContentsNotifications(
               return dwc1->index_before_any_removals >
                      dwc2->index_before_any_removals;
             });
+
+  TabStripModelChange::Remove remove;
+  remove.will_be_deleted = notifications->will_delete;
   for (auto& dwc : notifications->detached_web_contents) {
-    deltas.push_back(TabStripModelChange::CreateRemoveDelta(
-        dwc->contents.get(), dwc->index_before_any_removals,
-        notifications->will_delete));
+    remove.contents.push_back(
+        {dwc->contents.get(), dwc->index_before_any_removals});
   }
+  TabStripModelChange change(std::move(remove));
 
   TabStripSelectionChange selection;
   selection.old_contents = notifications->initially_active_web_contents;
@@ -474,7 +479,6 @@ void TabStripModel::SendDetachWebContentsNotifications(
             dwc->index_before_any_removals);
       });
 
-  TabStripModelChange change(TabStripModelChange::kRemoved, deltas);
   {
     auto visibility_tracker =
         empty() ? nullptr : InstallRenderWigetVisibilityTracker(selection);
@@ -1474,9 +1478,9 @@ void TabStripModel::InsertWebContentsAtImpl(
   if (group)
     contents_data_[index]->set_group(group);
 
-  TabStripModelChange change(
-      TabStripModelChange::kInserted,
-      TabStripModelChange::CreateInsertDelta(raw_contents, index));
+  TabStripModelChange::Insert insert;
+  insert.contents.push_back({raw_contents, index});
+  TabStripModelChange change(std::move(insert));
   for (auto& observer : observers_)
     observer.OnTabStripModelChanged(this, change, selection);
 }
@@ -1662,9 +1666,11 @@ void TabStripModel::MoveWebContentsAtImpl(int index,
     selection_model_.SetSelectedIndex(to_position);
   selection.new_model = selection_model_;
 
-  TabStripModelChange change(
-      TabStripModelChange::kMoved,
-      TabStripModelChange::CreateMoveDelta(web_contents, index, to_position));
+  TabStripModelChange::Move move;
+  move.contents = web_contents;
+  move.from_index = index;
+  move.to_index = to_position;
+  TabStripModelChange change(move);
   for (auto& observer : observers_)
     observer.OnTabStripModelChanged(this, change, selection);
 }
@@ -1752,10 +1758,12 @@ void TabStripModel::NotifyGroupChange(int index,
                                       const TabGroupData* new_group) {
   if (old_group == new_group)
     return;
-  TabStripModelChange::Delta delta =
-      TabStripModelChange::CreateGroupChangeDelta(GetWebContentsAt(index),
-                                                  index, old_group, new_group);
-  TabStripModelChange change(TabStripModelChange::kGroupChanged, {delta});
+  TabStripModelChange::GroupChange group_change;
+  group_change.contents = GetWebContentsAt(index);
+  group_change.index = index;
+  group_change.old_group_data = old_group;
+  group_change.new_group_data = new_group;
+  TabStripModelChange change(group_change);
   TabStripSelectionChange selection(GetActiveWebContents(), selection_model_);
   for (auto& observer : observers_)
     observer.OnTabStripModelChanged(this, change, selection);

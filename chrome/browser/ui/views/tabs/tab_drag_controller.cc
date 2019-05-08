@@ -269,9 +269,8 @@ class TabDragController::DraggedTabsClosedTracker
       const TabStripSelectionChange& selection) override {
     if (change.type() != TabStripModelChange::Type::kRemoved)
       return;
-    for (auto it = change.deltas().begin(); it != change.deltas().end(); it++) {
-      parent_->OnActiveStripWebContentsRemoved(it->remove.contents);
-    }
+    for (const auto& contents : change.GetRemove()->contents)
+      parent_->OnActiveStripWebContentsRemoved(contents.contents);
   }
 
  private:

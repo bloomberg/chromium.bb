@@ -13,6 +13,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -1747,21 +1748,21 @@ void BrowserView::OnTabStripModelChanged(
   if (change.type() != TabStripModelChange::kInserted)
     return;
 
-  for (size_t i = 0; i < change.deltas().size(); i++) {
+  for (const auto& contents : change.GetInsert()->contents) {
 #if defined(USE_AURA)
     // WebContents inserted in tabs might not have been added to the root
     // window yet. Per http://crbug/342672 add them now since drawing the
     // WebContents requires root window specific data - information about
     // the screen the WebContents is drawn on, for example.
-    const auto& delta = change.deltas()[i];
-    content::WebContents* contents = delta.insert.contents;
-    if (!contents->GetNativeView()->GetRootWindow()) {
-      aura::Window* window = contents->GetNativeView();
+    if (!contents.contents->GetNativeView()->GetRootWindow()) {
+      aura::Window* window = contents.contents->GetNativeView();
       aura::Window* root_window = GetNativeWindow()->GetRootWindow();
       aura::client::ParentWindowWithContext(window, root_window,
                                             root_window->GetBoundsInScreen());
-      DCHECK(contents->GetNativeView()->GetRootWindow());
+      DCHECK(contents.contents->GetNativeView()->GetRootWindow());
     }
+#else
+    ALLOW_UNUSED_LOCAL(contents);
 #endif
     web_contents_close_handler_->TabInserted();
   }

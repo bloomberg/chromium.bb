@@ -453,49 +453,43 @@ void BrowserTabStripController::OnTabStripModelChanged(
     const TabStripSelectionChange& selection) {
   switch (change.type()) {
     case TabStripModelChange::kInserted: {
-      for (const auto& delta : change.deltas()) {
-        DCHECK(delta.insert.contents);
-        DCHECK(model_->ContainsIndex(delta.insert.index));
-        AddTab(delta.insert.contents, delta.insert.index,
-               selection.new_contents == delta.insert.contents);
+      for (const auto& contents : change.GetInsert()->contents) {
+        DCHECK(model_->ContainsIndex(contents.index));
+        AddTab(contents.contents, contents.index,
+               selection.new_contents == contents.contents);
       }
       break;
     }
     case TabStripModelChange::kRemoved: {
-      for (const auto& delta : change.deltas()) {
-        // Cancel any pending tab transition.
+      for (const auto& contents : change.GetRemove()->contents) {
         hover_tab_selector_.CancelTabTransition();
-
-        tabstrip_->RemoveTabAt(delta.remove.contents, delta.remove.index,
-                               delta.remove.contents == selection.old_contents);
+        tabstrip_->RemoveTabAt(contents.contents, contents.index,
+                               contents.contents == selection.old_contents);
       }
       break;
     }
     case TabStripModelChange::kMoved: {
-      for (const auto& delta : change.deltas()) {
-        // Cancel any pending tab transition.
-        hover_tab_selector_.CancelTabTransition();
+      auto* move = change.GetMove();
+      // Cancel any pending tab transition.
+      hover_tab_selector_.CancelTabTransition();
 
-        // A move may have resulted in the pinned state changing, so pass in a
-        // TabRendererData.
-        tabstrip_->MoveTab(
-            delta.move.from_index, delta.move.to_index,
-            TabRendererDataFromModel(delta.move.contents, delta.move.to_index,
-                                     EXISTING_TAB));
-      }
+      // A move may have resulted in the pinned state changing, so pass in a
+      // TabRendererData.
+      tabstrip_->MoveTab(move->from_index, move->to_index,
+                         TabRendererDataFromModel(
+                             move->contents, move->to_index, EXISTING_TAB));
       break;
     }
     case TabStripModelChange::kReplaced: {
-      for (const auto& delta : change.deltas())
-        SetTabDataAt(delta.replace.new_contents, delta.replace.index);
+      auto* replace = change.GetReplace();
+      SetTabDataAt(replace->new_contents, replace->index);
       break;
     }
     case TabStripModelChange::kGroupChanged: {
-      for (const auto& delta : change.deltas()) {
-        tabstrip_->ChangeTabGroup(delta.group_change.index,
-                                  delta.group_change.old_group_data,
-                                  delta.group_change.new_group_data);
-      }
+      auto* group_change = change.GetGroupChange();
+      tabstrip_->ChangeTabGroup(group_change->index,
+                                group_change->old_group_data,
+                                group_change->new_group_data);
       break;
     }
     case TabStripModelChange::kSelectionOnly:

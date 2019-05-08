@@ -190,10 +190,9 @@ class TabClosingObserver : public TabStripModelObserver {
     if (change.type() != TabStripModelChange::kRemoved)
       return;
 
-    for (const auto& delta : change.deltas()) {
-      if (delta.remove.will_be_deleted)
-        ++closing_count_;
-    }
+    auto* remove = change.GetRemove();
+    if (remove->will_be_deleted)
+      closing_count_ += remove->contents.size();
   }
 
   int closing_count() const { return closing_count_; }

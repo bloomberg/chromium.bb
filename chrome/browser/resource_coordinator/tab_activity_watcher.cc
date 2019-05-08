@@ -565,33 +565,32 @@ void TabActivityWatcher::OnTabStripModelChanged(
     const TabStripSelectionChange& selection) {
   switch (change.type()) {
     case TabStripModelChange::kInserted: {
-      for (const auto& delta : change.deltas()) {
+      for (const auto& contents : change.GetInsert()->contents) {
         // Ensure the WebContentsData is created to observe this WebContents
         // since it may represent a newly created tab.
-        WebContentsData::CreateForWebContents(delta.insert.contents);
-        WebContentsData::FromWebContents(delta.insert.contents)
-            ->TabInserted(selection.new_contents == delta.insert.contents);
+        WebContentsData::CreateForWebContents(contents.contents);
+        WebContentsData::FromWebContents(contents.contents)
+            ->TabInserted(selection.new_contents == contents.contents);
       }
       break;
     }
     case TabStripModelChange::kRemoved: {
-      for (const auto& delta : change.deltas())
-        WebContentsData::FromWebContents(delta.remove.contents)->TabDetached();
+      for (const auto& contents : change.GetRemove()->contents)
+        WebContentsData::FromWebContents(contents.contents)->TabDetached();
       break;
     }
     case TabStripModelChange::kReplaced: {
-      for (const auto& delta : change.deltas()) {
-        WebContentsData* old_web_contents_data =
-            WebContentsData::FromWebContents(delta.replace.old_contents);
-        old_web_contents_data->WasReplaced();
+      auto* replace = change.GetReplace();
+      WebContentsData* old_web_contents_data =
+          WebContentsData::FromWebContents(replace->old_contents);
+      old_web_contents_data->WasReplaced();
 
-        // Ensure the WebContentsData is created to observe this WebContents
-        // since it likely hasn't been inserted into a tabstrip before.
-        WebContentsData::CreateForWebContents(delta.replace.new_contents);
+      // Ensure the WebContentsData is created to observe this WebContents
+      // since it likely hasn't been inserted into a tabstrip before.
+      WebContentsData::CreateForWebContents(replace->new_contents);
 
-        WebContentsData::FromWebContents(delta.replace.new_contents)
-            ->DidReplace(*old_web_contents_data);
-      }
+      WebContentsData::FromWebContents(replace->new_contents)
+          ->DidReplace(*old_web_contents_data);
       break;
     }
     case TabStripModelChange::kMoved:
