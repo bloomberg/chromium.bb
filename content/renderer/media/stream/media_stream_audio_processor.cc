@@ -634,35 +634,31 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
                             &pre_amplifier_fixed_gain_factor,
                             &gain_control_compression_gain_db);
 
-  if (properties.goog_auto_gain_control) {
-    blink::EnableAutomaticGainControl(audio_processing_.get(),
-                                      gain_control_compression_gain_db);
-  }
-
   webrtc::AudioProcessing::Config apm_config = audio_processing_->GetConfig();
   apm_config.high_pass_filter.enabled = properties.goog_highpass_filter;
 
-  if (properties.goog_experimental_auto_gain_control) {
-    apm_config.gain_controller2.enabled =
-        base::FeatureList::IsEnabled(features::kWebRtcHybridAgc);
-    apm_config.gain_controller2.fixed_digital.gain_db = 0.f;
-
-    apm_config.gain_controller2.adaptive_digital.enabled = true;
-
-    const bool use_peaks_not_rms = base::GetFieldTrialParamByFeatureAsBool(
-        features::kWebRtcHybridAgc, "use_peaks_not_rms", false);
-    using Shortcut =
-        webrtc::AudioProcessing::Config::GainController2::LevelEstimator;
-    apm_config.gain_controller2.adaptive_digital.level_estimator =
-        use_peaks_not_rms ? Shortcut::kPeak : Shortcut::kRms;
-
-    const int saturation_margin = base::GetFieldTrialParamByFeatureAsInt(
-        features::kWebRtcHybridAgc, "saturation_margin", -1);
-    if (saturation_margin != -1) {
-      apm_config.gain_controller2.adaptive_digital.extra_saturation_margin_db =
-          saturation_margin;
+  if (properties.goog_auto_gain_control ||
+      properties.goog_experimental_auto_gain_control) {
+    bool use_hybrid_agc = false;
+    base::Optional<bool> use_peaks_not_rms;
+    base::Optional<int> saturation_margin;
+    if (properties.goog_experimental_auto_gain_control) {
+      use_hybrid_agc = base::FeatureList::IsEnabled(features::kWebRtcHybridAgc);
+      if (use_hybrid_agc) {
+        DCHECK(properties.goog_auto_gain_control)
+            << "Cannot enable hybrid AGC when AGC is disabled.";
+      }
+      use_peaks_not_rms = base::GetFieldTrialParamByFeatureAsBool(
+          features::kWebRtcHybridAgc, "use_peaks_not_rms", false);
+      saturation_margin = base::GetFieldTrialParamByFeatureAsInt(
+          features::kWebRtcHybridAgc, "saturation_margin", -1);
     }
+    blink::ConfigAutomaticGainControl(
+        &apm_config, properties.goog_auto_gain_control,
+        properties.goog_experimental_auto_gain_control, use_hybrid_agc,
+        use_peaks_not_rms, saturation_margin, gain_control_compression_gain_db);
   }
+
   blink::ConfigPreAmplifier(&apm_config, pre_amplifier_fixed_gain_factor);
   audio_processing_->ApplyConfig(apm_config);
 

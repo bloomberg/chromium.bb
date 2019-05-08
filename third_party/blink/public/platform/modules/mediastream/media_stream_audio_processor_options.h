@@ -125,10 +125,14 @@ BLINK_PLATFORM_EXPORT void GetExtraGainConfig(
     base::Optional<double>* pre_amplifier_fixed_gain_factor,
     base::Optional<double>* gain_control_compression_gain_db);
 
-// Enables automatic gain control. If optional |fixed_gain| is set, will set the
-// gain control mode to use the fixed gain.
-BLINK_PLATFORM_EXPORT void EnableAutomaticGainControl(
-    AudioProcessing* audio_processing,
+// Enables automatic gain control with flags and optional configures.
+BLINK_PLATFORM_EXPORT void ConfigAutomaticGainControl(
+    webrtc::AudioProcessing::Config* apm_config,
+    bool agc_enabled,
+    bool experimental_agc_enabled,
+    bool use_hybrid_agc,
+    base::Optional<bool> hybrid_agc_use_peaks_not_rms,
+    base::Optional<int> hybrid_agc_saturation_margin,
     base::Optional<double> compression_gain_db);
 
 // Enables pre-amplifier with given gain factor if the optional |factor| is set.

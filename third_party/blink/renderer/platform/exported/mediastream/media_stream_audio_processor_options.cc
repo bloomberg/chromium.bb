@@ -183,24 +183,55 @@ void GetExtraGainConfig(
       GetGainControlCompressionGain(config.get());
 }
 
-void EnableAutomaticGainControl(AudioProcessing* audio_processing,
-                                base::Optional<double> compression_gain_db) {
+void ConfigAutomaticGainControl(
+    webrtc::AudioProcessing::Config* apm_config,
+    bool agc_enabled,
+    bool experimental_agc_enabled,
+    bool use_hybrid_agc,
+    base::Optional<bool> hybrid_agc_use_peaks_not_rms,
+    base::Optional<int> hybrid_agc_saturation_margin,
+    base::Optional<double> compression_gain_db) {
+  const bool use_fixed_digital_agc1 =
+      agc_enabled && !use_hybrid_agc && compression_gain_db.has_value();
+
+  // Configure AGC1.
+  if (agc_enabled) {
+    apm_config->gain_controller1.enabled = true;
+    if (use_fixed_digital_agc1) {
+      apm_config->gain_controller1.mode =
+          webrtc::AudioProcessing::Config::GainController1::Mode::kFixedDigital;
+      apm_config->gain_controller1.compression_gain_db =
+          compression_gain_db.value();
+    } else {
+      apm_config->gain_controller1.mode =
 #if defined(OS_ANDROID)
-  const webrtc::GainControl::Mode mode = webrtc::GainControl::kFixedDigital;
+          webrtc::AudioProcessing::Config::GainController1::Mode::kFixedDigital;
 #else
-  const webrtc::GainControl::Mode mode = webrtc::GainControl::kAdaptiveAnalog;
+          webrtc::AudioProcessing::Config::GainController1::Mode::
+              kAdaptiveAnalog;
 #endif
-  int err = 0;
-  if (!!compression_gain_db) {
-    err |= audio_processing->gain_control()->set_mode(
-        webrtc::GainControl::kFixedDigital);
-    err |= audio_processing->gain_control()->set_compression_gain_db(
-        compression_gain_db.value());
-  } else {
-    err |= audio_processing->gain_control()->set_mode(mode);
+    }
   }
-  err |= audio_processing->gain_control()->Enable(true);
-  CHECK_EQ(err, 0);
+
+  // Configure AGC2.
+  if (experimental_agc_enabled) {
+    DCHECK(hybrid_agc_use_peaks_not_rms.has_value() &&
+           hybrid_agc_saturation_margin.has_value());
+    apm_config->gain_controller2.enabled = use_hybrid_agc;
+    apm_config->gain_controller2.fixed_digital.gain_db = 0.f;
+    apm_config->gain_controller2.adaptive_digital.enabled = true;
+
+    using LevelEstimator =
+        webrtc::AudioProcessing::Config::GainController2::LevelEstimator;
+    apm_config->gain_controller2.adaptive_digital.level_estimator =
+        hybrid_agc_use_peaks_not_rms.value() ? LevelEstimator::kPeak
+                                             : LevelEstimator::kRms;
+
+    if (hybrid_agc_saturation_margin.value() != -1) {
+      apm_config->gain_controller2.adaptive_digital.extra_saturation_margin_db =
+          hybrid_agc_saturation_margin.value();
+    }
+  }
 }
 
 void ConfigPreAmplifier(webrtc::AudioProcessing::Config* apm_config,
