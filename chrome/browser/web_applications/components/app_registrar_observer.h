@@ -6,8 +6,7 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_APP_REGISTRAR_OBSERVER_H_
 
 #include "base/observer_list_types.h"
-
-class AppId;
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 
 namespace web_app {
 

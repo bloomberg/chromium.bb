@@ -18,9 +18,6 @@ class AppRegistrarObserver;
 
 class AppRegistrar {
  public:
-  void AddObserver(AppRegistrarObserver* observer);
-  void RemoveObserver(const AppRegistrarObserver* observer);
-
   explicit AppRegistrar(Profile* profile);
   virtual ~AppRegistrar();
 
@@ -53,6 +50,9 @@ class AppRegistrar {
   // use HasScopeUrl() to know if the app has a scope before calling this
   // method.
   virtual GURL GetScopeUrlForApp(const AppId& app_id) const = 0;
+
+  void AddObserver(AppRegistrarObserver* observer);
+  void RemoveObserver(const AppRegistrarObserver* observer);
 
  protected:
   Profile* profile() const { return profile_; }
