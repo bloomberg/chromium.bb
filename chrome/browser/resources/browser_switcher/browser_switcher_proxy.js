@@ -15,7 +15,7 @@ cr.define('browser_switcher', function() {
     gotoNewTabPage() {}
   }
 
-  /** @implements {settings.BrowserSwitcherProxy} */
+  /** @implements {browser_switcher.BrowserSwitcherProxy} */
   class BrowserSwitcherProxyImpl {
     /** @override */
     launchAlternativeBrowserAndCloseTab(url) {

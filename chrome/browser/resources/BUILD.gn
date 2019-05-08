@@ -58,6 +58,9 @@ if (closure_compile) {
     if (!is_android) {
       deps += [ "app_management:closure_compile" ]
     }
+    if (is_win || is_mac || is_desktop_linux) {
+      deps += [ "browser_switcher:closure_compile" ]
+    }
   }
 }
 

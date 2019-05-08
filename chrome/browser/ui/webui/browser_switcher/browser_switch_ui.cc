@@ -58,6 +58,29 @@ bool IsLastTab(const Profile* profile) {
   return true;
 }
 
+// Returns a dictionary like:
+//
+// {
+//   "sitelist": ["example.com", ...],
+//   "greylist": ["example.net", ...]
+// }
+std::unique_ptr<base::Value> RuleSetToDict(
+    const browser_switcher::RuleSet& ruleset) {
+  auto sitelist = std::make_unique<base::ListValue>();
+  for (const std::string& rule : ruleset.sitelist)
+    sitelist->GetList().emplace_back(rule);
+
+  auto greylist = std::make_unique<base::ListValue>();
+  for (const std::string& rule : ruleset.greylist)
+    greylist->GetList().emplace_back(rule);
+
+  auto dict = std::make_unique<base::DictionaryValue>();
+  dict->Set("sitelist", std::move(sitelist));
+  dict->Set("greylist", std::move(greylist));
+
+  return dict;
+}
+
 browser_switcher::BrowserSwitcherService* GetBrowserSwitcherService(
     content::WebUI* web_ui) {
   return browser_switcher::BrowserSwitcherServiceFactory::GetForBrowserContext(
@@ -116,8 +139,16 @@ content::WebUIDataSource* CreateBrowserSwitchUIHTMLSource(
                           IDR_BROWSER_SWITCHER_BROWSER_SWITCHER_PROXY_HTML);
   source->AddResourcePath("browser_switcher_proxy.js",
                           IDR_BROWSER_SWITCHER_BROWSER_SWITCHER_PROXY_JS);
-
   source->SetDefaultResource(IDR_BROWSER_SWITCHER_BROWSER_SWITCH_HTML);
+
+  // Setup chrome://browser-switch/internals debug UI.
+  source->AddResourcePath("internals/browser_switcher_internals.js",
+                          IDR_BROWSER_SWITCHER_INTERNALS_JS);
+  source->AddResourcePath("internals/browser_switcher_internals.html",
+                          IDR_BROWSER_SWITCHER_INTERNALS_HTML);
+  source->AddResourcePath("internals/", IDR_BROWSER_SWITCHER_INTERNALS_HTML);
+  source->AddResourcePath("internals", IDR_BROWSER_SWITCHER_INTERNALS_HTML);
+
   source->SetJsonPath("strings.js");
 
   return source;
@@ -143,6 +174,19 @@ class BrowserSwitchHandler : public content::WebUIMessageHandler {
   // Navigates to the New Tab Page.
   void HandleGotoNewTabPage(const base::ListValue* args);
 
+  // Resolves a promise with a JSON object with all the LBS rulesets, formatted
+  // like this:
+  //
+  // {
+  //   "gpo": {
+  //     "sitelist": ["example.com", ...],
+  //     "greylist": [...]
+  //   },
+  //   "ieem": { "sitelist": [...], "greylist": [...] },
+  //   "external": { "sitelist": [...], "greylist": [...] }
+  // }
+  void HandleGetAllRulesets(const base::ListValue* args);
+
   DISALLOW_COPY_AND_ASSIGN(BrowserSwitchHandler);
 };
 
@@ -158,6 +202,10 @@ void BrowserSwitchHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "gotoNewTabPage",
       base::BindRepeating(&BrowserSwitchHandler::HandleGotoNewTabPage,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getAllRulesets",
+      base::BindRepeating(&BrowserSwitchHandler::HandleGetAllRulesets,
                           base::Unretained(this)));
 }
 
@@ -209,6 +257,24 @@ void BrowserSwitchHandler::HandleGotoNewTabPage(const base::ListValue* args) {
   GotoNewTabPage(web_ui()->GetWebContents());
 }
 
+void BrowserSwitchHandler::HandleGetAllRulesets(const base::ListValue* args) {
+  DCHECK(args);
+  AllowJavascript();
+
+  auto* service = GetBrowserSwitcherService(web_ui());
+
+  base::DictionaryValue retval;
+  auto gpo_dict = RuleSetToDict(service->prefs().GetRules());
+  retval.Set("gpo", std::move(gpo_dict));
+  auto ieem_dict = RuleSetToDict(*service->sitelist()->GetIeemSitelist());
+  retval.Set("ieem", std::move(ieem_dict));
+  auto external_dict =
+      RuleSetToDict(*service->sitelist()->GetExternalSitelist());
+  retval.Set("external", std::move(external_dict));
+
+  ResolveJavascriptCallback(args->GetList()[0], retval);
+}
+
 }  // namespace
 
 BrowserSwitchUI::BrowserSwitchUI(content::WebUI* web_ui)
@@ -218,7 +284,7 @@ BrowserSwitchUI::BrowserSwitchUI(content::WebUI* web_ui)
   DarkModeHandler::Initialize(web_ui, data_source);
   web_ui->AddMessageHandler(std::make_unique<BrowserSwitchHandler>());
 
-  // Set up the about:browser-switch source.
+  // Set up the chrome://browser-switch source.
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, data_source);
 }

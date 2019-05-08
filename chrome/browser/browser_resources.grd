@@ -83,6 +83,8 @@
         <include name="IDR_BROWSER_SWITCHER_BROWSER_SWITCHER_PROXY_HTML" file="resources\browser_switcher\browser_switcher_proxy.html" compress="gzip" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_BROWSER_SWITCHER_BROWSER_SWITCHER_PROXY_JS" file="resources\browser_switcher\browser_switcher_proxy.js" compress="gzip" type="BINDATA" />
         <include name="IDR_BROWSER_SWITCHER_BROWSER_SWITCH_HTML" file="resources\browser_switcher\browser_switcher.html" compress="gzip" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_BROWSER_SWITCHER_INTERNALS_HTML" file="resources\browser_switcher\internals\browser_switcher_internals.html" compress="gzip" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_BROWSER_SWITCHER_INTERNALS_JS" file="resources\browser_switcher\internals\browser_switcher_internals.js" compress="gzip" type="BINDATA" />
       </if>
       <if expr="is_win">
         <include name="IDR_ABOUT_CONFLICTS_HTML" file="resources\conflicts\about_conflicts.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
