@@ -3688,7 +3688,6 @@
       },
       'webdriver_tests_suite': {
         'isolate_name': 'webdriver_wpt_tests',
-        'results_handler': 'layout tests',
         'swarming': {
           'shards': 1,
         },

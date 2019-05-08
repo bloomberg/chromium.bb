@@ -281,20 +281,32 @@ class TestImporterTest(LoggingTestCase):
             'Bug(test) some/test/a.html [ Failure ]\n'
             'Bug(test) some/test/b.html [ Failure ]\n'
             'Bug(test) some/test/c.html [ Failure ]\n')
+        host.filesystem.files[MOCK_WEB_TESTS + 'WebDriverExpectations'] = (
+            'Bug(test) external/wpt/webdriver/some/test/a.html>>foo [ Failure ]\n'
+            'Bug(test) external/wpt/webdriver/some/test/a.html>>bar [ Failure ]\n'
+            'Bug(test) external/wpt/webdriver/some/test/b.html>>foo [ Failure ]\n'
+            'Bug(test) external/wpt/webdriver/some/test/c.html>>a [ Failure ]\n')
         host.filesystem.files[MOCK_WEB_TESTS + 'VirtualTestSuites'] = '[]'
         host.filesystem.files[MOCK_WEB_TESTS + 'new/a.html'] = ''
         host.filesystem.files[MOCK_WEB_TESTS + 'new/b.html'] = ''
         importer = TestImporter(host)
-        deleted_tests = ['some/test/b.html']
+        deleted_tests = ['some/test/b.html', 'external/wpt/webdriver/some/test/b.html']
         renamed_test_pairs = {
             'some/test/a.html': 'new/a.html',
             'some/test/c.html': 'new/c.html',
+            'external/wpt/webdriver/some/test/a.html': 'old/a.html',
+            'external/wpt/webdriver/some/test/c.html': 'old/c.html',
         }
         importer.update_all_test_expectations_files(deleted_tests, renamed_test_pairs)
         self.assertMultiLineEqual(
             host.filesystem.read_text_file(MOCK_WEB_TESTS + 'TestExpectations'),
             ('Bug(test) new/a.html [ Failure ]\n'
              'Bug(test) new/c.html [ Failure ]\n'))
+        self.assertMultiLineEqual(
+            host.filesystem.read_text_file(MOCK_WEB_TESTS + 'WebDriverExpectations'),
+            ('Bug(test) old/a.html>>foo [ Failure ]\n'
+             'Bug(test) old/a.html>>bar [ Failure ]\n'
+             'Bug(test) old/c.html>>a [ Failure ]\n'))
 
     def test_get_directory_owners(self):
         host = MockHost()

@@ -969,6 +969,24 @@ class PortTest(LoggingTestCase):
             'Bug(test) failures/expected/image.html [ WontFix ]\n')
         self.assertTrue(port.skips_test('failures/expected/image.html'))
 
+    def test_split_webdriver_test_name(self):
+        port = self.make_port()
+        webdriver_expectation_name = "tests/accept_alert/accept.py>>foo"
+
+        (wb_test, subtest) = port.split_webdriver_test_name(webdriver_expectation_name)
+
+        self.assertEqual(wb_test, "tests/accept_alert/accept.py")
+        self.assertEqual(subtest, "foo")
+
+    def test_add_webdriver_subtest_suffix(self):
+        port = self.make_port()
+        wb_test_name = "abd"
+        sub_test_name = "bar"
+
+        full_webdriver_name = port.add_webdriver_subtest_suffix(wb_test_name, sub_test_name)
+
+        self.assertEqual(full_webdriver_name, "abd>>bar")
+
 
     def test_add_webdriver_subtest_suffix(self):
         port = self.make_port()

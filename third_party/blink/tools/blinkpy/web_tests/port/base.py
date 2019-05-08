@@ -1390,6 +1390,7 @@ class Port(object):
         """
         return filter(None, [
             self.path_to_generic_test_expectations_file(),
+            self.path_to_webdriver_expectations_file(),
             self._filesystem.join(self.web_tests_dir(), 'NeverFixTests'),
             self._filesystem.join(self.web_tests_dir(), 'StaleTestExpectations'),
             self._filesystem.join(self.web_tests_dir(), 'SlowTests'),
@@ -1778,6 +1779,20 @@ class Port(object):
                 _log.error(message)
                 raise TestRunException(exit_codes.SYS_DEPS_EXIT_STATUS, message)
         return result
+
+    def split_webdriver_test_name(self, test_name):
+        """Splits a WebDriver test name into a filename and a subtest name and
+        returns both of them. E.g.
+
+        abd::foo.html -> (abd, foo.html)
+        """
+        separator_index = test_name.find(self.WEBDRIVER_SUBTEST_SEPARATOR)
+        if separator_index == -1:
+            return test_name
+        webdriver_test_name = test_name[:separator_index]
+        separator_len = len(self.WEBDRIVER_SUBTEST_SEPARATOR)
+        subtest_suffix = test_name[separator_index + separator_len:]
+        return (webdriver_test_name, subtest_suffix)
 
     def add_webdriver_subtest_suffix(self, test_name, subtest_name):
         return test_name + self.WEBDRIVER_SUBTEST_SEPARATOR + subtest_name

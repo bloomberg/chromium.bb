@@ -104,5 +104,12 @@
         "port_name": "android-kitkat",
         "specifiers": ["KitKat", "Release"],
         "is_try_builder": true
+    },
+    "linux-rel": {
+        "bucket": "luci.chromium.try",
+        "port_name": "linux-trusty",
+        "specifiers": ["Trusty", "Release"],
+        "master": "tryserver.chromium.linux",
+        "is_try_builder": false
     }
 }
