@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/css_variable_data.h"
+#include "third_party/blink/renderer/core/style/style_variables.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -35,18 +36,22 @@ class CORE_EXPORT StyleInheritedVariables
                    scoped_refptr<CSSVariableData> value) {
     needs_resolution_ =
         needs_resolution_ || (value && value->NeedsVariableResolution());
-    data_.Set(name, std::move(value));
+    variables_.SetData(name, std::move(value));
   }
   CSSVariableData* GetVariable(const AtomicString& name) const;
-  void RemoveVariable(const AtomicString&);
+  StyleVariables::OptionalData GetData(const AtomicString&) const;
 
   void SetRegisteredVariable(const AtomicString&, const CSSValue*);
   const CSSValue* RegisteredVariable(const AtomicString&) const;
+  StyleVariables::OptionalValue GetValue(const AtomicString&) const;
 
   // Note that not all custom property names returned here necessarily have
   // valid values, due to cycles or references to invalid variables without
   // using a fallback.
   HashSet<AtomicString> GetCustomPropertyNames() const;
+
+  const StyleVariables::DataMap& Data() const { return variables_.Data(); }
+  const StyleVariables::ValueMap& Values() const { return variables_.Values(); }
 
   bool NeedsResolution() const { return needs_resolution_; }
   void ClearNeedsResolution() { needs_resolution_ = false; }
@@ -55,10 +60,7 @@ class CORE_EXPORT StyleInheritedVariables
   StyleInheritedVariables();
   StyleInheritedVariables(StyleInheritedVariables& other);
 
-  friend class CSSVariableResolver;
-
-  HashMap<AtomicString, scoped_refptr<CSSVariableData>> data_;
-  Persistent<HeapHashMap<AtomicString, Member<CSSValue>>> registered_data_;
+  StyleVariables variables_;
   scoped_refptr<StyleInheritedVariables> root_;
   bool needs_resolution_;
 };

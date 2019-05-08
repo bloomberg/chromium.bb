@@ -91,6 +91,8 @@ blink_core_sources("rendering") {
     "style_ray.h",
     "style_reflection.h",
     "style_self_alignment_data.h",
+    "style_variables.cc",
+    "style_variables.h",
     "text_size_adjust.h",
   ]
 }

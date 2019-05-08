@@ -1743,31 +1743,40 @@ void ComputedStyle::SetRegisteredVariable(const AtomicString& name,
     MutableNonInheritedVariables().SetRegisteredVariable(name, value);
 }
 
-void ComputedStyle::RemoveVariable(const AtomicString& name,
-                                   bool is_inherited_property) {
-  if (is_inherited_property) {
-    MutableInheritedVariables().RemoveVariable(name);
-  } else {
-    MutableNonInheritedVariables().RemoveVariable(name);
-  }
+static CSSVariableData* GetInitialVariableData(
+    const AtomicString& name,
+    const StyleInitialData* initial_data) {
+  if (!initial_data)
+    return nullptr;
+  return initial_data->GetVariableData(name);
 }
 
 CSSVariableData* ComputedStyle::GetVariable(const AtomicString& name) const {
-  CSSVariableData* variable = GetVariable(name, true);
-  if (variable) {
-    return variable;
+  if (InheritedVariables()) {
+    if (auto data = InheritedVariables()->GetData(name))
+      return *data;
   }
-  return GetVariable(name, false);
+  if (NonInheritedVariables()) {
+    if (auto data = NonInheritedVariables()->GetData(name))
+      return *data;
+  }
+  return GetInitialVariableData(name, InitialDataInternal().get());
 }
 
 CSSVariableData* ComputedStyle::GetVariable(const AtomicString& name,
                                             bool is_inherited_property) const {
   if (is_inherited_property) {
-    return InheritedVariables() ? InheritedVariables()->GetVariable(name)
-                                : nullptr;
+    if (InheritedVariables()) {
+      if (auto data = InheritedVariables()->GetData(name))
+        return *data;
+    }
+  } else {
+    if (NonInheritedVariables()) {
+      if (auto data = NonInheritedVariables()->GetData(name))
+        return *data;
+    }
   }
-  return NonInheritedVariables() ? NonInheritedVariables()->GetVariable(name)
-                                 : nullptr;
+  return GetInitialVariableData(name, InitialDataInternal().get());
 }
 
 static const CSSValue* GetInitialRegisteredVariable(
@@ -1775,40 +1784,37 @@ static const CSSValue* GetInitialRegisteredVariable(
     const StyleInitialData* initial_data) {
   if (!initial_data)
     return nullptr;
-  return initial_data->GetInitialVariable(name);
+  return initial_data->GetVariableValue(name);
 }
 
 const CSSValue* ComputedStyle::GetRegisteredVariable(
     const AtomicString& name,
     bool is_inherited_property) const {
-  const CSSValue* result =
-      GetNonInitialRegisteredVariable(name, is_inherited_property);
-  if (result)
-    return result;
+  if (is_inherited_property) {
+    if (InheritedVariables()) {
+      if (auto value = InheritedVariables()->GetValue(name))
+        return *value;
+    }
+  } else {
+    if (NonInheritedVariables()) {
+      if (auto value = NonInheritedVariables()->GetValue(name))
+        return *value;
+    }
+  }
   return GetInitialRegisteredVariable(name, InitialDataInternal().get());
 }
 
 const CSSValue* ComputedStyle::GetRegisteredVariable(
     const AtomicString& name) const {
-  const CSSValue* result = GetNonInitialRegisteredVariable(name, false);
-  if (result)
-    return result;
-  result = GetNonInitialRegisteredVariable(name, true);
-  if (result)
-    return result;
-  return GetInitialRegisteredVariable(name, InitialDataInternal().get());
-}
-
-const CSSValue* ComputedStyle::GetNonInitialRegisteredVariable(
-    const AtomicString& name,
-    bool is_inherited_property) const {
-  if (is_inherited_property) {
-    return InheritedVariables() ? InheritedVariables()->RegisteredVariable(name)
-                                : nullptr;
+  if (InheritedVariables()) {
+    if (auto value = InheritedVariables()->GetValue(name))
+      return *value;
   }
-  return NonInheritedVariables()
-             ? NonInheritedVariables()->RegisteredVariable(name)
-             : nullptr;
+  if (NonInheritedVariables()) {
+    if (auto value = NonInheritedVariables()->GetValue(name))
+      return *value;
+  }
+  return GetInitialRegisteredVariable(name, InitialDataInternal().get());
 }
 
 bool ComputedStyle::SetFontDescription(const FontDescription& v) {

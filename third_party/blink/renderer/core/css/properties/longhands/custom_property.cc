@@ -36,27 +36,31 @@ CSSPropertyName CustomProperty::GetCSSPropertyName() const {
 }
 
 void CustomProperty::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->RemoveVariable(name_, IsInherited());
+  bool is_inherited_property = IsInherited();
+
+  if (!registration_) {
+    state.Style()->SetVariable(name_, nullptr, is_inherited_property);
+    return;
+  }
+
+  state.Style()->SetVariable(name_, registration_->InitialVariableData(),
+                             is_inherited_property);
+  state.Style()->SetRegisteredVariable(name_, registration_->Initial(),
+                                       is_inherited_property);
 }
 
 void CustomProperty::ApplyInherit(StyleResolverState& state) const {
   bool is_inherited_property = IsInherited();
-  state.Style()->RemoveVariable(name_, is_inherited_property);
 
   CSSVariableData* parent_value =
       state.ParentStyle()->GetVariable(name_, is_inherited_property);
 
-  if (!parent_value)
-    return;
-
   state.Style()->SetVariable(name_, parent_value, is_inherited_property);
 
   if (registration_) {
-    const CSSValue* parent_css_value =
-        parent_value ? state.ParentStyle()->GetNonInitialRegisteredVariable(
-                           name_, is_inherited_property)
-                     : nullptr;
-    state.Style()->SetRegisteredVariable(name_, parent_css_value,
+    const CSSValue* parent_value =
+        state.ParentStyle()->GetRegisteredVariable(name_);
+    state.Style()->SetRegisteredVariable(name_, parent_value,
                                          is_inherited_property);
   }
 }

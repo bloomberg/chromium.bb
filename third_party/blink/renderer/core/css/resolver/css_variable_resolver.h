@@ -207,9 +207,6 @@ class CORE_EXPORT CSSVariableResolver {
                              const CSSValue*);
   void SetInvalidVariable(const AtomicString& name,
                           const PropertyRegistration*);
-  bool IsRegisteredVariableInvalid(const AtomicString& name,
-                                   const PropertyRegistration&);
-
   const StyleResolverState& state_;
   StyleInheritedVariables* inherited_variables_;
   StyleNonInheritedVariables* non_inherited_variables_;

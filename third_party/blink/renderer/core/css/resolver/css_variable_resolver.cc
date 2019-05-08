@@ -73,21 +73,8 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
 
   CSSVariableData* variable_data = GetVariable(name, registration);
 
-  if (!variable_data) {
-    // For unregistered properties, not having a CSSVariableData here means
-    // that it either never existed, or we have resolved it earlier, but
-    // resolution failed. Either way, we return nullptr to signify that this is
-    // an invalid variable.
-    if (!registration)
-      return nullptr;
-    // For registered properties, it's more complicated. Here too, it can mean
-    // that it never existed, or that resolution failed earlier, but now we need
-    // to know which; in the former case we must provide the initial value, and
-    // in the latter case the variable is invalid.
-    return IsRegisteredVariableInvalid(name, *registration)
-               ? nullptr
-               : registration->InitialVariableData();
-  }
+  if (!variable_data)
+    return nullptr;
 
   bool cycle_detected = false;
   scoped_refptr<CSSVariableData> resolved_data = ResolveCustomPropertyIfNeeded(
@@ -126,15 +113,16 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
     }
   }
 
-  // If either parsing or resolution failed, and this property inherits,
-  // take inherited values instead of falling back on initial.
-  if (registration->Inherits() && !resolved_data) {
-    resolved_data = state_.ParentStyle()->GetVariable(name, true);
-    resolved_value =
-        state_.ParentStyle()->GetNonInitialRegisteredVariable(name, true);
+  // If either parsing or resolution failed, fall back on "unset".
+  if (!resolved_data) {
+    if (registration->Inherits()) {
+      resolved_data = state_.ParentStyle()->GetVariable(name, true);
+      resolved_value = state_.ParentStyle()->GetRegisteredVariable(name, true);
+    } else {
+      resolved_data = registration->InitialVariableData();
+      resolved_value = registration->Initial();
+    }
   }
-
-  DCHECK(!!resolved_data == !!resolved_value);
 
   // Registered custom properties substitute as token sequences equivalent to
   // their computed values. CSSVariableData instances which represent such token
@@ -161,10 +149,6 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
   // calculate animations.
   if (value != resolved_value)
     SetRegisteredVariable(name, *registration, resolved_value);
-
-  if (!resolved_data) {
-    return registration->InitialVariableData();
-  }
 
   return resolved_data;
 }
@@ -229,24 +213,14 @@ bool CSSVariableResolver::IsVariableDisallowed(
 CSSVariableData* CSSVariableResolver::GetVariable(
     const AtomicString& name,
     const PropertyRegistration* registration) {
-  if (!registration || registration->Inherits()) {
-    return inherited_variables_ ? inherited_variables_->GetVariable(name)
-                                : nullptr;
-  }
-  return non_inherited_variables_ ? non_inherited_variables_->GetVariable(name)
-                                  : nullptr;
+  return state_.Style()->GetVariable(name,
+                                     !registration || registration->Inherits());
 }
 
 const CSSValue* CSSVariableResolver::GetRegisteredVariable(
     const AtomicString& name,
     const PropertyRegistration& registration) {
-  if (registration.Inherits()) {
-    return inherited_variables_ ? inherited_variables_->RegisteredVariable(name)
-                                : nullptr;
-  }
-  return non_inherited_variables_
-             ? non_inherited_variables_->RegisteredVariable(name)
-             : nullptr;
+  return state_.Style()->GetRegisteredVariable(name, registration.Inherits());
 }
 
 void CSSVariableResolver::SetVariable(
@@ -278,20 +252,9 @@ void CSSVariableResolver::SetRegisteredVariable(
 void CSSVariableResolver::SetInvalidVariable(
     const AtomicString& name,
     const PropertyRegistration* registration) {
-  // TODO(andruud): Use RemoveVariable instead, but currently it also does
-  // a lookup in the registered map, which seems wasteful.
   SetVariable(name, registration, nullptr);
-  if (registration) {
-    const CSSValue* value = CSSInvalidVariableValue::Create();
-    SetRegisteredVariable(name, *registration, value);
-  }
-}
-
-bool CSSVariableResolver::IsRegisteredVariableInvalid(
-    const AtomicString& name,
-    const PropertyRegistration& registration) {
-  const CSSValue* value = GetRegisteredVariable(name, registration);
-  return value && value->IsInvalidVariableValue();
+  if (registration)
+    SetRegisteredVariable(name, *registration, nullptr);
 }
 
 bool CSSVariableResolver::ResolveVariableReference(CSSParserTokenRange range,
@@ -498,16 +461,16 @@ void CSSVariableResolver::ResolveVariableDefinitions() {
 
   int variable_count = 0;
   if (inherited_variables_ && inherited_variables_->NeedsResolution()) {
-    for (auto& variable : inherited_variables_->data_)
+    for (auto& variable : inherited_variables_->Data())
       ValueForCustomProperty(variable.key, options);
     inherited_variables_->ClearNeedsResolution();
-    variable_count += inherited_variables_->data_.size();
+    variable_count += inherited_variables_->Data().size();
   }
   if (non_inherited_variables_ && non_inherited_variables_->NeedsResolution()) {
-    for (auto& variable : non_inherited_variables_->data_)
+    for (auto& variable : non_inherited_variables_->Data())
       ValueForCustomProperty(variable.key, options);
     non_inherited_variables_->ClearNeedsResolution();
-    variable_count += non_inherited_variables_->data_.size();
+    variable_count += non_inherited_variables_->Data().size();
   }
   INCREMENT_STYLE_STATS_COUNTER(state_.GetDocument().GetStyleEngine(),
                                 custom_properties_applied, variable_count);
@@ -517,11 +480,11 @@ void CSSVariableResolver::ComputeRegisteredVariables() {
   Options options;
 
   if (inherited_variables_) {
-    for (auto& variable : *inherited_variables_->registered_data_)
+    for (auto& variable : inherited_variables_->Values())
       ValueForCustomProperty(variable.key, options);
   }
   if (non_inherited_variables_) {
-    for (auto& variable : *non_inherited_variables_->registered_data_)
+    for (auto& variable : non_inherited_variables_->Values())
       ValueForCustomProperty(variable.key, options);
   }
 }

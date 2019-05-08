@@ -1146,8 +1146,6 @@ class ComputedStyle : public ComputedStyleBase,
                              const CSSValue*,
                              bool is_inherited_property);
 
-  void RemoveVariable(const AtomicString&, bool is_inherited_property);
-
   // Handles both inherited and non-inherited variables
   CORE_EXPORT CSSVariableData* GetVariable(const AtomicString&) const;
 
@@ -1158,12 +1156,6 @@ class ComputedStyle : public ComputedStyleBase,
                                         bool is_inherited_property) const;
 
   const CSSValue* GetRegisteredVariable(const AtomicString&) const;
-
-  // Like GetRegisteredVariable, but returns nullptr if the computed value
-  // for the specified variable is the initial value.
-  const CSSValue* GetNonInitialRegisteredVariable(
-      const AtomicString&,
-      bool is_inherited_property) const;
 
   // Animations.
   CSSAnimationData& AccessAnimations();

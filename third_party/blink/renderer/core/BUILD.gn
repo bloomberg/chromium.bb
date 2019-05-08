@@ -2153,6 +2153,7 @@ jumbo_source_set("unit_tests") {
     "style/computed_style_test.cc",
     "style/filter_operations_test.cc",
     "style/style_difference_test.cc",
+    "style/style_variables_test.cc",
     "style/svg_computed_style_test.cc",
     "svg/graphics/svg_image_test.cc",
     "svg/svg_element_test.cc",
