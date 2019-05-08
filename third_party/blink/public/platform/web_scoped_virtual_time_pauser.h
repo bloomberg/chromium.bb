@@ -63,9 +63,7 @@ class BLINK_PLATFORM_EXPORT WebScopedVirtualTimePauser {
   VirtualTaskDuration duration_ = VirtualTaskDuration::kInstant;
   scheduler::MainThreadSchedulerImpl* scheduler_;  // NOT OWNED
   WebString debug_name_;
-  int trace_id_;
-
-  static int next_trace_id_;
+  intptr_t trace_id_;
 };
 
 }  // namespace blink
