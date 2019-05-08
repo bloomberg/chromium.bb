@@ -11,6 +11,7 @@
 #include "gpu/command_buffer/service/external_vk_image_gl_representation.h"
 #include "gpu/command_buffer/service/external_vk_image_skia_representation.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "ui/gl/gl_context.h"
 
@@ -70,10 +71,14 @@ bool ExternalVkImageBacking::BeginAccess(
   }
 
   if (readonly) {
+    DLOG_IF(ERROR, reads_in_progress_)
+        << "Concurrent reading may cause problem.";
+
     ++reads_in_progress_;
     // A semaphore will become unsignaled, when it has been signaled and waited,
     // so it is not safe to reuse it.
-    semaphore_handles->push_back(std::move(write_semaphore_handle_));
+    if (write_semaphore_handle_.is_valid())
+      semaphore_handles->push_back(std::move(write_semaphore_handle_));
   } else {
     is_write_in_progress_ = true;
     *semaphore_handles = std::move(read_semaphore_handles_);
@@ -112,15 +117,13 @@ void ExternalVkImageBacking::SetCleared() {
 void ExternalVkImageBacking::Update() {}
 
 void ExternalVkImageBacking::Destroy() {
-  // TODO(crbug.com/932260): We call vkQueueWaitIdle to ensure all these objects
-  // are no longer associated with any queue command that has not completed
-  // execution yet. Remove this call once we have better alternatives.
-  vkQueueWaitIdle(context_state()
-                      ->vk_context_provider()
-                      ->GetDeviceQueue()
-                      ->GetVulkanQueue());
-  vkDestroyImage(device(), image_, nullptr);
-  vkFreeMemory(device(), memory_, nullptr);
+  auto* fence_helper = context_state()
+                           ->vk_context_provider()
+                           ->GetDeviceQueue()
+                           ->GetFenceHelper();
+  fence_helper->EnqueueImageCleanupForSubmittedWork(image_, memory_);
+  image_ = VK_NULL_HANDLE;
+  memory_ = VK_NULL_HANDLE;
 
   if (texture_)
     texture_->RemoveLightweightRef(have_context());
