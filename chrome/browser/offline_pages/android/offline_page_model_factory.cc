@@ -5,7 +5,10 @@
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 
 #include <utility>
+#include <vector>
 
+#include "base/android/build_info.h"
+#include "base/android/path_utils.h"
 #include "base/files/file_path.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
@@ -25,6 +28,24 @@
 #include "components/offline_pages/core/offline_page_metadata_store.h"
 
 namespace offline_pages {
+
+namespace {
+base::FilePath GetPublishDirectory() {
+  base::FilePath publish_directory;
+  if (base::android::BuildInfo::GetInstance()->is_at_least_q()) {
+    // Starting in Q, Chrome does not have permission to access default download
+    // directory. Instead, use a private download directory.
+    std::vector<base::FilePath> all_directories =
+        base::android::GetAllPrivateDownloadsDirectories();
+    if (!all_directories.empty()) {
+      publish_directory = all_directories[0];
+    }
+  } else {
+    publish_directory = DownloadPrefs::GetDefaultDownloadDirectory();
+  }
+  return publish_directory;
+}
+}  // namespace
 
 OfflinePageModelFactory::OfflinePageModelFactory()
     : SimpleKeyedServiceFactory("OfflinePageModel",
@@ -70,9 +91,8 @@ std::unique_ptr<KeyedService> OfflinePageModelFactory::BuildServiceInstanceFor(
 
   ProfileKey* profile_key = ProfileKey::FromSimpleFactoryKey(key);
   std::unique_ptr<ArchiveManager> archive_manager(new DownloadArchiveManager(
-      temporary_archives_dir, persistent_archives_dir,
-      DownloadPrefs::GetDefaultDownloadDirectory(), background_task_runner,
-      profile_key->GetPrefs()));
+      temporary_archives_dir, persistent_archives_dir, GetPublishDirectory(),
+      background_task_runner, profile_key->GetPrefs()));
   auto clock = std::make_unique<base::DefaultClock>();
 
   std::unique_ptr<SystemDownloadManager> download_manager(
