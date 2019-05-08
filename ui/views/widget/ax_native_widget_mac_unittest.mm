@@ -459,6 +459,13 @@ TEST_F(AXNativeWidgetMacTest, TextfieldEditableAttributes) {
   EXPECT_EQ(gfx::Range(0, kTestStringValue.length),
             gfx::Range(ax_node.accessibilityVisibleCharacterRange));
 
+  // accessibilityLineForIndex:
+  EXPECT_EQ(0, [ax_node accessibilityLineForIndex:3]);
+
+  // accessibilityStringForRange:
+  EXPECT_NSEQ(@"string",
+              [ax_node accessibilityStringForRange:NSMakeRange(5, 6)]);
+
   // Test an RTL string.
   textfield->SetText(base::SysNSStringToUTF16(kTestRTLStringValue));
   textfield->SelectRange(forward_range);
@@ -614,7 +621,8 @@ TEST_F(AXNativeWidgetMacTest, TextParameterizedAttributes) {
   EXPECT_NSEQ(NSMakeRange(0, 0), [ax_node accessibilityRangeForIndex:4]);
   EXPECT_NSEQ(NSZeroRect, [ax_node accessibilityFrameForRange:test_range]);
   EXPECT_NSEQ(nil, [ax_node accessibilityRTFForRange:test_range]);
-  EXPECT_NSEQ(NSMakeRange(0, 0), [ax_node accessibilityStyleRangeForIndex:4]);
+  EXPECT_NSEQ(NSMakeRange(0, kTestStringLength),
+              [ax_node accessibilityStyleRangeForIndex:4]);
 }
 
 // Test performing a 'click' on Views with clickable roles work.
