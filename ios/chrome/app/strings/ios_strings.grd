@@ -1898,6 +1898,30 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_TRANSLATE_INFOBAR_TRANSLATING_ACCESSIBILITY_ANNOUNCEMENT" desc="The accessibility announcement read by Voice Over when the Translate Infobar UI is shown in translating mode. [Length: unlimited] [iOS only]">
         Translating the page to <ph name="language">$1<ex>French</ex></ph>. Options available near bottom of the screen.
       </message>
+      <message name="IDS_IOS_LANGUAGE_SETTINGS_TITLE" desc="Title for the language settings menu entry and page. [Length: 25em] [iOS only]">
+        Languages
+      </message>
+      <message name="IDS_IOS_LANGUAGE_SETTINGS_ADD_LANGUAGE_TITLE" desc="Title for the add language page of language settings. [Length: 25em] [iOS only]">
+        Add Language
+      </message>
+      <message name="IDS_IOS_LANGUAGE_SETTINGS_HEADER" desc="Header for the fluent languages section in the language settings page. [Length: unlimited] [iOS only]">
+        Websites will show text in your preferred language, when possible.
+      </message>
+      <message name="IDS_IOS_LANGUAGE_SETTINGS_ADD_LANGUAGE_BUTTON_TITLE" desc="Title for the button to add a language to the list of fluent languages in the language settings page. [Length: 30em] [iOS only]">
+        Add Language...
+      </message>
+      <message name="IDS_IOS_LANGUAGE_SETTINGS_TRANSLATE_SWITCH_TITLE" desc="Title for the switch to enable or disable translation in the language settings page. [Length: 30em] [iOS only]" meaning="Turning this switch on enables offering translation and turning it off disables offering translation.">
+        Translate Pages
+      </message>
+      <message name="IDS_IOS_LANGUAGE_SETTINGS_TRANSLATE_SWITCH_SUBTITLE" desc="Subtitle for the switch to enable or disable translation in the language settings page. [Length: unlimited] [iOS only]" meaning="This switch controls offering translation for pages in languages other than the languages listed above.">
+        Offer to translate pages in other languages
+      </message>
+      <message name="IDS_IOS_LANGUAGE_SETTINGS_NEVER_TRANSLATE_TITLE" desc="Label shown next to a language for which translation is not offered. [Length: 25em] [iOS only]">
+        Never Translate
+      </message>
+      <message name="IDS_IOS_LANGUAGE_SETTINGS_OFFER_TO_TRANSLATE_TITLE" desc="Label shown next to a language for which translation is offered. [Length: 25em] [iOS only]">
+        Offer to Translate
+      </message>
       <message name="IDS_IOS_TRANSLATE_SETTING" desc="Title for the view and option in Settings for Translate. [Length: 25em] [iOS only]">
         Google Translate
       </message>
