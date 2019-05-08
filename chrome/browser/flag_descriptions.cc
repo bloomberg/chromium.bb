@@ -2323,6 +2323,10 @@ const char kHomepageTileDescription[] =
     "When NTPButton is enabled, the first tile of the Suggested Tiles will be "
     "used for homepage. It will not have an effect when NTPButton is disabled.";
 
+const char kIdentityDiscName[] = "Identity Disc";
+const char kIdentityDiscDescription[] =
+    "Enables Identity Disc, profile avatar icon button in toolbar.";
+
 const char kIncognitoStringsName[] = "Alternate incognito strings";
 const char kIncognitoStringsDescription[] =
     "Show alternate incognito strings if enabled.";

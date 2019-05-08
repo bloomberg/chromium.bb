@@ -1173,6 +1173,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "identity-disc",
+    "owners": ["//chrome/android/java/src/org/chromium/chrome/browser/toolbar/OWNERS"],
+    "expiry_milestone": 78
+  },
+  {
     "name": "enable-implicit-root-scroller",
     "owners": [ "bokan", "input-dev" ],
     "expiry_milestone": 75

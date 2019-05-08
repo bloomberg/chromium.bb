@@ -34768,6 +34768,7 @@ from previous Chrome versions.
       label="SyncPseudoUSSHistoryDeleteDirectives:disabled"/>
   <int value="1260186484" label="spurious-power-button-screen-accel"/>
   <int value="1261713150" label="ChromeHomeOptOutSnackbar:disabled"/>
+  <int value="1266156008" label="IdentityDisc:disabled"/>
   <int value="1266525177"
       label="AutofillUpstreamUseGooglePayOnAndroidBranding:disabled"/>
   <int value="1266886673" label="delay-reload-stop-button-change"/>
@@ -35122,6 +35123,7 @@ from previous Chrome versions.
   <int value="1814671708" label="disable-password-manager-reauthentication"/>
   <int value="1816843861" label="ServiceWorkerServicification:enabled"/>
   <int value="1817312143" label="num-raster-threads"/>
+  <int value="1818829958" label="IdentityDisc:enabled"/>
   <int value="1819256299" label="disable-webrtc-hw-decoding"/>
   <int value="1819536169" label="disable-cast-streaming-hw-encoding"/>
   <int value="1820317896" label="NTPShowGoogleGInOmnibox:disabled"/>

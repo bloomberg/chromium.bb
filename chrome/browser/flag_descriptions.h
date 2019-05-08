@@ -1396,6 +1396,9 @@ extern const char kHomePageButtonDescription[];
 extern const char kHomepageTileName[];
 extern const char kHomepageTileDescription[];
 
+extern const char kIdentityDiscName[];
+extern const char kIdentityDiscDescription[];
+
 extern const char kIncognitoStringsName[];
 extern const char kIncognitoStringsDescription[];
 
