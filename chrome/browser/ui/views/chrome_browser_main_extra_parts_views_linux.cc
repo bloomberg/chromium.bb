@@ -10,9 +10,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/libgtkui/gtk_ui.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/linux_ui/linux_ui_factory.h"
 #include "chrome/browser/ui/views/theme_profile_key.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -26,7 +25,6 @@
 #include "ui/native_theme/native_theme_dark_aura.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
-#include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
 #include "ui/views/widget/native_widget_aura.h"
 
 namespace {
@@ -58,35 +56,34 @@ ui::NativeTheme* GetNativeThemeForWindow(aura::Window* window) {
 
 }  // namespace
 
-ChromeBrowserMainExtraPartsViewsLinux::ChromeBrowserMainExtraPartsViewsLinux() {
-}
+ChromeBrowserMainExtraPartsViewsLinux::ChromeBrowserMainExtraPartsViewsLinux() =
+    default;
 
 ChromeBrowserMainExtraPartsViewsLinux::
-    ~ChromeBrowserMainExtraPartsViewsLinux() {
-  if (views::X11DesktopHandler::get_dont_create())
-    views::X11DesktopHandler::get_dont_create()->RemoveObserver(this);
-}
+    ~ChromeBrowserMainExtraPartsViewsLinux() = default;
 
 void ChromeBrowserMainExtraPartsViewsLinux::PreEarlyInitialization() {
-  views::LinuxUI* gtk_ui = BuildGtkUi();
-  gtk_ui->SetNativeThemeOverride(base::BindRepeating(&GetNativeThemeForWindow));
-  views::LinuxUI::SetInstance(gtk_ui);
+  views::LinuxUI* linux_ui = views::BuildLinuxUI();
+  if (!linux_ui)
+    return;
+
+  linux_ui->SetNativeThemeOverride(
+      base::BindRepeating(&GetNativeThemeForWindow));
+  views::LinuxUI::SetInstance(linux_ui);
 }
 
 void ChromeBrowserMainExtraPartsViewsLinux::ToolkitInitialized() {
   ChromeBrowserMainExtraPartsViews::ToolkitInitialized();
-  views::LinuxUI::instance()->Initialize();
+  auto* instance = views::LinuxUI::instance();
+  if (instance)
+    instance->Initialize();
 }
 
 void ChromeBrowserMainExtraPartsViewsLinux::PreCreateThreads() {
   // Update the device scale factor before initializing views
   // because its display::Screen instance depends on it.
-  views::LinuxUI::instance()->UpdateDeviceScaleFactor();
+  auto* instance = views::LinuxUI::instance();
+  if (instance)
+    instance->UpdateDeviceScaleFactor();
   ChromeBrowserMainExtraPartsViews::PreCreateThreads();
-  views::X11DesktopHandler::get()->AddObserver(this);
-}
-
-void ChromeBrowserMainExtraPartsViewsLinux::OnWorkspaceChanged(
-    const std::string& new_workspace) {
-  BrowserList::MoveBrowsersInWorkspaceToFront(new_workspace);
 }

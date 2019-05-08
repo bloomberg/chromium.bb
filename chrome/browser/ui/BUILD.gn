@@ -3077,16 +3077,27 @@ jumbo_split_static_library("ui") {
         "//services/ws/public/mojom",
       ]
 
-      # These files do Gtk+-based theming, but Gtk+ is not available on
-      # Ozone builds, or on common environments where Ozone will be used.
-      #
-      # TODO(tonikitoo): It seems sensible to make it possible to opt-in
-      # the use of these files in case Gtk is available with its Wayland.
-      if (!use_ozone && is_desktop_linux) {
+      # These files can do Gtk+-based theming for builds with gtk enabled.
+      if (is_desktop_linux) {
         sources += [
           "views/chrome_browser_main_extra_parts_views_linux.cc",
           "views/chrome_browser_main_extra_parts_views_linux.h",
+          "views/linux_ui/linux_ui_factory.h",
         ]
+        if (use_gtk) {
+          sources += [ "views/linux_ui/linux_ui_factory_gtk.cc" ]
+
+          # This is the only component that can interact with gtk.
+          deps += [ "//chrome/browser/ui/libgtkui" ]
+        } else {
+          sources += [ "views/linux_ui/linux_ui_factory.cc" ]
+        }
+        if (use_x11) {
+          sources += [
+            "views/chrome_browser_main_extra_parts_views_linux_x11.cc",
+            "views/chrome_browser_main_extra_parts_views_linux_x11.h",
+          ]
+        }
       }
     }
 
