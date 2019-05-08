@@ -791,13 +791,16 @@ void FrameSelection::SelectSubString(const Element& element,
 }
 
 void FrameSelection::NotifyAccessibilityForSelectionChange() {
-  if (GetSelectionInDOMTree().IsNone())
-    return;
   AXObjectCache* cache = GetDocument().ExistingAXObjectCache();
   if (!cache)
     return;
-  const Position& start = GetSelectionInDOMTree().ComputeStartPosition();
-  cache->SelectionChanged(start.ComputeContainerNode());
+  const Position& extent = GetSelectionInDOMTree().Extent();
+  Node* anchor = extent.ComputeContainerNode();
+  if (anchor) {
+    cache->SelectionChanged(anchor);
+  } else {
+    cache->SelectionChanged(RootEditableElementOrDocumentElement());
+  }
 }
 
 void FrameSelection::NotifyCompositorForSelectionChange() {

@@ -18,5 +18,5 @@
         var axPara = accessibilityController.accessibleElementById('para');
         assert_false(axPara.setSelection(axPara, 0, axPara, 1));
         assert_true(axPara.setSelection(axPara, 0, axPara, 1));
-    });
+    }, 'Test that setting the selection via the accessibility API can be canceled by JavaScript running on the page.');
 </script>
