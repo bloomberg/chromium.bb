@@ -620,7 +620,6 @@ jumbo_component("views") {
       "accessibility/accessibility_alert_window.h",
       "accessibility/ax_aura_obj_cache.h",
       "accessibility/ax_aura_obj_wrapper.h",
-      "accessibility/ax_aura_window_utils.h",
       "accessibility/ax_root_obj_wrapper.h",
       "accessibility/ax_tree_source_views.h",
       "accessibility/ax_view_obj_wrapper.h",
@@ -657,7 +656,6 @@ jumbo_component("views") {
       "accessibility/accessibility_alert_window.cc",
       "accessibility/ax_aura_obj_cache.cc",
       "accessibility/ax_aura_obj_wrapper.cc",
-      "accessibility/ax_aura_window_utils.cc",
       "accessibility/ax_root_obj_wrapper.cc",
       "accessibility/ax_tree_source_views.cc",
       "accessibility/ax_view_obj_wrapper.cc",
@@ -1202,7 +1200,6 @@ test("views_unittests") {
   if (use_aura) {
     sources += [
       "accessibility/ax_aura_obj_cache_unittest.cc",
-      "accessibility/ax_aura_window_utils_unittest.cc",
       "accessibility/ax_tree_source_views_unittest.cc",
       "controls/native/native_view_host_aura_unittest.cc",
       "corewm/tooltip_controller_unittest.cc",

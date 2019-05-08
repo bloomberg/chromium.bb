@@ -10,7 +10,6 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
-#include "ui/views/accessibility/ax_aura_window_utils.h"
 #include "ui/views/accessibility/ax_view_obj_wrapper.h"
 #include "ui/views/accessibility/ax_widget_obj_wrapper.h"
 #include "ui/views/accessibility/ax_window_obj_wrapper.h"
@@ -144,15 +143,13 @@ View* AXAuraObjCache::GetFocusedView() {
     if (!focused_window)
       return nullptr;
 
-    // SingleProcessMash may need to jump between ash and client windows.
-    AXAuraWindowUtils* window_utils = AXAuraWindowUtils::Get();
-    focused_widget = window_utils->GetWidgetForNativeView(focused_window);
+    focused_widget = Widget::GetWidgetForNativeView(focused_window);
     while (!focused_widget) {
       focused_window = focused_window->parent();
       if (!focused_window)
         break;
 
-      focused_widget = window_utils->GetWidgetForNativeView(focused_window);
+      focused_widget = Widget::GetWidgetForNativeView(focused_window);
     }
   }
 
