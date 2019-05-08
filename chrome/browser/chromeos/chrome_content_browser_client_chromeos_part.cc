@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -23,6 +24,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
+#include "extensions/common/constants.h"
 
 namespace {
 
@@ -33,7 +35,7 @@ GURL GetURL(content::WebContents* contents) {
 
 // Returns true if |contents| is of an internal pages (such as
 // chrome://settings, chrome://extensions, ... etc) or the New Tab Page.
-bool ShouldExcludePage(content::WebContents* contents) {
+bool IsInternalPage(content::WebContents* contents) {
   DCHECK(contents);
 
   GURL url = GetURL(contents);
@@ -48,6 +50,24 @@ bool ShouldExcludePage(content::WebContents* contents) {
     return true;
 
   return url.SchemeIs(content::kChromeUIScheme);
+}
+
+// Returns true if the WebUI at |url| is considered "system UI" and should use
+// the system font size (the default) instead of the browser font size.
+// Takes a URL because the WebContents may not yet be associated with a window,
+// SettingsWindowManager, etc.
+bool UseDefaultFontSize(const GURL& url) {
+  if (chromeos::SystemWebDialogDelegate::HasInstance(url))
+    return true;
+
+  if (url.SchemeIs(content::kChromeUIScheme))
+    return chrome::IsSystemWebUIHost(url.host_piece());
+
+  if (url.SchemeIs(extensions::kExtensionScheme)) {
+    base::StringPiece extension_id = url.host_piece();
+    return extension_misc::IsSystemUIApp(extension_id);
+  }
+  return false;
 }
 
 void OverrideWebkitPrefsForTabletMode(content::WebContents* contents,
@@ -65,7 +85,7 @@ void OverrideWebkitPrefsForTabletMode(content::WebContents* contents,
     return;
 
   // Also exclude internal pages and NTPs.
-  if (ShouldExcludePage(contents))
+  if (IsInternalPage(contents))
     return;
 
   web_prefs->double_tap_to_zoom_enabled =
@@ -77,13 +97,17 @@ void OverrideWebkitPrefsForTabletMode(content::WebContents* contents,
   web_prefs->default_maximum_page_scale_factor = 5.0;
 }
 
-void OverrideWebkitPrefsForSystemDialogs(content::WebContents* contents,
-                                         content::WebPreferences* web_prefs) {
+void OverrideFontSize(content::WebContents* contents,
+                      content::WebPreferences* web_prefs) {
   DCHECK(contents);
+  // Prior to SplitSettings, system UI font size follows browser font size.
   if (!chromeos::features::IsSplitSettingsEnabled())
     return;
+
+  // Check the URL because |contents| may not yet be associated with a window,
+  // SettingsWindowManager, etc.
   GURL url = GetURL(contents);
-  if (!url.is_empty() && chromeos::SystemWebDialogDelegate::HasInstance(url)) {
+  if (!url.is_empty() && UseDefaultFontSize(url)) {
     // System dialogs are considered native UI, so they do not follow the
     // browser's web-page font sizes. Reset fonts to the base sizes.
     content::WebPreferences base_prefs;
@@ -112,5 +136,11 @@ void ChromeContentBrowserClientChromeOsPart::OverrideWebkitPrefs(
     return;
 
   OverrideWebkitPrefsForTabletMode(contents, web_prefs);
-  OverrideWebkitPrefsForSystemDialogs(contents, web_prefs);
+  OverrideFontSize(contents, web_prefs);
+}
+
+// static
+bool ChromeContentBrowserClientChromeOsPart::UseDefaultFontSizeForTest(
+    const GURL& url) {
+  return UseDefaultFontSize(url);
 }

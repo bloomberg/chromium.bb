@@ -7,6 +7,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/strings/string_piece_forward.h"
 #include "ui/base/layout.h"
 
 namespace extensions {
@@ -264,6 +265,11 @@ extern const char kScreensaverAlt1AppId[];
 
 // The extension id of an alternate Demo Mode screensaver app.
 extern const char kScreensaverAlt2AppId[];
+
+// Returns true if this app is part of the "system UI". Generally this is UI
+// that that on other operating systems would be considered part of the OS,
+// for example the file manager.
+bool IsSystemUIApp(base::StringPiece extension_id);
 #endif
 
 // The extension id for the production version of Hangouts.

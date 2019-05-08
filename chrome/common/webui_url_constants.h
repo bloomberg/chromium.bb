@@ -10,6 +10,7 @@
 
 #include <stddef.h>
 
+#include "base/strings/string_piece_forward.h"
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
 #include "content/public/common/url_constants.h"
@@ -162,8 +163,6 @@ extern const char kChromeUIUsbInternalsHost[];
 extern const char kChromeUIUserActionsHost[];
 extern const char kChromeUIVersionHost[];
 extern const char kChromeUIVersionURL[];
-extern const char kChromeUIPasswordChangeHost[];
-extern const char kChromeUIPasswordChangeUrl[];
 extern const char kChromeUIWelcomeHost[];
 extern const char kChromeUIWelcomeURL[];
 extern const char kChromeUIWelcomeWin10Host[];
@@ -185,9 +184,15 @@ extern const char kChromeUIWebApksHost[];
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
+// NOTE: If you add a URL/host please check if it should be added to
+// IsSystemWebUIHost().
 extern const char kChromeUIAccountManagerWelcomeHost[];
 extern const char kChromeUIAccountManagerWelcomeURL[];
 extern const char kChromeUIActivationMessageHost[];
+extern const char kChromeUIArcGraphicsTracingHost[];
+extern const char kChromeUIArcGraphicsTracingURL[];
+extern const char kChromeUIAssistantOptInHost[];
+extern const char kChromeUIAssistantOptInURL[];
 extern const char kChromeUIBluetoothPairingHost[];
 extern const char kChromeUIBluetoothPairingURL[];
 extern const char kChromeUICellularSetupHost[];
@@ -216,6 +221,8 @@ extern const char kChromeUIOSSettingsHost[];
 extern const char kChromeUIOSSettingsURL[];
 extern const char kChromeUIOobeHost[];
 extern const char kChromeUIOobeURL[];
+extern const char kChromeUIPasswordChangeHost[];
+extern const char kChromeUIPasswordChangeUrl[];
 extern const char kChromeUIPowerHost[];
 extern const char kChromeUIScreenlockIconHost[];
 extern const char kChromeUIScreenlockIconURL[];
@@ -231,10 +238,12 @@ extern const char kChromeUISmbShareURL[];
 extern const char kChromeUISysInternalsHost[];
 extern const char kChromeUIUserImageHost[];
 extern const char kChromeUIUserImageURL[];
-extern const char kChromeUIAssistantOptInHost[];
-extern const char kChromeUIAssistantOptInURL[];
-extern const char kChromeUIArcGraphicsTracingHost[];
-extern const char kChromeUIArcGraphicsTracingURL[];
+
+// Returns true if this web UI is part of the "system UI". Generally this is
+// UI that opens in a window (not a browser tab) and that on other operating
+// systems would be considered part of the OS or window manager.
+bool IsSystemWebUIHost(base::StringPiece host);
+
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)

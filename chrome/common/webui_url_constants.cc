@@ -5,6 +5,7 @@
 #include "chrome/common/webui_url_constants.h"
 
 #include "base/stl_util.h"
+#include "base/strings/string_piece.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/safe_browsing/web_ui/constants.h"
 #include "extensions/buildflags/buildflags.h"
@@ -184,12 +185,15 @@ const char kChromeUIWebApksHost[] = "webapks";
 #endif
 
 #if defined(OS_CHROMEOS)
-const char kChromeUIPasswordChangeHost[] = "password-change";
-const char kChromeUIPasswordChangeUrl[] = "chrome://password-change";
+// Keep alphabetized.
 const char kChromeUIAccountManagerWelcomeHost[] = "account-manager-welcome";
 const char kChromeUIAccountManagerWelcomeURL[] =
     "chrome://account-manager-welcome";
 const char kChromeUIActivationMessageHost[] = "activationmessage";
+const char kChromeUIArcGraphicsTracingHost[] = "arc-graphics-tracing";
+const char kChromeUIArcGraphicsTracingURL[] = "chrome://arc-graphics-tracing/";
+const char kChromeUIAssistantOptInHost[] = "assistant-optin";
+const char kChromeUIAssistantOptInURL[] = "chrome://assistant-optin/";
 const char kChromeUIBluetoothPairingHost[] = "bluetooth-pairing";
 const char kChromeUIBluetoothPairingURL[] = "chrome://bluetooth-pairing/";
 const char kChromeUICellularSetupHost[] = "cellular-setup";
@@ -221,6 +225,8 @@ const char kChromeUIOSSettingsHost[] = "os-settings";
 const char kChromeUIOSSettingsURL[] = "chrome://os-settings/";
 const char kChromeUIOobeHost[] = "oobe";
 const char kChromeUIOobeURL[] = "chrome://oobe/";
+const char kChromeUIPasswordChangeHost[] = "password-change";
+const char kChromeUIPasswordChangeUrl[] = "chrome://password-change";
 const char kChromeUIPowerHost[] = "power";
 const char kChromeUIScreenlockIconHost[] = "screenlock-icon";
 const char kChromeUIScreenlockIconURL[] = "chrome://screenlock-icon/";
@@ -236,10 +242,42 @@ const char kChromeUISmbCredentialsURL[] = "chrome://smb-credentials-dialog/";
 const char kChromeUISysInternalsHost[] = "sys-internals";
 const char kChromeUIUserImageHost[] = "userimage";
 const char kChromeUIUserImageURL[] = "chrome://userimage/";
-const char kChromeUIAssistantOptInHost[] = "assistant-optin";
-const char kChromeUIAssistantOptInURL[] = "chrome://assistant-optin/";
-const char kChromeUIArcGraphicsTracingHost[] = "arc-graphics-tracing";
-const char kChromeUIArcGraphicsTracingURL[] = "chrome://arc-graphics-tracing/";
+// Keep alphabetized.
+
+bool IsSystemWebUIHost(base::StringPiece host) {
+  // Compares host instead of full URL for performance (the strings are
+  // shorter).
+  static const char* const kHosts[] = {
+      kChromeUIAccountManagerWelcomeHost,
+      kChromeUIActivationMessageHost,
+      kChromeUIAssistantOptInHost,
+      kChromeUIBluetoothPairingHost,
+      kChromeUICellularSetupHost,
+      kChromeUICertificateManagerHost,
+      kChromeUICryptohomeHost,
+      kChromeUIDeviceEmulatorHost,
+      kChromeUIFirstRunHost,
+      kChromeUIInternetConfigDialogHost,
+      kChromeUIInternetDetailDialogHost,
+      kChromeUILinuxCreditsHost,
+      kChromeUIMobileSetupHost,
+      kChromeUIMultiDeviceSetupHost,
+      kChromeUINetworkHost,
+      kChromeUIOobeHost,
+      kChromeUIOSCreditsHost,
+      kChromeUIOSSettingsHost,
+      kChromeUIPasswordChangeHost,
+      kChromeUIPowerHost,
+      kChromeUISetTimeHost,
+      kChromeUISmbCredentialsHost,
+      kChromeUISmbShareHost,
+  };
+  for (const char* h : kHosts) {
+    if (host == h)
+      return true;
+  }
+  return false;
+}
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
@@ -330,24 +368,24 @@ const char kStylusSubPage[] = "stylus";
 const char kTetherSettingsSubPage[] = "networks?type=Tether";
 
 bool IsOSSettingsSubPage(const std::string& sub_page) {
-  const char* const kSubPages[] = {kAccessibilitySubPage,
-                                   kAndroidAppsDetailsSubPage,
-                                   kAssistantSubPage,
-                                   kBluetoothSubPage,
-                                   kCrostiniSharedUsbDevicesSubPage,
-                                   kDateTimeSubPage,
-                                   kDisplaySubPage,
-                                   kHelpSubPage,
-                                   kInternetSubPage,
-                                   kConnectedDevicesSubPage,
-                                   kLockScreenSubPage,
-                                   kNetworkDetailSubPage,
-                                   kPowerSubPage,
-                                   kSmartLockSettingsSubPage,
-                                   kSmbSharesPageAddDialog,
-                                   kStorageSubPage,
-                                   kStylusSubPage,
-                                   kTetherSettingsSubPage};
+  static const char* const kSubPages[] = {kAccessibilitySubPage,
+                                          kAndroidAppsDetailsSubPage,
+                                          kAssistantSubPage,
+                                          kBluetoothSubPage,
+                                          kCrostiniSharedUsbDevicesSubPage,
+                                          kDateTimeSubPage,
+                                          kDisplaySubPage,
+                                          kHelpSubPage,
+                                          kInternetSubPage,
+                                          kConnectedDevicesSubPage,
+                                          kLockScreenSubPage,
+                                          kNetworkDetailSubPage,
+                                          kPowerSubPage,
+                                          kSmartLockSettingsSubPage,
+                                          kSmbSharesPageAddDialog,
+                                          kStorageSubPage,
+                                          kStylusSubPage,
+                                          kTetherSettingsSubPage};
   for (const char* p : kSubPages) {
     if (sub_page == p)
       return true;
