@@ -44,8 +44,6 @@ MAC_CONDITIONS = ['leopard', 'snowleopard', 'lion', 'mountainlion',
 ANDROID_CONDITIONS = ['l', 'm', 'n', 'o', 'p', 'q']
 GENERIC_CONDITIONS = OS_CONDITIONS + GPU_CONDITIONS
 
-GENERIC_CONDITIONS = OS_CONDITIONS + GPU_CONDITIONS
-
 _map_specific_to_generic = {sos:'win' for sos in WIN_CONDITIONS}
 _map_specific_to_generic.update({sos:'mac' for sos in MAC_CONDITIONS})
 _map_specific_to_generic.update({sos:'android' for sos in ANDROID_CONDITIONS})
@@ -215,20 +213,18 @@ def is_collision(s1, s2):
 
 def _glob_conflicts_with_exp(possible_collision, exp):
   reason_template = (
-      'Pattern \'%s\' on line %d has the %s expectation however the '
-      'the pattern on \'%s\' line %d has the Pass expectation')
+      'Pattern \'{0}\' on line {1} has the %s expectation however the '
+      'the pattern on \'{2}\' line {3} has the Pass expectation'). format(
+          possible_collision.test, possible_collision.lineno, exp.test,
+          exp.lineno)
+  causes_regression = not(
+      ResultType.Failure in exp.results or ResultType.Skip in exp.results)
   if (ResultType.Skip in possible_collision.results and
-      ResultType.Failure not in exp.results and
-      ResultType.Skip not in exp.results):
-    return (reason_template %
-            (possible_collision.test, possible_collision.lineno, 'Skip',
-            exp.test, exp.lineno))
+      causes_regression):
+    return reason_template % 'Skip'
   if (ResultType.Failure in possible_collision.results and
-      ResultType.Failure not in exp.results and
-      ResultType.Skip not in exp.results):
-    return (reason_template %
-            (possible_collision.test, possible_collision.lineno, 'Failure',
-            exp.test, exp.lineno))
+      causes_regression):
+    return reason_template % 'Failure'
   return ''
 
 
@@ -242,6 +238,18 @@ def _map_gpu_devices_to_vendors(tag_sets):
 
 
 def _checkTestExpectationGlobsForCollision(expectations, file_name):
+  """This function looks for collisions between test expectations with patterns
+  that match with test expectation patterns that are globs. A test expectation
+  collides with another if its pattern matches with another's glob and if its
+  tags is a super set of the other expectation's tags. The less specific test
+  expectation must have a failure or skip expectation while the more specific
+  test expectation does not. The more specific test expectation will trump
+  the less specific test expectation and may cause an unexpected regression.
+
+  Args:
+  expectations: A string containing test expectations in the new format
+  file_name: Name of the file that the test expectations came from
+  """
   master_conflicts_found = False
   error_msg = ''
   trie = {}
@@ -288,7 +296,17 @@ def _checkTestExpectationGlobsForCollision(expectations, file_name):
   assert not master_conflicts_found, error_msg
 
 
-def _checkTestExpectationsForCollision(expectations, file_name):
+def _checkTestExpectationPatternsForCollision(expectations, file_name):
+  """This function makes sure that any test expectations that have the same
+  pattern do not collide with each other. They collide when one expectation's
+  tags are a subset of the other expectation's tags. If the expectation with
+  the larger tag set is active during a test run, then the expectation's whose
+  tag set is a subset of the tags will be active as well.
+
+  Args:
+  expectations: A string containing test expectations in the new format
+  file_name: Name of the file that the test expectations came from
+  """
   parser = expectations_parser.TaggedTestListParser(expectations)
   tests_to_exps = defaultdict(list)
   master_conflicts_found = False
@@ -387,7 +405,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     [ intel xp debug ] a/b/c/d [ Skip ]
     '''
     with self.assertRaises(AssertionError):
-      _checkTestExpectationsForCollision(test_expectations, 'test.txt')
+      _checkTestExpectationPatternsForCollision(test_expectations, 'test.txt')
 
   def testNoCollisionBetweenSpecificOsTags(self):
     test_expectations = '''# tags: [ mac win linux xp win7 ]
@@ -396,7 +414,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     [ intel win7 ] a/b/c/d [ Failure ]
     [ intel xp debug ] a/b/c/d [ Skip ]
     '''
-    _checkTestExpectationsForCollision(test_expectations, 'test.txt')
+    _checkTestExpectationPatternsForCollision(test_expectations, 'test.txt')
 
   def testCollisionInTestExpectationsWithGpuVendorAndDeviceTags(self):
     test_expectations = '''# tags: [ mac win linux xp ]
@@ -406,17 +424,17 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     [ nvidia-0x01 xp debug ] a/b/c/d [ Skip ]
     '''
     with self.assertRaises(AssertionError):
-      _checkTestExpectationsForCollision(test_expectations, 'test.txt')
+      _checkTestExpectationPatternsForCollision(test_expectations, 'test.txt')
 
   def testCollisionInTestExpectationsWithGpuVendorAndDeviceTags2(self):
     test_expectations = '''# tags: [ mac win linux xp win7 ]
     # tags: [ intel amd nvidia nvidia-0x01 nvidia-0x02 ]
     # tags: [ debug release ]
-    [ nvidia-0x01 win ] a/b/c/d [ Failure ]
-    [ nvidia win7 debug ] a/b/c/d [ Skip ]
+    [ nvidia-0x01 win ] a/b/c/* [ Failure ]
+    [ nvidia win7 debug ] a/b/c/* [ Skip ]
     '''
     with self.assertRaises(AssertionError):
-      _checkTestExpectationsForCollision(test_expectations, 'test.txt')
+      _checkTestExpectationPatternsForCollision(test_expectations, 'test.txt')
 
   def testNoCollisionBetweenGpuDeviceTags(self):
     test_expectations = '''# tags: [ mac win linux xp win7 ]
@@ -424,8 +442,9 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     # tags: [ debug release ]
     [ nvidia-0x01 win7 ] a/b/c/d [ Failure ]
     [ nvidia-0x02 win7 debug ] a/b/c/d [ Skip ]
+    [ nvidia win debug ] a/b/c/* [ Skip ]
     '''
-    _checkTestExpectationsForCollision(test_expectations, 'test.txt')
+    _checkTestExpectationPatternsForCollision(test_expectations, 'test.txt')
 
   def testMixGenericandSpecificTagsInCollidingSets(self):
     test_expectations = '''# tags: [ mac win linux xp win7 ]
@@ -435,7 +454,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     [ nvidia win7 debug ] a/b/c/d [ Skip ]
     '''
     with self.assertRaises(AssertionError):
-      _checkTestExpectationsForCollision(test_expectations, 'test.txt')
+      _checkTestExpectationPatternsForCollision(test_expectations, 'test.txt')
 
   def testCollisionInTestExpectationCausesAssertion(self):
     test_expectations = '''# tags: [ mac win linux ]
@@ -450,7 +469,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     [ intel mac ] a/b/c [ Failure ]
     '''
     with self.assertRaises(AssertionError) as context:
-      _checkTestExpectationsForCollision(test_expectations, 'test.txt')
+      _checkTestExpectationPatternsForCollision(test_expectations, 'test.txt')
     self.assertIn("Found conflicts for test a/b/c/d in test.txt:",
       str(context.exception))
     self.assertIn('line 4 conflicts with line 5',
@@ -478,7 +497,9 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
       _checkTestExpectationGlobsForCollision(test_expectations, 'test.txt')
     self.assertIn('Found conflicts for pattern a/b/c/d* in test.txt:',
         str(context.exception))
-    self.assertIn('line 4 conflicts with line 5',
+    self.assertIn(("line 4 conflicts with line 5: Pattern 'a/b/c/d*' on line 4 "
+        "has the Failure expectation however the the pattern on 'a/b/c/d'"
+        " line 5 has the Pass expectation"),
         str(context.exception))
     self.assertNotIn('line 4 conflicts with line 6',
         str(context.exception))
@@ -509,6 +530,10 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
         str(context.exception))
     self.assertIn('line 4 conflicts with line 6',
         str(context.exception))
+    self.assertIn(("line 4 conflicts with line 6: Pattern 'a/b/c/d*' on line 4 "
+        "has the Skip expectation however the the pattern on 'a/b/c/d/e'"
+        " line 6 has the Pass expectation"),
+        str(context.exception))
 
   def testNoCollisionWithGlobsWithSkipExpectation(self):
     test_expectations = '''# tags: [ mac win linux ]
@@ -528,9 +553,9 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     [ intel debug ] a/b/c/d [ Failure ]
     [ nvidia debug ] a/b/c/d [ Failure ]
     '''
-    _checkTestExpectationsForCollision(test_expectations, 'test.txt')
+    _checkTestExpectationPatternsForCollision(test_expectations, 'test.txt')
 
-  def testNoCollisionsWithGlobsInGpuTestExpectations(self):
+  def testNoCollisionsForSameTestsInGpuTestExpectations(self):
     webgl_conformance_test_class = (
         webgl_conformance_integration_test.WebGLConformanceIntegrationTest)
     for test_case in _FindTestCases():
@@ -540,10 +565,10 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
               MockArgs(webgl_version=('%d.0.0' % i))))
           if test_case.ExpectationsFiles():
             with open(test_case.ExpectationsFiles()[0]) as f:
-              _checkTestExpectationsForCollision(f.read(),
+              _checkTestExpectationPatternsForCollision(f.read(),
               os.path.basename(f.name))
 
-  def testNoCollisionsForSamePatternsInGpuTestExpectations(self):
+  def testNoCollisionsWithGlobsInGpuTestExpectations(self):
     webgl_conformance_test_class = (
         webgl_conformance_integration_test.WebGLConformanceIntegrationTest)
     for test_case in _FindTestCases():
@@ -800,7 +825,6 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
       ['--repeat=3'])
     self.assertEquals(self._test_state['num_test_runs'], 3)
 
-  @unittest.skip('Re-enable test after pushing crrev.com/c/1594012')
   def testAlsoRunDisabledTests(self):
     self._RunIntegrationTest(
       'test_also_run_disabled_tests',
