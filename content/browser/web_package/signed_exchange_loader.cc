@@ -214,8 +214,7 @@ void SignedExchangeLoader::OnUploadProgress(
   NOTREACHED();
 }
 
-void SignedExchangeLoader::OnReceiveCachedMetadata(
-    const std::vector<uint8_t>& data) {
+void SignedExchangeLoader::OnReceiveCachedMetadata(mojo_base::BigBuffer data) {
   // Curerntly CachedMetadata for Signed Exchange is not supported.
   NOTREACHED();
 }

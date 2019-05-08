@@ -97,9 +97,9 @@ class HeaderRewritingURLLoaderClient : public network::mojom::URLLoaderClient {
                                          std::move(ack_callback));
   }
 
-  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override {
+  void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override {
     DCHECK(url_loader_client_.is_bound());
-    url_loader_client_->OnReceiveCachedMetadata(data);
+    url_loader_client_->OnReceiveCachedMetadata(std::move(data));
   }
 
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override {
@@ -717,7 +717,7 @@ int ServiceWorkerSubresourceLoader::StartBlobReading(
 
 void ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete(
     mojo::ScopedDataPipeConsumerHandle data_pipe,
-    const base::Optional<std::vector<uint8_t>>& metadata) {
+    base::Optional<mojo_base::BigBuffer> metadata) {
   TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker",
       "ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete",
@@ -731,7 +731,7 @@ void ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete(
   side_data_reading_complete_ = true;
 
   if (metadata.has_value())
-    url_loader_client_->OnReceiveCachedMetadata(metadata.value());
+    url_loader_client_->OnReceiveCachedMetadata(std::move(metadata.value()));
 
   // If parallel reading is disabled then we need to start reading the blob.
   if (!data_pipe.is_valid()) {

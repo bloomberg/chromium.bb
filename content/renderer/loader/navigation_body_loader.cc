@@ -122,14 +122,13 @@ void NavigationBodyLoader::OnUploadProgress(int64_t current_position,
   NOTREACHED();
 }
 
-void NavigationBodyLoader::OnReceiveCachedMetadata(
-    const std::vector<uint8_t>& data) {
+void NavigationBodyLoader::OnReceiveCachedMetadata(mojo_base::BigBuffer data) {
   // Even if IsolatedCodeCaching is landed, this code is still used by
   // ServiceWorker.
   // TODO(horo, kinuko): Make a test to cover this function.
   // TODO(https://crbug.com/930000): Add support for inline script code caching
   // with the service worker service.
-  client_->BodyCodeCacheReceived(data);
+  client_->BodyCodeCacheReceived(std::move(data));
 }
 
 void NavigationBodyLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {

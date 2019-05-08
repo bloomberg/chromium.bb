@@ -298,7 +298,7 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
   void OnReceiveResponse(const ResourceResponseHead& response_head) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          const ResourceResponseHead& response_head) override;
-  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override;
+  void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override;
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
@@ -1621,8 +1621,7 @@ void SimpleURLLoaderImpl::OnReceiveRedirect(
                               {} /* new_url */);
 }
 
-void SimpleURLLoaderImpl::OnReceiveCachedMetadata(
-    const std::vector<uint8_t>& data) {
+void SimpleURLLoaderImpl::OnReceiveCachedMetadata(mojo_base::BigBuffer data) {
   // Ignored.
 }
 

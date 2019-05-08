@@ -194,7 +194,7 @@ void DownloadResponseHandler::OnUploadProgress(
 }
 
 void DownloadResponseHandler::OnReceiveCachedMetadata(
-    const std::vector<uint8_t>& data) {}
+    mojo_base::BigBuffer data) {}
 
 void DownloadResponseHandler::OnTransferSizeUpdated(
     int32_t transfer_size_diff) {}

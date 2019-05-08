@@ -4,6 +4,7 @@
 
 module blink.mojom;
 
+import "mojo/public/mojom/base/big_buffer.mojom";
 import "services/network/public/mojom/data_pipe_getter.mojom";
 import "services/network/public/mojom/http_request_headers.mojom";
 
@@ -50,7 +51,7 @@ interface Blob {
   // Reads the side-data (if any) associated with this blob. This is the same
   // data that would be passed to OnReceivedCachedMetadata if you were reading
   // this blob through a blob URL.
-  ReadSideData() => (array<uint8>? data);
+  ReadSideData() => (mojo_base.mojom.BigBuffer? data);
 
   // This method is an implementation detail of the blob system. You should not
   // ever need to call it directly.

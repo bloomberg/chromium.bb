@@ -952,9 +952,9 @@ void WebURLLoaderImpl::Context::OnReceivedCachedMetadata(
     const char* data, int len) {
   if (!client_)
     return;
-  TRACE_EVENT_WITH_FLOW0(
-      "loading", "WebURLLoaderImpl::Context::OnReceivedCachedMetadata",
-      this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+  TRACE_EVENT_WITH_FLOW1(
+      "loading", "WebURLLoaderImpl::Context::OnReceivedCachedMetadata", this,
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "length", len);
   client_->DidReceiveCachedMetadata(data, len);
 }
 

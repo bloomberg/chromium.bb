@@ -373,7 +373,7 @@ void PreviewsLitePageServingURLLoader::OnUploadProgress(
 }
 
 void PreviewsLitePageServingURLLoader::OnReceiveCachedMetadata(
-    const std::vector<uint8_t>& data) {
+    mojo_base::BigBuffer data) {
   // Do nothing. This is not supported for navigation loader.
 }
 

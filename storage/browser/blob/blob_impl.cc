@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/span.h"
 #include "net/base/io_buffer.h"
 #include "net/disk_cache/disk_cache.h"
 #include "storage/browser/blob/blob_data_handle.h"
@@ -156,10 +157,11 @@ void BlobImpl::ReadSideData(ReadSideDataCallback callback) {
               const uint8_t* data =
                   reinterpret_cast<const uint8_t*>(io_buffer->data());
               std::move(callback).Run(
-                  std::vector<uint8_t>(data, data + io_buffer->size()));
+                  base::make_span(data, data + io_buffer->size()));
             },
             io_buffer, std::move(callback)));
 
+        // TODO(crbug.com/867848): Plumb BigBuffer into disk_cache::ReadData().
         int rv = entry->ReadData(item->disk_cache_side_stream_index(), 0,
                                  io_buffer.get(), body_size, io_callback);
         if (rv != net::ERR_IO_PENDING)

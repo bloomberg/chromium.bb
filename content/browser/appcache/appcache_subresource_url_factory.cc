@@ -253,8 +253,8 @@ class SubresourceLoader : public network::mojom::URLLoader,
                                      std::move(ack_callback));
   }
 
-  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override {
-    remote_client_->OnReceiveCachedMetadata(data);
+  void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override {
+    remote_client_->OnReceiveCachedMetadata(std::move(data));
   }
 
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override {

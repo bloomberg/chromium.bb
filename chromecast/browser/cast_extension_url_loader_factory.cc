@@ -131,8 +131,8 @@ class CastExtensionURLLoader : public network::mojom::URLLoader,
                                        std::move(callback));
   }
 
-  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override {
-    original_client_->OnReceiveCachedMetadata(data);
+  void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override {
+    original_client_->OnReceiveCachedMetadata(std::move(data));
   }
 
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override {

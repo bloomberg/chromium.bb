@@ -323,7 +323,7 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
     observer_->OnReceiveRedirect(redirect_info.new_url);
   }
 
-  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override {}
+  void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override {}
 
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override {}
 

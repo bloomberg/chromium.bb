@@ -68,7 +68,7 @@ void NavigationPreloadRequest::OnUploadProgress(
 }
 
 void NavigationPreloadRequest::OnReceiveCachedMetadata(
-    const std::vector<uint8_t>& data) {}
+    mojo_base::BigBuffer data) {}
 
 void NavigationPreloadRequest::OnTransferSizeUpdated(
     int32_t transfer_size_diff) {}

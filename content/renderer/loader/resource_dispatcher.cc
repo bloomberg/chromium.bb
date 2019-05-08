@@ -177,14 +177,14 @@ void ResourceDispatcher::OnReceivedResponse(
 
 void ResourceDispatcher::OnReceivedCachedMetadata(
     int request_id,
-    const std::vector<uint8_t>& data) {
+    base::span<const uint8_t> data) {
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
 
   if (data.size()) {
     request_info->peer->OnReceivedCachedMetadata(
-        reinterpret_cast<const char*>(&data.front()), data.size());
+        reinterpret_cast<const char*>(data.data()), data.size());
   }
 }
 

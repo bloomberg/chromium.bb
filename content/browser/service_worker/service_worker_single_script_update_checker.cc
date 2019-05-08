@@ -157,7 +157,7 @@ void ServiceWorkerSingleScriptUpdateChecker::OnUploadProgress(
 }
 
 void ServiceWorkerSingleScriptUpdateChecker::OnReceiveCachedMetadata(
-    const std::vector<uint8_t>& data) {}
+    mojo_base::BigBuffer data) {}
 
 void ServiceWorkerSingleScriptUpdateChecker::OnTransferSizeUpdated(
     int32_t transfer_size_diff) {}

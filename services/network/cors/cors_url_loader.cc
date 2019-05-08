@@ -345,11 +345,11 @@ void CorsURLLoader::OnUploadProgress(int64_t current_position,
                                        std::move(ack_callback));
 }
 
-void CorsURLLoader::OnReceiveCachedMetadata(const std::vector<uint8_t>& data) {
+void CorsURLLoader::OnReceiveCachedMetadata(mojo_base::BigBuffer data) {
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
   DCHECK(!deferred_redirect_url_);
-  forwarding_client_->OnReceiveCachedMetadata(data);
+  forwarding_client_->OnReceiveCachedMetadata(std::move(data));
 }
 
 void CorsURLLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {

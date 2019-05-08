@@ -135,8 +135,8 @@ class ProxyingURLLoaderFactory::InProgressRequest
                                      std::move(callback));
   }
 
-  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override {
-    target_client_->OnReceiveCachedMetadata(data);
+  void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override {
+    target_client_->OnReceiveCachedMetadata(std::move(data));
   }
 
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override {

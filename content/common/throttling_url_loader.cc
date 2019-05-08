@@ -598,12 +598,11 @@ void ThrottlingURLLoader::OnUploadProgress(
                                        std::move(ack_callback));
 }
 
-void ThrottlingURLLoader::OnReceiveCachedMetadata(
-    const std::vector<uint8_t>& data) {
+void ThrottlingURLLoader::OnReceiveCachedMetadata(mojo_base::BigBuffer data) {
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
   DCHECK(!loader_completed_);
 
-  forwarding_client_->OnReceiveCachedMetadata(data);
+  forwarding_client_->OnReceiveCachedMetadata(std::move(data));
 }
 
 void ThrottlingURLLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {

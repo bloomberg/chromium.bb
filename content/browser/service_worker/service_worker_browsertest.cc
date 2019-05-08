@@ -3282,7 +3282,7 @@ class CacheStorageSideDataSizeChecker
     blob_handle->get()->ReadSideData(base::BindOnce(
         [](scoped_refptr<storage::BlobHandle> blob_handle, int* result,
            base::OnceClosure continuation,
-           const base::Optional<std::vector<uint8_t>>& data) {
+           const base::Optional<mojo_base::BigBuffer> data) {
           *result = data ? data->size() : 0;
           std::move(continuation).Run();
         },

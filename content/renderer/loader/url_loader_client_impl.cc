@@ -98,8 +98,8 @@ class URLLoaderClientImpl::DeferredOnUploadProgress final
 class URLLoaderClientImpl::DeferredOnReceiveCachedMetadata final
     : public DeferredMessage {
  public:
-  explicit DeferredOnReceiveCachedMetadata(const std::vector<uint8_t>& data)
-      : data_(data) {}
+  explicit DeferredOnReceiveCachedMetadata(mojo_base::BigBuffer data)
+      : data_(std::move(data)) {}
 
   void HandleMessage(ResourceDispatcher* dispatcher, int request_id) override {
     dispatcher->OnReceivedCachedMetadata(request_id, data_);
@@ -107,7 +107,7 @@ class URLLoaderClientImpl::DeferredOnReceiveCachedMetadata final
   bool IsCompletionMessage() const override { return false; }
 
  private:
-  const std::vector<uint8_t> data_;
+  mojo_base::BigBuffer data_;
 };
 
 class URLLoaderClientImpl::DeferredOnStartLoadingResponseBody final
@@ -281,10 +281,10 @@ void URLLoaderClientImpl::OnUploadProgress(
   std::move(ack_callback).Run();
 }
 
-void URLLoaderClientImpl::OnReceiveCachedMetadata(
-    const std::vector<uint8_t>& data) {
+void URLLoaderClientImpl::OnReceiveCachedMetadata(mojo_base::BigBuffer data) {
   if (NeedsStoringMessage()) {
-    StoreAndDispatch(std::make_unique<DeferredOnReceiveCachedMetadata>(data));
+    StoreAndDispatch(
+        std::make_unique<DeferredOnReceiveCachedMetadata>(std::move(data)));
   } else {
     resource_dispatcher_->OnReceivedCachedMetadata(request_id_, data);
   }

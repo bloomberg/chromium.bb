@@ -285,7 +285,7 @@ void SignedExchangeCertFetcher::OnUploadProgress(
 }
 
 void SignedExchangeCertFetcher::OnReceiveCachedMetadata(
-    const std::vector<uint8_t>& data) {
+    mojo_base::BigBuffer data) {
   // Cert fetching doesn't use cached metadata.
   NOTREACHED();
 }

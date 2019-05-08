@@ -4,6 +4,7 @@
 
 module network.mojom;
 
+import "mojo/public/mojom/base/big_buffer.mojom";
 import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/time.mojom";
@@ -441,7 +442,7 @@ interface URLLoaderClient {
   OnUploadProgress(int64 current_position, int64 total_size) => ();
 
   // Called when cached metadata from a resource request is ready.
-  OnReceiveCachedMetadata(array<uint8> data);
+  OnReceiveCachedMetadata(mojo_base.mojom.BigBuffer data);
 
   // Called when the transfer size is updated. This is only called if
   // |report_raw_headers| is set or the renderer has permission to read the

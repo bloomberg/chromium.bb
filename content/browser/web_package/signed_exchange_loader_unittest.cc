@@ -62,7 +62,7 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
                       const network::ResourceResponseHead&));
     MOCK_METHOD3(OnUploadProgress,
                  void(int64_t, int64_t, base::OnceCallback<void()> callback));
-    MOCK_METHOD1(OnReceiveCachedMetadata, void(const std::vector<uint8_t>&));
+    MOCK_METHOD1(OnReceiveCachedMetadata, void(mojo_base::BigBuffer));
     MOCK_METHOD1(OnTransferSizeUpdated, void(int32_t));
     MOCK_METHOD1(OnStartLoadingResponseBody,
                  void(mojo::ScopedDataPipeConsumerHandle));

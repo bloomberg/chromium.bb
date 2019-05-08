@@ -384,8 +384,8 @@ void ServiceWorkerNewScriptLoader::OnUploadProgress(
 }
 
 void ServiceWorkerNewScriptLoader::OnReceiveCachedMetadata(
-    const std::vector<uint8_t>& data) {
-  client_->OnReceiveCachedMetadata(data);
+    mojo_base::BigBuffer data) {
+  client_->OnReceiveCachedMetadata(std::move(data));
 }
 
 void ServiceWorkerNewScriptLoader::OnTransferSizeUpdated(

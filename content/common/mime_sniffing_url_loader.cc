@@ -90,9 +90,8 @@ void MimeSniffingURLLoader::OnUploadProgress(
                                                    std::move(ack_callback));
 }
 
-void MimeSniffingURLLoader::OnReceiveCachedMetadata(
-    const std::vector<uint8_t>& data) {
-  destination_url_loader_client_->OnReceiveCachedMetadata(data);
+void MimeSniffingURLLoader::OnReceiveCachedMetadata(mojo_base::BigBuffer data) {
+  destination_url_loader_client_->OnReceiveCachedMetadata(std::move(data));
 }
 
 void MimeSniffingURLLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {

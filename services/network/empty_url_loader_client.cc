@@ -47,8 +47,7 @@ void EmptyURLLoaderClient::OnUploadProgress(int64_t current_position,
   std::move(callback).Run();
 }
 
-void EmptyURLLoaderClient::OnReceiveCachedMetadata(
-    const std::vector<uint8_t>& data) {}
+void EmptyURLLoaderClient::OnReceiveCachedMetadata(mojo_base::BigBuffer data) {}
 
 void EmptyURLLoaderClient::OnTransferSizeUpdated(int32_t transfer_size_diff) {}
 

@@ -187,8 +187,7 @@ void PrefetchURLLoader::OnUploadProgress(int64_t current_position,
                                        std::move(callback));
 }
 
-void PrefetchURLLoader::OnReceiveCachedMetadata(
-    const std::vector<uint8_t>& data) {
+void PrefetchURLLoader::OnReceiveCachedMetadata(mojo_base::BigBuffer data) {
   // Just drop this; we don't need to forward this to the renderer
   // for prefetch.
 }

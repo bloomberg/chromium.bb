@@ -279,8 +279,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnUploadProgress(
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
-    OnReceiveCachedMetadata(const std::vector<uint8_t>& data) {
-  target_client_->OnReceiveCachedMetadata(data);
+    OnReceiveCachedMetadata(mojo_base::BigBuffer data) {
+  target_client_->OnReceiveCachedMetadata(std::move(data));
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::

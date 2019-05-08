@@ -117,7 +117,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   int StartBlobReading(mojo::ScopedDataPipeConsumerHandle* body_pipe);
   void OnBlobSideDataReadingComplete(
       mojo::ScopedDataPipeConsumerHandle data_pipe,
-      const base::Optional<std::vector<uint8_t>>& metadata);
+      base::Optional<mojo_base::BigBuffer> metadata);
   void OnBlobReadingComplete(int net_error);
 
   // Calls url_loader_client_->OnReceiveResponse() with |response_head_|.

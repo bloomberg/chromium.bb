@@ -175,8 +175,7 @@ void WorkerScriptFetcher::OnUploadProgress(int64_t current_position,
   NOTREACHED();
 }
 
-void WorkerScriptFetcher::OnReceiveCachedMetadata(
-    const std::vector<uint8_t>& data) {
+void WorkerScriptFetcher::OnReceiveCachedMetadata(mojo_base::BigBuffer data) {
   NOTREACHED();
 }
 
