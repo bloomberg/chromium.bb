@@ -941,11 +941,11 @@ void LocalFrameView::UpdateLayout() {
   if (nested_layout_count_)
     return;
 
-  // TODO(crbug.com/946004): Move the following line into a DCHECK_IS_ON() block
-  // when we no longer see missing layout reports in LayoutNG.
+#if DCHECK_IS_ON()
   // Post-layout assert that nobody was re-marked as needing layout during
   // layout.
   GetLayoutView()->AssertSubtreeIsLaidOut();
+#endif
 
   if (frame_->IsMainFrame()) {
     // Scrollbars changing state can cause a visual viewport size change.
@@ -2887,9 +2887,9 @@ void LocalFrameView::UpdateStyleAndLayoutIfNeededRecursive() {
   // These asserts ensure that parent frames are clean, when child frames
   // finished updating layout and style.
   CheckDoesNotNeedLayout();
-  // TODO(crbug.com/946004): Move the following line into a DCHECK_IS_ON() block
-  // when we no longer see missing layout reports in LayoutNG.
+#if DCHECK_IS_ON()
   frame_->GetDocument()->GetLayoutView()->AssertLaidOut();
+#endif
 
   UpdateGeometriesIfNeeded();
 
