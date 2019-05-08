@@ -15,6 +15,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/thread_annotations.h"
 #include "net/extras/sqlite/sqlite_persistent_store_backend_base.h"
@@ -28,11 +29,46 @@
 namespace net {
 
 namespace {
-// Version 1: Adds tables for NEL policies, Reporting endpoints, and Reporting
-//            endpoint groups.
-
+// Version 1 - 2019/03 - crrev.com/c/1504493, crrev.com/c/1560456
+//
+// Version 1 adds tables for NEL policies, Reporting endpoints, and Reporting
+// endpoint groups.
 const int kCurrentVersionNumber = 1;
 const int kCompatibleVersionNumber = 1;
+
+// Enums for histograms:
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+
+// Outcome of initializing database
+enum class InitializeDbOutcome {
+  kFailedPathDoesNotExist = 0,
+  kFailedOpenDbProblem = 1,
+  kFailedMigrateDbProblem = 2,
+  kSucceededNewDbFileCreated = 3,
+  kSucceededExistingDbFileLoaded = 4,
+  kMaxValue = kSucceededExistingDbFileLoaded,
+};
+
+// Outcome of updating the backing store
+enum class BackingStoreUpdateOutcome {
+  kSuccess = 0,
+  kTrouble = 1,
+  kFailure = 2,
+  kMaxValue = kFailure
+};
+
+// Histogram names
+const char kInitializeDbOutcomeHistogramName[] =
+    "ReportingAndNEL.InitializeDBOutcome";
+const char kBackingStoreUpdateOutcomeHistogramName[] =
+    "ReportingAndNEL.BackingStoreUpdateOutcome";
+const char kNumberOfLoadedNelPoliciesHistogramName[] =
+    "ReportingAndNEL.NumberOfLoadedNELPolicies";
+const char kNumberOfLoadedReportingEndpointsHistogramName[] =
+    "ReportingAndNEL.NumberOfLoadedReportingEndpoints";
+const char kNumberOfLoadedReportingEndpointGroupsHistogramName[] =
+    "ReportingAndNEL.NumberOfLoadedReportingEndpointGroups";
 }  // namespace
 
 class SQLitePersistentReportingAndNelStore::Backend
@@ -113,12 +149,15 @@ class SQLitePersistentReportingAndNelStore::Backend
   void DoCommit() override;
 
   // Commit a pending operation pertaining to a NEL policy.
-  void CommitNelPolicyOperation(PendingOperation<NelPolicyInfo>* op);
+  // Returns true on success.
+  bool CommitNelPolicyOperation(PendingOperation<NelPolicyInfo>* op);
   // Commit a pending operation pertaining to a Reporting endpoint.
-  void CommitReportingEndpointOperation(
+  // Returns true on success.
+  bool CommitReportingEndpointOperation(
       PendingOperation<ReportingEndpointInfo>* op);
   // Commit a pending operation pertaining to a Reporting endpoint group.
-  void CommitReportingEndpointGroupOperation(
+  // Returns true on success.
+  bool CommitReportingEndpointGroupOperation(
       PendingOperation<ReportingEndpointGroupInfo>* op);
 
   // Add a pending operation to the appropriate queue.
@@ -174,6 +213,19 @@ class SQLitePersistentReportingAndNelStore::Backend
       std::vector<ReportingEndpoint> loaded_endpoints,
       std::vector<CachedReportingEndpointGroup> loaded_endpoint_groups,
       bool load_success);
+
+  // SQLitePersistentStoreBackendBase:
+  void RecordPathDoesNotExistProblem() override;
+  void RecordOpenDBProblem() override;
+  void RecordDBMigrationProblem() override;
+  void RecordNewDBFile() override;
+  void RecordDBLoaded() override;
+
+  void RecordInitializeDBOutcome(InitializeDbOutcome outcome);
+  void RecordBackingStoreUpdateOutcome(BackingStoreUpdateOutcome outcome);
+  void RecordNumberOfLoadedNelPolicies(size_t count);
+  void RecordNumberOfLoadedReportingEndpoints(size_t count);
+  void RecordNumberOfLoadedReportingEndpointGroups(size_t count);
 
   // Total number of pending operations (may not match the sum of the number of
   // elements in the pending operations queues, due to operation coalescing).
@@ -551,13 +603,15 @@ void SQLitePersistentReportingAndNelStore::Backend::DoCommit() {
   if (!transaction.Begin())
     return;
 
+  bool ops_success = true;
+
   // Commit all the NEL policy operations.
   for (const auto& origin_and_nel_policy_ops : nel_policy_ops) {
     const PendingOperationsVector<NelPolicyInfo>& ops_for_origin =
         origin_and_nel_policy_ops.second;
     for (const std::unique_ptr<PendingOperation<NelPolicyInfo>>& nel_policy_op :
          ops_for_origin) {
-      CommitNelPolicyOperation(nel_policy_op.get());
+      ops_success &= CommitNelPolicyOperation(nel_policy_op.get());
     }
   }
 
@@ -567,7 +621,8 @@ void SQLitePersistentReportingAndNelStore::Backend::DoCommit() {
         key_and_reporting_endpoint_ops.second;
     for (const std::unique_ptr<PendingOperation<ReportingEndpointInfo>>&
              reporting_endpoint_op : ops_for_key) {
-      CommitReportingEndpointOperation(reporting_endpoint_op.get());
+      ops_success &=
+          CommitReportingEndpointOperation(reporting_endpoint_op.get());
     }
   }
 
@@ -578,16 +633,23 @@ void SQLitePersistentReportingAndNelStore::Backend::DoCommit() {
         key_and_reporting_endpoint_group_ops.second;
     for (const std::unique_ptr<PendingOperation<ReportingEndpointGroupInfo>>&
              reporting_endpoint_group_op : ops_for_key) {
-      CommitReportingEndpointGroupOperation(reporting_endpoint_group_op.get());
+      ops_success &= CommitReportingEndpointGroupOperation(
+          reporting_endpoint_group_op.get());
     }
   }
 
   // TODO(chlily): Commit operations pertaining to Reporting reports.
 
-  transaction.Commit();
+  bool commit_success = transaction.Commit();
+  BackingStoreUpdateOutcome outcome =
+      (commit_success && ops_success)
+          ? BackingStoreUpdateOutcome::kSuccess
+          : commit_success ? BackingStoreUpdateOutcome::kTrouble
+                           : BackingStoreUpdateOutcome::kFailure;
+  RecordBackingStoreUpdateOutcome(outcome);
 }
 
-void SQLitePersistentReportingAndNelStore::Backend::CommitNelPolicyOperation(
+bool SQLitePersistentReportingAndNelStore::Backend::CommitNelPolicyOperation(
     PendingOperation<NelPolicyInfo>* op) {
   DCHECK_EQ(1, db()->transaction_nesting());
 
@@ -598,21 +660,21 @@ void SQLitePersistentReportingAndNelStore::Backend::CommitNelPolicyOperation(
       "success_fraction, failure_fraction, is_include_subdomains, "
       "last_access_us_since_epoch) VALUES (?,?,?,?,?,?,?,?,?,?)"));
   if (!add_smt.is_valid())
-    return;
+    return false;
 
   sql::Statement update_access_smt(db()->GetCachedStatement(
       SQL_FROM_HERE,
       "UPDATE nel_policies SET last_access_us_since_epoch=? WHERE "
       "origin_scheme=? AND origin_host=? AND origin_port=?"));
   if (!update_access_smt.is_valid())
-    return;
+    return false;
 
   sql::Statement del_smt(db()->GetCachedStatement(
       SQL_FROM_HERE,
       "DELETE FROM nel_policies WHERE "
       "origin_scheme=? AND origin_host=? AND origin_port=?"));
   if (!del_smt.is_valid())
-    return;
+    return false;
 
   const NelPolicyInfo& nel_policy_info = op->data();
 
@@ -629,8 +691,10 @@ void SQLitePersistentReportingAndNelStore::Backend::CommitNelPolicyOperation(
       add_smt.BindDouble(7, nel_policy_info.failure_fraction);
       add_smt.BindBool(8, nel_policy_info.is_include_subdomains);
       add_smt.BindInt64(9, nel_policy_info.last_access_us_since_epoch);
-      if (!add_smt.Run())
+      if (!add_smt.Run()) {
         DLOG(WARNING) << "Could not add a NEL policy to the DB.";
+        return false;
+      }
       break;
 
     case PendingOperation<NelPolicyInfo>::Type::UPDATE_ACCESS_TIME:
@@ -643,6 +707,7 @@ void SQLitePersistentReportingAndNelStore::Backend::CommitNelPolicyOperation(
       if (!update_access_smt.Run()) {
         DLOG(WARNING)
             << "Could not update NEL policy last access time in the DB.";
+        return false;
       }
       break;
 
@@ -651,8 +716,10 @@ void SQLitePersistentReportingAndNelStore::Backend::CommitNelPolicyOperation(
       del_smt.BindString(0, nel_policy_info.origin_scheme);
       del_smt.BindString(1, nel_policy_info.origin_host);
       del_smt.BindInt(2, nel_policy_info.origin_port);
-      if (!del_smt.Run())
+      if (!del_smt.Run()) {
         DLOG(WARNING) << "Could not delete a NEL policy from the DB.";
+        return false;
+      }
       break;
 
     default:
@@ -662,9 +729,11 @@ void SQLitePersistentReportingAndNelStore::Backend::CommitNelPolicyOperation(
       NOTREACHED();
       break;
   }
+
+  return true;
 }
 
-void SQLitePersistentReportingAndNelStore::Backend::
+bool SQLitePersistentReportingAndNelStore::Backend::
     CommitReportingEndpointOperation(
         PendingOperation<ReportingEndpointInfo>* op) {
   DCHECK_EQ(1, db()->transaction_nesting());
@@ -675,7 +744,7 @@ void SQLitePersistentReportingAndNelStore::Backend::
       "origin_port, group_name, url, priority, weight) "
       "VALUES (?,?,?,?,?,?,?)"));
   if (!add_smt.is_valid())
-    return;
+    return false;
 
   sql::Statement update_details_smt(db()->GetCachedStatement(
       SQL_FROM_HERE,
@@ -683,7 +752,7 @@ void SQLitePersistentReportingAndNelStore::Backend::
       "origin_scheme=? AND origin_host=? AND origin_port=? "
       "AND group_name=? AND url=?"));
   if (!update_details_smt.is_valid())
-    return;
+    return false;
 
   sql::Statement del_smt(db()->GetCachedStatement(
       SQL_FROM_HERE,
@@ -691,7 +760,7 @@ void SQLitePersistentReportingAndNelStore::Backend::
       "origin_scheme=? AND origin_host=? AND origin_port=? "
       "AND group_name=? AND url=?"));
   if (!del_smt.is_valid())
-    return;
+    return false;
 
   const ReportingEndpointInfo& reporting_endpoint_info = op->data();
 
@@ -705,8 +774,10 @@ void SQLitePersistentReportingAndNelStore::Backend::
       add_smt.BindString(4, reporting_endpoint_info.url);
       add_smt.BindInt(5, reporting_endpoint_info.priority);
       add_smt.BindInt(6, reporting_endpoint_info.weight);
-      if (!add_smt.Run())
+      if (!add_smt.Run()) {
         DLOG(WARNING) << "Could not add a Reporting endpoint to the DB.";
+        return false;
+      }
       break;
 
     case PendingOperation<ReportingEndpointInfo>::Type::UPDATE_DETAILS:
@@ -721,6 +792,7 @@ void SQLitePersistentReportingAndNelStore::Backend::
       if (!update_details_smt.Run()) {
         DLOG(WARNING)
             << "Could not update Reporting endpoint details in the DB.";
+        return false;
       }
       break;
 
@@ -731,8 +803,10 @@ void SQLitePersistentReportingAndNelStore::Backend::
       del_smt.BindInt(2, reporting_endpoint_info.origin_port);
       del_smt.BindString(3, reporting_endpoint_info.group_name);
       del_smt.BindString(4, reporting_endpoint_info.url);
-      if (!del_smt.Run())
+      if (!del_smt.Run()) {
         DLOG(WARNING) << "Could not delete a Reporting endpoint from the DB.";
+        return false;
+      }
       break;
 
     default:
@@ -741,9 +815,11 @@ void SQLitePersistentReportingAndNelStore::Backend::
       NOTREACHED();
       break;
   }
+
+  return true;
 }
 
-void SQLitePersistentReportingAndNelStore::Backend::
+bool SQLitePersistentReportingAndNelStore::Backend::
     CommitReportingEndpointGroupOperation(
         PendingOperation<ReportingEndpointGroupInfo>* op) {
   DCHECK_EQ(1, db()->transaction_nesting());
@@ -754,14 +830,14 @@ void SQLitePersistentReportingAndNelStore::Backend::
       "origin_port, group_name, is_include_subdomains, expires_us_since_epoch, "
       "last_access_us_since_epoch) VALUES (?,?,?,?,?,?,?)"));
   if (!add_smt.is_valid())
-    return;
+    return false;
 
   sql::Statement update_access_smt(db()->GetCachedStatement(
       SQL_FROM_HERE,
       "UPDATE reporting_endpoint_groups SET last_access_us_since_epoch=? WHERE "
       "origin_scheme=? AND origin_host=? AND origin_port=? AND group_name=?"));
   if (!update_access_smt.is_valid())
-    return;
+    return false;
 
   sql::Statement update_details_smt(db()->GetCachedStatement(
       SQL_FROM_HERE,
@@ -769,14 +845,14 @@ void SQLitePersistentReportingAndNelStore::Backend::
       "expires_us_since_epoch=?, last_access_us_since_epoch=? WHERE "
       "origin_scheme=? AND origin_host=? AND origin_port=? AND group_name=?"));
   if (!update_details_smt.is_valid())
-    return;
+    return false;
 
   sql::Statement del_smt(db()->GetCachedStatement(
       SQL_FROM_HERE,
       "DELETE FROM reporting_endpoint_groups WHERE "
       "origin_scheme=? AND origin_host=? AND origin_port=? AND group_name=?"));
   if (!del_smt.is_valid())
-    return;
+    return false;
 
   const ReportingEndpointGroupInfo& reporting_endpoint_group_info = op->data();
 
@@ -792,8 +868,10 @@ void SQLitePersistentReportingAndNelStore::Backend::
                         reporting_endpoint_group_info.expires_us_since_epoch);
       add_smt.BindInt64(
           6, reporting_endpoint_group_info.last_access_us_since_epoch);
-      if (!add_smt.Run())
+      if (!add_smt.Run()) {
         DLOG(WARNING) << "Could not add a Reporting endpoint group to the DB.";
+        return false;
+      }
       break;
 
     case PendingOperation<ReportingEndpointGroupInfo>::Type::UPDATE_ACCESS_TIME:
@@ -810,6 +888,7 @@ void SQLitePersistentReportingAndNelStore::Backend::
         DLOG(WARNING)
             << "Could not update Reporting endpoint group last access "
                "time in the DB.";
+        return false;
       }
       break;
 
@@ -831,6 +910,7 @@ void SQLitePersistentReportingAndNelStore::Backend::
       if (!update_details_smt.Run()) {
         DLOG(WARNING)
             << "Could not update Reporting endpoint group details in the DB.";
+        return false;
       }
       break;
 
@@ -843,9 +923,12 @@ void SQLitePersistentReportingAndNelStore::Backend::
       if (!del_smt.Run()) {
         DLOG(WARNING)
             << "Could not delete a Reporting endpoint group from the DB.";
+        return false;
       }
       break;
   }
+
+  return true;
 }
 
 template <typename KeyType, typename DataType>
@@ -1009,7 +1092,7 @@ void SQLitePersistentReportingAndNelStore::Backend::
   DCHECK(client_task_runner()->RunsTasksInCurrentSequence());
 
   if (load_success) {
-    // TODO(chlily): report metrics
+    RecordNumberOfLoadedNelPolicies(loaded_policies.size());
   } else {
     DCHECK(loaded_policies.empty());
   }
@@ -1106,7 +1189,8 @@ void SQLitePersistentReportingAndNelStore::Backend::
   DCHECK(client_task_runner()->RunsTasksInCurrentSequence());
 
   if (load_success) {
-    // TODO(chlily): report metrics
+    RecordNumberOfLoadedReportingEndpoints(loaded_endpoints.size());
+    RecordNumberOfLoadedReportingEndpointGroups(loaded_endpoint_groups.size());
   } else {
     DCHECK(loaded_endpoints.empty());
     DCHECK(loaded_endpoint_groups.empty());
@@ -1114,6 +1198,59 @@ void SQLitePersistentReportingAndNelStore::Backend::
 
   std::move(loaded_callback)
       .Run(std::move(loaded_endpoints), std::move(loaded_endpoint_groups));
+}
+
+void SQLitePersistentReportingAndNelStore::Backend::
+    RecordPathDoesNotExistProblem() {
+  RecordInitializeDBOutcome(InitializeDbOutcome::kFailedPathDoesNotExist);
+}
+
+void SQLitePersistentReportingAndNelStore::Backend::RecordOpenDBProblem() {
+  RecordInitializeDBOutcome(InitializeDbOutcome::kFailedOpenDbProblem);
+}
+
+void SQLitePersistentReportingAndNelStore::Backend::RecordDBMigrationProblem() {
+  RecordInitializeDBOutcome(InitializeDbOutcome::kFailedMigrateDbProblem);
+}
+
+void SQLitePersistentReportingAndNelStore::Backend::RecordNewDBFile() {
+  RecordInitializeDBOutcome(InitializeDbOutcome::kSucceededNewDbFileCreated);
+}
+
+void SQLitePersistentReportingAndNelStore::Backend::RecordDBLoaded() {
+  RecordInitializeDBOutcome(
+      InitializeDbOutcome::kSucceededExistingDbFileLoaded);
+}
+
+void SQLitePersistentReportingAndNelStore::Backend::RecordInitializeDBOutcome(
+    InitializeDbOutcome outcome) {
+  UMA_HISTOGRAM_ENUMERATION(kInitializeDbOutcomeHistogramName, outcome);
+}
+
+void SQLitePersistentReportingAndNelStore::Backend::
+    RecordBackingStoreUpdateOutcome(BackingStoreUpdateOutcome outcome) {
+  UMA_HISTOGRAM_ENUMERATION(kBackingStoreUpdateOutcomeHistogramName, outcome);
+}
+
+void SQLitePersistentReportingAndNelStore::Backend::
+    RecordNumberOfLoadedNelPolicies(size_t count) {
+  // The NetworkErrorLoggingService stores up to 1000 policies.
+  UMA_HISTOGRAM_COUNTS_1000(kNumberOfLoadedNelPoliciesHistogramName, count);
+}
+
+void SQLitePersistentReportingAndNelStore::Backend::
+    RecordNumberOfLoadedReportingEndpoints(size_t count) {
+  // The ReportingCache stores up to 1000 endpoints.
+  UMA_HISTOGRAM_COUNTS_1000(kNumberOfLoadedReportingEndpointsHistogramName,
+                            count);
+}
+
+void SQLitePersistentReportingAndNelStore::Backend::
+    RecordNumberOfLoadedReportingEndpointGroups(size_t count) {
+  // The ReportingCache stores up to 1000 endpoints, and there is at least one
+  // endpoint per group.
+  UMA_HISTOGRAM_COUNTS_1000(kNumberOfLoadedReportingEndpointGroupsHistogramName,
+                            count);
 }
 
 SQLitePersistentReportingAndNelStore::SQLitePersistentReportingAndNelStore(
