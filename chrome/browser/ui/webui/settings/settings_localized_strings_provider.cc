@@ -585,6 +585,7 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
 #else
     {"resetToDefaultTheme", IDS_SETTINGS_RESET_TO_DEFAULT_THEME},
 #endif
+    {"chromeColors", IDS_SETTINGS_CHROME_COLORS},
     {"showHomeButton", IDS_SETTINGS_SHOW_HOME_BUTTON},
     {"showBookmarksBar", IDS_SETTINGS_SHOW_BOOKMARKS_BAR},
     {"homePageNtp", IDS_SETTINGS_HOME_PAGE_NTP},
