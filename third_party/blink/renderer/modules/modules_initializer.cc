@@ -84,6 +84,7 @@
 #include "third_party/blink/renderer/modules/webdatabase/inspector_database_agent.h"
 #include "third_party/blink/renderer/modules/webdatabase/web_database_impl.h"
 #include "third_party/blink/renderer/modules/worklet/animation_and_paint_worklet_thread.h"
+#include "third_party/blink/renderer/modules/xr/navigator_xr.h"
 #if defined(SUPPORT_WEBGL2_COMPUTE_CONTEXT)
 #include "third_party/blink/renderer/modules/webgl/webgl2_compute_rendering_context.h"
 #endif
@@ -259,6 +260,8 @@ void ModulesInitializer::OnClearWindowObjectInMainWorld(
   DOMWindowStorageController::From(document);
   if (RuntimeEnabledFeatures::WebVREnabled(document.GetExecutionContext()))
     NavigatorVR::From(document);
+  if (RuntimeEnabledFeatures::WebXREnabled(document.GetExecutionContext()))
+    NavigatorXR::From(document);
   if (RuntimeEnabledFeatures::PresentationEnabled() &&
       settings.GetPresentationReceiver()) {
     // We eagerly create PresentationReceiver so that the frame creating the

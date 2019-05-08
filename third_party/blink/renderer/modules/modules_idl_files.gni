@@ -955,6 +955,7 @@ modules_dependency_idl_files =
           "webshare/navigator_share.idl",
           "webusb/navigator_usb.idl",
           "webusb/worker_navigator_usb.idl",
+          "xr/navigator_xr.idl",
         ],
         "abspath")
 

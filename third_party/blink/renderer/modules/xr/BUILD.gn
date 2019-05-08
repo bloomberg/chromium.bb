@@ -6,6 +6,8 @@ import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("xr") {
   sources = [
+    "navigator_xr.cc",
+    "navigator_xr.h",
     "type_converters.cc",
     "type_converters.h",
     "xr.cc",
@@ -79,5 +81,6 @@ blink_modules_sources("xr") {
 
   deps = [
     "//device/vr/public/mojom:mojom_blink",
+    "//services/metrics/public/cpp:ukm_builders",
   ]
 }

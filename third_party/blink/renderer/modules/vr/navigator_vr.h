@@ -13,14 +13,11 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/vr/vr_display.h"
 #include "third_party/blink/renderer/modules/vr/vr_display_event.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
 class Document;
-class Navigator;
-class XR;
 class VRController;
 
 class MODULES_EXPORT NavigatorVR final
@@ -45,12 +42,6 @@ class MODULES_EXPORT NavigatorVR final
   explicit NavigatorVR(Navigator&);
   ~NavigatorVR() override;
 
-  // XR API
-  // TODO(http://crbug.com/842025) Should eventually move this out into it's own
-  // separate Navigator supplement.
-  static XR* xr(Navigator&);
-  XR* xr();
-
   // Legacy API
   static ScriptPromise getVRDisplays(ScriptState*, Navigator&);
   ScriptPromise getVRDisplays(ScriptState*);
@@ -73,10 +64,6 @@ class MODULES_EXPORT NavigatorVR final
   void DidRemoveEventListener(LocalDOMWindow*, const AtomicString&) override;
   void DidRemoveAllEventListeners(LocalDOMWindow*) override;
 
-  bool HasWebVrBeenUsed() const { return did_use_webvr_; }
-
-  int64_t GetSourceId() const;
-
   void Trace(blink::Visitor*) override;
 
  private:
@@ -85,7 +72,6 @@ class MODULES_EXPORT NavigatorVR final
 
   void FireVRDisplayPresentChange(VRDisplay*);
 
-  Member<XR> xr_;
   Member<VRController> controller_;
 
   // Whether this page is listening for vrdisplayactivate event.
@@ -97,8 +83,6 @@ class MODULES_EXPORT NavigatorVR final
   // Metrics data - indicates whether we've already measured this data so we
   // don't do it every frame.
   bool did_log_getVRDisplays_ = false;
-  bool did_log_NavigatorXR_ = false;
-  const int64_t ukm_source_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigatorVR);
 };

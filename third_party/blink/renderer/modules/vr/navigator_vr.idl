@@ -2,13 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/webvr/#interface-navigator
+// https://immersive-web.github.io/webvr/spec/1.1/#interface-navigator
 [
     ImplementedAs=NavigatorVR
 ] partial interface Navigator {
-    // Latest API
-    [SecureContext, RuntimeEnabled=WebXR, MeasureAs=NavigatorXR, SameObject] readonly attribute XR xr;
-
-    // Legacy API
     [RuntimeEnabled=WebVR, CallWith=ScriptState] Promise<sequence<VRDisplay>> getVRDisplays();
 };
