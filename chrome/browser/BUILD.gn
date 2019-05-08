@@ -1114,6 +1114,7 @@ jumbo_split_static_library("browser") {
     "performance_manager/performance_manager_tab_helper.h",
     "performance_manager/public/graph/frame_node.h",
     "performance_manager/public/graph/graph.h",
+    "performance_manager/public/graph/node_attached_data.h",
     "performance_manager/public/graph/page_node.h",
     "performance_manager/public/graph/process_node.h",
     "performance_manager/public/graph/system_node.h",

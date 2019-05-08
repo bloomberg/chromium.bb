@@ -9,48 +9,11 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "chrome/browser/performance_manager/graph/node_type.h"
+#include "chrome/browser/performance_manager/public/graph/node_attached_data.h"
 
 namespace performance_manager {
 
 class NodeBase;
-
-// Abstract base class used for attaching user data to nodes in the graph.
-// Implementations should derive from NodeAttachedDataImpl. See
-// node_attached_data_impl.h for details.
-class NodeAttachedData {
- public:
-  NodeAttachedData();
-  virtual ~NodeAttachedData();
-
-  // Returns the 'key' associated with this type of NodeAttachedData. This needs
-  // to be unique per data type or bad things happen.
-  virtual const void* key() const = 0;
-
- protected:
-  friend class NodeAttachedDataTest;
-
-  // For creating / retrieving / destroying data that is stored in a global map
-  // owned by the graph. These are not intended to be used directly, rather
-  // they are invoked by the typed helper functions provided via
-  // NodeAttachedDataImpl.
-
-  // Attaches the provided |data| to the provided |node|. This should only be
-  // called if the data does not exist (GetFromMap returns nullptr), and will
-  // DCHECK otherwise. This should also only be called if |data| can be attached
-  // to the given node type (also enforced by a DCHECK).
-  static void AttachInMap(const NodeBase* node,
-                          std::unique_ptr<NodeAttachedData> data);
-
-  // Retrieves the data associated with the provided |node| and |key|. This
-  // returns nullptr if no data exists.
-  static NodeAttachedData* GetFromMap(const NodeBase* node, const void* key);
-
-  // Detaches the data associated with the provided |node| and |key|. It is
-  // harmless to call this when no data exists.
-  static std::unique_ptr<NodeAttachedData> DetachFromMap(const NodeBase* node,
-                                                         const void* key);
-};
 
 // Helper class for providing internal storage of a NodeAttachedData
 // implementation directly in a node. The storage is provided as a raw buffer of
@@ -97,6 +60,68 @@ class InternalNodeAttachedDataStorage {
   uint8_t buffer_[kDataSize];
   DISALLOW_COPY_AND_ASSIGN(InternalNodeAttachedDataStorage);
 };
+
+// Provides access for setting/getting data in the map based storage. Not
+// intended to be used directly, but rather by (External)NodeAttachedDataImpl.
+class NodeAttachedDataMapHelper {
+ public:
+  // Attaches the provided |data| to the provided |node|. This should only be
+  // called if the data does not exist (GetFromMap returns nullptr), and will
+  // DCHECK otherwise.
+  static void AttachInMap(const NodeBase* node,
+                          std::unique_ptr<NodeAttachedData> data);
+
+  // Retrieves the data associated with the provided |node| and |key|. This
+  // returns nullptr if no data exists.
+  static NodeAttachedData* GetFromMap(const NodeBase* node, const void* key);
+
+  // Detaches the data associated with the provided |node| and |key|. It is
+  // harmless to call this when no data exists.
+  static std::unique_ptr<NodeAttachedData> DetachFromMap(const NodeBase* node,
+                                                         const void* key);
+};
+
+// Implementation of ExternalNodeAttachedDataImpl, which is declared in the
+// corresponding public header. This helps keep the public headers as clean as
+// possible.
+
+// static
+template <typename UserDataType>
+constexpr int ExternalNodeAttachedDataImpl<UserDataType>::kUserDataKey;
+
+template <typename UserDataType>
+template <typename NodeType>
+UserDataType* ExternalNodeAttachedDataImpl<UserDataType>::GetOrCreate(
+    const NodeType* node) {
+  if (auto* data = Get(node))
+    return data;
+  std::unique_ptr<UserDataType> data = std::make_unique<UserDataType>(node);
+  auto* raw_data = data.get();
+  auto* base = reinterpret_cast<const NodeBase*>(node->GetIndexingKey());
+  NodeAttachedDataMapHelper::AttachInMap(base, std::move(data));
+  return raw_data;
+}
+
+template <typename UserDataType>
+template <typename NodeType>
+UserDataType* ExternalNodeAttachedDataImpl<UserDataType>::Get(
+    const NodeType* node) {
+  auto* base = reinterpret_cast<const NodeBase*>(node->GetIndexingKey());
+  auto* data = NodeAttachedDataMapHelper::GetFromMap(base, UserDataKey());
+  if (!data)
+    return nullptr;
+  DCHECK_EQ(UserDataKey(), data->GetKey());
+  return static_cast<UserDataType*>(data);
+}
+
+template <typename UserDataType>
+template <typename NodeType>
+bool ExternalNodeAttachedDataImpl<UserDataType>::Destroy(const NodeType* node) {
+  auto* base = reinterpret_cast<const NodeBase*>(node->GetIndexingKey());
+  std::unique_ptr<NodeAttachedData> data =
+      NodeAttachedDataMapHelper::DetachFromMap(base, UserDataKey());
+  return data.get();
+}
 
 }  // namespace performance_manager
 

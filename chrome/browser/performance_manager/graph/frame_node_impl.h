@@ -43,7 +43,7 @@ class ProcessNodeImpl;
 // another process!) and commits, the frame will be swapped with the previously
 // active frame.
 class FrameNodeImpl
-    : public FrameNode,
+    : public PublicNodeImpl<FrameNodeImpl, FrameNode>,
       public CoordinationUnitInterface<
           FrameNodeImpl,
           resource_coordinator::mojom::DocumentCoordinationUnit,
@@ -62,7 +62,7 @@ class FrameNodeImpl
                 const base::UnguessableToken& dev_tools_token);
   ~FrameNodeImpl() override;
 
-  // FrameNode implementation.
+  // resource_coordinator::mojom::DocumentCoordinationUnit implementation.
   void SetNetworkAlmostIdle(bool idle) override;
   void SetLifecycleState(
       resource_coordinator::mojom::LifecycleState state) override;

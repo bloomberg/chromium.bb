@@ -24,7 +24,8 @@ namespace performance_manager {
 class FrameNodeImpl;
 class ProcessNodeImpl;
 
-class PageNodeImpl : public PageNode, public TypedNodeBase<PageNodeImpl> {
+class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
+                     public TypedNodeBase<PageNodeImpl> {
  public:
   using LifecycleState = resource_coordinator::mojom::LifecycleState;
 

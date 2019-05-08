@@ -9,6 +9,8 @@
 
 namespace performance_manager {
 
+class Graph;
+
 // Frame nodes form a tree structure, each FrameNode at most has one parent that
 // is a FrameNode. Conceptually, a frame corresponds to a
 // content::RenderFrameHost in the browser, and a content::RenderFrameImpl /
@@ -35,6 +37,13 @@ class FrameNode {
  public:
   FrameNode();
   virtual ~FrameNode();
+
+  // Returns the graph to which this node belongs.
+  virtual Graph* GetGraph() const = 0;
+
+  // Returns the private key which is used for indexing this object in the
+  // graph. This is an opaque pointer strictly used for implementation.
+  virtual const void* GetIndexingKey() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FrameNode);

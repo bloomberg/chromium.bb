@@ -46,7 +46,8 @@ struct ProcessResourceMeasurementBatch {
   std::vector<ProcessResourceMeasurement> measurements;
 };
 
-class SystemNodeImpl : public SystemNode, public TypedNodeBase<SystemNodeImpl> {
+class SystemNodeImpl : public PublicNodeImpl<SystemNodeImpl, SystemNode>,
+                       public TypedNodeBase<SystemNodeImpl> {
  public:
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kSystem; }
 

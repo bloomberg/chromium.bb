@@ -36,6 +36,13 @@ class FrameNodeImplTest : public GraphTestHarness {
 
 }  // namespace
 
+TEST_F(FrameNodeImplTest, GetIndexingKey) {
+  auto process = CreateNode<ProcessNodeImpl>();
+  auto page = CreateNode<PageNodeImpl>();
+  auto frame = CreateNode<FrameNodeImpl>(process.get(), page.get());
+  EXPECT_EQ(frame->GetIndexingKey(), static_cast<const NodeBase*>(frame.get()));
+}
+
 TEST_F(FrameNodeImplTest, AddFrameHierarchyBasic) {
   auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();

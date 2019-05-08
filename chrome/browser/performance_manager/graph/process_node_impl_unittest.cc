@@ -19,6 +19,13 @@ class ProcessNodeImplTest : public GraphTestHarness {};
 
 }  // namespace
 
+TEST_F(ProcessNodeImplTest, GetIndexingKey) {
+  auto process = CreateNode<ProcessNodeImpl>();
+  EXPECT_EQ(
+      process->GetIndexingKey(),
+      static_cast<const void*>(static_cast<const NodeBase*>(process.get())));
+}
+
 TEST_F(ProcessNodeImplTest, MeasureCPUUsage) {
   auto process_node = CreateNode<ProcessNodeImpl>();
   process_node->SetCPUUsage(1.0);

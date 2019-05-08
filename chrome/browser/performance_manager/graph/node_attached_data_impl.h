@@ -190,7 +190,7 @@ class NodeAttachedDataImpl : public NodeAttachedData {
   static const void* UserDataKey() { return &DataType::kUserDataKey; }
 
   // NodeAttachedData implementation:
-  const void* key() const override { return UserDataKey(); }
+  const void* GetKey() const override { return UserDataKey(); }
 
  private:
   // Uses implicit conversion of the traits to get the appropriate mixin class
@@ -266,15 +266,11 @@ template <typename NodeType>
 DataType*
 NodeAttachedDataImpl<DataType>::NodeAttachedDataInMap<NodeType>::GetOrCreate(
     const NodeType* node) {
-  NodeAttachedData* base_data =
-      NodeAttachedData::GetFromMap(node, DataType::UserDataKey());
-  if (base_data) {
-    DCHECK_EQ(DataType::UserDataKey(), base_data->key());
-    return static_cast<DataType*>(base_data);
-  }
-  std::unique_ptr<DataType> data = base::WrapUnique(new DataType(node));
+  if (auto* data = Get(node))
+    return data;
+  std::unique_ptr<DataType> data = std::make_unique<DataType>(node);
   DataType* raw_data = data.get();
-  NodeAttachedData::AttachInMap(node, std::move(data));
+  NodeAttachedDataMapHelper::AttachInMap(node, std::move(data));
   return raw_data;
 }
 
@@ -283,8 +279,9 @@ template <typename DataType>
 template <typename NodeType>
 DataType* NodeAttachedDataImpl<DataType>::NodeAttachedDataInMap<NodeType>::Get(
     const NodeType* node) {
-  auto* data = NodeAttachedData::GetFromMap(node, DataType::UserDataKey());
-  DCHECK(!data || DataType::UserDataKey() == data->key());
+  auto* data =
+      NodeAttachedDataMapHelper::GetFromMap(node, DataType::UserDataKey());
+  DCHECK(!data || DataType::UserDataKey() == data->GetKey());
   return static_cast<DataType*>(data);
 }
 
@@ -294,7 +291,7 @@ template <typename NodeType>
 bool NodeAttachedDataImpl<DataType>::NodeAttachedDataInMap<NodeType>::Destroy(
     const NodeType* node) {
   std::unique_ptr<NodeAttachedData> data =
-      NodeAttachedData::DetachFromMap(node, DataType::UserDataKey());
+      NodeAttachedDataMapHelper::DetachFromMap(node, DataType::UserDataKey());
   return data.get();
 }
 
@@ -308,8 +305,8 @@ DataType* NodeAttachedDataImpl<DataType>::NodeAttachedDataOwnedByNodeType<
   std::unique_ptr<NodeAttachedData>* storage =
       DataType::GetUniquePtrStorage(const_cast<NodeType*>(node));
   if (!storage->get())
-    *storage = base::WrapUnique(new DataType(node));
-  DCHECK_EQ(DataType::UserDataKey(), storage->get()->key());
+    *storage = std::make_unique<DataType>(node);
+  DCHECK_EQ(DataType::UserDataKey(), storage->get()->GetKey());
   return static_cast<DataType*>(storage->get());
 }
 
@@ -322,7 +319,7 @@ NodeAttachedDataImpl<DataType>::NodeAttachedDataOwnedByNodeType<NodeType>::Get(
   std::unique_ptr<NodeAttachedData>* storage =
       DataType::GetUniquePtrStorage(const_cast<NodeType*>(node));
   if (storage->get())
-    DCHECK_EQ(DataType::UserDataKey(), storage->get()->key());
+    DCHECK_EQ(DataType::UserDataKey(), storage->get()->GetKey());
   return static_cast<DataType*>(storage->get());
 }
 
@@ -353,7 +350,7 @@ DataType* NodeAttachedDataImpl<DataType>::NodeAttachedDataInternalOnNodeType<
     NodeAttachedData* data = new (storage->buffer()) DataType(node);
     InternalNodeAttachedDataStorageAccess::Set(storage, data);
   }
-  DCHECK_EQ(DataType::UserDataKey(), storage->Get()->key());
+  DCHECK_EQ(DataType::UserDataKey(), storage->Get()->GetKey());
   return static_cast<DataType*>(storage->Get());
 }
 
@@ -365,7 +362,7 @@ DataType* NodeAttachedDataImpl<DataType>::NodeAttachedDataInternalOnNodeType<
   InternalNodeAttachedDataStorage<sizeof(DataType)>* storage =
       DataType::GetInternalStorage(const_cast<NodeType*>(node));
   if (storage->Get())
-    DCHECK_EQ(DataType::UserDataKey(), storage->Get()->key());
+    DCHECK_EQ(DataType::UserDataKey(), storage->Get()->GetKey());
   return static_cast<DataType*>(storage->Get());
 }
 

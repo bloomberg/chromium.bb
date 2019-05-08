@@ -79,6 +79,13 @@ std::unique_ptr<ProcessResourceMeasurementBatch> CreateMeasurementBatch(
 
 }  // namespace
 
+TEST_F(SystemNodeImplTest, GetIndexingKey) {
+  MockMultiplePagesWithMultipleProcessesGraph mock_graph(graph());
+  auto& sys = mock_graph.system;
+  EXPECT_EQ(sys->GetIndexingKey(),
+            static_cast<const void*>(static_cast<const NodeBase*>(sys.get())));
+}
+
 TEST_F(SystemNodeImplTest, DistributeMeasurementBatch) {
   SystemAndProcessObserver observer;
   MockMultiplePagesWithMultipleProcessesGraph mock_graph(graph());

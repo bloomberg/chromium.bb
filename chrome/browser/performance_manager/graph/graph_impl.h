@@ -102,7 +102,7 @@ class GraphImpl : public Graph {
   ukm::UkmRecorder* ukm_recorder_ = nullptr;
 
   // User data storage for the graph.
-  friend class NodeAttachedData;
+  friend class NodeAttachedDataMapHelper;
   using NodeAttachedDataKey = std::pair<const NodeBase*, const void*>;
   using NodeAttachedDataMap =
       std::map<NodeAttachedDataKey, std::unique_ptr<NodeAttachedData>>;

@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/node_type.h"
 #include "chrome/browser/performance_manager/graph/properties.h"
 #include "chrome/browser/performance_manager/observers/graph_observer.h"
@@ -23,8 +24,6 @@
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 
 namespace performance_manager {
-
-class GraphImpl;
 
 // NodeBase implements shared functionality among different types of graph
 // nodes. A specific type of graph node will derive from this class and can
@@ -79,6 +78,23 @@ class NodeBase {
   base::ObserverList<GraphObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(NodeBase);
+};
+
+// Helper for implementing the common bits of |PublicNodeClass|.
+template <class NodeImplClass, class PublicNodeClass>
+class PublicNodeImpl : public PublicNodeClass {
+ public:
+  // Partial implementation of PublicNodeClass:
+  Graph* GetGraph() const override {
+    return static_cast<const NodeImplClass*>(this)->graph();
+  }
+  const void* GetIndexingKey() const override {
+    // By contract the indexing key is actually a NodeBase pointer. This allows
+    // quick and safe casting from a public node type to the corresponding
+    // internal node type.
+    return static_cast<const NodeBase*>(
+        static_cast<const NodeImplClass*>(this));
+  }
 };
 
 template <class NodeImplClass>

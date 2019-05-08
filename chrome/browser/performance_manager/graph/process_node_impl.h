@@ -32,7 +32,7 @@ class FrameNodeImpl;
 // 3. Process died or falied to start, have exit status.
 // 4. Back to 2.
 class ProcessNodeImpl
-    : public ProcessNode,
+    : public PublicNodeImpl<ProcessNodeImpl, ProcessNode>,
       public CoordinationUnitInterface<
           ProcessNodeImpl,
           resource_coordinator::mojom::ProcessCoordinationUnit,

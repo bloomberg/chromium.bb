@@ -38,6 +38,12 @@ class PageNodeImplTest : public GraphTestHarness {
 
 }  // namespace
 
+TEST_F(PageNodeImplTest, GetIndexingKey) {
+  auto page = CreateNode<PageNodeImpl>();
+  EXPECT_EQ(page->GetIndexingKey(),
+            static_cast<const void*>(static_cast<const NodeBase*>(page.get())));
+}
+
 TEST_F(PageNodeImplTest, AddFrameBasic) {
   auto process_node = CreateNode<ProcessNodeImpl>();
   auto page_node = CreateNode<PageNodeImpl>();

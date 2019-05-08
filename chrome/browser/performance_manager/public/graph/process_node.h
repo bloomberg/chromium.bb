@@ -9,6 +9,8 @@
 
 namespace performance_manager {
 
+class Graph;
+
 // A process node follows the lifetime of a RenderProcessHost.
 // It may reference zero or one processes at a time, but during its lifetime, it
 // may reference more than one process. This can happen if the associated
@@ -23,6 +25,13 @@ class ProcessNode {
  public:
   ProcessNode();
   virtual ~ProcessNode();
+
+  // Returns the graph to which this node belongs.
+  virtual Graph* GetGraph() const = 0;
+
+  // Returns the private key which is used for indexing this object in the
+  // graph. This is an opaque pointer strictly used for implementation.
+  virtual const void* GetIndexingKey() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProcessNode);
