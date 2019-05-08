@@ -194,7 +194,12 @@ ArcApps::~ArcApps() {
   pending_load_icon_calls_.clear();
 
   if (prefs_) {
-    prefs_->app_connection_holder()->RemoveObserver(this);
+    auto* holder = prefs_->app_connection_holder();
+    // The null check is for unit tests. On production, |holder| is always
+    // non-null.
+    if (holder) {
+      holder->RemoveObserver(this);
+    }
     prefs_->RemoveObserver(this);
   }
 }
