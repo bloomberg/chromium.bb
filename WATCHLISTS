@@ -2193,7 +2193,6 @@
     'chromeos_webui': ['alemate+watch@chromium.org'],
     'clang_update': ['dcheng@chromium.org',
                      'dmikurube+clang@chromium.org',
-                     'dsinclair@chromium.org',
                      'eugenis+clang@chromium.org',
                      'gbiv+clang@chromium.org',
                      'glider+clang@chromium.org',
