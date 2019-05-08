@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 3615 tests; 3570 PASS, 45 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 3613 tests; 3570 PASS, 43 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Document: original interface defined
 PASS Partial interface mixin NavigatorID: original interface mixin defined
@@ -836,7 +836,6 @@ PASS HTMLObjectElement interface: existence and properties of interface prototyp
 PASS HTMLObjectElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLObjectElement interface: attribute data
 PASS HTMLObjectElement interface: attribute type
-FAIL HTMLObjectElement interface: attribute typeMustMatch assert_true: The prototype object must have a property "typeMustMatch" expected true got false
 PASS HTMLObjectElement interface: attribute name
 PASS HTMLObjectElement interface: attribute useMap
 PASS HTMLObjectElement interface: attribute form
@@ -865,7 +864,6 @@ PASS HTMLObjectElement must be primary interface of document.createElement("obje
 PASS Stringification of document.createElement("object")
 PASS HTMLObjectElement interface: document.createElement("object") must inherit property "data" with the proper type
 PASS HTMLObjectElement interface: document.createElement("object") must inherit property "type" with the proper type
-FAIL HTMLObjectElement interface: document.createElement("object") must inherit property "typeMustMatch" with the proper type assert_inherits: property "typeMustMatch" not found in prototype chain
 PASS HTMLObjectElement interface: document.createElement("object") must inherit property "name" with the proper type
 PASS HTMLObjectElement interface: document.createElement("object") must inherit property "useMap" with the proper type
 PASS HTMLObjectElement interface: document.createElement("object") must inherit property "form" with the proper type
