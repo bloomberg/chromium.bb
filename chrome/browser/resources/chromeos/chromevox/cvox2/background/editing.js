@@ -72,7 +72,7 @@ editing.TextEditHandler.prototype = {
    * Receives the following kinds of events when the node provided to the
    * constructor is focuse: |focus|, |textChanged|, |textSelectionChanged| and
    * |valueChanged|.
-   * An implementation of this method should emit the appropritate braille and
+   * An implementation of this method should emit the appropriate braille and
    * spoken feedback for the event.
    * @param {!(AutomationEvent|CustomAutomationEvent)} evt
    */
@@ -266,18 +266,16 @@ function AutomationRichEditableText(node) {
 
   var root = this.node_.root;
   if (!root || !root.selectionStartObject || !root.selectionEndObject ||
-      !root.focusObject || root.selectionStartOffset === undefined ||
-      root.selectionEndOffset === undefined || root.focusOffset === undefined)
+      root.selectionStartOffset === undefined ||
+      root.selectionEndOffset === undefined)
     return;
 
   this.startLine_ = new editing.EditableLine(
       root.selectionStartObject, root.selectionStartOffset,
       root.selectionStartObject, root.selectionStartOffset);
-
-  // TODO(nektar): |focus| below should be |end|. Change once new selection code
-  // lands.
   this.endLine_ = new editing.EditableLine(
-      root.focusObject, root.focusOffset, root.focusObject, root.focusOffset);
+      root.selectionEndObject, root.selectionEndOffset, root.selectionEndObject,
+      root.selectionEndOffset);
 
   this.line_ = new editing.EditableLine(
       root.selectionStartObject, root.selectionStartOffset,
@@ -364,27 +362,22 @@ AutomationRichEditableText.prototype = {
   onUpdate: function(eventFrom) {
     var root = this.node_.root;
     if (!root.selectionStartObject || !root.selectionEndObject ||
-        !root.focusObject || root.selectionStartOffset === undefined ||
-        root.selectionEndOffset === undefined || root.focusOffset === undefined)
+        root.selectionStartOffset === undefined ||
+        root.selectionEndOffset === undefined)
       return;
 
     var startLine = new editing.EditableLine(
         root.selectionStartObject, root.selectionStartOffset,
         root.selectionStartObject, root.selectionStartOffset);
-
-    // TODO(nektar): |focus| below should be |end|. Change once new selection
-    // code lands.
     var endLine = new editing.EditableLine(
-        root.focusObject, root.focusOffset, root.focusObject, root.focusOffset);
+        root.selectionEndObject, root.selectionEndOffset,
+        root.selectionEndObject, root.selectionEndOffset);
 
     var prevStartLine = this.startLine_;
     var prevEndLine = this.endLine_;
     this.startLine_ = startLine;
     this.endLine_ = endLine;
 
-    // Compute the current line based upon whether the current selection was
-    // extended from anchor or focus. The default behavior is to compute lines
-    // via focus.
     var baseLineOnStart = prevEndLine.isSameLineAndSelection(endLine);
     var isSameSelection =
         baseLineOnStart && prevStartLine.isSameLineAndSelection(startLine);
@@ -463,14 +456,7 @@ AutomationRichEditableText.prototype = {
       return;
     }
 
-    // TODO(dtseng): base/extent and anchor/focus are ordered
-    // (i.e. anchor/base always comes before focus/extent) in Blink
-    // accessibility. However, in other parts of Blink, they are
-    // unordered (i.e. anchor is where the selection starts and focus
-    // where it ends). The latter is correct. Change this once Blink
-    // ax gets fixed.
     var curBase = baseLineOnStart ? endLine : startLine;
-
     if ((cur.startContainer_.role == RoleType.TEXT_FIELD ||
          (cur.startContainer_ == prev.startContainer_ &&
           cur.endContainer_ == prev.endContainer_)) &&
@@ -903,9 +889,9 @@ editing.observer_ = new editing.EditingChromeVoxStateObserver();
  * @param {number} startIndex
  * @param {!AutomationNode} endNode
  * @param {number} endIndex
- * @param {boolean=} opt_baseLineOnStart Controls whether to use anchor or
- * focus for Line computations as described above. Selections are automatically
- * truncated up to either the line start or end.
+ * @param {boolean=} opt_baseLineOnStart  Controls whether to use
+ *     |startNode| or |endNode| for Line computations. Selections are
+ * automatically truncated up to either the line start or end.
  * @constructor
  */
 editing.EditableLine = function(
@@ -913,10 +899,10 @@ editing.EditableLine = function(
   /** @private {!Cursor} */
   this.start_ = new Cursor(startNode, startIndex);
   this.start_ = this.start_.deepEquivalent || this.start_;
-
   /** @private {!Cursor} */
   this.end_ = new Cursor(endNode, endIndex);
   this.end_ = this.end_.deepEquivalent || this.end_;
+
   /** @private {number} */
   this.localContainerStartOffset_ = startIndex;
   /** @private {number} */
@@ -950,10 +936,10 @@ editing.EditableLine = function(
 editing.EditableLine.prototype = {
   /** @private */
   computeLineData_: function(opt_baseLineOnStart) {
-    // Note that we calculate the line based only upon anchor or focus even if
-    // they do not fall on the same line. It is up to the caller to specify
-    // which end to base this line upon since it requires reasoning about two
-    // lines.
+    // Note that we calculate the line based only upon |start_| or
+    // |end_| even if they do not fall on the same line. It is up to
+    // the caller to specify which end to base this line upon since it requires
+    // reasoning about two lines.
     var nameLen = 0;
     var lineBase = opt_baseLineOnStart ? this.start_ : this.end_;
     var lineExtend = opt_baseLineOnStart ? this.end_ : this.start_;

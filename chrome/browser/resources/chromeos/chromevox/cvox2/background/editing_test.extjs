@@ -593,7 +593,6 @@ TEST_F('ChromeVoxEditingTest', 'RichTextImageByCharacter', function() {
 
     this.listenOnce(input, 'focus', function() {
       var lineText = 'dog is a cat test mled';
-      var lineOnDogText = 'dog img is a cat test mled';
       var lineOnCatText = 'dog is a cat img test mled';
       mockFeedback
           // This is initial output from focusing the contenteditable (which has
@@ -603,9 +602,9 @@ TEST_F('ChromeVoxEditingTest', 'RichTextImageByCharacter', function() {
           .clearPendingOutput()
           .call(moveByChar)
           .expectSpeech('dog', 'Image')
-          .expectBraille(lineOnDogText, {startIndex: 1, endIndex: 1})
+          .expectBraille(lineText, {startIndex: 3, endIndex: 3})
           .call(moveByChar)
-          .expectSpeech('og ')
+          .expectSpeech('i')
           .expectBraille(lineText, {startIndex: 4, endIndex: 4})
           .call(moveByChar)
           .expectSpeech('s')

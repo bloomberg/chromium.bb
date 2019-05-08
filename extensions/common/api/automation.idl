@@ -706,6 +706,9 @@
     // Tree selection attributes (available on root nodes only)
     //
 
+    // If a selection is present, whether the anchor of the selection comes
+    // after its focus in the accessibility tree.
+    boolean? isSelectionBackward;
     // The anchor node of the tree selection, if any.
     AutomationNode? anchorObject;
     // The anchor offset of the tree selection, if any.

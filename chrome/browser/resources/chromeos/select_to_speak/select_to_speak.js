@@ -190,16 +190,18 @@ SelectToSpeak.prototype = {
       this.onNullSelection_();
       return;
     }
-    let anchorObject = focusedNode.root.selectionStartObject;
-    let anchorOffset = focusedNode.root.selectionStartOffset || 0;
-    let focusObject = focusedNode.root.selectionEndObject;
-    let focusOffset = focusedNode.root.selectionEndOffset || 0;
-    if (anchorObject === focusObject && anchorOffset == focusOffset) {
+
+    let startObject = focusedNode.root.selectionStartObject;
+    let startOffset = focusedNode.root.selectionStartOffset || 0;
+    let endObject = focusedNode.root.selectionEndObject;
+    let endOffset = focusedNode.root.selectionEndOffset || 0;
+    if (startObject === endObject && startOffset == endOffset) {
       this.onNullSelection_();
       return;
     }
+
     // First calculate the equivalent position for this selection.
-    // Sometimes the automation selection returns a offset into a root
+    // Sometimes the automation selection returns an offset into a root
     // node rather than a child node, which may be a bug. This allows us to
     // work around that bug until it is fixed or redefined.
     // Note that this calculation is imperfect: it uses node name length
@@ -208,44 +210,38 @@ SelectToSpeak.prototype = {
     // fix the Blink bug where focus offset is not specific enough to
     // say which node is selected and at what charOffset. See
     // https://crbug.com/803160 for more.
-    let anchorPosition = NodeUtils.getDeepEquivalentForSelection(
-        anchorObject, anchorOffset, true);
-    let focusPosition = NodeUtils.getDeepEquivalentForSelection(
-        focusObject, focusOffset, false);
+
+    let startPosition =
+        NodeUtils.getDeepEquivalentForSelection(startObject, startOffset, true);
+    let endPosition =
+        NodeUtils.getDeepEquivalentForSelection(endObject, endOffset, false);
+
+    // TODO(katie): We go into these blocks but they feel redundant. Can
+    // there be another way to do this?
     let firstPosition;
     let lastPosition;
-    if (anchorPosition.node === focusPosition.node) {
-      if (anchorPosition.offset < focusPosition.offset) {
-        firstPosition = anchorPosition;
-        lastPosition = focusPosition;
+    if (startPosition.node === endPosition.node) {
+      if (startPosition.offset < endPosition.offset) {
+        firstPosition = startPosition;
+        lastPosition = endPosition;
       } else {
-        lastPosition = anchorPosition;
-        firstPosition = focusPosition;
+        lastPosition = startPosition;
+        firstPosition = endPosition;
       }
     } else {
       let dir =
-          AutomationUtil.getDirection(anchorPosition.node, focusPosition.node);
+          AutomationUtil.getDirection(startPosition.node, endPosition.node);
       // Highlighting may be forwards or backwards. Make sure we start at the
       // first node.
       if (dir == constants.Dir.FORWARD) {
-        firstPosition = anchorPosition;
-        lastPosition = focusPosition;
+        firstPosition = startPosition;
+        lastPosition = endPosition;
       } else {
-        lastPosition = anchorPosition;
-        firstPosition = focusPosition;
+        lastPosition = startPosition;
+        firstPosition = endPosition;
       }
     }
 
-    // Adjust such that non-text types don't have offsets into their names.
-    if (firstPosition.node.role != RoleType.STATIC_TEXT &&
-        firstPosition.node.role != RoleType.INLINE_TEXT_BOX) {
-      firstPosition.offset = 0;
-    }
-    if (lastPosition.node.role != RoleType.STATIC_TEXT &&
-        lastPosition.node.role != RoleType.INLINE_TEXT_BOX) {
-      lastPosition.offset =
-          ParagraphUtils.getNodeName(lastPosition.node).length;
-    }
     this.readNodesInSelection_(firstPosition, lastPosition, focusedNode);
   },
 
@@ -916,7 +912,7 @@ SelectToSpeak.prototype = {
       // Do a hit test to make sure the node is not in a background window
       // or minimimized. On the result checkCurrentNodeMatchesHitTest_ will be
       // called, and we will use that result plus the currentNode's state to
-      // deterimine how to set the focus and whether to stop speech.
+      // determine how to set the focus and whether to stop speech.
       this.desktop_.hitTest(
           this.currentNode_.node.location.left,
           this.currentNode_.node.location.top, EventType.HOVER);

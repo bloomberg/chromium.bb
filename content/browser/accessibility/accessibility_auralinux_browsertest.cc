@@ -679,13 +679,14 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestScrollTo) {
 #endif  //  defined(ATK_230)
 
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestSetSelection) {
-  AtkText* atk_text = SetUpSampleParagraph();
+  AtkText* atk_text = SetUpInputField();
 
   int start_offset, end_offset;
   gchar* selected_text =
       atk_text_get_selection(atk_text, 0, &start_offset, &end_offset);
-  EXPECT_EQ(selected_text, nullptr);
-  ASSERT_EQ(start_offset, end_offset);
+  EXPECT_EQ(nullptr, selected_text);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(0, end_offset);
 
   AccessibilityNotificationWaiter waiter(
       shell()->web_contents(), ui::kAXModeComplete,
@@ -698,7 +699,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestSetSelection) {
   waiter.WaitForNotification();
   selected_text =
       atk_text_get_selection(atk_text, 0, &start_offset, &end_offset);
-  EXPECT_NE(selected_text, nullptr);
+  EXPECT_NE(nullptr, selected_text);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(contents_string_length, end_offset);
   g_free(selected_text);
@@ -709,7 +710,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestSetSelection) {
   waiter.WaitForNotification();
   selected_text =
       atk_text_get_selection(atk_text, 0, &start_offset, &end_offset);
-  EXPECT_NE(selected_text, nullptr);
+  EXPECT_NE(nullptr, selected_text);
   EXPECT_EQ(1, start_offset);
   EXPECT_EQ(contents_string_length, end_offset);
   g_free(selected_text);

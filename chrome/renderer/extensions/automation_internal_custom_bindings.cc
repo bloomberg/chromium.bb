@@ -569,6 +569,19 @@ void AutomationInternalCustomBindings::AddRoutes() {
             isolate, tree_wrapper->tree()->data().loading_progress));
       });
   RouteTreeIDFunction(
+      "GetIsSelectionBackward",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper) {
+        const ui::AXTreeData& tree_data = tree_wrapper->tree()->data();
+        const ui::AXNode* anchor =
+            tree_wrapper->tree()->GetFromId(tree_data.sel_anchor_object_id);
+        if (!anchor)
+          return;
+
+        result.Set(v8::Boolean::New(
+            isolate, tree_wrapper->tree()->data().sel_is_backward));
+      });
+  RouteTreeIDFunction(
       "GetAnchorObjectID",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper) {

@@ -43,6 +43,13 @@ var GetDocLoadingProgress =
 
 /**
  * @param {string} axTreeID The id of the accessibility tree.
+ * @return {boolean} Whether the selection's anchor comes after its focus in the
+ *     accessibility tree.
+ */
+var GetIsSelectionBackward = natives.GetIsSelectionBackward;
+
+/**
+ * @param {string} axTreeID The id of the accessibility tree.
  * @return {?number} The ID of the selection anchor object.
  */
 var GetAnchorObjectID = natives.GetAnchorObjectID;
@@ -1422,6 +1429,10 @@ AutomationRootNodeImpl.prototype = {
     return GetDocLoadingProgress(this.treeID);
   },
 
+  get isSelectionBackward() {
+    return GetIsSelectionBackward(this.treeID);
+  },
+
   get anchorObject() {
     const id = GetAnchorObjectID(this.treeID);
     if (id && id != -1)
@@ -1701,6 +1712,7 @@ utils.expose(AutomationRootNode, AutomationRootNodeImpl, {
     'docUrl',
     'docLoaded',
     'docLoadingProgress',
+    'isSelectionBackward',
     'anchorObject',
     'anchorOffset',
     'anchorAffinity',

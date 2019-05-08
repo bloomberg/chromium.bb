@@ -91,13 +91,6 @@ cursors.Cursor = function(node, index) {
       node = nextNode;
       index = 0;
     }
-  } else if (
-      node.role == RoleType.GENERIC_CONTAINER && node.state.richlyEditable &&
-      (node.firstChild &&
-       (node.firstChild.role == RoleType.LINE_BREAK ||
-        node.firstChild.role == RoleType.STATIC_TEXT))) {
-    // Re-interpret this case as pointing to the text under the div.
-    node = node.find({role: RoleType.INLINE_TEXT_BOX}) || node;
   }
 
   /** @type {number} @private */
@@ -467,8 +460,14 @@ cursors.Cursor.prototype = {
         break;
       } else if (
           newNode.role != RoleType.INLINE_TEXT_BOX &&
-          !newNode.state[StateType.EDITABLE] && newNode.children[newIndex]) {
-        // Valid node offset.
+          // An index inside a content editable or a descendant of a content
+          // editable should be treated as a child offset.
+          // However, an index inside a simple editable, such as an input
+          // element, should be treated as a character offset.
+          (!newNode.state[StateType.EDITABLE] ||
+           newNode.state[StateType.RICHLY_EDITABLE]) &&
+          newNode.children[newIndex]) {
+        // Valid child node offset.
         newNode = newNode.children[newIndex];
         newIndex = 0;
       } else {
