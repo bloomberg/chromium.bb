@@ -3,6 +3,10 @@
 # HTML imports feature turned off, before the Blink team disables the feature by
 # default.
 
+# TODO(rbpotter): Restore this test to the list of tests below, after failures
+# on Mac 10.13 have been fixed.
+-CrExtensionsManagerTestWithMultipleExtensionTypesInstalled.*
+
 CrExtensionsSidebarTest.*
 CrExtensionsToolbarTest.*
 CrExtensionsItemsTest.*
@@ -17,7 +21,6 @@ CrExtensionsLoadErrorTest.*
 CrExtensionsManagerUnitTest.*
 CrExtensionsManagerUnitTestWithActivityLogFlag.*
 CrExtensionsManagerTestWithIdQueryParam.*
-CrExtensionsManagerTestWithMultipleExtensionTypesInstalled.*
 CrExtensionsManagerTestWithActivityLogFlag.*
 CrExtensionsShortcutTest.*
 CrExtensionsShortcutInputTest.*

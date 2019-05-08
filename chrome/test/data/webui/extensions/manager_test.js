@@ -34,9 +34,7 @@ cr.define('extension_manager_tests', function() {
     }
 
     setup(function() {
-      return test_util.waitForRender(document).then(() => {
-        manager = document.querySelector('extensions-manager');
-      });
+      manager = document.querySelector('extensions-manager');
     });
 
     test(assert(TestNames.ItemListVisibility), function() {
