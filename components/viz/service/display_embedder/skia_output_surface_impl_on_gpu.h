@@ -80,18 +80,6 @@ class SkiaOutputSurfaceImplOnGpu {
   using ContextLostCallback = base::RepeatingCallback<void()>;
 
   SkiaOutputSurfaceImplOnGpu(
-      gpu::SurfaceHandle surface_handle,
-      scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
-      gpu::MailboxManager* mailbox_manager,
-      scoped_refptr<gpu::SyncPointClientState> sync_point_client_data,
-      std::unique_ptr<gpu::SharedImageRepresentationFactory> sir_factory,
-      gpu::raster::GrShaderCache* gr_shader_cache,
-      VulkanContextProvider* vulkan_context_provider,
-      const RendererSettings& renderer_settings_,
-      const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
-      const BufferPresentedCallback& buffer_presented_callback,
-      const ContextLostCallback& context_lost_callback);
-  SkiaOutputSurfaceImplOnGpu(
       GpuServiceImpl* gpu_service,
       gpu::SurfaceHandle surface_handle,
       const RendererSettings& renderer_settings_,

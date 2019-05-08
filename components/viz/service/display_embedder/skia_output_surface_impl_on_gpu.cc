@@ -297,24 +297,20 @@ void SkiaOutputSurfaceImplOnGpu::OffscreenSurface::set_surface(
 }
 
 SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
+    GpuServiceImpl* gpu_service,
     gpu::SurfaceHandle surface_handle,
-    scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
-    gpu::MailboxManager* mailbox_manager,
-    scoped_refptr<gpu::SyncPointClientState> sync_point_client_state,
-    std::unique_ptr<gpu::SharedImageRepresentationFactory> sir_factory,
-    gpu::raster::GrShaderCache* gr_shader_cache,
-    VulkanContextProvider* vulkan_context_provider,
     const RendererSettings& renderer_settings,
     const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
     const BufferPresentedCallback& buffer_presented_callback,
     const ContextLostCallback& context_lost_callback)
     : surface_handle_(surface_handle),
-      feature_info_(std::move(feature_info)),
-      mailbox_manager_(mailbox_manager),
-      sync_point_client_state_(std::move(sync_point_client_state)),
-      shared_image_representation_factory_(std::move(sir_factory)),
-      gr_shader_cache_(gr_shader_cache),
-      vulkan_context_provider_(vulkan_context_provider),
+      feature_info_(CreateFeatureInfo(gpu_service)),
+      mailbox_manager_(gpu_service->mailbox_manager()),
+      sync_point_client_state_(CreateSyncPointClientState(gpu_service)),
+      shared_image_representation_factory_(
+          CreateSharedImageRepresentationFactory(gpu_service)),
+      gr_shader_cache_(gpu_service->gr_shader_cache()),
+      vulkan_context_provider_(gpu_service->vulkan_context_provider()),
       renderer_settings_(renderer_settings),
       did_swap_buffer_complete_callback_(did_swap_buffer_complete_callback),
       buffer_presented_callback_(buffer_presented_callback),
@@ -322,38 +318,12 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
       weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
-}
-
-SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
-    GpuServiceImpl* gpu_service,
-    gpu::SurfaceHandle surface_handle,
-    const RendererSettings& renderer_settings,
-    const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
-    const BufferPresentedCallback& buffer_presented_callback,
-    const ContextLostCallback& context_lost_callback)
-    : SkiaOutputSurfaceImplOnGpu(
-          surface_handle,
-          CreateFeatureInfo(gpu_service),
-          gpu_service->mailbox_manager(),
-          CreateSyncPointClientState(gpu_service),
-          CreateSharedImageRepresentationFactory(gpu_service),
-          gpu_service->gr_shader_cache(),
-          gpu_service->vulkan_context_provider(),
-          renderer_settings,
-          did_swap_buffer_complete_callback,
-          buffer_presented_callback,
-          context_lost_callback) {
 #if defined(USE_OZONE)
   window_surface_ = ui::OzonePlatform::GetInstance()
                         ->GetSurfaceFactoryOzone()
                         ->CreatePlatformWindowSurface(surface_handle);
 #endif
-  if (gpu_service) {
-    gpu_preferences_ = gpu_service->gpu_channel_manager()->gpu_preferences();
-  } else {
-    auto* command_line = base::CommandLine::ForCurrentProcess();
-    gpu_preferences_ = gpu::gles2::ParseGpuPreferences(command_line);
-  }
+  gpu_preferences_ = gpu_service->gpu_channel_manager()->gpu_preferences();
 
   if (is_using_vulkan())
     InitializeForVulkan(gpu_service);
