@@ -131,8 +131,22 @@ static double calc_psnrhvs(const unsigned char *src, int _systride,
   int pixels;
   int x;
   int y;
+  float sum1;
+  float sum2;
+  float delt;
   (void)_par;
   ret = pixels = 0;
+  sum1 = sum2 = delt = 0.0f;
+  for (x = 0; x < _w * _h; x++) {
+    if (!buf_is_hbd) {
+      sum1 += _src8[x];
+      sum2 += _dst8[x];
+    } else {
+      sum1 += _src16[x] >> _shift;
+      sum2 += _dst16[x] >> _shift;
+    }
+  }
+  delt = (sum1 - sum2) / (_w * _h);
   /*In the PSNR-HVS-M paper[1] the authors describe the construction of
    their masking table as "we have used the quantization table for the
    color component Y of JPEG [6] that has been also obtained on the
@@ -183,6 +197,7 @@ static double calc_psnrhvs(const unsigned char *src, int _systride,
             dct_s[i * 8 + j] = _src16[(y + i) * _systride + (j + x)] >> _shift;
             dct_d[i * 8 + j] = _dst16[(y + i) * _dystride + (j + x)] >> _shift;
           }
+          dct_d[i * 8 + j] += (int)(delt + 0.5f);
           s_gmean += dct_s[i * 8 + j];
           d_gmean += dct_d[i * 8 + j];
           s_means[sub] += dct_s[i * 8 + j];
@@ -242,6 +257,7 @@ static double calc_psnrhvs(const unsigned char *src, int _systride,
   }
   if (pixels <= 0) return 0;
   ret /= pixels;
+  ret += 0.04 * delt * delt;
   return ret;
 }
 
