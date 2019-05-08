@@ -38,17 +38,12 @@ class PasswordGenerationState {
   // Signals that the user cancels password generation.
   void PasswordNoLongerGenerated();
 
-  // Finish the generation flow by saving the final credential |generated| and
-  // leaving the generation state.
-  // |best_matches| constains possible passwords for the current site. They will
-  // be update according to the new preferred state.
-  // |credentials_to_update| are credentials for probably related domain that
-  // should be also updated.
+  // Finish the generation flow by saving the final credential |generated|.
+  // |matches| and |old_password| have the same meaning as in FormSaver.
   void CommitGeneratedPassword(
       autofill::PasswordForm generated,
-      const std::map<base::string16, const autofill::PasswordForm*>&
-          best_matches,
-      const std::vector<autofill::PasswordForm>* credentials_to_update);
+      const std::vector<const autofill::PasswordForm*>& matches,
+      const base::string16& old_password);
 
 #if defined(UNIT_TEST)
   void set_clock(std::unique_ptr<base::Clock> clock) {

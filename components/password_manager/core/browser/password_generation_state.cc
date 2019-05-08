@@ -29,9 +29,9 @@ void PasswordGenerationState::PresaveGeneratedPassword(PasswordForm generated) {
   DCHECK(!generated.password_value.empty());
   generated.date_created = clock_->Now();
   if (presaved_) {
-    form_saver_->Update(generated, {} /* best_matches */,
-                        nullptr /* credentials_to_update */,
-                        &presaved_.value() /* old_primary_key */);
+    form_saver_->UpdateReplace(generated, {} /* matches */,
+                               base::string16() /* old_password */,
+                               presaved_.value() /* old_primary_key */);
   } else {
     form_saver_->Save(generated, {} /* matches */,
                       base::string16() /* old_password */);
@@ -47,13 +47,13 @@ void PasswordGenerationState::PasswordNoLongerGenerated() {
 
 void PasswordGenerationState::CommitGeneratedPassword(
     PasswordForm generated,
-    const std::map<base::string16, const PasswordForm*>& best_matches,
-    const std::vector<PasswordForm>* credentials_to_update) {
+    const std::vector<const autofill::PasswordForm*>& matches,
+    const base::string16& old_password) {
   DCHECK(presaved_);
   generated.preferred = true;
   generated.date_created = clock_->Now();
-  form_saver_->Update(generated, best_matches, credentials_to_update,
-                      &presaved_.value() /* old_primary_key */);
+  form_saver_->UpdateReplace(generated, matches, old_password,
+                             presaved_.value() /* old_primary_key */);
 }
 
 }  // namespace password_manager

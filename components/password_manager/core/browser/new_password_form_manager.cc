@@ -267,21 +267,10 @@ void NewPasswordFormManager::Save() {
     pending_credentials_.date_created = base::Time::Now();
     votes_uploader_.SendVotesOnSave(observed_form_, *parsed_submitted_form_,
                                     best_matches_, &pending_credentials_);
-    base::string16 old_password;
-    if (password_overridden_) {
-      // |pending_credentials_| contains not only a new credential that is to be
-      // stored, but it also implies that existing credentials in the store need
-      // to get the password updated.
-      const PasswordForm* saved_form =
-          password_manager_util::GetMatchForUpdating(*parsed_submitted_form_,
-                                                     best_matches_);
-      DCHECK(saved_form);
-      old_password = saved_form->password_value;
-    }
-    SavePendingToStore(false /*update*/, old_password);
+    SavePendingToStore(false /*update*/);
   } else {
     ProcessUpdate();
-    SavePendingToStore(true /*update*/, base::string16());
+    SavePendingToStore(true /*update*/);
   }
 
   if (pending_credentials_.times_used == 1 &&
@@ -311,7 +300,7 @@ void NewPasswordFormManager::Update(const PasswordForm& credentials_to_update) {
   pending_credentials_.preferred = true;
   is_new_login_ = false;
   ProcessUpdate();
-  SavePendingToStore(true /*update*/, base::string16());
+  SavePendingToStore(true /*update*/);
 
   client_->UpdateFormManagers();
 }
@@ -406,7 +395,8 @@ void NewPasswordFormManager::PermanentlyBlacklist() {
     }
     blacklisted_matches_.push_back(new_blacklisted_.get());
   }
-  form_saver_->PermanentlyBlacklist(new_blacklisted_.get());
+  *new_blacklisted_ = form_saver_->PermanentlyBlacklist(
+      PasswordStore::FormDigest(*new_blacklisted_));
 }
 
 void NewPasswordFormManager::OnPasswordsRevealed() {
@@ -988,29 +978,6 @@ void NewPasswordFormManager::FillHttpAuth() {
   client_->AutofillHttpAuth(best_matches_, *preferred_match_);
 }
 
-std::vector<PasswordForm> NewPasswordFormManager::FindOtherCredentialsToUpdate()
-    const {
-  std::vector<autofill::PasswordForm> credentials_to_update;
-  if (!pending_credentials_.federation_origin.opaque())
-    return credentials_to_update;
-
-  auto updated_password_it =
-      best_matches_.find(pending_credentials_.username_value);
-  DCHECK(best_matches_.end() != updated_password_it);
-  const base::string16& old_password =
-      updated_password_it->second->password_value;
-  for (auto* not_best_match : not_best_matches_) {
-    if (not_best_match->username_value == pending_credentials_.username_value &&
-        not_best_match->password_value == old_password) {
-      credentials_to_update.push_back(*not_best_match);
-      credentials_to_update.back().password_value =
-          pending_credentials_.password_value;
-    }
-  }
-
-  return credentials_to_update;
-}
-
 std::unique_ptr<PasswordForm> NewPasswordFormManager::ParseFormAndMakeLogging(
     const FormData& form,
     FormDataParser::Mode mode) {
@@ -1108,17 +1075,18 @@ std::vector<const PasswordForm*> NewPasswordFormManager::GetAllMatches() const {
   return result;
 }
 
-void NewPasswordFormManager::SavePendingToStore(
-    bool update,
-    const base::string16& old_password) {
+void NewPasswordFormManager::SavePendingToStore(bool update) {
+  const PasswordForm* saved_form = password_manager_util::GetMatchForUpdating(
+      *parsed_submitted_form_, best_matches_);
+  if (update || password_overridden_)
+    DCHECK(saved_form);
+  base::string16 old_password =
+      saved_form ? saved_form->password_value : base::string16();
   if (HasGeneratedPassword()) {
     generation_state_->CommitGeneratedPassword(pending_credentials_,
-                                               best_matches_, nullptr);
+                                               GetAllMatches(), old_password);
   } else if (update) {
-    std::vector<PasswordForm> credentials_to_update =
-        FindOtherCredentialsToUpdate();
-    form_saver_->Update(pending_credentials_, best_matches_,
-                        &credentials_to_update, nullptr);
+    form_saver_->Update(pending_credentials_, GetAllMatches(), old_password);
   } else {
     form_saver_->Save(pending_credentials_, GetAllMatches(), old_password);
   }

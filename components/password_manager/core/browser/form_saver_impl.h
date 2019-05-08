@@ -24,34 +24,22 @@ class FormSaverImpl : public FormSaver {
   ~FormSaverImpl() override;
 
   // FormSaver:
-  void PermanentlyBlacklist(autofill::PasswordForm* observed) override;
-  void Save(const autofill::PasswordForm& pending,
+  autofill::PasswordForm PermanentlyBlacklist(
+      PasswordStore::FormDigest digest) override WARN_UNUSED_RESULT;
+  void Save(autofill::PasswordForm pending,
             const std::vector<const autofill::PasswordForm*>& matches,
             const base::string16& old_password) override;
-  void Update(const autofill::PasswordForm& pending,
-              const std::map<base::string16, const autofill::PasswordForm*>&
-                  best_matches,
-              const std::vector<autofill::PasswordForm>* credentials_to_update,
-              const autofill::PasswordForm* old_primary_key) override;
+  void Update(autofill::PasswordForm pending,
+              const std::vector<const autofill::PasswordForm*>& matches,
+              const base::string16& old_password) override;
+  void UpdateReplace(autofill::PasswordForm pending,
+                     const std::vector<const autofill::PasswordForm*>& matches,
+                     const base::string16& old_password,
+                     const autofill::PasswordForm& old_unique_key) override;
   void Remove(const autofill::PasswordForm& form) override;
   std::unique_ptr<FormSaver> Clone() override;
 
  private:
-  // Marks all of |best_matches| as not preferred unless the username is
-  // |preferred_username| or the credential is PSL matched.
-  void UpdatePreferredLoginState(
-      const base::string16& preferred_username,
-      const std::map<base::string16, const autofill::PasswordForm*>&
-          best_matches);
-
-  // Iterates over all |best_matches| and deletes from the password store all
-  // which are not PSL-matched, have an empty username, and a password equal to
-  // |pending.password_value|.
-  void DeleteEmptyUsernameCredentials(
-      const autofill::PasswordForm& pending,
-      const std::map<base::string16, const autofill::PasswordForm*>&
-          best_matches);
-
   // The class is stateless. Don't introduce it. The methods are utilities for
   // common tasks on the password store. The state should belong to either a
   // form handler or origin handler which could embed FormSaver.

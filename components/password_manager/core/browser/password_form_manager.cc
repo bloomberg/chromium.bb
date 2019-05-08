@@ -243,10 +243,11 @@ void PasswordFormManager::PermanentlyBlacklist() {
   DCHECK(!client_->IsIncognito());
 
   if (!new_blacklisted_) {
-    new_blacklisted_ = std::make_unique<PasswordForm>(observed_form_);
+    new_blacklisted_ = std::make_unique<PasswordForm>();
     blacklisted_matches_.push_back(new_blacklisted_.get());
   }
-  form_saver_->PermanentlyBlacklist(new_blacklisted_.get());
+  *new_blacklisted_ = form_saver_->PermanentlyBlacklist(
+      PasswordStore::FormDigest(observed_form_));
 }
 
 bool PasswordFormManager::IsNewLogin() const {
@@ -1035,19 +1036,26 @@ std::vector<PasswordForm> PasswordFormManager::FindOtherCredentialsToUpdate()
 }
 
 void PasswordFormManager::SavePendingToStore(bool update) {
+  std::vector<const autofill::PasswordForm*> matches;
+  for (const auto& match : best_matches_)
+    matches.push_back(match.second);
+  matches.insert(matches.end(), not_best_matches_.begin(),
+                 not_best_matches_.end());
   if (HasGeneratedPassword()) {
-    generation_state_->CommitGeneratedPassword(pending_credentials_,
-                                               best_matches_, nullptr);
+    generation_state_->CommitGeneratedPassword(pending_credentials_, matches,
+                                               base::string16());
   } else if (update) {
-    std::vector<PasswordForm> credentials_to_update =
-        FindOtherCredentialsToUpdate();
-    form_saver_->Update(pending_credentials_, best_matches_,
-                        &credentials_to_update, nullptr);
+    base::string16 old_password;
+    if (!pending_credentials_.IsFederatedCredential()) {
+      auto updated_password_it =
+          best_matches_.find(pending_credentials_.username_value);
+      DCHECK(best_matches_.end() != updated_password_it);
+      old_password = updated_password_it->second->password_value;
+    }
+
+    form_saver_->Update(pending_credentials_, matches, old_password);
   } else {
-    std::vector<const autofill::PasswordForm*> best_matches;
-    for (const auto& match : best_matches_)
-      best_matches.push_back(match.second);
-    form_saver_->Save(pending_credentials_, best_matches, base::string16());
+    form_saver_->Save(pending_credentials_, matches, base::string16());
   }
 }
 

@@ -250,13 +250,6 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // Sends fill data to the http auth popup.
   void FillHttpAuth();
 
-  // Goes through |not_best_matches_|, updates the password of those which share
-  // the old password and username with |pending_credentials_| to the new
-  // password of |pending_credentials_|, and returns copies of all such modified
-  // credentials.
-  // TODO(crbug/831123): remove. FormSaver should do the job.
-  std::vector<autofill::PasswordForm> FindOtherCredentialsToUpdate() const;
-
   // Helper function for calling form parsing and logging results if logging is
   // active.
   std::unique_ptr<autofill::PasswordForm> ParseFormAndMakeLogging(
@@ -276,9 +269,8 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // and |not_best_matches_|).
   std::vector<const autofill::PasswordForm*> GetAllMatches() const;
 
-  // Save/update |pending_credentials_| to the password store. If |old_password|
-  // is provided, then the corresponding credentials are updated too.
-  void SavePendingToStore(bool update, const base::string16& old_password);
+  // Save/update |pending_credentials_| to the password store.
+  void SavePendingToStore(bool update);
 
   // The client which implements embedder-specific PasswordManager operations.
   PasswordManagerClient* client_;

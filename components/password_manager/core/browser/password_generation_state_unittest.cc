@@ -44,6 +44,7 @@ PasswordForm CreateSavedPSL() {
   form.action = GURL("https://login.example.org");
   form.username_value = ASCIIToUTF16("old_username2");
   form.password_value = ASCIIToUTF16("passw0rd");
+  form.is_public_suffix_match = true;
   return form;
 }
 
@@ -157,7 +158,7 @@ TEST_F(PasswordGenerationStateTest, PresaveGeneratedPassword_ReplaceTwice) {
 // credential (as new) results in replacing the presaved password with the
 // pending one.
 TEST_F(PasswordGenerationStateTest, PresaveGeneratedPassword_ThenSaveAsNew) {
-  PasswordForm generated = CreateGenerated();
+  const PasswordForm generated = CreateGenerated();
 
   EXPECT_CALL(store(), AddLogin(_));
   state().PresaveGeneratedPassword(generated);
@@ -170,8 +171,8 @@ TEST_F(PasswordGenerationStateTest, PresaveGeneratedPassword_ThenSaveAsNew) {
   generated_with_date.date_created = base::Time::FromTimeT(kTime);
   EXPECT_CALL(store(), UpdateLoginWithPrimaryKey(generated_with_date,
                                                  FormHasUniqueKey(generated)));
-  state().CommitGeneratedPassword(pending, {} /* best_matches */,
-                                  nullptr /* credentials_to_update */);
+  state().CommitGeneratedPassword(pending, {} /* matches */,
+                                  base::string16() /* old_password */);
   EXPECT_TRUE(state().HasGeneratedPassword());
 }
 
@@ -184,26 +185,50 @@ TEST_F(PasswordGenerationStateTest, PresaveGeneratedPassword_ThenUpdate) {
   EXPECT_CALL(store(), AddLogin(_));
   state().PresaveGeneratedPassword(generated);
 
-  PasswordForm pending = generated;
-  pending.username_value = ASCIIToUTF16("edited_username");
+  PasswordForm related_password = CreateSaved();
+  related_password.username_value = ASCIIToUTF16("username");
+  related_password.username_element = ASCIIToUTF16("username_field");
+  related_password.password_value = ASCIIToUTF16("old password");
 
-  PasswordForm old_saved = CreateSaved();
-  old_saved.preferred = false;
-  PasswordForm old_psl_saved = CreateSavedPSL();
-  old_psl_saved.password_value = pending.password_value;
-  std::vector<autofill::PasswordForm> credentials_to_update = {old_psl_saved};
-  PasswordForm generated_with_date = pending;
+  PasswordForm related_psl_password = CreateSavedPSL();
+  related_psl_password.username_value = ASCIIToUTF16("username");
+  related_psl_password.password_value = ASCIIToUTF16("old password");
+
+  PasswordForm unrelated_password = CreateSaved();
+  unrelated_password.preferred = true;
+  unrelated_password.username_value = ASCIIToUTF16("another username");
+  unrelated_password.password_value = ASCIIToUTF16("some password");
+
+  PasswordForm unrelated_psl_password = CreateSavedPSL();
+  unrelated_psl_password.preferred = true;
+  unrelated_psl_password.username_value = ASCIIToUTF16("another username");
+  unrelated_psl_password.password_value = ASCIIToUTF16("some password");
+
+  generated.username_value = ASCIIToUTF16("username");
+  PasswordForm generated_with_date = generated;
   generated_with_date.date_created = base::Time::FromTimeT(kTime);
 
-  EXPECT_CALL(store(), UpdateLoginWithPrimaryKey(generated_with_date,
-                                                 FormHasUniqueKey(generated)));
-  EXPECT_CALL(store(), UpdateLogin(old_saved));
-  EXPECT_CALL(store(), UpdateLogin(old_psl_saved));
+  EXPECT_CALL(store(),
+              UpdateLoginWithPrimaryKey(generated_with_date,
+                                        FormHasUniqueKey(CreateGenerated())));
 
-  old_saved.preferred = true;
+  PasswordForm related_password_expected = related_password;
+  related_password_expected.password_value = generated.password_value;
+  EXPECT_CALL(store(), UpdateLogin(related_password_expected));
+
+  PasswordForm related_psl_password_expected = related_psl_password;
+  related_psl_password_expected.password_value = generated.password_value;
+  EXPECT_CALL(store(), UpdateLogin(related_psl_password_expected));
+
+  PasswordForm unrelated_password_expected = unrelated_password;
+  unrelated_password_expected.preferred = false;
+  EXPECT_CALL(store(), UpdateLogin(unrelated_password_expected));
+
   state().CommitGeneratedPassword(
-      pending, {{old_saved.username_value, &old_saved}} /* best_matches */,
-      &credentials_to_update);
+      generated,
+      {&related_password, &related_psl_password, &unrelated_password,
+       &unrelated_psl_password} /* matches */,
+      ASCIIToUTF16("old password"));
   EXPECT_TRUE(state().HasGeneratedPassword());
 }
 
