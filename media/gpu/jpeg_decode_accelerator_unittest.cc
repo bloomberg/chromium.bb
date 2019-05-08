@@ -757,6 +757,8 @@ TEST_F(JpegDecodeAcceleratorTest, MultipleDecoders) {
   TestDecode(images, expected_status, 3 /* num_concurrent_decoders */);
 }
 
+#if !(BUILDFLAG(USE_V4L2_CODEC) && defined(ARCH_CPU_ARM_FAMILY))
+// TODO(andrescj): re-enable for ARM devices when crbug.com/852236 is fixed.
 TEST_F(JpegDecodeAcceleratorTest, OddDimensions) {
   std::vector<ParsedJpegImage*> images;
   for (auto& image : g_env->image_data_odd_)
@@ -764,6 +766,7 @@ TEST_F(JpegDecodeAcceleratorTest, OddDimensions) {
   const std::vector<ClientState> expected_status(images.size(), CS_DECODE_PASS);
   TestDecode(images, expected_status);
 }
+#endif
 
 TEST_F(JpegDecodeAcceleratorTest, InputSizeChange) {
   // The size of |image_data_1280x720_black_| is smaller than
