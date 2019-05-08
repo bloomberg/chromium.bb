@@ -4,6 +4,12 @@
 
 #include "chrome/browser/notifications/scheduler/test/test_utils.h"
 
+#include <sstream>
+#include <utility>
+
+#include "chrome/browser/notifications/scheduler/notification_data.h"
+#include "chrome/browser/notifications/scheduler/notification_entry.h"
+
 namespace notifications {
 namespace test {
 
@@ -53,6 +59,27 @@ void AddImpressionTestData(
     AddImpressionTestData(test_data, client_state.get());
     client_states->emplace_back(std::move(client_state));
   }
+}
+
+std::string DebugString(NotificationData* data) {
+  DCHECK(data);
+  std::ostringstream stream;
+  stream << " Notification Data: \n id:" << data->id
+         << " \n title:" << data->title << "\n message:" << data->message
+         << " \n icon_id:" << data->icon_uuid << " \n url:" << data->url;
+  return stream.str();
+}
+
+std::string DebugString(NotificationEntry* entry) {
+  DCHECK(entry);
+  std::ostringstream stream;
+  stream << "NotificationEntry: \n  type: " << static_cast<int>(entry->type)
+         << " \n guid: " << entry->guid << "\n create_time: "
+         << entry->create_time.ToDeltaSinceWindowsEpoch().InMicroseconds()
+         << " \n notification_data:" << DebugString(&entry->notification_data)
+         << " \n schedule params: priority:"
+         << static_cast<int>(entry->schedule_params.priority);
+  return stream.str();
 }
 
 }  // namespace test

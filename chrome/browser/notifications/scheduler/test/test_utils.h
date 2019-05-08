@@ -5,11 +5,19 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_TEST_TEST_UTILS_H_
 #define CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_TEST_TEST_UTILS_H_
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "chrome/browser/notifications/scheduler/impression_history_tracker.h"
 #include "chrome/browser/notifications/scheduler/impression_types.h"
 #include "chrome/browser/notifications/scheduler/notification_scheduler_types.h"
 
 namespace notifications {
+
+struct NotificationData;
+struct NotificationEntry;
+
 namespace test {
 
 // Flattened type state data used in test to generate client states.
@@ -41,6 +49,12 @@ void AddImpressionTestData(
 void AddImpressionTestData(
     const std::vector<ImpressionTestData>& test_data,
     std::vector<std::unique_ptr<ClientState>>* client_states);
+
+// Generates a debug string to print details of |data|.
+std::string DebugString(NotificationData* data);
+
+// Generates a debug string to print details of |entry|.
+std::string DebugString(NotificationEntry* entry);
 
 }  // namespace test
 }  // namespace notifications

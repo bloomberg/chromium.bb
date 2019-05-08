@@ -21,27 +21,6 @@ const char kUuid[] = "123";
 const char kGuid[] = "testGuid";
 const char kData[] = "bitmapdata";
 
-std::string DebugString(NotificationData* data) {
-  DCHECK(data);
-  std::ostringstream stream;
-  stream << " Notification Data: \n id:" << data->id
-         << " \n title:" << data->title << "\n message:" << data->message
-         << " \n icon_id:" << data->icon_uuid << " \n url:" << data->url;
-  return stream.str();
-}
-
-std::string DebugString(NotificationEntry* entry) {
-  DCHECK(entry);
-  std::ostringstream stream;
-  stream << "NotificationEntry: \n  type: " << static_cast<int>(entry->type)
-         << " \n guid: " << entry->guid << "\n create_time: "
-         << entry->create_time.ToDeltaSinceWindowsEpoch().InMicroseconds()
-         << " \n notification_data:" << DebugString(&entry->notification_data)
-         << " \n schedule params: priority:"
-         << static_cast<int>(entry->schedule_params.priority);
-  return stream.str();
-}
-
 void TestClientStateConversion(ClientState* client_state) {
   DCHECK(client_state);
   notifications::proto::ClientState proto;
@@ -62,8 +41,9 @@ void TestNotificationEntryConversion(NotificationEntry* entry) {
   EXPECT_EQ(entry->notification_data, expected.notification_data);
   EXPECT_EQ(entry->schedule_params, expected.schedule_params);
 
-  EXPECT_EQ(*entry, expected) << "Output: " << DebugString(entry)
-                              << " \n Expected: " << DebugString(&expected);
+  EXPECT_EQ(*entry, expected)
+      << "Output: " << test::DebugString(entry)
+      << " \n Expected: " << test::DebugString(&expected);
 }
 
 TEST(ProtoConversionTest, IconEntryFromProto) {

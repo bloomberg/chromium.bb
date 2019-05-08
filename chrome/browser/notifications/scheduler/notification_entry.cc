@@ -8,6 +8,9 @@
 
 namespace notifications {
 
+NotificationEntry::NotificationEntry()
+    : NotificationEntry(SchedulerClientType::kUnknown, std::string()) {}
+
 NotificationEntry::NotificationEntry(SchedulerClientType type,
                                      const std::string& guid)
     : type(type), guid(guid), create_time(base::Time::Now()) {}
