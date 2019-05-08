@@ -46,6 +46,7 @@ const char kPasswordFrameUrl[] = "https://password_frame.com/";
 const char kSavedDomain[] = "saved_domain.com";
 const char kSavedDomain2[] = "saved_domain2.com";
 const char kTargetUrl[] = "http://foo.com/";
+const char kUserName[] = "username";
 
 const unsigned int kMinute = 60;
 const unsigned int kDay = 24 * 60 * kMinute;
@@ -105,7 +106,7 @@ class TestPasswordProtectionService : public MockPasswordProtectionService {
 
   void RequestFinished(
       PasswordProtectionRequest* request,
-      bool already_cached_unused,
+      RequestOutcome outcome,
       std::unique_ptr<LoginReputationClientResponse> response) override {
     latest_request_ = request;
     latest_response_ = std::move(response);
@@ -203,7 +204,7 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
 
     request_ = new PasswordProtectionRequest(
         web_contents, target_url, GURL(kFormActionUrl), GURL(kPasswordFrameUrl),
-        PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN, {},
+        kUserName, PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN, {},
         LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true,
         password_protection_service_.get(), timeout_in_ms);
     request_->Start();
@@ -221,9 +222,9 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
             Return(match_whitelist ? AsyncMatch::MATCH : AsyncMatch::NO_MATCH));
 
     request_ = new PasswordProtectionRequest(
-        web_contents, target_url, GURL(), GURL(), type, matching_domains,
-        LoginReputationClientRequest::PASSWORD_REUSE_EVENT, true,
-        password_protection_service_.get(), timeout_in_ms);
+        web_contents, target_url, GURL(), GURL(), kUserName, type,
+        matching_domains, LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+        true, password_protection_service_.get(), timeout_in_ms);
     request_->Start();
   }
 
@@ -979,7 +980,8 @@ TEST_P(PasswordProtectionServiceTest, TestTearDownWithPendingRequests) {
       .WillRepeatedly(Return(AsyncMatch::NO_MATCH));
   password_protection_service_->StartRequest(
       GetWebContents(), target_url, GURL("http://foo.com/submit"),
-      GURL("http://foo.com/frame"), PasswordReuseEvent::SAVED_PASSWORD, {},
+      GURL("http://foo.com/frame"), "username",
+      PasswordReuseEvent::SAVED_PASSWORD, {},
       LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
 
   // Destroy password_protection_service_ while there is one request pending.
@@ -1373,7 +1375,7 @@ TEST_P(PasswordProtectionServiceTest, TestPingsForAboutBlank) {
   test_url_loader_factory_.AddResponse(url_.spec(),
                                        expected_response.SerializeAsString());
   password_protection_service_->StartRequest(
-      GetWebContents(), GURL("about:blank"), GURL(), GURL(),
+      GetWebContents(), GURL("about:blank"), GURL(), GURL(), "username",
       PasswordReuseEvent::SAVED_PASSWORD, {"example.com"},
       LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
   base::RunLoop().RunUntilIdle();
@@ -1391,13 +1393,14 @@ TEST_P(PasswordProtectionServiceTest,
       .Times(AnyNumber())
       .WillOnce(Return(gfx::Size(1000, 1000)));
   password_protection_service_->StartRequest(
-      GetWebContents(), GURL("about:blank"), GURL(), GURL(),
+      GetWebContents(), GURL("about:blank"), GURL(), GURL(), kUserName,
       PasswordReuseEvent::SAVED_PASSWORD, {"example.com"},
       LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
   base::RunLoop().RunUntilIdle();
 
   bool is_sber = GetParam();
   if (is_sber) {
+    password_protection_service_->WaitForResponse();
     ASSERT_NE(nullptr, password_protection_service_->GetLatestRequestProto());
     EXPECT_TRUE(password_protection_service_->GetLatestRequestProto()
                     ->has_visual_features());
@@ -1414,11 +1417,12 @@ TEST_P(PasswordProtectionServiceTest, TestDomFeaturesPopulated) {
       .Times(AnyNumber())
       .WillOnce(Return(gfx::Size(1000, 1000)));
   password_protection_service_->StartRequest(
-      GetWebContents(), GURL("about:blank"), GURL(), GURL(),
+      GetWebContents(), GURL("about:blank"), GURL(), GURL(), kUserName,
       PasswordReuseEvent::SAVED_PASSWORD, {"example.com"},
       LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
   base::RunLoop().RunUntilIdle();
 
+  password_protection_service_->WaitForResponse();
   ASSERT_NE(nullptr, password_protection_service_->GetLatestRequestProto());
   EXPECT_TRUE(password_protection_service_->GetLatestRequestProto()
                   ->has_dom_features());

@@ -479,6 +479,7 @@ ChromePasswordManagerClient::GetPasswordProtectionService() const {
 
 void ChromePasswordManagerClient::CheckProtectedPasswordEntry(
     PasswordType reused_password_type,
+    const std::string& username,
     const std::vector<std::string>& matching_domains,
     bool password_field_exists) {
   safe_browsing::PasswordProtectionService* pps =
@@ -486,7 +487,7 @@ void ChromePasswordManagerClient::CheckProtectedPasswordEntry(
   if (!pps)
     return;
   pps->MaybeStartProtectedPasswordEntryRequest(
-      web_contents(), GetMainFrameURL(),
+      web_contents(), GetMainFrameURL(), username,
       safe_browsing::PasswordProtectionService::
           GetPasswordProtectionReusedPasswordType(reused_password_type),
       matching_domains, password_field_exists);

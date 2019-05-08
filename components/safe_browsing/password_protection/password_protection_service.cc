@@ -338,6 +338,7 @@ void PasswordProtectionService::StartRequest(
     const GURL& main_frame_url,
     const GURL& password_form_action,
     const GURL& password_form_frame_url,
+    const std::string& username,
     ReusedPasswordType reused_password_type,
     const std::vector<std::string>& matching_domains,
     LoginReputationClientRequest::TriggerType trigger_type,
@@ -346,8 +347,9 @@ void PasswordProtectionService::StartRequest(
   scoped_refptr<PasswordProtectionRequest> request(
       new PasswordProtectionRequest(
           web_contents, main_frame_url, password_form_action,
-          password_form_frame_url, reused_password_type, matching_domains,
-          trigger_type, password_field_exists, this, GetRequestTimeoutInMS()));
+          password_form_frame_url, username, reused_password_type,
+          matching_domains, trigger_type, password_field_exists, this,
+          GetRequestTimeoutInMS()));
   request->Start();
   pending_requests_.insert(std::move(request));
 }
@@ -363,7 +365,7 @@ void PasswordProtectionService::MaybeStartPasswordFieldOnFocusRequest(
                   main_frame_url,
                   PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN, &reason)) {
     StartRequest(web_contents, main_frame_url, password_form_action,
-                 password_form_frame_url,
+                 password_form_frame_url, /* username */ "",
                  PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN,
                  {}, /* matching_domains: not used for this type */
                  LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
@@ -373,6 +375,7 @@ void PasswordProtectionService::MaybeStartPasswordFieldOnFocusRequest(
 void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
     WebContents* web_contents,
     const GURL& main_frame_url,
+    const std::string& username,
     ReusedPasswordType reused_password_type,
     const std::vector<std::string>& matching_domains,
     bool password_field_exists) {
@@ -388,25 +391,17 @@ void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
       static_cast<int>(100 * content::ZoomLevelToZoomFactor(zoom_level)));
 
   RequestOutcome reason;
-  bool reported_password_reuse_event = false;
   if (CanSendPing(LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
                   main_frame_url, reused_password_type, &reason)) {
-    StartRequest(web_contents, main_frame_url, GURL(), GURL(),
+    StartRequest(web_contents, main_frame_url, GURL(), GURL(), username,
                  reused_password_type, matching_domains,
                  LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
                  password_field_exists);
-    // TODO(crbug.com/932741): |is_phishing_url| field isn't populated quite
-    // accurately, will resolve in a follow up cl.
-    MaybeReportPasswordReuseDetected(web_contents, reused_password_type, true);
   } else {
     MaybeLogPasswordReuseLookupEvent(web_contents, reason, nullptr);
-    reported_password_reuse_event = true;
   }
   if (CanShowInterstitial(reason, reused_password_type, main_frame_url)) {
     ShowInterstitial(web_contents, reused_password_type);
-    if (!reported_password_reuse_event)
-      MaybeReportPasswordReuseDetected(web_contents, reused_password_type,
-                                       false);
   }
 }
 
@@ -436,13 +431,13 @@ bool PasswordProtectionService::CanSendPing(
 
 void PasswordProtectionService::RequestFinished(
     PasswordProtectionRequest* request,
-    bool already_cached,
+    RequestOutcome outcome,
     std::unique_ptr<LoginReputationClientResponse> response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(request);
 
   if (response) {
-    if (!already_cached) {
+    if (outcome != RequestOutcome::RESPONSE_ALREADY_CACHED) {
       CacheVerdict(request->main_frame_url(), request->trigger_type(),
                    request->reused_password_type(), response.get(),
                    base::Time::Now());
@@ -457,6 +452,18 @@ void PasswordProtectionService::RequestFinished(
   }
 
   request->HandleDeferredNavigations();
+
+  // If the request is canceled, the PasswordProtectionService is already
+  // partially destroyed, and we won't be able to log accurate metrics.
+  if (outcome != RequestOutcome::CANCELED) {
+    auto verdict =
+        response ? response->verdict_type()
+                 : LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
+    auto is_phishing_url = verdict == LoginReputationClientResponse::PHISHING;
+    MaybeReportPasswordReuseDetected(
+        request->web_contents(), request->username(),
+        request->reused_password_type(), is_phishing_url);
+  }
 
   // Remove request from |pending_requests_| list. If it triggers warning, add
   // it into the !warning_reqeusts_| list.

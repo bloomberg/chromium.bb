@@ -101,6 +101,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
                     const GURL& main_frame_url,
                     const GURL& password_form_action,
                     const GURL& password_form_frame_url,
+                    const std::string& username,
                     ReusedPasswordType reused_password_type,
                     const std::vector<std::string>& matching_domains,
                     LoginReputationClientRequest::TriggerType trigger_type,
@@ -115,6 +116,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual void MaybeStartProtectedPasswordEntryRequest(
       content::WebContents* web_contents,
       const GURL& main_frame_url,
+      const std::string& username,
       ReusedPasswordType reused_password_type,
       const std::vector<std::string>& matching_domains,
       bool password_field_exists);
@@ -185,6 +187,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // Triggers the safeBrowsingPrivate.OnPolicySpecifiedPasswordReuseDetected.
   virtual void MaybeReportPasswordReuseDetected(
       content::WebContents* web_contents,
+      const std::string& username,
       ReusedPasswordType reused_password_type,
       bool is_phishing_url) = 0;
 
@@ -222,7 +225,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // itself from |requests_|.
   virtual void RequestFinished(
       PasswordProtectionRequest* request,
-      bool already_cached,
+      RequestOutcome outcome,
       std::unique_ptr<LoginReputationClientResponse> response);
 
   // Cancels all requests in |requests_|, empties it, and releases references to

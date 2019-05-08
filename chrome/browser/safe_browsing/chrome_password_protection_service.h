@@ -176,7 +176,10 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // If the browser is not incognito and the user is reusing their enterprise
   // password or is a GSuite user, triggers
   // safeBrowsingPrivate.OnPolicySpecifiedPasswordReuseDetected.
+  // |username| can be an email address or a username for a non-GAIA or
+  // saved-password reuse. No validation has been done on it.
   void MaybeReportPasswordReuseDetected(content::WebContents* web_contents,
+                                        const std::string& username,
                                         ReusedPasswordType reused_password_type,
                                         bool is_phishing_url) override;
 

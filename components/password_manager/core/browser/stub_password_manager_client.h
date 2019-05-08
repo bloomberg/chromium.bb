@@ -61,6 +61,7 @@ class StubPasswordManagerClient : public PasswordManagerClient {
                                    const GURL& frame_url) override;
   void CheckProtectedPasswordEntry(
       metrics_util::PasswordType reused_password_type,
+      const std::string& username,
       const std::vector<std::string>& matching_domains,
       bool password_field_exists) override;
   void LogPasswordReuseDetectedEvent() override;

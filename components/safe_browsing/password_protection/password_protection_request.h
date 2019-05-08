@@ -56,6 +56,7 @@ class PasswordProtectionRequest
                             const GURL& main_frame_url,
                             const GURL& password_form_action,
                             const GURL& password_form_frame_url,
+                            const std::string& username,
                             ReusedPasswordType reused_password_type,
                             const std::vector<std::string>& matching_origins,
                             LoginReputationClientRequest::TriggerType type,
@@ -89,6 +90,8 @@ class PasswordProtectionRequest
   LoginReputationClientRequest::TriggerType trigger_type() const {
     return trigger_type_;
   }
+
+  const std::string& username() const { return username_; }
 
   ReusedPasswordType reused_password_type() const {
     return reused_password_type_;
@@ -174,6 +177,11 @@ class PasswordProtectionRequest
 
   // Frame url of the detected password form.
   const GURL password_form_frame_url_;
+
+  // The username of the reused password hash. The username can be an email or
+  // a username for a non-GAIA or saved-password reuse. No validation has been
+  // done on it.
+  const std::string& username_;
 
   // Type of the reused password.
   const ReusedPasswordType reused_password_type_;

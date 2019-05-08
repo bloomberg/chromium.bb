@@ -65,6 +65,7 @@ PasswordProtectionRequest::PasswordProtectionRequest(
     const GURL& main_frame_url,
     const GURL& password_form_action,
     const GURL& password_form_frame_url,
+    const std::string& username,
     ReusedPasswordType reused_password_type,
     const std::vector<std::string>& matching_domains,
     LoginReputationClientRequest::TriggerType type,
@@ -75,6 +76,7 @@ PasswordProtectionRequest::PasswordProtectionRequest(
       main_frame_url_(main_frame_url),
       password_form_action_(password_form_action),
       password_form_frame_url_(password_form_frame_url),
+      username_(username),
       reused_password_type_(reused_password_type),
       matching_domains_(matching_domains),
       trigger_type_(type),
@@ -465,9 +467,8 @@ void PasswordProtectionRequest::Finish(
     }
   }
 
-  password_protection_service_->RequestFinished(
-      this, outcome == RequestOutcome::RESPONSE_ALREADY_CACHED,
-      std::move(response));
+  password_protection_service_->RequestFinished(this, outcome,
+                                                std::move(response));
 }
 
 void PasswordProtectionRequest::Cancel(bool timed_out) {

@@ -253,8 +253,12 @@ class PasswordManagerClient {
   // happens. This is called by the PasswordReuseDetectionManager when a
   // protected password is typed on the wrong domain. This may trigger a
   // warning dialog if it looks like the page is phishy.
+  // The |username| is the user name of the reused password. The user name
+  // can be an email or a username for a non-GAIA or saved-password reuse. No
+  // validation has been done on it.
   virtual void CheckProtectedPasswordEntry(
       metrics_util::PasswordType reused_password_type,
+      const std::string& username,
       const std::vector<std::string>& matching_domains,
       bool password_field_exists) = 0;
 
