@@ -182,15 +182,14 @@ TEST_F(StructTraitsTest, GpuMemoryBufferHandle) {
 #elif defined(OS_FUCHSIA)
   zx::vmo buffer_handle;
 #endif
-  handle2.native_pixmap_handle.modifier = kModifier;
-  handle2.native_pixmap_handle.planes.emplace_back(kOffset, kStride, kSize,
-                                                   std::move(buffer_handle));
+  handle2.native_pixmap_handle.planes.emplace_back(
+      kOffset, kStride, kSize, std::move(buffer_handle), kModifier);
   proxy->EchoGpuMemoryBufferHandle(std::move(handle2), &output);
   EXPECT_EQ(gfx::NATIVE_PIXMAP, output.type);
-  EXPECT_EQ(kModifier, output.native_pixmap_handle.modifier);
   EXPECT_EQ(kId, output.id);
   ASSERT_EQ(1u, output.native_pixmap_handle.planes.size());
   EXPECT_EQ(kSize, output.native_pixmap_handle.planes.back().size);
+  EXPECT_EQ(kModifier, output.native_pixmap_handle.planes.back().modifier);
 #endif
 }
 

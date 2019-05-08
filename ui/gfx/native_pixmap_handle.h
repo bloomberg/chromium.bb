@@ -28,18 +28,21 @@ namespace gfx {
 // NativePixmapPlane is used to carry the plane related information for GBM
 // buffer. More fields can be added if they are plane specific.
 struct GFX_EXPORT NativePixmapPlane {
+  // This is the same value as DRM_FORMAT_MOD_INVALID, which is not a valid
+  // modifier. We use this to indicate that layout information
+  // (tiling/compression) if any will be communicated out of band.
+  static constexpr uint64_t kNoModifier = 0x00ffffffffffffffULL;
+
   NativePixmapPlane();
   NativePixmapPlane(int stride,
                     int offset,
-                    uint64_t size
+                    uint64_t size,
 #if defined(OS_LINUX)
-                    ,
-                    base::ScopedFD fd
+                    base::ScopedFD fd,
 #elif defined(OS_FUCHSIA)
-                    ,
-                    zx::vmo vmo
+                    zx::vmo vmo,
 #endif
-  );
+                    uint64_t modifier = kNoModifier);
   NativePixmapPlane(NativePixmapPlane&& other);
   ~NativePixmapPlane();
 
@@ -52,6 +55,10 @@ struct GFX_EXPORT NativePixmapPlane {
   // Size in bytes of the plane.
   // This is necessary to map the buffers.
   uint64_t size;
+  // The modifier is retrieved from GBM library and passed to EGL driver.
+  // Generally it's platform specific, and we don't need to modify it in
+  // Chromium code. Also one per plane per entry.
+  uint64_t modifier;
 
 #if defined(OS_LINUX)
   // File descriptor for the underlying memory object (usually dmabuf).
@@ -68,11 +75,6 @@ using SysmemBufferCollectionId = base::UnguessableToken;
 #endif
 
 struct GFX_EXPORT NativePixmapHandle {
-  // This is the same value as DRM_FORMAT_MOD_INVALID, which is not a valid
-  // modifier. We use this to indicate that layout information
-  // (tiling/compression) if any will be communicated out of band.
-  static constexpr uint64_t kNoModifier = 0x00ffffffffffffffULL;
-
   NativePixmapHandle();
   NativePixmapHandle(NativePixmapHandle&& other);
 
@@ -81,11 +83,6 @@ struct GFX_EXPORT NativePixmapHandle {
   NativePixmapHandle& operator=(NativePixmapHandle&& other);
 
   std::vector<NativePixmapPlane> planes;
-
-  // The modifier is retrieved from GBM library and passed to EGL driver.
-  // Generally it's platform specific, and we don't need to modify it in
-  // Chromium code. Also one per plane per entry.
-  uint64_t modifier;
 
 #if defined(OS_FUCHSIA)
   base::Optional<SysmemBufferCollectionId> buffer_collection_id;

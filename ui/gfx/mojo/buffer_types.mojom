@@ -53,6 +53,7 @@ struct NativePixmapPlane {
   uint32 stride;
   int32 offset;
   uint64 size;
+  uint64 modifier;
 
   // A platform-specific handle the underlying memory object.
   handle buffer_handle;
@@ -62,7 +63,6 @@ struct NativePixmapPlane {
 [EnableIf=supports_native_pixmap]
 struct NativePixmapHandle {
   array<NativePixmapPlane> planes;
-  uint64 modifier;
 
   [EnableIf=is_fuchsia]
   mojo_base.mojom.UnguessableToken? buffer_collection_id;

@@ -144,7 +144,8 @@ std::unique_ptr<GbmBuffer> MockGbmDevice::CreateBufferWithModifiers(
 
   std::vector<gfx::NativePixmapPlane> planes;
   planes.push_back(gfx::NativePixmapPlane(plane_stride, plane_offset,
-                                          plane_size, base::ScopedFD()));
+                                          plane_size, base::ScopedFD(),
+                                          format_modifier));
   std::vector<uint32_t> handles;
   handles.push_back(next_handle_++);
 

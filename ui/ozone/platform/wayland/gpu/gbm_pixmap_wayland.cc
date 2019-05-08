@@ -149,11 +149,10 @@ gfx::NativePixmapHandle GbmPixmapWayland::ExportHandle() {
   }
 
   for (size_t i = 0; i < num_planes; ++i) {
-    handle.planes.emplace_back(GetDmaBufPitch(i), GetDmaBufOffset(i),
-                               gbm_bo_->GetPlaneSize(i),
-                               std::move(scoped_fds[i]));
+    handle.planes.emplace_back(
+        GetDmaBufPitch(i), GetDmaBufOffset(i), gbm_bo_->GetPlaneSize(i),
+        std::move(scoped_fds[i]), GetBufferFormatModifier());
   }
-  handle.modifier = GetBufferFormatModifier();
   return handle;
 }
 
