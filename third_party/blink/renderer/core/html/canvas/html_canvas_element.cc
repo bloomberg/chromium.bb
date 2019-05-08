@@ -152,8 +152,10 @@ HTMLCanvasElement::~HTMLCanvasElement() {
 }
 
 void HTMLCanvasElement::Dispose() {
-  if (PlaceholderFrame())
+  if (PlaceholderFrame()) {
     ReleasePlaceholderFrame();
+    UnregisterPlaceholder();
+  }
 
   // We need to drop frame dispatcher, to prevent mojo calls from completing.
   frame_dispatcher_ = nullptr;
