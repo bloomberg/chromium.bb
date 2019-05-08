@@ -3654,9 +3654,9 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_AutomationIdPropertyId:
-      result->vt = VT_BSTR;
-      result->bstrVal =
-          SysAllocString(base::NumberToString16(GetUniqueId()).c_str());
+      V_VT(result) = VT_BSTR;
+      V_BSTR(result) =
+          SysAllocString(GetDelegate()->GetAuthorUniqueId().c_str());
       break;
 
     case UIA_ClassNamePropertyId:

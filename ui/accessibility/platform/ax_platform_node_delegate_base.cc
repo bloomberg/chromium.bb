@@ -329,6 +329,10 @@ std::set<AXPlatformNode*> AXPlatformNodeDelegateBase::GetReverseRelations(
   return std::set<AXPlatformNode*>();
 }
 
+base::string16 AXPlatformNodeDelegateBase::GetAuthorUniqueId() const {
+  return base::string16();
+}
+
 const AXUniqueId& AXPlatformNodeDelegateBase::GetUniqueId() const {
   static base::NoDestructor<AXUniqueId> dummy_unique_id;
   return *dummy_unique_id;

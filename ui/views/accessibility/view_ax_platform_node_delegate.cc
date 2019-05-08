@@ -388,6 +388,17 @@ bool ViewAXPlatformNodeDelegate::IsOffscreen() const {
   return false;
 }
 
+base::string16 ViewAXPlatformNodeDelegate::GetAuthorUniqueId() const {
+  const View* v = view();
+  if (v) {
+    const int view_id = v->GetID();
+    if (view_id)
+      return base::WideToUTF16(L"view_") + base::NumberToString16(view_id);
+  }
+
+  return base::string16();
+}
+
 const ui::AXUniqueId& ViewAXPlatformNodeDelegate::GetUniqueId() const {
   return ViewAccessibility::GetUniqueId();
 }

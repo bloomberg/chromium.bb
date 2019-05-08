@@ -177,6 +177,13 @@ class AX_EXPORT AXPlatformNodeDelegate {
   virtual std::set<AXPlatformNode*> GetReverseRelations(
       ax::mojom::IntListAttribute attr) = 0;
 
+  // Return the string representation of the unique ID assigned by the author,
+  // otherwise return an empty string. The author ID must be persistent across
+  // any instance of the application, regardless of locale. The author ID should
+  // be unique among sibling accessibility nodes and is best if unique across
+  // the application, however, not meeting this requirement is non-fatal.
+  virtual base::string16 GetAuthorUniqueId() const = 0;
+
   virtual const AXUniqueId& GetUniqueId() const = 0;
 
   // This method finds text boundaries in the text used for platform text APIs.

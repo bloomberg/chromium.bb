@@ -372,6 +372,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   virtual base::string16 GetText() const;
 
   // AXPlatformNodeDelegate.
+  base::string16 GetAuthorUniqueId() const override;
   const ui::AXNodeData& GetData() const override;
   const ui::AXTreeData& GetTreeData() const override;
   ui::AXNodePosition::AXPositionInstance CreateTextPositionAt(

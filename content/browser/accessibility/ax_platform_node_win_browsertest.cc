@@ -387,4 +387,37 @@ IN_PROC_BROWSER_TEST_F(
       ax::mojom::Role::kAlertDialog, &BrowserAccessibility::PlatformGetChild, 0,
       true, true);
 }
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeWinBrowserTest,
+                       UIAGetPropertyValueAutomationId) {
+  LoadInitialAccessibilityTreeFromHtml(std::string(R"HTML(
+      <!DOCTYPE html>
+      <html>
+        </body>
+          <div id="id"></div>
+        </body>
+      </html>
+  )HTML"));
+
+  BrowserAccessibility* root_browser_accessibility = GetRootAndAssertNonNull();
+  BrowserAccessibilityComWin* root_browser_accessibility_com_win =
+      ToBrowserAccessibilityWin(root_browser_accessibility)->GetCOM();
+  ASSERT_NE(nullptr, root_browser_accessibility_com_win);
+
+  BrowserAccessibility* browser_accessibility =
+      root_browser_accessibility->PlatformDeepestLastChild();
+  ASSERT_NE(nullptr, browser_accessibility);
+  ASSERT_EQ(ax::mojom::Role::kGenericContainer,
+            browser_accessibility->GetRole());
+  BrowserAccessibilityComWin* browser_accessibility_com_win =
+      ToBrowserAccessibilityWin(browser_accessibility)->GetCOM();
+  ASSERT_NE(nullptr, browser_accessibility_com_win);
+
+  base::win::ScopedVariant expected_scoped_variant;
+  expected_scoped_variant.Set(SysAllocString(L"id"));
+  base::win::ScopedVariant scoped_variant;
+  EXPECT_HRESULT_SUCCEEDED(browser_accessibility_com_win->GetPropertyValue(
+      UIA_AutomationIdPropertyId, scoped_variant.Receive()));
+  EXPECT_EQ(0, expected_scoped_variant.Compare(scoped_variant));
+}
 }  // namespace content

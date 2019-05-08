@@ -565,4 +565,24 @@ TEST_F(BrowserAccessibilityTest, GetInnerTextRangeBoundsRectScrolledWindow) {
                   .ToString());
   }
 }
+
+TEST_F(BrowserAccessibilityTest, GetAuthorUniqueId) {
+  ui::AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.html_attributes.push_back(std::make_pair("id", "my_html_id"));
+
+  std::unique_ptr<BrowserAccessibilityManager> browser_accessibility_manager(
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(root), test_browser_accessibility_delegate_.get(),
+          new BrowserAccessibilityFactory()));
+  ASSERT_NE(nullptr, browser_accessibility_manager.get());
+
+  BrowserAccessibility* root_accessible =
+      browser_accessibility_manager->GetRoot();
+  ASSERT_NE(nullptr, root_accessible);
+
+  ASSERT_EQ(base::WideToUTF16(L"my_html_id"),
+            root_accessible->GetAuthorUniqueId());
+}
 }  // namespace content

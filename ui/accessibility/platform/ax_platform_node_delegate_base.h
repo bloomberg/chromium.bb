@@ -130,6 +130,8 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   std::set<AXPlatformNode*> GetReverseRelations(
       ax::mojom::IntListAttribute attr) override;
 
+  base::string16 GetAuthorUniqueId() const override;
+
   const AXUniqueId& GetUniqueId() const override;
 
   base::Optional<int> FindTextBoundary(

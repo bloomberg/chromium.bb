@@ -1189,6 +1189,12 @@ std::set<ui::AXPlatformNode*> BrowserAccessibility::GetReverseRelations(
       manager_->ax_tree()->GetReverseRelations(attr, GetData().id));
 }
 
+base::string16 BrowserAccessibility::GetAuthorUniqueId() const {
+  base::string16 html_id;
+  GetData().GetHtmlAttribute("id", &html_id);
+  return html_id;
+}
+
 const ui::AXUniqueId& BrowserAccessibility::GetUniqueId() const {
   // This is not the same as GetData().id which comes from Blink, because
   // those ids are only unique within the Blink process. We need one that is

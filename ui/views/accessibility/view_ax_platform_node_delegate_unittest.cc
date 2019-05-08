@@ -51,9 +51,11 @@ class ViewAXPlatformNodeDelegateTest : public ViewsTestBase {
     widget_->Init(params);
 
     button_ = new TestButton();
+    button_->SetID(NON_DEFAULT_VIEW_ID);
     button_->SetSize(gfx::Size(20, 20));
 
     label_ = new Label();
+    label_->SetID(DEFAULT_VIEW_ID);
     button_->AddChildView(label_);
 
     widget_->GetContentsView()->AddChildView(button_);
@@ -84,6 +86,9 @@ class ViewAXPlatformNodeDelegateTest : public ViewsTestBase {
   }
 
  protected:
+  const int DEFAULT_VIEW_ID = 0;
+  const int NON_DEFAULT_VIEW_ID = 1;
+
   Widget* widget_ = nullptr;
   Button* button_ = nullptr;
   Label* label_ = nullptr;
@@ -169,6 +174,15 @@ TEST_F(ViewAXPlatformNodeDelegateTest, WritableFocus) {
   // If not focusable at all, SetFocused() should return false.
   button_->SetEnabled(false);
   EXPECT_FALSE(SetFocused(button_accessibility(), true));
+}
+
+TEST_F(ViewAXPlatformNodeDelegateTest, GetAuthorUniqueIdDefault) {
+  ASSERT_EQ(base::WideToUTF16(L""), label_accessibility()->GetAuthorUniqueId());
+}
+
+TEST_F(ViewAXPlatformNodeDelegateTest, GetAuthorUniqueIdNonDefault) {
+  ASSERT_EQ(base::WideToUTF16(L"view_1"),
+            button_accessibility()->GetAuthorUniqueId());
 }
 
 #if defined(USE_AURA)
