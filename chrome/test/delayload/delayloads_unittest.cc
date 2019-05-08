@@ -115,20 +115,21 @@ TEST_F(DelayloadsTest, ChromeDllDelayloadsCheck) {
 }
 
 TEST_F(DelayloadsTest, ChromeDllLoadSanityTest) {
-  // On Win7 we expect this test to result in user32.dll getting loaded. As a
-  // result, we need to ensure it is executed in its own test process. This
-  // "test" will re-launch with custom parameters to accomplish that.
+  // As a precaution to avoid affecting other tests, we need to ensure this is
+  // executed in its own test process. This "test" will re-launch with custom
+  // parameters to accomplish that.
   base::CommandLine new_test =
       base::CommandLine(base::CommandLine::ForCurrentProcess()->GetProgram());
-  new_test.AppendSwitchASCII(base::kGTestFilterFlag,
-                             "DelayloadsTest.DISABLED_ChromeDllLoadSanityTest");
+  new_test.AppendSwitchASCII(
+      base::kGTestFilterFlag,
+      "DelayloadsTest.DISABLED_ChromeDllLoadSanityTestImpl");
   new_test.AppendSwitch("gtest_also_run_disabled_tests");
   new_test.AppendSwitch("single-process-tests");
 
   std::string output;
   ASSERT_TRUE(base::GetAppOutput(new_test, &output));
   std::string crash_string =
-      "OK ] DelayloadsTest.DISABLED_ChromeDllLoadSanityTest";
+      "OK ] DelayloadsTest.DISABLED_ChromeDllLoadSanityTestImpl";
 
   if (output.find(crash_string) == std::string::npos) {
     GTEST_FAIL() << "Couldn't find\n"
@@ -139,7 +140,7 @@ TEST_F(DelayloadsTest, ChromeDllLoadSanityTest) {
 // Note: This test is not actually disabled, it's just tagged disabled so that
 // the real run (above, in ChromeDllLoadSanityTest) can run it with an argument
 // added to the command line.
-TEST_F(DelayloadsTest, DISABLED_ChromeDllLoadSanityTest) {
+TEST_F(DelayloadsTest, DISABLED_ChromeDllLoadSanityTestImpl) {
   base::FilePath dll;
   ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &dll));
   dll = dll.Append(L"chrome.dll");
@@ -153,13 +154,8 @@ TEST_F(DelayloadsTest, DISABLED_ChromeDllLoadSanityTest) {
 
   HMODULE chrome_module_handle = ::LoadLibrary(dll.value().c_str());
   ASSERT_TRUE(chrome_module_handle != nullptr);
-  // Loading chrome.dll should not load user32.dll on Win10.
-  // On Win7, chains of system dlls and lack of apisets result in it loading.
-  if (base::win::GetVersion() >= base::win::Version::WIN10) {
-    EXPECT_EQ(nullptr, ::GetModuleHandle(L"user32.dll"));
-  } else {
-    EXPECT_NE(nullptr, ::GetModuleHandle(L"user32.dll"));
-  }
+  // Loading chrome.dll should not load user32.dll.
+  EXPECT_EQ(nullptr, ::GetModuleHandle(L"user32.dll"));
   EXPECT_TRUE(!!::FreeLibrary(chrome_module_handle));
 }
 
@@ -222,14 +218,14 @@ TEST_F(DelayloadsTest, ChromeChildDllLoadSanityTest) {
       base::CommandLine(base::CommandLine::ForCurrentProcess()->GetProgram());
   new_test.AppendSwitchASCII(
       base::kGTestFilterFlag,
-      "DelayloadsTest.DISABLED_ChromeChildDllLoadSanityTest");
+      "DelayloadsTest.DISABLED_ChromeChildDllLoadSanityTestImpl");
   new_test.AppendSwitch("gtest_also_run_disabled_tests");
   new_test.AppendSwitch("single-process-tests");
 
   std::string output;
   ASSERT_TRUE(base::GetAppOutput(new_test, &output));
   std::string crash_string =
-      "OK ] DelayloadsTest.DISABLED_ChromeChildDllLoadSanityTest";
+      "OK ] DelayloadsTest.DISABLED_ChromeChildDllLoadSanityTestImpl";
 
   if (output.find(crash_string) == std::string::npos) {
     GTEST_FAIL() << "Couldn't find\n"
@@ -240,7 +236,7 @@ TEST_F(DelayloadsTest, ChromeChildDllLoadSanityTest) {
 // Note: This test is not actually disabled, it's just tagged disabled so that
 // the real run (above, in ChromeChildDllLoadSanityTest) can run it with an
 // argument added to the command line.
-TEST_F(DelayloadsTest, DISABLED_ChromeChildDllLoadSanityTest) {
+TEST_F(DelayloadsTest, DISABLED_ChromeChildDllLoadSanityTestImpl) {
   base::FilePath dll;
   ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &dll));
   dll = dll.Append(L"chrome_child.dll");
@@ -262,6 +258,95 @@ TEST_F(DelayloadsTest, DISABLED_ChromeChildDllLoadSanityTest) {
     EXPECT_NE(nullptr, ::GetModuleHandle(L"user32.dll"));
   }
   EXPECT_TRUE(!!::FreeLibrary(chrome_child_module_handle));
+}
+
+TEST_F(DelayloadsTest, ChromeElfDllDelayloadsCheck) {
+  base::FilePath dll;
+  ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &dll));
+  dll = dll.Append(L"chrome_elf.dll");
+  std::vector<std::string> dll_imports;
+  GetImports(dll, &dll_imports);
+
+  // Check that the dll has imports.
+  ASSERT_LT(0u, dll_imports.size())
+      << "Ensure the delayloads_unittests "
+         "target was built, instead of delayloads_unittests.exe";
+
+  static const char* const kValidFilePatterns[] = {
+    "KERNEL32.dll",
+    "RPCRT4.dll",
+#if defined(ADDRESS_SANITIZER) && defined(COMPONENT_BUILD)
+    "clang_rt.asan_dynamic-i386.dll",
+#endif
+    "ADVAPI32.dll",
+    // On 64 bit the Version API's like VerQueryValue come from VERSION.dll.
+    // It depends on kernel32, advapi32 and api-ms-win-crt*.dll. This should
+    // be ok.
+    "VERSION.dll",
+  };
+
+  // Make sure all of ELF's imports are in the valid imports list.
+  for (const std::string& dll_import : dll_imports) {
+    bool match = false;
+    for (const char* kValidFilePattern : kValidFilePatterns) {
+      if (base::MatchPattern(dll_import, kValidFilePattern)) {
+        match = true;
+        break;
+      }
+    }
+    ASSERT_TRUE(match) << "Illegal import in chrome_elf.dll: " << dll_import;
+  }
+}
+
+TEST_F(DelayloadsTest, ChromeElfDllLoadSanityTest) {
+  // chrome_elf will try to launch crashpad_handler by reinvoking the current
+  // binary with --type=crashpad-handler if not already running that way. To
+  // avoid that, we relaunch and run the real test body manually, adding that
+  // command line argument, as we're only trying to confirm that user32.dll
+  // doesn't get loaded by import table when chrome_elf.dll does.
+  base::CommandLine new_test =
+      base::CommandLine(base::CommandLine::ForCurrentProcess()->GetProgram());
+  new_test.AppendSwitchASCII(
+      base::kGTestFilterFlag,
+      "DelayloadsTest.DISABLED_ChromeElfDllLoadSanityTestImpl");
+  new_test.AppendSwitchASCII("type", "crashpad-handler");
+  new_test.AppendSwitch("gtest_also_run_disabled_tests");
+  new_test.AppendSwitch("single-process-tests");
+
+  std::string output;
+  ASSERT_TRUE(base::GetAppOutput(new_test, &output));
+  std::string crash_string =
+      "OK ] DelayloadsTest.DISABLED_ChromeElfDllLoadSanityTestImpl";
+
+  if (output.find(crash_string) == std::string::npos) {
+    GTEST_FAIL() << "Couldn't find\n"
+                 << crash_string << "\n in output\n " << output;
+  }
+}
+
+// Note: This test is not actually disabled, it's just tagged disabled so that
+// the real run (above, in ChromeElfDllLoadSanityTest) can run it with an
+// argument added to the command line.
+TEST_F(DelayloadsTest, DISABLED_ChromeElfDllLoadSanityTestImpl) {
+  base::FilePath dll;
+  ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &dll));
+  dll = dll.Append(L"chrome_elf.dll");
+
+  // We don't expect user32 to be loaded in chrome_elf_import_unittests. If this
+  // test case fails, then it means that a dependency on user32 has crept into
+  // the chrome_elf_imports_unittests executable, which needs to be removed.
+  // NOTE: it may be a secondary dependency of another system DLL.  If so,
+  // try adding a "/DELAYLOAD:<blah>.dll" to the build.gn file.
+  ASSERT_EQ(nullptr, ::GetModuleHandle(L"user32.dll"));
+
+  HMODULE chrome_elf_module_handle = ::LoadLibrary(dll.value().c_str());
+  ASSERT_TRUE(chrome_elf_module_handle != nullptr);
+  // Loading chrome_elf.dll should not load user32.dll
+  EXPECT_EQ(nullptr, ::GetModuleHandle(L"user32.dll"));
+  // Note: Do not unload the chrome_elf DLL in any test where the elf hook has
+  // been applied (browser process type only).  This results in the shim code
+  // disappearing, but ntdll hook remaining, followed in tests by fireworks.
+  EXPECT_TRUE(!!::FreeLibrary(chrome_elf_module_handle));
 }
 
 TEST_F(DelayloadsTest, ChromeExeDelayloadsCheck) {
@@ -299,6 +384,26 @@ TEST_F(DelayloadsTest, ChromeExeDelayloadsCheck) {
 }
 
 #endif  // NDEBUG && !COMPONENT_BUILD
+
+TEST_F(DelayloadsTest, ChromeExeLoadSanityCheck) {
+  std::vector<std::string> exe_imports;
+
+  base::FilePath exe;
+  ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &exe));
+  exe = exe.Append(L"chrome.exe");
+  GetImports(exe, &exe_imports);
+
+  // Check that chrome.exe has imports.
+  ASSERT_LT(0u, exe_imports.size())
+      << "Ensure the delayloads_unittests "
+         "target was built, instead of delayloads_unittests.exe";
+
+  // Chrome.exe's first import must be ELF.
+  EXPECT_EQ("chrome_elf.dll", exe_imports[0])
+      << "Illegal import order in chrome.exe (ensure the "
+         "delayloads_unittests "
+         "target was built, instead of just delayloads_unittests.exe)";
+}
 
 }  // namespace
 

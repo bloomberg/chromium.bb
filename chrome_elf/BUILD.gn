@@ -320,44 +320,6 @@ test("chrome_elf_unittests") {
   ]
 }
 
-test("chrome_elf_import_unittests") {
-  output_name = "chrome_elf_import_unittests"
-  sources = [
-    "elf_imports_unittest.cc",
-  ]
-  include_dirs = [ "$target_gen_dir" ]
-  deps = [
-    "//base",
-    "//base/test:test_support",
-    "//chrome",
-    "//chrome/install_static:install_static_util",
-    "//chrome/install_static/test:test_support",
-    "//testing/gtest",
-  ]
-
-  # It's not easily possible to have //chrome in data_deps without changing
-  # the //chrome target to bundle up both initial/chrome.exe and chrome.exe.
-  # As a workaround, explicitly include a data dep on just chrome.exe, and
-  # add //chrome to deps above to make sure it's been built.
-  data = [
-    "$root_out_dir/chrome.exe",
-  ]
-  data_deps = [
-    ":chrome_elf",
-  ]
-
-  # Don't want the test-specific dependencies to affect ChromeElfLoadSanityTest.
-  # In particular, a few system DLLs cause user32 to be loaded, which is bad.
-  ldflags = [
-    "/DELAYLOAD:advapi32.dll",
-    "/DELAYLOAD:ole32.dll",
-    "/DELAYLOAD:shell32.dll",
-    "/DELAYLOAD:shlwapi.dll",
-    "/DELAYLOAD:user32.dll",
-    "/DELAYLOAD:winmm.dll",
-  ]
-}
-
 ##------------------------------------------------------------------------------
 ## tests - data_deps
 ##------------------------------------------------------------------------------
