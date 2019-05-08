@@ -3192,6 +3192,52 @@ TEST_F(MainThreadSchedulerImplTest, VirtualTimePauserNonInstantTask) {
   EXPECT_GT(after, before);
 }
 
+TEST_F(MainThreadSchedulerImplTest, VirtualTimeWithOneQueueWithoutVirtualTime) {
+  // This test ensures that we do not do anything strange like stopping
+  // processing task queues after we encountered one task queue with
+  // DoNotUseVirtualTime trait.
+  scheduler_->EnableVirtualTime(
+      MainThreadSchedulerImpl::BaseTimeOverridePolicy::DO_NOT_OVERRIDE);
+  scheduler_->SetVirtualTimePolicy(
+      PageSchedulerImpl::VirtualTimePolicy::kDeterministicLoading);
+
+  WebScopedVirtualTimePauser pauser =
+      scheduler_->CreateWebScopedVirtualTimePauser(
+          "test", WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
+
+  // Test will pass if the queue without virtual is the last one in the
+  // iteration order. Create 100 of them and ensure that it is created in the
+  // middle.
+  std::vector<scoped_refptr<MainThreadTaskQueue>> task_queues;
+  constexpr int kTaskQueueCount = 100;
+
+  for (size_t i = 0; i < kTaskQueueCount; ++i) {
+    task_queues.push_back(scheduler_->NewTaskQueue(
+        MainThreadTaskQueue::QueueCreationParams(
+            MainThreadTaskQueue::QueueType::kFrameThrottleable)
+            .SetShouldUseVirtualTime(i != 42)));
+  }
+
+  // This should install a fence on all queues with virtual time.
+  pauser.PauseVirtualTime();
+
+  int counter = 0;
+
+  for (const auto& task_queue : task_queues) {
+    task_queue->task_runner()->PostTask(
+        FROM_HERE, base::BindOnce([](int* counter) { ++*counter; }, &counter));
+  }
+
+  // Only the queue without virtual time should run, all others should be
+  // blocked by their fences.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(counter, 1);
+
+  pauser.UnpauseVirtualTime();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(counter, kTaskQueueCount);
+}
+
 TEST_F(MainThreadSchedulerImplTest, Tracing) {
   // This test sets renderer scheduler to some non-trivial state
   // (by posting tasks, creating child schedulers, etc) and converts it into a

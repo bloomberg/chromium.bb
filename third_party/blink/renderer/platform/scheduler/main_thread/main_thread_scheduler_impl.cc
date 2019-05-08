@@ -1799,7 +1799,7 @@ void MainThreadSchedulerImpl::SetVirtualTimeStopped(bool virtual_time_stopped) {
 void MainThreadSchedulerImpl::VirtualTimePaused() {
   for (const auto& pair : task_runners_) {
     if (!pair.first->ShouldUseVirtualTime())
-      return;
+      continue;
     if (pair.first->queue_class() == MainThreadTaskQueue::QueueClass::kTimer) {
       DCHECK(!task_queue_throttler_->IsThrottled(pair.first.get()));
       pair.first->InsertFence(TaskQueue::InsertFencePosition::kNow);
@@ -1810,7 +1810,7 @@ void MainThreadSchedulerImpl::VirtualTimePaused() {
 void MainThreadSchedulerImpl::VirtualTimeResumed() {
   for (const auto& pair : task_runners_) {
     if (!pair.first->ShouldUseVirtualTime())
-      return;
+      continue;
     if (pair.first->queue_class() == MainThreadTaskQueue::QueueClass::kTimer) {
       DCHECK(!task_queue_throttler_->IsThrottled(pair.first.get()));
       DCHECK(pair.first->HasActiveFence());
