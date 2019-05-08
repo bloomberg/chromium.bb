@@ -184,7 +184,7 @@ void OnConsentReceived(
       content::ChildProcessSecurityPolicy::GetInstance();
   DCHECK(policy);
 
-  const auto process_id = requester->render_frame_host()->GetProcess()->GetID();
+  const auto process_id = requester->source_process_id();
   // Read-only permisisons.
   policy->GrantReadFile(process_id, volume->mount_path());
   policy->GrantReadFileSystem(process_id, file_system_id);

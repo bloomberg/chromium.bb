@@ -431,8 +431,6 @@ bool WebViewInternalExecuteCodeFunction::CanExecuteScriptOnPage(
 
 extensions::ScriptExecutor*
 WebViewInternalExecuteCodeFunction::GetScriptExecutor(std::string* error) {
-  if (!render_frame_host() || !render_frame_host()->GetProcess())
-    return nullptr;
   WebViewGuest* guest =
       WebViewGuest::From(source_process_id(), guest_instance_id_);
   if (!guest)
@@ -452,8 +450,6 @@ const GURL& WebViewInternalExecuteCodeFunction::GetWebViewSrc() const {
 bool WebViewInternalExecuteCodeFunction::LoadFileForWebUI(
     const std::string& file_src,
     WebUIURLFetcher::WebUILoadFileCallback callback) {
-  if (!render_frame_host() || !render_frame_host()->GetProcess())
-    return false;
   WebViewGuest* guest =
       WebViewGuest::From(source_process_id(), guest_instance_id_);
   if (!guest || host_id().type() != HostID::WEBUI)
