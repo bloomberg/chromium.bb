@@ -8,6 +8,8 @@
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
+#import "ios/chrome/browser/ui/util/named_guide.h"
+#import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -83,11 +85,9 @@ void PagePlaceholderTabHelper::AddPlaceholder() {
 
   // Lazily create the placeholder view.
   if (!placeholder_view_) {
-    placeholder_view_ = [[UIImageView alloc] init];
+    placeholder_view_ = [[TopAlignedImageView alloc] init];
     placeholder_view_.backgroundColor = [UIColor whiteColor];
-    placeholder_view_.contentMode = UIViewContentModeScaleAspectFit;
-    placeholder_view_.autoresizingMask =
-        UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    placeholder_view_.translatesAutoresizingMaskIntoConstraints = NO;
   }
 
   // Update placeholder view's image and display it on top of WebState's view.
@@ -112,15 +112,11 @@ void PagePlaceholderTabHelper::AddPlaceholder() {
 }
 
 void PagePlaceholderTabHelper::DisplaySnapshotImage(UIImage* snapshot) {
-  CGRect frame = web_state_->GetView().frame;
-  UIEdgeInsets inset = web_state_->GetWebViewProxy().contentInset;
-  frame.origin.x += inset.left;
-  frame.origin.y += inset.top;
-  frame.size.width -= (inset.right + inset.left);
-  frame.size.height -= (inset.bottom + inset.top);
-  placeholder_view_.frame = frame;
   placeholder_view_.image = snapshot;
   [web_state_->GetView() addSubview:placeholder_view_];
+  AddSameConstraints([NamedGuide guideWithName:kContentAreaGuide
+                                          view:placeholder_view_],
+                     placeholder_view_);
 }
 
 void PagePlaceholderTabHelper::RemovePlaceholder() {
@@ -130,7 +126,7 @@ void PagePlaceholderTabHelper::RemovePlaceholder() {
   displaying_placeholder_ = false;
 
   // Remove placeholder view with a fade-out animation.
-  __weak UIImageView* weak_placeholder_view = placeholder_view_;
+  __weak UIView* weak_placeholder_view = placeholder_view_;
   [UIView animateWithDuration:kPlaceholderFadeOutAnimationLengthInSeconds
       animations:^{
         weak_placeholder_view.alpha = 0.0f;

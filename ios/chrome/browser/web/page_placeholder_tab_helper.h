@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/macros.h"
+#import "ios/chrome/browser/ui/elements/top_aligned_image_view.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
 
@@ -62,7 +63,7 @@ class PagePlaceholderTabHelper
   web::WebState* web_state_ = nullptr;
 
   // View used to display the placeholder.
-  UIImageView* placeholder_view_ = nil;
+  TopAlignedImageView* placeholder_view_ = nil;
 
   // true if placeholder is currently being displayed.
   bool displaying_placeholder_ = false;
