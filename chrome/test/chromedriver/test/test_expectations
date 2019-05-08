@@ -244,6 +244,11 @@ _OS_NEGATIVE_FILTER['android:chromedriver_webview_shell'] = (
 
         # ChromeDriverWebViewShell doesn't support local storage
         'LocalStorageTest.*',
+
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2899
+        'ClickScrollingTest.testShouldBeAbleToClickOnAnElementHiddenByDoubleOverflow',
+        'ClickTest.testCanClickOnALinkThatOverflowsAndFollowIt',
+        'PageLoadingTest.testShouldDoNothingIfThereIsNothingToGoBackTo',
     ]
 )
 
