@@ -36,7 +36,7 @@ namespace extensions {
 namespace {
 #if defined(OS_WIN) || defined(OS_MACOSX)
 // Prepopulated id hardcoded in test_extension.
-const int kTestExtensionPrepopulatedId = 1;
+const int kTestExtensionPrepopulatedId = 3;
 // TemplateURLData with search engines settings from test extension manifest.
 // chrome/test/data/extensions/settings_override/manifest.json
 std::unique_ptr<TemplateURLData> TestExtensionSearchEngine(PrefService* prefs) {

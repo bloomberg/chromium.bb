@@ -243,7 +243,6 @@ TEST_F(TemplateURLPrepopulateDataTest, ClearProvidersFromPrefs) {
   EXPECT_EQ(ASCIIToUTF16("Google"), t_urls[default_index]->short_name());
   EXPECT_FALSE(t_urls[default_index]->suggestions_url.empty());
   EXPECT_FALSE(t_urls[default_index]->image_url.empty());
-  EXPECT_FALSE(t_urls[default_index]->new_tab_url.empty());
   EXPECT_FALSE(t_urls[default_index]->contextual_search_url.empty());
   EXPECT_FALSE(t_urls[default_index]->image_url_post_params.empty());
   EXPECT_EQ(SEARCH_ENGINE_GOOGLE,
@@ -278,7 +277,6 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrepopulated) {
   EXPECT_EQ(ASCIIToUTF16("Google"), t_urls[default_index]->short_name());
   EXPECT_FALSE(t_urls[default_index]->suggestions_url.empty());
   EXPECT_FALSE(t_urls[default_index]->image_url.empty());
-  EXPECT_FALSE(t_urls[default_index]->new_tab_url.empty());
   EXPECT_FALSE(t_urls[default_index]->contextual_search_url.empty());
   EXPECT_FALSE(t_urls[default_index]->image_url_post_params.empty());
   // Expect at least 2 alternate_urls.
