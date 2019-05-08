@@ -176,10 +176,7 @@ class ClassPropertyReadOnlyMetaData : public MemberMetaDataBase {
 // (so it will trigger things like property changed notifications).
 template <typename TClass,
           typename TValue,
-          void (TClass::*Set)(
-              typename std::conditional<std::is_fundamental<TValue>::value,
-                                        TValue,
-                                        const TValue&>::type),
+          void (TClass::*Set)(ArgType<TValue>),
           TValue (TClass::*Get)() const>
 class ClassPropertyMetaData
     : public ClassPropertyReadOnlyMetaData<TClass, TValue, Get> {

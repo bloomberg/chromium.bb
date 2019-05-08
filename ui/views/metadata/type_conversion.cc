@@ -23,59 +23,58 @@ base::string16 ConvertToString<base::string16>(
 }
 
 template <>
-base::string16 ConvertToString<int8_t>(const int8_t& source_value) {
+base::string16 ConvertToString<int8_t>(int8_t source_value) {
   return base::NumberToString16(source_value);
 }
 
 template <>
-base::string16 ConvertToString<int16_t>(const int16_t& source_value) {
+base::string16 ConvertToString<int16_t>(int16_t source_value) {
   return base::NumberToString16(source_value);
 }
 
 template <>
-base::string16 ConvertToString<int32_t>(const int32_t& source_value) {
+base::string16 ConvertToString<int32_t>(int32_t source_value) {
   return base::NumberToString16(source_value);
 }
 
 template <>
-base::string16 ConvertToString<int64_t>(const int64_t& source_value) {
+base::string16 ConvertToString<int64_t>(int64_t source_value) {
   return base::NumberToString16(source_value);
 }
 
 template <>
-base::string16 ConvertToString<uint8_t>(const uint8_t& source_value) {
+base::string16 ConvertToString<uint8_t>(uint8_t source_value) {
   return base::NumberToString16(source_value);
 }
 
 template <>
-base::string16 ConvertToString<uint16_t>(const uint16_t& source_value) {
+base::string16 ConvertToString<uint16_t>(uint16_t source_value) {
   return base::NumberToString16(source_value);
 }
 
 template <>
-base::string16 ConvertToString<uint32_t>(const uint32_t& source_value) {
+base::string16 ConvertToString<uint32_t>(uint32_t source_value) {
   return base::NumberToString16(source_value);
 }
 
 template <>
-base::string16 ConvertToString<uint64_t>(const uint64_t& source_value) {
+base::string16 ConvertToString<uint64_t>(uint64_t source_value) {
   return base::NumberToString16(source_value);
 }
 
 template <>
-base::string16 ConvertToString<float>(const float& source_value) {
+base::string16 ConvertToString<float>(float source_value) {
   return base::NumberToString16(source_value);
 }
 
 template <>
-base::string16 ConvertToString<double>(const double& source_value) {
+base::string16 ConvertToString<double>(double source_value) {
   return base::NumberToString16(source_value);
 }
 
 template <>
-base::string16 ConvertToString<bool>(const bool& source_value) {
-  return source_value ? base::ASCIIToUTF16("true")
-                      : base::ASCIIToUTF16("false");
+base::string16 ConvertToString<bool>(bool source_value) {
+  return base::ASCIIToUTF16(source_value ? "true" : "false");
 }
 
 template <>

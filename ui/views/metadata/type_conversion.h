@@ -18,11 +18,21 @@
 namespace views {
 namespace metadata {
 
+// Various metadata methods pass types either by value or const ref depending on
+// whether the types are "small" (defined as "fundamental, enum, or pointer").
+// ArgType<T> gives the appropriate type to use as an argument in such cases.
+template <typename T>
+using ArgType = typename std::conditional<std::is_fundamental<T>::value ||
+                                              std::is_enum<T>::value ||
+                                              std::is_pointer<T>::value,
+                                          T,
+                                          const T&>::type;
+
 // TypeConverter Class --------------------------------------------------------
 template <typename TSource, typename TTarget>
 class TypeConverter {
  public:
-  static TTarget Convert(const TSource& source_val) = delete;
+  static TTarget Convert(ArgType<TSource>) = delete;
 
  private:
   TypeConverter();
@@ -30,58 +40,51 @@ class TypeConverter {
 
 // Master Type Conversion Function --------------------------------------------
 template <typename TSource, typename TTarget>
-TTarget Convert(const TSource& source_value) {
+TTarget Convert(ArgType<TSource> source_value) {
   return TypeConverter<TSource, TTarget>::Convert(source_value);
 }
 
 // String Conversions ---------------------------------------------------------
 
 template <typename TSource>
-base::string16 ConvertToString(const TSource& source_value) = delete;
+base::string16 ConvertToString(ArgType<TSource>) = delete;
 
 template <>
 VIEWS_EXPORT base::string16 ConvertToString<base::string16>(
     const base::string16& source_value);
 
 template <>
-VIEWS_EXPORT base::string16 ConvertToString<int8_t>(const int8_t& source_value);
+VIEWS_EXPORT base::string16 ConvertToString<int8_t>(int8_t source_value);
 
 template <>
-VIEWS_EXPORT base::string16 ConvertToString<int16_t>(
-    const int16_t& source_value);
+VIEWS_EXPORT base::string16 ConvertToString<int16_t>(int16_t source_value);
 
 template <>
-VIEWS_EXPORT base::string16 ConvertToString<int32_t>(
-    const int32_t& source_value);
+VIEWS_EXPORT base::string16 ConvertToString<int32_t>(int32_t source_value);
 
 template <>
-VIEWS_EXPORT base::string16 ConvertToString<int64_t>(
-    const int64_t& source_value);
+VIEWS_EXPORT base::string16 ConvertToString<int64_t>(int64_t source_value);
 
 template <>
-VIEWS_EXPORT base::string16 ConvertToString<uint8_t>(
-    const uint8_t& source_value);
+VIEWS_EXPORT base::string16 ConvertToString<uint8_t>(uint8_t source_value);
 
 template <>
-VIEWS_EXPORT base::string16 ConvertToString<uint16_t>(
-    const uint16_t& source_value);
+VIEWS_EXPORT base::string16 ConvertToString<uint16_t>(uint16_t source_value);
 
 template <>
-VIEWS_EXPORT base::string16 ConvertToString<uint32_t>(
-    const uint32_t& source_value);
+VIEWS_EXPORT base::string16 ConvertToString<uint32_t>(uint32_t source_value);
 
 template <>
-VIEWS_EXPORT base::string16 ConvertToString<uint64_t>(
-    const uint64_t& source_value);
+VIEWS_EXPORT base::string16 ConvertToString<uint64_t>(uint64_t source_value);
 
 template <>
-VIEWS_EXPORT base::string16 ConvertToString<float>(const float& source_value);
+VIEWS_EXPORT base::string16 ConvertToString<float>(float source_value);
 
 template <>
-VIEWS_EXPORT base::string16 ConvertToString<double>(const double& source_value);
+VIEWS_EXPORT base::string16 ConvertToString<double>(double source_value);
 
 template <>
-VIEWS_EXPORT base::string16 ConvertToString<bool>(const bool& source_value);
+VIEWS_EXPORT base::string16 ConvertToString<bool>(bool source_value);
 
 template <>
 VIEWS_EXPORT base::string16 ConvertToString<gfx::Size>(
@@ -90,8 +93,8 @@ VIEWS_EXPORT base::string16 ConvertToString<gfx::Size>(
 template <typename TSource>
 class TypeConverter<TSource, base::string16> {
  public:
-  static base::string16 Convert(const TSource& source_val) {
-    return ConvertToString<TSource>(source_val);
+  static base::string16 Convert(ArgType<TSource> source_value) {
+    return ConvertToString<TSource>(source_value);
   }
 };
 
