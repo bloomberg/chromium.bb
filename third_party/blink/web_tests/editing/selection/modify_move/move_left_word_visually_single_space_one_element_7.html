@@ -63,13 +63,13 @@ selection_test(
 selection_test(
   '<div contenteditable dir="ltr">abc def ש|נב סטז uvw xyz</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="ltr">abc def שנב| סטז uvw xyz</div>',
+  '<div contenteditable dir="ltr">abc def |\u05E9\u05E0\u05D1 \u05E1\u05D8\u05D6 uvw xyz</div>',
   '7-9 left word');
 
 selection_test(
   '<div contenteditable dir="ltr">abc def שנ|ב סטז uvw xyz</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="ltr">abc def שנב| סטז uvw xyz</div>',
+  '<div contenteditable dir="ltr">abc def |\u05E9\u05E0\u05D1 \u05E1\u05D8\u05D6 uvw xyz</div>',
   '7-10 left word');
 
 selection_test(
@@ -87,25 +87,25 @@ selection_test(
 selection_test(
   '<div contenteditable dir="ltr">abc def שנב ס|טז uvw xyz</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="ltr">abc def |שנב סטז uvw xyz</div>',
+  '<div contenteditable dir="ltr">abc def \u05E9\u05E0\u05D1 |\u05E1\u05D8\u05D6 uvw xyz</div>',
   '7-13 left word');
 
 selection_test(
   '<div contenteditable dir="ltr">abc def שנב סט|ז uvw xyz</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="ltr">abc def |שנב סטז uvw xyz</div>',
+  '<div contenteditable dir="ltr">abc def \u05E9\u05E0\u05D1 |\u05E1\u05D8\u05D6 uvw xyz</div>',
   '7-14 left word');
 
 selection_test(
   '<div contenteditable dir="ltr">abc def שנב סטז| uvw xyz</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="ltr">abc def שנב| סטז uvw xyz</div>',
+  '<div contenteditable dir="ltr">abc def \u05E9\u05E0\u05D1 |\u05E1\u05D8\u05D6 uvw xyz</div>',
   '7-15 left word');
 
 selection_test(
   '<div contenteditable dir="ltr">abc def שנב סטז |uvw xyz</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="ltr">abc def שנב| סטז uvw xyz</div>',
+  '<div contenteditable dir="ltr">abc def \u05E9\u05E0\u05D1 |\u05E1\u05D8\u05D6 uvw xyz</div>',
   '7-16 left word');
 
 selection_test(
@@ -150,4 +150,3 @@ selection_test(
   '<div contenteditable dir="ltr">abc def שנב סטז uvw |xyz</div>',
   '7-23 left word');
 </script>
-

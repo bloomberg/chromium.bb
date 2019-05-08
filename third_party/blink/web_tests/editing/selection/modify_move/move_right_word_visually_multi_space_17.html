@@ -39,127 +39,127 @@ selection_test(
 selection_test(
   '<div contenteditable dir="rtl">    a|bc    def    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc|    def    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    |abc    def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq    rst    uvw    </div>',
   '17-5 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    ab|c    def    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc|    def    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    |abc    def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq    rst    uvw    </div>',
   '17-6 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc|    def    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc    def|    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    |abc    def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq    rst    uvw    </div>',
   '17-7 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc |   def    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc    def|    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    |abc    def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq    rst    uvw    </div>',
   '17-8 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc  |  def    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc    def|    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    |abc    def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq    rst    uvw    </div>',
   '17-9 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc   | def    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc    def|    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    |abc    def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq    rst    uvw    </div>',
   '17-10 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    |def    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc    def|    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    |abc    def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq    rst    uvw    </div>',
   '17-11 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    d|ef    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc    def|    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc |   def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq    rst    uvw    </div>',
   '17-12 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    de|f    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc    def|    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc |   def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq    rst    uvw    </div>',
   '17-13 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def|    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    |abc    def    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc |   def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq    rst    uvw    </div>',
   '17-14 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def |   hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    |abc    def    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc |   def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq    rst    uvw    </div>',
   '17-15 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def  |  hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    |abc    def    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc |   def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq    rst    uvw    </div>',
   '17-16 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def   | hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    |abc    def    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc |   def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq    rst    uvw    </div>',
   '17-17 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    |hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    |abc    def    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc |   def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq    rst    uvw    </div>',
   '17-18 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    h|ij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    |abc    def    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc    def |   hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq    rst    uvw    </div>',
   '17-19 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    hi|j    אבצ    דעפ    היח    opq    rst    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    |abc    def    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc    def |   hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq    rst    uvw    </div>',
   '17-20 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    hij|    אבצ    דעפ    היח    opq    rst    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc|    def    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc    def |   hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq    rst    uvw    </div>',
   '17-21 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    hij |   אבצ    דעפ    היח    opq    rst    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc|    def    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc    def |   hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq    rst    uvw    </div>',
   '17-22 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    hij  |  אבצ    דעפ    היח    opq    rst    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc|    def    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc    def |   hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq    rst    uvw    </div>',
   '17-23 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    hij   | אבצ    דעפ    היח    opq    rst    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc|    def    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc    def |   hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq    rst    uvw    </div>',
   '17-24 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    hij    |אבצ    דעפ    היח    opq    rst    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc|    def    hij    אבצ    דעפ    היח    opq    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc    def |   hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq    rst    uvw    </div>',
   '17-25 right word');
 
 selection_test(
@@ -291,127 +291,126 @@ selection_test(
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    o|pq    rst    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq|    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc    def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7 |   opq    rst    uvw    </div>',
   '17-47 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    op|q    rst    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq|    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc    def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7 |   opq    rst    uvw    </div>',
   '17-48 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq|    rst    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq    rst|    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc    def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7 |   opq    rst    uvw    </div>',
   '17-49 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq |   rst    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq    rst|    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc    def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7 |   opq    rst    uvw    </div>',
   '17-50 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq  |  rst    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq    rst|    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc    def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7 |   opq    rst    uvw    </div>',
   '17-51 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq   | rst    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq    rst|    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc    def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7 |   opq    rst    uvw    </div>',
   '17-52 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq    |rst    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq    rst|    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc    def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7 |   opq    rst    uvw    </div>',
   '17-53 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq    r|st    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq    rst|    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc    def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq |   rst    uvw    </div>',
   '17-54 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq    rs|t    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq    rst|    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc    def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq |   rst    uvw    </div>',
   '17-55 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq    rst|    uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח |   opq    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc    def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq |   rst    uvw    </div>',
   '17-56 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq    rst |   uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח |   opq    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc    def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq |   rst    uvw    </div>',
   '17-57 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq    rst  |  uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח |   opq    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc    def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq |   rst    uvw    </div>',
   '17-58 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq    rst   | uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח |   opq    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc    def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq |   rst    uvw    </div>',
   '17-59 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq    rst    |uvw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח |   opq    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc    def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq |   rst    uvw    </div>',
   '17-60 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq    rst    u|vw    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח |   opq    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc    def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq    rst |   uvw    </div>',
   '17-61 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq    rst    uv|w    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח |   opq    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc    def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq    rst |   uvw    </div>',
   '17-62 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq    rst    uvw|    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq|    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc    def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq    rst |   uvw    </div>',
   '17-63 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq    rst    uvw |   </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq|    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc    def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq    rst |   uvw    </div>',
   '17-64 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq    rst    uvw  |  </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq|    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc    def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq    rst |   uvw    </div>',
   '17-65 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq    rst    uvw   | </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq|    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc    def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq    rst |   uvw    </div>',
   '17-66 right word');
 
 selection_test(
   '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq    rst    uvw    |</div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">    abc    def    hij    אבצ    דעפ    היח    opq|    rst    uvw    </div>',
+  '<div contenteditable dir="rtl">    abc    def    hij    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    \u05D4\u05D9\u05D7    opq    rst |   uvw    </div>',
   '17-67 right word');
 </script>
-
