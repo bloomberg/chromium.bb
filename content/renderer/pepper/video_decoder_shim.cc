@@ -63,7 +63,7 @@ class VideoDecoderShim::YUVConverter {
   YUVConverter(scoped_refptr<ws::ContextProviderCommandBuffer>);
   ~YUVConverter();
   bool Initialize();
-  void Convert(const scoped_refptr<media::VideoFrame>& frame, GLuint tex_out);
+  void Convert(const media::VideoFrame* frame, GLuint tex_out);
 
  private:
   GLuint CreateShader();
@@ -353,9 +353,8 @@ bool VideoDecoderShim::YUVConverter::Initialize() {
   return (program_ != 0);
 }
 
-void VideoDecoderShim::YUVConverter::Convert(
-    const scoped_refptr<media::VideoFrame>& frame,
-    GLuint tex_out) {
+void VideoDecoderShim::YUVConverter::Convert(const media::VideoFrame* frame,
+                                             GLuint tex_out) {
   const float* yuv_matrix = nullptr;
   const float* yuv_adjust = nullptr;
 
@@ -610,8 +609,7 @@ VideoDecoderShim::PendingDecode::~PendingDecode() {
 
 struct VideoDecoderShim::PendingFrame {
   explicit PendingFrame(uint32_t decode_id);
-  PendingFrame(uint32_t decode_id,
-               const scoped_refptr<media::VideoFrame>& frame);
+  PendingFrame(uint32_t decode_id, scoped_refptr<media::VideoFrame> frame);
   ~PendingFrame();
 
   const uint32_t decode_id;
@@ -628,9 +626,8 @@ VideoDecoderShim::PendingFrame::PendingFrame(uint32_t decode_id)
 
 VideoDecoderShim::PendingFrame::PendingFrame(
     uint32_t decode_id,
-    const scoped_refptr<media::VideoFrame>& frame)
-    : decode_id(decode_id), video_frame(frame) {
-}
+    scoped_refptr<media::VideoFrame> frame)
+    : decode_id(decode_id), video_frame(std::move(frame)) {}
 
 VideoDecoderShim::PendingFrame::~PendingFrame() {
 }
@@ -1056,7 +1053,7 @@ void VideoDecoderShim::SendPictures() {
 
     uint32_t local_texture_id = texture_id_map_[texture_id];
 
-    yuv_converter_->Convert(frame->video_frame, local_texture_id);
+    yuv_converter_->Convert(frame->video_frame.get(), local_texture_id);
 
     host_->PictureReady(media::Picture(texture_id, frame->decode_id,
                                        frame->video_frame->visible_rect(),
