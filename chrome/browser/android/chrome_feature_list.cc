@@ -267,7 +267,7 @@ const base::Feature kBackgroundTaskComponentUpdate{
 
 const base::Feature kBackgroundTaskSchedulerForBackgroundSync{
     "BackgroundTaskSchedulerForBackgroundSync",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Used in downstream code.
 const base::Feature kCastDeviceFilter{"CastDeviceFilter",
