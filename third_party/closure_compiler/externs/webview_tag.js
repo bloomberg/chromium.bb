@@ -193,6 +193,9 @@ var SelectionRect;
 function WebRequestEventInterface() {}
 
 /** @type {!WebRequestOptionallySynchronousEvent} */
+WebRequestEventInterface.prototype.onBeforeRequest;
+
+/** @type {!WebRequestOptionallySynchronousEvent} */
 WebRequestEventInterface.prototype.onBeforeSendHeaders;
 
 /**

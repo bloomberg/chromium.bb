@@ -45,7 +45,10 @@ js_library("files_metadata_entry") {
 js_library("files_quick_view") {
   deps = [
     ":files_metadata_box",
-    "../../../externs:webview_tag",
+  ]
+  externs_list = [
+    "$externs_path/chrome_extensions.js",
+    "$externs_path/webview_tag.js",
   ]
 }
 
