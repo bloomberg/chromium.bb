@@ -4,6 +4,7 @@
 
 #include "content/browser/devtools/protocol/background_service_handler.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/storage_partition_impl.h"
@@ -188,10 +189,13 @@ Response BackgroundServiceHandler::SetRecording(bool should_record,
   if (service_enum == devtools::proto::BackgroundService::UNKNOWN)
     return Response::InvalidParams("Invalid service name");
 
-  if (should_record)
+  if (should_record) {
     devtools_context_->StartRecording(service_enum);
-  else
+    base::UmaHistogramEnumeration("DevTools.BackgroundService.StartRecording",
+                                  service_enum, devtools::proto::COUNT);
+  } else {
     devtools_context_->StopRecording(service_enum);
+  }
 
   return Response::OK();
 }

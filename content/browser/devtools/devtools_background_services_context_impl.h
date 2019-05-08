@@ -131,7 +131,7 @@ class CONTENT_EXPORT DevToolsBackgroundServicesContextImpl
   // recorded. The BackgroundService enum is used as the index.
   // This should only be updated on the UI thread, but is also
   // accessed from the IO thread.
-  std::array<base::Time, devtools::proto::BackgroundService_ARRAYSIZE>
+  std::array<base::Time, devtools::proto::BackgroundService::COUNT>
       expiration_times_;
 
   base::ObserverList<EventObserver> observers_;

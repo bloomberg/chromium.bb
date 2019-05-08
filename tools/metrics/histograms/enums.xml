@@ -12337,6 +12337,11 @@ Called by update_net_error_codes.py.-->
   <int value="33" label="Network panel film strip started recording"/>
 </enum>
 
+<enum name="DevToolsBackgroundService">
+  <int value="2" label="Background Fetch"/>
+  <int value="3" label="Background Sync"/>
+</enum>
+
 <enum name="DevToolsPanel">
   <int value="1" label="Elements"/>
   <int value="2" label="Resources"/>
