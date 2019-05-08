@@ -35,6 +35,7 @@
 #include "remoting/protocol/performance_tracker.h"
 #include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/video_renderer.h"
+#include "remoting/signaling/ftl_signal_strategy.h"
 #include "remoting/signaling/server_log_entry.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
@@ -85,6 +86,7 @@ struct SessionContext {
       audio_player_weak_factory;
   std::unique_ptr<protocol::CursorShapeStub> cursor_shape_stub;
   std::unique_ptr<protocol::VideoRenderer> video_renderer;
+  std::unique_ptr<FtlDeviceIdProvider> device_id_provider;
 
   ConnectToHostInfo info;
 };
@@ -182,7 +184,7 @@ class ChromotingSession::Core : public ClientUserInterface,
   std::unique_ptr<protocol::PerformanceTracker> perf_tracker_;
 
   // |signaling_| must outlive |client_|.
-  std::unique_ptr<XmppSignalStrategy> signaling_;
+  std::unique_ptr<SignalStrategy> signaling_;
   std::unique_ptr<OAuthTokenGetter> token_getter_;
   std::unique_ptr<ChromotingClient> client_;
 
@@ -491,10 +493,17 @@ void ChromotingSession::Core::ConnectOnNetworkThread() {
   xmpp_config.username = session_context_->info.username;
   xmpp_config.auth_token = session_context_->info.auth_token;
 
-  signaling_.reset(
-      new XmppSignalStrategy(net::ClientSocketFactory::GetDefaultFactory(),
-                             runtime_->url_requester(), xmpp_config));
-  logger_->SetSignalStrategyType(ChromotingEvent::SignalStrategyType::XMPP);
+  if (!session_context_->info.host_ftl_id.empty()) {
+    signaling_ = std::make_unique<FtlSignalStrategy>(
+        runtime_->CreateOAuthTokenGetter(),
+        std::move(session_context_->device_id_provider));
+    logger_->SetSignalStrategyType(ChromotingEvent::SignalStrategyType::FTL);
+  } else {
+    signaling_ = std::make_unique<XmppSignalStrategy>(
+        net::ClientSocketFactory::GetDefaultFactory(),
+        runtime_->url_requester(), xmpp_config);
+    logger_->SetSignalStrategyType(ChromotingEvent::SignalStrategyType::XMPP);
+  }
 
   token_getter_ = runtime_->CreateOAuthTokenGetter();
 
@@ -535,9 +544,11 @@ void ChromotingSession::Core::ConnectOnNetworkThread() {
   client_auth_config.fetch_secret_callback =
       base::BindRepeating(&Core::FetchSecret, GetWeakPtr());
 
+  std::string signaling_id = session_context_->info.host_ftl_id.empty()
+                                 ? session_context_->info.host_jid
+                                 : session_context_->info.host_ftl_id;
   client_->Start(signaling_.get(), client_auth_config, transport_context,
-                 session_context_->info.host_jid,
-                 session_context_->info.capabilities);
+                 signaling_id, session_context_->info.capabilities);
 }
 
 void ChromotingSession::Core::LogPerfStats() {
@@ -627,6 +638,7 @@ ChromotingSession::ChromotingSession(
     std::unique_ptr<protocol::CursorShapeStub> cursor_shape_stub,
     std::unique_ptr<protocol::VideoRenderer> video_renderer,
     std::unique_ptr<protocol::AudioStub> audio_player,
+    std::unique_ptr<FtlDeviceIdProvider> device_id_provider,
     const ConnectToHostInfo& info)
     : runtime_(ChromotingClientRuntime::GetInstance()) {
   DCHECK(delegate);
@@ -644,6 +656,7 @@ ChromotingSession::ChromotingSession(
           session_context->audio_player.get());
   session_context->cursor_shape_stub = std::move(cursor_shape_stub);
   session_context->video_renderer = std::move(video_renderer);
+  session_context->device_id_provider = std::move(device_id_provider);
   session_context->info = info;
 
   auto logger = std::make_unique<ClientTelemetryLogger>(

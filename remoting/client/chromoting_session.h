@@ -22,6 +22,7 @@
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/cursor_shape_stub.h"
+#include "remoting/signaling/ftl_device_id_provider.h"
 #include "remoting/signaling/xmpp_signal_strategy.h"
 
 namespace remoting {
@@ -92,6 +93,7 @@ class ChromotingSession : public ClientInputInjector {
                     std::unique_ptr<protocol::CursorShapeStub> cursor_stub,
                     std::unique_ptr<protocol::VideoRenderer> video_renderer,
                     std::unique_ptr<protocol::AudioStub> audio_player,
+                    std::unique_ptr<FtlDeviceIdProvider> device_id_provider,
                     const ConnectToHostInfo& info);
 
   ~ChromotingSession() override;

@@ -26,6 +26,7 @@
 #include "remoting/client/connect_to_host_info.h"
 #include "remoting/client/gesture_interpreter.h"
 #include "remoting/client/input/keyboard_interpreter.h"
+#include "remoting/ios/facade/ftl_device_id_provider_ios.h"
 #import "remoting/ios/facade/remoting_authentication.h"
 #import "remoting/ios/facade/remoting_service.h"
 #include "remoting/ios/session/remoting_client_session_delegate.h"
@@ -140,9 +141,13 @@ static void ResolveFeedbackDataCallback(
   _displayHandler = [[GlDisplayHandler alloc] init];
   _displayHandler.delegate = self;
 
-  _session.reset(new remoting::ChromotingSession(
+  auto device_id_provider =
+      std::make_unique<remoting::FtlDeviceIdProviderIos>();
+
+  _session = std::make_unique<remoting::ChromotingSession>(
       _sessonDelegate->GetWeakPtr(), [_displayHandler createCursorShapeStub],
-      [_displayHandler createVideoRenderer], std::move(audioStream), info));
+      [_displayHandler createVideoRenderer], std::move(audioStream),
+      std::move(device_id_provider), info);
   _gestureInterpreter.SetContext(_displayHandler.rendererProxy, _session.get());
   _keyboardInterpreter.SetContext(_session.get());
 }

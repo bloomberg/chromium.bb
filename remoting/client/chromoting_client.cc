@@ -21,6 +21,7 @@
 #include "remoting/protocol/video_renderer.h"
 #include "remoting/protocol/webrtc_connection_to_host.h"
 #include "remoting/signaling/jid_util.h"
+#include "remoting/signaling/signaling_address.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace remoting {
@@ -89,8 +90,9 @@ void ChromotingClient::Start(
 #endif
     } else {
       DCHECK(protocol_config_->ice_supported());
-      // TODO(yuweih): Pass true for FTL connection.
-      connection_.reset(new protocol::IceConnectionToHost(false));
+      bool use_turn_api = SignalingAddress(host_jid).channel() ==
+                          SignalingAddress::Channel::FTL;
+      connection_.reset(new protocol::IceConnectionToHost(use_turn_api));
     }
   }
   connection_->set_client_stub(this);
