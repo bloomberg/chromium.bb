@@ -7,6 +7,7 @@ import("//build/config/compiler/compiler.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
+import("//build/config/linux/gtk/gtk.gni")
 import("//build/config/ui.gni")
 import("//build/split_static_library.gni")
 import("//chrome/common/features.gni")
@@ -2352,11 +2353,10 @@ jumbo_split_static_library("ui") {
         "views/frame/browser_desktop_window_tree_host_platform.h",
         "views/frame/native_browser_frame_factory_ozone.cc",
       ]
-    } else {
-      if (use_aura) {
-        # This is the only component that can interact with gtk.
-        deps += [ "//chrome/browser/ui/libgtkui" ]
-      }
+    }
+    if (use_gtk) {
+      # This is the only component that can interact with gtk.
+      deps += [ "//chrome/browser/ui/libgtkui" ]
     }
   }
 

@@ -7,6 +7,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
+import("//build/config/linux/gtk/gtk.gni")
 import("//build/config/ui.gni")
 import("//build/toolchain/toolchain.gni")
 import("//build/util/version.gni")
@@ -4201,7 +4202,7 @@ test("unit_tests") {
       "../browser/ui/input_method/input_method_engine_unittest.cc",
     ]
   }
-  if (!is_chromeos && !is_chromecast && is_linux) {
+  if (use_gtk) {
     sources +=
         [ "../browser/ui/libgtkui/select_file_dialog_impl_gtk_unittest.cc" ]
     deps += [ "//build/config/linux/gtk" ]

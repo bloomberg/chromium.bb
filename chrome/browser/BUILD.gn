@@ -6,6 +6,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
+import("//build/config/linux/gtk/gtk.gni")
 import("//build/config/ui.gni")
 import("//build/split_static_library.gni")
 import("//chrome/common/features.gni")
@@ -3933,10 +3934,9 @@ jumbo_split_static_library("browser") {
       "//ui/snapshot",
       "//ui/views/mus",
     ]
-  }
-
-  if (use_aura && !use_ozone && is_desktop_linux) {
-    deps += [ "//chrome/browser/ui/libgtkui" ]
+    if (use_gtk) {
+      deps += [ "//chrome/browser/ui/libgtkui" ]
+    }
   }
 
   if (use_x11) {
