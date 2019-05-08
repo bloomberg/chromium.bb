@@ -2909,6 +2909,8 @@ static_library("test_support") {
       "network_error_logging/mock_persistent_nel_store.h",
       "network_error_logging/network_error_logging_test_util.cc",
       "network_error_logging/network_error_logging_test_util.h",
+      "reporting/mock_persistent_reporting_store.cc",
+      "reporting/mock_persistent_reporting_store.h",
       "reporting/reporting_test_util.cc",
       "reporting/reporting_test_util.h",
     ]
@@ -5603,6 +5605,7 @@ test("net_unittests") {
     sources += [
       "network_error_logging/mock_persistent_nel_store_unittest.cc",
       "network_error_logging/network_error_logging_service_unittest.cc",
+      "reporting/mock_persistent_reporting_store_unittest.cc",
       "reporting/reporting_browsing_data_remover_unittest.cc",
       "reporting/reporting_cache_unittest.cc",
       "reporting/reporting_delivery_agent_unittest.cc",
