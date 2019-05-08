@@ -166,8 +166,8 @@ VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
       bind_image_cb_(bind_image_cb),
       weak_this_factory_(this) {
   weak_this_ = weak_this_factory_.GetWeakPtr();
-  va_surface_release_cb_ = BindToCurrentLoop(
-      base::Bind(&VaapiVideoDecodeAccelerator::RecycleVASurfaceID, weak_this_));
+  va_surface_release_cb_ = BindToCurrentLoop(base::BindRepeating(
+      &VaapiVideoDecodeAccelerator::RecycleVASurfaceID, weak_this_));
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "media::VaapiVideoDecodeAccelerator",
       base::ThreadTaskRunnerHandle::Get());
@@ -1018,7 +1018,7 @@ scoped_refptr<VASurface> VaapiVideoDecodeAccelerator::CreateSurface() {
 
     return new VASurface(id, requested_pic_size_,
                          vaapi_wrapper_->va_surface_format(),
-                         va_surface_release_cb_);
+                         base::BindOnce(va_surface_release_cb_));
   }
 
   // Find the first |available_va_surfaces_| id such that the associated
@@ -1034,7 +1034,7 @@ scoped_refptr<VASurface> VaapiVideoDecodeAccelerator::CreateSurface() {
         base::Erase(available_va_surfaces_, va_surface_id);
         return new VASurface(va_surface_id, requested_pic_size_,
                              vaapi_wrapper_->va_surface_format(),
-                             va_surface_release_cb_);
+                             base::BindOnce(va_surface_release_cb_));
       }
     }
   }

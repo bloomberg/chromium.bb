@@ -375,8 +375,8 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
   DVLOGF(1) << "Frames in flight: " << num_frames_in_flight;
 
   va_surface_release_cb_ = BindToCurrentLoop(
-      base::Bind(&VaapiVideoEncodeAccelerator::RecycleVASurfaceID,
-                 base::Unretained(this)));
+      base::BindRepeating(&VaapiVideoEncodeAccelerator::RecycleVASurfaceID,
+                          base::Unretained(this)));
 
   va_surfaces_per_video_frame_ =
       kNumSurfacesForOutputPicture +
@@ -579,11 +579,13 @@ scoped_refptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
 
   scoped_refptr<VASurface> input_surface = new VASurface(
       va_input_surface_id, coded_size_, vaapi_wrapper_->va_surface_format(),
-      native_input_mode_ ? base::DoNothing() : va_surface_release_cb_);
+      native_input_mode_ ? base::DoNothing()
+                         : base::BindOnce(va_surface_release_cb_));
 
-  scoped_refptr<VASurface> reconstructed_surface = new VASurface(
-      available_va_surface_ids_.back(), coded_size_,
-      vaapi_wrapper_->va_surface_format(), va_surface_release_cb_);
+  scoped_refptr<VASurface> reconstructed_surface =
+      new VASurface(available_va_surface_ids_.back(), coded_size_,
+                    vaapi_wrapper_->va_surface_format(),
+                    base::BindOnce(va_surface_release_cb_));
   available_va_surface_ids_.pop_back();
 
   auto job = base::MakeRefCounted<VaapiEncodeJob>(

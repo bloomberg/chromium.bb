@@ -186,7 +186,7 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   std::vector<VABufferID> available_va_buffer_ids_;
 
   // Callback via which finished VA surfaces are returned to us.
-  VASurface::ReleaseCB va_surface_release_cb_;
+  base::RepeatingCallback<void(VASurfaceID)> va_surface_release_cb_;
 
   // Queue of input frames to be encoded.
   base::queue<std::unique_ptr<InputFrameRef>> input_queue_;

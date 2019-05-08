@@ -289,7 +289,7 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   base::WeakPtr<VaapiVideoDecodeAccelerator> weak_this_;
 
   // Callback used when creating VASurface objects. Only used on |task_runner_|.
-  VASurface::ReleaseCB va_surface_release_cb_;
+  base::RepeatingCallback<void(VASurfaceID)> va_surface_release_cb_;
 
   // To expose client callbacks from VideoDecodeAccelerator. Used only on
   // |task_runner_|.
