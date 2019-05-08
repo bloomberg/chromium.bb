@@ -13,6 +13,7 @@
 #include "gpu/vulkan/vulkan_command_buffer.h"
 #include "gpu/vulkan/vulkan_command_pool.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
+#include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
@@ -26,8 +27,10 @@ ExternalVkImageFactory::ExternalVkImageFactory(
 
 ExternalVkImageFactory::~ExternalVkImageFactory() {
   if (command_pool_) {
-    command_pool_->Destroy();
-    command_pool_.reset();
+    context_state_->vk_context_provider()
+        ->GetDeviceQueue()
+        ->GetFenceHelper()
+        ->EnqueueVulkanObjectCleanupForSubmittedWork(std::move(command_pool_));
   }
 }
 
@@ -204,11 +207,11 @@ std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
     return nullptr;
   }
   vk_backing->EndAccess(false /* readonly */, std::move(semaphore_handle));
-  VkQueue queue =
-      context_state_->vk_context_provider()->GetDeviceQueue()->GetVulkanQueue();
-  // TODO(https://crbug.com/932260): avoid blocking CPU thread.
-  vkQueueWaitIdle(queue);
-  vkDestroySemaphore(device, semaphore, nullptr /* pAllocator */);
+
+  context_state_->vk_context_provider()
+      ->GetDeviceQueue()
+      ->GetFenceHelper()
+      ->EnqueueSemaphoreCleanupForSubmittedWork(semaphore);
 
   return backing;
 }
@@ -335,14 +338,11 @@ void ExternalVkImageFactory::TransitionToColorAttachment(VkImage image) {
                          nullptr, 0, nullptr, 1, &image_memory_barrier);
   }
   command_buffer->Submit(0, nullptr, 0, nullptr);
-  // TODO(crbug.com/932260): Remove blocking call to VkQueueWaitIdle once we
-  // have a better approach for determining when |command_buffer| is safe to
-  // destroy.
-  vkQueueWaitIdle(context_state_->vk_context_provider()
-                      ->GetDeviceQueue()
-                      ->GetVulkanQueue());
-  command_buffer->Destroy();
-  command_buffer.reset();
+
+  context_state_->vk_context_provider()
+      ->GetDeviceQueue()
+      ->GetFenceHelper()
+      ->EnqueueVulkanObjectCleanupForSubmittedWork(std::move(command_buffer));
 }
 
 }  // namespace gpu

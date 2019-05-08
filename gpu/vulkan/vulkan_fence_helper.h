@@ -7,6 +7,7 @@
 
 #include <vulkan/vulkan.h>
 
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
@@ -95,7 +96,8 @@ class VULKAN_EXPORT VulkanFenceHelper {
   using CleanupTask = base::OnceCallback<void(VulkanDeviceQueue* device_queue,
                                               bool device_lost)>;
   // Submits a cleanup task for already submitted work.  ProcessCleanupTasks
-  // must be called periodically to ensure these run.
+  // must be called periodically to ensure these run. Cleanup tasks will be
+  // executed in order they are enqueued.
   void EnqueueCleanupTaskForSubmittedWork(CleanupTask task);
   // Processes CleanupTasks for which a fence has passed.
   void ProcessCleanupTasks();
@@ -105,6 +107,9 @@ class VULKAN_EXPORT VulkanFenceHelper {
       std::vector<VkSemaphore> semaphores);
   void EnqueueImageCleanupForSubmittedWork(VkImage image,
                                            VkDeviceMemory memory);
+  // Helpers for VulkanCommandBuffer, VulkanCommandPool, etc
+  template <typename T>
+  void EnqueueVulkanObjectCleanupForSubmittedWork(std::unique_ptr<T> obj);
 
  private:
   void PerformImmediateCleanup();
@@ -137,6 +142,15 @@ class VULKAN_EXPORT VulkanFenceHelper {
 
   DISALLOW_COPY_AND_ASSIGN(VulkanFenceHelper);
 };
+
+template <typename T>
+void VulkanFenceHelper::EnqueueVulkanObjectCleanupForSubmittedWork(
+    std::unique_ptr<T> obj) {
+  EnqueueCleanupTaskForSubmittedWork(
+      base::BindOnce([](std::unique_ptr<T> obj, VulkanDeviceQueue* device_queue,
+                        bool device_lost) { obj->Destroy(); },
+                     std::move(obj)));
+}
 
 }  // namespace gpu
 
