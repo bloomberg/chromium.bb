@@ -2316,7 +2316,7 @@ HostResolverManager::HostResolverManager(
       received_dns_config_(false),
       dns_config_overrides_(options.dns_config_overrides),
       num_dns_failures_(0),
-      assume_ipv6_failure_on_wifi_(false),
+      check_ipv6_on_wifi_(options.check_ipv6_on_wifi),
       use_local_ipv6_(false),
       last_ipv6_probe_result_(true),
       additional_resolver_flags_(0),
@@ -2453,16 +2453,6 @@ std::unique_ptr<base::Value> HostResolverManager::GetDnsConfigAsValue() const {
     return std::make_unique<base::DictionaryValue>();
 
   return dns_config->ToValue();
-}
-
-void HostResolverManager::SetNoIPv6OnWifi(bool no_ipv6_on_wifi) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  assume_ipv6_failure_on_wifi_ = no_ipv6_on_wifi;
-}
-
-bool HostResolverManager::GetNoIPv6OnWifi() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return assume_ipv6_failure_on_wifi_;
 }
 
 void HostResolverManager::SetDnsConfigOverrides(
@@ -2951,9 +2941,8 @@ void HostResolverManager::GetEffectiveParametersForRequest(
 bool HostResolverManager::IsIPv6Reachable(const NetLogWithSource& net_log) {
   // Don't bother checking if the device is on WiFi and IPv6 is assumed to not
   // work on WiFi.
-  if (assume_ipv6_failure_on_wifi_ &&
-      NetworkChangeNotifier::GetConnectionType() ==
-          NetworkChangeNotifier::CONNECTION_WIFI) {
+  if (!check_ipv6_on_wifi_ && NetworkChangeNotifier::GetConnectionType() ==
+                                  NetworkChangeNotifier::CONNECTION_WIFI) {
     return false;
   }
 

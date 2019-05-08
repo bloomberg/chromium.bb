@@ -58,14 +58,6 @@ std::unique_ptr<base::Value> HostResolver::GetDnsConfigAsValue() const {
   return nullptr;
 }
 
-void HostResolver::SetNoIPv6OnWifi(bool no_ipv6_on_wifi) {
-  NOTREACHED();
-}
-
-bool HostResolver::GetNoIPv6OnWifi() {
-  return false;
-}
-
 void HostResolver::SetRequestContext(URLRequestContext* request_context) {
   // Should be overridden in any HostResolver implementation where this method
   // may be called.

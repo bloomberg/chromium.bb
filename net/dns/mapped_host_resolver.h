@@ -59,11 +59,10 @@ class NET_EXPORT MappedHostResolver : public HostResolver {
                  HostCache::EntryStaleness* stale_out,
                  bool* secure_out) const override;
   std::unique_ptr<base::Value> GetDnsConfigAsValue() const override;
-  void SetNoIPv6OnWifi(bool no_ipv6_on_wifi) override;
-  bool GetNoIPv6OnWifi() override;
   void SetRequestContext(URLRequestContext* request_context) override;
   const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
   GetDnsOverHttpsServersForTesting() const override;
+  HostResolverManager* GetManagerForTesting() override;
 
  private:
   class AlwaysErrorRequestImpl;

@@ -148,9 +148,6 @@ class NET_EXPORT HostResolverManager
 
   std::unique_ptr<base::Value> GetDnsConfigAsValue() const;
 
-  void SetNoIPv6OnWifi(bool no_ipv6_on_wifi);
-  bool GetNoIPv6OnWifi();
-
   // Sets overriding configuration that will replace or add to configuration
   // read from the system for DnsClient resolution.
   void SetDnsConfigOverrides(const DnsConfigOverrides& overrides);
@@ -202,6 +199,8 @@ class NET_EXPORT HostResolverManager
   }
 
   size_t num_jobs_for_testing() const { return jobs_.size(); }
+
+  bool check_ipv6_on_wifi_for_testing() const { return check_ipv6_on_wifi_; }
 
  protected:
   // Callback from HaveOnlyLoopbackAddresses probe.
@@ -437,9 +436,9 @@ class NET_EXPORT HostResolverManager
   // Number of consecutive failures of DnsTask, counted when fallback succeeds.
   unsigned num_dns_failures_;
 
-  // True if IPv6 should not be attempted when on a WiFi connection. See
-  // https://crbug.com/696569 for further context.
-  bool assume_ipv6_failure_on_wifi_;
+  // False if IPv6 should not be attempted and assumed unreachable when on a
+  // WiFi connection. See https://crbug.com/696569 for further context.
+  bool check_ipv6_on_wifi_;
 
   // True if DnsConfigService detected that system configuration depends on
   // local IPv6 connectivity. Disables probing.

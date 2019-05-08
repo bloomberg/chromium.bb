@@ -153,14 +153,6 @@ std::unique_ptr<base::Value> ContextHostResolver::GetDnsConfigAsValue() const {
   return manager_->GetDnsConfigAsValue();
 }
 
-void ContextHostResolver::SetNoIPv6OnWifi(bool no_ipv6_on_wifi) {
-  manager_->SetNoIPv6OnWifi(no_ipv6_on_wifi);
-}
-
-bool ContextHostResolver::GetNoIPv6OnWifi() {
-  return manager_->GetNoIPv6OnWifi();
-}
-
 void ContextHostResolver::SetRequestContext(
     URLRequestContext* request_context) {
   DCHECK(request_context);

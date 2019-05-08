@@ -467,9 +467,10 @@ class HostResolverManagerTest : public TestWithScopedTaskEnvironment {
 
   HostResolverManagerTest() : proc_(new MockHostResolverProc()) {}
 
-  void CreateResolver() {
+  void CreateResolver(bool check_ipv6_on_wifi = true) {
     CreateResolverWithLimitsAndParams(kMaxJobs, DefaultParams(proc_.get()),
-                                      true /* ipv6_reachable */);
+                                      true /* ipv6_reachable */,
+                                      check_ipv6_on_wifi);
   }
 
   void DestroyResolver() {
@@ -483,10 +484,11 @@ class HostResolverManagerTest : public TestWithScopedTaskEnvironment {
 
   // This HostResolverManager will only allow 1 outstanding resolve at a time
   // and perform no retries.
-  void CreateSerialResolver() {
+  void CreateSerialResolver(bool check_ipv6_on_wifi = true) {
     ProcTaskParams params = DefaultParams(proc_.get());
     params.max_retry_attempts = 0u;
-    CreateResolverWithLimitsAndParams(1u, params, true /* ipv6_reachable */);
+    CreateResolverWithLimitsAndParams(1u, params, true /* ipv6_reachable */,
+                                      check_ipv6_on_wifi);
   }
 
  protected:
@@ -508,9 +510,11 @@ class HostResolverManagerTest : public TestWithScopedTaskEnvironment {
 
   void CreateResolverWithLimitsAndParams(size_t max_concurrent_resolves,
                                          const ProcTaskParams& params,
-                                         bool ipv6_reachable) {
+                                         bool ipv6_reachable,
+                                         bool check_ipv6_on_wifi) {
     HostResolver::ManagerOptions options = DefaultOptions();
     options.max_concurrent_resolves = max_concurrent_resolves;
+    options.check_ipv6_on_wifi = check_ipv6_on_wifi;
 
     CreateResolverWithOptionsAndParams(std::move(options), params,
                                        ipv6_reachable);
@@ -2134,8 +2138,8 @@ TEST_F(HostResolverManagerTest, MultipleAttempts) {
   base::TimeDelta unresponsive_delay = params.unresponsive_delay;
   int retry_factor = params.retry_factor;
 
-  CreateResolverWithLimitsAndParams(kMaxJobs, params,
-                                    true /* ipv6_reachable */);
+  CreateResolverWithLimitsAndParams(kMaxJobs, params, true /* ipv6_reachable */,
+                                    true /* check_ipv6_on_wifi */);
 
   // Override the current thread task runner, so we can simulate the passage of
   // time and avoid any actual sleeps.
@@ -4034,7 +4038,8 @@ TEST_F(HostResolverManagerDnsTest, CacheHostsLookupOnConfigChange) {
   // Only allow 1 resolution at a time, so that the second lookup is queued and
   // occurs when the DNS config changes.
   CreateResolverWithLimitsAndParams(1u, DefaultParams(proc_.get()),
-                                    true /* ipv6_reachable */);
+                                    true /* ipv6_reachable */,
+                                    true /* check_ipv6_on_wifi */);
   DnsConfig config = CreateValidDnsConfig();
   ChangeDnsConfig(config);
 
@@ -4290,7 +4295,8 @@ TEST_F(HostResolverManagerDnsTest, DontDisableDnsClientOnSporadicFailure) {
 // Test both the DnsClient and system host resolver paths.
 TEST_F(HostResolverManagerDnsTest, DualFamilyLocalhost) {
   CreateResolverWithLimitsAndParams(kMaxJobs, DefaultParams(proc_.get()),
-                                    false /* ipv6_reachable */);
+                                    false /* ipv6_reachable */,
+                                    true /* check_ipv6_on_wifi */);
 
   // Make request fail if we actually get to the system resolver.
   proc_->AddRuleForAllFamilies(std::string(), std::string());
@@ -4336,7 +4342,8 @@ TEST_F(HostResolverManagerDnsTest, DualFamilyLocalhost) {
 TEST_F(HostResolverManagerDnsTest, CancelWithOneTransactionActive) {
   // Disable ipv6 to ensure we'll only try a single transaction for the host.
   CreateResolverWithLimitsAndParams(kMaxJobs, DefaultParams(proc_.get()),
-                                    false /* ipv6_reachable */);
+                                    false /* ipv6_reachable */,
+                                    true /* check_ipv6_on_wifi */);
   DnsConfig config = CreateValidDnsConfig();
   config.use_local_ipv6 = false;
   ChangeDnsConfig(config);
@@ -4391,7 +4398,8 @@ TEST_F(HostResolverManagerDnsTest, CancelWithTwoTransactionsActive) {
 TEST_F(HostResolverManagerDnsTest, DeleteWithActiveTransactions) {
   // At most 10 Jobs active at once.
   CreateResolverWithLimitsAndParams(10u, DefaultParams(proc_.get()),
-                                    true /* ipv6_reachable */);
+                                    true /* ipv6_reachable */,
+                                    true /* check_ipv6_on_wifi */);
 
   ChangeDnsConfig(CreateValidDnsConfig());
 
@@ -4706,7 +4714,8 @@ TEST_F(HostResolverManagerDnsTest, SerialResolver) {
 // started.
 TEST_F(HostResolverManagerDnsTest, AAAAStartsAfterOtherJobFinishes) {
   CreateResolverWithLimitsAndParams(3u, DefaultParams(proc_.get()),
-                                    true /* ipv6_reachable */);
+                                    true /* ipv6_reachable */,
+                                    true /* check_ipv6_on_wifi */);
   set_allow_fallback_to_proctask(false);
   ChangeDnsConfig(CreateValidDnsConfig());
 
@@ -4738,7 +4747,8 @@ TEST_F(HostResolverManagerDnsTest, AAAAStartsAfterOtherJobFinishes) {
 TEST_F(HostResolverManagerDnsTest, IPv4EmptyFallback) {
   // Disable ipv6 to ensure we'll only try a single transaction for the host.
   CreateResolverWithLimitsAndParams(kMaxJobs, DefaultParams(proc_.get()),
-                                    false /* ipv6_reachable */);
+                                    false /* ipv6_reachable */,
+                                    true /* check_ipv6_on_wifi */);
   DnsConfig config = CreateValidDnsConfig();
   config.use_local_ipv6 = false;
   ChangeDnsConfig(config);
@@ -4778,7 +4788,8 @@ TEST_F(HostResolverManagerDnsTest, InvalidDnsConfigWithPendingRequests) {
   // trigger another DnsTransaction on the second Job when it releases its
   // second prioritized dispatcher slot.
   CreateResolverWithLimitsAndParams(3u, DefaultParams(proc_.get()),
-                                    true /* ipv6_reachable */);
+                                    true /* ipv6_reachable */,
+                                    true /* check_ipv6_on_wifi */);
 
   ChangeDnsConfig(CreateValidDnsConfig());
 
@@ -4853,7 +4864,8 @@ TEST_F(HostResolverManagerDnsTest,
   // into problems.  Try limits between [1, 2 * # of non failure requests].
   for (size_t limit = 1u; limit < 10u; ++limit) {
     CreateResolverWithLimitsAndParams(limit, DefaultParams(proc_.get()),
-                                      true /* ipv6_reachable */);
+                                      true /* ipv6_reachable */,
+                                      true /* check_ipv6_on_wifi */);
 
     ChangeDnsConfig(CreateValidDnsConfig());
 
@@ -4946,7 +4958,8 @@ TEST_F(HostResolverManagerDnsTest,
   // another DnsTransaction on the second Job when it releases its second
   // prioritized dispatcher slot.
   CreateResolverWithLimitsAndParams(3u, DefaultParams(proc_.get()),
-                                    true /* ipv6_reachable */);
+                                    true /* ipv6_reachable */,
+                                    true /* check_ipv6_on_wifi */);
 
   ChangeDnsConfig(CreateValidDnsConfig());
 
@@ -5042,15 +5055,15 @@ TEST_F(HostResolverManagerDnsTest, DnsCallsWithNoDnsConfig) {
   EXPECT_THAT(response.result_error(), IsError(ERR_FAILED));
 }
 
-TEST_F(HostResolverManagerDnsTest, NoIPv6OnWifi) {
+TEST_F(HostResolverManagerDnsTest, NoCheckIpv6OnWifi) {
   // CreateSerialResolver will destroy the current resolver_ which will attempt
   // to remove itself from the NetworkChangeNotifier. If this happens after a
   // new NetworkChangeNotifier is active, then it will not remove itself from
   // the old NetworkChangeNotifier which is a potential use-after-free.
   DestroyResolver();
   test::ScopedMockNetworkChangeNotifier notifier;
-  CreateSerialResolver();  // To guarantee order of resolutions.
-  resolver_->SetNoIPv6OnWifi(true);
+  // Serial resolver to guarantee order of resolutions.
+  CreateSerialResolver(false /* check_ipv6_on_wifi */);
 
   notifier.mock_network_change_notifier()->SetConnectionType(
       NetworkChangeNotifier::CONNECTION_WIFI);

@@ -86,14 +86,6 @@ std::unique_ptr<base::Value> MappedHostResolver::GetDnsConfigAsValue() const {
   return impl_->GetDnsConfigAsValue();
 }
 
-void MappedHostResolver::SetNoIPv6OnWifi(bool no_ipv6_on_wifi) {
-  impl_->SetNoIPv6OnWifi(no_ipv6_on_wifi);
-}
-
-bool MappedHostResolver::GetNoIPv6OnWifi() {
-  return impl_->GetNoIPv6OnWifi();
-}
-
 void MappedHostResolver::SetRequestContext(URLRequestContext* request_context) {
   impl_->SetRequestContext(request_context);
 }
@@ -101,6 +93,10 @@ void MappedHostResolver::SetRequestContext(URLRequestContext* request_context) {
 const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
 MappedHostResolver::GetDnsOverHttpsServersForTesting() const {
   return impl_->GetDnsOverHttpsServersForTesting();
+}
+
+HostResolverManager* MappedHostResolver::GetManagerForTesting() {
+  return impl_->GetManagerForTesting();
 }
 
 }  // namespace net

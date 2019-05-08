@@ -139,6 +139,11 @@ class NET_EXPORT HostResolver {
     // Initial configuration overrides for the built-in asynchronous DnsClient.
     // See HostResolverManager::SetDnsConfigOverrides() for details.
     DnsConfigOverrides dns_config_overrides;
+
+    // If set to |false|, when on a WiFi connection, IPv6 will be assumed to be
+    // unreachable without actually checking. See https://crbug.com/696569 for
+    // further context.
+    bool check_ipv6_on_wifi = true;
   };
 
   // Factory class. Useful for classes that need to inject and override resolver
@@ -287,11 +292,6 @@ class NET_EXPORT HostResolver {
   // Returns the current DNS configuration |this| is using, as a Value, or
   // nullptr if it's configured to always use the system host resolver.
   virtual std::unique_ptr<base::Value> GetDnsConfigAsValue() const;
-
-  // Sets the HostResolver to assume that IPv6 is unreachable when on a wifi
-  // connection. See https://crbug.com/696569 for further context.
-  virtual void SetNoIPv6OnWifi(bool no_ipv6_on_wifi);
-  virtual bool GetNoIPv6OnWifi();
 
   // Set the associated URLRequestContext, generally expected to be called by
   // URLRequestContextBuilder on passing ownership of |this| to a context. May

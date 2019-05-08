@@ -675,6 +675,7 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
     std::unique_ptr<net::HostResolver> host_resolver;
     net::HostResolver::ManagerOptions host_resolver_manager_options;
     host_resolver_manager_options.dns_client_enabled = async_dns_enable;
+    host_resolver_manager_options.check_ipv6_on_wifi = !disable_ipv6_on_wifi;
     // TODO(crbug.com/934402): Consider using a shared HostResolverManager for
     // Cronet HostResolvers.
     if (stale_dns_enable) {
@@ -687,8 +688,6 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       host_resolver = net::HostResolver::CreateStandaloneResolver(
           net_log, std::move(host_resolver_manager_options));
     }
-    if (disable_ipv6_on_wifi)
-      host_resolver->SetNoIPv6OnWifi(true);
     if (host_resolver_rules_enable) {
       std::unique_ptr<net::MappedHostResolver> remapped_resolver(
           new net::MappedHostResolver(std::move(host_resolver)));
