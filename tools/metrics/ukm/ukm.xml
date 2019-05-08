@@ -4563,13 +4563,6 @@ be describing additional metrics about the same event.
       meaningful input per navigation. See https://goo.gl/tr1oTZ for a detailed
       explanation. In ms.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="InteractiveTiming.FirstInputDelay2">
     <obsolete>
@@ -4582,14 +4575,6 @@ be describing additional metrics about the same event.
       meaningful input per navigation. See https://goo.gl/tr1oTZ for a detailed
       explanation. In ms.
     </summary>
-    <aggregation>
-      <history>
-        <index fields="profile.country"/>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="InteractiveTiming.FirstInputDelay3">
     <summary>
@@ -4665,14 +4650,6 @@ be describing additional metrics about the same event.
       timestamp and the start of event processing on the main thread for the
       meaningful input per navigation. In ms.
     </summary>
-    <aggregation>
-      <history>
-        <index fields="profile.country"/>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="InteractiveTiming.LongestInputDelay3">
     <summary>
