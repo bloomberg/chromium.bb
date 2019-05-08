@@ -232,6 +232,25 @@ if (enable_vr) {
       "//testing/gmock",
     ]
   }
+
+  if (is_win) {
+    static_library("directx_helpers") {
+      testonly = true
+      sources = [
+        "windows/d3d11_device_helpers.cc",
+        "windows/d3d11_device_helpers.h",
+      ]
+
+      libs = [
+        "d3d11.lib",
+        "DXGI.lib",
+      ]
+
+      deps = [
+        "//base",
+      ]
+    }
+  }
 } else {
   source_set("vr") {
     # We need to include an empty .cc file so that mac and windows don't fall over when trying to
@@ -244,6 +263,7 @@ if (enable_vr) {
 
 if (enable_openvr) {
   shared_library("openvr_mock") {
+    testonly = true
     output_name = "mock_vr_clients/bin/vrclient"
     if (target_cpu == "x64" && is_win) {
       output_name = "mock_vr_clients/bin/vrclient_x64"
@@ -262,6 +282,7 @@ if (enable_openvr) {
     ]
 
     deps = [
+      ":directx_helpers",
       "//base",
       "//device/vr/public/mojom:test_mojom",
       "//third_party/openvr:openvr_headers",

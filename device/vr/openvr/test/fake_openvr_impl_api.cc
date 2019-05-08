@@ -4,19 +4,14 @@
 
 #include <D3D11_1.h>
 #include <DXGI1_4.h>
-#include <wrl.h>
 #include <memory>
 
-#include "base/stl_util.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_restrictions.h"
 #include "device/vr/openvr/test/test_helper.h"
 #include "device/vr/test/test_hook.h"
+#include "device/vr/windows/d3d11_device_helpers.h"
 #include "third_party/openvr/src/headers/openvr.h"
 #include "third_party/openvr/src/src/ivrclientcore.h"
 
-// TODO(https://crbug.com/892717): Update argument names to be consistent with
-// Chromium style guidelines.
 namespace vr {
 
 class TestVRSystem : public IVRSystem {
@@ -424,30 +419,7 @@ void TestVRSystem::GetRecommendedRenderTargetSize(uint32_t* width,
 }
 
 void TestVRSystem::GetDXGIOutputInfo(int32_t* adapter_index) {
-  // Enumerate devices until we find one that supports 11.1.
-  *adapter_index = -1;
-  Microsoft::WRL::ComPtr<IDXGIFactory1> dxgi_factory;
-  Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
-  bool success = SUCCEEDED(CreateDXGIFactory1(IID_PPV_ARGS(&dxgi_factory)));
-  DCHECK(success);
-  for (int i = 0; SUCCEEDED(
-           dxgi_factory->EnumAdapters(i, adapter.ReleaseAndGetAddressOf()));
-       ++i) {
-    D3D_FEATURE_LEVEL feature_levels[] = {D3D_FEATURE_LEVEL_11_1};
-    UINT flags = 0;
-    D3D_FEATURE_LEVEL feature_level_out = D3D_FEATURE_LEVEL_11_1;
-
-    Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device;
-    Microsoft::WRL::ComPtr<ID3D11DeviceContext> d3d11_device_context;
-    if (SUCCEEDED(D3D11CreateDevice(
-            adapter.Get(), D3D_DRIVER_TYPE_UNKNOWN, NULL, flags, feature_levels,
-            base::size(feature_levels), D3D11_SDK_VERSION,
-            d3d11_device.GetAddressOf(), &feature_level_out,
-            d3d11_device_context.GetAddressOf()))) {
-      *adapter_index = i;
-      return;
-    }
-  }
+  GetD3D11_1Adapter(adapter_index);
 }
 
 void TestVRSystem::GetProjectionRaw(EVREye eye,

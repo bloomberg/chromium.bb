@@ -665,6 +665,8 @@ if (!is_android) {
 
     # Common infrastructure.
     sources = [
+      "test/conditional_skipping.cc",
+      "test/conditional_skipping.h",
       "test/mock_xr_device_hook_base.cc",
       "test/mock_xr_device_hook_base.h",
       "test/webvr_browser_test.cc",
@@ -733,6 +735,7 @@ if (!is_android) {
 
       deps += [
         "//components/content_settings/core/browser",
+        "//device/vr:directx_helpers",
         "//third_party/openvr",
       ]
 

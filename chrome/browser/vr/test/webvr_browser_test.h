@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VR_TEST_WEBVR_BROWSER_TEST_H_
 
 #include "build/build_config.h"
+#include "chrome/browser/vr/test/conditional_skipping.h"
 #include "chrome/browser/vr/test/webxr_vr_browser_test.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/web_contents.h"
@@ -47,10 +48,6 @@ class WebVrBrowserTestOpenVrDisabled : public WebVrBrowserTestBase {
 #if BUILDFLAG(ENABLE_WINDOWS_MR)
     disable_features_.push_back(features::kWindowsMixedReality);
 #endif
-
-#if defined(OS_WIN)
-    disable_features_.push_back(service_manager::features::kXRSandbox);
-#endif
   }
 };
 
@@ -62,6 +59,8 @@ class WebVrBrowserTestStandard : public WebVrBrowserTestBase {
   WebVrBrowserTestStandard() {
     append_switches_.push_back(switches::kEnableWebVR);
     enable_features_.push_back(features::kOpenVR);
+
+    runtime_requirements_.push_back(XrTestRequirement::DIRECTX_11_1);
 
 #if BUILDFLAG(ENABLE_WINDOWS_MR)
     disable_features_.push_back(features::kWindowsMixedReality);

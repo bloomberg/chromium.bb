@@ -22,14 +22,28 @@ differences between the two implementations.
 Both the instrumentation tests and browser tests have hardware/software
 restrictions - in the case of browser tests, XR is only supported on Windows 8
 and later (or Windows 7 with a non-standard patch applied) with a GPU that
-supports DirectX 11.1.
+supports DirectX 11.1, although several tests exist that don't actually use XR
+functionality, and thus don't have these requirements.
 
-Instrumentation tests handle restrictions with the `@Restriction` annotation,
-but browser tests don't have any equivalent functionality. However, since
-the browser tests don't require any setup outside of the tests like
-instrumentation tests do (which require the paired viewer, etc. to be changed),
-having the tests in their own target is sufficient to prevent us from running
-into hardware incompatibility issues.
+Runtime restrictions in browser tests are handled via the macros in
+`conditional_skipping.h`. To add a runtime requirement to a test class, simply
+append it to the `runtime_requirements_` vector that each class has. The
+test setup will automatically skip tests that don't meet all requirements.
+
+One-off skipping within a test can also be done by using the XR_CONDITIONAL_SKIP
+macro directly in a test.
+
+The bots can be made to ignore these runtime requirement checks if we expect
+the requirements to always be met (and thus we want the tests to fail if they
+aren't) via the `--ignore-runtime-requirements` argument. This takes a
+comma-separated list of requirements to ignore, or the wildcard (\*) to ignore
+all requirements. For example, `--ignore-runtime-requirements=DirectX_11.1`
+would cause a test that requires a DirectX 11.1 device to be run even if a
+suitable device is not found.
+
+New requirements can be added by adding to the `XrTestRequirement` enum in
+`conditional_skipping.h` and adding its associated checking logic in
+`conditional_skipping.cc`.
 
 ## Command Line Switches
 

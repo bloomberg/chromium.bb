@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
@@ -41,6 +42,7 @@ constexpr char XrBrowserTestBase::kVrConfigPathVal[];
 constexpr char XrBrowserTestBase::kVrLogPathEnvVar[];
 constexpr char XrBrowserTestBase::kVrLogPathVal[];
 constexpr char XrBrowserTestBase::kTestFileDir[];
+constexpr char XrBrowserTestBase::kSwitchIgnoreRuntimeRequirements[];
 const std::vector<std::string> XrBrowserTestBase::kRequiredTestSwitches{
     "enable-gpu", "enable-pixel-output-in-tests",
     "run-through-xr-wrapper-script"};
@@ -106,6 +108,22 @@ void XrBrowserTestBase::SetUp() {
         << ", but not required value " << req_switch_pair.second;
   }
 
+  // Get the set of runtime requirements to ignore.
+  if (cmd_line->HasSwitch(kSwitchIgnoreRuntimeRequirements)) {
+    auto reqs = cmd_line->GetSwitchValueASCII(kSwitchIgnoreRuntimeRequirements);
+    if (reqs != "") {
+      for (auto req : base::SplitString(
+               reqs, ",", base::WhitespaceHandling::TRIM_WHITESPACE,
+               base::SplitResult::SPLIT_WANT_NONEMPTY)) {
+        ignored_requirements_.insert(req);
+      }
+    }
+  }
+
+  // Check whether we meet all runtime requirements for this test.
+  XR_CONDITIONAL_SKIP_PRETEST(runtime_requirements_, ignored_requirements_,
+                              &test_skipped_at_startup_)
+
   // Set the environment variable to use the mock OpenVR client.
   ASSERT_TRUE(
       env_->SetVar(kVrOverrideEnvVar, MakeExecutableRelative(kVrOverrideVal)))
@@ -125,6 +143,15 @@ void XrBrowserTestBase::SetUp() {
   scoped_feature_list_.InitWithFeatures(enable_features_, disable_features_);
 
   InProcessBrowserTest::SetUp();
+}
+
+void XrBrowserTestBase::TearDown() {
+  if (test_skipped_at_startup_) {
+    // Since we didn't complete startup, no need to do teardown, either. Doing
+    // so can result in hitting a DCHECK.
+    return;
+  }
+  InProcessBrowserTest::TearDown();
 }
 
 GURL XrBrowserTestBase::GetFileUrlForHtmlTestFile(

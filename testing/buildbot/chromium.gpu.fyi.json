@@ -20185,6 +20185,9 @@
         "test": "video_decode_accelerator_unittest"
       },
       {
+        "args": [
+          "--ignore-runtime-requirements=*"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -20799,6 +20802,9 @@
         }
       },
       {
+        "args": [
+          "--ignore-runtime-requirements=*"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -21565,6 +21571,9 @@
         "test": "video_decode_accelerator_unittest"
       },
       {
+        "args": [
+          "--ignore-runtime-requirements=*"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -22431,6 +22440,9 @@
         "test": "video_decode_accelerator_unittest"
       },
       {
+        "args": [
+          "--ignore-runtime-requirements=*"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -23405,6 +23417,9 @@
         "test": "video_decode_accelerator_unittest"
       },
       {
+        "args": [
+          "--ignore-runtime-requirements=*"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -24218,6 +24233,9 @@
         "test": "video_decode_accelerator_unittest"
       },
       {
+        "args": [
+          "--ignore-runtime-requirements=*"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -25160,6 +25178,9 @@
         "test": "video_decode_accelerator_unittest"
       },
       {
+        "args": [
+          "--ignore-runtime-requirements=*"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -26172,6 +26193,9 @@
         }
       },
       {
+        "args": [
+          "--ignore-runtime-requirements=*"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"

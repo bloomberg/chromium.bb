@@ -3151,6 +3151,13 @@
 
     'gpu_default_and_optional_win_specific_gtests': {
       'xr_browser_tests': {
+        # The Windows machines this is run on should always meet all the
+        # requirements, so skip the runtime checks to help catch issues, e.g.
+        # if we're incorrectly being told a DirectX 11.1 device isn't
+        # available
+        'args': [
+          '--ignore-runtime-requirements=*',
+        ],
         'test': 'xr_browser_tests',
       },
     },
