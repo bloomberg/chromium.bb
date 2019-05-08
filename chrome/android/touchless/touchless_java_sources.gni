@@ -38,7 +38,6 @@ touchless_java_sources = [
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPageMediator.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPageProperties.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPageTopLayout.java",
-  "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessPreferences.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessRecyclerView.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessTabObserver.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessUiController.java",
