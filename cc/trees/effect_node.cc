@@ -140,9 +140,6 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetDouble("opacity", opacity);
   value->SetDouble("backdrop_filter_quality", backdrop_filter_quality);
   value->SetBoolean("is_fast_rounded_corner", is_fast_rounded_corner);
-  if (is_fast_rounded_corner)
-    MathUtil::AddToTracedValue("rounded_corner_bounds", rounded_corner_bounds,
-                               value);
   value->SetString("blend_mode", SkBlendMode_Name(blend_mode));
   value->SetBoolean("cache_render_surface", cache_render_surface);
   value->SetBoolean("has_copy_request", has_copy_request);

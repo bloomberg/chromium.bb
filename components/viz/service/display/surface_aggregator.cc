@@ -699,18 +699,6 @@ SharedQuadState* SurfaceAggregator::CopySharedQuadState(
       occluding_damage_rect_valid);
 }
 
-gfx::RRectF MapRoundedBounds(const gfx::RRectF& old_bounds,
-                             const gfx::Transform& transform) {
-  if (old_bounds.IsEmpty())
-    return old_bounds;
-  DCHECK(transform.Preserves2dAxisAlignment());
-  gfx::RRectF bounds(old_bounds);
-  SkMatrix matrix = transform.matrix();
-  bounds.Scale(matrix.getScaleX(), matrix.getScaleY());
-  bounds.Offset(transform.To2dTranslation());
-  return bounds;
-}
-
 SharedQuadState* SurfaceAggregator::CopyAndScaleSharedQuadState(
     const SharedQuadState* source_sqs,
     const gfx::Transform& scaled_quad_to_target_transform,
@@ -737,14 +725,9 @@ SharedQuadState* SurfaceAggregator::CopyAndScaleSharedQuadState(
   gfx::Transform new_transform = scaled_quad_to_target_transform;
   new_transform.ConcatTransform(target_transform);
 
-  // The rounded corner bounds need to be in the space of the target. Since
-  // the target may have changed, apply the extra transform to the new target.
-  gfx::RRectF new_bounds =
-      MapRoundedBounds(*rounded_corner_info.bounds, target_transform);
-
   shared_quad_state->SetAll(
-      new_transform, quad_layer_rect, visible_quad_layer_rect, new_bounds,
-      new_clip_rect.rect, new_clip_rect.is_clipped,
+      new_transform, quad_layer_rect, visible_quad_layer_rect,
+      *rounded_corner_info.bounds, new_clip_rect.rect, new_clip_rect.is_clipped,
       source_sqs->are_contents_opaque, source_sqs->opacity,
       source_sqs->blend_mode, source_sqs->sorting_context_id);
   shared_quad_state->is_fast_rounded_corner =
