@@ -29,9 +29,9 @@ using ::testing::Matcher;
 namespace {
 
 constexpr char kRootFolderName[] = "Linux apps";
-constexpr char kDummpyApp1Name[] = "dummy1";
-constexpr char kDummpyApp2Id[] = "dummy2";
-constexpr char kDummpyApp2Name[] = "dummy2";
+constexpr char kDummyApp1Name[] = "dummy1";
+constexpr char kDummyApp2Id[] = "dummy2";
+constexpr char kDummyApp2Name[] = "dummy2";
 constexpr char kAppNewName[] = "new name";
 constexpr char kBananaAppId[] = "banana";
 constexpr char kBananaAppName[] = "banana app name";
@@ -172,8 +172,8 @@ TEST_F(CrostiniAppModelBuilderTest, AppInstallation) {
       testing::UnorderedElementsAre(
           IsChromeApp(crostini::kCrostiniTerminalId, TerminalAppName(),
                       crostini::kCrostiniFolderId),
-          IsChromeApp(_, kDummpyApp1Name, crostini::kCrostiniFolderId),
-          IsChromeApp(_, kDummpyApp2Name, crostini::kCrostiniFolderId)));
+          IsChromeApp(_, kDummyApp1Name, crostini::kCrostiniFolderId),
+          IsChromeApp(_, kDummyApp2Name, crostini::kCrostiniFolderId)));
 
   test_helper_->AddApp(
       CrostiniTestHelper::BasicApp(kBananaAppId, kBananaAppName));
@@ -181,8 +181,8 @@ TEST_F(CrostiniAppModelBuilderTest, AppInstallation) {
               testing::UnorderedElementsAre(
                   IsChromeApp(crostini::kCrostiniTerminalId, TerminalAppName(),
                               crostini::kCrostiniFolderId),
-                  IsChromeApp(_, kDummpyApp1Name, crostini::kCrostiniFolderId),
-                  IsChromeApp(_, kDummpyApp2Name, crostini::kCrostiniFolderId),
+                  IsChromeApp(_, kDummyApp1Name, crostini::kCrostiniFolderId),
+                  IsChromeApp(_, kDummyApp2Name, crostini::kCrostiniFolderId),
                   IsChromeApp(_, kBananaAppName, crostini::kCrostiniFolderId)));
 }
 
@@ -200,7 +200,7 @@ TEST_F(CrostiniAppModelBuilderTest, UpdateApps) {
       GetAllApps(),
       testing::UnorderedElementsAre(
           IsChromeApp(crostini::kCrostiniTerminalId, _, _),
-          IsChromeApp(CrostiniTestHelper::GenerateAppId(kDummpyApp2Name), _,
+          IsChromeApp(CrostiniTestHelper::GenerateAppId(kDummyApp2Name), _,
                       _)));
 
   // Setting NoDisplay to false should unhide an app.
@@ -210,21 +210,21 @@ TEST_F(CrostiniAppModelBuilderTest, UpdateApps) {
       GetAllApps(),
       testing::UnorderedElementsAre(
           IsChromeApp(crostini::kCrostiniTerminalId, _, _),
-          IsChromeApp(CrostiniTestHelper::GenerateAppId(kDummpyApp1Name), _, _),
-          IsChromeApp(CrostiniTestHelper::GenerateAppId(kDummpyApp2Name), _,
+          IsChromeApp(CrostiniTestHelper::GenerateAppId(kDummyApp1Name), _, _),
+          IsChromeApp(CrostiniTestHelper::GenerateAppId(kDummyApp2Name), _,
                       _)));
 
   // Changes to app names should be detected.
   vm_tools::apps::App dummy2 =
-      CrostiniTestHelper::BasicApp(kDummpyApp2Id, kAppNewName);
+      CrostiniTestHelper::BasicApp(kDummyApp2Id, kAppNewName);
   test_helper_->AddApp(dummy2);
   EXPECT_THAT(
       GetAllApps(),
       testing::UnorderedElementsAre(
           IsChromeApp(crostini::kCrostiniTerminalId, _, _),
-          IsChromeApp(CrostiniTestHelper::GenerateAppId(kDummpyApp1Name),
-                      kDummpyApp1Name, _),
-          IsChromeApp(CrostiniTestHelper::GenerateAppId(kDummpyApp2Name),
+          IsChromeApp(CrostiniTestHelper::GenerateAppId(kDummyApp1Name),
+                      kDummyApp1Name, _),
+          IsChromeApp(CrostiniTestHelper::GenerateAppId(kDummyApp2Name),
                       kAppNewName, _)));
 }
 
