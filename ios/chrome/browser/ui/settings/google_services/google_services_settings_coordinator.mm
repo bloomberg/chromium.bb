@@ -109,7 +109,10 @@
   if (self.stopDone) {
     return;
   }
-  if (self.authService->IsAuthenticated()) {
+  // Sync changes should only be commited if the user is authenticated and
+  // there is no sign-in progress.
+  if (self.authService->IsAuthenticated() &&
+      !self.signinInteractionCoordinator) {
     SyncSetupService* syncSetupService =
         SyncSetupServiceFactory::GetForBrowserState(self.browserState);
     if (self.mode == GoogleServicesSettingsModeSettings &&
