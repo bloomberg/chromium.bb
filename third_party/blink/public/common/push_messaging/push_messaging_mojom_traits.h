@@ -8,14 +8,16 @@
 #include <stddef.h>
 
 #include "mojo/public/cpp/bindings/struct_traits.h"
+#include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<blink::mojom::PushSubscriptionOptionsDataView,
-                    blink::PushSubscriptionOptionsParams> {
+struct BLINK_COMMON_EXPORT
+    StructTraits<blink::mojom::PushSubscriptionOptionsDataView,
+                 blink::PushSubscriptionOptionsParams> {
   static bool user_visible_only(const blink::PushSubscriptionOptionsParams& r) {
     return r.user_visible_only;
   }
@@ -28,7 +30,8 @@ struct StructTraits<blink::mojom::PushSubscriptionOptionsDataView,
 };
 
 template <>
-struct EnumTraits<blink::mojom::PushErrorType, blink::WebPushError::ErrorType> {
+struct BLINK_COMMON_EXPORT
+    EnumTraits<blink::mojom::PushErrorType, blink::WebPushError::ErrorType> {
   static blink::mojom::PushErrorType ToMojom(
       blink::WebPushError::ErrorType input);
   static bool FromMojom(blink::mojom::PushErrorType input,

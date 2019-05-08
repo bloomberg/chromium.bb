@@ -9,7 +9,7 @@ public_headers = [
 ]
 traits_headers = [ "//third_party/blink/public/common/push_messaging/push_messaging_mojom_traits.h" ]
 sources = [
-  "//third_party/blink/public/common/push_messaging/push_messaging_mojom_traits.cc",
+  "//third_party/blink/common/push_messaging/push_messaging_mojom_traits.cc",
 ]
 type_mappings = [
   "blink.mojom.PushErrorType=blink::WebPushError::ErrorType",
