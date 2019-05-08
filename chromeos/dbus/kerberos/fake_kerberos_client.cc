@@ -51,11 +51,6 @@ FakeKerberosClient::~FakeKerberosClient() = default;
 
 void FakeKerberosClient::AddAccount(const kerberos::AddAccountRequest& request,
                                     AddAccountCallback callback) {
-  if (!started_) {
-    PostResponse(std::move(callback), kerberos::ERROR_DBUS_FAILURE);
-    return;
-  }
-
   if (accounts_.find(request.principal_name()) != accounts_.end()) {
     PostResponse(std::move(callback), kerberos::ERROR_DUPLICATE_PRINCIPAL_NAME);
     return;
@@ -68,11 +63,6 @@ void FakeKerberosClient::AddAccount(const kerberos::AddAccountRequest& request,
 void FakeKerberosClient::RemoveAccount(
     const kerberos::RemoveAccountRequest& request,
     RemoveAccountCallback callback) {
-  if (!started_) {
-    PostResponse(std::move(callback), kerberos::ERROR_DBUS_FAILURE);
-    return;
-  }
-
   kerberos::ErrorType error = accounts_.erase(request.principal_name()) == 0
                                   ? kerberos::ERROR_UNKNOWN_PRINCIPAL_NAME
                                   : kerberos::ERROR_NONE;
@@ -82,11 +72,6 @@ void FakeKerberosClient::RemoveAccount(
 void FakeKerberosClient::ListAccounts(
     const kerberos::ListAccountsRequest& request,
     ListAccountsCallback callback) {
-  if (!started_) {
-    PostResponse(std::move(callback), kerberos::ERROR_DBUS_FAILURE);
-    return;
-  }
-
   kerberos::ListAccountsResponse response;
   for (const auto& account : accounts_) {
     const std::string& principal_name = account.first;
@@ -106,11 +91,6 @@ void FakeKerberosClient::ListAccounts(
 
 void FakeKerberosClient::SetConfig(const kerberos::SetConfigRequest& request,
                                    SetConfigCallback callback) {
-  if (!started_) {
-    PostResponse(std::move(callback), kerberos::ERROR_DBUS_FAILURE);
-    return;
-  }
-
   AccountData* data = GetAccountData(request.principal_name());
   if (!data) {
     PostResponse(std::move(callback), kerberos::ERROR_UNKNOWN_PRINCIPAL_NAME);
@@ -125,11 +105,6 @@ void FakeKerberosClient::AcquireKerberosTgt(
     const kerberos::AcquireKerberosTgtRequest& request,
     int password_fd,
     AcquireKerberosTgtCallback callback) {
-  if (!started_) {
-    PostResponse(std::move(callback), kerberos::ERROR_DBUS_FAILURE);
-    return;
-  }
-
   AccountData* data = GetAccountData(request.principal_name());
   if (!data) {
     PostResponse(std::move(callback), kerberos::ERROR_UNKNOWN_PRINCIPAL_NAME);
@@ -144,11 +119,6 @@ void FakeKerberosClient::AcquireKerberosTgt(
 void FakeKerberosClient::GetKerberosFiles(
     const kerberos::GetKerberosFilesRequest& request,
     GetKerberosFilesCallback callback) {
-  if (!started_) {
-    PostResponse(std::move(callback), kerberos::ERROR_DBUS_FAILURE);
-    return;
-  }
-
   AccountData* data = GetAccountData(request.principal_name());
   if (!data) {
     PostResponse(std::move(callback), kerberos::ERROR_UNKNOWN_PRINCIPAL_NAME);
@@ -176,18 +146,6 @@ FakeKerberosClient::AccountData* FakeKerberosClient::GetAccountData(
   if (it == accounts_.end())
     return nullptr;
   return &it->second;
-}
-
-KerberosClient::TestInterface* FakeKerberosClient::GetTestInterface() {
-  return this;
-}
-
-void FakeKerberosClient::FakeKerberosClient::set_started(bool started) {
-  started_ = started;
-}
-
-bool FakeKerberosClient::FakeKerberosClient::started() const {
-  return started_;
 }
 
 }  // namespace chromeos

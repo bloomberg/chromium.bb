@@ -56,12 +56,6 @@ void FakeUpstartClient::RestartAuthPolicyService() {
   FakeAuthPolicyClient::Get()->SetStarted(true);
 }
 
-void FakeUpstartClient::StartKerberosService(VoidDBusMethodCallback callback) {
-  KerberosClient::Get()->GetTestInterface()->set_started(true);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), true));
-}
-
 void FakeUpstartClient::StartMediaAnalytics(
     const std::vector<std::string>& /* upstart_env */,
     VoidDBusMethodCallback callback) {

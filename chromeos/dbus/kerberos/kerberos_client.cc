@@ -125,8 +125,6 @@ class KerberosClientImpl : public KerberosClient {
     DCHECK(success);
   }
 
-  TestInterface* GetTestInterface() override { return nullptr; }
-
   void Init(dbus::Bus* bus) {
     proxy_ =
         bus->GetObjectProxy(kerberos::kKerberosServiceName,

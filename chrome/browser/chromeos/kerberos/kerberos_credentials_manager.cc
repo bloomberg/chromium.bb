@@ -106,25 +106,10 @@ class KerberosAddAccountRunner {
         normalized_principal_(normalized_principal),
         password_(password),
         callback_(std::move(callback)) {
-    StartKerberosDaemon();
+    AddAccount();
   }
 
  private:
-  // Make sure the Kerberos daemon is running.
-  void StartKerberosDaemon() {
-    UpstartClient::Get()->StartKerberosService(
-        base::BindOnce(&KerberosAddAccountRunner::OnStartKerberosService,
-                       weak_factory_.GetWeakPtr()));
-  }
-
-  // Gets called when the daemon has been started or failed to start.
-  void OnStartKerberosService(bool success) {
-    if (success)
-      AddAccount();
-    else
-      Done(kerberos::ERROR_DBUS_FAILURE);
-  }
-
   // Adds the |normalized_principal_| account to the Kerberos daemon.
   void AddAccount() {
     kerberos::AddAccountRequest request;

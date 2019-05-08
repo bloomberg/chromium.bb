@@ -86,8 +86,6 @@ class COMPONENT_EXPORT(KERBEROS) KerberosClient {
   virtual void ConnectToKerberosFileChangedSignal(
       KerberosFilesChangedCallback callback) = 0;
 
-  virtual TestInterface* GetTestInterface() = 0;
-
  protected:
   // Initialize/Shutdown should be used instead.
   KerberosClient();

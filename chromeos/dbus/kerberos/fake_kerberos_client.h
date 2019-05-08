@@ -16,8 +16,7 @@
 namespace chromeos {
 
 class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeKerberosClient
-    : public KerberosClient,
-      public KerberosClient::TestInterface {
+    : public KerberosClient {
  public:
   FakeKerberosClient();
   ~FakeKerberosClient() override;
@@ -38,11 +37,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeKerberosClient
                         GetKerberosFilesCallback callback) override;
   void ConnectToKerberosFileChangedSignal(
       KerberosFilesChangedCallback callback) override;
-  KerberosClient::TestInterface* GetTestInterface() override;
-
-  // KerberosClient::TestInterface:
-  void set_started(bool started) override;
-  bool started() const override;
 
  private:
   struct AccountData {
@@ -59,9 +53,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeKerberosClient
   // Maps principal name (user@REALM.COM) to account data.
   using AccountsMap = std::unordered_map<std::string, AccountData>;
   AccountsMap accounts_;
-
-  // Whether the service has started by UpstartClient.
-  bool started_ = false;
 
   KerberosFilesChangedCallback kerberos_files_changed_callback_;
 
