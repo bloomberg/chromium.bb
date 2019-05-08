@@ -72,33 +72,6 @@ ProcessIdToHelperMap* GetProcessIdToHelperMap() {
 
 }  // namespace
 
-MimeHandlerViewAttachHelper::GuestEmbedderFrameLifetimeObserver::
-    GuestEmbedderFrameLifetimeObserver(MimeHandlerViewGuest* guest_view,
-                                       MimeHandlerViewAttachHelper* helper)
-    : content::WebContentsObserver(content::WebContents::FromRenderFrameHost(
-          guest_view->GetEmbedderFrame())),
-      guest_view_(guest_view),
-      attach_helper_(helper) {}
-
-MimeHandlerViewAttachHelper::GuestEmbedderFrameLifetimeObserver::
-    ~GuestEmbedderFrameLifetimeObserver() {}
-
-void MimeHandlerViewAttachHelper::GuestEmbedderFrameLifetimeObserver::
-    RenderFrameDeleted(RenderFrameHost* render_frame_host) {
-  if (render_frame_host != guest_view_->GetEmbedderFrame())
-    return;
-  // This could happen if the embedder frame of MHVG goes away during
-  // attaching (https://crbug.com/959572).
-  int32_t instance_id = guest_view_->element_instance_id();
-  guest_view_->Destroy(true /* also_delete */);
-  // Erasing from helper map will end up destroying |this|.
-  attach_helper_->pending_guests_.erase(instance_id);
-}
-
-void MimeHandlerViewAttachHelper::GuestEmbedderFrameLifetimeObserver::
-    FrameDeleted(RenderFrameHost* render_frame_host) {
-  RenderFrameDeleted(render_frame_host);
-}
 
 // static
 MimeHandlerViewAttachHelper* MimeHandlerViewAttachHelper::Get(
@@ -152,8 +125,7 @@ void MimeHandlerViewAttachHelper::AttachToOuterWebContents(
     int32_t element_instance_id,
     bool is_full_page_plugin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  pending_guests_[element_instance_id] =
-      std::make_unique<GuestEmbedderFrameLifetimeObserver>(guest_view, this);
+  pending_guests_[element_instance_id] = guest_view;
   outer_contents_frame->PrepareForInnerWebContentsAttach(base::BindOnce(
       &MimeHandlerViewAttachHelper::ResumeAttachOrDestroy,
       weak_factory_.GetWeakPtr(), element_instance_id, is_full_page_plugin));
@@ -182,12 +154,8 @@ void MimeHandlerViewAttachHelper::ResumeAttachOrDestroy(
     bool is_full_page_plugin,
     content::RenderFrameHost* plugin_rfh) {
   DCHECK(!plugin_rfh || (plugin_rfh->GetProcess() == render_process_host_));
-  auto it = pending_guests_.find(element_instance_id);
-  auto* guest_view =
-      (it != pending_guests_.end()) ? it->second->guest_view() : nullptr;
-  if (!guest_view)
-    return;
-  pending_guests_.erase(it);
+  auto* guest_view = pending_guests_[element_instance_id];
+  pending_guests_.erase(element_instance_id);
   if (!plugin_rfh) {
     mojom::MimeHandlerViewContainerManagerPtr container_manager;
     guest_view->GetEmbedderFrame()->GetRemoteInterfaces()->GetInterface(

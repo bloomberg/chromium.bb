@@ -13,7 +13,6 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "content/public/browser/render_process_host_observer.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "extensions/common/mojo/guest_view.mojom.h"
 
 namespace content {
@@ -67,28 +66,6 @@ class MimeHandlerViewAttachHelper : content::RenderProcessHostObserver {
                                 bool is_full_page_plugin);
 
  private:
-  // Helper class which tracks the lifetime of the embedder frame of a GuestView
-  // from the time AttachToOuterWebContents is called to when the GuestView is
-  // fully attached to its embedder.
-  class GuestEmbedderFrameLifetimeObserver
-      : public content::WebContentsObserver {
-   public:
-    GuestEmbedderFrameLifetimeObserver(MimeHandlerViewGuest* guest_view,
-                                       MimeHandlerViewAttachHelper* helper);
-    ~GuestEmbedderFrameLifetimeObserver() override;
-
-    MimeHandlerViewGuest* guest_view() const { return guest_view_; }
-
-    void RenderFrameDeleted(
-        content::RenderFrameHost* render_frame_host) override;
-    void FrameDeleted(content::RenderFrameHost* render_frame_host) override;
-
-   private:
-    MimeHandlerViewGuest* const guest_view_;
-    MimeHandlerViewAttachHelper* const attach_helper_;
-  };
-  friend class GuestEmbedderFrameLifetimeObserver;
-
   // Called after the content layer finishes preparing a frame for attaching to
   // the embedder WebContents. If |plugin_rfh| is nullptr then attaching is not
   // possible and the guest should be destroyed; otherwise it is safe to proceed
@@ -109,8 +86,7 @@ class MimeHandlerViewAttachHelper : content::RenderProcessHostObserver {
 
   MimeHandlerViewAttachHelper(content::RenderProcessHost* render_process_host);
 
-  base::flat_map<int32_t, std::unique_ptr<GuestEmbedderFrameLifetimeObserver>>
-      pending_guests_;
+  base::flat_map<int32_t, MimeHandlerViewGuest*> pending_guests_;
 
   content::RenderProcessHost* const render_process_host_;
 
