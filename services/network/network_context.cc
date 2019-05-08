@@ -2304,4 +2304,9 @@ void NetworkContext::InitializeCorsParams() {
     cors_exempt_header_list_.insert(key);
 }
 
+void NetworkContext::GetOriginPolicyManager(
+    mojom::OriginPolicyManagerRequest request) {
+  origin_policy_manager_.AddBinding(std::move(request));
+}
+
 }  // namespace network
