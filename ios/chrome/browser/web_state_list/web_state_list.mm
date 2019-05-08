@@ -289,10 +289,17 @@ std::unique_ptr<web::WebState> WebStateList::DetachWebStateAt(int index) {
   // as the active one but only send the WebStateActivatedAt notification after
   // the WebStateDetachedAt one.
   bool active_web_state_was_closed = (index == active_index_);
-  if (active_index_ > index)
+  if (active_index_ > index) {
     --active_index_;
-  else if (active_index_ == index)
-    active_index_ = new_active_index;
+  } else if (active_index_ == index) {
+    if (new_active_index != kInvalidIndex && !ContainsIndex(new_active_index)) {
+      // TODO(crbug.com/877792): This is a speculative fix for 877792 and short
+      // term fix for 960628.
+      active_index_ = count() - 1;
+    } else {
+      active_index_ = new_active_index;
+    }
+  }
 
   for (auto& observer : observers_)
     observer.WebStateDetachedAt(this, web_state, index);
