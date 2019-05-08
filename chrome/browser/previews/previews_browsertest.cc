@@ -558,6 +558,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsReportingBrowserTest,
         [
           {
             "body": {
+              "id": "LitePageServed",
               "message": "Modified page load behavior on the page because )text"
       R"text(the page was expected to take a long amount of time to load. )text"
       R"text(https://www.chromestatus.com/feature/5148050062311424"

@@ -175,7 +175,8 @@ void ReportingContext::SendToReportingAPI(Report* report,
     const InterventionReportBody* body =
         static_cast<InterventionReportBody*>(report->body());
     GetReportingService()->QueueInterventionReport(
-        url, body->message(), body->sourceFile(), line_number, column_number);
+        url, body->id(), body->message(), body->sourceFile(), line_number,
+        column_number);
   }
 }
 

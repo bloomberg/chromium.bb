@@ -36,11 +36,13 @@ class ReportingServiceProxyImpl : public blink::mojom::ReportingServiceProxy {
   // blink::mojom::ReportingServiceProxy:
 
   void QueueInterventionReport(const GURL& url,
+                               const std::string& id,
                                const std::string& message,
                                const base::Optional<std::string>& source_file,
                                int line_number,
                                int column_number) override {
     auto body = std::make_unique<base::DictionaryValue>();
+    body->SetString("id", id);
     body->SetString("message", message);
     if (source_file)
       body->SetString("sourceFile", *source_file);

@@ -12,6 +12,7 @@ interface ReportingServiceProxy {
   //
   // (See //third_party/blink/renderer/core/frame/intervention_report_body.h.)
   QueueInterventionReport(url.mojom.Url url,
+                          string id,
                           string message,
                           string? source_file,
                           int32 line_number,
