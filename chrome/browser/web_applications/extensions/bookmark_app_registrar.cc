@@ -89,14 +89,18 @@ void BookmarkAppRegistrar::OnExtensionInstalled(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     bool is_update) {
-  NotifyWebAppInstalled(extension->id());
+  DCHECK_EQ(browser_context, profile());
+  if (extension->from_bookmark())
+    NotifyWebAppInstalled(extension->id());
 }
 
 void BookmarkAppRegistrar::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     extensions::UninstallReason reason) {
-  NotifyWebAppUninstalled(extension->id());
+  DCHECK_EQ(browser_context, profile());
+  if (extension->from_bookmark())
+    NotifyWebAppUninstalled(extension->id());
 }
 
 void BookmarkAppRegistrar::OnShutdown(ExtensionRegistry* registry) {
