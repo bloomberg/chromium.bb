@@ -19,6 +19,7 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/common/mojo/guest_view.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 
 namespace extensions {
 
@@ -73,6 +74,15 @@ void MimeHandlerViewEmbedder::ReadyToCommitNavigation(
       !render_frame_host_) {
     DCHECK_EQ(handle->GetURL(), resource_url_);
     render_frame_host_ = handle->GetRenderFrameHost();
+    if (render_frame_host_->GetFrameOwnerElementType() ==
+            blink::FrameOwnerElementType::kNone &&
+        render_frame_host_->GetFrameOwnerElementType() ==
+            blink::FrameOwnerElementType::kIframe) {
+      // In such cases the print helper might need to postMessage to the frame
+      // container and we should ensure one exists already. Note that in general
+      // <embed> and <object> navigations
+      GetContainerManager();
+    }
   }
 }
 

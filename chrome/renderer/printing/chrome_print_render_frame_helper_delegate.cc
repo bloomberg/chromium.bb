@@ -72,11 +72,9 @@ bool ChromePrintRenderFrameHelperDelegate::IsPrintPreviewEnabled() {
 bool ChromePrintRenderFrameHelperDelegate::OverridePrint(
     blink::WebLocalFrame* frame) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (!frame->GetDocument().IsPluginDocument())
-    return false;
-
-  if (auto* post_message_support =
-          extensions::PostMessageSupport::FromWebLocalFrame(frame)) {
+  auto* post_message_support =
+      extensions::PostMessageSupport::FromWebLocalFrame(frame);
+  if (post_message_support) {
     // This message is handled in chrome/browser/resources/pdf/pdf_viewer.js and
     // instructs the PDF plugin to print. This is to make window.print() on a
     // PDF plugin document correctly print the PDF. See

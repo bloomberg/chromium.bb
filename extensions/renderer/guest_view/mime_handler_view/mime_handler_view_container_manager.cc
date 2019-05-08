@@ -125,6 +125,8 @@ void MimeHandlerViewContainerManager::OnDestruct() {
 
 void MimeHandlerViewContainerManager::CreateBeforeUnloadControl(
     CreateBeforeUnloadControlCallback callback) {
+  if (!post_message_support_)
+    post_message_support_ = std::make_unique<PostMessageSupport>(this);
   mime_handler::BeforeUnloadControlPtr before_unload_control;
   before_unload_control_binding_.Bind(
       mojo::MakeRequest(&before_unload_control));
@@ -140,6 +142,13 @@ void MimeHandlerViewContainerManager::DestroyFrameContainer(
 void MimeHandlerViewContainerManager::DidLoad(int32_t element_instance_id,
                                               const GURL& resource_url) {
   RecordInteraction(UMAType::kDidLoadExtension);
+  if (post_message_support_ && !post_message_support_->is_active()) {
+    // We don't need verification here, if any MHV has loaded inside this
+    // |render_frame()| then the one corresponding to full-page must have done
+    // so first.
+    post_message_support_->SetActive();
+    return;
+  }
   for (auto& frame_container : frame_containers_) {
     if (frame_container->resource_url() != resource_url)
       continue;
@@ -224,4 +233,25 @@ void MimeHandlerViewContainerManager::RecordInteraction(UMAType type) {
   base::UmaHistogramEnumeration(MimeHandlerViewUMATypes::kUMAName, type);
 }
 
+PostMessageSupport* MimeHandlerViewContainerManager::GetPostMessageSupport() {
+  if (!post_message_support_)
+    post_message_support_ = std::make_unique<PostMessageSupport>(this);
+  return post_message_support_.get();
+}
+
+blink::WebLocalFrame* MimeHandlerViewContainerManager::GetSourceFrame() {
+  return render_frame()->GetWebFrame();
+}
+
+blink::WebFrame* MimeHandlerViewContainerManager::GetTargetFrame() {
+  return GetSourceFrame()->FirstChild();
+}
+
+bool MimeHandlerViewContainerManager::IsEmbedded() const {
+  return false;
+}
+
+bool MimeHandlerViewContainerManager::IsResourceAccessibleBySource() const {
+  return true;
+}
 }  // namespace extensions

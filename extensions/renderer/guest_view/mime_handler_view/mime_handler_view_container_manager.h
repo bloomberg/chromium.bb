@@ -17,6 +17,10 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "url/gurl.h"
 
+namespace blink {
+class WebFrame;
+class WebLocalFrame;
+}  // namespace blink
 namespace content {
 class RenderFrame;
 struct WebPluginInfo;
@@ -37,7 +41,8 @@ class MimeHandlerViewFrameContainer;
 class MimeHandlerViewContainerManager
     : public content::RenderFrameObserver,
       public mojom::MimeHandlerViewContainerManager,
-      public mime_handler::BeforeUnloadControl {
+      public mime_handler::BeforeUnloadControl,
+      public PostMessageSupport::Delegate {
  public:
   static void BindRequest(
       int32_t routing_id,
@@ -71,6 +76,9 @@ class MimeHandlerViewContainerManager
   MimeHandlerViewFrameContainer* GetFrameContainer(
       const blink::WebElement& plugin_element);
   MimeHandlerViewFrameContainer* GetFrameContainer(int32_t element_instance_id);
+  // Returns the instance of PostMessageSupport, if any, for the page navigation
+  // to MHV. This is used when |did_create_beforeunload_control_| is set.
+  PostMessageSupport* GetPostMessageSupport();
 
   // content::RenderFrameObserver.
   void OnDestruct() override;
@@ -83,6 +91,12 @@ class MimeHandlerViewContainerManager
                const GURL& resource_url) override;
 
  private:
+  // PostMessageSupport::Delegate overrides.
+  blink::WebLocalFrame* GetSourceFrame() override;
+  blink::WebFrame* GetTargetFrame() override;
+  bool IsEmbedded() const override;
+  bool IsResourceAccessibleBySource() const override;
+
   bool RemoveFrameContainer(MimeHandlerViewFrameContainer* frame_container);
   // mime_handler::BeforeUnloadControl implementation.
   void SetShowBeforeUnloadDialog(
@@ -90,6 +104,13 @@ class MimeHandlerViewContainerManager
       SetShowBeforeUnloadDialogCallback callback) override;
 
   void RecordInteraction(MimeHandlerViewUMATypes::Type type);
+
+  // Instantiated if this MHVFC is for a full-page MHV. This means MHV is
+  // created when a frame was navigated to MHV resource by means other than
+  // HTMLPlugInElement::RequestObjectInternal (e.g., omnibox). Note: the
+  // |post_message_support_| is only used for internal print messages and there
+  // is no web-accessible scriptable object exposed.
+  std::unique_ptr<PostMessageSupport> post_message_support_;
 
   // Contains all the MimeHandlerViewFrameContainers under |render-frame()|.
   std::vector<std::unique_ptr<MimeHandlerViewFrameContainer>> frame_containers_;

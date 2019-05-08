@@ -136,6 +136,8 @@ MimeHandlerViewContainerBase::~MimeHandlerViewContainerBase() {
 // static
 PostMessageSupport::Delegate* PostMessageSupport::Delegate::FromWebLocalFrame(
     blink::WebLocalFrame* web_local_frame) {
+  if (!web_local_frame->GetDocument().IsPluginDocument())
+    return nullptr;
   auto mime_handlers = MimeHandlerViewContainerBase::FromRenderFrame(
       content::RenderFrame::FromWebFrame(web_local_frame));
   if (mime_handlers.empty())

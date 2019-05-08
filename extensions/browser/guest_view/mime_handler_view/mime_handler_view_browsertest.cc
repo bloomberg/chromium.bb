@@ -387,7 +387,7 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, Basic) {
                     ->streams_.size());
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Iframe) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, Iframe) {
   RunTest("test_iframe.html");
 }
 

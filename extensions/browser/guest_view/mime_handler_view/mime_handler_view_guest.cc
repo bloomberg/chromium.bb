@@ -439,17 +439,15 @@ void MimeHandlerViewGuest::DocumentOnLoadCompletedInMainFrame() {
   // removed before the guest is properly loaded, then owner RenderWidgetHost
   // will be nullptr.
   if (CanUseCrossProcessFrames()) {
-    // TODO(ekaramad): Verify if the container manager corresponding to the
-    // embedder frame itself needs to be notified; possibly for postMessage
-    // support from print helpers (https://crbug.com/659750).
-    if (maybe_has_frame_container_) {
-      // For plugin elements, the embedder should be notified so that the queued
-      // messages (postMessage) are forwarded to the guest page.
-      mojom::MimeHandlerViewContainerManagerPtr container_manager;
-      GetEmbedderFrame()->GetParent()->GetRemoteInterfaces()->GetInterface(
-          &container_manager);
-      container_manager->DidLoad(element_instance_id(), original_resource_url_);
-    }
+    // For plugin elements, the embedder should be notified so that the queued
+    // messages (postMessage) are forwarded to the guest page. Otherwise we
+    // just send the upadte to the embedder (full page  MHV).
+    auto* rfh = maybe_has_frame_container_ ? GetEmbedderFrame()->GetParent()
+                                           : GetEmbedderFrame();
+    mojom::MimeHandlerViewContainerManagerPtr container_manager;
+    rfh->GetRemoteInterfaces()->GetInterface(&container_manager);
+    container_manager->DidLoad(element_instance_id(), original_resource_url_);
+    return;
   }
   if (auto* rwh = GetOwnerRenderWidgetHost()) {
     rwh->Send(new ExtensionsGuestViewMsg_MimeHandlerViewGuestOnLoadCompleted(
