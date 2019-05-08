@@ -703,7 +703,7 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
   partition->platform_notification_context_->Initialize();
 
   partition->devtools_background_services_context_ =
-      base::MakeRefCounted<DevToolsBackgroundServicesContext>(
+      base::MakeRefCounted<DevToolsBackgroundServicesContextImpl>(
           context, partition->service_worker_context_);
 
   partition->background_fetch_context_ =
@@ -939,7 +939,7 @@ StoragePartitionImpl::GetGeneratedCodeCacheContext() {
   return generated_code_cache_context_.get();
 }
 
-DevToolsBackgroundServicesContext*
+DevToolsBackgroundServicesContextImpl*
 StoragePartitionImpl::GetDevToolsBackgroundServicesContext() {
   return devtools_background_services_context_.get();
 }

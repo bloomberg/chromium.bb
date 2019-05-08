@@ -93,7 +93,7 @@ class BackgroundFetchServiceTest
     : public BackgroundFetchTestBase,
       public BackgroundFetchDataManagerObserver,
       public ServiceWorkerContextCoreObserver,
-      public DevToolsBackgroundServicesContext::EventObserver {
+      public DevToolsBackgroundServicesContextImpl::EventObserver {
  public:
   BackgroundFetchServiceTest() = default;
   ~BackgroundFetchServiceTest() override = default;

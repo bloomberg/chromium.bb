@@ -29,7 +29,7 @@ class BackgroundFetchJobController;
 class BackgroundFetchRegistrationId;
 class BackgroundFetchRegistrationNotifier;
 class BackgroundFetchRequestInfo;
-class DevToolsBackgroundServicesContext;
+class DevToolsBackgroundServicesContextImpl;
 
 // Maintains a list of Controllers and chooses which ones should launch new
 // downloads.
@@ -42,7 +42,7 @@ class CONTENT_EXPORT BackgroundFetchScheduler
       BackgroundFetchDataManager* data_manager,
       BackgroundFetchRegistrationNotifier* registration_notifier,
       BackgroundFetchDelegateProxy* delegate_proxy,
-      DevToolsBackgroundServicesContext* devtools_context,
+      DevToolsBackgroundServicesContextImpl* devtools_context,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
   ~BackgroundFetchScheduler() override;
 
@@ -140,10 +140,11 @@ class CONTENT_EXPORT BackgroundFetchScheduler
 
   void DispatchClickEvent(const std::string& unique_id);
 
-  // Information needed to send over to the DevToolsBackgroundServicesContext.
-  // |event| is an enum describing the stage of the fetch. |request_info| is
-  // nullptr if not available at the moment. Any additional data to log can be
-  // passed through the |metadata| map.
+  // Information needed to send over to the
+  // DevToolsBackgroundServicesContextImpl. |event| is an enum describing the
+  // stage of the fetch. |request_info| is nullptr if not available at the
+  // moment. Any additional data to log can be passed through the |metadata|
+  // map.
   void LogBackgroundFetchEventForDevTools(
       Event event,
       const BackgroundFetchRegistrationId& registration_id,
@@ -154,7 +155,7 @@ class CONTENT_EXPORT BackgroundFetchScheduler
   BackgroundFetchDataManager* data_manager_;
   BackgroundFetchRegistrationNotifier* registration_notifier_;
   BackgroundFetchDelegateProxy* delegate_proxy_;
-  DevToolsBackgroundServicesContext* devtools_context_;
+  DevToolsBackgroundServicesContextImpl* devtools_context_;
 
   BackgroundFetchEventDispatcher event_dispatcher_;
 

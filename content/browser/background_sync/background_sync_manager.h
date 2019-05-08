@@ -24,7 +24,7 @@
 #include "content/browser/background_sync/background_sync_registration.h"
 #include "content/browser/background_sync/background_sync_status.h"
 #include "content/browser/cache_storage/cache_storage_scheduler.h"
-#include "content/browser/devtools/devtools_background_services_context.h"
+#include "content/browser/devtools/devtools_background_services_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/common/content_export.h"
@@ -69,7 +69,7 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   static std::unique_ptr<BackgroundSyncManager> Create(
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-      scoped_refptr<DevToolsBackgroundServicesContext> devtools_context);
+      scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context);
   ~BackgroundSyncManager() override;
 
   // Stores the given background sync registration and adds it to the scheduling
@@ -138,7 +138,7 @@ class CONTENT_EXPORT BackgroundSyncManager
  protected:
   BackgroundSyncManager(
       scoped_refptr<ServiceWorkerContextWrapper> context,
-      scoped_refptr<DevToolsBackgroundServicesContext> devtools_context);
+      scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context);
 
   // Init must be called before any public member function. Only call it once.
   void Init();
@@ -338,7 +338,7 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   CacheStorageScheduler op_scheduler_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
-  scoped_refptr<DevToolsBackgroundServicesContext> devtools_context_;
+  scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context_;
 
   std::unique_ptr<BackgroundSyncParameters> parameters_;
 

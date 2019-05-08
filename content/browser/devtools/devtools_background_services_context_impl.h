@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_BACKGROUND_SERVICES_CONTEXT_H_
-#define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_BACKGROUND_SERVICES_CONTEXT_H_
+#ifndef CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_BACKGROUND_SERVICES_CONTEXT_IMPL_H_
+#define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_BACKGROUND_SERVICES_CONTEXT_IMPL_H_
 
 #include <array>
 #include <map>
@@ -22,10 +22,7 @@
 #include "content/browser/devtools/devtools_background_services.pb.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/content_export.h"
-
-namespace url {
-class Origin;
-}  // namespace url
+#include "content/public/browser/devtools_background_services_context.h"
 
 namespace content {
 
@@ -38,8 +35,9 @@ class ServiceWorkerContextWrapper;
 // This class is also responsible for reading back the data to the DevTools
 // client, as the protocol handler will have access to an instance of the
 // context.
-class CONTENT_EXPORT DevToolsBackgroundServicesContext
-    : public base::RefCountedThreadSafe<DevToolsBackgroundServicesContext> {
+class CONTENT_EXPORT DevToolsBackgroundServicesContextImpl
+    : public DevToolsBackgroundServicesContext,
+      public base::RefCountedThreadSafe<DevToolsBackgroundServicesContextImpl> {
  public:
   using GetLoggedBackgroundServiceEventsCallback = base::OnceCallback<void(
       std::vector<devtools::proto::BackgroundServiceEvent>)>;
@@ -54,12 +52,32 @@ class CONTENT_EXPORT DevToolsBackgroundServicesContext
         devtools::proto::BackgroundService service) = 0;
   };
 
-  DevToolsBackgroundServicesContext(
+  DevToolsBackgroundServicesContextImpl(
       BrowserContext* browser_context,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
 
   void AddObserver(EventObserver* observer);
   void RemoveObserver(const EventObserver* observer);
+
+  // DevToolsBackgroundServicesContext overrides:
+  bool IsRecording(DevToolsBackgroundService service) override;
+  void LogBackgroundServiceEvent(
+      uint64_t service_worker_registration_id,
+      const url::Origin& origin,
+      DevToolsBackgroundService service,
+      const std::string& event_name,
+      const std::string& instance_id,
+      const std::map<std::string, std::string>& event_metadata) override;
+
+  // Helper functions for public overriden APIs. Can be used directly.
+  bool IsRecording(devtools::proto::BackgroundService service);
+  void LogBackgroundServiceEventOnIO(
+      uint64_t service_worker_registration_id,
+      const url::Origin& origin,
+      DevToolsBackgroundService service,
+      const std::string& event_name,
+      const std::string& instance_id,
+      const std::map<std::string, std::string>& event_metadata);
 
   // Enables recording mode for |service|. This is capped at 3 days in case
   // developers forget to switch it off.
@@ -67,9 +85,6 @@ class CONTENT_EXPORT DevToolsBackgroundServicesContext
 
   // Disables recording mode for |service|.
   void StopRecording(devtools::proto::BackgroundService service);
-
-  // Whether events related to |service| should be recorded.
-  bool IsRecording(devtools::proto::BackgroundService service);
 
   // Queries all logged events for |service| and returns them in sorted order
   // (by timestamp). |callback| is called with an empty vector if there was an
@@ -83,22 +98,11 @@ class CONTENT_EXPORT DevToolsBackgroundServicesContext
   void ClearLoggedBackgroundServiceEvents(
       devtools::proto::BackgroundService service);
 
-  // Logs the event for |service|. |event_name| is a description of the event.
-  // |instance_id| is for tracking events related to the same feature instance.
-  // Any additional useful information relating to the feature can be sent via
-  // |event_metadata|. Must be called on the IO thread.
-  void LogBackgroundServiceEvent(
-      uint64_t service_worker_registration_id,
-      const url::Origin& origin,
-      devtools::proto::BackgroundService service,
-      const std::string& event_name,
-      const std::string& instance_id,
-      const std::map<std::string, std::string>& event_metadata);
-
  private:
   friend class DevToolsBackgroundServicesContextTest;
-  friend class base::RefCountedThreadSafe<DevToolsBackgroundServicesContext>;
-  ~DevToolsBackgroundServicesContext();
+  friend class base::RefCountedThreadSafe<
+      DevToolsBackgroundServicesContextImpl>;
+  ~DevToolsBackgroundServicesContextImpl() override;
 
   // Whether |service| has an expiration time and it was exceeded.
   bool IsRecordingExpired(devtools::proto::BackgroundService service);
@@ -132,11 +136,11 @@ class CONTENT_EXPORT DevToolsBackgroundServicesContext
 
   base::ObserverList<EventObserver> observers_;
 
-  base::WeakPtrFactory<DevToolsBackgroundServicesContext> weak_ptr_factory_;
+  base::WeakPtrFactory<DevToolsBackgroundServicesContextImpl> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(DevToolsBackgroundServicesContext);
+  DISALLOW_COPY_AND_ASSIGN(DevToolsBackgroundServicesContextImpl);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_BACKGROUND_SERVICES_CONTEXT_H_
+#endif  // CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_BACKGROUND_SERVICES_CONTEXT_IMPL_H_

@@ -93,6 +93,11 @@ TestStoragePartition::GetPlatformNotificationContext() {
   return nullptr;
 }
 
+DevToolsBackgroundServicesContext*
+TestStoragePartition::GetDevToolsBackgroundServicesContext() {
+  return nullptr;
+}
+
 #if !defined(OS_ANDROID)
 HostZoomMap* TestStoragePartition::GetHostZoomMap() {
   return host_zoom_map_;

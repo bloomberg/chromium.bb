@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/devtools/devtools_background_services.pb.h"
-#include "content/browser/devtools/devtools_background_services_context.h"
+#include "content/browser/devtools/devtools_background_services_context_impl.h"
 #include "content/browser/devtools/protocol/background_service.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 
@@ -26,7 +26,7 @@ namespace protocol {
 class BackgroundServiceHandler
     : public DevToolsDomainHandler,
       public BackgroundService::Backend,
-      public DevToolsBackgroundServicesContext::EventObserver {
+      public DevToolsBackgroundServicesContextImpl::EventObserver {
  public:
   BackgroundServiceHandler();
   ~BackgroundServiceHandler() override;
@@ -59,7 +59,7 @@ class BackgroundServiceHandler
   std::unique_ptr<BackgroundService::Frontend> frontend_;
 
   // Owned by the storage partition.
-  DevToolsBackgroundServicesContext* devtools_context_;
+  DevToolsBackgroundServicesContextImpl* devtools_context_;
 
   base::flat_set<devtools::proto::BackgroundService> enabled_services_;
 

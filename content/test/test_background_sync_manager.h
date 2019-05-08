@@ -23,7 +23,7 @@ class Origin;
 namespace content {
 
 struct BackgroundSyncParameters;
-class DevToolsBackgroundServicesContext;
+class DevToolsBackgroundServicesContextImpl;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerVersion;
 
@@ -41,7 +41,7 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
 
   TestBackgroundSyncManager(
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-      scoped_refptr<DevToolsBackgroundServicesContext> devtools_context);
+      scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context);
   ~TestBackgroundSyncManager() override;
 
   // Force a call to the internal Init() method.

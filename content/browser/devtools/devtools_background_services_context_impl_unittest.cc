@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/devtools/devtools_background_services_context.h"
+#include "content/browser/devtools/devtools_background_services_context_impl.h"
 
 #include <string>
 #include <vector>
@@ -87,7 +87,7 @@ void DidGetLoggedBackgroundServiceEvents(
 
 class DevToolsBackgroundServicesContextTest
     : public ::testing::Test,
-      DevToolsBackgroundServicesContext::EventObserver {
+      DevToolsBackgroundServicesContextImpl::EventObserver {
  public:
   DevToolsBackgroundServicesContextTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
@@ -120,7 +120,7 @@ class DevToolsBackgroundServicesContextTest
     if (context_)
       context_->RemoveObserver(this);
     // Create |context_|.
-    context_ = base::MakeRefCounted<DevToolsBackgroundServicesContext>(
+    context_ = base::MakeRefCounted<DevToolsBackgroundServicesContextImpl>(
         &browser_context_, embedded_worker_test_helper_.context_wrapper());
     context_->AddObserver(this);
     ASSERT_TRUE(context_);
@@ -129,18 +129,17 @@ class DevToolsBackgroundServicesContextTest
   void SimulateOneWeekPassing() {
     base::Time one_week_ago = base::Time::Now() - base::TimeDelta::FromDays(7);
     context_->expiration_times_
-        [devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE] =
-        one_week_ago;
+        [devtools::proto::BackgroundService::BACKGROUND_FETCH] = one_week_ago;
   }
 
   bool IsRecording() {
     return context_->IsRecording(
-        devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE);
+        devtools::proto::BackgroundService::BACKGROUND_FETCH);
   }
 
   base::Time GetExpirationTime() {
     return context_->expiration_times_
-        [devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE];
+        [devtools::proto::BackgroundService::BACKGROUND_FETCH];
   }
 
   std::vector<devtools::proto::BackgroundServiceEvent>
@@ -149,7 +148,7 @@ class DevToolsBackgroundServicesContextTest
 
     base::RunLoop run_loop;
     context_->GetLoggedBackgroundServiceEvents(
-        devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE,
+        devtools::proto::BackgroundService::BACKGROUND_FETCH,
         base::BindOnce(&DidGetLoggedBackgroundServiceEvents,
                        run_loop.QuitClosure(), &feature_states));
     run_loop.Run();
@@ -158,19 +157,18 @@ class DevToolsBackgroundServicesContextTest
   }
 
   void LogTestBackgroundServiceEvent(const std::string& log_message) {
-    context_->LogBackgroundServiceEvent(
+    context_->LogBackgroundServiceEventOnIO(
         service_worker_registration_id_, origin_,
-        devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE, kEventName,
-        kInstanceId, {{"key", log_message}});
+        DevToolsBackgroundService::kBackgroundFetch, kEventName, kInstanceId,
+        {{"key", log_message}});
   }
 
   void StartRecording() {
     EXPECT_CALL(
-        *this,
-        OnRecordingStateChanged(
-            true, devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE));
+        *this, OnRecordingStateChanged(
+                   true, devtools::proto::BackgroundService::BACKGROUND_FETCH));
     context_->StartRecording(
-        devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE);
+        devtools::proto::BackgroundService::BACKGROUND_FETCH);
 
     // Wait for the messages to propagate to the browser client.
     thread_bundle_.RunUntilIdle();
@@ -180,10 +178,9 @@ class DevToolsBackgroundServicesContextTest
     EXPECT_CALL(
         *this,
         OnRecordingStateChanged(
-            false,
-            devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE));
+            false, devtools::proto::BackgroundService::BACKGROUND_FETCH));
     context_->StopRecording(
-        devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE);
+        devtools::proto::BackgroundService::BACKGROUND_FETCH);
 
     // Wait for the messages to propagate to the browser client.
     thread_bundle_.RunUntilIdle();
@@ -191,7 +188,7 @@ class DevToolsBackgroundServicesContextTest
 
   void ClearLoggedBackgroundServiceEvents() {
     context_->ClearLoggedBackgroundServiceEvents(
-        devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE);
+        devtools::proto::BackgroundService::BACKGROUND_FETCH);
   }
 
   TestBrowserThreadBundle thread_bundle_;  // Must be first member.
@@ -247,7 +244,7 @@ class DevToolsBackgroundServicesContextTest
 
   EmbeddedWorkerTestHelper embedded_worker_test_helper_;
   TestBrowserContext browser_context_;
-  scoped_refptr<DevToolsBackgroundServicesContext> context_;
+  scoped_refptr<DevToolsBackgroundServicesContextImpl> context_;
   scoped_refptr<ServiceWorkerRegistration> service_worker_registration_;
   std::unique_ptr<ContentBrowserClient> browser_client_;
 
@@ -280,7 +277,7 @@ TEST_F(DevToolsBackgroundServicesContextTest, GetLoggedEvents) {
 
   for (const auto& feature_event : feature_events) {
     EXPECT_EQ(feature_event.background_service(),
-              devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE);
+              devtools::proto::BackgroundService::BACKGROUND_FETCH);
     EXPECT_EQ(feature_event.origin(), origin_.GetURL().spec());
     EXPECT_EQ(feature_event.service_worker_registration_id(),
               service_worker_registration_id_);
@@ -352,10 +349,9 @@ TEST_F(DevToolsBackgroundServicesContextTest, RecordingExpiration) {
   LogTestBackgroundServiceEvent("f1");
 
   // Observers should be informed that recording stopped.
-  EXPECT_CALL(
-      *this,
-      OnRecordingStateChanged(
-          false, devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE));
+  EXPECT_CALL(*this,
+              OnRecordingStateChanged(
+                  false, devtools::proto::BackgroundService::BACKGROUND_FETCH));
 
   thread_bundle_.RunUntilIdle();
 

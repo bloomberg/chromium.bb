@@ -122,6 +122,7 @@ jumbo_source_set("browser_sources") {
     "devtools_agent_host_client.h",
     "devtools_agent_host_observer.cc",
     "devtools_agent_host_observer.h",
+    "devtools_background_services_context.h",
     "devtools_external_agent_proxy.h",
     "devtools_external_agent_proxy_delegate.h",
     "devtools_frontend_host.h",

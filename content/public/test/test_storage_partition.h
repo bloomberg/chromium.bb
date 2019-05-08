@@ -18,6 +18,7 @@ namespace content {
 
 class AppCacheService;
 class BackgroundSyncContext;
+class DevToolsBackgroundServicesContext;
 class DOMStorageContext;
 class IndexedDBContext;
 class PlatformNotificationContext;
@@ -129,6 +130,13 @@ class TestStoragePartition : public StoragePartition {
   }
   PlatformNotificationContext* GetPlatformNotificationContext() override;
 
+  void set_devtools_background_services_context(
+      DevToolsBackgroundServicesContext* context) {
+    devtools_background_services_context_ = context;
+  }
+  DevToolsBackgroundServicesContext* GetDevToolsBackgroundServicesContext()
+      override;
+
 #if !defined(OS_ANDROID)
   void set_host_zoom_map(HostZoomMap* map) { host_zoom_map_ = map; }
   HostZoomMap* GetHostZoomMap() override;
@@ -202,6 +210,8 @@ class TestStoragePartition : public StoragePartition {
   CacheStorageContext* cache_storage_context_ = nullptr;
   GeneratedCodeCacheContext* generated_code_cache_context_ = nullptr;
   PlatformNotificationContext* platform_notification_context_ = nullptr;
+  DevToolsBackgroundServicesContext* devtools_background_services_context_ =
+      nullptr;
 #if !defined(OS_ANDROID)
   HostZoomMap* host_zoom_map_ = nullptr;
   HostZoomLevelContext* host_zoom_level_context_ = nullptr;

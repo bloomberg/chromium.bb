@@ -21,7 +21,7 @@
 #include "content/browser/bluetooth/bluetooth_allowed_devices_map.h"
 #include "content/browser/broadcast_channel/broadcast_channel_provider.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
-#include "content/browser/devtools/devtools_background_services_context.h"
+#include "content/browser/devtools/devtools_background_services_context_impl.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/idle/idle_manager.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
@@ -109,6 +109,8 @@ class CONTENT_EXPORT StoragePartitionImpl
   SmsManager* GetSmsManager();
   SharedWorkerServiceImpl* GetSharedWorkerService() override;
   GeneratedCodeCacheContext* GetGeneratedCodeCacheContext() override;
+  DevToolsBackgroundServicesContextImpl* GetDevToolsBackgroundServicesContext()
+      override;
 #if !defined(OS_ANDROID)
   HostZoomMap* GetHostZoomMap() override;
   HostZoomLevelContext* GetHostZoomLevelContext() override;
@@ -155,7 +157,6 @@ class CONTENT_EXPORT StoragePartitionImpl
   BlobRegistryWrapper* GetBlobRegistry();
   PrefetchURLLoaderService* GetPrefetchURLLoaderService();
   CookieStoreContext* GetCookieStoreContext();
-  DevToolsBackgroundServicesContext* GetDevToolsBackgroundServicesContext();
   NativeFileSystemManagerImpl* GetNativeFileSystemManager();
 
   // blink::mojom::StoragePartitionService interface.
@@ -344,7 +345,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   scoped_refptr<PrefetchURLLoaderService> prefetch_url_loader_service_;
   scoped_refptr<CookieStoreContext> cookie_store_context_;
   scoped_refptr<GeneratedCodeCacheContext> generated_code_cache_context_;
-  scoped_refptr<DevToolsBackgroundServicesContext>
+  scoped_refptr<DevToolsBackgroundServicesContextImpl>
       devtools_background_services_context_;
   scoped_refptr<NativeFileSystemManagerImpl> native_file_system_manager_;
 

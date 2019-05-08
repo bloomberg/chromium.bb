@@ -14,7 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/background_fetch/background_fetch_registration_service_impl.h"
-#include "content/browser/devtools/devtools_background_services_context.h"
+#include "content/browser/devtools/devtools_background_services_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -73,7 +73,7 @@ void RecordFailureResult(ServiceWorkerMetrics::EventType event,
 BackgroundFetchEventDispatcher::BackgroundFetchEventDispatcher(
     BackgroundFetchContext* background_fetch_context,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-    DevToolsBackgroundServicesContext* devtools_context)
+    DevToolsBackgroundServicesContextImpl* devtools_context)
     : background_fetch_context_(background_fetch_context),
       service_worker_context_(std::move(service_worker_context)),
       devtools_context_(devtools_context) {
@@ -338,8 +338,10 @@ void BackgroundFetchEventDispatcher::LogBackgroundFetchCompletionForDevTools(
     blink::mojom::BackgroundFetchFailureReason failure_reason) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!devtools_context_->IsRecording(devtools::proto::BACKGROUND_FETCH))
+  if (!devtools_context_->IsRecording(
+          DevToolsBackgroundService::kBackgroundFetch)) {
     return;
+  }
 
   std::map<std::string, std::string> metadata = {
       {"Event Type", EventTypeToString(event_type)}};
@@ -349,9 +351,9 @@ void BackgroundFetchEventDispatcher::LogBackgroundFetchCompletionForDevTools(
     metadata["Failure Reason"] = stream.str();
   }
 
-  devtools_context_->LogBackgroundServiceEvent(
+  devtools_context_->LogBackgroundServiceEventOnIO(
       registration_id.service_worker_registration_id(),
-      registration_id.origin(), devtools::proto::BACKGROUND_FETCH,
+      registration_id.origin(), DevToolsBackgroundService::kBackgroundFetch,
       /* event_name= */ "Background Fetch completed",
       /* instance_id= */ registration_id.developer_id(), metadata);
 }

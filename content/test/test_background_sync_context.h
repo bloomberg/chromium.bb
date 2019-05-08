@@ -22,7 +22,7 @@ class TestBackgroundSyncContext : public BackgroundSyncContextImpl {
   // BackgroundSyncContextImpl:
   void CreateBackgroundSyncManager(
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-      scoped_refptr<DevToolsBackgroundServicesContext> devtools_context)
+      scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context)
       override;
 
  private:

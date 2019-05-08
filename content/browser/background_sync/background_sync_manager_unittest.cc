@@ -24,7 +24,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/background_sync/background_sync_network_observer.h"
 #include "content/browser/background_sync/background_sync_status.h"
-#include "content/browser/devtools/devtools_background_services_context.h"
+#include "content/browser/devtools/devtools_background_services_context_impl.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -94,7 +94,7 @@ blink::mojom::BackgroundSyncType GetBackgroundSyncType(
 
 class BackgroundSyncManagerTest
     : public testing::Test,
-      public DevToolsBackgroundServicesContext::EventObserver {
+      public DevToolsBackgroundServicesContextImpl::EventObserver {
  public:
   BackgroundSyncManagerTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {

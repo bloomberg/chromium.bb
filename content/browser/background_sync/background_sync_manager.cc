@@ -275,7 +275,7 @@ BackgroundSyncManager::BackgroundSyncRegistrations::
 // static
 std::unique_ptr<BackgroundSyncManager> BackgroundSyncManager::Create(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-    scoped_refptr<DevToolsBackgroundServicesContext> devtools_context) {
+    scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   BackgroundSyncManager* sync_manager = new BackgroundSyncManager(
@@ -433,7 +433,7 @@ void BackgroundSyncManager::EmulateServiceWorkerOffline(
 
 BackgroundSyncManager::BackgroundSyncManager(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-    scoped_refptr<DevToolsBackgroundServicesContext> devtools_context)
+    scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context)
     : op_scheduler_(CacheStorageSchedulerClient::kBackgroundSync),
       service_worker_context_(std::move(service_worker_context)),
       devtools_context_(std::move(devtools_context)),
@@ -962,8 +962,8 @@ void BackgroundSyncManager::AddActiveRegistration(
       sync_registration;
 
   if (ShouldLogToDevTools(sync_type)) {
-    devtools_context_->LogBackgroundServiceEvent(
-        sw_registration_id, origin, devtools::proto::BACKGROUND_SYNC,
+    devtools_context_->LogBackgroundServiceEventOnIO(
+        sw_registration_id, origin, DevToolsBackgroundService::kBackgroundSync,
         /* event_name= */ "Registered sync",
         /* instance_id= */ sync_registration.options()->tag,
         /* event_metadata= */ {});
@@ -1024,10 +1024,11 @@ void BackgroundSyncManager::DispatchSyncEvent(
       base::BindOnce(&OnSyncEventFinished, active_version, request_id,
                      std::move(repeating_callback)));
 
-  if (devtools_context_->IsRecording(devtools::proto::BACKGROUND_SYNC)) {
-    devtools_context_->LogBackgroundServiceEvent(
+  if (devtools_context_->IsRecording(
+          DevToolsBackgroundService::kBackgroundSync)) {
+    devtools_context_->LogBackgroundServiceEventOnIO(
         active_version->registration_id(), active_version->script_origin(),
-        devtools::proto::BACKGROUND_SYNC,
+        DevToolsBackgroundService::kBackgroundSync,
         /* event_name= */ "Dispatched sync event",
         /* instance_id= */ tag,
         /* event_metadata= */
@@ -1456,9 +1457,9 @@ void BackgroundSyncManager::EventCompleteDidGetDelay(
     registration->set_num_attempts(0);
     registration_completed = false;
     if (ShouldLogToDevTools(registration->sync_type())) {
-      devtools_context_->LogBackgroundServiceEvent(
+      devtools_context_->LogBackgroundServiceEventOnIO(
           registration_info->service_worker_registration_id, origin,
-          devtools::proto::BACKGROUND_SYNC,
+          DevToolsBackgroundService::kBackgroundSync,
           /* event_name= */ "Sync event reregistered",
           /* instance_id= */ registration_info->tag,
           /* event_metadata= */ {});
@@ -1473,9 +1474,9 @@ void BackgroundSyncManager::EventCompleteDidGetDelay(
       std::string delay_ms = delay.is_max()
                                  ? "infinite"
                                  : base::NumberToString(delay.InMilliseconds());
-      devtools_context_->LogBackgroundServiceEvent(
+      devtools_context_->LogBackgroundServiceEventOnIO(
           registration_info->service_worker_registration_id, origin,
-          devtools::proto::BACKGROUND_SYNC,
+          DevToolsBackgroundService::kBackgroundSync,
           /* event_name= */ "Sync event failed",
           /* instance_id= */ registration_info->tag,
           {{"Next Attempt Delay (ms)", delay_ms},
@@ -1488,9 +1489,9 @@ void BackgroundSyncManager::EventCompleteDidGetDelay(
         succeeded, registration->num_attempts());
 
     if (ShouldLogToDevTools(registration->sync_type())) {
-      devtools_context_->LogBackgroundServiceEvent(
+      devtools_context_->LogBackgroundServiceEventOnIO(
           registration_info->service_worker_registration_id, origin,
-          devtools::proto::BACKGROUND_SYNC,
+          DevToolsBackgroundService::kBackgroundSync,
           /* event_name= */ "Sync completed",
           /* instance_id= */ registration_info->tag,
           {{"Status", GetEventStatusString(status_code)}});
@@ -1603,7 +1604,8 @@ blink::ServiceWorkerStatusCode BackgroundSyncManager::CanEmulateSyncEvent(
 
 bool BackgroundSyncManager::ShouldLogToDevTools(BackgroundSyncType sync_type) {
   return sync_type == BackgroundSyncType::ONE_SHOT &&
-         devtools_context_->IsRecording(devtools::proto::BACKGROUND_SYNC);
+         devtools_context_->IsRecording(
+             DevToolsBackgroundService::kBackgroundSync);
 }
 
 }  // namespace content
