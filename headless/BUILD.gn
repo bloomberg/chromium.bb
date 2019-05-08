@@ -24,7 +24,7 @@ config("inside_headless_component") {
 
 group("headless_lib") {
   deps = [
-    ":headless_non_renderer",
+    ":headless",
   ]
 }
 
@@ -227,7 +227,7 @@ if (headless_fontconfig_utils && !is_fuchsia) {
 }
 
 inspector_protocol_generate("protocol_sources") {
-  visibility = [ "//headless:headless_shared_sources" ]
+  visibility = [ "//headless" ]
   deps = [
     "//third_party/blink/renderer/core/inspector:protocol_version",
   ]
@@ -262,75 +262,10 @@ inspector_protocol_generate("protocol_sources") {
   ]
 }
 
-# Code needed in both processes. Only exposed through |headless| and
-# |headless_non_renderer| components.
-jumbo_source_set("headless_shared_sources") {
-  visibility = [
-    "//headless:headless_non_renderer",
-    "//headless:headless",
-  ]
-
+jumbo_component("headless") {
   sources = [
     "app/headless_shell_switches.cc",
     "app/headless_shell_switches.h",
-    "lib/headless_content_client.cc",
-    "lib/headless_content_client.h",
-    "public/headless_browser.cc",
-    "public/headless_browser.h",
-    "public/headless_export.h",
-    "public/internal/headless_devtools_client_impl.h",
-    "public/internal/message_dispatcher.h",
-    "public/internal/value_conversions.h",
-    "public/util/error_reporter.cc",
-    "public/util/error_reporter.h",
-    "public/util/user_agent.cc",
-    "public/util/user_agent.h",
-  ]
-
-  sources += generated_devtools_api
-  sources += get_target_outputs(":protocol_sources")
-
-  if (!is_fuchsia) {
-    sources += [
-      "lib/headless_crash_reporter_client.cc",
-      "lib/headless_crash_reporter_client.h",
-    ]
-  }
-
-  deps = [
-    ":gen_devtools_client_api",
-    ":protocol_sources",
-    "//base:base_static",
-    "//content/public/common",
-    "//content/public/common:service_names",
-    "//ui/base",
-    "//url",
-  ]
-
-  if (!is_fuchsia) {
-    deps += [ "//components/crash/content/browser" ]
-  }
-  if (is_win) {
-    deps += [ "//components/crash/content/app:crash_export_thunks" ]
-  }
-
-  if (is_linux && !is_chromeos) {
-    deps += [ "//components/os_crypt" ]
-  }
-
-  configs += [ ":inside_headless_component" ]
-}
-
-# Code that is needed in a renderer process.
-jumbo_component("headless") {
-  deps = [
-    ":headless_shared_sources",
-  ]
-}
-
-# Code that is not needed in a renderer process.
-jumbo_component("headless_non_renderer") {
-  sources = [
     "lib/browser/headless_browser_context_impl.cc",
     "lib/browser/headless_browser_context_impl.h",
     "lib/browser/headless_browser_context_options.cc",
@@ -373,12 +308,34 @@ jumbo_component("headless_non_renderer") {
     "lib/browser/protocol/page_handler.h",
     "lib/browser/protocol/target_handler.cc",
     "lib/browser/protocol/target_handler.h",
+    "lib/headless_content_client.cc",
+    "lib/headless_content_client.h",
+    "public/headless_browser.cc",
+    "public/headless_browser.h",
     "public/headless_browser_context.h",
     "public/headless_devtools_channel.h",
     "public/headless_devtools_client.h",
     "public/headless_devtools_target.h",
+    "public/headless_export.h",
     "public/headless_web_contents.h",
+    "public/internal/headless_devtools_client_impl.h",
+    "public/internal/message_dispatcher.h",
+    "public/internal/value_conversions.h",
+    "public/util/error_reporter.cc",
+    "public/util/error_reporter.h",
+    "public/util/user_agent.cc",
+    "public/util/user_agent.h",
   ]
+
+  if (!is_fuchsia) {
+    sources += [
+      "lib/headless_crash_reporter_client.cc",
+      "lib/headless_crash_reporter_client.h",
+    ]
+  }
+
+  sources += generated_devtools_api
+  sources += get_target_outputs(":protocol_sources")
 
   if (use_aura) {
     sources += [
@@ -415,7 +372,8 @@ jumbo_component("headless_non_renderer") {
   }
 
   deps = [
-    ":headless_shared_sources",
+    ":gen_devtools_client_api",
+    ":protocol_sources",
     ":version_header",
     "//base:base_static",
     "//components/cookie_config",
@@ -430,6 +388,10 @@ jumbo_component("headless_non_renderer") {
     "//ui/events/devices",
     "//url",
   ]
+
+  if (is_linux && !is_chromeos) {
+    deps += [ "//components/os_crypt" ]
+  }
 
   if (enable_basic_printing) {
     deps += [ "//components/printing/browser" ]
@@ -572,7 +534,7 @@ if (!is_component_build) {
   # component.
   group("headless_renderer") {
     deps = [
-      ":headless_non_renderer",
+      ":headless",
     ]
   }
 }
@@ -605,7 +567,7 @@ test("headless_unittests") {
   }
 
   deps = [
-    ":headless_shell_lib",
+    ":headless_renderer",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//components/security_state/content",
@@ -757,7 +719,7 @@ test("headless_browsertests") {
   }
 
   deps = [
-    ":headless_shell_lib",
+    ":headless_renderer",
     "//base",
     "//components/security_state/content",
     "//components/services/pdf_compositor/public/cpp:manifest",
@@ -770,7 +732,10 @@ test("headless_browsertests") {
   ]
 
   if (!is_fuchsia) {
-    deps += [ "//components/crash/content/browser" ]
+    deps += [
+      "//components/crash/content/app:test_support",
+      "//components/crash/content/browser",
+    ]
   }
 
   if (is_linux) {
@@ -809,7 +774,7 @@ if (is_win) {
       "public/headless_shell.h",
     ]
     deps = [
-      ":headless_non_renderer",
+      ":headless",
       "//components/services/pdf_compositor/public/cpp:manifest",
       "//components/services/pdf_compositor/public/interfaces",
       "//content:sandbox_helper_win",
@@ -905,10 +870,6 @@ jumbo_static_library("headless_shell_lib") {
   public_deps = [
     "//base",
   ]
-
-  if (!is_component_build) {
-    public_deps += [ ":headless_non_renderer" ]
-  }
 
   if (!is_fuchsia) {
     deps += [ "//components/crash/content/browser" ]
