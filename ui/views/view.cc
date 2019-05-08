@@ -141,6 +141,9 @@ View::~View() {
 
   for (ViewObserver& observer : observers_)
     observer.OnViewIsDeleting(this);
+
+  for (ui::Layer* layer_beneath : layers_beneath_)
+    layer_beneath->RemoveObserver(this);
 }
 
 // Tree operations -------------------------------------------------------------
@@ -504,6 +507,9 @@ void View::SetTransform(const gfx::Transform& transform) {
     layer()->SetTransform(transform);
     layer()->ScheduleDraw();
   }
+
+  for (ui::Layer* layer_beneath : layers_beneath_)
+    layer_beneath->SetTransform(transform);
 }
 
 void View::SetPaintToLayer(ui::LayerType layer_type) {
@@ -528,6 +534,53 @@ void View::SetPaintToLayer(ui::LayerType layer_type) {
 void View::DestroyLayer() {
   paint_to_layer_explicitly_set_ = false;
   CreateOrDestroyLayer();
+}
+
+void View::AddLayerBeneathView(ui::Layer* new_layer) {
+  DCHECK(new_layer);
+  DCHECK(!base::ContainsValue(layers_beneath_, new_layer))
+      << "Layer already added.";
+
+  new_layer->AddObserver(this);
+  new_layer->SetVisible(visible());
+  layers_beneath_.push_back(new_layer);
+
+  // If painting to a layer already, ensure |new_layer| gets added and stacked
+  // correctly. If not, this will happen on layer creation.
+  if (layer()) {
+    ui::Layer* parent_layer = layer()->parent();
+    if (parent_layer)
+      parent_layer->Add(new_layer);
+    new_layer->SetBounds(gfx::Rect(new_layer->size()) +
+                         layer()->bounds().OffsetFromOrigin());
+    if (parent())
+      parent()->ReorderLayers();
+  }
+
+  CreateOrDestroyLayer();
+
+  layer()->SetFillsBoundsOpaquely(false);
+}
+
+void View::RemoveLayerBeneathView(ui::Layer* old_layer) {
+  auto layer_pos =
+      std::find(layers_beneath_.begin(), layers_beneath_.end(), old_layer);
+  DCHECK(layer_pos != layers_beneath_.end())
+      << "Attempted to remove a layer that was never added.";
+  layers_beneath_.erase(layer_pos);
+  old_layer->RemoveObserver(this);
+
+  ui::Layer* parent_layer = layer()->parent();
+  if (parent_layer)
+    parent_layer->Remove(old_layer);
+
+  CreateOrDestroyLayer();
+}
+
+void View::LayerDestroyed(ui::Layer* layer) {
+  // Only layers added with |AddLayerBeneathView()| are observed so |layer| can
+  // safely be removed.
+  RemoveLayerBeneathView(layer);
 }
 
 std::unique_ptr<ui::Layer> View::RecreateLayer() {
@@ -1625,6 +1678,9 @@ void View::MoveLayerToParent(ui::Layer* parent_layer,
 
   if (layer() && parent_layer != layer()) {
     parent_layer->Add(layer());
+    for (ui::Layer* layer_beneath : layers_beneath_)
+      parent_layer->Add(layer_beneath);
+
     SetLayerBounds(size(), local_offset_data);
   } else {
     internal::ScopedChildrenLock lock(this);
@@ -1642,16 +1698,24 @@ void View::UpdateLayerVisibility() {
 }
 
 void View::UpdateChildLayerVisibility(bool ancestor_visible) {
+  const bool layers_visible = ancestor_visible && visible_;
   if (layer()) {
-    layer()->SetVisible(ancestor_visible && visible_);
+    layer()->SetVisible(layers_visible);
+    for (ui::Layer* layer_beneath : layers_beneath_)
+      layer_beneath->SetVisible(layers_visible);
   } else {
     internal::ScopedChildrenLock lock(this);
     for (auto* child : children_)
-      child->UpdateChildLayerVisibility(ancestor_visible && visible_);
+      child->UpdateChildLayerVisibility(layers_visible);
   }
 }
 
 void View::DestroyLayerImpl(LayerChangeNotifyBehavior notify_parents) {
+  // Normally, adding layers beneath will trigger painting to a layer. It would
+  // leave this view in an inconsistent state if its layer were destroyed while
+  // layers beneath were still present. So, assume this doesn't happen.
+  DCHECK(layers_beneath_.empty());
+
   if (!layer())
     return;
 
@@ -1730,7 +1794,8 @@ void View::OnDeviceScaleFactorChanged(float old_device_scale_factor,
 }
 
 void View::CreateOrDestroyLayer() {
-  if (paint_to_layer_explicitly_set_ || paint_to_layer_for_transform_) {
+  if (paint_to_layer_explicitly_set_ || paint_to_layer_for_transform_ ||
+      !layers_beneath_.empty()) {
     // If we need to paint to a layer, make sure we have one.
     if (!layer())
       CreateLayer(ui::LAYER_TEXTURED);
@@ -1770,6 +1835,8 @@ void View::ReorderChildLayers(ui::Layer* parent_layer) {
   if (layer() && layer() != parent_layer) {
     DCHECK_EQ(parent_layer, layer()->parent());
     parent_layer->StackAtBottom(layer());
+    for (ui::Layer* layer_beneath : layers_beneath_)
+      parent_layer->StackAtBottom(layer_beneath);
   } else {
     // Iterate backwards through the children so that a child with a layer
     // which is further to the back is stacked above one which is further to
@@ -2258,12 +2325,19 @@ void View::SnapLayerToPixelBoundary(const LayerOffsetData& offset_data) {
       layer()->GetCompositor()) {
     if (layer()->GetCompositor()->is_pixel_canvas()) {
       layer()->SetSubpixelPositionOffset(offset_data.GetSubpixelOffset());
+      for (ui::Layer* layer_beneath : layers_beneath_)
+        layer_beneath->SetSubpixelPositionOffset(
+            offset_data.GetSubpixelOffset());
     } else {
       ui::SnapLayerToPhysicalPixelBoundary(layer()->parent(), layer());
+      for (ui::Layer* layer_beneath : layers_beneath_)
+        ui::SnapLayerToPhysicalPixelBoundary(layer()->parent(), layer_beneath);
     }
   } else {
     // Reset the offset.
     layer()->SetSubpixelPositionOffset(gfx::Vector2dF());
+    for (ui::Layer* layer_beneath : layers_beneath_)
+      layer_beneath->SetSubpixelPositionOffset(gfx::Vector2dF());
   }
 }
 
@@ -2332,7 +2406,12 @@ void View::SetLayoutManagerImpl(std::unique_ptr<LayoutManager> layout_manager) {
 
 void View::SetLayerBounds(const gfx::Size& size,
                           const LayerOffsetData& offset_data) {
-  layer()->SetBounds(gfx::Rect(size) + offset_data.offset());
+  const gfx::Rect bounds = gfx::Rect(size) + offset_data.offset();
+  layer()->SetBounds(bounds);
+  for (ui::Layer* layer_beneath : layers_beneath_) {
+    layer_beneath->SetBounds(gfx::Rect(layer_beneath->size()) +
+                             bounds.OffsetFromOrigin());
+  }
   SnapLayerToPixelBoundary(offset_data);
 }
 
@@ -2452,8 +2531,12 @@ bool View::UpdateParentLayers() {
 
 void View::OrphanLayers() {
   if (layer()) {
-    if (layer()->parent())
-      layer()->parent()->Remove(layer());
+    ui::Layer* parent = layer()->parent();
+    if (parent) {
+      parent->Remove(layer());
+      for (ui::Layer* layer_beneath : layers_beneath_)
+        parent->Remove(layer_beneath);
+    }
 
     // The layer belonging to this View has already been orphaned. It is not
     // necessary to orphan the child layers.
@@ -2466,9 +2549,15 @@ void View::OrphanLayers() {
 
 void View::ReparentLayer(const gfx::Vector2d& offset, ui::Layer* parent_layer) {
   layer()->SetBounds(GetLocalBounds() + offset);
+  for (ui::Layer* layer_beneath : layers_beneath_)
+    layer_beneath->SetBounds(gfx::Rect(layer_beneath->size()) + offset);
+
   DCHECK_NE(layer(), parent_layer);
-  if (parent_layer)
+  if (parent_layer) {
     parent_layer->Add(layer());
+    for (ui::Layer* layer_beneath : layers_beneath_)
+      parent_layer->Add(layer_beneath);
+  }
   layer()->SchedulePaint(GetLocalBounds());
   MoveLayerToParent(layer(), LayerOffsetData(layer()->device_scale_factor()));
 }

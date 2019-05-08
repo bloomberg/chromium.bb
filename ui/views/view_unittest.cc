@@ -34,6 +34,7 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
+#include "ui/compositor/test/test_layers.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -4556,6 +4557,233 @@ TEST_F(ViewLayerTest, SnapLayerToPixel) {
   GetRootLayer()->GetCompositor()->SetScaleAndSize(
       2.0f, size, allocator.GetCurrentLocalSurfaceIdAllocation());
   EXPECT_EQ("0.00 0.00", ToString(v11->layer()->subpixel_position_offset()));
+}
+
+TEST_F(ViewLayerTest, LayerBeneathTriggersPaintToLayer) {
+  View root;
+  root.SetPaintToLayer();
+
+  View* view = root.AddChildView(std::make_unique<View>());
+  EXPECT_EQ(nullptr, view->layer());
+
+  ui::Layer layer1;
+  ui::Layer layer2;
+  view->AddLayerBeneathView(&layer1);
+  EXPECT_NE(nullptr, view->layer());
+  view->AddLayerBeneathView(&layer2);
+  EXPECT_NE(nullptr, view->layer());
+
+  view->RemoveLayerBeneathView(&layer1);
+  EXPECT_NE(nullptr, view->layer());
+  view->RemoveLayerBeneathView(&layer2);
+  EXPECT_EQ(nullptr, view->layer());
+}
+
+TEST_F(ViewLayerTest, LayerBeneathAddedToTree) {
+  View root;
+  root.SetPaintToLayer();
+
+  ui::Layer layer;
+  View* view = root.AddChildView(std::make_unique<View>());
+
+  view->AddLayerBeneathView(&layer);
+  ASSERT_NE(nullptr, view->layer());
+  EXPECT_TRUE(view->layer()->parent()->Contains(&layer));
+
+  view->RemoveLayerBeneathView(&layer);
+  EXPECT_EQ(nullptr, layer.parent());
+}
+
+TEST_F(ViewLayerTest, LayerBeneathRemovedOnDestruction) {
+  View root;
+  root.SetPaintToLayer();
+
+  auto layer = std::make_unique<ui::Layer>();
+  View* view = root.AddChildView(std::make_unique<View>());
+
+  // No assertions, just get coverage of deleting the layer while it is added.
+  view->AddLayerBeneathView(layer.get());
+  layer.reset();
+  root.RemoveChildView(view);
+  delete view;
+}
+
+TEST_F(ViewLayerTest, LayerBeneathVisibilityUpdated) {
+  View root;
+  root.SetPaintToLayer();
+
+  ui::Layer layer;
+
+  // Make a parent view that has no layer, and a child view that has a layer.
+  View* parent = root.AddChildView(std::make_unique<View>());
+  View* child = parent->AddChildView(std::make_unique<View>());
+  child->AddLayerBeneathView(&layer);
+
+  EXPECT_EQ(nullptr, parent->layer());
+  EXPECT_NE(nullptr, child->layer());
+
+  // Test setting the views' visbilities in various orders.
+  EXPECT_TRUE(layer.visible());
+  child->SetVisible(false);
+  EXPECT_FALSE(layer.visible());
+  child->SetVisible(true);
+  EXPECT_TRUE(layer.visible());
+
+  parent->SetVisible(false);
+  EXPECT_FALSE(layer.visible());
+  parent->SetVisible(true);
+  EXPECT_TRUE(layer.visible());
+
+  parent->SetVisible(false);
+  EXPECT_FALSE(layer.visible());
+  child->SetVisible(false);
+  EXPECT_FALSE(layer.visible());
+  parent->SetVisible(true);
+  EXPECT_FALSE(layer.visible());
+  child->SetVisible(true);
+  EXPECT_TRUE(layer.visible());
+
+  child->RemoveLayerBeneathView(&layer);
+
+  // Now check the visibility upon adding.
+  child->SetVisible(false);
+  child->AddLayerBeneathView(&layer);
+  EXPECT_FALSE(layer.visible());
+  child->SetVisible(true);
+  EXPECT_TRUE(layer.visible());
+
+  child->RemoveLayerBeneathView(&layer);
+}
+
+TEST_F(ViewLayerTest, LayerBeneathHasCorrectBounds) {
+  View root;
+  root.SetBoundsRect(gfx::Rect(100, 100));
+  root.SetPaintToLayer();
+
+  View* view = root.AddChildView(std::make_unique<View>());
+  view->SetBoundsRect(gfx::Rect(25, 25, 50, 50));
+
+  // The layer's position will be changed, but its size should be respected.
+  ui::Layer layer;
+  layer.SetBounds(gfx::Rect(25, 25));
+
+  // First check when |view| is already painting to a layer.
+  view->SetPaintToLayer();
+  view->AddLayerBeneathView(&layer);
+  EXPECT_NE(nullptr, layer.parent());
+  EXPECT_EQ(gfx::Rect(25, 25, 25, 25), layer.bounds());
+
+  view->RemoveLayerBeneathView(&layer);
+  EXPECT_EQ(nullptr, layer.parent());
+  layer.SetBounds(gfx::Rect(25, 25));
+
+  // Next check when |view| wasn't painting to a layer.
+  view->DestroyLayer();
+  EXPECT_EQ(nullptr, view->layer());
+  view->AddLayerBeneathView(&layer);
+  EXPECT_NE(nullptr, view->layer());
+  EXPECT_NE(nullptr, layer.parent());
+  EXPECT_EQ(gfx::Rect(25, 25, 25, 25), layer.bounds());
+
+  // Finally check that moving |view| also moves the layer.
+  view->SetBoundsRect(gfx::Rect(50, 50, 50, 50));
+  EXPECT_EQ(gfx::Rect(50, 50, 25, 25), layer.bounds());
+
+  view->RemoveLayerBeneathView(&layer);
+}
+
+TEST_F(ViewLayerTest, LayerBeneathTransformed) {
+  View root;
+  root.SetPaintToLayer();
+
+  ui::Layer layer;
+  View* view = root.AddChildView(std::make_unique<View>());
+  view->SetPaintToLayer();
+  view->AddLayerBeneathView(&layer);
+  EXPECT_TRUE(layer.transform().IsIdentity());
+
+  gfx::Transform transform;
+  transform.Rotate(90);
+  view->SetTransform(transform);
+  EXPECT_EQ(transform, layer.transform());
+  view->SetTransform(gfx::Transform());
+  EXPECT_TRUE(layer.transform().IsIdentity());
+}
+
+TEST_F(ViewLayerTest, LayerBeneathStackedCorrectly) {
+  using ui::test::ChildLayerNamesAsString;
+
+  View root;
+  root.SetPaintToLayer();
+
+  ui::Layer layer;
+  layer.set_name("layer");
+
+  View* v1 = root.AddChildView(std::make_unique<View>());
+  View* v2 = root.AddChildView(std::make_unique<View>());
+  View* v3 = root.AddChildView(std::make_unique<View>());
+
+  // Check that |layer| is stacked correctly as we add more layers to the tree.
+  v2->AddLayerBeneathView(&layer);
+  v2->layer()->set_name("v2");
+  EXPECT_EQ(ChildLayerNamesAsString(*root.layer()), "layer v2");
+  v3->SetPaintToLayer();
+  v3->layer()->set_name("v3");
+  EXPECT_EQ(ChildLayerNamesAsString(*root.layer()), "layer v2 v3");
+  v1->SetPaintToLayer();
+  v1->layer()->set_name("v1");
+  EXPECT_EQ(ChildLayerNamesAsString(*root.layer()), "v1 layer v2 v3");
+
+  v2->RemoveLayerBeneathView(&layer);
+}
+
+TEST_F(ViewLayerTest, LayerBeneathOrphanedOnRemoval) {
+  View root;
+  root.SetPaintToLayer();
+
+  ui::Layer layer;
+  View* view = root.AddChildView(std::make_unique<View>());
+  view->AddLayerBeneathView(&layer);
+  EXPECT_EQ(layer.parent(), root.layer());
+
+  // Ensure that the layer beneath is orphaned and re-parented appropriately.
+  root.RemoveChildView(view);
+  EXPECT_EQ(layer.parent(), nullptr);
+  root.AddChildView(view);
+  EXPECT_EQ(layer.parent(), root.layer());
+
+  view->RemoveLayerBeneathView(&layer);
+}
+
+TEST_F(ViewLayerTest, LayerBeneathMovedWithView) {
+  using ui::test::ChildLayerNamesAsString;
+
+  View root;
+  root.SetPaintToLayer();
+  root.layer()->set_name("root");
+
+  ui::Layer layer;
+  layer.set_name("layer");
+
+  View* v1 = root.AddChildView(std::make_unique<View>());
+  View* v2 = root.AddChildView(std::make_unique<View>());
+  View* v3 = v1->AddChildView(std::make_unique<View>());
+
+  v1->SetPaintToLayer();
+  v1->layer()->set_name("v1");
+  v2->SetPaintToLayer();
+  v2->layer()->set_name("v2");
+  v3->SetPaintToLayer();
+  v3->layer()->set_name("v3");
+
+  // Verify that |layer| is stacked correctly.
+  v3->AddLayerBeneathView(&layer);
+  EXPECT_EQ(ChildLayerNamesAsString(*v1->layer()), "layer v3");
+
+  // Move |v3| to under |v2| and check |layer|'s stacking.
+  v1->RemoveChildView(v3);
+  v2->AddChildView(std::unique_ptr<View>(v3));
+  EXPECT_EQ(ChildLayerNamesAsString(*v2->layer()), "layer v3");
 }
 
 namespace {

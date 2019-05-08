@@ -33,6 +33,7 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer_delegate.h"
+#include "ui/compositor/layer_observer.h"
 #include "ui/compositor/layer_owner.h"
 #include "ui/compositor/paint_cache.h"
 #include "ui/events/event.h"
@@ -268,6 +269,7 @@ enum PropertyEffects {
 //   END_METADATA()
 /////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT View : public ui::LayerDelegate,
+                          public ui::LayerObserver,
                           public ui::LayerOwner,
                           public ui::AcceleratorTarget,
                           public ui::EventTarget,
@@ -604,6 +606,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Sets the transform to the supplied transform.
   void SetTransform(const gfx::Transform& transform);
 
+  // Accelerated painting ------------------------------------------------------
+
   // Sets whether this view paints to a layer. A view paints to a layer if
   // either of the following are true:
   // . the view has a non-identity transform.
@@ -620,6 +624,23 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // that this will not actually destroy the layer if the view paints to a layer
   // for another reason.
   void DestroyLayer();
+
+  // Add or remove layers below this view. This view does not take ownership of
+  // the layers. It is the caller's responsibility to keep track of this View's
+  // size and update their layer accordingly.
+  //
+  // In very rare cases, it may be necessary to override these. If any of this
+  // view's contents must be painted to the same layer as its parent, or can't
+  // handle being painted with transparency, overriding might be appropriate.
+  // One example is LabelButton, where the label must paint below any added
+  // layers for subpixel rendering reasons. Overrides should be made
+  // judiciously, and generally they should just forward the calls to a child
+  // view. They must be overridden together for correctness.
+  virtual void AddLayerBeneathView(ui::Layer* new_layer);
+  virtual void RemoveLayerBeneathView(ui::Layer* old_layer);
+
+  // ui::LayerObserver:
+  void LayerDestroyed(ui::Layer* layer) override;
 
   // Overridden from ui::LayerOwner:
   std::unique_ptr<ui::Layer> RecreateLayer() override;
@@ -1961,6 +1982,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Whether we are painting to a layer because of a non-identity transform.
   bool paint_to_layer_for_transform_ = false;
+
+  // Set of layers that should be painted beneath this View's layer. These
+  // layers are maintained as siblings of this View's layer and are stacked
+  // beneath.
+  std::vector<ui::Layer*> layers_beneath_;
 
   // Accelerators --------------------------------------------------------------
 
