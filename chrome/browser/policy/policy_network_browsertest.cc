@@ -285,7 +285,8 @@ class QuicAllowedPolicyIsNotSet : public QuicAllowedPolicyTestBase {
   DISALLOW_COPY_AND_ASSIGN(QuicAllowedPolicyIsNotSet);
 };
 
-IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyIsNotSet, NoQuicRegulations) {
+// Flaky test on Win7. https://crbug.com/961049
+IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyIsNotSet, DISABLED_NoQuicRegulations) {
   EXPECT_TRUE(IsQuicEnabledForSystem());
   EXPECT_TRUE(IsQuicEnabledForSafeBrowsing());
   EXPECT_TRUE(IsQuicEnabled(browser()->profile()));
