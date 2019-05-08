@@ -137,13 +137,6 @@ def main():
       help='The resource list path to write (default stdout)')
   sub_parser.set_defaults(func=_ListMain)
 
-  if len(sys.argv) == 1:
-    parser.print_help()
-    sys.exit(1)
-  elif len(sys.argv) == 2 and sys.argv[1] in actions:
-    parser.parse_args(sys.argv[1:] + ['-h'])
-    sys.exit(1)
-
   args = parser.parse_args()
   args.func(args)
 
