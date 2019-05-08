@@ -9,7 +9,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "components/gcm_driver/common/gcm_messages.h"
+#include "components/gcm_driver/common/gcm_message.h"
 #include "components/gcm_driver/crypto/encryption_header_parsers.h"
 #include "components/gcm_driver/crypto/gcm_decryption_result.h"
 #include "components/gcm_driver/crypto/gcm_key_store.h"

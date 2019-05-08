@@ -42,7 +42,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "components/gcm_driver/common/gcm_messages.h"
+#include "components/gcm_driver/common/gcm_message.h"
 #include "components/gcm_driver/fake_gcm_profile_service.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/instance_id/fake_gcm_driver_for_instance_id.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_GCM_DRIVER_COMMON_GCM_MESSAGES_H_
-#define COMPONENTS_GCM_DRIVER_COMMON_GCM_MESSAGES_H_
+#ifndef COMPONENTS_GCM_DRIVER_COMMON_GCM_MESSAGE_H_
+#define COMPONENTS_GCM_DRIVER_COMMON_GCM_MESSAGE_H_
 
 #include <map>
 #include <string>
@@ -13,7 +13,7 @@
 namespace gcm {
 
 // Message data consisting of key-value pairs.
-typedef std::map<std::string, std::string> MessageData;
+using MessageData = std::map<std::string, std::string>;
 
 // Message to be delivered to the other party.
 struct GCM_DRIVER_EXPORT OutgoingMessage {
@@ -48,4 +48,4 @@ struct GCM_DRIVER_EXPORT IncomingMessage {
 
 }  // namespace gcm
 
-#endif  // COMPONENTS_GCM_DRIVER_COMMON_GCM_MESSAGES_H_
+#endif  // COMPONENTS_GCM_DRIVER_COMMON_GCM_MESSAGE_H_
