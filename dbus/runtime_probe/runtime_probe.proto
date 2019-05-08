@@ -31,6 +31,7 @@ message ProbeRequest {
     audio_codec = 0;
     battery = 1;
     storage = 2;
+    vpd_cached = 3;
   }
   // repeated string categories = 1;
   repeated SupportCategory categories = 1;
@@ -126,6 +127,21 @@ message Storage {
   Fields values = 2;  // Component's details
 }
 
+// Things about VPD (Vital Product Data) , cached version.
+message VpdCached{
+  // TODO(itspeter): Add more fileds for Vpd.
+  message Fields {
+    // Allowed VPD fileds are reviewed on https://b/131849646
+    // Up to date documentation on VPD fields for each Chromebook is on
+    //   https://www.google.com/chromeos/partner/fe/docs/factory/vpd.html
+
+    // SKU number of the unit
+    string vpd_sku_number = 1;
+  }
+  string name = 1;    // Component alias
+  Fields values = 2;  // Component's details
+}
+
 // A ProbeResult contains all potential probe results. For category not existed
 // or not requested for probing, field is expected to be empty.
 message ProbeResult {
@@ -135,4 +151,5 @@ message ProbeResult {
   repeated AudioCodec audio_codec = 2;
   repeated Battery battery = 3;
   repeated Storage storage = 4;
+  repeated VpdCached vpd_cached = 5;
 }
