@@ -137,6 +137,11 @@ void XR::AddEnvironmentProviderErrorHandler(
   environment_provider_error_callbacks_.push_back(std::move(callback));
 }
 
+void XR::ExitPresent() {
+  DCHECK(device_);
+  device_->ExitPresent();
+}
+
 ScriptPromise XR::supportsSession(ScriptState* script_state,
                                   const String& mode) {
   LocalFrame* frame = GetFrame();
@@ -194,6 +199,7 @@ void XR::DispatchSupportsSession(PendingSessionQuery* query) {
   device::mojom::blink::XRSessionOptionsPtr session_options =
       convertModeToMojo(query->mode);
 
+  outstanding_support_queries_.insert(query);
   device_->SupportsSession(
       std::move(session_options),
       WTF::Bind(&XR::OnSupportsSessionReturned, WrapPersistent(this),
@@ -297,6 +303,7 @@ void XR::DispatchRequestSession(PendingSessionQuery* query) {
   // WebXR, either pass in the correct value for metrics to know whether
   // this was triggered by device activation, or remove the value as soon as
   // legacy API has been removed.
+  outstanding_request_queries_.insert(query);
   device_->RequestSession(
       std::move(session_options), false /* triggered by display activate */,
       WTF::Bind(&XR::OnRequestSessionReturned, WrapWeakPersistent(this),
@@ -330,6 +337,8 @@ void XR::OnRequestDeviceReturned(device::mojom::blink::XRDevicePtr device) {
   pending_device_ = false;
   if (device) {
     device_ = std::move(device);
+    device_.set_connection_error_handler(
+        WTF::Bind(&XR::OnDeviceDisconnect, WrapWeakPersistent(this)));
 
     // Log metrics
     if (!did_log_returned_device_ || !did_log_supports_immersive_) {
@@ -372,6 +381,11 @@ void XR::DispatchPendingSessionCalls() {
 
 void XR::OnSupportsSessionReturned(PendingSessionQuery* query,
                                    bool supports_session) {
+  // The session query has returned and we're about to resolve or reject the
+  // promise, so remove it from our outstanding list.
+  DCHECK(outstanding_support_queries_.Contains(query));
+  outstanding_support_queries_.erase(query);
+
   supports_session
       ? query->resolver->Resolve()
       : query->resolver->Reject(DOMException::Create(
@@ -381,6 +395,11 @@ void XR::OnSupportsSessionReturned(PendingSessionQuery* query,
 void XR::OnRequestSessionReturned(
     PendingSessionQuery* query,
     device::mojom::blink::XRSessionPtr session_ptr) {
+  // The session query has returned and we're about to resolve or reject the
+  // promise, so remove it from our outstanding list.
+  DCHECK(outstanding_request_queries_.Contains(query));
+  outstanding_request_queries_.erase(query);
+
   // TODO(https://crbug.com/872316) Improve the error messaging to indicate why
   // a request failed.
   if (!session_ptr) {
@@ -513,13 +532,34 @@ void XR::Dispose() {
   if (frame_provider_)
     frame_provider_->Dispose();
 
-  device_ = nullptr;
+  OnDeviceDisconnect();
 
   // If we failed out with an outstanding call to RequestDevice, we may have
   // pending promises that need to be resolved.  Fake a call that we found no
   // devices to free up those promises.
   if (pending_device_)
     OnRequestDeviceReturned(nullptr);
+}
+
+void XR::OnDeviceDisconnect() {
+  if (!device_)
+    return;
+
+  device_ = nullptr;
+
+  HeapHashSet<Member<PendingSessionQuery>> support_queries =
+      outstanding_support_queries_;
+  for (const auto& query : support_queries) {
+    OnSupportsSessionReturned(query, false);
+  }
+  DCHECK(outstanding_support_queries_.IsEmpty());
+
+  HeapHashSet<Member<PendingSessionQuery>> request_queries =
+      outstanding_request_queries_;
+  for (const auto& query : request_queries) {
+    OnRequestSessionReturned(query, nullptr);
+  }
+  DCHECK(outstanding_support_queries_.IsEmpty());
 }
 
 void XR::OnEnvironmentProviderDisconnect() {
@@ -536,6 +576,8 @@ void XR::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_session_requests_);
   visitor->Trace(frame_provider_);
   visitor->Trace(sessions_);
+  visitor->Trace(outstanding_support_queries_);
+  visitor->Trace(outstanding_request_queries_);
   ContextLifecycleObserver::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
 }

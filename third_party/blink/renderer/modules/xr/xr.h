@@ -42,9 +42,6 @@ class XR final : public EventTargetWithInlineData,
 
   XRFrameProvider* frameProvider();
 
-  const device::mojom::blink::XRDevicePtr& xrDevicePtr() const {
-    return device_;
-  }
   const device::mojom::blink::XRFrameDataProviderPtr& xrMagicWindowProviderPtr()
       const {
     return magic_window_provider_;
@@ -72,6 +69,8 @@ class XR final : public EventTargetWithInlineData,
   using EnvironmentProviderErrorCallback = base::OnceCallback<void()>;
   void AddEnvironmentProviderErrorHandler(
       EnvironmentProviderErrorCallback callback);
+
+  void ExitPresent();
 
   TimeTicks NavigationStart() const { return navigation_start_; }
 
@@ -117,6 +116,7 @@ class XR final : public EventTargetWithInlineData,
 
   void Dispose();
 
+  void OnDeviceDisconnect();
   void OnEnvironmentProviderDisconnect();
 
   bool pending_device_ = false;
@@ -136,6 +136,9 @@ class XR final : public EventTargetWithInlineData,
   // respective calls to be made directly.
   HeapVector<Member<PendingSessionQuery>> pending_mode_queries_;
   HeapVector<Member<PendingSessionQuery>> pending_session_requests_;
+
+  HeapHashSet<Member<PendingSessionQuery>> outstanding_support_queries_;
+  HeapHashSet<Member<PendingSessionQuery>> outstanding_request_queries_;
 
   Vector<EnvironmentProviderErrorCallback>
       environment_provider_error_callbacks_;

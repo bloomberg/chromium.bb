@@ -149,7 +149,7 @@ void XRFrameProvider::OnImmersiveSessionEnded() {
   if (!immersive_session_)
     return;
 
-  xr_->xrDevicePtr()->ExitPresent();
+  xr_->ExitPresent();
 
   immersive_session_ = nullptr;
   pending_immersive_vsync_ = false;
