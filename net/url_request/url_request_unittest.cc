@@ -54,6 +54,7 @@
 #include "net/base/directory_listing.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/escape.h"
+#include "net/base/features.h"
 #include "net/base/layered_network_delegate.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
@@ -8064,6 +8065,114 @@ TEST_F(URLRequestTestHTTP, EmptyReferrerAfterValidReferrer) {
   d.RunUntilComplete();
 
   EXPECT_EQ(std::string("None"), d.data_received());
+}
+
+TEST_F(URLRequestTestHTTP, CapRefererDisabled) {
+  ASSERT_TRUE(http_test_server()->Start());
+
+  // Create a string, and pad it out to ~10k with a very exciting path.
+  std::string long_referer_header = "http://foo.com/";
+  long_referer_header.resize(10000, 'a');
+
+  // If the feature isn't enabled, a long `referer` will remain long.
+  TestDelegate d;
+  std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+      http_test_server()->GetURL("/echoheader?Referer"), DEFAULT_PRIORITY, &d,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
+  req->SetReferrer(long_referer_header);
+  req->Start();
+  d.RunUntilComplete();
+
+  EXPECT_EQ(long_referer_header, d.data_received());
+}
+
+TEST_F(URLRequestTestHTTP, CapRefererHeaderLengthEnabled) {
+  ASSERT_TRUE(http_test_server()->Start());
+
+  // Create a string, and pad it out to ~10k with a very exciting path.
+  std::string long_referer_header = "http://foo.com/";
+  long_referer_header.resize(10000, 'a');
+
+  // If the feature is enabled without params, a `referer` longer than 4096
+  // bytes will be shortened.
+  {
+    TestDelegate d;
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(features::kCapRefererHeaderLength);
+
+    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+        http_test_server()->GetURL("/echoheader?Referer"), DEFAULT_PRIORITY, &d,
+        TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->SetReferrer(long_referer_header);
+    req->Start();
+    d.RunUntilComplete();
+
+    EXPECT_EQ("http://foo.com/", d.data_received());
+  }
+
+  // If the feature is enabled with params, they will govern the shortening
+  // behavior as expected. The following three tests verify behavior for a
+  // param larger than the referrer length, exactly the same as the string
+  // length, and shorter than the string length.
+  {
+    TestDelegate d;
+    std::map<std::string, std::string> params;
+    params["MaxRefererHeaderLength"] =
+        base::NumberToString(long_referer_header.length() + 1);
+
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeatureWithParameters(
+        features::kCapRefererHeaderLength, params);
+
+    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+        http_test_server()->GetURL("/echoheader?Referer"), DEFAULT_PRIORITY, &d,
+        TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->SetReferrer(long_referer_header);
+    req->Start();
+    d.RunUntilComplete();
+
+    EXPECT_EQ(long_referer_header, d.data_received());
+  }
+
+  {
+    TestDelegate d;
+    std::map<std::string, std::string> params;
+    params["MaxRefererHeaderLength"] =
+        base::NumberToString(long_referer_header.length());
+
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeatureWithParameters(
+        features::kCapRefererHeaderLength, params);
+
+    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+        http_test_server()->GetURL("/echoheader?Referer"), DEFAULT_PRIORITY, &d,
+        TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->SetReferrer(long_referer_header);
+    req->Start();
+    d.RunUntilComplete();
+
+    EXPECT_EQ(long_referer_header, d.data_received());
+  }
+
+  {
+    TestDelegate d;
+    std::map<std::string, std::string> params;
+    params["MaxRefererHeaderLength"] =
+        base::NumberToString(long_referer_header.length() - 1);
+
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeatureWithParameters(
+        features::kCapRefererHeaderLength, params);
+
+    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+        http_test_server()->GetURL("/echoheader?Referer"), DEFAULT_PRIORITY, &d,
+        TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->SetReferrer(long_referer_header);
+    req->Start();
+    d.RunUntilComplete();
+
+    EXPECT_EQ("http://foo.com/", d.data_received());
+  }
 }
 
 TEST_F(URLRequestTestHTTP, CancelRedirect) {

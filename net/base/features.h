@@ -6,10 +6,16 @@
 #define NET_BASE_FEATURES_H_
 
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "net/base/net_export.h"
 
 namespace net {
 namespace features {
+
+// Caps the length of the `referer` header to 4k, which should be enough for
+// anyone.
+NET_EXPORT extern const base::Feature kCapRefererHeaderLength;
+NET_EXPORT extern const base::FeatureParam<int> kMaxRefererHeaderLength;
 
 // Uses a site isolated code cache that is keyed on the resource url and the
 // origin lock of the renderer that is requesting the resource. The requests

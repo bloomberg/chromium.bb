@@ -7,6 +7,11 @@
 namespace net {
 namespace features {
 
+const base::Feature kCapRefererHeaderLength = {
+    "CapRefererHeaderLength", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<int> kMaxRefererHeaderLength = {
+    &kCapRefererHeaderLength, "MaxRefererHeaderLength", 4096};
+
 // Uses a site isolated code cache that is keyed on the resource url and the
 // origin lock of the renderer that is requesting the resource. The requests
 // to site-isolated code cache are handled by the content/GeneratedCodeCache

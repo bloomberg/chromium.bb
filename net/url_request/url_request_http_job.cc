@@ -17,6 +17,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -25,6 +26,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
+#include "net/base/features.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/http_user_agent_settings.h"
 #include "net/base/load_flags.h"
@@ -340,8 +342,17 @@ void URLRequestHttpJob::Start() {
   // Our consumer should have made sure that this is a safe referrer. See for
   // instance WebCore::FrameLoader::HideReferrer.
   if (referrer.is_valid()) {
+    std::string referer_value = referrer.spec();
+    UMA_HISTOGRAM_COUNTS_10000("Referrer.HeaderLength", referer_value.length());
+    if (base::FeatureList::IsEnabled(features::kCapRefererHeaderLength) &&
+        base::saturated_cast<int>(referer_value.length()) >
+            features::kMaxRefererHeaderLength.Get()) {
+      // Strip the referrer down to its origin, but ensure that it's serialized
+      // as a URL (e.g. retaining a trailing `/` character).
+      referer_value = url::Origin::Create(referrer).GetURL().spec();
+    }
     request_info_.extra_headers.SetHeader(HttpRequestHeaders::kReferer,
-                                          referrer.spec());
+                                          referer_value);
   }
 
   request_info_.extra_headers.SetHeaderIfMissing(
