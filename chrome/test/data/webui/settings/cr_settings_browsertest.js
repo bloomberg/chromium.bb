@@ -560,7 +560,8 @@ CrSettingsPeoplePageKerberosAccountsTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsPeoplePageKerberosAccountsTest', 'All', function() {
+// Test is consistently failing. http://crbug.com/960837
+TEST_F('CrSettingsPeoplePageKerberosAccountsTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
@@ -2522,7 +2523,8 @@ CrSettingsAddUsersTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsAddUsersTest', 'All', function() {
+// Test is consistently failing. http://crbug.com/960837
+TEST_F('CrSettingsAddUsersTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
