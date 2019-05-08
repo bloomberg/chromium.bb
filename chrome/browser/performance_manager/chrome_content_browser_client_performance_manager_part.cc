@@ -34,10 +34,9 @@ void BindProcessNode(
   DCHECK(performance_manager);
 
   performance_manager->task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&performance_manager::ProcessNodeImpl::AddBinding,
-                     base::Unretained(user_data->process_node()),
-                     std::move(request)));
+      FROM_HERE, base::BindOnce(&performance_manager::ProcessNodeImpl::Bind,
+                                base::Unretained(user_data->process_node()),
+                                std::move(request)));
 }
 
 }  // namespace

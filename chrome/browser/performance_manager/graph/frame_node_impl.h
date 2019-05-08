@@ -44,10 +44,8 @@ class ProcessNodeImpl;
 // active frame.
 class FrameNodeImpl
     : public PublicNodeImpl<FrameNodeImpl, FrameNode>,
-      public CoordinationUnitInterface<
-          FrameNodeImpl,
-          resource_coordinator::mojom::DocumentCoordinationUnit,
-          resource_coordinator::mojom::DocumentCoordinationUnitRequest> {
+      public TypedNodeBase<FrameNodeImpl>,
+      public resource_coordinator::mojom::DocumentCoordinationUnit {
  public:
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kFrame; }
 
@@ -61,6 +59,9 @@ class FrameNodeImpl
                 int frame_tree_node_id,
                 const base::UnguessableToken& dev_tools_token);
   ~FrameNodeImpl() override;
+
+  void Bind(
+      resource_coordinator::mojom::DocumentCoordinationUnitRequest request);
 
   // resource_coordinator::mojom::DocumentCoordinationUnit implementation.
   void SetNetworkAlmostIdle(bool idle) override;
@@ -90,12 +91,14 @@ class FrameNodeImpl
   bool is_ad_frame() const;
 
   // Setters are not thread safe.
-  void set_url(const GURL& url);
   void SetIsCurrent(bool is_current);
 
   // A frame is a main frame if it has no |parent_frame_node|. This can be
   // called from any thread.
   bool IsMainFrame() const;
+
+  // Invoked when a navigation is committed in the frame.
+  void OnNavigationCommitted(const GURL& url, bool same_document);
 
   // Returns true if all intervention policies have been set for this frame.
   bool AreAllInterventionPoliciesSet() const;
@@ -118,6 +121,8 @@ class FrameNodeImpl
 
   bool HasFrameNodeInAncestors(FrameNodeImpl* frame_node) const;
   bool HasFrameNodeInDescendants(FrameNodeImpl* frame_node) const;
+
+  mojo::Binding<resource_coordinator::mojom::DocumentCoordinationUnit> binding_;
 
   FrameNodeImpl* const parent_frame_node_;
   PageNodeImpl* const page_node_;

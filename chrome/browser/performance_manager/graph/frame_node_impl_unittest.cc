@@ -58,13 +58,23 @@ TEST_F(FrameNodeImplTest, AddFrameHierarchyBasic) {
   EXPECT_EQ(parent_node.get(), child3_node->parent_frame_node());
 }
 
-TEST_F(FrameNodeImplTest, Url) {
+TEST_F(FrameNodeImplTest, NavigationCommitted_SameDocument) {
   auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();
   auto frame_node = CreateNode<FrameNodeImpl>(process.get(), page.get());
   EXPECT_TRUE(frame_node->url().is_empty());
   const GURL url("http://www.foo.com/");
-  frame_node->set_url(url);
+  frame_node->OnNavigationCommitted(url, /* same_document */ true);
+  EXPECT_EQ(url, frame_node->url());
+}
+
+TEST_F(FrameNodeImplTest, NavigationCommitted_DifferentDocument) {
+  auto process = CreateNode<ProcessNodeImpl>();
+  auto page = CreateNode<PageNodeImpl>();
+  auto frame_node = CreateNode<FrameNodeImpl>(process.get(), page.get());
+  EXPECT_TRUE(frame_node->url().is_empty());
+  const GURL url("http://www.foo.com/");
+  frame_node->OnNavigationCommitted(url, /* same_document */ false);
   EXPECT_EQ(url, frame_node->url());
 }
 

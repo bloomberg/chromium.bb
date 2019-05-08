@@ -33,15 +33,16 @@ class FrameNodeImpl;
 // 4. Back to 2.
 class ProcessNodeImpl
     : public PublicNodeImpl<ProcessNodeImpl, ProcessNode>,
-      public CoordinationUnitInterface<
-          ProcessNodeImpl,
-          resource_coordinator::mojom::ProcessCoordinationUnit,
-          resource_coordinator::mojom::ProcessCoordinationUnitRequest> {
+      public TypedNodeBase<ProcessNodeImpl>,
+      public resource_coordinator::mojom::ProcessCoordinationUnit {
  public:
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kProcess; }
 
   explicit ProcessNodeImpl(GraphImpl* graph);
   ~ProcessNodeImpl() override;
+
+  void Bind(
+      resource_coordinator::mojom::ProcessCoordinationUnitRequest request);
 
   // resource_coordinator::mojom::ProcessCoordinationUnit implementation:
   void SetExpectedTaskQueueingDuration(base::TimeDelta duration) override;
@@ -104,6 +105,8 @@ class ProcessNodeImpl
   friend class FrozenFrameAggregatorAccess;
 
   void LeaveGraph() override;
+
+  mojo::Binding<resource_coordinator::mojom::ProcessCoordinationUnit> binding_;
 
   base::TimeDelta cumulative_cpu_usage_;
   uint64_t private_footprint_kb_ = 0u;

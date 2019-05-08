@@ -12,7 +12,7 @@
 namespace performance_manager {
 
 ProcessNodeImpl::ProcessNodeImpl(GraphImpl* graph)
-    : CoordinationUnitInterface(graph) {
+    : TypedNodeBase(graph), binding_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -36,6 +36,13 @@ void ProcessNodeImpl::SetCPUUsage(double cpu_usage) {
   cpu_usage_ = cpu_usage;
 }
 
+void ProcessNodeImpl::Bind(
+    resource_coordinator::mojom::ProcessCoordinationUnitRequest request) {
+  if (binding_.is_bound())
+    binding_.Close();
+  binding_.Bind(std::move(request));
+}
+
 void ProcessNodeImpl::SetExpectedTaskQueueingDuration(
     base::TimeDelta duration) {
   expected_task_queueing_duration_.SetAndNotify(this, duration);
@@ -55,6 +62,9 @@ void ProcessNodeImpl::SetProcessExitStatus(int32_t exit_status) {
 
   // Close the process handle to kill the zombie.
   process_.Close();
+
+  // No more message should be received from this process.
+  binding_.Close();
 }
 
 void ProcessNodeImpl::SetProcess(base::Process process,

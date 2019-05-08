@@ -110,7 +110,8 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
       render_frame_host->GetDevToolsFrameToken(),
       base::BindOnce(
           [](const GURL& url, bool is_current, FrameNodeImpl* frame_node) {
-            frame_node->set_url(url);
+            if (!url.is_empty())
+              frame_node->OnNavigationCommitted(url, /* same_document */ false);
             frame_node->SetIsCurrent(is_current);
           },
           render_frame_host->GetLastCommittedURL(),
@@ -213,7 +214,8 @@ void PerformanceManagerTabHelper::DidFinishNavigation(
 
   // Notify the frame of the committed URL.
   GURL url = navigation_handle->GetURL();
-  PostToGraph(FROM_HERE, &FrameNodeImpl::set_url, frame_node, url);
+  PostToGraph(FROM_HERE, &FrameNodeImpl::OnNavigationCommitted, frame_node, url,
+              navigation_handle->IsSameDocument());
 
   if (navigation_handle->IsSameDocument() ||
       !navigation_handle->IsInMainFrame()) {
@@ -257,7 +259,7 @@ void PerformanceManagerTabHelper::OnInterfaceRequestFromFrame(
 
   auto it = frames_.find(render_frame_host);
   DCHECK(it != frames_.end());
-  PostToGraph(FROM_HERE, &FrameNodeImpl::AddBinding, it->second.get(),
+  PostToGraph(FROM_HERE, &FrameNodeImpl::Bind, it->second.get(),
               resource_coordinator::mojom::DocumentCoordinationUnitRequest(
                   std::move(*interface_pipe)));
 }

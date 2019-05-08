@@ -18,7 +18,8 @@ FrameNodeImpl::FrameNodeImpl(GraphImpl* graph,
                              FrameNodeImpl* parent_frame_node,
                              int frame_tree_node_id,
                              const base::UnguessableToken& dev_tools_token)
-    : CoordinationUnitInterface(graph),
+    : TypedNodeBase(graph),
+      binding_(this),
       parent_frame_node_(parent_frame_node),
       page_node_(page_node),
       process_node_(process_node),
@@ -31,6 +32,20 @@ FrameNodeImpl::FrameNodeImpl(GraphImpl* graph,
 
 FrameNodeImpl::~FrameNodeImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+void FrameNodeImpl::Bind(
+    resource_coordinator::mojom::DocumentCoordinationUnitRequest request) {
+  // It is possible to receive a DocumentCoordinationUnitRequest when |binding_|
+  // is already bound in these cases:
+  // - Navigation from the initial empty document to the first real document.
+  // - Navigation rejected by RenderFrameHostImpl::ValidateDidCommitParams().
+  // See discussion:
+  // https://chromium-review.googlesource.com/c/chromium/src/+/1572459/6#message-bd31f3e73f96bd9f7721be81ba6ac0076d053147
+  if (binding_.is_bound())
+    binding_.Close();
+
+  binding_.Bind(std::move(request));
 }
 
 void FrameNodeImpl::SetNetworkAlmostIdle(bool network_almost_idle) {
@@ -140,11 +155,6 @@ bool FrameNodeImpl::is_ad_frame() const {
   return is_ad_frame_;
 }
 
-void FrameNodeImpl::set_url(const GURL& url) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  url_ = url;
-}
-
 void FrameNodeImpl::SetIsCurrent(bool is_current) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   is_current_.SetAndMaybeNotify(this, is_current);
@@ -174,6 +184,38 @@ void FrameNodeImpl::SetIsCurrent(bool is_current) {
 
 bool FrameNodeImpl::IsMainFrame() const {
   return !parent_frame_node_;
+}
+
+void FrameNodeImpl::OnNavigationCommitted(const GURL& url, bool same_document) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  url_ = url;
+
+  if (same_document)
+    return;
+
+  // Close |binding_| to ensure that messages queued by the previous document
+  // before the navigation commit are dropped.
+  //
+  // Note: It is guaranteed that |binding_| isn't yet bound to the new document.
+  //       This is important because it would be incorrect to close the new
+  //       document's binding.
+  //
+  //       Renderer: blink::DocumentLoader::DidCommitNavigation
+  //                   ... content::RenderFrameImpl::DidCommitProvisionalLoad
+  //                     ... mojom::FrameHost::DidCommitProvisionalLoad
+  //       Browser:  RenderFrameHostImpl::DidCommitNavigation
+  //                   Bind the new document's interface provider [A]
+  //                   PMTabHelper::DidFinishNavigation
+  //                     (async) FrameNodeImpl::OnNavigationCommitted [B]
+  //       Renderer: Request DocumentCoordinationUnit interface
+  //       Browser:  PMTabHelper::OnInterfaceRequestFromFrame [C]
+  //                   (async) FrameNodeImpl::Bind [D]
+  //
+  //       A happens before C, because no interface request can be processed
+  //       before the interface provider is bound. A posts B to PM sequence and
+  //       C posts D to PM sequence, therefore B happens before D.
+  binding_.Close();
 }
 
 bool FrameNodeImpl::AreAllInterventionPoliciesSet() const {

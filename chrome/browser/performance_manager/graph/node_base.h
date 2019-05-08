@@ -18,7 +18,7 @@
 #include "chrome/browser/performance_manager/graph/node_type.h"
 #include "chrome/browser/performance_manager/graph/properties.h"
 #include "chrome/browser/performance_manager/observers/graph_observer.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
@@ -117,25 +117,6 @@ class TypedNodeBase : public NodeBase {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TypedNodeBase);
-};
-
-template <class NodeImplClass, class MojoInterfaceClass, class MojoRequestClass>
-class CoordinationUnitInterface : public TypedNodeBase<NodeImplClass>,
-                                  public MojoInterfaceClass {
- public:
-  explicit CoordinationUnitInterface(GraphImpl* graph)
-      : TypedNodeBase<NodeImplClass>(graph) {}
-
-  ~CoordinationUnitInterface() override = default;
-
-  void AddBinding(MojoRequestClass request) {
-    bindings_.AddBinding(this, std::move(request));
-  }
-
- private:
-  mojo::BindingSet<MojoInterfaceClass> bindings_;
-
-  DISALLOW_COPY_AND_ASSIGN(CoordinationUnitInterface);
 };
 
 }  // namespace performance_manager
