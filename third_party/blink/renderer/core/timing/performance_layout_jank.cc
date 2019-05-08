@@ -10,8 +10,9 @@
 
 namespace blink {
 
-PerformanceLayoutJank::PerformanceLayoutJank(double fraction)
-    : PerformanceEntry(g_empty_atom, 0.0, 0.0), fraction_(fraction) {}
+PerformanceLayoutJank::PerformanceLayoutJank(double start_time, double fraction)
+    : PerformanceEntry(g_empty_atom, start_time, start_time),
+      fraction_(fraction) {}
 
 PerformanceLayoutJank::~PerformanceLayoutJank() = default;
 
