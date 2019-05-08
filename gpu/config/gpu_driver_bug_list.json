@@ -449,10 +449,6 @@
       },
       "gl_type": "gl",
       "gl_renderer": ".*Mesa.*",
-      "direct_rendering_version": {
-        "op" : "<",
-        "value": "2.3"
-      },
       "features": [
         "disable_post_sub_buffers_for_onscreen_surfaces"
       ]
