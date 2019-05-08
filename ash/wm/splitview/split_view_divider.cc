@@ -494,6 +494,8 @@ void SplitViewDivider::CreateDividerWidget(aura::Window* root_window) {
   DividerView* divider_view = new DividerView(this);
   divider_widget_->set_focus_on_creation(false);
   divider_widget_->Init(params);
+  divider_widget_->SetVisibilityAnimationTransition(
+      views::Widget::ANIMATE_NONE);
   divider_widget_->SetContentsView(divider_view);
   divider_widget_->SetBounds(GetDividerBoundsInScreen(false /* is_dragging */));
   divider_widget_->Show();
