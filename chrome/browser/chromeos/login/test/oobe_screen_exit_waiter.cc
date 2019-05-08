@@ -18,7 +18,8 @@ OobeScreenExitWaiter::~OobeScreenExitWaiter() = default;
 void OobeScreenExitWaiter::Wait() {
   DCHECK_EQ(State::IDLE, state_);
 
-  if (GetOobeUI()->current_screen() != target_screen_) {
+  OobeUI* oobe_ui = GetOobeUI();
+  if (!oobe_ui || oobe_ui->current_screen() != target_screen_) {
     state_ = State::DONE;
     return;
   }
@@ -50,9 +51,9 @@ void OobeScreenExitWaiter::OnDestroyingOobeUI() {
 }
 
 OobeUI* OobeScreenExitWaiter::GetOobeUI() {
-  OobeUI* oobe_ui = LoginDisplayHost::default_host()->GetOobeUI();
-  CHECK(oobe_ui);
-  return oobe_ui;
+  if (!LoginDisplayHost::default_host())
+    return nullptr;
+  return LoginDisplayHost::default_host()->GetOobeUI();
 }
 
 void OobeScreenExitWaiter::EndWait() {
