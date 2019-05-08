@@ -13,10 +13,96 @@ from __future__ import print_function
 import os
 import re
 
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import failures_lib
 from chromite.lib import moblab_vm
 from chromite.lib import osutils
+from chromite.lib import portage_util
+
+
+class Error(Exception):
+  """The module's base error class."""
+
+
+class BuildTargetUnitTestResult(object):
+  """Result value object."""
+
+  def __init__(self, return_code, failed_cpvs):
+    """Init method.
+
+    Args:
+      return_code (int): The return code from the command execution.
+      failed_cpvs (list[portage_util.CPV]|None): List of packages whose tests
+        failed.
+    """
+    self.return_code = return_code
+    self.failed_cpvs = failed_cpvs or []
+
+  @property
+  def success(self):
+    return self.return_code == 0 and len(self.failed_cpvs) == 0
+
+
+def BuildTargetUnitTest(build_target, chroot, blacklist=None, was_built=True):
+  """Run the ebuild unit tests for the target.
+
+  Args:
+    build_target (build_target_util.BuildTarget): The build target.
+    chroot (chroot_lib.Chroot): The chroot where the tests are running.
+    blacklist (list[str]|None): Tests to skip.
+    was_built (bool): Whether packages were built.
+
+  Returns:
+    BuildTargetUnitTestResult
+  """
+  # TODO(saklein) Refactor commands.RunUnitTests to use this/the API.
+  # TODO(crbug.com/960805) Move cros_run_unit_tests logic here.
+  cmd = ['cros_run_unit_tests', '--board', build_target.name]
+
+  if blacklist:
+    cmd.extend(['--blacklist_packages', ' '.join(blacklist)])
+
+  if not was_built:
+    cmd.append('--assume-empty-sysroot')
+
+  # Set up the parallel emerge status file.
+  extra_env = chroot.env
+  base_dir = os.path.join(chroot.path, 'tmp')
+  with osutils.TempDir(base_dir=base_dir) as tempdir:
+    full_sf_path = os.path.join(tempdir, 'status_file')
+    chroot_sf_path = full_sf_path.replace(chroot.path, '')
+    extra_env[constants.PARALLEL_EMERGE_STATUS_FILE_ENVVAR] = chroot_sf_path
+
+    result = cros_build_lib.RunCommand(cmd, enter_chroot=True,
+                                       extra_env=extra_env,
+                                       chroot_args=chroot.GetEnterArgs(),
+                                       error_code_ok=True)
+
+    failed_pkgs = portage_util.ParseParallelEmergeStatusFile(full_sf_path)
+
+  return BuildTargetUnitTestResult(result.returncode, failed_pkgs)
+
+
+def BuildTargetUnitTestTarball(chroot, sysroot, result_path):
+  """Build the unittest tarball.
+
+  Args:
+    chroot (chroot_lib.Chroot): Chroot where the tests were run.
+    sysroot (sysroot_lib.Sysroot): The sysroot where the tests were run.
+    result_path (str): The directory where the archive should be created.
+  """
+  tarball = 'unit_tests.tar'
+  tarball_path = os.path.join(result_path, tarball)
+
+  cwd = os.path.join(chroot.path, sysroot.path.lstrip(os.sep),
+                     constants.UNITTEST_PKG_PATH)
+
+  result = cros_build_lib.CreateTarball(tarball_path, cwd, chroot=chroot.path,
+                                        compression=cros_build_lib.COMP_NONE,
+                                        error_code_ok=True)
+
+  return tarball_path if result.returncode == 0 else None
 
 
 def DebugInfoTest(sysroot_path):

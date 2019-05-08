@@ -15,13 +15,11 @@ import os
 from chromite.api import controller
 from chromite.api.controller import controller_util
 from chromite.api.gen.chromite.api import test_pb2
-from chromite.cbuildbot import commands
+from chromite.lib import build_target_util
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
-from chromite.lib import failures_lib
 from chromite.lib import image_lib
 from chromite.lib import osutils
-from chromite.lib import portage_util
 from chromite.lib import sysroot_lib
 from chromite.scripts import cros_set_lsb_release
 from chromite.service import test
@@ -62,7 +60,8 @@ def BuildTargetUnitTest(input_proto, output_proto):
     cros_build_lib.Die('result_path is required.')
 
   # Method flags.
-  # An empty sysroot means build packages was not run.
+  # An empty sysroot means build packages was not run. This is used for
+  # certain boards that need to use prebuilts (e.g. grunt's unittest-only).
   was_built = not input_proto.flags.empty_sysroot
 
   # Skipped tests.
@@ -71,74 +70,27 @@ def BuildTargetUnitTest(input_proto, output_proto):
   for package_info in blacklisted_package_info:
     blacklist.append(controller_util.PackageInfoToString(package_info))
 
-  # Chroot handling.
-  chroot = input_proto.chroot.path
-  cache_dir = input_proto.chroot.cache_dir
+  build_target = build_target_util.BuildTarget(board)
+  chroot = controller_util.ParseChroot(input_proto.chroot)
 
-  chroot_args = []
-  if chroot:
-    chroot_args.extend(['--chroot', chroot])
-  else:
-    chroot = constants.DEFAULT_CHROOT_PATH
+  result = test.BuildTargetUnitTest(build_target, chroot, blacklist=blacklist,
+                                    was_built=was_built)
 
-  if cache_dir:
-    chroot_args.extend(['--cache_dir', cache_dir])
+  if not result.success:
+    # Failed to run tests or some tests failed.
+    # Record all failed packages.
+    for cpv in result.failed_cpvs:
+      package_info = output_proto.failed_packages.add()
+      controller_util.CPVToPackageInfo(cpv, package_info)
+    if result.failed_cpvs:
+      return controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE
+    else:
+      return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY
 
-  # TODO(crbug.com/954609) Service implementation.
-  extra_env = {'USE': 'chrome_internal'}
-  base_dir = os.path.join(chroot, 'tmp')
-  # The called code also sets the status file in some cases, but the hacky
-  # call makes it not always work, so set up our own just in case.
-  with osutils.TempDir(base_dir=base_dir) as tempdir:
-    full_sf_path = os.path.join(tempdir, 'status_file')
-    chroot_sf_path = full_sf_path.replace(chroot, '')
-    extra_env[constants.PARALLEL_EMERGE_STATUS_FILE_ENVVAR] = chroot_sf_path
-
-    try:
-      commands.RunUnitTests(constants.SOURCE_ROOT, board, extra_env=extra_env,
-                            chroot_args=chroot_args, build_stage=was_built,
-                            blacklist=blacklist)
-    except failures_lib.PackageBuildFailure as e:
-      # Add the failed packages.
-      for pkg in e.failed_packages:
-        cpv = portage_util.SplitCPV(pkg, strict=False)
-        package_info = output_proto.failed_packages.add()
-        controller_util.CPVToPackageInfo(cpv, package_info)
-
-      if e.failed_packages:
-        return controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE
-      else:
-        return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY
-    except failures_lib.BuildScriptFailure:
-      # Check our status file for failed packages in case the calling code's
-      # file didn't get set.
-      failed_packages = portage_util.ParseParallelEmergeStatusFile(full_sf_path)
-      for cpv in failed_packages:
-        package_info = output_proto.failed_packages.add()
-        controller_util.CPVToPackageInfo(cpv, package_info)
-
-      if failed_packages:
-        return controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE
-      else:
-        return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY
-
-    tarball = _BuildUnittestTarball(chroot, board, result_path)
-    if tarball:
-      output_proto.tarball_path = tarball
-
-
-def _BuildUnittestTarball(chroot, board, result_path):
-  """Build the unittest tarball."""
-  tarball = 'unit_tests.tar'
-  tarball_path = os.path.join(result_path, tarball)
-
-  cwd = os.path.join(chroot, 'build', board, constants.UNITTEST_PKG_PATH)
-
-  result = cros_build_lib.CreateTarball(tarball_path, cwd, chroot=chroot,
-                                        compression=cros_build_lib.COMP_NONE,
-                                        error_code_ok=True)
-
-  return tarball_path if result.returncode == 0 else None
+  sysroot = sysroot_lib.Sysroot(build_target.root)
+  tarball = test.BuildTargetUnitTestTarball(chroot, sysroot, result_path)
+  if tarball:
+    output_proto.tarball_path = tarball
 
 
 def ChromiteUnitTest(_input_proto, _output_proto):

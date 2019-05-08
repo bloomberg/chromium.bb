@@ -22,7 +22,8 @@ class Chroot(object):
   """Chroot class."""
 
   def __init__(self, path=None, cache_dir=None, env=None):
-    self.path = path or constants.DEFAULT_CHROOT_PATH
+    # Strip trailing / if present for consistency.
+    self.path = (path or constants.DEFAULT_CHROOT_PATH).rstrip('/')
     self._is_default_path = not bool(path)
     self._env = env
     # cache_dir is often '' when not set, but testing and comparing is much
@@ -67,4 +68,4 @@ class Chroot(object):
 
   @property
   def env(self):
-    return self._env.copy() if self._env else None
+    return self._env.copy() if self._env else {}

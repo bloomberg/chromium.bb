@@ -14,11 +14,8 @@ from chromite.api import controller
 from chromite.api.controller import test as test_controller
 from chromite.api.gen.chromiumos import common_pb2
 from chromite.api.gen.chromite.api import test_pb2
-from chromite.cbuildbot import commands
-from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
-from chromite.lib import failures_lib
 from chromite.lib import image_lib
 from chromite.lib import osutils
 from chromite.lib import portage_util
@@ -77,37 +74,10 @@ class BuildTargetUnitTestTest(cros_test_lib.MockTempDirTestCase):
 
     pkgs = ['cat/pkg', 'foo/bar']
     expected = [('cat', 'pkg'), ('foo', 'bar')]
-    rce = cros_build_lib.RunCommandError('error',
-                                         cros_build_lib.CommandResult())
-    error = failures_lib.PackageBuildFailure(rce, 'shortname', pkgs)
-    self.PatchObject(commands, 'RunUnitTests', side_effect=error)
 
-    input_msg = self._GetInput(board='board', result_path=self.tempdir)
-    output_msg = self._GetOutput()
-
-    rc = test_controller.BuildTargetUnitTest(input_msg, output_msg)
-
-    self.assertEqual(controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE, rc)
-    self.assertTrue(output_msg.failed_packages)
-    failed = []
-    for pi in output_msg.failed_packages:
-      failed.append((pi.category, pi.package_name))
-    self.assertItemsEqual(expected, failed)
-
-  def testPopulatedEmergeFile(self):
-    """Test build script failure due to using outside emerge status file."""
-    tempdir = osutils.TempDir(base_dir=self.tempdir)
-    self.PatchObject(osutils, 'TempDir', return_value=tempdir)
-
-    pkgs = ['cat/pkg', 'foo/bar']
-    cpvs = [portage_util.SplitCPV(pkg, strict=False) for pkg in pkgs]
-    expected = [('cat', 'pkg'), ('foo', 'bar')]
-    rce = cros_build_lib.RunCommandError('error',
-                                         cros_build_lib.CommandResult())
-    error = failures_lib.BuildScriptFailure(rce, 'shortname')
-    self.PatchObject(commands, 'RunUnitTests', side_effect=error)
-    self.PatchObject(portage_util, 'ParseParallelEmergeStatusFile',
-                     return_value=cpvs)
+    result = test_service.BuildTargetUnitTestResult(1, None)
+    result.failed_cpvs = [portage_util.SplitCPV(p, strict=False) for p in pkgs]
+    self.PatchObject(test_service, 'BuildTargetUnitTest', return_value=result)
 
     input_msg = self._GetInput(board='board', result_path=self.tempdir)
     output_msg = self._GetOutput()
@@ -126,12 +96,8 @@ class BuildTargetUnitTestTest(cros_test_lib.MockTempDirTestCase):
     tempdir = osutils.TempDir(base_dir=self.tempdir)
     self.PatchObject(osutils, 'TempDir', return_value=tempdir)
 
-    rce = cros_build_lib.RunCommandError('error',
-                                         cros_build_lib.CommandResult())
-    error = failures_lib.BuildScriptFailure(rce, 'shortname')
-    patch = self.PatchObject(commands, 'RunUnitTests', side_effect=error)
-    self.PatchObject(portage_util, 'ParseParallelEmergeStatusFile',
-                     return_value=[])
+    result = test_service.BuildTargetUnitTestResult(1, None)
+    self.PatchObject(test_service, 'BuildTargetUnitTest', return_value=result)
 
     pkgs = ['foo/bar', 'cat/pkg']
     blacklist = [portage_util.SplitCPV(p, strict=False) for p in pkgs]
@@ -143,9 +109,6 @@ class BuildTargetUnitTestTest(cros_test_lib.MockTempDirTestCase):
 
     self.assertEqual(controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY, rc)
     self.assertFalse(output_msg.failed_packages)
-    patch.assert_called_with(constants.SOURCE_ROOT, 'board', extra_env=mock.ANY,
-                             chroot_args=mock.ANY, build_stage=False,
-                             blacklist=pkgs)
 
 
 class VmTestTest(cros_test_lib.MockTestCase):
@@ -257,7 +220,7 @@ class MoblabVmTestTest(cros_test_lib.MockTestCase):
         test_service, 'ValidateMoblabVmTest')
 
     @contextlib.contextmanager
-    def MockLoopbackPartitions(*args, **kwargs):
+    def MockLoopbackPartitions(*_args, **_kwargs):
       mount = mock.MagicMock()
       mount.destination = self.image_mount_dir
       yield mount

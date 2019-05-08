@@ -16,7 +16,19 @@ def ParseChroot(chroot_message):
   path = chroot_message.path
   cache_dir = chroot_message.cache_dir
 
-  return chroot_lib.Chroot(path=path, cache_dir=cache_dir)
+  use_flags = [u.flag for u in chroot_message.env.use_flags]
+  features = [f.feature for f in chroot_message.env.features]
+
+  env = {}
+  if use_flags:
+    env['USE'] = ' '.join(use_flags)
+
+  # TODO(saklein) Remove the default when fully integrated in recipes.
+  env['FEATURES'] = 'separatedebug'
+  if features:
+    env['FEATURES'] = ' '.join(features)
+
+  return chroot_lib.Chroot(path=path, cache_dir=cache_dir, env=env)
 
 
 def CPVToPackageInfo(cpv, package_info):

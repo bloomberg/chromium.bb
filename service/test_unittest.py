@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Tests for test service."""
+"""The test service unit tests."""
 
 from __future__ import print_function
 
@@ -11,11 +11,127 @@ import contextlib
 import mock
 import os
 
+from chromite.lib import build_target_util
+from chromite.lib import chroot_lib
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import failures_lib
 from chromite.lib import moblab_vm
 from chromite.lib import osutils
+from chromite.lib import portage_util
+from chromite.lib import sysroot_lib
 from chromite.service import test
+
+
+class BuildTargetUnitTestResultTest(cros_test_lib.TestCase):
+  """BuildTargetUnitTestResult tests."""
+
+  def testSuccess(self):
+    """Test success case."""
+    result = test.BuildTargetUnitTestResult(0, None)
+    self.assertTrue(result.success)
+
+  def testPackageFailure(self):
+    """Test packages failed."""
+    # Supposed to be CPVs, but not actually necessary at the moment.
+    packages = ['a', 'b']
+    # Should have a non-zero return code when packages fail.
+    result = test.BuildTargetUnitTestResult(1, packages)
+    self.assertFalse(result.success)
+    # Make sure failed packages alone are enough.
+    result = test.BuildTargetUnitTestResult(0, packages)
+    self.assertFalse(result.success)
+
+  def testScriptFailure(self):
+    """Test non-package failure."""
+    # Should have a non-zero return code when packages fail.
+    result = test.BuildTargetUnitTestResult(1, None)
+    self.assertFalse(result.success)
+
+
+class BuildTargetUnitTestTest(cros_test_lib.RunCommandTempDirTestCase):
+  """BuildTargetUnitTest tests."""
+
+  def setUp(self):
+    self.board = 'board'
+    self.build_target = build_target_util.BuildTarget(self.board)
+    self.chroot = chroot_lib.Chroot(path=self.tempdir)
+    # Make the chroot's tmp directory, used for the parallel emerge status file.
+    tempdir = os.path.join(self.tempdir, 'tmp')
+    osutils.SafeMakedirs(tempdir)
+
+  def testSuccess(self):
+    """Test simple success case."""
+    result = test.BuildTargetUnitTest(self.build_target, self.chroot)
+
+    self.assertCommandContains(['cros_run_unit_tests', '--board', self.board])
+    self.assertTrue(result.success)
+
+  def testBlacklist(self):
+    """Test the blacklist argument."""
+    blacklist = ['foo/bar', 'cat/pkg']
+    test.BuildTargetUnitTest(self.build_target, self.chroot,
+                             blacklist=blacklist)
+    self.assertCommandContains(['--blacklist_packages', 'foo/bar cat/pkg'])
+
+  def testFailure(self):
+    """Test non-zero return code and failed package handling."""
+    packages = ['foo/bar', 'cat/pkg']
+    cpvs = [portage_util.SplitCPV(p, strict=False) for p in packages]
+    self.PatchObject(portage_util, 'ParseParallelEmergeStatusFile',
+                     return_value=cpvs)
+    expected_rc = 1
+    self.rc.SetDefaultCmdResult(returncode=expected_rc)
+
+    result = test.BuildTargetUnitTest(self.build_target, self.chroot)
+
+    self.assertFalse(result.success)
+    self.assertEqual(expected_rc, result.return_code)
+    self.assertItemsEqual(cpvs, result.failed_cpvs)
+
+
+class BuildTargetUnitTestTarballTest(cros_test_lib.MockTestCase):
+  """BuildTargetUnitTestTarball tests."""
+
+  def setUp(self):
+    self.chroot = chroot_lib.Chroot(path='/chroot/path')
+    self.sysroot = sysroot_lib.Sysroot('/chroot/path/sysroot/path')
+    self.result_path = '/result/path'
+
+  def testSuccess(self):
+    """Test success handling."""
+    result = cros_build_lib.CommandResult(returncode=0)
+    self.PatchObject(cros_build_lib, 'CreateTarball', return_value=result)
+
+    path = test.BuildTargetUnitTestTarball(self.chroot, self.sysroot,
+                                           self.result_path)
+
+    self.assertStartsWith(path, self.result_path)
+
+  def testFailure(self):
+    """Test failure creating tarball."""
+    result = cros_build_lib.CommandResult(returncode=1)
+    self.PatchObject(cros_build_lib, 'CreateTarball', return_value=result)
+
+    path = test.BuildTargetUnitTestTarball(self.chroot, self.sysroot,
+                                           self.result_path)
+
+    self.assertIsNone(path)
+
+
+class DebugInfoTestTest(cros_test_lib.RunCommandTestCase):
+  """DebugInfoTest tests."""
+
+  def testSuccess(self):
+    """Test command success."""
+    self.assertTrue(test.DebugInfoTest('/sysroot/path'))
+    self.assertCommandContains(['debug_info_test',
+                                '/sysroot/path/usr/lib/debug'])
+
+  def testFailure(self):
+    """Test command failure."""
+    self.rc.SetDefaultCmdResult(returncode=1)
+    self.assertFalse(test.DebugInfoTest('/sysroot/path'))
 
 
 class MoblabVmTestCase(cros_test_lib.RunCommandTempDirTestCase):
@@ -61,8 +177,9 @@ class PrepareMoblabVmImageCacheTest(MoblabVmTestCase):
 
   def setUp(self):
     @contextlib.contextmanager
-    def MountedMoblabDiskContextMock(*args, **kwargs):
+    def MountedMoblabDiskContextMock(*_args, **_kwargs):
       yield self.tempdir
+
     self.PatchObject(moblab_vm.MoblabVm, 'MountedMoblabDiskContext',
                      MountedMoblabDiskContextMock)
 

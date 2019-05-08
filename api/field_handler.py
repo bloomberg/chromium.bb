@@ -15,9 +15,8 @@ import contextlib
 import os
 import shutil
 
+from chromite.api.controller import controller_util
 from chromite.api.gen.chromiumos import common_pb2
-from chromite.lib import chroot_lib
-from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 
@@ -46,29 +45,7 @@ class ChrootHandler(object):
 
   def parse_chroot(self, chroot_message):
     """Parse a Chroot message instance."""
-    path = chroot_message.path or constants.DEFAULT_CHROOT_PATH
-    return chroot_lib.Chroot(path=path, cache_dir=chroot_message.cache_dir,
-                             env=self._parse_env(chroot_message))
-
-  def _parse_env(self, chroot_message):
-    """Get chroot environment variables that need to be set.
-
-    Returns:
-      dict - The variable: value pairs.
-    """
-    use_flags = [u.flag for u in chroot_message.env.use_flags]
-    features = [f.feature for f in chroot_message.env.features]
-
-    env = {}
-    if use_flags:
-      env['USE'] = ' '.join(use_flags)
-
-    # TODO(saklein) Remove the default when fully integrated in recipes.
-    env['FEATURES'] = 'separatedebug'
-    if features:
-      env['FEATURES'] = ' '.join(features)
-
-    return env
+    return controller_util.ParseChroot(chroot_message)
 
 
 def handle_chroot(message, clear_field=True):
