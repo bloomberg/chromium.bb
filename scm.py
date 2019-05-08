@@ -369,9 +369,14 @@ class GIT(object):
 
     sha_only: Fail unless rev is a sha hash.
     """
+    if sys.platform.startswith('win'):
+      # Windows .bat scripts use ^ as escape sequence, which means we have to
+      # escape it with itself for every .bat invocation.
+      needle = '%s^^^^{commit}' % rev
+    else:
+      needle = '%s^{commit}' % rev
     try:
-      sha = GIT.Capture(['rev-parse', '--verify', '%s^{commit}' % rev],
-                        cwd=cwd)
+      sha = GIT.Capture(['rev-parse', '--verify', needle], cwd=cwd)
       if sha_only:
         return sha == rev.lower()
       return True

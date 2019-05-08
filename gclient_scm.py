@@ -372,25 +372,25 @@ class GitWrapper(SCMWrapper):
                'Candidate refs were %s.' % (commit, remote_refs))
     return None
 
-  def apply_patch_ref(self, patch_repo, patch_ref, target_branch, options,
+  def apply_patch_ref(self, patch_repo, patch_ref, target_ref, options,
                       file_list):
     """Apply a patch on top of the revision we're synced at.
 
     The patch ref is given by |patch_repo|@|patch_ref|, and the current revision
     is |base_rev|.
-    We also need the |target_branch| that the patch was uploaded against. We use
+    We also need the |target_ref| that the patch was uploaded against. We use
     it to find a merge base between |patch_rev| and |base_rev|, so we can find
     what commits constitute the patch:
 
     Graphically, it looks like this:
 
-     ... -> merge_base -> [possibly already landed commits] -> target_branch
+     ... -> merge_base -> [possibly already landed commits] -> target_ref
                        \
                         -> [possibly not yet landed dependent CLs] -> patch_rev
 
     Next, we apply the commits |merge_base..patch_rev| on top of whatever is
     currently checked out, denoted |base_rev|. Typically, it'd be a revision
-    from |target_branch|, but this is not required.
+    from |target_ref|, but this is not required.
 
     Graphically, we cherry pick |merge_base..patch_rev| on top of |base_rev|:
 
@@ -402,7 +402,7 @@ class GitWrapper(SCMWrapper):
     Args:
       patch_repo: The patch origin. e.g. 'https://foo.googlesource.com/bar'
       patch_ref: The ref to the patch. e.g. 'refs/changes/1234/34/1'.
-      target_branch: The branch the patch was uploaded against.
+      target_ref: The ref the patch was uploaded against.
           e.g. 'refs/heads/master' or 'refs/heads/infra/config'.
       options: The options passed to gclient.
       file_list: A list where modified files will be appended.
@@ -416,25 +416,49 @@ class GitWrapper(SCMWrapper):
 
     base_rev = self._Capture(['rev-parse', 'HEAD'])
 
-    if target_branch:
-      # Convert the target branch to a remote ref if possible.
-      remote_ref = scm.GIT.RefToRemoteRef(target_branch, self.remote)
-      if remote_ref:
-        target_branch = ''.join(remote_ref)
+    if not target_ref:
+      target_ref = self._GetTargetBranchForCommit(base_rev) or base_rev
+    elif not target_ref.startswith(('refs/heads/', 'refs/branch-heads/')):
+      # TODO(ehmaldonado): Support all refs.
+      raise gclient_utils.Error(
+          'target_ref must be in refs/heads/** or refs/branch-heads/**. '
+          'Got %s instead.' % target_ref)
+    elif target_ref == 'refs/heads/master':
+      # We handle refs/heads/master separately because bot_update treats it
+      # differently than other refs: it will fetch refs/heads/foo to
+      # refs/heads/foo, but refs/heads/master to refs/remotes/origin/master.
+      # It's not strictly necessary, but it simplifies the rest of the code.
+      target_ref = 'refs/remotes/%s/master' % self.remote
+    elif scm.GIT.IsValidRevision(self.checkout_path, target_ref):
+      # The target ref for the change is already available, so we don't need to
+      # do anything.
+      # This is a common case. When applying a patch to a top-level solution,
+      # bot_update will fetch the target ref for the change and sync the
+      # solution to it.
+      pass
     else:
-      target_branch = self._GetTargetBranchForCommit(base_rev)
-
-    # Fallback to the commit we got.
-    # This means that apply_path_ref will try to find the merge-base between the
-    # patch and the commit (which is most likely the commit) and cherry-pick
-    # everything in between.
-    if not target_branch:
-      target_branch = base_rev
+      # The target ref is not available. We check next for a remote version of
+      # it (e.g. refs/remotes/origin/<branch>) and fetch it if it's not
+      # available.
+      self.Print('%s is not an existing ref.' % target_ref)
+      original_target_ref = target_ref
+      target_ref = ''.join(scm.GIT.RefToRemoteRef(target_ref, self.remote))
+      self.Print('Trying with %s' % target_ref)
+      if not scm.GIT.IsValidRevision(self.checkout_path, target_ref):
+        self.Print(
+            '%s is not an existing ref either. Will proceed to fetch it.'
+            % target_ref)
+        url, _ = gclient_utils.SplitUrlRevision(self.url)
+        mirror = self._GetMirror(url, options, target_ref)
+        if mirror:
+          self._UpdateMirrorIfNotContains(
+              mirror, options, 'branch', target_ref, original_target_ref)
+        self._Fetch(options, refspec=target_ref)
 
     self.Print('===Applying patch ref===')
     self.Print('Patch ref is %r @ %r. Target branch for patch is %r. '
                'Current HEAD is %r. Current dir is %r' % (
-                   patch_repo, patch_ref, target_branch, base_rev,
+                   patch_repo, patch_ref, target_ref, base_rev,
                    self.checkout_path))
     self._Capture(['reset', '--hard'])
     self._Capture(['fetch', patch_repo, patch_ref])
@@ -446,9 +470,9 @@ class GitWrapper(SCMWrapper):
       else:
         # Find the merge-base between the branch_rev and patch_rev to find out
         # the changes we need to cherry-pick on top of base_rev.
-        merge_base = self._Capture(['merge-base', target_branch, patch_rev])
+        merge_base = self._Capture(['merge-base', target_ref, patch_rev])
         self.Print('Merge base of %s and %s is %s' % (
-            target_branch, patch_rev, merge_base))
+            target_ref, patch_rev, merge_base))
         if merge_base == patch_rev:
           # If the merge-base is patch_rev, it means patch_rev is already part
           # of the history, so just check it out.
@@ -467,9 +491,9 @@ class GitWrapper(SCMWrapper):
 
     except subprocess2.CalledProcessError as e:
       self.Print('Failed to apply patch.')
-      self.Print('Patch ref is %r @ %r. Target branch for patch is %r. '
+      self.Print('Patch ref is %r @ %r. Target ref for patch is %r. '
                  'Current HEAD is %r. Current dir is %r' % (
-                     patch_repo, patch_ref, target_branch, base_rev,
+                     patch_repo, patch_ref, target_ref, base_rev,
                      self.checkout_path))
       self.Print('git returned non-zero exit status %s:\n%s' % (
           e.returncode, e.stderr))
