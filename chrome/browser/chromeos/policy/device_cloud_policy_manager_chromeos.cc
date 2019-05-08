@@ -297,8 +297,6 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
   core()->Connect(std::move(client_to_connect));
   core()->StartRefreshScheduler();
   core()->RefreshSoon();
-  core()->StartRemoteCommandsService(std::unique_ptr<RemoteCommandsFactory>(
-      new DeviceCommandsFactoryChromeOS()));
   core()->TrackRefreshDelayPref(local_state_,
                                 prefs::kDevicePolicyRefreshRate);
 
@@ -318,6 +316,10 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
         new chromeos::attestation::AttestationPolicyObserver(
             machine_certificate_uploader_.get()));
   }
+
+  // Start remote commands services now that we have setup everything they need.
+  core()->StartRemoteCommandsService(
+      std::make_unique<DeviceCommandsFactoryChromeOS>(this));
 
   // Enable device reporting and status monitoring for cloud managed devices. We
   // want to create these objects even if monitoring is currently inactive, in

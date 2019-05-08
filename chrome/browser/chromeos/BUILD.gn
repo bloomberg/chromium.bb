@@ -1651,6 +1651,8 @@ source_set("chromeos") {
     "policy/remote_commands/device_command_fetch_status_job.h",
     "policy/remote_commands/device_command_reboot_job.cc",
     "policy/remote_commands/device_command_reboot_job.h",
+    "policy/remote_commands/device_command_refresh_machine_certificate_job.cc",
+    "policy/remote_commands/device_command_refresh_machine_certificate_job.h",
     "policy/remote_commands/device_command_screenshot_job.cc",
     "policy/remote_commands/device_command_screenshot_job.h",
     "policy/remote_commands/device_command_set_volume_job.cc",
