@@ -353,3 +353,8 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_deprecate_queued_control_frames,
           false)
+
+// When true, QUIC server will drop IETF QUIC Version Negotiation packets.
+QUIC_FLAG(bool,
+          FLAGS_quic_restart_flag_quic_server_drop_version_negotiation,
+          false)
