@@ -481,11 +481,6 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
           scoped_promise_image_access.end_semaphores().back();
       DCHECK(swap_buffers_semaphore_.isInitialized());
     }
-
-    // Add an extra GrContext flush to workaround a skia crash
-    // TODO(penghuang): remove it when the crash is fixed.
-    // https://crbug.com/c/956177
-    gr_context()->flush();
   }
   ReleaseFenceSyncAndPushTextureUpdates(sync_fence_release);
 }
