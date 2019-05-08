@@ -34,6 +34,7 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
+#include "base/hash/md5.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -43,7 +44,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
 #include "base/strings/stringize_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -73,7 +73,6 @@
 #include "media/video/h264_parser.h"
 #include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/boringssl/src/include/openssl/md5.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gl/gl_image.h"
 
@@ -1399,11 +1398,8 @@ TEST_P(VideoDecodeAcceleratorParamTest, MAYBE_TestSimpleDecode) {
     EXPECT_EQ(media::test::ConvertRGBAToRGB(rgba, &rgb), true)
         << "RGBA frame had incorrect alpha";
 
-    uint8_t digest[MD5_DIGEST_LENGTH];
-    MD5(reinterpret_cast<uint8_t*>(&rgb[0]), rgb.size(), digest);
-    std::string md5_string =
-        base::ToLowerASCII(base::HexEncode(digest, MD5_DIGEST_LENGTH));
-
+    std::string md5_string = base::MD5String(
+        base::StringPiece(reinterpret_cast<char*>(&rgb[0]), rgb.size()));
     base::FilePath filepath(test_video_files_[0]->file_name);
     auto golden_md5s = media::test::ReadGoldenThumbnailMD5s(
         filepath.AddExtension(FILE_PATH_LITERAL(".md5")));

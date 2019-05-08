@@ -16,14 +16,11 @@
 #include "base/memory/shared_memory.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/stl_util.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/simple_sync_token_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/boringssl/src/include/openssl/md5.h"
 #include "third_party/libyuv/include/libyuv.h"
 
 namespace {
@@ -52,6 +49,8 @@ void CreateTestY16Frame(const gfx::Size& coded_size,
 }  // namespace
 
 namespace media {
+
+using base::MD5DigestToBase16;
 
 // Helper function that initializes a YV12 frame with white and black scan
 // lines based on the |white_to_black| parameter.  If 0, then the entire
@@ -143,12 +142,12 @@ void ExpectFrameExtents(VideoPixelFormat format, const char* expected_hash) {
            frame->stride(plane) * frame->rows(plane));
   }
 
-  MD5_CTX context;
-  MD5_Init(&context);
+  base::MD5Context context;
+  base::MD5Init(&context);
   VideoFrame::HashFrameForTesting(&context, *frame.get());
-  uint8_t digest[MD5_DIGEST_LENGTH];
-  MD5_Final(digest, &context);
-  EXPECT_EQ(base::HexEncode(digest, MD5_DIGEST_LENGTH), expected_hash);
+  base::MD5Digest digest;
+  base::MD5Final(&digest, &context);
+  EXPECT_EQ(MD5DigestToBase16(digest), expected_hash);
 }
 
 TEST(VideoFrame, CreateFrame) {
@@ -169,23 +168,21 @@ TEST(VideoFrame, CreateFrame) {
     InitializeYV12Frame(frame.get(), 0.0f);
     ExpectFrameColor(frame.get(), 0xFF000000);
   }
-  uint8_t digest[MD5_DIGEST_LENGTH];
-  MD5_CTX context;
-  MD5_Init(&context);
+  base::MD5Digest digest;
+  base::MD5Context context;
+  base::MD5Init(&context);
   VideoFrame::HashFrameForTesting(&context, *frame.get());
-  MD5_Final(digest, &context);
-  EXPECT_EQ(base::HexEncode(digest, MD5_DIGEST_LENGTH),
-            "9065C841D9FCA49186EF8B4EF547E79B");
+  base::MD5Final(&digest, &context);
+  EXPECT_EQ(MD5DigestToBase16(digest), "9065c841d9fca49186ef8b4ef547e79b");
   {
     SCOPED_TRACE("");
     InitializeYV12Frame(frame.get(), 1.0f);
     ExpectFrameColor(frame.get(), 0xFFFFFFFF);
   }
-  MD5_Init(&context);
+  base::MD5Init(&context);
   VideoFrame::HashFrameForTesting(&context, *frame.get());
-  MD5_Final(digest, &context);
-  EXPECT_EQ(base::HexEncode(digest, MD5_DIGEST_LENGTH),
-            "911991D51438AD2E1A40ED5F6FC7C796");
+  base::MD5Final(&digest, &context);
+  EXPECT_EQ(MD5DigestToBase16(digest), "911991d51438ad2e1a40ed5f6fc7c796");
 
   // Test single planar frame.
   frame = VideoFrame::CreateFrame(media::PIXEL_FORMAT_ARGB, size,
@@ -437,8 +434,8 @@ TEST(VideoFrame, WrapExternalDmabufs) {
 TEST(VideoFrame, CheckFrameExtents) {
   // Each call consists of a Format and the expected hash of all
   // planes if filled with kFillByte (defined in ExpectFrameExtents).
-  ExpectFrameExtents(PIXEL_FORMAT_YV12, "8E5D54CB23CD0EDCA111DD35FFB6FF05");
-  ExpectFrameExtents(PIXEL_FORMAT_I422, "CCE408A044B212DB42A10DFEC304B3EF");
+  ExpectFrameExtents(PIXEL_FORMAT_YV12, "8e5d54cb23cd0edca111dd35ffb6ff05");
+  ExpectFrameExtents(PIXEL_FORMAT_I422, "cce408a044b212db42a10dfec304b3ef");
 }
 
 static void TextureCallback(gpu::SyncToken* called_sync_token,

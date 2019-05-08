@@ -5,11 +5,10 @@
 #include "media/filters/audio_file_reader.h"
 
 #include <memory>
-#include <string>
 
+#include "base/hash/md5.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_hash.h"
@@ -19,7 +18,6 @@
 #include "media/filters/in_memory_url_protocol.h"
 #include "media/media_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/boringssl/src/include/openssl/md5.h"
 
 namespace media {
 
@@ -73,11 +71,8 @@ class AudioFileReaderTest : public testing::Test {
 
         // On the first pass save the MD5 hash of each packet, on subsequent
         // passes ensure it matches.
-        uint8_t digest[MD5_DIGEST_LENGTH];
-        MD5(packet.data, packet.size, digest);
-        const std::string md5_hash =
-            base::HexEncode(packet.data, MD5_DIGEST_LENGTH);
-
+        const std::string md5_hash = base::MD5String(base::StringPiece(
+            reinterpret_cast<char*>(packet.data), packet.size));
         if (i == 0) {
           packet_md5_hashes_.push_back(md5_hash);
           if (j == 0) {

@@ -7,12 +7,10 @@
 #include <memory>
 
 #include "base/files/file_util.h"
+#include "base/hash/md5.h"
 #include "base/json/json_reader.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "media/base/test_data_util.h"
-#include "third_party/boringssl/src/include/openssl/md5.h"
 
 #define VLOGF(level) VLOG(level) << __func__ << "(): "
 
@@ -77,12 +75,9 @@ bool Image::Load() {
   }
 
   // Verify that the image's checksum matches the checksum in the metadata.
-  uint8_t digest[MD5_DIGEST_LENGTH];
-  MD5(mapped_file_.data(), mapped_file_.length(), digest);
-  const std::string md5_hash =
-      base::ToLowerASCII(base::HexEncode(digest, MD5_DIGEST_LENGTH));
-
-  if (md5_hash != checksum_) {
+  base::MD5Digest digest;
+  base::MD5Sum(mapped_file_.data(), mapped_file_.length(), &digest);
+  if (base::MD5DigestToBase16(digest) != checksum_) {
     LOG(ERROR) << "Image checksum not matching metadata";
     return false;
   }

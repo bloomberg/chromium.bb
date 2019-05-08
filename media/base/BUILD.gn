@@ -306,7 +306,6 @@ jumbo_source_set("base") {
     ":video_facing",
     "//media:media_buildflags",
     "//media:shared_memory_support",
-    "//third_party/boringssl",
     "//ui/gfx:color_space",
   ]
   deps = [

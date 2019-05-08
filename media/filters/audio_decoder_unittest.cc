@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/format_macros.h"
+#include "base/hash/md5.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -32,7 +33,6 @@
 #include "media/filters/in_memory_url_protocol.h"
 #include "media/media_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/boringssl/src/include/openssl/md5.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -318,17 +318,17 @@ class AudioDecoderTest
         AudioBus::Create(buffer->channel_count(), buffer->frame_count());
     buffer->ReadFrames(buffer->frame_count(), 0, 0, output.get());
 
-    MD5_CTX context;
-    MD5_Init(&context);
+    base::MD5Context context;
+    base::MD5Init(&context);
     for (int ch = 0; ch < output->channels(); ++ch) {
-      MD5_Update(&context, reinterpret_cast<char*>(output->channel(ch)),
-                 output->frames() * sizeof(*output->channel(ch)));
+      base::MD5Update(
+          &context,
+          base::StringPiece(reinterpret_cast<char*>(output->channel(ch)),
+                            output->frames() * sizeof(*output->channel(ch))));
     }
-
-    uint8_t digest[MD5_DIGEST_LENGTH];
-    MD5_Final(digest, &context);
-
-    return base::HexEncode(digest, MD5_DIGEST_LENGTH);
+    base::MD5Digest digest;
+    base::MD5Final(&digest, &context);
+    return base::MD5DigestToBase16(digest);
   }
 
   // Android MediaCodec returns wrong timestamps (shifted one frame forward)

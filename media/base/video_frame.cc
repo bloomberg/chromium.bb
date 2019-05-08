@@ -841,13 +841,15 @@ size_t VideoFrame::Columns(size_t plane, VideoPixelFormat format, int width) {
 }
 
 // static
-void VideoFrame::HashFrameForTesting(MD5_CTX* context,
+void VideoFrame::HashFrameForTesting(base::MD5Context* context,
                                      const VideoFrame& frame) {
   DCHECK(context);
   for (size_t plane = 0; plane < NumPlanes(frame.format()); ++plane) {
     for (int row = 0; row < frame.rows(plane); ++row) {
-      MD5_Update(context, (frame.data(plane) + frame.stride(plane) * row),
-                 frame.row_bytes(plane));
+      base::MD5Update(context, base::StringPiece(reinterpret_cast<const char*>(
+                                                     frame.data(plane) +
+                                                     frame.stride(plane) * row),
+                                                 frame.row_bytes(plane)));
     }
   }
 }

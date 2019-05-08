@@ -103,7 +103,6 @@ source_set("unit_test") {
   deps = [
     ":v4l2",
     "//testing/gtest",
-    "//third_party/boringssl",
     "//ui/gfx:test_support",
     "//ui/gl",
   ]

@@ -377,7 +377,6 @@ source_set("unit_tests") {
 
     deps += [
       # Direct dependency needed for the config
-      "//third_party/boringssl",
       "//third_party/opus",
     ]
 

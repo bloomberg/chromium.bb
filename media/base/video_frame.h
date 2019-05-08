@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/hash/md5.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
@@ -29,7 +30,6 @@
 #include "media/base/video_frame_layout.h"
 #include "media/base/video_frame_metadata.h"
 #include "media/base/video_types.h"
-#include "third_party/boringssl/src/include/openssl/md5.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -365,8 +365,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   static size_t Columns(size_t plane, VideoPixelFormat format, int width);
 
   // Used to keep a running hash of seen frames.  Expects an initialized MD5
-  // context.  Calls MD5_Update with the context and the contents of the frame.
-  static void HashFrameForTesting(MD5_CTX* context, const VideoFrame& frame);
+  // context.  Calls MD5Update with the context and the contents of the frame.
+  static void HashFrameForTesting(base::MD5Context* context,
+                                  const VideoFrame& frame);
 
   // Returns true if |frame| is accesible mapped in the VideoFrame memory space.
   // static

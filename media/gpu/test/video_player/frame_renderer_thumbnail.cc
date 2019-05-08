@@ -8,7 +8,6 @@
 
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/gpu/test/rendering_helper.h"
@@ -230,10 +229,8 @@ bool FrameRendererThumbnail::ValidateThumbnail() {
       << "RGBA frame has incorrect alpha";
 
   // Calculate the thumbnail's checksum and compare it to golden values.
-  uint8_t digest[MD5_DIGEST_LENGTH];
-  MD5(reinterpret_cast<uint8_t*>(&rgb[0]), rgb.size(), digest);
-  std::string md5_string =
-      base::ToLowerASCII(base::HexEncode(digest, MD5_DIGEST_LENGTH));
+  std::string md5_string = base::MD5String(
+      base::StringPiece(reinterpret_cast<char*>(&rgb[0]), rgb.size()));
   bool is_valid_thumbnail =
       base::ContainsValue(thumbnail_checksums_, md5_string);
 

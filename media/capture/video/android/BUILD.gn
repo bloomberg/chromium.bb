@@ -25,7 +25,6 @@ source_set("android") {
     "//media/capture:capture_device_specific",
     "//media/capture/mojom:image_capture",
     "//media/capture/mojom:image_capture_types",
-    "//third_party/boringssl",
     "//third_party/libyuv",
     "//ui/gfx:color_space",
     "//ui/gfx/geometry",

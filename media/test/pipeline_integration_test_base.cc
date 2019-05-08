@@ -5,18 +5,13 @@
 #include "media/test/pipeline_integration_test_base.h"
 
 #include <memory>
-#include <set>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
@@ -29,7 +24,6 @@
 #include "media/renderers/renderer_impl.h"
 #include "media/test/fake_encrypted_media.h"
 #include "media/test/test_media_source.h"
-#include "third_party/boringssl/src/include/openssl/md5.h"
 #include "third_party/libaom/libaom_buildflags.h"
 
 #if BUILDFLAG(ENABLE_LIBAOM_DECODER)
@@ -567,14 +561,14 @@ base::TimeDelta PipelineIntegrationTestBase::GetStartTime() {
 
 void PipelineIntegrationTestBase::ResetVideoHash() {
   DVLOG(1) << __func__;
-  MD5_Init(&md5_context_);
+  base::MD5Init(&md5_context_);
 }
 
 std::string PipelineIntegrationTestBase::GetVideoHash() {
   DCHECK(hashing_enabled_);
-  uint8_t digest[MD5_DIGEST_LENGTH];
-  MD5_Final(digest, &md5_context_);
-  return base::ToLowerASCII(base::HexEncode(digest, MD5_DIGEST_LENGTH));
+  base::MD5Digest digest;
+  base::MD5Final(&digest, &md5_context_);
+  return base::MD5DigestToBase16(digest);
 }
 
 std::string PipelineIntegrationTestBase::GetAudioHash() {
