@@ -13,7 +13,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc |ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq rst</div>'
-      : '<div contenteditable dir="rtl">abc |ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq rst</div>',
+      : '<div contenteditable dir="rtl">abc| ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq rst</div>',
   '9-0 rtl left word');
 
 selection_test(
@@ -21,7 +21,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc ghi|<div><img src="../../resources/abe.png"></div><div></div><div></div>opq rst</div>'
-      : '<div contenteditable dir="rtl">abc |ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq rst</div>',
+      : '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>|opq rst</div>',
   '9-1 rtl left word');
 
 selection_test(
@@ -29,7 +29,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc ghi|<div><img src="../../resources/abe.png"></div><div></div><div></div>opq rst</div>'
-      : '<div contenteditable dir="rtl">abc |ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq rst</div>',
+      : '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>|opq rst</div>',
   '9-2 rtl left word');
 
 selection_test(
@@ -37,7 +37,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc ghi|<div><img src="../../resources/abe.png"></div><div></div><div></div>opq rst</div>'
-      : '<div contenteditable dir="rtl">abc ghi|<div><img src="../../resources/abe.png"></div><div></div><div></div>opq rst</div>',
+      : '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>|opq rst</div>',
   '9-3 rtl left word');
 
 selection_test(
@@ -45,7 +45,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc ghi|<div><img src="../../resources/abe.png"></div><div></div><div></div>opq rst</div>'
-      : '<div contenteditable dir="rtl">abc ghi|<div><img src="../../resources/abe.png"></div><div></div><div></div>opq rst</div>',
+      : '<div contenteditable dir="rtl">abc| ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq rst</div>',
   '9-4 rtl left word');
 
 selection_test(
@@ -53,7 +53,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc |ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq rst</div>'
-      : '<div contenteditable dir="rtl">abc ghi|<div><img src="../../resources/abe.png"></div><div></div><div></div>opq rst</div>',
+      : '<div contenteditable dir="rtl">abc| ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq rst</div>',
   '9-5 rtl left word');
 
 selection_test(
@@ -61,7 +61,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc |ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq rst</div>'
-      : '<div contenteditable dir="rtl">abc ghi|<div><img src="../../resources/abe.png"></div><div></div><div></div>opq rst</div>',
+      : '<div contenteditable dir="rtl">abc| ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq rst</div>',
   '9-6 rtl left word');
 
 selection_test(
@@ -69,7 +69,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq |rst</div>'
-      : '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png">|</div><div></div><div></div>opq rst</div>',
+      : '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>|opq rst</div>',
   '9-7 rtl left word');
 
 selection_test(
@@ -77,7 +77,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq |rst</div>'
-      : '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png">|</div><div></div><div></div>opq rst</div>',
+      : '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>|opq rst</div>',
   '9-8 rtl left word');
 
 selection_test(
@@ -85,7 +85,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq |rst</div>'
-      : '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq |rst</div>',
+      : '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>|opq rst</div>',
   '9-9 rtl left word');
 
 selection_test(
@@ -93,7 +93,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq |rst</div>'
-      : '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq |rst</div>',
+      : '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq| rst</div>',
   '9-10 rtl left word');
 
 selection_test(
@@ -101,7 +101,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq |rst</div>'
-      : '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq |rst</div>',
+      : '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq| rst</div>',
   '9-11 rtl left word');
 
 selection_test(
@@ -109,7 +109,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq |rst</div>'
-      : '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq |rst</div>',
+      : '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq| rst</div>',
   '9-12 rtl left word');
 
 selection_test(
@@ -117,7 +117,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq |rst</div>'
-      : '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq |rst</div>',
+      : '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq| rst</div>',
   '9-13 rtl left word');
 
 selection_test(
@@ -125,19 +125,19 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq |rst</div>'
-      : '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq |rst</div>',
+      : '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq| rst</div>',
   '9-14 rtl left word');
 
 selection_test(
   '<div contenteditable dir="rtl">abc ghi<div><img src=../../resources/abe.png></div><div></div><div></div>o|pq rst</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq |rst</div>',
+  '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq rst|</div>',
   '9-15 rtl left word');
 
 selection_test(
   '<div contenteditable dir="rtl">abc ghi<div><img src=../../resources/abe.png></div><div></div><div></div>op|q rst</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq |rst</div>',
+  '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq rst|</div>',
   '9-16 rtl left word');
 
 selection_test(
@@ -151,7 +151,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq rst|</div>'
-      : '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq rst|</div>',
+      : '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq| rst</div>',
   '9-18 rtl left word');
 
 selection_test(
@@ -159,7 +159,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq |rst</div>'
-      : '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq rst|</div>',
+      : '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq| rst</div>',
   '9-19 rtl left word');
 
 selection_test(
@@ -167,7 +167,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq |rst</div>'
-      : '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq rst|</div>',
+      : '<div contenteditable dir="rtl">abc ghi<div><img src="../../resources/abe.png"></div><div></div><div></div>opq| rst</div>',
   '9-20 rtl left word');
 
 selection_test(

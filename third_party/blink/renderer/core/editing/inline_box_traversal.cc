@@ -131,9 +131,24 @@ class AbstractInlineBox {
 
   TextDirection ParagraphDirection() const {
     DCHECK(IsNotNull());
-    if (IsOldLayout())
-      return ParagraphDirectionOf(GetInlineBox());
-    return ParagraphDirectionOf(GetNGPaintFragment());
+    if (IsOldLayout()) {
+      const ComputedStyle& block_style = *GetInlineBox().Root().Block().Style();
+      if (block_style.GetUnicodeBidi() != UnicodeBidi::kPlaintext)
+        return block_style.Direction();
+
+      // There is no reliable way to get the paragraph direction in legacy
+      // layout when 'unicode-bidi: plaintext' is set. Use the lowest-level
+      // inline box's direction as a workaround.
+      UBiDiLevel min_level = 128;
+      for (const InlineBox* runner = GetInlineBox().Root().FirstLeafChild();
+           runner; runner = runner->NextLeafChild()) {
+        min_level = std::min(min_level, runner->BidiLevel());
+      }
+      return DirectionFromLevel(min_level);
+    }
+    const auto& line_box = To<NGPhysicalLineBoxFragment>(
+        GetNGPaintFragment().ContainerLineBox()->PhysicalFragment());
+    return line_box.BaseDirection();
   }
 
  private:
@@ -796,6 +811,44 @@ RangeSelectionAdjuster::RenderedPosition::Create(
 
 }  // namespace
 
+const InlineBox* InlineBoxTraversal::FindLeftBidiRun(const InlineBox& box,
+                                                     unsigned bidi_level) {
+  const AbstractInlineBox& result =
+      FindBidiRun<TraverseLeft>(AbstractInlineBox(box), bidi_level);
+  if (result.IsNull())
+    return nullptr;
+  DCHECK(result.IsOldLayout());
+  return &result.GetInlineBox();
+}
+
+const InlineBox* InlineBoxTraversal::FindRightBidiRun(const InlineBox& box,
+                                                      unsigned bidi_level) {
+  const AbstractInlineBox& result =
+      FindBidiRun<TraverseRight>(AbstractInlineBox(box), bidi_level);
+  if (result.IsNull())
+    return nullptr;
+  DCHECK(result.IsOldLayout());
+  return &result.GetInlineBox();
+}
+
+const InlineBox& InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRun(
+    const InlineBox& box,
+    unsigned bidi_level) {
+  const AbstractInlineBox& result = FindBoundaryOfEntireBidiRun<TraverseLeft>(
+      AbstractInlineBox(box), bidi_level);
+  DCHECK(result.IsOldLayout());
+  return result.GetInlineBox();
+}
+
+const InlineBox& InlineBoxTraversal::FindRightBoundaryOfEntireBidiRun(
+    const InlineBox& box,
+    unsigned bidi_level) {
+  const AbstractInlineBox& result = FindBoundaryOfEntireBidiRun<TraverseRight>(
+      AbstractInlineBox(box), bidi_level);
+  DCHECK(result.IsOldLayout());
+  return result.GetInlineBox();
+}
+
 InlineBoxPosition BidiAdjustment::AdjustForCaretPositionResolution(
     const InlineBoxPosition& caret_position) {
   const AbstractInlineBoxAndSideAffinity unadjusted(caret_position);
@@ -846,30 +899,6 @@ SelectionInFlatTree BidiAdjustment::AdjustForRangeSelection(
     const PositionInFlatTreeWithAffinity& base,
     const PositionInFlatTreeWithAffinity& extent) {
   return RangeSelectionAdjuster::AdjustFor(base, extent);
-}
-
-// TODO(xiaochengh): Move this function to a better place
-TextDirection ParagraphDirectionOf(const InlineBox& box) {
-  const ComputedStyle& block_style = *box.Root().Block().Style();
-  if (block_style.GetUnicodeBidi() != UnicodeBidi::kPlaintext)
-    return block_style.Direction();
-
-  // There is no reliable way to get the paragraph direction in legacy
-  // layout when 'unicode-bidi: plaintext' is set. Use the lowest-level
-  // inline box's direction as a workaround.
-  UBiDiLevel min_level = 128;
-  for (const InlineBox* runner = box.Root().FirstLeafChild(); runner;
-       runner = runner->NextLeafChild()) {
-    min_level = std::min(min_level, runner->BidiLevel());
-  }
-  return DirectionFromLevel(min_level);
-}
-
-// TODO(xiaochengh): Move this function to a better place
-TextDirection ParagraphDirectionOf(const NGPaintFragment& fragment) {
-  const auto& line_box = To<NGPhysicalLineBoxFragment>(
-      fragment.ContainerLineBox()->PhysicalFragment());
-  return line_box.BaseDirection();
 }
 
 }  // namespace blink

@@ -13,7 +13,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc |def<div><br></div><div><br></div><div><br></div>uvw xyz</div>'
-      : '<div contenteditable dir="rtl">abc |def<div><br></div><div><br></div><div><br></div>uvw xyz</div>',
+      : '<div contenteditable dir="rtl">abc| def<div><br></div><div><br></div><div><br></div>uvw xyz</div>',
   '2-0 rtl left word');
 
 selection_test(
@@ -21,7 +21,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc def|<div><br></div><div><br></div><div><br></div>uvw xyz</div>'
-      : '<div contenteditable dir="rtl">abc |def<div><br></div><div><br></div><div><br></div>uvw xyz</div>',
+      : '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>|uvw xyz</div>',
   '2-1 rtl left word');
 
 selection_test(
@@ -29,7 +29,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc def|<div><br></div><div><br></div><div><br></div>uvw xyz</div>'
-      : '<div contenteditable dir="rtl">abc |def<div><br></div><div><br></div><div><br></div>uvw xyz</div>',
+      : '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>|uvw xyz</div>',
   '2-2 rtl left word');
 
 selection_test(
@@ -37,7 +37,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc def|<div><br></div><div><br></div><div><br></div>uvw xyz</div>'
-      : '<div contenteditable dir="rtl">abc def|<div><br></div><div><br></div><div><br></div>uvw xyz</div>',
+      : '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>|uvw xyz</div>',
   '2-3 rtl left word');
 
 selection_test(
@@ -45,7 +45,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc def|<div><br></div><div><br></div><div><br></div>uvw xyz</div>'
-      : '<div contenteditable dir="rtl">abc def|<div><br></div><div><br></div><div><br></div>uvw xyz</div>',
+      : '<div contenteditable dir="rtl">abc| def<div><br></div><div><br></div><div><br></div>uvw xyz</div>',
   '2-4 rtl left word');
 
 selection_test(
@@ -53,7 +53,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc |def<div><br></div><div><br></div><div><br></div>uvw xyz</div>'
-      : '<div contenteditable dir="rtl">abc def|<div><br></div><div><br></div><div><br></div>uvw xyz</div>',
+      : '<div contenteditable dir="rtl">abc| def<div><br></div><div><br></div><div><br></div>uvw xyz</div>',
   '2-5 rtl left word');
 
 selection_test(
@@ -61,7 +61,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc |def<div><br></div><div><br></div><div><br></div>uvw xyz</div>'
-      : '<div contenteditable dir="rtl">abc def|<div><br></div><div><br></div><div><br></div>uvw xyz</div>',
+      : '<div contenteditable dir="rtl">abc| def<div><br></div><div><br></div><div><br></div>uvw xyz</div>',
   '2-6 rtl left word');
 
 selection_test(
@@ -69,7 +69,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>uvw |xyz</div>'
-      : '<div contenteditable dir="rtl">abc def<div>|<br></div><div><br></div><div><br></div>uvw xyz</div>',
+      : '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>|uvw xyz</div>',
   '2-7 rtl left word');
 
 selection_test(
@@ -77,7 +77,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc def<div><br></div><div>|<br></div><div><br></div>uvw xyz</div>'
-      : '<div contenteditable dir="rtl">abc def<div>|<br></div><div><br></div><div><br></div>uvw xyz</div>',
+      : '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>|uvw xyz</div>',
   '2-8 rtl left word');
 
 selection_test(
@@ -85,7 +85,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc def<div><br></div><div>|<br></div><div><br></div>uvw xyz</div>'
-      : '<div contenteditable dir="rtl">abc def<div>|<br></div><div><br></div><div><br></div>uvw xyz</div>',
+      : '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>|uvw xyz</div>',
   '2-9 rtl left word');
 
 selection_test(
@@ -93,7 +93,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>uvw |xyz</div>'
-      : '<div contenteditable dir="rtl">abc def<div><br></div><div>|<br></div><div><br></div>uvw xyz</div>',
+      : '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>|uvw xyz</div>',
   '2-10 rtl left word');
 
 selection_test(
@@ -101,7 +101,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>uvw |xyz</div>'
-      : '<div contenteditable dir="rtl">abc def<div><br></div><div>|<br></div><div><br></div>uvw xyz</div>',
+      : '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>|uvw xyz</div>',
   '2-11 rtl left word');
 
 selection_test(
@@ -109,7 +109,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>uvw |xyz</div>'
-      : '<div contenteditable dir="rtl">abc def<div><br></div><div>|<br></div><div><br></div>uvw xyz</div>',
+      : '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>|uvw xyz</div>',
   '2-12 rtl left word');
 
 selection_test(
@@ -117,7 +117,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>uvw |xyz</div>'
-      : '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div>|<br></div>uvw xyz</div>',
+      : '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>|uvw xyz</div>',
   '2-13 rtl left word');
 
 selection_test(
@@ -125,7 +125,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>uvw |xyz</div>'
-      : '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div>|<br></div>uvw xyz</div>',
+      : '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>|uvw xyz</div>',
   '2-14 rtl left word');
 
 selection_test(
@@ -133,7 +133,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>uvw |xyz</div>'
-      : '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div>|<br></div>uvw xyz</div>',
+      : '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>|uvw xyz</div>',
   '2-15 rtl left word');
 
 selection_test(
@@ -141,19 +141,19 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>uvw |xyz</div>'
-      : '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>uvw |xyz</div>',
+      : '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>uvw| xyz</div>',
   '2-16 rtl left word');
 
 selection_test(
   '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>u|vw xyz</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>uvw |xyz</div>',
+  '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>uvw xyz|</div>',
   '2-17 rtl left word');
 
 selection_test(
   '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>uv|w xyz</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>uvw |xyz</div>',
+  '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>uvw xyz|</div>',
   '2-18 rtl left word');
 
 selection_test(
@@ -167,7 +167,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>uvw xyz|</div>'
-      : '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>uvw xyz|</div>',
+      : '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>uvw| xyz</div>',
   '2-20 rtl left word');
 
 selection_test(
@@ -175,7 +175,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>uvw |xyz</div>'
-      : '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>uvw xyz|</div>',
+      : '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>uvw| xyz</div>',
   '2-21 rtl left word');
 
 selection_test(
@@ -183,7 +183,7 @@ selection_test(
   selection => selection.modify('move', 'left', 'word'),
   isMac
       ? '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>uvw |xyz</div>'
-      : '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>uvw xyz|</div>',
+      : '<div contenteditable dir="rtl">abc def<div><br></div><div><br></div><div><br></div>uvw| xyz</div>',
   '2-22 rtl left word');
 
 selection_test(

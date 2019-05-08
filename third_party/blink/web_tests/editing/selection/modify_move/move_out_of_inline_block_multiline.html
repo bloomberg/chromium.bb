@@ -124,13 +124,13 @@ selection_test(
 selection_test(
     '<div contenteditable>foo<span style="display:inline-block">אבג|<br>qux</span>baz</div>',
     selection => selection.modify('move', 'left', 'character'),
-    '<div contenteditable>foo<span style="display:inline-block">אב|ג<br>qux</span>baz</div>',
+    '<div contenteditable>foo<span style="display:inline-block">א|בג<br>qux</span>baz</div>',
     'End of line 1, move left, LTR resolved direction, RTL/LTR text inside');
 
 selection_test(
     '<div contenteditable>foo<span style="display:inline-block">אבג|<br>יךכ</span>baz</div>',
     selection => selection.modify('move', 'left', 'character'),
-    '<div contenteditable>foo<span style="display:inline-block">אב|ג<br>יךכ</span>baz</div>',
+    '<div contenteditable>foo<span style="display:inline-block">א|בג<br>יךכ</span>baz</div>',
     'End of line 1, move left, LTR resolved direction, RTL/RTL text inside');
 
 selection_test(
@@ -184,13 +184,13 @@ selection_test(
 selection_test(
     '<div contenteditable dir="rtl">דהו<span style="display:inline-block">bar|<br>qux</span>זחט</div>',
     selection => selection.modify('move', 'right', 'character'),
-    '<div contenteditable dir="rtl">דהו<span style="display:inline-block">ba|r<br>qux</span>זחט</div>',
+    '<div contenteditable dir="rtl">דהו<span style="display:inline-block">b|ar<br>qux</span>זחט</div>',
     'End of line 1, move right, RTL resolved direction, LTR/LTR text inside');
 
 selection_test(
     '<div contenteditable dir="rtl">דהו<span style="display:inline-block">bar|<br>יךכ</span>זחט</div>',
     selection => selection.modify('move', 'right', 'character'),
-    '<div contenteditable dir="rtl">דהו<span style="display:inline-block">ba|r<br>יךכ</span>זחט</div>',
+    '<div contenteditable dir="rtl">דהו<span style="display:inline-block">b|ar<br>יךכ</span>זחט</div>',
     'End of line 1, move right, RTL resolved direction, LTR/RTL text inside');
 
 selection_test(
@@ -232,7 +232,7 @@ selection_test(
 selection_test(
     '<div contenteditable dir="rtl">דהו<span style="display:inline-block">bar<br>|qux</span>זחט</div>',
     selection => selection.modify('move', 'left', 'character'),
-    '<div contenteditable dir="rtl">דהו<span style="display:inline-block">bar<br>q|ux</span>זחט</div>',
+    '<div contenteditable dir="rtl">דהו<span style="display:inline-block">bar<br>qu|x</span>זחט</div>',
     'Start of line 2, move left, RTL resolved direction, LTR/LTR text inside');
 
 selection_test(
@@ -244,7 +244,7 @@ selection_test(
 selection_test(
     '<div contenteditable dir="rtl">דהו<span style="display:inline-block">אבג<br>|qux</span>זחט</div>',
     selection => selection.modify('move', 'left', 'character'),
-    '<div contenteditable dir="rtl">דהו<span style="display:inline-block">אבג<br>q|ux</span>זחט</div>',
+    '<div contenteditable dir="rtl">דהו<span style="display:inline-block">אבג<br>qu|x</span>זחט</div>',
     'Start of line 2, move left, RTL resolved direction, RTL/LTR text inside');
 
 selection_test(
@@ -262,7 +262,7 @@ selection_test(
 selection_test(
     '<div contenteditable>foo<span style="display:inline-block">bar<br>|יךכ</span>baz</div>',
     selection => selection.modify('move', 'right', 'character'),
-    '<div contenteditable>foo<span style="display:inline-block">bar<br>י|ךכ</span>baz</div>',
+    '<div contenteditable>foo<span style="display:inline-block">bar<br>יך|כ</span>baz</div>',
     'Start of line 2, move right, LTR resolved direction, LTR/RTL text inside');
 
 selection_test(
@@ -274,7 +274,7 @@ selection_test(
 selection_test(
     '<div contenteditable>foo<span style="display:inline-block">אבג<br>|יךכ</span>baz</div>',
     selection => selection.modify('move', 'right', 'character'),
-    '<div contenteditable>foo<span style="display:inline-block">אבג<br>י|ךכ</span>baz</div>',
+    '<div contenteditable>foo<span style="display:inline-block">אבג<br>יך|כ</span>baz</div>',
     'Start of line 2, move right, LTR resolved direction, RTL/RTL text inside');
 
 selection_test(
@@ -310,7 +310,7 @@ selection_test(
 selection_test(
     '<div contenteditable>foo<span style="display:inline-block">bar<br>יךכ|</span>baz</div>',
     selection => selection.modify('move', 'left', 'character'),
-    '<div contenteditable>foo<span style="display:inline-block">bar<br>יך|כ</span>baz</div>',
+    '<div contenteditable>foo<span style="display:inline-block">bar<br>י|ךכ</span>baz</div>',
     'End of line 2, move left, LTR resolved direction, LTR/RTL text inside');
 
 selection_test(
@@ -322,7 +322,7 @@ selection_test(
 selection_test(
     '<div contenteditable>foo<span style="display:inline-block">אבג<br>יךכ|</span>baz</div>',
     selection => selection.modify('move', 'left', 'character'),
-    '<div contenteditable>foo<span style="display:inline-block">אבג<br>יך|כ</span>baz</div>',
+    '<div contenteditable>foo<span style="display:inline-block">אבג<br>י|ךכ</span>baz</div>',
     'End of line 2, move left, LTR resolved direction, RTL/RTL text inside');
 
 selection_test(
@@ -376,7 +376,7 @@ selection_test(
 selection_test(
     '<div contenteditable dir="rtl">דהו<span style="display:inline-block">bar<br>qux|</span>זחט</div>',
     selection => selection.modify('move', 'right', 'character'),
-    '<div contenteditable dir="rtl">דהו<span style="display:inline-block">bar<br>qu|x</span>זחט</div>',
+    '<div contenteditable dir="rtl">דהו<span style="display:inline-block">bar<br>q|ux</span>זחט</div>',
     'End of line 2, move right, RTL resolved direction, LTR/LTR text inside');
 
 selection_test(
@@ -388,7 +388,7 @@ selection_test(
 selection_test(
     '<div contenteditable dir="rtl">דהו<span style="display:inline-block">אבג<br>qux|</span>זחט</div>',
     selection => selection.modify('move', 'right', 'character'),
-    '<div contenteditable dir="rtl">דהו<span style="display:inline-block">אבג<br>qu|x</span>זחט</div>',
+    '<div contenteditable dir="rtl">דהו<span style="display:inline-block">אבג<br>q|ux</span>זחט</div>',
     'End of line 2, move right, RTL resolved direction, RTL/LTR text inside');
 
 selection_test(

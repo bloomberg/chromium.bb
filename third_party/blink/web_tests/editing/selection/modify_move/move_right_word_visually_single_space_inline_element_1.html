@@ -9,19 +9,19 @@ if (window.internals)
 selection_test(
   '<div contenteditable dir="ltr">|אאא <span>בב</span></div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 |<span>\u05D1\u05D1</span></div>',
+  '<div contenteditable dir="ltr">אאא| <span>בב</span></div>',
   '1-0 right word');
 
 selection_test(
   '<div contenteditable dir="ltr">א|אא <span>בב</span></div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 |<span>\u05D1\u05D1</span></div>',
+  '<div contenteditable dir="ltr">אאא <span>בב|</span></div>',
   '1-1 right word');
 
 selection_test(
   '<div contenteditable dir="ltr">אא|א <span>בב</span></div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 |<span>\u05D1\u05D1</span></div>',
+  '<div contenteditable dir="ltr">אאא <span>בב|</span></div>',
   '1-2 right word');
 
 selection_test(
@@ -33,19 +33,19 @@ selection_test(
 selection_test(
   '<div contenteditable dir="ltr">אאא |<span>בב</span></div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 <span>\u05D1\u05D1|</span></div>',
+  '<div contenteditable dir="ltr">אאא| <span>בב</span></div>',
   '1-4 right word');
 
 selection_test(
   '<div contenteditable dir="ltr">אאא <span>|בב</span></div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 <span>\u05D1\u05D1|</span></div>',
+  '<div contenteditable dir="ltr">אאא| <span>בב</span></div>',
   '1-5 right word');
 
 selection_test(
   '<div contenteditable dir="ltr">אאא <span>ב|ב</span></div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 <span>\u05D1\u05D1|</span></div>',
+  '<div contenteditable dir="ltr">אאא| <span>בב</span></div>',
   '1-6 right word');
 
 selection_test(
@@ -54,3 +54,4 @@ selection_test(
   '<div contenteditable dir="ltr">אאא <span>בב|</span></div>',
   '1-7 right word');
 </script>
+

@@ -27,7 +27,7 @@ selection_test(
 selection_test(
   '<div contenteditable dir="rtl">אאא| בבב צצצ aaa bbb ccc דדד עעע פפפ</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D1\u05D1\u05D1 |\u05E6\u05E6\u05E6 aaa bbb ccc \u05D3\u05D3\u05D3 \u05E2\u05E2\u05E2 \u05E4\u05E4\u05E4</div>',
+  '<div contenteditable dir="rtl">אאא |בבב צצצ aaa bbb ccc דדד עעע פפפ</div>',
   '12-3 left word');
 
 selection_test(
@@ -51,7 +51,7 @@ selection_test(
 selection_test(
   '<div contenteditable dir="rtl">אאא בבב| צצצ aaa bbb ccc דדד עעע פפפ</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D1\u05D1\u05D1 \u05E6\u05E6\u05E6 |aaa bbb ccc \u05D3\u05D3\u05D3 \u05E2\u05E2\u05E2 \u05E4\u05E4\u05E4</div>',
+  '<div contenteditable dir="rtl">אאא בבב |צצצ aaa bbb ccc דדד עעע פפפ</div>',
   '12-7 left word');
 
 selection_test(
@@ -75,79 +75,79 @@ selection_test(
 selection_test(
   '<div contenteditable dir="rtl">אאא בבב צצצ| aaa bbb ccc דדד עעע פפפ</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D1\u05D1\u05D1 \u05E6\u05E6\u05E6 aaa |bbb ccc \u05D3\u05D3\u05D3 \u05E2\u05E2\u05E2 \u05E4\u05E4\u05E4</div>',
+  '<div contenteditable dir="rtl">אאא בבב צצצ |aaa bbb ccc דדד עעע פפפ</div>',
   '12-11 left word');
 
 selection_test(
   '<div contenteditable dir="rtl">אאא בבב צצצ |aaa bbb ccc דדד עעע פפפ</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D1\u05D1\u05D1 \u05E6\u05E6\u05E6 aaa |bbb ccc \u05D3\u05D3\u05D3 \u05E2\u05E2\u05E2 \u05E4\u05E4\u05E4</div>',
+  '<div contenteditable dir="rtl">אאא בבב צצצ aaa bbb| ccc דדד עעע פפפ</div>',
   '12-12 left word');
 
 selection_test(
   '<div contenteditable dir="rtl">אאא בבב צצצ a|aa bbb ccc דדד עעע פפפ</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D1\u05D1\u05D1 \u05E6\u05E6\u05E6 aaa |bbb ccc \u05D3\u05D3\u05D3 \u05E2\u05E2\u05E2 \u05E4\u05E4\u05E4</div>',
+  '<div contenteditable dir="rtl">אאא בבב צצצ aaa bbb ccc |דדד עעע פפפ</div>',
   '12-13 left word');
 
 selection_test(
   '<div contenteditable dir="rtl">אאא בבב צצצ aa|a bbb ccc דדד עעע פפפ</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D1\u05D1\u05D1 \u05E6\u05E6\u05E6 aaa |bbb ccc \u05D3\u05D3\u05D3 \u05E2\u05E2\u05E2 \u05E4\u05E4\u05E4</div>',
+  '<div contenteditable dir="rtl">אאא בבב צצצ aaa bbb ccc |דדד עעע פפפ</div>',
   '12-14 left word');
 
 selection_test(
   '<div contenteditable dir="rtl">אאא בבב צצצ aaa| bbb ccc דדד עעע פפפ</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D1\u05D1\u05D1 \u05E6\u05E6\u05E6 aaa bbb |ccc \u05D3\u05D3\u05D3 \u05E2\u05E2\u05E2 \u05E4\u05E4\u05E4</div>',
+  '<div contenteditable dir="rtl">אאא בבב צצצ aaa bbb ccc |דדד עעע פפפ</div>',
   '12-15 left word');
 
 selection_test(
   '<div contenteditable dir="rtl">אאא בבב צצצ aaa |bbb ccc דדד עעע פפפ</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D1\u05D1\u05D1 \u05E6\u05E6\u05E6 aaa bbb |ccc \u05D3\u05D3\u05D3 \u05E2\u05E2\u05E2 \u05E4\u05E4\u05E4</div>',
+  '<div contenteditable dir="rtl">אאא בבב צצצ aaa| bbb ccc דדד עעע פפפ</div>',
   '12-16 left word');
 
 selection_test(
   '<div contenteditable dir="rtl">אאא בבב צצצ aaa b|bb ccc דדד עעע פפפ</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D1\u05D1\u05D1 \u05E6\u05E6\u05E6 aaa bbb |ccc \u05D3\u05D3\u05D3 \u05E2\u05E2\u05E2 \u05E4\u05E4\u05E4</div>',
+  '<div contenteditable dir="rtl">אאא בבב צצצ aaa| bbb ccc דדד עעע פפפ</div>',
   '12-17 left word');
 
 selection_test(
   '<div contenteditable dir="rtl">אאא בבב צצצ aaa bb|b ccc דדד עעע פפפ</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D1\u05D1\u05D1 \u05E6\u05E6\u05E6 aaa bbb |ccc \u05D3\u05D3\u05D3 \u05E2\u05E2\u05E2 \u05E4\u05E4\u05E4</div>',
+  '<div contenteditable dir="rtl">אאא בבב צצצ aaa| bbb ccc דדד עעע פפפ</div>',
   '12-18 left word');
 
 selection_test(
   '<div contenteditable dir="rtl">אאא בבב צצצ aaa bbb| ccc דדד עעע פפפ</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D1\u05D1\u05D1 \u05E6\u05E6\u05E6 aaa bbb ccc |\u05D3\u05D3\u05D3 \u05E2\u05E2\u05E2 \u05E4\u05E4\u05E4</div>',
+  '<div contenteditable dir="rtl">אאא בבב צצצ aaa| bbb ccc דדד עעע פפפ</div>',
   '12-19 left word');
 
 selection_test(
   '<div contenteditable dir="rtl">אאא בבב צצצ aaa bbb |ccc דדד עעע פפפ</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D1\u05D1\u05D1 \u05E6\u05E6\u05E6 aaa bbb ccc |\u05D3\u05D3\u05D3 \u05E2\u05E2\u05E2 \u05E4\u05E4\u05E4</div>',
+  '<div contenteditable dir="rtl">אאא בבב צצצ aaa bbb| ccc דדד עעע פפפ</div>',
   '12-20 left word');
 
 selection_test(
   '<div contenteditable dir="rtl">אאא בבב צצצ aaa bbb c|cc דדד עעע פפפ</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D1\u05D1\u05D1 \u05E6\u05E6\u05E6 aaa bbb ccc |\u05D3\u05D3\u05D3 \u05E2\u05E2\u05E2 \u05E4\u05E4\u05E4</div>',
+  '<div contenteditable dir="rtl">אאא בבב צצצ aaa bbb| ccc דדד עעע פפפ</div>',
   '12-21 left word');
 
 selection_test(
   '<div contenteditable dir="rtl">אאא בבב צצצ aaa bbb cc|c דדד עעע פפפ</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D1\u05D1\u05D1 \u05E6\u05E6\u05E6 aaa bbb ccc |\u05D3\u05D3\u05D3 \u05E2\u05E2\u05E2 \u05E4\u05E4\u05E4</div>',
+  '<div contenteditable dir="rtl">אאא בבב צצצ aaa bbb| ccc דדד עעע פפפ</div>',
   '12-22 left word');
 
 selection_test(
   '<div contenteditable dir="rtl">אאא בבב צצצ aaa bbb ccc| דדד עעע פפפ</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D1\u05D1\u05D1 \u05E6\u05E6\u05E6 aaa bbb ccc \u05D3\u05D3\u05D3 |\u05E2\u05E2\u05E2 \u05E4\u05E4\u05E4</div>',
+  '<div contenteditable dir="rtl">אאא בבב צצצ aaa bbb ccc |דדד עעע פפפ</div>',
   '12-23 left word');
 
 selection_test(
@@ -171,7 +171,7 @@ selection_test(
 selection_test(
   '<div contenteditable dir="rtl">אאא בבב צצצ aaa bbb ccc דדד| עעע פפפ</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D1\u05D1\u05D1 \u05E6\u05E6\u05E6 aaa bbb ccc \u05D3\u05D3\u05D3 \u05E2\u05E2\u05E2 |\u05E4\u05E4\u05E4</div>',
+  '<div contenteditable dir="rtl">אאא בבב צצצ aaa bbb ccc דדד |עעע פפפ</div>',
   '12-27 left word');
 
 selection_test(
@@ -195,7 +195,7 @@ selection_test(
 selection_test(
   '<div contenteditable dir="rtl">אאא בבב צצצ aaa bbb ccc דדד עעע| פפפ</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D1\u05D1\u05D1 \u05E6\u05E6\u05E6 aaa bbb ccc \u05D3\u05D3\u05D3 \u05E2\u05E2\u05E2 \u05E4\u05E4\u05E4|</div>',
+  '<div contenteditable dir="rtl">אאא בבב צצצ aaa bbb ccc דדד עעע |פפפ</div>',
   '12-31 left word');
 
 selection_test(
@@ -222,3 +222,4 @@ selection_test(
   '<div contenteditable dir="rtl">אאא בבב צצצ aaa bbb ccc דדד עעע פפפ|</div>',
   '12-35 left word');
 </script>
+
