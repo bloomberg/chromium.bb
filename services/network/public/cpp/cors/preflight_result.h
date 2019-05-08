@@ -59,6 +59,9 @@ class COMPONENT_EXPORT(NETWORK_CPP) PreflightResult final {
       const net::HttpRequestHeaders& headers,
       bool is_revalidating) const;
 
+  // Checks if this entry is expired.
+  bool IsExpired() const;
+
   // Checks if the given combination of |credentials_mode|, |method|, and
   // |headers| is allowed by the CORS-preflight response.
   // This also does not reject the forbidden headers as

@@ -9870,6 +9870,25 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Hash Mismatch"/>
 </enum>
 
+<enum name="CorsCompletionStatus">
+  <summary>The completion status of CorsURLLoader request.</summary>
+  <int value="0"
+      label="A request finished successfully when CORS flag was not set"/>
+  <int value="1" label="A request failed when CORS flag was not set"/>
+  <int value="2"
+      label="A request finished successfully when CORS flag was set"/>
+  <int value="3" label="A request failed when CORS flag was set"/>
+  <int value="4" label="A request was blocked by CORS checks"/>
+</enum>
+
+<enum name="CorsPreflightCacheResult">
+  <summary>The CORS preflight cache query result.</summary>
+  <int value="0" label="Cache hit, and the entry allowed to make a request"/>
+  <int value="1" label="Cache hit, but the entry blocked to make a request"/>
+  <int value="2" label="Cache missed"/>
+  <int value="3" label="Cache hit, but the entry was stale"/>
+</enum>
+
 <enum name="Cr50BoardIdFlags">
   <int value="-1" label="Unprogrammed (0xffffffff)"/>
   <int value="127" label="Legacy pre-pvt (0x7f)"/>

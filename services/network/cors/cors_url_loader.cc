@@ -5,6 +5,7 @@
 #include "services/network/cors/cors_url_loader.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "net/base/load_flags.h"
 #include "services/network/cors/preflight_controller.h"
@@ -17,6 +18,18 @@ namespace network {
 namespace cors {
 
 namespace {
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class CompletionStatusMetric {
+  kPassedWhenCorsFlagUnset = 0,
+  kFailedWhenCorsFlagUnset = 1,
+  kPassedWhenCorsFlagSet = 2,
+  kFailedWhenCorsFlagSet = 3,
+  kBlockedByCors = 4,
+
+  kMaxValue = kBlockedByCors,
+};
 
 bool NeedsPreflight(const ResourceRequest& request) {
   if (!IsCorsEnabledRequestMode(request.fetch_request_mode))
@@ -41,6 +54,21 @@ bool NeedsPreflight(const ResourceRequest& request) {
   return !CorsUnsafeNotForbiddenRequestHeaderNames(
               request.headers.GetHeaderVector(), request.is_revalidating)
               .empty();
+}
+
+void ReportCompletionStatusMetric(bool fetch_cors_flag,
+                                  const URLLoaderCompletionStatus& status) {
+  CompletionStatusMetric metric;
+  if (status.error_code == net::OK) {
+    metric = fetch_cors_flag ? CompletionStatusMetric::kPassedWhenCorsFlagSet
+                             : CompletionStatusMetric::kPassedWhenCorsFlagUnset;
+  } else if (status.cors_error_status) {
+    metric = CompletionStatusMetric::kBlockedByCors;
+  } else {
+    metric = fetch_cors_flag ? CompletionStatusMetric::kFailedWhenCorsFlagSet
+                             : CompletionStatusMetric::kFailedWhenCorsFlagUnset;
+  }
+  UMA_HISTOGRAM_ENUMERATION("Net.Cors.CompletionStatus", metric);
 }
 
 }  // namespace
@@ -438,6 +466,7 @@ void CorsURLLoader::StartNetworkRequest(
 }
 
 void CorsURLLoader::HandleComplete(const URLLoaderCompletionStatus& status) {
+  ReportCompletionStatusMetric(fetch_cors_flag_, status);
   forwarding_client_->OnComplete(status);
   std::move(delete_callback_).Run(this);
   // |this| is deleted here.
