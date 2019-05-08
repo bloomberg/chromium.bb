@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "ash/public/interfaces/arc_custom_tab.mojom.h"
 #include "ash/public/interfaces/new_window.mojom.h"
 #include "base/macros.h"
 #include "components/arc/intent_helper/open_url_delegate.h"
@@ -64,8 +63,6 @@ class ChromeNewWindowClient : public ash::mojom::NewWindowClient,
   std::unique_ptr<TabRestoreHelper> tab_restore_helper_;
 
   ash::mojom::NewWindowControllerPtr new_window_controller_;
-
-  ash::mojom::ArcCustomTabControllerPtr arc_custom_tab_controller_;
 
   // Binds this object to the client interface.
   mojo::AssociatedBinding<ash::mojom::NewWindowClient> binding_;

@@ -8,7 +8,6 @@
 #include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
 #include "ash/public/interfaces/app_list.mojom.h"
-#include "ash/public/interfaces/arc_custom_tab.mojom.h"
 #include "ash/public/interfaces/ash_display_controller.mojom.h"
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
@@ -79,8 +78,7 @@ const service_manager::Manifest& GetManifest() {
               service_manager::Manifest::InterfaceList<
                   mojom::AcceleratorController, mojom::AccessibilityController,
                   mojom::AccessibilityFocusRingController,
-                  mojom::AppListController, mojom::ArcCustomTabController,
-                  mojom::AshMessageCenterController,
+                  mojom::AppListController, mojom::AshMessageCenterController,
                   mojom::AssistantAlarmTimerController,
                   mojom::AssistantController,
                   mojom::AssistantNotificationController,

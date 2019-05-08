@@ -17,7 +17,6 @@
 #include "ash/assistant/assistant_setup_controller.h"
 #include "ash/autotest/shelf_integration_test_api.h"
 #include "ash/cast_config_controller.h"
-#include "ash/custom_tab/arc_custom_tab_controller.h"
 #include "ash/display/ash_display_controller.h"
 #include "ash/display/cros_display_config.h"
 #include "ash/display/display_output_protection.h"
@@ -89,11 +88,6 @@ void BindAppListControllerRequestOnMainThread(
   // sessions.
   if (Shell::Get()->app_list_controller())
     Shell::Get()->app_list_controller()->BindRequest(std::move(request));
-}
-
-void BindArcCustomTabControllerRequestOnMainThread(
-    mojom::ArcCustomTabControllerRequest request) {
-  Shell::Get()->arc_custom_tab_controller()->BindRequest(std::move(request));
 }
 
 void BindAshDisplayControllerRequestOnMainThread(
@@ -297,9 +291,6 @@ void RegisterInterfaces(
       main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindAppListControllerRequestOnMainThread),
-      main_thread_task_runner);
-  registry->AddInterface(
-      base::BindRepeating(&BindArcCustomTabControllerRequestOnMainThread),
       main_thread_task_runner);
   if (chromeos::switches::IsAssistantEnabled()) {
     registry->AddInterface(

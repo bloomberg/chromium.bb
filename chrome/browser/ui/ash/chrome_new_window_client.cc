@@ -57,9 +57,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window.h"
 #include "ui/base/page_transition_types.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/window_open_disposition.h"
-#include "ui/views/mus/remote_view/remote_view_provider.h"
 #include "url/url_constants.h"
 
 namespace {
@@ -106,17 +104,6 @@ std::string GetPathAndQuery(const GURL& url) {
 // Implementation of CustomTabSession interface.
 class CustomTabSessionImpl : public arc::mojom::CustomTabSession {
  public:
-  static arc::mojom::CustomTabSessionPtr Create(
-      Profile* profile,
-      const GURL& url,
-      ash::mojom::ArcCustomTabViewPtr view) {
-    // This object will be deleted when the mojo connection is closed.
-    auto* tab = new CustomTabSessionImpl(profile, url, std::move(view));
-    arc::mojom::CustomTabSessionPtr ptr;
-    tab->Bind(&ptr);
-    return ptr;
-  }
-
   static arc::mojom::CustomTabSessionPtr CreateForClassic(
       Profile* profile,
       const GURL& url,
@@ -135,20 +122,6 @@ class CustomTabSessionImpl : public arc::mojom::CustomTabSession {
   void OnOpenInChromeClicked() override { forwarded_to_normal_tab_ = true; }
 
  private:
-  CustomTabSessionImpl(Profile* profile,
-                       const GURL& url,
-                       ash::mojom::ArcCustomTabViewPtr view)
-      : binding_(this),
-        view_(std::move(view)),
-        web_contents_(CreateWebContents(profile, url)),
-        weak_ptr_factory_(this) {
-    aura::Window* window = web_contents_->GetNativeView();
-    remote_view_provider_ = std::make_unique<views::RemoteViewProvider>(window);
-    remote_view_provider_->GetEmbedToken(base::BindOnce(
-        &CustomTabSessionImpl::OnEmbedToken, weak_ptr_factory_.GetWeakPtr()));
-    window->Show();
-  }
-
   CustomTabSessionImpl(Profile* profile,
                        const GURL& url,
                        std::unique_ptr<ash::ArcCustomTab> custom_tab)
@@ -227,15 +200,9 @@ class CustomTabSessionImpl : public arc::mojom::CustomTabSession {
     return web_contents;
   }
 
-  void OnEmbedToken(const base::UnguessableToken& token) {
-    view_->EmbedUsingToken(token);
-  }
-
   mojo::Binding<arc::mojom::CustomTabSession> binding_;
-  ash::mojom::ArcCustomTabViewPtr view_;
   std::unique_ptr<ash::ArcCustomTab> custom_tab_;
   std::unique_ptr<content::WebContents> web_contents_;
-  std::unique_ptr<views::RemoteViewProvider> remote_view_provider_;
   base::ElapsedTimer lifetime_timer_;
   bool forwarded_to_normal_tab_ = false;
   base::WeakPtrFactory<CustomTabSessionImpl> weak_ptr_factory_;
@@ -251,8 +218,6 @@ ChromeNewWindowClient::ChromeNewWindowClient() : binding_(this) {
   service_manager::Connector* connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
   connector->BindInterface(ash::mojom::kServiceName, &new_window_controller_);
-  connector->BindInterface(ash::mojom::kServiceName,
-                           &arc_custom_tab_controller_);
 
   // Register this object as the client interface implementation.
   ash::mojom::NewWindowClientAssociatedPtrInfo ptr_info;
@@ -492,27 +457,9 @@ void ChromeNewWindowClient::OpenArcCustomTab(
     arc::mojom::IntentHelperHost::OnOpenCustomTabCallback callback) {
   GURL url_to_open = ConvertArcUrlToExternalFileUrlIfNeeded(url);
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  if (features::IsUsingWindowService()) {
-    arc_custom_tab_controller_->CreateView(
-        task_id, surface_id, top_margin,
-        base::BindOnce(
-            [](Profile* profile, const GURL& url,
-               arc::mojom::IntentHelperHost::OnOpenCustomTabCallback callback,
-               ash::mojom::ArcCustomTabViewPtr view) {
-              if (!view) {
-                std::move(callback).Run(nullptr);
-                return;
-              }
-              std::move(callback).Run(
-                  CustomTabSessionImpl::Create(profile, url, std::move(view)));
-            },
-            profile, url_to_open, std::move(callback)));
-  } else {
-    auto custom_tab =
-        ash::ArcCustomTab::Create(task_id, surface_id, top_margin);
-    std::move(callback).Run(CustomTabSessionImpl::CreateForClassic(
-        profile, url, std::move(custom_tab)));
-  }
+  auto custom_tab = ash::ArcCustomTab::Create(task_id, surface_id, top_margin);
+  std::move(callback).Run(CustomTabSessionImpl::CreateForClassic(
+      profile, url, std::move(custom_tab)));
 }
 
 content::WebContents* ChromeNewWindowClient::OpenUrlImpl(

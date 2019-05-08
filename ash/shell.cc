@@ -23,7 +23,6 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/cast_config_controller.h"
-#include "ash/custom_tab/arc_custom_tab_controller.h"
 #include "ash/dbus/ash_dbus_helper.h"
 #include "ash/dbus/ash_dbus_services.h"
 #include "ash/detachable_base/detachable_base_handler.h"
@@ -640,7 +639,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
                           : nullptr),
       aura_env_(owned_aura_env_.get() ? owned_aura_env_.get()
                                       : aura::Env::GetInstance()),
-      arc_custom_tab_controller_(std::make_unique<ArcCustomTabController>()),
       ash_display_controller_(std::make_unique<AshDisplayController>()),
       brightness_control_delegate_(
           std::make_unique<system::BrightnessControllerChromeos>()),
