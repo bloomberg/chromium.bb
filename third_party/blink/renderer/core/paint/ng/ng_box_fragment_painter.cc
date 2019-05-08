@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_phase.h"
+#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
 #include "third_party/blink/renderer/core/paint/theme_painter.h"
@@ -339,6 +340,10 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
   DCHECK(layout_object->IsLayoutBlockFlow());
   const auto& layout_block = To<LayoutBlock>(*layout_object);
   DCHECK(layout_block.ChildrenInline());
+  base::Optional<ScopedPaintTimingDetectorBlockPaintHook>
+      scoped_paint_timing_detector_block_paint_hook;
+  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled())
+    scoped_paint_timing_detector_block_paint_hook.emplace(layout_block);
   if (ShouldPaintDescendantOutlines(paint_info.phase)) {
     ObjectPainter(layout_block).PaintInlineChildrenOutlines(paint_info);
   } else {

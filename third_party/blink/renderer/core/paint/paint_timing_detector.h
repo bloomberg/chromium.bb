@@ -7,6 +7,7 @@
 
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 
@@ -55,10 +56,8 @@ class CORE_EXPORT PaintTimingDetector
   void NotifyLargestText(base::TimeTicks, uint64_t size);
   void DidChangePerformanceTiming();
 
-  // |visual_rect| should be an object's bounding rect in the space of
-  // PropertyTreeState.
-  uint64_t CalculateVisualSize(const IntRect& visual_rect,
-                               const PropertyTreeState&) const;
+  FloatRect CalculateVisualRect(const IntRect& visual_rect,
+                                const PropertyTreeState&) const;
 
   TextPaintTimingDetector* GetTextPaintTimingDetector() {
     return text_paint_timing_detector_;
@@ -89,6 +88,32 @@ class CORE_EXPORT PaintTimingDetector
   // Largest text information.
   base::TimeTicks largest_text_paint_time_;
   uint64_t largest_text_paint_size_ = 0;
+};
+
+// Largest Text Paint aggregates text nodes by these text nodes' ancestors. In
+// order to tell whether a text node is contained by another node
+// efficiently, LTP relies on the paint order of the rendering tree
+// (https://www.w3.org/TR/CSS21/zindex.html). Because of the paint order, we can
+// assume that if a text node T is visited during the visit of another node B,
+// then B contains T. This class acts as the hook to certain container nodes
+// (block object or inline object) to tell whether a text node is their
+// descendant. The hook should be placed right before visiting the subtree of an
+// container node, so that the constructor and the destructor can tell the start
+// and end of the visit.
+class ScopedPaintTimingDetectorBlockPaintHook {
+  DISALLOW_NEW();
+
+ public:
+  ScopedPaintTimingDetectorBlockPaintHook(
+      const LayoutBoxModelObject& text_aggregating_block_);
+
+  ~ScopedPaintTimingDetectorBlockPaintHook();
+
+ private:
+  Persistent<LocalFrameView> frame_view_;
+  const LayoutBoxModelObject& text_aggregating_block_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedPaintTimingDetectorBlockPaintHook);
 };
 
 }  // namespace blink

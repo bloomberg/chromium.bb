@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/paint/text_paint_timing_detector.h"
+
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/svg/svg_text_content_element.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/wtf/scoped_mock_clock.h"
 
 namespace blink {
 
@@ -104,13 +106,15 @@ class TextPaintTimingDetectorTest
     GetPaintTimingDetector().GetTextPaintTimingDetector()->UpdateCandidate();
   }
 
-  Element* AppendFontElementToBody(String content) {
-    Element* element = GetDocument().CreateRawElement(html_names::kFontTag);
-    element->setAttribute(html_names::kSizeAttr, AtomicString("5"));
+  Element* AppendFontBlockToBody(String content) {
+    Element* font = GetDocument().CreateRawElement(html_names::kFontTag);
+    font->setAttribute(html_names::kSizeAttr, AtomicString("5"));
     Text* text = GetDocument().createTextNode(content);
-    element->AppendChild(text);
-    GetDocument().body()->AppendChild(element);
-    return element;
+    font->AppendChild(text);
+    Element* div = GetDocument().CreateRawElement(html_names::kDivTag);
+    div->AppendChild(font);
+    GetDocument().body()->AppendChild(div);
+    return font;
   }
 
   Element* AppendDivElementToBody(String content, String style = "") {
@@ -120,13 +124,6 @@ class TextPaintTimingDetectorTest
     div->AppendChild(text);
     GetDocument().body()->AppendChild(div);
     return div;
-  }
-
-  DOMNodeId NodeIdOfText(Element* element) {
-    DCHECK_EQ(element->CountChildren(), 1u);
-    DCHECK(element->firstChild()->IsTextNode());
-    DCHECK(!element->firstChild()->hasChildren());
-    return DOMNodeIds::IdForNode(element->firstChild());
   }
 
   TextRecord* TextRecordOfLargestTextPaint() {
@@ -170,7 +167,23 @@ TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_OneText) {
   )HTML");
   Element* only_text = AppendDivElementToBody("The only text");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id, NodeIdOfText(only_text));
+  EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id,
+            DOMNodeIds::ExistingIdForNode(only_text));
+}
+
+TEST_F(TextPaintTimingDetectorTest, AggregationBySelfPaintingInlineElement) {
+  SetBodyInnerHTML(R"HTML(
+    <div style="background: yellow">
+      tiny
+      <span id="target"
+        style="position: relative; background: blue; top: 100px; left: 100px">
+        this is the largest text in the world.</span>
+    </div>
+  )HTML");
+  Element* span = GetDocument().getElementById("target");
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id,
+            DOMNodeIds::ExistingIdForNode(span));
 }
 
 TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_OpacityZero) {
@@ -212,7 +225,8 @@ TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_LargestText) {
   AppendDivElementToBody("small");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
 
-  EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id, NodeIdOfText(large_text));
+  EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id,
+            DOMNodeIds::ExistingIdForNode(large_text));
 }
 
 TEST_F(TextPaintTimingDetectorTest, UpdateResultWhenCandidateChanged) {
@@ -227,8 +241,7 @@ TEST_F(TextPaintTimingDetectorTest, UpdateResultWhenCandidateChanged) {
   EXPECT_GE(first_largest, time1);
   EXPECT_GE(time2, first_largest);
 
-  Text* larger_text = GetDocument().createTextNode("a long-long-long text");
-  GetDocument().body()->AppendChild(larger_text);
+  AppendDivElementToBody("a long-long-long text");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
   UpdateCandidate();
   TimeTicks time3 = CurrentTimeTicks();
@@ -263,30 +276,25 @@ TEST_F(TextPaintTimingDetectorTest, VisitSameNodeTwiceBeforePaintTimeIsSet) {
   GetFrameView().UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason::kTest);
   InvokeCallback();
-  EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id, NodeIdOfText(text));
+  EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id,
+            DOMNodeIds::ExistingIdForNode(text));
 }
 
 TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_ReportFirstPaintTime) {
-  TimeTicks time1 = CurrentTimeTicks();
+  WTF::ScopedMockClock clock;
+  clock.Advance(TimeDelta::FromSecondsD(1));
   SetBodyInnerHTML(R"HTML(
   )HTML");
-  Element* size_changing_text = AppendFontElementToBody("size-changing text");
-  Element* long_text =
-      AppendFontElementToBody("a long-long-long-long moving text");
+  Element* text = AppendDivElementToBody("text");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
-
-  TimeTicks time2 = CurrentTimeTicks();
-  SetFontSize(size_changing_text, 50);
+  clock.Advance(TimeDelta::FromSecondsD(1));
+  text->setAttribute(html_names::kStyleAttr,
+                     AtomicString("position:fixed;left:30px"));
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
-
-  SetFontSize(long_text, 100);
-  UpdateAllLifecyclePhasesAndSimulateSwapTime();
-
+  clock.Advance(TimeDelta::FromSecondsD(1));
   TextRecord* record = TextRecordOfLargestTextPaint();
-  EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id, NodeIdOfText(long_text));
-  TimeTicks paint_time = record->paint_time;
-  EXPECT_GE(paint_time, time1);
-  EXPECT_GE(time2, paint_time);
+  EXPECT_TRUE(record);
+  EXPECT_EQ(record->paint_time, base::TimeTicks() + TimeDelta::FromSecondsD(1));
 }
 
 TEST_F(TextPaintTimingDetectorTest,
@@ -312,11 +320,13 @@ TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_IgnoreRemovedText) {
       "text)");
   Element* small_text = AppendDivElementToBody("small text");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id, NodeIdOfText(large_text));
+  EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id,
+            DOMNodeIds::ExistingIdForNode(large_text));
 
   RemoveElement(large_text);
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id, NodeIdOfText(small_text));
+  EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id,
+            DOMNodeIds::ExistingIdForNode(small_text));
 }
 
 TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_ReportLastNullCandidate) {
@@ -325,7 +335,8 @@ TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_ReportLastNullCandidate) {
   Element* text = AppendDivElementToBody("text to remove");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
   UpdateCandidate();
-  EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id, NodeIdOfText(text));
+  EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id,
+            DOMNodeIds::ExistingIdForNode(text));
   EXPECT_NE(LargestPaintStoredResult(), base::TimeTicks());
 
   RemoveElement(text);
@@ -342,7 +353,8 @@ TEST_F(TextPaintTimingDetectorTest,
   AppendDivElementToBody("a long text", "position:fixed;left:-10px");
   Element* short_text = AppendDivElementToBody("short");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id, NodeIdOfText(short_text));
+  EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id,
+            DOMNodeIds::ExistingIdForNode(short_text));
 }
 
 // Depite that the l
@@ -357,7 +369,7 @@ TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_CompareSizesAtFirstPaint) {
   SetElementStyle(shortening_long_text, "position:fixed;left:-10px");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
   EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id,
-            NodeIdOfText(shortening_long_text));
+            DOMNodeIds::ExistingIdForNode(shortening_long_text));
 }
 
 TEST_F(TextPaintTimingDetectorTest, TreatEllipsisAsText) {
@@ -370,15 +382,7 @@ TEST_F(TextPaintTimingDetectorTest, TreatEllipsisAsText) {
   )HTML");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
 
-  // The FCP++ hook in ellipsis box painter is using the line layout item as the
-  // tracking node while layout ng is using the layout text as the tracking
-  // node.
-  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    EXPECT_EQ(CountVisibleTexts(), 1u);
-  } else {
-    // The text and the elllipsis are recorded.
-    EXPECT_EQ(CountVisibleTexts(), 2u);
-  }
+  EXPECT_EQ(CountVisibleTexts(), 1u);
 }
 
 TEST_F(TextPaintTimingDetectorTest, CaptureFileUploadController) {
@@ -388,7 +392,7 @@ TEST_F(TextPaintTimingDetectorTest, CaptureFileUploadController) {
 
   EXPECT_EQ(CountVisibleTexts(), 1u);
   EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id,
-            DOMNodeIds::IdForNode(element));
+            DOMNodeIds::ExistingIdForNode(element));
 }
 
 TEST_F(TextPaintTimingDetectorTest, NotCapturingListMarkers) {
@@ -417,7 +421,8 @@ TEST_F(TextPaintTimingDetectorTest, CaptureSVGText) {
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
 
   EXPECT_EQ(CountVisibleTexts(), 1u);
-  EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id, NodeIdOfText(elem));
+  EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id,
+            DOMNodeIds::ExistingIdForNode(elem));
 }
 
 TEST_F(TextPaintTimingDetectorTest, StopRecordingOverNodeLimit) {
@@ -488,7 +493,8 @@ TEST_F(TextPaintTimingDetectorTest, ClippedByParentVisibleRect) {
   GetDocument().body()->getElementById("outer1")->AppendChild(div1);
 
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id, NodeIdOfText(div1));
+  EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id,
+            DOMNodeIds::ExistingIdForNode(div1));
   EXPECT_EQ(TextRecordOfLargestTextPaint()->first_size, 1u);
 
   Element* div2 = GetDocument().CreateRawElement(html_names::kDivTag);
@@ -500,7 +506,8 @@ TEST_F(TextPaintTimingDetectorTest, ClippedByParentVisibleRect) {
   GetDocument().body()->getElementById("outer2")->AppendChild(div2);
 
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id, NodeIdOfText(div2));
+  EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id,
+            DOMNodeIds::ExistingIdForNode(div2));
   // This size is larger than the size of the first object . But the exact size
   // depends on different platforms. We only need to ensure this size is larger
   // than the first size.

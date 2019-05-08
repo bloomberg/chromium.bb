@@ -15,12 +15,14 @@
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 class LayoutObject;
 class TracedValue;
 class LocalFrameView;
 class PropertyTreeState;
+class LayoutBoxModelObject;
 
 class TextRecord : public base::SupportsWeakPtr<TextRecord> {
  public:
@@ -35,6 +37,17 @@ class TextRecord : public base::SupportsWeakPtr<TextRecord> {
   String text = "";
 #endif
   DISALLOW_COPY_AND_ASSIGN(TextRecord);
+};
+
+class BlockInfo {
+ public:
+  void Aggregate(FloatRect new_text_rect) {
+    aggregated_text_rect_.UniteIfNonZero(new_text_rect);
+  }
+  uint64_t AggregatedTextSize() { return aggregated_text_rect_.Size().Area(); }
+
+ private:
+  FloatRect aggregated_text_rect_;
 };
 
 class TextRecordsManager {
@@ -57,7 +70,7 @@ class TextRecordsManager {
                          const uint64_t& visual_size,
                          const LayoutObject&);
   bool NeedMeausuringPaintTime() const {
-    return !texts_queued_for_paint_time_.empty();
+    return !texts_queued_for_paint_time_.IsEmpty();
   }
   void AssignPaintTimeToQueuedNodes(const base::TimeTicks&);
 
@@ -84,7 +97,7 @@ class TextRecordsManager {
   // the largest node efficiently. Note that the entries in |size_ordered_set_|
   // and |visible_node_map_| should always be added/deleted together.
   TextRecordSet size_ordered_set_;
-  std::queue<base::WeakPtr<TextRecord>> texts_queued_for_paint_time_;
+  Deque<base::WeakPtr<TextRecord>> texts_queued_for_paint_time_;
   TextRecord* cached_largest_paint_candidate_;
 
   DISALLOW_COPY_AND_ASSIGN(TextRecordsManager);
@@ -114,7 +127,11 @@ class CORE_EXPORT TextPaintTimingDetector final
 
  public:
   TextPaintTimingDetector(LocalFrameView* frame_view);
-  void RecordText(const LayoutObject& object, const PropertyTreeState&);
+  // TODO(crbug.com/960946): we should document the text aggregation.
+  void AggregateText(const LayoutObject&, const PropertyTreeState&);
+  void WillWalkTextAggregatingNode();
+  void DidWalkTextAggregatingNode(
+      const LayoutBoxModelObject& text_aggregating_block);
   void OnPaintFinished();
   void NotifyNodeRemoved(DOMNodeId);
   TextRecord* FindLargestPaintCandidate();
@@ -126,11 +143,15 @@ class CORE_EXPORT TextPaintTimingDetector final
   void Trace(blink::Visitor*);
 
  private:
-  void PopulateTraceValue(TracedValue& value,
+  void AggregateTextToClosestBlock(const LayoutObject&,
+                                   const PropertyTreeState&);
+  void PopulateTraceValue(TracedValue&,
                           const TextRecord& first_text_paint,
                           unsigned candidate_index) const;
   void TimerFired(TimerBase*);
   void UpdateCandidate();
+  void RecordAggregatedText(const LayoutObject& aggregating_object,
+                            uint64_t aggregated_size);
 
   void ReportSwapTime(WebWidgetClient::SwapResult result,
                       base::TimeTicks timestamp);
@@ -146,6 +167,10 @@ class CORE_EXPORT TextPaintTimingDetector final
 
   bool has_records_changed_ = true;
   bool need_update_timing_at_frame_end_ = false;
+
+  HashSet<const LayoutObject*> visited_text_objects_;
+
+  Vector<BlockInfo> walking_block_stack_;
 
   base::TimeTicks largest_text_paint_;
   uint64_t largest_text_paint_size_ = 0;

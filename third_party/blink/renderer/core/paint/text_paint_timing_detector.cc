@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "third_party/blink/renderer/core/paint/text_paint_timing_detector.h"
+
 #include <memory>
 
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -14,7 +16,6 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
-#include "third_party/blink/renderer/core/paint/text_paint_timing_detector.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -25,6 +26,7 @@ namespace blink {
 // Calculate metrics candidate every 1 second after the first text pre-paint.
 static constexpr TimeDelta kTimerDelay = TimeDelta::FromSeconds(1);
 constexpr size_t kTextNodeNumberLimit = 5000;
+constexpr size_t kVisitedTextObjectsLimit = 10000;
 
 static bool LargeTextFirst(const base::WeakPtr<TextRecord>& a,
                            const base::WeakPtr<TextRecord>& b) {
@@ -134,15 +136,48 @@ void TextPaintTimingDetector::ReportSwapTime(WebWidgetClient::SwapResult result,
   awaiting_swap_promise_ = false;
 }
 
-void TextPaintTimingDetector::RecordText(
+void TextPaintTimingDetector::AggregateText(
     const LayoutObject& object,
     const PropertyTreeState& current_paint_chunk_properties) {
+  if (!is_recording_)
+    return;
+  // Text nodes are aggregated with the lowest of either block-level block
+  // element or self-painting inline-level element.
+  DCHECK_GT(walking_block_stack_.size(), 0u);
+  AggregateTextToClosestBlock(object, current_paint_chunk_properties);
+}
+
+void TextPaintTimingDetector::AggregateTextToClosestBlock(
+    const LayoutObject& text_object,
+    const PropertyTreeState& current_paint_chunk_properties) {
+  DCHECK_GT(walking_block_stack_.size(), 0u);
+
+  if (visited_text_objects_.Contains(&text_object) ||
+      visited_text_objects_.size() >= kVisitedTextObjectsLimit)
+    return;
+
+  IntRect visual_rect = text_object.FragmentsVisualRectBoundingBox();
+  if (visual_rect.IsEmpty())
+    return;
+
+  visited_text_objects_.insert(&text_object);
+  FloatRect mapped_visual_rect =
+      frame_view_->GetPaintTimingDetector().CalculateVisualRect(
+          visual_rect, current_paint_chunk_properties);
+  if (mapped_visual_rect.Size().Area() == 0)
+    return;
+  walking_block_stack_.back().Aggregate(mapped_visual_rect);
+}
+
+void TextPaintTimingDetector::RecordAggregatedText(
+    const LayoutObject& text_aggregating_object,
+    uint64_t aggregated_size) {
   if (!is_recording_)
     return;
   DCHECK(!records_manager_.HasTooManyNodes());
   // TODO(crbug.com/933479): Use LayoutObject::GeneratingNode() to include
   // anonymous objects' rect.
-  Node* node = object.GetNode();
+  Node* node = text_aggregating_object.GetNode();
   if (!node)
     return;
   DOMNodeId node_id = DOMNodeIds::IdForNode(node);
@@ -150,28 +185,16 @@ void TextPaintTimingDetector::RecordText(
 
   records_manager_.MarkNodeReattachedIfNeeded(node_id);
 
-  // This metric defines the size of a text by its first size. So it
-  // early-returns if the text has been recorded.
+  // This metric defines the size of a text block by its first size. So it
+  // early-returns if the text block has been recorded.
   if (records_manager_.HasRecorded(node_id))
     return;
 
-  uint64_t visual_size = 0;
-  // Compared to object.FirstFragment().VisualRect(), this will include other
-  // fragments of the object.
-  IntRect visual_rect = object.FragmentsVisualRectBoundingBox();
-  if (!visual_rect.IsEmpty()) {
-    visual_size = frame_view_->GetPaintTimingDetector().CalculateVisualSize(
-        visual_rect, current_paint_chunk_properties);
-  }
-  DVLOG(2) << "Node id (" << node_id << "): size=" << visual_size
-           << ", type=" << object.DebugName();
-
-  // When visual_size == 0, it either means the text size is 0 or the text is
-  // out of viewport. In either case, we don't record their time for efficiency.
-  if (visual_size == 0) {
+  if (aggregated_size == 0) {
     records_manager_.RecordInvisibleNode(node_id);
   } else {
-    records_manager_.RecordVisibleNode(node_id, visual_size, object);
+    records_manager_.RecordVisibleNode(node_id, aggregated_size,
+                                       text_aggregating_object);
   }
 
   if (records_manager_.HasTooManyNodes()) {
@@ -218,13 +241,13 @@ void TextRecordsManager::AssignPaintTimeToQueuedNodes(
   // consumed in a callback earlier than this one. That violates the assumption
   // that only one or zero callback will be called after one OnPaintFinished.
   DCHECK_GT(texts_queued_for_paint_time_.size(), 0UL);
-  while (!texts_queued_for_paint_time_.empty()) {
+  while (!texts_queued_for_paint_time_.IsEmpty()) {
     base::WeakPtr<TextRecord>& record = texts_queued_for_paint_time_.front();
     DCHECK(visible_node_map_.Contains(record->node_id));
     DCHECK_EQ(record->paint_time, base::TimeTicks());
     record->paint_time = timestamp;
 
-    texts_queued_for_paint_time_.pop();
+    texts_queued_for_paint_time_.pop_front();
     is_result_invalidated_ = true;
   }
 }
@@ -274,7 +297,7 @@ void TextRecordsManager::RecordVisibleNode(const DOMNodeId& node_id,
 
 void TextRecordsManager::QueueToMeasurePaintTime(
     base::WeakPtr<TextRecord> record) {
-  texts_queued_for_paint_time_.emplace(record);
+  texts_queued_for_paint_time_.push_back(std::move(record));
 }
 
 bool TextRecordsManager::HasTooManyNodes() const {
@@ -302,5 +325,17 @@ TextRecord* TextRecordsManager::FindLargestPaintCandidate() {
   cached_largest_paint_candidate_ = new_largest_paint_candidate;
   is_result_invalidated_ = false;
   return new_largest_paint_candidate;
+}
+
+void TextPaintTimingDetector::WillWalkTextAggregatingNode() {
+  walking_block_stack_.push_back(BlockInfo());
+}
+
+void TextPaintTimingDetector::DidWalkTextAggregatingNode(
+    const LayoutBoxModelObject& text_aggregating_block) {
+  uint64_t aggregated_size = walking_block_stack_.back().AggregatedTextSize();
+  if (aggregated_size > 0)
+    RecordAggregatedText(text_aggregating_block, aggregated_size);
+  walking_block_stack_.pop_back();
 }
 }  // namespace blink

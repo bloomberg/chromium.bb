@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
+
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
@@ -122,10 +124,10 @@ void PaintTimingDetector::NotifyTextPaint(
   if (!object.HasNonZeroEffectiveOpacity())
     return;
   PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
-  if (detector.GetTextPaintTimingDetector()) {
-    detector.GetTextPaintTimingDetector()->RecordText(
-        object, current_paint_chunk_properties);
-  }
+  if (!detector.GetTextPaintTimingDetector())
+    return;
+  detector.GetTextPaintTimingDetector()->AggregateText(
+      object, current_paint_chunk_properties);
 }
 
 void PaintTimingDetector::NotifyNodeRemoved(const LayoutObject& object) {
@@ -201,7 +203,7 @@ void PaintTimingDetector::DidChangePerformanceTiming() {
   loader->DidChangePerformanceTiming();
 }
 
-uint64_t PaintTimingDetector::CalculateVisualSize(
+FloatRect PaintTimingDetector::CalculateVisualRect(
     const IntRect& visual_rect,
     const PropertyTreeState& current_paint_chunk_properties) const {
   // This case should be dealt with outside the function.
@@ -215,7 +217,7 @@ uint64_t PaintTimingDetector::CalculateVisualSize(
                                             float_clip_visual_rect);
   FloatRect& float_visual_rect = float_clip_visual_rect.Rect();
   if (frame_view_->GetFrame().LocalFrameRoot().IsMainFrame())
-    return float_visual_rect.Size().Area();
+    return float_visual_rect;
   // OOPIF. The final rect lives in the iframe's root frame space. We need to
   // project it to the top frame space.
   LayoutRect layout_visual_rect(float_visual_rect);
@@ -223,9 +225,29 @@ uint64_t PaintTimingDetector::CalculateVisualSize(
       .LocalFrameRoot()
       .View()
       ->MapToVisualRectInTopFrameSpace(layout_visual_rect);
-  return (layout_visual_rect.Size().Width() *
-          layout_visual_rect.Size().Height())
-      .ToUnsigned();
+  return FloatRect(layout_visual_rect);
+}
+
+ScopedPaintTimingDetectorBlockPaintHook::
+    ScopedPaintTimingDetectorBlockPaintHook(
+        const LayoutBoxModelObject& text_aggregating_block)
+    : text_aggregating_block_(text_aggregating_block) {
+  frame_view_ = text_aggregating_block.GetFrameView();
+  DCHECK(frame_view_);
+  PaintTimingDetector& detector = frame_view_->GetPaintTimingDetector();
+  if (detector.GetTextPaintTimingDetector()) {
+    detector.GetTextPaintTimingDetector()->WillWalkTextAggregatingNode();
+  }
+}
+
+ScopedPaintTimingDetectorBlockPaintHook::
+    ~ScopedPaintTimingDetectorBlockPaintHook() {
+  DCHECK(frame_view_);
+  PaintTimingDetector& detector = frame_view_->GetPaintTimingDetector();
+  if (detector.GetTextPaintTimingDetector()) {
+    detector.GetTextPaintTimingDetector()->DidWalkTextAggregatingNode(
+        text_aggregating_block_);
+  }
 }
 
 void PaintTimingDetector::Trace(Visitor* visitor) {

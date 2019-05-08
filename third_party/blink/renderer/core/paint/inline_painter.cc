@@ -11,12 +11,18 @@
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
 
 namespace blink {
 
 void InlinePainter::Paint(const PaintInfo& paint_info) {
+  base::Optional<ScopedPaintTimingDetectorBlockPaintHook>
+      scoped_paint_timing_detector_block_paint_hook;
+  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled())
+    scoped_paint_timing_detector_block_paint_hook.emplace(layout_inline_);
+
   ScopedPaintState paint_state(layout_inline_, paint_info);
   auto paint_offset = paint_state.PaintOffset();
   const auto& local_paint_info = paint_state.GetPaintInfo();
@@ -44,8 +50,9 @@ void InlinePainter::Paint(const PaintInfo& paint_info) {
     if (ShouldPaintDescendantOutlines(local_paint_info.phase))
       painter.PaintInlineChildrenOutlines(local_paint_info);
     if (ShouldPaintSelfOutline(local_paint_info.phase) &&
-        !layout_inline_.IsElementContinuation())
+        !layout_inline_.IsElementContinuation()) {
       painter.PaintOutline(local_paint_info, paint_offset);
+    }
     return;
   }
 

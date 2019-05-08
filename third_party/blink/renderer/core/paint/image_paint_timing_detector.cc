@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "third_party/blink/renderer/core/paint/image_paint_timing_detector.h"
+
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
@@ -252,8 +253,10 @@ void ImagePaintTimingDetector::RecordBackgroundImage(
   if (visual_rect.IsEmpty())
     return;
   uint64_t rect_size =
-      frame_view_->GetPaintTimingDetector().CalculateVisualSize(
-          visual_rect, current_paint_chunk_properties);
+      frame_view_->GetPaintTimingDetector()
+          .CalculateVisualRect(visual_rect, current_paint_chunk_properties)
+          .Size()
+          .Area();
   rect_size = DownScaleIfIntrinsicSizeIsSmaller(
       rect_size, intrinsic_size.Area(),
       (visual_rect.Width() * visual_rect.Height()));
@@ -309,8 +312,10 @@ void ImagePaintTimingDetector::RecordImage(
   if (visual_rect.IsEmpty())
     return;
   uint64_t rect_size =
-      frame_view_->GetPaintTimingDetector().CalculateVisualSize(
-          visual_rect, current_paint_chunk_properties);
+      frame_view_->GetPaintTimingDetector()
+          .CalculateVisualRect(visual_rect, current_paint_chunk_properties)
+          .Size()
+          .Area();
   rect_size = DownScaleIfIntrinsicSizeIsSmaller(
       rect_size, intrinsic_size.Area(),
       visual_rect.Width() * visual_rect.Height());
