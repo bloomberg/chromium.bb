@@ -128,6 +128,28 @@ class UmaHistogramChangeMatchedOrNotTest(unittest.TestCase):
                                                    MockOutputApi())
     self.assertEqual(0, len(warnings))
 
+  def testCorrectlyMatchedChangeViaSuffixesWithLineWrapping(self):
+    diff_cc = [
+        'UMA_HISTOGRAM_BOOL("LongHistogramNameNeedsLineWrapping.Dummy", true)']
+    diff_java = ['RecordHistogram.recordBooleanHistogram(' +
+                 '"LongHistogramNameNeedsLineWrapping.Dummy", true)']
+    diff_xml = ['<histogram_suffixes',
+                '    name="LongHistogramNameNeedsLineWrapping"',
+                '    separator=".">',
+                '  <suffix name="Dummy"/>',
+                '  <affected-histogram',
+                '      name="LongHistogramNameNeedsLineWrapping"/>',
+                '</histogram>']
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockFile('some/path/foo.cc', diff_cc),
+      MockFile('some/path/foo.java', diff_java),
+      MockFile('tools/metrics/histograms/histograms.xml', diff_xml),
+    ]
+    warnings = PRESUBMIT._CheckUmaHistogramChanges(mock_input_api,
+                                                   MockOutputApi())
+    self.assertEqual(0, len(warnings))
+
   def testNameMatch(self):
     # Check that the detected histogram name is "Dummy" and not, e.g.,
     # "Dummy\", true);  // The \"correct"

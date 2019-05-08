@@ -1147,16 +1147,25 @@ def _CheckDCHECK_IS_ONHasBraces(input_api, output_api):
   return errors
 
 
-def _FindHistogramNameInLine(histogram_name, line):
-  """Tries to find a histogram name or prefix in a line."""
-  if not "affected-histogram" in line:
-    return histogram_name in line
+def _FindHistogramNameInChunk(histogram_name, chunk):
+  """Tries to find a histogram name or prefix in a line.
+
+  Returns the existence of the histogram name, or None if it needs more chunk
+  to determine."""
   # A histogram_suffixes tag type has an affected-histogram name as a prefix of
   # the histogram_name.
-  if not '"' in line:
-    return False
-  histogram_prefix = line.split('\"')[1]
-  return histogram_prefix in histogram_name
+  if '<affected-histogram' in chunk:
+    # If the tag is not completed, needs more chunk to get the name.
+    if not '>' in chunk:
+      return None
+    if not 'name="' in chunk:
+      return False
+    # Retrieve the first portion of the chunk wrapped by double-quotations. We
+    # expect the only attribute is the name.
+    histogram_prefix = chunk.split('"')[1]
+    return histogram_prefix in histogram_name
+  # Typically the whole histogram name should in the line.
+  return histogram_name in chunk
 
 
 def _CheckUmaHistogramChanges(input_api, output_api):
@@ -1205,8 +1214,13 @@ def _CheckUmaHistogramChanges(input_api, output_api):
   unmatched_histograms = []
   for histogram_info in touched_histograms:
     histogram_name_found = False
+    chunk = ''
     for line_num, line in histograms_xml_modifications:
-      histogram_name_found = _FindHistogramNameInLine(histogram_info[0], line)
+      chunk += line
+      histogram_name_found = _FindHistogramNameInChunk(histogram_info[0], chunk)
+      if histogram_name_found is None:
+        continue
+      chunk = ''
       if histogram_name_found:
         break
     if not histogram_name_found:
@@ -1219,8 +1233,14 @@ def _CheckUmaHistogramChanges(input_api, output_api):
       for histogram_name, f, line_num in unmatched_histograms:
         histograms_xml.seek(0)
         histogram_name_found = False
+        chunk = ''
         for line in histograms_xml:
-          histogram_name_found = _FindHistogramNameInLine(histogram_name, line)
+          chunk += line
+          histogram_name_found = _FindHistogramNameInChunk(histogram_name,
+                                                           chunk)
+          if histogram_name_found is None:
+            continue
+          chunk = ''
           if histogram_name_found:
             break
         if not histogram_name_found:
