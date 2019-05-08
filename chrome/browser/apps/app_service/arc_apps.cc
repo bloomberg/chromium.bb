@@ -500,7 +500,9 @@ apps::mojom::AppPtr ArcApps::Convert(const std::string& app_id,
 
   app->app_type = apps::mojom::AppType::kArc;
   app->app_id = app_id;
-  app->readiness = apps::mojom::Readiness::kReady;
+  app->readiness = app_info.suspended
+                       ? apps::mojom::Readiness::kDisabledByPolicy
+                       : apps::mojom::Readiness::kReady;
   app->name = app_info.name;
   app->short_name = app->name;
 
