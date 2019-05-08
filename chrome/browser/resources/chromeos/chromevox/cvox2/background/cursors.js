@@ -436,10 +436,12 @@ cursors.Cursor.prototype = {
   get deepEquivalent() {
     var newNode = this.node;
     var newIndex = this.index_;
+    var isTextIndex = false;
     while (newNode.firstChild) {
       if (newNode.role == RoleType.STATIC_TEXT) {
         // Text offset.
         // Re-interpret the index as an offset into an inlineTextBox.
+        isTextIndex = true;
         var target = newNode.firstChild;
         var length = 0;
         while (target && length < newIndex) {
@@ -473,6 +475,7 @@ cursors.Cursor.prototype = {
       } else {
         // This offset is a text offset into the descendant visible
         // text. Approximate this by indexing into the inline text boxes.
+        isTextIndex = true;
         var lines = this.getAllLeaves_(newNode);
         if (!lines.length)
           break;
@@ -502,6 +505,8 @@ cursors.Cursor.prototype = {
         break;
       }
     }
+    if (!isTextIndex)
+      newIndex = cursors.NODE_INDEX;
 
     return new cursors.Cursor(newNode, newIndex);
   },

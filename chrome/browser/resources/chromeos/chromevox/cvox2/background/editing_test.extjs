@@ -618,11 +618,9 @@ TEST_F('ChromeVoxEditingTest', 'RichTextImageByCharacter', function() {
           .call(moveByChar)
           .expectSpeech(' ')
           .expectBraille(lineText, {startIndex: 8, endIndex: 8})
+          .clearPendingOutput()
           .call(moveByChar)
-
-          // This is technically wrong because we're actually over the entire
-          // image. This is broken because of bad node offsets.
-          .expectSpeech('c')
+          .expectSpeech('cat', 'Image')
           .expectBraille(lineOnCatText, {startIndex: 9, endIndex: 9})
 
           // Unfortunately, the node offset being wrong here means there's no

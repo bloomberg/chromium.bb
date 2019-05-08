@@ -413,11 +413,21 @@ AutomationRichEditableText.prototype = {
     if (startLine.isSameLine(prevStartLine) &&
         endLine.isSameLine(prevEndLine)) {
       // Intra-line changes.
-      var text = cur.text;
-      if (text == '\n')
-        text = '';
-      this.changed(
-          new cvox.TextChangeEvent(text, cur.startOffset, cur.endOffset, true));
+
+      if (cur.hasTextSelection()) {
+        var text = cur.text;
+        if (text == '\n')
+          text = '';
+        this.changed(new cvox.TextChangeEvent(
+            text, cur.startOffset, cur.endOffset, true));
+      } else {
+        // Handle description of non-textual lines.
+        new Output()
+            .withRichSpeech(
+                new Range(cur.start_, cur.end_),
+                new Range(prev.start_, prev.end_), Output.EventType.NAVIGATE)
+            .go();
+      }
       this.brailleCurrentRichLine_();
 
       // Finally, queue up any text markers/styles at bounds.
@@ -1097,7 +1107,8 @@ editing.EditableLine.prototype = {
     // It is possible that the start cursor points to content before this line
     // (e.g. in a multi-line selection).
     try {
-      return this.value_.getSpanStart(this.start_) + this.start_.index;
+      return this.value_.getSpanStart(this.start_) +
+          (this.start_.index == cursors.NODE_INDEX ? 0 : this.start_.index);
     } catch (e) {
       // When that happens, fall back to the start of this line.
       return 0;
@@ -1110,7 +1121,8 @@ editing.EditableLine.prototype = {
    */
   get endOffset() {
     try {
-      return this.value_.getSpanStart(this.end_) + this.end_.index;
+      return this.value_.getSpanStart(this.end_) +
+          (this.end_.index == cursors.NODE_INDEX ? 0 : this.end_.index);
     } catch (e) {
       return this.value_.length;
     }
@@ -1168,6 +1180,15 @@ editing.EditableLine.prototype = {
   /** @return {boolean} */
   hasCollapsedSelection: function() {
     return this.start_.equals(this.end_);
+  },
+
+  /**
+   * Returns whether this line has selection over text nodes.
+   */
+  hasTextSelection() {
+    if (this.start_.node && this.end_.node)
+      return AutomationPredicate.text(this.start_.node) &&
+          AutomationPredicate.text(this.end_.node);
   },
 
   /**
