@@ -180,9 +180,11 @@ struct IsDisallowNew {
 };
 
 template <typename T>
-class IsGarbageCollectedTypeInternal {
+class IsGarbageCollectedType {
   typedef char YesType;
   typedef struct NoType { char padding[8]; } NoType;
+
+  static_assert(sizeof(T), "T must be fully defined");
 
   using NonConstType = typename std::remove_const<T>::type;
   template <typename U>
@@ -213,11 +215,6 @@ class IsGarbageCollectedTypeInternal {
        sizeof(CheckGarbageCollectedType<NonConstType>(nullptr))) ||
       (sizeof(YesType) ==
        sizeof(CheckGarbageCollectedMixinType<NonConstType>(nullptr)));
-};
-
-template <typename T>
-class IsGarbageCollectedType : public IsGarbageCollectedTypeInternal<T> {
-  static_assert(sizeof(T), "T must be fully defined");
 };
 
 template <>

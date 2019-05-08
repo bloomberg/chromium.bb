@@ -754,6 +754,8 @@ class PLATFORM_EXPORT BaseArena {
 
   Address AllocateLargeObject(size_t allocation_size, size_t gc_info_index);
 
+  bool WillObjectBeLazilySwept(BasePage*, void*) const;
+
   virtual void VerifyObjectStartBitmap() {}
   virtual void VerifyMarking() {}
 

@@ -351,6 +351,68 @@ Address BaseArena::AllocateLargeObject(size_t allocation_size,
   return large_object;
 }
 
+bool BaseArena::WillObjectBeLazilySwept(BasePage* page,
+                                        void* object_pointer) const {
+  // If not on the current page being (potentially) lazily swept,
+  // |objectPointer| is an unmarked, sweepable object.
+  if (page != first_unswept_page_)
+    return true;
+
+  DCHECK(!page->IsLargeObjectPage());
+  // Check if the arena is currently being lazily swept.
+  NormalPage* normal_page = reinterpret_cast<NormalPage*>(page);
+  NormalPageArena* normal_arena = normal_page->ArenaForNormalPage();
+  if (!normal_arena->IsLazySweeping())
+    return true;
+
+  // Rare special case: unmarked object is on the page being lazily swept,
+  // and a finalizer for an object on that page calls
+  // ThreadHeap::willObjectBeLazilySwept().
+  //
+  // Need to determine if |objectPointer| represents a live (unmarked) object or
+  // an unmarked object that will be lazily swept later. As lazy page sweeping
+  // doesn't record a frontier pointer representing how far along it is, the
+  // page is scanned from the start, skipping past freed & unmarked regions.
+  //
+  // If no marked objects are encountered before |objectPointer|, we know that
+  // the finalizing object calling willObjectBeLazilySwept() comes later, and
+  // |objectPointer| has been deemed to be alive already (=> it won't be swept.)
+  //
+  // If a marked object is encountered before |objectPointer|, it will
+  // not have been lazily swept past already. Hence it represents an unmarked,
+  // sweepable object.
+  //
+  // As willObjectBeLazilySwept() is used rarely and it happening to be
+  // used while runnning a finalizer on the page being lazily swept is
+  // even rarer, the page scan is considered acceptable and something
+  // really wanted -- willObjectBeLazilySwept()'s result can be trusted.
+  Address page_end = normal_page->PayloadEnd();
+  for (Address header_address = normal_page->Payload();
+       header_address < page_end;) {
+    HeapObjectHeader* header =
+        reinterpret_cast<HeapObjectHeader*>(header_address);
+    size_t size = header->size();
+    // Scan made it to |objectPointer| without encountering any marked objects.
+    //  => lazy sweep will have processed this unmarked, but live, object.
+    //  => |object_pointer| will not be lazily swept.
+    //
+    // Notice that |object_pointer| might be pointer to a GarbageCollectedMixin,
+    // hence using |FromPayload| to derive the HeapObjectHeader isn't possible
+    // (and use its value to check if |header_address| is equal to it.)
+    if (header_address > object_pointer)
+      return false;
+    if (!header->IsFree() && header->IsMarked()) {
+      // There must be a marked object on this page and the one located must
+      // have room after it for the unmarked |objectPointer| object.
+      DCHECK(header_address + size < page_end);
+      return true;
+    }
+    header_address += size;
+  }
+  NOTREACHED();
+  return true;
+}
+
 NormalPageArena::NormalPageArena(ThreadState* state, int index)
     : BaseArena(state, index),
       current_allocation_point_(nullptr),

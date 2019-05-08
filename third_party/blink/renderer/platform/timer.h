@@ -32,7 +32,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/sanitizers.h"
@@ -112,35 +111,22 @@ class PLATFORM_EXPORT TimerBase {
   DISALLOW_COPY_AND_ASSIGN(TimerBase);
 };
 
-template <typename TimerFiredClass,
-          bool = WTF::IsGarbageCollectedTypeInternal<TimerFiredClass>::value>
-class TaskRunnerTimer;
-
-template <typename TimerFiredClass>
-class TaskRunnerTimer<TimerFiredClass, false> : public TimerBase {
+template <typename T, bool = IsGarbageCollectedType<T>::value>
+class TimerIsObjectAliveTrait {
  public:
-  using TimerFiredFunction = void (TimerFiredClass::*)(TimerBase*);
+  static bool IsHeapObjectAlive(T*) { return true; }
+};
 
-  TaskRunnerTimer(scoped_refptr<base::SingleThreadTaskRunner> web_task_runner,
-                  TimerFiredClass* o,
-                  TimerFiredFunction f)
-      : TimerBase(std::move(web_task_runner)), object_(o), function_(f) {}
-
-  ~TaskRunnerTimer() override = default;
-
- protected:
-  void Fired() override { (object_->*function_)(this); }
-
-  NO_SANITIZE_ADDRESS
-  bool CanFire() const override { return true; }
-
- private:
-  TimerFiredClass* object_;
-  TimerFiredFunction function_;
+template <typename T>
+class TimerIsObjectAliveTrait<T, true> {
+ public:
+  static bool IsHeapObjectAlive(T* object_pointer) {
+    return !ThreadHeap::WillObjectBeLazilySwept(object_pointer);
+  }
 };
 
 template <typename TimerFiredClass>
-class TaskRunnerTimer<TimerFiredClass, true> : public TimerBase {
+class TaskRunnerTimer : public TimerBase {
  public:
   using TimerFiredFunction = void (TimerFiredClass::*)(TimerBase*);
 
@@ -155,11 +141,20 @@ class TaskRunnerTimer<TimerFiredClass, true> : public TimerBase {
   void Fired() override { (object_->*function_)(this); }
 
   NO_SANITIZE_ADDRESS
-  bool CanFire() const override { return object_.Get(); }
+  bool CanFire() const override {
+    // Oilpan: if a timer fires while Oilpan heaps are being lazily
+    // swept, it is not safe to proceed if the object is about to
+    // be swept (and this timer will be stopped while doing so.)
+    return TimerIsObjectAliveTrait<TimerFiredClass>::IsHeapObjectAlive(object_);
+  }
 
  private:
+  // FIXME: Oilpan: TimerBase should be moved to the heap and m_object should be
+  // traced.  This raw pointer is safe as long as Timer<X> is held by the X
+  // itself (That's the case
+  // in the current code base).
   GC_PLUGIN_IGNORE("363031")
-  WeakPersistent<TimerFiredClass> object_;
+  TimerFiredClass* object_;
   TimerFiredFunction function_;
 };
 
