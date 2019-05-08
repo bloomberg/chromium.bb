@@ -16,7 +16,13 @@ namespace chromeos {
 namespace {
 
 // Fake delay for any asynchronous operation.
-const auto kTaskDelay = base::TimeDelta::FromMilliseconds(500);
+constexpr auto kTaskDelay = base::TimeDelta::FromMilliseconds(500);
+
+// Fake validity lifetime for TGTs.
+constexpr base::TimeDelta kTgtValidity = base::TimeDelta::FromHours(10);
+
+// Fake renewal lifetime for TGTs.
+constexpr base::TimeDelta kTgtRenewal = base::TimeDelta::FromHours(24);
 
 // Posts |callback| on the current thread's task runner, passing it the
 // |response| message.
@@ -71,6 +77,31 @@ void FakeKerberosClient::RemoveAccount(
                                   ? kerberos::ERROR_UNKNOWN_PRINCIPAL_NAME
                                   : kerberos::ERROR_NONE;
   PostResponse(std::move(callback), error);
+}
+
+void FakeKerberosClient::ListAccounts(
+    const kerberos::ListAccountsRequest& request,
+    ListAccountsCallback callback) {
+  if (!started_) {
+    PostResponse(std::move(callback), kerberos::ERROR_DBUS_FAILURE);
+    return;
+  }
+
+  kerberos::ListAccountsResponse response;
+  for (const auto& account : accounts_) {
+    const std::string& principal_name = account.first;
+    const AccountData& data = account.second;
+
+    kerberos::Account* response_account = response.add_accounts();
+    response_account->set_principal_name(principal_name);
+    response_account->set_krb5conf(data.krb5conf);
+    response_account->set_tgt_validity_seconds(
+        data.has_tgt ? kTgtValidity.InSeconds() : 0);
+    response_account->set_tgt_renewal_seconds(
+        data.has_tgt ? kTgtRenewal.InSeconds() : 0);
+  }
+  response.set_error(kerberos::ERROR_NONE);
+  PostProtoResponse(std::move(callback), response);
 }
 
 void FakeKerberosClient::SetConfig(const kerberos::SetConfigRequest& request,

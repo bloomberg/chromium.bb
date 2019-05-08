@@ -58,6 +58,12 @@ class KerberosClientImpl : public KerberosClient {
                     std::move(callback));
   }
 
+  void ListAccounts(const kerberos::ListAccountsRequest& request,
+                    ListAccountsCallback callback) override {
+    CallProtoMethod(kerberos::kListAccountsMethod, request,
+                    std::move(callback));
+  }
+
   void SetConfig(const kerberos::SetConfigRequest& request,
                  SetConfigCallback callback) override {
     CallProtoMethod(kerberos::kSetConfigMethod, request, std::move(callback));

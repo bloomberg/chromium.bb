@@ -26,6 +26,8 @@ class COMPONENT_EXPORT(KERBEROS) KerberosClient {
       base::OnceCallback<void(const kerberos::AddAccountResponse& response)>;
   using RemoveAccountCallback =
       base::OnceCallback<void(const kerberos::RemoveAccountResponse& response)>;
+  using ListAccountsCallback =
+      base::OnceCallback<void(const kerberos::ListAccountsResponse& response)>;
   using SetConfigCallback =
       base::OnceCallback<void(const kerberos::SetConfigResponse& response)>;
   using AcquireKerberosTgtCallback = base::OnceCallback<void(
@@ -65,6 +67,9 @@ class COMPONENT_EXPORT(KERBEROS) KerberosClient {
 
   virtual void RemoveAccount(const kerberos::RemoveAccountRequest& request,
                              RemoveAccountCallback callback) = 0;
+
+  virtual void ListAccounts(const kerberos::ListAccountsRequest& request,
+                            ListAccountsCallback callback) = 0;
 
   virtual void SetConfig(const kerberos::SetConfigRequest& request,
                          SetConfigCallback callback) = 0;

@@ -363,6 +363,20 @@ void KerberosCredentialsManager::OnRemoveAccount(
   std::move(callback).Run(response.error());
 }
 
+void KerberosCredentialsManager::ListAccounts(ListAccountsCallback callback) {
+  kerberos::ListAccountsRequest request;
+  KerberosClient::Get()->ListAccounts(
+      request, base::BindOnce(&KerberosCredentialsManager::OnListAccounts,
+                              weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void KerberosCredentialsManager::OnListAccounts(
+    ListAccountsCallback callback,
+    const kerberos::ListAccountsResponse& response) {
+  LogError("ListAccounts", response.error());
+  std::move(callback).Run(response);
+}
+
 kerberos::ErrorType KerberosCredentialsManager::SetActiveAccount(
     std::string principal_name) {
   if (!NormalizePrincipal(&principal_name))

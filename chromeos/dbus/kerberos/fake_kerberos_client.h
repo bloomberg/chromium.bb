@@ -28,6 +28,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeKerberosClient
                   AddAccountCallback callback) override;
   void RemoveAccount(const kerberos::RemoveAccountRequest& request,
                      RemoveAccountCallback callback) override;
+  void ListAccounts(const kerberos::ListAccountsRequest& request,
+                    ListAccountsCallback callback) override;
   void SetConfig(const kerberos::SetConfigRequest& request,
                  SetConfigCallback callback) override;
   void AcquireKerberosTgt(const kerberos::AcquireKerberosTgtRequest& request,

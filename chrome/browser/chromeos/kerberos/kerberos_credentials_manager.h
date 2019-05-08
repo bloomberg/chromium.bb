@@ -23,6 +23,8 @@ class KerberosAddAccountRunner;
 class KerberosCredentialsManager {
  public:
   using ResultCallback = base::OnceCallback<void(kerberos::ErrorType)>;
+  using ListAccountsCallback =
+      base::OnceCallback<void(const kerberos::ListAccountsResponse&)>;
 
   class Observer : public base::CheckedObserver {
    public:
@@ -66,6 +68,10 @@ class KerberosCredentialsManager {
   // On success, calls OnAccountsChanged() for observers.
   void RemoveAccount(std::string principal_name, ResultCallback callback);
 
+  // Returns a list of all existing accounts, including current status like
+  // remaining Kerberos ticket lifetime.
+  void ListAccounts(ListAccountsCallback callback);
+
   // Sets the contents of the Kerberos configuration (krb5.conf) to |krb5_conf|
   // for the account  with given |principal_name|.
   void SetConfig(std::string principal_name,
@@ -94,6 +100,10 @@ class KerberosCredentialsManager {
   void OnRemoveAccount(const std::string& principal_name,
                        ResultCallback callback,
                        const kerberos::RemoveAccountResponse& response);
+
+  // Callback for RemoveAccount().
+  void OnListAccounts(ListAccountsCallback callback,
+                      const kerberos::ListAccountsResponse& response);
 
   // Callback for SetConfig().
   void OnSetConfig(ResultCallback callback,
