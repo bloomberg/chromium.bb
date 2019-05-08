@@ -132,6 +132,10 @@ base::RefCountedMemory* CastContentClient::GetDataResourceBytes(
       resource_id);
 }
 
+bool CastContentClient::IsDataResourceGzipped(int resource_id) const {
+  return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
+}
+
 gfx::Image& CastContentClient::GetNativeImageNamed(int resource_id) const {
   return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       resource_id);

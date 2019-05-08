@@ -27,6 +27,7 @@ class CastContentClient : public content::ContentClient {
       ui::ScaleFactor scale_factor) const override;
   base::RefCountedMemory* GetDataResourceBytes(
       int resource_id) const override;
+  bool IsDataResourceGzipped(int resource_id) const override;
   gfx::Image& GetNativeImageNamed(int resource_id) const override;
 #if defined(OS_ANDROID)
   ::media::MediaDrmBridgeClient* GetMediaDrmBridgeClient() override;
