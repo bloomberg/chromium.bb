@@ -191,7 +191,7 @@ ui::PageTransition NavigationHandleImpl::GetPageTransition() {
   return navigation_request_->common_params().transition;
 }
 
-const NavigationUIData* NavigationHandleImpl::GetNavigationUIData() {
+NavigationUIData* NavigationHandleImpl::GetNavigationUIData() {
   return navigation_request_->navigation_ui_data();
 }
 

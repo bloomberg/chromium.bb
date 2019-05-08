@@ -336,7 +336,7 @@ class ResourceDispatcherHostImpl::ScheduledResourceRequestAdapter final
   void WillStartRequest(bool* defer) override {
     request_->WillStartRequest(defer);
   }
-  const char* GetNameForLogging() const override { return "ResourceScheduler"; }
+  const char* GetNameForLogging() override { return "ResourceScheduler"; }
 
  private:
   std::unique_ptr<network::ResourceScheduler::ScheduledResourceRequest>

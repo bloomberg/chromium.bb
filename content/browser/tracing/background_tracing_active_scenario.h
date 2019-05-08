@@ -26,7 +26,7 @@ class BackgroundTracingActiveScenario {
   enum class State { kIdle, kTracing, kFinalizing, kUploading, kAborted };
 
   BackgroundTracingActiveScenario(
-      std::unique_ptr<const BackgroundTracingConfigImpl> config,
+      std::unique_ptr<BackgroundTracingConfigImpl> config,
       bool requires_anonymized_data,
       BackgroundTracingManager::ReceiveCallback receive_callback,
       base::OnceClosure on_aborted_callback);
@@ -70,7 +70,7 @@ class BackgroundTracingActiveScenario {
 
   void SetState(State new_state);
 
-  std::unique_ptr<const BackgroundTracingConfigImpl> config_;
+  std::unique_ptr<BackgroundTracingConfigImpl> config_;
   bool requires_anonymized_data_;
   State scenario_state_;
   std::unique_ptr<base::DictionaryValue> last_triggered_rule_;

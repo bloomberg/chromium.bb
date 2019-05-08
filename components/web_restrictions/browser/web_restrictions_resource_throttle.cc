@@ -33,7 +33,7 @@ void WebRestrictionsResourceThrottle::WillRedirectRequest(
   *defer = ShouldDefer(redirect_info.new_url);
 }
 
-const char* WebRestrictionsResourceThrottle::GetNameForLogging() const {
+const char* WebRestrictionsResourceThrottle::GetNameForLogging() {
   return "WebRestrictionsResourceThrottle";
 }
 

@@ -246,7 +246,7 @@ void BrowsingDataRemoverImpl::RunNextTask() {
                                   kSlowTaskTimeout);
 
   RemoveImpl(removal_task.delete_begin, removal_task.delete_end,
-             removal_task.remove_mask, *removal_task.filter_builder,
+             removal_task.remove_mask, removal_task.filter_builder.get(),
              removal_task.origin_type_mask);
 }
 
@@ -254,7 +254,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     const base::Time& delete_begin,
     const base::Time& delete_end,
     int remove_mask,
-    const BrowsingDataFilterBuilder& filter_builder,
+    BrowsingDataFilterBuilder* filter_builder,
     int origin_type_mask) {
   // =============== README before adding more storage backends ===============
   //
@@ -297,12 +297,12 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   //////////////////////////////////////////////////////////////////////////////
   // INITIALIZATION
   base::RepeatingCallback<bool(const GURL& url)> filter =
-      filter_builder.BuildGeneralFilter();
+      filter_builder->BuildGeneralFilter();
 
   // Some backends support a filter that |is_null()| to make complete deletion
   // more efficient.
   base::RepeatingCallback<bool(const GURL&)> nullable_filter =
-      filter_builder.IsEmptyBlacklist()
+      filter_builder->IsEmptyBlacklist()
           ? base::RepeatingCallback<bool(const GURL&)>()
           : filter;
 
@@ -393,10 +393,10 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     // If cookies are supposed to be conditionally deleted from the storage
     // partition, create the deletion info object.
     network::mojom::CookieDeletionFilterPtr deletion_filter;
-    if (!filter_builder.IsEmptyBlacklist() &&
+    if (!filter_builder->IsEmptyBlacklist() &&
         (storage_partition_remove_mask &
          StoragePartition::REMOVE_DATA_MASK_COOKIES)) {
-      deletion_filter = filter_builder.BuildCookieDeletionFilter();
+      deletion_filter = filter_builder->BuildCookieDeletionFilter();
     } else {
       deletion_filter = network::mojom::CookieDeletionFilter::New();
     }
@@ -406,7 +406,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
       embedder_matcher = embedder_delegate_->GetOriginTypeMatcher();
     bool perform_storage_cleanup =
         delete_begin_.is_null() && delete_end_.is_max() &&
-        filter_builder.GetMode() == BrowsingDataFilterBuilder::BLACKLIST;
+        filter_builder->GetMode() == BrowsingDataFilterBuilder::BLACKLIST;
 
     storage_partition->ClearData(
         storage_partition_remove_mask, quota_storage_remove_mask,
@@ -433,7 +433,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
       // when enabled. Note that we've deprecated the concept of a media cache,
       // and are now using a single cache for both purposes.
       network_context->ClearHttpCache(
-          delete_begin, delete_end, filter_builder.BuildNetworkServiceFilter(),
+          delete_begin, delete_end, filter_builder->BuildNetworkServiceFilter(),
           CreateTaskCompletionClosureForMojo(TracingDataType::kHttpCache));
     } else {
       storage_partition->ClearHttpAndMediaCaches(
@@ -465,10 +465,10 @@ void BrowsingDataRemoverImpl::RemoveImpl(
         BrowserContext::GetDefaultStoragePartition(browser_context_)
             ->GetNetworkContext();
     network_context->ClearReportingCacheClients(
-        filter_builder.BuildNetworkServiceFilter(),
+        filter_builder->BuildNetworkServiceFilter(),
         CreateTaskCompletionClosureForMojo(TracingDataType::kReportingCache));
     network_context->ClearNetworkErrorLogging(
-        filter_builder.BuildNetworkServiceFilter(),
+        filter_builder->BuildNetworkServiceFilter(),
         CreateTaskCompletionClosureForMojo(
             TracingDataType::kNetworkErrorLogging));
   }

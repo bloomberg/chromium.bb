@@ -470,7 +470,7 @@ bool PrerenderContents::AddAliasURL(const GURL& url) {
 
 bool PrerenderContents::Matches(
     const GURL& url,
-    const SessionStorageNamespace* session_storage_namespace) const {
+    SessionStorageNamespace* session_storage_namespace) const {
   // TODO(davidben): Remove any consumers that pass in a NULL
   // session_storage_namespace and only test with matches.
   if (session_storage_namespace &&

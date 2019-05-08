@@ -527,9 +527,7 @@ class GenericResourceThrottle : public ResourceThrottle {
     }
   }
 
-  const char* GetNameForLogging() const override {
-    return "GenericResourceThrottle";
-  }
+  const char* GetNameForLogging() override { return "GenericResourceThrottle"; }
 
   void AssertAndResume() {
     ASSERT_TRUE(this == active_throttle_);

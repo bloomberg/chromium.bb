@@ -279,7 +279,7 @@ void SiteInstanceImpl::SetSite(const GURL& url) {
   }
 }
 
-const GURL& SiteInstanceImpl::GetSiteURL() const {
+const GURL& SiteInstanceImpl::GetSiteURL() {
   return site_;
 }
 
@@ -403,7 +403,7 @@ void SiteInstanceImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-BrowserContext* SiteInstanceImpl::GetBrowserContext() const {
+BrowserContext* SiteInstanceImpl::GetBrowserContext() {
   return browsing_instance_->GetBrowserContext();
 }
 

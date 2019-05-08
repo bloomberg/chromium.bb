@@ -51,7 +51,7 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
   void EnableAccessibility() override;
   void DisableAccessibility() override;
   bool IsRendererAccessibilityEnabled() override;
-  ui::AXMode GetAccessibilityMode() const override;
+  ui::AXMode GetAccessibilityMode() override;
   void AddAccessibilityModeFlags(ui::AXMode mode) override;
   void RemoveAccessibilityModeFlags(ui::AXMode mode) override;
   void ResetAccessibilityMode() override;

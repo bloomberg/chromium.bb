@@ -165,7 +165,7 @@ class TestInterstitialPage : public InterstitialPageImpl {
                          error_code);
   }
 
-  bool is_showing() const {
+  bool is_showing() {
     return static_cast<TestRenderWidgetHostView*>(
                GetMainFrame()->GetRenderViewHost()->GetWidget()->GetView())
         ->is_showing();

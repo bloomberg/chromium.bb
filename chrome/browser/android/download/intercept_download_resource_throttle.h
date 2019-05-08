@@ -26,7 +26,7 @@ class InterceptDownloadResourceThrottle : public content::ResourceThrottle {
 
   // content::ResourceThrottle implementation:
   void WillProcessResponse(bool* defer) override;
-  const char* GetNameForLogging() const override;
+  const char* GetNameForLogging() override;
 
  private:
   void CheckCookiePolicy(const net::CookieList& cookie_list,

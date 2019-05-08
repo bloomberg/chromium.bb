@@ -72,7 +72,7 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data,
   // Sets/Gets the delegate for this DownloadManager. The delegate has to live
   // past its Shutdown method being called (by the DownloadManager).
   virtual void SetDelegate(DownloadManagerDelegate* delegate) = 0;
-  virtual DownloadManagerDelegate* GetDelegate() const = 0;
+  virtual DownloadManagerDelegate* GetDelegate() = 0;
 
   // Shutdown the download manager. Content calls this when BrowserContext is
   // being destructed. If the embedder needs this to be called earlier, it can
@@ -195,20 +195,20 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data,
       DownloadInitializationDependency dependency) = 0;
 
   // Returns if the manager has been initialized and loaded all the data.
-  virtual bool IsManagerInitialized() const = 0;
+  virtual bool IsManagerInitialized() = 0;
 
   // The number of in progress (including paused) downloads.
   // Performance note: this loops over all items. If profiling finds that this
   // is too slow, use an AllDownloadItemNotifier to count in-progress items.
-  virtual int InProgressCount() const = 0;
+  virtual int InProgressCount() = 0;
 
   // The number of in progress (including paused) downloads.
   // Performance note: this loops over all items. If profiling finds that this
   // is too slow, use an AllDownloadItemNotifier to count in-progress items.
   // This excludes downloads that are marked as malicious.
-  virtual int NonMaliciousInProgressCount() const = 0;
+  virtual int NonMaliciousInProgressCount() = 0;
 
-  virtual BrowserContext* GetBrowserContext() const = 0;
+  virtual BrowserContext* GetBrowserContext() = 0;
 
   // Checks whether downloaded files still exist. Updates state of downloads
   // that refer to removed files. The check runs in the background and may

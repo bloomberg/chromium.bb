@@ -49,7 +49,7 @@ class SafeBrowsingParallelResourceThrottle
 
   ~SafeBrowsingParallelResourceThrottle() override;
 
-  const char* GetNameForLogging() const override;
+  const char* GetNameForLogging() override;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingParallelResourceThrottle);
 };

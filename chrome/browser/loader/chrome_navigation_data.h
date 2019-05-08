@@ -24,7 +24,7 @@ class ChromeNavigationData : public content::NavigationData {
   // changes to the original after the clone is created will not be reflected in
   // the clone.
   // |data_reduction_proxy_data_| is deep copied.
-  std::unique_ptr<content::NavigationData> Clone() const override;
+  std::unique_ptr<content::NavigationData> Clone() override;
 
   // Takes ownership of |data_reduction_proxy_data|.
   void SetDataReductionProxyData(

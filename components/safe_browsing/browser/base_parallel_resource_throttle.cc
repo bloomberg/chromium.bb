@@ -168,7 +168,7 @@ void BaseParallelResourceThrottle::WillProcessResponse(bool* defer) {
     throttle_in_band_ = false;
 }
 
-const char* BaseParallelResourceThrottle::GetNameForLogging() const {
+const char* BaseParallelResourceThrottle::GetNameForLogging() {
   return "BaseParallelResourceThrottle";
 }
 

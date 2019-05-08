@@ -4763,7 +4763,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
         helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting());
     main_frame = web_contents->GetMainFrame();
   } else {
-    const content::InterstitialPage* interstitial =
+    content::InterstitialPage* interstitial =
         content::InterstitialPage::GetInterstitialPage(web_contents);
     ASSERT_TRUE(interstitial);
     main_frame = interstitial->GetMainFrame();

@@ -300,9 +300,8 @@ class BrowsingDataApiTest : public ExtensionServiceTestBase {
         << " for " << args;
   }
 
-  void VerifyFilterBuilder(
-      const std::string& options,
-      const content::BrowsingDataFilterBuilder& filter_builder) {
+  void VerifyFilterBuilder(const std::string& options,
+                           content::BrowsingDataFilterBuilder* filter_builder) {
     delegate()->ExpectCall(
         base::Time::UnixEpoch(), base::Time::Max(),
         content::BrowsingDataRemover::DATA_TYPE_LOCAL_STORAGE, UNPROTECTED_WEB,
@@ -617,7 +616,7 @@ TEST_F(BrowsingDataApiTest, RemoveWithoutFilter) {
       content::BrowsingDataFilterBuilder::BLACKLIST);
   ASSERT_TRUE(filter_builder->IsEmptyBlacklist());
 
-  VerifyFilterBuilder("{}", *filter_builder);
+  VerifyFilterBuilder("{}", filter_builder.get());
 }
 
 TEST_F(BrowsingDataApiTest, RemoveWithWhitelistFilter) {
@@ -626,7 +625,7 @@ TEST_F(BrowsingDataApiTest, RemoveWithWhitelistFilter) {
   filter_builder->AddOrigin(url::Origin::Create(GURL("http://example.com")));
 
   VerifyFilterBuilder(R"({"origins": ["http://example.com"]})",
-                      *filter_builder);
+                      filter_builder.get());
 }
 
 TEST_F(BrowsingDataApiTest, RemoveWithBlacklistFilter) {
@@ -635,7 +634,7 @@ TEST_F(BrowsingDataApiTest, RemoveWithBlacklistFilter) {
   filter_builder->AddOrigin(url::Origin::Create(GURL("http://example.com")));
 
   VerifyFilterBuilder(R"({"excludeOrigins": ["http://example.com"]})",
-                      *filter_builder);
+                      filter_builder.get());
 }
 
 TEST_F(BrowsingDataApiTest, RemoveWithSpecialUrlFilter) {
@@ -647,7 +646,7 @@ TEST_F(BrowsingDataApiTest, RemoveWithSpecialUrlFilter) {
   VerifyFilterBuilder(
       R"({"excludeOrigins": ["file:///tmp/foo.html/",
           "filesystem:http://example.com/foo.txt"]})",
-      *filter_builder);
+      filter_builder.get());
 }
 
 TEST_F(BrowsingDataApiTest, RemoveCookiesWithFilter) {
@@ -656,7 +655,7 @@ TEST_F(BrowsingDataApiTest, RemoveCookiesWithFilter) {
   filter_builder->AddRegisterableDomain("example.com");
   delegate()->ExpectCall(base::Time::UnixEpoch(), base::Time::Max(),
                          content::BrowsingDataRemover::DATA_TYPE_COOKIES,
-                         UNPROTECTED_WEB, *filter_builder);
+                         UNPROTECTED_WEB, filter_builder.get());
 
   auto function = base::MakeRefCounted<BrowsingDataRemoveFunction>();
   EXPECT_EQ(RunFunctionAndReturnSingleResult(
@@ -676,7 +675,7 @@ TEST_F(BrowsingDataApiTest, RemoveCookiesAndStorageWithFilter) {
   filter_builder1->AddRegisterableDomain("example.com");
   delegate()->ExpectCall(base::Time::UnixEpoch(), base::Time::Max(),
                          content::BrowsingDataRemover::DATA_TYPE_COOKIES,
-                         UNPROTECTED_WEB, *filter_builder1);
+                         UNPROTECTED_WEB, filter_builder1.get());
 
   auto filter_builder2 = content::BrowsingDataFilterBuilder::Create(
       content::BrowsingDataFilterBuilder::WHITELIST);
@@ -684,7 +683,7 @@ TEST_F(BrowsingDataApiTest, RemoveCookiesAndStorageWithFilter) {
       url::Origin::Create(GURL("http://www.example.com")));
   delegate()->ExpectCall(base::Time::UnixEpoch(), base::Time::Max(),
                          content::BrowsingDataRemover::DATA_TYPE_LOCAL_STORAGE,
-                         UNPROTECTED_WEB, *filter_builder2);
+                         UNPROTECTED_WEB, filter_builder2.get());
 
   auto function = base::MakeRefCounted<BrowsingDataRemoveFunction>();
   EXPECT_EQ(RunFunctionAndReturnSingleResult(

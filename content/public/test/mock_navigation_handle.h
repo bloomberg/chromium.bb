@@ -52,7 +52,7 @@ class MockNavigationHandle : public NavigationHandle {
   const Referrer& GetReferrer() override { return referrer_; }
   MOCK_METHOD0(HasUserGesture, bool());
   ui::PageTransition GetPageTransition() override { return page_transition_; }
-  MOCK_METHOD0(GetNavigationUIData, const NavigationUIData*());
+  MOCK_METHOD0(GetNavigationUIData, NavigationUIData*());
   MOCK_METHOD0(IsExternalProtocol, bool());
   net::Error GetNetErrorCode() override { return net_error_code_; }
   RenderFrameHost* GetRenderFrameHost() override { return render_frame_host_; }

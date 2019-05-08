@@ -80,7 +80,7 @@ bool AwCookieAccessPolicy::GetShouldAcceptThirdPartyCookies(
     render_frame_id = info->GetRenderFrameID();
     frame_tree_node_id = info->GetFrameTreeNodeId();
   } else {
-    const WebSocketHandshakeRequestInfo* websocket_info =
+    WebSocketHandshakeRequestInfo* websocket_info =
         WebSocketHandshakeRequestInfo::ForRequest(&request);
     if (!websocket_info)
       return false;

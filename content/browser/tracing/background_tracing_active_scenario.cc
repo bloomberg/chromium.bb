@@ -51,7 +51,7 @@ class BackgroundTracingActiveScenario::TracingTimer {
 };
 
 BackgroundTracingActiveScenario::BackgroundTracingActiveScenario(
-    std::unique_ptr<const BackgroundTracingConfigImpl> config,
+    std::unique_ptr<BackgroundTracingConfigImpl> config,
     bool requires_anonymized_data,
     BackgroundTracingManager::ReceiveCallback receive_callback,
     base::OnceClosure on_aborted_callback)

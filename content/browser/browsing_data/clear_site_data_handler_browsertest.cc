@@ -104,7 +104,7 @@ class TestBrowsingDataRemoverDelegate : public MockBrowsingDataRemoverDelegate {
           BrowsingDataFilterBuilder::WHITELIST);
       filter_builder.AddRegisterableDomain(origin.host());
       ExpectCall(base::Time(), base::Time::Max(), data_type_mask,
-                 kOriginTypeMask, std::move(filter_builder));
+                 kOriginTypeMask, &filter_builder);
     }
     if (storage || cache) {
       int data_type_mask =
@@ -115,7 +115,7 @@ class TestBrowsingDataRemoverDelegate : public MockBrowsingDataRemoverDelegate {
           BrowsingDataFilterBuilder::WHITELIST);
       filter_builder.AddOrigin(origin);
       ExpectCall(base::Time(), base::Time::Max(), data_type_mask,
-                 kOriginTypeMask, std::move(filter_builder));
+                 kOriginTypeMask, &filter_builder);
     }
   }
 

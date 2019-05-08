@@ -74,7 +74,7 @@ class CONTENT_EXPORT DownloadManagerImpl
 
   // DownloadManager functions.
   void SetDelegate(DownloadManagerDelegate* delegate) override;
-  DownloadManagerDelegate* GetDelegate() const override;
+  DownloadManagerDelegate* GetDelegate() override;
   void Shutdown() override;
   void GetAllDownloads(
       download::SimpleDownloadManager::DownloadVector* result) override;
@@ -125,10 +125,10 @@ class CONTENT_EXPORT DownloadManagerImpl
       const std::vector<download::DownloadItem::ReceivedSlice>& received_slices)
       override;
   void PostInitialization(DownloadInitializationDependency dependency) override;
-  bool IsManagerInitialized() const override;
-  int InProgressCount() const override;
-  int NonMaliciousInProgressCount() const override;
-  BrowserContext* GetBrowserContext() const override;
+  bool IsManagerInitialized() override;
+  int InProgressCount() override;
+  int NonMaliciousInProgressCount() override;
+  BrowserContext* GetBrowserContext() override;
   void CheckForHistoryFilesRemoval() override;
   void OnHistoryQueryComplete(
       base::OnceClosure load_history_downloads_cb) override;

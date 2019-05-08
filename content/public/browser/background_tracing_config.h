@@ -31,7 +31,7 @@ class CONTENT_EXPORT BackgroundTracingConfig {
   static std::unique_ptr<BackgroundTracingConfig> FromDict(
       const base::DictionaryValue* dict);
 
-  virtual void IntoDict(base::DictionaryValue* dict) const = 0;
+  virtual void IntoDict(base::DictionaryValue* dict) = 0;
 
  private:
   friend class BackgroundTracingConfigImpl;

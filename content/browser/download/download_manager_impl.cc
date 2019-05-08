@@ -492,7 +492,7 @@ void DownloadManagerImpl::SetDelegate(DownloadManagerDelegate* delegate) {
   delegate_ = delegate;
 }
 
-DownloadManagerDelegate* DownloadManagerImpl::GetDelegate() const {
+DownloadManagerDelegate* DownloadManagerImpl::GetDelegate() {
   return delegate_;
 }
 
@@ -752,7 +752,7 @@ std::string DownloadManagerImpl::GetApplicationClientIdForFileScanning() const {
   return std::string();
 }
 
-BrowserContext* DownloadManagerImpl::GetBrowserContext() const {
+BrowserContext* DownloadManagerImpl::GetBrowserContext() {
   return browser_context_;
 }
 
@@ -1170,11 +1170,11 @@ void DownloadManagerImpl::OnDownloadManagerInitialized() {
     observer.OnManagerInitialized();
 }
 
-bool DownloadManagerImpl::IsManagerInitialized() const {
+bool DownloadManagerImpl::IsManagerInitialized() {
   return initialized_;
 }
 
-int DownloadManagerImpl::InProgressCount() const {
+int DownloadManagerImpl::InProgressCount() {
   int count = 0;
   for (const auto& it : downloads_) {
     if (it.second->GetState() == download::DownloadItem::IN_PROGRESS)
@@ -1183,7 +1183,7 @@ int DownloadManagerImpl::InProgressCount() const {
   return count;
 }
 
-int DownloadManagerImpl::NonMaliciousInProgressCount() const {
+int DownloadManagerImpl::NonMaliciousInProgressCount() {
   int count = 0;
   for (const auto& it : downloads_) {
     if (it.second->GetState() == download::DownloadItem::IN_PROGRESS &&

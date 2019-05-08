@@ -66,7 +66,7 @@ void InterceptDownloadResourceThrottle::WillProcessResponse(bool* defer) {
   }
 }
 
-const char* InterceptDownloadResourceThrottle::GetNameForLogging() const {
+const char* InterceptDownloadResourceThrottle::GetNameForLogging() {
   return "InterceptDownloadResourceThrottle";
 }
 

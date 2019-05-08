@@ -37,7 +37,7 @@ std::unique_ptr<BackgroundTracingConfigImpl> ReadFromJSONString(
   return config;
 }
 
-std::string ConfigToString(const BackgroundTracingConfig* config) {
+std::string ConfigToString(BackgroundTracingConfig* config) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   config->IntoDict(dict.get());

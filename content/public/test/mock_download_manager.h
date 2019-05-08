@@ -95,7 +95,7 @@ class MockDownloadManager : public DownloadManager {
 
   // DownloadManager:
   MOCK_METHOD1(SetDelegate, void(DownloadManagerDelegate* delegate));
-  MOCK_CONST_METHOD0(GetDelegate, DownloadManagerDelegate*());
+  MOCK_METHOD0(GetDelegate, DownloadManagerDelegate*());
   MOCK_METHOD0(Shutdown, void());
   MOCK_METHOD1(GetAllDownloads, void(DownloadVector* downloads));
   MOCK_METHOD1(Init, bool(BrowserContext* browser_context));
@@ -162,10 +162,10 @@ class MockDownloadManager : public DownloadManager {
                download::DownloadItem*(CreateDownloadItemAdapter adapter));
   MOCK_METHOD1(PostInitialization,
                void(DownloadInitializationDependency dependency));
-  MOCK_CONST_METHOD0(IsManagerInitialized, bool());
-  MOCK_CONST_METHOD0(InProgressCount, int());
-  MOCK_CONST_METHOD0(NonMaliciousInProgressCount, int());
-  MOCK_CONST_METHOD0(GetBrowserContext, BrowserContext*());
+  MOCK_METHOD0(IsManagerInitialized, bool());
+  MOCK_METHOD0(InProgressCount, int());
+  MOCK_METHOD0(NonMaliciousInProgressCount, int());
+  MOCK_METHOD0(GetBrowserContext, BrowserContext*());
   MOCK_METHOD0(CheckForHistoryFilesRemoval, void());
   MOCK_METHOD1(GetDownload, download::DownloadItem*(uint32_t id));
   MOCK_METHOD1(GetDownloadByGuid, download::DownloadItem*(const std::string&));

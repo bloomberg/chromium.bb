@@ -40,7 +40,7 @@ class ChromeNavigationUIData : public content::NavigationUIData {
   // Creates a new ChromeNavigationUIData that is a deep copy of the original.
   // Any changes to the original after the clone is created will not be
   // reflected in the clone.  All owned data members are deep copied.
-  std::unique_ptr<content::NavigationUIData> Clone() const override;
+  std::unique_ptr<content::NavigationUIData> Clone() override;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   void SetExtensionNavigationUIData(

@@ -119,7 +119,7 @@ class TestResourceThrottle : public ResourceThrottle {
       CancelWithError(net::ERR_UNEXPECTED);
   }
 
-  const char* GetNameForLogging() const override { return "Hank"; }
+  const char* GetNameForLogging() override { return "Hank"; }
 
   int will_start_request_called() const { return will_start_request_called_; }
   int will_redirect_request_called() const {

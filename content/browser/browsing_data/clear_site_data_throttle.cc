@@ -183,7 +183,7 @@ ClearSiteDataThrottle::~ClearSiteDataThrottle() {
     OutputConsoleMessages();
 }
 
-const char* ClearSiteDataThrottle::GetNameForLogging() const {
+const char* ClearSiteDataThrottle::GetNameForLogging() {
   return kNameForLogging2;
 }
 

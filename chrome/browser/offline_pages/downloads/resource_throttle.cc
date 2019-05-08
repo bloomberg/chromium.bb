@@ -65,7 +65,7 @@ void ResourceThrottle::WillProcessResponse(bool* defer) {
   }
 }
 
-const char* ResourceThrottle::GetNameForLogging() const {
+const char* ResourceThrottle::GetNameForLogging() {
   return "offline_pages::downloads::ResourceThrottle";
 }
 

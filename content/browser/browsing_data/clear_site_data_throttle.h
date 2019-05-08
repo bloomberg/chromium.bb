@@ -89,7 +89,7 @@ class CONTENT_EXPORT ClearSiteDataThrottle : public ResourceThrottle {
   ~ClearSiteDataThrottle() override;
 
   // ResourceThrottle implementation:
-  const char* GetNameForLogging() const override;
+  const char* GetNameForLogging() override;
   void WillRedirectRequest(const net::RedirectInfo& redirect_info,
                            bool* defer) override;
   void WillProcessResponse(bool* defer) override;

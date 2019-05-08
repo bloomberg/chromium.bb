@@ -17,7 +17,7 @@ class NavigationData {
   virtual ~NavigationData() {}
 
   // Creates a new NavigationData that is a deep copy of the original
-  virtual std::unique_ptr<NavigationData> Clone() const = 0;
+  virtual std::unique_ptr<NavigationData> Clone() = 0;
 };
 
 }  // namespace content

@@ -550,16 +550,16 @@ class ClearDomainReliabilityTester {
 
  private:
   void Clear(
-      const content::BrowsingDataFilterBuilder& filter_builder,
+      content::BrowsingDataFilterBuilder* filter_builder,
       network::mojom::NetworkContext_DomainReliabilityClearMode mode,
       network::mojom::NetworkContext::ClearDomainReliabilityCallback callback) {
     ++clear_count_;
     last_clear_mode_ = mode;
     std::move(callback).Run();
 
-    last_filter_ = filter_builder.IsEmptyBlacklist()
+    last_filter_ = filter_builder->IsEmptyBlacklist()
                        ? base::RepeatingCallback<bool(const GURL&)>()
-                       : filter_builder.BuildGeneralFilter();
+                       : filter_builder->BuildGeneralFilter();
   }
 
   unsigned clear_count_ = 0;

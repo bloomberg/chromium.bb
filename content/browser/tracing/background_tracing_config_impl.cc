@@ -168,7 +168,7 @@ bool BackgroundTracingConfigImpl::StringToCategoryPreset(
   return false;
 }
 
-void BackgroundTracingConfigImpl::IntoDict(base::DictionaryValue* dict) const {
+void BackgroundTracingConfigImpl::IntoDict(base::DictionaryValue* dict) {
   switch (tracing_mode()) {
     case BackgroundTracingConfigImpl::PREEMPTIVE:
       dict->SetString(kConfigModeKey, kConfigModePreemptive);

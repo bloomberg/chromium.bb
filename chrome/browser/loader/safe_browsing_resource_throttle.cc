@@ -46,6 +46,6 @@ SafeBrowsingParallelResourceThrottle::SafeBrowsingParallelResourceThrottle(
 SafeBrowsingParallelResourceThrottle::~SafeBrowsingParallelResourceThrottle() =
     default;
 
-const char* SafeBrowsingParallelResourceThrottle::GetNameForLogging() const {
+const char* SafeBrowsingParallelResourceThrottle::GetNameForLogging() {
   return "SafeBrowsingParallelResourceThrottle";
 }

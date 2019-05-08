@@ -52,7 +52,7 @@ ChromeNavigationData* ChromeNavigationData::GetDataAndCreateIfNecessary(
   return data_owner_ptr->data();
 }
 
-std::unique_ptr<content::NavigationData> ChromeNavigationData::Clone() const {
+std::unique_ptr<content::NavigationData> ChromeNavigationData::Clone() {
   std::unique_ptr<ChromeNavigationData> copy(new ChromeNavigationData());
   if (data_reduction_proxy_data_)
     copy->SetDataReductionProxyData(data_reduction_proxy_data_->DeepCopy());

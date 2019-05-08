@@ -252,7 +252,7 @@ WebRequestInfoInitParams::WebRequestInfoInitParams(net::URLRequest* url_request)
 
     // TODO(pkalinnikov): Consider embedding WebSocketHandshakeRequestInfo into
     // UrlRequestUserData.
-    const content::WebSocketHandshakeRequestInfo* ws_info =
+    content::WebSocketHandshakeRequestInfo* ws_info =
         content::WebSocketHandshakeRequestInfo::ForRequest(url_request);
     if (ws_info) {
       render_process_id = ws_info->GetChildId();
