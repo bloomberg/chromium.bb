@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "remoting/proto/ftl/v1/chromoting_message.pb.h"
 #include "remoting/proto/ftl/v1/ftl_services.grpc.pb.h"
+#include "remoting/signaling/message_tracker.h"
 
 namespace remoting {
 
@@ -111,6 +112,7 @@ class FtlMessagingClient final {
   std::unique_ptr<Messaging::Stub> messaging_stub_;
   std::unique_ptr<MessageReceptionChannel> reception_channel_;
   MessageCallbackList callback_list_;
+  MessageTracker message_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(FtlMessagingClient);
 };

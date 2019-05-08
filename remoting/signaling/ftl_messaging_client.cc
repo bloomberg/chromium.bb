@@ -206,6 +206,13 @@ FtlMessagingClient::OpenReceiveMessagesStream(
 }
 
 void FtlMessagingClient::RunMessageCallbacks(const ftl::InboxMessage& message) {
+  if (message_tracker_.IsIdTracked(message.message_id())) {
+    LOG(WARNING) << "Found message with duplicated message ID: "
+                 << message.message_id();
+    return;
+  }
+  message_tracker_.TrackId(message.message_id());
+
   if (message.message_type() !=
       ftl::InboxMessage_MessageType_CHROMOTING_MESSAGE) {
     LOG(WARNING) << "Received message with unknown type: "
