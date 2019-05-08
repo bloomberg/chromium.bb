@@ -292,7 +292,7 @@ group("default_create_sys_info") {
     public_deps = [
       ":android_create_sys_info",
     ]
-  } else if (chromecast_branding == "public" || is_fuchsia) {
+  } else if (chromecast_branding == "public") {
     public_deps = [
       ":dummy_create_sys_info",
     ]
@@ -306,9 +306,12 @@ group("default_create_sys_info") {
 # TODO(b/130731732): Remove these targets once dependents are all migrated.
 group("cast_sys_info") {
   public_deps = [
-    ":default_create_sys_info",
+    ":cast_sys_info_util",
     ":dummy_cast_sys_info",
   ]
+  if (is_android || chromecast_branding == "public") {
+    public_deps += [ ":default_create_sys_info" ]
+  }
 }
 group("cast_sys_info_shlib") {
   if (!is_android) {
