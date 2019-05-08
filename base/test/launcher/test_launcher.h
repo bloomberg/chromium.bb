@@ -131,6 +131,9 @@ class TestLauncher {
     ALLOW_BREAKAWAY_FROM_JOB = (1 << 1),
   };
 
+  // Enum for subprocess stdio redirect.
+  enum StdioRedirect { AUTO, ALWAYS, NEVER };
+
   struct LaunchOptions {
     LaunchOptions();
     LaunchOptions(const LaunchOptions& other);
@@ -154,7 +157,9 @@ class TestLauncher {
   virtual ~TestLauncher();
 
   // Runs the launcher. Must be called at most once.
-  bool Run() WARN_UNUSED_RESULT;
+  // command_line is null by default.
+  // if null, uses command line for current process.
+  bool Run(CommandLine* command_line = nullptr) WARN_UNUSED_RESULT;
 
   // Launches a child process (assumed to be gtest-based binary) using
   // |command_line|. If |wrapper| is not empty, it is prepended to the final
@@ -173,7 +178,7 @@ class TestLauncher {
   void OnTestFinished(const TestResult& result);
 
  private:
-  bool Init() WARN_UNUSED_RESULT;
+  bool Init(CommandLine* command_line) WARN_UNUSED_RESULT;
 
   // Runs all tests in current iteration.
   void RunTests();
@@ -195,6 +200,12 @@ class TestLauncher {
 
   // Called by the delay timer when no output was made for a while.
   void OnOutputTimeout();
+
+  // Creates and starts a ThreadPool with |num_parallel_jobs| dedicated to
+  // foreground blocking tasks (corresponds to the traits used to launch and
+  // wait for child processes).
+  // virtual to mock in testing.
+  virtual void CreateAndStartThreadPool(int num_parallel_jobs);
 
   // Make sure we don't accidentally call the wrong methods e.g. on the worker
   // pool thread.  Should be the first member so that it's destroyed last: when
@@ -261,6 +272,24 @@ class TestLauncher {
 
   // Number of jobs to run in parallel.
   size_t parallel_jobs_;
+
+  // Switch to control tests stdio :{auto, always, never}
+  StdioRedirect print_test_stdio_;
+
+  // Skip disabled tests unless explicitly requested.
+  bool skip_diabled_tests_;
+
+  // Stop test iterations due to failure.
+  bool stop_on_failure_;
+
+  // Path to JSON summary result file.
+  FilePath summary_path_;
+
+  // Path to trace file.
+  FilePath trace_path_;
+
+  // redirect stdio of subprocess
+  bool redirect_stdio_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLauncher);
 };

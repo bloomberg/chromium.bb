@@ -133,23 +133,6 @@ TestLauncherTracer* GetTestLauncherTracer() {
   return tracer;
 }
 
-// Creates and starts a ThreadPool with |num_parallel_jobs| dedicated to
-// foreground blocking tasks (corresponds to the traits used to launch and wait
-// for child processes).
-void CreateAndStartThreadPool(int num_parallel_jobs) {
-  // These values are taken from ThreadPool::StartWithDefaultParams(), which
-  // is not used directly to allow a custom number of threads in the foreground
-  // pool.
-  // TODO(etiennep): Change this to 2 in future CL.
-  constexpr int kMaxBackgroundThreads = 3;
-  constexpr base::TimeDelta kSuggestedReclaimTime =
-      base::TimeDelta::FromSeconds(30);
-  base::ThreadPool::Create("TestLauncher");
-  base::ThreadPool::GetInstance()->Start(
-      {{kMaxBackgroundThreads, kSuggestedReclaimTime},
-       {num_parallel_jobs, kSuggestedReclaimTime}});
-}
-
 #if defined(OS_POSIX)
 // Self-pipe that makes it possible to do complex shutdown handling
 // outside of the signal handler.
@@ -232,11 +215,10 @@ bool UnsetEnvironmentVariableIfExists(const std::string& name) {
 // Returns true if bot mode has been requested, i.e. defaults optimized
 // for continuous integration bots. This way developers don't have to remember
 // special command-line flags.
-bool BotModeEnabled() {
+bool BotModeEnabled(const CommandLine* command_line) {
   std::unique_ptr<Environment> env(Environment::Create());
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kTestLauncherBotMode) ||
-      env->HasVar("CHROMIUM_TEST_LAUNCHER_BOT_MODE");
+  return command_line->HasSwitch(switches::kTestLauncherBotMode) ||
+         env->HasVar("CHROMIUM_TEST_LAUNCHER_BOT_MODE");
 }
 
 // Returns command line command line after gtest-specific processing
@@ -616,7 +598,8 @@ TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate,
                       kOutputTimeout,
                       this,
                       &TestLauncher::OnOutputTimeout),
-      parallel_jobs_(parallel_jobs) {}
+      parallel_jobs_(parallel_jobs),
+      print_test_stdio_(AUTO) {}
 
 TestLauncher::~TestLauncher() {
   if (base::ThreadPool::GetInstance()) {
@@ -624,8 +607,9 @@ TestLauncher::~TestLauncher() {
   }
 }
 
-bool TestLauncher::Run() {
-  if (!Init())
+bool TestLauncher::Run(CommandLine* command_line) {
+  if (!Init((command_line == nullptr) ? CommandLine::ForCurrentProcess()
+                                      : command_line))
     return false;
 
   // Value of |cycles_| changes after each iteration. Keep track of the
@@ -677,15 +661,10 @@ void TestLauncher::LaunchChildGTestProcess(
   CommandLine new_command_line(
       PrepareCommandLineForGTest(command_line, wrapper));
 
-  // When running in parallel mode we need to redirect stdio to avoid mixed-up
-  // output. We also always redirect on the bots to get the test output into
-  // JSON summary.
-  bool redirect_stdio = (parallel_jobs_ > 1) || BotModeEnabled();
-
   PostTaskWithTraits(
       FROM_HERE, {MayBlock(), TaskShutdownBehavior::BLOCK_SHUTDOWN},
       BindOnce(&DoLaunchChildTestProcess, new_command_line, timeout, options,
-               redirect_stdio, RetainedRef(ThreadTaskRunnerHandle::Get()),
+               redirect_stdio_, RetainedRef(ThreadTaskRunnerHandle::Get()),
                std::move(observer)));
 }
 
@@ -709,21 +688,12 @@ void TestLauncher::OnTestFinished(const TestResult& original_result) {
   }
 
   bool print_snippet = false;
-  std::string print_test_stdio("auto");
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kTestLauncherPrintTestStdio)) {
-    print_test_stdio = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-        switches::kTestLauncherPrintTestStdio);
-  }
-  if (print_test_stdio == "auto") {
+  if (print_test_stdio_ == AUTO) {
     print_snippet = (result.status != TestResult::TEST_SUCCESS);
-  } else if (print_test_stdio == "always") {
+  } else if (print_test_stdio_ == ALWAYS) {
     print_snippet = true;
-  } else if (print_test_stdio == "never") {
+  } else if (print_test_stdio_ == NEVER) {
     print_snippet = false;
-  } else {
-    LOG(WARNING) << "Invalid value of " << switches::kTestLauncherPrintTestStdio
-                 << ": " << print_test_stdio;
   }
   if (print_snippet) {
     std::vector<base::StringPiece> snippet_lines =
@@ -896,9 +866,7 @@ bool LoadFilterFile(const FilePath& file_path,
   return true;
 }
 
-bool TestLauncher::Init() {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-
+bool TestLauncher::Init(CommandLine* command_line) {
   // Initialize sharding. Command line takes precedence over legacy environment
   // variables.
   if (command_line->HasSwitch(switches::kTestLauncherTotalShards) &&
@@ -983,7 +951,7 @@ bool TestLauncher::Init() {
     }
 
     retry_limit_ = retry_limit;
-  } else if (BotModeEnabled() ||
+  } else if (BotModeEnabled(command_line) ||
              !(command_line->HasSwitch(kGTestFilterFlag) ||
                command_line->HasSwitch(kIsolatedScriptTestFilterFlag))) {
     // Retry failures 3 times by default if we are running all of the tests or
@@ -991,8 +959,8 @@ bool TestLauncher::Init() {
     retry_limit_ = 3;
   }
 
-  if (command_line->HasSwitch(switches::kTestLauncherForceRunBrokenTests))
-    force_run_broken_tests_ = true;
+  force_run_broken_tests_ =
+      command_line->HasSwitch(switches::kTestLauncherForceRunBrokenTests);
 
   // Some of the TestLauncherDelegate implementations don't call into gtest
   // until they've already split into test-specific processes. This results
@@ -1075,6 +1043,43 @@ bool TestLauncher::Init() {
     return false;
   }
 
+  if (command_line->HasSwitch(switches::kTestLauncherPrintTestStdio)) {
+    std::string print_test_stdio = command_line->GetSwitchValueASCII(
+        switches::kTestLauncherPrintTestStdio);
+    if (print_test_stdio == "auto") {
+      print_test_stdio = AUTO;
+    } else if (print_test_stdio == "always") {
+      print_test_stdio = ALWAYS;
+    } else if (print_test_stdio == "never") {
+      print_test_stdio = NEVER;
+    } else {
+      LOG(WARNING) << "Invalid value of "
+                   << switches::kTestLauncherPrintTestStdio << ": "
+                   << print_test_stdio;
+      return false;
+    }
+  }
+
+  skip_diabled_tests_ =
+      !command_line->HasSwitch(kGTestRunDisabledTestsFlag) &&
+      !command_line->HasSwitch(kIsolatedScriptRunDisabledTestsFlag);
+
+  stop_on_failure_ = command_line->HasSwitch(kGTestBreakOnFailure);
+
+  if (command_line->HasSwitch(switches::kTestLauncherSummaryOutput)) {
+    summary_path_ = FilePath(
+        command_line->GetSwitchValuePath(switches::kTestLauncherSummaryOutput));
+  }
+  if (command_line->HasSwitch(switches::kTestLauncherTrace)) {
+    trace_path_ = FilePath(
+        command_line->GetSwitchValuePath(switches::kTestLauncherTrace));
+  }
+
+  // When running in parallel mode we need to redirect stdio to avoid mixed-up
+  // output. We also always redirect on the bots to get the test output into
+  // JSON summary.
+  redirect_stdio_ = (parallel_jobs_ > 1) || BotModeEnabled(command_line);
+
   CombinePositiveTestFilters(std::move(positive_gtest_filter),
                              std::move(positive_file_filter));
 
@@ -1152,6 +1157,20 @@ bool TestLauncher::Init() {
   return true;
 }
 
+void TestLauncher::CreateAndStartThreadPool(int num_parallel_jobs) {
+  // These values are taken from ThreadPool::StartWithDefaultParams(), which
+  // is not used directly to allow a custom number of threads in the foreground
+  // pool.
+  // TODO(etiennep): Change this to 2 in future CL.
+  constexpr int kMaxBackgroundThreads = 3;
+  constexpr base::TimeDelta kSuggestedReclaimTime =
+      base::TimeDelta::FromSeconds(30);
+  base::ThreadPool::Create("TestLauncher");
+  base::ThreadPool::GetInstance()->Start(
+      {{kMaxBackgroundThreads, kSuggestedReclaimTime},
+       {num_parallel_jobs, kSuggestedReclaimTime}});
+}
+
 void TestLauncher::CombinePositiveTestFilters(
     std::vector<std::string> filter_a,
     std::vector<std::string> filter_b) {
@@ -1185,7 +1204,6 @@ void TestLauncher::CombinePositiveTestFilters(
 
 void TestLauncher::RunTests() {
   std::vector<std::string> test_names;
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
   for (const TestIdentifier& test_id : tests_) {
     std::string test_name =
         FormatFullTestName(test_id.test_case_name, test_id.test_name);
@@ -1196,8 +1214,7 @@ void TestLauncher::RunTests() {
       results_tracker_.AddDisabledTest(test_name);
 
       // Skip disabled tests unless explicitly requested.
-      if (!command_line->HasSwitch(kGTestRunDisabledTestsFlag) &&
-          !command_line->HasSwitch(kIsolatedScriptRunDisabledTestsFlag))
+      if (skip_diabled_tests_)
         continue;
     }
 
@@ -1295,10 +1312,8 @@ void TestLauncher::RunTests() {
 }
 
 void TestLauncher::RunTestIteration() {
-  const bool stop_on_failure =
-      CommandLine::ForCurrentProcess()->HasSwitch(kGTestBreakOnFailure);
   if (cycles_ == 0 ||
-      (stop_on_failure && test_success_count_ != test_finished_count_)) {
+      (stop_on_failure_ && test_success_count_ != test_finished_count_)) {
     RunLoop::QuitCurrentWhenIdleDeprecated();
     return;
   }
@@ -1337,18 +1352,13 @@ void TestLauncher::OnShutdownPipeReadable() {
 
 void TestLauncher::MaybeSaveSummaryAsJSON(
     const std::vector<std::string>& additional_tags) {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kTestLauncherSummaryOutput)) {
-    FilePath summary_path(command_line->GetSwitchValuePath(
-                              switches::kTestLauncherSummaryOutput));
-    if (!results_tracker_.SaveSummaryAsJSON(summary_path, additional_tags)) {
+  if (!summary_path_.empty()) {
+    if (!results_tracker_.SaveSummaryAsJSON(summary_path_, additional_tags)) {
       LOG(ERROR) << "Failed to save test launcher output summary.";
     }
   }
-  if (command_line->HasSwitch(switches::kTestLauncherTrace)) {
-    FilePath trace_path(
-        command_line->GetSwitchValuePath(switches::kTestLauncherTrace));
-    if (!GetTestLauncherTracer()->Dump(trace_path)) {
+  if (!trace_path_.empty()) {
+    if (!GetTestLauncherTracer()->Dump(trace_path_)) {
       LOG(ERROR) << "Failed to save test launcher trace.";
     }
   }
@@ -1415,7 +1425,7 @@ size_t NumParallelJobs() {
     }
     return jobs;
   }
-  if (!BotModeEnabled() &&
+  if (!BotModeEnabled(command_line) &&
       (command_line->HasSwitch(kGTestFilterFlag) ||
        command_line->HasSwitch(kIsolatedScriptTestFilterFlag))) {
     // Do not run jobs in parallel by default if we are running a subset of
