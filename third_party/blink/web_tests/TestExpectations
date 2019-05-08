@@ -2903,6 +2903,16 @@ crbug.com/939181 external/wpt/html/browsers/origin/cross-origin-objects/cross-or
 crbug.com/939181 virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-text/hyphens/hyphens-out-of-flow-001.html [ Failure ]
+crbug.com/626703 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechSynthesisUtterance-volume-manual.html [ Skip ]
+crbug.com/626703 [ Linux ] external/wpt/speech-api/SpeechSynthesisUtterance-volume-manual.html [ Skip ]
+crbug.com/626703 [ Mac10.10 ] external/wpt/speech-api/SpeechSynthesisUtterance-volume-manual.html [ Skip ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/speech-api/SpeechSynthesisUtterance-volume-manual.html [ Skip ]
+crbug.com/626703 [ Mac10.13 ] external/wpt/speech-api/SpeechSynthesisUtterance-volume-manual.html [ Skip ]
+crbug.com/626703 [ Retina ] external/wpt/speech-api/SpeechSynthesisUtterance-volume-manual.html [ Skip ]
+crbug.com/626703 [ Win ] external/wpt/speech-api/SpeechSynthesisUtterance-volume-manual.html [ Skip ]
+crbug.com/626703 [ Mac10.11 ] external/wpt/speech-api/SpeechSynthesisUtterance-volume-manual.html [ Skip ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-text/hyphens/hyphens-out-of-flow-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/contain-size-replaced-003b.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/contain-size-replaced-003c.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/contain-size-replaced-003a.html [ Failure ]
