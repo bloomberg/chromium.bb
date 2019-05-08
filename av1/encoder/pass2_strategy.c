@@ -1555,29 +1555,33 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
 
   if (!twopass->stats_in) return;
 
-  // If this is an arf frame then we dont want to read the stats file or
-  // advance the input pointer as we already have what we need.
-  if (gf_group->update_type[gf_group->index] == ARF_UPDATE ||
-      gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE) {
-    target_rate = gf_group->bit_allocation[gf_group->index];
-    target_rate = av1_rc_clamp_pframe_target_size(
-        cpi, target_rate, gf_group->update_type[gf_group->index]);
-    rc->base_frame_target = target_rate;
+  if (rc->frames_till_gf_update_due > 0) {
+    assert(gf_group->index < gf_group->size);
+    const int update_type = gf_group->update_type[gf_group->index];
 
-    if (cpi->no_show_kf) {
-      assert(gf_group->update_type[gf_group->index] == ARF_UPDATE);
-      frame_params->frame_type = KEY_FRAME;
-    } else {
-      frame_params->frame_type = INTER_FRAME;
+    // If this is an arf frame then we dont want to read the stats file or
+    // advance the input pointer as we already have what we need.
+    if (update_type == ARF_UPDATE || update_type == INTNL_ARF_UPDATE) {
+      target_rate = gf_group->bit_allocation[gf_group->index];
+      target_rate =
+          av1_rc_clamp_pframe_target_size(cpi, target_rate, update_type);
+      rc->base_frame_target = target_rate;
+
+      if (cpi->no_show_kf) {
+        assert(update_type == ARF_UPDATE);
+        frame_params->frame_type = KEY_FRAME;
+      } else {
+        frame_params->frame_type = INTER_FRAME;
+      }
+
+      // Do the firstpass stats indicate that this frame is skippable for the
+      // partition search?
+      if (cpi->sf.allow_partition_search_skip && cpi->oxcf.pass == 2) {
+        cpi->partition_search_skippable_frame = is_skippable_frame(cpi);
+      }
+
+      return;
     }
-
-    // Do the firstpass stats indicate that this frame is skippable for the
-    // partition search?
-    if (cpi->sf.allow_partition_search_skip && cpi->oxcf.pass == 2) {
-      cpi->partition_search_skippable_frame = is_skippable_frame(cpi);
-    }
-
-    return;
   }
 
   aom_clear_system_state();
@@ -1633,10 +1637,12 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
 
   // Define a new GF/ARF group. (Should always enter here for key frames).
   if (rc->frames_till_gf_update_due == 0) {
+    assert(current_frame->frame_number == 0 ||
+           gf_group->index == gf_group->size);
     define_gf_group(cpi, &this_frame, frame_params);
-
     rc->frames_till_gf_update_due = rc->baseline_gf_interval;
     cpi->num_gf_group_show_frames = 0;
+    assert(gf_group->index == 0);
 
 #if ARF_STATS_OUTPUT
     {
@@ -1651,6 +1657,7 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
     }
 #endif
   }
+  assert(gf_group->index < gf_group->size);
 
   // Do the firstpass stats indicate that this frame is skippable for the
   // partition search?

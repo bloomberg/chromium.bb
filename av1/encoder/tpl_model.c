@@ -820,6 +820,7 @@ void av1_tpl_setup_forward_stats(AV1_COMP *cpi) {
 #endif  // MC_FLOW_BSIZE == 64
 
   const GF_GROUP *gf_group = &cpi->twopass.gf_group;
+  assert(IMPLIES(gf_group->size > 0, gf_group->index < gf_group->size));
   const int tpl_cur_idx = cpi->twopass.gf_group.frame_disp_idx[gf_group->index];
   TplDepFrame *tpl_frame = &cpi->tpl_stats[tpl_cur_idx];
   memset(

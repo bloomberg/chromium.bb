@@ -3710,6 +3710,8 @@ static void init_first_partition_pass_stats_tables(
 
 static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
                             int mi_col, int orig_rdmult) {
+  assert(IMPLIES(cpi->twopass.gf_group.size > 0,
+                 cpi->twopass.gf_group.index < cpi->twopass.gf_group.size));
   TplDepFrame *tpl_frame = &cpi->tpl_stats[cpi->twopass.gf_group.index];
   TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
   int tpl_stride = tpl_frame->stride;
@@ -3762,6 +3764,8 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
                                       int analysis_type, int mi_row,
                                       int mi_col) {
   AV1_COMMON *const cm = &cpi->common;
+  assert(IMPLIES(cpi->twopass.gf_group.size > 0,
+                 cpi->twopass.gf_group.index < cpi->twopass.gf_group.size));
   const int tpl_idx =
       cpi->twopass.gf_group.frame_disp_idx[cpi->twopass.gf_group.index];
   TplDepFrame *tpl_frame = &cpi->tpl_stats[tpl_idx];
@@ -4169,7 +4173,6 @@ static void adjust_rdmult_tpl_model(AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
                                     int mi_col) {
   const BLOCK_SIZE sb_size = cpi->common.seq_params.sb_size;
   const int orig_rdmult = cpi->rd.RDMULT;
-  const int gf_group_index = cpi->twopass.gf_group.index;
   x->cb_rdmult = orig_rdmult;
 
   if (cpi->tpl_model_pass == 1) {
@@ -4178,6 +4181,9 @@ static void adjust_rdmult_tpl_model(AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
     return;
   }
 
+  assert(IMPLIES(cpi->twopass.gf_group.size > 0,
+                 cpi->twopass.gf_group.index < cpi->twopass.gf_group.size));
+  const int gf_group_index = cpi->twopass.gf_group.index;
   if (cpi->oxcf.enable_tpl_model && cpi->oxcf.aq_mode == NO_AQ &&
       cpi->oxcf.deltaq_mode == NO_DELTA_Q && gf_group_index > 0 &&
       cpi->twopass.gf_group.update_type[gf_group_index] == ARF_UPDATE) {
@@ -4983,6 +4989,8 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   if (cpi->twopass.gf_group.index &&
       cpi->twopass.gf_group.index < MAX_LAG_BUFFERS &&
       cpi->oxcf.enable_tpl_model && cpi->tpl_model_pass == 0) {
+    assert(IMPLIES(cpi->twopass.gf_group.size > 0,
+                   cpi->twopass.gf_group.index < cpi->twopass.gf_group.size));
     const int tpl_idx =
         cpi->twopass.gf_group.frame_disp_idx[cpi->twopass.gf_group.index];
     TplDepFrame *tpl_frame = &cpi->tpl_stats[tpl_idx];

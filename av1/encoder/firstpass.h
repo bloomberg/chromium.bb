@@ -115,21 +115,21 @@ enum {
 
 typedef struct {
   unsigned char index;
-  FRAME_UPDATE_TYPE update_type[MAX_STATIC_GF_GROUP_LENGTH + 1];
-  unsigned char arf_src_offset[MAX_STATIC_GF_GROUP_LENGTH + 1];
-  unsigned char arf_update_idx[MAX_STATIC_GF_GROUP_LENGTH + 1];
-  unsigned char arf_pos_in_gf[MAX_STATIC_GF_GROUP_LENGTH + 1];
-  unsigned char frame_disp_idx[MAX_STATIC_GF_GROUP_LENGTH + 1];
-  unsigned char pyramid_level[MAX_STATIC_GF_GROUP_LENGTH + 1];
-  int ref_frame_disp_idx[MAX_STATIC_GF_GROUP_LENGTH + 1][REF_FRAMES];
-  int ref_frame_gop_idx[MAX_STATIC_GF_GROUP_LENGTH + 1][REF_FRAMES];
+  FRAME_UPDATE_TYPE update_type[MAX_STATIC_GF_GROUP_LENGTH];
+  unsigned char arf_src_offset[MAX_STATIC_GF_GROUP_LENGTH];
+  unsigned char arf_update_idx[MAX_STATIC_GF_GROUP_LENGTH];
+  unsigned char arf_pos_in_gf[MAX_STATIC_GF_GROUP_LENGTH];
+  unsigned char frame_disp_idx[MAX_STATIC_GF_GROUP_LENGTH];
+  unsigned char pyramid_level[MAX_STATIC_GF_GROUP_LENGTH];
+  int ref_frame_disp_idx[MAX_STATIC_GF_GROUP_LENGTH][REF_FRAMES];
+  int ref_frame_gop_idx[MAX_STATIC_GF_GROUP_LENGTH][REF_FRAMES];
   unsigned char pyramid_height;
   unsigned char pyramid_lvl_nodes[MAX_PYRAMID_LVL];
   // These are currently only populated for AOM_Q mode
-  unsigned char q_val[MAX_STATIC_GF_GROUP_LENGTH + 1];
-  unsigned char q_upper[MAX_STATIC_GF_GROUP_LENGTH + 1];
-  unsigned char q_lower[MAX_STATIC_GF_GROUP_LENGTH + 1];
-  int bit_allocation[MAX_STATIC_GF_GROUP_LENGTH + 1];
+  unsigned char q_val[MAX_STATIC_GF_GROUP_LENGTH];
+  unsigned char q_upper[MAX_STATIC_GF_GROUP_LENGTH];
+  unsigned char q_lower[MAX_STATIC_GF_GROUP_LENGTH];
+  int bit_allocation[MAX_STATIC_GF_GROUP_LENGTH];
   int size;
 } GF_GROUP;
 

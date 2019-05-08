@@ -129,7 +129,7 @@ void check_frame_params(GF_GROUP *const gf_group, int gf_interval) {
   FILE *fid = fopen("GF_PARAMS.txt", "a");
 
   fprintf(fid, "\ngf_interval = {%d}\n", gf_interval);
-  for (int i = 0; i <= gf_group->size; ++i) {
+  for (int i = 0; i < gf_group->size; ++i) {
     fprintf(fid, "#%2d : %s %d %d %d %d\n", i,
             update_type_strings[gf_group->update_type[i]],
             gf_group->arf_src_offset[i], gf_group->arf_pos_in_gf[i],
@@ -176,7 +176,7 @@ static INLINE void reset_ref_frame_idx(int *ref_idx, int reset_value) {
 }
 
 static INLINE void set_ref_frame_disp_idx(GF_GROUP *const gf_group) {
-  for (int i = 0; i <= gf_group->size; ++i) {
+  for (int i = 0; i < gf_group->size; ++i) {
     for (int ref = 0; ref < INTER_REFS_PER_FRAME + 1; ++ref) {
       int ref_gop_idx = gf_group->ref_frame_gop_idx[i][ref];
       if (ref_gop_idx == -1) {
@@ -191,7 +191,7 @@ static INLINE void set_ref_frame_disp_idx(GF_GROUP *const gf_group) {
 
 static void set_gop_ref_frame_map(GF_GROUP *const gf_group) {
   // Initialize the reference slots as all -1.
-  for (int frame_idx = 0; frame_idx <= gf_group->size; ++frame_idx)
+  for (int frame_idx = 0; frame_idx < gf_group->size; ++frame_idx)
     reset_ref_frame_idx(gf_group->ref_frame_gop_idx[frame_idx], -1);
 
   // Set the map for frames in the current gop
@@ -311,14 +311,6 @@ void av1_gop_setup_structure(AV1_COMP *cpi,
   gf_group->size = construct_multi_layer_gf_structure(
       gf_group, rc->baseline_gf_interval, get_pyramid_height(cpi),
       first_frame_update_type);
-
-  // We need to configure the frame at the end of the sequence + 1 that
-  // will be the start frame for the next group. Otherwise prior to the
-  // call to av1_get_second_pass_params(), the data will be undefined.
-  gf_group->update_type[gf_group->size] =
-      (rc->source_alt_ref_pending) ? OVERLAY_UPDATE : GF_UPDATE;
-  gf_group->arf_update_idx[gf_group->size] = 0;
-  gf_group->arf_pos_in_gf[gf_group->size] = 0;
 
   set_gop_ref_frame_map(gf_group);
 
