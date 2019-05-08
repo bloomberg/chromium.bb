@@ -58,8 +58,8 @@ PasswordCredential* PasswordCredential::Create(
       continue;
 
     Vector<String> autofill_tokens;
-    ListedElementToHTMLElement(submittable_element)
-        ->FastGetAttribute(html_names::kAutocompleteAttr)
+    submittable_element->ToHTMLElement()
+        .FastGetAttribute(html_names::kAutocompleteAttr)
         .GetString()
         .LowerASCII()
         .Split(' ', autofill_tokens);

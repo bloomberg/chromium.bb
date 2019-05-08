@@ -757,7 +757,7 @@ void HTMLSelectElement::RecalcListItems() const {
           ElementTraversal::NextSkippingChildren(*current_element, this);
       continue;
     }
-    HTMLElement& current = ToHTMLElement(*current_element);
+    HTMLElement& current = blink::ToHTMLElement(*current_element);
 
     // We should ignore nested optgroup elements. The HTML parser flatten
     // them.  However we need to ignore nested optgroups built by DOM APIs.

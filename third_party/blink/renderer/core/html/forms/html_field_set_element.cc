@@ -53,7 +53,7 @@ bool HTMLFieldSetElement::IsValidElement() {
       if (!ToHTMLFormControlElement(element)->IsNotCandidateOrValid())
         return false;
     } else if (element->IsHTMLElement() &&
-               ToHTMLElement(element)->IsFormAssociatedCustomElement()) {
+               blink::ToHTMLElement(element)->IsFormAssociatedCustomElement()) {
       if (!element->EnsureElementInternals().IsNotCandidateOrValid())
         return false;
     }

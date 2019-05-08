@@ -44,15 +44,15 @@ void AXValidationMessage::GetRelativeBounds(AXObject** out_container,
   if (!listed_element)
     return;
 
-  HTMLElement* form_control = ListedElementToHTMLElement(listed_element);
-  if (!form_control || !form_control->GetLayoutObject())
+  HTMLElement& form_control = listed_element->ToHTMLElement();
+  if (!form_control.GetLayoutObject())
     return;
 
   *out_container = ParentObject();
 
-  if (form_control->GetLayoutObject()) {
+  if (form_control.GetLayoutObject()) {
     out_bounds_in_container =
-        FloatRect(form_control->GetLayoutObject()->AbsoluteBoundingBoxRect());
+        FloatRect(form_control.GetLayoutObject()->AbsoluteBoundingBoxRect());
   }
 }
 

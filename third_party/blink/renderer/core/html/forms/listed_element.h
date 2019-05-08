@@ -53,6 +53,11 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
   // Returns nullptr otherwise.
   static ListedElement* From(Element& element);
 
+  // Cast |this| to HTMLElement, or return the target element associated
+  // to ElementInternals.
+  const HTMLElement& ToHTMLElement() const;
+  HTMLElement& ToHTMLElement();
+
   static HTMLFormElement* FindAssociatedForm(const HTMLElement*,
                                              const AtomicString& form_id,
                                              HTMLFormElement* form_ancestor);
@@ -233,11 +238,6 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
   mutable enum DataListAncestorState data_list_ancestor_state_ =
       DataListAncestorState::kUnknown;
 };
-
-CORE_EXPORT HTMLElement* ListedElementToHTMLElement(ListedElement*);
-CORE_EXPORT HTMLElement& ListedElementToHTMLElement(ListedElement&);
-CORE_EXPORT const HTMLElement* ListedElementToHTMLElement(const ListedElement*);
-CORE_EXPORT const HTMLElement& ListedElementToHTMLElement(const ListedElement&);
 
 }  // namespace blink
 

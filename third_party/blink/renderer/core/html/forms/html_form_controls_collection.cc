@@ -70,7 +70,7 @@ static unsigned FindListedElement(const ListedElement::List& listed_elements,
   for (; i < listed_elements.size(); ++i) {
     ListedElement* listed_element = listed_elements[i];
     if (listed_element->IsEnumeratable() &&
-        ListedElementToHTMLElement(listed_element) == element)
+        &listed_element->ToHTMLElement() == element)
       break;
   }
   return i;
@@ -90,7 +90,7 @@ HTMLElement* HTMLFormControlsCollection::VirtualItemAfter(
   for (unsigned i = offset; i < listed_elements.size(); ++i) {
     ListedElement* listed_element = listed_elements[i];
     if (listed_element->IsEnumeratable()) {
-      cached_element_ = ListedElementToHTMLElement(listed_element);
+      cached_element_ = listed_element->ToHTMLElement();
       cached_element_offset_in_array_ = i;
       return cached_element_;
     }
@@ -110,10 +110,10 @@ static HTMLElement* FirstNamedItem(const ListedElement::List& elements_array,
   DCHECK(attr_name == kIdAttr || attr_name == kNameAttr);
 
   for (const auto& listed_element : elements_array) {
-    HTMLElement* element = ListedElementToHTMLElement(listed_element);
+    HTMLElement& element = listed_element->ToHTMLElement();
     if (listed_element->IsEnumeratable() &&
-        element->FastGetAttribute(attr_name) == name)
-      return element;
+        element.FastGetAttribute(attr_name) == name)
+      return &element;
   }
   return nullptr;
 }
@@ -139,15 +139,15 @@ void HTMLFormControlsCollection::UpdateIdNameCache() const {
 
   for (const auto& listed_element : ListedElements()) {
     if (listed_element->IsEnumeratable()) {
-      HTMLElement* element = ListedElementToHTMLElement(listed_element);
-      const AtomicString& id_attr_val = element->GetIdAttribute();
-      const AtomicString& name_attr_val = element->GetNameAttribute();
+      HTMLElement& element = listed_element->ToHTMLElement();
+      const AtomicString& id_attr_val = element.GetIdAttribute();
+      const AtomicString& name_attr_val = element.GetNameAttribute();
       if (!id_attr_val.IsEmpty()) {
-        cache->AddElementWithId(id_attr_val, element);
+        cache->AddElementWithId(id_attr_val, &element);
         found_input_elements.insert(id_attr_val.Impl());
       }
       if (!name_attr_val.IsEmpty() && id_attr_val != name_attr_val) {
-        cache->AddElementWithName(name_attr_val, element);
+        cache->AddElementWithName(name_attr_val, &element);
         found_input_elements.insert(name_attr_val.Impl());
       }
     }

@@ -233,7 +233,7 @@ bool HTMLFormElement::ValidateInteractively() {
 
   // Focus on the first focusable control and show a validation message.
   for (const auto& unhandled : unhandled_invalid_controls) {
-    if (ListedElementToHTMLElement(unhandled)->IsFocusable()) {
+    if (unhandled->ToHTMLElement().IsFocusable()) {
       unhandled->ShowValidationMessage();
       UseCounter::Count(GetDocument(),
                         WebFeature::kFormValidationShowedMessage);
@@ -243,7 +243,7 @@ bool HTMLFormElement::ValidateInteractively() {
   // Warn about all of unfocusable controls.
   if (GetDocument().GetFrame()) {
     for (const auto& unhandled : unhandled_invalid_controls) {
-      if (ListedElementToHTMLElement(unhandled)->IsFocusable())
+      if (unhandled->ToHTMLElement().IsFocusable())
         continue;
       String message(
           "An invalid form control with name='%name' is not focusable.");
@@ -437,7 +437,7 @@ FormData* HTMLFormElement::ConstructEntryList(
     submit_button->SetActivatedSubmit(true);
   for (ListedElement* control : ListedElements()) {
     DCHECK(control);
-    HTMLElement& element = ListedElementToHTMLElement(*control);
+    HTMLElement& element = control->ToHTMLElement();
     if (!element.IsDisabledFormControl())
       control->AppendToFormData(form_data);
     if (auto* input = ToHTMLInputElementOrNull(element)) {
@@ -517,8 +517,7 @@ void HTMLFormElement::reset() {
     if (element->IsFormControlElement()) {
       ToHTMLFormControlElement(element)->Reset();
     } else if (element->IsElementInternals()) {
-      CustomElement::EnqueueFormResetCallback(
-          *ListedElementToHTMLElement(element));
+      CustomElement::EnqueueFormResetCallback(element->ToHTMLElement());
     }
   }
 
@@ -562,14 +561,14 @@ void HTMLFormElement::ParseAttribute(
 void HTMLFormElement::Associate(ListedElement& e) {
   listed_elements_are_dirty_ = true;
   listed_elements_.clear();
-  if (ListedElementToHTMLElement(e).FastHasAttribute(kFormAttr))
+  if (e.ToHTMLElement().FastHasAttribute(kFormAttr))
     has_elements_associated_by_form_attribute_ = true;
 }
 
 void HTMLFormElement::Disassociate(ListedElement& e) {
   listed_elements_are_dirty_ = true;
   listed_elements_.clear();
-  RemoveFromPastNamesMap(ListedElementToHTMLElement(e));
+  RemoveFromPastNamesMap(e.ToHTMLElement());
 }
 
 bool HTMLFormElement::IsURLAttribute(const Attribute& attribute) const {
