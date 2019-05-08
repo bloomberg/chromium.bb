@@ -162,6 +162,15 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
   }
 #endif
 
+#if defined(__NR_vfork)
+  // vfork() is almost never used as a system call, but some libc versions (e.g.
+  // older versions of bionic) might use it in a posix_spawn() implementation,
+  // which is used by system();
+  if (sysno == __NR_vfork) {
+    return Error(EPERM);
+  }
+#endif
+
   if (sysno == __NR_futex)
     return RestrictFutex();
 
