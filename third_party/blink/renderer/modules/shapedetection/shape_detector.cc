@@ -109,6 +109,12 @@ ScriptPromise ShapeDetector::DetectShapesOnImageData(
     return promise;
   }
 
+  if (image_data->BufferBase()->IsNeutered()) {
+    resolver->Reject(DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                                          "The image data has been detached."));
+    return promise;
+  }
+
   SkBitmap sk_bitmap;
   if (!sk_bitmap.tryAllocPixels(
           SkImageInfo::Make(image_data->width(), image_data->height(),
