@@ -9,7 +9,6 @@
 #include <string>
 #include <unordered_map>
 
-#include "base/optional.h"
 #include "chromeos/dbus/kerberos/kerberos_client.h"
 #include "chromeos/dbus/kerberos/kerberos_service.pb.h"
 #include "dbus/object_proxy.h"
@@ -53,9 +52,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeKerberosClient
     bool has_tgt = false;
   };
 
-  // Returns the AccountData for |principal_name| if available or nullopt
+  // Returns the AccountData for |principal_name| if available or nullptr
   // otherwise.
-  base::Optional<AccountData> GetAccountData(const std::string& principal_name);
+  AccountData* GetAccountData(const std::string& principal_name);
 
   // Maps principal name (user@REALM.COM) to account data.
   using AccountsMap = std::unordered_map<std::string, AccountData>;

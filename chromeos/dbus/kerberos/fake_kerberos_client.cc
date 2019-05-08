@@ -111,7 +111,7 @@ void FakeKerberosClient::SetConfig(const kerberos::SetConfigRequest& request,
     return;
   }
 
-  base::Optional<AccountData> data = GetAccountData(request.principal_name());
+  AccountData* data = GetAccountData(request.principal_name());
   if (!data) {
     PostResponse(std::move(callback), kerberos::ERROR_UNKNOWN_PRINCIPAL_NAME);
     return;
@@ -130,7 +130,7 @@ void FakeKerberosClient::AcquireKerberosTgt(
     return;
   }
 
-  base::Optional<AccountData> data = GetAccountData(request.principal_name());
+  AccountData* data = GetAccountData(request.principal_name());
   if (!data) {
     PostResponse(std::move(callback), kerberos::ERROR_UNKNOWN_PRINCIPAL_NAME);
     return;
@@ -149,7 +149,7 @@ void FakeKerberosClient::GetKerberosFiles(
     return;
   }
 
-  base::Optional<AccountData> data = GetAccountData(request.principal_name());
+  AccountData* data = GetAccountData(request.principal_name());
   if (!data) {
     PostResponse(std::move(callback), kerberos::ERROR_UNKNOWN_PRINCIPAL_NAME);
     return;
@@ -170,12 +170,12 @@ void FakeKerberosClient::ConnectToKerberosFileChangedSignal(
   kerberos_files_changed_callback_ = callback;
 }
 
-base::Optional<FakeKerberosClient::AccountData>
-FakeKerberosClient::GetAccountData(const std::string& principal_name) {
+FakeKerberosClient::AccountData* FakeKerberosClient::GetAccountData(
+    const std::string& principal_name) {
   auto it = accounts_.find(principal_name);
   if (it == accounts_.end())
-    return base::nullopt;
-  return it->second;
+    return nullptr;
+  return &it->second;
 }
 
 KerberosClient::TestInterface* FakeKerberosClient::GetTestInterface() {
