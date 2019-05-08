@@ -12,10 +12,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/animation/animation_container_observer.h"
-#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/views_export.h"
 
 namespace gfx {
@@ -37,7 +38,7 @@ class View;
 // You can attach an AnimationDelegate to the individual animation for a view
 // by way of SetAnimationDelegate. Additionally you can attach an observer to
 // the BoundsAnimator that is notified when all animations are complete.
-class VIEWS_EXPORT BoundsAnimator : public gfx::AnimationDelegate,
+class VIEWS_EXPORT BoundsAnimator : public AnimationDelegateViews,
                                     public gfx::AnimationContainerObserver {
  public:
   explicit BoundsAnimator(View* view);
@@ -99,6 +100,8 @@ class VIEWS_EXPORT BoundsAnimator : public gfx::AnimationDelegate,
   void AddObserver(BoundsAnimatorObserver* observer);
   void RemoveObserver(BoundsAnimatorObserver* observer);
 
+  gfx::AnimationContainer* container() { return container_.get(); }
+
  protected:
   // Creates the animation to use for animating views.
   virtual std::unique_ptr<gfx::SlideAnimation> CreateAnimation();
@@ -151,7 +154,7 @@ class VIEWS_EXPORT BoundsAnimator : public gfx::AnimationDelegate,
   void AnimationEndedOrCanceled(const gfx::Animation* animation,
                                 AnimationEndType type);
 
-  // gfx::AnimationDelegate overrides.
+  // AnimationDelegateViews overrides.
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;

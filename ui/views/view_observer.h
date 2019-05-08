@@ -39,6 +39,12 @@ class VIEWS_EXPORT ViewObserver {
       View* observed_view,
       const ViewHierarchyChangedDetails& details) {}
 
+  // Called when View::AddedToWidget() is called.
+  virtual void OnViewAddedToWidget(View* observed_view) {}
+
+  // Called when View::RemovedFromWidget() is called.
+  virtual void OnViewRemovedFromWidget(View* observed_view) {}
+
   // Called when a child is reordered among its siblings, specifically
   // View::ReorderChildView() is called on |observed_view|.
   virtual void OnChildViewReordered(View* observed_view, View* child) {}

@@ -4,6 +4,8 @@
 
 #include "ui/gfx/animation/animation.h"
 
+#include <memory>
+
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "ui/gfx/animation/animation_container.h"
@@ -37,8 +39,11 @@ void Animation::Start() {
   if (is_animating_)
     return;
 
-  if (!container_.get())
-    container_ = new AnimationContainer();
+  if (!container_) {
+    container_ = base::MakeRefCounted<AnimationContainer>();
+    if (delegate_)
+      delegate_->AnimationContainerWasSet(container_.get());
+  }
 
   is_animating_ = true;
 
@@ -91,6 +96,9 @@ void Animation::SetContainer(AnimationContainer* container) {
     container_ = container;
   else
     container_ = new AnimationContainer();
+
+  if (delegate_)
+    delegate_->AnimationContainerWasSet(container_.get());
 
   if (is_animating_)
     container_->Start(this);

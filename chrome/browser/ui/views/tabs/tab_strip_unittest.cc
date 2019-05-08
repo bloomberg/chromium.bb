@@ -82,41 +82,6 @@ class TestAXEventObserver : public views::AXEventObserver {
   DISALLOW_COPY_AND_ASSIGN(TestAXEventObserver);
 };
 
-class AnimationWaiter {
- public:
-  AnimationWaiter(TabStrip* tab_strip, base::TimeDelta duration)
-      : tab_strip_(tab_strip), duration_(duration) {}
-
-  ~AnimationWaiter() = default;
-
-  // Blocks until |tab_strip_| is not animating.
-  void Wait() {
-    interval_timer_.Start(
-        FROM_HERE, duration_,
-        base::BindRepeating(&AnimationWaiter::CheckAnimationEnds,
-                            base::Unretained(this)));
-
-    run_loop_.Run();
-  }
-
- private:
-  void CheckAnimationEnds() {
-    if (tab_strip_->IsAnimating())
-      return;
-
-    interval_timer_.Stop();
-    run_loop_.Quit();
-  }
-
-  TabStrip* tab_strip_;
-
-  base::RepeatingTimer interval_timer_;
-  base::TimeDelta duration_;
-
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(AnimationWaiter);
-};
 }  // namespace
 
 class TestTabStripObserver : public TabStripObserver {
@@ -867,6 +832,8 @@ TEST_P(TabStripTest, ResetBoundsForDraggedTabs) {
   Tab* dragged_tab = tab_strip_->tab_at(dragged_tab_index);
   dragged_tab->set_dragging(true);
 
+  gfx::AnimationContainerTestApi test_api(bounds_animator()->container());
+
   // Ending the drag triggers the tabstrip to begin animating this tab back
   // to its ideal bounds.
   StopDraggingTab(dragged_tab);
@@ -881,8 +848,7 @@ TEST_P(TabStripTest, ResetBoundsForDraggedTabs) {
   // than the original ones (where it's an active tab).
   const auto duration = base::TimeDelta::FromMilliseconds(
       bounds_animator()->GetAnimationDuration());
-  AnimationWaiter waiter(tab_strip_, duration);
-  waiter.Wait();
+  test_api.IncrementTime(duration);
 
   EXPECT_FALSE(dragged_tab->dragging());
   EXPECT_LT(dragged_tab->bounds().width(), min_active_width);

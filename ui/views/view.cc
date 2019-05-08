@@ -2158,8 +2158,11 @@ void View::PropagateRemoveNotifications(View* old_parent,
   for (View* v = this; v; v = v->parent_)
     v->ViewHierarchyChangedImpl(true, details);
 
-  if (is_removed_from_widget)
+  if (is_removed_from_widget) {
     RemovedFromWidget();
+    for (ViewObserver& observer : observers_)
+      observer.OnViewRemovedFromWidget(this);
+  }
 }
 
 void View::PropagateAddNotifications(const ViewHierarchyChangedDetails& details,
@@ -2170,8 +2173,11 @@ void View::PropagateAddNotifications(const ViewHierarchyChangedDetails& details,
       child->PropagateAddNotifications(details, is_added_to_widget);
   }
   ViewHierarchyChangedImpl(true, details);
-  if (is_added_to_widget)
+  if (is_added_to_widget) {
     AddedToWidget();
+    for (ViewObserver& observer : observers_)
+      observer.OnViewAddedToWidget(this);
+  }
 }
 
 void View::PropagateNativeViewHierarchyChanged() {
