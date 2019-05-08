@@ -23,12 +23,12 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/chromeos_camera/gpu_jpeg_encode_accelerator_factory.h"
+#include "components/chromeos_camera/jpeg_encode_accelerator.h"
 #include "media/base/test_data_util.h"
 #include "media/filters/jpeg_parser.h"
 #include "media/gpu/buildflags.h"
-#include "media/gpu/gpu_jpeg_encode_accelerator_factory.h"
 #include "media/gpu/test/video_accelerator_unittest_helpers.h"
-#include "media/video/jpeg_encode_accelerator.h"
 #include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libyuv/include/libyuv.h"
@@ -38,7 +38,7 @@
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #endif
 
-namespace media {
+namespace chromeos_camera {
 namespace {
 
 // Default test image file.
@@ -232,7 +232,7 @@ JpegEncodeAcceleratorTestEnvironment::GetOriginalOrTestDataFilePath(
     const std::string& name) {
   base::FilePath file_path = base::FilePath(name);
   if (!PathExists(file_path)) {
-    file_path = GetTestDataFilePath(name);
+    file_path = media::GetTestDataFilePath(name);
   }
   VLOG(3) << "Using file path " << file_path.value();
   return file_path;
@@ -296,7 +296,7 @@ class JpegClient : public JpegEncodeAccelerator::Client {
   media::test::ClientStateNotification<ClientState>* note_;
 
   // Output buffer prepared for JpegEncodeAccelerator.
-  std::unique_ptr<BitstreamBuffer> encoded_buffer_;
+  std::unique_ptr<media::BitstreamBuffer> encoded_buffer_;
 
   // Mapped memory of input file.
   std::unique_ptr<base::SharedMemory> in_shm_;
@@ -558,13 +558,15 @@ void JpegClient::StartEncode(int32_t bitstream_buffer_id) {
 
   base::SharedMemoryHandle dup_handle;
   dup_handle = base::SharedMemory::DuplicateHandle(hw_out_shm_->handle());
-  encoded_buffer_ = std::make_unique<BitstreamBuffer>(
+  encoded_buffer_ = std::make_unique<media::BitstreamBuffer>(
       bitstream_buffer_id, dup_handle, test_image->output_size);
-  scoped_refptr<VideoFrame> input_frame_ = VideoFrame::WrapExternalSharedMemory(
-      PIXEL_FORMAT_I420, test_image->visible_size,
-      gfx::Rect(test_image->visible_size), test_image->visible_size,
-      static_cast<uint8_t*>(in_shm_->memory()), test_image->image_data.size(),
-      in_shm_->handle(), 0, base::TimeDelta());
+  scoped_refptr<media::VideoFrame> input_frame_ =
+      media::VideoFrame::WrapExternalSharedMemory(
+          media::PIXEL_FORMAT_I420, test_image->visible_size,
+          gfx::Rect(test_image->visible_size), test_image->visible_size,
+          static_cast<uint8_t*>(in_shm_->memory()),
+          test_image->image_data.size(), in_shm_->handle(), 0,
+          base::TimeDelta());
 
   LOG_ASSERT(input_frame_.get());
 
@@ -697,7 +699,7 @@ TEST_F(JpegEncodeAcceleratorTest, CodedSizeAlignment) {
 }
 
 }  // namespace
-}  // namespace media
+}  // namespace chromeos_camera
 
 int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
@@ -739,7 +741,7 @@ int main(int argc, char** argv) {
       continue;
     }
     if (it->first == "save_to_file") {
-      media::g_save_to_file = true;
+      chromeos_camera::g_save_to_file = true;
       continue;
     }
     if (it->first == "v" || it->first == "vmodule")
@@ -753,10 +755,11 @@ int main(int argc, char** argv) {
   media::VaapiWrapper::PreSandboxInitialization();
 #endif
 
-  media::g_env = reinterpret_cast<media::JpegEncodeAcceleratorTestEnvironment*>(
-      testing::AddGlobalTestEnvironment(
-          new media::JpegEncodeAcceleratorTestEnvironment(yuv_filenames,
-                                                          log_path, repeat)));
+  chromeos_camera::g_env =
+      reinterpret_cast<chromeos_camera::JpegEncodeAcceleratorTestEnvironment*>(
+          testing::AddGlobalTestEnvironment(
+              new chromeos_camera::JpegEncodeAcceleratorTestEnvironment(
+                  yuv_filenames, log_path, repeat)));
 
   return RUN_ALL_TESTS();
 }

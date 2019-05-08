@@ -5,8 +5,8 @@
 mojom = "//components/chromeos_camera/common/mjpeg_decode_accelerator.mojom"
 
 public_headers = [
+  "//components/chromeos_camera/mjpeg_decode_accelerator.h",
   "//media/base/bitstream_buffer.h",
-  "//media/video/mjpeg_decode_accelerator.h",
 ]
 
 traits_headers = [
@@ -25,5 +25,5 @@ deps = [
 
 type_mappings = [
   "chromeos_camera.mojom.BitstreamBuffer=media::BitstreamBuffer",
-  "chromeos_camera.mojom.DecodeError=media::MjpegDecodeAccelerator::Error",
+  "chromeos_camera.mojom.DecodeError=chromeos_camera::MjpegDecodeAccelerator::Error",
 ]

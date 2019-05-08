@@ -15,9 +15,3 @@ include_rules = [
   # media/mojo is not part of "media" target and should not use MEDIA_EXPORT.
   "-media/base/media_export.h"
 ]
-
-specific_include_rules = {
-  "cros_mojo_mjpeg_decode_accelerator\.h": [
-    "+components/chromeos_camera/common",
-  ],
-}

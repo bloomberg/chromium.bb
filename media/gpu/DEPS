@@ -19,5 +19,9 @@ include_rules = [
 
   # SharedImageVideo uses it.
   "+components/viz/common/resources/resource_format_utils.h",
-  "+components/viz/common/resources/resource_sizes.h"
+  "+components/viz/common/resources/resource_sizes.h",
+
+  # Chrome OS specific JEA/MJDA.
+  "+components/chromeos_camera/jpeg_encode_accelerator.h",
+  "+components/chromeos_camera/mjpeg_decode_accelerator.h",
 ]

@@ -45,23 +45,23 @@ static void ReportToVAJDADecoderFailureUMA(VAJDADecoderFailure failure) {
 }
 
 static void ReportToVAJDAResponseToClientUMA(
-    MjpegDecodeAccelerator::Error response) {
+    chromeos_camera::MjpegDecodeAccelerator::Error response) {
   UMA_HISTOGRAM_ENUMERATION(
       "Media.VAJDA.ResponseToClient", response,
-      MjpegDecodeAccelerator::Error::MJDA_ERROR_CODE_MAX + 1);
+      chromeos_camera::MjpegDecodeAccelerator::Error::MJDA_ERROR_CODE_MAX + 1);
 }
 
-static MjpegDecodeAccelerator::Error VaapiJpegDecodeStatusToError(
-    VaapiJpegDecodeStatus status) {
+static chromeos_camera::MjpegDecodeAccelerator::Error
+VaapiJpegDecodeStatusToError(VaapiJpegDecodeStatus status) {
   switch (status) {
     case VaapiJpegDecodeStatus::kSuccess:
-      return MjpegDecodeAccelerator::Error::NO_ERRORS;
+      return chromeos_camera::MjpegDecodeAccelerator::Error::NO_ERRORS;
     case VaapiJpegDecodeStatus::kParseJpegFailed:
-      return MjpegDecodeAccelerator::Error::PARSE_JPEG_FAILED;
+      return chromeos_camera::MjpegDecodeAccelerator::Error::PARSE_JPEG_FAILED;
     case VaapiJpegDecodeStatus::kUnsupportedSubsampling:
-      return MjpegDecodeAccelerator::Error::UNSUPPORTED_JPEG;
+      return chromeos_camera::MjpegDecodeAccelerator::Error::UNSUPPORTED_JPEG;
     default:
-      return MjpegDecodeAccelerator::Error::PLATFORM_FAILURE;
+      return chromeos_camera::MjpegDecodeAccelerator::Error::PLATFORM_FAILURE;
   }
 }
 
@@ -94,7 +94,7 @@ void VaapiMjpegDecodeAccelerator::NotifyError(int32_t bitstream_buffer_id,
   VLOGF(1) << "Notifying of error " << error;
   // |error| shouldn't be NO_ERRORS because successful decodes should be handled
   // by VideoFrameReady().
-  DCHECK_NE(MjpegDecodeAccelerator::Error::NO_ERRORS, error);
+  DCHECK_NE(chromeos_camera::MjpegDecodeAccelerator::Error::NO_ERRORS, error);
   ReportToVAJDAResponseToClientUMA(error);
   DCHECK(client_);
   client_->NotifyError(bitstream_buffer_id, error);
@@ -102,7 +102,8 @@ void VaapiMjpegDecodeAccelerator::NotifyError(int32_t bitstream_buffer_id,
 
 void VaapiMjpegDecodeAccelerator::VideoFrameReady(int32_t bitstream_buffer_id) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  ReportToVAJDAResponseToClientUMA(MjpegDecodeAccelerator::Error::NO_ERRORS);
+  ReportToVAJDAResponseToClientUMA(
+      chromeos_camera::MjpegDecodeAccelerator::Error::NO_ERRORS);
   client_->VideoFrameReady(bitstream_buffer_id);
 }
 
@@ -122,7 +123,8 @@ VaapiMjpegDecodeAccelerator::~VaapiMjpegDecodeAccelerator() {
   decoder_thread_.Stop();
 }
 
-bool VaapiMjpegDecodeAccelerator::Initialize(Client* client) {
+bool VaapiMjpegDecodeAccelerator::Initialize(
+    chromeos_camera::MjpegDecodeAccelerator::Client* client) {
   VLOGF(2);
   DCHECK(task_runner_->BelongsToCurrentThread());
 
