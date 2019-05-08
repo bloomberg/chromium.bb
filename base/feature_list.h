@@ -5,6 +5,7 @@
 #ifndef BASE_FEATURE_LIST_H_
 #define BASE_FEATURE_LIST_H_
 
+#include <functional>
 #include <map>
 #include <memory>
 #include <string>
@@ -287,7 +288,7 @@ class BASE_EXPORT FeatureList {
 
   // Map from feature name to an OverrideEntry struct for the feature, if it
   // exists.
-  std::map<std::string, OverrideEntry> overrides_;
+  std::map<std::string, OverrideEntry, std::less<>> overrides_;
 
   // Locked map that keeps track of seen features, to ensure a single feature is
   // only defined once. This verification is only done in builds with DCHECKs
