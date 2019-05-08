@@ -86,10 +86,6 @@ class SyncQuery {
       query_->Set();
     }
     bool HasPassed() override { return !query_ || !query_->IsPending(); }
-    void Wait() override {
-      if (query_)
-        query_->Wait();
-    }
 
    private:
     ~Fence() override {}

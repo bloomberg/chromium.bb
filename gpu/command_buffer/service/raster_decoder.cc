@@ -780,7 +780,7 @@ void RasterDecoderImpl::Destroy(bool have_context) {
           .fNumSemaphores = end_semaphores_.size(),
           .fSignalSemaphores = end_semaphores_.data(),
       };
-      CreateCleanupCallbackForSkiaFlush(
+      AddVulkanCleanupTaskForSkiaFlush(
           shared_context_state_->vk_context_provider(), &flush_info);
       auto result = sk_surface_->flush(
           SkSurface::BackendSurfaceAccess::kPresent, flush_info);
@@ -2230,7 +2230,7 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
         .fNumSemaphores = end_semaphores_.size(),
         .fSignalSemaphores = end_semaphores_.data(),
     };
-    CreateCleanupCallbackForSkiaFlush(
+    AddVulkanCleanupTaskForSkiaFlush(
         shared_context_state_->vk_context_provider(), &flush_info);
     if (use_ddl_) {
       // TODO(penghuang): Switch to sk_surface_->flush() when skia flush bug is

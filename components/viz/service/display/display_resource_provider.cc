@@ -556,6 +556,10 @@ ResourceMetadata DisplayResourceProvider::LockForExternalUse(ResourceId id) {
   metadata.origin = kTopLeft_GrSurfaceOrigin;
 
   resource->locked_for_external_use = true;
+
+  if (resource->transferable.read_lock_fences_enabled)
+    resource->read_lock_fence = current_read_lock_fence_;
+
   return metadata;
 }
 
@@ -960,10 +964,6 @@ bool DisplayResourceProvider::SynchronousFence::HasPassed() {
     Synchronize();
   }
   return true;
-}
-
-void DisplayResourceProvider::SynchronousFence::Wait() {
-  HasPassed();
 }
 
 void DisplayResourceProvider::SynchronousFence::Synchronize() {

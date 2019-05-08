@@ -352,7 +352,6 @@ class TestFence : public ResourceFence {
   // ResourceFence implementation.
   void Set() override {}
   bool HasPassed() override { return passed; }
-  void Wait() override {}
 
   bool passed = false;
 

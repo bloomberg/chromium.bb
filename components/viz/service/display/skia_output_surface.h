@@ -92,7 +92,10 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
   // a sync token which can be waited on in a command buffer to ensure the paint
   // operation is completed. This token is released when the GPU ops from
   // painting the render pass have been seen and processed by the GPU main.
-  virtual gpu::SyncToken SubmitPaint() = 0;
+  // Optionally the caller may specify |on_finished| callback to be called after
+  // the GPU has finished processing all submitted commands. The callback may be
+  // called on a different thread.
+  virtual gpu::SyncToken SubmitPaint(base::OnceClosure on_finished) = 0;
 
   // Make a promise SkImage from a render pass id. The render pass has been
   // painted with BeginPaintRenderPass and FinishPaintRenderPass. The format

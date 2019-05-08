@@ -239,7 +239,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     // ResourceFence implementation.
     void Set() override;
     bool HasPassed() override;
-    void Wait() override;
 
     // Returns true if fence has been set but not yet synchornized.
     bool has_synchronized() const { return has_synchronized_; }

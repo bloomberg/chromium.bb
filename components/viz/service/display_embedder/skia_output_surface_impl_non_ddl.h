@@ -79,7 +79,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
                                  ResourceFormat format,
                                  bool mipmap,
                                  sk_sp<SkColorSpace> color_space) override;
-  gpu::SyncToken SubmitPaint() override;
+  gpu::SyncToken SubmitPaint(base::OnceClosure on_finished) override;
   sk_sp<SkImage> MakePromiseSkImage(const ResourceMetadata& metadata) override;
   sk_sp<SkImage> MakePromiseSkImageFromRenderPass(
       const RenderPassId& id,

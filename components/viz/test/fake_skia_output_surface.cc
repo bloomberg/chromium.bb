@@ -193,10 +193,14 @@ SkCanvas* FakeSkiaOutputSurface::BeginPaintRenderPass(
   return sk_surface->getCanvas();
 }
 
-gpu::SyncToken FakeSkiaOutputSurface::SubmitPaint() {
+gpu::SyncToken FakeSkiaOutputSurface::SubmitPaint(
+    base::OnceClosure on_finished) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   sk_surfaces_[current_render_pass_id_]->flush();
   current_render_pass_id_ = 0;
+
+  if (on_finished)
+    std::move(on_finished).Run();
 
   gpu::SyncToken sync_token;
   context_provider()->ContextGL()->GenSyncTokenCHROMIUM(sync_token.GetData());

@@ -7,9 +7,11 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/bits.h"
 #include "base/command_line.h"
 #include "base/optional.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
 #include "cc/paint/render_surface_filters.h"
@@ -595,6 +597,22 @@ SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
 
 SkiaRenderer::~SkiaRenderer() = default;
 
+class FrameResourceFence : public ResourceFence {
+ public:
+  FrameResourceFence() = default;
+
+  // ResourceFence implementation.
+  void Set() override { event_.Signal(); }
+  bool HasPassed() override { return event_.IsSignaled(); }
+
+ private:
+  ~FrameResourceFence() override = default;
+
+  base::WaitableEvent event_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameResourceFence);
+};
+
 bool SkiaRenderer::CanPartialSwap() {
   if (draw_mode_ == DrawMode::DDL)
     return output_surface_->capabilities().supports_post_sub_buffer;
@@ -611,19 +629,22 @@ bool SkiaRenderer::CanPartialSwap() {
 
 void SkiaRenderer::BeginDrawingFrame() {
   TRACE_EVENT0("viz", "SkiaRenderer::BeginDrawingFrame");
-  if (draw_mode_ != DrawMode::SKPRECORD)
-    return;
+
+  DCHECK(!current_frame_resource_fence_);
 
   // Copied from GLRenderer.
   scoped_refptr<ResourceFence> read_lock_fence;
   if (sync_queries_) {
     read_lock_fence = sync_queries_->StartNewFrame();
+    current_frame_resource_fence_ = nullptr;
   } else {
-    read_lock_fence =
-        base::MakeRefCounted<DisplayResourceProvider::SynchronousFence>(
-            context_provider_->ContextGL());
+    read_lock_fence = base::MakeRefCounted<FrameResourceFence>();
+    current_frame_resource_fence_ = read_lock_fence;
   }
   resource_provider_->SetReadLockFence(read_lock_fence.get());
+
+  if (draw_mode_ != DrawMode::SKPRECORD)
+    return;
 
   // Insert WaitSyncTokenCHROMIUM on quad resources prior to drawing the
   // frame, so that drawing can proceed without GL context switching
@@ -1857,7 +1878,20 @@ void SkiaRenderer::FinishDrawingQuadList() {
       // SubmitPaint to the GPU thread.
       promise_images_.clear();
       yuv_promise_images_.clear();
-      gpu::SyncToken sync_token = skia_output_surface_->SubmitPaint();
+
+      base::OnceClosure on_finished_callback;
+
+      // Signal |current_frame_resource_fence_| when the root render pass is
+      // finished.
+      if (current_frame_resource_fence_ &&
+          current_frame()->current_render_pass ==
+              current_frame()->root_render_pass) {
+        on_finished_callback = base::BindOnce(
+            &ResourceFence::Set, std::move(current_frame_resource_fence_));
+      }
+      gpu::SyncToken sync_token =
+          skia_output_surface_->SubmitPaint(std::move(on_finished_callback));
+
       lock_set_for_external_use_->UnlockResources(sync_token);
       break;
     }

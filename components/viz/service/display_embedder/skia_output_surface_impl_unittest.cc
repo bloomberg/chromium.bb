@@ -164,7 +164,12 @@ TEST_P(SkiaOutputSurfaceImplTest, SubmitPaint) {
   SkRect rect = SkRect::MakeWH(output_rect.width(), output_rect.height());
   root_canvas->drawRect(rect, paint);
 
-  gpu::SyncToken sync_token = output_surface_->SubmitPaint();
+  bool on_finished_called = false;
+  base::OnceClosure on_finished =
+      base::BindOnce([](bool* result) { *result = true; }, &on_finished_called);
+
+  gpu::SyncToken sync_token =
+      output_surface_->SubmitPaint(std::move(on_finished));
   EXPECT_TRUE(sync_token.HasData());
   base::OnceClosure closure =
       base::BindOnce(&SkiaOutputSurfaceImplTest::CheckSyncTokenOnGpuThread,
@@ -176,6 +181,7 @@ TEST_P(SkiaOutputSurfaceImplTest, SubmitPaint) {
   gpu_service()->scheduler()->ScheduleTask(gpu::Scheduler::Task(
       sequence_id, std::move(closure), std::move(resource_sync_tokens)));
   BlockMainThread();
+  EXPECT_TRUE(on_finished_called);
 
   // Copy the output
   const gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();

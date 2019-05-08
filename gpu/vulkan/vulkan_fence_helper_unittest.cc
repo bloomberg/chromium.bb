@@ -101,11 +101,9 @@ TEST_F(VulkanFenceHelperTest, TestSkiaCallback) {
       base::BindOnce([](bool* cleanup_run, VulkanDeviceQueue* device_queue,
                         bool is_lost) { *cleanup_run = true; },
                      &cleanup_run));
-  VulkanFenceHelper::ExternalCallback callback;
-  VulkanFenceHelper::ExternalCallbackContext context;
-  fence_helper->EnqueueExternalCallback(&callback, &context);
+  auto cleanup_closure = fence_helper->CreateExternalCallback();
   EXPECT_FALSE(cleanup_run);
-  callback(context);
+  std::move(cleanup_closure).Run();
   EXPECT_TRUE(cleanup_run);
 }
 
@@ -126,9 +124,7 @@ TEST_F(VulkanFenceHelperTest, SkiaCallbackBeforeFences) {
   }
 
   // The first 5 callbacks use a callback to trigger.
-  VulkanFenceHelper::ExternalCallback callback;
-  VulkanFenceHelper::ExternalCallbackContext context;
-  fence_helper->EnqueueExternalCallback(&callback, &context);
+  auto cleanup_closure = fence_helper->CreateExternalCallback();
 
   // Enqueue 5 more callbacks.
   for (int i = 5; i < 10; i++) {
@@ -147,7 +143,7 @@ TEST_F(VulkanFenceHelperTest, SkiaCallbackBeforeFences) {
   EXPECT_EQ(10u, cleanups_run);
 
   // Running the callback now should be a no-op.
-  callback(context);
+  std::move(cleanup_closure).Run();
   EXPECT_EQ(10u, cleanups_run);
 }
 
@@ -179,13 +175,11 @@ TEST_F(VulkanFenceHelperTest, SkiaCallbackAfterFences) {
   }
 
   // The next 5 callbacks use a callback to trigger.
-  VulkanFenceHelper::ExternalCallback callback;
-  VulkanFenceHelper::ExternalCallbackContext context;
-  fence_helper->EnqueueExternalCallback(&callback, &context);
+  auto cleanup_closure = fence_helper->CreateExternalCallback();
 
-  // Signal the fence, all callbacks should run.
+  // Call the cleanup closure, all callbacks should run.
   // Generate a cleanup fence for the next 5 callbacks.
-  callback(context);
+  std::move(cleanup_closure).Run();
   EXPECT_EQ(10u, cleanups_run);
 }
 

@@ -111,7 +111,8 @@ class SkiaOutputSurfaceImplOnGpu {
       std::unique_ptr<SkDeferredDisplayList> overdraw_ddl,
       std::vector<ImageContext*> image_contexts,
       std::vector<gpu::SyncToken> sync_tokens,
-      uint64_t sync_fence_release);
+      uint64_t sync_fence_release,
+      base::OnceClosure on_finished);
   void SwapBuffers(OutputSurfaceFrame frame);
   void EnsureBackbuffer() { output_device_->EnsureBackbuffer(); }
   void DiscardBackbuffer() { output_device_->DiscardBackbuffer(); }

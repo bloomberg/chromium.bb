@@ -142,40 +142,30 @@ VulkanFenceHelper::FenceHandle VulkanFenceHelper::GenerateCleanupFence() {
   return EnqueueFence(fence);
 }
 
-void VulkanFenceHelper::EnqueueExternalCallback(
-    ExternalCallback* callback,
-    ExternalCallbackContext* context) {
+base::OnceClosure VulkanFenceHelper::CreateExternalCallback() {
   // No need to do callback tracking if there are no cleanup tasks to run.
   if (tasks_pending_fence_.empty())
-    return;
+    return base::OnceClosure();
 
-  // Get a generaiton ID for this callback and associate existing cleanup
+  // Get a generation ID for this callback and associate existing cleanup
   // tasks.
   uint64_t generation_id = next_generation_++;
   cleanup_tasks_.emplace_back(generation_id, std::move(tasks_pending_fence_));
   tasks_pending_fence_ = std::vector<CleanupTask>();
 
-  // Populate |callback| and |context|.
-  struct ExternalCallbackData {
-    base::WeakPtr<VulkanFenceHelper> fence_helper;
-    uint64_t generation_id;
-  };
-  // As we must pass a void* which may outlive this class, use "new" here. We
-  // will delete |context| in the callback below.
-  *context =
-      new ExternalCallbackData{weak_factory_.GetWeakPtr(), generation_id};
-  *callback = [](ExternalCallbackContext context) {
-    auto* callback_data = static_cast<ExternalCallbackData*>(context);
-    if (auto* fence_helper = callback_data->fence_helper.get()) {
-      // If |current_generation_| is ahead of the callback's |generation_id|,
-      // the callback came late. Ignore it.
-      if (callback_data->generation_id > fence_helper->current_generation_) {
-        fence_helper->current_generation_ = callback_data->generation_id;
-        fence_helper->ProcessCleanupTasks();
-      }
-    }
-    delete callback_data;
-  };
+  return base::BindOnce(
+      [](base::WeakPtr<VulkanFenceHelper> fence_helper,
+         uint64_t generation_id) {
+        if (!fence_helper)
+          return;
+        // If |current_generation_| is ahead of the callback's
+        // |generation_id|, the callback came late. Ignore it.
+        if (generation_id > fence_helper->current_generation_) {
+          fence_helper->current_generation_ = generation_id;
+          fence_helper->ProcessCleanupTasks();
+        }
+      },
+      weak_factory_.GetWeakPtr(), generation_id);
 }
 
 void VulkanFenceHelper::EnqueueSemaphoreCleanupForSubmittedWork(

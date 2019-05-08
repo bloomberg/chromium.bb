@@ -382,7 +382,8 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     std::unique_ptr<SkDeferredDisplayList> overdraw_ddl,
     std::vector<ImageContext*> image_contexts,
     std::vector<gpu::SyncToken> sync_tokens,
-    uint64_t sync_fence_release) {
+    uint64_t sync_fence_release,
+    base::OnceClosure on_finished) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ddl);
   DCHECK(output_sk_surface());
@@ -434,8 +435,12 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
         .fSignalSemaphores =
             scoped_promise_image_access.end_semaphores().data(),
     };
-    gpu::CreateCleanupCallbackForSkiaFlush(vulkan_context_provider_,
-                                           &flush_info);
+
+    gpu::AddVulkanCleanupTaskForSkiaFlush(vulkan_context_provider_,
+                                          &flush_info);
+    if (on_finished)
+      gpu::AddCleanupTaskForSkiaFlush(std::move(on_finished), &flush_info);
+
     auto result = output_sk_surface()->flush(
         SkSurface::BackendSurfaceAccess::kPresent, flush_info);
     if (result != GrSemaphoresSubmitted::kYes &&
@@ -528,8 +533,9 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
         .fSignalSemaphores =
             scoped_promise_image_access.end_semaphores().data(),
     };
-    gpu::CreateCleanupCallbackForSkiaFlush(vulkan_context_provider_,
-                                           &flush_info);
+
+    gpu::AddVulkanCleanupTaskForSkiaFlush(vulkan_context_provider_,
+                                          &flush_info);
     auto result = offscreen.surface()->flush(
         SkSurface::BackendSurfaceAccess::kNoAccess, flush_info);
     if (result != GrSemaphoresSubmitted::kYes &&

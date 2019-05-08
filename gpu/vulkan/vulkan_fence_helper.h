@@ -69,18 +69,14 @@ class VULKAN_EXPORT VulkanFenceHelper {
   // TODO(ericrk): We should avoid this in all cases if possible.
   FenceHandle GenerateCleanupFence();
 
-  // Helper for associating cleanup tasks with a callback which will be run
-  // after a future fence submission. Used in cases where an external
-  // component (Skia) is submitting / waiting on a fence and cannot share that
-  // fence with this class.
+  // Creates a callback that calls pending cleanup tasks. Used in cases where an
+  // external component (Skia) is submitting / waiting on a fence and cannot
+  // share that fence with this class.
   // Note: It is important that no new cleanup tasks or fences are inserted
   // between this call and the submission of the fence which will eventually
   // trigger this callback. Doing so could cause the callbacks associated
   // with this call to run out of order / incorrectly.
-  using ExternalCallbackContext = void*;
-  using ExternalCallback = void (*)(ExternalCallbackContext);
-  void EnqueueExternalCallback(ExternalCallback* callback,
-                               ExternalCallbackContext* context);
+  base::OnceClosure CreateExternalCallback();
 
   // Helper functions which allow clients to wait for or check the statusof a
   // fence submitted with EnqueueFence.

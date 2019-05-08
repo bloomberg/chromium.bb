@@ -287,7 +287,8 @@ SkCanvas* SkiaOutputSurfaceImplNonDDL::BeginPaintRenderPass(
   return sk_current_surface_->getCanvas();
 }
 
-gpu::SyncToken SkiaOutputSurfaceImplNonDDL::SubmitPaint() {
+gpu::SyncToken SkiaOutputSurfaceImplNonDDL::SubmitPaint(
+    base::OnceClosure on_finished) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // To make sure sync_token is valid, we need make sure we are processing a gpu
   // task.
@@ -336,8 +337,12 @@ gpu::SyncToken SkiaOutputSurfaceImplNonDDL::SubmitPaint() {
       .fNumSemaphores = pending_semaphores_.size(),
       .fSignalSemaphores = pending_semaphores_.data(),
   };
-  gpu::CreateCleanupCallbackForSkiaFlush(
+
+  gpu::AddVulkanCleanupTaskForSkiaFlush(
       shared_context_state_->vk_context_provider(), &flush_info);
+  if (on_finished)
+    gpu::AddCleanupTaskForSkiaFlush(std::move(on_finished), &flush_info);
+
   auto result = sk_current_surface_->flush(access, flush_info);
   DCHECK_EQ(result, GrSemaphoresSubmitted::kYes);
   pending_semaphores_.clear();

@@ -350,7 +350,8 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
   return recorder_->getCanvas();
 }
 
-gpu::SyncToken SkiaOutputSurfaceImpl::SubmitPaint() {
+gpu::SyncToken SkiaOutputSurfaceImpl::SubmitPaint(
+    base::OnceClosure on_finished) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(recorder_);
 
@@ -386,6 +387,7 @@ gpu::SyncToken SkiaOutputSurfaceImpl::SubmitPaint() {
       // MakePromiseSkImageFromRenderPass() is called.
       it->second->image = nullptr;
     }
+    DCHECK(!on_finished);
     callback = base::BindOnce(
         &SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass,
         base::Unretained(impl_on_gpu_.get()), current_render_pass_id_,
@@ -396,7 +398,7 @@ gpu::SyncToken SkiaOutputSurfaceImpl::SubmitPaint() {
         &SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame,
         base::Unretained(impl_on_gpu_.get()), std::move(ddl),
         std::move(overdraw_ddl), std::move(images_in_current_paint_),
-        resource_sync_tokens_, sync_fence_release_);
+        resource_sync_tokens_, sync_fence_release_, std::move(on_finished));
   }
   images_in_current_paint_.clear();
   ScheduleGpuTask(std::move(callback), std::move(resource_sync_tokens_));
