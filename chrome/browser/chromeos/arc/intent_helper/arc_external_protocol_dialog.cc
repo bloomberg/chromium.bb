@@ -474,9 +474,9 @@ void OnAppIconsReceived(
     return;
 
   browser->window()->SetIntentPickerViewVisibility(/*visible=*/true);
+  const bool stay_in_chrome = IsChromeAnAppCandidate(handlers);
   browser->window()->ShowIntentPickerBubble(
-      std::move(app_info), IsChromeAnAppCandidate(handlers),
-      /*show_remember_selection=*/true,
+      std::move(app_info), stay_in_chrome, /*show_remember_selection=*/true,
       base::BindOnce(OnIntentPickerClosed, render_process_host_id, routing_id,
                      url, safe_to_bypass_ui, std::move(handlers)));
 }
