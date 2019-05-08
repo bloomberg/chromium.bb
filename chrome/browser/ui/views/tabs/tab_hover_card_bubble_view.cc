@@ -211,6 +211,7 @@ class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
   void AnimateToAnchorView(views::View* anchor_view) {
     anchor_view_ = anchor_view;
     gfx::Rect anchor_bounds = anchor_view->GetAnchorBoundsInScreen();
+    anchor_bounds.Inset(bubble_delegate_->anchor_view_insets());
 
     // If an animation is currently running we should start the next animation
     // from where the previous left off.
@@ -256,6 +257,10 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   // We'll do all of our own layout inside the bubble, so no need to inset this
   // view inside the client view.
   set_margins(gfx::Insets());
+
+  // Inset the tab hover cards anchor rect to bring the card closer to the tab.
+  constexpr gfx::Insets kTabHoverCardAnchorInsets(2, 0);
+  set_anchor_view_insets(kTabHoverCardAnchorInsets);
 
   // Set so that when hovering over a tab in a inactive window that window will
   // not become active. Setting this to false creates the need to explicitly
