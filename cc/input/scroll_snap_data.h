@@ -154,15 +154,11 @@ struct SnapAreaData {
 
 typedef std::vector<SnapAreaData> SnapAreaList;
 
-// Snap container is a scroll container that at least one snap area assigned to
-// it.  If the snap-type is not 'none', then it can be snapped to one of its
-// snap areas when a scroll happens.
+// Snap container is a scroll container that has non-'none' value for
+// scroll-snap-type. It can be snapped to one of its snap areas when a scroll
+// happens.
 // This data structure describes the data needed for SnapCoordinator to perform
 // snapping in the snap container.
-//
-// Note that the snap area data should only be used when snap-type is not 'none'
-// There is not guarantee that this information is up-to-date otherwise. In
-// fact, we skip updating these info as an optiomization.
 class CC_EXPORT SnapContainerData {
  public:
   SnapContainerData();
