@@ -804,9 +804,13 @@ void NetworkService::AckUpdateLoadInfo() {
 
 void NetworkService::ReportMetrics() {
   size_t cache_size = 0;
-  for (auto* context : network_contexts_)
+  size_t loader_count = 0;
+  for (auto* context : network_contexts_) {
     cache_size += context->ReportAndGatherCorsPreflightCacheSizeMetric();
+    loader_count += context->GatherActiveLoaderCount();
+  }
   UMA_HISTOGRAM_COUNTS_10000("Net.Cors.PreflightCacheTotalEntries", cache_size);
+  UMA_HISTOGRAM_COUNTS_1000("Net.Cors.ActiveLoaderCount", loader_count);
 }
 
 void NetworkService::Bind(mojom::NetworkServiceRequest request) {
