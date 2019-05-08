@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 214 tests; 210 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 202 tests; 200 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Navigator: original interface defined
 PASS Partial dictionary WebGLContextAttributes: original dictionary defined
@@ -10,13 +10,13 @@ PASS XR interface object name
 PASS XR interface: existence and properties of interface prototype object
 PASS XR interface: existence and properties of interface prototype object's "constructor" property
 PASS XR interface: existence and properties of interface prototype object's @@unscopables property
-FAIL XR interface: operation supportsSessionMode(XRSessionMode) assert_own_property: interface prototype object missing non-static operation expected property "supportsSessionMode" missing
+PASS XR interface: operation supportsSession(XRSessionMode)
 PASS XR interface: operation requestSession(XRSessionMode)
 PASS XR interface: attribute ondevicechange
 PASS XR must be primary interface of navigator.xr
 PASS Stringification of navigator.xr
-FAIL XR interface: navigator.xr must inherit property "supportsSessionMode(XRSessionMode)" with the proper type assert_inherits: property "supportsSessionMode" not found in prototype chain
-FAIL XR interface: calling supportsSessionMode(XRSessionMode) on navigator.xr with too few arguments must throw TypeError assert_inherits: property "supportsSessionMode" not found in prototype chain
+PASS XR interface: navigator.xr must inherit property "supportsSession(XRSessionMode)" with the proper type
+PASS XR interface: calling supportsSession(XRSessionMode) on navigator.xr with too few arguments must throw TypeError
 PASS XR interface: navigator.xr must inherit property "requestSession(XRSessionMode)" with the proper type
 PASS XR interface: calling requestSession(XRSessionMode) on navigator.xr with too few arguments must throw TypeError
 PASS XR interface: navigator.xr must inherit property "ondevicechange" with the proper type
@@ -30,7 +30,7 @@ PASS XRSession interface: attribute environmentBlendMode
 PASS XRSession interface: attribute renderState
 PASS XRSession interface: attribute viewerSpace
 PASS XRSession interface: operation updateRenderState(XRRenderStateInit)
-PASS XRSession interface: operation requestReferenceSpace(XRReferenceSpaceOptions)
+PASS XRSession interface: operation requestReferenceSpace(XRReferenceSpaceType)
 PASS XRSession interface: operation getInputSources()
 PASS XRSession interface: operation requestAnimationFrame(XRFrameRequestCallback)
 PASS XRSession interface: operation cancelAnimationFrame(long)
@@ -74,14 +74,8 @@ PASS XRReferenceSpace interface object name
 PASS XRReferenceSpace interface: existence and properties of interface prototype object
 PASS XRReferenceSpace interface: existence and properties of interface prototype object's "constructor" property
 PASS XRReferenceSpace interface: existence and properties of interface prototype object's @@unscopables property
-PASS XRReferenceSpace interface: attribute originOffset
+FAIL XRReferenceSpace interface: operation getOffsetReferenceSpace(XRRigidTransform) assert_own_property: interface prototype object missing non-static operation expected property "getOffsetReferenceSpace" missing
 PASS XRReferenceSpace interface: attribute onreset
-PASS XRStationaryReferenceSpace interface: existence and properties of interface object
-PASS XRStationaryReferenceSpace interface object length
-PASS XRStationaryReferenceSpace interface object name
-PASS XRStationaryReferenceSpace interface: existence and properties of interface prototype object
-PASS XRStationaryReferenceSpace interface: existence and properties of interface prototype object's "constructor" property
-PASS XRStationaryReferenceSpace interface: existence and properties of interface prototype object's @@unscopables property
 PASS XRBoundedReferenceSpace interface: existence and properties of interface object
 PASS XRBoundedReferenceSpace interface object length
 PASS XRBoundedReferenceSpace interface object name
@@ -89,12 +83,6 @@ PASS XRBoundedReferenceSpace interface: existence and properties of interface pr
 PASS XRBoundedReferenceSpace interface: existence and properties of interface prototype object's "constructor" property
 PASS XRBoundedReferenceSpace interface: existence and properties of interface prototype object's @@unscopables property
 PASS XRBoundedReferenceSpace interface: attribute boundsGeometry
-PASS XRUnboundedReferenceSpace interface: existence and properties of interface object
-PASS XRUnboundedReferenceSpace interface object length
-PASS XRUnboundedReferenceSpace interface object name
-PASS XRUnboundedReferenceSpace interface: existence and properties of interface prototype object
-PASS XRUnboundedReferenceSpace interface: existence and properties of interface prototype object's "constructor" property
-PASS XRUnboundedReferenceSpace interface: existence and properties of interface prototype object's @@unscopables property
 PASS XRView interface: existence and properties of interface object
 PASS XRView interface object length
 PASS XRView interface object name
