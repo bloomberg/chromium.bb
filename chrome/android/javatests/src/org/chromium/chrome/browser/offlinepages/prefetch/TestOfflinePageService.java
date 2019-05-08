@@ -28,6 +28,7 @@ import org.chromium.components.offline_pages.core.prefetch.proto.OfflinePages.Pa
 import org.chromium.components.offline_pages.core.prefetch.proto.OfflinePages.PageParameters;
 import org.chromium.components.offline_pages.core.prefetch.proto.OperationOuterClass.Operation;
 import org.chromium.components.offline_pages.core.prefetch.proto.StatusOuterClass;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.util.WebServer;
 import org.chromium.net.test.util.WebServer.HTTPHeader;
@@ -230,7 +231,9 @@ public class TestOfflinePageService {
         }
         mOperations.put(operationName, request);
         if (!writeOperationResponse(operationName, request, true, output)) {
-            mIncompleteOperations.add(operationName);
+            synchronized (mIncompleteOperations) {
+                mIncompleteOperations.add(operationName);
+            }
         }
     }
 
@@ -245,12 +248,32 @@ public class TestOfflinePageService {
      * name that was completed. Returns null if no bundle needs to be sent. If more than one bundle
      * needs to be sent, the first completed bundle is sent. This can be called repeatedly until no
      * more bundles are ready.
+     *
+     * This method is typically not called on the server thread, so access to members should be
+     * synchronized.
      */
     public String sendPushMessage() throws InterruptedException, TimeoutException {
-        if (mIncompleteOperations.isEmpty()) {
-            return null;
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Boolean result;
+            synchronized (mIncompleteOperations) {
+                result = !mIncompleteOperations.isEmpty();
+            }
+            return result;
+        });
+
+        String operationName;
+        synchronized (mIncompleteOperations) {
+            operationName = mIncompleteOperations.remove(0);
         }
-        String operationName = mIncompleteOperations.remove(0);
+        // We have to wait until Chrome gets the GCM token.
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            try {
+                FakeInstanceIDWithSubtype.getSubtypeAndAuthorizedEntityOfOnlyToken();
+                return true;
+            } catch (IllegalStateException e) {
+                return false;
+            }
+        }, "GetGCMToken not complete", 15000, 500);
         final Pair<String, String> appIdAndSenderId =
                 FakeInstanceIDWithSubtype.getSubtypeAndAuthorizedEntityOfOnlyToken();
         final String appId = appIdAndSenderId.first;

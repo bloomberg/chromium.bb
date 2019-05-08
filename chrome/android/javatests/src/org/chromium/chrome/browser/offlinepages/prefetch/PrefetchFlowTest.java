@@ -19,7 +19,6 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -253,7 +252,6 @@ public class PrefetchFlowTest implements WebServer.RequestHandler {
     @Test
     @MediumTest
     @Feature({"OfflinePrefetch"})
-    @DisabledTest
     public void testPrefetchPageReadyLater() throws Throwable {
         final String url1 = "http://suggestion1.com/main";
         mSuggestionsService.addSuggestion("Suggestion 1", url1, imageUrlBase() + "suggestion1");
