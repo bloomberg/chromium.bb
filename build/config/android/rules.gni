@@ -4634,6 +4634,7 @@ if (enable_java_templates) {
       data = [
         _bundle_wrapper_script_path,
         _android_aapt2_path,
+        _android_aapt2_path + "/lib64/libc++.so",
         _keystore_path,
       ]
       data_deps = [
