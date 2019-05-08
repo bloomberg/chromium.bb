@@ -66,9 +66,14 @@ views::View* SaveCardOfferBubbleViews::CreateExtraView() {
     return nullptr;
   }
 
+  // CreateMainContentView() must happen prior to this so that |prefilled_name|
+  // gets populated.
   auto* upload_explanation_tooltip =
       new views::TooltipIcon(l10n_util::GetStringUTF16(
-          IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_TOOLTIP));
+          (cardholder_name_textfield_ &&
+           !cardholder_name_textfield_->text().empty())
+              ? IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_AND_CARDHOLDER_NAME_TOOLTIP
+              : IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_TOOLTIP));
   upload_explanation_tooltip->set_bubble_width(kTooltipBubbleWidth);
   upload_explanation_tooltip->set_anchor_point_arrow(
       views::BubbleBorder::Arrow::TOP_RIGHT);
@@ -217,8 +222,12 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateMainContentView() {
     }
 
     // Set up cardholder name label tooltip ONLY if the cardholder name
-    // textfield will be prefilled.
-    if (!prefilled_name.empty()) {
+    // textfield will be prefilled and sync transport for Wallet data is not
+    // active. Otherwise, this tooltip's info will appear in CreateExtraView()'s
+    // tooltip.
+    if (!prefilled_name.empty() &&
+        controller()->GetSyncState() !=
+            AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled) {
       std::unique_ptr<views::TooltipIcon> cardholder_name_tooltip =
           std::make_unique<views::TooltipIcon>(
               l10n_util::GetStringUTF16(
