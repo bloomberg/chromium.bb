@@ -80,7 +80,7 @@ absl::optional<RtpPacketParser::ParseResult> RtpPacketParser::Parse(
     const uint16_t type_and_size = ConsumeField<uint16_t>(&buffer);
     const uint8_t type = type_and_size >> kNumExtensionDataSizeFieldBits;
     const size_t size =
-        type_and_size & ((1 << kNumExtensionDataSizeFieldBits) - 1);
+        type_and_size & FieldBitmask<uint16_t>(kNumExtensionDataSizeFieldBits);
     if (buffer.size() < size) {
       return absl::nullopt;
     }

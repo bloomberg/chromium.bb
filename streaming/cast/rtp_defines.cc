@@ -24,5 +24,20 @@ bool IsRtpPayloadType(uint8_t raw_byte) {
   return false;
 }
 
+bool IsRtcpPacketType(uint8_t raw_byte) {
+  switch (static_cast<RtcpPacketType>(raw_byte)) {
+    case RtcpPacketType::kSenderReport:
+    case RtcpPacketType::kReceiverReport:
+    case RtcpPacketType::kApplicationDefined:
+    case RtcpPacketType::kPayloadSpecific:
+    case RtcpPacketType::kExtendedReports:
+      return true;
+
+    case RtcpPacketType::kNull:
+      break;
+  }
+  return false;
+}
+
 }  // namespace cast_streaming
 }  // namespace openscreen

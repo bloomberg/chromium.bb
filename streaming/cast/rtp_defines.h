@@ -118,6 +118,85 @@ constexpr uint8_t kRtpExtensionCountMask = 0b00111111;
 constexpr uint8_t kAdaptiveLatencyRtpExtensionType = 1;
 constexpr int kNumExtensionDataSizeFieldBits = 10;
 
+// RTCP Common Header:
+//
+//  0                   1                   2                   3
+//  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |V=2|P|RC/Subtyp|  Packet Type  |            Length             |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+constexpr int kRtcpCommonHeaderSize = 4;
+// All RTCP packets must carry the version 2 flag and not use padding.
+constexpr uint8_t kRtcpRequiredVersionAndPaddingBits = 0b100;
+constexpr int kRtcpReportCountFieldNumBits = 5;
+
+// https://www.iana.org/assignments/rtp-parameters/rtp-parameters.xhtml
+enum class RtcpPacketType : uint8_t {
+  kNull = 0,
+
+  kSenderReport = 200,
+  kReceiverReport = 201,
+  kApplicationDefined = 204,
+  kPayloadSpecific = 206,
+  kExtendedReports = 207,
+};
+
+// Returns true if the |raw_byte| can be type-casted to a RtcpPacketType, and is
+// also not RtcpPacketType::kNull.
+bool IsRtcpPacketType(uint8_t raw_byte);
+
+// Supported subtype values in the RTCP Common Header when the packet type is
+// kApplicationDefined or kPayloadSpecific.
+enum class RtcpSubtype : uint8_t {
+  kNull = 0,
+
+  kPictureLossIndicator = 1,
+  kReceiverLog = 2,
+  kFeedback = 15,
+};
+
+// RTCP Sender Report:
+//
+//  0                   1                   2                   3
+//  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |                        SSRC of Sender                         |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |                                                               |
+// |                         NTP Timestamp                         |
+// |                                                               |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |                         RTP Timestamp                         |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |                     Sender's Packet Count                     |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |                     Sender's Octet Count                      |
+// +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+//        ...Followed by zero or more "Report Blocks"...
+constexpr int kRtcpSenderReportSize = 24;
+
+// RTCP Report Block. For Cast Streaming, zero or one of these accompanies a
+// Sender or Receiver Report, which is different than the RTCP spec (which
+// allows zero or more).
+//
+//  0                   1                   2                   3
+//  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |                           "To" SSRC                           |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// | Fraction Lost |       Cumulative Number of Packets Lost       |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |      [32-bit extended] Highest Sequence Number Received       |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// | Interarrival Jitter Mean Absolute Deviation (in RTP Timebase) |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |    Middle 32-bits of NTP Timestamp from last Sender Report    |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |     Delay since last Sender Report (1/65536 sec timebase)     |
+// +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+constexpr int kRtcpReportBlockSize = 24;
+constexpr int kRtcpCumulativePacketsFieldNumBits = 24;
+
 }  // namespace cast_streaming
 }  // namespace openscreen
 

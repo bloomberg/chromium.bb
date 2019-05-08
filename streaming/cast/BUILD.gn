@@ -20,6 +20,10 @@ source_set("common") {
     "ntp_time.h",
     "packet_util.cc",
     "packet_util.h",
+    "rtcp_common.cc",
+    "rtcp_common.h",
+    "rtcp_session.cc",
+    "rtcp_session.h",
     "rtp_defines.cc",
     "rtp_defines.h",
     "rtp_time.cc",
@@ -42,6 +46,8 @@ source_set("receiver") {
   sources = [
     "rtp_packet_parser.cc",
     "rtp_packet_parser.h",
+    "sender_report_parser.cc",
+    "sender_report_parser.h",
   ]
 
   public_deps = [
@@ -53,6 +59,8 @@ source_set("sender") {
   sources = [
     "rtp_packetizer.cc",
     "rtp_packetizer.h",
+    "sender_report_builder.cc",
+    "sender_report_builder.h",
   ]
 
   public_deps = [
@@ -68,9 +76,11 @@ source_set("cast_unittests") {
     "frame_crypto_unittest.cc",
     "ntp_time_unittest.cc",
     "packet_util_unittest.cc",
+    "rtcp_common_unittest.cc",
     "rtp_packet_parser_unittest.cc",
     "rtp_packetizer_unittest.cc",
     "rtp_time_unittest.cc",
+    "sender_report_unittest.cc",
     "ssrc_unittest.cc",
   ]
 
@@ -95,6 +105,22 @@ if (build_with_chromium) {
     ]
 
     seed_corpus = "rtp_packet_parser_fuzzer_seeds"
+
+    # Note: 1500 is approx. kMaxRtpPacketSize in rtp_defines.h.
+    libfuzzer_options = [ "max_len=1500" ]
+  }
+
+  fuzzer_test("sender_report_parser_fuzzer") {
+    sources = [
+      "sender_report_parser_fuzzer.cc",
+    ]
+
+    deps = [
+      ":receiver",
+      "../../third_party/abseil",
+    ]
+
+    seed_corpus = "sender_report_parser_fuzzer_seeds"
 
     # Note: 1500 is approx. kMaxRtpPacketSize in rtp_defines.h.
     libfuzzer_options = [ "max_len=1500" ]
