@@ -606,6 +606,9 @@ void Display::DidReceivePresentationFeedback(
   auto& callbacks = pending_presented_callbacks_.front().second;
   const auto swap_time = pending_presented_callbacks_.front().first;
   auto copy_feedback = SanitizePresentationFeedback(feedback, swap_time);
+  TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(
+      "benchmark,viz", "Display::FrameDisplayed", TRACE_EVENT_SCOPE_THREAD,
+      copy_feedback.timestamp);
   for (auto& callback : callbacks) {
     std::move(callback).Run(copy_feedback);
   }
