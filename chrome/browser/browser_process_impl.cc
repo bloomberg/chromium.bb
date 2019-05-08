@@ -75,6 +75,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/site_isolation/prefs_observer.h"
+#include "chrome/browser/ssl/secure_origin_prefs_observer.h"
 #include "chrome/browser/startup_data.h"
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -1156,6 +1157,8 @@ void BrowserProcessImpl::PreCreateThreads(
       extensions::kExtensionScheme, true);
 #endif
 
+  secure_origin_prefs_observer_ =
+      std::make_unique<SecureOriginPrefsObserver>(local_state());
   site_isolation_prefs_observer_ =
       std::make_unique<SiteIsolationPrefsObserver>(local_state());
 

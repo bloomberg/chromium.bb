@@ -9,6 +9,10 @@
 #include <vector>
 
 #include "base/component_export.h"
+#include "base/macros.h"
+#include "base/no_destructor.h"
+#include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "url/gurl.h"
 
 namespace url {
@@ -20,57 +24,88 @@ namespace network {
 // Returns whether an origin is potentially trustworthy according to
 // https://www.w3.org/TR/powerful-features/#is-origin-trustworthy.
 //
+// This function is safe to be called from any thread.
+//
 // See also blink::SecurityOrigin::isPotentiallyTrustworthy.
 COMPONENT_EXPORT(NETWORK_CPP)
 bool IsOriginPotentiallyTrustworthy(const url::Origin& origin);
 
 // Returns whether a URL is potentially trustworthy according to
 // https://www.w3.org/TR/powerful-features/#is-url-trustworthy.
+//
+// This function is safe to be called from any thread.
 COMPONENT_EXPORT(NETWORK_CPP)
 bool IsUrlPotentiallyTrustworthy(const GURL& url);
 
-// Return an allowlist of origins and hostname patterns that need to be
-// considered trustworthy.  The allowlist is given by the
-// --unsafely-treat-insecure-origin-as-secure command-line option. See
-// https://www.w3.org/TR/powerful-features/#is-origin-trustworthy.
+// Helper class for maintaining an allowlist of origins and hostname patterns
+// that should be considered trustworthy.
 //
-// The allowlist can contain origins and wildcard hostname patterns up to
-// eTLD+1. For example, the list may contain "http://foo.com",
-// "http://foo.com:8000", "*.foo.com", "*.foo.*.bar.com", and
-// "http://*.foo.bar.com", but not "*.co.uk", "*.com", or "test.*.com". Hostname
-// patterns must contain a wildcard somewhere (so "test.com" is not a valid
-// pattern) and wildcards can only replace full components ("test*.foo.com" is
-// not valid).
+// The allowlist is a sum of 1) the --unsafely-treat-insecure-origin-as-secure
+// command-line parameter, 2) the argument passed to SetAuxiliaryAllowlist (e.g.
+// the value taken from the enterprise policy).
+//
+// The argument passed to --unsafely-treat-insecure-origin-as-secure should be a
+// comma-separated list of origins and wildcard hostname patterns up to eTLD+1.
+// For example, the list may contain "http://foo.com", "http://foo.com:8000",
+// "*.foo.com", "*.foo.*.bar.com", and "http://*.foo.bar.com", but not
+// "*.co.uk", "*.com", or "test.*.com". Hostname patterns must contain a
+// wildcard somewhere (so "test.com" is not a valid pattern) and wildcards can
+// only replace full components ("test*.foo.com" is not valid).
 //
 // Plain origins ("http://foo.com") are canonicalized when they are inserted
 // into this list by converting to url::Origin and serializing. For hostname
 // patterns, each component is individually canonicalized.
 //
-// This function is safe to be called from any thread in production code (tests
-// should see the warning in the ResetSecureOriginAllowlistForTesting comments
-// below).
-COMPONENT_EXPORT(NETWORK_CPP)
-const std::vector<std::string>& GetSecureOriginAllowlist();
-
-// Empties the secure origin allowlist.
+// See also https://www.w3.org/TR/powerful-features/#is-origin-trustworthy -
+// this class handles marking origins as "configured as a trustworthy origin".
 //
-// Thread-safety warning: Caller needs to ensure that all calls to
-// GetSecureOriginAllowlist, IsAllowlistedAsSecureOrigin and
-// ResetSecureOriginAllowlistForTesting are done from the same thread.
-COMPONENT_EXPORT(NETWORK_CPP) void ResetSecureOriginAllowlistForTesting();
+// Note: all methods of this class are thread-safe.
+class COMPONENT_EXPORT(NETWORK_CPP) SecureOriginAllowlist {
+ public:
+  static SecureOriginAllowlist& GetInstance();
 
-// Returns true if |origin| has a match in |allowlist|.  |allowlist| is usually
-// retrieved by GetSecureOriginAllowlist above.
-COMPONENT_EXPORT(NETWORK_CPP)
-bool IsAllowlistedAsSecureOrigin(const url::Origin& origin,
-                                 const std::vector<std::string>& allowlist);
+  // Returns true if |origin| has a match in the secure origin allowlist.
+  bool IsOriginAllowlisted(const url::Origin& origin);
 
-// Parses a comma-separated list of origins and wildcard hostname patterns.
-// This separate function allows callers other than GetSecureOriginAllowlist()
-// to explicitly pass an allowlist to be parsed.
-COMPONENT_EXPORT(NETWORK_CPP)
-std::vector<std::string> ParseSecureOriginAllowlist(
-    const std::string& origins_str);
+  // Returns the current allowlist, combining 1) the
+  // --unsafely-treat-insecure-origin-as-secure command-line parameter, 2) the
+  // argument passed to SetAuxiliaryAllowlist (e.g. the value taken from the
+  // enterprise policy).
+  //
+  // This method is safe to be called from any thread.
+  std::vector<std::string> GetCurrentAllowlist();
+
+  // Allows setting allowlist from an additional source (e.g. from an enterprise
+  // policy).
+  //
+  // As with --unsafely-treat-insecure-origin-as-secure, the
+  // |auxiliary_allowlist| will be canonicalized (for more details see the
+  // class-level comment above).
+  //
+  // This method is safe to be called from any thread.
+  void SetAuxiliaryAllowlist(const std::string& auxiliary_allowlist);
+
+  // Empties the secure origin allowlist.
+  //
+  // This function is safe to be called from any thread.
+  void ResetForTesting();
+
+ private:
+  friend class base::NoDestructor<SecureOriginAllowlist>;
+  SecureOriginAllowlist();
+  ~SecureOriginAllowlist() = delete;
+
+  void ParseCmdlineIfNeeded() EXCLUSIVE_LOCKS_REQUIRED(lock_);
+
+  base::Lock lock_;
+
+  std::vector<std::string> cmdline_allowlist_ GUARDED_BY(lock_);
+  bool has_cmdline_been_parsed_ GUARDED_BY(lock_) = false;
+
+  std::vector<std::string> auxiliary_allowlist_ GUARDED_BY(lock_);
+
+  DISALLOW_COPY_AND_ASSIGN(SecureOriginAllowlist);
+};
 
 }  // namespace network
 

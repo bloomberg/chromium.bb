@@ -333,6 +333,7 @@
 #include "services/image_annotation/public/mojom/constants.mojom.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
@@ -1072,6 +1073,21 @@ void LaunchURL(
 
 std::string GetProduct() {
   return version_info::GetProductNameAndVersionForUserAgent();
+}
+
+void MaybeAppendSecureOriginsAllowlistSwitch(base::CommandLine* cmdline) {
+  // |allowlist| combines pref/policy + cmdline switch in the browser process.
+  // For renderer and utility (e.g. NetworkService) processes the switch is the
+  // only available source, so below the combined (pref/policy + cmdline)
+  // allowlist of secure origins is injected into |cmdline| for these other
+  // processes.
+  std::vector<std::string> allowlist =
+      network::SecureOriginAllowlist::GetInstance().GetCurrentAllowlist();
+  if (!allowlist.empty()) {
+    cmdline->AppendSwitchASCII(
+        network::switches::kUnsafelyTreatInsecureOriginAsSecure,
+        base::JoinString(allowlist, ","));
+  }
 }
 
 }  // namespace
@@ -2178,11 +2194,8 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
             error_page::switches::kDisableDinosaurEasterEgg);
       }
 
-      if (prefs->HasPrefPath(prefs::kUnsafelyTreatInsecureOriginAsSecure)) {
-        command_line->AppendSwitchASCII(
-            network::switches::kUnsafelyTreatInsecureOriginAsSecure,
-            prefs->GetString(prefs::kUnsafelyTreatInsecureOriginAsSecure));
-      }
+      MaybeAppendSecureOriginsAllowlistSwitch(command_line);
+
       if (prefs->HasPrefPath(prefs::kAllowPopupsDuringPageUnload) &&
           prefs->GetBoolean(prefs::kAllowPopupsDuringPageUnload)) {
         command_line->AppendSwitch(switches::kAllowPopupsDuringPageUnload);
@@ -2264,6 +2277,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                                    base::size(kSwitchNames));
 #endif
+    MaybeAppendSecureOriginsAllowlistSwitch(command_line);
   } else if (process_type == service_manager::switches::kZygoteProcess) {
     static const char* const kSwitchNames[] = {
       // Load (in-process) Pepper plugins in-process in the zygote pre-sandbox.

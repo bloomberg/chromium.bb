@@ -12791,7 +12791,7 @@
       'supported_on': ['chrome.*:65-'],
       'features': {
         'dynamic_refresh': False,
-        'per_profile': True,
+        'per_profile': False,
       },
       'example_value': ['http://testserver.example.com/','*.example.org'],
       'id': 400,
@@ -14056,7 +14056,7 @@
       'supported_on': ['chrome.*:69-', 'chrome_os:69-', 'android:69-'],
       'features': {
         'dynamic_refresh': False,
-        'per_profile': True,
+        'per_profile': False,
       },
       'example_value': ['http://testserver.example.com/','*.example.org'],
       'id': 457,

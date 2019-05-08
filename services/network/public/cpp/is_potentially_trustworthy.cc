@@ -4,6 +4,10 @@
 
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 
+#include <algorithm>
+#include <iterator>
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -29,31 +33,6 @@
 namespace network {
 
 namespace {
-
-#if DCHECK_IS_ON()
-base::Optional<base::SequenceChecker>& GetSequenceCheckerForAllowlist() {
-  static base::NoDestructor<base::Optional<base::SequenceChecker>> s_checker;
-  return *s_checker;
-}
-#endif
-
-#if DCHECK_IS_ON()
-#define DCHECK_ALLOWLIST_USED_ON_VALID_SEQUENCE()                            \
-  do {                                                                       \
-    if (GetSequenceCheckerForAllowlist().has_value()) {                      \
-      DCHECK(                                                                \
-          GetSequenceCheckerForAllowlist().value().CalledOnValidSequence()); \
-    }                                                                        \
-  } while (false);
-#else  // DCHECK_IS_ON()
-#define DCHECK_ALLOWLIST_USED_ON_VALID_SEQUENCE() EAT_STREAM_PARAMETERS
-#endif
-
-// |g_should_reparse_secure_origin_allowlist_cmdline| is needed to allow tests
-// to trigger reparsing of the cmdline switch.  This global should remain set to
-// |false| in production code.  See also thread safety notes in
-// GetSecureOriginAllowlist().
-bool g_should_reparse_secure_origin_allowlist_cmdline = false;
 
 // Given a hostname pattern with a wildcard such as "*.foo.com", returns
 // true if |hostname_pattern| meets both of these conditions:
@@ -136,14 +115,45 @@ std::string CanonicalizePatternComponents(const std::string& hostname_pattern) {
   return canonical_host;
 }
 
+std::vector<std::string> ParseSecureOriginAllowlist(
+    const std::vector<std::string>& origins_and_patterns_list) {
+  std::vector<std::string> result;
+  for (const std::string& origin_or_pattern : origins_and_patterns_list) {
+    if (origin_or_pattern.find("*") != std::string::npos) {
+      if (IsValidWildcardPattern(origin_or_pattern)) {
+        std::string canonicalized_pattern =
+            CanonicalizePatternComponents(origin_or_pattern);
+        if (!canonicalized_pattern.empty()) {
+          result.push_back(canonicalized_pattern);
+          continue;
+        }
+      }
+      LOG(ERROR) << "Allowlisted secure origin pattern " << origin_or_pattern
+                 << " is not valid; ignoring.";
+      continue;
+    }
+
+    // Drop opaque origins, as they are unequal to any other origins.
+    url::Origin origin(url::Origin::Create(GURL(origin_or_pattern)));
+    if (origin.opaque())
+      continue;
+
+    result.push_back(origin.Serialize());
+  }
+  return result;
+}
+
+std::vector<std::string> ParseSecureOriginAllowlist(
+    const std::string& origins_str) {
+  std::vector<std::string> origin_patterns =
+      ParseSecureOriginAllowlist(base::SplitString(
+          origins_str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL));
+  return origin_patterns;
+}
+
 std::vector<std::string> ParseSecureOriginAllowlistFromCmdline() {
   // If kUnsafelyTreatInsecureOriginAsSecure option is given, then treat the
-  // value as a comma-separated list of origins or origin patterns. Callers
-  // that need to also check the kUnsafelyTreatInsecureOriginAsSecure pref
-  // value must instead use ParseAllowlist directly (as there is no way for
-  // CreateAllowlist() to access prefs). For renderer processes the pref and
-  // the switch will match, but for non-renderer processes the switch may
-  // not be set.
+  // value as a comma-separated list of origins or origin patterns.
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   std::string origins_str = "";
@@ -151,7 +161,32 @@ std::vector<std::string> ParseSecureOriginAllowlistFromCmdline() {
     origins_str = command_line.GetSwitchValueASCII(
         switches::kUnsafelyTreatInsecureOriginAsSecure);
   }
-  return ParseSecureOriginAllowlist(origins_str);
+
+  std::vector<std::string> origin_patterns =
+      ParseSecureOriginAllowlist(origins_str);
+  UMA_HISTOGRAM_COUNTS_100("Security.TreatInsecureOriginAsSecure",
+                           origin_patterns.size());
+#if defined(OS_CHROMEOS)
+  // For Crostini, we allow access to the default VM/container as a secure
+  // origin via the hostname penguin.linux.test. We are required to use a
+  // wildcard for the prefix because we do not know what the port number is.
+  // https://chromium.googlesource.com/chromiumos/docs/+/master/containers_and_vms.md
+  origin_patterns.push_back("*.linux.test");
+#endif
+  return origin_patterns;
+}
+
+bool IsAllowlisted(const std::vector<std::string>& allowlist,
+                   const url::Origin& origin) {
+  if (base::ContainsValue(allowlist, origin.Serialize()))
+    return true;
+
+  for (const std::string& origin_or_pattern : allowlist) {
+    if (base::MatchPattern(origin.host(), origin_or_pattern))
+      return true;
+  }
+
+  return false;
 }
 
 }  // namespace
@@ -211,7 +246,7 @@ bool IsOriginPotentiallyTrustworthy(const url::Origin& origin) {
   // 7. If origin has been configured as a trustworthy origin, return
   //    "Potentially Trustworthy".
   //    Note: See §7.2 Development Environments for detail here.
-  if (IsAllowlistedAsSecureOrigin(origin, GetSecureOriginAllowlist()))
+  if (SecureOriginAllowlist::GetInstance().IsOriginAllowlisted(origin))
     return true;
 
   // 8. Return "Not Trustworthy".
@@ -243,94 +278,58 @@ bool IsUrlPotentiallyTrustworthy(const GURL& url) {
   return IsOriginPotentiallyTrustworthy(url::Origin::Create(url));
 }
 
-const std::vector<std::string>& GetSecureOriginAllowlist() {
-  // This function will initialize |s_allowlist| in a thread-safe way because of
-  // the way how |static| works - invoking base::NoDestructor's constructor and
-  // ParseSecureOriginAllowlistFromCmdline in a thread-safe way and only once.
-  //
-  // OTOH, if ResetSecureOriginAllowlistForTesting forces reinitialization, then
-  // things are not thread-safe anymore.  The DCHECK_ALLOWLIST_... below is
-  // trying to making sure that tests behave correctly.
-  DCHECK_ALLOWLIST_USED_ON_VALID_SEQUENCE();
-  static base::NoDestructor<std::vector<std::string>> s_allowlist(
-      ParseSecureOriginAllowlistFromCmdline());
-
-  // If unit tests set |g_should_reparse_secure_origin_allowlist_cmdline| then
-  // reading |g_should_reparse_secure_origin_allowlist_cmdline| as well as
-  // reinitializing |s_allowlist| are NOT THREAD SAFE.  This seems okay for unit
-  // tests (+ correct usage is verified by DCHECK_ALLOWLIST... above).
-  if (g_should_reparse_secure_origin_allowlist_cmdline) {
-    g_should_reparse_secure_origin_allowlist_cmdline = false;
-    *s_allowlist = ParseSecureOriginAllowlistFromCmdline();
-  }
-
-  return *s_allowlist;
+// static
+SecureOriginAllowlist& SecureOriginAllowlist::GetInstance() {
+  static base::NoDestructor<SecureOriginAllowlist> s_instance;
+  return *s_instance;
 }
 
-void ResetSecureOriginAllowlistForTesting() {
-#if DCHECK_IS_ON()
-  DCHECK_ALLOWLIST_USED_ON_VALID_SEQUENCE();
-  // Enforce sequence-affinity only *after* the first call to
-  // ResetSecureOriginAllowlistForTesting.
-  if (!GetSequenceCheckerForAllowlist().has_value()) {
-    // Construct a new base::SequenceChecked emplacing it into base::Optional.
-    GetSequenceCheckerForAllowlist().emplace();
-  }
-#endif
+std::vector<std::string> SecureOriginAllowlist::GetCurrentAllowlist() {
+  base::AutoLock lock(lock_);
+  ParseCmdlineIfNeeded();
 
-  g_should_reparse_secure_origin_allowlist_cmdline = true;
+  std::vector<std::string> result;
+  result.reserve(cmdline_allowlist_.size() + auxiliary_allowlist_.size());
+  std::copy(cmdline_allowlist_.begin(), cmdline_allowlist_.end(),
+            std::back_inserter(result));
+  std::copy(auxiliary_allowlist_.begin(), auxiliary_allowlist_.end(),
+            std::back_inserter(result));
+  return result;
 }
 
-bool IsAllowlistedAsSecureOrigin(const url::Origin& origin,
-                                 const std::vector<std::string>& allowlist) {
-  if (base::ContainsValue(allowlist, origin.Serialize()))
-    return true;
+void SecureOriginAllowlist::SetAuxiliaryAllowlist(
+    const std::string& auxiliary_allowlist) {
+  std::vector<std::string> parsed_list =
+      ParseSecureOriginAllowlist(auxiliary_allowlist);
 
-  for (const std::string& origin_or_pattern : allowlist) {
-    if (base::MatchPattern(origin.host(), origin_or_pattern))
-      return true;
-  }
-
-  return false;
+  base::AutoLock lock(lock_);
+  auxiliary_allowlist_ = std::move(parsed_list);
 }
 
-std::vector<std::string> ParseSecureOriginAllowlist(
-    const std::string& origins_str) {
-  std::vector<std::string> origin_patterns;
-  for (const std::string& origin_str : base::SplitString(
-           origins_str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-    if (origin_str.find("*") != std::string::npos) {
-      if (IsValidWildcardPattern(origin_str)) {
-        std::string canonicalized_pattern =
-            CanonicalizePatternComponents(origin_str);
-        if (!canonicalized_pattern.empty()) {
-          origin_patterns.push_back(canonicalized_pattern);
-          continue;
-        }
-      }
-      LOG(ERROR) << "Allowlisted secure origin pattern " << origin_str
-                 << " is not valid; ignoring.";
-      continue;
-    }
+void SecureOriginAllowlist::ResetForTesting() {
+  base::AutoLock lock(lock_);
 
-    // Drop .unique() origins, as they are unequal to any other origins.
-    url::Origin origin(url::Origin::Create(GURL(origin_str)));
-    if (!origin.opaque())
-      origin_patterns.push_back(origin.Serialize());
+  cmdline_allowlist_.clear();
+  has_cmdline_been_parsed_ = false;
+
+  auxiliary_allowlist_.clear();
+}
+
+bool SecureOriginAllowlist::IsOriginAllowlisted(const url::Origin& origin) {
+  base::AutoLock lock(lock_);
+  ParseCmdlineIfNeeded();
+  return IsAllowlisted(cmdline_allowlist_, origin) ||
+         IsAllowlisted(auxiliary_allowlist_, origin);
+}
+
+SecureOriginAllowlist::SecureOriginAllowlist() = default;
+
+void SecureOriginAllowlist::ParseCmdlineIfNeeded() {
+  lock_.AssertAcquired();
+  if (!has_cmdline_been_parsed_) {
+    cmdline_allowlist_ = ParseSecureOriginAllowlistFromCmdline();
+    has_cmdline_been_parsed_ = true;
   }
-
-  UMA_HISTOGRAM_COUNTS_100("Security.TreatInsecureOriginAsSecure",
-                           origin_patterns.size());
-
-#if defined(OS_CHROMEOS)
-  // For Crostini, we allow access to the default VM/container as a secure
-  // origin via the hostname penguin.linux.test. We are required to use a
-  // wildcard for the prefix because we do not know what the port number is.
-  // https://chromium.googlesource.com/chromiumos/docs/+/master/containers_and_vms.md
-  origin_patterns.push_back("*.linux.test");
-#endif
-
-  return origin_patterns;
 }
 
 }  // namespace network

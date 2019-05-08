@@ -5,10 +5,10 @@
 #include "chrome/browser/ui/manifest_web_app_browser_controller.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ssl/origin_util.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/common/origin_util.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "ui/gfx/favicon_size.h"
@@ -34,11 +34,8 @@ bool ManifestWebAppBrowserController::ShouldShowToolbar() const {
     return false;
 
   // Show toolbar if the web_contents is not on a secure origin.
-  if (!IsOriginSecure(app_launch_url_, Profile::FromBrowserContext(
-                                           web_contents->GetBrowserContext())
-                                           ->GetPrefs())) {
+  if (!content::IsOriginSecure(app_launch_url_))
     return true;
-  }
 
   // Show toolbar if web_contents is not on the same origin as it was originally
   // launched on.

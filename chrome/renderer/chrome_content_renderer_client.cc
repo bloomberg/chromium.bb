@@ -418,7 +418,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   pdf::PepperPDFHost::SetPrintClient(pdf_print_client_.get());
 #endif
 
-  for (auto& origin_or_hostname_pattern : network::GetSecureOriginAllowlist()) {
+  for (auto& origin_or_hostname_pattern :
+       network::SecureOriginAllowlist::GetInstance().GetCurrentAllowlist()) {
     WebSecurityPolicy::AddOriginToTrustworthySafelist(
         WebString::FromUTF8(origin_or_hostname_pattern));
   }

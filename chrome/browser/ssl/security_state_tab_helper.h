@@ -43,7 +43,6 @@ class SecurityStateTabHelper
 
   bool UsedPolicyInstalledCertificate() const;
   security_state::MaliciousContentStatus GetMaliciousContentStatus() const;
-  std::vector<std::string> GetSecureOriginsAndPatterns() const;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

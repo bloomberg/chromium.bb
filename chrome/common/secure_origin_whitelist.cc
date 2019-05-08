@@ -19,7 +19,7 @@ std::set<std::string> GetSchemesBypassingSecureContextCheck() {
   return schemes;
 }
 
-void RegisterProfilePrefs(PrefRegistrySimple* registry) {
+void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kUnsafelyTreatInsecureOriginAsSecure,
                                /* default_value */ "");
 }

@@ -12,9 +12,12 @@
 
 namespace network {
 
-bool IsAllowlistedAsSecureOrigin(const url::Origin& origin) {
-  return IsAllowlistedAsSecureOrigin(origin,
-                                     network::GetSecureOriginAllowlist());
+bool IsOriginAllowlisted(const url::Origin& origin) {
+  return SecureOriginAllowlist::GetInstance().IsOriginAllowlisted(origin);
+}
+
+bool IsOriginAllowlisted(const char* str) {
+  return IsOriginAllowlisted(url::Origin::Create(GURL(str)));
 }
 
 bool IsPotentiallyTrustworthy(const char* str) {
@@ -89,15 +92,13 @@ TEST(IsPotentiallyTrustworthy, MainTest) {
 class SecureOriginAllowlistTest : public testing::Test {
   void TearDown() override {
     // Ensure that we reset the allowlisted origins without any flags applied.
-    ResetSecureOriginAllowlistForTesting();
+    SecureOriginAllowlist::GetInstance().ResetForTesting();
   }
 };
 
 TEST_F(SecureOriginAllowlistTest, UnsafelyTreatInsecureOriginAsSecure) {
-  EXPECT_FALSE(IsAllowlistedAsSecureOrigin(
-      url::Origin::Create(GURL("http://example.com/a.html"))));
-  EXPECT_FALSE(IsAllowlistedAsSecureOrigin(
-      url::Origin::Create(GURL("http://127.example.com/a.html"))));
+  EXPECT_FALSE(IsOriginAllowlisted("http://example.com/a.html"));
+  EXPECT_FALSE(IsOriginAllowlisted("http://127.example.com/a.html"));
   EXPECT_FALSE(IsPotentiallyTrustworthy("http://example.com/a.html"));
   EXPECT_FALSE(IsPotentiallyTrustworthy("http://127.example.com/a.html"));
 
@@ -108,13 +109,11 @@ TEST_F(SecureOriginAllowlistTest, UnsafelyTreatInsecureOriginAsSecure) {
   command_line->AppendSwitchASCII(
       switches::kUnsafelyTreatInsecureOriginAsSecure,
       "http://example.com,http://127.example.com");
-  ResetSecureOriginAllowlistForTesting();
+  SecureOriginAllowlist::GetInstance().ResetForTesting();
 
   // They should be now allow-listed.
-  EXPECT_TRUE(IsAllowlistedAsSecureOrigin(
-      url::Origin::Create(GURL("http://example.com/a.html"))));
-  EXPECT_TRUE(IsAllowlistedAsSecureOrigin(
-      url::Origin::Create(GURL("http://127.example.com/a.html"))));
+  EXPECT_TRUE(IsOriginAllowlisted("http://example.com/a.html"));
+  EXPECT_TRUE(IsOriginAllowlisted("http://127.example.com/a.html"));
   EXPECT_TRUE(IsPotentiallyTrustworthy("http://example.com/a.html"));
   EXPECT_TRUE(IsPotentiallyTrustworthy("http://127.example.com/a.html"));
 
@@ -124,10 +123,8 @@ TEST_F(SecureOriginAllowlistTest, UnsafelyTreatInsecureOriginAsSecure) {
       IsPotentiallyTrustworthy("http://foobar.127.example.com/a.html"));
 
   // When port is not specified, default port is assumed.
-  EXPECT_TRUE(IsAllowlistedAsSecureOrigin(
-      url::Origin::Create(GURL("http://example.com:80/a.html"))));
-  EXPECT_FALSE(IsAllowlistedAsSecureOrigin(
-      url::Origin::Create(GURL("http://example.com:8080/a.html"))));
+  EXPECT_TRUE(IsOriginAllowlisted("http://example.com:80/a.html"));
+  EXPECT_FALSE(IsOriginAllowlisted("http://example.com:8080/a.html"));
 }
 
 TEST_F(SecureOriginAllowlistTest, HostnamePatterns) {
@@ -176,10 +173,10 @@ TEST_F(SecureOriginAllowlistTest, HostnamePatterns) {
         scoped_command_line.GetProcessCommandLine();
     command_line->AppendSwitchASCII(
         switches::kUnsafelyTreatInsecureOriginAsSecure, test.pattern);
-    ResetSecureOriginAllowlistForTesting();
+    SecureOriginAllowlist::GetInstance().ResetForTesting();
     GURL input_url(test.test_input);
     url::Origin input_origin = url::Origin::Create(input_url);
-    EXPECT_EQ(test.expected_secure, IsAllowlistedAsSecureOrigin(input_origin));
+    EXPECT_EQ(test.expected_secure, IsOriginAllowlisted(input_origin));
     EXPECT_EQ(test.expected_secure, IsPotentiallyTrustworthy(test.test_input));
   }
 }
@@ -190,14 +187,11 @@ TEST_F(SecureOriginAllowlistTest, MixOfOriginAndHostnamePatterns) {
   command_line->AppendSwitchASCII(
       switches::kUnsafelyTreatInsecureOriginAsSecure,
       "http://example.com,*.foo.com,http://10.20.30.40");
-  ResetSecureOriginAllowlistForTesting();
+  SecureOriginAllowlist::GetInstance().ResetForTesting();
 
-  EXPECT_TRUE(IsAllowlistedAsSecureOrigin(
-      url::Origin::Create(GURL("http://example.com/a.html"))));
-  EXPECT_TRUE(IsAllowlistedAsSecureOrigin(
-      url::Origin::Create(GURL("http://bar.foo.com/b.html"))));
-  EXPECT_TRUE(IsAllowlistedAsSecureOrigin(
-      url::Origin::Create(GURL("http://10.20.30.40/c.html"))));
+  EXPECT_TRUE(IsOriginAllowlisted("http://example.com/a.html"));
+  EXPECT_TRUE(IsOriginAllowlisted("http://bar.foo.com/b.html"));
+  EXPECT_TRUE(IsOriginAllowlisted("http://10.20.30.40/c.html"));
 }
 
 }  // namespace network
