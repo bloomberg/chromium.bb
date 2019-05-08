@@ -60,7 +60,7 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
     // |lf_params| does not need to remain valid after this method returns.
     //
     // Return true when successful, false otherwise.
-    virtual bool SubmitDecode(const scoped_refptr<VP9Picture>& pic,
+    virtual bool SubmitDecode(scoped_refptr<VP9Picture> pic,
                               const Vp9SegmentationParams& segm_params,
                               const Vp9LoopFilterParams& lf_params,
                               const Vp9ReferenceFrameVector& reference_frames,
@@ -76,7 +76,7 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
     // immediately after calling this method.
     //
     // Return true when successful, false otherwise.
-    virtual bool OutputPicture(const scoped_refptr<VP9Picture>& pic) = 0;
+    virtual bool OutputPicture(scoped_refptr<VP9Picture> pic) = 0;
 
     // Return true if the accelerator requires the client to provide frame
     // context in order to decode. If so, the Vp9FrameHeader provided by the
@@ -85,7 +85,7 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
 
     // Set |frame_ctx| to the state after decoding |pic|, returning true on
     // success, false otherwise.
-    virtual bool GetFrameContext(const scoped_refptr<VP9Picture>& pic,
+    virtual bool GetFrameContext(scoped_refptr<VP9Picture> pic,
                                  Vp9FrameContext* frame_ctx) = 0;
 
    private:
@@ -110,9 +110,6 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
   size_t GetNumReferenceFrames() const override;
 
  private:
-  // Update ref_frames_ based on the information in current frame header.
-  void RefreshReferenceFrames(const scoped_refptr<VP9Picture>& pic);
-
   // Decode and possibly output |pic| (if the picture is to be shown).
   // Return true on success, false otherwise.
   bool DecodeAndOutputPicture(scoped_refptr<VP9Picture> pic);
@@ -120,7 +117,7 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
   // Get frame context state after decoding |pic| from the accelerator, and call
   // |context_refresh_cb| with the acquired state.
   void UpdateFrameContext(
-      const scoped_refptr<VP9Picture>& pic,
+      scoped_refptr<VP9Picture> pic,
       const base::Callback<void(const Vp9FrameContext&)>& context_refresh_cb);
 
   // Called on error, when decoding cannot continue. Sets state_ to kError and

@@ -204,13 +204,13 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
 }
 
 void VP9Decoder::UpdateFrameContext(
-    const scoped_refptr<VP9Picture>& pic,
+    scoped_refptr<VP9Picture> pic,
     const base::Callback<void(const Vp9FrameContext&)>& context_refresh_cb) {
   DCHECK(context_refresh_cb);
   Vp9FrameContext frame_ctx;
   memset(&frame_ctx, 0, sizeof(frame_ctx));
 
-  if (!accelerator_->GetFrameContext(pic, &frame_ctx)) {
+  if (!accelerator_->GetFrameContext(std::move(pic), &frame_ctx)) {
     SetError();
     return;
   }
@@ -239,7 +239,7 @@ bool VP9Decoder::DecodeAndOutputPicture(scoped_refptr<VP9Picture> pic) {
       return false;
   }
 
-  ref_frames_.Refresh(pic);
+  ref_frames_.Refresh(std::move(pic));
   return true;
 }
 

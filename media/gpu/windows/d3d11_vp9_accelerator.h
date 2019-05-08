@@ -31,42 +31,41 @@ class D3D11VP9Accelerator : public VP9Decoder::VP9Accelerator {
 
   scoped_refptr<VP9Picture> CreateVP9Picture() override;
 
-  // TODO(crbug/890054): Use constref instead of scoped_refptr.
-  bool SubmitDecode(const scoped_refptr<VP9Picture>& picture,
+  bool SubmitDecode(scoped_refptr<VP9Picture> picture,
                     const Vp9SegmentationParams& segmentation_params,
                     const Vp9LoopFilterParams& loop_filter_params,
                     const Vp9ReferenceFrameVector& reference_frames,
                     const base::Closure& on_finished_cb) override;
 
-  bool OutputPicture(const scoped_refptr<VP9Picture>& picture) override;
+  bool OutputPicture(scoped_refptr<VP9Picture> picture) override;
 
   bool IsFrameContextRequired() const override;
 
-  bool GetFrameContext(const scoped_refptr<VP9Picture>& picture,
+  bool GetFrameContext(scoped_refptr<VP9Picture> picture,
                        Vp9FrameContext* frame_context) override;
 
  private:
   // Helper methods for SubmitDecode
-  bool BeginFrame(D3D11VP9Picture* pic);
+  bool BeginFrame(const D3D11VP9Picture& pic);
 
   // TODO(crbug/890054): Use constref instead of scoped_refptr.
-  void CopyFrameParams(const scoped_refptr<D3D11VP9Picture>& pic,
+  void CopyFrameParams(const D3D11VP9Picture& pic,
                        DXVA_PicParams_VP9* pic_params);
-  void CopyReferenceFrames(const scoped_refptr<D3D11VP9Picture>& pic,
+  void CopyReferenceFrames(const D3D11VP9Picture& pic,
                            DXVA_PicParams_VP9* pic_params,
                            const Vp9ReferenceFrameVector& ref_frames);
   void CopyFrameRefs(DXVA_PicParams_VP9* pic_params,
-                     const scoped_refptr<D3D11VP9Picture>& picture);
+                     const D3D11VP9Picture& picture);
   void CopyLoopFilterParams(DXVA_PicParams_VP9* pic_params,
                             const Vp9LoopFilterParams& loop_filter_params);
   void CopyQuantParams(DXVA_PicParams_VP9* pic_params,
-                       const scoped_refptr<D3D11VP9Picture>& pic);
+                       const D3D11VP9Picture& pic);
   void CopySegmentationParams(DXVA_PicParams_VP9* pic_params,
                               const Vp9SegmentationParams& segmentation_params);
   void CopyHeaderSizeAndID(DXVA_PicParams_VP9* pic_params,
-                           const scoped_refptr<D3D11VP9Picture>& pic);
+                           const D3D11VP9Picture& pic);
   bool SubmitDecoderBuffer(const DXVA_PicParams_VP9& pic_params,
-                           const scoped_refptr<D3D11VP9Picture>& pic);
+                           const D3D11VP9Picture& pic);
 
   void RecordFailure(const std::string& fail_type, const std::string& reason);
 
