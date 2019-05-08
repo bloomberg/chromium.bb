@@ -9,6 +9,11 @@
 namespace sessions {
 const char kTaskIdKey[] = "task_id_data";
 
+ContextRecordTaskId::ContextRecordTaskId() {}
+
+ContextRecordTaskId::ContextRecordTaskId(
+    const ContextRecordTaskId& context_record_task_id) = default;
+
 ContextRecordTaskId::~ContextRecordTaskId() {}
 
 ContextRecordTaskId* ContextRecordTaskId::Get(content::NavigationEntry* entry) {
@@ -25,10 +30,5 @@ ContextRecordTaskId* ContextRecordTaskId::Get(content::NavigationEntry* entry) {
 std::unique_ptr<base::SupportsUserData::Data> ContextRecordTaskId::Clone() {
   return base::WrapUnique(new ContextRecordTaskId(*this));
 }
-
-ContextRecordTaskId::ContextRecordTaskId() {}
-
-ContextRecordTaskId::ContextRecordTaskId(
-    const ContextRecordTaskId& context_record_task_id) = default;
 
 }  // namespace sessions

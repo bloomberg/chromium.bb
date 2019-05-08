@@ -13,7 +13,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/sessions/content/content_record_task_id.h"
 #include "content/public/browser/navigation_entry.h"
 
 #if defined(OS_ANDROID)
@@ -22,6 +21,19 @@
 
 using base::android::JavaParamRef;
 #endif  // defined(OS_ANDROID)
+
+namespace {
+bool DoesTransitionContinueTask(ui::PageTransition transition) {
+  return ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_LINK) ||
+         ui::PageTransitionCoreTypeIs(transition,
+                                      ui::PAGE_TRANSITION_AUTO_SUBFRAME) ||
+         ui::PageTransitionCoreTypeIs(transition,
+                                      ui::PAGE_TRANSITION_MANUAL_SUBFRAME) ||
+         ui::PageTransitionCoreTypeIs(transition,
+                                      ui::PAGE_TRANSITION_FORM_SUBMIT) ||
+         transition & ui::PAGE_TRANSITION_IS_REDIRECT_MASK;
+}
+}  // namespace
 
 namespace tasks {
 
@@ -61,6 +73,8 @@ void TaskTabHelper::NavigationEntryCommitted(
 
   if (current_entry_index > last_pruned_navigation_entry_index_)
     entry_index_to_spoke_count_map_[current_entry_index] = 1;
+
+  UpdateAndRecordTaskIds(load_details);
 }
 
 void TaskTabHelper::NavigationListPruned(
@@ -91,6 +105,40 @@ sessions::ContextRecordTaskId* TaskTabHelper::GetContextRecordTaskId(
   if (!context_record_task_id)
     return nullptr;
   return context_record_task_id;
+}
+
+void TaskTabHelper::UpdateAndRecordTaskIds(
+    const content::LoadCommittedDetails& load_details) {
+  sessions::ContextRecordTaskId* context_record_task_id =
+      sessions::ContextRecordTaskId::Get(load_details.entry);
+
+  // The Task ID is the Global ID of the first navigation. The first
+  // navigation is detected if the Task ID hasn't been set yet.
+  if (context_record_task_id->task_id() == -1) {
+    context_record_task_id->set_task_id(
+        load_details.entry->GetTimestamp().since_origin().InMicroseconds());
+  }
+
+  if (DoesTransitionContinueTask(load_details.entry->GetTransitionType())) {
+    if (load_details.previous_entry_index != -1) {
+      content::NavigationEntry* prev_nav_entry =
+          web_contents()->GetController().GetEntryAtIndex(
+              load_details.previous_entry_index);
+
+      if (prev_nav_entry != nullptr) {
+        sessions::ContextRecordTaskId* prev_context_record_task_id =
+            sessions::ContextRecordTaskId::Get(prev_nav_entry);
+        context_record_task_id->set_parent_task_id(
+            prev_context_record_task_id->task_id());
+        context_record_task_id->set_root_task_id(
+            prev_context_record_task_id->root_task_id());
+      }
+    }
+  } else {
+    context_record_task_id->set_root_task_id(context_record_task_id->task_id());
+  }
+  local_context_record_task_id_map_.emplace(load_details.entry->GetUniqueID(),
+                                            *context_record_task_id);
 }
 
 void TaskTabHelper::RecordHubAndSpokeNavigationUsage(int spokes) {

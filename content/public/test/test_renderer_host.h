@@ -222,7 +222,11 @@ class RenderViewHostTestHarness : public testing::Test {
 
   // Cover for |contents()->NavigateAndCommit(url)|. See
   // WebContentsTester::NavigateAndCommit for details.
-  void NavigateAndCommit(const GURL& url);
+  // Optional parameter transition allows transition type to be controlled for
+  // greater flexibility for tests.
+  void NavigateAndCommit(
+      const GURL& url,
+      ui::PageTransition transition = ui::PAGE_TRANSITION_LINK);
 
   // Sets the focused frame to the main frame of the WebContents for tests that
   // rely on the focused frame not being null.

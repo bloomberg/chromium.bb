@@ -86,6 +86,10 @@ class TaskTabHelperUnitTest : public ChromeRenderViewHostTestHarness {
     }
   }
 
+  content::NavigationEntry* GetLastCommittedEntry() {
+    return web_contents()->GetController().GetLastCommittedEntry();
+  }
+
   MockTaskTabHelper* task_tab_helper_;
   base::HistogramTester histogram_tester_;
 };
@@ -199,4 +203,32 @@ TEST_F(TaskTabHelperUnitTest, TestGetContextRecordTaskId) {
                 test_parent_web_contents.get())
                 ->root_task_id(),
             4);
+}
+
+TEST_F(TaskTabHelperUnitTest, TestTaskIdExistingChain) {
+  NavigateAndCommit(GURL("http://a.com"));
+  sessions::ContextRecordTaskId a_context_record_task_id =
+      *sessions::ContextRecordTaskId::Get(GetLastCommittedEntry());
+  NavigateAndCommit(GURL("http://b.com"));
+  sessions::ContextRecordTaskId b_context_record_task_id =
+      *sessions::ContextRecordTaskId::Get(GetLastCommittedEntry());
+
+  EXPECT_EQ(b_context_record_task_id.parent_task_id(),
+            a_context_record_task_id.task_id());
+  EXPECT_EQ(a_context_record_task_id.root_task_id(),
+            b_context_record_task_id.root_task_id());
+}
+
+TEST_F(TaskTabHelperUnitTest, TestTaskIdNewChain) {
+  NavigateAndCommit(GURL("http://a.com"));
+  sessions::ContextRecordTaskId a_context_record_task_id =
+      *sessions::ContextRecordTaskId::Get(GetLastCommittedEntry());
+
+  NavigateAndCommit(GURL("http://b.com"), ui::PAGE_TRANSITION_TYPED);
+  sessions::ContextRecordTaskId b_context_record_task_id =
+      *sessions::ContextRecordTaskId::Get(GetLastCommittedEntry());
+
+  EXPECT_EQ(b_context_record_task_id.parent_task_id(), -1);
+  EXPECT_NE(a_context_record_task_id.root_task_id(),
+            b_context_record_task_id.root_task_id());
 }

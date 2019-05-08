@@ -226,8 +226,11 @@ void RenderViewHostTestHarness::FocusWebContentsOnMainFrame() {
       root, root->current_frame_host()->GetSiteInstance());
 }
 
-void RenderViewHostTestHarness::NavigateAndCommit(const GURL& url) {
-  static_cast<TestWebContents*>(web_contents())->NavigateAndCommit(url);
+void RenderViewHostTestHarness::NavigateAndCommit(
+    const GURL& url,
+    ui::PageTransition transition) {
+  static_cast<TestWebContents*>(web_contents())
+      ->NavigateAndCommit(url, transition);
 }
 
 void RenderViewHostTestHarness::SetUp() {
