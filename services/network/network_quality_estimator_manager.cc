@@ -132,6 +132,9 @@ void NetworkQualityEstimatorManager::OnEffectiveConnectionTypeChanged(
   base::TimeDelta transport_rtt = transport_rtt_;
   int32_t downstream_throughput_kbps = downstream_throughput_kbps_;
 
+  if (effective_connection_type == effective_connection_type_)
+    return;
+
   effective_connection_type_ = effective_connection_type;
   clients_.ForAllPtrs([effective_connection_type, http_rtt, transport_rtt,
                        downstream_throughput_kbps](
