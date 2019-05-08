@@ -1,14 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="180dp"
-    android:layout_height="32dp"
-    android:layout_marginTop="11dp">
+<!-- Copyright 2019 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_horizontal"
+    android:background="@drawable/progress_bar_shadow">
 
     <ProgressBar
         android:id="@+id/notouch_progress_bar_view"
         style="@android:style/Widget.ProgressBar.Horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="192dp"
+        android:layout_height="36dp"
         android:progressDrawable="@drawable/notouch_progress_bar_drawable" />
 
     <TextView
@@ -16,10 +22,9 @@
         style="@style/TextAppearance.NoTouchProgressBar"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:ellipsize="start"
+        android:layout_gravity="center"
         android:gravity="center"
-        android:paddingEnd="16dp"
-        android:paddingStart="16dp"
+        android:ellipsize="start"
         android:singleLine="true" />
 
-</RelativeLayout>
+</FrameLayout>
