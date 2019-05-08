@@ -397,16 +397,22 @@ bool SyncAuthManager::UpdateSyncAccountIfNecessary() {
   DCHECK(registered_for_auth_notifications_);
 
   syncer::SyncAccountInfo new_account = DetermineAccountToUse();
-  // If we're already using this account and its |is_primary| bit hasn't changed
-  // (or there was and is no account to use), then there's nothing to do.
   if (new_account.account_info.account_id ==
-          sync_account_.account_info.account_id &&
-      new_account.is_primary == sync_account_.is_primary) {
-    return false;
+      sync_account_.account_info.account_id) {
+    // We're already using this account (or there was and is no account to use).
+    // If the |is_primary| bit hasn't changed either, then there's nothing to
+    // do.
+    if (new_account.is_primary == sync_account_.is_primary) {
+      return false;
+    }
+    // The |is_primary| bit *has* changed, so update our state and notify.
+    sync_account_ = new_account;
+    account_state_changed_callback_.Run();
+    return true;
   }
 
   // Something has changed: Either this is a sign-in or sign-out, or the account
-  // changed, or the account stayed the same but its |is_primary| bit changed.
+  // changed.
 
   // Sign out of the old account (if any).
   if (!sync_account_.account_info.account_id.empty()) {

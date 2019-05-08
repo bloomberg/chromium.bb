@@ -37,9 +37,9 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
  public:
   // Called when the existence of an authenticated account changes. It's
   // guaranteed that this is only called for going from "no account" to "have
-  // account" or vice versa, i.e. SyncAuthManager will never directly switch
-  // from one account to a different one. Call GetActiveAccountInfo to get the
-  // new state.
+  // account" or vice versa, or if the existing account's |is_primary| bit
+  // changed. I.e. SyncAuthManager will never directly switch from one account
+  // to a different one. Call GetActiveAccountInfo to get the new state.
   using AccountStateChangedCallback = base::RepeatingClosure;
   // Called when the credential state changes, i.e. an access token was
   // added/changed/removed. Call GetCredentials to get the new state.

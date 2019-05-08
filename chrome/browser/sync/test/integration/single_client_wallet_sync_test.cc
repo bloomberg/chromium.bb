@@ -1550,22 +1550,11 @@ IN_PROC_BROWSER_TEST_P(
   GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
   auto setup_handle = GetSyncService(0)->GetSetupInProgressHandle();
 
-  // Adding a primary account triggers a restart of the Sync engine, so it
-  // should now be initializing again.
-  ASSERT_EQ(syncer::SyncService::TransportState::INITIALIZING,
-            GetSyncService(0)->GetTransportState());
-
-  ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization());
-
-  // Since we're still holding on to the setup-in-progress handle, the data
-  // types can't be configured yet.
-  ASSERT_EQ(syncer::SyncService::TransportState::PENDING_DESIRED_CONFIGURATION,
-            GetSyncService(0)->GetTransportState());
-
   GetSyncService(0)->GetUserSettings()->SetSelectedTypes(
       /*sync_everything=*/false, {syncer::UserSelectableType::kAutofill});
 
-  // Once the user finishes the setup, we can actually configure.
+  // Once the user finishes the setup, the newly selected data types will
+  // actually get configured.
   setup_handle.reset();
   ASSERT_EQ(syncer::SyncService::TransportState::CONFIGURING,
             GetSyncService(0)->GetTransportState());

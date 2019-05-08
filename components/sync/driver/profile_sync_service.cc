@@ -320,13 +320,21 @@ void ProfileSyncService::AccountStateChanged() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!IsSignedIn()) {
+    // The account was signed out, so shut down.
     sync_disabled_by_admin_ = false;
     StopImpl(CLEAR_DATA);
     DCHECK(!engine_);
   } else {
-    DCHECK(!engine_);
-    startup_controller_->TryStart(/*force_immediate=*/IsSetupInProgress());
+    // Either a new account was signed in, or the existing account's
+    // |is_primary| bit was changed. Start up or reconfigure.
+    if (!engine_) {
+      startup_controller_->TryStart(/*force_immediate=*/IsSetupInProgress());
+    } else {
+      ReconfigureDatatypeManager(/*bypass_setup_in_progress_check=*/false);
+    }
   }
+
+  // Propagate the (potentially) changed account ID to the invalidations system.
   for (auto* provider : invalidations_identity_providers_) {
     if (provider) {
       provider->SetActiveAccountId(GetAuthenticatedAccountInfo().account_id);
