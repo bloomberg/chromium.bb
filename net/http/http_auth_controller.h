@@ -30,21 +30,49 @@ class NetLogWithSource;
 struct HttpRequestInfo;
 class SSLInfo;
 
-// HttpAuthController is interface between other classes and HttpAuthHandlers.
-// It handles all challenges when attempting to make a single request to a
-// server, both in the case of trying multiple sets of credentials (Possibly on
-// different sockets), and when going through multiple rounds of auth with
-// connection-based auth, creating new HttpAuthHandlers as necessary.
+// HttpAuthController is the main entry point for external callers into the HTTP
+// authentication stack. A single instance of an HttpAuthController can be used
+// to handle authentication to a single "target", where "target" is a HTTP
+// server or a proxy. During its lifetime, the HttpAuthController can make use
+// of multiple authentication handlers (implemented as HttpAuthHandler
+// subclasses), and respond to multiple challenges.
 //
-// It is unaware of when a round of auth uses a new socket, which can lead to
-// problems for connection-based auth.
+// Individual HTTP authentication schemes can have additional requirements other
+// than what's prescribed in RFC 7235. See HandleAuthChallenge() for details.
 class NET_EXPORT_PRIVATE HttpAuthController
     : public base::RefCounted<HttpAuthController> {
  public:
-  // The arguments are self explanatory except possibly for |auth_url|, which
-  // should be both the auth target and auth path in a single url argument.
-  // |target| indicates whether this is for authenticating with a proxy or
-  // destination server.
+  // Construct a new HttpAuthController.
+  //
+  // * |target| is either PROXY or SERVER and determines the authentication
+  //       headers to use ("WWW-Authenticate"/"Authorization" vs.
+  //       "Proxy-Authenticate","Proxy-Authorization") and how ambient
+  //       credentials are used.
+  //
+  // * |auth_url| specifies the target URL. The origin of the URL identifies the
+  //       target host. The path (hierarchical part defined in RFC 3986 section
+  //       3.3) of the URL is used by HTTP basic authentication to determine
+  //       cached credentials can be used to preemptively send an authorization
+  //       header. See RFC 7627 section 2.2 (Reusing Credentials) for details.
+  //       If |target| is PROXY, then |auth_url| should have no hierarchical
+  //       part since that is meaningless.
+  //
+  // * |http_auth_cache| specifies the credentials cache to use. During
+  //       authentication if explicit (user-provided) credentials are used and
+  //       they can be cached to respond to authentication challenges in the
+  //       future, they are stored in the cache. In addition, the HTTP Digest
+  //       authentication is stateful across requests. So the |http_auth_cache|
+  //       is also used to maintain state for this authentication scheme.
+  //
+  // * |http_auth_handler_factory| is used to contruct instances of
+  //       HttpAuthHandler subclass to handle scheme specific authentication
+  //       logic. The |http_auth_handler_factory| is also responsible for
+  //       determining whether the authentication stack should use a specific
+  //       authentication scheme or not.
+  //
+  // * |host_resolver| is used for determining the canonical hostname given a
+  //       possibly non-canonical host name. Name canonicalization is used for
+  //       NTLM and Negotiate HTTP authentication schemes.
   HttpAuthController(HttpAuth::Target target,
                      const GURL& auth_url,
                      HttpAuthCache* http_auth_cache,

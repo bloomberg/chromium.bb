@@ -133,12 +133,14 @@ HttpAuthController::HttpAuthController(
     : target_(target),
       auth_url_(auth_url),
       auth_origin_(auth_url.GetOrigin()),
-      auth_path_(HttpAuth::AUTH_PROXY ? std::string() : auth_url.path()),
+      auth_path_(auth_url.path()),
       embedded_identity_used_(false),
       default_credentials_used_(false),
       http_auth_cache_(http_auth_cache),
       http_auth_handler_factory_(http_auth_handler_factory),
-      host_resolver_(host_resolver) {}
+      host_resolver_(host_resolver) {
+  DCHECK(target != HttpAuth::AUTH_PROXY || auth_path_ == "/");
+}
 
 HttpAuthController::~HttpAuthController() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
