@@ -60,6 +60,9 @@ Polymer({
         return [];
       },
     },
+
+    /** @private {string|undefined} */
+    languageSyncedWithBrowserEnableSpellchecking_: String,
     // </if>
 
     /**
@@ -552,14 +555,39 @@ Polymer({
           `spellCheckLanguages_.${i}.downloadDictionaryFailureCount`);
     }
 
-    this.hideSpellCheckLanguages_ = this.spellCheckLanguages_.length === 1 &&
-        !!this.spellCheckLanguages_[0].spellCheckEnabled &&
-        !!this.getPref('browser.enable_spellchecking').value;
-
     if (this.spellCheckLanguages_.length === 0) {
       // If there are no supported spell check languages, automatically turn
       // off spell check to indicate no spell check will happen.
       this.setPrefValue('browser.enable_spellchecking', false);
+    }
+
+    if (this.spellCheckLanguages_.length === 1) {
+      const singleLanguage = this.spellCheckLanguages_[0];
+
+      // Hide list of spell check languages if there is only 1 language
+      // and we don't need to display any errors for that language
+      this.hideSpellCheckLanguages_ = !singleLanguage.isManaged &&
+          singleLanguage.downloadDictionaryFailureCount === 0;
+
+      // Turn off spell check if spell check for the 1 remaining language is off
+      if (!singleLanguage.spellCheckEnabled) {
+        this.setPrefValue('browser.enable_spellchecking', false);
+        this.languageSyncedWithBrowserEnableSpellchecking_ =
+            singleLanguage.language.code;
+      }
+
+      // Undo the sync if spell check appeared as turned off for the language
+      // because a download was still in progress. This only occurs when
+      // Settings is loaded for the very first time and dictionaries have not
+      // been downloaded yet.
+      if (this.languageSyncedWithBrowserEnableSpellchecking_ ===
+              singleLanguage.language.code &&
+          singleLanguage.spellCheckEnabled) {
+        this.setPrefValue('browser.enable_spellchecking', true);
+      }
+    } else {
+      this.hideSpellCheckLanguages_ = false;
+      this.languageSyncedWithBrowserEnableSpellchecking_ = undefined;
     }
   },
 
@@ -567,6 +595,16 @@ Polymer({
   updateSpellcheckEnabled_: function() {
     if (this.prefs == undefined) {
       return;
+    }
+
+    // If there is only 1 language, we hide the list of languages so users
+    // are unable to toggle on/off spell check specifically for the 1 language.
+    // Therefore, we need to treat the toggle for `browser.enable_spellchecking`
+    // as the toggle for the 1 language as well.
+    if (this.spellCheckLanguages_.length === 1) {
+      this.languageHelper.toggleSpellCheck(
+          this.spellCheckLanguages_[0].language.code,
+          !!this.getPref('browser.enable_spellchecking').value);
     }
 
     // <if expr="_google_chrome">
