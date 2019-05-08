@@ -95,69 +95,92 @@ the same histogram.  For example, if you want to count pages opened from the
 history page, it might be a useful comparison to have the same histogram
 record the number of times the history page was opened.
 
-If few buckets will be emitted to, consider using a [sparse
+If only a few buckets will be emitted to, consider using a [sparse
 histogram](#When-To-Use-Sparse-Histograms).
 
-You may append to your enum if the possible states/actions grows.  However, you
-should not reorder, renumber, or otherwise reuse existing values.  Definitions
-for enums recorded in histograms should be prefixed by the following warning:
+#### Requirements
+
+Enums logged in histograms must:
+
+- be prefixed with the comment:
+  ```c++
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  ```
+- be numbered starting from `0`. Note this bullet point does *not* apply for
+  enums logged with sparse histograms.
+- have enumerators with explicit values (`= 0`, `= 1`, `= 2`), to make it clear
+  that the actual values are important. This also makes it easy to match the
+  values between the C++/Java definition and [histograms.xml](./histograms.xml).
+- not renumber or reuse enumerator values. When adding a new enumerator, append
+  the new enumerator to the end. When removing an unused enumerator, comment it
+  out, making it clear the value was previously used.
+
+If your enum histogram has a catch-all / miscellaneous bucket, put that bucket
+first (`= 0`). This will make the bucket easy to find on the dashboard if
+additional buckets are added later.
+
+#### Usage
+
+Define an `enum class` with a `kMaxValue` enumerator:
+
 ```c++
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-```
-
-The enums themselves should have explicit enumerator values set (`= 0`, `= 1`,
-`= 2`), to make it clear that the actual values are important and to make it
-easy to match the values between the C++ definition and
-[histograms.xml](./histograms.xml).
-
-For new enums used in histograms, prefer using an enum class with a kMaxValue
-element, like this:
-```c++ {.good}
 enum class NewTabPageAction {
   kUseOmnibox = 0,
   kClickTitle = 1,
-  kOpenBookmark = 2,
+  // kUseSearchbox = 2,  // no longer used, combined into omnibox
+  kOpenBookmark = 3,
   kMaxValue = kOpenBookmark,
 };
 ```
-`kMaxValue` is a special enumerator value that shares the value of the highest
-enumerator: this should be done by assigning it the name of the enumerator with
-the highest explicit integral value. There is a presubmit check which will
-enforce this semantic. Enums defined this way have better type checking support
-from the compiler, allow inferring kMaxValue from the type, and allow `switch`
-statements over them will not need to handle an otherwise unused sentinel value.
 
-Enumerators defined in this way should be recorded using the two argument
-version of `UMA_HISTOGRAM_ENUMERATION`:
-```
+`kMaxValue` is a special enumerator that must share the highest enumerator
+value, typically done by aliasing it with the enumerator with the highest
+value: clang automatically checks that `kMaxValue` is correctly set for `enum
+class`.
+
+The histogram helpers use the `kMaxValue` convention, and the enum may be
+logged with:
+
+```c++
 UMA_HISTOGRAM_ENUMERATION("NewTabPageAction", action);
 ```
-which automatically deduces the range of the enum from `kMaxValue`.
 
-If you need to record a histogram based on an enum without kMaxValue, you can
-use the three argument version, which takes the number of buckets as the argument, e.g:
+or:
+
 ```c++
-UMA_HISTOGRAM_ENUMERATION("NewTabPageAction", action,
-                          NewTabPageAction_MaxValue + 1);
+UmaHistogramEnumeration("NewTabPageAction", action);
 ```
 
-This is often seen with enums defined with a sentinal enumerator value at the
-end, relying on the compiler to keep the value up to date:
+#### Legacy Enums
+
+**Note: this method of defining histogram enums is deprecated. Do not use this
+for new enums.**
+
+Many legacy enums define a `kCount` sentinel, reying on the compiler to
+automatically update it when new entries are added:
+
 ```c++
 enum class NewTabPageAction {
   kUseOmnibox = 0,
   kClickTitle = 1,
-  kOpenBookmark = 2,
+  // kUseSearchbox = 2,  // no longer used, combined into omnibox
+  kOpenBookmark = 3,
   kCount,
 };
+```
 
+These enums must be recorded using the legacy helpers:
+
+```c++
 UMA_HISTOGRAM_ENUMERATION("NewTabPageAction", action, NewTabPageAction::kCount);
 ```
 
-Finally, if your enum histogram has a catch-all / miscellaneous bucket, put that
-bucket first (`= 0`).  This will make the bucket easy to find on the dashboard
-if later you add additional buckets to your histogram.
+or:
+
+```c++
+UmaHistogramEnumeration("NewTabPageAction", action, NewTabPageAction::kCount);
+```
 
 ### Flag Histograms
 
