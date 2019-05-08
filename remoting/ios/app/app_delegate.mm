@@ -10,6 +10,7 @@
 
 #import <AVFoundation/AVFoundation.h>
 
+#include "remoting/base/string_resources.h"
 #import "remoting/ios/app/app_initializer.h"
 #import "remoting/ios/app/app_view_controller.h"
 #import "remoting/ios/app/first_launch_view_presenter.h"
@@ -21,11 +22,16 @@
 #import "remoting/ios/app/view_utils.h"
 #import "remoting/ios/app/web_view_controller.h"
 #import "remoting/ios/facade/remoting_oauth_authentication.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #include "base/logging.h"
 #include "remoting/base/string_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+static NSString* const kTosUrl = @"https://policies.google.com/terms";
+static NSString* const kPrivacyPolicyUrl =
+    @"https://policies.google.com/privacy";
 
 @interface AppDelegate ()<FirstLaunchViewControllerDelegate> {
   AppViewController* _appViewController;
@@ -121,6 +127,14 @@
   [UserStatusPresenter.instance start];
 }
 
+- (void)presentOnTopPresentingVC:(UIViewController*)viewController {
+  UINavigationController* navController = [[UINavigationController alloc]
+      initWithRootViewController:viewController];
+  [remoting::TopPresentingVC() presentViewController:navController
+                                            animated:YES
+                                          completion:nil];
+}
+
 #pragma mark - AppDelegate
 
 - (void)navigateToHelpCenter:(UINavigationController*)navigationController {
@@ -129,11 +143,21 @@
 }
 
 - (void)presentHelpCenter {
-  UINavigationController* navController = [[UINavigationController alloc]
-      initWithRootViewController:[[HelpViewController alloc] init]];
-  [remoting::TopPresentingVC() presentViewController:navController
-                                            animated:YES
-                                          completion:nil];
+  [self presentOnTopPresentingVC:[[HelpViewController alloc] init]];
+}
+
+- (void)presentTermsOfService {
+  [self presentOnTopPresentingVC:[[WebViewController alloc]
+                                     initWithUrl:kTosUrl
+                                           title:l10n_util::GetNSString(
+                                                     IDS_TERMS_OF_SERVICE)]];
+}
+
+- (void)presentPrivacyPolicy {
+  [self presentOnTopPresentingVC:[[WebViewController alloc]
+                                     initWithUrl:kPrivacyPolicyUrl
+                                           title:l10n_util::GetNSString(
+                                                     IDS_PRIVACY_POLICY)]];
 }
 
 - (void)presentFeedbackFlowWithContext:(NSString*)context {
