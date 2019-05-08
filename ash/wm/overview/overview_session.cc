@@ -352,7 +352,7 @@ void OverviewSession::Shutdown() {
 }
 
 void OverviewSession::CancelSelection() {
-  delegate_->OnSelectionEnded();
+  delegate_->EndOverview();
 }
 
 void OverviewSession::OnGridEmpty(OverviewGrid* grid) {
@@ -926,7 +926,7 @@ void OverviewSession::OnSplitViewStateChanged(
     SplitViewController::State previous_state,
     SplitViewController::State state) {
   // Do nothing if overview is being shutdown.
-  if (!Shell::Get()->overview_controller()->IsSelecting())
+  if (!Shell::Get()->overview_controller()->InOverviewSession())
     return;
 
   const bool unsnappable_window_activated =

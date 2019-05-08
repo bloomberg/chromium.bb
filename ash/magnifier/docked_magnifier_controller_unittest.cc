@@ -329,14 +329,14 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreasOverviewMode) {
   // Enable overview mode followed by the magnifier.
   auto* overview_controller = Shell::Get()->overview_controller();
   overview_controller->ToggleOverview();
-  EXPECT_TRUE(overview_controller->IsSelecting());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
   controller()->SetEnabled(true);
   EXPECT_TRUE(controller()->GetEnabled());
 
   // Expect that overview mode is exited, the display's work area is updated,
   // and the window's bounds are updated to be equal to the new display's work
   // area bounds.
-  EXPECT_FALSE(overview_controller->IsSelecting());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
   const display::Display& display = display_manager()->GetDisplayAt(0);
   gfx::Rect workarea = display.bounds();
   const int magnifier_height = GetMagnifierHeight(display.bounds().height());
@@ -367,18 +367,18 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreasSingleSplitView) {
   // a window to the left.
   auto* overview_controller = Shell::Get()->overview_controller();
   overview_controller->ToggleOverview();
-  EXPECT_TRUE(overview_controller->IsSelecting());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
   split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
   EXPECT_EQ(split_view_controller->state(), SplitViewController::LEFT_SNAPPED);
   EXPECT_EQ(split_view_controller->left_window(), window.get());
-  EXPECT_TRUE(overview_controller->IsSelecting());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
 
   // Enable the docked magnifier and expect that both overview and split view
   // modes are exited, and the window remains maximized, and its bounds are
   // updated to match the new display's work area.
   controller()->SetEnabled(true);
   EXPECT_TRUE(controller()->GetEnabled());
-  EXPECT_FALSE(overview_controller->IsSelecting());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_EQ(split_view_controller->state(), SplitViewController::NO_SNAP);
   EXPECT_EQ(split_view_controller->InSplitViewMode(), false);
   const display::Display& display = display_manager()->GetDisplayAt(0);
@@ -406,7 +406,7 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreasDoubleSplitView) {
 
   auto* overview_controller = Shell::Get()->overview_controller();
   overview_controller->ToggleOverview();
-  EXPECT_TRUE(overview_controller->IsSelecting());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
 
   auto* split_view_controller = Shell::Get()->split_view_controller();
   EXPECT_EQ(split_view_controller->InSplitViewMode(), false);
@@ -416,7 +416,7 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreasDoubleSplitView) {
   EXPECT_EQ(split_view_controller->state(), SplitViewController::BOTH_SNAPPED);
 
   // Snapping both windows should exit overview mode.
-  EXPECT_FALSE(overview_controller->IsSelecting());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
 
   // Enable the docked magnifier, and expect that split view does not exit, and
   // the two windows heights are updated to be equal to the height of the

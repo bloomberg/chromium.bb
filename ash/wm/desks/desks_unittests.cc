@@ -53,7 +53,7 @@ OverviewGrid* GetOverviewGridForRoot(aura::Window* root) {
   DCHECK(root->IsRootWindow());
 
   auto* overview_controller = Shell::Get()->overview_controller();
-  DCHECK(overview_controller->IsSelecting());
+  DCHECK(overview_controller->InOverviewSession());
 
   return overview_controller->overview_session()->GetGridWithRootWindow(root);
 }
@@ -209,7 +209,7 @@ TEST_F(DesksTest, DesksBarViewDeskCreation) {
 
   auto* overview_controller = Shell::Get()->overview_controller();
   overview_controller->ToggleOverview();
-  EXPECT_TRUE(overview_controller->IsSelecting());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
 
   const auto* overview_grid =
       GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
@@ -267,9 +267,9 @@ TEST_F(DesksTest, DesksBarViewDeskCreation) {
   // desks, their mini_views should be created upon construction of the desks
   // bar.
   overview_controller->ToggleOverview();
-  EXPECT_FALSE(overview_controller->IsSelecting());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
   overview_controller->ToggleOverview();
-  EXPECT_TRUE(overview_controller->IsSelecting());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
 
   // Get the new grid and the new desk_bar_view.
   overview_grid =
@@ -538,7 +538,7 @@ TEST_F(DesksTest, ActivateDeskFromOverview) {
   // grid.
   auto* overview_controller = Shell::Get()->overview_controller();
   overview_controller->ToggleOverview();
-  EXPECT_TRUE(overview_controller->IsSelecting());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
   const auto* overview_grid =
       GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
   const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
@@ -562,7 +562,7 @@ TEST_F(DesksTest, ActivateDeskFromOverview) {
 
   // Expect that desk_4 is now active, and overview mode exited.
   EXPECT_TRUE(desk_4->is_active());
-  EXPECT_FALSE(overview_controller->IsSelecting());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
   // Exiting overview mode should not restore focus to a window on a
   // now-inactive desk. Run a loop since the overview session is destroyed async
   // and until that happens, focus will be on the dummy
@@ -575,14 +575,14 @@ TEST_F(DesksTest, ActivateDeskFromOverview) {
   auto win2 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
   wm::ActivateWindow(win2.get());
   overview_controller->ToggleOverview();
-  EXPECT_TRUE(overview_controller->IsSelecting());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
   overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
   EXPECT_EQ(1u, overview_grid->window_list().size());
 
   // When exiting overview mode without changing desks, the focus should be
   // restored to the same window.
   overview_controller->ToggleOverview();
-  EXPECT_FALSE(overview_controller->IsSelecting());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
   // Run a loop since the overview session is destroyed async and until that
   // happens, focus will be on the dummy "OverviewModeFocusedWidget".
   base::RunLoop().RunUntilIdle();
@@ -605,7 +605,7 @@ TEST_F(DesksTest, ActivateDeskFromOverviewDualDisplay) {
   // Enter overview mode.
   auto* overview_controller = Shell::Get()->overview_controller();
   overview_controller->ToggleOverview();
-  EXPECT_TRUE(overview_controller->IsSelecting());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
 
   auto roots = Shell::GetAllRootWindows();
   ASSERT_EQ(2u, roots.size());
@@ -629,7 +629,7 @@ TEST_F(DesksTest, ActivateDeskFromOverviewDualDisplay) {
 
   // Expect that desk_4 is now active, and overview mode exited.
   EXPECT_TRUE(desk_4->is_active());
-  EXPECT_FALSE(overview_controller->IsSelecting());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
 }
 
 TEST_F(DesksTest, RemoveInactiveDeskFromOverview) {
@@ -653,7 +653,7 @@ TEST_F(DesksTest, RemoveInactiveDeskFromOverview) {
   ActivateDesk(desk_4);
   auto* overview_controller = Shell::Get()->overview_controller();
   overview_controller->ToggleOverview();
-  EXPECT_TRUE(overview_controller->IsSelecting());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
   const auto* overview_grid =
       GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
   EXPECT_TRUE(overview_grid->window_list().empty());
@@ -670,7 +670,7 @@ TEST_F(DesksTest, RemoveInactiveDeskFromOverview) {
   CloseDeskFromMiniView(mini_view, GetEventGenerator());
 
   ASSERT_EQ(3u, desks_bar_view->mini_views().size());
-  EXPECT_TRUE(overview_controller->IsSelecting());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
   ASSERT_EQ(2u, overview_grid->window_list().size());
   EXPECT_TRUE(overview_grid->GetOverviewItemContaining(win0.get()));
   EXPECT_TRUE(overview_grid->GetOverviewItemContaining(win1.get()));
@@ -681,7 +681,7 @@ TEST_F(DesksTest, RemoveInactiveDeskFromOverview) {
 
   // Make sure overview mode remains active.
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(overview_controller->IsSelecting());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
 }
 
 TEST_F(DesksTest, RemoveActiveDeskFromOverview) {
@@ -707,7 +707,7 @@ TEST_F(DesksTest, RemoveActiveDeskFromOverview) {
   // Enter overview mode, and remove desk_2 from its mini-view close button.
   auto* overview_controller = Shell::Get()->overview_controller();
   overview_controller->ToggleOverview();
-  EXPECT_TRUE(overview_controller->IsSelecting());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
   const auto* overview_grid =
       GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
   EXPECT_EQ(1u, overview_grid->window_list().size());
@@ -724,7 +724,7 @@ TEST_F(DesksTest, RemoveActiveDeskFromOverview) {
   ASSERT_EQ(1u, desks_bar_view->mini_views().size());
   const Desk* desk_1 = controller->desks()[0].get();
   EXPECT_TRUE(desk_1->is_active());
-  EXPECT_TRUE(overview_controller->IsSelecting());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_EQ(3u, overview_grid->window_list().size());
   EXPECT_TRUE(overview_grid->GetOverviewItemContaining(win0.get()));
   EXPECT_TRUE(overview_grid->GetOverviewItemContaining(win1.get()));
@@ -740,7 +740,7 @@ TEST_F(DesksTest, RemoveActiveDeskFromOverview) {
 
   // Make sure overview mode remains active.
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(overview_controller->IsSelecting());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
 }
 
 TEST_F(DesksTest, ActivateActiveDeskFromOverview) {
@@ -755,14 +755,14 @@ TEST_F(DesksTest, ActivateActiveDeskFromOverview) {
   // overview mode exits since this is the already active desk.
   auto* overview_controller = Shell::Get()->overview_controller();
   overview_controller->ToggleOverview();
-  EXPECT_TRUE(overview_controller->IsSelecting());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
   const auto* overview_grid =
       GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
   const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
   const Desk* desk_1 = controller->desks()[0].get();
   const auto* mini_view = desks_bar_view->mini_views().front().get();
   ClickOnMiniView(mini_view, GetEventGenerator());
-  EXPECT_FALSE(overview_controller->IsSelecting());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_TRUE(desk_1->is_active());
   EXPECT_EQ(desk_1, controller->active_desk());
 }

@@ -379,7 +379,8 @@ gfx::RectF OverviewItem::GetTransformedBounds() const {
 
 void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
                              OverviewAnimationType animation_type) {
-  if (in_bounds_update_ || !Shell::Get()->overview_controller()->IsSelecting())
+  if (in_bounds_update_ ||
+      !Shell::Get()->overview_controller()->InOverviewSession())
     return;
 
   // Do not animate if the resulting bounds does not change. The original
@@ -734,7 +735,7 @@ void OverviewItem::UpdateMaskAndShadow() {
   bool should_show = true;
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   if (disable_mask_ || !overview_controller ||
-      !overview_controller->IsSelecting() ||
+      !overview_controller->InOverviewSession() ||
       (!ash::features::ShouldUseShaderRoundedCorner() &&
        overview_grid_->window_list().size() > 10) ||
       overview_controller->IsInStartAnimation() || is_being_dragged_ ||
@@ -887,7 +888,7 @@ void OverviewItem::OnWindowBoundsChanged(aura::Window* window,
                                          const gfx::Rect& new_bounds,
                                          ui::PropertyChangeReason reason) {
   // Do not keep the overview bounds if we're shutting down.
-  if (!Shell::Get()->overview_controller()->IsSelecting())
+  if (!Shell::Get()->overview_controller()->InOverviewSession())
     return;
 
   if (reason == ui::PropertyChangeReason::NOT_FROM_ANIMATION) {

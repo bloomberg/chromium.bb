@@ -302,7 +302,7 @@ class OverviewGrid::TargetWindowObserver : public aura::WindowObserver {
   void UpdateWindowItemInOverviewContaining(aura::Window* window) {
     OverviewController* overview_controller =
         Shell::Get()->overview_controller();
-    if (!overview_controller->IsSelecting())
+    if (!overview_controller->InOverviewSession())
       return;
 
     OverviewGrid* grid =

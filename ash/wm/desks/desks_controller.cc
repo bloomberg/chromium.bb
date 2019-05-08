@@ -29,7 +29,7 @@ namespace {
 // overview grid.
 void AppendWindowsToOverview(const base::flat_set<aura::Window*>& windows,
                              bool should_animate) {
-  DCHECK(Shell::Get()->overview_controller()->IsSelecting());
+  DCHECK(Shell::Get()->overview_controller()->InOverviewSession());
 
   auto* overview_session =
       Shell::Get()->overview_controller()->overview_session();
@@ -44,7 +44,7 @@ void AppendWindowsToOverview(const base::flat_set<aura::Window*>& windows,
 
 // Removes the given |windows| from the currently active overview mode session.
 void RemoveWindowsFromOverview(const base::flat_set<aura::Window*>& windows) {
-  DCHECK(Shell::Get()->overview_controller()->IsSelecting());
+  DCHECK(Shell::Get()->overview_controller()->InOverviewSession());
 
   auto* overview_session =
       Shell::Get()->overview_controller()->overview_session();
@@ -125,7 +125,8 @@ void DesksController::RemoveDesk(const Desk* desk) {
 
   DCHECK(!desks_.empty());
 
-  const bool is_selecting = Shell::Get()->overview_controller()->IsSelecting();
+  const bool in_overview =
+      Shell::Get()->overview_controller()->InOverviewSession();
   const base::flat_set<aura::Window*> removed_desk_windows =
       removed_desk->windows();
 
@@ -139,7 +140,7 @@ void DesksController::RemoveDesk(const Desk* desk) {
     // overview grid in the order of their MRU. Note that this can only be done
     // after the windows have moved to the active desk above, so that building
     // the window MRU list should contain those windows.
-    if (is_selecting)
+    if (in_overview)
       AppendWindowsToOverview(removed_desk_windows, /*should_animate=*/true);
   } else {
     Desk* target_desk = nullptr;
@@ -158,7 +159,7 @@ void DesksController::RemoveDesk(const Desk* desk) {
     // "OverviewModeLabel" widgets created by overview mode for these windows.
     // This way the removed desk tracks only real windows, which are now ready
     // to be moved to the target desk.
-    if (is_selecting)
+    if (in_overview)
       RemoveWindowsFromOverview(removed_desk_windows);
 
     // If overview mode is active, change desk activation without changing
@@ -166,11 +167,11 @@ void DesksController::RemoveDesk(const Desk* desk) {
     // "OverviewModeFocusedWidget" while overview mode is active.
     removed_desk->MoveWindowsToDesk(target_desk);
     ActivateDeskInternal(target_desk,
-                         /*update_window_activation=*/!is_selecting);
+                         /*update_window_activation=*/!in_overview);
 
     // Now that the windows from the removed and target desks merged, add them
     // all without animation to the grid in the order of their MRU.
-    if (is_selecting)
+    if (in_overview)
       AppendWindowsToOverview(target_desk->windows(), /*should_animate=*/false);
   }
 
@@ -188,7 +189,7 @@ void DesksController::ActivateDesk(const Desk* desk) {
   if (desk == active_desk_) {
     OverviewController* overview_controller =
         Shell::Get()->overview_controller();
-    if (overview_controller->IsSelecting()) {
+    if (overview_controller->InOverviewSession()) {
       // Selecting the active desk's mini_view in overview mode is allowed and
       // should just exit overview mode normally.
       overview_controller->ToggleOverview();
@@ -240,14 +241,16 @@ void DesksController::OnStartingDeskScreenshotTaken(const Desk* ending_desk) {
   for (auto* root : roots)
     root->GetHost()->compositor()->SetAllowLocksToExtendTimeout(true);
 
-  const bool is_selecting = Shell::Get()->overview_controller()->IsSelecting();
+  const bool in_overview =
+      Shell::Get()->overview_controller()->InOverviewSession();
 
   ActivateDeskInternal(ending_desk, /*update_window_activation=*/true);
 
   // Activating a desk should not change the overview mode state.
-  DCHECK_EQ(is_selecting, Shell::Get()->overview_controller()->IsSelecting());
+  DCHECK_EQ(in_overview,
+            Shell::Get()->overview_controller()->InOverviewSession());
 
-  if (is_selecting) {
+  if (in_overview) {
     // Exit overview mode immediately without any animations before taking the
     // ending desk screenshot. This makes sure that the ending desk
     // screenshot will only show the windows in that desk, not overview stuff.

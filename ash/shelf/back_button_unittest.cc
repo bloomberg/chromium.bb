@@ -158,7 +158,7 @@ TEST_F(KioskNextBackButtonTest, BackKeySequenceGenerated) {
   // home screen.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   ASSERT_TRUE(overview_controller->ToggleOverview());
-  ASSERT_TRUE(overview_controller->IsSelecting());
+  ASSERT_TRUE(overview_controller->InOverviewSession());
   test_api()->RunMessageLoopUntilAnimationsDone();
 
   // Register an accelerator that looks for back releases.
@@ -174,13 +174,13 @@ TEST_F(KioskNextBackButtonTest, BackKeySequenceGenerated) {
   generator->MoveMouseTo(back_button()->GetBoundsInScreen().CenterPoint());
   generator->PressLeftButton();
   EXPECT_EQ(0, target_back_release.accelerator_count());
-  EXPECT_TRUE(overview_controller->IsSelecting());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
 
   // Verify that by releasing the back button, the accelerator is triggered,
   // exiting Overview mode and sending a release event.
   generator->ReleaseLeftButton();
   EXPECT_EQ(1, target_back_release.accelerator_count());
-  EXPECT_FALSE(overview_controller->IsSelecting());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
 }
 
 }  // namespace ash

@@ -153,7 +153,7 @@ TEST_F(OverviewControllerTest,
   resizer->Drag(CalculateDragPoint(*resizer, 10, 0), 0);
   EXPECT_TRUE(wm::GetWindowState(dragged_window.get())->is_dragged());
   GetEventGenerator()->PressKey(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE);
-  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
+  EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
   resizer->CompleteDrag();
 }
 
@@ -164,7 +164,7 @@ TEST_F(OverviewControllerTest, AnimationCallbacks) {
   // Enter without windows.
   auto* shell = Shell::Get();
   shell->overview_controller()->ToggleOverview();
-  EXPECT_TRUE(shell->overview_controller()->IsSelecting());
+  EXPECT_TRUE(shell->overview_controller()->InOverviewSession());
   EXPECT_EQ(TestOverviewObserver::COMPLETED,
             observer.starting_animation_state());
   auto* overview_controller = shell->overview_controller();
@@ -173,7 +173,7 @@ TEST_F(OverviewControllerTest, AnimationCallbacks) {
 
   // Exit without windows still creates an animation.
   shell->overview_controller()->ToggleOverview();
-  EXPECT_FALSE(shell->overview_controller()->IsSelecting());
+  EXPECT_FALSE(shell->overview_controller()->InOverviewSession());
   EXPECT_EQ(TestOverviewObserver::UNKNOWN, observer.ending_animation_state());
   EXPECT_TRUE(overview_controller->HasBlurForTest());
   EXPECT_TRUE(overview_controller->HasBlurAnimationForTest());
@@ -195,7 +195,7 @@ TEST_F(OverviewControllerTest, AnimationCallbacks) {
 
   // Enter with windows.
   shell->overview_controller()->ToggleOverview();
-  EXPECT_TRUE(shell->overview_controller()->IsSelecting());
+  EXPECT_TRUE(shell->overview_controller()->InOverviewSession());
   EXPECT_EQ(TestOverviewObserver::UNKNOWN, observer.starting_animation_state());
   EXPECT_EQ(TestOverviewObserver::UNKNOWN, observer.ending_animation_state());
   EXPECT_FALSE(overview_controller->HasBlurForTest());
@@ -203,7 +203,7 @@ TEST_F(OverviewControllerTest, AnimationCallbacks) {
 
   // Exit with windows before starting animation ends.
   shell->overview_controller()->ToggleOverview();
-  EXPECT_FALSE(shell->overview_controller()->IsSelecting());
+  EXPECT_FALSE(shell->overview_controller()->InOverviewSession());
   EXPECT_EQ(TestOverviewObserver::CANCELED,
             observer.starting_animation_state());
   EXPECT_EQ(TestOverviewObserver::UNKNOWN, observer.ending_animation_state());
@@ -215,7 +215,7 @@ TEST_F(OverviewControllerTest, AnimationCallbacks) {
 
   // Enter again before exit animation ends.
   shell->overview_controller()->ToggleOverview();
-  EXPECT_TRUE(shell->overview_controller()->IsSelecting());
+  EXPECT_TRUE(shell->overview_controller()->InOverviewSession());
   EXPECT_EQ(TestOverviewObserver::UNKNOWN, observer.starting_animation_state());
   EXPECT_EQ(TestOverviewObserver::CANCELED, observer.ending_animation_state());
   // Blur animation will start when animation is completed.
@@ -226,7 +226,7 @@ TEST_F(OverviewControllerTest, AnimationCallbacks) {
 
   // Activating window while entering animation should cancel the overview.
   wm::ActivateWindow(window1.get());
-  EXPECT_FALSE(shell->overview_controller()->IsSelecting());
+  EXPECT_FALSE(shell->overview_controller()->InOverviewSession());
   EXPECT_EQ(TestOverviewObserver::CANCELED,
             observer.starting_animation_state());
   // Blur animation never started.
@@ -249,7 +249,7 @@ TEST_F(OverviewControllerTest, OverviewEnterExitAnimationClamshell) {
   EXPECT_FALSE(observer.last_animation_was_slide());
 
   // Even with all window minimized, there should not be a slide animation.
-  ASSERT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
+  ASSERT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
   wm::GetWindowState(window.get())->Minimize();
   Shell::Get()->overview_controller()->ToggleOverview();
   EXPECT_FALSE(observer.last_animation_was_slide());
@@ -278,7 +278,7 @@ TEST_F(OverviewControllerTest, OverviewEnterExitAnimationTablet) {
   Shell::Get()->overview_controller()->ToggleOverview(
       OverviewSession::EnterExitOverviewType::kWindowsMinimized);
   EXPECT_TRUE(observer.last_animation_was_slide());
-  ASSERT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
+  ASSERT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
   EXPECT_TRUE(wm::GetWindowState(window.get())->IsMinimized());
 
   // All windows are minimized, so we should use the slide animation.
@@ -354,7 +354,7 @@ TEST_F(OverviewControllerTest, OcclusionTest) {
   observer.WaitForEndingAnimationComplete();
 
   // Windows are visible because tracker is paused.
-  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
+  EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
   EXPECT_EQ(OcclusionState::VISIBLE, window2->occlusion_state());
   EXPECT_EQ(OcclusionState::VISIBLE, window1->occlusion_state());
   WaitForOcclusionStateChange(window2.get());

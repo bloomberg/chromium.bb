@@ -60,7 +60,7 @@ constexpr char kSwipeDownDragTabMaxLatencyHistogram[] =
 // Returns the overview session if overview mode is active, otherwise returns
 // nullptr.
 OverviewSession* GetOverviewSession() {
-  return Shell::Get()->overview_controller()->IsSelecting()
+  return Shell::Get()->overview_controller()->InOverviewSession()
              ? Shell::Get()->overview_controller()->overview_session()
              : nullptr;
 }
@@ -141,13 +141,13 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
                                BackdropWindowMode::kDisabled);
 
   OverviewController* controller = Shell::Get()->overview_controller();
-  bool was_overview_open = controller->IsSelecting();
+  bool was_overview_open = controller->InOverviewSession();
 
   const bool was_splitview_active = split_view_controller_->InSplitViewMode();
   // If the dragged window is one of the snapped windows, SplitViewController
   // might open overview in the dragged window side of the screen.
   split_view_controller_->OnWindowDragStarted(dragged_window_);
-  if (ShouldOpenOverviewWhenDragStarts() && !controller->IsSelecting()) {
+  if (ShouldOpenOverviewWhenDragStarts() && !controller->InOverviewSession()) {
     OverviewButtonTray* overview_button_tray =
         RootWindowController::ForWindow(dragged_window_)
             ->GetStatusAreaWidget()
@@ -158,7 +158,7 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
         OverviewSession::EnterExitOverviewType::kWindowDragged);
   }
 
-  if (controller->IsSelecting()) {
+  if (controller->InOverviewSession()) {
     // Only do animation if overview was open before the drag started. If the
     // overview is opened because of the window drag, do not do animation.
     GetOverviewSession()->OnWindowDragStarted(dragged_window_,
@@ -193,7 +193,7 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
     if (was_splitview_active)
       tablet_mode_controller->increment_app_window_drag_in_splitview_count();
   }
-  if (controller->IsSelecting()) {
+  if (controller->InOverviewSession()) {
     UMA_HISTOGRAM_COUNTS_100(
         "Tablet.WindowDrag.OpenedWindowsNumber",
         shell->mru_window_tracker()->BuildMruWindowList().size());
@@ -296,7 +296,7 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
 
 void TabletModeWindowDragDelegate::FlingOrSwipe(ui::GestureEvent* event) {
   if (ShouldFlingIntoOverview(event)) {
-    DCHECK(Shell::Get()->overview_controller()->IsSelecting());
+    DCHECK(Shell::Get()->overview_controller()->InOverviewSession());
     Shell::Get()->overview_controller()->overview_session()->AddItem(
         dragged_window_, /*reposition=*/true, /*animate=*/false);
   }
@@ -394,7 +394,7 @@ SplitViewController::SnapPosition TabletModeWindowDragDelegate::GetSnapPosition(
 
 void TabletModeWindowDragDelegate::UpdateDraggedWindowTransform(
     const gfx::Point& location_in_screen) {
-  DCHECK(Shell::Get()->overview_controller()->IsSelecting());
+  DCHECK(Shell::Get()->overview_controller()->InOverviewSession());
 
   // Calculate the desired scale along the y-axis. The scale of the window
   // during drag is based on the distance from |y_location_in_screen| to the y
@@ -456,7 +456,7 @@ bool TabletModeWindowDragDelegate::ShouldFlingIntoOverview(
   // overview is not opened when drag starts (if it's tab-dragging and the
   // dragged window is not the same with the source window), we should not fling
   // the dragged window into overview in this case.
-  if (!Shell::Get()->overview_controller()->IsSelecting())
+  if (!Shell::Get()->overview_controller()->InOverviewSession())
     return false;
 
   const gfx::Point location_in_screen = GetEventLocationInScreen(event);

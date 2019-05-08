@@ -40,8 +40,8 @@ namespace {
 // active before cancelling it.
 bool CancelOverview() {
   OverviewController* controller = Shell::Get()->overview_controller();
-  if (controller->IsSelecting()) {
-    controller->OnSelectionEnded();
+  if (controller->InOverviewSession()) {
+    controller->EndOverview();
     return true;
   }
   return false;
@@ -355,7 +355,7 @@ void TabletModeWindowManager::OnActiveUserSessionChanged(
   // snapped to one side but no window snapped to the other side.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   SplitViewController::State state = split_view_controller->state();
-  if (overview_controller->IsSelecting() !=
+  if (overview_controller->InOverviewSession() !=
       (state == SplitViewController::LEFT_SNAPPED ||
        state == SplitViewController::RIGHT_SNAPPED)) {
     overview_controller->ToggleOverview();

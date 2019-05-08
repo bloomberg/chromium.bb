@@ -572,7 +572,7 @@ void DockedMagnifierController::OnEnabledPrefChanged() {
   // below. https://crbug.com/894256.
   Shell* shell = Shell::Get();
   auto* overview_controller = shell->overview_controller();
-  if (overview_controller->IsSelecting()) {
+  if (overview_controller->InOverviewSession()) {
     auto* split_view_controller = shell->split_view_controller();
     if (split_view_controller->InSplitViewMode()) {
       // In this case, we're in a single-split-view mode, i.e. a window is

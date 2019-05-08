@@ -84,7 +84,7 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   // Skip if the second tap happened outside of overview. This can happen if a
   // window gets activated in between, which cancels overview mode.
-  if (overview_controller->IsSelecting() && last_press_event_time_ &&
+  if (overview_controller->InOverviewSession() && last_press_event_time_ &&
       event.time_stamp() - last_press_event_time_.value() <
           kDoubleTapThresholdMs) {
     base::RecordAction(base::UserMetricsAction("Tablet_QuickSwitch"));
@@ -127,9 +127,10 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
 
   // If not in overview mode record the time of this tap. A subsequent tap will
   // be checked against this to see if we should quick switch.
-  last_press_event_time_ = Shell::Get()->overview_controller()->IsSelecting()
-                               ? base::nullopt
-                               : base::make_optional(event.time_stamp());
+  last_press_event_time_ =
+      Shell::Get()->overview_controller()->InOverviewSession()
+          ? base::nullopt
+          : base::make_optional(event.time_stamp());
 
   OverviewController* controller = Shell::Get()->overview_controller();
   // Note: Toggling overview mode will fail if there is no window to show, the

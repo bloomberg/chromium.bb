@@ -638,8 +638,8 @@ class CanSwitchUserTest : public AshTestBase {
   bool ToggleOverview() {
     return Shell::Get()->overview_controller()->ToggleOverview();
   }
-  bool IsSelecting() const {
-    return Shell::Get()->overview_controller()->IsSelecting();
+  bool InOverviewSession() const {
+    return Shell::Get()->overview_controller()->InOverviewSession();
   }
 
   // Various counter accessors.
@@ -794,9 +794,9 @@ TEST_F(CanSwitchUserTest, OverviewModeDismissed) {
   gfx::Rect bounds(0, 0, 100, 100);
   std::unique_ptr<aura::Window> w(CreateTestWindowInShellWithBounds(bounds));
   ASSERT_TRUE(ToggleOverview());
-  ASSERT_TRUE(IsSelecting());
+  ASSERT_TRUE(InOverviewSession());
   SwitchUser(CanSwitchUserTest::NO_DIALOG);
-  ASSERT_FALSE(IsSelecting());
+  ASSERT_FALSE(InOverviewSession());
   EXPECT_EQ(1, switch_callback_hit_count());
 }
 

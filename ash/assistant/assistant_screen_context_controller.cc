@@ -172,7 +172,7 @@ void AssistantScreenContextController::RequestScreenshot(
         callback) {
   // http://crbug.com/941276
   // We need to avoid requesting screenshot in known situations that will break.
-  if (Shell::Get()->overview_controller()->IsSelecting() ||
+  if (Shell::Get()->overview_controller()->InOverviewSession() ||
       Shell::Get()->overview_controller()->IsCompletingShutdownAnimations()) {
     std::move(callback).Run(std::vector<uint8_t>());
     return;

@@ -1316,17 +1316,17 @@ TEST_F(TabletModeWindowManagerTest, ExitsOverview) {
 
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   ASSERT_TRUE(overview_controller->ToggleOverview());
-  ASSERT_TRUE(overview_controller->IsSelecting());
+  ASSERT_TRUE(overview_controller->InOverviewSession());
   TabletModeWindowManager* manager = CreateTabletModeWindowManager();
   ASSERT_TRUE(manager);
-  EXPECT_FALSE(overview_controller->IsSelecting());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
 
   ASSERT_TRUE(overview_controller->ToggleOverview());
-  ASSERT_TRUE(overview_controller->IsSelecting());
+  ASSERT_TRUE(overview_controller->InOverviewSession());
   // Destroy the manager again and check that the windows return to their
   // previous state.
   DestroyTabletModeWindowManager();
-  EXPECT_FALSE(overview_controller->IsSelecting());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
 }
 
 // Test that an edge swipe from the top will end full screen mode.

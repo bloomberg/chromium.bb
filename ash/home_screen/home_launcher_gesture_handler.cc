@@ -499,7 +499,7 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
   const bool is_final_state_show = IsFinalStateShow();
   NotifyHomeLauncherAnimationComplete(is_final_state_show /*shown*/,
                                       display_.id());
-  if (Shell::Get()->overview_controller()->IsSelecting()) {
+  if (Shell::Get()->overview_controller()->InOverviewSession()) {
     if (overview_active_on_gesture_start_ && is_final_state_show) {
       // Exit overview if event is released on the top half. This will also
       // end splitview if it is active as SplitViewController observes
@@ -624,7 +624,7 @@ void HomeLauncherGestureHandler::UpdateWindows(double progress, bool animate) {
   // observe the animation of a window in overview.
   OverviewController* controller = Shell::Get()->overview_controller();
   std::unique_ptr<ui::ScopedLayerAnimationSettings> overview_settings;
-  if (overview_active_on_gesture_start_ && controller->IsSelecting()) {
+  if (overview_active_on_gesture_start_ && controller->InOverviewSession()) {
     DCHECK_EQ(mode_, Mode::kSlideUpToShow);
     const int inverted_y_position = gfx::Tween::IntValueBetween(
         progress, work_area.y(), work_area.bottom());
@@ -735,7 +735,7 @@ bool HomeLauncherGestureHandler::IsAnimating() {
     return true;
 
   if (overview_active_on_gesture_start_ &&
-      Shell::Get()->overview_controller()->IsSelecting() &&
+      Shell::Get()->overview_controller()->InOverviewSession() &&
       (Shell::Get()->overview_controller()->IsInStartAnimation() ||
        animating_to_close_overview_)) {
     return true;
@@ -770,7 +770,7 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
   overview_active_on_gesture_start_ =
-      Shell::Get()->overview_controller()->IsSelecting();
+      Shell::Get()->overview_controller()->InOverviewSession();
   const bool split_view_active = split_view_controller->InSplitViewMode();
   auto windows = Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
   if (window && (mode != Mode::kSlideDownToHide ||

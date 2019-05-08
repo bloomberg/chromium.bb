@@ -1229,14 +1229,14 @@ TEST_F(ClientControlledShellSurfaceDragTest, DragWindowFromTopInTabletMode) {
   // again.
   SendGestureEvents(window, gfx::Point(0, 10));
   EXPECT_TRUE(ash::wm::GetWindowState(window)->IsMaximized());
-  EXPECT_FALSE(shell->overview_controller()->IsSelecting());
+  EXPECT_FALSE(shell->overview_controller()->InOverviewSession());
 
   // FLING the window not inisde preview area with large enough y veloicty
   // (larger than kFlingToOverviewThreshold) will drop the window into overview.
   SendGestureEvents(
       window, gfx::Point(400, 10), /*fling=*/true,
       ash::TabletModeWindowDragDelegate::kFlingToOverviewThreshold + 10.f);
-  ASSERT_TRUE(shell->overview_controller()->IsSelecting());
+  ASSERT_TRUE(shell->overview_controller()->InOverviewSession());
   EXPECT_TRUE(
       shell->overview_controller()->overview_session()->IsWindowInOverview(
           window));

@@ -94,7 +94,7 @@ SkColor GetWallpaperDarkenColor() {
           ->tablet_mode_controller()
           ->IsTabletModeWindowManagerEnabled()) {
     alpha = kTabletModeWallpaperAlpha;
-  } else if (Shell::Get()->overview_controller()->IsSelecting()) {
+  } else if (Shell::Get()->overview_controller()->InOverviewSession()) {
     // Overview mode will apply its own brightness filter on a downscaled image,
     // so color with full opacity here.
     alpha = 255;
@@ -129,7 +129,7 @@ class PreEventDispatchHandler : public ui::EventHandler {
   void HandleClickOrTap(ui::Event* event) {
     CHECK_EQ(ui::EP_PRETARGET, event->phase());
     OverviewController* controller = Shell::Get()->overview_controller();
-    if (!controller->IsSelecting())
+    if (!controller->InOverviewSession())
       return;
     // Events that happen while app list is sliding out during overview should
     // be ignored to prevent overview from disappearing out from under the user.

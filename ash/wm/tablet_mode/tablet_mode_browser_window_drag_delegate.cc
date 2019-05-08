@@ -128,7 +128,7 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
     source_window->SetProperty(kBackdropWindowMode,
                                BackdropWindowMode::kDisabled);
 
-    DCHECK(!Shell::Get()->overview_controller()->IsSelecting());
+    DCHECK(!Shell::Get()->overview_controller()->InOverviewSession());
 
     aura::Window* root_window = dragged_window->GetRootWindow();
     std::vector<aura::Window*> windows =
@@ -176,7 +176,7 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
       }
     }
 
-    DCHECK(!Shell::Get()->overview_controller()->IsSelecting());
+    DCHECK(!Shell::Get()->overview_controller()->InOverviewSession());
 
     // May reshow the home launcher after dragging.
     Shell::Get()->home_screen_controller()->OnWindowDragEnded();

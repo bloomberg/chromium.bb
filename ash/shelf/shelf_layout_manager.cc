@@ -535,7 +535,7 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
   }
 
   if (Shell::Get()->overview_controller() &&
-      Shell::Get()->overview_controller()->IsSelecting()) {
+      Shell::Get()->overview_controller()->InOverviewSession()) {
     return SHELF_BACKGROUND_OVERVIEW;
   }
 
@@ -979,7 +979,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     // movement on async preference initialization in tests: crbug.com/834369
     display_ = display::Screen::GetScreen()->GetDisplayNearestWindow(
         shelf_widget_->GetNativeWindow());
-    bool in_overview = Shell::Get()->overview_controller()->IsSelecting();
+    bool in_overview = Shell::Get()->overview_controller()->InOverviewSession();
     if (!in_overview && !state_.IsScreenLocked() &&
         (shelf_->alignment() != SHELF_ALIGNMENT_BOTTOM_LOCKED ||
          display_.work_area() == display_.bounds())) {
@@ -1273,7 +1273,7 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
 
   // Do not hide the shelf if overview mode is active.
   if (Shell::Get()->overview_controller() &&
-      Shell::Get()->overview_controller()->IsSelecting()) {
+      Shell::Get()->overview_controller()->InOverviewSession()) {
     return SHELF_AUTO_HIDE_SHOWN;
   }
 
@@ -1421,7 +1421,7 @@ bool ShelfLayoutManager::IsHomeScreenShown() const {
   if (!IsHomeScreenAvailable())
     return false;
 
-  return !Shell::Get()->overview_controller()->IsSelecting() &&
+  return !Shell::Get()->overview_controller()->InOverviewSession() &&
          !HasVisibleWindow();
 }
 

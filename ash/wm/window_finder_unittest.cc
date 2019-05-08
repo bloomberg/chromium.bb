@@ -83,7 +83,7 @@ TEST_F(WindowFinderTest, TopmostWindowWithOverviewActive) {
 
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   overview_controller->ToggleOverview();
-  EXPECT_TRUE(overview_controller->IsSelecting());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
 
   // Get |window1| and |window2|'s transformed bounds in overview.
   OverviewGrid* grid =

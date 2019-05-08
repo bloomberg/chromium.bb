@@ -236,7 +236,7 @@ void ShellTestApi::ToggleOverviewMode(ToggleOverviewModeCallback cb) {
 }
 
 void ShellTestApi::IsOverviewSelecting(IsOverviewSelectingCallback callback) {
-  std::move(callback).Run(shell_->overview_controller()->IsSelecting());
+  std::move(callback).Run(shell_->overview_controller()->InOverviewSession());
 }
 
 void ShellTestApi::AddRemoveDisplay() {
@@ -273,14 +273,14 @@ void ShellTestApi::WaitForOverviewAnimationState(
     WaitForOverviewAnimationStateCallback callback) {
   auto* overview_controller = Shell::Get()->overview_controller();
   if (state == mojom::OverviewAnimationState::kEnterAnimationComplete &&
-      overview_controller->IsSelecting() &&
+      overview_controller->InOverviewSession() &&
       !overview_controller->IsInStartAnimation()) {
     // If there is no animation applied, call the callback immediately.
     std::move(callback).Run();
     return;
   }
   if (state == mojom::OverviewAnimationState::kExitAnimationComplete &&
-      !overview_controller->IsSelecting() &&
+      !overview_controller->InOverviewSession() &&
       !overview_controller->IsCompletingShutdownAnimations()) {
     // If there is no animation applied, call the callback immediately.
     std::move(callback).Run();

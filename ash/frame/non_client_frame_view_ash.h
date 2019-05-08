@@ -156,7 +156,7 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
   // Track whether the device is in overview mode. Set this to true when
   // overview mode started and false when overview mode finished. Use this to
   // check whether we should paint when splitview state changes instead of
-  // Shell::Get()->overview_controller()->IsSelecting() because the
+  // Shell::Get()->overview_controller()->InOverviewSession() because the
   // later actually may be still be false after overview mode has started.
   bool in_overview_ = false;
 

@@ -125,7 +125,7 @@ void BackdropController::UpdateBackdrop() {
   // No need to continue update for recursive calls or in overview mode.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   if (pause_update_ ||
-      (overview_controller && overview_controller->IsSelecting())) {
+      (overview_controller && overview_controller->InOverviewSession())) {
     return;
   }
 

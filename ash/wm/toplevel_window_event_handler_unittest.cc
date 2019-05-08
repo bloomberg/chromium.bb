@@ -1188,7 +1188,7 @@ TEST_F(ToplevelWindowEventHandlerDragTest,
   EXPECT_TRUE(wm::GetWindowState(dragged_window_.get())->is_dragged());
 
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  EXPECT_TRUE(overview_controller->IsSelecting());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_TRUE(overview_controller->overview_session()->IsWindowInOverview(
       non_dragged_window_.get()));
 
@@ -1202,7 +1202,7 @@ TEST_F(ToplevelWindowEventHandlerDragTest,
 
   // Overview mode is no longer active and |non_dragged_window_| is not in the
   // overview grid after tapping it in overview grid.
-  EXPECT_FALSE(overview_controller->IsSelecting());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_FALSE(overview_controller->overview_session());
 }
 
@@ -1221,7 +1221,7 @@ TEST_F(ToplevelWindowEventHandlerDragTest,
   EXPECT_TRUE(wm::GetWindowState(dragged_window_.get())->is_dragged());
 
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  EXPECT_TRUE(overview_controller->IsSelecting());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_TRUE(overview_controller->overview_session()->IsWindowInOverview(
       non_dragged_window_.get()));
 }
@@ -1241,7 +1241,7 @@ TEST_F(ToplevelWindowEventHandlerDragTest,
   EXPECT_FALSE(wm::GetWindowState(dragged_window_.get())->is_dragged());
 
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  EXPECT_FALSE(overview_controller->IsSelecting());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
 }
 
 // Tests that the window drag will be reverted if the screen is being rotated.
@@ -1270,7 +1270,7 @@ TEST_F(ToplevelWindowEventHandlerDragTest, DisplayConfigurationChangeTest) {
   EXPECT_TRUE(wm::GetWindowState(dragged_window_.get())->is_dragged());
 
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  EXPECT_TRUE(overview_controller->IsSelecting());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_TRUE(overview_controller->overview_session()->IsWindowInOverview(
       non_dragged_window_.get()));
 
@@ -1280,7 +1280,7 @@ TEST_F(ToplevelWindowEventHandlerDragTest, DisplayConfigurationChangeTest) {
   EXPECT_EQ(test_api.GetCurrentOrientation(),
             OrientationLockType::kPortraitPrimary);
   EXPECT_TRUE(wm::GetWindowState(dragged_window_.get())->IsMaximized());
-  EXPECT_FALSE(overview_controller->IsSelecting());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_FALSE(wm::GetWindowState(dragged_window_.get())->is_dragged());
 }
 

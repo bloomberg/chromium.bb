@@ -96,7 +96,7 @@ aura::Window* GetToplevelWindowInOverviewAtPoint(
     const std::set<aura::Window*>& ignore) {
   ash::OverviewController* overview_controller =
       ash::Shell::Get()->overview_controller();
-  if (!overview_controller->IsSelecting())
+  if (!overview_controller->InOverviewSession())
     return nullptr;
 
   ash::OverviewGrid* grid =

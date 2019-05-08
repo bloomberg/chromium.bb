@@ -84,7 +84,7 @@ bool HomeScreenController::GoHome(int64_t display_id) {
     return true;
   }
 
-  if (Shell::Get()->overview_controller()->IsSelecting()) {
+  if (Shell::Get()->overview_controller()->InOverviewSession()) {
     // End overview mode.
     Shell::Get()->overview_controller()->ToggleOverview(
         OverviewSession::EnterExitOverviewType::kWindowsMinimized);
@@ -167,7 +167,8 @@ void HomeScreenController::UpdateVisibility() {
   if (!window)
     return;
 
-  const bool in_overview = Shell::Get()->overview_controller()->IsSelecting();
+  const bool in_overview =
+      Shell::Get()->overview_controller()->InOverviewSession();
   if (in_overview || in_wallpaper_preview_ || in_window_dragging_)
     window->Hide();
   else

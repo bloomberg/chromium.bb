@@ -31,9 +31,9 @@ bool WmShadowControllerDelegate::ShouldShowShadowForWindow(
 
   // Hide the shadow while we are in overview mode.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  if (overview_controller && overview_controller->IsSelecting()) {
+  if (overview_controller && overview_controller->InOverviewSession()) {
     OverviewSession* overview_session = overview_controller->overview_session();
-    // IsSelecting() being true implies |overview_session| exists.
+    // InOverviewSession() being true implies |overview_session| exists.
     DCHECK(overview_session);
     if (overview_session->IsWindowInOverview(window))
       return false;

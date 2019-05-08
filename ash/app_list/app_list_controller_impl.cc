@@ -1114,7 +1114,7 @@ bool AppListControllerImpl::CanProcessEventsOnApplistViews() {
   // will be ended after the app is opened.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   auto* split_view_controller = Shell::Get()->split_view_controller();
-  if ((overview_controller->IsSelecting() &&
+  if ((overview_controller->InOverviewSession() &&
        !split_view_controller->InClamshellSplitViewMode()) ||
       overview_controller->IsCompletingShutdownAnimations()) {
     return false;

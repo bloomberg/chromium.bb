@@ -15,8 +15,7 @@ class DelayedAnimationObserver;
 // Implement this class to handle the selection event from OverviewSession.
 class ASH_EXPORT OverviewDelegate {
  public:
-  // Invoked if selection is ended.
-  virtual void OnSelectionEnded() = 0;
+  virtual void EndOverview() = 0;
 
   // Passes ownership of |animation_observer| to |this| delegate.
   virtual void AddExitAnimationObserver(

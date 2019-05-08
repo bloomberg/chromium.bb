@@ -32,19 +32,16 @@ class TestOverviewDelegate : public OverviewDelegate {
   }
 
   // OverviewDelegate:
-  void OnSelectionEnded() override {}
-
+  void EndOverview() override {}
   void AddExitAnimationObserver(
       std::unique_ptr<DelayedAnimationObserver> animation_observer) override {
     animation_observer->SetOwner(this);
     observers_.push_back(std::move(animation_observer));
   }
-
   void RemoveAndDestroyExitAnimationObserver(
       DelayedAnimationObserver* animation_observer) override {
     base::EraseIf(observers_, base::MatchesUniquePtr(animation_observer));
   }
-
   void AddEnterAnimationObserver(
       std::unique_ptr<DelayedAnimationObserver> animation_observer) override {}
   void RemoveAndDestroyEnterAnimationObserver(

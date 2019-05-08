@@ -305,7 +305,7 @@ TEST_F(KioskNextHomeButtonTest, TapToGoHome) {
   // Enter Overview mode.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   ASSERT_TRUE(overview_controller->ToggleOverview());
-  ASSERT_TRUE(overview_controller->IsSelecting());
+  ASSERT_TRUE(overview_controller->InOverviewSession());
   test_api.RunMessageLoopUntilAnimationsDone();
 
   // Tapping the home button should exit Overview mode.
@@ -313,7 +313,7 @@ TEST_F(KioskNextHomeButtonTest, TapToGoHome) {
   views::View::ConvertPointToScreen(app_list_button(), &center);
   GetEventGenerator()->GestureTapDownAndUp(center);
   test_api.RunMessageLoopUntilAnimationsDone();
-  EXPECT_FALSE(overview_controller->IsSelecting());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
 
   // TODO(michaelpg): Create a Home Screen aura::Window* and verify its state.
 }

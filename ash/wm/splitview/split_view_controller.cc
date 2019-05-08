@@ -154,7 +154,7 @@ bool IsSnapped(aura::Window* window) {
 // Returns the overview session if overview mode is active, otherwise returns
 // nullptr.
 OverviewSession* GetOverviewSession() {
-  return Shell::Get()->overview_controller()->IsSelecting()
+  return Shell::Get()->overview_controller()->InOverviewSession()
              ? Shell::Get()->overview_controller()->overview_session()
              : nullptr;
 }
@@ -1413,7 +1413,7 @@ void SplitViewController::EndSplitViewAfterResizingIfAppropriate() {
   // Track the window that needs to be put back into the overview list if we
   // remain in overview mode.
   aura::Window* insert_overview_window = nullptr;
-  if (Shell::Get()->overview_controller()->IsSelecting())
+  if (Shell::Get()->overview_controller()->InOverviewSession())
     insert_overview_window = GetDefaultSnappedWindow();
   EndSplitView();
   if (active_window) {
@@ -1757,7 +1757,7 @@ void SplitViewController::SetTransformWithAnimation(
 
 void SplitViewController::RemoveWindowFromOverviewIfApplicable(
     aura::Window* window) {
-  if (!Shell::Get()->overview_controller()->IsSelecting())
+  if (!Shell::Get()->overview_controller()->InOverviewSession())
     return;
 
   OverviewSession* overview_session = GetOverviewSession();
@@ -1794,7 +1794,7 @@ void SplitViewController::InsertWindowToOverview(aura::Window* window,
 }
 
 void SplitViewController::StartOverview(bool window_drag) {
-  if (!Shell::Get()->overview_controller()->IsSelecting()) {
+  if (!Shell::Get()->overview_controller()->InOverviewSession()) {
     Shell::Get()->overview_controller()->ToggleOverview(
         window_drag ? OverviewSession::EnterExitOverviewType::kWindowDragged
                     : OverviewSession::EnterExitOverviewType::kNormal);
@@ -1802,7 +1802,7 @@ void SplitViewController::StartOverview(bool window_drag) {
 }
 
 void SplitViewController::EndOverview() {
-  if (Shell::Get()->overview_controller()->IsSelecting())
+  if (Shell::Get()->overview_controller()->InOverviewSession())
     Shell::Get()->overview_controller()->ToggleOverview();
 }
 

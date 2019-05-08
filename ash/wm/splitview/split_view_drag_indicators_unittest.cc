@@ -48,7 +48,7 @@ class SplitViewDragIndicatorsTest : public AshTestBase {
   void ToggleOverview() {
     auto* overview_controller = Shell::Get()->overview_controller();
     overview_controller->ToggleOverview();
-    if (!overview_controller->IsSelecting()) {
+    if (!overview_controller->InOverviewSession()) {
       overview_session_ = nullptr;
       split_view_drag_indicators_ = nullptr;
       return;
@@ -167,7 +167,7 @@ TEST_F(SplitViewDragIndicatorsTest, Dragging) {
   // Verify if the drag is started in the left snap region, the drag needs to
   // move by |drag_offset_snap_region| towards the right side of the screen
   // before split view acknowledges the drag (shows the preview area).
-  ASSERT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
   generator->set_current_screen_location(
       gfx::Point(left_item->target_bounds().origin().x() + item_inset,
                  left_item->target_bounds().CenterPoint().y()));
@@ -196,7 +196,7 @@ TEST_F(SplitViewDragIndicatorsTest, Dragging) {
   // Verify if the drag is started in the right snap region, the drag needs to
   // move by |drag_offset_snap_region| towards the left side of the screen
   // before split view acknowledges the drag.
-  ASSERT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
   generator->set_current_screen_location(
       gfx::Point(right_item->target_bounds().right() - item_inset,
                  right_item->target_bounds().CenterPoint().y()));
@@ -422,7 +422,7 @@ TEST_F(SplitViewDragIndicatorsTest, SplitViewDragIndicatorsWidgetReparenting) {
                           gfx::PointF(primary_screen_bounds.CenterPoint()));
   overview_session_->CompleteDrag(
       item, gfx::PointF(primary_screen_bounds.CenterPoint()));
-  ASSERT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
   ASSERT_FALSE(split_view_controller()->InSplitViewMode());
 
   // Select an item on the secondary display and verify the indicators widget

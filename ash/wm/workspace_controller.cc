@@ -73,7 +73,7 @@ wm::WorkspaceWindowState WorkspaceController::GetWindowState() const {
   // the same regardles of the window we have.
   // The |overview_controller| can be null during shutdown.
   if (Shell::Get()->overview_controller() &&
-      Shell::Get()->overview_controller()->IsSelecting()) {
+      Shell::Get()->overview_controller()->InOverviewSession()) {
     return wm::WORKSPACE_WINDOW_STATE_DEFAULT;
   }
 

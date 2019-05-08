@@ -37,7 +37,7 @@ bool OverviewGestureHandler::ProcessScrollEvent(const ui::ScrollEvent& event) {
 
   // Horizontal 3-finger scroll moves selection when already in overview mode.
   if (std::fabs(scroll_x_) >= std::fabs(scroll_y_)) {
-    if (!overview_controller->IsSelecting()) {
+    if (!overview_controller->InOverviewSession()) {
       scroll_x_ = scroll_y_ = 0;
       return false;
     }
@@ -51,7 +51,7 @@ bool OverviewGestureHandler::ProcessScrollEvent(const ui::ScrollEvent& event) {
   }
 
   // Use vertical 3-finger scroll gesture up to enter overview, down to exit.
-  if (overview_controller->IsSelecting()) {
+  if (overview_controller->InOverviewSession()) {
     if (scroll_y_ < 0)
       scroll_x_ = scroll_y_ = 0;
     if (scroll_y_ < vertical_threshold_pixels_)
@@ -66,7 +66,7 @@ bool OverviewGestureHandler::ProcessScrollEvent(const ui::ScrollEvent& event) {
   // Reset scroll amount on toggling.
   scroll_x_ = scroll_y_ = 0;
   base::RecordAction(base::UserMetricsAction("Touchpad_Gesture_Overview"));
-  if (overview_controller->IsSelecting() &&
+  if (overview_controller->InOverviewSession() &&
       overview_controller->AcceptSelection()) {
     return true;
   }
