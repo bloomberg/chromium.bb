@@ -681,18 +681,18 @@ class SaveCardBubbleViewsFullFormBrowserTest
       return nullptr;
 
     SaveCardIconView* icon_view = nullptr;
+    BrowserView* browser_view =
+        BrowserView::GetBrowserViewForBrowser(browser());
     if (base::FeatureList::IsEnabled(
             features::kAutofillEnableToolbarStatusChip)) {
       ToolbarPageActionIconContainerView*
           toolbar_page_action_icon_container_view =
-              static_cast<ToolbarPageActionIconContainerView*>(
-                  browser()->window()->GetToolbarPageActionIconContainer());
+              browser_view->toolbar()->toolbar_page_action_container();
       DCHECK(toolbar_page_action_icon_container_view->save_card_icon_view());
       icon_view =
           toolbar_page_action_icon_container_view->save_card_icon_view();
     } else {
-      LocationBarView* location_bar_view =
-          static_cast<LocationBarView*>(browser()->window()->GetLocationBar());
+      LocationBarView* location_bar_view = browser_view->GetLocationBarView();
       DCHECK(location_bar_view->save_credit_card_icon_view());
       icon_view = location_bar_view->save_credit_card_icon_view();
     }
