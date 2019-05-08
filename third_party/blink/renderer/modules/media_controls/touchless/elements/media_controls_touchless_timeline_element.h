@@ -17,6 +17,7 @@ class MediaControlsTouchlessTimelineElement
 
   // MediaControlsTouchlessMediaEventListenerObserver overrides
   void OnTimeUpdate() override;
+  void OnSeeking() override;
   void OnDurationChange() override;
   void OnLoadingProgress() override;
 

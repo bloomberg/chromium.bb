@@ -56,6 +56,7 @@ class MODULES_EXPORT MediaControlsTouchlessImpl final
   void OnFocusIn() override;
   void OnTimeUpdate() override {}
   void OnDurationChange() override {}
+  void OnSeeking() override {}
   void OnLoadingProgress() override {}
   void OnPlay() override;
   void OnPause() override;

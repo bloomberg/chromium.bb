@@ -18,6 +18,7 @@ class MediaControlsTouchlessTimeDisplayElement
 
   // MediaControlsTouchlessMediaEventListenerObserver overrides
   void OnTimeUpdate() override;
+  void OnSeeking() override;
   void OnDurationChange() override;
 
   void Trace(blink::Visitor* visitor) override;

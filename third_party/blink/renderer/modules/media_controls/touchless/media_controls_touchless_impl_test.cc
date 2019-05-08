@@ -283,6 +283,14 @@ TEST_F(MediaControlsTouchlessImplTest, ProgressBar) {
   EXPECT_DOUBLE_EQ(buffered / duration, loaded_bar_width / timeline_width);
   EXPECT_DOUBLE_EQ(current_time / buffered,
                    progress_bar_width / loaded_bar_width);
+
+  // Seek event should trigger a UI update as well.
+  SetBufferedRange(0);
+  MediaElement().setCurrentTime(0);
+  MediaElement().DispatchEvent(*Event::Create(event_type_names::kSeeking));
+
+  EXPECT_DOUBLE_EQ(progress_bar->getBoundingClientRect()->width(), 0);
+  EXPECT_DOUBLE_EQ(loaded_bar->getBoundingClientRect()->width(), 0);
 }
 
 TEST_F(MediaControlsTouchlessImplTest, TimeDisplay) {

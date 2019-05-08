@@ -27,6 +27,11 @@ void MediaControlsTouchlessTimeDisplayElement::OnTimeUpdate() {
   UpdateTimeDisplay();
 }
 
+void MediaControlsTouchlessTimeDisplayElement::OnSeeking() {
+  current_time_ = MediaElement().currentTime();
+  UpdateTimeDisplay();
+}
+
 void MediaControlsTouchlessTimeDisplayElement::OnDurationChange() {
   duration_ = MediaElement().duration();
   UpdateTimeDisplay();
