@@ -86,6 +86,12 @@ cr_slider.SliderTick;
         reflectToAttribute: true,
       },
 
+      updatingFromKey: {
+        type: Boolean,
+        value: false,
+        notify: true,
+      },
+
       markerCount: {
         type: Number,
         value: 0,
@@ -181,6 +187,7 @@ cr_slider.SliderTick;
       focus: 'onFocus_',
       blur: 'onBlur_',
       keydown: 'onKeyDown_',
+      keyup: 'onKeyUp_',
       pointerdown: 'onPointerDown_',
     },
 
@@ -314,6 +321,7 @@ cr_slider.SliderTick;
         return;
       }
 
+      this.updatingFromKey = true;
       if (this.updateValue_(newValue)) {
         this.fire('cr-slider-value-changed');
       }
@@ -322,6 +330,19 @@ cr_slider.SliderTick;
       setTimeout(() => {
         this.holdDown_ = true;
       });
+    },
+
+    /**
+     * @param {!Event} event
+     * @private
+     */
+    onKeyUp_: function(event) {
+      if (event.key == 'Home' || event.key == 'End' ||
+          this.deltaKeyMap_.has(event.key)) {
+        setTimeout(() => {
+          this.updatingFromKey = false;
+        });
+      }
     },
 
     /**
@@ -379,7 +400,8 @@ cr_slider.SliderTick;
       this.draggingEventTracker_.add(this, 'pointerdown', stopDragging);
       this.draggingEventTracker_.add(this, 'pointerup', stopDragging);
       this.draggingEventTracker_.add(this, 'keydown', e => {
-        if (e.key == 'Escape' || e.key == 'Tab') {
+        if (e.key == 'Escape' || e.key == 'Tab' || e.key == 'Home' ||
+            e.key == 'End' || this.deltaKeyMap_.has(e.key)) {
           stopDragging();
         }
       });

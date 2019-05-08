@@ -585,130 +585,125 @@ cr.define('device_page_tests', function() {
       });
     });
 
-    test(assert(TestNames.Keyboard), function() {
+    test(assert(TestNames.Keyboard), async () => {
       const name = k => `prefs.settings.language.${k}.value`;
       const get = k => devicePage.get(name(k));
       const set = (k, v) => devicePage.set(name(k), v);
-      let keyboardPage;
       let collapse;
       // Open the keyboard subpage.
-      return showAndGetDeviceSubpage('keyboard', settings.routes.KEYBOARD)
-          .then(function(page) {
-            keyboardPage = page;
-            // Initially, the optional keys are hidden.
-            expectFalse(!!keyboardPage.$$('#capsLockKey'));
+      let keyboardPage =
+          await showAndGetDeviceSubpage('keyboard', settings.routes.KEYBOARD);
+      // Initially, the optional keys are hidden.
+      expectFalse(!!keyboardPage.$$('#capsLockKey'));
 
-            // Pretend no internal keyboard is available.
-            let keyboardParams = {
-              'showCapsLock': false,
-              'showExternalMetaKey': false,
-              'showAppleCommandKey': false,
-              'hasInternalKeyboard': false,
-              'hasAssistantKey': false,
-            };
-            cr.webUIListenerCallback('show-keys-changed', keyboardParams);
-            Polymer.dom.flush();
-            expectFalse(!!keyboardPage.$$('#internalSearchKey'));
-            expectFalse(!!keyboardPage.$$('#capsLockKey'));
-            expectFalse(!!keyboardPage.$$('#externalMetaKey'));
-            expectFalse(!!keyboardPage.$$('#externalCommandKey'));
-            expectFalse(!!keyboardPage.$$('#assistantKey'));
+      // Pretend no internal keyboard is available.
+      let keyboardParams = {
+        'showCapsLock': false,
+        'showExternalMetaKey': false,
+        'showAppleCommandKey': false,
+        'hasInternalKeyboard': false,
+        'hasAssistantKey': false,
+      };
+      cr.webUIListenerCallback('show-keys-changed', keyboardParams);
+      Polymer.dom.flush();
+      expectFalse(!!keyboardPage.$$('#internalSearchKey'));
+      expectFalse(!!keyboardPage.$$('#capsLockKey'));
+      expectFalse(!!keyboardPage.$$('#externalMetaKey'));
+      expectFalse(!!keyboardPage.$$('#externalCommandKey'));
+      expectFalse(!!keyboardPage.$$('#assistantKey'));
 
-            // Pretend a Caps Lock key is now available.
-            keyboardParams['showCapsLock'] = true;
-            cr.webUIListenerCallback('show-keys-changed', keyboardParams);
-            Polymer.dom.flush();
-            expectFalse(!!keyboardPage.$$('#internalSearchKey'));
-            expectTrue(!!keyboardPage.$$('#capsLockKey'));
-            expectFalse(!!keyboardPage.$$('#externalMetaKey'));
-            expectFalse(!!keyboardPage.$$('#externalCommandKey'));
-            expectFalse(!!keyboardPage.$$('#assistantKey'));
+      // Pretend a Caps Lock key is now available.
+      keyboardParams['showCapsLock'] = true;
+      cr.webUIListenerCallback('show-keys-changed', keyboardParams);
+      Polymer.dom.flush();
+      expectFalse(!!keyboardPage.$$('#internalSearchKey'));
+      expectTrue(!!keyboardPage.$$('#capsLockKey'));
+      expectFalse(!!keyboardPage.$$('#externalMetaKey'));
+      expectFalse(!!keyboardPage.$$('#externalCommandKey'));
+      expectFalse(!!keyboardPage.$$('#assistantKey'));
 
-            // Add a non-Apple external keyboard.
-            keyboardParams['showExternalMetaKey'] = true;
-            cr.webUIListenerCallback('show-keys-changed', keyboardParams);
-            Polymer.dom.flush();
-            expectFalse(!!keyboardPage.$$('#internalSearchKey'));
-            expectTrue(!!keyboardPage.$$('#capsLockKey'));
-            expectTrue(!!keyboardPage.$$('#externalMetaKey'));
-            expectFalse(!!keyboardPage.$$('#externalCommandKey'));
-            expectFalse(!!keyboardPage.$$('#assistantKey'));
+      // Add a non-Apple external keyboard.
+      keyboardParams['showExternalMetaKey'] = true;
+      cr.webUIListenerCallback('show-keys-changed', keyboardParams);
+      Polymer.dom.flush();
+      expectFalse(!!keyboardPage.$$('#internalSearchKey'));
+      expectTrue(!!keyboardPage.$$('#capsLockKey'));
+      expectTrue(!!keyboardPage.$$('#externalMetaKey'));
+      expectFalse(!!keyboardPage.$$('#externalCommandKey'));
+      expectFalse(!!keyboardPage.$$('#assistantKey'));
 
-            // Add an Apple keyboard.
-            keyboardParams['showAppleCommandKey'] = true;
-            cr.webUIListenerCallback('show-keys-changed', keyboardParams);
-            Polymer.dom.flush();
-            expectFalse(!!keyboardPage.$$('#internalSearchKey'));
-            expectTrue(!!keyboardPage.$$('#capsLockKey'));
-            expectTrue(!!keyboardPage.$$('#externalMetaKey'));
-            expectTrue(!!keyboardPage.$$('#externalCommandKey'));
-            expectFalse(!!keyboardPage.$$('#assistantKey'));
+      // Add an Apple keyboard.
+      keyboardParams['showAppleCommandKey'] = true;
+      cr.webUIListenerCallback('show-keys-changed', keyboardParams);
+      Polymer.dom.flush();
+      expectFalse(!!keyboardPage.$$('#internalSearchKey'));
+      expectTrue(!!keyboardPage.$$('#capsLockKey'));
+      expectTrue(!!keyboardPage.$$('#externalMetaKey'));
+      expectTrue(!!keyboardPage.$$('#externalCommandKey'));
+      expectFalse(!!keyboardPage.$$('#assistantKey'));
 
-            // Add an internal keyboard.
-            keyboardParams['hasInternalKeyboard'] = true;
-            cr.webUIListenerCallback('show-keys-changed', keyboardParams);
-            Polymer.dom.flush();
-            expectTrue(!!keyboardPage.$$('#internalSearchKey'));
-            expectTrue(!!keyboardPage.$$('#capsLockKey'));
-            expectTrue(!!keyboardPage.$$('#externalMetaKey'));
-            expectTrue(!!keyboardPage.$$('#externalCommandKey'));
-            expectFalse(!!keyboardPage.$$('#assistantKey'));
+      // Add an internal keyboard.
+      keyboardParams['hasInternalKeyboard'] = true;
+      cr.webUIListenerCallback('show-keys-changed', keyboardParams);
+      Polymer.dom.flush();
+      expectTrue(!!keyboardPage.$$('#internalSearchKey'));
+      expectTrue(!!keyboardPage.$$('#capsLockKey'));
+      expectTrue(!!keyboardPage.$$('#externalMetaKey'));
+      expectTrue(!!keyboardPage.$$('#externalCommandKey'));
+      expectFalse(!!keyboardPage.$$('#assistantKey'));
 
-            // Pretend an Assistant key is now available.
-            keyboardParams['hasAssistantKey'] = true;
-            cr.webUIListenerCallback('show-keys-changed', keyboardParams);
-            Polymer.dom.flush();
-            expectTrue(!!keyboardPage.$$('#internalSearchKey'));
-            expectTrue(!!keyboardPage.$$('#capsLockKey'));
-            expectTrue(!!keyboardPage.$$('#externalMetaKey'));
-            expectTrue(!!keyboardPage.$$('#externalCommandKey'));
-            expectTrue(!!keyboardPage.$$('#assistantKey'));
+      // Pretend an Assistant key is now available.
+      keyboardParams['hasAssistantKey'] = true;
+      cr.webUIListenerCallback('show-keys-changed', keyboardParams);
+      Polymer.dom.flush();
+      expectTrue(!!keyboardPage.$$('#internalSearchKey'));
+      expectTrue(!!keyboardPage.$$('#capsLockKey'));
+      expectTrue(!!keyboardPage.$$('#externalMetaKey'));
+      expectTrue(!!keyboardPage.$$('#externalCommandKey'));
+      expectTrue(!!keyboardPage.$$('#assistantKey'));
 
-            collapse = keyboardPage.$$('iron-collapse');
-            assertTrue(!!collapse);
-            expectTrue(collapse.opened);
+      collapse = keyboardPage.$$('iron-collapse');
+      assertTrue(!!collapse);
+      expectTrue(collapse.opened);
 
-            expectEquals(500, keyboardPage.$$('#delaySlider').pref.value);
-            expectEquals(500, keyboardPage.$$('#repeatRateSlider').pref.value);
+      expectEquals(500, keyboardPage.$$('#delaySlider').pref.value);
+      expectEquals(500, keyboardPage.$$('#repeatRateSlider').pref.value);
 
-            // Test interaction with the settings-slider's underlying cr-slider.
-            MockInteractions.pressAndReleaseKeyOn(
-                keyboardPage.$$('#delaySlider').$$('cr-slider'), 37 /* left */,
-                [], 'ArrowLeft');
-            MockInteractions.pressAndReleaseKeyOn(
-                keyboardPage.$$('#repeatRateSlider').$$('cr-slider'), 39, [],
-                'ArrowRight');
-            expectEquals(1000, get('xkb_auto_repeat_delay_r2'));
-            expectEquals(300, get('xkb_auto_repeat_interval_r2'));
+      // Test interaction with the settings-slider's underlying cr-slider.
+      MockInteractions.pressAndReleaseKeyOn(
+          keyboardPage.$$('#delaySlider').$$('cr-slider'), 37 /* left */, [],
+          'ArrowLeft');
+      MockInteractions.pressAndReleaseKeyOn(
+          keyboardPage.$$('#repeatRateSlider').$$('cr-slider'), 39, [],
+          'ArrowRight');
+      expectEquals(1000, get('xkb_auto_repeat_delay_r2'));
+      expectEquals(300, get('xkb_auto_repeat_interval_r2'));
 
-            // Test sliders change when prefs change.
-            set('xkb_auto_repeat_delay_r2', 1500);
-            expectEquals(1500, keyboardPage.$$('#delaySlider').pref.value);
-            set('xkb_auto_repeat_interval_r2', 2000);
-            expectEquals(2000, keyboardPage.$$('#repeatRateSlider').pref.value);
+      // Test sliders change when prefs change.
+      set('xkb_auto_repeat_delay_r2', 1500);
+      await PolymerTest.flushTasks();
+      expectEquals(1500, keyboardPage.$$('#delaySlider').pref.value);
+      set('xkb_auto_repeat_interval_r2', 2000);
+      await PolymerTest.flushTasks();
+      expectEquals(2000, keyboardPage.$$('#repeatRateSlider').pref.value);
 
-            // Test sliders round to nearest value when prefs change.
-            set('xkb_auto_repeat_delay_r2', 600);
-            return PolymerTest.flushTasks();
-          })
-          .then(() => {
-            expectEquals(500, keyboardPage.$$('#delaySlider').pref.value);
-            set('xkb_auto_repeat_interval_r2', 45);
-            return PolymerTest.flushTasks();
-          })
-          .then(() => {
-            expectEquals(50, keyboardPage.$$('#repeatRateSlider').pref.value);
+      // Test sliders round to nearest value when prefs change.
+      set('xkb_auto_repeat_delay_r2', 600);
+      await PolymerTest.flushTasks();
+      expectEquals(500, keyboardPage.$$('#delaySlider').pref.value);
+      set('xkb_auto_repeat_interval_r2', 45);
+      await PolymerTest.flushTasks();
+      expectEquals(50, keyboardPage.$$('#repeatRateSlider').pref.value);
 
-            set('xkb_auto_repeat_enabled_r2', false);
-            expectFalse(collapse.opened);
+      set('xkb_auto_repeat_enabled_r2', false);
+      expectFalse(collapse.opened);
 
-            // Test keyboard shortcut viewer button.
-            keyboardPage.$$('#keyboardShortcutViewer').click();
-            expectEquals(
-                1,
-                settings.DevicePageBrowserProxyImpl.getInstance()
-                    .keyboardShortcutViewerShown_);
-          });
+      // Test keyboard shortcut viewer button.
+      keyboardPage.$$('#keyboardShortcutViewer').click();
+      expectEquals(
+          1,
+          settings.DevicePageBrowserProxyImpl.getInstance()
+              .keyboardShortcutViewerShown_);
     });
 
     test(assert(TestNames.Display), function() {

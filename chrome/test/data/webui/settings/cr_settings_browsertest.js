@@ -82,6 +82,7 @@ CrSettingsSliderTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'test_util.js',
     'settings_slider_tests.js',
   ]),
 };
