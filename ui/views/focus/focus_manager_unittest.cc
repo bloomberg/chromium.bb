@@ -51,15 +51,15 @@ class SimpleTestView : public View {
   SimpleTestView(std::vector<FocusTestEvent>* event_list, int view_id)
       : event_list_(event_list) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
-    set_id(view_id);
+    SetID(view_id);
   }
 
   void OnFocus() override {
-    event_list_->push_back(FocusTestEvent(ON_FOCUS, id()));
+    event_list_->push_back(FocusTestEvent(ON_FOCUS, GetID()));
   }
 
   void OnBlur() override {
-    event_list_->push_back(FocusTestEvent(ON_BLUR, id()));
+    event_list_->push_back(FocusTestEvent(ON_BLUR, GetID()));
   }
 
  private:

@@ -210,7 +210,7 @@ class DigitPinButton : public BasePinButton {
       : BasePinButton(size,
                       GetButtonLabelForNumber(value),
                       base::BindRepeating(on_key, value)) {
-    set_id(GetViewIdForPinNumber(value));
+    SetID(GetViewIdForPinNumber(value));
     const gfx::FontList& base_font_list = views::Label::GetDefaultFontList();
     views::Label* label = new views::Label(GetButtonLabelForNumber(value),
                                            views::style::CONTEXT_BUTTON,

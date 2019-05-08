@@ -197,7 +197,7 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
       friendly_suggestion_text_prefix_length_(0),
       scoped_compositor_observer_(this),
       scoped_template_url_service_observer_(this) {
-  set_id(VIEW_ID_OMNIBOX);
+  SetID(VIEW_ID_OMNIBOX);
   SetFontList(font_list);
 
   if (base::FeatureList::IsEnabled(

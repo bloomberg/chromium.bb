@@ -402,7 +402,7 @@ views::View* NetworkListView::CreateControlledByExtensionView(
   controlled_icon->set_tooltip_text(l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_EXTENSION_CONTROLLED_WIFI,
       base::UTF8ToUTF16(network->captive_portal_provider()->name)));
-  controlled_icon->set_id(VIEW_ID_EXTENSION_CONTROLLED_WIFI);
+  controlled_icon->SetID(VIEW_ID_EXTENSION_CONTROLLED_WIFI);
   return controlled_icon;
 }
 

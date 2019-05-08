@@ -607,7 +607,7 @@ bool MenuController::OnMousePressed(SubmenuView* source,
       SetHotTrackedButton(button);
 
     // Empty menu items are always handled by the menu controller.
-    if (!view || view->id() != MenuItemView::kEmptyMenuItemViewID) {
+    if (!view || view->GetID() != MenuItemView::kEmptyMenuItemViewID) {
       base::WeakPtr<MenuController> this_ref = AsWeakPtr();
       bool processed = forward_to_root->ProcessMousePressed(event_for_root);
       // This object may be destroyed as a result of a mouse press event (some
@@ -712,7 +712,7 @@ void MenuController::OnMouseReleased(SubmenuView* source,
     // |menu| is null means this event is from an empty menu or a separator.
     // If it is from an empty menu, use parent context menu instead of that.
     if (!menu && part.submenu->children().size() == 1 &&
-        part.submenu->children().front()->id() ==
+        part.submenu->children().front()->GetID() ==
             MenuItemView::kEmptyMenuItemViewID) {
       menu = part.parent;
     }
@@ -1053,7 +1053,7 @@ int MenuController::OnPerformDrop(SubmenuView* source,
   SetExitType(ExitType::kAll);
 
   // If over an empty menu item, drop occurs on the parent.
-  if (drop_target->id() == MenuItemView::kEmptyMenuItemViewID)
+  if (drop_target->GetID() == MenuItemView::kEmptyMenuItemViewID)
     drop_target = drop_target->GetParentMenuItem();
 
   if (for_drop_) {
@@ -1754,11 +1754,11 @@ MenuItemView* MenuController::GetMenuItemAt(View* source, int x, int y) {
   // Walk the view hierarchy until we find a menu item (or the root).
   View* child_under_mouse = source->GetEventHandlerForPoint(gfx::Point(x, y));
   while (child_under_mouse &&
-         child_under_mouse->id() != MenuItemView::kMenuItemViewID) {
+         child_under_mouse->GetID() != MenuItemView::kMenuItemViewID) {
     child_under_mouse = child_under_mouse->parent();
   }
   if (child_under_mouse && child_under_mouse->enabled() &&
-      child_under_mouse->id() == MenuItemView::kMenuItemViewID) {
+      child_under_mouse->GetID() == MenuItemView::kMenuItemViewID) {
     return static_cast<MenuItemView*>(child_under_mouse);
   }
   return nullptr;
@@ -1767,7 +1767,7 @@ MenuItemView* MenuController::GetMenuItemAt(View* source, int x, int y) {
 MenuItemView* MenuController::GetEmptyMenuItemAt(View* source, int x, int y) {
   View* child_under_mouse = source->GetEventHandlerForPoint(gfx::Point(x, y));
   if (child_under_mouse &&
-      child_under_mouse->id() == MenuItemView::kEmptyMenuItemViewID) {
+      child_under_mouse->GetID() == MenuItemView::kEmptyMenuItemViewID) {
     return static_cast<MenuItemView*>(child_under_mouse);
   }
   return nullptr;

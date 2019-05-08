@@ -87,7 +87,7 @@ gfx::Size DialogPlate::CalculatePreferredSize() const {
 }
 
 void DialogPlate::ButtonPressed(views::Button* sender, const ui::Event& event) {
-  OnButtonPressed(static_cast<ash::AssistantButtonId>(sender->id()));
+  OnButtonPressed(static_cast<ash::AssistantButtonId>(sender->GetID()));
 }
 
 bool DialogPlate::HandleKeyEvent(views::Textfield* textfield,

@@ -142,7 +142,7 @@ void SuggestionContainerView::OnSuggestionsChanged(
 
     // Given a suggestion chip view, we need to be able to look up the id of
     // the underlying suggestion. This is used for handling press events.
-    suggestion_chip_view->set_id(id);
+    suggestion_chip_view->SetID(id);
 
     // Given an id, we also want to be able to look up the corresponding
     // suggestion chip view. This is used for handling icon download events.
@@ -176,12 +176,12 @@ void SuggestionContainerView::ButtonPressed(views::Button* sender,
   // pressed was a conversation starter.
   if (!has_received_response_) {
     suggestion =
-        delegate_->GetCacheModel()->GetConversationStarterById(sender->id());
+        delegate_->GetCacheModel()->GetConversationStarterById(sender->GetID());
   } else {
     // Otherwise, the suggestion chip belonged to the interaction response.
     suggestion =
         delegate_->GetInteractionModel()->response()->GetSuggestionById(
-            sender->id());
+            sender->GetID());
   }
 
   delegate_->OnSuggestionChipPressed(suggestion);

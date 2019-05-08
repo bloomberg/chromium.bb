@@ -246,7 +246,7 @@ LoginUserMenuView::LoginUserMenuView(
         kRemoveUserInitialColor);
     remove_user_button_ = new RemoveUserButton(this, remove_user_label_, this);
     remove_user_button_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-    remove_user_button_->set_id(kUserMenuRemoveUserButtonIdForTest);
+    remove_user_button_->SetID(kUserMenuRemoveUserButtonIdForTest);
     remove_user_button_->SetAccessibleName(remove_user_label_->text());
     container->AddChildView(remove_user_button_);
   }

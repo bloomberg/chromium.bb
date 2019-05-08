@@ -599,10 +599,10 @@ gfx::Size OpaqueBrowserFrameViewLayout::GetPreferredSize(
 
 void OpaqueBrowserFrameViewLayout::ViewAdded(views::View* host,
                                              views::View* view) {
-  SetView(view->id(), view);
+  SetView(view->GetID(), view);
 }
 
 void OpaqueBrowserFrameViewLayout::ViewRemoved(views::View* host,
                                                views::View* view) {
-  SetView(view->id(), nullptr);
+  SetView(view->GetID(), nullptr);
 }

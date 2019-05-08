@@ -143,7 +143,7 @@ class OpaqueBrowserFrameViewLayoutTest
     gfx::ImageSkiaRep rep(size, 1.0f);
     gfx::ImageSkia image(rep);
     button->SetImage(views::Button::STATE_NORMAL, &image);
-    button->set_id(view_id);
+    button->SetID(view_id);
     root_view_->AddChildView(button);
     return button;
   }
@@ -151,7 +151,7 @@ class OpaqueBrowserFrameViewLayoutTest
   void AddWindowTitleIcons() {
     tab_icon_view_ = new TabIconView(nullptr, nullptr);
     tab_icon_view_->set_is_light(true);
-    tab_icon_view_->set_id(VIEW_ID_WINDOW_ICON);
+    tab_icon_view_->SetID(VIEW_ID_WINDOW_ICON);
     root_view_->AddChildView(tab_icon_view_);
 
     window_title_ = new views::Label(delegate_->GetWindowTitle());
@@ -159,7 +159,7 @@ class OpaqueBrowserFrameViewLayoutTest
     window_title_->SetEnabledColor(SK_ColorWHITE);
     window_title_->SetSubpixelRenderingEnabled(false);
     window_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    window_title_->set_id(VIEW_ID_WINDOW_TITLE);
+    window_title_->SetID(VIEW_ID_WINDOW_TITLE);
     root_view_->AddChildView(window_title_);
   }
 

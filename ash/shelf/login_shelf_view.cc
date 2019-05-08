@@ -407,13 +407,13 @@ LoginShelfView::LoginShelfView(
                            const gfx::VectorIcon& icon) {
     LoginShelfButton* button =
         new LoginShelfButton(this, text_resource_id, icon);
-    button->set_id(id);
+    button->SetID(id);
     AddChildView(button);
   };
   add_button(kShutdown, IDS_ASH_SHELF_SHUTDOWN_BUTTON,
              kShelfShutdownButtonIcon);
   kiosk_apps_button_ = new KioskAppsButton();
-  kiosk_apps_button_->set_id(kApps);
+  kiosk_apps_button_->SetID(kApps);
   AddChildView(kiosk_apps_button_);
   add_button(kRestart, IDS_ASH_SHELF_RESTART_BUTTON, kShelfShutdownButtonIcon);
   add_button(kSignOut, IDS_ASH_SHELF_SIGN_OUT_BUTTON, kShelfSignOutButtonIcon);
@@ -481,8 +481,8 @@ void LoginShelfView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 void LoginShelfView::ButtonPressed(views::Button* sender,
                                    const ui::Event& event) {
   UserMetricsRecorder::RecordUserClickOnShelfButton(
-      GetUserClickTarget(sender->id()));
-  switch (sender->id()) {
+      GetUserClickTarget(sender->GetID()));
+  switch (sender->GetID()) {
     case kShutdown:
     case kRestart:
       // |ShutdownController| will further distinguish the two cases based on

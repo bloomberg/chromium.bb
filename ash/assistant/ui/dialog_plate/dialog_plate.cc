@@ -87,7 +87,7 @@ int DialogPlate::GetHeightForWidth(int width) const {
 }
 
 void DialogPlate::ButtonPressed(views::Button* sender, const ui::Event& event) {
-  OnButtonPressed(static_cast<AssistantButtonId>(sender->id()));
+  OnButtonPressed(static_cast<AssistantButtonId>(sender->GetID()));
 }
 
 bool DialogPlate::HandleKeyEvent(views::Textfield* textfield,

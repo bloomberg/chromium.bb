@@ -153,7 +153,7 @@ class DesktopLinuxBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
  protected:
   views::ImageButton* InitWindowCaptionButton(ViewID view_id) {
     views::ImageButton* button = new views::ImageButton(nullptr);
-    button->set_id(view_id);
+    button->SetID(view_id);
     root_view_->AddChildView(button);
     return button;
   }

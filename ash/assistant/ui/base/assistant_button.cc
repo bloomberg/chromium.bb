@@ -42,7 +42,7 @@ AssistantButton::AssistantButton(views::ButtonListener* listener,
   set_ink_drop_base_color(kInkDropBaseColor);
   set_ink_drop_visible_opacity(kInkDropVisibleOpacity);
 
-  set_id(static_cast<int>(button_id));
+  SetID(static_cast<int>(button_id));
 }
 
 AssistantButton::~AssistantButton() = default;
@@ -108,7 +108,7 @@ std::unique_ptr<views::InkDropRipple> AssistantButton::CreateInkDropRipple()
 void AssistantButton::ButtonPressed(views::Button* sender,
                                     const ui::Event& event) {
   assistant::util::IncrementAssistantButtonClickCount(
-      static_cast<AssistantButtonId>(sender->id()));
+      static_cast<AssistantButtonId>(sender->GetID()));
   listener_->ButtonPressed(sender, event);
 }
 

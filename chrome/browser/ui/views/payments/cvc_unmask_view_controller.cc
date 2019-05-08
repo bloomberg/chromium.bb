@@ -193,14 +193,14 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
   if (requesting_expiration) {
     auto month = std::make_unique<views::Combobox>(&month_combobox_model_);
     month->set_listener(this);
-    month->set_id(static_cast<int>(DialogViewID::CVC_MONTH));
+    month->SetID(static_cast<int>(DialogViewID::CVC_MONTH));
     month->SelectValue(credit_card_.ExpirationMonthAsString());
     month->SetInvalid(true);
     layout->AddView(month.release());
 
     auto year = std::make_unique<views::Combobox>(&year_combobox_model_);
     year->set_listener(this);
-    year->set_id(static_cast<int>(DialogViewID::CVC_YEAR));
+    year->SetID(static_cast<int>(DialogViewID::CVC_YEAR));
     year->SelectValue(credit_card_.Expiration4DigitYearAsString());
     year->SetInvalid(true);
     layout->AddView(year.release());
@@ -222,7 +222,7 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
   std::unique_ptr<views::Textfield> cvc_field =
       std::unique_ptr<views::Textfield>(autofill::CreateCvcTextfield());
   cvc_field->set_controller(this);
-  cvc_field->set_id(static_cast<int>(DialogViewID::CVC_PROMPT_TEXT_FIELD));
+  cvc_field->SetID(static_cast<int>(DialogViewID::CVC_PROMPT_TEXT_FIELD));
   cvc_field_ = cvc_field.get();
   layout->AddView(cvc_field.release());
 
@@ -244,7 +244,7 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
   layout->StartRow(views::GridLayout::kFixedSize, 2);
   std::unique_ptr<views::ImageView> error_icon =
       std::make_unique<views::ImageView>();
-  error_icon->set_id(static_cast<int>(DialogViewID::CVC_ERROR_ICON));
+  error_icon->SetID(static_cast<int>(DialogViewID::CVC_ERROR_ICON));
   error_icon->SetImage(
       gfx::CreateVectorIcon(vector_icons::kWarningIcon, 16,
                             error_icon->GetNativeTheme()->GetSystemColor(
@@ -253,7 +253,7 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
   layout->AddView(error_icon.release());
 
   std::unique_ptr<views::Label> error_label = std::make_unique<views::Label>();
-  error_label->set_id(static_cast<int>(DialogViewID::CVC_ERROR_LABEL));
+  error_label->SetID(static_cast<int>(DialogViewID::CVC_ERROR_LABEL));
   error_label->SetMultiLine(true);
   error_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   error_label->SetEnabledColor(error_label->GetNativeTheme()->GetSystemColor(
@@ -268,7 +268,7 @@ std::unique_ptr<views::Button> CvcUnmaskViewController::CreatePrimaryButton() {
       views::MdTextButton::CreateSecondaryUiBlueButton(
           this, l10n_util::GetStringUTF16(IDS_CONFIRM)));
   button->SetEnabled(false);  // Only enabled when a valid CVC is entered.
-  button->set_id(static_cast<int>(DialogViewID::CVC_PROMPT_CONFIRM_BUTTON));
+  button->SetID(static_cast<int>(DialogViewID::CVC_PROMPT_CONFIRM_BUTTON));
   button->set_tag(static_cast<int>(Tags::CONFIRM_TAG));
   return button;
 }

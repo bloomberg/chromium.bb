@@ -58,7 +58,7 @@ class EmptyMenuMenuItem : public MenuItemView {
   explicit EmptyMenuMenuItem(MenuItemView* parent)
       : MenuItemView(parent, 0, EMPTY) {
     // Set this so that we're not identified as a normal menu item.
-    set_id(kEmptyMenuItemViewID);
+    SetID(kEmptyMenuItemViewID);
     SetTitle(l10n_util::GetStringUTF16(IDS_APP_MENU_EMPTY_SUBMENU));
     SetEnabled(false);
   }
@@ -823,7 +823,7 @@ void MenuItemView::Init(MenuItemView* parent,
   show_mnemonics_ = false;
   corner_radius_ = 0;
   // Assign our ID, this allows SubmenuItemView to find MenuItemViews.
-  set_id(kMenuItemViewID);
+  SetID(kMenuItemViewID);
   has_icons_ = false;
 
   if (type_ == CHECKBOX || type_ == RADIO) {
@@ -934,11 +934,11 @@ void MenuItemView::RemoveEmptyMenus() {
   // Copy the children, since we may mutate them as we go.
   const Views children = submenu_->children();
   for (View* child : children) {
-    if (child->id() == MenuItemView::kMenuItemViewID) {
+    if (child->GetID() == MenuItemView::kMenuItemViewID) {
       MenuItemView* menu_item = static_cast<MenuItemView*>(child);
       if (menu_item->HasSubmenu())
         menu_item->RemoveEmptyMenus();
-    } else if (child->id() == EmptyMenuMenuItem::kEmptyMenuItemViewID) {
+    } else if (child->GetID() == EmptyMenuMenuItem::kEmptyMenuItemViewID) {
       submenu_->RemoveChildView(child);
       delete child;
     }
@@ -1329,7 +1329,7 @@ int MenuItemView::GetLabelStartForThisItem() const {
 }
 
 base::string16 MenuItemView::GetMinorText() const {
-  if (id() == kEmptyMenuItemViewID) {
+  if (GetID() == kEmptyMenuItemViewID) {
     // Don't query the delegate for menus that represent no children.
     return base::string16();
   }

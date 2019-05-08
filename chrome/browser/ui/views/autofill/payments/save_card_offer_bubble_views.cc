@@ -186,9 +186,9 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateMainContentView() {
   std::unique_ptr<views::View> view =
       SaveCardBubbleViews::CreateMainContentView();
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  view->set_id(controller()->IsUploadSave()
-                   ? DialogViewId::MAIN_CONTENT_VIEW_UPLOAD
-                   : DialogViewId::MAIN_CONTENT_VIEW_LOCAL);
+  view->SetID(controller()->IsUploadSave()
+                  ? DialogViewId::MAIN_CONTENT_VIEW_UPLOAD
+                  : DialogViewId::MAIN_CONTENT_VIEW_LOCAL);
 
   // If necessary, add the cardholder name label and textfield to the upload
   // save dialog.
@@ -235,7 +235,7 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateMainContentView() {
               kTooltipIconSize);
       cardholder_name_tooltip->set_anchor_point_arrow(
           views::BubbleBorder::Arrow::TOP_LEFT);
-      cardholder_name_tooltip->set_id(DialogViewId::CARDHOLDER_NAME_TOOLTIP);
+      cardholder_name_tooltip->SetID(DialogViewId::CARDHOLDER_NAME_TOOLTIP);
       cardholder_name_label_row->AddChildView(
           cardholder_name_tooltip.release());
     }
@@ -244,7 +244,7 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateMainContentView() {
     DCHECK(!cardholder_name_textfield_);
     cardholder_name_textfield_ = new views::Textfield();
     cardholder_name_textfield_->set_controller(this);
-    cardholder_name_textfield_->set_id(DialogViewId::CARDHOLDER_NAME_TEXTFIELD);
+    cardholder_name_textfield_->SetID(DialogViewId::CARDHOLDER_NAME_TEXTFIELD);
     cardholder_name_textfield_->SetAccessibleName(l10n_util::GetStringUTF16(
         IDS_AUTOFILL_SAVE_CARD_PROMPT_CARDHOLDER_NAME));
     cardholder_name_textfield_->SetTextInputType(
@@ -277,14 +277,14 @@ SaveCardOfferBubbleViews::CreateRequestExpirationDateView() {
   expiration_date_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
-  expiration_date_view->set_id(DialogViewId::EXPIRATION_DATE_VIEW);
+  expiration_date_view->SetID(DialogViewId::EXPIRATION_DATE_VIEW);
 
   // Set up the month and year comboboxes.
   month_input_dropdown_ = new views::Combobox(&month_combobox_model_);
   month_input_dropdown_->set_listener(this);
   month_input_dropdown_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_MONTH));
-  month_input_dropdown_->set_id(DialogViewId::EXPIRATION_DATE_DROPBOX_MONTH);
+  month_input_dropdown_->SetID(DialogViewId::EXPIRATION_DATE_DROPBOX_MONTH);
 
   const CreditCard& card = controller()->GetCard();
   // Pre-populate expiration date month if it is detected.
@@ -298,7 +298,7 @@ SaveCardOfferBubbleViews::CreateRequestExpirationDateView() {
   year_input_dropdown_->set_listener(this);
   year_input_dropdown_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_YEAR));
-  year_input_dropdown_->set_id(DialogViewId::EXPIRATION_DATE_DROPBOX_YEAR);
+  year_input_dropdown_->SetID(DialogViewId::EXPIRATION_DATE_DROPBOX_YEAR);
 
   // Pre-populate expiration date year if it is not passed.
   if (IsValidCreditCardExpirationYear(card.expiration_year(),

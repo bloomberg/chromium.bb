@@ -219,7 +219,7 @@ void PaymentMethodViewController::FillContentView(views::View* content_view) {
 
   std::unique_ptr<views::View> list_view =
       payment_method_list_.CreateListView();
-  list_view->set_id(
+  list_view->SetID(
       static_cast<int>(DialogViewID::PAYMENT_METHOD_SHEET_LIST_VIEW));
   content_view->AddChildView(list_view.release());
 }

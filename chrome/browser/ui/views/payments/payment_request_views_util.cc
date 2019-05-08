@@ -80,7 +80,7 @@ std::unique_ptr<views::View> GetBaseProfileLabel(
                                : static_cast<int>(views::style::STYLE_PRIMARY);
     std::unique_ptr<views::Label> label = std::make_unique<views::Label>(
         s1, views::style::CONTEXT_LABEL, text_style);
-    label->set_id(static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_1));
+    label->SetID(static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_1));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     if (!enabled) {
       label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
@@ -91,7 +91,7 @@ std::unique_ptr<views::View> GetBaseProfileLabel(
 
   if (!s2.empty()) {
     std::unique_ptr<views::Label> label = std::make_unique<views::Label>(s2);
-    label->set_id(static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_2));
+    label->SetID(static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_2));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     if (!enabled) {
       label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
@@ -102,7 +102,7 @@ std::unique_ptr<views::View> GetBaseProfileLabel(
 
   if (!s3.empty()) {
     std::unique_ptr<views::Label> label = std::make_unique<views::Label>(s3);
-    label->set_id(static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_3));
+    label->SetID(static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_3));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     if (!enabled) {
       label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
@@ -142,7 +142,7 @@ std::unique_ptr<views::Label> GetLabelForMissingInformation(
     const base::string16& missing_info) {
   std::unique_ptr<views::Label> label =
       std::make_unique<views::Label>(missing_info, CONTEXT_BODY_TEXT_SMALL);
-  label->set_id(static_cast<int>(DialogViewID::PROFILE_LABEL_ERROR));
+  label->SetID(static_cast<int>(DialogViewID::PROFILE_LABEL_ERROR));
   // Missing information typically has a nice shade of blue.
   label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_LinkEnabled));
@@ -227,7 +227,7 @@ void PopulateSheetHeaderView(bool show_back_arrow,
     back_arrow->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
     back_arrow->set_tag(
         static_cast<int>(PaymentRequestCommonTags::BACK_BUTTON_TAG));
-    back_arrow->set_id(static_cast<int>(DialogViewID::BACK_BUTTON));
+    back_arrow->SetID(static_cast<int>(DialogViewID::BACK_BUTTON));
     back_arrow->SetAccessibleName(l10n_util::GetStringUTF16(IDS_PAYMENTS_BACK));
     layout->AddView(back_arrow.release());
   }
@@ -404,15 +404,14 @@ std::unique_ptr<views::View> CreateShippingOptionLabel(
     // example, in "he" labels being right-aligned in a browser that's using
     // "en" locale.
     shipping_label->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
-    shipping_label->set_id(
+    shipping_label->SetID(
         static_cast<int>(DialogViewID::SHIPPING_OPTION_DESCRIPTION));
     container->AddChildView(shipping_label.release());
 
     std::unique_ptr<views::Label> amount_label =
         std::make_unique<views::Label>(formatted_amount);
     amount_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    amount_label->set_id(
-        static_cast<int>(DialogViewID::SHIPPING_OPTION_AMOUNT));
+    amount_label->SetID(static_cast<int>(DialogViewID::SHIPPING_OPTION_AMOUNT));
     container->AddChildView(amount_label.release());
 
     *accessible_content = l10n_util::GetStringFUTF16(
@@ -442,7 +441,7 @@ std::unique_ptr<views::View> CreateWarningView(const base::string16& message,
   // according to the language of the website's text.
   label->SetHorizontalAlignment(message.empty() ? gfx::ALIGN_LEFT
                                                 : gfx::ALIGN_TO_HEAD);
-  label->set_id(static_cast<int>(DialogViewID::WARNING_LABEL));
+  label->SetID(static_cast<int>(DialogViewID::WARNING_LABEL));
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 

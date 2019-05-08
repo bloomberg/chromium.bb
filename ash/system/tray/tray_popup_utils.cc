@@ -214,7 +214,7 @@ void TrayPopupUtils::ConfigureTrayPopupButton(views::Button* button) {
 }
 
 void TrayPopupUtils::ConfigureAsStickyHeader(views::View* view) {
-  view->set_id(VIEW_ID_STICKY_HEADER);
+  view->SetID(VIEW_ID_STICKY_HEADER);
   view->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(kMenuSeparatorVerticalPadding, 0)));
   view->SetPaintToLayer();

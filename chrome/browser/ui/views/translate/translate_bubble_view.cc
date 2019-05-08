@@ -206,7 +206,7 @@ void TranslateBubbleView::Init() {
 
 void TranslateBubbleView::ButtonPressed(views::Button* sender,
                                         const ui::Event& event) {
-  switch (static_cast<ButtonID>(sender->id())) {
+  switch (static_cast<ButtonID>(sender->GetID())) {
     case BUTTON_ID_TRANSLATE: {
       Translate();
       break;
@@ -317,11 +317,11 @@ gfx::Size TranslateBubbleView::CalculatePreferredSize() const {
 }
 
 void TranslateBubbleView::OnPerformAction(views::Combobox* combobox) {
-  HandleComboboxPerformAction(static_cast<ComboboxID>(combobox->id()));
+  HandleComboboxPerformAction(static_cast<ComboboxID>(combobox->GetID()));
 }
 
 void TranslateBubbleView::LinkClicked(views::Link* source, int event_flags) {
-  HandleLinkClicked(static_cast<LinkID>(source->id()));
+  HandleLinkClicked(static_cast<LinkID>(source->GetID()));
 }
 
 void TranslateBubbleView::ShowOptionsMenu(views::Button* source) {
@@ -594,7 +594,7 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
             IDS_TRANSLATE_BUBBLE_ALWAYS_TRANSLATE_LANG,
             model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex())),
         this);
-    before_always_translate_checkbox_->set_id(BUTTON_ID_ALWAYS_TRANSLATE);
+    before_always_translate_checkbox_->SetID(BUTTON_ID_ALWAYS_TRANSLATE);
     layout->AddView(before_always_translate_checkbox_);
   }
 
@@ -605,13 +605,13 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
   views::LabelButton* accept_button =
       views::MdTextButton::CreateSecondaryUiButton(
           this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ACCEPT));
-  accept_button->set_id(BUTTON_ID_TRANSLATE);
+  accept_button->SetID(BUTTON_ID_TRANSLATE);
 
   accept_button->SetIsDefault(true);
   before_translate_options_button_ = new views::MdTextButtonWithDownArrow(
       this,
       l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_OPTIONS_MENU_BUTTON));
-  before_translate_options_button_->set_id(BUTTON_ID_OPTIONS_MENU);
+  before_translate_options_button_->SetID(BUTTON_ID_OPTIONS_MENU);
   before_translate_options_button_->set_request_focus_on_press(true);
 
   if (views::PlatformStyle::kIsOkButtonLeading) {
@@ -657,7 +657,7 @@ views::View* TranslateBubbleView::CreateViewTranslating() {
   views::LabelButton* revert_button =
       views::MdTextButton::CreateSecondaryUiButton(
           this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_REVERT));
-  revert_button->set_id(BUTTON_ID_SHOW_ORIGINAL);
+  revert_button->SetID(BUTTON_ID_SHOW_ORIGINAL);
   revert_button->SetEnabled(false);
   layout->AddView(revert_button);
 
@@ -692,13 +692,13 @@ views::View* TranslateBubbleView::CreateViewAfterTranslate() {
   layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
   views::LabelButton* button = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_REVERT));
-  button->set_id(BUTTON_ID_SHOW_ORIGINAL);
+  button->SetID(BUTTON_ID_SHOW_ORIGINAL);
   layout->AddView(button);
 
   views::Button* options_menu_button = new views::MdTextButtonWithDownArrow(
       this,
       l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_OPTIONS_MENU_BUTTON));
-  options_menu_button->set_id(BUTTON_ID_OPTIONS_MENU);
+  options_menu_button->SetID(BUTTON_ID_OPTIONS_MENU);
   options_menu_button->set_request_focus_on_press(true);
 
   layout->AddView(options_menu_button);
@@ -735,14 +735,14 @@ views::View* TranslateBubbleView::CreateViewError() {
   views::LabelButton* try_again_button =
       views::MdTextButton::CreateSecondaryUiButton(
           this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_TRY_AGAIN));
-  try_again_button->set_id(BUTTON_ID_TRY_AGAIN);
+  try_again_button->SetID(BUTTON_ID_TRY_AGAIN);
   layout->AddView(try_again_button);
 
   views::LabelButton* advanced_button =
       views::MdTextButton::CreateSecondaryUiButton(
           this,
           l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ADVANCED_BUTTON));
-  advanced_button->set_id(BUTTON_ID_ADVANCED);
+  advanced_button->SetID(BUTTON_ID_ADVANCED);
   layout->AddView(advanced_button);
 
   return view;
@@ -765,7 +765,7 @@ views::View* TranslateBubbleView::CreateViewAdvanced() {
   source_language_combobox_ =
       new views::Combobox(source_language_combobox_model_.get());
 
-  source_language_combobox_->set_id(COMBOBOX_ID_SOURCE_LANGUAGE);
+  source_language_combobox_->SetID(COMBOBOX_ID_SOURCE_LANGUAGE);
   source_language_combobox_->set_listener(this);
 
   int target_default_index = model_->GetTargetLanguageIndex();
@@ -774,14 +774,14 @@ views::View* TranslateBubbleView::CreateViewAdvanced() {
   target_language_combobox_ =
       new views::Combobox(target_language_combobox_model_.get());
 
-  target_language_combobox_->set_id(COMBOBOX_ID_TARGET_LANGUAGE);
+  target_language_combobox_->SetID(COMBOBOX_ID_TARGET_LANGUAGE);
   target_language_combobox_->set_listener(this);
 
   // In an incognito window, "Always translate" checkbox shouldn't be shown.
   if (!is_in_incognito_window_) {
     advanced_always_translate_checkbox_ = new views::Checkbox(
         l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ALWAYS), this);
-    advanced_always_translate_checkbox_->set_id(BUTTON_ID_ALWAYS_TRANSLATE);
+    advanced_always_translate_checkbox_->SetID(BUTTON_ID_ALWAYS_TRANSLATE);
   }
 
   views::View* view = new AdvancedViewContainer();
@@ -855,11 +855,11 @@ views::View* TranslateBubbleView::CreateViewAdvanced() {
 
   advanced_done_button_ = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_DONE));
-  advanced_done_button_->set_id(BUTTON_ID_DONE);
+  advanced_done_button_->SetID(BUTTON_ID_DONE);
   advanced_done_button_->SetIsDefault(true);
   advanced_cancel_button_ = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_CANCEL));
-  advanced_cancel_button_->set_id(BUTTON_ID_CANCEL);
+  advanced_cancel_button_->SetID(BUTTON_ID_CANCEL);
   layout->AddView(advanced_done_button_);
   layout->AddView(advanced_cancel_button_);
 

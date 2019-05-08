@@ -234,7 +234,7 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
       emoji_button_ =
           CreateImeMenuButton(this, kImeMenuEmoticonIcon,
                               IDS_ASH_STATUS_TRAY_IME_EMOJI, right_border);
-      emoji_button_->set_id(kEmojiButtonId);
+      emoji_button_->SetID(kEmojiButtonId);
       AddChildView(emoji_button_);
     }
 

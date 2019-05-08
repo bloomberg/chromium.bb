@@ -32,7 +32,7 @@ FeaturePodButton* CastFeaturePodController::CreateButton() {
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_CAST_TOOLTIP));
   button_->ShowDetailedViewArrow();
   button_->DisableLabelButtonFocus();
-  button_->set_id(VIEW_ID_CAST_MAIN_VIEW);
+  button_->SetID(VIEW_ID_CAST_MAIN_VIEW);
   Update();
   return button_;
 }

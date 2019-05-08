@@ -187,7 +187,7 @@ HostedAppButtonContainer::HostedAppButtonContainer(
              ->web_app_controller()
              ->IsForExperimentalWebAppBrowser());
 
-  set_id(VIEW_ID_HOSTED_APP_BUTTON_CONTAINER);
+  SetID(VIEW_ID_HOSTED_APP_BUTTON_CONTAINER);
 
   views::BoxLayout& layout =
       *SetLayoutManager(std::make_unique<views::BoxLayout>(

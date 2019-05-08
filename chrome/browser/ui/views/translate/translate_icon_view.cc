@@ -22,7 +22,7 @@ TranslateIconView::TranslateIconView(CommandUpdater* command_updater,
                                      PageActionIconView::Delegate* delegate)
     : PageActionIconView(command_updater, IDC_TRANSLATE_PAGE, delegate) {
   DCHECK(delegate);
-  set_id(VIEW_ID_TRANSLATE_BUTTON);
+  SetID(VIEW_ID_TRANSLATE_BUTTON);
 }
 
 TranslateIconView::~TranslateIconView() {}

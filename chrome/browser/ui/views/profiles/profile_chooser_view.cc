@@ -318,7 +318,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
         base::UserMetricsAction("ProfileChooser_CloseAllClicked"));
   } else if (sender == sync_error_button_) {
     sync_ui_util::AvatarSyncErrorType error =
-        static_cast<sync_ui_util::AvatarSyncErrorType>(sender->id());
+        static_cast<sync_ui_util::AvatarSyncErrorType>(sender->GetID());
     switch (error) {
       case sync_ui_util::MANAGED_USER_UNRECOVERABLE_ERROR:
         chrome::ShowSettingsSubPage(browser(), chrome::kSignOutSubPage);
@@ -468,7 +468,7 @@ bool ProfileChooserView::AddSyncErrorViewIfNeeded(
         l10n_util::GetStringUTF16(button_string_id), true /* md_style */);
     // Track the error type so that the correct action can be taken in
     // ButtonPressed().
-    sync_error_button_->set_id(error);
+    sync_error_button_->SetID(error);
   }
 
   return true;
@@ -511,7 +511,7 @@ void ProfileChooserView::AddDiceSyncErrorView(
   if (!sync_disabled) {
     sync_error_button_ = CreateAndAddBlueButton(
         l10n_util::GetStringUTF16(button_string_id), true /* md_style */);
-    sync_error_button_->set_id(error);
+    sync_error_button_->SetID(error);
     base::RecordAction(
         base::UserMetricsAction("ProfileChooser_SignInAgainDisplayed"));
   }

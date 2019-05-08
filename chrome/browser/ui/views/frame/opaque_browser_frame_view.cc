@@ -169,7 +169,7 @@ void OpaqueBrowserFrameView::InitViews() {
   if (browser_view()->ShouldShowWindowIcon()) {
     window_icon_ = new TabIconView(this, this);
     window_icon_->set_is_light(true);
-    window_icon_->set_id(VIEW_ID_WINDOW_ICON);
+    window_icon_->SetID(VIEW_ID_WINDOW_ICON);
     AddChildView(window_icon_);
     window_icon_->Update();
   }
@@ -178,7 +178,7 @@ void OpaqueBrowserFrameView::InitViews() {
   window_title_->SetVisible(browser_view()->ShouldShowWindowTitle());
   window_title_->SetSubpixelRenderingEnabled(false);
   window_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  window_title_->set_id(VIEW_ID_WINDOW_TITLE);
+  window_title_->SetID(VIEW_ID_WINDOW_TITLE);
   AddChildView(window_title_);
 
   WebAppBrowserController* controller =
@@ -594,7 +594,7 @@ void OpaqueBrowserFrameView::InitWindowCaptionButton(
     int accessibility_string_id,
     ViewID view_id) {
   button->SetAccessibleName(l10n_util::GetStringUTF16(accessibility_string_id));
-  button->set_id(view_id);
+  button->SetID(view_id);
   AddChildView(button);
 }
 

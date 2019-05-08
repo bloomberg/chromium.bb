@@ -296,7 +296,7 @@ EnterpriseManagedView::EnterpriseManagedView(
                        kUnifiedMenuManagedIcon),
       controller_(controller) {
   DCHECK(Shell::Get());
-  set_id(VIEW_ID_TRAY_ENTERPRISE);
+  SetID(VIEW_ID_TRAY_ENTERPRISE);
   Shell::Get()->system_tray_model()->enterprise_domain()->AddObserver(this);
   Shell::Get()->session_controller()->AddObserver(this);
   Update();

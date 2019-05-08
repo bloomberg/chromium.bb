@@ -22,7 +22,7 @@ void PrintViewHierarchyImp(const View* view,
   *out << std::string(indent, ' ');
   *out << view->GetClassName();
   *out << ' ';
-  *out << view->id();
+  *out << view->GetID();
   *out << ' ';
   *out << view->x() << "," << view->y() << ",";
   *out << view->bounds().right() << "," << view->bounds().bottom();
@@ -40,7 +40,7 @@ void PrintFocusHierarchyImp(const View* view,
   *out << std::string(indent, ' ');
   *out << view->GetClassName();
   *out << ' ';
-  *out << view->id();
+  *out << view->GetID();
   *out << ' ';
   *out << view->GetClassName();
   *out << ' ';

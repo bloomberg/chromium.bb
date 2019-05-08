@@ -300,7 +300,7 @@ class PaymentSheetRowBuilder {
         std::move(extra_content_view), std::move(chevron),
         /*clickable=*/true, /*extra_trailing_inset=*/true);
     section->set_tag(tag_);
-    section->set_id(id_);
+    section->SetID(id_);
     return section;
   }
 
@@ -352,7 +352,7 @@ class PaymentSheetRowBuilder {
         views::MdTextButton::CreateSecondaryUiBlueButton(listener_,
                                                          button_string));
     button->set_tag(tag_);
-    button->set_id(id_);
+    button->SetID(id_);
     button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
     button->SetEnabled(button_enabled);
     return CreatePaymentSheetRow(
@@ -400,7 +400,7 @@ PaymentSheetViewController::CreatePrimaryButton() {
       views::MdTextButton::CreateSecondaryUiBlueButton(
           this, l10n_util::GetStringUTF16(IDS_PAYMENTS_PAY_BUTTON)));
   button->set_tag(static_cast<int>(PaymentRequestCommonTags::PAY_BUTTON_TAG));
-  button->set_id(static_cast<int>(DialogViewID::PAY_BUTTON));
+  button->SetID(static_cast<int>(DialogViewID::PAY_BUTTON));
   button->SetEnabled(state()->is_ready_to_pay());
   return button;
 }
@@ -990,7 +990,7 @@ std::unique_ptr<views::View> PaymentSheetViewController::CreateDataSourceRow() {
   std::unique_ptr<views::StyledLabel> data_source_label =
       std::make_unique<views::StyledLabel>(data_source, this);
   data_source_label->SetBorder(views::CreateEmptyBorder(22, 0, 0, 0));
-  data_source_label->set_id(static_cast<int>(DialogViewID::DATA_SOURCE_LABEL));
+  data_source_label->SetID(static_cast<int>(DialogViewID::DATA_SOURCE_LABEL));
   data_source_label->SetDefaultTextStyle(views::style::STYLE_DISABLED);
 
   views::StyledLabel::RangeStyleInfo link_style =

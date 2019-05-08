@@ -210,7 +210,7 @@ class ComboboxTest : public ViewsTestBase {
     combobox_ = new TestCombobox(model_.get());
     test_api_ = std::make_unique<ComboboxTestApi>(combobox_);
     test_api_->InstallTestMenuRunner(&menu_show_count_);
-    combobox_->set_id(1);
+    combobox_->SetID(1);
 
     widget_ = new Widget;
     Widget::InitParams params =

@@ -173,7 +173,7 @@ void SimpleWebViewDialog::Init() {
                            views::ImageButton::ALIGN_TOP);
   back_->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_BACK));
   back_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_BACK));
-  back_->set_id(VIEW_ID_BACK_BUTTON);
+  back_->SetID(VIEW_ID_BACK_BUTTON);
 
   forward_ = new views::ImageButton(this);
   forward_->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
@@ -181,7 +181,7 @@ void SimpleWebViewDialog::Init() {
   forward_->set_tag(IDC_FORWARD);
   forward_->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_FORWARD));
   forward_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FORWARD));
-  forward_->set_id(VIEW_ID_FORWARD_BUTTON);
+  forward_->SetID(VIEW_ID_FORWARD_BUTTON);
 
   // Location bar.
   location_bar_ = new LocationBarView(nullptr, profile_, command_updater_.get(),
@@ -194,7 +194,7 @@ void SimpleWebViewDialog::Init() {
   reload_->set_tag(IDC_RELOAD);
   reload_->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_RELOAD));
   reload_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_RELOAD));
-  reload_->set_id(VIEW_ID_RELOAD_BUTTON);
+  reload_->SetID(VIEW_ID_RELOAD_BUTTON);
 
   // Use separate view to setup custom background.
   ToolbarRowView* toolbar_row = new ToolbarRowView;

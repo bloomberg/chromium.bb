@@ -138,7 +138,7 @@ views::View* CastDialogView::CreateExtraView() {
   sources_button_ = new views::MdTextButtonWithDownArrow(
       this,
       l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_ALTERNATIVE_SOURCES_BUTTON));
-  sources_button_->set_id(kAlternativeSourceButtonId);
+  sources_button_->SetID(kAlternativeSourceButtonId);
   sources_button_->SetEnabled(false);
   return sources_button_;
 }

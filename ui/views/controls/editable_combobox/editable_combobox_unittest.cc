@@ -135,10 +135,10 @@ void EditableComboboxTest::InitEditableCombobox(
                            filter_on_edit, show_on_empty, type);
   listener_ = std::make_unique<DummyListener>();
   combobox_->set_listener(listener_.get());
-  combobox_->set_id(1);
+  combobox_->SetID(1);
   dummy_focusable_view_ = new View();
   dummy_focusable_view_->SetFocusBehavior(View::FocusBehavior::ALWAYS);
-  dummy_focusable_view_->set_id(2);
+  dummy_focusable_view_->SetID(2);
 
   InitWidget();
   combobox_->RequestFocus();

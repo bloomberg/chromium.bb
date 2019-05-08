@@ -362,7 +362,7 @@ void ProfileListViewController::FillContentView(views::View* content_view) {
   if (header_view)
     content_view->AddChildView(header_view.release());
   std::unique_ptr<views::View> list_view = list_.CreateListView();
-  list_view->set_id(static_cast<int>(GetDialogViewId()));
+  list_view->SetID(static_cast<int>(GetDialogViewId()));
   content_view->AddChildView(list_view.release());
 }
 

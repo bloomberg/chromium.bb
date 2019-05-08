@@ -3621,19 +3621,19 @@ TEST_F(ViewTest, ReorderChildren) {
 TEST_F(ViewTest, GetViewByID) {
   View v1;
   const int kV1ID = 1;
-  v1.set_id(kV1ID);
+  v1.SetID(kV1ID);
 
   View v2;
   const int kV2ID = 2;
-  v2.set_id(kV2ID);
+  v2.SetID(kV2ID);
 
   View v3;
   const int kV3ID = 3;
-  v3.set_id(kV3ID);
+  v3.SetID(kV3ID);
 
   View v4;
   const int kV4ID = 4;
-  v4.set_id(kV4ID);
+  v4.SetID(kV4ID);
 
   const int kV5ID = 5;
 
@@ -4907,7 +4907,7 @@ class OrderableView : public View {
     View::Views children_in_z_order = children();
     std::stable_partition(
         children_in_z_order.begin(), children_in_z_order.end(),
-        [](const View* child) { return child->id() != VIEW_ID_RAISED; });
+        [](const View* child) { return child->GetID() != VIEW_ID_RAISED; });
     return children_in_z_order;
   }
 
@@ -4931,7 +4931,7 @@ TEST_F(ViewTest, ChildViewZOrderChanged) {
   }
 
   // Raise one of the children in z-order and add another child to reorder.
-  view->children()[2]->set_id(OrderableView::VIEW_ID_RAISED);
+  view->children()[2]->SetID(OrderableView::VIEW_ID_RAISED);
   AddViewWithChildLayer(view.get());
 
   // 2nd child should be now on top, i.e. the last element in the array returned
@@ -4957,7 +4957,7 @@ TEST_F(ViewTest, AttachChildViewWithComplicatedLayers) {
   // child_view1 has layer and has id OrderableView::VIEW_ID_RAISED.
   View* child_view1 = parent_view->AddChildView(std::make_unique<View>());
   child_view1->SetPaintToLayer();
-  child_view1->set_id(OrderableView::VIEW_ID_RAISED);
+  child_view1->SetID(OrderableView::VIEW_ID_RAISED);
 
   // child_view2 has no layer.
   View* child_view2 = parent_view->AddChildView(std::make_unique<View>());

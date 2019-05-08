@@ -198,7 +198,7 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
     auto* expiration_date_label = new views::Label(
         card.AbbreviatedExpirationDateForDisplay(false),
         CONTEXT_BODY_TEXT_LARGE, ChromeTextStyle::STYLE_SECONDARY);
-    expiration_date_label->set_id(DialogViewId::EXPIRATION_DATE_LABEL);
+    expiration_date_label->SetID(DialogViewId::EXPIRATION_DATE_LABEL);
     description_view->AddChildView(expiration_date_label);
   }
 
@@ -208,16 +208,16 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
 void SaveCardBubbleViews::InitFootnoteView(views::View* footnote_view) {
   DCHECK(!footnote_view_);
   footnote_view_ = footnote_view;
-  footnote_view_->set_id(DialogViewId::FOOTNOTE_VIEW);
+  footnote_view_->SetID(DialogViewId::FOOTNOTE_VIEW);
 }
 
 void SaveCardBubbleViews::AssignIdsToDialogClientView() {
   auto* ok_button = GetDialogClientView()->ok_button();
   if (ok_button)
-    ok_button->set_id(DialogViewId::OK_BUTTON);
+    ok_button->SetID(DialogViewId::OK_BUTTON);
   auto* cancel_button = GetDialogClientView()->cancel_button();
   if (cancel_button)
-    cancel_button->set_id(DialogViewId::CANCEL_BUTTON);
+    cancel_button->SetID(DialogViewId::CANCEL_BUTTON);
 }
 
 void SaveCardBubbleViews::Init() {

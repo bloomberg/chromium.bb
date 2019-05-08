@@ -139,7 +139,7 @@ std::unique_ptr<HoverButton> CreateMoreInfoButton(
     button->SetTitleTextWithHintRange(title_text, secondary_text_range);
   }
 
-  button->set_id(click_target_id);
+  button->SetID(click_target_id);
   button->SetTooltipText(tooltip_text);
   return button;
 }
@@ -248,7 +248,7 @@ BubbleHeaderView::BubbleHeaderView(
 
   security_details_label_ =
       new views::StyledLabel(base::string16(), styled_label_listener);
-  security_details_label_->set_id(
+  security_details_label_->SetID(
       PageInfoBubbleView::VIEW_ID_PAGE_INFO_LABEL_SECURITY_DETAILS);
   layout->AddView(security_details_label_, 1.0, 1.0, views::GridLayout::FILL,
                   views::GridLayout::LEADING);
@@ -305,7 +305,7 @@ void BubbleHeaderView::AddResetDecisionsLabel() {
       base::ASCIIToUTF16("$1 $2"), subst, &offsets);
   reset_cert_decisions_label_ =
       new views::StyledLabel(text, styled_label_listener_);
-  reset_cert_decisions_label_->set_id(
+  reset_cert_decisions_label_->SetID(
       PageInfoBubbleView::VIEW_ID_PAGE_INFO_LABEL_RESET_CERTIFICATE_DECISIONS);
   gfx::Range link_range(offsets[1], text.length());
 
@@ -334,13 +334,13 @@ void BubbleHeaderView::AddPasswordReuseButtons() {
   change_password_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(
       button_listener_,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON));
-  change_password_button_->set_id(
+  change_password_button_->SetID(
       PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_CHANGE_PASSWORD);
   whitelist_password_reuse_button_ =
       views::MdTextButton::CreateSecondaryUiButton(
           button_listener_, l10n_util::GetStringUTF16(
                                 IDS_PAGE_INFO_WHITELIST_PASSWORD_REUSE_BUTTON));
-  whitelist_password_reuse_button_->set_id(
+  whitelist_password_reuse_button_->SetID(
       PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_WHITELIST_PASSWORD_REUSE);
 
   int kSpacingBetweenButtons = 8;
@@ -584,7 +584,7 @@ void PageInfoBubbleView::OnWidgetDestroying(views::Widget* widget) {
 
 void PageInfoBubbleView::ButtonPressed(views::Button* button,
                                        const ui::Event& event) {
-  switch (button->id()) {
+  switch (button->GetID()) {
     case PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_CLOSE:
       GetWidget()->Close();
       break;
@@ -862,7 +862,7 @@ void PageInfoBubbleView::SetPageFeatureInfo(const PageFeatureInfo& info) {
 
   std::unique_ptr<views::MdTextButton> exit_button(views::MdTextButton::Create(
       this, l10n_util::GetStringUTF16(IDS_PAGE_INFO_VR_TURN_OFF_BUTTON_TEXT)));
-  exit_button->set_id(VIEW_ID_PAGE_INFO_BUTTON_END_VR);
+  exit_button->SetID(VIEW_ID_PAGE_INFO_BUTTON_END_VR);
   exit_button->SetProminent(true);
 
   auto button = std::make_unique<HoverButton>(
@@ -871,7 +871,7 @@ void PageInfoBubbleView::SetPageFeatureInfo(const PageFeatureInfo& info) {
       base::string16(), std::move(exit_button),
       false,  // Try not to change the row height while adding secondary view
       true);  // Secondary view can handle events.
-  button->set_id(VIEW_ID_PAGE_INFO_HOVER_BUTTON_VR_PRESENTATION);
+  button->SetID(VIEW_ID_PAGE_INFO_HOVER_BUTTON_VR_PRESENTATION);
 
   page_feature_info_view_->AddChildView(button.release());
 
@@ -980,7 +980,7 @@ void PageInfoBubbleView::HandleMoreInfoRequest(views::View* source) {
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&PageInfoBubbleView::HandleMoreInfoRequestAsync,
-                     weak_factory_.GetWeakPtr(), source->id()));
+                     weak_factory_.GetWeakPtr(), source->GetID()));
 }
 
 void PageInfoBubbleView::HandleMoreInfoRequestAsync(int view_id) {
@@ -1016,7 +1016,7 @@ void PageInfoBubbleView::HandleMoreInfoRequestAsync(int view_id) {
 void PageInfoBubbleView::StyledLabelLinkClicked(views::StyledLabel* label,
                                                 const gfx::Range& range,
                                                 int event_flags) {
-  switch (label->id()) {
+  switch (label->GetID()) {
     case PageInfoBubbleView::VIEW_ID_PAGE_INFO_LABEL_SECURITY_DETAILS:
       web_contents()->OpenURL(content::OpenURLParams(
           GURL(chrome::kPageInfoHelpCenterURL), content::Referrer(),

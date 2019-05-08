@@ -733,8 +733,13 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Gets and sets the ID for this view. ID should be unique within the subtree
   // that you intend to search for it. 0 is the default ID for views.
-  int id() const { return id_; }
-  void set_id(int id) { id_ = id; }
+  int GetID() const { return id_; }
+  void SetID(int id);
+
+  // Adds a callback subscription associated with the above |ID| property.
+  // The callback will be invoked whenever the property changes.
+  PropertyChangedSubscription AddIDChangedCallback(
+      PropertyChangedCallback callback) WARN_UNUSED_RESULT;
 
   // A group id is used to tag views which are part of the same logical group.
   // Focus can be moved between views with the same group using the arrow keys.
@@ -743,6 +748,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   void SetGroup(int gid);
   // Returns the group id of the view, or -1 if the id is not set yet.
   int GetGroup() const;
+
+  // Adds a callback subscription associated with the above |Group| property.
+  // The callback will be invoked whenever the property changes.
+  PropertyChangedSubscription AddGroupChangedCallback(
+      PropertyChangedCallback callback) WARN_UNUSED_RESULT;
 
   // If this returns true, the views from the same group can each be focused
   // when moving focus with the Tab/Shift-Tab key.  If this returns false,

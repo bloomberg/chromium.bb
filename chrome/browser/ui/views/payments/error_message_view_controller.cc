@@ -31,7 +31,7 @@ ErrorMessageViewController::CreatePrimaryButton() {
       views::MdTextButton::CreateSecondaryUiBlueButton(
           this, l10n_util::GetStringUTF16(IDS_CLOSE)));
   button->set_tag(static_cast<int>(PaymentRequestCommonTags::CLOSE_BUTTON_TAG));
-  button->set_id(static_cast<int>(DialogViewID::CANCEL_BUTTON));
+  button->SetID(static_cast<int>(DialogViewID::CANCEL_BUTTON));
   return button;
 }
 

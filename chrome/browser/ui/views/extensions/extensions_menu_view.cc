@@ -67,7 +67,7 @@ ExtensionsMenuView::~ExtensionsMenuView() {
 
 void ExtensionsMenuView::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
-  DCHECK_EQ(sender->id(), EXTENSIONS_SETTINGS_ID);
+  DCHECK_EQ(sender->GetID(), EXTENSIONS_SETTINGS_ID);
   chrome::ShowExtensions(browser_, std::string());
 }
 
@@ -106,7 +106,7 @@ void ExtensionsMenuView::Repopulate() {
   auto footer = std::make_unique<HoverButton>(
       this, std::move(icon_view),
       l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSION), base::string16());
-  footer->set_id(EXTENSIONS_SETTINGS_ID);
+  footer->SetID(EXTENSIONS_SETTINGS_ID);
   manage_extensions_button_for_testing_ = footer.get();
   AddChildView(std::move(footer));
 }

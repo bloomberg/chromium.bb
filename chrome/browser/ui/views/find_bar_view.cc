@@ -151,7 +151,7 @@ class FindBarView::MatchCountLabel : public views::Label {
 
 FindBarView::FindBarView(FindBarHost* host) : find_bar_host_(host) {
   auto find_text = std::make_unique<views::Textfield>();
-  find_text->set_id(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
+  find_text->SetID(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
   find_text->SetDefaultWidthInChars(kDefaultCharWidth);
   find_text->SetMinimumWidthInChars(kMinimumCharWidth);
   find_text->set_controller(this);
@@ -167,7 +167,7 @@ FindBarView::FindBarView(FindBarHost* host) : find_bar_host_(host) {
   separator_ = AddChildView(std::make_unique<views::Separator>());
 
   auto find_previous_button = views::CreateVectorImageButton(this);
-  find_previous_button->set_id(VIEW_ID_FIND_IN_PAGE_PREVIOUS_BUTTON);
+  find_previous_button->SetID(VIEW_ID_FIND_IN_PAGE_PREVIOUS_BUTTON);
   find_previous_button->SetFocusForPlatform();
   find_previous_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_PREVIOUS_TOOLTIP));
@@ -176,7 +176,7 @@ FindBarView::FindBarView(FindBarHost* host) : find_bar_host_(host) {
   find_previous_button_ = AddChildView(std::move(find_previous_button));
 
   auto find_next_button = views::CreateVectorImageButton(this);
-  find_next_button->set_id(VIEW_ID_FIND_IN_PAGE_NEXT_BUTTON);
+  find_next_button->SetID(VIEW_ID_FIND_IN_PAGE_NEXT_BUTTON);
   find_next_button->SetFocusForPlatform();
   find_next_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_NEXT_TOOLTIP));
@@ -185,7 +185,7 @@ FindBarView::FindBarView(FindBarHost* host) : find_bar_host_(host) {
   find_next_button_ = AddChildView(std::move(find_next_button));
 
   auto close_button = views::CreateVectorImageButton(this);
-  close_button->set_id(VIEW_ID_FIND_IN_PAGE_CLOSE_BUTTON);
+  close_button->SetID(VIEW_ID_FIND_IN_PAGE_CLOSE_BUTTON);
   close_button->SetFocusForPlatform();
   close_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_CLOSE_TOOLTIP));
@@ -379,7 +379,7 @@ void FindBarView::FocusAndSelectAll() {
 
 void FindBarView::ButtonPressed(
     views::Button* sender, const ui::Event& event) {
-  switch (sender->id()) {
+  switch (sender->GetID()) {
     case VIEW_ID_FIND_IN_PAGE_PREVIOUS_BUTTON:
     case VIEW_ID_FIND_IN_PAGE_NEXT_BUTTON:
       if (!find_text_->text().empty()) {
@@ -387,7 +387,7 @@ void FindBarView::ButtonPressed(
             find_bar_host_->GetFindBarController()->web_contents());
         find_tab_helper->StartFinding(
             find_text_->text(),
-            sender->id() == VIEW_ID_FIND_IN_PAGE_NEXT_BUTTON,
+            sender->GetID() == VIEW_ID_FIND_IN_PAGE_NEXT_BUTTON,
             false);  // Not case sensitive.
       }
       break;

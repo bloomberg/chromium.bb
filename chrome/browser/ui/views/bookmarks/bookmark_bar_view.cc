@@ -540,7 +540,7 @@ BookmarkBarView::BookmarkBarView(Browser* browser, BrowserView* browser_view)
       throbbing_view_(nullptr),
       bookmark_bar_state_(BookmarkBar::SHOW),
       show_folder_method_factory_(this) {
-  set_id(VIEW_ID_BOOKMARK_BAR);
+  SetID(VIEW_ID_BOOKMARK_BAR);
   Init();
 
   // TODO(lgrey): This layer was introduced to support clipping the bookmark
@@ -1519,7 +1519,7 @@ int BookmarkBarView::GetFirstHiddenNodeIndex() {
 MenuButton* BookmarkBarView::CreateOtherBookmarksButton() {
   // Title is set in Loaded.
   MenuButton* button = new BookmarkFolderButton(base::string16(), this);
-  button->set_id(VIEW_ID_OTHER_BOOKMARKS);
+  button->SetID(VIEW_ID_OTHER_BOOKMARKS);
   button->set_context_menu_controller(this);
   return button;
 }
@@ -1527,7 +1527,7 @@ MenuButton* BookmarkBarView::CreateOtherBookmarksButton() {
 MenuButton* BookmarkBarView::CreateManagedBookmarksButton() {
   // Title is set in Loaded.
   MenuButton* button = new BookmarkFolderButton(base::string16(), this);
-  button->set_id(VIEW_ID_MANAGED_BOOKMARKS);
+  button->SetID(VIEW_ID_MANAGED_BOOKMARKS);
   button->set_context_menu_controller(this);
   return button;
 }
@@ -1570,7 +1570,7 @@ views::LabelButton* BookmarkBarView::CreateAppsPageShortcutButton() {
       this, l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_APPS_SHORTCUT_NAME));
   button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_APPS_SHORTCUT_TOOLTIP));
-  button->set_id(VIEW_ID_BOOKMARK_BAR_ELEMENT);
+  button->SetID(VIEW_ID_BOOKMARK_BAR_ELEMENT);
   button->SetImage(views::Button::STATE_NORMAL,
                    *GetImageSkiaNamed(IDR_BOOKMARK_BAR_APPS_SHORTCUT));
   button->set_context_menu_controller(this);
@@ -1582,7 +1582,7 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
                                       views::LabelButton* button) {
   button->SetText(node->GetTitle());
   button->SetAccessibleName(node->GetTitle());
-  button->set_id(VIEW_ID_BOOKMARK_BAR_ELEMENT);
+  button->SetID(VIEW_ID_BOOKMARK_BAR_ELEMENT);
   // We don't always have a theme provider (ui tests, for example).
   const ui::ThemeProvider* const tp = GetThemeProvider();
   if (tp) {

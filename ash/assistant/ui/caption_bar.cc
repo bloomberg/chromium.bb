@@ -81,7 +81,7 @@ void CaptionBar::VisibilityChanged(views::View* starting_from, bool visible) {
 }
 
 void CaptionBar::ButtonPressed(views::Button* sender, const ui::Event& event) {
-  HandleButton(static_cast<AssistantButtonId>(sender->id()));
+  HandleButton(static_cast<AssistantButtonId>(sender->GetID()));
 }
 
 void CaptionBar::OnEvent(const ui::Event& event) {

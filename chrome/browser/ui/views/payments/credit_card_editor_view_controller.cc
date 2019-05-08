@@ -259,7 +259,7 @@ CreditCardEditorViewController::CreateHeaderView() {
     base::string16 link_text =
         l10n_util::GetStringUTF16(IDS_AUTOFILL_WALLET_MANAGEMENT_LINK_TEXT);
     auto edit_link = std::make_unique<views::StyledLabel>(link_text, this);
-    edit_link->set_id(
+    edit_link->SetID(
         static_cast<int>(DialogViewID::GOOGLE_PAYMENTS_EDIT_LINK_LABEL));
     edit_link->AddStyleRange(
         gfx::Range(0, link_text.size()),
@@ -285,7 +285,7 @@ CreditCardEditorViewController::CreateCustomFieldView(
   if (IsEditingServerCard()) {
     std::unique_ptr<views::Label> exp_label = std::make_unique<views::Label>(
         credit_card_to_edit_->ExpirationDateForDisplay());
-    exp_label->set_id(
+    exp_label->SetID(
         GetInputFieldViewId(autofill::CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR));
     exp_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
@@ -351,8 +351,7 @@ CreditCardEditorViewController::CreateExtraViewForField(
   // The button to add new billing addresses.
   std::unique_ptr<views::Button> add_button(
       views::MdTextButton::Create(this, l10n_util::GetStringUTF16(IDS_ADD)));
-  add_button->set_id(
-      static_cast<int>(DialogViewID::ADD_BILLING_ADDRESS_BUTTON));
+  add_button->SetID(static_cast<int>(DialogViewID::ADD_BILLING_ADDRESS_BUTTON));
   add_button->set_tag(add_billing_address_button_tag_);
   add_button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   button_view->AddChildView(add_button.release());

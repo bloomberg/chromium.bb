@@ -63,10 +63,10 @@ SubmenuView::~SubmenuView() {
 }
 
 bool SubmenuView::HasEmptyMenuItemView() const {
-  return std::any_of(children().cbegin(), children().cend(),
-                     [](const View* child) {
-                       return child->id() == MenuItemView::kEmptyMenuItemViewID;
-                     });
+  return std::any_of(
+      children().cbegin(), children().cend(), [](const View* child) {
+        return child->GetID() == MenuItemView::kEmptyMenuItemViewID;
+      });
 }
 
 bool SubmenuView::HasVisibleChildren() const {
@@ -78,7 +78,7 @@ bool SubmenuView::HasVisibleChildren() const {
 SubmenuView::MenuItems SubmenuView::GetMenuItems() const {
   MenuItems menu_items;
   for (View* child : children()) {
-    if (child->id() == MenuItemView::kMenuItemViewID)
+    if (child->GetID() == MenuItemView::kMenuItemViewID)
       menu_items.push_back(static_cast<MenuItemView*>(child));
   }
   return menu_items;
@@ -155,7 +155,7 @@ gfx::Size SubmenuView::CalculatePreferredSize() const {
   for (const View* child : children()) {
     if (!child->visible())
       continue;
-    if (child->id() == MenuItemView::kMenuItemViewID) {
+    if (child->GetID() == MenuItemView::kMenuItemViewID) {
       const MenuItemView* menu = static_cast<const MenuItemView*>(child);
       const MenuItemView::MenuItemDimensions& dimensions =
           menu->GetDimensions();

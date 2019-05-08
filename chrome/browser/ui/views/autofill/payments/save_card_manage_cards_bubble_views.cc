@@ -69,7 +69,7 @@ views::View* SaveCardManageCardsBubbleViews::CreateExtraView() {
   views::View* manage_cards_button =
       views::MdTextButton::CreateSecondaryUiButton(
           this, l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE_CARDS));
-  manage_cards_button->set_id(DialogViewId::MANAGE_CARDS_BUTTON);
+  manage_cards_button->SetID(DialogViewId::MANAGE_CARDS_BUTTON);
   return manage_cards_button;
 }
 
@@ -88,7 +88,7 @@ std::unique_ptr<views::View>
 SaveCardManageCardsBubbleViews::CreateMainContentView() {
   std::unique_ptr<views::View> view =
       SaveCardBubbleViews::CreateMainContentView();
-  view->set_id(DialogViewId::MANAGE_CARDS_VIEW);
+  view->SetID(DialogViewId::MANAGE_CARDS_VIEW);
   return view;
 }
 

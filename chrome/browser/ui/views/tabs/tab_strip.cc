@@ -1521,10 +1521,11 @@ Tab* TabStrip::GetTabAt(const gfx::Point& point) {
     return nullptr;  // No tab contains the point.
 
   // Walk up the view hierarchy until we find a tab, or the TabStrip.
-  while (view && view != this && view->id() != VIEW_ID_TAB)
+  while (view && view != this && view->GetID() != VIEW_ID_TAB)
     view = view->parent();
 
-  return view && view->id() == VIEW_ID_TAB ? static_cast<Tab*>(view) : nullptr;
+  return view && view->GetID() == VIEW_ID_TAB ? static_cast<Tab*>(view)
+                                              : nullptr;
 }
 
 const Tab* TabStrip::GetAdjacentTab(const Tab* tab, int offset) {
@@ -1999,7 +2000,7 @@ void TabStrip::HandleDragExited() {
 // TabStrip, private:
 
 void TabStrip::Init() {
-  set_id(VIEW_ID_TAB_STRIP);
+  SetID(VIEW_ID_TAB_STRIP);
   // So we get enter/exit on children to switch stacked layout on and off.
   set_notify_enter_exit_on_child(true);
 

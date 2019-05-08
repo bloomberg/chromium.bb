@@ -32,7 +32,7 @@ std::string GetViewDebugString(const views::View* view) {
     classes.insert(classes.begin(), ancestor->GetClassName());
 
   return base::JoinString(classes, " > ") +
-         base::StringPrintf(" (id %d)", view->id());
+         base::StringPrintf(" (id %d)", view->GetID());
 }
 
 bool DoesViewHaveAccessibleNameOrLabelError(ui::AXNodeData* data) {

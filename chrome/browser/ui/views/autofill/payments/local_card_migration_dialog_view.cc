@@ -501,7 +501,7 @@ void LocalCardMigrationDialogView::ConstructView() {
 
   if (view_state == LocalCardMigrationDialogState::kOffered) {
     offer_view_ = new LocalCardMigrationOfferView(controller_, this);
-    offer_view_->set_id(DialogViewId::MAIN_CONTENT_VIEW_MIGRATION_OFFER_DIALOG);
+    offer_view_->SetID(DialogViewId::MAIN_CONTENT_VIEW_MIGRATION_OFFER_DIALOG);
     card_list_view_ = offer_view_->card_list_view_;
     AddChildView(offer_view_);
   } else {

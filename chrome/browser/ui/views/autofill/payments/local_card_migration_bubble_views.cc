@@ -170,7 +170,7 @@ void LocalCardMigrationBubbleViews::Init() {
   explanatory_message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   explanatory_message->SetMultiLine(true);
   AddChildView(explanatory_message);
-  set_id(DialogViewId::MAIN_CONTENT_VIEW_MIGRATION_BUBBLE);
+  SetID(DialogViewId::MAIN_CONTENT_VIEW_MIGRATION_BUBBLE);
 }
 
 }  // namespace autofill

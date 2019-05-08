@@ -61,8 +61,7 @@ std::unique_ptr<views::View> CreateErrorLabelView(
 
   std::unique_ptr<views::Label> error_label =
       std::make_unique<views::Label>(error, CONTEXT_BODY_TEXT_SMALL);
-  error_label->set_id(static_cast<int>(DialogViewID::ERROR_LABEL_OFFSET) +
-                      type);
+  error_label->SetID(static_cast<int>(DialogViewID::ERROR_LABEL_OFFSET) + type);
   error_label->SetEnabledColor(error_label->GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_AlertSeverityHigh));
   error_label->SetMultiLine(true);
@@ -134,7 +133,7 @@ std::unique_ptr<views::Button> EditorViewController::CreatePrimaryButton() {
       views::MdTextButton::CreateSecondaryUiBlueButton(
           this, l10n_util::GetStringUTF16(IDS_DONE)));
   button->set_tag(static_cast<int>(EditorViewControllerTags::SAVE_BUTTON));
-  button->set_id(static_cast<int>(DialogViewID::EDITOR_SAVE_BUTTON));
+  button->SetID(static_cast<int>(DialogViewID::EDITOR_SAVE_BUTTON));
   return button;
 }
 
@@ -213,7 +212,7 @@ EditorViewController::CreateComboboxForField(const EditorField& field,
   }
 
   // Using autofill field type as a view ID.
-  combobox->set_id(GetInputFieldViewId(field.type));
+  combobox->SetID(GetInputFieldViewId(field.type));
   combobox->set_listener(this);
   comboboxes_.insert(std::make_pair(combobox.get(), field));
   return combobox;
@@ -396,7 +395,7 @@ views::View* EditorViewController::CreateInputField(views::GridLayout* layout,
         text_field->SetTextInputType(ui::TextInputType::TEXT_INPUT_TYPE_NUMBER);
       text_field->set_controller(this);
       // Using autofill field type as a view ID (for testing).
-      text_field->set_id(GetInputFieldViewId(field.type));
+      text_field->SetID(GetInputFieldViewId(field.type));
       text_fields_.insert(std::make_pair(text_field, field));
       focusable_field = text_field;
 
@@ -434,7 +433,7 @@ views::View* EditorViewController::CreateInputField(views::GridLayout* layout,
     case EditorField::ControlType::READONLY_LABEL: {
       std::unique_ptr<views::Label> label =
           std::make_unique<views::Label>(GetInitialValueForType(field.type));
-      label->set_id(GetInputFieldViewId(field.type));
+      label->SetID(GetInputFieldViewId(field.type));
       label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       layout->AddView(label.release(), 1, 1, views::GridLayout::FILL,
                       views::GridLayout::FILL, 0, kInputFieldHeight);

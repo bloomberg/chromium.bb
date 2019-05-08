@@ -181,7 +181,7 @@ class TranslateBubbleViewTest : public ChromeViewsTestBase {
 
   void PressButton(TranslateBubbleView::ButtonID id) {
     views::LabelButton button(nullptr, base::ASCIIToUTF16("hello"));
-    button.set_id(id);
+    button.SetID(id);
 
     bubble_->ButtonPressed(&button,
                            ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN,

@@ -56,7 +56,7 @@ const char InfoBarContainerView::kViewClassName[] = "InfoBarContainerView";
 InfoBarContainerView::InfoBarContainerView(Delegate* delegate)
     : infobars::InfoBarContainer(delegate),
       content_shadow_(new ContentShadow()) {
-  set_id(VIEW_ID_INFO_BAR_CONTAINER);
+  SetID(VIEW_ID_INFO_BAR_CONTAINER);
   AddChildView(content_shadow_);
 }
 

@@ -128,7 +128,7 @@ Tab::Tab(TabController* controller)
   // hover.
   set_notify_enter_exit_on_child(true);
 
-  set_id(VIEW_ID_TAB);
+  SetID(VIEW_ID_TAB);
 
   // This will cause calls to GetContentsBounds to return only the rectangle
   // inside the tab shape, rather than to its extents.

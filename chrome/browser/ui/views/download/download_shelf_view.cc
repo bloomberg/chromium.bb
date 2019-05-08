@@ -97,7 +97,7 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
 
   mouse_watcher_.set_notify_on_exit_time(
       base::TimeDelta::FromMilliseconds(kNotifyOnExitTimeMS));
-  set_id(VIEW_ID_DOWNLOAD_SHELF);
+  SetID(VIEW_ID_DOWNLOAD_SHELF);
   parent->AddChildView(this);
 }
 

@@ -657,14 +657,36 @@ View* View::GetViewByID(int id) {
   return const_cast<View*>(const_cast<const View*>(this)->GetViewByID(id));
 }
 
+void View::SetID(int id) {
+  if (id == id_)
+    return;
+
+  id_ = id;
+
+  OnPropertyChanged(&id_, kPropertyEffectsNone);
+}
+
+PropertyChangedSubscription View::AddIDChangedCallback(
+    PropertyChangedCallback callback) {
+  return AddPropertyChangedCallback(&id_, callback);
+}
+
 void View::SetGroup(int gid) {
   // Don't change the group id once it's set.
   DCHECK(group_ == -1 || group_ == gid);
-  group_ = gid;
+  if (group_ != gid) {
+    group_ = gid;
+    OnPropertyChanged(&group_, kPropertyEffectsNone);
+  }
 }
 
 int View::GetGroup() const {
   return group_;
+}
+
+PropertyChangedSubscription View::AddGroupChangedCallback(
+    PropertyChangedCallback callback) {
+  return AddPropertyChangedCallback(&group_, callback);
 }
 
 bool View::IsGroupFocusTraversable() const {
@@ -2707,6 +2729,8 @@ bool View::DoDrag(const ui::LocatedEvent& event,
 // declaration for View.
 BEGIN_METADATA(View)
 ADD_PROPERTY_METADATA(View, bool, Enabled)
+ADD_PROPERTY_METADATA(View, int, Group)
+ADD_PROPERTY_METADATA(View, int, ID)
 ADD_PROPERTY_METADATA(View, bool, Visible)
 ADD_READONLY_PROPERTY_METADATA(View, gfx::Size, MinimumSize)
 ADD_READONLY_PROPERTY_METADATA(View, gfx::Size, MaximumSize)

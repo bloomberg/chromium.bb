@@ -92,7 +92,7 @@ class AutoclickMenuButton : public TopShortcutButton {
   }
 
   void SetId(AutoclickMenuView::ButtonId id) {
-    views::View::set_id(static_cast<int>(id));
+    views::View::SetID(static_cast<int>(id));
   }
 
  private:

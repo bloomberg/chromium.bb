@@ -31,7 +31,7 @@ LocalCardMigrationIconView::LocalCardMigrationIconView(
                          font_list),
       browser_(browser) {
   DCHECK(delegate);
-  set_id(VIEW_ID_MIGRATE_LOCAL_CREDIT_CARD_BUTTON);
+  SetID(VIEW_ID_MIGRATE_LOCAL_CREDIT_CARD_BUTTON);
   SetUpForInOutAnimation();
 }
 

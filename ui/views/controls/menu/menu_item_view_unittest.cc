@@ -118,7 +118,7 @@ TEST(MenuItemViewUnitTest, TestEmptyTopLevelWhenAllItemsAreHidden) {
   ASSERT_EQ(3u, submenu->children().size());
   auto* empty_item = static_cast<MenuItemView*>(submenu->children().front());
   ASSERT_TRUE(empty_item);
-  ASSERT_EQ(MenuItemView::kEmptyMenuItemViewID, empty_item->id());
+  ASSERT_EQ(MenuItemView::kEmptyMenuItemViewID, empty_item->GetID());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_APP_MENU_EMPTY_SUBMENU),
             empty_item->title());
 }
@@ -156,7 +156,7 @@ TEST(MenuItemViewUnitTest, TestEmptySubmenuWhenAllChildItemsAreHidden) {
   // if it already has an empty menu item.
   root_menu.AddEmptyMenus();
   ASSERT_EQ(3u, submenu->children().size());
-  ASSERT_EQ(MenuItemView::kEmptyMenuItemViewID, empty_item->id());
+  ASSERT_EQ(MenuItemView::kEmptyMenuItemViewID, empty_item->GetID());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_APP_MENU_EMPTY_SUBMENU),
             empty_item->title());
 }

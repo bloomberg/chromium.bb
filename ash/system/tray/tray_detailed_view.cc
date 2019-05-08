@@ -51,7 +51,7 @@ const int kTitleRowSeparatorIndex = 1;
 // the children as sticky header rows. The sticky header rows are not scrolled
 // above the top of the visible viewport until the next one "pushes" it up and
 // are painted above other children. To indicate that a child is a sticky header
-// row use set_id(VIEW_ID_STICKY_HEADER).
+// row use SetID(VIEW_ID_STICKY_HEADER).
 class ScrollContentsView : public views::View {
  public:
   explicit ScrollContentsView(DetailedViewDelegate* delegate)
@@ -73,7 +73,7 @@ class ScrollContentsView : public views::View {
       // Sticky header is at the top.
       if (header.view->y() != header.natural_offset) {
         sticky_header_height = header.view->bounds().height();
-        DCHECK_EQ(VIEW_ID_STICKY_HEADER, header.view->id());
+        DCHECK_EQ(VIEW_ID_STICKY_HEADER, header.view->GetID());
         break;
       }
     }
@@ -88,13 +88,13 @@ class ScrollContentsView : public views::View {
                                         paint_info.paint_recording_scale_y()));
       clip_recorder.ClipRect(clip_rect);
       for (auto* child : children()) {
-        if (child->id() != VIEW_ID_STICKY_HEADER && !child->layer())
+        if (child->GetID() != VIEW_ID_STICKY_HEADER && !child->layer())
           child->Paint(paint_info);
       }
     }
     // Paint sticky headers.
     for (auto* child : children()) {
-      if (child->id() == VIEW_ID_STICKY_HEADER && !child->layer())
+      if (child->GetID() == VIEW_ID_STICKY_HEADER && !child->layer())
         child->Paint(paint_info);
     }
 
@@ -117,7 +117,7 @@ class ScrollContentsView : public views::View {
     views::View::Layout();
     headers_.clear();
     for (auto* child : children()) {
-      if (child->id() == VIEW_ID_STICKY_HEADER)
+      if (child->GetID() == VIEW_ID_STICKY_HEADER)
         headers_.emplace_back(child);
     }
     PositionHeaderRows();
@@ -127,9 +127,10 @@ class ScrollContentsView : public views::View {
     // Place sticky headers last in the child order so that they wind up on top
     // in Z order.
     View::Views children_in_z_order = children();
-    std::stable_partition(
-        children_in_z_order.begin(), children_in_z_order.end(),
-        [](const View* child) { return child->id() != VIEW_ID_STICKY_HEADER; });
+    std::stable_partition(children_in_z_order.begin(),
+                          children_in_z_order.end(), [](const View* child) {
+                            return child->GetID() != VIEW_ID_STICKY_HEADER;
+                          });
     return children_in_z_order;
   }
 
@@ -149,7 +150,7 @@ class ScrollContentsView : public views::View {
       // header).
       DCHECK_EQ(box_layout_, GetLayoutManager());
       box_layout_->set_inside_border_insets(
-          gfx::Insets(details.child->id() == VIEW_ID_STICKY_HEADER
+          gfx::Insets(details.child->GetID() == VIEW_ID_STICKY_HEADER
                           ? 0
                           : kMenuSeparatorVerticalPadding,
                       0, kMenuSeparatorVerticalPadding, 0));

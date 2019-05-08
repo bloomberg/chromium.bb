@@ -56,7 +56,7 @@ ToolbarActionView::ToolbarActionView(
       delegate_(delegate) {
   SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
-  set_id(VIEW_ID_BROWSER_ACTION);
+  SetID(VIEW_ID_BROWSER_ACTION);
   view_controller_->SetDelegate(this);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   set_drag_controller(delegate_);

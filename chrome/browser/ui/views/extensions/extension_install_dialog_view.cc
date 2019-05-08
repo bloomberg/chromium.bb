@@ -57,7 +57,7 @@ class RatingsView : public views::View {
  public:
   RatingsView(double rating, int rating_count)
       : rating_(rating), rating_count_(rating_count) {
-    set_id(ExtensionInstallDialogView::kRatingsViewId);
+    SetID(ExtensionInstallDialogView::kRatingsViewId);
     SetLayoutManager(
         std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
   }

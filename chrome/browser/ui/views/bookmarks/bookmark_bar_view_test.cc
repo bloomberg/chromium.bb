@@ -1366,7 +1366,7 @@ class BookmarkBarViewTest13 : public BookmarkBarViewEventTestBase {
     const auto i = std::find_if(
         submenu->children().begin(), submenu->children().end(),
         [](const auto* child) {
-          return child->id() != views::MenuItemView::kMenuItemViewID;
+          return child->GetID() != views::MenuItemView::kMenuItemViewID;
         });
     ASSERT_FALSE(i == submenu->children().end());
 
@@ -1912,7 +1912,7 @@ class BookmarkBarViewTest21 : public BookmarkBarViewEventTestBase {
 
     views::View* view = submenu->children().front();
     ASSERT_NE(nullptr, view);
-    EXPECT_EQ(views::MenuItemView::kEmptyMenuItemViewID, view->id());
+    EXPECT_EQ(views::MenuItemView::kEmptyMenuItemViewID, view->GetID());
 
     // Right click on the first child to get its context menu.
     ui_test_utils::MoveMouseToCenterAndPress(

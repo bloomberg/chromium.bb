@@ -78,7 +78,7 @@ BrowserActionsContainer::BrowserActionsContainer(
       browser_(browser),
       main_container_(main_container),
       interactive_(interactive) {
-  set_id(VIEW_ID_BROWSER_ACTION_TOOLBAR);
+  SetID(VIEW_ID_BROWSER_ACTION_TOOLBAR);
 
   toolbar_actions_bar_ = delegate_->CreateToolbarActionsBar(
       this, browser,

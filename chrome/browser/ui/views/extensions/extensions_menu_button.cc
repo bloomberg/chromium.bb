@@ -54,7 +54,7 @@ const char* ExtensionsMenuButton::GetClassName() const {
 
 void ExtensionsMenuButton::ButtonPressed(Button* sender,
                                          const ui::Event& event) {
-  if (sender->id() == EXTENSION_CONTEXT_MENU) {
+  if (sender->GetID() == EXTENSION_CONTEXT_MENU) {
     ShowContextMenu(gfx::Point(), ui::MENU_SOURCE_MOUSE);
     return;
   }
@@ -141,7 +141,7 @@ void ExtensionsMenuButton::ConfigureSecondaryView() {
 
   auto context_menu_button =
       std::make_unique<views::MenuButton>(base::string16(), this);
-  context_menu_button->set_id(EXTENSION_CONTEXT_MENU);
+  context_menu_button->SetID(EXTENSION_CONTEXT_MENU);
   context_menu_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_MENU_CONTEXT_MENU_TOOLTIP));
 

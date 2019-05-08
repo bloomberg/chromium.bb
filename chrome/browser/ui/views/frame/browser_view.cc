@@ -2545,14 +2545,14 @@ void BrowserView::InitViews() {
     SetToolbarButtonProvider(toolbar_);
 
   contents_web_view_ = new ContentsWebView(browser_->profile());
-  contents_web_view_->set_id(VIEW_ID_TAB_CONTAINER);
+  contents_web_view_->SetID(VIEW_ID_TAB_CONTAINER);
   contents_web_view_->SetEmbedFullscreenWidgetMode(true);
 
   web_contents_close_handler_.reset(
       new WebContentsCloseHandler(contents_web_view_));
 
   devtools_web_view_ = new views::WebView(browser_->profile());
-  devtools_web_view_->set_id(VIEW_ID_DEV_TOOLS_DOCKED);
+  devtools_web_view_->SetID(VIEW_ID_DEV_TOOLS_DOCKED);
   devtools_web_view_->SetVisible(false);
 
   contents_container_ = new views::View();

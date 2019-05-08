@@ -130,7 +130,7 @@ void LocaleDetailedView::CreateItems() {
     LocaleItem* item =
         new LocaleItem(this, entry->iso_code, entry->display_name, checked);
     scroll_content()->AddChildView(item);
-    item->set_id(id);
+    item->SetID(id);
     id_to_locale_[id] = entry->iso_code;
     ++id;
   }
@@ -138,7 +138,7 @@ void LocaleDetailedView::CreateItems() {
 }
 
 void LocaleDetailedView::HandleViewClicked(views::View* view) {
-  auto it = id_to_locale_.find(view->id());
+  auto it = id_to_locale_.find(view->GetID());
   DCHECK(it != id_to_locale_.end());
   const std::string locale_iso_code = it->second;
   if (locale_iso_code !=

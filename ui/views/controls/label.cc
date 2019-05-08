@@ -480,7 +480,7 @@ void Label::PaintText(gfx::Canvas* canvas) {
 
     if (view->layer() && view->layer()->fills_bounds_opaquely()) {
       DLOG(WARNING) << "Ancestor view has a non-opaque layer: "
-                    << view->GetClassName() << " with ID " << view->id();
+                    << view->GetClassName() << " with ID " << view->GetID();
       break;
     }
   }

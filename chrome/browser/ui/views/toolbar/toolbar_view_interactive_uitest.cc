@@ -239,12 +239,12 @@ void ToolbarViewTest::RunToolbarCycleFocusTest(Browser* browser) {
   while (view != first_view) {
     focus_manager->AdvanceFocus(false);
     view = focus_manager->GetFocusedView();
-    ids.push_back(view->id());
-    if (view->id() == VIEW_ID_RELOAD_BUTTON)
+    ids.push_back(view->GetID());
+    if (view->GetID() == VIEW_ID_RELOAD_BUTTON)
       found_reload = true;
-    if (view->id() == VIEW_ID_APP_MENU)
+    if (view->GetID() == VIEW_ID_APP_MENU)
       found_app_menu = true;
-    if (view->id() == VIEW_ID_OMNIBOX)
+    if (view->GetID() == VIEW_ID_OMNIBOX)
       found_location_bar = true;
     if (ids.size() > 100)
       GTEST_FAIL() << "Tabbed 100 times, still haven't cycled back!";
@@ -261,7 +261,7 @@ void ToolbarViewTest::RunToolbarCycleFocusTest(Browser* browser) {
   while (view != first_view) {
     focus_manager->AdvanceFocus(true);
     view = focus_manager->GetFocusedView();
-    reverse_ids.push_back(view->id());
+    reverse_ids.push_back(view->GetID());
     if (reverse_ids.size() > 100)
       GTEST_FAIL() << "Tabbed 100 times, still haven't cycled back!";
   }

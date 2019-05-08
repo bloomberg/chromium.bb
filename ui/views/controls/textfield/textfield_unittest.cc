@@ -456,13 +456,13 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     widget_->SetContentsView(container);
     container->AddChildView(textfield_);
     textfield_->SetBoundsRect(params.bounds);
-    textfield_->set_id(1);
+    textfield_->SetID(1);
     test_api_ = std::make_unique<TextfieldTestApi>(textfield_);
 
     for (int i = 1; i < count; i++) {
       Textfield* textfield = new Textfield();
       container->AddChildView(textfield);
-      textfield->set_id(i + 1);
+      textfield->SetID(i + 1);
     }
 
     model_ = test_api_->model();
@@ -1493,54 +1493,54 @@ TEST_F(TextfieldTest, FocusTraversalTest) {
   InitTextfields(3);
   textfield_->RequestFocus();
 
-  EXPECT_EQ(1, GetFocusedView()->id());
+  EXPECT_EQ(1, GetFocusedView()->GetID());
   widget_->GetFocusManager()->AdvanceFocus(false);
-  EXPECT_EQ(2, GetFocusedView()->id());
+  EXPECT_EQ(2, GetFocusedView()->GetID());
   widget_->GetFocusManager()->AdvanceFocus(false);
-  EXPECT_EQ(3, GetFocusedView()->id());
+  EXPECT_EQ(3, GetFocusedView()->GetID());
   // Cycle back to the first textfield.
   widget_->GetFocusManager()->AdvanceFocus(false);
-  EXPECT_EQ(1, GetFocusedView()->id());
+  EXPECT_EQ(1, GetFocusedView()->GetID());
 
   widget_->GetFocusManager()->AdvanceFocus(true);
-  EXPECT_EQ(3, GetFocusedView()->id());
+  EXPECT_EQ(3, GetFocusedView()->GetID());
   widget_->GetFocusManager()->AdvanceFocus(true);
-  EXPECT_EQ(2, GetFocusedView()->id());
+  EXPECT_EQ(2, GetFocusedView()->GetID());
   widget_->GetFocusManager()->AdvanceFocus(true);
-  EXPECT_EQ(1, GetFocusedView()->id());
+  EXPECT_EQ(1, GetFocusedView()->GetID());
   // Cycle back to the last textfield.
   widget_->GetFocusManager()->AdvanceFocus(true);
-  EXPECT_EQ(3, GetFocusedView()->id());
+  EXPECT_EQ(3, GetFocusedView()->GetID());
 
   // Request focus should still work.
   textfield_->RequestFocus();
-  EXPECT_EQ(1, GetFocusedView()->id());
+  EXPECT_EQ(1, GetFocusedView()->GetID());
 
   // Test if clicking on textfield view sets the focus.
   widget_->GetFocusManager()->AdvanceFocus(true);
-  EXPECT_EQ(3, GetFocusedView()->id());
+  EXPECT_EQ(3, GetFocusedView()->GetID());
   MoveMouseTo(gfx::Point(0, GetCursorYForTesting()));
   ClickLeftMouseButton();
-  EXPECT_EQ(1, GetFocusedView()->id());
+  EXPECT_EQ(1, GetFocusedView()->GetID());
 
   // Tab/Shift+Tab should also cycle focus, not insert a tab character.
   SendKeyEvent(ui::VKEY_TAB, false, false);
-  EXPECT_EQ(2, GetFocusedView()->id());
+  EXPECT_EQ(2, GetFocusedView()->GetID());
   SendKeyEvent(ui::VKEY_TAB, false, false);
-  EXPECT_EQ(3, GetFocusedView()->id());
+  EXPECT_EQ(3, GetFocusedView()->GetID());
   // Cycle back to the first textfield.
   SendKeyEvent(ui::VKEY_TAB, false, false);
-  EXPECT_EQ(1, GetFocusedView()->id());
+  EXPECT_EQ(1, GetFocusedView()->GetID());
 
   SendKeyEvent(ui::VKEY_TAB, true, false);
-  EXPECT_EQ(3, GetFocusedView()->id());
+  EXPECT_EQ(3, GetFocusedView()->GetID());
   SendKeyEvent(ui::VKEY_TAB, true, false);
-  EXPECT_EQ(2, GetFocusedView()->id());
+  EXPECT_EQ(2, GetFocusedView()->GetID());
   SendKeyEvent(ui::VKEY_TAB, true, false);
-  EXPECT_EQ(1, GetFocusedView()->id());
+  EXPECT_EQ(1, GetFocusedView()->GetID());
   // Cycle back to the last textfield.
   SendKeyEvent(ui::VKEY_TAB, true, false);
-  EXPECT_EQ(3, GetFocusedView()->id());
+  EXPECT_EQ(3, GetFocusedView()->GetID());
 }
 
 TEST_F(TextfieldTest, ContextMenuDisplayTest) {
@@ -2241,7 +2241,7 @@ TEST_F(TextfieldTest, Yank) {
 
   // Move focus to next textfield.
   widget_->GetFocusManager()->AdvanceFocus(false);
-  EXPECT_EQ(2, GetFocusedView()->id());
+  EXPECT_EQ(2, GetFocusedView()->GetID());
   Textfield* textfield2 = static_cast<Textfield*>(GetFocusedView());
   EXPECT_TRUE(textfield2->text().empty());
 
@@ -2969,7 +2969,7 @@ TEST_F(TextfieldTest, SelectionClipboard_Password) {
 
   // Move focus to the next textfield.
   widget_->GetFocusManager()->AdvanceFocus(false);
-  EXPECT_EQ(2, GetFocusedView()->id());
+  EXPECT_EQ(2, GetFocusedView()->GetID());
   Textfield* textfield2 = static_cast<Textfield*>(GetFocusedView());
 
   // Select-all should not modify the selection clipboard for a password
@@ -3355,7 +3355,7 @@ TEST_F(TextfieldTest, TextfieldInitialization) {
   container->AddChildView(new_textfield);
 
   new_textfield->SetBoundsRect(params.bounds);
-  new_textfield->set_id(1);
+  new_textfield->SetID(1);
   test_api_ = std::make_unique<TextfieldTestApi>(new_textfield);
   widget->Show();
   EXPECT_FALSE(new_textfield->HasFocus());

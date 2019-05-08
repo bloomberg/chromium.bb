@@ -78,7 +78,7 @@ class ReadOnlyOriginView : public views::View {
       std::unique_ptr<views::Label> title_label =
           std::make_unique<views::Label>(page_title,
                                          views::style::CONTEXT_DIALOG_TITLE);
-      title_label->set_id(static_cast<int>(DialogViewID::SHEET_TITLE));
+      title_label->SetID(static_cast<int>(DialogViewID::SHEET_TITLE));
       title_label->SetFocusBehavior(
           views::View::FocusBehavior::ACCESSIBLE_ONLY);
       // Turn off autoreadability because the computed |foreground| color takes
@@ -94,7 +94,7 @@ class ReadOnlyOriginView : public views::View {
     origin_label->SetElideBehavior(gfx::ELIDE_HEAD);
     if (!title_is_valid) {
       // Set the origin as title when the page title is invalid.
-      origin_label->set_id(static_cast<int>(DialogViewID::SHEET_TITLE));
+      origin_label->SetID(static_cast<int>(DialogViewID::SHEET_TITLE));
 
       // Pad to keep header as the same height as when the page title is valid.
       constexpr int kVerticalPadding = 10;

@@ -819,9 +819,9 @@ void LockDebugView::CycleAuthErrorMessage() {
 void LockDebugView::ButtonPressed(views::Button* sender,
                                   const ui::Event& event) {
   // Add or remove a user.
-  bool is_add_user = sender->id() == ButtonId::kGlobalAddUser;
-  bool is_add_many_users = sender->id() == ButtonId::kGlobalAddTenUsers;
-  bool is_remove_user = sender->id() == ButtonId::kGlobalRemoveUser;
+  bool is_add_user = sender->GetID() == ButtonId::kGlobalAddUser;
+  bool is_add_many_users = sender->GetID() == ButtonId::kGlobalAddTenUsers;
+  bool is_remove_user = sender->GetID() == ButtonId::kGlobalRemoveUser;
   if (is_add_user || is_add_many_users || is_remove_user) {
     int num_users = debug_data_dispatcher_->GetUserCount();
     if (is_add_user)
@@ -839,20 +839,20 @@ void LockDebugView::ButtonPressed(views::Button* sender,
   }
 
   // Enable or disable wallpaper blur.
-  if (sender->id() == ButtonId::kGlobalToggleBlur) {
+  if (sender->GetID() == ButtonId::kGlobalToggleBlur) {
     Shell::Get()->wallpaper_controller()->UpdateWallpaperBlur(
         !Shell::Get()->wallpaper_controller()->IsWallpaperBlurred());
     return;
   }
 
   // Enable or disable note action.
-  if (sender->id() == ButtonId::kGlobalToggleNoteAction) {
+  if (sender->GetID() == ButtonId::kGlobalToggleNoteAction) {
     debug_data_dispatcher_->ToggleLockScreenNoteButton();
     return;
   }
 
   // Enable or disable caps lock.
-  if (sender->id() == ButtonId::kGlobalToggleCapsLock) {
+  if (sender->GetID() == ButtonId::kGlobalToggleCapsLock) {
     ImeController* ime_controller = Shell::Get()->ime_controller();
     ime_controller->SetCapsLockEnabled(!ime_controller->IsCapsLockEnabled());
     return;
@@ -860,7 +860,7 @@ void LockDebugView::ButtonPressed(views::Button* sender,
 
   // Iteratively adds more info to the system info labels to test 7 permutations
   // and then disables the button.
-  if (sender->id() == ButtonId::kGlobalAddSystemInfo) {
+  if (sender->GetID() == ButtonId::kGlobalAddSystemInfo) {
     DCHECK_LT(num_system_info_clicks_, 7u);
     ++num_system_info_clicks_;
     if (num_system_info_clicks_ == 7u)
@@ -879,7 +879,7 @@ void LockDebugView::ButtonPressed(views::Button* sender,
   // Enable/disable auth. This is useful for testing auth failure scenarios on
   // Linux Desktop builds, where the cryptohome dbus stub accepts all passwords
   // as valid.
-  if (sender->id() == ButtonId::kGlobalToggleAuth) {
+  if (sender->GetID() == ButtonId::kGlobalToggleAuth) {
     auto get_next_auth_state = [](LoginScreenController::ForceFailAuth auth) {
       switch (auth) {
         case LoginScreenController::ForceFailAuth::kOff:
@@ -914,22 +914,22 @@ void LockDebugView::ButtonPressed(views::Button* sender,
     return;
   }
 
-  if (sender->id() == ButtonId::kGlobalAddKioskApp) {
+  if (sender->GetID() == ButtonId::kGlobalAddKioskApp) {
     debug_data_dispatcher_->AddKioskApp(
         Shelf::ForWindow(GetWidget()->GetNativeWindow())->shelf_widget());
   }
 
-  if (sender->id() == ButtonId::kGlobalRemoveKioskApp) {
+  if (sender->GetID() == ButtonId::kGlobalRemoveKioskApp) {
     debug_data_dispatcher_->RemoveKioskApp(
         Shelf::ForWindow(GetWidget()->GetNativeWindow())->shelf_widget());
   }
 
-  if (sender->id() == ButtonId::kGlobalShowKioskError) {
+  if (sender->GetID() == ButtonId::kGlobalShowKioskError) {
     Shell::Get()->login_screen_controller()->ShowKioskAppError(
         "Test error message.");
   }
 
-  if (sender->id() == ButtonId::kGlobalToggleDebugDetachableBase) {
+  if (sender->GetID() == ButtonId::kGlobalToggleDebugDetachableBase) {
     if (debug_detachable_base_model_->debugging_pairing_state()) {
       debug_detachable_base_model_->ClearDebugPairingState();
       // In authenticated state, per user column has a button to mark the
@@ -946,7 +946,7 @@ void LockDebugView::ButtonPressed(views::Button* sender,
     return;
   }
 
-  if (sender->id() == ButtonId::kGlobalCycleDetachableBaseStatus) {
+  if (sender->GetID() == ButtonId::kGlobalCycleDetachableBaseStatus) {
     debug_detachable_base_model_->SetPairingState(
         debug_detachable_base_model_->NextPairingStatus(),
         debug_detachable_base_model_->NextBaseId());
@@ -956,7 +956,7 @@ void LockDebugView::ButtonPressed(views::Button* sender,
     return;
   }
 
-  if (sender->id() == ButtonId::kGlobalCycleDetachableBaseId) {
+  if (sender->GetID() == ButtonId::kGlobalCycleDetachableBaseId) {
     debug_detachable_base_model_->SetPairingState(
         DetachableBasePairingStatus::kAuthenticated,
         debug_detachable_base_model_->NextBaseId());
@@ -965,13 +965,13 @@ void LockDebugView::ButtonPressed(views::Button* sender,
     return;
   }
 
-  if (sender->id() == ButtonId::kGlobalCycleAuthErrorMessage) {
+  if (sender->GetID() == ButtonId::kGlobalCycleAuthErrorMessage) {
     CycleAuthErrorMessage();
     return;
   }
 
   // Show or hide warning banner.
-  if (sender->id() == ButtonId::kGlobalToggleWarningBanner) {
+  if (sender->GetID() == ButtonId::kGlobalToggleWarningBanner) {
     if (is_warning_banner_shown_) {
       debug_data_dispatcher_->HideWarningBanner();
     } else {
@@ -982,30 +982,30 @@ void LockDebugView::ButtonPressed(views::Button* sender,
   }
 
   // Enable or disable PIN.
-  if (sender->id() == ButtonId::kPerUserTogglePin)
+  if (sender->GetID() == ButtonId::kPerUserTogglePin)
     debug_data_dispatcher_->TogglePinStateForUserIndex(sender->tag());
 
   // Enable or disable tap.
-  if (sender->id() == ButtonId::kPerUserToggleTap)
+  if (sender->GetID() == ButtonId::kPerUserToggleTap)
     debug_data_dispatcher_->ToggleTapStateForUserIndex(sender->tag());
 
   // Cycle easy unlock.
-  if (sender->id() == ButtonId::kPerUserCycleEasyUnlockState)
+  if (sender->GetID() == ButtonId::kPerUserCycleEasyUnlockState)
     debug_data_dispatcher_->CycleEasyUnlockForUserIndex(sender->tag());
 
   // Cycle fingerprint unlock state.
-  if (sender->id() == ButtonId::kPerUserCycleFingerprintState)
+  if (sender->GetID() == ButtonId::kPerUserCycleFingerprintState)
     debug_data_dispatcher_->CycleFingerprintStateForUserIndex(sender->tag());
-  if (sender->id() == ButtonId::kPerUserAuthFingerprintSuccessState) {
+  if (sender->GetID() == ButtonId::kPerUserAuthFingerprintSuccessState) {
     debug_data_dispatcher_->AuthenticateFingerprintForUserIndex(sender->tag(),
                                                                 true);
   }
-  if (sender->id() == ButtonId::kPerUserAuthFingerprintFailState) {
+  if (sender->GetID() == ButtonId::kPerUserAuthFingerprintFailState) {
     debug_data_dispatcher_->AuthenticateFingerprintForUserIndex(sender->tag(),
                                                                 false);
   }
 
-  if (sender->id() == ButtonId::kGlobalToggleManagedSessionDisclosure) {
+  if (sender->GetID() == ButtonId::kGlobalToggleManagedSessionDisclosure) {
     is_managed_session_disclosure_shown_ =
         !is_managed_session_disclosure_shown_;
     debug_data_dispatcher_->OnPublicSessionShowFullManagementDisclosureChanged(
@@ -1013,28 +1013,28 @@ void LockDebugView::ButtonPressed(views::Button* sender,
   }
 
   // Force online sign-in.
-  if (sender->id() == ButtonId::kPerUserForceOnlineSignIn)
+  if (sender->GetID() == ButtonId::kPerUserForceOnlineSignIn)
     debug_data_dispatcher_->ForceOnlineSignInForUserIndex(sender->tag());
 
   // Enable or disable auth.
-  if (sender->id() == ButtonId::kPerUserToggleAuthEnabled)
+  if (sender->GetID() == ButtonId::kPerUserToggleAuthEnabled)
     debug_data_dispatcher_->ToggleAuthEnabledForUserIndex(sender->tag());
 
   // Update the last used detachable base.
-  if (sender->id() == ButtonId::kPerUserUseDetachableBase) {
+  if (sender->GetID() == ButtonId::kPerUserUseDetachableBase) {
     debug_detachable_base_model_->SetBaseLastUsedForUser(
         debug_data_dispatcher_->GetAccountIdForUserIndex(sender->tag()));
   }
 
   // Convert this user to regular user or public account.
-  if (sender->id() == ButtonId::kPerUserTogglePublicAccount) {
+  if (sender->GetID() == ButtonId::kPerUserTogglePublicAccount) {
     debug_data_dispatcher_->TogglePublicAccountForUserIndex(sender->tag());
     UpdatePerUserActionContainer();
     Layout();
   }
 
   // Toggle parent access view.
-  if (sender->id() == ButtonId::kGlobalToggleParentAccess) {
+  if (sender->GetID() == ButtonId::kGlobalToggleParentAccess) {
     is_parent_access_shown_ = !is_parent_access_shown_;
     lock_->OnSetShowParentAccessDialog(is_parent_access_shown_);
   }
@@ -1127,7 +1127,7 @@ views::LabelButton* LockDebugView::AddButton(const std::string& text,
   // Creates a button with |text| that cannot be focused.
   auto* button = views::MdTextButton::CreateSecondaryUiButton(
       this, base::ASCIIToUTF16(text));
-  button->set_id(id);
+  button->SetID(id);
   button->SetFocusBehavior(views::View::FocusBehavior::NEVER);
   container->AddChildView(login_views_utils::WrapViewForPreferredSize(button));
   return button;

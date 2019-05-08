@@ -174,7 +174,7 @@ ShippingAddressEditorViewController::GetComboboxModelForType(
 void ShippingAddressEditorViewController::OnPerformAction(
     views::Combobox* sender) {
   EditorViewController::OnPerformAction(sender);
-  if (sender->id() != GetInputFieldViewId(autofill::ADDRESS_HOME_COUNTRY))
+  if (sender->GetID() != GetInputFieldViewId(autofill::ADDRESS_HOME_COUNTRY))
     return;
   DCHECK_GE(sender->GetSelectedIndex(), 0);
   if (chosen_country_index_ !=
@@ -217,7 +217,7 @@ std::unique_ptr<views::Button>
 ShippingAddressEditorViewController::CreatePrimaryButton() {
   std::unique_ptr<views::Button> button(
       EditorViewController::CreatePrimaryButton());
-  button->set_id(static_cast<int>(DialogViewID::SAVE_ADDRESS_BUTTON));
+  button->SetID(static_cast<int>(DialogViewID::SAVE_ADDRESS_BUTTON));
   return button;
 }
 
@@ -558,7 +558,8 @@ bool ShippingAddressEditorViewController::SaveFieldsToProfile(
     // ValidatingCombobox* is the key, EditorField is the value.
     ValidatingCombobox* combobox = field.first;
     // The country has already been dealt with.
-    if (combobox->id() == GetInputFieldViewId(autofill::ADDRESS_HOME_COUNTRY))
+    if (combobox->GetID() ==
+        GetInputFieldViewId(autofill::ADDRESS_HOME_COUNTRY))
       continue;
     if (combobox->IsValid()) {
       success = profile->SetInfo(
@@ -579,7 +580,7 @@ bool ShippingAddressEditorViewController::SaveFieldsToProfile(
 
 void ShippingAddressEditorViewController::OnComboboxModelChanged(
     views::Combobox* combobox) {
-  if (combobox->id() != GetInputFieldViewId(autofill::ADDRESS_HOME_STATE))
+  if (combobox->GetID() != GetInputFieldViewId(autofill::ADDRESS_HOME_STATE))
     return;
   autofill::RegionComboboxModel* model =
       static_cast<autofill::RegionComboboxModel*>(combobox->model());

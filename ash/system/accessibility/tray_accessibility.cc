@@ -191,8 +191,8 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
       kSystemMenuAccessibilityAutoClickIcon,
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_AUTOCLICK),
       autoclick_enabled_);
-  autoclick_view_->set_id(ash::VIEW_ID_ACCESSIBILITY_AUTOCLICK);
-  autoclick_view_->right_view()->set_id(
+  autoclick_view_->SetID(ash::VIEW_ID_ACCESSIBILITY_AUTOCLICK);
+  autoclick_view_->right_view()->SetID(
       ash::VIEW_ID_ACCESSIBILITY_AUTOCLICK_ENABLED);
 
   virtual_keyboard_enabled_ = controller->virtual_keyboard_enabled();
