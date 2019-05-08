@@ -331,6 +331,8 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   void SetPageScheduler(std::unique_ptr<PageScheduler>);
 
+  void UpdateHasRelatedPages();
+
   // Typically, the main frame and Page should both be owned by the embedder,
   // which must call Page::willBeDestroyed() prior to destroying Page. This
   // call detaches the main frame and clears this pointer, thus ensuring that
@@ -405,6 +407,10 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   // browsing context.  See also RelatedPages method.
   Member<Page> next_related_page_;
   Member<Page> prev_related_page_;
+
+  // A handle to notify the scheduler whether this page has other related
+  // pages or not.
+  FrameScheduler::SchedulingAffectingFeatureHandle has_related_pages_;
 
   std::unique_ptr<PageScheduler> page_scheduler_;
 
