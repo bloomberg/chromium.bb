@@ -76,7 +76,9 @@ config("runtime_library") {
     # does not match ours.
     defines += [ "_LIBCPP_NO_AUTO_LINK" ]
 
-    configs = [ "//tools/win/DebugVisualizers:libc++" ]
+    # Add a debug visualizer for Microsoft's debuggers so that they can display
+    # libc++ types well.
+    ldflags += [ "/NATVIS:" + rebase_path("libc++.natvis", root_build_dir) ]
   } else {
     cflags_cc += [
       "-nostdinc++",
