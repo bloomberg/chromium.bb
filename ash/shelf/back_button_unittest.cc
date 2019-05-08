@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/kiosk_next/kiosk_next_shell_test_util.h"
@@ -90,7 +90,8 @@ TEST_F(BackButtonTest, BackKeySequenceGenerated) {
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   test_api()->RunMessageLoopUntilAnimationsDone();
 
-  AcceleratorController* controller = Shell::Get()->accelerator_controller();
+  AcceleratorControllerImpl* controller =
+      Shell::Get()->accelerator_controller();
 
   // Register an accelerator that looks for back presses. Note there is already
   // an accelerator on AppListView, which will handle the accelerator since it
@@ -161,11 +162,11 @@ TEST_F(KioskNextBackButtonTest, BackKeySequenceGenerated) {
   test_api()->RunMessageLoopUntilAnimationsDone();
 
   // Register an accelerator that looks for back releases.
-  AcceleratorController* controller = Shell::Get()->accelerator_controller();
   ui::Accelerator accelerator_back_release(ui::VKEY_BROWSER_BACK, ui::EF_NONE);
   accelerator_back_release.set_key_state(ui::Accelerator::KeyState::RELEASED);
   ui::TestAcceleratorTarget target_back_release;
-  controller->Register({accelerator_back_release}, &target_back_release);
+  Shell::Get()->accelerator_controller()->Register({accelerator_back_release},
+                                                   &target_back_release);
 
   // Verify that when pressing down the back button, the accelerator is not
   // triggered yet.

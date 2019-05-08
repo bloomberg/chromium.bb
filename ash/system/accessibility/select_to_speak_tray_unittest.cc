@@ -4,7 +4,7 @@
 
 #include "ash/system/accessibility/select_to_speak_tray.h"
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/shell.h"

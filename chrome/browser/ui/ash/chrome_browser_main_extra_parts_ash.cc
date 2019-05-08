@@ -43,7 +43,6 @@
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/ash/tab_scrubber.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
-#include "chrome/browser/ui/ash/volume_controller.h"
 #include "chrome/browser/ui/ash/vpn_list_forwarder.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/views/ime_driver/ime_driver_mus.h"
@@ -244,8 +243,6 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   tablet_mode_client_ = std::make_unique<TabletModeClient>();
   tablet_mode_client_->Init();
 
-  volume_controller_ = std::make_unique<VolumeController>();
-
   vpn_list_forwarder_ = std::make_unique<VpnListForwarder>();
 
   wallpaper_controller_client_ = std::make_unique<WallpaperControllerClient>();
@@ -327,7 +324,6 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
 
   wallpaper_controller_client_.reset();
   vpn_list_forwarder_.reset();
-  volume_controller_.reset();
 
   // Initialized in PostProfileInit:
   network_portal_notification_controller_.reset();

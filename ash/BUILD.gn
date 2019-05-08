@@ -28,7 +28,6 @@ component("ash") {
     "ash_service.h",
 
     # TODO: move the following to source. Do NOT add new files here.
-    "accelerators/accelerator_controller.h",
     "accessibility/accessibility_controller.h",
     "accessibility/accessibility_delegate.h",
     "accessibility/focus_ring_controller.h",
@@ -97,7 +96,8 @@ component("ash") {
     "accelerators/accelerator_commands.h",
     "accelerators/accelerator_confirmation_dialog.cc",
     "accelerators/accelerator_confirmation_dialog.h",
-    "accelerators/accelerator_controller.cc",
+    "accelerators/accelerator_controller_impl.cc",
+    "accelerators/accelerator_controller_impl.h",
     "accelerators/accelerator_ids.h",
     "accelerators/accelerator_table.cc",
     "accelerators/accelerator_table.h",

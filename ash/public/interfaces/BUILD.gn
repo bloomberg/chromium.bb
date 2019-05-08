@@ -16,7 +16,6 @@ mojom("interfaces_internal") {
   disable_variants = true
 
   sources = [
-    "accelerator_controller.mojom",
     "accessibility_controller.mojom",
     "accessibility_controller_enums.mojom",
     "accessibility_focus_ring_controller.mojom",
@@ -63,7 +62,6 @@ mojom("interfaces_internal") {
     "update.mojom",
     "user_info.mojom",
     "voice_interaction_controller.mojom",
-    "volume.mojom",
     "vpn_list.mojom",
     "wallpaper.mojom",
     "window_pin_type.mojom",

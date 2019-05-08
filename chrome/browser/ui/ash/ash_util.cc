@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/ash/ash_util.h"
 
-#include "ash/accelerators/accelerator_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/event_properties.mojom.h"
 #include "ash/shell.h"
@@ -19,10 +18,6 @@
 #include "ui/wm/core/window_animations.h"
 
 namespace ash_util {
-
-bool IsAcceleratorDeprecated(const ui::Accelerator& accelerator) {
-  return ash::Shell::Get()->accelerator_controller()->IsDeprecated(accelerator);
-}
 
 bool WillAshProcessAcceleratorForEvent(const ui::KeyEvent& key_event) {
   return key_event.properties() &&

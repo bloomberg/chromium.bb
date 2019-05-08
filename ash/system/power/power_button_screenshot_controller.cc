@@ -4,7 +4,7 @@
 
 #include "ash/system/power/power_button_screenshot_controller.h"
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/power/power_button_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -131,7 +131,7 @@ bool PowerButtonScreenshotController::InterceptScreenshotChord() {
     if (now <= volume_down_key_pressed_time_ + kScreenshotChordDelay &&
         now <= power_button_pressed_time_ + kScreenshotChordDelay) {
       Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
-          TAKE_SCREENSHOT);
+          TAKE_SCREENSHOT, {});
       consume_volume_down_ = true;
 
       base::RecordAction(

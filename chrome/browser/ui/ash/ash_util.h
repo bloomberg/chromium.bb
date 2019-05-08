@@ -18,15 +18,10 @@ class Connector;
 }
 
 namespace ui {
-class Accelerator;
 class KeyEvent;
 }  // namespace ui
 
 namespace ash_util {
-
-// Returns true if the given |accelerator| has been deprecated and hence can
-// be consumed by web contents if needed.
-bool IsAcceleratorDeprecated(const ui::Accelerator& accelerator);
 
 // Returns true if ash has an accelerator for |key_event| that is enabled.
 bool WillAshProcessAcceleratorForEvent(const ui::KeyEvent& key_event);

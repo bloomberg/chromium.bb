@@ -5,7 +5,7 @@
 #ifndef ASH_SYSTEM_ACCESSIBILITY_DICTATION_BUTTON_TRAY_H_
 #define ASH_SYSTEM_ACCESSIBILITY_DICTATION_BUTTON_TRAY_H_
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/ash_export.h"
 #include "ash/session/session_observer.h"

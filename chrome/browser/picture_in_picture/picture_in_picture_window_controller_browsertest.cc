@@ -50,8 +50,7 @@
 #include "ui/views/widget/widget_observer.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/accelerators/accelerator_controller.h"
-#include "ash/shell.h"
+#include "ash/public/cpp/accelerators.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/hit_test.h"
 #endif
@@ -1472,9 +1471,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(
       content::ExecuteScript(second_active_web_contents, "video.play();"));
 
-  ash::AcceleratorController* controller =
-      ash::Shell::Get()->accelerator_controller();
-  controller->Process(ui::Accelerator(ui::VKEY_MEDIA_PLAY_PAUSE, ui::EF_NONE));
+  ash::AcceleratorController::Get()->Process(
+      ui::Accelerator(ui::VKEY_MEDIA_PLAY_PAUSE, ui::EF_NONE));
   base::RunLoop().RunUntilIdle();
 
   bool is_paused = false;

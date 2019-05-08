@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ACCELERATORS_ACCELERATOR_CONTROLLER_H_
-#define ASH_ACCELERATORS_ACCELERATOR_CONTROLLER_H_
+#ifndef ASH_ACCELERATORS_ACCELERATOR_CONTROLLER_IMPL_H_
+#define ASH_ACCELERATORS_ACCELERATOR_CONTROLLER_IMPL_H_
 
 #include <stddef.h>
 
@@ -16,12 +16,10 @@
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/accelerators/exit_warning_handler.h"
 #include "ash/ash_export.h"
-#include "ash/public/interfaces/accelerator_controller.mojom.h"
-#include "ash/public/interfaces/volume.mojom.h"
+#include "ash/public/cpp/accelerators.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_history.h"
 
@@ -39,11 +37,11 @@ ASH_EXPORT extern const char kHighContrastToggleAccelNotificationId[];
 ASH_EXPORT extern const char kDockedMagnifierToggleAccelNotificationId[];
 ASH_EXPORT extern const char kFullscreenMagnifierToggleAccelNotificationId[];
 
-// AcceleratorController provides functions for registering or unregistering
+// AcceleratorControllerImpl provides functions for registering or unregistering
 // global keyboard accelerators, which are handled earlier than any windows. It
 // also implements several handlers as an accelerator target.
-class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget,
-                                         public mojom::AcceleratorController {
+class ASH_EXPORT AcceleratorControllerImpl : public ui::AcceleratorTarget,
+                                             public AcceleratorController {
  public:
   // Fields of the side volume button location info.
   static constexpr const char* kVolumeButtonRegion = "region";
@@ -58,8 +56,8 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget,
   static constexpr const char* kVolumeButtonSideTop = "top";
   static constexpr const char* kVolumeButtonSideBottom = "bottom";
 
-  AcceleratorController();
-  ~AcceleratorController() override;
+  AcceleratorControllerImpl();
+  ~AcceleratorControllerImpl() override;
 
   // A list of possible ways in which an accelerator should be restricted before
   // processing. Any target registered with this controller should respect
@@ -107,13 +105,12 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget,
   // Returns true if there is an action for |accelerator| and it is enabled.
   bool IsActionForAcceleratorEnabled(const ui::Accelerator& accelerator) const;
 
-  // Activates the target associated with the specified accelerator.
-  // First, AcceleratorPressed handler of the most recently registered target
-  // is called, and if that handler processes the event (i.e. returns true),
-  // this method immediately returns. If not, we do the same thing on the next
-  // target, and so on.
-  // Returns true if an accelerator was activated.
-  bool Process(const ui::Accelerator& accelerator);
+  // AcceleratorControllerImpl:
+  bool Process(const ui::Accelerator& accelerator) override;
+  bool IsDeprecated(const ui::Accelerator& accelerator) const override;
+  bool PerformActionIfEnabled(AcceleratorAction action,
+                              const ui::Accelerator& accelerator) override;
+  bool OnMenuAccelerator(const ui::Accelerator& accelerator) override;
 
   // Returns true if the |accelerator| is registered.
   bool IsRegistered(const ui::Accelerator& accelerator) const;
@@ -127,16 +124,6 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget,
   // is always handled and will never be passed to an window/web contents.
   bool IsReserved(const ui::Accelerator& accelerator) const;
 
-  // Returns true if the |accelerator| is deprecated. Deprecated accelerators
-  // can be consumed by web contents if needed.
-  bool IsDeprecated(const ui::Accelerator& accelerator) const;
-
-  // Performs the specified action if it is enabled. Returns whether the action
-  // was performed successfully.
-  bool PerformActionIfEnabled(
-      AcceleratorAction action,
-      const ui::Accelerator& accelerator = ui::Accelerator());
-
   // Returns the restriction for the current context.
   AcceleratorProcessingRestriction GetCurrentAcceleratorRestriction();
 
@@ -145,10 +132,6 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget,
     return &exit_warning_handler_;
   }
 
-  // Returns true if the menu should close in order to perform the accelerator.
-  bool ShouldCloseMenuAndRepostAccelerator(
-      const ui::Accelerator& accelerator) const;
-
   ui::AcceleratorHistory* accelerator_history() {
     return accelerator_history_.get();
   }
@@ -156,12 +139,6 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget,
   // Overridden from ui::AcceleratorTarget:
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   bool CanHandleAccelerators() const override;
-
-  // Binds the mojom::AcceleratorController interface to this object.
-  void BindRequest(mojom::AcceleratorControllerRequest request);
-
-  // mojom::AcceleratorController:
-  void SetVolumeController(mojom::VolumeControllerPtr controller) override;
 
   // A confirmation dialog will be shown the first time an accessibility feature
   // is enabled using the specified accelerator key sequence. Only one dialog
@@ -272,13 +249,6 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget,
       actions_with_deprecations_;
   std::set<ui::Accelerator> deprecated_accelerators_;
 
-  // Bindings for the mojom::AcceleratorController interface.
-  mojo::BindingSet<mojom::AcceleratorController> bindings_;
-
-  // Volume controller interface in chrome browser. May be null in tests. Exists
-  // because chrome owns the CrasAudioHandler dbus communication.
-  mojom::VolumeControllerPtr volume_controller_;
-
   // Actions allowed when the user is not signed in.
   std::set<int> actions_allowed_at_login_screen_;
   // Actions allowed when the screen is locked.
@@ -315,9 +285,9 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget,
   // Stores the location info of side volume buttons.
   SideVolumeButtonLocation side_volume_button_location_;
 
-  DISALLOW_COPY_AND_ASSIGN(AcceleratorController);
+  DISALLOW_COPY_AND_ASSIGN(AcceleratorControllerImpl);
 };
 
 }  // namespace ash
 
-#endif  // ASH_ACCELERATORS_ACCELERATOR_CONTROLLER_H_
+#endif  // ASH_ACCELERATOR_CONTROLLER_IMPL_H_

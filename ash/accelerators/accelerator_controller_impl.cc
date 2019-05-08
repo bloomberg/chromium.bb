@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_controller_impl.h"
 
 #include <algorithm>
 #include <cmath>
@@ -968,27 +968,47 @@ void HandleToggleSpokenFeedback() {
                                        A11Y_NOTIFICATION_SHOW);
 }
 
-void HandleVolumeDown(mojom::VolumeController* volume_controller) {
+// Percent by which the volume should be changed when a volume key is pressed.
+const double kStepPercentage = 4.0;
+
+void HandleVolumeDown() {
   base::RecordAction(UserMetricsAction("Accel_VolumeDown_F9"));
 
-  if (volume_controller)
-    volume_controller->VolumeDown();
+  chromeos::CrasAudioHandler* audio_handler = chromeos::CrasAudioHandler::Get();
+  if (audio_handler->IsOutputMuted()) {
+    audio_handler->SetOutputVolumePercent(0);
+  } else {
+    audio_handler->AdjustOutputVolumeByPercent(-kStepPercentage);
+    if (audio_handler->IsOutputVolumeBelowDefaultMuteLevel())
+      audio_handler->SetOutputMute(true);
+    else
+      AcceleratorController::PlayVolumeAdjustmentSound();
+  }
 }
 
-void HandleVolumeMute(mojom::VolumeController* volume_controller,
-                      const ui::Accelerator& accelerator) {
+void HandleVolumeMute(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_VOLUME_MUTE)
     base::RecordAction(UserMetricsAction("Accel_VolumeMute_F8"));
 
-  if (volume_controller)
-    volume_controller->VolumeMute();
+  chromeos::CrasAudioHandler::Get()->SetOutputMute(true);
 }
 
-void HandleVolumeUp(mojom::VolumeController* volume_controller) {
+void HandleVolumeUp() {
   base::RecordAction(UserMetricsAction("Accel_VolumeUp_F10"));
 
-  if (volume_controller)
-    volume_controller->VolumeUp();
+  chromeos::CrasAudioHandler* audio_handler = chromeos::CrasAudioHandler::Get();
+  bool play_sound = false;
+  if (audio_handler->IsOutputMuted()) {
+    audio_handler->SetOutputMute(false);
+    audio_handler->AdjustOutputVolumeToAudibleLevel();
+    play_sound = true;
+  } else {
+    play_sound = audio_handler->GetOutputVolumePercent() != 100;
+    audio_handler->AdjustOutputVolumeByPercent(kStepPercentage);
+  }
+
+  if (play_sound)
+    AcceleratorController::PlayVolumeAdjustmentSound();
 }
 
 bool CanHandleActiveMagnifierZoom() {
@@ -1025,19 +1045,19 @@ void HandleTouchHudModeChange() {
 
 }  // namespace
 
-constexpr const char* AcceleratorController::kVolumeButtonRegion;
-constexpr const char* AcceleratorController::kVolumeButtonSide;
-constexpr const char* AcceleratorController::kVolumeButtonRegionKeyboard;
-constexpr const char* AcceleratorController::kVolumeButtonRegionScreen;
-constexpr const char* AcceleratorController::kVolumeButtonSideLeft;
-constexpr const char* AcceleratorController::kVolumeButtonSideRight;
-constexpr const char* AcceleratorController::kVolumeButtonSideTop;
-constexpr const char* AcceleratorController::kVolumeButtonSideBottom;
+constexpr const char* AcceleratorControllerImpl::kVolumeButtonRegion;
+constexpr const char* AcceleratorControllerImpl::kVolumeButtonSide;
+constexpr const char* AcceleratorControllerImpl::kVolumeButtonRegionKeyboard;
+constexpr const char* AcceleratorControllerImpl::kVolumeButtonRegionScreen;
+constexpr const char* AcceleratorControllerImpl::kVolumeButtonSideLeft;
+constexpr const char* AcceleratorControllerImpl::kVolumeButtonSideRight;
+constexpr const char* AcceleratorControllerImpl::kVolumeButtonSideTop;
+constexpr const char* AcceleratorControllerImpl::kVolumeButtonSideBottom;
 
 ////////////////////////////////////////////////////////////////////////////////
-// AcceleratorController, public:
+// AcceleratorControllerImpl, public:
 
-AcceleratorController::AcceleratorController()
+AcceleratorControllerImpl::AcceleratorControllerImpl()
     : accelerator_manager_(std::make_unique<ui::AcceleratorManager>()),
       accelerator_history_(std::make_unique<ui::AcceleratorHistory>()),
       side_volume_button_location_file_path_(
@@ -1047,66 +1067,41 @@ AcceleratorController::AcceleratorController()
   ParseSideVolumeButtonLocationInfo();
 }
 
-AcceleratorController::~AcceleratorController() = default;
+AcceleratorControllerImpl::~AcceleratorControllerImpl() = default;
 
-void AcceleratorController::Register(
+void AcceleratorControllerImpl::Register(
     const std::vector<ui::Accelerator>& accelerators,
     ui::AcceleratorTarget* target) {
   accelerator_manager_->Register(
       accelerators, ui::AcceleratorManager::kNormalPriority, target);
 }
 
-void AcceleratorController::Unregister(const ui::Accelerator& accelerator,
-                                       ui::AcceleratorTarget* target) {
+void AcceleratorControllerImpl::Unregister(const ui::Accelerator& accelerator,
+                                           ui::AcceleratorTarget* target) {
   accelerator_manager_->Unregister(accelerator, target);
 }
 
-void AcceleratorController::UnregisterAll(ui::AcceleratorTarget* target) {
+void AcceleratorControllerImpl::UnregisterAll(ui::AcceleratorTarget* target) {
   accelerator_manager_->UnregisterAll(target);
 }
 
-bool AcceleratorController::IsActionForAcceleratorEnabled(
+bool AcceleratorControllerImpl::IsActionForAcceleratorEnabled(
     const ui::Accelerator& accelerator) const {
   std::map<ui::Accelerator, AcceleratorAction>::const_iterator it =
       accelerators_.find(accelerator);
   return it != accelerators_.end() && CanPerformAction(it->second, accelerator);
 }
 
-bool AcceleratorController::Process(const ui::Accelerator& accelerator) {
+bool AcceleratorControllerImpl::Process(const ui::Accelerator& accelerator) {
   return accelerator_manager_->Process(accelerator);
 }
 
-bool AcceleratorController::IsRegistered(
-    const ui::Accelerator& accelerator) const {
-  return accelerator_manager_->IsRegistered(accelerator);
-}
-
-bool AcceleratorController::IsPreferred(
-    const ui::Accelerator& accelerator) const {
-  std::map<ui::Accelerator, AcceleratorAction>::const_iterator iter =
-      accelerators_.find(accelerator);
-  if (iter == accelerators_.end())
-    return false;  // not an accelerator.
-
-  return preferred_actions_.find(iter->second) != preferred_actions_.end();
-}
-
-bool AcceleratorController::IsReserved(
-    const ui::Accelerator& accelerator) const {
-  std::map<ui::Accelerator, AcceleratorAction>::const_iterator iter =
-      accelerators_.find(accelerator);
-  if (iter == accelerators_.end())
-    return false;  // not an accelerator.
-
-  return reserved_actions_.find(iter->second) != reserved_actions_.end();
-}
-
-bool AcceleratorController::IsDeprecated(
+bool AcceleratorControllerImpl::IsDeprecated(
     const ui::Accelerator& accelerator) const {
   return deprecated_accelerators_.count(accelerator) != 0;
 }
 
-bool AcceleratorController::PerformActionIfEnabled(
+bool AcceleratorControllerImpl::PerformActionIfEnabled(
     AcceleratorAction action,
     const ui::Accelerator& accelerator) {
   if (CanPerformAction(action, accelerator)) {
@@ -1116,13 +1111,10 @@ bool AcceleratorController::PerformActionIfEnabled(
   return false;
 }
 
-AcceleratorController::AcceleratorProcessingRestriction
-AcceleratorController::GetCurrentAcceleratorRestriction() {
-  return GetAcceleratorProcessingRestriction(-1);
-}
+bool AcceleratorControllerImpl::OnMenuAccelerator(
+    const ui::Accelerator& accelerator) {
+  accelerator_history()->StoreCurrentAccelerator(accelerator);
 
-bool AcceleratorController::ShouldCloseMenuAndRepostAccelerator(
-    const ui::Accelerator& accelerator) const {
   auto itr = accelerators_.find(accelerator);
   if (itr == accelerators_.end())
     return false;  // Menu shouldn't be closed for an invalid accelerator.
@@ -1131,10 +1123,40 @@ bool AcceleratorController::ShouldCloseMenuAndRepostAccelerator(
   return actions_keeping_menu_open_.count(action) == 0;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// AcceleratorController, ui::AcceleratorTarget implementation:
+bool AcceleratorControllerImpl::IsRegistered(
+    const ui::Accelerator& accelerator) const {
+  return accelerator_manager_->IsRegistered(accelerator);
+}
 
-bool AcceleratorController::AcceleratorPressed(
+bool AcceleratorControllerImpl::IsPreferred(
+    const ui::Accelerator& accelerator) const {
+  std::map<ui::Accelerator, AcceleratorAction>::const_iterator iter =
+      accelerators_.find(accelerator);
+  if (iter == accelerators_.end())
+    return false;  // not an accelerator.
+
+  return preferred_actions_.find(iter->second) != preferred_actions_.end();
+}
+
+bool AcceleratorControllerImpl::IsReserved(
+    const ui::Accelerator& accelerator) const {
+  std::map<ui::Accelerator, AcceleratorAction>::const_iterator iter =
+      accelerators_.find(accelerator);
+  if (iter == accelerators_.end())
+    return false;  // not an accelerator.
+
+  return reserved_actions_.find(iter->second) != reserved_actions_.end();
+}
+
+AcceleratorControllerImpl::AcceleratorProcessingRestriction
+AcceleratorControllerImpl::GetCurrentAcceleratorRestriction() {
+  return GetAcceleratorProcessingRestriction(-1);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// AcceleratorControllerImpl, ui::AcceleratorTarget implementation:
+
+bool AcceleratorControllerImpl::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
   std::map<ui::Accelerator, AcceleratorAction>::const_iterator it =
       accelerators_.find(accelerator);
@@ -1154,24 +1176,14 @@ bool AcceleratorController::AcceleratorPressed(
   return ShouldActionConsumeKeyEvent(action);
 }
 
-bool AcceleratorController::CanHandleAccelerators() const {
+bool AcceleratorControllerImpl::CanHandleAccelerators() const {
   return true;
 }
 
-void AcceleratorController::BindRequest(
-    mojom::AcceleratorControllerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
-}
-
-void AcceleratorController::SetVolumeController(
-    mojom::VolumeControllerPtr controller) {
-  volume_controller_ = std::move(controller);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
-// AcceleratorController, private:
+// AcceleratorControllerImpl, private:
 
-void AcceleratorController::Init() {
+void AcceleratorControllerImpl::Init() {
   for (size_t i = 0; i < kActionsAllowedAtLoginOrLockScreenLength; ++i) {
     actions_allowed_at_login_screen_.insert(
         kActionsAllowedAtLoginOrLockScreen[i]);
@@ -1227,7 +1239,7 @@ void AcceleratorController::Init() {
   }
 }
 
-void AcceleratorController::RegisterAccelerators(
+void AcceleratorControllerImpl::RegisterAccelerators(
     const AcceleratorData accelerators[],
     size_t accelerators_length) {
   std::vector<ui::Accelerator> ui_accelerators;
@@ -1241,7 +1253,7 @@ void AcceleratorController::RegisterAccelerators(
   Register(ui_accelerators, this);
 }
 
-void AcceleratorController::RegisterDeprecatedAccelerators() {
+void AcceleratorControllerImpl::RegisterDeprecatedAccelerators() {
   for (size_t i = 0; i < kDeprecatedAcceleratorsDataLength; ++i) {
     const DeprecatedAcceleratorData* data = &kDeprecatedAcceleratorsData[i];
     actions_with_deprecations_[data->action] = data;
@@ -1261,7 +1273,7 @@ void AcceleratorController::RegisterDeprecatedAccelerators() {
   Register(ui_accelerators, this);
 }
 
-bool AcceleratorController::CanPerformAction(
+bool AcceleratorControllerImpl::CanPerformAction(
     AcceleratorAction action,
     const ui::Accelerator& accelerator) const {
   if (accelerator.IsRepeat() && !repeatable_actions_.count(action))
@@ -1419,8 +1431,9 @@ bool AcceleratorController::CanPerformAction(
   }
 }
 
-void AcceleratorController::PerformAction(AcceleratorAction action,
-                                          const ui::Accelerator& accelerator) {
+void AcceleratorControllerImpl::PerformAction(
+    AcceleratorAction action,
+    const ui::Accelerator& accelerator) {
   AcceleratorProcessingRestriction restriction =
       GetAcceleratorProcessingRestriction(action);
   if (restriction != RESTRICTION_NONE)
@@ -1725,13 +1738,13 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       accelerators::UnpinWindow();
       break;
     case VOLUME_DOWN:
-      HandleVolumeDown(volume_controller_.get());
+      HandleVolumeDown();
       break;
     case VOLUME_MUTE:
-      HandleVolumeMute(volume_controller_.get(), accelerator);
+      HandleVolumeMute(accelerator);
       break;
     case VOLUME_UP:
-      HandleVolumeUp(volume_controller_.get());
+      HandleVolumeUp();
       break;
     case WINDOW_CYCLE_SNAP_LEFT:
     case WINDOW_CYCLE_SNAP_RIGHT:
@@ -1746,14 +1759,15 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
   }
 }
 
-bool AcceleratorController::ShouldActionConsumeKeyEvent(
+bool AcceleratorControllerImpl::ShouldActionConsumeKeyEvent(
     AcceleratorAction action) {
   // Adding new exceptions is *STRONGLY* discouraged.
   return true;
 }
 
-AcceleratorController::AcceleratorProcessingRestriction
-AcceleratorController::GetAcceleratorProcessingRestriction(int action) const {
+AcceleratorControllerImpl::AcceleratorProcessingRestriction
+AcceleratorControllerImpl::GetAcceleratorProcessingRestriction(
+    int action) const {
   if (Shell::Get()->kiosk_next_shell_controller()->IsEnabled() &&
       actions_allowed_for_kiosk_next_shell_.count(action) == 0) {
     return RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION;
@@ -1800,8 +1814,8 @@ AcceleratorController::GetAcceleratorProcessingRestriction(int action) const {
   return RESTRICTION_NONE;
 }
 
-AcceleratorController::AcceleratorProcessingStatus
-AcceleratorController::MaybeDeprecatedAcceleratorPressed(
+AcceleratorControllerImpl::AcceleratorProcessingStatus
+AcceleratorControllerImpl::MaybeDeprecatedAcceleratorPressed(
     AcceleratorAction action,
     const ui::Accelerator& accelerator) const {
   auto itr = actions_with_deprecations_.find(action);
@@ -1838,7 +1852,7 @@ AcceleratorController::MaybeDeprecatedAcceleratorPressed(
   return AcceleratorProcessingStatus::PROCEED;
 }
 
-void AcceleratorController::MaybeShowConfirmationDialog(
+void AcceleratorControllerImpl::MaybeShowConfirmationDialog(
     int window_title_text_id,
     int dialog_text_id,
     base::OnceClosure on_accept_callback) {
@@ -1851,7 +1865,7 @@ void AcceleratorController::MaybeShowConfirmationDialog(
   confirmation_dialog_ = dialog->GetWeakPtr();
 }
 
-void AcceleratorController::ParseSideVolumeButtonLocationInfo() {
+void AcceleratorControllerImpl::ParseSideVolumeButtonLocationInfo() {
   if (!base::PathExists(side_volume_button_location_file_path_))
     return;
 
@@ -1871,7 +1885,7 @@ void AcceleratorController::ParseSideVolumeButtonLocationInfo() {
                           &side_volume_button_location_.side);
 }
 
-bool AcceleratorController::IsSideVolumeButton(int source_device_id) const {
+bool AcceleratorControllerImpl::IsSideVolumeButton(int source_device_id) const {
   if (source_device_id == ui::ED_UNKNOWN_DEVICE)
     return false;
 
@@ -1886,7 +1900,7 @@ bool AcceleratorController::IsSideVolumeButton(int source_device_id) const {
   return false;
 }
 
-bool AcceleratorController::IsValidSideVolumeButtonLocation() const {
+bool AcceleratorControllerImpl::IsValidSideVolumeButtonLocation() const {
   const std::string region = side_volume_button_location_.region;
   const std::string side = side_volume_button_location_.side;
   if (region != kVolumeButtonRegionKeyboard &&
@@ -1900,7 +1914,7 @@ bool AcceleratorController::IsValidSideVolumeButtonLocation() const {
   return true;
 }
 
-bool AcceleratorController::ShouldSwapSideVolumeButtons(
+bool AcceleratorControllerImpl::ShouldSwapSideVolumeButtons(
     int source_device_id) const {
   if (!features::IsSwapSideVolumeButtonsForOrientationEnabled() ||
       !Shell::Get()

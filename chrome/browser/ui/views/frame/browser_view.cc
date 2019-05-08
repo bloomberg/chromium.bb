@@ -170,6 +170,7 @@
 #include "ui/views/window/dialog_delegate.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/accelerators.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/window_properties.h"
 #include "chrome/browser/ui/views/frame/top_controls_slide_controller_chromeos.h"
@@ -1607,7 +1608,7 @@ content::KeyboardEventProcessingResult BrowserView::PreHandleKeyboardEvent(
   }
 
 #if defined(OS_CHROMEOS)
-  if (ash_util::IsAcceleratorDeprecated(accelerator)) {
+  if (ash::AcceleratorController::Get()->IsDeprecated(accelerator)) {
     return (event.GetType() == blink::WebInputEvent::kRawKeyDown)
                ? content::KeyboardEventProcessingResult::NOT_HANDLED_IS_SHORTCUT
                : content::KeyboardEventProcessingResult::NOT_HANDLED;

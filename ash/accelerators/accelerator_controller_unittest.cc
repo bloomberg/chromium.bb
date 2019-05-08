@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_controller_impl.h"
 
 #include <utility>
 
@@ -179,7 +179,7 @@ class AcceleratorControllerTest : public AshTestBase {
   ~AcceleratorControllerTest() override = default;
 
  protected:
-  static AcceleratorController* GetController();
+  static AcceleratorControllerImpl* GetController();
 
   static bool ProcessInController(const ui::Accelerator& accelerator) {
     if (accelerator.key_state() == ui::Accelerator::KeyState::RELEASED) {
@@ -296,7 +296,7 @@ class AcceleratorControllerTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(AcceleratorControllerTest);
 };
 
-AcceleratorController* AcceleratorControllerTest::GetController() {
+AcceleratorControllerImpl* AcceleratorControllerTest::GetController() {
   return Shell::Get()->accelerator_controller();
 }
 
@@ -460,13 +460,13 @@ TEST_F(AcceleratorControllerTest, WindowSnap) {
   window_state->Activate();
 
   {
-    GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_LEFT);
+    GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_LEFT, {});
     gfx::Rect expected_bounds =
         wm::GetDefaultLeftSnappedWindowBoundsInParent(window.get());
     EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
   }
   {
-    GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_RIGHT);
+    GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_RIGHT, {});
     gfx::Rect expected_bounds =
         wm::GetDefaultRightSnappedWindowBoundsInParent(window.get());
     EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
@@ -474,34 +474,34 @@ TEST_F(AcceleratorControllerTest, WindowSnap) {
   {
     gfx::Rect normal_bounds = window_state->GetRestoreBoundsInParent();
 
-    GetController()->PerformActionIfEnabled(TOGGLE_MAXIMIZED);
+    GetController()->PerformActionIfEnabled(TOGGLE_MAXIMIZED, {});
     EXPECT_TRUE(window_state->IsMaximized());
     EXPECT_NE(normal_bounds.ToString(), window->bounds().ToString());
 
-    GetController()->PerformActionIfEnabled(TOGGLE_MAXIMIZED);
+    GetController()->PerformActionIfEnabled(TOGGLE_MAXIMIZED, {});
     EXPECT_FALSE(window_state->IsMaximized());
     // Window gets restored to its restore bounds since side-maximized state
     // is treated as a "maximized" state.
     EXPECT_EQ(normal_bounds.ToString(), window->bounds().ToString());
 
-    GetController()->PerformActionIfEnabled(TOGGLE_MAXIMIZED);
-    GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_LEFT);
+    GetController()->PerformActionIfEnabled(TOGGLE_MAXIMIZED, {});
+    GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_LEFT, {});
     EXPECT_FALSE(window_state->IsMaximized());
 
-    GetController()->PerformActionIfEnabled(TOGGLE_MAXIMIZED);
-    GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_RIGHT);
+    GetController()->PerformActionIfEnabled(TOGGLE_MAXIMIZED, {});
+    GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_RIGHT, {});
     EXPECT_FALSE(window_state->IsMaximized());
 
-    GetController()->PerformActionIfEnabled(TOGGLE_MAXIMIZED);
+    GetController()->PerformActionIfEnabled(TOGGLE_MAXIMIZED, {});
     EXPECT_TRUE(window_state->IsMaximized());
-    GetController()->PerformActionIfEnabled(WINDOW_MINIMIZE);
+    GetController()->PerformActionIfEnabled(WINDOW_MINIMIZE, {});
     EXPECT_FALSE(window_state->IsMaximized());
     EXPECT_TRUE(window_state->IsMinimized());
     window_state->Restore();
     window_state->Activate();
   }
   {
-    GetController()->PerformActionIfEnabled(WINDOW_MINIMIZE);
+    GetController()->PerformActionIfEnabled(WINDOW_MINIMIZE, {});
     EXPECT_TRUE(window_state->IsMinimized());
   }
 }
@@ -515,26 +515,26 @@ TEST_F(AcceleratorControllerTest, TestRepeatedSnap) {
   window_state->Activate();
 
   // Snap right.
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_RIGHT);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_RIGHT, {});
   gfx::Rect normal_bounds = window_state->GetRestoreBoundsInParent();
   gfx::Rect expected_bounds =
       wm::GetDefaultRightSnappedWindowBoundsInParent(window.get());
   EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
   EXPECT_TRUE(window_state->IsSnapped());
   // Snap right again ->> becomes normal.
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_RIGHT);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_RIGHT, {});
   EXPECT_TRUE(window_state->IsNormalStateType());
   EXPECT_EQ(normal_bounds.ToString(), window->bounds().ToString());
   // Snap right.
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_RIGHT);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_RIGHT, {});
   EXPECT_TRUE(window_state->IsSnapped());
   // Snap left.
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_LEFT);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_LEFT, {});
   EXPECT_TRUE(window_state->IsSnapped());
   expected_bounds = wm::GetDefaultLeftSnappedWindowBoundsInParent(window.get());
   EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
   // Snap left again ->> becomes normal.
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_LEFT);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_LEFT, {});
   EXPECT_TRUE(window_state->IsNormalStateType());
   EXPECT_EQ(normal_bounds.ToString(), window->bounds().ToString());
 }
@@ -1075,10 +1075,10 @@ TEST_F(AcceleratorControllerTest, SideVolumeButtonLocation) {
   // Tests that |side_volume_button_location_| is read correctly if the location
   // file exists.
   base::DictionaryValue location;
-  location.SetString(AcceleratorController::kVolumeButtonRegion,
-                     AcceleratorController::kVolumeButtonRegionScreen);
-  location.SetString(AcceleratorController::kVolumeButtonSide,
-                     AcceleratorController::kVolumeButtonSideLeft);
+  location.SetString(AcceleratorControllerImpl::kVolumeButtonRegion,
+                     AcceleratorControllerImpl::kVolumeButtonRegionScreen);
+  location.SetString(AcceleratorControllerImpl::kVolumeButtonSide,
+                     AcceleratorControllerImpl::kVolumeButtonSideLeft);
   std::string json_location;
   base::JSONWriter::Write(location, &json_location);
   base::ScopedTempDir file_tmp_dir;
@@ -1088,9 +1088,9 @@ TEST_F(AcceleratorControllerTest, SideVolumeButtonLocation) {
   EXPECT_TRUE(base::PathExists(file_path));
   GetController()->set_side_volume_button_file_path_for_testing(file_path);
   GetController()->ParseSideVolumeButtonLocationInfo();
-  EXPECT_EQ(AcceleratorController::kVolumeButtonRegionScreen,
+  EXPECT_EQ(AcceleratorControllerImpl::kVolumeButtonRegionScreen,
             GetController()->side_volume_button_location_for_testing().region);
-  EXPECT_EQ(AcceleratorController::kVolumeButtonSideLeft,
+  EXPECT_EQ(AcceleratorControllerImpl::kVolumeButtonSideLeft,
             GetController()->side_volume_button_location_for_testing().side);
   base::DeleteFile(file_path, false);
 }
@@ -1109,9 +1109,8 @@ class SideVolumeButtonAcceleratorTest
   void SetUp() override {
     AcceleratorControllerTest::SetUp();
     Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
-    AcceleratorController* controller = GetController();
-    DCHECK(controller);
-    controller->set_side_volume_button_location_for_testing(region_, side_);
+    GetController()->set_side_volume_button_location_for_testing(region_,
+                                                                 side_);
     ws::InputDeviceClientTestApi().SetUncategorizedDevices({ui::InputDevice(
         kSideVolumeButtonId, ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
         "cros_ec_buttons")});
@@ -1120,12 +1119,12 @@ class SideVolumeButtonAcceleratorTest
   }
 
   bool IsLeftOrRightSide() const {
-    return side_ == AcceleratorController::kVolumeButtonSideLeft ||
-           side_ == AcceleratorController::kVolumeButtonSideRight;
+    return side_ == AcceleratorControllerImpl::kVolumeButtonSideLeft ||
+           side_ == AcceleratorControllerImpl::kVolumeButtonSideRight;
   }
 
   bool IsOnKeyboard() const {
-    return region_ == AcceleratorController::kVolumeButtonRegionKeyboard;
+    return region_ == AcceleratorControllerImpl::kVolumeButtonRegionKeyboard;
   }
 
  private:
@@ -1219,27 +1218,28 @@ TEST_P(SideVolumeButtonAcceleratorTest, FlipSideVolumeButtonAction) {
 INSTANTIATE_TEST_SUITE_P(
     AshSideVolumeButton,
     SideVolumeButtonAcceleratorTest,
-    testing::ValuesIn({std::make_pair<std::string, std::string>(
-                           AcceleratorController::kVolumeButtonRegionKeyboard,
-                           AcceleratorController::kVolumeButtonSideLeft),
-                       std::make_pair<std::string, std::string>(
-                           AcceleratorController::kVolumeButtonRegionKeyboard,
-                           AcceleratorController::kVolumeButtonSideRight),
-                       std::make_pair<std::string, std::string>(
-                           AcceleratorController::kVolumeButtonRegionKeyboard,
-                           AcceleratorController::kVolumeButtonSideBottom),
-                       std::make_pair<std::string, std::string>(
-                           AcceleratorController::kVolumeButtonRegionScreen,
-                           AcceleratorController::kVolumeButtonSideLeft),
-                       std::make_pair<std::string, std::string>(
-                           AcceleratorController::kVolumeButtonRegionScreen,
-                           AcceleratorController::kVolumeButtonSideRight),
-                       std::make_pair<std::string, std::string>(
-                           AcceleratorController::kVolumeButtonRegionScreen,
-                           AcceleratorController::kVolumeButtonSideTop),
-                       std::make_pair<std::string, std::string>(
-                           AcceleratorController::kVolumeButtonRegionScreen,
-                           AcceleratorController::kVolumeButtonSideBottom)}));
+    testing::ValuesIn(
+        {std::make_pair<std::string, std::string>(
+             AcceleratorControllerImpl::kVolumeButtonRegionKeyboard,
+             AcceleratorControllerImpl::kVolumeButtonSideLeft),
+         std::make_pair<std::string, std::string>(
+             AcceleratorControllerImpl::kVolumeButtonRegionKeyboard,
+             AcceleratorControllerImpl::kVolumeButtonSideRight),
+         std::make_pair<std::string, std::string>(
+             AcceleratorControllerImpl::kVolumeButtonRegionKeyboard,
+             AcceleratorControllerImpl::kVolumeButtonSideBottom),
+         std::make_pair<std::string, std::string>(
+             AcceleratorControllerImpl::kVolumeButtonRegionScreen,
+             AcceleratorControllerImpl::kVolumeButtonSideLeft),
+         std::make_pair<std::string, std::string>(
+             AcceleratorControllerImpl::kVolumeButtonRegionScreen,
+             AcceleratorControllerImpl::kVolumeButtonSideRight),
+         std::make_pair<std::string, std::string>(
+             AcceleratorControllerImpl::kVolumeButtonRegionScreen,
+             AcceleratorControllerImpl::kVolumeButtonSideTop),
+         std::make_pair<std::string, std::string>(
+             AcceleratorControllerImpl::kVolumeButtonRegionScreen,
+             AcceleratorControllerImpl::kVolumeButtonSideBottom)}));
 
 namespace {
 
@@ -1486,7 +1486,7 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
   for (const auto& action : all_actions) {
     if (actionsAllowedAtModalWindow.find(action) ==
         actionsAllowedAtModalWindow.end()) {
-      EXPECT_TRUE(GetController()->PerformActionIfEnabled(action))
+      EXPECT_TRUE(GetController()->PerformActionIfEnabled(action, {}))
           << " for action (disallowed at modal window): " << action;
     }
   }
@@ -1567,7 +1567,7 @@ TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
     controller->TriggerAccessibilityAlert(mojom::AccessibilityAlert::NONE);
     controller->FlushMojoForTest();
     EXPECT_TRUE(
-        GetController()->PerformActionIfEnabled(kActionsNeedingWindow[i]));
+        GetController()->PerformActionIfEnabled(kActionsNeedingWindow[i], {}));
     controller->FlushMojoForTest();
     EXPECT_EQ(mojom::AccessibilityAlert::WINDOW_NEEDED,
               client.last_a11y_alert());
@@ -1580,7 +1580,7 @@ TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
     wm::ActivateWindow(window.get());
     controller->TriggerAccessibilityAlert(mojom::AccessibilityAlert::NONE);
     controller->FlushMojoForTest();
-    GetController()->PerformActionIfEnabled(kActionsNeedingWindow[i]);
+    GetController()->PerformActionIfEnabled(kActionsNeedingWindow[i], {});
     controller->FlushMojoForTest();
     EXPECT_NE(mojom::AccessibilityAlert::WINDOW_NEEDED,
               client.last_a11y_alert());
@@ -1590,10 +1590,10 @@ TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
   for (size_t i = 0; i < kActionsNeedingWindowLength; ++i) {
     window.reset(CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
     wm::ActivateWindow(window.get());
-    GetController()->PerformActionIfEnabled(WINDOW_MINIMIZE);
+    GetController()->PerformActionIfEnabled(WINDOW_MINIMIZE, {});
     controller->TriggerAccessibilityAlert(mojom::AccessibilityAlert::NONE);
     controller->FlushMojoForTest();
-    GetController()->PerformActionIfEnabled(kActionsNeedingWindow[i]);
+    GetController()->PerformActionIfEnabled(kActionsNeedingWindow[i], {});
     controller->FlushMojoForTest();
     EXPECT_NE(mojom::AccessibilityAlert::WINDOW_NEEDED,
               client.last_a11y_alert());
@@ -1757,7 +1757,7 @@ TEST_F(AcceleratorControllerGuestModeTest, IncognitoWindowDisabled) {
 
   // New incognito window is disabled.
   EXPECT_FALSE(Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
-      NEW_INCOGNITO_WINDOW));
+      NEW_INCOGNITO_WINDOW, {}));
 }
 
 namespace {

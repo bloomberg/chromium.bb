@@ -16,10 +16,8 @@ specific_include_rules = {
   "ash_shell_init\.cc": [
     "+ash",
   ],
-  # IsAcceleratorDeprecated and SetupWidgetInitParamsForContainer access
-  # ash::Shell in non Mash mode only.
+  # SetupWidgetInitParamsForContainer accesses ash::Shell.
   "ash_util\.cc": [
-    "+ash/accelerators/accelerator_controller.h",
     "+ash/shell.h",
   ],
   # https://crbug.com/756054

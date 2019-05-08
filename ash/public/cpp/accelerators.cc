@@ -4,9 +4,22 @@
 
 #include "ash/public/cpp/accelerators.h"
 
+#include "base/callback.h"
+#include "base/no_destructor.h"
 #include "base/stl_util.h"
 
 namespace ash {
+
+namespace {
+
+AcceleratorController* g_instance = nullptr;
+
+base::RepeatingClosure* GetVolumeAdjustmentCallback() {
+  static base::NoDestructor<base::RepeatingClosure> callback;
+  return callback.get();
+}
+
+}  // namespace
 
 const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN, SWITCH_TO_LAST_USED_IME},
@@ -179,5 +192,33 @@ const AcceleratorData kAcceleratorData[] = {
 };
 
 const size_t kAcceleratorDataLength = base::size(kAcceleratorData);
+
+// static
+AcceleratorController* AcceleratorController::Get() {
+  return g_instance;
+}
+
+// static
+void AcceleratorController::SetVolumeAdjustmentSoundCallback(
+    const base::RepeatingClosure& closure) {
+  DCHECK(GetVolumeAdjustmentCallback()->is_null() || closure.is_null());
+  *GetVolumeAdjustmentCallback() = std::move(closure);
+}
+
+// static
+void AcceleratorController::PlayVolumeAdjustmentSound() {
+  if (*GetVolumeAdjustmentCallback())
+    GetVolumeAdjustmentCallback()->Run();
+}
+
+AcceleratorController::AcceleratorController() {
+  DCHECK_EQ(nullptr, g_instance);
+  g_instance = this;
+}
+
+AcceleratorController::~AcceleratorController() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
 
 }  // namespace ash

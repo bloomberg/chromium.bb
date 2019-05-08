@@ -9,7 +9,7 @@
 #include <string>
 #include <utility>
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accelerators/ash_focus_manager_factory.h"
 #include "ash/accelerators/magnifier_key_scroller.h"
 #include "ash/accelerators/pre_target_accelerator_handler.h"
@@ -1120,7 +1120,7 @@ void Shell::Init(
   cursor_manager_->SetDisplay(
       display::Screen::GetScreen()->GetPrimaryDisplay());
 
-  accelerator_controller_ = std::make_unique<AcceleratorController>();
+  accelerator_controller_ = std::make_unique<AcceleratorControllerImpl>();
   voice_interaction_controller_ =
       std::make_unique<VoiceInteractionController>();
 

@@ -4,7 +4,7 @@
 
 #include "ash/accelerators/pre_target_accelerator_handler.h"
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
 #include "base/feature_list.h"
@@ -116,7 +116,7 @@ bool PreTargetAcceleratorHandler::ShouldProcessAcceleratorNow(
   if (base::ContainsValue(Shell::GetAllRootWindows(), target))
     return true;
 
-  AcceleratorController* accelerator_controller =
+  AcceleratorControllerImpl* accelerator_controller =
       Shell::Get()->accelerator_controller();
 
   // Reserved accelerators (such as Power button) always have a priority.

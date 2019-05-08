@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/frame/header_view.h"
 #include "ash/frame/wide_frame_view.h"
 #include "ash/public/cpp/ash_switches.h"
@@ -509,7 +509,7 @@ class TestButtonModel : public CaptionButtonModel {
 }  // namespace
 
 TEST_F(NonClientFrameViewAshTest, BackButton) {
-  ash::AcceleratorController* controller =
+  ash::AcceleratorControllerImpl* controller =
       ash::Shell::Get()->accelerator_controller();
   std::unique_ptr<TestButtonModel> model = std::make_unique<TestButtonModel>();
   TestButtonModel* model_ptr = model.get();

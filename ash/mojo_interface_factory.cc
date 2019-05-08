@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/accelerators/accelerator_controller.h"
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/accessibility_focus_ring_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
@@ -64,11 +63,6 @@ namespace {
 
 base::LazyInstance<RegisterInterfacesCallback>::Leaky
     g_register_interfaces_callback = LAZY_INSTANCE_INITIALIZER;
-
-void BindAcceleratorControllerRequestOnMainThread(
-    mojom::AcceleratorControllerRequest request) {
-  Shell::Get()->accelerator_controller()->BindRequest(std::move(request));
-}
 
 void BindAccessibilityControllerRequestOnMainThread(
     mojom::AccessibilityControllerRequest request) {
@@ -279,9 +273,6 @@ void BindSplitViewRequestOnMainThread(
 void RegisterInterfaces(
     service_manager::BinderRegistry* registry,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
-  registry->AddInterface(
-      base::BindRepeating(&BindAcceleratorControllerRequestOnMainThread),
-      main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindAccessibilityControllerRequestOnMainThread),
       main_thread_task_runner);

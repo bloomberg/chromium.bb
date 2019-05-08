@@ -93,7 +93,7 @@ class GpuInterfaceProvider;
 
 namespace ash {
 
-class AcceleratorController;
+class AcceleratorControllerImpl;
 class AccessibilityController;
 class AccessibilityDelegate;
 class AccessibilityFocusRingController;
@@ -329,7 +329,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   // dialog. If true then changes to display settings can be saved.
   bool ShouldSaveDisplaySettings();
 
-  AcceleratorController* accelerator_controller() {
+  AcceleratorControllerImpl* accelerator_controller() {
     return accelerator_controller_.get();
   }
   AccessibilityController* accessibility_controller() {
@@ -716,7 +716,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<UserMetricsRecorder> user_metrics_recorder_;
   std::unique_ptr<WindowPositioner> window_positioner_;
 
-  std::unique_ptr<AcceleratorController> accelerator_controller_;
+  std::unique_ptr<AcceleratorControllerImpl> accelerator_controller_;
   std::unique_ptr<AccessibilityController> accessibility_controller_;
   std::unique_ptr<AccessibilityDelegate> accessibility_delegate_;
   std::unique_ptr<AccessibilityFocusRingController>

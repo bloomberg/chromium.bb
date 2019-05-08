@@ -133,13 +133,13 @@ TEST_F(DictationButtonTrayTest, ActiveStateOnlyDuringDictation) {
   ASSERT_FALSE(GetTray()->is_active());
 
   Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
-      AcceleratorAction::TOGGLE_DICTATION);
+      AcceleratorAction::TOGGLE_DICTATION, {});
   controller->FlushMojoForTest();
   EXPECT_TRUE(Shell::Get()->accessibility_controller()->dictation_active());
   EXPECT_TRUE(GetTray()->is_active());
 
   Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
-      AcceleratorAction::TOGGLE_DICTATION);
+      AcceleratorAction::TOGGLE_DICTATION, {});
   controller->FlushMojoForTest();
   EXPECT_FALSE(Shell::Get()->accessibility_controller()->dictation_active());
   EXPECT_FALSE(GetTray()->is_active());

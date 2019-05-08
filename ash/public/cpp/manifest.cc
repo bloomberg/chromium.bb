@@ -4,7 +4,6 @@
 
 #include "ash/public/cpp/manifest.h"
 
-#include "ash/public/interfaces/accelerator_controller.mojom.h"
 #include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
 #include "ash/public/interfaces/app_list.mojom.h"
@@ -76,7 +75,7 @@ const service_manager::Manifest& GetManifest() {
           .ExposeCapability(
               "system_ui",
               service_manager::Manifest::InterfaceList<
-                  mojom::AcceleratorController, mojom::AccessibilityController,
+                  mojom::AccessibilityController,
                   mojom::AccessibilityFocusRingController,
                   mojom::AppListController, mojom::AshMessageCenterController,
                   mojom::AssistantAlarmTimerController,

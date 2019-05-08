@@ -383,6 +383,8 @@ class AccessibilityManager
 
   void UpdateChromeOSAccessibilityHistograms();
 
+  void PlayVolumeAdjustSound();
+
   // content::NotificationObserver
   void Observe(int type,
                const content::NotificationSource& source,

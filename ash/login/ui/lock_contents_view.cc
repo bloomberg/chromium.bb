@@ -8,7 +8,7 @@
 #include <memory>
 #include <utility>
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/detachable_base/detachable_base_pairing_status.h"
 #include "ash/focus_cycler.h"
 #include "ash/ime/ime_controller.h"
@@ -1904,7 +1904,8 @@ void LockContentsView::RegisterAccelerators() {
   }
 
   // Register the accelerators.
-  AcceleratorController* controller = Shell::Get()->accelerator_controller();
+  AcceleratorControllerImpl* controller =
+      Shell::Get()->accelerator_controller();
   for (const auto& item : accel_map_)
     controller->Register({item.first}, this);
 }

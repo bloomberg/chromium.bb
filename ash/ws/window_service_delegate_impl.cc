@@ -4,7 +4,7 @@
 
 #include "ash/ws/window_service_delegate_impl.h"
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/ime/ime_engine_factory_registry.h"
 #include "ash/root_window_controller.h"

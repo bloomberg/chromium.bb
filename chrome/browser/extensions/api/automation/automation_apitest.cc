@@ -37,11 +37,11 @@
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 #include "ui/accessibility/tree_generator.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/display/display_switches.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/accelerators/accelerator_controller.h"
-#include "ash/shell.h"
+#include "ash/public/cpp/accelerators.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #endif
 
@@ -264,8 +264,8 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_DesktopHitTestIframe) {
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_DesktopFocusViews) {
   AutomationManagerAura::GetInstance()->Enable();
   // Trigger the shelf subtree to be computed.
-  ash::Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
-      ash::FOCUS_SHELF);
+  ash::AcceleratorController::Get()->PerformActionIfEnabled(ash::FOCUS_SHELF,
+                                                            {});
 
   ASSERT_TRUE(
       RunExtensionSubtest("automation/tests/desktop", "focus_views.html"))
@@ -295,8 +295,8 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopNotRequested) {
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_DesktopActions) {
   AutomationManagerAura::GetInstance()->Enable();
   // Trigger the shelf subtree to be computed.
-  ash::Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
-      ash::FOCUS_SHELF);
+  ash::AcceleratorController::Get()->PerformActionIfEnabled(ash::FOCUS_SHELF,
+                                                            {});
 
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/desktop", "actions.html"))
       << message_;

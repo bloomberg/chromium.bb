@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/public/cpp/accelerators.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
@@ -18,7 +18,7 @@ namespace {
 void ProcessAcceleratorNow(const ui::Accelerator& accelerator) {
   // TODO(afakhry): See if we need here to send the accelerator to the
   // FocusManager of the active window in a follow-up CL.
-  ash::Shell::Get()->accelerator_controller()->Process(accelerator);
+  ash::AcceleratorController::Get()->Process(accelerator);
 }
 
 }  // namespace
@@ -32,13 +32,7 @@ ChromeViewsDelegate::ProcessAcceleratorWhileMenuShowing(
   if (features::IsMultiProcessMash())
     return views::ViewsDelegate::ProcessMenuAcceleratorResult::LEAVE_MENU_OPEN;
 
-  ash::AcceleratorController* accelerator_controller =
-      ash::Shell::Get()->accelerator_controller();
-
-  accelerator_controller->accelerator_history()->StoreCurrentAccelerator(
-      accelerator);
-  if (accelerator_controller->ShouldCloseMenuAndRepostAccelerator(
-          accelerator)) {
+  if (ash::AcceleratorController::Get()->OnMenuAccelerator(accelerator)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(ProcessAcceleratorNow, accelerator));
     return views::ViewsDelegate::ProcessMenuAcceleratorResult::CLOSE_MENU;

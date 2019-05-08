@@ -6,8 +6,8 @@
 
 #include <queue>
 
-#include "ash/accelerators/accelerator_controller.h"
 #include "ash/events/event_rewriter_controller.h"
+#include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
@@ -120,9 +120,7 @@ void LoggedInSpokenFeedbackTest::SimulateTouchScreenInChromeVox() {
 
 bool LoggedInSpokenFeedbackTest::PerformAcceleratorAction(
     ash::AcceleratorAction action) {
-  ash::AcceleratorController* controller =
-      ash::Shell::Get()->accelerator_controller();
-  return controller->PerformActionIfEnabled(action);
+  return ash::AcceleratorController::Get()->PerformActionIfEnabled(action, {});
 }
 
 void LoggedInSpokenFeedbackTest::DisableEarcons() {

@@ -4,7 +4,7 @@
 
 #include "ash/display/display_move_window_util.h"
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
@@ -62,7 +62,7 @@ views::Widget* CreateTestWidgetWithParent(views::Widget::InitParams::Type type,
 
 void PerformMoveWindowAccel() {
   Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
-      MOVE_ACTIVE_WINDOW_BETWEEN_DISPLAYS);
+      MOVE_ACTIVE_WINDOW_BETWEEN_DISPLAYS, {});
 }
 
 }  // namespace

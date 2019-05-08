@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accelerators/pre_target_accelerator_handler.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/session/session_controller_impl.h"
