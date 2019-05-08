@@ -12,8 +12,6 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_debug_daemon_client.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -29,12 +27,6 @@ class PluginVmUtilTest : public testing::Test {
     settings_helper_.ReplaceDeviceSettingsProviderWithStub();
     profile_builder.SetProfileName("user0");
     testing_profile_ = profile_builder.Build();
-
-    std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
-        chromeos::DBusThreadManager::GetSetterForTesting();
-    dbus_setter->SetDebugDaemonClient(
-        std::unique_ptr<chromeos::DebugDaemonClient>(
-            new chromeos::FakeDebugDaemonClient));
   }
 
   void TearDown() override {
@@ -102,22 +94,6 @@ TEST_F(PluginVmUtilTest,
       plugin_vm::prefs::kPluginVmImageExists, true);
 
   EXPECT_TRUE(IsPluginVmConfigured(testing_profile_.get()));
-}
-
-TEST_F(PluginVmUtilTest, PluginVmNotStartedIfNotAllowed) {
-  base::MockCallback<PluginVmStartedCallback> callback;
-  EXPECT_CALL(callback, Run(false));
-  StartPluginVmForProfile(testing_profile_.get(), callback.Get());
-  thread_bundle_.RunUntilIdle();
-}
-
-TEST_F(PluginVmUtilTest, PluginVmNotStarted) {
-  AllowPluginVm();
-
-  base::MockCallback<PluginVmStartedCallback> callback;
-  EXPECT_CALL(callback, Run(false));
-  StartPluginVmForProfile(testing_profile_.get(), callback.Get());
-  thread_bundle_.RunUntilIdle();
 }
 
 TEST_F(PluginVmUtilTest, GetPluginVmLicenseKey) {

@@ -31,6 +31,7 @@ component("dbus") {
     ":seneschal_proto",
     ":smbprovider_proto",
     ":vm_applications_apps_proto",
+    ":vm_plugin_dispatcher_proto",
     "//base",
     "//components/account_id",
     "//components/device_event_log",
@@ -107,6 +108,8 @@ component("dbus") {
     "fake_update_engine_client.h",
     "fake_virtual_file_provider_client.cc",
     "fake_virtual_file_provider_client.h",
+    "fake_vm_plugin_dispatcher_client.cc",
+    "fake_vm_plugin_dispatcher_client.h",
     "fake_wilco_dtc_supportd_client.cc",
     "fake_wilco_dtc_supportd_client.h",
     "image_burner_client.cc",
@@ -129,6 +132,8 @@ component("dbus") {
     "util/version_loader.h",
     "virtual_file_provider_client.cc",
     "virtual_file_provider_client.h",
+    "vm_plugin_dispatcher_client.cc",
+    "vm_plugin_dispatcher_client.h",
     "wilco_dtc_supportd_client.cc",
     "wilco_dtc_supportd_client.h",
   ]
@@ -301,4 +306,12 @@ proto_library("vm_applications_apps_proto") {
   ]
 
   proto_out_dir = "chromeos/dbus/vm_applications"
+}
+
+proto_library("vm_plugin_dispatcher_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/vm_plugin_dispatcher/vm_plugin_dispatcher.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/vm_plugin_dispatcher"
 }

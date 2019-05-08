@@ -19,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -314,7 +315,7 @@ void OpenInternalApp(const std::string& app_id,
         ->ShowChromeDiscoverPageForProfile(profile);
   } else if (app_id == plugin_vm::kPluginVmAppId) {
     if (plugin_vm::IsPluginVmEnabled(profile)) {
-      // TODO(http://crbug.com/904853): Start PluginVm.
+      plugin_vm::PluginVmManager::GetForProfile(profile)->LaunchPluginVm();
     } else {
       plugin_vm::ShowPluginVmLauncherView(profile);
     }

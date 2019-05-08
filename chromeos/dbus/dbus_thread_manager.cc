@@ -234,6 +234,11 @@ WilcoDtcSupportdClient* DBusThreadManager::GetWilcoDtcSupportdClient() {
                           : nullptr;
 }
 
+VmPluginDispatcherClient* DBusThreadManager::GetVmPluginDispatcherClient() {
+  return clients_browser_ ? clients_browser_->vm_plugin_dispatcher_client.get()
+                          : nullptr;
+}
+
 void DBusThreadManager::InitializeClients() {
   // Some clients call DBusThreadManager::Get() during initialization.
   DCHECK(g_dbus_thread_manager);

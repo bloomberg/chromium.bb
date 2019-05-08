@@ -35,6 +35,7 @@
 #include "chromeos/dbus/fake_seneschal_client.h"
 #include "chromeos/dbus/fake_smb_provider_client.h"
 #include "chromeos/dbus/fake_virtual_file_provider_client.h"
+#include "chromeos/dbus/fake_vm_plugin_dispatcher_client.h"
 #include "chromeos/dbus/fake_wilco_dtc_supportd_client.h"
 #include "chromeos/dbus/image_burner_client.h"
 #include "chromeos/dbus/image_loader_client.h"
@@ -45,6 +46,7 @@
 #include "chromeos/dbus/smb_provider_client.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "chromeos/dbus/virtual_file_provider_client.h"
+#include "chromeos/dbus/vm_plugin_dispatcher_client.h"
 #include "chromeos/dbus/wilco_dtc_supportd_client.h"
 
 namespace chromeos {
@@ -99,6 +101,8 @@ DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
   update_engine_client_.reset(UpdateEngineClient::Create(client_impl_type));
   virtual_file_provider_client_ =
       CREATE_DBUS_CLIENT(VirtualFileProviderClient, use_real_clients);
+  vm_plugin_dispatcher_client =
+      CREATE_DBUS_CLIENT(VmPluginDispatcherClient, use_real_clients);
   wilco_dtc_supportd_client_ =
       CREATE_DBUS_CLIENT(WilcoDtcSupportdClient, use_real_clients);
 }
@@ -127,6 +131,7 @@ void DBusClientsBrowser::Initialize(dbus::Bus* system_bus) {
   smb_provider_client_->Init(system_bus);
   update_engine_client_->Init(system_bus);
   virtual_file_provider_client_->Init(system_bus);
+  vm_plugin_dispatcher_client->Init(system_bus);
   wilco_dtc_supportd_client_->Init(system_bus);
 }
 
