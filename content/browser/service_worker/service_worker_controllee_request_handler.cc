@@ -253,6 +253,7 @@ void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
 
   stripped_url_ = net::SimplifyUrlForRequest(url);
   provider_host_->UpdateUrls(stripped_url_, site_for_cookies);
+  registration_lookup_start_time_ = base::TimeTicks::Now();
   context_->storage()->FindRegistrationForDocument(
       stripped_url_, base::BindOnce(&ServiceWorkerControlleeRequestHandler::
                                         DidLookupRegistrationForMainResource,
@@ -269,6 +270,9 @@ void ServiceWorkerControlleeRequestHandler::
   // The job may have been destroyed before this was invoked.
   if (!loader())
     return;
+
+  ServiceWorkerMetrics::RecordLookupRegistrationTime(
+      status, base::TimeTicks::Now() - registration_lookup_start_time_);
 
   if (status != blink::ServiceWorkerStatusCode::kOk) {
     loader()->FallbackToNetwork();

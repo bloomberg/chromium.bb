@@ -135,6 +135,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final
   ResourceContext* resource_context_;
   GURL stripped_url_;
   bool force_update_started_;
+  base::TimeTicks registration_lookup_start_time_;
 
   base::WeakPtrFactory<ServiceWorkerControlleeRequestHandler> weak_factory_;
 

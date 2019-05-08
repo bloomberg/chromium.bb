@@ -811,4 +811,20 @@ void ServiceWorkerMetrics::RecordRegisteredOriginCount(size_t origin_count) {
   UMA_HISTOGRAM_COUNTS_1M("ServiceWorker.RegisteredOriginCount", origin_count);
 }
 
+void ServiceWorkerMetrics::RecordLookupRegistrationTime(
+    blink::ServiceWorkerStatusCode status,
+    base::TimeDelta duration) {
+  if (status == blink::ServiceWorkerStatusCode::kOk) {
+    UMA_HISTOGRAM_TIMES(
+        "ServiceWorker.LookupRegistration.MainResource.Time.Exists", duration);
+  } else if (status == blink::ServiceWorkerStatusCode::kErrorNotFound) {
+    UMA_HISTOGRAM_TIMES(
+        "ServiceWorker.LookupRegistration.MainResource.Time.DoesNotExist",
+        duration);
+  } else {
+    UMA_HISTOGRAM_TIMES(
+        "ServiceWorker.LookupRegistration.MainResource.Time.Error", duration);
+  }
+}
+
 }  // namespace content

@@ -427,6 +427,15 @@ class ServiceWorkerMetrics {
   // Records the number of origins with a registered service worker.
   static void RecordRegisteredOriginCount(size_t origin_count);
 
+  // Records the duration of looking up an existing registration.
+  // |status| is the result of lookup. The records for the cases where
+  // the registration is found (kOk), not found (kErrorNotFound), or an error
+  // happens (other errors) are saved separately into a relevant suffixed
+  // histogram.
+  static void RecordLookupRegistrationTime(
+      blink::ServiceWorkerStatusCode status,
+      base::TimeDelta duration);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerMetrics);
 };

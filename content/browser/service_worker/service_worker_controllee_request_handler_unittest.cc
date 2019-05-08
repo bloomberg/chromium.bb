@@ -12,6 +12,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -161,6 +162,91 @@ class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
     return false;
   }
 };
+
+TEST_F(ServiceWorkerControlleeRequestHandlerTest, Basic) {
+  base::HistogramTester histogram_tester;
+
+  // Prepare a valid version and registration.
+  version_->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  registration_->SetActiveVersion(version_);
+  {
+    base::RunLoop loop;
+    context()->storage()->StoreRegistration(
+        registration_.get(), version_.get(),
+        base::BindOnce(
+            [](base::OnceClosure closure,
+               blink::ServiceWorkerStatusCode status) {
+              ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
+              std::move(closure).Run();
+            },
+            loop.QuitClosure()));
+    loop.Run();
+  }
+
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.LookupRegistration.MainResource.Time.Exists", 0);
+
+  // Conduct a main resource load.
+  ServiceWorkerRequestTestResources test_resources(
+      this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
+  ServiceWorkerNavigationLoader* loader = test_resources.MaybeCreateLoader();
+
+  EXPECT_FALSE(loader->ShouldFallbackToNetwork());
+  EXPECT_FALSE(loader->ShouldForwardToServiceWorker());
+  EXPECT_FALSE(version_->HasControllee());
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(loader->ShouldFallbackToNetwork());
+  EXPECT_TRUE(loader->ShouldForwardToServiceWorker());
+  EXPECT_TRUE(version_->HasControllee());
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.LookupRegistration.MainResource.Time.Exists", 1);
+
+  test_resources.ResetHandler();
+}
+
+TEST_F(ServiceWorkerControlleeRequestHandlerTest, DoesNotExist) {
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.LookupRegistration.MainResource.Time.DoesNotExist", 0);
+
+  // No version and registration exists in the scope.
+
+  // Conduct a main resource load.
+  ServiceWorkerRequestTestResources test_resources(
+      this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
+  ServiceWorkerNavigationLoader* loader = test_resources.MaybeCreateLoader();
+  EXPECT_FALSE(loader);
+
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.LookupRegistration.MainResource.Time.DoesNotExist", 1);
+
+  test_resources.ResetHandler();
+}
+
+TEST_F(ServiceWorkerControlleeRequestHandlerTest, Error) {
+  base::HistogramTester histogram_tester;
+
+  // Disabling the storage makes looking up the registration return an error.
+  context()->storage()->Disable();
+
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.LookupRegistration.MainResource.Time.Error", 0);
+
+  // Conduct a main resource load.
+  ServiceWorkerRequestTestResources test_resources(
+      this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
+  ServiceWorkerNavigationLoader* loader = test_resources.MaybeCreateLoader();
+  EXPECT_FALSE(loader);
+
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.LookupRegistration.MainResource.Time.Error", 1);
+
+  test_resources.ResetHandler();
+}
 
 TEST_F(ServiceWorkerControlleeRequestHandlerTest, DisallowServiceWorker) {
   ServiceWorkerTestContentBrowserClient test_browser_client;
