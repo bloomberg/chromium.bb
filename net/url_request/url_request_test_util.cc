@@ -23,8 +23,6 @@
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/transport_security_state.h"
 #include "net/proxy_resolution/proxy_retry_info.h"
-#include "net/ssl/channel_id_service.h"
-#include "net/ssl/default_channel_id_store.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory_impl.h"
@@ -108,12 +106,6 @@ void TestURLRequestContext::Init() {
         nullptr /* store */, nullptr /* netlog */));
   }
 
-  // In-memory Channel ID service.  Must be created before the
-  // HttpNetworkSession.
-  if (!channel_id_service()) {
-    context_storage_.set_channel_id_service(
-        std::make_unique<ChannelIDService>(new DefaultChannelIDStore(nullptr)));
-  }
   if (!http_user_agent_settings() && create_default_http_user_agent_settings_) {
     context_storage_.set_http_user_agent_settings(
         std::make_unique<StaticHttpUserAgentSettings>("en-us,fr",

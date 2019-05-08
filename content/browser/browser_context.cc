@@ -60,8 +60,6 @@
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/cookie_store.h"
-#include "net/ssl/channel_id_service.h"
-#include "net/ssl/channel_id_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/content/public/mojom/constants.mojom.h"
@@ -599,7 +597,6 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
 
   if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
     scoped_refptr<net::URLRequestContextGetter> context_getter;
-    // Channel ID isn't supported with network service.
     if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
       context_getter = storage_partition->GetURLRequestContext();
     base::PostTaskWithTraits(

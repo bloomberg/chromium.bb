@@ -89,7 +89,6 @@
 #include "net/http/transport_security_persister.h"
 #include "net/net_buildflags.h"
 #include "net/nqe/network_quality_estimator.h"
-#include "net/ssl/channel_id_service.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/data_protocol_handler.h"
@@ -521,12 +520,6 @@ void ProfileIOData::AppRequestContext::SetCookieStore(
     std::unique_ptr<net::CookieStore> cookie_store) {
   cookie_store_ = std::move(cookie_store);
   set_cookie_store(cookie_store_.get());
-}
-
-void ProfileIOData::AppRequestContext::SetChannelIDService(
-    std::unique_ptr<net::ChannelIDService> channel_id_service) {
-  channel_id_service_ = std::move(channel_id_service);
-  set_channel_id_service(channel_id_service_.get());
 }
 
 void ProfileIOData::AppRequestContext::SetHttpNetworkSession(

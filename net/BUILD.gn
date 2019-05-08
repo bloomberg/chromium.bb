@@ -330,16 +330,10 @@ component("net") {
     "socket/ssl_socket.h",
     "socket/stream_socket.cc",
     "socket/stream_socket.h",
-    "ssl/channel_id_service.cc",
-    "ssl/channel_id_service.h",
-    "ssl/channel_id_store.cc",
-    "ssl/channel_id_store.h",
     "ssl/client_cert_identity.cc",
     "ssl/client_cert_identity.h",
     "ssl/client_cert_identity_mac.cc",
     "ssl/client_cert_identity_mac.h",
-    "ssl/default_channel_id_store.cc",
-    "ssl/default_channel_id_store.h",
     "ssl/openssl_ssl_util.cc",
     "ssl/openssl_ssl_util.h",
     "ssl/ssl_cert_request_info.cc",
@@ -2751,8 +2745,6 @@ static_library("test_support") {
     "test/cert_test_util.cc",
     "test/cert_test_util.h",
     "test/cert_test_util_nss.cc",
-    "test/channel_id_test_util.cc",
-    "test/channel_id_test_util.h",
     "test/ct_test_util.cc",
     "test/ct_test_util.h",
     "test/embedded_test_server/controllable_http_response.cc",
@@ -5208,13 +5200,11 @@ test("net_unittests") {
     "spdy/spdy_stream_test_util.h",
     "spdy/spdy_stream_unittest.cc",
     "spdy/spdy_write_queue_unittest.cc",
-    "ssl/channel_id_service_unittest.cc",
     "ssl/client_cert_identity_unittest.cc",
     "ssl/client_cert_store_mac_unittest.cc",
     "ssl/client_cert_store_nss_unittest.cc",
     "ssl/client_cert_store_unittest-inl.h",
     "ssl/client_cert_store_win_unittest.cc",
-    "ssl/default_channel_id_store_unittest.cc",
     "ssl/ssl_cipher_suite_names_unittest.cc",
     "ssl/ssl_client_auth_cache_unittest.cc",
     "ssl/ssl_client_session_cache_unittest.cc",
@@ -5632,10 +5622,7 @@ test("net_unittests") {
       ]
     }
   } else {
-    sources -= [
-      "extras/sqlite/sqlite_channel_id_store_unittest.cc",
-      "extras/sqlite/sqlite_persistent_cookie_store_unittest.cc",
-    ]
+    sources -= [ "extras/sqlite/sqlite_persistent_cookie_store_unittest.cc" ]
   }
 
   data = []

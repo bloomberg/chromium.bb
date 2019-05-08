@@ -32,7 +32,6 @@ URLRequestContext::URLRequestContext(bool allow_copy)
     : net_log_(nullptr),
       host_resolver_(nullptr),
       cert_verifier_(nullptr),
-      channel_id_service_(nullptr),
       http_auth_handler_factory_(nullptr),
       proxy_resolution_service_(nullptr),
       proxy_delegate_(nullptr),
@@ -160,7 +159,6 @@ void URLRequestContext::CopyFrom(const URLRequestContext* other) {
   set_net_log(other->net_log_);
   set_host_resolver(other->host_resolver_);
   set_cert_verifier(other->cert_verifier_);
-  set_channel_id_service(other->channel_id_service_);
   set_http_auth_handler_factory(other->http_auth_handler_factory_);
   set_proxy_resolution_service(other->proxy_resolution_service_);
   set_proxy_delegate(other->proxy_delegate_);

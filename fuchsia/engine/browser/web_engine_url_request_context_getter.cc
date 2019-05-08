@@ -10,7 +10,6 @@
 #include "content/public/browser/cookie_store_factory.h"
 #include "net/cookies/cookie_store.h"
 #include "net/proxy_resolution/proxy_config_service.h"
-#include "net/ssl/channel_id_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 

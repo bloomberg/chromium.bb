@@ -59,8 +59,6 @@
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/spdy/spdy_session.h"
-#include "net/ssl/channel_id_service.h"
-#include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
@@ -262,7 +260,6 @@ void IOSIOThread::Init() {
   // TODO(crbug.com/801910): Hook up logging by passing in a non-null netlog.
   globals_->system_cookie_store.reset(
       new net::CookieMonster(nullptr /* store */, nullptr /* netlog */));
-  // In-memory channel ID store.
   globals_->http_user_agent_settings.reset(new net::StaticHttpUserAgentSettings(
       std::string(),
       web::GetWebClient()->GetUserAgent(web::UserAgentType::MOBILE)));

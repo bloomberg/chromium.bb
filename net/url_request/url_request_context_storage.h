@@ -16,7 +16,6 @@
 namespace net {
 
 class CertVerifier;
-class ChannelIDService;
 class CookieStore;
 class CTPolicyEnforcer;
 class CTVerifier;
@@ -57,8 +56,6 @@ class NET_EXPORT URLRequestContextStorage {
   void set_net_log(std::unique_ptr<NetLog> net_log);
   void set_host_resolver(std::unique_ptr<HostResolver> host_resolver);
   void set_cert_verifier(std::unique_ptr<CertVerifier> cert_verifier);
-  void set_channel_id_service(
-      std::unique_ptr<ChannelIDService> channel_id_service);
   void set_http_auth_handler_factory(
       std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory);
   void set_proxy_delegate(std::unique_ptr<ProxyDelegate> proxy_delegate);
@@ -109,8 +106,6 @@ class NET_EXPORT URLRequestContextStorage {
   std::unique_ptr<NetLog> net_log_;
   std::unique_ptr<HostResolver> host_resolver_;
   std::unique_ptr<CertVerifier> cert_verifier_;
-  // The ChannelIDService must outlive the HttpTransactionFactory.
-  std::unique_ptr<ChannelIDService> channel_id_service_;
   std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
   std::unique_ptr<ProxyDelegate> proxy_delegate_;
   std::unique_ptr<NetworkDelegate> network_delegate_;

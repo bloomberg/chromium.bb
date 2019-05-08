@@ -62,7 +62,6 @@ class InfoMap;
 namespace net {
 class CertNetFetcherImpl;
 class CertVerifier;
-class ChannelIDService;
 class ClientCertStore;
 class CookieStore;
 class HttpTransactionFactory;
@@ -279,8 +278,6 @@ class ProfileIOData {
     AppRequestContext();
 
     void SetCookieStore(std::unique_ptr<net::CookieStore> cookie_store);
-    void SetChannelIDService(
-        std::unique_ptr<net::ChannelIDService> channel_id_service);
     void SetHttpNetworkSession(
         std::unique_ptr<net::HttpNetworkSession> http_network_session);
     void SetHttpTransactionFactory(
@@ -291,7 +288,6 @@ class ProfileIOData {
     ~AppRequestContext() override;
 
     std::unique_ptr<net::CookieStore> cookie_store_;
-    std::unique_ptr<net::ChannelIDService> channel_id_service_;
     std::unique_ptr<net::HttpNetworkSession> http_network_session_;
     std::unique_ptr<net::HttpTransactionFactory> http_factory_;
     std::unique_ptr<net::URLRequestJobFactory> job_factory_;

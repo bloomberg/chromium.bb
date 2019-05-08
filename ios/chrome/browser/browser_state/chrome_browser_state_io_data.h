@@ -42,7 +42,6 @@ enum class ChromeBrowserStateType;
 }
 
 namespace net {
-class ChannelIDService;
 class CookieStore;
 class HttpServerProperties;
 class HttpTransactionFactory;
@@ -132,8 +131,6 @@ class ChromeBrowserStateIOData {
     AppRequestContext();
 
     void SetCookieStore(std::unique_ptr<net::CookieStore> cookie_store);
-    void SetChannelIDService(
-        std::unique_ptr<net::ChannelIDService> channel_id_service);
     void SetHttpNetworkSession(
         std::unique_ptr<net::HttpNetworkSession> http_network_session);
     void SetHttpTransactionFactory(
@@ -144,7 +141,6 @@ class ChromeBrowserStateIOData {
 
    private:
     std::unique_ptr<net::CookieStore> cookie_store_;
-    std::unique_ptr<net::ChannelIDService> channel_id_service_;
     std::unique_ptr<net::HttpNetworkSession> http_network_session_;
     std::unique_ptr<net::HttpTransactionFactory> http_factory_;
     std::unique_ptr<net::URLRequestJobFactory> job_factory_;
@@ -194,11 +190,6 @@ class ChromeBrowserStateIOData {
   //     is really silly.  Can we do something cleaner?
   void ShutdownOnUIThread(
       std::unique_ptr<IOSChromeURLRequestContextGetterVector> context_getters);
-
-  // A ChannelIDService object is created by a derived class of
-  // ChromeBrowserStateIOData, and the derived class calls this method to set
-  // the channel_id_service_ member and transfers ownership to the base class.
-  void set_channel_id_service(net::ChannelIDService* channel_id_service) const;
 
   net::ProxyResolutionService* proxy_resolution_service() const {
     return proxy_resolution_service_.get();
@@ -279,9 +270,6 @@ class ChromeBrowserStateIOData {
   mutable BooleanPrefMember enable_do_not_track_;
 
   BooleanPrefMember enable_metrics_;
-
-  // Pointed to by URLRequestContext.
-  mutable std::unique_ptr<net::ChannelIDService> channel_id_service_;
 
   mutable std::unique_ptr<net::ProxyResolutionService>
       proxy_resolution_service_;

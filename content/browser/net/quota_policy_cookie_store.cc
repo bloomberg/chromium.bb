@@ -44,8 +44,7 @@ QuotaPolicyCookieStore::~QuotaPolicyCookieStore() {
 CookieStoreConfig::CookieStoreConfig()
     : restore_old_session_cookies(false),
       persist_session_cookies(false),
-      crypto_delegate(nullptr),
-      channel_id_service(nullptr) {
+      crypto_delegate(nullptr) {
   // Default to an in-memory cookie store.
 }
 
@@ -58,8 +57,7 @@ CookieStoreConfig::CookieStoreConfig(
       restore_old_session_cookies(restore_old_session_cookies),
       persist_session_cookies(persist_session_cookies),
       storage_policy(storage_policy),
-      crypto_delegate(nullptr),
-      channel_id_service(nullptr) {
+      crypto_delegate(nullptr) {
   CHECK(!path.empty() ||
         (!restore_old_session_cookies && !persist_session_cookies));
 }
