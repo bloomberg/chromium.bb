@@ -11,7 +11,6 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
-#include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/i18n/rtl.h"
 #include "ui/display/display.h"
@@ -39,16 +38,10 @@ OverflowBubbleView::OverflowBubbleView(ShelfView* shelf_view,
                                        SkColor background_color)
     : ShelfBubble(anchor, shelf_view->shelf()->alignment(), background_color),
       shelf_(shelf_view->shelf()),
-      shelf_view_(shelf_view),
-      background_animator_(SHELF_BACKGROUND_DEFAULT,
-                           // Don't pass the Shelf so the translucent color is
-                           // always used.
-                           nullptr,
-                           Shell::Get()->wallpaper_controller()) {
+      shelf_view_(shelf_view) {
   DCHECK(shelf_);
 
   set_border_radius(ShelfConstants::shelf_size() / 2);
-  background_animator_.AddObserver(this);
   SetArrow(views::BubbleBorder::NONE);
   SetBackground(nullptr);
   set_shadow(views::BubbleBorder::NO_ASSETS);
@@ -70,9 +63,7 @@ OverflowBubbleView::OverflowBubbleView(ShelfView* shelf_view,
   AddChildView(shelf_view_);
 }
 
-OverflowBubbleView::~OverflowBubbleView() {
-  background_animator_.RemoveObserver(this);
-}
+OverflowBubbleView::~OverflowBubbleView() = default;
 
 bool OverflowBubbleView::ProcessGestureEvent(const ui::GestureEvent& event) {
   // Handle scroll-related events, but don't do anything special for begin and
@@ -234,10 +225,6 @@ bool OverflowBubbleView::ShouldCloseOnPressDown() {
 
 bool OverflowBubbleView::ShouldCloseOnMouseExit() {
   return false;
-}
-
-void OverflowBubbleView::UpdateShelfBackground(SkColor color) {
-  set_color(color);
 }
 
 }  // namespace ash

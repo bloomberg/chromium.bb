@@ -30,13 +30,22 @@ namespace ash {
 ShelfBubble::ShelfBubble(views::View* anchor,
                          ShelfAlignment alignment,
                          SkColor background_color)
-    : views::BubbleDialogDelegateView(anchor, GetArrow(alignment)) {
-  set_color(background_color);
+    : views::BubbleDialogDelegateView(anchor, GetArrow(alignment)),
+      background_animator_(SHELF_BACKGROUND_DEFAULT,
+                           // Don't pass the Shelf so the translucent color is
+                           // always used.
+                           nullptr,
+                           Shell::Get()->wallpaper_controller()) {
+  background_animator_.AddObserver(this);
 
   // Place the bubble in the same display as the anchor.
   set_parent_window(
       anchor_widget()->GetNativeWindow()->GetRootWindow()->GetChildById(
           kShellWindowId_SettingBubbleContainer));
+}
+
+ShelfBubble::~ShelfBubble() {
+  background_animator_.RemoveObserver(this);
 }
 
 ax::mojom::Role ShelfBubble::GetAccessibleWindowRole() {
@@ -57,6 +66,10 @@ void ShelfBubble::CreateBubble() {
 
 int ShelfBubble::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
+}
+
+void ShelfBubble::UpdateShelfBackground(SkColor color) {
+  set_color(color);
 }
 
 }  // namespace ash

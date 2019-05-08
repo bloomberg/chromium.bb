@@ -6,8 +6,6 @@
 #define ASH_SHELF_OVERFLOW_BUBBLE_VIEW_H_
 
 #include "ash/ash_export.h"
-#include "ash/shelf/shelf_background_animator.h"
-#include "ash/shelf/shelf_background_animator_observer.h"
 #include "ash/shelf/shelf_bubble.h"
 #include "base/macros.h"
 
@@ -17,8 +15,7 @@ class ShelfView;
 
 // OverflowBubbleView hosts a ShelfView to display overflown items.
 // Exports to access this class from OverflowBubbleViewTestAPI.
-class ASH_EXPORT OverflowBubbleView : public ShelfBubble,
-                                      public ShelfBackgroundAnimatorObserver {
+class ASH_EXPORT OverflowBubbleView : public ShelfBubble {
  public:
   // |anchor| is the overflow button on the main shelf. |shelf_view| is the
   // ShelfView containing the overflow items.
@@ -57,14 +54,9 @@ class ASH_EXPORT OverflowBubbleView : public ShelfBubble,
   // ui::EventHandler:
   void OnScrollEvent(ui::ScrollEvent* event) override;
 
-  // ShelfBackgroundAnimatorObserver:
-  void UpdateShelfBackground(SkColor color) override;
-
   Shelf* shelf_;
   ShelfView* shelf_view_;  // Owned by views hierarchy.
   gfx::Vector2d scroll_offset_;
-
-  ShelfBackgroundAnimator background_animator_;
 
   DISALLOW_COPY_AND_ASSIGN(OverflowBubbleView);
 };
