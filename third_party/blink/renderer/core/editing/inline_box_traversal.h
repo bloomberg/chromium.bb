@@ -15,6 +15,8 @@ namespace blink {
 class InlineBox;
 struct InlineBoxPosition;
 struct NGCaretPosition;
+class NGPaintFragment;
+enum class TextDirection : uint8_t;
 
 class BidiAdjustment final {
   STATIC_ONLY(BidiAdjustment);
@@ -41,31 +43,8 @@ class BidiAdjustment final {
       const PositionInFlatTreeWithAffinity&);
 };
 
-// This class provides common traveral functions on list of |InlineBox|.
-// TODO(xiaochengh): Code using InlineBoxTraversal should be merged into the .cc
-// file and templatized to share code with NG bidi traversal.
-class InlineBoxTraversal final {
-  STATIC_ONLY(InlineBoxTraversal);
-
- public:
-  // TODO(yosin): We should take |bidi_level| from |InlineBox::BidiLevel()|,
-  // once all call sites satisfy it.
-
-  // Traverses left/right from |box|, and returns the first box with bidi level
-  // less than or equal to |bidi_level| (excluding |box| itself). Returns
-  // |nullptr| when such a box doesn't exist.
-  static const InlineBox* FindLeftBidiRun(const InlineBox& box,
-                                          unsigned bidi_level);
-  static const InlineBox* FindRightBidiRun(const InlineBox& box,
-                                           unsigned bidi_level);
-
-  // Traverses left/right from |box|, and returns the last box with bidi level
-  // greater than or equal to |bidi_level| (including |box| itself).
-  static const InlineBox& FindLeftBoundaryOfEntireBidiRun(const InlineBox& box,
-                                                          unsigned bidi_level);
-  static const InlineBox& FindRightBoundaryOfEntireBidiRun(const InlineBox& box,
-                                                           unsigned bidi_level);
-};
+TextDirection ParagraphDirectionOf(const InlineBox&);
+TextDirection ParagraphDirectionOf(const NGPaintFragment&);
 
 }  // namespace blink
 
