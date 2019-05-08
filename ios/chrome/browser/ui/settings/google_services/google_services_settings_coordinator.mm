@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_mediator.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_coordinator.h"
+#import "ios/chrome/browser/ui/settings/sync/sync_encryption_passphrase_table_view_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 
@@ -191,8 +192,11 @@
 }
 
 - (void)openPassphraseDialog {
-  [self.dispatcher
-      showSyncPassphraseSettingsFromViewController:self.viewController];
+  SyncEncryptionPassphraseTableViewController* controller =
+      [[SyncEncryptionPassphraseTableViewController alloc]
+          initWithBrowserState:self.browserState];
+  controller.dispatcher = self.dispatcher;
+  [self.navigationController pushViewController:controller animated:YES];
 }
 
 - (void)showSignIn {
