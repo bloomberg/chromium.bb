@@ -1675,10 +1675,6 @@ class CONTENT_EXPORT RenderFrameImpl
   std::unique_ptr<blink::AssociatedInterfaceProvider>
       remote_associated_interfaces_;
 
-  // TODO(dcheng): Remove these members.
-  bool committed_first_load_ = false;
-  bool name_changed_before_first_commit_ = false;
-
   // This flag is true while browser process is processing a pending navigation,
   // as a result of mojom::FrameHost::BeginNavigation call. It is reset when the
   // navigation is either committed or cancelled.

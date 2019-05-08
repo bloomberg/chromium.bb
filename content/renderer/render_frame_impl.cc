@@ -4386,9 +4386,6 @@ void RenderFrameImpl::DidChangeName(const blink::WebString& name) {
     unique_name_helper_.UpdateName(name.Utf8());
   }
   GetFrameHost()->DidChangeName(name.Utf8(), unique_name_helper_.value());
-
-  if (!committed_first_load_)
-    name_changed_before_first_commit_ = true;
 }
 
 void RenderFrameImpl::DidEnforceInsecureRequestPolicy(
@@ -4560,44 +4557,6 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
   TRACE_EVENT2("navigation,rail", "RenderFrameImpl::didCommitProvisionalLoad",
                "id", routing_id_,
                "url", GetLoadingUrl().possibly_invalid_spec());
-  // TODO(dcheng): Remove this UMA once we have enough measurements.
-  // Record the number of subframes where window.name changes between the
-  // creation of the frame and the first commit that records a history entry
-  // with a persisted unique name. We'd like to make unique name immutable to
-  // simplify code, but it's unclear if there are site that depend on the
-  // following pattern:
-  //   1. Create a new subframe.
-  //   2. Assign it a window.name.
-  //   3. Navigate it.
-  //
-  // If unique name are immutable, then it's possible that session history would
-  // become less reliable for subframes:
-  //   * A subframe with no initial name will receive a generated name that
-  //     depends on DOM insertion order instead of using a name baed on the
-  //     window.name assigned in step 2.
-  //   * A subframe may intentionally try to choose a non-conflicting
-  //     window.name if it detects a conflict. Immutability would prevent this
-  //     from having the desired effect.
-  //
-  // The logic for when to record the UMA is a bit subtle:
-  //   * if |committed_first_load_| is false and |current_history_item_| is
-  //     null, then this is being called to commit the initial empty document.
-  //     Don't record the UMA yet. |current_history_item_| will be non-null in
-  //     subsequent invocations of this callback.
-  //   * if |committed_first_load_| is false and |current_history_item_| is
-  //     *not* null, then the initial empty document has already committed.
-  //     Record if window.name has changed.
-  if (!committed_first_load_ && !current_history_item_.IsNull()) {
-    if (!IsMainFrame()) {
-      UMA_HISTOGRAM_BOOLEAN(
-          "SessionRestore.SubFrameUniqueNameChangedBeforeFirstCommit",
-          name_changed_before_first_commit_);
-    }
-    // TODO(dcheng): This signal is likely calculated incorrectly, and will be
-    // removed in a followup CL (as we've decided to try to preserve backwards
-    // compatibility as much as possible for the time being).
-    committed_first_load_ = true;
-  }
 
   InternalDocumentStateData* internal_data =
       InternalDocumentStateData::FromDocumentLoader(
