@@ -15,6 +15,27 @@ suite('<app-management-app>', () => {
         .$$('app-management-expandable-app-list');
   }
 
+  /** @param {String} term  */
+  async function searchApps(term) {
+    app.dispatch(app_management.actions.setSearchTerm(term));
+    await PolymerTest.flushTasks();
+  }
+
+  /** @return {boolean} */
+  function isSearchViewShown() {
+    return !!app.$$('app-management-search-view');
+  }
+
+  /** @return {boolean} */
+  function isMainViewShown() {
+    return !!app.$$('app-management-main-view');
+  }
+
+  /** @return {boolean} */
+  function isDetailViewShown() {
+    return !!app.$$('app-management-pwa-permission-view');
+  }
+
   setup(async () => {
     fakeHandler = setupFakeHandler();
     store = replaceStore();
@@ -61,5 +82,33 @@ suite('<app-management-app>', () => {
         .$$('#backButton')
         .click();
     await PolymerTest.flushTasks();
+  });
+
+  test('Search from main page', async () => {
+    await navigateTo('/');
+    expectTrue(isMainViewShown());
+
+    await searchApps('o');
+    expectTrue(isSearchViewShown());
+    expectEquals('/?q=o', getCurrentUrlSuffix());
+
+    await searchApps('');
+    expectTrue(isMainViewShown());
+    expectEquals('/', getCurrentUrlSuffix());
+  });
+
+  test('Search from detail page', async () => {
+    await fakeHandler.addApp();
+
+    await navigateTo('/detail?id=0');
+    expectTrue(isDetailViewShown());
+
+    await searchApps('o');
+    expectTrue(isSearchViewShown());
+    expectEquals('/detail?id=0&q=o', getCurrentUrlSuffix());
+
+    await searchApps('');
+    expectTrue(isDetailViewShown());
+    expectEquals('/detail?id=0', getCurrentUrlSuffix());
   });
 });

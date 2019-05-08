@@ -6,7 +6,6 @@
 
 suite('app state', function() {
   let apps;
-  let state;
 
   setup(function() {
     apps = {

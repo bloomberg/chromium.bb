@@ -68,6 +68,8 @@ if (!is_android) {
       ":types",
       ":util",
       "//chrome/browser/ui/webui/app_management:mojo_bindings_js_library_for_compile",
+      "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar",
+      "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar_search_field",
     ]
   }
 

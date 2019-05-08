@@ -139,11 +139,14 @@ cr.define('app_management', function() {
    * @return {SearchState}
    */
   SearchState.startSearch = function(apps, search, action) {
-    const searchTerm = action.term.toLowerCase();
+    if (action.term === search.term) {
+      return search;
+    }
+
     const results = [];
 
     for (const app of Object.values(apps)) {
-      if (app.title.toLowerCase().includes(searchTerm)) {
+      if (app.title.toLowerCase().includes(action.term.toLowerCase())) {
         results.push(app);
       }
     }
@@ -177,6 +180,7 @@ cr.define('app_management', function() {
       case 'start-search':
         return SearchState.startSearch(apps, search, action);
       case 'clear-search':
+      case 'change-page':
         return SearchState.clearSearch();
       default:
         return search;
