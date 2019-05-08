@@ -68,7 +68,7 @@ base::TimeDelta GetMinimumTriggerDelay() {
       0);
   switch (delay_group) {
     case 2:
-      return base::TimeDelta::FromMilliseconds(500);
+      return base::TimeDelta::FromMilliseconds(150);
     case 1:
       return base::TimeDelta::FromMilliseconds(200);
     case 0:
@@ -83,7 +83,7 @@ base::TimeDelta GetMaximumTriggerDelay() {
       0);
   switch (delay_group) {
     case 2:
-      return base::TimeDelta::FromMilliseconds(1000);
+      return base::TimeDelta::FromMilliseconds(500);
     case 1:
       return base::TimeDelta::FromMilliseconds(700);
     case 0:
