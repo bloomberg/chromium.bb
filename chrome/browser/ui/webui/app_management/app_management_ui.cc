@@ -48,6 +48,9 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("openSiteSettings",
                              IDS_APP_MANAGEMENT_SITE_SETTING);
   source->AddLocalizedString("permissions", IDS_APP_MANAGEMENT_PERMISSIONS);
+  source->AddLocalizedString("morePermissions",
+                             IDS_APP_MANAGEMENT_MORE_PERMISSIONS);
+  source->AddLocalizedString("thisAppCan", IDS_APP_MANAGEMENT_THIS_APP_CAN);
   source->AddLocalizedString("pinToShelf", IDS_APP_MANAGEMENT_PIN_TO_SHELF);
   source->AddLocalizedString("searchPrompt", IDS_APP_MANAGEMENT_SEARCH_PROMPT);
   source->AddLocalizedString("size", IDS_APP_MANAGEMENT_SIZE);

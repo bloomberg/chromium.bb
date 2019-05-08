@@ -47,7 +47,7 @@
         on-click="onClickBackButton_" aria-label="$i18n{back}"></cr-icon-button>
     <img id="permission-view-header-icon" src="[[iconUrlFromId_(app_)]]">
     <div class="page-title">[[app_.title]]</div>
-    <slot name="extra-right-buttons"></slot>
+
     <div id="uninstall-wrapper" title$="[[getUninstallButtonHoverText_(app_)]]">
       <template is="dom-if" if="[[isPolicyApp_(app_)]]">
         <iron-icon id="policy-indicator" icon="cr:domain"></iron-icon>

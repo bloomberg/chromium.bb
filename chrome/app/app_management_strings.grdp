@@ -49,6 +49,12 @@
   <message name="IDS_APP_MANAGEMENT_PERMISSIONS" desc="Label for permissions section in the app settings page.">
     Permissions
   </message>
+  <message name="IDS_APP_MANAGEMENT_MORE_PERMISSIONS" desc="Label for a link to more permissions for an app.">
+    More permissions
+  </message>
+  <message name="IDS_APP_MANAGEMENT_THIS_APP_CAN" desc="Label for permissions that a Chrome app can use.">
+    This app can:
+  </message>
   <message name="IDS_APP_MANAGEMENT_PIN_TO_SHELF" desc="Label for the pin to shelf button in the app settings page.">
     Pin to shelf
   </message>
