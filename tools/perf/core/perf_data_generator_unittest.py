@@ -97,6 +97,61 @@ class PerfDataGeneratorTest(unittest.TestCase):
       }
     self.assertEquals(returned_test, expected_generated_test)
 
+  def testGeneratePerformanceTestSuiteExact(self):
+    swarming_dimensions = [
+        {'os': 'SkyNet', 'pool': 'T-RIP'}
+    ]
+    test_config = {
+        'platform': 'android-webview',
+        'browser': 'bin/monochrome_64_32_bundle',
+        'dimension': swarming_dimensions,
+    }
+    test = {
+        'isolate': 'performance_test_suite',
+        'extra_args': [
+            '--run-ref-build',
+            '--test-shard-map-filename=shard_map.json',
+          ],
+        'num_shards': 26
+    }
+    returned_test = perf_data_generator.generate_performance_test(
+        test_config, test)
+
+    expected_generated_test = {
+        'override_compile_targets': ['performance_test_suite'],
+        'isolate_name': 'performance_test_suite',
+        'args': ['-v', '--browser=exact', '--upload-results',
+                 '--browser-executable=../../out/Release'
+                 '/bin/monochrome_64_32_bundle',
+                 '--device=android',
+                 '--webview-embedder-apk=../../out/Release'
+                 '/apks/SystemWebViewShell.apk',
+                 '--run-ref-build',
+                 '--test-shard-map-filename=shard_map.json'],
+        'trigger_script': {
+          'args': [
+            '--multiple-dimension-script-verbose',
+            'True'
+          ],
+          'requires_simultaneous_shard_dispatch': True,
+          'script': '//testing/trigger_scripts/perf_device_trigger.py'
+        },
+        'merge': {
+          'script': '//tools/perf/process_perf_results.py'
+        },
+        'swarming': {
+          'ignore_task_failure': False,
+          'can_use_on_swarming_builders': True,
+          'expiration': 7200,
+          'io_timeout': 1800,
+          'hard_timeout': 36000,
+          'dimension_sets': [[{'os': 'SkyNet', 'pool': 'T-RIP'}]],
+          'shards': 26
+        },
+        'name': 'performance_test_suite'
+      }
+    self.assertEquals(returned_test, expected_generated_test)
+
   def testGeneratePerformanceTestSuiteWebview(self):
     swarming_dimensions = [
         {'os': 'SkyNet', 'pool': 'T-RIP'}
