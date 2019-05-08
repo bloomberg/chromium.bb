@@ -40,7 +40,7 @@ class EasyUnlockKeyManager {
   EasyUnlockKeyManager();
   ~EasyUnlockKeyManager();
 
-  // Nukes existing Easy unlock keys and creates new ones for the given
+  // Clears existing Easy unlock keys and creates new ones for the given
   // |remote_devices| and the given |user_context|. |user_context| must have
   // secret to allow keys to be created.
   void RefreshKeys(const UserContext& user_context,

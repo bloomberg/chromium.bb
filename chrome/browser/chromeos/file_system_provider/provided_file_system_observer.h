@@ -24,7 +24,7 @@ class ProvidedFileSystemObserver {
  public:
   struct Change;
 
-  // Lust of changes.
+  // List of changes.
   typedef std::vector<Change> Changes;
 
   // Describes a change related to a watched entry.

@@ -33,7 +33,7 @@ class ImeNativeWindow {
   // Gets the bounds of the native window.
   virtual gfx::Rect GetBounds() const = 0;
 
-  // Updates the window's titie icon.
+  // Updates the window's title icon.
   virtual void UpdateWindowIcon() = 0;
 
   // For testing.
