@@ -70,18 +70,18 @@ const double kDegToRad = M_PI / 180.0;
 const double kMagicWindowVerticalFieldOfView = 75.0f * M_PI / 180.0f;
 
 void UpdateViewFromEyeParameters(
-    XRView* view,
+    XRViewData& view,
     const device::mojom::blink::VREyeParametersPtr& eye,
     double depth_near,
     double depth_far) {
   const device::mojom::blink::VRFieldOfViewPtr& fov = eye->fieldOfView;
 
-  view->UpdateProjectionMatrixFromFoV(
+  view.UpdateProjectionMatrixFromFoV(
       fov->upDegrees * kDegToRad, fov->downDegrees * kDegToRad,
       fov->leftDegrees * kDegToRad, fov->rightDegrees * kDegToRad, depth_near,
       depth_far);
 
-  view->UpdateOffset(eye->offset[0], eye->offset[1], eye->offset[2]);
+  view.UpdateOffset(eye->offset[0], eye->offset[1], eye->offset[2]);
 }
 
 }  // namespace
@@ -966,7 +966,7 @@ void XRSession::SetXRDisplayInfo(
   is_external_ = display_info_->capabilities->hasExternalDisplay;
 }
 
-const HeapVector<Member<XRView>>& XRSession::views() {
+WTF::Vector<XRViewData>& XRSession::views() {
   // TODO(bajones): For now we assume that immersive sessions render a stereo
   // pair of views and non-immersive sessions render a single view. That doesn't
   // always hold true, however, so the view configuration should ultimately come
@@ -975,10 +975,9 @@ const HeapVector<Member<XRView>>& XRSession::views() {
     if (immersive()) {
       // If we don't already have the views allocated, do so now.
       if (views_.IsEmpty()) {
-        views_.push_back(MakeGarbageCollected<XRView>(this, XRView::kEyeLeft));
+        views_.emplace_back(XRView::kEyeLeft);
         if (display_info_->rightEye) {
-          views_.push_back(
-              MakeGarbageCollected<XRView>(this, XRView::kEyeRight));
+          views_.emplace_back(XRView::kEyeRight);
         }
       }
       // In immersive mode the projection and view matrices must be aligned with
@@ -993,8 +992,8 @@ const HeapVector<Member<XRView>>& XRSession::views() {
       }
     } else {
       if (views_.IsEmpty()) {
-        views_.push_back(MakeGarbageCollected<XRView>(this, XRView::kEyeLeft));
-        views_[XRView::kEyeLeft]->UpdateOffset(0, 0, 0);
+        views_.emplace_back(XRView::kEyeLeft);
+        views_[XRView::kEyeLeft].UpdateOffset(0, 0, 0);
       }
 
       float aspect = 1.0f;
@@ -1006,7 +1005,7 @@ const HeapVector<Member<XRView>>& XRSession::views() {
       // In non-immersive mode, if there is no explicit projection matrix
       // provided, the projection matrix must be aligned with the
       // output canvas dimensions.
-      views_[XRView::kEyeLeft]->UpdateProjectionMatrixFromAspect(
+      views_[XRView::kEyeLeft].UpdateProjectionMatrixFromAspect(
           kMagicWindowVerticalFieldOfView, aspect, render_state_->depthNear(),
           render_state_->depthFar());
     }
@@ -1028,7 +1027,6 @@ void XRSession::Trace(blink::Visitor* visitor) {
   visitor->Trace(world_information_);
   visitor->Trace(viewer_space_);
   visitor->Trace(pending_render_state_);
-  visitor->Trace(views_);
   visitor->Trace(input_sources_);
   visitor->Trace(resize_observer_);
   visitor->Trace(canvas_input_provider_);

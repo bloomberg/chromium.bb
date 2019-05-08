@@ -135,6 +135,12 @@ DOMFloat32Array* XRRay::matrix() {
     matrix_ = transformationMatrixToDOMFloat32Array(matrix);
   }
 
+  if (!matrix_ || !matrix_->View() || !matrix_->View()->Data()) {
+    // A page may take the matrix value and detach it so matrix_ is a detached
+    // array buffer.  This breaks the inspector, so return null instead.
+    return nullptr;
+  }
+
   return matrix_;
 }
 

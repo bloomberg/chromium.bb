@@ -15,6 +15,5 @@ enum XREye {
 ] interface XRView {
   readonly attribute XREye eye;
   [SameObject] readonly attribute Float32Array projectionMatrix;
-  // TODO(https://crbug.com/958014): Ensure that this can be SameObject.
-  readonly attribute XRRigidTransform transform;
+  [SameObject] readonly attribute XRRigidTransform transform;
 };

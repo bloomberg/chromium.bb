@@ -49,6 +49,7 @@ class MODULES_EXPORT XRRigidTransform : public ScriptWrappable {
   Member<DOMPointReadOnly> position_;
   Member<DOMPointReadOnly> orientation_;
   Member<XRRigidTransform> inverse_;
+  Member<DOMFloat32Array> matrix_array_;
   std::unique_ptr<TransformationMatrix> matrix_;
 
   DISALLOW_COPY_AND_ASSIGN(XRRigidTransform);

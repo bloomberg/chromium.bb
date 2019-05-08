@@ -11,65 +11,36 @@
 
 namespace blink {
 
-XRView::XRView(XRSession* session, XREye eye)
-    : eye_(eye),
-      session_(session),
-      projection_matrix_(DOMFloat32Array::Create(16)) {
+XRView::XRView(XRSession* session, const XRViewData& view_data)
+    : eye_(view_data.Eye()), session_(session) {
   eye_string_ = (eye_ == kEyeLeft ? "left" : "right");
-}
-
-XRView::XRView()
-    : eye_(XREye::kEyeLeft),
-      eye_string_("left"),
-      session_(nullptr),
-      projection_matrix_(DOMFloat32Array::Create(16)) {}
-
-// deep copy
-XRView::XRView(const XRView& other)
-    : projection_matrix_(DOMFloat32Array::Create(16)) {
-  *this = other;
-}
-
-// deep copy
-XRView& XRView::operator=(const XRView& other) {
-  if (&other == this)
-    return *this;
-
-  eye_ = other.eye_;
-  eye_string_ = other.eye_string_;
-  session_ = other.session_;
-  AssignMatrices(other);
-  offset_ = other.offset_;
-
-  transform_ = other.transform_;
-
-  // Don't copy the inverse projection matrix because it is rarely used.
-  // Just set this flag so that if UnprojectPointer is called, this matrix
-  // gets computed.
-  inv_projection_dirty_ = true;
-
-  return *this;
-}
-
-void XRView::AssignMatrices(const XRView& other) {
-  const float* src_projection_data = other.projection_matrix_->Data();
-  float* dst_projection_data = projection_matrix_->Data();
-
-  for (int i = 0; i < 16; ++i) {
-    dst_projection_data[i] = src_projection_data[i];
-  }
+  transform_ = MakeGarbageCollected<XRRigidTransform>(view_data.Transform());
+  projection_matrix_ =
+      transformationMatrixToDOMFloat32Array(view_data.ProjectionMatrix());
 }
 
 XRSession* XRView::session() const {
   return session_;
 }
 
-void XRView::UpdateProjectionMatrixFromFoV(float up_rad,
-                                           float down_rad,
-                                           float left_rad,
-                                           float right_rad,
-                                           float near_depth,
-                                           float far_depth) {
+DOMFloat32Array* XRView::projectionMatrix() const {
+  if (!projection_matrix_ || !projection_matrix_->View() ||
+      !projection_matrix_->View()->Data()) {
+    // A page may take the projection matrix value and detach it so
+    // projection_matrix_ is a detached array buffer.  This breaks the
+    // inspector, so return null instead.
+    return nullptr;
+  }
+
+  return projection_matrix_;
+}
+
+void XRViewData::UpdateProjectionMatrixFromFoV(float up_rad,
+                                               float down_rad,
+                                               float left_rad,
+                                               float right_rad,
+                                               float near_depth,
+                                               float far_depth) {
   float up_tan = tanf(up_rad);
   float down_tan = tanf(down_rad);
   float left_tan = tanf(left_rad);
@@ -78,73 +49,40 @@ void XRView::UpdateProjectionMatrixFromFoV(float up_rad,
   float y_scale = 2.0f / (up_tan + down_tan);
   float inv_nf = 1.0f / (near_depth - far_depth);
 
-  float* out = projection_matrix_->Data();
-  out[0] = x_scale;
-  out[1] = 0.0f;
-  out[2] = 0.0f;
-  out[3] = 0.0f;
-  out[4] = 0.0f;
-  out[5] = y_scale;
-  out[6] = 0.0f;
-  out[7] = 0.0f;
-  out[8] = -((left_tan - right_tan) * x_scale * 0.5);
-  out[9] = ((up_tan - down_tan) * y_scale * 0.5);
-  out[10] = (near_depth + far_depth) * inv_nf;
-  out[11] = -1.0f;
-  out[12] = 0.0f;
-  out[13] = 0.0f;
-  out[14] = (2.0f * far_depth * near_depth) * inv_nf;
-  out[15] = 0.0f;
-
-  inv_projection_dirty_ = true;
+  projection_matrix_ = TransformationMatrix(
+      x_scale, 0.0f, 0.0f, 0.0f, 0.0f, y_scale, 0.0f, 0.0f,
+      -((left_tan - right_tan) * x_scale * 0.5),
+      ((up_tan - down_tan) * y_scale * 0.5), (near_depth + far_depth) * inv_nf,
+      -1.0f, 0.0f, 0.0f, (2.0f * far_depth * near_depth) * inv_nf, 0.0f);
 }
 
-void XRView::UpdateProjectionMatrixFromAspect(float fovy,
-                                              float aspect,
-                                              float near_depth,
-                                              float far_depth) {
+void XRViewData::UpdateProjectionMatrixFromAspect(float fovy,
+                                                  float aspect,
+                                                  float near_depth,
+                                                  float far_depth) {
   float f = 1.0f / tanf(fovy / 2);
   float inv_nf = 1.0f / (near_depth - far_depth);
 
-  float* out = projection_matrix_->Data();
-  out[0] = f / aspect;
-  out[1] = 0.0f;
-  out[2] = 0.0f;
-  out[3] = 0.0f;
-  out[4] = 0.0f;
-  out[5] = f;
-  out[6] = 0.0f;
-  out[7] = 0.0f;
-  out[8] = 0.0f;
-  out[9] = 0.0f;
-  out[10] = (far_depth + near_depth) * inv_nf;
-  out[11] = -1.0f;
-  out[12] = 0.0f;
-  out[13] = 0.0f;
-  out[14] = (2.0f * far_depth * near_depth) * inv_nf;
-  out[15] = 0.0f;
+  projection_matrix_ = TransformationMatrix(
+      f / aspect, 0.0f, 0.0f, 0.0f, 0.0f, f, 0.0f, 0.0f, 0.0f, 0.0f,
+      (far_depth + near_depth) * inv_nf, -1.0f, 0.0f, 0.0f,
+      (2.0f * far_depth * near_depth) * inv_nf, 0.0f);
 
   inv_projection_dirty_ = true;
 }
 
-void XRView::UpdateOffset(float x, float y, float z) {
+void XRViewData::UpdateOffset(float x, float y, float z) {
   offset_.Set(x, y, z);
 }
 
-std::unique_ptr<TransformationMatrix> XRView::UnprojectPointer(
+std::unique_ptr<TransformationMatrix> XRViewData::UnprojectPointer(
     double x,
     double y,
     double canvas_width,
     double canvas_height) {
   // Recompute the inverse projection matrix if needed.
   if (inv_projection_dirty_) {
-    float* m = projection_matrix_->Data();
-    std::unique_ptr<TransformationMatrix> projection =
-        std::make_unique<TransformationMatrix>(
-            m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10],
-            m[11], m[12], m[13], m[14], m[15]);
-    inv_projection_ =
-        std::make_unique<TransformationMatrix>(projection->Inverse());
+    inv_projection_ = projection_matrix_.Inverse();
     inv_projection_dirty_ = false;
   }
 
@@ -156,7 +94,7 @@ std::unique_ptr<TransformationMatrix> XRView::UnprojectPointer(
       (canvas_height - y) / canvas_height * 2.0 - 1.0, -1.0);
 
   FloatPoint3D point_in_view_space =
-      inv_projection_->MapPoint(point_in_projection_space);
+      inv_projection_.MapPoint(point_in_projection_space);
 
   const FloatPoint3D kOrigin(0.0, 0.0, 0.0);
   const FloatPoint3D kUp(0.0, 1.0, 0.0);
@@ -186,11 +124,9 @@ std::unique_ptr<TransformationMatrix> XRView::UnprojectPointer(
   return pointer;
 }
 
-// Pass pose_matrix by value because this method modifies its offset, but
-// the calling code doesn't want it changed.
-void XRView::UpdatePoseMatrix(TransformationMatrix pose_matrix) {
-  pose_matrix.Translate3d(offset_.X(), offset_.Y(), offset_.Z());
-  transform_ = MakeGarbageCollected<XRRigidTransform>(pose_matrix);
+void XRViewData::UpdatePoseMatrix(const TransformationMatrix& pose_matrix) {
+  transform_ = pose_matrix;
+  transform_.Translate3d(offset_.X(), offset_.Y(), offset_.Z());
 }
 
 XRRigidTransform* XRView::transform() const {

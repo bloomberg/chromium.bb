@@ -18,63 +18,70 @@
 namespace blink {
 
 class XRSession;
+class XRViewData;
 
 class MODULES_EXPORT XRView final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  XRView(XRSession*, const XRViewData&);
+
   enum XREye { kEyeLeft = 0, kEyeRight = 1 };
-
-  XRView(XRSession*, XREye);
-  XRView();
-
-  // Make deep copies.
-  XRView(const XRView& other);
-  XRView& operator=(const XRView& other);
 
   const String& eye() const { return eye_string_; }
   XREye EyeValue() const { return eye_; }
 
   XRSession* session() const;
-  DOMFloat32Array* projectionMatrix() const { return projection_matrix_; }
+  DOMFloat32Array* projectionMatrix() const;
   XRRigidTransform* transform() const;
 
+  void Trace(blink::Visitor*) override;
+
+ private:
+  XREye eye_;
+  String eye_string_;
+  Member<XRSession> session_;
+  Member<XRRigidTransform> transform_;
+  Member<DOMFloat32Array> projection_matrix_;
+};
+
+class MODULES_EXPORT XRViewData {
+ public:
+  XRViewData(XRView::XREye eye) : eye_(eye) {}
+
+  void UpdatePoseMatrix(const TransformationMatrix& pose_matrix);
   void UpdateProjectionMatrixFromFoV(float up_rad,
                                      float down_rad,
                                      float left_rad,
                                      float right_rad,
                                      float near_depth,
                                      float far_depth);
-
   void UpdateProjectionMatrixFromAspect(float fovy,
                                         float aspect,
                                         float near_depth,
                                         float far_depth);
+
+  // TODO(bajones): Should eventually represent this as a full transform.
+  const FloatPoint3D& offset() const { return offset_; }
+  void UpdateOffset(float x, float y, float z);
 
   std::unique_ptr<TransformationMatrix> UnprojectPointer(double x,
                                                          double y,
                                                          double canvas_width,
                                                          double canvas_height);
 
-  // TODO(crbug.com/958014): Remove UpdatePoseMatrix to ensure SameObject.
-  void UpdatePoseMatrix(TransformationMatrix pose_matrix);
-
-  // TODO(bajones): Should eventually represent this as a full transform.
-  const FloatPoint3D& offset() const { return offset_; }
-  void UpdateOffset(float x, float y, float z);
-
-  void Trace(blink::Visitor*) override;
+  XRView::XREye Eye() const { return eye_; }
+  const TransformationMatrix& Transform() const { return transform_; }
+  const TransformationMatrix& ProjectionMatrix() const {
+    return projection_matrix_;
+  }
 
  private:
-  void AssignMatrices(const XRView& other);
-
-  XREye eye_;
-  String eye_string_;
-  Member<XRSession> session_;
-  Member<XRRigidTransform> transform_;
-  Member<DOMFloat32Array> projection_matrix_;
+  const XRView::XREye eye_;
+  TransformationMatrix transform_;
   FloatPoint3D offset_;
-  std::unique_ptr<TransformationMatrix> inv_projection_;
+  TransformationMatrix projection_matrix_;
+  TransformationMatrix inv_projection_;
   bool inv_projection_dirty_ = true;
 };
 

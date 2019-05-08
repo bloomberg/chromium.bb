@@ -37,7 +37,7 @@ class XRReferenceSpace;
 class XRReferenceSpaceOptions;
 class XRRenderState;
 class XRRenderStateInit;
-class XRView;
+class XRViewData;
 class XRViewerSpace;
 class XRWorldInformation;
 class XRWorldTrackingState;
@@ -139,7 +139,7 @@ class XRSession final : public EventTargetWithInlineData,
       int16_t frame_id,
       const WTF::Vector<device::mojom::blink::XRInputSourceStatePtr>&);
 
-  const HeapVector<Member<XRView>>& views();
+  WTF::Vector<XRViewData>& views();
 
   void OnSelectStart(XRInputSource*);
   void OnSelectEnd(XRInputSource*);
@@ -223,7 +223,9 @@ class XRSession final : public EventTargetWithInlineData,
   Member<XRWorldInformation> world_information_;
   Member<XRViewerSpace> viewer_space_;
   HeapVector<Member<XRRenderStateInit>> pending_render_state_;
-  HeapVector<Member<XRView>> views_;
+
+  WTF::Vector<XRViewData> views_;
+
   InputSourceMap input_sources_;
   Member<ResizeObserver> resize_observer_;
   Member<XRCanvasInputProvider> canvas_input_provider_;

@@ -17,7 +17,7 @@ namespace blink {
 namespace {
 
 TEST(XRViewTest, UpdatePoseMatrix) {
-  XRView view;
+  XRViewData view(XRView::kEyeLeft);
   view.UpdateOffset(-1.0, 2.0, 3.0);
 
   DOMPointInit* position = MakePointForTest(1.0, -1.0, 4.0, 1.0);
@@ -29,8 +29,7 @@ TEST(XRViewTest, UpdatePoseMatrix) {
   TransformationMatrix pose_matrix = initial_transform->TransformMatrix();
 
   view.UpdatePoseMatrix(pose_matrix);
-  TransformationMatrix view_transform_matrix =
-      view.transform()->TransformMatrix();
+  TransformationMatrix view_transform_matrix = view.Transform();
   const std::vector<double> actual_matrix =
       GetMatrixDataForTest(view_transform_matrix);
 

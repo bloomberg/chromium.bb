@@ -79,7 +79,19 @@ XRRigidTransform* XRRigidTransform::Create(DOMPointInit* position,
 
 DOMFloat32Array* XRRigidTransform::matrix() {
   EnsureMatrix();
-  return transformationMatrixToDOMFloat32Array(*matrix_);
+  if (!matrix_array_) {
+    matrix_array_ = transformationMatrixToDOMFloat32Array(*matrix_);
+  }
+
+  if (!matrix_array_ || !matrix_array_->View() ||
+      !matrix_array_->View()->Data()) {
+    // A page may take the matrix_array_ value and detach it so matrix_array_ is
+    // a detached array buffer.  This breaks the inspector, so return null
+    // instead.
+    return nullptr;
+  }
+
+  return matrix_array_;
 }
 
 XRRigidTransform* XRRigidTransform::inverse() {
@@ -139,6 +151,7 @@ void XRRigidTransform::Trace(blink::Visitor* visitor) {
   visitor->Trace(position_);
   visitor->Trace(orientation_);
   visitor->Trace(inverse_);
+  visitor->Trace(matrix_array_);
   ScriptWrappable::Trace(visitor);
 }
 

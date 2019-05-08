@@ -105,10 +105,10 @@ void XRCanvasInputProvider::UpdateInputSource(PointerEvent* event) {
   // position of the screen interaction and shoves it backwards through the
   // projection matrix to get a 3D point in space, which is then returned in
   // matrix form so we can use it as an XRInputSource's pointerMatrix.
-  XRView* view = session_->views()[0];
+  XRViewData& view = session_->views()[0];
   std::unique_ptr<TransformationMatrix> pointer_transform_matrix =
-      view->UnprojectPointer(element_x, element_y, canvas_->OffsetWidth(),
-                             canvas_->OffsetHeight());
+      view.UnprojectPointer(element_x, element_y, canvas_->OffsetWidth(),
+                            canvas_->OffsetHeight());
 
   // Update the input source's pointer matrix.
   input_source_->SetPointerTransformMatrix(std::move(pointer_transform_matrix));
