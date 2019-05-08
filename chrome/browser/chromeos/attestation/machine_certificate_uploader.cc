@@ -269,7 +269,9 @@ void MachineCertificateUploader::CheckCertificateExpiry(
   // Get the payload and check if the certificate has already been uploaded.
   GetKeyPayload(
       base::BindRepeating(&MachineCertificateUploader::CheckIfUploaded,
-                          weak_factory_.GetWeakPtr(), pem_certificate_chain));
+                          weak_factory_.GetWeakPtr(), pem_certificate_chain),
+      base::BindRepeating(&MachineCertificateUploader::Reschedule,
+                          weak_factory_.GetWeakPtr()));
 }
 
 void MachineCertificateUploader::UploadCertificate(
@@ -293,16 +295,13 @@ void MachineCertificateUploader::CheckIfUploaded(
 }
 
 void MachineCertificateUploader::GetKeyPayload(
-    base::RepeatingCallback<void(const std::string&)> callback) {
+    base::RepeatingCallback<void(const std::string&)> callback,
+    base::RepeatingCallback<void()> on_failure) {
   cryptohome_client_->TpmAttestationGetKeyPayload(
       KEY_DEVICE,
       cryptohome::AccountIdentifier(),  // Not used.
       kEnterpriseMachineKey,
-      base::BindRepeating(
-          DBusStringCallback, callback,
-          base::BindRepeating(&MachineCertificateUploader::Reschedule,
-                              weak_factory_.GetWeakPtr()),
-          FROM_HERE));
+      base::BindRepeating(DBusStringCallback, callback, on_failure, FROM_HERE));
 }
 
 void MachineCertificateUploader::OnUploadComplete(bool status) {
@@ -310,7 +309,8 @@ void MachineCertificateUploader::OnUploadComplete(bool status) {
     VLOG(1) << "Enterprise Machine Certificate uploaded to DMServer.";
     GetKeyPayload(
         base::BindRepeating(&MachineCertificateUploader::MarkAsUploaded,
-                            weak_factory_.GetWeakPtr()));
+                            weak_factory_.GetWeakPtr()),
+        base::DoNothing());
   }
   std::move(callback_).Run(status);
 }
