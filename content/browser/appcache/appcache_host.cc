@@ -19,7 +19,9 @@
 #include "content/browser/appcache/appcache_subresource_url_factory.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/appcache_interfaces.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/url_constants.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -137,6 +139,20 @@ void AppCacheHost::SelectCache(const GURL& document_url,
     return;
   }
 
+  DCHECK_NE(process_id_, ChildProcessHost::kInvalidUniqueID);
+  auto* security_policy = ChildProcessSecurityPolicy::GetInstance();
+  if (document_url != kAboutSrcDocURL &&
+      !security_policy->CanAccessDataForOrigin(process_id_, document_url)) {
+    mojo::ReportBadMessage("ACH_SELECT_CACHE_DOCUMENT_URL_ACCESS_NOT_ALLOWED");
+    return;
+  }
+
+  if (!manifest_url.is_empty() &&
+      !security_policy->CanAccessDataForOrigin(process_id_, manifest_url)) {
+    mojo::ReportBadMessage("ACH_SELECT_CACHE_MANIFEST_URL_ACCESS_NOT_ALLOWED");
+    return;
+  }
+
   DCHECK(pending_start_update_callback_.is_null() &&
          pending_swap_cache_callback_.is_null() &&
          pending_get_status_callback_.is_null() && !is_selection_pending());
@@ -226,6 +242,14 @@ void AppCacheHost::MarkAsForeignEntry(const GURL& document_url,
                                       int64_t cache_document_was_loaded_from) {
   if (was_select_cache_called_) {
     mojo::ReportBadMessage("ACH_MARK_AS_FOREIGN_ENTRY");
+    return;
+  }
+
+  auto* security_policy = ChildProcessSecurityPolicy::GetInstance();
+  if (document_url != kAboutSrcDocURL &&
+      !security_policy->CanAccessDataForOrigin(process_id_, document_url)) {
+    mojo::ReportBadMessage(
+        "ACH_MARK_AS_FOREIGN_ENTRY_DOCUMENT_URL_ACCESS_NOT_ALLOWED");
     return;
   }
 
