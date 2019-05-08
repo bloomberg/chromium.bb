@@ -32,6 +32,7 @@ VULKAN_PHYSICAL_DEVICE_FUNCTIONS = [
 { 'name': 'vkCreateDevice' },
 { 'name': 'vkEnumerateDeviceLayerProperties' },
 { 'name': 'vkGetPhysicalDeviceQueueFamilyProperties' },
+{ 'name': 'vkGetPhysicalDeviceProperties' },
 # The following functions belong here but are handled specially:
 # vkGetPhysicalDeviceSurfaceCapabilitiesKHR
 # vkGetPhysicalDeviceSurfaceFormatsKHR

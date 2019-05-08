@@ -58,6 +58,7 @@
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/wrapped_sk_image.h"
+#include "gpu/vulkan/buildflags.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDeferredDisplayListRecorder.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -72,6 +73,11 @@
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_version_info.h"
+
+#if BUILDFLAG(ENABLE_VULKAN)
+#include "components/viz/common/gpu/vulkan_context_provider.h"
+#include "gpu/vulkan/vulkan_device_queue.h"
+#endif
 
 // Local versions of the SET_GL_ERROR macros
 #define LOCAL_SET_GL_ERROR(error, function_name, msg) \
@@ -866,7 +872,22 @@ Capabilities RasterDecoderImpl::GetCapabilities() {
   caps.texture_storage_image =
       feature_info()->feature_flags().chromium_texture_storage_image;
   caps.texture_storage = feature_info()->feature_flags().ext_texture_storage;
-  api()->glGetIntegervFn(GL_MAX_TEXTURE_SIZE, &caps.max_texture_size);
+  // TODO(piman): have a consistent limit in shared image backings.
+  // https://crbug.com/960588
+  if (shared_context_state_->GrContextIsGL()) {
+    api()->glGetIntegervFn(GL_MAX_TEXTURE_SIZE, &caps.max_texture_size);
+  } else if (shared_context_state_->GrContextIsVulkan()) {
+#if BUILDFLAG(ENABLE_VULKAN)
+    caps.max_texture_size = shared_context_state_->vk_context_provider()
+                                ->GetDeviceQueue()
+                                ->vk_physical_device_properties()
+                                .limits.maxImageDimension2D;
+#else
+    NOTREACHED();
+#endif
+  } else {
+    NOTIMPLEMENTED();
+  }
   if (feature_info()->workarounds().max_texture_size) {
     caps.max_texture_size = std::min(
         caps.max_texture_size, feature_info()->workarounds().max_texture_size);

@@ -75,6 +75,7 @@ struct VulkanFunctionPointers {
       nullptr;
   PFN_vkGetPhysicalDeviceQueueFamilyProperties
       vkGetPhysicalDeviceQueueFamilyPropertiesFn = nullptr;
+  PFN_vkGetPhysicalDeviceProperties vkGetPhysicalDevicePropertiesFn = nullptr;
   PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR
       vkGetPhysicalDeviceSurfaceCapabilitiesKHRFn = nullptr;
   PFN_vkGetPhysicalDeviceSurfaceFormatsKHR
@@ -209,6 +210,8 @@ struct VulkanFunctionPointers {
   gpu::GetVulkanFunctionPointers()->vkEnumerateDeviceLayerPropertiesFn
 #define vkGetPhysicalDeviceQueueFamilyProperties \
   gpu::GetVulkanFunctionPointers()->vkGetPhysicalDeviceQueueFamilyPropertiesFn
+#define vkGetPhysicalDeviceProperties \
+  gpu::GetVulkanFunctionPointers()->vkGetPhysicalDevicePropertiesFn
 #define vkGetPhysicalDeviceSurfaceCapabilitiesKHR \
   gpu::GetVulkanFunctionPointers()->vkGetPhysicalDeviceSurfaceCapabilitiesKHRFn
 #define vkGetPhysicalDeviceSurfaceFormatsKHR \

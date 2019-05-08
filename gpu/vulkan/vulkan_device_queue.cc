@@ -88,6 +88,9 @@ bool VulkanDeviceQueue::Initialize(
     return false;
 
   vk_physical_device_ = devices[device_index];
+  vkGetPhysicalDeviceProperties(vk_physical_device_,
+                                &vk_physical_device_properties_);
+
   vk_queue_index_ = queue_index;
 
   float queue_priority = 0.0f;

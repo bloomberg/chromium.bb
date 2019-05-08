@@ -101,6 +101,13 @@ bool VulkanFunctionPointers::BindPhysicalDeviceFunctionPointers(
   if (!vkGetPhysicalDeviceQueueFamilyPropertiesFn)
     return false;
 
+  vkGetPhysicalDevicePropertiesFn =
+      reinterpret_cast<PFN_vkGetPhysicalDeviceProperties>(
+          vkGetInstanceProcAddrFn(vk_instance,
+                                  "vkGetPhysicalDeviceProperties"));
+  if (!vkGetPhysicalDevicePropertiesFn)
+    return false;
+
   return true;
 }
 
