@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "build/build_config.h"
 #include "device/usb/public/mojom/device_manager.mojom.h"
 #include "device/usb/usb_service.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -47,6 +48,14 @@ class DeviceManagerImpl : public mojom::UsbDeviceManager,
   void GetDevice(const std::string& guid,
                  mojom::UsbDeviceRequest device_request,
                  mojom::UsbDeviceClientPtr device_client) override;
+
+#if defined(OS_ANDROID)
+  void RefreshDeviceInfo(const std::string& guid,
+                         RefreshDeviceInfoCallback callback) override;
+  void OnPermissionGrantedToRefresh(scoped_refptr<UsbDevice> device,
+                                    RefreshDeviceInfoCallback callback,
+                                    bool granted);
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
   void CheckAccess(const std::string& guid,
