@@ -169,7 +169,6 @@ bool StructTraits<
       !data.ReadFetchCredentialsMode(&out->fetch_credentials_mode) ||
       !data.ReadFetchRedirectMode(&out->fetch_redirect_mode) ||
       !data.ReadFetchIntegrity(&out->fetch_integrity) ||
-      !data.ReadFetchFrameType(&out->fetch_frame_type) ||
       !data.ReadRequestBody(&out->request_body) ||
       !data.ReadThrottlingProfileId(&out->throttling_profile_id) ||
       !data.ReadCustomProxyPreCacheHeaders(

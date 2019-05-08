@@ -151,10 +151,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
       const network::ResourceRequest& request) {
     return request.fetch_request_context_type;
   }
-  static network::mojom::RequestContextFrameType fetch_frame_type(
-      const network::ResourceRequest& request) {
-    return request.fetch_frame_type;
-  }
   static const scoped_refptr<network::ResourceRequestBody>& request_body(
       const network::ResourceRequest& request) {
     return request.request_body;

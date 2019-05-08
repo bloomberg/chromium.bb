@@ -18,7 +18,6 @@
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
-#include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -71,8 +70,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
       mojom::FetchRedirectMode::kFollow;
   std::string fetch_integrity;
   int fetch_request_context_type = 0;
-  mojom::RequestContextFrameType fetch_frame_type =
-      mojom::RequestContextFrameType::kAuxiliary;
   scoped_refptr<ResourceRequestBody> request_body;
   bool keepalive = false;
   bool has_user_gesture = false;

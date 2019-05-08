@@ -593,7 +593,6 @@ ServiceWorkerProviderHost::CreateLoaderInterceptor(
     bool keepalive,
     ResourceType resource_type,
     blink::mojom::RequestContextType request_context_type,
-    network::mojom::RequestContextFrameType frame_type,
     scoped_refptr<network::ResourceRequestBody> body,
     bool skip_service_worker) {
   if (skip_service_worker) {
@@ -604,7 +603,7 @@ ServiceWorkerProviderHost::CreateLoaderInterceptor(
 
   return std::make_unique<ServiceWorkerControlleeRequestHandler>(
       context_, AsWeakPtr(), request_mode, credentials_mode, redirect_mode,
-      integrity, keepalive, resource_type, request_context_type, frame_type,
+      integrity, keepalive, resource_type, request_context_type,
       std::move(body));
 }
 

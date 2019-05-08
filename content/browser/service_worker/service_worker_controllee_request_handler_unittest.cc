@@ -29,7 +29,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/resource_request_body.h"
-#include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -63,7 +62,6 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
               false /* keepalive */,
               type,
               blink::mojom::RequestContextType::HYPERLINK,
-              network::mojom::RequestContextFrameType::kTopLevel,
               scoped_refptr<network::ResourceRequestBody>())) {}
 
     ServiceWorkerNavigationLoader* MaybeCreateLoader() {

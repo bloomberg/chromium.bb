@@ -72,19 +72,15 @@ ServiceWorkerRequestHandler::CreateForNavigation(
   const ResourceType resource_type = request_info.is_main_frame
                                          ? ResourceType::kMainFrame
                                          : ResourceType::kSubFrame;
-  const network::mojom::RequestContextFrameType frame_type =
-      request_info.is_main_frame
-          ? network::mojom::RequestContextFrameType::kTopLevel
-          : network::mojom::RequestContextFrameType::kNested;
   return (*out_provider_host)
-      ->CreateLoaderInterceptor(
-          network::mojom::FetchRequestMode::kNavigate,
-          network::mojom::FetchCredentialsMode::kInclude,
-          network::mojom::FetchRedirectMode::kManual,
-          std::string() /* integrity */, false /* keepalive */, resource_type,
-          request_info.begin_params->request_context_type, frame_type,
-          request_info.common_params.post_data,
-          request_info.begin_params->skip_service_worker);
+      ->CreateLoaderInterceptor(network::mojom::FetchRequestMode::kNavigate,
+                                network::mojom::FetchCredentialsMode::kInclude,
+                                network::mojom::FetchRedirectMode::kManual,
+                                std::string() /* integrity */,
+                                false /* keepalive */, resource_type,
+                                request_info.begin_params->request_context_type,
+                                request_info.common_params.post_data,
+                                request_info.begin_params->skip_service_worker);
 }
 
 // static
@@ -115,8 +111,7 @@ ServiceWorkerRequestHandler::CreateForWorker(
       resource_request.resource_type == static_cast<int>(ResourceType::kWorker)
           ? blink::mojom::RequestContextType::WORKER
           : blink::mojom::RequestContextType::SHARED_WORKER,
-      resource_request.fetch_frame_type, resource_request.request_body,
-      resource_request.skip_service_worker);
+      resource_request.request_body, resource_request.skip_service_worker);
 }
 
 }  // namespace content

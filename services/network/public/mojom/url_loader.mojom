@@ -15,7 +15,6 @@ import "services/network/public/mojom/data_pipe_getter.mojom";
 import "services/network/public/mojom/fetch_api.mojom";
 import "services/network/public/mojom/http_request_headers.mojom";
 import "services/network/public/mojom/network_param.mojom";
-import "services/network/public/mojom/request_context_frame_type.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
@@ -233,9 +232,6 @@ struct URLRequest {
   // TODO(jam): remove this from the struct since network service shouldn't know
   // about this.
   int32 fetch_request_context_type;
-
-  // The frame type passed to the ServiceWorker.
-  RequestContextFrameType fetch_frame_type;
 
   // Optional resource request body.
   URLRequestBody? request_body;

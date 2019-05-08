@@ -19,7 +19,6 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/resource_type.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
-#include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "url/gurl.h"
 
@@ -51,7 +50,6 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final
       bool keepalive,
       ResourceType resource_type,
       blink::mojom::RequestContextType request_context_type,
-      network::mojom::RequestContextFrameType frame_type,
       scoped_refptr<network::ResourceRequestBody> body);
   ~ServiceWorkerControlleeRequestHandler() override;
 
@@ -133,7 +131,6 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final
   std::string integrity_;
   const bool keepalive_;
   blink::mojom::RequestContextType request_context_type_;
-  network::mojom::RequestContextFrameType frame_type_;
   scoped_refptr<network::ResourceRequestBody> body_;
   ResourceContext* resource_context_;
   GURL stripped_url_;

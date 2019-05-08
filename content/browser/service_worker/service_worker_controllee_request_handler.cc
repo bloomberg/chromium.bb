@@ -98,7 +98,6 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
     bool keepalive,
     ResourceType resource_type,
     blink::mojom::RequestContextType request_context_type,
-    network::mojom::RequestContextFrameType frame_type,
     scoped_refptr<network::ResourceRequestBody> body)
     : context_(std::move(context)),
       provider_host_(std::move(provider_host)),
@@ -109,7 +108,6 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
       integrity_(integrity),
       keepalive_(keepalive),
       request_context_type_(request_context_type),
-      frame_type_(frame_type),
       body_(std::move(body)),
       force_update_started_(false),
       weak_factory_(this) {

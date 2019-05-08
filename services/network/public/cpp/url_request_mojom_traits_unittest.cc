@@ -75,7 +75,6 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.fetch_redirect_mode = mojom::FetchRedirectMode::kFollow;
   original.fetch_integrity = "dummy_fetch_integrity";
   original.fetch_request_context_type = 0;
-  original.fetch_frame_type = mojom::RequestContextFrameType::kAuxiliary;
   original.keepalive = true;
   original.has_user_gesture = false;
   original.enable_load_timing = true;

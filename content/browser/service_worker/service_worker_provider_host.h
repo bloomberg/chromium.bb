@@ -29,7 +29,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
-#include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
@@ -305,7 +304,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       bool keepalive,
       ResourceType resource_type,
       blink::mojom::RequestContextType request_context_type,
-      network::mojom::RequestContextFrameType frame_type,
       scoped_refptr<network::ResourceRequestBody> body,
       bool skip_service_worker);
 
