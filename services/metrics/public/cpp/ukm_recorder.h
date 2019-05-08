@@ -18,7 +18,6 @@
 #include "url/gurl.h"
 
 class BackgroundFetchDelegateImpl;
-class BackgroundSyncMetrics;
 class IOSChromePasswordManagerClient;
 class MediaEngagementSession;
 class PlatformNotificationServiceImpl;
@@ -105,7 +104,6 @@ class METRICS_EXPORT UkmRecorder {
 
  private:
   friend BackgroundFetchDelegateImpl;
-  friend BackgroundSyncMetrics;
   friend DelegatingUkmRecorder;
   friend IOSChromePasswordManagerClient;
   friend MediaEngagementSession;
