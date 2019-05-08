@@ -287,15 +287,14 @@ BridgedNativeWidgetImpl::CreateNSWindow(
                         defer:NO]);
       break;
   }
-  if (@available(macOS 10.10, *)) {
-    if (params->titlebar_appears_transparent)
-      [ns_window setTitlebarAppearsTransparent:YES];
 
-    if (params->window_title_hidden)
-      [ns_window setTitleVisibility:NSWindowTitleHidden];
-  }
+  if (params->titlebar_appears_transparent)
+    [ns_window setTitlebarAppearsTransparent:YES];
+  if (params->window_title_hidden)
+    [ns_window setTitleVisibility:NSWindowTitleHidden];
   if (params->animation_enabled)
     [ns_window setAnimationBehavior:NSWindowAnimationBehaviorDocumentWindow];
+
   return ns_window;
 }
 

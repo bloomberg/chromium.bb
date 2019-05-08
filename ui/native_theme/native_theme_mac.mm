@@ -286,21 +286,19 @@ NativeThemeMac::NativeThemeMac() {
           theme->NotifyObservers();
         }]);
   }
-  if (@available(macOS 10.10, *)) {
-    if (!IsForcedHighContrast()) {
-      set_high_contrast(IsHighContrast());
-      __block auto theme = this;
-      high_contrast_notification_token_ =
-          [[[NSWorkspace sharedWorkspace] notificationCenter]
-              addObserverForName:
-                  NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification
-                          object:nil
-                           queue:nil
-                      usingBlock:^(NSNotification* notification) {
-                        theme->set_high_contrast(IsHighContrast());
-                        theme->NotifyObservers();
-                      }];
-    }
+  if (!IsForcedHighContrast()) {
+    set_high_contrast(IsHighContrast());
+    __block auto theme = this;
+    high_contrast_notification_token_ =
+        [[[NSWorkspace sharedWorkspace] notificationCenter]
+            addObserverForName:
+                NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification
+                        object:nil
+                         queue:nil
+                    usingBlock:^(NSNotification* notification) {
+                      theme->set_high_contrast(IsHighContrast());
+                      theme->NotifyObservers();
+                    }];
   }
 }
 

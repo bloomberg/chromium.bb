@@ -38,10 +38,7 @@ ACTION_P(RunClosure, closure) {
 
 std::unique_ptr<mojom::BarcodeDetection> CreateBarcodeDetectorImplMacCoreImage(
     mojom::BarcodeDetectorOptionsPtr options) {
-  if (@available(macOS 10.10, *)) {
-    return std::make_unique<BarcodeDetectionImplMac>();
-  }
-  return nullptr;
+  return std::make_unique<BarcodeDetectionImplMac>();
 }
 
 std::unique_ptr<mojom::BarcodeDetection> CreateBarcodeDetectorImplMacVision(
