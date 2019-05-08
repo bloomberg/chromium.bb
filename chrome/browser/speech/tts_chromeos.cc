@@ -11,6 +11,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/tts_platform.h"
 
+TtsPlatformImplChromeOs::TtsPlatformImplChromeOs() : weak_factory_(this) {}
+TtsPlatformImplChromeOs::~TtsPlatformImplChromeOs() {}
+
 bool TtsPlatformImplChromeOs::PlatformImplAvailable() {
   return arc::ArcServiceManager::Get() && arc::ArcServiceManager::Get()
                                               ->arc_bridge_service()
@@ -36,19 +39,20 @@ void TtsPlatformImplChromeOs::Speak(
     base::OnceCallback<void(bool)> on_speak_finished) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // Insert call to strip SSML.
-
-  ProcessSpeech(utterance_id, utterance, lang, voice, params,
-                std::move(on_speak_finished));
+  // Parse SSML and process speech.
+  content::TtsController::GetInstance()->StripSSML(
+      utterance, base::BindOnce(&TtsPlatformImplChromeOs::ProcessSpeech,
+                                weak_factory_.GetWeakPtr(), utterance_id, lang,
+                                voice, params, std::move(on_speak_finished)));
 }
 
 void TtsPlatformImplChromeOs::ProcessSpeech(
     int utterance_id,
-    const std::string& utterance,
     const std::string& lang,
     const content::VoiceData& voice,
     const content::UtteranceContinuousParameters& params,
-    base::OnceCallback<void(bool)> on_speak_finished) {
+    base::OnceCallback<void(bool)> on_speak_finished,
+    const std::string& parsed_utterance) {
   auto* const arc_service_manager = arc::ArcServiceManager::Get();
   if (!arc_service_manager) {
     std::move(on_speak_finished).Run(false);
@@ -63,7 +67,7 @@ void TtsPlatformImplChromeOs::ProcessSpeech(
 
   arc::mojom::TtsUtterancePtr arc_utterance = arc::mojom::TtsUtterance::New();
   arc_utterance->utteranceId = utterance_id;
-  arc_utterance->text = utterance;
+  arc_utterance->text = parsed_utterance;
   arc_utterance->rate = params.rate;
   arc_utterance->pitch = params.pitch;
   tts->Speak(std::move(arc_utterance));

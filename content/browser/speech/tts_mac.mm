@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
@@ -85,11 +86,11 @@ class TtsPlatformImplMac : public content::TtsPlatformImpl {
   ~TtsPlatformImplMac() override;
 
   void ProcessSpeech(int utterance_id,
-                     const std::string& utterance,
                      const std::string& lang,
                      const content::VoiceData& voice,
                      const content::UtteranceContinuousParameters& params,
-                     base::OnceCallback<void(bool)> on_speak_finished);
+                     base::OnceCallback<void(bool)> on_speak_finished,
+                     const std::string& parsed_utterance);
 
   base::scoped_nsobject<SingleUseSpeechSynthesizer> speech_synthesizer_;
   base::scoped_nsobject<ChromeTtsDelegate> delegate_;
@@ -99,6 +100,8 @@ class TtsPlatformImplMac : public content::TtsPlatformImpl {
   bool paused_;
 
   friend struct base::DefaultSingletonTraits<TtsPlatformImplMac>;
+
+  base::WeakPtrFactory<TtsPlatformImplMac> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TtsPlatformImplMac);
 };
@@ -115,21 +118,21 @@ void TtsPlatformImplMac::Speak(
     const content::VoiceData& voice,
     const content::UtteranceContinuousParameters& params,
     base::OnceCallback<void(bool)> on_speak_finished) {
-  // TODO: convert SSML to SAPI xml. http://crbug.com/88072
-  // Insert call to ParseSSML.
-
-  ProcessSpeech(utterance_id, utterance, lang, voice, params,
-                std::move(on_speak_finished));
+  // Parse SSML and process speech.
+  content::TtsController::GetInstance()->StripSSML(
+      utterance, base::BindOnce(&TtsPlatformImplMac::ProcessSpeech,
+                                weak_factory_.GetWeakPtr(), utterance_id, lang,
+                                voice, params, std::move(on_speak_finished)));
 }
 
 void TtsPlatformImplMac::ProcessSpeech(
     int utterance_id,
-    const std::string& utterance,
     const std::string& lang,
     const content::VoiceData& voice,
     const content::UtteranceContinuousParameters& params,
-    base::OnceCallback<void(bool)> on_speak_finished) {
-  utterance_ = utterance;
+    base::OnceCallback<void(bool)> on_speak_finished,
+    const std::string& parsed_utterance) {
+  utterance_ = parsed_utterance;
   paused_ = false;
 
   NSString* utterance_nsstring =
@@ -296,7 +299,7 @@ void TtsPlatformImplMac::OnSpeechEvent(NSSpeechSynthesizer* sender,
   last_char_index_ = char_index;
 }
 
-TtsPlatformImplMac::TtsPlatformImplMac() {
+TtsPlatformImplMac::TtsPlatformImplMac() : weak_factory_(this) {
   utterance_id_ = -1;
   paused_ = false;
 

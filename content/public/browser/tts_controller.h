@@ -151,6 +151,10 @@ class CONTENT_EXPORT TtsController {
   virtual void SetTtsPlatform(TtsPlatform* tts_platform) = 0;
   virtual int QueueSize() = 0;
 
+  virtual void StripSSML(
+      const std::string& utterance,
+      base::OnceCallback<void(const std::string&)> callback) = 0;
+
  protected:
   virtual ~TtsController() {}
 };

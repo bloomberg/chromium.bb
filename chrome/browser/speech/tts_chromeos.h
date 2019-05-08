@@ -39,19 +39,21 @@ class TtsPlatformImplChromeOs : public content::TtsPlatform {
   static TtsPlatformImplChromeOs* GetInstance();
 
  private:
-  TtsPlatformImplChromeOs() {}
-  virtual ~TtsPlatformImplChromeOs() {}
+  TtsPlatformImplChromeOs();
+  virtual ~TtsPlatformImplChromeOs();
 
   void ProcessSpeech(int utterance_id,
-                     const std::string& utterance,
                      const std::string& lang,
                      const content::VoiceData& voice,
                      const content::UtteranceContinuousParameters& params,
-                     base::OnceCallback<void(bool)> on_speak_finished);
+                     base::OnceCallback<void(bool)> on_speak_finished,
+                     const std::string& parsed_utterance);
 
   friend struct base::DefaultSingletonTraits<TtsPlatformImplChromeOs>;
 
   std::string error_;
+
+  base::WeakPtrFactory<TtsPlatformImplChromeOs> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TtsPlatformImplChromeOs);
 };

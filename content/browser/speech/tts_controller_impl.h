@@ -64,8 +64,9 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController {
   int QueueSize() override;
 
   // Strips SSML so that tags are not output by speech engine.
-  void StripSSML(const std::string& utterance,
-                 base::OnceCallback<void(std::string)> callback);
+  void StripSSML(
+      const std::string& utterance,
+      base::OnceCallback<void(const std::string&)> callback) override;
 
  protected:
   TtsControllerImpl();
@@ -107,7 +108,7 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController {
   // Static helper methods for StripSSML.
   static void StripSSMLHelper(
       const std::string& utterance,
-      base::OnceCallback<void(std::string)> on_ssml_parsed,
+      base::OnceCallback<void(const std::string&)> on_ssml_parsed,
       std::unique_ptr<base::Value> value,
       const base::Optional<std::string>& error_message);
   static void PopulateParsedText(std::string* parsed_text,

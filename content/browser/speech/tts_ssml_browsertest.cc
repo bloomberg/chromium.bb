@@ -41,8 +41,8 @@ class TtsSsmlBrowserTest : public ContentBrowserTest {
 
   // Passed as callback to StripSSML.
   void CheckCorrect(base::OnceClosure quit_loop_closure,
-                    std::string expected_string,
-                    std::string actual_string) {
+                    const std::string& expected_string,
+                    const std::string& actual_string) {
     EXPECT_EQ(expected_string, actual_string);
     base::ScopedClosureRunner runner(std::move(quit_loop_closure));
   }

@@ -486,7 +486,7 @@ TtsControllerDelegate* TtsControllerImpl::GetTtsControllerDelegate() {
 
 void TtsControllerImpl::StripSSML(
     const std::string& utterance,
-    base::OnceCallback<void(std::string)> on_ssml_parsed) {
+    base::OnceCallback<void(const std::string&)> on_ssml_parsed) {
   // Skip parsing and return if not xml.
   if (utterance.find("<?xml") == std::string::npos) {
     std::move(on_ssml_parsed).Run(utterance);
@@ -511,7 +511,7 @@ void TtsControllerImpl::StripSSML(
 // Uses parsed xml to build parsed utterance text.
 void TtsControllerImpl::StripSSMLHelper(
     const std::string& utterance,
-    base::OnceCallback<void(std::string)> on_ssml_parsed,
+    base::OnceCallback<void(const std::string&)> on_ssml_parsed,
     std::unique_ptr<base::Value> value,
     const base::Optional<std::string>& error_message) {
   // Error checks.

@@ -62,6 +62,10 @@ class MockTtsController : public TtsController {
 
   int QueueSize() override { return 0; }
 
+  void StripSSML(
+      const std::string& utterance,
+      base::OnceCallback<void(const std::string&)> callback) override {}
+
  private:
   friend struct base::DefaultSingletonTraits<MockTtsController>;
   DISALLOW_COPY_AND_ASSIGN(MockTtsController);

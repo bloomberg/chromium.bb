@@ -54,15 +54,17 @@ class TtsPlatformImplAndroid : public TtsPlatformImpl {
                          int char_index);
 
   void ProcessSpeech(int utterance_id,
-                     const std::string& utterance,
                      const std::string& lang,
                      const VoiceData& voice,
                      const UtteranceContinuousParameters& params,
-                     base::OnceCallback<void(bool)> on_speak_finished);
+                     base::OnceCallback<void(bool)> on_speak_finished,
+                     const std::string& parsed_utterance);
 
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
   int utterance_id_;
   std::string utterance_;
+
+  base::WeakPtrFactory<TtsPlatformImplAndroid> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TtsPlatformImplAndroid);
 };

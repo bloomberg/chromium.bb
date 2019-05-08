@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <wrl/client.h>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
@@ -64,11 +65,11 @@ class TtsPlatformImplWin : public TtsPlatformImpl {
   void SetVoiceFromName(const std::string& name);
 
   void ProcessSpeech(int utterance_id,
-                     const std::string& utterance,
                      const std::string& lang,
                      const VoiceData& voice,
                      const UtteranceContinuousParameters& params,
-                     base::OnceCallback<void(bool)> on_speak_finished);
+                     base::OnceCallback<void(bool)> on_speak_finished,
+                     const std::string& parsed_utterance);
 
   Microsoft::WRL::ComPtr<ISpVoice> speech_synthesizer_;
 
@@ -83,6 +84,8 @@ class TtsPlatformImplWin : public TtsPlatformImpl {
   std::string last_voice_name_;
 
   friend struct base::DefaultSingletonTraits<TtsPlatformImplWin>;
+
+  base::WeakPtrFactory<TtsPlatformImplWin> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TtsPlatformImplWin);
 };
@@ -99,18 +102,20 @@ void TtsPlatformImplWin::Speak(
     const VoiceData& voice,
     const UtteranceContinuousParameters& params,
     base::OnceCallback<void(bool)> on_speak_finished) {
-  // Insert call to ParseSSML.
-  ProcessSpeech(utterance_id, utterance, lang, voice, params,
-                std::move(on_speak_finished));
+  // Parse SSML and process speech.
+  TtsController::GetInstance()->StripSSML(
+      utterance, base::BindOnce(&TtsPlatformImplWin::ProcessSpeech,
+                                weak_factory_.GetWeakPtr(), utterance_id, lang,
+                                voice, params, std::move(on_speak_finished)));
 }
 
 void TtsPlatformImplWin::ProcessSpeech(
     int utterance_id,
-    const std::string& src_utterance,
     const std::string& lang,
     const VoiceData& voice,
     const UtteranceContinuousParameters& params,
-    base::OnceCallback<void(bool)> on_speak_finished) {
+    base::OnceCallback<void(bool)> on_speak_finished,
+    const std::string& parsed_utterance) {
   std::wstring prefix;
   std::wstring suffix;
 
@@ -146,7 +151,7 @@ void TtsPlatformImplWin::ProcessSpeech(
 
   // TODO(dmazzoni): convert SSML to SAPI xml. http://crbug.com/88072
 
-  utterance_ = base::UTF8ToWide(src_utterance);
+  utterance_ = base::UTF8ToWide(parsed_utterance);
   utterance_id_ = utterance_id;
   char_position_ = 0;
   char_length_ = 0;
@@ -328,7 +333,8 @@ TtsPlatformImplWin::TtsPlatformImplWin()
       prefix_len_(0),
       stream_number_(0),
       char_position_(0),
-      paused_(false) {
+      paused_(false),
+      weak_factory_(this) {
   ::CoCreateInstance(CLSID_SpVoice, nullptr, CLSCTX_ALL,
                      IID_PPV_ARGS(&speech_synthesizer_));
   if (speech_synthesizer_.Get()) {
