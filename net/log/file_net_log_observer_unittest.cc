@@ -309,7 +309,7 @@ class FileNetLogObserverBoundedTest : public ::testing::Test,
   }
 
   void CreateAndStartObserving(std::unique_ptr<base::Value> constants,
-                               int total_file_size,
+                               uint64_t total_file_size,
                                int num_files) {
     logger_ = FileNetLogObserver::CreateBoundedForTests(
         log_path_, total_file_size, num_files, std::move(constants));
@@ -937,6 +937,34 @@ TEST_F(FileNetLogObserverBoundedTest, PreExistingUsesSpecifiedDir) {
   // Now the scratch dir should be gone, too.
   EXPECT_FALSE(base::PathExists(scratch_dir.GetPath()));
   EXPECT_FALSE(base::PathExists(GetInprogressDirectory()));
+}
+
+// Creates a bounded log with a very large total size and verifies that events
+// are not dropped. This is a regression test for https://crbug.com/959929 in
+// which the WriteQueue size was calculated by the possibly overflowed
+// expression |total_file_size * 2|.
+TEST_F(FileNetLogObserverBoundedTest, LargeWriteQueueSize) {
+  TestClosure closure;
+
+  // This is a large value such that multiplying it by 2 will overflow to a much
+  // smaller value (5).
+  uint64_t total_file_size = 0x8000000000000005;
+
+  CreateAndStartObserving(nullptr, total_file_size, kTotalNumFiles);
+
+  // Send 3 dummy events. This isn't a lot of data, however if WriteQueue was
+  // initialized using the overflowed value of |total_file_size * 2| (which is
+  // 5), then the effective limit would prevent any events from being written.
+  AddEntries(logger_.get(), 3, kDummyEventSize);
+
+  logger_->StopObserving(nullptr, closure.closure());
+
+  closure.WaitForResult();
+
+  // Verify the written log.
+  std::unique_ptr<ParsedNetLog> log = ReadNetLogFromDisk(log_path_);
+  ASSERT_TRUE(log);
+  ASSERT_EQ(3u, log->events->GetSize());
 }
 
 void AddEntriesViaNetLog(NetLog* net_log, int num_entries) {

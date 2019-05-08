@@ -15,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/numerics/clamped_math.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
@@ -460,11 +461,13 @@ std::unique_ptr<FileNetLogObserver> FileNetLogObserver::CreateInternal(
       log_path, inprogress_dir_path, std::move(pre_existing_log_file),
       max_event_file_size, total_num_event_files, file_task_runner));
 
-  scoped_refptr<WriteQueue> write_queue(new WriteQueue(max_total_size * 2));
+  uint64_t write_queue_memory_max =
+      base::MakeClampedNum<uint64_t>(max_total_size) * 2;
 
-  return std::unique_ptr<FileNetLogObserver>(
-      new FileNetLogObserver(file_task_runner, std::move(file_writer),
-                             std::move(write_queue), std::move(constants)));
+  return base::WrapUnique(new FileNetLogObserver(
+      file_task_runner, std::move(file_writer),
+      base::WrapRefCounted(new WriteQueue(write_queue_memory_max)),
+      std::move(constants)));
 }
 
 FileNetLogObserver::FileNetLogObserver(
