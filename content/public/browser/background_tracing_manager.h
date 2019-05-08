@@ -102,9 +102,8 @@ class BackgroundTracingManager {
   virtual std::string GetLatestTraceToUpload() = 0;
 
   // For tests
-  virtual void AbortScenarioForTesting() = 0;
-  virtual void SetTraceToUploadForTesting(
-      std::unique_ptr<std::string> trace_data) = 0;
+  virtual void AbortScenario() = 0;
+  virtual void SetTraceToUploadForTesting(base::StringPiece data) = 0;
 
  protected:
   virtual ~BackgroundTracingManager() {}

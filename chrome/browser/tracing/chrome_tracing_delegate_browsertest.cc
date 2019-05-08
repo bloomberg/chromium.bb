@@ -148,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTest,
       local_state->GetInt64(prefs::kBackgroundTracingLastUpload));
   EXPECT_FALSE(last_upload_time.is_null());
 
-  content::BackgroundTracingManager::GetInstance()->AbortScenarioForTesting();
+  content::BackgroundTracingManager::GetInstance()->AbortScenario();
   base::RunLoop wait_for_abort;
   content::BackgroundTracingManager::GetInstance()->WhenIdle(
       wait_for_abort.QuitClosure());
@@ -188,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTest,
       local_state->GetInt64(prefs::kBackgroundTracingLastUpload));
   EXPECT_FALSE(last_upload_time.is_null());
 
-  content::BackgroundTracingManager::GetInstance()->AbortScenarioForTesting();
+  content::BackgroundTracingManager::GetInstance()->AbortScenario();
   base::RunLoop wait_for_abort;
   content::BackgroundTracingManager::GetInstance()->WhenIdle(
       wait_for_abort.QuitClosure());
