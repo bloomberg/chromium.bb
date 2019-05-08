@@ -8,6 +8,7 @@ import android.content.Context;
 import android.view.View;
 
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.explore_sites.CategoryCardViewHolderFactory;
 import org.chromium.chrome.browser.explore_sites.ExploreSitesPage;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageHost;
@@ -48,5 +49,10 @@ public class TouchlessExploreSitesPage extends ExploreSitesPage {
         if (delegate == null) return;
         mTouchlessContextMenuManager.showTouchlessContextMenu(
                 mModalDialogManager, mContext, delegate);
+    }
+
+    @Override
+    protected CategoryCardViewHolderFactory createCategoryCardViewHolderFactory() {
+        return new TouchlessCategoryCardViewHolderFactory();
     }
 }

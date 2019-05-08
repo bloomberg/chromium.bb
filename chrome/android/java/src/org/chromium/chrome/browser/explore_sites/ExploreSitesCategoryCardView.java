@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.explore_sites;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
@@ -70,13 +71,13 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
         mTileViewLayout = tileResource;
     }
 
-    private class CategoryCardInteractionDelegate
+    protected class CategoryCardInteractionDelegate
             implements ContextMenuManager.Delegate, OnClickListener, OnCreateContextMenuListener,
                        OnFocusChangeListener {
         private String mSiteUrl;
         private int mTileIndex;
 
-        CategoryCardInteractionDelegate(String siteUrl, int tileIndex) {
+        public CategoryCardInteractionDelegate(String siteUrl, int tileIndex) {
             mSiteUrl = siteUrl;
             mTileIndex = tileIndex;
         }
@@ -151,7 +152,7 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
     // paradigm for the category card view itself since it is mismatched to the needs of the
     // recycler view that we use for category cards.  The controller for MVC is actually here, the
     // bind code inside the view class.
-    private class ExploreSitesSiteViewBinder
+    protected class ExploreSitesSiteViewBinder
             implements PropertyModelChangeProcessor
                                .ViewBinder<PropertyModel, ExploreSitesTileView, PropertyKey> {
         @Override
@@ -164,13 +165,17 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
             } else if (key == ExploreSitesSite.URL_KEY) {
                 // Attach click handlers.
                 CategoryCardInteractionDelegate interactionDelegate =
-                        new CategoryCardInteractionDelegate(model.get(ExploreSitesSite.URL_KEY),
-                                model.get(ExploreSitesSite.TILE_INDEX_KEY));
+                        createInteractionDelegate(model);
                 view.setOnClickListener(interactionDelegate);
                 view.setOnCreateContextMenuListener(interactionDelegate);
                 ContextMenuManager.registerViewForTouchlessContextMenu(view, interactionDelegate);
                 view.setOnFocusChangeListener(interactionDelegate);
             }
+        }
+
+        protected CategoryCardInteractionDelegate createInteractionDelegate(PropertyModel model) {
+            return new CategoryCardInteractionDelegate(model.get(ExploreSitesSite.URL_KEY),
+                    model.get(ExploreSitesSite.TILE_INDEX_KEY));
         }
     }
 
@@ -250,7 +255,7 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
             siteModel.set(ExploreSitesSite.TILE_INDEX_KEY, tileIndex);
 
             mModelChangeProcessors.add(PropertyModelChangeProcessor.create(
-                    siteModel, tileView, new ExploreSitesSiteViewBinder()));
+                    siteModel, tileView, createViewBinder((Activity) getContext())));
 
             // Fetch icon if not present already.
             if (siteModel.get(ExploreSitesSite.ICON_KEY) == null) {
@@ -280,5 +285,9 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
         // of using MAX_TILE_COUNT?
         RecordHistogram.recordLinearCountHistogram("ExploreSites.SiteTilesClickIndex",
                 cardIndex * MAX_TILE_COUNT + tileIndex, 1, 100, 100);
+    }
+
+    protected ExploreSitesSiteViewBinder createViewBinder(Activity activity) {
+        return new ExploreSitesSiteViewBinder();
     }
 }

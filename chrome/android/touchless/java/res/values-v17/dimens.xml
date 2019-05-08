@@ -38,4 +38,16 @@
     <dimen name="most_likely_quantized_icon_margin">6dp</dimen>
 
 
+    <dimen name="explore_sites_category_padding_vertical_condensed">12dp</dimen>
+    <dimen name="explore_sites_category_padding_horizontal_condensed">4dp</dimen>
+    <dimen name="explore_sites_category_grid_minimum_spacing">8dp</dimen>
+    <dimen name="explore_sites_category_title_spacing_condensed">10dp</dimen>
+    <dimen name="explore_sites_tile_view_icon_background_size_condensed">44dp</dimen>
+    <dimen name="explore_sites_tile_view_icon_size_condensed">22dp</dimen>
+    <dimen name="explore_sites_tile_view_icon_margin_top_condensed">18dp</dimen>
+    <dimen name="explore_sites_tile_view_title_margin_top_condensed">51dp</dimen>
+    <dimen name="explore_sites_tile_view_width_condensed">72dp</dimen>
+    <dimen name="explore_sites_tile_view_icon_padding_horizontal_condensed">4dp</dimen>
+    <dimen name="explore_sites_tile_view_text_margin_bottom_condensed">4dp</dimen>
+
 </resources>
