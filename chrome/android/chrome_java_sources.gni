@@ -849,7 +849,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/locale/LocaleManager.java",
   "java/src/org/chromium/chrome/browser/locale/LocaleTemplateUrlLoader.java",
   "java/src/org/chromium/chrome/browser/locale/SogouPromoDialog.java",
-  "java/src/org/chromium/chrome/browser/locationcustomizations/LocationCustomizations.java",
   "java/src/org/chromium/chrome/browser/login/ChromeHttpAuthHandler.java",
   "java/src/org/chromium/chrome/browser/login/LoginPrompt.java",
   "java/src/org/chromium/chrome/browser/media/MediaCaptureNotificationService.java",

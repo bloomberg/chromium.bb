@@ -95,7 +95,6 @@ import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.infobar.DataReductionPromoInfoBar;
 import org.chromium.chrome.browser.language.LanguageAskPrompt;
 import org.chromium.chrome.browser.locale.LocaleManager;
-import org.chromium.chrome.browser.locationcustomizations.LocationCustomizations;
 import org.chromium.chrome.browser.metrics.ActivityStopMetrics;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.MainIntentBehaviorMetrics;
@@ -798,7 +797,6 @@ public class ChromeTabbedActivity
 
         mLocaleManager.setSnackbarManager(getSnackbarManager());
         mLocaleManager.startObservingPhoneChanges();
-        LocationCustomizations.initialize();
 
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)) {
             if (isWarmOnResume()) {
