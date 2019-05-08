@@ -2291,6 +2291,7 @@ enum WebFeature {
   kFocusWithoutUserActivationSandboxedAdFrame = 2885,
   kV8RTCRtpReceiver_JitterBufferDelayHint_AttributeGetter = 2886,
   kV8RTCRtpReceiver_JitterBufferDelayHint_AttributeSetter = 2887,
+  kMediaCapabilitiesDecodingInfoWithKeySystemConfig = 2888,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
