@@ -1608,6 +1608,7 @@ test("ash_unittests") {
     "accessibility/touch_exploration_controller_unittest.cc",
     "accessibility/touch_exploration_manager_unittest.cc",
     "app_list/app_list_controller_impl_unittest.cc",
+    "app_list/app_list_metrics_unittest.cc",
     "app_list/app_list_presenter_delegate_unittest.cc",
     "app_list/app_list_unittest.cc",
     "app_list/model/app_list_item_list_unittest.cc",
