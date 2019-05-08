@@ -4,14 +4,22 @@
 
 #include "content/browser/web_package/signed_exchange_certificate_chain.h"
 
+#include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/no_destructor.h"
+#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "components/cbor/reader.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
+#include "content/public/browser/content_browser_client.h"
+#include "crypto/sha2.h"
+#include "net/cert/asn1_util.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
+#include "services/network/public/cpp/network_switches.h"
 
 namespace content {
 
@@ -169,5 +177,51 @@ SignedExchangeCertificateChain::SignedExchangeCertificateChain(
 }
 
 SignedExchangeCertificateChain::~SignedExchangeCertificateChain() = default;
+
+bool SignedExchangeCertificateChain::ShouldIgnoreErrors() const {
+  static base::NoDestructor<
+      SignedExchangeCertificateChain::IgnoreErrorsSPKIList>
+      instance(*base::CommandLine::ForCurrentProcess());
+  return instance->ShouldIgnoreErrors(cert_);
+}
+
+SignedExchangeCertificateChain::IgnoreErrorsSPKIList::IgnoreErrorsSPKIList(
+    const std::string& spki_list) {
+  Parse(spki_list);
+}
+
+SignedExchangeCertificateChain::IgnoreErrorsSPKIList::IgnoreErrorsSPKIList(
+    const base::CommandLine& command_line) {
+  if (!GetContentClient()->browser()->CanIgnoreCertificateErrorIfNeeded())
+    return;
+  Parse(command_line.GetSwitchValueASCII(
+      network::switches::kIgnoreCertificateErrorsSPKIList));
+}
+
+void SignedExchangeCertificateChain::IgnoreErrorsSPKIList::Parse(
+    const std::string& spki_list) {
+  hash_set_ =
+      network::IgnoreErrorsCertVerifier::MakeWhitelist(base::SplitString(
+          spki_list, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL));
+}
+
+SignedExchangeCertificateChain::IgnoreErrorsSPKIList::~IgnoreErrorsSPKIList() =
+    default;
+
+bool SignedExchangeCertificateChain::IgnoreErrorsSPKIList::ShouldIgnoreErrors(
+    scoped_refptr<net::X509Certificate> certificate) {
+  if (hash_set_.empty())
+    return false;
+
+  base::StringPiece spki;
+  if (!net::asn1::ExtractSPKIFromDERCert(
+          net::x509_util::CryptoBufferAsStringPiece(certificate->cert_buffer()),
+          &spki)) {
+    return false;
+  }
+  net::SHA256HashValue hash;
+  crypto::SHA256HashString(spki, &hash, sizeof(net::SHA256HashValue));
+  return hash_set_.find(hash) != hash_set_.end();
+}
 
 }  // namespace content

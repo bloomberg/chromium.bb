@@ -21,8 +21,23 @@ namespace content {
 
 namespace {
 
+constexpr char kPEMECDSAP256SPKIHash[] =
+    "/e65FnHy30VS3LY9z8f0bNU1v6IQbg7g/mhGEQ11Im0=";
+constexpr char kPEMECDSAP384SPKIHash[] =
+    "V8vLfOEWuDlMqzl7Ki6PmnvSepqzjY1qU0gl+DrEh9A=";
+
 cbor::Value CBORByteString(base::StringPiece str) {
   return cbor::Value(str, cbor::Value::Type::BYTE_STRING);
+}
+
+scoped_refptr<net::X509Certificate> LoadCertificate(
+    const std::string& cert_file) {
+  base::FilePath dir_path;
+  base::PathService::Get(content::DIR_TEST_DATA, &dir_path);
+  dir_path = dir_path.AppendASCII("sxg");
+
+  return net::CreateCertificateChainFromFile(
+      dir_path, cert_file, net::X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
 }
 
 }  // namespace
@@ -197,6 +212,30 @@ TEST(SignedExchangeCertificateParseTest, ParseGoldenFile) {
   auto parsed = SignedExchangeCertificateChain::Parse(
       base::as_bytes(base::make_span(contents)), nullptr);
   ASSERT_TRUE(parsed);
+}
+
+TEST(SignedExchangeCertificateChainTest, IgnoreErrorsSPKIList) {
+  SignedExchangeCertificateChain::IgnoreErrorsSPKIList ignore_nothing("");
+  SignedExchangeCertificateChain::IgnoreErrorsSPKIList ignore_ecdsap256(
+      kPEMECDSAP256SPKIHash);
+  SignedExchangeCertificateChain::IgnoreErrorsSPKIList ignore_ecdsap384(
+      kPEMECDSAP384SPKIHash);
+  SignedExchangeCertificateChain::IgnoreErrorsSPKIList ignore_both(
+      std::string(kPEMECDSAP256SPKIHash) + "," + kPEMECDSAP384SPKIHash);
+
+  scoped_refptr<net::X509Certificate> cert_ecdsap256 =
+      LoadCertificate("prime256v1-sha256.public.pem");
+  scoped_refptr<net::X509Certificate> cert_ecdsap384 =
+      LoadCertificate("secp384r1-sha256.public.pem");
+
+  EXPECT_FALSE(ignore_nothing.ShouldIgnoreErrors(cert_ecdsap256));
+  EXPECT_FALSE(ignore_nothing.ShouldIgnoreErrors(cert_ecdsap384));
+  EXPECT_TRUE(ignore_ecdsap256.ShouldIgnoreErrors(cert_ecdsap256));
+  EXPECT_FALSE(ignore_ecdsap256.ShouldIgnoreErrors(cert_ecdsap384));
+  EXPECT_FALSE(ignore_ecdsap384.ShouldIgnoreErrors(cert_ecdsap256));
+  EXPECT_TRUE(ignore_ecdsap384.ShouldIgnoreErrors(cert_ecdsap384));
+  EXPECT_TRUE(ignore_both.ShouldIgnoreErrors(cert_ecdsap256));
+  EXPECT_TRUE(ignore_both.ShouldIgnoreErrors(cert_ecdsap384));
 }
 
 }  // namespace content

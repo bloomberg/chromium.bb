@@ -503,7 +503,7 @@ void SignedExchangeHandler::OnCertReceived(
   DCHECK(version_.has_value());
   const SignedExchangeSignatureVerifier::Result verify_result =
       SignedExchangeSignatureVerifier::Verify(
-          *version_, *envelope_, unverified_cert_chain_->cert(),
+          *version_, *envelope_, unverified_cert_chain_.get(),
           GetVerificationTime(), devtools_proxy_.get());
   UMA_HISTOGRAM_ENUMERATION(kHistogramSignatureVerificationResult,
                             verify_result);

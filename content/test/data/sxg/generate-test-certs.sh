@@ -78,20 +78,13 @@ openssl ca -batch \
   -out secp384r1-sha256.public.pem
 
 echo
-echo "Update the test certs in signed_exchange_signature_verifier_unittest.cc"
+echo "Update the test hashes in signed_exchange_certificate_chain_unittest.cc"
 echo "with the followings:"
 echo "===="
 
-echo 'constexpr char kCertPEMECDSAP256[] = R"('
-cat ./prime256v1-sha256.public.pem
-echo ')";'
-echo 'constexpr char kCertPEMECDSAP384[] = R"('
-cat ./secp384r1-sha256.public.pem
-echo ')";'
-
-echo "constexpr char kPEMECDSAP256SPKIHash = "
+echo "constexpr char kPEMECDSAP256SPKIHash[] ="
 echo "    \"$(dumpSPKIHash ./prime256v1-sha256.public.pem)\";"
-echo "constexpr char kPEMECDSAP384SPKIHash = "
+echo "constexpr char kPEMECDSAP384SPKIHash[] ="
 echo "    \"$(dumpSPKIHash ./secp384r1-sha256.public.pem)\";"
 
 echo "===="
