@@ -71,6 +71,7 @@
 #include "av1/encoder/rdopt.h"
 #include "av1/encoder/segmentation.h"
 #include "av1/encoder/speed_features.h"
+#include "av1/encoder/tpl_model.h"
 #include "av1/encoder/reconinter_enc.h"
 #include "av1/encoder/var_based_part.h"
 
@@ -4504,9 +4505,7 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
 
     if (cpi->tpl_model_pass == 1) {
       assert(cpi->oxcf.enable_tpl_model == 2);
-
-      // TODO(debargha, yuec): Update forward tpl model here
-
+      av1_tpl_setup_forward_stats(cpi);
       cpi->tpl_model_pass = 0;
       loop = 1;
     }

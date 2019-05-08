@@ -373,14 +373,13 @@ static void tpl_model_store(TplDepStats *tpl_stats_ptr, int mi_row, int mi_col,
   }
 }
 
-#ifndef NDEBUG
 static YV12_BUFFER_CONFIG *get_framebuf(
     AV1_COMP *cpi, const EncodeFrameInput *const frame_input, int frame_idx) {
   if (frame_idx == 0) {
     RefCntBuffer *ref_buf = get_ref_frame_buf(&cpi->common, GOLDEN_FRAME);
     return &ref_buf->buf;
   } else if (frame_idx == 1) {
-    return frame_input->source;
+    return frame_input ? frame_input->source : NULL;
   } else {
     const GF_GROUP *gf_group = &cpi->twopass.gf_group;
     const int frame_disp_idx = gf_group->frame_disp_idx[frame_idx];
@@ -389,7 +388,6 @@ static YV12_BUFFER_CONFIG *get_framebuf(
     return &buf->img;
   }
 }
-#endif  // NDEBUG
 
 static void mc_flow_dispenser(AV1_COMP *cpi, YV12_BUFFER_CONFIG **gf_picture,
                               int frame_idx) {
@@ -627,17 +625,76 @@ void av1_tpl_setup_stats(AV1_COMP *cpi,
                          const EncodeFrameInput *const frame_input) {
   YV12_BUFFER_CONFIG *gf_picture[MAX_LENGTH_TPL_FRAME_STATS];
   GF_GROUP *gf_group = &cpi->twopass.gf_group;
-  int tpl_group_frames = 0;
   int frame_idx;
 
-  init_gop_frames_for_tpl(cpi, gf_picture, gf_group, &tpl_group_frames,
+  init_gop_frames_for_tpl(cpi, gf_picture, gf_group, &cpi->tpl_gf_group_frames,
                           frame_input);
 
   init_tpl_stats(cpi);
 
   if (cpi->oxcf.enable_tpl_model == 1) {
     // Backward propagation from tpl_group_frames to 1.
-    for (frame_idx = tpl_group_frames - 1; frame_idx > 0; --frame_idx)
+    for (frame_idx = cpi->tpl_gf_group_frames - 1; frame_idx > 0; --frame_idx)
       mc_flow_dispenser(cpi, gf_picture, frame_idx);
+  }
+}
+
+void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
+                           BLOCK_SIZE bsize, YV12_BUFFER_CONFIG *ref,
+                           YV12_BUFFER_CONFIG *src,
+                           TplDepFrame *ref_tpl_frame) {
+  // TODO(debargha, yuec): Fill this up
+  (void)cpi;
+  (void)x;
+  (void)xd;
+  (void)bsize;
+  (void)ref;
+  (void)src;
+  (void)ref_tpl_frame;
+}
+
+void av1_tpl_setup_forward_stats(AV1_COMP *cpi) {
+  ThreadData *td = &cpi->td;
+  MACROBLOCK *x = &td->mb;
+  MACROBLOCKD *xd = &x->e_mbd;
+#if MC_FLOW_BSIZE == 64
+  const BLOCK_SIZE bsize = BLOCK_64X64;
+#elif MC_FLOW_BSIZE == 32
+  const BLOCK_SIZE bsize = BLOCK_32X32;
+#elif MC_FLOW_BSIZE == 16
+  const BLOCK_SIZE bsize = BLOCK_16X16;
+#elif MC_FLOW_BSIZE == 8
+  const BLOCK_SIZE bsize = BLOCK_8X8;
+#elif MC_FLOW_BSIZE == 4
+  const BLOCK_SIZE bsize = BLOCK_4X4;
+#else
+#error "Invalid block size for tpl model"
+#endif  // MC_FLOW_BSIZE == 64
+
+  const GF_GROUP *gf_group = &cpi->twopass.gf_group;
+  const int tpl_cur_idx = cpi->twopass.gf_group.frame_disp_idx[gf_group->index];
+  TplDepFrame *tpl_frame = &cpi->tpl_stats[tpl_cur_idx];
+  int tpl_used_mask[MAX_LENGTH_TPL_FRAME_STATS] = { 0 };
+  for (int idx = gf_group->index + 1; idx < cpi->tpl_gf_group_frames; ++idx) {
+    const int tpl_future_idx = cpi->twopass.gf_group.frame_disp_idx[idx];
+
+    if (tpl_future_idx == tpl_cur_idx) continue;
+    if (tpl_used_mask[tpl_future_idx]) continue;
+
+    for (int ridx = 0; ridx < INTER_REFS_PER_FRAME; ++ridx) {
+      const int ref_idx = gf_group->ref_frame_gop_idx[idx][ridx];
+      const int tpl_ref_idx = cpi->twopass.gf_group.frame_disp_idx[ref_idx];
+      if (tpl_ref_idx == tpl_cur_idx) {
+        // Do tpl stats computation between current buffer and the one at
+        // gf_group index given by idx (and with disp index given by
+        // tpl_future_idx).
+        assert(idx >= 2);
+        YV12_BUFFER_CONFIG *cur_buf = &cpi->common.cur_frame->buf;
+        YV12_BUFFER_CONFIG *future_buf = get_framebuf(cpi, NULL, idx);
+        get_tpl_forward_stats(cpi, x, xd, bsize, cur_buf, future_buf,
+                              tpl_frame);
+        tpl_used_mask[tpl_future_idx] = 1;
+      }
+    }
   }
 }
