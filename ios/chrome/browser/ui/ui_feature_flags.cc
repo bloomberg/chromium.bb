@@ -34,3 +34,6 @@ const base::Feature kNewOmniboxPopupLayout{"NewOmniboxPopupLayout",
 
 const base::Feature kOmniboxUseDefaultSearchEngineFavicon{
     "OmniboxUseDefaultSearchEngineFavicon", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kLanguageSettings{"LanguageSettings",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};

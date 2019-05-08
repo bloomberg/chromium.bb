@@ -289,6 +289,11 @@ const char kInProductHelpDemoModeDescription[] =
     "an individual promotion causes that promotion but no other promotions to "
     "occur.";
 
+const char kLanguageSettingsName[] = "Language Settings";
+const char kLanguageSettingsDescription[] =
+    "Enables the Language Settings page allowing modifications to user "
+    "preferred languages and translate preferences.";
+
 const char kMarkHttpAsName[] = "Mark non-secure origins as non-secure";
 const char kMarkHttpAsDescription[] = "Change the UI treatment for HTTP pages";
 

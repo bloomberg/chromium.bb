@@ -580,6 +580,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillPruneSuggestionsName,
      flag_descriptions::kAutofillPruneSuggestionsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillPruneSuggestions)},
+    {"language-settings", flag_descriptions::kLanguageSettingsName,
+     flag_descriptions::kLanguageSettingsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kLanguageSettings)},
 };
 
 // Add all switches from experimental flags to |command_line|.

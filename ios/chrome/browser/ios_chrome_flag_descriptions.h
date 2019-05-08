@@ -236,6 +236,10 @@ extern const char kInfobarUIRebootDescription[];
 extern const char kInProductHelpDemoModeName[];
 extern const char kInProductHelpDemoModeDescription[];
 
+// Title and description for the flag to enable the language settings page.
+extern const char kLanguageSettingsName[];
+extern const char kLanguageSettingsDescription[];
+
 // Title, description, and options for the MarkHttpAs setting that controls
 // display of omnibox warnings about non-secure pages.
 extern const char kMarkHttpAsName[];

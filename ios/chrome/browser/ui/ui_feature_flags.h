@@ -40,4 +40,7 @@ extern const base::Feature kNewOmniboxPopupLayout;
 // in the omnibox.
 extern const base::Feature kOmniboxUseDefaultSearchEngineFavicon;
 
+// Feature flag for the language settings page.
+extern const base::Feature kLanguageSettings;
+
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_
