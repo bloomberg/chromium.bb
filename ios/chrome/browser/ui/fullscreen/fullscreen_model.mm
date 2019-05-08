@@ -212,7 +212,13 @@ void FullscreenModel::SetScrollViewIsDragging(bool dragging) {
     for (auto& observer : observers_) {
       observer.FullscreenModelScrollEventStarted(this);
     }
+    // Update the base offset for each new scroll event.
     UpdateBaseOffset();
+    // Re-rendering events are ignored during scrolls since disabling the model
+    // mid-scroll leads to choppy animations.  If the content was re-rendered
+    // to be too short to collapse the toolbars, the model should be disabled
+    // to prevent the subsequent scroll.
+    UpdateDisabledCounterForContentHeight();
   }
 }
 
@@ -289,6 +295,12 @@ void FullscreenModel::UpdateProgress() {
 }
 
 void FullscreenModel::UpdateDisabledCounterForContentHeight() {
+  // Sometimes the content size and scroll view sizes are updated mid-scroll
+  // such that the scroll view height is updated before the content is re-
+  // rendered, causing the model to be disabled.  These changes should be
+  // ignored while the content is scrolling.
+  if (scrolling_)
+    return;
   // The model should be disabled when the content fits.
   CGFloat disabling_threshold = scroll_view_height_;
   if (resizes_scroll_view_) {
