@@ -6,9 +6,9 @@
       <emit emit_type='prepend'></emit>
     </output>
     <output filename="grit/onboarding_welcome_resources_map.cc"
-            type="gzipped_resource_file_map_source" />
+            type="resource_file_map_source" />
     <output filename="grit/onboarding_welcome_resources_map.h"
-            type="gzipped_resource_map_header" />
+            type="resource_map_header" />
     <output filename="onboarding_welcome_resources.pak"
             type="data_package" />
   </outputs>
