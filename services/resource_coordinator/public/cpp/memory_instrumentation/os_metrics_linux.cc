@@ -32,6 +32,7 @@ namespace {
 using mojom::VmRegion;
 using mojom::VmRegionPtr;
 
+const char kClearPeakRssCommand[] = "5";
 const uint32_t kMaxLineSize = 4096;
 
 // TODO(chiniforooshan): Many of the utility functions in this anonymous
@@ -55,6 +56,19 @@ bool GetResidentAndSharedPagesFromStatmFile(int fd,
   int num_scanned =
       sscanf(line, "%*s %" SCNu64 " %" SCNu64, resident_pages, shared_pages);
   return num_scanned == 2;
+}
+
+bool ResetPeakRSSIfPossible(base::ProcessId pid) {
+  static bool is_peak_rss_resettable = true;
+  if (!is_peak_rss_resettable)
+    return false;
+  auto clear_refs_file = GetProcPidDir(pid).Append("clear_refs");
+  base::ScopedFD clear_refs_fd(open(clear_refs_file.value().c_str(), O_WRONLY));
+  is_peak_rss_resettable =
+      clear_refs_fd.get() >= 0 &&
+      base::WriteFileDescriptor(clear_refs_fd.get(), kClearPeakRssCommand,
+                                sizeof(kClearPeakRssCommand) - 1);
+  return is_peak_rss_resettable;
 }
 
 std::unique_ptr<base::ProcessMetrics> CreateProcessMetrics(
@@ -250,6 +264,7 @@ bool OSMetrics::FillOSMemoryDump(base::ProcessId pid,
   dump->platform_private_footprint->vm_swap_bytes = vm_swap_bytes;
   dump->resident_set_kb = process_metrics->GetResidentSetSize() / 1024;
   dump->peak_resident_set_kb = GetPeakResidentSetSize(pid);
+  dump->is_peak_rss_resettable = ResetPeakRSSIfPossible(pid);
 
 #if defined(OS_ANDROID)
 #if BUILDFLAG(SUPPORTS_CODE_ORDERING)

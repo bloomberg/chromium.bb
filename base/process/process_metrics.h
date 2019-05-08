@@ -96,6 +96,7 @@ class BASE_EXPORT ProcessMetrics {
   // Resident Set Size is a Linux/Android specific memory concept. Do not
   // attempt to extend this to other platforms.
   BASE_EXPORT size_t GetResidentSetSize() const;
+  BASE_EXPORT size_t GetPeakResidentSetSize() const;
 #endif
 
 #if defined(OS_CHROMEOS)

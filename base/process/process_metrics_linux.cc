@@ -198,6 +198,10 @@ size_t ProcessMetrics::GetResidentSetSize() const {
       getpagesize();
 }
 
+size_t ProcessMetrics::GetPeakResidentSetSize() const {
+  return ReadProcStatusAndGetFieldAsSizeT(process_, "VmHWM") * 1024;
+}
+
 TimeDelta ProcessMetrics::GetCumulativeCPUUsage() {
   return internal::ClockTicksToTimeDelta(GetProcessCPU(process_));
 }
