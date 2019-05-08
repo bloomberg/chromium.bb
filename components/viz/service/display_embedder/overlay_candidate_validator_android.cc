@@ -35,9 +35,6 @@ OverlayCandidateValidatorAndroid::~OverlayCandidateValidatorAndroid() = default;
 
 void OverlayCandidateValidatorAndroid::GetStrategies(
     OverlayProcessor::StrategyList* strategies) {
-  // Added in priority order, most to least desirable.
-  strategies->push_back(std::make_unique<OverlayStrategyFullscreen>(this));
-  strategies->push_back(std::make_unique<OverlayStrategySingleOnTop>(this));
   strategies->push_back(std::make_unique<OverlayStrategyUnderlay>(
       this, OverlayStrategyUnderlay::OpaqueMode::AllowTransparentCandidates));
 }
@@ -51,7 +48,7 @@ bool OverlayCandidateValidatorAndroid::AllowDCLayerOverlays() {
 }
 
 bool OverlayCandidateValidatorAndroid::NeedsSurfaceOccludingDamageRect() {
-  return false;
+  return true;
 }
 
 void OverlayCandidateValidatorAndroid::CheckOverlaySupport(
