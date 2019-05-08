@@ -235,9 +235,7 @@ bool WorkerOrWorkletScriptController::Initialize(const KURL& url_for_debugger) {
       v8::Local<v8::Function>(), global_interface_template);
 
   if (!disable_eval_pending_.IsEmpty()) {
-    script_state_->GetContext()->AllowCodeGenerationFromStrings(false);
-    script_state_->GetContext()->SetErrorMessageForCodeGenerationFromStrings(
-        V8String(isolate_, disable_eval_pending_));
+    DisableEvalInternal(disable_eval_pending_);
     disable_eval_pending_ = String();
   }
 
@@ -246,6 +244,17 @@ bool WorkerOrWorkletScriptController::Initialize(const KURL& url_for_debugger) {
   InitializeV8ExtrasBinding(script_state_);
 
   return true;
+}
+
+void WorkerOrWorkletScriptController::DisableEvalInternal(
+    const String& error_message) {
+  DCHECK(IsContextInitialized());
+  DCHECK(!error_message.IsEmpty());
+
+  ScriptState::Scope scope(script_state_);
+  script_state_->GetContext()->AllowCodeGenerationFromStrings(false);
+  script_state_->GetContext()->SetErrorMessageForCodeGenerationFromStrings(
+      V8String(isolate_, error_message));
 }
 
 ScriptValue WorkerOrWorkletScriptController::EvaluateInternal(
@@ -370,6 +379,23 @@ bool WorkerOrWorkletScriptController::IsExecutionForbidden() const {
 }
 
 void WorkerOrWorkletScriptController::DisableEval(const String& error_message) {
+  DCHECK(!error_message.IsEmpty());
+  // Currently, this can be called before or after
+  // WorkerOrWorkletScriptController::Initialize() because of messy
+  // worker/worklet initialization sequences. Tidy them up after
+  // off-the-main-thread worker script fetch is enabled by default, make
+  // sure to call WorkerOrWorkletScriptController::DisableEval() after
+  // WorkerOrWorkletScriptController::Initialize(), and remove
+  // |disable_eval_pending_| logic (https://crbug.com/960770).
+  if (IsContextInitialized()) {
+    DisableEvalInternal(error_message);
+    return;
+  }
+  // `eval()` will actually be disabled on
+  // WorkerOrWorkletScriptController::Initialize() to be called from
+  // WorkerThread::InitializeOnWorkerThread() immediately and synchronously
+  // after returning here. Keep the error message until that time.
+  DCHECK(disable_eval_pending_.IsEmpty());
   disable_eval_pending_ = error_message;
 }
 
