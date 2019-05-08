@@ -59,6 +59,16 @@ class CORE_EXPORT NGDirtyLines {
     return false;
   }
 
+  bool HandleFloatingOrOutOfFlowPositioned(LayoutObject* layout_object) {
+    DCHECK(layout_object->IsFloatingOrOutOfFlowPositioned());
+    if (layout_object->NeedsLayout()) {
+      MarkLastFragment();
+      return true;
+    }
+    // Don't update last fragment. Floats and OOF are opaque.
+    return false;
+  }
+
   // Mark the line box at the specified text offset dirty.
   void MarkAtTextOffset(unsigned offset);
 

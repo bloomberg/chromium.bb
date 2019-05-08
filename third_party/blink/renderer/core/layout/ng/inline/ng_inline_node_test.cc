@@ -581,14 +581,21 @@ struct StyleChangeData {
     kAll = kText | kParentAndAbove,
   };
   unsigned needs_collect_inlines;
+  base::Optional<bool> is_line_dirty;
 } style_change_data[] = {
     // Changing color, text-decoration, etc. should not re-run
     // |CollectInlines()|.
-    {"#parent.after { color: red; }", StyleChangeData::kNone},
+    {"#parent.after { color: red; }", StyleChangeData::kNone, false},
     {"#parent.after { text-decoration-line: underline; }",
-     StyleChangeData::kNone},
+     StyleChangeData::kNone, false},
     // Changing fonts should re-run |CollectInlines()|.
-    {"#parent.after { font-size: 200%; }", StyleChangeData::kAll},
+    {"#parent.after { font-size: 200%; }", StyleChangeData::kAll, true},
+    // Changing from/to out-of-flow should re-rerun |CollectInlines()|.
+    {"#parent.after { position: absolute; }", StyleChangeData::kContainer,
+     true},
+    {"#parent { position: absolute; }"
+     "#parent.after { position: initial; }",
+     StyleChangeData::kContainer, true},
     // List markers are captured in |NGInlineItem|.
     {"#parent.after { display: list-item; }", StyleChangeData::kContainer},
     {"#parent { display: list-item; list-style-type: none; }"
@@ -600,9 +607,9 @@ struct StyleChangeData {
     // Changing properties related with bidi resolution should re-run
     // |CollectInlines()|.
     {"#parent.after { unicode-bidi: bidi-override; }",
-     StyleChangeData::kParentAndAbove},
+     StyleChangeData::kParentAndAbove, true},
     {"#container.after { unicode-bidi: bidi-override; }",
-     StyleChangeData::kContainer},
+     StyleChangeData::kContainer, false},
 };
 
 std::ostream& operator<<(std::ostream& os, const StyleChangeData& data) {
@@ -656,6 +663,14 @@ TEST_P(StyleChangeTest, NeedsCollectInlinesOnStyle) {
   Element* next = GetElementById("next");
   EXPECT_FALSE(previous->GetLayoutObject()->NeedsCollectInlines());
   EXPECT_FALSE(next->GetLayoutObject()->NeedsCollectInlines());
+
+  if (data.is_line_dirty) {
+    layout_block_flow_ = ToLayoutNGBlockFlow(container->GetLayoutObject());
+    auto lines = MarkLineBoxesDirty();
+    EXPECT_EQ(*data.is_line_dirty, lines[0]->IsDirty());
+  }
+
+  ForceLayout();  // Ensure running layout does not crash.
 }
 
 using CreateNode = Node* (*)(Document&);
@@ -966,47 +981,80 @@ TEST_F(NGInlineNodeTest, SpaceRestoredByInsertingWord) {
 }
 
 // Test marking line boxes when inserting a span before the first child.
-TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnInsert) {
+TEST_P(NodeInsertTest, MarkLineBoxesDirtyOnInsert) {
   SetupHtml("container", R"HTML(
+    <style>
+    .abspos { position: absolute; }
+    .float { float: left; }
+    </style>
     <div id=container style="font-size: 10px; width: 10ch">
       12345678
     </div>
   )HTML");
 
-  Element* span = GetDocument().CreateElementForBinding("span");
+  Node* insert = (*GetParam())(GetDocument());
   Element* container = GetElementById("container");
-  container->insertBefore(span, container->firstChild());
+  container->insertBefore(insert, container->firstChild());
 
   auto lines = MarkLineBoxesDirty();
   EXPECT_TRUE(lines[0]->IsDirty());
 }
 
 // Test marking line boxes when appending a span.
-TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnAppend) {
+TEST_P(NodeInsertTest, MarkLineBoxesDirtyOnAppend) {
   SetupHtml("container", R"HTML(
+    <style>
+    .abspos { position: absolute; }
+    .float { float: left; }
+    </style>
     <div id=container style="font-size: 10px; width: 10ch">
       12345678
     </div>
   )HTML");
 
-  Element* span = GetDocument().CreateElementForBinding("span");
-  layout_block_flow_->GetNode()->appendChild(span);
+  Node* insert = (*GetParam())(GetDocument());
+  layout_block_flow_->GetNode()->appendChild(insert);
 
   auto lines = MarkLineBoxesDirty();
   EXPECT_TRUE(lines[0]->IsDirty());
 }
 
 // Test marking line boxes when appending a span on 2nd line.
-TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnAppend2) {
+TEST_P(NodeInsertTest, MarkLineBoxesDirtyOnAppend2) {
   SetupHtml("container", R"HTML(
+    <style>
+    .abspos { position: absolute; }
+    .float { float: left; }
+    </style>
     <div id=container style="font-size: 10px; width: 10ch">
       12345678
       2234
     </div>
   )HTML");
 
-  Element* span = GetDocument().CreateElementForBinding("span");
-  layout_block_flow_->GetNode()->appendChild(span);
+  Node* insert = (*GetParam())(GetDocument());
+  layout_block_flow_->GetNode()->appendChild(insert);
+
+  auto lines = MarkLineBoxesDirty();
+  EXPECT_FALSE(lines[0]->IsDirty());
+  EXPECT_TRUE(lines[1]->IsDirty());
+}
+
+// Test marking line boxes when appending a span on 2nd line.
+TEST_P(NodeInsertTest, MarkLineBoxesDirtyOnAppendAfterBR) {
+  SetupHtml("container", R"HTML(
+    <style>
+    .abspos { position: absolute; }
+    .float { float: left; }
+    </style>
+    <div id=container style="font-size: 10px; width: 10ch">
+      <br>
+      <br>
+    </div>
+  )HTML");
+
+  Node* insert = (*GetParam())(GetDocument());
+  layout_block_flow_->GetNode()->appendChild(insert);
 
   auto lines = MarkLineBoxesDirty();
   EXPECT_FALSE(lines[0]->IsDirty());

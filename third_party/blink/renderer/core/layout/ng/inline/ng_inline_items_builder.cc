@@ -819,6 +819,11 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendFloating(
     LayoutObject* layout_object) {
   AppendOpaque(NGInlineItem::kFloating, kObjectReplacementCharacter,
                layout_object);
+
+  // Mark dirty lines. Clear if marked, only the first dirty line is relevant.
+  if (dirty_lines_ &&
+      dirty_lines_->HandleFloatingOrOutOfFlowPositioned(layout_object))
+    dirty_lines_ = nullptr;
 }
 
 template <typename OffsetMappingBuilder>
@@ -826,6 +831,11 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
     AppendOutOfFlowPositioned(LayoutObject* layout_object) {
   AppendOpaque(NGInlineItem::kOutOfFlowPositioned, kObjectReplacementCharacter,
                layout_object);
+
+  // Mark dirty lines. Clear if marked, only the first dirty line is relevant.
+  if (dirty_lines_ &&
+      dirty_lines_->HandleFloatingOrOutOfFlowPositioned(layout_object))
+    dirty_lines_ = nullptr;
 }
 
 template <typename OffsetMappingBuilder>
