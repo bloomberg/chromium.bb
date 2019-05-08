@@ -65,10 +65,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   // TODO(jamescook): Remove after basic_page.html is forked for OS settings.
   html_source->AddBoolean("showOSSettings", true);
 
-#if BUILDFLAG(OPTIMIZE_WEBUI)
-  std::vector<std::string> exclude_from_gzip;
-#endif
-
   AddSettingsPageUIHandler(
       std::make_unique<::settings::AppearanceHandler>(web_ui));
 
@@ -128,10 +124,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   if (web_app::SystemWebAppManager::IsEnabled()) {
     html_source->AddResourcePath("icon-192.png", IDR_SETTINGS_LOGO_192);
     html_source->AddResourcePath("pwa.html", IDR_PWA_HTML);
-#if BUILDFLAG(OPTIMIZE_WEBUI)
-    exclude_from_gzip.push_back("icon-192.png");
-    exclude_from_gzip.push_back("pwa.html");
-#endif  // BUILDFLAG(OPTIMIZE_WEBUI)
   }
 
 #if BUILDFLAG(OPTIMIZE_WEBUI)
@@ -141,12 +133,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   html_source->AddResourcePath("chromeos/lazy_load.html",
                                IDR_OS_SETTINGS_LAZY_LOAD_VULCANIZED_HTML);
   html_source->SetDefaultResource(IDR_OS_SETTINGS_VULCANIZED_HTML);
-  html_source->UseGzip(base::BindRepeating(
-      [](const std::vector<std::string>& excluded_paths,
-         const std::string& path) {
-        return !base::ContainsValue(excluded_paths, path);
-      },
-      std::move(exclude_from_gzip)));
   html_source->AddResourcePath("manifest.json", IDR_OS_SETTINGS_MANIFEST);
 #else
   // Add all settings resources.

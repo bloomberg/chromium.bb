@@ -115,7 +115,6 @@ ResetPasswordUI::ResetPasswordUI(content::WebUI* web_ui)
                                IDR_RESET_PASSWORD_MOJOM_LITE_JS);
   html_source->SetDefaultResource(IDR_RESET_PASSWORD_HTML);
   html_source->AddLocalizedStrings(PopulateStrings());
-  html_source->UseGzip();
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                 html_source.release());

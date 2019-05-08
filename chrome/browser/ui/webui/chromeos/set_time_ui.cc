@@ -151,7 +151,6 @@ SetTimeUI::SetTimeUI(content::WebUI* web_ui) : WebDialogUI(web_ui) {
   source->AddLocalizedStrings(values);
   source->SetJsonPath("strings.js");
 
-  source->UseGzip();
   source->AddResourcePath("set_time_browser_proxy.html",
                           IDR_SET_TIME_BROWSER_PROXY_HTML);
   source->AddResourcePath("set_time_browser_proxy.js",

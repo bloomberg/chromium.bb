@@ -65,7 +65,6 @@ content::WebUIDataSource* CreateSystemInfoUIDataSource() {
   html_source->AddResourcePath("about_sys.css", IDR_ABOUT_SYS_CSS);
   html_source->SetDefaultResource(IDR_ABOUT_SYS_HTML);
   html_source->SetJsonPath("strings.js");
-  html_source->UseGzip();
   return html_source;
 }
 

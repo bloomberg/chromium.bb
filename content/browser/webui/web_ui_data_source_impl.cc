@@ -220,17 +220,6 @@ void WebUIDataSourceImpl::DisableDenyXFrameOptions() {
   deny_xframe_options_ = false;
 }
 
-void WebUIDataSourceImpl::UseGzip() {
-  // No-op since this call is unnecessary anymore.
-  // TODO(dpapad): Remove this and update all clients.
-}
-
-void WebUIDataSourceImpl::UseGzip(
-    base::RepeatingCallback<bool(const std::string&)> is_gzipped_callback) {
-  // No-op since this call is unnecessary anymore.
-  // TODO(dpapad): Remove this and update all clients.
-}
-
 const ui::TemplateReplacements* WebUIDataSourceImpl::GetReplacements() const {
   return &replacements_;
 }

@@ -1043,7 +1043,6 @@ SafeBrowsingUI::SafeBrowsingUI(content::WebUI* web_ui)
   html_source->AddResourcePath("safe_browsing.css", IDR_SAFE_BROWSING_CSS);
   html_source->AddResourcePath("safe_browsing.js", IDR_SAFE_BROWSING_JS);
   html_source->SetDefaultResource(IDR_SAFE_BROWSING_HTML);
-  html_source->UseGzip();
 
   content::WebUIDataSource::Add(browser_context, html_source);
 }

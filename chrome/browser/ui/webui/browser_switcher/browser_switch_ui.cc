@@ -119,7 +119,6 @@ content::WebUIDataSource* CreateBrowserSwitchUIHTMLSource(
 
   source->SetDefaultResource(IDR_BROWSER_SWITCHER_BROWSER_SWITCH_HTML);
   source->SetJsonPath("strings.js");
-  source->UseGzip();
 
   return source;
 }

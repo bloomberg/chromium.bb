@@ -66,7 +66,6 @@ content::WebUIDataSource* CreateDataSource() {
       content::WebUIDataSource::Create(chrome::kChromeUISandboxHost);
   source->SetDefaultResource(IDR_SANDBOX_INTERNALS_HTML);
   source->AddResourcePath("sandbox_internals.js", IDR_SANDBOX_INTERNALS_JS);
-  source->UseGzip();
 
 #if defined(OS_LINUX)
   SetSandboxStatusData(source);

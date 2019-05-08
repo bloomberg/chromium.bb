@@ -86,7 +86,6 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
 
   source->AddResourcePath(flags_ui::kFlagsJS, IDR_FLAGS_UI_FLAGS_JS);
   source->SetDefaultResource(IDR_FLAGS_UI_FLAGS_HTML);
-  source->UseGzip();
   return source;
 }
 

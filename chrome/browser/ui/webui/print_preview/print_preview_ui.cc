@@ -341,8 +341,7 @@ void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
                                                  : "");
 }
 
-std::vector<std::string> SetupPrintPreviewPlugin(
-    content::WebUIDataSource* source) {
+void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {
   static constexpr struct {
     const char* path;
     int id;
@@ -422,9 +421,7 @@ std::vector<std::string> SetupPrintPreviewPlugin(
     {"pdf/viewport_scroller.js", IDR_PDF_VIEWPORT_SCROLLER_JS},
     {"pdf/zoom_manager.js", IDR_PDF_ZOOM_MANAGER_JS},
   };
-  std::vector<std::string> excluded_paths;
   for (const auto& resource : kPdfResources) {
-    excluded_paths.emplace_back(resource.path);
     source->AddResourcePath(resource.path, resource.id);
   }
 
@@ -433,8 +430,6 @@ std::vector<std::string> SetupPrintPreviewPlugin(
   source->OverrideContentSecurityPolicyChildSrc("child-src 'self';");
   source->DisableDenyXFrameOptions();
   source->OverrideContentSecurityPolicyObjectSrc("object-src 'self';");
-
-  return excluded_paths;
 }
 
 content::WebUIDataSource* CreatePrintPreviewUISource(Profile* profile) {
@@ -445,14 +440,6 @@ content::WebUIDataSource* CreatePrintPreviewUISource(Profile* profile) {
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->AddResourcePath("crisper.js", IDR_PRINT_PREVIEW_CRISPER_JS);
   source->SetDefaultResource(IDR_PRINT_PREVIEW_VULCANIZED_HTML);
-  std::vector<std::string> exclude_from_gzip = SetupPrintPreviewPlugin(source);
-  source->UseGzip(base::BindRepeating(
-      [](const std::vector<std::string>& excluded_paths,
-         const std::string& path) {
-        return !base::ContainsValue(excluded_paths, path) &&
-               !PrintPreviewUI::ParseDataPath(path, nullptr, nullptr);
-      },
-      std::move(exclude_from_gzip)));
 #else
   for (size_t i = 0; i < kPrintPreviewResourcesSize; ++i) {
     source->AddResourcePath(kPrintPreviewResources[i].name,
@@ -462,8 +449,8 @@ content::WebUIDataSource* CreatePrintPreviewUISource(Profile* profile) {
   source->AddResourcePath("subpage_loader.html", IDR_WEBUI_HTML_SUBPAGE_LOADER);
   source->AddResourcePath("subpage_loader.js", IDR_WEBUI_JS_SUBPAGE_LOADER);
   source->SetDefaultResource(IDR_PRINT_PREVIEW_HTML);
-  SetupPrintPreviewPlugin(source);
 #endif
+  SetupPrintPreviewPlugin(source);
   AddPrintPreviewFlags(source, profile);
   return source;
 }

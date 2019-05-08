@@ -85,7 +85,6 @@ ConnectionHelpUI::ConnectionHelpUI(content::WebUI* web_ui)
                                IDR_SECURITY_INTERSTITIAL_CONNECTION_HELP_JS);
   html_source->SetDefaultResource(
       IDR_SECURITY_INTERSTITIAL_CONNECTION_HELP_HTML);
-  html_source->UseGzip();
 
   content::BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();

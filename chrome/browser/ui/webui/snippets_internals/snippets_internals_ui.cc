@@ -27,7 +27,6 @@ SnippetsInternalsUI::SnippetsInternalsUI(content::WebUI* web_ui)
   source->AddResourcePath("snippets_internals.mojom-lite.js",
                           IDR_SNIPPETS_INTERNALS_MOJOM_LITE_JS);
   source->SetDefaultResource(IDR_SNIPPETS_INTERNALS_HTML);
-  source->UseGzip();
 
     Profile* profile = Profile::FromWebUI(web_ui);
   content_suggestions_service_ =

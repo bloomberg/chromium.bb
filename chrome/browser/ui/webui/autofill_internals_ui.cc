@@ -28,7 +28,6 @@ content::WebUIDataSource* CreateAutofillInternalsHTMLSource() {
   source->AddResourcePath("autofill_and_password_manager_internals.css",
                           IDR_AUTOFILL_AND_PASSWORD_MANAGER_INTERNALS_CSS);
   source->SetDefaultResource(IDR_AUTOFILL_AND_PASSWORD_MANAGER_INTERNALS_HTML);
-  source->UseGzip();
   return source;
 }
 

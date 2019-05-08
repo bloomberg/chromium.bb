@@ -9,7 +9,6 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/profiles/profile.h"
@@ -142,9 +141,6 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->AddResourcePath("crisper.js", IDR_BOOKMARKS_CRISPER_JS);
   source->SetDefaultResource(IDR_BOOKMARKS_VULCANIZED_HTML);
-  source->UseGzip(base::BindRepeating([](const std::string& path) {
-    return path != "images/folder_open.svg" && path != "images/folder.svg";
-  }));
 #else
   source->AddResourcePath("actions.html", IDR_BOOKMARKS_ACTIONS_HTML);
   source->AddResourcePath("actions.js", IDR_BOOKMARKS_ACTIONS_JS);

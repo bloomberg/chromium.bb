@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/webui/welcome/welcome_ui.h"
 
-#include <map>
-
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -132,19 +130,6 @@ void AddOnboardingStrings(content::WebUIDataSource* html_source) {
                           base::size(kLocalizedStrings));
 }
 
-const std::map<std::string, bool>& GetGzipMap() {
-  static std::map<std::string, bool>* gzip_map = nullptr;
-  if (!gzip_map) {
-    gzip_map = new std::map<std::string, bool>();
-    for (size_t i = 0; i < kOnboardingWelcomeResourcesSize; ++i) {
-      (*gzip_map)[kOnboardingWelcomeResources[i].name] =
-          kOnboardingWelcomeResources[i].gzipped;
-    }
-    (*gzip_map)[kPreviewBackgroundPath] = false;
-  }
-  return *gzip_map;
-}
-
 }  // namespace
 
 WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
@@ -218,7 +203,6 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
                             weak_ptr_factory_.GetWeakPtr()),
         base::BindRepeating(&HandleRequestCallback,
                             weak_ptr_factory_.GetWeakPtr()));
-    html_source->UseGzip(base::BindRepeating(&WelcomeUI::IsGzipped));
     html_source->SetJsonPath("strings.js");
   } else if (kIsBranded &&
              AccountConsistencyModeManager::IsDiceEnabledForProfile(profile)) {
@@ -281,10 +265,4 @@ void WelcomeUI::CreateBackgroundFetcher(
 void WelcomeUI::StorePageSeen(Profile* profile) {
   // Store that this profile has been shown the Welcome page.
   profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, true);
-}
-
-bool WelcomeUI::IsGzipped(const std::string& path) {
-  const std::map<std::string, bool>& gzip_map = GetGzipMap();
-  const auto it = gzip_map.find(path);
-  return it == gzip_map.end() || it->second;
 }

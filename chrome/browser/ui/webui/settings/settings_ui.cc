@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "ash/public/cpp/ash_features.h"
-#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -157,10 +156,6 @@ void SettingsUI::RegisterProfilePrefs(
 SettingsUI::SettingsUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui),
       WebContentsObserver(web_ui->GetWebContents()) {
-#if BUILDFLAG(OPTIMIZE_WEBUI)
-  std::vector<std::string> exclude_from_gzip;
-#endif
-
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUISettingsHost);
@@ -288,10 +283,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   if (web_app::SystemWebAppManager::IsEnabled()) {
     html_source->AddResourcePath("icon-192.png", IDR_SETTINGS_LOGO_192);
     html_source->AddResourcePath("pwa.html", IDR_PWA_HTML);
-#if BUILDFLAG(OPTIMIZE_WEBUI)
-    exclude_from_gzip.push_back("icon-192.png");
-    exclude_from_gzip.push_back("pwa.html");
-#endif  // BUILDFLAG(OPTIMIZE_WEBUI)
   }
 #endif  // defined (OS_CHROMEOS)
 
@@ -302,12 +293,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->AddResourcePath("lazy_load.html",
                                IDR_SETTINGS_LAZY_LOAD_VULCANIZED_HTML);
   html_source->SetDefaultResource(IDR_SETTINGS_VULCANIZED_HTML);
-  html_source->UseGzip(base::BindRepeating(
-      [](const std::vector<std::string>& excluded_paths,
-         const std::string& path) {
-        return !base::ContainsValue(excluded_paths, path);
-      },
-      std::move(exclude_from_gzip)));
 #if defined(OS_CHROMEOS)
   html_source->AddResourcePath("manifest.json", IDR_SETTINGS_MANIFEST);
 #endif  // defined (OS_CHROMEOS)

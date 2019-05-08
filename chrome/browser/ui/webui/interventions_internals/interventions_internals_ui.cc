@@ -28,7 +28,6 @@ content::WebUIDataSource* GetSource() {
       "interventions_internals.mojom-lite.js",
       IDR_INTERVENTIONS_INTERNALS_MOJOM_LITE_JS);
   source->SetDefaultResource(IDR_INTERVENTIONS_INTERNALS_INDEX_HTML);
-  source->UseGzip();
   return source;
 }
 
@@ -36,7 +35,6 @@ content::WebUIDataSource* GetUnsupportedSource() {
   content::WebUIDataSource* source = content::WebUIDataSource::Create(
       chrome::kChromeUIInterventionsInternalsHost);
   source->SetDefaultResource(IDR_INTERVENTIONS_INTERNALS_UNSUPPORTED_PAGE_HTML);
-  source->UseGzip();
   return source;
 }
 

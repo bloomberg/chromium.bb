@@ -52,7 +52,6 @@ content::WebUIDataSource* CreateSlowUIHTMLSource() {
   source->AddResourcePath("slow.js", IDR_SLOW_JS);
   source->AddResourcePath("slow.css", IDR_SLOW_CSS);
   source->SetDefaultResource(IDR_SLOW_HTML);
-  source->UseGzip();
   return source;
 }
 

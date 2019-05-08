@@ -139,12 +139,6 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
                           IDR_DOWNLOADS_MOJO_LITE_JS);
 
 #if BUILDFLAG(OPTIMIZE_WEBUI)
-  source->UseGzip(base::BindRepeating([](const std::string& path) {
-    return path != "images/incognito_marker.svg" &&
-           path != "images/no_downloads.svg" &&
-           path != "downloads.mojom-lite.js";
-  }));
-
   source->AddResourcePath("crisper.js", IDR_DOWNLOADS_CRISPER_JS);
   source->SetDefaultResource(IDR_DOWNLOADS_VULCANIZED_HTML);
 #else

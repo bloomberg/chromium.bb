@@ -114,7 +114,6 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
   source->AddResourcePath("management_ui.js", IDR_MANAGEMENT_UI_JS);
   source->AddResourcePath("icons.html", IDR_MANAGEMENT_ICONS_HTML);
   source->SetDefaultResource(IDR_MANAGEMENT_HTML);
-  source->UseGzip();
   return source;
 }
 

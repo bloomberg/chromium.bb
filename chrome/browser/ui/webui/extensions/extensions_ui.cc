@@ -342,7 +342,6 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->AddResourcePath("crisper.js", IDR_EXTENSIONS_CRISPER_JS);
   source->SetDefaultResource(IDR_EXTENSIONS_VULCANIZED_HTML);
-  source->UseGzip();
 #else
   // Add all MD Extensions resources.
   for (size_t i = 0; i < kExtensionsResourcesSize; ++i) {

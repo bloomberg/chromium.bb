@@ -428,7 +428,6 @@ DiscardsUI::DiscardsUI(content::WebUI* web_ui)
       IDR_DISCARDS_MOJO_PUBLIC_BASE_PROCESS_ID_MOJOM_LITE_JS);
 
   source->SetDefaultResource(IDR_DISCARDS_HTML);
-  source->UseGzip();
 
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, source.release());

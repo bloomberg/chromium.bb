@@ -40,7 +40,6 @@ ProcessInternalsUI::ProcessInternalsUI(WebUI* web_ui)
   source->AddResourcePath("process_internals.mojom-lite.js",
                           IDR_PROCESS_INTERNALS_MOJO_JS);
   source->SetDefaultResource(IDR_PROCESS_INTERNALS_HTML);
-  source->UseGzip();
 
   WebUIDataSource::Add(web_contents()->GetBrowserContext(), source);
 

@@ -161,17 +161,9 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
 #endif
   };
 
-  std::vector<std::string> exclude_from_gzip;
   for (const auto& resource : uncompressed_resources) {
     source->AddResourcePath(resource.path, resource.idr);
-    exclude_from_gzip.push_back(resource.path);
   }
-  source->UseGzip(base::BindRepeating(
-      [](const std::vector<std::string> excluded_paths,
-         const std::string& path) {
-        return !base::ContainsValue(excluded_paths, path);
-      },
-      std::move(exclude_from_gzip)));
 
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->AddResourcePath("app.html", IDR_HISTORY_APP_VULCANIZED_HTML);

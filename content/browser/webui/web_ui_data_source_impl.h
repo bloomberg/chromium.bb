@@ -50,9 +50,6 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   void OverrideContentSecurityPolicyObjectSrc(const std::string& data) override;
   void OverrideContentSecurityPolicyChildSrc(const std::string& data) override;
   void DisableDenyXFrameOptions() override;
-  void UseGzip() override;
-  void UseGzip(base::RepeatingCallback<bool(const std::string&)>
-                   is_gzipped_callback) override;
   std::string GetSource() const override;
 
   // URLDataSourceImpl:

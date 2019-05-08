@@ -30,7 +30,6 @@ content::WebUIDataSource* CreateSignInInternalsHTMLSource() {
   source->SetJsonPath("strings.js");
   source->AddResourcePath("signin_internals.js", IDR_SIGNIN_INTERNALS_INDEX_JS);
   source->SetDefaultResource(IDR_SIGNIN_INTERNALS_INDEX_HTML);
-  source->UseGzip();
   return source;
 }
 

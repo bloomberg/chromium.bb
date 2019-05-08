@@ -24,7 +24,6 @@ FeedInternalsUI::FeedInternalsUI(content::WebUI* web_ui)
                           IDR_FEED_INTERNALS_MOJO_JS);
   source->AddResourcePath("feed_internals.css", IDR_FEED_INTERNALS_CSS);
   source->SetDefaultResource(IDR_FEED_INTERNALS_HTML);
-  source->UseGzip();
 
   content::WebUIDataSource::Add(profile_, source);
   // This class is the caller of the callback when an observer interface is

@@ -129,7 +129,6 @@ content::WebUIDataSource* CreateNTPTilesInternalsHTMLSource() {
   source->AddResourcePath("ntp_tiles_internals.css",
                           IDR_NTP_TILES_INTERNALS_CSS);
   source->SetDefaultResource(IDR_NTP_TILES_INTERNALS_HTML);
-  source->UseGzip();
   return source;
 }
 

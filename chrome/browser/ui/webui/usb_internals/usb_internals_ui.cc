@@ -35,7 +35,6 @@ UsbInternalsUI::UsbInternalsUI(content::WebUI* web_ui)
                           IDR_USB_DEVICE_MANAGER_TEST_MOJOM_LITE_JS);
 
   source->SetDefaultResource(IDR_USB_INTERNALS_HTML);
-  source->UseGzip();
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
   AddHandlerToRegistry(base::BindRepeating(
