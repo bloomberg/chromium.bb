@@ -45,8 +45,12 @@ source_set("vaapi") {
     "vaapi_jpeg_decode_accelerator_worker.h",
     "vaapi_jpeg_decoder.cc",
     "vaapi_jpeg_decoder.h",
+    "vaapi_jpeg_encode_accelerator.cc",
+    "vaapi_jpeg_encode_accelerator.h",
     "vaapi_jpeg_encoder.cc",
     "vaapi_jpeg_encoder.h",
+    "vaapi_mjpeg_decode_accelerator.cc",
+    "vaapi_mjpeg_decode_accelerator.h",
     "vaapi_picture.cc",
     "vaapi_picture.h",
     "vaapi_picture_factory.cc",
@@ -82,20 +86,6 @@ source_set("vaapi") {
     "//third_party/libyuv",
     "//ui/gfx/geometry",
   ]
-
-  if (is_chromeos) {
-    sources += [
-      "vaapi_jpeg_encode_accelerator.cc",
-      "vaapi_jpeg_encode_accelerator.h",
-      "vaapi_mjpeg_decode_accelerator.cc",
-      "vaapi_mjpeg_decode_accelerator.h",
-    ]
-
-    deps += [
-      "//components/chromeos_camera:jpeg_encode_accelerator",
-      "//components/chromeos_camera:mjpeg_decode_accelerator",
-    ]
-  }
 
   if (is_linux) {
     configs += [ "//build/config/linux/libva" ]

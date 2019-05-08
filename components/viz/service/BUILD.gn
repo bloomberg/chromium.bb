@@ -5,7 +5,6 @@
 import("//build/config/ui.gni")
 import("//components/viz/viz.gni")
 import("//gpu/vulkan/features.gni")
-import("//media/gpu/args.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
 config("viz_service_implementation") {
@@ -353,8 +352,6 @@ viz_source_set("gpu_service_dependencies") {
   if (is_chromeos) {
     deps += [
       "//components/arc/video_accelerator",
-      "//components/chromeos_camera:jpeg_encode_accelerator_service",
-      "//components/chromeos_camera:mjpeg_decode_accelerator_service",
       "//gpu/command_buffer/service:gles2",
       "//media/mojo/services",
     ]

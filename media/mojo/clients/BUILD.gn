@@ -88,6 +88,26 @@ jumbo_source_set("clients") {
   }
 }
 
+if (is_chromeos) {
+  source_set("cros_mjpeg_decode_accelerator") {
+    visibility = [
+      "//content/browser",
+      "//media/capture:capture_lib",
+    ]
+
+    sources = [
+      "cros_mojo_mjpeg_decode_accelerator.cc",
+      "cros_mojo_mjpeg_decode_accelerator.h",
+    ]
+
+    deps = [
+      "//base",
+      "//components/chromeos_camera/common",
+      "//media/mojo/interfaces",
+    ]
+  }
+}
+
 source_set("unit_tests") {
   testonly = true
 

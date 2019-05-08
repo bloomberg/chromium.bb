@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CHROMEOS_CAMERA_JPEG_ENCODE_ACCELERATOR_H_
-#define COMPONENTS_CHROMEOS_CAMERA_JPEG_ENCODE_ACCELERATOR_H_
+#ifndef MEDIA_VIDEO_JPEG_ENCODE_ACCELERATOR_H_
+#define MEDIA_VIDEO_JPEG_ENCODE_ACCELERATOR_H_
 
 #include <stdint.h>
 
 #include "media/base/bitstream_buffer.h"
+#include "media/base/media_export.h"
 #include "media/base/video_frame.h"
 
-namespace chromeos_camera {
+namespace media {
 
 // JPEG encoder interface.
-class JpegEncodeAccelerator {
+class MEDIA_EXPORT JpegEncodeAccelerator {
  public:
   static constexpr int32_t kInvalidBitstreamBufferId = -1;
   enum Status {
@@ -44,7 +45,7 @@ class JpegEncodeAccelerator {
     LARGEST_ERROR_ENUM = PLATFORM_FAILURE,
   };
 
-  class Client {
+  class MEDIA_EXPORT Client {
    public:
     // Callback called after each successful Encode().
     // Parameters:
@@ -101,8 +102,8 @@ class JpegEncodeAccelerator {
   //  called.
   virtual void Encode(scoped_refptr<media::VideoFrame> video_frame,
                       int quality,
-                      const media::BitstreamBuffer* exif_buffer,
-                      const media::BitstreamBuffer& output_buffer) = 0;
+                      const BitstreamBuffer* exif_buffer,
+                      const BitstreamBuffer& output_buffer) = 0;
 
   // Encodes the given |video_frame| that contains a YUV image. Client will
   // receive the encoded result in Client::VideoFrameReady() callback with the
@@ -115,13 +116,13 @@ class JpegEncodeAccelerator {
   //  quality.
   //  |exif_buffer| contains Exif data to be inserted into JPEG image. If it's
   //  nullptr, the JFIF APP0 segment will be inserted.
-  virtual void EncodeWithDmaBuf(scoped_refptr<media::VideoFrame> input_frame,
-                                scoped_refptr<media::VideoFrame> output_frame,
+  virtual void EncodeWithDmaBuf(scoped_refptr<VideoFrame> input_frame,
+                                scoped_refptr<VideoFrame> output_frame,
                                 int quality,
                                 int32_t buffer_id,
-                                const media::BitstreamBuffer* exif_buffer) = 0;
+                                const BitstreamBuffer* exif_buffer) = 0;
 };
 
-}  // namespace chromeos_camera
+}  // namespace media
 
-#endif  // COMPONENTS_CHROMEOS_CAMERA_JPEG_ENCODE_ACCELERATOR_H_
+#endif  // MEDIA_VIDEO_JPEG_ENCODE_ACCELERATOR_H_

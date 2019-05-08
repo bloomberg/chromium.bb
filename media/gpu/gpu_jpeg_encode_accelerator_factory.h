@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CHROMEOS_CAMERA_GPU_JPEG_ENCODE_ACCELERATOR_FACTORY_H_
-#define COMPONENTS_CHROMEOS_CAMERA_GPU_JPEG_ENCODE_ACCELERATOR_FACTORY_H_
+#ifndef MEDIA_GPU_GPU_JPEG_ENCODE_ACCELERATOR_FACTORY_H_
+#define MEDIA_GPU_GPU_JPEG_ENCODE_ACCELERATOR_FACTORY_H_
 
 #include "base/memory/ref_counted.h"
-#include "components/chromeos_camera/jpeg_encode_accelerator.h"
+#include "media/gpu/media_gpu_export.h"
+#include "media/video/jpeg_encode_accelerator.h"
 
 namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace chromeos_camera {
+namespace media {
 
-class GpuJpegEncodeAcceleratorFactory {
+class MEDIA_GPU_EXPORT GpuJpegEncodeAcceleratorFactory {
  public:
   using CreateAcceleratorCB =
       base::RepeatingCallback<std::unique_ptr<JpegEncodeAccelerator>(
@@ -27,6 +28,6 @@ class GpuJpegEncodeAcceleratorFactory {
   static std::vector<CreateAcceleratorCB> GetAcceleratorFactories();
 };
 
-}  // namespace chromeos_camera
+}  // namespace media
 
-#endif  // COMPONENTS_CHROMEOS_CAMERA_GPU_JPEG_ENCODE_ACCELERATOR_FACTORY_H_
+#endif  // MEDIA_GPU_GPU_JPEG_ENCODE_ACCELERATOR_FACTORY_H_

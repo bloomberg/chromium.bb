@@ -6,7 +6,7 @@ module chromeos_camera.mojom;
 
 import "media/mojo/interfaces/media_types.mojom";
 
-// Encode errors (see components/chromeos_camera/jpeg_encode_accelerator.h).
+// Encode errors (see media/video/jpeg_encode_accelerator.h).
 enum EncodeStatus {
   ENCODE_OK,
   HW_JPEG_ENCODE_NOT_SUPPORTED,

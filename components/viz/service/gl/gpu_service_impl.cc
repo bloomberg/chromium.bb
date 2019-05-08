@@ -40,10 +40,15 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
+#include "media/gpu/gpu_mjpeg_decode_accelerator_factory.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
 #include "media/gpu/ipc/service/gpu_video_decode_accelerator.h"
 #include "media/gpu/ipc/service/media_gpu_channel_manager.h"
+#if defined(OS_CHROMEOS)
+#include "media/mojo/services/cros_mojo_jpeg_encode_accelerator_service.h"
+#include "media/mojo/services/cros_mojo_mjpeg_decode_accelerator_service.h"
+#endif  // defined(OS_CHROMEOS)
 #include "media/mojo/services/mojo_video_encode_accelerator_provider.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/skia/include/gpu/GrContext.h"
@@ -68,9 +73,6 @@
 #include "components/arc/video_accelerator/gpu_arc_video_protected_buffer_allocator.h"
 #include "components/arc/video_accelerator/protected_buffer_manager.h"
 #include "components/arc/video_accelerator/protected_buffer_manager_proxy.h"
-#include "components/chromeos_camera/gpu_mjpeg_decode_accelerator_factory.h"
-#include "components/chromeos_camera/mojo_jpeg_encode_accelerator_service.h"
-#include "components/chromeos_camera/mojo_mjpeg_decode_accelerator_service.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
@@ -88,15 +90,6 @@ namespace {
 static base::LazyInstance<base::RepeatingCallback<
     void(int severity, size_t message_start, const std::string& message)>>::
     Leaky g_log_callback = LAZY_INSTANCE_INITIALIZER;
-
-bool IsAcceleratedJpegDecodeSupported() {
-#if defined(OS_CHROMEOS)
-  return chromeos_camera::GpuMjpegDecodeAcceleratorFactory::
-      IsAcceleratedJpegDecodeSupported();
-#else
-  return false;
-#endif  // defined(OS_CHROMEOS)
-}
 
 bool GpuLogMessageHandler(int severity,
                           const char* file,
@@ -228,8 +221,8 @@ void GpuServiceImpl::UpdateGPUInfo() {
       media::GpuVideoAcceleratorUtil::ConvertMediaToGpuEncodeProfiles(
           media::GpuVideoEncodeAcceleratorFactory::GetSupportedProfiles(
               gpu_preferences_));
-  gpu_info_.jpeg_decode_accelerator_supported =
-      IsAcceleratedJpegDecodeSupported();
+  gpu_info_.jpeg_decode_accelerator_supported = media::
+      GpuMjpegDecodeAcceleratorFactory::IsAcceleratedJpegDecodeSupported();
   // Record initialization only after collecting the GPU info because that can
   // take a significant amount of time.
   gpu_info_.initialization_time = base::Time::Now() - start_time_;
@@ -419,15 +412,13 @@ void GpuServiceImpl::CreateArcProtectedBufferManagerOnMainThread(
 void GpuServiceImpl::CreateJpegDecodeAccelerator(
     chromeos_camera::mojom::MjpegDecodeAcceleratorRequest jda_request) {
   DCHECK(io_runner_->BelongsToCurrentThread());
-  chromeos_camera::MojoMjpegDecodeAcceleratorService::Create(
-      std::move(jda_request));
+  media::CrOSMojoMjpegDecodeAcceleratorService::Create(std::move(jda_request));
 }
 
 void GpuServiceImpl::CreateJpegEncodeAccelerator(
     chromeos_camera::mojom::JpegEncodeAcceleratorRequest jea_request) {
   DCHECK(io_runner_->BelongsToCurrentThread());
-  chromeos_camera::MojoJpegEncodeAcceleratorService::Create(
-      std::move(jea_request));
+  media::CrOSMojoJpegEncodeAcceleratorService::Create(std::move(jea_request));
 }
 #endif  // defined(OS_CHROMEOS)
 

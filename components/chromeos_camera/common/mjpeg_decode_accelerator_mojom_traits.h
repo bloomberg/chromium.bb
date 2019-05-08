@@ -7,19 +7,19 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "components/chromeos_camera/common/mjpeg_decode_accelerator.mojom.h"
-#include "components/chromeos_camera/mjpeg_decode_accelerator.h"
 #include "media/base/bitstream_buffer.h"
+#include "media/video/mjpeg_decode_accelerator.h"
 
 namespace mojo {
 
 template <>
 struct EnumTraits<chromeos_camera::mojom::DecodeError,
-                  chromeos_camera::MjpegDecodeAccelerator::Error> {
+                  media::MjpegDecodeAccelerator::Error> {
   static chromeos_camera::mojom::DecodeError ToMojom(
-      chromeos_camera::MjpegDecodeAccelerator::Error error);
+      media::MjpegDecodeAccelerator::Error error);
 
   static bool FromMojom(chromeos_camera::mojom::DecodeError input,
-                        chromeos_camera::MjpegDecodeAccelerator::Error* out);
+                        media::MjpegDecodeAccelerator::Error* out);
 };
 
 template <>

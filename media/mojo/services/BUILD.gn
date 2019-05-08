@@ -114,6 +114,16 @@ jumbo_component("services") {
     ]
   }
 
+  if (is_chromeos) {
+    sources += [
+      "cros_mojo_jpeg_encode_accelerator_service.cc",
+      "cros_mojo_jpeg_encode_accelerator_service.h",
+      "cros_mojo_mjpeg_decode_accelerator_service.cc",
+      "cros_mojo_mjpeg_decode_accelerator_service.h",
+    ]
+    deps += [ "//components/chromeos_camera/common" ]
+  }
+
   if (enable_library_cdms) {
     sources += [
       "cdm_service.cc",
@@ -218,9 +228,7 @@ source_set("unit_tests") {
   }
 
   if (is_chromeos) {
-    deps += [
-      "//components/chromeos_camera:mjpeg_decode_accelerator_service_unittest",
-    ]
+    sources += [ "cros_mojo_mjpeg_decode_accelerator_service_unittest.cc" ]
   }
 }
 

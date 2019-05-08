@@ -6,18 +6,18 @@
 #define COMPONENTS_CHROMEOS_CAMERA_COMMON_JPEG_ENCODE_ACCELERATOR_MOJOM_TRAITS_H_
 
 #include "components/chromeos_camera/common/jpeg_encode_accelerator.mojom.h"
-#include "components/chromeos_camera/jpeg_encode_accelerator.h"
+#include "media/video/jpeg_encode_accelerator.h"
 
 namespace mojo {
 
 template <>
 struct EnumTraits<chromeos_camera::mojom::EncodeStatus,
-                  chromeos_camera::JpegEncodeAccelerator::Status> {
+                  media::JpegEncodeAccelerator::Status> {
   static chromeos_camera::mojom::EncodeStatus ToMojom(
-      chromeos_camera::JpegEncodeAccelerator::Status status);
+      media::JpegEncodeAccelerator::Status status);
 
   static bool FromMojom(chromeos_camera::mojom::EncodeStatus input,
-                        chromeos_camera::JpegEncodeAccelerator::Status* out);
+                        media::JpegEncodeAccelerator::Status* out);
 };
 
 }  // namespace mojo

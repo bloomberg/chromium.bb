@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "components/chromeos_camera/mojo_mjpeg_decode_accelerator.h"
 #include "media/base/media_switches.h"
+#include "media/mojo/clients/cros_mojo_mjpeg_decode_accelerator.h"
 
 namespace media {
 
@@ -22,8 +22,7 @@ VideoCaptureJpegDecoderImpl::VideoCaptureJpegDecoderImpl(
       send_log_message_cb_(std::move(send_log_message_cb)),
       has_received_decoded_frame_(false),
       next_bitstream_buffer_id_(0),
-      in_buffer_id_(
-          chromeos_camera::MjpegDecodeAccelerator::kInvalidBitstreamBufferId),
+      in_buffer_id_(media::MjpegDecodeAccelerator::kInvalidBitstreamBufferId),
       decoder_status_(INIT_PENDING),
       weak_ptr_factory_(this) {}
 
@@ -148,10 +147,9 @@ void VideoCaptureJpegDecoderImpl::DecodeCapturedData(
   // base::Unretained is safe because |decoder_| is deleted on
   // |decoder_task_runner_|.
   decoder_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&chromeos_camera::MjpegDecodeAccelerator::Decode,
-                     base::Unretained(decoder_.get()), in_buffer,
-                     std::move(out_frame)));
+      FROM_HERE, base::BindOnce(&media::MjpegDecodeAccelerator::Decode,
+                                base::Unretained(decoder_.get()), in_buffer,
+                                std::move(out_frame)));
 }
 
 void VideoCaptureJpegDecoderImpl::VideoFrameReady(int32_t bitstream_buffer_id) {
@@ -173,8 +171,7 @@ void VideoCaptureJpegDecoderImpl::VideoFrameReady(int32_t bitstream_buffer_id) {
                << ", expected " << in_buffer_id_;
     return;
   }
-  in_buffer_id_ =
-      chromeos_camera::MjpegDecodeAccelerator::kInvalidBitstreamBufferId;
+  in_buffer_id_ = media::MjpegDecodeAccelerator::kInvalidBitstreamBufferId;
 
   std::move(decode_done_closure_).Run();
 
@@ -184,7 +181,7 @@ void VideoCaptureJpegDecoderImpl::VideoFrameReady(int32_t bitstream_buffer_id) {
 
 void VideoCaptureJpegDecoderImpl::NotifyError(
     int32_t bitstream_buffer_id,
-    chromeos_camera::MjpegDecodeAccelerator::Error error) {
+    media::MjpegDecodeAccelerator::Error error) {
   DCHECK(decoder_task_runner_->RunsTasksInCurrentSequence());
   LOG(ERROR) << "Decode error, bitstream_buffer_id=" << bitstream_buffer_id
              << ", error=" << error;
@@ -202,7 +199,7 @@ void VideoCaptureJpegDecoderImpl::FinishInitialization() {
   jpeg_decoder_factory_.Run(mojo::MakeRequest(&remote_decoder));
 
   base::AutoLock lock(lock_);
-  decoder_ = std::make_unique<chromeos_camera::MojoMjpegDecodeAccelerator>(
+  decoder_ = std::make_unique<media::CrOSMojoMjpegDecodeAccelerator>(
       decoder_task_runner_, remote_decoder.PassInterface());
 
   decoder_->InitializeAsync(

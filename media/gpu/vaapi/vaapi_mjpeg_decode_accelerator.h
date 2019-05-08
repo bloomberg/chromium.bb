@@ -13,9 +13,9 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
-#include "components/chromeos_camera/mjpeg_decode_accelerator.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/vaapi/vaapi_jpeg_decoder.h"
+#include "media/video/mjpeg_decode_accelerator.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -37,15 +37,14 @@ class VideoFrame;
 // stopped during |this->Destroy()|, so any tasks posted to the decoder thread
 // can assume |*this| is still alive.  See |weak_this_| below for more details.
 class MEDIA_GPU_EXPORT VaapiMjpegDecodeAccelerator
-    : public chromeos_camera::MjpegDecodeAccelerator {
+    : public MjpegDecodeAccelerator {
  public:
   VaapiMjpegDecodeAccelerator(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
   ~VaapiMjpegDecodeAccelerator() override;
 
-  // chromeos_camera::MjpegDecodeAccelerator implementation.
-  bool Initialize(
-      chromeos_camera::MjpegDecodeAccelerator::Client* client) override;
+  // MjpegDecodeAccelerator implementation.
+  bool Initialize(MjpegDecodeAccelerator::Client* client) override;
   void Decode(const BitstreamBuffer& bitstream_buffer,
               const scoped_refptr<VideoFrame>& video_frame) override;
   bool IsSupported() override;
@@ -78,7 +77,7 @@ class MEDIA_GPU_EXPORT VaapiMjpegDecodeAccelerator
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // The client of this class.
-  chromeos_camera::MjpegDecodeAccelerator::Client* client_;
+  Client* client_;
 
   VaapiJpegDecoder decoder_;
 
