@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/nullable_string16.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
+#include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "url/gurl.h"
 
 namespace blink {

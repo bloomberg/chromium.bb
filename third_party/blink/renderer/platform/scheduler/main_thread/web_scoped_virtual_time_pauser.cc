@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
+#include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 
 #include "base/trace_event/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"

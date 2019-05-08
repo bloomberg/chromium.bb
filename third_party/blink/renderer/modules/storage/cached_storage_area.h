@@ -10,7 +10,7 @@
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_area.mojom-blink.h"
-#include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
+#include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/storage/storage_area_map.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"

@@ -36,7 +36,7 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
+#include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
