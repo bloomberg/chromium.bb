@@ -39,6 +39,7 @@ import org.chromium.net.test.EmbeddedTestServer;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class NoTouchActivityTest {
     private static final String TEST_PATH = "/chrome/test/data/android/simple.html";
+    private static final String TEST_PATH_2 = "/chrome/test/data/android/test.html";
 
     @Rule
     public ChromeActivityTestRule<NoTouchActivity> mActivityTestRule =
@@ -157,11 +158,38 @@ public class NoTouchActivityTest {
                     mTestServer.getURL(TEST_PATH));
         });
 
-        mActivity = ApplicationTestUtils.recreateActivity(mActivity);
-        mActivityTestRule.setActivity(mActivity);
-        mActivityTestRule.waitForActivityNativeInitializationComplete();
+        ApplicationTestUtils.fireHomeScreenIntent(mActivityTestRule.getActivity());
+        ApplicationTestUtils.launchChrome(mActivityTestRule.getActivity());
         CriteriaHelper.pollUiThread(
                 () -> mActivity.getActivityTab().getNativePage() instanceof TouchlessNewTabPage);
+    }
+
+    @Test
+    @MediumTest
+    @CommandLineFlags.
+    Add({"enable-features=" + ChromeInactivityTracker.FEATURE_NAME + "<FakeStudyName",
+            "force-fieldtrials=FakeStudyName/Enabled",
+            "force-fieldtrial-params=FakeStudyName.Enabled:" + NTP_LAUNCH_DELAY_IN_MINS_PARAM
+                    + "/0"})
+    public void
+    testViewUrlAfterInactivity() throws Throwable {
+        mActivityTestRule.startMainActivityFromLauncher();
+        mActivity = mActivityTestRule.getActivity();
+        mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PATH));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals(mActivity.getActivityTab().getWebContents().getLastCommittedUrl(),
+                    mTestServer.getURL(TEST_PATH));
+        });
+
+        ApplicationTestUtils.fireHomeScreenIntent(mActivityTestRule.getActivity());
+
+        String alternateUrl = mTestServer.getURL(TEST_PATH_2);
+        mActivityTestRule.startMainActivityWithURL(alternateUrl);
+
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> alternateUrl.equals(
+                                mActivity.getActivityTab().getWebContents().getLastCommittedUrl()));
     }
 
     /**
