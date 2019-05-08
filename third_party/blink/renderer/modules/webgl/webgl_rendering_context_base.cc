@@ -30,6 +30,7 @@
 #include "base/numerics/checked_math.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/config/gpu_feature_info.h"
@@ -1015,7 +1016,9 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
                      &WebGLRenderingContextBase::MaybeRestoreContext),
       task_runner_(task_runner),
       num_gl_errors_to_console_allowed_(kMaxGLErrorsAllowedToConsole),
-      context_type_(context_type) {
+      context_type_(context_type),
+      program_completion_queries_(
+          base::MRUCache<WebGLProgram*, GLuint>::NO_AUTO_EVICT) {
   DCHECK(context_provider);
 
   // TODO(http://crbug.com/876140) Make sure this is being created on a
@@ -1303,6 +1306,8 @@ WebGLRenderingContextBase::~WebGLRenderingContextBase() {
   // objects like WebGLTextures that were previously hooked into the
   // context state.
   destruction_in_progress_ = true;
+
+  clearProgramCompletionQueries();
 
   // Now that the context and context group no longer hold on to the
   // objects they create, and now that the objects are eagerly finalized
@@ -3455,7 +3460,10 @@ ScriptValue WebGLRenderingContextBase::getProgramParameter(
                           "invalid parameter name");
         return ScriptValue::CreateNull(script_state);
       }
-
+      bool completed;
+      if (checkProgramCompletionQueryAvailable(program, &completed)) {
+        return WebGLAny(script_state, completed);
+      }
       return WebGLAny(script_state, program->CompletionStatus(this));
     case GL_ACTIVE_UNIFORM_BLOCKS:
     case GL_TRANSFORM_FEEDBACK_VARYINGS:
@@ -4190,7 +4198,17 @@ void WebGLRenderingContextBase::linkProgram(WebGLProgram* program) {
     return;
   }
 
+  GLuint query = 0u;
+  if (ExtensionEnabled(kKHRParallelShaderCompileName)) {
+    ContextGL()->GenQueriesEXT(1, &query);
+    ContextGL()->BeginQueryEXT(GL_PROGRAM_COMPLETION_QUERY_CHROMIUM, query);
+  }
   ContextGL()->LinkProgram(ObjectOrZero(program));
+  if (ExtensionEnabled(kKHRParallelShaderCompileName)) {
+    ContextGL()->EndQueryEXT(GL_PROGRAM_COMPLETION_QUERY_CHROMIUM);
+    addProgramCompletionQuery(program, query);
+  }
+
   program->IncreaseLinkCount();
 }
 
@@ -8151,4 +8169,40 @@ void WebGLRenderingContextBase::getHTMLOrOffscreenCanvas(
   }
 }
 
+void WebGLRenderingContextBase::addProgramCompletionQuery(WebGLProgram* program,
+                                                          GLuint query) {
+  auto old_query = program_completion_queries_.Get(program);
+  if (old_query != program_completion_queries_.end()) {
+    ContextGL()->DeleteQueriesEXT(1, &old_query->second);
+  }
+  program_completion_queries_.Put(program, query);
+  if (program_completion_queries_.size() > kMaxProgramCompletionQueries) {
+    auto oldest = program_completion_queries_.rbegin();
+    ContextGL()->DeleteQueriesEXT(1, &oldest->second);
+    program_completion_queries_.Erase(oldest);
+  }
+}
+
+void WebGLRenderingContextBase::clearProgramCompletionQueries() {
+  for (auto query : program_completion_queries_) {
+    ContextGL()->DeleteQueriesEXT(1, &query.second);
+  }
+  program_completion_queries_.Clear();
+}
+
+bool WebGLRenderingContextBase::checkProgramCompletionQueryAvailable(
+    WebGLProgram* program,
+    bool* completed) {
+  GLuint id = 0;
+  auto found = program_completion_queries_.Get(program);
+  if (found != program_completion_queries_.end()) {
+    id = found->second;
+    GLuint available;
+    ContextGL()->GetQueryObjectuivEXT(id, GL_QUERY_RESULT_AVAILABLE,
+                                      &available);
+    *completed = (available == GL_TRUE);
+    return true;
+  }
+  return false;
+}
 }  // namespace blink

@@ -29,6 +29,7 @@
 #include <memory>
 #include <set>
 
+#include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "base/numerics/checked_math.h"
 #include "base/optional.h"
@@ -1737,6 +1738,13 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   static bool webgl_context_limits_initialized_;
   static unsigned max_active_webgl_contexts_;
   static unsigned max_active_webgl_contexts_on_worker_;
+
+  void addProgramCompletionQuery(WebGLProgram* program, GLuint query);
+  void clearProgramCompletionQueries();
+  bool checkProgramCompletionQueryAvailable(WebGLProgram* program,
+                                            bool* completed);
+  static constexpr unsigned int kMaxProgramCompletionQueries = 128u;
+  base::MRUCache<WebGLProgram*, GLuint> program_completion_queries_;
 
   DISALLOW_COPY_AND_ASSIGN(WebGLRenderingContextBase);
 };

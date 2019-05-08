@@ -2056,6 +2056,7 @@ bool GLES2DecoderPassthroughImpl::IsEmulatedQueryTarget(GLenum target) const {
     case GL_LATENCY_QUERY_CHROMIUM:
     case GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM:
     case GL_GET_ERROR_QUERY_CHROMIUM:
+    case GL_PROGRAM_COMPLETION_QUERY_CHROMIUM:
       return true;
 
     default:
@@ -2063,9 +2064,18 @@ bool GLES2DecoderPassthroughImpl::IsEmulatedQueryTarget(GLenum target) const {
   }
 }
 
+bool GLES2DecoderPassthroughImpl::OnlyHasPendingProgramCompletionQueries() {
+  return std::find_if(pending_queries_.begin(), pending_queries_.end(),
+                      [](const auto& query) {
+                        return query.target !=
+                               GL_PROGRAM_COMPLETION_QUERY_CHROMIUM;
+                      }) == pending_queries_.end();
+}
+
 error::Error GLES2DecoderPassthroughImpl::ProcessQueries(bool did_finish) {
+  bool program_completion_query_deferred = false;
   while (!pending_queries_.empty()) {
-    const PendingQuery& query = pending_queries_.front();
+    PendingQuery& query = pending_queries_.front();
     GLuint result_available = GL_FALSE;
     GLuint64 result = 0;
     switch (query.target) {
@@ -2125,6 +2135,30 @@ error::Error GLES2DecoderPassthroughImpl::ProcessQueries(bool did_finish) {
         result = PopError();
         break;
 
+      case GL_PROGRAM_COMPLETION_QUERY_CHROMIUM:
+        GLint status;
+        if (!api()->glIsProgramFn(query.program_service_id)) {
+          status = GL_TRUE;
+        } else {
+          api()->glGetProgramivFn(query.program_service_id,
+                                  GL_COMPLETION_STATUS_KHR, &status);
+        }
+        result_available = (status == GL_TRUE);
+        if (!result_available) {
+          // Move the query to the end of queue, so that other queries may have
+          // chance to be processed.
+          auto temp = std::move(query);
+          pending_queries_.pop_front();
+          pending_queries_.emplace_back(std::move(temp));
+          if (did_finish && !OnlyHasPendingProgramCompletionQueries()) {
+            continue;
+          } else {
+            program_completion_query_deferred = true;
+          }
+        }
+        result = 0;
+        break;
+
       default:
         DCHECK(!IsEmulatedQueryTarget(query.target));
         if (did_finish) {
@@ -2159,7 +2193,8 @@ error::Error GLES2DecoderPassthroughImpl::ProcessQueries(bool did_finish) {
 
   // If api()->glFinishFn() has been called, all of our queries should be
   // completed.
-  DCHECK(!did_finish || pending_queries_.empty());
+  DCHECK(!did_finish || pending_queries_.empty() ||
+         program_completion_query_deferred);
   return error::kNoError;
 }
 

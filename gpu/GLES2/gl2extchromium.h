@@ -1287,6 +1287,16 @@ typedef void(GL_APIENTRYP PFNGLUNPREMULTIPLYANDDITHERCOPYCHROMIUMPROC)(
 #define GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM 0x8AF7
 #endif /* GL_CHROMIUM_shared_image */
 
+/* GL_CHROMIUM_program_completion_query */
+#ifndef GL_CHROMIUM_program_completion_query
+#define GL_CHROMIUM_program_completion_query 1
+
+#ifndef GL_PROGRAM_COMPLETION_QUERY_CHROMIUM
+// TODO(jie.a.chen@intel.com): Get official numbers for this constants.
+#define GL_PROGRAM_COMPLETION_QUERY_CHROMIUM 0x6009
+#endif
+#endif /* GL_CHROMIUM_program_completion_query */
+
 #ifdef __cplusplus
 }
 #endif

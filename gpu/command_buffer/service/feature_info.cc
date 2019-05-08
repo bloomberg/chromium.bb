@@ -1542,6 +1542,9 @@ void FeatureInfo::InitializeFeatures() {
     // https://crbug.com/881152
     validators_.shader_parameter.AddValue(GL_COMPLETION_STATUS_KHR);
     validators_.program_parameter.AddValue(GL_COMPLETION_STATUS_KHR);
+
+    AddExtensionString("GL_CHROMIUM_completion_query");
+    feature_flags_.chromium_completion_query = true;
   }
 
   if (gfx::HasExtension(extensions, "GL_KHR_robust_buffer_access_behavior")) {

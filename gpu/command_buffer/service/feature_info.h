@@ -146,6 +146,7 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool nv_internalformat_sample_query = false;
     bool amd_framebuffer_multisample_advanced = false;
     bool ext_float_blend = false;
+    bool chromium_completion_query = false;
   };
 
   FeatureInfo();

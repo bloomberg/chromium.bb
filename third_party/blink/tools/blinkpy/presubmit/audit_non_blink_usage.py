@@ -525,6 +525,7 @@ _CONFIG = [
         # The modules listed above need access to the following GL drawing and
         # display-related types.
         'allowed': [
+            'base::MRUCache',
             'gpu::gles2::GLES2Interface',
             'gpu::MailboxHolder',
             'display::Display',

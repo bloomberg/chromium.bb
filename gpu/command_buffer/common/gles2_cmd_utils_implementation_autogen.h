@@ -1009,6 +1009,10 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         "GL_LATENCY_QUERY_CHROMIUM",
     },
     {
+        0x6009,
+        "GL_PROGRAM_COMPLETION_QUERY_CHROMIUM",
+    },
+    {
         0x78EC,
         "GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM",
     },
@@ -7371,6 +7375,8 @@ std::string GLES2Util::GetStringQueryTarget(uint32_t value) {
       {GL_COMMANDS_COMPLETED_CHROMIUM, "GL_COMMANDS_COMPLETED_CHROMIUM"},
       {GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM,
        "GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM"},
+      {GL_PROGRAM_COMPLETION_QUERY_CHROMIUM,
+       "GL_PROGRAM_COMPLETION_QUERY_CHROMIUM"},
   };
   return GLES2Util::GetQualifiedEnumString(string_table,
                                            base::size(string_table), value);

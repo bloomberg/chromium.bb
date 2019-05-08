@@ -17209,6 +17209,13 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(
         return error::kNoError;
       }
       break;
+    case GL_PROGRAM_COMPLETION_QUERY_CHROMIUM:
+      if (!features().chromium_completion_query) {
+        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginQueryEXT",
+                           "not enabled for program completion queries");
+        return error::kNoError;
+      }
+      break;
     case GL_SAMPLES_PASSED_ARB:
       if (!features().occlusion_query) {
         LOCAL_SET_GL_ERROR(

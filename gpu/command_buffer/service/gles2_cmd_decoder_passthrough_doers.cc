@@ -2226,11 +2226,14 @@ error::Error GLES2DecoderPassthroughImpl::DoLineWidth(GLfloat width) {
 error::Error GLES2DecoderPassthroughImpl::DoLinkProgram(GLuint program) {
   TRACE_EVENT0("gpu", "GLES2DecoderPassthroughImpl::DoLinkProgram");
   SCOPED_UMA_HISTOGRAM_TIMER("GPU.PassthroughDoLinkProgramTime");
-  api()->glLinkProgramFn(GetProgramServiceID(program, resources_));
+  GLuint program_service_id = GetProgramServiceID(program, resources_);
+  api()->glLinkProgramFn(program_service_id);
 
   // Program linking can be very slow.  Exit command processing to allow for
   // context preemption and GPU watchdog checks.
   ExitCommandProcessingEarly();
+
+  linking_program_service_id_ = program_service_id;
 
   return error::kNoError;
 }
@@ -3360,6 +3363,9 @@ error::Error GLES2DecoderPassthroughImpl::DoBeginQueryEXT(
   if (!sync)
     return error::kOutOfBounds;
 
+  if (target == GL_PROGRAM_COMPLETION_QUERY_CHROMIUM) {
+    linking_program_service_id_ = 0u;
+  }
   if (IsEmulatedQueryTarget(target)) {
     if (active_queries_.find(target) != active_queries_.end()) {
       InsertError(GL_INVALID_OPERATION, "Query already active on target.");
@@ -3454,6 +3460,10 @@ error::Error GLES2DecoderPassthroughImpl::DoEndQueryEXT(GLenum target,
       pending_query.buffer_shadow_update_fence = gl::GLFence::Create();
       pending_query.buffer_shadow_updates = std::move(buffer_shadow_updates_);
       buffer_shadow_updates_.clear();
+      break;
+
+    case GL_PROGRAM_COMPLETION_QUERY_CHROMIUM:
+      pending_query.program_service_id = linking_program_service_id_;
       break;
 
     default:
