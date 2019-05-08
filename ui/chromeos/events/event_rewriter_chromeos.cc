@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -1261,10 +1262,12 @@ int EventRewriterChromeOS::RewriteModifierClick(
       IsFromTouchpadDevice(mouse_event)) {
     *flags &= ~kAltLeftButton;
     *flags |= ui::EF_RIGHT_MOUSE_BUTTON;
-    if (mouse_event.type() == ui::ET_MOUSE_PRESSED)
+    if (mouse_event.type() == ui::ET_MOUSE_PRESSED) {
       pressed_device_ids_.insert(mouse_event.source_device_id());
-    else
+      base::RecordAction(base::UserMetricsAction("AltClickMappedToRightClick"));
+    } else {
       pressed_device_ids_.erase(mouse_event.source_device_id());
+    }
     return ui::EF_RIGHT_MOUSE_BUTTON;
   }
   return ui::EF_NONE;
