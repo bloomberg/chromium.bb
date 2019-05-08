@@ -477,8 +477,8 @@ void OnAppIconsReceived(
   browser->window()->ShowIntentPickerBubble(
       std::move(app_info), IsChromeAnAppCandidate(handlers),
       /*show_remember_selection=*/true,
-      base::Bind(OnIntentPickerClosed, render_process_host_id, routing_id, url,
-                 safe_to_bypass_ui, base::Passed(&handlers)));
+      base::BindOnce(OnIntentPickerClosed, render_process_host_id, routing_id,
+                     url, safe_to_bypass_ui, std::move(handlers)));
 }
 
 // Called when ARC returned a handler list for the |url|.
