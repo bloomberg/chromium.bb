@@ -1686,17 +1686,6 @@ crbug.com/869492 virtual/threaded/external/wpt/feature-policy/experimental-featu
 crbug.com/869492 virtual/threaded/external/wpt/feature-policy/experimental-features/lazyload/lazyload-enabled-image-tentative.sub.html [ WontFix ]
 crbug.com/869492 virtual/threaded/external/wpt/feature-policy/experimental-features/lazyload/lazyload-image-attribute-on-sanity-check-tentative.sub.html [ WontFix ]
 
-# Tests that are not supported if outofblink-cors feature is enabled.
-# These functionarities should be verified on browser_tests for outofblink-cors.
-crbug.com/870172 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-all.html [ WontFix ]
-crbug.com/870172 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-exact-match.html [ WontFix ]
-crbug.com/870172 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-subdomains.html [ WontFix ]
-crbug.com/870172 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ WontFix ]
-
-# Tests that passes iff outofblink-cors feature is enabled.
-# TODO(toyoshim): Remove this if Out-Of-Blink CORS is enabled
-http/tests/security/img-redirect-to-crossorigin-credentials.html [ WontFix ]
-
 # Tests that only work when the mixed content autoupgrade experiment is enabled
 http/tests/mixed-autoupgrade [ WontFix ]
 
@@ -2174,11 +2163,6 @@ external/wpt/xhr/send-authentication-existing-session-manual.htm [ WontFix ]
 external/wpt/xhr/send-authentication-prompt-2-manual.htm [ WontFix ]
 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-MediaElement-preload-none-manual.https.html [ WontFix ]
 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStreamTrack-end-manual.https.html [ WontFix ]
-virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ WontFix ]
-virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ WontFix ]
-virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ WontFix ]
-virtual/outofblink-cors/external/wpt/xhr/send-authentication-existing-session-manual.htm [ WontFix ]
-virtual/outofblink-cors/external/wpt/xhr/send-authentication-prompt-2-manual.htm [ WontFix ]
 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ WontFix ]
 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ WontFix ]
 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ WontFix ]
@@ -2246,7 +2230,6 @@ Bug(none) external/wpt/wasm/serialization/module/window-similar-but-cross-origin
 # https://foo.example.com/path?token=secret needs to be replaced with just
 # https://foo.example.com).
 crbug.com/669083 http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ WontFix ]
-crbug.com/669083 virtual/outofblink-cors/http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ WontFix ]
 # --------------------------- code cache isolation -----------------------
 # Code cache isolation tests only make sense if either
 # 1) site isolation is disabled or

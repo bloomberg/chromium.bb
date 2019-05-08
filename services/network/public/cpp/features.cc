@@ -30,7 +30,7 @@ const base::Feature kNetworkService {
 
 // Out of Blink CORS
 const base::Feature kOutOfBlinkCors{"OutOfBlinkCors",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kReporting{"Reporting", base::FEATURE_ENABLED_BY_DEFAULT};
 
