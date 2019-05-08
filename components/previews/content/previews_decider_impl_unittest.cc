@@ -1636,6 +1636,39 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeBlacklistStatusesIgnore) {
   }
 }
 
+TEST_F(PreviewsDeciderImplTest, LogDecisionMadeMediaSuffixesAreExcluded) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kResourceLoadingHints,
+       features::kOptimizationHints},
+      {});
+  InitializeUIService();
+  auto expected_reason = PreviewsEligibilityReason::EXCLUDED_BY_MEDIA_SUFFIX;
+  auto expected_type = PreviewsType::RESOURCE_LOADING_HINTS;
+
+  PreviewsEligibilityReason blacklist_decisions[] = {
+      PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
+  };
+
+  for (auto blacklist_decision : blacklist_decisions) {
+    std::unique_ptr<TestPreviewsBlackList> blacklist =
+        std::make_unique<TestPreviewsBlackList>(blacklist_decision,
+                                                previews_decider_impl());
+    previews_decider_impl()->InjectTestBlacklist(std::move(blacklist));
+    PreviewsUserData user_data(kDefaultPageId);
+    previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+        &user_data, GURL("http://www.google.com/video.mp4"), false,
+        expected_type);
+
+    base::RunLoop().RunUntilIdle();
+    // Testing correct log method is called.
+    EXPECT_THAT(ui_service()->decision_reasons(),
+                ::testing::Contains(expected_reason));
+    EXPECT_THAT(ui_service()->decision_types(),
+                ::testing::Contains(expected_type));
+  }
+}
+
 TEST_F(PreviewsDeciderImplTest, IgnoreFlagDoesNotCheckBlacklist) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
@@ -1702,6 +1735,8 @@ TEST_F(PreviewsDeciderImplTest,
   auto expected_type = PreviewsType::LOFI;
 
   std::vector<PreviewsEligibilityReason> checked_decisions = {
+      PreviewsEligibilityReason::URL_HAS_BASIC_AUTH,
+      PreviewsEligibilityReason::EXCLUDED_BY_MEDIA_SUFFIX,
       PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE,
       PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
       PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
@@ -1748,6 +1783,8 @@ TEST_F(PreviewsDeciderImplTest,
   auto expected_type = PreviewsType::RESOURCE_LOADING_HINTS;
 
   std::vector<PreviewsEligibilityReason> checked_decisions = {
+      PreviewsEligibilityReason::URL_HAS_BASIC_AUTH,
+      PreviewsEligibilityReason::EXCLUDED_BY_MEDIA_SUFFIX,
       PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE,
       PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
       PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
@@ -1793,6 +1830,8 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeNetworkNotSlow) {
   auto expected_type = PreviewsType::LOFI;
 
   std::vector<PreviewsEligibilityReason> checked_decisions = {
+      PreviewsEligibilityReason::URL_HAS_BASIC_AUTH,
+      PreviewsEligibilityReason::EXCLUDED_BY_MEDIA_SUFFIX,
       PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE,
       PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
       PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
@@ -1835,6 +1874,8 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeReloadDisallowed) {
   auto expected_type = PreviewsType::OFFLINE;
 
   std::vector<PreviewsEligibilityReason> checked_decisions = {
+      PreviewsEligibilityReason::URL_HAS_BASIC_AUTH,
+      PreviewsEligibilityReason::EXCLUDED_BY_MEDIA_SUFFIX,
       PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE,
       PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
       PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
@@ -1908,6 +1949,8 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeAllowClientPreviewsWithECT) {
   auto expected_type = PreviewsType::LOFI;
 
   std::vector<PreviewsEligibilityReason> checked_decisions = {
+      PreviewsEligibilityReason::URL_HAS_BASIC_AUTH,
+      PreviewsEligibilityReason::EXCLUDED_BY_MEDIA_SUFFIX,
       PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE,
       PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
       PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
@@ -1958,6 +2001,8 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeAllowHintPreviewWithoutECT) {
   auto expected_type = PreviewsType::NOSCRIPT;
 
   std::vector<PreviewsEligibilityReason> checked_decisions = {
+      PreviewsEligibilityReason::URL_HAS_BASIC_AUTH,
+      PreviewsEligibilityReason::EXCLUDED_BY_MEDIA_SUFFIX,
       PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE,
       PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
       PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,

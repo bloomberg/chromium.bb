@@ -167,15 +167,6 @@ base::TimeDelta LitePagePreviewsNavigationTimeoutDuration() {
                                              30 * 1000));
 }
 
-std::vector<std::string> LitePagePreviewsBlacklistedPathSuffixes() {
-  const std::string csv = base::GetFieldTrialParamValueByFeature(
-      features::kLitePageServerPreviews, "blacklisted_path_suffixes");
-  if (csv == "")
-    return {};
-  return base::SplitString(csv, ",", base::TRIM_WHITESPACE,
-                           base::SPLIT_WANT_NONEMPTY);
-}
-
 int LitePageRedirectPreviewMaxServerBlacklistByteSize() {
   return base::GetFieldTrialParamByFeatureAsInt(
       features::kLitePageServerPreviews, "max_blacklist_byte_size",
@@ -405,6 +396,30 @@ bool ShouldOverrideNavigationCoinFlipToHoldback() {
 bool ShouldOverrideNavigationCoinFlipToAllowed() {
   return base::GetFieldTrialParamByFeatureAsBool(
       features::kCoinFlipHoldback, "force_coin_flip_always_allow", false);
+}
+
+bool ShouldExcludeMediaSuffix(const GURL& url) {
+  if (!base::FeatureList::IsEnabled(features::kExcludedMediaSuffixes))
+    return false;
+
+  std::vector<std::string> suffixes = {
+      ".apk", ".avi",  ".gif", ".gifv", ".jpeg", ".jpg", ".mp3",
+      ".mp4", ".mpeg", ".pdf", ".png",  ".webm", ".webp"};
+
+  std::string csv = base::GetFieldTrialParamValueByFeature(
+      features::kExcludedMediaSuffixes, "excluded_path_suffixes");
+  if (csv != "") {
+    suffixes = base::SplitString(csv, ",", base::TRIM_WHITESPACE,
+                                 base::SPLIT_WANT_NONEMPTY);
+  }
+
+  for (const std::string& suffix : suffixes) {
+    if (base::EndsWith(url.path(), suffix,
+                       base::CompareCase::INSENSITIVE_ASCII)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace params

@@ -123,10 +123,6 @@ GURL GetOptimizationGuideServiceURL();
 // The duration of a single bypass for Lite Page Server Previews.
 base::TimeDelta LitePagePreviewsSingleBypassDuration();
 
-// A list of all path suffixes to blacklist from Lite Page Server Previews.
-// Primarily used to prohibit URLs that look like media requests.
-std::vector<std::string> LitePagePreviewsBlacklistedPathSuffixes();
-
 // Whether or not to trigger a preview for a navigation to localhost. Provided
 // as an experiment for automated and manual testing.
 bool LitePagePreviewsTriggerOnLocalhost();
@@ -218,6 +214,9 @@ bool ShouldOverrideNavigationCoinFlipToHoldback();
 
 // Forces the coin flip holdback, if enabled, to always come up "allowed".
 bool ShouldOverrideNavigationCoinFlipToAllowed();
+
+// Returns true if the given url matches an excluded media suffix.
+bool ShouldExcludeMediaSuffix(const GURL& url);
 
 }  // namespace params
 

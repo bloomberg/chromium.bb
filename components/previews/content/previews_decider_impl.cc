@@ -250,6 +250,15 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
   // Do not allow previews on any authenticated pages.
   if (url.has_username() || url.has_password())
     return PreviewsEligibilityReason::URL_HAS_BASIC_AUTH;
+  passed_reasons->push_back(PreviewsEligibilityReason::URL_HAS_BASIC_AUTH);
+
+  // Do not allow previews for URL suffixes which are excluded. In practice,
+  // this is used to exclude navigations that look like media resources like
+  // navigating to http://chromium.org/video.mp4.
+  if (params::ShouldExcludeMediaSuffix(url))
+    return PreviewsEligibilityReason::EXCLUDED_BY_MEDIA_SUFFIX;
+  passed_reasons->push_back(
+      PreviewsEligibilityReason::EXCLUDED_BY_MEDIA_SUFFIX);
 
   // Skip blacklist checks if the blacklist is ignored.
   if (!blacklist_ignored_) {

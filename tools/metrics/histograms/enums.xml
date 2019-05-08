@@ -46362,6 +46362,7 @@ Called by update_net_trust_anchors.py.-->
       label="URL contained Basic Authentication, i.e.: a username or
              password."/>
   <int value="17" label="Optimization hints not loaded."/>
+  <int value="18" label="The navigation URL had an excluded media suffix."/>
 </enum>
 
 <enum name="PreviewsHintCacheLevelDBStoreLoadMetadataResult">
@@ -46448,7 +46449,7 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PreviewsServerLitePageBlacklistReason">
-  <int value="0" label="Path suffix"/>
+  <int value="0" label="(DEPRECATED IN M76) Path suffix"/>
   <int value="1" label="Navigation to Previews Domain"/>
   <int value="2" label="Navigation to Private Domain"/>
   <int value="3" label="Host was blacklisted in a previous server request"/>

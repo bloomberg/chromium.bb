@@ -885,9 +885,9 @@ IN_PROC_BROWSER_TEST_P(
     VerifyPreviewNotLoaded();
     ClearDeciderState();
     histogram_tester.ExpectBucketCount(
-        "Previews.ServerLitePage.BlacklistReasons",
-        PreviewsLitePageNavigationThrottle::BlacklistReason::
-            kPathSuffixBlacklisted,
+        "Previews.EligibilityReason.LitePageRedirect",
+        static_cast<int>(
+            previews::PreviewsEligibilityReason::EXCLUDED_BY_MEDIA_SUFFIX),
         1);
   }
 

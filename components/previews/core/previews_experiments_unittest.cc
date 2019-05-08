@@ -7,6 +7,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
@@ -137,6 +138,109 @@ TEST(PreviewsExperimentsTest, TestEnableClientLoFiWithCustomParams) {
   EXPECT_EQ(10, params::ClientLoFiVersion());
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_3G,
             params::GetECTThresholdForPreview(PreviewsType::LOFI));
+}
+
+TEST(PreviewsExperimentsTest, TestDefaultShouldExcludeMediaSuffix) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kExcludedMediaSuffixes);
+
+  EXPECT_FALSE(
+      params::ShouldExcludeMediaSuffix(GURL("http://chromium.org/path/")));
+
+  std::vector<std::string> default_suffixes = {
+      ".apk", ".avi",  ".gif", ".gifv", ".jpeg", ".jpg", ".mp3",
+      ".mp4", ".mpeg", ".pdf", ".png",  ".webm", ".webp"};
+  for (const std::string& suffix : default_suffixes) {
+    GURL url("http://chromium.org/path/" + suffix);
+    EXPECT_TRUE(params::ShouldExcludeMediaSuffix(url));
+  }
+}
+
+TEST(PreviewsExperimentsTest, TestShouldExcludeMediaSuffix) {
+  struct TestCase {
+    std::string msg;
+    bool enable_feature;
+    std::string varaiation_value;
+    std::vector<std::string> urls;
+    bool want_return;
+  };
+  const TestCase kTestCases[]{
+      {
+          .msg = "Feature disabled, should always return false",
+          .enable_feature = false,
+          .varaiation_value = "",
+          .urls = {"http://chromium.org/video.mp4"},
+          .want_return = false,
+      },
+      {
+          .msg = "Default values are overridden by variations",
+          .enable_feature = true,
+          .varaiation_value = ".html",
+          .urls = {"http://chromium.org/video.mp4",
+                   "http://chromium.org/image.png",
+                   "http://chromium.org/image.jpg",
+                   "http://chromium.org/audio.mp3"},
+          .want_return = false,
+      },
+      {
+          .msg = "Variation value whitespace should be trimmed",
+          .enable_feature = true,
+          .varaiation_value = " .mp4 , \t .png\n",
+          .urls = {"http://chromium.org/video.mp4",
+                   "http://chromium.org/image.png"},
+          .want_return = true,
+      },
+      {
+          .msg = "Variation value empty values should be excluded",
+          .enable_feature = true,
+          .varaiation_value = ".mp4,,.png,",
+          .urls = {"http://chromium.org/video.mp4",
+                   "http://chromium.org/image.png"},
+          .want_return = true,
+      },
+      {
+          .msg = "URLs should be compared case insensitive",
+          .enable_feature = true,
+          .varaiation_value = ".MP4,.png,",
+          .urls = {"http://chromium.org/video.mP4",
+                   "http://chromium.org/image.PNG"},
+          .want_return = true,
+      },
+      {
+          .msg = "Query params and fragments don't matter",
+          .enable_feature = true,
+          .varaiation_value = ".mp4,.png,",
+          .urls = {"http://chromium.org/video.mp4?hello=world",
+                   "http://chromium.org/image.png#test"},
+          .want_return = true,
+      },
+      {
+          .msg = "Query params and fragments shouldn't be considered",
+          .enable_feature = true,
+          .varaiation_value = ".mp4,.png,",
+          .urls = {"http://chromium.org/?video=video.mp4",
+                   "http://chromium.org/#image.png"},
+          .want_return = false,
+      },
+  };
+  for (const TestCase& test_case : kTestCases) {
+    SCOPED_TRACE(test_case.msg);
+
+    base::test::ScopedFeatureList scoped_feature_list;
+    if (test_case.enable_feature) {
+      scoped_feature_list.InitAndEnableFeatureWithParameters(
+          features::kExcludedMediaSuffixes,
+          {{"excluded_path_suffixes", test_case.varaiation_value}});
+    } else {
+      scoped_feature_list.InitAndDisableFeature(
+          features::kExcludedMediaSuffixes);
+    }
+
+    for (const std::string& url : test_case.urls) {
+      EXPECT_EQ(test_case.want_return,
+                params::ShouldExcludeMediaSuffix(GURL(url)));
+    }
+  }
 }
 
 }  // namespace

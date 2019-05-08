@@ -118,5 +118,11 @@ const base::Feature kOfflinePreviewsFalsePositivePrevention{
 const base::Feature kCoinFlipHoldback{"PreviewsCoinFlipHoldback_UKMOnly",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables filtering navigation URLs by suffix to exclude navigation that look
+// like media resources from triggering previews. For example,
+// http://chromium.org/video.mp4 would be excluded.
+const base::Feature kExcludedMediaSuffixes{"PreviewsExcludedMediaSuffixes",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace previews

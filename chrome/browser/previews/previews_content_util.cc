@@ -121,17 +121,6 @@ bool ShouldAllowRedirectPreview(content::NavigationHandle* navigation_handle) {
             kNavigationToPrivateDomain);
   }
 
-  std::vector<std::string> blacklisted_path_suffixes =
-      previews::params::LitePagePreviewsBlacklistedPathSuffixes();
-  for (const std::string& suffix : blacklisted_path_suffixes) {
-    if (base::EndsWith(url.path(), suffix,
-                       base::CompareCase::INSENSITIVE_ASCII)) {
-      blacklist_reasons.push_back(PreviewsLitePageNavigationThrottle::
-                                      BlacklistReason::kPathSuffixBlacklisted);
-      break;
-    }
-  }
-
   if (decider->HostBlacklistedFromBypass(url.host())) {
     blacklist_reasons.push_back(PreviewsLitePageNavigationThrottle::
                                     BlacklistReason::kHostBypassBlacklisted);
