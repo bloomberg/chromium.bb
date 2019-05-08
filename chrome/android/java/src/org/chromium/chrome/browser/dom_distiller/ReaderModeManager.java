@@ -499,6 +499,9 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
 
         CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
         builder.setShowTitle(true);
+        builder.setColorScheme(mChromeActivity.getNightModeStateProvider().isInNightMode()
+                        ? CustomTabsIntent.COLOR_SCHEME_DARK
+                        : CustomTabsIntent.COLOR_SCHEME_LIGHT);
         CustomTabsIntent customTabsIntent = builder.build();
         customTabsIntent.intent.setClassName(mChromeActivity, CustomTabActivity.class.getName());
 
