@@ -7,6 +7,7 @@
 
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-blink.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 struct Manifest;
@@ -19,7 +20,8 @@ namespace mojo {
 // directly.
 
 template <>
-struct TypeConverter<blink::mojom::blink::ManifestPtr, const blink::Manifest*> {
+struct MODULES_EXPORT
+    TypeConverter<blink::mojom::blink::ManifestPtr, const blink::Manifest*> {
   static blink::mojom::blink::ManifestPtr Convert(const blink::Manifest* input);
 };
 

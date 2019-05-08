@@ -57,6 +57,7 @@ TypeConverter<blink::mojom::blink::ManifestPtr,
       file_filters.push_back(
           blink::mojom::blink::ManifestFileFilter::From(&file_handler));
     }
+    output->file_handler = blink::mojom::blink::ManifestFileHandler::New();
     output->file_handler->action = blink::KURL(input->file_handler->action);
     output->file_handler->files = std::move(file_filters);
   }
