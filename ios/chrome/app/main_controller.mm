@@ -1685,7 +1685,8 @@ enum class EnterTabSwitcherSnapshotResult {
           initWithBaseViewController:baseViewController
                         browserState:_mainBrowserState];
   self.googleServicesNavigationCoordinator.delegate = self;
-  self.googleServicesNavigationCoordinator.dispatcher = self;
+  self.googleServicesNavigationCoordinator.dispatcherForSettings =
+      self.dispatcherForSettings;
   [self.googleServicesNavigationCoordinator start];
 }
 
