@@ -6,14 +6,38 @@
     "gtest_tests": [
       {
         "args": [
-          "--gtest_filter=WebRtc*"
+          "--gtest_filter=WebRtc*",
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "content_browsertests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ]
         },
         "test": "content_browsertests"
       },
@@ -21,15 +45,39 @@
         "args": [
           "--gtest_filter=UsingRealWebcam*",
           "--run-manual",
-          "--test-launcher-jobs=1"
+          "--test-launcher-jobs=1",
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "content_browsertests_sequential"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
         "name": "content_browsertests_sequential",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ]
         },
         "test": "content_browsertests"
       }
