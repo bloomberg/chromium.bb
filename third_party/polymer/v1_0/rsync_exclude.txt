@@ -44,6 +44,9 @@ iron-form-element-behavior/*
 # paper-behaviors
 paper-behaviors/paper-checked-element-behavior.html
 
+# paper-icon-button
+paper-icon-button/paper-icon-button-light.html
+
 # paper-input
 paper-input/all-imports.html
 paper-input/paper-input-behavior.html

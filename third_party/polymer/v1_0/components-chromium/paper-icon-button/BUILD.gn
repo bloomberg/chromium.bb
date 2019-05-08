@@ -12,9 +12,3 @@ js_library("paper-icon-button-extracted") {
     "../paper-behaviors:paper-inky-focus-behavior-extracted",
   ]
 }
-
-js_library("paper-icon-button-light-extracted") {
-  deps = [
-    "../paper-behaviors:paper-ripple-behavior-extracted",
-  ]
-}
