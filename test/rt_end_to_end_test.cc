@@ -64,7 +64,8 @@ class RTEndToEndTest
     InitializeConfig();
     SetMode(::libaom_test::kRealTime);
 
-    cfg_.g_usage = 1;  // TODO(kyslov): Move it to encode_test_driver.cc
+    cfg_.g_usage =
+        AOM_USAGE_REALTIME;  // TODO(kyslov): Move it to encode_test_driver.cc
     cfg_.rc_end_usage = AOM_CBR;
     cfg_.rc_buf_sz = 1000;
     cfg_.rc_buf_initial_sz = 500;

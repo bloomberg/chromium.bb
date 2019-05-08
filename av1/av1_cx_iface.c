@@ -569,7 +569,7 @@ static aom_codec_err_t set_encoder_config(
   oxcf->profile = cfg->g_profile;
   oxcf->fwd_kf_enabled = cfg->fwd_kf_enabled;
   oxcf->max_threads = (int)cfg->g_threads;
-  oxcf->mode = (cfg->g_usage == 1) ? REALTIME : GOOD;
+  oxcf->mode = (cfg->g_usage == AOM_USAGE_REALTIME) ? REALTIME : GOOD;
   oxcf->width = cfg->g_w;
   oxcf->height = cfg->g_h;
   oxcf->forced_max_frame_width = cfg->g_forced_max_frame_width;
@@ -638,7 +638,8 @@ static aom_codec_err_t set_encoder_config(
   oxcf->fixed_q = -1;
 
   oxcf->enable_cdef = extra_cfg->enable_cdef;
-  oxcf->enable_restoration = extra_cfg->enable_restoration;
+  oxcf->enable_restoration =
+      (cfg->g_usage == AOM_USAGE_REALTIME) ? 0 : extra_cfg->enable_restoration;
   oxcf->enable_obmc = extra_cfg->enable_obmc;
   oxcf->enable_palette = extra_cfg->enable_palette;
   oxcf->enable_intrabc = extra_cfg->enable_intrabc;
@@ -2338,9 +2339,9 @@ static aom_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
   { 0,
     {
         // NOLINT
-        0,  // g_usage - non-realtime usage
-        0,  // g_threads
-        0,  // g_profile
+        AOM_USAGE_GOOD_QUALITY,  // g_usage - non-realtime usage
+        0,                       // g_threads
+        0,                       // g_profile
 
         320,         // g_width
         240,         // g_height
@@ -2406,9 +2407,9 @@ static aom_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
   { 1,
     {
         // NOLINT
-        1,  // g_usage - real-time usage
-        0,  // g_threads
-        0,  // g_profile
+        AOM_USAGE_REALTIME,  // g_usage - real-time usage
+        0,                   // g_threads
+        0,                   // g_profile
 
         320,         // g_width
         240,         // g_height
