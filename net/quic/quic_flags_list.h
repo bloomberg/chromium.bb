@@ -109,7 +109,7 @@ QUIC_FLAG(double, FLAGS_quic_lumpy_pacing_cwnd_fraction, 0.25f)
 // If true, static streams in a QuicSession will be stored inside dynamic
 // stream map. static_stream_map will no longer be used.
 QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_eliminate_static_stream_map,
+          FLAGS_quic_reloadable_flag_quic_eliminate_static_stream_map_2,
           false)
 
 // Default enables QUIC ack decimation and adds a connection option to disable
