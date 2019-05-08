@@ -69,11 +69,22 @@ void DarkModeFilter::UpdateSettings(const DarkModeSettings& new_settings) {
   config.fContrast = settings_.contrast;
   default_filter_ = SkHighContrastFilter::Make(config);
 
-  if (settings_.image_style == DarkModeImageStyle::kGrayscale) {
-    config.fGrayscale = true;
-    image_filter_ = SkHighContrastFilter::Make(config);
-  } else {
-    image_filter_.reset(nullptr);
+  SkHighContrastConfig image_config = config;
+  switch (settings_.image_style) {
+    case DarkModeImageStyle::kGrayscale:
+      image_config.fGrayscale = true;
+      image_config.fInvertStyle = SkHighContrastConfig::InvertStyle::kNoInvert;
+      image_filter_ = SkHighContrastFilter::Make(image_config);
+      break;
+    case DarkModeImageStyle::kGrayscaleAndInvert:
+      DCHECK_NE(image_config.fInvertStyle,
+                SkHighContrastConfig::InvertStyle::kNoInvert);
+      image_config.fGrayscale = true;
+      image_filter_ = SkHighContrastFilter::Make(image_config);
+      break;
+    case DarkModeImageStyle::kDefault:
+      image_filter_.reset(nullptr);
+      break;
   }
 }
 
@@ -111,8 +122,8 @@ base::Optional<cc::PaintFlags> DarkModeFilter::ApplyToFlagsIfNeeded(
     dark_mode_flags.setColorFilter(default_filter_);
   } else {
     auto invertedColor = ApplyIfNeeded(flags.getColor());
-    dark_mode_flags.setColor(
-        SkColorSetRGB(invertedColor.Red(), invertedColor.Green(), invertedColor.Blue()));
+    dark_mode_flags.setColor(SkColorSetRGB(
+        invertedColor.Red(), invertedColor.Green(), invertedColor.Blue()));
   }
 
   return base::make_optional<cc::PaintFlags>(std::move(dark_mode_flags));

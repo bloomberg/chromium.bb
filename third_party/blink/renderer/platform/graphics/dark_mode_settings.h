@@ -28,10 +28,12 @@ enum class DarkModeImagePolicy {
 
 // For images that should have a filter applied, which filter should be used?
 enum class DarkModeImageStyle {
-  // Invert images the same way as other elements
+  // Invert images the same way as other elements.
   kDefault,
-  // Apply grayscale to images as well as inverting them
-  kGrayscale
+  // Apply grayscale to images that would be inverted, but don't invert them.
+  kGrayscale,
+  // Apply grayscale to images as well as inverting them.
+  kGrayscaleAndInvert
 };
 
 enum class DarkModePagePolicy {
