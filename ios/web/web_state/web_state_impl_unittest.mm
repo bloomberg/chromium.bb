@@ -13,6 +13,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -20,10 +21,12 @@
 #import "ios/web/interstitials/web_interstitial_impl.h"
 #import "ios/web/navigation/navigation_context_impl.h"
 #import "ios/web/navigation/navigation_item_impl.h"
+#import "ios/web/navigation/serializable_user_data_manager_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/crw_navigation_item_storage.h"
 #import "ios/web/public/crw_session_storage.h"
 #import "ios/web/public/java_script_dialog_presenter.h"
+#import "ios/web/public/serializable_user_data_manager.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/fake_web_frame.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
@@ -911,7 +914,8 @@ TEST_P(WebStateImplTest, FaviconUpdateForSameDocumentNavigations) {
 }
 
 // Tests that BuildSessionStorage() and GetTitle() return information about the
-// most recently restored session if no navigation item has been committed.
+// most recently restored session if no navigation item has been committed. Also
+// tests that re-restoring that session includes updated userData.
 TEST_P(WebStateImplTest, UncommittedRestoreSession) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
@@ -929,12 +933,25 @@ TEST_P(WebStateImplTest, UncommittedRestoreSession) {
   web::WebState::CreateParams params(GetBrowserState());
   WebStateImpl web_state(params, session_storage);
 
+  // After restoring |web_state| change the uncommitted state's user data.
+  web::SerializableUserDataManager* user_data_manager =
+      web::SerializableUserDataManager::FromWebState(&web_state);
+  user_data_manager->AddSerializableData(@(1), @"user_data_key");
+
   CRWSessionStorage* extracted_session_storage =
       web_state.BuildSessionStorage();
   EXPECT_EQ(0, extracted_session_storage.lastCommittedItemIndex);
   EXPECT_EQ(1U, extracted_session_storage.itemStorages.count);
   EXPECT_NSEQ(@"Title", base::SysUTF16ToNSString(web_state.GetTitle()));
   EXPECT_EQ(url, web_state.GetVisibleURL());
+
+  WebStateImpl restored_web_state(params, extracted_session_storage);
+  web::SerializableUserDataManager* restored_user_data_manager =
+      web::SerializableUserDataManager::FromWebState(&restored_web_state);
+  NSNumber* user_data_value = base::mac::ObjCCast<NSNumber>(
+      restored_user_data_manager->GetValueForSerializationKey(
+          @"user_data_key"));
+  EXPECT_EQ(@(1), user_data_value);
 }
 
 TEST_P(WebStateImplTest, NoUncommittedRestoreSession) {

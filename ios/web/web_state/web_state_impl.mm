@@ -29,6 +29,7 @@
 #include "ios/web/public/favicon_url.h"
 #import "ios/web/public/java_script_dialog_presenter.h"
 #import "ios/web/public/navigation_item.h"
+#import "ios/web/public/serializable_user_data_manager.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/context_menu_params.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
@@ -625,8 +626,16 @@ WebStateImpl::GetSessionCertificatePolicyCache() {
 CRWSessionStorage* WebStateImpl::BuildSessionStorage() {
   [web_controller_ recordStateInHistory];
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-      restored_session_storage_)
+      restored_session_storage_) {
+    // UserData can be updated in an uncommitted WebState. Even
+    // if a WebState hasn't been restored, its opener value may have changed.
+    std::unique_ptr<web::SerializableUserData> serializable_user_data =
+        web::SerializableUserDataManager::FromWebState(this)
+            ->CreateSerializableUserData();
+    [restored_session_storage_
+        setSerializableUserData:std::move(serializable_user_data)];
     return restored_session_storage_;
+  }
   SessionStorageBuilder session_storage_builder;
   return session_storage_builder.BuildStorage(this);
 }
