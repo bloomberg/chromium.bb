@@ -9,4 +9,4 @@ on a github repository, and then imported to Chromium repository directly here,
 until a long-term Layered API development plan is settled.
 
 Local Modifications:
-None (except for renaming virtual-scroller-element.js to index.js)
+None (except for renaming virtual-scroller-element.mjs to index.mjs)

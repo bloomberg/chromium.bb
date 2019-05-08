@@ -53,35 +53,36 @@ TEST_F(LayeredAPITest, GetInternalURL) {
   EXPECT_EQ(GetInternalURL(KURL("https://example.com/")), NullURL());
 
   EXPECT_EQ(GetInternalURL(KURL("std:blank")),
-            KURL("std-internal://blank/index.js"));
+            KURL("std-internal://blank/index.mjs"));
 
-  EXPECT_EQ(GetInternalURL(KURL("std-internal://blank/index.js")),
-            KURL("std-internal://blank/index.js"));
-  EXPECT_EQ(GetInternalURL(KURL("std-internal://blank/foo/bar.js")),
-            KURL("std-internal://blank/foo/bar.js"));
+  EXPECT_EQ(GetInternalURL(KURL("std-internal://blank/index.mjs")),
+            KURL("std-internal://blank/index.mjs"));
+  EXPECT_EQ(GetInternalURL(KURL("std-internal://blank/foo/bar.mjs")),
+            KURL("std-internal://blank/foo/bar.mjs"));
 }
 
 TEST_F(LayeredAPITest, InternalURLRelativeResolution) {
-  EXPECT_EQ(KURL(KURL("std-internal://blank/index.js"), "./sub.js"),
-            KURL("std-internal://blank/sub.js"));
-  EXPECT_EQ(KURL(KURL("std-internal://blank/index.js"), "/sub.js"),
-            KURL("std-internal://blank/sub.js"));
-  EXPECT_EQ(KURL(KURL("std-internal://blank/index.js"), "./foo/bar.js"),
-            KURL("std-internal://blank/foo/bar.js"));
-  EXPECT_EQ(KURL(KURL("std-internal://blank/foo/bar.js"), "../baz.js"),
-            KURL("std-internal://blank/baz.js"));
+  EXPECT_EQ(KURL(KURL("std-internal://blank/index.mjs"), "./sub.mjs"),
+            KURL("std-internal://blank/sub.mjs"));
+  EXPECT_EQ(KURL(KURL("std-internal://blank/index.mjs"), "/sub.mjs"),
+            KURL("std-internal://blank/sub.mjs"));
+  EXPECT_EQ(KURL(KURL("std-internal://blank/index.mjs"), "./foo/bar.mjs"),
+            KURL("std-internal://blank/foo/bar.mjs"));
+  EXPECT_EQ(KURL(KURL("std-internal://blank/foo/bar.mjs"), "../baz.mjs"),
+            KURL("std-internal://blank/baz.mjs"));
 }
 
 TEST_F(LayeredAPITest, GetSourceText) {
   EXPECT_EQ(
-      GetSourceText(GetModulator(), KURL("std-internal://blank/index.js")),
+      GetSourceText(GetModulator(), KURL("std-internal://blank/index.mjs")),
       String(""));
 
   EXPECT_EQ(
-      GetSourceText(GetModulator(), KURL("std-internal://blank/not-found.js")),
+      GetSourceText(GetModulator(), KURL("std-internal://blank/not-found.mjs")),
       String());
-  EXPECT_EQ(GetSourceText(GetModulator(), KURL("std-internal://none/index.js")),
-            String());
+  EXPECT_EQ(
+      GetSourceText(GetModulator(), KURL("std-internal://none/index.mjs")),
+      String());
 
   EXPECT_EQ(GetSourceText(GetModulator(), KURL("https://example.com/")),
             String());

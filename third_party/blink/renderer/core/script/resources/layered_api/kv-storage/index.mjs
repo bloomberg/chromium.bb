@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {createStorageAreaAsyncIterator} from './async_iterator.js';
-import {promiseForRequest, promiseForTransaction, throwForDisallowedKey} from './idb_utils.js';
+import {createStorageAreaAsyncIterator} from './async_iterator.mjs';
+import {promiseForRequest, promiseForTransaction, throwForDisallowedKey} from './idb_utils.mjs';
 
 // TODOs/spec-noncompliances:
 // - Susceptible to tampering of built-in prototypes and globals. We want to

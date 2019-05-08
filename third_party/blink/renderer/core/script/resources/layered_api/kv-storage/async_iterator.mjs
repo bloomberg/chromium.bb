@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {getNextKey, getNextKeyValuePair, HASNT_STARTED_YET} from './idb_utils.js';
+import {getNextKey, getNextKeyValuePair, HASNT_STARTED_YET} from './idb_utils.mjs';
 
 const _performDatabaseOperation = new WeakMap();
 const _lastKey = new WeakMap();  // undefined = got to the end;
