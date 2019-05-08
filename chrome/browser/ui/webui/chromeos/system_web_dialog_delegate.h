@@ -42,8 +42,8 @@ class SystemWebDialogDelegate : public ui::WebDialogDelegate {
   // that only support a single instance.
   virtual const std::string& Id();
 
-  // Returns extra init params for the widget. By default returns empty params.
-  virtual views::Widget::InitParams GetInitParams();
+  // Adjust the init params for the widget. By default makes no change.
+  virtual void AdjustWidgetInitParams(views::Widget::InitParams* params) {}
 
   // Focuses the dialog window. Note: No-op for modal dialogs, see
   // implementation for details.

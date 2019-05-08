@@ -32,7 +32,7 @@ namespace chromeos {
 
 namespace {
 
-bool is_active = false;
+AssistantOptInDialog* g_dialog = nullptr;
 
 constexpr int kAssistantOptInDialogWidth = 768;
 constexpr int kAssistantOptInDialogHeight = 640;
@@ -113,34 +113,30 @@ void AssistantOptInUI::Initialize() {
 void AssistantOptInDialog::Show(
     ash::mojom::FlowType type,
     ash::mojom::AssistantSetup::StartAssistantOptInFlowCallback callback) {
-  if (is_active)
+  if (g_dialog) {
+    g_dialog->Focus();
+    std::move(callback).Run(false);
     return;
-  AssistantOptInDialog* dialog =
-      new AssistantOptInDialog(type, std::move(callback));
+  }
+  g_dialog = new AssistantOptInDialog(type, std::move(callback));
 
-  dialog->ShowSystemDialog();
-}
-
-// static
-bool AssistantOptInDialog::IsActive() {
-  return is_active;
+  g_dialog->ShowSystemDialog();
 }
 
 AssistantOptInDialog::AssistantOptInDialog(
     ash::mojom::FlowType type,
     ash::mojom::AssistantSetup::StartAssistantOptInFlowCallback callback)
     : SystemWebDialogDelegate(CreateAssistantOptInURL(type), base::string16()),
-      callback_(std::move(callback)) {
-  DCHECK(!is_active);
-  is_active = true;
-}
+      callback_(std::move(callback)) {}
 
 AssistantOptInDialog::~AssistantOptInDialog() {
-  is_active = false;
+  DCHECK_EQ(this, g_dialog);
+  g_dialog = nullptr;
 }
 
-views::Widget::InitParams AssistantOptInDialog::GetInitParams() {
-  return ash_util::GetFramelessInitParams();
+void AssistantOptInDialog::AdjustWidgetInitParams(
+    views::Widget::InitParams* params) {
+  *params = ash_util::GetFramelessInitParams();
 }
 
 void AssistantOptInDialog::GetDialogSize(gfx::Size* size) const {

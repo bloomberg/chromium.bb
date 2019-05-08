@@ -49,9 +49,6 @@ class AssistantOptInDialog : public SystemWebDialogDelegate {
       ash::mojom::AssistantSetup::StartAssistantOptInFlowCallback callback =
           base::DoNothing());
 
-  // Returns whether the dialog is being shown.
-  static bool IsActive();
-
  protected:
   AssistantOptInDialog(
       ash::mojom::FlowType type,
@@ -59,7 +56,7 @@ class AssistantOptInDialog : public SystemWebDialogDelegate {
   ~AssistantOptInDialog() override;
 
   // SystemWebDialogDelegate
-  views::Widget::InitParams GetInitParams() override;
+  void AdjustWidgetInitParams(views::Widget::InitParams* params) override;
 
   // ui::WebDialogDelegate
   void GetDialogSize(gfx::Size* size) const override;

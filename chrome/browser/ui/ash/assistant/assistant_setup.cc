@@ -103,11 +103,6 @@ AssistantSetup::~AssistantSetup() {
 void AssistantSetup::StartAssistantOptInFlow(
     ash::mojom::FlowType type,
     StartAssistantOptInFlowCallback callback) {
-  if (chromeos::AssistantOptInDialog::IsActive()) {
-    std::move(callback).Run(false);
-    return;
-  }
-
   chromeos::AssistantOptInDialog::Show(type, std::move(callback));
 }
 
