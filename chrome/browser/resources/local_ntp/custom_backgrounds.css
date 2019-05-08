@@ -456,10 +456,6 @@ html[darkmode=true] #bg-sel-footer {
   margin-inline-end: 8px;
 }
 
-#bg-sel-footer-toggle-text {
-  padding: 24px 0 0 16px;
-}
-
 .bg-sel-tile {
   background-size: cover;
   height: 100%;
@@ -601,42 +597,6 @@ html[darkmode=true] .selected-check::after {
 
 .bg-selected .bg-sel-tile-title {
   width: 118px;
-}
-
-#bg-daily-refresh {
- margin: 23px 0 0 16px;
-}
-
-.is-img-sel #bg-daily-refresh {
-  display: none;
-}
-
-.is-col-sel #bg-daily-refresh {
-  display: none;
-}
-
-.is-img-sel #bg-sel-refresh-text {
-  display: none;
-  margin: 24px 0 0 64px;
-}
-
-.is-col-sel #bg-sel-refresh-text {
-  display: none;
-}
-
-.plus-icon {
-  background: url(icons/add.svg);
-  background-size: 22px 22px;
-  height: 22px;
-  left: 67px;
-  position: absolute;
-  top: 47px;
-  width: 22px;
-}
-
-html[dir=rtl] .plus-icon {
-  left: auto;
-  right: 67px;
 }
 
 #custom-bg-attr {

@@ -72,7 +72,6 @@ customBackgrounds.IDS = {
   ATTR1: 'attr1',
   ATTR2: 'attr2',
   ATTRIBUTIONS: 'custom-bg-attr',
-  BACK: 'bg-sel-back',
   BACK_CIRCLE: 'bg-sel-back-circle',
   CANCEL: 'bg-sel-footer-cancel',
   CUSTOMIZATION_MENU: 'customization-menu',
@@ -88,17 +87,11 @@ customBackgrounds.IDS = {
   EDIT_BG_MENU: 'edit-bg-menu',
   EDIT_BG_TEXT: 'edit-bg-text',
   MENU_CANCEL: 'menu-cancel',
-  MSG_BOX: 'message-box',
-  MSG_BOX_MSG: 'message-box-message',
-  MSG_BOX_LINK: 'message-box-link',
-  MSG_BOX_CONTAINER: 'message-box-container',
   LINK_ICON: 'link-icon',
   MENU: 'bg-sel-menu',
   OPTIONS_TITLE: 'edit-bg-title',
   RESTORE_DEFAULT: 'edit-bg-restore-default',
   RESTORE_DEFAULT_TEXT: 'edit-bg-restore-default-text',
-  REFRESH_TEXT: 'bg-sel-refresh-text',
-  REFRESH_TOGGLE: 'bg-daily-refresh',
   UPLOAD_IMAGE: 'edit-bg-upload-image',
   UPLOAD_IMAGE_TEXT: 'edit-bg-upload-image-text',
   TILES: 'bg-sel-tiles',
@@ -119,16 +112,11 @@ customBackgrounds.CLASSES = {
   COLLECTION_TILE: 'bg-sel-tile',  // Preview tile for background customization
   COLLECTION_TILE_BG: 'bg-sel-tile-bg',
   COLLECTION_TITLE: 'bg-sel-tile-title',  // Title of a background image
-  DONE_AVAILABLE: 'done-available',
   // Extended and elevated style for entry point.
   ENTRY_POINT_ENHANCED: 'ep-enhanced',
-  FLOAT_UP: 'float-up',
-  HAS_LINK: 'has-link',
-  HIDE_MSG_BOX: 'message-box-hide',
   IMAGE_DIALOG: 'is-img-sel',
   OPTION: 'bg-option',
   OPTION_DISABLED: 'bg-option-disabled',  // The menu option is disabled.
-  PLUS_ICON: 'plus-icon',
   MOUSE_NAV: 'using-mouse-nav',
   SELECTED_BORDER: 'selected-border',
   SELECTED_CHECK: 'selected-check',
@@ -603,7 +591,6 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
       $(customBackgrounds.IDS.DONE).tabIndex = 0;
 
       // Turn toggle off when an image is selected.
-      $(customBackgrounds.IDS.REFRESH_TOGGLE).children[0].checked = false;
       $(customBackgrounds.IDS.DONE).disabled = false;
       ntpApiHandle.logEvent(BACKGROUND_CUSTOMIZATION_LOG_TYPE
                                 .NTP_CUSTOMIZE_CHROME_BACKGROUND_SELECT_IMAGE);
@@ -955,8 +942,6 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
       configData.translatedStrings.uploadImage;
   $(customBackgrounds.IDS.RESTORE_DEFAULT_TEXT).textContent =
       configData.translatedStrings.restoreDefaultBackground;
-  $(customBackgrounds.IDS.REFRESH_TEXT).textContent =
-      configData.translatedStrings.dailyRefresh;
   $(customBackgrounds.IDS.DONE).textContent =
       configData.translatedStrings.selectionDone;
   $(customBackgrounds.IDS.CANCEL).textContent =
@@ -1176,15 +1161,6 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
     if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
       doneInteraction(event);
     }
-  };
-
-  // Interactions with the "Daily refresh" toggle.
-  $(customBackgrounds.IDS.REFRESH_TOGGLE).onclick = function(event) {
-    if (customBackgrounds.selectedTile) {
-      customBackgrounds.removeSelectedState(customBackgrounds.selectedTile);
-      customBackgrounds.selectedTile = null;
-    }
-    $(customBackgrounds.IDS.DONE).disabled = false;
   };
 
   // On any arrow key event in the tiles area, focus the first tile.
