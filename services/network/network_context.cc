@@ -778,6 +778,10 @@ bool NetworkContext::SkipReportingPermissionCheck() const {
   return params_ && params_->skip_reporting_send_permission_check;
 }
 
+size_t NetworkContext::ReportAndGatherCorsPreflightCacheSizeMetric() {
+  return cors_preflight_controller_.ReportAndGatherCacheSizeMetric();
+}
+
 void NetworkContext::ClearNetworkingHistorySince(
     base::Time time,
     base::OnceClosure completion_callback) {

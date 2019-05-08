@@ -11,7 +11,6 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "base/timer/timer.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/cors/preflight_result.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
@@ -48,6 +47,9 @@ class COMPONENT_EXPORT(NETWORK_CPP) PreflightCache final {
       const net::HttpRequestHeaders& headers,
       bool is_revalidating);
 
+  // Reports and gather CORS preflight cache size metric.
+  size_t ReportAndGatherSizeMetric();
+
   // Counts cached origins for testing.
   size_t CountOriginsForTesting() const;
 
@@ -61,16 +63,12 @@ class COMPONENT_EXPORT(NETWORK_CPP) PreflightCache final {
  private:
   size_t CountEntries() const;
   void MayPurge(size_t max_entries);
-  void ReportMetrics();
 
   // A map for caching. The outer map takes an origin to find a per-origin
   // cache map, and the inner map takes an URL to find a cached entry.
   std::map<std::string /* origin */,
            std::map<std::string /* url */, std::unique_ptr<PreflightResult>>>
       cache_;
-
-  // RepeatingTimer to report metrics.
-  base::RepeatingTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(PreflightCache);
 };

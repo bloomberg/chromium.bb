@@ -353,6 +353,10 @@ void PreflightController::PerformPreflightCheck(
   (*emplaced_pair.first)->Request(loader_factory);
 }
 
+size_t PreflightController::ReportAndGatherCacheSizeMetric() {
+  return cache_.ReportAndGatherSizeMetric();
+}
+
 void PreflightController::RemoveLoader(PreflightLoader* loader) {
   auto it = loaders_.find(loader);
   DCHECK(it != loaders_.end());
