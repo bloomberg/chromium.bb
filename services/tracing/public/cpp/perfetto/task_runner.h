@@ -17,15 +17,6 @@
 
 namespace tracing {
 
-class COMPONENT_EXPORT(TRACING_CPP) ScopedPerfettoPostTaskBlocker {
- public:
-  explicit ScopedPerfettoPostTaskBlocker(bool enable);
-  ~ScopedPerfettoPostTaskBlocker();
-
- private:
-  const bool enabled_;
-};
-
 // This wraps a base::TaskRunner implementation to be able
 // to provide it to Perfetto.
 class COMPONENT_EXPORT(TRACING_CPP) PerfettoTaskRunner
@@ -58,24 +49,10 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTaskRunner
   void ResetTaskRunnerForTesting(
       scoped_refptr<base::SequencedTaskRunner> task_runner);
 
-  // Sometimes we have to temporarily defer any posted tasks, like
-  // when trace events are added when the taskqueue is locked. For this purpose
-  // we keep a timer running when tracing is enabled, which will periodically
-  // drain these posted tasks.
-  void StartDeferredTasksDrainTimer();
-  void StopDeferredTasksDrainTimer();
-
-  static void BlockPostTaskForThread();
-  static void UnblockPostTaskForThread();
-
  private:
   void OnDeferredTasksDrainTimer();
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
-  base::Lock lock_;  // Protects deferred_tasks_;
-  std::list<std::function<void()>> deferred_tasks_;
-  base::RepeatingTimer deferred_tasks_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(PerfettoTaskRunner);
 };

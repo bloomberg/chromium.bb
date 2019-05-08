@@ -63,15 +63,6 @@ PerfettoService::PerfettoService(
   // from threads without a MessageLoop doesn't get lost.
   service_->SetSMBScrapingEnabled(true);
   DCHECK(service_);
-
-  // Trace events emitted from the taskqueue and other places can cause the
-  // Perfetto task runner to queue tasks instead of directly posting them to the
-  // taskrunner; we start a timer to periodically flush these (rare) tasks.
-  // This is needed in addition to the timer we start in
-  // TraceEventDataSource::BeginTracing as the SharedMemoryArbiter will post
-  // tasks to the taskrunner used by the Perfetto service rather than the
-  // taskrunner used by the ProducerClient, when running in in-process mode.
-  perfetto_task_runner_.StartDeferredTasksDrainTimer();
 }
 
 PerfettoService::~PerfettoService() = default;

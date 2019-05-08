@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/strings/stringprintf.h"
+#include "base/task/common/scoped_defer_task_posting.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/time_domain.h"
 #include "base/task/sequence_manager/work_queue.h"
@@ -49,6 +50,8 @@ TaskQueueImpl::GuardedTaskPoster::GuardedTaskPoster(TaskQueueImpl* outer)
 TaskQueueImpl::GuardedTaskPoster::~GuardedTaskPoster() {}
 
 bool TaskQueueImpl::GuardedTaskPoster::PostTask(PostedTask task) {
+  ScopedDeferTaskPosting disallow_task_posting;
+
   auto token = operations_controller_.TryBeginOperation();
   if (!token)
     return false;
@@ -565,14 +568,16 @@ void TaskQueueImpl::TraceQueueSize() const {
   if (!associated_thread_->IsBoundToCurrentThread())
     return;
 
-  base::internal::CheckedAutoLock lock(any_thread_lock_);
-  TRACE_COUNTER_WITH_FLAG1(
-      TRACE_DISABLED_BY_DEFAULT("sequence_manager"), GetName(),
-      TRACE_EVENT_FLAG_DISALLOW_POSTTASK,
-      any_thread_.immediate_incoming_queue.size() +
-          main_thread_only().immediate_work_queue->Size() +
-          main_thread_only().delayed_work_queue->Size() +
-          main_thread_only().delayed_incoming_queue.size());
+  size_t total_task_count;
+  {
+    base::internal::CheckedAutoLock lock(any_thread_lock_);
+    total_task_count = any_thread_.immediate_incoming_queue.size() +
+                       main_thread_only().immediate_work_queue->Size() +
+                       main_thread_only().delayed_work_queue->Size() +
+                       main_thread_only().delayed_incoming_queue.size();
+  }
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("sequence_manager"), GetName(),
+                 total_task_count);
 }
 
 void TaskQueueImpl::SetQueuePriority(TaskQueue::QueuePriority priority) {

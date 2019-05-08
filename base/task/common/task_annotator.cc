@@ -66,8 +66,7 @@ void TaskAnnotator::WillQueueTask(const char* trace_event_name,
   DCHECK(task_queue_name);
   TRACE_EVENT_WITH_FLOW1(
       TRACE_DISABLED_BY_DEFAULT("toplevel.flow"), trace_event_name,
-      TRACE_ID_MANGLE(GetTaskTraceID(*pending_task)),
-      TRACE_EVENT_FLAG_FLOW_OUT | TRACE_EVENT_FLAG_DISALLOW_POSTTASK,
+      TRACE_ID_MANGLE(GetTaskTraceID(*pending_task)), TRACE_EVENT_FLAG_FLOW_OUT,
       "task_queue_name", task_queue_name);
 
   DCHECK(!pending_task->task_backtrace[0])

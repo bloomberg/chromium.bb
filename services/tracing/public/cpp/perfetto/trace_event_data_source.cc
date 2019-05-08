@@ -267,7 +267,6 @@ void TraceEventDataSource::StartTracing(
       TraceConfig(data_source_config.chrome_config().trace_config());
   TraceLog::GetInstance()->SetEnabled(trace_config, TraceLog::RECORDING_MODE);
   ResetHistograms(trace_config);
-  PerfettoTracedProcess::GetTaskRunner()->StartDeferredTasksDrainTimer();
 }
 
 void TraceEventDataSource::StopTracing(
@@ -282,12 +281,6 @@ void TraceEventDataSource::StopTracing(
           return;
         }
 
-        // It's extremely unlikely any threads are still in mid-trace-event
-        // at this point and end up posting new tasks to the PerfettoTaskRunner
-        // which end up not getting run until the next tracing session; worst
-        // case is we lose some chunk commit messages and Perfetto will
-        // scrape the chunks.
-        PerfettoTracedProcess::GetTaskRunner()->StopDeferredTasksDrainTimer();
         data_source->UnregisterFromTraceLog();
 
         if (data_source->stop_complete_callback_) {
@@ -448,20 +441,13 @@ void TraceEventDataSource::OnAddTraceEvent(
     // events emitted while the taskqueue is locked), we can't reset the
     // sink as the TraceWriter deletion is done through PostTask.
     if (new_session_id > kFirstSessionID &&
-        new_session_id != thread_local_event_sink->session_id() &&
-        !(trace_event->flags() & TRACE_EVENT_FLAG_DISALLOW_POSTTASK)) {
+        new_session_id != thread_local_event_sink->session_id()) {
       delete thread_local_event_sink;
       thread_local_event_sink = nullptr;
     }
   }
 
   if (!thread_local_event_sink) {
-    // Trace events emitted by the task queue itself can happen while the task
-    // queue is locked, posting to it reentrantly would deadlock so these events
-    // need to be flagged so we can avoid PostTasks while they're being emitted.
-    ScopedPerfettoPostTaskBlocker post_task_blocker(
-        !!(trace_event->flags() & TRACE_EVENT_FLAG_DISALLOW_POSTTASK));
-
     thread_local_event_sink =
         GetInstance()->CreateThreadLocalEventSink(thread_will_flush);
     ThreadLocalEventSinkSlot()->Set(thread_local_event_sink);

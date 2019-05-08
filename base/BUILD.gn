@@ -744,6 +744,8 @@ jumbo_component("base") {
     "task/common/intrusive_heap.h",
     "task/common/operations_controller.cc",
     "task/common/operations_controller.h",
+    "task/common/scoped_defer_task_posting.cc",
+    "task/common/scoped_defer_task_posting.h",
     "task/common/task_annotator.cc",
     "task/common/task_annotator.h",
     "task/lazy_task_runner.cc",

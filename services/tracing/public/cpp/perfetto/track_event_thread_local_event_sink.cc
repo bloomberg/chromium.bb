@@ -176,9 +176,6 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
   bool copy_strings = flags & TRACE_EVENT_FLAG_COPY;
   bool explicit_timestamp = flags & TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP;
 
-  ScopedPerfettoPostTaskBlocker post_task_blocker(
-      !!(flags & TRACE_EVENT_FLAG_DISALLOW_POSTTASK));
-
   if (reset_incremental_state_) {
     interned_event_categories_.ResetEmittedState();
     interned_event_names_.ResetEmittedState();
