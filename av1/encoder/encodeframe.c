@@ -3774,6 +3774,11 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
 
   double r0, rk, beta;
 
+  if (cpi->tpl_model_pass == 1) {
+    assert(cpi->oxcf.enable_tpl_model == 2);
+    return cm->base_qindex;
+  }
+
   if (tpl_frame->is_valid == 0) return cm->base_qindex;
 
   if (cpi->common.show_frame) return cm->base_qindex;
@@ -4164,6 +4169,12 @@ static void adjust_rdmult_tpl_model(AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
   const int orig_rdmult = cpi->rd.RDMULT;
   const int gf_group_index = cpi->twopass.gf_group.index;
   x->cb_rdmult = orig_rdmult;
+
+  if (cpi->tpl_model_pass == 1) {
+    assert(cpi->oxcf.enable_tpl_model == 2);
+    x->rdmult = orig_rdmult;
+    return;
+  }
 
   if (cpi->oxcf.enable_tpl_model && cpi->oxcf.aq_mode == NO_AQ &&
       cpi->oxcf.deltaq_mode == NO_DELTA_Q && gf_group_index > 0 &&
@@ -4969,7 +4980,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 
   if (cpi->twopass.gf_group.index &&
       cpi->twopass.gf_group.index < MAX_LAG_BUFFERS &&
-      cpi->oxcf.enable_tpl_model) {
+      cpi->oxcf.enable_tpl_model && cpi->tpl_model_pass == 0) {
     const int tpl_idx =
         cpi->twopass.gf_group.frame_disp_idx[cpi->twopass.gf_group.index];
     TplDepFrame *tpl_frame = &cpi->tpl_stats[tpl_idx];

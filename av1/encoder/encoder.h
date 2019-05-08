@@ -157,7 +157,7 @@ enum {
   SS_CFG_TOTAL = 2
 } UENUM1BYTE(SS_CFG_OFFSET);
 
-#define MAX_LENGTH_TPL_FRAME_STATS MAX_LAG_BUFFERS
+#define MAX_LENGTH_TPL_FRAME_STATS 27
 
 typedef struct TplDepStats {
   int64_t intra_cost;

@@ -4370,7 +4370,7 @@ static void recode_loop_update_q(AV1_COMP *const cpi, int *const loop,
 static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
   AV1_COMMON *const cm = &cpi->common;
   RATE_CONTROL *const rc = &cpi->rc;
-  const int allow_recode = cpi->sf.recode_loop != DISALLOW_RECODE;
+  const int allow_recode = (cpi->sf.recode_loop != DISALLOW_RECODE);
 
   set_size_independent_vars(cpi);
 
@@ -4395,6 +4395,7 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
   printf("\n Encoding a frame:");
 #endif
   do {
+    loop = 0;
     aom_clear_system_state();
 
     // if frame was scaled calculate global_motion_search again if already
@@ -4498,6 +4499,15 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
 
     if (allow_recode && !cpi->sf.gm_disable_recode &&
         recode_loop_test_global_motion(cpi)) {
+      loop = 1;
+    }
+
+    if (cpi->tpl_model_pass == 1) {
+      assert(cpi->oxcf.enable_tpl_model == 2);
+
+      // TODO(debargha, yuec): Update forward tpl model here
+
+      cpi->tpl_model_pass = 0;
       loop = 1;
     }
 
@@ -4990,6 +5000,15 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 #if CONFIG_COLLECT_COMPONENT_TIMING
   start_timing(cpi, encode_with_recode_loop_time);
 #endif
+
+  if (cpi->oxcf.pass == 2 && cpi->oxcf.enable_tpl_model == 2 &&
+      current_frame->frame_type == INTER_FRAME) {
+    if (!cm->show_frame) {
+      assert(cpi->tpl_model_pass == 0);
+      cpi->tpl_model_pass = 1;
+    }
+  }
+
   if (encode_with_recode_loop(cpi, size, dest) != AOM_CODEC_OK)
     return AOM_CODEC_ERROR;
 #if CONFIG_COLLECT_COMPONENT_TIMING
