@@ -4,6 +4,7 @@
 <link rel="import" href="../cr_icons_css.html">
 <link rel="import" href="../cr_toolbar/cr_toolbar_search_field.html">
 <link rel="import" href="../hidden_style_css.html">
+<link rel="import" href="../icons.html">
 <link rel="import" href="../shared_vars_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-media-query/iron-media-query.html">
 
@@ -54,9 +55,8 @@
       }
 
       cr-icon-button {
-        --cr-icon-button-size:  32px;
+        --cr-icon-button-size: 32px;
         min-width: 32px;
-        padding: 6px 0;
       }
 
       :host-context(html:not([dark])) cr-icon-button {
@@ -144,24 +144,14 @@
         padding: 0;
         width: 20px;
       }
-
-      #menuButton {
-        -webkit-mask-image: url(../../images/icon_toolbar_menu.svg);
-        -webkit-mask-position: center;
-        -webkit-mask-repeat: no-repeat;
-        background: currentColor;
-      }
-
-      :host-context([dark]) #menuButton {
-        -webkit-mask-image: url(../../images/dark/icon_toolbar_menu.svg);
-      }
     </style>
     <div id="leftContent">
       <div id="leftSpacer">
         <!-- Note: showing #menuPromo relies on this dom-if being [restamp]. -->
         <template is="dom-if" if="[[showMenu]]" restamp>
-          <cr-icon-button id="menuButton" class="icon-toolbar-menu no-overlap"
-              on-click="onMenuTap_" aria-label$="[[menuLabel]]"
+          <cr-icon-button id="menuButton" class="no-overlap"
+              iron-icon="cr20:menu" on-click="onMenuTap_"
+              aria-label$="[[menuLabel]]"
               title="[[titleIfNotShowMenuPromo_(menuLabel, showMenuPromo)]]">
           </cr-icon-button>
           <template is="dom-if" if="[[showMenuPromo]]">
