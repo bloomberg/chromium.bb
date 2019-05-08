@@ -666,6 +666,8 @@ jumbo_static_library("test_support") {
       "test/cocoa_helper.mm",
       "test/menu_test_observer.h",
       "test/menu_test_observer.mm",
+      "test/ns_ax_tree_validator.h",
+      "test/ns_ax_tree_validator.mm",
       "test/nswindow_fullscreen_notification_waiter.h",
       "test/nswindow_fullscreen_notification_waiter.mm",
       "test/scoped_fake_full_keyboard_access.h",
