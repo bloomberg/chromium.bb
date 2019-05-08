@@ -98,9 +98,6 @@ struct CORE_EXPORT FrameLoadRequest {
   ShouldSendReferrer GetShouldSendReferrer() const {
     return should_send_referrer_;
   }
-  void SetShouldSendReferrer(ShouldSendReferrer should_send_referrer) {
-    should_send_referrer_ = should_send_referrer;
-  }
 
   const AtomicString& HrefTranslate() const { return href_translate_; }
   void SetHrefTranslate(const AtomicString& translate) {
@@ -141,6 +138,11 @@ struct CORE_EXPORT FrameLoadRequest {
   bool IsWindowOpen() const { return is_window_open_; }
 
   void SetNoOpener() { window_features_.noopener = true; }
+  void SetNoReferrer() {
+    should_send_referrer_ = kNeverSendReferrer;
+    resource_request_.ClearHTTPReferrer();
+    resource_request_.ClearHTTPOrigin();
+  }
 
  private:
   Member<Document> origin_document_;

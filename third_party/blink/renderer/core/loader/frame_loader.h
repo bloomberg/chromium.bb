@@ -208,8 +208,6 @@ class CORE_EXPORT FrameLoader final {
 
   void Trace(blink::Visitor*);
 
-  static void SetReferrerForFrameRequest(FrameLoadRequest&);
-
   void DidDropNavigation();
   void MarkAsLoading();
 
@@ -219,7 +217,7 @@ class CORE_EXPORT FrameLoader final {
   bool ShouldReuseDefaultView(const KURL&, const ContentSecurityPolicy*);
 
  private:
-  bool PrepareRequestForThisFrame(FrameLoadRequest&);
+  bool AllowRequestForThisFrame(const FrameLoadRequest&);
   WebFrameLoadType DetermineFrameLoadType(const KURL& url,
                                           const AtomicString& http_method,
                                           Document* origin_document,

@@ -3507,9 +3507,7 @@ TEST_F(WebViewTest, DoNotFocusCurrentFrameOnNavigateFromLocalFrame) {
   FrameLoadRequest request_with_target_start(
       local_frame->GetDocument(),
       web_url_request_with_target_start.ToResourceRequest(), "_top");
-  local_frame->Loader().StartNavigation(request_with_target_start);
-  frame_test_helpers::PumpPendingRequestsForFrameToLoad(
-      To<WebLocalFrameImpl>(web_view_impl->MainFrame()->FirstChild()));
+  local_frame->Tree().FindOrCreateFrameForNavigation(request_with_target_start);
   EXPECT_FALSE(client.DidFocusCalled());
 
   web_view_helper.Reset();  // Remove dependency on locally scoped client.
@@ -3527,8 +3525,8 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate) {
   FrameLoadRequest request(nullptr, web_url_request.ToResourceRequest(),
                            "_blank");
   To<LocalFrame>(web_view_impl->GetPage()->MainFrame())
-      ->Loader()
-      .StartNavigation(request);
+      ->Tree()
+      .FindOrCreateFrameForNavigation(request);
   ASSERT_TRUE(client.CreatedWebView());
   EXPECT_FALSE(client.DidFocusCalled());
 
@@ -3540,8 +3538,8 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate) {
   To<LocalFrame>(static_cast<WebViewImpl*>(client.CreatedWebView())
                      ->GetPage()
                      ->MainFrame())
-      ->Loader()
-      .StartNavigation(request_with_target_start);
+      ->Tree()
+      .FindOrCreateFrameForNavigation(request_with_target_start);
   EXPECT_TRUE(client.DidFocusCalled());
 
   web_view_helper.Reset();  // Remove dependency on locally scoped client.
@@ -3569,33 +3567,12 @@ class ViewReusingWebViewClient : public frame_test_helpers::TestWebViewClient {
   WebView* web_view_ = nullptr;
 };
 
-class NavigationPolicyWebFrameClient
-    : public frame_test_helpers::TestWebFrameClient {
- public:
-  NavigationPolicyWebFrameClient() = default;
-
-  void BeginNavigation(std::unique_ptr<WebNavigationInfo> info) override {
-    begin_navigation_called_ = true;
-    last_navigation_policy_ = info->navigation_policy;
-  }
-
-  bool BeginNavigationWasCalled() const { return begin_navigation_called_; }
-  WebNavigationPolicy LastNavigationPolicy() const {
-    return last_navigation_policy_;
-  }
-
- private:
-  WebNavigationPolicy last_navigation_policy_ = kWebNavigationPolicyCurrentTab;
-  bool begin_navigation_called_ = false;
-};
-
 TEST_F(WebViewTest,
        ReuseExistingWindowOnCreateViewUsesCorrectNavigationPolicy) {
   ViewReusingWebViewClient view_client;
-  NavigationPolicyWebFrameClient frame_client;
   frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl =
-      web_view_helper.Initialize(&frame_client, &view_client);
+      web_view_helper.Initialize(nullptr, &view_client);
   view_client.SetWebView(web_view_impl);
   LocalFrame* frame = To<LocalFrame>(web_view_impl->GetPage()->MainFrame());
 
@@ -3604,10 +3581,10 @@ TEST_F(WebViewTest,
   WebURLRequest web_url_request(KURL("about:blank"));
   FrameLoadRequest request(frame->GetDocument(),
                            web_url_request.ToResourceRequest(), "_blank");
-  frame->Loader().StartNavigation(request);
-  ASSERT_TRUE(frame_client.BeginNavigationWasCalled());
-  EXPECT_EQ(kWebNavigationPolicyCurrentTab,
-            frame_client.LastNavigationPolicy());
+  FrameTree::FindResult result =
+      frame->Tree().FindOrCreateFrameForNavigation(request);
+  EXPECT_EQ(frame, result.frame);
+  EXPECT_EQ(kNavigationPolicyCurrentTab, request.GetNavigationPolicy());
 }
 
 TEST_F(WebViewTest, DispatchesFocusOutFocusInOnViewToggleFocus) {

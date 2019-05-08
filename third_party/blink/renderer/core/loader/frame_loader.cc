@@ -497,38 +497,6 @@ void FrameLoader::DidFinishSameDocumentNavigation(
   TakeObjectSnapshot();
 }
 
-// static
-void FrameLoader::SetReferrerForFrameRequest(FrameLoadRequest& frame_request) {
-  ResourceRequest& request = frame_request.GetResourceRequest();
-  Document* origin_document = frame_request.OriginDocument();
-
-  if (!origin_document)
-    return;
-  if (frame_request.GetShouldSendReferrer() == kNeverSendReferrer)
-    return;
-
-  // Always use the initiating document to generate the referrer. We need to
-  // generateReferrer(), because we haven't enforced
-  // network::mojom::ReferrerPolicy or https->http referrer suppression yet.
-  String referrer_to_use = request.ReferrerString();
-  network::mojom::ReferrerPolicy referrer_policy_to_use =
-      request.GetReferrerPolicy();
-
-  if (referrer_to_use == Referrer::ClientReferrerString())
-    referrer_to_use = origin_document->OutgoingReferrer();
-
-  if (referrer_policy_to_use == network::mojom::ReferrerPolicy::kDefault)
-    referrer_policy_to_use = origin_document->GetReferrerPolicy();
-
-  Referrer referrer = SecurityPolicy::GenerateReferrer(
-      referrer_policy_to_use, request.Url(), referrer_to_use);
-
-  // TODO(domfarolino): Stop storing ResourceRequest's generated referrer as a
-  // header and instead use a separate member. See https://crbug.com/850813.
-  request.SetHttpReferrer(referrer);
-  request.SetHTTPOriginToMatchReferrerIfNeeded();
-}
-
 WebFrameLoadType FrameLoader::DetermineFrameLoadType(
     const KURL& url,
     const AtomicString& http_method,
@@ -581,13 +549,13 @@ WebFrameLoadType FrameLoader::DetermineFrameLoadType(
   return WebFrameLoadType::kStandard;
 }
 
-bool FrameLoader::PrepareRequestForThisFrame(FrameLoadRequest& request) {
+bool FrameLoader::AllowRequestForThisFrame(const FrameLoadRequest& request) {
   // If no origin Document* was specified, skip remaining security checks and
   // assume the caller has fully initialized the FrameLoadRequest.
   if (!request.OriginDocument())
     return true;
 
-  KURL url = request.GetResourceRequest().Url();
+  const KURL& url = request.GetResourceRequest().Url();
   if (url.ProtocolIsJavaScript()) {
     Document* origin_document = request.OriginDocument();
     // Check the CSP of the caller (the "source browsing context") if required,
@@ -669,6 +637,8 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   CHECK(!IsBackForwardLoadType(frame_load_type));
   DCHECK(passed_request.TriggeringEventInfo() !=
          WebTriggeringEventInfo::kUnknown);
+  // Finding the correct frame must happen before calling StartNavigation().
+  DCHECK(passed_request.FrameName().IsEmpty());
 
   DCHECK(frame_->GetDocument());
   if (HTMLFrameOwnerElement* element = frame_->DeprecatedLocalOwner())
@@ -682,30 +652,8 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   resource_request.SetHasUserGesture(
       LocalFrame::HasTransientUserActivation(frame_));
 
-  if (!PrepareRequestForThisFrame(request))
+  if (!AllowRequestForThisFrame(request))
     return;
-
-  SetReferrerForFrameRequest(request);
-
-  // A GetNavigationPolicy() value other than kNavigationPolicyCurrentTab at
-  // this point indicates that a user event modified the navigation policy
-  // (e.g., a ctrl-click). Let the user's action override any target attribute.
-  if (request.GetNavigationPolicy() == kNavigationPolicyCurrentTab) {
-    Frame* target_frame =
-        frame_->Tree().FindOrCreateFrameForNavigation(request).frame;
-    request.SetNavigationPolicy(kNavigationPolicyCurrentTab);
-    if (!target_frame)
-      return;
-    if (target_frame != frame_) {
-      bool was_in_same_page = target_frame->GetPage() == frame_->GetPage();
-      request.ClearFrameName();
-      target_frame->Navigate(request, frame_load_type);
-      Page* page = target_frame->GetPage();
-      if (!was_in_same_page && page)
-        page->GetChromeClient().Focus(frame_);
-      return;
-    }
-  }
 
   // Block renderer-initiated loads of data: and filesystem: URLs in the top
   // frame.

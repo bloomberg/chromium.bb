@@ -132,9 +132,6 @@ void SVGAElement::DefaultEventHandler(Event& event) {
         target = AtomicString("_blank");
       event.SetDefaultHandled();
 
-      LocalFrame* frame = GetDocument().GetFrame();
-      if (!frame)
-        return;
       FrameLoadRequest frame_request(
           &GetDocument(), ResourceRequest(GetDocument().CompleteURL(url)),
           target);
@@ -142,8 +139,16 @@ void SVGAElement::DefaultEventHandler(Event& event) {
       frame_request.SetTriggeringEventInfo(
           event.isTrusted() ? WebTriggeringEventInfo::kFromTrustedEvent
                             : WebTriggeringEventInfo::kFromUntrustedEvent);
-      frame->Loader().StartNavigation(frame_request,
-                                      WebFrameLoadType::kStandard);
+      if (!GetDocument().GetFrame())
+        return;
+      Frame* frame = GetDocument()
+                         .GetFrame()
+                         ->Tree()
+                         .FindOrCreateFrameForNavigation(frame_request)
+                         .frame;
+      if (!frame)
+        return;
+      frame->Navigate(frame_request, WebFrameLoadType::kStandard);
       return;
     }
   }

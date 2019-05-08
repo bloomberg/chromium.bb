@@ -84,9 +84,8 @@ void RemoteFrame::Navigate(const FrameLoadRequest& passed_request,
   }
 
   // The process where this frame actually lives won't have sufficient
-  // information to determine correct referrer and upgrade the url, since it
-  // won't have access to the originDocument. Do it now.
-  FrameLoader::SetReferrerForFrameRequest(frame_request);
+  // information to upgrade the url, since it won't have access to the
+  // originDocument. Do it now.
   const FetchClientSettingsObject* fetch_client_settings_object = nullptr;
   if (frame_request.OriginDocument()) {
     fetch_client_settings_object = &frame_request.OriginDocument()

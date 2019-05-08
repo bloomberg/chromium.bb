@@ -10,9 +10,36 @@
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
+
+static void SetReferrerForRequest(Document* origin_document,
+                                  ResourceRequest& request) {
+  DCHECK(origin_document);
+
+  // Always use the initiating document to generate the referrer. We need to
+  // generateReferrer(), because we haven't enforced
+  // network::mojom::ReferrerPolicy or https->http referrer suppression yet.
+  String referrer_to_use = request.ReferrerString();
+  network::mojom::ReferrerPolicy referrer_policy_to_use =
+      request.GetReferrerPolicy();
+
+  if (referrer_to_use == Referrer::ClientReferrerString())
+    referrer_to_use = origin_document->OutgoingReferrer();
+
+  if (referrer_policy_to_use == network::mojom::ReferrerPolicy::kDefault)
+    referrer_policy_to_use = origin_document->GetReferrerPolicy();
+
+  Referrer referrer = SecurityPolicy::GenerateReferrer(
+      referrer_policy_to_use, request.Url(), referrer_to_use);
+
+  // TODO(domfarolino): Stop storing ResourceRequest's generated referrer as a
+  // header and instead use a separate member. See https://crbug.com/850813.
+  request.SetHttpReferrer(referrer);
+  request.SetHTTPOriginToMatchReferrerIfNeeded();
+}
 
 FrameLoadRequest::FrameLoadRequest(Document* origin_document,
                                    const ResourceRequest& resource_request)
@@ -54,6 +81,8 @@ FrameLoadRequest::FrameLoadRequest(Document* origin_document,
       origin_document->GetPublicURLManager().Resolve(
           resource_request.Url(), MakeRequest(&blob_url_token_->data));
     }
+
+    SetReferrerForRequest(origin_document_, resource_request_);
   }
 }
 

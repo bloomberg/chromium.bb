@@ -28,7 +28,9 @@
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_view.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/create_window.h"
+#include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
@@ -195,15 +197,36 @@ FrameTree::FindResult FrameTree::FindOrCreateFrameForNavigation(
   DCHECK(IsA<LocalFrame>(this_frame_.Get()));
   LocalFrame* current_frame = To<LocalFrame>(this_frame_.Get());
 
+  // A GetNavigationPolicy() value other than kNavigationPolicyCurrentTab at
+  // this point indicates that a user event modified the navigation policy
+  // (e.g., a ctrl-click). Let the user's action override any target attribute.
+  if (request.GetNavigationPolicy() != kNavigationPolicyCurrentTab) {
+    request.ClearFrameName();
+    return FindResult(current_frame, false);
+  }
+
   Frame* frame = FindFrameForNavigationInternal(request);
   bool new_window = false;
   if (!frame) {
     frame = CreateNewWindow(*current_frame, request);
     new_window = true;
+    // CreateNewWindow() might have modified NavigationPolicy.
+    // Set it back now that the new window is known to be the right one.
+    request.SetNavigationPolicy(kNavigationPolicyCurrentTab);
   } else if (!current_frame->CanNavigate(*frame)) {
     frame = nullptr;
   }
 
+  request.ClearFrameName();
+  if (frame && !new_window) {
+    if (frame->GetPage() == current_frame->GetPage())
+      frame->GetPage()->GetFocusController().SetFocusedFrame(frame);
+    else
+      frame->GetPage()->GetChromeClient().Focus(current_frame);
+    // Focusing can fire onblur, so check for detach.
+    if (!frame->GetPage())
+      frame = nullptr;
+  }
   return FindResult(frame, new_window);
 }
 

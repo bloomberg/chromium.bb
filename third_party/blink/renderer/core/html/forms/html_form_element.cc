@@ -493,8 +493,14 @@ void HTMLFormElement::ScheduleFormSubmission(FormSubmission* submission) {
   frame_load_request.SetNavigationPolicy(submission->GetNavigationPolicy());
   frame_load_request.GetResourceRequest().SetHasUserGesture(
       LocalFrame::HasTransientUserActivation(GetDocument().GetFrame()));
-  GetDocument().GetFrame()->Navigate(frame_load_request,
-                                     WebFrameLoadType::kStandard);
+
+  Frame* target_frame = GetDocument()
+                            .GetFrame()
+                            ->Tree()
+                            .FindOrCreateFrameForNavigation(frame_load_request)
+                            .frame;
+  if (target_frame)
+    target_frame->Navigate(frame_load_request, WebFrameLoadType::kStandard);
 }
 
 void HTMLFormElement::reset() {

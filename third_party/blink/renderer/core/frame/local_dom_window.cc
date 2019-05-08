@@ -93,7 +93,6 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/create_window.h"
-#include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
@@ -1523,22 +1522,9 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   if (!result.frame)
     return nullptr;
 
-  if (!result.new_window) {
-    Page* target_page = result.frame->GetPage();
-    if (target_page == GetFrame()->GetPage())
-      target_page->GetFocusController().SetFocusedFrame(result.frame);
-    else
-      target_page->GetChromeClient().Focus(GetFrame());
-    // Focusing can fire onblur, so check for detach.
-    if (!result.frame->GetPage())
-      return nullptr;
-  }
-
   if ((!completed_url.IsEmpty() || result.new_window) &&
       !result.frame->DomWindow()->IsInsecureScriptAccess(*incumbent_window,
                                                          completed_url)) {
-    frame_request.ClearFrameName();
-    frame_request.SetNavigationPolicy(kNavigationPolicyCurrentTab);
     result.frame->Navigate(frame_request, WebFrameLoadType::kStandard);
   }
 
