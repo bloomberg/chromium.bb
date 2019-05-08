@@ -6,19 +6,34 @@
 
 #include "base/bind.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/transition_manager/full_browser_transition_manager.h"
 #include "components/download/public/common/in_progress_download_manager.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_request_utils.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/download/download_manager_service.h"
 #endif
 
+namespace {
 // Ignores origin security check. DownloadManagerImpl will provide its own
 // implementation when InProgressDownloadManager object is passed to it.
 bool IgnoreOriginSecurityCheck(const GURL& url) {
   return true;
 }
+
+// Some ChromeOS browser tests doesn't initialize DownloadManager when profile
+// is created, and cause the download request to fail. This method helps us
+// ensure that the DownloadManager will be created after profile creation.
+void GetDownloadManagerOnProfileCreation(Profile* profile) {
+  content::DownloadManager* manager =
+      content::BrowserContext::GetDownloadManager(profile);
+  DCHECK(manager);
+}
+
+}  // namespace
 
 download::InProgressDownloadManager*
 DownloadManagerUtils::RetrieveInProgressDownloadManager(Profile* profile) {
@@ -36,4 +51,16 @@ DownloadManagerUtils::RetrieveInProgressDownloadManager(Profile* profile) {
       profile->IsOffTheRecord() ? base::FilePath() : profile->GetPath(),
       base::BindRepeating(&IgnoreOriginSecurityCheck),
       base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe));
+}
+
+void DownloadManagerUtils::InitializeSimpleDownloadManager(
+    SimpleFactoryKey* key) {
+#if defined(OS_ANDROID)
+  if (!g_browser_process) {
+    DownloadManagerService::GetInstance()->CreateInProgressDownloadManager();
+    return;
+  }
+#endif
+  FullBrowserTransitionManager::Get()->RegisterCallbackOnProfileCreation(
+      key, base::BindOnce(&GetDownloadManagerOnProfileCreation));
 }

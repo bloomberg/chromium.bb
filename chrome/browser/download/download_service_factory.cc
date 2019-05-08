@@ -17,6 +17,7 @@
 #include "chrome/browser/background_fetch/background_fetch_download_client.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_download_client.h"
 #include "chrome/browser/download/deferred_client_wrapper.h"
+#include "chrome/browser/download/download_manager_utils.h"
 #include "chrome/browser/download/download_task_scheduler_impl.h"
 #include "chrome/browser/download/simple_download_manager_coordinator_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -187,9 +188,12 @@ KeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
 #else
     task_scheduler = std::make_unique<DownloadTaskSchedulerImpl>(context);
 #endif
-    content::DownloadManager* manager =
-        content::BrowserContext::GetDownloadManager(context);
-    DCHECK(manager);
+    // Some tests doesn't initialize DownloadManager when profile is created,
+    // and cause the download service to fail. Call
+    // InitializeSimpleDownloadManager() to initialize the DownloadManager
+    // whenever profile becomes available.
+    DownloadManagerUtils::InitializeSimpleDownloadManager(
+        profile->GetProfileKey());
     return download::BuildDownloadService(
         profile->GetProfileKey(), profile->GetPrefs(), std::move(clients),
         content::GetNetworkConnectionTracker(), storage_dir,

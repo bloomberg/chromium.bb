@@ -188,6 +188,10 @@ class DownloadManagerService
   download::DownloadItem* GetDownload(const std::string& download_guid,
                                       bool is_off_the_record);
 
+  // Creates the InProgressDownloadmanager when running with ServiceManager
+  // only mode.
+  void CreateInProgressDownloadManager();
+
  protected:
   // Called to get the content::DownloadManager instance.
   virtual content::DownloadManager* GetDownloadManager(bool is_off_the_record);
@@ -229,10 +233,6 @@ class DownloadManagerService
   void OnResumptionFailed(const std::string& download_guid);
 
   void OnResumptionFailedInternal(const std::string& download_guid);
-
-  // Creates the InProgressDownloadmanager when running with ServiceManager
-  // only mode.
-  void CreateInProgressDownloadManager();
 
   // Called when all pending downloads are loaded.
   void OnPendingDownloadsLoaded();

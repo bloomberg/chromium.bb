@@ -694,7 +694,8 @@ download::DownloadItem* DownloadManagerService::GetDownload(
 }
 
 void DownloadManagerService::CreateInProgressDownloadManager() {
-  DCHECK(!in_progress_manager_);
+  if (in_progress_manager_)
+    return;
   base::FilePath data_dir;
   base::android::GetDataDirectory(&data_dir);
   in_progress_manager_ = std::make_unique<download::InProgressDownloadManager>(
