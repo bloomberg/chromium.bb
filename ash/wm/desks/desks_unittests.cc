@@ -15,9 +15,11 @@
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/new_desk_button.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_session.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -68,6 +70,16 @@ void CloseDeskFromMiniView(const DeskMiniView* desk_mini_view,
   // Move to the center of the close button and click.
   event_generator->MoveMouseTo(
       desk_mini_view->close_desk_button()->GetBoundsInScreen().CenterPoint());
+  event_generator->ClickLeftButton();
+}
+
+void ClickOnMiniView(const DeskMiniView* desk_mini_view,
+                     ui::test::EventGenerator* event_generator) {
+  DCHECK(desk_mini_view);
+
+  const gfx::Point mini_view_center =
+      desk_mini_view->GetBoundsInScreen().CenterPoint();
+  event_generator->MoveMouseTo(mini_view_center);
   event_generator->ClickLeftButton();
 }
 
@@ -731,8 +743,62 @@ TEST_F(DesksTest, RemoveActiveDeskFromOverview) {
   EXPECT_TRUE(overview_controller->IsSelecting());
 }
 
+TEST_F(DesksTest, ActivateActiveDeskFromOverview) {
+  auto* controller = DesksController::Get();
+
+  // Create one more desk other than the default initial desk, so the desks bar
+  // shows up in overview mode.
+  controller->NewDesk();
+  ASSERT_EQ(2u, controller->desks().size());
+
+  // Enter overview mode, and click on `desk_1`'s mini_view, and expect that
+  // overview mode exits since this is the already active desk.
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->ToggleOverview();
+  EXPECT_TRUE(overview_controller->IsSelecting());
+  const auto* overview_grid =
+      GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+  const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
+  const Desk* desk_1 = controller->desks()[0].get();
+  const auto* mini_view = desks_bar_view->mini_views().front().get();
+  ClickOnMiniView(mini_view, GetEventGenerator());
+  EXPECT_FALSE(overview_controller->IsSelecting());
+  EXPECT_TRUE(desk_1->is_active());
+  EXPECT_EQ(desk_1, controller->active_desk());
+}
+
+TEST_F(DesksTest, MinimizedWindow) {
+  auto* controller = DesksController::Get();
+  controller->NewDesk();
+  ASSERT_EQ(2u, controller->desks().size());
+  const Desk* desk_1 = controller->desks()[0].get();
+  const Desk* desk_2 = controller->desks()[1].get();
+
+  auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  wm::ActivateWindow(win0.get());
+  EXPECT_EQ(win0.get(), wm::GetActiveWindow());
+
+  auto* window_state = wm::GetWindowState(win0.get());
+  window_state->Minimize();
+  EXPECT_TRUE(window_state->IsMinimized());
+
+  // Minimized windows on the active desk show up in the MRU list...
+  EXPECT_EQ(1u,
+            Shell::Get()->mru_window_tracker()->BuildMruWindowList().size());
+
+  ActivateDesk(desk_2);
+
+  // ... But they don't once their desk is inactive.
+  EXPECT_TRUE(Shell::Get()->mru_window_tracker()->BuildMruWindowList().empty());
+
+  // Switching back to their desk should neither activate them nor unminimize
+  // them.
+  ActivateDesk(desk_1);
+  EXPECT_TRUE(window_state->IsMinimized());
+  EXPECT_NE(win0.get(), wm::GetActiveWindow());
+}
+
 // TODO(afakhry): Add more tests:
-// - Multi displays.
 // - Always on top windows are not tracked by any desk.
 // - Reusing containers when desks are removed and created.
 

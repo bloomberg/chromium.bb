@@ -78,19 +78,19 @@ bool AshFocusRules::IsWindowConsideredVisibleForActivation(
   if (window->IsVisible())
     return true;
 
+  const aura::Window* const parent = window->parent();
+  const bool is_on_active_desk = desks_util::IsActiveDeskContainer(parent);
+
   // Minimized windows are hidden in their minimized state, but they can always
-  // be activated.
-  if (wm::GetWindowState(window)->IsMinimized())
+  // be activated, given that they're on the active desk.
+  if (wm::GetWindowState(window)->IsMinimized() && is_on_active_desk)
     return true;
 
   if (!window->TargetVisibility())
     return false;
 
-  const aura::Window* parent = window->parent();
-  if (desks_util::IsActiveDeskContainer(parent))
-    return true;
-
-  return parent->id() == kShellWindowId_LockScreenContainer;
+  return is_on_active_desk ||
+         parent->id() == kShellWindowId_LockScreenContainer;
 }
 
 bool AshFocusRules::CanActivateWindow(const aura::Window* window) const {

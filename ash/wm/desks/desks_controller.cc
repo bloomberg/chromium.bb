@@ -185,8 +185,16 @@ void DesksController::RemoveDesk(const Desk* desk) {
 void DesksController::ActivateDesk(const Desk* desk) {
   DCHECK(HasDesk(desk));
 
-  if (desk == active_desk_)
+  if (desk == active_desk_) {
+    OverviewController* overview_controller =
+        Shell::Get()->overview_controller();
+    if (overview_controller->IsSelecting()) {
+      // Selecting the active desk's mini_view in overview mode is allowed and
+      // should just exit overview mode normally.
+      overview_controller->ToggleOverview();
+    }
     return;
+  }
 
   // New desks are always added at the end of the list to the right of existing
   // desks. Therefore, desks at lower indices are located on the left of desks

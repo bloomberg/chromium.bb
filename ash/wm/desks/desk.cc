@@ -8,6 +8,7 @@
 
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/window_util.h"
 
@@ -107,10 +108,15 @@ void Desk::Activate(bool update_window_activation) {
   // the user switched to another desk, so as not to break the user's workflow.
   for (auto* window :
        Shell::Get()->mru_window_tracker()->BuildMruWindowList()) {
-    if (windows_.contains(window)) {
-      wm::ActivateWindow(window);
-      return;
-    }
+    if (!windows_.contains(window))
+      continue;
+
+    // Do not activate minimized windows, otherwise they will unminimize.
+    if (wm::GetWindowState(window)->IsMinimized())
+      continue;
+
+    wm::ActivateWindow(window);
+    return;
   }
 }
 
