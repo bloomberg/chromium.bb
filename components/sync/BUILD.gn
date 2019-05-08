@@ -5,7 +5,6 @@
 import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
-import("//components/sync/protocol/protocol_sources.gni")
 import("//testing/test.gni")
 
 group("sync") {
@@ -15,8 +14,6 @@ group("sync") {
   ]
 }
 
-# Note: This target intentionally doesn't include test_support_fake_server -
-# targets that need the fake server should depend on it explicitly.
 group("test_support") {
   testonly = true
   public_deps = [
@@ -715,51 +712,9 @@ source_set("unit_tests") {
   }
 }
 
-static_library("test_support_fake_server") {
-  testonly = true
-  sources = [
-    "test/fake_server/bookmark_entity_builder.cc",
-    "test/fake_server/bookmark_entity_builder.h",
-    "test/fake_server/entity_builder_factory.cc",
-    "test/fake_server/entity_builder_factory.h",
-    "test/fake_server/fake_server.cc",
-    "test/fake_server/fake_server.h",
-    "test/fake_server/fake_server_http_post_provider.cc",
-    "test/fake_server/fake_server_http_post_provider.h",
-    "test/fake_server/fake_server_network_resources.cc",
-    "test/fake_server/fake_server_network_resources.h",
-    "test/fake_server/fake_server_verifier.cc",
-    "test/fake_server/fake_server_verifier.h",
-    "test/fake_server/sessions_hierarchy.cc",
-    "test/fake_server/sessions_hierarchy.h",
-  ]
-
-  deps = [
-    ":sync",
-    "//base",
-    "//net",
-    "//services/network/public/cpp:cpp",
-    "//testing/gtest",
-    "//url",
-  ]
-
-  public_deps = [
-    "//third_party/protobuf:protobuf_lite",
-  ]
-
-  configs += [ "//build/config/compiler:wexit_time_destructors" ]
-}
-
 if (is_android) {
   import("//build/config/android/rules.gni")
-
-  generate_jni("fake_server_jni") {
-    testonly = true
-    jni_package = "sync/test/fake_server"
-    sources = [
-      "//chrome/android/javatests/src/org/chromium/chrome/browser/sync/FakeServerHelper.java",
-    ]
-  }
+  import("//components/sync/protocol/protocol_sources.gni")
 
   _test_support_prepared_protos_dir =
       "$root_gen_dir/test_support_proto_java_prepare/"
@@ -792,21 +747,5 @@ if (is_android) {
       "//third_party/junit",
     ]
     java_files = [ "test/android/javatests/src/org/chromium/components/sync/test/util/MockSyncContentResolverDelegate.java" ]
-  }
-
-  static_library("test_support_fake_server_android") {
-    testonly = true
-    sources = [
-      "test/fake_server/android/fake_server_helper_android.cc",
-      "test/fake_server/android/fake_server_helper_android.h",
-    ]
-    deps = [
-      ":fake_server_jni",
-      ":sync",
-      ":test_support_fake_server",
-      "//base",
-      "//testing/gtest",
-      "//url:url",
-    ]
   }
 }

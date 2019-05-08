@@ -1176,7 +1176,7 @@ chrome_common_shared_library("libchromefortest") {
     "//components/heap_profiling:test_support",
     "//components/minidump_uploader",
     "//components/sync",
-    "//components/sync:test_support_fake_server_android",
+    "//components/sync/test/fake_server:fake_server_android",
     "//content/public/test/android:content_native_test_support",
     "//content/test:test_support",
   ]
