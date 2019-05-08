@@ -294,27 +294,16 @@ void ScriptProcessorHandler::FireProcessEventForOfflineAudioContext(
 }
 
 bool ScriptProcessorHandler::RequiresTailProcessing() const {
-  // Any tail processing that is required MUST be done by the user's
-  // audioprocess event.  We won't do anything automatic here.
-  return false;
+  // Always return true since the tail and latency are never zero.
+  return true;
 }
 
 double ScriptProcessorHandler::TailTime() const {
-  // Any tail is the responsibility of the user; we do not do anything special
-  // for the user.
-  return 0;
+  return std::numeric_limits<double>::infinity();
 }
 
 double ScriptProcessorHandler::LatencyTime() const {
-  // Any latency is the responsibility of the user; we do not do anything
-  // special for the user.
-  return 0;
-}
-
-bool ScriptProcessorHandler::PropagatesSilence() const {
-  // Can't assume silent inputs produce silent outputs since the behavior
-  // depends on the user-specified script.
-  return false;
+  return std::numeric_limits<double>::infinity();
 }
 
 void ScriptProcessorHandler::SetChannelCount(uint32_t channel_count,
