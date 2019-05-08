@@ -11,3 +11,15 @@ cc_grpc_library("directory_grpc_library") {
     "host_info.proto",
   ]
 }
+
+if (is_android) {
+  import("///build/config/android/rules.gni")
+
+  proto_java_library("directory_proto_java") {
+    proto_path = "."
+    sources = [
+      "directory_messages.proto",
+      "host_info.proto",
+    ]
+  }
+}

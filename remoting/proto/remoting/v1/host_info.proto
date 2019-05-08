@@ -4,6 +4,7 @@
 
 syntax = "proto2";
 
+option java_multiple_files = true;
 option optimize_for = LITE_RUNTIME;
 
 package remoting.apis.v1;

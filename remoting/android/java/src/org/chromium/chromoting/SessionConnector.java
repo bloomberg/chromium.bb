@@ -6,16 +6,18 @@ package org.chromium.chromoting;
 
 import org.chromium.chromoting.jni.Client;
 import org.chromium.chromoting.jni.ConnectionListener;
+import org.chromium.chromoting.jni.DirectoryService;
+import org.chromium.chromoting.jni.DirectoryServiceRequestError;
 
 /**
  * This class manages making a connection to a host, with logic for reloading the host list and
  * retrying the connection in the case of a stale host JID.
  */
-public class SessionConnector implements ConnectionListener, HostListManager.Callback {
+public class SessionConnector implements ConnectionListener, DirectoryService.HostListCallback {
     private Client mClient;
     private ConnectionListener mConnectionListener;
-    private HostListManager.Callback mHostListCallback;
-    private HostListManager mHostListManager;
+    private DirectoryService.HostListCallback mHostListCallback;
+    private DirectoryService mDirectoryService;
     private SessionAuthenticator mAuthenticator;
 
     private String mAccountName;
@@ -36,14 +38,14 @@ public class SessionConnector implements ConnectionListener, HostListManager.Cal
     /**
      * @param connectionListener Object to be notified on connection success/failure.
      * @param hostListCallback Object to be notified whenever the host list is reloaded.
-     * @param hostListManager The object used for reloading the host list.
+     * @param directoryService The object used for reloading the host list.
      */
     public SessionConnector(Client client, ConnectionListener connectionListener,
-            HostListManager.Callback hostListCallback, HostListManager hostListManager) {
+            DirectoryService.HostListCallback hostListCallback, DirectoryService directoryService) {
         mClient = client;
         mConnectionListener = connectionListener;
         mHostListCallback = hostListCallback;
-        mHostListManager = hostListManager;
+        mDirectoryService = directoryService;
     }
 
     /** Initiates a connection to the host. */
@@ -77,7 +79,7 @@ public class SessionConnector implements ConnectionListener, HostListManager.Cal
 
     private void reloadHostListAndConnect() {
         mTriedReloadingHostList = true;
-        mHostListManager.retrieveHostList(mAuthToken, this);
+        mDirectoryService.retrieveHostList(this);
     }
 
     @Override
@@ -130,17 +132,7 @@ public class SessionConnector implements ConnectionListener, HostListManager.Cal
     }
 
     @Override
-    public void onHostUpdated() {
-        // Not implemented Yet.
-    }
-
-    @Override
-    public void onHostDeleted() {
-        // Not implemented Yet.
-    }
-
-    @Override
-    public void onError(@HostListManager.Error int error) {
+    public void onError(@DirectoryServiceRequestError int error) {
         // Connection failed and reloading the host list also failed, so report the connection
         // error.
         mConnectionListener.onConnectionState(ConnectionListener.State.FAILED,

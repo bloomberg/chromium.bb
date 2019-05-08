@@ -4,6 +4,7 @@
 
 syntax = "proto2";
 
+option java_multiple_files = true;
 option optimize_for = LITE_RUNTIME;
 
 package remoting.apis.v1;
@@ -82,6 +83,31 @@ enum HeartbeatResult {
   HEARTBEATRESULT_SUCCESS = 1;
   // There was an error processing the heartbeat request.
   HEARTBEATRESULT_ERROR = 2;
+}
+
+// Requests that a new host entry to added to the Directory.
+message RegisterHostRequest {
+  // Host identity. Normally a UUID.
+  optional string host_id = 1;
+
+  // Public key for the host. Must be a 2048-bit RSA key encoded with BASE64.
+  optional string public_key = 2;
+
+  // A readable name shown to the user.
+  optional string host_name = 3;
+
+  // The OAuth client ID for the host.
+  optional string host_client_id = 4;
+}
+
+// Response to a RegisterHostRequest.
+message RegisterHostResponse {
+  // The Directory entry for the registered host.
+  optional remoting.apis.v1.HostInfo host_info = 1;
+
+  // An auth code nonce which can be exchanged for a new token from Gaia by the
+  // robot account created for the new host instance.
+  optional string auth_code = 2;
 }
 
 // Requests an auth_code with updated OAuth scopes.  Should only be called by
