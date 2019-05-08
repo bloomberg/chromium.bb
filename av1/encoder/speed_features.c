@@ -282,7 +282,7 @@ static void set_good_speed_features_framesize_independent(
     sf->inter_tx_size_search_init_depth_rect = 1;
     sf->inter_tx_size_search_init_depth_sqr = 1;
 
-    sf->fast_cdef_search = 1;
+    sf->cdef_pick_method = CDEF_FAST_SEARCH;
 
     sf->adaptive_rd_thresh = 1;
     sf->mv.auto_mv_step_size = 1;
@@ -503,7 +503,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->selective_ref_frame = 3;
     sf->inter_tx_size_search_init_depth_rect = 1;
     sf->inter_tx_size_search_init_depth_sqr = 1;
-    sf->fast_cdef_search = 1;
+    sf->cdef_pick_method = CDEF_FAST_SEARCH;
 
     sf->adaptive_rd_thresh = 1;
     sf->mv.auto_mv_step_size = 1;
@@ -743,6 +743,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
     sf->intra_uv_mode_mask[i] = UV_INTRA_ALL;
   }
   sf->lpf_pick = LPF_PICK_FROM_FULL_IMAGE;
+  sf->cdef_pick_method = CDEF_FULL_SEARCH;
   sf->use_fast_coef_costing = 0;
   sf->max_intra_bsize = BLOCK_LARGEST;
   // This setting only takes effect when partition_search_type is set
@@ -758,7 +759,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->ml_prune_ab_partition = 0;
   sf->ml_prune_4_partition = 0;
   sf->ml_early_term_after_part_split_level = 0;
-  sf->fast_cdef_search = 0;
   for (i = 0; i < PARTITION_BLOCK_SIZES; ++i) {
     sf->ml_partition_search_breakout_thresh[i] = -1;  // -1 means not enabled.
   }

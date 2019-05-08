@@ -131,6 +131,12 @@ enum {
 } UENUM1BYTE(LPF_PICK_METHOD);
 
 enum {
+  CDEF_FULL_SEARCH,
+  CDEF_FAST_SEARCH,  // Search among a subset of all possible filters.
+  CDEF_PICK_FROM_Q   // Estimate filter strength based on quantizer.
+} UENUM1BYTE(CDEF_PICK_METHOD);
+
+enum {
   // Terminate search early based on distortion so far compared to
   // qp step, distortion in the neighborhood of the frame, etc.
   FLAG_EARLY_TERMINATE = 1 << 0,
@@ -381,8 +387,6 @@ typedef struct SPEED_FEATURES {
   // 1 - 2 increasing aggressiveness in order.
   int ml_early_term_after_part_split_level;
 
-  int fast_cdef_search;
-
   // 2-pass coding block partition search, and also use the mode decisions made
   // in the initial partition search to prune mode candidates, e.g. ref frames.
   int two_pass_partition_search;
@@ -481,6 +485,9 @@ typedef struct SPEED_FEATURES {
 
   // This feature controls how the loop filter level is determined.
   LPF_PICK_METHOD lpf_pick;
+
+  // Control how the CDEF strength is determined.
+  CDEF_PICK_METHOD cdef_pick_method;
 
   // This feature controls whether we do the expensive context update and
   // calculation in the rd coefficient costing loop.
