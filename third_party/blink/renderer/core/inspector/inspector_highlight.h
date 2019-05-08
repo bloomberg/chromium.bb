@@ -58,7 +58,9 @@ class CORE_EXPORT InspectorHighlight {
   explicit InspectorHighlight(float scale);
   ~InspectorHighlight();
 
-  static bool GetBoxModel(Node*, std::unique_ptr<protocol::DOM::BoxModel>*);
+  static bool GetBoxModel(Node*,
+                          std::unique_ptr<protocol::DOM::BoxModel>*,
+                          bool use_absolute_zoom);
   static bool GetContentQuads(
       Node*,
       std::unique_ptr<protocol::Array<protocol::Array<double>>>*);

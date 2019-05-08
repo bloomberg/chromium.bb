@@ -566,7 +566,8 @@ std::unique_ptr<protocol::DictionaryValue> InspectorHighlight::AsProtocolValue()
 // static
 bool InspectorHighlight::GetBoxModel(
     Node* node,
-    std::unique_ptr<protocol::DOM::BoxModel>* model) {
+    std::unique_ptr<protocol::DOM::BoxModel>* model,
+    bool use_absolute_zoom) {
   node->GetDocument().EnsurePaintLocationDataValidForNode(node);
   LayoutObject* layout_object = node->GetLayoutObject();
   LocalFrameView* view = node->GetDocument().View();
@@ -586,10 +587,12 @@ bool InspectorHighlight::GetBoxModel(
     return false;
   }
 
-  AdjustForAbsoluteZoom::AdjustFloatQuad(content, *layout_object);
-  AdjustForAbsoluteZoom::AdjustFloatQuad(padding, *layout_object);
-  AdjustForAbsoluteZoom::AdjustFloatQuad(border, *layout_object);
-  AdjustForAbsoluteZoom::AdjustFloatQuad(margin, *layout_object);
+  if (use_absolute_zoom) {
+    AdjustForAbsoluteZoom::AdjustFloatQuad(content, *layout_object);
+    AdjustForAbsoluteZoom::AdjustFloatQuad(padding, *layout_object);
+    AdjustForAbsoluteZoom::AdjustFloatQuad(border, *layout_object);
+    AdjustForAbsoluteZoom::AdjustFloatQuad(margin, *layout_object);
+  }
 
   float scale = 1 / view->GetPage()->GetVisualViewport().Scale();
   content.Scale(scale, scale);

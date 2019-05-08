@@ -1290,7 +1290,7 @@ Response InspectorDOMAgent::getBoxModel(
   if (!response.isSuccess())
     return response;
 
-  bool result = InspectorHighlight::GetBoxModel(node, model);
+  bool result = InspectorHighlight::GetBoxModel(node, model, true);
   if (!result)
     return Response::Error("Could not compute box model.");
   return Response::OK();
