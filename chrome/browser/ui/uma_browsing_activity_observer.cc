@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
@@ -76,9 +78,22 @@ void UMABrowsingActivityObserver::Observe(
     LogRenderProcessHostCount();
     LogBrowserTabCount();
   } else if (type == chrome::NOTIFICATION_APP_TERMINATING) {
+    LogTimeBeforeUpdate();
     delete g_uma_browsing_activity_observer_instance;
     g_uma_browsing_activity_observer_instance = NULL;
   }
+}
+
+void UMABrowsingActivityObserver::LogTimeBeforeUpdate() const {
+  const base::Time upgrade_detected_time =
+      UpgradeDetector::GetInstance()->upgrade_detected_time();
+  if (upgrade_detected_time.is_null())
+    return;
+  const base::Time now = base::Time::Now();
+  UMA_HISTOGRAM_CUSTOM_TIMES("UpgradeDetector.TimeBeforeUpgrade",
+                             base::TimeDelta(now - upgrade_detected_time),
+                             base::TimeDelta::FromHours(1),
+                             base::TimeDelta::FromDays(20), 50);
 }
 
 void UMABrowsingActivityObserver::LogRenderProcessHostCount() const {
