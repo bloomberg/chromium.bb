@@ -246,32 +246,25 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
                 navigation_handle->GetWebContents()->GetBrowserContext()))
           : nullptr;
 
-  // Offline previews state should not be updated if previews triggering
-  // logic has already been run. The Offline Previews URLLoader will not receive
-  // an updated PreviewsState, so the state should stay consistent throughout
-  // the navigation.
   if (previews_triggering_logic_already_ran) {
     // Record that the navigation was redirected.
     previews_data->set_is_redirect(true);
-    // Keep the same OFFLINE previews bit as the original URL.
-    previews_state |=
-        (previews_data->allowed_previews_state() & content::OFFLINE_PAGE_ON);
-  } else {
-    bool allow_offline = true;
-    // If |previews_service| is null, skip the previews offline helper check.
-    // This only happens in testing.
-    if (previews_service) {
-      allow_offline = previews_service->previews_offline_helper()
-                          ->ShouldAttemptOfflinePreview(url);
-    }
-    allow_offline =
-        allow_offline &&
-        previews_decider->ShouldAllowPreviewAtNavigationStart(
-            previews_data, url, is_reload, previews::PreviewsType::OFFLINE);
-
-    if (allow_offline)
-      previews_state |= content::OFFLINE_PAGE_ON;
   }
+
+  bool allow_offline = true;
+  // If |previews_service| is null, skip the previews offline helper check.
+  // This only happens in testing.
+  if (previews_service) {
+    allow_offline = previews_service->previews_offline_helper()
+                        ->ShouldAttemptOfflinePreview(url);
+  }
+  allow_offline =
+      allow_offline &&
+      previews_decider->ShouldAllowPreviewAtNavigationStart(
+          previews_data, url, is_reload, previews::PreviewsType::OFFLINE);
+
+  if (allow_offline)
+    previews_state |= content::OFFLINE_PAGE_ON;
 
   // Check PageHint preview types first.
   bool should_load_page_hints = false;

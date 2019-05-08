@@ -183,6 +183,7 @@ TEST_F(PreviewsContentUtilTest,
   bool is_reload = false;
   bool previews_triggering_logic_already_ran = false;
   bool is_data_saver_user = true;
+
   EXPECT_EQ(content::OFFLINE_PAGE_ON,
             previews::CallDetermineAllowedClientPreviewsState(
                 &user_data, GURL("http://www.google.com"), is_reload,
@@ -190,6 +191,7 @@ TEST_F(PreviewsContentUtilTest,
                 enabled_previews_decider(), nullptr));
   EXPECT_FALSE(user_data.is_redirect());
   user_data.set_allowed_previews_state(content::OFFLINE_PAGE_ON);
+
   previews_triggering_logic_already_ran = true;
   EXPECT_EQ(content::OFFLINE_PAGE_ON,
             previews::CallDetermineAllowedClientPreviewsState(
@@ -197,12 +199,14 @@ TEST_F(PreviewsContentUtilTest,
                 previews_triggering_logic_already_ran, is_data_saver_user,
                 enabled_previews_decider(), nullptr));
   EXPECT_TRUE(user_data.is_redirect());
+
   user_data.set_allowed_previews_state(content::PREVIEWS_OFF);
-  EXPECT_EQ(content::PREVIEWS_UNSPECIFIED,
+  EXPECT_EQ(content::OFFLINE_PAGE_ON,
             previews::CallDetermineAllowedClientPreviewsState(
                 &user_data, GURL("http://www.google.com"), is_reload,
                 previews_triggering_logic_already_ran, is_data_saver_user,
                 enabled_previews_decider(), nullptr));
+
   previews_triggering_logic_already_ran = false;
   EXPECT_EQ(content::OFFLINE_PAGE_ON,
             previews::CallDetermineAllowedClientPreviewsState(
