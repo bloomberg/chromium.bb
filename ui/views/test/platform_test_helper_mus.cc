@@ -147,14 +147,14 @@ class PlatformTestHelperMus::ServiceManagerConnection {
                     .RequireCapability("*", "test")
                     .Build()});
 
-    service_manager::mojom::ServicePtr service;
+    service_manager::mojom::ServicePtrInfo service;
     default_service_binding_.Bind(mojo::MakeRequest(&service));
     // The service name matches the name field in unittests_manifest.json.
     background_service_manager_->RegisterService(
         service_manager::Identity(kServiceName,
                                   service_manager::kSystemInstanceGroup,
                                   base::Token{}, base::Token::CreateRandom()),
-        std::move(service), nullptr);
+        std::move(service), mojo::NullReceiver());
     service_manager_connector_ =
         default_service_binding_.GetConnector()->Clone();
     service_manager_identity_ = default_service_binding_.identity();

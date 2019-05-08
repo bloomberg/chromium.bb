@@ -19,6 +19,7 @@
 #include "chromecast/external_mojo/public/cpp/common.h"
 #include "chromecast/external_mojo/public/mojom/connector.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
@@ -144,7 +145,8 @@ class ExternalMojoBroker::ConnectorImpl : public mojom::ExternalConnector {
     void RegisterServiceInstance(
         const ::service_manager::Identity& identity,
         mojo::ScopedMessagePipeHandle service,
-        service_manager::mojom::PIDReceiverRequest pid_receiver_request,
+        mojo::PendingReceiver<service_manager::mojom::ProcessMetadata>
+            metadata_receiver,
         RegisterServiceInstanceCallback callback) override {
       // TODO(kmackay) Could add a wrapper as needed.
       NOTIMPLEMENTED();
@@ -185,17 +187,16 @@ class ExternalMojoBroker::ConnectorImpl : public mojom::ExternalConnector {
 
     for (const auto& service_name : external_services_to_proxy) {
       LOG(INFO) << "Register proxy for external " << service_name;
-      service_manager::mojom::ServicePtr service_ptr;
+      service_manager::mojom::ServicePtrInfo service_ptr;
       registered_external_services_[service_name] =
           std::make_unique<ExternalServiceProxy>(
               this, service_name, mojo::MakeRequest(&service_ptr));
 
-      service_manager::mojom::PIDReceiverPtr pid_receiver;
       connector_->RegisterServiceInstance(
           service_manager::Identity(service_name,
                                     service_manager::kSystemInstanceGroup,
                                     base::Token{}, base::Token::CreateRandom()),
-          std::move(service_ptr), mojo::MakeRequest(&pid_receiver),
+          std::move(service_ptr), mojo::NullReceiver() /* metadata_receiver */,
           base::BindOnce(&OnRegisterServiceResult, service_name));
     }
   }

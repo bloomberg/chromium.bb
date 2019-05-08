@@ -68,15 +68,14 @@ BackgroundServiceManager::~BackgroundServiceManager() {
 
 void BackgroundServiceManager::RegisterService(
     const Identity& identity,
-    mojom::ServicePtr service,
-    mojom::PIDReceiverRequest pid_receiver_request) {
-  mojom::ServicePtrInfo service_info = service.PassInterface();
+    mojo::PendingRemote<mojom::Service> service,
+    mojo::PendingReceiver<mojom::ProcessMetadata> metadata_receiver) {
   background_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(
           &BackgroundServiceManager::RegisterServiceOnBackgroundThread,
-          base::Unretained(this), identity, base::Passed(&service_info),
-          base::Passed(&pid_receiver_request)));
+          base::Unretained(this), identity, std::move(service),
+          std::move(metadata_receiver)));
 }
 
 void BackgroundServiceManager::InitializeOnBackgroundThread(
@@ -99,12 +98,10 @@ void BackgroundServiceManager::ShutDownOnBackgroundThread(
 
 void BackgroundServiceManager::RegisterServiceOnBackgroundThread(
     const Identity& identity,
-    mojom::ServicePtrInfo service_info,
-    mojom::PIDReceiverRequest pid_receiver_request) {
-  mojom::ServicePtr service;
-  service.Bind(std::move(service_info));
+    mojo::PendingRemote<mojom::Service> service,
+    mojo::PendingReceiver<mojom::ProcessMetadata> metadata_receiver) {
   service_manager_->RegisterService(identity, std::move(service),
-                                    std::move(pid_receiver_request));
+                                    std::move(metadata_receiver));
 }
 
 }  // namespace service_manager

@@ -320,6 +320,8 @@
 #include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
@@ -1455,16 +1457,15 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
   for (size_t i = 0; i < extra_parts_.size(); ++i)
     extra_parts_[i]->RenderProcessWillLaunch(host);
 
-  service_manager::mojom::ServicePtr service;
-  *service_request = mojo::MakeRequest(&service);
-  service_manager::mojom::PIDReceiverPtr pid_receiver;
+  mojo::PendingRemote<service_manager::mojom::Service> service;
+  *service_request = service.InitWithNewPipeAndPassReceiver();
   service_manager::Identity renderer_identity = host->GetChildIdentity();
   ChromeService::GetInstance()->connector()->RegisterServiceInstance(
       service_manager::Identity(chrome::mojom::kRendererServiceName,
                                 renderer_identity.instance_group(),
                                 renderer_identity.instance_id(),
                                 base::Token::CreateRandom()),
-      std::move(service), mojo::MakeRequest(&pid_receiver));
+      std::move(service), mojo::NullReceiver() /* metadata_receiver */);
 }
 
 GURL ChromeContentBrowserClient::GetEffectiveURL(

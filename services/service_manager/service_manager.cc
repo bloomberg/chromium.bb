@@ -79,17 +79,14 @@ ServiceManager::ServiceManager(std::unique_ptr<ServiceProcessLauncherFactory>
                            .Build())
           .ExposeCapability(kCapability_ServiceManager,
                             Manifest::InterfaceList<mojom::ServiceManager>())
-          .WithInterfacesBindableOnAnyService(
-              service_manager::Manifest::InterfaceList<mojom::ServiceFactory>())
           .Build();
   service_manager_instance_ = CreateServiceInstance(
       GetServiceManagerInstanceIdentity(), service_manager_manifest);
-  service_manager_instance_->set_pid(GetCurrentPid());
+  service_manager_instance_->SetPID(GetCurrentPid());
 
   mojo::PendingRemote<mojom::Service> remote;
   service_binding_.Bind(remote.InitWithNewPipeAndPassReceiver());
-  service_manager_instance_->StartWithRemote(std::move(remote),
-                                             mojo::NullReceiver());
+  service_manager_instance_->StartWithRemote(std::move(remote));
 }
 
 ServiceManager::~ServiceManager() {
@@ -121,18 +118,29 @@ ServiceInstance* ServiceManager::FindOrCreateMatchingTargetInstance(
   TRACE_EVENT_INSTANT1("service_manager", "ServiceManager::Connect",
                        TRACE_EVENT_SCOPE_THREAD, "original_name",
                        partial_target_filter.service_name());
+  if (partial_target_filter.service_name() == mojom::kServiceName)
+    return service_manager_instance_;
 
-  const Identity& source_identity = source_instance.identity();
-  ServiceFilter target_filter = partial_target_filter;
+  const service_manager::Manifest* manifest =
+      catalog_.GetManifest(partial_target_filter.service_name());
+  if (!manifest) {
+    LOG(ERROR) << "Failed to resolve service name: "
+               << partial_target_filter.service_name();
+    return nullptr;
+  }
 
-  // If the target filter does not specify an instance group, we assume the
-  // source's own.
-  if (!target_filter.instance_group())
-    target_filter.set_instance_group(source_identity.instance_group());
-
-  // If the target filter does not specify an instance ID, we assume zero.
-  if (!target_filter.instance_id())
+  service_manager::ServiceFilter target_filter = partial_target_filter;
+  if (!target_filter.instance_group()) {
+    // Inherit the source instance's group if none was specified by the
+    // caller's provided filter.
+    target_filter.set_instance_group(
+        source_instance.identity().instance_group());
+  }
+  if (!target_filter.instance_id()) {
+    // Assume the default (zero) instance ID if none was specified by the
+    // caller's provided filter.
     target_filter.set_instance_id(base::Token());
+  }
 
   // Use an existing instance if possible.
   ServiceInstance* target_instance =
@@ -140,86 +148,64 @@ ServiceInstance* ServiceManager::FindOrCreateMatchingTargetInstance(
   if (target_instance)
     return target_instance;
 
-  const service_manager::Manifest* manifest =
-      catalog_.GetManifest(target_filter.service_name());
-  if (!manifest) {
-    LOG(ERROR) << "Failed to resolve service name: "
-               << target_filter.service_name();
-    return nullptr;
-  }
-
   // If there was no existing instance but the caller is requesting a specific
   // globally unique ID for the target, ignore the request. That instance is
   // obviously no longer running, and globally unique IDs are never reused.
   if (target_filter.globally_unique_id())
     return nullptr;
 
-  Identity new_instance_identity;
-  if (manifest->options.instance_sharing_policy ==
-      Manifest::InstanceSharingPolicy::kSingleton) {
-    // For singleton instances, we generate a random group ID along with the
-    // random GUID.
-    new_instance_identity =
-        Identity(target_filter.service_name(), base::Token::CreateRandom(),
-                 base::Token{}, base::Token::CreateRandom());
-  } else if (manifest->options.instance_sharing_policy ==
-             Manifest::InstanceSharingPolicy::kSharedAcrossGroups) {
-    // Services that use |kSharedAcrossGroups| sharing policy are allowed to
-    // match ServiceFilters targeting any instance group. They run with a
-    // random group ID generated here, and the group provided by |target_filter|
-    // is ignored. The instance ID from |target_filter| is still used.
-    new_instance_identity =
-        Identity(target_filter.service_name(), base::Token::CreateRandom(),
-                 *target_filter.instance_id(), base::Token::CreateRandom());
-  } else {
-    DCHECK_EQ(manifest->options.instance_sharing_policy,
-              Manifest::InstanceSharingPolicy::kNoSharing);
-    new_instance_identity =
-        Identity(target_filter.service_name(), *target_filter.instance_group(),
-                 *target_filter.instance_id(), base::Token::CreateRandom());
-  }
-
-  DCHECK(!target_instance);
-  target_instance = CreateServiceInstance(new_instance_identity, *manifest);
-
   const service_manager::Manifest* parent_manifest =
       catalog_.GetParentManifest(manifest->service_name);
-  if (parent_manifest) {
-    // This service is provided by another service via a ServiceFactory.
-    //
-    // We normally ignore the target instance group and generate a unique
-    // instance group identifier when starting shared instances, but when those
-    // instances need to be started by a service factory, it's conceivable that
-    // the factory itself may be part of the originally targeted instance group.
-    // In that case we use the originally targeted instance group to identify
-    // the factory service.
-    //
-    // TODO(https://crbug.com/904240): This is super weird and hard to
-    // rationalize. Maybe it's the wrong thing to do.
-    target_instance->set_identity(
-        Identity(new_instance_identity.name(), *target_filter.instance_group(),
-                 new_instance_identity.instance_id(),
-                 new_instance_identity.globally_unique_id()));
 
+  // New instances to be shared globally or across instance groups are assigned
+  // their own random instance group. Packaged service instances also retain
+  // the target filter group regardless of sharing policy.
+  const base::Token target_group =
+      manifest->options.instance_sharing_policy ==
+                  Manifest::InstanceSharingPolicy::kNoSharing ||
+              parent_manifest
+          ? *target_filter.instance_group()
+          : base::Token::CreateRandom();
+
+  // New singleton instances are always forced to instance ID zero.
+  const base::Token target_instance_id =
+      manifest->options.instance_sharing_policy ==
+              Manifest::InstanceSharingPolicy::kSingleton
+          ? base::Token()
+          : *target_filter.instance_id();
+
+  DCHECK(!target_instance);
+  target_instance = CreateServiceInstance(
+      Identity(target_filter.service_name(), target_group, target_instance_id,
+               target_filter.globally_unique_id().value_or(
+                   base::Token::CreateRandom())),
+      *manifest);
+
+  if (parent_manifest) {
+    // This service is provided by another service, as indicated by the
+    // providing service's manifest. Get an instance of that service first, and
+    // ask it to create an instance of this one.
     auto factory_filter = ServiceFilter::ByNameWithIdInGroup(
         parent_manifest->service_name, *target_filter.instance_id(),
         *target_filter.instance_group());
+    ServiceInstance* factory_instance = FindOrCreateMatchingTargetInstance(
+        *service_manager_instance_, factory_filter);
 
-    mojom::PIDReceiverPtr pid_receiver;
-    auto pid_receiver_request = mojo::MakeRequest(&pid_receiver);
-
+    mojo::PendingRemote<mojom::ProcessMetadata> metadata;
+    auto metadata_receiver = metadata.InitWithNewPipeAndPassReceiver();
     mojo::PendingRemote<mojom::Service> remote;
-    auto* factory = GetServiceFactory(factory_filter);
-    if (!factory) {
+    bool created =
+        factory_instance &&
+        factory_instance->CreatePackagedServiceInstance(
+            target_instance->identity(),
+            remote.InitWithNewPipeAndPassReceiver(), std::move(metadata));
+    if (!created) {
       DestroyInstance(target_instance);
       return nullptr;
     }
 
-    factory->CreateService(remote.InitWithNewPipeAndPassReceiver(),
-                           target_filter.service_name(),
-                           std::move(pid_receiver));
-    target_instance->StartWithRemote(std::move(remote),
-                                     std::move(pid_receiver_request));
+    target_instance->BindProcessMetadataReceiver(std::move(metadata_receiver));
+    target_instance->StartWithRemote(std::move(remote));
   } else {
     base::FilePath service_exe_root;
     CHECK(base::PathService::Get(base::DIR_ASSETS, &service_exe_root));
@@ -253,8 +239,8 @@ bool ServiceManager::QueryCatalog(const std::string& service_name,
 
 bool ServiceManager::RegisterService(
     const Identity& identity,
-    mojom::ServicePtr service,
-    mojom::PIDReceiverRequest pid_receiver_request) {
+    mojo::PendingRemote<mojom::Service> service,
+    mojo::PendingReceiver<mojom::ProcessMetadata> metadata_receiver) {
   if (!identity.IsValid())
     return false;
 
@@ -265,15 +251,12 @@ bool ServiceManager::RegisterService(
     return false;
   }
 
-  if (!pid_receiver_request.is_pending()) {
-    mojo::Remote<mojom::PIDReceiver> pid_receiver;
-    pid_receiver_request = pid_receiver.BindNewPipeAndPassReceiver();
-    pid_receiver->SetPID(GetCurrentPid());
-  }
-
   ServiceInstance* instance = CreateServiceInstance(identity, *manifest);
-  instance->StartWithRemote(service.PassInterface(),
-                            std::move(pid_receiver_request));
+  if (metadata_receiver)
+    instance->BindProcessMetadataReceiver(std::move(metadata_receiver));
+  else
+    instance->SetPID(GetCurrentPid());
+  instance->StartWithRemote(std::move(service));
   return true;
 }
 
@@ -362,37 +345,6 @@ void ServiceManager::AddListener(mojom::ServiceManagerListenerPtr listener) {
 
   listener->OnInit(std::move(infos));
   listeners_.AddPtr(std::move(listener));
-}
-
-mojom::ServiceFactory* ServiceManager::GetServiceFactory(
-    const ServiceFilter& filter) {
-  auto it = service_factories_.find(filter);
-  if (it != service_factories_.end())
-    return it->second.get();
-
-  mojom::ServiceFactoryPtr factory;
-  ServiceInstance* factory_instance =
-      FindOrCreateMatchingTargetInstance(*service_manager_instance_, filter);
-  if (!factory_instance)
-    return nullptr;
-
-  factory_instance->MaybeAcceptConnectionRequest(
-      *service_manager_instance_, mojom::ServiceFactory::Name_,
-      mojo::MakeRequest(&factory).PassMessagePipe(),
-      mojom::BindInterfacePriority::kImportant);
-
-  mojom::ServiceFactory* factory_interface = factory.get();
-  factory.set_connection_error_handler(base::BindOnce(
-      &ServiceManager::OnServiceFactoryLost, base::Unretained(this), filter));
-  service_factories_[filter] = std::move(factory);
-  return factory_interface;
-}
-
-void ServiceManager::OnServiceFactoryLost(const ServiceFilter& which) {
-  // Remove the mapping.
-  auto it = service_factories_.find(which);
-  DCHECK(it != service_factories_.end());
-  service_factories_.erase(it);
 }
 
 void ServiceManager::OnBindInterface(

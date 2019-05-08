@@ -24,6 +24,7 @@
 #include "ios/web/public/web_thread.h"
 #include "ios/web/webui/url_data_manager_ios_backend.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_context_getter_observer.h"
 #include "services/network/network_context.h"
@@ -299,20 +300,20 @@ void BrowserState::Initialize(BrowserState* browser_state,
     // Have the global service manager connection start an instance of the
     // web_browser service that is associated with this BrowserState (via
     // |new_group|).
-    service_manager::mojom::ServicePtr service;
-    auto service_request = mojo::MakeRequest(&service);
+    mojo::PendingRemote<service_manager::mojom::Service> service;
+    auto service_receiver = service.InitWithNewPipeAndPassReceiver();
 
-    service_manager::mojom::PIDReceiverPtr pid_receiver;
+    mojo::Remote<service_manager::mojom::ProcessMetadata> metadata;
     service_manager::Identity identity(mojom::kBrowserServiceName, new_group,
                                        base::Token{},
                                        base::Token::CreateRandom());
     service_manager_connection->GetConnector()->RegisterServiceInstance(
-        identity, std::move(service), mojo::MakeRequest(&pid_receiver));
-    pid_receiver->SetPID(base::GetCurrentProcId());
+        identity, std::move(service), metadata.BindNewPipeAndPassReceiver());
+    metadata->SetPID(base::GetCurrentProcId());
 
     auto connection_holder =
         std::make_unique<BrowserStateServiceManagerConnectionHolder>(
-            browser_state, std::move(service_request));
+            browser_state, std::move(service_receiver));
 
     ServiceManagerConnection* connection =
         connection_holder->service_manager_connection();

@@ -42,6 +42,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
@@ -366,34 +367,33 @@ bool ServiceUtilityProcessHost::StartProcess(bool sandbox) {
   service_manager_ = std::make_unique<service_manager::ServiceManager>(
       std::make_unique<NullServiceProcessLauncherFactory>(), manifests);
 
-  service_manager::mojom::ServicePtr browser_proxy;
+  service_manager::mojom::ServicePtrInfo browser_proxy;
   service_manager_connection_ = content::ServiceManagerConnection::Create(
       mojo::MakeRequest(&browser_proxy),
       base::SequencedTaskRunnerHandle::Get());
   service_manager_connection_->AddConnectionFilter(
       std::make_unique<ConnectionFilterImpl>());
 
-  service_manager::mojom::PIDReceiverPtr pid_receiver;
+  mojo::Remote<service_manager::mojom::ProcessMetadata> metadata;
   service_manager_->RegisterService(
       service_manager::Identity(content::mojom::kBrowserServiceName,
                                 service_manager::kSystemInstanceGroup,
                                 base::Token{}, base::Token::CreateRandom()),
-      std::move(browser_proxy), mojo::MakeRequest(&pid_receiver));
-  pid_receiver->SetPID(base::GetCurrentProcId());
-  pid_receiver.reset();
+      std::move(browser_proxy), metadata.BindNewPipeAndPassReceiver());
+  metadata->SetPID(base::GetCurrentProcId());
+  metadata.reset();
 
   std::string mojo_bootstrap_token = base::NumberToString(base::RandUint64());
-  service_manager::mojom::ServicePtr utility_service;
-  utility_service.Bind(service_manager::mojom::ServicePtrInfo(
-      mojo_invitation_.AttachMessagePipe(mojo_bootstrap_token), 0u));
+  service_manager::mojom::ServicePtrInfo utility_service(
+      mojo_invitation_.AttachMessagePipe(mojo_bootstrap_token), 0u);
   utility_service_instance_identity_ =
       service_manager::Identity(content::mojom::kUtilityServiceName,
                                 service_manager::kSystemInstanceGroup,
                                 base::Token{}, base::Token::CreateRandom());
   service_manager_->RegisterService(utility_service_instance_identity_,
                                     std::move(utility_service),
-                                    mojo::MakeRequest(&pid_receiver));
-  pid_receiver->SetPID(base::GetCurrentProcId());
+                                    metadata.BindNewPipeAndPassReceiver());
+  metadata->SetPID(base::GetCurrentProcId());
 
   service_manager_connection_->Start();
 

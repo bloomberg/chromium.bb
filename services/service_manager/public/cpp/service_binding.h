@@ -14,11 +14,11 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/public/mojom/service_control.mojom.h"
-#include "services/service_manager/public/mojom/service_factory.mojom.h"
 
 namespace service_manager {
 
@@ -44,8 +44,7 @@ class Service;
 // can reasonably be made for system-wide shutdown situations where even the
 // Service Manager itself will be imminently torn down.
 class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ServiceBinding
-    : public mojom::Service,
-      public mojom::ServiceFactory {
+    : public mojom::Service {
  public:
   // Creates a new ServiceBinding bound to |service|. The service will not
   // receive any Service interface calls until |Bind()| is called, but its
@@ -166,11 +165,10 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ServiceBinding
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe,
                        OnBindInterfaceCallback callback) override;
-
-  // mojom::ServiceFactory:
-  void CreateService(mojom::ServiceRequest request,
-                     const std::string& service_name,
-                     mojom::PIDReceiverPtr pid_Receiver) override;
+  void CreatePackagedServiceInstance(
+      const Identity& identity,
+      mojo::PendingReceiver<mojom::Service> receiver,
+      mojo::PendingRemote<mojom::ProcessMetadata> metadata) override;
 
   // The Service instance to which all incoming events from the Service Manager
   // should be directed. Typically this is the object which owns this
@@ -186,11 +184,6 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ServiceBinding
   mojo::Binding<mojom::Service> binding_;
   Identity identity_;
   std::unique_ptr<Connector> connector_;
-
-  // TODO(https://crbug.com/952860): Remove this. Temporary until an API is
-  // added to the mojom::Service interface for creating packaged service
-  // instances.
-  mojo::BindingSet<mojom::ServiceFactory> factory_bindings_;
 
   // This instance's control interface to the service manager. Note that this
   // is unbound and therefore invalid until OnStart() is called.

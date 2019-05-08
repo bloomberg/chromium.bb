@@ -58,6 +58,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "media/capabilities/video_decode_stats_db_impl.h"
 #include "media/mojo/services/video_decode_perf_history.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/cookie_store.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/channel_id_store.h"
@@ -658,20 +659,20 @@ void BrowserContext::Initialize(
     // NOTE: Many unit tests create a TestBrowserContext without initializing
     // Mojo or the global service manager connection.
 
-    service_manager::mojom::ServicePtr service;
-    auto service_request = mojo::MakeRequest(&service);
+    mojo::PendingRemote<service_manager::mojom::Service> service;
+    auto service_receiver = service.InitWithNewPipeAndPassReceiver();
 
-    service_manager::mojom::PIDReceiverPtr pid_receiver;
+    mojo::Remote<service_manager::mojom::ProcessMetadata> metadata;
     service_manager::Identity identity(mojom::kBrowserServiceName, new_group,
                                        base::Token{},
                                        base::Token::CreateRandom());
     service_manager_connection->GetConnector()->RegisterServiceInstance(
-        identity, std::move(service), mojo::MakeRequest(&pid_receiver));
-    pid_receiver->SetPID(base::GetCurrentProcId());
+        identity, std::move(service), metadata.BindNewPipeAndPassReceiver());
+    metadata->SetPID(base::GetCurrentProcId());
 
     BrowserContextServiceManagerConnectionHolder* connection_holder =
         new BrowserContextServiceManagerConnectionHolder(
-            browser_context, std::move(service_request),
+            browser_context, std::move(service_receiver),
             base::SequencedTaskRunnerHandle::Get());
     browser_context->SetUserData(kServiceManagerConnection,
                                  base::WrapUnique(connection_holder));

@@ -19,7 +19,6 @@
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/mojom/service_factory.mojom.h"
 
 namespace device {
 

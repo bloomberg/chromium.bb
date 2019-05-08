@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/tracing/public/cpp/traced_process.h"
 #include "services/tracing/public/mojom/traced_process.mojom.h"
@@ -168,11 +169,7 @@ void ServiceBinding::OnBindInterface(
     return;
   }
 
-  if (interface_name == mojom::ServiceFactory::Name_) {
-    factory_bindings_.AddBinding(
-        this, mojom::ServiceFactoryRequest(std::move(interface_pipe)));
-    return;
-  } else if (interface_name == tracing::mojom::TracedProcess::Name_) {
+  if (interface_name == tracing::mojom::TracedProcess::Name_) {
     tracing::TracedProcess::OnTracedProcessRequest(
         tracing::mojom::TracedProcessRequest(std::move(interface_pipe)));
     return;
@@ -181,20 +178,22 @@ void ServiceBinding::OnBindInterface(
   service_->OnConnect(source_info, interface_name, std::move(interface_pipe));
 }
 
-void ServiceBinding::CreateService(mojom::ServiceRequest request,
-                                   const std::string& service_name,
-                                   mojom::PIDReceiverPtr pid_receiver) {
-  auto receiver =
-      mojo::PendingReceiver<mojom::Service>(request.PassMessagePipe());
-  auto callback = base::BindOnce(
-      [](mojom::PIDReceiverPtr pid_receiver,
-         base::Optional<base::ProcessId> pid) {
-        if (pid)
-          pid_receiver->SetPID(*pid);
-      },
-      std::move(pid_receiver));
-  service_->CreatePackagedServiceInstance(service_name, std::move(receiver),
-                                          std::move(callback));
+void ServiceBinding::CreatePackagedServiceInstance(
+    const Identity& identity,
+    mojo::PendingReceiver<mojom::Service> receiver,
+    mojo::PendingRemote<mojom::ProcessMetadata> metadata) {
+  service_->CreatePackagedServiceInstance(
+      identity.name(), std::move(receiver),
+      base::BindOnce(
+          [](mojo::PendingRemote<mojom::ProcessMetadata> pending_metadata,
+             base::Optional<base::ProcessId> pid) {
+            if (pid) {
+              mojo::Remote<mojom::ProcessMetadata> metadata(
+                  std::move(pending_metadata));
+              metadata->SetPID(*pid);
+            }
+          },
+          std::move(metadata)));
 }
 
 }  // namespace service_manager

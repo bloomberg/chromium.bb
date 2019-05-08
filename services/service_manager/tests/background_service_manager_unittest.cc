@@ -13,6 +13,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/manifest.h"
@@ -82,7 +83,7 @@ TEST(BackgroundServiceManagerTest, MAYBE_Basic) {
   background_service_manager.RegisterService(
       Identity(kTestName, kSystemInstanceGroup, base::Token{},
                base::Token::CreateRandom()),
-      std::move(service), nullptr);
+      service.PassInterface(), mojo::NullReceiver() /* metadata_receiver */);
 
   mojom::TestServicePtr test_service;
   service_impl.connector()->BindInterface(ServiceFilter::ByName(kAppName),

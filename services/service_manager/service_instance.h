@@ -20,6 +20,7 @@
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -42,7 +43,7 @@ class ServiceProcessLauncher;
 // corresponding ServiceInstance object in the Service Manager, dedicated to
 // that instance.
 class ServiceInstance : public mojom::Connector,
-                        public mojom::PIDReceiver,
+                        public mojom::ProcessMetadata,
                         public mojom::ServiceControl,
                         public mojom::ServiceManager {
  public:
@@ -55,23 +56,20 @@ class ServiceInstance : public mojom::Connector,
   const Identity& identity() const { return identity_; }
   const Manifest& manifest() const { return manifest_; }
 
-  // Overrides the Identity set at construction time.
-  void set_identity(const Identity& identity) {
-    DCHECK(identity.IsValid());
-    identity_ = identity;
-  }
-
-  // Sets the PID explicitly for this instance rather than waiting for a PID
-  // from a bound PIDReceiver endpoint.
-  void set_pid(base::ProcessId pid) { pid_ = pid; }
+  // mojom::ProcessMetadata:
+  void SetPID(base::ProcessId pid) override;
 
   // Starts this instance using an already-established Service pipe.
-  void StartWithRemote(mojo::PendingRemote<mojom::Service> remote,
-                       mojo::PendingReceiver<mojom::PIDReceiver> pid_receiver);
+  void StartWithRemote(mojo::PendingRemote<mojom::Service> remote);
 
   // Starts this instance from a path to a service executable on disk.
   bool StartWithExecutablePath(const base::FilePath& path,
                                SandboxType sandbox_type);
+
+  // Binds an endpoint for this instance to receive metadata about its
+  // corresponding service process, if any.
+  void BindProcessMetadataReceiver(
+      mojo::PendingReceiver<mojom::ProcessMetadata> receiver);
 
   // Forwards a BindInterface request from |source_instance| to this instance,
   // iff it should be allowed based on manifest constraints. Returns |true| if
@@ -81,6 +79,14 @@ class ServiceInstance : public mojom::Connector,
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle receiving_pipe,
       mojom::BindInterfacePriority priority);
+
+  // Asks this service instance to bind a new concrete service implementation
+  // for |packaged_instance_identity|. The packaged instance will always
+  // correspond to a service packaged in this service's manifest.
+  bool CreatePackagedServiceInstance(
+      const Identity& packaged_instance_identity,
+      mojo::PendingReceiver<mojom::Service> receiver,
+      mojo::PendingRemote<mojom::ProcessMetadata> metadata);
 
   // Stops receiving any new messages from the service instance and renders the
   // instance permanently unreachable. Note that this does NOT make any attempt
@@ -133,16 +139,13 @@ class ServiceInstance : public mojom::Connector,
   void RegisterServiceInstance(
       const Identity& identity,
       mojo::ScopedMessagePipeHandle service_remote_handle,
-      mojom::PIDReceiverRequest pid_receiver_request,
+      mojo::PendingReceiver<mojom::ProcessMetadata> metadata_receiver,
       RegisterServiceInstanceCallback callback) override;
   void Clone(mojom::ConnectorRequest request) override;
   void FilterInterfaces(const std::string& filter_name,
                         const Identity& source,
                         mojom::InterfaceProviderRequest source_request,
                         mojom::InterfaceProviderPtr target) override;
-
-  // mojom::PIDReceiver:
-  void SetPID(uint32_t pid) override;
 
   // mojom::ServiceControl:
   void RequestQuit() override;
@@ -155,7 +158,7 @@ class ServiceInstance : public mojom::Connector,
 
   // A unique identity for this instance. Distinct from PID, as a single process
   // may host multiple service instances. Globally unique across time and space.
-  Identity identity_;
+  const Identity identity_;
 
   // The static service manifest provided for this service at system
   // initialization time.
@@ -175,7 +178,7 @@ class ServiceInstance : public mojom::Connector,
   // Receivers for the various interfaces implemented by this object. These all
   // receive calls directly from the service instance itself or some trusted
   // representative thereof.
-  mojo::Receiver<mojom::PIDReceiver> pid_receiver_receiver_{this};
+  mojo::Receiver<mojom::ProcessMetadata> process_metadata_receiver_{this};
   mojo::ReceiverSet<mojom::Connector> connector_receivers_;
   mojo::ReceiverSet<mojom::ServiceManager> service_manager_receivers_;
   mojo::AssociatedReceiver<mojom::ServiceControl> control_receiver_{this};

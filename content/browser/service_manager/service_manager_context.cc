@@ -56,6 +56,7 @@
 #include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
 #include "media/mojo/interfaces/constants.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "services/audio/public/mojom/constants.mojom.h"
@@ -460,13 +461,11 @@ class ServiceManagerContext::InProcessServiceManagerContext
     service_manager_ = std::make_unique<service_manager::ServiceManager>(
         std::move(service_process_launcher_factory), std::move(manifests));
 
-    service_manager::mojom::ServicePtr packaged_services_service;
-    packaged_services_service.Bind(std::move(packaged_services_service_info));
     service_manager_->RegisterService(
         service_manager::Identity(mojom::kPackagedServicesServiceName,
                                   service_manager::kSystemInstanceGroup,
                                   base::Token{}, base::Token::CreateRandom()),
-        std::move(packaged_services_service), nullptr);
+        std::move(packaged_services_service_info), mojo::NullReceiver());
     service_manager_->SetInstanceQuitCallback(
         base::Bind(&OnInstanceQuitOnServiceManagerThread,
                    std::move(ui_thread_task_runner)));
@@ -557,19 +556,19 @@ ServiceManagerContext::ServiceManagerContext(
       base::BindRepeating(&ServiceManagerContext::OnUnhandledServiceRequest,
                           weak_ptr_factory_.GetWeakPtr()));
 
-  service_manager::mojom::ServicePtr root_browser_service;
+  service_manager::mojom::ServicePtrInfo root_browser_service;
   ServiceManagerConnection::SetForProcess(
       ServiceManagerConnection::Create(mojo::MakeRequest(&root_browser_service),
                                        service_manager_thread_task_runner_));
   auto* browser_connection = ServiceManagerConnection::GetForProcess();
 
-  service_manager::mojom::PIDReceiverPtr pid_receiver;
+  mojo::Remote<service_manager::mojom::ProcessMetadata> metadata;
   packaged_services_connection_->GetConnector()->RegisterServiceInstance(
       service_manager::Identity(mojom::kBrowserServiceName,
                                 service_manager::kSystemInstanceGroup,
                                 base::Token{}, base::Token::CreateRandom()),
-      std::move(root_browser_service), mojo::MakeRequest(&pid_receiver));
-  pid_receiver->SetPID(base::GetCurrentProcId());
+      std::move(root_browser_service), metadata.BindNewPipeAndPassReceiver());
+  metadata->SetPID(base::GetCurrentProcId());
 
   RegisterInProcessService(
       packaged_services_connection_.get(),

@@ -205,21 +205,29 @@ ServiceInstance::~ServiceInstance() {
     Stop();
 }
 
+void ServiceInstance::SetPID(base::ProcessId pid) {
+#if !defined(OS_IOS)
+  // iOS does not support base::Process and simply passes 0 here, so elide
+  // this check on that platform.
+  if (pid == base::kNullProcessId) {
+    // Destroys |this|.
+    service_manager_->DestroyInstance(this);
+    return;
+  }
+#endif
+  pid_ = pid;
+  MaybeNotifyPidAvailable();
+}
+
 void ServiceInstance::StartWithRemote(
-    mojo::PendingRemote<mojom::Service> remote,
-    mojo::PendingReceiver<mojom::PIDReceiver> pid_receiver) {
+    mojo::PendingRemote<mojom::Service> remote) {
   DCHECK(!service_remote_);
-
-  if (pid_receiver)
-    pid_receiver_receiver_.Bind(std::move(pid_receiver));
-
   service_remote_.Bind(std::move(remote));
   service_remote_.set_disconnect_handler(base::BindOnce(
       &ServiceInstance::OnServiceDisconnected, base::Unretained(this)));
   service_remote_->OnStart(identity_,
                            base::BindOnce(&ServiceInstance::OnStartCompleted,
                                           base::Unretained(this)));
-
   service_manager_->NotifyServiceCreated(*this);
 }
 
@@ -237,13 +245,17 @@ bool ServiceInstance::StartWithExecutablePath(const base::FilePath& path,
   if (!process_launcher_)
     return false;
   // TODO(tsepez): use actual sandbox type. https://crbug.com/788778
-  mojom::ServicePtr service =
-      process_launcher_->Start(identity_, SANDBOX_TYPE_NO_SANDBOX,
-                               base::BindOnce(&ServiceInstance::set_pid,
-                                              weak_ptr_factory_.GetWeakPtr()));
-  StartWithRemote(service.PassInterface(), mojo::NullReceiver());
+  mojom::ServicePtr service = process_launcher_->Start(
+      identity_, SANDBOX_TYPE_NO_SANDBOX,
+      base::BindOnce(&ServiceInstance::SetPID, weak_ptr_factory_.GetWeakPtr()));
+  StartWithRemote(service.PassInterface());
   return true;
 #endif
+}
+
+void ServiceInstance::BindProcessMetadataReceiver(
+    mojo::PendingReceiver<mojom::ProcessMetadata> receiver) {
+  process_metadata_receiver_.Bind(std::move(receiver));
 }
 
 bool ServiceInstance::MaybeAcceptConnectionRequest(
@@ -284,6 +296,17 @@ bool ServiceInstance::MaybeAcceptConnectionRequest(
   return true;
 }
 
+bool ServiceInstance::CreatePackagedServiceInstance(
+    const Identity& packaged_instance_identity,
+    mojo::PendingReceiver<mojom::Service> receiver,
+    mojo::PendingRemote<mojom::ProcessMetadata> metadata) {
+  if (!service_remote_)
+    return false;
+  service_remote_->CreatePackagedServiceInstance(
+      packaged_instance_identity, std::move(receiver), std::move(metadata));
+  return true;
+}
+
 void ServiceInstance::Stop() {
   DCHECK(!stopped_);
 
@@ -291,7 +314,7 @@ void ServiceInstance::Stop() {
   // observe disconnection of its corresponding Service receiver and react by
   // self-terminating ASAP.
   service_remote_.reset();
-  pid_receiver_receiver_.reset();
+  process_metadata_receiver_.reset();
   connector_receivers_.Clear();
   service_manager_receivers_.Clear();
   MarkUnreachable();
@@ -487,7 +510,7 @@ void ServiceInstance::WarmService(const ServiceFilter& target_filter,
 void ServiceInstance::RegisterServiceInstance(
     const Identity& identity,
     mojo::ScopedMessagePipeHandle service_remote_handle,
-    mojom::PIDReceiverRequest pid_receiver_request,
+    mojo::PendingReceiver<mojom::ProcessMetadata> metadata_receiver,
     RegisterServiceInstanceCallback callback) {
   auto target_filter = ServiceFilter::ForExactIdentity(identity);
   if (!CanConnectToOtherInstance(target_filter,
@@ -514,9 +537,8 @@ void ServiceInstance::RegisterServiceInstance(
     return;
   }
 
-  mojom::ServicePtr service(std::move(service_remote));
-  if (!service_manager_->RegisterService(identity, std::move(service),
-                                         std::move(pid_receiver_request))) {
+  if (!service_manager_->RegisterService(identity, std::move(service_remote),
+                                         std::move(metadata_receiver))) {
     std::move(callback).Run(mojom::ConnectResult::ACCESS_DENIED);
   }
 
@@ -535,20 +557,6 @@ void ServiceInstance::FilterInterfaces(
   interface_filters_.insert(std::make_unique<InterfaceFilter>(
       service_manager_, this, filter_name, source, identity_,
       target.PassInterface(), std::move(source_request)));
-}
-
-void ServiceInstance::SetPID(uint32_t pid) {
-#if !defined(OS_IOS)
-  // iOS does not support base::Process and simply passes 0 here, so elide
-  // this check on that platform.
-  if (pid == base::kNullProcessId) {
-    // Destroys |this|.
-    service_manager_->DestroyInstance(this);
-    return;
-  }
-#endif
-  pid_ = pid;
-  MaybeNotifyPidAvailable();
 }
 
 void ServiceInstance::RequestQuit() {

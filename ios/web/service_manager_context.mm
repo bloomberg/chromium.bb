@@ -25,6 +25,7 @@
 #include "ios/web/service_manager_connection_impl.h"
 #import "ios/web/web_browser_manifest.h"
 #import "ios/web/web_packaged_services_manifest.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/manifest.h"
@@ -84,13 +85,11 @@ class ServiceManagerContext::InProcessServiceManagerContext
     service_manager_ =
         std::make_unique<service_manager::ServiceManager>(nullptr, manifests);
 
-    service_manager::mojom::ServicePtr packaged_services_service;
-    packaged_services_service.Bind(std::move(packaged_services_service_info));
     service_manager_->RegisterService(
         service_manager::Identity(mojom::kPackagedServicesServiceName,
                                   service_manager::kSystemInstanceGroup,
                                   base::Token{}, base::Token::CreateRandom()),
-        std::move(packaged_services_service), nullptr);
+        std::move(packaged_services_service_info), mojo::NullReceiver());
   }
 
   void ShutDownOnIOThread() {
@@ -120,19 +119,19 @@ ServiceManagerContext::ServiceManagerContext() {
       base::BindRepeating(&ServiceManagerContext::OnUnhandledServiceRequest,
                           weak_ptr_factory_.GetWeakPtr()));
 
-  service_manager::mojom::ServicePtr root_browser_service;
+  service_manager::mojom::ServicePtrInfo root_browser_service;
   ServiceManagerConnection::Set(ServiceManagerConnection::Create(
       mojo::MakeRequest(&root_browser_service),
       base::CreateSingleThreadTaskRunnerWithTraits({WebThread::IO})));
   auto* browser_connection = ServiceManagerConnection::Get();
 
-  service_manager::mojom::PIDReceiverPtr pid_receiver;
+  mojo::Remote<service_manager::mojom::ProcessMetadata> metadata;
   packaged_services_connection_->GetConnector()->RegisterServiceInstance(
       service_manager::Identity(mojom::kBrowserServiceName,
                                 service_manager::kSystemInstanceGroup,
                                 base::Token{}, base::Token::CreateRandom()),
-      std::move(root_browser_service), mojo::MakeRequest(&pid_receiver));
-  pid_receiver->SetPID(base::GetCurrentProcId());
+      std::move(root_browser_service), metadata.BindNewPipeAndPassReceiver());
+  metadata->SetPID(base::GetCurrentProcId());
 
   packaged_services_connection_->Start();
   browser_connection->Start();

@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -125,15 +126,15 @@ class ServiceManagerListenerTest : public testing::Test, public Service {
 
   mojom::ServiceRequest RegisterServiceInstance(const std::string& service_name,
                                                 uint32_t fake_pid) {
-    mojom::ServicePtr proxy;
-    mojom::ServiceRequest request = mojo::MakeRequest(&proxy);
-    mojom::PIDReceiverPtr pid_receiver;
+    mojo::PendingRemote<mojom::Service> service;
+    auto receiver = service.InitWithNewPipeAndPassReceiver();
+    mojo::Remote<mojom::ProcessMetadata> metadata;
     service_manager_.RegisterService(
         Identity(service_name, kSystemInstanceGroup, base::Token{},
                  base::Token::CreateRandom()),
-        std::move(proxy), mojo::MakeRequest(&pid_receiver));
-    pid_receiver->SetPID(fake_pid);
-    return request;
+        std::move(service), metadata.BindNewPipeAndPassReceiver());
+    metadata->SetPID(fake_pid);
+    return receiver;
   }
 
   void WaitForServiceStarted(Identity* out_identity, uint32_t* out_pid) {

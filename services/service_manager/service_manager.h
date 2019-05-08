@@ -5,7 +5,6 @@
 #ifndef SERVICES_SERVICE_MANAGER_SERVICE_MANAGER_H_
 #define SERVICES_SERVICE_MANAGER_SERVICE_MANAGER_H_
 
-#include <map>
 #include <memory>
 #include <set>
 #include <vector>
@@ -16,6 +15,8 @@
 #include "base/process/process.h"
 #include "base/token.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/catalog.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/manifest.h"
@@ -24,7 +25,6 @@
 #include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
-#include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
 #include "services/service_manager/service_instance_registry.h"
 #include "services/service_manager/service_process_launcher_factory.h"
@@ -62,13 +62,14 @@ class ServiceManager : public Service {
   // Service Manager's embedder to register instances directly, without
   // requiring a Connector.
   //
-  // |pid_receiver_request| may be null, in which case the service manager
-  // assumes the new service is running in this process.
+  // |metadata_receiver| may be null, in which case the Service Manager assumes
+  // the new service is running in the calling process.
   //
   // Returns |true| if registration succeeded, or |false| otherwise.
-  bool RegisterService(const Identity& identity,
-                       mojom::ServicePtr service,
-                       mojom::PIDReceiverRequest pid_receiver_request);
+  bool RegisterService(
+      const Identity& identity,
+      mojo::PendingRemote<mojom::Service> service,
+      mojo::PendingReceiver<mojom::ProcessMetadata> metadata_receiver);
 
   // Determine information about |service_name| from its manifests. Returns
   // false if the identity does not have a catalog entry.
@@ -77,8 +78,8 @@ class ServiceManager : public Service {
                     std::string* sandbox_type);
 
   // Attempts to locate a ServiceInstance as a target for a connection request
-  // from |source_instance| by matching against |partial_target_filter|. If
-  // a suitable instance exists it is returned, otherwise the Service Manager
+  // from |source_instance| by matching against |partial_target_filter|. If a
+  // suitable instance exists it is returned, otherwise the Service Manager
   // attempts to create a new suitable instance.
   //
   // Returns null if a matching instance did not exist and could not be created,
@@ -120,11 +121,6 @@ class ServiceManager : public Service {
   // Called from the instance implementing mojom::ServiceManager.
   void AddListener(mojom::ServiceManagerListenerPtr listener);
 
-  // Returns a running ServiceFactory for |filter|. If there is not one running,
-  // one is started.
-  mojom::ServiceFactory* GetServiceFactory(const ServiceFilter& filter);
-  void OnServiceFactoryLost(const ServiceFilter& which);
-
   // Service:
   void OnBindInterface(const BindSourceInfo& source_info,
                        const std::string& interface_name,
@@ -147,7 +143,6 @@ class ServiceManager : public Service {
   // ServiceInstance still has an entry in |instances_|.
   ServiceInstance* service_manager_instance_;
 
-  std::map<ServiceFilter, mojom::ServiceFactoryPtr> service_factories_;
   mojo::InterfacePtrSet<mojom::ServiceManagerListener> listeners_;
   base::Callback<void(const Identity&)> instance_quit_callback_;
   std::unique_ptr<ServiceProcessLauncherFactory>
