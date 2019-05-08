@@ -51,9 +51,8 @@ static void CompareRenderPassLists(const RenderPassList& expected_list,
               actual->transform_to_root_target);
     EXPECT_EQ(expected->damage_rect, actual->damage_rect);
     EXPECT_EQ(expected->filters, actual->filters);
-    EXPECT_EQ(expected->backdrop_filters, expected->backdrop_filters);
-    EXPECT_EQ(expected->backdrop_filter_bounds,
-              expected->backdrop_filter_bounds);
+    EXPECT_EQ(expected->backdrop_filters, actual->backdrop_filters);
+    EXPECT_EQ(expected->backdrop_filter_bounds, actual->backdrop_filter_bounds);
     EXPECT_EQ(expected->has_transparent_background,
               actual->has_transparent_background);
     EXPECT_EQ(expected->generate_mipmap, actual->generate_mipmap);
