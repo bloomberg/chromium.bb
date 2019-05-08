@@ -197,6 +197,7 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
@@ -2497,6 +2498,17 @@ void WebLocalFrameImpl::AdvanceFocusInForm(WebFocusType focus_type) {
 
   next_element->scrollIntoViewIfNeeded(true /*centerIfNeeded*/);
   next_element->focus();
+}
+
+bool WebLocalFrameImpl::CanFocusedFieldBeAutofilled() const {
+  DCHECK(GetFrame()->GetDocument());
+  auto* focused_form_control_element = ToHTMLFormControlElementOrNull(
+      GetFrame()->GetDocument()->FocusedElement());
+
+  if (!focused_form_control_element)
+    return false;
+
+  return autofill_client_->HasFillData(focused_form_control_element);
 }
 
 void WebLocalFrameImpl::PerformMediaPlayerAction(

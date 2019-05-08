@@ -3267,10 +3267,7 @@ TEST_F(WebViewTest, ShowPressOnTransformedLink) {
 
 class MockAutofillClient : public WebAutofillClient {
  public:
-  MockAutofillClient()
-      : text_changes_(0),
-        text_changes_from_user_gesture_(0),
-        user_gesture_notifications_count_(0) {}
+  MockAutofillClient() = default;
 
   ~MockAutofillClient() override = default;
 
@@ -3282,6 +3279,12 @@ class MockAutofillClient : public WebAutofillClient {
   }
   void UserGestureObserved() override { ++user_gesture_notifications_count_; }
 
+  bool HasFillData(const WebFormControlElement&) const override {
+    return has_fill_data_;
+  }
+
+  void SetFillData(bool has_fill_data) { has_fill_data_ = has_fill_data; }
+
   void ClearChangeCounts() { text_changes_ = 0; }
 
   int TextChanges() { return text_changes_; }
@@ -3291,9 +3294,10 @@ class MockAutofillClient : public WebAutofillClient {
   }
 
  private:
-  int text_changes_;
-  int text_changes_from_user_gesture_;
-  int user_gesture_notifications_count_;
+  int text_changes_ = 0;
+  int text_changes_from_user_gesture_ = 0;
+  int user_gesture_notifications_count_ = 0;
+  bool has_fill_data_ = false;
 };
 
 TEST_F(WebViewTest, LosingFocusDoesNotTriggerAutofillTextChange) {
@@ -4630,6 +4634,28 @@ TEST_F(WebViewTest, WebSubstringUtilIframe) {
 }
 
 #endif
+
+TEST_F(WebViewTest, PasswordFieldCanBeAutofilled) {
+  RegisterMockedHttpURLLoad("input_field_password.html");
+  // Pretend client has fill data for all fields it's queried.
+  MockAutofillClient client;
+  client.SetFillData(true);
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
+      base_url_ + "input_field_password.html");
+  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  frame->SetAutofillClient(&client);
+  // No field is focused.
+  EXPECT_FALSE(frame->CanFocusedFieldBeAutofilled());
+
+  // Focusing a field should result in treating it autofillable.
+  web_view->SetInitialFocus(false);
+  EXPECT_TRUE(frame->CanFocusedFieldBeAutofilled());
+
+  // Pretend that |client| no longer has autofill data available.
+  client.SetFillData(false);
+  EXPECT_FALSE(frame->CanFocusedFieldBeAutofilled());
+  frame->SetAutofillClient(nullptr);
+}
 
 TEST_F(WebViewTest, PasswordFieldEditingIsUserGesture) {
   RegisterMockedHttpURLLoad("input_field_password.html");

@@ -724,12 +724,18 @@ class WebLocalFrame : public WebFrame {
   // This function should be called after pairs of PrintBegin() and PrintEnd().
   virtual void DispatchAfterPrintEvent() = 0;
 
+  // Focus --------------------------------------------------------------
+
   // Advance the focus of the WebView to next text input element from current
   // input field wrt sequential navigation with TAB or Shift + TAB
   // WebFocusTypeForward simulates TAB and WebFocusTypeBackward simulates
   // Shift + TAB. (Will be extended to other form controls like select element,
   // checkbox, radio etc.)
   virtual void AdvanceFocusInForm(WebFocusType) = 0;
+
+  // Returns whether the currently focused field could be autofilled by the
+  // active WebAutofillClient.
+  virtual bool CanFocusedFieldBeAutofilled() const = 0;
 
   // Performance --------------------------------------------------------
 

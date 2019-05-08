@@ -893,6 +893,12 @@ void AutofillAgent::SelectFieldOptionsChanged(
                           weak_ptr_factory_.GetWeakPtr(), element));
 }
 
+bool AutofillAgent::HasFillData(const WebFormControlElement& element) const {
+  // This is currently only implemented for passwords. Consider supporting other
+  // autofill types in the future as well.
+  return password_autofill_agent_->HasFillData(element);
+}
+
 void AutofillAgent::SelectWasUpdated(
     const blink::WebFormControlElement& element) {
   // Look for the form and field associated with the select element. If they are
