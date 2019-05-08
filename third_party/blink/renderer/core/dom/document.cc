@@ -3500,7 +3500,7 @@ bool Document::CheckCompletedInternal() {
   if (!ShouldComplete())
     return false;
 
-  if (frame_) {
+  if (frame_ && !UnloadStarted()) {
     frame_->Client()->RunScriptsAtDocumentIdle();
 
     // Injected scripts may have disconnected this frame.
