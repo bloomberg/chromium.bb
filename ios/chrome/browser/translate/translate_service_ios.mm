@@ -6,11 +6,18 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "components/language/core/browser/language_model.h"
+#include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // The singleton instance of TranslateServiceIOS.
@@ -26,8 +33,7 @@ TranslateServiceIOS::TranslateServiceIOS()
   resource_request_allowed_notifier_.Init(this, true /* leaky */);
 }
 
-TranslateServiceIOS::~TranslateServiceIOS() {
-}
+TranslateServiceIOS::~TranslateServiceIOS() {}
 
 // static
 void TranslateServiceIOS::Initialize() {
@@ -62,6 +68,15 @@ void TranslateServiceIOS::OnResourceRequestsAllowed() {
 
   language_list->SetResourceRequestsAllowed(
       resource_request_allowed_notifier_.ResourceRequestsAllowed());
+}
+
+// static
+std::string TranslateServiceIOS::GetTargetLanguage(
+    PrefService* prefs,
+    language::LanguageModel* language_model) {
+  return translate::TranslateManager::GetTargetLanguage(
+      ChromeIOSTranslateClient::CreateTranslatePrefs(prefs).get(),
+      language_model);
 }
 
 // static
