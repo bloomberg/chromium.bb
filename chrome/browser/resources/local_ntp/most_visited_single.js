@@ -216,6 +216,16 @@ let currGrid = null;
 
 
 /**
+ * Additional API for Array. Moves the item at index |from| to index |to|.
+ * @param {number} from Index of the item to move.
+ * @param {number} to Index to move the item to.
+ */
+Array.prototype.move = function(from, to) {
+  this.splice(to, 0, this.splice(from, 1)[0]);
+};
+
+
+/**
  * Class that handles layouts and animations for the tile grid. This includes
  * animations for adding, deleting, and reordering.
  */
@@ -233,6 +243,8 @@ class Grid {
     this.maxTiles_ = 0;
 
     /** @private {number} */
+    this.gridWidth_ = 0;
+    /** @private {number} */
     this.maxTilesPerRowWindow_ = 0;
 
     /** @private {?Element} */
@@ -241,10 +253,22 @@ class Grid {
     this.tiles_ = null;
 
     /**
-     * Matrix that stores the (x,y) positions of the tile layout.
-     * @private {?Array<!Array<number>>}
+     * Array that stores the {x,y} positions of the tile layout.
+     * @private {?Array<!Object>}
      */
     this.position_ = null;
+
+    /**
+     * Stores the current order of the tiles. Index corresponds to grid
+     * position, while value is the index of the tile in |this.tiles_|.
+     * @private {?Array<number>}
+     */
+    this.order_ = null;
+
+    /** @private {number} The index of the tile we're reordering. */
+    this.itemToReorder_ = -1;
+    /** @private {number} The index to move the tile we're reordering to. */
+    this.newIndexOfItemToReorder_ = -1;
   }
 
 
@@ -275,8 +299,19 @@ class Grid {
           ') exceeds the maximum (' + this.maxTiles_ + ').');
     }
     this.position_ = new Array(this.maxTiles_);
+    this.order_ = new Array(this.maxTiles_);
     for (let i = 0; i < this.maxTiles_; i++) {
-      this.position_[i] = Array(2).fill(0);
+      this.position_[i] = {x: 0, y: 0};
+      this.order_[i] = i;
+    }
+
+    if (isCustomLinksEnabled || params.enableReorder) {
+      // Set up reordering for all tiles except the add shortcut button.
+      for (let i = 0; i < this.tiles_.length; i++) {
+        if (this.tiles_[i].getAttribute('add') !== 'true') {
+          this.setupReorder_(this.tiles_[i], i);
+        }
+      }
     }
 
     this.updateLayout();
@@ -286,11 +321,15 @@ class Grid {
   /**
    * Returns a grid tile wrapper that contains |tile|.
    * @param {!Element} tile The tile element.
+   * @param {number} rid The tile's restricted id.
+   * @param {boolean} isAddButton True if this is the add shortcut button.
    * @return {!Element} A grid tile wrapper.
    */
-  createGridTile(tile) {
+  createGridTile(tile, rid, isAddButton) {
     const gridTileContainer = document.createElement('div');
     gridTileContainer.className = CLASSES.GRID_TILE_CONTAINER;
+    gridTileContainer.setAttribute('rid', rid);
+    gridTileContainer.setAttribute('add', isAddButton);
     const gridTile = document.createElement('div');
     gridTile.className = CLASSES.GRID_TILE;
     gridTile.appendChild(tile);
@@ -307,7 +346,8 @@ class Grid {
   updateLayout() {
     const tilesPerRow = this.getTilesPerRow_();
 
-    this.container_.style.width = (tilesPerRow * this.tileWidth_) + 'px';
+    this.gridWidth_ = tilesPerRow * this.tileWidth_;
+    this.container_.style.width = this.gridWidth_ + 'px';
 
     const maxVisibleTiles = tilesPerRow * 2;
     let x = 0;
@@ -321,8 +361,8 @@ class Grid {
       }
       // Update the tile's position.
       this.translate_(tile, x, y);
-      this.position_[i][0] = x;
-      this.position_[i][1] = y;
+      this.position_[i].x = x;
+      this.position_[i].y = y;
       x += this.tileWidth_;  // Increment for the next tile.
 
       // Update visibility for tiles that may be hidden by the iframe border in
@@ -406,14 +446,174 @@ class Grid {
 
   /**
    * Translates the |element| by (x, y).
-   * @param {!Element} element The element to apply the transform to.
+   * @param {?Element} element The element to apply the transform to.
    * @param {number} x The x value.
    * @param {number} y The y value.
    * @private
    */
   translate_(element, x, y) {
+    if (!element) {
+      throw new Error('Invalid element: cannot apply transform');
+    }
     const rtlX = x * (this.isRtl_() ? -1 : 1);
     element.style.transform = 'translate(' + rtlX + 'px, ' + y + 'px)';
+  }
+
+
+  /**
+   * Sets up event listeners necessary for tile reordering.
+   * @param {!Element} tile Tile on which to set the event listeners.
+   * @param {number} index The tile's index.
+   * @private
+   */
+  setupReorder_(tile, index) {
+    tile.setAttribute('index', index);
+    // Listen for the drag event on the tile instead of the tile container. The
+    // tile container remains static during the reorder flow.
+    tile.firstChild.draggable = true;
+    tile.firstChild.addEventListener('dragstart', (event) => {
+      this.startReorder_(tile, event);
+    });
+    // Listen for the mouseover event on the tile container. If this is placed
+    // on the tile instead, it can be triggered while the tile is translated to
+    // its new position.
+    tile.addEventListener('mouseover', (event) => {
+      this.reorderToIndex_(index);
+    });
+  }
+
+
+  /**
+   * Starts the reorder flow. Updates the visual style of the held tile to
+   * indicate that it is being moved and sets up the relevant event listeners.
+   * @param {!Element} tile Tile that is being moved.
+   * @param {!Event} event The 'dragstart' event. Used to obtain the current
+   *     cursor position
+   * @private
+   */
+  startReorder_(tile, event) {
+    const index = Number(tile.getAttribute('index'));
+
+    this.itemToReorder_ = index;
+    this.newIndexOfItemToReorder_ = index;
+
+    // Apply reorder styling.
+    tile.classList.add(CLASSES.REORDER);
+    // Disable other hover/active styling for all tiles.
+    document.body.classList.add(CLASSES.REORDERING);
+
+    // Set up event listeners for the reorder flow.
+    const mouseMove = this.trackCursor_(tile, event.pageX, event.pageY);
+    document.addEventListener('mousemove', mouseMove);
+    document.addEventListener('mouseup', () => {
+      document.removeEventListener('mousemove', mouseMove);
+      this.stopReorder_(tile);
+    }, {once: true});
+  }
+
+
+  /**
+   * Stops the reorder flow. Resets the held tile's visual style and tells the
+   * EmbeddedSearchAPI that a tile has been moved.
+   * @param {!Element} tile Tile that has been moved.
+   * @private
+   */
+  stopReorder_(tile) {
+    const index = Number(tile.getAttribute('index'));
+
+    // Remove reorder styling.
+    tile.classList.remove(CLASSES.REORDER);
+    document.body.classList.remove(CLASSES.REORDERING);
+
+    // Move the tile to its new position and notify EmbeddedSearchAPI that the
+    // tile has been moved.
+    this.applyReorder_(tile, this.newIndexOfItemToReorder_);
+    chrome.embeddedSearch.newTabPage.reorderCustomLink(
+        Number(this.tiles_[index].getAttribute('rid')),
+        this.newIndexOfItemToReorder_);
+
+    this.itemToReorder_ = -1;
+    this.newIndexOfItemToReorder_ = -1;
+  }
+
+
+  /**
+   * Executed only when the reorder flow is ongoing. Inserts the currently held
+   * tile at |index| and shifts tiles accordingly.
+   * @param {number} index The index to insert the held tile at.
+   * @private
+   */
+  reorderToIndex_(index) {
+    if (this.newIndexOfItemToReorder_ === index ||
+        !document.body.classList.contains(CLASSES.REORDERING)) {
+      return;
+    }
+
+    // Moves the held tile from its current position to |index|.
+    this.order_.move(this.newIndexOfItemToReorder_, index);
+    this.newIndexOfItemToReorder_ = index;
+    // Shift tiles according to the new order.
+    for (let i = 0; i < this.tiles_.length; i++) {
+      const tileIndex = this.order_[i];
+      // Don't move the tile we're holding.
+      if (tileIndex === this.itemToReorder_) {
+        continue;
+      }
+      this.applyReorder_(this.tiles_[tileIndex], i);
+    }
+  }
+
+
+  /**
+   * Translates the |tile|'s |CLASSES.GRID_TILE| from |index| to |newIndex|.
+   * This is done to prevent interference with event listeners on the |tile|'s
+   * |CLASSES.GRID_TILE_CONTAINER|, particularly 'mouseover'.
+   * @param {!Element} tile Tile that is being shifted.
+   * @param {number} newIndex New index for the tile.
+   * @private
+   */
+  applyReorder_(tile, newIndex) {
+    const index = Number(tile.getAttribute('index'));
+    const x = this.position_[newIndex].x - this.position_[index].x;
+    const y = this.position_[newIndex].y - this.position_[index].y;
+    this.translate_(tile.children[0], x, y);
+  }
+
+
+  /**
+   * Moves |tile| so that it tracks the cursor's position. This is done by
+   * translating the |tile|'s |CLASSES.GRID_TILE|, which prevents interference
+   * with event listeners on the |tile|'s |CLASSES.GRID_TILE_CONTAINER|.
+   * @param {!Element} tile Tile that is being moved.
+   * @param {number} origCursorX Original x cursor position.
+   * @param {number} origCursorY Original y cursor position.
+   * @private
+   */
+  trackCursor_(tile, origCursorX, origCursorY) {
+    const index = Number(tile.getAttribute('index'));
+    // RTL positions align with the right side of the grid. Therefore, the x
+    // value must be recalculated to align with the left.
+    const origPosX = this.isRtl_() ?
+        (this.gridWidth_ - (this.position_[index].x + this.tileWidth_)) :
+        this.position_[index].x;
+    const origPosY = this.position_[index].y;
+
+    // Get the max translation allowed by the grid boundaries. This will be the
+    // x of the last tile in a row and the y of the tiles in the second row.
+    const maxTranslateX = this.gridWidth_ - this.tileWidth_;
+    const maxTranslateY = this.tileHeight_;
+
+    const maxX = maxTranslateX - origPosX;
+    const maxY = maxTranslateY - origPosY;
+    const minX = 0 - origPosX;
+    const minY = 0 - origPosY;
+
+    return (event) => {
+      // Do not exceed the iframe borders.
+      const x = Math.max(Math.min(event.pageX - origCursorX, maxX), minX);
+      const y = Math.max(Math.min(event.pageY - origCursorY, maxY), minY);
+      tile.firstChild.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+    };
   }
 }
 
@@ -917,7 +1117,7 @@ function renderMaterialDesignTile(data) {
     mdTileContainer.appendChild(mdMenu);
   }
 
-  return currGrid.createGridTile(mdTileContainer);
+  return currGrid.createGridTile(mdTileContainer, data.tid, !!data.isAddButton);
 }
 
 
