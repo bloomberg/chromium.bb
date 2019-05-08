@@ -224,10 +224,6 @@ RulesetManager::Action::~Action() = default;
 RulesetManager::Action::Action(Action&&) = default;
 RulesetManager::Action& RulesetManager::Action::operator=(Action&&) = default;
 
-bool RulesetManager::Action::operator==(const Action& that) const {
-  return type == that.type && redirect_url == that.redirect_url;
-}
-
 RulesetManager::RulesetManager(const InfoMap* info_map) : info_map_(info_map) {
   DCHECK(info_map_);
 

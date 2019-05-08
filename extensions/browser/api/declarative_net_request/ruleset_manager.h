@@ -50,8 +50,6 @@ class RulesetManager {
     Action(Action&&);
     Action& operator=(Action&&);
 
-    bool operator==(const Action&) const;
-
     Type type = Type::NONE;
 
     // Valid iff |type| is |REDIRECT|.
