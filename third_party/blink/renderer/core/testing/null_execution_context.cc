@@ -8,6 +8,8 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/dom_timer.h"
+#include "third_party/blink/renderer/platform/scheduler/public/dummy_schedulers.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 
 namespace blink {
@@ -15,7 +17,10 @@ namespace blink {
 NullExecutionContext::NullExecutionContext()
     : ExecutionContext(v8::Isolate::GetCurrent()),
       tasks_need_pause_(false),
-      is_secure_context_(true) {}
+      is_secure_context_(true),
+      scheduler_(scheduler::CreateDummyFrameScheduler()) {}
+
+NullExecutionContext::~NullExecutionContext() {}
 
 void NullExecutionContext::SetIsSecureContext(bool is_secure_context) {
   is_secure_context_ = is_secure_context;
@@ -35,7 +40,7 @@ void NullExecutionContext::SetUpSecurityContext() {
 }
 
 FrameOrWorkerScheduler* NullExecutionContext::GetScheduler() {
-  return nullptr;
+  return scheduler_.get();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> NullExecutionContext::GetTaskRunner(

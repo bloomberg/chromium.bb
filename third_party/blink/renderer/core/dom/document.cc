@@ -287,6 +287,7 @@
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/dummy_schedulers.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
@@ -7556,7 +7557,10 @@ FrameOrWorkerScheduler* Document::GetScheduler() {
   // cases, though, there isn't a good candidate (most commonly when either the
   // passed-in document or ContextDocument() used to be attached to a Frame but
   // has since been detached).
-  return nullptr;
+  if (!detached_scheduler_) {
+    detached_scheduler_ = scheduler::CreateDummyFrameScheduler();
+  }
+  return detached_scheduler_.get();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> Document::GetTaskRunner(
