@@ -289,14 +289,21 @@ void AppListPresenterDelegateImpl::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void AppListPresenterDelegateImpl::OnKeyEvent(ui::KeyEvent* event) {
+  // If keyboard traversal is already engaged, no-op.
   if (controller_->KeyboardTraversalEngaged())
     return;
 
-  // When in tablet mode, all events hit this function, so we must ensure that
-  // the home launcher is visible before setting an event handled.
+  // If the home launcher is not shown in tablet mode, ignore events.
+  if (IsTabletMode() && !presenter_->home_launcher_shown())
+    return;
+
+  // Don't absorb the first event for the search box while it is open
+  if (view_->search_box_view()->is_search_box_active())
+    return;
+
+  // Arrow keys or Tab will engage the traversal mode.
   if ((app_list::IsUnhandledArrowKeyEvent(*event) ||
-       event->key_code() == ui::VKEY_TAB) &&
-      (!IsTabletMode() || presenter_->home_launcher_shown())) {
+       event->key_code() == ui::VKEY_TAB)) {
     // Handle the first arrow key event to just show the focus rings.
     event->SetHandled();
     controller_->SetKeyboardTraversalMode(true);
