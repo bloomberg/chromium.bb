@@ -349,8 +349,8 @@ public class EphemeralTabPanel extends OverlayPanel {
     private void finishPeekTimer() {
         if (!mDidRecordFirstPeek && mPanelPeekedNanoseconds != 0) {
             mDidRecordFirstPeek = true;
-            int durationPeeking = (int) ((System.nanoTime() - mPanelPeekedNanoseconds)
-                    / TimeUtils.NANOSECONDS_PER_MILLISECOND);
+            long durationPeeking = (System.nanoTime() - mPanelPeekedNanoseconds)
+                    / TimeUtils.NANOSECONDS_PER_MILLISECOND;
             RecordHistogram.recordMediumTimesHistogram(
                     "EphemeralTab.DurationPeeked", durationPeeking);
         }
@@ -365,8 +365,8 @@ public class EphemeralTabPanel extends OverlayPanel {
     private void finishOpenTimer() {
         if (!mDidRecordFirstOpen && mPanelOpenedNanoseconds != 0) {
             mDidRecordFirstOpen = true;
-            int durationOpened = (int) ((System.nanoTime() - mPanelOpenedNanoseconds)
-                    / TimeUtils.NANOSECONDS_PER_MILLISECOND);
+            long durationOpened = (System.nanoTime() - mPanelOpenedNanoseconds)
+                    / TimeUtils.NANOSECONDS_PER_MILLISECOND;
             RecordHistogram.recordMediumTimesHistogram(
                     "EphemeralTab.DurationOpened", durationOpened);
         }
