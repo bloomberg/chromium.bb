@@ -38,10 +38,6 @@ void PrioritizeWKHTTPCookieStoreCallbacks() {
 
 @implementation CRWWKHTTPCookieStore
 
-- (void)dealloc {
-  [_HTTPCookieStore removeObserver:self];
-}
-
 - (void)getAllCookies:(void (^)(NSArray<NSHTTPCookie*>*))completionHandler {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   NSArray<NSHTTPCookie*>* result = _HTTPCookieStore ? _cachedCookies : @[];

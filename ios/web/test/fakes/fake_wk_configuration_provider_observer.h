@@ -20,8 +20,6 @@ class FakeWKConfigurationProviderObserver
   // DidCreateNewConfiguration method.
   WKWebViewConfiguration* GetLastCreatedWKConfiguration();
 
-  bool IsProviderDestroyed() const;
-
   void ResetLastCreatedWKConfig();
 
  private:
@@ -29,13 +27,10 @@ class FakeWKConfigurationProviderObserver
   void DidCreateNewConfiguration(
       WKWebViewConfigurationProvider* config_provider,
       WKWebViewConfiguration* new_config) override;
-  void ConfigurationProviderDestroyed(
-      WKWebViewConfigurationProvider* config_provider) override;
+
   // The last created configuration that was passed to
   // DidCreateNewConfiguration.
   WKWebViewConfiguration* last_created_wk_config_ = nil;
-  // True after ConfigurationProviderDestroyed is called.
-  bool is_provider_destroyed_ = false;
 };
 
 }  // namespace web

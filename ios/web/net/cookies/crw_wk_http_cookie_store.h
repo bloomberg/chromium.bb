@@ -19,6 +19,7 @@
 
 // CRWWKHTTPCookieStore will not retain the WKHTTPCookieStore instance, and it
 // will be deleted with the owning WKWebSiteDataStore.
+// Note: CookieStore must be set before any web view that uses it is created.
 @property(nonatomic, weak) WKHTTPCookieStore* HTTPCookieStore;
 
 // Fetches all stored cookies. If the store didn't change between calls, this
