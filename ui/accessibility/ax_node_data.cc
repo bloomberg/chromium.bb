@@ -525,6 +525,36 @@ void AXNodeData::RemoveStringListAttribute(
                 });
 }
 
+AXNodeTextStyles AXNodeData::GetTextStyles() const {
+  AXNodeTextStyles style_attributes;
+
+  GetIntAttribute(ax::mojom::IntAttribute::kBackgroundColor,
+                  &style_attributes.background_color);
+  GetIntAttribute(ax::mojom::IntAttribute::kColor, &style_attributes.color);
+  GetIntAttribute(ax::mojom::IntAttribute::kInvalidState,
+                  &style_attributes.invalid_state);
+  GetIntAttribute(ax::mojom::IntAttribute::kTextOverlineStyle,
+                  &style_attributes.overline_style);
+  GetIntAttribute(ax::mojom::IntAttribute::kTextDirection,
+                  &style_attributes.text_direction);
+  GetIntAttribute(ax::mojom::IntAttribute::kTextPosition,
+                  &style_attributes.text_position);
+  GetIntAttribute(ax::mojom::IntAttribute::kTextStrikethroughStyle,
+                  &style_attributes.strikethrough_style);
+  GetIntAttribute(ax::mojom::IntAttribute::kTextStyle,
+                  &style_attributes.text_style);
+  GetIntAttribute(ax::mojom::IntAttribute::kTextUnderlineStyle,
+                  &style_attributes.underline_style);
+  GetFloatAttribute(ax::mojom::FloatAttribute::kFontSize,
+                    &style_attributes.font_size);
+  GetFloatAttribute(ax::mojom::FloatAttribute::kFontWeight,
+                    &style_attributes.font_weight);
+  GetStringAttribute(ax::mojom::StringAttribute::kFontFamily,
+                     &style_attributes.font_family);
+
+  return style_attributes;
+}
+
 void AXNodeData::SetName(const std::string& name) {
   auto iter = std::find_if(string_attributes.begin(), string_attributes.end(),
                            [](const auto& string_attribute) {

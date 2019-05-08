@@ -148,6 +148,9 @@ void AXPositionTest::SetUp() {
   static_text1_.AddState(ax::mojom::State::kEditable);
   static_text1_.SetName("Line 1");
   static_text1_.child_ids.push_back(inline_box1_.id);
+  static_text1_.AddIntAttribute(
+      ax::mojom::IntAttribute::kTextStyle,
+      static_cast<int32_t>(ax::mojom::TextStyle::kBold));
 
   inline_box1_.role = ax::mojom::Role::kInlineTextBox;
   inline_box1_.AddState(ax::mojom::State::kEditable);
@@ -169,6 +172,7 @@ void AXPositionTest::SetUp() {
   static_text2_.AddState(ax::mojom::State::kEditable);
   static_text2_.SetName("Line 2");
   static_text2_.child_ids.push_back(inline_box2_.id);
+  static_text2_.AddFloatAttribute(ax::mojom::FloatAttribute::kFontSize, 1.0f);
 
   inline_box2_.role = ax::mojom::Role::kInlineTextBox;
   inline_box2_.AddState(ax::mojom::State::kEditable);
@@ -1122,6 +1126,162 @@ TEST_F(AXPositionTest, CreatePositionAtEndOfAnchorWithTextPosition) {
   EXPECT_EQ(6, test_position->text_offset());
   // Affinity should have been reset to the default value.
   EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
+}
+
+TEST_F(AXPositionTest, CreatePositionAtPreviousFormatStartWithNullPosition) {
+  TestPositionType null_position = AXNodePosition::CreateNullPosition();
+  ASSERT_NE(nullptr, null_position);
+  TestPositionType test_position =
+      null_position->CreatePreviousFormatStartPosition(
+          AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsNullPosition());
+  test_position = null_position->CreatePreviousFormatStartPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsNullPosition());
+}
+
+TEST_F(AXPositionTest, CreatePositionAtPreviousFormatStartWithTreePosition) {
+  TestPositionType tree_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, inline_box1_.id, 0 /* child_index */);
+  ASSERT_NE(nullptr, tree_position);
+  TestPositionType test_position =
+      tree_position->CreatePreviousFormatStartPosition(
+          AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(button_.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->child_index());
+
+  // AXBoundaryBehavior::StopIfAlreadyAtBoundary shouldn't move, since it's
+  // already at a boundary.
+  test_position = test_position->CreatePreviousFormatStartPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(button_.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->child_index());
+
+  // AXBoundaryBehavior::CrossBoundary should return a null position when it
+  // reaches the start of the document
+  test_position = test_position->CreatePreviousFormatStartPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsNullPosition());
+}
+
+TEST_F(AXPositionTest, CreatePositionAtPreviousFormatStartWithTextPosition) {
+  TestPositionType text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, inline_box1_.id, 2 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  TestPositionType test_position =
+      text_position->CreatePreviousFormatStartPosition(
+          AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(inline_box1_.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->text_offset());
+
+  // AXBoundaryBehavior::StopIfAlreadyAtBoundary shouldn't move, since it's
+  // already at a boundary.
+  test_position = test_position->CreatePreviousFormatStartPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(inline_box1_.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->text_offset());
+
+  // This time, it should move due to AXBoundaryBehavior::CrossBoundary
+  test_position = test_position->CreatePreviousFormatStartPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(button_.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->text_offset());
+}
+
+TEST_F(AXPositionTest, CreatePositionAtNextFormatEndWithNullPosition) {
+  TestPositionType null_position = AXNodePosition::CreateNullPosition();
+  ASSERT_NE(nullptr, null_position);
+  TestPositionType test_position = null_position->CreateNextFormatEndPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsNullPosition());
+  test_position = null_position->CreateNextFormatEndPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsNullPosition());
+}
+
+TEST_F(AXPositionTest, CreatePositionAtNextFormatEndWithTreePosition) {
+  TestPositionType tree_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, inline_box1_.id, 0 /* child_index */);
+  ASSERT_NE(nullptr, tree_position);
+  TestPositionType test_position = tree_position->CreateNextFormatEndPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(line_break_.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->child_index());
+
+  // AXBoundaryBehavior::StopIfAlreadyAtBoundary shouldn't move, since it's
+  // already at a boundary.
+  test_position = test_position->CreatePreviousFormatStartPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(line_break_.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->child_index());
+
+  // AXBoundaryBehavior::CrossBoundary should return a null position when it
+  // reaches the end of the document
+  test_position = test_position->CreateNextFormatEndPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  test_position = test_position->CreateNextFormatEndPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsNullPosition());
+}
+
+TEST_F(AXPositionTest, CreatePositionAtNextFormatEndWithTextPosition) {
+  TestPositionType text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, inline_box1_.id, 2 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  TestPositionType test_position = text_position->CreateNextFormatEndPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(inline_box1_.id, test_position->anchor_id());
+  EXPECT_EQ(6, test_position->text_offset());
+
+  // AXBoundaryBehavior::StopIfAlreadyAtBoundary shouldn't move, since it's
+  // already at a boundary.
+  test_position = test_position->CreateNextFormatEndPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(inline_box1_.id, test_position->anchor_id());
+  EXPECT_EQ(6, test_position->text_offset());
+
+  // This time, it should move due to AXBoundaryBehavior::CrossBoundary
+  test_position = test_position->CreateNextFormatEndPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(line_break_.id, test_position->anchor_id());
+  EXPECT_EQ(1, test_position->text_offset());
+
+  test_position = test_position->CreateNextFormatEndPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(inline_box2_.id, test_position->anchor_id());
+  EXPECT_EQ(6, test_position->text_offset());
 }
 
 TEST_F(AXPositionTest, CreatePositionAtStartOfDocumentWithNullPosition) {

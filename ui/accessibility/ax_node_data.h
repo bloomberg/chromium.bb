@@ -16,6 +16,7 @@
 #include "base/strings/string_split.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/accessibility/ax_export.h"
+#include "ui/accessibility/ax_node_text_styles.h"
 #include "ui/accessibility/ax_relative_bounds.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -122,6 +123,11 @@ struct AX_EXPORT AXNodeData {
   void RemoveBoolAttribute(ax::mojom::BoolAttribute attribute);
   void RemoveIntListAttribute(ax::mojom::IntListAttribute attribute);
   void RemoveStringListAttribute(ax::mojom::StringListAttribute attribute);
+
+  //
+  // Text styles.
+  //
+  AXNodeTextStyles GetTextStyles() const;
 
   //
   // Convenience functions.

@@ -360,6 +360,122 @@ class AXPlatformNodeTextRangeProviderTest : public ui::AXPlatformNodeWinTest {
     update.tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
     return update;
   }
+
+  ui::AXTreeUpdate BuildAXTreeForMoveByFormat() {
+    ui::AXNodeData group1_data;
+    group1_data.id = 2;
+    group1_data.role = ax::mojom::Role::kGenericContainer;
+    group1_data.AddStringAttribute(ax::mojom::StringAttribute::kFontFamily,
+                                   "test font");
+
+    ui::AXNodeData text_data;
+    text_data.id = 3;
+    text_data.role = ax::mojom::Role::kStaticText;
+    std::string text_content = "Text with formatting";
+    text_data.SetName(text_content);
+    group1_data.child_ids = {3};
+
+    ui::AXNodeData group2_data;
+    group2_data.id = 4;
+    group2_data.role = ax::mojom::Role::kGenericContainer;
+
+    ui::AXNodeData line_break1_data;
+    line_break1_data.id = 5;
+    line_break1_data.role = ax::mojom::Role::kLineBreak;
+
+    ui::AXNodeData standalone_text_data;
+    standalone_text_data.id = 6;
+    standalone_text_data.role = ax::mojom::Role::kStaticText;
+    text_content = "Standalone line with no formatting";
+    standalone_text_data.SetName(text_content);
+
+    ui::AXNodeData line_break2_data;
+    line_break2_data.id = 7;
+    line_break2_data.role = ax::mojom::Role::kLineBreak;
+
+    group2_data.child_ids = {5, 6, 7};
+
+    ui::AXNodeData group3_data;
+    group3_data.id = 8;
+    group3_data.role = ax::mojom::Role::kGenericContainer;
+    group3_data.AddIntAttribute(
+        ax::mojom::IntAttribute::kTextStyle,
+        static_cast<int32_t>(ax::mojom::TextStyle::kBold));
+
+    ui::AXNodeData bold_text_data;
+    bold_text_data.id = 9;
+    bold_text_data.role = ax::mojom::Role::kStaticText;
+    text_content = "bold text";
+    bold_text_data.SetName(text_content);
+    group3_data.child_ids = {9};
+
+    ui::AXNodeData paragraph1_data;
+    paragraph1_data.id = 10;
+    paragraph1_data.role = ax::mojom::Role::kParagraph;
+    paragraph1_data.AddIntAttribute(ax::mojom::IntAttribute::kColor, 100);
+
+    ui::AXNodeData paragraph1_text_data;
+    paragraph1_text_data.id = 11;
+    paragraph1_text_data.role = ax::mojom::Role::kStaticText;
+    text_content = "Paragraph 1";
+    paragraph1_text_data.SetName(text_content);
+    paragraph1_data.child_ids = {11};
+
+    ui::AXNodeData paragraph2_data;
+    paragraph2_data.id = 12;
+    paragraph2_data.role = ax::mojom::Role::kParagraph;
+    paragraph2_data.AddFloatAttribute(ax::mojom::FloatAttribute::kFontSize,
+                                      1.0f);
+
+    ui::AXNodeData paragraph2_text_data;
+    paragraph2_text_data.id = 13;
+    paragraph2_text_data.role = ax::mojom::Role::kStaticText;
+    text_content = "Paragraph 2";
+    paragraph2_text_data.SetName(text_content);
+    paragraph2_data.child_ids = {13};
+
+    ui::AXNodeData paragraph3_data;
+    paragraph3_data.id = 14;
+    paragraph3_data.role = ax::mojom::Role::kParagraph;
+    paragraph3_data.AddFloatAttribute(ax::mojom::FloatAttribute::kFontSize,
+                                      1.0f);
+
+    ui::AXNodeData paragraph3_text_data;
+    paragraph3_text_data.id = 15;
+    paragraph3_text_data.role = ax::mojom::Role::kStaticText;
+    text_content = "Paragraph 3";
+    paragraph3_text_data.SetName(text_content);
+    paragraph3_data.child_ids = {15};
+
+    ui::AXNodeData root_data;
+    root_data.id = 1;
+    root_data.role = ax::mojom::Role::kRootWebArea;
+    root_data.child_ids = {2, 4, 8, 10, 12, 14};
+
+    ui::AXTreeUpdate update;
+    ui::AXTreeData tree_data;
+    tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+    update.tree_data = tree_data;
+    update.has_tree_data = true;
+    update.root_id = root_data.id;
+    update.nodes.push_back(root_data);
+    update.nodes.push_back(group1_data);
+    update.nodes.push_back(text_data);
+    update.nodes.push_back(group2_data);
+    update.nodes.push_back(group3_data);
+    update.nodes.push_back(line_break1_data);
+    update.nodes.push_back(standalone_text_data);
+    update.nodes.push_back(line_break2_data);
+    update.nodes.push_back(bold_text_data);
+    update.nodes.push_back(paragraph1_data);
+    update.nodes.push_back(paragraph1_text_data);
+    update.nodes.push_back(paragraph2_data);
+    update.nodes.push_back(paragraph2_text_data);
+    update.nodes.push_back(paragraph3_data);
+    update.nodes.push_back(paragraph3_text_data);
+
+    return update;
+  }
 };
 
 class MockAXPlatformNodeTextRangeProviderWin
@@ -975,7 +1091,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveFormat) {
-  Init(BuildAXTreeForMove());
+  Init(BuildAXTreeForMoveByFormat());
   AXNode* root_node = GetRootNode();
   AXNodePosition::SetTreeForTesting(tree_.get());
 
@@ -983,6 +1099,8 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveFormat) {
   GetTextRangeProviderFromTextNode(text_range_provider, root_node);
 
   // TODO(https://crbug.com/928948): add tests
+
+  AXNodePosition::SetTreeForTesting(nullptr);
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveWord) {
@@ -1714,6 +1832,71 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
       TextPatternRangeEndpoint_End, TextUnit_Line, /*count*/ -1, &count));
   ASSERT_EQ(-1, count);
   EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"some text");
+
+  AXNodePosition::SetTreeForTesting(nullptr);
+}
+
+TEST_F(AXPlatformNodeTextRangeProviderTest,
+       TestITextRangeProviderMoveEndpointByFormat) {
+  Init(BuildAXTreeForMoveByFormat());
+  AXNode* root_node = GetRootNode();
+  AXNodePosition::SetTreeForTesting(tree_.get());
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(text_range_provider, root_node);
+
+  EXPECT_UIA_TEXTRANGE_EQ(
+      text_range_provider,
+      L"Text with formattingStandalone line with no formattingbold "
+      L"textParagraph 1Paragraph 2Paragraph 3");
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ -1,
+      /*expected_text*/
+      L"Text with formattingStandalone line with no formattingbold "
+      L"textParagraph 1",
+      /*expected_count*/ -1);
+
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ -1,
+      /*expected_text*/
+      L"Text with formattingStandalone line with no formattingbold text",
+
+      /*expected_count*/ -1);
+
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ -1,
+      /*expected_text*/
+      L"Text with formattingStandalone line with no formatting",
+      /*expected_count*/ -1);
+
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ -1,
+      /*expected_text*/ L"Text with formatting",
+      /*expected_count*/ -1);
+
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ -1,
+      /*expected_text*/ L"",
+      /*expected_count*/ -1);
+
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ 6,
+      /*expected_text*/
+      L"Text with formattingStandalone line with no formattingbold "
+      L"textParagraph 1Paragraph 2Paragraph 3",
+      /*expected_count*/ 5);
+
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ -8,
+      /*expected_text*/ L"",
+      /*expected_count*/ -5);
 
   AXNodePosition::SetTreeForTesting(nullptr);
 }

@@ -49,6 +49,16 @@ namespace content {
     EXPECT_STREQ(expected_content, provider_content);       \
   }
 
+#define EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider, endpoint, unit,  \
+                                         count, expected_text, expected_count) \
+  {                                                                            \
+    int result_count;                                                          \
+    EXPECT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(          \
+        endpoint, unit, count, &result_count));                                \
+    EXPECT_EQ(expected_count, result_count);                                   \
+    EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, expected_text);               \
+  }
+
 class AXPlatformNodeTextRangeProviderWinBrowserTest
     : public AccessibilityContentBrowserTest {
  protected:
@@ -508,5 +518,203 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
       &BrowserAccessibility::PlatformDeepestFirstChild,
       ax::mojom::Role::kStaticText,
       &BrowserAccessibility::PlatformDeepestLastChild, false);
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       MoveEndpointByUnitFormat) {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+      <body>
+        <div>plain 1</div><div>plain 2</div>
+        <div style="font-style: italic">italic 1</div>
+        <div style="font-style: italic">italic 2</div>
+        <div style="font-weight: bold">bold 1</div>
+        <div style="font-weight: bold">bold 2</div>
+      </body>
+      </html>)HTML");
+  auto* node = FindNode(ax::mojom::Role::kStaticText, "plain 1");
+  ASSERT_NE(nullptr, node);
+  EXPECT_TRUE(node->PlatformIsLeaf());
+  EXPECT_EQ(0u, node->PlatformChildCount());
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(text_range_provider, node);
+  ASSERT_NE(nullptr, text_range_provider.Get());
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"plain 1");
+
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ 1,
+      /*expected_text*/ L"plain 1plain 2",
+      /*expected_count*/ 1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ 1,
+      /*expected_text*/
+      L"plain 1plain 2italic 1italic 2",
+      /*expected_count*/ 1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ -1,
+      /*expected_text*/ L"plain 1plain 2",
+      /*expected_count*/ -1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ 1,
+      /*expected_text*/
+      L"plain 1plain 2italic 1italic 2",
+      /*expected_count*/ 1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ 5,
+      /*expected_text*/
+      L"plain 1plain 2italic 1italic 2bold 1bold 2",
+      /*expected_count*/ 1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ -4,
+      /*expected_text*/ L"",
+      /*expected_count*/ -3);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ 1,
+      /*expected_text*/ L"plain 1plain 2",
+      /*expected_count*/ 1);
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       MoveEndpointByUnitFormatAllFormats) {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+      <body>
+        <div>plain 1</div><div>plain 2</div>
+        <div style="background-color: red">background-color 1</div>
+        <div style="background-color: red">background-color 2</div>
+        <div style="color: blue">color 1</div>
+        <div style="color: blue">color 2</div>
+        <div style="text-decoration: overline">overline 1</div>
+        <div style="text-decoration: overline">overline 2</div>
+        <div style="text-decoration: line-through">line-through 1</div>
+        <div style="text-decoration: line-through">line-through 2</div>
+        <div style="vertical-align:super">sup 1</div>
+        <div style="vertical-align:super">sup 2</div>
+        <div style="font-weight: bold">bold 1</div>
+        <div style="font-weight: bold">bold 2</div>
+        <div style="font-family: sans-serif">font-family 1</div>
+        <div style="font-family: sans-serif">font-family 2</div>
+      </body>
+      </html>)HTML");
+  auto* node = FindNode(ax::mojom::Role::kStaticText, "plain 1");
+  ASSERT_NE(nullptr, node);
+  EXPECT_TRUE(node->PlatformIsLeaf());
+  EXPECT_EQ(0u, node->PlatformChildCount());
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(text_range_provider, node);
+  ASSERT_NE(nullptr, text_range_provider.Get());
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"plain 1");
+
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ 1,
+      /*expected_text*/ L"plain 1plain 2",
+      /*expected_count*/ 1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ 1,
+      /*expected_text*/
+      L"plain 1plain 2background-color 1background-color 2",
+      /*expected_count*/ 1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ -1,
+      /*expected_text*/ L"plain 1plain 2",
+      /*expected_count*/ -1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ 2,
+      /*expected_text*/
+      L"plain 1plain 2background-color 1background-color 2color 1color 2",
+      /*expected_count*/ 2);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ -1,
+      /*expected_text*/
+      L"plain 1plain 2background-color 1background-color 2",
+      /*expected_count*/ -1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ 2,
+      /*expected_text*/
+      L"plain 1plain 2background-color 1background-color 2color 1color "
+      L"2overline 1overline 2",
+      /*expected_count*/ 2);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ -1,
+      /*expected_text*/
+      L"plain 1plain 2background-color 1background-color 2color 1color 2",
+      /*expected_count*/ -1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ 2,
+      /*expected_text*/
+      L"plain 1plain 2background-color 1background-color 2color 1color "
+      L"2overline 1overline 2line-through 1line-through 2",
+      /*expected_count*/ 2);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ -1,
+      /*expected_text*/
+      L"plain 1plain 2background-color 1background-color 2color 1color "
+      L"2overline 1overline 2",
+      /*expected_count*/ -1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ 2,
+      /*expected_text*/
+      L"plain 1plain 2background-color 1background-color 2color 1color "
+      L"2overline 1overline 2line-through 1line-through 2sup 1sup 2",
+      /*expected_count*/ 2);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ -1,
+      /*expected_text*/
+      L"plain 1plain 2background-color 1background-color 2color 1color "
+      L"2overline 1overline 2line-through 1line-through 2",
+      /*expected_count*/ -1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ 2,
+      /*expected_text*/
+      L"plain 1plain 2background-color 1background-color 2color 1color "
+      L"2overline 1overline 2line-through 1line-through 2sup 1sup 2bold 1bold "
+      L"2",
+      /*expected_count*/ 2);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ -1,
+      /*expected_text*/
+      L"plain 1plain 2background-color 1background-color 2color 1color "
+      L"2overline 1overline 2line-through 1line-through 2sup 1sup 2",
+      /*expected_count*/ -1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ 2,
+      /*expected_text*/
+      L"plain 1plain 2background-color 1background-color 2color 1color "
+      L"2overline 1overline 2line-through 1line-through 2sup 1sup 2bold 1bold "
+      L"2font-family 1font-family 2",
+      /*expected_count*/ 2);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ -1,
+      /*expected_text*/
+      L"plain 1plain 2background-color 1background-color 2color 1color "
+      L"2overline 1overline 2line-through 1line-through 2sup 1sup 2bold 1bold "
+      L"2",
+      /*expected_count*/ -1);
 }
 }  // namespace content

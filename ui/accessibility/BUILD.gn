@@ -60,6 +60,8 @@ jumbo_component("accessibility") {
     "ax_node_data.h",
     "ax_node_position.cc",
     "ax_node_position.h",
+    "ax_node_text_styles.cc",
+    "ax_node_text_styles.h",
     "ax_offscreen_result.h",
     "ax_position.h",
     "ax_range.h",

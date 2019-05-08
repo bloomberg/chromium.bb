@@ -523,7 +523,8 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnit(
           MoveEndpointByCharacter(position_to_move, count, units_moved);
       break;
     case TextUnit_Format:
-      return E_NOTIMPL;
+      new_position = MoveEndpointByFormat(position_to_move, count, units_moved);
+      break;
     case TextUnit_Word:
       new_position = MoveEndpointByWord(position_to_move, is_start_endpoint,
                                         count, units_moved);
@@ -751,7 +752,6 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByCharacter(
     const int count,
     int* units_moved) {
   DCHECK_NE(count, 0);
-
   return MoveEndpointByUnitHelper(
       std::move(endpoint),
       (count > 0) ? &AXPositionInstanceType::CreateNextCharacterPosition
@@ -800,6 +800,24 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByLine(
         is_start_endpoint
             ? &AXPositionInstanceType::CreatePreviousLineStartPosition
             : &AXPositionInstanceType::CreatePreviousLineEndPosition;
+
+  return MoveEndpointByUnitHelper(std::move(endpoint), create_next_position,
+                                  count, units_moved);
+}
+
+AXPlatformNodeTextRangeProviderWin::AXPositionInstance
+AXPlatformNodeTextRangeProviderWin::MoveEndpointByFormat(
+    const AXPositionInstance& endpoint,
+    const int count,
+    int* units_moved) {
+  DCHECK_NE(count, 0);
+
+  CreateNextPositionFunction create_next_position = nullptr;
+  if (count > 0)
+    create_next_position = &AXPositionInstanceType::CreateNextFormatEndPosition;
+  else
+    create_next_position =
+        &AXPositionInstanceType::CreatePreviousFormatStartPosition;
 
   return MoveEndpointByUnitHelper(std::move(endpoint), create_next_position,
                                   count, units_moved);
