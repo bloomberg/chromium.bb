@@ -6,7 +6,9 @@
 
 #include "base/run_loop.h"
 #include "base/task/thread_pool/thread_pool.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_bypass_protocol.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
@@ -188,7 +190,8 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest, DontUseAlternateProxyList) {
 void RestartBypassProxyAndCacheHelper(
     mojom::DataReductionProxy* mojo_data_reduction_proxy,
     bool response_came_from_drp) {
-  auto drp_server = MakeCoreDrpServer("HTTPS localhost");
+  base::HistogramTester histogram_tester;
+  auto drp_server = MakeCoreDrpServer("QUIC proxy.googlezip.net:443");
 
   auto manager = CreateManager(mojo_data_reduction_proxy, {drp_server});
   MockDelegate delegate;
@@ -227,8 +230,12 @@ void RestartBypassProxyAndCacheHelper(
     EXPECT_EQ(1u, delegate.restart_with_flags_called);
     EXPECT_EQ(net::LOAD_BYPASS_PROXY | net::LOAD_BYPASS_CACHE,
               delegate.restart_additional_load_flags);
+    histogram_tester.ExpectUniqueSample("DataReductionProxy.Quic.ProxyStatus",
+                                        QUIC_PROXY_STATUS_AVAILABLE, 1);
   } else {
     EXPECT_EQ(0u, delegate.restart_with_flags_called);
+    histogram_tester.ExpectUniqueSample("DataReductionProxy.Quic.ProxyStatus",
+                                        QUIC_PROXY_NOT_SUPPORTED, 1);
   }
 }
 
@@ -250,6 +257,7 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest,
 
 TEST_F(DataReductionProxyURLLoaderThrottleTest,
        DisregardChromeProxyFromDirect) {
+  base::HistogramTester histogram_tester;
   auto drp_server = MakeCoreDrpServer("HTTPS localhost");
 
   auto manager = CreateManager(mock_mojo_data_reduction_proxy(), {drp_server});
@@ -279,6 +287,7 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest,
   EXPECT_FALSE(defer);
   EXPECT_EQ(0u, delegate.resume_called);
   EXPECT_EQ(0u, delegate.restart_with_flags_called);
+  histogram_tester.ExpectTotalCount("DataReductionProxy.Quic.ProxyStatus", 0);
 }
 
 TEST_F(DataReductionProxyURLLoaderThrottleTest, MarkProxyAsBadAndRestart) {
