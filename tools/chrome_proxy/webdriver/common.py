@@ -869,8 +869,8 @@ class HTTPResponse:
     return self._redirect_chain
 
   def ResponseHasViaHeader(self):
-    return 'via' in self._response_headers and (self._response_headers['via'] ==
-      self._flags.via_header_value)
+    return 'via' in self._response_headers and (self._flags.via_header_value in
+      [piece.strip() for piece in self._response_headers['via'].split(',')])
 
   def WasXHR(self):
     return self.request_type == 'XHR'
