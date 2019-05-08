@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -23,7 +24,7 @@ class MockBluetoothAdapter : public BluetoothAdapter {
  public:
   class Observer : public BluetoothAdapter::Observer {
    public:
-    Observer();
+    Observer(scoped_refptr<BluetoothAdapter> adapter);
     ~Observer() override;
 
     MOCK_METHOD2(AdapterPresentChanged, void(BluetoothAdapter*, bool));
@@ -32,6 +33,15 @@ class MockBluetoothAdapter : public BluetoothAdapter {
     MOCK_METHOD2(DeviceAdded, void(BluetoothAdapter*, BluetoothDevice*));
     MOCK_METHOD2(DeviceChanged, void(BluetoothAdapter*, BluetoothDevice*));
     MOCK_METHOD2(DeviceRemoved, void(BluetoothAdapter*, BluetoothDevice*));
+    MOCK_METHOD3(GattCharacteristicValueChanged,
+                 void(BluetoothAdapter*,
+                      BluetoothRemoteGattCharacteristic*,
+                      const std::vector<uint8_t>&));
+
+   private:
+    const scoped_refptr<BluetoothAdapter> adapter_;
+
+    DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
   MockBluetoothAdapter();

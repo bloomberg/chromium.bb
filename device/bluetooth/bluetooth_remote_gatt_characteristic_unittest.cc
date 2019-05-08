@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
+#include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/test_bluetooth_adapter_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,6 +31,9 @@
 #elif defined(OS_FUCHSIA)
 #include "device/bluetooth/test/bluetooth_test_fuchsia.h"
 #endif
+
+using testing::_;
+using testing::Invoke;
 
 namespace device {
 
@@ -3115,6 +3119,60 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE("Did not crash!");
   EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count());
+}
+
+// Tests that closing the GATT connection during a characteristic
+// value notification is safe.
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#define MAYBE_GattCharacteristicValueChanged_DisconnectDuring \
+  GattCharacteristicValueChanged_DisconnectDuring
+#else
+#define MAYBE_GattCharacteristicValueChanged_DisconnectDuring \
+  DISABLED_GattCharacteristicValueChanged_DisconnectDuring
+#endif
+#if defined(OS_WIN)
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrtOnly,
+       GattCharacteristicValueChanged_DisconnectDuring) {
+#else
+TEST_F(BluetoothRemoteGattCharacteristicTest,
+       MAYBE_GattCharacteristicValueChanged_DisconnectDuring) {
+#endif
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
+      /* properties: NOTIFY */ 0x10, NotifyValueState::NOTIFY));
+  MockBluetoothAdapter::Observer observer1(adapter_);
+  MockBluetoothAdapter::Observer observer2(adapter_);
+
+  // |observer1| will be notified first and close the GATT connection which
+  // may prevent |observer2| from being notified if |characteristic1_| has been
+  // freed.
+  base::RunLoop loop;
+  EXPECT_CALL(observer1, GattCharacteristicValueChanged(adapter_.get(),
+                                                        characteristic1_, _))
+      .WillOnce(
+          Invoke([&](BluetoothAdapter*, BluetoothRemoteGattCharacteristic*,
+                     const std::vector<uint8_t>& value) {
+            gatt_connections_[0]->Disconnect();
+            loop.Quit();
+          }));
+  EXPECT_CALL(observer2, GattCharacteristicValueChanged(adapter_.get(),
+                                                        characteristic1_, _))
+      .Times(testing::AtMost(1))
+      .WillRepeatedly(
+          Invoke([&](BluetoothAdapter*,
+                     BluetoothRemoteGattCharacteristic* characteristic,
+                     const std::vector<uint8_t>& value) {
+            // Call a method on |characteristic| to check the pointer is still
+            // valid.
+            EXPECT_EQ(value, characteristic->GetValue());
+          }));
+
+  std::vector<uint8_t> empty_vector;
+  SimulateGattCharacteristicChanged(characteristic1_, empty_vector);
+  loop.Run();
 }
 
 #if defined(OS_ANDROID)

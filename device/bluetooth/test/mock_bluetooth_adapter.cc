@@ -15,8 +15,15 @@ namespace device {
 using testing::Invoke;
 using testing::_;
 
-MockBluetoothAdapter::Observer::Observer() = default;
-MockBluetoothAdapter::Observer::~Observer() = default;
+MockBluetoothAdapter::Observer::Observer(
+    scoped_refptr<BluetoothAdapter> adapter)
+    : adapter_(std::move(adapter)) {
+  adapter_->AddObserver(this);
+}
+
+MockBluetoothAdapter::Observer::~Observer() {
+  adapter_->RemoveObserver(this);
+}
 
 MockBluetoothAdapter::MockBluetoothAdapter() {
   ON_CALL(*this, AddObserver(_))
