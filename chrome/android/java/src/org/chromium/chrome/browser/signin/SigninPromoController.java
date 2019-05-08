@@ -20,10 +20,10 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.metrics.ImpressionTracker;
 import org.chromium.chrome.browser.metrics.OneShotImpressionListener;
 import org.chromium.chrome.browser.signin.AccountSigninActivity.AccessPoint;
+
 
 /**
  * A controller for configuring the sign in promo. It sets up the sign in promo depending on the
@@ -271,14 +271,6 @@ public class SigninPromoController {
     public @StringRes int getDescriptionStringId() {
         if (!isUnifiedConsent()) return mDescriptionStringIdLegacy;
         return mProfileData == null ? mDescriptionStringIdNoAccount : mDescriptionStringId;
-    }
-
-    /**
-     * Returns true if signin promos should be shown on this device.
-     * In some regions signing in may be problematic, thus promos should be suppressed.
-     */
-    public static boolean isSignInPromoAllowed() {
-        return !LocaleManager.getInstance().isSpecialUser();
     }
 
     private void setupColdState(final Context context, PersonalizedSigninPromoView view) {

@@ -201,8 +201,8 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
         if (!ChromeSigninController.get().isSignedIn()) {
             boolean impressionLimitReached = !SigninPromoController.hasNotReachedImpressionLimit(
                     SigninAccessPoint.BOOKMARK_MANAGER);
-            if (!mSignInManager.isSignInAllowed() || !SigninPromoController.isSignInPromoAllowed()
-                    || impressionLimitReached || wasPersonalizedSigninPromoDeclined()) {
+            if (!mSignInManager.isSignInAllowed() || impressionLimitReached
+                    || wasPersonalizedSigninPromoDeclined()) {
                 return PromoState.PROMO_NONE;
             }
             return PromoState.PROMO_SIGNIN_PERSONALIZED;
