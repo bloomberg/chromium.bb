@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 214 tests; 209 PASS, 5 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 214 tests; 210 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Navigator: original interface defined
 PASS Partial dictionary WebGLContextAttributes: original dictionary defined
@@ -29,7 +29,7 @@ PASS XRSession interface: existence and properties of interface prototype object
 PASS XRSession interface: attribute environmentBlendMode
 PASS XRSession interface: attribute renderState
 PASS XRSession interface: attribute viewerSpace
-FAIL XRSession interface: operation updateRenderState(XRRenderStateInit) assert_equals: property has wrong .length expected 0 but got 1
+PASS XRSession interface: operation updateRenderState(XRRenderStateInit)
 PASS XRSession interface: operation requestReferenceSpace(XRReferenceSpaceOptions)
 PASS XRSession interface: operation getInputSources()
 PASS XRSession interface: operation requestAnimationFrame(XRFrameRequestCallback)

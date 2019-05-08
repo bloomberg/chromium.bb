@@ -33,7 +33,7 @@ enum XREnvironmentBlendMode {
   attribute EventHandler onselectstart;
   attribute EventHandler onselectend;
 
-  [RaisesException] void updateRenderState(XRRenderStateInit init);
+  [RaisesException] void updateRenderState(optional XRRenderStateInit init);
 
   [CallWith=ScriptState] Promise<XRReferenceSpace> requestReferenceSpace([PermissiveDictionaryConversion] XRReferenceSpaceOptions options);
 
