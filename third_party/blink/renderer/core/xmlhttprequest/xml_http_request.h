@@ -368,7 +368,6 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   bool error_ = false;
   bool upload_events_allowed_ = true;
   bool upload_complete_ = false;
-  bool same_origin_request_ = true;
   // True iff the ongoing resource loading is using the downloadToBlob
   // option.
   bool downloading_to_blob_ = false;
