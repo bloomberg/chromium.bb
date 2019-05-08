@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "content/child/child_process.h"
 #include "media/base/limits.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -170,9 +169,9 @@ TEST_P(CanvasCaptureHandlerTest, GetFormatsStartAndStop) {
   blink::MediaStreamVideoCapturerSource* const ms_source =
       static_cast<blink::MediaStreamVideoCapturerSource*>(
           web_media_stream_source.GetPlatformSource());
-  EXPECT_TRUE(ms_source != nullptr);
+  EXPECT_TRUE(ms_source);
   media::VideoCapturerSource* source = GetVideoCapturerSource(ms_source);
-  EXPECT_TRUE(source != nullptr);
+  EXPECT_TRUE(source);
 
   media::VideoCaptureFormats formats = source->GetPreferredFormats();
   ASSERT_EQ(2u, formats.size());
@@ -182,14 +181,15 @@ TEST_P(CanvasCaptureHandlerTest, GetFormatsStartAndStop) {
   params.requested_format = formats[0];
 
   base::RunLoop run_loop;
-  base::Closure quit_closure = run_loop.QuitClosure();
+  base::RepeatingClosure quit_closure = run_loop.QuitClosure();
   EXPECT_CALL(*this, DoOnRunning(true)).Times(1);
   EXPECT_CALL(*this, DoOnDeliverFrame(_, _))
       .Times(1)
       .WillOnce(RunClosure(std::move(quit_closure)));
   source->StartCapture(
-      params, base::Bind(&CanvasCaptureHandlerTest::OnDeliverFrame,
-                         base::Unretained(this)),
+      params,
+      base::BindRepeating(&CanvasCaptureHandlerTest::OnDeliverFrame,
+                          base::Unretained(this)),
       base::Bind(&CanvasCaptureHandlerTest::OnRunning, base::Unretained(this)));
   canvas_capture_handler_->SendNewFrame(
       GenerateTestImage(testing::get<0>(GetParam()),
@@ -210,16 +210,17 @@ TEST_P(CanvasCaptureHandlerTest, VerifyFrame) {
   media::VideoCapturerSource* const source = GetVideoCapturerSource(
       static_cast<blink::MediaStreamVideoCapturerSource*>(
           track_.Source().GetPlatformSource()));
-  EXPECT_TRUE(source != nullptr);
+  EXPECT_TRUE(source);
 
   base::RunLoop run_loop;
   EXPECT_CALL(*this, DoOnRunning(true)).Times(1);
   media::VideoCaptureParams params;
   source->StartCapture(
       params,
-      base::Bind(&CanvasCaptureHandlerTest::OnVerifyDeliveredFrame,
-                 base::Unretained(this), opaque_frame, width, height),
-      base::Bind(&CanvasCaptureHandlerTest::OnRunning, base::Unretained(this)));
+      base::BindRepeating(&CanvasCaptureHandlerTest::OnVerifyDeliveredFrame,
+                          base::Unretained(this), opaque_frame, width, height),
+      base::BindRepeating(&CanvasCaptureHandlerTest::OnRunning,
+                          base::Unretained(this)));
   canvas_capture_handler_->SendNewFrame(
       GenerateTestImage(opaque_frame, width, height), nullptr);
   run_loop.RunUntilIdle();
@@ -231,7 +232,7 @@ TEST_F(CanvasCaptureHandlerTest, CheckNeedsNewFrame) {
   media::VideoCapturerSource* source = GetVideoCapturerSource(
       static_cast<blink::MediaStreamVideoCapturerSource*>(
           track_.Source().GetPlatformSource()));
-  EXPECT_TRUE(source != nullptr);
+  EXPECT_TRUE(source);
   EXPECT_TRUE(canvas_capture_handler_->NeedsNewFrame());
   source->StopCapture();
   EXPECT_FALSE(canvas_capture_handler_->NeedsNewFrame());

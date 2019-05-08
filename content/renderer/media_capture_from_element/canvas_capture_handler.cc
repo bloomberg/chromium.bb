@@ -13,8 +13,6 @@
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/viz/common/gl_helper.h"
-#include "content/public/renderer/render_thread.h"
-#include "content/renderer/render_thread_impl.h"
 #include "media/base/limits.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
@@ -64,7 +62,7 @@ class VideoCapturerSource : public media::VideoCapturerSource {
 
  protected:
   media::VideoCaptureFormats GetPreferredFormats() override {
-    DCHECK(main_render_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
     media::VideoCaptureFormats formats;
     formats.push_back(media::VideoCaptureFormat(size_, frame_rate_,
                                                 media::PIXEL_FORMAT_I420));
@@ -75,19 +73,19 @@ class VideoCapturerSource : public media::VideoCapturerSource {
   void StartCapture(const media::VideoCaptureParams& params,
                     const blink::VideoCaptureDeliverFrameCB& frame_callback,
                     const RunningCallback& running_callback) override {
-    DCHECK(main_render_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
     if (canvas_handler_.get()) {
       canvas_handler_->StartVideoCapture(params, frame_callback,
                                          running_callback);
     }
   }
   void RequestRefreshFrame() override {
-    DCHECK(main_render_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
     if (canvas_handler_.get())
       canvas_handler_->RequestRefreshFrame();
   }
   void StopCapture() override {
-    DCHECK(main_render_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
     if (canvas_handler_.get())
       canvas_handler_->StopVideoCapture();
   }
@@ -96,7 +94,7 @@ class VideoCapturerSource : public media::VideoCapturerSource {
   const blink::WebSize size_;
   const float frame_rate_;
   // Bound to Main Render thread.
-  base::ThreadChecker main_render_thread_checker_;
+  THREAD_CHECKER(main_render_thread_checker_);
   // CanvasCaptureHandler is owned by CanvasDrawListener in blink. It is
   // guaranteed to be destroyed on Main Render thread and it would happen
   // independently of this class. Therefore, WeakPtr should always be checked
@@ -109,15 +107,15 @@ class CanvasCaptureHandler::CanvasCaptureHandlerDelegate {
   explicit CanvasCaptureHandlerDelegate(
       media::VideoCapturerSource::VideoCaptureDeliverFrameCB new_frame_callback)
       : new_frame_callback_(new_frame_callback), weak_ptr_factory_(this) {
-    io_thread_checker_.DetachFromThread();
+    DETACH_FROM_THREAD(io_thread_checker_);
   }
   ~CanvasCaptureHandlerDelegate() {
-    DCHECK(io_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   }
 
   void SendNewFrameOnIOThread(scoped_refptr<VideoFrame> video_frame,
                               base::TimeTicks current_time) {
-    DCHECK(io_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
     new_frame_callback_.Run(std::move(video_frame), current_time);
   }
 
@@ -129,7 +127,7 @@ class CanvasCaptureHandler::CanvasCaptureHandlerDelegate {
   const media::VideoCapturerSource::VideoCaptureDeliverFrameCB
       new_frame_callback_;
   // Bound to IO thread.
-  base::ThreadChecker io_thread_checker_;
+  THREAD_CHECKER(io_thread_checker_);
   base::WeakPtrFactory<CanvasCaptureHandlerDelegate> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CanvasCaptureHandlerDelegate);
@@ -151,7 +149,7 @@ CanvasCaptureHandler::CanvasCaptureHandler(
 
 CanvasCaptureHandler::~CanvasCaptureHandler() {
   DVLOG(3) << __func__;
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   io_task_runner_->DeleteSoon(FROM_HERE, delegate_.release());
 }
 
@@ -173,7 +171,7 @@ CanvasCaptureHandler::CreateCanvasCaptureHandler(
 void CanvasCaptureHandler::SendNewFrame(
     sk_sp<SkImage> image,
     blink::WebGraphicsContext3DProvider* context_provider) {
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   DCHECK(image);
   TRACE_EVENT0("webrtc", "CanvasCaptureHandler::SendNewFrame");
 
@@ -213,7 +211,7 @@ void CanvasCaptureHandler::SendNewFrame(
 }
 
 bool CanvasCaptureHandler::NeedsNewFrame() const {
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   return ask_for_new_frame_;
 }
 
@@ -224,7 +222,7 @@ void CanvasCaptureHandler::StartVideoCapture(
     const media::VideoCapturerSource::RunningCallback& running_callback) {
   DVLOG(3) << __func__ << " requested "
            << media::VideoCaptureFormat::ToString(params.requested_format);
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   DCHECK(params.requested_format.IsValid());
   capture_format_ = params.requested_format;
   delegate_.reset(new CanvasCaptureHandlerDelegate(new_frame_callback));
@@ -235,7 +233,7 @@ void CanvasCaptureHandler::StartVideoCapture(
 
 void CanvasCaptureHandler::RequestRefreshFrame() {
   DVLOG(3) << __func__;
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   if (last_frame_ && delegate_) {
     io_task_runner_->PostTask(
         FROM_HERE,
@@ -248,13 +246,13 @@ void CanvasCaptureHandler::RequestRefreshFrame() {
 
 void CanvasCaptureHandler::StopVideoCapture() {
   DVLOG(3) << __func__;
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   ask_for_new_frame_ = false;
   io_task_runner_->DeleteSoon(FROM_HERE, delegate_.release());
 }
 
 void CanvasCaptureHandler::ReadARGBPixelsSync(sk_sp<SkImage> image) {
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
 
   const base::TimeTicks timestamp = base::TimeTicks::Now();
   const gfx::Size image_size(image->width(), image->height());
@@ -287,7 +285,7 @@ void CanvasCaptureHandler::ReadARGBPixelsSync(sk_sp<SkImage> image) {
 void CanvasCaptureHandler::ReadARGBPixelsAsync(
     sk_sp<SkImage> image,
     blink::WebGraphicsContext3DProvider* context_provider) {
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
 
   const base::TimeTicks timestamp = base::TimeTicks::Now();
   const gfx::Size image_size(image->width(), image->height());
@@ -317,7 +315,7 @@ void CanvasCaptureHandler::ReadARGBPixelsAsync(
 void CanvasCaptureHandler::ReadYUVPixelsAsync(
     sk_sp<SkImage> image,
     blink::WebGraphicsContext3DProvider* context_provider) {
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
 
   const base::TimeTicks timestamp = base::TimeTicks::Now();
   const gfx::Size image_size(image->width(), image->height());
@@ -359,7 +357,7 @@ void CanvasCaptureHandler::OnARGBPixelsReadAsync(
     base::TimeTicks this_frame_ticks,
     bool flip,
     bool success) {
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   if (!success) {
     DLOG(ERROR) << "Couldn't read SkImage using async callback";
     // Async reading is not supported on some platforms, see
@@ -386,7 +384,7 @@ void CanvasCaptureHandler::OnYUVPixelsReadAsync(
     scoped_refptr<media::VideoFrame> yuv_frame,
     base::TimeTicks this_frame_ticks,
     bool success) {
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   if (!success) {
     DLOG(ERROR) << "Couldn't read SkImage using async callback";
     return;
@@ -402,7 +400,7 @@ scoped_refptr<media::VideoFrame> CanvasCaptureHandler::ConvertToYUVFrame(
     int stride,
     SkColorType source_color_type) {
   DVLOG(4) << __func__;
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   TRACE_EVENT0("webrtc", "CanvasCaptureHandler::ConvertToYUVFrame");
 
   scoped_refptr<VideoFrame> video_frame = frame_pool_.CreateFrame(
@@ -456,7 +454,7 @@ scoped_refptr<media::VideoFrame> CanvasCaptureHandler::ConvertToYUVFrame(
 void CanvasCaptureHandler::SendFrame(scoped_refptr<VideoFrame> video_frame,
                                      base::TimeTicks this_frame_ticks,
                                      const gfx::ColorSpace& color_space) {
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
 
   // If this function is called asynchronously, |delegate_| might have been
   // released already in StopVideoCapture().

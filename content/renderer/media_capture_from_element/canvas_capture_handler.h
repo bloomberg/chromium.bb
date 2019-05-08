@@ -121,7 +121,7 @@ class CONTENT_EXPORT CanvasCaptureHandler final
   std::unique_ptr<CanvasCaptureHandlerDelegate> delegate_;
 
   // Bound to Main Render thread.
-  base::ThreadChecker main_render_thread_checker_;
+  THREAD_CHECKER(main_render_thread_checker_);
   base::WeakPtrFactory<CanvasCaptureHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CanvasCaptureHandler);
