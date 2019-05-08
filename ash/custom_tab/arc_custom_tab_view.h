@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_CUSTOM_TAB_ARC_CUSTOM_TAB_VIEW_CLASSIC_H_
-#define ASH_CUSTOM_TAB_ARC_CUSTOM_TAB_VIEW_CLASSIC_H_
+#ifndef ASH_CUSTOM_TAB_ARC_CUSTOM_TAB_VIEW_H_
+#define ASH_CUSTOM_TAB_ARC_CUSTOM_TAB_VIEW_H_
 
 #include <memory>
 
@@ -80,4 +80,4 @@ class ArcCustomTabViewClassic : public ArcCustomTab,
 
 }  // namespace ash
 
-#endif  // ASH_CUSTOM_TAB_ARC_CUSTOM_TAB_VIEW_CLASSIC_H_
+#endif  // ASH_CUSTOM_TAB_ARC_CUSTOM_TAB_VIEW_H_
