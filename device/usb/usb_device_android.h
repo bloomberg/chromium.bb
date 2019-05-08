@@ -26,7 +26,7 @@ class UsbDeviceAndroid : public UsbDevice {
   void Open(OpenCallback callback) override;
 
   jint device_id() const { return device_id_; }
-  void PermissionGranted(JNIEnv* env, bool granted);
+  void PermissionGranted(bool granted);
 
  private:
   UsbDeviceAndroid(

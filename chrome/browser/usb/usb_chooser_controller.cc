@@ -63,27 +63,6 @@ base::string16 FormatUsbDeviceName(
   return device_name;
 }
 
-void OnDeviceInfoRefreshed(
-    base::WeakPtr<UsbChooserContext> chooser_context,
-    const url::Origin& requesting_origin,
-    const url::Origin& embedding_origin,
-    blink::mojom::WebUsbService::GetPermissionCallback callback,
-    device::mojom::UsbDeviceInfoPtr device_info) {
-  if (!chooser_context || !device_info) {
-    std::move(callback).Run(nullptr);
-    return;
-  }
-
-  RecordWebUsbChooserClosure(
-      device_info->serial_number->empty()
-          ? WEBUSB_CHOOSER_CLOSED_EPHEMERAL_PERMISSION_GRANTED
-          : WEBUSB_CHOOSER_CLOSED_PERMISSION_GRANTED);
-
-  chooser_context->GrantDevicePermission(requesting_origin, embedding_origin,
-                                         *device_info);
-  std::move(callback).Run(std::move(device_info));
-}
-
 }  // namespace
 
 UsbChooserController::UsbChooserController(
@@ -111,7 +90,7 @@ UsbChooserController::UsbChooserController(
 }
 
 UsbChooserController::~UsbChooserController() {
-  if (callback_)
+  if (!callback_.is_null())
     std::move(callback_).Run(nullptr);
 }
 
@@ -163,7 +142,6 @@ void UsbChooserController::Select(const std::vector<size_t>& indices) {
   DCHECK_EQ(1u, indices.size());
   size_t index = indices[0];
   DCHECK_LT(index, devices_.size());
-  const std::string& guid = devices_[index].first;
 
   if (!chooser_context_) {
     // Return nullptr for GetPermissionCallback.
@@ -171,20 +149,16 @@ void UsbChooserController::Select(const std::vector<size_t>& indices) {
     return;
   }
 
-  // The prompt is about to close, destroying |this| so all the parameters
-  // necessary to grant permission to access the device need to be bound to
-  // this callback.
-  auto on_device_info_refreshed = base::BindOnce(
-      &OnDeviceInfoRefreshed, chooser_context_, requesting_origin_,
-      embedding_origin_, std::move(callback_));
-#if defined(OS_ANDROID)
-  chooser_context_->RefreshDeviceInfo(guid,
-                                      std::move(on_device_info_refreshed));
-#else
-  auto* device_info = chooser_context_->GetDeviceInfo(guid);
+  auto* device_info = chooser_context_->GetDeviceInfo(devices_[index].first);
   DCHECK(device_info);
-  std::move(on_device_info_refreshed).Run(device_info->Clone());
-#endif
+  chooser_context_->GrantDevicePermission(requesting_origin_, embedding_origin_,
+                                          *device_info);
+  std::move(callback_).Run(device_info->Clone());
+
+  RecordWebUsbChooserClosure(
+      device_info->serial_number->empty()
+          ? WEBUSB_CHOOSER_CLOSED_EPHEMERAL_PERMISSION_GRANTED
+          : WEBUSB_CHOOSER_CLOSED_PERMISSION_GRANTED);
 }
 
 void UsbChooserController::Cancel() {

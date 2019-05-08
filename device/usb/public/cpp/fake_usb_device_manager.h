@@ -11,7 +11,6 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
-#include "build/build_config.h"
 #include "device/usb/public/cpp/fake_usb_device_info.h"
 #include "device/usb/public/mojom/device.mojom.h"
 #include "device/usb/public/mojom/device_manager.mojom.h"
@@ -70,11 +69,6 @@ class FakeUsbDeviceManager : public mojom::UsbDeviceManager {
   void GetDevice(const std::string& guid,
                  mojom::UsbDeviceRequest device_request,
                  mojom::UsbDeviceClientPtr device_client) override;
-
-#if defined(OS_ANDROID)
-  void RefreshDeviceInfo(const std::string& guid,
-                         RefreshDeviceInfoCallback callback) override;
-#endif
 
 #if defined(OS_CHROMEOS)
   void CheckAccess(const std::string& guid,

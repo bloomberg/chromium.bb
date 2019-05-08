@@ -58,20 +58,6 @@ void FakeUsbDeviceManager::GetDevice(const std::string& guid,
                         std::move(device_client));
 }
 
-#if defined(OS_ANDROID)
-void FakeUsbDeviceManager::RefreshDeviceInfo(
-    const std::string& guid,
-    RefreshDeviceInfoCallback callback) {
-  auto it = devices_.find(guid);
-  if (it == devices_.end()) {
-    std::move(callback).Run(nullptr);
-    return;
-  }
-
-  std::move(callback).Run(it->second->GetDeviceInfo().Clone());
-}
-#endif
-
 #if defined(OS_CHROMEOS)
 void FakeUsbDeviceManager::CheckAccess(const std::string& guid,
                                        CheckAccessCallback callback) {

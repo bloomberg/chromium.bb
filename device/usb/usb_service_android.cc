@@ -76,7 +76,7 @@ void UsbServiceAndroid::DevicePermissionRequestComplete(
     jboolean granted) {
   const auto it = devices_by_id_.find(device_id);
   DCHECK(it != devices_by_id_.end());
-  it->second->PermissionGranted(env, granted);
+  it->second->PermissionGranted(granted);
 }
 
 ScopedJavaLocalRef<jobject> UsbServiceAndroid::OpenDevice(

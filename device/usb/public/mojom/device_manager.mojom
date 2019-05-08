@@ -23,13 +23,6 @@ interface UsbDeviceManager {
   GetDevice(string guid, UsbDevice& device_request,
             UsbDeviceClient? device_client);
 
-  // Check Android permissions to access the device identified by |guid|. If
-  // necessary the user is prompted to grant this access. If access is granted
-  // the device information is refreshed to include data not previously
-  // accessible.
-  [EnableIf=is_android]
-  RefreshDeviceInfo(string guid) => (UsbDeviceInfo? device_info);
-
   // Check whether permission_broker will allow a future Open call for
   // a given USB device to succeed.
   [EnableIf=is_chromeos]

@@ -167,19 +167,11 @@ UsbDeviceAndroid::UsbDeviceAndroid(
 
 UsbDeviceAndroid::~UsbDeviceAndroid() {}
 
-void UsbDeviceAndroid::PermissionGranted(JNIEnv* env, bool granted) {
-  if (!granted) {
-    CallRequestPermissionCallbacks(false);
-    return;
-  }
-
-  ScopedJavaLocalRef<jstring> serial_jstring =
-      Java_ChromeUsbDevice_getSerialNumber(env, j_object_);
-  if (!serial_jstring.is_null())
-    serial_number_ = ConvertJavaStringToUTF16(env, serial_jstring);
-
-  Open(
-      base::BindOnce(&UsbDeviceAndroid::OnDeviceOpenedToReadDescriptors, this));
+void UsbDeviceAndroid::PermissionGranted(bool granted) {
+  if (granted)
+    Open(base::Bind(&UsbDeviceAndroid::OnDeviceOpenedToReadDescriptors, this));
+  else
+    CallRequestPermissionCallbacks(granted);
 }
 
 void UsbDeviceAndroid::CallRequestPermissionCallbacks(bool granted) {
