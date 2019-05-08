@@ -47,7 +47,7 @@ const base::FilePath::CharType kFilesStorageDir[] = FILE_PATH_LITERAL("Files");
 
 // Helper function to create download service with different implementation
 // details.
-DownloadService* CreateDownloadServiceInternal(
+std::unique_ptr<DownloadService> CreateDownloadServiceInternal(
     SimpleFactoryKey* simple_factory_key,
     std::unique_ptr<DownloadClientMap> clients,
     std::unique_ptr<Configuration> config,
@@ -90,12 +90,12 @@ DownloadService* CreateDownloadServiceInternal(
       files_storage_dir);
   logger->SetLogSource(controller.get());
 
-  return new DownloadServiceImpl(std::move(config), std::move(logger),
-                                 std::move(controller));
+  return std::make_unique<DownloadServiceImpl>(
+      std::move(config), std::move(logger), std::move(controller));
 }
 
 // Create download service for normal profile.
-DownloadService* BuildDownloadService(
+std::unique_ptr<DownloadService> BuildDownloadService(
     SimpleFactoryKey* simple_factory_key,
     PrefService* prefs,
     std::unique_ptr<DownloadClientMap> clients,
@@ -130,7 +130,7 @@ DownloadService* BuildDownloadService(
 }
 
 // Create download service for incognito mode without any database or file IO.
-DownloadService* BuildInMemoryDownloadService(
+std::unique_ptr<DownloadService> BuildInMemoryDownloadService(
     SimpleFactoryKey* simple_factory_key,
     std::unique_ptr<DownloadClientMap> clients,
     network::NetworkConnectionTracker* network_connection_tracker,

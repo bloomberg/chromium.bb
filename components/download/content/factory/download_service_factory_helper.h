@@ -38,7 +38,7 @@ class TaskScheduler;
 // will act as an in-memory only service (this means no auto-retries after
 // restarts, no files written on completion, etc.).
 // |background_task_runner| will be used for all disk reads and writes.
-DownloadService* BuildDownloadService(
+std::unique_ptr<DownloadService> BuildDownloadService(
     SimpleFactoryKey* simple_factory_key,
     PrefService* prefs,
     std::unique_ptr<DownloadClientMap> clients,
@@ -50,7 +50,7 @@ DownloadService* BuildDownloadService(
 
 // Create download service used in incognito mode, without any database or
 // download file IO.
-DownloadService* BuildInMemoryDownloadService(
+std::unique_ptr<DownloadService> BuildInMemoryDownloadService(
     SimpleFactoryKey* simple_factory_key,
     std::unique_ptr<DownloadClientMap> clients,
     network::NetworkConnectionTracker* network_connection_tracker,

@@ -276,13 +276,12 @@ void WebTestBackgroundFetchDelegate::CreateDownloadJob(
               .get();
       SimpleFactoryKey* simple_key =
           SimpleKeyMap::GetInstance()->GetForBrowserContext(browser_context_);
-      download_service_ =
-          base::WrapUnique(download::BuildInMemoryDownloadService(
-              simple_key, std::move(clients), GetNetworkConnectionTracker(),
-              base::FilePath(),
-              std::make_unique<TestBlobContextGetterFactory>(browser_context_),
-              base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
-              url_loader_factory));
+      download_service_ = download::BuildInMemoryDownloadService(
+          simple_key, std::move(clients), GetNetworkConnectionTracker(),
+          base::FilePath(),
+          std::make_unique<TestBlobContextGetterFactory>(browser_context_),
+          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
+          url_loader_factory);
     }
   }
 }
