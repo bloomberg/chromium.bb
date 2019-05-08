@@ -292,7 +292,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemOperationRunner {
   // FileSystemContext, and |this| being deleted, by the time the call returns.
   void FinishOperation(OperationID id);
 
-  // Not owned; file_system_context owns this.
+  // Not owned; whatever owns this has to make sure context outlives this.
   FileSystemContext* file_system_context_;
 
   using Operations =
