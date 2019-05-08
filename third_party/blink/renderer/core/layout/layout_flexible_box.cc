@@ -1442,7 +1442,7 @@ void LayoutFlexibleBox::LayoutLineItems(FlexLine* current_line,
     // width, so we need to compare to the size including the scrollbar.
     if (flex_item.flexed_content_size !=
         MainAxisContentExtentForChildIncludingScrollbar(*child)) {
-      child->SetChildNeedsLayout(kMarkOnlyThis);
+      child->SetSelfNeedsLayoutForAvailableSpace(true);
     } else {
       // To avoid double applying margin changes in
       // updateAutoMarginsInCrossAxis, we reset the margins here.
