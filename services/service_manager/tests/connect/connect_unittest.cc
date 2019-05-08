@@ -558,15 +558,16 @@ TEST_F(ConnectTest, MAYBE_PackagedApp_BlockedInterface) {
 // Connection to another application provided by the same package, blocked
 // because it's not in the capability filter whitelist.
 TEST_F(ConnectTest, MAYBE_BlockedPackagedApplication) {
-  mojom::ConnectResult result;
   base::RunLoop run_loop;
   test::mojom::ConnectTestServicePtr service_b;
   connector()->BindInterface(
       ServiceFilter::ByName(kTestAppBName), mojo::MakeRequest(&service_b),
-      base::BindOnce(&StartServiceResponse, nullptr, &result, nullptr));
-  service_b.set_connection_error_handler(run_loop.QuitClosure());
+      base::BindLambdaForTesting([&](mojom::ConnectResult result,
+                                     const base::Optional<Identity>& identity) {
+        EXPECT_EQ(mojom::ConnectResult::ACCESS_DENIED, result);
+        run_loop.Quit();
+      }));
   run_loop.Run();
-  EXPECT_EQ(mojom::ConnectResult::ACCESS_DENIED, result);
 }
 
 TEST_F(ConnectTest, CapabilityClasses) {
