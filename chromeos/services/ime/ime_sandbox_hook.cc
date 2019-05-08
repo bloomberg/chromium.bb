@@ -112,6 +112,8 @@ bool ImePreSandboxHook(service_manager::SandboxLinux::Options options) {
                                GetImeFilePermissions(),
                                service_manager::SandboxLinux::PreSandboxHook(),
                                options);
+
+  instance->EngageNamespaceSandboxIfPossible();
   return true;
 }
 
