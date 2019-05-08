@@ -90,11 +90,6 @@ void MappedHostResolver::SetRequestContext(URLRequestContext* request_context) {
   impl_->SetRequestContext(request_context);
 }
 
-const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
-MappedHostResolver::GetDnsOverHttpsServersForTesting() const {
-  return impl_->GetDnsOverHttpsServersForTesting();
-}
-
 HostResolverManager* MappedHostResolver::GetManagerForTesting() {
   return impl_->GetManagerForTesting();
 }

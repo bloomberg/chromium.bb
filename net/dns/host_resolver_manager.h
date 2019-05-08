@@ -166,6 +166,8 @@ class NET_EXPORT HostResolverManager
   void AddHostCacheInvalidator(HostCache::Invalidator* invalidator);
   void RemoveHostCacheInvalidator(const HostCache::Invalidator* invalidator);
 
+  // Returns the currently configured DNS over HTTPS servers. Returns nullptr if
+  // DNS over HTTPS is not enabled.
   const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
   GetDnsOverHttpsServersForTesting() const;
 

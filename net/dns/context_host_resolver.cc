@@ -161,11 +161,6 @@ void ContextHostResolver::SetRequestContext(
   context_ = request_context;
 }
 
-const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
-ContextHostResolver::GetDnsOverHttpsServersForTesting() const {
-  return manager_->GetDnsOverHttpsServersForTesting();
-}
-
 HostResolverManager* ContextHostResolver::GetManagerForTesting() {
   return manager_;
 }

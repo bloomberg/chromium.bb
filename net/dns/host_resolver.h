@@ -298,19 +298,8 @@ class NET_EXPORT HostResolver {
   // only be called once.
   virtual void SetRequestContext(URLRequestContext* request_context);
 
-  // Returns the currently configured DNS over HTTPS servers. Returns nullptr if
-  // DNS over HTTPS is not enabled.
-  virtual const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
-  GetDnsOverHttpsServersForTesting() const;
-
   virtual HostResolverManager* GetManagerForTesting();
   virtual const URLRequestContext* GetContextForTesting() const;
-
-  // TODO(crbug.com/934402): Cleanup the various property-setting methods in
-  // this class.  Many only affect manager-wide properties and can probably be
-  // removed and replaced by calling equivalent methods directly on the
-  // underlying HostResolverManager (through NetworkService that generally owns
-  // that manager).
 
   // Creates a new HostResolver. |manager| must outlive the returned resolver.
   //

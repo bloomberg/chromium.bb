@@ -60,8 +60,6 @@ class NET_EXPORT MappedHostResolver : public HostResolver {
                  bool* secure_out) const override;
   std::unique_ptr<base::Value> GetDnsConfigAsValue() const override;
   void SetRequestContext(URLRequestContext* request_context) override;
-  const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
-  GetDnsOverHttpsServersForTesting() const override;
   HostResolverManager* GetManagerForTesting() override;
 
  private:

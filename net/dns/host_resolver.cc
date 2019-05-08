@@ -64,11 +64,6 @@ void HostResolver::SetRequestContext(URLRequestContext* request_context) {
   NOTREACHED();
 }
 
-const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
-HostResolver::GetDnsOverHttpsServersForTesting() const {
-  return nullptr;
-}
-
 HostResolverManager* HostResolver::GetManagerForTesting() {
   // Should be overridden in any HostResolver implementation where this method
   // may be called.
