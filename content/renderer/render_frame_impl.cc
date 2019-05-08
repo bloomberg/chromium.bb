@@ -3934,6 +3934,8 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
     BrowserPluginDelegate* delegate =
         GetContentClient()->renderer()->CreateBrowserPluginDelegate(
             this, WebPluginInfo(), kBrowserPluginMimeType, GURL(params.url));
+    if (!delegate)
+      return nullptr;
     return BrowserPluginManager::Get()->CreateBrowserPlugin(
         this, delegate->GetWeakPtr());
   }
