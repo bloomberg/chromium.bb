@@ -100,7 +100,7 @@
 
 #if defined(OS_LINUX)
 #include "components/services/font/font_service_app.h"
-#include "components/services/font/public/interfaces/constants.mojom.h"
+#include "components/services/font/public/interfaces/constants.mojom.h"  // nogncheck
 #endif
 
 #if defined(OS_CHROMEOS)

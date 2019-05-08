@@ -635,7 +635,6 @@ target(link_target_type, "renderer") {
     "//storage/common",
     "//third_party/blink/public:blink",
     "//third_party/blink/public:buildflags",
-    "//third_party/blink/public:mojo_bindings",
     "//third_party/blink/public/common",
     "//third_party/boringssl",
     "//third_party/icu",

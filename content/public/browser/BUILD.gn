@@ -388,7 +388,6 @@ jumbo_source_set("browser_sources") {
 
     # We expose storage headers for quota and blob storage context in the public API.
     "//storage/browser",
-    "//third_party/blink/public:mojo_bindings",
   ]
   deps = [
     "//cc",

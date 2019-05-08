@@ -14,7 +14,7 @@
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/bluetooth_chooser.h"
-#include "third_party/blink/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
+#include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 
 namespace device {
 class BluetoothAdapter;

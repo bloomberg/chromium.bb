@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_BLUETOOTH_STRUCT_TRAITS_H_
 
 #include "device/bluetooth/public/mojom/uuid.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/bluetooth/web_bluetooth.mojom-blink.h"
+#include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom-blink.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace mojo {

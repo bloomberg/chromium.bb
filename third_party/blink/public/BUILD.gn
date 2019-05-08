@@ -546,8 +546,6 @@ source_set("blink_headers") {
   ]
 
   deps = [
-    ":generate_mojo_bindings",
-    ":mojo_bindings_blink_headers",
     "//base:base",
     "//cc:cc",
     "//cc/paint:paint",
@@ -657,63 +655,5 @@ repack("scaled_resources_200_percent") {
   }
   deps = [
     ":scaled_resources",
-  ]
-}
-
-# TODO: Move these into blink/public/mojom.
-mojom("mojo_bindings") {
-  visibility = [
-    "//content/*",
-    "//chrome/common:mojo_bindings",
-  ]
-  visibility_blink =
-      [ "//third_party/blink/renderer/platform:blink_platform_public_deps" ]
-  sources = [
-    "platform/modules/bluetooth/web_bluetooth.mojom",
-  ]
-  public_deps = [
-    "//components/services/font/public/interfaces",
-    "//device/bluetooth/public/mojom",
-    "//mojo/public/mojom/base",
-    "//services/device/public/mojom",
-    "//services/network/public/mojom",
-    "//services/service_manager/public/mojom",
-    "//skia/public/interfaces",
-    "//third_party/blink/public/mojom:mojom_platform",
-    "//ui/gfx/geometry/mojo",
-    "//url/mojom:url_mojom_gurl",
-    "//url/mojom:url_mojom_origin",
-  ]
-
-  overridden_deps = [ "//third_party/blink/public/mojom:mojom_platform" ]
-  component_deps = [ "//third_party/blink/public/common" ]
-
-  component_output_prefix = "blink_mojo_bindings"
-
-  # The chromium variant must be linked with content and use the same export
-  # settings in component build because of the WebBluetoothDeviceId typemap
-  # inside content.
-  export_class_attribute = "CONTENT_EXPORT"
-  export_define = "CONTENT_IMPLEMENTATION=1"
-  export_header = "content/common/content_export.h"
-
-  # Similarly, the blink variant must be linked with the platform component
-  # since it uses types from it in its typemaps.
-  export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
-  export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
-  export_header_blink = "third_party/blink/public/platform/web_common.h"
-}
-
-# Note that this intentionally depends on the generator target of the mojom
-# target instead of the mojom target itself directly. This is to ensure that the
-# dependencies are header-only and don't link against any bindings code.
-group("generate_mojo_bindings") {
-  deps = [
-    # It's important to generate both the regular and the Blink variants. The
-    # Blink public API exposes a number of Mojo interfaces; omitting it will
-    # cause non-deterministic compile failures for code that uses the regular
-    # variant of the generated files.
-    ":mojo_bindings_blink_headers",
-    ":mojo_bindings_headers",
   ]
 }
