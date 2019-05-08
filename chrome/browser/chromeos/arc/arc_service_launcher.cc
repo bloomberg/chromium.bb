@@ -51,6 +51,7 @@
 #include "components/arc/appfuse/arc_appfuse_bridge.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/audio/arc_audio_bridge.h"
+#include "components/arc/camera/arc_camera_bridge.h"
 #include "components/arc/clipboard/arc_clipboard_bridge.h"
 #include "components/arc/crash_collector/arc_crash_collector_bridge.h"
 #include "components/arc/disk_quota/arc_disk_quota_bridge.h"
@@ -156,6 +157,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcBluetoothBridge::GetForBrowserContext(profile);
   ArcBootErrorNotification::GetForBrowserContext(profile);
   ArcBootPhaseMonitorBridge::GetForBrowserContext(profile);
+  ArcCameraBridge::GetForBrowserContext(profile);
   ArcCastReceiverService::GetForBrowserContext(profile);
   ArcCertStoreBridge::GetForBrowserContext(profile);
   ArcClipboardBridge::GetForBrowserContext(profile);

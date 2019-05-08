@@ -14,6 +14,7 @@
 #include "components/arc/common/backup_settings.mojom.h"
 #include "components/arc/common/bluetooth.mojom.h"
 #include "components/arc/common/boot_phase_monitor.mojom.h"
+#include "components/arc/common/camera.mojom.h"
 #include "components/arc/common/cast_receiver.mojom.h"
 #include "components/arc/common/cert_store.mojom.h"
 #include "components/arc/common/clipboard.mojom.h"
@@ -84,6 +85,9 @@ void FakeArcBridgeHost::OnBluetoothInstanceReady(
 
 void FakeArcBridgeHost::OnBootPhaseMonitorInstanceReady(
     mojom::BootPhaseMonitorInstancePtr boot_phase_monitor_ptr) {}
+
+void FakeArcBridgeHost::OnCameraInstanceReady(
+    mojom::CameraInstancePtr camera_ptr) {}
 
 void FakeArcBridgeHost::OnCastReceiverInstanceReady(
     mojom::CastReceiverInstancePtr cast_receiver_ptr) {}

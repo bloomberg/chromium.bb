@@ -30,6 +30,8 @@ class BluetoothHost;
 class BluetoothInstance;
 class BootPhaseMonitorHost;
 class BootPhaseMonitorInstance;
+class CameraHost;
+class CameraInstance;
 class CastReceiverInstance;
 class CertStoreHost;
 class CertStoreInstance;
@@ -133,6 +135,9 @@ class ArcBridgeService {
                    mojom::BootPhaseMonitorHost>*
   boot_phase_monitor() {
     return &boot_phase_monitor_;
+  }
+  ConnectionHolder<mojom::CameraInstance, mojom::CameraHost>* camera() {
+    return &camera_;
   }
   ConnectionHolder<mojom::CastReceiverInstance>* cast_receiver() {
     return &cast_receiver_;
@@ -258,6 +263,7 @@ class ArcBridgeService {
   ConnectionHolder<mojom::BluetoothInstance, mojom::BluetoothHost> bluetooth_;
   ConnectionHolder<mojom::BootPhaseMonitorInstance, mojom::BootPhaseMonitorHost>
       boot_phase_monitor_;
+  ConnectionHolder<mojom::CameraInstance, mojom::CameraHost> camera_;
   ConnectionHolder<mojom::CastReceiverInstance> cast_receiver_;
   ConnectionHolder<mojom::CertStoreInstance, mojom::CertStoreHost> cert_store_;
   ConnectionHolder<mojom::ClipboardInstance, mojom::ClipboardHost> clipboard_;
