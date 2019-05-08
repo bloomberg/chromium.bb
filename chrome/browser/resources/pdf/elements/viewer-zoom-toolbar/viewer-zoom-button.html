@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-fab/paper-fab.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
 
 <dom-module id="viewer-zoom-button">
   <template>
@@ -29,48 +30,48 @@
         transform: translateX(calc(-1 * var(--translate-x-distance)));
       }
 
-      paper-fab {
-        --paper-fab-mini: {
-          height: 36px;
-          padding: 8px;
-          width: 36px;
-        };
+      cr-icon-button {
+        --cr-icon-button-size: 36px;
+        --cr-icon-button-icon-size: 20px;
         background-color: rgb(242, 242, 242);
+        border-radius: 50%;
         color: var(--paper-grey-700);
         overflow: visible;
+        @apply --shadow-elevation-2dp;
       }
 
-      :host([new-print-preview]) paper-fab {
-        --paper-fab-mini: {
-          height: 24px;
-          padding: 4px;
-          width: 24px;
-        };
+      :host(:not([new-print-preview])) cr-icon-button {
+        --cr-icon-button-ripple-opacity: .4;
+      }
+
+      cr-icon-button([disabled]) {
+        box-shadow: none;
+      }
+
+      :host([new-print-preview]) cr-icon-button {
+        --cr-icon-button-size: 24px;
+        --cr-icon-button-icon-size: 16px;
         background-color: var(--google-grey-100);
         color: var(--google-grey-refresh-700);
       }
 
-      :host-context([dark]):host([new-print-preview]) paper-fab {
+      :host-context([dark]):host([new-print-preview]) cr-icon-button {
         background-color: var(--google-grey-900);
         color: var(--google-grey-200);
       }
 
-      paper-fab.keyboard-focus {
-        background-color: var(--viewer-icon-ink-color);
+      :host([keyboard-navigation-active]) cr-icon-button:focus {
+        @apply --shadow-elevation-6dp;
       }
 
-      :host([new-print-preview]) paper-fab.keyboard-focus {
-        background-color: var(--google-grey-200);
-      }
-
-      :host-context([dark]):host([new-print-preview]) paper-fab.keyboard-focus {
-        background-color: var(--google-grey-800);
+      cr-icon-button:active {
+        @apply --shadow-elevation-8dp;
       }
     </style>
     <div id="wrapper">
-      <paper-fab id="button" mini icon="[[visibleIcon_]]" on-click="fireClick"
+      <cr-icon-button iron-icon="[[visibleIcon_]]" on-click="fireClick"
           aria-label$="[[visibleTooltip_]]" title="[[visibleTooltip_]]">
-      </paper-fab>
+      </cr-icon-button>
     </div>
   </template>
   <script src="viewer-zoom-button.js"></script>

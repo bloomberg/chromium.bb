@@ -44,11 +44,12 @@
       }
 
       :host paper-ripple {
-        --paper-ripple-opacity: .21; /* GG900 .15 is about GG700 .21 */
+        /* GG900 .15 is about GG700 .21 */
+        --paper-ripple-opacity: var(--cr-icon-button-ripple-opacity, .21);
       }
 
       :host-context([dark]) paper-ripple {
-        --paper-ripple-opacity: .4;
+        --paper-ripple-opacity: var(--cr-icon-button-ripple-opacity, .4);
       }
 
       #icon {
