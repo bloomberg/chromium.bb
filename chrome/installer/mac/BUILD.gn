@@ -121,9 +121,11 @@ group("mac_signing_tests") {
     "signing/config.py.in",
     "signing/model.py",
     "signing/model_test.py",
+    "signing/modification.py",
+    "signing/modification_test.py",
+    "signing/run_mac_signing_tests.py",
     "signing/signing.py",
     "signing/signing_test.py",
-    "signing/run_mac_signing_tests.py",
     "signing/test_common.py",
     "signing/test_config.py",
 
