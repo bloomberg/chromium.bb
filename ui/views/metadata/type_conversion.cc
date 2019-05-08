@@ -87,82 +87,62 @@ base::string16 ConvertToString<gfx::Size>(const gfx::Size& source_value) {
 template <>
 int8_t ConvertFromString<int8_t>(const base::string16& source_value) {
   int32_t ret = 0;
-  if (base::StringToInt(source_value, &ret))
-    return static_cast<int8_t>(ret);
-  NOTREACHED();
-  return 0;
+  return base::StringToInt(source_value, &ret) &&
+                 base::IsValueInRangeForNumericType<int8_t>(ret)
+             ? static_cast<int8_t>(ret)
+             : 0;
 }
 
 template <>
 int16_t ConvertFromString<int16_t>(const base::string16& source_value) {
   int32_t ret = 0;
-  if (base::StringToInt(source_value, &ret))
-    return static_cast<int16_t>(ret);
-  NOTREACHED();
-  return 0;
+  return base::StringToInt(source_value, &ret) &&
+                 base::IsValueInRangeForNumericType<int16_t>(ret)
+             ? static_cast<int16_t>(ret)
+             : 0;
 }
 
 template <>
 int32_t ConvertFromString<int32_t>(const base::string16& source_value) {
   int32_t ret = 0;
-  if (base::StringToInt(source_value, &ret))
-    return ret;
-  NOTREACHED();
-  return 0;
+  return base::StringToInt(source_value, &ret) ? static_cast<int32_t>(ret) : 0;
 }
 
 template <>
 int64_t ConvertFromString<int64_t>(const base::string16& source_value) {
   int64_t ret = 0;
-  if (base::StringToInt64(source_value, &ret))
-    return ret;
-  NOTREACHED();
-  return 0;
+  return base::StringToInt64(source_value, &ret) ? ret : 0;
 }
 
 template <>
 uint8_t ConvertFromString<uint8_t>(const base::string16& source_value) {
   uint32_t ret = 0;
-  if (base::StringToUint(source_value, &ret))
-    return static_cast<uint8_t>(ret);
-  NOTREACHED();
-  return 0;
+  return base::StringToUint(source_value, &ret) &&
+                 base::IsValueInRangeForNumericType<uint8_t>(ret)
+             ? static_cast<uint8_t>(ret)
+             : 0;
 }
 
 template <>
 uint16_t ConvertFromString<uint16_t>(const base::string16& source_value) {
   uint32_t ret = 0;
-  if (base::StringToUint(source_value, &ret))
-    return static_cast<uint16_t>(ret);
-  NOTREACHED();
-  return 0;
+  return base::StringToUint(source_value, &ret) &&
+                 base::IsValueInRangeForNumericType<uint16_t>(ret)
+             ? static_cast<uint16_t>(ret)
+             : 0;
 }
 
 template <>
 uint32_t ConvertFromString<uint32_t>(const base::string16& source_value) {
   uint32_t ret = 0;
-  if (base::StringToUint(source_value, &ret))
-    return ret;
-  NOTREACHED();
-  return 0;
+  return base::StringToUint(source_value, &ret) ? static_cast<uint32_t>(ret)
+                                                : 0;
 }
 
 template <>
 uint64_t ConvertFromString<uint64_t>(const base::string16& source_value) {
   uint64_t ret = 0;
-  if (base::StringToUint64(source_value, &ret))
-    return ret;
-  NOTREACHED();
-  return 0;
-}
-
-template <>
-double ConvertFromString<double>(const base::string16& source_value) {
-  double ret = 0;
-  if (base::StringToDouble(base::UTF16ToUTF8(source_value), &ret))
-    return ret;
-  NOTREACHED();
-  return 0.0;
+  return base::StringToUint64(source_value, &ret) ? ret : 0;
 }
 
 template <>
@@ -171,14 +151,15 @@ float ConvertFromString<float>(const base::string16& source_value) {
 }
 
 template <>
-bool ConvertFromString<bool>(const base::string16& source_value) {
-  if (source_value == base::ASCIIToUTF16("true"))
-    return true;
-  if (source_value == base::ASCIIToUTF16("false"))
-    return false;
+double ConvertFromString<double>(const base::string16& source_value) {
+  double ret = 0;
+  return base::StringToDouble(base::UTF16ToUTF8(source_value), &ret) ? ret
+                                                                     : 0.0;
+}
 
-  NOTREACHED();
-  return false;
+template <>
+bool ConvertFromString<bool>(const base::string16& source_value) {
+  return source_value == base::ASCIIToUTF16("true");
 }
 
 }  // namespace metadata
