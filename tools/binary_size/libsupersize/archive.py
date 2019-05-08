@@ -1538,7 +1538,9 @@ def _DeduceMainPaths(args, parser, extracted_minimal_apk_path=None):
   aab_or_apk = args.apk_file or args.minimal_apks_file
   mapping_path = args.mapping_file
   if aab_or_apk:
+    # Allow either .minimal.apks or just .apks.
     aab_or_apk = aab_or_apk.replace('.minimal.apks', '.aab')
+    aab_or_apk = aab_or_apk.replace('.apks', '.aab')
     if not mapping_path:
       mapping_path = aab_or_apk + '.mapping'
       logging.debug('Detected --mapping-file=%s', mapping_path)
