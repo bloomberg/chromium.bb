@@ -41,7 +41,7 @@ PropertyAction HandlePropertyChange(T new_value,
 
 WatchTimeReporter::WatchTimeReporter(
     mojom::PlaybackPropertiesPtr properties,
-    const gfx::Size& initial_natural_size,
+    const gfx::Size& natural_size,
     GetMediaTimeCB get_media_time_cb,
     mojom::MediaMetricsProvider* provider,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -49,7 +49,7 @@ WatchTimeReporter::WatchTimeReporter(
     : WatchTimeReporter(std::move(properties),
                         false /* is_background */,
                         false /* is_muted */,
-                        initial_natural_size,
+                        natural_size,
                         std::move(get_media_time_cb),
                         provider,
                         task_runner,
@@ -59,7 +59,7 @@ WatchTimeReporter::WatchTimeReporter(
     mojom::PlaybackPropertiesPtr properties,
     bool is_background,
     bool is_muted,
-    const gfx::Size& initial_natural_size,
+    const gfx::Size& natural_size,
     GetMediaTimeCB get_media_time_cb,
     mojom::MediaMetricsProvider* provider,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -67,9 +67,9 @@ WatchTimeReporter::WatchTimeReporter(
     : properties_(std::move(properties)),
       is_background_(is_background),
       is_muted_(is_muted),
-      initial_natural_size_(initial_natural_size),
       get_media_time_cb_(std::move(get_media_time_cb)),
-      reporting_timer_(tick_clock) {
+      reporting_timer_(tick_clock),
+      natural_size_(natural_size) {
   DCHECK(get_media_time_cb_);
   DCHECK(properties_->has_audio || properties_->has_video);
   DCHECK_EQ(is_background, properties_->is_background);
@@ -100,9 +100,8 @@ WatchTimeReporter::WatchTimeReporter(
       display_type_component_ = CreateDisplayTypeComponent();
   }
 
-  // If this is a sub-reporter or we shouldn't report watch time, we're done. We
-  // don't support muted+background reporting currently.
-  if (is_background_ || is_muted_ || !ShouldReportWatchTime())
+  // If this is a sub-reporter we're done.
+  if (is_background_ || is_muted_)
     return;
 
   // Background watch time is reported by creating an background only watch time
@@ -112,8 +111,7 @@ WatchTimeReporter::WatchTimeReporter(
   prop_copy->is_background = true;
   background_reporter_.reset(new WatchTimeReporter(
       std::move(prop_copy), true /* is_background */, false /* is_muted */,
-      initial_natural_size_, get_media_time_cb_, provider, task_runner,
-      tick_clock));
+      natural_size_, get_media_time_cb_, provider, task_runner, tick_clock));
 
   // Muted watch time is only reported for audio+video playback.
   if (!properties_->has_video || !properties_->has_audio)
@@ -125,8 +123,7 @@ WatchTimeReporter::WatchTimeReporter(
   prop_copy->is_muted = true;
   muted_reporter_.reset(new WatchTimeReporter(
       std::move(prop_copy), false /* is_background */, true /* is_muted */,
-      initial_natural_size_, get_media_time_cb_, provider, task_runner,
-      tick_clock));
+      natural_size_, get_media_time_cb_, provider, task_runner, tick_clock));
 }
 
 WatchTimeReporter::~WatchTimeReporter() {
@@ -280,7 +277,19 @@ void WatchTimeReporter::UpdateSecondaryProperties(
         secondary_properties.Clone());
   }
   if (muted_reporter_)
-    muted_reporter_->UpdateSecondaryProperties(std::move(secondary_properties));
+    muted_reporter_->UpdateSecondaryProperties(secondary_properties.Clone());
+
+  // A change in resolution may affect ShouldReportingTimerRun().
+  bool original_should_run = ShouldReportingTimerRun();
+  natural_size_ = secondary_properties->natural_size;
+  bool should_run = ShouldReportingTimerRun();
+  if (original_should_run != should_run) {
+    if (should_run) {
+      MaybeStartReportingTimer(get_media_time_cb_.Run());
+    } else {
+      MaybeFinalizeWatchTime(FinalizeTime::ON_NEXT_UPDATE);
+    }
+  }
 }
 
 void WatchTimeReporter::SetAutoplayInitiated(bool autoplay_initiated) {
@@ -332,8 +341,8 @@ void WatchTimeReporter::OnDisplayTypeChanged(DisplayType display_type) {
 bool WatchTimeReporter::ShouldReportWatchTime() const {
   // Report listen time or watch time for videos of sufficient size.
   return properties_->has_video
-             ? (initial_natural_size_.height() >= kMinimumVideoSize.height() &&
-                initial_natural_size_.width() >= kMinimumVideoSize.width())
+             ? (natural_size_.height() >= kMinimumVideoSize.height() &&
+                natural_size_.width() >= kMinimumVideoSize.width())
              : properties_->has_audio;
 }
 
@@ -435,8 +444,6 @@ void WatchTimeReporter::RecordWatchTime() {
 }
 
 void WatchTimeReporter::UpdateWatchTime() {
-  DCHECK(ShouldReportWatchTime());
-
   // First record watch time.
   RecordWatchTime();
 

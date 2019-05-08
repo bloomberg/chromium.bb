@@ -80,7 +80,7 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   // TODO(dalecurtis): Should we only report when rate == 1.0? Should we scale
   // the elapsed media time instead?
   WatchTimeReporter(mojom::PlaybackPropertiesPtr properties,
-                    const gfx::Size& initial_natural_size,
+                    const gfx::Size& natural_size,
                     GetMediaTimeCB get_media_time_cb,
                     mojom::MediaMetricsProvider* provider,
                     scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -136,6 +136,9 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   // Mutates various properties that may change over the lifetime of a playback
   // but for which we don't want to interrupt reporting for. UMA watch time will
   // not be interrupted by changes to these properties, while UKM will.
+  //
+  // Note: Both UMA and UMK watch time will be interrupted if the natural size
+  // transitions above/below kMinimumVideoSize.
   void UpdateSecondaryProperties(
       mojom::SecondaryPlaybackPropertiesPtr secondary_properties);
 
@@ -154,7 +157,7 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   WatchTimeReporter(mojom::PlaybackPropertiesPtr properties,
                     bool is_background,
                     bool is_muted,
-                    const gfx::Size& initial_natural_size,
+                    const gfx::Size& natural_size,
                     GetMediaTimeCB get_media_time_cb,
                     mojom::MediaMetricsProvider* provider,
                     scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -195,7 +198,6 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   const mojom::PlaybackPropertiesPtr properties_;
   const bool is_background_;
   const bool is_muted_;
-  const gfx::Size initial_natural_size_;
   const GetMediaTimeCB get_media_time_cb_;
   mojom::WatchTimeRecorderPtr recorder_;
 
@@ -212,6 +214,10 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   bool is_seeking_ = false;
   bool in_shutdown_ = false;
   double volume_ = 1.0;
+
+  // Updated by UpdateSecondaryProperties(); controls timer state when
+  // transitioning above/below kMinimumVideoSize.
+  gfx::Size natural_size_;
 
   int underflow_count_ = 0;
   std::vector<base::TimeDelta> pending_underflow_events_;

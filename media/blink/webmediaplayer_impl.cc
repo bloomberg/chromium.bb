@@ -2124,9 +2124,6 @@ void WebMediaPlayerImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {
     // in CreateWatchTimeReporter() that guesses the existence of a video track.
     CreateWatchTimeReporter();
   } else {
-    // TODO(sandersd): If the size changed such that ShouldReportWatchTime()
-    // changes, |watch_time_reporter_| should be reinitialized. This should be
-    // internal to WatchTimeReporter.
     UpdateSecondaryProperties();
   }
 
