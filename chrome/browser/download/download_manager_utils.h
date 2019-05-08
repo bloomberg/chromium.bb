@@ -8,7 +8,6 @@
 #include "base/macros.h"
 
 class Profile;
-class SimpleFactoryKey;
 
 namespace download {
 class InProgressDownloadManager;
@@ -19,11 +18,6 @@ class DownloadManagerUtils {
   // Creates an InProgressDownloadManager from a profile.
   static download::InProgressDownloadManager* RetrieveInProgressDownloadManager(
       Profile* profile);
-
-  // Initializes the SimpleDownloadManager that is associated with |key| whenver
-  // possible.
-  static void InitializeSimpleDownloadManager(SimpleFactoryKey* key);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadManagerUtils);
 };
