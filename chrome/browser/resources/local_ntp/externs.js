@@ -136,6 +136,12 @@ window.gbar.a.pc;
  */
 window.localNTPUnitTest;
 
+/**
+ * Used for running Most Visited iframe javascript unit tests. Defined in
+ * src/chrome/test/data/local_ntp/most_visited_browsertest.html
+ */
+window.mostVisitedUnitTest;
+
 /**************************** Embedded Search API ****************************/
 
 /**

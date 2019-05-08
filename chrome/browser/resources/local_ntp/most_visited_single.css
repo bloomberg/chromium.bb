@@ -50,26 +50,17 @@ a:visited {
 }
 
 #most-visited {
-  margin: 10px 0;
   text-align: -webkit-center;
   user-select: none;
-  width: 100%
+  width: 100%;
 }
 
 #mv-tiles,
 .mv-tiles-old {
-  display: flex;
-  flex-wrap: wrap;
   font-size: 0;
-  justify-content: center;
-  /* 5 88px tiles per row. If you change this, also change the corresponding
-   * values in local_ntp.css. */
-  max-width: calc(var(--md-tile-width) * var(--md-max-tiles-row));
   opacity: 0;
-  position: static;
-  /* This align correctly for both LTR and RTL */
-  text-align: -webkit-auto;
-  user-select: none;
+  padding: 10px 6px 0;
+  position: relative;
 }
 
 html:not(.no-initial-fade) :-webkit-any(#mv-tiles, .mv-tiles-old) {
@@ -85,6 +76,15 @@ html:not(.no-initial-fade) :-webkit-any(#mv-tiles, .mv-tiles-old) {
 
 .mouse-navigation {
   outline: none;
+}
+
+.grid-tile-container {
+  position: absolute;
+  transition: transform 300ms ease-in-out;
+}
+
+.grid-tile {
+  transition: transform 300ms ease-in-out;
 }
 
 .md-tile-container {

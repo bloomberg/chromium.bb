@@ -3,7 +3,12 @@
  * found in the LICENSE file. */
 
 // Single iframe for NTP tiles.
-(function() {
+
+/**
+ * Controls rendering the Most Visited iframe.
+ * @return {Object} A limited interface for testing the iframe.
+ */
+function MostVisited() {
 'use strict';
 
 
@@ -43,6 +48,8 @@ const IDS = {
  */
 const CLASSES = {
   FAILED_FAVICON: 'failed-favicon',  // Applied when the favicon fails to load.
+  GRID_TILE: 'grid-tile',
+  GRID_TILE_CONTAINER: 'grid-tile-container',
   REORDER: 'reorder',  // Applied to the tile being moved while reordering.
   REORDERING: 'reordering',      // Applied while we are reordering.
   MAC_CHROMEOS: 'mac-chromeos',  // Reduces font weight for MacOS and ChromeOS.
@@ -115,13 +122,6 @@ const RESIZE_TIMEOUT_DELAY = 66;
 
 
 /**
- * Timeout delay in ms before starting the reorder flow.
- * @const {number}
- */
-const REORDER_TIMEOUT_DELAY = 1000;
-
-
-/**
  * Maximum number of tiles if custom links is enabled.
  * @const {number}
  */
@@ -133,6 +133,14 @@ const MD_MAX_NUM_CUSTOM_LINK_TILES = 10;
  * @const {number}
  */
 const MD_MAX_TILES_PER_ROW = 5;
+
+
+/**
+ * Height of a tile for Material Design. Keep in sync with
+ * most_visited_single.css.
+ * @const {number}
+ */
+const MD_TILE_HEIGHT = 128;
 
 
 /**
@@ -194,25 +202,220 @@ let queryArgs = {};
 
 
 /**
- * True if we are currently reordering the tiles.
- * @type {boolean}
- */
-let reordering = false;
-
-
-/**
- * The tile that is being moved during the reorder flow. Null if we are
- * currently not reordering.
- * @type {?Element}
- */
-let elementToReorder = null;
-
-
-/**
  * True if custom links is enabled.
  * @type {boolean}
  */
 let isCustomLinksEnabled = false;
+
+
+/**
+ * The current grid of tiles.
+ * @type {?Grid}
+ */
+let currGrid = null;
+
+
+/**
+ * Class that handles layouts and animations for the tile grid. This includes
+ * animations for adding, deleting, and reordering.
+ */
+class Grid {
+  constructor() {
+    /** @private {number} */
+    this.tileHeight_ = 0;
+    /** @private {number} */
+    this.tileWidth_ = 0;
+    /** @private {number} */
+    this.tilesAlwaysVisible_ = 0;
+    /** @private {number} */
+    this.maxTilesPerRow_ = 0;
+    /** @private {number} */
+    this.maxTiles_ = 0;
+
+    /** @private {number} */
+    this.maxTilesPerRowWindow_ = 0;
+
+    /** @private {?Element} */
+    this.container_ = null;
+    /** @private {?HTMLCollection} */
+    this.tiles_ = null;
+
+    /**
+     * Matrix that stores the (x,y) positions of the tile layout.
+     * @private {?Array<!Array<number>>}
+     */
+    this.position_ = null;
+  }
+
+
+  /**
+   * Sets up the grid for the new tileset in |container|. The old tileset is
+   * discarded.
+   * @param {!Element} container The grid container element.
+   * @param {Object=} params Customizable parameters for the grid. Used in
+   *     testing.
+   */
+  init(container, params = {}) {
+    this.container_ = container;
+
+    this.tileHeight_ = params.tileHeight || MD_TILE_HEIGHT;
+    this.tileWidth_ = params.tileWidth || MD_TILE_WIDTH;
+    this.tilesAlwaysVisible_ =
+        params.tilesAlwaysVisible || MD_NUM_TILES_ALWAYS_VISIBLE;
+    this.maxTilesPerRow_ = params.maxTilesPerRow || MD_MAX_TILES_PER_ROW;
+    this.maxTiles_ = params.maxTiles || maxNumTiles;
+
+    this.maxTilesPerRowWindow_ = this.getMaxTilesPerRow_();
+
+    this.tiles_ =
+        this.container_.getElementsByClassName(CLASSES.GRID_TILE_CONTAINER);
+    if (this.tiles_.length > this.maxTiles_) {
+      throw new Error(
+          'The number of tiles (' + this.tiles_.length +
+          ') exceeds the maximum (' + this.maxTiles_ + ').');
+    }
+    this.position_ = new Array(this.maxTiles_);
+    for (let i = 0; i < this.maxTiles_; i++) {
+      this.position_[i] = Array(2).fill(0);
+    }
+
+    this.updateLayout();
+  }
+
+
+  /**
+   * Returns a grid tile wrapper that contains |tile|.
+   * @param {!Element} tile The tile element.
+   * @return {!Element} A grid tile wrapper.
+   */
+  createGridTile(tile) {
+    const gridTileContainer = document.createElement('div');
+    gridTileContainer.className = CLASSES.GRID_TILE_CONTAINER;
+    const gridTile = document.createElement('div');
+    gridTile.className = CLASSES.GRID_TILE;
+    gridTile.appendChild(tile);
+    gridTileContainer.appendChild(gridTile);
+    return gridTileContainer;
+  }
+
+
+  /**
+   * Updates the layout of the tiles. This is called for new tilesets and when
+   * the window is resized or zoomed. Translates each tile's
+   * |CLASSES.GRID_TILE_CONTAINER| to the correct position.
+   */
+  updateLayout() {
+    const tilesPerRow = this.getTilesPerRow_();
+
+    this.container_.style.width = (tilesPerRow * this.tileWidth_) + 'px';
+
+    const maxVisibleTiles = tilesPerRow * 2;
+    let x = 0;
+    let y = 0;
+    for (let i = 0; i < this.tiles_.length; i++) {
+      const tile = this.tiles_[i];
+      // Reset the offset for row 2.
+      if (i === tilesPerRow) {
+        x = this.getRow2Offset_(tilesPerRow);
+        y = this.tileHeight_;
+      }
+      // Update the tile's position.
+      this.translate_(tile, x, y);
+      this.position_[i][0] = x;
+      this.position_[i][1] = y;
+      x += this.tileWidth_;  // Increment for the next tile.
+
+      // Update visibility for tiles that may be hidden by the iframe border in
+      // order to prevent keyboard navigation from reaching them. Ignores tiles
+      // that will always be visible, since changing 'display' prevents
+      // transitions from working.
+      if (i >= this.tilesAlwaysVisible_) {
+        const isVisible = i < maxVisibleTiles;
+        tile.style.display = isVisible ? 'block' : 'none';
+      }
+    }
+  }
+
+
+  /**
+   * Called when the window is resized/zoomed. Recalculates maximums for the new
+   * window size and calls |updateLayout| if necessary.
+   */
+  onResize() {
+    // Update the layout if the max number of tiles per row changes due to the
+    // new window size.
+    const maxPerRowWindow = this.getMaxTilesPerRow_();
+    if (maxPerRowWindow !== this.maxTilesPerRowWindow_) {
+      this.maxTilesPerRowWindow_ = maxPerRowWindow;
+      this.updateLayout();
+    }
+  }
+
+
+  /**
+   * Returns the number of tiles per row. This may be balanced if there are more
+   * than |this.maxTilesPerRow_| in order to make even rows.
+   * @return {number} The number of tiles per row.
+   * @private
+   */
+  getTilesPerRow_() {
+    const tilesPerRow = (this.tiles_.length > this.maxTilesPerRow_) ?
+        Math.ceil(this.tiles_.length / 2) :
+        this.tiles_.length;
+    // The number of tiles cannot exceed the max allowed by the window size.
+    return Math.min(tilesPerRow, this.maxTilesPerRowWindow_);
+  }
+
+
+  /**
+   * Returns the maximum number of tiles per row allowed by the window size.
+   * @return {number} The maximum number of tiles per row.
+   * @private
+   */
+  getMaxTilesPerRow_() {
+    return Math.floor(window.innerWidth / this.tileWidth_);
+  }
+
+
+  /**
+   * Returns row 2's x offset from row 1 in px. This will either be 0 or half a
+   * tile length.
+   * @param {number} tilesPerRow The number of tiles per row.
+   * @return {number} The offset for row 2.
+   * @private
+   */
+  getRow2Offset_(tilesPerRow) {
+    // An odd number of tiles requires a half tile offset in the second row,
+    // unless both rows are full (i.e. for smaller window widths).
+    if (this.tiles_.length % 2 === 1 && this.tiles_.length / tilesPerRow < 2) {
+      return Math.round(this.tileWidth_ / 2);
+    }
+    return 0;
+  }
+
+
+  /**
+   * Returns true if the browser is in RTL.
+   * @return {boolean}
+   * @private
+   */
+  isRtl_() {
+    return document.documentElement.dir === 'rtl';
+  }
+
+
+  /**
+   * Translates the |element| by (x, y).
+   * @param {!Element} element The element to apply the transform to.
+   * @param {number} x The x value.
+   * @param {number} y The y value.
+   * @private
+   */
+  translate_(element, x, y) {
+    const rtlX = x * (this.isRtl_() ? -1 : 1);
+    element.style.transform = 'translate(' + rtlX + 'px, ' + y + 'px)';
+  }
+}
 
 
 /**
@@ -432,15 +635,9 @@ function swapInNewTiles() {
   cur.id = IDS.MV_TILES;
   parent.appendChild(cur);
 
-  // Re-balance the tiles if there are more than |MD_MAX_TILES_PER_ROW| in order
-  // to make even rows.
-  if (cur.childNodes.length > MD_MAX_TILES_PER_ROW) {
-    cur.style.maxWidth = 'calc(var(--md-tile-width) * ' +
-        Math.ceil(cur.childNodes.length / 2) + ')';
-  }
-
-  // Prevent keyboard navigation to tiles that are not visible.
-  updateTileVisibility();
+  // Initialize the new tileset before modifying opacity. This will prevent the
+  // transform transition from applying after the tiles fade in.
+  currGrid.init(cur);
 
   const flushOpacity = () => window.getComputedStyle(cur).opacity;
 
@@ -459,26 +656,6 @@ function swapInNewTiles() {
   // Make sure the tiles variable contain the next tileset we'll use if the host
   // page sends us an updated set of tiles.
   tiles = document.createElement('div');
-}
-
-
-/**
- * Explicitly hide tiles that are not visible in order to prevent keyboard
- * navigation.
- */
-function updateTileVisibility() {
-  const allTiles = document.querySelectorAll(
-      '#' + IDS.MV_TILES + ' .' + CLASSES.MD_TILE_CONTAINER);
-  if (allTiles.length === 0) {
-    return;
-  }
-
-  // Get the current number of tiles per row. Hide any tile after the first two
-  // rows.
-  const tilesPerRow = Math.trunc(document.body.offsetWidth / MD_TILE_WIDTH);
-  for (let i = MD_NUM_TILES_ALWAYS_VISIBLE; i < allTiles.length; i++) {
-    allTiles[i].style.display = (i < tilesPerRow * 2) ? 'block' : 'none';
-  }
 }
 
 
@@ -542,113 +719,6 @@ function blacklistTile(tile) {
  */
 function editCustomLink(tid) {
   window.parent.postMessage({cmd: 'startEditLink', tid: tid}, DOMAIN_ORIGIN);
-}
-
-
-/**
- * Starts the reorder flow. Updates the visual style of the held tile to
- * indicate that it is being moved.
- * @param {!Element} tile Tile that is being moved.
- */
-function startReorder(tile) {
-  reordering = true;
-  elementToReorder = tile;
-
-  tile.classList.add(CLASSES.REORDER);
-  // Disable other hover/active styling for all tiles.
-  document.body.classList.add(CLASSES.REORDERING);
-
-  document.addEventListener('dragend', () => {
-    stopReorder(tile);
-  }, {once: true});
-}
-
-
-/**
- * Stops the reorder flow. Resets the held tile's visual style and tells the
- * EmbeddedSearchAPI that a tile has been moved.
- * @param {!Element} tile Tile that has been moved.
- */
-function stopReorder(tile) {
-  reordering = false;
-  elementToReorder = null;
-
-  tile.classList.remove(CLASSES.REORDER);
-  document.body.classList.remove(CLASSES.REORDERING);
-
-  // Update |data-pos| for all tiles and notify EmbeddedSearchAPI that the tile
-  // has been moved.
-  const allTiles = document.querySelectorAll('#mv-tiles .' + CLASSES.MD_TILE);
-  for (let i = 0; i < allTiles.length; i++) {
-    allTiles[i].setAttribute('data-pos', i);
-  }
-  chrome.embeddedSearch.newTabPage.reorderCustomLink(
-      Number(tile.firstChild.getAttribute('data-tid')),
-      Number(tile.firstChild.getAttribute('data-pos')));
-}
-
-
-/**
- * Sets up event listeners necessary for tile reordering.
- * @param {!Element} tile Tile on which to set the event listeners.
- */
-function setupReorder(tile) {
-  // Starts the reorder flow after the user has held the mouse button down for
-  // |REORDER_TIMEOUT_DELAY|.
-  tile.addEventListener('mousedown', (event) => {
-    // Do not reorder if the edit menu was clicked or if ctrl/shift/alt/meta is
-    // also held down.
-    if (event.button == 0 /* LEFT CLICK */ && !event.ctrlKey &&
-        !event.shiftKey && !event.altKey && !event.metaKey &&
-        !event.target.classList.contains(CLASSES.MD_MENU)) {
-      let timeout = -1;
-
-      // Cancel the timeout if the user drags the mouse off the tile and
-      // releases or if the mouse if released.
-      const dragend = () => {
-        window.clearTimeout(timeout);
-      };
-      document.addEventListener('dragend', dragend, {once: true});
-
-      const mouseup = () => {
-        if (event.button == 0 /* LEFT CLICK */) {
-          window.clearTimeout(timeout);
-        }
-      };
-      document.addEventListener('mouseup', mouseup, {once: true});
-
-      const timeoutFunc = (dragend_in, mouseup_in) => {
-        if (!reordering) {
-          startReorder(tile);
-        }
-        document.removeEventListener('dragend', dragend_in);
-        document.removeEventListener('mouseup', mouseup_in);
-      };
-      // Wait for |REORDER_TIMEOUT_DELAY| before starting the reorder flow.
-      timeout = window.setTimeout(
-          timeoutFunc.bind(dragend, mouseup), REORDER_TIMEOUT_DELAY);
-    }
-  });
-
-  tile.addEventListener('dragover', (event) => {
-    // Only executed when the reorder flow is ongoing. Inserts the tile that is
-    // being moved before/after this |tile| according to order in the list.
-    if (reordering && elementToReorder && elementToReorder != tile) {
-      // Determine which side to insert the element on:
-      // - If the held tile comes after the current tile, insert behind the
-      //   current tile.
-      // - If the held tile comes before the current tile, insert in front of
-      //   the current tile.
-      let insertBefore;  // Element to insert the held tile behind.
-      if (tile.compareDocumentPosition(elementToReorder) &
-          Node.DOCUMENT_POSITION_FOLLOWING) {
-        insertBefore = tile;
-      } else {
-        insertBefore = tile.nextSibling;
-      }
-      $('mv-tiles').insertBefore(elementToReorder, insertBefore);
-    }
-  });
 }
 
 
@@ -847,13 +917,7 @@ function renderMaterialDesignTile(data) {
     mdTileContainer.appendChild(mdMenu);
   }
 
-  // Enable reordering.
-  if (isCustomLinksEnabled && !data.isAddButton) {
-    mdTileContainer.draggable = 'true';
-    setupReorder(mdTileContainer);
-  }
-
-  return mdTileContainer;
+  return currGrid.createGridTile(mdTileContainer);
 }
 
 
@@ -882,8 +946,7 @@ function init() {
 
   // Enable RTL.
   if (queryArgs['rtl'] == '1') {
-    const html = document.querySelector('html');
-    html.dir = 'rtl';
+    document.documentElement.dir = 'rtl';
   }
 
   // Enable custom links.
@@ -896,15 +959,17 @@ function init() {
     maxNumTiles = MD_MAX_NUM_CUSTOM_LINK_TILES;
   }
 
-  // Throttle the resize event.
+  currGrid = new Grid();
+  // Set up layout updates on window resize. Throttled according to
+  // |RESIZE_TIMEOUT_DELAY|.
   let resizeTimeout;
   window.onresize = () => {
     if (resizeTimeout) {
-      return;
+      window.clearTimeout(resizeTimeout);
     }
     resizeTimeout = window.setTimeout(() => {
       resizeTimeout = null;
-      updateTileVisibility();
+      currGrid.onResize();
     }, RESIZE_TIMEOUT_DELAY);
   };
 
@@ -912,5 +977,21 @@ function init() {
 }
 
 
-window.addEventListener('DOMContentLoaded', init);
-})();
+/**
+ * Binds event listeners.
+ */
+function listen() {
+  document.addEventListener('DOMContentLoaded', init);
+}
+
+
+return {
+  Grid: Grid,      // Exposed for testing.
+  init: init,      // Exposed for testing.
+  listen: listen,
+};
+}
+
+if (!window.mostVisitedUnitTest) {
+  MostVisited().listen();
+}
