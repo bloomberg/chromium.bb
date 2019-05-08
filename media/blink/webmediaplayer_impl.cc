@@ -2136,7 +2136,18 @@ void WebMediaPlayerImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {
     return;
 
   pipeline_metadata_.natural_size = rotated_size;
-  UpdateSecondaryProperties();
+
+  if (using_media_player_renderer_ && old_size.IsEmpty()) {
+    // If we are using MediaPlayerRenderer and this is the first size change, we
+    // now know that there is a video track. This condition is paired with code
+    // in CreateWatchTimeReporter() that guesses the existence of a video track.
+    CreateWatchTimeReporter();
+  } else {
+    // TODO(sandersd): If the size changed such that ShouldReportWatchTime()
+    // changes, |watch_time_reporter_| should be reinitialized. This should be
+    // internal to WatchTimeReporter.
+    UpdateSecondaryProperties();
+  }
 
   if (video_decode_stats_reporter_ &&
       !video_decode_stats_reporter_->MatchesBucketedNaturalSize(
@@ -3065,12 +3076,18 @@ void WebMediaPlayerImpl::CreateWatchTimeReporter() {
   if (!HasVideo() && !HasAudio())
     return;
 
+  // MediaPlayerRenderer does not know about tracks until playback starts.
+  // Assume audio-only unless the natural size has been detected.
+  bool has_video = pipeline_metadata_.has_video;
+  if (using_media_player_renderer_) {
+    has_video = !pipeline_metadata_.natural_size.IsEmpty();
+  }
+
   // Create the watch time reporter and synchronize its initial state.
   watch_time_reporter_.reset(new WatchTimeReporter(
-      mojom::PlaybackProperties::New(pipeline_metadata_.has_audio,
-                                     pipeline_metadata_.has_video, false, false,
-                                     !!chunk_demuxer_, is_encrypted_,
-                                     embedded_media_experience_enabled_),
+      mojom::PlaybackProperties::New(
+          pipeline_metadata_.has_audio, has_video, false, false,
+          !!chunk_demuxer_, is_encrypted_, embedded_media_experience_enabled_),
       pipeline_metadata_.natural_size,
       base::BindRepeating(&WebMediaPlayerImpl::GetCurrentTimeInternal,
                           base::Unretained(this)),
