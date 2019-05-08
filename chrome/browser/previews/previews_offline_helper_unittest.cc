@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -177,6 +178,8 @@ TEST_F(PreviewsOfflineHelperTest, TestAddRemovePages) {
   for (const TestCase& test_case : kTestCases) {
     SCOPED_TRACE(test_case.msg);
 
+    base::HistogramTester histogram_tester;
+
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitWithFeatureState(
         previews::features::kOfflinePreviewsFalsePositivePrevention,
@@ -213,6 +216,23 @@ TEST_F(PreviewsOfflineHelperTest, TestAddRemovePages) {
     for (const std::string not_want : test_case.not_want_pages) {
       EXPECT_FALSE(helper->ShouldAttemptOfflinePreview(GURL(not_want)));
     }
+
+    histogram_tester.ExpectTotalCount(
+        "Previews.Offline.FalsePositivePrevention.Allowed",
+        test_case.enable_feature
+            ? test_case.not_want_pages.size() + test_case.want_pages.size()
+            : 0);
+
+    if (test_case.enable_feature && test_case.not_want_pages.size() > 0) {
+      histogram_tester.ExpectBucketCount(
+          "Previews.Offline.FalsePositivePrevention.Allowed", false,
+          test_case.not_want_pages.size());
+    }
+    if (test_case.enable_feature && test_case.want_pages.size() > 0) {
+      histogram_tester.ExpectBucketCount(
+          "Previews.Offline.FalsePositivePrevention.Allowed", true,
+          test_case.want_pages.size());
+    }
   }
 }
 
@@ -245,6 +265,8 @@ TEST_F(PreviewsOfflineHelperTest, TestUpdateAllPrefEntries) {
   scoped_feature_list.InitAndEnableFeature(
       previews::features::kOfflinePreviewsFalsePositivePrevention);
 
+  base::HistogramTester histogram_tester;
+
   PreviewsOfflineHelper* helper = NewHelper();
   base::Time now = base::Time::Now();
   base::Time expired = now -
@@ -263,4 +285,7 @@ TEST_F(PreviewsOfflineHelperTest, TestUpdateAllPrefEntries) {
   EXPECT_TRUE(helper->ShouldAttemptOfflinePreview(GURL("http://new.com")));
   EXPECT_TRUE(helper->ShouldAttemptOfflinePreview(GURL("http://new2.com")));
   EXPECT_FALSE(helper->ShouldAttemptOfflinePreview(GURL("http://expired.com")));
+
+  histogram_tester.ExpectUniqueSample(
+      "Previews.Offline.FalsePositivePrevention.PrefSize", 2, 1);
 }

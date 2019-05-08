@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/hash/hash.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -27,6 +28,11 @@
 namespace {
 // Pref key for the available hashed pages kept in class.
 const char kHashedAvailablePages[] = "previews.offline_helper.available_pages";
+
+void RecordShouldAttemptOfflinePreviewResult(bool result) {
+  UMA_HISTOGRAM_BOOLEAN("Previews.Offline.FalsePositivePrevention.Allowed",
+                        result);
+}
 
 std::string HashURL(const GURL& url) {
   // We are ok with some hash collisions in exchange for non-arbitrary key
@@ -163,17 +169,22 @@ bool PreviewsOfflineHelper::ShouldAttemptOfflinePreview(const GURL& url) {
   std::string hashed_url = HashURL(url);
 
   base::Value* value = available_pages_->FindKey(hashed_url);
-  if (!value)
+  if (!value) {
+    RecordShouldAttemptOfflinePreviewResult(false);
     return false;
+  }
 
   if (!value->is_string()) {
     NOTREACHED();
+    RecordShouldAttemptOfflinePreviewResult(false);
     return false;
   }
   base::Optional<base::Time> time_value =
       TimeFromDictionaryValue(value->GetString());
-  if (!time_value.has_value())
+  if (!time_value.has_value()) {
+    RecordShouldAttemptOfflinePreviewResult(false);
     return false;
+  }
 
   base::Time expiry =
       time_value.value() + previews::params::OfflinePreviewFreshnessDuration();
@@ -183,6 +194,7 @@ bool PreviewsOfflineHelper::ShouldAttemptOfflinePreview(const GURL& url) {
     UpdatePref();
   }
 
+  RecordShouldAttemptOfflinePreviewResult(!is_expired);
   return !is_expired;
 }
 
@@ -206,6 +218,9 @@ void PreviewsOfflineHelper::UpdateAllPrefEntries(
     AddSingleOfflineItemEntry(available_pages_.get(), page);
   RemoveStaleOfflinePageEntries(available_pages_.get());
   UpdatePref();
+
+  UMA_HISTOGRAM_COUNTS_100("Previews.Offline.FalsePositivePrevention.PrefSize",
+                           available_pages_->size());
 }
 
 void PreviewsOfflineHelper::OfflinePageModelLoaded(
