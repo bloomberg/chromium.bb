@@ -71,7 +71,7 @@ Notification::Notification(
   notifier.profile_id = ash::Shell::Get()
                             ->session_controller()
                             ->GetPrimaryUserSession()
-                            ->user_info->account_id.GetUserEmail();
+                            ->user_info.account_id.GetUserEmail();
 
   message_center::RichNotificationData data;
   for (const auto& button : buttons)

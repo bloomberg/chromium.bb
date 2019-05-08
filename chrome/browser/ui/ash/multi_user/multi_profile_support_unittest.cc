@@ -245,7 +245,7 @@ class MultiProfileSupportTest : public ChromeAshTestBase {
     return Shell::Get()
         ->session_controller()
         ->GetUserSessions()[0]
-        ->user_info->account_id;
+        ->user_info.account_id;
   }
 
   // Initiate a user transition.

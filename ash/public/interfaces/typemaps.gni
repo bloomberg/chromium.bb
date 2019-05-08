@@ -5,7 +5,6 @@
 typemaps = [
   "//ash/public/interfaces/app_list.typemap",
   "//ash/public/interfaces/menu.typemap",
-  "//ash/public/interfaces/session_controller.typemap",
   "//ash/public/interfaces/shelf.typemap",
   "//ash/public/interfaces/shelf_integration_test_api.typemap",
   "//ash/public/interfaces/user_info.typemap",

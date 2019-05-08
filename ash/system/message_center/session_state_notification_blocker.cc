@@ -31,10 +31,10 @@ bool CalculateShouldShowPopup() {
     return false;
   }
 
-  const mojom::UserSession* active_user_session =
+  const UserSession* active_user_session =
       session_controller->GetUserSession(0);
   return active_user_session && session_controller->GetUserPrefServiceForUser(
-                                    active_user_session->user_info->account_id);
+                                    active_user_session->user_info.account_id);
 }
 
 }  // namespace

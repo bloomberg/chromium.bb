@@ -106,9 +106,9 @@ void DetachableBaseNotificationController::ShowPairingNotificationIfNeeded() {
   if (Shell::Get()->session_controller()->IsUserSessionBlocked())
     return;
 
-  const mojom::UserSession* active_session =
+  const UserSession* active_session =
       Shell::Get()->session_controller()->GetUserSession(0);
-  if (!active_session || !active_session->user_info)
+  if (!active_session)
     return;
 
   DetachableBasePairingStatus pairing_status =
@@ -116,14 +116,14 @@ void DetachableBaseNotificationController::ShowPairingNotificationIfNeeded() {
   if (pairing_status == DetachableBasePairingStatus::kNone)
     return;
 
-  const mojom::UserInfo& user_info = *active_session->user_info;
+  const mojom::UserInfoPtr user_info = active_session->user_info.ToMojom();
   if (pairing_status == DetachableBasePairingStatus::kAuthenticated &&
-      detachable_base_handler_->PairedBaseMatchesLastUsedByUser(user_info)) {
+      detachable_base_handler_->PairedBaseMatchesLastUsedByUser(*user_info)) {
     // Set the current base as last used by the user.
     // PairedBaseMatchesLastUsedByUser returns true if the user has not
     // previously used a base, so make sure the last used base value is actually
     // set.
-    detachable_base_handler_->SetPairedBaseAsLastUsedByUser(user_info);
+    detachable_base_handler_->SetPairedBaseAsLastUsedByUser(*user_info);
     return;
   }
 
@@ -156,7 +156,7 @@ void DetachableBaseNotificationController::ShowPairingNotificationIfNeeded() {
   // At this point the session is unblocked - mark the current base as used by
   // user (as they have just been notified about the base change).
   if (pairing_status == DetachableBasePairingStatus::kAuthenticated)
-    detachable_base_handler_->SetPairedBaseAsLastUsedByUser(user_info);
+    detachable_base_handler_->SetPairedBaseAsLastUsedByUser(*user_info);
 }
 
 void DetachableBaseNotificationController::RemovePairingNotification() {

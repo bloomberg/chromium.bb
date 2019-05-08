@@ -418,14 +418,12 @@ TEST_F(ResolutionNotificationControllerTest, Fallback) {
 
 TEST_F(ResolutionNotificationControllerTest, NoTimeoutInKioskMode) {
   // Login in as kiosk app.
-  mojom::UserSessionPtr session = mojom::UserSession::New();
-  session->session_id = 1u;
-  session->user_info = mojom::UserInfo::New();
-  session->user_info->avatar = mojom::UserAvatar::New();
-  session->user_info->type = user_manager::USER_TYPE_KIOSK_APP;
-  session->user_info->account_id = AccountId::FromUserEmail("user1@test.com");
-  session->user_info->display_name = "User 1";
-  session->user_info->display_email = "user1@test.com";
+  UserSession session;
+  session.session_id = 1u;
+  session.user_info.type = user_manager::USER_TYPE_KIOSK_APP;
+  session.user_info.account_id = AccountId::FromUserEmail("user1@test.com");
+  session.user_info.display_name = "User 1";
+  session.user_info.display_email = "user1@test.com";
   Shell::Get()->session_controller()->UpdateUserSession(std::move(session));
   EXPECT_EQ(LoginStatus::KIOSK_APP,
             Shell::Get()->session_controller()->login_status());

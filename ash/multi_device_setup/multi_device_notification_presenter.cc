@@ -223,15 +223,14 @@ void MultiDeviceNotificationPresenter::ObserveMultiDeviceSetupIfPossible() {
     return;
   }
 
-  const mojom::UserSession* user_session =
-      session_controller->GetPrimaryUserSession();
+  const UserSession* user_session = session_controller->GetPrimaryUserSession();
 
   // The primary user session may be unavailable (e.g., for test/guest users).
   if (!user_session)
     return;
 
   base::Optional<base::Token> service_instance_group =
-      user_session->user_info->service_instance_group;
+      user_session->user_info.service_instance_group;
 
   // Cannot proceed if there is no known service instance group.
   if (!service_instance_group)

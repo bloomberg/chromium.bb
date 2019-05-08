@@ -88,7 +88,7 @@ int SessionControllerImpl::NumberOfLoggedInUsers() const {
 
 AccountId SessionControllerImpl::GetActiveAccountId() const {
   return user_sessions_.empty() ? AccountId()
-                                : user_sessions_[0]->user_info->account_id;
+                                : user_sessions_[0]->user_info.account_id;
 }
 
 AddUserSessionPolicy SessionControllerImpl::GetAddUserPolicy() const {
@@ -160,12 +160,12 @@ bool SessionControllerImpl::ShouldShowNotificationTray() const {
   return user_sessions_[0]->should_show_notification_tray;
 }
 
-const std::vector<mojom::UserSessionPtr>&
+const SessionControllerImpl::UserSessions&
 SessionControllerImpl::GetUserSessions() const {
   return user_sessions_;
 }
 
-const mojom::UserSession* SessionControllerImpl::GetUserSession(
+const UserSession* SessionControllerImpl::GetUserSession(
     UserIndex index) const {
   if (index < 0 || index >= static_cast<UserIndex>(user_sessions_.size()))
     return nullptr;
@@ -173,9 +173,9 @@ const mojom::UserSession* SessionControllerImpl::GetUserSession(
   return user_sessions_[index].get();
 }
 
-const mojom::UserSession* SessionControllerImpl::GetPrimaryUserSession() const {
+const UserSession* SessionControllerImpl::GetPrimaryUserSession() const {
   auto it = std::find_if(user_sessions_.begin(), user_sessions_.end(),
-                         [this](const mojom::UserSessionPtr& session) {
+                         [this](const std::unique_ptr<UserSession>& session) {
                            return session->session_id == primary_session_id_;
                          });
   if (it == user_sessions_.end())
@@ -188,7 +188,7 @@ bool SessionControllerImpl::IsUserSupervised() const {
   if (!IsActiveUserSessionStarted())
     return false;
 
-  user_manager::UserType active_user_type = GetUserSession(0)->user_info->type;
+  user_manager::UserType active_user_type = GetUserSession(0)->user_info.type;
   return active_user_type == user_manager::USER_TYPE_SUPERVISED ||
          active_user_type == user_manager::USER_TYPE_CHILD;
 }
@@ -197,7 +197,7 @@ bool SessionControllerImpl::IsUserLegacySupervised() const {
   if (!IsActiveUserSessionStarted())
     return false;
 
-  user_manager::UserType active_user_type = GetUserSession(0)->user_info->type;
+  user_manager::UserType active_user_type = GetUserSession(0)->user_info.type;
   return active_user_type == user_manager::USER_TYPE_SUPERVISED;
 }
 
@@ -205,7 +205,7 @@ bool SessionControllerImpl::IsUserChild() const {
   if (!IsActiveUserSessionStarted())
     return false;
 
-  user_manager::UserType active_user_type = GetUserSession(0)->user_info->type;
+  user_manager::UserType active_user_type = GetUserSession(0)->user_info.type;
   return active_user_type == user_manager::USER_TYPE_CHILD;
 }
 
@@ -213,7 +213,7 @@ bool SessionControllerImpl::IsUserPublicAccount() const {
   if (!IsActiveUserSessionStarted())
     return false;
 
-  user_manager::UserType active_user_type = GetUserSession(0)->user_info->type;
+  user_manager::UserType active_user_type = GetUserSession(0)->user_info.type;
   return active_user_type == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
 }
 
@@ -222,7 +222,7 @@ base::Optional<user_manager::UserType> SessionControllerImpl::GetUserType()
   if (!IsActiveUserSessionStarted())
     return base::nullopt;
 
-  return base::make_optional(GetUserSession(0)->user_info->type);
+  return base::make_optional(GetUserSession(0)->user_info.type);
 }
 
 bool SessionControllerImpl::IsUserPrimary() const {
@@ -236,14 +236,14 @@ bool SessionControllerImpl::IsUserFirstLogin() const {
   if (!IsActiveUserSessionStarted())
     return false;
 
-  return GetUserSession(0)->user_info->is_new_profile;
+  return GetUserSession(0)->user_info.is_new_profile;
 }
 
 bool SessionControllerImpl::ShouldDisplayManagedUI() const {
   if (!IsActiveUserSessionStarted())
     return false;
 
-  return GetUserSession(0)->user_info->should_display_managed_ui;
+  return GetUserSession(0)->user_info.should_display_managed_ui;
 }
 
 void SessionControllerImpl::LockScreen() {
@@ -290,8 +290,8 @@ PrefService* SessionControllerImpl::GetUserPrefServiceForUser(
 }
 
 PrefService* SessionControllerImpl::GetPrimaryUserPrefService() const {
-  const mojom::UserSession* session = GetPrimaryUserSession();
-  return session ? GetUserPrefServiceForUser(session->user_info->account_id)
+  const UserSession* session = GetPrimaryUserSession();
+  return session ? GetUserPrefServiceForUser(session->user_info.account_id)
                  : nullptr;
 }
 
@@ -319,31 +319,30 @@ void SessionControllerImpl::SetClient(SessionControllerClient* client) {
   client_ = std::move(client);
 }
 
-void SessionControllerImpl::SetSessionInfo(mojom::SessionInfoPtr info) {
-  can_lock_ = info->can_lock_screen;
-  should_lock_screen_automatically_ = info->should_lock_screen_automatically;
-  is_running_in_app_mode_ = info->is_running_in_app_mode;
-  if (info->is_demo_session)
+void SessionControllerImpl::SetSessionInfo(const SessionInfo& info) {
+  can_lock_ = info.can_lock_screen;
+  should_lock_screen_automatically_ = info.should_lock_screen_automatically;
+  is_running_in_app_mode_ = info.is_running_in_app_mode;
+  if (info.is_demo_session)
     SetIsDemoSession();
-  add_user_session_policy_ = info->add_user_session_policy;
-  SetSessionState(info->state);
+  add_user_session_policy_ = info.add_user_session_policy;
+  SetSessionState(info.state);
 }
 
-void SessionControllerImpl::UpdateUserSession(
-    mojom::UserSessionPtr user_session) {
-  auto it =
-      std::find_if(user_sessions_.begin(), user_sessions_.end(),
-                   [&user_session](const mojom::UserSessionPtr& session) {
-                     return session->session_id == user_session->session_id;
-                   });
+void SessionControllerImpl::UpdateUserSession(const UserSession& user_session) {
+  auto it = std::find_if(
+      user_sessions_.begin(), user_sessions_.end(),
+      [&user_session](const std::unique_ptr<UserSession>& session) {
+        return session->session_id == user_session.session_id;
+      });
   if (it == user_sessions_.end()) {
-    AddUserSession(std::move(user_session));
+    AddUserSession(user_session);
     return;
   }
 
-  *it = std::move(user_session);
+  *it = std::make_unique<UserSession>(user_session);
   for (auto& observer : observers_)
-    observer.OnUserSessionUpdated((*it)->user_info->account_id);
+    observer.OnUserSessionUpdated((*it)->user_info.account_id);
 
   UpdateLoginStatus();
 }
@@ -354,14 +353,14 @@ void SessionControllerImpl::SetUserSessionOrder(
 
   AccountId last_active_account_id;
   if (user_sessions_.size())
-    last_active_account_id = user_sessions_[0]->user_info->account_id;
+    last_active_account_id = user_sessions_[0]->user_info.account_id;
 
   // Adjusts |user_sessions_| to match the given order.
-  std::vector<mojom::UserSessionPtr> sessions;
+  std::vector<std::unique_ptr<UserSession>> sessions;
   for (const auto& session_id : user_session_order) {
     auto it =
         std::find_if(user_sessions_.begin(), user_sessions_.end(),
-                     [session_id](const mojom::UserSessionPtr& session) {
+                     [session_id](const std::unique_ptr<UserSession>& session) {
                        return session && session->session_id == session_id;
                      });
     if (it == user_sessions_.end()) {
@@ -385,18 +384,18 @@ void SessionControllerImpl::SetUserSessionOrder(
     }
 
     session_activation_observer_holder_.NotifyActiveSessionChanged(
-        last_active_account_id, user_sessions_[0]->user_info->account_id);
+        last_active_account_id, user_sessions_[0]->user_info.account_id);
 
     // When switching to a user for whose PrefService is not ready,
     // |last_active_user_prefs_| continues to point to the PrefService of the
     // most-recently active user with a loaded PrefService.
-    auto it = per_user_prefs_.find(user_sessions_[0]->user_info->account_id);
+    auto it = per_user_prefs_.find(user_sessions_[0]->user_info.account_id);
     if (it != per_user_prefs_.end())
       last_active_user_prefs_ = it->second.get();
 
     for (auto& observer : observers_) {
       observer.OnActiveUserSessionChanged(
-          user_sessions_[0]->user_info->account_id);
+          user_sessions_[0]->user_info.account_id);
     }
 
     if (it != per_user_prefs_.end())
@@ -494,7 +493,7 @@ void SessionControllerImpl::AddSessionActivationObserverForAccountId(
   bool locked = state_ == SessionState::LOCKED;
   observer->OnLockStateChanged(locked);
   observer->OnSessionActivated(user_sessions_.size() &&
-                               user_sessions_[0]->user_info->account_id ==
+                               user_sessions_[0]->user_info.account_id ==
                                    account_id);
   session_activation_observer_holder_.AddSessionActivationObserverForAccountId(
       account_id, std::move(observer));
@@ -561,13 +560,13 @@ void SessionControllerImpl::SetSessionState(SessionState state) {
     EnsureActiveWindowAfterUnblockingUserSession();
 }
 
-void SessionControllerImpl::AddUserSession(mojom::UserSessionPtr user_session) {
-  const AccountId account_id(user_session->user_info->account_id);
+void SessionControllerImpl::AddUserSession(const UserSession& user_session) {
+  const AccountId account_id(user_session.user_info.account_id);
 
   if (primary_session_id_ == 0u)
-    primary_session_id_ = user_session->session_id;
+    primary_session_id_ = user_session.session_id;
 
-  user_sessions_.push_back(std::move(user_session));
+  user_sessions_.push_back(std::make_unique<UserSession>(user_session));
 
   if (connector_) {
     auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
@@ -621,10 +620,10 @@ LoginStatus SessionControllerImpl::CalculateLoginStatusForActiveSession()
   if (user_sessions_.empty())  // Can be empty in tests.
     return LoginStatus::USER;
 
-  switch (user_sessions_[0]->user_info->type) {
+  switch (user_sessions_[0]->user_info.type) {
     case user_manager::USER_TYPE_REGULAR:
-      return user_sessions_[0]->user_info->is_device_owner ? LoginStatus::OWNER
-                                                           : LoginStatus::USER;
+      return user_sessions_[0]->user_info.is_device_owner ? LoginStatus::OWNER
+                                                          : LoginStatus::USER;
     case user_manager::USER_TYPE_GUEST:
       return LoginStatus::GUEST;
     case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
@@ -721,7 +720,7 @@ void SessionControllerImpl::OnProfilePrefServiceInitialized(
       per_user_prefs_.emplace(account_id, std::move(pref_service)).second;
   DCHECK(inserted);
   DCHECK(!user_sessions_.empty());
-  if (account_id == user_sessions_[0]->user_info->account_id) {
+  if (account_id == user_sessions_[0]->user_info.account_id) {
     last_active_user_prefs_ = pref_service_ptr;
 
     MaybeNotifyOnActiveUserPrefServiceChanged();

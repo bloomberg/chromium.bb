@@ -429,7 +429,7 @@ TEST_F(SessionControllerClientImplTest, SendUserSession) {
   ASSERT_TRUE(session_controller.last_user_session());
   EXPECT_EQ(content::BrowserContext::GetServiceInstanceGroupFor(user_profile),
             session_controller.last_user_session()
-                ->user_info->service_instance_group.value());
+                ->user_info.service_instance_group.value());
 
   // Simulate a request for an update where nothing changed.
   client.SendUserSession(*user_manager()->GetLoggedInUsers()[0]);
@@ -448,7 +448,7 @@ TEST_F(SessionControllerClientImplTest, SupervisedUser) {
 
   // Simulate the login screen. No user session yet.
   session_manager_.SetSessionState(SessionState::LOGIN_PRIMARY);
-  EXPECT_FALSE(session_controller.last_user_session());
+  EXPECT_FALSE(session_controller.last_user_session().has_value());
 
   // Simulate a supervised user logging in.
   const AccountId account_id(AccountId::FromUserEmail("child@test.com"));
@@ -469,7 +469,7 @@ TEST_F(SessionControllerClientImplTest, SupervisedUser) {
   // The session controller received session info and user session.
   EXPECT_LT(0u, session_controller.last_user_session()->session_id);
   EXPECT_EQ(user_manager::USER_TYPE_SUPERVISED,
-            session_controller.last_user_session()->user_info->type);
+            session_controller.last_user_session()->user_info.type);
 
   // Simulate profile creation after login.
   TestingProfile* user_profile = CreateTestingProfile(user);
@@ -515,12 +515,12 @@ TEST_F(SessionControllerClientImplTest, DeviceOwner) {
   UserAddedToSession(owner);
   SessionControllerClientImpl::FlushForTesting();
   EXPECT_TRUE(
-      session_controller.last_user_session()->user_info->is_device_owner);
+      session_controller.last_user_session()->user_info.is_device_owner);
 
   UserAddedToSession(normal_user);
   SessionControllerClientImpl::FlushForTesting();
   EXPECT_FALSE(
-      session_controller.last_user_session()->user_info->is_device_owner);
+      session_controller.last_user_session()->user_info.is_device_owner);
 }
 
 TEST_F(SessionControllerClientImplTest, UserBecomesDeviceOwner) {
@@ -535,12 +535,12 @@ TEST_F(SessionControllerClientImplTest, UserBecomesDeviceOwner) {
   SessionControllerClientImpl::FlushForTesting();
   // The device owner is empty, the current session shouldn't be the owner.
   EXPECT_FALSE(
-      session_controller.last_user_session()->user_info->is_device_owner);
+      session_controller.last_user_session()->user_info.is_device_owner);
 
   user_manager()->SetOwnerId(owner);
   SessionControllerClientImpl::FlushForTesting();
   EXPECT_TRUE(
-      session_controller.last_user_session()->user_info->is_device_owner);
+      session_controller.last_user_session()->user_info.is_device_owner);
 }
 
 TEST_F(SessionControllerClientImplTest, UserPrefsChange) {

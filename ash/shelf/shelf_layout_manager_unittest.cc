@@ -406,18 +406,10 @@ class ShelfLayoutManagerTest : public AshTestBase {
   }
 
   // Turn on the lock screen.
-  void LockScreen() {
-    mojom::SessionInfoPtr info = mojom::SessionInfo::New();
-    info->state = session_manager::SessionState::LOCKED;
-    Shell::Get()->session_controller()->SetSessionInfo(std::move(info));
-  }
+  void LockScreen() { GetSessionControllerClient()->LockScreen(); }
 
   // Turn off the lock screen.
-  void UnlockScreen() {
-    mojom::SessionInfoPtr info = mojom::SessionInfo::New();
-    info->state = session_manager::SessionState::ACTIVE;
-    Shell::Get()->session_controller()->SetSessionInfo(std::move(info));
-  }
+  void UnlockScreen() { GetSessionControllerClient()->UnlockScreen(); }
 
   int64_t GetPrimaryDisplayId() {
     return display::Screen::GetScreen()->GetPrimaryDisplay().id();
@@ -1259,9 +1251,9 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenLoginScreenShowing) {
       Shell::Get()->wallpaper_controller();
   WallpaperShownWaiter waiter;
 
-  mojom::SessionInfoPtr info = mojom::SessionInfo::New();
-  info->state = session_manager::SessionState::LOGIN_PRIMARY;
-  Shell::Get()->session_controller()->SetSessionInfo(std::move(info));
+  SessionInfo info;
+  info.state = session_manager::SessionState::LOGIN_PRIMARY;
+  Shell::Get()->session_controller()->SetSessionInfo(info);
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
   // No wallpaper.

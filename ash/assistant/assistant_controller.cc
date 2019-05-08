@@ -147,7 +147,7 @@ void AssistantController::DownloadImage(
     mojom::AssistantImageDownloader::DownloadCallback callback) {
   DCHECK(assistant_image_downloader_);
 
-  const mojom::UserSession* user_session =
+  const UserSession* user_session =
       Shell::Get()->session_controller()->GetUserSession(0);
 
   if (!user_session) {
@@ -156,7 +156,7 @@ void AssistantController::DownloadImage(
     return;
   }
 
-  AccountId account_id = user_session->user_info->account_id;
+  AccountId account_id = user_session->user_info.account_id;
   assistant_image_downloader_->Download(account_id, url, std::move(callback));
 }
 
@@ -261,7 +261,7 @@ void AssistantController::OpenUrl(const GURL& url, bool from_server) {
 
 void AssistantController::GetNavigableContentsFactory(
     mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver) {
-  const mojom::UserSession* user_session =
+  const UserSession* user_session =
       Shell::Get()->session_controller()->GetUserSession(0);
 
   if (!user_session) {
@@ -270,7 +270,7 @@ void AssistantController::GetNavigableContentsFactory(
   }
 
   const base::Optional<base::Token>& service_instance_group =
-      user_session->user_info->service_instance_group;
+      user_session->user_info.service_instance_group;
   if (!service_instance_group) {
     LOG(ERROR) << "Unable to retrieve service instance group.";
     return;

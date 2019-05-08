@@ -139,17 +139,17 @@ views::View* CreateAddUserErrorView(const base::string16& message) {
 
 views::View* CreateUserAvatarView(int user_index) {
   DCHECK(Shell::Get());
-  const mojom::UserSession* const user_session =
+  const UserSession* const user_session =
       Shell::Get()->session_controller()->GetUserSession(user_index);
   DCHECK(user_session);
 
-  if (user_session->user_info->type == user_manager::USER_TYPE_GUEST) {
+  if (user_session->user_info.type == user_manager::USER_TYPE_GUEST) {
     // In guest mode, the user avatar is just a disabled button pod.
     return new TopShortcutButton(kSystemMenuGuestIcon);
   } else {
     auto* image_view = new tray::RoundedImageView(kTrayItemSize / 2);
     image_view->set_can_process_events_within_subtree(false);
-    image_view->SetImage(user_session->user_info->avatar->image,
+    image_view->SetImage(user_session->user_info.avatar.image,
                          gfx::Size(kTrayItemSize, kTrayItemSize));
     return image_view;
   }
@@ -157,28 +157,28 @@ views::View* CreateUserAvatarView(int user_index) {
 
 base::string16 GetUserItemAccessibleString(int user_index) {
   DCHECK(Shell::Get());
-  const mojom::UserSession* const user_session =
+  const UserSession* const user_session =
       Shell::Get()->session_controller()->GetUserSession(user_index);
   DCHECK(user_session);
 
-  if (user_session->user_info->type == user_manager::USER_TYPE_GUEST)
+  if (user_session->user_info.type == user_manager::USER_TYPE_GUEST)
     return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_GUEST_LABEL);
 
-  if (user_session->user_info->type == user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
+  if (user_session->user_info.type == user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
     std::string display_domain = Shell::Get()
                                      ->system_tray_model()
                                      ->enterprise_domain()
                                      ->enterprise_display_domain();
     return l10n_util::GetStringFUTF16(
         IDS_ASH_STATUS_TRAY_PUBLIC_LABEL,
-        base::UTF8ToUTF16(user_session->user_info->display_name),
+        base::UTF8ToUTF16(user_session->user_info.display_name),
         base::UTF8ToUTF16(display_domain));
   }
 
   return l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_USER_INFO_ACCESSIBILITY,
-      base::UTF8ToUTF16(user_session->user_info->display_name),
-      base::UTF8ToUTF16(user_session->user_info->display_email));
+      base::UTF8ToUTF16(user_session->user_info.display_name),
+      base::UTF8ToUTF16(user_session->user_info.display_email));
 }
 
 UserItemButton::UserItemButton(int user_index,
@@ -205,16 +205,16 @@ UserItemButton::UserItemButton(int user_index,
   vertical_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
 
-  const mojom::UserSession* const user_session =
+  const UserSession* const user_session =
       Shell::Get()->session_controller()->GetUserSession(user_index);
 
-  name_->SetText(base::UTF8ToUTF16(user_session->user_info->display_name));
+  name_->SetText(base::UTF8ToUTF16(user_session->user_info.display_name));
   name_->SetEnabledColor(kUnifiedMenuTextColor);
   name_->SetAutoColorReadabilityEnabled(false);
   name_->SetSubpixelRenderingEnabled(false);
   vertical_labels->AddChildView(name_);
 
-  email_->SetText(base::UTF8ToUTF16(user_session->user_info->display_email));
+  email_->SetText(base::UTF8ToUTF16(user_session->user_info.display_email));
   email_->SetEnabledColor(kUnifiedMenuSecondaryTextColor);
   email_->SetAutoColorReadabilityEnabled(false);
   email_->SetSubpixelRenderingEnabled(false);
@@ -326,9 +326,9 @@ void UserChooserView::OnMediaCaptureChanged(
     return;
 
   for (size_t i = 0; i < user_item_buttons_.size(); ++i) {
-    const mojom::UserSession* const user_session =
+    const UserSession* const user_session =
         Shell::Get()->session_controller()->GetUserSession(i);
-    auto matched = capture_states.find(user_session->user_info->account_id);
+    auto matched = capture_states.find(user_session->user_info.account_id);
     if (matched != capture_states.end()) {
       user_item_buttons_[i]->SetCaptureState(matched->second);
     }

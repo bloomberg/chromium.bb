@@ -95,8 +95,8 @@ TEST_F(UnifiedSystemInfoViewNoSessionTest, SupervisedVisible) {
   client->Reset();
   client->AddUserSession("child@test.com", user_manager::USER_TYPE_SUPERVISED);
   client->SetSessionState(session_manager::SessionState::ACTIVE);
-  mojom::UserSessionPtr user_session = session->GetUserSession(0)->Clone();
-  user_session->custodian_email = "parent@test.com";
+  UserSession user_session = *session->GetUserSession(0);
+  user_session.custodian_email = "parent@test.com";
   session->UpdateUserSession(std::move(user_session));
 
   // Now the supervised user view is visible.

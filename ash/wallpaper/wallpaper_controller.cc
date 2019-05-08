@@ -366,10 +366,10 @@ bool IsInKioskMode() {
 // Checks if |account_id| is the current active user.
 bool IsActiveUser(const AccountId& account_id) {
   // The current active user has index 0.
-  const mojom::UserSession* const active_user_session =
+  const UserSession* const active_user_session =
       Shell::Get()->session_controller()->GetUserSession(/*user index=*/0);
   return active_user_session &&
-         active_user_session->user_info->account_id == account_id;
+         active_user_session->user_info.account_id == account_id;
 }
 
 // Returns the file path of the wallpaper corresponding to |url| if it exists in
@@ -1081,10 +1081,10 @@ void WallpaperController::UpdateCustomWallpaperLayout(
   // This method has a very specific use case: the user should be active and
   // have a custom wallpaper.
   // The currently active user has index 0.
-  const mojom::UserSession* const active_user_session =
+  const UserSession* const active_user_session =
       Shell::Get()->session_controller()->GetUserSession(/*user index=*/0);
   if (!active_user_session ||
-      active_user_session->user_info->account_id != user_info->account_id) {
+      active_user_session->user_info.account_id != user_info->account_id) {
     return;
   }
   WallpaperInfo info;
@@ -2132,25 +2132,24 @@ void WallpaperController::OnDevicePolicyWallpaperDecoded(
 
 bool WallpaperController::IsActiveUserWallpaperControlledByPolicyImpl() const {
   // The currently active user has index 0.
-  const mojom::UserSession* const active_user_session =
+  const UserSession* const active_user_session =
       Shell::Get()->session_controller()->GetUserSession(/*user index=*/0);
   if (!active_user_session)
     return false;
-  return IsPolicyControlled(active_user_session->user_info->account_id,
-                            active_user_session->user_info->is_ephemeral);
+  return IsPolicyControlled(active_user_session->user_info.account_id,
+                            active_user_session->user_info.is_ephemeral);
 }
 
 bool WallpaperController::GetActiveUserWallpaperInfoImpl(
     WallpaperInfo* info_out) const {
   // The currently active user has index 0.
-  const mojom::UserSession* const active_user_session =
+  const UserSession* const active_user_session =
       Shell::Get()->session_controller()->GetUserSession(/*user index=*/0);
   if (!active_user_session)
     return false;
 
-  if (!GetUserWallpaperInfo(active_user_session->user_info->account_id,
-                            info_out,
-                            active_user_session->user_info->is_ephemeral)) {
+  if (!GetUserWallpaperInfo(active_user_session->user_info.account_id, info_out,
+                            active_user_session->user_info.is_ephemeral)) {
     return false;
   }
   return true;
@@ -2158,13 +2157,12 @@ bool WallpaperController::GetActiveUserWallpaperInfoImpl(
 
 bool WallpaperController::ShouldShowWallpaperSettingImpl() const {
   // The currently active user has index 0.
-  const mojom::UserSession* const active_user_session =
+  const UserSession* const active_user_session =
       Shell::Get()->session_controller()->GetUserSession(/*user index=*/0);
   if (!active_user_session)
     return false;
 
-  user_manager::UserType active_user_type =
-      active_user_session->user_info->type;
+  user_manager::UserType active_user_type = active_user_session->user_info.type;
   return active_user_type == user_manager::USER_TYPE_REGULAR ||
          active_user_type == user_manager::USER_TYPE_PUBLIC_ACCOUNT ||
          active_user_type == user_manager::USER_TYPE_SUPERVISED ||

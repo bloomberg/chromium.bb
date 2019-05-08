@@ -66,14 +66,14 @@ mojom::WallpaperUserInfoPtr WallpaperUserInfoForAccount(
       mojom::WallpaperUserInfo::New();
   SessionControllerImpl* session_controller =
       Shell::Get()->session_controller();
-  for (const mojom::UserSessionPtr& user_session :
+  for (const std::unique_ptr<UserSession>& user_session :
        session_controller->GetUserSessions()) {
-    if (user_session->user_info->account_id == account_id) {
+    if (user_session->user_info.account_id == account_id) {
       wallpaper_user_info->account_id = account_id;
-      wallpaper_user_info->type = user_session->user_info->type;
-      wallpaper_user_info->is_ephemeral = user_session->user_info->is_ephemeral;
+      wallpaper_user_info->type = user_session->user_info.type;
+      wallpaper_user_info->is_ephemeral = user_session->user_info.is_ephemeral;
       wallpaper_user_info->has_gaia_account =
-          user_session->user_info->has_gaia_account;
+          user_session->user_info.has_gaia_account;
       return wallpaper_user_info;
     }
   }

@@ -443,9 +443,9 @@ TEST_F(WorkspaceControllerTest, ShelfStateUpdated) {
 TEST_F(WorkspaceControllerTest, MinimizeResetsVisibility) {
   // TODO(bruthig|xiyuan): Move SessionState setup into AshTestBase or
   // AshTestHelper.
-  mojom::SessionInfoPtr info = mojom::SessionInfo::New();
-  info->state = session_manager::SessionState::ACTIVE;
-  ash::Shell::Get()->session_controller()->SetSessionInfo(std::move(info));
+  SessionInfo info;
+  info.state = session_manager::SessionState::ACTIVE;
+  ash::Shell::Get()->session_controller()->SetSessionInfo(info);
 
   std::unique_ptr<Window> w1(CreateTestWindow());
   w1->Show();

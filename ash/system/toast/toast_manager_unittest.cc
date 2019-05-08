@@ -108,10 +108,10 @@ class ToastManagerTest : public AshTestBase {
   void CancelToast(const std::string& id) { manager()->Cancel(id); }
 
   void ChangeLockState(bool lock) {
-    mojom::SessionInfoPtr info_ptr = mojom::SessionInfo::New();
-    info_ptr->state = lock ? session_manager::SessionState::LOCKED
-                           : session_manager::SessionState::ACTIVE;
-    Shell::Get()->session_controller()->SetSessionInfo(std::move(info_ptr));
+    SessionInfo info;
+    info.state = lock ? session_manager::SessionState::LOCKED
+                      : session_manager::SessionState::ACTIVE;
+    Shell::Get()->session_controller()->SetSessionInfo(info);
   }
 
  private:

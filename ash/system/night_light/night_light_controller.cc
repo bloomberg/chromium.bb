@@ -546,7 +546,7 @@ void NightLightController::StoreCachedGeoposition(
       Shell::Get()->session_controller();
   for (const auto& user_session : session_controller->GetUserSessions()) {
     PrefService* pref_service = session_controller->GetUserPrefServiceForUser(
-        user_session->user_info->account_id);
+        user_session->user_info.account_id);
     if (!pref_service)
       continue;
 

@@ -25,11 +25,9 @@ namespace ash {
 namespace {
 
 void SetSessionState(const session_manager::SessionState& state) {
-  mojom::SessionInfoPtr info_ptr = mojom::SessionInfo::New();
-  info_ptr->state = state;
-  SessionControllerImpl* session_controller =
-      Shell::Get()->session_controller();
-  session_controller->SetSessionInfo(std::move(info_ptr));
+  SessionInfo info;
+  info.state = state;
+  Shell::Get()->session_controller()->SetSessionInfo(info);
 }
 
 }  // anonymous namespace

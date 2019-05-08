@@ -79,7 +79,7 @@ void KioskNextShellController::OnActiveUserPrefServiceChanged(
     kiosk_next_shell_client_->LaunchKioskNextShell(Shell::Get()
                                                        ->session_controller()
                                                        ->GetPrimaryUserSession()
-                                                       ->user_info->account_id);
+                                                       ->user_info.account_id);
 
     // Notify observers that KioskNextShell has been enabled.
     for (KioskNextShellObserver& observer : observer_list_) {

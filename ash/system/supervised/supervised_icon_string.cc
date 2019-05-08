@@ -33,8 +33,7 @@ base::string16 GetSupervisedUserMessage() {
   DCHECK(session_controller->IsActiveUserSessionStarted());
 
   // Get the active user session.
-  const mojom::UserSession* const user_session =
-      session_controller->GetUserSession(0);
+  const UserSession* const user_session = session_controller->GetUserSession(0);
   DCHECK(user_session);
 
   base::string16 first_custodian = UTF8ToUTF16(user_session->custodian_email);

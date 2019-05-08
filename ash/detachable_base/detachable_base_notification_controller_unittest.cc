@@ -118,7 +118,7 @@ TEST_F(DetachableBaseNotificationControllerTest,
   CloseBaseChangedNotification();
 
   GetSessionControllerClient()->SwitchActiveUser(
-      session_controller()->GetUserSession(1)->user_info->account_id);
+      session_controller()->GetUserSession(1)->user_info.account_id);
 
   EXPECT_TRUE(IsBaseChangedNotificationVisible());
 }
@@ -212,7 +212,7 @@ TEST_F(DetachableBaseNotificationControllerTest,
   EXPECT_FALSE(IsBaseChangedNotificationVisible());
 
   EXPECT_TRUE(detachable_base_handler()->SetPairedBaseAsLastUsedByUser(
-      *session_controller()->GetUserSession(0)->user_info));
+      *session_controller()->GetUserSession(0)->user_info.ToMojom()));
 
   UnblockUserSession();
   EXPECT_FALSE(IsBaseChangedNotificationVisible());

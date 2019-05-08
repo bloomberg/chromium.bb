@@ -327,14 +327,14 @@ void AssistantUiController::OnUiVisibilityChanged(
       // user so that we don't leak across user sessions.
       auto* window_manager = MultiUserWindowManagerImpl::Get();
       if (window_manager) {
-        const mojom::UserSession* user_session =
+        const UserSession* user_session =
             Shell::Get()->session_controller()->GetUserSession(0);
         if (user_session) {
           container_view_->GetWidget()->GetNativeWindow()->SetProperty(
               aura::client::kCreatedByUserGesture, true);
           window_manager->SetWindowOwner(
               container_view_->GetWidget()->GetNativeWindow(),
-              user_session->user_info->account_id);
+              user_session->user_info.account_id);
         }
       }
       break;

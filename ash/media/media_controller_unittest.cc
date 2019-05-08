@@ -55,9 +55,9 @@ class MediaControllerTest : public AshTestBase {
   }
 
   void SimulateSessionLock() {
-    mojom::SessionInfoPtr info_ptr = mojom::SessionInfo::New();
-    info_ptr->state = session_manager::SessionState::LOCKED;
-    Shell::Get()->session_controller()->SetSessionInfo(std::move(info_ptr));
+    SessionInfo info;
+    info.state = session_manager::SessionState::LOCKED;
+    Shell::Get()->session_controller()->SetSessionInfo(info);
   }
 
   void Flush() {

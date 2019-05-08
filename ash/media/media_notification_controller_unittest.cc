@@ -87,10 +87,10 @@ class MediaNotificationControllerTest : public AshTestBase {
   }
 
   void SimulateSessionLock(bool locked) {
-    mojom::SessionInfoPtr info_ptr = mojom::SessionInfo::New();
-    info_ptr->state = locked ? session_manager::SessionState::LOCKED
-                             : session_manager::SessionState::ACTIVE;
-    Shell::Get()->session_controller()->SetSessionInfo(std::move(info_ptr));
+    SessionInfo info;
+    info.state = locked ? session_manager::SessionState::LOCKED
+                        : session_manager::SessionState::ACTIVE;
+    Shell::Get()->session_controller()->SetSessionInfo(info);
   }
 
  private:

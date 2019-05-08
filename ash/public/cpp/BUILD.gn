@@ -106,7 +106,10 @@ component("cpp") {
     "session/session_controller.cc",
     "session/session_controller.h",
     "session/session_controller_client.h",
+    "session/session_types.cc",
     "session/session_types.h",
+    "session/user_info.cc",
+    "session/user_info.h",
     "shelf_item.cc",
     "shelf_item.h",
     "shelf_item_delegate.cc",
@@ -163,6 +166,7 @@ component("cpp") {
   public_deps = [
     "//ash/public/interfaces:interfaces_internal",
     "//base",
+    "//components/session_manager:base",
     "//ui/gfx",
   ]
 

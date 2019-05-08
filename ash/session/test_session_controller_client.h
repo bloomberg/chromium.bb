@@ -10,6 +10,7 @@
 #include <string>
 
 #include "ash/public/cpp/session/session_controller_client.h"
+#include "ash/public/cpp/session/session_types.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -105,7 +106,7 @@ class TestSessionControllerClient : public ash::SessionControllerClient {
   SessionControllerImpl* const controller_;
 
   int fake_session_id_ = 0;
-  mojom::SessionInfoPtr session_info_;
+  SessionInfo session_info_;
 
   bool use_lower_case_user_id_ = true;
   int request_sign_out_count_ = 0;

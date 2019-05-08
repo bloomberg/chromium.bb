@@ -34,13 +34,13 @@ TestSessionController::~TestSessionController() {
 
 void TestSessionController::SetClient(ash::SessionControllerClient* client) {}
 
-void TestSessionController::SetSessionInfo(ash::mojom::SessionInfoPtr info) {
-  last_session_info_ = info->Clone();
+void TestSessionController::SetSessionInfo(const ash::SessionInfo& info) {
+  last_session_info_ = info;
 }
 
 void TestSessionController::UpdateUserSession(
-    ash::mojom::UserSessionPtr user_session) {
-  last_user_session_ = user_session->Clone();
+    const ash::UserSession& user_session) {
+  last_user_session_ = user_session;
   update_user_session_count_++;
 }
 

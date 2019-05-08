@@ -50,12 +50,11 @@ void SupervisedNotificationController::OnUserSessionUpdated(
 
   // Get the active user session.
   DCHECK(session_controller->IsActiveUserSessionStarted());
-  const mojom::UserSession* const user_session =
-      session_controller->GetUserSession(0);
+  const UserSession* const user_session = session_controller->GetUserSession(0);
   DCHECK(user_session);
 
   // Only respond to updates for the active user.
-  if (user_session->user_info->account_id != account_id)
+  if (user_session->user_info.account_id != account_id)
     return;
 
   // Show notifications when custodian data first becomes available on login

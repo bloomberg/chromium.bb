@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ASH_SESSION_CONTROLLER_CLIENT_IMPL_H_
 #define CHROME_BROWSER_UI_ASH_SESSION_CONTROLLER_CLIENT_IMPL_H_
 
+#include <memory>
 #include <vector>
 
 #include "ash/public/cpp/session/session_controller_client.h"
@@ -178,9 +179,9 @@ class SessionControllerClientImpl
   // Observes changes to Local State prefs.
   std::unique_ptr<PrefChangeRegistrar> local_state_registrar_;
 
-  // Used to suppress duplicate IPCs to ash.
-  ash::mojom::SessionInfoPtr last_sent_session_info_;
-  ash::mojom::UserSessionPtr last_sent_user_session_;
+  // Used to suppress duplicate calls to ash.
+  std::unique_ptr<ash::SessionInfo> last_sent_session_info_;
+  std::unique_ptr<ash::UserSession> last_sent_user_session_;
 
   base::WeakPtrFactory<SessionControllerClientImpl> weak_ptr_factory_{this};
 

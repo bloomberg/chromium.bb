@@ -57,7 +57,7 @@ void UserChooserDetailedViewController::HandleUserSwitch(int user_index) {
   MultiProfileUMA::RecordSwitchActiveUser(
       MultiProfileUMA::SWITCH_ACTIVE_USER_BY_TRAY);
   controller->SwitchActiveUser(
-      controller->GetUserSession(user_index)->user_info->account_id);
+      controller->GetUserSession(user_index)->user_info.account_id);
   tray_controller_->CloseBubble();
 }
 

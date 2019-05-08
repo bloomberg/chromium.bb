@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "ash/ash_export.h"
@@ -40,6 +41,8 @@ class SessionObserver;
 class ASH_EXPORT SessionControllerImpl : public SessionController,
                                          public mojom::SessionController {
  public:
+  using UserSessions = std::vector<std::unique_ptr<UserSession>>;
+
   // |connector| is used to connect to other services for connecting to per-user
   // PrefServices. If |connector| is null, no per-user PrefService instances
   // will be created. In tests, ProvideUserPrefServiceForTest() can be used to
@@ -104,14 +107,14 @@ class ASH_EXPORT SessionControllerImpl : public SessionController,
   session_manager::SessionState GetSessionState() const;
 
   // Gets the user sessions in LRU order with the active session being first.
-  const std::vector<mojom::UserSessionPtr>& GetUserSessions() const;
+  const UserSessions& GetUserSessions() const;
 
   // Convenience helper to gets the user session at a given index. Returns
   // nullptr if no user session is found for the index.
-  const mojom::UserSession* GetUserSession(UserIndex index) const;
+  const UserSession* GetUserSession(UserIndex index) const;
 
   // Gets the primary user session.
-  const mojom::UserSession* GetPrimaryUserSession() const;
+  const UserSession* GetPrimaryUserSession() const;
 
   // Returns true if the current user is supervised: has legacy supervised
   // account or kid account.
@@ -193,12 +196,12 @@ class ASH_EXPORT SessionControllerImpl : public SessionController,
 
   // SessionController
   void SetClient(SessionControllerClient* client) override;
-
-  // mojom::SessionController
-  void SetSessionInfo(mojom::SessionInfoPtr info) override;
-  void UpdateUserSession(mojom::UserSessionPtr user_session) override;
+  void SetSessionInfo(const SessionInfo& info) override;
+  void UpdateUserSession(const UserSession& user_session) override;
   void SetUserSessionOrder(
       const std::vector<uint32_t>& user_session_order) override;
+
+  // mojom::SessionController
   void PrepareForLock(PrepareForLockCallback callback) override;
   void StartLock(StartLockCallback callback) override;
   void NotifyChromeLockAnimationsComplete() override;
@@ -227,7 +230,7 @@ class ASH_EXPORT SessionControllerImpl : public SessionController,
   // Marks the session as a demo session for Demo Mode.
   void SetIsDemoSession();
   void SetSessionState(session_manager::SessionState state);
-  void AddUserSession(mojom::UserSessionPtr user_session);
+  void AddUserSession(const UserSession& user_session);
 
   // Calculate login status based on session state and active user session.
   LoginStatus CalculateLoginStatus() const;
@@ -280,7 +283,7 @@ class ASH_EXPORT SessionControllerImpl : public SessionController,
   // Cached user session info sorted by the order from SetUserSessionOrder.
   // Currently the session manager code (chrome) sets a LRU order with the
   // active session being the first.
-  std::vector<mojom::UserSessionPtr> user_sessions_;
+  UserSessions user_sessions_;
 
   // The user session id of the current active user session. User session id
   // is managed by session manager code, starting at 1. 0u is an invalid id

@@ -6,12 +6,11 @@
 #define ASH_PUBLIC_CPP_SESSION_SESSION_CONTROLLER_CLIENT_H_
 
 #include "ash/public/cpp/ash_public_export.h"
-
-class AccountId;
+#include "ash/public/cpp/session/session_controller.h"
+#include "ash/public/cpp/session/session_types.h"
+#include "components/account_id/account_id.h"
 
 namespace ash {
-
-enum class CycleUserDirection;
 
 class ASH_PUBLIC_EXPORT SessionControllerClient {
  public:

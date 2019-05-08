@@ -86,37 +86,35 @@ uint32_t GetSessionId(const User& user) {
 
 // Creates a mojom::UserSession for the given user. Returns nullptr if there is
 // no user session started for the given user.
-ash::mojom::UserSessionPtr UserToUserSession(const User& user) {
+std::unique_ptr<ash::UserSession> UserToUserSession(const User& user) {
   const uint32_t user_session_id = GetSessionId(user);
   if (user_session_id == 0u)
     return nullptr;
 
-  ash::mojom::UserSessionPtr session = ash::mojom::UserSession::New();
+  auto session = std::make_unique<ash::UserSession>();
   Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(&user);
   session->session_id = user_session_id;
-  session->user_info = ash::mojom::UserInfo::New();
-  session->user_info->type = user.GetType();
-  session->user_info->account_id = user.GetAccountId();
-  session->user_info->display_name = base::UTF16ToUTF8(user.display_name());
-  session->user_info->display_email = user.display_email();
-  session->user_info->is_ephemeral =
+  session->user_info.type = user.GetType();
+  session->user_info.account_id = user.GetAccountId();
+  session->user_info.display_name = base::UTF16ToUTF8(user.display_name());
+  session->user_info.display_email = user.display_email();
+  session->user_info.is_ephemeral =
       UserManager::Get()->IsUserNonCryptohomeDataEphemeral(user.GetAccountId());
-  session->user_info->has_gaia_account = user.has_gaia_account();
-  session->user_info->should_display_managed_ui =
+  session->user_info.has_gaia_account = user.has_gaia_account();
+  session->user_info.should_display_managed_ui =
       profile && chrome::ShouldDisplayManagedUi(profile);
   const AccountId& owner_id = UserManager::Get()->GetOwnerAccountId();
-  session->user_info->is_device_owner =
+  session->user_info.is_device_owner =
       owner_id.is_valid() && owner_id == user.GetAccountId();
   if (profile) {
-    session->user_info->service_instance_group =
+    session->user_info.service_instance_group =
         content::BrowserContext::GetServiceInstanceGroupFor(profile);
-    session->user_info->is_new_profile = profile->IsNewProfile();
+    session->user_info.is_new_profile = profile->IsNewProfile();
   }
 
-  session->user_info->avatar = ash::mojom::UserAvatar::New();
-  session->user_info->avatar->image = user.GetImage();
-  if (session->user_info->avatar->image.isNull()) {
-    session->user_info->avatar->image =
+  session->user_info.avatar.image = user.GetImage();
+  if (session->user_info.avatar.image.isNull()) {
+    session->user_info.avatar.image =
         *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_LOGIN_DEFAULT_USER);
   }
@@ -583,7 +581,7 @@ void SessionControllerClientImpl::ConnectToSessionController() {
 void SessionControllerClientImpl::SendSessionInfoIfChanged() {
   SessionManager* const session_manager = SessionManager::Get();
 
-  ash::mojom::SessionInfoPtr info = ash::mojom::SessionInfo::New();
+  auto info = std::make_unique<ash::SessionInfo>();
   info->can_lock_screen = CanLockScreen();
   info->should_lock_screen_automatically = ShouldLockScreenAutomatically();
   info->is_running_in_app_mode = chrome::IsRunningInAppMode();
@@ -592,14 +590,15 @@ void SessionControllerClientImpl::SendSessionInfoIfChanged() {
   info->add_user_session_policy = GetAddUserSessionPolicy();
   info->state = session_manager->session_state();
 
-  if (info != last_sent_session_info_) {
-    last_sent_session_info_ = info->Clone();
-    session_controller_->SetSessionInfo(std::move(info));
-  }
+  if (last_sent_session_info_ && *info == *last_sent_session_info_)
+    return;
+
+  last_sent_session_info_ = std::move(info);
+  ash::SessionController::Get()->SetSessionInfo(*last_sent_session_info_);
 }
 
 void SessionControllerClientImpl::SendUserSession(const User& user) {
-  ash::mojom::UserSessionPtr user_session = UserToUserSession(user);
+  auto user_session = UserToUserSession(user);
 
   // Bail if the user has no session. Currently the only code path that hits
   // this condition is from OnUserImageChanged when user images are changed
@@ -608,10 +607,11 @@ void SessionControllerClientImpl::SendUserSession(const User& user) {
   if (!user_session)
     return;
 
-  if (user_session != last_sent_user_session_) {
-    last_sent_user_session_ = user_session->Clone();
-    session_controller_->UpdateUserSession(std::move(user_session));
-  }
+  if (last_sent_user_session_ && *user_session == *last_sent_user_session_)
+    return;
+
+  last_sent_user_session_ = std::move(user_session);
+  ash::SessionController::Get()->UpdateUserSession(*last_sent_user_session_);
 }
 
 void SessionControllerClientImpl::SendUserSessionOrder() {
@@ -625,7 +625,7 @@ void SessionControllerClientImpl::SendUserSessionOrder() {
     user_session_ids.push_back(user_session_id);
   }
 
-  session_controller_->SetUserSessionOrder(user_session_ids);
+  ash::SessionController::Get()->SetUserSessionOrder(user_session_ids);
 }
 
 void SessionControllerClientImpl::SendSessionLengthLimit() {

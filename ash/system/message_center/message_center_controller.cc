@@ -195,7 +195,7 @@ void MessageCenterController::SetArcNotificationsInstance(
         Shell::Get()
             ->session_controller()
             ->GetPrimaryUserSession()
-            ->user_info->account_id,
+            ->user_info.account_id,
         message_center::MessageCenter::Get());
   }
   arc_notification_manager_->SetInstance(std::move(arc_notification_instance));
