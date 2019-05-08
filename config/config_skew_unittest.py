@@ -19,6 +19,11 @@ from google.protobuf import json_format
 BUILDER_CONFIG_FILENAME = os.path.join(
     constants.SOURCE_ROOT, 'infra/config/generated/builder_configs.cfg')
 
+# Builders that we generally leave out of old versus new config comparisons
+# as these builders existing in new config have no equivalent in the old
+# config world.
+POSTSUBMIT_EXCLUDE_BUILDERS = ["chromite-postsubmit", "test_vm-postsubmit"]
+
 class ErrorWrapper(Exception):
   """Simple exception wrapper to provide more failure context."""
 
@@ -87,20 +92,18 @@ class ConfigSkewTest(cros_test_lib.TestCase):
   def testPostsubmitBuildTargets(self):
     master_postsubmit_children = self._to_utf8(
         self._get_old_config_slaves("master-postsubmit"))
-    # Old config is not expected to havea "chromite-postsubmit" builder,
-    # so we exclude it.
+    # Exclude the special builders that old config is not expected to have.
     postsubmit_orchestrator_children = self._get_new_config_children(
-        "postsubmit-orchestrator", ["chromite-postsubmit"])
+        "postsubmit-orchestrator", POSTSUBMIT_EXCLUDE_BUILDERS)
 
     self.assertItemsEqual(postsubmit_orchestrator_children,
                           master_postsubmit_children)
 
   @cros_test_lib.ConfigSkewTest()
   def testPostsubmitBuildTargetsCriticality(self):
-    # Old config is not expected to havea "chromite-postsubmit" builder,
-    # so we exclude it.
-    for child_name in self._get_new_config_children("postsubmit-orchestrator",
-                                                    ["chromite-postsubmit"]):
+    # Exclude the special builders that old config is not expected to have.
+    for child_name in self._get_new_config_children(
+        "postsubmit-orchestrator", POSTSUBMIT_EXCLUDE_BUILDERS):
       new_config = self._get_new_config(child_name)
       old_config = self._get_old_config(child_name)
       # old_config doesn't exist is caught in another test, don't report here.
