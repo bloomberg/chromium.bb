@@ -5089,6 +5089,7 @@ interface RTCRtpTransceiver
     getter sender
     getter stopped
     method constructor
+    method setCodecPreferences
     setter direction
 interface RTCSessionDescription
     attribute @@toStringTag

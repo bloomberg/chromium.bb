@@ -58,6 +58,10 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpTransceiver {
       const = 0;
   virtual base::Optional<webrtc::RtpTransceiverDirection> FiredDirection()
       const = 0;
+  virtual webrtc::RTCError SetCodecPreferences(
+      WebVector<webrtc::RtpCodecCapability>) {
+    return {};
+  }
 };
 
 }  // namespace blink

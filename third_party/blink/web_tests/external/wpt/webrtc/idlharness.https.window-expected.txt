@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 506 tests; 444 PASS, 62 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 506 tests; 447 PASS, 59 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Test driver for asyncInitCertificate
 PASS Test driver for asyncInitTransports
@@ -292,7 +292,7 @@ PASS RTCRtpTransceiver interface: attribute stopped
 PASS RTCRtpTransceiver interface: attribute direction
 PASS RTCRtpTransceiver interface: attribute currentDirection
 FAIL RTCRtpTransceiver interface: operation stop() assert_own_property: interface prototype object missing non-static operation expected property "stop" missing
-FAIL RTCRtpTransceiver interface: operation setCodecPreferences([object Object]) assert_own_property: interface prototype object missing non-static operation expected property "setCodecPreferences" missing
+PASS RTCRtpTransceiver interface: operation setCodecPreferences([object Object])
 PASS RTCRtpTransceiver must be primary interface of new RTCPeerConnection().addTransceiver('audio')
 PASS Stringification of new RTCPeerConnection().addTransceiver('audio')
 PASS RTCRtpTransceiver interface: new RTCPeerConnection().addTransceiver('audio') must inherit property "mid" with the proper type
@@ -302,8 +302,8 @@ PASS RTCRtpTransceiver interface: new RTCPeerConnection().addTransceiver('audio'
 PASS RTCRtpTransceiver interface: new RTCPeerConnection().addTransceiver('audio') must inherit property "direction" with the proper type
 PASS RTCRtpTransceiver interface: new RTCPeerConnection().addTransceiver('audio') must inherit property "currentDirection" with the proper type
 FAIL RTCRtpTransceiver interface: new RTCPeerConnection().addTransceiver('audio') must inherit property "stop()" with the proper type assert_inherits: property "stop" not found in prototype chain
-FAIL RTCRtpTransceiver interface: new RTCPeerConnection().addTransceiver('audio') must inherit property "setCodecPreferences([object Object])" with the proper type assert_inherits: property "setCodecPreferences" not found in prototype chain
-FAIL RTCRtpTransceiver interface: calling setCodecPreferences([object Object]) on new RTCPeerConnection().addTransceiver('audio') with too few arguments must throw TypeError assert_inherits: property "setCodecPreferences" not found in prototype chain
+PASS RTCRtpTransceiver interface: new RTCPeerConnection().addTransceiver('audio') must inherit property "setCodecPreferences([object Object])" with the proper type
+PASS RTCRtpTransceiver interface: calling setCodecPreferences([object Object]) on new RTCPeerConnection().addTransceiver('audio') with too few arguments must throw TypeError
 PASS RTCDtlsTransport interface: existence and properties of interface object
 PASS RTCDtlsTransport interface object length
 PASS RTCDtlsTransport interface object name

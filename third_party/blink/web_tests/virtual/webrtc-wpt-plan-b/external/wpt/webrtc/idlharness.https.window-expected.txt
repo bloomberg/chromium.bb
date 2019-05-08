@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 506 tests; 378 PASS, 128 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 506 tests; 379 PASS, 127 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Test driver for asyncInitCertificate
 FAIL Test driver for asyncInitTransports assert_unreached: Failed to run asyncInitTransports: Error: assert_true: Expect pc.sctp to be instance of RTCSctpTransport expected true got false Reached unreachable code
@@ -292,7 +292,7 @@ PASS RTCRtpTransceiver interface: attribute stopped
 PASS RTCRtpTransceiver interface: attribute direction
 PASS RTCRtpTransceiver interface: attribute currentDirection
 FAIL RTCRtpTransceiver interface: operation stop() assert_own_property: interface prototype object missing non-static operation expected property "stop" missing
-FAIL RTCRtpTransceiver interface: operation setCodecPreferences([object Object]) assert_own_property: interface prototype object missing non-static operation expected property "setCodecPreferences" missing
+PASS RTCRtpTransceiver interface: operation setCodecPreferences([object Object])
 FAIL RTCRtpTransceiver must be primary interface of new RTCPeerConnection().addTransceiver('audio') assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'. 'unified-plan' will become the default behavior in the future, but it is currently experimental. To try it out, construct the RTCPeerConnection with sdpSemantics:'unified-plan' present in the RTCConfiguration argument."
 FAIL Stringification of new RTCPeerConnection().addTransceiver('audio') assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'. 'unified-plan' will become the default behavior in the future, but it is currently experimental. To try it out, construct the RTCPeerConnection with sdpSemantics:'unified-plan' present in the RTCConfiguration argument."
 FAIL RTCRtpTransceiver interface: new RTCPeerConnection().addTransceiver('audio') must inherit property "mid" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'. 'unified-plan' will become the default behavior in the future, but it is currently experimental. To try it out, construct the RTCPeerConnection with sdpSemantics:'unified-plan' present in the RTCConfiguration argument."

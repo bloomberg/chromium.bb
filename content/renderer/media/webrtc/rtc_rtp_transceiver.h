@@ -178,6 +178,8 @@ class CONTENT_EXPORT RTCRtpTransceiver : public blink::WebRTCRtpTransceiver {
       const override;
   base::Optional<webrtc::RtpTransceiverDirection> FiredDirection()
       const override;
+  webrtc::RTCError SetCodecPreferences(
+      blink::WebVector<webrtc::RtpCodecCapability>) override;
 
  private:
   class RTCRtpTransceiverInternal;

@@ -240,6 +240,11 @@ class RTCRtpTransceiver::RTCRtpTransceiverInternal
     state_.set_direction(webrtc_transceiver_->direction());
   }
 
+  webrtc::RTCError setCodecPreferences(
+      std::vector<webrtc::RtpCodecCapability> codec_preferences) {
+    return webrtc_transceiver_->SetCodecPreferences(codec_preferences);
+  }
+
  private:
   friend struct RTCRtpTransceiver::RTCRtpTransceiverInternalTraits;
 
@@ -370,4 +375,8 @@ RTCRtpTransceiver::FiredDirection() const {
   return internal_->state().fired_direction();
 }
 
+webrtc::RTCError RTCRtpTransceiver::SetCodecPreferences(
+    blink::WebVector<webrtc::RtpCodecCapability> codec_preferences) {
+  return internal_->setCodecPreferences(codec_preferences.ReleaseVector());
+}
 }  // namespace content
