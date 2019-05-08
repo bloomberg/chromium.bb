@@ -645,7 +645,18 @@ TEST_F(TimerTest, DestructOnHeapTimer) {
   EXPECT_FALSE(record->TimerHasFired());
 }
 
-TEST_F(TimerTest, MarkOnHeapTimerAsUnreachable) {
+// The following test assumes that an object may still be accessed after the
+// garabge collector found it unreachable until its destructor is called. This
+// is not possible in a purely managed environment and only necessary because
+// timers pass around raw pointers to managed objects. When running with ASAN
+// all unreachable objects are poisoned directly after marking, prohibiting any
+// access until the destructor is called.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_MarkOnHeapTimerAsUnreachable DISABLED_MarkOnHeapTimerAsUnreachable
+#else
+#define MAYBE_MarkOnHeapTimerAsUnreachable MarkOnHeapTimerAsUnreachable
+#endif  // ADDRESS_SANITIZER
+TEST_F(TimerTest, MAYBE_MarkOnHeapTimerAsUnreachable) {
   scoped_refptr<OnHeapTimerOwner::Record> record =
       OnHeapTimerOwner::Record::Create();
   Persistent<OnHeapTimerOwner> owner =
