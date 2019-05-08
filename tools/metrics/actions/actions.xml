@@ -839,8 +839,29 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Accel_Restore_Tab">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>mpearson@chromium.org</owner>
+  <owner>chrisha@chromium.org</owner>
+  <description>
+    Emitted when the Ash window manager hotkey handler handles the
+    &quot;Ctrl-Shift-T&quot; shortcut that causes the most recently closed tab
+    to be restored. Because it's related to Ash, it's ChromeOS only. This is
+    only emitted when the Ash hotkey handler handles the shortcut, which only
+    happens when a non-Chrome window is focussed on ChromeOS. (The launcher is
+    an example of a non-Chrome window.) If a Chrome window was focussed on
+    ChromeOS as the user presses the keyboard shortcut, it's handled by Chrome's
+    keyboard shortcut handler system. In that case, the user action RestoreTab
+    is emitted, not Accel_Restore_Tab.
+
+    It's never the case that both Accel_Restore_Tab and RestoreTab are emitted
+    for the same keyboard shortcut press.
+
+    Note: if the last user action was to close an entire window with multiple
+    tabs, this keyboard shortcut will cause the entire window to be restored,
+    containing multiple tabs. This user action is only emitted once however,
+    regardless of the number of tabs.
+
+    This is not emitted during session restore that occurs as part of startup.
+  </description>
 </action>
 
 <action name="Accel_Rotate_Active_Window">
@@ -16639,8 +16660,27 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="RestoreTab">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>mpearson@chromium.org</owner>
+  <owner>chrisha@chromium.org</owner>
+  <description>
+    Emitted anytime the most recently closed tab is restored via
+    browser/ui/browser_tab_restorer.cc. This occurs either via the
+    (Ctrl-Shift-T) hotkey or the tab context menu. These are cases where the
+    user hasn't explicitly selected a recently closed tab; the user is asking
+    that the most recently closed tab be restored. Thus, it's not recorded, for
+    example, if the user uses three-dots menu &gt; History &gt; Recently Closed
+    Tabs and selects a tab, as in this case the user has selected a recently
+    closed tab explicitly. That case and cases like it go directly to
+    TabRestoreService::RestoreEntryById and bypass the browser_tab_restorer code
+    path.
+
+    Note: if the last user action was to close an entire window with multiple
+    tabs, this RestoreTab action will cause the entire window to be restored,
+    containing multiple tabs. This user action is only emitted once however,
+    regardless of the number of tabs.
+
+    This is not emitted during session restore that occurs as part of startup.
+  </description>
 </action>
 
 <action name="Save">
@@ -20400,8 +20440,18 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TabContextMenu_RestoreTab">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>mpearson@chromium.org</owner>
+  <owner>chrisha@chromium.org</owner>
+  <description>
+    Emitted when the user uses the tab strip context menu and selects
+    &quot;Reopen Closed Tab&quot;. This interaction also causes the user action
+    RestoreTab to be emitted.
+
+    Note: if the last user action was to close an entire window with multiple
+    tabs, this &quot;Reopen Closed Tab&quot; action will cause the entire window
+    to be restored, containing multiple tabs. This user action is only emitted
+    once however, regardless of the number of tabs.
+  </description>
 </action>
 
 <action name="TabContextMenu_SendTabToSelf_Clicked">
