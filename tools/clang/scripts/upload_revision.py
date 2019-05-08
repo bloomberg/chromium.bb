@@ -31,8 +31,8 @@ def PatchRevision(clang_revision, clang_sub_revision):
   content = re.sub("CLANG_REVISION = '[0-9]+'",
                    "CLANG_REVISION = '{}'".format(clang_revision),
                    content, count=1)
-  content = re.sub("CLANG_SUB_REVISION=[0-9]+",
-                   "CLANG_SUB_REVISION={}".format(clang_sub_revision),
+  content = re.sub("CLANG_SUB_REVISION = [0-9]+",
+                   "CLANG_SUB_REVISION = {}".format(clang_sub_revision),
                    content, count=1)
   with open(UPDATE_PY_PATH, 'wb') as f:
     f.write(content)
