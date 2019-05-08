@@ -51,6 +51,14 @@ void TestSessionController::PrepareForLock(PrepareForLockCallback callback) {
   std::move(callback).Run();
 }
 
+void TestSessionController::AddSessionActivationObserverForAccountId(
+    const AccountId& account_id,
+    ash::SessionActivationObserver* observer) {}
+
+void TestSessionController::RemoveSessionActivationObserverForAccountId(
+    const AccountId& account_id,
+    ash::SessionActivationObserver* observer) {}
+
 void TestSessionController::StartLock(StartLockCallback callback) {
   std::move(callback).Run(true);
 }
@@ -89,10 +97,6 @@ void TestSessionController::ShowTeleportWarningDialog(
 
 void TestSessionController::ShowMultiprofilesSessionAbortedDialog(
     const std::string& user_email) {}
-
-void TestSessionController::AddSessionActivationObserverForAccountId(
-    const AccountId& account_id,
-    ash::mojom::SessionActivationObserverPtr observer) {}
 
 void TestSessionController::Bind(mojo::ScopedMessagePipeHandle handle) {
   binding_.Bind(ash::mojom::SessionControllerRequest(std::move(handle)));

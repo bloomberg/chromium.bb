@@ -12,9 +12,12 @@
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/session/session_types.h"
 
+class AccountId;
+
 namespace ash {
 
 class SessionControllerClient;
+class SessionActivationObserver;
 
 // Interface to manage user sessions in ash.
 class ASH_PUBLIC_EXPORT SessionController {
@@ -39,6 +42,16 @@ class ASH_PUBLIC_EXPORT SessionController {
   // active user session.
   virtual void SetUserSessionOrder(
       const std::vector<uint32_t>& user_session_ids) = 0;
+
+  // Adds/removes session activation observer. The observer is called when
+  // session with |account_id| is becoming active or inactive. The observer is
+  // immediately called for upon registration with the current status.
+  virtual void AddSessionActivationObserverForAccountId(
+      const AccountId& account_id,
+      SessionActivationObserver* observer) = 0;
+  virtual void RemoveSessionActivationObserverForAccountId(
+      const AccountId& account_id,
+      SessionActivationObserver* observer) = 0;
 
  protected:
   SessionController();

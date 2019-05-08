@@ -55,6 +55,12 @@ class TestSessionController : public ash::SessionController,
   void UpdateUserSession(const ash::UserSession& user_session) override;
   void SetUserSessionOrder(
       const std::vector<uint32_t>& user_session_order) override;
+  void AddSessionActivationObserverForAccountId(
+      const AccountId& account_id,
+      ash::SessionActivationObserver* observer) override;
+  void RemoveSessionActivationObserverForAccountId(
+      const AccountId& account_id,
+      ash::SessionActivationObserver* observer) override;
 
   // ash::mojom::SessionController:
   void PrepareForLock(PrepareForLockCallback callback) override;
@@ -71,9 +77,6 @@ class TestSessionController : public ash::SessionController,
       ShowTeleportWarningDialogCallback callback) override;
   void ShowMultiprofilesSessionAbortedDialog(
       const std::string& user_email) override;
-  void AddSessionActivationObserverForAccountId(
-      const AccountId& account_id,
-      ash::mojom::SessionActivationObserverPtr observer) override;
 
  private:
   void Bind(mojo::ScopedMessagePipeHandle handle);

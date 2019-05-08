@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/session/session_activation_observer.h"
 #include "ash/public/cpp/session/session_controller_client.h"
 #include "ash/public/interfaces/pref_connector.mojom.h"
 #include "ash/public/interfaces/user_info.mojom.h"
@@ -489,14 +490,19 @@ void SessionControllerImpl::ShowMultiprofilesSessionAbortedDialog(
 
 void SessionControllerImpl::AddSessionActivationObserverForAccountId(
     const AccountId& account_id,
-    mojom::SessionActivationObserverPtr observer) {
+    SessionActivationObserver* observer) {
   bool locked = state_ == SessionState::LOCKED;
   observer->OnLockStateChanged(locked);
   observer->OnSessionActivated(user_sessions_.size() &&
                                user_sessions_[0]->user_info.account_id ==
                                    account_id);
-  session_activation_observer_holder_.AddSessionActivationObserverForAccountId(
-      account_id, std::move(observer));
+  session_activation_observer_holder_.AddForAccountId(account_id, observer);
+}
+
+void SessionControllerImpl::RemoveSessionActivationObserverForAccountId(
+    const AccountId& account_id,
+    SessionActivationObserver* observer) {
+  session_activation_observer_holder_.RemoveForAccountId(account_id, observer);
 }
 
 void SessionControllerImpl::ClearUserSessionsForTest() {

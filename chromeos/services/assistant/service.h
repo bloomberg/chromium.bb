@@ -10,6 +10,7 @@
 
 #include "ash/public/cpp/assistant/assistant_state_proxy.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
+#include "ash/public/cpp/session/session_activation_observer.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
@@ -56,7 +57,7 @@ class AssistantManagerService;
 class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
     : public service_manager::Service,
       public chromeos::PowerManagerClient::Observer,
-      public ash::mojom::SessionActivationObserver,
+      public ash::SessionActivationObserver,
       public mojom::AssistantPlatform,
       public ash::DefaultVoiceInteractionObserver {
  public:
@@ -126,7 +127,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void PowerChanged(const power_manager::PowerSupplyProperties& prop) override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
-  // ash::mojom::SessionActivationObserver overrides:
+  // ash::SessionActivationObserver overrides:
   void OnSessionActivated(bool activated) override;
   void OnLockStateChanged(bool locked) override;
 
@@ -171,8 +172,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   mojo::BindingSet<mojom::Assistant> bindings_;
   mojo::Binding<mojom::AssistantPlatform> platform_binding_;
-  mojo::Binding<ash::mojom::SessionActivationObserver>
-      session_observer_binding_;
+  bool observing_ash_session_ = false;
   mojom::ClientPtr client_;
   mojom::DeviceActionsPtr device_actions_;
 

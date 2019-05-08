@@ -200,6 +200,12 @@ class ASH_EXPORT SessionControllerImpl : public SessionController,
   void UpdateUserSession(const UserSession& user_session) override;
   void SetUserSessionOrder(
       const std::vector<uint32_t>& user_session_order) override;
+  void AddSessionActivationObserverForAccountId(
+      const AccountId& account_id,
+      SessionActivationObserver* observer) override;
+  void RemoveSessionActivationObserverForAccountId(
+      const AccountId& account_id,
+      SessionActivationObserver* observer) override;
 
   // mojom::SessionController
   void PrepareForLock(PrepareForLockCallback callback) override;
@@ -216,9 +222,6 @@ class ASH_EXPORT SessionControllerImpl : public SessionController,
       ShowTeleportWarningDialogCallback callback) override;
   void ShowMultiprofilesSessionAbortedDialog(
       const std::string& user_email) override;
-  void AddSessionActivationObserverForAccountId(
-      const AccountId& account_id,
-      mojom::SessionActivationObserverPtr observer) override;
 
   // Test helpers.
   void ClearUserSessionsForTest();
