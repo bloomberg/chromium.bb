@@ -16,6 +16,7 @@
 #include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data_mojom_traits.h"
+#include "third_party/blink/renderer/platform/network/wrapped_data_pipe_getter.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

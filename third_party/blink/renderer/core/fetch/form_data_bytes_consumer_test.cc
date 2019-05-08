@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
+#include "services/network/public/mojom/data_pipe_getter.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_http_body.h"

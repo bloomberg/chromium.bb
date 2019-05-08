@@ -32,9 +32,11 @@
 
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom-blink.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/network/form_data_encoder.h"
+#include "third_party/blink/renderer/platform/network/wrapped_data_pipe_getter.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 
 namespace blink {

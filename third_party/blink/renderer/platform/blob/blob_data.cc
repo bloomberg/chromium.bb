@@ -38,7 +38,9 @@
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom-blink.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
+#include "third_party/blink/public/mojom/blob/data_element.mojom-blink.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -104,6 +106,15 @@ mojom::blink::BlobRegistry* GetThreadSpecificRegistry() {
 constexpr int64_t BlobData::kToEndOfFile;
 
 RawData::RawData() = default;
+
+BlobData::BlobData(FileCompositionStatus composition)
+    : file_composition_(composition) {}
+
+BlobData::~BlobData() {}
+
+Vector<mojom::blink::DataElementPtr> BlobData::ReleaseElements() {
+  return std::move(elements_);
+}
 
 std::unique_ptr<BlobData> BlobData::CreateForFileWithUnknownSize(
     const String& path) {
@@ -295,6 +306,19 @@ void BlobData::AppendDataInternal(base::span<const char> data,
     last_bytes_provider_->AppendData(std::move(raw_data));
   else
     last_bytes_provider_->AppendData(std::move(data));
+}
+
+// static
+scoped_refptr<BlobDataHandle> BlobDataHandle::Create(
+    const String& uuid,
+    const String& type,
+    uint64_t size,
+    mojom::blink::BlobPtrInfo blob_info) {
+  if (blob_info.is_valid()) {
+    return base::AdoptRef(
+        new BlobDataHandle(uuid, type, size, std::move(blob_info)));
+  }
+  return base::AdoptRef(new BlobDataHandle(uuid, type, size));
 }
 
 BlobDataHandle::BlobDataHandle()

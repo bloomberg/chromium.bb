@@ -4,6 +4,7 @@
 
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_response.h"
 
+#include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
 #include "third_party/blink/public/platform/web_http_header_visitor.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/network/http_header_map.h"
