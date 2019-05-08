@@ -1084,6 +1084,42 @@ var ENTRIES = {
     },
   }),
 
+  // A regular file that can't be renamed, but can be deleted.
+  deletableFile: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'text.txt',
+    targetPath: 'Deletable File.txt',
+    mimeType: 'text/plain',
+    lastModifiedTime: 'Sep 4, 1998, 12:34 PM',
+    nameText: 'Deletable File.txt',
+    sizeText: '51 bytes',
+    typeText: 'Plain text',
+    capabilities: {
+      canCopy: true,
+      canAddChildren: false,
+      canRename: false,
+      canDelete: true
+    },
+  }),
+
+  // A regular file that can't be deleted, but can be renamed.
+  renamableFile: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'text.txt',
+    targetPath: 'Renamable File.txt',
+    mimeType: 'text/plain',
+    lastModifiedTime: 'Sep 4, 1998, 12:34 PM',
+    nameText: 'Renamable File.txt',
+    sizeText: '51 bytes',
+    typeText: 'Plain text',
+    capabilities: {
+      canCopy: true,
+      canAddChildren: false,
+      canRename: true,
+      canDelete: false
+    },
+  }),
+
   // Default Android directories.
   directoryDocuments: new TestEntryInfo({
     type: EntryType.DIRECTORY,

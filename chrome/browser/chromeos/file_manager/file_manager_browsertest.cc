@@ -493,7 +493,11 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("checkPlayFilesContextMenu"),
         TestCase("checkPlayFilesContextMenu").EnableMyFilesVolume(),
         TestCase("checkLinuxFilesContextMenu"),
-        TestCase("checkLinuxFilesContextMenu").EnableMyFilesVolume()));
+        TestCase("checkLinuxFilesContextMenu").EnableMyFilesVolume(),
+        TestCase("checkDeleteDisabledInDocProvider").EnableDocumentsProvider(),
+        TestCase("checkDeleteEnabledInDocProvider").EnableDocumentsProvider(),
+        TestCase("checkRenameDisabledInDocProvider").EnableDocumentsProvider(),
+        TestCase("checkRenameEnabledInDocProvider").EnableDocumentsProvider()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Delete, /* delete.js */

@@ -34,6 +34,9 @@ mojom::DocumentPtr MakeDocument(const FakeFileSystemInstance::Document& doc) {
   document->mime_type = doc.mime_type;
   document->size = doc.size;
   document->last_modified = doc.last_modified;
+  document->supports_delete = doc.supports_delete;
+  document->supports_rename = doc.supports_rename;
+  document->dir_supports_create = doc.dir_supports_create;
   return document;
 }
 
@@ -77,13 +80,38 @@ FakeFileSystemInstance::Document::Document(
     const std::string& mime_type,
     int64_t size,
     uint64_t last_modified)
+    : Document(authority,
+               document_id,
+               parent_document_id,
+               display_name,
+               mime_type,
+               size,
+               last_modified,
+               true,
+               true,
+               true) {}
+
+FakeFileSystemInstance::Document::Document(
+    const std::string& authority,
+    const std::string& document_id,
+    const std::string& parent_document_id,
+    const std::string& display_name,
+    const std::string& mime_type,
+    int64_t size,
+    uint64_t last_modified,
+    bool supports_delete,
+    bool supports_rename,
+    bool dir_supports_create)
     : authority(authority),
       document_id(document_id),
       parent_document_id(parent_document_id),
       display_name(display_name),
       mime_type(mime_type),
       size(size),
-      last_modified(last_modified) {}
+      last_modified(last_modified),
+      supports_delete(supports_delete),
+      supports_rename(supports_rename),
+      dir_supports_create(dir_supports_create) {}
 
 FakeFileSystemInstance::Document::Document(const Document& that) = default;
 
@@ -401,11 +429,13 @@ void FakeFileSystemInstance::DeleteDocument(const std::string& authority,
                                             DeleteDocumentCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DocumentKey key(authority, document_id);
-  if (!documents_.erase(key)) {
+  auto iter = documents_.find(key);
+  if (iter == documents_.end() || iter->second.supports_delete == false) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), false));
     return;
   }
+  documents_.erase(iter);
   size_t erased = child_documents_.erase(key);
   DCHECK_NE(0u, erased);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -419,7 +449,11 @@ void FakeFileSystemInstance::RenameDocument(const std::string& authority,
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DocumentKey key(authority, document_id);
   auto iter = documents_.find(key);
-  DCHECK(iter != documents_.end());
+  if (iter == documents_.end() || iter->second.supports_rename == false) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), mojom::DocumentPtr()));
+    return;
+  }
   iter->second.display_name = display_name;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -433,6 +467,14 @@ void FakeFileSystemInstance::CreateDocument(
     const std::string& display_name,
     CreateDocumentCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DocumentKey parent_key(authority, parent_document_id);
+  auto iter = documents_.find(parent_key);
+  DCHECK(iter != documents_.end());
+  if (iter->second.dir_supports_create == false) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), mojom::DocumentPtr()));
+    return;
+  }
   std::string document_id = GenerateDocumentId();
   Document document(authority, document_id, parent_document_id, display_name,
                     mime_type, 0, 0);

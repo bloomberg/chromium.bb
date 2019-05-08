@@ -77,11 +77,13 @@ ArcDocumentsProviderRoot::ArcDocumentsProviderRoot(
     const std::string& authority,
     const std::string& root_document_id,
     const std::string& root_id,
+    bool read_only,
     const std::vector<std::string>& mime_types)
     : runner_(runner),
       authority_(authority),
       root_document_id_(root_document_id),
       root_id_(root_id),
+      read_only_(read_only),
       mime_types_(mime_types),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -246,6 +248,26 @@ void ArcDocumentsProviderRoot::ResolveToContentUrl(
       path, base::BindOnce(
                 &ArcDocumentsProviderRoot::ResolveToContentUrlWithDocumentId,
                 weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void ArcDocumentsProviderRoot::GetMetadata(const base::FilePath& path,
+                                           GetMetadataCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (path.IsAbsolute()) {
+    std::move(callback).Run(base::File::FILE_ERROR_NOT_FOUND, {});
+    return;
+  }
+  if (read_only_) {
+    // We can return default metadata for read-only roots without Mojo calls,
+    // since all properties on ExtraFileMetadata are about write capabilities.
+    std::move(callback).Run(base::File::FILE_OK, {});
+    return;
+  }
+  ResolveToDocumentId(
+      path,
+      base::BindOnce(&ArcDocumentsProviderRoot::GetMetadataWithDocumentId,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void ArcDocumentsProviderRoot::SetDirectoryCacheExpireSoonForTesting() {
@@ -705,6 +727,34 @@ void ArcDocumentsProviderRoot::ResolveToContentUrlWithDocumentId(
     return;
   }
   std::move(callback).Run(BuildDocumentUrl(authority_, document_id));
+}
+
+void ArcDocumentsProviderRoot::GetMetadataWithDocumentId(
+    GetMetadataCallback callback,
+    const std::string& document_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (document_id.empty()) {
+    std::move(callback).Run(base::File::FILE_ERROR_NOT_FOUND, {});
+    return;
+  }
+  runner_->GetDocument(
+      authority_, document_id,
+      base::BindOnce(&ArcDocumentsProviderRoot::OnMetadataGotten,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void ArcDocumentsProviderRoot::OnMetadataGotten(GetMetadataCallback callback,
+                                                mojom::DocumentPtr document) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (document.is_null()) {
+    std::move(callback).Run(base::File::FILE_ERROR_NOT_FOUND, {});
+    return;
+  }
+  ExtraFileMetadata metadata;
+  metadata.supports_delete = document->supports_delete;
+  metadata.supports_rename = document->supports_rename;
+  metadata.dir_supports_create = document->dir_supports_create;
+  std::move(callback).Run(base::File::FILE_OK, metadata);
 }
 
 void ArcDocumentsProviderRoot::ResolveToDocumentId(

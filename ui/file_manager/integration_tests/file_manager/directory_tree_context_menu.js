@@ -1029,7 +1029,7 @@
         '#directory-tree [entry-label="DocumentsProvider"]';
 
     // Add a DocumentsProvider folder.
-    await addEntries(['documents_provider'], [ENTRIES.photos]);
+    await addEntries(['documents_provider'], [ENTRIES.readOnlyFolder]);
 
     // Open Files app on local Downloads.
     const appId = await setupAndWaitUntilReady(
@@ -1063,7 +1063,8 @@
 
     // Check the context menu for a folder inside a DocumentsProvider.
     await checkContextMenu(
-        appId, '/DocumentsProvider/photos', folderMenus, false /* rootMenu */);
+        appId, '/DocumentsProvider/Read-Only Folder', folderMenus,
+        false /* rootMenu */);
   };
 
   /**

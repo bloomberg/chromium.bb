@@ -1257,7 +1257,7 @@ void VolumeManager::OnDocumentsProviderRootAdded(
     bool read_only,
     const std::vector<std::string>& mime_types) {
   arc::ArcDocumentsProviderRootMap::GetForArcBrowserContext()->RegisterRoot(
-      authority, document_id, root_id, mime_types);
+      authority, document_id, root_id, read_only, mime_types);
   DoMountEvent(
       chromeos::MOUNT_ERROR_NONE,
       Volume::CreateForDocumentsProvider(authority, root_id, document_id, title,

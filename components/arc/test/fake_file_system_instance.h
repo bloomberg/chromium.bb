@@ -109,6 +109,16 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
     // in file_system.mojom stops using uint64.
     uint64_t last_modified;
 
+    // Flag indicating that a document is deletable.
+    bool supports_delete;
+
+    // Flag indicating that a document can be renamed.
+    bool supports_rename;
+
+    // Flag indicating that a document is a directory that supports creation of
+    // new files within it.
+    bool dir_supports_create;
+
     Document(const std::string& authority,
              const std::string& document_id,
              const std::string& parent_document_id,
@@ -116,6 +126,16 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
              const std::string& mime_type,
              int64_t size,
              uint64_t last_modified);
+    Document(const std::string& authority,
+             const std::string& document_id,
+             const std::string& parent_document_id,
+             const std::string& display_name,
+             const std::string& mime_type,
+             int64_t size,
+             uint64_t last_modified,
+             bool supports_delete,
+             bool supports_rename,
+             bool dir_supports_create);
     Document(const Document& that);
     ~Document();
   };

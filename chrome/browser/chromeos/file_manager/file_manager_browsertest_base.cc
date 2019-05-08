@@ -1355,19 +1355,23 @@ class DocumentsProviderTestVolume : public TestVolume {
       const std::string& name,
       arc::FakeFileSystemInstance* const file_system_instance,
       const std::string& authority,
-      const std::string& root_document_id)
+      const std::string& root_document_id,
+      bool read_only)
       : TestVolume(name),
         file_system_instance_(file_system_instance),
         authority_(authority),
-        root_document_id_(root_document_id) {}
+        root_document_id_(root_document_id),
+        read_only_(read_only) {}
   DocumentsProviderTestVolume(
       arc::FakeFileSystemInstance* const file_system_instance,
       const std::string& authority,
-      const std::string& root_document_id)
+      const std::string& root_document_id,
+      bool read_only)
       : DocumentsProviderTestVolume("DocumentsProvider",
                                     file_system_instance,
                                     authority,
-                                    root_document_id) {}
+                                    root_document_id,
+                                    read_only) {}
   ~DocumentsProviderTestVolume() override = default;
 
   virtual void CreateEntry(const AddEntriesMessage::TestEntryInfo& entry) {
@@ -1375,7 +1379,8 @@ class DocumentsProviderTestVolume : public TestVolume {
     arc::FakeFileSystemInstance::Document document(
         authority_, entry.name_text, root_document_id_, entry.name_text,
         GetMimeType(entry), GetFileSize(entry),
-        entry.last_modified_time.ToJavaTime());
+        entry.last_modified_time.ToJavaTime(), entry.capabilities.can_delete,
+        entry.capabilities.can_rename, entry.capabilities.can_add_children);
     file_system_instance_->AddDocument(document);
   }
 
@@ -1385,14 +1390,15 @@ class DocumentsProviderTestVolume : public TestVolume {
     // Tell VolumeManager that a new DocumentsProvider volume is added.
     VolumeManager::Get(profile)->OnDocumentsProviderRootAdded(
         authority_, root_document_id_, root_document_id_, name(), "", GURL(),
-        true, std::vector<std::string>());
+        read_only_, std::vector<std::string>());
     return true;
   }
 
  protected:
   arc::FakeFileSystemInstance* const file_system_instance_;
-  std::string authority_;
-  std::string root_document_id_;
+  const std::string authority_;
+  const std::string root_document_id_;
+  const bool read_only_;
 
   // Register a root document of this volume.
   void RegisterRoot() {
@@ -1433,7 +1439,8 @@ class MediaViewTestVolume : public DocumentsProviderTestVolume {
       : DocumentsProviderTestVolume(root_document_id,
                                     file_system_instance,
                                     authority,
-                                    root_document_id) {}
+                                    root_document_id,
+                                    true /* read_only */) {}
 
   ~MediaViewTestVolume() override = default;
 
@@ -1626,7 +1633,7 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
         documents_provider_volume_ =
             std::make_unique<DocumentsProviderTestVolume>(
                 arc_file_system_instance_.get(), "com.example.documents",
-                "root");
+                "root", false /* read_only */);
         if (!DoesTestStartWithNoVolumesMounted()) {
           documents_provider_volume_->Mount(profile());
         }

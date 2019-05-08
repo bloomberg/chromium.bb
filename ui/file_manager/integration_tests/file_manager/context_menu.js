@@ -511,3 +511,98 @@ testcase.checkLinuxFilesContextMenu = () => {
   };
   return checkMyFilesRootItemContextMenu('Linux files', commands);
 };
+
+/**
+ * Tests that the specified menu item is in |expectedEnabledState| when the
+ * entry at |path| is selected.
+ *
+ * @param {string} commandId ID of the command in the context menu to check.
+ * @param {string} path Path to the file to open the context menu for.
+ * @param {boolean} expectedEnabledState True if the command should be enabled
+ *     in the context menu, false if not.
+ */
+async function checkDocumentsProviderContextMenu(
+    commandId, path, expectedEnabledState) {
+  const documentsProviderVolumeQuery =
+      '[has-children="true"] [volume-type-icon="documents_provider"]';
+
+  // Open Files app.
+  const appId = await openNewWindow(RootPath.DOWNLOADS);
+
+  // Add files to the DocumentsProvider volume.
+  await addEntries(
+      ['documents_provider'], COMPLEX_DOCUMENTS_PROVIDER_ENTRY_SET);
+
+  // Wait for the DocumentsProvider volume to mount.
+  await remoteCall.waitForElement(appId, documentsProviderVolumeQuery);
+
+  // Click to open the DocumentsProvider volume.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, [documentsProviderVolumeQuery]),
+      'fakeMouseClick failed');
+
+  // Check: the DocumentsProvider files should appear in the file list.
+  const files =
+      TestEntryInfo.getExpectedRows(COMPLEX_DOCUMENTS_PROVIDER_ENTRY_SET);
+  await remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true});
+
+  // Select the file |path|.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil('selectFile', appId, [path]));
+
+  // Wait for the file to be selected.
+  await remoteCall.waitForElement(appId, '.table-row[selected]');
+
+  // Right-click the selected file.
+  chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
+      'fakeMouseRightClick', appId, ['.table-row[selected]']));
+
+  // Wait for the context menu to appear.
+  await remoteCall.waitForElement(appId, '#file-context-menu:not([hidden])');
+
+  // Wait for the command option to appear.
+  let query = '#file-context-menu:not([hidden])';
+  if (expectedEnabledState) {
+    query += ` [command="#${commandId}"]:not([hidden]):not([disabled])`;
+  } else {
+    query += ` [command="#${commandId}"][disabled]:not([hidden])`;
+  }
+  await remoteCall.waitForElement(appId, query);
+}
+
+/**
+ * Tests that the Delete menu item is disabled if the DocumentsProvider file is
+ * not deletable.
+ */
+testcase.checkDeleteDisabledInDocProvider = () => {
+  return checkDocumentsProviderContextMenu(
+      'delete', 'Renamable File.txt', false);
+};
+
+/**
+ * Tests that the Delete menu item is enabled if the DocumentsProvider file is
+ * deletable.
+ */
+testcase.checkDeleteEnabledInDocProvider = () => {
+  return checkDocumentsProviderContextMenu(
+      'delete', 'Deletable File.txt', true);
+};
+
+/**
+ * Tests that the Rename menu item is disabled if the DocumentsProvider file is
+ * not renamable.
+ */
+testcase.checkRenameDisabledInDocProvider = () => {
+  return checkDocumentsProviderContextMenu(
+      'rename', 'Deletable File.txt', false);
+};
+
+/**
+ * Tests that the Rename menu item is enabled if the DocumentsProvider file is
+ * renamable.
+ */
+testcase.checkRenameEnabledInDocProvider = () => {
+  return checkDocumentsProviderContextMenu(
+      'rename', 'Renamable File.txt', true);
+};
