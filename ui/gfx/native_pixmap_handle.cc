@@ -21,27 +21,27 @@
 namespace gfx {
 
 #if defined(OS_LINUX)
-static_assert(NativePixmapPlane::kNoModifier == DRM_FORMAT_MOD_INVALID,
-              "gfx::NativePixmapPlane::kNoModifier should be an alias for"
+static_assert(NativePixmapHandle::kNoModifier == DRM_FORMAT_MOD_INVALID,
+              "gfx::NativePixmapHandle::kNoModifier should be an alias for"
               "DRM_FORMAT_MOD_INVALID");
 #endif
 
-NativePixmapPlane::NativePixmapPlane()
-    : stride(0), offset(0), size(0), modifier(0) {}
+NativePixmapPlane::NativePixmapPlane() : stride(0), offset(0), size(0) {}
 
 NativePixmapPlane::NativePixmapPlane(int stride,
                                      int offset,
-                                     uint64_t size,
+                                     uint64_t size
 #if defined(OS_LINUX)
-                                     base::ScopedFD fd,
+                                     ,
+                                     base::ScopedFD fd
 #elif defined(OS_FUCHSIA)
-                                     zx::vmo vmo,
+                                     ,
+                                     zx::vmo vmo
 #endif
-                                     uint64_t modifier)
+                                     )
     : stride(stride),
       offset(offset),
-      size(size),
-      modifier(modifier)
+      size(size)
 #if defined(OS_LINUX)
       ,
       fd(std::move(fd))
@@ -78,7 +78,7 @@ NativePixmapHandle CloneHandleForIPC(const NativePixmapHandle& handle) {
       return NativePixmapHandle();
     }
     clone.planes.emplace_back(plane.stride, plane.offset, plane.size,
-                              std::move(fd_dup), plane.modifier);
+                              std::move(fd_dup));
 #elif defined(OS_FUCHSIA)
     zx::vmo vmo_dup;
     // VMO may be set to NULL for pixmaps that cannot be mapped.
@@ -90,12 +90,13 @@ NativePixmapHandle CloneHandleForIPC(const NativePixmapHandle& handle) {
       }
     }
     clone.planes.emplace_back(plane.stride, plane.offset, plane.size,
-                              std::move(vmo_dup), plane.modifier);
+                              std::move(vmo_dup));
 #else
 #error Unsupported OS
 #endif
   }
 
+  clone.modifier = handle.modifier;
 #if defined(OS_FUCHSIA)
   clone.buffer_collection_id = handle.buffer_collection_id;
   clone.buffer_index = handle.buffer_index;

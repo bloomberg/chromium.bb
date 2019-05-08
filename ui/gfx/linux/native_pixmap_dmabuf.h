@@ -51,7 +51,7 @@ class GFX_EXPORT NativePixmapDmaBuf : public gfx::NativePixmap {
  private:
   gfx::Size size_;
   gfx::BufferFormat format_;
-  std::vector<gfx::NativePixmapPlane> planes_;
+  gfx::NativePixmapHandle handle_;
 
   DISALLOW_COPY_AND_ASSIGN(NativePixmapDmaBuf);
 };

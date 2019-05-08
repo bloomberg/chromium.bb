@@ -116,7 +116,10 @@ gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle(
   const size_t num_planes = VideoFrame::NumPlanes(video_frame->format());
   const size_t num_buffers = video_frame->layout().buffer_sizes().size();
   DCHECK_EQ(video_frame->layout().planes().size(), num_planes);
-
+  // TODO(crbug.com/914700): Move the modifier variable from
+  // VideoFrameLayout::Plane to VideoFrameLayout.
+  handle.native_pixmap_handle.modifier =
+      video_frame->layout().planes()[0].modifier;
   // TODO(crbug.com/946880): Handles case that num_planes mismatches num_buffers
   for (size_t i = 0; i < num_planes; ++i) {
     const auto& plane = video_frame->layout().planes()[i];
@@ -124,8 +127,7 @@ gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle(
     if (i < num_buffers)
       buffer_size = video_frame->layout().buffer_sizes()[i];
     handle.native_pixmap_handle.planes.emplace_back(
-        plane.stride, plane.offset, buffer_size, std::move(duped_fds[i]),
-        plane.modifier);
+        plane.stride, plane.offset, buffer_size, std::move(duped_fds[i]));
   }
 #else
   NOTREACHED();

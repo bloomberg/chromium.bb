@@ -237,7 +237,7 @@ TEST(VideoFrameLayout, ToString) {
   std::ostringstream ostream;
   ostream << *layout;
   const std::string kNoModifier =
-      std::to_string(gfx::NativePixmapPlane::kNoModifier);
+      std::to_string(gfx::NativePixmapHandle::kNoModifier);
   EXPECT_EQ(ostream.str(),
             "VideoFrameLayout(format: PIXEL_FORMAT_I420, coded_size: 320x180, "
             "planes (stride, offset, modifier): [(384, 0, " +
@@ -258,7 +258,7 @@ TEST(VideoFrameLayout, ToStringOneBuffer) {
   std::ostringstream ostream;
   ostream << *layout;
   const std::string kNoModifier =
-      std::to_string(gfx::NativePixmapPlane::kNoModifier);
+      std::to_string(gfx::NativePixmapHandle::kNoModifier);
   EXPECT_EQ(ostream.str(),
             "VideoFrameLayout(format: PIXEL_FORMAT_NV12, coded_size: 320x180, "
             "planes (stride, offset, modifier): [(384, 100, " +
@@ -273,7 +273,7 @@ TEST(VideoFrameLayout, ToStringNoBufferInfo) {
   std::ostringstream ostream;
   ostream << *layout;
   const std::string kNoModifier =
-      std::to_string(gfx::NativePixmapPlane::kNoModifier);
+      std::to_string(gfx::NativePixmapHandle::kNoModifier);
   EXPECT_EQ(ostream.str(),
             "VideoFrameLayout(format: PIXEL_FORMAT_NV12, coded_size: 320x180, "
             "planes (stride, offset, modifier): [(0, 0, " +

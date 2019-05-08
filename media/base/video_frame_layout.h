@@ -56,7 +56,9 @@ class MEDIA_EXPORT VideoFrameLayout {
     // Modifier of a plane. The modifier is retrieved from GBM library. This can
     // be a different value from kNoModifier only if the VideoFrame is created
     // by using NativePixmap.
-    uint64_t modifier = gfx::NativePixmapPlane::kNoModifier;
+    // TODO(crbug.com/914700): All planes share the modifier. Move the modifier
+    // variable from VideoFrameLayout::Plane to VideoFrameLayout.
+    uint64_t modifier = gfx::NativePixmapHandle::kNoModifier;
   };
 
   // Factory functions.
