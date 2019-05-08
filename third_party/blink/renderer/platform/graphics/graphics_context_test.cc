@@ -42,6 +42,7 @@
 #include "third_party/skia/include/core/SkShader.h"
 
 namespace blink {
+namespace {
 
 #define EXPECT_EQ_RECT(a, b)       \
   EXPECT_EQ(a.x(), b.x());         \
@@ -156,14 +157,10 @@ class GraphicsContextDarkModeTest : public testing::Test {
   }
 
   void DrawColorsToContext() {
-    Color black(0.0f, 0.0f, 0.0f, 1.0f);
-    Color white(1.0f, 1.0f, 1.0f, 1.0f);
-    Color red(1.0f, 0.0f, 0.0f, 1.0f);
-    Color gray(0.5f, 0.5f, 0.5f, 1.0f);
-    context_->FillRect(FloatRect(0, 0, 1, 1), black);
-    context_->FillRect(FloatRect(1, 0, 1, 1), white);
-    context_->FillRect(FloatRect(2, 0, 1, 1), red);
-    context_->FillRect(FloatRect(3, 0, 1, 1), gray);
+    context_->FillRect(FloatRect(0, 0, 1, 1), Color(SK_ColorBLACK));
+    context_->FillRect(FloatRect(1, 0, 1, 1), Color(SK_ColorWHITE));
+    context_->FillRect(FloatRect(2, 0, 1, 1), Color(SK_ColorRED));
+    context_->FillRect(FloatRect(3, 0, 1, 1), Color(SK_ColorGRAY));
     // Capture the result in the bitmap.
     canvas_->drawPicture(context_->EndRecording());
   }
@@ -176,28 +173,16 @@ class GraphicsContextDarkModeTest : public testing::Test {
 
 // This is just a baseline test, compare against the other variants
 // of the test below, where dark mode is enabled.
-// TODO(crbug.com/850782): Reenable this.
-#if defined(OS_ANDROID)
-#define MAYBE_NoDarkMode DISABLED_NoDarkMode
-#else
-#define MAYBE_NoDarkMode NoDarkMode
-#endif
-TEST_F(GraphicsContextDarkModeTest, MAYBE_NoDarkMode) {
+TEST_F(GraphicsContextDarkModeTest, NoDarkMode) {
   DrawColorsToContext();
 
-  EXPECT_EQ(0xff000000, *bitmap_.getAddr32(0, 0));
-  EXPECT_EQ(0xffffffff, *bitmap_.getAddr32(1, 0));
-  EXPECT_EQ(0xffff0000, *bitmap_.getAddr32(2, 0));
-  EXPECT_EQ(0xff808080, *bitmap_.getAddr32(3, 0));
+  EXPECT_EQ(SK_ColorBLACK, bitmap_.getColor(0, 0));
+  EXPECT_EQ(SK_ColorWHITE, bitmap_.getColor(1, 0));
+  EXPECT_EQ(SK_ColorRED, bitmap_.getColor(2, 0));
+  EXPECT_EQ(SK_ColorGRAY, bitmap_.getColor(3, 0));
 }
 
-// TODO(crbug.com/850782): Reenable this.
-#if defined(OS_ANDROID)
-#define MAYBE_DarkModeOff DISABLED_DarkModeOff
-#else
-#define MAYBE_DarkModeOff DarkModeOff
-#endif
-TEST_F(GraphicsContextDarkModeTest, MAYBE_DarkModeOff) {
+TEST_F(GraphicsContextDarkModeTest, DarkModeOff) {
   DarkModeSettings settings;
   settings.mode = DarkMode::kOff;
   settings.grayscale = false;
@@ -206,21 +191,15 @@ TEST_F(GraphicsContextDarkModeTest, MAYBE_DarkModeOff) {
 
   DrawColorsToContext();
 
-  EXPECT_EQ(0xff000000, *bitmap_.getAddr32(0, 0));
-  EXPECT_EQ(0xffffffff, *bitmap_.getAddr32(1, 0));
-  EXPECT_EQ(0xffff0000, *bitmap_.getAddr32(2, 0));
-  EXPECT_EQ(0xff808080, *bitmap_.getAddr32(3, 0));
+  EXPECT_EQ(SK_ColorBLACK, bitmap_.getColor(0, 0));
+  EXPECT_EQ(SK_ColorWHITE, bitmap_.getColor(1, 0));
+  EXPECT_EQ(SK_ColorRED, bitmap_.getColor(2, 0));
+  EXPECT_EQ(SK_ColorGRAY, bitmap_.getColor(3, 0));
 }
 
 // Simple invert for testing. Each color component |c|
 // is replaced with |255 - c| for easy testing.
-// TODO(crbug.com/850782): Reenable this.
-#if defined(OS_ANDROID)
-#define MAYBE_SimpleInvertForTesting DISABLED_SimpleInvertForTesting
-#else
-#define MAYBE_SimpleInvertForTesting SimpleInvertForTesting
-#endif
-TEST_F(GraphicsContextDarkModeTest, MAYBE_SimpleInvertForTesting) {
+TEST_F(GraphicsContextDarkModeTest, SimpleInvertForTesting) {
   DarkModeSettings settings;
   settings.mode = DarkMode::kSimpleInvertForTesting;
   settings.grayscale = false;
@@ -229,20 +208,14 @@ TEST_F(GraphicsContextDarkModeTest, MAYBE_SimpleInvertForTesting) {
 
   DrawColorsToContext();
 
-  EXPECT_EQ(0xffffffff, *bitmap_.getAddr32(0, 0));
-  EXPECT_EQ(0xff000000, *bitmap_.getAddr32(1, 0));
-  EXPECT_EQ(0xff00ffff, *bitmap_.getAddr32(2, 0));
-  EXPECT_EQ(0xff7f7f7f, *bitmap_.getAddr32(3, 0));
+  EXPECT_EQ(SK_ColorWHITE, bitmap_.getColor(0, 0));
+  EXPECT_EQ(SK_ColorBLACK, bitmap_.getColor(1, 0));
+  EXPECT_EQ(SK_ColorCYAN, bitmap_.getColor(2, 0));
+  EXPECT_EQ(0xff777777, bitmap_.getColor(3, 0));
 }
 
 // Invert brightness (with gamma correction).
-// TODO(crbug.com/850782): Reenable this.
-#if defined(OS_ANDROID)
-#define MAYBE_InvertBrightness DISABLED_InvertBrightness
-#else
-#define MAYBE_InvertBrightness InvertBrightness
-#endif
-TEST_F(GraphicsContextDarkModeTest, MAYBE_InvertBrightness) {
+TEST_F(GraphicsContextDarkModeTest, InvertBrightness) {
   DarkModeSettings settings;
   settings.mode = DarkMode::kInvertBrightness;
   settings.grayscale = false;
@@ -251,20 +224,14 @@ TEST_F(GraphicsContextDarkModeTest, MAYBE_InvertBrightness) {
 
   DrawColorsToContext();
 
-  EXPECT_EQ(0xffffffff, *bitmap_.getAddr32(0, 0));
-  EXPECT_EQ(0xff000000, *bitmap_.getAddr32(1, 0));
-  EXPECT_EQ(0xff00ffff, *bitmap_.getAddr32(2, 0));
-  EXPECT_EQ(0xffdddddd, *bitmap_.getAddr32(3, 0));
+  EXPECT_EQ(SK_ColorWHITE, bitmap_.getColor(0, 0));
+  EXPECT_EQ(SK_ColorBLACK, bitmap_.getColor(1, 0));
+  EXPECT_EQ(SK_ColorCYAN, bitmap_.getColor(2, 0));
+  EXPECT_EQ(0xffd8d8d8, bitmap_.getColor(3, 0));
 }
 
 // Invert lightness (in HSL space).
-// TODO(crbug.com/850782): Reenable this.
-#if defined(OS_ANDROID)
-#define MAYBE_InvertLightness DISABLED_InvertLightness
-#else
-#define MAYBE_InvertLightness InvertLightness
-#endif
-TEST_F(GraphicsContextDarkModeTest, MAYBE_InvertLightness) {
+TEST_F(GraphicsContextDarkModeTest, InvertLightness) {
   DarkModeSettings settings;
   settings.mode = DarkMode::kInvertLightness;
   settings.grayscale = false;
@@ -273,10 +240,10 @@ TEST_F(GraphicsContextDarkModeTest, MAYBE_InvertLightness) {
 
   DrawColorsToContext();
 
-  EXPECT_EQ(0xffffffff, *bitmap_.getAddr32(0, 0));
-  EXPECT_EQ(0xff000000, *bitmap_.getAddr32(1, 0));
-  EXPECT_EQ(0xffff0000, *bitmap_.getAddr32(2, 0));
-  EXPECT_EQ(0xffdddddd, *bitmap_.getAddr32(3, 0));
+  EXPECT_EQ(SK_ColorWHITE, bitmap_.getColor(0, 0));
+  EXPECT_EQ(SK_ColorBLACK, bitmap_.getColor(1, 0));
+  EXPECT_EQ(SK_ColorRED, bitmap_.getColor(2, 0));
+  EXPECT_EQ(0xffd8d8d8, bitmap_.getColor(3, 0));
 }
 
 // Invert lightness plus grayscale.
@@ -289,19 +256,13 @@ TEST_F(GraphicsContextDarkModeTest, InvertLightnessPlusGrayscale) {
 
   DrawColorsToContext();
 
-  EXPECT_EQ(0xffffffff, *bitmap_.getAddr32(0, 0));
-  EXPECT_EQ(0xff000000, *bitmap_.getAddr32(1, 0));
-  EXPECT_EQ(0xffe2e2e2, *bitmap_.getAddr32(2, 0));
-  EXPECT_EQ(0xffdddddd, *bitmap_.getAddr32(3, 0));
+  EXPECT_EQ(SK_ColorWHITE, bitmap_.getColor(0, 0));
+  EXPECT_EQ(SK_ColorBLACK, bitmap_.getColor(1, 0));
+  EXPECT_EQ(0xffe2e2e2, bitmap_.getColor(2, 0));
+  EXPECT_EQ(0xffd8d8d8, bitmap_.getColor(3, 0));
 }
 
-// TODO(crbug.com/850782): Reenable this.
-#if defined(OS_ANDROID)
-#define MAYBE_InvertLightnessPlusContrast DISABLED_InvertLightnessPlusContrast
-#else
-#define MAYBE_InvertLightnessPlusContrast InvertLightnessPlusContrast
-#endif
-TEST_F(GraphicsContextDarkModeTest, MAYBE_InvertLightnessPlusContrast) {
+TEST_F(GraphicsContextDarkModeTest, InvertLightnessPlusContrast) {
   DarkModeSettings settings;
   settings.mode = DarkMode::kInvertLightness;
   settings.grayscale = false;
@@ -310,10 +271,11 @@ TEST_F(GraphicsContextDarkModeTest, MAYBE_InvertLightnessPlusContrast) {
 
   DrawColorsToContext();
 
-  EXPECT_EQ(0xffffffff, *bitmap_.getAddr32(0, 0));
-  EXPECT_EQ(0xff000000, *bitmap_.getAddr32(1, 0));
-  EXPECT_EQ(0xffff0000, *bitmap_.getAddr32(2, 0));
-  EXPECT_EQ(0xffeeeeee, *bitmap_.getAddr32(3, 0));
+  EXPECT_EQ(SK_ColorWHITE, bitmap_.getColor(0, 0));
+  EXPECT_EQ(SK_ColorBLACK, bitmap_.getColor(1, 0));
+  EXPECT_EQ(SK_ColorRED, bitmap_.getColor(2, 0));
+  EXPECT_EQ(0xffe7e7e7, bitmap_.getColor(3, 0));
 }
 
+}  // namespace
 }  // namespace blink
