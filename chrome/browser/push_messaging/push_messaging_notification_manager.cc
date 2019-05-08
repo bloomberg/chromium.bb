@@ -101,17 +101,18 @@ PushMessagingNotificationManager::PushMessagingNotificationManager(
     Profile* profile)
     : profile_(profile), budget_database_(profile), weak_factory_(this) {}
 
-PushMessagingNotificationManager::~PushMessagingNotificationManager() {}
+PushMessagingNotificationManager::~PushMessagingNotificationManager() = default;
 
 void PushMessagingNotificationManager::EnforceUserVisibleOnlyRequirements(
     const GURL& origin,
     int64_t service_worker_registration_id,
-    base::OnceClosure message_handled_closure) {
+    EnforceRequirementsCallback message_handled_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if defined(OS_CHROMEOS)
   if (ShouldSkipUserVisibleOnlyRequirements(origin)) {
-    std::move(message_handled_closure).Run();
+    std::move(message_handled_callback)
+        .Run(/* did_show_generic_notification= */ false);
     return;
   }
 #endif
@@ -125,13 +126,13 @@ void PushMessagingNotificationManager::EnforceUserVisibleOnlyRequirements(
       base::BindOnce(
           &PushMessagingNotificationManager::DidGetNotificationsFromDatabase,
           weak_factory_.GetWeakPtr(), origin, service_worker_registration_id,
-          std::move(message_handled_closure)));
+          std::move(message_handled_callback)));
 }
 
 void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
     const GURL& origin,
     int64_t service_worker_registration_id,
-    base::OnceClosure message_handled_closure,
+    EnforceRequirementsCallback message_handled_callback,
     bool success,
     const std::vector<NotificationDatabaseData>& data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -165,8 +166,9 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
   if (notification_count >= 2) {
     for (const auto& notification_database_data : data) {
       if (notification_database_data.notification_data.tag !=
-          kPushMessagingForcedNotificationTag)
+          kPushMessagingForcedNotificationTag) {
         continue;
+      }
 
       PlatformNotificationServiceFactory::GetForProfile(profile_)
           ->ClosePersistentNotification(
@@ -183,7 +185,7 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
         base::BindOnce(&PushMessagingNotificationManager::ProcessSilentPush,
                        weak_factory_.GetWeakPtr(), origin,
                        service_worker_registration_id,
-                       std::move(message_handled_closure)));
+                       std::move(message_handled_callback)));
     return;
   }
 
@@ -198,7 +200,8 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
         blink::mojom::PushUserVisibleStatus::NOT_REQUIRED_BUT_SHOWN);
   }
 
-  std::move(message_handled_closure).Run();
+  std::move(message_handled_callback)
+      .Run(/* did_show_generic_notification= */ false);
 }
 
 bool PushMessagingNotificationManager::IsTabVisible(
@@ -237,7 +240,7 @@ bool PushMessagingNotificationManager::IsTabVisible(
 void PushMessagingNotificationManager::ProcessSilentPush(
     const GURL& origin,
     int64_t service_worker_registration_id,
-    base::OnceClosure message_handled_closure,
+    EnforceRequirementsCallback message_handled_callback,
     bool silent_push_allowed) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -245,7 +248,8 @@ void PushMessagingNotificationManager::ProcessSilentPush(
   if (silent_push_allowed) {
     RecordUserVisibleStatus(
         blink::mojom::PushUserVisibleStatus::REQUIRED_BUT_NOT_SHOWN_USED_GRACE);
-    std::move(message_handled_closure).Run();
+    std::move(message_handled_callback)
+        .Run(/* did_show_generic_notification= */ false);
     return;
   }
 
@@ -271,18 +275,19 @@ void PushMessagingNotificationManager::ProcessSilentPush(
       database_data,
       base::BindOnce(
           &PushMessagingNotificationManager::DidWriteNotificationData,
-          weak_factory_.GetWeakPtr(), std::move(message_handled_closure)));
+          weak_factory_.GetWeakPtr(), std::move(message_handled_callback)));
 }
 
 void PushMessagingNotificationManager::DidWriteNotificationData(
-    base::OnceClosure message_handled_closure,
+    EnforceRequirementsCallback message_handled_callback,
     bool success,
     const std::string& notification_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!success)
     DLOG(ERROR) << "Writing forced notification to database should not fail";
 
-  std::move(message_handled_closure).Run();
+  std::move(message_handled_callback)
+      .Run(/* did_show_generic_notification= */ true);
 }
 
 #if defined(OS_CHROMEOS)

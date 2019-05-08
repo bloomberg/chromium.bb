@@ -300,11 +300,12 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
 
   RecordDeliveryStatus(status);
 
-  base::Closure completion_closure =
-      base::Bind(&PushMessagingServiceImpl::DidHandleMessage,
-                 weak_factory_.GetWeakPtr(), app_id, message_handled_closure);
-  // The completion_closure should run by default at the end of this function,
-  // unless it is explicitly passed to another function.
+  base::RepeatingClosure completion_closure = base::BindRepeating(
+      &PushMessagingServiceImpl::DidHandleMessage, weak_factory_.GetWeakPtr(),
+      app_id, message_handled_closure,
+      false /* did_show_generic_notification */);
+  // The |completion_closure| should run by default at the end of this function,
+  // unless it is explicitly passed to another function or disabled.
   base::ScopedClosureRunner completion_closure_runner(completion_closure);
 
   // A reason to automatically unsubscribe. UNKNOWN means do not unsubscribe.
@@ -330,7 +331,11 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
               switches::kAllowSilentPush)) {
         notification_manager_.EnforceUserVisibleOnlyRequirements(
             requesting_origin, service_worker_registration_id,
-            completion_closure_runner.Release());
+            base::BindOnce(&PushMessagingServiceImpl::DidHandleMessage,
+                           weak_factory_.GetWeakPtr(), app_id,
+                           message_handled_closure));
+        // Disable the default completion closure.
+        completion_closure_runner.ReplaceClosure(base::DoNothing());
       }
       break;
     case blink::mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR:
@@ -367,7 +372,8 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
 
 void PushMessagingServiceImpl::DidHandleMessage(
     const std::string& app_id,
-    const base::Closure& message_handled_closure) {
+    const base::RepeatingClosure& message_handled_closure,
+    bool did_show_generic_notification) {
   auto in_flight_iterator = in_flight_message_deliveries_.find(app_id);
   DCHECK(in_flight_iterator != in_flight_message_deliveries_.end());
 

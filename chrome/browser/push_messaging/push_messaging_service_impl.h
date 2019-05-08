@@ -153,7 +153,8 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
                               blink::mojom::PushDeliveryStatus status);
 
   void DidHandleMessage(const std::string& app_id,
-                        const base::Closure& completion_closure);
+                        const base::RepeatingClosure& completion_closure,
+                        bool did_show_generic_notification);
 
   // Subscribe methods ---------------------------------------------------------
 
