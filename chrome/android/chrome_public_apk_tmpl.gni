@@ -252,15 +252,10 @@ template("chrome_public_common_apk_or_module_tmpl") {
       deps += [ ":$_unwind_asset" ]
     }
 
-    deps += [ "//chrome/android:chrome_all_java" ]
-
-    # Features that are shipped in feature modules for bundles but should still
-    # be available in the Chrome APK.
-    if (_target_type == "android_apk" && enable_vr) {
-      deps += [ "//chrome/android/features/vr:java" ]
-    }
-
-    deps += [ "//chrome/android/features/tab_ui:java" ]
+    deps += [
+      "//chrome/android:chrome_all_java",
+      "//chrome/android/features/tab_ui:java",
+    ]
 
     if (!defined(version_code)) {
       if (_is_trichrome) {
