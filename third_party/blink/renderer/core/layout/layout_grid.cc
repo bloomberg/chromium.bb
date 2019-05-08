@@ -328,6 +328,9 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
     LayoutUnit track_based_logical_height =
         track_sizing_algorithm_.ComputeTrackBasedSize() +
         BorderAndPaddingLogicalHeight();
+    if (!CachedHasDefiniteLogicalHeight() && ShouldApplySizeContainment()) {
+      ComputeTrackSizesForDefiniteSize(kForRows, track_based_logical_height);
+    }
 
     // TODO(rego): We shouldn't need this once crbug.com/906530 is fixed.
     // Right now we need this because
@@ -501,10 +504,6 @@ void LayoutGrid::ComputeIntrinsicLogicalWidths(
   min_logical_width = scrollbar_width;
   max_logical_width = scrollbar_width;
 
-  // TODO(crbug.com/953915): Handle display-locked grid sizing.
-  if (ShouldApplySizeContainment())
-    return;
-
   std::unique_ptr<Grid> grid = Grid::Create(this);
   GridTrackSizingAlgorithm algorithm(this, *grid);
   PlaceItemsOnGrid(algorithm, base::nullopt);
@@ -522,6 +521,7 @@ void LayoutGrid::ComputeIntrinsicLogicalWidths(
     }
   }
 
+  // TODO(crbug.com/953915): Handle display-locked grid sizing.
   ComputeTrackSizesForIndefiniteSize(algorithm, kForColumns);
 
   size_t number_of_tracks = algorithm.Tracks(kForColumns).size();
@@ -565,6 +565,12 @@ size_t LayoutGrid::ComputeAutoRepeatTracksCount(
     base::Optional<LayoutUnit> available_size) const {
   DCHECK(!available_size || available_size.value() != -1);
   bool is_row_axis = direction == kForColumns;
+  if (ShouldApplySizeContainment() &&
+      ((is_row_axis &&
+        StyleRef().GridAutoRepeatColumnsType() == AutoRepeatType::kAutoFit) ||
+       (!is_row_axis &&
+        StyleRef().GridAutoRepeatRowsType() == AutoRepeatType::kAutoFit)))
+    return 0;
   const auto& auto_repeat_tracks = is_row_axis
                                        ? StyleRef().GridAutoRepeatColumns()
                                        : StyleRef().GridAutoRepeatRows();

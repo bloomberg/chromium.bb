@@ -3364,7 +3364,7 @@ void LayoutBox::ComputeLogicalHeight(
   if (DisplayLockInducesSizeContainment()) {
     height = BorderAndPaddingLogicalHeight() + ScrollbarLogicalHeight() +
              GetDisplayLockContext()->GetLockedContentLogicalHeight();
-  } else if (ShouldApplySizeContainment()) {
+  } else if (ShouldApplySizeContainment() && !IsLayoutGrid()) {
     height = BorderAndPaddingLogicalHeight() + ScrollbarLogicalHeight();
   } else {
     height = LogicalHeight();
@@ -3561,7 +3561,7 @@ LayoutUnit LayoutBox::ComputeIntrinsicLogicalContentHeightUsing(
   if (logical_height_length.IsMinContent() ||
       logical_height_length.IsMaxContent() ||
       logical_height_length.IsFitContent()) {
-    if (IsAtomicInlineLevel())
+    if (IsAtomicInlineLevel() && !IsLayoutGrid())
       return IntrinsicSize().Height();
     return intrinsic_content_height;
   }
