@@ -117,10 +117,6 @@ cr.define('downloads', function() {
 
     /** @private */
     hasDownloadsChanged_: function() {
-      if (loadTimeData.getBoolean('allowDeletingHistory')) {
-        this.$.toolbar.downloadsShowing = this.hasDownloads_;
-      }
-
       if (this.hasDownloads_) {
         this.$.downloadsList.fire('iron-resize');
       }
@@ -156,6 +152,12 @@ cr.define('downloads', function() {
     /** @private */
     itemsChanged_: function() {
       this.hasDownloads_ = this.items_.length > 0;
+      this.$.toolbar.hasClearableDownloads =
+          loadTimeData.getBoolean('allowDeletingHistory') &&
+          this.items_.some(
+              ({state}) => state != downloads.States.DANGEROUS &&
+                  state != downloads.States.IN_PROGRESS &&
+                  state != downloads.States.PAUSED);
 
       if (this.inSearchMode_) {
         Polymer.IronA11yAnnouncer.requestAvailability();

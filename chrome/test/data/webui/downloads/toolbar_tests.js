@@ -35,4 +35,13 @@ suite('toolbar tests', function() {
     toolbar.$.toolbar.fire('search-changed', 'a ');  // Same term plus a space.
     assertFalse(toolbar.spinnerActive);
   });
+
+  test('clear all shown/hidden', () => {
+    const clearAll = toolbar.$$('#moreActionsMenu button');
+    assertTrue(clearAll.hidden);
+    toolbar.hasClearableDownloads = true;
+    assertFalse(clearAll.hidden);
+    toolbar.$.toolbar.getSearchField().setValue('test');
+    assertTrue(clearAll.hidden);
+  });
 });
