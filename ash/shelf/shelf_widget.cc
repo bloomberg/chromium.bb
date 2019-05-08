@@ -45,6 +45,9 @@ namespace {
 
 constexpr int kShelfRoundedCornerRadius = 28;
 constexpr int kShelfBlurRadius = 30;
+// The maximum size of the opaque layer during an "overshoot" (drag away from
+// the screen edge).
+constexpr int kShelfMaxOvershootHeight = 32;
 constexpr float kShelfBlurQuality = 0.33f;
 
 // Return the first or last focusable child of |root|.
@@ -226,7 +229,11 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
   // To achieve this, we extend the layer in the same direction where the shelf
   // is aligned (downwards for a bottom shelf, etc.).
   const int radius = kShelfRoundedCornerRadius;
-  const int safety_margin = 3 * radius;
+  // With shader rounded corners, we can easily round only 2 corners out of
+  // 4 which means we don't need as much extra shelf height.
+  const int safety_margin = ash::features::ShouldUseShaderRoundedCorner()
+                                ? kShelfMaxOvershootHeight
+                                : 3 * radius;
   opaque_background_bounds.Inset(
       -shelf->SelectValueForShelfAlignment(0, safety_margin, 0), 0,
       -shelf->SelectValueForShelfAlignment(0, 0, safety_margin),
