@@ -91,7 +91,7 @@ void PaintTimingDetector::NotifyBackgroundImagePaint(
   if (!object->HasNonZeroEffectiveOpacity())
     return;
   detector.GetImagePaintTimingDetector()->RecordBackgroundImage(
-      *object, image->Size(), cached_image, current_paint_chunk_properties);
+      *object, image->Size(), *cached_image, current_paint_chunk_properties);
 }
 
 // static
@@ -108,7 +108,7 @@ void PaintTimingDetector::NotifyImagePaint(
   PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
   if (detector.GetImagePaintTimingDetector()) {
     detector.GetImagePaintTimingDetector()->RecordImage(
-        object, intrinsic_size, cached_image, current_paint_chunk_properties);
+        object, intrinsic_size, *cached_image, current_paint_chunk_properties);
   }
 }
 

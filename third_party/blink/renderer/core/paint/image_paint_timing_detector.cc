@@ -79,9 +79,11 @@ void ImagePaintTimingDetector::PopulateTraceValue(
     const ImageRecord& first_image_paint,
     unsigned candidate_index) const {
   value.SetInteger("DOMNodeId", static_cast<int>(first_image_paint.node_id));
-#ifndef NDEBUG
-  value.SetString("imageUrl", first_image_paint.image_url);
-#endif
+  // The cached_image could have been deleted when this is called.
+  value.SetString("imageUrl",
+                  first_image_paint.cached_image
+                      ? String(first_image_paint.cached_image->Url())
+                      : "(deleted)");
   value.SetInteger("size", static_cast<int>(first_image_paint.first_size));
   value.SetInteger("candidateIndex", candidate_index);
   value.SetBoolean("isMainFrame", frame_view_->GetFrame().IsMainFrame());
@@ -90,14 +92,13 @@ void ImagePaintTimingDetector::PopulateTraceValue(
 }
 
 void ImagePaintTimingDetector::OnLargestImagePaintDetected(
-    ImageRecord* largest_image_record) {
-  DCHECK(largest_image_record);
-  DCHECK(!largest_image_record->paint_time.is_null());
-  largest_image_paint_ = largest_image_record;
+    ImageRecord& largest_image_record) {
+  DCHECK(!largest_image_record.paint_time.is_null());
+  largest_image_paint_ = &largest_image_record;
   auto value = std::make_unique<TracedValue>();
-  PopulateTraceValue(*value, *largest_image_record, ++count_candidates_);
+  PopulateTraceValue(*value, largest_image_record, ++count_candidates_);
   TRACE_EVENT_MARK_WITH_TIMESTAMP2("loading", "LargestImagePaint::Candidate",
-                                   largest_image_record->paint_time, "data",
+                                   largest_image_record.paint_time, "data",
                                    std::move(value), "frame",
                                    ToTraceValue(&frame_view_->GetFrame()));
 }
@@ -120,7 +121,7 @@ void ImagePaintTimingDetector::UpdateCandidate() {
     frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
   } else if (largest_image_record->loaded &&
              !largest_image_record->paint_time.is_null()) {
-    OnLargestImagePaintDetected(largest_image_record);
+    OnLargestImagePaintDetected(*largest_image_record);
     frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
   }
   if (largest_image_paint_) {
@@ -221,11 +222,8 @@ void ImageRecordsManager::AssignPaintTimeToRegisteredQueuedNodes(
 void ImagePaintTimingDetector::RecordBackgroundImage(
     const LayoutObject& object,
     const IntSize& intrinsic_size,
-    const ImageResourceContent* cached_image,
+    const ImageResourceContent& cached_image,
     const PropertyTreeState& current_paint_chunk_properties) {
-  DCHECK(cached_image);
-  if (!cached_image)
-    return;
   Node* node = object.GetNode();
   if (!node)
     return;
@@ -235,12 +233,13 @@ void ImagePaintTimingDetector::RecordBackgroundImage(
     return;
 
   records_manager_.SetNodeReattachedIfNeeded(node_id);
-  BackgroundImageId background_image_id = std::make_pair(node_id, cached_image);
+  BackgroundImageId background_image_id =
+      std::make_pair(node_id, &cached_image);
   bool is_recored_visible_node =
       records_manager_.IsRecordedVisibleNode(background_image_id);
   if (is_recored_visible_node &&
       !records_manager_.WasVisibleNodeLoaded(background_image_id) &&
-      cached_image->IsLoaded()) {
+      cached_image.IsLoaded()) {
     records_manager_.OnImageLoaded(background_image_id, frame_index_);
     return;
   }
@@ -265,9 +264,8 @@ void ImagePaintTimingDetector::RecordBackgroundImage(
     // are deemed as invisible.
     records_manager_.RecordInvisibleNode(node_id);
   } else {
-    records_manager_.RecordVisibleNode(background_image_id, rect_size,
-                                       cached_image->Url());
-    if (cached_image->IsLoaded())
+    records_manager_.RecordVisibleNode(background_image_id, rect_size);
+    if (cached_image.IsLoaded())
       records_manager_.OnImageLoaded(background_image_id, frame_index_);
   }
 
@@ -278,7 +276,7 @@ void ImagePaintTimingDetector::RecordBackgroundImage(
 void ImagePaintTimingDetector::RecordImage(
     const LayoutObject& object,
     const IntSize& intrinsic_size,
-    const ImageResourceContent* cached_image,
+    const ImageResourceContent& cached_image,
     const PropertyTreeState& current_paint_chunk_properties) {
   // TODO(crbug.com/933479): Use LayoutObject::GeneratingNode() to include
   // anonymous objects' rect.
@@ -294,7 +292,7 @@ void ImagePaintTimingDetector::RecordImage(
 
   records_manager_.SetNodeReattachedIfNeeded(node_id);
 
-  bool is_loaded = cached_image->IsLoaded();
+  bool is_loaded = cached_image.IsLoaded();
   bool is_recored_visible_node =
       records_manager_.IsRecordedVisibleNode(node_id);
   if (is_recored_visible_node &&
@@ -321,7 +319,7 @@ void ImagePaintTimingDetector::RecordImage(
   if (rect_size == 0) {
     records_manager_.RecordInvisibleNode(node_id);
   } else {
-    records_manager_.RecordVisibleNode(node_id, rect_size, cached_image->Url());
+    records_manager_.RecordVisibleNode(node_id, rect_size);
     if (is_loaded)
       records_manager_.OnImageLoaded(node_id, frame_index_);
   }
@@ -423,20 +421,18 @@ void ImageRecordsManager::RecordInvisibleNode(const DOMNodeId& node_id) {
 }
 
 void ImageRecordsManager::RecordVisibleNode(const DOMNodeId& node_id,
-                                            const uint64_t& visual_size,
-                                            const String& url) {
+                                            const uint64_t& visual_size) {
   std::unique_ptr<ImageRecord> record =
-      CreateImageRecord(node_id, nullptr, visual_size, url);
+      CreateImageRecord(node_id, nullptr, visual_size);
   size_ordered_set_.insert(record->AsWeakPtr());
   visible_node_map_.insert(node_id, std::move(record));
 }
 
 void ImageRecordsManager::RecordVisibleNode(
     const BackgroundImageId& background_image_id,
-    const uint64_t& visual_size,
-    const String& url) {
+    const uint64_t& visual_size) {
   std::unique_ptr<ImageRecord> record = CreateImageRecord(
-      background_image_id.first, background_image_id.second, visual_size, url);
+      background_image_id.first, background_image_id.second, visual_size);
   size_ordered_set_.insert(record->AsWeakPtr());
   visible_background_image_map_.insert(background_image_id, std::move(record));
 }
@@ -444,17 +440,14 @@ void ImageRecordsManager::RecordVisibleNode(
 std::unique_ptr<ImageRecord> ImageRecordsManager::CreateImageRecord(
     const DOMNodeId& node_id,
     const ImageResourceContent* cached_image,
-    const uint64_t& visual_size,
-    const String& url) {
+    const uint64_t& visual_size) {
   DCHECK(!RecordedTooManyNodes());
   DCHECK_GT(visual_size, 0u);
   std::unique_ptr<ImageRecord> record = std::make_unique<ImageRecord>();
   record->record_id = max_record_id_++;
   record->node_id = node_id;
   record->first_size = visual_size;
-#ifndef NDEBUG
-  record->image_url = url;
-#endif
+  record->cached_image = cached_image;
   return record;
 }
 
