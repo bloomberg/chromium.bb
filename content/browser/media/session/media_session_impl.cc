@@ -14,6 +14,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "components/url_formatter/elide_url.h"
+#include "content/app/strings/grit/content_strings.h"
 #include "content/browser/media/session/audio_focus_delegate.h"
 #include "content/browser/media/session/media_session_controller.h"
 #include "content/browser/media/session/media_session_player_observer.h"
@@ -23,6 +24,7 @@
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_client.h"
 #include "media/base/media_content_type.h"
 #include "services/media_session/public/cpp/media_image_manager.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
@@ -1156,9 +1158,15 @@ void MediaSessionImpl::RebuildAndNotifyMetadataChanged() {
   if (metadata.title.empty())
     metadata.title = SanitizeMediaTitle(web_contents()->GetTitle());
 
+  const ContentClient* content_client = content::GetContentClient();
+  const GURL& url = web_contents()->GetLastCommittedURL();
+
+  // If the url is a file then we should display a placeholder.
   base::string16 formatted_origin =
-      url_formatter::FormatOriginForSecurityDisplay(
-          url::Origin::Create(web_contents()->GetLastCommittedURL()));
+      url.SchemeIsFile()
+          ? content_client->GetLocalizedString(IDS_MEDIA_SESSION_FILE_SOURCE)
+          : url_formatter::FormatOriginForSecurityDisplay(
+                url::Origin::Create(url));
 
   if (metadata.artist.empty()) {
     metadata.artist = formatted_origin;

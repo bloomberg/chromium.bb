@@ -2423,3 +2423,14 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest, Async_Unducking_Suspended) {
   ResolveAudioFocusSuccess();
   EXPECT_TRUE(IsDucking());
 }
+
+IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest, MetadataWhenFileUrlScheme) {
+  NavigateToURL(shell(), GURL("file:///"));
+
+  media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
+
+  media_session::MediaMetadata expected_metadata;
+  expected_metadata.title = shell()->web_contents()->GetTitle();
+  expected_metadata.artist = base::ASCIIToUTF16("Local File");
+  observer.WaitForExpectedMetadata(expected_metadata);
+}
