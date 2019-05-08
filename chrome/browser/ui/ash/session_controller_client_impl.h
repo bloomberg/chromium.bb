@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "ash/public/cpp/session/session_controller_client.h"
-#include "ash/public/interfaces/session_controller.mojom.h"
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -118,9 +117,6 @@ class SessionControllerClientImpl
   static void DoSwitchActiveUser(const AccountId& account_id);
   static void DoCycleActiveUser(ash::CycleUserDirection direction);
 
-  // Flushes the mojo pipe to ash.
-  static void FlushForTesting();
-
  private:
   FRIEND_TEST_ALL_PREFIXES(SessionControllerClientImplTest, CyclingThreeUsers);
   FRIEND_TEST_ALL_PREFIXES(SessionControllerClientImplTest, SendUserSession);
@@ -136,9 +132,6 @@ class SessionControllerClientImpl
 
   // Sends the user session info for a given profile.
   void SendUserSessionForProfile(Profile* profile);
-
-  // Connects to the |session_controller_| interface.
-  void ConnectToSessionController();
 
   // Sends session info to ash.
   void SendSessionInfoIfChanged();
@@ -158,9 +151,8 @@ class SessionControllerClientImpl
   // policy.
   void SendSessionLengthLimit();
 
-  // SessionController interface in ash. Holding the interface pointer keeps the
-  // pipe alive to receive mojo return values.
-  ash::mojom::SessionControllerPtr session_controller_;
+  // SessionController instance in ash.
+  ash::SessionController* session_controller_ = nullptr;
 
   // Whether the primary user session info is sent to ash.
   bool primary_user_session_sent_ = false;

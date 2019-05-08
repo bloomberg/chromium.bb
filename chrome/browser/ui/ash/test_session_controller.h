@@ -9,20 +9,11 @@
 #include <vector>
 
 #include "ash/public/cpp/session/session_controller.h"
-#include "ash/public/interfaces/session_controller.mojom.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
-// Test implementation of ash's mojo SessionController interface.
-//
-// Registers itself to ServiceManager on construction and deregisters
-// on destruction.
-//
-// Note: A ServiceManagerConnection must be initialized before constructing this
-// object. Consider using content::TestServiceManagerContext on your tests.
-class TestSessionController : public ash::SessionController,
-                              public ash::mojom::SessionController {
+// Test implementation of ash's SessionController interface.
+class TestSessionController : public ash::SessionController {
  public:
   TestSessionController();
   ~TestSessionController() override;
@@ -55,14 +46,6 @@ class TestSessionController : public ash::SessionController,
   void UpdateUserSession(const ash::UserSession& user_session) override;
   void SetUserSessionOrder(
       const std::vector<uint32_t>& user_session_order) override;
-  void AddSessionActivationObserverForAccountId(
-      const AccountId& account_id,
-      ash::SessionActivationObserver* observer) override;
-  void RemoveSessionActivationObserverForAccountId(
-      const AccountId& account_id,
-      ash::SessionActivationObserver* observer) override;
-
-  // ash::mojom::SessionController:
   void PrepareForLock(PrepareForLockCallback callback) override;
   void StartLock(StartLockCallback callback) override;
   void NotifyChromeLockAnimationsComplete() override;
@@ -77,17 +60,20 @@ class TestSessionController : public ash::SessionController,
       ShowTeleportWarningDialogCallback callback) override;
   void ShowMultiprofilesSessionAbortedDialog(
       const std::string& user_email) override;
+  void AddSessionActivationObserverForAccountId(
+      const AccountId& account_id,
+      ash::SessionActivationObserver* observer) override;
+  void RemoveSessionActivationObserverForAccountId(
+      const AccountId& account_id,
+      ash::SessionActivationObserver* observer) override;
 
  private:
-  void Bind(mojo::ScopedMessagePipeHandle handle);
-
   base::Optional<ash::SessionInfo> last_session_info_;
   base::Optional<ash::UserSession> last_user_session_;
   base::TimeDelta last_session_length_limit_;
   base::TimeTicks last_session_start_time_;
   int update_user_session_count_ = 0;
   int lock_animation_complete_call_count_ = 0;
-  mojo::Binding<ash::mojom::SessionController> binding_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestSessionController);
 };

@@ -40,7 +40,6 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_test_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
-#include "chrome/browser/ui/ash/session_controller_client_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -187,9 +186,6 @@ class LauncherPlatformAppBrowserTest
   ~LauncherPlatformAppBrowserTest() override {}
 
   void SetUpOnMainThread() override {
-    // Ensure ash starts the session and creates the shelf and controller.
-    SessionControllerClientImpl::FlushForTesting();
-
     controller_ = ChromeLauncherController::instance();
     ASSERT_TRUE(controller_);
     extensions::PlatformAppBrowserTest::SetUpOnMainThread();
@@ -237,9 +233,6 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
   ash::ShelfModel* shelf_model() { return controller_->shelf_model(); }
 
   void SetUpOnMainThread() override {
-    // Ensure ash starts the session and creates the shelf and controller.
-    SessionControllerClientImpl::FlushForTesting();
-
     controller_ = ChromeLauncherController::instance();
     ASSERT_TRUE(controller_);
     extensions::ExtensionBrowserTest::SetUpOnMainThread();

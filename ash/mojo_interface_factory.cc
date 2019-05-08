@@ -34,7 +34,6 @@
 #include "ash/note_taking_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -217,11 +216,6 @@ void BindProcessCreationTimeRecorderOnMainThread(
   Shell::Get()->time_to_first_present_recorder()->Bind(std::move(request));
 }
 
-void BindSessionControllerRequestOnMainThread(
-    mojom::SessionControllerRequest request) {
-  Shell::Get()->session_controller()->BindRequest(std::move(request));
-}
-
 void BindShelfRequestOnMainThread(mojom::ShelfControllerRequest request) {
   Shell::Get()->shelf_controller()->BindRequest(std::move(request));
 }
@@ -366,9 +360,6 @@ void RegisterInterfaces(
       main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindProcessCreationTimeRecorderOnMainThread),
-      main_thread_task_runner);
-  registry->AddInterface(
-      base::BindRepeating(&BindSessionControllerRequestOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(base::BindRepeating(&BindShelfRequestOnMainThread),
                          main_thread_task_runner);

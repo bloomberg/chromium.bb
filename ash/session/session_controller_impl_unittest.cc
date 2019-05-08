@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "ash/login_status.h"
-#include "ash/public/interfaces/session_controller.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"

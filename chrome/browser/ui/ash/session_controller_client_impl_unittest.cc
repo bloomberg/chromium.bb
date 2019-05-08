@@ -237,31 +237,24 @@ TEST_F(SessionControllerClientImplTest, CyclingThreeUsers) {
   UserAddedToSession(second_user);
   UserAddedToSession(third_user);
   user_manager()->SwitchActiveUser(first_user);
-  SessionControllerClientImpl::FlushForTesting();
 
   // Cycle forward.
   const ash::CycleUserDirection forward = ash::CycleUserDirection::NEXT;
   EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
   SessionControllerClientImpl::DoCycleActiveUser(forward);
-  SessionControllerClientImpl::FlushForTesting();
   EXPECT_EQ("seconduser@test.com", GetActiveUserEmail());
   SessionControllerClientImpl::DoCycleActiveUser(forward);
-  SessionControllerClientImpl::FlushForTesting();
   EXPECT_EQ("thirduser@test.com", GetActiveUserEmail());
   SessionControllerClientImpl::DoCycleActiveUser(forward);
-  SessionControllerClientImpl::FlushForTesting();
   EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
 
   // Cycle backwards.
   const ash::CycleUserDirection backward = ash::CycleUserDirection::PREVIOUS;
   SessionControllerClientImpl::DoCycleActiveUser(backward);
-  SessionControllerClientImpl::FlushForTesting();
   EXPECT_EQ("thirduser@test.com", GetActiveUserEmail());
   SessionControllerClientImpl::DoCycleActiveUser(backward);
-  SessionControllerClientImpl::FlushForTesting();
   EXPECT_EQ("seconduser@test.com", GetActiveUserEmail());
   SessionControllerClientImpl::DoCycleActiveUser(backward);
-  SessionControllerClientImpl::FlushForTesting();
   EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
 }
 
@@ -406,7 +399,6 @@ TEST_F(SessionControllerClientImplTest, SendUserSession) {
   SessionControllerClientImpl client;
   TestSessionController session_controller;
   client.Init();
-  SessionControllerClientImpl::FlushForTesting();
 
   // No user session sent yet.
   EXPECT_EQ(0, session_controller.update_user_session_count());
@@ -422,7 +414,6 @@ TEST_F(SessionControllerClientImplTest, SendUserSession) {
           account_id.GetUserEmail()),
       false);
   session_manager_.SetSessionState(SessionState::ACTIVE);
-  SessionControllerClientImpl::FlushForTesting();
 
   // User session was sent.
   EXPECT_EQ(1, session_controller.update_user_session_count());
@@ -433,7 +424,6 @@ TEST_F(SessionControllerClientImplTest, SendUserSession) {
 
   // Simulate a request for an update where nothing changed.
   client.SendUserSession(*user_manager()->GetLoggedInUsers()[0]);
-  SessionControllerClientImpl::FlushForTesting();
 
   // Session was not updated because nothing changed.
   EXPECT_EQ(1, session_controller.update_user_session_count());
@@ -444,7 +434,6 @@ TEST_F(SessionControllerClientImplTest, SupervisedUser) {
   SessionControllerClientImpl client;
   TestSessionController session_controller;
   client.Init();
-  SessionControllerClientImpl::FlushForTesting();
 
   // Simulate the login screen. No user session yet.
   session_manager_.SetSessionState(SessionState::LOGIN_PRIMARY);
@@ -464,7 +453,6 @@ TEST_F(SessionControllerClientImplTest, SupervisedUser) {
           "child@test.com"),
       false);
   session_manager_.SetSessionState(SessionState::ACTIVE);
-  SessionControllerClientImpl::FlushForTesting();
 
   // The session controller received session info and user session.
   EXPECT_LT(0u, session_controller.last_user_session()->session_id);
@@ -494,7 +482,6 @@ TEST_F(SessionControllerClientImplTest, SupervisedUser) {
   // Simulate an update to the custodian information.
   prefs->SetString(prefs::kSupervisedUserCustodianEmail, "parent3@test.com");
   client.OnCustodianInfoChanged();
-  SessionControllerClientImpl::FlushForTesting();
 
   // The updated custodian was sent over the mojo interface.
   EXPECT_EQ("parent3@test.com",
@@ -513,12 +500,10 @@ TEST_F(SessionControllerClientImplTest, DeviceOwner) {
       AccountId::FromUserEmailGaiaId("user@test.com", "2222222222");
   user_manager()->SetOwnerId(owner);
   UserAddedToSession(owner);
-  SessionControllerClientImpl::FlushForTesting();
   EXPECT_TRUE(
       session_controller.last_user_session()->user_info.is_device_owner);
 
   UserAddedToSession(normal_user);
-  SessionControllerClientImpl::FlushForTesting();
   EXPECT_FALSE(
       session_controller.last_user_session()->user_info.is_device_owner);
 }
@@ -532,13 +517,11 @@ TEST_F(SessionControllerClientImplTest, UserBecomesDeviceOwner) {
   const AccountId owner =
       AccountId::FromUserEmailGaiaId("owner@test.com", "1111111111");
   UserAddedToSession(owner);
-  SessionControllerClientImpl::FlushForTesting();
   // The device owner is empty, the current session shouldn't be the owner.
   EXPECT_FALSE(
       session_controller.last_user_session()->user_info.is_device_owner);
 
   user_manager()->SetOwnerId(owner);
-  SessionControllerClientImpl::FlushForTesting();
   EXPECT_TRUE(
       session_controller.last_user_session()->user_info.is_device_owner);
 }
@@ -548,7 +531,6 @@ TEST_F(SessionControllerClientImplTest, UserPrefsChange) {
   SessionControllerClientImpl client;
   TestSessionController session_controller;
   client.Init();
-  SessionControllerClientImpl::FlushForTesting();
 
   // Simulate login.
   const AccountId account_id(
@@ -560,7 +542,6 @@ TEST_F(SessionControllerClientImplTest, UserPrefsChange) {
           account_id.GetUserEmail()),
       false);
   session_manager_.SetSessionState(SessionState::ACTIVE);
-  SessionControllerClientImpl::FlushForTesting();
 
   // Simulate the notification that the profile is ready.
   TestingProfile* const user_profile = CreateTestingProfile(user);
@@ -570,17 +551,13 @@ TEST_F(SessionControllerClientImplTest, UserPrefsChange) {
   PrefService* const user_prefs = user_profile->GetPrefs();
 
   user_prefs->SetBoolean(ash::prefs::kAllowScreenLock, true);
-  SessionControllerClientImpl::FlushForTesting();
   EXPECT_TRUE(session_controller.last_session_info()->can_lock_screen);
   user_prefs->SetBoolean(ash::prefs::kAllowScreenLock, false);
-  SessionControllerClientImpl::FlushForTesting();
   EXPECT_FALSE(session_controller.last_session_info()->can_lock_screen);
   user_prefs->SetBoolean(ash::prefs::kEnableAutoScreenLock, true);
-  SessionControllerClientImpl::FlushForTesting();
   EXPECT_TRUE(
       session_controller.last_session_info()->should_lock_screen_automatically);
   user_prefs->SetBoolean(ash::prefs::kEnableAutoScreenLock, false);
-  SessionControllerClientImpl::FlushForTesting();
   EXPECT_FALSE(
       session_controller.last_session_info()->should_lock_screen_automatically);
 }
@@ -590,7 +567,6 @@ TEST_F(SessionControllerClientImplTest, SessionLengthLimit) {
   SessionControllerClientImpl client;
   TestSessionController session_controller;
   client.Init();
-  SessionControllerClientImpl::FlushForTesting();
 
   // By default there is no session length limit.
   EXPECT_TRUE(session_controller.last_session_length_limit().is_zero());
@@ -603,7 +579,6 @@ TEST_F(SessionControllerClientImplTest, SessionLengthLimit) {
   local_state->SetInteger(prefs::kSessionLengthLimit,
                           length_limit.InMilliseconds());
   local_state->SetInt64(prefs::kSessionStartTime, start_time.ToInternalValue());
-  SessionControllerClientImpl::FlushForTesting();
   EXPECT_EQ(length_limit, session_controller.last_session_length_limit());
   EXPECT_EQ(start_time, session_controller.last_session_start_time());
 }

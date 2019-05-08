@@ -6,31 +6,8 @@
 
 #include <utility>
 
-#include "ash/public/interfaces/constants.mojom.h"
-#include "content/public/common/service_manager_connection.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/service_filter.h"
-
-TestSessionController::TestSessionController() {
-  CHECK(content::ServiceManagerConnection::GetForProcess())
-      << "ServiceManager is uninitialized. Did you forget to create a "
-         "content::TestServiceManagerContext?";
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->OverrideBinderForTesting(
-          service_manager::ServiceFilter::ByName(ash::mojom::kServiceName),
-          ash::mojom::SessionController::Name_,
-          base::BindRepeating(&TestSessionController::Bind,
-                              base::Unretained(this)));
-}
-
-TestSessionController::~TestSessionController() {
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->ClearBinderOverrideForTesting(
-          service_manager::ServiceFilter::ByName(ash::mojom::kServiceName),
-          ash::mojom::SessionController::Name_);
-}
+TestSessionController::TestSessionController() = default;
+TestSessionController::~TestSessionController() = default;
 
 void TestSessionController::SetClient(ash::SessionControllerClient* client) {}
 
@@ -50,14 +27,6 @@ void TestSessionController::SetUserSessionOrder(
 void TestSessionController::PrepareForLock(PrepareForLockCallback callback) {
   std::move(callback).Run();
 }
-
-void TestSessionController::AddSessionActivationObserverForAccountId(
-    const AccountId& account_id,
-    ash::SessionActivationObserver* observer) {}
-
-void TestSessionController::RemoveSessionActivationObserverForAccountId(
-    const AccountId& account_id,
-    ash::SessionActivationObserver* observer) {}
 
 void TestSessionController::StartLock(StartLockCallback callback) {
   std::move(callback).Run(true);
@@ -98,6 +67,10 @@ void TestSessionController::ShowTeleportWarningDialog(
 void TestSessionController::ShowMultiprofilesSessionAbortedDialog(
     const std::string& user_email) {}
 
-void TestSessionController::Bind(mojo::ScopedMessagePipeHandle handle) {
-  binding_.Bind(ash::mojom::SessionControllerRequest(std::move(handle)));
-}
+void TestSessionController::AddSessionActivationObserverForAccountId(
+    const AccountId& account_id,
+    ash::SessionActivationObserver* observer) {}
+
+void TestSessionController::RemoveSessionActivationObserverForAccountId(
+    const AccountId& account_id,
+    ash::SessionActivationObserver* observer) {}

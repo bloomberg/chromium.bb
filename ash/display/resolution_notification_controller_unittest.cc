@@ -4,7 +4,6 @@
 
 #include "ash/display/resolution_notification_controller.h"
 
-#include "ash/public/interfaces/session_controller.mojom.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"

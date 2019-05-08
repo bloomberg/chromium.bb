@@ -217,9 +217,9 @@ SessionControllerClientImpl::~SessionControllerClientImpl() {
 }
 
 void SessionControllerClientImpl::Init() {
-  ash::SessionController::Get()->SetClient(this);
+  session_controller_ = ash::SessionController::Get();
+  session_controller_->SetClient(this);
 
-  ConnectToSessionController();
   SendSessionInfoIfChanged();
   SendSessionLengthLimit();
   // User sessions and their order will be sent via UserSessionStateObserver
@@ -465,11 +465,6 @@ void SessionControllerClientImpl::DoCycleActiveUser(
   DoSwitchActiveUser(account_id);
 }
 
-// static
-void SessionControllerClientImpl::FlushForTesting() {
-  g_session_controller_client_instance->session_controller_.FlushForTesting();
-}
-
 void SessionControllerClientImpl::OnSessionStateChanged() {
   // Sent the primary user metadata and user session order that are deferred
   // from ActiveUserChanged before update session state.
@@ -572,12 +567,6 @@ void SessionControllerClientImpl::SendUserSessionForProfile(Profile* profile) {
   SendUserSession(*user);
 }
 
-void SessionControllerClientImpl::ConnectToSessionController() {
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &session_controller_);
-}
-
 void SessionControllerClientImpl::SendSessionInfoIfChanged() {
   SessionManager* const session_manager = SessionManager::Get();
 
@@ -594,7 +583,7 @@ void SessionControllerClientImpl::SendSessionInfoIfChanged() {
     return;
 
   last_sent_session_info_ = std::move(info);
-  ash::SessionController::Get()->SetSessionInfo(*last_sent_session_info_);
+  session_controller_->SetSessionInfo(*last_sent_session_info_);
 }
 
 void SessionControllerClientImpl::SendUserSession(const User& user) {
@@ -611,7 +600,7 @@ void SessionControllerClientImpl::SendUserSession(const User& user) {
     return;
 
   last_sent_user_session_ = std::move(user_session);
-  ash::SessionController::Get()->UpdateUserSession(*last_sent_user_session_);
+  session_controller_->UpdateUserSession(*last_sent_user_session_);
 }
 
 void SessionControllerClientImpl::SendUserSessionOrder() {
@@ -625,7 +614,7 @@ void SessionControllerClientImpl::SendUserSessionOrder() {
     user_session_ids.push_back(user_session_id);
   }
 
-  ash::SessionController::Get()->SetUserSessionOrder(user_session_ids);
+  session_controller_->SetUserSessionOrder(user_session_ids);
 }
 
 void SessionControllerClientImpl::SendSessionLengthLimit() {

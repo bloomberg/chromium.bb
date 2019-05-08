@@ -14,14 +14,12 @@
 #include "ash/login_status.h"
 #include "ash/public/cpp/session/session_controller.h"
 #include "ash/public/cpp/session/session_types.h"
-#include "ash/public/interfaces/session_controller.mojom.h"
 #include "ash/session/session_activation_observer_holder.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 
 class AccountId;
 class PrefService;
@@ -38,8 +36,7 @@ class SessionObserver;
 // Implements mojom::SessionController to cache session related info such as
 // session state, meta data about user sessions to support synchronous
 // queries for ash.
-class ASH_EXPORT SessionControllerImpl : public SessionController,
-                                         public mojom::SessionController {
+class ASH_EXPORT SessionControllerImpl : public SessionController {
  public:
   using UserSessions = std::vector<std::unique_ptr<UserSession>>;
 
@@ -52,9 +49,6 @@ class ASH_EXPORT SessionControllerImpl : public SessionController,
 
   base::TimeDelta session_length_limit() const { return session_length_limit_; }
   base::TimeTicks session_start_time() const { return session_start_time_; }
-
-  // Binds the mojom::SessionControllerRequest to this object.
-  void BindRequest(mojom::SessionControllerRequest request);
 
   // Returns the number of signed in users. If 0 is returned, there is either
   // no session in progress or no active user.
@@ -200,14 +194,6 @@ class ASH_EXPORT SessionControllerImpl : public SessionController,
   void UpdateUserSession(const UserSession& user_session) override;
   void SetUserSessionOrder(
       const std::vector<uint32_t>& user_session_order) override;
-  void AddSessionActivationObserverForAccountId(
-      const AccountId& account_id,
-      SessionActivationObserver* observer) override;
-  void RemoveSessionActivationObserverForAccountId(
-      const AccountId& account_id,
-      SessionActivationObserver* observer) override;
-
-  // mojom::SessionController
   void PrepareForLock(PrepareForLockCallback callback) override;
   void StartLock(StartLockCallback callback) override;
   void NotifyChromeLockAnimationsComplete() override;
@@ -222,6 +208,12 @@ class ASH_EXPORT SessionControllerImpl : public SessionController,
       ShowTeleportWarningDialogCallback callback) override;
   void ShowMultiprofilesSessionAbortedDialog(
       const std::string& user_email) override;
+  void AddSessionActivationObserverForAccountId(
+      const AccountId& account_id,
+      SessionActivationObserver* observer) override;
+  void RemoveSessionActivationObserverForAccountId(
+      const AccountId& account_id,
+      SessionActivationObserver* observer) override;
 
   // Test helpers.
   void ClearUserSessionsForTest();
@@ -268,9 +260,6 @@ class ASH_EXPORT SessionControllerImpl : public SessionController,
   // Called when IsUserSessionBlocked() becomes true. If there isn't an active
   // window, tries to activate one.
   void EnsureActiveWindowAfterUnblockingUserSession();
-
-  // Bindings for users of the mojom::SessionController interface.
-  mojo::BindingSet<mojom::SessionController> bindings_;
 
   // Client interface to session manager code (chrome).
   SessionControllerClient* client_ = nullptr;

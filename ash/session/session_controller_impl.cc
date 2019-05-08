@@ -78,11 +78,6 @@ SessionControllerImpl::~SessionControllerImpl() {
     std::move(start_lock_callback_).Run(false /* locked */);
 }
 
-void SessionControllerImpl::BindRequest(
-    mojom::SessionControllerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
-}
-
 int SessionControllerImpl::NumberOfLoggedInUsers() const {
   return static_cast<int>(user_sessions_.size());
 }
