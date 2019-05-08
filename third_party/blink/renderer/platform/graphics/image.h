@@ -282,9 +282,8 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
       const FloatRect& src_rect,
       const DarkModeClassification dark_mode_classification);
 
-  typedef std::pair<float, float> ClassificationKey;
-  std::map<ClassificationKey, DarkModeClassification>
-      dark_mode_classifications_;
+  typedef FloatSize ClassificationKey;
+  HashMap<ClassificationKey, DarkModeClassification> dark_mode_classifications_;
 
  private:
   virtual DarkModeClassification ClassifyImageForDarkMode(

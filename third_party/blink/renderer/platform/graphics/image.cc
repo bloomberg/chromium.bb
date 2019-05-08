@@ -375,12 +375,11 @@ DarkModeClassification Image::GetDarkModeClassification(
   // size, only the top left corner coordinates of the src_rect are used to
   // generate the key for caching and retrieving the classification.
   ClassificationKey key(src_rect.X(), src_rect.Y());
-  std::map<ClassificationKey, DarkModeClassification>::iterator result =
-      dark_mode_classifications_.find(key);
+  auto result = dark_mode_classifications_.find(key);
   if (result == dark_mode_classifications_.end())
     return DarkModeClassification::kNotClassified;
 
-  return result->second;
+  return result->value;
 }
 
 void Image::AddDarkModeClassification(
@@ -390,7 +389,7 @@ void Image::AddDarkModeClassification(
   DCHECK(GetDarkModeClassification(src_rect) ==
          DarkModeClassification::kNotClassified);
   ClassificationKey key(src_rect.X(), src_rect.Y());
-  dark_mode_classifications_[key] = dark_mode_classification;
+  dark_mode_classifications_.insert(key, dark_mode_classification);
 }
 
 bool Image::ShouldApplyDarkModeFilter(const FloatRect& src_rect) {
