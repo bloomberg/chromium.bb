@@ -7,6 +7,17 @@ import("//printing/buildflags/buildflags.gni")
 
 assert(is_chromeos, "Non-Chrome-OS builds must not depend on this")
 
+source_set("cpp") {
+  sources = [
+    "type_conversions.cpp",
+    "type_conversions.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
+}
+
 source_set("manifest") {
   sources = [
     "manifest.cc",

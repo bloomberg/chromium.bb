@@ -16,6 +16,7 @@ source_set("lib") {
 
   deps = [
     "//base",
+    "//chrome/services/cups_proxy/public/cpp",
     "//mojo/public/cpp/bindings",
     "//net",
   ]

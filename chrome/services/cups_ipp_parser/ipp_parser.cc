@@ -6,10 +6,13 @@
 
 #include <cups/cups.h>
 #include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/optional.h"
 #include "chrome/services/cups_ipp_parser/public/cpp/ipp_converter.h"
+#include "chrome/services/cups_proxy/public/cpp/type_conversions.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/http/http_util.h"
 

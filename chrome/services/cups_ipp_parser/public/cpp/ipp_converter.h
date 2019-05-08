@@ -88,11 +88,6 @@ base::Optional<std::vector<uint8_t>> BuildIppRequest(
 // Note: This function does not take ownership of |ipp|.
 chrome::mojom::IppMessagePtr ConvertIppToMojo(ipp_t* ipp);
 
-// Common converters for working with arbitrary byte buffers.
-std::vector<uint8_t> ConvertToByteBuffer(base::StringPiece char_buffer);
-std::vector<char> ConvertToCharBuffer(base::span<const uint8_t> byte_buffer);
-std::string ConvertToString(base::span<const uint8_t> byte_buffer);
-
 }  // namespace ipp_converter
 
 #endif  // CHROME_SERVICES_CUPS_IPP_PARSER_PUBLIC_CPP_IPP_CONVERTER_H_
