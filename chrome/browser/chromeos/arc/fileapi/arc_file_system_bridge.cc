@@ -219,15 +219,18 @@ void ArcFileSystemBridge::GetFileName(const std::string& url,
                                       GetFileNameCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   GURL url_decoded = DecodeFromChromeContentProviderUrl(GURL(url));
-  if (url_decoded.is_empty() || !IsUrlAllowed(url_decoded)) {
+  std::string unescaped_file_name;
+  // It's generally not safe to unescape path separators in strings to be used
+  // in file paths.
+  if (url_decoded.is_empty() || !IsUrlAllowed(url_decoded) ||
+      !net::UnescapeBinaryURLComponentSafe(url_decoded.ExtractFileName(),
+                                           true /* fail_on_path_separators */,
+                                           &unescaped_file_name)) {
     LOG(ERROR) << "Invalid URL: " << url << " " << url_decoded;
     std::move(callback).Run(base::nullopt);
     return;
   }
-  std::move(callback).Run(net::UnescapeURLComponent(
-      url_decoded.ExtractFileName(),
-      net::UnescapeRule::SPACES |
-          net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS));
+  std::move(callback).Run(unescaped_file_name);
 }
 
 void ArcFileSystemBridge::GetFileSize(const std::string& url,

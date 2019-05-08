@@ -128,6 +128,42 @@ TEST_F(ArcFileSystemBridgeTest, GetFileNameNonASCII) {
   run_loop.Run();
 }
 
+// net::UnescapeURLComponent() leaves UTF-8 lock icons escaped, but they're
+// valid file names, so shouldn't be left escaped here.
+TEST_F(ArcFileSystemBridgeTest, GetFileNameLockIcon) {
+  const GURL url("externalfile:abc:test-filesystem:/%F0%9F%94%92");
+
+  base::RunLoop run_loop;
+  arc_file_system_bridge_->GetFileName(
+      EncodeToChromeContentProviderUrl(url).spec(),
+      base::BindOnce(
+          [](base::RunLoop* run_loop,
+             const base::Optional<std::string>& result) {
+            run_loop->Quit();
+            ASSERT_TRUE(result.has_value());
+            EXPECT_EQ("\xF0\x9F\x94\x92", result.value());
+          },
+          &run_loop));
+  run_loop.Run();
+}
+
+// An escaped path separator should cause GetFileName() to fail.
+TEST_F(ArcFileSystemBridgeTest, GetFileNameEscapedPathSeparator) {
+  const GURL url("externalfile:abc:test-filesystem:/foo%2F");
+
+  base::RunLoop run_loop;
+  arc_file_system_bridge_->GetFileName(
+      EncodeToChromeContentProviderUrl(url).spec(),
+      base::BindOnce(
+          [](base::RunLoop* run_loop,
+             const base::Optional<std::string>& result) {
+            run_loop->Quit();
+            ASSERT_FALSE(result.has_value());
+          },
+          &run_loop));
+  run_loop.Run();
+}
+
 TEST_F(ArcFileSystemBridgeTest, GetFileSize) {
   base::RunLoop run_loop;
   arc_file_system_bridge_->GetFileSize(
