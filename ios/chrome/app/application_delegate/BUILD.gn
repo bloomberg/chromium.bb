@@ -79,10 +79,7 @@ source_set("unit_tests") {
     "//ui/base",
     "//url",
   ]
-  libs = [
-    "CoreSpotlight.framework",
-    "QuartzCore.framework",
-  ]
+  libs = [ "CoreSpotlight.framework" ]
 }
 
 source_set("application_delegate_internal") {

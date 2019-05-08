@@ -4,15 +4,11 @@
 
 #import "ios/chrome/app/application_delegate/app_state.h"
 
-#import <QuartzCore/QuartzCore.h>
-
 #include <memory>
 
 #include "base/bind.h"
 #include "base/ios/block_types.h"
 #include "base/mac/scoped_block.h"
-#include "base/synchronization/lock.h"
-#include "base/task/post_task.h"
 #import "ios/chrome/app/application_delegate/app_navigation.h"
 #import "ios/chrome/app/application_delegate/app_state_testing.h"
 #import "ios/chrome/app/application_delegate/browser_launcher.h"
@@ -53,7 +49,6 @@
 #include "ios/public/provider/chrome/browser/test_chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/user_feedback/test_user_feedback_provider.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
-#include "ios/web/net/request_tracker_impl.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "ios/web/public/web_task_traits.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -358,44 +353,11 @@ class AppStateTest : public BlockCleanupTest {
   std::unique_ptr<TestChromeBrowserState> browser_state_;
 };
 
-// TODO(crbug.com/585700): remove this.
-// Creates a requestTracker, needed for teardown.
-void createTracker(BOOL* created, base::Lock* lock) {
-  web::RequestTrackerImpl::GetTrackerForRequestGroupID(@"test");
-  base::AutoLock scoped_lock(*lock);
-  *created = YES;
-}
-
 // Used to have a thread handling the closing of the IO threads.
 class AppStateWithThreadTest : public PlatformTest {
  protected:
   AppStateWithThreadTest()
       : thread_bundle_(web::TestWebThreadBundle::REAL_IO_THREAD) {
-    BOOL created = NO;
-    base::Lock* lock = new base::Lock;
-
-    base::PostTaskWithTraits(FROM_HERE, {web::WebThread::IO},
-                             base::BindOnce(&createTracker, &created, lock));
-
-    CFTimeInterval start = CACurrentMediaTime();
-
-    // Poll for at most 1s, waiting for the Tracker creation.
-    while (1) {
-      base::AutoLock scoped_lock(*lock);
-      if (created)
-        return;
-      if (CACurrentMediaTime() - start > 1.0) {
-        trackerCreationFailed();
-        return;
-      }
-      // Ensure that other threads have a chance to run even on a single-core
-      // devices.
-      pthread_yield_np();
-    }
-  }
-
-  void trackerCreationFailed() {
-    FAIL() << "Tracker creation took too much time.";
   }
 
  private:
