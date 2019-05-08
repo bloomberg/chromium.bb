@@ -100,7 +100,6 @@ a:focus {
   display: flex;
   flex: 1 1 auto;
   margin-top: 8px;
-  overflow-x: auto;
   position: relative;
 }
 
@@ -126,7 +125,7 @@ div.splitter {
   bottom: 0;
   flex: none;
   left: 0;
-  min-width: min-content;
+  overflow-x: hidden;
   overflow-y: auto;
   position: absolute;
   right: 0;

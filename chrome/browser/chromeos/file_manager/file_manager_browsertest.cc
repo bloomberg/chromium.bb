@@ -1001,11 +1001,6 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("metadataLargeDrive").EnableDriveFs(),
         TestCase("metadataLargeDrive").EnableDriveFs().EnableMyFilesVolume()));
 
-WRAPPED_INSTANTIATE_TEST_SUITE_P(
-    NavigationList, /* navigation_list.js */
-    FilesAppBrowserTest,
-    ::testing::Values(TestCase("navigationScrollsWhenClipped")));
-
 // Structure to describe an account info.
 struct TestAccountInfo {
   const char* const gaia_id;
