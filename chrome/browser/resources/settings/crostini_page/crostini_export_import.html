@@ -11,14 +11,20 @@
     <style include="settings-shared"></style>
     <div class="list-frame vertical-list">
       <div id="export" class="list-item">
-        <div class="start secondary">$i18n{crostiniExportLabel}</div>
-        <paper-button on-click="onExportClick_">
+        <div id="exportCrostiniLabel" class="start secondary">
+          $i18n{crostiniExportLabel}
+        </div>
+        <paper-button on-click="onExportClick_"
+          aria-labelledby="exportCrostiniLabel">
            $i18n{crostiniExport}
         </paper-button>
       </div>
       <div id="import" class="list-item">
-        <div class="start secondary">$i18n{crostiniImportLabel}</div>
-        <paper-button on-click="onImportClick_">
+        <div id="importCrostiniLabel" class="start secondary">
+          $i18n{crostiniImportLabel}
+        </div>
+        <paper-button on-click="onImportClick_"
+          aria-labelledby="importCrostiniLabel">
            $i18n{crostiniImport}
         </paper-button>
       </div>
