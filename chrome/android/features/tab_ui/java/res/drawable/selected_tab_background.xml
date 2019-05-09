@@ -6,6 +6,6 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
     <stroke
         android:width="2dp"
-        android:color="@color/modern_blue_600" />
+        android:color="@color/light_active_color" />
     <corners android:radius="@dimen/default_rounded_corner_radius" />
 </shape>
