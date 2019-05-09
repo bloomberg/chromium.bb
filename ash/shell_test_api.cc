@@ -205,26 +205,6 @@ void ShellTestApi::EnableVirtualKeyboard(EnableVirtualKeyboardCallback cb) {
   std::move(cb).Run();
 }
 
-void ShellTestApi::SnapWindowInSplitView(const std::string& client_name,
-                                         ws::Id window_id,
-                                         bool left,
-                                         SnapWindowInSplitViewCallback cb) {
-  auto* window_service = shell_->window_service_owner()->window_service();
-  aura::Window* window = nullptr;
-  for (ws::WindowTree* window_tree : window_service->window_trees()) {
-    if (client_name == window_tree->client_name()) {
-      window = window_tree->GetWindowByTransportId(window_id);
-      break;
-    }
-  }
-  DCHECK(window);
-  shell_->split_view_controller()->SnapWindow(
-      window,
-      left ? ash::SplitViewController::LEFT : ash::SplitViewController::RIGHT);
-  shell_->split_view_controller()->FlushForTesting();
-  std::move(cb).Run();
-}
-
 void ShellTestApi::ToggleFullscreen(ToggleFullscreenCallback cb) {
   ash::accelerators::ToggleFullscreen();
   std::move(cb).Run();

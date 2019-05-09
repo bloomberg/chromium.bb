@@ -9,8 +9,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/frame/header_view.h"
+#include "ash/public/cpp/split_view.h"
 #include "ash/wm/overview/overview_observer.h"
-#include "ash/wm/splitview/split_view_controller.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -36,7 +36,7 @@ class NonClientFrameViewAshImmersiveHelper;
 // BrowserNonClientFrameViewAsh.
 class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
                                          public OverviewObserver,
-                                         public SplitViewController::Observer {
+                                         public SplitViewObserver {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -107,9 +107,9 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnded() override;
 
-  // SplitViewController::Observer:
-  void OnSplitViewStateChanged(SplitViewController::State previous_state,
-                               SplitViewController::State state) override;
+  // SplitViewObserver:
+  void OnSplitViewStateChanged(SplitViewState previous_state,
+                               SplitViewState state) override;
 
   const views::View* GetAvatarIconViewForTest() const;
 

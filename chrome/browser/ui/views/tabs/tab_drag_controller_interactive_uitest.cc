@@ -1788,20 +1788,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
   // Right snap the browser window.
   aura::Window* window = browser()->window()->GetNativeWindow();
-  if (features::IsUsingWindowService()) {
-    ash::mojom::ShellTestApiPtr shell_test_api;
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(ash::mojom::kServiceName, &shell_test_api);
-    ash::mojom::ShellTestApiAsyncWaiter shell_waiter(shell_test_api.get());
-    shell_waiter.SnapWindowInSplitView(
-        content::mojom::kBrowserServiceName,
-        aura::WindowMus::Get(window->GetRootWindow())->server_id(), false);
-  } else {
-    ash::Shell* shell = ash::Shell::Get();
-    shell->split_view_controller()->SnapWindow(window,
-                                               ash::SplitViewController::RIGHT);
-  }
+  ash::Shell::Get()->split_view_controller()->SnapWindow(
+      window, ash::SplitViewController::RIGHT);
   EXPECT_NE(gfx::Point(), window->GetBoundsInScreen().origin());
 
   DragWindowAndVerifyOffset(this, GetTabStripForBrowser(browser()), 0);

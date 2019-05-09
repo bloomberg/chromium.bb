@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/shell.h"                               // mash-ok
-#include "ash/wm/splitview/split_view_controller.h"  // mash-ok
+#include "ash/shell.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/system/sys_info.h"
@@ -17,11 +17,8 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/perf/performance_test.h"
-#include "content/public/common/service_names.mojom.h"
-#include "ui/aura/mus/window_mus.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/display/display.h"
@@ -31,12 +28,6 @@
 #include "ui/views/widget/widget_observer.h"
 
 namespace {
-
-ws::Id GetBrowserWindowServerId(Browser* browser) {
-  return aura::WindowMus::Get(
-             browser->window()->GetNativeWindow()->GetRootWindow())
-      ->server_id();
-}
 
 class SplitViewTest : public UIPerformanceTest {
  public:
@@ -133,33 +124,11 @@ IN_PROC_BROWSER_TEST_F(SplitViewTest, SplitViewResize) {
       BrowserView::GetBrowserViewForBrowser(browser())->GetWidget();
   views::Widget* browser2_widget =
       BrowserView::GetBrowserViewForBrowser(browser2)->GetWidget();
-  if (features::IsUsingWindowService()) {
-    ash::mojom::ShellTestApiPtr shell_test_api = test::GetShellTestApi();
-
-    {
-      base::RunLoop run_loop;
-      shell_test_api->SnapWindowInSplitView(content::mojom::kBrowserServiceName,
-                                            GetBrowserWindowServerId(browser2),
-                                            true, run_loop.QuitClosure());
-      run_loop.Run();
-    }
-
-    {
-      base::RunLoop run_loop;
-      shell_test_api->SnapWindowInSplitView(content::mojom::kBrowserServiceName,
-                                            GetBrowserWindowServerId(browser()),
-                                            false, run_loop.QuitClosure());
-      run_loop.Run();
-    }
-  } else {
-    ash::Shell* shell = ash::Shell::Get();
-    shell->split_view_controller()->SnapWindow(
-        browser2_widget->GetNativeWindow(), ash::SplitViewController::LEFT);
-    shell->split_view_controller()->FlushForTesting();
-    shell->split_view_controller()->SnapWindow(
-        browser_widget->GetNativeWindow(), ash::SplitViewController::RIGHT);
-    shell->split_view_controller()->FlushForTesting();
-  }
+  ash::Shell* shell = ash::Shell::Get();
+  shell->split_view_controller()->SnapWindow(browser2_widget->GetNativeWindow(),
+                                             ash::SplitViewController::LEFT);
+  shell->split_view_controller()->SnapWindow(browser_widget->GetNativeWindow(),
+                                             ash::SplitViewController::RIGHT);
 
   test::WaitForNoPointerHoldLock();
 

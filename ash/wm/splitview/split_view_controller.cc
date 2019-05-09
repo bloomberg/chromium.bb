@@ -107,22 +107,6 @@ gfx::Point GetBoundedPosition(const gfx::Point& location_in_screen,
                bounds_in_screen.y()));
 }
 
-mojom::SplitViewState ToMojomSplitViewState(SplitViewController::State state) {
-  switch (state) {
-    case SplitViewController::NO_SNAP:
-      return mojom::SplitViewState::NO_SNAP;
-    case SplitViewController::LEFT_SNAPPED:
-      return mojom::SplitViewState::LEFT_SNAPPED;
-    case SplitViewController::RIGHT_SNAPPED:
-      return mojom::SplitViewState::RIGHT_SNAPPED;
-    case SplitViewController::BOTH_SNAPPED:
-      return mojom::SplitViewState::BOTH_SNAPPED;
-    default:
-      NOTREACHED();
-      return mojom::SplitViewState::NO_SNAP;
-  }
-}
-
 mojom::WindowStateType GetStateTypeFromSnapPosition(
     SplitViewController::SnapPosition snap_position) {
   DCHECK(snap_position != SplitViewController::NONE);
@@ -309,21 +293,18 @@ SplitViewController::~SplitViewController() {
   EndSplitView();
 }
 
-void SplitViewController::BindRequest(
-    mojom::SplitViewControllerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
-}
-
 bool SplitViewController::InSplitViewMode() const {
   return InClamshellSplitViewMode() || InTabletSplitViewMode();
 }
 
 bool SplitViewController::InClamshellSplitViewMode() const {
-  return state_ != NO_SNAP && split_view_type_ == SplitViewType::kClamshellType;
+  return state_ != SplitViewState::kNoSnap &&
+         split_view_type_ == SplitViewType::kClamshellType;
 }
 
 bool SplitViewController::InTabletSplitViewMode() const {
-  return state_ != NO_SNAP && split_view_type_ == SplitViewType::kTabletType;
+  return state_ != SplitViewState::kNoSnap &&
+         split_view_type_ == SplitViewType::kTabletType;
 }
 
 void SplitViewController::SnapWindow(aura::Window* window,
@@ -342,7 +323,7 @@ void SplitViewController::SnapWindow(aura::Window* window,
   UpdateSnappingWindowTransformedBounds(window);
   RemoveWindowFromOverviewIfApplicable(window);
 
-  if (state_ == NO_SNAP) {
+  if (state_ == SplitViewState::kNoSnap) {
     // Add observers when the split view mode starts.
     Shell::Get()->AddShellObserver(this);
     Shell::Get()->overview_controller()->AddObserver(this);
@@ -403,7 +384,7 @@ void SplitViewController::SnapWindow(aura::Window* window,
     // Update the divider position and window bounds before snapping a new
     // window. Since the minimum size of |window| maybe larger than currently
     // bounds in |snap_position|.
-    if (state_ != NO_SNAP) {
+    if (state_ != SplitViewState::kNoSnap) {
       divider_position_ = GetClosestFixedDividerPosition();
       UpdateSnappedWindowsAndDividerBounds();
     }
@@ -567,7 +548,7 @@ void SplitViewController::StartResize(const gfx::Point& location_in_screen) {
   }
 
   base::RecordAction(base::UserMetricsAction("SplitView_ResizeWindows"));
-  if (state_ == BOTH_SNAPPED) {
+  if (state_ == SplitViewState::kBothSnapped) {
     presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
         split_view_divider_->divider_widget()->GetCompositor(),
         kSplitViewResizeMultiHistogram,
@@ -719,23 +700,16 @@ void SplitViewController::OnWindowDragEnded(
   }
 }
 
-void SplitViewController::AddObserver(Observer* observer) {
+SplitViewState SplitViewController::GetCurrentState() const {
+  return state_;
+}
+
+void SplitViewController::AddObserver(SplitViewObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void SplitViewController::RemoveObserver(Observer* observer) {
+void SplitViewController::RemoveObserver(SplitViewObserver* observer) {
   observers_.RemoveObserver(observer);
-}
-
-void SplitViewController::FlushForTesting() {
-  mojo_observers_.FlushForTesting();
-  bindings_.FlushForTesting();
-}
-
-void SplitViewController::AddObserver(mojom::SplitViewObserverPtr observer) {
-  mojom::SplitViewObserver* observer_ptr = observer.get();
-  mojo_observers_.AddPtr(std::move(observer));
-  observer_ptr->OnSplitViewStateChanged(ToMojomSplitViewState(state_));
 }
 
 void SplitViewController::OnWindowDestroyed(aura::Window* window) {
@@ -979,7 +953,7 @@ void SplitViewController::OnOverviewModeEnding(
   }
   aura::Window* root_window = GetDefaultSnappedWindow()->GetRootWindow();
 
-  if (state_ == BOTH_SNAPPED) {
+  if (state_ == SplitViewState::kBothSnapped) {
     // If overview is ended because of the window gets snapped, do not do
     // exiting overview animation.
     overview_session->SetWindowListNotAnimatedWhenExiting(root_window);
@@ -1146,34 +1120,31 @@ void SplitViewController::StopObserving(SnapPosition snap_position) {
 }
 
 void SplitViewController::UpdateSplitViewStateAndNotifyObservers() {
-  State previous_state = state_;
+  SplitViewState previous_state = state_;
   if (IsSnapped(left_window_) && IsSnapped(right_window_))
-    state_ = BOTH_SNAPPED;
+    state_ = SplitViewState::kBothSnapped;
   else if (IsSnapped(left_window_))
-    state_ = LEFT_SNAPPED;
+    state_ = SplitViewState::kLeftSnapped;
   else if (IsSnapped(right_window_))
-    state_ = RIGHT_SNAPPED;
+    state_ = SplitViewState::kRightSnapped;
   else
-    state_ = NO_SNAP;
+    state_ = SplitViewState::kNoSnap;
 
   // We still notify observers even if |state_| doesn't change as it's possible
   // to snap a window to a position that already has a snapped window.
-  for (Observer& observer : observers_)
+  for (auto& observer : observers_)
     observer.OnSplitViewStateChanged(previous_state, state_);
-  mojo_observers_.ForAllPtrs([this](mojom::SplitViewObserver* observer) {
-    observer->OnSplitViewStateChanged(ToMojomSplitViewState(state_));
-  });
 
   if (previous_state != state_) {
-    if (previous_state == NO_SNAP)
+    if (previous_state == SplitViewState::kNoSnap)
       Shell::Get()->NotifySplitViewModeStarted();
-    else if (state_ == NO_SNAP)
+    else if (state_ == SplitViewState::kNoSnap)
       Shell::Get()->NotifySplitViewModeEnded();
   }
 }
 
 void SplitViewController::NotifyDividerPositionChanged() {
-  for (Observer& observer : observers_)
+  for (auto& observer : observers_)
     observer.OnSplitViewDividerPositionChanged();
 }
 
@@ -1457,7 +1428,7 @@ void SplitViewController::OnWindowSnapped(aura::Window* window) {
   ActivateAndStackSnappedWindow(window);
 
   // If there are two window snapped in clamshell mode, splitview mode is ended.
-  if (state_ == BOTH_SNAPPED &&
+  if (state_ == SplitViewState::kBothSnapped &&
       split_view_type_ == SplitViewType::kClamshellType) {
     EndSplitView();
   }

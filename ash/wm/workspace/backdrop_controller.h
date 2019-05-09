@@ -8,11 +8,12 @@
 #include <memory>
 
 #include "ash/accessibility/accessibility_observer.h"
+#include "ash/public/cpp/split_view.h"
 #include "ash/shell_observer.h"
 #include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "ash/wm/overview/overview_observer.h"
-#include "ash/wm/splitview/split_view_controller.h"
 #include "base/macros.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace aura {
 class Window;
@@ -47,7 +48,7 @@ class BackdropDelegate;
 class BackdropController : public AccessibilityObserver,
                            public ShellObserver,
                            public OverviewObserver,
-                           public SplitViewController::Observer,
+                           public SplitViewObserver,
                            public WallpaperControllerObserver {
  public:
   explicit BackdropController(aura::Window* container);
@@ -81,9 +82,9 @@ class BackdropController : public AccessibilityObserver,
   // AccessibilityObserver:
   void OnAccessibilityStatusChanged() override;
 
-  // SplitViewController::Observer:
-  void OnSplitViewStateChanged(SplitViewController::State previous_state,
-                               SplitViewController::State state) override;
+  // SplitViewObserver:
+  void OnSplitViewStateChanged(SplitViewState previous_state,
+                               SplitViewState state) override;
   void OnSplitViewDividerPositionChanged() override;
 
   // WallpaperControllerObserver:

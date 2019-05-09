@@ -21,6 +21,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
@@ -457,7 +458,7 @@ TEST_F(NonClientFrameViewAshTest, HeaderVisibilityInSplitview) {
   // the header is again drawn for the snapped window, but not for the unsnapped
   // window.
   Shell::Get()->overview_controller()->ToggleOverview();
-  ASSERT_EQ(SplitViewController::LEFT_SNAPPED,
+  ASSERT_EQ(SplitViewState::kLeftSnapped,
             Shell::Get()->split_view_controller()->state());
   EXPECT_TRUE(delegate1->header_view()->should_paint());
   EXPECT_EQ(0, delegate1->GetNonClientFrameViewTopBorderHeight());

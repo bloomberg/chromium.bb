@@ -124,6 +124,8 @@ component("cpp") {
     "shelf_types.h",
     "shell_window_ids.cc",
     "shell_window_ids.h",
+    "split_view.cc",
+    "split_view.h",
     "stylus_utils.cc",
     "stylus_utils.h",
     "system_tray_focus_observer.h",

@@ -13,6 +13,7 @@
 #include "ash/wm/overview/scoped_overview_transform_window.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/rect.h"

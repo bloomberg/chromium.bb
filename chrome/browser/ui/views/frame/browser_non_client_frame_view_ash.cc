@@ -16,7 +16,6 @@
 #include "ash/public/cpp/touch_uma.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/split_view.mojom.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
@@ -85,24 +84,24 @@ bool IsV1AppBackButtonEnabled() {
 }
 
 // Returns true if |window| is currently snapped in split view mode.
-bool IsSnappedInSplitView(const aura::Window* window,
-                          ash::mojom::SplitViewState state) {
+bool IsSnappedInSplitView(const aura::Window* window) {
+  ash::SplitViewState state = ash::SplitViewNotifier::Get()->GetCurrentState();
   ash::mojom::WindowStateType type =
       window->GetProperty(ash::kWindowStateTypeKey);
   switch (state) {
-    case ash::mojom::SplitViewState::NO_SNAP:
+    case ash::SplitViewState::kNoSnap:
       return false;
-    case ash::mojom::SplitViewState::LEFT_SNAPPED:
+    case ash::SplitViewState::kLeftSnapped:
       return type == ash::mojom::WindowStateType::LEFT_SNAPPED;
-    case ash::mojom::SplitViewState::RIGHT_SNAPPED:
+    case ash::SplitViewState::kRightSnapped:
       return type == ash::mojom::WindowStateType::RIGHT_SNAPPED;
-    case ash::mojom::SplitViewState::BOTH_SNAPPED:
+    case ash::SplitViewState::kBothSnapped:
       return type == ash::mojom::WindowStateType::LEFT_SNAPPED ||
              type == ash::mojom::WindowStateType::RIGHT_SNAPPED;
-    default:
-      NOTREACHED();
-      return false;
   }
+
+  NOTREACHED();
+  return false;
 }
 
 const views::WindowManagerFrameValues& frame_values() {
@@ -127,16 +126,6 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
     BrowserView* browser_view)
     : BrowserNonClientFrameView(frame, browser_view) {
   ash::wm::InstallResizeHandleWindowTargeterForWindow(frame->GetNativeWindow());
-
-  // The ServiceManagerConnection may be nullptr in tests.
-  if (content::ServiceManagerConnection::GetForProcess()) {
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(ash::mojom::kServiceName, &split_view_controller_);
-    ash::mojom::SplitViewObserverPtr observer;
-    observer_binding_.Bind(mojo::MakeRequest(&observer));
-    split_view_controller_->AddObserver(std::move(observer));
-  }
 }
 
 BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
@@ -145,6 +134,8 @@ BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
 
   if (TabletModeClient::Get())
     TabletModeClient::Get()->RemoveObserver(this);
+
+  ash::SplitViewNotifier::Get()->RemoveObserver(this);
 
   ImmersiveModeController* immersive_controller =
       browser_view()->immersive_mode_controller();
@@ -199,17 +190,9 @@ void BrowserNonClientFrameViewAsh::Init() {
     SetUpForHostedApp();
 
   browser_view()->immersive_mode_controller()->AddObserver(this);
+  ash::SplitViewNotifier::Get()->AddObserver(this);
 
   UpdateFrameColors();
-}
-
-ash::mojom::SplitViewObserverPtr
-BrowserNonClientFrameViewAsh::CreateInterfacePtrForTesting() {
-  if (observer_binding_.is_bound())
-    observer_binding_.Unbind();
-  ash::mojom::SplitViewObserverPtr ptr;
-  observer_binding_.Bind(mojo::MakeRequest(&ptr));
-  return ptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -557,8 +540,8 @@ void BrowserNonClientFrameViewAsh::EnabledStateChangedForCommand(int id,
 }
 
 void BrowserNonClientFrameViewAsh::OnSplitViewStateChanged(
-    ash::mojom::SplitViewState current_state) {
-  split_view_state_ = current_state;
+    ash::SplitViewState previous_state,
+    ash::SplitViewState new_state) {
   OnOverviewOrSplitviewModeChanged();
 }
 
@@ -644,8 +627,7 @@ bool BrowserNonClientFrameViewAsh::ShouldShowCaptionButtons() const {
     return false;
   }
 
-  return !IsInOverviewMode() ||
-         IsSnappedInSplitView(GetFrameWindow(), split_view_state_);
+  return !IsInOverviewMode() || IsSnappedInSplitView(GetFrameWindow());
 }
 
 int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {

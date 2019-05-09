@@ -527,7 +527,7 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
 
   // Explicitly exit split view if two windows are snapped.
   if (is_final_state_show && Shell::Get()->split_view_controller()->state() ==
-                                 SplitViewController::BOTH_SNAPPED) {
+                                 SplitViewState::kBothSnapped) {
     Shell::Get()->split_view_controller()->EndSplitView();
   }
 
@@ -824,7 +824,7 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
   // Alter a second window if we are in split view mode with two windows
   // snapped.
   if (mode == Mode::kSlideUpToShow &&
-      split_view_controller->state() == SplitViewController::BOTH_SNAPPED) {
+      split_view_controller->state() == SplitViewState::kBothSnapped) {
     DCHECK_GT(windows.size(), 0u);
     aura::Window* second_window =
         split_view_controller->default_snap_position() ==

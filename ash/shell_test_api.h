@@ -55,10 +55,6 @@ class ShellTestApi : public mojom::ShellTestApi {
   void IsSystemModalWindowOpen(IsSystemModalWindowOpenCallback cb) override;
   void EnableTabletModeWindowManager(bool enable) override;
   void EnableVirtualKeyboard(EnableVirtualKeyboardCallback cb) override;
-  void SnapWindowInSplitView(const std::string& client_name,
-                             ws::Id window_id,
-                             bool left,
-                             SnapWindowInSplitViewCallback cb) override;
   void ToggleFullscreen(ToggleFullscreenCallback cb) override;
   void ToggleOverviewMode(ToggleOverviewModeCallback cb) override;
   void IsOverviewSelecting(IsOverviewSelectingCallback callback) override;

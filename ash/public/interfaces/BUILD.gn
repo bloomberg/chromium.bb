@@ -54,7 +54,6 @@ mojom("interfaces_internal") {
     "shelf.mojom",
     "shelf_integration_test_api.mojom",
     "shutdown.mojom",
-    "split_view.mojom",
     "system_tray.mojom",
     "tablet_mode.mojom",
     "tray_action.mojom",

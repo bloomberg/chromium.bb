@@ -33,7 +33,6 @@
 #include "ash/public/interfaces/shelf.mojom.h"
 #include "ash/public/interfaces/shelf_integration_test_api.mojom.h"
 #include "ash/public/interfaces/shutdown.mojom.h"
-#include "ash/public/interfaces/split_view.mojom.h"
 #include "ash/public/interfaces/system_tray.mojom.h"
 #include "ash/public/interfaces/tablet_mode.mojom.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
@@ -94,10 +93,10 @@ const service_manager::Manifest& GetManifest() {
                   mojom::NewWindowController, mojom::NightLightController,
                   mojom::NoteTakingController,
                   mojom::ProcessCreationTimeRecorder, mojom::ShelfController,
-                  mojom::ShutdownController, mojom::SplitViewController,
-                  mojom::SystemTray, mojom::TabletModeController,
-                  mojom::TrayAction, mojom::VoiceInteractionController,
-                  mojom::VpnList, mojom::WallpaperController>())
+                  mojom::ShutdownController, mojom::SystemTray,
+                  mojom::TabletModeController, mojom::TrayAction,
+                  mojom::VoiceInteractionController, mojom::VpnList,
+                  mojom::WallpaperController>())
           .ExposeCapability("display", service_manager::Manifest::InterfaceList<
                                            mojom::AshDisplayController,
                                            mojom::DisplayOutputProtection>())

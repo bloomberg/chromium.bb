@@ -1295,48 +1295,32 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
       ws::mojom::kResizeBehaviorCanMaximize |
           ws::mojom::kResizeBehaviorCanResize);
 
-    // Test that when one browser window is snapped, the header is visible for
-    // the snapped browser window, but invisible for the browser window still in
-    // overview mode.
-    ash::Shell* shell = ash::Shell::Get();
-    ash::SplitViewController* split_view_controller =
-        shell->split_view_controller();
-    split_view_controller->BindRequest(
-        mojo::MakeRequest(&frame_view->split_view_controller_));
-    split_view_controller->BindRequest(
-        mojo::MakeRequest(&frame_view2->split_view_controller_));
-    split_view_controller->AddObserver(
-        frame_view->CreateInterfacePtrForTesting());
-    split_view_controller->AddObserver(
-        frame_view2->CreateInterfacePtrForTesting());
-    frame_view->split_view_controller_.FlushForTesting();
-    frame_view2->split_view_controller_.FlushForTesting();
+  // Test that when one browser window is snapped, the header is visible for
+  // the snapped browser window, but invisible for the browser window still in
+  // overview mode.
+  ash::Shell* shell = ash::Shell::Get();
+  ash::SplitViewController* split_view_controller =
+      shell->split_view_controller();
 
-    ToggleOverview();
-    split_view_controller->SnapWindow(widget->GetNativeWindow(),
-                                      ash::SplitViewController::LEFT);
-    frame_view->split_view_controller_.FlushForTesting();
-    frame_view2->split_view_controller_.FlushForTesting();
-    EXPECT_TRUE(frame_view->caption_button_container_->visible());
-    EXPECT_FALSE(frame_view2->caption_button_container_->visible());
+  ToggleOverview();
+  split_view_controller->SnapWindow(widget->GetNativeWindow(),
+                                    ash::SplitViewController::LEFT);
+  EXPECT_TRUE(frame_view->caption_button_container_->visible());
+  EXPECT_FALSE(frame_view2->caption_button_container_->visible());
 
-    // When both browser windows are snapped, the headers are both visible.
-    split_view_controller->SnapWindow(widget2->GetNativeWindow(),
-                                      ash::SplitViewController::RIGHT);
-    frame_view->split_view_controller_.FlushForTesting();
-    frame_view2->split_view_controller_.FlushForTesting();
-    EXPECT_TRUE(frame_view->caption_button_container_->visible());
-    EXPECT_TRUE(frame_view2->caption_button_container_->visible());
+  // When both browser windows are snapped, the headers are both visible.
+  split_view_controller->SnapWindow(widget2->GetNativeWindow(),
+                                    ash::SplitViewController::RIGHT);
+  EXPECT_TRUE(frame_view->caption_button_container_->visible());
+  EXPECT_TRUE(frame_view2->caption_button_container_->visible());
 
-    // Toggle overview mode while splitview mode is active. Test that the header
-    // is visible for the snapped browser window but not for the other browser
-    // window in overview mode.
-    ToggleOverview();
-    frame_view->split_view_controller_.FlushForTesting();
-    frame_view2->split_view_controller_.FlushForTesting();
+  // Toggle overview mode while splitview mode is active. Test that the header
+  // is visible for the snapped browser window but not for the other browser
+  // window in overview mode.
+  ToggleOverview();
 
-    EXPECT_TRUE(frame_view->caption_button_container_->visible());
-    EXPECT_FALSE(frame_view2->caption_button_container_->visible());
+  EXPECT_TRUE(frame_view->caption_button_container_->visible());
+  EXPECT_FALSE(frame_view2->caption_button_container_->visible());
 }
 
 // Regression test for https://crbug.com/879851.

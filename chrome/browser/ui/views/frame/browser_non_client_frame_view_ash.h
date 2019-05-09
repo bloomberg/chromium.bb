@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/public/interfaces/split_view.mojom.h"
+#include "ash/public/cpp/split_view.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -43,7 +43,7 @@ class BrowserNonClientFrameViewAsh
       public TabletModeClientObserver,
       public TabIconViewModel,
       public CommandObserver,
-      public ash::mojom::SplitViewObserver,
+      public ash::SplitViewObserver,
       public aura::WindowObserver,
       public ImmersiveModeController::Observer {
  public:
@@ -51,8 +51,6 @@ class BrowserNonClientFrameViewAsh
   ~BrowserNonClientFrameViewAsh() override;
 
   void Init();
-
-  ash::mojom::SplitViewObserverPtr CreateInterfacePtrForTesting();
 
   // BrowserNonClientFrameView:
   gfx::Rect GetBoundsForTabStripRegion(
@@ -102,9 +100,9 @@ class BrowserNonClientFrameViewAsh
   // CommandObserver:
   void EnabledStateChangedForCommand(int id, bool enabled) override;
 
-  // ash::mojom::SplitViewObserver:
-  void OnSplitViewStateChanged(
-      ash::mojom::SplitViewState current_state) override;
+  // ash::SplitViewObserver:
+  void OnSplitViewStateChanged(ash::SplitViewState previous_state,
+                               ash::SplitViewState new_state) override;
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
@@ -213,17 +211,7 @@ class BrowserNonClientFrameViewAsh
   // Helper class for painting the header.
   std::unique_ptr<ash::FrameHeader> frame_header_;
 
-  // Ash's mojom::SplitViewController.
-  ash::mojom::SplitViewControllerPtr split_view_controller_;
-
-  // The binding this instance uses to implement mojom::SplitViewObserver.
-  mojo::Binding<ash::mojom::SplitViewObserver> observer_binding_{this};
-
   ScopedObserver<aura::Window, aura::WindowObserver> window_observer_{this};
-
-  // Maintains the current split view state.
-  ash::mojom::SplitViewState split_view_state_ =
-      ash::mojom::SplitViewState::NO_SNAP;
 
   base::WeakPtrFactory<BrowserNonClientFrameViewAsh> weak_ptr_factory_{this};
 

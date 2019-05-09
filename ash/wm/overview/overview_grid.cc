@@ -216,10 +216,10 @@ gfx::Rect GetGridBoundsInScreenAfterDragging(aura::Window* dragged_window) {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
   switch (split_view_controller->state()) {
-    case SplitViewController::LEFT_SNAPPED:
+    case SplitViewState::kLeftSnapped:
       return split_view_controller->GetSnappedWindowBoundsInScreen(
           dragged_window, SplitViewController::RIGHT);
-    case SplitViewController::RIGHT_SNAPPED:
+    case SplitViewState::kRightSnapped:
       return split_view_controller->GetSnappedWindowBoundsInScreen(
           dragged_window, SplitViewController::LEFT);
     default:

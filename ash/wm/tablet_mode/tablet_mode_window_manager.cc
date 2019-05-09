@@ -346,7 +346,7 @@ void TabletModeWindowManager::OnActiveUserSessionChanged(
         default:
           break;
       }
-      if (split_view_controller->state() == SplitViewController::BOTH_SNAPPED)
+      if (split_view_controller->state() == SplitViewState::kBothSnapped)
         break;
     }
   }
@@ -354,10 +354,10 @@ void TabletModeWindowManager::OnActiveUserSessionChanged(
   // Ensure that overview mode is active if and only if there is a window
   // snapped to one side but no window snapped to the other side.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  SplitViewController::State state = split_view_controller->state();
+  SplitViewState state = split_view_controller->state();
   if (overview_controller->InOverviewSession() !=
-      (state == SplitViewController::LEFT_SNAPPED ||
-       state == SplitViewController::RIGHT_SNAPPED)) {
+      (state == SplitViewState::kLeftSnapped ||
+       state == SplitViewState::kRightSnapped)) {
     overview_controller->ToggleOverview();
   }
 }

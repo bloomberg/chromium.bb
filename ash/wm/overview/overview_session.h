@@ -12,9 +12,9 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/split_view.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/overview/scoped_overview_hide_windows.h"
-#include "ash/wm/splitview/split_view_controller.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -25,10 +25,12 @@
 
 namespace gfx {
 class Point;
+class PointF;
 }  // namespace gfx
 
 namespace ui {
 class KeyEvent;
+class ScopedLayerAnimationSettings;
 }  // namespace ui
 
 namespace views {
@@ -51,7 +53,7 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
                                    public aura::WindowObserver,
                                    public ui::EventHandler,
                                    public ShellObserver,
-                                   public SplitViewController::Observer {
+                                   public SplitViewObserver {
  public:
   enum Direction { LEFT, UP, RIGHT, DOWN };
 
@@ -260,9 +262,9 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
 
-  // SplitViewController::Observer:
-  void OnSplitViewStateChanged(SplitViewController::State previous_state,
-                               SplitViewController::State state) override;
+  // SplitViewObserver:
+  void OnSplitViewStateChanged(SplitViewState previous_state,
+                               SplitViewState state) override;
   void OnSplitViewDividerPositionChanged() override;
 
   OverviewDelegate* delegate() { return delegate_; }

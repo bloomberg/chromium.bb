@@ -22,6 +22,7 @@
 #include "ash/shell.h"
 #include "ash/wm/client_controlled_state.h"
 #include "ash/wm/drag_details.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_properties.h"

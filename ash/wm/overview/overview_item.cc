@@ -544,10 +544,9 @@ void OverviewItem::UpdateCannotSnapWarningVisibility() {
       overview_grid_->IsDropTargetWindow(GetWindow())) {
     visible = false;
   } else {
-    const SplitViewController::State state =
-        Shell::Get()->split_view_controller()->state();
-    visible = state == SplitViewController::LEFT_SNAPPED ||
-              state == SplitViewController::RIGHT_SNAPPED;
+    const SplitViewState state = Shell::Get()->split_view_controller()->state();
+    visible = state == SplitViewState::kLeftSnapped ||
+              state == SplitViewState::kRightSnapped;
   }
 
   if (!visible && !cannot_snap_widget_)

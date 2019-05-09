@@ -18,6 +18,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "ash/wm/window_state.h"
@@ -466,8 +467,8 @@ void NonClientFrameViewAsh::OnOverviewModeEnded() {
 }
 
 void NonClientFrameViewAsh::OnSplitViewStateChanged(
-    SplitViewController::State /* previous_state */,
-    SplitViewController::State /* current_state */) {
+    SplitViewState /* previous_state */,
+    SplitViewState /* current_state */) {
   UpdateHeaderView();
 }
 

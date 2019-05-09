@@ -18,6 +18,7 @@
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -190,9 +191,8 @@ void BackdropController::OnAccessibilityStatusChanged() {
   UpdateBackdrop();
 }
 
-void BackdropController::OnSplitViewStateChanged(
-    SplitViewController::State previous_state,
-    SplitViewController::State state) {
+void BackdropController::OnSplitViewStateChanged(SplitViewState previous_state,
+                                                 SplitViewState state) {
   UpdateBackdrop();
 }
 
@@ -321,10 +321,10 @@ bool BackdropController::BackdropShouldFullscreen() {
   aura::Window* window = GetTopmostWindowWithBackdrop();
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
-  SplitViewController::State state = split_view_controller->state();
-  if ((state == SplitViewController::LEFT_SNAPPED &&
+  SplitViewState state = split_view_controller->state();
+  if ((state == SplitViewState::kLeftSnapped &&
        window == split_view_controller->left_window()) ||
-      (state == SplitViewController::RIGHT_SNAPPED &&
+      (state == SplitViewState::kRightSnapped &&
        window == split_view_controller->right_window())) {
     return false;
   }
@@ -337,14 +337,14 @@ gfx::Rect BackdropController::GetBackdropBounds() {
 
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
-  SplitViewController::State state = split_view_controller->state();
-  DCHECK(state == SplitViewController::LEFT_SNAPPED ||
-         state == SplitViewController::RIGHT_SNAPPED);
+  SplitViewState state = split_view_controller->state();
+  DCHECK(state == SplitViewState::kLeftSnapped ||
+         state == SplitViewState::kRightSnapped);
   aura::Window* snapped_window =
       split_view_controller->GetDefaultSnappedWindow();
   SplitViewController::SnapPosition snap_position =
-      (state == SplitViewController::LEFT_SNAPPED) ? SplitViewController::LEFT
-                                                   : SplitViewController::RIGHT;
+      (state == SplitViewState::kLeftSnapped) ? SplitViewController::LEFT
+                                              : SplitViewController::RIGHT;
   return split_view_controller->GetSnappedWindowBoundsInScreenUnadjusted(
       snapped_window, snap_position);
 }

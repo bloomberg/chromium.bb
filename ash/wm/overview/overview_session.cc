@@ -922,28 +922,26 @@ void OverviewSession::OnShellDestroying() {
   CancelSelection();
 }
 
-void OverviewSession::OnSplitViewStateChanged(
-    SplitViewController::State previous_state,
-    SplitViewController::State state) {
+void OverviewSession::OnSplitViewStateChanged(SplitViewState previous_state,
+                                              SplitViewState state) {
   // Do nothing if overview is being shutdown.
   if (!Shell::Get()->overview_controller()->InOverviewSession())
     return;
 
   const bool unsnappable_window_activated =
-      state == SplitViewController::NO_SNAP &&
+      state == SplitViewState::kNoSnap &&
       Shell::Get()->split_view_controller()->end_reason() ==
           SplitViewController::EndReason::kUnsnappableWindowActivated;
 
   // Restore focus unless either a window was just snapped (and activated) or
   // split view mode was ended by activating an unsnappable window.
-  if (state != SplitViewController::NO_SNAP || unsnappable_window_activated)
+  if (state != SplitViewState::kNoSnap || unsnappable_window_activated)
     ResetFocusRestoreWindow(false);
 
   // If two windows were snapped to both sides of the screen or an unsnappable
   // window was just activated, or we're in single split mode in clamshell mode
   // and there is no window in overview, end overview mode and bail out.
-  if (state == SplitViewController::BOTH_SNAPPED ||
-      unsnappable_window_activated ||
+  if (state == SplitViewState::kBothSnapped || unsnappable_window_activated ||
       (Shell::Get()->split_view_controller()->InClamshellSplitViewMode() &&
        IsEmpty())) {
     CancelSelection();
@@ -956,7 +954,7 @@ void OverviewSession::OnSplitViewStateChanged(
     grid->UpdateCannotSnapWarningVisibility();
 
   // Notify |split_view_drag_indicators_| if split view mode ended.
-  if (split_view_drag_indicators_ && state == SplitViewController::NO_SNAP)
+  if (split_view_drag_indicators_ && state == SplitViewState::kNoSnap)
     split_view_drag_indicators_->OnSplitViewModeEnded();
 }
 
@@ -1088,11 +1086,10 @@ void OverviewSession::MaybeCreateAndPositionNoWindowsWidget() {
   gfx::Rect bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
   auto* split_view_controller = Shell::Get()->split_view_controller();
-  if (split_view_controller->state() == SplitViewController::LEFT_SNAPPED) {
+  if (split_view_controller->state() == SplitViewState::kLeftSnapped) {
     bounds = split_view_controller->GetSnappedWindowBoundsInScreen(
         window, SplitViewController::RIGHT);
-  } else if (split_view_controller->state() ==
-             SplitViewController::RIGHT_SNAPPED) {
+  } else if (split_view_controller->state() == SplitViewState::kRightSnapped) {
     bounds = split_view_controller->GetSnappedWindowBoundsInScreen(
         window, SplitViewController::LEFT);
   }
