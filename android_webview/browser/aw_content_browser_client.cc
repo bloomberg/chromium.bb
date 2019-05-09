@@ -71,6 +71,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/client_certificate_delegate.h"
+#include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/file_url_loader.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -378,6 +379,8 @@ AwContentBrowserClient::GetNetworkContextParams() {
   g_created_network_context_params = true;
 #endif
   context_params->check_clear_text_permitted = g_check_cleartext_permitted;
+
+  content::UpdateCorsExemptHeader(context_params.get());
 
   // Add proxy settings
   AwProxyConfigMonitor::GetInstance()->AddProxyToNetworkContextParams(
