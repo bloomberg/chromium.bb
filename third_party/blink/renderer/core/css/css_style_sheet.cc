@@ -226,6 +226,8 @@ void CSSStyleSheet::DidMutateRules() {
       resolver->InvalidateMatchedPropertiesCache();
   } else if (!adopted_tree_scopes_.IsEmpty()) {
     for (auto tree_scope : adopted_tree_scopes_) {
+      if (!tree_scope->RootNode().isConnected())
+        continue;
       tree_scope->GetDocument().GetStyleEngine().SetNeedsActiveStyleUpdate(
           *tree_scope);
       if (StyleResolver* resolver =
