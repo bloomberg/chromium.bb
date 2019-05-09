@@ -267,15 +267,15 @@
 <translation id="1502843533062797703">Activa el bloqueig d'injecció de programari de tercers</translation>
 <translation id="1504431521196476721">Testimoni remot</translation>
 <translation id="1507382822467487898">
-          Configura quina adreça MAC (control d'accés als recursos multimèdia) s'utilitzarà quan es connecta una base al dispositiu.
+          Configura quina adreça MAC (control d'accés multimèdia) es farà servir en connectar una base al dispositiu.
 
-          Quan una base es connecta a alguns models de dispositius, l'adreça MAC de la base dissenyada s'utilitza per identificar el dispositiu a Ethernet de manera predeterminada. Aquesta política permet a l'administrador canviar l'origen de l'adreça MAC mentre el dispositiu està connectat a la base.
+          Quan es connecta una base a alguns models de dispositiu, es fa servir l'adreça MAC de la base designada pel dispositiu per identificar el dispositiu a Ethernet de manera predeterminada. Aquesta política permet que l'administrador canviï la font de l'adreça MAC mentre està connectat.
 
-          Si se selecciona "DeviceDockMacAddress" o la política es deixa sense establir, s'utilitzarà l'adreça MAC de la base designada del dispositiu.
+          Si se selecciona "DeviceDockMacAddress" o la política es deixa sense establir, es farà servir l'adreça MAC de la base designada pel dispositiu.
 
-          Si se selecciona "DeviceNicMacAddress", s'utilitzarà l'adreça MAC del NIC (controlador de la interfície de xarxa).
+          Si se selecciona "DeviceNicMacAddress", es farà servir l'adreça MAC del NIC (controlador de la interfície de xarxa) del dispositiu.
 
-          Si se selecciona "DockNicMacAddress", s'utilitzarà l'adreça MAC del NIC de la base.
+          Si se selecciona "DockNicMacAddress", es farà servir l'adreça MAC del NIC de la base.
 
           L'usuari no pot canviar aquesta opció de configuració.</translation>
 <translation id="1507957856411744193">Si aquesta política s'estableix en "true", <ph name="PRODUCT_NAME" /> es connectarà a dispositius d'emissió en totes les adreces IP, no només en adreces privades de les normes RFC 1918 i RFC 4913.
@@ -671,7 +671,7 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
 
           Si aquesta política es deixa sense establir i el dispositiu l'admet, s'aplicarà el mode estàndard de càrrega de la bateria i l'usuari no el podrà canviar.
 
-          Nota: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> substitueix aquesta política si la primera s'especifica.</translation>
+          Nota: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> substitueix aquesta política si s'especifica l'anterior.</translation>
 <translation id="237494535617297575">Us permet definir una llista de patrons d'URL que especifiquen els llocs en què està permès mostrar notificacions. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultNotificationsSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="2386362615870139244">Permet els wake locks de la pantalla</translation>
 <translation id="2411817661175306360">L'advertiment sobre la protecció de contrasenyes està desactivat</translation>
@@ -1107,7 +1107,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 <translation id="3165808775394012744">Aquestes polítiques s'inclouen aquí perquè sigui fàcil suprimir-les.</translation>
 <translation id="316778957754360075">Aquesta versió no està disponible des de la versió 29 de <ph name="PRODUCT_NAME" />. La manera recomanada de definir col·leccions d'aplicacions/extensions allotjades per una organització és incloure el lloc que allotja els paquets CRX a ExtensionInstallSources i col·locar enllaços de baixada directa als paquets en una pàgina web. Es pot crear un menú d'aplicacions per a la pàgina web mitjançant la política ExtensionInstallForcelist.</translation>
 <translation id="3171369832001535378">Plantilla per al nom d'amfitrió de la xarxa del dispositiu</translation>
-<translation id="3177802893484440532">Requereix als ancoratges de confiança locals que duguin a terme comprovacions OCSP/CRL en línia</translation>
+<translation id="3177802893484440532">Requereix comprovacions OCSP/CRL en línia per a ancoratges de confiança locals</translation>
 <translation id="3185009703220253572">des de la versió <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Les aplicacions per a Android no poden obtenir accés a les claus corporatives. Aquesta política no hi té cap efecte.</translation>
 <translation id="3205825995289802549">Maximitza la primera finestra del navegador en iniciar-lo per primera vegada</translation>
@@ -1367,9 +1367,9 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3826475866868158882">S'han activat els serveis d'ubicació de Google</translation>
 <translation id="3831054243924627613">Aquesta política controla l'estat inicial del servei de còpia de seguretat i restauració d'Android.
 
-      Quan aquesta política no es configura o s'estableix en "<ph name="BR_DISABLED" />", el servei de còpia de seguretat i restauració d'Android es desactiva en un primer moment.
+      Quan aquesta política no es configura o s'estableix en "<ph name="BR_DISABLED" />", el servei de còpia de seguretat i restauració d'Android està desactivat des d'un principi.
 
-      Quan aquesta política s'estableix en "<ph name="BR_ENABLED" />", el servei de còpia de seguretat i restauració d'Android s'activa en un primer moment.
+      Quan aquesta política s'estableix en "<ph name="BR_ENABLED" />", el servei de còpia de seguretat i restauració d'Android està activat des d'un principi.
 
       Quan aquesta política s'estableix en "<ph name="BR_UNDER_USER_CONTROL" />", es demana a l'usuari que triï si vol utilitzar el servei de còpia de seguretat i restauració d'Android. Si l'usuari activa el servei de còpia de seguretat i restauració, les dades de l'aplicació d'Android es carreguen als servidors de còpia de seguretat d'Android, des d'on es restauraran quan es tornin a instal·lar aplicacions compatibles.
 
@@ -1671,7 +1671,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Utilitza el caràcter comodí "*" per cercar coincidències amb zero o més caràcters arbitraris. El caràcter d'escapada és "\", per tant, col·loca'l davant de "*" o "\" per obtenir instàncies reals d'aquests caràcters.
 
      Si aquesta política no es defineix, es podran veure tots els comptes de Google del dispositiu a <ph name="PRODUCT_NAME" />.</translation>
-<translation id="4363057787588706121">Permet combinar llistes de polítiques de fonts diferents</translation>
+<translation id="4363057787588706121">Permet combinar les polítiques de llista que provinguin de fonts diferents</translation>
 <translation id="436581050240847513">Informe de les interfícies de xarxa del dispositiu</translation>
 <translation id="4372704773119750918">No permetis que l'usuari d'empresa formi part dels perfils múltiples (com a usuari principal o secundari)</translation>
 <translation id="4377599627073874279">Permet que tots els llocs mostrin totes les imatges</translation>
@@ -1944,11 +1944,11 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
       A diferència de la política <ph name="URL_LIST_POLICY_NAME" />, les regles són bidireccionals. És a dir, si hi ha el complement d'Internet Explorer i està activat, també controlarà si <ph name="IE_PRODUCT_NAME" /> ha d'obrir aquests URL a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Activa l'inici amb alimentació (corrent altern)</translation>
-<translation id="5131211790949066746">Permet la combinació de les polítiques <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> i <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />de les llistes d'instal·lació d'extensions.
+<translation id="5131211790949066746">Permet la combinació de les polítiques de llista per a la instal·lació d'extensions <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> i <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 
-      Si actives aquesta opció de configuració, els valors de la política de la plataforma de l'ordinador, la política del núvol de l'ordinador i la política de la plataforma de l'usuari es combinen en una llista única i s'utilitzen conjuntament en lloc de fer servir només els valors de la font de màxima prioritat.
+      Si actives aquesta opció de configuració, els valors de la política de la plataforma de l'ordinador, de la política al núvol de l'ordinador i de la política de la plataforma de l'usuari es combinen en una sola llista i es fan servir conjuntament en lloc d'utilitzar-se només els valors d'una sola font amb la prioritat més alta.
 
-      Si desactives aquesta opció de configuració o la deixes sense establir, només es tindran en compte les entrades de la llista de la font de màxima prioritat. La resta de fonts es mostraran com a conflictes i s'ignoraran.</translation>
+      Si desactives aquesta opció de configuració o la deixes sense establir, només es tindran en compte les entrades de la llista provinent de la font amb una prioritat més alta; les altres es mostraran com a conflictes i s'ignoraran.</translation>
 <translation id="5141670636904227950">Estableix el tipus de lupa predeterminat activat a la pantalla d'inici de sessió</translation>
 <translation id="5142301680741828703">Renderitza sempre els patrons URL següents a <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Us permet especificar els paràmetres especials que s'utilitzen quan <ph name="PRODUCT_FRAME_NAME" /> inicia <ph name="PRODUCT_NAME" />.
@@ -2203,11 +2203,11 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
 
           Aquesta opció de configuració afegeix a la llista blanca els tipus d'extensions i d'aplicacions admesos que es poden instal·lar a <ph name="PRODUCT_NAME" /> i els amfitrions amb què poden interaccionar. El valor és una llista de cadenes, cadascuna de les quals hauria de ser una de les següents: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Consulta la documentació de les extensions de <ph name="PRODUCT_NAME" /> per obtenir-ne més informació.
 
-          Tingues en compte que aquesta política també força les extensions i les aplicacions perquè s'instal·lin obligatòriament mitjançant ExtensionInstallForcelist.
+          Tingues en compte que aquesta política també afecta les extensions i les aplicacions que s'hauran d'instal·lar de manera forçada mitjançant ExtensionInstallForcelist.
 
-          Si es configura aquesta opció, no s'instal·laran les extensions o les aplicacions d'un tipus que no aparegui a la llista.
+          Si aquesta opció de configuració es configura, no s'instal·laran els tipus d'extensions o d'aplicacions que no aparegui a la llista.
 
-          Si no es configura aquesta opció, no s'aplicarà cap restricció als tipus d'extensions i d'aplicacions acceptables.
+          Si aquesta opció de configuració no es configura, no s'aplicarà cap restricció als tipus d'extensions i d'aplicacions acceptables.
 
           Abans de la versió 75, no s'admet l'ús de diversos identificadors d'extensions separats per comes i s'ometran. La resta de la política es continuarà aplicant.</translation>
 <translation id="5645779841392247734">Permet les galetes en aquests llocs</translation>
@@ -2520,7 +2520,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
         Si una política és a la llista i es produeix un conflicte entre dos fonts i també entre diferents abasts o nivells, s'aplicarà la política que tingui una prioritat més alta.
 
-        Si una política no és a la llista i es produeix un conflicte entre fonts, abasts o nivells, s'aplicarà la política que tingui una prioritat més alta.</translation>
+        Si una política no és a la llista i es produeix un conflicte entre fonts, abast o nivell, s'aplicarà la política que tingui una prioritat més alta.</translation>
 <translation id="6258193603492867656">Especifica si l'SPN de Kerberos que es genera ha d'incloure un port no estàndard. Si activeu aquest paràmetre i introduïu un port no estàndard (p. ex. un port diferent de 80 o de 443), s'inclourà a l'SPN de Kerberos que es generi. Si desactiveu aquest paràmetre o no el definiu, l'SPN del Kerberos que es generi no inclourà cap port en cap cas.</translation>
 <translation id="6261643884958898336">Proporciona informació d'identificació de l'ordinador</translation>
 <translation id="6281043242780654992">Configura les polítiques per a la missatgeria nativa. Només es permetran els amfitrions de missatgeria nativa afegits a la llista negra si també apareixen a la llista blanca.</translation>
@@ -3157,9 +3157,9 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si el valor d'aquesta política és 0, s'utilitzarà la mida de memòria cau predeterminada, però l'usuari no podrà canviar-la.
 
       Si no definiu aquesta política, s'utilitzarà la mida de memòria cau predeterminada i els usuaris podran substituir-la amb la marca "--disk-cache-size".</translation>
-<translation id="759389052790680884">Estableix la parada personalitzada de la càrrega de la bateria en percentatge.
+<translation id="759389052790680884">Estableix quan vols que la bateria deixi de carregar-se en percentatge.
 
-          La bateria deixa de carregar-se quan s'assoleix el valor en què s'ha establert l'aturada personalitzada de la càrrega de la bateria.
+          La bateria deixa de carregar-se quan s'assoleix el valor personalitzat de l'aturada de la càrrega.
 
           El valor de DeviceBatteryChargeCustomStartCharging ha de ser inferior al de DeviceBatteryChargeCustomStopCharging.
 
@@ -3240,9 +3240,9 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Si aquesta política no es configura o es deixa sense establir, el mode avançat de càrrega de bateria estarà sempre desactivat.
 
-          Nota: el valor de <ph name="CHARGE_START_TIME_FIELD_NAME" /> ha de ser inferior al de <ph name="CHARGE_END_TIME_FIELD_NAME" />.
+          Nota: el valor del camp <ph name="CHARGE_START_TIME_FIELD_NAME" /> ha de ser inferior al del camp <ph name="CHARGE_END_TIME_FIELD_NAME" />.
 
-          Nota: els valors que s'admeten al camp <ph name="MINUTE_FIELD_NAME" /> corresponent a <ph name="CHARGE_START_TIME_FIELD_NAME" /> i a <ph name="CHARGE_END_TIME_FIELD_NAME" /> són 0, 15, 30 i 45.</translation>
+          Nota: els valors permesos per al camp <ph name="MINUTE_FIELD_NAME" /> a <ph name="CHARGE_START_TIME_FIELD_NAME" /> i a <ph name="CHARGE_END_TIME_FIELD_NAME" /> són "0", "15", "30" i "45".</translation>
 <translation id="7717938661004793600">Permet configurar les funcions d'accessibilitat de <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7724994675283793633">Aquesta política activa la compatibilitat amb HTTP/0.9 als ports que no són 80 per a HTTP ni 443 per a HTTPS.
 
@@ -3617,7 +3617,7 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
       Si no s'estableix, s'utilitza el període predeterminat de 345.600.000 mil·lisegons (4 dies) per a dispositius amb <ph name="PRODUCT_OS_NAME" /> i 604.800.000 mil·lisegons (1 setmana) per a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">L'advertiment sobre la protecció de contrasenyes s'activa quan es reutilitza una contrasenya</translation>
 <translation id="8693243869659262736">Utilitza el client DNS integrat</translation>
-<translation id="8698286761337647563">Amb quants dies d'antelació es notifica als usuaris de SAML que la seva contrasenya caducarà aviat</translation>
+<translation id="8698286761337647563">Amb quants dies d'antel·lació es notifica als usuaris de SAML que la seva contrasenya caducarà aviat</translation>
 <translation id="8703488928438047864">Informa de l'estat del tauler</translation>
 <translation id="8703872185032220081">Estableix la configuració diària per al canvi d'alimentació en els pics d'ús.
 
