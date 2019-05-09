@@ -357,8 +357,8 @@ class BuildConfigGenerator extends DefaultTask {
                 licenseString = dependency.licenseName
         }
 
-        def securityCritical = dependency.supportsAndroid && !dependency.testOnly
-        def licenseFile = securityCritical? "LICENSE" : "NOT_SHIPPED"
+        def securityCritical = dependency.supportsAndroid && dependency.isShipped
+        def licenseFile = dependency.isShipped? "LICENSE" : "NOT_SHIPPED"
 
         return """\
         Name: ${dependency.displayName}

@@ -62,11 +62,13 @@ class ChromiumDepGraph {
 
     void collectDependencies() {
         def compileConfig = project.configurations.getByName('compile').resolvedConfiguration
+        def buildCompileConfig = project.configurations.getByName('buildCompile').resolvedConfiguration
         def annotationProcessorConfig = project.configurations.getByName('annotationProcessor').resolvedConfiguration
         def testCompileConfig = project.configurations.getByName('testCompile').resolvedConfiguration
         List<String> topLevelIds = []
         Set<ResolvedConfiguration> deps = []
         deps += compileConfig.firstLevelModuleDependencies
+        deps += buildCompileConfig.firstLevelModuleDependencies
         deps += annotationProcessorConfig.firstLevelModuleDependencies
         deps += testCompileConfig.firstLevelModuleDependencies
 
@@ -82,6 +84,16 @@ class ChromiumDepGraph {
             assert dep != null : "No dependency collected for artifact ${artifact.name}"
             dep.supportsAndroid = true
             dep.testOnly = true
+            dep.isShipped = false
+        }
+
+        buildCompileConfig.resolvedArtifacts.each { artifact ->
+            def id = makeModuleId(artifact)
+            def dep = dependencies.get(id)
+            assert dep != null : "No dependency collected for artifact ${artifact.name}"
+            dep.supportsAndroid = true
+            dep.testOnly = false
+            dep.isShipped = false
         }
 
         compileConfig.resolvedArtifacts.each { artifact ->
@@ -90,6 +102,7 @@ class ChromiumDepGraph {
             assert dep != null : "No dependency collected for artifact ${artifact.name}"
             dep.supportsAndroid = true
             dep.testOnly = false
+            dep.isShipped = true
         }
     }
 
@@ -248,7 +261,7 @@ class ChromiumDepGraph {
         String group, name, version, extension, displayName, description, url
         String licenseName, licenseUrl, licensePath
         String fileName
-        boolean supportsAndroid, visible, exclude, testOnly
+        boolean supportsAndroid, visible, exclude, testOnly, isShipped
         boolean licenseAndroidCompatible
         ComponentIdentifier componentId
         List<String> children
