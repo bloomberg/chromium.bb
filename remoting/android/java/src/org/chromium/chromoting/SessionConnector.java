@@ -68,7 +68,7 @@ public class SessionConnector implements ConnectionListener, DirectoryService.Ho
     }
 
     private void doConnect() {
-        mClient.connectToHost(mAccountName, mAuthToken, mHost.jabberId, mHost.id,
+        mClient.connectToHost(mAccountName, mAuthToken, mHost.jabberId, mHost.ftlId, mHost.id,
                 mHost.publicKey, mAuthenticator, mFlags, mHost.hostVersion, mHost.hostOs,
                 mHost.hostOsVersion, this);
     }

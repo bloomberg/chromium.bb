@@ -150,6 +150,7 @@ void JniClient::Connect(
     const base::android::JavaParamRef<jstring>& username,
     const base::android::JavaParamRef<jstring>& auth_token,
     const base::android::JavaParamRef<jstring>& host_jid,
+    const base::android::JavaParamRef<jstring>& host_ftl_id,
     const base::android::JavaParamRef<jstring>& host_id,
     const base::android::JavaParamRef<jstring>& host_pubkey,
     const base::android::JavaParamRef<jstring>& pair_id,
@@ -163,6 +164,7 @@ void JniClient::Connect(
   info.username = ConvertJavaStringToUTF8(env, username);
   info.auth_token = ConvertJavaStringToUTF8(env, auth_token);
   info.host_jid = ConvertJavaStringToUTF8(env, host_jid);
+  info.host_ftl_id = ConvertJavaStringToUTF8(env, host_ftl_id);
   info.host_id = ConvertJavaStringToUTF8(env, host_id);
   info.host_pubkey = ConvertJavaStringToUTF8(env, host_pubkey);
   info.pairing_id = ConvertJavaStringToUTF8(env, pair_id);
