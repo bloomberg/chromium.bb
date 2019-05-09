@@ -2028,8 +2028,8 @@
   },
   {
     "name": "force-color-profile",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "ccameron" ],
+    "expiry_milestone": 81
   },
   {
     "name": "force-effective-connection-type",
