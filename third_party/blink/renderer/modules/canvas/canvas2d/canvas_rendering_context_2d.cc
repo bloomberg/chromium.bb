@@ -557,7 +557,14 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
     Font resolved_font;
     if (!canvas_font_cache->GetFontUsingDefaultStyle(new_font, resolved_font))
       return;
-    ModifiableState().SetFont(resolved_font, Host()->GetFontSelector());
+
+    // We need to reset Computed and Adjusted size so we skip zoom and
+    // minimum font size for detached canvas.
+    FontDescription final_description(resolved_font.GetFontDescription());
+    final_description.SetComputedSize(final_description.SpecifiedSize());
+    final_description.SetAdjustedSize(final_description.SpecifiedSize());
+    Font final_font(final_description);
+    ModifiableState().SetFont(final_font, Host()->GetFontSelector());
   }
 
   // The parse succeeded.
