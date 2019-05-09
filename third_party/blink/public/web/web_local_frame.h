@@ -213,10 +213,6 @@ class WebLocalFrame : public WebFrame {
   // Start navigation to the given URL.
   virtual void StartNavigation(const WebURLRequest&) = 0;
 
-  // Returns the document loader that is currently loading.  May be null.
-  // TODO(dgozman): move this to WebNavigationControl.
-  virtual WebDocumentLoader* GetProvisionalDocumentLoader() const = 0;
-
   // View-source rendering mode.  Set this before loading an URL to cause
   // it to be rendered in view-source mode.
   virtual void EnableViewSourceMode(bool) = 0;

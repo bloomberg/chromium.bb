@@ -126,9 +126,6 @@ class CORE_EXPORT FrameLoader final {
   void DidAccessInitialDocument();
 
   DocumentLoader* GetDocumentLoader() const { return document_loader_.Get(); }
-  DocumentLoader* GetProvisionalDocumentLoader() const {
-    return provisional_document_loader_.Get();
-  }
 
   void SetDefersLoading(bool);
 
@@ -196,7 +193,7 @@ class CORE_EXPORT FrameLoader final {
   void RestoreScrollPositionAndViewState();
 
   bool HasProvisionalNavigation() const {
-    return client_navigation_.get() || GetProvisionalDocumentLoader();
+    return client_navigation_.get() || provisional_document_loader_.Get();
   }
 
   bool MaybeRenderFallbackContent();

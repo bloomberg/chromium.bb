@@ -79,17 +79,7 @@ blink::WebDocumentLoader* CurrentDocumentLoader(
     const blink::WebLocalFrame* frame) {
   auto& map = FrameDocumentLoaderMap();
   auto it = map.find(frame);
-  blink::WebDocumentLoader* loader = frame->GetDocumentLoader();
-  if (it != map.end()) {
-    loader = it->second;
-    // This and next are temporary DCHECKs which verify that
-    // document loader we have in the map is the same as
-    // (soon to be removed) GetProvisionalDocumentLoader.
-    DCHECK_EQ(loader, frame->GetProvisionalDocumentLoader());
-  } else {
-    DCHECK(!frame->GetProvisionalDocumentLoader());
-  }
-  return loader;
+  return it == map.end() ? frame->GetDocumentLoader() : it->second;
 }
 
 }  // namespace

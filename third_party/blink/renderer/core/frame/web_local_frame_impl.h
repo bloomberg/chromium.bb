@@ -154,7 +154,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   void StartNavigation(const WebURLRequest&) override;
   void CheckCompleted() override;
   void StopLoading() override;
-  WebDocumentLoader* GetProvisionalDocumentLoader() const override;
   WebDocumentLoader* GetDocumentLoader() const override;
   void EnableViewSourceMode(bool enable) override;
   bool IsViewSourceModeEnabled() const override;

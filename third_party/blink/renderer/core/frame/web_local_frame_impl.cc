@@ -932,12 +932,6 @@ void WebLocalFrameImpl::StopLoading() {
   GetFrame()->Loader().StopAllLoaders();
 }
 
-WebDocumentLoader* WebLocalFrameImpl::GetProvisionalDocumentLoader() const {
-  DCHECK(GetFrame());
-  return DocumentLoaderForDocLoader(
-      GetFrame()->Loader().GetProvisionalDocumentLoader());
-}
-
 WebDocumentLoader* WebLocalFrameImpl::GetDocumentLoader() const {
   DCHECK(GetFrame());
   return DocumentLoaderForDocLoader(GetFrame()->Loader().GetDocumentLoader());

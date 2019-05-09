@@ -92,7 +92,6 @@ void AppWindowCustomBindings::ResumeParser(
     return;
   }
 
-  DCHECK(!app_frame->GetWebFrame()->GetProvisionalDocumentLoader());
   blink::WebDocumentLoader* loader =
       app_frame->GetWebFrame()->GetDocumentLoader();
   if (!loader) {
