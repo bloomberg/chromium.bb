@@ -927,7 +927,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessInternalsHitTestBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessInternalsHitTestBrowserTest,
-                       NestedLocalNonFastScrollableDivCoordsAreLocal) {
+                       DISABLED_NestedLocalNonFastScrollableDivCoordsAreLocal) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
