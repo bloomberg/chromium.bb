@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
@@ -134,6 +135,10 @@ static void ConsiderForBestCandidate(SpatialNavigationDirection direction,
     *best_candidate = candidate;
     *best_distance = distance;
   }
+}
+
+bool IsFocused(Element* element) {
+  return element && element->IsFocused();
 }
 
 }  // namespace
@@ -527,6 +532,7 @@ void SpatialNavigationController::UpdateSpatialNavigationState(
   change |= UpdateCanExitFocus(element);
   change |= UpdateCanSelectInterestedElement(element);
   change |= UpdateHasNextFormElement(element);
+  change |= UpdateHasDefaultVideoControls(element);
   if (change)
     OnSpatialNavigationStateChanged();
 }
@@ -539,7 +545,7 @@ void SpatialNavigationController::OnSpatialNavigationStateChanged() {
 }
 
 bool SpatialNavigationController::UpdateCanExitFocus(Element* element) {
-  bool can_exit_focus = element && element->IsFocused();
+  bool can_exit_focus = IsFocused(element);
   if (can_exit_focus == spatial_navigation_state_->can_exit_focus)
     return false;
   spatial_navigation_state_->can_exit_focus = can_exit_focus;
@@ -559,13 +565,27 @@ bool SpatialNavigationController::UpdateCanSelectInterestedElement(
 
 bool SpatialNavigationController::UpdateHasNextFormElement(Element* element) {
   bool has_next_form_element =
-      element && element->IsFocused() &&
+      IsFocused(element) &&
       page_->GetFocusController().NextFocusableElementInForm(
           element, kWebFocusTypeForward);
   if (has_next_form_element == spatial_navigation_state_->has_next_form_element)
     return false;
 
   spatial_navigation_state_->has_next_form_element = has_next_form_element;
+  return true;
+}
+
+bool SpatialNavigationController::UpdateHasDefaultVideoControls(
+    Element* element) {
+  bool has_default_video_controls =
+      IsFocused(element) && IsHTMLVideoElement(element) &&
+      ToHTMLVideoElement(element)->ShouldShowControls();
+  if (has_default_video_controls ==
+      spatial_navigation_state_->has_default_video_controls) {
+    return false;
+  }
+  spatial_navigation_state_->has_default_video_controls =
+      has_default_video_controls;
   return true;
 }
 

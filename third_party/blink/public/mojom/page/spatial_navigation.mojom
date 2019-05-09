@@ -14,6 +14,8 @@ struct SpatialNavigationState {
   // True if the currently focused element is a form element, and there is a
   // next form element available to move to.
   bool has_next_form_element;
+  // True if the video element has default controls and the element is focused.
+  bool has_default_video_controls;
 };
 
 // Mojo service for browser exposing Spatial Navigation state to the browser.
