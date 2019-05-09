@@ -19,12 +19,10 @@ WebThreadSupportingGC::WebThreadSupportingGC(
 #if DCHECK_IS_ON()
   WTF::WillCreateThread();
 #endif
-  if (!thread_) {
-    if (params.thread_type == WebThreadType::kAudioWorkletThread) {
-      thread_ = Thread::CreateWebAudioThread();
-    } else {
-      thread_ = Thread::CreateThread(params);
-    }
+  if (params.thread_type == WebThreadType::kAudioWorkletThread) {
+    thread_ = Thread::CreateWebAudioThread();
+  } else {
+    thread_ = Thread::CreateThread(params);
   }
   MemoryPressureListenerRegistry::Instance().RegisterThread(thread_.get());
 }
