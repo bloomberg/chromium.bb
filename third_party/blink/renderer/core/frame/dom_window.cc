@@ -498,11 +498,19 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
 
   // Transfer user activation state in the source's renderer when
   // |transferUserActivation| is true.
+  // TODO(lanwei): we should execute the below code after the post task fires
+  // (for both local and remote posting messages).
   LocalFrame* source_frame = source->GetFrame();
   if (RuntimeEnabledFeatures::UserActivationPostMessageTransferEnabled() &&
       options->transferUserActivation() &&
       LocalFrame::HasTransientUserActivation(source_frame)) {
     GetFrame()->TransferUserActivationFrom(source_frame);
+
+    // When the source and target frames are in the same process, we need to
+    // update the user activation state in the browser process. For the cross
+    // process case, it is handled in RemoteDOMWindow.
+    if (IsLocalDOMWindow())
+      GetFrame()->Client()->TransferUserActivationFrom(source->GetFrame());
   }
 
   SchedulePostMessage(event, std::move(target), source_document);

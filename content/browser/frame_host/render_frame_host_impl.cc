@@ -1462,6 +1462,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_RequestOverlayRoutingToken,
                         OnRequestOverlayRoutingToken)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ShowCreatedWindow, OnShowCreatedWindow)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_TransferUserActivationFrom,
+                        OnTransferUserActivationFrom)
   IPC_END_MESSAGE_MAP()
 
   // No further actions here, since we may have been deleted.
@@ -3657,6 +3659,16 @@ void RenderFrameHostImpl::OnShowCreatedWindow(int pending_widget_routing_id,
                                               bool user_gesture) {
   delegate_->ShowCreatedWindow(GetProcess()->GetID(), pending_widget_routing_id,
                                disposition, initial_rect, user_gesture);
+}
+
+void RenderFrameHostImpl::OnTransferUserActivationFrom(
+    int32_t source_routing_id) {
+  RenderFrameHostImpl* source_rfh =
+      RenderFrameHostImpl::FromID(GetProcess()->GetID(), source_routing_id);
+  if (source_rfh &&
+      source_rfh->frame_tree_node()->HasTransientUserActivation()) {
+    frame_tree_node()->TransferUserActivationFrom(source_rfh);
+  }
 }
 
 void RenderFrameHostImpl::CreateNewWindow(

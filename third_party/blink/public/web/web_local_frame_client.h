@@ -862,6 +862,9 @@ class BLINK_EXPORT WebLocalFrameClient {
                                                     v8::Isolate*) {
     return v8::Local<v8::Object>();
   }
+
+  // Transfers user activation state from |source_frame| to the current frame.
+  virtual void TransferUserActivationFrom(WebLocalFrame* source_frame) {}
 };
 
 }  // namespace blink

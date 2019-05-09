@@ -9,6 +9,7 @@
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -37,6 +38,9 @@ class CORE_EXPORT FrameClient : public GarbageCollectedFinalized<FrameClient> {
   virtual void VisibilityChanged(blink::mojom::FrameVisibility visibility) = 0;
 
   virtual base::UnguessableToken GetDevToolsFrameToken() const = 0;
+
+  // Transfers user activation state from |source_frame| to the this frame.
+  virtual void TransferUserActivationFrom(LocalFrame* source_frame) {}
 
   virtual ~FrameClient() = default;
 

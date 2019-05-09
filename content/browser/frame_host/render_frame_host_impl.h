@@ -1142,6 +1142,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       blink::WebScrollGranularity granularity);
   void OnFrameDidCallFocus();
   void OnRenderFallbackContentInParentProcess();
+  void OnTransferUserActivationFrom(int32_t source_routing_id);
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   void OnShowPopup(const FrameHostMsg_ShowPopup_Params& params);

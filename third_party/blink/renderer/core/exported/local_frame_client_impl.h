@@ -322,6 +322,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   bool UsePrintingLayout() const override;
 
+  void TransferUserActivationFrom(LocalFrame* source_frame) override;
+
  private:
   struct DocumentInterfaceBrokerForwarderTraits {
     using Interface = mojom::blink::DocumentInterfaceBroker;

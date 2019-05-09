@@ -283,7 +283,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
       MessageEvent* event,
       scoped_refptr<UserGestureToken> token,
       scoped_refptr<const SecurityOrigin> intended_target_origin,
-      std::unique_ptr<SourceLocation>);
+      std::unique_ptr<SourceLocation> location);
 
   void DispatchMessageEventWithOriginCheck(
       const SecurityOrigin* intended_target_origin,

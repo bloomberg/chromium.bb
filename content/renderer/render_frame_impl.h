@@ -984,6 +984,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidCancelResponse(int request_id);
   void DidReceiveTransferSizeUpdate(int request_id, int received_data_length);
 
+  void TransferUserActivationFrom(blink::WebLocalFrame* source_frame) override;
+
   // Used in tests to override DocumentInterfaceBroker's methods
   void SetDocumentInterfaceBrokerForTesting(
       blink::mojom::DocumentInterfaceBrokerPtr test_broker);

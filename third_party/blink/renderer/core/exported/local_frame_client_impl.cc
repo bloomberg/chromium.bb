@@ -1247,6 +1247,12 @@ bool LocalFrameClientImpl::UsePrintingLayout() const {
   return web_frame_->UsePrintingLayout();
 }
 
+void LocalFrameClientImpl::TransferUserActivationFrom(
+    LocalFrame* source_frame) {
+  web_frame_->Client()->TransferUserActivationFrom(
+      WebLocalFrameImpl::FromFrame(source_frame));
+}
+
 STATIC_ASSERT_ENUM(DownloadCrossOriginRedirects::kFollow,
                    WebLocalFrameClient::CrossOriginRedirects::kFollow);
 STATIC_ASSERT_ENUM(DownloadCrossOriginRedirects::kNavigate,

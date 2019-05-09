@@ -7545,4 +7545,16 @@ void RenderFrameImpl::AbortCommitNavigation(
   }
 }
 
+void RenderFrameImpl::TransferUserActivationFrom(
+    blink::WebLocalFrame* source_frame) {
+  int32_t source_routing_id = MSG_ROUTING_NONE;
+  if (source_frame) {
+    RenderFrameImpl* source_render_frame =
+        RenderFrameImpl::FromWebFrame(source_frame);
+    source_routing_id = source_render_frame->GetRoutingID();
+    Send(new FrameHostMsg_TransferUserActivationFrom(routing_id_,
+                                                     source_routing_id));
+  }
+}
+
 }  // namespace content
