@@ -5,9 +5,21 @@
 #ifndef COMPONENTS_GWP_ASAN_CLIENT_GWP_ASAN_H_
 #define COMPONENTS_GWP_ASAN_CLIENT_GWP_ASAN_H_
 
+#include <stddef.h>  // for size_t
 #include "components/gwp_asan/client/export.h"
 
 namespace gwp_asan {
+
+namespace internal {
+
+struct AllocatorSettings {
+  size_t max_allocated_pages;
+  size_t num_metadata;
+  size_t total_pages;
+  size_t sampling_frequency;
+};
+
+}  // namespace internal
 
 // Enable GWP-ASan for the current process. This should only be called once per
 // process. This can not be disabled once it has been enabled. The caller should

@@ -48,6 +48,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "guarded_page_allocator_unittest.cc",
+    "gwp_asan_unittest.cc",
   ]
 
   if (use_allocator_shim) {
@@ -64,6 +65,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/crash/core/common:crash_key",
     "//components/gwp_asan/common",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }

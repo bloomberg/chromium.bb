@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/numerics/safe_math.h"
+#include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
@@ -29,7 +30,6 @@ namespace gwp_asan {
 namespace internal {
 namespace {
 
-#if BUILDFLAG(USE_ALLOCATOR_SHIM)
 constexpr int kDefaultMaxAllocations = 35;
 constexpr int kDefaultMaxMetadata = 150;
 
@@ -41,46 +41,28 @@ constexpr int kDefaultTotalPages = 2048;
 constexpr int kDefaultTotalPages = kDefaultMaxMetadata * 2;
 #endif
 
-constexpr int kDefaultAllocationSamplingMultiplier = 1000;
-constexpr int kDefaultAllocationSamplingRange = 64;
-constexpr double kDefaultProcessSamplingProbability = 0.2;
-constexpr int kDefaultProcessSamplingBoost = 4;
-
-const base::Feature kGwpAsan{"GwpAsanMalloc", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::FeatureParam<int> kMaxAllocationsParam{&kGwpAsan, "MaxAllocations",
-                                                   kDefaultMaxAllocations};
-
-const base::FeatureParam<int> kMaxMetadataParam{&kGwpAsan, "MaxMetadata",
-                                                kDefaultMaxMetadata};
-
-const base::FeatureParam<int> kTotalPagesParam{&kGwpAsan, "TotalPages",
-                                               kDefaultTotalPages};
-
 // The allocation sampling frequency is calculated using the formula:
 // multiplier * range**rand
 // where rand is a random real number in the range [0,1).
-const base::FeatureParam<int> kAllocationSamplingMultiplierParam{
-    &kGwpAsan, "AllocationSamplingMultiplier",
-    kDefaultAllocationSamplingMultiplier};
+constexpr int kDefaultAllocationSamplingMultiplier = 1000;
+constexpr int kDefaultAllocationSamplingRange = 64;
 
-const base::FeatureParam<int> kAllocationSamplingRangeParam{
-    &kGwpAsan, "AllocationSamplingRange", kDefaultAllocationSamplingRange};
-
-const base::FeatureParam<double> kProcessSamplingParam{
-    &kGwpAsan, "ProcessSamplingProbability",
-    kDefaultProcessSamplingProbability};
-
+constexpr double kDefaultProcessSamplingProbability = 0.2;
 // The multiplier to increase the ProcessSamplingProbability in scenarios where
 // we want to perform additional testing (e.g. on canary/dev builds or in the
 // browser process.) The multiplier increase is cumulative when multiple
 // conditions apply.
-const base::FeatureParam<int> kProcessSamplingBoostParam{
-    &kGwpAsan, "ProcessSamplingBoost", kDefaultProcessSamplingBoost};
+constexpr int kDefaultProcessSamplingBoost = 4;
+
+const base::Feature kGwpAsan{"GwpAsanMalloc", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Returns whether this process should be sampled to enable GWP-ASan.
-bool SampleProcess(bool is_canary_dev, bool is_browser_process) {
-  double process_sampling_probability = kProcessSamplingParam.Get();
+bool SampleProcess(const base::Feature& feature,
+                   bool is_canary_dev,
+                   bool is_browser_process) {
+  double process_sampling_probability =
+      GetFieldTrialParamByFeatureAsDouble(feature, "ProcessSamplingProbability",
+                                          kDefaultProcessSamplingProbability);
   if (process_sampling_probability < 0.0 ||
       process_sampling_probability > 1.0) {
     DLOG(ERROR) << "GWP-ASan ProcessSamplingProbability is out-of-range: "
@@ -88,11 +70,13 @@ bool SampleProcess(bool is_canary_dev, bool is_browser_process) {
     return false;
   }
 
+  int process_sampling_boost = GetFieldTrialParamByFeatureAsInt(
+      feature, "ProcessSamplingBoost", kDefaultProcessSamplingBoost);
   base::CheckedNumeric<int> multiplier = 1;
   if (is_canary_dev)
-    multiplier += kProcessSamplingBoostParam.Get();
+    multiplier += process_sampling_boost;
   if (is_browser_process)
-    multiplier += kProcessSamplingBoostParam.Get();
+    multiplier += process_sampling_boost;
 
   if (!multiplier.IsValid() || multiplier.ValueOrDie() < 1) {
     DLOG(ERROR) << "GWP-ASan ProcessSampling multiplier is out-of-range";
@@ -113,15 +97,18 @@ bool SampleProcess(bool is_canary_dev, bool is_browser_process) {
 }
 
 // Returns the allocation sampling frequency, or 0 on error.
-size_t AllocationSamplingFrequency() {
-  int multiplier = kAllocationSamplingMultiplierParam.Get();
+size_t AllocationSamplingFrequency(const base::Feature& feature) {
+  int multiplier =
+      GetFieldTrialParamByFeatureAsInt(feature, "AllocationSamplingMultiplier",
+                                       kDefaultAllocationSamplingMultiplier);
   if (multiplier < 1) {
     DLOG(ERROR) << "GWP-ASan AllocationSamplingMultiplier is out-of-range: "
                 << multiplier;
     return 0;
   }
 
-  int range = kAllocationSamplingRangeParam.Get();
+  int range = GetFieldTrialParamByFeatureAsInt(
+      feature, "AllocationSamplingRange", kDefaultAllocationSamplingRange);
   if (range < 1) {
     DLOG(ERROR) << "GWP-ASan AllocationSamplingRange is out-of-range: "
                 << range;
@@ -138,9 +125,15 @@ size_t AllocationSamplingFrequency() {
   return frequency.ValueOrDie();
 }
 
-bool EnableForMalloc(bool is_canary_dev, bool is_browser_process) {
-  if (!base::FeatureList::IsEnabled(kGwpAsan))
-    return false;
+}  // namespace
+
+// Exported for testing.
+GWP_ASAN_EXPORT base::Optional<AllocatorSettings> GetAllocatorSettings(
+    const base::Feature& feature,
+    bool is_canary_dev,
+    bool is_browser_process) {
+  if (!base::FeatureList::IsEnabled(feature))
+    return base::nullopt;
 
   static_assert(AllocatorState::kMaxSlots <= std::numeric_limits<int>::max(),
                 "kMaxSlots out of range");
@@ -150,48 +143,58 @@ bool EnableForMalloc(bool is_canary_dev, bool is_browser_process) {
                 "kMaxMetadata out of range");
   constexpr int kMaxMetadata = static_cast<int>(AllocatorState::kMaxMetadata);
 
-  int total_pages = kTotalPagesParam.Get();
+  int total_pages = GetFieldTrialParamByFeatureAsInt(feature, "TotalPages",
+                                                     kDefaultTotalPages);
   if (total_pages < 1 || total_pages > kMaxSlots) {
     DLOG(ERROR) << "GWP-ASan TotalPages is out-of-range: " << total_pages;
-    return false;
+    return base::nullopt;
   }
 
-  int max_metadata = kMaxMetadataParam.Get();
+  int max_metadata = GetFieldTrialParamByFeatureAsInt(feature, "MaxMetadata",
+                                                      kDefaultMaxMetadata);
   if (max_metadata < 1 || max_metadata > std::min(total_pages, kMaxMetadata)) {
     DLOG(ERROR) << "GWP-ASan MaxMetadata is out-of-range: " << max_metadata
                 << " with TotalPages = " << total_pages;
-    return false;
+    return base::nullopt;
   }
 
-  int max_allocations = kMaxAllocationsParam.Get();
+  int max_allocations = GetFieldTrialParamByFeatureAsInt(
+      feature, "MaxAllocations", kDefaultMaxAllocations);
   if (max_allocations < 1 || max_allocations > max_metadata) {
     DLOG(ERROR) << "GWP-ASan MaxAllocations is out-of-range: "
                 << max_allocations << " with MaxMetadata = " << max_metadata;
-    return false;
+    return base::nullopt;
   }
 
-  size_t alloc_sampling_freq = AllocationSamplingFrequency();
+  size_t alloc_sampling_freq = AllocationSamplingFrequency(feature);
   if (!alloc_sampling_freq)
-    return false;
+    return base::nullopt;
 
-  if (!SampleProcess(is_canary_dev, is_browser_process))
-    return false;
+  if (!SampleProcess(feature, is_canary_dev, is_browser_process))
+    return base::nullopt;
 
-  InstallMallocHooks(max_allocations, max_metadata, total_pages,
-                     alloc_sampling_freq);
-  return true;
+  return AllocatorSettings{max_allocations, max_metadata, total_pages,
+                           alloc_sampling_freq};
 }
-#endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
 
-}  // namespace
 }  // namespace internal
 
 void EnableForMalloc(bool is_canary_dev, bool is_browser_process) {
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
-  static bool init_once =
-      internal::EnableForMalloc(is_canary_dev, is_browser_process);
+  static bool init_once = [&]() -> bool {
+    auto settings = internal::GetAllocatorSettings(
+        internal::kGwpAsan, is_canary_dev, is_browser_process);
+    if (!settings)
+      return false;
+
+    internal::InstallMallocHooks(settings->max_allocated_pages,
+                                 settings->num_metadata, settings->total_pages,
+                                 settings->sampling_frequency);
+    return true;
+  }();
   ignore_result(init_once);
 #else
+  ignore_result(internal::kGwpAsan);
   DLOG(WARNING) << "base::allocator shims are unavailable for GWP-ASan.";
 #endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
 }
