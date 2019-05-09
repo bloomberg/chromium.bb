@@ -54,7 +54,7 @@ class IntWrapper : public blink::GarbageCollectedFinalized<IntWrapper> {
             blink::BlinkGC::kHashTableArenaIndex));
         return;
       case VectorsAreCompacted:
-        CHECK(compaction->IsCompactingVectorArenas());
+        CHECK(compaction->IsCompactingVectorArenasForTesting());
         return;
     }
   }
@@ -83,8 +83,6 @@ static_assert(WTF::IsTraceable<IntWrapper>::value,
 
 }  // namespace
 
-#if ENABLE_HEAP_COMPACTION
-
 using IntVector = blink::HeapVector<blink::Member<IntWrapper>>;
 using IntDeque = blink::HeapDeque<blink::Member<IntWrapper>>;
 using IntMap = blink::HeapHashMap<blink::Member<IntWrapper>, int>;
@@ -95,9 +93,8 @@ WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(IntMap)
 namespace blink {
 
 static void PerformHeapCompaction() {
-  EXPECT_FALSE(HeapCompact::ScheduleCompactionGCForTesting(true));
+  ThreadState::Current()->EnableCompactionForNextGCForTesting();
   PreciselyCollectGarbage();
-  EXPECT_FALSE(HeapCompact::ScheduleCompactionGCForTesting(false));
 }
 
 TEST(HeapCompactTest, CompactVector) {
@@ -392,4 +389,3 @@ TEST(HeapCompactTest, CompactInlinedBackingStore) {
 
 }  // namespace blink
 
-#endif  // ENABLE_HEAP_COMPACTION

@@ -18,8 +18,6 @@
 
 namespace blink {
 
-bool HeapCompact::force_compaction_gc_ = false;
-
 // The real worker behind heap compaction, recording references to movable
 // objects ("slots".) When the objects end up being compacted and moved,
 // relocate() will adjust the slots to point to the new location of the
@@ -326,56 +324,33 @@ HeapCompact::MovableObjectFixups& HeapCompact::Fixups() {
   return *fixups_;
 }
 
-bool HeapCompact::ShouldCompact(ThreadHeap* heap,
-                                BlinkGC::StackState stack_state,
+bool HeapCompact::ShouldCompact(BlinkGC::StackState stack_state,
                                 BlinkGC::MarkingType marking_type,
                                 BlinkGC::GCReason reason) {
-#if !ENABLE_HEAP_COMPACTION
-  return false;
-#else
-  if (!RuntimeEnabledFeatures::HeapCompactionEnabled())
+  if (!RuntimeEnabledFeatures::HeapCompactionEnabled()) {
     return false;
-
-  LOG_HEAP_COMPACTION() << "shouldCompact(): gc=" << static_cast<int>(reason)
-                        << " count=" << gc_count_since_last_compaction_
-                        << " free=" << free_list_size_;
-  gc_count_since_last_compaction_++;
-
-  // If the GCing thread requires a stack scan, do not compact.
-  // Why? Should the stack contain an iterator pointing into its
-  // associated backing store, its references wouldn't be
-  // correctly relocated.
-  if (stack_state == BlinkGC::kHeapPointersOnStack)
-    return false;
-
-  if (reason == BlinkGC::GCReason::kForcedGCForTesting) {
-    UpdateHeapResidency();
-    return force_compaction_gc_;
   }
 
-  // Compaction enable rules:
-  //  - It's been a while since the last time.
-  //  - "Considerable" amount of heap memory is bound up in freelist
-  //    allocations. For now, use a fixed limit irrespective of heap
-  //    size.
-  //
-  // As this isn't compacting all arenas, the cost of doing compaction
-  // isn't a worry as it will additionally only be done by idle GCs.
-  // TODO: add some form of compaction overhead estimate to the marking
-  // time estimate.
+  DCHECK_NE(BlinkGC::MarkingType::kTakeSnapshot, marking_type);
+  if (marking_type == BlinkGC::MarkingType::kAtomicMarking &&
+      stack_state == BlinkGC::StackState::kHeapPointersOnStack) {
+    // The following check ensures that tests that want to test compaction are
+    // not interrupted by garbage collections that cannot use compaction.
+    CHECK(!force_for_next_gc_);
+    return false;
+  }
 
   UpdateHeapResidency();
 
-#if STRESS_TEST_HEAP_COMPACTION
-  // Exercise the handling of object movement by compacting as
-  // often as possible.
-  return true;
-#else
-  return force_compaction_gc_ || (gc_count_since_last_compaction_ >
-                                      kGCCountSinceLastCompactionThreshold &&
-                                  free_list_size_ > kFreeListSizeThreshold);
-#endif
-#endif
+  if (force_for_next_gc_) {
+    return true;
+  }
+
+  // TODO(mlippautz): Only enable compaction when doing garbage collections that
+  // should aggressively reduce memory footprint.
+  return gc_count_since_last_compaction_ >
+             kGCCountSinceLastCompactionThreshold &&
+         free_list_size_ > kFreeListSizeThreshold;
 }
 
 void HeapCompact::Initialize(ThreadState* state) {
@@ -384,7 +359,7 @@ void HeapCompact::Initialize(ThreadState* state) {
   do_compact_ = true;
   fixups_.reset();
   gc_count_since_last_compaction_ = 0;
-  force_compaction_gc_ = false;
+  force_for_next_gc_ = false;
 }
 
 void HeapCompact::RegisterMovingObjectReference(MovableReference* slot) {
@@ -496,12 +471,6 @@ void HeapCompact::AddCompactingPage(BasePage* page) {
   DCHECK(do_compact_);
   DCHECK(IsCompactingArena(page->Arena()->ArenaIndex()));
   Fixups().AddCompactingPage(page);
-}
-
-bool HeapCompact::ScheduleCompactionGCForTesting(bool value) {
-  bool current = force_compaction_gc_;
-  force_compaction_gc_ = value;
-  return current;
 }
 
 }  // namespace blink

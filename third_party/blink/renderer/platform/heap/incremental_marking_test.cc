@@ -1578,7 +1578,7 @@ class IncrementalMarkingTestDriver {
 
   size_t GetHeapCompactLastFixupCount() {
     HeapCompact* compaction = ThreadState::Current()->Heap().Compaction();
-    return compaction->last_fixup_count_for_testing();
+    return compaction->LastFixupCountForTesting();
   }
 
  private:
@@ -1674,7 +1674,7 @@ TEST(IncrementalMarkingTest, DropReferenceWithHeapCompaction) {
   Persistent<Store> persistent(new Store());
   persistent->insert(MakeGarbageCollected<Object>());
   IncrementalMarkingTestDriver driver(ThreadState::Current());
-  HeapCompact::ScheduleCompactionGCForTesting(true);
+  ThreadState::Current()->EnableCompactionForNextGCForTesting();
   driver.Start();
   driver.FinishSteps();
   persistent->clear();
@@ -1690,7 +1690,7 @@ TEST(IncrementalMarkingTest, HasInlineCapacityCollectionWithHeapCompaction) {
   Persistent<Store> persistent2(MakeGarbageCollected<Store>());
 
   IncrementalMarkingTestDriver driver(ThreadState::Current());
-  HeapCompact::ScheduleCompactionGCForTesting(true);
+  ThreadState::Current()->EnableCompactionForNextGCForTesting();
   persistent->push_back(MakeGarbageCollected<Object>());
   driver.Start();
   driver.FinishGC();
@@ -1711,7 +1711,7 @@ TEST(IncrementalMarkingTest, WeakHashMapHeapCompaction) {
   Persistent<Store> persistent(new Store());
 
   IncrementalMarkingTestDriver driver(ThreadState::Current());
-  HeapCompact::ScheduleCompactionGCForTesting(true);
+  ThreadState::Current()->EnableCompactionForNextGCForTesting();
   driver.Start();
   driver.FinishSteps();
   persistent->insert(MakeGarbageCollected<Object>());
@@ -1727,7 +1727,7 @@ TEST(IncrementalMarkingTest, ConservativeGCWhileCompactionScheduled) {
   persistent->push_back(MakeGarbageCollected<Object>());
 
   IncrementalMarkingTestDriver driver(ThreadState::Current());
-  HeapCompact::ScheduleCompactionGCForTesting(true);
+  ThreadState::Current()->EnableCompactionForNextGCForTesting();
   driver.Start();
   driver.FinishSteps();
   ThreadState::Current()->CollectGarbage(
@@ -1874,8 +1874,7 @@ TEST(IncrementalMarkingTest, IncrementalMarkingShrinkingBackingCompaction) {
     holder->at(i).emplace_back(MakeGarbageCollected<Object>());
   }
   IncrementalMarkingTestDriver driver(ThreadState::Current());
-  ThreadState::Current()->Heap().Compaction()->ScheduleCompactionGCForTesting(
-      true);
+  ThreadState::Current()->EnableCompactionForNextGCForTesting();
   driver.Start();
   driver.FinishSteps();
   // Reduce size of the outer backing store.
@@ -1894,8 +1893,7 @@ TEST(IncrementalMarkingTest,
 
   using Nested = HeapVector<HeapVector<Member<Object>>>;
   IncrementalMarkingTestDriver driver(ThreadState::Current());
-  ThreadState::Current()->Heap().Compaction()->ScheduleCompactionGCForTesting(
-      true);
+  ThreadState::Current()->EnableCompactionForNextGCForTesting();
   // Allocate a vector and reserve a buffer to avoid triggering the write
   // barrier during incremental marking.
   Nested* nested = MakeGarbageCollected<Nested>();
@@ -1940,8 +1938,7 @@ TEST(IncrementalMarkingTest,
   // that slots filtering happens before any eager sweep phase.
 
   IncrementalMarkingTestDriver driver(ThreadState::Current());
-  ThreadState::Current()->Heap().Compaction()->ScheduleCompactionGCForTesting(
-      true);
+  ThreadState::Current()->EnableCompactionForNextGCForTesting();
   EagerlySweptWithVectorWithInlineStorage* eagerly =
       MakeGarbageCollected<EagerlySweptWithVectorWithInlineStorage>();
   driver.Start();

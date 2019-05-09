@@ -1616,23 +1616,25 @@ void ThreadState::MarkPhasePrologue(BlinkGC::StackState stack_state,
   Heap().CommitCallbackStacks();
 
   const bool take_snapshot = marking_type == BlinkGC::kTakeSnapshot;
-  const bool should_compact =
-      !take_snapshot && Heap().Compaction()->ShouldCompact(
-                            &Heap(), stack_state, marking_type, reason);
+
+  // Enable compaction if supported and feasible.
+  const bool compaction_enabled =
+      !take_snapshot &&
+      Heap().Compaction()->ShouldCompact(stack_state, marking_type, reason);
+  if (compaction_enabled) {
+    Heap().Compaction()->Initialize(this);
+  }
 
   current_gc_data_.reason = reason;
   current_gc_data_.visitor =
       IsUnifiedGCMarkingInProgress()
           ? std::make_unique<UnifiedHeapMarkingVisitor>(
-                this, GetMarkingMode(should_compact, take_snapshot),
+                this, GetMarkingMode(compaction_enabled, take_snapshot),
                 GetIsolate())
           : std::make_unique<MarkingVisitor>(
-                this, GetMarkingMode(should_compact, take_snapshot));
+                this, GetMarkingMode(compaction_enabled, take_snapshot));
   current_gc_data_.stack_state = stack_state;
   current_gc_data_.marking_type = marking_type;
-
-  if (should_compact)
-    Heap().Compaction()->Initialize(this);
 }
 
 void ThreadState::AtomicPausePrologue(BlinkGC::StackState stack_state,
@@ -1772,6 +1774,10 @@ void ThreadState::CollectAllGarbageForTesting(BlinkGC::StackState stack_state) {
       break;
     previous_live_objects = live_objects;
   }
+}
+
+void ThreadState::EnableCompactionForNextGCForTesting() {
+  Heap().Compaction()->EnableCompactionForNextGCForTesting();
 }
 
 void ThreadState::UpdateIncrementalMarkingStepDuration() {

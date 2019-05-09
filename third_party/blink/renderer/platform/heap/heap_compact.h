@@ -18,9 +18,6 @@
 
 // Compaction-specific debug switches:
 
-// Set to 0 to prevent compaction GCs, disabling the heap compaction feature.
-#define ENABLE_HEAP_COMPACTION 1
-
 // Emit debug info during compaction.
 #define DEBUG_HEAP_COMPACTION 0
 
@@ -28,17 +25,7 @@
 // 0 - disabled, 1 - minimal, 2 - verbose.
 #define DEBUG_HEAP_FREELIST 0
 
-// Log the amount of time spent compacting.
-#define DEBUG_LOG_HEAP_COMPACTION_RUNNING_TIME 0
-
-// Compact during all idle + precise GCs; for debugging.
-#define STRESS_TEST_HEAP_COMPACTION 0
-
 namespace blink {
-
-namespace incremental_marking_test {
-class IncrementalMarkingTestDriver;
-}
 
 class NormalPageArena;
 class BasePage;
@@ -46,23 +33,24 @@ class ThreadState;
 class ThreadHeap;
 
 class PLATFORM_EXPORT HeapCompact final {
-  friend class incremental_marking_test::IncrementalMarkingTestDriver;
-
  public:
+  // Returns |true| if the ongoing GC may compact the given arena/sub-heap.
+  static bool IsCompactableArena(int arena_index) {
+    return arena_index >= BlinkGC::kVector1ArenaIndex &&
+           arena_index <= BlinkGC::kHashTableArenaIndex;
+  }
+
   explicit HeapCompact(ThreadHeap*);
   ~HeapCompact();
 
-  // Determine if a GC for the given type and reason should also perform
-  // additional heap compaction.
-  //
-  bool ShouldCompact(ThreadHeap*,
-                     BlinkGC::StackState,
+  // Returns true if compaction can and should be used for the provided
+  // parameters.
+  bool ShouldCompact(BlinkGC::StackState,
                      BlinkGC::MarkingType,
                      BlinkGC::GCReason);
 
   // Compaction should be performed as part of the ongoing GC, initialize
-  // the heap compaction pass. Returns the appropriate visitor type to
-  // use when running the marking phase.
+  // the heap compaction pass.
   void Initialize(ThreadState*);
 
   // Returns true if the ongoing GC will perform compaction.
@@ -72,12 +60,6 @@ class PLATFORM_EXPORT HeapCompact final {
   // heap arena.
   bool IsCompactingArena(int arena_index) const {
     return do_compact_ && (compactable_arenas_ & (0x1u << arena_index));
-  }
-
-  // Returns |true| if the ongoing GC may compact the given arena/sub-heap.
-  static bool IsCompactableArena(int arena_index) {
-    return arena_index >= BlinkGC::kVector1ArenaIndex &&
-           arena_index <= BlinkGC::kHashTableArenaIndex;
   }
 
   // See |Heap::registerMovingObjectReference()| documentation.
@@ -116,14 +98,11 @@ class PLATFORM_EXPORT HeapCompact final {
   // (Called by the sweep compaction pass.)
   void Relocate(Address from, Address to);
 
-  // For unit testing only: arrange for a compaction GC to be triggered
-  // next time a non-conservative GC is run. Sets the compact-next flag
-  // to the new value, returning old.
-  static bool ScheduleCompactionGCForTesting(bool);
+  // Enables compaction for the next garbage collection if technically possible.
+  void EnableCompactionForNextGCForTesting() { force_for_next_gc_ = true; }
 
-  // Test-only: verify that one or more of the vector arenas are
-  // in the process of being compacted.
-  bool IsCompactingVectorArenas() {
+  // Returns true if one or more vector arenas are being compacted.
+  bool IsCompactingVectorArenasForTesting() const {
     for (int i = BlinkGC::kVector1ArenaIndex; i <= BlinkGC::kVector4ArenaIndex;
          ++i) {
       if (IsCompactingArena(i))
@@ -132,14 +111,12 @@ class PLATFORM_EXPORT HeapCompact final {
     return false;
   }
 
-  size_t last_fixup_count_for_testing() {
+  size_t LastFixupCountForTesting() const {
     return last_fixup_count_for_testing_;
   }
 
  private:
   class MovableObjectFixups;
-
-  static bool force_compaction_gc_;
 
   // Number of GCs that must have passed since last compaction GC.
   static const int kGCCountSinceLastCompactionThreshold = 10;
@@ -171,12 +148,13 @@ class PLATFORM_EXPORT HeapCompact final {
   // Last reported freelist size, across all compactable arenas.
   size_t free_list_size_ = 0;
 
+  // If compacting, i'th heap arena will be compacted if corresponding bit is
+  // set. Indexes are in the range of BlinkGC::ArenaIndices.
+  unsigned compactable_arenas_ = 0u;
+
   size_t last_fixup_count_for_testing_ = 0;
 
-  // If compacting, i'th heap arena will be compacted
-  // if corresponding bit is set. Indexes are in
-  // the range of BlinkGC::ArenaIndices.
-  unsigned compactable_arenas_ = 0u;
+  bool force_for_next_gc_ = false;
 };
 
 }  // namespace blink
