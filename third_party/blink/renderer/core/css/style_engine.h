@@ -357,8 +357,6 @@ class CORE_EXPORT StyleEngine final
   void Trace(blink::Visitor*) override;
   const char* NameInHeapSnapshot() const override { return "StyleEngine"; }
 
-  bool InDomRemoval() const { return in_dom_removal_; }
-
  private:
   // FontSelectorClient implementation.
   void FontsNeedUpdate(FontSelector*) override;

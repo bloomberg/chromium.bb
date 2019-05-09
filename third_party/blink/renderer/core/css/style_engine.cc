@@ -1767,20 +1767,30 @@ void StyleEngine::RebuildLayoutTree() {
 void StyleEngine::UpdateStyleInvalidationRoot(ContainerNode* ancestor,
                                               Node* dirty_node) {
   DCHECK(IsMaster());
-  if (GetDocument().IsActive())
+  if (GetDocument().IsActive()) {
+    if (in_dom_removal_) {
+      ancestor = nullptr;
+      dirty_node = document_;
+    }
     style_invalidation_root_.Update(ancestor, dirty_node);
+  }
 }
 
 void StyleEngine::UpdateStyleRecalcRoot(ContainerNode* ancestor,
                                         Node* dirty_node) {
   if (GetDocument().IsActive()) {
     DCHECK(!in_layout_tree_rebuild_);
+    if (in_dom_removal_) {
+      ancestor = nullptr;
+      dirty_node = document_;
+    }
     style_recalc_root_.Update(ancestor, dirty_node);
   }
 }
 
 void StyleEngine::UpdateLayoutTreeRebuildRoot(ContainerNode* ancestor,
                                               Node* dirty_node) {
+  DCHECK(!in_dom_removal_);
   if (GetDocument().IsActive())
     layout_tree_rebuild_root_.Update(ancestor, dirty_node);
 }

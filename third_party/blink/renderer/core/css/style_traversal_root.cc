@@ -23,19 +23,7 @@ void StyleTraversalRoot::Update(ContainerNode* common_ancestor,
     return;
   }
 
-  if (!root_node_) {
-    // When removing elements in a <form> subtree, we can reach this
-    // point without a root node, because we can synchronously mark
-    // nodes for recalc in a partially disconnected tree via
-    // HTMLFormElement::InvalidateDefaultButtonStyle. These DCHECKs
-    // are in place to prevent this unfortunate situation in other
-    // circumstances.
-#if DCHECK_IS_ON()
-    DCHECK(!IsConnectedToDocument(*dirty_node));
-    DCHECK(dirty_node->GetDocument().GetStyleEngine().InDomRemoval());
-#endif  // DCHECK_IS_ON()
-    return;
-  }
+  DCHECK(root_node_);
 #if DCHECK_IS_ON()
   DCHECK(Parent(*dirty_node));
   DCHECK(!IsDirty(*Parent(*dirty_node)));
