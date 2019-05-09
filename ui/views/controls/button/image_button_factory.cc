@@ -34,9 +34,10 @@ std::unique_ptr<ImageButton> CreateVectorImageButton(ButtonListener* listener) {
   return button;
 }
 
-ToggleImageButton* CreateVectorToggleImageButton(ButtonListener* listener) {
-  ToggleImageButton* button = new ToggleImageButton(listener);
-  ConfigureVectorImageButton(button);
+std::unique_ptr<ToggleImageButton> CreateVectorToggleImageButton(
+    ButtonListener* listener) {
+  auto button = std::make_unique<ToggleImageButton>(listener);
+  ConfigureVectorImageButton(button.get());
   return button;
 }
 

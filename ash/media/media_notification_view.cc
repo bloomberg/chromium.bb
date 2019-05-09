@@ -116,57 +116,59 @@ MediaNotificationView::MediaNotificationView(
   control_buttons_view_->set_owned_by_client();
 
   // |header_row_| contains app_icon, app_name, control buttons, etc.
-  header_row_ = new message_center::NotificationHeaderView(this);
-  header_row_->AddChildView(control_buttons_view_.get());
-  header_row_->SetAppName(
+  auto header_row =
+      std::make_unique<message_center::NotificationHeaderView>(this);
+  header_row->AddChildView(control_buttons_view_.get());
+  header_row->SetAppName(
       message_center::MessageCenter::Get()->GetSystemNotificationAppName());
-  header_row_->ClearAppIcon();
-  header_row_->SetProperty(views::kMarginsKey,
-                           new gfx::Insets(kMediaNotificationHeaderTopInset,
-                                           kMediaNotificationHeaderInset,
-                                           kMediaNotificationHeaderInset,
-                                           kMediaNotificationHeaderRightInset));
-  AddChildView(header_row_);
+  header_row->ClearAppIcon();
+  header_row->SetProperty(views::kMarginsKey,
+                          new gfx::Insets(kMediaNotificationHeaderTopInset,
+                                          kMediaNotificationHeaderInset,
+                                          kMediaNotificationHeaderInset,
+                                          kMediaNotificationHeaderRightInset));
+  header_row_ = AddChildView(std::move(header_row));
 
   // |main_row_| holds the main content of the notification.
-  main_row_ = new views::View();
-  AddChildView(main_row_);
+  auto main_row = std::make_unique<views::View>();
+  main_row_ = AddChildView(std::move(main_row));
 
   // |title_artist_row_| contains the title and artist labels.
-  title_artist_row_ = new views::View();
+  auto title_artist_row = std::make_unique<views::View>();
   title_artist_row_layout_ =
-      title_artist_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      title_artist_row->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::kVertical, kMediaTitleArtistInsets, 0));
   title_artist_row_layout_->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   title_artist_row_layout_->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
-  main_row_->AddChildView(title_artist_row_);
+  title_artist_row_ = main_row_->AddChildView(std::move(title_artist_row));
 
-  title_label_ = new views::Label(base::string16(), views::style::CONTEXT_LABEL,
-                                  views::style::STYLE_PRIMARY);
+  auto title_label = std::make_unique<views::Label>(
+      base::string16(), views::style::CONTEXT_LABEL,
+      views::style::STYLE_PRIMARY);
   const gfx::FontList& base_font_list = views::Label::GetDefaultFontList();
-  title_label_->SetFontList(base_font_list.Derive(
+  title_label->SetFontList(base_font_list.Derive(
       0, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::MEDIUM));
-  title_label_->SetLineHeight(kTitleArtistLineHeight);
-  title_artist_row_->AddChildView(title_label_);
+  title_label->SetLineHeight(kTitleArtistLineHeight);
+  title_label_ = title_artist_row_->AddChildView(std::move(title_label));
 
-  artist_label_ =
-      new views::Label(base::string16(), views::style::CONTEXT_LABEL,
-                       views::style::STYLE_PRIMARY);
-  artist_label_->SetLineHeight(kTitleArtistLineHeight);
-  title_artist_row_->AddChildView(artist_label_);
+  auto artist_label = std::make_unique<views::Label>(
+      base::string16(), views::style::CONTEXT_LABEL,
+      views::style::STYLE_PRIMARY);
+  artist_label->SetLineHeight(kTitleArtistLineHeight);
+  artist_label_ = title_artist_row_->AddChildView(std::move(artist_label));
 
   // |button_row_| contains the buttons for controlling playback.
-  button_row_ = new views::View();
+  auto button_row = std::make_unique<views::View>();
   auto* button_row_layout =
-      button_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      button_row->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::kHorizontal, gfx::Insets(),
           kMediaButtonRowSeparator));
   button_row_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-  button_row_->SetPreferredSize(kMediaNotificationButtonRowSize);
-  main_row_->AddChildView(button_row_);
+  button_row->SetPreferredSize(kMediaNotificationButtonRowSize);
+  button_row_ = main_row_->AddChildView(std::move(button_row));
 
   CreateMediaButton(MediaSessionAction::kPreviousTrack,
                     l10n_util::GetStringUTF16(
@@ -176,15 +178,15 @@ MediaNotificationView::MediaNotificationView(
                         IDS_ASH_MEDIA_NOTIFICATION_ACTION_SEEK_BACKWARD));
 
   // |play_pause_button_| toggles playback.
-  play_pause_button_ = views::CreateVectorToggleImageButton(this);
-  play_pause_button_->set_tag(static_cast<int>(MediaSessionAction::kPlay));
-  play_pause_button_->SetPreferredSize(kMediaButtonSize);
-  play_pause_button_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-  play_pause_button_->SetTooltipText(
+  auto play_pause_button = views::CreateVectorToggleImageButton(this);
+  play_pause_button->set_tag(static_cast<int>(MediaSessionAction::kPlay));
+  play_pause_button->SetPreferredSize(kMediaButtonSize);
+  play_pause_button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+  play_pause_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_ASH_MEDIA_NOTIFICATION_ACTION_PLAY));
-  play_pause_button_->SetToggledTooltipText(
+  play_pause_button->SetToggledTooltipText(
       l10n_util::GetStringUTF16(IDS_ASH_MEDIA_NOTIFICATION_ACTION_PAUSE));
-  button_row_->AddChildView(play_pause_button_);
+  play_pause_button_ = button_row_->AddChildView(std::move(play_pause_button));
 
   CreateMediaButton(MediaSessionAction::kSeekForward,
                     l10n_util::GetStringUTF16(

@@ -27,7 +27,7 @@ VIEWS_EXPORT std::unique_ptr<ImageButton> CreateVectorImageButton(
 // Creates a ToggleImageButton with an ink drop and a centered image in
 // preperation for applying a vector icon from SetImageFromVectorIcon and
 // SetToggledImageFromVectorIcon below.
-VIEWS_EXPORT ToggleImageButton* CreateVectorToggleImageButton(
+VIEWS_EXPORT std::unique_ptr<ToggleImageButton> CreateVectorToggleImageButton(
     ButtonListener* listener);
 
 // Sets images on |button| for STATE_NORMAL and STATE_DISABLED from the given
