@@ -79,12 +79,30 @@ GIT_HASH_RE = re.compile(r'\b([a-f0-9]{6})[a-f0-9]{34}\b', flags=re.I)
 # Used to redact the cookies from the gitcookies file.
 GITCOOKIES_REDACT_RE = re.compile(r'1/.*')
 
+# The maximum number of traces we will keep. Multiplied by 3 since we store
+# 3 files per trace.
+MAX_TRACES = 3 * 10
+# Message to display to the user after git-cl has run, to inform them of the
+# traces we just collected.
 TRACES_MESSAGE = (
-'When filing a bug, be sure to include the traces found at:\n'
-'  %s.zip\n'
-'Consider including the git config and gitcookies,\n'
-'which we have packed for you at:\n'
-'  %s.zip\n')
+'\n'
+'When filing a bug for this push, be sure to include the traces found at:\n'
+'  %(trace_name)s-traces.zip\n'
+'Consider including the git config and gitcookies, which we have packed for \n'
+'you at:\n'
+'  %(trace_name)s-git-info.zip\n')
+# Format of the message to be stored as part of the traces to give developers a
+# better context when they go through traces.
+TRACES_README_FORMAT = (
+'Date: %(now)s\n'
+'\n'
+'Change: https://%(gerrit_host)s/q/%(change_id)s\n'
+'Title: %(title)s\n'
+'\n'
+'%(description)s\n'
+'\n'
+'Execution time: %(execution_time)s\n'
+'Exit code: %(exit_code)s\n') + TRACES_MESSAGE
 
 COMMIT_BOT_EMAIL = 'commit-bot@chromium.org'
 POSTUPSTREAM_HOOK = '.git/hooks/post-cl-land'
@@ -203,6 +221,12 @@ def time_time():
   # Use this so that it can be mocked in tests without interfering with python
   # system machinery.
   return time.time()
+
+
+def datetime_now():
+  # Use this so that it can be mocked in tests without interfering with python
+  # system machinery.
+  return datetime.datetime.now()
 
 
 def ask_for_data(prompt):
@@ -2496,18 +2520,75 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       else:
         print('OK, will keep Gerrit commit-msg hook in place.')
 
-  def _RunGitPushWithTraces(self, change_desc, refspec, refspec_opts):
-    gclient_utils.safe_makedirs(TRACES_DIR)
+  def _CleanUpOldTraces(self):
+    """Keep only the last |MAX_TRACES| traces."""
+    try:
+      traces = sorted([
+        os.path.join(TRACES_DIR, f)
+        for f in os.listdir(TRACES_DIR)
+        if (os.path.isfile(os.path.join(TRACES_DIR, f))
+            and not f.startswith('tmp'))
+      ])
+      traces_to_delete = traces[:-MAX_TRACES]
+      for trace in traces_to_delete:
+          os.remove(trace)
+    except OSError:
+      print('WARNING: Failed to remove old git traces from\n'
+            '  %s'
+            'Consider removing them manually.' % TRACES_DIR)
 
-    # Create a temporary directory to store traces in. Traces will be compressed
-    # and stored in a 'traces' dir inside depot_tools.
-    traces_dir = tempfile.mkdtemp()
-    trace_name = os.path.basename(traces_dir)
-    traces_zip = os.path.join(TRACES_DIR, trace_name + '-traces')
+  def _WriteGitPushTraces(self, traces_dir, git_push_metadata):
+    """Zip and write the git push traces stored in traces_dir."""
+    gclient_utils.safe_makedirs(TRACES_DIR)
+    now = datetime_now()
+    trace_name = os.path.join(TRACES_DIR, now.strftime('%Y%m%dT%H%M%S.%f'))
+    traces_zip = trace_name + '-traces'
+    traces_readme = trace_name + '-README'
     # Create a temporary dir to store git config and gitcookies in. It will be
     # compressed and stored next to the traces.
     git_info_dir = tempfile.mkdtemp()
-    git_info_zip = os.path.join(TRACES_DIR, trace_name + '-git-info')
+    git_info_zip = trace_name + '-git-info'
+
+    git_push_metadata['now'] = now.strftime('%c')
+    git_push_metadata['trace_name'] = trace_name
+    gclient_utils.FileWrite(
+        traces_readme, TRACES_README_FORMAT % git_push_metadata)
+
+    # Keep only the first 6 characters of the git hashes on the packet
+    # trace. This greatly decreases size after compression.
+    packet_traces = os.path.join(traces_dir, 'trace-packet')
+    if os.path.isfile(packet_traces):
+      contents = gclient_utils.FileRead(packet_traces)
+      gclient_utils.FileWrite(
+          packet_traces, GIT_HASH_RE.sub(r'\1', contents))
+    shutil.make_archive(traces_zip, 'zip', traces_dir)
+
+    # Collect and compress the git config and gitcookies.
+    git_config = RunGit(['config', '-l'])
+    gclient_utils.FileWrite(
+        os.path.join(git_info_dir, 'git-config'),
+        git_config)
+
+    cookie_auth = gerrit_util.Authenticator.get()
+    if isinstance(cookie_auth, gerrit_util.CookiesAuthenticator):
+      gitcookies_path = cookie_auth.get_gitcookies_path()
+      if os.path.isfile(gitcookies_path):
+        gitcookies = gclient_utils.FileRead(gitcookies_path)
+        gclient_utils.FileWrite(
+            os.path.join(git_info_dir, 'gitcookies'),
+            GITCOOKIES_REDACT_RE.sub('REDACTED', gitcookies))
+    shutil.make_archive(git_info_zip, 'zip', git_info_dir)
+
+    print(TRACES_MESSAGE % {'trace_name': trace_name})
+
+    gclient_utils.rmtree(git_info_dir)
+
+  def _RunGitPushWithTraces(
+      self, change_desc, refspec, refspec_opts, git_push_metadata):
+    """Run git push and collect the traces resulting from the execution."""
+    # Create a temporary directory to store traces in. Traces will be compressed
+    # and stored in a 'traces' dir inside depot_tools.
+    traces_dir = tempfile.mkdtemp()
 
     env = os.environ.copy()
     env['GIT_REDACT_COOKIES'] = 'o,SSO,GSSO_Uberproxy'
@@ -2518,9 +2599,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
     try:
       push_returncode = 0
+      remote_url = self.GetRemoteUrl()
       before_push = time_time()
       push_stdout = gclient_utils.CheckCallAndFilter(
-          ['git', 'push', self.GetRemoteUrl(), refspec],
+          ['git', 'push', remote_url, refspec],
           env=env,
           print_stdout=True,
           # Flush after every line: useful for seeing progress when running as
@@ -2532,8 +2614,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
                    'for the reason of the failure.\n'
                    'Hint: run command below to diagnose common Git/Gerrit '
                    'credential problems:\n'
-                   '  git cl creds-check\n' +
-                   TRACES_MESSAGE % (traces_zip, git_info_zip),
+                   '  git cl creds-check',
                    change_desc)
     finally:
       execution_time = time_time() - before_push
@@ -2544,31 +2625,11 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         'arguments': metrics_utils.extract_known_subcommand_args(refspec_opts),
       })
 
-      if push_returncode != 0:
-        # Keep only the first 6 characters of the git hashes on the packet
-        # trace. This greatly decreases size after compression.
-        packet_traces = os.path.join(traces_dir, 'trace-packet')
-        contents = gclient_utils.FileRead(packet_traces)
-        gclient_utils.FileWrite(
-            packet_traces, GIT_HASH_RE.sub(r'\1', contents))
-        shutil.make_archive(traces_zip, 'zip', traces_dir)
+      git_push_metadata['execution_time'] = execution_time
+      git_push_metadata['exit_code'] = push_returncode
+      self._WriteGitPushTraces(traces_dir, git_push_metadata)
 
-        # Collect and compress the git config and gitcookies.
-        git_config = RunGit(['config', '-l'])
-        gclient_utils.FileWrite(
-            os.path.join(git_info_dir, 'git-config'),
-            git_config)
-
-        cookie_auth = gerrit_util.Authenticator.get()
-        if isinstance(cookie_auth, gerrit_util.CookiesAuthenticator):
-          gitcookies_path = cookie_auth.get_gitcookies_path()
-          gitcookies = gclient_utils.FileRead(gitcookies_path)
-          gclient_utils.FileWrite(
-              os.path.join(git_info_dir, 'gitcookies'),
-              GITCOOKIES_REDACT_RE.sub('REDACTED', gitcookies))
-        shutil.make_archive(git_info_zip, 'zip', git_info_dir)
-
-      gclient_utils.rmtree(git_info_dir)
+      self._CleanUpOldTraces()
       gclient_utils.rmtree(traces_dir)
 
     return push_stdout
@@ -2822,7 +2883,14 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           'spaces not allowed in refspec: "%s"' % refspec_suffix)
     refspec = '%s:refs/for/%s%s' % (ref_to_push, branch, refspec_suffix)
 
-    push_stdout = self._RunGitPushWithTraces(change_desc, refspec, refspec_opts)
+    git_push_metadata = {
+        'gerrit_host': self._GetGerritHost(),
+        'title': title or '<untitled>',
+        'change_id': change_id,
+        'description': change_desc.description,
+    }
+    push_stdout = self._RunGitPushWithTraces(
+        change_desc, refspec, refspec_opts, git_push_metadata)
 
     if options.squash:
       regex = re.compile(r'remote:\s+https?://[\w\-\.\+\/#]*/(\d+)\s.*')

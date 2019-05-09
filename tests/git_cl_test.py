@@ -909,7 +909,8 @@ class TestGitCl(TestCase):
                            post_amend_description=None, issue=None, cc=None,
                            custom_cl_base=None, tbr=None,
                            short_hostname='chromium',
-                           labels=None):
+                           labels=None, change_id=None, original_title=None,
+                           final_description=None, gitcookies_exists=True):
     if post_amend_description is None:
       post_amend_description = description
     cc = cc or []
@@ -1107,6 +1108,78 @@ class TestGitCl(TestCase):
         None,),
     ]
 
+    final_description = final_description or post_amend_description.strip()
+    original_title = original_title or title or '<untitled>'
+    # Trace-related calls
+    calls += [
+        # Write a description with context for the current trace.
+        ((['FileWrite', 'TRACES_DIR/20170316T200041.000000-README',
+           'Date: Thu Mar 16 20:00:41 2017\n\n'
+           'Change: https://%(short_hostname)s-review.googlesource.com/'
+           'q/%(change_id)s\n'
+           'Title: %(title)s\n\n'
+           '%(description)s\n\n'
+           'Execution time: 1000\n'
+           'Exit code: 0\n\n'
+           'When filing a bug for this push, be sure to include the traces '
+           'found at:\n'
+           '  TRACES_DIR/20170316T200041.000000-traces.zip\n'
+           'Consider including the git config and gitcookies, which we have '
+           'packed for \nyou at:\n'
+           '  TRACES_DIR/20170316T200041.000000-git-info.zip\n' % {
+             'short_hostname': short_hostname,
+             'change_id': change_id,
+             'description': final_description,
+             'title': original_title,
+           }],),
+         None,
+        ),
+        # Read traces and shorten git hashes.
+        ((['os.path.isfile', 'TEMP_DIR/trace-packet'],),
+         True,
+        ),
+        ((['FileRead', 'TEMP_DIR/trace-packet'],),
+         ('git-hash: 0123456789012345678901234567890123456789\n'
+          'git-hash: abcdeabcdeabcdeabcdeabcdeabcdeabcdeabcde\n'),
+        ),
+        ((['FileWrite', 'TEMP_DIR/trace-packet',
+           'git-hash: 012345\n'
+           'git-hash: abcdea\n'],),
+         None,
+        ),
+        # Make zip file for the git traces.
+        ((['make_archive', 'TRACES_DIR/20170316T200041.000000-traces', 'zip',
+           'TEMP_DIR'],),
+         None,
+        ),
+        # Collect git config and gitcookies.
+        ((['git', 'config', '-l'],),
+         'git-config-output',
+        ),
+        ((['FileWrite', 'TEMP_DIR/git-config', 'git-config-output'],),
+         None,
+        ),
+        ((['os.path.isfile', '~/.gitcookies'],),
+         gitcookies_exists,
+        ),
+    ]
+    if gitcookies_exists:
+      calls += [
+          ((['FileRead', '~/.gitcookies'],),
+           'gitcookies 1/SECRET',
+          ),
+          ((['FileWrite', 'TEMP_DIR/gitcookies', 'gitcookies REDACTED'],),
+           None,
+          ),
+      ]
+    calls += [
+        # Make zip file for the git config and gitcookies.
+        ((['make_archive', 'TRACES_DIR/20170316T200041.000000-git-info', 'zip',
+           'TEMP_DIR'],),
+         None,
+        ),
+    ]
+
     if squash:
       calls += [
           ((['git', 'config', 'branch.master.gerritissue', '123456'],),
@@ -1147,7 +1220,11 @@ class TestGitCl(TestCase):
       custom_cl_base=None,
       tbr=None,
       short_hostname='chromium',
-      labels=None):
+      labels=None,
+      change_id=None,
+      original_title=None,
+      final_description=None,
+      gitcookies_exists=True):
     """Generic gerrit upload test framework."""
     if squash_mode is None:
       if '--no-squash' in upload_args:
@@ -1169,6 +1246,19 @@ class TestGitCl(TestCase):
               lambda *_, **__: self._mocked_call(['RunEditor']))
     self.mock(git_cl, 'DownloadGerritHook', lambda force: self._mocked_call(
       'DownloadGerritHook', force))
+    self.mock(git_cl.gclient_utils, 'FileRead',
+              lambda path: self._mocked_call(['FileRead', path]))
+    self.mock(git_cl.gclient_utils, 'FileWrite',
+              lambda path, contents: self._mocked_call(
+                  ['FileWrite', path, contents]))
+    self.mock(git_cl, 'datetime_now',
+             lambda: datetime.datetime(2017, 3, 16, 20, 0, 41, 0))
+    self.mock(git_cl.tempfile, 'mkdtemp', lambda: 'TEMP_DIR')
+    self.mock(git_cl, 'TRACES_DIR', 'TRACES_DIR')
+    self.mock(git_cl.shutil, 'make_archive',
+              lambda *args: self._mocked_call(['make_archive'] + list(args)))
+    self.mock(os.path, 'isfile',
+              lambda path: self._mocked_call(['os.path.isfile', path]))
 
     self.calls = self._gerrit_base_calls(
         issue=issue,
@@ -1190,10 +1280,24 @@ class TestGitCl(TestCase):
           issue=issue, cc=cc,
           custom_cl_base=custom_cl_base, tbr=tbr,
           short_hostname=short_hostname,
-          labels=labels)
+          labels=labels,
+          change_id=change_id,
+          original_title=original_title,
+          final_description=final_description,
+          gitcookies_exists=gitcookies_exists)
     # Uncomment when debugging.
     # print('\n'.join(map(lambda x: '%2i: %s' % x, enumerate(self.calls))))
     git_cl.main(['upload'] + upload_args)
+
+  def test_gerrit_upload_traces_no_gitcookies(self):
+    self._run_gerrit_upload_test(
+        ['--no-squash'],
+        'desc\n\nBUG=\n',
+        [],
+        squash=False,
+        post_amend_description='desc\n\nBUG=\n\nChange-Id: Ixxx',
+        change_id='Ixxx',
+        gitcookies_exists=False)
 
   def test_gerrit_upload_without_change_id(self):
     self._run_gerrit_upload_test(
@@ -1201,7 +1305,8 @@ class TestGitCl(TestCase):
         'desc\n\nBUG=\n',
         [],
         squash=False,
-        post_amend_description='desc\n\nBUG=\n\nChange-Id: Ixxx')
+        post_amend_description='desc\n\nBUG=\n\nChange-Id: Ixxx',
+        change_id='Ixxx')
 
   def test_gerrit_upload_without_change_id_override_nosquash(self):
     self._run_gerrit_upload_test(
@@ -1210,7 +1315,8 @@ class TestGitCl(TestCase):
         [],
         squash=False,
         squash_mode='override_nosquash',
-        post_amend_description='desc\n\nBUG=\n\nChange-Id: Ixxx')
+        post_amend_description='desc\n\nBUG=\n\nChange-Id: Ixxx',
+        change_id='Ixxx')
 
   def test_gerrit_no_reviewer(self):
     self._run_gerrit_upload_test(
@@ -1218,7 +1324,8 @@ class TestGitCl(TestCase):
         'desc\n\nBUG=\n\nChange-Id: I123456789\n',
         [],
         squash=False,
-        squash_mode='override_nosquash')
+        squash_mode='override_nosquash',
+        change_id='I123456789')
 
   def test_gerrit_no_reviewer_non_chromium_host(self):
     # TODO(crbug/877717): remove this test case.
@@ -1228,7 +1335,8 @@ class TestGitCl(TestCase):
         [],
         squash=False,
         squash_mode='override_nosquash',
-        short_hostname='other')
+        short_hostname='other',
+        change_id='I123456789')
 
   def test_gerrit_patchset_title_special_chars(self):
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
@@ -1237,7 +1345,9 @@ class TestGitCl(TestCase):
         'desc\n\nBUG=\n\nChange-Id: I123456789',
         squash=False,
         squash_mode='override_nosquash',
-        title='We%27ll_escape_%5E%5F_%5E_special_chars%2E%2E%2E%40%7Bu%7D')
+        title='We%27ll_escape_%5E%5F_%5E_special_chars%2E%2E%2E%40%7Bu%7D',
+        change_id='I123456789',
+        original_title='We\'ll escape ^_ ^ special chars...@{u}')
 
   def test_gerrit_reviewers_cmd_line(self):
     self._run_gerrit_upload_test(
@@ -1246,7 +1356,10 @@ class TestGitCl(TestCase):
         ['foo@example.com'],
         squash=False,
         squash_mode='override_nosquash',
-        notify=True)
+        notify=True,
+        change_id='I123456789',
+        final_description=
+            'desc\n\nBUG=\nR=foo@example.com\n\nChange-Id: I123456789')
 
   def test_gerrit_reviewer_multiple(self):
     self.mock(git_cl.gerrit_util, 'GetCodeReviewTbrScore',
@@ -1260,14 +1373,18 @@ class TestGitCl(TestCase):
         expected_upstream_ref='origin/master',
         cc=['more@example.com', 'people@example.com'],
         tbr='reviewer@example.com',
-        labels={'Code-Review': 2})
+        labels={'Code-Review': 2},
+        change_id='123456789',
+        original_title='Initial upload')
 
   def test_gerrit_upload_squash_first_is_default(self):
     self._run_gerrit_upload_test(
         [],
         'desc\nBUG=\n\nChange-Id: 123456789',
         [],
-        expected_upstream_ref='origin/master')
+        expected_upstream_ref='origin/master',
+        change_id='123456789',
+        original_title='Initial upload')
 
   def test_gerrit_upload_squash_first(self):
     self._run_gerrit_upload_test(
@@ -1275,7 +1392,9 @@ class TestGitCl(TestCase):
         'desc\nBUG=\n\nChange-Id: 123456789',
         [],
         squash=True,
-        expected_upstream_ref='origin/master')
+        expected_upstream_ref='origin/master',
+        change_id='123456789',
+        original_title='Initial upload')
 
   def test_gerrit_upload_squash_first_with_labels(self):
     self._run_gerrit_upload_test(
@@ -1284,7 +1403,9 @@ class TestGitCl(TestCase):
         [],
         squash=True,
         expected_upstream_ref='origin/master',
-        labels={'Commit-Queue': 1, 'Auto-Submit': 1})
+        labels={'Commit-Queue': 1, 'Auto-Submit': 1},
+        change_id='123456789',
+        original_title='Initial upload')
 
   def test_gerrit_upload_squash_first_against_rev(self):
     custom_cl_base = 'custom_cl_base_rev_or_branch'
@@ -1294,7 +1415,9 @@ class TestGitCl(TestCase):
         [],
         squash=True,
         expected_upstream_ref='origin/master',
-        custom_cl_base=custom_cl_base)
+        custom_cl_base=custom_cl_base,
+        change_id='123456789',
+        original_title='Initial upload')
     self.assertIn(
         'If you proceed with upload, more than 1 CL may be created by Gerrit',
         sys.stdout.getvalue())
@@ -1307,7 +1430,9 @@ class TestGitCl(TestCase):
         [],
         squash=True,
         expected_upstream_ref='origin/master',
-        issue=123456)
+        issue=123456,
+        change_id='123456789',
+        original_title='User input')
 
   def test_gerrit_upload_squash_reupload_to_abandoned(self):
     self.mock(git_cl, 'DieWithError',
@@ -1321,7 +1446,8 @@ class TestGitCl(TestCase):
           squash=True,
           expected_upstream_ref='origin/master',
           issue=123456,
-          fetched_status='ABANDONED')
+          fetched_status='ABANDONED',
+          change_id='123456789')
 
   def test_gerrit_upload_squash_reupload_to_not_owned(self):
     self.mock(git_cl.gerrit_util, 'GetAccountDetails',
@@ -1334,7 +1460,9 @@ class TestGitCl(TestCase):
           squash=True,
           expected_upstream_ref='origin/master',
           issue=123456,
-          other_cl_owner='other@example.com')
+          other_cl_owner='other@example.com',
+          change_id='123456789',
+          original_title='User input')
     self.assertIn(
         'WARNING: Change 123456 is owned by other@example.com, but you '
         'authenticate to Gerrit as yet-another@example.com.\n'
