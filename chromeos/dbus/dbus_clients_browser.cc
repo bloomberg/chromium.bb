@@ -16,7 +16,6 @@
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
-#include "chromeos/dbus/diagnosticsd_client.h"
 #include "chromeos/dbus/easy_unlock_client.h"
 #include "chromeos/dbus/fake_arc_appfuse_provider_client.h"
 #include "chromeos/dbus/fake_arc_midis_client.h"
@@ -25,7 +24,6 @@
 #include "chromeos/dbus/fake_cicerone_client.h"
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "chromeos/dbus/fake_debug_daemon_client.h"
-#include "chromeos/dbus/fake_diagnosticsd_client.h"
 #include "chromeos/dbus/fake_easy_unlock_client.h"
 #include "chromeos/dbus/fake_image_burner_client.h"
 #include "chromeos/dbus/fake_image_loader_client.h"
@@ -35,6 +33,7 @@
 #include "chromeos/dbus/fake_seneschal_client.h"
 #include "chromeos/dbus/fake_smb_provider_client.h"
 #include "chromeos/dbus/fake_virtual_file_provider_client.h"
+#include "chromeos/dbus/fake_wilco_dtc_supportd_client.h"
 #include "chromeos/dbus/image_burner_client.h"
 #include "chromeos/dbus/image_loader_client.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
@@ -44,6 +43,7 @@
 #include "chromeos/dbus/smb_provider_client.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "chromeos/dbus/virtual_file_provider_client.h"
+#include "chromeos/dbus/wilco_dtc_supportd_client.h"
 
 namespace chromeos {
 
@@ -94,11 +94,6 @@ DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
     debug_daemon_client_.reset(new FakeDebugDaemonClient);
 
   if (use_real_clients)
-    diagnosticsd_client_ = DiagnosticsdClient::Create();
-  else
-    diagnosticsd_client_ = std::make_unique<FakeDiagnosticsdClient>();
-
-  if (use_real_clients)
     easy_unlock_client_.reset(EasyUnlockClient::Create());
   else
     easy_unlock_client_.reset(new FakeEasyUnlockClient);
@@ -144,6 +139,11 @@ DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
     virtual_file_provider_client_.reset(VirtualFileProviderClient::Create());
   else
     virtual_file_provider_client_.reset(new FakeVirtualFileProviderClient);
+
+  if (use_real_clients)
+    wilco_dtc_supportd_client_ = WilcoDtcSupportdClient::Create();
+  else
+    wilco_dtc_supportd_client_ = std::make_unique<FakeWilcoDtcSupportdClient>();
 }
 
 DBusClientsBrowser::~DBusClientsBrowser() = default;
@@ -160,7 +160,6 @@ void DBusClientsBrowser::Initialize(dbus::Bus* system_bus) {
   concierge_client_->Init(system_bus);
   cros_disks_client_->Init(system_bus);
   debug_daemon_client_->Init(system_bus);
-  diagnosticsd_client_->Init(system_bus);
   easy_unlock_client_->Init(system_bus);
   image_burner_client_->Init(system_bus);
   image_loader_client_->Init(system_bus);
@@ -171,6 +170,7 @@ void DBusClientsBrowser::Initialize(dbus::Bus* system_bus) {
   smb_provider_client_->Init(system_bus);
   update_engine_client_->Init(system_bus);
   virtual_file_provider_client_->Init(system_bus);
+  wilco_dtc_supportd_client_->Init(system_bus);
 }
 
 }  // namespace chromeos

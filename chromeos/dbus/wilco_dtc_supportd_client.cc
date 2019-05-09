@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/diagnosticsd_client.h"
+#include "chromeos/dbus/wilco_dtc_supportd_client.h"
 
 #include <utility>
 
@@ -21,40 +21,40 @@ void OnVoidDBusMethod(VoidDBusMethodCallback callback,
   std::move(callback).Run(response != nullptr);
 }
 
-// The DiagnosticsdClient implementation used in production.
-class DiagnosticsdClientImpl final : public DiagnosticsdClient {
+// The WilcoDtcSupportdClient implementation used in production.
+class WilcoDtcSupportdClientImpl final : public WilcoDtcSupportdClient {
  public:
-  DiagnosticsdClientImpl();
-  ~DiagnosticsdClientImpl() override;
+  WilcoDtcSupportdClientImpl();
+  ~WilcoDtcSupportdClientImpl() override;
 
-  // DiagnosticsdClient overrides:
+  // WilcoDtcSupportdClient overrides:
   void WaitForServiceToBeAvailable(
       WaitForServiceToBeAvailableCallback callback) override;
   void BootstrapMojoConnection(base::ScopedFD fd,
                                VoidDBusMethodCallback callback) override;
 
  protected:
-  // DiagnosticsdClient overrides:
+  // WilcoDtcSupportdClient overrides:
   void Init(dbus::Bus* bus) override;
 
  private:
-  dbus::ObjectProxy* diagnosticsd_proxy_ = nullptr;
+  dbus::ObjectProxy* wilco_dtc_supportd_proxy_ = nullptr;
 
-  base::WeakPtrFactory<DiagnosticsdClientImpl> weak_ptr_factory_{this};
+  base::WeakPtrFactory<WilcoDtcSupportdClientImpl> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(DiagnosticsdClientImpl);
+  DISALLOW_COPY_AND_ASSIGN(WilcoDtcSupportdClientImpl);
 };
 
-DiagnosticsdClientImpl::DiagnosticsdClientImpl() = default;
+WilcoDtcSupportdClientImpl::WilcoDtcSupportdClientImpl() = default;
 
-DiagnosticsdClientImpl::~DiagnosticsdClientImpl() = default;
+WilcoDtcSupportdClientImpl::~WilcoDtcSupportdClientImpl() = default;
 
-void DiagnosticsdClientImpl::WaitForServiceToBeAvailable(
+void WilcoDtcSupportdClientImpl::WaitForServiceToBeAvailable(
     WaitForServiceToBeAvailableCallback callback) {
-  diagnosticsd_proxy_->WaitForServiceToBeAvailable(std::move(callback));
+  wilco_dtc_supportd_proxy_->WaitForServiceToBeAvailable(std::move(callback));
 }
 
-void DiagnosticsdClientImpl::BootstrapMojoConnection(
+void WilcoDtcSupportdClientImpl::BootstrapMojoConnection(
     base::ScopedFD fd,
     VoidDBusMethodCallback callback) {
   dbus::MethodCall method_call(
@@ -62,13 +62,13 @@ void DiagnosticsdClientImpl::BootstrapMojoConnection(
       ::diagnostics::kDiagnosticsdBootstrapMojoConnectionMethod);
   dbus::MessageWriter writer(&method_call);
   writer.AppendFileDescriptor(fd.get());
-  diagnosticsd_proxy_->CallMethod(
+  wilco_dtc_supportd_proxy_->CallMethod(
       &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
       base::BindOnce(&OnVoidDBusMethod, std::move(callback)));
 }
 
-void DiagnosticsdClientImpl::Init(dbus::Bus* bus) {
-  diagnosticsd_proxy_ = bus->GetObjectProxy(
+void WilcoDtcSupportdClientImpl::Init(dbus::Bus* bus) {
+  wilco_dtc_supportd_proxy_ = bus->GetObjectProxy(
       ::diagnostics::kDiagnosticsdServiceName,
       dbus::ObjectPath(::diagnostics::kDiagnosticsdServicePath));
 }
@@ -76,10 +76,10 @@ void DiagnosticsdClientImpl::Init(dbus::Bus* bus) {
 }  // namespace
 
 // static
-std::unique_ptr<DiagnosticsdClient> DiagnosticsdClient::Create() {
-  return std::make_unique<DiagnosticsdClientImpl>();
+std::unique_ptr<WilcoDtcSupportdClient> WilcoDtcSupportdClient::Create() {
+  return std::make_unique<WilcoDtcSupportdClientImpl>();
 }
 
-DiagnosticsdClient::DiagnosticsdClient() = default;
+WilcoDtcSupportdClient::WilcoDtcSupportdClient() = default;
 
 }  // namespace chromeos

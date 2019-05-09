@@ -57,7 +57,6 @@
 #include "chrome/browser/chromeos/dbus/screen_lock_service_provider.h"
 #include "chrome/browser/chromeos/dbus/virtual_file_request_service_provider.h"
 #include "chrome/browser/chromeos/dbus/vm_applications_service_provider.h"
-#include "chrome/browser/chromeos/diagnosticsd/diagnosticsd_manager.h"
 #include "chrome/browser/chromeos/display/quirks_manager_delegate_impl.h"
 #include "chrome/browser/chromeos/events/event_rewriter_delegate_impl.h"
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
@@ -106,6 +105,7 @@
 #include "chrome/browser/chromeos/system/user_removal_manager.h"
 #include "chrome/browser/chromeos/ui/low_disk_notification.h"
 #include "chrome/browser/chromeos/usb/cros_usb_detector.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_manager.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -701,7 +701,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   g_browser_process->platform_part()->InitializeChromeUserManager();
 
-  diagnosticsd_manager_ = std::make_unique<DiagnosticsdManager>();
+  wilco_dtc_supportd_manager_ = std::make_unique<WilcoDtcSupportdManager>();
 
   ScreenLocker::InitClass();
 
@@ -1109,10 +1109,10 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   user_activity_controller_.reset();
   adaptive_screen_brightness_manager_.reset();
   scheduler_configuration_manager_.reset();
-  diagnosticsd_manager_.reset();
   auto_screen_brightness_controller_.reset();
   dark_resume_controller_.reset();
   lock_to_single_user_manager_.reset();
+  wilco_dtc_supportd_manager_.reset();
 
   // Detach D-Bus clients before DBusThreadManager is shut down.
   idle_action_warning_observer_.reset();
