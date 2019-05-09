@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.UUID;
@@ -345,6 +346,22 @@ public class CrashFileManager {
     }
 
     /**
+     * Imports minidumps from Crashpad's database to the Crash Reports directory, converting them to
+     * MIME files and returning crash info as key-value pairs.
+     *
+     * @return a Map for crash report uuid to this crash info key-value pairs.
+     */
+    public Map<String, Map<String, String>> importMinidumpsCrashKeys() {
+        File crashpadDir = getCrashpadDirectory();
+        if (!crashpadDir.exists() || !ensureCrashDirExists()) {
+            return null;
+        }
+        File crashDir = getCrashDirectory();
+        return CrashReportMimeWriter.rewriteMinidumpsAsMIMEsAndGetCrashKeys(
+                crashpadDir, crashDir);
+    }
+
+    /**
      * Returns the most recent minidump without a logcat for a given pid, or null if no such
      * minidump exists. This method begins by reading all minidumps from Crashpad's database and
      * rewriting them as MIME files in the Crash Reports directory.
@@ -360,12 +377,23 @@ public class CrashFileManager {
      * Returns all minidump files that definitely do not have logcat output, sorted by modification
      * time stamp. This method begins by reading all minidumps from Crashpad's database and
      * rewriting them as MIME files in the Crash Reports directory. Note: This method does not
-     * provide an "if and only if" test: it may return omit some files that lack logcat output, if
-     * logcat output has been intentionally skipped for those minidumps. However, any files returned
+     * provide an "if and only if" test: it may return some files that lack logcat output, if logcat
+     * output has been intentionally skipped for those minidumps. However, any files returned
      * definitely lack logcat output.
      */
     public File[] getMinidumpsSansLogcat() {
         importCrashpadMinidumps();
+        return listCrashFiles(MINIDUMP_SANS_LOGCAT_PATTERN);
+    }
+
+    /**
+     * Returns all minidump files currently in the Crash Reports directory that definitely do not
+     * have logcat output, sorted by modification time stamp. Note: This method does not provide an
+     * "if and only if" test: it may return some files that lack logcat output, if logcat outpuy has
+     * been intentionally skipped for those minidumps. However, any files returned definitely lack
+     * logcat output.
+     */
+    public File[] getCurrentMinidumpsSansLogcat() {
         return listCrashFiles(MINIDUMP_SANS_LOGCAT_PATTERN);
     }
 
