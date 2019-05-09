@@ -61,9 +61,7 @@ void TestVDAVideoDecoder::Destroy() {
   weak_this_factory_.InvalidateWeakPtrs();
 
   // Delete all video frames and related textures.
-  frame_renderer_->AcquireGLContext();
   video_frames_.clear();
-  frame_renderer_->ReleaseGLContext();
 }
 
 std::string TestVDAVideoDecoder::GetDisplayName() const {
