@@ -47,6 +47,10 @@ public class TouchlessDialogProperties {
         public static final WritableObjectPropertyKey<String> TEXT =
                 new WritableObjectPropertyKey<>();
 
+        /** Whether this item can be clicked more than one time. */
+        public static final WritableBooleanPropertyKey MULTI_CLICKABLE =
+                new WritableBooleanPropertyKey();
+
         /** The action to be performed when the item is selected. */
         public static final WritableObjectPropertyKey<OnClickListener> CLICK_LISTENER =
                 new WritableObjectPropertyKey<>();
@@ -55,8 +59,8 @@ public class TouchlessDialogProperties {
         public static final WritableBooleanPropertyKey FOCUS_LISTENER_SET =
                 new WritableBooleanPropertyKey();
 
-        public static final PropertyKey[] ALL_KEYS = {ICON, TEXT, CLICK_LISTENER,
-                FOCUS_LISTENER_SET};
+        public static final PropertyKey[] ALL_KEYS = {
+                ICON, TEXT, MULTI_CLICKABLE, CLICK_LISTENER, FOCUS_LISTENER_SET};
     }
 
     /**

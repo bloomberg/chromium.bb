@@ -180,7 +180,20 @@ public class TouchlessDialogPresenter extends Presenter {
         } else if (DialogListItemProperties.TEXT == propertyKey) {
             textView.setText(model.get(DialogListItemProperties.TEXT));
         } else if (DialogListItemProperties.CLICK_LISTENER == propertyKey) {
-            view.setOnClickListener(model.get(DialogListItemProperties.CLICK_LISTENER));
+            if (!(model.get(DialogListItemProperties.CLICK_LISTENER)
+                                instanceof ClickThrottlingListener)) {
+                ClickThrottlingListener listener = new ClickThrottlingListener(
+                        model.get(DialogListItemProperties.CLICK_LISTENER));
+                listener.setIsMultiClickable(model.get(DialogListItemProperties.MULTI_CLICKABLE));
+                model.set(DialogListItemProperties.CLICK_LISTENER, listener);
+                view.setOnClickListener(listener);
+            }
+        } else if (DialogListItemProperties.MULTI_CLICKABLE == propertyKey) {
+            View.OnClickListener listener = model.get(DialogListItemProperties.CLICK_LISTENER);
+            if (listener instanceof ClickThrottlingListener) {
+                ((ClickThrottlingListener) listener)
+                        .setIsMultiClickable(model.get(DialogListItemProperties.MULTI_CLICKABLE));
+            }
         } else if (DialogListItemProperties.FOCUS_LISTENER_SET == propertyKey) {
             if (model.get(DialogListItemProperties.FOCUS_LISTENER_SET)) {
                 view.setOnFocusChangeListener((v, hasFocus) -> {
@@ -198,6 +211,34 @@ public class TouchlessDialogPresenter extends Presenter {
                     }
                 });
             }
+        }
+    }
+
+    /**
+     * This OnClickListener implementation ensures that
+     * {@link DialogListItemProperties.CLICK_LISTENER} is only called once for models with
+     * {@link DialogListItemProperties.MULTI_CLICKABLE} set to false.
+     */
+    private static class ClickThrottlingListener implements View.OnClickListener {
+        private View.OnClickListener mOnClickListener;
+        private boolean mWasClicked;
+        private boolean mIsMultiClickable;
+
+        private ClickThrottlingListener(View.OnClickListener onClickListener) {
+            mOnClickListener = onClickListener;
+        }
+
+        private void setIsMultiClickable(boolean isMultiClickable) {
+            mIsMultiClickable = isMultiClickable;
+        }
+
+        @Override
+        public void onClick(View view) {
+            if (mOnClickListener == null) return;
+            if (!mIsMultiClickable && mWasClicked) return;
+
+            mOnClickListener.onClick(view);
+            mWasClicked = true;
         }
     }
 }
