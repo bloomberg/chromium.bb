@@ -24,7 +24,6 @@
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
-#include "ash/ws/window_lookup.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"

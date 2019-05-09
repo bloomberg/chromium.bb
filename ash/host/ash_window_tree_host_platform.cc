@@ -11,18 +11,12 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/window_factory.h"
-#include "ash/ws/window_service_owner.h"
 #include "base/feature_list.h"
 #include "base/trace_event/trace_event.h"
-#include "services/ws/event_queue.h"
 #include "services/ws/public/cpp/input_devices/input_device_controller_client.h"
-#include "services/ws/public/mojom/window_manager.mojom.h"
-#include "services/ws/window_service.h"
-#include "ui/aura/mus/input_method_mus.h"
 #include "ui/aura/null_window_targeter.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host_platform.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/events/event_sink.h"
 #include "ui/events/null_event_targeter.h"
 #include "ui/events/ozone/chromeos/cursor_controller.h"
@@ -37,20 +31,11 @@
 #include "ui/platform_window/text_input_state.h"
 
 namespace ash {
-namespace {
-
-// String passed to Compositor to identify who is submitting compositor frames.
-// Used by telemetry.
-const char* kTraceEnvironmentName = "ash";
-
-}  // namespace
 
 AshWindowTreeHostPlatform::AshWindowTreeHostPlatform(
     ui::PlatformWindowInitProperties properties)
-    : aura::WindowTreeHostPlatform(
-          std::move(properties),
-          window_factory::NewWindow(),
-          ::features::IsUsingWindowService() ? kTraceEnvironmentName : nullptr),
+    : aura::WindowTreeHostPlatform(std::move(properties),
+                                   window_factory::NewWindow()),
       transformer_helper_(this) {
   CommonInit();
 }
@@ -58,12 +43,10 @@ AshWindowTreeHostPlatform::AshWindowTreeHostPlatform(
 AshWindowTreeHostPlatform::AshWindowTreeHostPlatform()
     : aura::WindowTreeHostPlatform(window_factory::NewWindow()),
       transformer_helper_(this) {
-  CreateCompositor(
-      viz::FrameSinkId(),
-      /* force_software_compositor */ false,
-      /* external_begin_frame_client */ nullptr,
-      /* are_events_in_pixels */ true,
-      ::features::IsUsingWindowService() ? kTraceEnvironmentName : nullptr);
+  CreateCompositor(viz::FrameSinkId(),
+                   /* force_software_compositor */ false,
+                   /* external_begin_frame_client */ nullptr,
+                   /* are_events_in_pixels */ true);
   CommonInit();
 }
 
@@ -112,17 +95,6 @@ void AshWindowTreeHostPlatform::SetCursorConfig(
 void AshWindowTreeHostPlatform::ClearCursorConfig() {
   ui::CursorController::GetInstance()->ClearCursorConfigForWindow(
       GetAcceleratedWidget());
-}
-
-void AshWindowTreeHostPlatform::UpdateTextInputState(
-    ui::mojom::TextInputStatePtr state) {
-  SetTextInputState(std::move(state));
-}
-
-void AshWindowTreeHostPlatform::UpdateImeVisibility(
-    bool visible,
-    ui::mojom::TextInputStatePtr state) {
-  SetImeVisibility(visible, std::move(state));
 }
 
 void AshWindowTreeHostPlatform::SetRootWindowTransformer(
@@ -183,16 +155,6 @@ void AshWindowTreeHostPlatform::SetBoundsInPixels(
 
 void AshWindowTreeHostPlatform::CommonInit() {
   transformer_helper_.Init();
-
-  event_queue_ =
-      Shell::Get()->window_service_owner()->window_service()->event_queue();
-
-  if (!::features::IsMultiProcessMash())
-    return;
-
-  input_method_ = std::make_unique<aura::InputMethodMus>(this, this);
-  input_method_->Init(Shell::Get()->connector());
-  SetSharedInputMethod(input_method_.get());
 }
 
 void AshWindowTreeHostPlatform::SetTapToClickPaused(bool state) {
@@ -205,45 +167,11 @@ void AshWindowTreeHostPlatform::SetTapToClickPaused(bool state) {
   input_device_controller_client->SetTapToClickPaused(state);
 }
 
-bool AshWindowTreeHostPlatform::ShouldSendKeyEventToIme() {
-  // Don't send key events to IME if they are going to go to a remote client.
-  // Remote clients handle forwarding to IME (as necessary).
-  aura::Window* target = window()->targeter()->FindTargetForKeyEvent(window());
-  return !target || !ws::WindowService::IsProxyWindow(target);
-}
-
 void AshWindowTreeHostPlatform::DispatchEvent(ui::Event* event) {
   TRACE_EVENT0("input", "AshWindowTreeHostPlatform::DispatchEvent");
   if (event->IsLocatedEvent())
     TranslateLocatedEvent(event->AsLocatedEvent());
   return aura::WindowTreeHostPlatform::DispatchEvent(event);
-}
-
-ui::EventDispatchDetails AshWindowTreeHostPlatform::DeliverEventToSink(
-    ui::Event* event) {
-  // Queue the event if needed, or deliver it directly to the sink.
-  auto result = event_queue_->DeliverOrQueueEvent(this, event);
-  return result.value_or(ui::EventDispatchDetails());
-}
-
-void AshWindowTreeHostPlatform::SetTextInputState(
-    ui::mojom::TextInputStatePtr state) {
-  ui::PlatformImeController* ime =
-      platform_window()->GetPlatformImeController();
-  if (ime)
-    ime->UpdateTextInputState(state.To<ui::TextInputState>());
-}
-
-void AshWindowTreeHostPlatform::SetImeVisibility(
-    bool visible,
-    ui::mojom::TextInputStatePtr state) {
-  if (!state.is_null())
-    SetTextInputState(std::move(state));
-
-  ui::PlatformImeController* ime =
-      platform_window()->GetPlatformImeController();
-  if (ime)
-    ime->SetImeVisibility(visible);
 }
 
 }  // namespace ash

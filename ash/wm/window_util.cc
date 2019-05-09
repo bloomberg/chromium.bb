@@ -22,8 +22,6 @@
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
-#include "ash/ws/window_service_owner.h"
-#include "services/ws/window_service.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_client.h"
@@ -63,14 +61,6 @@ bool MoveWindowToRoot(aura::Window* window, aura::Window* root) {
     return false;
   container->AddChild(window);
   return true;
-}
-
-// Asks the remote client that owns |window| to close it. Returns true if there
-// was a remote client for |window|, false otherwise.
-bool AskRemoteClientToCloseWindow(aura::Window* window) {
-  ws::WindowService* window_service =
-      Shell::Get()->window_service_owner()->window_service();
-  return window_service && window_service->RequestClose(window);
 }
 
 // This window targeter reserves space for the portion of the resize handles
@@ -248,9 +238,6 @@ void SetChildrenUseExtendedHitRegionForWindow(aura::Window* window) {
 }
 
 void CloseWidgetForWindow(aura::Window* window) {
-  if (AskRemoteClientToCloseWindow(window))
-    return;
-
   views::Widget* widget = GetInternalWidgetForWindow(window);
   DCHECK(widget);
   widget->Close();

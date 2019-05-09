@@ -423,8 +423,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void HandleServiceRequest(
       const std::string& service_name,
       service_manager::mojom::ServiceRequest request) override;
-  bool ShouldTerminateOnServiceQuit(
-      const service_manager::Identity& id) override;
   base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
       base::StringPiece name) override;
   std::vector<service_manager::Manifest> GetExtraServiceManifests() override;

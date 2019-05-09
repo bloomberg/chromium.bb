@@ -16,10 +16,6 @@ class BrowserContext;
 class WebContents;
 }  // namespace content
 
-namespace views {
-class RemoteViewProvider;
-}
-
 namespace ash {
 namespace shell {
 
@@ -37,7 +33,6 @@ class EmbeddedBrowser {
   void OnUnembed();
 
   std::unique_ptr<content::WebContents> contents_;
-  std::unique_ptr<views::RemoteViewProvider> remote_view_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedBrowser);
 };

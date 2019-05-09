@@ -52,12 +52,6 @@
 #include "chrome/test/base/search_test_utils.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "ash/public/interfaces/constants.mojom.h"
-#include "content/public/common/service_names.mojom.h"
-#include "services/ws/public/mojom/constants.mojom.h"
-#endif
-
 using content::BrowsingDataFilterBuilder;
 using testing::_;
 using ChromeContentBrowserClientTest = testing::Test;
@@ -504,32 +498,3 @@ TEST(ChromeContentBrowserClient, UserAgentMetadata) {
   EXPECT_EQ(metadata.architecture, "");
   EXPECT_EQ(metadata.model, "");
 }
-
-#if defined(OS_CHROMEOS)
-
-TEST(ChromeContentBrowserClientTest, ShouldTerminateOnServiceQuit) {
-  const struct {
-    std::string service_name;
-    bool expect_terminate;
-  } kTestCases[] = {
-      // Don't terminate for invalid service names.
-      {"x", false},
-      {"unknown-name", false},
-      // Don't terminate for some well-known browser services.
-      {content::mojom::kBrowserServiceName, false},
-      {content::mojom::kGpuServiceName, false},
-      {content::mojom::kRendererServiceName, false},
-      // Do terminate for some mash-specific cases.
-      {ws::mojom::kServiceName, true},
-      {ash::mojom::kServiceName, true},
-  };
-  ChromeContentBrowserClient client;
-  for (const auto& test : kTestCases) {
-    service_manager::Identity id(test.service_name, base::Token{1, 2},
-                                 base::Token{}, base::Token{3, 4});
-    EXPECT_EQ(test.expect_terminate, client.ShouldTerminateOnServiceQuit(id))
-        << "for service name " << test.service_name;
-  }
-}
-
-#endif  // defined(OS_CHROMEOS)

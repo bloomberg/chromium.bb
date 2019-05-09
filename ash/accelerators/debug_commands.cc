@@ -17,18 +17,13 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "ash/ws/window_lookup.h"
-#include "ash/ws/window_service_owner.h"
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/utf_string_conversions.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ws/window_service.h"
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/accessibility/platform/aura_window_properties.h"
-#include "ui/aura/mus/window_tree_client.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/compositor/debug_utils.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/manager/display_manager.h"
@@ -36,7 +31,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/views/debug_utils.h"
-#include "ui/views/mus/mus_client.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_properties.h"
 
@@ -52,16 +46,6 @@ void HandlePrintLayerHierarchy() {
           layer,
           RootWindowController::ForWindow(root)->GetLastMouseLocationInRoot());
   }
-
-  if (!features::IsSingleProcessMash())
-    return;
-
-  for (aura::Window* mus_root :
-       views::MusClient::Get()->window_tree_client()->GetRoots()) {
-    ui::Layer* layer = mus_root->layer();
-    if (layer)
-      ui::PrintLayerHierarchy(layer, gfx::Point());
-  }
 }
 
 void HandlePrintViewHierarchy() {
@@ -74,8 +58,7 @@ void HandlePrintViewHierarchy() {
   views::PrintViewHierarchy(widget->GetRootView());
 }
 
-void PrintWindowHierarchy(ws::WindowService* window_service,
-                          const aura::Window* active_window,
+void PrintWindowHierarchy(const aura::Window* active_window,
                           const aura::Window* focused_window,
                           aura::Window* window,
                           int indent,
@@ -87,8 +70,6 @@ void PrintWindowHierarchy(ws::WindowService* window_service,
   const gfx::Vector2dF& subpixel_position_offset =
       window->layer()->subpixel_position_offset();
   *out << indent_str;
-  if (window_service && ws::WindowService::IsProxyWindow(window))
-    *out << " [proxy] id=" << window_service->GetIdForDebugging(window) << " ";
   *out << name << " (" << window << ")"
        << " type=" << window->type();
   if (window->GetProperty(kWindowStateKey))
@@ -104,46 +85,23 @@ void PrintWindowHierarchy(ws::WindowService* window_service,
     *out << " [snapped]";
   if (!subpixel_position_offset.IsZero())
     *out << " subpixel offset=" + subpixel_position_offset.ToString();
-  if (features::IsSingleProcessMash()) {
-    aura::Window* proxy_window =
-        window_lookup::GetProxyWindowForClientWindow(window);
-    if (proxy_window)
-      *out << " id=" << window_service->GetIdForDebugging(proxy_window);
-  }
   std::string* tree_id = window->GetProperty(ui::kChildAXTreeID);
   if (tree_id)
     *out << " ax_tree_id=" << *tree_id;
   *out << '\n';
 
-  for (aura::Window* child : window->children()) {
-    PrintWindowHierarchy(window_service, active_window, focused_window, child,
-                         indent + 3, out);
-  }
+  for (aura::Window* child : window->children())
+    PrintWindowHierarchy(active_window, focused_window, child, indent + 3, out);
 }
 
 void HandlePrintWindowHierarchy() {
   aura::Window* active_window = wm::GetActiveWindow();
   aura::Window* focused_window = wm::GetFocusedWindow();
   aura::Window::Windows roots = Shell::Get()->GetAllRootWindows();
-  ws::WindowService* window_service =
-      Shell::Get()->window_service_owner()->window_service();
   for (size_t i = 0; i < roots.size(); ++i) {
     std::ostringstream out;
     out << "RootWindow " << i << ":\n";
-    PrintWindowHierarchy(window_service, active_window, focused_window,
-                         roots[i], 0, &out);
-    // Error so logs can be collected from end-users.
-    LOG(ERROR) << out.str();
-  }
-
-  if (!features::IsSingleProcessMash())
-    return;
-
-  for (aura::Window* mus_root :
-       views::MusClient::Get()->window_tree_client()->GetRoots()) {
-    std::ostringstream out;
-    out << "WindowService Client RootWindow\n";
-    PrintWindowHierarchy(nullptr, nullptr, nullptr, mus_root, 0, &out);
+    PrintWindowHierarchy(active_window, focused_window, roots[i], 0, &out);
     // Error so logs can be collected from end-users.
     LOG(ERROR) << out.str();
   }

@@ -2320,31 +2320,12 @@ void ChromeContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
     const service_manager::Identity& identity,
     base::CommandLine* command_line) {
 #if defined(OS_CHROMEOS)
-  bool copy_switches = false;
-  if (identity.name() == ash::mojom::kServiceName) {
-    copy_switches = true;
-    command_line->AppendSwitch(switches::kMessageLoopTypeUi);
-  }
-  if (ash_service_registry::IsAshRelatedServiceName(identity.name())) {
-    // Ash services also need command line flags, as some flags are used to
-    // configure the compositor.
-    copy_switches = true;
-    command_line->AppendSwitchASCII(switches::kMashServiceName,
-                                    identity.name());
-  }
   if (identity.name() == viz::mojom::kVizServiceName) {
-#if defined(USE_OZONE)
     if (ui::OzonePlatform::EnsureInstance()->GetMessageLoopTypeForGpu() ==
         base::MessageLoop::TYPE_UI) {
       command_line->AppendSwitch(switches::kMessageLoopTypeUi);
     }
-#endif
     content::GpuDataManager::GetInstance()->AppendGpuCommandLine(command_line);
-  }
-  // TODO(crbug.com/906954): whitelist flags to copy.
-  if (copy_switches) {
-    for (const auto& sw : base::CommandLine::ForCurrentProcess()->GetSwitches())
-      command_line->AppendSwitchNative(sw.first, sw.second);
   }
 #endif
 
@@ -4039,8 +4020,6 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
       &l10n_util::GetStringUTF16, IDS_UTILITY_PROCESS_UNZIP_NAME);
 
 #if defined(OS_CHROMEOS)
-  ash_service_registry::RegisterOutOfProcessServices(services);
-
   (*services)[chromeos::ime::mojom::kServiceName] = base::BindRepeating(
       &l10n_util::GetStringUTF16, IDS_UTILITY_PROCESS_IME_SERVICE_NAME);
 #endif
@@ -4127,14 +4106,6 @@ void ChromeContentBrowserClient::HandleServiceRequest(
   if (service)
     service_manager::Service::RunAsyncUntilTermination(std::move(service));
 #endif
-}
-
-bool ChromeContentBrowserClient::ShouldTerminateOnServiceQuit(
-    const service_manager::Identity& id) {
-#if defined(OS_CHROMEOS)
-  return ash_service_registry::ShouldTerminateOnServiceQuit(id.name());
-#endif
-  return false;
 }
 
 base::Optional<service_manager::Manifest>

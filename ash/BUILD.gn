@@ -90,7 +90,6 @@ component("ash") {
     "wm/window_util.h",
     "wm/wm_event.h",
     "wm/workspace/workspace_window_resizer.h",
-    "ws/window_lookup.h",
   ]
   sources = [
     "accelerators/accelerator_commands.cc",
@@ -1274,13 +1273,6 @@ component("ash") {
     "wm/workspace/workspace_window_resizer.cc",
     "wm/workspace_controller.cc",
     "wm/workspace_controller.h",
-    "ws/ash_gpu_interface_provider.cc",
-    "ws/ash_gpu_interface_provider.h",
-    "ws/window_lookup.cc",
-    "ws/window_service_delegate_impl.cc",
-    "ws/window_service_delegate_impl.h",
-    "ws/window_service_owner.cc",
-    "ws/window_service_owner.h",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]
@@ -1915,7 +1907,6 @@ test("ash_unittests") {
 
   deps = [
     ":ash",
-    ":ash_service_resources",
     ":test_support",
     "//ash/app_list:test_support",
     "//ash/app_list/presenter",
@@ -2029,8 +2020,6 @@ test("ash_unittests") {
   ]
 
   data_deps = [
-    ":ash_service_resources",
-    ":ash_service",
     "//ash/resources:ash_test_resources_100_percent",
     "//services/viz",
   ]
@@ -2279,69 +2268,5 @@ static_library("test_support") {
     "//ash/strings:ash_test_strings",
     "//ash/resources:ash_test_resources_100_percent",
     "//ash/resources:ash_test_resources_200_percent",
-  ]
-}
-
-service_executable("ash_service") {
-  output_name = "ash"
-
-  sources = [
-    "main.cc",
-  ]
-
-  deps = [
-    ":ash",
-    ":ash_service_resources",
-    ":ash_service_resources_200",
-    "//services/service_manager/public/cpp",
-  ]
-
-  data_deps = [
-    ":ash_service_resources",
-    ":ash_service_resources_200",
-  ]
-}
-
-# TODO: Load locale-specific strings.
-# TODO: Avoid duplication between Mash and Chrome pak files: crbug.com/628715.
-repack("ash_service_resources") {
-  output = "$root_out_dir/ash_service_resources.pak"
-  sources = [
-    "$root_gen_dir/ash/components/resources/ash_components_resources_100_percent.pak",
-    "$root_gen_dir/ash/strings/ash_strings_en-US.pak",
-    "$root_gen_dir/chromeos/strings/chromeos_strings_en-US.pak",
-    "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_100_percent.pak",
-    "$root_gen_dir/ui/chromeos/strings/ui_chromeos_strings_en-US.pak",
-    "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
-    "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
-    "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
-    "$root_gen_dir/ui/views/resources/views_resources_100_percent.pak",
-  ]
-  deps = [
-    "//ash/components/resources",
-    "//ash/strings",
-    "//chromeos/strings",
-    "//ui/chromeos/resources",
-    "//ui/chromeos/strings",
-    "//ui/resources",
-    "//ui/strings",
-    "//ui/views/mus:resources",
-    "//ui/views/resources",
-  ]
-}
-
-repack("ash_service_resources_200") {
-  output = "$root_out_dir/ash_service_resources_200.pak"
-  sources = [
-    "$root_gen_dir/ash/components/resources/ash_components_resources_200_percent.pak",
-    "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_200_percent.pak",
-    "$root_gen_dir/ui/resources/ui_resources_200_percent.pak",
-    "$root_gen_dir/ui/views/resources/views_resources_200_percent.pak",
-  ]
-  deps = [
-    "//ash/components/resources",
-    "//ui/chromeos/resources",
-    "//ui/resources",
-    "//ui/views/resources",
   ]
 }

@@ -222,11 +222,6 @@ include_rules = [
 
 specific_include_rules = {
   "ash_service_registry\.cc": [
-    # The following are needed for classic mode to create the WindowService.
-    # Once Ash runs out of process no longer needed.
-    "+ash/shell.h",
-
-    # Needed for classic mode.
     "+ash/ash_service.h",
   ],
   "platform_util_mac.mm": [

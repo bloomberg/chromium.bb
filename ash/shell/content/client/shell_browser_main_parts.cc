@@ -37,7 +37,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/context_factory.h"
-#include "content/public/browser/gpu_interface_provider_factory.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/shell/browser/shell_browser_context.h"
@@ -124,7 +123,6 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   init_params.delegate = std::make_unique<ash::shell::ShellDelegateImpl>();
   init_params.context_factory = content::GetContextFactory();
   init_params.context_factory_private = content::GetContextFactoryPrivate();
-  init_params.gpu_interface_provider = content::CreateGpuInterfaceProvider();
   init_params.connector = connector;
   init_params.keyboard_ui_factory = std::make_unique<TestKeyboardUIFactory>();
   ash::Shell::CreateInstance(std::move(init_params));

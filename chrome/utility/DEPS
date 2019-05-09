@@ -47,17 +47,7 @@ include_rules = [
   "+services/network/public",
   "+services/network/url_request_context_builder_mojo.h",
   "+services/proxy_resolver",
-  "+services/ws/public",
   "+skia/ext",
   "+third_party/libxml",
   "+third_party/zlib/google",
 ]
-
-specific_include_rules = {
-  "mash_service_factory.cc": [
-    "+ash/ash_service.h",
-    "+ash/public/interfaces",
-    "+ash/window_manager_service.h",
-    "+services/ws/public",
-  ],
-}

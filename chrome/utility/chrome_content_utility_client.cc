@@ -71,7 +71,6 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/utility/mash_service_factory.h"
 #include "chromeos/assistant/buildflags.h"  // nogncheck
 #include "chromeos/services/ime/ime_service.h"
 #include "chromeos/services/ime/public/mojom/constants.mojom.h"
@@ -166,10 +165,6 @@ ChromeContentUtilityClient::ChromeContentUtilityClient()
     : utility_process_running_elevated_(false) {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && defined(OS_WIN)
   printing_handler_ = std::make_unique<printing::PrintingHandler>();
-#endif
-
-#if defined(OS_CHROMEOS)
-  mash_service_factory_ = std::make_unique<MashServiceFactory>();
 #endif
 }
 
@@ -346,11 +341,8 @@ ChromeContentUtilityClient::MaybeCreateMainThreadService(
   }
 #endif
 
-  return mash_service_factory_->HandleServiceRequest(service_name,
-                                                     std::move(request));
-#else   // defined(OS_CHROMEOS)
-  return nullptr;
 #endif  // defined(OS_CHROMEOS)
+  return nullptr;
 }
 
 std::unique_ptr<service_manager::Service>

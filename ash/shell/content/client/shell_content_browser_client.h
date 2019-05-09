@@ -35,9 +35,6 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
   base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
       base::StringPiece name) override;
   void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
-  void HandleServiceRequest(
-      const std::string& service_name,
-      service_manager::mojom::ServiceRequest request) override;
 
  private:
   ShellBrowserMainParts* shell_browser_main_parts_;

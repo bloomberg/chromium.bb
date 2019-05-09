@@ -41,7 +41,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
-#include "services/ws/public/cpp/host/gpu_interface_provider.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "services/ws/public/mojom/gpu.mojom.h"
 #include "ui/aura/env.h"
@@ -53,7 +52,6 @@
 #include "ui/base/ime/init/input_method_initializer.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/platform_window_defaults.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/test_context_factories.h"
@@ -67,41 +65,6 @@
 #include "ui/wm/core/wm_state.h"
 
 namespace ash {
-
-// An implementation of GpuInterfaceProvider that queues up requests for
-// interfaces. The requests are never actually bound, but are kept alive to
-// ensure the requestor doesn't detect a close and try to exit.
-class TestGpuInterfaceProvider : public ws::GpuInterfaceProvider {
- public:
-  TestGpuInterfaceProvider() = default;
-  ~TestGpuInterfaceProvider() override = default;
-
-  // ws::GpuInterfaceProvider:
-  void RegisterGpuInterfaces(
-      service_manager::BinderRegistry* registry) override {
-    registry->AddInterface(base::BindRepeating(
-        &TestGpuInterfaceProvider::BindDiscardableSharedMemoryManager,
-        base::Unretained(this)));
-    registry->AddInterface(base::BindRepeating(
-        &TestGpuInterfaceProvider::BindGpuRequest, base::Unretained(this)));
-  }
-  void BindOzoneGpuInterface(const std::string& interface_name,
-                             mojo::ScopedMessagePipeHandle handle) override {}
-
- private:
-  void BindDiscardableSharedMemoryManager(
-      discardable_memory::mojom::DiscardableSharedMemoryManagerRequest
-          request) {
-    request_handles_.push_back(request.PassMessagePipe());
-  }
-  void BindGpuRequest(ws::mojom::GpuRequest request) {
-    request_handles_.push_back(request.PassMessagePipe());
-  }
-
-  std::vector<mojo::ScopedMessagePipeHandle> request_handles_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestGpuInterfaceProvider);
-};
 
 AshTestHelper::AshTestHelper()
     : command_line_(std::make_unique<base::test::ScopedCommandLine>()) {
@@ -322,8 +285,6 @@ void AshTestHelper::CreateShell() {
   init_params.context_factory = context_factories_->GetContextFactory();
   init_params.context_factory_private =
       context_factories_->GetContextFactoryPrivate();
-  init_params.gpu_interface_provider =
-      std::make_unique<TestGpuInterfaceProvider>();
   init_params.keyboard_ui_factory = std::make_unique<TestKeyboardUIFactory>();
   Shell::CreateInstance(std::move(init_params));
 }

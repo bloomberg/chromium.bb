@@ -145,17 +145,11 @@ static_library("utility") {
   }
 
   if (is_chromeos) {
-    sources += [
-      "mash_service_factory.cc",
-      "mash_service_factory.h",
-    ]
     deps += [
-      "//ash",
       "//chrome/services/file_util:lib",
       "//chromeos/assistant:buildflags",
       "//chromeos/services/ime:lib",
       "//chromeos/services/ime/public/mojom",
-      "//services/ws/public/mojom",
     ]
 
     if (enable_cros_libassistant) {

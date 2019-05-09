@@ -13,8 +13,6 @@
 #include "content/public/utility/content_utility_client.h"
 #include "printing/buildflags/buildflags.h"
 
-class MashServiceFactory;
-
 namespace printing {
 class PrintingHandler;
 }
@@ -55,11 +53,6 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
 
   // True if the utility process runs with elevated privileges.
   bool utility_process_running_elevated_;
-
-#if defined(OS_CHROMEOS)
-  // Must be owned by utility main thread.
-  std::unique_ptr<MashServiceFactory> mash_service_factory_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentUtilityClient);
 };

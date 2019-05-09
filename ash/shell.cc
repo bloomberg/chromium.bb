@@ -163,7 +163,6 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_shadow_controller_delegate.h"
 #include "ash/wm/workspace_controller.h"
-#include "ash/ws/window_service_owner.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -185,8 +184,6 @@
 #include "services/preferences/public/cpp/pref_service_factory.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ws/public/cpp/host/gpu_interface_provider.h"
-#include "services/ws/window_service.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
@@ -285,7 +282,6 @@ Shell* Shell::CreateInstance(ShellInitParams init_params) {
   instance_->Init(
       init_params.context_factory, init_params.context_factory_private,
       std::move(init_params.initial_display_prefs),
-      std::move(init_params.gpu_interface_provider),
       std::move(init_params.keyboard_ui_factory), init_params.dbus_bus);
   return instance_;
 }
@@ -396,11 +392,6 @@ int Shell::GetOpenSystemModalWindowContainerId() {
 // static
 bool Shell::IsSystemModalWindowOpen() {
   return GetOpenSystemModalWindowContainerId() >= 0;
-}
-
-// static
-bool Shell::IsProxyWindow(aura::Window* window) {
-  return ws::WindowService::IsProxyWindow(window);
 }
 
 // static
@@ -887,10 +878,6 @@ Shell::~Shell() {
   // Similarly for DockedMagnifierController.
   docked_magnifier_controller_ = nullptr;
 
-  // May own windows and other objects that have indirect hooks into
-  // WindowTreeHostManager.
-  window_service_owner_.reset();
-
   // Must be released before |focus_controller_|.
   ime_focus_handler_.reset();
 
@@ -973,7 +960,6 @@ void Shell::Init(
     ui::ContextFactory* context_factory,
     ui::ContextFactoryPrivate* context_factory_private,
     std::unique_ptr<base::Value> initial_display_prefs,
-    std::unique_ptr<ws::GpuInterfaceProvider> gpu_interface_provider,
     std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory,
     scoped_refptr<dbus::Bus> dbus_bus) {
   if (::features::IsSingleProcessMash()) {
@@ -1092,10 +1078,6 @@ void Shell::Init(
   overview_controller_ = std::make_unique<OverviewController>();
 
   screen_position_controller_ = std::make_unique<ScreenPositionController>();
-
-  // Must be before CreatePrimaryHost().
-  window_service_owner_ =
-      std::make_unique<WindowServiceOwner>(std::move(gpu_interface_provider));
 
   window_tree_host_manager_->Start();
   AshWindowTreeHostInitParams ash_init_params;

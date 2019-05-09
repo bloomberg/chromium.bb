@@ -14,21 +14,17 @@
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_ui_factory.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/context_factory.h"
-#include "content/public/browser/gpu_interface_provider_factory.h"
 #include "content/public/common/service_manager_connection.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/base/ui_base_features.h"
 
 namespace {
 
-void CreateClassicShell() {
+void CreateShell() {
   ash::ShellInitParams shell_init_params;
   shell_init_params.delegate = std::make_unique<ChromeShellDelegate>();
   shell_init_params.context_factory = content::GetContextFactory();
   shell_init_params.context_factory_private =
       content::GetContextFactoryPrivate();
-  shell_init_params.gpu_interface_provider =
-      content::CreateGpuInterfaceProvider();
   shell_init_params.connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
   DCHECK(shell_init_params.connector);
@@ -39,10 +35,8 @@ void CreateClassicShell() {
   shell_init_params.initial_display_prefs =
       ash::DisplayPrefs::GetInitialDisplayPrefsFromPrefService(
           g_browser_process->local_state());
-  if (!features::IsUsingWindowService()) {
-    shell_init_params.keyboard_ui_factory =
-        std::make_unique<ChromeKeyboardUIFactory>();
-  }
+  shell_init_params.keyboard_ui_factory =
+      std::make_unique<ChromeKeyboardUIFactory>();
   shell_init_params.dbus_bus =
       chromeos::DBusThreadManager::Get()->GetSystemBus();
 
@@ -53,13 +47,13 @@ void CreateClassicShell() {
 
 // static
 void AshShellInit::RegisterDisplayPrefs(PrefRegistrySimple* registry) {
-  // Note: For CLASSIC/MUS, DisplayPrefs must be registered here so that
-  // the initial display prefs can be passed synchronously to ash::Shell.
+  // DisplayPrefs must be registered here so that the initial display prefs can
+  // be passed synchronously to ash::Shell.
   ash::DisplayPrefs::RegisterLocalStatePrefs(registry);
 }
 
 AshShellInit::AshShellInit() {
-  CreateClassicShell();
+  CreateShell();
   ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
 }
 

@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
-#include "chrome/browser/ash_service_registry.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/chrome_service_name.h"
 #include "chrome/browser/chromeos/login/session/chrome_session_manager.h"

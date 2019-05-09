@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/ash_service.h"
 #include "ash/public/cpp/manifest.h"
 #include "ash/public/cpp/test_manifest.h"
 #include "ash/public/cpp/window_properties.h"
@@ -96,13 +95,6 @@ void ShellContentBrowserClient::RegisterOutOfProcessServices(
     OutOfProcessServiceMap* services) {
   (*services)[test_ime_driver::mojom::kServiceName] = base::BindRepeating(
       &base::ASCIIToUTF16, test_ime_driver::mojom::kServiceName);
-}
-
-void ShellContentBrowserClient::HandleServiceRequest(
-    const std::string& service_name,
-    service_manager::mojom::ServiceRequest request) {
-  service_manager::Service::RunAsyncUntilTermination(
-      std::make_unique<AshService>(std::move(request)));
 }
 
 }  // namespace shell

@@ -87,10 +87,6 @@ class VisibilityController;
 class WindowModalityController;
 }  // namespace wm
 
-namespace ws {
-class GpuInterfaceProvider;
-}
-
 namespace ash {
 
 class AcceleratorControllerImpl;
@@ -207,7 +203,6 @@ class VoiceInteractionController;
 class VpnList;
 class WallpaperController;
 class WaylandServerController;
-class WindowServiceOwner;
 class WindowCycleController;
 class WindowPositioner;
 class WindowTreeHostManager;
@@ -279,11 +274,6 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   // Returns true if a system-modal dialog window is currently open.
   static bool IsSystemModalWindowOpen();
-
-  // Returns true if |window| is a proxy window. A proxy window is a window that
-  // was created by way of a WindowService client (e.g. the keyboard shortcut
-  // viewer app under classic ash, or a browser window under mash).
-  static bool IsProxyWindow(aura::Window* window);
 
   // Registers all ash related local state prefs to the given |registry|.
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry,
@@ -567,9 +557,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   OverviewController* overview_controller() {
     return overview_controller_.get();
   }
-  WindowServiceOwner* window_service_owner() {
-    return window_service_owner_.get();
-  }
   WindowTreeHostManager* window_tree_host_manager() {
     return window_tree_host_manager_.get();
   }
@@ -662,7 +649,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   void Init(ui::ContextFactory* context_factory,
             ui::ContextFactoryPrivate* context_factory_private,
             std::unique_ptr<base::Value> initial_display_prefs,
-            std::unique_ptr<ws::GpuInterfaceProvider> gpu_interface_provider,
             std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory,
             scoped_refptr<dbus::Bus> dbus_bus);
 
@@ -792,7 +778,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<ui::UserActivityDetector> user_activity_detector_;
   std::unique_ptr<VideoDetector> video_detector_;
   std::unique_ptr<WaylandServerController> wayland_server_controller_;
-  std::unique_ptr<WindowServiceOwner> window_service_owner_;
   std::unique_ptr<WindowTreeHostManager> window_tree_host_manager_;
   std::unique_ptr<PersistentWindowController> persistent_window_controller_;
   std::unique_ptr<HighContrastController> high_contrast_controller_;
