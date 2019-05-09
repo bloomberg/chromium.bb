@@ -164,14 +164,3 @@ source_set("eg_tests") {
   ]
   libs = [ "XCTest.framework" ]
 }
-
-source_set("hooks") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "tab_grid_egtests_hook.mm",
-  ]
-  deps = [
-    "//ios/chrome/app:tests_hook",
-  ]
-}

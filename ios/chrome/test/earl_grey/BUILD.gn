@@ -84,7 +84,6 @@ chrome_ios_eg_test("ios_chrome_tab_grid_egtests") {
     ":test_support",
     "//ios/chrome/browser/ui/tab_grid:eg_tests",
   ]
-  hooks_target = "//ios/chrome/browser/ui/tab_grid:hooks"
 }
 
 chrome_ios_eg_test("ios_chrome_ui_egtests") {
