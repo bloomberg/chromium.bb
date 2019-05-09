@@ -10,6 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/printing/printer_event_tracker.h"
+#include "chrome/browser/chromeos/printing/printer_installation_manager.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_service.h"
@@ -29,7 +30,8 @@ class SyncedPrintersManager;
 
 // Top level manager of available CUPS printers in ChromeOS.  All functions
 // in this class must be called from a sequenced context.
-class CupsPrintersManager : public KeyedService {
+class CupsPrintersManager : public PrinterInstallationManager,
+                            public KeyedService {
  public:
   class Observer {
    public:
@@ -85,11 +87,11 @@ class CupsPrintersManager : public KeyedService {
   // Parameter |is_automatic| should be set to true if the printer was
   // saved automatically (without requesting additional information
   // from the user).
-  virtual void PrinterInstalled(const Printer& printer, bool is_automatic) = 0;
+  void PrinterInstalled(const Printer& printer, bool is_automatic) override = 0;
 
   // Returns true if |printer| is currently installed in CUPS with this
   // configuration.
-  virtual bool IsPrinterInstalled(const Printer& printer) const = 0;
+  bool IsPrinterInstalled(const Printer& printer) const override = 0;
 
   // Look for a printer with the given id in any class.  Returns a copy of the
   // printer if found, base::nullopt if not found.

@@ -1828,6 +1828,7 @@ source_set("chromeos") {
     "printing/printer_event_tracker_factory.cc",
     "printing/printer_event_tracker_factory.h",
     "printing/printer_info.h",
+    "printing/printer_installation_manager.h",
     "printing/printer_metrics_provider.cc",
     "printing/printer_metrics_provider.h",
     "printing/printers_map.cc",
