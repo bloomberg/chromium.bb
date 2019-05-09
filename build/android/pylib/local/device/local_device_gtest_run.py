@@ -526,7 +526,8 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
             with logcat_monitor.LogcatMonitor(
                 device.adb,
                 filter_specs=local_device_environment.LOGCAT_FILTERS,
-                output_file=logcat_file.name) as logmon:
+                output_file=logcat_file.name,
+                check_error=False) as logmon:
               with contextlib_ext.Optional(
                   trace_event.trace(str(test)),
                   self._env.trace_output):

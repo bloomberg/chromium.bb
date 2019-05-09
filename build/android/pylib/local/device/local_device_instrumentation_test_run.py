@@ -534,8 +534,8 @@ class LocalDeviceInstrumentationTestRun(
               device.adb,
               filter_specs=local_device_environment.LOGCAT_FILTERS,
               output_file=logcat_file.name,
-              transform_func=self._test_instance.MaybeDeobfuscateLines
-              ) as logmon:
+              transform_func=self._test_instance.MaybeDeobfuscateLines,
+              check_error=False) as logmon:
             with _LogTestEndpoints(device, test_name):
               with contextlib_ext.Optional(
                   trace_event.trace(test_name),
