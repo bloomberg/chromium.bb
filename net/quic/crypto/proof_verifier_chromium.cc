@@ -606,6 +606,8 @@ quic::QuicAsyncStatus ProofVerifierChromium::VerifyProof(
 quic::QuicAsyncStatus ProofVerifierChromium::VerifyCertChain(
     const std::string& hostname,
     const std::vector<std::string>& certs,
+    const std::string& ocsp_response,
+    const std::string& cert_sct,
     const quic::ProofVerifyContext* verify_context,
     std::string* error_details,
     std::unique_ptr<quic::ProofVerifyDetails>* verify_details,
@@ -614,6 +616,7 @@ quic::QuicAsyncStatus ProofVerifierChromium::VerifyCertChain(
     *error_details = "Missing context";
     return quic::QUIC_FAILURE;
   }
+  // TODO(mattm): use |ocsp_response| and |cert_sct|.
   const ProofVerifyContextChromium* chromium_context =
       reinterpret_cast<const ProofVerifyContextChromium*>(verify_context);
   std::unique_ptr<Job> job = std::make_unique<Job>(
