@@ -20,7 +20,8 @@
 namespace audio {
 
 StreamFactory::StreamFactory(media::AudioManager* audio_manager)
-    : audio_manager_(audio_manager) {
+    : audio_manager_(audio_manager),
+      loopback_worker_thread_("Loopback Worker") {
   magic_bytes_ = 0x600DC0DEu;
   SetStateForCrashing("constructed");
 }
@@ -189,13 +190,40 @@ void StreamFactory::CreateLoopbackStream(
       group_id.GetLowForSerialization(), "params",
       params.AsHumanReadableString());
 
+  // All LoopbackStreams share a single realtime worker thread. This is because
+  // the execution timing of scheduled tasks must be precise, and top priority
+  // should be given to the smooth continuous flow of audio while in low-CPU
+  // situations; all to avoid glitches. The thread is started just before the
+  // first LoopbackStream will be created, and stopped after all LoopbackStreams
+  // are gone.
+  scoped_refptr<base::SequencedTaskRunner> task_runner;
+  if (loopback_worker_thread_.IsRunning()) {
+    task_runner = loopback_worker_thread_.task_runner();
+  } else {
+    TRACE_EVENT_BEGIN0("audio", "Start Loopback Worker");
+    base::Thread::Options options;
+    options.timer_slack = base::TIMER_SLACK_NONE;
+    options.priority = base::ThreadPriority::REALTIME_AUDIO;
+    if (loopback_worker_thread_.StartWithOptions(options)) {
+      task_runner = loopback_worker_thread_.task_runner();
+      TRACE_EVENT_END1("audio", "Start Loopback Worker", "success", true);
+    } else {
+      // Something about this platform or its current environment has prevented
+      // a realtime audio thread from being started. Fall-back to using the
+      // AudioManager worker thread.
+      LOG(ERROR) << "Unable to start realtime loopback worker thread.";
+      task_runner = audio_manager_->GetWorkerTaskRunner();
+      TRACE_EVENT_END1("audio", "Start Loopback Worker", "success", false);
+    }
+  }
+
   auto stream = std::make_unique<LoopbackStream>(
       std::move(created_callback),
       base::BindOnce(&StreamFactory::DestroyLoopbackStream,
                      base::Unretained(this)),
-      audio_manager_->GetWorkerTaskRunner(), std::move(receiver),
-      std::move(client), std::move(observer), params, shared_memory_count,
-      &coordinator_, group_id);
+      std::move(task_runner), std::move(receiver), std::move(client),
+      std::move(observer), params, shared_memory_count, &coordinator_,
+      group_id);
   loopback_streams_.emplace_back(std::move(stream));
   SetStateForCrashing("created loopback stream");
 }
@@ -225,7 +253,7 @@ void StreamFactory::DestroyMuter(LocalMuter* muter) {
 
   // Output streams have a task posting before destruction (see the OnError
   // function in output_stream.cc). To ensure that stream destruction and
-  // unmuting is done in the intended order (the order in which the messeges are
+  // unmuting is done in the intended order (the order in which the messages are
   // received by the service), we post a task for destroying the muter as well.
   // Otherwise, a "destroy all streams, then destroy the muter" sequence may
   // result in a brief blip of audio.
@@ -262,6 +290,12 @@ void StreamFactory::DestroyLoopbackStream(LoopbackStream* stream) {
   loopback_streams_.erase(it);
 
   SetStateForCrashing("destroyed loopback stream");
+
+  // If all LoopbackStreams have ended, stop and join the worker thread.
+  if (loopback_streams_.empty()) {
+    TRACE_EVENT0("audio", "Stop Loopback Worker");
+    loopback_worker_thread_.Stop();
+  }
 }
 
 void StreamFactory::SetStateForCrashing(const char* state) {
