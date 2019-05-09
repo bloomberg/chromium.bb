@@ -59,8 +59,6 @@ LabelButton::LabelButton(ButtonListener* listener,
   SetTextInternal(text);
 
   AddChildView(ink_drop_container_);
-  ink_drop_container_->SetPaintToLayer();
-  ink_drop_container_->layer()->SetFillsBoundsOpaquely(false);
   ink_drop_container_->SetVisible(false);
 
   AddChildView(image_);
