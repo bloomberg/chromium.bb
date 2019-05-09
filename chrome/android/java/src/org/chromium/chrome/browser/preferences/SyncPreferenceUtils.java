@@ -17,6 +17,7 @@ import android.support.customtabs.CustomTabsIntent;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
@@ -213,6 +214,7 @@ public class SyncPreferenceUtils {
      */
     public static void openGoogleMyAccount(Activity activity) {
         assert ChromeSigninController.get().isSignedIn();
+        RecordUserAction.record("SyncPreferences_ManageGoogleAccountClicked");
         openCustomTabWithURL(activity,
                 String.format(
                         MY_ACCOUNT_URL, ChromeSigninController.get().getSignedInAccountName()));

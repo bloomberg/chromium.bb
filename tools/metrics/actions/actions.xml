@@ -20293,6 +20293,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="SyncPreferences_ManageGoogleAccountClicked">
+  <owner>triploblastic@google.com</owner>
+  <owner>msarda@chromium.org</owner>
+  <description>
+    Used clicked 'Manage your Google Account' in sync and google services menu
+    in android.
+  </description>
+</action>
+
 <action name="SystemBack">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
