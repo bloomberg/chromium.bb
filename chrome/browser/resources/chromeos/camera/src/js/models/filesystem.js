@@ -24,6 +24,13 @@ cca.models.FileSystem = function() {
 };
 
 /**
+ * The prefix of thumbnail files.
+ * @type {string}
+ * @const
+ */
+cca.models.FileSystem.THUMBNAIL_PREFIX = 'thumb-';
+
+/**
  * Directory in the internal file system.
  * @type {DirectoryEntry}
  */
