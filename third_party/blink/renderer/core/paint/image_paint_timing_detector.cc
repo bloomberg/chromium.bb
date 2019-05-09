@@ -92,10 +92,9 @@ void ImagePaintTimingDetector::PopulateTraceValue(
                    !frame_view_->GetFrame().LocalFrameRoot().IsMainFrame());
 }
 
-void ImagePaintTimingDetector::OnLargestImagePaintDetected(
+void ImagePaintTimingDetector::ReportCandidateToTrace(
     ImageRecord& largest_image_record) {
   DCHECK(!largest_image_record.paint_time.is_null());
-  largest_image_paint_ = &largest_image_record;
   auto value = std::make_unique<TracedValue>();
   PopulateTraceValue(*value, largest_image_record, ++count_candidates_);
   TRACE_EVENT_MARK_WITH_TIMESTAMP2("loading", "LargestImagePaint::Candidate",
@@ -107,33 +106,27 @@ void ImagePaintTimingDetector::OnLargestImagePaintDetected(
 void ImagePaintTimingDetector::UpdateCandidate() {
   ImageRecord* largest_image_record =
       records_manager_.FindLargestPaintCandidate();
-  // These conditions represents the following scenarios:
-  // 1. candiate being nullptr: no image is found. We discard the candidate and
-  // wait for the next analysis.
-  // 2. candidate's first paint being null: largest image is still pending for
-  // timing. We discard the candidate and wait for the next analysis.
-  // 3. new candidate equals to old candidate: we don't need to update the
-  // result.
-  if (largest_image_record == largest_image_paint_)
+  const base::TimeTicks time = largest_image_record
+                                   ? largest_image_record->paint_time
+                                   : base::TimeTicks();
+  const uint64_t size =
+      largest_image_record ? largest_image_record->first_size : 0;
+  bool changed =
+      frame_view_->GetPaintTimingDetector().HasLargestImagePaintChanged(time,
+                                                                        size);
+  if (!changed)
     return;
-
-  if (!largest_image_record) {
-    largest_image_paint_ = nullptr;
-    frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
-  } else if (largest_image_record->loaded &&
-             !largest_image_record->paint_time.is_null()) {
-    OnLargestImagePaintDetected(*largest_image_record);
-    frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
+  if (largest_image_record && !largest_image_record->paint_time.is_null()) {
+    // If an image has paint time, it must have been loaded.
+    DCHECK(largest_image_record->loaded);
+    // TODO(crbug.com/960365): we need to figure out how to communicate to the
+    // trace (devtools/trace-viewer/benchmarks) that the largest image is still
+    // loading (when paint_time is null). Before we decide how to handle it, we
+    // do not notify the trace about this specific case for now.
+    ReportCandidateToTrace(*largest_image_record);
   }
-  if (largest_image_paint_) {
-    frame_view_->GetPaintTimingDetector().NotifyLargestImage(
-        largest_image_paint_->paint_time, largest_image_paint_->first_size);
-  } else {
-    frame_view_->GetPaintTimingDetector().NotifyLargestImage(base::TimeTicks(),
-                                                             0);
-  }
-  // TODO(crbug/949974): when the largest image is still loading, we should
-  // update the result as the current time.
+  frame_view_->GetPaintTimingDetector().NotifyLargestImagePaintChange(time,
+                                                                      size);
 }
 
 void ImagePaintTimingDetector::OnPaintFinished() {
@@ -242,6 +235,7 @@ void ImagePaintTimingDetector::RecordBackgroundImage(
       !records_manager_.WasVisibleNodeLoaded(background_image_id) &&
       cached_image.IsLoaded()) {
     records_manager_.OnImageLoaded(background_image_id, frame_index_);
+    need_update_timing_at_frame_end_ = true;
     return;
   }
 
@@ -268,8 +262,10 @@ void ImagePaintTimingDetector::RecordBackgroundImage(
     records_manager_.RecordInvisibleNode(node_id);
   } else {
     records_manager_.RecordVisibleNode(background_image_id, rect_size);
-    if (cached_image.IsLoaded())
+    if (cached_image.IsLoaded()) {
       records_manager_.OnImageLoaded(background_image_id, frame_index_);
+      need_update_timing_at_frame_end_ = true;
+    }
   }
 
   if (records_manager_.RecordedTooManyNodes())
@@ -301,6 +297,7 @@ void ImagePaintTimingDetector::RecordImage(
   if (is_recored_visible_node &&
       !records_manager_.WasVisibleNodeLoaded(node_id) && is_loaded) {
     records_manager_.OnImageLoaded(node_id, frame_index_);
+    need_update_timing_at_frame_end_ = true;
     return;
   }
 
@@ -325,8 +322,10 @@ void ImagePaintTimingDetector::RecordImage(
     records_manager_.RecordInvisibleNode(node_id);
   } else {
     records_manager_.RecordVisibleNode(node_id, rect_size);
-    if (is_loaded)
+    if (is_loaded) {
       records_manager_.OnImageLoaded(node_id, frame_index_);
+      need_update_timing_at_frame_end_ = true;
+    }
   }
 
   if (records_manager_.RecordedTooManyNodes())
@@ -464,7 +463,7 @@ bool ImagePaintTimingDetector::FinishedReportingImages() const {
   return !is_recording_ && num_pending_swap_callbacks_ == 0;
 }
 
-ImageRecord* ImageRecordsManager::FindLargestPaintCandidate() {
+ImageRecord* ImageRecordsManager::FindLargestPaintCandidate() const {
   DCHECK_EQ(visible_node_map_.size() + visible_background_image_map_.size(),
             size_ordered_set_.size());
   for (auto it = size_ordered_set_.begin(); it != size_ordered_set_.end();

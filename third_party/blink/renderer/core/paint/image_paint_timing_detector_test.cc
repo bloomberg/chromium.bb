@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
+#include "third_party/blink/public/web/web_performance.h"
 #include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
@@ -14,6 +15,9 @@
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/svg/svg_image_element.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/core/timing/dom_window_performance.h"
+#include "third_party/blink/renderer/core/timing/performance_timing.h"
+#include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -55,6 +59,12 @@ class ImagePaintTimingDetectorTest
   }
   PaintTimingDetector& GetChildPaintTimingDetector() {
     return GetChildFrameView().GetPaintTimingDetector();
+  }
+
+  const PerformanceTiming& GetPerformanceTiming() {
+    PerformanceTiming* performance =
+        DOMWindowPerformance::performance(*GetFrame().DomWindow())->timing();
+    return *performance;
   }
 
   IntRect GetViewportRect(LocalFrameView& view) {
@@ -118,17 +128,13 @@ class ImagePaintTimingDetectorTest
   }
 
   TimeTicks LargestPaintStoredResult() {
-    ImageRecord* record = GetPaintTimingDetector()
-                              .GetImagePaintTimingDetector()
-                              ->largest_image_paint_;
-    return !record ? base::TimeTicks() : record->paint_time;
+    return GetPaintTimingDetector().largest_image_paint_time_;
   }
 
   void UpdateAllLifecyclePhasesAndInvokeCallbackIfAny() {
     UpdateAllLifecyclePhasesForTest();
-    if (!callback_queue_.empty()) {
+    if (!callback_queue_.empty())
       InvokeCallback();
-    }
   }
 
   void InvokeCallback() {
@@ -209,6 +215,48 @@ TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_OneImage) {
   EXPECT_TRUE(record);
   EXPECT_EQ(record->first_size, 25ul);
   EXPECT_TRUE(record->loaded);
+}
+
+TEST_F(ImagePaintTimingDetectorTest, UpdatePerformanceTiming) {
+  const PerformanceTiming& performance_timing = GetPerformanceTiming();
+  EXPECT_EQ(performance_timing.LargestImagePaintSize(), 0u);
+  EXPECT_EQ(performance_timing.LargestImagePaint(), 0u);
+  SetBodyInnerHTML(R"HTML(
+    <img id="target"></img>
+  )HTML");
+  SetImageAndPaint("target", 5, 5);
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  EXPECT_EQ(performance_timing.LargestImagePaintSize(), 25u);
+  EXPECT_GT(performance_timing.LargestImagePaint(), 0u);
+}
+
+TEST_F(ImagePaintTimingDetectorTest,
+       PerformanceTimingHasZeroTimeNonZeroSizeWhenTheLargestIsNotPainted) {
+  const PerformanceTiming& performance_timing = GetPerformanceTiming();
+  EXPECT_EQ(performance_timing.LargestImagePaintSize(), 0u);
+  EXPECT_EQ(performance_timing.LargestImagePaint(), 0u);
+  SetBodyInnerHTML(R"HTML(
+    <img id="target"></img>
+  )HTML");
+  SetImageAndPaint("target", 5, 5);
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(performance_timing.LargestImagePaintSize(), 25u);
+  EXPECT_EQ(performance_timing.LargestImagePaint(), 0u);
+}
+
+TEST_F(ImagePaintTimingDetectorTest, UpdatePerformanceTimingToZero) {
+  SetBodyInnerHTML(R"HTML(
+    <img id="target"></img>
+  )HTML");
+  SetImageAndPaint("target", 5, 5);
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  const PerformanceTiming& performance_timing = GetPerformanceTiming();
+  EXPECT_EQ(performance_timing.LargestImagePaintSize(), 25u);
+  EXPECT_GT(performance_timing.LargestImagePaint(), 0u);
+  GetDocument().body()->RemoveChild(GetDocument().getElementById("target"));
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  EXPECT_EQ(performance_timing.LargestImagePaintSize(), 0u);
+  EXPECT_EQ(performance_timing.LargestImagePaint(), 0u);
 }
 
 TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_OpacityZero) {

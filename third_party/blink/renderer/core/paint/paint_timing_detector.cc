@@ -181,10 +181,20 @@ bool PaintTimingDetector::NeedToNotifyInputOrScroll() {
           image_paint_timing_detector_->IsRecording());
 }
 
-void PaintTimingDetector::NotifyLargestImage(base::TimeTicks image_paint_time,
-                                             uint64_t image_paint_size) {
+void PaintTimingDetector::NotifyLargestImagePaintChange(
+    base::TimeTicks image_paint_time,
+    uint64_t image_paint_size) {
+  DCHECK(HasLargestImagePaintChanged(image_paint_time, image_paint_size));
   largest_image_paint_time_ = image_paint_time;
   largest_image_paint_size_ = image_paint_size;
+  DidChangePerformanceTiming();
+}
+
+bool PaintTimingDetector::HasLargestImagePaintChanged(
+    base::TimeTicks largest_image_paint_time,
+    uint64_t largest_image_paint_size) {
+  return largest_image_paint_time != largest_image_paint_time_ ||
+         largest_image_paint_size != largest_image_paint_size_;
 }
 
 void PaintTimingDetector::NotifyLargestText(base::TimeTicks text_paint_time,

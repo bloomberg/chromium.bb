@@ -30,6 +30,8 @@ class TextPaintTimingDetector;
 // https://docs.google.com/document/d/1DRVd4a2VU8-yyWftgOparZF-sf16daf0vfbsHuz2rws/edit
 class CORE_EXPORT PaintTimingDetector
     : public GarbageCollected<PaintTimingDetector> {
+  friend class ImagePaintTimingDetectorTest;
+
  public:
   PaintTimingDetector(LocalFrameView*);
 
@@ -52,8 +54,9 @@ class CORE_EXPORT PaintTimingDetector
   void NotifyInputEvent(WebInputEvent::Type);
   bool NeedToNotifyInputOrScroll();
   void NotifyScroll(ScrollType);
-  void NotifyLargestImage(base::TimeTicks, uint64_t size);
+  void NotifyLargestImagePaintChange(base::TimeTicks, uint64_t size);
   void NotifyLargestText(base::TimeTicks, uint64_t size);
+  bool HasLargestImagePaintChanged(base::TimeTicks, uint64_t size);
   void DidChangePerformanceTiming();
 
   FloatRect CalculateVisualRect(const IntRect& visual_rect,

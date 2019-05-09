@@ -33,7 +33,7 @@ class ImageRecord : public base::SupportsWeakPtr<ImageRecord> {
   // |size_ordered_set_| since it's the sorting key.
   uint64_t first_size = 0;
   unsigned frame_index = 0;
-  // The time of the first paint after fully loaded.
+  // The time of the first paint after fully loaded. 0 means not painted yet.
   base::TimeTicks paint_time = base::TimeTicks();
   WeakPersistent<const ImageResourceContent> cached_image;
   bool loaded = false;
@@ -56,7 +56,7 @@ class CORE_EXPORT ImageRecordsManager {
 
  public:
   ImageRecordsManager();
-  ImageRecord* FindLargestPaintCandidate();
+  ImageRecord* FindLargestPaintCandidate() const;
 
   bool AreAllVisibleNodesDetached() const;
   void SetNodeDetached(const DOMNodeId& visible_node_id);
@@ -182,7 +182,7 @@ class CORE_EXPORT ImagePaintTimingDetector final
   void Trace(blink::Visitor*);
 
  private:
-  ImageRecord* FindLargestPaintCandidate();
+  ImageRecord* FindLargestPaintCandidate() const;
 
   void PopulateTraceValue(TracedValue&,
                           const ImageRecord& first_image_paint,
@@ -192,7 +192,7 @@ class CORE_EXPORT ImagePaintTimingDetector final
                       WebWidgetClient::SwapResult,
                       base::TimeTicks);
   void RegisterNotifySwapTime();
-  void OnLargestImagePaintDetected(ImageRecord&);
+  void ReportCandidateToTrace(ImageRecord&);
   void Deactivate();
   void HandleTooManyNodes();
 
@@ -216,9 +216,10 @@ class CORE_EXPORT ImagePaintTimingDetector final
   // |is_recording|, helps determine whether this detector can be destroyed.
   int num_pending_swap_callbacks_ = 0;
 
+  // This need to be set whenever changes that can affect the output of
+  // |FindLargestPaintCandidate| occur during the paint tree walk.
   bool need_update_timing_at_frame_end_ = false;
 
-  ImageRecord* largest_image_paint_ = nullptr;
   ImageRecordsManager records_manager_;
   Member<LocalFrameView> frame_view_;
 };
