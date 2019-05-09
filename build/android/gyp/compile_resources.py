@@ -155,6 +155,15 @@ def _ParseArgs(args):
       '--no-xml-namespaces',
       action='store_true',
       help='Whether to strip xml namespaces from processed xml resources.')
+  input_opts.add_argument(
+      '--short-resource-paths',
+      action='store_true',
+      help='Whether to shorten resource paths inside the apk or module.')
+  input_opts.add_argument(
+      '--strip-resource-names',
+      action='store_true',
+      help='Whether to strip resource names from the resource table of the apk '
+      'or module.')
 
   output_opts.add_argument('--arsc-path', help='Apk output for arsc format.')
   output_opts.add_argument('--proto-path', help='Apk output for proto format.')
@@ -187,6 +196,11 @@ def _ParseArgs(args):
   output_opts.add_argument(
       '--emit-ids-out', help='Path to file produced by aapt2 --emit-ids.')
 
+  output_opts.add_argument(
+      '--resources-path-map-out-path',
+      help='Path to file produced by aapt2 that maps original resource paths '
+      'to shortened resource paths inside the apk or module.')
+
   options = parser.parse_args(args)
 
   resource_utils.HandleCommonOptions(options)
@@ -203,6 +217,10 @@ def _ParseArgs(args):
 
   if not options.arsc_path and not options.proto_path:
     parser.error('One of --arsc-path or --proto-path is required.')
+
+  if options.resources_path_map_out_path and not options.short_resource_paths:
+    parser.error(
+        '--resources-path-map-out-path requires --short-resource-paths')
 
   if options.package_name_to_id_mapping:
     package_names_list = build_utils.ParseGnList(
@@ -732,30 +750,42 @@ def _OptimizeApk(output, options, temp_dir, unoptimized_path, r_txt_path):
     unoptimized_path: path of the apk to optimize.
     r_txt_path: path to the R.txt file of the unoptimized apk.
   """
-  # Resources of type ID are references to UI elements/views. They are used by
-  # UI automation testing frameworks. They are kept in so that they dont break
-  # tests, even though they may not actually be used during runtime. See
-  # https://crbug.com/900993
-  id_resources = _ExtractIdResources(r_txt_path)
-  gen_config_path = os.path.join(temp_dir, 'aapt2.config')
-  if options.resources_config_path:
-    shutil.copyfile(options.resources_config_path, gen_config_path)
-  with open(gen_config_path, 'a+') as config:
-    for resource in id_resources:
-      config.write('{}#no_obfuscate\n'.format(resource))
-
-  # Optimize the resources.arsc file by obfuscating resource names and only
-  # allow usage via R.java constant.
   optimize_command = [
       options.aapt2_path,
       'optimize',
-      '--enable-resource-obfuscation',
+      unoptimized_path,
       '-o',
       output,
-      '--resources-config-path',
-      gen_config_path,
-      unoptimized_path,
   ]
+
+  # Optimize the resources.arsc file by obfuscating resource names and only
+  # allow usage via R.java constant.
+  if options.strip_resource_names:
+    # Resources of type ID are references to UI elements/views. They are used by
+    # UI automation testing frameworks. They are kept in so that they dont break
+    # tests, even though they may not actually be used during runtime. See
+    # https://crbug.com/900993
+    id_resources = _ExtractIdResources(r_txt_path)
+    gen_config_path = os.path.join(temp_dir, 'aapt2.config')
+    if options.resources_config_path:
+      shutil.copyfile(options.resources_config_path, gen_config_path)
+    with open(gen_config_path, 'a+') as config:
+      for resource in id_resources:
+        config.write('{}#no_obfuscate\n'.format(resource))
+
+    optimize_command += [
+        '--enable-resource-obfuscation',
+        '--resources-config-path',
+        gen_config_path,
+    ]
+
+  if options.short_resource_paths:
+    optimize_command += ['--enable-resource-path-shortening']
+  if options.resources_path_map_out_path:
+    optimize_command += [
+        '--resource-path-shortening-map', options.resources_path_map_out_path
+    ]
+
   build_utils.CheckOutput(
       optimize_command, print_stdout=False, print_stderr=False)
 

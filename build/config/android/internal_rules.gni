@@ -332,6 +332,11 @@ template("write_build_config") {
       _rebased_rtxt_path = rebase_path(invoker.module_rtxt_path, root_build_dir)
       args += [ "--module-rtxt-path=$_rebased_rtxt_path" ]
     }
+    if (defined(invoker.module_pathmap_path)) {
+      _rebased_pathmap_path =
+          rebase_path(invoker.module_pathmap_path, root_build_dir)
+      args += [ "--module-pathmap-path=$_rebased_pathmap_path" ]
+    }
 
     if (defined(invoker.shared_libraries_runtime_deps_file)) {
       # Don't list shared_libraries_runtime_deps_file as an input in order to
@@ -2151,6 +2156,13 @@ if (enable_java_templates) {
   #     Use resource IDs provided by another APK target when compiling resources
   #     (via. "aapt2 link --stable-ids")
   #
+  #   short_resource_paths: (optional)
+  #     Rename the paths within a the apk to be randomly generated short
+  #     strings to reduce binary size.
+  #
+  #   strip_resource_names: (optional)
+  #     Strip resource names from the resources table of the apk.
+  #
   # Output variables:
   #   arsc_output: Path to output .ap_ file (optional).
   #
@@ -2162,6 +2174,10 @@ if (enable_java_templates) {
   #
   #   r_text_out_path: (optional):
   #       Path for the corresponding generated R.txt file.
+  #
+  #   resources_path_map_out_path: (optional):
+  #       Path for the generated map between original resource paths and
+  #       shortend resource paths.
   #
   #   srcjar_path: (optional)
   #       Path to a generated .srcjar containing the generated R.java sources
@@ -2298,6 +2314,21 @@ if (enable_java_templates) {
           "--resources-config-path",
           rebase_path(invoker.resources_config_path, root_build_dir),
         ]
+      }
+      if (defined(invoker.short_resource_paths) &&
+          invoker.short_resource_paths) {
+        args += [ "--short-resource-paths" ]
+        if (defined(invoker.resources_path_map_out_path)) {
+          outputs += [ invoker.resources_path_map_out_path ]
+          args += [
+            "--resources-path-map-out-path",
+            rebase_path(invoker.resources_path_map_out_path, root_build_dir),
+          ]
+        }
+      }
+      if (defined(invoker.strip_resource_names) &&
+          invoker.strip_resource_names) {
+        args += [ "--strip-resource-names" ]
       }
 
       # Useful to have android:debuggable in the manifest even for Release
@@ -3209,6 +3240,8 @@ if (enable_java_templates) {
   #    binary xml + resources.arsc).
   #  module_rtxt_path: The path of the R.txt file generated when compiling the
   #    resources for the bundle module.
+  #  module_pathmap_path: The path of the pathmap file generated when compiling
+  #    the resources for the bundle module, if path shortening is enabled.
   #  base_whitelist_rtxt_path: The path of the R.txt file containing the
   #    list of string resources to keep in the base split APK for any bundle
   #    that uses this target.
@@ -3448,6 +3481,7 @@ if (enable_java_templates) {
                                [
                                  "base_module_target",
                                  "is_base_module",
+                                 "module_pathmap_path",
                                  "module_rtxt_path",
                                  "proto_resources_path",
                                ])

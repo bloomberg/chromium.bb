@@ -2039,8 +2039,10 @@ if (enable_java_templates) {
   #     uncompressed in the APK. Must be unset or true if load_library_from_apk
   #     is set to true.
   #   uncompress_dex: Store final .dex files uncompressed in the apk.
-  #   optimize_resources: True if resource names should be stripped from the
+  #   strip_resource_names: True if resource names should be stripped from the
   #     resources.arsc file in the apk or module.
+  #   short_resource_paths: True if resource paths should be shortened in the
+  #     apk or module.
   #   resources_config_path: Path to the aapt2 optimize config file that tags
   #     resources with acceptable/non-acceptable optimizations.
   #   verify_manifest: Enables verification of expected merged manifest based
@@ -2099,15 +2101,22 @@ if (enable_java_templates) {
     if (!_is_bundle_module) {
       _final_rtxt_path = "${_final_apk_path}.R.txt"
     }
+
+    _short_resource_paths =
+        defined(invoker.short_resource_paths) && invoker.short_resource_paths
+    _strip_resource_names =
+        defined(invoker.strip_resource_names) && invoker.strip_resource_names
+    _optimize_resources = _strip_resource_names || _short_resource_paths
+
+    if (!_is_bundle_module && _short_resource_paths) {
+      _final_pathmap_path = "${_final_apk_path}.pathmap.txt"
+    }
     _res_size_info_path = "$target_out_dir/$target_name.ap_.info"
     _final_apk_path_no_ext_list =
         process_file_template([ _final_apk_path ],
                               "{{source_dir}}/{{source_name_part}}")
     _final_apk_path_no_ext = _final_apk_path_no_ext_list[0]
     assert(_final_apk_path_no_ext != "")  # Mark as used.
-
-    _optimize_resources =
-        defined(invoker.optimize_resources) && invoker.optimize_resources
 
     # Non-base bundle modules create only proto resources.
     if (!_is_bundle_module || _is_base_module) {
@@ -2366,6 +2375,11 @@ if (enable_java_templates) {
           "${invoker.shared_resources_whitelist_target}__compile_resources"
     }
 
+    if (_short_resource_paths) {
+      _resources_path_map_out_path =
+          "${target_gen_dir}/${_template_name}_resources_path_map.txt"
+    }
+
     _compile_resources_target = "${_template_name}__compile_resources"
     _compile_resources_rtxt_out =
         "${target_gen_dir}/${_compile_resources_target}_R.txt"
@@ -2384,6 +2398,8 @@ if (enable_java_templates) {
                                "resource_blacklist_regex",
                                "resources_config_path",
                                "shared_resources",
+                               "short_resource_paths",
+                               "strip_resource_names",
                                "shared_resources_whitelist_locales",
                                "support_zh_hk",
                              ])
@@ -2405,6 +2421,9 @@ if (enable_java_templates) {
       proguard_file = _generated_proguard_config
       if (_enable_main_dex_list) {
         proguard_file_main_dex = _generated_proguard_main_dex_config
+      }
+      if (_short_resource_paths) {
+        resources_path_map_out_path = _resources_path_map_out_path
       }
 
       build_config = _build_config
@@ -2504,6 +2523,23 @@ if (enable_java_templates) {
         ]
       }
       _final_deps += [ ":$_copy_rtxt_target" ]
+
+      if (_short_resource_paths) {
+        # Do the same for path map
+        _copy_pathmap_target = "${_template_name}__copy_pathmap"
+        copy(_copy_pathmap_target) {
+          deps = [
+            ":$_compile_resources_target",
+          ]
+          sources = [
+            _resources_path_map_out_path,
+          ]
+          outputs = [
+            _final_pathmap_path,
+          ]
+        }
+        _final_deps += [ ":$_copy_pathmap_target" ]
+      }
     }
 
     _srcjar_deps += [ ":$_compile_resources_target" ]
@@ -2682,6 +2718,12 @@ if (enable_java_templates) {
       if (_is_bundle_module) {
         proto_resources_path = _proto_resources_path
         module_rtxt_path = _compile_resources_rtxt_out
+        if (_optimize_resources) {
+          proto_resources_path = _optimized_proto_resources_path
+          if (_short_resource_paths) {
+            module_pathmap_path = _resources_path_map_out_path
+          }
+        }
       } else {
         apk_path = _final_apk_path
         incremental_allowed = _incremental_allowed
@@ -2972,9 +3014,7 @@ if (enable_java_templates) {
                                ])
         packaged_resources_path = _arsc_resources_path
 
-        if (_optimize_resources && _is_bundle_module) {
-          optimized_resources_path = _optimized_proto_resources_path
-        } else if (_optimize_resources) {
+        if (_optimize_resources) {
           optimized_resources_path = _optimized_arsc_resources_path
         }
 
@@ -3250,7 +3290,7 @@ if (enable_java_templates) {
                                "never_incremental",
                                "no_build_hooks",
                                "no_xml_namespaces",
-                               "optimize_resources",
+                               "strip_resource_names",
                                "png_to_webp",
                                "post_process_package_resources_script",
                                "product_version_resources_dep",
@@ -3268,6 +3308,7 @@ if (enable_java_templates) {
                                "shared_resources",
                                "shared_resources_whitelist_locales",
                                "shared_resources_whitelist_target",
+                               "short_resource_paths",
                                "srcjar_deps",
                                "static_library_dependent_targets",
                                "static_library_provider",
@@ -3362,7 +3403,6 @@ if (enable_java_templates) {
                                "native_lib_version_rule",
                                "negative_main_dex_globs",
                                "no_xml_namespaces",
-                               "optimize_resources",
                                "package_name",
                                "package_name_to_id_mapping",
                                "png_to_webp",
@@ -3379,6 +3419,8 @@ if (enable_java_templates) {
                                "shared_resources",
                                "shared_resources_whitelist_locales",
                                "shared_resources_whitelist_target",
+                               "strip_resource_names",
+                               "short_resource_paths",
                                "srcjar_deps",
                                "static_library_provider",
                                "support_zh_hk",
@@ -4559,6 +4601,7 @@ if (enable_java_templates) {
       args = [
         "--out-bundle=$_rebased_bundle_path",
         "--rtxt-out-path=$_rebased_bundle_path.R.txt",
+        "--pathmap-out-path=$_rebased_bundle_path.pathmap.txt",
         "--module-zips=$_all_rebased_module_zip_paths",
       ]
       if (_sign_bundle) {
@@ -4593,6 +4636,8 @@ if (enable_java_templates) {
               "$_rebased_build_config:uncompressed_assets)",
           "--rtxt-in-paths=@FileArg(" +
               "$_rebased_build_config:deps_info:module_rtxt_path)",
+          "--pathmap-in-paths=@FileArg(" +
+              "$_rebased_build_config:deps_info:module_pathmap_path)",
         ]
       }
     }

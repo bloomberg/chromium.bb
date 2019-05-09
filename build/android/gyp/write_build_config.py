@@ -460,6 +460,10 @@ protocol buffer format (instead of regular binary xml + resources.arsc).
 The path of the R.txt file generated when compiling the resources for the bundle
 module.
 
+* `deps_info['module_pathmap_path']`:
+The path of the pathmap file generated when compiling the resources for the
+bundle module, if resource path shortening is enabled.
+
 * `deps_info['base_whitelist_rtxt_path']`:
 Optional path to an R.txt file used as a whitelist for base string resources.
 This means that any string resource listed in this file *and* in
@@ -954,6 +958,9 @@ def main(argv):
                     help='Path to resources compiled in protocol buffer format '
                          ' for this apk.')
   parser.add_option(
+      '--module-pathmap-path',
+      help='Path to pathmap file for resource paths in a bundle module.')
+  parser.add_option(
       '--module-rtxt-path',
       help='Path to R.txt file for resources in a bundle module.')
   parser.add_option(
@@ -1022,6 +1029,9 @@ def main(argv):
                       '--type=android_app_bundle_module')
     if options.module_rtxt_path:
       raise Exception('--module-rxt-path can only be used with '
+                      '--type=android_app_bundle_module')
+    if options.module_pathmap_path:
+      raise Exception('--module-pathmap-path can only be used with '
                       '--type=android_app_bundle_module')
     if options.base_whitelist_rtxt_path:
       raise Exception('--base-whitelist-rtxt-path can only be used with '
@@ -1168,6 +1178,15 @@ def main(argv):
 
     if options.module_rtxt_path:
       deps_info['module_rtxt_path'] = options.module_rtxt_path
+
+    if options.module_pathmap_path:
+      deps_info['module_pathmap_path'] = options.module_pathmap_path
+    else:
+      # Ensure there is an entry, even if it is empty, for modules
+      # that have not enabled resource path shortening. Otherwise
+      # build_utils.ExpandFileArgs fails.
+      deps_info['module_pathmap_path'] = ''
+
     if options.base_whitelist_rtxt_path:
       deps_info['base_whitelist_rtxt_path'] = options.base_whitelist_rtxt_path
     else:
