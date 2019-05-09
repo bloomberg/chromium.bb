@@ -44,7 +44,7 @@ class BuildStore(object):
 
   NUM_RESULTS_NO_LIMIT = -1
 
-  def __init__(self, _read_from_bb=False, _write_to_bb=True,
+  def __init__(self, _read_from_bb=True, _write_to_bb=True,
                _write_to_cidb=True, cidb_creds=None, for_service=None):
     """Get an instance of the BuildStore.
 
@@ -56,10 +56,6 @@ class BuildStore(object):
       for_service: Argument for CIDBConnection.__init__().
     """
     self._read_from_bb = _read_from_bb
-    # This value is only to be used by read functions that are ready for
-    # transition to Buildbucket. The plan is to move more and more functions
-    # to depend on this till we can finally eliminate it.
-    self._transitioning_to_bb = True
     self._write_to_bb = _write_to_bb
     self._write_to_cidb = _write_to_cidb
     self.cidb_creds = cidb_creds
@@ -85,8 +81,7 @@ class BuildStore(object):
     Returns:
       Boolean indicating the state of Buildbucket v2 client.
     """
-    need_for_bb = (self._write_to_bb or self._read_from_bb
-                   or self._transitioning_to_bb)
+    need_for_bb = self._write_to_bb or self._read_from_bb
     bb_is_running = self.bb_client is not None
 
     return need_for_bb and not bb_is_running
@@ -189,8 +184,8 @@ class BuildStore(object):
     """
     if not self.InitializeClients():
       raise BuildStoreException('BuildStore clients could not be initialized.')
-    if (self._read_from_bb or self._transitioning_to_bb
-        and master_build_identifier.buildbucket_id is not None):
+    if (self._read_from_bb and
+        master_build_identifier.buildbucket_id is not None):
       return self.bb_client.GetChildStatuses(
           int(master_build_identifier.buildbucket_id))
     elif not self._read_from_bb and master_build_identifier.cidb_id is not None:
@@ -208,7 +203,7 @@ class BuildStore(object):
     """
     if not self.InitializeClients():
       raise BuildStoreException('BuildStore clients could not be initialized.')
-    if self._read_from_bb or self._transitioning_to_bb:
+    if self._read_from_bb:
       if build_identifier.buildbucket_id is not None:
         return self.bb_client.GetKilledChildBuilds(
             int(build_identifier.buildbucket_id))
@@ -453,7 +448,7 @@ class BuildStore(object):
       raise BuildStoreException('BuildStore clients could not be initialized.')
     if not buildbucket_ids:
       return []
-    elif self._read_from_bb or self._transitioning_to_bb:
+    elif self._read_from_bb:
       failure_list = []
       for buildbucket_id in buildbucket_ids:
         bb_list = self.bb_client.GetStageFailures(int(buildbucket_id))
@@ -487,7 +482,7 @@ class BuildStore(object):
       raise BuildStoreException('BuildStore clients could not be initialized.')
     if not buildbucket_ids:
       return []
-    elif self._read_from_bb or self._transitioning_to_bb:
+    elif self._read_from_bb:
       stage_list = []
       for buildbucket_id in buildbucket_ids:
         stage_list += self.bb_client.GetBuildStages(int(buildbucket_id))
@@ -521,7 +516,7 @@ class BuildStore(object):
       return self.cidb_conn.GetBuildStatuses(build_ids)
     elif not buildbucket_ids:
       return []
-    elif self._read_from_bb or self._transitioning_to_bb:
+    elif self._read_from_bb:
       return [self.bb_client.GetBuildStatus(int(buildbucket_id))
               for buildbucket_id in buildbucket_ids]
     elif not self._read_from_bb:
