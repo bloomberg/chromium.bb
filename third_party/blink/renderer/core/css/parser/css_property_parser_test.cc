@@ -530,13 +530,31 @@ TEST_F(CSSPropertyUseCounterTest, UnitlessPresentationAttributesNotCounted) {
   EXPECT_FALSE(IsCounted(feature));
 }
 
-TEST_F(CSSPropertyUseCounterTest, CSSPropertyAnimationNameCustomIdentUseCount) {
+TEST_F(CSSPropertyUseCounterTest, CSSPropertyDefaultAnimationNameUseCount) {
   WebFeature feature = WebFeature::kDefaultInCustomIdent;
   EXPECT_FALSE(IsCounted(feature));
+
   ParseProperty(CSSPropertyID::kAnimationName, "initial");
-  // css-wide keywords in custom ident other than default should not register.
   EXPECT_FALSE(IsCounted(feature));
+
+  ParseProperty(CSSPropertyID::kAnimationName, "test");
+  EXPECT_FALSE(IsCounted(feature));
+
   ParseProperty(CSSPropertyID::kAnimationName, "default");
+  EXPECT_TRUE(IsCounted(feature));
+}
+
+TEST_F(CSSPropertyUseCounterTest, CSSPropertyRevertAnimationNameUseCount) {
+  WebFeature feature = WebFeature::kRevertInCustomIdent;
+  EXPECT_FALSE(IsCounted(feature));
+
+  ParseProperty(CSSPropertyID::kAnimationName, "initial");
+  EXPECT_FALSE(IsCounted(feature));
+
+  ParseProperty(CSSPropertyID::kAnimationName, "test");
+  EXPECT_FALSE(IsCounted(feature));
+
+  ParseProperty(CSSPropertyID::kAnimationName, "revert");
   EXPECT_TRUE(IsCounted(feature));
 }
 

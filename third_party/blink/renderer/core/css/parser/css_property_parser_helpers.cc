@@ -588,6 +588,8 @@ CSSCustomIdentValue* ConsumeCustomIdentWithToken(
 
   if (EqualIgnoringASCIICase(token.Value(), "default"))
     context.Count(WebFeature::kDefaultInCustomIdent);
+  if (EqualIgnoringASCIICase(token.Value(), "revert"))
+    context.Count(WebFeature::kRevertInCustomIdent);
 
   return MakeGarbageCollected<CSSCustomIdentValue>(
       token.Value().ToAtomicString());
