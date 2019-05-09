@@ -187,7 +187,7 @@
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
-#include "chrome/browser/ui/webui/browser_switcher/browser_switch_ui.h"
+#include "chrome/browser/ui/webui/browser_switch/browser_switch_ui.h"
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 #include "chrome/browser/ui/webui/signin/signin_email_confirmation_ui.h"
 #include "chrome/browser/ui/webui/signin/signin_error_ui.h"

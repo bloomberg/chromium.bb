@@ -16,7 +16,7 @@ const LaunchError = {
 };
 
 Polymer({
-  is: 'browser-switcher-app',
+  is: 'browser-switch-app',
 
   behaviors: [I18nBehavior],
 
@@ -141,6 +141,6 @@ function getUrlHostname(url) {
 }
 
 function getProxy() {
-  return browser_switcher.BrowserSwitcherProxyImpl.getInstance();
+  return browser_switch.BrowserSwitchProxyImpl.getInstance();
 }
 })();

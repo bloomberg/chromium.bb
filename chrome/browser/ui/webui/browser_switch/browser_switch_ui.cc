@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/browser_switcher/browser_switch_ui.h"
+#include "chrome/browser/ui/webui/browser_switch/browser_switch_ui.h"
 
 #include <memory>
 
@@ -131,23 +131,22 @@ content::WebUIDataSource* CreateBrowserSwitchUIHTMLSource(
                              IDS_ABOUT_BROWSER_SWITCH_PROTOCOL_ERROR);
   source->AddLocalizedString("title", IDS_ABOUT_BROWSER_SWITCH_TITLE);
 
-  source->AddResourcePath("app.html", IDR_BROWSER_SWITCHER_APP_HTML);
-  source->AddResourcePath("app.js", IDR_BROWSER_SWITCHER_APP_JS);
-  source->AddResourcePath("browser_switch.html",
-                          IDR_BROWSER_SWITCHER_BROWSER_SWITCH_HTML);
-  source->AddResourcePath("browser_switcher_proxy.html",
-                          IDR_BROWSER_SWITCHER_BROWSER_SWITCHER_PROXY_HTML);
-  source->AddResourcePath("browser_switcher_proxy.js",
-                          IDR_BROWSER_SWITCHER_BROWSER_SWITCHER_PROXY_JS);
-  source->SetDefaultResource(IDR_BROWSER_SWITCHER_BROWSER_SWITCH_HTML);
+  source->AddResourcePath("app.html", IDR_BROWSER_SWITCH_APP_HTML);
+  source->AddResourcePath("app.js", IDR_BROWSER_SWITCH_APP_JS);
+  source->AddResourcePath("browser_switch.html", IDR_BROWSER_SWITCH_HTML);
+  source->AddResourcePath("browser_switch_proxy.html",
+                          IDR_BROWSER_SWITCH_PROXY_HTML);
+  source->AddResourcePath("browser_switch_proxy.js",
+                          IDR_BROWSER_SWITCH_PROXY_JS);
+  source->SetDefaultResource(IDR_BROWSER_SWITCH_HTML);
 
   // Setup chrome://browser-switch/internals debug UI.
-  source->AddResourcePath("internals/browser_switcher_internals.js",
-                          IDR_BROWSER_SWITCHER_INTERNALS_JS);
-  source->AddResourcePath("internals/browser_switcher_internals.html",
-                          IDR_BROWSER_SWITCHER_INTERNALS_HTML);
-  source->AddResourcePath("internals/", IDR_BROWSER_SWITCHER_INTERNALS_HTML);
-  source->AddResourcePath("internals", IDR_BROWSER_SWITCHER_INTERNALS_HTML);
+  source->AddResourcePath("internals/browser_switch_internals.js",
+                          IDR_BROWSER_SWITCH_INTERNALS_JS);
+  source->AddResourcePath("internals/browser_switch_internals.html",
+                          IDR_BROWSER_SWITCH_INTERNALS_HTML);
+  source->AddResourcePath("internals/", IDR_BROWSER_SWITCH_INTERNALS_HTML);
+  source->AddResourcePath("internals", IDR_BROWSER_SWITCH_INTERNALS_HTML);
 
   source->SetJsonPath("strings.js");
 

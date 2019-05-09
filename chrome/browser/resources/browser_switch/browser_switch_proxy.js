@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('browser_switcher', function() {
+cr.define('browser_switch', function() {
   /** @interface */
-  class BrowserSwitcherProxy {
+  class BrowserSwitchProxy {
     /**
      * @param {string} url URL to open in alternative browser.
      * @return {Promise} A promise that can fail if unable to launch. It will
@@ -15,8 +15,8 @@ cr.define('browser_switcher', function() {
     gotoNewTabPage() {}
   }
 
-  /** @implements {browser_switcher.BrowserSwitcherProxy} */
-  class BrowserSwitcherProxyImpl {
+  /** @implements {browser_switch.BrowserSwitchProxy} */
+  class BrowserSwitchProxyImpl {
     /** @override */
     launchAlternativeBrowserAndCloseTab(url) {
       return cr.sendWithPromise('launchAlternativeBrowserAndCloseTab', url);
@@ -28,10 +28,10 @@ cr.define('browser_switcher', function() {
     }
   }
 
-  cr.addSingletonGetter(BrowserSwitcherProxyImpl);
+  cr.addSingletonGetter(BrowserSwitchProxyImpl);
 
   return {
-    BrowserSwitcherProxy: BrowserSwitcherProxy,
-    BrowserSwitcherProxyImpl: BrowserSwitcherProxyImpl
+    BrowserSwitchProxy: BrowserSwitchProxy,
+    BrowserSwitchProxyImpl: BrowserSwitchProxyImpl
   };
 });

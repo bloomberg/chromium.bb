@@ -78,13 +78,13 @@
         <include name="IDR_DISCARDS_WEBUI_GRAPH_DUMP_MOJOM_LITE_JS" file="${root_gen_dir}\chrome\browser\performance_manager\webui_graph_dump.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
       </if>
       <if expr="is_win or is_macosx or (is_linux and not is_chromeos)">
-        <include name="IDR_BROWSER_SWITCHER_APP_HTML" file="resources\browser_switcher\app.html" compress="gzip" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_BROWSER_SWITCHER_APP_JS" file="resources\browser_switcher\app.js" compress="gzip" type="BINDATA" />
-        <include name="IDR_BROWSER_SWITCHER_BROWSER_SWITCHER_PROXY_HTML" file="resources\browser_switcher\browser_switcher_proxy.html" compress="gzip" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_BROWSER_SWITCHER_BROWSER_SWITCHER_PROXY_JS" file="resources\browser_switcher\browser_switcher_proxy.js" compress="gzip" type="BINDATA" />
-        <include name="IDR_BROWSER_SWITCHER_BROWSER_SWITCH_HTML" file="resources\browser_switcher\browser_switcher.html" compress="gzip" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_BROWSER_SWITCHER_INTERNALS_HTML" file="resources\browser_switcher\internals\browser_switcher_internals.html" compress="gzip" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_BROWSER_SWITCHER_INTERNALS_JS" file="resources\browser_switcher\internals\browser_switcher_internals.js" compress="gzip" type="BINDATA" />
+        <include name="IDR_BROWSER_SWITCH_APP_HTML" file="resources\browser_switch\app.html" compress="gzip" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_BROWSER_SWITCH_APP_JS" file="resources\browser_switch\app.js" compress="gzip" type="BINDATA" />
+        <include name="IDR_BROWSER_SWITCH_PROXY_HTML" file="resources\browser_switch\browser_switch_proxy.html" compress="gzip" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_BROWSER_SWITCH_PROXY_JS" file="resources\browser_switch\browser_switch_proxy.js" compress="gzip" type="BINDATA" />
+        <include name="IDR_BROWSER_SWITCH_HTML" file="resources\browser_switch\browser_switch.html" compress="gzip" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_BROWSER_SWITCH_INTERNALS_HTML" file="resources\browser_switch\internals\browser_switch_internals.html" compress="gzip" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_BROWSER_SWITCH_INTERNALS_JS" file="resources\browser_switch\internals\browser_switch_internals.js" compress="gzip" type="BINDATA" />
       </if>
       <if expr="is_win">
         <include name="IDR_ABOUT_CONFLICTS_HTML" file="resources\conflicts\about_conflicts.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
