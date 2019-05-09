@@ -64,15 +64,11 @@
 #include "content/public/common/service_manager_connection.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ws/public/mojom/constants.mojom.h"
 #include "services/ws/public/mojom/user_activity_monitor.mojom.h"
 #include "ui/aura/mus/property_converter.h"
-#include "ui/aura/mus/user_activity_forwarder.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/base/user_activity/user_activity_detector.h"
-#include "ui/views/mus/mus_client.h"
 
 #if BUILDFLAG(ENABLE_WAYLAND_SERVER)
 #include "chrome/browser/exo_parts.h"
@@ -147,40 +143,6 @@ ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() {
   tablet_mode_client_.reset();
 }
 
-void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
-    content::ServiceManagerConnection* connection) {
-  if (features::IsMultiProcessMash()) {
-    // Mash and SingleProcessMash cannot be enabled simultaneously.
-    DCHECK(!features::IsSingleProcessMash());
-
-    // ash::Shell will not be created because ash is running out-of-process.
-    ash::Shell::SetIsBrowserProcessWithMash();
-  }
-
-  if (features::IsUsingWindowService()) {
-    // Start up the window service and the ash system UI service.
-    // NOTE: ash::Shell is still created below for SingleProcessMash.
-    connection->GetConnector()->WarmService(
-        service_manager::ServiceFilter::ByName(ws::mojom::kServiceName));
-    connection->GetConnector()->WarmService(
-        service_manager::ServiceFilter::ByName(ash::mojom::kServiceName));
-
-    views::MusClient::InitParams params;
-    params.connector = connection->GetConnector();
-    params.io_task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
-        {content::BrowserThread::IO});
-    // WMState has already been created, so don't have MusClient create it.
-    params.create_wm_state = false;
-    params.running_in_ws_process = features::IsSingleProcessMash();
-    mus_client_ = std::make_unique<views::MusClient>(params);
-    // Register ash-specific window properties with Chrome's property converter.
-    // Values of registered properties will be transported between the services.
-    ash::RegisterWindowProperties(mus_client_->property_converter());
-    mus_client_->SetMusPropertyMirror(
-        std::make_unique<ash::MusPropertyMirrorAsh>());
-  }
-}
-
 void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   // IME driver must be available at login screen, so initialize before profile.
   IMEDriverMus::Register();
@@ -190,21 +152,7 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
       std::make_unique<NetworkConnectDelegateChromeOS>();
   chromeos::NetworkConnect::Initialize(network_connect_delegate_.get());
 
-  if (!features::IsMultiProcessMash()) {
-    ash_shell_init_ = std::make_unique<AshShellInit>();
-  } else {
-    // Enterprise support in the browser can monitor user activity. Connect to
-    // the UI service to monitor activity. The ash process has its own monitor.
-    // TODO(jamescook): Figure out if we need this for SingleProcessMash.
-    // https://crbug.com/626899
-    user_activity_detector_ = std::make_unique<ui::UserActivityDetector>();
-    ws::mojom::UserActivityMonitorPtr user_activity_monitor;
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(ws::mojom::kServiceName, &user_activity_monitor);
-    user_activity_forwarder_ = std::make_unique<aura::UserActivityForwarder>(
-        std::move(user_activity_monitor), user_activity_detector_.get());
-  }
+  ash_shell_init_ = std::make_unique<AshShellInit>();
 
   if (ui_devtools::UiDevToolsServer::IsUiDevToolsEnabled(
           ui_devtools::switches::kEnableUiDevTools)) {
@@ -343,10 +291,6 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   // needs to be released before destroying the profile.
   app_list_client_.reset();
   ash_shell_init_.reset();
-
-  // WindowTreeClient needs to do some shutdown while the IO thread is alive.
-  if (mus_client_)
-    mus_client_->window_tree_client()->OnEarlyShutdown();
 
   chromeos::NetworkConnect::Shutdown();
   network_connect_delegate_.reset();

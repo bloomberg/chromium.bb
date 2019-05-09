@@ -303,6 +303,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     bool wants_mouse_events_when_inactive = false;
 
     // A map of properties applied to windows when running in mus.
+    // TODO(crbug.com/958241): this is deprecated and will be removed shortly.
     std::map<std::string, std::vector<uint8_t>> mus_properties;
   };
 

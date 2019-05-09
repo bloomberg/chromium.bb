@@ -33,13 +33,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/session_manager/core/session_manager.h"
 #include "extensions/common/constants.h"
-#include "services/ws/public/cpp/property_type_converters.h"
-#include "services/ws/public/mojom/window_manager.mojom.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/mus/property_converter.h"
-#include "ui/aura/mus/window_mus.h"
-#include "ui/aura/mus/window_tree_client.h"
-#include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -51,7 +45,6 @@
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/webview/webview.h"
-#include "ui/views/mus/mus_client.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -148,27 +141,6 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
     DCHECK_EQ(ui::SHOW_STATE_DEFAULT, init_params->show_state);
     init_params->show_state = ui::SHOW_STATE_MAXIMIZED;
   }
-
-  if (HasFrameColor()) {
-    init_params
-        ->mus_properties[ws::mojom::WindowManager::kFrameActiveColor_Property] =
-        mojo::ConvertTo<std::vector<uint8_t>>(
-            static_cast<int64_t>(ActiveFrameColor()));
-    init_params->mus_properties
-        [ws::mojom::WindowManager::kFrameInactiveColor_Property] =
-        mojo::ConvertTo<std::vector<uint8_t>>(
-            static_cast<int64_t>(InactiveFrameColor()));
-  }
-  init_params
-      ->mus_properties[ws::mojom::WindowManager::kShelfItemType_Property] =
-      mojo::ConvertTo<std::vector<uint8_t>>(
-          static_cast<int64_t>(ash::TYPE_APP));
-  init_params
-      ->mus_properties[ws::mojom::WindowManager::kWindowTitleShown_Property] =
-      mojo::ConvertTo<std::vector<uint8_t>>(static_cast<int64_t>(false));
-  init_params->mus_properties[ash::mojom::kAppType_Property] =
-      mojo::ConvertTo<std::vector<uint8_t>>(
-          static_cast<int64_t>(ash::AppType::CHROME_APP));
 }
 
 views::NonClientFrameView*

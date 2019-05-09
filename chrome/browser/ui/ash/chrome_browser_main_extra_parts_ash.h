@@ -11,24 +11,12 @@
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/common/buildflags.h"
 
-namespace aura {
-class UserActivityForwarder;
-}
-
 namespace chromeos {
 class NetworkPortalNotificationController;
 }
 
 namespace policy {
 class DisplaySettingsHandler;
-}
-
-namespace ui {
-class UserActivityDetector;
-}
-
-namespace views {
-class MusClient;
 }
 
 class AccessibilityControllerClient;
@@ -66,8 +54,6 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   ~ChromeBrowserMainExtraPartsAsh() override;
 
   // Overridden from ChromeBrowserMainExtraParts:
-  void ServiceManagerConnectionStarted(
-      content::ServiceManagerConnection* connection) override;
   void PreProfileInit() override;
   void PostProfileInit() override;
   void PostBrowserStart() override;
@@ -83,10 +69,6 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
 
   // Initialized in PreProfileInit if ash config != MASH:
   std::unique_ptr<AshShellInit> ash_shell_init_;
-
-  // Initialized in PreProfileInit if ash config == MASH:
-  std::unique_ptr<aura::UserActivityForwarder> user_activity_forwarder_;
-  std::unique_ptr<ui::UserActivityDetector> user_activity_detector_;
 
   // Initialized in PreProfileInit in all configs after Shell init:
   std::unique_ptr<AccessibilityControllerClient>
@@ -123,9 +105,6 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   // Initialized in PostBrowserStart in all configs:
   std::unique_ptr<MobileDataNotifications> mobile_data_notifications_;
   std::unique_ptr<NightLightClient> night_light_client_;
-
-  // Created for mash (both in single and multi-process).
-  std::unique_ptr<views::MusClient> mus_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsAsh);
 };

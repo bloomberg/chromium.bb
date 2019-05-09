@@ -248,7 +248,6 @@ void ArcAppWindowLauncherController::AttachControllerToWindowIfNeeded(
     return;
 
   // TODO(msw): Set shelf item types earlier to avoid ShelfWindowWatcher races.
-  // (maybe use Widget::InitParams::mus_properties in cash too crbug.com/750334)
   window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_APP);
 
   // Create controller if we have task info.

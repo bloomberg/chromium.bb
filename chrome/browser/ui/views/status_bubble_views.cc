@@ -46,8 +46,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/window_properties.mojom.h"
-#include "services/ws/public/cpp/property_type_converters.h"
 #include "ui/aura/window.h"
 #endif
 
@@ -689,10 +687,6 @@ void StatusBubbleViews::InitPopup() {
     params.parent = frame->GetNativeView();
     params.context = frame->GetNativeWindow();
     params.name = "StatusBubble";
-#if defined(OS_CHROMEOS)
-    params.mus_properties[ash::mojom::kHideInOverview_Property] =
-        mojo::ConvertTo<std::vector<uint8_t>>(true);
-#endif
     popup_->Init(params);
     // We do our own animation and don't want any from the system.
     popup_->SetVisibilityChangedAnimationsEnabled(false);

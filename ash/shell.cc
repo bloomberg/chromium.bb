@@ -228,8 +228,6 @@ namespace {
 using aura::Window;
 using views::Widget;
 
-bool g_is_browser_process_with_mash = false;
-
 // A Corewm VisibilityController subclass that calls the Ash animation routine
 // so we can pick up our extended animations. See ash/wm/window_animations.h.
 class AshVisibilityController : public ::wm::VisibilityController {
@@ -288,10 +286,6 @@ Shell* Shell::CreateInstance(ShellInitParams init_params) {
 
 // static
 Shell* Shell::Get() {
-  CHECK(!g_is_browser_process_with_mash)  // Implies null |instance_|.
-      << "Ash is running in its own process so Shell::Get() will return null. "
-         "The browser process must use the mojo interfaces in //ash/public to "
-         "access ash. See ash/README.md for details.";
   CHECK(instance_);
   return instance_;
 }
@@ -613,11 +607,6 @@ void Shell::NotifyShelfAlignmentChanged(aura::Window* root_window) {
 void Shell::NotifyShelfAutoHideBehaviorChanged(aura::Window* root_window) {
   for (auto& observer : shell_observers_)
     observer.OnShelfAutoHideBehaviorChanged(root_window);
-}
-
-// static
-void Shell::SetIsBrowserProcessWithMash() {
-  g_is_browser_process_with_mash = true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
