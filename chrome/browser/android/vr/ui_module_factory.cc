@@ -8,13 +8,13 @@
 
 #include <utility>
 
+#include "base/android/bundle_utils.h"
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/vr/ui_interface.h"
-
 #include "chrome/browser/vr/audio_delegate.h"
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/keyboard_delegate.h"
 #include "chrome/browser/vr/text_input_delegate.h"
+#include "chrome/browser/vr/ui_interface.h"
 
 namespace vr {
 
@@ -32,20 +32,14 @@ std::unique_ptr<UiInterface> UiModuleFactory::Create(
     std::unique_ptr<AudioDelegate> audio_delegate,
     const UiInitialState& ui_initial_state) {
   DCHECK(ui_library_handle_ == nullptr);
-
-  // TODO(http://crbug.com/874584): Programmatically determine the name of the
-  // library instead of trying both here.
-  ui_library_handle_ = dlopen("libvr_ui_module_lib.so", RTLD_LOCAL | RTLD_NOW);
-  if (!ui_library_handle_) {
-    ui_library_handle_ =
-        dlopen("libvr_ui_monochrome_module_lib.so", RTLD_LOCAL | RTLD_NOW);
-  }
-  CHECK(ui_library_handle_ != nullptr)
+  ui_library_handle_ =
+      base::android::BundleUtils::DlOpenModuleLibraryPartition("vr");
+  DCHECK(ui_library_handle_ != nullptr)
       << "Could not open VR UI library:" << dlerror();
 
   CreateUiFunction* create_ui = reinterpret_cast<CreateUiFunction*>(
       dlsym(ui_library_handle_, "CreateUi"));
-  CHECK(create_ui != nullptr);
+  DCHECK(create_ui != nullptr);
 
   std::unique_ptr<UiInterface> ui = base::WrapUnique(
       create_ui(browser, content_input_forwarder, std::move(keyboard_delegate),

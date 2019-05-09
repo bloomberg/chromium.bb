@@ -901,10 +901,10 @@ FovRectangle Ui::GetMinimalFov(const gfx::Transform& view_matrix,
 
 #if defined(OS_ANDROID)
 extern "C" {
-
 // This symbol is retrieved from the VR feature module library via dlsym(),
 // where it's bare address is type-cast to a CreateUiFunction pointer and
-// executed. Any changes to the arguments here must be mirrored in that type.
+// executed. The forward declaration here ensures that the signatures match.
+CreateUiFunction CreateUi;
 __attribute__((visibility("default"))) UiInterface* CreateUi(
     UiBrowserInterface* browser,
     PlatformInputHandler* content_input_forwarder,
@@ -916,7 +916,7 @@ __attribute__((visibility("default"))) UiInterface* CreateUi(
                 std::move(text_input_delegate), std::move(audio_delegate),
                 ui_initial_state);
 }
-}
+}  // extern "C"
 #endif  // defined(OS_ANDROID
 
 }  // namespace vr
