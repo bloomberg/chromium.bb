@@ -185,8 +185,8 @@ class ClassPropertyMetaData
   ~ClassPropertyMetaData() override = default;
 
   void SetValueAsString(void* obj, const base::string16& new_value) override {
-    (static_cast<TClass*>(obj)->*Set)(
-        Convert<base::string16, TValue>(new_value));
+    (static_cast<TClass*>(obj)->*Set)(Convert<base::string16, TValue>(
+        new_value, (static_cast<TClass*>(obj)->*Get)()));
   }
 
   PropertyFlags GetPropertyFlags() const override {
