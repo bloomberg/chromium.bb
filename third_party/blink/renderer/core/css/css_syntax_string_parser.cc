@@ -154,7 +154,9 @@ bool CSSSyntaxStringParser::ConsumeDataTypeName(CSSSyntaxType& type) {
 
 bool CSSSyntaxStringParser::ConsumeIdent(String& ident) {
   ident = ConsumeName(input_);
-  return !css_property_parser_helpers::IsCSSWideKeyword(ident);
+  // TODO(crbug.com/579788): Implement 'revert'.
+  return !css_property_parser_helpers::IsCSSWideKeyword(ident) &&
+         !css_property_parser_helpers::IsRevertKeyword(ident);
 }
 
 }  // namespace blink

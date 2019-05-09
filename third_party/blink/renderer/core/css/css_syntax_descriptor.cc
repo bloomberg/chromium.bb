@@ -17,6 +17,24 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
+namespace {
+
+// The 'revert' keyword is reserved.
+//
+// https://drafts.csswg.org/css-cascade/#default
+//
+// // TODO(crbug.com/579788): Implement 'revert'.
+bool IsRevertToken(const CSSParserToken& token) {
+  return token.GetType() == kIdentToken &&
+         css_property_parser_helpers::IsRevertKeyword(token.Value());
+}
+
+bool CouldConsumeRevertKeyword(CSSParserTokenRange range) {
+  range.ConsumeWhitespace();
+  if (IsRevertToken(range.ConsumeIncludingWhitespace()))
+    return range.AtEnd();
+  return false;
+}
 
 const CSSValue* ConsumeSingleType(const CSSSyntaxComponent& syntax,
                                   CSSParserTokenRange& range,
@@ -61,6 +79,9 @@ const CSSValue* ConsumeSingleType(const CSSSyntaxComponent& syntax,
     case CSSSyntaxType::kTransformList:
       return ConsumeTransformList(range, *context);
     case CSSSyntaxType::kCustomIdent:
+      // TODO(crbug.com/579788): Implement 'revert'.
+      if (IsRevertToken(range.Peek()))
+        return nullptr;
       return ConsumeCustomIdent(range, *context);
     default:
       NOTREACHED();
@@ -99,6 +120,8 @@ const CSSValue* ConsumeSyntaxComponent(const CSSSyntaxComponent& syntax,
   return result;
 }
 
+}  // namespace
+
 const CSSSyntaxComponent* CSSSyntaxDescriptor::Match(
     const CSSStyleValue& value) const {
   for (const CSSSyntaxComponent& component : syntax_components_) {
@@ -116,6 +139,9 @@ const CSSValue* CSSSyntaxDescriptor::Parse(CSSParserTokenRange range,
                                            const CSSParserContext* context,
                                            bool is_animation_tainted) const {
   if (IsTokenStream()) {
+    // TODO(crbug.com/579788): Implement 'revert'.
+    if (CouldConsumeRevertKeyword(range))
+      return nullptr;
     return CSSVariableParser::ParseRegisteredPropertyValue(
         range, *context, false, is_animation_tainted);
   }

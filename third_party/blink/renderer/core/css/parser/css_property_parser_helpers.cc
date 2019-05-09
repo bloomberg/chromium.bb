@@ -1742,6 +1742,11 @@ bool IsCSSWideKeyword(StringView keyword) {
          EqualIgnoringASCIICase(keyword, "unset");
 }
 
+// https://drafts.csswg.org/css-cascade/#default
+bool IsRevertKeyword(StringView keyword) {
+  return EqualIgnoringASCIICase(keyword, "revert");
+}
+
 // https://drafts.csswg.org/css-shapes-1/#typedef-shape-box
 CSSIdentifierValue* ConsumeShapeBox(CSSParserTokenRange& range) {
   return ConsumeIdent<CSSValueID::kContentBox, CSSValueID::kPaddingBox,
