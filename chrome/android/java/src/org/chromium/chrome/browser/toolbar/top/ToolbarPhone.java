@@ -26,6 +26,7 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
@@ -2452,8 +2453,8 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     }
 
     @Override
-    void enableExperimentalButton(
-            OnClickListener onClickListener, int drawableResId, int contentDescriptionResId) {
+    void enableExperimentalButton(OnClickListener onClickListener, Drawable image,
+            @StringRes int contentDescriptionResId) {
         if (mExperimentalButton == null) {
             ViewStub viewStub = findViewById(R.id.experimental_button_stub);
             mExperimentalButton = (ImageButton) viewStub.inflate();
@@ -2471,7 +2472,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         }
 
         mExperimentalButton.setOnClickListener(onClickListener);
-        mExperimentalButton.setImageResource(drawableResId);
+        mExperimentalButton.setImageDrawable(image);
         mExperimentalButton.setContentDescription(
                 getContext().getResources().getString(contentDescriptionResId));
         ApiCompatibilityUtils.setImageTintList(mExperimentalButton, getTint());
@@ -2490,8 +2491,9 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     }
 
     @Override
-    View getExperimentalButtonView() {
-        return mExperimentalButton;
+    void updateExperimentalButtonImage(Drawable image) {
+        assert mExperimentalButton != null;
+        mExperimentalButton.setImageDrawable(image);
     }
 
     @Override

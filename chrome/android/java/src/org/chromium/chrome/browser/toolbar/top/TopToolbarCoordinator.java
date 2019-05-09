@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.toolbar.top;
 
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.view.View;
@@ -593,13 +592,12 @@ public class TopToolbarCoordinator implements Toolbar {
      * Enable the experimental toolbar button.
      * @param onClickListener The {@link View.OnClickListener} to be called when the button is
      *                        clicked.
-     * @param drawableResId The resource id of the drawable to display for the button.
+     * @param image The drawable to display for the button.
      * @param contentDescriptionResId The resource id of the content description for the button.
      */
-    public void enableExperimentalButton(View.OnClickListener onClickListener,
-            @DrawableRes int drawableResId, @StringRes int contentDescriptionResId) {
-        mToolbarLayout.enableExperimentalButton(
-                onClickListener, drawableResId, contentDescriptionResId);
+    public void enableExperimentalButton(View.OnClickListener onClickListener, Drawable image,
+            @StringRes int contentDescriptionResId) {
+        mToolbarLayout.enableExperimentalButton(onClickListener, image, contentDescriptionResId);
     }
 
     /**
@@ -612,8 +610,10 @@ public class TopToolbarCoordinator implements Toolbar {
     /**
      * @return The experimental toolbar button if it exists.
      */
-    public @Nullable View getExperimentalButtonView() {
-        return mToolbarLayout == null ? null : mToolbarLayout.getExperimentalButtonView();
+    public void updateExperimentalButtonImage(Drawable image) {
+        if (mToolbarLayout != null) {
+            mToolbarLayout.updateExperimentalButtonImage(image);
+        }
     }
 
     /**

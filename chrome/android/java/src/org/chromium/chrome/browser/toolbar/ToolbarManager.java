@@ -11,7 +11,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
-import android.support.annotation.DrawableRes;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
@@ -1047,12 +1046,12 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     /**
      * Enable the experimental toolbar button.
      * @param onClickListener The {@link OnClickListener} to be called when the button is clicked.
-     * @param drawableResId The resource id of the drawable to display for the button.
+     * @param image The drawable to display for the button.
      * @param contentDescriptionResId The resource id of the content description for the button.
      */
-    public void enableExperimentalButton(OnClickListener onClickListener,
-            @DrawableRes int drawableResId, @StringRes int contentDescriptionResId) {
-        mToolbar.enableExperimentalButton(onClickListener, drawableResId, contentDescriptionResId);
+    public void enableExperimentalButton(OnClickListener onClickListener, Drawable image,
+            @StringRes int contentDescriptionResId) {
+        mToolbar.enableExperimentalButton(onClickListener, image, contentDescriptionResId);
     }
 
     /**
@@ -1063,10 +1062,10 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     }
 
     /**
-     * @return The experimental toolbar button if it exists.
+     * Updates image displayed on experimental button.
      */
-    public @Nullable View getExperimentalButtonView() {
-        return mToolbar.getExperimentalButtonView();
+    public void updateExperimentalButtonImage(Drawable image) {
+        mToolbar.updateExperimentalButtonImage(image);
     }
 
     /**

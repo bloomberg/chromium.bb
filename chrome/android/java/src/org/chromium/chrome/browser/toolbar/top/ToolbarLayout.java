@@ -11,7 +11,6 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 import android.support.annotation.ColorRes;
-import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.util.AttributeSet;
@@ -840,19 +839,16 @@ public abstract class ToolbarLayout
     /**
      * Enable the experimental toolbar button.
      * @param onClickListener The {@link OnClickListener} to be called when the button is clicked.
-     * @param drawableResId The resource id of the drawable to display for the button.
+     * @param image The drawable to display for the button.
      * @param contentDescriptionResId The resource id of the content description for the button.
      */
-    void enableExperimentalButton(OnClickListener onClickListener, @DrawableRes int drawableResId,
+    void enableExperimentalButton(OnClickListener onClickListener, Drawable image,
             @StringRes int contentDescriptionResId) {}
 
     /**
-     * @return The experimental toolbar button if it exists.
+     * Updates image displayed on experimental button.
      */
-    @Nullable
-    View getExperimentalButtonView() {
-        return null;
-    }
+    void updateExperimentalButtonImage(Drawable image) {}
 
     /**
      * Disable the experimental toolbar button.
