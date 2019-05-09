@@ -2559,15 +2559,6 @@ TEST_P(WebStateObserverTest, RestoreSessionOnline) {
                                              /*for_main_frame=*/true))
       .WillOnce(Return(true));
 
-  // decide policy for restore_session.html?targetUrl=url0 again due to reload
-  // in onpopstate().
-  EXPECT_CALL(*decider_,
-              ShouldAllowRequest(URLMatch(CreateRedirectUrl(url0)), _))
-      .WillOnce(Return(true));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(URLMatch(CreateRedirectUrl(url0)),
-                                             /*for_main_frame=*/true))
-      .WillOnce(Return(true));
-
   // Client-side redirect to |url0|.
   EXPECT_CALL(*decider_, ShouldAllowRequest(URLMatch(url0), _))
       .WillOnce(Return(true));
