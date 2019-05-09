@@ -14,13 +14,12 @@ namespace media {
 const int kMaxOutOfOrderFrameLogs = 10;
 
 VideoRendererAlgorithm::ReadyFrame::ReadyFrame(
-    const scoped_refptr<VideoFrame>& ready_frame)
-    : frame(ready_frame),
+    scoped_refptr<VideoFrame> ready_frame)
+    : frame(std::move(ready_frame)),
       has_estimated_end_time(true),
       ideal_render_count(0),
       render_count(0),
-      drop_count(0) {
-}
+      drop_count(0) {}
 
 VideoRendererAlgorithm::ReadyFrame::ReadyFrame(const ReadyFrame& other) =
     default;
@@ -331,8 +330,7 @@ int64_t VideoRendererAlgorithm::GetMemoryUsage() const {
   return allocation_size;
 }
 
-void VideoRendererAlgorithm::EnqueueFrame(
-    const scoped_refptr<VideoFrame>& frame) {
+void VideoRendererAlgorithm::EnqueueFrame(scoped_refptr<VideoFrame> frame) {
   DCHECK(frame);
   DCHECK(!frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM));
 

@@ -331,11 +331,11 @@ void WebMediaPlayerMSCompositor::EnqueueFrame(
     dropped_frame_count_ += rendering_frame_buffer_->frames_queued() - 1;
     rendering_frame_buffer_->Reset();
     timestamps_to_clock_times_.clear();
-    RenderWithoutAlgorithm(std::move(frame));
+    RenderWithoutAlgorithm(frame);
   }
 
   timestamps_to_clock_times_[frame->timestamp()] = render_time;
-  rendering_frame_buffer_->EnqueueFrame(frame);
+  rendering_frame_buffer_->EnqueueFrame(std::move(frame));
 }
 
 bool WebMediaPlayerMSCompositor::UpdateCurrentFrame(
