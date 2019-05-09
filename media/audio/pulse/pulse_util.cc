@@ -162,8 +162,10 @@ void GetDefaultDeviceIdCallback(pa_context* c,
                                 const pa_server_info* info,
                                 void* userdata) {
   DefaultDevicesData* data = static_cast<DefaultDevicesData*>(userdata);
-  data->input_ = info->default_source_name;
-  data->output_ = info->default_sink_name;
+  if (info->default_source_name)
+    data->input_ = info->default_source_name;
+  if (info->default_sink_name)
+    data->output_ = info->default_sink_name;
   pa_threaded_mainloop_signal(data->loop_, 0);
 }
 

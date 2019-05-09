@@ -306,7 +306,8 @@ void AudioManagerPulse::AudioHardwareInfoCallback(pa_context* context,
 
   manager->native_input_sample_rate_ = info->sample_spec.rate;
   manager->native_channel_count_ = info->sample_spec.channels;
-  manager->default_source_name_ = info->default_source_name;
+  if (info->default_source_name)
+    manager->default_source_name_ = info->default_source_name;
   pa_threaded_mainloop_signal(manager->input_mainloop_, 0);
 }
 
