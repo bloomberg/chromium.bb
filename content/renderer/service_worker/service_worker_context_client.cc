@@ -697,6 +697,9 @@ void ServiceWorkerContextClient::DidHandleInstallEvent(
     int event_id,
     blink::mojom::ServiceWorkerEventStatus status) {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
+  proxy_->SetFetchHandlerExistence(proxy_->HasFetchEventHandler()
+                                       ? FetchHandlerExistence::EXISTS
+                                       : FetchHandlerExistence::DOES_NOT_EXIST);
   if (!context_)
     return;
   TRACE_EVENT_WITH_FLOW1("ServiceWorker",
@@ -1442,7 +1445,8 @@ void ServiceWorkerContextClient::DispatchBackgroundFetchSuccessEvent(
 
 void ServiceWorkerContextClient::InitializeGlobalScope(
     blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
-    blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info) {
+    blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info,
+    FetchHandlerExistence fetch_handler_existence) {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   // Connect to the blink::mojom::ServiceWorkerHost.
   proxy_->BindServiceWorkerHost(service_worker_host.PassHandle());
@@ -1453,6 +1457,7 @@ void ServiceWorkerContextClient::InitializeGlobalScope(
   DCHECK(registration_info->request.is_pending());
   proxy_->SetRegistration(
       registration_info.To<blink::WebServiceWorkerRegistrationObjectInfo>());
+  proxy_->SetFetchHandlerExistence(fetch_handler_existence);
 
   proxy_->ReadyToEvaluateScript();
 }

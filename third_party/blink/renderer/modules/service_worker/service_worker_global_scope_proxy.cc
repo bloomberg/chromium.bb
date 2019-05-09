@@ -189,6 +189,11 @@ void ServiceWorkerGlobalScopeProxy::SetRegistration(
   WorkerGlobalScope()->SetRegistration(std::move(info));
 }
 
+void ServiceWorkerGlobalScopeProxy::SetFetchHandlerExistence(
+    FetchHandlerExistence fetch_handler_existence) {
+  WorkerGlobalScope()->SetFetchHandlerExistence(fetch_handler_existence);
+}
+
 void ServiceWorkerGlobalScopeProxy::ReadyToEvaluateScript() {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WorkerGlobalScope()->ReadyToEvaluateScript();

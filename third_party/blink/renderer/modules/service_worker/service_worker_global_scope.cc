@@ -536,6 +536,16 @@ void ServiceWorkerGlobalScope::SetRegistration(
       GetExecutionContext(), std::move(info));
 }
 
+void ServiceWorkerGlobalScope::SetFetchHandlerExistence(
+    FetchHandlerExistence fetch_handler_existence) {
+  DCHECK(IsContextThread());
+  if (fetch_handler_existence == FetchHandlerExistence::EXISTS &&
+      base::FeatureList::IsEnabled(
+          features::kServiceWorkerIsolateInForeground)) {
+    GetThread()->GetIsolate()->IsolateInForegroundNotification();
+  }
+}
+
 ServiceWorker* ServiceWorkerGlobalScope::GetOrCreateServiceWorker(
     WebServiceWorkerObjectInfo info) {
   if (info.version_id == mojom::blink::kInvalidServiceWorkerVersionId)
@@ -579,11 +589,6 @@ void ServiceWorkerGlobalScope::EvaluateClassicScriptInternal(
                   WrapWeakPersistent(this), script_url, std::move(source_code),
                   std::move(cached_meta_data));
     return;
-  }
-
-  if (base::FeatureList::IsEnabled(
-          features::kServiceWorkerIsolateInForeground)) {
-    GetThread()->GetIsolate()->IsolateInForegroundNotification();
   }
 
   WorkerGlobalScope::EvaluateClassicScriptInternal(script_url, source_code,

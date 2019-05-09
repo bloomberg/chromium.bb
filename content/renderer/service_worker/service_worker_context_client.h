@@ -258,6 +258,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
                            DispatchOrQueueFetchEvent_NotRequestedTermination);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextClientTest, TaskInServiceWorker);
 
+  using FetchHandlerExistence = blink::mojom::FetchHandlerExistence;
+
   static void ToWebServiceWorkerRequestForFetchEvent(
       blink::mojom::FetchAPIRequestPtr request,
       const std::string& client_id,
@@ -268,8 +270,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // Implements blink::mojom::ServiceWorker.
   void InitializeGlobalScope(
       blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
-      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info)
-      override;
+      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info,
+      FetchHandlerExistence fetch_hander_existence) override;
   void DispatchInstallEvent(
       DispatchInstallEventCallback callback) override;
   void DispatchActivateEvent(DispatchActivateEventCallback callback) override;

@@ -114,6 +114,8 @@ void StartWorker(ServiceWorkerVersion* version,
 
 class ServiceWorkerVersionTest : public testing::Test {
  protected:
+  using FetchHandlerExistence = blink::mojom::FetchHandlerExistence;
+
   struct RunningStateListener : public ServiceWorkerVersion::Observer {
     RunningStateListener() : last_status(EmbeddedWorkerStatus::STOPPED) {}
     ~RunningStateListener() override {}
@@ -161,7 +163,10 @@ class ServiceWorkerVersionTest : public testing::Test {
     version_->script_cache_map()->SetResources(records);
     version_->SetMainScriptHttpResponseInfo(
         EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
-    version_->set_fetch_handler_existence(GetFetchHandlerExistence());
+    if (GetFetchHandlerExistence() !=
+        ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN) {
+      version_->set_fetch_handler_existence(GetFetchHandlerExistence());
+    }
 
     // Make the registration findable via storage functions.
     base::Optional<blink::ServiceWorkerStatusCode> status;
@@ -1596,6 +1601,25 @@ TEST_F(ServiceWorkerNavigationHintUMATest, StartWhileStopping) {
   StopWorker();
   // The UMA must be recorded when the worker stopped.
   histogram_tester_.ExpectTotalCount(kStartHintPrecision, 2);
+}
+
+TEST_F(ServiceWorkerVersionTest, InstalledFetchEventHandlerExists) {
+  auto* service_worker =
+      helper_->AddNewPendingServiceWorker<FakeServiceWorker>(helper_.get());
+  StartWorker(version_.get(), ServiceWorkerMetrics::EventType::UNKNOWN);
+  service_worker->RunUntilInitializeGlobalScope();
+  EXPECT_EQ(FetchHandlerExistence::EXISTS,
+            service_worker->fetch_handler_existence());
+}
+
+TEST_F(ServiceWorkerVersionNoFetchHandlerTest,
+       InstalledFetchEventHandlerDoesNotExist) {
+  auto* service_worker =
+      helper_->AddNewPendingServiceWorker<FakeServiceWorker>(helper_.get());
+  StartWorker(version_.get(), ServiceWorkerMetrics::EventType::UNKNOWN);
+  service_worker->RunUntilInitializeGlobalScope();
+  EXPECT_EQ(FetchHandlerExistence::DOES_NOT_EXIST,
+            service_worker->fetch_handler_existence());
 }
 
 }  // namespace service_worker_version_unittest
