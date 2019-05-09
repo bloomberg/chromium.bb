@@ -75,7 +75,7 @@ base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
     case OVERVIEW_ANIMATION_SELECTION_WINDOW_SHADOW:
     case OVERVIEW_ANIMATION_SELECTION_WINDOW:
       return kOverviewSelectorTransition;
-  };
+  }
   NOTREACHED();
   return base::TimeDelta();
 }

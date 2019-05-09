@@ -4,6 +4,8 @@
 
 #include "ash/wm/overview/rounded_label_widget.h"
 
+#include <memory>
+
 #include "ash/public/cpp/ash_features.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"

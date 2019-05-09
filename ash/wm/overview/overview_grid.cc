@@ -431,7 +431,7 @@ void OverviewGrid::PositionWindows(
 
   int animate_count = 0;
   bool has_non_cover_animating = false;
-  OverviewAnimationType animation_types[rects.size()];
+  std::vector<OverviewAnimationType> animation_types(rects.size());
 
   for (size_t i = 0; i < window_list_.size(); ++i) {
     OverviewItem* window_item = window_list_[i].get();

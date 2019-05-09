@@ -4,6 +4,8 @@
 
 #include "ash/wm/overview/drop_target_view.h"
 
+#include <algorithm>
+
 #include "ash/public/cpp/ash_features.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/wm/overview/overview_constants.h"

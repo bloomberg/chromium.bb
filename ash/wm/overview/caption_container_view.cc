@@ -4,6 +4,8 @@
 
 #include "ash/wm/overview/caption_container_view.h"
 
+#include <memory>
+
 #include "ash/public/cpp/ash_features.h"
 #include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/window_preview_view.h"

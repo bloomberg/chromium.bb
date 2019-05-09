@@ -5,6 +5,7 @@
 #include "ash/wm/overview/overview_item.h"
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "ash/public/cpp/ash_features.h"
@@ -462,7 +463,8 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
     // There is a bug where the first OverviewItem |window_| will always return
     // the identity, even though a transform has been visually applied. For this
     // case use the y location of the screen bounds.
-    // TODO: Investigate why this is happening and remove the if clause.
+    // TODO(sammiequon): Investigate why this is happening and remove the if
+    // clause.
     if (window->transform().IsIdentity() &&
         (window == GetWindow() ||
          ::wm::HasTransientAncestor(window, GetWindow()))) {

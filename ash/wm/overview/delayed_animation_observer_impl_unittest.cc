@@ -4,6 +4,8 @@
 
 #include "ash/wm/overview/delayed_animation_observer_impl.h"
 
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "ash/test/ash_test_base.h"

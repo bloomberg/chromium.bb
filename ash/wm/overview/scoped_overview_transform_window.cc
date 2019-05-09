@@ -71,7 +71,7 @@ ScopedOverviewTransformWindow::GridWindowFillMode GetWindowDimensionsType(
 class ScopedOverviewTransformWindow::LayerCachingAndFilteringObserver
     : public ui::LayerObserver {
  public:
-  LayerCachingAndFilteringObserver(ui::Layer* layer) : layer_(layer) {
+  explicit LayerCachingAndFilteringObserver(ui::Layer* layer) : layer_(layer) {
     layer_->AddObserver(this);
     layer_->AddCacheRenderSurfaceRequest();
     layer_->AddTrilinearFilteringRequest();
