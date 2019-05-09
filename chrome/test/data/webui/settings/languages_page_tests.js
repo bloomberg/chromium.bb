@@ -626,7 +626,7 @@ cr.define('languages_page_tests', function() {
             spellCheckLanguagesCount);
       });
 
-      test('only 1 supported language does not show list', () => {
+      test('only 1 supported language', () => {
         if (cr.isMac) {
           return;
         }
@@ -634,13 +634,28 @@ cr.define('languages_page_tests', function() {
         const list = languagesPage.$.spellCheckLanguagesList;
         assertFalse(list.hidden);
 
-        // Update supported languages to just 1
         languageHelper.setPrefValue('intl.accept_languages', 'en-US');
         if (cr.isChromeOS) {
           languageHelper.setPrefValue(
               'settings.language.preferred_languages', 'en-US');
         }
+
+        // Update supported languages to just 1 language English with spell
+        // check disabled for that language
+        languageHelper.setPrefValue('spellcheck.dictionaries', []);
         assertTrue(list.hidden);
+        assertFalse(
+            languageHelper.getPref('browser.enable_spellchecking').value);
+
+        // Update supported languages to just 1 language English that finished
+        // downloading and is now ready
+        languageHelper.setPrefValue('spellcheck.dictionaries', ['en-US']);
+        languageHelper.set('languages.enabled.0.downloadDictionaryStatus', {
+          isReady: true,
+        });
+        assertTrue(list.hidden);
+        assertTrue(
+            languageHelper.getPref('browser.enable_spellchecking').value);
       });
 
       test('no supported languages', () => {
