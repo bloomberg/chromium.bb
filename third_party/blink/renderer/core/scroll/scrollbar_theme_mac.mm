@@ -52,6 +52,7 @@
   blink::Scrollbar* _scrollbar;
   base::scoped_nsobject<ScrollbarPainter> _scrollbarPainter;
   BOOL _suppressSetScrollbarsHidden;
+  CGFloat _saved_knob_alpha;
 }
 - (id)initWithScrollbar:(blink::Scrollbar*)scrollbar
                 painter:(const base::scoped_nsobject<ScrollbarPainter>&)painter;
@@ -79,6 +80,12 @@
 
 - (void)setSuppressSetScrollbarsHidden:(BOOL)value {
   _suppressSetScrollbarsHidden = value;
+  if (value) {
+    _saved_knob_alpha = [_scrollbarPainter knobAlpha];
+  } else {
+    [_scrollbarPainter setKnobAlpha:_saved_knob_alpha];
+    _scrollbar->SetScrollbarsHiddenIfOverlay(_saved_knob_alpha == 0);
+  }
 }
 
 - (void)dealloc {
@@ -310,7 +317,6 @@ void ScrollbarThemeMac::PaintThumbInternal(GraphicsContext& context,
     [scrollbar_painter setKnobProportion:1];
 
     [observer setSuppressSetScrollbarsHidden:YES];
-    CGFloat old_knob_alpha = [scrollbar_painter knobAlpha];
     [scrollbar_painter setKnobAlpha:1];
 
     if (scrollbar.Enabled())
@@ -321,7 +327,6 @@ void ScrollbarThemeMac::PaintThumbInternal(GraphicsContext& context,
     // scrollbar area.
     [scrollbar_painter
         setBoundsSize:NSSizeFromCGSize(CGSize(scrollbar.FrameRect().Size()))];
-    [scrollbar_painter setKnobAlpha:old_knob_alpha];
     [observer setSuppressSetScrollbarsHidden:NO];
   }
 
