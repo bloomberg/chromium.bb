@@ -64,6 +64,7 @@ import org.chromium.payments.mojom.CanMakePaymentQueryResult;
 import org.chromium.payments.mojom.HasEnrolledInstrumentQueryResult;
 import org.chromium.payments.mojom.PayerDetail;
 import org.chromium.payments.mojom.PayerErrors;
+import org.chromium.payments.mojom.PaymentAddress;
 import org.chromium.payments.mojom.PaymentComplete;
 import org.chromium.payments.mojom.PaymentCurrencyAmount;
 import org.chromium.payments.mojom.PaymentDetails;
@@ -2108,8 +2109,19 @@ public class PaymentRequestImpl
         // Don't reuse the selected address because it is formatted for display.
         AutofillAddress shippingAddress = new AutofillAddress(chromeActivity, profile);
 
+        // Redact shipping address before exposing it in ShippingAddressChangeEvent.
+        // https://w3c.github.io/payment-request/#shipping-address-changed-algorithm
+        PaymentAddress redactedAddress = shippingAddress.toPaymentAddress();
+        if (PaymentsExperimentalFeatures.isEnabled(
+                    ChromeFeatureList.WEB_PAYMENTS_REDACT_SHIPPING_ADDRESS)) {
+            redactedAddress.organization = "";
+            redactedAddress.phone = "";
+            redactedAddress.recipient = "";
+            redactedAddress.addressLine = new String[0];
+        }
+
         // This updates the line items and the shipping options asynchronously.
-        mClient.onShippingAddressChange(shippingAddress.toPaymentAddress());
+        mClient.onShippingAddressChange(redactedAddress);
     }
 
     @Override

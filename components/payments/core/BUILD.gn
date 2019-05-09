@@ -51,6 +51,8 @@ jumbo_static_library("core") {
     "payment_response.h",
     "payment_shipping_option.cc",
     "payment_shipping_option.h",
+    "payments_experimental_features.cc",
+    "payments_experimental_features.h",
     "payments_profile_comparator.cc",
     "payments_profile_comparator.h",
     "payments_validators.cc",

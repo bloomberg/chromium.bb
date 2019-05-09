@@ -23,6 +23,7 @@
 #include "components/payments/core/payment_details_validation.h"
 #include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/payment_prefs.h"
+#include "components/payments/core/payments_experimental_features.h"
 #include "components/payments/core/payments_validators.h"
 #include "components/prefs/pref_service.h"
 #include "components/ukm/content/source_url_recorder.h"
@@ -595,6 +596,15 @@ void PaymentRequest::OnShippingOptionIdSelected(
 
 void PaymentRequest::OnShippingAddressSelected(
     mojom::PaymentAddressPtr address) {
+  // Redact shipping address before exposing it in ShippingAddressChangeEvent.
+  // https://w3c.github.io/payment-request/#shipping-address-changed-algorithm
+  if (PaymentsExperimentalFeatures::IsEnabled(
+          features::kWebPaymentsRedactShippingAddress)) {
+    address->organization.clear();
+    address->phone.clear();
+    address->recipient.clear();
+    address->address_line.clear();
+  }
   client_->OnShippingAddressChange(std::move(address));
 }
 

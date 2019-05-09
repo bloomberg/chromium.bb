@@ -38,5 +38,8 @@ const base::Feature kWebPaymentsPerMethodCanMakePaymentQuota{
     "WebPaymentsPerMethodCanMakePaymentQuota",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kWebPaymentsRedactShippingAddress{
+    "WebPaymentsRedactShippingAddress", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace payments

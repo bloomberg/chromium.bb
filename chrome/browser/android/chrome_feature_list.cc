@@ -185,6 +185,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &payments::features::kWebPaymentsMethodSectionOrderV2,
     &payments::features::kWebPaymentsModifiers,
     &payments::features::kWebPaymentsSingleAppUiSkip,
+    &payments::features::kWebPaymentsRedactShippingAddress,
     &language::kExplicitLanguageAsk,
     &ntp_snippets::kArticleSuggestionsFeature,
     &offline_pages::kOfflineIndicatorFeature,
