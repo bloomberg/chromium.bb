@@ -139,7 +139,6 @@ class PLATFORM_EXPORT FontPlatformData {
   enum Flags {
     kAntiAlias = 1 << 0,
     kSubpixelsAntiAlias = 1 << 1,
-    kSubpixelMetrics = 1 << 2,
   };
   int FontFlags() const { return font_flags_; }
 #endif

@@ -117,6 +117,8 @@ void WebFontRenderStyle::ApplyToSkFont(SkFont* font,
       (sk_hint_style != SkFontHinting::kFull || device_scale_factor > 1.0f);
 
   font->setSubpixel(force_subpixel_positioning || use_subpixel_positioning);
+
+  font->setLinearMetrics(use_subpixel_positioning == 1);
 }
 
 }  // namespace blink

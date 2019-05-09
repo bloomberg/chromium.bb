@@ -53,7 +53,6 @@ void FontPlatformData::SetupSkFont(SkFont* font, float, const Font*) const {
   } else {
     font->setEdging(SkFont::Edging::kAlias);
   }
-  font->setSubpixel(SkToBool(font_flags & kSubpixelMetrics));
 
   // Only use sub-pixel positioning if anti aliasing is enabled. Otherwise,
   // without font smoothing, subpixel text positioning leads to uneven spacing
