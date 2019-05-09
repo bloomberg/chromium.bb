@@ -276,3 +276,20 @@ TEST_F(FullscreenModelTest, IgnoreScrollsPastBottomWhileResizing) {
   SimulateFullscreenUserScrollForProgress(&model(), 0.0);
   EXPECT_EQ(observer().progress(), 1.0);
 }
+
+// Tests that updates to the content height that would normally disable the
+// model are ignored during the scroll, and that the model is correctly updated
+// to be disabled upon the subsequent scroll.
+TEST_F(FullscreenModelTest, IgnoreContentHeightChangesWhileScrolling) {
+  ASSERT_TRUE(model().enabled());
+  // Simulate a re-render to a height that would disable the model during a
+  // scroll.
+  model().SetScrollViewIsScrolling(true);
+  model().SetContentHeight(kScrollViewHeight / 2.0);
+  model().SetScrollViewIsScrolling(false);
+  EXPECT_TRUE(model().enabled());
+  // Simulate the start of a subsequent scroll and verify that the model becomes
+  // disabled for the short content height.
+  model().SetScrollViewIsDragging(true);
+  EXPECT_FALSE(model().enabled());
+}
