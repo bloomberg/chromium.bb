@@ -23,7 +23,6 @@ class TickClock;
 
 namespace chromeos {
 
-class BaseScreenDelegate;
 class ErrorScreen;
 class ErrorScreensHistogramHelper;
 class NetworkState;
@@ -68,8 +67,7 @@ class UpdateScreen : public BaseScreen,
   };
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
-  UpdateScreen(BaseScreenDelegate* base_screen_delegate,
-               UpdateView* view,
+  UpdateScreen(UpdateView* view,
                ErrorScreen* error_screen,
                const ScreenExitCallback& exit_callback);
   ~UpdateScreen() override;
@@ -77,9 +75,6 @@ class UpdateScreen : public BaseScreen,
   // Called when the being destroyed. This should call Unbind() on the
   // associated View if this class is destroyed before it.
   void OnViewDestroyed(UpdateView* view);
-
-  // Starts network check. Made virtual to simplify mocking.
-  virtual void StartNetworkCheck();
 
   void SetIgnoreIdleStatus(bool ignore_idle_status);
 
@@ -99,6 +94,7 @@ class UpdateScreen : public BaseScreen,
   void Hide() override;
   void OnUserAction(const std::string& action_id) override;
 
+  base::OneShotTimer* GetShowTimerForTesting();
   base::OneShotTimer* GetErrorMessageTimerForTesting();
   base::OneShotTimer* GetRebootTimerForTesting();
 
@@ -127,6 +123,9 @@ class UpdateScreen : public BaseScreen,
     STATE_UPDATE,
     STATE_ERROR
   };
+
+  // Starts network check.
+  void StartNetworkCheck();
 
   // Callback to UpdateEngineClient::SetUpdateOverCellularOneTimePermission
   // called in response to user confirming that the OS update can proceed
@@ -194,7 +193,6 @@ class UpdateScreen : public BaseScreen,
   // Ignore fist IDLE status that is sent before update screen initiated check.
   bool ignore_idle_status_ = true;
 
-  BaseScreenDelegate* base_screen_delegate_;
   UpdateView* view_;
   ErrorScreen* error_screen_;
   ScreenExitCallback exit_callback_;
@@ -226,6 +224,14 @@ class UpdateScreen : public BaseScreen,
   int64_t pending_update_size_ = 0;
 
   std::unique_ptr<ErrorScreensHistogramHelper> histogram_helper_;
+
+  // Showing the update screen view will be delayed for a small amount of time
+  // after UpdateScreen::Show() is called. If the screen determines that an
+  // update is not required before the delay expires, the UpdateScreen will exit
+  // without actually showing any UI. The goal is to avoid short flashes of
+  // update screen UI when update check is done quickly enough.
+  // This holds the timer to show the actual update screen UI.
+  base::OneShotTimer show_timer_;
 
   // Timer for the captive portal detector to show portal login page.
   // If redirect did not happen during this delay, error message is shown

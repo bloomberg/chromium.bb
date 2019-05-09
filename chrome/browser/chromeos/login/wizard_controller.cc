@@ -164,8 +164,8 @@
 using content::BrowserThread;
 
 namespace {
-// Interval in ms which is used for smooth screen showing.
-static int g_show_delay_ms = 400;
+
+bool g_using_zero_delays = false;
 
 // Total timezone resolving process timeout.
 const unsigned int kResolveTimeZoneTimeoutSeconds = 60;
@@ -437,7 +437,7 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnNetworkScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<UpdateScreen>(
-      this, oobe_ui->GetView<UpdateScreenHandler>(), oobe_ui->GetErrorScreen(),
+      oobe_ui->GetView<UpdateScreenHandler>(), oobe_ui->GetErrorScreen(),
       base::BindRepeating(&WizardController::OnUpdateScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<EulaScreen>(
@@ -563,7 +563,6 @@ void WizardController::ShowLoginScreen(const LoginScreenContext& context) {
   VLOG(1) << "Showing login screen.";
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_SPECIAL_LOGIN);
   GetLoginDisplayHost()->StartSignInScreen(context);
-  smooth_show_timer_.Stop();
   login_screen_started_ = true;
 }
 
@@ -1240,8 +1239,7 @@ void WizardController::InitiateOOBEUpdate() {
 }
 
 void WizardController::StartOOBEUpdate() {
-  SetCurrentScreenSmooth(GetScreen(UpdateView::kScreenId), true);
-  UpdateScreen::Get(screen_manager())->StartNetworkCheck();
+  SetCurrentScreen(GetScreen(UpdateView::kScreenId));
 }
 
 void WizardController::StartTimezoneResolve() {
@@ -1299,37 +1297,11 @@ void WizardController::PerformOOBECompletedActions() {
 }
 
 void WizardController::SetCurrentScreen(BaseScreen* new_current) {
-  SetCurrentScreenSmooth(new_current, false);
-}
-
-void WizardController::ShowCurrentScreen() {
-  // ShowCurrentScreen may get called by smooth_show_timer_ even after
-  // flow has been switched to sign in screen (ExistingUserController).
-  if (!GetOobeUI())
-    return;
-
-  // First remember how far have we reached so that we can resume if needed.
-  if (is_out_of_box_ && !demo_setup_controller_ &&
-      IsResumableScreen(current_screen_->screen_id())) {
-    StartupUtils::SaveOobePendingScreen(current_screen_->screen_id().name);
-  }
-
-  smooth_show_timer_.Stop();
-
-  UpdateStatusAreaVisibilityForScreen(current_screen_->screen_id());
-  current_screen_->SetConfiguration(&oobe_configuration_);
-  current_screen_->Show();
-}
-
-void WizardController::SetCurrentScreenSmooth(BaseScreen* new_current,
-                                              bool use_smoothing) {
-  VLOG(1) << "SetCurrentScreenSmooth: " << new_current->screen_id();
+  VLOG(1) << "SetCurrentScreen: " << new_current->screen_id();
   if (current_screen_ == new_current || new_current == nullptr ||
       GetOobeUI() == nullptr) {
     return;
   }
-
-  smooth_show_timer_.Stop();
 
   if (current_screen_) {
     current_screen_->Hide();
@@ -1343,13 +1315,15 @@ void WizardController::SetCurrentScreenSmooth(BaseScreen* new_current,
   previous_screen_ = current_screen_;
   current_screen_ = new_current;
 
-  if (use_smoothing) {
-    smooth_show_timer_.Start(FROM_HERE,
-                             base::TimeDelta::FromMilliseconds(g_show_delay_ms),
-                             this, &WizardController::ShowCurrentScreen);
-  } else {
-    ShowCurrentScreen();
+  // First remember how far have we reached so that we can resume if needed.
+  if (is_out_of_box_ && !demo_setup_controller_ &&
+      IsResumableScreen(current_screen_->screen_id())) {
+    StartupUtils::SaveOobePendingScreen(current_screen_->screen_id().name);
   }
+
+  UpdateStatusAreaVisibilityForScreen(current_screen_->screen_id());
+  current_screen_->SetConfiguration(&oobe_configuration_);
+  current_screen_->Show();
 }
 
 void WizardController::UpdateStatusAreaVisibilityForScreen(
@@ -1504,8 +1478,6 @@ void WizardController::SimulateDemoModeSetupForTesting(
     demo_setup_controller_->set_demo_config(*demo_config);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// WizardController, BaseScreenDelegate overrides:
 void WizardController::ShowErrorScreen() {
   SetCurrentScreen(GetScreen(ErrorScreenView::kScreenId));
 }
@@ -1569,12 +1541,12 @@ void WizardController::AutoLaunchKioskApp() {
 
 // static
 void WizardController::SetZeroDelays() {
-  g_show_delay_ms = 0;
+  g_using_zero_delays = true;
 }
 
 // static
 bool WizardController::IsZeroDelayEnabled() {
-  return g_show_delay_ms == 0;
+  return g_using_zero_delays;
 }
 
 // static

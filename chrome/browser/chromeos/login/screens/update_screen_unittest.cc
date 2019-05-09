@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/optional.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
-#include "chrome/browser/chromeos/login/screens/mock_base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/mock_error_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_update_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -84,7 +83,7 @@ class UpdateScreenUnitTest : public testing::Test {
         .WillRepeatedly(Return(false));
 
     update_screen_ = std::make_unique<UpdateScreen>(
-        &mock_base_screen_delegate_, &mock_view_, mock_error_screen_.get(),
+        &mock_view_, mock_error_screen_.get(),
         base::BindRepeating(&UpdateScreenUnitTest::HandleScreenExit,
                             base::Unretained(this)));
   }
@@ -103,7 +102,6 @@ class UpdateScreenUnitTest : public testing::Test {
   std::unique_ptr<UpdateScreen> update_screen_;
 
   // Accessory objects needed by UpdateScreen.
-  MockBaseScreenDelegate mock_base_screen_delegate_;
   MockUpdateView mock_view_;
   MockErrorScreenView mock_error_view_;
   std::unique_ptr<MockErrorScreen> mock_error_screen_;
@@ -127,7 +125,7 @@ class UpdateScreenUnitTest : public testing::Test {
 
 TEST_F(UpdateScreenUnitTest, HandlesNoUpdate) {
   // DUT reaches UpdateScreen.
-  update_screen_->StartNetworkCheck();
+  update_screen_->Show();
 
   // Verify that the DUT checks for an update.
   EXPECT_EQ(fake_update_engine_client_->request_update_check_call_count(), 1);
@@ -143,7 +141,7 @@ TEST_F(UpdateScreenUnitTest, HandlesNoUpdate) {
 
 TEST_F(UpdateScreenUnitTest, HandlesNonCriticalUpdate) {
   // DUT reaches UpdateScreen.
-  update_screen_->StartNetworkCheck();
+  update_screen_->Show();
 
   // Verify that the DUT checks for an update.
   EXPECT_EQ(fake_update_engine_client_->request_update_check_call_count(), 1);
@@ -159,7 +157,7 @@ TEST_F(UpdateScreenUnitTest, HandlesNonCriticalUpdate) {
 
 TEST_F(UpdateScreenUnitTest, HandlesCriticalUpdate) {
   // DUT reaches UpdateScreen.
-  update_screen_->StartNetworkCheck();
+  update_screen_->Show();
 
   // Verify that the DUT checks for an update.
   EXPECT_EQ(fake_update_engine_client_->request_update_check_call_count(), 1);
@@ -173,7 +171,7 @@ TEST_F(UpdateScreenUnitTest, HandlesCriticalUpdate) {
 
 TEST_F(UpdateScreenUnitTest, HandleCriticalUpdateError) {
   // DUT reaches UpdateScreen.
-  update_screen_->StartNetworkCheck();
+  update_screen_->Show();
 
   // Verify that the DUT checks for an update.
   EXPECT_EQ(fake_update_engine_client_->request_update_check_call_count(), 1);

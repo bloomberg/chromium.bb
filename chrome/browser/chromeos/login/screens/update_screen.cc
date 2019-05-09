@@ -18,7 +18,6 @@
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
-#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -84,6 +83,8 @@ const double kMaxTimeLeft = 24 * 60 * 60;
 // its login page before error message appears.
 const int kDelayErrorMessageSec = 10;
 
+const int kShowDelayMs = 400;
+
 }  // anonymous namespace
 
 // static
@@ -91,14 +92,12 @@ UpdateScreen* UpdateScreen::Get(ScreenManager* manager) {
   return static_cast<UpdateScreen*>(manager->GetScreen(UpdateView::kScreenId));
 }
 
-UpdateScreen::UpdateScreen(BaseScreenDelegate* base_screen_delegate,
-                           UpdateView* view,
+UpdateScreen::UpdateScreen(UpdateView* view,
                            ErrorScreen* error_screen,
                            const ScreenExitCallback& exit_callback)
     : BaseScreen(UpdateView::kScreenId),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       reboot_check_delay_(kWaitForRebootTimeSec),
-      base_screen_delegate_(base_screen_delegate),
       view_(view),
       error_screen_(error_screen),
       exit_callback_(exit_callback),
@@ -142,6 +141,7 @@ void UpdateScreen::SetIgnoreIdleStatus(bool ignore_idle_status) {
 void UpdateScreen::ExitUpdate(Result result) {
   DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
   network_portal_detector::GetInstance()->RemoveObserver(this);
+  show_timer_.Stop();
 
   exit_callback_.Run(result);
 }
@@ -324,6 +324,10 @@ void UpdateScreen::OnPortalDetectionCompleted(
     } else {
       UpdateErrorMessage(network, status);
 
+      // StartUpdateCheck, which gets called when the error clears up,  will add
+      // the update engine observer back.
+      DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
+
       if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL)
         DelayErrorMessage();
       else
@@ -337,6 +341,10 @@ void UpdateScreen::CancelUpdate() {
   ExitUpdate(Result::UPDATE_NOT_REQUIRED);
 }
 
+base::OneShotTimer* UpdateScreen::GetShowTimerForTesting() {
+  return &show_timer_;
+}
+
 base::OneShotTimer* UpdateScreen::GetErrorMessageTimerForTesting() {
   return &error_message_timer_;
 }
@@ -346,21 +354,23 @@ base::OneShotTimer* UpdateScreen::GetRebootTimerForTesting() {
 }
 
 void UpdateScreen::Show() {
-  is_shown_ = true;
-  histogram_helper_->OnScreenShow();
-
   if (view_) {
 #if !defined(OFFICIAL_BUILD)
     view_->SetCancelUpdateShortcutEnabled(true);
 #endif
     view_->SetProgress(kBeforeUpdateCheckProgress);
     view_->SetRequiresPermissionForCellular(false);
-
-    view_->Show();
   }
+
+  show_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kShowDelayMs),
+                    base::BindOnce(&UpdateScreen::MakeSureScreenIsShown,
+                                   weak_factory_.GetWeakPtr()));
+
+  StartNetworkCheck();
 }
 
 void UpdateScreen::Hide() {
+  show_timer_.Stop();
   if (view_)
     view_->Hide();
   is_shown_ = false;
@@ -488,9 +498,15 @@ void UpdateScreen::OnWaitForRebootTimeElapsed() {
 }
 
 void UpdateScreen::MakeSureScreenIsShown() {
-  if (!is_shown_) {
-    base_screen_delegate_->ShowCurrentScreen();
-  }
+  show_timer_.Stop();
+
+  if (is_shown_ || !view_)
+    return;
+
+  is_shown_ = true;
+  histogram_helper_->OnScreenShow();
+
+  view_->Show();
 }
 
 void UpdateScreen::StartUpdateCheck() {
@@ -519,6 +535,8 @@ void UpdateScreen::ShowErrorMessage() {
   error_message_timer_.Stop();
 
   is_shown_ = false;
+  show_timer_.Stop();
+
   state_ = State::STATE_ERROR;
   connect_request_subscription_ =
       error_screen_->RegisterConnectRequestCallback(base::BindRepeating(

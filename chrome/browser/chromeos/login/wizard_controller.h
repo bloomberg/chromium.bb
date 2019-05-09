@@ -23,7 +23,6 @@
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
-#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/demo_preferences_screen.h"
 #include "chrome/browser/chromeos/login/screens/demo_setup_screen.h"
 #include "chrome/browser/chromeos/login/screens/enable_debugging_screen.h"
@@ -55,10 +54,10 @@ struct TimeZoneResponseData;
 
 // Class that manages control flow between wizard screens. Wizard controller
 // interacts with screen controllers to move the user between screens.
-class WizardController : public BaseScreenDelegate {
+class WizardController {
  public:
   WizardController();
-  ~WizardController() override;
+  ~WizardController();
 
   // Returns the default wizard controller if it has been created. This is a
   // helper for LoginDisplayHost::default_host()->GetWizardController();
@@ -253,8 +252,6 @@ class WizardController : public BaseScreenDelegate {
   // Actions that should be done right after update stage is finished.
   void PerformOOBECompletedActions();
 
-  // Overridden from BaseScreenDelegate:
-  void ShowCurrentScreen() override;
   ErrorScreen* GetErrorScreen();
   void ShowErrorScreen();
 
@@ -269,10 +266,6 @@ class WizardController : public BaseScreenDelegate {
 
   // Switches from one screen to another.
   void SetCurrentScreen(BaseScreen* screen);
-
-  // Switches from one screen to another with delay before showing. Calling
-  // ShowCurrentScreen directly forces screen to be shown immediately.
-  void SetCurrentScreenSmooth(BaseScreen* screen, bool use_smoothing);
 
   // Update the status area visibility for |screen|.
   void UpdateStatusAreaVisibilityForScreen(OobeScreenId screen);
@@ -352,8 +345,6 @@ class WizardController : public BaseScreenDelegate {
 
   // Value of the screen name that WizardController was started with.
   OobeScreenId first_screen_ = OobeScreen::SCREEN_UNKNOWN;
-
-  base::OneShotTimer smooth_show_timer_;
 
   // If true then update check is cancelled and enrollment is started after
   // EULA is accepted.
