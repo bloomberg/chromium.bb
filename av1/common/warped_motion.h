@@ -31,6 +31,8 @@
 #define SAMPLES_ARRAY_SIZE (LEAST_SQUARES_SAMPLES_MAX * 2)
 #define WARPED_MOTION_DEBUG 0
 #define DEFAULT_WMTYPE AFFINE
+#define WARP_ERROR_BLOCK_LOG 5
+#define WARP_ERROR_BLOCK (1 << WARP_ERROR_BLOCK_LOG)
 
 extern const int16_t av1_warped_filter[WARPEDPIXEL_PREC_SHIFTS * 3 + 1][8];
 
@@ -151,12 +153,18 @@ int64_t av1_warp_error(WarpedMotionParams *wm, int use_hbd, int bd,
                        const uint8_t *ref, int width, int height, int stride,
                        uint8_t *dst, int p_col, int p_row, int p_width,
                        int p_height, int p_stride, int subsampling_x,
-                       int subsampling_y, int64_t best_error);
+                       int subsampling_y, int64_t best_error,
+                       uint8_t *segment_map, int segment_map_stride);
 
 // Returns the error between the frame described by 'ref' and the frame
 // described by 'dst'.
 int64_t av1_frame_error(int use_hbd, int bd, const uint8_t *ref, int stride,
                         uint8_t *dst, int p_width, int p_height, int p_stride);
+
+int64_t av1_segmented_frame_error(int use_hbd, int bd, const uint8_t *ref,
+                                  int stride, uint8_t *dst, int p_width,
+                                  int p_height, int p_stride,
+                                  uint8_t *segment_map, int segment_map_stride);
 
 void av1_warp_plane(WarpedMotionParams *wm, int use_hbd, int bd,
                     const uint8_t *ref, int width, int height, int stride,
