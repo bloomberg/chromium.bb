@@ -268,6 +268,11 @@ std::string SupervisedUserService::GetCustodianEmailAddress() const {
   return email;
 }
 
+std::string SupervisedUserService::GetCustodianObfuscatedGaiaId() const {
+  return profile_->GetPrefs()->GetString(
+      prefs::kSupervisedUserCustodianObfuscatedGaiaId);
+}
+
 std::string SupervisedUserService::GetCustodianName() const {
   std::string name = profile_->GetPrefs()->GetString(
       prefs::kSupervisedUserCustodianName);
@@ -289,6 +294,11 @@ std::string SupervisedUserService::GetCustodianName() const {
 std::string SupervisedUserService::GetSecondCustodianEmailAddress() const {
   return profile_->GetPrefs()->GetString(
       prefs::kSupervisedUserSecondCustodianEmail);
+}
+
+std::string SupervisedUserService::GetSecondCustodianObfuscatedGaiaId() const {
+  return profile_->GetPrefs()->GetString(
+      prefs::kSupervisedUserSecondCustodianObfuscatedGaiaId);
 }
 
 std::string SupervisedUserService::GetSecondCustodianName() const {

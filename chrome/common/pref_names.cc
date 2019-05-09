@@ -135,6 +135,12 @@ const char kSupervisedUserCustodianEmail[] = "profile.managed.custodian_email";
 // starts a session.
 const char kSupervisedUserCustodianName[] = "profile.managed.custodian_name";
 
+// Stores the obfuscated gaia id associated with the google account of the
+// custodian of the supervised user, updated (if possible) each time the
+// supervised user starts a session.
+const char kSupervisedUserCustodianObfuscatedGaiaId[] =
+    "profile.managed.custodian_obfuscated_gaia_id";
+
 // Stores the URL of the profile image associated with the google account of the
 // custodian of the supervised user.
 const char kSupervisedUserCustodianProfileImageURL[] =
@@ -169,6 +175,12 @@ const char kSupervisedUserSecondCustodianEmail[] =
 // supervised user starts a session.
 const char kSupervisedUserSecondCustodianName[] =
     "profile.managed.second_custodian_name";
+
+// Stores the obfuscated gaia id associated with the google account of the
+// secondary custodian of the supervised user, updated (if possible) each time
+// the supervised user starts a session.
+const char kSupervisedUserSecondCustodianObfuscatedGaiaId[] =
+    "profile.managed.second_custodian_obfuscated_gaia_id";
 
 // Stores the URL of the profile image associated with the google account of the
 // secondary custodian of the supervised user.

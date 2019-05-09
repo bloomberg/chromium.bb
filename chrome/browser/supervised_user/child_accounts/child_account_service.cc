@@ -353,6 +353,9 @@ void ChildAccountService::SetFirstCustodianPrefs(
                                   custodian.display_name);
   profile_->GetPrefs()->SetString(prefs::kSupervisedUserCustodianEmail,
                                   custodian.email);
+  profile_->GetPrefs()->SetString(
+      prefs::kSupervisedUserCustodianObfuscatedGaiaId,
+      custodian.obfuscated_gaia_id);
   profile_->GetPrefs()->SetString(prefs::kSupervisedUserCustodianProfileURL,
                                   custodian.profile_url);
   profile_->GetPrefs()->SetString(
@@ -366,6 +369,9 @@ void ChildAccountService::SetSecondCustodianPrefs(
                                   custodian.display_name);
   profile_->GetPrefs()->SetString(prefs::kSupervisedUserSecondCustodianEmail,
                                   custodian.email);
+  profile_->GetPrefs()->SetString(
+      prefs::kSupervisedUserSecondCustodianObfuscatedGaiaId,
+      custodian.obfuscated_gaia_id);
   profile_->GetPrefs()->SetString(
       prefs::kSupervisedUserSecondCustodianProfileURL,
       custodian.profile_url);

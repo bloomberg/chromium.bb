@@ -134,6 +134,9 @@ class SupervisedUserService : public KeyedService,
   // Returns the email address of the custodian.
   std::string GetCustodianEmailAddress() const;
 
+  // Returns the obfuscated GAIA id of the custodian.
+  std::string GetCustodianObfuscatedGaiaId() const;
+
   // Returns the name of the custodian, or the email address if the name is
   // empty.
   std::string GetCustodianName() const;
@@ -142,8 +145,12 @@ class SupervisedUserService : public KeyedService,
   // if there is no second custodian.
   std::string GetSecondCustodianEmailAddress() const;
 
+  // Returns the obfuscated GAIA id of the second custodian or the empty
+  // string if there is no second custodian.
+  std::string GetSecondCustodianObfuscatedGaiaId() const;
+
   // Returns the name of the second custodian, or the email address if the name
-  // is empty, or the empty string is there is no second custodian.
+  // is empty, or the empty string if there is no second custodian.
   std::string GetSecondCustodianName() const;
 
   // Returns a message saying that extensions can only be modified by the
