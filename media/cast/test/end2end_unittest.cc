@@ -364,7 +364,8 @@ class TestReceiverVideoCallback
               base::TimeDelta());
       PopulateVideoFrame(expected_I420_frame.get(),
                          expected_video_frame.frame_number);
-      EXPECT_LE(kVideoAcceptedPSNR, I420PSNR(expected_I420_frame, video_frame));
+      EXPECT_LE(kVideoAcceptedPSNR,
+                I420PSNR(*expected_I420_frame, *video_frame));
     }
 
     EXPECT_NEAR(

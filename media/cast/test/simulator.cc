@@ -270,8 +270,8 @@ void GotVideoFrame(
   if (video_frame_tracker) {
     scoped_refptr<media::VideoFrame> src_frame =
         video_frame_tracker->PopOldestEncodedFrame();
-    metrics_output->psnr.push_back(I420PSNR(src_frame, video_frame));
-    metrics_output->ssim.push_back(I420SSIM(src_frame, video_frame));
+    metrics_output->psnr.push_back(I420PSNR(*src_frame, *video_frame));
+    metrics_output->ssim.push_back(I420SSIM(*src_frame, *video_frame));
   }
 
   if (!yuv_output.empty()) {

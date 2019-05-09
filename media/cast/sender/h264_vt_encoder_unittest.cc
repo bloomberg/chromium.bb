@@ -153,7 +153,7 @@ class EndToEndFrameChecker
     ASSERT_LT(0u, expectations_.size());
     auto& e = expectations_.front();
     expectations_.pop();
-    EXPECT_LE(kVideoAcceptedPSNR, I420PSNR(e, frame));
+    EXPECT_LE(kVideoAcceptedPSNR, I420PSNR(*e, *frame));
     ++count_frames_checked_;
   }
 
