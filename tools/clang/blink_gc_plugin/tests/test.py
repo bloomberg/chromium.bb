@@ -22,6 +22,11 @@ class BlinkGcPluginTest(plugin_testing.ClangPluginTest):
     clang_cmd.append('-Wno-inaccessible-base')
 
   def ProcessOneResult(self, test_name, actual):
+    # TODO(crbug.com/961204): Enable after the next clang roll.
+    if test_name == 'crash_on_invalid':
+      sys.stdout.write('(skipping due to crbug.com/961204) ')
+      return
+
     # Some Blink GC plugins dump a JSON representation of the object graph, and
     # use the processed results as the actual results of the test.
     if os.path.exists('%s.graph.json' % test_name):

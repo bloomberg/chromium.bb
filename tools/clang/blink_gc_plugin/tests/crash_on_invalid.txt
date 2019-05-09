@@ -1,5 +1,5 @@
 In file included from crash_on_invalid.cpp:5:
-./crash_on_invalid.h:16:30: error: unknown template name 'GarbageCollectedFinalized'
+./crash_on_invalid.h:16:30: error: no template named 'GarbageCollectedFinalized'
 class Gamepad final : public GarbageCollectedFinalized<Gamepad>,
                              ^
 ./crash_on_invalid.h:20:19: error: unknown type name 'WrapperTypeInfo'
