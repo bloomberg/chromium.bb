@@ -4261,6 +4261,8 @@ TEST_F(RenderTextTest, HarfBuzz_UnicodeFallback) {
 
 // Ensure that the fallback fonts offered by GetFallbackFont() support glyphs
 // for different languages.
+// TODO(https://crbug.com/743296): Implements Fallback fonts on Fuchsia.
+#if !defined(OS_FUCHSIA)
 TEST_F(RenderTextTest, HarfBuzz_FallbackFontsSupportGlyphs) {
   // The word 'test' in different languages.
   static const wchar_t* kLanguageTests[] = {
@@ -4281,7 +4283,13 @@ TEST_F(RenderTextTest, HarfBuzz_FallbackFontsSupportGlyphs) {
     }
   }
 }
+#endif  // !defined(OS_FUCHSIA)
 
+
+// Ensure that the fallback fonts offered by GetFallbackFont() support glyphs
+// for different languages.
+// TODO(https://crbug.com/743296): Implements Fallback fonts on Fuchsia.
+#if !defined(OS_FUCHSIA)
 TEST_F(RenderTextTest, HarfBuzz_MultiRunsSupportGlyphs) {
   static const wchar_t* kLanguageTests[] = {
       L"www.اختبار.com",
@@ -4305,6 +4313,7 @@ TEST_F(RenderTextTest, HarfBuzz_MultiRunsSupportGlyphs) {
     }
   }
 }
+#endif  // !defined(OS_FUCHSIA)
 
 // Ensure that the width reported by RenderText is sufficient for drawing. Draws
 // to a canvas and checks if any pixel beyond the bounding rectangle is colored.
