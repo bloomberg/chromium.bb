@@ -484,6 +484,8 @@ if (use_v4l2_codec || use_vaapi || is_mac || is_win) {
       "//media/gpu",
       "//mojo/core/embedder",
       "//testing/gtest",
+      "//third_party/ffmpeg",
+      "//third_party/libyuv",
       "//ui/base",
       "//ui/gfx",
       "//ui/gfx:test_support",

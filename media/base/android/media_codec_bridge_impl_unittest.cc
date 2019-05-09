@@ -439,8 +439,8 @@ TEST(MediaCodecBridgeTest, CreateUnsupportedCodec) {
 TEST(MediaCodecBridgeTest, H264VideoEncodeAndValidate) {
   SKIP_TEST_IF_HW_H264_IS_NOT_AVAILABLE();
 
-  const int width = 320;
-  const int height = 192;
+  const int width = 640;
+  const int height = 360;
   const int bit_rate = 300000;
   const int frame_rate = 30;
   const int i_frame_interval = 20;
@@ -464,7 +464,7 @@ TEST(MediaCodecBridgeTest, H264VideoEncodeAndValidate) {
           i_frame_interval, color_format));
   ASSERT_THAT(media_codec, NotNull());
 
-  const char* src_filename = "bear_320x192_40frames.yuv";
+  const char* src_filename = "bali_640x360_P420.yuv";
   base::FilePath src_file = GetTestDataFilePath(src_filename);
   int64_t src_file_size = 0;
   ASSERT_TRUE(base::GetFileSize(src_file, &src_file_size));
@@ -479,15 +479,13 @@ TEST(MediaCodecBridgeTest, H264VideoEncodeAndValidate) {
   base::File src(src_file, base::File::FLAG_OPEN | base::File::FLAG_READ);
   std::unique_ptr<uint8_t[]> frame_data =
       std::make_unique<uint8_t[]>(frame_size);
-  off_t src_offset = 0;
+  ASSERT_THAT(src.Read(0, (char*)frame_data.get(), frame_size), frame_size);
+
   // A monotonically-growing value.
   base::TimeDelta input_timestamp;
-  // Src_file should contain 40 frames. Here we only encode 3 of them.
-  for (int frame = 0; frame < num_frames && frame < 3; frame++) {
-    ASSERT_THAT(src.Read(src_offset, (char*)frame_data.get(), frame_size),
-                frame_size);
-    src_offset += static_cast<off_t>(frame_size);
 
+  // Src_file contains 1 frames. Encode it 3 times.
+  for (int frame = 0; frame < num_frames && frame < 3; frame++) {
     input_timestamp += base::TimeDelta::FromMicroseconds(
         base::Time::kMicrosecondsPerSecond / frame_rate);
     EncodeMediaFrame(media_codec.get(), frame_data.get(), frame_size, width,
@@ -498,10 +496,6 @@ TEST(MediaCodecBridgeTest, H264VideoEncodeAndValidate) {
   // also contain SPS/PPS NALUs.
   media_codec->RequestKeyFrameSoon();
   for (int frame = 0; frame < num_frames && frame < 3; frame++) {
-    ASSERT_THAT(src.Read(src_offset, (char*)frame_data.get(), frame_size),
-                frame_size);
-    src_offset += static_cast<off_t>(frame_size);
-
     input_timestamp += base::TimeDelta::FromMicroseconds(
         base::Time::kMicrosecondsPerSecond / frame_rate);
     EncodeMediaFrame(media_codec.get(), frame_data.get(), frame_size, width,
