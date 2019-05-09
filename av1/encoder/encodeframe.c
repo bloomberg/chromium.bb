@@ -3820,13 +3820,14 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
         mc_saved_base != 0.0
             ? ((double)mc_saved - mc_saved_base) / mc_saved_base
             : 0.0;
-    offset = -(int)rint(mc_saved_beta * 4.0);
+    offset = -(int)rint(mc_saved_beta * 2.0);
+    // printf("mc_saved_beta %g, offset %d\n", mc_saved_beta, offset);
   }
 
   aom_clear_system_state();
 
-  offset = AOMMIN(offset, DEFAULT_DELTA_Q_RES_OBJECTIVE * 2);
-  offset = AOMMAX(offset, -DEFAULT_DELTA_Q_RES_OBJECTIVE * 2);
+  offset = AOMMIN(offset, DEFAULT_DELTA_Q_RES_OBJECTIVE * 3 - 1);
+  offset = AOMMAX(offset, -DEFAULT_DELTA_Q_RES_OBJECTIVE * 3 + 1);
   int qindex = cm->base_qindex + offset;
   qindex = AOMMIN(qindex, MAXQ);
   qindex = AOMMAX(qindex, MINQ);
@@ -3864,7 +3865,7 @@ static void setup_delta_q(AV1_COMP *const cpi, MACROBLOCK *const x,
     assert(cpi->oxcf.enable_tpl_model);
     // Setup deltaq based on tpl stats
     current_qindex =
-        get_q_for_deltaq_objective(cpi, sb_size, 1, mi_row, mi_col);
+        get_q_for_deltaq_objective(cpi, sb_size, 2, mi_row, mi_col);
   }
 
   const int qmask = ~(delta_q_info->delta_q_res - 1);
