@@ -197,7 +197,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     }
 
     @Test
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/761060")
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/888931")
     @LargeTest
     public void testNoSelection() throws Throwable {
         createDialog(false, Arrays.asList("image/*")); // Multi-select = false.
@@ -215,7 +215,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     }
 
     @Test
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/761060")
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/888931")
     @Ignore("crbug/941488")
     @LargeTest
     public void testSingleSelectionPhoto() throws Throwable {
@@ -237,7 +237,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     }
 
     @Test
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/761060")
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/888931")
     @Ignore("crbug/941488")
     @LargeTest
     public void testMultiSelectionPhoto() throws Throwable {
