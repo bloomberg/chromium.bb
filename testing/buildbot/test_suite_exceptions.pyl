@@ -1001,6 +1001,23 @@
       },
     },
   },
+  'network_service_webview_instrumentation_test_apk': {
+    # Only run these on the phone testers for now due to capacity.
+    'remove_from': [
+      # chromium.android
+      'android-kitkat-arm-rel',
+      'android-marshmallow-arm64-rel',
+      'KitKat Tablet Tester',
+      'Lollipop Tablet Tester',
+      'Marshmallow Tablet Tester',
+      'KitKat Phone Tester (dbg)',
+      # chromium.memory
+      'Android CFI',
+      # chromium.clang
+      'ToTAndroid',
+      'ToTAndroidCFI',
+    ],
+  },
   'non_network_service_browser_tests': {
     'modifications': {
       # chromium.chromiumos

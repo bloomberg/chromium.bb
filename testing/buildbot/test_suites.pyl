@@ -3763,18 +3763,6 @@
         ],
         'test': 'components_browsertests',
       },
-      'network_service_webview_instrumentation_test_apk': {
-        'swarming': {
-          'shards': 20,
-        },
-        'args': [
-          # TODO(crbug.com/882650): WebView currently does not support running network
-          # service OOP.
-          '--enable-features=NetworkService,NetworkServiceInProcess',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_webview_instrumentation_test_apk.filter',
-        ],
-        'test': 'webview_instrumentation_test_apk',
-      },
       'network_service_in_process_content_browsertests': {
         'args': [
           '--enable-features=NetworkService,NetworkServiceInProcess',
@@ -3832,6 +3820,18 @@
           '--enable-features=NetworkService',
         ],
         'test': 'content_shell_test_apk',
+      },
+      'network_service_webview_instrumentation_test_apk': {
+        'swarming': {
+          'shards': 20,
+        },
+        'args': [
+          # TODO(crbug.com/882650): WebView currently does not support running network
+          # service OOP.
+          '--enable-features=NetworkService,NetworkServiceInProcess',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_webview_instrumentation_test_apk.filter',
+        ],
+        'test': 'webview_instrumentation_test_apk',
       },
     },
 
