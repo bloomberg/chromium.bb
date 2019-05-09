@@ -723,6 +723,8 @@ TEST_F(AudioManagerTest, CheckMakeOutputStreamWithPreferredParameters) {
   AudioOutputStream* stream =
       audio_manager_->MakeAudioOutputStreamProxy(params, "");
   ASSERT_TRUE(stream);
+
+  stream->Close();
 }
 
 #if defined(OS_MACOSX) || defined(USE_CRAS)
