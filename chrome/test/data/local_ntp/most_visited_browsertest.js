@@ -779,6 +779,72 @@ test.mostVisited.testReorderInsertRtl = function() {
 };
 
 
+/**
+ * Tests if the tiles are translated properly when reordering with an add
+ * shortcut button present.
+ */
+test.mostVisited.testReorderInsertWithAddButton = function() {
+  // Set the window so that there's 10px padding around the grid.
+  window.innerHeight = 40;
+  window.innerWidth = 50;
+  const params = {  // Used to override the default grid parameters.
+    tileHeight: 10,
+    tileWidth: 10,
+    maxTilesPerRow: 3,
+    maxTiles: 6,
+    enableReorder: true
+  };
+
+  // Create a grid with uneven rows.
+  let container = document.createElement('div');
+  $(test.mostVisited.MOST_VISITED).appendChild(container);
+  test.mostVisited.initGridWithAdd(container, params, 5);
+
+  const dragStart = new Event('dragstart');
+  const mouseOver = new Event('mouseover');
+  const mouseUp = new Event('mouseup');
+
+  const tiles = document.getElementsByClassName(
+      test.mostVisited.CLASSES.GRID_TILE_CONTAINER);
+
+  // Start the reorder flow on the second tile.
+
+  let tile = tiles[1];
+  tile.firstChild.dispatchEvent(dragStart);
+
+  // Mouseover the first tile. This should shift tiles as if the held tile was
+  // inserted before.
+  let expectedLayout = [
+    'translate(10px, 0px)', '', 'translate(0px, 0px)', 'translate(0px, 0px)', ''
+  ];
+  tiles[0].dispatchEvent(mouseOver);
+
+  test.mostVisited.assertReorderInsert(container, expectedLayout, 3);
+
+  // Mouseover the last tile (the add shortcut button). This should not shift
+  // the tiles.
+  tiles[4].dispatchEvent(mouseOver);
+
+  test.mostVisited.assertReorderInsert(container, expectedLayout, 0);
+
+  // Mouseover the second to last tile. This should shift tiles as if the held
+  // tile was inserted after.
+  expectedLayout = [
+    'translate(0px, 0px)', '', 'translate(-10px, 0px)',
+    'translate(15px, -10px)', ''
+  ];
+  tiles[3].dispatchEvent(mouseOver);
+
+  test.mostVisited.assertReorderInsert(container, expectedLayout, 3);
+
+  // Stop the reorder flow.
+  document.dispatchEvent(mouseUp);
+  // Check that the correct values were sent to the EmbeddedSearchAPI.
+  assertEquals(1, test.mostVisited.reorderRid);
+  assertEquals(3, test.mostVisited.reorderNewIndex);
+};
+
+
 // ***************************** HELPER FUNCTIONS *****************************
 // These are used by the tests above.
 

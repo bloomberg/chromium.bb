@@ -555,8 +555,9 @@ class Grid {
     // Shift tiles according to the new order.
     for (let i = 0; i < this.tiles_.length; i++) {
       const tileIndex = this.order_[i];
-      // Don't move the tile we're holding.
-      if (tileIndex === this.itemToReorder_) {
+      // Don't move the tile we're holding nor the add shortcut button.
+      if (tileIndex === this.itemToReorder_ ||
+          this.tiles_[i].getAttribute('add') === 'true') {
         continue;
       }
       this.applyReorder_(this.tiles_[tileIndex], i);
@@ -573,6 +574,9 @@ class Grid {
    * @private
    */
   applyReorder_(tile, newIndex) {
+    if (tile.getAttribute('index') === null) {
+      throw new Error('Tile does not have an index.');
+    }
     const index = Number(tile.getAttribute('index'));
     const x = this.position_[newIndex].x - this.position_[index].x;
     const y = this.position_[newIndex].y - this.position_[index].y;
