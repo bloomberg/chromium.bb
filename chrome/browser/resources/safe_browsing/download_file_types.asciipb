@@ -706,7 +706,7 @@ file_types {
   ping_setting: FULL_PING
   inspection_type: ZIP
   platform_settings {
-    max_file_size_to_analyze: 52428800 # 50MB
+    max_file_size_to_analyze: 15728640 # 15MB
   }
 }
 file_types {
