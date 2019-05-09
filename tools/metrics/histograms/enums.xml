@@ -40555,6 +40555,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="Unknown"/>
 </enum>
 
+<enum name="NetworkCellularConnectionState">
+  <int value="0" label="Connected"/>
+  <int value="1" label="Disconnected"/>
+</enum>
+
 <enum name="NetworkCellularOutOfCreditsReason">
   <int value="0" label="Connect-Disconnect Loop"/>
   <int value="1" label="TX-Queue Congestion"/>

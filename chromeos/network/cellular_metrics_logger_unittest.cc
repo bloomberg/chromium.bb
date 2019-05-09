@@ -21,6 +21,7 @@ namespace {
 
 const char kTestCellularDevicePath[] = "/device/wwan0";
 const char kTestCellularServicePath[] = "/service/cellular0";
+const char kTestCellularServicePath2[] = "/service/cellular1";
 const char kTestEthServicePath[] = "/service/eth0";
 
 const char kUsageCountHistogram[] = "Network.Cellular.Usage.Count";
@@ -28,6 +29,8 @@ const char kActivationStatusAtLoginHistogram[] =
     "Network.Cellular.Activation.StatusAtLogin";
 const char kTimeToConnectedHistogram[] =
     "Network.Cellular.Connection.TimeToConnected";
+const char kDisconnectionsHistogram[] =
+    "Network.Cellular.Connection.Disconnections";
 
 }  // namespace
 
@@ -43,15 +46,16 @@ class CellularMetricsLoggerTest : public testing::Test {
   void SetUp() override {
     LoginState::Initialize();
 
-    network_metrics_logger_.reset(new CellularMetricsLogger());
-    network_metrics_logger_->Init(
-        network_state_test_helper_.network_state_handler());
+    cellular_metrics_logger_.reset(new CellularMetricsLogger());
+    cellular_metrics_logger_->Init(
+        network_state_test_helper_.network_state_handler(),
+        /* network_connection_handler */ nullptr);
   }
 
   void TearDown() override {
     network_state_test_helper_.ClearDevices();
     network_state_test_helper_.ClearServices();
-    network_metrics_logger_.reset();
+    cellular_metrics_logger_.reset();
     LoginState::Shutdown();
   }
 
@@ -75,10 +79,16 @@ class CellularMetricsLoggerTest : public testing::Test {
     service_test->AddService(kTestCellularServicePath, "test_guid0",
                              "test_cellular", shill::kTypeCellular,
                              shill::kStateIdle, true);
+    service_test->AddService(kTestCellularServicePath2, "test_guid1",
+                             "test_cellular_2", shill::kTypeCellular,
+                             shill::kStateIdle, true);
     base::RunLoop().RunUntilIdle();
 
-    service_client_test()->SetServiceProperty(
+    service_test->SetServiceProperty(
         kTestCellularServicePath, shill::kActivationStateProperty,
+        base::Value(shill::kActivationStateNotActivated));
+    service_test->SetServiceProperty(
+        kTestCellularServicePath2, shill::kActivationStateProperty,
         base::Value(shill::kActivationStateNotActivated));
     base::RunLoop().RunUntilIdle();
   }
@@ -100,10 +110,14 @@ class CellularMetricsLoggerTest : public testing::Test {
     return network_state_test_helper_.service_test();
   }
 
+  CellularMetricsLogger* cellular_metrics_logger() const {
+    return cellular_metrics_logger_.get();
+  }
+
  private:
   NetworkStateTestHelper network_state_test_helper_{
       false /* use_default_devices_and_services */};
-  std::unique_ptr<CellularMetricsLogger> network_metrics_logger_;
+  std::unique_ptr<CellularMetricsLogger> cellular_metrics_logger_;
 
   DISALLOW_COPY_AND_ASSIGN(CellularMetricsLoggerTest);
 };
@@ -270,19 +284,86 @@ TEST_F(CellularMetricsLoggerTest, CellularTimeToConnectedTest) {
   base::RunLoop().RunUntilIdle();
   histogram_tester.ExpectTotalCount(kTimeToConnectedHistogram, 0);
 
-  // Should log connection time when activated.
+  // Set cellular networks to activated state and connecting state.
   service_client_test()->SetServiceProperty(
       kTestCellularServicePath, shill::kActivationStateProperty,
       base::Value(shill::kActivationStateActivated));
   service_client_test()->SetServiceProperty(
+      kTestCellularServicePath2, shill::kActivationStateProperty,
+      base::Value(shill::kActivationStateActivated));
+  service_client_test()->SetServiceProperty(
       kTestCellularServicePath, shill::kStateProperty, kAssocStateValue);
+  service_client_test()->SetServiceProperty(
+      kTestCellularServicePath2, shill::kStateProperty, kAssocStateValue);
   base::RunLoop().RunUntilIdle();
+
+  // Should log first network's connection time independently.
   scoped_task_environment_.FastForwardBy(kTestConnectionTime);
   service_client_test()->SetServiceProperty(
       kTestCellularServicePath, shill::kStateProperty, kOnlineStateValue);
   base::RunLoop().RunUntilIdle();
   histogram_tester.ExpectTimeBucketCount(kTimeToConnectedHistogram,
                                          kTestConnectionTime, 1);
+
+  // Should log second network's connection time independently.
+  scoped_task_environment_.FastForwardBy(kTestConnectionTime);
+  service_client_test()->SetServiceProperty(
+      kTestCellularServicePath2, shill::kStateProperty, kOnlineStateValue);
+  base::RunLoop().RunUntilIdle();
+  histogram_tester.ExpectTimeBucketCount(kTimeToConnectedHistogram,
+                                         2 * kTestConnectionTime, 1);
+}
+
+TEST_F(CellularMetricsLoggerTest, CellularDisconnectionsTest) {
+  InitCellular();
+  base::HistogramTester histogram_tester;
+  base::Value kOnlineStateValue(shill::kStateOnline);
+  base::Value kIdleStateValue(shill::kStateIdle);
+
+  // Should log connected state.
+  service_client_test()->SetServiceProperty(
+      kTestCellularServicePath, shill::kStateProperty, kOnlineStateValue);
+  base::RunLoop().RunUntilIdle();
+  histogram_tester.ExpectBucketCount(
+      kDisconnectionsHistogram,
+      CellularMetricsLogger::ConnectionState::kConnected, 1);
+
+  // Should not log user initiated disconnections.
+  cellular_metrics_logger()->DisconnectRequested(kTestCellularServicePath);
+  scoped_task_environment_.FastForwardBy(
+      CellularMetricsLogger::kDisconnectRequestTimeout / 2);
+  service_client_test()->SetServiceProperty(
+      kTestCellularServicePath, shill::kStateProperty, kIdleStateValue);
+  base::RunLoop().RunUntilIdle();
+  histogram_tester.ExpectBucketCount(
+      kDisconnectionsHistogram,
+      CellularMetricsLogger::ConnectionState::kDisconnected, 0);
+
+  // Should log non user initiated disconnects.
+  service_client_test()->SetServiceProperty(
+      kTestCellularServicePath, shill::kStateProperty, kOnlineStateValue);
+  base::RunLoop().RunUntilIdle();
+  service_client_test()->SetServiceProperty(
+      kTestCellularServicePath, shill::kStateProperty, kIdleStateValue);
+  base::RunLoop().RunUntilIdle();
+  histogram_tester.ExpectBucketCount(
+      kDisconnectionsHistogram,
+      CellularMetricsLogger::ConnectionState::kDisconnected, 1);
+
+  // Should log non user initiated disconnects when a previous
+  // disconnect request timed out.
+  service_client_test()->SetServiceProperty(
+      kTestCellularServicePath, shill::kStateProperty, kOnlineStateValue);
+  base::RunLoop().RunUntilIdle();
+  cellular_metrics_logger()->DisconnectRequested(kTestCellularServicePath);
+  scoped_task_environment_.FastForwardBy(
+      CellularMetricsLogger::kDisconnectRequestTimeout * 2);
+  service_client_test()->SetServiceProperty(
+      kTestCellularServicePath, shill::kStateProperty, kIdleStateValue);
+  base::RunLoop().RunUntilIdle();
+  histogram_tester.ExpectBucketCount(
+      kDisconnectionsHistogram,
+      CellularMetricsLogger::ConnectionState::kDisconnected, 2);
 }
 
 }  // namespace chromeos
