@@ -23,6 +23,7 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/dns/mock_host_resolver.h"
@@ -147,7 +148,8 @@ void CheckMemoryMetric(const std::string& name,
     EXPECT_EQ(samples->TotalCount(), count * number_of_processes) << name;
   }
 
-  if (count != 0 && value_restriction == ValueRestriction::ABOVE_ZERO)
+  if (count != 0 && number_of_processes != 0 &&
+      value_restriction == ValueRestriction::ABOVE_ZERO)
     EXPECT_GT(samples->sum(), 0u) << name;
 
   // As a sanity check, no memory stat should exceed 4 GB.
@@ -251,16 +253,21 @@ void CheckStableMemoryMetrics(const base::HistogramTester& histogram_tester,
   }
 
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    int number_of_ns_processes =
+        content::IsOutOfProcessNetworkService() ? 1 : 0;
     CheckMemoryMetric("Memory.NetworkService.ResidentSet", histogram_tester,
-                      count_for_resident_set, ValueRestriction::ABOVE_ZERO, 1);
+                      count_for_resident_set, ValueRestriction::ABOVE_ZERO,
+                      number_of_ns_processes);
     CheckMemoryMetric("Memory.NetworkService.PrivateMemoryFootprint",
-                      histogram_tester, count, ValueRestriction::ABOVE_ZERO, 1);
+                      histogram_tester, count, ValueRestriction::ABOVE_ZERO,
+                      number_of_ns_processes);
     // Shared memory footprint can be below 1 MB, which is reported as zero.
     CheckMemoryMetric("Memory.NetworkService.SharedMemoryFootprint",
-                      histogram_tester, count, ValueRestriction::NONE, 1);
+                      histogram_tester, count, ValueRestriction::NONE,
+                      number_of_ns_processes);
     CheckMemoryMetric("Memory.NetworkService.PrivateSwapFootprint",
                       histogram_tester, count_for_private_swap_footprint,
-                      ValueRestriction::NONE, 1);
+                      ValueRestriction::NONE, number_of_ns_processes);
   }
 
   CheckMemoryMetric("Memory.Total.ResidentSet", histogram_tester,
