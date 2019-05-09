@@ -693,8 +693,7 @@ void Navigate(NavigateParams* params) {
       // make the index refer to a different tab.
       auto gesture_type = user_initiated ? TabStripModel::GestureType::kOther
                                          : TabStripModel::GestureType::kNone;
-      params->browser->tab_strip_model()->ActivateTabAt(singleton_index,
-                                                        {gesture_type});
+      bool should_close_this_tab = false;
       if (params->disposition == WindowOpenDisposition::SWITCH_TO_TAB) {
         // Close orphaned NTP (and the like) with no history when the user
         // switches away from them.
@@ -704,11 +703,18 @@ void Navigate(NavigateParams* params) {
              params->source_contents->GetLastCommittedURL().spec() !=
                  chrome::kChromeSearchLocalNtpUrl &&
              params->source_contents->GetLastCommittedURL().spec() !=
-                 url::kAboutBlankURL))
+                 url::kAboutBlankURL)) {
+          // Blur location bar before state save in ActivateTabAt() below.
           params->source_contents->Focus();
-        else
-          params->source_contents->Close();
+        } else {
+          should_close_this_tab = true;
+        }
       }
+      params->browser->tab_strip_model()->ActivateTabAt(singleton_index,
+                                                        {gesture_type});
+      // Close tab after switch so index remains correct.
+      if (should_close_this_tab)
+        params->source_contents->Close();
     }
   }
 

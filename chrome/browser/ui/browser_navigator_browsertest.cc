@@ -32,6 +32,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/navigation_handle.h"
@@ -805,6 +806,33 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SchemeMismatchTabSwitchTest) {
                  false);
 
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
+}
+
+// Make sure that switching tabs preserves the post-focus state (of the
+// content area) of the previous tab.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SaveAfterFocusTabSwitchTest) {
+  GURL first_url("chrome://dino/");
+  GURL second_url("chrome://history/");
+
+  NavigateHelper(first_url, browser(), WindowOpenDisposition::CURRENT_TAB,
+                 true);
+
+  // Generate history so the tab isn't closed.
+  NavigateHelper(second_url, browser(),
+                 WindowOpenDisposition::NEW_FOREGROUND_TAB, true);
+
+  LocationBar* location_bar = browser()->window()->GetLocationBar();
+  location_bar->FocusLocation(true);
+
+  NavigateHelper(first_url, browser(), WindowOpenDisposition::SWITCH_TO_TAB,
+                 false);
+
+  browser()->tab_strip_model()->ActivateTabAt(
+      1, {TabStripModel::GestureType::kOther});
+
+  OmniboxView* omnibox_view = location_bar->GetOmniboxView();
+  EXPECT_EQ(omnibox_view->model()->focus_state(),
+            OmniboxFocusState::OMNIBOX_FOCUS_NONE);
 }
 
 // This test verifies that we're picking the correct browser and tab to
