@@ -594,11 +594,11 @@ void HeadsUpDisplayLayerImpl::DrawText(PaintCanvas* canvas,
 
   if (align == TextAlign::kCenter) {
     auto width =
-        font.measureText(text.c_str(), text.length(), kUTF8_SkTextEncoding);
+        font.measureText(text.c_str(), text.length(), SkTextEncoding::kUTF8);
     x -= width * 0.5f;
   } else if (align == TextAlign::kRight) {
     auto width =
-        font.measureText(text.c_str(), text.length(), kUTF8_SkTextEncoding);
+        font.measureText(text.c_str(), text.length(), SkTextEncoding::kUTF8);
     x -= width;
   }
 
@@ -953,7 +953,7 @@ void HeadsUpDisplayLayerImpl::DrawDebugRect(
     SkFont label_font(typeface_, kFontHeight);
 
     const SkScalar label_text_width = label_font.measureText(
-        label_text.c_str(), label_text.length(), kUTF8_SkTextEncoding);
+        label_text.c_str(), label_text.length(), SkTextEncoding::kUTF8);
     canvas->drawRect(SkRect::MakeWH(label_text_width + 2 * kPadding,
                                     kFontHeight + 2 * kPadding),
                      label_flags);

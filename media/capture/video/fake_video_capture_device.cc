@@ -366,7 +366,7 @@ void PacmanFramePainter::DrawPacman(base::TimeDelta elapsed_time,
                          milliseconds, frame_count);
   canvas.scale(3, 3);
   canvas.drawSimpleText(time_string.data(), time_string.length(),
-                        kUTF8_SkTextEncoding, 30, 20, font, paint);
+                        SkTextEncoding::kUTF8, 30, 20, font, paint);
 
   if (pixel_format_ == Format::Y16) {
     // Use 8 bit bitmap rendered to first half of the buffer as high byte values
