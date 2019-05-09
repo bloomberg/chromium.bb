@@ -100,6 +100,8 @@ a:focus {
   display: flex;
   flex: 1 1 auto;
   margin-top: 8px;
+  overflow-x: auto;
+  overflow-y: auto;
   position: relative;
 }
 
@@ -125,11 +127,9 @@ div.splitter {
   bottom: 0;
   flex: none;
   left: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  position: absolute;
-  right: 0;
-  top: 0;
+  min-height: max-content;
+  min-width: min-content;
+  overflow: hidden;
 }
 
 #directory-tree .tree-row {
@@ -139,6 +139,12 @@ div.splitter {
   display: flex;
   height: 40px;
   padding: 0 3px;
+}
+
+div[section-start='removable'].tree-item {
+  left: 0;
+  max-width: 100%;
+  position: absolute;
 }
 
 #directory-tree .tree-row > .button {
