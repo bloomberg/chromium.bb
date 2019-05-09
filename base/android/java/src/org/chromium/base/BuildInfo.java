@@ -166,10 +166,9 @@ public class BuildInfo {
                 abiString = String.format("ABI1: %s, ABI2: %s", Build.CPU_ABI, Build.CPU_ABI2);
             }
 
-            // Use lastUpdateTime when developing locally, since versionCode does not normally
-            // change in this case.
-            long version = versionCode > 10 ? versionCode : pi.lastUpdateTime;
-            extractedFileSuffix = String.format("@%x", version);
+            // Append lastUpdateTime to versionCode, since versionCode is unlikely to change when
+            // developing locally but lastUpdateTime is.
+            extractedFileSuffix = String.format("@%x_%x", versionCode, pi.lastUpdateTime);
 
             // The value is truncated, as this is used for crash and UMA reporting.
             androidBuildFingerprint = Build.FINGERPRINT.substring(
