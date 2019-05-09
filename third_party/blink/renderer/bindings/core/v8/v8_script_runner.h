@@ -81,6 +81,7 @@ class CORE_EXPORT V8ScriptRunner final {
       v8::Local<v8::Value> argv[] = nullptr);
   static v8::MaybeLocal<v8::Value> CallInternalFunction(
       v8::Isolate*,
+      v8::MicrotaskQueue*,
       v8::Local<v8::Function>,
       v8::Local<v8::Value> receiver,
       int argc,
@@ -92,6 +93,7 @@ class CORE_EXPORT V8ScriptRunner final {
                                                 v8::Local<v8::Value> info[],
                                                 v8::Isolate*);
   static v8::MaybeLocal<v8::Value> EvaluateModule(v8::Isolate*,
+                                                  ExecutionContext*,
                                                   v8::Local<v8::Module>,
                                                   v8::Local<v8::Context>);
 

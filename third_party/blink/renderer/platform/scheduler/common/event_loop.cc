@@ -14,7 +14,9 @@ namespace blink {
 namespace scheduler {
 
 EventLoop::EventLoop(v8::Isolate* isolate)
-    : isolate_(isolate), microtask_queue_(v8::MicrotaskQueue::New(isolate)) {
+    : isolate_(isolate),
+      microtask_queue_(
+          v8::MicrotaskQueue::New(isolate, v8::MicrotasksPolicy::kScoped)) {
   DCHECK(isolate_);
 }
 

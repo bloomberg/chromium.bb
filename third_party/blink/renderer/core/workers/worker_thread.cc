@@ -34,6 +34,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/inspector/console_message_storage.h"
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
 #include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
@@ -52,6 +53,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/worker_resource_timing_notifier.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
@@ -258,7 +260,18 @@ void WorkerThread::WillProcessTask(const base::PendingTask& pending_task) {
 
 void WorkerThread::DidProcessTask(const base::PendingTask& pending_task) {
   DCHECK(IsCurrentThread());
+
+  // TODO(tzik): Move this to WorkerThreadScheduler::OnTaskCompleted(), so that
+  // metrics for microtasks are counted as a part of the preceding task.
+  GlobalScope()->GetAgent()->event_loop()->PerformMicrotaskCheckpoint();
+
+  // Microtask::PerformCheckpoint() runs microtasks and its completion hooks for
+  // the default microtask queue. The default queue may contain the microtasks
+  // queued by V8 itself, and legacy blink::MicrotaskQueue::EnqueueMicrotask.
+  // The completion hook contains IndexedDB clean-up task, as described at
+  // https://html.spec.whatwg.org/C#perform-a-microtask-checkpoint
   // TODO(tzik): Move rejected promise handling to EventLoop.
+
   GlobalScope()->ScriptController()->GetRejectedPromises()->ProcessQueue();
   if (GlobalScope()->IsClosing()) {
     // This WorkerThread will eventually be requested to terminate.

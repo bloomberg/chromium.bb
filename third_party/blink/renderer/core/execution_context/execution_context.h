@@ -68,6 +68,7 @@ class DocumentInterfaceBroker;
 }  // namespace blink
 }  // namespace mojom
 
+class Agent;
 class ConsoleMessage;
 class ContentSecurityPolicy;
 class ContentSecurityPolicyDelegate;
@@ -293,12 +294,18 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   InterfaceInvalidator* GetInterfaceInvalidator() { return invalidator_.get(); }
 
   v8::Isolate* GetIsolate() const { return isolate_; }
+  Agent* GetAgent() const { return agent_; }
 
   virtual TrustedTypePolicyFactory* GetTrustedTypes() const { return nullptr; }
 
  protected:
-  explicit ExecutionContext(v8::Isolate* isolate);
+  explicit ExecutionContext(v8::Isolate* isolate, Agent* agent);
   ~ExecutionContext() override;
+
+  void SetAgent(Agent* agent) {
+    DCHECK(agent);
+    agent_ = agent;
+  }
 
  private:
   v8::Isolate* const isolate_;
@@ -317,6 +324,8 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   Member<PublicURLManager> public_url_manager_;
 
   const Member<ContentSecurityPolicyDelegate> csp_delegate_;
+
+  Member<Agent> agent_;
 
   // Counter that keeps track of how many window interaction calls are allowed
   // for this ExecutionContext. Callers are expected to call

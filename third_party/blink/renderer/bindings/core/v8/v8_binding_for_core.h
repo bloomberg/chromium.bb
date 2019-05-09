@@ -555,6 +555,9 @@ CORE_EXPORT Vector<String> GetOwnPropertyNames(v8::Isolate*,
                                                const v8::Local<v8::Object>&,
                                                ExceptionState&);
 
+v8::MicrotaskQueue* ToMicrotaskQueue(ExecutionContext*);
+v8::MicrotaskQueue* ToMicrotaskQueue(ScriptState*);
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_BINDING_FOR_CORE_H_

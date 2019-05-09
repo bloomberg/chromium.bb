@@ -609,7 +609,7 @@ Document::Document(const DocumentInit& initializer,
                    DocumentClassFlags document_classes)
     : ContainerNode(nullptr, kCreateDocument),
       TreeScope(*this),
-      ExecutionContext(V8PerIsolateData::MainThreadIsolate()),
+      ExecutionContext(V8PerIsolateData::MainThreadIsolate(), nullptr),
       evaluate_media_queries_on_style_recalc_(false),
       pending_sheet_layout_(kNoLayoutWithPendingSheets),
       frame_(initializer.GetFrame()),
@@ -743,6 +743,9 @@ Document::Document(const DocumentInit& initializer,
   InitSecurityContext(initializer);
   if (frame_)
     frame_->Client()->DidSetFramePolicyHeaders(GetSandboxFlags(), {});
+
+  // TODO(tzik): Set up Agent for the current SecurityOrigin, and store it
+  // with SetAgent().
 
   InitDNSPrefetch();
 

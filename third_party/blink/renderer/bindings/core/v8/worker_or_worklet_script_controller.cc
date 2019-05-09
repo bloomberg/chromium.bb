@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_initializer.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
 #include "third_party/blink/renderer/core/events/error_event.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
@@ -55,6 +56,7 @@
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -163,10 +165,15 @@ bool WorkerOrWorkletScriptController::Initialize(const KURL& url_for_debugger) {
     v8::ExtensionConfiguration extension_configuration =
         ScriptController::ExtensionsFor(global_scope_);
 
+    Agent* agent = global_scope_->GetAgent();
+    DCHECK(agent);
+
     V8PerIsolateData::UseCounterDisabledScope use_counter_disabled(
         V8PerIsolateData::From(isolate_));
-    context =
-        v8::Context::New(isolate_, &extension_configuration, global_template);
+    context = v8::Context::New(isolate_, &extension_configuration,
+                               global_template, v8::MaybeLocal<v8::Value>(),
+                               v8::DeserializeInternalFieldsCallback(),
+                               agent->event_loop()->microtask_queue());
   }
   if (context.IsEmpty())
     return false;

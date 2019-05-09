@@ -131,12 +131,14 @@ ScriptValue ModuleRecord::Evaluate(ScriptState* script_state) const {
   // returning from here.
   v8::TryCatch try_catch(isolate);
 
-  probe::ExecuteScript probe(ExecutionContext::From(script_state), source_url_);
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  probe::ExecuteScript probe(execution_context, source_url_);
 
   // TODO(kouhei): We currently don't have a code-path which use return value of
   // EvaluateModule. Stop ignoring result once we have such path.
   v8::Local<v8::Value> result;
-  if (!V8ScriptRunner::EvaluateModule(isolate, module_->NewLocal(isolate),
+  if (!V8ScriptRunner::EvaluateModule(isolate, execution_context,
+                                      module_->NewLocal(isolate),
                                       script_state->GetContext())
            .ToLocal(&result)) {
     DCHECK(try_catch.HasCaught());
