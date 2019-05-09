@@ -3197,6 +3197,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-arc-cups-api", flag_descriptions::kArcCupsApiName,
      flag_descriptions::kArcCupsApiDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kArcCupsApi)},
+    {"enable-cros-vm-cups-proxy", flag_descriptions::kCrosVmCupsProxyName,
+     flag_descriptions::kCrosVmCupsProxyDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kCrosVmCupsProxy)},
 #endif  // OS_CHROMEOS
 
 #if defined(OS_CHROMEOS)

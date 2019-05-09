@@ -1789,6 +1789,9 @@ extern const char kCrostiniUsbAllowUnsupportedDescription[];
 extern const char kCrostiniUsbSupportName[];
 extern const char kCrostiniUsbSupportDescription[];
 
+extern const char kCrosVmCupsProxyName[];
+extern const char kCrosVmCupsProxyDescription[];
+
 extern const char kCryptAuthV2EnrollmentName[];
 extern const char kCryptAuthV2EnrollmentDescription[];
 

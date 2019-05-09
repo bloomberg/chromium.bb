@@ -707,6 +707,10 @@ const base::Feature kUseSameCacheForMedia{"UseSameCacheForMedia",
 const base::Feature kArcCupsApi{"ArcCupsApi",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables serving printing requests from VMs on ChromeOS.
+const base::Feature kCrosVmCupsProxy{"CrosVmCupsProxy",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables pin quick unlock.
 // TODO(https://crbug.com/935613): Remove this & the backing code.
 const base::Feature kQuickUnlockPin{"QuickUnlockPin",

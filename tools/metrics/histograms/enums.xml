@@ -33829,6 +33829,7 @@ from previous Chrome versions.
       label="CrossOriginMediaPlaybackRequiresUserGesture:disabled"/>
   <int value="-296179618" label="CookiesWithoutSameSiteMustBeSecure:enabled"/>
   <int value="-290672626" label="enable-asm-wasm"/>
+  <int value="-290329565" label="CrosVmCupsProxy:disabled"/>
   <int value="-288316828" label="enable-delegated-renderer"/>
   <int value="-286603268" label="hide-android-files-in-files-app"/>
   <int value="-284547865" label="UnifiedConsent:enabled"/>
@@ -34131,6 +34132,7 @@ from previous Chrome versions.
   <int value="173288154" label="PrintPdfAsImage:enabled"/>
   <int value="178337215" label="enable-md-history"/>
   <int value="180074362" label="memory-pressure-thresholds"/>
+  <int value="181150000" label="CrosVmCupsProxy:enabled"/>
   <int value="183208826" label="TabGroups:enabled"/>
   <int value="185991204" label="enable-webrtc-srtp-encrypted-headers"/>
   <int value="188610022" label="NewMessageListView:enabled"/>

@@ -2969,6 +2969,10 @@ const char kCrostiniUsbSupportName[] = "Crostini Usb Support";
 const char kCrostiniUsbSupportDescription[] =
     "Enable mounting Usb devices in Crostini.";
 
+const char kCrosVmCupsProxyName[] = "Chrome OS CUPS Proxy";
+const char kCrosVmCupsProxyDescription[] =
+    "Supports printing from VMs on Chrome OS.";
+
 const char kCryptAuthV2EnrollmentName[] = "CryptAuth v2 Enrollment";
 const char kCryptAuthV2EnrollmentDescription[] =
     "Use the CryptAuth v2 Enrollment protocol.";
