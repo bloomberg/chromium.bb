@@ -36,6 +36,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/resource_scheduler_params_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -85,6 +86,8 @@ const int kChildId2 = 43;
 const int kRouteId2 = 67;
 const int kBackgroundChildId = 35;
 const int kBackgroundRouteId = 43;
+const int kBrowserChildId = mojom::kBrowserProcessId;
+const int kBrowserRouteId = 1;
 
 const size_t kMaxNumDelayableRequestsPerHostPerClient = 6;
 
@@ -182,6 +185,8 @@ class ResourceSchedulerTest : public testing::Test {
                                 &network_quality_estimator_);
     scheduler_->OnClientCreated(kBackgroundChildId, kBackgroundRouteId,
                                 &network_quality_estimator_);
+    scheduler_->OnClientCreated(kBrowserChildId, kBrowserRouteId,
+                                &network_quality_estimator_);
   }
 
   ResourceSchedulerParamsManager FixedParamsManager(
@@ -205,6 +210,7 @@ class ResourceSchedulerTest : public testing::Test {
     if (scheduler_) {
       scheduler_->OnClientDeleted(kChildId, kRouteId);
       scheduler_->OnClientDeleted(kBackgroundChildId, kBackgroundRouteId);
+      scheduler_->OnClientDeleted(kBrowserChildId, kBrowserRouteId);
     }
   }
 
@@ -249,6 +255,13 @@ class ResourceSchedulerTest : public testing::Test {
       net::RequestPriority priority) {
     return NewRequestWithChildAndRoute(url, priority, kBackgroundChildId,
                                        kBackgroundRouteId);
+  }
+
+  std::unique_ptr<TestRequest> NewBrowserRequest(
+      const char* url,
+      net::RequestPriority priority) {
+    return NewRequestWithChildAndRoute(url, priority, kBrowserChildId,
+                                       kBrowserRouteId);
   }
 
   std::unique_ptr<TestRequest> NewSyncRequest(const char* url,
@@ -687,6 +700,35 @@ TEST_F(ResourceSchedulerTest, LowerPriority) {
 
   EXPECT_FALSE(request->started());
   EXPECT_TRUE(idle->started());
+}
+
+// Verify that browser requests are not throttled by the resource scheduler.
+TEST_F(ResourceSchedulerTest, LowerPriorityBrowserRequestsNotThrottled) {
+  SetMaxDelayableRequests(1);
+  // Dummies to enforce scheduling.
+  std::unique_ptr<TestRequest> high(
+      NewBrowserRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> low(
+      NewBrowserRequest("http://host/low", net::LOWEST));
+
+  std::unique_ptr<TestRequest> request(
+      NewBrowserRequest("http://host/req", net::LOWEST));
+  std::unique_ptr<TestRequest> idle(
+      NewBrowserRequest("http://host/idle", net::IDLE));
+  EXPECT_TRUE(request->started());
+  EXPECT_TRUE(idle->started());
+
+  const int kDefaultMaxNumDelayableRequestsPerClient =
+      10;  // Should match the .cc.
+
+  // Create more requests than kDefaultMaxNumDelayableRequestsPerClient. All
+  // requests should be started immediately.
+  std::vector<std::unique_ptr<TestRequest>> lows;
+  for (int i = 0; i < kDefaultMaxNumDelayableRequestsPerClient + 1; ++i) {
+    string url = "http://host" + base::NumberToString(i) + "/low";
+    lows.push_back(NewBrowserRequest(url.c_str(), net::LOWEST));
+    EXPECT_TRUE(lows.back()->started());
+  }
 }
 
 TEST_F(ResourceSchedulerTest, ReprioritizedRequestGoesToBackOfQueue) {

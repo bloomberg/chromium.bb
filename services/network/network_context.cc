@@ -677,15 +677,11 @@ void NetworkContext::SetClient(mojom::NetworkContextClientPtr client) {
 void NetworkContext::CreateURLLoaderFactory(
     mojom::URLLoaderFactoryRequest request,
     mojom::URLLoaderFactoryParamsPtr params) {
-  scoped_refptr<ResourceSchedulerClient> resource_scheduler_client;
-  if (params->process_id != mojom::kBrowserProcessId) {
-    // Zero process ID means it's from the browser process and we don't want
-    // to throttle the requests.
-    resource_scheduler_client = base::MakeRefCounted<ResourceSchedulerClient>(
-        params->process_id, ++current_resource_scheduler_client_id_,
-        resource_scheduler_.get(),
-        url_request_context_->network_quality_estimator());
-  }
+  scoped_refptr<ResourceSchedulerClient> resource_scheduler_client =
+      base::MakeRefCounted<ResourceSchedulerClient>(
+          params->process_id, ++current_resource_scheduler_client_id_,
+          resource_scheduler_.get(),
+          url_request_context_->network_quality_estimator());
   CreateURLLoaderFactory(std::move(request), std::move(params),
                          std::move(resource_scheduler_client));
 }
