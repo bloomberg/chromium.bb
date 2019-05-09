@@ -125,8 +125,6 @@ void WebPluginContainerImpl::AttachToLayout() {
   DCHECK(!IsAttached());
   SetAttached(true);
   SetParentVisible(true);
-  // No need to track visibility for plugins.
-  element_->StopVisibilityObserver();
 }
 
 void WebPluginContainerImpl::DetachFromLayout() {

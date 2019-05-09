@@ -21,8 +21,6 @@ class PaintCanvas;
 namespace blink {
 class CullRect;
 class GraphicsContext;
-class IntersectionObserver;
-class IntersectionObserverEntry;
 class LocalFrameView;
 class RemoteFrame;
 
@@ -67,6 +65,9 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
   void SetIntrinsicSizeInfo(const IntrinsicSizingInfo& size_info);
   bool HasIntrinsicSizingInfo() const override;
 
+  bool CanThrottleRendering() const override;
+  void RenderThrottlingStatusChanged() override;
+
   // Compute the interest rect of this frame in its unscrolled space. This may
   // be used by the OOPIF's compositor to limit the amount of rastered tiles,
   // and reduce the number of paint-ops generated.
@@ -77,21 +78,17 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
   void Trace(blink::Visitor*) override;
 
  protected:
+  // This is used to service IntersectionObservers in an OOPIF child document.
+  void SetViewportIntersection(const IntRect& viewport_intersection,
+                               FrameOcclusionState occlusion_state) override;
   void ParentVisibleChanged() override;
 
  private:
-
   // This function returns the LocalFrameView associated with the parent frame's
   // local root, or nullptr if the parent frame is not a local frame. For
   // portals, this will return the local root associated with the portal's
   // owner.
   LocalFrameView* ParentLocalRootFrameView() const;
-
-  void OnViewportIntersectionChanged(
-      const HeapVector<Member<IntersectionObserverEntry>>& entries);
-  void UpdateRenderThrottlingStatus(bool hidden, bool subtree_throttled);
-  bool CanThrottleRendering() const;
-  void UpdateVisibility(bool scroll_visible);
 
   // The properties and handling of the cycle between RemoteFrame
   // and its RemoteFrameView corresponds to that between LocalFrame
@@ -100,16 +97,18 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
   Member<RemoteFrame> remote_frame_;
   IntRect last_viewport_intersection_;
   FrameOcclusionState last_occlusion_state_ = FrameOcclusionState::kUnknown;
-  bool scroll_visible_ = true;
-  blink::mojom::FrameVisibility visibility_ =
-      blink::mojom::FrameVisibility::kRenderedInViewport;
 
-  Member<IntersectionObserver> visibility_observer_;
-  bool subtree_throttled_ = false;
-  bool hidden_for_throttling_ = false;
   IntrinsicSizingInfo intrinsic_sizing_info_;
   bool has_intrinsic_sizing_info_ = false;
   bool needs_occlusion_tracking_ = false;
+};
+
+template <>
+struct DowncastTraits<RemoteFrameView> {
+  static bool AllowFrom(const EmbeddedContentView& embedded_content_view) {
+    return !embedded_content_view.IsLocalFrameView() &&
+           !embedded_content_view.IsPluginView();
+  }
 };
 
 }  // namespace blink

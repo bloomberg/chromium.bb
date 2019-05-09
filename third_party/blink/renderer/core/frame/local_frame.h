@@ -188,14 +188,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   bool IsLocalRoot() const;
   LocalFrame& LocalFrameRoot() const;
 
-  // Note that the result of this function should not be cached: a frame is
-  // not necessarily detached when it is navigated, so the return value can
-  // change.
-  // In addition, this function will always return true for a detached frame.
-  // TODO(dcheng): Move this to LocalDOMWindow and figure out the right
-  // behavior for detached windows.
-  bool IsCrossOriginSubframe() const;
-
   CoreProbeSink* GetProbeSink() { return probe_sink_.Get(); }
   scoped_refptr<InspectorTaskRunner> GetInspectorTaskRunner();
 

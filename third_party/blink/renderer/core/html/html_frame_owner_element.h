@@ -39,8 +39,6 @@ namespace blink {
 
 class ExceptionState;
 class Frame;
-class IntersectionObserver;
-class IntersectionObserverEntry;
 class LayoutEmbeddedContent;
 class LazyLoadFrameObserver;
 class WebPluginContainerImpl;
@@ -128,9 +126,6 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
 
   void CancelPendingLazyLoad();
 
-  void StartVisibilityObserver();
-  void StopVisibilityObserver();
-
   void ParseAttribute(const AttributeModificationParams&) override;
 
   void Trace(Visitor*) override;
@@ -183,17 +178,12 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   }
 
   bool IsLoadingFrameDefaultEagerEnforced() const;
-  void OnViewportIntersectionChanged(
-      const HeapVector<Member<IntersectionObserverEntry>>& entries);
 
   Member<Frame> content_frame_;
   Member<EmbeddedContentView> embedded_content_view_;
   FramePolicy frame_policy_;
 
-  Member<IntersectionObserver> visibility_observer_;
   Member<LazyLoadFrameObserver> lazy_load_frame_observer_;
-  blink::mojom::FrameVisibility frame_visibility_ =
-      blink::mojom::FrameVisibility::kRenderedInViewport;
   bool should_lazy_load_children_;
 };
 

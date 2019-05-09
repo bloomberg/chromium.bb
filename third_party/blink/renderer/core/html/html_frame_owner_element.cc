@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/lazy_load_frame_observer.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
@@ -513,67 +512,9 @@ void HTMLFrameOwnerElement::ParseAttribute(
   }
 }
 
-void HTMLFrameOwnerElement::OnViewportIntersectionChanged(
-    const HeapVector<Member<IntersectionObserverEntry>>& entries) {
-  // TODO(szager): this logic is only used for LocalFrame's; RemoteFrame's do
-  // the equivalent in RemoteFrameView::UpdateViewportIntersectionsForSubtree.
-  // The reason for the divergent implementations is to avoid redundant
-  // intersection computation, since RemoteFrameView must propagate the viewport
-  // intersection rect to the child process (which can't be done using standard
-  // IntersectionObserver behavior). Ultimately, the logic in RemoteFrameView
-  // should be used for both local and remote frames.
-  if (!content_frame_ || !content_frame_->IsLocalFrame())
-    return;
-  if (embedded_content_view_ && !embedded_content_view_->IsLocalFrameView())
-    return;
-  bool visible = entries.back()->intersectionRatio() > 0;
-  blink::mojom::FrameVisibility frame_visibility =
-      blink::mojom::FrameVisibility::kNotRendered;
-  if (embedded_content_view_) {
-    if (embedded_content_view_->IsAttached()) {
-      frame_visibility =
-          visible ? blink::mojom::FrameVisibility::kRenderedInViewport
-                  : blink::mojom::FrameVisibility::kRenderedOutOfViewport;
-    }
-    To<LocalFrameView>(embedded_content_view_.Get())->UpdateVisibility(visible);
-  }
-
-  if (frame_visibility == frame_visibility_)
-    return;
-
-  if (auto* client = To<LocalFrame>(content_frame_.Get())->Client()) {
-    frame_visibility_ = frame_visibility;
-    client->VisibilityChanged(frame_visibility);
-  }
-}
-
-void HTMLFrameOwnerElement::StartVisibilityObserver() {
-  // When this method is called, it indicates that the caller wants to receive
-  // a notification at the next opportunity, even if nothing has changed.
-  // Un-observing and then re-observing will accomplish that.
-  if (visibility_observer_) {
-    visibility_observer_->unobserve(this);
-  } else {
-    visibility_observer_ = IntersectionObserver::Create(
-        {}, {IntersectionObserver::kMinimumThreshold}, &GetDocument(),
-        WTF::BindRepeating(
-            &HTMLFrameOwnerElement::OnViewportIntersectionChanged,
-            WrapWeakPersistent(this)));
-  }
-  visibility_observer_->observe(this);
-}
-
-void HTMLFrameOwnerElement::StopVisibilityObserver() {
-  if (visibility_observer_) {
-    visibility_observer_->disconnect();
-    visibility_observer_ = nullptr;
-  }
-}
-
 void HTMLFrameOwnerElement::Trace(Visitor* visitor) {
   visitor->Trace(content_frame_);
   visitor->Trace(embedded_content_view_);
-  visitor->Trace(visibility_observer_);
   visitor->Trace(lazy_load_frame_observer_);
   HTMLElement::Trace(visitor);
   FrameOwner::Trace(visitor);

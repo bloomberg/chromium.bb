@@ -11,8 +11,6 @@
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_client.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
-#include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
-#include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -67,17 +65,10 @@ void RemoteFrameView::AttachToLayout() {
   SetAttached(true);
   if (ParentFrameView()->IsVisible())
     SetParentVisible(true);
-  UpdateVisibility(true);
-
-  // For RemoteFrame's, the work of the visibility observer is done in
-  // RemoteFrameView::UpdateViewportIntersectionsForSubtree. Disable the
-  // visibility observer to prevent redundant work.
-  HTMLFrameOwnerElement* owner = remote_frame_->DeprecatedLocalOwner();
-  if (owner)
-    owner->StopVisibilityObserver();
-
-  subtree_throttled_ = ParentFrameView()->CanThrottleRendering();
-
+  UpdateFrameVisibility(true);
+  UpdateRenderThrottlingStatus(
+      IsHiddenForThrottling(),
+      ParentFrameView()->CanThrottleRenderingForPropagation());
   FrameRectsChanged(FrameRect());
 }
 
@@ -95,65 +86,13 @@ RemoteFrameView* RemoteFrameView::Create(RemoteFrame* remote_frame) {
 
 bool RemoteFrameView::UpdateViewportIntersectionsForSubtree(
     unsigned parent_flags) {
-  if (!(parent_flags &
-        IntersectionObservation::kImplicitRootObserversNeedUpdate)) {
-    return needs_occlusion_tracking_;
-  }
+  UpdateViewportIntersection(parent_flags, needs_occlusion_tracking_);
+  return needs_occlusion_tracking_;
+}
 
-  // This should only run in child frames.
-  HTMLFrameOwnerElement* owner_element = remote_frame_->DeprecatedLocalOwner();
-  DCHECK(owner_element);
-  LayoutEmbeddedContent* owner = GetLayoutEmbeddedContent();
-  IntRect viewport_intersection;
-  DocumentLifecycle::LifecycleState parent_lifecycle_state =
-      owner_element->GetDocument().Lifecycle().GetState();
-  FrameOcclusionState occlusion_state =
-      owner_element->GetDocument().GetFrame()->GetOcclusionState();
-  bool should_compute_occlusion =
-      needs_occlusion_tracking_ &&
-      occlusion_state == FrameOcclusionState::kGuaranteedNotOccluded &&
-      parent_lifecycle_state >= DocumentLifecycle::kPrePaintClean &&
-      RuntimeEnabledFeatures::IntersectionObserverV2Enabled();
-
-  if (!owner || !IsSelfVisible()) {
-    // The frame is detached from layout or not visible; leave
-    // viewport_intersection empty, and signal the frame as occluded if
-    // necessary.
-    occlusion_state = FrameOcclusionState::kPossiblyOccluded;
-  } else if (parent_lifecycle_state >= DocumentLifecycle::kLayoutClean) {
-    unsigned geometry_flags =
-        IntersectionGeometry::kShouldUseReplacedContentRect;
-    if (should_compute_occlusion)
-      geometry_flags |= IntersectionGeometry::kShouldComputeVisibility;
-
-    IntersectionGeometry geometry(nullptr, *owner_element, {},
-                                  {IntersectionObserver::kMinimumThreshold},
-                                  geometry_flags);
-    // geometry.IntersectionRect() is in absolute coordinates of the owning
-    // document. Map it down to absolute coordinates in the child document.
-    LayoutRect intersection_rect = LayoutRect(
-        owner
-            ->AncestorToLocalQuad(
-                nullptr, FloatQuad(FloatRect(geometry.IntersectionRect())),
-                kUseTransforms)
-            .BoundingBox());
-    // Map from the box coordinates of the owner to the inner frame.
-    intersection_rect.Move(-owner->PhysicalContentBoxOffset());
-    // Don't let EnclosingIntRect turn an empty rect into a non-empty one.
-    if (intersection_rect.IsEmpty()) {
-      viewport_intersection =
-          IntRect(FlooredIntPoint(intersection_rect.Location()), IntSize());
-    } else {
-      viewport_intersection = EnclosingIntRect(intersection_rect);
-    }
-    if (should_compute_occlusion && !geometry.IsVisible())
-      occlusion_state = FrameOcclusionState::kPossiblyOccluded;
-  } else if (occlusion_state == FrameOcclusionState::kGuaranteedNotOccluded) {
-    // If the parent LocalFrameView is throttled and out-of-date, then we can't
-    // get any useful information.
-    occlusion_state = FrameOcclusionState::kUnknown;
-  }
-
+void RemoteFrameView::SetViewportIntersection(
+    const IntRect& viewport_intersection,
+    FrameOcclusionState occlusion_state) {
   if (viewport_intersection != last_viewport_intersection_ ||
       occlusion_state != last_occlusion_state_) {
     last_viewport_intersection_ = viewport_intersection;
@@ -161,22 +100,6 @@ bool RemoteFrameView::UpdateViewportIntersectionsForSubtree(
     remote_frame_->Client()->UpdateRemoteViewportIntersection(
         viewport_intersection, occlusion_state);
   }
-
-  // TODO(szager): There is redundant functionality here; clean it up.
-  // UpdateVisibility controls RenderFrameHostImpl::visibility_ for the iframe,
-  // and RenderWidget::is_hidden_ in the iframe process. When an OOPIF is marked
-  // "hidden", it stops running lifecycle updates altogether.
-  // UpdateRenderThrottlingStatus sets the hidden_for_throttling_ and
-  // subtree_throttled_ flags on LocalFrameView in the iframe process. They
-  // control whether the iframe skips doing rendering work during lifecycle
-  // updates.
-  bool is_visible_for_throttling = !viewport_intersection.IsEmpty();
-  UpdateVisibility(is_visible_for_throttling);
-  UpdateRenderThrottlingStatus(
-      !is_visible_for_throttling,
-      IsAttached() && ParentFrameView()->CanThrottleRendering());
-
-  return needs_occlusion_tracking_;
 }
 
 void RemoteFrameView::SetNeedsOcclusionTracking(bool needs_tracking) {
@@ -305,64 +228,31 @@ void RemoteFrameView::UpdateGeometry() {
 
 void RemoteFrameView::Hide() {
   SetSelfVisible(false);
-  UpdateVisibility(scroll_visible_);
+  UpdateFrameVisibility(!last_viewport_intersection_.IsEmpty());
 }
 
 void RemoteFrameView::Show() {
   SetSelfVisible(true);
-  UpdateVisibility(scroll_visible_);
+  UpdateFrameVisibility(!last_viewport_intersection_.IsEmpty());
 }
 
 void RemoteFrameView::ParentVisibleChanged() {
   if (IsSelfVisible())
-    UpdateVisibility(scroll_visible_);
+    UpdateFrameVisibility(!last_viewport_intersection_.IsEmpty());
 }
 
-void RemoteFrameView::UpdateVisibility(bool scroll_visible) {
-  blink::mojom::FrameVisibility visibility;
-  scroll_visible_ = scroll_visible;
-  if (IsVisible()) {
-    visibility = scroll_visible
-                     ? blink::mojom::FrameVisibility::kRenderedInViewport
-                     : blink::mojom::FrameVisibility::kRenderedOutOfViewport;
-  } else {
-    visibility = blink::mojom::FrameVisibility::kNotRendered;
-  }
-
-  if (visibility == visibility_)
-    return;
-  visibility_ = visibility;
-  remote_frame_->Client()->VisibilityChanged(visibility);
-}
-
-void RemoteFrameView::UpdateRenderThrottlingStatus(bool hidden,
-                                                   bool subtree_throttled) {
-  TRACE_EVENT0("blink", "RemoteFrameView::UpdateRenderThrottlingStatus");
+void RemoteFrameView::RenderThrottlingStatusChanged() {
+  TRACE_EVENT0("blink", "RemoteFrameView::RenderThrottlingStatusChanged");
   if (!remote_frame_->Client())
     return;
-
-  bool was_throttled = CanThrottleRendering();
-
-  // Note that we disallow throttling of 0x0 and display:none frames because
-  // some sites use them to drive UI logic.
-  HTMLFrameOwnerElement* owner_element = remote_frame_->DeprecatedLocalOwner();
-  hidden_for_throttling_ = hidden && !Size().IsEmpty() &&
-                           (owner_element && owner_element->GetLayoutObject());
-  subtree_throttled_ = subtree_throttled;
-
-  bool is_throttled = CanThrottleRendering();
-  if (was_throttled != is_throttled) {
-    remote_frame_->Client()->UpdateRenderThrottlingStatus(is_throttled,
-                                                          subtree_throttled_);
-  }
+  remote_frame_->Client()->UpdateRenderThrottlingStatus(IsHiddenForThrottling(),
+                                                        IsSubtreeThrottled());
 }
 
 bool RemoteFrameView::CanThrottleRendering() const {
   if (!RuntimeEnabledFeatures::RenderingPipelineThrottlingEnabled())
     return false;
-  if (subtree_throttled_)
-    return true;
-  return hidden_for_throttling_;
+  return IsSubtreeThrottled() || IsHiddenForThrottling();
 }
 
 void RemoteFrameView::SetIntrinsicSizeInfo(
@@ -391,7 +281,6 @@ uint32_t RemoteFrameView::Print(const IntRect& rect,
 
 void RemoteFrameView::Trace(blink::Visitor* visitor) {
   visitor->Trace(remote_frame_);
-  visitor->Trace(visibility_observer_);
 }
 
 }  // namespace blink

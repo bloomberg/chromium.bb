@@ -68,6 +68,7 @@ blink_core_sources("frame") {
     "frame_serializer.cc",
     "frame_serializer.h",
     "frame_types.h",
+    "frame_view.cc",
     "frame_view.h",
     "frame_view_auto_size_info.cc",
     "frame_view_auto_size_info.h",

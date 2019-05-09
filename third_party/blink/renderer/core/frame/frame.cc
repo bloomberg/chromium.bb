@@ -130,6 +130,13 @@ bool Frame::IsMainFrame() const {
   return !Tree().Parent();
 }
 
+bool Frame::IsCrossOriginSubframe() const {
+  const SecurityOrigin* security_origin =
+      GetSecurityContext()->GetSecurityOrigin();
+  return !security_origin->CanAccess(
+      Tree().Top().GetSecurityContext()->GetSecurityOrigin());
+}
+
 HTMLFrameOwnerElement* Frame::DeprecatedLocalOwner() const {
   return DynamicTo<HTMLFrameOwnerElement>(owner_.Get());
 }

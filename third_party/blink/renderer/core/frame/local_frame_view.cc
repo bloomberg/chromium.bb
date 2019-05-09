@@ -247,8 +247,6 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       needs_update_geometries_(false),
       root_layer_did_scroll_(false),
       frame_timing_requests_dirty_(true),
-      hidden_for_throttling_(false),
-      subtree_throttled_(false),
       // The compositor throttles the main frame using deferred commits, we
       // can't throttle it here or it seems the root compositor doesn't get
       // setup properly.
@@ -369,17 +367,6 @@ void LocalFrameView::ForAllNonThrottledLocalFrameViews(
     if (LocalFrameView* child_view = child_local_frame->View())
       child_view->ForAllNonThrottledLocalFrameViews(function);
   }
-}
-
-void LocalFrameView::SetupRenderThrottling() {
-  // We observe the frame owner element instead of the document element, because
-  // if the document has no content we can falsely think the frame is invisible.
-  // Note that this means we cannot throttle top-level frames or (currently)
-  // frames whose owner element is remote.
-  HTMLFrameOwnerElement* target_element = GetFrame().DeprecatedLocalOwner();
-  if (!target_element)
-    return;
-  target_element->StartVisibilityObserver();
 }
 
 void LocalFrameView::Dispose() {
@@ -1012,7 +999,6 @@ DocumentLifecycle& LocalFrameView::Lifecycle() const {
 
 void LocalFrameView::RunPostLifecycleSteps() {
   RunIntersectionObserverSteps();
-  UpdateThrottlingStatusForSubtree();
 }
 
 void LocalFrameView::RunIntersectionObserverSteps() {
@@ -3394,8 +3380,8 @@ void LocalFrameView::AttachToLayout() {
   CHECK(parent_view);
   if (parent_view->IsVisible())
     SetParentVisible(true);
-  SetupRenderThrottling();
-  subtree_throttled_ = parent_view->CanThrottleRendering();
+  UpdateRenderThrottlingStatus(IsHiddenForThrottling(),
+                               parent_view->CanThrottleRendering());
 
   // We may have updated paint properties in detached frame subtree for
   // printing (see UpdateLifecyclePhasesForPrinting()). The paint properties
@@ -3802,6 +3788,8 @@ void LocalFrameView::ParentVisibleChanged() {
 }
 
 void LocalFrameView::SelfVisibleChanged() {
+  // FrameView visibility affects PLC::CanBeComposited, which in turn affects
+  // compositing inputs.
   if (LayoutView* view = GetLayoutView())
     view->Layer()->SetNeedsCompositingInputsUpdate();
 }
@@ -3894,6 +3882,8 @@ bool LocalFrameView::UpdateViewportIntersectionsForSubtree(
     intersection_observation_state_ = kNotNeeded;
   }
 
+  UpdateViewportIntersection(flags, needs_occlusion_tracking);
+
   for (Frame* child = frame_->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
     needs_occlusion_tracking |=
@@ -3923,70 +3913,27 @@ void LocalFrameView::DeliverSynchronousIntersectionObservations() {
   });
 }
 
-void LocalFrameView::UpdateThrottlingStatusForSubtree() {
-  if (!GetFrame().GetDocument()->IsActive())
-    return;
-
-  // Don't throttle display:none frames (see updateRenderThrottlingStatus).
-  HTMLFrameOwnerElement* owner_element = frame_->DeprecatedLocalOwner();
-  if (IsHiddenForThrottling() && owner_element &&
-      !owner_element->GetLayoutObject()) {
-    // No need to notify children because descendants of display:none frames
-    // should remain throttled.
-    UpdateRenderThrottlingStatus(hidden_for_throttling_, subtree_throttled_,
-                                 kDontForceThrottlingInvalidation,
-                                 kDontNotifyChildren);
-  }
-
-  ForAllChildLocalFrameViews([](LocalFrameView& child_view) {
-    child_view.UpdateThrottlingStatusForSubtree();
-  });
-}
-
 void LocalFrameView::CrossOriginStatusChanged() {
-  // Cross-domain status is not stored as a dirty bit within LocalFrameView,
-  // so force-invalidate throttling status when it changes regardless of
-  // previous or new value.
-  UpdateRenderThrottlingStatus(hidden_for_throttling_, subtree_throttled_,
-                               kForceThrottlingInvalidation);
+  // If any of these conditions hold, then a change in cross-origin status does
+  // not affect throttling.
+  if (lifecycle_updates_throttled_ ||
+      !RuntimeEnabledFeatures::RenderingPipelineThrottlingEnabled() ||
+      IsSubtreeThrottled() || !IsHiddenForThrottling()) {
+    return;
+  }
+  RenderThrottlingStatusChanged();
+  // Immediately propagate changes to children.
+  UpdateRenderThrottlingStatus(IsHiddenForThrottling(), IsSubtreeThrottled(),
+                               true);
 }
 
-void LocalFrameView::UpdateRenderThrottlingStatus(
-    bool hidden,
-    bool subtree_throttled,
-    ForceThrottlingInvalidationBehavior force_throttling_invalidation_behavior,
-    NotifyChildrenBehavior notify_children_behavior) {
-  TRACE_EVENT0("blink", "LocalFrameView::updateRenderThrottlingStatus");
+void LocalFrameView::RenderThrottlingStatusChanged() {
+  TRACE_EVENT0("blink", "LocalFrameView::RenderThrottlingStatusChanged");
   DCHECK(!IsInPerformLayout());
   DCHECK(!frame_->GetDocument() || !frame_->GetDocument()->InStyleRecalc());
-  bool was_throttled = CanThrottleRendering();
-
-  // Note that we disallow throttling of 0x0 and display:none frames because
-  // some sites use them to drive UI logic.
-  hidden_for_throttling_ = hidden;
-  subtree_throttled_ = subtree_throttled;
-
-  bool is_throttled = CanThrottleRendering();
-  bool became_unthrottled = was_throttled && !is_throttled;
-
-  // If this LocalFrameView became unthrottled or throttled, we must make sure
-  // all its children are notified synchronously. Otherwise we 1) might attempt
-  // to paint one of the children with an out-of-date layout before
-  // |updateRenderThrottlingStatus| has made it throttled or 2) fail to
-  // unthrottle a child whose parent is unthrottled by a later notification.
-  if (notify_children_behavior == kNotifyChildren &&
-      (was_throttled != is_throttled ||
-       force_throttling_invalidation_behavior ==
-           kForceThrottlingInvalidation)) {
-    ForAllChildLocalFrameViews([is_throttled](LocalFrameView& frame_view) {
-      frame_view.UpdateRenderThrottlingStatus(frame_view.hidden_for_throttling_,
-                                              is_throttled);
-    });
-  }
 
   ScrollingCoordinator* scrolling_coordinator = this->GetScrollingCoordinator();
-  if (became_unthrottled ||
-      force_throttling_invalidation_behavior == kForceThrottlingInvalidation) {
+  if (!CanThrottleRendering()) {
     // ScrollingCoordinator needs to update according to the new throttling
     // status.
     if (scrolling_coordinator)
@@ -3997,7 +3944,7 @@ void LocalFrameView::UpdateRenderThrottlingStatus(
     // Force a full repaint of this frame to ensure we are not left with a
     // partially painted version of this frame's contents if we skipped
     // painting them while the frame was throttled.
-    auto* layout_view = GetLayoutView();
+    LayoutView* layout_view = GetLayoutView();
     if (layout_view) {
       layout_view->InvalidatePaintForViewAndCompositedLayers();
       // Also need to update all paint properties that might be skipped while
@@ -4010,17 +3957,18 @@ void LocalFrameView::UpdateRenderThrottlingStatus(
       SetPaintArtifactCompositorNeedsUpdate();
   }
 
-  EventHandlerRegistry& registry = frame_->GetEventHandlerRegistry();
-  bool has_handlers =
-      (registry.HasEventHandlers(EventHandlerRegistry::kTouchAction) ||
-       registry.HasEventHandlers(
-           EventHandlerRegistry::kTouchStartOrMoveEventBlocking) ||
-       registry.HasEventHandlers(
-           EventHandlerRegistry::kTouchStartOrMoveEventBlockingLowLatency));
-  if (was_throttled != CanThrottleRendering() && scrolling_coordinator &&
-      has_handlers) {
-    scrolling_coordinator->TouchEventTargetRectsDidChange(
-        &GetFrame().LocalFrameRoot());
+  if (scrolling_coordinator) {
+    EventHandlerRegistry& registry = frame_->GetEventHandlerRegistry();
+    bool has_handlers =
+        (registry.HasEventHandlers(EventHandlerRegistry::kTouchAction) ||
+         registry.HasEventHandlers(
+             EventHandlerRegistry::kTouchStartOrMoveEventBlocking) ||
+         registry.HasEventHandlers(
+             EventHandlerRegistry::kTouchStartOrMoveEventBlockingLowLatency));
+    if (has_handlers) {
+      scrolling_coordinator->TouchEventTargetRectsDidChange(
+          &GetFrame().LocalFrameRoot());
+    }
   }
 
   if (FrameScheduler* frame_scheduler = frame_->GetFrameScheduler()) {
@@ -4113,7 +4061,7 @@ bool LocalFrameView::CanThrottleRendering() const {
     return true;
   if (!RuntimeEnabledFeatures::RenderingPipelineThrottlingEnabled())
     return false;
-  if (subtree_throttled_)
+  if (IsSubtreeThrottled())
     return true;
   // We only throttle hidden cross-origin frames. This is to avoid a situation
   // where an ancestor frame directly depends on the pipeline timing of a
@@ -4122,21 +4070,6 @@ bool LocalFrameView::CanThrottleRendering() const {
   // so they should be able to tolerate some delay in receiving replies from a
   // throttled peer.
   return IsHiddenForThrottling() && frame_->IsCrossOriginSubframe();
-}
-
-bool LocalFrameView::IsHiddenForThrottling() const {
-  // TODO(szager): hidden_for_throttling_ has a different meaning depending on
-  // whether this frame has a remote parent (i.e, if it's OOPIF). In the OOPIF
-  // case, it means "non-zero sized AND not display:none AND scrolled out of the
-  // parent document's viewport." For the non-OOPIF case, it just means
-  // "scrolled out of the parent document's viewport." Fixing this will
-  // require some moderately complex refactoring of render throttling.
-  if (!hidden_for_throttling_)
-    return false;
-  HTMLFrameOwnerElement* owner_element = frame_->DeprecatedLocalOwner();
-  if (owner_element)
-    return !Size().IsEmpty() && !!owner_element->GetLayoutObject();
-  return true;
 }
 
 void LocalFrameView::BeginLifecycleUpdates() {
@@ -4155,7 +4088,8 @@ void LocalFrameView::BeginLifecycleUpdates() {
                                 kMarkOnlyThis);
   }
 
-  SetupRenderThrottling();
+  ScheduleAnimation();
+  SetIntersectionObservationState(kRequired);
 
   // The compositor will "defer commits" for the main frame until we
   // explicitly request them.
@@ -4389,10 +4323,6 @@ void LocalFrameView::RegisterForLifecycleNotifications(
 void LocalFrameView::UnregisterFromLifecycleNotifications(
     LifecycleNotificationObserver* observer) {
   lifecycle_observers_.erase(observer);
-}
-
-void LocalFrameView::UpdateVisibility(bool is_visible) {
-  UpdateRenderThrottlingStatus(!is_visible, subtree_throttled_);
 }
 
 #if DCHECK_IS_ON()

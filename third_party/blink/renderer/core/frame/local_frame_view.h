@@ -460,10 +460,6 @@ class CORE_EXPORT LocalFrameView final
   // coordinate space.
   ChromeClient* GetChromeClient() const;
 
-  // This is called when the intersection between the FrameView with its
-  // embedding view changes.
-  void UpdateVisibility(bool is_visible);
-
   LocalFrameView* ParentFrameView() const override;
   LayoutEmbeddedContent* GetLayoutEmbeddedContent() const override;
   void AttachToLayout() override;
@@ -581,11 +577,7 @@ class CORE_EXPORT LocalFrameView final
   // Returns true if this frame should not render or schedule visual updates.
   bool ShouldThrottleRendering() const;
 
-  // Returns true if this frame could potentially skip rendering and avoid
-  // scheduling visual updates.
-  bool CanThrottleRendering() const;
-  bool IsHiddenForThrottling() const;
-  void SetupRenderThrottling();
+  bool CanThrottleRendering() const override;
 
   void BeginLifecycleUpdates();
 
@@ -662,17 +654,6 @@ class CORE_EXPORT LocalFrameView final
 
   const cc::Layer* RootCcLayer() const;
 
-  enum ForceThrottlingInvalidationBehavior {
-    kDontForceThrottlingInvalidation,
-    kForceThrottlingInvalidation
-  };
-  enum NotifyChildrenBehavior { kDontNotifyChildren, kNotifyChildren };
-  void UpdateRenderThrottlingStatus(
-      bool hidden,
-      bool subtree_throttled,
-      ForceThrottlingInvalidationBehavior = kDontForceThrottlingInvalidation,
-      NotifyChildrenBehavior = kNotifyChildren);
-
   // Keeps track of whether the scrollable state for the LocalRoot has changed
   // since ScrollingCoordinator last checked. Only ScrollingCoordinator should
   // ever call the clearing function.
@@ -712,6 +693,12 @@ class CORE_EXPORT LocalFrameView final
   void SelfVisibleChanged() override;
   void ParentVisibleChanged() override;
   void NotifyFrameRectsChangedIfNeeded();
+  void SetViewportIntersection(const IntRect& viewport_intersection,
+                               FrameOcclusionState occlusion_state) override {}
+  void RenderThrottlingStatusChanged() override;
+  bool LifecycleUpdatesThrottled() const override {
+    return lifecycle_updates_throttled_;
+  }
 
  private:
 #if DCHECK_IS_ON()
@@ -831,8 +818,6 @@ class CORE_EXPORT LocalFrameView final
   bool UpdateViewportIntersectionsForSubtree(unsigned parent_flags) override;
   void DeliverSynchronousIntersectionObservations();
 
-  void UpdateThrottlingStatusForSubtree();
-
   void NotifyResizeObservers();
 
   bool CheckLayoutInvalidationIsAllowed() const;
@@ -920,11 +905,8 @@ class CORE_EXPORT LocalFrameView final
   // main frame.
   Member<RootFrameViewport> viewport_scrollable_area_;
 
-  // The following members control rendering pipeline throttling for this
-  // frame. They are only updated in response to intersection observer
-  // notifications, i.e., not in the middle of the lifecycle.
-  bool hidden_for_throttling_;
-  bool subtree_throttled_;
+  // Non-top-level frames a throttled until they are ready to run lifecycle
+  // updates (after render-blocking resources have loaded).
   bool lifecycle_updates_throttled_;
 
   // This is set on the local root frame view only.
