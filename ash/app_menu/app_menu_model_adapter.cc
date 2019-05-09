@@ -5,6 +5,7 @@
 #include "ash/app_menu/app_menu_model_adapter.h"
 
 #include "ash/app_menu/notification_menu_controller.h"
+#include "ash/public/cpp/shelf_model.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -100,16 +101,17 @@ void AppMenuModelAdapter::OnMenuClosed(views::MenuItemView* menu) {
 }
 
 void AppMenuModelAdapter::RecordExecuteCommandHistogram(int command_id) {
-  base::UmaHistogramSparse(app_id().empty() ? kNonAppContextMenuExecuteCommand
-                                            : kAppContextMenuExecuteCommand,
+  const bool is_not_from_app = app_id().empty() || app_id() == kAppListId;
+  base::UmaHistogramSparse(is_not_from_app ? kNonAppContextMenuExecuteCommand
+                                           : kAppContextMenuExecuteCommand,
                            command_id);
   if (is_tablet_mode_) {
-    base::UmaHistogramSparse(app_id().empty()
+    base::UmaHistogramSparse(is_not_from_app
                                  ? kNonAppContextMenuExecuteCommandInTablet
                                  : kAppContextMenuExecuteCommandInTablet,
                              command_id);
   } else {
-    base::UmaHistogramSparse(app_id().empty()
+    base::UmaHistogramSparse(is_not_from_app
                                  ? kNonAppContextMenuExecuteCommandInClamshell
                                  : kAppContextMenuExecuteCommandInClamshell,
                              command_id);
