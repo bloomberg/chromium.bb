@@ -452,6 +452,13 @@ cr.define('downloads', function() {
 
     /** @private */
     onRemoveTap_: function() {
+      const pieces = loadTimeData.getSubstitutedStringPieces(
+          loadTimeData.getString('toastRemovedFromList'), this.data.fileName);
+      pieces.forEach(p => {
+        // Make the file name collapsible.
+        p.collapsible = !!p.arg;
+      });
+      cr.toastManager.getInstance().showForStringPieces(pieces, true);
       this.mojoHandler_.remove(this.data.id);
       this.fire('restore-focus-after-remove');
     },

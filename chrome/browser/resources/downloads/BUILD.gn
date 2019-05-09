@@ -66,6 +66,7 @@ js_library("item") {
     ":constants",
     ":icon_loader",
     "//third_party/polymer/v1_0/components-chromium/paper-behaviors:paper-inky-focus-behavior-extracted",
+    "//ui/webui/resources/cr_elements/cr_toast:cr_toast_manager",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:util",

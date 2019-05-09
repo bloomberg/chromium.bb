@@ -249,7 +249,6 @@ cr.define('downloads', function() {
      */
     removeItem_: function(index) {
       const removed = this.items_.splice(index, 1);
-      const removedFileName = removed[0].fileName;
       this.updateHideDates_(index, index);
       this.notifySplices('items_', [{
                            index: index,
@@ -258,13 +257,6 @@ cr.define('downloads', function() {
                            type: 'splice',
                            removed: removed,
                          }]);
-      const pieces = loadTimeData.getSubstitutedStringPieces(
-          loadTimeData.getString('toastRemovedFromList'), removedFileName);
-      pieces.forEach(p => {
-        // Make the file name collapsible.
-        p.collapsible = !!p.arg;
-      });
-      cr.toastManager.getInstance().showForStringPieces(pieces, true);
       if (this.restoreFocusAfterRemove_) {
         this.restoreFocusAfterRemove_ = false;
         if (this.items_.length > 0) {
