@@ -639,18 +639,162 @@ void av1_tpl_setup_stats(AV1_COMP *cpi,
   }
 }
 
-void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
-                           BLOCK_SIZE bsize, YV12_BUFFER_CONFIG *ref,
-                           YV12_BUFFER_CONFIG *src,
-                           TplDepFrame *ref_tpl_frame) {
-  // TODO(debargha, yuec): Fill this up
-  (void)cpi;
-  (void)x;
-  (void)xd;
-  (void)bsize;
-  (void)ref;
-  (void)src;
-  (void)ref_tpl_frame;
+static void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
+                                  BLOCK_SIZE bsize, YV12_BUFFER_CONFIG *ref,
+                                  YV12_BUFFER_CONFIG *src,
+                                  TplDepFrame *ref_tpl_frame) {
+  AV1_COMMON *cm = &cpi->common;
+  ThreadData *td = &cpi->td;
+
+  const int bw = 4 << mi_size_wide_log2[bsize];
+  const int bh = 4 << mi_size_high_log2[bsize];
+  const int mi_height = mi_size_high[bsize];
+  const int mi_width = mi_size_wide[bsize];
+  const int pix_num = bw * bh;
+  const TX_SIZE tx_size = max_txsize_lookup[bsize];
+
+  DECLARE_ALIGNED(32, uint16_t, predictor16[MC_FLOW_NUM_PELS * 3]);
+  DECLARE_ALIGNED(32, uint8_t, predictor8[MC_FLOW_NUM_PELS * 3]);
+  uint8_t *predictor;
+  DECLARE_ALIGNED(32, int16_t, src_diff[MC_FLOW_NUM_PELS]);
+  DECLARE_ALIGNED(32, tran_low_t, coeff[MC_FLOW_NUM_PELS]);
+
+  if (is_cur_buf_hbd(xd))
+    predictor = CONVERT_TO_BYTEPTR(predictor16);
+  else
+    predictor = predictor8;
+
+  // Initialize advanced prediction parameters as default values
+  struct scale_factors sf;
+  av1_setup_scale_factors_for_frame(&sf, ref->y_crop_width, ref->y_crop_height,
+                                    src->y_crop_width, src->y_crop_height);
+  ConvolveParams conv_params = get_conv_params(0, 0, xd->bd);
+  WarpTypesAllowed warp_types;
+  memset(&warp_types, 0, sizeof(WarpTypesAllowed));
+  const InterpFilters kernel =
+      av1_make_interp_filters(EIGHTTAP_REGULAR, EIGHTTAP_REGULAR);
+  xd->above_mbmi = NULL;
+  xd->left_mbmi = NULL;
+
+  for (int mi_row = 0; mi_row < cm->mi_rows; mi_row += mi_height) {
+    // Motion estimation row boundary
+    x->mv_limits.row_min = -((mi_row * MI_SIZE) + (17 - 2 * AOM_INTERP_EXTEND));
+    x->mv_limits.row_max =
+        (cm->mi_rows - 1 - mi_row) * MI_SIZE + (17 - 2 * AOM_INTERP_EXTEND);
+    xd->mb_to_top_edge = -((mi_row * MI_SIZE) * 8);
+    xd->mb_to_bottom_edge = ((cm->mi_rows - 1 - mi_row) * MI_SIZE) * 8;
+
+    for (int mi_col = 0; mi_col < cm->mi_cols; mi_col += mi_width) {
+      int64_t inter_cost, intra_cost;
+
+      // Intra mode
+      int64_t best_intra_cost = INT64_MAX;
+      for (PREDICTION_MODE mode = DC_PRED; mode <= PAETH_PRED; ++mode) {
+        uint8_t *src_buf =
+            src->y_buffer + mi_row * MI_SIZE * src->y_stride + mi_col * MI_SIZE;
+        const int src_stride = src->y_stride;
+
+        uint8_t *dst_buf = &predictor[0];
+        const int dst_stride = bw;
+
+        xd->mi[0]->sb_type = bsize;
+        xd->mi[0]->ref_frame[0] = INTRA_FRAME;
+
+        av1_predict_intra_block(cm, xd, bw, bh, tx_size, mode, 0, 0,
+                                FILTER_INTRA_MODES, src_buf, src_stride,
+                                dst_buf, dst_stride, 0, 0, 0);
+
+        if (is_cur_buf_hbd(xd)) {
+          aom_highbd_subtract_block(bh, bw, src_diff, bw, src_buf, src_stride,
+                                    dst_buf, dst_stride, xd->bd);
+        } else {
+          aom_subtract_block(bh, bw, src_diff, bw, src_buf, src_stride, dst_buf,
+                             dst_stride);
+        }
+
+        wht_fwd_txfm(src_diff, bw, coeff, tx_size);
+
+        intra_cost = aom_satd(coeff, pix_num);
+
+        if (intra_cost < best_intra_cost) best_intra_cost = intra_cost;
+      }
+
+      // Inter mode
+      // Motion estimation column boundary
+      x->mv_limits.col_min =
+          -((mi_col * MI_SIZE) + (17 - 2 * AOM_INTERP_EXTEND));
+      x->mv_limits.col_max =
+          ((cm->mi_cols - 1 - mi_col) * MI_SIZE) + (17 - 2 * AOM_INTERP_EXTEND);
+      xd->mb_to_left_edge = -((mi_col * MI_SIZE) * 8);
+      xd->mb_to_right_edge = ((cm->mi_cols - 1 - mi_col) * MI_SIZE) * 8;
+
+      const int mb_y_offset =
+          mi_row * MI_SIZE * src->y_stride + mi_col * MI_SIZE;
+      const int mb_y_offset_ref =
+          mi_row * MI_SIZE * ref->y_stride + mi_col * MI_SIZE;
+      motion_compensated_prediction(
+          cpi, td, src->y_buffer + mb_y_offset, ref->y_buffer + mb_y_offset_ref,
+          src->y_stride, ref->y_stride, bsize, mi_row, mi_col);
+
+      av1_build_inter_predictor(
+          ref->y_buffer + mb_y_offset_ref, ref->y_stride, &predictor[0], bw,
+          &x->best_mv.as_mv, &sf, bw, bh, &conv_params, kernel, &warp_types,
+          mi_col * MI_SIZE, mi_row * MI_SIZE, 0, 0, MV_PRECISION_Q3,
+          mi_col * MI_SIZE, mi_row * MI_SIZE, xd, 0);
+      if (is_cur_buf_hbd(xd)) {
+        aom_highbd_subtract_block(bh, bw, src_diff, bw,
+                                  src->y_buffer + mb_y_offset, src->y_stride,
+                                  &predictor[0], bw, xd->bd);
+      } else {
+        aom_subtract_block(bh, bw, src_diff, bw, src->y_buffer + mb_y_offset,
+                           src->y_stride, &predictor[0], bw);
+      }
+      wht_fwd_txfm(src_diff, bw, coeff, tx_size);
+      inter_cost = aom_satd(coeff, pix_num);
+
+      // Finalize stats
+      best_intra_cost = AOMMAX(best_intra_cost, 1);
+      inter_cost = AOMMIN(best_intra_cost, inter_cost);
+
+      // Project stats to reference block
+      TplDepStats *ref_stats_ptr = ref_tpl_frame->tpl_stats_ptr;
+      const MV mv = x->best_mv.as_mv;
+      const int mv_row = mv.row >> 3;
+      const int mv_col = mv.col >> 3;
+      const int ref_pos_row = mi_row * MI_SIZE + mv_row;
+      const int ref_pos_col = mi_col * MI_SIZE + mv_col;
+      const int grid_pos_row_base = round_floor(ref_pos_row, bh) * bh;
+      const int grid_pos_col_base = round_floor(ref_pos_col, bw) * bw;
+
+      for (int block = 0; block < 4; ++block) {
+        const int grid_pos_row = grid_pos_row_base + bh * (block >> 1);
+        const int grid_pos_col = grid_pos_col_base + bw * (block & 0x01);
+
+        if (grid_pos_row >= 0 &&
+            grid_pos_row < ref_tpl_frame->mi_rows * MI_SIZE &&
+            grid_pos_col >= 0 &&
+            grid_pos_col < ref_tpl_frame->mi_cols * MI_SIZE) {
+          const int overlap_area =
+              get_overlap_area(grid_pos_row, grid_pos_col, ref_pos_row,
+                               ref_pos_col, block, bsize);
+          const int ref_mi_row = round_floor(grid_pos_row, bh) * mi_height;
+          const int ref_mi_col = round_floor(grid_pos_col, bw) * mi_width;
+
+          const int64_t mc_saved = best_intra_cost - inter_cost;
+          for (int idy = 0; idy < mi_height; ++idy) {
+            for (int idx = 0; idx < mi_width; ++idx) {
+              TplDepStats *des_stats =
+                  &ref_stats_ptr[(ref_mi_row + idy) * ref_tpl_frame->stride +
+                                 (ref_mi_col + idx)];
+              des_stats->mc_count += overlap_area << TPL_DEP_COST_SCALE_LOG2;
+              des_stats->mc_saved += (mc_saved * overlap_area) / pix_num;
+              assert(overlap_area >= 0);
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 void av1_tpl_setup_forward_stats(AV1_COMP *cpi) {
