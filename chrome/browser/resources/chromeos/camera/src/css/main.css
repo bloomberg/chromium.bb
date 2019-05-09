@@ -244,7 +244,7 @@ div.mode-item>span {
   line-height: 32px;
   margin: 8px 0;
   padding: 0 12px;
-  text-shadow: 2px 3px 3px rgba(32, 33, 36, 0.3);
+  text-shadow: 0 2px 3px rgba(32, 33, 36, 0.3);
 }
 
 .mode-item>input {
