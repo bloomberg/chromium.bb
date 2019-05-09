@@ -47,6 +47,13 @@ class LearningTaskControllerHelperTest : public testing::Test {
     id_ = base::UnguessableToken::Create();
   }
 
+  ~LearningTaskControllerHelperTest() override {
+    // To prevent a memory leak, reset the helper.  This will post destruction
+    // of other objects, so RunUntilIdle().
+    helper_.reset();
+    scoped_task_environment_.RunUntilIdle();
+  }
+
   void CreateClient(bool include_fp) {
     // Create the fake feature provider, and get a pointer to it.
     base::SequenceBound<FakeFeatureProvider> sb_fp;

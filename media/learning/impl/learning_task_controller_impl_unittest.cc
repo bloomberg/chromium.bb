@@ -108,6 +108,13 @@ class LearningTaskControllerImplTest : public testing::Test {
     task_.min_new_data_fraction = 0.1;
   }
 
+  ~LearningTaskControllerImplTest() override {
+    // To prevent a memory leak, reset the controller.  This may post
+    // destruction of other objects, so RunUntilIdle().
+    controller_.reset();
+    scoped_task_environment_.RunUntilIdle();
+  }
+
   void CreateController(SequenceBoundFeatureProvider feature_provider =
                             SequenceBoundFeatureProvider()) {
     std::unique_ptr<FakeDistributionReporter> reporter =

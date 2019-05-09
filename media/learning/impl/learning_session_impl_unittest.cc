@@ -100,6 +100,13 @@ class LearningSessionImplTest : public testing::Test {
     task_1_.name = "task_1";
   }
 
+  ~LearningSessionImplTest() override {
+    // To prevent a memory leak, reset the session.  This will post destruction
+    // of other objects, so RunUntilIdle().
+    session_.reset();
+    scoped_task_environment_.RunUntilIdle();
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
