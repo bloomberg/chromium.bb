@@ -4,7 +4,7 @@
 
 mojom = "//components/chromeos_camera/common/jpeg_encode_accelerator.mojom"
 
-public_headers = [ "//media/video/jpeg_encode_accelerator.h" ]
+public_headers = [ "//components/chromeos_camera/jpeg_encode_accelerator.h" ]
 
 traits_headers = [
   "//components/chromeos_camera/common/jpeg_encode_accelerator_mojom_traits.h",
@@ -20,6 +20,4 @@ deps = [
   "//media/base/ipc",
 ]
 
-type_mappings = [
-  "chromeos_camera.mojom.EncodeStatus=media::JpegEncodeAccelerator::Status",
-]
+type_mappings = [ "chromeos_camera.mojom.EncodeStatus=chromeos_camera::JpegEncodeAccelerator::Status" ]

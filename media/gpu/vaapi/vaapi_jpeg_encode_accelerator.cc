@@ -233,8 +233,9 @@ void VaapiJpegEncodeAccelerator::VideoFrameReady(int32_t buffer_id,
   client_->VideoFrameReady(buffer_id, encoded_picture_size);
 }
 
-JpegEncodeAccelerator::Status VaapiJpegEncodeAccelerator::Initialize(
-    JpegEncodeAccelerator::Client* client) {
+chromeos_camera::JpegEncodeAccelerator::Status
+VaapiJpegEncodeAccelerator::Initialize(
+    chromeos_camera::JpegEncodeAccelerator::Client* client) {
   VLOGF(2);
   DCHECK(task_runner_->BelongsToCurrentThread());
 

@@ -10,11 +10,11 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "components/chromeos_camera/jpeg_encode_accelerator.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/unaligned_shared_memory.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
-#include "media/video/jpeg_encode_accelerator.h"
 
 namespace media {
 
@@ -28,14 +28,15 @@ namespace media {
 // a weak this can be run on the encoder thread because it can assume
 // VaapiJpegEncodeAccelerator is still alive.
 class MEDIA_GPU_EXPORT VaapiJpegEncodeAccelerator
-    : public JpegEncodeAccelerator {
+    : public chromeos_camera::JpegEncodeAccelerator {
  public:
   explicit VaapiJpegEncodeAccelerator(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
   ~VaapiJpegEncodeAccelerator() override;
 
   // JpegEncodeAccelerator implementation.
-  Status Initialize(JpegEncodeAccelerator::Client* client) override;
+  chromeos_camera::JpegEncodeAccelerator::Status Initialize(
+      chromeos_camera::JpegEncodeAccelerator::Client* client) override;
   size_t GetMaxCodedBufferSize(const gfx::Size& picture_size) override;
 
   // Currently only I420 format is supported for |video_frame|.

@@ -17,13 +17,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "components/chromeos_camera/jpeg_encode_accelerator.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/unaligned_shared_memory.h"
 #include "media/base/video_frame.h"
 #include "media/filters/jpeg_parser.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/v4l2/v4l2_device.h"
-#include "media/video/jpeg_encode_accelerator.h"
 
 namespace {
 
@@ -46,14 +46,15 @@ static_assert(
 namespace media {
 
 class MEDIA_GPU_EXPORT V4L2JpegEncodeAccelerator
-    : public JpegEncodeAccelerator {
+    : public chromeos_camera::JpegEncodeAccelerator {
  public:
   V4L2JpegEncodeAccelerator(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
   ~V4L2JpegEncodeAccelerator() override;
 
   // JpegEncodeAccelerator implementation.
-  JpegEncodeAccelerator::Status Initialize(Client* client) override;
+  chromeos_camera::JpegEncodeAccelerator::Status Initialize(
+      chromeos_camera::JpegEncodeAccelerator::Client* client) override;
   size_t GetMaxCodedBufferSize(const gfx::Size& picture_size) override;
   void Encode(scoped_refptr<media::VideoFrame> video_frame,
               int quality,
@@ -266,7 +267,7 @@ class MEDIA_GPU_EXPORT V4L2JpegEncodeAccelerator
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // The client of this class.
-  Client* client_;
+  chromeos_camera::JpegEncodeAccelerator::Client* client_;
 
   // Thread to communicate with the device.
   base::Thread encoder_thread_;

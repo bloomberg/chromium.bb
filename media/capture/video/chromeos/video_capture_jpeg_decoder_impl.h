@@ -15,12 +15,12 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "components/chromeos_camera/mojo_mjpeg_decode_accelerator.h"
 #include "gpu/config/gpu_info.h"
 #include "media/capture/capture_export.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
 #include "media/capture/video/chromeos/video_capture_jpeg_decoder.h"
 #include "media/capture/video/video_capture_device_factory.h"
-#include "media/mojo/clients/cros_mojo_mjpeg_decode_accelerator.h"
 
 namespace media {
 
@@ -35,7 +35,7 @@ namespace media {
 // media::VideoCaptureJpegDecoder methods may be called from any thread.
 class CAPTURE_EXPORT VideoCaptureJpegDecoderImpl
     : public VideoCaptureJpegDecoder,
-      public MjpegDecodeAccelerator::Client {
+      public chromeos_camera::MjpegDecodeAccelerator::Client {
  public:
   VideoCaptureJpegDecoderImpl(
       MojoMjpegDecodeAcceleratorFactoryCB jpeg_decoder_factory,
@@ -55,11 +55,12 @@ class CAPTURE_EXPORT VideoCaptureJpegDecoderImpl
       base::TimeDelta timestamp,
       media::VideoCaptureDevice::Client::Buffer out_buffer) override;
 
-  // MjpegDecodeAccelerator::Client implementation.
+  // chromeos_camera::MjpegDecodeAccelerator::Client implementation.
   // These will be called on |decoder_task_runner|.
   void VideoFrameReady(int32_t buffer_id) override;
-  void NotifyError(int32_t buffer_id,
-                   media::MjpegDecodeAccelerator::Error error) override;
+  void NotifyError(
+      int32_t buffer_id,
+      chromeos_camera::MjpegDecodeAccelerator::Error error) override;
 
  private:
   void FinishInitialization();
@@ -77,7 +78,7 @@ class CAPTURE_EXPORT VideoCaptureJpegDecoderImpl
   scoped_refptr<base::SequencedTaskRunner> decoder_task_runner_;
 
   // The underlying JPEG decode accelerator.
-  std::unique_ptr<media::MjpegDecodeAccelerator> decoder_;
+  std::unique_ptr<chromeos_camera::MjpegDecodeAccelerator> decoder_;
 
   // The callback to run when decode succeeds.
   const DecodeDoneCB decode_done_cb_;

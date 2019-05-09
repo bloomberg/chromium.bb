@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/mojo/services/cros_mojo_mjpeg_decode_accelerator_service.h"
+#include "components/chromeos_camera/mojo_mjpeg_decode_accelerator_service.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -13,17 +13,17 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace media {
+namespace chromeos_camera {
 
 static const int32_t kArbitraryBitstreamBufferId = 123;
 
 // Test fixture for the unit that is created via the mojom interface for
-// class CrOSMojoMjpegDecodeAcceleratorService. Uses a FakeJpegDecodeAccelerator
+// class MojoMjpegDecodeAcceleratorService. Uses a FakeJpegDecodeAccelerator
 // to simulate the actual decoding without the need for special hardware.
-class CrOSMojoMjpegDecodeAcceleratorServiceTest : public ::testing::Test {
+class MojoMjpegDecodeAcceleratorServiceTest : public ::testing::Test {
  public:
-  CrOSMojoMjpegDecodeAcceleratorServiceTest() = default;
-  ~CrOSMojoMjpegDecodeAcceleratorServiceTest() override = default;
+  MojoMjpegDecodeAcceleratorServiceTest() = default;
+  ~MojoMjpegDecodeAcceleratorServiceTest() override = default;
 
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -48,14 +48,13 @@ class CrOSMojoMjpegDecodeAcceleratorServiceTest : public ::testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
-TEST_F(CrOSMojoMjpegDecodeAcceleratorServiceTest, InitializeAndDecode) {
+TEST_F(MojoMjpegDecodeAcceleratorServiceTest, InitializeAndDecode) {
   chromeos_camera::mojom::MjpegDecodeAcceleratorPtr jpeg_decoder;
-  CrOSMojoMjpegDecodeAcceleratorService::Create(
-      mojo::MakeRequest(&jpeg_decoder));
+  MojoMjpegDecodeAcceleratorService::Create(mojo::MakeRequest(&jpeg_decoder));
 
   base::RunLoop run_loop;
   jpeg_decoder->Initialize(
-      base::Bind(&CrOSMojoMjpegDecodeAcceleratorServiceTest::OnInitializeDone,
+      base::Bind(&MojoMjpegDecodeAcceleratorServiceTest::OnInitializeDone,
                  base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
 
@@ -64,9 +63,9 @@ TEST_F(CrOSMojoMjpegDecodeAcceleratorServiceTest, InitializeAndDecode) {
   const gfx::Size kDummyFrameCodedSize(10, 10);
   const char kKeyId[] = "key id";
   const char kIv[] = "0123456789abcdef";
-  std::vector<SubsampleEntry> subsamples;
-  subsamples.push_back(SubsampleEntry(10, 5));
-  subsamples.push_back(SubsampleEntry(15, 7));
+  std::vector<media::SubsampleEntry> subsamples;
+  subsamples.push_back(media::SubsampleEntry(10, 5));
+  subsamples.push_back(media::SubsampleEntry(15, 7));
 
   base::RunLoop run_loop2;
   base::SharedMemory shm;
@@ -75,7 +74,7 @@ TEST_F(CrOSMojoMjpegDecodeAcceleratorServiceTest, InitializeAndDecode) {
   mojo::ScopedSharedBufferHandle output_frame_handle =
       mojo::SharedBufferHandle::Create(kOutputFrameSizeInBytes);
 
-  BitstreamBuffer bitstream_buffer(
+  media::BitstreamBuffer bitstream_buffer(
       kArbitraryBitstreamBufferId,
       base::SharedMemory::DuplicateHandle(shm.handle()),
       kInputBufferSizeInBytes);
@@ -84,9 +83,9 @@ TEST_F(CrOSMojoMjpegDecodeAcceleratorServiceTest, InitializeAndDecode) {
   jpeg_decoder->Decode(
       bitstream_buffer, kDummyFrameCodedSize, std::move(output_frame_handle),
       base::checked_cast<uint32_t>(kOutputFrameSizeInBytes),
-      base::Bind(&CrOSMojoMjpegDecodeAcceleratorServiceTest::OnDecodeAck,
+      base::Bind(&MojoMjpegDecodeAcceleratorServiceTest::OnDecodeAck,
                  base::Unretained(this), run_loop2.QuitClosure()));
   run_loop2.Run();
 }
 
-}  // namespace media
+}  // namespace chromeos_camera

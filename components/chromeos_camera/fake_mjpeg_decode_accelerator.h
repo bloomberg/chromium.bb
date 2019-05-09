@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_FAKE_MJPEG_DECODE_ACCELERATOR_H_
-#define MEDIA_GPU_FAKE_MJPEG_DECODE_ACCELERATOR_H_
+#ifndef COMPONENTS_CHROMEOS_CAMERA_FAKE_MJPEG_DECODE_ACCELERATOR_H_
+#define COMPONENTS_CHROMEOS_CAMERA_FAKE_MJPEG_DECODE_ACCELERATOR_H_
 
 #include <stdint.h>
 
@@ -12,21 +12,19 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
+#include "components/chromeos_camera/mjpeg_decode_accelerator.h"
 #include "media/base/bitstream_buffer.h"
-#include "media/gpu/media_gpu_export.h"
-#include "media/video/mjpeg_decode_accelerator.h"
 
 namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace media {
+namespace chromeos_camera {
 
 // Uses software-based decoding. The purpose of this class is to enable testing
 // of communication to the MjpegDecodeAccelerator without requiring an actual
 // hardware decoder.
-class MEDIA_GPU_EXPORT FakeMjpegDecodeAccelerator
-    : public MjpegDecodeAccelerator {
+class FakeMjpegDecodeAccelerator : public MjpegDecodeAccelerator {
  public:
   FakeMjpegDecodeAccelerator(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
@@ -34,14 +32,15 @@ class MEDIA_GPU_EXPORT FakeMjpegDecodeAccelerator
 
   // MjpegDecodeAccelerator implementation.
   bool Initialize(MjpegDecodeAccelerator::Client* client) override;
-  void Decode(const BitstreamBuffer& bitstream_buffer,
-              const scoped_refptr<VideoFrame>& video_frame) override;
+  void Decode(const media::BitstreamBuffer& bitstream_buffer,
+              const scoped_refptr<media::VideoFrame>& video_frame) override;
   bool IsSupported() override;
 
  private:
-  void DecodeOnDecoderThread(const BitstreamBuffer& bitstream_buffer,
-                             const scoped_refptr<VideoFrame>& video_frame,
-                             std::unique_ptr<UnalignedSharedMemory> src_shm);
+  void DecodeOnDecoderThread(
+      const media::BitstreamBuffer& bitstream_buffer,
+      const scoped_refptr<media::VideoFrame>& video_frame,
+      std::unique_ptr<media::UnalignedSharedMemory> src_shm);
   void NotifyError(int32_t bitstream_buffer_id, Error error);
   void NotifyErrorOnClientThread(int32_t bitstream_buffer_id, Error error);
   void OnDecodeDoneOnClientThread(int32_t input_buffer_id);
@@ -62,6 +61,6 @@ class MEDIA_GPU_EXPORT FakeMjpegDecodeAccelerator
   DISALLOW_COPY_AND_ASSIGN(FakeMjpegDecodeAccelerator);
 };
 
-}  // namespace media
+}  // namespace chromeos_camera
 
-#endif  // MEDIA_GPU_FAKE_MJPEG_DECODE_ACCELERATOR_H_
+#endif  // COMPONENTS_CHROMEOS_CAMERA_FAKE_MJPEG_DECODE_ACCELERATOR_H_

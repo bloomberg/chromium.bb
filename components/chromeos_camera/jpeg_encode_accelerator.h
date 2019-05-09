@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_VIDEO_JPEG_ENCODE_ACCELERATOR_H_
-#define MEDIA_VIDEO_JPEG_ENCODE_ACCELERATOR_H_
+#ifndef COMPONENTS_CHROMEOS_CAMERA_JPEG_ENCODE_ACCELERATOR_H_
+#define COMPONENTS_CHROMEOS_CAMERA_JPEG_ENCODE_ACCELERATOR_H_
 
 #include <stdint.h>
 
 #include "media/base/bitstream_buffer.h"
-#include "media/base/media_export.h"
 #include "media/base/video_frame.h"
 
-namespace media {
+namespace chromeos_camera {
 
 // JPEG encoder interface.
-class MEDIA_EXPORT JpegEncodeAccelerator {
+class JpegEncodeAccelerator {
  public:
   static constexpr int32_t kInvalidBitstreamBufferId = -1;
   enum Status {
@@ -45,7 +44,7 @@ class MEDIA_EXPORT JpegEncodeAccelerator {
     LARGEST_ERROR_ENUM = PLATFORM_FAILURE,
   };
 
-  class MEDIA_EXPORT Client {
+  class Client {
    public:
     // Callback called after each successful Encode().
     // Parameters:
@@ -102,8 +101,8 @@ class MEDIA_EXPORT JpegEncodeAccelerator {
   //  called.
   virtual void Encode(scoped_refptr<media::VideoFrame> video_frame,
                       int quality,
-                      const BitstreamBuffer* exif_buffer,
-                      const BitstreamBuffer& output_buffer) = 0;
+                      const media::BitstreamBuffer* exif_buffer,
+                      const media::BitstreamBuffer& output_buffer) = 0;
 
   // Encodes the given |video_frame| that contains a YUV image. Client will
   // receive the encoded result in Client::VideoFrameReady() callback with the
@@ -116,13 +115,13 @@ class MEDIA_EXPORT JpegEncodeAccelerator {
   //  quality.
   //  |exif_buffer| contains Exif data to be inserted into JPEG image. If it's
   //  nullptr, the JFIF APP0 segment will be inserted.
-  virtual void EncodeWithDmaBuf(scoped_refptr<VideoFrame> input_frame,
-                                scoped_refptr<VideoFrame> output_frame,
+  virtual void EncodeWithDmaBuf(scoped_refptr<media::VideoFrame> input_frame,
+                                scoped_refptr<media::VideoFrame> output_frame,
                                 int quality,
                                 int32_t buffer_id,
-                                const BitstreamBuffer* exif_buffer) = 0;
+                                const media::BitstreamBuffer* exif_buffer) = 0;
 };
 
-}  // namespace media
+}  // namespace chromeos_camera
 
-#endif  // MEDIA_VIDEO_JPEG_ENCODE_ACCELERATOR_H_
+#endif  // COMPONENTS_CHROMEOS_CAMERA_JPEG_ENCODE_ACCELERATOR_H_

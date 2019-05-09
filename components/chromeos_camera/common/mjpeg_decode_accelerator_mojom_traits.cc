@@ -14,20 +14,20 @@ namespace mojo {
 // static
 chromeos_camera::mojom::DecodeError
 EnumTraits<chromeos_camera::mojom::DecodeError,
-           media::MjpegDecodeAccelerator::Error>::
-    ToMojom(media::MjpegDecodeAccelerator::Error error) {
+           chromeos_camera::MjpegDecodeAccelerator::Error>::
+    ToMojom(chromeos_camera::MjpegDecodeAccelerator::Error error) {
   switch (error) {
-    case media::MjpegDecodeAccelerator::NO_ERRORS:
+    case chromeos_camera::MjpegDecodeAccelerator::NO_ERRORS:
       return chromeos_camera::mojom::DecodeError::NO_ERRORS;
-    case media::MjpegDecodeAccelerator::INVALID_ARGUMENT:
+    case chromeos_camera::MjpegDecodeAccelerator::INVALID_ARGUMENT:
       return chromeos_camera::mojom::DecodeError::INVALID_ARGUMENT;
-    case media::MjpegDecodeAccelerator::UNREADABLE_INPUT:
+    case chromeos_camera::MjpegDecodeAccelerator::UNREADABLE_INPUT:
       return chromeos_camera::mojom::DecodeError::UNREADABLE_INPUT;
-    case media::MjpegDecodeAccelerator::PARSE_JPEG_FAILED:
+    case chromeos_camera::MjpegDecodeAccelerator::PARSE_JPEG_FAILED:
       return chromeos_camera::mojom::DecodeError::PARSE_JPEG_FAILED;
-    case media::MjpegDecodeAccelerator::UNSUPPORTED_JPEG:
+    case chromeos_camera::MjpegDecodeAccelerator::UNSUPPORTED_JPEG:
       return chromeos_camera::mojom::DecodeError::UNSUPPORTED_JPEG;
-    case media::MjpegDecodeAccelerator::PLATFORM_FAILURE:
+    case chromeos_camera::MjpegDecodeAccelerator::PLATFORM_FAILURE:
       return chromeos_camera::mojom::DecodeError::PLATFORM_FAILURE;
   }
   NOTREACHED();
@@ -36,27 +36,27 @@ EnumTraits<chromeos_camera::mojom::DecodeError,
 
 // static
 bool EnumTraits<chromeos_camera::mojom::DecodeError,
-                media::MjpegDecodeAccelerator::Error>::
+                chromeos_camera::MjpegDecodeAccelerator::Error>::
     FromMojom(chromeos_camera::mojom::DecodeError error,
-              media::MjpegDecodeAccelerator::Error* out) {
+              chromeos_camera::MjpegDecodeAccelerator::Error* out) {
   switch (error) {
     case chromeos_camera::mojom::DecodeError::NO_ERRORS:
-      *out = media::MjpegDecodeAccelerator::Error::NO_ERRORS;
+      *out = chromeos_camera::MjpegDecodeAccelerator::Error::NO_ERRORS;
       return true;
     case chromeos_camera::mojom::DecodeError::INVALID_ARGUMENT:
-      *out = media::MjpegDecodeAccelerator::Error::INVALID_ARGUMENT;
+      *out = chromeos_camera::MjpegDecodeAccelerator::Error::INVALID_ARGUMENT;
       return true;
     case chromeos_camera::mojom::DecodeError::UNREADABLE_INPUT:
-      *out = media::MjpegDecodeAccelerator::Error::UNREADABLE_INPUT;
+      *out = chromeos_camera::MjpegDecodeAccelerator::Error::UNREADABLE_INPUT;
       return true;
     case chromeos_camera::mojom::DecodeError::PARSE_JPEG_FAILED:
-      *out = media::MjpegDecodeAccelerator::Error::PARSE_JPEG_FAILED;
+      *out = chromeos_camera::MjpegDecodeAccelerator::Error::PARSE_JPEG_FAILED;
       return true;
     case chromeos_camera::mojom::DecodeError::UNSUPPORTED_JPEG:
-      *out = media::MjpegDecodeAccelerator::Error::UNSUPPORTED_JPEG;
+      *out = chromeos_camera::MjpegDecodeAccelerator::Error::UNSUPPORTED_JPEG;
       return true;
     case chromeos_camera::mojom::DecodeError::PLATFORM_FAILURE:
-      *out = media::MjpegDecodeAccelerator::Error::PLATFORM_FAILURE;
+      *out = chromeos_camera::MjpegDecodeAccelerator::Error::PLATFORM_FAILURE;
       return true;
   }
   NOTREACHED();
