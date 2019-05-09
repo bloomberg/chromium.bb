@@ -2111,6 +2111,7 @@ copy("dbus_service_files") {
   sources = [
     "dbus/org.chromium.ChromeFeaturesService.conf",
     "dbus/org.chromium.ComponentUpdaterService.conf",
+    "dbus/org.chromium.CryptohomeKeyDelegate.conf",
     "dbus/org.chromium.DriveFileStreamService.conf",
     "dbus/org.chromium.KioskAppService.conf",
     "dbus/org.chromium.LibvdaService.conf",
