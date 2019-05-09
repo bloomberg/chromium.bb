@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/css_gradient_value.h"
+#include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/style/clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
@@ -15,6 +16,8 @@
 #include "third_party/blink/renderer/core/style/style_generated_image.h"
 
 namespace blink {
+
+using namespace css_test_helpers;
 
 TEST(ComputedStyleTest, ShapeOutsideBoxEqual) {
   ShapeValue* shape1 = ShapeValue::CreateBoxShapeValue(CSSBoxType::kContent);
@@ -423,6 +426,62 @@ TEST(ComputedStyleTest, AnimationFlags) {
   TEST_ANIMATION_FLAG_NO_DIFF(IsRunningOpacityAnimationOnCompositor);
   TEST_ANIMATION_FLAG_NO_DIFF(IsRunningFilterAnimationOnCompositor);
   TEST_ANIMATION_FLAG_NO_DIFF(IsRunningBackdropFilterAnimationOnCompositor);
+}
+
+TEST(ComputedStyleTest, CustomPropertiesEqual_Values) {
+  Document* document = Document::CreateForTest();
+  RegisterProperty(*document, "--x", "<length>", "0px", false);
+
+  scoped_refptr<ComputedStyle> style1 = ComputedStyle::Create();
+  scoped_refptr<ComputedStyle> style2 = ComputedStyle::Create();
+
+  using UnitType = CSSPrimitiveValue::UnitType;
+
+  const auto* value1 = CSSPrimitiveValue::Create(1.0, UnitType::kPixels);
+  const auto* value2 = CSSPrimitiveValue::Create(2.0, UnitType::kPixels);
+  const auto* value3 = CSSPrimitiveValue::Create(1.0, UnitType::kPixels);
+
+  Vector<AtomicString> properties;
+  properties.push_back("--x");
+
+  style1->SetVariableValue("--x", value1, false);
+  style2->SetVariableValue("--x", value1, false);
+  EXPECT_TRUE(style1->CustomPropertiesEqual(properties, *style2));
+
+  style1->SetVariableValue("--x", value1, false);
+  style2->SetVariableValue("--x", value3, false);
+  EXPECT_TRUE(style1->CustomPropertiesEqual(properties, *style2));
+
+  style1->SetVariableValue("--x", value1, false);
+  style2->SetVariableValue("--x", value2, false);
+  EXPECT_FALSE(style1->CustomPropertiesEqual(properties, *style2));
+}
+
+TEST(ComputedStyleTest, CustomPropertiesEqual_Data) {
+  Document* document = Document::CreateForTest();
+  RegisterProperty(*document, "--x", "<length>", "0px", false);
+
+  scoped_refptr<ComputedStyle> style1 = ComputedStyle::Create();
+  scoped_refptr<ComputedStyle> style2 = ComputedStyle::Create();
+
+  auto value1 = CreateVariableData("foo");
+  auto value2 = CreateVariableData("bar");
+  auto value3 = CreateVariableData("foo");
+
+  Vector<AtomicString> properties;
+  properties.push_back("--x");
+
+  style1->SetVariableData("--x", value1, false);
+  style2->SetVariableData("--x", value1, false);
+  EXPECT_TRUE(style1->CustomPropertiesEqual(properties, *style2));
+
+  style1->SetVariableData("--x", value1, false);
+  style2->SetVariableData("--x", value3, false);
+  EXPECT_TRUE(style1->CustomPropertiesEqual(properties, *style2));
+
+  style1->SetVariableData("--x", value1, false);
+  style2->SetVariableData("--x", value2, false);
+  EXPECT_FALSE(style1->CustomPropertiesEqual(properties, *style2));
 }
 
 }  // namespace blink

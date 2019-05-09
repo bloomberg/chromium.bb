@@ -71,7 +71,7 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
   const PropertyRegistration* registration =
       registry_ ? registry_->Registration(name) : nullptr;
 
-  CSSVariableData* variable_data = GetVariable(name, registration);
+  CSSVariableData* variable_data = GetVariableData(name, registration);
 
   if (!variable_data)
     return nullptr;
@@ -93,11 +93,11 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
 
   if (!registration) {
     if (resolved_data != variable_data && options.absolutize)
-      SetVariable(name, registration, resolved_data);
+      SetVariableData(name, registration, resolved_data);
     return resolved_data;
   }
 
-  const CSSValue* value = GetRegisteredVariable(name, *registration);
+  const CSSValue* value = GetVariableValue(name, *registration);
   const CSSValue* resolved_value = value;
 
   // The computed value of a registered property must be stored as a CSSValue
@@ -116,8 +116,8 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
   // If either parsing or resolution failed, fall back on "unset".
   if (!resolved_data) {
     if (registration->Inherits()) {
-      resolved_data = state_.ParentStyle()->GetVariable(name, true);
-      resolved_value = state_.ParentStyle()->GetRegisteredVariable(name, true);
+      resolved_data = state_.ParentStyle()->GetVariableData(name, true);
+      resolved_value = state_.ParentStyle()->GetVariableValue(name, true);
     } else {
       resolved_data = registration->InitialVariableData();
       resolved_value = registration->Initial();
@@ -141,14 +141,14 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
   // token sequence to retain any var()-references. This makes it possible to
   // resolve the var()-reference again, using a different (e.g. animated) value.
   if (options.absolutize && resolved_data != variable_data)
-    SetVariable(name, registration, resolved_data);
+    SetVariableData(name, registration, resolved_data);
 
   // The options.absolutize flag does not apply to the computed value, only
   // to the tokens used for substitution. Hence, store the computed value on
   // ComputedStyle, regardless of the flag. This is needed to correctly
   // calculate animations.
   if (value != resolved_value)
-    SetRegisteredVariable(name, *registration, resolved_value);
+    SetVariableValue(name, *registration, resolved_value);
 
   return resolved_data;
 }
@@ -210,51 +210,51 @@ bool CSSVariableResolver::IsVariableDisallowed(
           variable_data.HasRootFontUnits());
 }
 
-CSSVariableData* CSSVariableResolver::GetVariable(
+CSSVariableData* CSSVariableResolver::GetVariableData(
     const AtomicString& name,
     const PropertyRegistration* registration) {
-  return state_.Style()->GetVariable(name,
-                                     !registration || registration->Inherits());
+  return state_.Style()->GetVariableData(
+      name, !registration || registration->Inherits());
 }
 
-const CSSValue* CSSVariableResolver::GetRegisteredVariable(
+const CSSValue* CSSVariableResolver::GetVariableValue(
     const AtomicString& name,
     const PropertyRegistration& registration) {
-  return state_.Style()->GetRegisteredVariable(name, registration.Inherits());
+  return state_.Style()->GetVariableValue(name, registration.Inherits());
 }
 
-void CSSVariableResolver::SetVariable(
+void CSSVariableResolver::SetVariableData(
     const AtomicString& name,
     const PropertyRegistration* registration,
     scoped_refptr<CSSVariableData> variable_data) {
   if (!registration || registration->Inherits()) {
     DCHECK(inherited_variables_);
-    inherited_variables_->SetVariable(name, std::move(variable_data));
+    inherited_variables_->SetData(name, std::move(variable_data));
   } else {
     DCHECK(non_inherited_variables_);
-    non_inherited_variables_->SetVariable(name, std::move(variable_data));
+    non_inherited_variables_->SetData(name, std::move(variable_data));
   }
 }
 
-void CSSVariableResolver::SetRegisteredVariable(
+void CSSVariableResolver::SetVariableValue(
     const AtomicString& name,
     const PropertyRegistration& registration,
     const CSSValue* value) {
   if (registration.Inherits()) {
     DCHECK(inherited_variables_);
-    inherited_variables_->SetRegisteredVariable(name, value);
+    inherited_variables_->SetValue(name, value);
   } else {
     DCHECK(non_inherited_variables_);
-    non_inherited_variables_->SetRegisteredVariable(name, value);
+    non_inherited_variables_->SetValue(name, value);
   }
 }
 
 void CSSVariableResolver::SetInvalidVariable(
     const AtomicString& name,
     const PropertyRegistration* registration) {
-  SetVariable(name, registration, nullptr);
+  SetVariableData(name, registration, nullptr);
   if (registration)
-    SetRegisteredVariable(name, *registration, nullptr);
+    SetVariableValue(name, *registration, nullptr);
 }
 
 bool CSSVariableResolver::ResolveVariableReference(CSSParserTokenRange range,

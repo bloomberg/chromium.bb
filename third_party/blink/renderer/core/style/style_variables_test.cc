@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/style/style_variables.h"
 
-#include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/core/css/css_variable_data.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
@@ -15,22 +14,7 @@ namespace {
 
 using namespace css_test_helpers;
 
-class StyleVariablesTest : public PageTestBase {
- public:
-  scoped_refptr<CSSVariableData> CreateData(String s) {
-    auto tokens = CSSTokenizer(s).TokenizeToEOF();
-    CSSParserTokenRange range(tokens);
-    bool is_animation_tainted = false;
-    bool needs_variable_resolution = false;
-    return CSSVariableData::Create(range, is_animation_tainted,
-                                   needs_variable_resolution, KURL(),
-                                   WTF::TextEncoding());
-  }
-
-  const CSSValue* CreateValue(AtomicString s) {
-    return MakeGarbageCollected<CSSCustomIdentValue>(s);
-  }
-};
+class StyleVariablesTest : public PageTestBase {};
 
 TEST_F(StyleVariablesTest, EmptyEqual) {
   StyleVariables vars1;
@@ -41,8 +25,8 @@ TEST_F(StyleVariablesTest, EmptyEqual) {
 }
 
 TEST_F(StyleVariablesTest, Copy) {
-  auto foo_data = CreateData("foo");
-  const CSSValue* foo_value = CreateValue("foo");
+  auto foo_data = CreateVariableData("foo");
+  const CSSValue* foo_value = CreateCustomIdent("foo");
 
   StyleVariables vars1;
   vars1.SetData("--x", foo_data);
@@ -56,8 +40,8 @@ TEST_F(StyleVariablesTest, Copy) {
 
 TEST_F(StyleVariablesTest, GetNames) {
   StyleVariables vars;
-  vars.SetData("--x", CreateData("foo"));
-  vars.SetData("--y", CreateData("bar"));
+  vars.SetData("--x", CreateVariableData("foo"));
+  vars.SetData("--y", CreateVariableData("bar"));
 
   HashSet<AtomicString> names = vars.GetNames();
   EXPECT_EQ(2u, names.size());
@@ -70,15 +54,15 @@ TEST_F(StyleVariablesTest, GetNames) {
 TEST_F(StyleVariablesTest, IsEmptyData) {
   StyleVariables vars;
   EXPECT_TRUE(vars.IsEmpty());
-  vars.SetData("--x", CreateData("foo"));
+  vars.SetData("--x", CreateVariableData("foo"));
   EXPECT_FALSE(vars.IsEmpty());
 }
 
 TEST_F(StyleVariablesTest, SetData) {
   StyleVariables vars;
 
-  auto foo = CreateData("foo");
-  auto bar = CreateData("bar");
+  auto foo = CreateVariableData("foo");
+  auto bar = CreateVariableData("bar");
 
   EXPECT_FALSE(vars.GetData("--x").has_value());
 
@@ -99,7 +83,7 @@ TEST_F(StyleVariablesTest, SetNullData) {
 }
 
 TEST_F(StyleVariablesTest, SingleDataSamePointer) {
-  auto data = CreateData("foo");
+  auto data = CreateVariableData("foo");
   StyleVariables vars1;
   StyleVariables vars2;
   vars1.SetData("--x", data);
@@ -110,25 +94,25 @@ TEST_F(StyleVariablesTest, SingleDataSamePointer) {
 TEST_F(StyleVariablesTest, SingleDataSameContent) {
   StyleVariables vars1;
   StyleVariables vars2;
-  vars1.SetData("--x", CreateData("foo"));
-  vars2.SetData("--x", CreateData("foo"));
+  vars1.SetData("--x", CreateVariableData("foo"));
+  vars2.SetData("--x", CreateVariableData("foo"));
   EXPECT_EQ(vars1, vars2);
 }
 
 TEST_F(StyleVariablesTest, SingleDataContentNotEqual) {
   StyleVariables vars1;
   StyleVariables vars2;
-  vars1.SetData("--x", CreateData("foo"));
-  vars2.SetData("--x", CreateData("bar"));
+  vars1.SetData("--x", CreateVariableData("foo"));
+  vars2.SetData("--x", CreateVariableData("bar"));
   EXPECT_NE(vars1, vars2);
 }
 
 TEST_F(StyleVariablesTest, DifferentDataSize) {
   StyleVariables vars1;
   StyleVariables vars2;
-  vars1.SetData("--x", CreateData("foo"));
-  vars2.SetData("--x", CreateData("bar"));
-  vars2.SetData("--y", CreateData("foz"));
+  vars1.SetData("--x", CreateVariableData("foo"));
+  vars2.SetData("--x", CreateVariableData("bar"));
+  vars2.SetData("--y", CreateVariableData("foz"));
   EXPECT_NE(vars1, vars2);
 }
 
@@ -137,15 +121,15 @@ TEST_F(StyleVariablesTest, DifferentDataSize) {
 TEST_F(StyleVariablesTest, IsEmptyValue) {
   StyleVariables vars;
   EXPECT_TRUE(vars.IsEmpty());
-  vars.SetValue("--x", CreateValue("foo"));
+  vars.SetValue("--x", CreateCustomIdent("foo"));
   EXPECT_FALSE(vars.IsEmpty());
 }
 
 TEST_F(StyleVariablesTest, SetValue) {
   StyleVariables vars;
 
-  const CSSValue* foo = CreateValue("foo");
-  const CSSValue* bar = CreateValue("bar");
+  const CSSValue* foo = CreateCustomIdent("foo");
+  const CSSValue* bar = CreateCustomIdent("bar");
 
   EXPECT_FALSE(vars.GetValue("--x").has_value());
 
@@ -166,7 +150,7 @@ TEST_F(StyleVariablesTest, SetNullValue) {
 }
 
 TEST_F(StyleVariablesTest, SingleValueSamePointer) {
-  const CSSValue* foo = CreateValue("foo");
+  const CSSValue* foo = CreateCustomIdent("foo");
   StyleVariables vars1;
   StyleVariables vars2;
   vars1.SetValue("--x", foo);
@@ -177,25 +161,25 @@ TEST_F(StyleVariablesTest, SingleValueSamePointer) {
 TEST_F(StyleVariablesTest, SingleValueSameContent) {
   StyleVariables vars1;
   StyleVariables vars2;
-  vars1.SetValue("--x", CreateValue("foo"));
-  vars2.SetValue("--x", CreateValue("foo"));
+  vars1.SetValue("--x", CreateCustomIdent("foo"));
+  vars2.SetValue("--x", CreateCustomIdent("foo"));
   EXPECT_EQ(vars1, vars2);
 }
 
 TEST_F(StyleVariablesTest, SingleValueContentNotEqual) {
   StyleVariables vars1;
   StyleVariables vars2;
-  vars1.SetValue("--x", CreateValue("foo"));
-  vars2.SetValue("--x", CreateValue("bar"));
+  vars1.SetValue("--x", CreateCustomIdent("foo"));
+  vars2.SetValue("--x", CreateCustomIdent("bar"));
   EXPECT_NE(vars1, vars2);
 }
 
 TEST_F(StyleVariablesTest, DifferentValueSize) {
   StyleVariables vars1;
   StyleVariables vars2;
-  vars1.SetValue("--x", CreateValue("foo"));
-  vars2.SetValue("--x", CreateValue("bar"));
-  vars2.SetValue("--y", CreateValue("foz"));
+  vars1.SetValue("--x", CreateCustomIdent("foo"));
+  vars2.SetValue("--x", CreateCustomIdent("bar"));
+  vars2.SetValue("--y", CreateCustomIdent("foz"));
   EXPECT_NE(vars1, vars2);
 }
 

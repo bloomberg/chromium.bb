@@ -589,10 +589,12 @@ TEST_P(AnimationCompositorAnimationsTest,
 
   auto style = GetDocument().EnsureStyleResolver().StyleForElement(element_);
   EXPECT_TRUE(style->NonInheritedVariables());
-  EXPECT_TRUE(
-      style->NonInheritedVariables()->GetVariable(AtomicString("--foo")));
-  EXPECT_TRUE(
-      style->NonInheritedVariables()->GetVariable(AtomicString("--bar")));
+  EXPECT_TRUE(style->NonInheritedVariables()
+                  ->GetData(AtomicString("--foo"))
+                  .value_or(nullptr));
+  EXPECT_TRUE(style->NonInheritedVariables()
+                  ->GetData(AtomicString("--bar"))
+                  .value_or(nullptr));
 
   StringKeyframe* keyframe = CreateReplaceOpKeyframe("--foo", "10");
   EXPECT_TRUE(DuplicateSingleKeyframeAndTestIsCandidateOnResult(keyframe));

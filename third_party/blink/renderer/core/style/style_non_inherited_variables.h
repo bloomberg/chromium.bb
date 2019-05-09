@@ -28,27 +28,34 @@ class CORE_EXPORT StyleNonInheritedVariables {
     return base::WrapUnique(new StyleNonInheritedVariables(*this));
   }
 
-  bool operator==(const StyleNonInheritedVariables& other) const;
+  bool operator==(const StyleNonInheritedVariables& other) const {
+    return variables_ == other.variables_;
+  }
+
   bool operator!=(const StyleNonInheritedVariables& other) const {
     return !(*this == other);
   }
 
-  void SetVariable(const AtomicString& name,
-                   scoped_refptr<CSSVariableData> value) {
+  void SetData(const AtomicString& name, scoped_refptr<CSSVariableData> value) {
     needs_resolution_ =
         needs_resolution_ || (value && value->NeedsVariableResolution());
     variables_.SetData(name, std::move(value));
   }
-  CSSVariableData* GetVariable(const AtomicString& name) const;
-  StyleVariables::OptionalData GetData(const AtomicString&) const;
-
-  void SetRegisteredVariable(const AtomicString&, const CSSValue*);
-  const CSSValue* RegisteredVariable(const AtomicString& name) const {
-    return variables_.GetValue(name).value_or(nullptr);
+  StyleVariables::OptionalData GetData(const AtomicString& name) const {
+    return variables_.GetData(name);
   }
-  StyleVariables::OptionalValue GetValue(const AtomicString&) const;
 
-  HashSet<AtomicString> GetCustomPropertyNames() const;
+  void SetValue(const AtomicString& name, const CSSValue* value) {
+    needs_resolution_ = true;
+    variables_.SetValue(name, value);
+  }
+  StyleVariables::OptionalValue GetValue(const AtomicString& name) const {
+    return variables_.GetValue(name);
+  }
+
+  HashSet<AtomicString> GetCustomPropertyNames() const {
+    return variables_.GetNames();
+  }
 
   const StyleVariables::DataMap& Data() const { return variables_.Data(); }
   const StyleVariables::ValueMap& Values() const { return variables_.Values(); }

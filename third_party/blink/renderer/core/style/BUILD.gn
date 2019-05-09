@@ -81,7 +81,6 @@ blink_core_sources("rendering") {
     "style_inherited_variables.h",
     "style_initial_data.cc",
     "style_initial_data.h",
-    "style_non_inherited_variables.cc",
     "style_non_inherited_variables.h",
     "style_offset_rotation.h",
     "style_path.cc",

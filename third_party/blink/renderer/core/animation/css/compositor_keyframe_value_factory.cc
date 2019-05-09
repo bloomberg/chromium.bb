@@ -67,7 +67,7 @@ CompositorKeyframeValue* CompositorKeyframeValueFactory::Create(
         return nullptr;
       }
       const AtomicString& property_name = property.CustomPropertyName();
-      const CSSValue* value = style.GetRegisteredVariable(property_name);
+      const CSSValue* value = style.GetVariableValue(property_name);
       const auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value);
       if (!primitive_value || !primitive_value->IsNumber())
         return nullptr;

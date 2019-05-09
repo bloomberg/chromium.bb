@@ -32,17 +32,17 @@ class CORE_EXPORT StyleInheritedVariables
     return !(*this == other);
   }
 
-  void SetVariable(const AtomicString& name,
-                   scoped_refptr<CSSVariableData> value) {
+  void SetData(const AtomicString& name, scoped_refptr<CSSVariableData> value) {
     needs_resolution_ =
         needs_resolution_ || (value && value->NeedsVariableResolution());
     variables_.SetData(name, std::move(value));
   }
-  CSSVariableData* GetVariable(const AtomicString& name) const;
   StyleVariables::OptionalData GetData(const AtomicString&) const;
 
-  void SetRegisteredVariable(const AtomicString&, const CSSValue*);
-  const CSSValue* RegisteredVariable(const AtomicString&) const;
+  void SetValue(const AtomicString& name, const CSSValue* value) {
+    needs_resolution_ = true;
+    variables_.SetValue(name, value);
+  }
   StyleVariables::OptionalValue GetValue(const AtomicString&) const;
 
   // Note that not all custom property names returned here necessarily have

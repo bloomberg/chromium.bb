@@ -69,8 +69,7 @@ class InheritedCustomPropertyChecker
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue&) const final {
     const CSSValue* inherited_value =
-        state.ParentStyle()->GetRegisteredVariable(name_,
-                                                   is_inherited_property_);
+        state.ParentStyle()->GetVariableValue(name_, is_inherited_property_);
     if (!inherited_value) {
       inherited_value = initial_value_.Get();
     }
@@ -192,8 +191,8 @@ InterpolationValue CSSInterpolationType::MaybeConvertCustomPropertyDeclaration(
     if (declaration.IsInitial(is_inherited_property)) {
       value = Registration().Initial();
     } else {
-      value = state.ParentStyle()->GetRegisteredVariable(name,
-                                                         is_inherited_property);
+      value =
+          state.ParentStyle()->GetVariableValue(name, is_inherited_property);
       if (!value) {
         value = Registration().Initial();
       }
@@ -242,7 +241,7 @@ InterpolationValue CSSInterpolationType::MaybeConvertUnderlyingValue(
   const PropertyHandle property = GetProperty();
   const AtomicString& name = property.CustomPropertyName();
   const CSSValue* underlying_value =
-      style.GetRegisteredVariable(name, Registration().Inherits());
+      style.GetVariableValue(name, Registration().Inherits());
   if (!underlying_value)
     return nullptr;
   // TODO(alancutter): Remove the need for passing in conversion checkers.
@@ -288,8 +287,8 @@ void CSSInterpolationType::ApplyCustomPropertyValue(
   const PropertyHandle property = GetProperty();
   const AtomicString& property_name = property.CustomPropertyName();
   bool inherits = Registration().Inherits();
-  style.SetVariable(property_name, std::move(variable_data), inherits);
-  style.SetRegisteredVariable(property_name, css_value, inherits);
+  style.SetVariableData(property_name, std::move(variable_data), inherits);
+  style.SetVariableValue(property_name, css_value, inherits);
 }
 
 }  // namespace blink

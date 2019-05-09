@@ -26,11 +26,6 @@ StyleInheritedVariables::StyleInheritedVariables(StyleInheritedVariables& other)
   }
 }
 
-CSSVariableData* StyleInheritedVariables::GetVariable(
-    const AtomicString& name) const {
-  return GetData(name).value_or(nullptr);
-}
-
 StyleVariables::OptionalData StyleInheritedVariables::GetData(
     const AtomicString& name) const {
   if (auto data = variables_.GetData(name))
@@ -38,18 +33,6 @@ StyleVariables::OptionalData StyleInheritedVariables::GetData(
   if (root_)
     return root_->variables_.GetData(name);
   return base::nullopt;
-}
-
-void StyleInheritedVariables::SetRegisteredVariable(
-    const AtomicString& name,
-    const CSSValue* parsed_value) {
-  needs_resolution_ = true;
-  variables_.SetValue(name, parsed_value);
-}
-
-const CSSValue* StyleInheritedVariables::RegisteredVariable(
-    const AtomicString& name) const {
-  return GetValue(name).value_or(nullptr);
 }
 
 StyleVariables::OptionalValue StyleInheritedVariables::GetValue(

@@ -206,8 +206,8 @@ TEST_F(CSSVariableResolverTest, NoResolutionWithoutVar) {
 
   const auto* prop = CreateCustomProperty("#fefefe");
 
-  inherited_variables->SetVariable("--prop", prop->Value());
-  non_inherited_variables->SetVariable("--prop", prop->Value());
+  inherited_variables->SetData("--prop", prop->Value());
+  non_inherited_variables->SetData("--prop", prop->Value());
 
   EXPECT_FALSE(inherited_variables->NeedsResolution());
   EXPECT_FALSE(non_inherited_variables->NeedsResolution());
@@ -224,16 +224,16 @@ TEST_F(CSSVariableResolverTest, VarNeedsResolution) {
   const auto* prop1 = CreateCustomProperty("var(--prop2)");
   const auto* prop2 = CreateCustomProperty("#fefefe");
 
-  inherited_variables->SetVariable("--prop1", prop1->Value());
-  non_inherited_variables->SetVariable("--prop1", prop1->Value());
+  inherited_variables->SetData("--prop1", prop1->Value());
+  non_inherited_variables->SetData("--prop1", prop1->Value());
 
   EXPECT_TRUE(inherited_variables->NeedsResolution());
   EXPECT_TRUE(non_inherited_variables->NeedsResolution());
 
   // While NeedsResolution() == true, add some properties without
   // var()-references.
-  inherited_variables->SetVariable("--prop2", prop2->Value());
-  non_inherited_variables->SetVariable("--prop2", prop2->Value());
+  inherited_variables->SetData("--prop2", prop2->Value());
+  non_inherited_variables->SetData("--prop2", prop2->Value());
 
   // We should still need resolution even after adding properties that don't
   // have var-references.
@@ -254,8 +254,8 @@ TEST_F(CSSVariableResolverTest, CopiedVariablesRetainNeedsResolution) {
 
   const auto* prop = CreateCustomProperty("var(--x)");
 
-  inherited_variables->SetVariable("--prop", prop->Value());
-  non_inherited_variables->SetVariable("--prop", prop->Value());
+  inherited_variables->SetData("--prop", prop->Value());
+  non_inherited_variables->SetData("--prop", prop->Value());
 
   EXPECT_TRUE(inherited_variables->NeedsResolution());
   EXPECT_TRUE(non_inherited_variables->NeedsResolution());
@@ -319,15 +319,15 @@ TEST_F(CSSVariableResolverTest, DontCrashWhenSettingInheritedNullVariable) {
   scoped_refptr<StyleInheritedVariables> inherited_variables =
       StyleInheritedVariables::Create();
   AtomicString name("--test");
-  inherited_variables->SetVariable(name, nullptr);
-  inherited_variables->SetRegisteredVariable(name, nullptr);
+  inherited_variables->SetData(name, nullptr);
+  inherited_variables->SetValue(name, nullptr);
 }
 
 TEST_F(CSSVariableResolverTest, DontCrashWhenSettingNonInheritedNullVariable) {
   auto inherited_variables = std::make_unique<StyleNonInheritedVariables>();
   AtomicString name("--test");
-  inherited_variables->SetVariable(name, nullptr);
-  inherited_variables->SetRegisteredVariable(name, nullptr);
+  inherited_variables->SetData(name, nullptr);
+  inherited_variables->SetValue(name, nullptr);
 }
 
 TEST_F(CSSVariableResolverTest, TokenCountAboveLimitIsInValidForSubstitution) {
@@ -343,12 +343,12 @@ TEST_F(CSSVariableResolverTest, TokenCountAboveLimitIsInValidForSubstitution) {
 
   // A custom property with more than MaxSubstitutionTokens() is valid ...
   const CSSVariableData* referenced =
-      target->ComputedStyleRef().GetVariable("--referenced");
+      target->ComputedStyleRef().GetVariableData("--referenced");
   ASSERT_TRUE(referenced);
   EXPECT_EQ(MaxSubstitutionTokens() + 1, referenced->Tokens().size());
 
   // ... it is not valid for substitution, however.
-  EXPECT_FALSE(target->ComputedStyleRef().GetVariable("--x"));
+  EXPECT_FALSE(target->ComputedStyleRef().GetVariableData("--x"));
 }
 
 TEST_F(CSSVariableResolverTest, TokenCountAtLimitIsValidForSubstitution) {
@@ -362,11 +362,11 @@ TEST_F(CSSVariableResolverTest, TokenCountAtLimitIsValidForSubstitution) {
   ASSERT_TRUE(target);
 
   const CSSVariableData* referenced =
-      target->ComputedStyleRef().GetVariable("--referenced");
+      target->ComputedStyleRef().GetVariableData("--referenced");
   ASSERT_TRUE(referenced);
   EXPECT_EQ(MaxSubstitutionTokens(), referenced->Tokens().size());
 
-  const CSSVariableData* x = target->ComputedStyleRef().GetVariable("--x");
+  const CSSVariableData* x = target->ComputedStyleRef().GetVariableData("--x");
   ASSERT_TRUE(x);
   EXPECT_EQ(MaxSubstitutionTokens(), x->Tokens().size());
 
@@ -425,13 +425,13 @@ TEST_F(CSSVariableResolverTest, BillionLaughs) {
   // The last --x2^N variable is over the limit. Any reference to that
   // should be invalid.
   const CSSVariableData* ref_last =
-      target->ComputedStyleRef().GetVariable("--ref-last");
+      target->ComputedStyleRef().GetVariableData("--ref-last");
   EXPECT_FALSE(ref_last);
 
   // The next-to-last (--x2^(N-1)) variable is not over the limit. A reference
   // to that is still valid.
   const CSSVariableData* ref_next_to_last =
-      target->ComputedStyleRef().GetVariable("--ref-next-to-last");
+      target->ComputedStyleRef().GetVariableData("--ref-next-to-last");
   ASSERT_TRUE(ref_next_to_last);
   EXPECT_EQ(tokens / 2, ref_next_to_last->Tokens().size());
 
