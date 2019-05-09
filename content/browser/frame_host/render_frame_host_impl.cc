@@ -6383,8 +6383,53 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
       navigation_request->commit_params().navigation_token !=
           validated_params->navigation_token) {
     navigation_request.reset();
-    // TODO(clamy): We should kill the renderer in all cases where we expect to
-    // have a NavigationRequest matching the commit URL.
+  }
+
+  if (!navigation_request) {
+    // A matching NavigationRequest should have been found, unless in a few very
+    // specific cases. Check if this is one of those cases.
+    bool is_commit_allowed_to_proceed = false;
+
+    //  1) This was a renderer-initiated navigation to a URL that doesn't need
+    //  to be handled by the network stack (eg. about:blank).
+    is_commit_allowed_to_proceed |=
+        !IsURLHandledByNetworkStack(validated_params->url);
+
+    //  2) This was a same-document navigation.
+    //  TODO(clamy): We should enforce having a request on browser-initiated
+    //  same-document navigations.
+    is_commit_allowed_to_proceed |= is_same_document_navigation;
+
+    //  3) This was a navigation to a subframe in an MHTML archive.
+    is_commit_allowed_to_proceed |=
+        GetParent() && frame_tree_node_->frame_tree()
+                           ->root()
+                           ->current_frame_host()
+                           ->is_mhtml_document();
+
+    //  4) Transient interstitial page commits will not have a matching
+    //  NavigationRequest.
+    //  TODO(clamy): Enforce having a NavigationRequest for data URLs when
+    //  committed interstitials have launched or interstitials create
+    //  NavigationRequests.
+    is_commit_allowed_to_proceed |= !!delegate_->GetAsInterstitialPage();
+
+    //  5) Error pages implementations in Chrome can commit twice.
+    //  TODO(clamy): Fix this.
+    is_commit_allowed_to_proceed |= validated_params->url_is_unreachable;
+
+    //  6) Special case for DOMSerializerBrowsertests which are implemented
+    //  entirely renderer-side and unlike normal RenderView based tests load
+    //  file URLs instead of data URLs.
+    //  TODO(clamy): Rework the tests to remove this exception.
+    is_commit_allowed_to_proceed |= validated_params->url.SchemeIsFile();
+
+    if (!is_commit_allowed_to_proceed) {
+      bad_message::ReceivedBadMessage(
+          GetProcess(),
+          bad_message::RFH_NO_MATCHING_NAVIGATION_REQUEST_ON_COMMIT);
+      return false;
+    }
   }
 
   if (!ValidateDidCommitParams(navigation_request.get(), validated_params,

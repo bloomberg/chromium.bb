@@ -4601,6 +4601,7 @@ Unknown properties are collapsed to zero. -->
   <int value="213" label="INVALID_INITIATOR_ORIGIN"/>
   <int value="214" label="RFHI_BEGIN_NAVIGATION_MISSING_INITIATOR_ORIGIN"/>
   <int value="215" label="RFHI_BEGIN_NAVIGATION_NON_WEBBY_TRANSITION"/>
+  <int value="216" label="RFH_NO_MATCHING_NAVIGATION_REQUEST_ON_COMMIT"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">

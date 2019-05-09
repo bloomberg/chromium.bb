@@ -14005,6 +14005,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                      std::string());
   EXPECT_TRUE(controller.GetPendingEntry());
   EXPECT_EQ(another_url, controller.GetPendingEntry()->GetURL());
+  NavigationRequest* navigation_request = root->navigation_request();
+  ASSERT_TRUE(navigation_request);
 
   RenderProcessHostKillWaiter kill_waiter(
       root->current_frame_host()->GetProcess());
@@ -14021,6 +14023,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   params->gesture = NavigationGestureAuto;
   params->method = "GET";
   params->page_state = PageState::CreateFromURL(start_url);
+  params->navigation_token =
+      root->navigation_request()->commit_params().navigation_token;
 
   // Use an origin mismatched with the origin lock.
   params->origin = url::Origin::Create(another_url);
@@ -14029,6 +14033,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ("http://a.com/", policy->GetOriginLock(process_id));
   EXPECT_EQ(start_url.host(), policy->GetOriginLock(process_id).host());
   EXPECT_NE(another_url.host(), policy->GetOriginLock(process_id).host());
+
+  // Transfer the NavigationRequest ownership to the RenderFrameHost. The test
+  // for NavigationRequest match happens before the check of origin lock and
+  // needs to be successful.
+  root->TransferNavigationRequestOwnership(root->current_frame_host());
+  root->current_frame_host()->OnCrossDocumentCommitProcessed(
+      navigation_request, blink::mojom::CommitResult::Ok);
 
   // Simulate a commit IPC.
   service_manager::mojom::InterfaceProviderPtr interface_provider;
