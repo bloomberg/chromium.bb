@@ -5284,6 +5284,13 @@ bool LayoutBox::ShrinkToAvoidFloats() const {
     if (containing_block->IsLayoutNGMixin())
       return false;
   }
+
+  // Legends are taken out of the normal flow, and are laid out at the very
+  // start of the fieldset, and are therefore not affected by floats (that may
+  // appear earlier in the DOM).
+  if (IsRenderedLegend())
+    return false;
+
   return true;
 }
 
