@@ -564,11 +564,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "disable-tablet-splitview",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "disable-threaded-scrolling",
     "owners": [ "bokan", "input-dev" ],
     // This flag is a useful debugging control when investigating scrolling
@@ -1589,11 +1584,6 @@
     "name": "enable-skia-renderer",
     "owners": [ "backer"],
     "expiry_milestone": 80
-  },
-  {
-    "name": "enable-sole-integration",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
   },
   {
     "name": "enable-speculative-service-worker-start-on-query-input",
