@@ -12909,15 +12909,15 @@
       'id': 405,
       'caption': '''Force enable spellcheck languages''',
       'tags': [],
-      'desc': '''Force-enables spellcheck languages. Unrecognized languages in that list will be ignored.
+      'desc': '''Force-enables spellcheck languages. Unrecognized languages in the list will be ignored.
 
       If you enable this policy, spellcheck will be enabled for the languages specified, in addition to the languages for which the user has enabled spellcheck.
 
       If you do not set this policy, or disable it, there will be no change to the user's spellcheck preferences.
 
-      If the SpellcheckEnabled policy is set to disabled, this policy will have no effect.
+      If the <ph name="SPELLCHECK_ENABLED_POLICY_NAME">SpellcheckEnabled</ph> policy is set to false, this policy will have no effect.
 
-      If a language is included in both this policy and the SpellcheckLanguageBlacklist policy, this policy is prioritized and the spellcheck language is enabled.
+      If a language is included in both this policy and the <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME">SpellcheckLanguageBlacklist</ph> policy, this policy is prioritized and the spellcheck language is enabled.
 
       The currently supported languages are: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.'''
     },
@@ -12945,9 +12945,9 @@
 
       If you do not set this policy, or disable it, there will be no change to the user's spellcheck preferences.
 
-      If the SpellcheckEnabled policy is set to disabled, this policy will have no effect.
+      If the <ph name="SPELLCHECK_ENABLED_POLICY_NAME">SpellcheckEnabled</ph> policy is set to false, this policy will have no effect.
 
-      If a language is included in both this policy and the SpellcheckLanguage policy, the SpellcheckLanguage policy is prioritized and the spellcheck language will be enabled.
+      If a language is included in both this policy and the <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME">SpellcheckLanguage</ph> policy, the latter is prioritized and the spellcheck language will be enabled.
 
       The currently supported languages are: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.'''
     },
@@ -12980,9 +12980,11 @@
       'id': 408,
       'caption': '''Enable spellcheck''',
       'tags': [],
-      'desc': '''If this policy is not set or enabled, the user is allowed to use spellcheck.
+      'desc': '''If this policy is not set, the user can enable or disable spellcheck in the language settings.
 
-      If this policy is disabled, the user is not allowed to use spellcheck. The SpellcheckLanguage and SpellcheckLanguageBlacklist policies will also be ignored when this policy is disabled.
+      If this policy is set to true, spellcheck is enabled and the user cannot disable it. On <ph name="MS_WIN_NAME">Microsoft® Windows</ph>, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> and <ph name="LINUX_OS_NAME">Linux</ph>, spellcheck languages can be individually toggled on or off, so the user can still effectively disable spellcheck by toggling off every spellcheck language. To avoid that, the <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME">SpellcheckLanguage</ph> policy can be used to force specific spellcheck languages to be enabled.
+
+      If this policy is set to false, spellcheck is disabled and the user cannot enable it. The <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME">SpellcheckLanguage</ph> and <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME">SpellcheckLanguageBlacklist</ph> policies have no effect when this policy is set to false.
       '''
     },
     {
