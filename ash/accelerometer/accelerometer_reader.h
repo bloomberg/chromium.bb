@@ -54,6 +54,10 @@ class ASH_EXPORT AccelerometerReader {
   void StartListenToTabletModeController();
   void StopListenToTabletModeController();
 
+  void DisableForTest();
+
+  bool is_disabled() const { return !accelerometer_file_reader_; }
+
  protected:
   AccelerometerReader();
   virtual ~AccelerometerReader();

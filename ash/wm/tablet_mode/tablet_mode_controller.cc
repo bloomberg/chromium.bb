@@ -670,6 +670,10 @@ void TabletModeController::OnGetSwitchStates(
     base::Optional<chromeos::PowerManagerClient::SwitchStates> result) {
   if (!result.has_value())
     return;
+
+  if (AccelerometerReader::GetInstance()->is_disabled())
+    return;
+
   LidEventReceived(result->lid_state, base::TimeTicks::Now());
   TabletModeEventReceived(result->tablet_mode, base::TimeTicks::Now());
 }
