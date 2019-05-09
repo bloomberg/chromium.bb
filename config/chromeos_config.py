@@ -4426,7 +4426,7 @@ def BranchScheduleConfig():
     # for conflicts caused by two master release builders.
     branch_builds.append([branch, 'master-lakitu-release',
                           config_lib.DISPLAY_LABEL_RELEASE,
-                          None, None])
+                          'triggered', None])
     branch_builds.extend([[branch, pfq,
                            config_lib.DISPLAY_LABEL_RELEASE,
                            android_schedule, None]
