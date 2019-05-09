@@ -65,6 +65,16 @@ class MimeHandlerViewAttachHelper : content::RenderProcessHostObserver {
                                 int32_t element_instance_id,
                                 bool is_full_page_plugin);
 
+  // Called when MimeHandlerViewGuest is about to be destroyed due to its
+  // embedder frame going away. This is specifically relevant during attaching;
+  // from the time the GuestView starts the attach process
+  // (AttachToOuterWebContents) to when the inner WebContents of GuestView
+  // attaches to the outer WebContents, there is a gap where the embedder
+  // RenderFrameHost (parent frame to the outer contents frame) can go away.
+  // MimeHandlerViewAttachHelper should be notified to remove the guest from
+  // |pending_guests_|.
+  void GuestEmbedderFrameGone(int32_t element_instance_id);
+
  private:
   // Called after the content layer finishes preparing a frame for attaching to
   // the embedder WebContents. If |plugin_rfh| is nullptr then attaching is not

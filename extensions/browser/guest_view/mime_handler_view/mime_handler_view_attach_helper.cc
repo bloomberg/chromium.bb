@@ -131,6 +131,13 @@ void MimeHandlerViewAttachHelper::AttachToOuterWebContents(
       weak_factory_.GetWeakPtr(), element_instance_id, is_full_page_plugin));
 }
 
+void MimeHandlerViewAttachHelper::GuestEmbedderFrameGone(
+    int32_t element_instance_id) {
+  auto it = pending_guests_.find(element_instance_id);
+  if (it != pending_guests_.end())
+    pending_guests_.erase(it);
+}
+
 // static
 void MimeHandlerViewAttachHelper::CreateFullPageMimeHandlerView(
     int32_t frame_tree_node_id,
