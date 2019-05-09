@@ -201,7 +201,7 @@ class OculusGamepadBuilder : public GamepadBuilder {
   // TODO(https://crbug.com/942201): Get correct ID string once WebXR spec issue
   // #550 (https://github.com/immersive-web/webxr/issues/550) is resolved.
   OculusGamepadBuilder(ovrInputState state, ovrHandType hand)
-      : GamepadBuilder("unknown",
+      : GamepadBuilder("oculus-touch",
                        GamepadMapping::kXRStandard,
                        OculusToMojomHand(hand)),
         state_(state) {}

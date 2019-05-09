@@ -193,7 +193,8 @@ base::Optional<Gamepad> GetWebXRGamepad(ParsedInputState& input_state) {
 
   // TODO(https://crbug.com/942201): Get correct ID string once WebXR spec issue
   // #550 (https://github.com/immersive-web/webxr/issues/550) is resolved.
-  GamepadBuilder builder("unknown", GamepadBuilder::GamepadMapping::kXRStandard,
+  GamepadBuilder builder("windows-mixed-reality",
+                         GamepadBuilder::GamepadMapping::kXRStandard,
                          handedness);
 
   builder.SetAxisDeadzone(kDeadzoneMinimum);

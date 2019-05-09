@@ -42,7 +42,7 @@ device::Gamepad CreateGamepad(const device::GvrGamepadData& data) {
 
   // TODO(https://crbug.com/942201): Get correct ID string once WebXR spec issue
   // #550 (https://github.com/immersive-web/webxr/issues/550) is resolved.
-  CopyToUString(base::UTF8ToUTF16("unknown"), gamepad.id,
+  CopyToUString(base::UTF8ToUTF16("daydream-controller"), gamepad.id,
                 base::size(gamepad.id));
 
   gamepad.hand = data.right_handed ? device::GamepadHand::kRight
