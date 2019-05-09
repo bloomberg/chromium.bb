@@ -24,8 +24,8 @@ namespace {
 // These are in the same order as the columns in keycode_converter_data.inc
 // as reflected in the USB_KEYMAP() macro below.
 const size_t expected_mapped_key_count[] = {
-  211,  // evdev
-  211,  // xkb
+  212,  // evdev
+  212,  // xkb
   157,  // windows
   118,  // mac
 };
