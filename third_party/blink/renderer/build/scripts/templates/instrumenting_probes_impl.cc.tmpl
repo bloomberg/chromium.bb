@@ -25,19 +25,6 @@ Mutex& AgentCountMutex() {
   return mutex;
 }
 
-// HeapLinkedHashSet does not support modification during iteration.
-// This helper copies items first so calees iterate over the copied container.
-template <typename T>
-HeapVector<Member<T>> CopyLinkedHashSetToVector(
-    const HeapLinkedHashSet<Member<T>>& linked_hash_set) {
-  unsigned capacity = linked_hash_set.size();
-  HeapVector<Member<T>> result;
-  result.ReserveInitialCapacity(capacity);
-  for (T* agent : linked_hash_set)
-      result.push_back(agent);
-  return result;
-}
-
 }  // namespace
 
 // static
@@ -114,8 +101,7 @@ namespace probe {
 {% for agent in probe.agents %}
 {% set class_name = agent | agent_name_to_class %}
   if (probe_sink->Has{{agent}}s()) {
-    auto copy = CopyLinkedHashSetToVector(probe_sink->{{class_name}}s());
-    for ({{class_name}}* agent : copy)
+    for ({{class_name}}* agent : probe_sink->{{class_name}}s())
       agent->{{agent_probe_name}}({{caller()}});
   }
 {% endfor %}
