@@ -170,7 +170,7 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
 
   // The following two variables are used to determine whether we should update
   // the target device name to cache guid map.
-  std::string oldest_device_cache_guid_ = "";
+  base::Time oldest_non_expired_device_timestamp_;
   size_t number_of_devices_ = 0;
 
   base::WeakPtrFactory<SendTabToSelfBridge> weak_ptr_factory_;

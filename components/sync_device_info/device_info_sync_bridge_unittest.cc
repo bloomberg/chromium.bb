@@ -190,7 +190,7 @@ class TestLocalDeviceInfoProvider : public MutableLocalDeviceInfoProvider {
         cache_guid, session_name, ChromeVersionForSuffix(kLocalSuffix),
         SyncUserAgentForSuffix(kLocalSuffix),
         sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-        SigninScopedDeviceIdForSuffix(kLocalSuffix), true);
+        SigninScopedDeviceIdForSuffix(kLocalSuffix), base::Time(), true);
   }
 
   void Clear() override { local_device_info_.reset(); }

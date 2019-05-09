@@ -14,6 +14,7 @@
 #include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
+#include "components/send_tab_to_self/target_device_info.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/device_info_sync_service.h"
@@ -187,4 +188,35 @@ IN_PROC_BROWSER_TEST_F(TwoClientSendTabToSelfSyncTest,
 
   EXPECT_NE(device_infos[0]->send_tab_to_self_receiving_enabled(),
             device_infos[1]->send_tab_to_self_receiving_enabled());
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientSendTabToSelfSyncTest,
+                       SendTabToSelfTargetDeviceMap) {
+  ASSERT_TRUE(SetupSync());
+
+  DeviceInfoSyncServiceFactory::GetForProfile(GetProfile(0))
+      ->GetDeviceInfoTracker()
+      ->ForcePulseForTest();
+  DeviceInfoSyncServiceFactory::GetForProfile(GetProfile(1))
+      ->GetDeviceInfoTracker()
+      ->ForcePulseForTest();
+
+  ASSERT_TRUE(send_tab_to_self_helper::SendTabToSelfMultiDeviceActiveChecker(
+                  DeviceInfoSyncServiceFactory::GetForProfile(GetProfile(1))
+                      ->GetDeviceInfoTracker())
+                  .Wait());
+
+  std::map<std::string, send_tab_to_self::TargetDeviceInfo>
+      profile1_target_device_map =
+          SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(0))
+              ->GetSendTabToSelfModel()
+              ->GetTargetDeviceNameToCacheInfoMap();
+  std::map<std::string, send_tab_to_self::TargetDeviceInfo>
+      profile2_target_device_map =
+          SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(1))
+              ->GetSendTabToSelfModel()
+              ->GetTargetDeviceNameToCacheInfoMap();
+
+  EXPECT_EQ(1u, profile1_target_device_map.size());
+  EXPECT_EQ(1u, profile2_target_device_map.size());
 }

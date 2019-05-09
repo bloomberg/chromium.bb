@@ -556,8 +556,7 @@ bool SendTabToSelfBridge::ShouldUpdateTargetDeviceNameToCacheInfoMap() const {
   return target_device_name_to_cache_info_.empty() ||
          device_info_tracker_->GetAllDeviceInfo().size() !=
              number_of_devices_ ||
-         clock_->Now() - change_processor()->GetEntityModificationTime(
-                             oldest_device_cache_guid_) >
+         clock_->Now() - oldest_non_expired_device_timestamp_ >
              kDeviceExpiration;
 }
 
@@ -567,23 +566,21 @@ void SendTabToSelfBridge::SetTargetDeviceNameToCacheInfoMap() {
   number_of_devices_ = all_devices.size();
 
   // Sort the DeviceInfo vector so the most recenly modified devices are first.
-  const syncer::ModelTypeChangeProcessor* change_processor_ptr =
-      change_processor();
-  std::stable_sort(
-      all_devices.begin(), all_devices.end(),
-      [change_processor_ptr](
-          const std::unique_ptr<syncer::DeviceInfo>& device1,
-          const std::unique_ptr<syncer::DeviceInfo>& device2) {
-        return change_processor_ptr->GetEntityModificationTime(
-                   device1->guid()) >
-               change_processor_ptr->GetEntityModificationTime(device2->guid());
-      });
+  std::stable_sort(all_devices.begin(), all_devices.end(),
+                   [](const std::unique_ptr<syncer::DeviceInfo>& device1,
+                      const std::unique_ptr<syncer::DeviceInfo>& device2) {
+                     return device1->last_updated_timestamp() >
+                            device2->last_updated_timestamp();
+                   });
 
   target_device_name_to_cache_info_.clear();
   for (const auto& device : all_devices) {
-    // TODO(crbug/959487) If the current device is considered expired for our
-    // purposes, stop here since the next devices in the vector are at least
-    // as expired than this one.
+    // If the current device is considered expired for our purposes, stop here
+    // since the next devices in the vector are at least as expired than this
+    // one.
+    if (clock_->Now() - device->last_updated_timestamp() > kDeviceExpiration) {
+      break;
+    }
 
     // TODO(crbug.com/957716): Dedupe older versions of this device as well.
     // Don't include this device.
@@ -602,7 +599,7 @@ void SendTabToSelfBridge::SetTargetDeviceNameToCacheInfoMap() {
     TargetDeviceInfo target_device_info(device->guid(), device->device_type());
     target_device_name_to_cache_info_.emplace(device->client_name(),
                                               target_device_info);
-    oldest_device_cache_guid_ = device->guid();
+    oldest_non_expired_device_timestamp_ = device->last_updated_timestamp();
   }
 }
 

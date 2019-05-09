@@ -58,6 +58,7 @@ std::unique_ptr<DeviceInfo> SpecificsToModel(
       specifics.cache_guid(), specifics.client_name(),
       specifics.chrome_version(), specifics.sync_user_agent(),
       specifics.device_type(), specifics.signin_scoped_device_id(),
+      ProtoTimeToTime(specifics.last_updated_timestamp()),
       specifics.feature_fields().send_tab_to_self_receiving_enabled());
 }
 
@@ -70,12 +71,9 @@ std::unique_ptr<EntityData> CopyToEntityData(
   return entity_data;
 }
 
-// Converts DeviceInfo into a freshly allocated DeviceInfoSpecifics. Takes
-// |last_updated_timestamp| to set because the model object does not contain
-// this concept.
-std::unique_ptr<DeviceInfoSpecifics> ModelToSpecifics(
-    const DeviceInfo& info,
-    int64_t last_updated_timestamp) {
+// Converts a local DeviceInfo into a freshly allocated DeviceInfoSpecifics.
+std::unique_ptr<DeviceInfoSpecifics> MakeLocalDeviceSpecifics(
+    const DeviceInfo& info) {
   auto specifics = std::make_unique<DeviceInfoSpecifics>();
   specifics->set_cache_guid(info.guid());
   specifics->set_client_name(info.client_name());
@@ -83,7 +81,10 @@ std::unique_ptr<DeviceInfoSpecifics> ModelToSpecifics(
   specifics->set_sync_user_agent(info.sync_user_agent());
   specifics->set_device_type(info.device_type());
   specifics->set_signin_scoped_device_id(info.signin_scoped_device_id());
-  specifics->set_last_updated_timestamp(last_updated_timestamp);
+  // The local device should have not been updated yet. Set the last updated
+  // timestamp to now.
+  DCHECK(info.last_updated_timestamp() == base::Time());
+  specifics->set_last_updated_timestamp(TimeToProtoTime(Time::Now()));
 
   FeatureSpecificFields* feature_fields = specifics->mutable_feature_fields();
   feature_fields->set_send_tab_to_self_receiving_enabled(
@@ -471,9 +472,8 @@ void DeviceInfoSyncBridge::SendLocalDataWithBatch(
   DCHECK(local_device_info_provider_->GetLocalDeviceInfo());
   DCHECK(change_processor()->IsTrackingMetadata());
 
-  std::unique_ptr<DeviceInfoSpecifics> specifics =
-      ModelToSpecifics(*local_device_info_provider_->GetLocalDeviceInfo(),
-                       TimeToProtoTime(Time::Now()));
+  std::unique_ptr<DeviceInfoSpecifics> specifics = MakeLocalDeviceSpecifics(
+      *local_device_info_provider_->GetLocalDeviceInfo());
   change_processor()->Put(specifics->cache_guid(), CopyToEntityData(*specifics),
                           batch->GetMetadataChangeList());
   StoreSpecifics(std::move(specifics), batch.get());

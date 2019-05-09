@@ -14,6 +14,7 @@ DeviceInfo::DeviceInfo(const std::string& guid,
                        const std::string& sync_user_agent,
                        const sync_pb::SyncEnums::DeviceType device_type,
                        const std::string& signin_scoped_device_id,
+                       base::Time last_updated_timestamp,
                        bool send_tab_to_self_receiving_enabled)
     : guid_(guid),
       client_name_(client_name),
@@ -21,6 +22,7 @@ DeviceInfo::DeviceInfo(const std::string& guid,
       sync_user_agent_(sync_user_agent),
       device_type_(device_type),
       signin_scoped_device_id_(signin_scoped_device_id),
+      last_updated_timestamp_(last_updated_timestamp),
       send_tab_to_self_receiving_enabled_(send_tab_to_self_receiving_enabled) {}
 
 DeviceInfo::~DeviceInfo() {}
@@ -51,6 +53,10 @@ sync_pb::SyncEnums::DeviceType DeviceInfo::device_type() const {
 
 const std::string& DeviceInfo::signin_scoped_device_id() const {
   return signin_scoped_device_id_;
+}
+
+base::Time DeviceInfo::last_updated_timestamp() const {
+  return last_updated_timestamp_;
 }
 
 bool DeviceInfo::send_tab_to_self_receiving_enabled() const {
@@ -111,6 +117,7 @@ std::unique_ptr<base::DictionaryValue> DeviceInfo::ToValue() {
   value->SetString("os", GetOSString());
   value->SetString("type", GetDeviceTypeString());
   value->SetString("chromeVersion", chrome_version_);
+  value->SetInteger("lastUpdatedTimestamp", last_updated_timestamp().ToTimeT());
   value->SetBoolean("sendTabToSelfReceivingEnabled",
                     send_tab_to_self_receiving_enabled());
   return value;

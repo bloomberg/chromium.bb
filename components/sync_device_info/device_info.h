@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace base {
@@ -27,6 +28,7 @@ class DeviceInfo {
              const std::string& sync_user_agent,
              const sync_pb::SyncEnums::DeviceType device_type,
              const std::string& signin_scoped_device_id,
+             base::Time last_updated_timestamp,
              bool send_tab_to_self_receiving_enabled);
   ~DeviceInfo();
 
@@ -56,6 +58,9 @@ class DeviceInfo {
   // Device_id that is stable until user signs out. This device_id is used for
   // annotating login scoped refresh token.
   const std::string& signin_scoped_device_id() const;
+
+  // Returns the time at which this device was last updated to the sync servers.
+  base::Time last_updated_timestamp() const;
 
   // Whether the receiving side of the SendTabToSelf feature is enabled.
   bool send_tab_to_self_receiving_enabled() const;
@@ -99,6 +104,8 @@ class DeviceInfo {
   // ids in that the same device will have different id for different apps
   // and they are also reset when app/extension is uninstalled.
   std::string public_id_;
+
+  const base::Time last_updated_timestamp_;
 
   bool send_tab_to_self_receiving_enabled_;
 

@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
@@ -48,6 +49,7 @@ class MockDeviceInfoTracker : public DeviceInfoTracker {
         device_info.guid(), device_info.client_name(),
         device_info.chrome_version(), device_info.sync_user_agent(),
         device_info.device_type(), device_info.signin_scoped_device_id(),
+        device_info.last_updated_timestamp(),
         device_info.send_tab_to_self_receiving_enabled());
   }
 
@@ -89,13 +91,15 @@ TEST(SignedInDevicesAPITest, GetSignedInDevices) {
   scoped_refptr<Extension> extension_test =
       extension_prefs.AddExtension(extension_name);
 
-  DeviceInfo device_info1(
-      base::GenerateGUID(), "abc Device", "XYZ v1", "XYZ SyncAgent v1",
-      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id", true);
+  DeviceInfo device_info1(base::GenerateGUID(), "abc Device", "XYZ v1",
+                          "XYZ SyncAgent v1",
+                          sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id",
+                          base::Time(), true);
 
-  DeviceInfo device_info2(
-      base::GenerateGUID(), "def Device", "XYZ v2", "XYZ SyncAgent v2",
-      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id", true);
+  DeviceInfo device_info2(base::GenerateGUID(), "def Device", "XYZ v2",
+                          "XYZ SyncAgent v2",
+                          sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id",
+                          base::Time(), true);
 
   device_tracker.Add(&device_info1);
   device_tracker.Add(&device_info2);
@@ -112,9 +116,10 @@ TEST(SignedInDevicesAPITest, GetSignedInDevices) {
 
   // Add a third device and make sure the first 2 ids are retained and a new
   // id is generated for the third device.
-  DeviceInfo device_info3(
-      base::GenerateGUID(), "def Device", "jkl v2", "XYZ SyncAgent v2",
-      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id", true);
+  DeviceInfo device_info3(base::GenerateGUID(), "def Device", "jkl v2",
+                          "XYZ SyncAgent v2",
+                          sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id",
+                          base::Time(), true);
 
   device_tracker.Add(&device_info3);
 
@@ -200,13 +205,15 @@ TEST_F(ExtensionSignedInDevicesTest, GetAll) {
           DeviceInfoSyncServiceFactory::GetForProfile(profile()))
           ->mock_tracker();
 
-  DeviceInfo device_info1(
-      base::GenerateGUID(), "abc Device", "XYZ v1", "XYZ SyncAgent v1",
-      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id", true);
+  DeviceInfo device_info1(base::GenerateGUID(), "abc Device", "XYZ v1",
+                          "XYZ SyncAgent v1",
+                          sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id",
+                          base::Time(), true);
 
-  DeviceInfo device_info2(
-      base::GenerateGUID(), "def Device", "XYZ v2", "XYZ SyncAgent v2",
-      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id", true);
+  DeviceInfo device_info2(base::GenerateGUID(), "def Device", "XYZ v2",
+                          "XYZ SyncAgent v2",
+                          sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id",
+                          base::Time(), true);
 
   device_tracker->Add(&device_info1);
   device_tracker->Add(&device_info2);

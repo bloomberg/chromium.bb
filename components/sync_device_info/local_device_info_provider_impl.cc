@@ -61,9 +61,12 @@ void LocalDeviceInfoProviderImpl::Initialize(const std::string& cache_guid,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!cache_guid.empty());
 
+  // The local device doesn't have a last updated timestamps. It will be set in
+  // the specifics when it will be synced up.
   local_device_info_ = std::make_unique<DeviceInfo>(
       cache_guid, session_name, version_, MakeUserAgentForSync(channel_),
       GetLocalDeviceType(), signin_scoped_device_id_callback_.Run(),
+      /*last_updated_timestamp=*/base::Time(),
       send_tab_to_self_receiving_enabled_callback_.Run());
 
   // Notify observers.

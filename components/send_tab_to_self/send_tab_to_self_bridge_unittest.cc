@@ -94,6 +94,7 @@ class TestDeviceInfoTracker : public syncer::DeviceInfoTracker {
         device_info.guid(), device_info.client_name(),
         device_info.chrome_version(), device_info.sync_user_agent(),
         device_info.device_type(), device_info.signin_scoped_device_id(),
+        device_info.last_updated_timestamp(),
         device_info.send_tab_to_self_receiving_enabled());
   }
 
@@ -676,32 +677,26 @@ TEST_F(SendTabToSelfBridgeTest,
   InitializeBridge();
 
   // Create multiple DeviceInfo objects with the same name but different guids.
-  syncer::DeviceInfo device1(kOldGuid, "device_name", "72", "agent",
-                             sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                             "scoped_is",
-                             /*send_tab_to_self_receiving_enabled=*/true);
-  AddTestDevice(&device1);
+  syncer::DeviceInfo recent_device(
+      kRecentGuid, "device_name", "72", "agent",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "scoped_is",
+      clock()->Now() - base::TimeDelta::FromDays(1),
+      /*send_tab_to_self_receiving_enabled=*/true);
+  AddTestDevice(&recent_device);
 
-  syncer::DeviceInfo device2(kRecentGuid, "device_name", "72", "agent",
-                             sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                             "scoped_is",
-                             /*send_tab_to_self_receiving_enabled=*/true);
-  AddTestDevice(&device2);
+  syncer::DeviceInfo old_device(
+      kOldGuid, "device_name", "72", "agent",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "scoped_is",
+      /*last_updated_timestamp=*/clock()->Now() - base::TimeDelta::FromDays(3),
+      /*send_tab_to_self_receiving_enabled=*/true);
+  AddTestDevice(&old_device);
 
-  syncer::DeviceInfo device3(kOlderGuid, "device_name", "72", "agent",
-                             sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                             "scoped_is",
-                             /*send_tab_to_self_receiving_enabled=*/true);
-  AddTestDevice(&device3);
-
-  // Make sure the device with cache id "recent_guid" was modified more
-  // recently.
-  ON_CALL(*processor(), GetEntityModificationTime(kRecentGuid))
-      .WillByDefault(Return(clock()->Now() - base::TimeDelta::FromDays(1)));
-  ON_CALL(*processor(), GetEntityModificationTime(kOldGuid))
-      .WillByDefault(Return(clock()->Now() - base::TimeDelta::FromDays(3)));
-  ON_CALL(*processor(), GetEntityModificationTime(kOlderGuid))
-      .WillByDefault(Return(clock()->Now() - base::TimeDelta::FromDays(5)));
+  syncer::DeviceInfo older_device(
+      kOlderGuid, "device_name", "72", "agent",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "scoped_is",
+      /*last_updated_timestamp=*/clock()->Now() - base::TimeDelta::FromDays(5),
+      /*send_tab_to_self_receiving_enabled=*/true);
+  AddTestDevice(&older_device);
 
   TargetDeviceInfo target_device_info(kRecentGuid,
                                       sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
@@ -719,20 +714,16 @@ TEST_F(SendTabToSelfBridgeTest,
   syncer::DeviceInfo enabled_device(
       "enabled_guid", "enabled_device_name", "72", "agent",
       sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "scoped_is",
+      /*last_updated_timestamp=*/clock()->Now(),
       /*send_tab_to_self_receiving_enabled=*/true);
   AddTestDevice(&enabled_device);
 
   syncer::DeviceInfo disabled_device(
       "disabled_guid", "disabled_device_name", "72", "agent",
       sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "scoped_is",
+      /*last_updated_timestamp=*/clock()->Now(),
       /*send_tab_to_self_receiving_enabled=*/false);
   AddTestDevice(&disabled_device);
-
-  // Make sure the devices were used recently.
-  ON_CALL(*processor(), GetEntityModificationTime("enabled_guid"))
-      .WillByDefault(Return(clock()->Now() - base::TimeDelta::FromDays(1)));
-  ON_CALL(*processor(), GetEntityModificationTime("disabled_guid"))
-      .WillByDefault(Return(clock()->Now() - base::TimeDelta::FromDays(1)));
 
   TargetDeviceInfo target_device_info("enabled_guid",
                                       sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
@@ -750,20 +741,16 @@ TEST_F(SendTabToSelfBridgeTest,
   syncer::DeviceInfo expired_device(
       "expired_guid", "expired_device_name", "72", "agent",
       sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "scoped_is",
+      /*last_updated_timestamp=*/clock()->Now() - base::TimeDelta::FromDays(11),
       /*send_tab_to_self_receiving_enabled=*/true);
   AddTestDevice(&expired_device);
 
   syncer::DeviceInfo valid_device(
       "valid_guid", "valid_device_name", "72", "agent",
       sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "scoped_is",
+      /*last_updated_timestamp=*/clock()->Now() - base::TimeDelta::FromDays(1),
       /*send_tab_to_self_receiving_enabled=*/true);
   AddTestDevice(&valid_device);
-
-  // Set one device to be expired and the other to be valid.
-  ON_CALL(*processor(), GetEntityModificationTime("expired_guid"))
-      .WillByDefault(Return(clock()->Now() - base::TimeDelta::FromDays(11)));
-  ON_CALL(*processor(), GetEntityModificationTime("valid_guid"))
-      .WillByDefault(Return(clock()->Now() - base::TimeDelta::FromDays(1)));
 
   TargetDeviceInfo target_device_info("valid_guid",
                                       sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
@@ -780,20 +767,16 @@ TEST_F(SendTabToSelfBridgeTest,
   syncer::DeviceInfo local_device(
       kLocalDeviceCacheGuid, "local_device_name", "72", "agent",
       sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "scoped_is",
+      /*last_updated_timestamp=*/clock()->Now(),
       /*send_tab_to_self_receiving_enabled=*/true);
   AddTestDevice(&local_device);
 
   syncer::DeviceInfo other_device(
       "other_guid", "other_device_name", "72", "agent",
       sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "scoped_is",
+      /*last_updated_timestamp=*/clock()->Now(),
       /*send_tab_to_self_receiving_enabled=*/true);
   AddTestDevice(&other_device);
-
-  // Set both device to not be expired.
-  ON_CALL(*processor(), GetEntityModificationTime(kLocalDeviceCacheGuid))
-      .WillByDefault(Return(clock()->Now() - base::TimeDelta::FromDays(1)));
-  ON_CALL(*processor(), GetEntityModificationTime("other_guid"))
-      .WillByDefault(Return(clock()->Now() - base::TimeDelta::FromDays(1)));
 
   TargetDeviceInfo target_device_info("other_guid",
                                       sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
@@ -809,23 +792,19 @@ TEST_F(SendTabToSelfBridgeTest,
   InitializeBridge();
 
   // Set a device that is about to expire and a more recent device.
-  syncer::DeviceInfo older_device("older_guid", "older_name", "72", "agent",
-                                  sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                                  "scoped_is",
-                                  /*send_tab_to_self_receiving_enabled=*/true);
+  syncer::DeviceInfo older_device(
+      "older_guid", "older_name", "72", "agent",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "scoped_is",
+      /*last_updated_timestamp=*/clock()->Now() - base::TimeDelta::FromDays(9),
+      /*send_tab_to_self_receiving_enabled=*/true);
   AddTestDevice(&older_device);
 
-  syncer::DeviceInfo recent_device("recent_guid", "recent_name", "72", "agent",
-                                   sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                                   "scoped_is",
-                                   /*send_tab_to_self_receiving_enabled=*/true);
+  syncer::DeviceInfo recent_device(
+      "recent_guid", "recent_name", "72", "agent",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "scoped_is",
+      /*last_updated_timestamp=*/clock()->Now() - base::TimeDelta::FromDays(1),
+      /*send_tab_to_self_receiving_enabled=*/true);
   AddTestDevice(&recent_device);
-
-  // Set both device to not be expired.
-  ON_CALL(*processor(), GetEntityModificationTime("older_guid"))
-      .WillByDefault(Return(clock()->Now() - base::TimeDelta::FromDays(9)));
-  ON_CALL(*processor(), GetEntityModificationTime("recent_guid"))
-      .WillByDefault(Return(clock()->Now() - base::TimeDelta::FromDays(1)));
 
   TargetDeviceInfo device_info_1("older_guid",
                                  sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
@@ -851,13 +830,11 @@ TEST_F(SendTabToSelfBridgeTest,
   InitializeBridge();
 
   // Set a valid device.
-  syncer::DeviceInfo device("guid", "name", "72", "agent",
-                            sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                            "scoped_is",
-                            /*send_tab_to_self_receiving_enabled=*/true);
+  syncer::DeviceInfo device(
+      "guid", "name", "72", "agent", sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
+      "scoped_is", /*last_updated_timestamp=*/clock()->Now(),
+      /*send_tab_to_self_receiving_enabled=*/true);
   AddTestDevice(&device);
-  ON_CALL(*processor(), GetEntityModificationTime("guid"))
-      .WillByDefault(Return(clock()->Now() - base::TimeDelta::FromDays(1)));
 
   // Set the map by calling it. Make sure it has the device.
   TargetDeviceInfo device_info_1("guid",
@@ -870,10 +847,9 @@ TEST_F(SendTabToSelfBridgeTest,
   syncer::DeviceInfo new_device("new_guid", "new_name", "72", "agent",
                                 sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
                                 "scoped_is",
+                                /*last_updated_timestamp=*/clock()->Now(),
                                 /*send_tab_to_self_receiving_enabled=*/true);
   AddTestDevice(&new_device);
-  ON_CALL(*processor(), GetEntityModificationTime("new_guid"))
-      .WillByDefault(Return(clock()->Now() - base::TimeDelta::FromDays(1)));
 
   // Make sure both devices are in the map.
   TargetDeviceInfo device_info_2("new_guid",
