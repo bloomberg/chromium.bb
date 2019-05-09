@@ -28,6 +28,10 @@ package-lock.json
 */site/
 */templates/
 
+# html-imports
+html-imports/src/*
+html-imports/gulpfile.js
+
 # html-imports-v0
 html-imports-v0/src/*
 html-imports-v0/gulpfile.js
