@@ -1098,6 +1098,10 @@ config("compiler_deterministic") {
       "-Xclang",
       ".",
     ]
+    if (!is_win) {
+      # We don't use clang -cc1as on Windows (yet? https://crbug.com/762167)
+      asmflags = [ "-Wa,-fdebug-compilation-dir,." ]
+    }
 
     if (is_win && use_lld) {
       if (symbol_level == 2 || (is_clang && using_sanitizer)) {
@@ -1168,18 +1172,6 @@ config("compiler_arm") {
     # arm is normally the default mode for clang, but on chromeos a wrapper
     # is used to pass -mthumb, and therefor change the default.
     cflags = [ "-marm" ]
-  }
-}
-
-config("assembler_debug_dir") {
-  # TODO(thakis): Once openmax_dl no longer uses -fno-integrated-as, move
-  # this behind the -fdebug-compilation-dir cflags in the "compiler" config.
-  if (symbol_level != 0 && is_clang &&
-      strip_absolute_paths_from_debug_symbols) {
-    if (!is_win) {
-      # We don't use clang -cc1as on Windows (yet? https://crbug.com/762167)
-      asmflags = [ "-Wa,-fdebug-compilation-dir,." ]
-    }
   }
 }
 
