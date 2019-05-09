@@ -85,6 +85,7 @@ if (is_android) {
         "src/src/crazy_linker_library_view.h",
         "src/src/crazy_linker_line_reader.cpp",
         "src/src/crazy_linker_line_reader.h",
+        "src/src/crazy_linker_load_params.h",
         "src/src/crazy_linker_memory_mapping.cpp",
         "src/src/crazy_linker_memory_mapping.h",
         "src/src/crazy_linker_pointer_set.cpp",

@@ -109,9 +109,22 @@ crazy_status_t crazy_library_open(crazy_library_t** library,
                                   const char* lib_name,
                                   crazy_context_t* context) {
   ScopedLockedGlobals globals;
-  LibraryView* view = globals->libraries()->LoadLibrary(
-      lib_name, context->load_address, globals->search_path_list(),
-      &context->error);
+  crazy::LibraryList* libs = globals->libraries();
+  crazy::LoadParams params;
+  params.wanted_address = context->load_address;
+  crazy::Expected<LibraryView*> found =
+      libs->FindAndCheckLoadedLibrary(lib_name, params, &context->error);
+  if (!found.has_value())
+    return CRAZY_STATUS_FAILURE;
+
+  LibraryView* view = found.value();
+  if (!view) {
+    if (!libs->LocateLibraryFile(lib_name, *globals->search_path_list(),
+                                 &params, &context->error)) {
+      return CRAZY_STATUS_FAILURE;
+    }
+    view = libs->LoadLibraryInternal(params, &context->error);
+  }
 
   if (!view)
     return CRAZY_STATUS_FAILURE;

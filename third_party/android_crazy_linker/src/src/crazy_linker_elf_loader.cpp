@@ -27,10 +27,7 @@ class InternalElfLoader {
  public:
   ~InternalElfLoader();
 
-  bool LoadAt(const char* lib_path,
-              off_t file_offset,
-              uintptr_t wanted_address,
-              Error* error);
+  bool LoadAt(const LoadParams& params, Error* error);
 
   // Only call the following functions after a successful LoadAt() call.
 
@@ -56,7 +53,6 @@ class InternalElfLoader {
   ELF::Addr phdr_size_ = 0;  // and its size.
 
   off_t file_offset_ = 0;
-  void* wanted_load_address_ = nullptr;
   void* load_start_ = nullptr;  // First page of reserved address space.
   ELF::Addr load_size_ = 0;     // Size in bytes of reserved address space.
   ELF::Addr load_bias_ = 0;     // load_bias, add this value to all "vaddr"
@@ -71,7 +67,7 @@ class InternalElfLoader {
   // Individual steps used by ::LoadAt()
   bool ReadElfHeader(Error* error);
   bool ReadProgramHeader(Error* error);
-  bool ReserveAddressSpace(Error* error);
+  bool ReserveAddressSpace(const LoadParams& params, Error* error);
   bool LoadSegments(Error* error);
   bool FindPhdr(Error* error);
   bool CheckPhdr(ELF::Addr, Error* error);
@@ -84,25 +80,25 @@ InternalElfLoader::~InternalElfLoader() {
   }
 }
 
-bool InternalElfLoader::LoadAt(const char* lib_path,
-                               off_t file_offset,
-                               uintptr_t wanted_address,
-                               Error* error) {
-  LOG("lib_path='%s', file_offset=%p, load_address=%p", lib_path, file_offset,
-      wanted_address);
+bool InternalElfLoader::LoadAt(const LoadParams& params, Error* error) {
+  const char* lib_path = params.library_path.c_str();
+  LOG("lib_path='%s', file_offset=%p, load_address=%lx", lib_path,
+      params.library_offset, static_cast<unsigned long>(params.wanted_address));
 
   // Check that the load address is properly page-aligned.
+  uintptr_t wanted_address = params.wanted_address;
   if (wanted_address != PAGE_START(wanted_address)) {
     error->Format("Load address is not page aligned (%08x)", wanted_address);
     return false;
   }
-  wanted_load_address_ = reinterpret_cast<void*>(wanted_address);
 
   // Check that the file offset is also properly page-aligned.
   // PAGE_START() can't be used here due to the compiler complaining about
   // comparing signed (off_t) and unsigned (size_t) values.
+  off_t file_offset = params.library_offset;
   if ((file_offset & static_cast<off_t>(PAGE_SIZE - 1)) != 0) {
-    error->Format("File offset is not page aligned (%08x)", file_offset);
+    error->Format("File offset is not page aligned (%08lx)",
+                  static_cast<unsigned long>(file_offset));
     return false;
   }
   file_offset_ = file_offset;
@@ -122,7 +118,7 @@ bool InternalElfLoader::LoadAt(const char* lib_path,
   path_ = lib_path;
 
   if (!ReadElfHeader(error) || !ReadProgramHeader(error) ||
-      !ReserveAddressSpace(error)) {
+      !ReserveAddressSpace(params, error)) {
     return false;
   }
 
@@ -220,7 +216,8 @@ bool InternalElfLoader::ReadProgramHeader(Error* error) {
 // This will use the wanted_load_address_ value. Fails if the requested
 // address range cannot be reserved. Typically this would be because
 // it overlaps an existing, possibly system, mapping.
-bool InternalElfLoader::ReserveAddressSpace(Error* error) {
+bool InternalElfLoader::ReserveAddressSpace(const LoadParams& params,
+                                            Error* error) {
   ELF::Addr min_vaddr;
   load_size_ =
       phdr_table_get_load_size(phdr_table_, phdr_num_, &min_vaddr, NULL);
@@ -229,20 +226,25 @@ bool InternalElfLoader::ReserveAddressSpace(Error* error) {
     return false;
   }
 
-  uint8_t* addr = NULL;
+  void* addr = nullptr;
   int mmap_flags = MAP_PRIVATE | MAP_ANONYMOUS;
 
   // Support loading at a fixed address.
-  if (wanted_load_address_) {
-    addr = static_cast<uint8_t*>(wanted_load_address_);
+  if (params.wanted_address) {
+    addr = reinterpret_cast<void*>(params.wanted_address);
+    mmap_flags |= MAP_FIXED;
   }
 
   size_t reserved_size = load_size_;
 
-  LOG("address=%p size=%p", addr, reserved_size);
+  LOG("Trying to reserve memory address=%p size=%lu (0x%lx)", addr,
+      static_cast<unsigned long>(load_size_),
+      static_cast<unsigned long>(load_size_));
+
   void* start = mmap(addr, reserved_size, PROT_NONE, mmap_flags, -1, 0);
   if (start == MAP_FAILED) {
-    error->Format("Could not reserve %d bytes of address space", reserved_size);
+    error->Format("Could not reserve %lu bytes of address space",
+                  static_cast<unsigned long>(reserved_size));
     return false;
   }
   if (addr && start != addr) {
@@ -253,12 +255,16 @@ bool InternalElfLoader::ReserveAddressSpace(Error* error) {
 
   // Take ownership of the mapping here.
   reserved_map_ = MemoryMapping(start, reserved_size);
-  LOG("reserved start=%p", reserved_map_.address());
 
   load_start_ = start;
-  load_bias_ = reinterpret_cast<ELF::Addr>(start) - min_vaddr;
+  load_bias_ = reinterpret_cast<ELF::Addr>(load_start_) - min_vaddr;
 
-  LOG("load start=%p, bias=%p", load_start_, load_bias_);
+  LOG("Reserved memory address=%p, size=%lu (0x%lx), bias=%lu (0x%lx)",
+      load_start_, static_cast<unsigned long>(load_size_),
+      static_cast<unsigned long>(load_size_),
+      static_cast<unsigned long>(load_bias_),
+      static_cast<unsigned long>(load_bias_));
+
   return true;
 }
 
@@ -390,13 +396,10 @@ bool InternalElfLoader::LoadSegments(Error* error) {
 }  // namespace
 
 // static
-ElfLoader::Result ElfLoader::LoadAt(const char* lib_path,
-                                    off_t file_offset,
-                                    uintptr_t wanted_address,
-                                    Error* error) {
+ElfLoader::Result ElfLoader::LoadAt(const LoadParams& params, Error* error) {
   InternalElfLoader loader;
   Result result;
-  if (loader.LoadAt(lib_path, file_offset, wanted_address, error)) {
+  if (loader.LoadAt(params, error)) {
     result.load_start = reinterpret_cast<ELF::Addr>(loader.load_start());
     result.load_size = loader.load_size();
     result.load_bias = loader.load_bias();
