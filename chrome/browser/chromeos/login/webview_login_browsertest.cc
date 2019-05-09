@@ -441,17 +441,16 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
   // Sets up the DeviceLoginScreenAutoSelectCertificateForUrls policy.
   void SetAutoSelectCertificatePatterns(
       const std::vector<std::string>& autoselect_patterns) {
-    em::ChromeDeviceSettingsProto& proto(
-        device_policy_test_helper_.device_policy()->payload());
+    em::ChromeDeviceSettingsProto& proto(device_policy_builder_.payload());
     auto* field =
         proto.mutable_device_login_screen_auto_select_certificate_for_urls();
     for (const std::string& autoselect_pattern : autoselect_patterns)
       field->add_login_screen_auto_select_certificate_rules(autoselect_pattern);
 
-    device_policy_test_helper_.device_policy()->Build();
+    device_policy_builder_.Build();
 
     FakeSessionManagerClient::Get()->set_device_policy(
-        device_policy_test_helper_.device_policy()->GetBlob());
+        device_policy_builder_.GetBlob());
     PrefChangeWatcher watcher(prefs::kManagedAutoSelectCertificateForUrls,
                               ProfileHelper::GetSigninProfile()->GetPrefs());
     FakeSessionManagerClient::Get()->OnPropertyChangeComplete(true);
@@ -471,16 +470,15 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
     base::DictionaryValue onc_dict =
         BuildDeviceOncDictForUntrustedAuthority(x509_contents);
 
-    em::ChromeDeviceSettingsProto& proto(
-        device_policy_test_helper_.device_policy()->payload());
+    em::ChromeDeviceSettingsProto& proto(device_policy_builder_.payload());
     base::JSONWriter::Write(onc_dict,
                             proto.mutable_open_network_configuration()
                                 ->mutable_open_network_configuration());
 
-    device_policy_test_helper_.device_policy()->Build();
+    device_policy_builder_.Build();
 
     FakeSessionManagerClient::Get()->set_device_policy(
-        device_policy_test_helper_.device_policy()->GetBlob());
+        device_policy_builder_.GetBlob());
     PrefChangeWatcher watcher(onc::prefs::kDeviceOpenNetworkConfiguration,
                               g_browser_process->local_state());
     FakeSessionManagerClient::Get()->OnPropertyChangeComplete(true);
@@ -545,13 +543,17 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
   void SetUpInProcessBrowserTestFixture() override {
     // Override FakeSessionManagerClient. This will be shut down by the browser.
     chromeos::SessionManagerClient::InitializeFakeInMemory();
+    device_policy_builder_.Build();
     FakeSessionManagerClient::Get()->set_device_policy(
-        device_policy_test_helper_.device_policy()->GetBlob());
+        device_policy_builder_.GetBlob());
 
     WebviewLoginTest::SetUpInProcessBrowserTestFixture();
   }
 
-  void TearDownOnMainThread() override { TearDownTestSystemSlot(); }
+  void TearDownOnMainThread() override {
+    TearDownTestSystemSlot();
+    WebviewLoginTest::TearDownOnMainThread();
+  }
 
  private:
   void SetUpTestSystemSlotOnIO(bool* out_system_slot_constructed_successfully) {
@@ -599,7 +601,7 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
     return onc_dict;
   }
 
-  policy::DevicePolicyCrosTestHelper device_policy_test_helper_;
+  policy::DevicePolicyBuilder device_policy_builder_;
   std::unique_ptr<crypto::ScopedTestSystemNSSKeySlot> test_system_slot_;
   scoped_refptr<net::X509Certificate> client_cert_;
   std::unique_ptr<net::SpawnedTestServer> https_server_;
@@ -879,10 +881,8 @@ class WebviewProxyAuthLoginTest : public WebviewLoginTest {
     //   registered for policy.
     // - the payload is given to |policy_test_server_|, so we can download fresh
     //   policy.
-    device_policy_test_helper_.device_policy()
-        ->policy_data()
-        .set_public_key_version(1);
-    device_policy_test_helper_.device_policy()->Build();
+    device_policy_builder()->policy_data().set_public_key_version(1);
+    device_policy_builder()->Build();
 
     UpdateServedPolicyFromDevicePolicyTestHelper();
     WebviewLoginTest::SetUp();
@@ -958,7 +958,7 @@ class WebviewProxyAuthLoginTest : public WebviewLoginTest {
   }
 
   policy::DevicePolicyBuilder* device_policy_builder() {
-    return device_policy_test_helper_.device_policy();
+    return &device_policy_builder_;
   }
 
   content::WindowedNotificationObserver* auth_needed_observer() {
@@ -975,7 +975,7 @@ class WebviewProxyAuthLoginTest : public WebviewLoginTest {
   // authentication method.
   std::unique_ptr<net::SpawnedTestServer> auth_proxy_server_;
   LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
-  policy::DevicePolicyCrosTestHelper device_policy_test_helper_;
+  policy::DevicePolicyBuilder device_policy_builder_;
 
   DeviceStateMixin device_state_{
       &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};

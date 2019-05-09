@@ -2213,6 +2213,11 @@ class KioskEnterpriseTest : public KioskTest {
  protected:
   KioskEnterpriseTest() { set_use_consumer_kiosk_mode(false); }
 
+  // KioskTest:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
+    KioskTest::SetUpCommandLine(command_line);
+  }
   void SetUpInProcessBrowserTestFixture() override {
     settings_helper_.SetCurrentUserIsOwner(false);
 

@@ -8,10 +8,10 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
+#include "chrome/browser/chromeos/login/test/scoped_policy_update.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
 
@@ -22,28 +22,6 @@ namespace chromeos {
 // NOTE: This mixin will set up in-memory FakeSessionManagerClient during setup.
 class UserPolicyMixin : public InProcessBrowserTestMixin {
  public:
-  // Helper that provides access to policy payload to test that need to update
-  // it,
-  // |callback| - callback that applies policy changes. Called when this object
-  // goes out of scope.
-  class ScopedPolicyUpdate {
-   public:
-    explicit ScopedPolicyUpdate(policy::UserPolicyBuilder* policy_builder,
-                                base::OnceClosure callback);
-    ~ScopedPolicyUpdate();
-
-    // Policy payload proto - use this to set up desired policy values.
-    enterprise_management::CloudPolicySettings* policy_payload() {
-      return &policy_builder_->payload();
-    }
-
-   private:
-    policy::UserPolicyBuilder* const policy_builder_;
-    base::OnceClosure callback_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedPolicyUpdate);
-  };
-
   UserPolicyMixin(InProcessBrowserTestMixinHost* mixin_host,
                   const AccountId& account_id);
   ~UserPolicyMixin() override;
@@ -51,14 +29,14 @@ class UserPolicyMixin : public InProcessBrowserTestMixin {
   // InProcessBrowserTestMixin:
   void SetUpInProcessBrowserTestFixture() override;
 
-  // Returns a ScopedPolicyUpdate object that will update the cached policy
+  // Returns a ScopedUserPolicyUpdate object that will update the cached policy
   // values as it goes out of scope. Calling this will ensure that the cached
   // policy blob is set (even if policy remains empty when ScopedPolicyUpdate is
   // done).
   //
   // If called during setup, before steps that initialize session manager,
   // policy change will be deferred until session manager initialization.
-  std::unique_ptr<ScopedPolicyUpdate> RequestCachedPolicyUpdate();
+  std::unique_ptr<ScopedUserPolicyUpdate> RequestCachedPolicyUpdate();
 
  private:
   // Creates a file containing public policy signing key that will be used to

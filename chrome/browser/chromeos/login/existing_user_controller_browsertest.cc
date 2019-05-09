@@ -221,6 +221,16 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
     users_pref->AppendIfNotPresent(std::make_unique<base::Value>(user_id));
   }
 
+  void MakeCrosSettingsPermanentlyUntrusted() {
+    device_policy()->policy().set_policy_data_signature("bad signature");
+    session_manager_client()->set_device_policy(device_policy()->GetBlob());
+    session_manager_client()->OnPropertyChangeComplete(true);
+
+    base::RunLoop run_loop;
+    WaitForPermanentlyUntrustedStatusAndRun(run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
   // ExistingUserController private member accessors.
   base::OneShotTimer* auto_login_timer() {
     return existing_user_controller()->auto_login_timer_.get();
@@ -288,8 +298,9 @@ class ExistingUserControllerUntrustedTest : public ExistingUserControllerTest {
  public:
   ExistingUserControllerUntrustedTest() = default;
 
-  void SetUpInProcessBrowserTestFixture() override {
-    ExistingUserControllerTest::SetUpInProcessBrowserTestFixture();
+  void SetUpOnMainThread() override {
+    ExistingUserControllerTest::SetUpOnMainThread();
+    MakeCrosSettingsPermanentlyUntrusted();
     ExpectLoginFailure();
   }
 
@@ -491,16 +502,6 @@ class ExistingUserControllerPublicSessionTest
 
   void FireAutoLogin() {
     existing_user_controller()->OnPublicSessionAutoLoginTimerFire();
-  }
-
-  void MakeCrosSettingsPermanentlyUntrusted() {
-    device_policy()->policy().set_policy_data_signature("bad signature");
-    session_manager_client()->set_device_policy(device_policy()->GetBlob());
-    session_manager_client()->OnPropertyChangeComplete(true);
-
-    base::RunLoop run_loop;
-    WaitForPermanentlyUntrustedStatusAndRun(run_loop.QuitClosure());
-    run_loop.Run();
   }
 
   const AccountId public_session_account_id_ =
