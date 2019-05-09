@@ -185,8 +185,19 @@ void Portal::Activate(blink::TransferableMessage data,
 
   auto* outer_contents_main_frame_view = static_cast<RenderWidgetHostViewBase*>(
       outer_contents->GetMainFrame()->GetView());
-  if (outer_contents_main_frame_view)
+
+  if (outer_contents_main_frame_view) {
+    // Take fallback contents from previous WebContents so that the activation
+    // is smooth without flashes.
+    auto* portal_contents_main_frame_view =
+        static_cast<RenderWidgetHostViewBase*>(
+            portal_contents_impl_->GetMainFrame()->GetView());
+    portal_contents_main_frame_view->TakeFallbackContentFrom(
+        outer_contents_main_frame_view);
+
     outer_contents_main_frame_view->Destroy();
+  }
+
   std::unique_ptr<WebContents> predecessor_web_contents =
       delegate->SwapWebContents(outer_contents, std::move(portal_contents),
                                 true, is_loading);
