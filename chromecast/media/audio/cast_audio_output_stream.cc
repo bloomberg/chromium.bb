@@ -131,7 +131,6 @@ class CastAudioOutputStream::CmaWrapper : public CmaBackend::Decoder::Delegate {
   std::unique_ptr<TaskRunnerImpl> cma_backend_task_runner_;
   std::unique_ptr<CmaBackend> cma_backend_;
   std::unique_ptr<::media::AudioBus> audio_bus_;
-  scoped_refptr<media::DecoderBufferBase> decoder_buffer_;
   base::OneShotTimer push_timer_;
   bool push_in_progress_;
   bool encountered_error_;
@@ -225,9 +224,6 @@ void CastAudioOutputStream::CmaWrapper::Initialize(
   }
 
   audio_bus_ = ::media::AudioBus::Create(audio_params_);
-  decoder_buffer_ =
-      base::MakeRefCounted<DecoderBufferAdapter>(new ::media::DecoderBuffer(
-          audio_params_.GetBytesPerBuffer(::media::kSampleFormatS16)));
   timestamp_helper_.SetBaseTimestamp(base::TimeDelta());
 }
 
@@ -330,15 +326,15 @@ void CastAudioOutputStream::CmaWrapper::PushBuffer() {
   DVLOG(3) << "frames_filled=" << frame_count << " with latency=" << delay;
 
   DCHECK_EQ(frame_count, audio_bus_->frames());
-  DCHECK_EQ(static_cast<int>(decoder_buffer_->data_size()),
-            audio_params_.GetBytesPerBuffer(::media::kSampleFormatS16));
+  auto decoder_buffer =
+      base::MakeRefCounted<DecoderBufferAdapter>(new ::media::DecoderBuffer(
+          audio_params_.GetBytesPerBuffer(::media::kSampleFormatS16)));
   audio_bus_->ToInterleaved<::media::SignedInt16SampleTypeTraits>(
-      frame_count,
-      reinterpret_cast<int16_t*>(decoder_buffer_->writable_data()));
-  decoder_buffer_->set_timestamp(timestamp_helper_.GetTimestamp());
+      frame_count, reinterpret_cast<int16_t*>(decoder_buffer->writable_data()));
+  decoder_buffer->set_timestamp(timestamp_helper_.GetTimestamp());
   timestamp_helper_.AddFrames(frame_count);
 
-  BufferStatus status = audio_decoder_->PushBuffer(decoder_buffer_.get());
+  BufferStatus status = audio_decoder_->PushBuffer(std::move(decoder_buffer));
   if (status != CmaBackend::BufferStatus::kBufferPending)
     OnPushBufferComplete(status);
 }
