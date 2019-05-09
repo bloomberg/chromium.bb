@@ -1156,9 +1156,9 @@ void VisualViewport::SetOverlayScrollbarsHidden(bool hidden) {
   ScrollableArea::SetScrollbarsHiddenIfOverlay(hidden);
 }
 
-void VisualViewport::SetPaintArtifactCompositorNeedsUpdate() const {
+void VisualViewport::GraphicsLayersDidChange() {
   if (MainFrame() && MainFrame()->View())
-    MainFrame()->View()->SetPaintArtifactCompositorNeedsUpdate();
+    MainFrame()->View()->GraphicsLayersDidChange();
 }
 
 PaintArtifactCompositor* VisualViewport::GetPaintArtifactCompositor() const {

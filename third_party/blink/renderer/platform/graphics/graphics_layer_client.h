@@ -96,7 +96,7 @@ class PLATFORM_EXPORT GraphicsLayerClient {
 
   virtual void SetOverlayScrollbarsHidden(bool) {}
 
-  virtual void SetPaintArtifactCompositorNeedsUpdate() const {}
+  virtual void GraphicsLayersDidChange() {}
 
   virtual String DebugName(const GraphicsLayer*) const = 0;
 

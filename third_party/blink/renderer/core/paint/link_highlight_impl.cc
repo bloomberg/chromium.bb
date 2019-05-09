@@ -514,8 +514,12 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
 
 void LinkHighlightImpl::SetPaintArtifactCompositorNeedsUpdate() {
   DCHECK(node_);
-  if (auto* frame_view = node_->GetDocument().View())
-    frame_view->SetPaintArtifactCompositorNeedsUpdate();
+  if (auto* frame_view = node_->GetDocument().View()) {
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+      frame_view->SetPaintArtifactCompositorNeedsUpdate();
+    else
+      frame_view->GraphicsLayersDidChange();
+  }
 }
 
 }  // namespace blink

@@ -2474,7 +2474,6 @@ void LocalFrameView::RunPaintLifecyclePhase() {
             }
           });
         }
-        paint_controller_ = nullptr;
       }
     }
   }
@@ -2508,18 +2507,6 @@ void LocalFrameView::PerformScrollAnchoringAdjustments() {
 static void RecordGraphicsLayerAsForeignLayer(
     GraphicsContext& context,
     const GraphicsLayer* graphics_layer) {
-  // Copy the first chunk's safe opaque background color over to the cc::Layer
-  // in the foreign layer wrapper.
-  if (graphics_layer->DrawsContent()) {
-    auto& chunks =
-        graphics_layer->GetPaintController().GetPaintArtifact().PaintChunks();
-    SkColor safe_background_color = SK_ColorWHITE;
-    if (chunks.size()) {
-      safe_background_color = chunks[0].safe_opaque_background_color;
-    }
-    graphics_layer->CcLayer()->SetSafeOpaqueBackgroundColor(
-        safe_background_color);
-  }
   // TODO(trchen): Currently the GraphicsLayer hierarchy is still built during
   // CompositingUpdate, and we have to clear them here to ensure no extraneous
   // layers are still attached. In future we will disable all those layer
@@ -2719,6 +2706,13 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
   SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
                            LocalFrameUkmAggregator::kCompositingCommit);
 
+  // Skip updating property trees, pushing cc::Layers, and issuing raster
+  // invalidations if possible.
+  if (!paint_artifact_compositor_->NeedsUpdate()) {
+    DCHECK(paint_controller_);
+    return;
+  }
+
   PaintArtifactCompositor::ViewportProperties viewport_properties;
   if (GetFrame().IsMainFrame()) {
     const auto& viewport = page->GetVisualViewport();
@@ -2731,17 +2725,14 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
   settings.prefer_compositing_to_lcd_text =
       page->GetSettings().GetPreferCompositingToLCDTextEnabled();
 
-  // Skip updating property trees, pushing cc::Layers, and issuing raster
-  // invalidations if possible.
-  if (!paint_artifact_compositor_->NeedsUpdate())
-    return;
-
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    // BlinkGenPropertyTrees just needs a transient PaintController to
-    // collect the foreign layers which doesn't need caching. It also
-    // shouldn't affect caching status of DisplayItemClients because it's
-    // FinishCycle() is not synchronized with other PaintControllers.
+      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+      !paint_controller_) {
+    // BlinkGenPropertyTrees just needs a transient PaintController to collect
+    // the foreign layers which doesn't need caching. It also shouldn't affect
+    // caching status of DisplayItemClients because it's FinishCycle() is not
+    // synchronized with other PaintControllers. It may live across frame update
+    // until GraphicsLayersDidChange() is called.
     paint_controller_ =
         std::make_unique<PaintController>(PaintController::kTransient);
 
@@ -4000,10 +3991,20 @@ void LocalFrameView::SetIntersectionObservationState(
   intersection_observation_state_ = state;
 }
 
-void LocalFrameView::SetPaintArtifactCompositorNeedsUpdate() const {
+void LocalFrameView::SetPaintArtifactCompositorNeedsUpdate() {
   LocalFrameView* root = GetFrame().LocalFrameRoot().View();
   if (root && root->paint_artifact_compositor_)
     root->paint_artifact_compositor_->SetNeedsUpdate();
+}
+
+void LocalFrameView::GraphicsLayersDidChange() {
+  LocalFrameView* root = GetFrame().LocalFrameRoot().View();
+  if (root) {
+    // We will re-collect GraphicsLayers in PushPaintArtifactsToCompositor().
+    root->paint_controller_ = nullptr;
+    if (root->paint_artifact_compositor_)
+      root->paint_artifact_compositor_->SetNeedsUpdate();
+  }
 }
 
 PaintArtifactCompositor* LocalFrameView::GetPaintArtifactCompositor() const {

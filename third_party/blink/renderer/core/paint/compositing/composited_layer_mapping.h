@@ -215,7 +215,7 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   bool ShouldThrottleRendering() const override;
   bool IsTrackingRasterInvalidations() const override;
   void SetOverlayScrollbarsHidden(bool) override;
-  void SetPaintArtifactCompositorNeedsUpdate() const override;
+  void GraphicsLayersDidChange() override;
 
 #if DCHECK_IS_ON()
   void VerifyNotPainting() override;

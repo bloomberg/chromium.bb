@@ -3506,10 +3506,10 @@ void CompositedLayerMapping::SetOverlayScrollbarsHidden(bool hidden) {
     scrollable_area->SetScrollbarsHiddenIfOverlay(hidden);
 }
 
-void CompositedLayerMapping::SetPaintArtifactCompositorNeedsUpdate() const {
+void CompositedLayerMapping::GraphicsLayersDidChange() {
   LocalFrameView* frame_view = GetLayoutObject().GetFrameView();
   DCHECK(frame_view);
-  frame_view->SetPaintArtifactCompositorNeedsUpdate();
+  frame_view->GraphicsLayersDidChange();
 }
 
 #if DCHECK_IS_ON()

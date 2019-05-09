@@ -259,7 +259,7 @@ void GraphicsLayer::RemoveFromParent() {
       !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     CcLayer()->RemoveFromParent();
   } else {
-    SetPaintArtifactCompositorNeedsUpdate();
+    client_.GraphicsLayersDidChange();
   }
 }
 
@@ -323,10 +323,12 @@ bool GraphicsLayer::Paint(GraphicsContext::DisabledMode disabled_mode) {
     return false;
 #endif
 
-  if (PaintWithoutCommit(disabled_mode))
+  if (PaintWithoutCommit(disabled_mode)) {
     GetPaintController().CommitNewDisplayItems();
-  else if (!needs_check_raster_invalidation_)
+    UpdateSafeOpaqueBackgroundColor();
+  } else if (!needs_check_raster_invalidation_) {
     return false;
+  }
 
 #if DCHECK_IS_ON()
   if (VLOG_IS_ON(2)) {
@@ -358,6 +360,15 @@ bool GraphicsLayer::Paint(GraphicsContext::DisabledMode disabled_mode) {
 
   needs_check_raster_invalidation_ = false;
   return true;
+}
+
+void GraphicsLayer::UpdateSafeOpaqueBackgroundColor() {
+  if (!DrawsContent())
+    return;
+  // Copy the first chunk's safe opaque background color over to the cc::Layer.
+  const auto& chunks = GetPaintController().GetPaintArtifact().PaintChunks();
+  CcLayer()->SetSafeOpaqueBackgroundColor(
+      chunks.size() ? chunks[0].safe_opaque_background_color : SK_ColorWHITE);
 }
 
 bool GraphicsLayer::PaintWithoutCommitForTesting(
@@ -403,7 +414,7 @@ void GraphicsLayer::UpdateChildList() {
   // When using layer lists, cc::Layers are created in PaintArtifactCompositor.
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
       RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    SetPaintArtifactCompositorNeedsUpdate();
+    client_.GraphicsLayersDidChange();
     return;
   }
 
@@ -740,10 +751,6 @@ void GraphicsLayer::SetContentsVisible(bool contents_visible) {
   UpdateLayerIsDrawable();
 }
 
-void GraphicsLayer::SetPaintArtifactCompositorNeedsUpdate() const {
-  client_.SetPaintArtifactCompositorNeedsUpdate();
-}
-
 void GraphicsLayer::SetClipParent(cc::Layer* parent) {
   has_clip_parent_ = !!parent;
   CcLayer()->SetClipParent(parent);
@@ -876,6 +883,7 @@ void GraphicsLayer::SetContentsRect(const IntRect& rect) {
 
   contents_rect_ = rect;
   UpdateContentsRect();
+  client_.GraphicsLayersDidChange();
 }
 
 void GraphicsLayer::SetContentsToImage(
@@ -1055,7 +1063,7 @@ void GraphicsLayer::SetLayerState(const PropertyTreeState& layer_state,
   }
 
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    SetPaintArtifactCompositorNeedsUpdate();
+    client_.GraphicsLayersDidChange();
 }
 
 void GraphicsLayer::SetContentsPropertyTreeState(
@@ -1063,11 +1071,15 @@ void GraphicsLayer::SetContentsPropertyTreeState(
   DCHECK(ContentsLayer());
 
   if (contents_property_tree_state_) {
+    if (*contents_property_tree_state_ == layer_state)
+      return;
     *contents_property_tree_state_ = layer_state;
   } else {
     contents_property_tree_state_ =
         std::make_unique<PropertyTreeState>(layer_state);
   }
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    client_.GraphicsLayersDidChange();
 }
 
 scoped_refptr<cc::DisplayItemList> GraphicsLayer::PaintContentsToDisplayList(

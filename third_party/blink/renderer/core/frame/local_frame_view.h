@@ -205,7 +205,8 @@ class CORE_EXPORT LocalFrameView final
 
   void ForceUpdateViewportIntersections();
 
-  void SetPaintArtifactCompositorNeedsUpdate() const;
+  void SetPaintArtifactCompositorNeedsUpdate();
+  void GraphicsLayersDidChange();
 
   // Marks this frame, and ancestor frames, as needing a mandatory compositing
   // update. This overrides throttling for one frame, up to kCompositingClean.
@@ -938,7 +939,14 @@ class CORE_EXPORT LocalFrameView final
   std::unique_ptr<Vector<ObjectPaintInvalidation>>
       tracked_object_paint_invalidations_;
 
-  // For CompositeAfterPaint only.
+  // For BlinkGenPropertyTrees/CompositeAfterPaint only. It's created lazily
+  // when it's used.
+  // - For BlinkGenPropertyTrees, we use it in PushPaintArtifactToCompositor()
+  //   to collect GraphicsLayers as foreign layers. It's transient, but may live
+  //   across frame updates until GraphicsLayersDidChange() is called.
+  // - For CompositeAfterPaint, we use it in PaintTree() for all paintings of
+  //   the frame tree in PaintTree(). It caches display items and subsequences
+  //   across frame updates and repaints.
   std::unique_ptr<PaintController> paint_controller_;
   std::unique_ptr<PaintArtifactCompositor> paint_artifact_compositor_;
 
