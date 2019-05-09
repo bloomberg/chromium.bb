@@ -1525,7 +1525,7 @@ bool RenderWidgetHostViewAura::ShouldDoLearning() {
 }
 
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
-void RenderWidgetHostViewAura::SetCompositionFromExistingText(
+bool RenderWidgetHostViewAura::SetCompositionFromExistingText(
     const gfx::Range& range,
     const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
   RenderFrameHostImpl* frame = GetFocusedFrame();
@@ -1534,6 +1534,7 @@ void RenderWidgetHostViewAura::SetCompositionFromExistingText(
         range.start(), range.end(), ui_ime_text_spans);
     has_composition_text_ = true;
   }
+  return true;
 }
 
 #endif

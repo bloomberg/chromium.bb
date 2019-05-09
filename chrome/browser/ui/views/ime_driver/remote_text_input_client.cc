@@ -211,9 +211,13 @@ bool RemoteTextInputClient::ShouldDoLearning() {
   return details_->should_do_learning;
 }
 
-void RemoteTextInputClient::SetCompositionFromExistingText(
+bool RemoteTextInputClient::SetCompositionFromExistingText(
     const gfx::Range& range,
-    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {}
+    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
+  // TODO(https://crbug.com/952757): Implement this method.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
+}
 
 ui::EventDispatchDetails RemoteTextInputClient::DispatchKeyEventPostIME(
     ui::KeyEvent* event,

@@ -146,9 +146,11 @@ bool DummyTextInputClient::ShouldDoLearning() {
 }
 
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
-void DummyTextInputClient::SetCompositionFromExistingText(
+bool DummyTextInputClient::SetCompositionFromExistingText(
     const gfx::Range& range,
-    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {}
+    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
+  return false;
+}
 #endif
 
 #if defined(OS_WIN)

@@ -57,7 +57,7 @@ class DummyTextInputClient : public TextInputClient {
   bool ShouldDoLearning() override;
 
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
-  void SetCompositionFromExistingText(
+  bool SetCompositionFromExistingText(
       const gfx::Range& range,
       const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
 #endif

@@ -520,9 +520,13 @@ bool ArcImeService::ShouldDoLearning() {
   return is_personalized_learning_allowed_;
 }
 
-void ArcImeService::SetCompositionFromExistingText(
+bool ArcImeService::SetCompositionFromExistingText(
     const gfx::Range& range,
-    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {}
+    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
+  // TODO(https://crbug.com/952757): Implement this method.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
+}
 
 // static
 void ArcImeService::SetOverrideDefaultDeviceScaleFactorForTesting(

@@ -1752,9 +1752,12 @@ bool Textfield::ShouldDoLearning() {
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
 // TODO(https://crbug.com/952355): Implement this method to support Korean IME reconversion feature
 // on native text fields (e.g. find bar).
-void Textfield::SetCompositionFromExistingText(
+bool Textfield::SetCompositionFromExistingText(
     const gfx::Range& range,
-    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {}
+    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
+}
 #endif
 
 #if defined(OS_WIN)

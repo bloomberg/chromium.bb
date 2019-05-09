@@ -67,7 +67,7 @@ class MockTextInputClient : public TextInputClient {
   MOCK_METHOD1(SetTextEditCommandForNextKeyEvent, void(TextEditCommand));
   MOCK_CONST_METHOD0(GetClientSourceForMetrics, ukm::SourceId());
   MOCK_METHOD2(SetCompositionFromExistingText,
-               void(const gfx::Range&, const std::vector<ui::ImeTextSpan>&));
+               bool(const gfx::Range&, const std::vector<ui::ImeTextSpan>&));
   MOCK_METHOD3(SetActiveCompositionForAccessibility,
                void(const gfx::Range&, const base::string16&, bool));
 };

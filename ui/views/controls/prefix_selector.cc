@@ -169,9 +169,13 @@ bool PrefixSelector::ShouldDoLearning() {
 }
 
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
-void PrefixSelector::SetCompositionFromExistingText(
+bool PrefixSelector::SetCompositionFromExistingText(
     const gfx::Range& range,
-    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {}
+    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
+  // TODO(https://crbug.com/952757): Implement this method.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
+}
 #endif
 
 #if defined(OS_WIN)
