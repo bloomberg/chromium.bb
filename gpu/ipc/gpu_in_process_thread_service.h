@@ -37,7 +37,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GpuInProcessThreadService
       const GpuFeatureInfo& gpu_feature_info,
       const GpuPreferences& gpu_preferences,
       SharedImageManager* shared_image_manager,
-      gles2::ProgramCache* program_cache);
+      gles2::ProgramCache* program_cache,
+      scoped_refptr<SharedContextState> shared_context_state);
   ~GpuInProcessThreadService() override;
 
   // CommandBufferTaskExecutor implementation.

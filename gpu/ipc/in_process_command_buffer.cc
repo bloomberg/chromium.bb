@@ -556,6 +556,8 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
     gl_share_group_ = task_executor_->share_group();
   }
 
+  context_state_ = task_executor_->shared_context_state();
+
   if (params.attribs.context_type == CONTEXT_TYPE_WEBGPU) {
     if (!task_executor_->gpu_preferences().enable_webgpu) {
       DLOG(ERROR) << "ContextResult::kFatalFailure: WebGPU not enabled";
@@ -610,19 +612,29 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
 
     if (params.attribs.enable_raster_interface &&
         !params.attribs.enable_gles2_interface) {
-      context_state_ = base::MakeRefCounted<SharedContextState>(
-          gl_share_group_, surface_, real_context, use_virtualized_gl_context_,
-          base::DoNothing());
-      context_state_->InitializeGL(task_executor_->gpu_preferences(),
-                                   context_group_->feature_info());
-      gr_shader_cache_ = params.gr_shader_cache;
-      context_state_->InitializeGrContext(workarounds, params.gr_shader_cache,
-                                          params.activity_flags);
+      if (!context_state_) {
+        context_state_ = base::MakeRefCounted<SharedContextState>(
+            gl_share_group_, surface_, real_context,
+            use_virtualized_gl_context_, base::DoNothing());
+        context_state_->InitializeGL(task_executor_->gpu_preferences(),
+                                     context_group_->feature_info());
+        gr_shader_cache_ = params.gr_shader_cache;
+        context_state_->InitializeGrContext(workarounds, params.gr_shader_cache,
+                                            params.activity_flags);
+      }
+
+      if (!context_state_->MakeCurrent(nullptr)) {
+        DestroyOnGpuThread();
+        LOG(ERROR) << "Failed to make context current.";
+        return ContextResult::kTransientFailure;
+      }
 
       if (base::ThreadTaskRunnerHandle::IsSet()) {
         gr_cache_controller_.emplace(context_state_.get(),
                                      base::ThreadTaskRunnerHandle::Get());
       }
+
+      context_ = context_state_->context();
 
       decoder_.reset(raster::RasterDecoder::Create(
           this, command_buffer_.get(), task_executor_->outputter(),
@@ -633,12 +645,7 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
       decoder_.reset(gles2::GLES2Decoder::Create(this, command_buffer_.get(),
                                                  task_executor_->outputter(),
                                                  context_group_.get()));
-    }
-
-    if (use_virtualized_gl_context_) {
-      if (context_state_) {
-        context_ = context_state_->context();
-      } else {
+      if (use_virtualized_gl_context_) {
         context_ = base::MakeRefCounted<GLContextVirtual>(
             gl_share_group_.get(), real_context.get(), decoder_->AsWeakPtr());
         if (!context_->Initialize(surface_.get(),
@@ -652,18 +659,18 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
                         "Failed to initialize virtual GL context.";
           return gpu::ContextResult::kFatalFailure;
         }
-      }
 
-      if (!context_->MakeCurrent(surface_.get())) {
-        DestroyOnGpuThread();
-        // The caller should retry making a context, but this one won't work.
-        LOG(ERROR) << "ContextResult::kTransientFailure: "
-                      "Could not make context current.";
-        return gpu::ContextResult::kTransientFailure;
+        if (!context_->MakeCurrent(surface_.get())) {
+          DestroyOnGpuThread();
+          // The caller should retry making a context, but this one won't work.
+          LOG(ERROR) << "ContextResult::kTransientFailure: "
+                        "Could not make context current.";
+          return gpu::ContextResult::kTransientFailure;
+        }
+      } else {
+        context_ = real_context;
+        DCHECK(context_->IsCurrent(surface_.get()));
       }
-    } else {
-      context_ = real_context;
-      DCHECK(context_->IsCurrent(surface_.get()));
     }
 
     if (!context_group_->has_program_cache() &&
