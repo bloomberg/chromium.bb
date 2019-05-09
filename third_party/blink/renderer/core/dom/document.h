@@ -1136,13 +1136,6 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsContextThread() const final;
   bool IsJSExecutionForbidden() const final { return false; }
 
-  bool ContainsValidityStyleRules() const {
-    return contains_validity_style_rules_;
-  }
-  void SetContainsValidityStyleRules() {
-    contains_validity_style_rules_ = true;
-  }
-
   void EnqueueResizeEvent();
   void EnqueueScrollEventForNode(Node*);
   void EnqueueScrollEndEventForNode(Node*);
@@ -1814,7 +1807,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool is_dns_prefetch_enabled_;
   bool have_explicitly_disabled_dns_prefetch_;
-  bool contains_validity_style_rules_;
   bool contains_plugins_;
 
   // https://html.spec.whatwg.org/C/dynamic-markup-insertion.html#ignore-destructive-writes-counter

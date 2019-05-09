@@ -992,12 +992,8 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoRequired:
       return element.IsRequiredFormControl();
     case CSSSelector::kPseudoValid:
-      if (mode_ == kResolvingStyle)
-        element.GetDocument().SetContainsValidityStyleRules();
       return element.MatchesValidityPseudoClasses() && element.IsValidElement();
     case CSSSelector::kPseudoInvalid:
-      if (mode_ == kResolvingStyle)
-        element.GetDocument().SetContainsValidityStyleRules();
       return element.MatchesValidityPseudoClasses() &&
              !element.IsValidElement();
     case CSSSelector::kPseudoChecked: {
@@ -1049,12 +1045,8 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       DCHECK(is_ua_rule_);
       return element.ContainsPersistentVideo();
     case CSSSelector::kPseudoInRange:
-      if (mode_ == kResolvingStyle)
-        element.GetDocument().SetContainsValidityStyleRules();
       return element.IsInRange();
     case CSSSelector::kPseudoOutOfRange:
-      if (mode_ == kResolvingStyle)
-        element.GetDocument().SetContainsValidityStyleRules();
       return element.IsOutOfRange();
     case CSSSelector::kPseudoFutureCue: {
       auto* vtt_element = DynamicTo<VTTElement>(element);
