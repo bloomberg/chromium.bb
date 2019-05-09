@@ -268,21 +268,6 @@ const char kCompositedLayerBordersDescription[] =
     "Renders a border around composited Render Layers to help debug and study "
     "layer compositing.";
 
-const char kContextualSuggestionsButtonName[] = "Contextual Suggestions Button";
-const char kContextualSuggestionsButtonDescription[] =
-    "If enabled, shows a button to trigger contextual suggestions.";
-
-const char kContextualSuggestionsIPHReverseScrollName[] =
-    "Contextual Suggestions IPH Reverse Scroll";
-const char kContextualSuggestionsIPHReverseScrollDescription[] =
-    "Require a reverse scroll before showing in-product help for contextual "
-    "suggestions.";
-
-const char kContextualSuggestionsOptOutName[] =
-    "Contextual Suggestions Opt-out";
-const char kContextualSuggestionsOptOutDescription[] =
-    "If enabled, allows the user to opt out of contextual suggestions.";
-
 extern const char kCookiesWithoutSameSiteMustBeSecureName[] =
     "Cookies without SameSite must be secure";
 extern const char kCookiesWithoutSameSiteMustBeSecureDescription[] =

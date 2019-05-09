@@ -212,10 +212,6 @@ public abstract class ChromeFeatureList {
             "ContextualSearchTranslationModel";
     public static final String CONTEXTUAL_SEARCH_UNITY_INTEGRATION =
             "ContextualSearchUnityIntegration";
-    public static final String CONTEXTUAL_SUGGESTIONS_BUTTON = "ContextualSuggestionsButton";
-    public static final String CONTEXTUAL_SUGGESTIONS_OPT_OUT = "ContextualSuggestionsOptOut";
-    public static final String CONTEXTUAL_SUGGESTIONS_IPH_REVERSE_SCROLL =
-            "ContextualSuggestionsIPHReverseScroll";
     public static final String CUSTOM_CONTEXT_MENU = "CustomContextMenu";
     public static final String DATA_SAVER_LITE_MODE_REBRANDING = "DataSaverLiteModeRebranding";
     public static final String DELEGATE_OVERSCROLL_SWIPES = "DelegateOverscrollSwipes";

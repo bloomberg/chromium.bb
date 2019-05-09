@@ -53,9 +53,7 @@ import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentHandler;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
-import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModule;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
-import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController.FinishReason;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabFactory;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
@@ -879,18 +877,18 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
         @Override
         public void closeAllIncognitoTabs() {
-            mNavigationController.finish(FinishReason.OTHER);
+            mNavigationController.finish(CustomTabActivityNavigationController.FinishReason.OTHER);
         }
     }
 
     @Override
-    protected CustomTabActivityComponent createComponent(ChromeActivityCommonsModule commonsModule,
-            ContextualSuggestionsModule contextualSuggestionsModule) {
+    protected CustomTabActivityComponent createComponent(
+            ChromeActivityCommonsModule commonsModule) {
         CustomTabActivityModule customTabsModule =
                 new CustomTabActivityModule(mIntentDataProvider);
-        CustomTabActivityComponent component = ChromeApplication.getComponent()
-                .createCustomTabActivityComponent(commonsModule, contextualSuggestionsModule,
-                        customTabsModule);
+        CustomTabActivityComponent component =
+                ChromeApplication.getComponent().createCustomTabActivityComponent(
+                        commonsModule, customTabsModule);
 
         mTabObserverRegistrar = component.resolveTabObserverRegistrar();
         mTabController = component.resolveTabController();

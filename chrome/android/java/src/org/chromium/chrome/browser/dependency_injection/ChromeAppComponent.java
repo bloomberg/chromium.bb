@@ -9,8 +9,6 @@ import org.chromium.chrome.browser.browserservices.ClearDataDialogResultRecorder
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.NotificationPermissionUpdater;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
-import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModule;
-import org.chromium.chrome.browser.contextual_suggestions.EnabledStateMonitor;
 import org.chromium.chrome.browser.customtabs.CustomTabsClientFileProcessor;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityComponent;
@@ -28,11 +26,9 @@ import dagger.Component;
 @Component(modules = {ChromeAppModule.class, AppHooksModule.class})
 @Singleton
 public interface ChromeAppComponent {
-    ChromeActivityComponent createChromeActivityComponent(ChromeActivityCommonsModule module,
-            ContextualSuggestionsModule contextualSuggestionsModule);
+    ChromeActivityComponent createChromeActivityComponent(ChromeActivityCommonsModule module);
 
     CustomTabActivityComponent createCustomTabActivityComponent(ChromeActivityCommonsModule module,
-            ContextualSuggestionsModule contextualSuggestionsModule,
             CustomTabActivityModule customTabActivityModule);
 
     CustomTabsConnection resolveCustomTabsConnection();
@@ -41,10 +37,6 @@ public interface ChromeAppComponent {
     TrustedWebActivityPermissionManager resolveTwaPermissionManager();
     NotificationPermissionUpdater resolveTwaPermissionUpdater();
     TrustedWebActivityClient resolveTrustedWebActivityClient();
-
-    // Temporary getters for DI migration process. All of these getters
-    // should eventually be replaced with constructor injection.
-    EnabledStateMonitor resolveContextualSuggestionsEnabledStateMonitor();
 
     ExternalAuthUtils resolveExternalAuthUtils();
 

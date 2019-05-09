@@ -573,7 +573,6 @@ jumbo_split_static_library("ui") {
 
   if (is_android) {
     deps += [
-      "//chrome/browser/ui/webui/eoc_internals:mojo_bindings",
       "//chrome/browser/ui/webui/explore_sites_internals:mojo_bindings",
       "//chrome/browser/ui/webui/snippets_internals:mojo_bindings",
     ]
@@ -731,10 +730,6 @@ jumbo_split_static_library("ui") {
       "android/view_android_helper.h",
       "browser_otr_state_android.cc",
       "screen_capture_notification_ui_stub.cc",
-      "webui/eoc_internals/eoc_internals_page_handler.cc",
-      "webui/eoc_internals/eoc_internals_page_handler.h",
-      "webui/eoc_internals/eoc_internals_ui.cc",
-      "webui/eoc_internals/eoc_internals_ui.h",
       "webui/explore_sites_internals/explore_sites_internals_page_handler.cc",
       "webui/explore_sites_internals/explore_sites_internals_page_handler.h",
       "webui/explore_sites_internals/explore_sites_internals_ui.cc",

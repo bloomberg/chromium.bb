@@ -33,33 +33,6 @@ static_library("ntp_snippets") {
     "content_suggestions_provider.h",
     "content_suggestions_service.cc",
     "content_suggestions_service.h",
-    "contextual/contextual_content_suggestions_service.cc",
-    "contextual/contextual_content_suggestions_service.h",
-    "contextual/contextual_content_suggestions_service_proxy.cc",
-    "contextual/contextual_content_suggestions_service_proxy.h",
-    "contextual/contextual_suggestion.cc",
-    "contextual/contextual_suggestion.h",
-    "contextual/contextual_suggestions_cache.cc",
-    "contextual/contextual_suggestions_cache.h",
-    "contextual/contextual_suggestions_features.cc",
-    "contextual/contextual_suggestions_features.h",
-    "contextual/contextual_suggestions_fetch.cc",
-    "contextual/contextual_suggestions_fetch.h",
-    "contextual/contextual_suggestions_fetcher.h",
-    "contextual/contextual_suggestions_fetcher_impl.cc",
-    "contextual/contextual_suggestions_fetcher_impl.h",
-    "contextual/contextual_suggestions_result.cc",
-    "contextual/contextual_suggestions_result.h",
-    "contextual/reporting/contextual_suggestions_composite_reporter.cc",
-    "contextual/reporting/contextual_suggestions_composite_reporter.h",
-    "contextual/reporting/contextual_suggestions_debugging_reporter.cc",
-    "contextual/reporting/contextual_suggestions_debugging_reporter.h",
-    "contextual/reporting/contextual_suggestions_metrics_reporter.cc",
-    "contextual/reporting/contextual_suggestions_metrics_reporter.h",
-    "contextual/reporting/contextual_suggestions_reporter.cc",
-    "contextual/reporting/contextual_suggestions_reporter.h",
-    "contextual/reporting/contextual_suggestions_ukm_entry.cc",
-    "contextual/reporting/contextual_suggestions_ukm_entry.h",
     "features.cc",
     "features.h",
     "ntp_snippets_constants.cc",
@@ -126,7 +99,6 @@ static_library("ntp_snippets") {
   ]
 
   deps = [
-    ":explore_protos",
     "//components/favicon/core",
     "//components/favicon_base",
     "//components/history/core/browser",
@@ -161,17 +133,8 @@ if (is_android) {
       "category_info.h",
       "category_status.h",
       "content_suggestions_service.cc",
-      "contextual/reporting/contextual_suggestions_reporter.h",
     ]
   }
-}
-
-proto_library("explore_protos") {
-  sources = [
-    "contextual/proto/chrome_search_api_request_context.proto",
-    "contextual/proto/get_pivots_request.proto",
-    "contextual/proto/get_pivots_response.proto",
-  ]
 }
 
 source_set("unit_tests") {
@@ -182,14 +145,6 @@ source_set("unit_tests") {
     "category_unittest.cc",
     "content_suggestions_metrics_unittest.cc",
     "content_suggestions_service_unittest.cc",
-    "contextual/contextual_content_suggestions_service_proxy_unittest.cc",
-    "contextual/contextual_content_suggestions_service_unittest.cc",
-    "contextual/contextual_suggestions_features_unittest.cc",
-    "contextual/contextual_suggestions_fetch_unittest.cc",
-    "contextual/contextual_suggestions_fetcher_impl_unittest.cc",
-    "contextual/reporting/contextual_suggestions_composite_reporter_unittest.cc",
-    "contextual/reporting/contextual_suggestions_metrics_reporter_unittest.cc",
-    "contextual/reporting/contextual_suggestions_ukm_entry_unittest.cc",
     "features_unittest.cc",
     "reading_list/reading_list_suggestions_provider_unittest.cc",
     "remote/cached_image_fetcher_unittest.cc",
@@ -209,7 +164,6 @@ source_set("unit_tests") {
   ]
 
   deps = [
-    ":explore_protos",
     ":ntp_snippets",
     ":test_support",
     "//base",
@@ -250,8 +204,6 @@ source_set("test_support") {
     "category_rankers/fake_category_ranker.h",
     "category_rankers/mock_category_ranker.cc",
     "category_rankers/mock_category_ranker.h",
-    "contextual/contextual_suggestions_test_utils.cc",
-    "contextual/contextual_suggestions_test_utils.h",
     "fake_content_suggestions_provider_observer.cc",
     "fake_content_suggestions_provider_observer.h",
     "mock_content_suggestions_provider.cc",

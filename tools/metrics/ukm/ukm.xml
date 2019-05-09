@@ -2199,6 +2199,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="ContextualSuggestions">
+  <obsolete>
+    This feature was deprecated in M74
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>fgorski@chromium.org</owner>
   <owner>twellington@chromium.org</owner>

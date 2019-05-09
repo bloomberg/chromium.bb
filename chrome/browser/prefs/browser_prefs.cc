@@ -197,7 +197,6 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/bookmarks/partner_bookmarks_shim.h"
-#include "chrome/browser/android/contextual_suggestions/contextual_suggestions_prefs.h"
 #include "chrome/browser/android/explore_sites/history_statistics_reporter.h"
 #include "chrome/browser/android/ntp/recent_tabs_page_prefs.h"
 #include "chrome/browser/android/oom_intervention/oom_intervention_decider.h"
@@ -790,8 +789,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
 #if defined(OS_ANDROID)
   cdm::MediaDrmStorageImpl::RegisterProfilePrefs(registry);
   MediaDrmOriginIdManager::RegisterProfilePrefs(registry);
-  contextual_suggestions::ContextualSuggestionsPrefs::RegisterProfilePrefs(
-      registry);
   explore_sites::HistoryStatisticsReporter::RegisterPrefs(registry);
   ntp_snippets::ClickBasedCategoryRanker::RegisterProfilePrefs(registry);
   OomInterventionDecider::RegisterProfilePrefs(registry);

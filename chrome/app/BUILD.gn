@@ -474,10 +474,8 @@ source_set("chrome_content_browser_overlay_manifest") {
   }
 
   if (is_android) {
-    deps += [
-      "//chrome/browser/ui/webui/eoc_internals:mojo_bindings",
-      "//chrome/browser/ui/webui/explore_sites_internals:mojo_bindings",
-    ]
+    deps +=
+        [ "//chrome/browser/ui/webui/explore_sites_internals:mojo_bindings" ]
   } else {
     deps += [
       "//chrome/browser/ui/webui/app_management:mojo_bindings",

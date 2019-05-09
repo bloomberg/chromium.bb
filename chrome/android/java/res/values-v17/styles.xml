@@ -805,16 +805,10 @@
         <item name="android:ellipsize">end</item>
         <item name="leading">20sp</item>
     </style>
-    <style name="ContextualSuggestionCardTitleModern" parent="SuggestionCardTitleModern">
-        <item name="leading">@dimen/text_size_large_leading</item>
-    </style>
     <style name="SuggestionCardBodyModern" parent="TextAppearance.BlackBody">
         <item name="android:layout_marginTop">8dp</item>
         <item name="android:ellipsize">end</item>
         <item name="leading">16sp</item>
-    </style>
-    <style name="ContextualSuggestionCardBodyModern" parent="SuggestionCardBodyModern">
-        <item name="leading">@dimen/text_size_medium_leading</item>
     </style>
     <style name="SuggestionCardAction" parent="@style/TextButton">
         <item name="android:minHeight">48dp</item>

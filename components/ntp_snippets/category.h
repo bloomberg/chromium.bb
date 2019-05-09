@@ -37,9 +37,6 @@ enum class KnownCategories {
   // Pages from the user reading list.
   READING_LIST,
 
-  // Contextual suggestion.
-  CONTEXTUAL,
-
   // ****************** INSERT NEW LOCAL CATEGORIES HERE! ******************
   // Existing categories are persisted and they must never be removed. This may
   // happen implicitly, e.g. when an older version without some local category

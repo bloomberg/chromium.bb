@@ -26,7 +26,6 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
-import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
@@ -67,7 +66,6 @@ import java.util.List;
  */
 public class FeatureUtilities {
     private static final String TAG = "FeatureUtilities";
-    private static final Integer CONTEXTUAL_SUGGESTIONS_TOOLBAR_MIN_DP = 320;
 
     private static Boolean sHasGoogleAccountAuthenticator;
     private static Boolean sHasRecognitionIntentHandler;
@@ -585,20 +583,6 @@ public class FeatureUtilities {
      */
     public static boolean isDownloadProgressInfoBarEnabled() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_PROGRESS_INFOBAR);
-    }
-
-    /**
-     * @param activityContext The context for the containing activity.
-     * @return Whether contextual suggestions are enabled.
-     */
-    public static boolean areContextualSuggestionsEnabled(Context activityContext) {
-        int smallestScreenWidth =
-                activityContext.getResources().getConfiguration().smallestScreenWidthDp;
-        return !DeviceFormFactor.isNonMultiDisplayContextOnTablet(activityContext)
-                && !LocaleManager.getInstance().needToCheckForSearchEnginePromo()
-                && (smallestScreenWidth >= CONTEXTUAL_SUGGESTIONS_TOOLBAR_MIN_DP
-                           && ChromeFeatureList.isEnabled(
-                                      ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON));
     }
 
     private static void cacheGridTabSwitcherEnabled() {

@@ -30,8 +30,6 @@ TEST_F(PrefsTest, TestIndex) {
 
   EXPECT_EQ(prefs::kAllowDeletingBrowserHistory,
             GetPrefName(ALLOW_DELETING_BROWSER_HISTORY));
-  EXPECT_EQ(contextual_suggestions::prefs::kContextualSuggestionsEnabled,
-            GetPrefName(CONTEXTUAL_SUGGESTIONS_ENABLED));
   EXPECT_EQ(prefs::kIncognitoModeAvailability,
             GetPrefName(INCOGNITO_MODE_AVAILABILITY));
 

@@ -96,15 +96,6 @@ public class SuggestionsNavigationDelegate extends NativePageNavigationDelegateI
                     ReferrerPolicy.ALWAYS));
         }
 
-        // Set appropriate referrer for contextual suggestions to distinguish them from navigation
-        // from a page.
-        if (article.mCategory == KnownCategories.CONTEXTUAL) {
-            loadUrlParams.setReferrer(
-                    new Referrer(SuggestionsConfig.getReferrerUrl(
-                                         ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON),
-                            ReferrerPolicy.ALWAYS));
-        }
-
         Tab loadingTab = openUrl(windowOpenDisposition, loadUrlParams);
         if (loadingTab != null && !article.isContextual()) {
             SuggestionsMetrics.recordVisit(loadingTab, article);

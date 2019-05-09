@@ -2437,7 +2437,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/content/ContentUtils.java",
     "java/src/org/chromium/chrome/browser/contextmenu/ContextMenuHelper.java",
     "java/src/org/chromium/chrome/browser/contextmenu/ContextMenuParams.java",
-    "java/src/org/chromium/chrome/browser/contextual_suggestions/ContextualSuggestionsBridge.java",
     "java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchContext.java",
     "java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchManager.java",
     "java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchPreferenceHelper.java",

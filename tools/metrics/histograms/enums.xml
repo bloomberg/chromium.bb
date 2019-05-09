@@ -9624,12 +9624,18 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="ContextualSuggestions.ClickDuration">
+  <obsolete>
+    This feature was deprecated in M74
+  </obsolete>
   <int value="0" label="Short (&lt;4 seconds)"/>
   <int value="1" label="Medium (4-180 seconds)"/>
   <int value="2" label="Long (&gt;180 seconds)"/>
 </enum>
 
 <enum name="ContextualSuggestions.Event">
+  <obsolete>
+    This feature was deprecated in M74
+  </obsolete>
   <int value="0" label="Uninitialized"/>
   <int value="1" label="Fetch delayed"/>
   <int value="2" label="Fetch requested"/>

@@ -161,7 +161,7 @@ public class SnippetArticleViewHolder extends CardViewHolder {
     }
 
     protected SuggestionsBinder createBinder(SuggestionsUiDelegate uiDelegate) {
-        return new SuggestionsBinder(itemView, uiDelegate, false);
+        return new SuggestionsBinder(itemView, uiDelegate);
     }
 
     /**

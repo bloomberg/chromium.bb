@@ -349,7 +349,6 @@
     <dimen name="ntp_wide_card_lateral_margins">48dp</dimen>
     <dimen name="ntp_progress_indicator_diameter">56dp</dimen>
     <dimen name="snippets_thumbnail_size">124dp</dimen>
-    <dimen name="snippets_thumbnail_size_small">72dp</dimen>
     <!-- The default padding for the peeking card and the amount the card peeks by in the current
          peeking card animation (the calculations assume this is the same). -->
     <dimen name="snippets_padding">16dp</dimen>
@@ -546,10 +545,6 @@
     <!-- Reader Mode dimensions -->
     <!-- Padding surrounding the message. -->
     <dimen name="reader_mode_infobar_text_padding">8dp</dimen>
-
-    <!-- Contextual Suggestions Dimensions -->
-    <dimen name="contextual_suggestions_publisher_margin">12dp</dimen>
-    <dimen name="contextual_suggestions_toolbar_icon_size">48dp</dimen>
 
     <!-- Defaults for TabbedModeFirstRunActivity values. -->
     <item type="dimen" name="dialog_fixed_width_major">100%</item>

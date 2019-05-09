@@ -4531,6 +4531,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ContextualSuggestions">
+  <obsolete>This feature was deprecated in M74</obsolete>
   <owner>huayinz@chromium.org</owner>
   <owner>twellington@chromium.com</owner>
   <owner>wylieb@chromium.com</owner>
@@ -4538,6 +4539,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ContextualSuggestions.ContextMenu">
+  <obsolete>This feature was deprecated in M74</obsolete>
   <owner>huayinz@chromium.org</owner>
   <owner>twellington@chromium.com</owner>
   <description>
@@ -4547,6 +4549,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ContextualSuggestions.Preference.Disabled">
+  <obsolete>This feature was deprecated in M74</obsolete>
   <owner>huayinz@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>
@@ -4556,6 +4559,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ContextualSuggestions.Preference.Enabled">
+  <obsolete>This feature was deprecated in M74</obsolete>
   <owner>huayinz@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>

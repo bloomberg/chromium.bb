@@ -108,8 +108,6 @@ HistogramCategories GetHistogramCategory(Category category) {
       return HistogramCategories::ARTICLES;
     case KnownCategories::READING_LIST:
       return HistogramCategories::READING_LIST;
-    case KnownCategories::CONTEXTUAL:
-      return HistogramCategories::CONTEXTUAL;
     case KnownCategories::BOOKMARKS_DEPRECATED:
       return HistogramCategories::BOOKMARKS_DEPRECATED;
     case KnownCategories::DOWNLOADS_DEPRECATED:

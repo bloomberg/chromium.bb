@@ -70,7 +70,6 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/ui/webui/eoc_internals/eoc_internals.mojom.h"
 #include "chrome/browser/ui/webui/explore_sites_internals/explore_sites_internals.mojom.h"
 #else
 #include "chrome/browser/ui/webui/app_management/app_management.mojom.h"
@@ -248,7 +247,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                     downloads::mojom::PageHandlerFactory,
                     feed_internals::mojom::PageHandler,
 #if defined(OS_ANDROID)
-                    eoc_internals::mojom::PageHandler,
                     explore_sites_internals::mojom::PageHandler,
 #else
                     app_management::mojom::PageHandlerFactory,

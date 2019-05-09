@@ -68,7 +68,6 @@ import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeController;
 import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
-import org.chromium.chrome.browser.contextual_suggestions.PageViewTimer;
 import org.chromium.chrome.browser.cookies.CookiesFetcher;
 import org.chromium.chrome.browser.crypto.CipherFactory;
 import org.chromium.chrome.browser.datareduction.DataReductionPromoScreen;
@@ -2462,8 +2461,7 @@ public class ChromeTabbedActivity
 
     @Override
     protected boolean shouldInitializeBottomSheet() {
-        return FeatureUtilities.areContextualSuggestionsEnabled(this)
-                || FeatureUtilities.isTabGroupsAndroidEnabled();
+        return FeatureUtilities.isTabGroupsAndroidEnabled();
     }
 
     @Override
@@ -2480,10 +2478,5 @@ public class ChromeTabbedActivity
                 if (tabObserver != null) tabObserver.onScreenshotTaken();
             }
         });
-    }
-
-    @Override
-    protected PageViewTimer createPageViewTimer() {
-        return new PageViewTimer(mTabModelSelectorImpl, mLayoutManager);
     }
 }

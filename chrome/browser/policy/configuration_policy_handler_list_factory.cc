@@ -74,7 +74,6 @@
 #include "ppapi/buildflags/buildflags.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/contextual_suggestions/contextual_suggestions_prefs.h"
 #include "chrome/browser/search/contextual_search_policy_handler_android.h"
 #endif
 
@@ -823,9 +822,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kAuthAndroidNegotiateAccountType,
     prefs::kAuthAndroidNegotiateAccountType,
     base::Value::Type::STRING },
-  { key::kContextualSuggestionsEnabled,
-    contextual_suggestions::prefs::kContextualSuggestionsEnabled,
-    base::Value::Type::BOOLEAN },
 #endif  // defined(OS_ANDROID)
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)

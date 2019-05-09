@@ -20,7 +20,6 @@
 #include "components/feed/feed_feature_list.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/language/core/common/language_experiments.h"
-#include "components/ntp_snippets/contextual/contextual_suggestions_features.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_tiles/constants.h"
 #include "components/offline_pages/core/offline_page_feature.h"
@@ -60,9 +59,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &autofill::features::kAutofillRefreshStyleAndroid,
     &autofill::features::kAutofillEnableCompanyName,
     &autofill_assistant::features::kAutofillAssistant,
-    &contextual_suggestions::kContextualSuggestionsButton,
-    &contextual_suggestions::kContextualSuggestionsIPHReverseScroll,
-    &contextual_suggestions::kContextualSuggestionsOptOut,
     &download::features::kDownloadAutoResumptionNative,
     &download::features::kUseDownloadOfflineContentProvider,
     &features::kAllowStartingServiceManagerOnly,

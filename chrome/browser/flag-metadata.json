@@ -431,21 +431,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "contextual-suggestions-button",
-    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextual_suggestions/OWNERS" ],
-    "expiry_milestone": 74
-  },
-  {
-    "name": "contextual-suggestions-iph-reverse-scroll",
-    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextual_suggestions/OWNERS" ],
-    "expiry_milestone": 74
-  },
-  {
-    "name": "contextual-suggestions-opt-out",
-    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextual_suggestions/OWNERS" ],
-    "expiry_milestone": 74
-  },
-  {
     "name": "cookies-without-same-site-must-be-secure",
     "owners": [ "chlily", "morlovich" ],
     "expiry_milestone": 80

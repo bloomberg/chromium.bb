@@ -73,9 +73,5 @@
             android:key="contextual_search"
             android:title="@string/contextual_search_title"
             android:fragment="org.chromium.chrome.browser.preferences.privacy.ContextualSearchPreferenceFragment"/>
-        <Preference
-            android:key="contextual_suggestions"
-            android:title="@string/prefs_contextual_suggestions"
-            android:fragment="org.chromium.chrome.browser.preferences.ContextualSuggestionsPreference"/>
     </PreferenceCategory>
 </PreferenceScreen>

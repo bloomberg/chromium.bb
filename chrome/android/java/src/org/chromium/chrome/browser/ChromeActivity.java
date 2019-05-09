@@ -71,8 +71,6 @@ import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.compositor.layouts.content.ContentOffsetProvider;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManagerHandler;
-import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModule;
-import org.chromium.chrome.browser.contextual_suggestions.PageViewTimer;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager.ContextualSearchTabPromotionDelegate;
@@ -329,9 +327,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     /** Whether or not a PolicyChangeListener was added. */
     private boolean mDidAddPolicyChangeListener;
 
-    /** Adds TabObserver and TabModelObserver to measure page view times. */
-    private PageViewTimer mPageViewTimer;
-
     private ActivityTabStartupMetricsTracker mActivityTabStartupMetricsTracker;
 
     /** A means of providing the foreground tab of the activity to different features. */
@@ -402,14 +397,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 ? new ChromeActivityCommonsModule(this, getLifecycleDispatcher())
                 : overridenCommonsFactory.create(this);
 
-        ContextualSuggestionsModule.Factory overridenSuggestionsFactory =
-                ModuleFactoryOverrides.getOverrideFor(ContextualSuggestionsModule.Factory.class);
-
-        ContextualSuggestionsModule suggestionsModule = overridenSuggestionsFactory == null
-                ? new ContextualSuggestionsModule()
-                : overridenSuggestionsFactory.create();
-
-        return createComponent(commonsModule, suggestionsModule);
+        return createComponent(commonsModule);
     }
 
     /**
@@ -421,10 +409,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * You may immediately resolve some of the classes belonging to the component in this method.
      */
     @SuppressWarnings("unchecked")
-    protected C createComponent(ChromeActivityCommonsModule commonsModule,
-            ContextualSuggestionsModule contextualSuggestionsModule) {
-        return (C) ChromeApplication.getComponent().createChromeActivityComponent(
-                commonsModule, contextualSuggestionsModule);
+    protected C createComponent(ChromeActivityCommonsModule commonsModule) {
+        return (C) ChromeApplication.getComponent().createChromeActivityComponent(commonsModule);
     }
 
     /**
@@ -1258,11 +1244,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     @SuppressLint("NewApi")
     @Override
     protected final void onDestroy() {
-        if (mPageViewTimer != null) {
-            mPageViewTimer.destroy();
-            mPageViewTimer = null;
-        }
-
         if (mReaderModeManager != null) {
             mReaderModeManager.destroy();
             mReaderModeManager = null;
@@ -1429,13 +1410,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         getCompositorViewHolder().addCompositorViewResizer(
                 mManualFillingComponent.getKeyboardExtensionViewResizer());
 
-        // Create after native initialization so subclasses that override this method have a chance
-        // to setup.
-        mPageViewTimer = createPageViewTimer();
         if (mBottomSheet == null && shouldInitializeBottomSheet()) {
             // TODO(yusufo): Unify initialization.
-            initializeBottomSheet(
-                    !ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON));
+            initializeBottomSheet(true);
         }
         AppHooks.get().startMonitoringNetworkQuality();
         AppHooks.get().startSystemSettingsObserver();
@@ -2579,15 +2556,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     public float getLastActiveDensity() {
         return mDensityDpi;
-    }
-
-    /**
-     * Create a PageViewTimer that's compatible with this activity. Override in subclasses to
-     * specialize behavior.
-     * @return The PageViewTimer created for this activity.
-     */
-    protected PageViewTimer createPageViewTimer() {
-        return new PageViewTimer(mTabModelSelector);
     }
 
     /**

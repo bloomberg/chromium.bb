@@ -11,7 +11,6 @@ import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.ContentPriority;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -100,21 +99,21 @@ public class TestBottomSheetContent implements BottomSheetContent {
 
     @Override
     public int getSheetContentDescriptionStringId() {
-        return R.string.contextual_suggestions_button_description;
+        return android.R.string.copy;
     }
 
     @Override
     public int getSheetHalfHeightAccessibilityStringId() {
-        return R.string.contextual_suggestions_sheet_opened_half;
+        return android.R.string.copy;
     }
 
     @Override
     public int getSheetFullHeightAccessibilityStringId() {
-        return R.string.contextual_suggestions_sheet_opened_full;
+        return android.R.string.copy;
     }
 
     @Override
     public int getSheetClosedAccessibilityStringId() {
-        return R.string.contextual_suggestions_sheet_closed;
+        return android.R.string.copy;
     }
 }

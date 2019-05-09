@@ -653,23 +653,6 @@ CHAR-LIMIT guidelines:
         Chrome Passwords
       </message>
 
-      <!-- Contextual suggestions preferences -->
-      <message name="IDS_PREFS_CONTEXTUAL_SUGGESTIONS" desc="Title of contextual suggestions settings, which allows the user to get site suggestions based on the current website.">
-        Suggest related pages
-      </message>
-      <message name="IDS_CONTEXTUAL_SUGGESTIONS_DESCRIPTION" desc="Description of contextual suggestions, which tells the user what contextual suggestions does.">
-        When you scroll up, show quick links to related pages. The URLs of pages you visit are sent to Google.
-      </message>
-      <message name="IDS_CONTEXTUAL_SUGGESTIONS_DESCRIPTION_TOOLBAR_BUTTON" desc="Description of contextual suggestions, which tells the user that when they tap the ‘More like this’ button they will be shown links to pages related to their current page. An icon will be inserted into the string after ‘More like this’. 'More like this' should match TC ID 1418444397960583910.">
-        When you tap More like this <ph name="ICON">&lt;icon&gt; &lt;/icon&gt;</ph> in the address bar, show quick links to related pages. The URLs of pages you visit are sent to Google.
-      </message>
-      <message name="IDS_CONTEXTUAL_SUGGESTIONS_MESSAGE" desc="Message of contextual suggestions settings, which tells the user how to opt in contextual suggestions.">
-        This feature uses <ph name="BEGIN_LINK">&lt;link&gt;</ph>sync<ph name="END_LINK">&lt;/link&gt;</ph>.
-      </message>
-      <message name="IDS_CONTEXTUAL_SUGGESTIONS_MESSAGE_UNIFIED_CONSENT" desc="Message of contextual suggestions settings, which tells the user how to opt in contextual suggestions.  Please ensure ‘Activity and interactions’ in this message matches the ‘Activity and interactions’ in sync settings.">
-        To use this feature, turn on <ph name="BEGIN_LINK">&lt;link&gt;</ph>Activity and interactions<ph name="END_LINK">&lt;/link&gt;</ph>.
-      </message>
-
       <!-- Homepage preferences -->
       <message name="IDS_OPTIONS_HOMEPAGE_EDIT_TITLE" desc="The title of the screen that allows users to change the URL that opens when they tap on the home page button in the omnibox.">
         Edit home page
@@ -3023,29 +3006,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Checking your internet connection
       </message>
 
-      <!-- Contextual suggestions strings -->
-      <message name="IDS_CONTEXTUAL_SUGGESTIONS_IN_PRODUCT_HELP" desc="The string displayed in an in-product help bubble when contextual suggestions are displayed for the first time. The bubble points to a toolbar button that shows suggestions related to the webpage the user is currently viewing when pressed. 'More like this' should match TC ID 1418444397960583910.">
-        See more like this from Google
-      </message>
-      <message name="IDS_CONTEXTUAL_SUGGESTIONS_IN_PRODUCT_HELP_ACCESSIBILITY" desc="The string displayed in an in-product help bubble when contextual suggestions are displayed for the first time and accessibility mode is enabled. The bubble points to a toolbar button that shows suggestions related to the webpage the user is currently viewing when pressed. 'More like this' should match TC ID 1418444397960583910.">
-        See more like this from Google using the More Like This button
-      </message>
-      <message name="IDS_CONTEXTUAL_SUGGESTIONS_BUTTON_DESCRIPTION" desc="The content description for a toolbar button that shows contextual suggestions related to the current web page when tapped. The suggestions show up in an overlay sheet. This string is also the default title for that sheet (see IDS_CONTEXTUAL_SUGGESTIONS_SHEET_OPENED_HALF for screenshot). 'More like this' is the name of the feature and is used in several other related strings.">
-        More like this
-      </message>
-      <message name="IDS_CONTEXTUAL_SUGGESTIONS_CLOSE_BUTTON_DESCRIPTION" desc="The content description for the contextual suggestions close button. Tapping the button closing the UI. 'More like this' should match TC ID 1418444397960583910.">
-         Close more like this
-      </message>
-      <message name="IDS_CONTEXTUAL_SUGGESTIONS_SHEET_OPENED_HALF" desc="Accessibility string read when the 'more like this' sheet is opened at half height. The sheet will occupy the bottom half the screen. 'More like this' should match TC ID 1418444397960583910.">
-         More like this opened at half height
-      </message>
-      <message name="IDS_CONTEXTUAL_SUGGESTIONS_SHEET_OPENED_FULL" desc="Accessibility string read when the 'more like this' sheet is opened at full height. The sheet will occupy the entire screen. 'More like this' should match TC ID 1418444397960583910.">
-         More like this opened at full height
-      </message>
-      <message name="IDS_CONTEXTUAL_SUGGESTIONS_SHEET_CLOSED" desc="Accessibility string read when the 'more like this' sheet is closed. 'More like this' should match TC ID 1418444397960583910.">
-         More like this closed
-      </message>
-
       <!-- Toolbar button strings -->
       <message name="IDS_OPEN_TABS" desc="Text for button to enter the tab switcher and show tabs that are open on this device">
         Open tabs
@@ -3156,9 +3116,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_MENU_CLOSE_ALL_PRIVATE_TABS" desc="Menu item for closing all open private tabs. [CHAR-LIMIT=27]">
         Close private tabs
-      </message>
-      <message name="IDS_MENU_SEND_FEEDBACK" desc="Menu item for sending feedback. [CHAR-LIMIT=27]">
-        Send feedback
       </message>
 
       <!-- Bookmarks strings -->

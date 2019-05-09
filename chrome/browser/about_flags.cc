@@ -72,7 +72,6 @@
 #include "components/nacl/common/nacl_switches.h"
 #include "components/network_session_configurator/common/network_features.h"
 #include "components/network_session_configurator/common/network_switches.h"
-#include "components/ntp_snippets/contextual/contextual_suggestions_features.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_tiles/constants.h"
@@ -1990,20 +1989,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableScrollAnchorSerializationDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kScrollAnchorSerialization)},
 #if defined(OS_ANDROID)
-    {"contextual-suggestions-button",
-     flag_descriptions::kContextualSuggestionsButtonName,
-     flag_descriptions::kContextualSuggestionsButtonDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(contextual_suggestions::kContextualSuggestionsButton)},
-    {"contextual-suggestions-iph-reverse-scroll",
-     flag_descriptions::kContextualSuggestionsIPHReverseScrollName,
-     flag_descriptions::kContextualSuggestionsIPHReverseScrollDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         contextual_suggestions::kContextualSuggestionsIPHReverseScroll)},
-    {"contextual-suggestions-opt-out",
-     flag_descriptions::kContextualSuggestionsOptOutName,
-     flag_descriptions::kContextualSuggestionsOptOutDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(contextual_suggestions::kContextualSuggestionsOptOut)},
     {"interest-feed-content-suggestions",
      flag_descriptions::kInterestFeedContentSuggestionsName,
      flag_descriptions::kInterestFeedContentSuggestionsDescription, kOsAndroid,

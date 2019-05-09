@@ -1962,28 +1962,6 @@
             ]
         }
     ],
-    "ExploreOnContent": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "ExploreOnContent",
-                    "params": {
-                        "availability": "any",
-                        "event_trigger": "name:explore_on_content_iph_trigger;comparator:==0;window:680;storage:680",
-                        "event_used": "name:contextual_suggestions_opened;comparator:<1;window:680;storage:680",
-                        "session_rate": "<1"
-                    },
-                    "enable_features": [
-                        "ContextualSuggestionsButton",
-                        "IPH_ContextualSuggestions"
-                    ]
-                }
-            ]
-        }
-    ],
     "ExploreSites InitialCountries": [
         {
             "platforms": [

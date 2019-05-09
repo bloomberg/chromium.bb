@@ -47,7 +47,6 @@ if (closure_compile) {
     }
     if (is_android) {
       deps += [
-        "eoc_internals:closure_compile",
         "explore_sites_internals:closure_compile",
         "feed_internals:closure_compile",
         "offline_pages:closure_compile",

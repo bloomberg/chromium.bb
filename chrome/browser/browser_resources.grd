@@ -191,10 +191,6 @@
       </if>
       <include name="IDR_FEEDBACK_MANIFEST" file="resources\feedback\manifest.json" type="BINDATA" />
       <if expr="is_android">
-        <include name="IDR_EOC_INTERNALS_HTML" file="resources\eoc_internals\eoc_internals.html" allowexternalscript="true" compress="gzip" type="BINDATA" />
-        <include name="IDR_EOC_INTERNALS_CSS" file="resources\eoc_internals\eoc_internals.css" compress="gzip" type="BINDATA" />
-        <include name="IDR_EOC_INTERNALS_JS" file="resources\eoc_internals\eoc_internals.js" compress="gzip" type="BINDATA" />
-        <include name="IDR_EOC_INTERNALS_MOJOM_LITE_JS" file="${root_gen_dir}\chrome\browser\ui\webui\eoc_internals\eoc_internals.mojom-lite.js" use_base_dir="false" type="BINDATA" compress="gzip" />
         <include name="IDR_EXPLORE_SITES_INTERNALS_HTML" file="resources\explore_sites_internals\explore_sites_internals.html" allowexternalscript="true" compress="gzip" type="BINDATA" />
         <include name="IDR_EXPLORE_SITES_INTERNALS_CSS" file="resources\explore_sites_internals\explore_sites_internals.css" compress="gzip" type="BINDATA" />
         <include name="IDR_EXPLORE_SITES_INTERNALS_JS" file="resources\explore_sites_internals\explore_sites_internals.js" compress="gzip" type="BINDATA" />

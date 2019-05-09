@@ -940,8 +940,6 @@ jumbo_split_static_library("browser") {
     "notifications/system_notification_helper.h",
     "ntp_snippets/content_suggestions_service_factory.cc",
     "ntp_snippets/content_suggestions_service_factory.h",
-    "ntp_snippets/contextual_content_suggestions_service_factory.cc",
-    "ntp_snippets/contextual_content_suggestions_service_factory.h",
     "ntp_snippets/ntp_snippets_metrics.cc",
     "ntp_snippets/ntp_snippets_metrics.h",
     "ntp_tiles/chrome_custom_links_manager_factory.cc",
@@ -2230,10 +2228,6 @@ jumbo_split_static_library("browser") {
       "android/compositor/tab_content_manager.h",
       "android/consent_auditor/consent_auditor_bridge.cc",
       "android/content/content_utils.cc",
-      "android/contextual_suggestions/contextual_suggestions_bridge.cc",
-      "android/contextual_suggestions/contextual_suggestions_bridge.h",
-      "android/contextual_suggestions/contextual_suggestions_prefs.cc",
-      "android/contextual_suggestions/contextual_suggestions_prefs.h",
       "android/contextualsearch/contextual_search_context.cc",
       "android/contextualsearch/contextual_search_context.h",
       "android/contextualsearch/contextual_search_delegate.cc",
@@ -5124,7 +5118,6 @@ grit("resources") {
 
   if (is_android) {
     deps += [
-      "//chrome/browser/ui/webui/eoc_internals:mojo_bindings_js",
       "//chrome/browser/ui/webui/explore_sites_internals:mojo_bindings_js",
       "//chrome/browser/ui/webui/feed_internals:mojo_bindings_js",
       "//chrome/browser/ui/webui/snippets_internals:mojo_bindings_js",

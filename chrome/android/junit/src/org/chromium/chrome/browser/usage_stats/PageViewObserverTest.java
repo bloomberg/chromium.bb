@@ -99,13 +99,7 @@ public final class PageViewObserverTest {
     }
 
     @Test
-    public void createPageViewTimer_withNoTab_noCrash() {
-        doReturn(null).when(mTabModelSelector).getCurrentTab();
-        PageViewObserver observer = createPageViewObserver();
-    }
-
-    @Test
-    public void updateUrl_currentlyNull_startReported() {
+    public void onUpdateUrl_currentlyNull_startReported() {
         PageViewObserver observer = createPageViewObserver();
         updateUrl(mTab, STARTING_URL);
         verify(mEventTracker, times(1)).addWebsiteEvent(argThat(isStartEvent(STARTING_FQDN)));

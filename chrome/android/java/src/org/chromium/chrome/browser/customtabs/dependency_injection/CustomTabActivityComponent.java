@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.customtabs.dependency_injection;
 
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityCoordinator;
-import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModule;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityLifecycleUmaTracker;
 import org.chromium.chrome.browser.customtabs.CustomTabBottomBarDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabTabPersistencePolicy;
@@ -28,8 +27,7 @@ import dagger.Subcomponent;
  * Activity-scoped component associated with
  * {@link org.chromium.chrome.browser.customtabs.CustomTabActivity}.
  */
-@Subcomponent(modules = {ChromeActivityCommonsModule.class, ContextualSuggestionsModule.class,
-                      CustomTabActivityModule.class})
+@Subcomponent(modules = {ChromeActivityCommonsModule.class, CustomTabActivityModule.class})
 @ActivityScope
 public interface CustomTabActivityComponent extends ChromeActivityComponent {
     TrustedWebActivityCoordinator resolveTrustedWebActivityCoordinator();

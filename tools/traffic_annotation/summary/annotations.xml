@@ -156,7 +156,7 @@ Refer to README.md for content description and update process.
  <item id="network_location_provider" hash_code="23472048" type="1" second_id="96590038" content_hash_code="41087976" os_list="linux,windows" semantics_fields="1" policy_fields="3,4" file_path="services/device/geolocation/network_location_provider.cc"/>
  <item id="network_location_request" hash_code="96590038" type="2" content_hash_code="80741011" os_list="linux,windows" semantics_fields="2,3,4,5" policy_fields="-1" file_path="services/device/geolocation/network_location_request.cc"/>
  <item id="network_time_component" hash_code="46188932" type="0" content_hash_code="28051857" os_list="linux,windows" file_path="components/network_time/network_time_tracker.cc"/>
- <item id="ntp_contextual_suggestions_fetch" hash_code="95711309" type="0" content_hash_code="107035434" os_list="linux,windows" file_path="components/ntp_snippets/contextual/contextual_suggestions_fetch.cc"/>
+ <item id="ntp_contextual_suggestions_fetch" hash_code="95711309" type="0" deprecated="2019-04-18" content_hash_code="107035434" file_path=""/>
  <item id="ntp_custom_link_checker_request" hash_code="78408551" type="0" deprecated="2018-10-26" content_hash_code="13407730" file_path=""/>
  <item id="ntp_icon_source" hash_code="29197139" type="0" content_hash_code="16399294" os_list="linux,windows" file_path="chrome/browser/search/ntp_icon_source.cc"/>
  <item id="ntp_snippets_fetch" hash_code="15418154" type="0" content_hash_code="10078959" os_list="linux,windows" file_path="components/ntp_snippets/remote/json_request.cc"/>
