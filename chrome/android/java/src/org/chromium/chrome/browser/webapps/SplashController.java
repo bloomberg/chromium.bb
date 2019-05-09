@@ -7,8 +7,10 @@ package org.chromium.chrome.browser.webapps;
 import android.app.Activity;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewPropertyAnimator;
 import android.view.ViewTreeObserver;
 
 import org.chromium.base.ObserverList;
@@ -17,6 +19,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.compositor.CompositorView;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -26,7 +29,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /** Shows and hides splash screen. */
-public class SplashController extends EmptyTabObserver implements InflationObserver {
+public class SplashController extends EmptyTabObserver implements InflationObserver, Destroyable {
     private static class SingleShotOnDrawListener implements ViewTreeObserver.OnDrawListener {
         private final View mView;
         private final Runnable mAction;
@@ -75,6 +78,9 @@ public class SplashController extends EmptyTabObserver implements InflationObser
     private ViewGroup mParentView;
 
     private View mSplashView;
+
+    @Nullable
+    private ViewPropertyAnimator mFadeOutAnimator;
 
     private boolean mDidPreInflationStartup;
 
@@ -130,6 +136,13 @@ public class SplashController extends EmptyTabObserver implements InflationObser
 
     @Override
     public void onPostInflationStartup() {}
+
+    @Override
+    public void destroy() {
+        if (mFadeOutAnimator != null) {
+            mFadeOutAnimator.cancel();
+        }
+    }
 
     @Override
     public void didFirstVisuallyNonEmptyPaint(Tab tab) {
@@ -198,9 +211,10 @@ public class SplashController extends EmptyTabObserver implements InflationObser
             hideSplashNow(tab, reason);
             return;
         }
-        mSplashView.animate().alpha(0f).setDuration(animationDurationMs).withEndAction(() -> {
-            hideSplashNow(tab, reason);
-        });
+        mFadeOutAnimator = mSplashView.animate()
+                                   .alpha(0f)
+                                   .setDuration(animationDurationMs)
+                                   .withEndAction(() -> { hideSplashNow(tab, reason); });
     }
 
     private void hideSplashNow(Tab tab, @SplashHidesReason int reason) {
