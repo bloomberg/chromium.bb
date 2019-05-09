@@ -73,7 +73,7 @@ void CastComponent::DestroyComponent(int termination_exit_code,
 void CastComponent::OnNavigationStateChanged(
     fuchsia::web::NavigationState change,
     OnNavigationStateChangedCallback callback) {
-  if (change.has_url())
+  if (change.has_is_main_document_loaded() && change.is_main_document_loaded())
     connector_.OnPageLoad();
   callback();
 }

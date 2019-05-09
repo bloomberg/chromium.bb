@@ -12,6 +12,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "fuchsia/base/fit_adapter.h"
+#include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/base/result_receiver.h"
 #include "fuchsia/base/test_navigation_listener.h"
@@ -70,16 +71,9 @@ class StubBindingsTest : public cr_fuchsia::WebEngineBrowserTest {
     fuchsia::web::NavigationControllerPtr controller;
     frame_->GetNavigationController(controller.NewRequest());
     const GURL page_url(embedded_test_server()->GetURL("/defaultresponse"));
-    navigate_run_loop_ = std::make_unique<base::RunLoop>();
-    cr_fuchsia::ResultReceiver<
-        fuchsia::web::NavigationController_LoadUrl_Result>
-        result;
-    controller->LoadUrl(
-        page_url.spec(), fuchsia::web::LoadUrlParams(),
-        cr_fuchsia::CallbackToFitFunction(result.GetReceiveCallback()));
-    navigate_run_loop_->Run();
-    navigate_run_loop_.reset();
-    EXPECT_TRUE(result->is_response());
+    EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+        controller.get(), fuchsia::web::LoadUrlParams(), page_url.spec()));
+    navigation_listener_.RunUntilUrlEquals(page_url);
   }
 
   void OnLogMessage(base::StringPiece message) {

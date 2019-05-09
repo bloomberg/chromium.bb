@@ -49,6 +49,8 @@ class TestNavigationListener : public fuchsia::web::NavigationEventListener {
   // Register a callback which intercepts the execution of the event
   // acknowledgement callback. |before_ack| takes ownership of the
   // acknowledgement callback and the responsibility for executing it.
+  // The default behavior can be restored by providing an unbound callback for
+  // |before_ack|.
   void SetBeforeAckHook(BeforeAckCallback before_ack);
 
  private:

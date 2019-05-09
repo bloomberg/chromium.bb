@@ -26,6 +26,8 @@
 #include "fuchsia/engine/test/web_engine_browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
+#include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -275,6 +277,167 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, GoBackAndForward) {
 
   // Process the navigation request message.
   base::RunLoop().RunUntilIdle();
+}
+
+// An HTTP response stream whose response payload can be sent as "chunks"
+// with indeterminate-length pauses in between.
+class ChunkedHttpTransaction {
+ public:
+  ChunkedHttpTransaction(const net::test_server::SendBytesCallback& send,
+                         const net::test_server::SendCompleteCallback& done)
+      : io_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+        send_callback_(send),
+        done_callback_(done) {
+    DCHECK(!current_instance_);
+    DCHECK(send_callback_);
+    DCHECK(done_callback_);
+
+    current_instance_ = this;
+  }
+
+  static ChunkedHttpTransaction* current() {
+    DCHECK(current_instance_);
+    return current_instance_;
+  }
+
+  void Close() {
+    EnsureSendCompleted();
+    io_task_runner_->PostTask(FROM_HERE, done_callback_);
+    delete this;
+  }
+
+  void EnsureSendCompleted() {
+    if (send_callback_)
+      return;
+
+    base::RunLoop run_loop;
+    send_chunk_complete_callback_ = run_loop.QuitClosure();
+    run_loop.Run();
+    DCHECK(send_callback_);
+  }
+
+  void SendChunk(std::string chunk) {
+    EnsureSendCompleted();
+
+    // Temporarily nullify |send_callback_| while the operation is inflight, to
+    // guard against concurrent sends. The callback will be restored by
+    // SendChunkComplete().
+    net::test_server::SendBytesCallback inflight_send_callback = send_callback_;
+    send_callback_ = {};
+
+    io_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(inflight_send_callback, chunk,
+                       base::BindRepeating(
+                           &ChunkedHttpTransaction::SendChunkCompleteOnIoThread,
+                           base::Unretained(this), inflight_send_callback,
+                           base::ThreadTaskRunnerHandle::Get())));
+  }
+
+ private:
+  static ChunkedHttpTransaction* current_instance_;
+
+  ~ChunkedHttpTransaction() { current_instance_ = nullptr; }
+
+  void SendChunkCompleteOnIoThread(
+      net::test_server::SendBytesCallback send_callback,
+      scoped_refptr<base::TaskRunner> ui_thread_task_runner) {
+    ui_thread_task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(&ChunkedHttpTransaction::SendChunkCompleteOnUiThread,
+                       base::Unretained(this), send_callback));
+  }
+
+  void SendChunkCompleteOnUiThread(
+      net::test_server::SendBytesCallback send_callback) {
+    send_callback_ = send_callback;
+    if (send_chunk_complete_callback_)
+      std::move(send_chunk_complete_callback_).Run();
+  }
+
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+
+  // Set by callers to SendChunk() waiting for the previous chunk to complete.
+  base::OnceClosure send_chunk_complete_callback_;
+
+  // Callbacks are affine with |io_task_runner_|.
+  net::test_server::SendBytesCallback send_callback_;
+  net::test_server::SendCompleteCallback done_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChunkedHttpTransaction);
+};
+
+ChunkedHttpTransaction* ChunkedHttpTransaction::current_instance_ = nullptr;
+
+class ChunkedHttpTransactionFactory : public net::test_server::HttpResponse {
+ public:
+  ChunkedHttpTransactionFactory() = default;
+  ~ChunkedHttpTransactionFactory() override = default;
+
+  void SetOnResponseCreatedCallback(base::OnceClosure on_response_created) {
+    on_response_created_ = std::move(on_response_created);
+  }
+
+  // net::test_server::HttpResponse implementation.
+  void SendResponse(
+      const net::test_server::SendBytesCallback& send,
+      const net::test_server::SendCompleteCallback& done) override {
+    // The ChunkedHttpTransaction manages its own lifetime.
+    new ChunkedHttpTransaction(send, done);
+
+    if (on_response_created_)
+      std::move(on_response_created_).Run();
+  }
+
+ private:
+  base::OnceClosure on_response_created_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChunkedHttpTransactionFactory);
+};
+
+IN_PROC_BROWSER_TEST_F(FrameImplTest, NavigationEventDuringPendingLoad) {
+  fuchsia::web::FramePtr frame = CreateFrame();
+  fuchsia::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+  ChunkedHttpTransactionFactory* factory = new ChunkedHttpTransactionFactory;
+  base::RunLoop transaction_created_run_loop;
+  factory->SetOnResponseCreatedCallback(
+      transaction_created_run_loop.QuitClosure());
+  embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+      &net::test_server::HandlePrefixedRequest, "/pausable",
+      base::BindRepeating(
+          [](std::unique_ptr<ChunkedHttpTransactionFactory> out_factory,
+             const net::test_server::HttpRequest&)
+              -> std::unique_ptr<net::test_server::HttpResponse> {
+            return out_factory;
+          },
+          base::Passed(base::WrapUnique(factory)))));
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL hung_url(embedded_test_server()->GetURL("/pausable"));
+  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      controller.get(), fuchsia::web::LoadUrlParams(), hung_url.spec()));
+  fuchsia::web::NavigationState state_change;
+  state_change.set_url(hung_url.spec());
+  state_change.set_is_main_document_loaded(false);
+  transaction_created_run_loop.Run();
+
+  ChunkedHttpTransaction* transaction = ChunkedHttpTransaction::current();
+  transaction->SendChunk(
+      "HTTP/1.0 200 OK\r\n"
+      "Host: localhost\r\n"
+      "Content-Type: text/html\r\n\r\n"
+      "<html><head><title>initial load</title>");
+  state_change.set_title("initial load");
+  state_change.set_is_main_document_loaded(false);
+  navigation_listener_.RunUntilNavigationStateMatches(state_change);
+
+  transaction->SendChunk(
+      "<script>document.title='final load';</script><body></body>");
+  transaction->Close();
+  state_change.set_title("final load");
+  state_change.set_is_main_document_loaded(true);
+  navigation_listener_.RunUntilNavigationStateMatches(state_change);
 }
 
 IN_PROC_BROWSER_TEST_F(FrameImplTest, ReloadFrame) {
@@ -817,18 +980,19 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, DelayedNavigationEventAck) {
 
   // Expect an navigation event here, but deliberately postpone acknowledgement
   // until the end of the test.
-  base::RunLoop captured_ack_run_loop;
   OnNavigationStateChangedCallback captured_ack_cb;
   navigation_listener_.SetBeforeAckHook(base::BindRepeating(
       [](OnNavigationStateChangedCallback* dest_cb,
-         const fuchsia::web::NavigationState&,
+         const fuchsia::web::NavigationState& state,
          OnNavigationStateChangedCallback cb) { *dest_cb = std::move(cb); },
       base::Unretained(&captured_ack_cb)));
-
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
       controller.get(), fuchsia::web::LoadUrlParams(), title1.spec()));
-  navigation_listener_.RunUntilUrlAndTitleEquals(title1, kPage1Title);
+  fuchsia::web::NavigationState expected_state;
+  expected_state.set_url(title1.spec());
+  navigation_listener_.RunUntilNavigationStateMatches(expected_state);
   EXPECT_TRUE(captured_ack_cb);
+  navigation_listener_.SetBeforeAckHook({});
 
   // Navigate to a second page.
   {

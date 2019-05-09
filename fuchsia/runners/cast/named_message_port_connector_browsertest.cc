@@ -52,7 +52,9 @@ class NamedMessagePortConnectorTest : public cr_fuchsia::WebEngineBrowserTest {
       const fuchsia::web::NavigationState& change,
       fuchsia::web::NavigationEventListener::OnNavigationStateChangedCallback
           callback) {
-    connector_->OnPageLoad();
+    if (change.has_is_main_document_loaded() &&
+        change.is_main_document_loaded())
+      connector_->OnPageLoad();
 
     // Allow the TestNavigationListener's usual navigation event processing flow
     // to continue.

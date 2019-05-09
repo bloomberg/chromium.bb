@@ -18,7 +18,8 @@ NavigationState CreateNavigationState(const GURL& url,
                                       base::StringPiece title,
                                       fuchsia::web::PageType page_type,
                                       bool can_go_back,
-                                      bool can_go_forward) {
+                                      bool can_go_forward,
+                                      bool is_main_document_loaded) {
   NavigationState navigation_state;
 
   navigation_state.set_url(url.spec());
@@ -26,6 +27,7 @@ NavigationState CreateNavigationState(const GURL& url,
   navigation_state.set_page_type(fuchsia::web::PageType(page_type));
   navigation_state.set_can_go_back(can_go_back);
   navigation_state.set_can_go_forward(can_go_forward);
+  navigation_state.set_is_main_document_loaded(is_main_document_loaded);
 
   return navigation_state;
 }
@@ -37,22 +39,23 @@ NavigationState CreateNavigationState(const GURL& url,
 TEST(FrameImplUnitTest, DiffNavigationEntriesNoChange) {
   fuchsia::web::NavigationState difference;
   NavigationState state = CreateNavigationState(
-      GURL(kUrl1), kTitle1, fuchsia::web::PageType::NORMAL, true, true);
+      GURL(kUrl1), kTitle1, fuchsia::web::PageType::NORMAL, true, true, true);
 
-  EXPECT_FALSE(DiffNavigationEntries(state, state, &difference));
+  DiffNavigationEntries(state, state, &difference);
+  EXPECT_TRUE(difference.IsEmpty());
 }
 
 // Verifies that states with different URL and title are correctly checked.
 TEST(FrameImplUnitTest, DiffNavigationEntriesTitleUrl) {
   fuchsia::web::NavigationState difference;
   NavigationState state1 = CreateNavigationState(
-      GURL(kUrl1), kTitle1, fuchsia::web::PageType::NORMAL, true, true);
+      GURL(kUrl1), kTitle1, fuchsia::web::PageType::NORMAL, true, true, true);
   NavigationState state2 = CreateNavigationState(
-      GURL(kUrl2), kTitle2, fuchsia::web::PageType::NORMAL, true, true);
+      GURL(kUrl2), kTitle2, fuchsia::web::PageType::NORMAL, true, true, true);
 
-  bool is_changed = DiffNavigationEntries(state1, state2, &difference);
+  DiffNavigationEntries(state1, state2, &difference);
 
-  EXPECT_TRUE(is_changed);
+  EXPECT_FALSE(difference.IsEmpty());
   EXPECT_TRUE(difference.has_title());
   EXPECT_EQ(difference.title(), kTitle2);
   EXPECT_TRUE(difference.has_url());
@@ -64,15 +67,32 @@ TEST(FrameImplUnitTest, DiffNavigationEntriesTitleUrl) {
 TEST(FrameImplUnitTest, DiffNavigationEntriesGoBackAndForward) {
   fuchsia::web::NavigationState difference;
   NavigationState state1 = CreateNavigationState(
-      GURL(kUrl1), kTitle1, fuchsia::web::PageType::NORMAL, true, false);
+      GURL(kUrl1), kTitle1, fuchsia::web::PageType::NORMAL, true, false, true);
   NavigationState state2 = CreateNavigationState(
-      GURL(kUrl1), kTitle1, fuchsia::web::PageType::NORMAL, false, true);
+      GURL(kUrl1), kTitle1, fuchsia::web::PageType::NORMAL, false, true, true);
 
-  bool is_changed = DiffNavigationEntries(state1, state2, &difference);
+  DiffNavigationEntries(state1, state2, &difference);
 
+  EXPECT_FALSE(difference.IsEmpty());
   EXPECT_TRUE(difference.has_can_go_back());
   EXPECT_TRUE(difference.has_can_go_back());
-  EXPECT_TRUE(is_changed);
   EXPECT_TRUE(difference.can_go_forward());
   EXPECT_FALSE(difference.can_go_back());
+}
+
+// Verifies that is_main_document is checked correctly.
+TEST(FrameImplUnitTest, DiffNavigationEntriesIsMainDocumentLoaded) {
+  fuchsia::web::NavigationState difference;
+  NavigationState state1 = CreateNavigationState(
+      GURL(kUrl1), kTitle1, fuchsia::web::PageType::NORMAL, true, true, true);
+  NavigationState state2 = CreateNavigationState(
+      GURL(kUrl1), kTitle1, fuchsia::web::PageType::NORMAL, true, true, false);
+
+  DiffNavigationEntries(state1, state2, &difference);
+  EXPECT_FALSE(difference.IsEmpty());
+  EXPECT_FALSE(difference.is_main_document_loaded());
+
+  DiffNavigationEntries(state2, state1, &difference);
+  EXPECT_FALSE(difference.IsEmpty());
+  EXPECT_TRUE(difference.is_main_document_loaded());
 }

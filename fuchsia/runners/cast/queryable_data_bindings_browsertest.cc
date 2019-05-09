@@ -109,7 +109,8 @@ class QueryableDataBindingsTest : public cr_fuchsia::WebEngineBrowserTest {
       const fuchsia::web::NavigationState& change,
       fuchsia::web::NavigationEventListener::OnNavigationStateChangedCallback
           callback) {
-    if (change.has_url())
+    if (change.has_is_main_document_loaded() &&
+        change.is_main_document_loaded())
       connector_->OnPageLoad();
 
     callback();

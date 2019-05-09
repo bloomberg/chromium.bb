@@ -31,8 +31,6 @@ class CastChannelBindingsTest : public cr_fuchsia::WebEngineBrowserTest,
         run_timeout_(TestTimeouts::action_timeout(),
                      base::MakeExpectedNotRunClosure(FROM_HERE)) {
     set_test_server_root(base::FilePath("fuchsia/runners/cast/testdata"));
-    navigation_listener_.SetBeforeAckHook(base::BindRepeating(
-        &CastChannelBindingsTest::OnBeforeAckHook, base::Unretained(this)));
   }
 
   ~CastChannelBindingsTest() override = default;
@@ -45,16 +43,6 @@ class CastChannelBindingsTest : public cr_fuchsia::WebEngineBrowserTest,
     connector_ = std::make_unique<NamedMessagePortConnector>(frame_.get());
   }
 
-  void OnBeforeAckHook(
-      const fuchsia::web::NavigationState& change,
-      fuchsia::web::NavigationEventListener::OnNavigationStateChangedCallback
-          callback) {
-    connector_->OnPageLoad();
-    if (navigate_run_loop_)
-      navigate_run_loop_->Quit();
-    callback();
-  }
-
   void Open(fidl::InterfaceHandle<fuchsia::web::MessagePort> channel,
             OpenCallback receive_next_channel_cb) override {
     connected_channel_ = channel.Bind();
@@ -64,15 +52,13 @@ class CastChannelBindingsTest : public cr_fuchsia::WebEngineBrowserTest,
       std::move(on_channel_connected_cb_).Run();
   }
 
-  void SignalReadyForNewChannel() { receive_next_channel_cb_(); }
-
   void WaitUntilCastChannelOpened() {
-    if (connected_channel_)
-      return;
-
-    base::RunLoop run_loop;
-    on_channel_connected_cb_ = run_loop.QuitClosure();
-    run_loop.Run();
+    if (!connected_channel_) {
+      base::RunLoop run_loop;
+      on_channel_connected_cb_ = run_loop.QuitClosure();
+      run_loop.Run();
+    }
+    receive_next_channel_cb_();
   }
 
   void WaitUntilCastChannelClosed() {
@@ -96,22 +82,20 @@ class CastChannelBindingsTest : public cr_fuchsia::WebEngineBrowserTest,
     run_loop.Run();
 
     std::string data;
-    CHECK(message->has_data());
     CHECK(cr_fuchsia::StringFromMemBuffer(message->data(), &data));
     return data;
   }
 
-  void CheckLoadUrl(const std::string& url,
+  void CheckLoadUrl(const GURL& url,
                     fuchsia::web::NavigationController* controller) {
     navigate_run_loop_ = std::make_unique<base::RunLoop>();
     cr_fuchsia::ResultReceiver<
         fuchsia::web::NavigationController_LoadUrl_Result>
         result;
     controller->LoadUrl(
-        url, fuchsia::web::LoadUrlParams(),
+        url.spec(), fuchsia::web::LoadUrlParams(),
         cr_fuchsia::CallbackToFitFunction(result.GetReceiveCallback()));
-    navigate_run_loop_->Run();
-    navigate_run_loop_.reset();
+    navigation_listener_.RunUntilUrlEquals(url);
     EXPECT_TRUE(result->is_response());
   }
 
@@ -150,7 +134,8 @@ IN_PROC_BROWSER_TEST_F(CastChannelBindingsTest, CastChannelBufferedInput) {
 
   // Verify that CastChannelBindings can properly handle message, connect,
   // disconnect, and MessagePort disconnection events.
-  CheckLoadUrl(test_url.spec(), controller.get());
+  CheckLoadUrl(test_url, controller.get());
+  connector_->OnPageLoad();
 
   WaitUntilCastChannelOpened();
 
@@ -178,13 +163,12 @@ IN_PROC_BROWSER_TEST_F(CastChannelBindingsTest, CastChannelReconnect) {
   // disconnect, and MessagePort disconnection events.
   // Also verify that the cast channel is used across inter-page navigations.
   for (int i = 0; i < 5; ++i) {
-    CheckLoadUrl(test_url.spec(), controller.get());
+    CheckLoadUrl(test_url, controller.get());
+    connector_->OnPageLoad();
 
     WaitUntilCastChannelOpened();
 
     WaitUntilCastChannelClosed();
-
-    SignalReadyForNewChannel();
 
     WaitUntilCastChannelOpened();
 
@@ -202,15 +186,13 @@ IN_PROC_BROWSER_TEST_F(CastChannelBindingsTest, CastChannelReconnect) {
           std::move(message),
           cr_fuchsia::CallbackToFitFunction(post_result.GetReceiveCallback()));
       run_loop.Run();
-      EXPECT_TRUE(post_result->is_response());
+      EXPECT_FALSE(post_result->is_err());
     }
 
     EXPECT_EQ("ack hello", ReadStringFromChannel());
 
     // Navigate away.
-    CheckLoadUrl(empty_url.spec(), controller.get());
-
-    SignalReadyForNewChannel();
+    CheckLoadUrl(empty_url, controller.get());
   }
 }
 
