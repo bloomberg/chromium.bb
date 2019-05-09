@@ -207,7 +207,7 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
 
   // Decides the concrete buffer allocation mode, depending on the hardware
   // platform and other parameters.
-  BufferAllocationMode DecideBufferAllocationMode() const;
+  BufferAllocationMode DecideBufferAllocationMode();
   bool IsBufferAllocationModeReducedOrSuperReduced() const;
 
   // VAVDA state.
@@ -316,6 +316,10 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // Last requested number/resolution of output PictureBuffers.
   size_t requested_num_pics_;
   gfx::Size requested_pic_size_;
+  // Potential extra PictureBuffers to request, used only on
+  // BufferAllocationMode::kNone, see DecideBufferAllocationMode().
+  size_t num_extra_pics_ = 0;
+
   // Max number of reference frames needed by |decoder_|. Only used on
   // |task_runner_| and when in BufferAllocationMode::kNone.
   size_t requested_num_reference_frames_;
