@@ -43,30 +43,36 @@
 #include "base/win/scoped_handle.h"
 #endif  // defined(OS_WIN)
 
+const bool kReadOnly = true;
+
 namespace remoting {
 
 class DesktopSessionProxy::IpcSharedBufferCore
     : public base::RefCountedThreadSafe<IpcSharedBufferCore> {
  public:
-  IpcSharedBufferCore(int id, base::ReadOnlySharedMemoryRegion region)
-      : id_(id) {
-    mapping_ = region.Map();
-    if (!mapping_.IsValid()) {
+  IpcSharedBufferCore(int id,
+                      base::SharedMemoryHandle handle,
+                      size_t size)
+      : id_(id),
+        shared_memory_(handle, kReadOnly),
+        size_(size) {
+    if (!shared_memory_.Map(size)) {
       LOG(ERROR) << "Failed to map a shared buffer: id=" << id
-                 << ", size=" << region.GetSize();
+                 << ", size=" << size;
     }
   }
 
   int id() { return id_; }
-  size_t size() { return mapping_.size(); }
-  const void* memory() const { return mapping_.memory(); }
+  size_t size() { return size_; }
+  void* memory() { return shared_memory_.memory(); }
 
  private:
   virtual ~IpcSharedBufferCore() = default;
   friend class base::RefCountedThreadSafe<IpcSharedBufferCore>;
 
   int id_;
-  base::ReadOnlySharedMemoryMapping mapping_;
+  base::SharedMemory shared_memory_;
+  size_t size_;
 
   DISALLOW_COPY_AND_ASSIGN(IpcSharedBufferCore);
 };
@@ -74,10 +80,7 @@ class DesktopSessionProxy::IpcSharedBufferCore
 class DesktopSessionProxy::IpcSharedBuffer : public webrtc::SharedMemory {
  public:
   IpcSharedBuffer(scoped_refptr<IpcSharedBufferCore> core)
-      : SharedMemory(const_cast<void*>(core->memory()),
-                     core->size(),
-                     0,
-                     core->id()),
+      : SharedMemory(core->memory(), core->size(), 0, core->id()),
         core_(core) {}
 
  private:
@@ -513,12 +516,12 @@ void DesktopSessionProxy::OnAudioPacket(const std::string& serialized_packet) {
 
 void DesktopSessionProxy::OnCreateSharedBuffer(
     int id,
-    base::ReadOnlySharedMemoryRegion region,
+    base::SharedMemoryHandle handle,
     uint32_t size) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   scoped_refptr<IpcSharedBufferCore> shared_buffer =
-      new IpcSharedBufferCore(id, std::move(region));
+      new IpcSharedBufferCore(id, handle, size);
 
   if (shared_buffer->memory() != nullptr &&
       !shared_buffers_.insert(std::make_pair(id, shared_buffer)).second) {
