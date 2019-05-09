@@ -62,6 +62,10 @@ const base::Feature kJankTrackingSweepLine{"JankTrackingSweepLine",
 const base::Feature kBlinkGenPropertyTrees{"BlinkGenPropertyTrees",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable Display Locking JavaScript APIs.
+const base::Feature kDisplayLocking{"DisplayLocking",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable applying rounded corner masks via a GL shader rather than
 // a mask layer.
 const base::Feature kFastBorderRadius{"FastBorderRadius",

@@ -643,6 +643,11 @@ const char kEnableBlinkGenPropertyTreesDescription[] =
     "Enable a new compositing mode where Blink generates the compositor "
     "property trees.";
 
+const char kEnableDisplayLockingName[] = "Enable Display Locking";
+const char kEnableDisplayLockingDescription[] =
+    "Enable Display Locking JavaScript API. The syntax and the APIs exposed "
+    "are experimental and may change.";
+
 const char kEnableLayoutNGName[] = "Enable LayoutNG";
 const char kEnableLayoutNGDescription[] =
     "Enable Blink's next generation layout engine.";

@@ -1010,6 +1010,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-display-locking",
+    "owners": [ "//third_party/blink/renderer/core/display_lock/OWNERS" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "enable-downloads-location-change",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

@@ -3052,6 +3052,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableBlinkGenPropertyTreesDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kBlinkGenPropertyTrees)},
 
+    {"enable-display-locking", flag_descriptions::kEnableDisplayLockingName,
+     flag_descriptions::kEnableDisplayLockingDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kDisplayLocking)},
+
     {"enable-layout-ng", flag_descriptions::kEnableLayoutNGName,
      flag_descriptions::kEnableLayoutNGDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kLayoutNG)},

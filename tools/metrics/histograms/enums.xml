@@ -34175,6 +34175,7 @@ from previous Chrome versions.
   <int value="313253630" label="AutofillRefreshStyleAndroid:enabled"/>
   <int value="313303258" label="WebPaymentsModifiers:disabled"/>
   <int value="316182183" label="MediaDocumentDownloadButton:disabled"/>
+  <int value="317432596" label="DisplayLocking:disabled"/>
   <int value="319683583" label="ContentSuggestionsDebugLog:enabled"/>
   <int value="320121752" label="DelegateOverscrollSwipes:disabled"/>
   <int value="323605372" label="ui-disable-compositor-animation-timelines"/>
@@ -35144,6 +35145,7 @@ from previous Chrome versions.
   <int value="1803470125" label="SyncUSSSessions:enabled"/>
   <int value="1807374811" label="CCTModuleCache:enabled"/>
   <int value="1809940714" label="SpeculativeLaunchServiceWorker:disabled"/>
+  <int value="1810258949" label="DisplayLocking:enabled"/>
   <int value="1810311887" label="WebAssemblyThreads:enabled"/>
   <int value="1812368073" label="enable-new-app-list-mixer"/>
   <int value="1814671708" label="disable-password-manager-reauthentication"/>

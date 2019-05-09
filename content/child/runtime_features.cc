@@ -493,6 +493,9 @@ void SetIndividualRuntimeFeatures(
 
   if (!base::FeatureList::IsEnabled(features::kSmsReceiver))
     WebRuntimeFeatures::EnableSmsReceiver(false);
+
+  WebRuntimeFeatures::EnableDisplayLocking(
+      base::FeatureList::IsEnabled(blink::features::kDisplayLocking));
 }
 
 }  // namespace

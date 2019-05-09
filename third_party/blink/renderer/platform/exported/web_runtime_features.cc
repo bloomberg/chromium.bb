@@ -668,4 +668,8 @@ void WebRuntimeFeatures::EnableSmsReceiver(bool enable) {
   RuntimeEnabledFeatures::SetSmsReceiverEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableDisplayLocking(bool enable) {
+  RuntimeEnabledFeatures::SetDisplayLockingEnabled(enable);
+}
+
 }  // namespace blink
