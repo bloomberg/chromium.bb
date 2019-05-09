@@ -8,13 +8,13 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "gpu/ipc/common/vulkan_ycbcr_info.mojom.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_instance.h"
 #include "gpu/vulkan/vulkan_posix_util.h"
 #include "gpu/vulkan/vulkan_surface.h"
 #include "gpu/vulkan/vulkan_util.h"
+#include "gpu/vulkan/vulkan_ycbcr_info.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -164,7 +164,7 @@ bool VulkanImplementationAndroid::CreateVkImageAndImportAHB(
     VkImageCreateInfo* vk_image_info,
     VkDeviceMemory* vk_device_memory,
     VkDeviceSize* mem_allocation_size,
-    mojom::VulkanYCbCrInfo* ycbcr_info) {
+    VulkanYCbCrInfo* ycbcr_info) {
   DCHECK(ahb_handle.is_valid());
   DCHECK(vk_image);
   DCHECK(vk_image_info);

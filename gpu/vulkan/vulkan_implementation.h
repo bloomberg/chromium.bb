@@ -33,10 +33,7 @@ namespace gpu {
 class VulkanDeviceQueue;
 class VulkanSurface;
 class VulkanInstance;
-
-namespace mojom {
-class VulkanYCbCrInfo;
-}  // namespace mojom
+struct VulkanYCbCrInfo;
 
 // Base class which provides functions for creating vulkan objects for different
 // platforms that use platform-specific extensions (e.g. for creation of
@@ -124,7 +121,7 @@ class VULKAN_EXPORT VulkanImplementation {
       VkImageCreateInfo* vk_image_info,
       VkDeviceMemory* vk_device_memory,
       VkDeviceSize* mem_allocation_size,
-      mojom::VulkanYCbCrInfo* ycbcr_info = nullptr) = 0;
+      VulkanYCbCrInfo* ycbcr_info = nullptr) = 0;
 #endif
 
  private:

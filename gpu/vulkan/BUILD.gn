@@ -50,6 +50,8 @@ if (enable_vulkan) {
       "vulkan_swap_chain.h",
       "vulkan_util.cc",
       "vulkan_util.h",
+      "vulkan_ycbcr_info.cc",
+      "vulkan_ycbcr_info.h",
     ]
 
     configs += [ "//build/config:precompiled_headers" ]

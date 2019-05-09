@@ -8,35 +8,12 @@ module gpu.mojom;
 // enums defined in the vulkan api which are passed as uint32/uint64 over ipc.
 // We use all of these values in an "opaque" way and don't consume it directly
 // in chrome.
+// See gpu/vulkan/vulkan_ycbcr_info.h.
 struct VulkanYCbCrInfo {
-  // Describes the color matrix for conversion between color models.
-  // Corresponds to vulkan type: VkSamplerYcbcrModelConversion.
   uint32 suggested_ycbcr_model;
-
-  // Describes whether the encoded values have headroom and foot room, or
-  // whether the encoding uses the full numerical range.
-  // Corresponds to vulkan type: VkSamplerYcbcrRange.
   uint32 suggested_ycbcr_range;
-
-  // Describes the sample location associated with downsampled chroma channels
-  // in the x dimension. It has no effect for formats in which chroma channels
-  // are the same resolution as the luma channel.
-  // Corresponds to vulkan type: VkChromaLocation.
   uint32 suggested_xchroma_offset;
-
-  // Describes the sample location associated with downsampled chroma channels
-  // in the y dimension. It has no effect for formats in which chroma channels
-  // are not downsampled vertically.
-  // Corresponds to vulkan type: VkChromaLocation.
   uint32 suggested_ychroma_offset;
-
-  // Implementation-defined external format identifier for use with
-  // VkExternalFormatANDROID.
-  // This property is driver specific.
   uint64 external_format;
-
-  // Describes the capabilities of the external format when used with an image
-  // bound to memory imported from buffer.
-  // Corresponds to vulkan type: VkFormatFeatureFlags.
   uint32 format_features;
 };

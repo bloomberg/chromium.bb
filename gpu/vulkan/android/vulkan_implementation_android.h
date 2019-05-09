@@ -60,7 +60,7 @@ class COMPONENT_EXPORT(VULKAN_ANDROID) VulkanImplementationAndroid
       VkImageCreateInfo* vk_image_info,
       VkDeviceMemory* vk_device_memory,
       VkDeviceSize* mem_allocation_size,
-      mojom::VulkanYCbCrInfo* ycbcr_info) override;
+      VulkanYCbCrInfo* ycbcr_info) override;
 
  private:
   VulkanInstance vulkan_instance_;
