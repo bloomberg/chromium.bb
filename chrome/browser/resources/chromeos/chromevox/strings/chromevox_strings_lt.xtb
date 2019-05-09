@@ -442,7 +442,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="4148180433151187540">{COUNT,plural, =1{uždaromasis riestinis skliaustas}one{# uždaromasis riestinis skliaustas}few{# uždaromieji riestiniai skliaustas}many{# right braces}other{# uždaromųjų riestinių skliaustų}}</translation>
 <translation id="4158704014418536539">Skirti didžiąsias ir mažąsias raides.</translation>
 <translation id="4159784952369912983">Violetinė</translation>
-<translation id="4161104397932142764">{COUNT,plural, =1{sekundė}one{sekundės}few{sekundės}many{sekundės}other{sekundės}}</translation>
+<translation id="4161104397932142764">{COUNT,plural, =1{sekundė}one{sekundė}few{sekundės}many{sekundės}other{sekundžių}}</translation>
 <translation id="4161663686871496107">„ChromeVox“ ekrano skaitymas balsu parengtas</translation>
 <translation id="4173994908659439270">Nėra kito redaguotino teksto lauko.</translation>
 <translation id="4176463684765177261">Neleista</translation>
@@ -945,7 +945,7 @@ Jei norite atidaryti „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.
 <translation id="7641134354185483015">Nėra ankstesnės 3 lygio antraštės.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, teksto laukelis</translation>
 <translation id="7663318257180412551">2 antraštė</translation>
-<translation id="7668307052366682650">{COUNT,plural, =1{valanda}one{valandos}few{valandos}many{valandos}other{valandos}}</translation>
+<translation id="7668307052366682650">{COUNT,plural, =1{valanda}one{valanda}few{valandos}many{valandos}other{valandų}}</translation>
 <translation id="7674576868851035240">Kita nuoroda</translation>
 <translation id="7674768236845044097">žymėjimas</translation>
 <translation id="7684431668231950609">Teksto redagavimas, URL įrašas</translation>

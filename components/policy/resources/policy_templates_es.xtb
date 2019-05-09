@@ -51,7 +51,7 @@
 <translation id="1049138910114524876">Establece la configuración regional que se fuerza a aplicar en la pantalla de inicio de sesión de <ph name="PRODUCT_OS_NAME" />.
 
       Si se asigna un valor a esta política, la pantalla de inicio de sesión se mostrará siempre en la configuración regional proporcionada por el primer valor de esta política (esta se define como lista para que sea compatible con versiones posteriores). Si no se le asigna ningún valor o se le asigna una lista vacía, la pantalla de inicio de sesión se mostrará en la configuración regional de la sesión del último usuario. Si el valor que se le asigna no es una configuración regional válida, la pantalla de inicio de sesión se mostrará en una configuración regional establecida antes (actualmente: en-US).</translation>
-<translation id="1052499923181221200">Esta política no tiene ningún efecto a menos que se le asigne el valor "True" a SamlInSessionPasswordChangeEnabled.
+<translation id="1052499923181221200">Esta política no tiene ningún efecto a menos que se asigne el valor "True" a SamlInSessionPasswordChangeEnabled.
       Si se asigna el valor "True" a SamlInSessionPasswordChangeEnabled y se asigna el valor 14 a esta política, por ejemplo, se enviará una notificación a los usuarios de SAML 14 días antes de que su contraseña caduque en una fecha determinada.
       Los usuarios de SAML podrán realizar inmediatamente un cambio de contraseña con la sesión iniciada y actualizarla antes de que caduque.
       Estas notificaciones solo se mostrarán si el proveedor de identidades de SAML envía la información sobre la caducidad de la contraseña al dispositivo durante el flujo de inicio de sesión de SAML.
@@ -317,9 +317,9 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 <translation id="1507382822467487898">
           Configura qué dirección MAC (control de acceso al medio) se usará cuando se conecte una base al dispositivo.
 
-          Al conectar una base a algunos modelos de dispositivo, se utilizará la dirección MAC designada del dispositivo para identificar el dispositivo en Ethernet de forma predeterminada. Esta política permite que el administrador pueda cambiar la fuente de la dirección MAC cuando esté conectado a una base.
+          Al conectar una base a algunos modelos de dispositivo, se usará la dirección MAC designada de la base del dispositivo para identificar el dispositivo en Ethernet de forma predeterminada. Esta política permite que el administrador pueda cambiar la fuente de la dirección MAC cuando el dispositivo esté conectado a una base.
 
-          Si se selecciona "DeviceDockMacAddress" o no se asigna ningún valor a esta política, se usará la dirección MAC designada de la base.
+          Si se selecciona "DeviceDockMacAddress" o no se configura esta política, se usará la dirección MAC designada de la base del dispositivo.
 
           Si se selecciona "DeviceNicMacAddress", se usará la dirección NIC (controlador de interfaz de red) MAC del dispositivo.
 
@@ -1421,7 +1421,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si se asigna a esta política el valor "DeveloperToolsDisallowed" (el valor 2), no se podrá acceder a las herramientas para desarrolladores y no se podrán inspeccionar los elementos de los sitios web. También se inhabilitarán las combinaciones de teclas y las entradas de menús o menús contextuales que permiten abrir las herramientas para desarrolladores y la consola de JavaScript.
       Si se asigna el valor "True" a la antigua política DeveloperToolsDisabled, el valor de esta política se ignorará y las herramientas para desarrolladores se inhabilitarán.</translation>
 <translation id="3547954654003013442">Configuración de proxy</translation>
-<translation id="3550875587920006460">Permite definir una programación personalizada para buscar actualizaciones. Se aplica a todos los usuarios y a todas las interfaces del dispositivo. Una vez definida la programación, el dispositivo se basará en ella para buscar actualizaciones. Se debe eliminar esta política para cancelar el resto de búsquedas de actualizaciones programadas.</translation>
+<translation id="3550875587920006460">Permite definir una programación personalizada para buscar actualizaciones. Se aplica a todos los usuarios y todas las interfaces del dispositivo. Una vez definida la programación, el dispositivo se basará en ella para buscar actualizaciones. Se debe eliminar esta política para cancelar el resto de búsquedas de actualizaciones programadas.</translation>
 <translation id="355118380775352753">Sitios web que se abren en el navegador alternativo</translation>
 <translation id="3554984410014457319">Permite que el Asistente de Google escuche la frase de activación</translation>
 <translation id="356579196325389849">Los usuarios pueden configurar el canal de lanzamiento de Chrome​OS</translation>
@@ -1872,7 +1872,7 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
       Ten en cuenta que el hecho de que la política incluya el ID de una aplicación no significa necesariamente que el usuario pueda habilitarla como aplicación para tomar notas en la pantalla de bloqueo. Por ejemplo, en Chrome 61, la plataforma también restringe el conjunto de aplicaciones disponibles.
 
       Si la política no se configura, esta no restringirá el conjunto de aplicaciones que el usuario puede habilitar en la pantalla de bloqueo.</translation>
-<translation id="4313767483634435271">Dirección MAC designada de la base</translation>
+<translation id="4313767483634435271">Dirección MAC designada de la base del dispositivo</translation>
 <translation id="4322842393287974810">Permite que la aplicación de kiosco sin retardo con inicio automático controle la versión de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Añadir un botón para cerrar sesión en la bandeja del sistema</translation>
 <translation id="4332177773549877617">Registrar eventos de descargas de aplicaciones para Android</translation>
@@ -2596,7 +2596,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5765780083710877561">Descripción:</translation>
 <translation id="5770738360657678870">Canal de desarrolladores (puede ser inestable)</translation>
 <translation id="5774856474228476867">URL de búsqueda del proveedor de búsquedas predeterminadas</translation>
-<translation id="5775235485119094648">Carga la batería mientras está dentro de un rango determinado.</translation>
+<translation id="5775235485119094648">Carga la batería mientras está dentro de un intervalo determinado.</translation>
 <translation id="5776485039795852974">Preguntar siempre que un sitio quiera mostrar notificaciones de escritorio</translation>
 <translation id="5781412041848781654">Especifica la biblioteca GSSAPI que se debe utilizar para la autenticación HTTP. Puedes definir simplemente el nombre de una biblioteca o una ruta completa.
 
@@ -2705,7 +2705,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
       Si esta opción se inhabilita o no se establece un valor, no se aplicará Búsqueda Segura en la Búsqueda web de Google.</translation>
 <translation id="5946082169633555022">Canal beta</translation>
-<translation id="5946329690214660966">Definir programación personalizada para buscar actualizaciones</translation>
+<translation id="5946329690214660966">Define la programación personalizada para buscar actualizaciones</translation>
 <translation id="5950205771952201658">Debido a que las comprobaciones de revocaciones online "soft-fail" no proporcionan una seguridad efectiva, están inhabilitadas de forma predeterminada en la versión 19 y en las versiones posteriores de <ph name="PRODUCT_NAME" />. Si esta política se establece en true, se restaurará el comportamiento anterior y se realizarán comprobaciones de OCSP y CRL online.
 
       Si no se establece la política o se establece en false, <ph name="PRODUCT_NAME" /> no realizará comprobaciones de revocaciones online en <ph name="PRODUCT_NAME" /> 19 ni en versiones posteriores.</translation>
@@ -2772,7 +2772,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="6034341625190551415">Controla los tipos de cuenta de sesión pública y de kiosko.</translation>
 <translation id="6034603289689965535">Permite que una página muestre ventanas emergentes mientras se descarga</translation>
 <translation id="6036523166753287175">Habilita que se pueda pasar a través de un cortafuegos desde un host de acceso remoto.</translation>
-<translation id="605475635122964053">Restringe el modo de impresión con PIN. Si no se configura esta política, no se aplicará ninguna restricción. Si este modo no está disponible, se ignorará esta política. Ten en cuenta que la función de impresión con PIN solo está habilitada para impresoras que utilicen uno de los protocolos IPPS, USB o IPP por USB. </translation>
+<translation id="605475635122964053">Restringe el modo de impresión con PIN. Si no se asigna ningún valor a esta política, no se aplicará ninguna restricción. Si este modo no está disponible, se ignorará esta política. Ten en cuenta que la función de impresión con PIN solo está habilitada para impresoras que utilicen uno de los protocolos IPPS, USB o IPP por USB. </translation>
 <translation id="6070667616071269965">Diseños de teclado para la pantalla de inicio de sesión del dispositivo</translation>
 <translation id="6074963268421707432">No permitir que ningún sitio muestre notificaciones de escritorio</translation>
 <translation id="6074964551275531965">Establece el periodo de tiempo para notificaciones de actualización</translation>
@@ -3242,7 +3242,7 @@ Si no se establece esta política, el teclado en pantalla se inhabilitará la pr
 
           Si se le asigna el valor "False", el modo avanzado de carga de la batería siempre estará inhabilitado.
 
-          Si se le asigna un valor a esta política, los usuarios no podrán cambiarla ni anularla.
+          Además, los usuarios no podrán cambiarla ni anularla.
 
           Si no se le asigna ningún valor, el modo avanzado de carga de la batería está inhabilitado y el usuario no podrá habilitarlo.</translation>
 <translation id="6972540544240464302">Selecciona la configuración del programador de tareas</translation>

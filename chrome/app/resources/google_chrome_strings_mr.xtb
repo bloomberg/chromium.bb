@@ -12,13 +12,13 @@
 <translation id="110877069173485804">हा तुमचा Chrome आहे</translation>
 <translation id="1142745911746664600">Chrome अपडेट करू शकत नाही</translation>
 <translation id="1154147086299354128">Chrome मध्‍ये &amp;उघडा</translation>
-<translation id="123620459398936149">Chrome OS तुमचा डेटा सिंक करू शकले नाही. कृपया तुमचा सिंक सांकेतिक पासफ्रेझ अपडेट करा.</translation>
+<translation id="123620459398936149">Chrome OS तुमचा डेटा सिंक करू शकले नाही. कृपया तुमचा सिंक सांकेतिक पासफ्रेज अपडेट करा.</translation>
 <translation id="127345590676626841">Chrome आपोआप अपडेट होते जेणेकरून तुमच्याकडे नेहमी सर्वात नवीन आवृत्ती असते. जेव्हा हे डाउनलोड पूर्ण होते, तेव्हा Chrome रीस्टार्ट होईल आणि तुम्ही तुमच्या मार्गावर असाल.</translation>
 <translation id="1302523850133262269">कृपया Chrome नवीनतम सिस्टम अपडेट इंस्टॉल करताना प्रतीक्षा करा.</translation>
 <translation id="1312676208694947750">{0,plural, =0{Chrome OS अपडेट उपलब्ध आहे}=1{Chrome OS अपडेट उपलब्ध आहे}other{Chrome अपडेट # दिवसांसाठी उपलब्ध आहे}}</translation>
 <translation id="137466361146087520">Google Chrome बीटा</translation>
 <translation id="1393853151966637042">Chrome वापरून मदत मिळवा</translation>
-<translation id="1399397803214730675">या कॉंप्युटरत आधीपासून Google Chrome ची अगदी अलिकडील आवृत्ती आहे. सॉफ्टवेअर काम करत नसल्यास, कृपया Google Chrome अनइंस्टॉल करा आणि पुन्हा प्रयत्न करा.</translation>
+<translation id="1399397803214730675">या काँप्युटरमध्ये आधीपासून Google Chrome ची अगदी अलिकडील आवृत्ती आहे. सॉफ्टवेअर कार्य करत नसल्यास, कृपया Google Chrome अनइंस्टॉल करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="1434626383986940139">Chrome Canary Apps</translation>
 <translation id="1457721931618994305">Google Chrome अपडेट करीत आहे...</translation>
 <translation id="1469002951682717133">Chrome App लाँचर</translation>
@@ -61,9 +61,9 @@
 <translation id="2290014774651636340">Google API की गहाळ आहेत. Google Chrome ची काही कार्यक्षमता अक्षम केली जाईल.</translation>
 <translation id="2290095356545025170">तुमची खात्री आहे की तुम्ही Google Chrome अनइंस्टॉल करू इच्छिता?</translation>
 <translation id="2309047409763057870">ही Google Chrome ची दुय्यम स्थापना असून त्यास तुमचा डीफॉल्ट ब्राउझर बनवू शकत नाही.</translation>
-<translation id="2346876346033403680">कोणीतरी यापूर्वी या कॉंप्युटरवरील Chrome मध्ये <ph name="ACCOUNT_EMAIL_LAST" /> या रुपात साइन इन केले होते. ते तुमचे खाते नसल्यास, तुमची माहिती स्वतंत्र ठेवण्यासाठी एक नवीन Chrome वापरकर्ता तयार करा.
+<translation id="2346876346033403680">कोणीतरी यापूर्वी या कॉंप्युटरवरील Chromeमध्ये <ph name="ACCOUNT_EMAIL_LAST" /> या रुपात साइन इन केले होते. ते तुमचे खाते नसल्यास, तुमची माहिती स्वतंत्र ठेवण्यासाठी एक नवीन Chrome वापरकर्ता तयार करा.
 
-तरीही साइन इन करण्यामुळे <ph name="ACCOUNT_EMAIL_NEW" /> मध्ये बुकमार्क, इतिहास यासारखी Chrome माहिती आणि अन्य सेटिंग्ज विलीन होतील.</translation>
+तरीही साइन इन करण्यामुळे <ph name="ACCOUNT_EMAIL_NEW" />मध्ये बुकमार्क, इतिहास यासारखी Chrome माहिती आणि अन्य सेटिंग्ज मर्ज होतील.</translation>
 <translation id="2348335408836342058">या साइटसाठी Chrome ला तुमचा कॅमेरा आणि मायक्रोफोन अॅक्सेस करण्याची परवानगी हवी आहे</translation>
 <translation id="2429317896000329049">आपल्या डोमेनसाठी संकालन उपलब्ध नसल्यामुळे Google Chrome तुमचा डेटा संकालित करू शकले नाही.</translation>
 <translation id="2467438592969358367">Google Chrome ला तुमचे पासवर्ड निर्यात करायचे आहेत. हे करू देण्यासाठी तुमचा Windows पासवर्ड टाइप करा.</translation>
@@ -155,7 +155,7 @@
 <translation id="4953650215774548573">तुमचा डीफॉल्ट ब्राउझर म्हणून Google Chrome सेट करा</translation>
 <translation id="495931528404527476">Chrome मध्ये</translation>
 <translation id="4990567037958725628">Google Chrome कॅनरी</translation>
-<translation id="5028489144783860647">Google Chrome तुमचा डेटा सिंक करू शकले नाही. कृपया तुमचा सिंक पासफ्रेझ अपडेट करा.</translation>
+<translation id="5028489144783860647">Google Chrome तुमचा डेटा सिंक करू शकले नाही. कृपया तुमची सिंक पासफ्रेज अपडेट करा.</translation>
 <translation id="5062123544085870375">Chrome OS रीस्टार्ट करा</translation>
 <translation id="5090044601776247154">Google Chrome 70 सह सुरू झालेले व्यवस्थापित वापरकर्ता प्रोफाइल यापुढे उपलब्ध होणार नाहीत.</translation>
 <translation id="5132929315877954718">Google Chrome साठी उत्कृष्ट ॲप, खेळ, विस्तार आणि थीम शोधा.</translation>
@@ -164,13 +164,13 @@
 <translation id="5193136243808726294">Google Chrome OS हे पृष्ठ उघडू शकत नाही.</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />सेवा अटी<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">अतिथी कोणतीही गोष्ट मागे न सोडता Chrome वापरू शकतात.</translation>
-<translation id="532046782124376502">चेतावणी: Google Chrome हे एक्स्टेंशनना तुमचा ब्राउझिंग इतिहास रेकॉर्ड करून ठेवण्यापासून रोखू शकत नाही. हे एक्स्टेंशन बंद करण्यासाठी गुप्त मोडमधील या पर्यायाची निवड रद्द करा.</translation>
+<translation id="532046782124376502">चेतावणी: Google Chrome हे एक्स्टेंशनला तुमचा ब्राउझिंग इतिहास रेकॉर्ड करून ठेवण्यापासून रोखू शकत नाही. हे एक्स्टेंशन बंद करण्यासाठी गुप्त मोडमधील या पर्यायाची निवड रद्द करा.</translation>
 <translation id="5386244825306882791">तुम्ही Chrome सुरू करता किंवा ओम्निबॉक्समधून शोध घेता तेव्हा कोणते पृष्ठ दर्शविले जाते हे देखील हे नियंत्रित करते.</translation>
 <translation id="5430073640787465221">तुमची प्राधान्ये फाइल दूषित किंवा चुकीचे आहेत.
 
 Google Chrome तुमची सेटिंग्ज पुन्हा मिळवू शकत नाही.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome आता पुन्हा लाँँच होईल}=1{Chrome एका सेकंदानंतर पुन्हा लाँँच होईल}other{Chrome # सेकंदांनंतर पुन्हा लाँँच होईल}}</translation>
-<translation id="5543953544073077331">Chrome च्या इतर प्रति रन होत आहेत. अपडेट करण्यासाठी, त्यांना बंद करा.</translation>
+<translation id="5543953544073077331">Chrome च्या इतर प्रती रन होत आहेत. अपडेट करण्यासाठी, त्या बंद करा.</translation>
 <translation id="556024056938947818">Google Chrome पासवर्ड दर्शवण्याचा प्रयत्न करत आहे.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-मध्ये)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> धोकादायक असू शकते, त्यामुळे Chrom ने ते अवरोधित केले आहे.</translation>
@@ -200,7 +200,7 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="6468844726266617801">{0,plural, =1{एका दिवसामध्ये Chrome पुन्हा लाँच करा}other{# दिवसांमध्ये Chrome पुन्हा लाँच करा}}</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome डेव्हलपर</translation>
 <translation id="6566149418543181476">Google Chrome अपडेट करीत आहे (<ph name="PROGRESS_PERCENT" />)</translation>
-<translation id="6598387184982954187">तुम्ही तुमची Chrome सामग्री सिंक करण्यासाठी <ph name="PROFILE_EMAIL" /> वापरत आहात. तुमचे सिंक प्राधान्य अपडेट करण्यासाठी किंवा Google खात्याशिवाय Chrome वापरण्यासाठी, <ph name="SETTINGS_LINK" /> ला भेट द्या.</translation>
+<translation id="6598387184982954187">तुम्ही तुमचा Chrome आशय सिंक करण्यासाठी <ph name="PROFILE_EMAIL" /> वापरत आहात. तुमचे सिंक प्राधान्य अपडेट करण्यासाठी किंवा Google खात्याशिवाय Chrome वापरण्यासाठी, <ph name="SETTINGS_LINK" /> ला भेट द्या.</translation>
 <translation id="6600954340915313787">Chrome वर कॉपी केले</translation>
 <translation id="6634887557811630702">Google Chrome अद्ययावत आहे.</translation>
 <translation id="6676384891291319759">इंटरनेट अॅक्सेस करा</translation>
@@ -231,7 +231,7 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="7473136999113284234">Chrome स्वयंचलितपणे अपडेट होते जेणेकरून आपल्याकडे नेहमी सर्वात नवीन आवृत्ती असते.</translation>
 <translation id="7486227612705979895">ॲड्रेस बारमध्ये सूचना देण्यासाठी Chrome तुमची ड्राइव्ह ॲक्सेस करेल</translation>
 <translation id="748945194546522577">ही फाईल धोकादायक आहे, त्यामुळे Chrome ने ती ब्लॉक केली आहे. तुम्ही प्रगत संरक्षणाद्वारे संरक्षित आहात.</translation>
-<translation id="7531671357096394523">Chrome च्या सर्व प्रति बंद करा.</translation>
+<translation id="7531671357096394523">Chrome च्या सर्व प्रती बंद करा.</translation>
 <translation id="7535429826459677826">Google Chrome विकासक</translation>
 <translation id="7552219221109926349">Chrome OS या भाषेत डिस्प्ले करा</translation>
 <translation id="7561940363513215021">{0,plural, =1{Chrome एका मिनिटानंतर पुन्हा लाँँच होईल}other{Chrome # मिनिटांनंतर पुन्हा लाँँच होईल}}</translation>

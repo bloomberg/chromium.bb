@@ -623,7 +623,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="5349770431644471053">Lien entrant</translation>
 <translation id="536031132345979795">Retour en arrière en lecture en continu</translation>
 <translation id="5368000168321181111">Icônes audio désactivées</translation>
-<translation id="5368505757342402527">Le téléchargement du fichier <ph name="FILE_NAME" /> en est pour l'instant à <ph name="PROGRESS" /> % . Il reste environ <ph name="TIME" /> <ph name="UNITS" />.</translation>
+<translation id="5368505757342402527">Le téléchargement du fichier <ph name="FILE_NAME" /> en est pour l'instant à <ph name="PROGRESS" /> %. Il reste environ <ph name="TIME" /> <ph name="UNITS" />.</translation>
 <translation id="5374320867641260420">Aucun bouton suivant</translation>
 <translation id="5376407118396657359">Appuyez simultanément sur Recherche+Ctrl+Alt et sur les flèches pour parcourir le contenu par cellule.</translation>
 <translation id="5382299583965267720">Aucun titre de niveau 1 suivant</translation>

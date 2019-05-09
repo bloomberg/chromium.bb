@@ -54,10 +54,10 @@
 
       Si cette règle est définie, l'écran de connexion est toujours affiché dans les paramètres régionaux indiqués par la première valeur de cette règle (cette dernière est définie en tant que liste pour la compatibilité ascendante). Si cette règle n'est pas définie, ou si elle est définie sur une liste vide, l'écran de connexion est affiché dans les paramètres régionaux de la dernière session de l'utilisateur. Si cette règle est définie sur une valeur qui ne constitue pas des paramètres régionaux valides, l'écran de connexion est affiché dans des paramètres régionaux de remplacement (actuellement "en-US").</translation>
 <translation id="1052499923181221200">Cette règle n'a aucune incidence, sauf si la règle SamlInSessionPasswordChangeEnabled est définie sur "True".
-      Si cette règle est définie sur "True" avec, par exemple, une valeur de 14, les utilisateurs SAML sont avertis 14 jours avant la date d'expiration de leur mot de passe.
-      Ils peuvent alors agir immédiatement en le modifiant en cours de session avant qu'il n'arrive à expiration.
+      Si cette règle est définie sur "True" avec une valeur de 14, par exemple, les utilisateurs SAML sont alors avertis 14 jours avant l'expiration de leur mot de passe.
+      Ils peuvent alors le modifier directement durant une session.
       Toutefois, ces notifications ne s'affichent que si le fournisseur d'identité SAML envoie à l'appareil des informations sur l'expiration du mot de passe au cours du processus de connexion SAML.
-      Si cette règle est définie sur zéro, les utilisateurs ne sont pas avertis à l'avance. Ils ne le seront qu'une fois le mot de passe arrivé à expiration.
+      Si cette règle est définie sur zéro, les utilisateurs ne sont pas avertis à l'avance et ne reçoivent de notification qu'une fois le mot de passe arrivé à expiration.
 
       Si cette règle est définie, l'utilisateur ne peut pas la modifier ni l'ignorer.</translation>
 <translation id="1062011392452772310">Activer l'attestation à distance pour l'appareil</translation>
@@ -322,15 +322,15 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="1507382822467487898">
           Permet de définir quelle l'adresse MAC (Media Access Control, contrôle d'accès au support) est utilisée lorsqu'une station d'accueil est connectée à l'appareil.
 
-          Quand une station d'accueil est connectée à certains modèles d'appareils, l'adresse MAC de la station d'accueil désignée de l'appareil est utilisée pour identifier ce dernier sur Ethernet par défaut. Cette règle permet à l'administrateur de modifier la source de l'adresse MAC lorsqu'une station d'accueil est connectée.
+          Quand une station d'accueil est connectée à certains modèles d'appareils, l'adresse MAC de la station d'accueil désignée de l'appareil est utilisée pour identifier ce dernier sur Ethernet par défaut. Cette règle permet à l'administrateur de modifier la source de l'adresse MAC lorsque l'appareil est inséré dans la station d'accueil.
 
-          Si la règle "DeviceDockMacAddress" est sélectionnée ou si elle n'est pas configurée, l'adresse MAC de la station d'accueil désignée de l'appareil est utilisée.
+          Si l'option "DeviceDockMacAddress" est sélectionnée ou si la règle n'est pas définie, l'adresse MAC de la station d'accueil définie pour l'appareil est utilisée.
 
-          Si la règle "DeviceNicMacAddress" est sélectionnée, l'adresse MAC de la carte d'interface réseau de l'appareil est utilisée.
+          Si l'option "DeviceNicMacAddress" est sélectionnée, l'adresse MAC de la carte d'interface réseau de l'appareil est utilisée.
 
-          Si la règle "DockNicMacAddress" est sélectionnée, l'adresse MAC de la carte d'interface réseau de l'appareil est utilisée.
+          Si l'option "DockNicMacAddress" est sélectionnée, l'adresse MAC de la carte d'interface réseau de la station d'accueil est utilisée.
 
-          Cette règle n'est pas modifiable par l'utilisateur.</translation>
+          Ce paramètre ne peut pas être modifié par l'utilisateur.</translation>
 <translation id="1507957856411744193">Si cette règle est définie sur "True", <ph name="PRODUCT_NAME" /> se connecte aux appareils Cast sur toutes les adresses IP, et pas seulement sur les adresses privées décrites dans la RFC 1918 ou la RFC 4193.
 
           Si cette règle est définie sur "False", <ph name="PRODUCT_NAME" /> ne se connecte aux appareils Cast que sur les adresses privées décrites dans la RFC 1918 ou la RFC 4193.
@@ -775,7 +775,7 @@ Si cette règle n'est pas configurée, le paramètre "BlockPopups" est utilisé 
 <translation id="2327252517317514801">Définir les domaines autorisés à accéder à G Suite</translation>
 <translation id="2356878440219553005">Permet de gérer l'alimentation suivant le mode de recharge de la batterie.
 
-          La recharge est contrôlée dynamiquement afin de réduire au maximum l'usure de la batterie due aux contraintes et à la plus longue autonomie de cette dernière.
+          La recharge est contrôlée dynamiquement afin de réduire au maximum l'usure de la batterie due aux contraintes et d'allonger sa durée de vie.
 
           Si le mode personnalisé de recharge est sélectionné, les règles DeviceBatteryChargeCustomStartCharging et DeviceBatteryChargeCustomStopCharging doivent être définies.
 
@@ -1003,7 +1003,7 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
 <translation id="2769952903507981510">Configurer le nom de domaine requis pour les hôtes d'accès à distance</translation>
 <translation id="2787173078141616821">Transmettre des informations sur l'état d'Android</translation>
 <translation id="2799297758492717491">Autoriser la lecture automatique des contenus multimédias pour les formats d'URL sur liste blanche</translation>
-<translation id="2801155097555584385">Configurer une recharge personnalisée avec le niveau de charge (en %) à partir duquel la batterie doit commencer à être rechargée</translation>
+<translation id="2801155097555584385">Personnaliser le pourcentage auquel la batterie doit commencer à être rechargée</translation>
 <translation id="2801230735743888564">Autoriser les utilisateurs à jouer au jeu Easter Egg du dinosaure lorsque l'appareil est déconnecté.
 
 Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer au jeu Easter Egg du dinosaure lorsque l'appareil est déconnecté. Si ce paramètre est défini sur "True", les utilisateurs sont autorisés à jouer au jeu des dinosaures. Si cette règle n'est pas définie, les utilisateurs ne sont pas autorisés à jouer au jeu Easter Egg du dinosaure sur les appareils équipés de Chrome OS et enregistrés, mais ils peuvent y jouer dans d'autres circonstances.</translation>
@@ -1214,17 +1214,17 @@ Si cette règle n'est pas configurée, le paramètre "AllowJavaScript" est utili
 <translation id="3077183141551274418">Activer ou désactiver le cycle de vie des onglets</translation>
 <translation id="3079417254871857650">Permet de spécifier l'action à effectuer lorsque le répertoire d'accueil de l'utilisateur a été créé avec un chiffrement eCryptfs.
 
-      Si cette règle est définie sur "DisallowArc", l'utilisateur n'a plus accès aux applications Android et la migration d'eCryptfs vers ext4 n'est pas effectuée. Toutefois, les applications Android peuvent continuer de fonctionner si le répertoire d'accueil est déjà chiffré avec ext4.
+      Si cette règle est définie sur "DisallowArc", les applications Android sont désactivées pour l'utilisateur, et la migration d'eCryptfs vers ext4 n'aura pas lieu. Les applications Android pourront s'exécuter si l'annuaire principal est déjà chiffré à l'aide du système ext4.
 
-      Si cette règle est définie sur "Migrate", les répertoires d'accueil chiffrés avec eCryptfs sont chiffrés automatiquement avec ext4 lors de la connexion, sans demander l'autorisation de l'utilisateur.
+      Si cette règle est définie sur "Migrate", les répertoires d'accueil chiffrés avec eCryptfs feront l'objet d'une migration automatique vers le chiffrement ext4 à la connexion, sans demander la permission de l'utilisateur.
 
-      Si cette règle est définie sur "Wipe", les répertoires d'accueil chiffrés avec eCryptfs sont supprimés lors de la connexion et remplacés par de nouveaux répertoires d'accueil chiffrés avec ext4. Avertissement : Les données locales de l'utilisateur sont supprimées.
+      Si cette règle est définie sur "Wipe", les répertoires d'accueil chiffrés avec eCryptfs seront supprimés à la connexion, puis de nouveaux répertoires avec chiffrement ext4 seront créés à leur place. Avertissement : Ceci supprime les données locales de l'utilisateur.
 
-      Si cette règle est définie sur "MinimalMigrate", les répertoires d'accueil chiffrés avec eCryptfs sont supprimés lors de la connexion et remplacés par de nouveaux répertoires d'accueil chiffrés avec ext4. Toutefois, cette option permet de conserver les jetons de connexion pour éviter à l'utilisateur de se reconnecter. Avertissement : Les données locales de l'utilisateur sont supprimées.
+      Si cette règle est définie sur "MinimalMigrate", les répertoires d'accueil chiffrés avec eCryptfs sont supprimés lors de la connexion et remplacés par de nouveaux répertoires d'accueil chiffrés avec ext4. Toutefois, cette option permet de conserver les jetons de connexion pour éviter à l'utilisateur de se reconnecter. Avertissement : Ceci supprime les données locales de l'utilisateur.
 
-      Si cette règle est définie sur une option qui n'est plus acceptée ("AskUser" ou "AskForEcryptfsArcUsers"), le résultat sera le même que si vous aviez sélectionné l'option "Migrate" à la place.
+      Si cette règle est définie sur une option qui n'est plus acceptée ("AskUser" ou "AskForEcryptfsArcUsers"), le résultat sera le même que si vous aviez sélectionné l'option "Migrate".
 
-      Cette règle ne s'applique pas aux utilisateurs de kiosque. Si cette règle n'est pas définie, l'appareil se comporte comme si vous aviez sélectionné l'option "DisallowArc".</translation>
+      Cette règle ne s'applique pas aux utilisateurs de kiosque. Si la règle n'est pas définie, l'appareil se comportera comme si elle était définie sur "DisallowArc".</translation>
 <translation id="3086995894968271156">Configurer le récepteur Cast dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3088796212846734853">Permet de définir une liste de formats d'URL spécifiant les sites autorisés à afficher des images.
 
@@ -1295,7 +1295,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Si ce paramètre est désactivé, l'utilisateur ne peut pas activer le proxy et la machine n'est pas autorisée à partager ses imprimantes avec <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="3312206664202507568">Affiche la page chrome://password-change, qui permet aux utilisateurs SAML de changer leur mot de passe en cours de session. De cette façon, le mot de passe SAML et celui de l'écran de verrouillage de l'appareil restent synchronisés.
 
-      Cette règle permet également d'activer les notifications destinées à signaler aux utilisateurs SAML que leur mot de passe SAML va bientôt arriver à expiration, afin qu'ils puissent agir immédiatement en le modifiant en cours de session.
+      Cette règle permet également d'activer les notifications destinées à signaler aux utilisateurs SAML que leur mot de passe SAML va bientôt arriver à expiration. Ils peuvent ainsi le modifier immédiatement, durant la session.
       Toutefois, ces notifications ne s'affichent que si le fournisseur d'identité SAML envoie à l'appareil des informations sur l'expiration du mot de passe au cours du processus de connexion SAML.
 
       Si cette règle est définie, l'utilisateur ne peut pas la modifier ni l'ignorer.</translation>
@@ -1426,7 +1426,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Si cette règle est définie sur "DeveloperToolsAllowed" (valeur 1), les outils pour les développeurs et la console JavaScript sont accessibles et utilisables dans tous les cas, y compris si des extensions ont été installées dans le cadre des règles de l'entreprise.
       Si cette règle est définie sur "DeveloperToolsDisallowed" (valeur 2), les outils pour les développeurs sont inaccessibles et les éléments de sites Web ne peuvent plus être examinés. En outre, les raccourcis clavier, ainsi que les entrées de menu ou de menu contextuel permettant d'ouvrir les outils pour les développeurs ou la console JavaScript sont désactivés.</translation>
 <translation id="3547954654003013442">Paramètres de proxy</translation>
-<translation id="3550875587920006460">Permet de planifier de manière personnalisée la recherche de mises à jour. Cette règle s'applique à l'ensemble des utilisateurs et des interfaces de l'appareil. L'appareil recherche alors les mises à jour en fonction du calendrier établi. Cette règle doit être supprimée pour annuler toute autre recherche planifiée de mises à jour.</translation>
+<translation id="3550875587920006460">Permet de planifier de manière personnalisée la recherche de mises à jour. Cette règle s'applique à l'ensemble des utilisateurs et des interfaces de l'appareil. Une fois la règle définie, l'appareil recherche les mises à jour en fonction du calendrier établi. Pour annuler toute autre recherche planifiée de mises à jour, cette règle doit être supprimée.</translation>
 <translation id="355118380775352753">Sites Web à ouvrir dans le navigateur secondaire</translation>
 <translation id="3554984410014457319">Autoriser l'Assistant Google à écouter l'expression d'activation des commandes vocales</translation>
 <translation id="356579196325389849">Les utilisateurs peuvent configurer la version disponible de Chrome OS</translation>
@@ -1544,15 +1544,15 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="382476126209906314">Configurer le préfixe TalkGadget pour les hôtes d'accès à distance</translation>
 <translation id="3824972131618513497">Paramètres de commande de la gestion de l'alimentation et du redémarrage.</translation>
 <translation id="3826475866868158882">Services de localisation Google activés</translation>
-<translation id="3831054243924627613">Cette règle permet de contrôler l'état initial du service de sauvegarde et de restauration Android.
+<translation id="3831054243924627613">Cette règle permet de contrôler l'état initial du service Android de sauvegarde et de restauration.
 
-      Si cette règle n'est pas configurée ou si elle est définie sur <ph name="BR_DISABLED" />, ce service est initialement désactivé.
+      Si cette règle n'est pas configurée ou est définie sur <ph name="BR_DISABLED" />, le service Android de sauvegarde et restauration est désactivé initialement.
 
-      Si cette règle est définie sur <ph name="BR_ENABLED" />, ce service est initialement activé.
+      Si cette règle est définie sur <ph name="BR_ENABLED" />, le service Android de sauvegarde et restauration est activé.
 
-      Si cette règle est définie sur <ph name="BR_UNDER_USER_CONTROL" />, l'utilisateur est invité à préciser s'il souhaite ou non activer ce service. S'il l'active, les données des applications Android sont transférées vers les serveurs de sauvegarde Android, puis restaurées depuis ces serveurs lors de la réinstallation des applications (si celles-ci sont compatibles).
+      Si cette règle est définie sur <ph name="BR_UNDER_USER_CONTROL" />, l'utilisateur est invité à choisir s'il souhaite activer le service Android de sauvegarde et restauration. S'il l'active, les données des applications Android sont sauvegardées sur les serveurs de sauvegarde Android, puis restaurées depuis ces derniers lors de la réinstallation des applications (si ces dernières sont compatibles).
 
-      Notez que cette règle ne permet de contrôler l'état du service de sauvegarde et de restauration Android que lors de la configuration initiale. Par la suite, l'utilisateur peut accéder aux paramètres Android pour activer ou désactiver ce service.</translation>
+      Cette règle contrôle uniquement l'état du service Android de sauvegarde et restauration lors la phase initiale de configuration. Par la suite, l'utilisateur peut accéder aux paramètres Android pour activer ou désactiver ce service.</translation>
 <translation id="3831376478177535007">Lorsque ce paramètre est activé, <ph name="PRODUCT_NAME" /> accepte de faire confiance aux certificats émis par l'ancienne infrastructure PKI de Symantec Corporation s'ils sont correctement validés et que leur chaîne de confiance renvoie à un certificat CA reconnu.
 
       Notez que cette règle dépend de la reconnaissance des certificats de l'ancienne infrastructure de Symantec par le système d'exploitation. Si une mise à jour du système d'exploitation modifie sa gestion de ces certificats, cette règle n'aura plus d'effet. En outre, cette règle n'est qu'une solution temporaire destinée à laisser suffisamment de temps aux entreprises pour cesser d'utiliser les anciens certificats Symantec. Elle sera supprimée aux alentours du 1er janvier 2019.
@@ -1636,9 +1636,9 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
           Si ce paramètre est défini sur "False" ou s'il n'est pas défini, les utilisateurs ont la possibilité de transférer des fichiers vers Google Drive.</translation>
 <translation id="3915395663995367577">URL d'un fichier .pac de proxy</translation>
-<translation id="3920892052017026701">Permet de configurer une recharge personnalisée avec le niveau de charge (en %) à partir duquel la batterie doit commencer à être rechargée.
+<translation id="3920892052017026701">Permet de personnaliser le pourcentage auquel la batterie doit commencer à être rechargée.
 
-          La batterie commence à se charger lorsque ce niveau de charge est atteint.
+          La batterie commence à se charger lorsqu'elle atteint le niveau défini.
 
           La valeur de la règle DeviceBatteryChargeCustomStartCharging doit être inférieure à celle de la règle DeviceBatteryChargeCustomStopCharging.
 
@@ -1673,25 +1673,23 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si cette règle est définie sur "True" ou si elle n'est pas définie, les utilisateurs peuvent utiliser leurs offres via ce service.
 
       Si elle est définie sur "False", les utilisateurs ne peuvent pas utiliser leurs offres.</translation>
-<translation id="4008233182078913897">Définit la liste des applications et des extensions qui sont installées en arrière-plan,
-          sans aucune intervention de l'utilisateur, et qui ne peuvent pas être désinstallées ni
-          désactivées par ce dernier. Toutes les autorisations demandées par les
-          applications ou les extensions sont accordées implicitement, sans intervention de l'utilisateur,
+<translation id="4008233182078913897">Définit la liste des sites Web qui sont installés silencieusement, sans aucune intervention de l'utilisateur, et que ce dernier ne peut pas désinstaller ni désactiver. Toutes les autorisations demandées par les
+          applications et extensions sont accordées implicitement, sans intervention de l’utilisateur,
           y compris n'importe quelle autre autorisation demandée par les futures versions de
-          l'application ou de l'extension. En outre, les autorisations sont accordées pour les
-          API d'extension enterprise.deviceAttributes et enterprise.platformKeys
-          (ces deux API ne sont pas disponibles pour les applications/extensions qui ne sont pas
+          l’application ou l’extension concernée. En outre, les autorisations sont accordées pour les
+          API d'extension enterprise.deviceAttributes et
+          enterprise.platformKeys (Ces deux API ne sont pas disponibles pour les applications/extensions qui ne sont pas
           installées d'office).
 
-          Cette règle prévaut en cas de conflit avec la règle <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Si une application ou une extension installée d'office est supprimée de la liste, <ph name="PRODUCT_NAME" /> la désinstalle automatiquement.
+          Cette règle est prioritaire sur toute règle <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> présentant un conflit potentiel. Si une application ayant été préalablement installée d'office est supprimée de cette liste, elle est automatiquement désinstallée par <ph name="PRODUCT_NAME" />.
 
           Pour les instances Windows qui ne sont pas associées à un domaine <ph name="MS_AD_NAME" />, l'installation d'office est limitée aux applications et aux extensions répertoriées sur le Chrome Web Store.
 
-          Sachez que le code source de toute extension peut être modifié par les utilisateurs (cela pouvant entraîner son dysfonctionnement) via les outils pour les développeurs. Si cela pose problème, la règle <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> doit être définie.
+          Sachez que le code source de toute extension peut être modifié par les utilisateurs via les outils pour les développeurs, ce qui peut entraîner des dysfonctionnements. Si cela pose problème, la règle <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> doit être définie.
 
-          Chaque élément de la règle correspond à une chaîne constituée d'un ID d'extension et d'une URL de mise à jour séparés par un point-virgule (<ph name="SEMICOLON" />). L'ID d'extension est la chaîne de 32 lettres qui se trouve, par exemple, dans <ph name="CHROME_EXTENSIONS_LINK" /> en mode développeur. L'URL de mise à jour doit renvoyer à un fichier manifeste de mise à jour au format XML, comme décrit sur la page <ph name="LINK_TO_EXTENSION_DOC1" />. Par défaut, l'URL de mise à jour du Chrome Web Store est utilisée (il s'agit actuellement de "https://clients2.google.com/service/update2/crx"). Sachez que l'URL de mise à jour spécifiée dans cette règle n'est utilisée que pour l'installation initiale. Toute mise à jour ultérieure de l'extension est effectuée avec l'URL indiquée dans le fichier manifeste de l'extension. Notez également que la définition explicite de l'URL de mise à jour était obligatoire dans les versions de <ph name="PRODUCT_NAME" /> jusqu'à la 67.
+          Dans cette règle, chaque élément de la liste est constitué d'une chaîne contenant un identifiant d'extension et une URL de mise à jour séparés par un point-virgule (<ph name="SEMICOLON" />). L'identifiant d'extension est la chaîne de 32 lettres qui se trouve, par exemple, dans <ph name="CHROME_EXTENSIONS_LINK" /> en mode développeur. L'URL de mise à jour doit renvoyer à un fichier manifeste de mise à jour au format XML, comme décrit sur la page <ph name="LINK_TO_EXTENSION_DOC1" />. Par défaut, l'URL de mise à jour du Chrome Web Store est utilisée (il s'agit actuellement de "https://clients2.google.com/service/update2/crx"). Notez que l'URL de mise à jour définie dans cette règle n'est utilisée que pour l'installation initiale. Toute mise à jour ultérieure de l'extension est effectuée avec l'URL de mise à jour indiquée dans le fichier manifeste de l'extension. Sachez également que la définition explicite de l'URL de mise à jour était obligatoire dans les versions de <ph name="PRODUCT_NAME" /> jusqu'à la version 67.
 
-          Par exemple, <ph name="EXTENSION_POLICY_EXAMPLE" /> installe l'application <ph name="EXTENSION_ID_SAMPLE" /> à partir de l'URL de mise à jour standard du Chrome Web Store. Pour en savoir plus sur l'hébergement des extensions, consultez la page <ph name="LINK_TO_EXTENSION_DOC2" />.
+          Par exemple, <ph name="EXTENSION_POLICY_EXAMPLE" /> installe l'application <ph name="EXTENSION_ID_SAMPLE" /> à partir de l'URL de mise à jour standard du Chrome Web Store. Pour en savoir plus sur l'hébergement des extensions, rendez-vous sur : <ph name="LINK_TO_EXTENSION_DOC2" />.
 
           Si cette règle n'est pas configurée, aucune application ni extension n'est installée automatiquement. Toute application ou extension de <ph name="PRODUCT_NAME" /> peut donc être désinstallée.
 
@@ -1798,7 +1796,7 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
 <translation id="4150201353443180367">Écran</translation>
 <translation id="4157003184375321727">Indiquer la version du système d'exploitation et du micrologiciel</translation>
 <translation id="4157594634940419685">Autoriser l'accès à des imprimantes CUPS en natif</translation>
-<translation id="4160962198980004898">Source de l'adresse MAC de l'appareil lorsqu'une station d'accueil est connectée</translation>
+<translation id="4160962198980004898">Source de l'adresse MAC de l'appareil lorsqu'il est connecté à une station d'accueil</translation>
 <translation id="4163705126749612234">Configure les noms de domaines obligatoires du client qui sont imposés aux clients d'accès à distance et ne peuvent pas être modifiés par les utilisateurs.
 
           Si ce paramètre est activé, seuls les clients de l'un des domaines indiqués peuvent se connecter à l'hôte.
@@ -2205,9 +2203,9 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="5124368997194894978">Activer le démarrage au branchement de l'alimentation CA (courant alternatif)</translation>
 <translation id="5131211790949066746">Permet de fusionner les règles relatives aux listes d'installation d'extensions <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> et <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 
-      Si vous activez cette règle, plutôt que d'utiliser les valeurs d'une seule source prioritaire par rapport aux autres, les valeurs issues des règles relatives au cloud (machine) et aux plates-formes (machines et utilisateurs) sont fusionnées dans une seule liste et utilisées globalement.
+      Si vous activez cette règle, les valeurs issues des règles relatives au cloud (machine) et aux plates-formes (machines et utilisateurs) sont fusionnées dans une seule liste et utilisées globalement. Ce ne sont pas uniquement les valeurs de la source avec la priorité la plus élevée qui sont utilisées.
 
-      Si vous désactivez cette règle ou si elle n'est pas configurée, seules les entrées de listes issues de la source prioritaire par rapport aux autres sont prises et toutes les autres sources sont affichées en tant que sources en conflit, mais ignorées.</translation>
+      Si vous désactivez cette règle ou si elle n'est pas configurée, seules les entrées de listes issues de la source avec la plus haute priorité sont prises en compte. Toutes les autres sources sont affichées en tant que sources en conflit, mais ignorées.</translation>
 <translation id="5141670636904227950">Activer la loupe plein écran sur l'écran de connexion</translation>
 <translation id="5142301680741828703">Toujours rendre les formats d'URL suivants dans <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Permet de spécifier les paramètres supplémentaires utilisés lorsque <ph name="PRODUCT_FRAME_NAME" /> lance <ph name="PRODUCT_NAME" />.
@@ -2550,7 +2548,7 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 <translation id="5630352020869108293">Restaurer la dernière session</translation>
 <translation id="5643906875497889108">Définit les types d'applications ou d'extensions qui sont autorisés à être installés, et limite l'accès pendant l'exécution.
 
-          Cette règle permet d'ajouter à la liste blanche les types d'extensions ou d'applications qui sont autorisés à être installés dans <ph name="PRODUCT_NAME" /> et les hôtes avec lesquels elles peuvent interagir. Il s'agit d'une liste de chaînes qui peuvent prendre les valeurs suivantes : "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app" et "platform_app". Pour en savoir plus sur ces différents types, consultez la documentation relative aux extensions dans <ph name="PRODUCT_NAME" />.
+          Cette règle permet d'ajouter à la liste blanche les types d'extensions ou d'applications qui peuvent être installés dans <ph name="PRODUCT_NAME" /> et les hôtes avec lesquels ils peuvent interagir. Il s'agit d'une liste de chaînes qui peuvent prendre les valeurs suivantes : "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app" et "platform_app". Pour en savoir plus sur ces différents types, consultez la documentation relative aux extensions dans <ph name="PRODUCT_NAME" />.
 
           Sachez que cette règle installe également d'office les extensions et les applications via la règle ExtensionInstallForcelist.
 
@@ -2558,7 +2556,7 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
           Si cette règle n'est pas configurée, aucune restriction n'est imposée concernant les types d'extensions ou d'applications pouvant être installés.
 
-          Avant la version 75, l'utilisation de plusieurs identifiants d'extension séparés par des virgules sera ignorée et ne sera pas acceptée. Le reste de la règle continuera de s'appliquer.</translation>
+          Avant la version 75, l'utilisation de plusieurs identifiants d'extension séparés par une virgule sera ignorée et ne sera pas acceptée. Le reste de la règle continuera de s'appliquer.</translation>
 <translation id="5645779841392247734">Autoriser les cookies sur ces sites</translation>
 <translation id="5689430183304951538">Format de page d'impression par défaut</translation>
 <translation id="5693469654327063861">Autoriser la migration de données</translation>
@@ -2676,10 +2674,10 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
       </translation>
 <translation id="5901427587865226597">Impression recto verso seulement</translation>
 <translation id="5903898512448364160">
-      Si cette règle est définie sur "True", les règles relatives au cloud prévalent en cas de conflit avec celles concernant les plates-formes.
-      Si cette règle est définie sur "False" ou n'est pas configurée, les règles relatives aux plates-formes prévalent en cas de conflit avec celles concernant le cloud.
+      Si cette règle est définie sur "True", la règle relative au cloud prévaut en cas de conflit avec celle concernant les plates-formes.
+      Si cette règle est définie sur "False" ou n'est pas configurée, la règle relative aux plates-formes prévaut en cas de conflit avec celle concernant le cloud.
 
-      Cette règle n'est disponible qu'en tant que règle obligatoire concernant les plates-formes (machine) et n'affecte que les règles relatives au cloud (machine).
+      Cette règle est uniquement disponible en tant que règle de la plate-forme (machine) et n'affecte que les règles relatives au cloud s’appliquant aux machines.
       </translation>
 <translation id="5905473632148429217">Activer les contrôles OCSP/CRL en ligne</translation>
 <translation id="5906199912611534122">Permet d'activer ou de désactiver la limitation du débit réseau.
@@ -2690,7 +2688,7 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
       Si cette règle est définie sur "False", aucune limitation n'est définie.
       Si cette règle est définie sur "True", la bande passante est limitée aux taux
       de téléchargement et de transfert fournis (en kbit/s).</translation>
-<translation id="591088232153082363">Recharge intelligente basée sur le niveau d'utilisation de la batterie.</translation>
+<translation id="591088232153082363">Recharge intelligente basée sur le modèle d'utilisation de la batterie.</translation>
 <translation id="5921713479449475707">Autoriser les téléchargements de mise à jour automatique via HTTP</translation>
 <translation id="5921888683953999946">Définit l'état par défaut de la fonctionnalité d'accessibilité de grand curseur sur l'écran de connexion.
 
@@ -2709,7 +2707,7 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
 
       Si vous désactivez ce paramètre ou ne définissez pas de valeur, SafeSearch n'est pas activé dans la recherche Google.</translation>
 <translation id="5946082169633555022">Version bêta</translation>
-<translation id="5946329690214660966">Planifiez de manière personnalisée la recherche de mises à jour</translation>
+<translation id="5946329690214660966">Planifier de manière personnalisée la recherche de mises à jour</translation>
 <translation id="5950205771952201658">Les contrôles de révocation en ligne étant sujets à erreur, ils ne présentent aucun avantage concret en termes de sécurité, ils sont désactivés par défaut dans <ph name="PRODUCT_NAME" /> 19 ou version ultérieure. La définition de cette règle sur "True" restaure le comportement précédent. Des contrôles OCSP/CRL sont alors effectués.
 
       Si cette règle n'est pas définie ou si elle est définie sur "False", aucun contrôle de révocation en ligne n'est effectué par <ph name="PRODUCT_NAME" /> dans <ph name="PRODUCT_NAME" /> 19 ou version ultérieure.</translation>
@@ -2810,7 +2808,7 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
 
       Si cette règle est définie sur <ph name="GLS_ENABLED" />, ces services sont initialement activés.
 
-      Si cette règle est définie sur <ph name="GLS_UNDER_USER_CONTROL" />, l'utilisateur est invité à préciser s'il souhaite ou non activer ces services. S'il les active, les applications Android peuvent alors utiliser ces services pour demander la position de l'appareil, et soumettre également des données de localisation anonymes à Google.
+      Si cette règle est définie sur <ph name="GLS_UNDER_USER_CONTROL" />, l'utilisateur est invité à préciser s'il souhaite ou non activer ces services. S'il les active, les applications Android peuvent alors utiliser ces services pour demander la position de l'appareil et envoyer des données de localisation anonymes à Google.
 
       Notez que cette règle ne permet de contrôler l'état des services de localisation Google que lors de la configuration initiale. Par la suite, l'utilisateur peut accéder aux paramètres Android pour activer ou désactiver ces services.
 
@@ -2895,13 +2893,13 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="6224304369267200483">URL/domaines automatiquement autorisés à recevoir une attestation de clé de sécurité</translation>
 <translation id="6233173491898450179">Définir le répertoire de téléchargement</translation>
 <translation id="6244210204546589761">URL à ouvrir au démarrage</translation>
-<translation id="6255387031094435995">Permet de fusionner les règles sélectionnées lorsqu'elles proviennent de sources différentes et si leur niveau et leurs champs d'application sont les mêmes.
+<translation id="6255387031094435995">Permet de fusionner les règles sélectionnées lorsqu'elles proviennent de sources différentes, et si le niveau et les champs d'application sont les mêmes.
 
-        Si une règle figure dans la liste, en cas de conflit entre deux sources, étant donné que les champs d'application et le niveau sont les mêmes, les valeurs sont fusionnées dans une nouvelle liste de règles.
+        En cas de conflit entre deux sources pour une règle figurant dans la liste, les valeurs sont fusionnées dans une nouvelle liste de règles si les champs d'application et le niveau sont les mêmes.
 
-        Si une règle figure dans la liste, en cas de conflit entre deux sources, mais également entre les champs d'application et/ou le niveau, la règle prioritaire par rapport aux autres est appliquée.
+        En cas de conflit entre deux sources pour une règle figurant dans la liste, la règle avec la plus haute priorité est appliquée si les champs d'application et/ou le niveau sont différents.
 
-        Si une règle ne figure pas dans la liste, en cas de conflit entre les sources, les champs d'application et/ou le niveau, la règle prioritaire par rapport aux autres est appliquée.</translation>
+        En cas de conflit entre deux sources pour une règle ne figurant pas dans la liste, la règle avec la plus haute priorité est appliquée si les champs d'application et/ou le niveau sont différents.</translation>
 <translation id="6258193603492867656">Indique si le SPN Kerberos généré doit inclure un port non standard. 
 
 Si vous activez ce paramètre et qu'un port non standard (c'est-à-dire, un port autre que 80 ou 443) est indiqué, ce port est inclus dans le SPN Kerberos généré. 
@@ -3236,13 +3234,13 @@ Cette règle n'est prise en compte que si la règle "DefaultSearchProviderEnable
       Si cette règle est définie sur "True" ou n'est pas configurée, le modèle de réduction intelligente de la luminosité est activé et autorisé à allonger la période de réduction de la luminosité de l'écran. Si cette règle est définie sur "False", le modèle n'a pas d'incidence sur la manière dont l'écran baisse en luminosité.</translation>
 <translation id="6967394885063085697">Permet de gérer l'alimentation en mode avancé de recharge de la batterie.
 
-          Le mode avancé de recharge de la batterie permet à l'utilisateur de maximiser les performances de la batterie. Pour ce faire, le système combine un algorithme de recharge standard avec d'autres techniques en dehors des heures de travail. Pendant les heures de travail, une option de recharge rapide est utilisée. La batterie est alors rechargée plus rapidement et le niveau de charge complète est atteint plus vite. Pour chaque jour, vous pouvez définir l'heure à partir de laquelle le système est le plus sollicité, ainsi que la durée de cette utilisation intensive.
+          Le mode avancé de recharge de la batterie permet à l'utilisateur de maximiser les performances de la batterie. Pour ce faire, le système combine un algorithme de recharge standard avec d'autres techniques en dehors des heures de travail. Pendant les heures de travail, une option de recharge rapide est utilisée. La batterie est alors rechargée plus rapidement, et le niveau de charge complète est atteint plus vite. Pour chaque jour, vous pouvez définir l'heure à partir de laquelle le système est le plus sollicité, ainsi que la durée de cette utilisation intensive.
 
           Si cette règle est définie sur "True" et si la règle DeviceAdvancedBatteryChargeModeDayConfig est définie, le mode avancé de recharge de la batterie est toujours activé s'il est compatible avec l'appareil.
 
           Si cette règle est définie sur "False", ce mode est toujours désactivé.
 
-          Si cette règle est définie, l'utilisateur ne peut pas la modifier ni l'ignorer.
+          Si vous définissez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
 
           Si cette règle n'est pas définie, ce mode est désactivé et ne peut être activé par l'utilisateur.</translation>
 <translation id="6972540544240464302">Sélectionner la configuration du planificateur de tâches</translation>
@@ -3324,13 +3322,13 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Si la règle n'est pas définie, l'utilisateur peut choisir d'être invité ou non à saisir le mot de passe pour déverrouiller l'appareil.</translation>
 <translation id="7107148737865880402">Permet de gérer le partage d'alimentation USB.
 
-          Certains appareils, tels que les téléphones portables, possèdent un port USB spécifique (identifié par une icône représentant un éclair ou une batterie) pour être rechargés à l'aide de la batterie du système. Cette règle affecte la recharge via ce port lorsque le système est en veille ou éteint. En revanche, elle n'affecte pas les autres ports USB ni la recharge lorsque le système est activé.
+          Certains appareils possèdent un port USB spécifique (identifié par une icône représentant un éclair ou une batterie) qui permet de recharger des appareils tels que les téléphones portables à l'aide de la batterie du système. Cette règle affecte la recharge via ce port lorsque le système est en veille ou éteint. En revanche, elle n'affecte pas les autres ports USB ni la recharge lorsque le système est activé.
 
           Lorsque le système est activé, le port USB fournit toujours l'alimentation nécessaire.
 
-          Lorsque le système est en veille, si cette règle est définie sur "True", le port USB est alors alimenté lorsque l'appareil est branché sur le chargeur secteur mural ou si le niveau de charge de la batterie est supérieur à 50 %. Dans le cas contraire, le port USB n'est pas alimenté.
+          Lorsque le système est en veille, si cette règle est définie sur "True", le port USB est alors alimenté lorsque l'appareil est branché sur le chargeur mural ou si le niveau de charge de la batterie est supérieur à 50 %. Dans le cas contraire, le port USB n'est pas alimenté.
 
-          Lorsque le système est éteint, si cette règle est définie sur "True", le port USB est alors alimenté lorsque l'appareil est branché sur le chargeur secteur mural. Dans le cas contraire, le port USB n'est pas alimenté.
+          Lorsque le système est éteint, si cette règle est définie sur "True", le port USB est alors alimenté lorsque l'appareil est branché sur le chargeur mural. Dans le cas contraire, le port USB n'est pas alimenté.
 
           Si cette règle n'est pas définie, elle est alors activée et ne peut pas être désactivée par l'utilisateur.</translation>
 <translation id="7115494316187648452">Détermine si un processus de <ph name="PRODUCT_NAME" /> doit être démarré lors de la connexion au système d'exploitation et s'il doit rester ouvert jusqu'à la fermeture de la dernière fenêtre du navigateur, permettant ainsi aux applications exécutées en arrière-plan et à la session de navigation en cours de rester actives, y compris tout cookie de session. Le processus exécuté en arrière-plan affiche une icône dans la barre d'état système et peut être fermé à tout moment à partir de cet emplacement.
@@ -3588,9 +3586,9 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si la valeur de cette règle est définie sur 0, la taille du cache par défaut est utilisée, mais l'utilisateur n'est pas en mesure de la modifier.
 
       Si cette règle n'est pas définie, la taille par défaut est utilisée, et l'utilisateur est en mesure de la remplacer à l'aide de l'indicateur "--disk-cache-size".</translation>
-<translation id="759389052790680884">Permet de configurer une recharge personnalisée avec le niveau de charge (en %) à partir duquel la recharge de la batterie doit s'arrêter.
+<translation id="759389052790680884">Permet de personnaliser le pourcentage auquel la recharge de la batterie doit s'arrêter.
 
-          Une fois ce pourcentage atteint, la batterie cesse d'être rechargée.
+          Une fois ce pourcentage atteint, la recharge s'arrête.
 
           La valeur de la règle DeviceBatteryChargeCustomStartCharging doit être inférieure à celle de la règle DeviceBatteryChargeCustomStopCharging.
 
@@ -3684,7 +3682,7 @@ au maximum si un utilisateur se sert de l'appareil.
 
           Remarque : La valeur du champ <ph name="CHARGE_START_TIME_FIELD_NAME" /> doit être inférieure à celle du champ <ph name="CHARGE_END_TIME_FIELD_NAME" />.
 
-          Remarque : Les valeurs autorisées dans le champ <ph name="MINUTE_FIELD_NAME" /> de <ph name="CHARGE_START_TIME_FIELD_NAME" /> et <ph name="CHARGE_END_TIME_FIELD_NAME" /> sont 0, 15, 30 et 45.</translation>
+          Remarque : Les valeurs autorisées dans le champ <ph name="MINUTE_FIELD_NAME" /> de <ph name="CHARGE_START_TIME_FIELD_NAME" /> et <ph name="CHARGE_END_TIME_FIELD_NAME" /> sont 0, 15, 30 et 45.</translation>
 <translation id="7717938661004793600">Permet de configurer les fonctionnalités d'accessibilité de <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7724994675283793633">Cette règle active le protocole HTTP 0.9 sur les ports autres que 80 pour HTTP et 443 pour HTTPS.
 
@@ -4116,7 +4114,7 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
       Si ce paramètre n'est pas défini, la période par défaut est fixée à 345 600 000 millisecondes (quatre jours) pour les appareils <ph name="PRODUCT_OS_NAME" /> et à 604 800 000 millisecondes (une semaine) pour les navigateurs <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">L'avertissement relatif à la protection par mot de passe est déclenché par la réutilisation d'un mot de passe</translation>
 <translation id="8693243869659262736">Utiliser le client DNS intégré</translation>
-<translation id="8698286761337647563">Délai en nombre de jours pour informer à l'avance les utilisateurs SAML de l'expiration de leur mot de passe</translation>
+<translation id="8698286761337647563">Délai, en nombre de jours, pour informer à l'avance les utilisateurs SAML de l'expiration de leur mot de passe</translation>
 <translation id="8703488928438047864">Envoyer des rapports sur l'état du matériel</translation>
 <translation id="8703872185032220081">Définir la configuration quotidienne du passage à l'alimentation via la batterie.
 
@@ -4169,7 +4167,7 @@ Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du
       Si ce paramètre est désactivé ou n'est pas défini, le service de protection par mot de passe dirige les utilisateurs vers la page https://myaccounts.google.com afin que ces derniers modifient leur mot de passe.
       Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, ou sur les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils.</translation>
 <translation id="8798099450830957504">Par défaut</translation>
-<translation id="8800453707696044281">Configurer une recharge personnalisée avec le niveau de charge (en %) à partir duquel la recharge de la batterie doit s'arrêter</translation>
+<translation id="8800453707696044281">Personnaliser le pourcentage auquel la recharge de la batterie doit s'arrêter</translation>
 <translation id="8801680448782904838">Avertir un utilisateur qu'un redémarrage du navigateur ou de l'appareil est recommandé ou exigé</translation>
 <translation id="8818173863808665831">Permet d'indiquer l'emplacement géographique de l'appareil.
 
