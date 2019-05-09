@@ -40,12 +40,12 @@ const char kFetchHintsOverride[] = "optimization-guide-fetch-hints-override";
 
 // Overrides the Optimization Guide Service URL that the HintsFetcher will
 // request remote hints from.
-const char kOptimizationGuideServiceURL[] = "optimization_guide_service_url";
+const char kOptimizationGuideServiceURL[] = "optimization-guide-service-url";
 
 // Overrides the Optimization Guide Service API Key for remote requests to be
 // made.
 const char kOptimizationGuideServiceAPIKey[] =
-    "optimization_guide_service_api_key";
+    "optimization-guide-service-api-key";
 
 // Purges the hint cache store on startup, so that it's guaranteed to be using
 // fresh data.
