@@ -101,6 +101,8 @@
 #include "chrome/browser/ui/blocked_content/popup_tracker.h"
 #include "chrome/browser/ui/bluetooth/bluetooth_chooser_controller.h"
 #include "chrome/browser/ui/bluetooth/bluetooth_chooser_desktop.h"
+#include "chrome/browser/ui/bluetooth/bluetooth_scanning_prompt_controller.h"
+#include "chrome/browser/ui/bluetooth/bluetooth_scanning_prompt_desktop.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -1204,6 +1206,27 @@ std::unique_ptr<content::BluetoothChooser> Browser::RunBluetoothChooser(
   bluetooth_chooser_desktop->set_bubble(std::move(bubble_reference));
 
   return std::move(bluetooth_chooser_desktop);
+}
+
+std::unique_ptr<content::BluetoothScanningPrompt>
+Browser::ShowBluetoothScanningPrompt(
+    content::RenderFrameHost* frame,
+    const content::BluetoothScanningPrompt::EventHandler& event_handler) {
+  auto bluetooth_scanning_prompt_controller =
+      std::make_unique<BluetoothScanningPromptController>(frame, event_handler);
+
+  auto bluetooth_scanning_prompt_desktop =
+      std::make_unique<BluetoothScanningPromptDesktop>(
+          bluetooth_scanning_prompt_controller.get());
+
+  auto chooser_bubble_delegate = std::make_unique<ChooserBubbleDelegate>(
+      frame, std::move(bluetooth_scanning_prompt_controller));
+
+  BubbleReference bubble_reference =
+      GetBubbleManager()->ShowBubble(std::move(chooser_bubble_delegate));
+  bluetooth_scanning_prompt_desktop->set_bubble(std::move(bubble_reference));
+
+  return std::move(bluetooth_scanning_prompt_desktop);
 }
 
 void Browser::PassiveInsecureContentFound(const GURL& resource_url) {

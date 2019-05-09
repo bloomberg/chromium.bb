@@ -9093,9 +9093,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_BLUETOOTH_DEVICE_CHOOSER_PAIR_BUTTON_TEXT" desc="Label on the button that closes the Bluetooth chooser popup and pairs the selected device.">
         Pair
       </message>
-      <message name="IDS_DEVICE_CHOOSER_CANCEL_BUTTON_TEXT" desc="Label on the button that closes the chooser popup without selecting an option.">
-        Cancel
-      </message>
       <message name="IDS_DEVICE_CHOOSER_GET_HELP_LINK_WITH_SCANNING_STATUS" desc="This text is shown at the bottom of the chooser popup with a link to 'Get help'.">
         Get help<ph name="SCANNING_STATUS">$1<ex> while scanning for devices...</ex></ph>
       </message>
@@ -9124,6 +9121,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_USB_DEVICE_CHOOSER_CONNECT_BUTTON_TEXT" desc="Label on the button that closes the USB chooser popup and connects the selected device.">
       Connect
     </message>
+    <message name="IDS_DEVICE_CHOOSER_CANCEL_BUTTON_TEXT" desc="Label on the button that closes the chooser popup without selecting an option.">
+      Cancel
+    </message>
 
     <!-- Device Chooser Device Name Unknown -->
     <message name="IDS_DEVICE_CHOOSER_DEVICE_NAME_UNKNOWN_DEVICE_WITH_VENDOR_NAME" desc="String describing an unknown device by its vendor name.">
@@ -9131,6 +9131,23 @@ Please help our engineers fix this problem. Tell us what happened right before y
     </message>
     <message name="IDS_DEVICE_CHOOSER_DEVICE_NAME_UNKNOWN_DEVICE_WITH_VENDOR_ID_AND_PRODUCT_ID" desc="String describing a device when only numeric vendor and product IDs are available.">
       Unknown device [<ph name="VENDOR_ID">$1<ex>123</ex></ph>:<ph name="PRODUCT_ID">$2<ex>123</ex></ph>]
+    </message>
+
+    <!-- Bluetooth Scanning Prompt -->
+    <message name="IDS_BLUETOOTH_SCANNING_PROMPT_NO_DEVICES_FOUND_PROMPT" desc="The label shown to the user to inform them that no nearby Bluetooth devices were found using the requirements that the application provided.">
+      No nearby devices found.
+    </message>
+    <message name="IDS_BLUETOOTH_SCANNING_PROMPT_ORIGIN" desc="The label that is used to introduce Bluetooth scanning prompt details to the user when it is from a website.">
+      <ph name="Origin">$1<ex>www.google.com</ex></ph> wants to scan for nearby Bluetooth devices, the following devices have been found:
+    </message>
+    <message name="IDS_BLUETOOTH_SCANNING_PROMPT_ALLOW_BUTTON_TEXT" desc="Label on the button that allows Bluetooth scanning.">
+      Allow
+    </message>
+    <message name="IDS_BLUETOOTH_SCANNING_PROMPT_BLOCK_BUTTON_TEXT" desc="Label on the button that blocks Bluetooth scanning.">
+      Block
+    </message>
+    <message name="IDS_BLUETOOTH_SCANNING_DEVICE_UNKNOWN" desc="Text to identify Bluetooth devices of unknown or unsupported class.">
+      Unknown or unsupported device (<ph name="DEVICE_ID">$1<ex>A1:B2:C3:D4:E5:F6</ex></ph>)
     </message>
 
     <!-- Device descriptions for devices defined by policy with wildcards. -->

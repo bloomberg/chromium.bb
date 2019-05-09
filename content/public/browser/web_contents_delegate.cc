@@ -143,6 +143,13 @@ std::unique_ptr<BluetoothChooser> WebContentsDelegate::RunBluetoothChooser(
   return nullptr;
 }
 
+std::unique_ptr<BluetoothScanningPrompt>
+WebContentsDelegate::ShowBluetoothScanningPrompt(
+    RenderFrameHost* frame,
+    const BluetoothScanningPrompt::EventHandler& event_handler) {
+  return nullptr;
+}
+
 bool WebContentsDelegate::EmbedsFullscreenWidget() const {
   return false;
 }

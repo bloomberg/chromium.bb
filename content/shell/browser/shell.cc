@@ -36,6 +36,7 @@
 #include "content/shell/browser/shell_devtools_frontend.h"
 #include "content/shell/browser/shell_javascript_dialog_manager.h"
 #include "content/shell/browser/web_test/blink_test_controller.h"
+#include "content/shell/browser/web_test/fake_bluetooth_scanning_prompt.h"
 #include "content/shell/browser/web_test/secondary_test_window_observer.h"
 #include "content/shell/browser/web_test/web_test_bluetooth_chooser_factory.h"
 #include "content/shell/browser/web_test/web_test_devtools_bindings.h"
@@ -552,6 +553,12 @@ std::unique_ptr<BluetoothChooser> Shell::RunBluetoothChooser(
   if (blink_test_controller && switches::IsRunWebTestsSwitchPresent())
     return blink_test_controller->RunBluetoothChooser(frame, event_handler);
   return nullptr;
+}
+
+std::unique_ptr<BluetoothScanningPrompt> Shell::ShowBluetoothScanningPrompt(
+    RenderFrameHost* frame,
+    const BluetoothScanningPrompt::EventHandler& event_handler) {
+  return std::make_unique<FakeBluetoothScanningPrompt>(event_handler);
 }
 
 bool Shell::DidAddMessageToConsole(WebContents* source,

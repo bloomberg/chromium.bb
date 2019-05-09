@@ -92,6 +92,8 @@ DOMException* BluetoothError::CreateDOMException(
       MAP_ERROR(DESCRIPTOR_NO_LONGER_EXISTS,
                 DOMExceptionCode::kInvalidStateError,
                 "GATT Descriptor no longer exists.");
+      MAP_ERROR(PROMPT_CANCELED, DOMExceptionCode::kInvalidStateError,
+                "User canceled the permission prompt.");
 
       // NetworkErrors:
       MAP_ERROR(CONNECT_ALREADY_IN_PROGRESS, DOMExceptionCode::kNetworkError,
@@ -192,6 +194,10 @@ DOMException* BluetoothError::CreateDOMException(
       MAP_ERROR(REQUEST_DEVICE_FROM_CROSS_ORIGIN_IFRAME,
                 DOMExceptionCode::kSecurityError,
                 "requestDevice() called from cross-origin iframe.");
+
+      // NotAllowedErrors:
+      MAP_ERROR(SCANNING_BLOCKED, DOMExceptionCode::kNotAllowedError,
+                "requestLEScan() call is blocked by user.");
 
 #undef MAP_ERROR
   }

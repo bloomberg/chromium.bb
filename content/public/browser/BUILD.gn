@@ -63,6 +63,8 @@ jumbo_source_set("browser_sources") {
     "blob_handle.h",
     "bluetooth_chooser.cc",
     "bluetooth_chooser.h",
+    "bluetooth_scanning_prompt.cc",
+    "bluetooth_scanning_prompt.h",
     "browser_accessibility_state.h",
     "browser_associated_interface.h",
     "browser_child_process_host.h",

@@ -170,6 +170,9 @@ class Shell : public WebContentsDelegate,
   std::unique_ptr<BluetoothChooser> RunBluetoothChooser(
       RenderFrameHost* frame,
       const BluetoothChooser::EventHandler& event_handler) override;
+  std::unique_ptr<BluetoothScanningPrompt> ShowBluetoothScanningPrompt(
+      RenderFrameHost* frame,
+      const BluetoothScanningPrompt::EventHandler& event_handler) override;
 #if defined(OS_MACOSX)
   bool HandleKeyboardEvent(WebContents* source,
                            const NativeWebKeyboardEvent& event) override;

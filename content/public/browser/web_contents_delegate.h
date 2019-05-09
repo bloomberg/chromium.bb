@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/bluetooth_chooser.h"
+#include "content/public/browser/bluetooth_scanning_prompt.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/media_stream_request.h"
 #include "content/public/browser/serial_chooser.h"
@@ -396,6 +397,12 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual std::unique_ptr<BluetoothChooser> RunBluetoothChooser(
       RenderFrameHost* frame,
       const BluetoothChooser::EventHandler& event_handler);
+
+  // Shows a prompt for the user to allow/block Bluetooth scanning. The
+  // observer must live at least as long as the returned prompt object.
+  virtual std::unique_ptr<BluetoothScanningPrompt> ShowBluetoothScanningPrompt(
+      RenderFrameHost* frame,
+      const BluetoothScanningPrompt::EventHandler& event_handler);
 
   // Returns true if the delegate will embed a WebContents-owned fullscreen
   // render widget.  In this case, the delegate may access the widget by calling

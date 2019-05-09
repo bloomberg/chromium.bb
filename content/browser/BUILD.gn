@@ -521,6 +521,8 @@ jumbo_source_set("browser") {
     "bluetooth/bluetooth_blocklist.h",
     "bluetooth/bluetooth_device_chooser_controller.cc",
     "bluetooth/bluetooth_device_chooser_controller.h",
+    "bluetooth/bluetooth_device_scanning_prompt_controller.cc",
+    "bluetooth/bluetooth_device_scanning_prompt_controller.h",
     "bluetooth/bluetooth_metrics.cc",
     "bluetooth/bluetooth_metrics.h",
     "bluetooth/frame_connected_bluetooth_devices.cc",

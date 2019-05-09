@@ -355,11 +355,14 @@ base::string16 DeviceChooserContentView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return button == ui::DIALOG_BUTTON_OK
              ? chooser_controller_->GetOkButtonLabel()
-             : l10n_util::GetStringUTF16(IDS_DEVICE_CHOOSER_CANCEL_BUTTON_TEXT);
+             : chooser_controller_->GetCancelButtonLabel();
 }
 
 bool DeviceChooserContentView::IsDialogButtonEnabled(
     ui::DialogButton button) const {
+  if (chooser_controller_->BothButtonsAlwaysEnabled())
+    return true;
+
   return button != ui::DIALOG_BUTTON_OK ||
          !table_view_->selection_model().empty();
 }
@@ -382,7 +385,10 @@ void DeviceChooserContentView::Close() {
 void DeviceChooserContentView::UpdateTableView() {
   bool has_options = adapter_enabled_ && chooser_controller_->NumOptions() > 0;
   table_parent_->SetVisible(has_options);
-  table_view_->SetEnabled(has_options);
+  if (chooser_controller_->TableViewAlwaysDisabled())
+    table_view_->SetEnabled(false);
+  else
+    table_view_->SetEnabled(has_options);
   no_options_help_->SetVisible(!has_options && adapter_enabled_);
   adapter_off_help_->SetVisible(!adapter_enabled_);
 }
