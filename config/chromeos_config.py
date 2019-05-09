@@ -3540,11 +3540,18 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
 
   def _AssignToMaster(config):
     """Add |config| as a slave config to the appropriate master config."""
-    # TODO: uncomment the following line when we figure out a solution for
-    # conflicts caused by two master release builders.
-    # master = (lakitu_master_config if _IsLakituConfig(config) else
-    # master_config)
+    # Default to chromeos master release builder.
     master = master_config
+
+    # Add this config to 'master-lakitu-release' instead if this is an LTS
+    # branch for lakitu. This is typically only done on a branch after it is
+    # out of ChromeOS support window.
+    # To do this, set 'lakitu_lts_branch' to 'True' and re-run
+    # 'config/chromeos_config_unittest --update'.
+    lakitu_lts_branch = False
+    if lakitu_lts_branch and _IsLakituConfig(config):
+      master = lakitu_master_config
+
     master.AddSlave(config)
 
   ### Release configs.
@@ -4388,11 +4395,13 @@ def BranchScheduleConfig():
       # Add non release branch schedules here, if needed.
       # <branch>, <build_config>, <display_label>, <schedule>, <triggers>
 
-      # ATTENTION: R69 is a Long Term Support milestone for lakitu and they'd
-      # like to keep it a little longer. Please let lakitu-dev@google.com know
-      # before deleting this.
+      # NOTE: R69 & R73 are Long Term Support (LTS) milestones for lakitu and
+      # they'd like to keep them a little longer. Please let
+      # lakitu-dev@google.com know before deleting this.
       ('release-R69-10895.B', 'master-lakitu-release',
        config_lib.DISPLAY_LABEL_RELEASE, '0 4 * * *', None),
+      ('release-R73-11647.B', 'master-lakitu-release',
+       config_lib.DISPLAY_LABEL_RELEASE, '0 8 * * *', None),
   ]
 
   # The three active release branches.
@@ -4404,11 +4413,6 @@ def BranchScheduleConfig():
        'samus-chrome-pre-flight-branch'),
 
       ('release-R74-11895.B',
-       ['reef-android-nyc-pre-flight-branch',
-        'grunt-android-pi-pre-flight-branch'],
-       'samus-chrome-pre-flight-branch'),
-
-      ('release-R73-11647.B',
        ['reef-android-nyc-pre-flight-branch',
         'grunt-android-pi-pre-flight-branch'],
        'samus-chrome-pre-flight-branch'),
@@ -4432,11 +4436,6 @@ def BranchScheduleConfig():
     branch_builds.append([branch, 'master-release',
                           config_lib.DISPLAY_LABEL_RELEASE,
                           schedule, None])
-    # TODO: change the schedule variable back when we figure out a solution
-    # for conflicts caused by two master release builders.
-    branch_builds.append([branch, 'master-lakitu-release',
-                          config_lib.DISPLAY_LABEL_RELEASE,
-                          'triggered', None])
     branch_builds.extend([[branch, pfq,
                            config_lib.DISPLAY_LABEL_RELEASE,
                            android_schedule, None]
