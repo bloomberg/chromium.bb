@@ -2600,6 +2600,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/rappor/RapporServiceBridge.java",
     "java/src/org/chromium/chrome/browser/rlz/RevenueStats.java",
     "java/src/org/chromium/chrome/browser/rlz/RlzPingHandler.java",
+    "java/src/org/chromium/chrome/browser/safe_browsing/FileTypePolicies.java",
     "java/src/org/chromium/chrome/browser/search_engines/TemplateUrl.java",
     "java/src/org/chromium/chrome/browser/search_engines/TemplateUrlService.java",
     "java/src/org/chromium/chrome/browser/send_tab_to_self/NotificationManager.java",

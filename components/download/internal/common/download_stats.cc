@@ -447,6 +447,29 @@ constexpr const base::FilePath::CharType* kDangerousFileTypes[] = {
     FILE_PATH_LITERAL(".configprofile"),    // 362
     FILE_PATH_LITERAL(".internetconnect"),  // 363
     FILE_PATH_LITERAL(".networkconnect"),   // 364
+    FILE_PATH_LITERAL(".bmp"),              // 365
+    FILE_PATH_LITERAL(".css"),              // 366
+    FILE_PATH_LITERAL(".ehtml"),            // 367
+    FILE_PATH_LITERAL(".flac"),             // 368
+    FILE_PATH_LITERAL(".ico"),              // 369
+    FILE_PATH_LITERAL(".jfif"),             // 370
+    FILE_PATH_LITERAL(".m4a"),              // 371
+    FILE_PATH_LITERAL(".m4v"),              // 372
+    FILE_PATH_LITERAL(".mpeg"),             // 373
+    FILE_PATH_LITERAL(".mpg"),              // 374
+    FILE_PATH_LITERAL(".oga"),              // 375
+    FILE_PATH_LITERAL(".ogg"),              // 376
+    FILE_PATH_LITERAL(".ogm"),              // 377
+    FILE_PATH_LITERAL(".ogv"),              // 378
+    FILE_PATH_LITERAL(".opus"),             // 379
+    FILE_PATH_LITERAL(".pjp"),              // 380
+    FILE_PATH_LITERAL(".pjpeg"),            // 381
+    FILE_PATH_LITERAL(".svgz"),             // 382
+    FILE_PATH_LITERAL(".text"),             // 383
+    FILE_PATH_LITERAL(".tiff"),             // 384
+    FILE_PATH_LITERAL(".weba"),             // 385
+    FILE_PATH_LITERAL(".webm"),             // 386
+    FILE_PATH_LITERAL(".xbm"),              // 387
     // NOTE! When you add a type here, please add the UMA value as a comment.
     // These must all match DownloadItem.DangerousFileType in
     // enums.xml. From 263 onward, they should also match

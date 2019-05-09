@@ -14091,6 +14091,29 @@ Called by update_net_error_codes.py.-->
   <int value="362" label="configprofile"/>
   <int value="363" label="internetconnect"/>
   <int value="364" label="networkconnect"/>
+  <int value="365" label="bmp"/>
+  <int value="366" label="css"/>
+  <int value="367" label="ehtml"/>
+  <int value="368" label="flac"/>
+  <int value="369" label="ico"/>
+  <int value="370" label="jfif"/>
+  <int value="371" label="m4a"/>
+  <int value="372" label="m4v"/>
+  <int value="373" label="mpeg"/>
+  <int value="374" label="mpg"/>
+  <int value="375" label="oga"/>
+  <int value="376" label="ogg"/>
+  <int value="377" label="ogm"/>
+  <int value="378" label="ogv"/>
+  <int value="379" label="opus"/>
+  <int value="380" label="pjp"/>
+  <int value="381" label="pjpeg"/>
+  <int value="382" label="svgz"/>
+  <int value="383" label="text"/>
+  <int value="384" label="tiff"/>
+  <int value="385" label="weba"/>
+  <int value="386" label="webm"/>
+  <int value="387" label="xbm"/>
 </enum>
 
 <enum name="DownloadItem.DangerType">
@@ -49937,6 +49960,29 @@ Called by update_net_trust_anchors.py.-->
   <int value="362" label="CONFIGPROFILE"/>
   <int value="363" label="INTERNETCONNECT"/>
   <int value="364" label="NETWORKCONNECT"/>
+  <int value="365" label="BMP"/>
+  <int value="366" label="CSS"/>
+  <int value="367" label="EHTML"/>
+  <int value="368" label="FLAC"/>
+  <int value="369" label="ICO"/>
+  <int value="370" label="JFIF"/>
+  <int value="371" label="M4A"/>
+  <int value="372" label="M4V"/>
+  <int value="373" label="MPEG"/>
+  <int value="374" label="MPG"/>
+  <int value="375" label="OGA"/>
+  <int value="376" label="OGG"/>
+  <int value="377" label="OGM"/>
+  <int value="378" label="OGV"/>
+  <int value="379" label="OPUS"/>
+  <int value="380" label="PJP"/>
+  <int value="381" label="PJPEG"/>
+  <int value="382" label="SVGZ"/>
+  <int value="383" label="TEXT"/>
+  <int value="384" label="TIFF"/>
+  <int value="385" label="WEBA"/>
+  <int value="386" label="WEBM"/>
+  <int value="387" label="XBM"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary">

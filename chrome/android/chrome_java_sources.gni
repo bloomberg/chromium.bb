@@ -1355,6 +1355,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/rappor/RapporServiceBridge.java",
   "java/src/org/chromium/chrome/browser/rlz/RevenueStats.java",
   "java/src/org/chromium/chrome/browser/rlz/RlzPingHandler.java",
+  "java/src/org/chromium/chrome/browser/safe_browsing/FileTypePolicies.java",
   "java/src/org/chromium/chrome/browser/search_engines/SearchEngineChoiceNotification.java",
   "java/src/org/chromium/chrome/browser/search_engines/TemplateUrl.java",
   "java/src/org/chromium/chrome/browser/search_engines/TemplateUrlService.java",

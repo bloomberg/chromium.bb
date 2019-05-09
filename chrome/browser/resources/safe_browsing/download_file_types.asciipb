@@ -8,7 +8,7 @@
 ##
 ## Top level settings
 ##
-version_id: 35
+version_id: 36
 sampled_ping_probability: 0.01
 max_archived_binaries_to_report: 10
 default_file_type {
@@ -3384,4 +3384,121 @@ file_types {
     danger_level: ALLOW_ON_USER_GESTURE
     auto_open_hint: DISALLOW_AUTO_OPEN
   }
+}
+
+# Other file types supported by Web Share API on Android
+file_types {
+  extension: "bmp"
+  uma_value: 365
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "css"
+  uma_value: 366
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "ehtml"
+  uma_value: 367
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "flac"
+  uma_value: 368
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "ico"
+  uma_value: 369
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "jfif"
+  uma_value: 370
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "m4a"
+  uma_value: 371
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "m4v"
+  uma_value: 372
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "mpeg"
+  uma_value: 373
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "mpg"
+  uma_value: 374
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "oga"
+  uma_value: 375
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "ogg"
+  uma_value: 376
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "ogm"
+  uma_value: 377
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "ogv"
+  uma_value: 378
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "opus"
+  uma_value: 379
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "pjp"
+  uma_value: 380
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "pjpeg"
+  uma_value: 381
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "svgz"
+  uma_value: 382
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "text"
+  uma_value: 383
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "tiff"
+  uma_value: 384
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "weba"
+  uma_value: 385
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "webm"
+  uma_value: 386
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "xbm"
+  uma_value: 387
+  ping_setting: SAMPLED_PING
 }
