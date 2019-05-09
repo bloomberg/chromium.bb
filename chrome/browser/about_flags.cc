@@ -1578,12 +1578,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExtensionContentVerificationName,
      flag_descriptions::kExtensionContentVerificationDescription, kOsDesktop,
      MULTI_VALUE_TYPE(kExtensionContentVerificationChoices)},
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    {"enable-embedded-extension-options",
-     flag_descriptions::kEmbeddedExtensionOptionsName,
-     flag_descriptions::kEmbeddedExtensionOptionsDescription, kOsDesktop,
-     SINGLE_VALUE_TYPE(extensions::switches::kEnableEmbeddedExtensionOptions)},
-#endif  // ENABLE_EXTENSIONS
 #if !defined(OS_ANDROID)
 #if defined(OS_CHROMEOS)
     {"enable-lock-screen-notification",

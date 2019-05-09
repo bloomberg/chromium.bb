@@ -346,11 +346,6 @@ const char kDisallowUnsafeHttpDownloadsNameDescription[] =
     "code), where the final download origin or any origin in the redirect "
     "chain is insecure.";
 
-const char kEmbeddedExtensionOptionsName[] = "Embedded extension options";
-const char kEmbeddedExtensionOptionsDescription[] =
-    "Display extension options as an embedded element in chrome://extensions "
-    "rather than opening a new tab.";
-
 const char kEnableAccessibilityImageDescriptionsName[] =
     "Accessibility Image Descriptions";
 const char kEnableAccessibilityImageDescriptionsDescription[] =

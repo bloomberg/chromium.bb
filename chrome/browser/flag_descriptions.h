@@ -239,9 +239,6 @@ extern const char kDisallowUnsafeHttpDownloadsNameDescription[];
 extern const char kDisplayList2dCanvasName[];
 extern const char kDisplayList2dCanvasDescription[];
 
-extern const char kEmbeddedExtensionOptionsName[];
-extern const char kEmbeddedExtensionOptionsDescription[];
-
 extern const char kEnableAccessibilityImageDescriptionsName[];
 extern const char kEnableAccessibilityImageDescriptionsDescription[];
 

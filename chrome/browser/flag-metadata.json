@@ -1005,11 +1005,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-embedded-extension-options",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-encryption-migration",
     "owners": [ "fukino" ],
     "expiry_milestone": 76
