@@ -5963,7 +5963,7 @@ crbug.com/959129 [ Win ] http/tests/devtools/tracing/timeline-script-parse.js [ 
 crbug.com/960443 [ Mac10.10 Mac10.11 ] external/wpt/animation-worklet/worklet-animation-with-scroll-timeline.https.html [ Failure Pass ]
 
 # Sheriff 2019-05-08
-crbug.com/961009 [ Linux ] http/tests/devtools/console-xhr-logging.js [ Failure ]
+crbug.com/961009 [ Linux ] http/tests/devtools/console-xhr-logging.js [ Failure Timeout ]
 crbug.com/961009 [ Linux ] http/tests/eventsource/eventsource-cors-non-http.html [ Failure ]
 crbug.com/961009 [ Linux ] http/tests/eventsource/workers/eventsource-cors-non-http.html [ Failure ]
 crbug.com/961009 [ Linux ] http/tests/inspector-protocol/network-fetch-content-with-error-status-code.js [ Failure ]
@@ -5971,3 +5971,4 @@ crbug.com/961009 [ Linux ] http/tests/security/script-crossorigin-redirect-crede
 crbug.com/961009 [ Linux ] http/tests/xmlhttprequest/cross-origin-unsupported-url.html [ Failure ]
 crbug.com/961009 [ Linux ] http/tests/xmlhttprequest/workers/cross-origin-unsupported-url.html [ Failure ]
 crbug.com/961009 [ Linux ] mhtml/cid_in_html_resource.html [ Failure ]
+crbug.com/961009 [ Linux ] http/tests/security/img-redirect-to-crossorigin-credentials.html [ Failure ]
