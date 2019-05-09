@@ -327,9 +327,6 @@ const char kProviderOpenVpn[] = "openvpn";
 const char kProviderThirdPartyVpn[] = "thirdpartyvpn";
 const char kProviderArcVpn[] = "arcvpn";
 
-// Flimflam VPN service properties
-const char kVPNDomainProperty[] = "VPN.Domain";
-
 // Flimflam monitored properties
 const char kMonitorPropertyChanged[] = "PropertyChanged";
 
