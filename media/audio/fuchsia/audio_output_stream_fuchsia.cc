@@ -148,6 +148,10 @@ void AudioOutputStreamFuchsia::OnMinLeadTimeChanged(int64_t min_lead_time) {
   if (payload_buffer_.IsValid() &&
       GetMinBufferSize() > payload_buffer_.size()) {
     payload_buffer_ = {};
+
+    // Discard all packets currently in flight. This is required because
+    // AddPayloadBuffer() will fail if there are any packets in flight.
+    audio_renderer_->DiscardAllPacketsNoReply();
   }
 }
 
