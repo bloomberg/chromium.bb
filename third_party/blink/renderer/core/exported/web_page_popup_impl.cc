@@ -231,6 +231,14 @@ class PagePopupChromeClient final : public EmptyChromeClient {
     }
   }
 
+  void InjectGestureScrollEvent(const blink::WebFloatSize& delta,
+                                blink::WebScrollGranularity granularity,
+                                cc::ElementId scrollable_area_element_id,
+                                WebInputEvent::Type injected_type) override {
+    popup_->WidgetClient()->InjectGestureScrollEvent(
+        delta, granularity, scrollable_area_element_id, injected_type);
+  }
+
   WebPagePopupImpl* popup_;
 };
 
