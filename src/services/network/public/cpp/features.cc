@@ -21,7 +21,7 @@ const base::Feature kNetworkService {
   "NetworkService",
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(IS_CHROMECAST))
-      base::FEATURE_ENABLED_BY_DEFAULT
+      base::FEATURE_DISABLED_BY_DEFAULT
 };
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
