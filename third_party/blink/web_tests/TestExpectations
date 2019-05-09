@@ -260,6 +260,10 @@ crbug.com/933544 virtual/display-lock/wpt_internal/display-lock/lock-after-appen
 crbug.com/955533 virtual/display-lock/wpt_internal/display-lock/sizing/overflow-auto-with-overflow.html [ Failure ]
 crbug.com/882663 http/tests/devtools/elements/highlight/highlight-display-locked.js [ Skip ]
 
+# Render throttling
+crbug.com/520170 fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
+crbug.com/956354 fast/dom/timer-throttling-out-of-view-cross-origin-page.html [ Failure Pass ]
+
 # Sheriff 2018/05/25
 crbug.com/846747 http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
 crbug.com/846747 virtual/stable/http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
@@ -1839,7 +1843,6 @@ crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoo
 crbug.com/522648 fast/events/touch/compositor-touch-hit-rects-iframes.html [ Crash Failure Pass ]
 crbug.com/522648 virtual/mouseevent_fractional/fast/events/touch/compositor-touch-hit-rects-iframes.html [ Crash Failure Pass ]
 crbug.com/522648 virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-iframes.html [ Skip ]
-crbug.com/520170 fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 crbug.com/652536 fast/events/mouse-cursor-change-after-image-load.html [ Failure Pass Crash ]
 crbug.com/652536 virtual/mouseevent_fractional/fast/events/mouse-cursor-change-after-image-load.html [ Failure Pass Crash ]
 crbug.com/520188 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass ]
