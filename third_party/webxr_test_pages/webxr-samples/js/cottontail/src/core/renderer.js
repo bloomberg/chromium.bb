@@ -585,6 +585,13 @@ export class Renderer {
     return renderPrimitive;
   }
 
+  removeRenderPrimitive(renderPrimitive) {
+    let index = this._renderPrimitives[renderPrimitive._material._renderOrder].indexOf(renderPrimitive);
+    if(index > -1) {
+      this._renderPrimitives[renderPrimitive._material._renderOrder].splice(index, 1);
+    }
+  }
+
   createMesh(primitive, material) {
     let meshNode = new Node();
     meshNode.addRenderPrimitive(this.createRenderPrimitive(primitive, material));
