@@ -75,10 +75,10 @@ void TestLocalCardMigrationManager::OnDidGetUploadDetails(
     std::vector<std::pair<int, int>> supported_bin_ranges) {
   if (result == AutofillClient::SUCCESS) {
     local_card_migration_was_triggered_ = true;
-    LocalCardMigrationManager::OnDidGetUploadDetails(
-        is_from_settings_page, result, context_token, std::move(legal_message),
-        supported_bin_ranges);
   }
+  LocalCardMigrationManager::OnDidGetUploadDetails(
+      is_from_settings_page, result, context_token, std::move(legal_message),
+      supported_bin_ranges);
 }
 
 }  // namespace autofill

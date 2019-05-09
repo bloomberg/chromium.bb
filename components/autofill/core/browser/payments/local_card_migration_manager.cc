@@ -71,11 +71,18 @@ bool LocalCardMigrationManager::ShouldOfferLocalCardMigration(
           AutofillMetrics::LocalCardMigrationOrigin::UseOfServerCard;
       break;
     default:
+      AutofillMetrics::LogLocalCardMigrationDecisionMetric(
+          AutofillMetrics::LocalCardMigrationDecisionMetric::
+              NOT_OFFERED_USE_NEW_CARD);
       return false;
   }
 
-  if (!IsCreditCardMigrationEnabled())
+  if (!IsCreditCardMigrationEnabled()) {
+    AutofillMetrics::LogLocalCardMigrationDecisionMetric(
+        AutofillMetrics::LocalCardMigrationDecisionMetric::
+            NOT_OFFERED_FAILED_PREREQUISITES);
     return false;
+  }
 
   // Don't show the prompt if max strike count was reached.
   if (base::FeatureList::IsEnabled(
@@ -91,6 +98,9 @@ bool LocalCardMigrationManager::ShouldOfferLocalCardMigration(
             AutofillMetrics::SaveTypeMetric::SERVER);
         break;
     }
+    AutofillMetrics::LogLocalCardMigrationDecisionMetric(
+        AutofillMetrics::LocalCardMigrationDecisionMetric::
+            NOT_OFFERED_REACHED_MAX_STRIKE_COUNT);
     return false;
   } else if (prefs::IsLocalCardMigrationPromptPreviouslyCancelled(
                  client_->GetPrefs())) {
@@ -105,12 +115,19 @@ bool LocalCardMigrationManager::ShouldOfferLocalCardMigration(
   // of Upstream if there are other local cards to migrate as well. If the form
   // was submitted with a server card, offer migration if ANY local cards can be
   // migrated.
-  return (imported_credit_card_record_type ==
-              FormDataImporter::ImportedCreditCardRecordType::LOCAL_CARD &&
-          migratable_credit_cards_.size() > 1) ||
-         (imported_credit_card_record_type ==
-              FormDataImporter::ImportedCreditCardRecordType::SERVER_CARD &&
-          !migratable_credit_cards_.empty());
+  if ((imported_credit_card_record_type ==
+           FormDataImporter::ImportedCreditCardRecordType::LOCAL_CARD &&
+       migratable_credit_cards_.size() > 1) ||
+      (imported_credit_card_record_type ==
+           FormDataImporter::ImportedCreditCardRecordType::SERVER_CARD &&
+       !migratable_credit_cards_.empty())) {
+    return true;
+  } else {
+    AutofillMetrics::LogLocalCardMigrationDecisionMetric(
+        AutofillMetrics::LocalCardMigrationDecisionMetric::
+            NOT_OFFERED_NO_MIGRATABLE_CARDS);
+    return false;
+  }
 }
 
 void LocalCardMigrationManager::AttemptToOfferLocalCardMigration(
@@ -223,9 +240,12 @@ void LocalCardMigrationManager::OnDidGetUploadDetails(
       // Filter the migratable credit cards with |supported_card_bin_ranges_|.
       FilterOutUnsupportedLocalCards();
       // Abandon the migration if no supported card left.
-      // TODO(crbug.com/954367): Log a metric here.
-      if (migratable_credit_cards_.empty())
+      if (migratable_credit_cards_.empty()) {
+        AutofillMetrics::LogLocalCardMigrationDecisionMetric(
+            AutofillMetrics::LocalCardMigrationDecisionMetric::
+                NOT_OFFERED_NO_SUPPORTED_CARDS);
         return;
+      }
       client_->ShowLocalCardMigrationDialog(base::BindOnce(
           &LocalCardMigrationManager::OnUserAcceptedIntermediateMigrationDialog,
           weak_ptr_factory_.GetWeakPtr()));
@@ -238,6 +258,12 @@ void LocalCardMigrationManager::OnDidGetUploadDetails(
     client_->LoadRiskData(base::BindRepeating(
         &LocalCardMigrationManager::OnDidGetMigrationRiskData,
         weak_ptr_factory_.GetWeakPtr()));
+    AutofillMetrics::LogLocalCardMigrationDecisionMetric(
+        AutofillMetrics::LocalCardMigrationDecisionMetric::OFFERED);
+  } else {
+    AutofillMetrics::LogLocalCardMigrationDecisionMetric(
+        AutofillMetrics::LocalCardMigrationDecisionMetric::
+            NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED);
   }
 }
 

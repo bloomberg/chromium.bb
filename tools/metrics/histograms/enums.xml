@@ -3823,6 +3823,16 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="User navigated away from page while bubble hidden"/>
 </enum>
 
+<enum name="AutofillLocalCardMigrationDecisionMetric">
+  <int value="0" label="Migration offered"/>
+  <int value="1" label="User used new card"/>
+  <int value="2" label="Failed enablement prerequisites"/>
+  <int value="3" label="Reached max strikes"/>
+  <int value="4" label="No migratable cards"/>
+  <int value="5" label="Get upload details RPC failed"/>
+  <int value="6" label="All cards are unsupported"/>
+</enum>
+
 <enum name="AutofillLocalCardMigrationDialogOffer">
   <int value="0" label="Shown"/>
   <int value="1" label="Not shown due to legal message being invalid"/>

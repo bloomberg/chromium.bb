@@ -820,6 +820,12 @@ void AutofillMetrics::LogScanCreditCardCompleted(
 }
 
 // static
+void AutofillMetrics::LogLocalCardMigrationDecisionMetric(
+    LocalCardMigrationDecisionMetric metric) {
+  UMA_HISTOGRAM_ENUMERATION("Autofill.LocalCardMigrationDecision", metric);
+}
+
+// static
 void AutofillMetrics::LogLocalCardMigrationBubbleOfferMetric(
     LocalCardMigrationBubbleOfferMetric metric,
     bool is_reshow) {

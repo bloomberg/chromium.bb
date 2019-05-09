@@ -126,6 +126,11 @@ class LocalCardMigrationManager {
   // Fetch all migratable credit cards and store in |migratable_credit_cards_|.
   void GetMigratableCreditCards();
 
+  // For testing.
+  void SetAppLocaleForTesting(const std::string& app_locale) {
+    app_locale_ = app_locale;
+  }
+
  protected:
   // Callback after successfully getting the legal documents. On success,
   // displays the offer-to-migrate dialog, which the user can accept or not.
