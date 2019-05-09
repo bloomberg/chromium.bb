@@ -13,6 +13,7 @@
 #include "base/unguessable_token.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/navigation_url_loader.h"
+#include "content/browser/loader/prefetched_signed_exchange_cache.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/test_resource_handler.h"
 #include "content/browser/loader_delegate_impl.h"
@@ -102,7 +103,7 @@ class NavigationURLLoaderTest : public testing::Test {
     return NavigationURLLoader::Create(
         browser_context_->GetResourceContext(),
         BrowserContext::GetDefaultStoragePartition(browser_context_.get()),
-        std::move(request_info), nullptr, nullptr, nullptr, delegate);
+        std::move(request_info), nullptr, nullptr, nullptr, nullptr, delegate);
   }
 
   // Helper function for fetching the body of a URL to a string.

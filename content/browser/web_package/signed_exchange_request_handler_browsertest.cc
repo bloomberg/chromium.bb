@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <tuple>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
@@ -199,25 +201,44 @@ class SignedExchangeRequestHandlerBrowserTestBase
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeRequestHandlerBrowserTestBase);
 };
 
-enum class SignedExchangeRequestHandlerBrowserTestPrefetchParam {
-  kPrefetchDisabled,
-  kPrefetchEnabled
-};
-
 class SignedExchangeRequestHandlerBrowserTest
-    : public SignedExchangeRequestHandlerBrowserTestBase,
-      public testing::WithParamInterface<
-          SignedExchangeRequestHandlerBrowserTestPrefetchParam> {
+    : public testing::WithParamInterface<
+          std::tuple<bool /* prefetch_enabled */,
+                     bool /* network_service_enabled */,
+                     bool /* sxg_subresource_prefetch_enabled */>>,
+      public SignedExchangeRequestHandlerBrowserTestBase {
  public:
   SignedExchangeRequestHandlerBrowserTest() = default;
+  ~SignedExchangeRequestHandlerBrowserTest() = default;
 
- protected:
-  bool PrefetchIsEnabled() {
-    return GetParam() == SignedExchangeRequestHandlerBrowserTestPrefetchParam::
-                             kPrefetchEnabled;
+  void SetUp() override {
+    bool network_service_enabled;
+    bool sxg_subresource_prefetch_enabled;
+    std::tie(prefetch_enabled_, network_service_enabled,
+             sxg_subresource_prefetch_enabled) = GetParam();
+    std::vector<base::Feature> enable_features;
+    std::vector<base::Feature> disabled_features;
+    if (network_service_enabled) {
+      enable_features.push_back(network::features::kNetworkService);
+    } else {
+      disabled_features.push_back(network::features::kNetworkService);
+    }
+    if (sxg_subresource_prefetch_enabled) {
+      enable_features.push_back(features::kSignedExchangeSubresourcePrefetch);
+    } else {
+      disabled_features.push_back(features::kSignedExchangeSubresourcePrefetch);
+    }
+    feature_list_.InitWithFeatures(enable_features, disabled_features);
+    SignedExchangeRequestHandlerBrowserTestBase::SetUp();
   }
 
+ protected:
+  bool PrefetchIsEnabled() const { return prefetch_enabled_; }
+
  private:
+  bool prefetch_enabled_;
+  base::test::ScopedFeatureList feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeRequestHandlerBrowserTest);
 };
 
@@ -529,13 +550,11 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, CertNotFound) {
       PrefetchIsEnabled() ? 2 : 1);
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    SignedExchangeRequestHandlerBrowserTest,
-    SignedExchangeRequestHandlerBrowserTest,
-    testing::Values(
-        SignedExchangeRequestHandlerBrowserTestPrefetchParam::kPrefetchDisabled,
-        SignedExchangeRequestHandlerBrowserTestPrefetchParam::
-            kPrefetchEnabled));
+INSTANTIATE_TEST_SUITE_P(,
+                         SignedExchangeRequestHandlerBrowserTest,
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool(),
+                                            ::testing::Bool()));
 
 class SignedExchangeRequestHandlerDownloadBrowserTest
     : public SignedExchangeRequestHandlerBrowserTestBase {

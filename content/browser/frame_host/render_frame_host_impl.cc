@@ -1836,7 +1836,8 @@ void RenderFrameHostImpl::Init() {
         std::move(pending_navigate_->begin_navigation_params),
         std::move(pending_navigate_->blob_url_loader_factory),
         std::move(pending_navigate_->navigation_client),
-        std::move(pending_navigate_->navigation_initiator));
+        std::move(pending_navigate_->navigation_initiator),
+        EnsurePrefetchedSignedExchangeCache());
     pending_navigate_.reset();
   }
 }
@@ -3961,7 +3962,7 @@ void RenderFrameHostImpl::BeginNavigation(
   frame_tree_node()->navigator()->OnBeginNavigation(
       frame_tree_node(), validated_params, std::move(begin_params),
       std::move(blob_url_loader_factory), std::move(navigation_client),
-      std::move(navigation_initiator));
+      std::move(navigation_initiator), EnsurePrefetchedSignedExchangeCache());
 }
 
 void RenderFrameHostImpl::SubresourceResponseStarted(

@@ -30,6 +30,8 @@ class BlobDataHandle;
 
 namespace content {
 
+class NavigationLoaderInterceptor;
+
 // PrefetchedSignedExchangeCache keeps prefetched and verified signed
 // exchanges.
 class CONTENT_EXPORT PrefetchedSignedExchangeCache
@@ -77,6 +79,8 @@ class CONTENT_EXPORT PrefetchedSignedExchangeCache
     void SetBlobDataHandle(
         std::unique_ptr<const storage::BlobDataHandle> blob_data_handle);
 
+    std::unique_ptr<const Entry> Clone() const;
+
    private:
     GURL outer_url_;
     std::unique_ptr<const network::ResourceResponseHead> outer_response_;
@@ -93,6 +97,9 @@ class CONTENT_EXPORT PrefetchedSignedExchangeCache
   PrefetchedSignedExchangeCache();
 
   void Store(std::unique_ptr<const Entry> cached_exchange);
+
+  std::unique_ptr<NavigationLoaderInterceptor> MaybeCreateInterceptor(
+      const GURL& outer_url);
 
  private:
   friend class base::RefCountedThreadSafe<PrefetchedSignedExchangeCache>;

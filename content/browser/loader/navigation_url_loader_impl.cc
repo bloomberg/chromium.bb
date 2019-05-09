@@ -32,6 +32,7 @@
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
+#include "content/browser/loader/prefetched_signed_exchange_cache.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/navigation_subresource_loader_params.h"
@@ -468,6 +469,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       storage::FileSystemContext* upload_file_system_context,
       ServiceWorkerNavigationHandleCore* service_worker_navigation_handle_core,
       AppCacheNavigationHandleCore* appcache_handle_core,
+      scoped_refptr<PrefetchedSignedExchangeCache>
+          prefetched_signed_exchange_cache,
       scoped_refptr<SignedExchangePrefetchMetricRecorder>
           signed_exchange_prefetch_metric_recorder,
       std::unique_ptr<NavigationRequestInfo> request_info,
@@ -498,6 +501,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
     StartInternal(request_info_.get(), service_worker_navigation_handle_core,
                   nullptr /* appcache_handle_core */,
+                  std::move(prefetched_signed_exchange_cache),
                   std::move(signed_exchange_prefetch_metric_recorder),
                   {} /* factory_for_webui */, url_request_context_getter,
                   std::move(accept_langs));
@@ -508,6 +512,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           network_loader_factory_info,
       ServiceWorkerNavigationHandleCore* service_worker_navigation_handle_core,
       AppCacheNavigationHandleCore* appcache_handle_core,
+      scoped_refptr<PrefetchedSignedExchangeCache>
+          prefetched_signed_exchange_cache,
       scoped_refptr<SignedExchangePrefetchMetricRecorder>
           signed_exchange_prefetch_metric_recorder,
       std::unique_ptr<NavigationRequestInfo> request_info,
@@ -552,12 +558,12 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
                              resource_context_, &blob_handles_);
     }
 
-    StartInternal(request_info.get(), service_worker_navigation_handle_core,
-                  appcache_handle_core,
-                  std::move(signed_exchange_prefetch_metric_recorder),
-                  std::move(factory_for_webui),
-                  nullptr /* url_request_context_getter */,
-                  std::move(accept_langs));
+    StartInternal(
+        request_info.get(), service_worker_navigation_handle_core,
+        appcache_handle_core, std::move(prefetched_signed_exchange_cache),
+        std::move(signed_exchange_prefetch_metric_recorder),
+        std::move(factory_for_webui), nullptr /* url_request_context_getter */,
+        std::move(accept_langs));
   }
 
   // Common setup routines, called by both StartWithoutNetworkService() and
@@ -572,6 +578,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       NavigationRequestInfo* request_info,
       ServiceWorkerNavigationHandleCore* service_worker_navigation_handle_core,
       AppCacheNavigationHandleCore* appcache_handle_core,
+      scoped_refptr<PrefetchedSignedExchangeCache>
+          prefetched_signed_exchange_cache,
       scoped_refptr<SignedExchangePrefetchMetricRecorder>
           signed_exchange_prefetch_metric_recorder,
       network::mojom::URLLoaderFactoryPtrInfo factory_for_webui,
@@ -611,6 +619,19 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           resource_request_.get(), this, kNavigationUrlLoaderTrafficAnnotation,
           base::ThreadTaskRunnerHandle::Get());
       return;
+    }
+
+    if (prefetched_signed_exchange_cache) {
+      DCHECK(base::FeatureList::IsEnabled(
+          features::kSignedExchangeSubresourcePrefetch));
+      std::unique_ptr<NavigationLoaderInterceptor>
+          prefetched_signed_exchange_interceptor =
+              prefetched_signed_exchange_cache->MaybeCreateInterceptor(
+                  request_info->common_params.url);
+      if (prefetched_signed_exchange_interceptor) {
+        interceptors_.push_back(
+            std::move(prefetched_signed_exchange_interceptor));
+      }
     }
 
     // Set-up an interceptor for service workers.
@@ -1460,6 +1481,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     std::unique_ptr<NavigationUIData> navigation_ui_data,
     ServiceWorkerNavigationHandle* service_worker_navigation_handle,
     AppCacheNavigationHandle* appcache_handle,
+    scoped_refptr<PrefetchedSignedExchangeCache>
+        prefetched_signed_exchange_cache,
     NavigationURLLoaderDelegate* delegate,
     std::vector<std::unique_ptr<NavigationLoaderInterceptor>>
         initial_interceptors)
@@ -1515,6 +1538,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
             base::Unretained(storage_partition->GetFileSystemContext()),
             base::Unretained(service_worker_navigation_handle_core),
             base::Unretained(appcache_handle_core),
+            std::move(prefetched_signed_exchange_cache),
             base::RetainedRef(signed_exchange_prefetch_metric_recorder),
             std::move(request_info), std::move(navigation_ui_data),
             std::move(accept_langs)));
@@ -1640,6 +1664,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
                      std::move(network_factory_info),
                      service_worker_navigation_handle_core,
                      appcache_handle_core,
+                     std::move(prefetched_signed_exchange_cache),
                      std::move(signed_exchange_prefetch_metric_recorder),
                      std::move(request_info), std::move(navigation_ui_data),
                      std::move(factory_for_webui), frame_tree_node_id,

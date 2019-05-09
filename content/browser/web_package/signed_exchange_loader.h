@@ -116,8 +116,6 @@ class CONTENT_EXPORT SignedExchangeLoader final
       SignedExchangeHandlerFactory* factory);
 
  private:
-  class OuterResponseInfo;
-
   // Called from |signed_exchange_handler_| when it finds an origin-signed HTTP
   // exchange.
   void OnHTTPExchangeFound(
@@ -133,9 +131,6 @@ class CONTENT_EXPORT SignedExchangeLoader final
   void ReportLoadResult(SignedExchangeLoadResult result);
 
   const network::ResourceRequest outer_request_;
-
-  // This info is used to create a dummy redirect response.
-  std::unique_ptr<const OuterResponseInfo> outer_response_info_;
 
   // The outer response of signed HTTP exchange which was received from network.
   const network::ResourceResponseHead outer_response_;

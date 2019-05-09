@@ -50,6 +50,7 @@ class NavigationURLLoader;
 class NavigationData;
 class NavigationUIData;
 class NavigatorDelegate;
+class PrefetchedSignedExchangeCache;
 class SiteInstanceImpl;
 struct SubresourceLoaderParams;
 
@@ -149,7 +150,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
       bool override_user_agent,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
       mojom::NavigationClientAssociatedPtrInfo navigation_client,
-      blink::mojom::NavigationInitiatorPtr navigation_initiator);
+      blink::mojom::NavigationInitiatorPtr navigation_initiator,
+      scoped_refptr<PrefetchedSignedExchangeCache>
+          prefetched_signed_exchange_cache);
 
   // Creates a request at commit time. This should only be used for
   // renderer-initiated same-document navigations, and navigations whose
@@ -864,6 +867,15 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   Referrer sanitized_referrer_;
 
   bool was_redirected_ = false;
+
+  // Used when SignedExchangeSubresourcePrefetch is enabled to hold the
+  // prefetched signed exchanges. This is shared with the navigation initiator's
+  // RenderFrameHostImpl. This also means that only the navigations that were
+  // directly initiated by the frame that made the prefetches could use the
+  // prefetched resources, which is a different behavior from regular prefetches
+  // (where all prefetched resources are stored and shared in http cache).
+  scoped_refptr<PrefetchedSignedExchangeCache>
+      prefetched_signed_exchange_cache_;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_;
 

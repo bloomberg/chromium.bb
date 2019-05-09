@@ -12,9 +12,12 @@
 #include "content/browser/web_package/signed_exchange_error.h"
 #include "content/browser/web_package/signed_exchange_signature_verifier.h"
 #include "content/common/content_export.h"
+#include "net/url_request/redirect_util.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "url/gurl.h"
 
 namespace network {
+struct ResourceRequest;
 struct ResourceResponseHead;
 }  // namespace network
 
@@ -72,6 +75,19 @@ CONTENT_EXPORT base::Optional<SignedExchangeVersion> GetSignedExchangeVersion(
 // [1] https://wicg.github.io/webpackage/loading.html
 SignedExchangeLoadResult GetLoadResultFromSignatureVerifierResult(
     SignedExchangeSignatureVerifier::Result verify_result);
+
+// Creates a RedirectInfo of synthesized redirect for signed exchange loading.
+net::RedirectInfo CreateRedirectInfo(
+    const GURL& new_url,
+    const network::ResourceRequest& outer_request,
+    const network::ResourceResponseHead& outer_response,
+    bool is_fallback_redirect);
+
+// Creates a ResourceResponseHead of synthesized redirect for signed exchange
+// loading.
+network::ResourceResponseHead CreateRedirectResponseHead(
+    const network::ResourceResponseHead& outer_response,
+    bool is_fallback_redirect);
 
 }  // namespace signed_exchange_utils
 }  // namespace content

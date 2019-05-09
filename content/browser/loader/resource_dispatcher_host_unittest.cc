@@ -30,6 +30,7 @@
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/detachable_resource_handler.h"
 #include "content/browser/loader/navigation_url_loader.h"
+#include "content/browser/loader/prefetched_signed_exchange_cache.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_loader.h"
 #include "content/browser/loader/resource_message_filter.h"
@@ -845,7 +846,8 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestMode> {
         NavigationURLLoader::Create(
             browser_context_->GetResourceContext(),
             BrowserContext::GetDefaultStoragePartition(browser_context_.get()),
-            std::move(request_info), nullptr, nullptr, nullptr, &delegate);
+            std::move(request_info), nullptr, nullptr, nullptr, nullptr,
+            &delegate);
 
     // The navigation should fail with the expected error code.
     delegate.WaitForRequestFailed();

@@ -25,6 +25,7 @@ namespace content {
 
 class NavigationData;
 class NavigationLoaderInterceptor;
+class PrefetchedSignedExchangeCache;
 class ResourceContext;
 class StoragePartition;
 class StoragePartitionImpl;
@@ -41,6 +42,8 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
       std::unique_ptr<NavigationUIData> navigation_ui_data,
       ServiceWorkerNavigationHandle* service_worker_handle,
       AppCacheNavigationHandle* appcache_handle,
+      scoped_refptr<PrefetchedSignedExchangeCache>
+          prefetched_signed_exchange_cache,
       NavigationURLLoaderDelegate* delegate,
       std::vector<std::unique_ptr<NavigationLoaderInterceptor>>
           initial_interceptors);

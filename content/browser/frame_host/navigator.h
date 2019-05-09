@@ -32,6 +32,7 @@ namespace content {
 
 class FrameNavigationEntry;
 class FrameTreeNode;
+class PrefetchedSignedExchangeCache;
 class RenderFrameHostImpl;
 struct CommonNavigationParams;
 
@@ -149,7 +150,9 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       mojom::BeginNavigationParamsPtr begin_params,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
       mojom::NavigationClientAssociatedPtrInfo navigation_client,
-      blink::mojom::NavigationInitiatorPtr navigation_initiator);
+      blink::mojom::NavigationInitiatorPtr navigation_initiator,
+      scoped_refptr<PrefetchedSignedExchangeCache>
+          prefetched_signed_exchange_cache);
 
   // Used to restart a navigation that was thought to be same-document in
   // cross-document mode.
