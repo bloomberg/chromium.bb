@@ -3142,11 +3142,6 @@ const char kFsNosymfollowDescription[] =
     " option, so the chromuimos LSM denies symlink traversal on the"
     " filesystem.";
 
-const char kGestureTypingName[] = "Gesture typing for the virtual keyboard.";
-const char kGestureTypingDescription[] =
-    "Enable/Disable gesture typing option in the settings page for the virtual "
-    "keyboard.";
-
 const char kHideArcMediaNotificationsName[] = "Hide ARC media notifications";
 const char kHideArcMediaNotificationsDescription[] =
     "Hides media notifications for ARC apps. Requires "

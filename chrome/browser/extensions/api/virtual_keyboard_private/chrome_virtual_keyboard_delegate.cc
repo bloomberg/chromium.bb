@@ -357,9 +357,7 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
   std::unique_ptr<base::ListValue> features(new base::ListValue());
 
   features->AppendString(GenerateFeatureFlag("floatingkeyboard", true));
-  features->AppendString(GenerateFeatureFlag(
-      "gesturetyping", !base::CommandLine::ForCurrentProcess()->HasSwitch(
-                           keyboard::switches::kDisableGestureTyping)));
+  features->AppendString(GenerateFeatureFlag("gesturetyping", true));
   // TODO(https://crbug.com/890134): Implement gesture editing.
   features->AppendString(GenerateFeatureFlag("gestureediting", false));
   features->AppendString(GenerateFeatureFlag("fullscreenhandwriting", false));

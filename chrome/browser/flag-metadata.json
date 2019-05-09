@@ -2090,11 +2090,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "gesture-typing",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "google-password-manager",
     "owners": [ "ioanap", "jdoerrie" ],
     "expiry_milestone": 76

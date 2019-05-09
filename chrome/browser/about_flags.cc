@@ -1469,9 +1469,6 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(
          chromeos::switches::kEnablePhysicalKeyboardAutocorrect,
          chromeos::switches::kDisablePhysicalKeyboardAutocorrect)},
-    {"gesture-typing", flag_descriptions::kGestureTypingName,
-     flag_descriptions::kGestureTypingDescription, kOsCrOS,
-     SINGLE_DISABLE_VALUE_TYPE(keyboard::switches::kDisableGestureTyping)},
 #endif  // OS_CHROMEOS
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
     {"device-discovery-notifications",

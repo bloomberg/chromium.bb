@@ -1893,9 +1893,6 @@ extern const char kForceUseChromeCameraDescription[];
 extern const char kFsNosymfollowName[];
 extern const char kFsNosymfollowDescription[];
 
-extern const char kGestureTypingName[];
-extern const char kGestureTypingDescription[];
-
 extern const char kHideArcMediaNotificationsName[];
 extern const char kHideArcMediaNotificationsDescription[];
 
