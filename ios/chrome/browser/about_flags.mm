@@ -583,6 +583,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"language-settings", flag_descriptions::kLanguageSettingsName,
      flag_descriptions::kLanguageSettingsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kLanguageSettings)},
+    {"lock-bottom-toolbar", flag_descriptions::kLockBottomToolbarName,
+     flag_descriptions::kLockBottomToolbarDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(fullscreen::features::kLockBottomToolbar)},
 };
 
 // Add all switches from experimental flags to |command_line|.

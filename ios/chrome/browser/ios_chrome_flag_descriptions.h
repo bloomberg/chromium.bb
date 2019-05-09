@@ -240,6 +240,10 @@ extern const char kInProductHelpDemoModeDescription[];
 extern const char kLanguageSettingsName[];
 extern const char kLanguageSettingsDescription[];
 
+// Title and description for the flag to lock the bottom toolbar into place.
+extern const char kLockBottomToolbarName[];
+extern const char kLockBottomToolbarDescription[];
+
 // Title, description, and options for the MarkHttpAs setting that controls
 // display of omnibox warnings about non-secure pages.
 extern const char kMarkHttpAsName[];

@@ -5,6 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_FEATURES_H_
 #define IOS_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_FEATURES_H_
 
+#include "base/feature_list.h"
 #include "components/flags_ui/feature_entry.h"
 
 namespace fullscreen {
@@ -35,6 +36,10 @@ enum class ViewportAdjustmentExperiment : short {
 // Convenience method for retrieving the active viewport adjustment experiment
 // from the command line.
 ViewportAdjustmentExperiment GetActiveViewportExperiment();
+
+// Used to control whether the bottom toolbar should be locked into the extended
+// position (i.e. fullscreen progress == 1.0).
+extern const base::Feature kLockBottomToolbar;
 
 }  // namespace features
 }  // namespace fullscreen
