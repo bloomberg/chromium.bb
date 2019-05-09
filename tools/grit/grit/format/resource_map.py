@@ -165,7 +165,8 @@ def _GetItemPath(item):
   real_path = item.ToRealPath(item.GetInputPath())
   if (item.attrs.get('use_base_dir', 'true') != 'true' and
           _IsSubpath(os.path.curdir, real_path)):
-    path = os.path.join('@out_folder@', os.path.relpath(real_path))
+    path = os.path.join(
+        '@out_folder@', os.path.relpath(real_path)).replace("\\", "/")
 
   assert '$' not in path, 'all variables should have been expanded'
   return path

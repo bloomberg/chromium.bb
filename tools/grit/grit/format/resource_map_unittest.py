@@ -109,14 +109,13 @@ const size_t kTheRcHeaderSize = base::size(kTheRcHeader);''', output)
 
     formatter = resource_map.GetFormatter('gzipped_resource_file_map_source')
     output = util.StripBlankLinesAndComments(''.join(formatter(grd, 'en', '.')))
-    gen_path = os.path.join('@out_folder@', 'gen', 'foo', 'bar', 'baz.js')
     expected = '''\
 #include "gzipped_resource_map_header.h"
 #include <stddef.h>
 #include "base/stl_util.h"
 #include "the_rc_header.h"
 const GzippedGritResourceMap kTheRcHeader[] = {
-  {"''' + gen_path + '''", IDR_FOO_BAR_BAZ_JS, true},
+  {"@out_folder@/gen/foo/bar/baz.js", IDR_FOO_BAR_BAZ_JS, true},
 };
 const size_t kTheRcHeaderSize = base::size(kTheRcHeader);'''
     self.assertEqual(expected, output)
