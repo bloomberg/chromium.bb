@@ -5,7 +5,6 @@
 #include "chrome/browser/media/router/providers/cast/cast_activity_record.h"
 
 #include <memory>
-#include <sstream>
 #include <string>
 #include <tuple>
 #include <utility>

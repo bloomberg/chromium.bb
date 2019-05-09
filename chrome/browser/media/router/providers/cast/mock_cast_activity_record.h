@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_CAST_MOCK_CAST_ACTIVITY_RECORD_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_CAST_MOCK_CAST_ACTIVITY_RECORD_H_
 
+#include <string>
+
 #include "chrome/browser/media/router/providers/cast/cast_activity_record.h"
+#include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

@@ -5,20 +5,15 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_TEST_TEST_HELPER_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_TEST_TEST_HELPER_H_
 
-#include <stddef.h>
-#include <stdint.h>
-
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/test/values_test_util.h"
-#include "build/build_config.h"
 #include "chrome/browser/media/router/issue_manager.h"
 #include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
-#include "content/public/browser/presentation_service_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 
@@ -230,6 +225,8 @@ std::unique_ptr<DialInternalMessage> ParseDialInternalMessage(
 
 #endif  // !defined(OS_ANDROID)
 
+// Matcher for blink::mojom::PresentationConnectionMessagePtr arguments.
+// TODO(jrw): Rename to something like IsPresentationConnectionMessage.
 MATCHER_P(IsCastMessage, json, "") {
   return arg->is_message() && base::test::IsJsonMatcher(json).MatchAndExplain(
                                   arg->get_message(), result_listener);

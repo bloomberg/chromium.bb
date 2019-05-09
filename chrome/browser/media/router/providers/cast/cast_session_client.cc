@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// #include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_client.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_record.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
@@ -23,9 +23,9 @@ namespace {
 
 void ReportClientMessageParseError(const MediaRoute::Id& route_id,
                                    const std::string& error) {
-  // TODO(crbug.com/808720): Record UMA metric for parse result.
-  DVLOG(2) << "Failed to parse Cast client message for " << route_id << ": "
-           << error;
+  // TODO(crbug.com/905002): Record UMA metric for parse result.
+  DLOG(ERROR) << "Failed to parse Cast client message for " << route_id << ": "
+              << error;
 }
 
 }  // namespace
@@ -143,7 +143,6 @@ void CastSessionClientImpl::HandleParsedClientMessage(
   if (!cast_message) {
     ReportClientMessageParseError(activity_->route().media_route_id(),
                                   "Not a Cast message");
-    DLOG(ERROR) << "Received non-Cast message from client";
     return;
   }
 

@@ -360,11 +360,6 @@ void CastActivityManager::TerminateSession(
   const MediaSinkInternal* sink = media_sink_service_->GetSinkByRoute(route);
   CHECK(sink);
 
-  for (auto& client : activity->connected_clients()) {
-    client.second->SendMessageToClient(
-        CreateReceiverActionStopMessage(client.first, *sink, hash_token_));
-  }
-
   activity->SendStopSessionMessageToReceiver(
       base::nullopt,  // TODO(jrw): Get the real client ID.
       hash_token_, std::move(callback));

@@ -45,8 +45,10 @@ class CastActivityRecord {
 
   const MediaRoute& route() const { return route_; }
   const std::string& app_id() const { return app_id_; }
-  const ClientMap& connected_clients() const { return connected_clients_; }
   const base::Optional<std::string>& session_id() const { return session_id_; }
+
+  // TODO(jrw): Get rid of this accessor.
+  const ClientMap& connected_clients() const { return connected_clients_; }
 
   // Sends app message |cast_message|, which came from the SDK client, to the
   // receiver hosting this session. Returns true if the message is sent

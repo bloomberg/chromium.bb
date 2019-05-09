@@ -27,12 +27,10 @@
 #include "components/cast_channel/cast_test_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-// #include "services/data_decoder/data_decoder_service.h"
 #include "services/data_decoder/public/cpp/testing_json_parser.h"
-// #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
-// #include "testing/gmock/include/gmock/gmock.h"
-// #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using base::test::IsJson;
 using base::test::ParseJson;
@@ -81,6 +79,15 @@ class CastSessionClientImplTest : public testing::Test {
  protected:
   void RunUntilIdle() { thread_bundle_.RunUntilIdle(); }
 
+  template <typename T>
+  void ExpectErrorLog(const T& matcher) {
+    if (DLOG_IS_ON(ERROR)) {
+      EXPECT_CALL(log_, Log(logging::LOG_ERROR, _, _, _,
+                            matcher))
+          .WillOnce(Return(true));  // suppress logging
+    }
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
   data_decoder::TestingJsonParser::ScopedFactoryOverride parser_override_;
   service_manager::TestConnectorFactory connector_factory_;
@@ -107,9 +114,7 @@ class CastSessionClientImplTest : public testing::Test {
 TEST_F(CastSessionClientImplTest, OnInvalidJson) {
   // TODO(crbug.com/905002): Check UMA calls instead of logging (here and
   // below).
-  EXPECT_CALL(log_, Log(logging::LOG_ERROR, _, _, _,
-                        HasSubstr("Failed to parse Cast client message")))
-      .WillOnce(Return(true));  // suppress logging
+  ExpectErrorLog(HasSubstr("Failed to parse Cast client message"));
 
   log_.StartCapturingLogs();
   client_->OnMessage(
@@ -117,10 +122,8 @@ TEST_F(CastSessionClientImplTest, OnInvalidJson) {
 }
 
 TEST_F(CastSessionClientImplTest, OnInvalidMessage) {
-  EXPECT_CALL(log_, Log(logging::LOG_ERROR, _, _, _,
-                        AllOf(HasSubstr("Failed to parse Cast client message"),
-                              HasSubstr("Not a Cast message"))))
-      .WillOnce(Return(true));  // suppress logging
+  ExpectErrorLog(AllOf(HasSubstr("Failed to parse Cast client message"),
+                       HasSubstr("Not a Cast message")));
 
   log_.StartCapturingLogs();
   client_->OnMessage(
@@ -128,11 +131,9 @@ TEST_F(CastSessionClientImplTest, OnInvalidMessage) {
 }
 
 TEST_F(CastSessionClientImplTest, OnMessageWrongClientId) {
-  EXPECT_CALL(
-      log_, Log(logging::LOG_ERROR, _, _, _,
-                AllOf(HasSubstr("Client ID mismatch"), HasSubstr("theClientId"),
-                      HasSubstr("theWrongClientId"))))
-      .WillOnce(Return(true));  // suppress logging
+  ExpectErrorLog(AllOf(HasSubstr("Client ID mismatch"),
+                       HasSubstr("theClientId"),
+                       HasSubstr("theWrongClientId")));
 
   log_.StartCapturingLogs();
   client_->OnMessage(
@@ -147,11 +148,9 @@ TEST_F(CastSessionClientImplTest, OnMessageWrongClientId) {
 }
 
 TEST_F(CastSessionClientImplTest, OnMessageWrongSessionId) {
-  EXPECT_CALL(log_, Log(logging::LOG_ERROR, _, _, _,
-                        AllOf(HasSubstr("Session ID mismatch"),
-                              HasSubstr("theSessionId"),
-                              HasSubstr("theWrongSessionId"))))
-      .WillOnce(Return(true));  // suppress logging
+  ExpectErrorLog(AllOf(HasSubstr("Session ID mismatch"),
+                       HasSubstr("theSessionId"),
+                       HasSubstr("theWrongSessionId")));
 
   log_.StartCapturingLogs();
   client_->OnMessage(
@@ -183,16 +182,21 @@ TEST_F(CastSessionClientImplTest, AppMessageFromClient) {
 }
 
 TEST_F(CastSessionClientImplTest, OnMediaStatusUpdatedWithPendingRequest) {
-  EXPECT_CALL(activity_, SendMediaRequestToReceiver(IsCastInternalMessage(R"({
-    "type": "v2_message",
-    "clientId": "theClientId",
-    "sequenceNumber": 123,
-    "message": {
-       "sessionId": "theSessionId",
-       "type": "MEDIA_GET_STATUS"
-    }
-  })")))
-      .WillOnce(Return(345));
+  EXPECT_CALL(activity_, SendMediaRequestToReceiver)
+      .WillOnce([](const auto& message) {
+        // TODO(crbug.com/961081): Use IsCastInternalMessage as argument to
+        // SendSetVolumeRequestToReceiver when bug is fixed.
+        EXPECT_THAT(message, IsCastInternalMessage(R"({
+          "type": "v2_message",
+          "clientId": "theClientId",
+          "sequenceNumber": 123,
+          "message": {
+             "sessionId": "theSessionId",
+             "type": "MEDIA_GET_STATUS"
+          }
+        })"));
+        return 345;
+      });
   client_->OnMessage(
       blink::mojom::PresentationConnectionMessage::NewMessage(R"({
         "type": "v2_message",
@@ -215,20 +219,21 @@ TEST_F(CastSessionClientImplTest, OnMediaStatusUpdatedWithPendingRequest) {
 }
 
 TEST_F(CastSessionClientImplTest, SendSetVolumeCommandToReceiver) {
-  EXPECT_CALL(activity_,
-              SendSetVolumeRequestToReceiver(IsCastInternalMessage(R"({
-    "type": "v2_message",
-    "clientId": "theClientId",
-    "sequenceNumber": 123,
-    "message": {
-       "sessionId": "theSessionId",
-       "type": "SET_VOLUME"
-    }
-  })"),
-                                             _))
-      .WillOnce(WithArg<1>([](auto callback) {
+  EXPECT_CALL(activity_, SendSetVolumeRequestToReceiver)
+      .WillOnce([](const auto& message, auto callback) {
+        // TODO(crbug.com/961081): Use IsCastInternalMessage as argument to
+        // SendSetVolumeRequestToReceiver when bug is fixed.
+        EXPECT_THAT(message, IsCastInternalMessage(R"({
+          "type": "v2_message",
+          "clientId": "theClientId",
+          "sequenceNumber": 123,
+          "message": {
+             "sessionId": "theSessionId",
+             "type": "SET_VOLUME"
+          }
+        })"));
         std::move(callback).Run(cast_channel::Result::kOk);
-      }));
+      });
   EXPECT_CALL(*mock_connection_, OnMessage(IsCastMessage(R"({
     "clientId": "theClientId",
     "message": null,
