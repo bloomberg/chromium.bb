@@ -26,7 +26,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 
 import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -115,8 +114,7 @@ public class PaymentRequestMultipleContactDetailsTest implements MainActivitySta
     private int[] mDatesToSet;
 
     @Override
-    public void onMainActivityStarted()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
 
         // Add the profiles.
@@ -142,7 +140,7 @@ public class PaymentRequestMultipleContactDetailsTest implements MainActivitySta
     @MediumTest
     @Feature({"Payments"})
     public void testContactDetailsSuggestionOrdering()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         // Set the use stats so that profile[0] has the highest frecency score, profile[1] the
         // second highest, profile[2] the third lowest, profile[3] the second lowest and profile[4]
         // the lowest.
@@ -173,7 +171,7 @@ public class PaymentRequestMultipleContactDetailsTest implements MainActivitySta
     @MediumTest
     @Feature({"Payments"})
     public void testContactDetailsEditRequiredMessage()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         mProfilesToAdd = new AutofillProfile[] {AUTOFILL_PROFILES[0], AUTOFILL_PROFILES[1],
                 AUTOFILL_PROFILES[4], AUTOFILL_PROFILES[5]};
         mCountsToSet = new int[] {15, 10, 5, 1};
@@ -200,7 +198,7 @@ public class PaymentRequestMultipleContactDetailsTest implements MainActivitySta
     @MediumTest
     @Feature({"Payments"})
     public void testContactDetailsDedupe_EmptyFields()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         // Add the original profile and a bunch of similar profiles with missing fields.
         // Make sure the original profile is suggested last, to test that the suggestions are
         // sorted by completeness.
@@ -229,7 +227,7 @@ public class PaymentRequestMultipleContactDetailsTest implements MainActivitySta
     @MediumTest
     @Feature({"Payments"})
     public void testContactDetailsDedupe_Capitalization()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         // Add the original profile and the one where the the name is not capitalized.
         // Make sure the original profile is suggested first (no particular reason).
         mProfilesToAdd = new AutofillProfile[] {AUTOFILL_PROFILES[2], AUTOFILL_PROFILES[11]};
@@ -252,7 +250,7 @@ public class PaymentRequestMultipleContactDetailsTest implements MainActivitySta
     @MediumTest
     @Feature({"Payments"})
     public void testContactDetailsDontDedupe_FieldSubset()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         // Add the original profile and the one where the email is a superset of the original.
         // Make sure the one with the superset is suggested first, because to test the subset one
         // needs to be added after.

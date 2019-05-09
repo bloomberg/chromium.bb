@@ -33,7 +33,6 @@ import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -52,8 +51,7 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
             new PaymentRequestTestRule("payment_request_can_make_payment_metrics_test.html", this);
 
     @Override
-    public void onMainActivityStarted()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         helper.setProfile(new AutofillProfile("", "https://example.com", true, "Jon Doe", "Google",
                 "340 Main St", "CA", "Los Angeles", "", "90291", "", "US", "310-310-6000",
@@ -69,8 +67,7 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
     @MediumTest
     @Feature({"Payments"})
     @CommandLineFlags.Add("disable-features=NoCreditCardAbort")
-    public void testCannotMakePayment_UserAbort()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testCannotMakePayment_UserAbort() throws InterruptedException, TimeoutException {
         // Initiate a payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
                 "queryShow", mPaymentRequestTestRule.getReadyForInput());
@@ -101,8 +98,7 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
     @MediumTest
     @Feature({"Payments"})
     @CommandLineFlags.Add("disable-features=NoCreditCardAbort")
-    public void testCannotMakePayment_Complete()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testCannotMakePayment_Complete() throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(
                 "queryShow", mPaymentRequestTestRule.getReadyForInput());
 
@@ -144,8 +140,7 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testCanMakePayment_MerchantAbort()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testCanMakePayment_MerchantAbort() throws InterruptedException, TimeoutException {
         // Install the app so CanMakePayment returns true.
         mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
 
@@ -175,8 +170,7 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testCanMakePayment_Complete()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testCanMakePayment_Complete() throws InterruptedException, TimeoutException {
         // Install the app so CanMakePayment returns true.
         mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
 
@@ -206,7 +200,7 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
     @MediumTest
     @Feature({"Payments"})
     public void testCanMakePaymentDisabled_Complete()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         TestThreadUtils.runOnUiThreadBlocking((Runnable) () -> {
             PrefServiceBridge.getInstance().setBoolean(Pref.CAN_MAKE_PAYMENT_ENABLED, false);
         });
@@ -239,8 +233,7 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
     @MediumTest
     @Feature({"Payments"})
     @CommandLineFlags.Add("disable-features=NoCreditCardAbort")
-    public void testNoQuery_UserAbort()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testNoQuery_UserAbort() throws InterruptedException, TimeoutException {
         // Initiate a payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
                 "noQueryShow", mPaymentRequestTestRule.getReadyForInput());
@@ -268,8 +261,7 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testNoQuery_Complete()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testNoQuery_Complete() throws InterruptedException, TimeoutException {
         // Install the app so the user can complete the Payment Request.
         mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
 

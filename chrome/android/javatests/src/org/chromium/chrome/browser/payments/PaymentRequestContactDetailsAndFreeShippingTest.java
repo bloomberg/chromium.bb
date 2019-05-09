@@ -26,7 +26,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -45,8 +44,7 @@ public class PaymentRequestContactDetailsAndFreeShippingTest implements MainActi
             "payment_request_contact_details_and_free_shipping_test.html", this);
 
     @Override
-    public void onMainActivityStarted()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         // The user has a shipping address with a valid email address and a valid phone number on
         // disk.
@@ -65,7 +63,7 @@ public class PaymentRequestContactDetailsAndFreeShippingTest implements MainActi
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPay() throws InterruptedException, ExecutionException, TimeoutException {
+    public void testPay() throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
@@ -87,8 +85,7 @@ public class PaymentRequestContactDetailsAndFreeShippingTest implements MainActi
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPaymentRequestEventsMetric()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testPaymentRequestEventsMetric() throws InterruptedException, TimeoutException {
         // Start and complete the Payment Request.
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
