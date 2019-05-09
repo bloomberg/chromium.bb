@@ -1747,6 +1747,11 @@ bool IsRevertKeyword(StringView keyword) {
   return EqualIgnoringASCIICase(keyword, "revert");
 }
 
+// https://drafts.csswg.org/css-values-4/#identifier-value
+bool IsDefaultKeyword(StringView keyword) {
+  return EqualIgnoringASCIICase(keyword, "default");
+}
+
 // https://drafts.csswg.org/css-shapes-1/#typedef-shape-box
 CSSIdentifierValue* ConsumeShapeBox(CSSParserTokenRange& range) {
   return ConsumeIdent<CSSValueID::kContentBox, CSSValueID::kPaddingBox,

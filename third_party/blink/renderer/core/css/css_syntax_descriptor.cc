@@ -19,19 +19,23 @@
 namespace blink {
 namespace {
 
-// The 'revert' keyword is reserved.
+// The 'revert' and 'default' keywords are reserved.
 //
 // https://drafts.csswg.org/css-cascade/#default
+// https://drafts.csswg.org/css-values-4/#identifier-value
 //
-// // TODO(crbug.com/579788): Implement 'revert'.
-bool IsRevertToken(const CSSParserToken& token) {
-  return token.GetType() == kIdentToken &&
-         css_property_parser_helpers::IsRevertKeyword(token.Value());
+// TODO(crbug.com/579788): Implement 'revert'.
+// TODO(crbug.com/882285): Make 'default' invalid as <custom-ident>.
+bool IsReservedIdentToken(const CSSParserToken& token) {
+  if (token.GetType() != kIdentToken)
+    return false;
+  return css_property_parser_helpers::IsRevertKeyword(token.Value()) ||
+         css_property_parser_helpers::IsDefaultKeyword(token.Value());
 }
 
-bool CouldConsumeRevertKeyword(CSSParserTokenRange range) {
+bool CouldConsumeReservedKeyword(CSSParserTokenRange range) {
   range.ConsumeWhitespace();
-  if (IsRevertToken(range.ConsumeIncludingWhitespace()))
+  if (IsReservedIdentToken(range.ConsumeIncludingWhitespace()))
     return range.AtEnd();
   return false;
 }
@@ -80,7 +84,8 @@ const CSSValue* ConsumeSingleType(const CSSSyntaxComponent& syntax,
       return ConsumeTransformList(range, *context);
     case CSSSyntaxType::kCustomIdent:
       // TODO(crbug.com/579788): Implement 'revert'.
-      if (IsRevertToken(range.Peek()))
+      // TODO(crbug.com/882285): Make 'default' invalid as <custom-ident>.
+      if (IsReservedIdentToken(range.Peek()))
         return nullptr;
       return ConsumeCustomIdent(range, *context);
     default:
@@ -140,7 +145,8 @@ const CSSValue* CSSSyntaxDescriptor::Parse(CSSParserTokenRange range,
                                            bool is_animation_tainted) const {
   if (IsTokenStream()) {
     // TODO(crbug.com/579788): Implement 'revert'.
-    if (CouldConsumeRevertKeyword(range))
+    // TODO(crbug.com/882285): Make 'default' invalid as <custom-ident>.
+    if (CouldConsumeReservedKeyword(range))
       return nullptr;
     return CSSVariableParser::ParseRegisteredPropertyValue(
         range, *context, false, is_animation_tainted);
