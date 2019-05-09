@@ -1,8 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Scott Hess <shess@chromium.org>
 Date: Sat, 20 Jul 2013 11:42:21 -0700
-Subject: [PATCH 01/15] Virtual table supporting recovery of corrupted
- databases.
+Subject: [PATCH 1/4] Virtual table supporting recovery of corrupted databases.
 
 "recover" implements a virtual table which uses the SQLite pager layer
 to read table pages and pull out the data which is structurally sound
@@ -40,11 +39,11 @@ index c4e8b78e911f..57a27c1e3fc1 100644
 @@ -77,6 +77,8 @@ LIBOBJ+= vdbe.o parse.o \
  	 vdbetrace.o wal.o walker.o where.o wherecode.o whereexpr.o \
           utf.o vtab.o window.o
- 
+
 +LIBOBJ += recover.o recover_varint.o
 +
  LIBOBJ += sqlite3session.o
- 
+
  # All of the source code files.
 @@ -410,6 +412,8 @@ TESTSRC2 = \
    $(TOP)/src/prepare.c \
@@ -60,7 +59,7 @@ index c4e8b78e911f..57a27c1e3fc1 100644
  TESTFIXTURE_FLAGS += -DSQLITE_ENABLE_DBPAGE_VTAB
  TESTFIXTURE_FLAGS += -DTCLSH_INIT_PROC=sqlite3TestInit
 +TESTFIXTURE_FLAGS += -DDEFAULT_ENABLE_RECOVER=1
- 
+
  testfixture$(EXE): $(TESTSRC2) libsqlite3.a $(TESTSRC) $(TOP)/src/tclsqlite.c
  	$(TCCX) $(TCL_FLAGS) $(TESTFIXTURE_FLAGS)                            \
 diff --git a/third_party/sqlite/patched/src/main.c b/third_party/sqlite/patched/src/main.c
@@ -70,7 +69,7 @@ index c98cfe99eed3..d58f8c633f8b 100644
 @@ -3244,6 +3244,14 @@ static int openDatabase(
    }
  #endif
- 
+
 +#ifdef DEFAULT_ENABLE_RECOVER
 +  /* Initialize recover virtual table for testing. */
 +  extern int chrome_sqlite3_recoverVtableInit(sqlite3 *db);
@@ -3900,6 +3899,6 @@ index 000000000000..8aa4e049a010
 +} [list 4 1024 1 text [string length $substr] $substr]
 +
 +finish_test
--- 
-2.21.0.392.gf8f6787159e-goog
+--
+2.21.0.1020.gf2820cf01a-goog
 

@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: "tc@google.com" <tc@google.com>
 Date: Tue, 6 Jan 2009 22:39:41 +0000
-Subject: [PATCH 02/15] Custom shell.c helpers to load Chromium's ICU data.
+Subject: [PATCH 2/4] Custom shell.c helpers to load Chromium's ICU data.
 
 History uses fts3 with an icu-based segmenter.  These changes allow building a
 sqlite3 binary for Linux or Windows which can read those files.
@@ -24,7 +24,7 @@ index b838b844a312..3047d172389b 100644
 @@ -60,6 +60,13 @@ TLIBS =
  OPTS = -DNDEBUG=1
  OPTS += -DHAVE_FDATASYNC=1
- 
+
 +# Support for loading Chromium ICU data in sqlite3.
 +ifeq ($(shell uname -s),Darwin)
 +SHELL_ICU =
@@ -40,12 +40,12 @@ index 57a27c1e3fc1..ee8ebbb92f50 100644
 --- a/third_party/sqlite/patched/main.mk
 +++ b/third_party/sqlite/patched/main.mk
 @@ -556,7 +556,7 @@ libsqlite3.a:	$(LIBOBJ)
- 
+
  sqlite3$(EXE):	shell.c libsqlite3.a sqlite3.h
  	$(TCCX) $(READLINE_FLAGS) -o sqlite3$(EXE) $(SHELL_OPT) \
 -		shell.c libsqlite3.a $(LIBREADLINE) $(TLIBS) $(THREADLIB)
 +		shell.c $(SHELL_ICU) libsqlite3.a $(LIBREADLINE) $(TLIBS) $(THREADLIB)
- 
+
  sqldiff$(EXE):	$(TOP)/tool/sqldiff.c sqlite3.c sqlite3.h
  	$(TCCX) -o sqldiff$(EXE) -DSQLITE_THREADSAFE=0 \
 diff --git a/third_party/sqlite/patched/src/shell.c.in b/third_party/sqlite/patched/src/shell.c.in
@@ -55,7 +55,7 @@ index cca409a6ac73..9ccac2b34ee5 100644
 @@ -8891,6 +8891,16 @@ int SQLITE_CDECL wmain(int argc, wchar_t **wargv){
    }
  #endif
- 
+
 +  /* Begin evanm patch. */
 +#if !defined(__APPLE__)
 +  extern int sqlite_shell_init_icu();
@@ -140,6 +140,6 @@ index 000000000000..67ebbf4fbdb4
 +
 +  return 1;
 +}
--- 
-2.21.0.392.gf8f6787159e-goog
+--
+2.21.0.1020.gf2820cf01a-goog
 
