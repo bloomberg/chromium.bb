@@ -11,7 +11,7 @@ Example bug: https://crbug.com/956851
 
 # Simple automated repro
 TODO: Move to [here](https://google.github.io/clusterfuzz/using-clusterfuzz/)?
-If just trying to verify that the bug still repros on the current trunk:
+To verify that the bug still repros on the current master branch:
 1. Open the relevant bug (ex. https://crbug.com/956851).
 2. Open the clusterfuzz "Detailed report" (ex. https://clusterfuzz.com/testcase?key=5756437473656832).
 3. Click on the "REDO TASK" button.
@@ -29,9 +29,8 @@ stack trace will be displayed in the "Detailed report".
 # Local repro using clusterfuzz testcase id
 If the fuzzer that identified this bug is public (ex. dbfuzz2), reproduce
 locally using the [Reproduce Tool](https://github.com/google/clusterfuzz-tools).
-1. Set ${TESTCASE_ID}, where TESTCASE_ID is the ID at the end of the clusterfuzz
-link (ex. `export TESTCASE_ID=5756437473656832`).
-2. `/google/data/ro/teams/clusterfuzz-tools/releases/clusterfuzz reproduce --current --skip-deps ${TESTCASE_ID}`,
+1. `export TESTCASE_ID=5756437473656832 # Set ${TESTCASE_ID}, where TESTCASE_ID is the ID at the end of the clusterfuzz link`
+2. `/google/data/ro/teams/clusterfuzz-tools/releases/clusterfuzz reproduce --current --skip-deps ${TESTCASE_ID}`
 
 # Local repro using clusterfuzz testcase
 If the fuzzer is not public (ex. LPM-based fuzzers, including fts_lpm), or if
@@ -39,7 +38,7 @@ more data is needed, reproduce a bit more manually by first building the target.
 To build the target, first set .gn args to match those in the clusterfuzz link,
 then build and run the fuzzer.
 
-1. `export FUZZER_NAME=sqlite3_fts3_lpm_fuzzer  # FUZZER_NAME is listed in the crbug as the Fuzz target binary`
+1. `export FUZZER_NAME=sqlite3_fts3_lpm_fuzzer  # FUZZER_NAME is listed in the crbug as the "Fuzz target binary"`
 2. Download the clusterfuzz minimized testcase.
 3. `export CLUSTERFUZZ_TESTCASE=./clusterfuzz-testcase-minimized-sqlite3_fts3_lpm_fuzzer-5756437473656832  # Set the clusterfuzz testcase path to CLUSTERFUZZ_TESTCASE`
 3. `gn args out/Fuzzer  # Set arguments to matches those in the clusterfuzz "Detailed report"'s "GN CONFIG (ARGS.GN)" section`
@@ -53,7 +52,7 @@ non-sql content afterwards. Either way, ensure that the case continues to repro
 given filters placed in (7).
 
 # Local repro using SQL commands
-Please have a SQL query ready, preferably in .sql format. For this context,
-we'll refer to this query as repro.sql.
+Please have a .sql file with SQL queries ready. We'll refer to this file as
+repro.sql.
 1. `autoninja -C out/Fuzzer/ sqlite_shell  # Build the sqlite_shell`
 2. `out/Fuzzer/sqlite_shell < repro.sql  # Try running this sql query in sqlite`
