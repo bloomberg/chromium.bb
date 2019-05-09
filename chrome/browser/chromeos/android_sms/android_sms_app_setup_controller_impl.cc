@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -41,6 +42,11 @@ const char kMigrationCookieName[] = "cros_migrated_to";
 const char kDefaultToPersistCookieValue[] = "true";
 
 }  // namespace
+
+// static
+const base::TimeDelta AndroidSmsAppSetupControllerImpl::kInstallRetryDelay =
+    base::TimeDelta::FromSeconds(5);
+const size_t AndroidSmsAppSetupControllerImpl::kMaxInstallRetryCount = 7u;
 
 AndroidSmsAppSetupControllerImpl::PwaDelegate::PwaDelegate() = default;
 
@@ -218,6 +224,17 @@ void AndroidSmsAppSetupControllerImpl::OnDeleteMigrationCookieResult(
     return;
   }
 
+  TryInstallApp(install_url, app_url, 0 /* num_attempts_so_far */,
+                std::move(callback));
+}
+
+void AndroidSmsAppSetupControllerImpl::TryInstallApp(const GURL& install_url,
+                                                     const GURL& app_url,
+                                                     size_t num_attempts_so_far,
+                                                     SuccessCallback callback) {
+  PA_LOG(VERBOSE) << "AndroidSmsAppSetupControllerImpl::TryInstallApp(): "
+                  << "Trying to install PWA for " << install_url
+                  << ". Num attempts so far # " << num_attempts_so_far;
   web_app::InstallOptions options(install_url,
                                   web_app::LaunchContainer::kWindow,
                                   web_app::InstallSource::kInternal);
@@ -226,24 +243,44 @@ void AndroidSmsAppSetupControllerImpl::OnDeleteMigrationCookieResult(
   // bypass it as a workaround.
   options.bypass_service_worker_check = true;
   options.require_manifest = true;
-
-  PA_LOG(VERBOSE) << "AndroidSmsAppSetupControllerImpl::OnSetCookieResult(): "
-                  << "Installing PWA for " << install_url << ".";
   pending_app_manager_->Install(
       std::move(options),
       base::BindOnce(&AndroidSmsAppSetupControllerImpl::OnAppInstallResult,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     app_url));
+                     num_attempts_so_far, app_url));
 }
 
 void AndroidSmsAppSetupControllerImpl::OnAppInstallResult(
     SuccessCallback callback,
+    size_t num_attempts_so_far,
     const GURL& app_url,
     const GURL& install_url,
     web_app::InstallResultCode code) {
   UMA_HISTOGRAM_ENUMERATION("AndroidSms.PWAInstallationResult", code);
+  bool install_succeeded =
+      code == web_app::InstallResultCode::kSuccess ||
+      code == web_app::InstallResultCode::kAlreadyInstalled;
 
-  if (code != web_app::InstallResultCode::kSuccess) {
+  if (!install_succeeded && num_attempts_so_far < kMaxInstallRetryCount) {
+    base::TimeDelta retry_delay =
+        kInstallRetryDelay * (1 << num_attempts_so_far);
+    PA_LOG(VERBOSE)
+        << "AndroidSmsAppSetupControllerImpl::OnAppInstallResult(): "
+        << "PWA for " << install_url << " failed to install."
+        << "InstallResultCode: " << static_cast<int>(code)
+        << " Retrying again in " << retry_delay;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&AndroidSmsAppSetupControllerImpl::TryInstallApp,
+                       weak_ptr_factory_.GetWeakPtr(), install_url, app_url,
+                       num_attempts_so_far + 1, std::move(callback)),
+        retry_delay);
+    return;
+  }
+  UMA_HISTOGRAM_BOOLEAN("AndroidSms.EffectivePWAInstallationSuccess",
+                        install_succeeded);
+
+  if (!install_succeeded) {
     PA_LOG(WARNING)
         << "AndroidSmsAppSetupControllerImpl::OnAppInstallResult(): "
         << "PWA for " << install_url << " failed to install. "
@@ -251,9 +288,11 @@ void AndroidSmsAppSetupControllerImpl::OnAppInstallResult(
     std::move(callback).Run(false /* success */);
     return;
   }
-
   PA_LOG(INFO) << "AndroidSmsAppSetupControllerImpl::OnAppInstallResult(): "
                << "PWA for " << install_url << " was installed successfully.";
+
+  UMA_HISTOGRAM_EXACT_LINEAR("AndroidSms.NumAttemptsForSuccessfulInstallation",
+                             num_attempts_so_far + 1, kMaxInstallRetryCount);
 
   // Grant notification permission for the PWA.
   host_content_settings_map_->SetWebsiteSettingDefaultScope(
