@@ -977,6 +977,7 @@ jumbo_static_library("extensions") {
       configs += [ "//build/config/linux/dbus" ]
     }
     deps += [
+      "//ash",
       "//ash/public/cpp",
       "//chrome/browser/resources/chromeos/camera:chrome_camera_app",
       "//chromeos",
