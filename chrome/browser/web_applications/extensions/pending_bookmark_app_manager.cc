@@ -26,10 +26,11 @@ namespace {
 
 std::unique_ptr<BookmarkAppInstallationTask> InstallationTaskCreateWrapper(
     Profile* profile,
+    web_app::AppRegistrar* registrar,
     web_app::InstallFinalizer* install_finalizer,
     web_app::InstallOptions install_options) {
   return std::make_unique<BookmarkAppInstallationTask>(
-      profile, install_finalizer, std::move(install_options));
+      profile, registrar, install_finalizer, std::move(install_options));
 }
 
 }  // namespace
@@ -62,7 +63,7 @@ PendingBookmarkAppManager::~PendingBookmarkAppManager() = default;
 void PendingBookmarkAppManager::Install(web_app::InstallOptions install_options,
                                         OnceInstallCallback callback) {
   pending_tasks_and_callbacks_.push_front(std::make_unique<TaskAndCallback>(
-      task_factory_.Run(profile_, install_finalizer_,
+      task_factory_.Run(profile_, registrar_, install_finalizer_,
                         std::move(install_options)),
       std::move(callback)));
 
@@ -77,7 +78,7 @@ void PendingBookmarkAppManager::InstallApps(
     const RepeatingInstallCallback& callback) {
   for (auto& install_options : install_options_list) {
     pending_tasks_and_callbacks_.push_back(std::make_unique<TaskAndCallback>(
-        task_factory_.Run(profile_, install_finalizer_,
+        task_factory_.Run(profile_, registrar_, install_finalizer_,
                           std::move(install_options)),
         callback));
   }
@@ -265,15 +266,6 @@ void PendingBookmarkAppManager::OnUrlLoaded(
                        // callback after being deleted and this class owns the
                        // task.
                        base::Unretained(this)));
-    return;
-  }
-
-  base::Optional<web_app::AppId> app_id =
-      externally_installed_app_prefs_.LookupPlaceholderAppId(
-          install_options.url);
-  if (app_id.has_value() && registrar_->IsInstalled(app_id.value())) {
-    // No need to install a placeholder app again.
-    CurrentInstallationFinished(app_id.value());
     return;
   }
 

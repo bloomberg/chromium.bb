@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -44,9 +45,11 @@ void BookmarkAppInstallationTask::CreateTabHelpers(
 
 BookmarkAppInstallationTask::BookmarkAppInstallationTask(
     Profile* profile,
+    web_app::AppRegistrar* registrar,
     web_app::InstallFinalizer* install_finalizer,
     web_app::InstallOptions install_options)
     : profile_(profile),
+      registrar_(registrar),
       install_finalizer_(install_finalizer),
       externally_installed_app_prefs_(profile_->GetPrefs()),
       install_options_(std::move(install_options)) {}
@@ -71,6 +74,18 @@ void BookmarkAppInstallationTask::Install(content::WebContents* web_contents,
 
 void BookmarkAppInstallationTask::InstallPlaceholder(ResultCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  base::Optional<web_app::AppId> app_id =
+      externally_installed_app_prefs_.LookupPlaceholderAppId(
+          install_options_.url);
+  if (app_id.has_value() && registrar_->IsInstalled(app_id.value())) {
+    // No need to install a placeholder app again.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback),
+                       Result(web_app::InstallResultCode::kSuccess, app_id)));
+    return;
+  }
 
   WebApplicationInfo web_app_info;
   web_app_info.title = base::UTF8ToUTF16(install_options_.url.spec());

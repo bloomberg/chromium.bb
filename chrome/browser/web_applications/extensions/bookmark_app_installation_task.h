@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/install_options.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -57,6 +58,7 @@ class BookmarkAppInstallationTask {
   // policy, etc.
   explicit BookmarkAppInstallationTask(
       Profile* profile,
+      web_app::AppRegistrar* registrar,
       web_app::InstallFinalizer* install_finalizer,
       web_app::InstallOptions install_options);
 
@@ -76,6 +78,7 @@ class BookmarkAppInstallationTask {
                          web_app::InstallResultCode code);
 
   Profile* profile_;
+  web_app::AppRegistrar* registrar_;
   web_app::InstallFinalizer* install_finalizer_;
 
   web_app::ExternallyInstalledWebAppPrefs externally_installed_app_prefs_;

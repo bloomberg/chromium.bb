@@ -83,6 +83,7 @@ class TestBookmarkAppInstallationTask : public BookmarkAppInstallationTask {
                                   web_app::InstallOptions install_options,
                                   bool succeeds)
       : BookmarkAppInstallationTask(profile,
+                                    registrar,
                                     install_finalizer,
                                     std::move(install_options)),
         profile_(profile),
@@ -245,8 +246,10 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
 
   std::unique_ptr<BookmarkAppInstallationTask> CreateSuccessfulInstallationTask(
       Profile* profile,
+      web_app::AppRegistrar* registrar,
       web_app::InstallFinalizer* install_finalizer,
       web_app::InstallOptions install_options) {
+    DCHECK_EQ(registrar, registrar_.get());
     return CreateInstallationTask(profile, install_finalizer,
                                   std::move(install_options),
                                   true /* succeeds */);
@@ -254,8 +257,10 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
 
   std::unique_ptr<BookmarkAppInstallationTask> CreateFailingInstallationTask(
       Profile* profile,
+      web_app::AppRegistrar* registrar,
       web_app::InstallFinalizer* install_finalizer,
       web_app::InstallOptions install_options) {
+    DCHECK_EQ(registrar, registrar_.get());
     return CreateInstallationTask(profile, install_finalizer,
                                   std::move(install_options),
                                   false /* succeeds */);
@@ -1283,7 +1288,7 @@ TEST_F(PendingBookmarkAppManagerTest,
     EXPECT_EQ(1u, install_placeholder_run_count());
   }
 
-  // Reinstall placeholder
+  // Try to reinstall placeholder
   {
     install_options.reinstall_placeholder = true;
     url_loader()->SetNextLoadUrlResult(
@@ -1303,7 +1308,10 @@ TEST_F(PendingBookmarkAppManagerTest,
     EXPECT_EQ(0u, uninstall_call_count());
 
     EXPECT_EQ(0u, install_run_count());
-    EXPECT_EQ(1u, install_placeholder_run_count());
+    // Even though the placeholder app is already install, we make a call to
+    // InstallFinalizer. InstallFinalizer ensures we don't unnecessarily
+    // install the placeholder app again.
+    EXPECT_EQ(2u, install_placeholder_run_count());
   }
 }
 

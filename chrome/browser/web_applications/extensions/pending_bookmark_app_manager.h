@@ -48,6 +48,7 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
   using TaskFactory =
       base::RepeatingCallback<std::unique_ptr<BookmarkAppInstallationTask>(
           Profile*,
+          web_app::AppRegistrar*,
           web_app::InstallFinalizer*,
           web_app::InstallOptions)>;
 
