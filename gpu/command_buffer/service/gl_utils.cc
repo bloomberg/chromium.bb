@@ -901,23 +901,6 @@ CopyTextureMethod GetCopyTextureCHROMIUMMethod(const FeatureInfo* feature_info,
       break;
   }
 
-  // CopyTex{Sub}Image2D() from GL_RGB10_A2 has issues on some Android chipsets.
-  if (source_internal_format == GL_RGB10_A2) {
-    if (feature_info->workarounds().disable_copy_tex_image_2d_rgb10_a2_tegra) {
-      if (dest_internal_format == GL_RGBA4)
-        return CopyTextureMethod::DIRECT_DRAW;
-      return CopyTextureMethod::DRAW_AND_COPY;
-    }
-    if (feature_info->workarounds().disable_copy_tex_image_2d_rgb10_a2_adreno &&
-        dest_internal_format != GL_RGB10_A2) {
-      return CopyTextureMethod::DRAW_AND_COPY;
-    }
-    if (feature_info->workarounds().disable_copy_tex_image_2d_rgb10_a2_mali &&
-        (dest_internal_format == GL_RGB || dest_internal_format == GL_RGBA)) {
-      return CopyTextureMethod::DRAW_AND_COPY;
-    }
-  }
-
   // CopyTexImage* should not allow internalformat of GL_BGRA_EXT and
   // GL_BGRA8_EXT. https://crbug.com/663086.
   bool copy_tex_image_format_valid =
@@ -928,6 +911,15 @@ CopyTextureMethod GetCopyTextureCHROMIUMMethod(const FeatureInfo* feature_info,
       ValidateCopyTexFormatHelper(feature_info, dest_internal_format,
                                   source_internal_format, source_type,
                                   &output_error_msg);
+
+  // The ES3 spec is vague about whether or not glCopyTexImage2D from a
+  // GL_RGB10_A2 attachment to an unsized internal format is valid. Most drivers
+  // interpreted the explicit call out as not valid (and dEQP actually checks
+  // this), so avoid DIRECT_COPY in that case.
+  if (feature_info->gl_version_info().is_es &&
+      source_internal_format == GL_RGB10_A2 &&
+      dest_internal_format != source_internal_format)
+    copy_tex_image_format_valid = false;
 
   // TODO(qiankun.miao@intel.com): for WebGL 2.0 or OpenGL ES 3.0, both
   // DIRECT_DRAW path for dest_level > 0 and DIRECT_COPY path for source_level >
