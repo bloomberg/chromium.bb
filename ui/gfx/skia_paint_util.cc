@@ -43,11 +43,9 @@ sk_sp<cc::PaintShader> CreateImageRepShaderForScale(
   // TODO(malaykeshav): The check for has_paint_image was only added here to
   // prevent generating a paint record in tests. Tests need an instance of
   // base::DiscardableMemoryAllocator to generate the PaintRecord. However most
-  // test suites dont have this set. Ensure that the check is removed before
-  // enabling the |kUsePaintRecordForImageSkia| feature by default.
+  // test suites don't have this set.
   // https://crbug.com/891469
-  if (base::FeatureList::IsEnabled(features::kUsePaintRecordForImageSkia) &&
-      !image_rep.has_paint_image()) {
+  if (!image_rep.has_paint_image()) {
     return cc::PaintShader::MakePaintRecord(
         image_rep.GetPaintRecord(),
         SkRect::MakeIWH(image_rep.pixel_width(), image_rep.pixel_height()),
