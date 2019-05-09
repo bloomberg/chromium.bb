@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
+#include "chromeos/dbus/constants/dbus_switches.h"
 
 namespace chromeos {
 
@@ -49,6 +50,7 @@ class WelcomeScreenBrowserTest : public InProcessBrowserTest {
   ~WelcomeScreenBrowserTest() override = default;
 
   // InProcessBrowserTest:
+
   void SetUpOnMainThread() override {
     ShowLoginWizard(OobeScreen::SCREEN_TEST_NO_WINDOW);
 
@@ -89,6 +91,18 @@ class WelcomeScreenBrowserTest : public InProcessBrowserTest {
   base::OnceClosure screen_exit_callback_;
 };
 
+class WelcomeScreenSystemDevModeBrowserTest : public WelcomeScreenBrowserTest {
+ public:
+  WelcomeScreenSystemDevModeBrowserTest() = default;
+  ~WelcomeScreenSystemDevModeBrowserTest() override = default;
+
+  // InProcessBrowserTest:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    WelcomeScreenBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(chromeos::switches::kSystemDevMode);
+  }
+};
+
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, WelcomeScreenElements) {
   welcome_screen_->Show();
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
@@ -103,6 +117,8 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, WelcomeScreenElements) {
       {"connect", "welcomeScreen", "languageSelectionButton"});
   test::OobeJS().ExpectVisiblePath(
       {"connect", "welcomeScreen", "accessibilitySettingsButton"});
+  test::OobeJS().ExpectVisiblePath(
+      {"connect", "welcomeScreen", "enableDebuggingLink"});
 }
 
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, WelcomeScreenNext) {
@@ -276,6 +292,19 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
 
   ToggleAccessibilityFeature("accessibility-screen-magnifier", false);
   ASSERT_FALSE(MagnificationManager::Get()->IsMagnifierEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(WelcomeScreenSystemDevModeBrowserTest,
+                       DebuggerModeTest) {
+  welcome_screen_->Show();
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
+  test::OobeJS().ClickOnPath(
+      {"connect", "welcomeScreen", "enableDebuggingLink"});
+
+  test::OobeJS().ExpectVisiblePath({"debugging-remove-protection-button"});
+  test::OobeJS().ExpectVisiblePath({"debugging-cancel-button"});
+  test::OobeJS().ExpectVisiblePath({"enable-debugging-help-link"});
+  test::OobeJS().ClickOnPath({"debugging-cancel-button"});
 }
 
 }  // namespace chromeos

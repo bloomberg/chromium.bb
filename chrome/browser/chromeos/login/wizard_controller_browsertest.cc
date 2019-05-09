@@ -50,6 +50,7 @@
 #include "chrome/browser/chromeos/login/screens/wrong_hwid_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
+#include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_configuration_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
@@ -2276,13 +2277,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerEnableDebuggingTest,
 
   // Find the enable debugging link element (in the appropriate shadow root),
   // and click it.
-  ASSERT_TRUE(
-      JSExecute("(function() {"
-                "  var root = ['connect', 'welcomeScreen'].reduce("
-                "    (root, id) => root.getElementById(id).shadowRoot,"
-                "    document);"
-                "  root.getElementById('enableDebuggingLink').click();"
-                "})();"));
+  test::OobeJS().ClickOnPath(
+      {"connect", "welcomeScreen", "enableDebuggingLink"});
 
   content::RunAllPendingInMessageLoop();
 
