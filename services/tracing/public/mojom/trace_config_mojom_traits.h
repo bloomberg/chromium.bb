@@ -49,6 +49,30 @@ class StructTraits<tracing::mojom::DataSourceDataView,
                    perfetto::TraceConfig::DataSource* out);
 };
 
+// perfetto::TraceConfig::BuiltinDataSource
+template <>
+class StructTraits<tracing::mojom::PerfettoBuiltinDataSourceDataView,
+                   perfetto::TraceConfig::BuiltinDataSource> {
+ public:
+  static bool disable_clock_snapshotting(
+      const perfetto::TraceConfig::BuiltinDataSource& src) {
+    return src.disable_clock_snapshotting();
+  }
+
+  static bool disable_trace_config(
+      const perfetto::TraceConfig::BuiltinDataSource& src) {
+    return src.disable_trace_config();
+  }
+
+  static bool disable_system_info(
+      const perfetto::TraceConfig::BuiltinDataSource& src) {
+    return src.disable_system_info();
+  }
+
+  static bool Read(tracing::mojom::PerfettoBuiltinDataSourceDataView data,
+                   perfetto::TraceConfig::BuiltinDataSource* out);
+};
+
 // perfetto::TraceConfig
 template <>
 class StructTraits<tracing::mojom::TraceConfigDataView, perfetto::TraceConfig> {
@@ -56,6 +80,11 @@ class StructTraits<tracing::mojom::TraceConfigDataView, perfetto::TraceConfig> {
   static const std::vector<perfetto::TraceConfig::DataSource>& data_sources(
       const perfetto::TraceConfig& src) {
     return src.data_sources();
+  }
+
+  static const perfetto::TraceConfig::BuiltinDataSource&
+  perfetto_builtin_data_source(const perfetto::TraceConfig& src) {
+    return src.builtin_data_sources();
   }
 
   static const std::vector<perfetto::TraceConfig::BufferConfig>& buffers(

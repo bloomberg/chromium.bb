@@ -29,6 +29,8 @@ perfetto::TraceConfig GetDefaultPerfettoConfig(
   // blocked by the sandboxed and isn't needed for Chrome regardless.
   auto* builtin_data_sources = perfetto_config.mutable_builtin_data_sources();
   builtin_data_sources->set_disable_clock_snapshotting(true);
+  builtin_data_sources->set_disable_trace_config(privacy_filtering_enabled);
+  builtin_data_sources->set_disable_system_info(privacy_filtering_enabled);
 
   // Capture actual trace events.
   auto* trace_event_data_source = perfetto_config.add_data_sources();

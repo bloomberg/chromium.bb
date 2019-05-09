@@ -149,11 +149,18 @@ struct DataSource {
   array<string> producer_name_filter;
 };
 
+struct PerfettoBuiltinDataSource {
+  bool disable_clock_snapshotting;
+  bool disable_trace_config;
+  bool disable_system_info;
+};
+
 // The configuration provided by a Consumer to the Perfetto service which
 // primarily configures which named data sources it would like to enable and
 // receive tracing data from, and how large the destination buffers should be.
 struct TraceConfig {
   array<DataSource> data_sources;
+  PerfettoBuiltinDataSource perfetto_builtin_data_source;
   array<BufferConfig> buffers;
 
   uint32 duration_ms;

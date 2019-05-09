@@ -62,6 +62,7 @@ source_set("privacy_check") {
   testonly = true
 
   sources = [
+    "perfetto/privacy_filtered_fields-inl.h",
     "perfetto/privacy_filtering_check.cc",
     "perfetto/privacy_filtering_check.h",
   ]

@@ -36,5 +36,6 @@ type_mappings = [
   "tracing.mojom.DataSourceConfig=perfetto::DataSourceConfig",
   "tracing.mojom.ChromeConfig=perfetto::ChromeConfig",
   "tracing.mojom.DataSourceRegistration=perfetto::DataSourceDescriptor",
+  "tracing.mojom.PerfettoBuiltinDataSource=perfetto::TraceConfig::BuiltinDataSource",
   "tracing.mojom.TraceConfig=perfetto::TraceConfig",
 ]

@@ -91,18 +91,11 @@ PerfettoFileTracer::PerfettoFileTracer()
 
   const auto& chrome_config =
       tracing::TraceStartupConfig::GetInstance()->GetTraceConfig();
+  // The output is always proto based. So, enable privacy filtering if argument
+  // filter is enabled.
+  bool privacy_filtering = chrome_config.IsArgumentFilterEnabled();
   perfetto::TraceConfig trace_config =
-      tracing::GetDefaultPerfettoConfig(chrome_config);
-
-  // TODO(ssid): This should be moved to GetDefaultPerfettoConfig(). But,
-  // currently we only require this for proto output since JSON exporter still
-  // needs sensitive fields in trace, which will later be stripped.
-  for (auto& source : *trace_config.mutable_data_sources()) {
-    source.mutable_config()
-        ->mutable_chrome_config()
-        ->set_privacy_filtering_enabled(
-            chrome_config.IsArgumentFilterEnabled());
-  }
+      tracing::GetDefaultPerfettoConfig(chrome_config, privacy_filtering);
 
   int duration_in_seconds =
       tracing::TraceStartupConfig::GetInstance()->GetStartupDuration();
