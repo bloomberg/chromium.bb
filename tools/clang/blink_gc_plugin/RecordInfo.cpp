@@ -718,13 +718,6 @@ Edge* RecordInfo::CreateEdge(const Type* type) {
     return edge;
   }
 
-  if (Config::IsTraceWrapperMember(info->name()) &&
-      info->GetTemplateArgs(1, &args)) {
-    if (Edge* ptr = CreateEdge(args[0]))
-      return new TraceWrapperMember(ptr);
-    return 0;
-  }
-
   if (Config::IsTraceWrapperV8Reference(info->name()) &&
       info->GetTemplateArgs(1, &args)) {
     if (Edge* ptr = CreateEdge(args[0]))
