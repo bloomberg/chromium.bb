@@ -45,7 +45,7 @@ public class GridTabSwitcherCoordinator
             ActivityLifecycleDispatcher lifecycleDispatcher, ToolbarManager toolbarManager,
             TabModelSelector tabModelSelector, TabContentManager tabContentManager,
             CompositorViewHolder compositorViewHolder, ChromeFullscreenManager fullscreenManager,
-            TabCreatorManager tabCreatorManager) {
+            TabCreatorManager tabCreatorManager, Runnable backPress) {
         PropertyModel containerViewModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
         TabListMediator.GridCardOnClickListenerProvider gridCardOnClickListenerProvider;
         if (FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
@@ -86,8 +86,8 @@ public class GridTabSwitcherCoordinator
                 org.chromium.chrome.tab_ui.R.layout.grid_tab_switcher_layout, COMPONENT_NAME);
         HistoryNavigationLayout navigation =
                 compositorViewHolder.findViewById(R.id.history_navigation);
-        navigation.setNavigationDelegate(
-                HistoryNavigationDelegate.createForTabSwitcher(tabModelSelector::getCurrentTab));
+        navigation.setNavigationDelegate(HistoryNavigationDelegate.createForTabSwitcher(
+                context, backPress, tabModelSelector::getCurrentTab));
         mContainerViewChangeProcessor = PropertyModelChangeProcessor.create(containerViewModel,
                 mTabGridCoordinator.getContainerView(), TabGridContainerViewBinder::bind);
 

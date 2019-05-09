@@ -69,23 +69,27 @@ public abstract class HistoryNavigationDelegate {
     // Implementation for tab switcher. Can't go forward, and going back exits
     // the switcher. Can exit Chrome if there's no current tab to go back to.
     private static class TabSwitcherNavigationDelegate extends HistoryNavigationDelegate {
-        private Supplier<Tab> mCurrentTab;
+        private final Runnable mBackPress;
+        private final Supplier<Tab> mCurrentTab;
 
-        private TabSwitcherNavigationDelegate(Supplier<Tab> currentTab) {
-            super(currentTab.get().getActivity());
+        private TabSwitcherNavigationDelegate(
+                Context context, Runnable backPress, Supplier<Tab> currentTab) {
+            super(context);
+            mBackPress = backPress;
             mCurrentTab = currentTab;
         }
 
         @Override
         public NavigationHandler.ActionDelegate createActionDelegate() {
-            return new TabSwitcherActionDelegate(mCurrentTab);
+            return new TabSwitcherActionDelegate(mBackPress, mCurrentTab);
         }
     }
 
     /**
      * Creates {@link HistoryNavigationDelegate} for tab switcher.
      */
-    public static HistoryNavigationDelegate createForTabSwitcher(Supplier<Tab> currentTab) {
-        return new TabSwitcherNavigationDelegate(currentTab);
+    public static HistoryNavigationDelegate createForTabSwitcher(
+            Context context, Runnable backPress, Supplier<Tab> currentTab) {
+        return new TabSwitcherNavigationDelegate(context, backPress, currentTab);
     }
 }

@@ -533,7 +533,8 @@ public abstract class StackLayoutBase extends Layout {
         if (mNavigationEnabled && mNavigationHandler == null) {
             Tab currentTab = mTabModelSelector.getCurrentTab();
             mNavigationHandler = new NavigationHandler(mViewContainer,
-                    new TabSwitcherActionDelegate(mTabModelSelector::getCurrentTab),
+                    new TabSwitcherActionDelegate(currentTab.getActivity()::onBackPressed,
+                            mTabModelSelector::getCurrentTab),
                     NavigationGlowFactory.forSceneLayer(mViewContainer, mSceneLayer,
                             currentTab.getActivity().getWindowAndroid()));
         }

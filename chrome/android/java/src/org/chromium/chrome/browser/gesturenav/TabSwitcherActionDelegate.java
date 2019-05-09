@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.gesturenav;
 
 import org.chromium.base.Supplier;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
 
 /**
@@ -15,14 +14,11 @@ import org.chromium.chrome.browser.tab.Tab;
  */
 public class TabSwitcherActionDelegate implements NavigationHandler.ActionDelegate {
     private final Supplier<Tab> mCurrentTab;
-    private final ChromeActivity mActivity;
+    private final Runnable mBackPress;
 
-    public TabSwitcherActionDelegate(Supplier<Tab> currentTab) {
+    public TabSwitcherActionDelegate(Runnable backPress, Supplier<Tab> currentTab) {
+        mBackPress = backPress;
         mCurrentTab = currentTab;
-
-        // Cache the activity at the beginning since it may not be reachable
-        // later when current tab becomes null.
-        mActivity = currentTab.get().getActivity();
     }
 
     @Override
@@ -33,7 +29,7 @@ public class TabSwitcherActionDelegate implements NavigationHandler.ActionDelega
     @Override
     public void navigate(boolean forward) {
         assert !forward : "Should be called only for back navigation";
-        mActivity.onBackPressed();
+        mBackPress.run();
     }
 
     @Override

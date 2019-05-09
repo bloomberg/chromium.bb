@@ -29,7 +29,7 @@ public class TabManagementModuleImpl implements TabManagementModule {
         return new GridTabSwitcherCoordinator(activity, activity.getLifecycleDispatcher(),
                 activity.getToolbarManager(), activity.getTabModelSelector(),
                 activity.getTabContentManager(), activity.getCompositorViewHolder(),
-                activity.getFullscreenManager(), activity);
+                activity.getFullscreenManager(), activity, activity::onBackPressed);
     }
 
     @Override
