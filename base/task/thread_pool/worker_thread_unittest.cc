@@ -60,7 +60,7 @@ class WorkerThreadDefaultDelegate : public WorkerThread::Delegate {
   scoped_refptr<TaskSource> GetWork(WorkerThread* worker) override {
     return nullptr;
   }
-  void DidRunTask(scoped_refptr<TaskSource> sequence) override {
+  void DidRunTask(scoped_refptr<TaskSource> task_source) override {
     ADD_FAILURE() << "Unexpected call to DidRunTask()";
   }
   TimeDelta GetSleepTimeout() override { return TimeDelta::Max(); }
@@ -184,6 +184,7 @@ class ThreadPoolWorkerTest : public testing::TestWithParam<int> {
             &task, sequence->shutdown_behavior()));
         sequence_transaction.PushTask(std::move(task));
       }
+      EXPECT_TRUE(outer_->task_tracker_.WillQueueTaskSource(sequence.get()));
 
       ExpectCallToDidRunTask();
 
@@ -192,39 +193,38 @@ class ThreadPoolWorkerTest : public testing::TestWithParam<int> {
         CheckedAutoLock auto_lock(outer_->lock_);
         outer_->created_sequences_.push_back(sequence);
       }
-
       return sequence;
     }
 
-    // This override verifies that |sequence| has the expected number of Tasks
-    // and adds it to |did_run_task_sequences_|. Unlike a normal DidRunTask()
-    // implementation, it doesn't add |sequence| to a queue for further
-    // execution.
-    void DidRunTask(scoped_refptr<TaskSource> sequence) override {
+    // This override verifies that |task_source| has the expected number of
+    // Tasks and adds it to |did_run_task_sequences_|. Unlike a normal
+    // DidRunTask() implementation, it doesn't add |task_source| to a queue for
+    // further execution.
+    void DidRunTask(scoped_refptr<TaskSource> task_source) override {
       {
         CheckedAutoLock auto_lock(expect_did_run_task_lock_);
         EXPECT_TRUE(expect_did_run_task_);
         expect_did_run_task_ = false;
       }
 
-      // If TasksPerSequence() is 1, |sequence| should be nullptr. Otherwise,
-      // |sequence| should contain TasksPerSequence() - 1 Tasks.
+      // If TasksPerSequence() is 1, |task_source| should be nullptr. Otherwise,
+      // |task_source| should contain TasksPerSequence() - 1 Tasks.
       if (outer_->TasksPerSequence() == 1) {
-        EXPECT_FALSE(sequence);
+        EXPECT_FALSE(task_source);
       } else {
-        EXPECT_TRUE(sequence);
+        EXPECT_TRUE(task_source);
 
-        // Verify the number of Tasks in |sequence|.
-        auto sequence_transaction(sequence->BeginTransaction());
+        // Verify the number of Tasks in |task_source|.
+        auto transaction(task_source->BeginTransaction());
         for (int i = 0; i < outer_->TasksPerSequence() - 1; ++i) {
-          EXPECT_TRUE(sequence_transaction.TakeTask());
+          EXPECT_TRUE(transaction.TakeTask());
           EXPECT_EQ(i == outer_->TasksPerSequence() - 2,
-                    !sequence_transaction.DidRunTask());
+                    !transaction.DidRunTask());
         }
 
-        // Add |sequence| to |did_run_task_sequences_|.
+        // Add |task_source| to |did_run_task_sequences_|.
         CheckedAutoLock auto_lock(outer_->lock_);
-        outer_->did_run_task_sequences_.push_back(std::move(sequence));
+        outer_->did_run_task_sequences_.push_back(std::move(task_source));
         EXPECT_LE(outer_->did_run_task_sequences_.size(),
                   outer_->created_sequences_.size());
       }
@@ -456,6 +456,7 @@ class ControllableCleanupDelegate : public WorkerThreadDefaultDelegate {
     EXPECT_TRUE(
         task_tracker_->WillPostTask(&task, sequence->shutdown_behavior()));
     sequence->BeginTransaction().PushTask(std::move(task));
+    EXPECT_TRUE(task_tracker_->WillQueueTaskSource(sequence.get()));
     return sequence;
   }
 
@@ -737,8 +738,10 @@ TEST(ThreadPoolWorkerTest, BumpPriorityOfAliveThreadDuringShutdown) {
 
   // Block shutdown to ensure that the worker doesn't exit when StartShutdown()
   // is called.
-  Task task(FROM_HERE, DoNothing(), TimeDelta());
-  task_tracker.WillPostTask(&task, TaskShutdownBehavior::BLOCK_SHUTDOWN);
+  scoped_refptr<Sequence> sequence =
+      MakeRefCounted<Sequence>(TaskTraits(TaskShutdownBehavior::BLOCK_SHUTDOWN),
+                               nullptr, TaskSourceExecutionMode::kParallel);
+  task_tracker.WillQueueTaskSource(sequence.get());
 
   std::unique_ptr<ExpectThreadPriorityDelegate> delegate(
       new ExpectThreadPriorityDelegate);

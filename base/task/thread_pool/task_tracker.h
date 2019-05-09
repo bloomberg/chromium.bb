@@ -26,6 +26,7 @@
 #include "base/task/thread_pool/task.h"
 #include "base/task/thread_pool/task_source.h"
 #include "base/task/thread_pool/tracked_ref.h"
+#include "base/thread_annotations.h"
 
 namespace base {
 
@@ -46,8 +47,9 @@ enum class CanRunPolicy {
 
 // TaskTracker enforces policies that determines whether:
 // - A task can be added to a task source (WillPostTask).
+// - A task source can be queued (WillQueueTaskSource).
 // - Tasks for a given priority can run (CanRunPriority).
-// - The next task in a scheduled task source can run (RunAndPopNextTask).
+// - The next task in a queued task source can run (RunAndPopNextTask).
 // TaskTracker also sets up the environment to run a task (RunAndPopNextTask)
 // and records metrics and trace events. This class is thread-safe.
 class BASE_EXPORT TaskTracker {
@@ -71,10 +73,10 @@ class BASE_EXPORT TaskTracker {
   // This can only be called once.
   void CompleteShutdown();
 
-  // Waits until there are no incomplete undelayed tasks. May be called in tests
-  // to validate that a condition is met after all undelayed tasks have run.
+  // Waits until there are no incomplete task sources. May be called in tests
+  // to validate that a condition is met after all task sources have run.
   //
-  // Does not wait for delayed tasks. Waits for undelayed tasks posted from
+  // Does not wait for delayed tasks. Waits for task sources posted from
   // other threads during the call. Returns immediately when shutdown completes.
   void FlushForTesting();
 
@@ -95,6 +97,11 @@ class BASE_EXPORT TaskTracker {
   // should be posted if-and-only-if it is). This method may also modify
   // metadata on |task| if desired.
   bool WillPostTask(Task* task, TaskShutdownBehavior shutdown_behavior);
+
+  // Informs this TaskTracker that |task_source| is about to be queued. Returns
+  // true if this operation is allowed (|task_source| should be queued
+  // if-and-only-if it is).
+  bool WillQueueTaskSource(TaskSource* task_source);
 
   // Returns true if a task with |priority| can run under to the current policy.
   bool CanRunPriority(TaskPriority priority) const;
@@ -159,10 +166,10 @@ class BASE_EXPORT TaskTracker {
                              const TaskTraits& traits,
                              bool can_run_task);
 
-  // Returns true if there are undelayed tasks that haven't completed their
+  // Returns true if there are task sources that haven't completed their
   // execution (still queued or in progress). If it returns false: the side-
   // effects of all completed tasks are guaranteed to be visible to the caller.
-  bool HasIncompleteUndelayedTasksForTesting() const;
+  bool HasIncompleteTaskSourcesForTesting() const;
 
  private:
   class State;
@@ -170,27 +177,29 @@ class BASE_EXPORT TaskTracker {
   void PerformShutdown();
 
   // Called before WillPostTask() informs the tracing system that a task has
-  // been posted. Updates |num_tasks_blocking_shutdown_| if necessary and
+  // been posted. Updates |num_items_blocking_shutdown_| if necessary and
   // returns true if the current shutdown state allows the task to be posted.
-  bool BeforePostTask(TaskShutdownBehavior effective_shutdown_behavior);
+  bool BeforeQueueTaskSource(TaskShutdownBehavior effective_shutdown_behavior);
 
   // Called before a task with |effective_shutdown_behavior| is run by
-  // RunTask(). Updates |num_tasks_blocking_shutdown_| if necessary and returns
+  // RunTask(). Updates |num_items_blocking_shutdown_| if necessary and returns
   // true if the current shutdown state allows the task to be run.
   bool BeforeRunTask(TaskShutdownBehavior effective_shutdown_behavior);
 
   // Called after a task with |effective_shutdown_behavior| has been run by
-  // RunTask(). Updates |num_tasks_blocking_shutdown_| and signals
-  // |shutdown_cv_| if necessary.
+  // RunTask(). Updates |num_items_blocking_shutdown_| if necessary.
   void AfterRunTask(TaskShutdownBehavior effective_shutdown_behavior);
 
-  // Called when the number of tasks blocking shutdown becomes zero after
-  // shutdown has started.
-  void OnBlockingShutdownTasksComplete();
+  // Called after the last task from |task_source| was run and it won't be
+  // reenqueued. Updates |num_items_blocking_shutdown_| if necessary.
+  void OnTaskSourceNotReEnqueued(TaskSource* task_source);
 
-  // Decrements the number of incomplete undelayed tasks and signals |flush_cv_|
+  // Called when an items blocking shutdown finishes after shutdown has started.
+  void DecrementNumItemsBlockingShutdown();
+
+  // Decrements the number of incomplete task sources and signals |flush_cv_|
   // if it reaches zero.
-  void DecrementNumIncompleteUndelayedTasks();
+  void DecrementNumIncompleteTaskSources();
 
   // Calls |flush_callback_for_testing_| if one is available in a lock-safe
   // manner.
@@ -217,30 +226,30 @@ class BASE_EXPORT TaskTracker {
   // has started.
   const std::unique_ptr<State> state_;
 
-  // Number of undelayed tasks that haven't completed their execution. Is
-  // decremented with a memory barrier after a task runs. Is accessed with an
-  // acquire memory barrier in FlushForTesting(). The memory barriers ensure
-  // that the memory written by flushed tasks is visible when FlushForTesting()
-  // returns.
-  subtle::Atomic32 num_incomplete_undelayed_tasks_ = 0;
+  // Number of task sources that haven't completed their execution. Is
+  // decremented with a memory barrier after the last task of a task source
+  // runs. Is accessed with an acquire memory barrier in FlushForTesting(). The
+  // memory barriers ensure that the memory written by flushed task sources is
+  // visible when FlushForTesting() returns.
+  std::atomic_int num_incomplete_task_sources_{0};
 
   // Global policy the determines result of CanRunPriority().
   std::atomic<CanRunPolicy> can_run_policy_;
 
   // Lock associated with |flush_cv_|. Partially synchronizes access to
-  // |num_incomplete_undelayed_tasks_|. Full synchronization isn't needed
+  // |num_incomplete_task_sources_|. Full synchronization isn't needed
   // because it's atomic, but synchronization is needed to coordinate waking and
   // sleeping at the right time. Fully synchronizes access to
   // |flush_callback_for_testing_|.
   mutable CheckedLock flush_lock_;
 
-  // Signaled when |num_incomplete_undelayed_tasks_| is or reaches zero or when
+  // Signaled when |num_incomplete_task_sources_| is or reaches zero or when
   // shutdown completes.
   const std::unique_ptr<ConditionVariable> flush_cv_;
 
-  // Invoked if non-null when |num_incomplete_undelayed_tasks_| is zero or when
+  // Invoked if non-null when |num_incomplete_task_sources_| is zero or when
   // shutdown completes.
-  OnceClosure flush_callback_for_testing_;
+  OnceClosure flush_callback_for_testing_ GUARDED_BY(flush_lock_);
 
   // Synchronizes access to shutdown related members below.
   mutable CheckedLock shutdown_lock_;

@@ -37,26 +37,22 @@ struct BASE_EXPORT ExecutionEnvironment {
 // A TaskSource is a virtual class that provides a series of Tasks that must be
 // executed.
 //
-// In order to execute a task from this TaskSource, a worker should first make
-// sure that it can take up an additional worker with NeedsWorker(). TakeTask()
-// can then be called to access the next Task, and Pop() must be called after
-// the task executed and before accessing any subsequent Tasks. This ensure that
-// the number of workers concurrently running tasks never go over the intended
-// concurrency.
+// In order to execute a task from this TaskSource, TakeTask() can be called to
+// access the next Task, and DidRunTask() must be called after the task executed
+// and before accessing any subsequent Tasks. This ensure that the number of
+// workers concurrently running tasks never go over the intended concurrency.
 //
 // In comments below, an "empty TaskSource" is a TaskSource with no Task.
 //
 // Note: there is a known refcounted-ownership cycle in the Scheduler
-// architecture: TaskSource -> Task -> TaskRunner -> TaskSource -> ...
-// This is okay so long as the other owners of TaskSource (PriorityQueue and
+// architecture: TaskSource -> TaskRunner -> TaskSource -> ... This is
+// okay so long as the other owners of TaskSource (PriorityQueue and
 // WorkerThread in alternation and
-// ThreadGroupImpl::WorkerThreadDelegateImpl::GetWork()
-// temporarily) keep running it (and taking Tasks from it as a result). A
-// dangling reference cycle would only occur should they release their reference
-// to it while it's not empty. In other words, it is only correct for them to
-// release it after IsEmpty() returns true.
-// TODO(etiennep): Break ownership cycle by moving TaskRunner reference from
-// Task to TaskSource.
+// ThreadGroupImpl::WorkerThreadDelegateImpl::GetWork() temporarily) keep
+// running it (and taking Tasks from it as a result). A dangling reference cycle
+// would only occur should they release their reference to it while it's not
+// empty. In other words, it is only correct for them to release it when
+// DidRunTask() returns false.
 //
 // This class is thread-safe.
 class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
@@ -88,9 +84,6 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
     // Returns a SequenceSortKey representing the priority of the TaskSource.
     // Cannot be called on an empty TaskSource.
     SequenceSortKey GetSortKey() const;
-
-    // Returns true if additional workers should run tasks from this TaskSource.
-    bool NeedsWorker() const;
 
     // Sets TaskSource priority to |priority|.
     void UpdatePriority(TaskPriority priority);
@@ -159,8 +152,6 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
 
   virtual SequenceSortKey GetSortKey() const = 0;
 
-  virtual bool IsEmpty() const = 0;
-
   virtual void Clear() = 0;
 
   // Sets TaskSource priority to |priority|.
@@ -180,14 +171,12 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
   HeapHandle heap_handle_;
 
   // A pointer to the TaskRunner that posts to this TaskSource, if any. The
-  // derived class is responsible for calling AddRef() when NeedWorkers()
-  // becomes true and Release() when DidRunTask() returns false.
+  // derived class is responsible for calling AddRef() when a TaskSource from
+  // which no Task is executing becomes non-empty and Release() when
+  // DidRunTask() returns false.
   TaskRunner* task_runner_;
 
   TaskSourceExecutionMode execution_mode_;
-
-  // TODO(etiennep): Add support for TaskSources with more than one worker.
-  bool has_worker_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TaskSource);
 };

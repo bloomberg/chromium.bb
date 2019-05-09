@@ -82,9 +82,9 @@ class WorkerThreadDelegate : public WorkerThread::Delegate {
   WorkerThreadDelegate(const std::string& thread_name,
                        WorkerThread::ThreadLabel thread_label,
                        TrackedRef<TaskTracker> task_tracker)
-      : thread_name_(thread_name),
-        thread_label_(thread_label),
-        task_tracker_(std::move(task_tracker)) {}
+      : task_tracker_(std::move(task_tracker)),
+        thread_name_(thread_name),
+        thread_label_(thread_label) {}
 
   void set_worker(WorkerThread* worker) {
     DCHECK(!worker_);
@@ -120,16 +120,21 @@ class WorkerThreadDelegate : public WorkerThread::Delegate {
 
   TimeDelta GetSleepTimeout() override { return TimeDelta::Max(); }
 
-  void PostTaskNow(scoped_refptr<Sequence> sequence, Task task) {
+  bool PostTaskNow(scoped_refptr<Sequence> sequence, Task task) {
     auto transaction = sequence->BeginTransaction();
-    const bool sequence_should_be_queued =
-        transaction.PushTask(std::move(task));
+    const bool sequence_should_be_queued = transaction.WillPushTask();
+    if (sequence_should_be_queued &&
+        !task_tracker_->WillQueueTaskSource(sequence.get())) {
+      return false;
+    }
+    transaction.PushTask(std::move(task));
     if (sequence_should_be_queued) {
       bool should_wakeup =
           EnqueueTaskSource({std::move(sequence), std::move(transaction)});
       if (should_wakeup)
         worker_->WakeUp();
     }
+    return true;
   }
 
   bool RunsTasksInCurrentSequence() {
@@ -172,6 +177,8 @@ class WorkerThreadDelegate : public WorkerThread::Delegate {
   CheckedLock lock_;
   bool worker_awake_ GUARDED_BY(lock_) = false;
 
+  const TrackedRef<TaskTracker> task_tracker_;
+
  private:
   // Enqueues a task source in this single-threaded worker's priority queue.
   // Returns true iff the worker must wakeup, i.e. task source is allowed to run
@@ -200,8 +207,6 @@ class WorkerThreadDelegate : public WorkerThread::Delegate {
   // starting or posting a task to the WorkerThread, because it's used in
   // OnMainEntry() and PostTaskNow().
   WorkerThread* worker_ = nullptr;
-
-  const TrackedRef<TaskTracker> task_tracker_;
 
   PriorityQueue priority_queue_ GUARDED_BY(lock_);
 
@@ -317,10 +322,14 @@ class WorkerThreadCOMDelegate : public WorkerThreadDelegate {
                              TimeDelta());
       if (task_tracker()->WillPostTask(
               &pump_message_task, TaskShutdownBehavior::SKIP_ON_SHUTDOWN)) {
-        bool was_empty = message_pump_sequence_->BeginTransaction().PushTask(
-            std::move(pump_message_task));
-        DCHECK(was_empty) << "GetWorkFromWindowsMessageQueue() does not expect "
-                             "queueing of pump tasks.";
+        auto transaction = message_pump_sequence_->BeginTransaction();
+        const bool sequence_should_be_queued = transaction.WillPushTask();
+        DCHECK(sequence_should_be_queued)
+            << "GetWorkFromWindowsMessageQueue() does not expect "
+               "queueing of pump tasks.";
+        if (!task_tracker_->WillQueueTaskSource(message_pump_sequence_.get()))
+          return nullptr;
+        transaction.PushTask(std::move(pump_message_task));
         return message_pump_sequence_;
       }
     }
@@ -375,17 +384,16 @@ class PooledSingleThreadTaskRunnerManager::PooledSingleThreadTaskRunner
       return false;
     }
 
-    if (task.delayed_run_time.is_null()) {
-      GetDelegate()->PostTaskNow(sequence_, std::move(task));
-    } else {
-      // Unretained(GetDelegate()) is safe because this TaskRunner and its
-      // worker are kept alive as long as there are pending Tasks.
-      outer_->delayed_task_manager_->AddDelayedTask(
-          std::move(task),
-          BindOnce(&WorkerThreadDelegate::PostTaskNow,
-                   Unretained(GetDelegate()), sequence_),
-          this);
-    }
+    if (task.delayed_run_time.is_null())
+      return GetDelegate()->PostTaskNow(sequence_, std::move(task));
+
+    // Unretained(GetDelegate()) is safe because this TaskRunner and its
+    // worker are kept alive as long as there are pending Tasks.
+    outer_->delayed_task_manager_->AddDelayedTask(
+        std::move(task),
+        BindOnce(IgnoreResult(&WorkerThreadDelegate::PostTaskNow),
+                 Unretained(GetDelegate()), sequence_),
+        this);
     return true;
   }
 

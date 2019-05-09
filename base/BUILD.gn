@@ -2629,7 +2629,6 @@ test("base_unittests") {
     "task/thread_pool/sequence_sort_key_unittest.cc",
     "task/thread_pool/sequence_unittest.cc",
     "task/thread_pool/service_thread_unittest.cc",
-    "task/thread_pool/task_source_unittest.cc",
     "task/thread_pool/task_tracker_unittest.cc",
     "task/thread_pool/test_task_factory.cc",
     "task/thread_pool/test_task_factory.h",

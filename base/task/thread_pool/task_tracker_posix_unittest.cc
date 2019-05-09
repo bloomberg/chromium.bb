@@ -61,6 +61,7 @@ TEST_F(ThreadPoolTaskTrackerPosixTest, RunTask) {
   EXPECT_TRUE(tracker_.WillPostTask(&task, default_traits.shutdown_behavior()));
 
   auto sequence = test::CreateSequenceWithTask(std::move(task), default_traits);
+  EXPECT_TRUE(tracker_.WillQueueTaskSource(sequence.get()));
   // Expect RunAndPopNextTask to return nullptr since |sequence| is empty after
   // popping a task from it.
   EXPECT_FALSE(tracker_.RunAndPopNextTask(sequence));
@@ -85,6 +86,7 @@ TEST_F(ThreadPoolTaskTrackerPosixTest, FileDescriptorWatcher) {
   auto sequence = test::CreateSequenceWithTask(
       std::move(task), default_traits, MakeRefCounted<NullTaskRunner>(),
       TaskSourceExecutionMode::kSequenced);
+  EXPECT_TRUE(tracker_.WillQueueTaskSource(sequence.get()));
 
   // Expect RunAndPopNextTask to return nullptr since |sequence| is empty after
   // popping a task from it.

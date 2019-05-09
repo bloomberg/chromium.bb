@@ -312,6 +312,22 @@ void ThreadPoolImpl::SetCanRunBestEffort(bool can_run_best_effort) {
   UpdateCanRunPolicy();
 }
 
+bool ThreadPoolImpl::PostTaskWithSequenceNow(Task task,
+                                             scoped_refptr<Sequence> sequence) {
+  auto transaction = sequence->BeginTransaction();
+  const bool sequence_should_be_queued = transaction.WillPushTask();
+  if (sequence_should_be_queued &&
+      !task_tracker_->WillQueueTaskSource(sequence.get()))
+    return false;
+  transaction.PushTask(std::move(task));
+  if (sequence_should_be_queued) {
+    const TaskTraits traits = transaction.traits();
+    GetThreadGroupForTraits(traits)->PushTaskSourceAndWakeUpWorkers(
+        {std::move(sequence), std::move(transaction)});
+  }
+  return true;
+}
+
 bool ThreadPoolImpl::PostTaskWithSequence(Task task,
                                           scoped_refptr<Sequence> sequence) {
   // Use CHECK instead of DCHECK to crash earlier. See http://crbug.com/711167
@@ -323,11 +339,7 @@ bool ThreadPoolImpl::PostTaskWithSequence(Task task,
     return false;
 
   if (task.delayed_run_time.is_null()) {
-    auto sequence_and_transaction =
-        SequenceAndTransaction::FromSequence(std::move(sequence));
-    const TaskTraits traits = sequence_and_transaction.transaction.traits();
-    GetThreadGroupForTraits(traits)->PostTaskWithSequenceNow(
-        std::move(task), std::move(sequence_and_transaction));
+    return PostTaskWithSequenceNow(std::move(task), std::move(sequence));
   } else {
     // It's safe to take a ref on this pointer since the caller must have a ref
     // to the TaskRunner in order to post.
@@ -337,13 +349,8 @@ bool ThreadPoolImpl::PostTaskWithSequence(Task task,
         BindOnce(
             [](scoped_refptr<Sequence> sequence,
                ThreadPoolImpl* thread_pool_impl, Task task) {
-              auto sequence_and_transaction =
-                  SequenceAndTransaction::FromSequence(std::move(sequence));
-              const TaskTraits traits =
-                  sequence_and_transaction.transaction.traits();
-              thread_pool_impl->GetThreadGroupForTraits(traits)
-                  ->PostTaskWithSequenceNow(
-                      std::move(task), std::move(sequence_and_transaction));
+              thread_pool_impl->PostTaskWithSequenceNow(std::move(task),
+                                                        std::move(sequence));
             },
             std::move(sequence), Unretained(this)),
         std::move(task_runner));

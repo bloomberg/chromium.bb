@@ -62,6 +62,8 @@ class MockPooledTaskRunnerDelegate : public PooledTaskRunnerDelegate {
 
   void SetThreadGroup(ThreadGroup* thread_group);
 
+  void PostTaskWithSequenceNow(Task task, scoped_refptr<Sequence> sequence);
+
  private:
   const TrackedRef<TaskTracker> task_tracker_;
   DelayedTaskManager* const delayed_task_manager_;
@@ -104,6 +106,10 @@ scoped_refptr<SequencedTaskRunner> CreateSequencedTaskRunnerWithTraits(
     MockPooledTaskRunnerDelegate* mock_pooled_task_runner_delegate);
 
 void WaitWithoutBlockingObserver(WaitableEvent* event);
+
+scoped_refptr<TaskSource> QueueAndRunTaskSource(
+    TaskTracker* task_tracker,
+    scoped_refptr<TaskSource> task_source);
 
 // Calls StartShutdown() and CompleteShutdown() on |task_tracker|.
 void ShutdownTaskTracker(TaskTracker* task_tracker);

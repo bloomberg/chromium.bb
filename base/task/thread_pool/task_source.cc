@@ -43,23 +43,15 @@ TaskSource::Transaction::~Transaction() {
 }
 
 Optional<Task> TaskSource::Transaction::TakeTask() {
-  DCHECK(!task_source_->has_worker_);
-  task_source_->has_worker_ = true;
   return task_source_->TakeTask();
 }
 
 bool TaskSource::Transaction::DidRunTask() {
-  DCHECK(task_source_->has_worker_);
-  task_source_->has_worker_ = false;
   return task_source_->DidRunTask();
 }
 
 SequenceSortKey TaskSource::Transaction::GetSortKey() const {
   return task_source_->GetSortKey();
-}
-
-bool TaskSource::Transaction::NeedsWorker() const {
-  return !task_source_->IsEmpty() && !task_source_->has_worker_;
 }
 
 void TaskSource::Transaction::Clear() {

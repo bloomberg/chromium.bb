@@ -581,7 +581,7 @@ void ScopedTaskEnvironment::RunUntilIdle() {
     // verified which could result in HasIncompleteUndelayedTasksForTesting()
     // returning false and the loop erroneously exiting with a pending task on
     // the main thread.
-    if (!task_tracker_->HasIncompleteUndelayedTasksForTesting())
+    if (!task_tracker_->HasIncompleteTaskSourcesForTesting())
       break;
   }
 

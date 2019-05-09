@@ -51,13 +51,17 @@ TEST(ThreadPoolSequenceTest, PushTakeRemove) {
 
   // Push task A in the sequence. PushTask() should return true since it's the
   // first task->
-  EXPECT_TRUE(sequence_transaction.PushTask(CreateTask(&mock_task_a)));
+  EXPECT_TRUE(sequence_transaction.WillPushTask());
+  sequence_transaction.PushTask(CreateTask(&mock_task_a));
 
   // Push task B, C and D in the sequence. PushTask() should return false since
   // there is already a task in a sequence.
-  EXPECT_FALSE(sequence_transaction.PushTask(CreateTask(&mock_task_b)));
-  EXPECT_FALSE(sequence_transaction.PushTask(CreateTask(&mock_task_c)));
-  EXPECT_FALSE(sequence_transaction.PushTask(CreateTask(&mock_task_d)));
+  EXPECT_FALSE(sequence_transaction.WillPushTask());
+  sequence_transaction.PushTask(CreateTask(&mock_task_b));
+  EXPECT_FALSE(sequence_transaction.WillPushTask());
+  sequence_transaction.PushTask(CreateTask(&mock_task_c));
+  EXPECT_FALSE(sequence_transaction.WillPushTask());
+  sequence_transaction.PushTask(CreateTask(&mock_task_d));
 
   // Take the task in front of the sequence. It should be task A.
   Optional<Task> task = sequence_transaction.TakeTask();
@@ -66,12 +70,14 @@ TEST(ThreadPoolSequenceTest, PushTakeRemove) {
 
   // Remove the empty slot. Task B should now be in front.
   EXPECT_TRUE(sequence_transaction.DidRunTask());
+  EXPECT_FALSE(sequence_transaction.WillPushTask());
   task = sequence_transaction.TakeTask();
   ExpectMockTask(&mock_task_b, &task.value());
   EXPECT_FALSE(task->queue_time.is_null());
 
   // Remove the empty slot. Task C should now be in front.
   EXPECT_TRUE(sequence_transaction.DidRunTask());
+  EXPECT_FALSE(sequence_transaction.WillPushTask());
   task = sequence_transaction.TakeTask();
   ExpectMockTask(&mock_task_c, &task.value());
   EXPECT_FALSE(task->queue_time.is_null());
@@ -80,7 +86,8 @@ TEST(ThreadPoolSequenceTest, PushTakeRemove) {
   EXPECT_TRUE(sequence_transaction.DidRunTask());
 
   // Push task E in the sequence.
-  EXPECT_FALSE(sequence_transaction.PushTask(CreateTask(&mock_task_e)));
+  EXPECT_FALSE(sequence_transaction.WillPushTask());
+  sequence_transaction.PushTask(CreateTask(&mock_task_e));
 
   // Task D should be in front.
   task = sequence_transaction.TakeTask();
@@ -89,12 +96,14 @@ TEST(ThreadPoolSequenceTest, PushTakeRemove) {
 
   // Remove the empty slot. Task E should now be in front.
   EXPECT_TRUE(sequence_transaction.DidRunTask());
+  EXPECT_FALSE(sequence_transaction.WillPushTask());
   task = sequence_transaction.TakeTask();
   ExpectMockTask(&mock_task_e, &task.value());
   EXPECT_FALSE(task->queue_time.is_null());
 
   // Remove the empty slot. The sequence should now be empty.
   EXPECT_FALSE(sequence_transaction.DidRunTask());
+  EXPECT_TRUE(sequence_transaction.WillPushTask());
 }
 
 // Verifies the sort key of a BEST_EFFORT sequence that contains one task.

@@ -118,9 +118,7 @@ bool MockPooledTaskRunnerDelegate::PostTaskWithSequence(
     return false;
 
   if (task.delayed_run_time.is_null()) {
-    thread_group_->PostTaskWithSequenceNow(
-        std::move(task),
-        SequenceAndTransaction::FromSequence(std::move(sequence)));
+    PostTaskWithSequenceNow(std::move(task), std::move(sequence));
   } else {
     // It's safe to take a ref on this pointer since the caller must have a ref
     // to the TaskRunner in order to post.
@@ -128,17 +126,31 @@ bool MockPooledTaskRunnerDelegate::PostTaskWithSequence(
     delayed_task_manager_->AddDelayedTask(
         std::move(task),
         BindOnce(
-            [](scoped_refptr<Sequence> sequence, ThreadGroup* thread_group,
-               Task task) {
-              thread_group->PostTaskWithSequenceNow(
-                  std::move(task),
-                  SequenceAndTransaction::FromSequence(std::move(sequence)));
+            [](scoped_refptr<Sequence> sequence,
+               MockPooledTaskRunnerDelegate* self, Task task) {
+              self->PostTaskWithSequenceNow(std::move(task),
+                                            std::move(sequence));
             },
-            std::move(sequence), thread_group_),
+            std::move(sequence), Unretained(this)),
         std::move(task_runner));
   }
 
   return true;
+}
+
+void MockPooledTaskRunnerDelegate::PostTaskWithSequenceNow(
+    Task task,
+    scoped_refptr<Sequence> sequence) {
+  auto transaction = sequence->BeginTransaction();
+  const bool sequence_should_be_queued = transaction.WillPushTask();
+  if (sequence_should_be_queued &&
+      !task_tracker_->WillQueueTaskSource(sequence.get()))
+    return;
+  transaction.PushTask(std::move(task));
+  if (sequence_should_be_queued) {
+    thread_group_->PushTaskSourceAndWakeUpWorkers(
+        {std::move(sequence), std::move(transaction)});
+  }
 }
 
 bool MockPooledTaskRunnerDelegate::IsRunningPoolWithTraits(
@@ -161,6 +173,14 @@ void MockPooledTaskRunnerDelegate::UpdatePriority(
 
 void MockPooledTaskRunnerDelegate::SetThreadGroup(ThreadGroup* thread_group) {
   thread_group_ = thread_group;
+}
+
+scoped_refptr<TaskSource> QueueAndRunTaskSource(
+    TaskTracker* task_tracker,
+    scoped_refptr<TaskSource> task_source) {
+  if (!task_tracker->WillQueueTaskSource(task_source.get()))
+    return nullptr;
+  return task_tracker->RunAndPopNextTask(std::move(task_source));
 }
 
 void ShutdownTaskTracker(TaskTracker* task_tracker) {

@@ -23,6 +23,7 @@
 #include "base/task/thread_pool/environment_config.h"
 #include "base/task/thread_pool/pooled_single_thread_task_runner_manager.h"
 #include "base/task/thread_pool/pooled_task_runner_delegate.h"
+#include "base/task/thread_pool/task_source.h"
 #include "base/task/thread_pool/task_tracker.h"
 #include "base/task/thread_pool/thread_group.h"
 #include "base/task/thread_pool/thread_group_impl.h"
@@ -114,6 +115,11 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPool,
 
   // ThreadGroup::Delegate:
   ThreadGroup* GetThreadGroupForTraits(const TaskTraits& traits) override;
+
+  // Posts |task| to be executed by the appropriate thread group as part of
+  // |sequence|. This must only be called after |task| has gone through
+  // TaskTracker::WillPostTask() and after |task|'s delayed run time.
+  bool PostTaskWithSequenceNow(Task task, scoped_refptr<Sequence> sequence);
 
   // PooledTaskRunnerDelegate:
   bool PostTaskWithSequence(Task task,

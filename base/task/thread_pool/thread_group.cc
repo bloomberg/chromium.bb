@@ -73,24 +73,6 @@ bool ThreadGroup::IsBoundToCurrentThread() const {
   return GetCurrentThreadGroup() == this;
 }
 
-void ThreadGroup::PostTaskWithSequenceNow(
-    Task task,
-    SequenceAndTransaction sequence_and_transaction) {
-  DCHECK(task.task);
-
-  // Confirm that |task| is ready to run (its delayed run time is either null or
-  // in the past).
-  DCHECK_LE(task.delayed_run_time, TimeTicks::Now());
-
-  const bool sequence_should_be_queued =
-      sequence_and_transaction.transaction.PushTask(std::move(task));
-  if (sequence_should_be_queued) {
-    PushTaskSourceAndWakeUpWorkers(
-        {std::move(sequence_and_transaction.sequence),
-         std::move(sequence_and_transaction.transaction)});
-  }
-}
-
 size_t ThreadGroup::GetNumQueuedCanRunBestEffortTaskSources() const {
   const size_t num_queued =
       priority_queue_.GetNumTaskSourcesWithPriority(TaskPriority::BEST_EFFORT);

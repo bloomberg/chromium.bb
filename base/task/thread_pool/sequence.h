@@ -51,9 +51,11 @@ class BASE_EXPORT Sequence : public TaskSource {
     Transaction(Transaction&& other);
     ~Transaction();
 
-    // Adds |task| in a new slot at the end of the Sequence. Returns true if the
-    // Sequence needs to be enqueued again.
-    bool PushTask(Task task);
+    // Returns true if the would need to be queued after receiving a new Task.
+    bool WillPushTask() const;
+
+    // Adds |task| in a new slot at the end of the Sequence.
+    void PushTask(Task task);
 
     Sequence* sequence() const { return static_cast<Sequence*>(task_source()); }
 
@@ -94,7 +96,6 @@ class BASE_EXPORT Sequence : public TaskSource {
   Optional<Task> TakeTask() override;
   bool DidRunTask() override;
   SequenceSortKey GetSortKey() const override;
-  bool IsEmpty() const override;
   void Clear() override;
 
   // Releases reference to TaskRunner. This might cause this object to be
@@ -105,6 +106,8 @@ class BASE_EXPORT Sequence : public TaskSource {
 
   // Queue of tasks to execute.
   base::queue<Task> queue_;
+
+  bool has_worker_ = false;
 
   // Holds data stored through the SequenceLocalStorageSlot API.
   SequenceLocalStorageMap sequence_local_storage_;

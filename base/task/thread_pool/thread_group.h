@@ -9,7 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/task/common/checked_lock.h"
 #include "base/task/thread_pool/priority_queue.h"
-#include "base/task/thread_pool/sequence.h"
 #include "base/task/thread_pool/task.h"
 #include "base/task/thread_pool/task_source.h"
 #include "base/task/thread_pool/tracked_ref.h"
@@ -46,13 +45,6 @@ class BASE_EXPORT ThreadGroup {
   };
 
   virtual ~ThreadGroup();
-
-  // Posts |task| to be executed by this ThreadGroup as part of
-  // the Sequence in |sequence_and_transaction|. This must only be called after
-  // |task| has gone through TaskTracker::WillPostTask() and after |task|'s
-  // delayed run time.
-  void PostTaskWithSequenceNow(Task task,
-                               SequenceAndTransaction sequence_and_transaction);
 
   // Registers the thread group in TLS.
   void BindToCurrentThread();
