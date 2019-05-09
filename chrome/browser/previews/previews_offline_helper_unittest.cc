@@ -25,8 +25,8 @@ class PreviewsOfflineHelperTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  PreviewsOfflineHelper* NewHelper() {
-    helper_.reset(new PreviewsOfflineHelper(browser_context()));
+  PreviewsOfflineHelper* NewHelper(content::BrowserContext* browser_context) {
+    helper_.reset(new PreviewsOfflineHelper(browser_context));
     return helper_.get();
   }
 
@@ -188,7 +188,7 @@ TEST_F(PreviewsOfflineHelperTest, TestAddRemovePages) {
     TestingPrefServiceSimple test_prefs;
     PreviewsOfflineHelper::RegisterProfilePrefs(test_prefs.registry());
 
-    PreviewsOfflineHelper* helper = NewHelper();
+    PreviewsOfflineHelper* helper = NewHelper(nullptr);
     helper->SetPrefServiceForTesting(&test_prefs);
 
     // The tests above rely on this ordering.
@@ -242,7 +242,7 @@ TEST_F(PreviewsOfflineHelperTest, TestMaxPrefSize) {
       previews::features::kOfflinePreviewsFalsePositivePrevention,
       {{"max_pref_entries", "1"}});
 
-  PreviewsOfflineHelper* helper = NewHelper();
+  PreviewsOfflineHelper* helper = NewHelper(nullptr);
 
   base::Time first = base::Time::Now();
   base::Time second = first + base::TimeDelta::FromMinutes(1);
@@ -267,7 +267,7 @@ TEST_F(PreviewsOfflineHelperTest, TestUpdateAllPrefEntries) {
 
   base::HistogramTester histogram_tester;
 
-  PreviewsOfflineHelper* helper = NewHelper();
+  PreviewsOfflineHelper* helper = NewHelper(nullptr);
   base::Time now = base::Time::Now();
   base::Time expired = now -
                        previews::params::OfflinePreviewFreshnessDuration() -
