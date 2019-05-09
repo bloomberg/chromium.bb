@@ -267,6 +267,7 @@ void LayoutText::SetFirstInlineFragment(NGPaintFragment* first_fragment) {
   if (has_abstract_inline_text_box_) {
     for (NGPaintFragment* fragment : NGPaintFragment::InlineFragmentsFor(this))
       NGAbstractInlineTextBox::WillDestroy(fragment);
+    has_abstract_inline_text_box_ = false;
   }
   first_paint_fragment_ = first_fragment;
 }
@@ -2413,7 +2414,6 @@ scoped_refptr<AbstractInlineTextBox> LayoutText::FirstAbstractInlineTextBox() {
     auto fragments = NGPaintFragment::InlineFragmentsFor(this);
     if (!fragments.IsEmpty() &&
         fragments.IsInLayoutNGInlineFormattingContext()) {
-      has_abstract_inline_text_box_ = true;
       return NGAbstractInlineTextBox::GetOrCreate(fragments.front());
     }
   }

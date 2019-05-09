@@ -283,6 +283,12 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   scoped_refptr<AbstractInlineTextBox> FirstAbstractInlineTextBox();
 
+  bool HasAbstractInlineTextBox() const {
+    return has_abstract_inline_text_box_;
+  }
+
+  void SetHasAbstractInlineTextBox() { has_abstract_inline_text_box_ = true; }
+
   float HyphenWidth(const Font&, TextDirection);
 
   LayoutRect DebugRect() const override;
