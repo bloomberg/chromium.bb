@@ -81,6 +81,13 @@ TEST(PipelineIntegrationPerfTest, VP9PlaybackBenchmark) {
   RunVideoPlaybackBenchmark("bear-vp9.webm", "clockless_video_playback_vp9");
 }
 
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+TEST(PipelineIntegrationPerfTest, AV1PlaybackBenchmark) {
+  RunVideoPlaybackBenchmark("bear-av1-640x480.webm",
+                            "clockless_video_playback_av1");
+}
+#endif
+
 #if BUILDFLAG(USE_PROPRIETARY_CODECS) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 TEST(PipelineIntegrationPerfTest, MP4PlaybackBenchmark) {
   RunVideoPlaybackBenchmark("bear_silent.mp4", "clockless_video_playback_mp4");
