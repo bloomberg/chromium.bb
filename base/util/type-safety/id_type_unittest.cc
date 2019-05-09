@@ -9,10 +9,10 @@
 #include <type_traits>
 #include <unordered_map>
 
-#include "gpu/command_buffer/common/id_type.h"
+#include "base/util/type-safety/id_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace gpu {
+namespace util {
 
 namespace {
 
@@ -197,4 +197,4 @@ INSTANTIATE_TEST_SUITE_P(,
                                            123,
                                            std::numeric_limits<int>::max()));
 
-}  // namespace gpu
+}  // namespace util

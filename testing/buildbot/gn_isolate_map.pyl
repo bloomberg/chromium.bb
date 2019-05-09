@@ -268,6 +268,10 @@
     "label": "//base:base_unittests",
     "type": "console_test_launcher",
   },
+  "base_util_unittests": {
+    "label": "//base/util:base_util_unittests",
+    "type": "console_test_launcher",
+  },
   "bdict_fuzzer": {
     "label": "//third_party/hunspell:bdict_fuzzer",
     "type": "fuzzer",

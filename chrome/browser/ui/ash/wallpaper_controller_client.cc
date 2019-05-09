@@ -530,11 +530,11 @@ void WallpaperControllerClient::OpenWallpaperPicker() {
 
 void WallpaperControllerClient::OnReadyToSetWallpaper() {
   // Apply device customization.
-  namespace util = chromeos::customization_wallpaper_util;
-  if (util::ShouldUseCustomizedDefaultWallpaper()) {
+  namespace customization_util = chromeos::customization_wallpaper_util;
+  if (customization_util::ShouldUseCustomizedDefaultWallpaper()) {
     base::FilePath customized_default_small_path;
     base::FilePath customized_default_large_path;
-    if (util::GetCustomizedDefaultWallpaperPaths(
+    if (customization_util::GetCustomizedDefaultWallpaperPaths(
             &customized_default_small_path, &customized_default_large_path)) {
       wallpaper_controller_->SetCustomizedDefaultWallpaperPaths(
           customized_default_small_path, customized_default_large_path);

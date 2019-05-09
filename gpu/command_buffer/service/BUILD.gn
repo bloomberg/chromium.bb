@@ -79,6 +79,7 @@ target(link_target_type, "service_sources") {
   ]
 
   public_deps = [
+    "//base/util/type-safety",
     "//gpu/command_buffer/common:common_sources",
     "//url:url",
   ]
@@ -282,6 +283,7 @@ target(link_target_type, "gles2_sources") {
   include_dirs = [ "//third_party/mesa_headers" ]
 
   public_deps = [
+    "//base/util/type-safety",
     "//cc/paint",
     "//gpu/command_buffer/common",
     "//gpu/command_buffer/common:gles2_sources",

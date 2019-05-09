@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_COMMAND_BUFFER_COMMON_ID_TYPE_H_
-#define GPU_COMMAND_BUFFER_COMMON_ID_TYPE_H_
+#ifndef BASE_UTIL_TYPE_SAFETY_ID_TYPE_H_
+#define BASE_UTIL_TYPE_SAFETY_ID_TYPE_H_
 
 #include <stdint.h>
 #include <cstddef>
@@ -43,7 +43,7 @@
 // - it ensures initialization to zero and allows checking against
 //   default-initialized values via is_null method.
 
-namespace gpu {
+namespace util {
 
 template <typename TypeMarker, typename WrappedType, WrappedType kInvalidValue>
 class IdType {
@@ -104,6 +104,6 @@ std::ostream& operator<<(
   return stream << id.GetUnsafeValue();
 }
 
-}  // namespace gpu
+}  // namespace util
 
-#endif  // CONTENT_COMMON_ID_TYPE_H_
+#endif  // BASE_UTIL_TYPE_SAFETY_ID_TYPE_H_

@@ -36,7 +36,7 @@
 #endif
 
 namespace keys = extension_management_api_constants;
-namespace util = extension_function_test_utils;
+namespace test_utils = extension_function_test_utils;
 
 namespace extensions {
 
@@ -179,19 +179,17 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
       new ManagementCreateAppShortcutFunction());
   create_shortcut_function->set_user_gesture(true);
   ManagementCreateAppShortcutFunction::SetAutoConfirmForTest(true);
-  util::RunFunctionAndReturnSingleResult(
+  test_utils::RunFunctionAndReturnSingleResult(
       create_shortcut_function.get(),
-      base::StringPrintf("[\"%s\"]", app_id.c_str()),
-      browser());
+      base::StringPrintf("[\"%s\"]", app_id.c_str()), browser());
 
   create_shortcut_function = new ManagementCreateAppShortcutFunction();
   create_shortcut_function->set_user_gesture(true);
   ManagementCreateAppShortcutFunction::SetAutoConfirmForTest(false);
   EXPECT_TRUE(base::MatchPattern(
-      util::RunFunctionAndReturnError(
+      test_utils::RunFunctionAndReturnError(
           create_shortcut_function.get(),
-          base::StringPrintf("[\"%s\"]", app_id.c_str()),
-          browser()),
+          base::StringPrintf("[\"%s\"]", app_id.c_str()), browser()),
       keys::kCreateShortcutCanceledError));
 }
 
@@ -209,7 +207,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
   scoped_refptr<ManagementGetAllFunction> function =
       new ManagementGetAllFunction();
   std::unique_ptr<base::Value> result(
-      util::RunFunctionAndReturnSingleResult(function.get(), "[]", browser()));
+      test_utils::RunFunctionAndReturnSingleResult(function.get(), "[]",
+                                                   browser()));
   base::ListValue* list;
   ASSERT_TRUE(result->GetAsList(&list));
   EXPECT_EQ(1U, list->GetSize());
@@ -218,8 +217,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
   ASSERT_TRUE(CrashEnabledExtension(extension->id()));
 
   function = new ManagementGetAllFunction();
-  result.reset(util::RunFunctionAndReturnSingleResult(
-      function.get(), "[]", browser()));
+  result.reset(test_utils::RunFunctionAndReturnSingleResult(function.get(),
+                                                            "[]", browser()));
   ASSERT_TRUE(result->GetAsList(&list));
   EXPECT_EQ(1U, list->GetSize());
 }
@@ -271,7 +270,7 @@ class ExtensionManagementApiEscalationTest :
       function->set_user_gesture(true);
     function->SetRenderFrameHost(browser()->tab_strip_model()->
         GetActiveWebContents()->GetMainFrame());
-    bool response = util::RunFunction(
+    bool response = test_utils::RunFunction(
         function.get(), base::StringPrintf("[\"%s\", %s]", kId, enabled_string),
         browser(), api_test_utils::NONE);
     if (expected_error.empty()) {
@@ -294,8 +293,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiEscalationTest,
                        DisabledReason) {
   scoped_refptr<ManagementGetFunction> function =
       new ManagementGetFunction();
-  std::unique_ptr<base::Value> result(util::RunFunctionAndReturnSingleResult(
-      function.get(), base::StringPrintf("[\"%s\"]", kId), browser()));
+  std::unique_ptr<base::Value> result(
+      test_utils::RunFunctionAndReturnSingleResult(
+          function.get(), base::StringPrintf("[\"%s\"]", kId), browser()));
   ASSERT_TRUE(result.get() != NULL);
   ASSERT_TRUE(result->is_dict());
   base::DictionaryValue* dict =

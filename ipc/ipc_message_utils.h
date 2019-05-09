@@ -35,6 +35,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/util/type-safety/id_type.h"
 #include "build/build_config.h"
 #include "ipc/ipc_message_start.h"
 #include "ipc/ipc_param_traits.h"
@@ -1029,6 +1030,28 @@ struct ParamTraits<base::Optional<P>> {
       LogParam(p.value(), l);
     else
       l->append("(unset)");
+  }
+};
+
+// base/util types ParamTraits
+
+template <typename TypeMarker, typename WrappedType, WrappedType kInvalidValue>
+struct ParamTraits<util::IdType<TypeMarker, WrappedType, kInvalidValue>> {
+  using param_type = util::IdType<TypeMarker, WrappedType, kInvalidValue>;
+  static void Write(base::Pickle* m, const param_type& p) {
+    WriteParam(m, p.GetUnsafeValue());
+  }
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r) {
+    WrappedType value;
+    if (!ReadParam(m, iter, &value))
+      return false;
+    *r = param_type::FromUnsafeValue(value);
+    return true;
+  }
+  static void Log(const param_type& p, std::string* l) {
+    LogParam(p.GetUnsafeValue(), l);
   }
 };
 

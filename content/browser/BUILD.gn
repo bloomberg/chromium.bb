@@ -229,6 +229,7 @@ jumbo_source_set("browser") {
 
   public_deps = [
     ":accessibility_buildflags",
+    "//base/util/type-safety",
     "//ipc",
     "//media/mojo/interfaces:remoting",
     "//third_party/blink/public/mojom:embedded_frame_sink_mojo_bindings",

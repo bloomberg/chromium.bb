@@ -82,7 +82,6 @@ jumbo_source_set("common_sources") {
     "gpu_memory_buffer_support.h",
     "id_allocator.cc",
     "id_allocator.h",
-    "id_type.h",
     "mailbox.cc",
     "mailbox.h",
     "mailbox_holder.cc",
@@ -107,6 +106,7 @@ jumbo_source_set("common_sources") {
   configs += [ "//gpu:gpu_implementation" ]
 
   public_deps = [
+    "//base/util/type-safety",
     "//mojo/public/cpp/system",
     "//ui/gfx:memory_buffer",
     "//ui/gfx/geometry",
