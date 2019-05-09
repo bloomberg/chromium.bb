@@ -225,6 +225,10 @@ class VIEWS_EXPORT InkDropHostView : public View {
   int ink_drop_small_corner_radius_ = 2;
   int ink_drop_large_corner_radius_ = 4;
 
+  // Determines whether the view was already painting to layer before adding ink
+  // drop layer.
+  bool old_paint_to_layer_ = false;
+
   bool destroying_ = false;
 
   std::unique_ptr<views::InkDropMask> ink_drop_mask_;

@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <utility>
 
 #include "base/lazy_instance.h"
@@ -60,6 +59,8 @@ LabelButton::LabelButton(ButtonListener* listener,
   SetTextInternal(text);
 
   AddChildView(ink_drop_container_);
+  ink_drop_container_->SetPaintToLayer();
+  ink_drop_container_->layer()->SetFillsBoundsOpaquely(false);
   ink_drop_container_->SetVisible(false);
 
   AddChildView(image_);
@@ -333,19 +334,6 @@ void LabelButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   Button::GetAccessibleNodeData(node_data);
 }
 
-void LabelButton::AddLayerBeneathView(ui::Layer* new_layer) {
-  image()->SetPaintToLayer();
-  image()->layer()->SetFillsBoundsOpaquely(false);
-  ink_drop_container()->SetVisible(true);
-  ink_drop_container()->AddLayerBeneathView(new_layer);
-}
-
-void LabelButton::RemoveLayerBeneathView(ui::Layer* old_layer) {
-  ink_drop_container()->RemoveLayerBeneathView(old_layer);
-  ink_drop_container()->SetVisible(false);
-  image()->DestroyLayer();
-}
-
 ui::NativeTheme::Part LabelButton::GetThemePart() const {
   return ui::NativeTheme::kPushButton;
 }
@@ -400,6 +388,19 @@ void LabelButton::UpdateThemedBorder() {
 
   SetBorder(PlatformStyle::CreateThemedLabelButtonBorder(this));
   border_is_themed_border_ = true;
+}
+
+void LabelButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+  image()->SetPaintToLayer();
+  image()->layer()->SetFillsBoundsOpaquely(false);
+  ink_drop_container_->AddInkDropLayer(ink_drop_layer);
+  InstallInkDropMask(ink_drop_layer);
+}
+
+void LabelButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
+  image()->DestroyLayer();
+  ResetInkDropMask();
+  ink_drop_container_->RemoveInkDropLayer(ink_drop_layer);
 }
 
 gfx::Rect LabelButton::GetChildAreaBounds() {

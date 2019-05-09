@@ -96,9 +96,9 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   void Layout() override;
   const char* GetClassName() const override;
   void EnableCanvasFlippingForRTLUI(bool flip) override;
+  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
+  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  void AddLayerBeneathView(ui::Layer* new_layer) override;
-  void RemoveLayerBeneathView(ui::Layer* old_layer) override;
 
   // NativeThemeDelegate:
   ui::NativeTheme::Part GetThemePart() const override;
