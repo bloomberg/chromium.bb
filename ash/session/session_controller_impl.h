@@ -270,7 +270,7 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
   bool is_running_in_app_mode_ = false;
   bool is_demo_session_ = false;
   AddUserSessionPolicy add_user_session_policy_ = AddUserSessionPolicy::ALLOWED;
-  session_manager::SessionState state_;
+  session_manager::SessionState state_ = session_manager::SessionState::UNKNOWN;
 
   // Cached user session info sorted by the order from SetUserSessionOrder.
   // Currently the session manager code (chrome) sets a LRU order with the
@@ -324,7 +324,7 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
   std::map<AccountId, std::unique_ptr<PrefService>> per_user_prefs_;
   PrefService* last_active_user_prefs_ = nullptr;
 
-  base::WeakPtrFactory<SessionControllerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<SessionControllerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SessionControllerImpl);
 };

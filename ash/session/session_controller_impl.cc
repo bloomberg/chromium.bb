@@ -31,7 +31,6 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -45,32 +44,9 @@ using session_manager::SessionState;
 
 namespace ash {
 
-namespace {
-
-// Get the default session state. Default session state is ACTIVE when the
-// process starts with a user session, i.e. the process has kLoginUser command
-// line switch. This is needed because ash focus rules depends on whether
-// session is blocked to pick an activatable window and chrome needs to create a
-// focused browser window when starting with a user session (both in production
-// and in tests). Using ACTIVE as default in this situation allows chrome to run
-// without having to wait for session state to reach to ash. For other cases
-// (oobe/login), there is only one login window. The login window always gets
-// focus so default session state does not matter. Use UNKNOWN and wait for
-// chrome to update ash for such cases.
-SessionState GetDefaultSessionState() {
-  const bool start_with_user =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kLoginUser);
-  return start_with_user ? SessionState::ACTIVE : SessionState::UNKNOWN;
-}
-
-}  // namespace
-
 SessionControllerImpl::SessionControllerImpl(
     service_manager::Connector* connector)
-    : state_(GetDefaultSessionState()),
-      connector_(connector),
-      weak_ptr_factory_(this) {}
+    : connector_(connector) {}
 
 SessionControllerImpl::~SessionControllerImpl() {
   // Abort pending start lock request.
