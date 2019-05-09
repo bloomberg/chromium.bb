@@ -191,32 +191,30 @@ void ConfigAutomaticGainControl(
     base::Optional<bool> hybrid_agc_use_peaks_not_rms,
     base::Optional<int> hybrid_agc_saturation_margin,
     base::Optional<double> compression_gain_db) {
-  const bool use_fixed_digital_agc1 =
-      agc_enabled && !use_hybrid_agc && compression_gain_db.has_value();
+  const bool use_fixed_digital_agc2 = agc_enabled &&
+                                      !experimental_agc_enabled &&
+                                      compression_gain_db.has_value();
+  const bool agc1_enabled =
+      agc_enabled && (use_hybrid_agc || !use_fixed_digital_agc2);
 
   // Configure AGC1.
-  if (agc_enabled) {
+  if (agc1_enabled) {
     apm_config->gain_controller1.enabled = true;
-    if (use_fixed_digital_agc1) {
-      apm_config->gain_controller1.mode =
-          webrtc::AudioProcessing::Config::GainController1::Mode::kFixedDigital;
-      apm_config->gain_controller1.compression_gain_db =
-          compression_gain_db.value();
-    } else {
-      apm_config->gain_controller1.mode =
+    apm_config->gain_controller1.mode =
 #if defined(OS_ANDROID)
-          webrtc::AudioProcessing::Config::GainController1::Mode::kFixedDigital;
+        webrtc::AudioProcessing::Config::GainController1::Mode::kFixedDigital;
 #else
-          webrtc::AudioProcessing::Config::GainController1::Mode::
-              kAdaptiveAnalog;
+        webrtc::AudioProcessing::Config::GainController1::Mode::kAdaptiveAnalog;
 #endif
-    }
   }
 
   // Configure AGC2.
   if (experimental_agc_enabled) {
     DCHECK(hybrid_agc_use_peaks_not_rms.has_value() &&
            hybrid_agc_saturation_margin.has_value());
+    // Experimental AGC is enabled. Hybrid AGC may or may not be enabled. Config
+    // AGC2 with adaptive mode and the given options, while ignoring
+    // |use_fixed_digital_agc2|.
     apm_config->gain_controller2.enabled = use_hybrid_agc;
     apm_config->gain_controller2.fixed_digital.gain_db = 0.f;
     apm_config->gain_controller2.adaptive_digital.enabled = true;
@@ -231,6 +229,13 @@ void ConfigAutomaticGainControl(
       apm_config->gain_controller2.adaptive_digital.extra_saturation_margin_db =
           hybrid_agc_saturation_margin.value();
     }
+  } else if (use_fixed_digital_agc2) {
+    // Experimental AGC is disabled, thus hybrid AGC is disabled. Config AGC2
+    // with fixed gain mode.
+    apm_config->gain_controller2.enabled = true;
+    apm_config->gain_controller2.fixed_digital.gain_db =
+        compression_gain_db.value();
+    apm_config->gain_controller2.adaptive_digital.enabled = false;
   }
 }
 

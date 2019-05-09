@@ -26,7 +26,7 @@ TEST(ConfigAutomaticGainControlTest, EnableDefaultAGC1) {
 #endif  // defined(OS_ANDROID)
 }
 
-TEST(ConfigAutomaticGainControlTest, EnableFixedDigitalAGC1) {
+TEST(ConfigAutomaticGainControlTest, EnableFixedDigitalAGC2) {
   webrtc::AudioProcessing::Config apm_config;
   const double compression_gain_db = 10.0;
   ConfigAutomaticGainControl(&apm_config,
@@ -34,24 +34,32 @@ TEST(ConfigAutomaticGainControlTest, EnableFixedDigitalAGC1) {
                              false,  // |experimental_agc_enabled|.
                              false,  // |use_hybrid_agc|.
                              base::nullopt, base::nullopt, compression_gain_db);
-  EXPECT_TRUE(apm_config.gain_controller1.enabled);
-  EXPECT_EQ(
-      apm_config.gain_controller1.mode,
-      webrtc::AudioProcessing::Config::GainController1::Mode::kFixedDigital);
-  EXPECT_FLOAT_EQ(apm_config.gain_controller1.compression_gain_db,
+  EXPECT_FALSE(apm_config.gain_controller1.enabled);
+  EXPECT_TRUE(apm_config.gain_controller2.enabled);
+  EXPECT_FALSE(apm_config.gain_controller2.adaptive_digital.enabled);
+  EXPECT_FLOAT_EQ(apm_config.gain_controller2.fixed_digital.gain_db,
                   compression_gain_db);
 }
 
-TEST(ConfigAutomaticGainControlTest, ConfigAGC2ForHybridAGC) {
+TEST(ConfigAutomaticGainControlTest, EnableHybridAGC) {
   webrtc::AudioProcessing::Config apm_config;
   const bool use_peaks_not_rms = true;
   const int saturation_margin = 10;
+  const double compression_gain_db = 10.0;  // Will test that it has no effect.
   ConfigAutomaticGainControl(&apm_config,
                              true,  // |agc_enabled|.
                              true,  // |experimental_agc_enabled|.
                              true,  // |use_hybrid_agc|.
                              use_peaks_not_rms, saturation_margin,
-                             base::nullopt);
+                             compression_gain_db);
+  EXPECT_TRUE(apm_config.gain_controller1.enabled);
+  EXPECT_EQ(
+      apm_config.gain_controller1.mode,
+#if defined(OS_ANDROID)
+      webrtc::AudioProcessing::Config::GainController1::Mode::kFixedDigital);
+#else
+      webrtc::AudioProcessing::Config::GainController1::Mode::kAdaptiveAnalog);
+#endif  // defined(OS_ANDROID)
   EXPECT_TRUE(apm_config.gain_controller2.enabled);
   EXPECT_EQ(apm_config.gain_controller2.fixed_digital.gain_db, 0);
   EXPECT_TRUE(apm_config.gain_controller2.adaptive_digital.enabled);
