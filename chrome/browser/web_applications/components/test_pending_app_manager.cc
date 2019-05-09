@@ -28,6 +28,11 @@ void TestPendingAppManager::SimulatePreviouslyInstalledApp(
   installed_apps_[url] = install_source;
 }
 
+void TestPendingAppManager::SetInstallResultCode(
+    InstallResultCode result_code) {
+  install_result_code_ = result_code;
+}
+
 void TestPendingAppManager::Install(InstallOptions install_options,
                                     OnceInstallCallback callback) {
   // TODO(nigeltao): Add error simulation when error codes are added to the API.
@@ -39,8 +44,8 @@ void TestPendingAppManager::Install(InstallOptions install_options,
           deduped_install_count_++;
         }
         install_requests_.push_back(install_options);
-        std::move(callback).Run(install_options.url,
-                                InstallResultCode::kSuccess);
+
+        std::move(callback).Run(install_options.url, install_result_code_);
       });
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(do_install, std::move(callback)));

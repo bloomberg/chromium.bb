@@ -46,6 +46,8 @@ class TestPendingAppManager : public PendingAppManager {
   void SimulatePreviouslyInstalledApp(const GURL& url,
                                       InstallSource install_source);
 
+  void SetInstallResultCode(InstallResultCode result_code);
+
   // PendingAppManager:
   void Install(InstallOptions install_options,
                OnceInstallCallback callback) override;
@@ -69,6 +71,7 @@ class TestPendingAppManager : public PendingAppManager {
   int deduped_uninstall_count_;
 
   std::map<GURL, InstallSource> installed_apps_;
+  InstallResultCode install_result_code_ = InstallResultCode::kSuccess;
 
   DISALLOW_COPY_AND_ASSIGN(TestPendingAppManager);
 };

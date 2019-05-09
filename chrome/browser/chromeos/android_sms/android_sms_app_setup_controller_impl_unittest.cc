@@ -182,7 +182,9 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
   };
 
   AndroidSmsAppSetupControllerImplTest()
-      : host_content_settings_map_(
+      : thread_bundle_(
+            content::TestBrowserThreadBundle::MainThreadType::UI_MOCK_TIME),
+        host_content_settings_map_(
             HostContentSettingsMapFactory::GetForProfile(&profile_)) {}
 
   ~AndroidSmsAppSetupControllerImplTest() override = default;
@@ -206,6 +208,72 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
 
     static_cast<AndroidSmsAppSetupControllerImpl*>(setup_controller_.get())
         ->SetPwaDelegateForTesting(std::move(base_delegate));
+  }
+
+  void CallSetUpAppWithRetries(const GURL& app_url,
+                               const GURL& install_url,
+                               size_t num_failure_tries,
+                               bool expected_setup_result) {
+    const auto& install_requests =
+        test_pending_app_manager_->install_requests();
+    size_t num_install_requests_before_call = install_requests.size();
+
+    base::RunLoop run_loop;
+    base::HistogramTester histogram_tester;
+
+    test_pending_app_manager_->SetInstallResultCode(
+        web_app::InstallResultCode::kFailedUnknownReason);
+
+    setup_controller_->SetUpApp(
+        app_url, install_url,
+        base::BindOnce(&AndroidSmsAppSetupControllerImplTest::OnSetUpAppResult,
+                       base::Unretained(this), run_loop.QuitClosure()));
+
+    fake_cookie_manager_->InvokePendingSetCanonicalCookieCallback(
+        "default_to_persist" /* expected_cookie_name */,
+        "true" /* expected_cookie_value */,
+        "https" /* expected_source_scheme */,
+        false /* expected_modify_http_only */,
+        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+        true /* success */);
+
+    fake_cookie_manager_->InvokePendingDeleteCookiesCallback(
+        app_url, "cros_migrated_to" /* expected_cookie_name */,
+        true /* success */);
+
+    base::RunLoop().RunUntilIdle();
+
+    // Fast forward through remaining attempts.
+    for (size_t retry_count = 0; retry_count < num_failure_tries - 1;
+         retry_count++) {
+      EXPECT_NE(ContentSetting::CONTENT_SETTING_ALLOW,
+                GetNotificationSetting(app_url));
+      EXPECT_EQ(num_install_requests_before_call + retry_count + 1u,
+                install_requests.size());
+      EXPECT_EQ(GetInstallOptionsForUrl(install_url), install_requests.back());
+
+      thread_bundle_.FastForwardBy(
+          AndroidSmsAppSetupControllerImpl::kInstallRetryDelay *
+          (1 << retry_count));
+    }
+
+    // Send success code for last attempt.
+    test_pending_app_manager_->SetInstallResultCode(
+        web_app::InstallResultCode::kSuccess);
+    thread_bundle_.FastForwardBy(
+        AndroidSmsAppSetupControllerImpl::kInstallRetryDelay *
+        (1 << (num_failure_tries - 1)));
+
+    if (last_set_up_app_result_ && *last_set_up_app_result_) {
+      histogram_tester.ExpectBucketCount(
+          "AndroidSms.NumAttemptsForSuccessfulInstallation",
+          num_failure_tries + 1, 1);
+    }
+    histogram_tester.ExpectBucketCount(
+        "AndroidSms.EffectivePWAInstallationSuccess", expected_setup_result, 1);
+
+    EXPECT_EQ(last_set_up_app_result_, expected_setup_result);
+    last_set_up_app_result_.reset();
   }
 
   void CallSetUpApp(const GURL& app_url,
@@ -250,6 +318,8 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
       histogram_tester.ExpectBucketCount("AndroidSms.PWAInstallationResult",
                                          web_app::InstallResultCode::kSuccess,
                                          num_expected_app_installs);
+      histogram_tester.ExpectBucketCount(
+          "AndroidSms.EffectivePWAInstallationSuccess", true, 1);
     }
 
     run_loop.Run();
@@ -390,6 +460,26 @@ TEST_F(AndroidSmsAppSetupControllerImplTest, SetUpAppThenDeleteCookie) {
   CallSetUpApp(GURL(kTestUrl1), GURL(kTestInstallUrl1),
                1u /* num_expected_app_installs */);
   CallDeleteRememberDeviceByDefaultCookie(GURL(kTestUrl1));
+}
+
+TEST_F(AndroidSmsAppSetupControllerImplTest, SetUpApp_Retry) {
+  // Setup should fail when all attempts fail.
+  CallSetUpAppWithRetries(
+      GURL(kTestUrl1), GURL(kTestInstallUrl1),
+      AndroidSmsAppSetupControllerImpl::kMaxInstallRetryCount +
+          1 /* num_failure_tries*/,
+      false /* expected_setup_result */);
+
+  // Setup should succeed when the last attempt succeeds.
+  CallSetUpAppWithRetries(GURL(kTestUrl1), GURL(kTestInstallUrl1),
+                          AndroidSmsAppSetupControllerImpl::
+                              kMaxInstallRetryCount /* num_failure_tries*/,
+                          true /* expected_setup_result */);
+
+  // Setup should succeed when only fewer than max attempts fail.
+  CallSetUpAppWithRetries(GURL(kTestUrl1), GURL(kTestInstallUrl1),
+                          1 /* num_failure_tries*/,
+                          true /* expected_setup_result */);
 }
 
 TEST_F(AndroidSmsAppSetupControllerImplTest, SetUpAppThenRemove) {
