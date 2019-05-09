@@ -17,6 +17,7 @@
 
 namespace gl {
 class GLSurfacePresentationHelper;
+class VSyncThreadWin;
 }
 
 namespace gpu {
@@ -98,6 +99,8 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
   bool SupportsProtectedVideo() const override;
   bool SetDrawRectangle(const gfx::Rect& rect) override;
   gfx::Vector2d GetDrawOffset() const override;
+  bool SupportsGpuVSync() const override;
+  void SetGpuVSyncEnabled(bool enabled) override;
 
   // This schedules an overlay plane to be displayed on the next SwapBuffers
   // or PostSubBuffer call. Overlay planes must be scheduled before every swap
@@ -121,8 +124,10 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
   HWND window_ = nullptr;
   ChildWindowWin child_window_;
 
+  std::unique_ptr<gl::VSyncThreadWin> vsync_thread_;
   scoped_refptr<DirectCompositionChildSurfaceWin> root_surface_;
   std::unique_ptr<DCLayerTree> layer_tree_;
+  base::WeakPtr<ImageTransportSurfaceDelegate> delegate_;
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_;
   std::unique_ptr<gl::GLSurfacePresentationHelper> presentation_helper_;
 

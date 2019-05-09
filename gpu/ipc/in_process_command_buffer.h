@@ -23,6 +23,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "components/viz/common/display/update_vsync_parameters_callback.h"
+#include "components/viz/common/gpu/gpu_vsync_callback.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/common/command_buffer.h"
@@ -170,16 +172,19 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   void BufferPresented(const gfx::PresentationFeedback& feedback) override;
   void AddFilter(IPC::MessageFilter* message_filter) override;
   int32_t GetRouteID() const override;
+  viz::GpuVSyncCallback GetGpuVSyncCallback() override;
 
   // Upstream this function to GpuControl if needs arise. Can be called on any
   // thread.
   const GpuFeatureInfo& GetGpuFeatureInfo() const;
 
-  using UpdateVSyncParametersCallback =
-      base::RepeatingCallback<void(base::TimeTicks timebase,
-                                   base::TimeDelta interval)>;
   void SetUpdateVSyncParametersCallback(
-      const UpdateVSyncParametersCallback& callback);
+      viz::UpdateVSyncParametersCallback callback);
+
+  void SetGpuVSyncCallback(viz::GpuVSyncCallback callback);
+  void SetGpuVSyncEnabled(bool enabled);
+
+  void SetGpuVSyncEnabledOnThread(bool enabled);
 
   gpu::ServiceTransferCache* GetTransferCacheForTest() const;
   int GetRasterDecoderIdForTest() const;
@@ -308,6 +313,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
                                      const gfx::PresentationFeedback& feedback);
 
   void HandleReturnDataOnOriginThread(std::vector<uint8_t> data);
+  void HandleGpuVSyncOnOriginThread(base::TimeTicks vsync_time,
+                                    base::TimeDelta vsync_interval);
 
   const CommandBufferId command_buffer_id_;
   const ContextUrl active_url_;
@@ -364,7 +371,9 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   scoped_refptr<gl::GLShareGroup> gl_share_group_;
   base::WaitableEvent fence_sync_wait_event_;
 
-  UpdateVSyncParametersCallback update_vsync_parameters_completion_callback_;
+  // Callbacks on client thread.
+  viz::UpdateVSyncParametersCallback update_vsync_parameters_callback_;
+  viz::GpuVSyncCallback gpu_vsync_callback_;
 
   // Params pushed each time we call OnSwapBuffers, and popped when a buffer
   // is presented or a swap completed.
@@ -377,6 +386,10 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
 
   scoped_refptr<SharedContextState> context_state_;
 
+  base::WeakPtr<InProcessCommandBuffer> client_thread_weak_ptr_;
+
+  // Don't use |client_thread_weak_ptr_factory_| on GPU thread.  Use the cached
+  // |client_thread_weak_ptr_| instead.
   base::WeakPtrFactory<InProcessCommandBuffer> client_thread_weak_ptr_factory_;
   base::WeakPtrFactory<InProcessCommandBuffer> gpu_thread_weak_ptr_factory_;
 

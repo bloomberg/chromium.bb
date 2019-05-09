@@ -27,6 +27,8 @@ GPU_EXPORT extern const base::Feature kDefaultEnableOopRasterization;
 
 GPU_EXPORT extern const base::Feature kDefaultPassthroughCommandDecoder;
 
+GPU_EXPORT extern const base::Feature kDirectCompositionGpuVSync;
+
 GPU_EXPORT extern const base::Feature kDirectCompositionPreferNV12Overlays;
 
 GPU_EXPORT extern const base::Feature kDirectCompositionUnderlays;

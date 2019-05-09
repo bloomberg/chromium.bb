@@ -55,4 +55,12 @@ void OutputSurface::SetNeedsSwapSizeNotifications(
   DCHECK(!needs_swap_size_notifications);
 }
 
+void OutputSurface::SetGpuVSyncCallback(GpuVSyncCallback callback) {
+  NOTREACHED();
+}
+
+void OutputSurface::SetGpuVSyncEnabled(bool enabled) {
+  NOTREACHED();
+}
+
 }  // namespace viz

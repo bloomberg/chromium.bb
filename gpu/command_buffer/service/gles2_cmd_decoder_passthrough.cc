@@ -1369,6 +1369,7 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.commit_overlay_planes = surface_->SupportsCommitOverlayPlanes();
   caps.use_dc_overlays_for_video = surface_->UseOverlaysForVideo();
   caps.protected_video_swap_chain = surface_->SupportsProtectedVideo();
+  caps.gpu_vsync = surface_->SupportsGpuVSync();
   caps.texture_npot = feature_info_->feature_flags().npot_ok;
   caps.chromium_gpu_fence = feature_info_->feature_flags().chromium_gpu_fence;
   caps.chromium_nonblocking_readback = true;

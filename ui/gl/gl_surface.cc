@@ -242,6 +242,12 @@ EGLTimestampClient* GLSurface::GetEGLTimestampClient() {
   return nullptr;
 }
 
+bool GLSurface::SupportsGpuVSync() const {
+  return false;
+}
+
+void GLSurface::SetGpuVSyncEnabled(bool enabled) {}
+
 GLSurface* GLSurface::GetCurrent() {
   return current_surface_.Pointer()->Get();
 }
@@ -490,6 +496,14 @@ int GLSurfaceAdapter::GetBufferCount() const {
 
 bool GLSurfaceAdapter::SupportsPlaneGpuFences() const {
   return surface_->SupportsPlaneGpuFences();
+}
+
+bool GLSurfaceAdapter::SupportsGpuVSync() const {
+  return surface_->SupportsGpuVSync();
+}
+
+void GLSurfaceAdapter::SetGpuVSyncEnabled(bool enabled) {
+  surface_->SetGpuVSyncEnabled(enabled);
 }
 
 GLSurfaceAdapter::~GLSurfaceAdapter() {}

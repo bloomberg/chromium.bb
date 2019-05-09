@@ -301,6 +301,10 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // Return the interface used for querying EGL timestamps.
   virtual EGLTimestampClient* GetEGLTimestampClient();
 
+  virtual bool SupportsGpuVSync() const;
+
+  virtual void SetGpuVSyncEnabled(bool enabled);
+
   static GLSurface* GetCurrent();
 
  protected:
@@ -392,6 +396,8 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   void SetEnableSwapTimestamps() override;
   bool SupportsPlaneGpuFences() const override;
   int GetBufferCount() const override;
+  bool SupportsGpuVSync() const override;
+  void SetGpuVSyncEnabled(bool enabled) override;
 
   GLSurface* surface() const { return surface_.get(); }
 

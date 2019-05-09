@@ -47,6 +47,8 @@ class GLOutputSurface : public OutputSurface {
       bool needs_swap_size_notifications) override;
   void SetUpdateVSyncParametersCallback(
       UpdateVSyncParametersCallback callback) override;
+  void SetGpuVSyncCallback(GpuVSyncCallback callback) override;
+  void SetGpuVSyncEnabled(bool enabled) override;
 
  protected:
   OutputSurfaceClient* client() const { return client_; }
@@ -70,6 +72,7 @@ class GLOutputSurface : public OutputSurface {
                                  const gfx::Size& pixel_size,
                                  const gpu::SwapBuffersCompleteParams& params);
   void OnPresentation(const gfx::PresentationFeedback& feedback);
+  void OnGpuVSync(base::TimeTicks vsync_time, base::TimeDelta vsync_interval);
 
   scoped_refptr<VizProcessContextProvider> viz_context_provider_;
   OutputSurfaceClient* client_ = nullptr;

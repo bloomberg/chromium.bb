@@ -135,6 +135,8 @@ viz_component("service") {
     "frame_sinks/frame_sink_manager_impl.cc",
     "frame_sinks/frame_sink_manager_impl.h",
     "frame_sinks/frame_sink_observer.h",
+    "frame_sinks/gpu_vsync_begin_frame_source.cc",
+    "frame_sinks/gpu_vsync_begin_frame_source.h",
     "frame_sinks/primary_begin_frame_source.cc",
     "frame_sinks/primary_begin_frame_source.h",
     "frame_sinks/root_compositor_frame_sink_impl.cc",

@@ -297,6 +297,8 @@ jumbo_component("gl") {
       "gl_wgl_api_implementation.h",
       "vsync_provider_win.cc",
       "vsync_provider_win.h",
+      "vsync_thread_win.cc",
+      "vsync_thread_win.h",
     ]
 
     libs = [ "dwmapi.lib" ]

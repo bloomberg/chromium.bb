@@ -69,6 +69,9 @@ class TestImageTransportSurfaceDelegate
   void BufferPresented(const gfx::PresentationFeedback& feedback) override {}
   void AddFilter(IPC::MessageFilter* message_filter) override {}
   int32_t GetRouteID() const override { return 0; }
+  viz::GpuVSyncCallback GetGpuVSyncCallback() override {
+    return viz::GpuVSyncCallback();
+  }
 
  private:
   scoped_refptr<gpu::gles2::FeatureInfo> feature_info_;

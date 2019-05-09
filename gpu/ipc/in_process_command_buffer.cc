@@ -381,6 +381,8 @@ gpu::ContextResult InProcessCommandBuffer::Initialize(
     origin_task_runner_ = std::move(task_runner);
   }
 
+  client_thread_weak_ptr_ = client_thread_weak_ptr_factory_.GetWeakPtr();
+
   Capabilities capabilities;
   InitializeOnGpuThreadParams params(surface_handle, attribs, &capabilities,
                                      image_factory, gr_shader_cache,
@@ -824,9 +826,8 @@ void InProcessCommandBuffer::OnParseError() {
     }
   }
 
-  PostOrRunClientCallback(
-      base::BindOnce(&InProcessCommandBuffer::OnContextLost,
-                     client_thread_weak_ptr_factory_.GetWeakPtr()));
+  PostOrRunClientCallback(base::BindOnce(&InProcessCommandBuffer::OnContextLost,
+                                         client_thread_weak_ptr_));
 }
 
 void InProcessCommandBuffer::OnContextLost() {
@@ -1252,9 +1253,9 @@ void InProcessCommandBuffer::ScheduleGrContextCleanup() {
 void InProcessCommandBuffer::HandleReturnData(base::span<const uint8_t> data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
   std::vector<uint8_t> vec(data.data(), data.data() + data.size());
-  PostOrRunClientCallback(base::BindOnce(
-      &InProcessCommandBuffer::HandleReturnDataOnOriginThread,
-      client_thread_weak_ptr_factory_.GetWeakPtr(), std::move(vec)));
+  PostOrRunClientCallback(
+      base::BindOnce(&InProcessCommandBuffer::HandleReturnDataOnOriginThread,
+                     client_thread_weak_ptr_, std::move(vec)));
 }
 
 void InProcessCommandBuffer::PostOrRunClientCallback(
@@ -1562,7 +1563,7 @@ void InProcessCommandBuffer::DidSwapBuffersComplete(
 
   PostOrRunClientCallback(base::BindOnce(
       &InProcessCommandBuffer::DidSwapBuffersCompleteOnOriginThread,
-      client_thread_weak_ptr_factory_.GetWeakPtr(), base::Passed(&params)));
+      client_thread_weak_ptr_, base::Passed(&params)));
 }
 
 const gles2::FeatureInfo* InProcessCommandBuffer::GetFeatureInfo() const {
@@ -1582,10 +1583,9 @@ void InProcessCommandBuffer::BufferPresented(
   SwapBufferParams params = pending_presented_params_.front();
   pending_presented_params_.pop_front();
 
-  PostOrRunClientCallback(
-      base::BindOnce(&InProcessCommandBuffer::BufferPresentedOnOriginThread,
-                     client_thread_weak_ptr_factory_.GetWeakPtr(),
-                     params.swap_id, params.flags, feedback));
+  PostOrRunClientCallback(base::BindOnce(
+      &InProcessCommandBuffer::BufferPresentedOnOriginThread,
+      client_thread_weak_ptr_, params.swap_id, params.flags, feedback));
 }
 
 void InProcessCommandBuffer::AddFilter(IPC::MessageFilter* message_filter) {
@@ -1612,10 +1612,9 @@ void InProcessCommandBuffer::BufferPresentedOnOriginThread(
   if (gpu_control_client_)
     gpu_control_client_->OnSwapBufferPresented(swap_id, feedback);
 
-  if (update_vsync_parameters_completion_callback_ &&
-      ShouldUpdateVsyncParams(feedback)) {
-    update_vsync_parameters_completion_callback_.Run(feedback.timestamp,
-                                                     feedback.interval);
+  if (update_vsync_parameters_callback_ && ShouldUpdateVsyncParams(feedback)) {
+    update_vsync_parameters_callback_.Run(feedback.timestamp,
+                                          feedback.interval);
   }
 }
 
@@ -1628,14 +1627,57 @@ void InProcessCommandBuffer::HandleReturnDataOnOriginThread(
 }
 
 void InProcessCommandBuffer::SetUpdateVSyncParametersCallback(
-    const UpdateVSyncParametersCallback& callback) {
+    viz::UpdateVSyncParametersCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
-  update_vsync_parameters_completion_callback_ = callback;
+  update_vsync_parameters_callback_ = std::move(callback);
 }
 
 void InProcessCommandBuffer::UpdateActiveUrl() {
   if (!active_url_.is_empty())
     ContextUrl::SetActiveUrl(active_url_);
+}
+
+void InProcessCommandBuffer::SetGpuVSyncCallback(
+    viz::GpuVSyncCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+  gpu_vsync_callback_ = std::move(callback);
+}
+
+void InProcessCommandBuffer::SetGpuVSyncEnabled(bool enabled) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+  ScheduleGpuTask(
+      base::BindOnce(&InProcessCommandBuffer::SetGpuVSyncEnabledOnThread,
+                     gpu_thread_weak_ptr_factory_.GetWeakPtr(), enabled));
+}
+
+void InProcessCommandBuffer::SetGpuVSyncEnabledOnThread(bool enabled) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
+  if (surface_)
+    surface_->SetGpuVSyncEnabled(enabled);
+}
+
+viz::GpuVSyncCallback InProcessCommandBuffer::GetGpuVSyncCallback() {
+  auto handle_gpu_vsync_callback =
+      base::BindRepeating(&InProcessCommandBuffer::HandleGpuVSyncOnOriginThread,
+                          client_thread_weak_ptr_);
+  auto forward_callback =
+      [](scoped_refptr<base::SequencedTaskRunner> task_runner,
+         viz::GpuVSyncCallback callback, base::TimeTicks vsync_time,
+         base::TimeDelta vsync_interval) {
+        task_runner->PostTask(
+            FROM_HERE, base::BindOnce(callback, vsync_time, vsync_interval));
+      };
+  return base::BindRepeating(forward_callback,
+                             base::RetainedRef(origin_task_runner_),
+                             std::move(handle_gpu_vsync_callback));
+}
+
+void InProcessCommandBuffer::HandleGpuVSyncOnOriginThread(
+    base::TimeTicks vsync_time,
+    base::TimeDelta vsync_interval) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+  if (gpu_vsync_callback_)
+    gpu_vsync_callback_.Run(vsync_time, vsync_interval);
 }
 
 }  // namespace gpu

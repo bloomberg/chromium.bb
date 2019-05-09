@@ -63,6 +63,8 @@ const base::Feature kDefaultEnableOopRasterization{
 const base::Feature kDefaultPassthroughCommandDecoder{
     "DefaultPassthroughCommandDecoder", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kDirectCompositionGpuVSync{
+    "DirectCompositionGpuVSync", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Overrides preferred overlay format to NV12 instead of YUY2.
 const base::Feature kDirectCompositionPreferNV12Overlays{

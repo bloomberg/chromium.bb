@@ -323,6 +323,10 @@ void DelayBasedBeginFrameSource::OnTimerTick() {
   if (RequestCallbackOnGpuAvailable())
     return;
   last_begin_frame_args_ = CreateBeginFrameArgs(time_source_->LastTickTime());
+  TRACE_EVENT2(
+      "viz", "DelayBasedBeginFrameSource::OnTimerTick", "frame_time",
+      last_begin_frame_args_.frame_time.since_origin().InMicroseconds(),
+      "interval", last_begin_frame_args_.interval.InMicroseconds());
   base::flat_set<BeginFrameObserver*> observers(observers_);
   for (auto* obs : observers)
     IssueBeginFrameToObserver(obs, last_begin_frame_args_);
@@ -427,6 +431,11 @@ void ExternalBeginFrameSource::OnBeginFrame(const BeginFrameArgs& args) {
     pending_begin_frame_args_ = args;
     return;
   }
+
+  TRACE_EVENT2(
+      "viz", "ExternalBeginFrameSource::OnBeginFrame", "frame_time",
+      last_begin_frame_args_.frame_time.since_origin().InMicroseconds(),
+      "interval", last_begin_frame_args_.interval.InMicroseconds());
 
   last_begin_frame_args_ = args;
   base::flat_set<BeginFrameObserver*> observers(observers_);

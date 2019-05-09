@@ -16,6 +16,7 @@
 #include "components/viz/service/display_embedder/vsync_parameter_listener.h"
 #include "components/viz/service/frame_sinks/external_begin_frame_source_mojo.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/service/frame_sinks/gpu_vsync_begin_frame_source.h"
 #include "components/viz/service/hit_test/hit_test_aggregator.h"
 
 #if defined(OS_ANDROID)
@@ -77,6 +78,9 @@ RootCompositorFrameSinkImpl::Create(
           std::make_unique<BackToBackBeginFrameSource>(
               std::make_unique<DelayBasedTimeSource>(
                   base::ThreadTaskRunnerHandle::Get().get()));
+    } else if (output_surface->capabilities().supports_gpu_vsync) {
+      external_begin_frame_source = std::make_unique<GpuVSyncBeginFrameSource>(
+          restart_id, output_surface.get());
     } else {
       synthetic_begin_frame_source =
           std::make_unique<DelayBasedBeginFrameSource>(
@@ -84,7 +88,7 @@ RootCompositorFrameSinkImpl::Create(
                   base::ThreadTaskRunnerHandle::Get().get()),
               restart_id);
     }
-#endif
+#endif  // OS_ANDROID
   }
 
   BeginFrameSource* begin_frame_source = synthetic_begin_frame_source.get();

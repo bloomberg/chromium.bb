@@ -13,6 +13,7 @@
 #include "base/threading/thread_checker.h"
 #include "components/viz/common/display/update_vsync_parameters_callback.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/gpu/gpu_vsync_callback.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/service/display/overlay_candidate_validator.h"
 #include "components/viz/service/display/software_output_device.h"
@@ -52,6 +53,8 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     bool supports_stencil = false;
     // Whether this OutputSurface supports post sub buffer or not.
     bool supports_post_sub_buffer = false;
+    // Whether this OutputSurface supports gpu vsync callbacks.
+    bool supports_gpu_vsync = false;
   };
 
   // Constructor for skia-based compositing.
@@ -137,6 +140,13 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   // supported.
   virtual void SetUpdateVSyncParametersCallback(
       UpdateVSyncParametersCallback callback) = 0;
+
+  // Set a callback for vsync signal from GPU service for begin frames.  The
+  // callbacks must be received on the calling thread.
+  virtual void SetGpuVSyncCallback(GpuVSyncCallback callback);
+
+  // Enable or disable vsync callback based on whether begin frames are needed.
+  virtual void SetGpuVSyncEnabled(bool enabled);
 
   // If set to true, the OutputSurface must deliver
   // OutputSurfaceclient::DidSwapWithSize notifications to its client.

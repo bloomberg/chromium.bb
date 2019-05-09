@@ -4242,6 +4242,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.dc_layers = supports_dc_layers_;
   caps.use_dc_overlays_for_video = surface_->UseOverlaysForVideo();
   caps.protected_video_swap_chain = surface_->SupportsProtectedVideo();
+  caps.gpu_vsync = surface_->SupportsGpuVSync();
 
   caps.blend_equation_advanced =
       feature_info_->feature_flags().blend_equation_advanced;

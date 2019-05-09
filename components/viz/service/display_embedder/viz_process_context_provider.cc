@@ -207,9 +207,16 @@ void VizProcessContextProvider::RemoveObserver(ContextLostObserver* obs) {
 }
 
 void VizProcessContextProvider::SetUpdateVSyncParametersCallback(
-    const gpu::InProcessCommandBuffer::UpdateVSyncParametersCallback&
-        callback) {
-  command_buffer_->SetUpdateVSyncParametersCallback(callback);
+    UpdateVSyncParametersCallback callback) {
+  command_buffer_->SetUpdateVSyncParametersCallback(std::move(callback));
+}
+
+void VizProcessContextProvider::SetGpuVSyncCallback(GpuVSyncCallback callback) {
+  command_buffer_->SetGpuVSyncCallback(std::move(callback));
+}
+
+void VizProcessContextProvider::SetGpuVSyncEnabled(bool enabled) {
+  command_buffer_->SetGpuVSyncEnabled(enabled);
 }
 
 bool VizProcessContextProvider::UseRGB565PixelFormat() const {

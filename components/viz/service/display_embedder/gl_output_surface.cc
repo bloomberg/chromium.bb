@@ -39,9 +39,14 @@ GLOutputSurface::GLOutputSurface(
   // can use.
   capabilities_.max_frames_pending =
       context_provider->ContextCapabilities().num_surface_buffers - 1;
+  capabilities_.supports_gpu_vsync =
+      context_provider->ContextCapabilities().gpu_vsync;
 }
 
 GLOutputSurface::~GLOutputSurface() {
+  viz_context_provider_->SetUpdateVSyncParametersCallback(
+      UpdateVSyncParametersCallback());
+  viz_context_provider_->SetGpuVSyncCallback(GpuVSyncCallback());
   if (gpu_fence_id_ > 0)
     context_provider()->ContextGL()->DestroyGpuFenceCHROMIUM(gpu_fence_id_);
 }
@@ -203,6 +208,16 @@ void GLOutputSurface::SetUpdateVSyncParametersCallback(
     UpdateVSyncParametersCallback callback) {
   wants_vsync_parameter_updates_ = !callback.is_null();
   viz_context_provider_->SetUpdateVSyncParametersCallback(std::move(callback));
+}
+
+void GLOutputSurface::SetGpuVSyncCallback(GpuVSyncCallback callback) {
+  DCHECK(capabilities_.supports_gpu_vsync);
+  viz_context_provider_->SetGpuVSyncCallback(std::move(callback));
+}
+
+void GLOutputSurface::SetGpuVSyncEnabled(bool enabled) {
+  DCHECK(capabilities_.supports_gpu_vsync);
+  viz_context_provider_->SetGpuVSyncEnabled(enabled);
 }
 
 }  // namespace viz

@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
@@ -19,6 +20,7 @@
 #include "gpu/ipc/service/direct_composition_child_surface_win.h"
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_surface_presentation_helper.h"
+#include "ui/gl/vsync_thread_win.h"
 
 #ifndef EGL_ANGLE_flexible_surface_compatibility
 #define EGL_ANGLE_flexible_surface_compatibility 1
@@ -197,6 +199,7 @@ DirectCompositionSurfaceWin::DirectCompositionSurfaceWin(
       root_surface_(new DirectCompositionChildSurfaceWin()),
       layer_tree_(std::make_unique<DCLayerTree>(
           delegate->GetFeatureInfo()->workarounds())),
+      delegate_(delegate),
       vsync_provider_(std::move(vsync_provider)),
       presentation_helper_(std::make_unique<gl::GLSurfacePresentationHelper>(
           vsync_provider_.get())) {}
@@ -386,7 +389,6 @@ bool DirectCompositionSurfaceWin::IsHDRSupported() {
   return hdr_monitor_found;
 }
 
-// static
 bool DirectCompositionSurfaceWin::Initialize(gl::GLSurfaceFormat format) {
   d3d11_device_ = gl::QueryD3D11DeviceObjectFromANGLE();
   if (!d3d11_device_) {
@@ -407,6 +409,12 @@ bool DirectCompositionSurfaceWin::Initialize(gl::GLSurfaceFormat format) {
   }
   window_ = child_window_.window();
 
+  auto vsync_callback = delegate_->GetGpuVSyncCallback();
+  if (SupportsGpuVSync() && vsync_callback) {
+    vsync_thread_ = std::make_unique<gl::VSyncThreadWin>(
+        window_, d3d11_device_, std::move(vsync_callback));
+  }
+
   if (!layer_tree_->Initialize(window_, d3d11_device_, dcomp_device_))
     return false;
 
@@ -417,6 +425,8 @@ bool DirectCompositionSurfaceWin::Initialize(gl::GLSurfaceFormat format) {
 }
 
 void DirectCompositionSurfaceWin::Destroy() {
+  // Destroy vsync thread because joining it could call OnVSync.
+  vsync_thread_ = nullptr;
   // Destroy presentation helper first because its dtor calls GetHandle.
   presentation_helper_ = nullptr;
   root_surface_->Destroy();
@@ -453,16 +463,12 @@ gfx::SwapResult DirectCompositionSurfaceWin::SwapBuffers(
   gl::GLSurfacePresentationHelper::ScopedSwapBuffers scoped_swap_buffers(
       presentation_helper_.get(), std::move(callback));
 
-  bool succeeded = true;
-  if (root_surface_->SwapBuffers(PresentationCallback()) ==
-      gfx::SwapResult::SWAP_FAILED)
-    succeeded = false;
+  gfx::SwapResult swap_result =
+      root_surface_->SwapBuffers(PresentationCallback());
 
   if (!layer_tree_->CommitAndClearPendingOverlays(root_surface_.get()))
-    succeeded = false;
+    swap_result = gfx::SwapResult::SWAP_FAILED;
 
-  auto swap_result =
-      succeeded ? gfx::SwapResult::SWAP_ACK : gfx::SwapResult::SWAP_FAILED;
   scoped_swap_buffers.set_result(swap_result);
   return swap_result;
 }
@@ -533,6 +539,15 @@ bool DirectCompositionSurfaceWin::SetDrawRectangle(const gfx::Rect& rectangle) {
 
 gfx::Vector2d DirectCompositionSurfaceWin::GetDrawOffset() const {
   return root_surface_->GetDrawOffset();
+}
+
+bool DirectCompositionSurfaceWin::SupportsGpuVSync() const {
+  return base::FeatureList::IsEnabled(features::kDirectCompositionGpuVSync);
+}
+
+void DirectCompositionSurfaceWin::SetGpuVSyncEnabled(bool enabled) {
+  DCHECK(vsync_thread_);
+  vsync_thread_->SetEnabled(enabled);
 }
 
 scoped_refptr<base::TaskRunner>
