@@ -353,7 +353,7 @@ public class DownloadBroadcastManager extends Service {
             String referrer = IntentUtils.safeGetStringExtra(intent, Intent.EXTRA_REFERRER);
             DownloadManagerService.openDownloadedContent(context, downloadFilename,
                     isSupportedMimeType, isOffTheRecord, contentId.id, id, originalUrl, referrer,
-                    DownloadMetrics.DownloadOpenSource.NOTIFICATION);
+                    DownloadMetrics.DownloadOpenSource.NOTIFICATION, null);
         });
     }
 
