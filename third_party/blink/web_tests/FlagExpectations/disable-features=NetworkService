@@ -23,6 +23,15 @@ crbug.com/950412 [ Linux Debug ] http/tests/inspector-protocol/network/request-i
 Bug(none) http/tests/misc/redirect-to-about-blank.html [ Pass ]
 
 # The below is only supported with network service.
-Bug(none) virtual/omt-worker-fetch [ Skip ]
+Bug(none) http/tests/devtools/console-xhr-logging.js [ Skip ]
+Bug(none) http/tests/eventsource/eventsource-cors-non-http.html [ Skip ]
+Bug(none) http/tests/eventsource/workers/eventsource-cors-non-http.html [ Skip ]
 Bug(none) http/tests/inspector-protocol/fetch [ Skip ]
+Bug(none) http/tests/inspector-protocol/network-fetch-content-with-error-status-code.js [ Skip ]
 Bug(none) http/tests/inspector-protocol/network/request-will-be-sent-for-sync-xhrs.js [ Skip ]
+Bug(none) http/tests/security/script-crossorigin-redirect-credentials.html [ Skip ]
+Bug(none) http/tests/xmlhttprequest/cross-origin-unsupported-url.html [ Skip ]
+Bug(none) http/tests/xmlhttprequest/workers/cross-origin-unsupported-url.html [ Skip ]
+Bug(none) http/tests/security/img-redirect-to-crossorigin-credentials.html [ Skip ]
+Bug(none) mhtml/cid_in_html_resource.html [ Skip ]
+Bug(none) virtual/omt-worker-fetch [ Skip ]
