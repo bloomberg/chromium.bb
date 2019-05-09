@@ -62,7 +62,7 @@ class PLATFORM_EXPORT GCInfoTable {
     return info;
   }
 
-  uint32_t EnsureGCInfoIndex(const GCInfo*, std::atomic_uint32_t*);
+  uint32_t EnsureGCInfoIndex(const GCInfo*, std::atomic<std::uint32_t>*);
 
   uint32_t GcInfoIndex() const { return current_index_; }
 
@@ -107,7 +107,7 @@ struct GCInfoAtBaseType {
         NameTrait<T>::GetName, std::is_polymorphic<T>::value};
     // This is more complicated than using threadsafe initialization, but this
     // is instantiated many times (once for every GC type).
-    static std::atomic_uint32_t gc_info_index{0};
+    static std::atomic<std::uint32_t> gc_info_index{0};
     uint32_t index = gc_info_index.load(std::memory_order_acquire);
     if (!index)
       index = GCInfoTable::Get().EnsureGCInfoIndex(&kGcInfo, &gc_info_index);
