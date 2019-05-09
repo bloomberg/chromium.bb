@@ -63,6 +63,14 @@ class ToolbarController {
         cr.ui.Command);
 
     /**
+     * @private {!cr.ui.Command}
+     * @const
+     */
+    this.refreshCommand_ = assertInstanceof(
+        queryRequiredElement('#refresh', assert(this.toolbar_.ownerDocument)),
+        cr.ui.Command);
+
+    /**
      * @private {!HTMLElement}
      * @const
      */
@@ -105,6 +113,9 @@ class ToolbarController {
     this.navigationList_.addEventListener(
         'relayout', this.onNavigationListRelayout_.bind(this));
 
+    this.directoryModel_.addEventListener(
+        'directory-change', this.updateCurrentDirectoryButtons_.bind(this));
+
     // Watch visibility of toolbar buttons to update the width of location line.
     const observer =
         new MutationObserver(this.onToolbarButtonsMutated_.bind(this));
@@ -115,6 +126,18 @@ class ToolbarController {
           toolbarButtons[i],
           /** @type MutationObserverInit */ ({attributes: true}));
     }
+  }
+
+  /**
+   * Updates buttons that act on current directory.
+   * @private
+   */
+  updateCurrentDirectoryButtons_() {
+    const volumeInfo = this.directoryModel_.getCurrentVolumeInfo();
+    this.refreshCommand_.disabled = !!volumeInfo && volumeInfo.watchable;
+    this.refreshCommand_.setHidden(
+        volumeInfo && volumeInfo.watchable ||
+        this.directoryModel_.getFileListSelection().getCheckSelectMode());
   }
 
   /**
