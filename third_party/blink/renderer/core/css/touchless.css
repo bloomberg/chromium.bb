@@ -25,3 +25,11 @@ video:-internal-spatial-navigation-interest {
     outline: auto 4px #185ABC !important;
     box-shadow: none !important
 }
+
+body {
+    user-select: none !important;
+}
+
+* {
+    -webkit-user-drag: none !important;
+}
