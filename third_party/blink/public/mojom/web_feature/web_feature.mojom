@@ -2275,6 +2275,8 @@ enum WebFeature {
   kV8RTCQuicTransport_ReadyToSendDatagram_Method = 2868,
   kV8RTCQuicTransport_SendDatagram_Method = 2869,
   kV8RTCQuicTransport_ReceiveDatagrams_Method = 2870,
+  kV8RTCRtpReceiver_JitterBufferDelayHint_AttributeGetter = 2871,
+  kV8RTCRtpReceiver_JitterBufferDelayHint_AttributeSetter = 2872,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

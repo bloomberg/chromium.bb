@@ -22952,6 +22952,10 @@ Called by update_net_error_codes.py.-->
   <int value="2868" label="V8RTCQuicTransport_ReadyToSendDatagram_Method"/>
   <int value="2869" label="V8RTCQuicTransport_SendDatagram_Method"/>
   <int value="2870" label="V8RTCQuicTransport_ReceiveDatagrams_Method"/>
+  <int value="2871"
+      label="V8RTCRtpReceiver_JitterBufferDelayHint_AttributeGetter"/>
+  <int value="2872"
+      label="V8RTCRtpReceiver_JitterBufferDelayHint_AttributeSetter"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
