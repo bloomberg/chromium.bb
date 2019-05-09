@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.gesturenav;
 
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
 
 /**
@@ -14,11 +13,9 @@ import org.chromium.chrome.browser.tab.Tab;
  */
 public class TabbedActionDelegate implements NavigationHandler.ActionDelegate {
     private final Tab mTab;
-    private final ChromeActivity mActivity;
 
     public TabbedActionDelegate(Tab tab) {
         mTab = tab;
-        mActivity = tab.getActivity();
     }
 
     @Override
@@ -31,7 +28,7 @@ public class TabbedActionDelegate implements NavigationHandler.ActionDelegate {
         if (forward) {
             mTab.goForward();
         } else {
-            mActivity.onBackPressed();
+            mTab.getActivity().onBackPressed();
         }
     }
 
