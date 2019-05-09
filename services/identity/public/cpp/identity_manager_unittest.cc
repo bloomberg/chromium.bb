@@ -440,24 +440,27 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSigninAndSignout) {
   EXPECT_EQ(primary_account_id, primary_account_info.account_id);
 }
 
-// Test that the primary account's ID remains tracked by the IdentityManager
-// after signing in even after having removed the account without signing out.
-TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSigninAndAccountRemoval) {
+// Test that the primary account's core info remains tracked by the
+// IdentityManager after signing in even after having removed the refresh token
+// without signing out.
+TEST_F(IdentityManagerTest,
+       PrimaryAccountInfoAfterSigninAndRefreshTokenRemoval) {
   ClearPrimaryAccount(identity_manager(), ClearPrimaryAccountPolicy::DEFAULT);
   // First ensure that the user is signed in from the POV of the
   // IdentityManager.
   SetPrimaryAccount(identity_manager(), kTestEmail);
 
-  // Remove the account from the AccountTrackerService and check that
-  // the returned AccountInfo won't have a valid ID anymore, even if
-  // the IdentityManager is still storing the primary account's ID.
-  account_tracker()->RemoveAccount(kTestGaiaId);
+  identity_manager()->account_fetcher_service_->EnableAccountRemovalForTest();
+  // Revoke the primary's account credentials from the token service and
+  // check that the returned CoreAccountInfo is still valid since the
+  // identity_manager stores it.
+  token_service()->RevokeCredentials(identity_manager()->GetPrimaryAccountId());
 
   CoreAccountInfo primary_account_info =
       identity_manager()->GetPrimaryAccountInfo();
-  EXPECT_EQ("", primary_account_info.gaia);
-  EXPECT_EQ("", primary_account_info.email);
-  EXPECT_EQ("", primary_account_info.account_id);
+  EXPECT_EQ(kTestGaiaId, primary_account_info.gaia);
+  EXPECT_EQ(kTestEmail, primary_account_info.email);
+  EXPECT_EQ(kTestGaiaId, primary_account_info.account_id);
 
   std::string primary_account_id = identity_manager()->GetPrimaryAccountId();
   EXPECT_EQ(primary_account_id, kTestGaiaId);

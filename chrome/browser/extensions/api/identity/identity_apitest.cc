@@ -777,7 +777,7 @@ class GetAuthTokenFunctionTest
     return ext;
   }
 
-  const std::string& GetPrimaryAccountId() {
+  std::string GetPrimaryAccountId() {
     return identity_test_env()->identity_manager()->GetPrimaryAccountId();
   }
 

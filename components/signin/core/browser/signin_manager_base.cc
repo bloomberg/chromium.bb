@@ -218,10 +218,17 @@ void SigninManagerBase::SetAuthenticatedAccountId(
   // Commit authenticated account info immediately so that it does not get lost
   // if Chrome crashes before the next commit interval.
   client_->GetPrefs()->CommitPendingWrite();
+
+  if (observer_) {
+    observer_->AuthenticatedAccountSet(info);
+  }
 }
 
 void SigninManagerBase::ClearAuthenticatedAccountId() {
   authenticated_account_id_.clear();
+  if (observer_) {
+    observer_->AuthenticatedAccountCleared();
+  }
 }
 
 bool SigninManagerBase::IsAuthenticated() const {

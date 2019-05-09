@@ -53,6 +53,14 @@ class SigninManagerBase {
     // Called when the currently signed-in user for a user has been signed out.
     virtual void GoogleSignedOut(const AccountInfo& account_info) {}
 
+    // Called during the signin as soon as
+    // SigninManagerBase::authenticated_account_id_ is set.
+    virtual void AuthenticatedAccountSet(const AccountInfo& account_info) {}
+
+    // Called during the signout as soon as
+    // SigninManagerBase::authenticated_account_id_ is cleared.
+    virtual void AuthenticatedAccountCleared() {}
+
    protected:
     virtual ~Observer() {}
 

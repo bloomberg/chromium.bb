@@ -204,21 +204,14 @@ class IdentityManager : public SigninManagerBase::Observer,
 
   // Provides access to the core information of the user's primary account.
   // Returns an empty struct if no such info is available, either because there
-  // is no primary account or because the extended information for the primary
-  // account has been removed (this happens when the refresh token is revoked,
-  // for example).
+  // is no primary account yet or because the user signed out.
   CoreAccountInfo GetPrimaryAccountInfo() const;
 
-  // Provides access to the account ID of the user's primary account. Note that
-  // this may return a valid string even in cases where GetPrimaryAccountInfo()
-  // returns an empty struct, as the extended information for the primary
-  // account is removed on certain events (e.g., when its refresh token is
-  // revoked).
-  const std::string& GetPrimaryAccountId() const;
+  // Provides access to the account ID of the user's primary account. Simple
+  // convenience wrapper over GetPrimaryAccountInfo().account_id.
+  std::string GetPrimaryAccountId() const;
 
-  // Returns whether the primary account is available. Simple convenience
-  // wrapper over checking whether GetPrimaryAccountId() returns a non-empty
-  // string.
+  // Returns whether the user's primary account is available.
   bool HasPrimaryAccount() const;
 
   // Provides the information of all accounts that have refresh tokens.
@@ -530,6 +523,10 @@ class IdentityManager : public SigninManagerBase::Observer,
   // order to drive its behavior.
   // TODO(https://crbug.com/943135): Find a better way to accomplish this.
   friend IdentityManagerTest;
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
+                           PrimaryAccountInfoAfterSigninAndAccountRemoval);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
+                           PrimaryAccountInfoAfterSigninAndRefreshTokenRemoval);
   FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest, RemoveAccessTokenFromCache);
   FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
                            CreateAccessTokenFetcherWithCustomURLLoaderFactory);
@@ -592,6 +589,8 @@ class IdentityManager : public SigninManagerBase::Observer,
   // SigninManagerBase::Observer:
   void GoogleSigninSucceeded(const AccountInfo& account_info) override;
   void GoogleSignedOut(const AccountInfo& account_info) override;
+  void AuthenticatedAccountSet(const AccountInfo& account_info) override;
+  void AuthenticatedAccountCleared() override;
 
   // OAuth2TokenService::Observer:
   void OnRefreshTokenAvailable(const std::string& account_id) override;
@@ -657,6 +656,8 @@ class IdentityManager : public SigninManagerBase::Observer,
   base::ObserverList<Observer, true>::Unchecked observer_list_;
   base::ObserverList<DiagnosticsObserver, true>::Unchecked
       diagnostics_observer_list_;
+
+  base::Optional<CoreAccountInfo> primary_account_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityManager);
 };

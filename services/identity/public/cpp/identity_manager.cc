@@ -66,6 +66,14 @@ IdentityManager::IdentityManager(
   token_service_->AddObserver(this);
   account_tracker_service_->AddObserver(this);
   gaia_cookie_manager_service_->AddObserver(this);
+
+  // Seed the primary account with any state that |signin_manager_| loaded from
+  // prefs.
+  if (signin_manager_->IsAuthenticated()) {
+    CoreAccountInfo account = signin_manager_->GetAuthenticatedAccountInfo();
+    DCHECK(!account.account_id.empty());
+    primary_account_ = std::move(account);
+  }
 }
 
 IdentityManager::~IdentityManager() {
@@ -81,16 +89,30 @@ IdentityManager::~IdentityManager() {
   gaia_cookie_manager_service_->RemoveObserver(this);
 }
 
+// TODO(862619) change return type to base::Optional<CoreAccountInfo>
 CoreAccountInfo IdentityManager::GetPrimaryAccountInfo() const {
-  return signin_manager_->GetAuthenticatedAccountInfo();
+  DCHECK_EQ(primary_account_.has_value(), signin_manager_->IsAuthenticated());
+  auto result = primary_account_.value_or(CoreAccountInfo());
+  DCHECK_EQ(result.account_id, signin_manager_->GetAuthenticatedAccountId());
+#if DCHECK_IS_ON()
+  CoreAccountInfo signin_manager_account =
+      signin_manager_->GetAuthenticatedAccountInfo();
+  if (!signin_manager_account.account_id.empty()) {
+    DCHECK_EQ(signin_manager_account, result)
+        << "If signin_manager_'s account is set (account has a refresh token), "
+           "primary_account_ must have the same value.";
+  }
+#endif
+  return result;
 }
 
-const std::string& IdentityManager::GetPrimaryAccountId() const {
-  return signin_manager_->GetAuthenticatedAccountId();
+std::string IdentityManager::GetPrimaryAccountId() const {
+  return GetPrimaryAccountInfo().account_id;
 }
 
 bool IdentityManager::HasPrimaryAccount() const {
-  return signin_manager_->IsAuthenticated();
+  DCHECK_EQ(primary_account_.has_value(), signin_manager_->IsAuthenticated());
+  return primary_account_.has_value();
 }
 
 std::vector<CoreAccountInfo> IdentityManager::GetAccountsWithRefreshTokens()
@@ -339,7 +361,7 @@ void IdentityManager::LegacySetPrimaryAccount(
 
   // TODO(https://crbug.com/944012): Unify the firing of this observer
   // notification between ChromeOS and other platforms.
-  FireOnPrimaryAccountSetNotification(GetPrimaryAccountInfo());
+  FireOnPrimaryAccountSetNotification(primary_account_.value());
 }
 #endif
 
@@ -471,6 +493,14 @@ void IdentityManager::GoogleSignedOut(const AccountInfo& account_info) {
     observer.OnPrimaryAccountCleared(account_info);
   }
 }
+void IdentityManager::AuthenticatedAccountSet(const AccountInfo& account_info) {
+  DCHECK(signin_manager_->IsAuthenticated());
+  primary_account_ = account_info;
+}
+void IdentityManager::AuthenticatedAccountCleared() {
+  DCHECK(!signin_manager_->IsAuthenticated());
+  primary_account_.reset();
+}
 
 void IdentityManager::OnRefreshTokenAvailable(const std::string& account_id) {
   CoreAccountInfo account_info =
@@ -569,6 +599,9 @@ void IdentityManager::OnRefreshTokenRevokedFromSource(
 }
 
 void IdentityManager::OnAccountUpdated(const AccountInfo& info) {
+  if (primary_account_ && primary_account_->account_id == info.account_id) {
+    primary_account_ = info;
+  }
   for (auto& observer : observer_list_) {
     observer.OnExtendedAccountInfoUpdated(info);
   }
