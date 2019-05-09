@@ -839,7 +839,7 @@ class ChannelAssociatedGroupController
     mojo::InterfaceId id = message->interface_id();
     DCHECK(mojo::IsValidInterfaceId(id));
 
-    base::AutoLock locker(lock_);
+    base::ReleasableAutoLock locker(&lock_);
     Endpoint* endpoint = FindEndpoint(id);
     if (!endpoint)
       return true;
@@ -870,10 +870,16 @@ class ChannelAssociatedGroupController
         return true;
       }
 
+      // If |proxy_task_runner_| has been torn down already, this PostTask will
+      // fail and destroy |message|. That operation may need to in turn destroy
+      // in-transit associated endpoints and thus acquire |lock_|. We no longer
+      // need the lock to be held now since |proxy_task_runner_| is safe to
+      // access unguarded.
+      locker.Release();
       proxy_task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(&ChannelAssociatedGroupController::AcceptOnProxyThread,
-                         this, base::Passed(message)));
+                         this, std::move(*message)));
       return true;
     }
 
@@ -882,7 +888,7 @@ class ChannelAssociatedGroupController
     DCHECK(!message->has_flag(mojo::Message::kFlagIsSync) ||
            !message->has_flag(mojo::Message::kFlagIsResponse));
 
-    base::AutoUnlock unlocker(lock_);
+    locker.Release();
     return client->HandleIncomingMessage(message);
   }
 
@@ -973,7 +979,7 @@ class ChannelAssociatedGroupController
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> proxy_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> proxy_task_runner_;
   const bool set_interface_id_namespace_bit_;
   bool paused_ = false;
   std::unique_ptr<mojo::Connector> connector_;
