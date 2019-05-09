@@ -18,6 +18,7 @@
 
 #include "absl/base/thread_annotations.h"
 #include "absl/types/optional.h"
+#include "osp_base/error.h"
 #include "platform/api/task_runner.h"
 #include "platform/api/time.h"
 
@@ -26,7 +27,30 @@ namespace platform {
 
 class TaskRunnerImpl : public TaskRunner {
  public:
-  explicit TaskRunnerImpl(platform::ClockNowFunctionPtr now_function);
+  class TaskWaiter {
+   public:
+    virtual ~TaskWaiter() = default;
+
+    // These calls should be thread-safe.  The absolute minimum is that
+    // OnTaskPosted must be safe to call from another thread while this is
+    // inside WaitForTaskToBePosted.  NOTE: There may be spurious wakeups from
+    // WaitForTaskToBePosted depending on whether the specific implementation
+    // chooses to clear queued WakeUps before entering WaitForTaskToBePosted.
+
+    // Blocks until some event occurs, which means new tasks may have been
+    // posted.  Wait may only block up to |timeout| where 0 means don't block at
+    // all (not block forever).
+    virtual Error WaitForTaskToBePosted(Clock::duration timeout) = 0;
+
+    // If a WaitForTaskToBePosted call is currently blocking, unblock it
+    // immediately.
+    virtual void OnTaskPosted() = 0;
+  };
+
+  explicit TaskRunnerImpl(
+      platform::ClockNowFunctionPtr now_function,
+      TaskWaiter* event_waiter = nullptr,
+      Clock::duration waiter_timeout = std::chrono::milliseconds(100));
 
   // TaskRunner overrides
   ~TaskRunnerImpl() override;
@@ -102,7 +126,12 @@ class TaskRunnerImpl : public TaskRunner {
                       std::greater<DelayedTask>>
       delayed_tasks_ GUARDED_BY(task_mutex_);
 
+  // When |task_waiter_| is nullptr, |run_loop_wakeup_| is used for sleeping the
+  // task runner.  Otherwise, |run_loop_wakeup_| isn't used and |task_waiter_|
+  // is used instead (along with |waiter_timeout_|).
   std::condition_variable run_loop_wakeup_;
+  TaskWaiter* const task_waiter_;
+  Clock::duration waiter_timeout_;
   std::deque<Task> tasks_ GUARDED_BY(task_mutex_);
 };
 }  // namespace platform

@@ -9,21 +9,34 @@
 namespace openscreen {
 namespace platform {
 
-TaskRunnerImpl::TaskRunnerImpl(platform::ClockNowFunctionPtr now_function)
-    : now_function_(now_function), is_running_(false) {}
+TaskRunnerImpl::TaskRunnerImpl(platform::ClockNowFunctionPtr now_function,
+                               TaskWaiter* event_waiter,
+                               Clock::duration waiter_timeout)
+    : now_function_(now_function),
+      is_running_(false),
+      task_waiter_(event_waiter),
+      waiter_timeout_(waiter_timeout) {}
 
 TaskRunnerImpl::~TaskRunnerImpl() = default;
 
 void TaskRunnerImpl::PostTask(Task task) {
   std::lock_guard<std::mutex> lock(task_mutex_);
   tasks_.push_back(std::move(task));
-  run_loop_wakeup_.notify_one();
+  if (task_waiter_) {
+    task_waiter_->OnTaskPosted();
+  } else {
+    run_loop_wakeup_.notify_one();
+  }
 }
 
 void TaskRunnerImpl::PostTaskWithDelay(Task task, Clock::duration delay) {
   std::lock_guard<std::mutex> lock(task_mutex_);
   delayed_tasks_.emplace(std::move(task), now_function_() + delay);
-  run_loop_wakeup_.notify_one();
+  if (task_waiter_) {
+    task_waiter_->OnTaskPosted();
+  } else {
+    run_loop_wakeup_.notify_one();
+  }
 }
 
 void TaskRunnerImpl::RunUntilStopped() {
@@ -38,8 +51,12 @@ void TaskRunnerImpl::RequestStopSoon() {
 
   if (was_running) {
     OSP_DVLOG << "Requesting stop...";
-    std::lock_guard<std::mutex> lock(task_mutex_);
-    run_loop_wakeup_.notify_one();
+    if (task_waiter_) {
+      task_waiter_->OnTaskPosted();
+    } else {
+      std::lock_guard<std::mutex> lock(task_mutex_);
+      run_loop_wakeup_.notify_one();
+    }
   }
 }
 
@@ -129,18 +146,34 @@ std::unique_lock<std::mutex> TaskRunnerImpl::WaitForWorkAndAcquireLock() {
     return lock;
   }
 
-  // Pass a wait predicate to avoid lost or spurious wakeups.
-  const auto wait_predicate = [this] { return ShouldWakeUpRunLoop(); };
-  if (!delayed_tasks_.empty()) {
-    // We don't have any work to do currently, but have some in the
-    // pipe.
-    OSP_DVLOG << "TaskRunner waiting for lock until delayed task ready...";
-    run_loop_wakeup_.wait_until(lock, delayed_tasks_.top().runnable_after,
-                                wait_predicate);
+  if (task_waiter_) {
+    do {
+      Clock::duration timeout = waiter_timeout_;
+      if (!delayed_tasks_.empty()) {
+        Clock::duration next_task_delta =
+            delayed_tasks_.top().runnable_after - now_function_();
+        if (next_task_delta < timeout) {
+          timeout = next_task_delta;
+        }
+      }
+      lock.unlock();
+      task_waiter_->WaitForTaskToBePosted(timeout);
+      lock.lock();
+    } while (!ShouldWakeUpRunLoop());
   } else {
-    // We don't have any work queued.
-    OSP_DVLOG << "TaskRunner waiting for lock...";
-    run_loop_wakeup_.wait(lock, wait_predicate);
+    // Pass a wait predicate to avoid lost or spurious wakeups.
+    const auto wait_predicate = [this] { return ShouldWakeUpRunLoop(); };
+    if (!delayed_tasks_.empty()) {
+      // We don't have any work to do currently, but have some in the
+      // pipe.
+      OSP_DVLOG << "TaskRunner waiting for lock until delayed task ready...";
+      run_loop_wakeup_.wait_until(lock, delayed_tasks_.top().runnable_after,
+                                  wait_predicate);
+    } else {
+      // We don't have any work queued.
+      OSP_DVLOG << "TaskRunner waiting for lock...";
+      run_loop_wakeup_.wait(lock, wait_predicate);
+    }
   }
 
   OSP_DVLOG << "TaskRunner lock acquired.";
