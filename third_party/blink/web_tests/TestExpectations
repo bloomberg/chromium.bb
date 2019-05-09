@@ -4222,6 +4222,8 @@ crbug.com/835717 virtual/omt-worker-fetch/external/wpt/content-security-policy/i
 crbug.com/835717 virtual/omt-worker-fetch/external/wpt/content-security-policy/inside-worker/dedicated-inheritance.html [ Skip ]
 # This is failing because of the lack of CSP support.
 crbug.com/940316 virtual/omt-worker-fetch/external/wpt/content-security-policy/inside-worker/shared-script.html [ Failure Pass ]
+# This is failing because of the lack of origin trial context support.
+crbug.com/945215 virtual/omt-worker-fetch/http/tests/origin_trials/sample-api-workers.html [ Failure ]
 
 # This fails because AllowedByNoSniff::MimeTypeAsScript() blocks the nested worker's
 # worker script, because the script url has a .html file extension.
