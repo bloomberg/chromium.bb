@@ -347,6 +347,27 @@ source_set("native_library_test_utils") {
   ]
 }
 
+# This shared library is dynamically loaded by ImmediateCrash unittests.
+shared_library("immediate_crash_test_helper") {
+  sources = [
+    "immediate_crash_test_helper.cc",
+  ]
+
+  # Note: the helper has a header-only dependency on //base/immediate_helper.h.
+  # However, the build rule intentionally omits an explicit //base dependency
+  # to avoid potential ODR violations and minimize the amount of code linked in.
+
+  # Try to minimize the risk of non-official builds generating different code.
+  if (!is_official_build) {
+    configs -= [ "//build/config/compiler:default_optimization" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
+
+  if (is_android) {
+    configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
+  }
+}
+
 # This shared library is dynamically loaded by NativeLibrary unittests.
 shared_library("test_shared_library") {
   testonly = true
