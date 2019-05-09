@@ -15,7 +15,6 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/app_list/views/search_result_page_view.h"
-#include "ash/app_list/views/search_result_tile_item_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
@@ -90,20 +89,29 @@ SearchResultTileItemListView::SearchResultTileItemListView(
     SearchResultTileItemView* tile_item = new SearchResultTileItemView(
         view_delegate, nullptr /* pagination model */,
         false /* show_in_apps_page */);
-    tile_item->SetIndexInItemListView(i);
+    tile_item->set_index_in_container(i);
     tile_item->SetParentBackgroundColor(
         AppListConfig::instance().card_background_color());
     tile_views_.push_back(tile_item);
     AddChildView(tile_item);
     AddObservedResultView(tile_item);
   }
+
+  // Tile items are shown horizontally.
+  set_horizontally_traversable(true);
 }
 
 SearchResultTileItemListView::~SearchResultTileItemListView() = default;
 
+SearchResultTileItemView* SearchResultTileItemListView::GetResultViewAt(
+    size_t index) {
+  DCHECK(index >= 0 && index < tile_views_.size());
+  return tile_views_[index];
+}
+
 void SearchResultTileItemListView::NotifyFirstResultYIndex(int y_index) {
   for (size_t i = 0; i < static_cast<size_t>(num_results()); ++i)
-    tile_views_[i]->result()->set_distance_from_origin(i + y_index);
+    GetResultViewAt(i)->result()->set_distance_from_origin(i + y_index);
 }
 
 int SearchResultTileItemListView::GetYSize() {
@@ -135,13 +143,13 @@ int SearchResultTileItemListView::DoUpdate() {
         separator_views_[i]->SetVisible(false);
       }
 
-      tile_views_[i]->SetResult(nullptr);
+      GetResultViewAt(i)->SetResult(nullptr);
       continue;
     }
 
     SearchResult* item = display_results[i];
 
-    tile_views_[i]->SetResult(item);
+    GetResultViewAt(i)->SetResult(item);
     result_id_added.insert(item->id());
     is_result_an_installable_app = IsResultAnInstallableApp(item);
 

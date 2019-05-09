@@ -50,6 +50,15 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
 
   int num_results() const { return num_results_; }
 
+  virtual SearchResultBaseView* GetResultViewAt(size_t index) = 0;
+
+  bool horizontally_traversable() const { return horizontally_traversable_; }
+
+  // Allows a container to define its traversal behavior
+  void set_horizontally_traversable(bool horizontally_traversable) {
+    horizontally_traversable_ = horizontally_traversable;
+  }
+
   void set_container_score(double score) { container_score_ = score; }
   double container_score() const { return container_score_; }
 
@@ -107,6 +116,9 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
   Delegate* delegate_ = nullptr;
 
   int num_results_ = 0;
+
+  // If true, left/right key events will traverse this container
+  bool horizontally_traversable_ = false;
 
   double container_score_;
 

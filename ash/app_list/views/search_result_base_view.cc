@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "ash/app_list/views/search_result_base_view.h"
+
 #include "ash/app_list/model/search/search_result.h"
+#include "base/strings/utf_string_conversions.h"
 
 namespace app_list {
 
@@ -38,6 +40,22 @@ void SearchResultBaseView::OnResultDestroying() {
   // Uses |SetResult| to ensure that the |OnResultChanging()| and
   // |OnResultChanged()| logic gets run.
   SetResult(nullptr);
+}
+
+base::string16 SearchResultBaseView::ComputeAccessibleName() const {
+  if (!result())
+    return base::string16();
+
+  base::string16 accessible_name = result()->title();
+  if (!result()->title().empty() && !result()->details().empty())
+    accessible_name += base::ASCIIToUTF16(", ");
+  accessible_name += result()->details();
+
+  return accessible_name;
+}
+
+void SearchResultBaseView::UpdateAccessibleName() {
+  SetAccessibleName(ComputeAccessibleName());
 }
 
 void SearchResultBaseView::ClearResult() {

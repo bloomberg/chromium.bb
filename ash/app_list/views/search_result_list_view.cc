@@ -13,7 +13,6 @@
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/search_box_view.h"
-#include "ash/app_list/views/search_result_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
@@ -125,7 +124,7 @@ SearchResultListView::SearchResultListView(AppListMainView* main_view,
   for (int i = 0; i < kMaxResults; ++i) {
     search_result_views_.emplace_back(
         new SearchResultView(this, view_delegate_));
-    search_result_views_.back()->set_index_in_search_result_list_view(i);
+    search_result_views_.back()->set_index_in_container(i);
     results_container_->AddChildView(search_result_views_.back());
     AddObservedResultView(search_result_views_.back());
   }
@@ -134,17 +133,17 @@ SearchResultListView::SearchResultListView(AppListMainView* main_view,
 
 SearchResultListView::~SearchResultListView() = default;
 
-SearchResultView* SearchResultListView::GetResultViewAt(size_t index) {
-  DCHECK(index >= 0 && index < search_result_views_.size());
-  return search_result_views_[index];
-}
-
 void SearchResultListView::ListItemsRemoved(size_t start, size_t count) {
   size_t last = std::min(start + count, search_result_views_.size());
   for (size_t i = start; i < last; ++i)
     GetResultViewAt(i)->ClearResult();
 
   SearchResultContainerView::ListItemsRemoved(start, count);
+}
+
+SearchResultView* SearchResultListView::GetResultViewAt(size_t index) {
+  DCHECK(index >= 0 && index < search_result_views_.size());
+  return search_result_views_[index];
 }
 
 void SearchResultListView::NotifyFirstResultYIndex(int y_index) {
@@ -175,7 +174,6 @@ int SearchResultListView::DoUpdate() {
 
   for (size_t i = 0; i < results_container_->children().size(); ++i) {
     SearchResultView* result_view = GetResultViewAt(i);
-    result_view->set_is_last_result(i == display_size - 1);
     if (i < display_results.size()) {
       if (assistant_item_icons[i]) {
         result_view->SetDisplayIcon(gfx::CreateVectorIcon(
@@ -225,8 +223,7 @@ void SearchResultListView::SearchResultActivated(SearchResultView* view,
     RecordSearchResultOpenSource(view->result(), view_delegate_->GetModel(),
                                  view_delegate_->GetSearchModel());
     view_delegate_->LogResultLaunchHistogram(
-        SearchResultLaunchLocation::kResultList,
-        view->get_index_in_search_result_list_view());
+        SearchResultLaunchLocation::kResultList, view->index_in_container());
     view_delegate_->OpenSearchResult(
         view->result()->id(), event_flags,
         ash::mojom::AppListLaunchedFrom::kLaunchedFromSearchBox,
@@ -262,7 +259,7 @@ bool SearchResultListView::HandleVerticalFocusMovement(SearchResultView* view,
                                                        bool arrow_up) {
   int view_index = -1;
   for (int i = 0; i < num_results(); ++i) {
-    if (view == search_result_views_[i]) {
+    if (view == GetResultViewAt(i)) {
       view_index = i;
       break;
     }
@@ -277,7 +274,7 @@ bool SearchResultListView::HandleVerticalFocusMovement(SearchResultView* view,
   if (arrow_up) {  // VKEY_UP
     if (view_index > 0) {
       // Move to the previous result if the current one is not the first result.
-      search_result_views_[view_index - 1]->RequestFocus();
+      GetResultViewAt(view_index - 1)->RequestFocus();
       return true;
     }
   } else {  // VKEY_DOWN
@@ -286,7 +283,7 @@ bool SearchResultListView::HandleVerticalFocusMovement(SearchResultView* view,
     if (view_index == num_results() - 1)
       main_view_->search_box_view()->search_box()->RequestFocus();
     else
-      search_result_views_[view_index + 1]->RequestFocus();
+      GetResultViewAt(view_index + 1)->RequestFocus();
     return true;
   }
 

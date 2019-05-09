@@ -44,10 +44,10 @@ constexpr int kPaddingDip = 16;
 constexpr int kPreferredHeightDip = 32;
 
 // Records an app being launched.
-void LogAppLaunch(int index_in_suggestion_chip_container) {
-  DCHECK_GE(index_in_suggestion_chip_container, 0);
+void LogAppLaunch(int index_in_container) {
+  DCHECK_GE(index_in_container, 0);
   base::UmaHistogramSparse("Apps.AppListSuggestedChipLaunched",
-                           index_in_suggestion_chip_container);
+                           index_in_container);
 
   base::RecordAction(base::UserMetricsAction("AppList_OpenSuggestedApp"));
 }
@@ -95,11 +95,6 @@ void SearchResultSuggestionChipView::OnResultChanged() {
   UpdateSuggestionChipView();
 }
 
-void SearchResultSuggestionChipView::SetIndexInSuggestionChipContainer(
-    size_t index) {
-  index_in_suggestion_chip_container_ = index;
-}
-
 void SearchResultSuggestionChipView::OnMetadataChanged() {
   UpdateSuggestionChipView();
 }
@@ -107,14 +102,13 @@ void SearchResultSuggestionChipView::OnMetadataChanged() {
 void SearchResultSuggestionChipView::ButtonPressed(views::Button* sender,
                                                    const ui::Event& event) {
   DCHECK(result());
-  LogAppLaunch(index_in_suggestion_chip_container_);
+  LogAppLaunch(index_in_container());
   RecordSearchResultOpenSource(result(), view_delegate_->GetModel(),
                                view_delegate_->GetSearchModel());
   view_delegate_->OpenSearchResult(
       result()->id(), event.flags(),
       ash::mojom::AppListLaunchedFrom::kLaunchedFromSuggestionChip,
-      ash::mojom::AppListLaunchType::kAppSearchResult,
-      index_in_suggestion_chip_container_);
+      ash::mojom::AppListLaunchType::kAppSearchResult, index_in_container());
 }
 
 const char* SearchResultSuggestionChipView::GetClassName() const {

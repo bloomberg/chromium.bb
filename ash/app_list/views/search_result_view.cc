@@ -19,7 +19,6 @@
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/interfaces/app_list.mojom.h"
 #include "base/bind.h"
-#include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
@@ -28,7 +27,6 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
-#include "ui/views/controls/progress_bar.h"
 
 namespace app_list {
 
@@ -71,7 +69,6 @@ SearchResultView::SearchResultView(SearchResultListView* list_view,
       display_icon_(new views::ImageView),
       badge_icon_(new views::ImageView),
       actions_view_(new SearchResultActionsView(this)),
-      progress_bar_(new views::ProgressBar),
       weak_ptr_factory_(this) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
   icon_->set_can_process_events_within_subtree(false);
@@ -83,7 +80,6 @@ SearchResultView::SearchResultView(SearchResultListView* list_view,
   AddChildView(display_icon_);
   AddChildView(badge_icon_);
   AddChildView(actions_view_);
-  AddChildView(progress_bar_);
   set_context_menu_controller(this);
   set_notify_enter_exit_on_child(true);
 }
@@ -96,8 +92,6 @@ void SearchResultView::OnResultChanged() {
   OnMetadataChanged();
   UpdateTitleText();
   UpdateDetailsText();
-  OnIsInstallingChanged();
-  OnPercentDownloadedChanged();
   SchedulePaint();
 }
 
@@ -117,22 +111,6 @@ void SearchResultView::UpdateDetailsText() {
     CreateDetailsRenderText();
 
   UpdateAccessibleName();
-}
-
-base::string16 SearchResultView::ComputeAccessibleName() const {
-  if (!result())
-    return base::string16();
-
-  base::string16 accessible_name = result()->title();
-  if (!result()->title().empty() && !result()->details().empty())
-    accessible_name += base::ASCIIToUTF16(", ");
-  accessible_name += result()->details();
-
-  return accessible_name;
-}
-
-void SearchResultView::UpdateAccessibleName() {
-  SetAccessibleName(ComputeAccessibleName());
 }
 
 void SearchResultView::CreateTitleRenderText() {
@@ -241,14 +219,6 @@ void SearchResultView::Layout() {
   actions_bounds.set_x(rect.right() - kActionButtonRightMargin - actions_width);
   actions_bounds.set_width(actions_width);
   actions_view_->SetBoundsRect(actions_bounds);
-
-  const int progress_width = rect.width() / 5;
-  const int progress_height = progress_bar_->GetPreferredSize().height();
-  const gfx::Rect progress_bounds(
-      rect.right() - kActionButtonRightMargin - progress_width,
-      rect.y() + (rect.height() - progress_height) / 2, progress_width,
-      progress_height);
-  progress_bar_->SetBoundsRect(progress_bounds);
 }
 
 bool SearchResultView::OnKeyPressed(const ui::KeyEvent& event) {
@@ -285,8 +255,7 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
         (actions_view_->children().empty() ? 0 : kActionButtonRightMargin));
   } else {
     text_bounds.set_width(rect.width() - kPreferredIconViewWidth -
-                          kTextTrailPadding - progress_bar_->bounds().width() -
-                          kActionButtonRightMargin);
+                          kTextTrailPadding - kActionButtonRightMargin);
   }
   text_bounds.set_x(
       GetMirroredXWithWidthInView(text_bounds.x(), text_bounds.width()));
@@ -431,21 +400,6 @@ void SearchResultView::SetIconImage(const gfx::ImageSkia& source,
       source, skia::ImageOperations::RESIZE_BEST,
       gfx::Size(icon_dimension, icon_dimension));
   icon->SetImage(image);
-}
-
-void SearchResultView::OnIsInstallingChanged() {
-  const bool is_installing = result() && result()->is_installing();
-  actions_view_->SetVisible(!is_installing);
-  progress_bar_->SetVisible(is_installing);
-}
-
-void SearchResultView::OnPercentDownloadedChanged() {
-  progress_bar_->SetValue(result() ? result()->percent_downloaded() / 100.0
-                                   : 0);
-}
-
-void SearchResultView::OnItemInstalled() {
-  list_view_->OnSearchResultInstalled(this);
 }
 
 void SearchResultView::OnSearchResultActionActivated(size_t index,

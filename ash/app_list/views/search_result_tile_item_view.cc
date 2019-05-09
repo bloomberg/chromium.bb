@@ -213,6 +213,10 @@ void SearchResultTileItemView::OnResultChanged() {
   if (!result()->icon().isNull())
     OnMetadataChanged();
 
+  UpdateAccessibleName();
+}
+
+base::string16 SearchResultTileItemView::ComputeAccessibleName() const {
   base::string16 accessible_name;
   if (!result()->accessible_name().empty())
     accessible_name = result()->accessible_name();
@@ -234,11 +238,7 @@ void SearchResultTileItemView::OnResultChanged() {
         base::UTF8ToUTF16(", ") +
         l10n_util::GetStringUTF16(IDS_APP_ACCESSIBILITY_APP_RECOMMENDATION_ARC);
   }
-  SetAccessibleName(accessible_name);
-}
-
-void SearchResultTileItemView::SetIndexInItemListView(size_t index) {
-  index_in_item_list_view_ = index;
+  return accessible_name;
 }
 
 void SearchResultTileItemView::SetParentBackgroundColor(SkColor color) {
@@ -396,10 +396,9 @@ void SearchResultTileItemView::ActivateResult(int event_flags) {
   view_delegate_->OpenSearchResult(
       result()->id(), event_flags,
       ash::mojom::AppListLaunchedFrom::kLaunchedFromSearchBox,
-      ash::mojom::AppListLaunchType::kAppSearchResult,
-      index_in_item_list_view_);
+      ash::mojom::AppListLaunchType::kAppSearchResult, index_in_container());
   view_delegate_->LogResultLaunchHistogram(
-      SearchResultLaunchLocation::kTileList, index_in_item_list_view_);
+      SearchResultLaunchLocation::kTileList, index_in_container());
 }
 
 void SearchResultTileItemView::SetIcon(const gfx::ImageSkia& icon) {

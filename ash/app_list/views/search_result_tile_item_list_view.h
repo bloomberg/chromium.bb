@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/app_list/views/search_result_container_view.h"
+#include "ash/app_list/views/search_result_tile_item_view.h"
 #include "base/macros.h"
 
 namespace views {
@@ -19,7 +20,6 @@ namespace app_list {
 
 class AppListViewDelegate;
 class SearchResultPageView;
-class SearchResultTileItemView;
 
 // Displays a list of SearchResultTileItemView.
 class APP_LIST_EXPORT SearchResultTileItemListView
@@ -31,6 +31,7 @@ class APP_LIST_EXPORT SearchResultTileItemListView
   ~SearchResultTileItemListView() override;
 
   // Overridden from SearchResultContainerView:
+  SearchResultTileItemView* GetResultViewAt(size_t index) override;
   void NotifyFirstResultYIndex(int y_index) override;
   int GetYSize() override;
   SearchResultBaseView* GetFirstResultView() override;

@@ -30,6 +30,7 @@ class APP_LIST_EXPORT SearchResultAnswerCardView
   int DoUpdate() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   SearchResultBaseView* GetFirstResultView() override;
+  SearchResultBaseView* GetResultViewAt(size_t index) override;
 
   views::View* GetAnswerCardResultViewForTest() const;
 

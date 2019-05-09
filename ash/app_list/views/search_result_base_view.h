@@ -7,6 +7,7 @@
 
 #include "ash/app_list/app_list_export.h"
 #include "ash/app_list/model/search/search_result_observer.h"
+#include "base/optional.h"
 #include "ui/views/controls/button/button.h"
 
 namespace app_list {
@@ -35,10 +36,17 @@ class APP_LIST_EXPORT SearchResultBaseView : public views::Button,
   // Overridden from SearchResultObserver:
   void OnResultDestroying() override;
 
+  // Computes the button's spoken feedback name.
+  virtual base::string16 ComputeAccessibleName() const;
+
   // Clears the result without calling |OnResultChanged| or |OnResultChanging|
   void ClearResult();
 
   bool background_highlighted() const { return background_highlighted_; }
+
+  int index_in_container() const { return index_in_container_.value(); }
+
+  void set_index_in_container(size_t index) { index_in_container_ = index; }
 
   // views::Button:
   bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) override;
@@ -46,8 +54,13 @@ class APP_LIST_EXPORT SearchResultBaseView : public views::Button,
  protected:
   ~SearchResultBaseView() override;
 
+  void UpdateAccessibleName();
+
  private:
   bool background_highlighted_ = false;
+
+  // The index of this view within a |SearchResultContainerView| that holds it.
+  base::Optional<int> index_in_container_;
 
   SearchResult* result_ = nullptr;  // Owned by SearchModel::SearchResults.
 

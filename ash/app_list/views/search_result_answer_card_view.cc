@@ -370,6 +370,12 @@ SearchResultBaseView* SearchResultAnswerCardView::GetFirstResultView() {
   return num_results() <= 0 ? nullptr : search_answer_container_view_;
 }
 
+SearchResultBaseView* SearchResultAnswerCardView::GetResultViewAt(
+    size_t index) {
+  DCHECK_EQ(index, 0u);
+  return search_answer_container_view_;
+}
+
 views::View* SearchResultAnswerCardView::GetAnswerCardResultViewForTest()
     const {
   return search_answer_container_view_;
