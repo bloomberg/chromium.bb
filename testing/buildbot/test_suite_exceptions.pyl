@@ -507,12 +507,6 @@
       },
     },
   },
-  'gfx_unittests': {
-    'remove_from': [
-      # chromium.linux
-      'Fuchsia x64',  # https://crbug.com/952652
-    ],
-  },
   'gin_unittests': {
     'remove_from': [
       # chromium.clang
