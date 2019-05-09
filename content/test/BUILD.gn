@@ -70,6 +70,7 @@ jumbo_static_library("test_support") {
     "../browser/service_worker/test_service_worker_observer.h",
     "../browser/web_package/mock_signed_exchange_handler.cc",
     "../browser/web_package/mock_signed_exchange_handler.h",
+    "../browser/web_package/signed_exchange_test_utils.h",
     "../public/test/audio_service_test_helper.cc",
     "../public/test/audio_service_test_helper.h",
     "../public/test/background_sync_test_util.cc",

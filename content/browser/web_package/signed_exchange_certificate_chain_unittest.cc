@@ -11,6 +11,7 @@
 #include "base/strings/string_piece.h"
 #include "components/cbor/values.h"
 #include "components/cbor/writer.h"
+#include "content/browser/web_package/signed_exchange_test_utils.h"
 #include "content/public/common/content_paths.h"
 #include "net/cert/x509_util.h"
 #include "net/test/cert_test_util.h"
@@ -20,11 +21,6 @@
 namespace content {
 
 namespace {
-
-constexpr char kPEMECDSAP256SPKIHash[] =
-    "/e65FnHy30VS3LY9z8f0bNU1v6IQbg7g/mhGEQ11Im0=";
-constexpr char kPEMECDSAP384SPKIHash[] =
-    "V8vLfOEWuDlMqzl7Ki6PmnvSepqzjY1qU0gl+DrEh9A=";
 
 cbor::Value CBORByteString(base::StringPiece str) {
   return cbor::Value(str, cbor::Value::Type::BYTE_STRING);
@@ -228,14 +224,14 @@ TEST(SignedExchangeCertificateChainTest, IgnoreErrorsSPKIList) {
   scoped_refptr<net::X509Certificate> cert_ecdsap384 =
       LoadCertificate("secp384r1-sha256.public.pem");
 
-  EXPECT_FALSE(ignore_nothing.ShouldIgnoreErrors(cert_ecdsap256));
-  EXPECT_FALSE(ignore_nothing.ShouldIgnoreErrors(cert_ecdsap384));
-  EXPECT_TRUE(ignore_ecdsap256.ShouldIgnoreErrors(cert_ecdsap256));
-  EXPECT_FALSE(ignore_ecdsap256.ShouldIgnoreErrors(cert_ecdsap384));
-  EXPECT_FALSE(ignore_ecdsap384.ShouldIgnoreErrors(cert_ecdsap256));
-  EXPECT_TRUE(ignore_ecdsap384.ShouldIgnoreErrors(cert_ecdsap384));
-  EXPECT_TRUE(ignore_both.ShouldIgnoreErrors(cert_ecdsap256));
-  EXPECT_TRUE(ignore_both.ShouldIgnoreErrors(cert_ecdsap384));
+  EXPECT_FALSE(ignore_nothing.ShouldIgnoreErrorsInternal(cert_ecdsap256));
+  EXPECT_FALSE(ignore_nothing.ShouldIgnoreErrorsInternal(cert_ecdsap384));
+  EXPECT_TRUE(ignore_ecdsap256.ShouldIgnoreErrorsInternal(cert_ecdsap256));
+  EXPECT_FALSE(ignore_ecdsap256.ShouldIgnoreErrorsInternal(cert_ecdsap384));
+  EXPECT_FALSE(ignore_ecdsap384.ShouldIgnoreErrorsInternal(cert_ecdsap256));
+  EXPECT_TRUE(ignore_ecdsap384.ShouldIgnoreErrorsInternal(cert_ecdsap384));
+  EXPECT_TRUE(ignore_both.ShouldIgnoreErrorsInternal(cert_ecdsap256));
+  EXPECT_TRUE(ignore_both.ShouldIgnoreErrorsInternal(cert_ecdsap384));
 }
 
 }  // namespace content

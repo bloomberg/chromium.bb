@@ -179,10 +179,22 @@ SignedExchangeCertificateChain::SignedExchangeCertificateChain(
 SignedExchangeCertificateChain::~SignedExchangeCertificateChain() = default;
 
 bool SignedExchangeCertificateChain::ShouldIgnoreErrors() const {
-  static base::NoDestructor<
-      SignedExchangeCertificateChain::IgnoreErrorsSPKIList>
-      instance(*base::CommandLine::ForCurrentProcess());
-  return instance->ShouldIgnoreErrors(cert_);
+  return IgnoreErrorsSPKIList::ShouldIgnoreErrors(cert_);
+}
+
+std::unique_ptr<SignedExchangeCertificateChain::IgnoreErrorsSPKIList>&
+SignedExchangeCertificateChain::IgnoreErrorsSPKIList::GetInstance() {
+  static base::NoDestructor<std::unique_ptr<IgnoreErrorsSPKIList>> instance(
+      std::make_unique<IgnoreErrorsSPKIList>(
+          *base::CommandLine::ForCurrentProcess()));
+  return *instance;
+}
+
+std::unique_ptr<SignedExchangeCertificateChain::IgnoreErrorsSPKIList>
+SignedExchangeCertificateChain::IgnoreErrorsSPKIList::SetInstanceForTesting(
+    std::unique_ptr<IgnoreErrorsSPKIList> p) {
+  GetInstance().swap(p);
+  return p;
 }
 
 SignedExchangeCertificateChain::IgnoreErrorsSPKIList::IgnoreErrorsSPKIList(
@@ -208,8 +220,15 @@ void SignedExchangeCertificateChain::IgnoreErrorsSPKIList::Parse(
 SignedExchangeCertificateChain::IgnoreErrorsSPKIList::~IgnoreErrorsSPKIList() =
     default;
 
+// static
 bool SignedExchangeCertificateChain::IgnoreErrorsSPKIList::ShouldIgnoreErrors(
     scoped_refptr<net::X509Certificate> certificate) {
+  return GetInstance()->ShouldIgnoreErrorsInternal(certificate);
+}
+
+bool SignedExchangeCertificateChain::IgnoreErrorsSPKIList::
+    ShouldIgnoreErrorsInternal(
+        scoped_refptr<net::X509Certificate> certificate) {
   if (hash_set_.empty())
     return false;
 

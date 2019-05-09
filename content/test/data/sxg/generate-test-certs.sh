@@ -78,7 +78,7 @@ openssl ca -batch \
   -out secp384r1-sha256.public.pem
 
 echo
-echo "Update the test hashes in signed_exchange_certificate_chain_unittest.cc"
+echo "Update the test hashes in signed_exchange_test_utils.h"
 echo "with the followings:"
 echo "===="
 

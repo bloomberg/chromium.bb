@@ -553,7 +553,8 @@ SignedExchangeLoadResult SignedExchangeHandler::CheckCertRequirements(
           net::x509_util::CryptoBufferAsStringPiece(
               verified_cert->cert_buffer())) &&
       !base::FeatureList::IsEnabled(
-          features::kAllowSignedHTTPExchangeCertsWithoutExtension)) {
+          features::kAllowSignedHTTPExchangeCertsWithoutExtension) &&
+      !unverified_cert_chain_->ShouldIgnoreErrors()) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy_.get(),
         "Certificate must have CanSignHttpExchangesDraft extension. To ignore "
@@ -576,7 +577,8 @@ SignedExchangeLoadResult SignedExchangeHandler::CheckCertRequirements(
     // 2019-05-01 00:00:00 UTC.
     const base::Time kRequirementStartDateForIssuance =
         base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1556668800);
-    if (verified_cert->valid_start() >= kRequirementStartDateForIssuance) {
+    if (verified_cert->valid_start() >= kRequirementStartDateForIssuance &&
+        !unverified_cert_chain_->ShouldIgnoreErrors()) {
       signed_exchange_utils::ReportErrorAndTraceEvent(
           devtools_proxy_.get(),
           "Signed Exchange's certificate issued after 2019-05-01 must not have "
@@ -588,7 +590,8 @@ SignedExchangeLoadResult SignedExchangeHandler::CheckCertRequirements(
     // 2019-08-01 00:00:00 UTC.
     const base::Time kRequirementStartDateForVerification =
         base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1564617600);
-    if (GetVerificationTime() >= kRequirementStartDateForVerification) {
+    if (GetVerificationTime() >= kRequirementStartDateForVerification &&
+        !unverified_cert_chain_->ShouldIgnoreErrors()) {
       signed_exchange_utils::ReportErrorAndTraceEvent(
           devtools_proxy_.get(),
           "After 2019-08-01, Signed Exchange's certificate must not have a "

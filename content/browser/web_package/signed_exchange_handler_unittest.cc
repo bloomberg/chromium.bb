@@ -17,6 +17,8 @@
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_request_matcher.h"
 #include "content/browser/web_package/signed_exchange_signature_verifier.h"
+#include "content/browser/web_package/signed_exchange_test_utils.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -32,6 +34,7 @@
 #include "net/test/test_data_directory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/network_context.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -62,6 +65,10 @@ constexpr char kDummySCTBytes[] = {
 };
 constexpr base::StringPiece kDummySCTList(kDummySCTBytes,
                                           sizeof(kDummySCTBytes));
+
+class TestBrowserClient : public ContentBrowserClient {
+  bool CanIgnoreCertificateErrorIfNeeded() override { return true; }
+};
 
 std::string GetTestFileContents(base::StringPiece name) {
   base::FilePath path;
@@ -176,6 +183,7 @@ class SignedExchangeHandlerTest
   }
 
   void SetUp() override {
+    original_client_ = SetBrowserClientForTesting(&browser_client_);
     SignedExchangeHandler::SetVerificationTimeForTesting(
         base::Time::UnixEpoch() +
         base::TimeDelta::FromSeconds(kSignatureHeaderDate));
@@ -197,15 +205,32 @@ class SignedExchangeHandlerTest
   }
 
   void TearDown() override {
+    if (original_ignore_errors_spki_list_) {
+      SignedExchangeCertificateChain::IgnoreErrorsSPKIList::
+          SetInstanceForTesting(std::move(original_ignore_errors_spki_list_));
+    }
     SignedExchangeHandler::SetNetworkContextForTesting(nullptr);
     network::NetworkContext::SetCertVerifierForTesting(nullptr);
     SignedExchangeHandler::SetVerificationTimeForTesting(
         base::Optional<base::Time>());
+    SetBrowserClientForTesting(original_client_);
   }
 
   void SetCertVerifier(std::unique_ptr<net::CertVerifier> cert_verifier) {
     cert_verifier_ = std::move(cert_verifier);
     network::NetworkContext::SetCertVerifierForTesting(cert_verifier_.get());
+  }
+
+  void SetIgnoreCertificateErrorsSPKIList(const std::string value) {
+    DCHECK(!original_ignore_errors_spki_list_);
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+    command_line.AppendSwitchASCII(
+        network::switches::kIgnoreCertificateErrorsSPKIList, value);
+    original_ignore_errors_spki_list_ = SignedExchangeCertificateChain::
+        IgnoreErrorsSPKIList::SetInstanceForTesting(
+            std::make_unique<
+                SignedExchangeCertificateChain::IgnoreErrorsSPKIList>(
+                command_line));
   }
 
   // Creates a net::CertVerifyResult with some useful default values.
@@ -377,10 +402,14 @@ class SignedExchangeHandlerTest
 
   base::test::ScopedFeatureList feature_list_;
   content::TestBrowserThreadBundle browser_thread_bundle_;
+  TestBrowserClient browser_client_;
+  ContentBrowserClient* original_client_;
   std::unique_ptr<net::TestURLRequestContext> url_request_context_;
   std::unique_ptr<network::NetworkContext> network_context_;
   network::mojom::NetworkContextPtr network_context_ptr_;
   const url::Origin request_initiator_;
+  std::unique_ptr<SignedExchangeCertificateChain::IgnoreErrorsSPKIList>
+      original_ignore_errors_spki_list_;
   std::unique_ptr<net::MockSourceStream> source_stream_;
   std::unique_ptr<MockSignedExchangeCertFetcherFactory> cert_fetcher_factory_;
 
@@ -607,10 +636,63 @@ TEST_P(SignedExchangeHandlerTest,
   ReadStream(source_, nullptr);
 }
 
+TEST_P(SignedExchangeHandlerTest,
+       CertValidMoreThan90DaysShouldBeAllowedByIgnoreErrorsSPKIListFlag) {
+  SetIgnoreCertificateErrorsSPKIList(kPEMECDSAP256SPKIHash);
+
+  SignedExchangeHandler::SetVerificationTimeForTesting(
+      base::Time::UnixEpoch() +
+      base::TimeDelta::FromSeconds(kCertValidityPeriodEnforcementDate));
+  mock_cert_fetcher_factory_->ExpectFetch(
+      GURL("https://cert.example.org/cert.msg"),
+      GetTestFileContents("test.example.org.public.pem.cbor"));
+  SetupMockCertVerifier("prime256v1-sha256.public.pem",
+                        CreateCertVerifyResult());
+  SetSourceStreamContents("test.example.org_test.sxg");
+
+  CreateSignedExchangeHandler(CreateTestURLRequestContext());
+  WaitForHeader();
+
+  ASSERT_TRUE(read_header());
+  EXPECT_EQ(SignedExchangeLoadResult::kSuccess, result());
+  EXPECT_EQ(net::OK, error());
+  std::string payload;
+  int rv = ReadPayloadStream(&payload);
+  std::string expected_payload = GetTestFileContents("test.html");
+
+  EXPECT_EQ(expected_payload, payload);
+  EXPECT_EQ(static_cast<int>(expected_payload.size()), rv);
+}
+
 TEST_P(SignedExchangeHandlerTest, CertWithoutExtensionAllowedByFeatureFlag) {
   base::test::ScopedFeatureList scoped_feature_list_;
   scoped_feature_list_.InitAndEnableFeature(
       features::kAllowSignedHTTPExchangeCertsWithoutExtension);
+
+  mock_cert_fetcher_factory_->ExpectFetch(
+      GURL("https://cert.example.org/cert.msg"),
+      GetTestFileContents("test.example.org-noext.public.pem.cbor"));
+  SetupMockCertVerifier("prime256v1-sha256-noext.public.pem",
+                        CreateCertVerifyResult());
+  SetSourceStreamContents("test.example.org_noext_test.sxg");
+
+  CreateSignedExchangeHandler(CreateTestURLRequestContext());
+  WaitForHeader();
+
+  ASSERT_TRUE(read_header());
+  EXPECT_EQ(SignedExchangeLoadResult::kSuccess, result());
+  EXPECT_EQ(net::OK, error());
+  std::string payload;
+  int rv = ReadPayloadStream(&payload);
+  std::string expected_payload = GetTestFileContents("test.html");
+
+  EXPECT_EQ(expected_payload, payload);
+  EXPECT_EQ(static_cast<int>(expected_payload.size()), rv);
+}
+
+TEST_P(SignedExchangeHandlerTest,
+       CertWithoutExtensionAllowedByIgnoreErrorsSPKIListFlag) {
+  SetIgnoreCertificateErrorsSPKIList(kPEMECDSAP256SPKIHash);
 
   mock_cert_fetcher_factory_->ExpectFetch(
       GURL("https://cert.example.org/cert.msg"),
