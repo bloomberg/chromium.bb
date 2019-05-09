@@ -82,8 +82,10 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
             BackNavigationType::kPaymentSheet,
             static_cast<int>(PaymentMethodViewControllerTags::MAX_TAG),
             /*on_edited=*/
-            base::BindOnce(&PaymentRequestState::SetSelectedInstrument,
-                           base::Unretained(state()), instrument_),
+            base::BindOnce(
+                &PaymentRequestState::SetSelectedInstrument,
+                base::Unretained(state()), instrument_,
+                PaymentRequestState::SectionSelectionStatus::kEditedSelected),
             /*on_added=*/
             base::OnceCallback<void(const autofill::CreditCard&)>(),
             static_cast<AutofillPaymentInstrument*>(instrument_)
@@ -145,7 +147,8 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
 
   void SelectedStateChanged() override {
     if (selected()) {
-      state()->SetSelectedInstrument(instrument_);
+      state()->SetSelectedInstrument(
+          instrument_, PaymentRequestState::SectionSelectionStatus::kSelected);
       dialog_->GoBack();
     }
   }

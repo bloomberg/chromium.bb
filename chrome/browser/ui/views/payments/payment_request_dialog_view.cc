@@ -207,8 +207,10 @@ void PaymentRequestDialogView::RetryDialog() {
     ShowShippingAddressEditor(
         BackNavigationType::kOneStep,
         /*on_edited=*/
-        base::BindOnce(&PaymentRequestState::SetSelectedShippingProfile,
-                       base::Unretained(request_->state()), profile),
+        base::BindOnce(
+            &PaymentRequestState::SetSelectedShippingProfile,
+            base::Unretained(request_->state()), profile,
+            PaymentRequestState::SectionSelectionStatus::kEditedSelected),
         /*on_added=*/
         base::OnceCallback<void(const autofill::AutofillProfile&)>(), profile);
   }
@@ -219,8 +221,10 @@ void PaymentRequestDialogView::RetryDialog() {
     ShowContactInfoEditor(
         BackNavigationType::kOneStep,
         /*on_edited=*/
-        base::BindOnce(&PaymentRequestState::SetSelectedContactProfile,
-                       base::Unretained(request_->state()), profile),
+        base::BindOnce(
+            &PaymentRequestState::SetSelectedContactProfile,
+            base::Unretained(request_->state()), profile,
+            PaymentRequestState::SectionSelectionStatus::kEditedSelected),
         /*on_added=*/
         base::OnceCallback<void(const autofill::AutofillProfile&)>(), profile);
   }

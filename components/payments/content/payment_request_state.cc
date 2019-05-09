@@ -22,7 +22,6 @@
 #include "components/payments/content/service_worker_payment_instrument.h"
 #include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/features.h"
-#include "components/payments/core/journey_logger.h"
 #include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "content/public/common/content_features.h"
@@ -359,8 +358,10 @@ void PaymentRequestState::AddAutofillPaymentInstrument(
       shipping_profiles_, app_locale_, payment_request_delegate_);
   available_instruments_.push_back(std::move(instrument));
 
-  if (selected)
-    SetSelectedInstrument(available_instruments_.back().get());
+  if (selected) {
+    SetSelectedInstrument(available_instruments_.back().get(),
+                          SectionSelectionStatus::kAddedSelected);
+  }
 }
 
 void PaymentRequestState::AddAutofillShippingProfile(
@@ -373,8 +374,10 @@ void PaymentRequestState::AddAutofillShippingProfile(
   autofill::AutofillProfile* new_cached_profile = profile_cache_.back().get();
   shipping_profiles_.push_back(new_cached_profile);
 
-  if (selected)
-    SetSelectedShippingProfile(new_cached_profile);
+  if (selected) {
+    SetSelectedShippingProfile(new_cached_profile,
+                               SectionSelectionStatus::kAddedSelected);
+  }
 }
 
 void PaymentRequestState::AddAutofillContactProfile(
@@ -385,8 +388,10 @@ void PaymentRequestState::AddAutofillContactProfile(
   autofill::AutofillProfile* new_cached_profile = profile_cache_.back().get();
   contact_profiles_.push_back(new_cached_profile);
 
-  if (selected)
-    SetSelectedContactProfile(new_cached_profile);
+  if (selected) {
+    SetSelectedContactProfile(new_cached_profile,
+                              SectionSelectionStatus::kAddedSelected);
+  }
 }
 
 void PaymentRequestState::SetSelectedShippingOption(
@@ -399,7 +404,8 @@ void PaymentRequestState::SetSelectedShippingOption(
 }
 
 void PaymentRequestState::SetSelectedShippingProfile(
-    autofill::AutofillProfile* profile) {
+    autofill::AutofillProfile* profile,
+    SectionSelectionStatus selection_status) {
   spec_->StartWaitingForUpdateWith(
       PaymentRequestSpec::UpdateReason::SHIPPING_ADDRESS);
   selected_shipping_profile_ = profile;
@@ -417,10 +423,13 @@ void PaymentRequestState::SetSelectedShippingProfile(
       *selected_shipping_profile_, /*timeout_seconds=*/2,
       base::BindOnce(&PaymentRequestState::OnAddressNormalized,
                      weak_ptr_factory_.GetWeakPtr()));
+  IncrementSelectionStatus(JourneyLogger::Section::SECTION_SHIPPING_ADDRESS,
+                           selection_status);
 }
 
 void PaymentRequestState::SetSelectedContactProfile(
-    autofill::AutofillProfile* profile) {
+    autofill::AutofillProfile* profile,
+    SectionSelectionStatus selection_status) {
   selected_contact_profile_ = profile;
 
   // Changing the contact information clears contact information validation
@@ -433,11 +442,35 @@ void PaymentRequestState::SetSelectedContactProfile(
     delegate_->OnPayerInfoSelected(
         response_helper_->GeneratePayerDetail(profile));
   }
+  IncrementSelectionStatus(JourneyLogger::Section::SECTION_CONTACT_INFO,
+                           selection_status);
 }
 
-void PaymentRequestState::SetSelectedInstrument(PaymentInstrument* instrument) {
+void PaymentRequestState::SetSelectedInstrument(
+    PaymentInstrument* instrument,
+    SectionSelectionStatus selection_status) {
   selected_instrument_ = instrument;
   UpdateIsReadyToPayAndNotifyObservers();
+  IncrementSelectionStatus(JourneyLogger::Section::SECTION_PAYMENT_METHOD,
+                           selection_status);
+}
+
+void PaymentRequestState::IncrementSelectionStatus(
+    JourneyLogger::Section section,
+    SectionSelectionStatus selection_status) {
+  switch (selection_status) {
+    case SectionSelectionStatus::kSelected:
+      journey_logger_->IncrementSelectionChanges(section);
+      break;
+    case SectionSelectionStatus::kEditedSelected:
+      journey_logger_->IncrementSelectionEdits(section);
+      break;
+    case SectionSelectionStatus::kAddedSelected:
+      journey_logger_->IncrementSelectionAdds(section);
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 const std::string& PaymentRequestState::GetApplicationLocale() {

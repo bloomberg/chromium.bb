@@ -140,15 +140,18 @@ class ShippingProfileViewController : public ProfileListViewController,
     // of the profile list. When the spec comes back updated (in OnSpecUpdated),
     // the decision will be made to either stay on this screen or go back to the
     // payment sheet.
-    state()->SetSelectedShippingProfile(profile);
+    state()->SetSelectedShippingProfile(
+        profile, PaymentRequestState::SectionSelectionStatus::kSelected);
   }
 
   void ShowEditor(autofill::AutofillProfile* profile) override {
     dialog()->ShowShippingAddressEditor(
         BackNavigationType::kPaymentSheet,
         /*on_edited=*/
-        base::BindOnce(&PaymentRequestState::SetSelectedShippingProfile,
-                       base::Unretained(state()), profile),
+        base::BindOnce(
+            &PaymentRequestState::SetSelectedShippingProfile,
+            base::Unretained(state()), profile,
+            PaymentRequestState::SectionSelectionStatus::kEditedSelected),
         /*on_added=*/
         base::BindOnce(&PaymentRequestState::AddAutofillShippingProfile,
                        base::Unretained(state()), /*selected=*/true),
@@ -251,7 +254,8 @@ class ContactProfileViewController : public ProfileListViewController {
   }
 
   void SelectProfile(autofill::AutofillProfile* profile) override {
-    state()->SetSelectedContactProfile(profile);
+    state()->SetSelectedContactProfile(
+        profile, PaymentRequestState::SectionSelectionStatus::kSelected);
     dialog()->GoBack();
   }
 
@@ -259,8 +263,10 @@ class ContactProfileViewController : public ProfileListViewController {
     dialog()->ShowContactInfoEditor(
         BackNavigationType::kPaymentSheet,
         /*on_edited=*/
-        base::BindOnce(&PaymentRequestState::SetSelectedContactProfile,
-                       base::Unretained(state()), profile),
+        base::BindOnce(
+            &PaymentRequestState::SetSelectedContactProfile,
+            base::Unretained(state()), profile,
+            PaymentRequestState::SectionSelectionStatus::kEditedSelected),
         /*on_added=*/
         base::BindOnce(&PaymentRequestState::AddAutofillContactProfile,
                        base::Unretained(state()), /*selected=*/true),
