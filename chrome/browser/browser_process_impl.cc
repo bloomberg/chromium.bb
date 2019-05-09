@@ -111,6 +111,7 @@
 #include "components/previews/core/previews_experiments.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
+#include "components/safe_browsing/safe_browsing_service_interface.h"
 #include "components/sessions/core/session_id_generator.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/subresource_filter/content/browser/ruleset_service.h"
@@ -1315,9 +1316,19 @@ void BrowserProcessImpl::CreateSafeBrowsingService() {
   // Set this flag to true so that we don't retry indefinitely to
   // create the service class if there was an error.
   created_safe_browsing_service_ = true;
-  safe_browsing_service_ =
-      safe_browsing::SafeBrowsingService::CreateSafeBrowsingService();
-  safe_browsing_service_->Initialize();
+
+  // The factory can be overridden in tests.
+  if (!safe_browsing::SafeBrowsingServiceInterface::HasFactory()) {
+    safe_browsing::SafeBrowsingServiceInterface::RegisterFactory(
+        safe_browsing::GetSafeBrowsingServiceFactory());
+  }
+
+  // TODO(crbug/925153): Port consumers of the |safe_browsing_service_| to use
+  // the interface in components/safe_browsing, and remove this cast.
+  safe_browsing_service_ = static_cast<safe_browsing::SafeBrowsingService*>(
+      safe_browsing::SafeBrowsingServiceInterface::CreateSafeBrowsingService());
+  if (safe_browsing_service_)
+    safe_browsing_service_->Initialize();
 }
 
 void BrowserProcessImpl::CreateSubresourceFilterRulesetService() {

@@ -1958,6 +1958,7 @@ jumbo_split_static_library("browser") {
     "//components/rappor:rappor_recorder",
     "//components/renderer_context_menu",
     "//components/resources",
+    "//components/safe_browsing:public",
     "//components/safe_search_api",
     "//components/safe_search_api:safe_search_client",
     "//components/search",

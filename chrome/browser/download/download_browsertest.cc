@@ -91,6 +91,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/proto/csd.pb.h"
+#include "components/safe_browsing/safe_browsing_service_interface.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -1166,7 +1167,8 @@ class TestSafeBrowsingServiceFactory
   TestSafeBrowsingServiceFactory() : fake_safe_browsing_service_(nullptr) {}
   ~TestSafeBrowsingServiceFactory() override {}
 
-  safe_browsing::SafeBrowsingService* CreateSafeBrowsingService() override {
+  safe_browsing::SafeBrowsingServiceInterface* CreateSafeBrowsingService()
+      override {
     DCHECK(!fake_safe_browsing_service_);
     fake_safe_browsing_service_ = new FakeSafeBrowsingService();
     return fake_safe_browsing_service_.get();
@@ -1186,13 +1188,13 @@ class DownloadTestWithFakeSafeBrowsing : public DownloadTest {
       : test_safe_browsing_factory_(new TestSafeBrowsingServiceFactory()) {}
 
   void SetUp() override {
-    safe_browsing::SafeBrowsingService::RegisterFactory(
+    safe_browsing::SafeBrowsingServiceInterface::RegisterFactory(
         test_safe_browsing_factory_.get());
     DownloadTest::SetUp();
   }
 
   void TearDown() override {
-    safe_browsing::SafeBrowsingService::RegisterFactory(nullptr);
+    safe_browsing::SafeBrowsingServiceInterface::RegisterFactory(nullptr);
     DownloadTest::TearDown();
   }
 

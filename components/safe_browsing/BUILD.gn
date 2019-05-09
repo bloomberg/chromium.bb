@@ -87,3 +87,15 @@ static_library("features") {
     "//base:base",
   ]
 }
+
+source_set("public") {
+  sources = [
+    "safe_browsing_service_interface.cc",
+    "safe_browsing_service_interface.h",
+  ]
+
+  deps = [
+    "//base:base",
+    "//content/public/browser",
+  ]
+}

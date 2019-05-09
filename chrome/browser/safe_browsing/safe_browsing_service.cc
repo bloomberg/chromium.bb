@@ -13,9 +13,9 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
@@ -100,28 +100,6 @@ void RecordFontSizeMetrics(const PrefService& pref_service) {
 #endif
 
 // static
-SafeBrowsingServiceFactory* SafeBrowsingService::factory_ = NULL;
-
-// The default SafeBrowsingServiceFactory.  Global, made a singleton so we
-// don't leak it.
-class SafeBrowsingServiceFactoryImpl : public SafeBrowsingServiceFactory {
- public:
-  SafeBrowsingService* CreateSafeBrowsingService() override {
-    return new SafeBrowsingService();
-  }
-
- private:
-  friend struct base::LazyInstanceTraitsBase<SafeBrowsingServiceFactoryImpl>;
-
-  SafeBrowsingServiceFactoryImpl() {}
-
-  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingServiceFactoryImpl);
-};
-
-static base::LazyInstance<SafeBrowsingServiceFactoryImpl>::Leaky
-    g_safe_browsing_service_factory_impl = LAZY_INSTANCE_INITIALIZER;
-
-// static
 base::FilePath SafeBrowsingService::GetCookieFilePathForTesting() {
   return base::FilePath(SafeBrowsingService::GetBaseFilename().value() +
                         safe_browsing::kCookiesFile);
@@ -133,13 +111,6 @@ base::FilePath SafeBrowsingService::GetBaseFilename() {
   bool result = base::PathService::Get(chrome::DIR_USER_DATA, &path);
   DCHECK(result);
   return path.Append(safe_browsing::kSafeBrowsingBaseFilename);
-}
-
-// static
-SafeBrowsingService* SafeBrowsingService::CreateSafeBrowsingService() {
-  if (!factory_)
-    factory_ = g_safe_browsing_service_factory_impl.Pointer();
-  return factory_->CreateSafeBrowsingService();
 }
 
 SafeBrowsingService::SafeBrowsingService()
@@ -590,6 +561,29 @@ SafeBrowsingService::CreateNetworkContextParams() {
   }
   proxy_config_monitor_->AddToNetworkContextParams(params.get());
   return params;
+}
+
+// The default SafeBrowsingServiceFactory.  Global, made a singleton so we
+// don't leak it.
+class SafeBrowsingServiceFactoryImpl : public SafeBrowsingServiceFactory {
+ public:
+  // TODO(crbug/925153): Once callers of this function are no longer downcasting
+  // it to the SafeBrowsingService, we can make this a scoped_refptr.
+  SafeBrowsingServiceInterface* CreateSafeBrowsingService() override {
+    return new SafeBrowsingService();
+  }
+
+ private:
+  friend class base::NoDestructor<SafeBrowsingServiceFactoryImpl>;
+
+  SafeBrowsingServiceFactoryImpl() {}
+
+  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingServiceFactoryImpl);
+};
+
+SafeBrowsingServiceFactory* GetSafeBrowsingServiceFactory() {
+  static base::NoDestructor<SafeBrowsingServiceFactoryImpl> factory;
+  return factory.get();
 }
 
 }  // namespace safe_browsing

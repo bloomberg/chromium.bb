@@ -10,6 +10,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -59,8 +60,12 @@ class AndroidTelemetryServiceTest : public testing::Test {
                 {content::BrowserThread::IO}));
     browser_process_->SetSystemRequestContext(
         system_request_context_getter_.get());
-    sb_service_ =
-        safe_browsing::SafeBrowsingService::CreateSafeBrowsingService();
+    safe_browsing::SafeBrowsingServiceInterface::RegisterFactory(
+        GetSafeBrowsingServiceFactory());
+    // TODO(crbug/925153): Port consumers of the |sb_service_| to use
+    // the interface in components/safe_browsing, and remove this cast.
+    sb_service_ = static_cast<SafeBrowsingService*>(
+        safe_browsing::SafeBrowsingService::CreateSafeBrowsingService());
     browser_process_->SetSafeBrowsingService(sb_service_.get());
     sb_service_->Initialize();
     base::RunLoop().RunUntilIdle();

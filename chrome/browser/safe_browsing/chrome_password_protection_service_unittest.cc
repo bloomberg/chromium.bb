@@ -188,10 +188,14 @@ class ChromePasswordProtectionServiceTest
     StringProvider sync_password_hash_provider =
         base::BindLambdaForTesting([=] { return sync_password_hash; });
 
+    // TODO(crbug/925153): Port consumers of the SafeBrowsingService
+    // to use the interface in components/safe_browsing, and remove this
+    // cast.
     return std::make_unique<MockChromePasswordProtectionService>(
         profile(), content_setting_map_,
         new SafeBrowsingUIManager(
-            SafeBrowsingService::CreateSafeBrowsingService()),
+            static_cast<safe_browsing::SafeBrowsingService*>(
+                SafeBrowsingService::CreateSafeBrowsingService())),
         sync_password_hash_provider);
   }
 
