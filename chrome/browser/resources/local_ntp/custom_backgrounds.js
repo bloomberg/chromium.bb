@@ -76,6 +76,7 @@ customBackgrounds.IDS = {
   ATTRIBUTIONS: 'custom-bg-attr',
   BACK_CIRCLE: 'bg-sel-back-circle',
   BACKGROUNDS_BUTTON: 'backgrounds-button',
+  BACKGROUNDS_IMAGE_MENU: 'backgrounds-image-menu',
   BACKGROUNDS_MENU: 'backgrounds-menu',
   CANCEL: 'bg-sel-footer-cancel',
   COLORS_BUTTON: 'colors-button',
@@ -91,7 +92,9 @@ customBackgrounds.IDS = {
   EDIT_BG_ICON: 'edit-bg-icon',
   EDIT_BG_MENU: 'edit-bg-menu',
   EDIT_BG_TEXT: 'edit-bg-text',
+  MENU_BACK: 'menu-back',
   MENU_CANCEL: 'menu-cancel',
+  MENU_TITLE: 'menu-title',
   LINK_ICON: 'link-icon',
   MENU: 'bg-sel-menu',
   OPTIONS_TITLE: 'edit-bg-title',
@@ -121,6 +124,7 @@ customBackgrounds.CLASSES = {
   // Extended and elevated style for entry point.
   ENTRY_POINT_ENHANCED: 'ep-enhanced',
   IMAGE_DIALOG: 'is-img-sel',
+  ON_IMAGE_MENU: 'on-img-menu',
   OPTION: 'bg-option',
   OPTION_DISABLED: 'bg-option-disabled',  // The menu option is disabled.
   MENU_SHOWN: 'menu-shown',
@@ -290,6 +294,24 @@ customBackgrounds.resetSelectionDialog = function() {
   customBackgrounds.unselectTile();
 };
 
+/**
+ * Remove image tiles and maybe swap back to main background menu.
+ * @param {boolean} showMenu Whether the main background menu should be shown.
+ */
+customBackgrounds.resetImageMenu = function(showMenu) {
+  const backgroundMenu = $(customBackgrounds.IDS.BACKGROUNDS_MENU);
+  const imageMenu = $(customBackgrounds.IDS.BACKGROUNDS_IMAGE_MENU);
+  const menu = $(customBackgrounds.IDS.CUSTOMIZATION_MENU);
+  const menuTitle = $(customBackgrounds.IDS.MENU_TITLE);
+
+  imageMenu.innerHTML = '';
+  imageMenu.classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, false);
+  menuTitle.textContent = menuTitle.dataset.mainTitle;
+  menu.classList.toggle(customBackgrounds.CLASSES.ON_IMAGE_MENU, false);
+  backgroundMenu.classList.toggle(
+      customBackgrounds.CLASSES.MENU_SHOWN, showMenu);
+};
+
 /* Close the collection selection dialog and cleanup the state
  * @param {dialog} menu The dialog to be closed
  */
@@ -402,8 +424,10 @@ customBackgrounds.showCollectionSelectionDialog = function(collectionsSource) {
   // Create dialog header.
   $(customBackgrounds.IDS.TITLE).textContent =
       configData.translatedStrings.selectChromeWallpaper;
-  menu.classList.add(customBackgrounds.CLASSES.COLLECTION_DIALOG);
-  menu.classList.remove(customBackgrounds.CLASSES.IMAGE_DIALOG);
+  if (!configData.richerPicker) {
+    menu.classList.toggle(customBackgrounds.CLASSES.COLLECTION_DIALOG);
+    menu.classList.remove(customBackgrounds.CLASSES.IMAGE_DIALOG);
+  }
 
   // Create dialog tiles.
   for (let i = 0; i < coll.length; ++i) {
@@ -451,6 +475,11 @@ customBackgrounds.showCollectionSelectionDialog = function(collectionsSource) {
         // Dependent upon the success of the load, populate the image selection
         // dialog or close the current dialog.
         if (imageDataLoaded) {
+          $(customBackgrounds.IDS.BACKGROUNDS_MENU)
+              .classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, false);
+          $(customBackgrounds.IDS.BACKGROUNDS_IMAGE_MENU)
+              .classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, true);
+
           customBackgrounds.resetSelectionDialog();
           customBackgrounds.showImageSelectionDialog(tile.dataset.name);
         } else {
@@ -547,12 +576,20 @@ customBackgrounds.removeSelectedState = function(tile) {
 customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
   const firstNTile = customBackgrounds.ROWS_TO_PRELOAD
       * customBackgrounds.getTilesWide();
-  const menu = $(customBackgrounds.IDS.MENU);
-  const tileContainer = $(customBackgrounds.IDS.TILES);
+  const tileContainer = configData.richerPicker ?
+      $(customBackgrounds.IDS.BACKGROUNDS_IMAGE_MENU) :
+      $(customBackgrounds.IDS.TILES);
+  const menu = configData.richerPicker ?
+      $(customBackgrounds.IDS.CUSTOMIZATION_MENU) :
+      $(customBackgrounds.IDS.MENU);
 
-  $(customBackgrounds.IDS.TITLE).textContent = dialogTitle;
-  menu.classList.remove(customBackgrounds.CLASSES.COLLECTION_DIALOG);
-  menu.classList.add(customBackgrounds.CLASSES.IMAGE_DIALOG);
+  $(customBackgrounds.IDS.MENU_TITLE).textContent = dialogTitle;
+  if (configData.richerPicker) {
+    menu.classList.toggle(customBackgrounds.CLASSES.ON_IMAGE_MENU, true);
+  } else {
+    menu.classList.remove(customBackgrounds.CLASSES.COLLECTION_DIALOG);
+    menu.classList.add(customBackgrounds.CLASSES.IMAGE_DIALOG);
+  }
 
   const preLoadTiles = [];
   const postLoadTiles = [];
@@ -810,6 +847,10 @@ customBackgrounds.init = function(
 
   $(customBackgrounds.IDS.OPTIONS_TITLE).textContent =
       configData.translatedStrings.customizeBackground;
+
+  // Store the main menu title so it can be restored if needed.
+  $(customBackgrounds.IDS.MENU_TITLE).dataset.mainTitle =
+      $(customBackgrounds.IDS.MENU_TITLE).textContent;
 
   $(customBackgrounds.IDS.EDIT_BG_ICON)
       .setAttribute(
@@ -1142,11 +1183,15 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
 
   // Interactions with the back arrow on the image selection dialog.
   const backInteraction = function(event) {
+    if (configData.richerPicker) {
+      customBackgrounds.resetImageMenu(true);
+    }
     customBackgrounds.resetSelectionDialog();
     customBackgrounds.showCollectionSelectionDialog(
         customBackgrounds.dialogCollectionsSource);
   };
   $(customBackgrounds.IDS.BACK_CIRCLE).onclick = backInteraction;
+  $(customBackgrounds.IDS.MENU_BACK).onclick = backInteraction;
   $(customBackgrounds.IDS.BACK_CIRCLE).onkeyup = function(event) {
     if (event.keyCode === customBackgrounds.KEYCODES.ENTER ||
         event.keyCode === customBackgrounds.KEYCODES.SPACE) {
@@ -1216,13 +1261,11 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
   };
 
   $(customBackgrounds.IDS.SHORTCUTS_BUTTON).onclick = function() {
-    $(customBackgrounds.IDS.BACKGROUNDS_MENU)
-        .classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, false);
+    customBackgrounds.resetImageMenu(false);
   };
 
   $(customBackgrounds.IDS.COLORS_BUTTON).onclick = function() {
-    $(customBackgrounds.IDS.BACKGROUNDS_MENU)
-        .classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, false);
+    customBackgrounds.resetImageMenu(false);
   };
 };
 

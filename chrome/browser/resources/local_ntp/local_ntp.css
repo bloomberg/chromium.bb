@@ -922,14 +922,28 @@ html[dir=rtl] .menu-option {
   user-select: none;
 }
 
+#menu-header {
+  height: 80px;
+
+}
+
+#menu-title-wrapper {
+  display: inline-block;
+  height: 80px;
+  position: absolute;
+}
+
 #menu-title {
   font-size: 16px;
-  height: 48px;
-  line-height: 48px;
-  margin-bottom: 8px;
-  margin-inline-start: 235px;
-  margin-top: 24px;
+  height: 20px;
+  line-height: 20px;
+  margin-top: 38px;
   user-select: none;
+  width: fit-content;
+}
+
+.on-img-menu #menu-title {
+  margin-inline-start: 16px;
 }
 
 #menu-footer {
@@ -975,16 +989,27 @@ html[dir=rtl] .menu-option {
   width: 100%;
 }
 
-#backgrounds-menu .bg-sel-tile-bg {
+.menu-panel.menu-shown {
+  visibility: visible;
+}
+
+#backgrounds-menu .bg-sel-tile-bg,
+#backgrounds-image-menu .bg-sel-tile-bg {
   border-radius: 4px;
   height: 176px;
   margin-bottom: 45px;
   margin-inline-end: 8px;
   margin-inline-start: 0;
+  margin-top: 0;
   width: 176px;
 }
 
-#backgrounds-menu .bg-sel-tile {
+#backgrounds-image-menu .bg-sel-tile-bg {
+  margin-bottom: 8px;
+}
+
+#backgrounds-menu .bg-sel-tile,
+#backgrounds-image-menu .bg-sel-tile {
   background-position: center;
   border-radius: 4px;
 }
@@ -1002,7 +1027,7 @@ html[dir=rtl] .menu-option {
   background-color: white;
   border: 1px solid black;
   height: 174px;
-  margin-inline-end: 6px
+  margin-inline-end: 6px;
   width: 174px;
 }
 
@@ -1015,6 +1040,27 @@ html[dir=rtl] .menu-option {
   width: 174px;
 }
 
-.menu-shown {
+#menu-back-wrapper {
+  display: inline-block;
+  height: 80px;
+}
+
+#menu-back {
+  background: url(../../../../ui/webui/resources/images/icon_arrow_back.svg) no-repeat center;
+  background-size: 20px 20px;
+  height: 20px;
+  margin-inline-start: 192px;
+  margin-top: 39px;
+  outline: none;
+  visibility: hidden;
+  width: 20px;
+}
+
+html[dir=rtl] #menu-back {
+  transform: scaleX(-1);
+}
+
+.on-img-menu #menu-back {
+  margin-inline-start: 212px;
   visibility: visible;
 }

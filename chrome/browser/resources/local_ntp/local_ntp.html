@@ -170,7 +170,14 @@
   </dialog>
 
   <dialog id="customization-menu" class="customize-dialog">
-    <div id="menu-title">$i18n{customizeMenuTitle}</div>
+    <div id="menu-header">
+      <div id="menu-back-wrapper">
+        <div id="menu-back"></div>
+      </div>
+      <div id="menu-title-wrapper">
+        <div id="menu-title">$i18n{customizeMenuTitle}</div>
+      </div>
+    </div>
     <div id="menu-nav-panel">
       <div id="backgrounds-button" class="menu-option" tabindex="0">
         <div class="menu-option-icon-wrapper">
@@ -198,6 +205,7 @@
           <div class="bg-sel-tile-title">Default</div>
         </div>
       </div>
+      <div id="backgrounds-image-menu" class="menu-panel"></div>
     </div>
     <div id="menu-footer">
       <button id="menu-cancel" class="bg-sel-footer-button paper secondary
