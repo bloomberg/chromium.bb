@@ -653,15 +653,10 @@ std::string AccountTrackerService::PickAccountIdForAccount(
 
 std::string AccountTrackerService::SeedAccountInfo(const std::string& gaia,
                                                    const std::string& email) {
-  const std::string account_id = PickAccountIdForAccount(gaia, email);
-  const bool already_exists = base::ContainsKey(accounts_, account_id);
-  StartTrackingAccount(account_id);
-  AccountInfo& account_info = accounts_[account_id];
-  DCHECK(!already_exists || account_info.gaia.empty() ||
-         account_info.gaia == gaia);
+  AccountInfo account_info;
   account_info.gaia = gaia;
   account_info.email = email;
-  SaveToPrefs(account_info);
+  std::string account_id = SeedAccountInfo(account_info);
 
   DVLOG(1) << "AccountTrackerService::SeedAccountInfo"
            << " account_id=" << account_id << " gaia_id=" << gaia
@@ -673,11 +668,12 @@ std::string AccountTrackerService::SeedAccountInfo(const std::string& gaia,
 std::string AccountTrackerService::SeedAccountInfo(AccountInfo info) {
   info.account_id = PickAccountIdForAccount(info.gaia, info.email);
 
-  if (!base::ContainsKey(accounts_, info.account_id)) {
-    StartTrackingAccount(info.account_id);
-  }
-
+  const bool already_exists = base::ContainsKey(accounts_, info.account_id);
+  StartTrackingAccount(info.account_id);
   AccountInfo& account_info = accounts_[info.account_id];
+  DCHECK(!already_exists || account_info.gaia.empty() ||
+         account_info.gaia == info.gaia);
+
   // Update the missing fields in |account_info| with |info|.
   if (account_info.UpdateWith(info)) {
     if (!account_info.gaia.empty())
