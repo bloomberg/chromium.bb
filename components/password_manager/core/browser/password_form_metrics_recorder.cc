@@ -247,6 +247,7 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
     UMA_HISTOGRAM_ENUMERATION("PasswordManager.DynamicFormChanges",
                               *form_changes_bitmask_,
                               static_cast<uint32_t>(kMaxFormDifferencesValue));
+    ukm_entry_builder_.SetDynamicFormChanges(*form_changes_bitmask_);
   }
 
   if (submit_result_ == kSubmitResultPassed && filling_assistance_) {

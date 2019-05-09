@@ -5039,6 +5039,15 @@ be describing additional metrics about the same event.
       distinguish two forms on the same site.
     </summary>
   </metric>
+  <metric name="DynamicFormChanges">
+    <summary>
+      Records a bitmask of password form changes after the first time this form
+      is seen by Password Manager. Recorded once per a form when the form is
+      removed from DOM. Bit 0 - changes in number of fields, bit 1 - changes in
+      fields renderer ids, bit 2 - changes in autocomplete attributes, bit 3 -
+      changes in form control types.
+    </summary>
+  </metric>
   <metric name="Fill.FirstFillingResultInRenderer">
     <summary>
       Records whether the PasswordAutofillAgent in the renderer manages to fill
