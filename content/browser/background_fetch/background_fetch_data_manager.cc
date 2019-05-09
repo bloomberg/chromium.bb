@@ -24,6 +24,7 @@
 #include "content/browser/background_fetch/storage/mark_request_complete_task.h"
 #include "content/browser/background_fetch/storage/match_requests_task.h"
 #include "content/browser/background_fetch/storage/start_next_pending_request_task.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"

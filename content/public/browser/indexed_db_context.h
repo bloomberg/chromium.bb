@@ -28,6 +28,8 @@ struct StorageUsageInfo;
 
 // Represents the per-BrowserContext IndexedDB data.
 // Call these methods only via the exposed TaskRunner.
+// Refcounted because this class is used throughout the codebase on different
+// threads.
 class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
  public:
   // Only call the below methods by posting to this TaskRunner.
@@ -50,6 +52,9 @@ class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
 
   // Forget the origins/sizes read from disk.
   virtual void ResetCachesForTesting() = 0;
+
+  // Disables the exit-time deletion of session-only data.
+  virtual void SetForceKeepSessionState() = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<IndexedDBContext>;

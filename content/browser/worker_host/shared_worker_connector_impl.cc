@@ -5,6 +5,7 @@
 #include "content/browser/worker_host/shared_worker_connector_impl.h"
 
 #include "base/memory/ptr_util.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/worker_host/shared_worker_service_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -12,6 +13,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
+#include "third_party/blink/public/mojom/blob/blob_url_store.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_info.mojom.h"
 
 namespace content {

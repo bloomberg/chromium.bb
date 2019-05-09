@@ -97,7 +97,8 @@ class IndexedDBFactoryTest : public testing::Test {
             CreateAndReturnTempDir(&temp_dir_),
             /*special_storage_policy=*/nullptr,
             quota_manager_proxy_.get(),
-            indexed_db::GetDefaultLevelDBFactory())) {}
+            indexed_db::GetDefaultLevelDBFactory(),
+            base::DefaultClock::GetInstance())) {}
 
   void TearDown() override {
     quota_manager_proxy_->SimulateQuotaManagerDestroyed();

@@ -206,7 +206,8 @@ class IndexedDBBackingStoreTest : public testing::Test {
 
     idb_context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         temp_dir_.GetPath(), special_storage_policy_, quota_manager_proxy_,
-        indexed_db::GetDefaultLevelDBFactory());
+        indexed_db::GetDefaultLevelDBFactory(),
+        base::DefaultClock::GetInstance());
 
     CreateFactoryAndBackingStore();
 

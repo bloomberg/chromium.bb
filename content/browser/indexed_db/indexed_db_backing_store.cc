@@ -30,6 +30,7 @@
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_data_format_version.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
+#include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
 #include "content/browser/indexed_db/indexed_db_metadata_coding.h"
@@ -2051,11 +2052,11 @@ IndexedDBBackingStore::Cursor::Cursor(
 }
 
 IndexedDBBackingStore::Cursor::Cursor(
-    scoped_refptr<IndexedDBBackingStore> backing_store,
+    IndexedDBBackingStore* backing_store,
     IndexedDBBackingStore::Transaction* transaction,
     int64_t database_id,
     const CursorOptions& cursor_options)
-    : backing_store_(backing_store.get()),
+    : backing_store_(backing_store),
       transaction_(transaction),
       database_id_(database_id),
       cursor_options_(cursor_options) {}
@@ -2312,7 +2313,7 @@ const IndexedDBKey& IndexedDBBackingStore::Cursor::primary_key() const {
 class ObjectStoreKeyCursorImpl : public IndexedDBBackingStore::Cursor {
  public:
   ObjectStoreKeyCursorImpl(
-      scoped_refptr<IndexedDBBackingStore> backing_store,
+      IndexedDBBackingStore* backing_store,
       IndexedDBBackingStore::Transaction* transaction,
       int64_t database_id,
       const IndexedDBBackingStore::Cursor::CursorOptions& cursor_options)
@@ -2389,7 +2390,7 @@ bool ObjectStoreKeyCursorImpl::LoadCurrentRow(Status* s) {
 class ObjectStoreCursorImpl : public IndexedDBBackingStore::Cursor {
  public:
   ObjectStoreCursorImpl(
-      scoped_refptr<IndexedDBBackingStore> backing_store,
+      IndexedDBBackingStore* backing_store,
       IndexedDBBackingStore::Transaction* transaction,
       int64_t database_id,
       const IndexedDBBackingStore::Cursor::CursorOptions& cursor_options)
@@ -2463,7 +2464,7 @@ bool ObjectStoreCursorImpl::LoadCurrentRow(Status* s) {
 class IndexKeyCursorImpl : public IndexedDBBackingStore::Cursor {
  public:
   IndexKeyCursorImpl(
-      scoped_refptr<IndexedDBBackingStore> backing_store,
+      IndexedDBBackingStore* backing_store,
       IndexedDBBackingStore::Transaction* transaction,
       int64_t database_id,
       const IndexedDBBackingStore::Cursor::CursorOptions& cursor_options)
@@ -2580,7 +2581,7 @@ bool IndexKeyCursorImpl::LoadCurrentRow(Status* s) {
 class IndexCursorImpl : public IndexedDBBackingStore::Cursor {
  public:
   IndexCursorImpl(
-      scoped_refptr<IndexedDBBackingStore> backing_store,
+      IndexedDBBackingStore* backing_store,
       IndexedDBBackingStore::Transaction* transaction,
       int64_t database_id,
       const IndexedDBBackingStore::Cursor::CursorOptions& cursor_options)

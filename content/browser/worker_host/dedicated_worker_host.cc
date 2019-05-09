@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/renderer_interface_binders.h"

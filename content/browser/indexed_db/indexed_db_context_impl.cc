@@ -68,7 +68,6 @@ void GetAllOriginsAndPaths(const base::FilePath& indexeddb_path,
     if (file_path.Extension() == indexed_db::kLevelDBExtension &&
         file_path.RemoveExtension().Extension() ==
             indexed_db::kIndexedDBExtension) {
-      // TODO(dmurph): Unittest this.
       std::string origin_id = file_path.BaseName()
                                   .RemoveExtension()
                                   .RemoveExtension()
@@ -86,7 +85,8 @@ IndexedDBContextImpl::IndexedDBContextImpl(
     const base::FilePath& data_path,
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
-    indexed_db::LevelDBFactory* leveldb_factory)
+    indexed_db::LevelDBFactory* leveldb_factory,
+    base::Clock* clock)
     : force_keep_session_state_(false),
       special_storage_policy_(special_storage_policy),
       quota_manager_proxy_(quota_manager_proxy),
@@ -95,7 +95,8 @@ IndexedDBContextImpl::IndexedDBContextImpl(
            base::TaskPriority::USER_VISIBLE,
            // BLOCK_SHUTDOWN to support clearing session-only storage.
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
-      leveldb_factory_(leveldb_factory) {
+      leveldb_factory_(leveldb_factory),
+      clock_(clock) {
   IDB_TRACE("init");
   if (!data_path.empty())
     data_path_ = data_path.Append(kIndexedDBDirectory);
@@ -444,6 +445,10 @@ void IndexedDBContextImpl::SetTaskRunnerForTesting(
 void IndexedDBContextImpl::ResetCachesForTesting() {
   origin_set_.reset();
   origin_size_map_.clear();
+}
+
+void IndexedDBContextImpl::SetForceKeepSessionState() {
+  force_keep_session_state_ = true;
 }
 
 void IndexedDBContextImpl::ConnectionOpened(const Origin& origin,

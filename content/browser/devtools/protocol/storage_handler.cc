@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/strings/string_split.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"

@@ -23,6 +23,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/syslog_logging.h"
 #include "base/task/post_task.h"
+#include "base/time/default_clock.h"
 #include "build/build_config.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
@@ -672,7 +673,8 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
   base::FilePath path = in_memory ? base::FilePath() : partition_path;
   partition->indexed_db_context_ = new IndexedDBContextImpl(
       path, context->GetSpecialStoragePolicy(), quota_manager_proxy,
-      indexed_db::GetDefaultLevelDBFactory());
+      indexed_db::GetDefaultLevelDBFactory(),
+      base::DefaultClock::GetInstance());
 
   partition->cache_storage_context_ = new CacheStorageContextImpl(context);
   partition->cache_storage_context_->Init(

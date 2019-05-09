@@ -342,7 +342,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
     virtual bool LoadCurrentRow(leveldb::Status* s) = 0;
 
    protected:
-    Cursor(scoped_refptr<IndexedDBBackingStore> backing_store,
+    Cursor(IndexedDBBackingStore* backing_store,
            Transaction* transaction,
            int64_t database_id,
            const CursorOptions& cursor_options);

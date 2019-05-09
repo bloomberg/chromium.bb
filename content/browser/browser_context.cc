@@ -38,7 +38,6 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/content_service_delegate_impl.h"
 #include "content/browser/download/download_manager_impl.h"
-#include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/media/browser_feature_provider.h"
 #include "content/browser/permissions/permission_controller_impl.h"
@@ -50,6 +49,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/indexed_db_context.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/site_instance.h"
@@ -224,7 +224,7 @@ void SaveSessionStateOnIOThread(
 }
 
 void SaveSessionStateOnIndexedDBThread(
-    scoped_refptr<IndexedDBContextImpl> indexed_db_context) {
+    scoped_refptr<IndexedDBContext> indexed_db_context) {
   indexed_db_context->SetForceKeepSessionState();
 }
 
@@ -614,15 +614,13 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
           storage_partition->GetDOMStorageContext());
   dom_storage_context_proxy->SetForceKeepSessionState();
 
-  IndexedDBContextImpl* indexed_db_context_impl =
-      static_cast<IndexedDBContextImpl*>(
-        storage_partition->GetIndexedDBContext());
+  scoped_refptr<IndexedDBContext> indexed_db_context =
+      storage_partition->GetIndexedDBContext();
   // No task runner in unit tests.
-  if (indexed_db_context_impl->TaskRunner()) {
-    indexed_db_context_impl->TaskRunner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&SaveSessionStateOnIndexedDBThread,
-                       base::WrapRefCounted(indexed_db_context_impl)));
+  if (indexed_db_context->TaskRunner()) {
+    indexed_db_context->TaskRunner()->PostTask(
+        FROM_HERE, base::BindOnce(&SaveSessionStateOnIndexedDBThread,
+                                  std::move(indexed_db_context)));
   }
 }
 

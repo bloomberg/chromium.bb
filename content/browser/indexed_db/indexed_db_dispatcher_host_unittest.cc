@@ -16,6 +16,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
+#include "base/time/default_clock.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
@@ -183,7 +184,8 @@ class IndexedDBDispatcherHostTest : public testing::Test {
             CreateAndReturnTempDir(&temp_dir_),
             special_storage_policy_,
             quota_manager_->proxy(),
-            indexed_db::GetDefaultLevelDBFactory())),
+            indexed_db::GetDefaultLevelDBFactory(),
+            base::DefaultClock::GetInstance())),
         host_(new IndexedDBDispatcherHost(
                   kFakeProcessId,
                   context_impl_,
