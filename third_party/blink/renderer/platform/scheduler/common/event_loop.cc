@@ -13,12 +13,6 @@
 namespace blink {
 namespace scheduler {
 
-// static
-scoped_refptr<EventLoop> EventLoop::CreateForWorkerOrWorklet(
-    v8::Isolate* isolate) {
-  return base::AdoptRef(new EventLoop(isolate));
-}
-
 EventLoop::EventLoop(v8::Isolate* isolate)
     : isolate_(isolate), microtask_queue_(v8::MicrotaskQueue::New(isolate)) {
   DCHECK(isolate_);
@@ -26,8 +20,6 @@ EventLoop::EventLoop(v8::Isolate* isolate)
 
 EventLoop::~EventLoop() {
   microtask_queue_ = nullptr;
-
-  // TODO(tzik): Remove the instance from associated EventLoopGroup.
 }
 
 void EventLoop::EnqueueMicrotask(base::OnceClosure task) {
