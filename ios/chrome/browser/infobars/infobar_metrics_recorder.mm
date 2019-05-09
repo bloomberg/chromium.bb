@@ -19,12 +19,19 @@ const char kInfobarConfirmBannerEventHistogram[] =
 const char kInfobarConfirmBannerDismissTypeHistogram[] =
     "Mobile.Messages.Banner.Dismiss.InfobarTypeConfirm";
 
-// Histogram names for InfobarTypePassword.
+// Histogram names for InfobarTypePasswordSave.
 // Banner.
-const char kInfobarPasswordBannerEventHistogram[] =
-    "Mobile.Messages.Banner.Event.InfobarTypePassword";
-const char kInfobarPasswordBannerDismissTypeHistogram[] =
-    "Mobile.Messages.Banner.Dismiss.InfobarTypePassword";
+const char kInfobarPasswordSaveBannerEventHistogram[] =
+    "Mobile.Messages.Banner.Event.InfobarTypePasswordSave";
+const char kInfobarPasswordSaveBannerDismissTypeHistogram[] =
+    "Mobile.Messages.Banner.Dismiss.InfobarTypePasswordSave";
+
+// Histogram names for InfobarTypePasswordUpdate.
+// Banner.
+const char kInfobarPasswordUpdateBannerEventHistogram[] =
+    "Mobile.Messages.Banner.Event.InfobarTypePasswordUpdate";
+const char kInfobarPasswordUpdateBannerDismissTypeHistogram[] =
+    "Mobile.Messages.Banner.Dismiss.InfobarTypePasswordUpdate";
 
 }  // namespace
 
@@ -50,8 +57,13 @@ const char kInfobarPasswordBannerDismissTypeHistogram[] =
     case InfobarType::kInfobarTypeConfirm:
       UMA_HISTOGRAM_ENUMERATION(kInfobarConfirmBannerEventHistogram, event);
       break;
-    case InfobarType::kInfobarTypePassword:
-      UMA_HISTOGRAM_ENUMERATION(kInfobarPasswordBannerEventHistogram, event);
+    case InfobarType::kInfobarTypePasswordSave:
+      UMA_HISTOGRAM_ENUMERATION(kInfobarPasswordSaveBannerEventHistogram,
+                                event);
+      break;
+    case InfobarType::kInfobarTypePasswordUpdate:
+      UMA_HISTOGRAM_ENUMERATION(kInfobarPasswordUpdateBannerEventHistogram,
+                                event);
       break;
   }
 }
@@ -62,9 +74,13 @@ const char kInfobarPasswordBannerDismissTypeHistogram[] =
       UMA_HISTOGRAM_ENUMERATION(kInfobarConfirmBannerDismissTypeHistogram,
                                 dismissType);
       break;
-    case InfobarType::kInfobarTypePassword:
-      UMA_HISTOGRAM_ENUMERATION(kInfobarPasswordBannerDismissTypeHistogram,
+    case InfobarType::kInfobarTypePasswordSave:
+      UMA_HISTOGRAM_ENUMERATION(kInfobarPasswordSaveBannerDismissTypeHistogram,
                                 dismissType);
+      break;
+    case InfobarType::kInfobarTypePasswordUpdate:
+      UMA_HISTOGRAM_ENUMERATION(
+          kInfobarPasswordUpdateBannerDismissTypeHistogram, dismissType);
       break;
   }
 }
