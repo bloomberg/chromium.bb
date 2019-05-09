@@ -27,6 +27,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -45,7 +46,8 @@ public class PaymentRequestIncompleteServerCardTest implements MainActivityStart
             new PaymentRequestTestRule("payment_request_no_shipping_test.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted()
+            throws InterruptedException, ExecutionException, TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         helper.setProfile(new AutofillProfile("", "https://example.com",
                 true, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
@@ -60,7 +62,8 @@ public class PaymentRequestIncompleteServerCardTest implements MainActivityStart
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPayAndDontUnmask() throws InterruptedException, TimeoutException {
+    public void testPayAndDontUnmask()
+            throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());

@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityS
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -37,12 +38,14 @@ public class PaymentRequestShowPromiseDigitalGoodsTest implements MainActivitySt
             new PaymentRequestTestRule("show_promise/digital_goods.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {}
+    public void onMainActivityStarted()
+            throws InterruptedException, ExecutionException, TimeoutException {}
 
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testDigitalGoodsFastApp() throws InterruptedException, TimeoutException {
+    public void testDigitalGoodsFastApp()
+            throws InterruptedException, ExecutionException, TimeoutException {
         mRule.installPaymentApp("basic-card", PaymentRequestTestRule.HAVE_INSTRUMENTS,
                 PaymentRequestTestRule.IMMEDIATE_RESPONSE);
         mRule.openPage();
@@ -59,7 +62,8 @@ public class PaymentRequestShowPromiseDigitalGoodsTest implements MainActivitySt
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testDigitalGoodsSlowApp() throws InterruptedException, TimeoutException {
+    public void testDigitalGoodsSlowApp()
+            throws InterruptedException, ExecutionException, TimeoutException {
         mRule.installPaymentApp("basic-card", PaymentRequestTestRule.HAVE_INSTRUMENTS,
                 PaymentRequestTestRule.DELAYED_RESPONSE, PaymentRequestTestRule.DELAYED_CREATION);
         mRule.openPage();
@@ -76,7 +80,8 @@ public class PaymentRequestShowPromiseDigitalGoodsTest implements MainActivitySt
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testSkipUIFastApp() throws InterruptedException, TimeoutException {
+    public void testSkipUIFastApp()
+            throws InterruptedException, ExecutionException, TimeoutException {
         mRule.installPaymentApp("basic-card", PaymentRequestTestRule.HAVE_INSTRUMENTS,
                 PaymentRequestTestRule.IMMEDIATE_RESPONSE);
         mRule.openPage();
@@ -91,7 +96,8 @@ public class PaymentRequestShowPromiseDigitalGoodsTest implements MainActivitySt
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testSkipUISlowApp() throws InterruptedException, TimeoutException {
+    public void testSkipUISlowApp()
+            throws InterruptedException, ExecutionException, TimeoutException {
         mRule.installPaymentApp("basic-card", PaymentRequestTestRule.HAVE_INSTRUMENTS,
                 PaymentRequestTestRule.DELAYED_RESPONSE, PaymentRequestTestRule.DELAYED_CREATION);
         mRule.openPage();

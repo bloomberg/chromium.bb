@@ -24,6 +24,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -42,7 +43,8 @@ public class PaymentRequestExtraShippingOptionsTest implements MainActivityStart
             new PaymentRequestTestRule("payment_request_extra_shipping_options_test.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted()
+            throws InterruptedException, ExecutionException, TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         String billingAddressId = helper.setProfile(new AutofillProfile("", "https://example.com",
                 true, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
@@ -59,7 +61,7 @@ public class PaymentRequestExtraShippingOptionsTest implements MainActivityStart
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPay() throws InterruptedException, TimeoutException {
+    public void testPay() throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());

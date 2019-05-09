@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityS
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -41,7 +42,8 @@ public class PaymentRequestShippingAddressChangeTest implements MainActivityStar
             new PaymentRequestTestRule("payment_request_shipping_address_change_test.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted()
+            throws InterruptedException, ExecutionException, TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         // The user has a shipping address on disk.
         String billingAddressId = helper.setProfile(new AutofillProfile("", "https://example.com",
@@ -60,7 +62,8 @@ public class PaymentRequestShippingAddressChangeTest implements MainActivityStar
     @MediumTest
     @Feature({"Payments"})
     @DisabledTest(message = "https://crbug.com/894011")
-    public void testShippingAddressChangeFormat() throws InterruptedException, TimeoutException {
+    public void testShippingAddressChangeFormat()
+            throws InterruptedException, ExecutionException, TimeoutException {
         // Select a shipping address and cancel out.
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(

@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityS
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -57,7 +58,8 @@ public class PaymentRequestBillingAddressTest implements MainActivityStartCallba
     private static final int BILLING_ADDRESS_DROPDOWN_INDEX = 2;
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted()
+            throws InterruptedException, ExecutionException, TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         String profile1 = helper.setProfile(new AutofillProfile("", "https://example.com", true,
                 "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "", "US",
@@ -118,7 +120,8 @@ public class PaymentRequestBillingAddressTest implements MainActivityStartCallba
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testNewCardBillingAddressFormat() throws InterruptedException, TimeoutException {
+    public void testNewCardBillingAddressFormat()
+            throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
@@ -145,7 +148,7 @@ public class PaymentRequestBillingAddressTest implements MainActivityStartCallba
     @MediumTest
     @Feature({"Payments"})
     public void testNumberOfBillingAddressSuggestions()
-            throws InterruptedException, TimeoutException {
+            throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
@@ -167,7 +170,7 @@ public class PaymentRequestBillingAddressTest implements MainActivityStartCallba
     @MediumTest
     @Feature({"Payments"})
     public void testNumberOfBillingAddressSuggestions_AfterCancellingNewBillingAddress()
-            throws InterruptedException, TimeoutException {
+            throws InterruptedException, ExecutionException, TimeoutException {
         // Add a payment method and add a new billing address.
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
@@ -197,7 +200,7 @@ public class PaymentRequestBillingAddressTest implements MainActivityStartCallba
     @MediumTest
     @Feature({"Payments"})
     public void testAddBillingAddressOnCardAndCancel_MaintainsPreviousSelection()
-            throws InterruptedException, TimeoutException {
+            throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         // Edit the only card.
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
@@ -233,7 +236,7 @@ public class PaymentRequestBillingAddressTest implements MainActivityStartCallba
     @MediumTest
     @Feature({"Payments"})
     public void testAddBillingAddressOnCardWithNoBillingAndCancel_MaintainsPreviousSelection()
-            throws InterruptedException, TimeoutException {
+            throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         // Edit the second card.
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
@@ -267,7 +270,8 @@ public class PaymentRequestBillingAddressTest implements MainActivityStartCallba
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testBillingAddressSortedByFrecency() throws InterruptedException, TimeoutException {
+    public void testBillingAddressSortedByFrecency()
+            throws InterruptedException, ExecutionException, TimeoutException {
         // Add a payment method.
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
@@ -307,7 +311,7 @@ public class PaymentRequestBillingAddressTest implements MainActivityStartCallba
     @MediumTest
     @Feature({"Payments"})
     public void testBillingAddressSortedByFrecency_AddNewAddress()
-            throws InterruptedException, TimeoutException {
+            throws InterruptedException, ExecutionException, TimeoutException {
         // Add a payment method.
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
@@ -363,7 +367,7 @@ public class PaymentRequestBillingAddressTest implements MainActivityStartCallba
     @MediumTest
     @Feature({"Payments"})
     public void testNewShippingAddressSuggestedFirst()
-            throws InterruptedException, TimeoutException {
+            throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
 
         // Add a shipping address.
@@ -401,7 +405,7 @@ public class PaymentRequestBillingAddressTest implements MainActivityStartCallba
     @MediumTest
     @Feature({"Payments"})
     public void testSelectIncompleteBillingAddress_EditComplete()
-            throws InterruptedException, TimeoutException {
+            throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         // Edit the second card.
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
@@ -451,7 +455,7 @@ public class PaymentRequestBillingAddressTest implements MainActivityStartCallba
     @MediumTest
     @Feature({"Payments"})
     public void testSelectIncompleteBillingAddress_EditCancel()
-            throws InterruptedException, TimeoutException {
+            throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         // Edit the only complete card.
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(

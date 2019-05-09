@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityS
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -39,12 +40,14 @@ public class PaymentRequestShowPromiseUSOnlyShippingTest implements MainActivity
             new PaymentRequestTestRule("show_promise/us_only_shipping.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {}
+    public void onMainActivityStarted()
+            throws InterruptedException, ExecutionException, TimeoutException {}
 
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testCannotShipWithFastApp() throws InterruptedException, TimeoutException {
+    public void testCannotShipWithFastApp()
+            throws InterruptedException, ExecutionException, TimeoutException {
         mRule.installPaymentApp("basic-card", PaymentRequestTestRule.HAVE_INSTRUMENTS,
                 PaymentRequestTestRule.IMMEDIATE_RESPONSE);
         runCannotShipTest();
@@ -53,13 +56,15 @@ public class PaymentRequestShowPromiseUSOnlyShippingTest implements MainActivity
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testCannotShipWithSlowApp() throws InterruptedException, TimeoutException {
+    public void testCannotShipWithSlowApp()
+            throws InterruptedException, ExecutionException, TimeoutException {
         mRule.installPaymentApp("basic-card", PaymentRequestTestRule.HAVE_INSTRUMENTS,
                 PaymentRequestTestRule.DELAYED_RESPONSE, PaymentRequestTestRule.DELAYED_CREATION);
         runCannotShipTest();
     }
 
-    private void runCannotShipTest() throws InterruptedException, TimeoutException {
+    private void runCannotShipTest()
+            throws InterruptedException, ExecutionException, TimeoutException {
         AutofillTestHelper autofillTestHelper = new AutofillTestHelper();
         autofillTestHelper.setProfile(new AutofillProfile("", "https://example.com", true,
                 "Jon Doe", "Google", "51 Breithaupt St", "ON", "Kitchener", "", "N2H 5G5", "", "CA",
@@ -79,7 +84,8 @@ public class PaymentRequestShowPromiseUSOnlyShippingTest implements MainActivity
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testCanShipWithFastApp() throws InterruptedException, TimeoutException {
+    public void testCanShipWithFastApp()
+            throws InterruptedException, ExecutionException, TimeoutException {
         mRule.installPaymentApp("basic-card", PaymentRequestTestRule.HAVE_INSTRUMENTS,
                 PaymentRequestTestRule.IMMEDIATE_RESPONSE);
         runCanShipTest();
@@ -88,13 +94,15 @@ public class PaymentRequestShowPromiseUSOnlyShippingTest implements MainActivity
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testCanShipWithSlowApp() throws InterruptedException, TimeoutException {
+    public void testCanShipWithSlowApp()
+            throws InterruptedException, ExecutionException, TimeoutException {
         mRule.installPaymentApp("basic-card", PaymentRequestTestRule.HAVE_INSTRUMENTS,
                 PaymentRequestTestRule.DELAYED_RESPONSE, PaymentRequestTestRule.DELAYED_CREATION);
         runCanShipTest();
     }
 
-    private void runCanShipTest() throws InterruptedException, TimeoutException {
+    private void runCanShipTest()
+            throws InterruptedException, ExecutionException, TimeoutException {
         AutofillTestHelper autofillTestHelper = new AutofillTestHelper();
         autofillTestHelper.setProfile(new AutofillProfile("", "https://example.com", true,
                 "Jane Smith", "Google", "340 Main St", "California", "Los Angeles", "", "90291", "",

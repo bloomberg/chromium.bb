@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityS
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -41,7 +42,8 @@ public class PaymentRequestAbortTest implements MainActivityStartCallback {
             new PaymentRequestTestRule("payment_request_abort_test.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted()
+            throws InterruptedException, ExecutionException, TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         String billingAddressId = helper.setProfile(new AutofillProfile("", "https://example.com",
                 true, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
@@ -56,7 +58,8 @@ public class PaymentRequestAbortTest implements MainActivityStartCallback {
     @MediumTest
     @Feature({"Payments"})
     @RetryOnFailure
-    public void testAbortBeforePayClicked() throws InterruptedException, TimeoutException {
+    public void testAbortBeforePayClicked()
+            throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickNodeAndWait("abort", mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(new String[] {"Aborted"});
@@ -67,7 +70,8 @@ public class PaymentRequestAbortTest implements MainActivityStartCallback {
     @MediumTest
     @Feature({"Payments"})
     @RetryOnFailure
-    public void testAbortWhileUnmaskingCard() throws InterruptedException, TimeoutException {
+    public void testAbortWhileUnmaskingCard()
+            throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());

@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityS
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -45,7 +46,8 @@ public class PaymentRequestIncompleteContactDetailsAndFreeShippingTest
             "payment_request_contact_details_and_free_shipping_test.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted()
+            throws InterruptedException, ExecutionException, TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         // The user has a shipping address with a valid email address on disk. However the phone
         // number is invalid.
@@ -60,7 +62,8 @@ public class PaymentRequestIncompleteContactDetailsAndFreeShippingTest
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testEditIncompleteShippingAndPay() throws InterruptedException, TimeoutException {
+    public void testEditIncompleteShippingAndPay()
+            throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
@@ -98,7 +101,7 @@ public class PaymentRequestIncompleteContactDetailsAndFreeShippingTest
     @MediumTest
     @Feature({"Payments"})
     public void testEditIncompleteShippingAndContactAndPay()
-            throws InterruptedException, TimeoutException {
+            throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());

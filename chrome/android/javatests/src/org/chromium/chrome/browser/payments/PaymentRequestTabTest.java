@@ -30,6 +30,7 @@ import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -48,7 +49,8 @@ public class PaymentRequestTabTest implements MainActivityStartCallback {
             new PaymentRequestTestRule("payment_request_dynamic_shipping_test.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted()
+            throws InterruptedException, ExecutionException, TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         String billingAddressId = helper.setProfile(new AutofillProfile("", "https://example.com",
                 true, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
@@ -62,7 +64,8 @@ public class PaymentRequestTabTest implements MainActivityStartCallback {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testDismissOnTabSwitch() throws InterruptedException, TimeoutException {
+    public void testDismissOnTabSwitch()
+            throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         Assert.assertEquals(0, mPaymentRequestTestRule.getDismissed().getCallCount());
         TestThreadUtils.runOnUiThreadBlocking(
@@ -78,7 +81,8 @@ public class PaymentRequestTabTest implements MainActivityStartCallback {
     // Disabled due to recent flakiness: crbug.com/661450.
     @Test
     @DisabledTest
-    public void testDismissOnTabClose() throws InterruptedException, TimeoutException {
+    public void testDismissOnTabClose()
+            throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         Assert.assertEquals(0, mPaymentRequestTestRule.getDismissed().getCallCount());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -92,7 +96,8 @@ public class PaymentRequestTabTest implements MainActivityStartCallback {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testDismissOnTabNavigate() throws InterruptedException, TimeoutException {
+    public void testDismissOnTabNavigate()
+            throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         Assert.assertEquals(0, mPaymentRequestTestRule.getDismissed().getCallCount());
         TestThreadUtils.runOnUiThreadBlocking(() -> {

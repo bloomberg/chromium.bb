@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityS
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -43,7 +44,8 @@ public class PaymentRequestCanMakePaymentGooglePayTest implements MainActivitySt
             new PaymentRequestTestRule("payment_request_can_make_payment_query_test.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted()
+            throws InterruptedException, ExecutionException, TimeoutException {
         // The user has a valid server credit card with a billing address on file. This is
         // sufficient for canMakePayment() to return true.
         AutofillTestHelper helper = new AutofillTestHelper();
@@ -61,7 +63,8 @@ public class PaymentRequestCanMakePaymentGooglePayTest implements MainActivitySt
     @Feature({"Payments"})
     @CommandLineFlags.
     Add("enable-features=" + ChromeFeatureList.WEB_PAYMENTS_RETURN_GOOGLE_PAY_IN_BASIC_CARD)
-    public void testGooglePayServerCardsAllowed() throws InterruptedException, TimeoutException {
+    public void testGooglePayServerCardsAllowed()
+            throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(
                 mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
         mPaymentRequestTestRule.expectResultContains(new String[] {"true"});
@@ -76,7 +79,8 @@ public class PaymentRequestCanMakePaymentGooglePayTest implements MainActivitySt
     @Feature({"Payments"})
     @CommandLineFlags.
     Add("disable-features=" + ChromeFeatureList.WEB_PAYMENTS_RETURN_GOOGLE_PAY_IN_BASIC_CARD)
-    public void testGooglePayServerCardsNotAllowed() throws InterruptedException, TimeoutException {
+    public void testGooglePayServerCardsNotAllowed()
+            throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(
                 mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
         mPaymentRequestTestRule.expectResultContains(new String[] {"true"});

@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityS
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -41,7 +42,8 @@ public class PaymentRequestShowPromiseSingleOptionShippingTest
             new PaymentRequestTestRule("show_promise/single_option_shipping.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted()
+            throws InterruptedException, ExecutionException, TimeoutException {
         AutofillTestHelper autofillTestHelper = new AutofillTestHelper();
         autofillTestHelper.setProfile(new AutofillProfile("", "https://example.com", true,
                 "Jon Doe", "Google", "340 Main St", "California", "Los Angeles", "", "90291", "",
@@ -54,7 +56,7 @@ public class PaymentRequestShowPromiseSingleOptionShippingTest
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testFastApp() throws InterruptedException, TimeoutException {
+    public void testFastApp() throws InterruptedException, ExecutionException, TimeoutException {
         mRule.installPaymentApp("basic-card", PaymentRequestTestRule.HAVE_INSTRUMENTS,
                 PaymentRequestTestRule.IMMEDIATE_RESPONSE);
         mRule.triggerUIAndWait(mRule.getReadyToPay());
@@ -69,7 +71,7 @@ public class PaymentRequestShowPromiseSingleOptionShippingTest
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testSlowApp() throws InterruptedException, TimeoutException {
+    public void testSlowApp() throws InterruptedException, ExecutionException, TimeoutException {
         mRule.installPaymentApp("basic-card", PaymentRequestTestRule.HAVE_INSTRUMENTS,
                 PaymentRequestTestRule.DELAYED_RESPONSE, PaymentRequestTestRule.DELAYED_CREATION);
         mRule.triggerUIAndWait(mRule.getReadyToPay());

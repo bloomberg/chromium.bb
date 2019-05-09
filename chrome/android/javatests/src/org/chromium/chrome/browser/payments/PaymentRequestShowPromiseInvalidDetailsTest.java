@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityS
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -35,12 +36,13 @@ public class PaymentRequestShowPromiseInvalidDetailsTest implements MainActivity
             new PaymentRequestTestRule("show_promise/invalid_details.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {}
+    public void onMainActivityStarted()
+            throws InterruptedException, ExecutionException, TimeoutException {}
 
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testReject() throws InterruptedException, TimeoutException {
+    public void testReject() throws InterruptedException, ExecutionException, TimeoutException {
         mRule.openPageAndClickNodeAndWait("buy", mRule.getDismissed());
         mRule.expectResultContains(new String[] {"Total amount value should be non-negative"});
     }

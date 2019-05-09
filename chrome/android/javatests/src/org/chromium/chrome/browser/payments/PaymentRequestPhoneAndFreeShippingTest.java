@@ -26,6 +26,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -44,7 +45,8 @@ public class PaymentRequestPhoneAndFreeShippingTest implements MainActivityStart
             new PaymentRequestTestRule("payment_request_phone_and_free_shipping_test.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted()
+            throws InterruptedException, ExecutionException, TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         // The user has a shipping address with a valid phone number on disk.
         String billingAddressId = helper.setProfile(new AutofillProfile("", "https://example.com",
@@ -59,7 +61,7 @@ public class PaymentRequestPhoneAndFreeShippingTest implements MainActivityStart
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPay() throws InterruptedException, TimeoutException {
+    public void testPay() throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
@@ -79,7 +81,8 @@ public class PaymentRequestPhoneAndFreeShippingTest implements MainActivityStart
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPaymentRequestEventsMetric() throws InterruptedException, TimeoutException {
+    public void testPaymentRequestEventsMetric()
+            throws InterruptedException, ExecutionException, TimeoutException {
         // Start and complete the Payment Request.
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(

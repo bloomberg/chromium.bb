@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityS
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -39,7 +40,8 @@ public class PaymentRequestShowPromiseEmptyTest implements MainActivityStartCall
             new PaymentRequestTestRule("show_promise/resolve_with_empty_dictionary.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted()
+            throws InterruptedException, ExecutionException, TimeoutException {
         new AutofillTestHelper().setProfile(new AutofillProfile("", "https://example.com", true,
                 "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "", "US",
                 "650-253-0000", "", "en-US"));
@@ -48,7 +50,8 @@ public class PaymentRequestShowPromiseEmptyTest implements MainActivityStartCall
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testResolveWithEmptyDictionary() throws InterruptedException, TimeoutException {
+    public void testResolveWithEmptyDictionary()
+            throws InterruptedException, ExecutionException, TimeoutException {
         mRule.installPaymentApp("basic-card", PaymentRequestTestRule.HAVE_INSTRUMENTS,
                 PaymentRequestTestRule.IMMEDIATE_RESPONSE);
         mRule.triggerUIAndWait(mRule.getReadyToPay());

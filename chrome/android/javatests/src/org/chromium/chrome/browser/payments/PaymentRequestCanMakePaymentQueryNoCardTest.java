@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityS
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -46,7 +47,8 @@ public class PaymentRequestCanMakePaymentQueryNoCardTest implements MainActivity
             new PaymentRequestTestRule("payment_request_can_make_payment_query_test.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted() throws InterruptedException, ExecutionException,
+            TimeoutException {
         // The user has an incomplete credit card on file. This is not sufficient for
         // canMakePayment() to return true.
         new AutofillTestHelper().setCreditCard(
@@ -58,7 +60,8 @@ public class PaymentRequestCanMakePaymentQueryNoCardTest implements MainActivity
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testNoBobPayInstalled() throws InterruptedException, TimeoutException {
+    public void testNoBobPayInstalled()
+            throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(
                 mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
         mPaymentRequestTestRule.expectResultContains(new String[] {"true"});
@@ -71,7 +74,8 @@ public class PaymentRequestCanMakePaymentQueryNoCardTest implements MainActivity
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testNoInstrumentsInFastBobPay() throws InterruptedException, TimeoutException {
+    public void testNoInstrumentsInFastBobPay()
+            throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.installPaymentApp(NO_INSTRUMENTS, IMMEDIATE_RESPONSE);
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(
                 mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
@@ -85,7 +89,8 @@ public class PaymentRequestCanMakePaymentQueryNoCardTest implements MainActivity
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testNoInstrumentsInSlowBobPay() throws InterruptedException, TimeoutException {
+    public void testNoInstrumentsInSlowBobPay()
+            throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.installPaymentApp(NO_INSTRUMENTS, DELAYED_RESPONSE);
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(
                 mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
@@ -99,7 +104,8 @@ public class PaymentRequestCanMakePaymentQueryNoCardTest implements MainActivity
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPayViaFastBobPay() throws InterruptedException, TimeoutException {
+    public void testPayViaFastBobPay()
+            throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(
                 mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
@@ -109,7 +115,8 @@ public class PaymentRequestCanMakePaymentQueryNoCardTest implements MainActivity
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPayViaSlowBobPay() throws InterruptedException, TimeoutException {
+    public void testPayViaSlowBobPay()
+            throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, DELAYED_RESPONSE);
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(
                 mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
