@@ -1031,4 +1031,14 @@ constexpr char kArcCameraServiceInterface[] = "org.chromium.ArcCamera";
 constexpr char kStartServiceMethod[] = "StartService";
 }  // namespace arc_camera
 
+namespace machine_learning {
+constexpr char kMlDecisionServiceName[] = "org.chromium.MlDecisionService";
+constexpr char kMlDecisionServicePath[] = "/org/chromium/MlDecisionService";
+constexpr char kMlDecisionServiceInterface[] = "org.chromium.MlDecisionService";
+
+// Method names.
+constexpr char kShouldDeferScreenDimMethod[] = "ShouldDeferScreenDim";
+}  // namespace machine_learning
+
+
 #endif  // SYSTEM_API_DBUS_SERVICE_CONSTANTS_H_
