@@ -23,6 +23,8 @@ from chromite.service import image
 _BASE_ID = common_pb2.BASE
 _DEV_ID = common_pb2.DEV
 _TEST_ID = common_pb2.TEST
+_BASE_VM_ID = common_pb2.BASE_VM
+_TEST_VM_ID = common_pb2.TEST_VM
 
 # Dict to allow easily translating names to enum ids and vice versa.
 _IMAGE_MAPPING = {
@@ -32,6 +34,11 @@ _IMAGE_MAPPING = {
     constants.IMAGE_TYPE_DEV: _DEV_ID,
     _TEST_ID: constants.IMAGE_TYPE_TEST,
     constants.IMAGE_TYPE_TEST: _TEST_ID,
+}
+
+_VM_IMAGE_MAPPING = {
+    _BASE_VM_ID: _IMAGE_MAPPING[_BASE_ID],
+    _TEST_VM_ID: _IMAGE_MAPPING[_TEST_ID],
 }
 
 
@@ -46,26 +53,11 @@ def Create(input_proto, output_proto):
   if not board:
     cros_build_lib.Die('build_target.name is required.')
 
-  image_types = set()
   # Build the base image if no images provided.
   to_build = input_proto.image_types or [_BASE_ID]
-  for current in to_build:
-    if current not in _IMAGE_MAPPING:
-      # Not expected, but at least it will be obvious if this comes up.
-      cros_build_lib.Die(
-          "The service's known image types do not match those in image.proto. "
-          'Unknown Enum ID: %s' % current)
 
-    image_types.add(_IMAGE_MAPPING[current])
-
-  enable_rootfs_verification = not input_proto.disable_rootfs_verification
-  version = input_proto.version or None
-  disk_layout = input_proto.disk_layout or None
-  builder_path = input_proto.builder_path or None
-  build_config = image.BuildConfig(
-      enable_rootfs_verification=enable_rootfs_verification, replace=True,
-      version=version, disk_layout=disk_layout, builder_path=builder_path,
-  )
+  image_types, vm_types = _ParseImagesToCreate(to_build)
+  build_config = _ParseCreateBuildConfig(input_proto)
 
   # Sorted isn't really necessary here, but it's much easier to test.
   result = image.Build(board=board, images=sorted(list(image_types)),
@@ -85,6 +77,67 @@ def Create(input_proto, output_proto):
         current.version = package.version
 
     return 1
+
+  if not vm_types:
+    # No VMs to build, we can exit now.
+    return 0
+
+  # There can be only one.
+  vm_type = vm_types.pop()
+  is_test = vm_type == _TEST_VM_ID
+  try:
+    vm_path = image.CreateVm(board, is_test=is_test)
+  except image.ImageToVmError as e:
+    cros_build_lib.Die(e.message)
+
+  new_image = output_proto.images.add()
+  new_image.path = vm_path
+  new_image.type = vm_type
+  new_image.build_target.name = board
+
+
+def _ParseImagesToCreate(to_build):
+  """Helper function to parse the image types to build.
+
+  This function exists just to clean up the Create function.
+
+  Args:
+    to_build (list[int]): The image type list.
+
+  Returns:
+    (set, set): The image and vm types, respectively, that need to be built.
+  """
+  image_types = set()
+  vm_types = set()
+  for current in to_build:
+    if current in _IMAGE_MAPPING:
+      image_types.add(_IMAGE_MAPPING[current])
+    elif current in _VM_IMAGE_MAPPING:
+      vm_types.add(current)
+      # Make sure we build the image required to build the VM.
+      image_types.add(_VM_IMAGE_MAPPING[current])
+    else:
+      # Not expected, but at least it will be obvious if this comes up.
+      cros_build_lib.Die(
+          "The service's known image types do not match those in image.proto. "
+          'Unknown Enum ID: %s' % current)
+
+  if len(vm_types) > 1:
+    cros_build_lib.Die('Cannot create more than one VM.')
+
+  return image_types, vm_types
+
+
+def _ParseCreateBuildConfig(input_proto):
+  """Helper to parse the image build config for Create."""
+  enable_rootfs_verification = not input_proto.disable_rootfs_verification
+  version = input_proto.version or None
+  disk_layout = input_proto.disk_layout or None
+  builder_path = input_proto.builder_path or None
+  return image.BuildConfig(
+      enable_rootfs_verification=enable_rootfs_verification, replace=True,
+      version=version, disk_layout=disk_layout, builder_path=builder_path,
+  )
 
 
 def _PopulateBuiltImages(board, image_types, output_proto):

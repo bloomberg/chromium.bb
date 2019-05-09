@@ -13,8 +13,9 @@ from __future__ import print_function
 import os
 
 from chromite.api.controller import controller_util
-from chromite.cbuildbot import commands
 from chromite.api.gen.chromite.api import test_pb2
+from chromite.api.gen.chromiumos import common_pb2
+from chromite.cbuildbot import commands
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import failures_lib
@@ -141,9 +142,14 @@ def VmTest(input_proto, _output_proto):
     cros_build_lib.Die('build_target is required')
   build_target = input_proto.build_target
 
-  if not input_proto.HasField('vm_image'):
-    cros_build_lib.Die('vm_image is required')
   vm_image = input_proto.vm_image
+  test_vm_image = input_proto.test_vm_image
+  if not vm_image.path and not test_vm_image.path:
+    cros_build_lib.Die('vm_image or test_vm_image is required.')
+  if test_vm_image.path:
+    if test_vm_image.type != common_pb2.TEST_VM:
+      cros_build_lib.Die('Must provide a test VM image.')
+    vm_image = test_vm_image
 
   test_harness = input_proto.test_harness
   if test_harness == test_pb2.VmTestRequest.UNSPECIFIED:
