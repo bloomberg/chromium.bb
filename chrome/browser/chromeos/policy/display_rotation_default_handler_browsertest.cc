@@ -259,9 +259,7 @@ class DisplayRotationBootTest
     : public chromeos::MixinBasedInProcessBrowserTest,
       public testing::WithParamInterface<display::Display::Rotation> {
  protected:
-  DisplayRotationBootTest() {
-    device_state_.set_skip_initial_policy_setup(true);
-  }
+  DisplayRotationBootTest() = default;
   ~DisplayRotationBootTest() override = default;
 
   void SetUpInProcessBrowserTestFixture() override {

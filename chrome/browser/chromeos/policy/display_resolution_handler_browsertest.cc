@@ -382,9 +382,7 @@ class DisplayResolutionBootTest
     : public chromeos::MixinBasedInProcessBrowserTest,
       public testing::WithParamInterface<PolicyValue> {
  protected:
-  DisplayResolutionBootTest() {
-    device_state_.set_skip_initial_policy_setup(true);
-  }
+  DisplayResolutionBootTest() = default;
   ~DisplayResolutionBootTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

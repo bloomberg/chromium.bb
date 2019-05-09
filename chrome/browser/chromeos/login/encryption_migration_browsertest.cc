@@ -92,7 +92,7 @@ class EncryptionMigrationTest : public MixinBasedInProcessBrowserTest {
 
   void SetUpEncryptionMigrationActionPolicy(
       arc::policy_util::EcryptfsMigrationAction action) {
-    std::unique_ptr<ScopedUserPolicyUpdate> updater =
+    std::unique_ptr<UserPolicyMixin::ScopedPolicyUpdate> updater =
         user_policy_mixin_.RequestCachedPolicyUpdate();
     updater->policy_payload()->mutable_ecryptfsmigrationstrategy()->set_value(
         static_cast<int>(action));

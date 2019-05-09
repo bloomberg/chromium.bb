@@ -21,6 +21,15 @@
 
 namespace chromeos {
 
+UserPolicyMixin::ScopedPolicyUpdate::ScopedPolicyUpdate(
+    policy::UserPolicyBuilder* policy_builder,
+    base::OnceClosure callback)
+    : policy_builder_(policy_builder), callback_(std::move(callback)) {}
+
+UserPolicyMixin::ScopedPolicyUpdate::~ScopedPolicyUpdate() {
+  std::move(callback_).Run();
+}
+
 UserPolicyMixin::UserPolicyMixin(InProcessBrowserTestMixinHost* mixin_host,
                                  const AccountId& account_id)
     : InProcessBrowserTestMixin(mixin_host), account_id_(account_id) {}
@@ -41,9 +50,9 @@ void UserPolicyMixin::SetUpInProcessBrowserTestFixture() {
     SetUpCachedPolicy();
 }
 
-std::unique_ptr<ScopedUserPolicyUpdate>
+std::unique_ptr<UserPolicyMixin::ScopedPolicyUpdate>
 UserPolicyMixin::RequestCachedPolicyUpdate() {
-  return std::make_unique<ScopedUserPolicyUpdate>(
+  return std::make_unique<ScopedPolicyUpdate>(
       &cached_user_policy_builder_,
       base::BindOnce(&UserPolicyMixin::SetUpCachedPolicy,
                      weak_factory_.GetWeakPtr()));

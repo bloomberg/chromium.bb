@@ -185,7 +185,7 @@ class AutoEnrollmentNoStateKeys : public AutoEnrollmentWithStatistics {
   // AutoEnrollmentWithStatistics:
   void SetUpInProcessBrowserTestFixture() override {
     AutoEnrollmentWithStatistics::SetUpInProcessBrowserTestFixture();
-    // Session manager client is initialized by DeviceStateMixin.
+    SessionManagerClient::InitializeFakeInMemory();
     FakeSessionManagerClient::Get()->set_force_state_keys_missing(true);
   }
 

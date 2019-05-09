@@ -63,6 +63,14 @@ DevicePolicyCrosBrowserTest::DevicePolicyCrosBrowserTest()
 
 DevicePolicyCrosBrowserTest::~DevicePolicyCrosBrowserTest() = default;
 
+void DevicePolicyCrosBrowserTest::SetUp() {
+  // Set some fake state keys to make surethey are not empty.
+  std::vector<std::string> state_keys;
+  state_keys.push_back("1");
+  fake_session_manager_client_->set_server_backed_state_keys(state_keys);
+  chromeos::MixinBasedInProcessBrowserTest::SetUp();
+}
+
 void DevicePolicyCrosBrowserTest::RefreshDevicePolicy() {
   // Reset the key to its original state.
   device_policy()->SetDefaultSigningKey();

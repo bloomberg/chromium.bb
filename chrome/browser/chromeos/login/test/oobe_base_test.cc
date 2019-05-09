@@ -62,19 +62,12 @@ void OobeBaseTest::SetUpCommandLine(base::CommandLine* command_line) {
   MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
 }
 
-void OobeBaseTest::CreatedBrowserMainParts(
-    content::BrowserMainParts* browser_main_parts) {
-  // If the test initially shows views login screen, this notification might
-  // come before SetUpOnMainThread(), so the observer has to be set up early.
+void OobeBaseTest::SetUpOnMainThread() {
+  host_resolver()->AddRule("*", "127.0.0.1");
+
   login_screen_load_observer_.reset(new content::WindowedNotificationObserver(
       chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
       content::NotificationService::AllSources()));
-
-  MixinBasedInProcessBrowserTest::CreatedBrowserMainParts(browser_main_parts);
-}
-
-void OobeBaseTest::SetUpOnMainThread() {
-  host_resolver()->AddRule("*", "127.0.0.1");
 
   test::UserSessionManagerTestApi session_manager_test_api(
       UserSessionManager::GetInstance());

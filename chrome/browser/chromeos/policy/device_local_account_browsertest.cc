@@ -13,7 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/system/session/logout_confirmation_controller.h"
 #include "ash/system/session/logout_confirmation_dialog.h"
@@ -50,7 +49,6 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
-#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
@@ -86,7 +84,6 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
@@ -472,10 +469,6 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     command_line->AppendSwitch(chromeos::switches::kLoginManager);
     command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
-
-    // LoginDisplayHostMojo does not support dynamic device policy changes (see
-    // https://crbug.com/956456).
-    command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -516,7 +509,10 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
       run_loop.Run();
 
     // Skip to the login screen.
-    chromeos::OobeScreenWaiter(chromeos::GaiaView::kScreenId).Wait();
+    chromeos::WizardController* wizard_controller =
+        chromeos::WizardController::default_controller();
+    ASSERT_TRUE(wizard_controller);
+    wizard_controller->SkipToLoginForTesting(LoginScreenContext());
 
     chromeos::test::UserSessionManagerTestApi session_manager_test_api(
         chromeos::UserSessionManager::GetInstance());

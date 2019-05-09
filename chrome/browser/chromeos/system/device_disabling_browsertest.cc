@@ -17,6 +17,8 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/policy/device_policy_builder.h"
+#include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/chromeos/login/device_disabled_screen_handler.h"
@@ -73,6 +75,7 @@ class DeviceDisablingTest
 
  protected:
   // OobeBaseTest:
+  void SetUpInProcessBrowserTestFixture() override;
   void SetUpOnMainThread() override;
 
   // NetworkStateInformer::NetworkStateInformerObserver:
@@ -82,6 +85,8 @@ class DeviceDisablingTest
   NetworkPortalDetectorMixin network_portal_detector_{&mixin_host_};
 
  private:
+  policy::DevicePolicyCrosTestHelper test_helper_;
+
   chromeos::DeviceStateMixin device_state_{
       &mixin_host_,
       chromeos::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
@@ -92,10 +97,11 @@ class DeviceDisablingTest
 
 void DeviceDisablingTest::SetDeviceDisabledPolicy() {
   // Prepare a policy fetch response that indicates the device is disabled.
-  std::unique_ptr<ScopedDevicePolicyUpdate> policy_update =
-      device_state_.RequestDevicePolicyUpdate();
-  policy_update->policy_data()->mutable_device_state()->set_device_mode(
-      enterprise_management::DeviceState::DEVICE_MODE_DISABLED);
+  test_helper_.device_policy()->policy_data().mutable_device_state()->
+      set_device_mode(enterprise_management::DeviceState::DEVICE_MODE_DISABLED);
+  test_helper_.device_policy()->Build();
+  FakeSessionManagerClient::Get()->set_device_policy(
+      test_helper_.device_policy()->GetBlob());
 }
 
 void DeviceDisablingTest::MarkDisabledAndWaitForPolicyFetch() {
@@ -121,6 +127,13 @@ std::string DeviceDisablingTest::GetCurrentScreenName(
     ADD_FAILURE();
   }
   return screen_name;
+}
+
+void DeviceDisablingTest::SetUpInProcessBrowserTestFixture() {
+  // Override FakeSessionManagerClient. This will be shut down by the browser.
+  chromeos::SessionManagerClient::InitializeFakeInMemory();
+
+  OobeBaseTest::SetUpInProcessBrowserTestFixture();
 }
 
 void DeviceDisablingTest::SetUpOnMainThread() {
@@ -159,6 +172,9 @@ IN_PROC_BROWSER_TEST_F(DeviceDisablingTest, DisableWithEphemeralUsers) {
   connect_run_loop.Run();
 
   // Skip to the login screen.
+  WizardController* wizard_controller = WizardController::default_controller();
+  ASSERT_TRUE(wizard_controller);
+  wizard_controller->SkipToLoginForTesting(LoginScreenContext());
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
 
   // Mark the device as disabled and wait until cros settings update.
