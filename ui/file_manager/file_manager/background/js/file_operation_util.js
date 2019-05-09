@@ -133,6 +133,14 @@ fileOperationUtil.resolveRecursively_ =
         maybeInvokeCallback();
       };
 
+      // If this is recursing through a very large directory structure (1000's
+      // of files), this will flood the browser process with IPC because each
+      // getEntryMetadata call causes an IPC to the browser. This can cause the
+      // browser to become unresponsive, and may even be killed by a watchdog
+      // timer. To prevent this, limit the number of concurrent getEntryMetadata
+      // calls to a reasonable level.
+      const metadataFetchQueue = new AsyncUtil.ConcurrentQueue(64);
+
       const process = entry => {
         numRunningTasks++;
         result.push(entry);
@@ -162,11 +170,17 @@ fileOperationUtil.resolveRecursively_ =
           }, onError);
         } else {
           // For a file, annotate the file size.
-          metadataProxy.getEntryMetadata(entry).then(metadata => {
-            entry.size = metadata.size;
-            --numRunningTasks;
-            maybeInvokeCallback();
-          }, onError);
+          metadataFetchQueue.run(done => {
+            metadataProxy.getEntryMetadata(entry)
+                .then(
+                    metadata => {
+                      entry.size = metadata.size;
+                      --numRunningTasks;
+                      maybeInvokeCallback();
+                    },
+                    onError)
+                .finally(done);
+          });
         }
       };
 
