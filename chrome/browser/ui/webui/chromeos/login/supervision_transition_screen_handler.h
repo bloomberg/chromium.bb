@@ -60,6 +60,8 @@ class SupervisionTransitionScreenHandler
   void Show() override;
   void Hide() override;
 
+  base::OneShotTimer* GetTimerForTesting();
+
  private:
   // BaseScreenHandler:
   void Initialize() override;

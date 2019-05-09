@@ -112,6 +112,10 @@ void SupervisionTransitionScreenHandler::Show() {
 
 void SupervisionTransitionScreenHandler::Hide() {}
 
+base::OneShotTimer* SupervisionTransitionScreenHandler::GetTimerForTesting() {
+  return &timer_;
+}
+
 void SupervisionTransitionScreenHandler::Initialize() {
   profile_ = ProfileManager::GetPrimaryUserProfile();
 

@@ -2179,8 +2179,6 @@ static_library("test_support") {
     "login/screens/mock_error_screen.h",
     "login/screens/mock_network_screen.cc",
     "login/screens/mock_network_screen.h",
-    "login/screens/mock_supervision_transition_screen.cc",
-    "login/screens/mock_supervision_transition_screen.h",
     "login/screens/mock_update_screen.cc",
     "login/screens/mock_update_screen.h",
     "login/screens/mock_welcome_screen.cc",

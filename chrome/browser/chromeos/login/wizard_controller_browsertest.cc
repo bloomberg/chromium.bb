@@ -41,7 +41,6 @@
 #include "chrome/browser/chromeos/login/screens/mock_enable_debugging_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_eula_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_network_screen.h"
-#include "chrome/browser/chromeos/login/screens/mock_supervision_transition_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_update_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_welcome_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_wrong_hwid_screen.h"
@@ -485,73 +484,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerTest, VolumeIsAdjustedForChromeVox) {
   ASSERT_FALSE(cras->IsOutputMuted());
   ASSERT_EQ(WizardController::kMinAudibleOutputVolumePercent,
             cras->GetOutputVolumePercent());
-}
-
-class WizardControllerSupervisionTransitionOobeTest
-    : public WizardControllerTest {
- protected:
-  WizardControllerSupervisionTransitionOobeTest() = default;
-
-  // WizardControllerTest:
-  void SetUpOnMainThread() override {
-    WizardControllerTest::SetUpOnMainThread();
-    // Setup existing user session and profile.
-    const AccountId test_account_id_ =
-        AccountId::FromUserEmailGaiaId("test@gmail.com", "123456");
-    session_manager::SessionManager::Get()->CreateSession(
-        test_account_id_, test_account_id_.GetUserEmail(),
-        /* is_child= */ false);
-    ProfileHelper::Get()->GetProfileByUserIdHashForTest(
-        test_account_id_.GetUserEmail());
-    // Pretend OOBE was complete.
-    StartupUtils::MarkOobeCompleted();
-
-    official_build_override_ = WizardController::ForceOfficialBuildForTesting();
-
-    mock_supervision_transition_screen_view_ =
-        std::make_unique<MockSupervisionTransitionScreenView>();
-    ExpectBindUnbind(mock_supervision_transition_screen_view_.get());
-    mock_supervision_transition_screen_ = MockScreenExpectLifecycle(
-        std::make_unique<MockSupervisionTransitionScreen>(
-            mock_supervision_transition_screen_view_.get(),
-            base::BindRepeating(
-                &WizardController::OnSupervisionTransitionScreenExit,
-                base::Unretained(WizardController::default_controller()))));
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    WizardControllerTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kLoginManager);
-    command_line->AppendSwitchASCII(switches::kLoginProfile,
-                                    TestingProfile::kTestUserProfileDir);
-  }
-
-  MockSupervisionTransitionScreen* mock_supervision_transition_screen_;
-  std::unique_ptr<MockSupervisionTransitionScreenView>
-      mock_supervision_transition_screen_view_;
-  std::unique_ptr<base::AutoReset<bool>> official_build_override_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WizardControllerSupervisionTransitionOobeTest);
-};
-
-// Tests that when supervision transition screen finishes, session
-// proceeds to ACTIVE state.
-IN_PROC_BROWSER_TEST_F(WizardControllerSupervisionTransitionOobeTest,
-                       SupervisionTransitionScreenFinished) {
-  EXPECT_CALL(*mock_supervision_transition_screen_, Show()).Times(1);
-  ASSERT_NE(session_manager::SessionManager::Get()->session_state(),
-            session_manager::SessionState::ACTIVE);
-  // Start from login screen.
-  LoginDisplayHost::default_host()->StartSignInScreen(LoginScreenContext());
-  // Advance to supervision transition screen.
-  WizardController::default_controller()->AdvanceToScreen(
-      SupervisionTransitionScreenView::kScreenId);
-  CheckCurrentScreen(SupervisionTransitionScreenView::kScreenId);
-  mock_supervision_transition_screen_->ExitScreen();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),
-            session_manager::SessionState::ACTIVE);
 }
 
 class TimeZoneTestRunner {
