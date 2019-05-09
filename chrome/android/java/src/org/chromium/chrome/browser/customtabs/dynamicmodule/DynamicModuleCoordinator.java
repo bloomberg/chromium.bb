@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.KeyboardVisibilityDelegate;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -155,7 +156,7 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
     private final DynamicModuleNavigationEventObserver mModuleNavigationEventObserver =
             new DynamicModuleNavigationEventObserver();
     private final DynamicModulePageLoadObserver mPageLoadObserver;
-
+    private final KeyboardVisibilityDelegate.KeyboardVisibilityListener mKeyboardVisibilityListener;
     private final PageCriteria mPageCriteria;
 
     @Inject
@@ -195,6 +196,11 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
         mPageCriteria = url -> (isModuleLoading() || isModuleLoaded()) && isModuleManagedUrl(url);
         closeButtonNavigator.setLandingPageCriteria(mPageCriteria);
         mNavigationController.setBackHandler(this::onBackPressedAsync);
+
+        mKeyboardVisibilityListener = isShowing ->
+            mBottomBarDelegate.get().hideBottomBar(isShowing);
+        KeyboardVisibilityDelegate.getInstance()
+                .addKeyboardVisibilityListener(mKeyboardVisibilityListener);
 
         activityLifecycleDispatcher.register(this);
     }
@@ -495,6 +501,8 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
         unregisterObserver(mHeaderVisibilityObserver);
         unregisterObserver(mCustomRequestHeaderModifier);
         PageLoadMetrics.removeObserver(mPageLoadObserver);
+        KeyboardVisibilityDelegate.getInstance()
+                .removeKeyboardVisibilityListener(mKeyboardVisibilityListener);
     }
 
     private void unregisterObserver(TabObserver observer) {

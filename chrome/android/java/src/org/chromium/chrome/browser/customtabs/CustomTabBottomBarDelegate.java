@@ -247,6 +247,10 @@ public class CustomTabBottomBarDelegate implements FullscreenListener {
         });
     }
 
+    /**
+     * This method remove bottomBarView completely.
+     * If you need to hide it temporarily use {@link #hideBottomBar(boolean)}.
+     */
     private void hideBottomBar() {
         if (mBottomBarView == null) return;
         mBottomBarView.animate().alpha(0f).translationY(mBottomBarView.getHeight())
@@ -348,7 +352,18 @@ public class CustomTabBottomBarDelegate implements FullscreenListener {
         boolean keyboardExtensionHidesBottomBar =
                 mActivity.getManualFillingComponent().getKeyboardExtensionViewResizer().getHeight()
                 > 0;
-        if (keyboardExtensionHidesBottomBar) {
+        hideBottomBar(keyboardExtensionHidesBottomBar);
+    }
+
+    /**
+     * This method temporarily hides bottomBarView.
+     *
+     * If you need to remove bottom bar completely use {@link #hideBottomBar()}.
+     *
+     * @param hidesBottomBar whether bottom bar needs to be hidden.
+     */
+    public void hideBottomBar(boolean hidesBottomBar) {
+        if (hidesBottomBar) {
             getBottomBarView().setVisibility(View.GONE);
             mFullscreenManager.setBottomControlsHeight(0);
         } else {
