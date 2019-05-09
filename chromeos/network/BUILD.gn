@@ -63,8 +63,9 @@ component("network") {
     "managed_network_configuration_handler_impl.h",
     "managed_state.cc",
     "managed_state.h",
-    "network_activation_handler.cc",
     "network_activation_handler.h",
+    "network_activation_handler_impl.cc",
+    "network_activation_handler_impl.h",
     "network_cert_loader.cc",
     "network_cert_loader.h",
     "network_cert_migrator.cc",
@@ -181,6 +182,8 @@ source_set("test_support") {
     "//testing/gtest",
   ]
   sources = [
+    "fake_network_activation_handler.cc",
+    "fake_network_activation_handler.h",
     "fake_network_device_handler.cc",
     "fake_network_device_handler.h",
     "mock_managed_network_configuration_handler.cc",
