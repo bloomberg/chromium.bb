@@ -56,32 +56,37 @@ suite('<app-management-app>', () => {
     assert(app.$$('app-management-search-view'));
   });
 
-  test('App list renders on page change', async (done) => {
+  test('App list renders on page change', (done) => {
     const appList = getAppList();
+    let numApps = 0;
 
-    await fakeHandler.addApp();
-    let numApps = 1;
+    fakeHandler.addApp()
+        .then(() => {
+          numApps = 1;
+          expectEquals(numApps, appList.numChildrenForTesting_);
 
-    expectEquals(numApps, appList.numChildrenForTesting_);
+          // Click app to go to detail page.
+          appList.querySelector('app-management-app-item').click();
+          return PolymerTest.flushTasks();
+        })
+        .then(() => {
+          return fakeHandler.addApp();
+        })
+        .then(() => {
+          numApps++;
 
-    // Click app to go to detail page.
-    appList.querySelector('app-management-app-item').click();
-    await PolymerTest.flushTasks();
+          appList.addEventListener('num-children-for-testing_-changed', () => {
+            expectEquals(numApps, appList.numChildrenForTesting_);
+            done();
+          });
 
-    await fakeHandler.addApp();
-    numApps++;
-
-    appList.addEventListener('num-children-for-testing_-changed', () => {
-      expectEquals(numApps, appList.numChildrenForTesting_);
-      done();
-    });
-
-    // Click back button to go to main page.
-    app.$$('app-management-pwa-permission-view')
-        .$$('app-management-permission-view-header')
-        .$$('#backButton')
-        .click();
-    await PolymerTest.flushTasks();
+          // Click back button to go to main page.
+          app.$$('app-management-pwa-permission-view')
+              .$$('app-management-permission-view-header')
+              .$$('#backButton')
+              .click();
+          PolymerTest.flushTasks();
+        });
   });
 
   test('Search from main page', async () => {

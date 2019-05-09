@@ -177,7 +177,7 @@ suite('<history-synced-device-manager>', function() {
 
     setForeignSessions(sessionList);
 
-    return PolymerTest.flushTasks()
+    PolymerTest.flushTasks()
         .then(function() {
           const cards = getCards(element);
           assertEquals(2, cards.length);
