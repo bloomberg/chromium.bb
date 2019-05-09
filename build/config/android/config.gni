@@ -213,10 +213,10 @@ if (is_android || is_chromeos) {
     # Turns off android lint. Useful for prototyping or for faster local builds.
     disable_android_lint = false
 
-    # Location of aapt2 binary used for app bundles. For now, a more recent version
+    # Location of aapt2 used for app bundles. For now, a more recent version
     # than the one distributed with the Android SDK is required.
-    android_sdk_tools_bundle_aapt2 =
-        "//third_party/android_build_tools/aapt2/aapt2"
+    android_sdk_tools_bundle_aapt2_dir =
+        "//third_party/android_build_tools/aapt2"
 
     # Use R8 for Java optimization rather than ProGuard for all targets. R8 is
     # already used as the default for public targets. This will evenutally be
@@ -369,6 +369,8 @@ if (is_android || is_chromeos) {
   android_objcopy = "${android_tool_prefix}objcopy"
   android_gdbserver =
       "$android_ndk_root/prebuilt/$android_prebuilt_arch/gdbserver/gdbserver"
+
+  android_sdk_tools_bundle_aapt2 = "${android_sdk_tools_bundle_aapt2_dir}/aapt2"
 
   # Toolchain stuff ------------------------------------------------------------
 
