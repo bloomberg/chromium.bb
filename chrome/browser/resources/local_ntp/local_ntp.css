@@ -856,8 +856,10 @@ html[darkmode=true] body:not(.light-chip) #promo > div > img {
 }
 
 #menu-nav-panel {
+  display: inline-block;
   height: 384px;
   left: 0;
+  vertical-align: top;
   width: 192px;
 }
 
@@ -920,12 +922,8 @@ html[dir=rtl] .menu-option {
   user-select: none;
 }
 
-#menu-header {
-  font-size: 16px;
-  height: 80px;
-}
-
 #menu-title {
+  font-size: 16px;
   height: 48px;
   line-height: 48px;
   margin-bottom: 8px;
@@ -957,4 +955,66 @@ html[dir=rtl] .menu-option {
   height: 32px;
   line-height: 32px;
   margin-inline-end: 8px;
+}
+
+#menu-contents {
+  display: inline-block;
+  height: 384px;
+  margin-inline-start: 20px;
+  position: relative;
+  width: 584px;
+}
+
+.menu-panel {
+  height: 100%;
+  left: 0;
+  overflow-y: scroll;
+  position: absolute;
+  top: 0;
+  visibility: hidden;
+  width: 100%;
+}
+
+#backgrounds-menu .bg-sel-tile-bg {
+  border-radius: 4px;
+  height: 176px;
+  margin-bottom: 45px;
+  margin-inline-end: 8px;
+  margin-inline-start: 0;
+  width: 176px;
+}
+
+#backgrounds-menu .bg-sel-tile {
+  background-position: center;
+  border-radius: 4px;
+}
+
+#backgrounds-menu .bg-sel-tile-title {
+  background-color: unset;
+  color: rgb(var(--GG700-rgb));
+  font-size: 13px;
+  height: 30px;
+  margin-bottom: -28px;
+  padding: 8px 0 24px 0;
+}
+
+#backgrounds-default.bg-sel-tile-bg {
+  background-color: white;
+  border: 1px solid black;
+  height: 174px;
+  margin-inline-end: 6px
+  width: 174px;
+}
+
+#backgrounds-upload.bg-sel-tile-bg {
+  background-color: white;
+  border: 1px solid black;
+  height: 174px;
+  margin-inline-end: 6px;
+  vertical-align: top;
+  width: 174px;
+}
+
+.menu-shown {
+  visibility: visible;
 }

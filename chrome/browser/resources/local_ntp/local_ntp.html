@@ -170,27 +170,33 @@
   </dialog>
 
   <dialog id="customization-menu" class="customize-dialog">
-    <div id="menu-header">
-      <div id="menu-title">$i18n{customizeMenuTitle}</div>
-    </div>
+    <div id="menu-title">$i18n{customizeMenuTitle}</div>
     <div id="menu-nav-panel">
-      <div class="menu-option" tabindex="0">
+      <div id="backgrounds-button" class="menu-option" tabindex="0">
         <div class="menu-option-icon-wrapper">
-          <div class="menu-option-icon" id="backgrounds-icon"></div>
+          <div ids="backgrounds-icon" class="menu-option-icon"></div>
         </div>
-        <div class="menu-option-label" id="backgrounds-button">$i18n{backgroundsOption}</div>
+        <div class="menu-option-label">$i18n{backgroundsOption}</div>
       </div>
-      <div class="menu-option" tabindex="0">
+      <div id="shortcuts-button" class="menu-option" tabindex="0">
         <div class="menu-option-icon-wrapper">
-          <div class="menu-option-icon" id="shortcuts-icon"></div>
+          <div ids="shortcuts-icon" class="menu-option-icon"></div>
         </div>
-        <div class="menu-option-label" id="shortcuts-button">$i18n{shortcutsOption}</div>
+        <div class="menu-option-label">$i18n{shortcutsOption}</div>
       </div>
-      <div class="menu-option" tabindex="0">
+      <div id="colors-button" class="menu-option" tabindex="0">
         <div class="menu-option-icon-wrapper">
-          <div class="menu-option-icon" id="colors-icon"></div>
+          <div id="colors-icon" class="menu-option-icon"></div>
         </div>
-        <div class="menu-option-label" id="colors-button">$i18n{colorsOption}</div>
+        <div class="menu-option-label">$i18n{colorsOption}</div>
+      </div>
+    </div>
+    <div id="menu-contents">
+      <div id="backgrounds-menu" class="menu-panel">
+        <div id="backgrounds-upload" class="bg-sel-tile-bg">Upload an image</div>
+        <div id="backgrounds-default" class="bg-sel-tile-bg">
+          <div class="bg-sel-tile-title">Default</div>
+        </div>
       </div>
     </div>
     <div id="menu-footer">

@@ -75,7 +75,10 @@ customBackgrounds.IDS = {
   ATTR2: 'attr2',
   ATTRIBUTIONS: 'custom-bg-attr',
   BACK_CIRCLE: 'bg-sel-back-circle',
+  BACKGROUNDS_BUTTON: 'backgrounds-button',
+  BACKGROUNDS_MENU: 'backgrounds-menu',
   CANCEL: 'bg-sel-footer-cancel',
+  COLORS_BUTTON: 'colors-button',
   CUSTOMIZATION_MENU: 'customization-menu',
   CUSTOM_LINKS_RESTORE_DEFAULT: 'custom-links-restore-default',
   CUSTOM_LINKS_RESTORE_DEFAULT_TEXT: 'custom-links-restore-default-text',
@@ -94,6 +97,7 @@ customBackgrounds.IDS = {
   OPTIONS_TITLE: 'edit-bg-title',
   RESTORE_DEFAULT: 'edit-bg-restore-default',
   RESTORE_DEFAULT_TEXT: 'edit-bg-restore-default-text',
+  SHORTCUTS_BUTTON: 'shortcuts-button',
   UPLOAD_IMAGE: 'edit-bg-upload-image',
   UPLOAD_IMAGE_TEXT: 'edit-bg-upload-image-text',
   TILES: 'bg-sel-tiles',
@@ -119,6 +123,7 @@ customBackgrounds.CLASSES = {
   IMAGE_DIALOG: 'is-img-sel',
   OPTION: 'bg-option',
   OPTION_DISABLED: 'bg-option-disabled',  // The menu option is disabled.
+  MENU_SHOWN: 'menu-shown',
   MOUSE_NAV: 'using-mouse-nav',
   SELECTED_BORDER: 'selected-border',
   SELECTED_CHECK: 'selected-check',
@@ -157,6 +162,11 @@ customBackgrounds.CUSTOM_BACKGROUND_OVERLAY =
 customBackgrounds.delayedHideNotification = -1;
 customBackgrounds.NOTIFICATION_TIMEOUT = 10000;
 
+/* Were the background tiles already created.
+ * @type {bool}
+ */
+customBackgrounds.builtTiles = false;
+
 /* Tile that was selected by the user.
  * @type {HTMLElement}
  */
@@ -188,6 +198,7 @@ customBackgrounds.showErrorNotification = null;
  * @private
  */
 customBackgrounds.hideCustomLinkNotification = null;
+
 
 /**
  * Sets the visibility of the settings menu and individual options depending on
@@ -366,8 +377,16 @@ customBackgrounds.getNextTile = function(deltaX, deltaY, current) {
  *              collection data from.
  */
 customBackgrounds.showCollectionSelectionDialog = function(collectionsSource) {
-  const tileContainer = $(customBackgrounds.IDS.TILES);
-  const menu = $(customBackgrounds.IDS.MENU);
+  const tileContainer = configData.richerPicker ?
+      $(customBackgrounds.IDS.BACKGROUNDS_MENU) :
+      $(customBackgrounds.IDS.TILES);
+  if (configData.richerPicker && customBackgrounds.builtTiles) {
+    return;
+  }
+  customBackgrounds.builtTiles = true;
+  const menu = configData.richerPicker ?
+      $(customBackgrounds.IDS.CUSTOMIZATION_MENU) :
+      $(customBackgrounds.IDS.MENU);
   if (collectionsSource != customBackgrounds.SOURCES.CHROME_BACKGROUNDS) {
     console.log(
         'showCollectionSelectionDialog() called with invalid source=' +
@@ -724,6 +743,12 @@ customBackgrounds.loadChromeBackgrounds = function() {
   collScript.id = 'ntp-collection-loader';
   collScript.src = 'chrome-search://local-ntp/ntp-background-collections.js?' +
       'collection_type=background';
+  collScript.onload = function() {
+    if (configData.richerPicker) {
+      customBackgrounds.showCollectionSelectionDialog(
+          customBackgrounds.SOURCES.CHROME_BACKGROUNDS);
+    }
+  };
   document.body.appendChild(collScript);
 };
 
@@ -796,6 +821,9 @@ customBackgrounds.init = function(
   // Edit gear icon interaction events.
   const editBackgroundInteraction = function() {
     if (configData.richerPicker) {
+      $(customBackgrounds.IDS.BACKGROUNDS_MENU)
+          .classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, true);
+      customBackgrounds.loadChromeBackgrounds();
       $(customBackgrounds.IDS.CUSTOMIZATION_MENU).showModal();
     } else {
       editDialog.showModal();
@@ -1180,6 +1208,21 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
         $('img_tile_0').focus();
       }
     }
+  };
+
+  $(customBackgrounds.IDS.BACKGROUNDS_BUTTON).onclick = function() {
+    $(customBackgrounds.IDS.BACKGROUNDS_MENU)
+        .classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, true);
+  };
+
+  $(customBackgrounds.IDS.SHORTCUTS_BUTTON).onclick = function() {
+    $(customBackgrounds.IDS.BACKGROUNDS_MENU)
+        .classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, false);
+  };
+
+  $(customBackgrounds.IDS.COLORS_BUTTON).onclick = function() {
+    $(customBackgrounds.IDS.BACKGROUNDS_MENU)
+        .classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, false);
   };
 };
 

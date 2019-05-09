@@ -360,9 +360,10 @@ checkCollectionDialog = function() {
   assertTrue(elementIsVisible($('bg-sel-menu')));
   assertTrue($('bg-sel-menu').classList.contains('is-col-sel'));
   assertTrue(
-      document.getElementsByClassName('bg-sel-tile').length == coll.length);
+      $('bg-sel-menu').getElementsByClassName('bg-sel-tile').length ==
+      coll.length);
   assertTrue(
-      document.getElementsByClassName('bg-sel-tile-title').length ==
+      $('bg-sel-menu').getElementsByClassName('bg-sel-tile-title').length ==
       coll.length);
   assertFalse(elementIsVisible($('bg-sel-back')));
   assertTrue(elementIsVisible($('bg-sel-footer-cancel')));
@@ -377,7 +378,8 @@ checkImageDialog = function() {
   assertTrue(elementIsVisible($('bg-sel-menu')));
   assertTrue($('bg-sel-menu').classList.contains('is-img-sel'));
   assertTrue(
-      document.getElementsByClassName('bg-sel-tile').length == collImg.length);
+      $('bg-sel-menu').getElementsByClassName('bg-sel-tile').length ==
+      collImg.length);
   assertTrue(elementIsVisible($('bg-sel-back')));
   assertTrue(elementIsVisible($('bg-sel-footer-cancel')));
   assertTrue(elementIsVisible($('bg-sel-footer-done')));
