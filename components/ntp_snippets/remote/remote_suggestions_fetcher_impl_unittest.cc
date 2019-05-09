@@ -151,9 +151,9 @@ void ParseJson(const std::string& json,
                const SuccessCallback& success_callback,
                const ErrorCallback& error_callback) {
   base::JSONReader json_reader;
-  std::unique_ptr<base::Value> value = json_reader.ReadToValueDeprecated(json);
+  base::Optional<base::Value> value = json_reader.ReadToValue(json);
   if (value) {
-    success_callback.Run(std::move(value));
+    success_callback.Run(std::move(*value));
   } else {
     error_callback.Run(json_reader.GetErrorMessage());
   }

@@ -72,9 +72,7 @@ void ParseJson(const std::string& json,
   base::Optional<base::Value> value = json_reader.ReadToValue(json);
   if (value) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(success_callback,
-                       base::Value::ToUniquePtrValue(std::move(*value))));
+        FROM_HERE, base::BindOnce(success_callback, std::move(*value)));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,

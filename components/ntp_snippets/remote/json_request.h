@@ -59,7 +59,7 @@ class JsonRequest {
   // A client can expect error_details only, if there was any error during the
   // fetching or parsing. In successful cases, it will be an empty string.
   using CompletedCallback =
-      base::OnceCallback<void(std::unique_ptr<base::Value> result,
+      base::OnceCallback<void(base::Value result,
                               FetchResult result_code,
                               const std::string& error_details)>;
 
@@ -153,7 +153,7 @@ class JsonRequest {
   void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
   void ParseJsonResponse();
-  void OnJsonParsed(std::unique_ptr<base::Value> result);
+  void OnJsonParsed(base::Value result);
   void OnJsonError(const std::string& error);
 
   // The loader for downloading the snippets. Only non-null if a load is

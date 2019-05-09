@@ -41,8 +41,7 @@ struct RequestParams {
 };
 
 // Callbacks for JSON parsing to allow injecting platform-dependent code.
-using SuccessCallback =
-    base::Callback<void(std::unique_ptr<base::Value> result)>;
+using SuccessCallback = base::Callback<void(base::Value result)>;
 using ErrorCallback = base::Callback<void(const std::string& error)>;
 using ParseJSONCallback =
     base::Callback<void(const std::string& raw_json_string,

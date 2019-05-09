@@ -174,14 +174,14 @@ void JsonRequest::OnSimpleLoaderComplete(
                            net_error == net::OK ? response_code : net_error);
   if (net_error != net::OK) {
     std::move(request_completed_callback_)
-        .Run(/*result=*/nullptr, FetchResult::URL_REQUEST_STATUS_ERROR,
+        .Run(/*result=*/base::Value(), FetchResult::URL_REQUEST_STATUS_ERROR,
              /*error_details=*/base::StringPrintf(" %d", net_error));
   } else if (response_code / 100 != 2) {
     FetchResult result = response_code == net::HTTP_UNAUTHORIZED
                              ? FetchResult::HTTP_ERROR_UNAUTHORIZED
                              : FetchResult::HTTP_ERROR;
     std::move(request_completed_callback_)
-        .Run(/*result=*/nullptr, result,
+        .Run(/*result=*/base::Value(), result,
              /*error_details=*/base::StringPrintf(" %d", response_code));
   } else {
     last_response_string_ = std::move(*response_body);
@@ -192,7 +192,7 @@ void JsonRequest::OnSimpleLoaderComplete(
   }
 }
 
-void JsonRequest::OnJsonParsed(std::unique_ptr<base::Value> result) {
+void JsonRequest::OnJsonParsed(base::Value result) {
   std::move(request_completed_callback_)
       .Run(std::move(result), FetchResult::SUCCESS,
            /*error_details=*/std::string());
@@ -202,7 +202,7 @@ void JsonRequest::OnJsonError(const std::string& error) {
   LOG(WARNING) << "Received invalid JSON (" << error
                << "): " << last_response_string_;
   std::move(request_completed_callback_)
-      .Run(/*result=*/nullptr, FetchResult::JSON_PARSE_ERROR,
+      .Run(/*result=*/base::Value(), FetchResult::JSON_PARSE_ERROR,
            /*error_details=*/base::StringPrintf(" (error %s)", error.c_str()));
 }
 

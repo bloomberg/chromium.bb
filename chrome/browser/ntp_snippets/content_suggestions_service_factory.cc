@@ -171,7 +171,22 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
   auto suggestions_fetcher = std::make_unique<RemoteSuggestionsFetcherImpl>(
       identity_manager, url_loader_factory, pref_service, language_histogram,
       base::Bind(
-          &data_decoder::SafeJsonParser::Parse,
+          // TODO(crbug.com/959749): Remove this adaptor once SafeJsonParser API
+          // has been updated to pass the base::Value by value.
+          [](service_manager::Connector* connector, const std::string& json,
+             const ntp_snippets::SuccessCallback& success_callback,
+             const ntp_snippets::ErrorCallback& error_callback) {
+            data_decoder::SafeJsonParser::Parse(
+                connector, json,
+                base::Bind(
+                    [](const ntp_snippets::SuccessCallback& callback,
+                       std::unique_ptr<base::Value> value) {
+                      callback.Run(
+                          base::Value::FromUniquePtrValue(std::move(value)));
+                    },
+                    success_callback),
+                error_callback);
+          },
           content::ServiceManagerConnection::GetForProcess()->GetConnector()),
       GetFetchEndpoint(), api_key, user_classifier);
 

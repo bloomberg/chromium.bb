@@ -345,7 +345,7 @@ void RemoteSuggestionsFetcherImpl::JsonRequestDone(
     SnippetsAvailableCallback callback,
     bool is_authenticated,
     std::string access_token,
-    std::unique_ptr<base::Value> result,
+    base::Value result,
     FetchResult status_code,
     const std::string& error_details) {
   DCHECK(request);
@@ -356,14 +356,14 @@ void RemoteSuggestionsFetcherImpl::JsonRequestDone(
 
   UMA_HISTOGRAM_TIMES("NewTabPage.Snippets.FetchTime",
                       request->GetFetchDuration());
-  if (!result) {
+  if (result.is_none()) {
     FetchFinished(OptionalFetchedCategories(), std::move(callback), status_code,
                   error_details, is_authenticated, access_token);
     return;
   }
 
   FetchedCategoriesVector categories;
-  if (!JsonToCategories(*result, &categories, fetch_time)) {
+  if (!JsonToCategories(result, &categories, fetch_time)) {
     LOG(WARNING) << "Received invalid snippets: " << last_fetch_json_;
     FetchFinished(OptionalFetchedCategories(), std::move(callback),
                   FetchResult::INVALID_SNIPPET_CONTENT_ERROR, std::string(),
