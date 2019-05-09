@@ -115,24 +115,13 @@ AsyncUtil.ConcurrentQueue.prototype.isCancelled = function() {
  * @private
  */
 AsyncUtil.ConcurrentQueue.prototype.continue_ = function() {
-  if (this.addedTasks_.length === 0) {
-    return;
+  while (this.addedTasks_.length > 0 &&
+         this.pendingTasks_.length < this.limit_) {
+    // Run the next closure.
+    const closure = this.addedTasks_.shift();
+    this.pendingTasks_.push(closure);
+    closure(this.onTaskFinished_.bind(this, closure));
   }
-
-  console.assert(
-      this.pendingTasks_.length <= this.limit_,
-      'Too many jobs are running (' + this.pendingTasks_.length + ')');
-
-  if (this.pendingTasks_.length >= this.limit_) {
-    return;
-  }
-
-  // Run the next closure.
-  const closure = this.addedTasks_.shift();
-  this.pendingTasks_.push(closure);
-  closure(this.onTaskFinished_.bind(this, closure));
-
-  this.continue_();
 };
 
 /**
