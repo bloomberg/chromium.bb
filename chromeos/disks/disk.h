@@ -75,9 +75,11 @@ class COMPONENT_EXPORT(CHROMEOS_DISKS) Disk {
   // Returns the file system uuid string.
   const std::string& fs_uuid() const { return fs_uuid_; }
 
-  // Path of the system device this device's block is a part of.
+  // Path of the storage device this device's block is a part of.
   // (e.g. /sys/devices/pci0000:00/.../8:0:0:0/)
-  const std::string& system_path_prefix() const { return system_path_prefix_; }
+  const std::string& storage_device_path() const {
+    return storage_device_path_;
+  }
 
   // Device type.
   DeviceType device_type() const { return device_type_; }
@@ -150,7 +152,7 @@ class COMPONENT_EXPORT(CHROMEOS_DISKS) Disk {
   std::string product_id_;
   std::string product_name_;
   std::string fs_uuid_;
-  std::string system_path_prefix_;
+  std::string storage_device_path_;
   DeviceType device_type_ = DEVICE_TYPE_UNKNOWN;
   uint64_t total_size_in_bytes_ = 0;
   bool is_parent_ = false;
@@ -182,7 +184,7 @@ class COMPONENT_EXPORT(CHROMEOS_DISKS) Disk::Builder {
   Builder& SetProductId(const std::string& product_id);
   Builder& SetProductName(const std::string& product_name);
   Builder& SetFileSystemUUID(const std::string& fs_uuid);
-  Builder& SetSystemPathPrefix(const std::string& system_path_prefix);
+  Builder& SetStorageDevicePath(const std::string& storage_device_path_);
   Builder& SetDeviceType(DeviceType device_type);
   Builder& SetSizeInBytes(uint64_t total_size_in_bytes);
   Builder& SetIsParent(bool is_parent);

@@ -23,7 +23,7 @@ namespace disks {
 namespace {
 
 const char kTestSystemPath[] = "/this/system/path";
-const char kTestSystemPathPrefix[] = "/this/system";
+const char kTestStorageDevicePath[] = "/this/system";
 const char kTestDevicePath[] = "/this/device/path";
 const char kTestMountPath[] = "/media/foofoo";
 const char kTestFilePath[] = "/this/file/path";
@@ -47,7 +47,7 @@ std::unique_ptr<Disk::Builder> MakeDiskBuilder() {
       .SetProductId(kTestProductId)
       .SetProductName(kTestProductName)
       .SetFileSystemUUID(kTestUuid)
-      .SetSystemPathPrefix(kTestSystemPathPrefix)
+      .SetStorageDevicePath(kTestStorageDevicePath)
       .SetHasMedia(true)
       .SetOnRemovableDevice(true)
       .SetFileSystemType(kTestFileSystemType);

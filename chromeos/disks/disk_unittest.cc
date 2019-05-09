@@ -133,7 +133,7 @@ TEST(DiskTest, ConstructFromDiskInfo) {
   EXPECT_EQ(kIdUuid, disk.fs_uuid());
   EXPECT_EQ(kDeviceSize, disk.total_size_in_bytes());
   EXPECT_EQ(DEVICE_TYPE_SD, disk.device_type());
-  EXPECT_EQ(kStorageDevicePath, disk.system_path_prefix());
+  EXPECT_EQ(kStorageDevicePath, disk.storage_device_path());
   EXPECT_EQ(kBaseMountpath, disk.base_mount_path());
   EXPECT_FALSE(disk.is_parent());
   EXPECT_FALSE(disk.is_read_only());

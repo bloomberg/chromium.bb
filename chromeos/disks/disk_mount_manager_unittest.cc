@@ -51,7 +51,7 @@ struct TestDiskInfo {
   const char* product_id;
   const char* product_name;
   const char* fs_uuid;
-  const char* system_path_prefix;
+  const char* storage_device_path;
   chromeos::DeviceType device_type;
   uint64_t size_in_bytes;
   bool is_read_only;
@@ -546,7 +546,7 @@ class DiskMountManagerTest : public testing::Test {
             .SetProductId(disk.product_id)
             .SetProductName(disk.product_name)
             .SetFileSystemUUID(disk.fs_uuid)
-            .SetSystemPathPrefix(disk.system_path_prefix)
+            .SetStorageDevicePath(disk.storage_device_path)
             .SetDeviceType(disk.device_type)
             .SetSizeInBytes(disk.size_in_bytes)
             .SetIsReadOnlyHardware(disk.is_read_only)

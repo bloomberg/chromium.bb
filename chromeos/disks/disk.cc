@@ -30,7 +30,7 @@ Disk::Disk(const DiskInfo& disk_info,
       product_id_(disk_info.product_id()),
       product_name_(disk_info.product_name()),
       fs_uuid_(disk_info.uuid()),
-      system_path_prefix_(disk_info.storage_device_path()),
+      storage_device_path_(disk_info.storage_device_path()),
       device_type_(disk_info.device_type()),
       total_size_in_bytes_(disk_info.total_size_in_bytes()),
       is_parent_(disk_info.is_drive()),
@@ -123,9 +123,9 @@ Disk::Builder& Disk::Builder::SetFileSystemUUID(const std::string& fs_uuid) {
   return *this;
 }
 
-Disk::Builder& Disk::Builder::SetSystemPathPrefix(
-    const std::string& system_path_prefix) {
-  disk_->system_path_prefix_ = system_path_prefix;
+Disk::Builder& Disk::Builder::SetStorageDevicePath(
+    const std::string& storage_device_path) {
+  disk_->storage_device_path_ = storage_device_path;
   return *this;
 }
 

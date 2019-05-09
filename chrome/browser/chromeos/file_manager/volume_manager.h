@@ -147,8 +147,8 @@ class Volume : public base::SupportsWeakPtr<Volume> {
     return mount_condition_;
   }
   MountContext mount_context() const { return mount_context_; }
-  const base::FilePath& system_path_prefix() const {
-    return system_path_prefix_;
+  const base::FilePath& storage_device_path() const {
+    return storage_device_path_;
   }
   const std::string& volume_label() const { return volume_label_; }
   bool is_parent() const { return is_parent_; }
@@ -215,9 +215,9 @@ class Volume : public base::SupportsWeakPtr<Volume> {
   // interaction or not.
   MountContext mount_context_;
 
-  // Path of the system device this device's block is a part of.
+  // Path of the storage device this device's block is a part of.
   // (e.g. /sys/devices/pci0000:00/.../8:0:0:0/)
-  base::FilePath system_path_prefix_;
+  base::FilePath storage_device_path_;
 
   // Label for the volume if the volume is either removable or a provided
   // file system. In case of removables, if disk is a parent, then its label,

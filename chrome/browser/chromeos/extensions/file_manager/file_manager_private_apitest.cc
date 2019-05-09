@@ -62,7 +62,7 @@ struct TestDiskInfo {
   const char* product_id;
   const char* product_name;
   const char* fs_uuid;
-  const char* system_path_prefix;
+  const char* storage_device_path;
   chromeos::DeviceType device_type;
   uint64_t size_in_bytes;
   bool is_parent;
@@ -95,7 +95,7 @@ TestDiskInfo kTestDisks[] = {{"system_path1",
                               "abcd",
                               "product1",
                               "FFFF-FFFF",
-                              "system_path_prefix1",
+                              "storage_device_path1",
                               chromeos::DEVICE_TYPE_USB,
                               1073741824,
                               false,
@@ -116,7 +116,7 @@ TestDiskInfo kTestDisks[] = {{"system_path1",
                               "cdef",
                               "product2",
                               "0FFF-FFFF",
-                              "system_path_prefix2",
+                              "storage_device_path2",
                               chromeos::DEVICE_TYPE_MOBILE,
                               47723,
                               true,
@@ -137,7 +137,7 @@ TestDiskInfo kTestDisks[] = {{"system_path1",
                               "ef01",
                               "product3",
                               "00FF-FFFF",
-                              "system_path_prefix3",
+                              "storage_device_path3",
                               chromeos::DEVICE_TYPE_OPTICAL_DISC,
                               0,
                               true,
@@ -303,8 +303,8 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
                 .SetProductId(kTestDisks[disk_info_index].product_id)
                 .SetProductName(kTestDisks[disk_info_index].product_name)
                 .SetFileSystemUUID(kTestDisks[disk_info_index].fs_uuid)
-                .SetSystemPathPrefix(
-                    kTestDisks[disk_info_index].system_path_prefix)
+                .SetStorageDevicePath(
+                    kTestDisks[disk_info_index].storage_device_path)
                 .SetDeviceType(kTestDisks[disk_info_index].device_type)
                 .SetSizeInBytes(kTestDisks[disk_info_index].size_in_bytes)
                 .SetIsParent(kTestDisks[disk_info_index].is_parent)
