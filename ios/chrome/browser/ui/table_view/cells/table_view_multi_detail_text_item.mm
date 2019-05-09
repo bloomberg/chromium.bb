@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/cells/autofill_data_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_multi_detail_text_item.h"
 
-#import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -18,19 +17,19 @@ const CGFloat kDetailTextWidthMultiplier = 0.5;
 const CGFloat kCompressionResistanceAdditionalPriority = 1;
 }  // namespace
 
-@implementation AutofillDataItem
+@implementation TableViewMultiDetailTextItem
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
   if (self) {
-    self.cellClass = [AutofillDataCell class];
+    self.cellClass = [TableViewMultiDetailTextCell class];
   }
   return self;
 }
 
 #pragma mark - TableViewItem
 
-- (void)configureCell:(AutofillDataCell*)cell
+- (void)configureCell:(TableViewMultiDetailTextCell*)cell
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:cell withStyler:styler];
   cell.textLabel.text = self.text;
@@ -40,13 +39,13 @@ const CGFloat kCompressionResistanceAdditionalPriority = 1;
 
 @end
 
-#pragma mark - AutofillDataCell
+#pragma mark - TableViewMultiDetailTextCell
 
-@interface AutofillDataCell ()
+@interface TableViewMultiDetailTextCell ()
 @property(nonatomic, strong) UIStackView* mainLabelsContainer;
 @end
 
-@implementation AutofillDataCell
+@implementation TableViewMultiDetailTextCell
 
 @synthesize textLabel = _textLabel;
 
@@ -98,12 +97,12 @@ const CGFloat kCompressionResistanceAdditionalPriority = 1;
       [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
   _leadingDetailTextLabel.adjustsFontForContentSizeCategory = YES;
   _leadingDetailTextLabel.textColor =
-      UIColorFromRGB(kSettingsCellsDetailTextColor);
+      UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
 
   _trailingDetailTextLabel.font =
       [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
   _trailingDetailTextLabel.textColor =
-      UIColorFromRGB(kSettingsCellsDetailTextColor);
+      UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
 }
 
 // Sets constraints on subviews.

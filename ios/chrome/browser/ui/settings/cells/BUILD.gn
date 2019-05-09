@@ -6,8 +6,6 @@ source_set("cells") {
   sources = [
     "account_sign_in_item.h",
     "account_sign_in_item.mm",
-    "autofill_data_item.h",
-    "autofill_data_item.mm",
     "byo_textfield_item.h",
     "byo_textfield_item.mm",
     "clear_browsing_data_constants.h",
@@ -78,7 +76,6 @@ source_set("public") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "autofill_data_item_unittest.mm",
     "byo_textfield_item_unittest.mm",
     "clear_browsing_data_item_unittest.mm",
     "copied_to_chrome_item_unittest.mm",

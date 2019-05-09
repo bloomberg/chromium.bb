@@ -33,6 +33,7 @@ source_set("autofill") {
     "//ios/chrome/browser/ui/autofill/cells",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/settings:settings_root",
+    "//ios/chrome/browser/ui/settings/autofill/cells",
     "//ios/chrome/browser/ui/settings/cells",
     "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/table_view/cells",
