@@ -18,13 +18,13 @@
 #include "base/macros.h"
 #include "base/memory/free_deleter.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/win/registry.h"
@@ -76,11 +76,11 @@ class RegistryReader {
     key_.Open(HKEY_LOCAL_MACHINE, key, KEY_QUERY_VALUE);
   }
 
-  ~RegistryReader() { DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_); }
+  ~RegistryReader() { DCHECK_CALLED_ON_VALID_THREAD(thread_checker_); }
 
   bool ReadString(const base::char16* name,
                   DnsSystemSettings::RegString* out) const {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     out->set = false;
     if (!key_.Valid()) {
       // Assume that if the |key_| is invalid then the key is missing.
@@ -96,7 +96,7 @@ class RegistryReader {
 
   bool ReadDword(const base::char16* name,
                  DnsSystemSettings::RegDword* out) const {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     out->set = false;
     if (!key_.Valid()) {
       // Assume that if the |key_| is invalid then the key is missing.
@@ -113,7 +113,7 @@ class RegistryReader {
  private:
   base::win::RegKey key_;
 
-  SEQUENCE_CHECKER(sequence_checker_);
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(RegistryReader);
 };
@@ -275,10 +275,10 @@ class RegistryWatcher {
   typedef base::Callback<void(bool succeeded)> CallbackType;
   RegistryWatcher() {}
 
-  ~RegistryWatcher() { DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_); }
+  ~RegistryWatcher() { DCHECK_CALLED_ON_VALID_THREAD(thread_checker_); }
 
   bool Watch(const base::char16* key, const CallbackType& callback) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     DCHECK(!callback.is_null());
     DCHECK(callback_.is_null());
     callback_ = callback;
@@ -290,7 +290,7 @@ class RegistryWatcher {
   }
 
   void OnObjectSignaled() {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     DCHECK(!callback_.is_null());
     if (key_.StartWatching(base::Bind(&RegistryWatcher::OnObjectSignaled,
                                       base::Unretained(this)))) {
@@ -305,7 +305,7 @@ class RegistryWatcher {
   CallbackType callback_;
   base::win::RegKey key_;
 
-  SEQUENCE_CHECKER(sequence_checker_);
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(RegistryWatcher);
 };
@@ -564,7 +564,7 @@ ConfigParseWinResult ConvertSettingsToDnsConfig(
   return result;
 }
 
-// Watches registry and HOSTS file for changes. Must live on a sequence which
+// Watches registry and HOSTS file for changes. Must live on a thread which
 // allows IO.
 class DnsConfigServiceWin::Watcher
     : public NetworkChangeNotifier::IPAddressObserver {
@@ -729,16 +729,13 @@ class DnsConfigServiceWin::HostsReader : public SerialWorker {
   DISALLOW_COPY_AND_ASSIGN(HostsReader);
 };
 
-DnsConfigServiceWin::DnsConfigServiceWin() {
-  // Allow constructing on one sequence and living on another.
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-}
+DnsConfigServiceWin::DnsConfigServiceWin()
+    : config_reader_(new ConfigReader(this)),
+      hosts_reader_(new HostsReader(this)) {}
 
 DnsConfigServiceWin::~DnsConfigServiceWin() {
-  if (config_reader_)
-    config_reader_->Cancel();
-  if (hosts_reader_)
-    hosts_reader_->Cancel();
+  config_reader_->Cancel();
+  hosts_reader_->Cancel();
 }
 
 void DnsConfigServiceWin::ReadNow() {
@@ -747,10 +744,6 @@ void DnsConfigServiceWin::ReadNow() {
 }
 
 bool DnsConfigServiceWin::StartWatching() {
-  if (!config_reader_)
-    config_reader_ = base::MakeRefCounted<ConfigReader>(this);
-  if (!hosts_reader_)
-    hosts_reader_ = base::MakeRefCounted<HostsReader>(this);
   // TODO(szym): re-start watcher if that makes sense. http://crbug.com/116139
   watcher_.reset(new Watcher(this));
   UMA_HISTOGRAM_ENUMERATION("AsyncDNS.WatchStatus", DNS_CONFIG_WATCH_STARTED,

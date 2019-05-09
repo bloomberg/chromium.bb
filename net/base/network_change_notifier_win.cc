@@ -12,10 +12,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
-#include "base/task/task_traits.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -33,18 +30,32 @@ const int kWatchForAddressChangeRetryIntervalMs = 500;
 
 }  // namespace
 
+// Thread on which we can run DnsConfigService, which requires AssertIOAllowed
+// to open registry keys and to handle FilePathWatcher updates.
+class NetworkChangeNotifierWin::DnsConfigServiceThread : public base::Thread {
+ public:
+  DnsConfigServiceThread() : base::Thread("DnsConfigService") {}
+
+  ~DnsConfigServiceThread() override { Stop(); }
+
+  void Init() override {
+    service_ = DnsConfigService::CreateSystemService();
+    service_->WatchConfig(base::Bind(&NetworkChangeNotifier::SetDnsConfig));
+  }
+
+  void CleanUp() override { service_.reset(); }
+
+ private:
+  std::unique_ptr<DnsConfigService> service_;
+
+  DISALLOW_COPY_AND_ASSIGN(DnsConfigServiceThread);
+};
+
 NetworkChangeNotifierWin::NetworkChangeNotifierWin()
     : NetworkChangeNotifier(NetworkChangeCalculatorParamsWin()),
       is_watching_(false),
       sequential_failures_(0),
-      dns_config_service_runner_(
-          base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})),
-      dns_config_service_(
-          DnsConfigService::CreateSystemService().release(),
-          // Ensure DnsConfigService lives on |dns_config_service_runner_|
-          // to prevent races where NetworkChangeNotifierWin outlives
-          // ScopedTaskEnvironment. https://crbug.com/938126
-          base::OnTaskRunnerDeleter(dns_config_service_runner_)),
+      dns_config_service_thread_(new DnsConfigServiceThread()),
       last_computed_connection_type_(RecomputeCurrentConnectionType()),
       last_announced_offline_(last_computed_connection_type_ ==
                               CONNECTION_NONE),
@@ -54,7 +65,7 @@ NetworkChangeNotifierWin::NetworkChangeNotifierWin()
 }
 
 NetworkChangeNotifierWin::~NetworkChangeNotifierWin() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (is_watching_) {
     CancelIPChangeNotify(&addr_overlapped_);
     addr_watcher_.StopWatching();
@@ -193,15 +204,15 @@ NetworkChangeNotifierWin::RecomputeCurrentConnectionType() const {
                           : NetworkChangeNotifier::CONNECTION_NONE;
 }
 
-void NetworkChangeNotifierWin::RecomputeCurrentConnectionTypeOnDnsSequence(
-    base::OnceCallback<void(ConnectionType)> reply_callback) const {
+void NetworkChangeNotifierWin::RecomputeCurrentConnectionTypeOnDnsThread(
+    base::Callback<void(ConnectionType)> reply_callback) const {
   // Unretained is safe in this call because this object owns the thread and the
   // thread is stopped in this object's destructor.
   base::PostTaskAndReplyWithResult(
-      dns_config_service_runner_.get(), FROM_HERE,
-      base::BindOnce(&NetworkChangeNotifierWin::RecomputeCurrentConnectionType,
-                     base::Unretained(this)),
-      std::move(reply_callback));
+      dns_config_service_thread_->task_runner().get(), FROM_HERE,
+      base::Bind(&NetworkChangeNotifierWin::RecomputeCurrentConnectionType,
+                 base::Unretained(this)),
+      reply_callback);
 }
 
 NetworkChangeNotifier::ConnectionType
@@ -217,19 +228,19 @@ void NetworkChangeNotifierWin::SetCurrentConnectionType(
 }
 
 void NetworkChangeNotifierWin::OnObjectSignaled(HANDLE object) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(is_watching_);
   is_watching_ = false;
 
   // Start watching for the next address change.
   WatchForAddressChange();
 
-  RecomputeCurrentConnectionTypeOnDnsSequence(base::BindOnce(
+  RecomputeCurrentConnectionTypeOnDnsThread(base::Bind(
       &NetworkChangeNotifierWin::NotifyObservers, weak_factory_.GetWeakPtr()));
 }
 
 void NetworkChangeNotifierWin::NotifyObservers(ConnectionType connection_type) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   SetCurrentConnectionType(connection_type);
   NotifyObserversOfIPAddressChange();
 
@@ -246,7 +257,7 @@ void NetworkChangeNotifierWin::NotifyObservers(ConnectionType connection_type) {
 }
 
 void NetworkChangeNotifierWin::WatchForAddressChange() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!is_watching_);
 
   // NotifyAddrChange occasionally fails with ERROR_OPEN_FAILED for unknown
@@ -276,7 +287,7 @@ void NetworkChangeNotifierWin::WatchForAddressChange() {
   // network change event, since network changes were not being observed in
   // that interval.
   if (sequential_failures_ > 0) {
-    RecomputeCurrentConnectionTypeOnDnsSequence(
+    RecomputeCurrentConnectionTypeOnDnsThread(
         base::Bind(&NetworkChangeNotifierWin::NotifyObservers,
                    weak_factory_.GetWeakPtr()));
   }
@@ -291,13 +302,12 @@ void NetworkChangeNotifierWin::WatchForAddressChange() {
 }
 
 bool NetworkChangeNotifierWin::WatchForAddressChangeInternal() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  dns_config_service_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&DnsConfigService::WatchConfig,
-                                base::Unretained(dns_config_service_.get()),
-                                base::BindRepeating(
-                                    &NetworkChangeNotifier::SetDnsConfig)));
+  if (!dns_config_service_thread_->IsRunning()) {
+    dns_config_service_thread_->StartWithOptions(
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+  }
 
   ResetEventIfSignaled(addr_overlapped_.hEvent);
   HANDLE handle = nullptr;
@@ -310,7 +320,7 @@ bool NetworkChangeNotifierWin::WatchForAddressChangeInternal() {
 }
 
 void NetworkChangeNotifierWin::NotifyParentOfConnectionTypeChange() {
-  RecomputeCurrentConnectionTypeOnDnsSequence(base::BindOnce(
+  RecomputeCurrentConnectionTypeOnDnsThread(base::Bind(
       &NetworkChangeNotifierWin::NotifyParentOfConnectionTypeChangeImpl,
       weak_factory_.GetWeakPtr()));
 }
