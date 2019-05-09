@@ -457,7 +457,8 @@ void HTMLMetaElement::GetViewportDescriptionFromContentAttribute(
 void HTMLMetaElement::ProcessViewportContentAttribute(
     const String& content,
     ViewportDescription::Type origin) {
-  DCHECK(!content.IsNull());
+  if (content.IsNull())
+    return;
 
   ViewportData& viewport_data = GetDocument().GetViewportData();
   if (!viewport_data.ShouldOverrideLegacyDescription(origin))
@@ -494,15 +495,30 @@ void HTMLMetaElement::ProcessSupportedColorSchemes(
   GetDocument().GetStyleEngine().SetSupportedColorSchemes(supported_schemes);
 }
 
+void HTMLMetaElement::NameRemoved(const AtomicString& name_value) {
+  const AtomicString& content_value = FastGetAttribute(kContentAttr);
+  if (content_value.IsNull())
+    return;
+  if (EqualIgnoringASCIICase(name_value, "theme-color") &&
+      GetDocument().GetFrame()) {
+    GetDocument().GetFrame()->Client()->DispatchDidChangeThemeColor();
+  }
+}
+
 void HTMLMetaElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == kHttpEquivAttr || params.name == kContentAttr) {
-    Process();
-    return;
-  }
-
-  if (params.name != kNameAttr)
+  if (params.name == kNameAttr) {
+    if (IsInDocumentTree())
+      NameRemoved(params.old_value);
+    ProcessContent();
+  } else if (params.name == kContentAttr) {
+    ProcessContent();
+    ProcessHttpEquiv();
+  } else if (params.name == kHttpEquivAttr) {
+    ProcessHttpEquiv();
+  } else {
     HTMLElement::ParseAttribute(params);
+  }
 }
 
 Node::InsertionNotificationRequest HTMLMetaElement::InsertedInto(
@@ -512,7 +528,14 @@ Node::InsertionNotificationRequest HTMLMetaElement::InsertedInto(
 }
 
 void HTMLMetaElement::DidNotifySubtreeInsertionsToDocument() {
-  Process();
+  ProcessContent();
+  ProcessHttpEquiv();
+}
+
+void HTMLMetaElement::RemovedFrom(ContainerNode& insertion_point) {
+  const AtomicString& name_value = FastGetAttribute(kNameAttr);
+  if (!name_value.IsEmpty())
+    NameRemoved(name_value);
 }
 
 static bool InDocumentHead(HTMLMetaElement* element) {
@@ -522,49 +545,47 @@ static bool InDocumentHead(HTMLMetaElement* element) {
   return Traversal<HTMLHeadElement>::FirstAncestor(*element);
 }
 
-void HTMLMetaElement::Process() {
+void HTMLMetaElement::ProcessHttpEquiv() {
   if (!IsInDocumentTree())
     return;
-
-  // All below situations require a content attribute (which can be the empty
-  // string).
   const AtomicString& content_value = FastGetAttribute(kContentAttr);
   if (content_value.IsNull())
     return;
-
-  const AtomicString& name_value = FastGetAttribute(kNameAttr);
-  if (!name_value.IsEmpty()) {
-    if (EqualIgnoringASCIICase(name_value, "viewport"))
-      ProcessViewportContentAttribute(content_value,
-                                      ViewportDescription::kViewportMeta);
-    else if (EqualIgnoringASCIICase(name_value, "referrer"))
-      GetDocument().ParseAndSetReferrerPolicy(
-          content_value, true /* support legacy keywords */);
-    else if (EqualIgnoringASCIICase(name_value, "handheldfriendly") &&
-             EqualIgnoringASCIICase(content_value, "true"))
-      ProcessViewportContentAttribute(
-          "width=device-width", ViewportDescription::kHandheldFriendlyMeta);
-    else if (EqualIgnoringASCIICase(name_value, "mobileoptimized"))
-      ProcessViewportContentAttribute(
-          "width=device-width, initial-scale=1",
-          ViewportDescription::kMobileOptimizedMeta);
-    else if (EqualIgnoringASCIICase(name_value, "theme-color") &&
-             GetDocument().GetFrame())
-      GetDocument().GetFrame()->Client()->DispatchDidChangeThemeColor();
-    else if (EqualIgnoringASCIICase(name_value, "supported-color-schemes"))
-      ProcessSupportedColorSchemes(content_value);
-  }
-
-  // Get the document to process the tag, but only if we're actually part of DOM
-  // tree (changing a meta tag while it's not in the tree shouldn't have any
-  // effect on the document).
-
   const AtomicString& http_equiv_value = FastGetAttribute(kHttpEquivAttr);
   if (http_equiv_value.IsEmpty())
     return;
-
   HttpEquiv::Process(GetDocument(), http_equiv_value, content_value,
                      InDocumentHead(this), this);
+}
+
+void HTMLMetaElement::ProcessContent() {
+  if (!IsInDocumentTree())
+    return;
+
+  const AtomicString& name_value = FastGetAttribute(kNameAttr);
+  if (name_value.IsEmpty())
+    return;
+
+  const AtomicString& content_value = FastGetAttribute(kContentAttr);
+  if (EqualIgnoringASCIICase(name_value, "viewport")) {
+    ProcessViewportContentAttribute(content_value,
+                                    ViewportDescription::kViewportMeta);
+  } else if (EqualIgnoringASCIICase(name_value, "referrer")) {
+    GetDocument().ParseAndSetReferrerPolicy(content_value,
+                                            true /* support legacy keywords */);
+  } else if (EqualIgnoringASCIICase(name_value, "handheldfriendly") &&
+             EqualIgnoringASCIICase(content_value, "true")) {
+    ProcessViewportContentAttribute("width=device-width",
+                                    ViewportDescription::kHandheldFriendlyMeta);
+  } else if (EqualIgnoringASCIICase(name_value, "mobileoptimized")) {
+    ProcessViewportContentAttribute("width=device-width, initial-scale=1",
+                                    ViewportDescription::kMobileOptimizedMeta);
+  } else if (EqualIgnoringASCIICase(name_value, "theme-color") &&
+             GetDocument().GetFrame()) {
+    GetDocument().GetFrame()->Client()->DispatchDidChangeThemeColor();
+  } else if (EqualIgnoringASCIICase(name_value, "supported-color-schemes")) {
+    ProcessSupportedColorSchemes(content_value);
+  }
 }
 
 WTF::TextEncoding HTMLMetaElement::ComputeEncoding() const {

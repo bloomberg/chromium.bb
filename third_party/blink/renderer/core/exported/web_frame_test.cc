@@ -8751,28 +8751,40 @@ TEST_F(WebFrameTest, ThemeColor) {
                                     &client);
   EXPECT_TRUE(client.DidNotify());
   WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
-  EXPECT_EQ(0xff0000ff, frame->GetDocument().ThemeColor());
+  EXPECT_EQ(Color(0, 0, 255), frame->GetDocument().ThemeColor());
   // Change color by rgb.
   client.Reset();
   frame->ExecuteScript(
       WebScriptSource("document.getElementById('tc1').setAttribute('content', "
                       "'rgb(0, 0, 0)');"));
   EXPECT_TRUE(client.DidNotify());
-  EXPECT_EQ(0xff000000, frame->GetDocument().ThemeColor());
+  EXPECT_EQ(Color::kBlack, frame->GetDocument().ThemeColor());
   // Change color by hsl.
   client.Reset();
   frame->ExecuteScript(
       WebScriptSource("document.getElementById('tc1').setAttribute('content', "
                       "'hsl(240,100%, 50%)');"));
   EXPECT_TRUE(client.DidNotify());
-  EXPECT_EQ(0xff0000ff, frame->GetDocument().ThemeColor());
+  EXPECT_EQ(Color(0, 0, 255), frame->GetDocument().ThemeColor());
   // Change of second theme-color meta tag will not change frame's theme
   // color.
   client.Reset();
   frame->ExecuteScript(WebScriptSource(
       "document.getElementById('tc2').setAttribute('content', '#00FF00');"));
   EXPECT_TRUE(client.DidNotify());
-  EXPECT_EQ(0xff0000ff, frame->GetDocument().ThemeColor());
+  EXPECT_EQ(Color(0, 0, 255), frame->GetDocument().ThemeColor());
+  // Remove the first theme-color meta tag to apply the second.
+  client.Reset();
+  frame->ExecuteScript(
+      WebScriptSource("document.getElementById('tc1').remove();"));
+  EXPECT_TRUE(client.DidNotify());
+  EXPECT_EQ(Color(0, 255, 0), frame->GetDocument().ThemeColor());
+  // Remove the name attribute of the remaining meta.
+  client.Reset();
+  frame->ExecuteScript(WebScriptSource(
+      "document.getElementById('tc2').removeAttribute('name');"));
+  EXPECT_TRUE(client.DidNotify());
+  EXPECT_EQ(base::nullopt, frame->GetDocument().ThemeColor());
 }
 
 // Make sure that an embedder-triggered detach with a remote frame parent

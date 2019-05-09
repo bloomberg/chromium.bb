@@ -149,10 +149,14 @@ TEST_F(HTMLMetaElementTest, SupportedColorSchemesProcessing_RemoveAttribute) {
     <meta id="meta" name="supported-color-schemes" content="dark">
   )HTML");
 
+  EXPECT_FALSE(SupportsColorScheme(ColorScheme::kLight));
+  EXPECT_TRUE(SupportsColorScheme(ColorScheme::kDark));
+
   GetDocument().getElementById("meta")->removeAttribute(
       html_names::kContentAttr);
 
-  EXPECT_TRUE(SupportsColorScheme(ColorScheme::kDark));
+  EXPECT_FALSE(SupportsColorScheme(ColorScheme::kLight));
+  EXPECT_FALSE(SupportsColorScheme(ColorScheme::kDark));
 }
 
 TEST_F(HTMLMetaElementTest, SupportedColorSchemesParsing) {
