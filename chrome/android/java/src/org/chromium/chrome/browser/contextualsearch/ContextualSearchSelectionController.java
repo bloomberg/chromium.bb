@@ -258,7 +258,6 @@ public class ContextualSearchSelectionController {
         mClearingSelection = true;
         SelectionPopupController controller = getSelectionPopupController();
         if (controller != null) controller.clearSelection();
-        mHandler.handleSelectionCleared();
         resetSelectionStates();
         mClearingSelection = false;
     }
@@ -405,7 +404,7 @@ public class ContextualSearchSelectionController {
     void handleShowUnhandledTapUIIfNeeded(int x, int y, int fontSizeDips, int textRunLength) {
         mWasTapGestureDetected = false;
         // TODO(donnd): refactor to avoid needing a new handler API method as suggested by Pedro.
-        if (mSelectionType != SelectionType.LONG_PRESS) {
+        if (mSelectionType != SelectionType.LONG_PRESS && !mAreSelectionHandlesShown) {
             if (mTapTimeNanoseconds != 0) {
                 mTapDurationMs = (int) ((System.nanoTime() - mTapTimeNanoseconds)
                         / TimeUtils.NANOSECONDS_PER_MILLISECOND);
@@ -418,7 +417,7 @@ public class ContextualSearchSelectionController {
             mTextRunLength = textRunLength;
             mHandler.handleValidTap();
         } else {
-            // Long press; reset last tap state.
+            // Long press, or long-press selection handles shown; reset last tap state.
             mLastTapState = null;
             mHandler.handleInvalidTap();
         }
@@ -450,8 +449,7 @@ public class ContextualSearchSelectionController {
         // been suppressed if each of the heuristics were satisfied.
         mHandler.handleMetricsForWouldSuppressTap(tapHeuristics);
 
-        boolean shouldSuppressTapBasedOnHeuristics =
-                tapHeuristics.shouldSuppressTap() || mAreSelectionHandlesShown;
+        boolean shouldSuppressTapBasedOnHeuristics = tapHeuristics.shouldSuppressTap();
         boolean shouldOverrideMlTapSuppression = tapHeuristics.shouldOverrideMlTapSuppression();
 
         // Make sure Tap Suppression features are consistent.

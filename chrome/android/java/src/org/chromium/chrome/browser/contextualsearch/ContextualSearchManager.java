@@ -463,13 +463,14 @@ public class ContextualSearchManager
         mReceivedContextualCardsEntityData = false;
 
         String selection = mSelectionController.getSelectedText();
-        boolean isTap = mSelectionController.getSelectionType() == SelectionType.TAP;
-        if (isTap) {
+        boolean canResolve = mSelectionController.getSelectionType() == SelectionType.TAP
+                || mSelectionController.getSelectionType() == SelectionType.RESOLVING_LONG_PRESS;
+        if (canResolve) {
             // If the user action was not a long-press, we should not delay before loading content.
             mShouldLoadDelayedSearch = false;
         }
-        if (isTap && mPolicy.shouldPreviousGestureResolve()) {
-            // For a resolving Tap we'll figure out translation need after the Resolve.
+        if (canResolve && mPolicy.shouldPreviousGestureResolve()) {
+            // For a resolving gestures we'll figure out translation need after the Resolve.
         } else if (!TextUtils.isEmpty(selection)) {
             boolean shouldPrefetch = mPolicy.shouldPrefetchSearchResult();
             mSearchRequest = new ContextualSearchRequest(selection, shouldPrefetch);
@@ -480,7 +481,7 @@ public class ContextualSearchManager
 
             // Record metrics for manual refinement of the search term from long-press.
             // TODO(donnd): remove this section once metrics have been analyzed.
-            if (!isTap && mSearchPanel.isPeeking()) {
+            if (!canResolve && mSearchPanel.isPeeking()) {
                 boolean isSingleWord =
                         !CONTAINS_WHITESPACE_PATTERN.matcher(selection.trim()).find();
                 RecordUserAction.record(isSingleWord ? "ContextualSearch.ManualRefineSingleWord"
