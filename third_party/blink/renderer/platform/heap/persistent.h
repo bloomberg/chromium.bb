@@ -176,6 +176,10 @@ class PersistentBase {
     persistent_node_.ClearWithLockHeld();
   }
 
+ protected:
+  NO_SANITIZE_ADDRESS
+  bool IsNotNull() const { return raw_; }
+
  private:
   NO_SANITIZE_ADDRESS
   void Assign(T* ptr) {
@@ -420,6 +424,9 @@ class WeakPersistent
     Parent::operator=(other);
     return *this;
   }
+
+  NO_SANITIZE_ADDRESS
+  bool IsClearedUnsafe() const { return this->IsNotNull(); }
 };
 
 // Unlike Persistent, we can destruct a CrossThreadPersistent in a thread

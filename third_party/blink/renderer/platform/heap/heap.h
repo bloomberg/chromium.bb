@@ -212,39 +212,6 @@ class PLATFORM_EXPORT ThreadHeap {
     return weak_callback_worklist_.get();
   }
 
-  // Is the finalizable GC object still alive, but slated for lazy sweeping?
-  // If a lazy sweep is in progress, returns true if the object was found
-  // to be not reachable during the marking phase, but it has yet to be swept
-  // and finalized. The predicate returns false in all other cases.
-  //
-  // Holding a reference to an already-dead object is not a valid state
-  // to be in; willObjectBeLazilySwept() has undefined behavior if passed
-  // such a reference.
-  template <typename T>
-  NO_SANITIZE_ADDRESS static bool WillObjectBeLazilySwept(
-      const T* object_pointer) {
-    static_assert(IsGarbageCollectedType<T>::value,
-                  "only objects deriving from GarbageCollected can be used.");
-    BasePage* page = PageFromObject(object_pointer);
-    // Page has been swept and it is still alive.
-    if (page->HasBeenSwept())
-      return false;
-    DCHECK(page->Arena()->GetThreadState()->IsSweepingInProgress());
-
-    // If marked and alive, the object hasn't yet been swept..and won't
-    // be once its page is processed.
-    if (ThreadHeap::IsHeapObjectAlive(const_cast<T*>(object_pointer)))
-      return false;
-
-    if (page->IsLargeObjectPage())
-      return true;
-
-    // If the object is unmarked, it may be on the page currently being
-    // lazily swept.
-    return page->Arena()->WillObjectBeLazilySwept(
-        page, const_cast<T*>(object_pointer));
-  }
-
   // Register an ephemeron table for fixed-point iteration.
   void RegisterWeakTable(void* container_object,
                          EphemeronCallback);
