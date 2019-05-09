@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/layout_constants.h"
-#include "chrome/browser/ui/tabs/tab_group_data.h"
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -208,7 +207,7 @@ class TabStripTest : public ChromeViewsTestBase,
   std::vector<TabGroupHeader*> ListGroupHeaders() const {
     std::vector<TabGroupHeader*> result;
     for (auto const& header_pair : tab_strip_->group_headers_)
-      result.push_back(header_pair.second);
+      result.push_back(header_pair.second.get());
     return result;
   }
 
@@ -970,7 +969,7 @@ TEST_P(TabStripTest, HorizontalScroll) {
 
 TEST_P(TabStripTest, CreateTabGroup) {
   tab_strip_->AddTabAt(0, TabRendererData(), false);
-  TabGroupData* group = controller_->CreateTabGroup();
+  base::Optional<int> group = controller_->CreateTabGroup();
   controller_->MoveTabIntoGroup(0, group);
   EXPECT_EQ(1u, ListGroupHeaders().size());
 }
@@ -978,13 +977,13 @@ TEST_P(TabStripTest, CreateTabGroup) {
 TEST_P(TabStripTest, DeleteTabGroupHeaderWhenEmpty) {
   tab_strip_->AddTabAt(0, TabRendererData(), false);
   tab_strip_->AddTabAt(1, TabRendererData(), false);
-  TabGroupData* group = controller_->CreateTabGroup();
+  base::Optional<int> group = controller_->CreateTabGroup();
   controller_->MoveTabIntoGroup(0, group);
   controller_->MoveTabIntoGroup(1, group);
-  controller_->MoveTabIntoGroup(0, nullptr);
+  controller_->MoveTabIntoGroup(0, base::nullopt);
 
   EXPECT_EQ(1u, ListGroupHeaders().size());
-  controller_->MoveTabIntoGroup(1, nullptr);
+  controller_->MoveTabIntoGroup(1, base::nullopt);
   EXPECT_EQ(0u, ListGroupHeaders().size());
 }
 

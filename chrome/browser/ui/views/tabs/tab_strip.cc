@@ -1184,17 +1184,19 @@ void TabStrip::SetTabData(int model_index, TabRendererData data) {
 }
 
 void TabStrip::ChangeTabGroup(int model_index,
-                              const TabGroupData* old_group_data,
-                              const TabGroupData* new_group_data) {
-  if (new_group_data && !group_headers_[new_group_data]) {
-    auto header = std::make_unique<TabGroupHeader>(new_group_data->title());
-    group_headers_[new_group_data] = header.get();
-    AddChildView(header.release());
+                              base::Optional<int> old_group,
+                              base::Optional<int> new_group) {
+  if (new_group.has_value() && !group_headers_[new_group.value()]) {
+    const TabGroupData* group_data =
+        controller_->GetDataForGroup(new_group.value());
+    auto header = std::make_unique<TabGroupHeader>(group_data->title());
+    header->set_owned_by_client();
+    AddChildView(header.get());
+    group_headers_[new_group.value()] = std::move(header);
   }
-  if (old_group_data != nullptr &&
-      controller_->ListTabsInGroup(old_group_data).size() == 0) {
-    delete group_headers_[old_group_data];
-    group_headers_.erase(old_group_data);
+  if (old_group.has_value() &&
+      controller_->ListTabsInGroup(old_group.value()).size() == 0) {
+    group_headers_.erase(old_group.value());
   }
 }
 

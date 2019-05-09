@@ -72,7 +72,8 @@ class BrowserTabStripController : public TabStripController,
   void StackedLayoutMaybeChanged() override;
   void OnStartedDraggingTabs() override;
   void OnStoppedDraggingTabs() override;
-  std::vector<int> ListTabsInGroup(const TabGroupData* group) const override;
+  const TabGroupData* GetDataForGroup(int group_id) const override;
+  std::vector<int> ListTabsInGroup(int group_id) const override;
   bool IsFrameCondensed() const override;
   bool HasVisibleBackgroundTabShapes() const override;
   bool EverHasVisibleBackgroundTabShapes() const override;

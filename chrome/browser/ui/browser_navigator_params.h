@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/global_request_id.h"
@@ -172,7 +173,7 @@ struct NavigateParams {
   int tabstrip_index = -1;
 
   // The group the caller would like the tab to be added to.
-  const TabGroupData* group = nullptr;
+  base::Optional<int> group;
 
   // A bitmask of values defined in TabStripModel::AddTabTypes. Helps
   // determine where to insert a new tab and whether or not it should be

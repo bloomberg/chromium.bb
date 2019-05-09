@@ -25,6 +25,16 @@ TabStripModelChange::Remove::~Remove() = default;
 //
 TabStripModelChange::TabStripModelChange() = default;
 
+TabStripModelChange::GroupChange::GroupChange() = default;
+
+TabStripModelChange::GroupChange::GroupChange(const GroupChange& other) =
+    default;
+
+TabStripModelChange::GroupChange& TabStripModelChange::GroupChange::operator=(
+    const GroupChange& other) = default;
+
+TabStripModelChange::GroupChange::~GroupChange() = default;
+
 TabStripModelChange::TabStripModelChange(Insert delta)
     : TabStripModelChange(Type::kInserted,
                           std::make_unique<Insert>(std::move(delta))) {}
