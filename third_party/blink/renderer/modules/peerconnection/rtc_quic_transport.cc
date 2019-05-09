@@ -265,8 +265,8 @@ static std::unique_ptr<rtc::SSLFingerprint> RTCDtlsFingerprintToSSLFingerprint(
     const RTCDtlsFingerprint* dtls_fingerprint) {
   std::string algorithm = WebString(dtls_fingerprint->algorithm()).Utf8();
   std::string value = WebString(dtls_fingerprint->value()).Utf8();
-  std::unique_ptr<rtc::SSLFingerprint> rtc_fingerprint(
-      rtc::SSLFingerprint::CreateFromRfc4572(algorithm, value));
+  std::unique_ptr<rtc::SSLFingerprint> rtc_fingerprint =
+      rtc::SSLFingerprint::CreateUniqueFromRfc4572(algorithm, value);
   DCHECK(rtc_fingerprint);
   return rtc_fingerprint;
 }

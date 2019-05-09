@@ -804,14 +804,14 @@ TEST_F(P2PQuicTransportTest, HandshakeConnectsPeersWithRemoteCertificates) {
 
   // Start the handshake with the remote fingerprints.
   std::vector<std::unique_ptr<rtc::SSLFingerprint>> server_fingerprints;
-  server_fingerprints.emplace_back(rtc::SSLFingerprint::Create(
-      "sha-256", server_peer()->certificate()->identity()));
+  server_fingerprints.push_back(rtc::SSLFingerprint::CreateUnique(
+      "sha-256", *server_peer()->certificate()->identity()));
   server_peer()->quic_transport()->Start(
       P2PQuicTransport::StartConfig(std::move(server_fingerprints)));
 
   std::vector<std::unique_ptr<rtc::SSLFingerprint>> client_fingerprints;
-  client_fingerprints.emplace_back(rtc::SSLFingerprint::Create(
-      "sha-256", client_peer()->certificate()->identity()));
+  client_fingerprints.push_back(rtc::SSLFingerprint::CreateUnique(
+      "sha-256", *client_peer()->certificate()->identity()));
   client_peer()->quic_transport()->Start(
       P2PQuicTransport::StartConfig(std::move(client_fingerprints)));
 
