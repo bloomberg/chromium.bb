@@ -5,6 +5,8 @@
 
 'use strict';
 
+// TODO(crbug.com/937570): After the RP launches this should be renamed to
+// customizationMenu along with the file, and large parts can be refactored/removed.
 const customBackgrounds = {};
 
 /**
