@@ -90,8 +90,11 @@ template("partitioned_shared_library") {
         "--stripped-output",
         rebase_path(invoker.stripped_output, root_build_dir),
       ]
-      if (defined(partition) && partition != "") {
-        args += [ "--partition', lib${partition}.so" ]
+      if (defined(invoker.partition) && invoker.partition != "") {
+        args += [
+          "--partition",
+          "lib${invoker.partition}.so",
+        ]
       }
       args += [ rebase_path(sources[0], root_build_dir) ]
     }

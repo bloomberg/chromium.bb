@@ -35,7 +35,7 @@ def main():
 
   objcopy_args = [args.objcopy]
   if args.partition:
-    objcopy_args += ['--extract-partition', args.extract_partition]
+    objcopy_args += ['--extract-partition', args.partition]
   else:
     objcopy_args += ['--extract-main-partition']
   objcopy_args += [args.input, args.unstripped_output]
