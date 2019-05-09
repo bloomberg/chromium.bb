@@ -706,6 +706,9 @@
       'filepath': 'chrome/browser/resource_coordinator/'\
                   '|services/resource_coordinator/',
     },
+    'chrome_performance_manager': {
+      'filepath': 'chrome/browser/performance_manager/',
+    },
     'chromecast': {
       'filepath': 'chromecast/',
     },
@@ -2162,6 +2165,7 @@
     'chrome_cleaner': ['joenotcharles+watch@google.com'],
     'chrome_elf': ['caitkp+watch@chromium.org'],
     'chrome_grc': ['chrome-grc-reviews@chromium.org'],
+    'chrome_performance_manager': ['performance-manager-reviews@chromium.org'],
     'chromecast': ['alokp+watch@chromium.org',
                    'halliwell+watch@chromium.org',
                    'lcwu+watch@chromium.org'],
