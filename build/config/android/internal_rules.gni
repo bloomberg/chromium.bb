@@ -1300,9 +1300,11 @@ if (enable_java_templates) {
             ]
             inputs += [ _main_dex_rules ]
           } else {
-            if (defined(invoker.extra_main_dex_proguard_config)) {
-              not_needed(invoker, [ "extra_main_dex_proguard_config" ])
-            }
+            args += [
+              "--main-dex-rules-path",
+              rebase_path("//build/android/arbitrary_main_dex.flags",
+                          root_build_dir),
+            ]
           }
         }
 
