@@ -1286,6 +1286,28 @@
             ]
         }
     ],
+    "CerseiFakeboxOnNtp": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "CerseiFakeboxOnNtp",
+                    "enable_features": [
+                        "FakeboxSearchIconColorOnNtp",
+                        "FakeboxSearchIconOnNtp",
+                        "FakeboxShortHintTextOnNtp",
+                        "UseAlternateFakeboxOnNtp",
+                        "UseAlternateFakeboxRectOnNtp"
+                    ]
+                }
+            ]
+        }
+    ],
     "CertDualVerificationTrial": [
         {
             "platforms": [
@@ -5230,25 +5252,6 @@
                     "params": {
                         "min_required_storage_for_update_mb": "500"
                     }
-                }
-            ]
-        }
-    ],
-    "UseAlternateFakeboxOnNtp": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "UseAlternateFakeboxOnNtp",
-                    "enable_features": [
-                        "FakeboxSearchIconOnNtp",
-                        "UseAlternateFakeboxOnNtp"
-                    ]
                 }
             ]
         }
