@@ -144,11 +144,6 @@ class PLATFORM_EXPORT FFTFrame {
   RDFTContext* inverse_context_;
   float* GetUpToDateComplexData();
   AudioFloatArray complex_data_;
-#elif defined(WTF_USE_WEBAUDIO_OPENMAX_DL_FFT)
-  static OMXFFTSpec_R_F32* ContextForSize(unsigned log2fft_size);
-  OMXFFTSpec_R_F32* forward_context_;
-  OMXFFTSpec_R_F32* inverse_context_;
-  AudioFloatArray complex_data_;
 #elif defined(WTF_USE_WEBAUDIO_PFFFT)
   // Create and return the setup data for an FFT (forward or ivnerse) of the
   // given size.

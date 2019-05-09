@@ -50,15 +50,6 @@ assert(!remove_webcore_debug_symbols,
            "Please change your args.gn to use 'blink_symbol_level = 0'. " +
            "https://crbug.com/943869")
 
-# Whether Android build uses OpenMAX DL FFT. Currently supported only on
-# ARMv7+, ARM64, x86 or x64 without webview.
-# TODO(crbug.com/917355): Remove support for openmax_dl FFT in favor
-# of PFFFT
-use_openmax_dl_fft = !use_webaudio_pffft && is_android &&
-                     (current_cpu == "x86" || current_cpu == "x64" ||
-                      (current_cpu == "arm" && arm_version >= 7) ||
-                      current_cpu == "arm64" || current_cpu == "mipsel")
-
 # feature_defines_list ---------------------------------------------------------
 
 feature_defines_list = []
@@ -77,10 +68,6 @@ if (use_webaudio_ffmpeg) {
 
 if (support_webgl2_compute_context) {
   feature_defines_list += [ "SUPPORT_WEBGL2_COMPUTE_CONTEXT=1" ]
-}
-
-if (use_openmax_dl_fft) {
-  feature_defines_list += [ "WTF_USE_WEBAUDIO_OPENMAX_DL_FFT=1" ]
 }
 
 if (use_webaudio_pffft) {

@@ -511,8 +511,6 @@ check_targets = [
   "//third_party/objenesis/*",
   "//third_party/ocmock/*",
   "//third_party/openh264/*",
-
-  # "//third_party/openmax_dl/*",  # 1 error
   "//third_party/openvr/*",
   "//third_party/opus/*",
   "//third_party/ots/*",

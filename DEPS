@@ -155,10 +155,6 @@ vars = {
   # and whatever else without interference from each other.
   'pdfium_revision': '94908c491899a1baf566826cc4faa253844b4e6a',
   # Three lines of non-changing comments so that
-  # the commit queue can handle CLs rolling openmax_dl
-  # and whatever else without interference from each other.
-  'openmax_dl_revision': '25492ab7195649acce190708e095692402593e2b',
-  # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
   #
@@ -1156,9 +1152,6 @@ deps = {
 
   'src/third_party/openh264/src':
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '6f26bce0b1c4e8ce0e13332f7c0083788def5fdf',
-
-  'src/third_party/openmax_dl':
-    Var('webrtc_git') + '/deps/third_party/openmax.git' + '@' +  Var('openmax_dl_revision'),
 
   'src/third_party/openscreen/src':
     Var('chromium_git') + '/openscreen' + '@' + 'b1d095ba4f8f3ec1efd90dbd5cb0a37e5b4b21f7',

@@ -316,7 +316,6 @@ jumbo_component("platform") {
     "animation/compositor_transform_operations.h",
     "animation/timing_function.cc",
     "animation/timing_function.h",
-    "audio/android/fft_frame_open_maxdl_android.cc",
     "audio/audio_array.h",
     "audio/audio_bus.cc",
     "audio/audio_bus.h",
@@ -1551,10 +1550,6 @@ jumbo_component("platform") {
   if (use_webaudio_ffmpeg) {
     include_dirs += [ "//third_party/ffmpeg" ]
     deps += [ "//third_party/ffmpeg" ]
-  }
-  if (use_openmax_dl_fft) {
-    include_dirs += [ "//third_party/openmax_dl" ]
-    deps += [ "//third_party/openmax_dl/dl" ]
   }
   if (use_webaudio_pffft) {
     include_dirs += [ "//third_party/pffft/src" ]
