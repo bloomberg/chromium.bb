@@ -110,8 +110,14 @@ bool IsIndexFileCurrent(const base::FilePath& cache_dir) {
        file_path = enumerator.Next()) {
     if (!GetFileInfo(file_path, &info))
       return false;
-    if (index_last_modified < info.last_modified)
+    if (index_last_modified < info.last_modified) {
+#if defined(OS_FUCHSIA)
+      // TODO(crbug.com/760687): Extra logging for bot debugging.
+      LOG(ERROR) << "index_last_modified: " << index_last_modified
+                 << " info.last_modified: " << info.last_modified;
+#endif  // OS_FUCHSIA
       return false;
+    }
   }
 
   return true;
@@ -1504,14 +1510,9 @@ TEST_P(CacheStorageManagerTestP, GetAllOriginsUsageDifferentOwners) {
   }
 }
 
-// TODO(crbug.com/760687): Flaky on Fuchsia.
-#if defined(OS_FUCHSIA)
-#define MAYBE_GetAllOriginsUsageWithOldIndex \
-  DISABLED_GetAllOriginsUsageWithOldIndex
-#else
-#define MAYBE_GetAllOriginsUsageWithOldIndex GetAllOriginsUsageWithOldIndex
-#endif
-TEST_F(CacheStorageManagerTest, MAYBE_GetAllOriginsUsageWithOldIndex) {
+// TODO(crbug.com/760687): Flaky on Fuchsia. Temporarily enabled with extra
+// logging to help debug.
+TEST_F(CacheStorageManagerTest, GetAllOriginsUsageWithOldIndex) {
   // Write a single value (V1) to the cache.
   const GURL kFooURL = origin1_.GetURL().Resolve("foo");
   const std::string kCacheName = "foo";
