@@ -32,8 +32,19 @@
 namespace {
 
 // Server address for the experimental suggestions service.
+//
+// For now, we wish to disable on-focus suggestions, but do so in a way that
+// can be overridden by an experiment config file change.
+//
+// To disable on-focus suggestions, we set the address to a URL that will not
+// reply.  It returns a 404.  (This URL is at the same host and similar to the
+// URL that will reply.)
+//
+// We'd be able to enable on-focus suggestions again by overriding this
+// default address in an experiment config.
 const char kDefaultExperimentalServerAddress[] =
-    "https://cuscochromeextension-pa.googleapis.com/v1/omniboxsuggestions";
+    "https://cuscochromeextension-pa.googleapis.com/v_turned_down_returns_404/"
+    "omniboxsuggestions";
 
 void AddVariationHeaders(network::ResourceRequest* request) {
   // Add Chrome experiment state to the request headers.

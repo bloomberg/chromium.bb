@@ -502,7 +502,12 @@ TEST_F(ZeroSuggestProviderTest, RedirectToChrome) {
   // experiments off, IsPersonalizedUrlDataCollectionActive true), and the
   // redirect to chrome mode on.
   base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(omnibox::kZeroSuggestRedirectToChrome);
+  std::map<std::string, std::string> params;
+  params[std::string(
+      OmniboxFieldTrial::kZeroSuggestRedirectToChromeServerAddressParam)] =
+      "https://cuscochromeextension-pa.googleapis.com/v1/omniboxsuggestions";
+  features.InitAndEnableFeatureWithParameters(
+      omnibox::kZeroSuggestRedirectToChrome, params);
   CreateContextualSuggestFieldTrial();
 
   EXPECT_CALL(*client_, IsAuthenticated())

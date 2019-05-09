@@ -10,7 +10,9 @@
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/template_url_service.h"
 #include "net/base/load_flags.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -45,6 +47,10 @@ class ContextualSuggestionsServiceTest : public testing::Test {
 };
 
 TEST_F(ContextualSuggestionsServiceTest, EnsureAttachCookies) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      omnibox::kZeroSuggestRedirectToChrome);
+
   network::ResourceRequest resource_request;
   test_url_loader_factory_.SetInterceptor(
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
