@@ -108,9 +108,9 @@ TEST_F(LayoutThemeTest, RootElementColorChange) {
   // Change color scheme to dark.
   GetDocument().GetSettings()->SetPreferredColorScheme(
       PreferredColorScheme::kDark);
-  ColorSchemeSet supported_schemes;
-  supported_schemes.Set(ColorScheme::kDark);
-  GetDocument().GetStyleEngine().SetSupportedColorSchemes(supported_schemes);
+  ColorSchemeSet color_schemes;
+  color_schemes.Set(ColorScheme::kDark);
+  GetDocument().GetStyleEngine().SetMetaColorScheme(color_schemes);
   UpdateAllLifecyclePhasesForTest();
 
   document_element_style = GetDocument().documentElement()->GetComputedStyle();

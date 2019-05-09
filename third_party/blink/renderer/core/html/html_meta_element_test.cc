@@ -24,7 +24,7 @@ class HTMLMetaElementTest : public PageTestBase {
     PageTestBase::SetUp();
 
     RuntimeEnabledFeatures::SetDisplayCutoutAPIEnabled(true);
-    RuntimeEnabledFeatures::SetMetaSupportedColorSchemesEnabled(true);
+    RuntimeEnabledFeatures::SetMetaColorSchemeEnabled(true);
     RuntimeEnabledFeatures::SetMediaQueryPrefersColorSchemeEnabled(true);
     GetDocument().GetSettings()->SetViewportMetaEnabled(true);
   }
@@ -38,21 +38,19 @@ class HTMLMetaElementTest : public PageTestBase {
   }
 
  protected:
-  HTMLMetaElement* CreateSupportedColorSchemesMeta(
-      const AtomicString& content) {
+  HTMLMetaElement* CreateColorSchemeMeta(const AtomicString& content) {
     auto* meta = MakeGarbageCollected<HTMLMetaElement>(GetDocument());
-    meta->setAttribute(html_names::kNameAttr, "supported-color-schemes");
+    meta->setAttribute(html_names::kNameAttr, "color-scheme");
     meta->setAttribute(html_names::kContentAttr, content);
     return meta;
   }
 
-  void SetSupportedColorSchemes(const AtomicString& content) {
-    GetDocument().head()->AppendChild(CreateSupportedColorSchemesMeta(content));
+  void SetColorScheme(const AtomicString& content) {
+    GetDocument().head()->AppendChild(CreateColorSchemeMeta(content));
   }
 
   bool SupportsColorScheme(ColorScheme scheme) const {
-    return GetDocument().GetStyleEngine().GetSupportedColorSchemes().Contains(
-        scheme);
+    return GetDocument().GetStyleEngine().GetMetaColorScheme().Contains(scheme);
   }
 
  private:
@@ -86,20 +84,20 @@ TEST_F(HTMLMetaElementTest, ViewportFit_Invalid) {
             LoadTestPageAndReturnViewportFit("invalid"));
 }
 
-TEST_F(HTMLMetaElementTest, SupportedColorSchemesProcessing_LastWins) {
+TEST_F(HTMLMetaElementTest, ColorSchemeProcessing_LastWins) {
   GetDocument().head()->SetInnerHTMLFromString(R"HTML(
-    <meta name="supported-color-schemes" content="dark">
-    <meta name="supported-color-schemes" content="light">
+    <meta name="color-scheme" content="dark">
+    <meta name="color-scheme" content="light">
   )HTML");
 
   EXPECT_TRUE(SupportsColorScheme(ColorScheme::kLight));
   EXPECT_FALSE(SupportsColorScheme(ColorScheme::kDark));
 }
 
-TEST_F(HTMLMetaElementTest, SupportedColorSchemesProcessing_Remove) {
+TEST_F(HTMLMetaElementTest, ColorSchemeProcessing_Remove) {
   GetDocument().head()->SetInnerHTMLFromString(R"HTML(
-    <meta name="supported-color-schemes" content="dark">
-    <meta id="last-meta" name="supported-color-schemes" content="light">
+    <meta name="color-scheme" content="dark">
+    <meta id="last-meta" name="color-scheme" content="light">
   )HTML");
 
   GetDocument().getElementById("last-meta")->remove();
@@ -108,33 +106,32 @@ TEST_F(HTMLMetaElementTest, SupportedColorSchemesProcessing_Remove) {
   EXPECT_FALSE(SupportsColorScheme(ColorScheme::kDark));
 }
 
-TEST_F(HTMLMetaElementTest, SupportedColorSchemesProcessing_InsertBefore) {
+TEST_F(HTMLMetaElementTest, ColorSchemeProcessing_InsertBefore) {
   GetDocument().head()->SetInnerHTMLFromString(R"HTML(
-    <meta name="supported-color-schemes" content="dark">
+    <meta name="color-scheme" content="dark">
   )HTML");
 
   Element* head = GetDocument().head();
-  head->insertBefore(CreateSupportedColorSchemesMeta("light"),
-                     head->firstChild());
+  head->insertBefore(CreateColorSchemeMeta("light"), head->firstChild());
 
   EXPECT_TRUE(SupportsColorScheme(ColorScheme::kLight));
   EXPECT_FALSE(SupportsColorScheme(ColorScheme::kDark));
 }
 
-TEST_F(HTMLMetaElementTest, SupportedColorSchemesProcessing_AppendChild) {
+TEST_F(HTMLMetaElementTest, ColorSchemeProcessing_AppendChild) {
   GetDocument().head()->SetInnerHTMLFromString(R"HTML(
-    <meta name="supported-color-schemes" content="dark">
+    <meta name="color-scheme" content="dark">
   )HTML");
 
-  GetDocument().head()->AppendChild(CreateSupportedColorSchemesMeta("light"));
+  GetDocument().head()->AppendChild(CreateColorSchemeMeta("light"));
 
   EXPECT_TRUE(SupportsColorScheme(ColorScheme::kLight));
   EXPECT_FALSE(SupportsColorScheme(ColorScheme::kDark));
 }
 
-TEST_F(HTMLMetaElementTest, SupportedColorSchemesProcessing_SetAttribute) {
+TEST_F(HTMLMetaElementTest, ColorSchemeProcessing_SetAttribute) {
   GetDocument().head()->SetInnerHTMLFromString(R"HTML(
-    <meta id="meta" name="supported-color-schemes" content="dark">
+    <meta id="meta" name="color-scheme" content="dark">
   )HTML");
 
   GetDocument().getElementById("meta")->setAttribute(html_names::kContentAttr,
@@ -144,9 +141,9 @@ TEST_F(HTMLMetaElementTest, SupportedColorSchemesProcessing_SetAttribute) {
   EXPECT_FALSE(SupportsColorScheme(ColorScheme::kDark));
 }
 
-TEST_F(HTMLMetaElementTest, SupportedColorSchemesProcessing_RemoveAttribute) {
+TEST_F(HTMLMetaElementTest, ColorSchemeProcessing_RemoveAttribute) {
   GetDocument().head()->SetInnerHTMLFromString(R"HTML(
-    <meta id="meta" name="supported-color-schemes" content="dark">
+    <meta id="meta" name="color-scheme" content="dark">
   )HTML");
 
   EXPECT_FALSE(SupportsColorScheme(ColorScheme::kLight));
@@ -159,42 +156,42 @@ TEST_F(HTMLMetaElementTest, SupportedColorSchemesProcessing_RemoveAttribute) {
   EXPECT_FALSE(SupportsColorScheme(ColorScheme::kDark));
 }
 
-TEST_F(HTMLMetaElementTest, SupportedColorSchemesParsing) {
-  SetSupportedColorSchemes("");
+TEST_F(HTMLMetaElementTest, ColorSchemeParsing) {
+  SetColorScheme("");
   EXPECT_FALSE(SupportsColorScheme(ColorScheme::kLight));
   EXPECT_FALSE(SupportsColorScheme(ColorScheme::kDark));
 
-  SetSupportedColorSchemes("light");
+  SetColorScheme("light");
   EXPECT_TRUE(SupportsColorScheme(ColorScheme::kLight));
   EXPECT_FALSE(SupportsColorScheme(ColorScheme::kDark));
 
-  SetSupportedColorSchemes("dark");
+  SetColorScheme("dark");
   EXPECT_FALSE(SupportsColorScheme(ColorScheme::kLight));
   EXPECT_TRUE(SupportsColorScheme(ColorScheme::kDark));
 
-  SetSupportedColorSchemes("light dark");
+  SetColorScheme("light dark");
   EXPECT_TRUE(SupportsColorScheme(ColorScheme::kLight));
   EXPECT_TRUE(SupportsColorScheme(ColorScheme::kDark));
 
-  SetSupportedColorSchemes("light,dark");
+  SetColorScheme("light,dark");
   EXPECT_FALSE(SupportsColorScheme(ColorScheme::kLight));
   EXPECT_FALSE(SupportsColorScheme(ColorScheme::kDark));
 
-  SetSupportedColorSchemes("light,");
+  SetColorScheme("light,");
   EXPECT_FALSE(SupportsColorScheme(ColorScheme::kLight));
 
-  SetSupportedColorSchemes(",light");
+  SetColorScheme(",light");
   EXPECT_FALSE(SupportsColorScheme(ColorScheme::kLight));
 
-  SetSupportedColorSchemes(", light");
+  SetColorScheme(", light");
   EXPECT_TRUE(SupportsColorScheme(ColorScheme::kLight));
 
-  SetSupportedColorSchemes("light, dark");
+  SetColorScheme("light, dark");
   EXPECT_FALSE(SupportsColorScheme(ColorScheme::kLight));
   EXPECT_TRUE(SupportsColorScheme(ColorScheme::kDark));
 }
 
-TEST_F(HTMLMetaElementTest, SupportedColorSchemesForcedDarkeningAndMQ) {
+TEST_F(HTMLMetaElementTest, ColorSchemeForcedDarkeningAndMQ) {
   GetDocument().GetSettings()->SetPreferredColorScheme(
       PreferredColorScheme::kDark);
 
@@ -204,13 +201,13 @@ TEST_F(HTMLMetaElementTest, SupportedColorSchemesForcedDarkeningAndMQ) {
   GetDocument().GetSettings()->SetForceDarkModeEnabled(true);
   EXPECT_FALSE(media_query->matches());
 
-  SetSupportedColorSchemes("light");
+  SetColorScheme("light");
   EXPECT_FALSE(media_query->matches());
 
-  SetSupportedColorSchemes("dark");
+  SetColorScheme("dark");
   EXPECT_TRUE(media_query->matches());
 
-  SetSupportedColorSchemes("light dark");
+  SetColorScheme("light dark");
   EXPECT_TRUE(media_query->matches());
 }
 

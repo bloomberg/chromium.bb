@@ -476,23 +476,22 @@ void HTMLMetaElement::ProcessViewportContentAttribute(
   viewport_data.SetViewportDescription(description_from_legacy_tag);
 }
 
-void HTMLMetaElement::ProcessSupportedColorSchemes(
-    const AtomicString& content) {
-  if (!RuntimeEnabledFeatures::MetaSupportedColorSchemesEnabled())
+void HTMLMetaElement::ProcessColorScheme(const AtomicString& content) {
+  if (!RuntimeEnabledFeatures::MetaColorSchemeEnabled())
     return;
 
-  SpaceSplitString supported_schemes_strings(content.LowerASCII());
-  size_t count = supported_schemes_strings.size();
-  ColorSchemeSet supported_schemes;
+  SpaceSplitString color_scheme_strings(content.LowerASCII());
+  size_t count = color_scheme_strings.size();
+  ColorSchemeSet color_scheme_set;
   for (size_t i = 0; i < count; i++) {
-    auto color_scheme = supported_schemes_strings[i];
+    auto color_scheme = color_scheme_strings[i];
     if (color_scheme == "light") {
-      supported_schemes.Set(ColorScheme::kLight);
+      color_scheme_set.Set(ColorScheme::kLight);
     } else if (color_scheme == "dark") {
-      supported_schemes.Set(ColorScheme::kDark);
+      color_scheme_set.Set(ColorScheme::kDark);
     }
   }
-  GetDocument().GetStyleEngine().SetSupportedColorSchemes(supported_schemes);
+  GetDocument().GetStyleEngine().SetMetaColorScheme(color_scheme_set);
 }
 
 void HTMLMetaElement::NameRemoved(const AtomicString& name_value) {
@@ -583,8 +582,8 @@ void HTMLMetaElement::ProcessContent() {
   } else if (EqualIgnoringASCIICase(name_value, "theme-color") &&
              GetDocument().GetFrame()) {
     GetDocument().GetFrame()->Client()->DispatchDidChangeThemeColor();
-  } else if (EqualIgnoringASCIICase(name_value, "supported-color-schemes")) {
-    ProcessSupportedColorSchemes(content_value);
+  } else if (EqualIgnoringASCIICase(name_value, "color-scheme")) {
+    ProcessColorScheme(content_value);
   }
 }
 

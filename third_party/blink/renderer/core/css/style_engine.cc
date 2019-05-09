@@ -1795,7 +1795,7 @@ void StyleEngine::UpdateColorScheme() {
   color_scheme_ = ColorScheme::kLight;
 
   if (preferred_color_scheme_ == PreferredColorScheme::kDark) {
-    if (supported_color_schemes_.Contains(ColorScheme::kDark)) {
+    if (meta_color_scheme_.Contains(ColorScheme::kDark)) {
       color_scheme_ = ColorScheme::kDark;
     } else if (settings->ForceDarkModeEnabled()) {
       // Make sure we don't match (prefers-color-scheme: dark) when forced

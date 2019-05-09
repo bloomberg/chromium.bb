@@ -117,7 +117,7 @@ class CORE_EXPORT HTMLMetaElement final : public HTMLElement {
   void NameRemoved(const AtomicString& name_value);
   void ProcessViewportContentAttribute(const String& content,
                                        ViewportDescription::Type origin);
-  void ProcessSupportedColorSchemes(const AtomicString& content);
+  void ProcessColorScheme(const AtomicString& content);
 };
 
 }  // namespace blink
