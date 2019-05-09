@@ -2139,6 +2139,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPerMethodCanMakePaymentQuotaDescription, kOsAll,
      FEATURE_VALUE_TYPE(
          payments::features::kWebPaymentsPerMethodCanMakePaymentQuota)},
+    {"enable-web-payments-experimental-features",
+     flag_descriptions::kWebPaymentsExperimentalFeaturesName,
+     flag_descriptions::kWebPaymentsExperimentalFeaturesDescription, kOsAll,
+     FEATURE_VALUE_TYPE(payments::features::kWebPaymentsExperimentalFeatures)},
     {"fill-on-account-select", flag_descriptions::kFillOnAccountSelectName,
      flag_descriptions::kFillOnAccountSelectDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kFillOnAccountSelect)},

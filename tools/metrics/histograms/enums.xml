@@ -33740,6 +33740,7 @@ from previous Chrome versions.
   <int value="-424701311" label="SignedHTTPExchange:disabled"/>
   <int value="-424544273"
       label="enable-experimental-accessibility-chromevox-rich-text-indication"/>
+  <int value="-424134004" label="WebPaymentsExperimentalFeatures:disabled"/>
   <int value="-418868128" label="enable-experimental-web-platform-features"/>
   <int value="-416660617" label="EnforceTLS13Downgrade:disabled"/>
   <int value="-415186532" label="AndroidSiteSettingsUIRefresh:enabled"/>
@@ -34117,6 +34118,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentHideSteadyStateUrlScheme:disabled"/>
   <int value="133482330" label="AppNotificationStatusMessaging:enabled"/>
   <int value="143725809" label="DownloadProgressInfoBar:enabled"/>
+  <int value="146229312" label="WebPaymentsExperimentalFeatures:enabled"/>
   <int value="147342055" label="ChromeHomeClearUrlOnOpen:disabled"/>
   <int value="147373243" label="enable-deferred-image-decoding"/>
   <int value="149914698" label="SearchReadyOmnibox:disabled"/>

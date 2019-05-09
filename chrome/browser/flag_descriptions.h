@@ -1185,6 +1185,9 @@ extern const char kWebglDraftExtensionsDescription[];
 extern const char kWebMidiName[];
 extern const char kWebMidiDescription[];
 
+extern const char kWebPaymentsExperimentalFeaturesName[];
+extern const char kWebPaymentsExperimentalFeaturesDescription[];
+
 extern const char kWebrtcHideLocalIpsWithMdnsName[];
 extern const char kWebrtcHideLocalIpsWithMdnsDecription[];
 

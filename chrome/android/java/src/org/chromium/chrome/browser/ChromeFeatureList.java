@@ -327,6 +327,8 @@ public abstract class ChromeFeatureList {
     public static final String USER_ACTIVATION_V2 = "UserActivationV2";
     public static final String WEB_AUTH = "WebAuthentication";
     public static final String WEB_PAYMENTS = "WebPayments";
+    public static final String WEB_PAYMENTS_EXPERIMENTAL_FEATURES =
+            "WebPaymentsExperimentalFeatures";
     public static final String WEB_PAYMENTS_METHOD_SECTION_ORDER_V2 =
             "WebPaymentsMethodSectionOrderV2";
     public static final String WEB_PAYMENTS_MODIFIERS = "WebPaymentsModifiers";

@@ -11,6 +11,10 @@
 namespace payments {
 namespace features {
 
+// Master toggle for all experimental features that will ship in the next
+// release.
+extern const base::Feature kWebPaymentsExperimentalFeatures;
+
 // Used to control whether Google Pay cards are returned for basic-card.
 extern const base::Feature kReturnGooglePayInBasicCard;
 

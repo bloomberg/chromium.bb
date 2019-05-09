@@ -1797,6 +1797,13 @@
     "expiry_milestone": 77
   },
   {
+    "name": "enable-web-payments-experimental-features",
+    "owners": [ "danyao", "rouslan", "paymentrequest@google.com" ],
+    // This flag is used by early adoption partners to test new Web Payments
+    // features in each release.
+    "expiry_milestone": -1
+  },
+  {
     "name": "enable-webassembly",
     "owners": [ "titzer", "wasm-team@google.com" ],
     "expiry_milestone": 72

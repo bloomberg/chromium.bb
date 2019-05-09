@@ -1979,6 +1979,11 @@ const char kWebglDraftExtensionsDescription[] =
 const char kWebMidiName[] = "Web MIDI API";
 const char kWebMidiDescription[] = "Enable Web MIDI API experimental support.";
 
+const char kWebPaymentsExperimentalFeaturesName[] =
+    "Experimental Web Payments API features";
+const char kWebPaymentsExperimentalFeaturesDescription[] =
+    "Enable experimental Web Payments API features";
+
 const char kWebrtcHideLocalIpsWithMdnsName[] =
     "Anonymize local IPs exposed by WebRTC.";
 const char kWebrtcHideLocalIpsWithMdnsDecription[] =
