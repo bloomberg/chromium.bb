@@ -60,10 +60,10 @@ if options.mac:
                "\t.align 4\n"
                "_icudt%s_dat:\n" %tuple([version_number] * 3))
 elif options.win:
-  output.write(".globl icudt%s_dat\n"
+  output.write(".globl _icudt%s_dat\n"
                "\t.section .rdata\n"
                "\t.balign 16\n"
-               "icudt%s_dat:\n" % tuple([version_number] * 2))
+               "_icudt%s_dat:\n" % tuple([version_number] * 2))
 else:
   output.write(".globl icudt%s_dat\n"
                "\t.section .note.GNU-stack,\"\",%%progbits\n"

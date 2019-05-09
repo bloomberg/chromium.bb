@@ -1060,10 +1060,11 @@ component("icuuc") {
 
   public_configs = [ ":icu_config" ]
 
-  if (is_win || icu_use_data_file) {
+  if (icu_use_data_file) {
     sources += [ "source/stubdata/stubdata.cpp" ]
-    defines += [ "U_ICUDATAENTRY_IN_COMMON" ]
   }
+
+  defines += [ "U_ICUDATAENTRY_IN_COMMON" ]
 
   if (is_fuchsia) {
     # Fuchsia puts its own libicuuc.so in /system/lib where we need to put our
