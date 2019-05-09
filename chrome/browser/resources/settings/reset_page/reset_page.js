@@ -25,20 +25,15 @@ Polymer({
     prefs: Object,
 
     // <if expr="chromeos">
-    /**
-     * Dictionary defining page visibility.
-     * @type {!ResetPageVisibility}
-     */
-    pageVisibility: Object,
-
     /** @private */
     showPowerwashDialog_: Boolean,
-
-    /** @private */
-    allowPowerwash_:
-        {type: Boolean, value: loadTimeData.getBoolean('allowPowerwash')},
     // </if>
 
+    /** @private */
+    allowPowerwash_: {
+      type: Boolean,
+      value: cr.isChromeOS ? loadTimeData.getBoolean('allowPowerwash') : false
+    },
 
     // <if expr="_google_chrome and is_win">
     /** @private */
@@ -50,15 +45,6 @@ Polymer({
     },
     // </if>
   },
-
-  // <if expr="chromeos">
-  /** @override */
-  ready: function() {
-    // TODO(hsuregan): Remove when OS settings migration is complete.
-    this.allowPowerwash_ =
-        this.allowPowerwash_ && this.pageVisibility.powerwash;
-  },
-  // </if>
 
   /**
    * settings.RouteObserverBehavior

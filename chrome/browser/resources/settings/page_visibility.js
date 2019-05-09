@@ -21,7 +21,7 @@
  *   onStartup: (boolean|undefined),
  *   people: (boolean|undefined|PeoplePageVisibility),
  *   privacy: (boolean|undefined|PrivacyPageVisibility),
- *   reset:(boolean|undefined|ResetPageVisibility),
+ *   reset:(boolean|undefined),
  * }}
  */
 let PageVisibility;
@@ -63,13 +63,6 @@ let PeoplePageVisibility;
  */
 let PrivacyPageVisibility;
 
-/**
- * @typedef {{
- *   powerwash: boolean,
- * }}
- */
-let ResetPageVisibility;
-
 cr.define('settings', function() {
   /**
    * Dictionary defining page visibility.
@@ -102,9 +95,7 @@ cr.define('settings', function() {
       autofill: false,
       people: false,
       onStartup: false,
-      reset: {
-        powerwash: false,
-      },
+      reset: false,
       appearance: {
         setWallpaper: false,
         setTheme: false,
@@ -142,9 +133,7 @@ cr.define('settings', function() {
         manageUsers: showOSSettings,
       },
       onStartup: true,
-      reset: {
-        powerwash: showOSSettings,
-      },
+      reset: true,
       appearance: {
         setWallpaper: showOSSettings,
         setTheme: true,

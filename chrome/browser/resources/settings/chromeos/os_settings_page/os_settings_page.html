@@ -83,6 +83,10 @@
     <template is="dom-if" if="[[showBasicPage_(
         currentRoute_, inSearchMode, hasExpandedSection_)]]">
       <div id="basicPage">
+        <template is="dom-if" if="[[showResetProfileBanner_]]" restamp>
+          <settings-reset-profile-banner on-close="onResetProfileBannerClosed_">
+          </settings-reset-profile-banner>
+        </template>
         <div id="secondaryUserBanner" hidden="[[!showSecondaryUserBanner_]]">
           <div id="secondaryUserIcon"></div>
           <div class="flex">$i18n{secondaryUserBannerText}</div>
@@ -263,7 +267,7 @@
                 restamp>
               <settings-section page-title="$i18n{resetPageTitle}"
                   section="reset">
-                <os-settings-reset-page></os-settings-reset-page>
+                <settings-reset-page prefs="{{prefs}}"></settings-reset-page>
               </settings-section>
             </template>
           </div>

@@ -64,7 +64,6 @@ group("closure_compile") {
   deps = [
     "os_people_page:closure_compile",
     "os_privacy_page:closure_compile",
-    "os_reset_page:closure_compile",
     "os_settings_main:closure_compile",
     "os_settings_menu:closure_compile",
     "os_settings_page:closure_compile",
