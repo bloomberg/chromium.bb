@@ -419,6 +419,10 @@ void PushMessagingServiceImpl::OnSendAcknowledged(
   NOTREACHED() << "The Push API shouldn't have sent messages upstream";
 }
 
+void PushMessagingServiceImpl::OnMessageDecryptionFailed(
+    const std::string& app_id,
+    const std::string& error_message) {}
+
 // GetEndpoint method ----------------------------------------------------------
 
 GURL PushMessagingServiceImpl::GetEndpoint(bool standard_protocol) const {

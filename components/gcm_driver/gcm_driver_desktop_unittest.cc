@@ -897,6 +897,9 @@ TEST_F(GCMDriverFunctionalTest, EncryptedMessageReceivedError) {
   PumpUILoop();
   PumpIOLoop();
 
+  EXPECT_EQ(FakeGCMAppHandler::DECRYPTION_FAILED_EVENT,
+            gcm_app_handler()->received_event());
+
   GCMClient::GCMStatistics statistics = GetGCMClient()->GetStatistics();
   EXPECT_TRUE(statistics.is_recording);
   EXPECT_EQ(

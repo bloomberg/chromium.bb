@@ -17,11 +17,9 @@
 
 namespace gcm {
 
-InstanceIDHandler::InstanceIDHandler() {
-}
+InstanceIDHandler::InstanceIDHandler() = default;
 
-InstanceIDHandler::~InstanceIDHandler() {
-}
+InstanceIDHandler::~InstanceIDHandler() = default;
 
 void InstanceIDHandler::DeleteAllTokensForApp(const std::string& app_id,
                                               DeleteTokenCallback callback) {
@@ -38,8 +36,7 @@ GCMDriver::GCMDriver(
     encryption_provider_.Init(store_path, blocking_task_runner);
 }
 
-GCMDriver::~GCMDriver() {
-}
+GCMDriver::~GCMDriver() = default;
 
 void GCMDriver::Register(const std::string& app_id,
                          const std::vector<std::string>& sender_ids,
@@ -298,9 +295,15 @@ void GCMDriver::DispatchMessageInternal(const std::string& app_id,
     case GCMDecryptionResult::INVALID_BINARY_HEADER_PAYLOAD_LENGTH:
     case GCMDecryptionResult::INVALID_BINARY_HEADER_RECORD_SIZE:
     case GCMDecryptionResult::INVALID_BINARY_HEADER_PUBLIC_KEY_LENGTH:
-    case GCMDecryptionResult::INVALID_BINARY_HEADER_PUBLIC_KEY_FORMAT:
+    case GCMDecryptionResult::INVALID_BINARY_HEADER_PUBLIC_KEY_FORMAT: {
       RecordDecryptionFailure(app_id, result);
+      GCMAppHandler* handler = GetAppHandler(app_id);
+      if (handler) {
+        handler->OnMessageDecryptionFailed(
+            app_id, ToGCMDecryptionResultDetailsString(result));
+      }
       return;
+    }
     case GCMDecryptionResult::ENUM_SIZE:
       break;  // deliberate fall-through
   }
