@@ -61,128 +61,66 @@ class ActionsController {
     this.ui_ = ui;
 
     /**
-     * @private {Map<string, ActionsModel>}
+     * @private {ActionsModel}
      */
-    this.readyModels_ = new Map();
+    this.fileListActionsModel_ = null;
 
     /**
-     * @private {Map<string, Promise<ActionsModel>>}
+     * @private {ActionsModel}
      */
-    this.initializingdModels_ = new Map();
+    this.navigationListActionsModel_ = null;
 
     /**
-     * Key for in-memory state for current directory.
-     * @private {?string}
-     */
-    this.currentDirKey_ = null;
-
-    /**
-     * Key for in-memory state for current selection in the file list.
-     * @private {?string}
-     */
-    this.currentSelectionKey_ = null;
-
-    /**
-     * Id for an UI update, when an async update happens we only send the state
-     * to the DOM if the sequence hasn't changed since its start.
-     *
      * @private {number}
      */
-    this.updateUiSequence_ = 0;
+    this.navigationListSequence_ = 0;
 
-    // Attach listeners to non-user events which will only update the in-memory
-    // ActionsModel.
+    /**
+     * @private {ActionsController.Context}
+     */
+    this.menuContext_ = ActionsController.Context.UNKNOWN;
+
     this.ui_.directoryTree.addEventListener(
         'change', this.onNavigationListSelectionChanged_.bind(this), true);
     this.selectionHandler_.addEventListener(
-        FileSelectionHandler.EventType.CHANGE_THROTTLED,
+        FileSelectionHandler.EventType.CHANGE,
         this.onSelectionChanged_.bind(this));
-
-    // Attach listeners to events based on user action to show the menu, which
-    // updates the DOM.
+    this.selectionHandler_.addEventListener(
+        FileSelectionHandler.EventType.CHANGE_THROTTLED,
+        this.onSelectionChangeThrottled_.bind(this));
     cr.ui.contextMenuHandler.addEventListener(
         'show', this.onContextMenuShow_.bind(this));
-    this.ui_.selectionMenuButton.addEventListener(
-        'menushow', this.onMenuShow_.bind(this));
-    this.ui_.gearButton.addEventListener(
-        'menushow', this.onMenuShow_.bind(this));
   }
 
   /**
    * @param {Element} element
-   * @return {!Array<Entry|FileEntry>}
+   * @return {ActionsController.Context}
    * @private
    */
-  getEntriesFor_(element) {
+  getContextFor_(element) {
     // Element can be null, eg. when invoking a command via a keyboard shortcut.
-    if (!element) {
-      return [];
+    // By default, all actions refer to the file list, so return FILE_LIST.
+    if (element === null) {
+      return ActionsController.Context.FILE_LIST;
     }
 
     if (this.ui_.listContainer.element.contains(element) ||
-        this.ui_.toolbar.contains(element) ||
-        this.ui_.fileContextMenu.contains(element) ||
-        document.body === element) {
-      return this.selectionHandler_.selection.entries;
+        this.ui_.toolbar.contains(element)) {
+      return ActionsController.Context.FILE_LIST;
+    } else if (this.ui_.directoryTree.contains(element)) {
+      return ActionsController.Context.NAVIGATION_LIST;
+    } else {
+      return ActionsController.Context.UNKNOWN;
     }
-    if (this.ui_.directoryTree.contains(element) ||
-        this.ui_.directoryTree.contextMenuForRootItems.contains(element) ||
-        this.ui_.directoryTree.contextMenuForSubitems.contains(element)) {
-      if (element.entry) {
-        // DirectoryItem has "entry" attribute.
-        return [element.entry];
-      }
-      if (element.selectedItem && element.selectedItem.entry) {
-        // DirectoryTree has the selected item.
-        return [element.selectedItem.entry];
-      }
-    }
-
-    return [];
   }
 
   /**
-   * @param {!Array<Entry|FileEntry>} entries
-   * @return {string}
-   * @private
-   * */
-  getEntriesKey_(entries) {
-    return entries.map(entry => entry.toURL()).join(';');
-  }
-
-  /**
-   * @param {!string} key Key to be cleared.
    * @private
    */
-  clearLocalCache_(key) {
-    this.readyModels_.delete(key);
-    this.initializingdModels_.delete(key);
-  }
-
-  /**
-   * @param {Element} element
-   * @private
-   */
-  updateUI_(element) {
-    const entries = this.getEntriesFor_(/** @type {Element} */ (element));
-
-    // Try to update synchronously.
-    const actionsModel = this.getInitializedActionsForEntries(entries);
-    if (actionsModel) {
-      this.ui_.actionsSubmenu.setActionsModel(actionsModel, element);
-      return;
-    }
-
-    // Asynchronously update the UI, after fetching actions from the backend.
-    const sequence = ++this.updateUiSequence_;
-    this.getActionsForEntries(entries).then((actionsModel) => {
-      // Only update if there wasn't another UI update started while the promise
-      // was resolving, which could be for different entries and avoids multiple
-      // updates for the same entries.
-      if (sequence === this.updateUiSequence_) {
-        this.ui_.actionsSubmenu.setActionsModel(actionsModel, element);
-      }
-    });
+  updateUI_() {
+    const actionsModel = this.getActionsModelForContext(this.menuContext_);
+    // TODO(mtomasz): Prevent flickering somehow.
+    this.ui_.actionsSubmenu.setActionsModel(actionsModel);
   }
 
   /**
@@ -190,110 +128,133 @@ class ActionsController {
    * @private
    */
   onContextMenuShow_(event) {
-    this.updateUI_(event.element);
-  }
-
-  /**
-   * @param {!Event} event
-   * @private
-   */
-  onMenuShow_(event) {
-    this.updateUI_(/** @type {Element} */ (event.target));
+    this.menuContext_ = this.getContextFor_(event.element);
+    this.updateUI_();
   }
 
   /**
    * @private
    */
   onSelectionChanged_() {
-    const entries = this.selectionHandler_.selection.entries;
+    if (this.fileListActionsModel_) {
+      this.fileListActionsModel_.destroy();
+      this.fileListActionsModel_ = null;
+    }
+    this.updateUI_();
+  }
 
-    if (!entries.length) {
-      this.currentSelectionKey_ = null;
+  /**
+   * @private
+   */
+  onSelectionChangeThrottled_() {
+    assert(!this.fileListActionsModel_);
+    const selection = this.selectionHandler_.selection;
+
+    const entries = selection.entries;
+    if (!entries) {
       return;
     }
 
-    const currentKey = this.getEntriesKey_(entries);
-    this.currentSelectionKey_ = currentKey;
+    const actionsModel = new ActionsModel(
+        this.volumeManager_, this.metadataModel_, this.shortcutsModel_,
+        this.driveSyncHandler_, this.ui_, entries);
 
-    this.getActionsForEntries(entries);
+    const initializeAndUpdateUI =
+        /** @type {function(Event=)} */ (opt_event => {
+          if (selection !== this.selectionHandler_.selection) {
+            return;
+          }
+          actionsModel.initialize().then(() => {
+            if (selection !== this.selectionHandler_.selection) {
+              return;
+            }
+            this.fileListActionsModel_ = actionsModel;
+            // Before updating the UI we need to ensure that this.menuContext_
+            // has a reasonable value or nothing will happen. We will save and
+            // restore the existing value.
+            const oldMenuContext = this.menuContext_;
+            if (this.menuContext_ === ActionsController.Context.UNKNOWN) {
+              // FILE_LIST should be a reasonable default.
+              this.menuContext_ = ActionsController.Context.FILE_LIST;
+            }
+            this.updateUI_();
+            this.menuContext_ = oldMenuContext;
+          });
+        });
+
+    actionsModel.addEventListener('invalidated', initializeAndUpdateUI);
+    initializeAndUpdateUI();
   }
 
   /**
    * @private
    */
   onNavigationListSelectionChanged_() {
-    const entry = this.ui_.directoryTree.selectedItem &&
-        this.ui_.directoryTree.selectedItem.entry;
+    if (this.navigationListActionsModel_) {
+      this.navigationListActionsModel_.destroy();
+      this.navigationListActionsModel_ = null;
+    }
+    this.updateUI_();
 
+    const entry = this.ui_.directoryTree.selectedItem ?
+        (this.ui_.directoryTree.selectedItem.entry || null) :
+        null;
     if (!entry) {
-      this.currentDirKey_ = null;
       return;
     }
 
-    // Force to recalculate for the new current directory.
-    const key = this.getEntriesKey_([entry]);
-    this.clearLocalCache_(key);
-    this.currentDirKey_ = key;
-
-    this.getActionsForEntries([entry]);
-  }
-
-  /**
-   * @param {!Array<Entry|FileEntry>} entries
-   * @return {?ActionsModel}
-   */
-  getInitializedActionsForEntries(entries) {
-    const key = this.getEntriesKey_(entries);
-    return this.readyModels_.get(key);
-  }
-
-  /**
-   * @param {!Array<Entry|FileEntry>} entries
-   * @return {Promise<ActionsModel>}
-   */
-  getActionsForEntries(entries) {
-    const key = this.getEntriesKey_(entries);
-    if (!key) {
-      return Promise.resolve();
-    }
-
-    // If it's still initializing, return the cached promise.
-    let promise = this.initializingdModels_.get(key);
-    if (promise) {
-      return promise;
-    }
-
-    // If it's already initialized, resolve with the model.
-    let actionsModel = this.readyModels_.get(key);
-    if (actionsModel) {
-      return Promise.resolve(actionsModel);
-    }
-
-    actionsModel = new ActionsModel(
+    const sequence = ++this.navigationListSequence_;
+    const actionsModel = new ActionsModel(
         this.volumeManager_, this.metadataModel_, this.shortcutsModel_,
-        this.driveSyncHandler_, this.ui_, entries);
+        this.driveSyncHandler_, this.ui_, [entry]);
 
-    // Once it's initialized, move to readyModels_ so we don't have to construct
-    // and initialized again.
-    const init = actionsModel.initialize().then(() => {
-      this.initializingdModels_.delete(key);
-      this.readyModels_.set(key, actionsModel);
-      return actionsModel;
-    });
+    const initializeAndUpdateUI =
+        /** @type {function(Event=)} */ (opt_event => {
+          actionsModel.initialize().then(() => {
+            if (this.navigationListSequence_ !== sequence) {
+              return;
+            }
+            this.navigationListActionsModel_ = actionsModel;
+            this.updateUI_();
+          });
+        });
 
-    // Cache in the waiting initialization map.
-    this.initializingdModels_.set(key, init);
-    return init;
+    actionsModel.addEventListener('invalidated', initializeAndUpdateUI);
+    initializeAndUpdateUI();
   }
 
   /**
-   * @param {Action} action
+   * @param {!ActionsController.Context} context
+   * @return {ActionsModel} Actions model.
    */
-  executeAction(action) {
-    const entries = action.getEntries();
-    const key = this.getEntriesKey_(entries);
-    // Invalidate the model early so new UI has to refresh it.
-    this.readyModels_.delete(key);
-    action.execute();
+  getActionsModelForContext(context) {
+    switch (context) {
+      case ActionsController.Context.FILE_LIST:
+        return this.fileListActionsModel_;
+
+      case ActionsController.Context.NAVIGATION_LIST:
+        return this.navigationListActionsModel_;
+
+      default:
+        return null;
+    }
+  }
+
+  /**
+   * @param {EventTarget} target
+   * @return {ActionsModel} Actions model.
+   */
+  getActionsModelFor(target) {
+    const element = /** @type {Element} */ (target);
+    return this.getActionsModelForContext(this.getContextFor_(element));
   }
 }
+
+/**
+ * @enum {string}
+ */
+ActionsController.Context = {
+  FILE_LIST: 'file-list',
+  NAVIGATION_LIST: 'navigation-list',
+  UNKNOWN: 'unknown'
+};
