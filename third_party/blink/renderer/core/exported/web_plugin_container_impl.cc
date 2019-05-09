@@ -122,17 +122,17 @@ const WebInputEvent::Modifiers kEditingModifier = WebInputEvent::kControlKey;
 // Public methods --------------------------------------------------------------
 
 void WebPluginContainerImpl::AttachToLayout() {
-  DCHECK(!is_attached_);
-  is_attached_ = true;
+  DCHECK(!IsAttached());
+  SetAttached(true);
   SetParentVisible(true);
   // No need to track visibility for plugins.
   element_->StopVisibilityObserver();
 }
 
 void WebPluginContainerImpl::DetachFromLayout() {
-  DCHECK(is_attached_);
+  DCHECK(IsAttached());
   SetParentVisible(false);
-  is_attached_ = false;
+  SetAttached(false);
 }
 
 void WebPluginContainerImpl::UpdateAllLifecyclePhases() {
@@ -141,30 +141,6 @@ void WebPluginContainerImpl::UpdateAllLifecyclePhases() {
 
   web_plugin_->UpdateAllLifecyclePhases(
       WebWidget::LifecycleUpdateReason::kOther);
-}
-
-void WebPluginContainerImpl::SetFrameRect(const IntRect& frame_rect) {
-  frame_rect_ = frame_rect;
-  ReportGeometry();
-}
-
-IntRect WebPluginContainerImpl::FrameRect() const {
-  IntPoint location(frame_rect_.Location());
-
-  // As an optimization, we don't include the root layer's scroll offset in the
-  // frame rect.  As a result, we don't need to recalculate the frame rect every
-  // time the root layer scrolls, but we need to add it in here.
-  LayoutEmbeddedContent* owner = element_->GetLayoutEmbeddedContent();
-  if (owner) {
-    LayoutView* owner_layout_view = owner->View();
-    DCHECK(owner_layout_view);
-    if (owner_layout_view->HasOverflowClip()) {
-      IntSize scroll_offset(owner_layout_view->ScrolledContentOffset());
-      location.SaturatedMove(-scroll_offset.Width(), -scroll_offset.Height());
-    }
-  }
-
-  return IntRect(location, frame_rect_.Size());
 }
 
 void WebPluginContainerImpl::Paint(GraphicsContext& context,
@@ -176,50 +152,50 @@ void WebPluginContainerImpl::Paint(GraphicsContext& context,
     return;
 
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() && layer_) {
-    layer_->SetBounds(gfx::Size(frame_rect_.Size()));
+    layer_->SetBounds(gfx::Size(Size()));
     layer_->SetIsDrawable(true);
     layer_->SetHitTestable(true);
     // When compositing is after paint, composited plugins should have their
     // layers inserted rather than invoking WebPlugin::paint.
     RecordForeignLayer(context, DisplayItem::kForeignLayerPlugin, layer_,
-                       FloatPoint(frame_rect_.Location()));
+                       FloatPoint(DocumentLocation()));
     return;
   }
 
   if (DrawingRecorder::UseCachedDrawingIfPossible(
-          context, *element_->GetLayoutObject(), DisplayItem::kWebPlugin))
+          context, *GetLayoutEmbeddedContent(), DisplayItem::kWebPlugin))
     return;
 
-  DrawingRecorder recorder(context, *element_->GetLayoutObject(),
+  DrawingRecorder recorder(context, *GetLayoutEmbeddedContent(),
                            DisplayItem::kWebPlugin);
   context.Save();
 
   // The plugin is positioned in the root frame's coordinates, so it needs to
   // be painted in them too.
-  FloatPoint origin(ParentFrameView().ConvertToRootFrame(IntPoint()));
+  FloatPoint origin(ParentFrameView()->ConvertToRootFrame(IntPoint()));
   origin.Move(-paint_offset);
   context.Translate(-origin.X(), -origin.Y());
 
   cc::PaintCanvas* canvas = context.Canvas();
 
-  IntRect window_rect = ParentFrameView().ConvertToRootFrame(cull_rect.Rect());
+  IntRect window_rect = ParentFrameView()->ConvertToRootFrame(cull_rect.Rect());
   web_plugin_->Paint(canvas, window_rect);
 
   context.Restore();
 }
 
 void WebPluginContainerImpl::UpdateGeometry() {
-  if (LayoutEmbeddedContent* layout = element_->GetLayoutEmbeddedContent())
+  if (LayoutEmbeddedContent* layout = GetLayoutEmbeddedContent())
     layout->UpdateGeometry(*this);
 }
 
 void WebPluginContainerImpl::InvalidateRect(const IntRect& rect) {
   // InvalidateRect can be called from Dispose when this plugin is no longer
   // attached.  In this case, we return immediately.
-  if (!is_attached_)
+  if (!IsAttached())
     return;
 
-  LayoutBox* layout_object = ToLayoutBox(element_->GetLayoutObject());
+  LayoutBox* layout_object = GetLayoutEmbeddedContent();
   if (!layout_object)
     return;
 
@@ -242,12 +218,12 @@ bool WebPluginContainerImpl::IsErrorplaceholder() {
 }
 
 void WebPluginContainerImpl::Show() {
-  self_visible_ = true;
+  SetSelfVisible(true);
   web_plugin_->UpdateVisibility(true);
 }
 
 void WebPluginContainerImpl::Hide() {
-  self_visible_ = false;
+  SetSelfVisible(false);
   web_plugin_->UpdateVisibility(false);
 }
 
@@ -276,32 +252,19 @@ void WebPluginContainerImpl::HandleEvent(Event& event) {
     element_->Node::DefaultEventHandler(event);
 }
 
-void WebPluginContainerImpl::FrameRectsChanged() {
-  ReportGeometry();
-}
-
 void WebPluginContainerImpl::EventListenersRemoved() {
   // We're no longer registered to receive touch events, so don't try to remove
   // the touch event handlers in our destructor.
   touch_event_request_type_ = kTouchEventRequestTypeNone;
 }
 
-void WebPluginContainerImpl::SetParentVisible(bool parent_visible) {
+void WebPluginContainerImpl::ParentVisibleChanged() {
   // We override this function to make sure that geometry updates are sent
   // over to the plugin. For e.g. when a plugin is instantiated it does not
-  // have a valid parent. As a result the first geometry update from webkit
-  // is ignored. This function is called when the plugin eventually gets a
-  // parent.
-
-  if (parent_visible_ == parent_visible)
-    return;  // No change.
-
-  parent_visible_ = parent_visible;
-  if (!self_visible_)
-    return;  // This widget has explicitely been marked as not visible.
-
-  if (web_plugin_)
-    web_plugin_->UpdateVisibility(parent_visible_ && self_visible_);
+  // have a valid parent. As a result the first geometry update is ignored. This
+  // function is called when the plugin eventually gets a parent.
+  if (web_plugin_ && IsSelfVisible())
+    web_plugin_->UpdateVisibility(IsVisible());
 }
 
 void WebPluginContainerImpl::SetPlugin(WebPlugin* plugin) {
@@ -410,11 +373,11 @@ int WebPluginContainerImpl::PrintBegin(
 
 void WebPluginContainerImpl::PrintPage(int page_number, GraphicsContext& gc) {
   if (DrawingRecorder::UseCachedDrawingIfPossible(
-          gc, *element_->GetLayoutObject(), DisplayItem::kWebPlugin))
+          gc, *GetLayoutEmbeddedContent(), DisplayItem::kWebPlugin))
     return;
 
   // TODO(wkorman): Do we still need print_rect at all?
-  DrawingRecorder recorder(gc, *element_->GetLayoutObject(),
+  DrawingRecorder recorder(gc, *GetLayoutEmbeddedContent(),
                            DisplayItem::kWebPlugin);
   gc.Save();
 
@@ -490,7 +453,7 @@ void WebPluginContainerImpl::EnqueueMessageEvent(
 }
 
 void WebPluginContainerImpl::Invalidate() {
-  InvalidateRect(IntRect(0, 0, frame_rect_.Width(), frame_rect_.Height()));
+  InvalidateRect(IntRect(0, 0, Size().Width(), Size().Height()));
 }
 
 void WebPluginContainerImpl::InvalidateRect(const WebRect& rect) {
@@ -509,13 +472,13 @@ void WebPluginContainerImpl::ScheduleAnimation() {
 void WebPluginContainerImpl::ReportGeometry() {
   // Ignore when SetFrameRect/ReportGeometry is called from
   // UpdateOnEmbeddedContentViewChange before plugin is attached.
-  if (!is_attached_)
+  if (!IsAttached())
     return;
 
   IntRect window_rect, clip_rect, unobscured_rect;
   CalculateGeometry(window_rect, clip_rect, unobscured_rect);
   web_plugin_->UpdateGeometry(window_rect, clip_rect, unobscured_rect,
-                              self_visible_);
+                              IsSelfVisible());
 }
 
 v8::Local<v8::Object> WebPluginContainerImpl::V8ObjectForElement() {
@@ -598,14 +561,14 @@ bool WebPluginContainerImpl::IsRectTopmost(const WebRect& rect) {
   // we might be being disposed because the frame has already be deleted and
   // then something else dropped the
   // last reference to the this object.
-  if (!is_attached_ || !element_)
+  if (!IsAttached() || !element_)
     return false;
 
   LocalFrame* frame = element_->GetDocument().GetFrame();
   if (!frame)
     return false;
 
-  IntPoint frame_location = FrameRect().Location();
+  IntPoint frame_location = Location();
   HitTestLocation location(LayoutRect(frame_location.X() + rect.x,
                                       frame_location.Y() + rect.y, rect.width,
                                       rect.height));
@@ -676,7 +639,7 @@ void WebPluginContainerImpl::SetWantsWheelEvents(bool wants_wheel_events) {
             page->GetScrollingCoordinator()) {
       // Only call scrolling_coordinator if attached.  SetWantsWheelEvents can
       // be called from Plugin Initialization when it is not yet attached.
-      if (is_attached_) {
+      if (IsAttached()) {
         LocalFrameView* frame_view = element_->GetDocument().GetFrame()->View();
         scrolling_coordinator->NotifyGeometryChanged(frame_view);
       }
@@ -687,24 +650,24 @@ void WebPluginContainerImpl::SetWantsWheelEvents(bool wants_wheel_events) {
 WebPoint WebPluginContainerImpl::RootFrameToLocalPoint(
     const WebPoint& point_in_root_frame) {
   WebPoint point_in_content =
-      ParentFrameView().ConvertFromRootFrame(point_in_root_frame);
-  return RoundedIntPoint(element_->GetLayoutObject()->AbsoluteToLocal(
+      ParentFrameView()->ConvertFromRootFrame(point_in_root_frame);
+  return RoundedIntPoint(GetLayoutEmbeddedContent()->AbsoluteToLocal(
       FloatPoint(point_in_content), kUseTransforms));
 }
 
 WebPoint WebPluginContainerImpl::LocalToRootFramePoint(
     const WebPoint& point_in_local) {
   IntPoint absolute_point =
-      RoundedIntPoint(element_->GetLayoutObject()->LocalToAbsolute(
+      RoundedIntPoint(GetLayoutEmbeddedContent()->LocalToAbsolute(
           FloatPoint(point_in_local), kUseTransforms));
-  return ParentFrameView().ConvertToRootFrame(absolute_point);
+  return ParentFrameView()->ConvertToRootFrame(absolute_point);
 }
 
 void WebPluginContainerImpl::DidReceiveResponse(
     const ResourceResponse& response) {
   // Make sure that the plugin receives window geometry before data, or else
   // plugins misbehave.
-  FrameRectsChanged();
+  ReportGeometry();
 
   WrappedResourceResponse url_response(response);
   web_plugin_->DidReceiveResponse(url_response);
@@ -770,29 +733,32 @@ bool WebPluginContainerImpl::WantsWheelEvents() {
 
 WebPluginContainerImpl::WebPluginContainerImpl(HTMLPlugInElement& element,
                                                WebPlugin* web_plugin)
-    : ContextClient(element.GetDocument().GetFrame()),
+    : EmbeddedContentView(IntRect()),
+      ContextClient(element.GetDocument().GetFrame()),
       element_(element),
       web_plugin_(web_plugin),
       layer_(nullptr),
       touch_event_request_type_(kTouchEventRequestTypeNone),
       prevent_contents_opaque_changes_(false),
-      wants_wheel_events_(false),
-      self_visible_(false),
-      parent_visible_(false),
-      is_attached_(false) {}
+      wants_wheel_events_(false) {}
 
 WebPluginContainerImpl::~WebPluginContainerImpl() {
   // The plugin container must have been disposed of by now.
   DCHECK(!web_plugin_);
 }
 
-LocalFrameView& WebPluginContainerImpl::ParentFrameView() const {
-  DCHECK(is_attached_);
-  return *element_->GetDocument().GetFrame()->View();
+LocalFrameView* WebPluginContainerImpl::ParentFrameView() const {
+  DCHECK(IsAttached());
+  return element_->GetDocument().GetFrame()->View();
+}
+
+LayoutEmbeddedContent* WebPluginContainerImpl::GetLayoutEmbeddedContent()
+    const {
+  return element_->GetLayoutEmbeddedContent();
 }
 
 void WebPluginContainerImpl::Dispose() {
-  is_attached_ = false;
+  SetAttached(false);
 
   RequestTouchEventType(kTouchEventRequestTypeNone);
   SetWantsWheelEvents(false);
@@ -815,6 +781,15 @@ void WebPluginContainerImpl::Dispose() {
   }
 }
 
+void WebPluginContainerImpl::SetFrameRect(const IntRect& rect) {
+  IntRect old_rect(FrameRect());
+  EmbeddedContentView::SetFrameRect(rect);
+  // We need to report every time SetFrameRect is called, even if there is no
+  // change (if there is a change, FrameRectsChanged will do the reporting).
+  if (old_rect == FrameRect())
+    PropagateFrameRects();
+}
+
 void WebPluginContainerImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(element_);
   ContextClient::Trace(visitor);
@@ -823,11 +798,11 @@ void WebPluginContainerImpl::Trace(blink::Visitor* visitor) {
 void WebPluginContainerImpl::HandleMouseEvent(MouseEvent& event) {
   // We cache the parent LocalFrameView here as the plugin widget could be
   // deleted in the call to HandleEvent. See http://b/issue?id=1362948
-  LocalFrameView& parent = ParentFrameView();
+  LocalFrameView* parent = ParentFrameView();
 
   // TODO(dtapuska): Move WebMouseEventBuilder into the anonymous namespace
   // in this class.
-  WebMouseEventBuilder transformed_event(&parent, element_->GetLayoutObject(),
+  WebMouseEventBuilder transformed_event(parent, GetLayoutEmbeddedContent(),
                                          event);
   if (transformed_event.GetType() == WebInputEvent::kUndefined)
     return;
@@ -844,11 +819,11 @@ void WebPluginContainerImpl::HandleMouseEvent(MouseEvent& event) {
   // A windowless plugin can change the cursor in response to a mouse move
   // event.  We need to reflect the changed cursor in the frame view as the
   // mouse is moved in the boundaries of the windowless plugin.
-  Page* page = parent.GetFrame().GetPage();
+  Page* page = parent->GetFrame().GetPage();
   if (!page)
     return;
   page->GetChromeClient().SetCursorForPlugin(
-      cursor_info, &parent.GetFrame().LocalFrameRoot());
+      cursor_info, &parent->GetFrame().LocalFrameRoot());
 }
 
 void WebPluginContainerImpl::HandleDragEvent(MouseEvent& event) {
@@ -872,7 +847,7 @@ void WebPluginContainerImpl::HandleDragEvent(MouseEvent& event) {
   WebDragOperationsMask drag_operation_mask =
       static_cast<WebDragOperationsMask>(data_transfer->SourceOperation());
   WebFloatPoint drag_screen_location(event.screenX(), event.screenY());
-  IntPoint location(FrameRect().Location());
+  IntPoint location(Location());
   WebFloatPoint drag_location(event.AbsoluteLocation().X() - location.X(),
                               event.AbsoluteLocation().Y() - location.Y());
 
@@ -885,9 +860,10 @@ void WebPluginContainerImpl::HandleWheelEvent(WheelEvent& event) {
   WebFloatPoint absolute_location = event.NativeEvent().PositionInRootFrame();
 
   // Translate the root frame position to content coordinates.
-  absolute_location = ParentFrameView().ConvertFromRootFrame(absolute_location);
+  absolute_location =
+      ParentFrameView()->ConvertFromRootFrame(absolute_location);
 
-  FloatPoint local_point = element_->GetLayoutObject()->AbsoluteToLocal(
+  FloatPoint local_point = GetLayoutEmbeddedContent()->AbsoluteToLocal(
       absolute_location, kUseTransforms);
   WebMouseWheelEvent translated_event = event.NativeEvent().FlattenTransform();
   translated_event.SetPositionInWidget(local_point.X(), local_point.Y());
@@ -974,15 +950,15 @@ WebTouchEvent WebPluginContainerImpl::TransformTouchEvent(
   const WebTouchEvent* touch_event = static_cast<const WebTouchEvent*>(&event);
   WebTouchEvent transformed_event = touch_event->FlattenTransform();
 
-  LocalFrameView& parent = ParentFrameView();
+  LocalFrameView* parent = ParentFrameView();
   for (unsigned i = 0; i < transformed_event.touches_length; ++i) {
     WebFloatPoint absolute_location =
         transformed_event.touches[i].PositionInWidget();
 
     // Translate the root frame position to content coordinates.
-    absolute_location = parent.ConvertFromRootFrame(absolute_location);
+    absolute_location = parent->ConvertFromRootFrame(absolute_location);
 
-    FloatPoint local_point = element_->GetLayoutObject()->AbsoluteToLocal(
+    FloatPoint local_point = GetLayoutEmbeddedContent()->AbsoluteToLocal(
         absolute_location, kUseTransforms);
     transformed_event.touches[i].SetPositionInWidget(local_point);
   }
@@ -1044,7 +1020,7 @@ void WebPluginContainerImpl::HandleGestureEvent(GestureEvent& event) {
   WebGestureEvent translated_event = event.NativeEvent();
   WebFloatPoint absolute_root_frame_location =
       event.NativeEvent().PositionInRootFrame();
-  FloatPoint local_point = element_->GetLayoutObject()->AbsoluteToLocal(
+  FloatPoint local_point = GetLayoutEmbeddedContent()->AbsoluteToLocal(
       absolute_root_frame_location, kUseTransforms);
   translated_event.FlattenTransform();
   translated_event.SetPositionInWidget(local_point);
@@ -1061,8 +1037,8 @@ void WebPluginContainerImpl::HandleGestureEvent(GestureEvent& event) {
 }
 
 void WebPluginContainerImpl::SynthesizeMouseEventIfPossible(TouchEvent& event) {
-  WebMouseEventBuilder web_event(&ParentFrameView(),
-                                 element_->GetLayoutObject(), event);
+  WebMouseEventBuilder web_event(ParentFrameView(), GetLayoutEmbeddedContent(),
+                                 event);
   if (web_event.GetType() == WebInputEvent::kUndefined)
     return;
 
@@ -1075,7 +1051,7 @@ void WebPluginContainerImpl::SynthesizeMouseEventIfPossible(TouchEvent& event) {
 
 void WebPluginContainerImpl::FocusPlugin() {
   LocalFrame* frame = element_->GetDocument().GetFrame();
-  DCHECK(is_attached_ && frame && frame->GetPage());
+  DCHECK(IsAttached() && frame && frame->GetPage());
   frame->GetPage()->GetFocusController().SetFocusedElement(element_, frame);
 }
 
@@ -1146,7 +1122,7 @@ void WebPluginContainerImpl::CalculateGeometry(IntRect& window_rect,
   // GetDocument().LayoutView() can be null when we receive messages from the
   // plugins while we are destroying a frame.
   // TODO: Can we just check element_->GetDocument().IsActive() ?
-  if (element_->GetLayoutObject()->GetDocument().GetLayoutView()) {
+  if (GetLayoutEmbeddedContent()->GetDocument().GetLayoutView()) {
     // Take our element and get the clip rect from the enclosing layer and
     // frame view.
     ComputeClipRectsForPlugin(element_, window_rect, clip_rect,

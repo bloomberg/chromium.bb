@@ -83,13 +83,10 @@ class CORE_EXPORT WebPluginContainerImpl final
 
   // EmbeddedContentView methods
   bool IsPluginView() const override { return true; }
+  LocalFrameView* ParentFrameView() const override;
+  LayoutEmbeddedContent* GetLayoutEmbeddedContent() const override;
   void AttachToLayout() override;
   void DetachFromLayout() override;
-  bool IsAttached() const override { return is_attached_; }
-  void SetParentVisible(bool) override;
-  void FrameRectsChanged() override;
-  void SetFrameRect(const IntRect&) override;
-  IntRect FrameRect() const override;
   // |paint_offset| is used to to paint the contents at the correct location.
   // It should be issued as a transform operation before painting the contents.
   void Paint(GraphicsContext&,
@@ -194,9 +191,13 @@ class CORE_EXPORT WebPluginContainerImpl final
   // method. Here we call Dispose() which does the correct virtual dispatch.
   void PreFinalize() { Dispose(); }
   void Dispose() override;
+  void SetFrameRect(const IntRect&) override;
+  void PropagateFrameRects() override { ReportGeometry(); }
+
+ protected:
+  void ParentVisibleChanged() override;
 
  private:
-  LocalFrameView& ParentFrameView() const;
   // Sets |windowRect| to the content rect of the plugin in screen space.
   // Sets |clippedAbsoluteRect| to the visible rect for the plugin, clipped to
   // the visible screen of the root frame, in local space of the plugin.
@@ -233,13 +234,9 @@ class CORE_EXPORT WebPluginContainerImpl final
   Member<HTMLPlugInElement> element_;
   WebPlugin* web_plugin_;
   cc::Layer* layer_;
-  IntRect frame_rect_;
   TouchEventRequestType touch_event_request_type_;
   bool prevent_contents_opaque_changes_;
   bool wants_wheel_events_;
-  bool self_visible_;
-  bool parent_visible_;
-  bool is_attached_;
 };
 
 DEFINE_TYPE_CASTS(WebPluginContainerImpl,

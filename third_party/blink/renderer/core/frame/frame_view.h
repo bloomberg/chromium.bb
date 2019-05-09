@@ -14,6 +14,7 @@ struct IntrinsicSizingInfo;
 
 class CORE_EXPORT FrameView : public EmbeddedContentView {
  public:
+  FrameView(const IntRect& frame_rect) : EmbeddedContentView(frame_rect) {}
   ~FrameView() override = default;
 
   // parent_flags is the result of calling GetIntersectionObservationFlags on

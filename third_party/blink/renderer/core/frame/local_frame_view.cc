@@ -222,9 +222,8 @@ static const unsigned kMaxUpdatePluginsIterations = 2;
 static bool g_initial_track_all_paint_invalidations = false;
 
 LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
-    : frame_(frame),
-      frame_rect_(frame_rect),
-      is_attached_(false),
+    : FrameView(frame_rect),
+      frame_(frame),
       display_mode_(kWebDisplayModeBrowser),
       can_have_scrollbars_(true),
       has_pending_layout_(false),
@@ -448,7 +447,7 @@ void LocalFrameView::SetLifecycleUpdatesThrottledForTesting() {
 }
 
 void LocalFrameView::InvalidateRect(const IntRect& rect) {
-  auto* layout_object = frame_->OwnerLayoutObject();
+  auto* layout_object = GetLayoutEmbeddedContent();
   if (!layout_object)
     return;
 
@@ -459,45 +458,23 @@ void LocalFrameView::InvalidateRect(const IntRect& rect) {
   layout_object->InvalidatePaintRectangle(LayoutRect(paint_invalidation_rect));
 }
 
-void LocalFrameView::SetFrameRect(const IntRect& unclamped_frame_rect) {
-  IntRect frame_rect(SaturatedRect(unclamped_frame_rect));
-  if (frame_rect == frame_rect_)
-    return;
-  const bool width_changed = frame_rect_.Width() != frame_rect.Width();
-  const bool height_changed = frame_rect_.Height() != frame_rect.Height();
-  frame_rect_ = frame_rect;
+void LocalFrameView::FrameRectsChanged(const IntRect& old_rect) {
+  const bool width_changed = Size().Width() != old_rect.Width();
+  const bool height_changed = Size().Height() != old_rect.Height();
 
-  FrameRectsChanged();
+  PropagateFrameRects();
 
-  if (auto* layout_view = GetLayoutView())
-    layout_view->SetShouldCheckForPaintInvalidation();
+  if (FrameRect() != old_rect) {
+    if (auto* layout_view = GetLayoutView())
+      layout_view->SetShouldCheckForPaintInvalidation();
+  }
 
   if (width_changed || height_changed) {
     ViewportSizeChanged(width_changed, height_changed);
-
     if (frame_->IsMainFrame())
       frame_->GetPage()->GetVisualViewport().MainFrameDidChangeSize();
-
     GetFrame().Loader().RestoreScrollPositionAndViewState();
   }
-}
-
-IntPoint LocalFrameView::Location() const {
-  IntPoint location(frame_rect_.Location());
-
-  // As an optimization, we don't include the root layer's scroll offset in the
-  // frame rect.  As a result, we don't need to recalculate the frame rect every
-  // time the root layer scrolls, but we need to add it in here.
-  LayoutEmbeddedContent* owner = frame_->OwnerLayoutObject();
-  if (owner) {
-    LayoutView* owner_layout_view = owner->View();
-    DCHECK(owner_layout_view);
-    if (owner_layout_view->HasOverflowClip()) {
-      IntSize scroll_offset(owner_layout_view->ScrolledContentOffset());
-      location.SaturatedMove(-scroll_offset.Width(), -scroll_offset.Height());
-    }
-  }
-  return location;
 }
 
 Page* LocalFrameView::GetPage() const {
@@ -1099,7 +1076,7 @@ bool LocalFrameView::HasIntrinsicSizingInfo() const {
 }
 
 void LocalFrameView::UpdateGeometry() {
-  LayoutEmbeddedContent* layout = frame_->OwnerLayoutObject();
+  LayoutEmbeddedContent* layout = GetLayoutEmbeddedContent();
   if (!layout)
     return;
 
@@ -1318,12 +1295,6 @@ bool LocalFrameView::ShouldSetCursor() const {
   return page && page->IsPageVisible() &&
          !frame_->GetEventHandler().IsMousePositionUnknown() &&
          page->GetFocusController().IsActive();
-}
-
-void LocalFrameView::NotifyFrameRectsChangedIfNeededRecursive() {
-  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
-    frame_view.NotifyFrameRectsChangedIfNeeded();
-  });
 }
 
 void LocalFrameView::InvalidateBackgroundAttachmentFixedDescendantsOnScroll(
@@ -1974,7 +1945,7 @@ void LocalFrameView::WillBeRemovedFromFrame() {
 }
 
 LocalFrameView* LocalFrameView::ParentFrameView() const {
-  if (!is_attached_)
+  if (!IsAttached())
     return nullptr;
 
   Frame* parent_frame = frame_->Tree().Parent();
@@ -1982,6 +1953,10 @@ LocalFrameView* LocalFrameView::ParentFrameView() const {
     return parent_local_frame->View();
 
   return nullptr;
+}
+
+LayoutEmbeddedContent* LocalFrameView::GetLayoutEmbeddedContent() const {
+  return frame_->OwnerLayoutObject();
 }
 
 void LocalFrameView::VisualViewportScrollbarsChanged() {
@@ -2044,7 +2019,7 @@ void LocalFrameView::UpdateLifecyclePhasesForPrinting() {
       DocumentLifecycle::LifecycleUpdateReason::kOther);
 
   auto* detached_frame_view = this;
-  while (detached_frame_view->is_attached_ &&
+  while (detached_frame_view->IsAttached() &&
          detached_frame_view != local_frame_view_root) {
     detached_frame_view = detached_frame_view->ParentFrameView();
     CHECK(detached_frame_view);
@@ -2052,7 +2027,7 @@ void LocalFrameView::UpdateLifecyclePhasesForPrinting() {
 
   if (detached_frame_view == local_frame_view_root)
     return;
-  DCHECK(!detached_frame_view->is_attached_);
+  DCHECK(!detached_frame_view->IsAttached());
 
   // We are printing a detached frame or a descendant of a detached frame which
   // was not reached in some phases during during |local_frame_view_root->
@@ -2176,7 +2151,7 @@ bool LocalFrameView::UpdateLifecyclePhases(
   // This must be called from the root frame, or a detached frame for printing,
   // since it recurses down, not up. Otherwise the lifecycles of the frames
   // might be out of sync.
-  DCHECK(frame_->IsLocalRoot() || !is_attached_);
+  DCHECK(frame_->IsLocalRoot() || !IsAttached());
 
   // Only the following target states are supported.
   DCHECK(target_state == DocumentLifecycle::kLayoutClean ||
@@ -2334,7 +2309,9 @@ bool LocalFrameView::RunStyleAndLayoutLifecyclePhases(
     ForAllNonThrottledLocalFrameViews(
         [](LocalFrameView& frame_view) { frame_view.NotifyResizeObservers(); });
 
-    NotifyFrameRectsChangedIfNeededRecursive();
+    ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
+      frame_view.NotifyFrameRectsChangedIfNeeded();
+    });
   }
   // If we exceed the number of re-layouts during ResizeObserver notifications,
   // then we shouldn't continue with the lifecycle updates. At that time, we
@@ -2393,7 +2370,7 @@ bool LocalFrameView::RunPrePaintLifecyclePhase(
       // We may record more foreign layers under the frame.
       if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
         frame_view.SetPaintArtifactCompositorNeedsUpdate();
-      if (auto* owner = frame_view.GetFrame().OwnerLayoutObject())
+      if (auto* owner = frame_view.GetLayoutEmbeddedContent())
         owner->SetShouldCheckForPaintInvalidation();
     }
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
@@ -3079,7 +3056,7 @@ FloatPoint LocalFrameView::ConvertToLayoutObject(
 IntPoint LocalFrameView::ConvertSelfToChild(const EmbeddedContentView& child,
                                             const IntPoint& point) const {
   IntPoint new_point(point);
-  new_point.MoveBy(-child.FrameRect().Location());
+  new_point.MoveBy(-child.Location());
   return new_point;
 }
 
@@ -3173,7 +3150,7 @@ LayoutRect LocalFrameView::FrameToDocument(
 IntRect LocalFrameView::ConvertToContainingEmbeddedContentView(
     const IntRect& local_rect) const {
   if (LocalFrameView* parent = ParentFrameView()) {
-    auto* layout_object = frame_->OwnerLayoutObject();
+    auto* layout_object = GetLayoutEmbeddedContent();
     if (!layout_object)
       return local_rect;
 
@@ -3203,7 +3180,7 @@ IntRect LocalFrameView::ConvertFromContainingEmbeddedContentView(
 LayoutPoint LocalFrameView::ConvertToContainingEmbeddedContentView(
     const LayoutPoint& local_point) const {
   if (LocalFrameView* parent = ParentFrameView()) {
-    auto* layout_object = frame_->OwnerLayoutObject();
+    auto* layout_object = GetLayoutEmbeddedContent();
     if (!layout_object)
       return local_point;
 
@@ -3221,7 +3198,7 @@ LayoutPoint LocalFrameView::ConvertToContainingEmbeddedContentView(
 FloatPoint LocalFrameView::ConvertToContainingEmbeddedContentView(
     const FloatPoint& local_point) const {
   if (ParentFrameView()) {
-    auto* layout_object = frame_->OwnerLayoutObject();
+    auto* layout_object = GetLayoutEmbeddedContent();
     if (!layout_object)
       return local_point;
 
@@ -3253,7 +3230,7 @@ DoublePoint LocalFrameView::ConvertFromContainingEmbeddedContentView(
     const DoublePoint& parent_point) const {
   if (LocalFrameView* parent = ParentFrameView()) {
     // Get our layoutObject in the parent view
-    auto* layout_object = frame_->OwnerLayoutObject();
+    auto* layout_object = GetLayoutEmbeddedContent();
     if (!layout_object)
       return parent_point;
 
@@ -3409,10 +3386,10 @@ void LocalFrameView::RemoveAnimatingScrollableArea(
 }
 
 void LocalFrameView::AttachToLayout() {
-  CHECK(!is_attached_);
+  CHECK(!IsAttached());
   if (frame_->GetDocument())
     CHECK_NE(Lifecycle().GetState(), DocumentLifecycle::kStopping);
-  is_attached_ = true;
+  SetAttached(true);
   LocalFrameView* parent_view = ParentFrameView();
   CHECK(parent_view);
   if (parent_view->IsVisible())
@@ -3430,9 +3407,9 @@ void LocalFrameView::AttachToLayout() {
 }
 
 void LocalFrameView::DetachFromLayout() {
-  CHECK(is_attached_);
+  CHECK(IsAttached());
   SetParentVisible(false);
-  is_attached_ = false;
+  SetAttached(false);
 
   // We may need update paint properties in detached frame subtree for printing.
   // See UpdateLifecyclePhasesForPrinting().
@@ -3485,15 +3462,16 @@ void LocalFrameView::SetCursor(const Cursor& cursor) {
   page->GetChromeClient().SetCursor(cursor, frame_);
 }
 
-void LocalFrameView::FrameRectsChanged() {
-  TRACE_EVENT0("blink", "LocalFrameView::frameRectsChanged");
+void LocalFrameView::PropagateFrameRects() {
+  TRACE_EVENT0("blink", "LocalFrameView::PropagateFrameRects");
   if (LayoutSizeFixedToFrameSize())
     SetLayoutSizeInternal(Size());
 
-  ForAllChildViewsAndPlugins([](EmbeddedContentView& embedded_content_view) {
-    auto* local_frame_view = DynamicTo<LocalFrameView>(embedded_content_view);
-    if (!local_frame_view || !local_frame_view->ShouldThrottleRendering())
-      embedded_content_view.FrameRectsChanged();
+  ForAllChildViewsAndPlugins([](EmbeddedContentView& view) {
+    auto* local_frame_view = DynamicTo<LocalFrameView>(view);
+    if (!local_frame_view || !local_frame_view->ShouldThrottleRendering()) {
+      view.PropagateFrameRects();
+    }
   });
 
   GetFrame().Client()->FrameRectsChanged(FrameRect());
@@ -3587,7 +3565,7 @@ void LocalFrameView::ScrollRectToVisibleInRemoteParent(
 void LocalFrameView::NotifyFrameRectsChangedIfNeeded() {
   if (root_layer_did_scroll_) {
     root_layer_did_scroll_ = false;
-    FrameRectsChanged();
+    PropagateFrameRects();
   }
 }
 
@@ -3808,33 +3786,24 @@ FloatPoint LocalFrameView::ConvertFromRootFrame(
   return point_in_root_frame;
 }
 
-void LocalFrameView::SetParentVisible(bool visible) {
-  if (IsParentVisible() == visible)
-    return;
-
+void LocalFrameView::ParentVisibleChanged() {
   // As parent visibility changes, we may need to recomposite this frame view
   // and potentially child frame views.
   SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
 
-  parent_visible_ = visible;
-
   if (!IsSelfVisible())
     return;
 
+  bool visible = IsParentVisible();
   ForAllChildViewsAndPlugins(
       [visible](EmbeddedContentView& embedded_content_view) {
         embedded_content_view.SetParentVisible(visible);
       });
 }
 
-void LocalFrameView::SetSelfVisible(bool visible) {
-  if (visible != self_visible_) {
-    // Frame view visibility affects PLC::CanBeComposited, which in turn
-    // affects compositing inputs.
-    if (LayoutView* view = GetLayoutView())
-      view->Layer()->SetNeedsCompositingInputsUpdate();
-  }
-  self_visible_ = visible;
+void LocalFrameView::SelfVisibleChanged() {
+  if (LayoutView* view = GetLayoutView())
+    view->Layer()->SetNeedsCompositingInputsUpdate();
 }
 
 void LocalFrameView::Show() {
@@ -4175,7 +4144,7 @@ void LocalFrameView::BeginLifecycleUpdates() {
   if (!GetFrame().Loader().StateMachine()->CommittedFirstRealDocumentLoad())
     return;
   lifecycle_updates_throttled_ = false;
-  if (auto* owner = GetFrame().OwnerLayoutObject())
+  if (auto* owner = GetLayoutEmbeddedContent())
     owner->SetShouldCheckForPaintInvalidation();
 
   LayoutView* layout_view = GetLayoutView();

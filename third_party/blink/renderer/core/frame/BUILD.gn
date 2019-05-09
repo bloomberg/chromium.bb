@@ -47,6 +47,7 @@ blink_core_sources("frame") {
     "dom_visual_viewport.h",
     "dom_window.cc",
     "dom_window.h",
+    "embedded_content_view.cc",
     "embedded_content_view.h",
     "event_handler_registry.cc",
     "event_handler_registry.h",

@@ -24,14 +24,14 @@
 namespace blink {
 
 RemoteFrameView::RemoteFrameView(RemoteFrame* remote_frame)
-    : remote_frame_(remote_frame), is_attached_(false) {
+    : FrameView(IntRect()), remote_frame_(remote_frame) {
   DCHECK(remote_frame);
 }
 
 RemoteFrameView::~RemoteFrameView() = default;
 
 LocalFrameView* RemoteFrameView::ParentFrameView() const {
-  if (!is_attached_)
+  if (!IsAttached())
     return nullptr;
 
   HTMLFrameOwnerElement* owner = remote_frame_->DeprecatedLocalOwner();
@@ -43,8 +43,12 @@ LocalFrameView* RemoteFrameView::ParentFrameView() const {
   return To<LocalFrame>(remote_frame_->Tree().Parent())->View();
 }
 
+LayoutEmbeddedContent* RemoteFrameView::GetLayoutEmbeddedContent() const {
+  return remote_frame_->OwnerLayoutObject();
+}
+
 LocalFrameView* RemoteFrameView::ParentLocalRootFrameView() const {
-  if (!is_attached_)
+  if (!IsAttached())
     return nullptr;
 
   HTMLFrameOwnerElement* owner = remote_frame_->DeprecatedLocalOwner();
@@ -59,8 +63,8 @@ LocalFrameView* RemoteFrameView::ParentLocalRootFrameView() const {
 }
 
 void RemoteFrameView::AttachToLayout() {
-  DCHECK(!is_attached_);
-  is_attached_ = true;
+  DCHECK(!IsAttached());
+  SetAttached(true);
   if (ParentFrameView()->IsVisible())
     SetParentVisible(true);
   UpdateVisibility(true);
@@ -74,13 +78,13 @@ void RemoteFrameView::AttachToLayout() {
 
   subtree_throttled_ = ParentFrameView()->CanThrottleRendering();
 
-  FrameRectsChanged();
+  FrameRectsChanged(FrameRect());
 }
 
 void RemoteFrameView::DetachFromLayout() {
-  DCHECK(is_attached_);
+  DCHECK(IsAttached());
   SetParentVisible(false);
-  is_attached_ = false;
+  SetAttached(false);
 }
 
 RemoteFrameView* RemoteFrameView::Create(RemoteFrame* remote_frame) {
@@ -99,7 +103,7 @@ bool RemoteFrameView::UpdateViewportIntersectionsForSubtree(
   // This should only run in child frames.
   HTMLFrameOwnerElement* owner_element = remote_frame_->DeprecatedLocalOwner();
   DCHECK(owner_element);
-  LayoutEmbeddedContent* owner = owner_element->GetLayoutEmbeddedContent();
+  LayoutEmbeddedContent* owner = GetLayoutEmbeddedContent();
   IntRect viewport_intersection;
   DocumentLifecycle::LifecycleState parent_lifecycle_state =
       owner_element->GetDocument().Lifecycle().GetState();
@@ -111,7 +115,7 @@ bool RemoteFrameView::UpdateViewportIntersectionsForSubtree(
       parent_lifecycle_state >= DocumentLifecycle::kPrePaintClean &&
       RuntimeEnabledFeatures::IntersectionObserverV2Enabled();
 
-  if (!owner || !self_visible_) {
+  if (!owner || !IsSelfVisible()) {
     // The frame is detached from layout or not visible; leave
     // viewport_intersection empty, and signal the frame as occluded if
     // necessary.
@@ -170,7 +174,7 @@ bool RemoteFrameView::UpdateViewportIntersectionsForSubtree(
   UpdateVisibility(is_visible_for_throttling);
   UpdateRenderThrottlingStatus(
       !is_visible_for_throttling,
-      is_attached_ && ParentFrameView()->CanThrottleRendering());
+      IsAttached() && ParentFrameView()->CanThrottleRendering());
 
   return needs_occlusion_tracking_;
 }
@@ -194,7 +198,7 @@ IntRect RemoteFrameView::GetCompositingRect() {
   // If the local frame root is an OOPIF itself, then we use the root's
   // intersection rect. This represents a conservative maximum for the area
   // that needs to be rastered by the OOPIF compositor.
-  IntSize viewport_size = local_root_view->FrameRect().Size();
+  IntSize viewport_size = local_root_view->Size();
   if (local_root_view->GetPage()->MainFrame() != local_root_view->GetFrame()) {
     viewport_size =
         local_root_view->GetFrame().RemoteViewportIntersection().Size();
@@ -210,7 +214,7 @@ IntRect RemoteFrameView::GetCompositingRect() {
   IntSize converted_viewport_size =
       EnclosingIntRect(viewport_quad.BoundingBox()).Size();
 
-  IntSize frame_size = FrameRect().Size();
+  IntSize frame_size = Size();
 
   // Iframes that fit within the window viewport get fully rastered. For
   // iframes that are larger than the window viewport, add a 30% buffer to the
@@ -256,34 +260,7 @@ void RemoteFrameView::InvalidateRect(const IntRect& rect) {
   object->InvalidatePaintRectangle(repaint_rect);
 }
 
-void RemoteFrameView::SetFrameRect(const IntRect& frame_rect) {
-  if (frame_rect == frame_rect_)
-    return;
-
-  frame_rect_ = frame_rect;
-  FrameRectsChanged();
-}
-
-IntRect RemoteFrameView::FrameRect() const {
-  IntPoint location(frame_rect_.Location());
-
-  // As an optimization, we don't include the root layer's scroll offset in the
-  // frame rect.  As a result, we don't need to recalculate the frame rect every
-  // time the root layer scrolls, but we need to add it in here.
-  LayoutEmbeddedContent* owner = remote_frame_->OwnerLayoutObject();
-  if (owner) {
-    LayoutView* owner_layout_view = owner->View();
-    DCHECK(owner_layout_view);
-    if (owner_layout_view->HasOverflowClip()) {
-      IntSize scroll_offset(owner_layout_view->ScrolledContentOffset());
-      location.SaturatedMove(-scroll_offset.Width(), -scroll_offset.Height());
-    }
-  }
-
-  return IntRect(location, frame_rect_.Size());
-}
-
-void RemoteFrameView::FrameRectsChanged() {
+void RemoteFrameView::PropagateFrameRects() {
   // Update the rect to reflect the position of the frame relative to the
   // containing local frame root. The position of the local root within
   // any remote frames, if any, is accounted for by the embedder.
@@ -322,34 +299,29 @@ void RemoteFrameView::Paint(GraphicsContext& context,
 }
 
 void RemoteFrameView::UpdateGeometry() {
-  if (LayoutEmbeddedContent* layout = remote_frame_->OwnerLayoutObject())
+  if (LayoutEmbeddedContent* layout = GetLayoutEmbeddedContent())
     layout->UpdateGeometry(*this);
 }
 
 void RemoteFrameView::Hide() {
-  self_visible_ = false;
+  SetSelfVisible(false);
   UpdateVisibility(scroll_visible_);
 }
 
 void RemoteFrameView::Show() {
-  self_visible_ = true;
+  SetSelfVisible(true);
   UpdateVisibility(scroll_visible_);
 }
 
-void RemoteFrameView::SetParentVisible(bool visible) {
-  if (parent_visible_ == visible)
-    return;
-
-  parent_visible_ = visible;
-  if (!self_visible_)
-    return;
-  UpdateVisibility(scroll_visible_);
+void RemoteFrameView::ParentVisibleChanged() {
+  if (IsSelfVisible())
+    UpdateVisibility(scroll_visible_);
 }
 
 void RemoteFrameView::UpdateVisibility(bool scroll_visible) {
   blink::mojom::FrameVisibility visibility;
   scroll_visible_ = scroll_visible;
-  if (self_visible_ && parent_visible_) {
+  if (IsVisible()) {
     visibility = scroll_visible
                      ? blink::mojom::FrameVisibility::kRenderedInViewport
                      : blink::mojom::FrameVisibility::kRenderedOutOfViewport;
@@ -374,7 +346,7 @@ void RemoteFrameView::UpdateRenderThrottlingStatus(bool hidden,
   // Note that we disallow throttling of 0x0 and display:none frames because
   // some sites use them to drive UI logic.
   HTMLFrameOwnerElement* owner_element = remote_frame_->DeprecatedLocalOwner();
-  hidden_for_throttling_ = hidden && !frame_rect_.IsEmpty() &&
+  hidden_for_throttling_ = hidden && !Size().IsEmpty() &&
                            (owner_element && owner_element->GetLayoutObject());
   subtree_throttled_ = subtree_throttled;
 

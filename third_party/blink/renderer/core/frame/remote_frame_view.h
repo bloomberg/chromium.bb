@@ -38,19 +38,18 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
 
   void AttachToLayout() override;
   void DetachFromLayout() override;
-  bool IsAttached() const override { return is_attached_; }
 
+  LocalFrameView* ParentFrameView() const override;
+  LayoutEmbeddedContent* GetLayoutEmbeddedContent() const override;
   RemoteFrame& GetFrame() const {
     DCHECK(remote_frame_);
     return *remote_frame_;
   }
 
   void Dispose() override;
+  void PropagateFrameRects() override;
   // Override to notify remote frame that its viewport size has changed.
-  void FrameRectsChanged() override;
   void InvalidateRect(const IntRect&);
-  void SetFrameRect(const IntRect&) override;
-  IntRect FrameRect() const override;
   void Paint(GraphicsContext&,
              const GlobalPaintFlags,
              const CullRect&,
@@ -58,7 +57,6 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
   void UpdateGeometry() override;
   void Hide() override;
   void Show() override;
-  void SetParentVisible(bool) override;
 
   bool UpdateViewportIntersectionsForSubtree(unsigned parent_flags) override;
   void SetNeedsOcclusionTracking(bool);
@@ -78,8 +76,10 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
 
   void Trace(blink::Visitor*) override;
 
+ protected:
+  void ParentVisibleChanged() override;
+
  private:
-  LocalFrameView* ParentFrameView() const;
 
   // This function returns the LocalFrameView associated with the parent frame's
   // local root, or nullptr if the parent frame is not a local frame. For
@@ -98,12 +98,8 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
   // and LocalFrameView. Please see the LocalFrameView::frame_ comment for
   // details.
   Member<RemoteFrame> remote_frame_;
-  bool is_attached_;
   IntRect last_viewport_intersection_;
   FrameOcclusionState last_occlusion_state_ = FrameOcclusionState::kUnknown;
-  IntRect frame_rect_;
-  bool self_visible_;
-  bool parent_visible_;
   bool scroll_visible_ = true;
   blink::mojom::FrameVisibility visibility_ =
       blink::mojom::FrameVisibility::kRenderedInViewport;

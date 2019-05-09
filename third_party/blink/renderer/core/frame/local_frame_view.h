@@ -127,22 +127,6 @@ class CORE_EXPORT LocalFrameView final
 
   void Invalidate() { InvalidateRect(IntRect(0, 0, Width(), Height())); }
   void InvalidateRect(const IntRect&);
-  void SetFrameRect(const IntRect&) override;
-  IntRect FrameRect() const override { return IntRect(Location(), Size()); }
-  IntPoint Location() const;
-  int X() const { return Location().X(); }
-  int Y() const { return Location().Y(); }
-  int Width() const { return Size().Width(); }
-  int Height() const { return Size().Height(); }
-  IntSize Size() const { return frame_rect_.Size(); }
-  void Resize(int width, int height) { Resize(IntSize(width, height)); }
-  void Resize(const IntSize& size) {
-    SetFrameRect(IntRect(frame_rect_.Location(), size));
-  }
-
-  // Called when our frame rect changes (or the rect/scroll offset of an
-  // ancestor changes).
-  void FrameRectsChanged() override;
 
   LocalFrame& GetFrame() const {
     DCHECK(frame_);
@@ -252,6 +236,7 @@ class CORE_EXPORT LocalFrameView final
   void UpdateCountersAfterStyleChange();
 
   void Dispose() override;
+  void PropagateFrameRects() override;
   void InvalidateAllCustomScrollbarsOnActiveChanged();
 
   // True if the LocalFrameView's base background color is completely opaque.
@@ -479,23 +464,10 @@ class CORE_EXPORT LocalFrameView final
   // embedding view changes.
   void UpdateVisibility(bool is_visible);
 
-  // Functions for child manipulation and inspection.
-  // The visibility flags are set for iframes based on style properties of the
-  // HTMLFrameOwnerElement in the embedding document.
-  bool IsSelfVisible() const {
-    return self_visible_;
-  }  // Whether or not we have been explicitly marked as visible or not.
-  bool IsParentVisible() const {
-    return parent_visible_;
-  }  // Whether or not our parent is visible.
-  bool IsVisible() const {
-    return self_visible_ && parent_visible_;
-  }  // Whether or not we are actually visible.
-  void SetParentVisible(bool) override;
-  void SetSelfVisible(bool);
+  LocalFrameView* ParentFrameView() const override;
+  LayoutEmbeddedContent* GetLayoutEmbeddedContent() const override;
   void AttachToLayout() override;
   void DetachFromLayout() override;
-  bool IsAttached() const override { return is_attached_; }
   using PluginSet = HeapHashSet<Member<WebPluginContainerImpl>>;
   const PluginSet& Plugins() const { return plugins_; }
   void AddPlugin(WebPluginContainerImpl*);
@@ -736,6 +708,9 @@ class CORE_EXPORT LocalFrameView final
   void UnregisterFromLifecycleNotifications(LifecycleNotificationObserver*);
 
  protected:
+  void FrameRectsChanged(const IntRect&) override;
+  void SelfVisibleChanged() override;
+  void ParentVisibleChanged() override;
   void NotifyFrameRectsChangedIfNeeded();
 
  private:
@@ -762,7 +737,6 @@ class CORE_EXPORT LocalFrameView final
                      const GlobalPaintFlags,
                      const CullRect&) const;
 
-  LocalFrameView* ParentFrameView() const;
   LayoutSVGRoot* EmbeddedReplacedContent() const;
 
   void DispatchEventsForPrintingOnAllFrames();
@@ -792,7 +766,6 @@ class CORE_EXPORT LocalFrameView final
       DocumentLifecycle::LifecycleState target_state);
   void RunPaintLifecyclePhase();
 
-  void NotifyFrameRectsChangedIfNeededRecursive();
   void PrePaint();
   void PaintTree();
   void UpdateStyleAndLayoutIfNeededRecursive();
@@ -824,7 +797,6 @@ class CORE_EXPORT LocalFrameView final
       const DoublePoint&) const;
 
   void UpdateGeometriesIfNeeded();
-
   bool WasViewportResized();
   void SendResizeEventIfNeeded();
 
@@ -875,11 +847,6 @@ class CORE_EXPORT LocalFrameView final
   EmbeddedObjectSet part_update_set_;
 
   Member<LocalFrame> frame_;
-
-  IntRect frame_rect_;
-  bool is_attached_;
-  bool self_visible_;
-  bool parent_visible_;
 
   WebDisplayMode display_mode_;
 
