@@ -292,10 +292,12 @@ test("gl_tests") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/angle:translator",
+    "//third_party/libyuv",
     "//ui/gfx",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//ui/gl",
+    "//ui/gl:test_support",
     "//ui/gl/init",
   ]
 
