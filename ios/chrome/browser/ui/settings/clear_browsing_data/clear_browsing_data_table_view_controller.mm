@@ -505,10 +505,20 @@
 }
 
 - (void)updateToolbarButtons {
-  // Enabling the Clear Browsing Data button only when at least 1 cells are
-  // selected.
-  self.clearBrowsingDataBarButton.enabled =
-      ([[self.tableView indexPathsForSelectedRows] count] > 0);
+  self.clearBrowsingDataBarButton.enabled = [self hasDataTypeItemsSelected];
+}
+
+- (BOOL)hasDataTypeItemsSelected {
+  // Returns YES iff at least 1 data type cell is selected.
+  NSArray* dataTypeItems = [self.tableViewModel
+      itemsInSectionWithIdentifier:SectionIdentifierDataTypes];
+  for (TableViewClearBrowsingDataItem* dataTypeItem in dataTypeItems) {
+    DCHECK([dataTypeItem isKindOfClass:[TableViewClearBrowsingDataItem class]]);
+    if (dataTypeItem.checked) {
+      return YES;
+    }
+  }
+  return NO;
 }
 
 @end
