@@ -93,22 +93,24 @@ class PLATFORM_EXPORT MarkingVisitor : public Visitor {
     RegisterWeakCallback(object_slot, callback);
   }
 
-  void VisitBackingStoreStrongly(void* object,
+  void VisitBackingStoreStrongly(const char* name,
+                                 void* object,
                                  void** object_slot,
                                  TraceDescriptor desc) final {
-    RegisterBackingStoreReference(object_slot);
+    RegisterBackingStoreReference(name, object_slot);
     if (!object)
       return;
     Visit(object, desc);
   }
 
   // All work is registered through RegisterWeakCallback.
-  void VisitBackingStoreWeakly(void* object,
+  void VisitBackingStoreWeakly(const char* name,
+                               void* object,
                                void** object_slot,
                                TraceDescriptor desc,
                                WeakCallback callback,
                                void* parameter) final {
-    RegisterBackingStoreReference(object_slot);
+    RegisterBackingStoreReference(name, object_slot);
     if (!object)
       return;
     RegisterWeakCallback(parameter, callback);
@@ -117,8 +119,10 @@ class PLATFORM_EXPORT MarkingVisitor : public Visitor {
   // Used to only mark the backing store when it has been registered for weak
   // processing. In this case, the contents are processed separately using
   // the corresponding traits but the backing store requires marking.
-  void VisitBackingStoreOnly(void* object, void** object_slot) final {
-    RegisterBackingStoreReference(object_slot);
+  void VisitBackingStoreOnly(const char* name,
+                             void* object,
+                             void** object_slot) final {
+    RegisterBackingStoreReference(name, object_slot);
     if (!object)
       return;
     MarkHeaderNoTracing(HeapObjectHeader::FromPayload(object));
@@ -139,7 +143,7 @@ class PLATFORM_EXPORT MarkingVisitor : public Visitor {
   static void WriteBarrierSlow(void*);
   static void TraceMarkedBackingStoreSlow(void*);
 
-  void RegisterBackingStoreReference(void** slot);
+  void RegisterBackingStoreReference(const char* name, void** slot);
 
   MarkingWorklist::View marking_worklist_;
   NotFullyConstructedWorklist::View not_fully_constructed_worklist_;

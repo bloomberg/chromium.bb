@@ -99,11 +99,12 @@ void MarkingVisitor::RegisterWeakCallback(void* object, WeakCallback callback) {
   weak_callback_worklist_.Push({object, callback});
 }
 
-void MarkingVisitor::RegisterBackingStoreReference(void** slot) {
+void MarkingVisitor::RegisterBackingStoreReference(const char* name,
+                                                   void** slot) {
   if (marking_mode_ != kGlobalMarkingWithCompaction)
     return;
   Heap().RegisterMovingObjectReference(
-      reinterpret_cast<MovableReference*>(slot));
+      name, reinterpret_cast<MovableReference*>(slot));
 }
 
 void MarkingVisitor::RegisterBackingStoreCallback(void** slot,
