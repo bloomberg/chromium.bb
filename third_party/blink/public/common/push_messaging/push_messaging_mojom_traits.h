@@ -17,16 +17,16 @@ namespace mojo {
 template <>
 struct BLINK_COMMON_EXPORT
     StructTraits<blink::mojom::PushSubscriptionOptionsDataView,
-                 blink::PushSubscriptionOptionsParams> {
-  static bool user_visible_only(const blink::PushSubscriptionOptionsParams& r) {
+                 blink::WebPushSubscriptionOptions> {
+  static bool user_visible_only(const blink::WebPushSubscriptionOptions& r) {
     return r.user_visible_only;
   }
-  static const std::string& sender_info(
-      const blink::PushSubscriptionOptionsParams& r) {
-    return r.sender_info;
+  static const std::string& application_server_key(
+      const blink::WebPushSubscriptionOptions& r) {
+    return r.application_server_key;
   }
   static bool Read(blink::mojom::PushSubscriptionOptionsDataView data,
-                   blink::PushSubscriptionOptionsParams* out);
+                   blink::WebPushSubscriptionOptions* out);
 };
 
 template <>

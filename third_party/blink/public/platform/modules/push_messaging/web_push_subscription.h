@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PUSH_MESSAGING_WEB_PUSH_SUBSCRIPTION_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PUSH_MESSAGING_WEB_PUSH_SUBSCRIPTION_H_
 
-#include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription_options.h"
+#include "third_party/blink/public/common/push_messaging/web_push_subscription_options.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -22,7 +22,7 @@ struct WebPushSubscription {
                       const WebVector<unsigned char>& auth)
       : endpoint(endpoint), p256dh(p256dh), auth(auth) {
     options.user_visible_only = user_visible_only;
-    options.application_server_key = application_server_key;
+    options.application_server_key = application_server_key.Latin1();
   }
 
   WebURL endpoint;

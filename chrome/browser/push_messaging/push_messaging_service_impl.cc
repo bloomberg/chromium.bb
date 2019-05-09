@@ -53,7 +53,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
-#include "third_party/blink/public/common/push_messaging/push_subscription_options_params.h"
+#include "third_party/blink/public/common/push_messaging/web_push_subscription_options.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -432,7 +432,7 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
     int64_t service_worker_registration_id,
     int renderer_id,
     int render_frame_id,
-    const blink::PushSubscriptionOptionsParams& options,
+    const blink::WebPushSubscriptionOptions& options,
     bool user_gesture,
     RegisterCallback callback) {
   PushMessagingAppIdentifier app_identifier =
@@ -483,7 +483,7 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
 void PushMessagingServiceImpl::SubscribeFromWorker(
     const GURL& requesting_origin,
     int64_t service_worker_registration_id,
-    const blink::PushSubscriptionOptionsParams& options,
+    const blink::WebPushSubscriptionOptions& options,
     RegisterCallback register_callback) {
   PushMessagingAppIdentifier app_identifier =
       PushMessagingAppIdentifier::FindByServiceWorker(
@@ -539,7 +539,7 @@ bool PushMessagingServiceImpl::SupportNonVisibleMessages() {
 
 void PushMessagingServiceImpl::DoSubscribe(
     const PushMessagingAppIdentifier& app_identifier,
-    const blink::PushSubscriptionOptionsParams& options,
+    const blink::WebPushSubscriptionOptions& options,
     RegisterCallback register_callback,
     ContentSetting content_setting) {
   if (content_setting != CONTENT_SETTING_ALLOW) {
@@ -553,13 +553,13 @@ void PushMessagingServiceImpl::DoSubscribe(
 
   GetInstanceIDDriver()
       ->GetInstanceID(app_identifier.app_id())
-      ->GetToken(
-          NormalizeSenderInfo(options.sender_info), kGCMScope,
-          std::map<std::string, std::string>() /* options */,
-          false /* is_lazy */,
-          base::BindOnce(&PushMessagingServiceImpl::DidSubscribe,
-                         weak_factory_.GetWeakPtr(), app_identifier,
-                         options.sender_info, std::move(register_callback)));
+      ->GetToken(NormalizeSenderInfo(options.application_server_key), kGCMScope,
+                 std::map<std::string, std::string>() /* options */,
+                 false /* is_lazy */,
+                 base::BindOnce(&PushMessagingServiceImpl::DidSubscribe,
+                                weak_factory_.GetWeakPtr(), app_identifier,
+                                options.application_server_key,
+                                std::move(register_callback)));
 }
 
 void PushMessagingServiceImpl::SubscribeEnd(
@@ -1015,17 +1015,19 @@ void PushMessagingServiceImpl::Observe(
 // Helper methods --------------------------------------------------------------
 
 std::string PushMessagingServiceImpl::NormalizeSenderInfo(
-    const std::string& sender_info) const {
-  // Only encode the |sender_info| when it is a NIST P-256 public key in
-  // uncompressed format, verified through its length and the 0x04 prefix byte.
-  if (sender_info.size() != 65 || sender_info[0] != 0x04)
-    return sender_info;
+    const std::string& application_server_key) const {
+  // Only encode the |application_server_key| when it is a NIST P-256 public key
+  // in uncompressed format, verified through its length and the 0x04 prefix
+  // byte.
+  if (application_server_key.size() != 65 || application_server_key[0] != 0x04)
+    return application_server_key;
 
-  std::string encoded_sender_info;
-  base::Base64UrlEncode(sender_info, base::Base64UrlEncodePolicy::OMIT_PADDING,
-                        &encoded_sender_info);
+  std::string encoded_application_server_key;
+  base::Base64UrlEncode(application_server_key,
+                        base::Base64UrlEncodePolicy::OMIT_PADDING,
+                        &encoded_application_server_key);
 
-  return encoded_sender_info;
+  return encoded_application_server_key;
 }
 
 // Assumes user_visible always since this is just meant to check

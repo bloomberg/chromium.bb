@@ -27,7 +27,7 @@ enum class PushGetRegistrationStatus;
 enum class PushRegistrationStatus;
 }  // namespace mojom
 
-struct PushSubscriptionOptionsParams;
+struct WebPushSubscriptionOptions;
 struct WebPushSubscriptionOptions;
 }  // namespace blink
 
@@ -71,7 +71,7 @@ class PushProvider : public blink::WebPushProvider,
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
       blink::mojom::PushRegistrationStatus status,
       const base::Optional<GURL>& endpoint,
-      const base::Optional<blink::PushSubscriptionOptionsParams>& options,
+      const base::Optional<blink::WebPushSubscriptionOptions>& options,
       const base::Optional<std::vector<uint8_t>>& p256dh,
       const base::Optional<std::vector<uint8_t>>& auth);
 
@@ -85,7 +85,7 @@ class PushProvider : public blink::WebPushProvider,
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
       blink::mojom::PushGetRegistrationStatus status,
       const base::Optional<GURL>& endpoint,
-      const base::Optional<blink::PushSubscriptionOptionsParams>& options,
+      const base::Optional<blink::WebPushSubscriptionOptions>& options,
       const base::Optional<std::vector<uint8_t>>& p256dh,
       const base::Optional<std::vector<uint8_t>>& auth);
 

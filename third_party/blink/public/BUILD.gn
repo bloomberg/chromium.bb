@@ -166,7 +166,6 @@ source_set("blink_headers") {
     "platform/modules/push_messaging/web_push_error.h",
     "platform/modules/push_messaging/web_push_provider.h",
     "platform/modules/push_messaging/web_push_subscription.h",
-    "platform/modules/push_messaging/web_push_subscription_options.h",
     "platform/modules/remoteplayback/web_remote_playback_client.h",
     "platform/modules/service_worker/web_service_worker_clients_info.h",
     "platform/modules/service_worker/web_service_worker_error.h",

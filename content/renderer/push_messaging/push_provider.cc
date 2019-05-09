@@ -16,10 +16,9 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/renderer/push_messaging/push_messaging_utils.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "third_party/blink/public/common/push_messaging/push_subscription_options_params.h"
+#include "third_party/blink/public/common/push_messaging/web_push_subscription_options.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription.h"
-#include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription_options.h"
 #include "third_party/blink/public/platform/web_string.h"
 
 namespace content {
@@ -77,12 +76,12 @@ void PushProvider::Subscribe(
     std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks) {
   DCHECK(callbacks);
 
-  blink::PushSubscriptionOptionsParams content_options;
+  blink::WebPushSubscriptionOptions content_options;
   content_options.user_visible_only = options.user_visible_only;
 
   // Just treat the server key as a string of bytes and pass it to the push
   // service.
-  content_options.sender_info = options.application_server_key.Latin1();
+  content_options.application_server_key = options.application_server_key;
 
   push_messaging_manager_->Subscribe(
       ChildProcessHost::kInvalidUniqueID, service_worker_registration_id,
@@ -97,7 +96,7 @@ void PushProvider::DidSubscribe(
     std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
     blink::mojom::PushRegistrationStatus status,
     const base::Optional<GURL>& endpoint,
-    const base::Optional<blink::PushSubscriptionOptionsParams>& options,
+    const base::Optional<blink::WebPushSubscriptionOptions>& options,
     const base::Optional<std::vector<uint8_t>>& p256dh,
     const base::Optional<std::vector<uint8_t>>& auth) {
   DCHECK(callbacks);
@@ -114,7 +113,7 @@ void PushProvider::DidSubscribe(
 
     callbacks->OnSuccess(std::make_unique<blink::WebPushSubscription>(
         endpoint.value(), options.value().user_visible_only,
-        blink::WebString::FromLatin1(options.value().sender_info),
+        blink::WebString::FromLatin1(options.value().application_server_key),
         p256dh.value(), auth.value()));
   } else {
     callbacks->OnError(PushRegistrationStatusToWebPushError(status));
@@ -167,7 +166,7 @@ void PushProvider::DidGetSubscription(
     std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
     blink::mojom::PushGetRegistrationStatus status,
     const base::Optional<GURL>& endpoint,
-    const base::Optional<blink::PushSubscriptionOptionsParams>& options,
+    const base::Optional<blink::WebPushSubscriptionOptions>& options,
     const base::Optional<std::vector<uint8_t>>& p256dh,
     const base::Optional<std::vector<uint8_t>>& auth) {
   DCHECK(callbacks);
@@ -180,7 +179,7 @@ void PushProvider::DidGetSubscription(
 
     callbacks->OnSuccess(std::make_unique<blink::WebPushSubscription>(
         endpoint.value(), options.value().user_visible_only,
-        blink::WebString::FromLatin1(options.value().sender_info),
+        blink::WebString::FromLatin1(options.value().application_server_key),
         p256dh.value(), auth.value()));
   } else {
     // We are only expecting an error if we can't find a registration.

@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/modules/push_messaging/push_manager.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription_options.h"
+#include "third_party/blink/public/common/push_messaging/web_push_subscription_options.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_options.h"
@@ -47,8 +47,8 @@ TEST(PushManagerTest, ValidSenderKey) {
     sender_key[i] = kApplicationServerKey[i];
   sender_key[kApplicationServerKeyLength] = 0x0;
   EXPECT_EQ(reinterpret_cast<const char*>(sender_key),
-            output.application_server_key.Latin1());
-  EXPECT_FALSE(output.application_server_key.IsEmpty());
+            output.application_server_key);
+  EXPECT_FALSE(output.application_server_key.empty());
 }
 
 TEST(PushManagerTest, InvalidSenderKeyLength) {

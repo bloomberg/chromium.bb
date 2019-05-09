@@ -20,7 +20,7 @@ enum class PushRegistrationStatus;
 enum class PushUnregistrationReason;
 enum class PushUnregistrationStatus;
 }  // namespace mojom
-struct PushSubscriptionOptionsParams;
+struct WebPushSubscriptionOptions;
 }  // namespace blink
 
 namespace content {
@@ -63,7 +63,7 @@ class CONTENT_EXPORT PushMessagingService {
       int64_t service_worker_registration_id,
       int renderer_id,
       int render_frame_id,
-      const blink::PushSubscriptionOptionsParams& options,
+      const blink::WebPushSubscriptionOptions& options,
       bool user_gesture,
       RegisterCallback callback) = 0;
 
@@ -75,7 +75,7 @@ class CONTENT_EXPORT PushMessagingService {
   virtual void SubscribeFromWorker(
       const GURL& requesting_origin,
       int64_t service_worker_registration_id,
-      const blink::PushSubscriptionOptionsParams& options,
+      const blink::WebPushSubscriptionOptions& options,
       RegisterCallback callback) = 0;
 
   // Retrieves the subscription associated with |origin| and

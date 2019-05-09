@@ -12,7 +12,7 @@ import "url/mojom/url.mojom";
 
 struct PushSubscriptionOptions {
   bool user_visible_only;
-  string sender_info;
+  string application_server_key;
 };
 
 enum PushErrorType {

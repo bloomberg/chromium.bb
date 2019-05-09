@@ -14,7 +14,7 @@
 #include "content/public/browser/push_messaging_service.h"
 
 namespace blink {
-struct PushSubscriptionOptionsParams;
+struct WebPushSubscriptionOptions;
 }  // namespace blink
 
 namespace content {
@@ -26,17 +26,16 @@ class WebTestPushMessagingService : public PushMessagingService {
 
   // PushMessagingService implementation:
   GURL GetEndpoint(bool standard_protocol) const override;
-  void SubscribeFromDocument(
-      const GURL& requesting_origin,
-      int64_t service_worker_registration_id,
-      int renderer_id,
-      int render_frame_id,
-      const blink::PushSubscriptionOptionsParams& options,
-      bool user_gesture,
-      RegisterCallback callback) override;
+  void SubscribeFromDocument(const GURL& requesting_origin,
+                             int64_t service_worker_registration_id,
+                             int renderer_id,
+                             int render_frame_id,
+                             const blink::WebPushSubscriptionOptions& options,
+                             bool user_gesture,
+                             RegisterCallback callback) override;
   void SubscribeFromWorker(const GURL& requesting_origin,
                            int64_t service_worker_registration_id,
-                           const blink::PushSubscriptionOptionsParams& options,
+                           const blink::WebPushSubscriptionOptions& options,
                            RegisterCallback callback) override;
   void GetSubscriptionInfo(const GURL& origin,
                            int64_t service_worker_registration_id,

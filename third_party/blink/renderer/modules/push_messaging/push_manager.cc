@@ -7,9 +7,9 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/common/push_messaging/web_push_subscription_options.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_client.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_provider.h"
-#include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription_options.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"

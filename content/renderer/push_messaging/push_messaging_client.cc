@@ -15,11 +15,10 @@
 #include "content/renderer/push_messaging/push_messaging_utils.h"
 #include "content/renderer/render_frame_impl.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "third_party/blink/public/common/push_messaging/push_subscription_options_params.h"
+#include "third_party/blink/public/common/push_messaging/web_push_subscription_options.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_error.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription.h"
-#include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription_options.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -55,7 +54,7 @@ void PushMessagingClient::Subscribe(
 
   // If a developer provided an application server key in |options|, skip
   // fetching the manifest.
-  if (options.application_server_key.IsEmpty()) {
+  if (options.application_server_key.empty()) {
     blink::WebManifestManager* manifest_manager =
         blink::WebManifestManager::FromFrame(
             RenderFrameImpl::FromRoutingID(routing_id())->GetWebFrame());
@@ -64,11 +63,11 @@ void PushMessagingClient::Subscribe(
                        base::Unretained(this), service_worker_registration_id,
                        options, user_gesture, std::move(callbacks)));
   } else {
-    blink::PushSubscriptionOptionsParams content_options;
+    blink::WebPushSubscriptionOptions content_options;
     content_options.user_visible_only = options.user_visible_only;
     // Just treat the server key as a string of bytes and pass it to the push
     // service.
-    content_options.sender_info = options.application_server_key.Latin1();
+    content_options.application_server_key = options.application_server_key;
     DoSubscribe(service_worker_registration_id, content_options, user_gesture,
                 std::move(callbacks));
   }
@@ -81,8 +80,8 @@ void PushMessagingClient::DidGetManifest(
     std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
     const blink::WebURL& manifest_url,
     const blink::Manifest& manifest) {
-  // Get the sender_info from the manifest since it wasn't provided by
-  // the caller.
+  // Get the application_server_key from the manifest since it wasn't provided
+  // by the caller.
   if (manifest.IsEmpty()) {
     DidSubscribe(
         std::move(callbacks),
@@ -91,10 +90,10 @@ void PushMessagingClient::DidGetManifest(
     return;
   }
 
-  blink::PushSubscriptionOptionsParams content_options;
+  blink::WebPushSubscriptionOptions content_options;
   content_options.user_visible_only = options.user_visible_only;
   if (!manifest.gcm_sender_id.is_null()) {
-    content_options.sender_info =
+    content_options.application_server_key =
         base::UTF16ToUTF8(manifest.gcm_sender_id.string());
   }
 
@@ -104,10 +103,10 @@ void PushMessagingClient::DidGetManifest(
 
 void PushMessagingClient::DoSubscribe(
     int64_t service_worker_registration_id,
-    const blink::PushSubscriptionOptionsParams& options,
+    const blink::WebPushSubscriptionOptions& options,
     bool user_gesture,
     std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks) {
-  if (options.sender_info.empty()) {
+  if (options.application_server_key.empty()) {
     DidSubscribe(std::move(callbacks),
                  blink::mojom::PushRegistrationStatus::NO_SENDER_ID,
                  base::nullopt, base::nullopt, base::nullopt, base::nullopt);
@@ -127,7 +126,7 @@ void PushMessagingClient::DidSubscribe(
     std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
     blink::mojom::PushRegistrationStatus status,
     const base::Optional<GURL>& endpoint,
-    const base::Optional<blink::PushSubscriptionOptionsParams>& options,
+    const base::Optional<blink::WebPushSubscriptionOptions>& options,
     const base::Optional<std::vector<uint8_t>>& p256dh,
     const base::Optional<std::vector<uint8_t>>& auth) {
   DCHECK(callbacks);
@@ -144,7 +143,7 @@ void PushMessagingClient::DidSubscribe(
 
     callbacks->OnSuccess(std::make_unique<blink::WebPushSubscription>(
         endpoint.value(), options.value().user_visible_only,
-        blink::WebString::FromLatin1(options.value().sender_info),
+        blink::WebString::FromLatin1(options.value().application_server_key),
         p256dh.value(), auth.value()));
   } else {
     callbacks->OnError(PushRegistrationStatusToWebPushError(status));

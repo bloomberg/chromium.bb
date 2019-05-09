@@ -26,7 +26,7 @@ enum class PushRegistrationStatus;
 }
 
 struct Manifest;
-struct PushSubscriptionOptionsParams;
+struct WebPushSubscriptionOptions;
 struct WebPushSubscriptionOptions;
 }  // namespace blink
 
@@ -59,7 +59,7 @@ class PushMessagingClient : public RenderFrameObserver,
 
   void DoSubscribe(
       int64_t service_worker_registration_id,
-      const blink::PushSubscriptionOptionsParams& options,
+      const blink::WebPushSubscriptionOptions& options,
       bool user_gesture,
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks);
 
@@ -67,7 +67,7 @@ class PushMessagingClient : public RenderFrameObserver,
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
       blink::mojom::PushRegistrationStatus status,
       const base::Optional<GURL>& endpoint,
-      const base::Optional<blink::PushSubscriptionOptionsParams>& options,
+      const base::Optional<blink::WebPushSubscriptionOptions>& options,
       const base::Optional<std::vector<uint8_t>>& p256dh,
       const base::Optional<std::vector<uint8_t>>& auth);
 

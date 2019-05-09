@@ -49,11 +49,11 @@ static_assert(blink::WebPushError::ErrorType::kErrorTypeLast ==
 
 // static
 bool StructTraits<blink::mojom::PushSubscriptionOptionsDataView,
-                  blink::PushSubscriptionOptionsParams>::
+                  blink::WebPushSubscriptionOptions>::
     Read(blink::mojom::PushSubscriptionOptionsDataView data,
-         blink::PushSubscriptionOptionsParams* out) {
+         blink::WebPushSubscriptionOptions* out) {
   out->user_visible_only = data.user_visible_only();
-  if (!data.ReadSenderInfo(&out->sender_info)) {
+  if (!data.ReadApplicationServerKey(&out->application_server_key)) {
     return false;
   }
   return true;

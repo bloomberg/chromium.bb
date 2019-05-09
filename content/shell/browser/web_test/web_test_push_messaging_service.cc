@@ -13,7 +13,7 @@
 #include "content/shell/browser/web_test/web_test_browser_context.h"
 #include "content/shell/browser/web_test/web_test_content_browser_client.h"
 #include "content/shell/browser/web_test/web_test_permission_manager.h"
-#include "third_party/blink/public/common/push_messaging/push_subscription_options_params.h"
+#include "third_party/blink/public/common/push_messaging/web_push_subscription_options.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
@@ -59,7 +59,7 @@ void WebTestPushMessagingService::SubscribeFromDocument(
     int64_t service_worker_registration_id,
     int renderer_id,
     int render_frame_id,
-    const blink::PushSubscriptionOptionsParams& options,
+    const blink::WebPushSubscriptionOptions& options,
     bool user_gesture,
     RegisterCallback callback) {
   SubscribeFromWorker(requesting_origin, service_worker_registration_id,
@@ -69,7 +69,7 @@ void WebTestPushMessagingService::SubscribeFromDocument(
 void WebTestPushMessagingService::SubscribeFromWorker(
     const GURL& requesting_origin,
     int64_t service_worker_registration_id,
-    const blink::PushSubscriptionOptionsParams& options,
+    const blink::WebPushSubscriptionOptions& options,
     RegisterCallback callback) {
   blink::mojom::PermissionStatus permission_status =
       WebTestContentBrowserClient::Get()

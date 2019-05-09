@@ -26,7 +26,7 @@ enum class PushRegistrationStatus;
 enum class PushUnregistrationStatus;
 }  // namespace mojom
 
-struct PushSubscriptionOptionsParams;
+struct WebPushSubscriptionOptions;
 }  // namespace blink
 
 namespace content {
@@ -47,7 +47,7 @@ class PushMessagingManager : public blink::mojom::PushMessaging {
   // blink::mojom::PushMessaging impl, run on IO thread.
   void Subscribe(int32_t render_frame_id,
                  int64_t service_worker_registration_id,
-                 const blink::PushSubscriptionOptionsParams& options,
+                 const blink::WebPushSubscriptionOptions& options,
                  bool user_gesture,
                  SubscribeCallback callback) override;
   void Unsubscribe(int64_t service_worker_registration_id,
