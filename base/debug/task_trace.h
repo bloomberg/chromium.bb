@@ -6,6 +6,7 @@
 #define BASE_DEBUG_TASK_TRACE_H_
 
 #include <iosfwd>
+#include <string>
 
 #include "base/base_export.h"
 #include "base/containers/span.h"
@@ -44,6 +45,9 @@ class BASE_EXPORT TaskTrace {
 
   // Outputs trace to |os|, may be called when empty() is true.
   void OutputToStream(std::ostream* os) const;
+
+  // Resolves trace to symbols and returns as string.
+  std::string ToString() const;
 
   // Returns the list of addresses in the task trace for testing.
   base::span<const void* const> AddressesForTesting() const;

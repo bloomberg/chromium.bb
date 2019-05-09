@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <sstream>
 
 #include "base/pending_task.h"
 #include "base/task/common/task_annotator.h"
@@ -50,6 +51,12 @@ void TaskTrace::OutputToStream(std::ostream* os) const {
            "PendingTask::kTaskBacktraceLength to increase."
         << std::endl;
   }
+}
+
+std::string TaskTrace::ToString() const {
+  std::stringstream stream;
+  OutputToStream(&stream);
+  return stream.str();
 }
 
 base::span<const void* const> TaskTrace::AddressesForTesting() const {
