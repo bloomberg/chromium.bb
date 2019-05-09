@@ -4087,11 +4087,12 @@ void HTMLMediaElement::OnRemovedFromDocumentTimerFired(TimerBase*) {
 
 void HTMLMediaElement::DefaultEventHandler(Event& event) {
   if (event.IsKeyboardEvent() && ShouldShowControls()) {
-    const String& key = ToKeyboardEvent(event).key();
-    if (key == "SoftRight") {
+    // TODO(bokan): Cleanup magic numbers once https://crbug.com/949766 lands.
+    const int key =
+        static_cast<int>(ToKeyboardEvent(event).KeyEvent()->dom_key);
+    if (key == 0x00200310) {
       // We need to handle the event here rather than in
-      // MediaControlsTouchlessImpl because right soft key
-      // event is not sent to JS.
+      // MediaControlsTouchlessImpl because it is not sent to JS.
       GetMediaControls()->ShowContextMenu();
       event.SetDefaultHandled();
     }
