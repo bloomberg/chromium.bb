@@ -240,5 +240,34 @@ TEST_F(ReportingEndpointManagerTest, Weight) {
   EXPECT_EQ(kEndpoint2Weight, endpoint2_count);
 }
 
+TEST_F(ReportingEndpointManagerTest, ZeroWeights) {
+  static const GURL kEndpoint1("https://endpoint1/");
+  static const GURL kEndpoint2("https://endpoint2/");
+
+  SetEndpoint(kEndpoint1, ReportingEndpoint::EndpointInfo::kDefaultPriority,
+              0 /* weight */);
+  SetEndpoint(kEndpoint2, ReportingEndpoint::EndpointInfo::kDefaultPriority,
+              0 /* weight */);
+
+  int endpoint1_count = 0;
+  int endpoint2_count = 0;
+
+  for (int i = 0; i < 10; ++i) {
+    ReportingEndpoint endpoint =
+        endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
+    ASSERT_TRUE(endpoint);
+    ASSERT_TRUE(endpoint.info.url == kEndpoint1 ||
+                endpoint.info.url == kEndpoint2);
+
+    if (endpoint.info.url == kEndpoint1)
+      ++endpoint1_count;
+    else if (endpoint.info.url == kEndpoint2)
+      ++endpoint2_count;
+  }
+
+  EXPECT_EQ(5, endpoint1_count);
+  EXPECT_EQ(5, endpoint2_count);
+}
+
 }  // namespace
 }  // namespace net

@@ -81,9 +81,11 @@ class ReportingEndpointManagerImpl : public ReportingEndpointManager {
       return ReportingEndpoint();
     }
 
-    // TODO(chlily): This will DCHECK if all the endpoints with the desired
-    // priority have a weight of 0. Also does not give endpoints with weight 0
-    // any chance of being selected.
+    if (total_weight == 0) {
+      int random_index = rand_callback_.Run(0, available_endpoints.size() - 1);
+      return available_endpoints[random_index];
+    }
+
     int random_index = rand_callback_.Run(0, total_weight - 1);
     int weight_so_far = 0;
     for (size_t i = 0; i < available_endpoints.size(); ++i) {
