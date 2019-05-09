@@ -67,6 +67,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/selection_model.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
@@ -450,9 +451,25 @@ gfx::Size OmniboxViewViews::GetMinimumSize() const {
 void OmniboxViewViews::OnPaint(gfx::Canvas* canvas) {
   if (latency_histogram_state_ == CHAR_TYPED) {
     DCHECK(!insert_char_time_.is_null());
+    auto now = base::TimeTicks::Now();
     UMA_HISTOGRAM_TIMES("Omnibox.CharTypedToRepaintLatency.ToPaint",
-                        base::TimeTicks::Now() - insert_char_time_);
+                        now - insert_char_time_);
     latency_histogram_state_ = ON_PAINT_CALLED;
+    GetWidget()->GetCompositor()->RequestPresentationTimeForNextFrame(
+        base::BindOnce(
+            [](base::TimeTicks insert_timestamp,
+               base::TimeTicks paint_timestamp,
+               const gfx::PresentationFeedback& feedback) {
+              if (feedback.flags & gfx::PresentationFeedback::kFailure)
+                return;
+              UMA_HISTOGRAM_TIMES(
+                  "Omnibox.CharTypedToRepaintLatency.PaintToPresent",
+                  feedback.timestamp - paint_timestamp);
+              UMA_HISTOGRAM_TIMES(
+                  "Omnibox.CharTypedToRepaintLatency.InsertToPresent",
+                  feedback.timestamp - insert_timestamp);
+            },
+            insert_char_time_, now));
   }
 
   {
