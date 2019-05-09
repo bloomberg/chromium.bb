@@ -19,8 +19,10 @@
 #include "base/win/core_winrt_util.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_hstring.h"
+#include "device/vr/test/test_hook.h"
 #include "device/vr/windows/d3d11_texture_helper.h"
 #include "device/vr/windows_mixed_reality/mixed_reality_input_helper.h"
+#include "device/vr/windows_mixed_reality/mixed_reality_statics.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_holographic_frame.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_holographic_space.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_logging.h"
@@ -198,6 +200,13 @@ HRESULT WrapperCreateDirect3D11DeviceFromDXGIDevice(IDXGIDevice* in,
 bool MixedRealityRenderLoop::StartRuntime() {
   initializer_ = std::make_unique<base::win::ScopedWinrtInitializer>();
 
+  {
+    auto hook = MixedRealityDeviceStatics::GetLockedTestHook();
+    if (hook.GetHook()) {
+      hook.GetHook()->AttachCurrentThread();
+    }
+  }
+
   InitializeSpace();
   if (!holographic_space_)
     return false;
@@ -261,6 +270,13 @@ void MixedRealityRenderLoop::StopRuntime() {
 
   if (initializer_)
     initializer_ = nullptr;
+
+  {
+    auto hook = MixedRealityDeviceStatics::GetLockedTestHook();
+    if (hook.GetHook()) {
+      hook.GetHook()->DetachCurrentThread();
+    }
+  }
 }
 
 void MixedRealityRenderLoop::InitializeOrigin() {
@@ -327,6 +343,8 @@ bool MixedRealityRenderLoop::EnsureStageStatics() {
 
 void MixedRealityRenderLoop::ClearStageStatics() {
   stage_changed_subscription_ = nullptr;
+  if (stage_statics_)
+    stage_statics_->Dispose();
   stage_statics_ = nullptr;
 }
 

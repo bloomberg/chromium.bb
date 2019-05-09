@@ -17,6 +17,8 @@
 #include "base/win/core_winrt_util.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_hstring.h"
+#include "device/vr/windows_mixed_reality/mixed_reality_statics.h"
+#include "device/vr/windows_mixed_reality/wrappers/test/mock_wmr_origins.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_logging.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_timestamp.h"
 
@@ -69,6 +71,8 @@ WMRCoordinateSystem::WMRCoordinateSystem(
   DCHECK(coordinates_);
 }
 
+WMRCoordinateSystem::WMRCoordinateSystem() {}
+
 WMRCoordinateSystem::~WMRCoordinateSystem() = default;
 
 bool WMRCoordinateSystem::TryGetTransformTo(const WMRCoordinateSystem* other,
@@ -95,6 +99,9 @@ ISpatialCoordinateSystem* WMRCoordinateSystem::GetRawPtr() const {
 // WMRStationaryOrigin
 std::unique_ptr<WMRStationaryOrigin>
 WMRStationaryOrigin::CreateAtCurrentLocation() {
+  if (MixedRealityDeviceStatics::GetLockedTestHook().GetHook()) {
+    return std::make_unique<MockWMRStationaryOrigin>();
+  }
   ComPtr<ISpatialLocator> locator = GetSpatialLocator();
   if (!locator)
     return nullptr;
@@ -116,6 +123,8 @@ WMRStationaryOrigin::WMRStationaryOrigin(
   DCHECK(stationary_origin_);
 }
 
+WMRStationaryOrigin::WMRStationaryOrigin() {}
+
 WMRStationaryOrigin::~WMRStationaryOrigin() = default;
 
 std::unique_ptr<WMRCoordinateSystem> WMRStationaryOrigin::CoordinateSystem() {
@@ -128,6 +137,9 @@ std::unique_ptr<WMRCoordinateSystem> WMRStationaryOrigin::CoordinateSystem() {
 // WMRAttachedOrigin
 std::unique_ptr<WMRAttachedOrigin>
 WMRAttachedOrigin::CreateAtCurrentLocation() {
+  if (MixedRealityDeviceStatics::GetLockedTestHook().GetHook()) {
+    return std::make_unique<MockWMRAttachedOrigin>();
+  }
   ComPtr<ISpatialLocator> locator = GetSpatialLocator();
   if (!locator)
     return nullptr;
@@ -148,6 +160,8 @@ WMRAttachedOrigin::WMRAttachedOrigin(
   DCHECK(attached_origin_);
 }
 
+WMRAttachedOrigin::WMRAttachedOrigin() {}
+
 WMRAttachedOrigin::~WMRAttachedOrigin() = default;
 
 std::unique_ptr<WMRCoordinateSystem>
@@ -167,6 +181,8 @@ WMRStageOrigin::WMRStageOrigin(
     : stage_origin_(stage_origin) {
   DCHECK(stage_origin_);
 }
+
+WMRStageOrigin::WMRStageOrigin() {}
 
 WMRStageOrigin::~WMRStageOrigin() = default;
 
@@ -207,6 +223,8 @@ std::vector<WFN::Vector3> WMRStageOrigin::GetMovementBounds(
 
 // WMRStageStatics
 std::unique_ptr<WMRStageStatics> WMRStageStatics::Create() {
+  if (MixedRealityDeviceStatics::GetLockedTestHook().GetHook())
+    return std::make_unique<MockWMRStageStatics>();
   ComPtr<ISpatialStageFrameOfReferenceStatics> stage_statics;
   base::win::ScopedHString spatial_stage_string =
       base::win::ScopedHString::Create(
@@ -230,12 +248,19 @@ WMRStageStatics::WMRStageStatics(
   DCHECK(SUCCEEDED(hr));
 }
 
+WMRStageStatics::WMRStageStatics() {}
+
 WMRStageStatics::~WMRStageStatics() {
+  DCHECK(dispose_called_);
+}
+
+void WMRStageStatics::Dispose() {
   if (stage_changed_token_.value != 0) {
     HRESULT hr = stage_statics_->remove_CurrentChanged(stage_changed_token_);
     stage_changed_token_.value = 0;
     DCHECK(SUCCEEDED(hr));
   }
+  dispose_called_ = true;
 }
 
 std::unique_ptr<WMRStageOrigin> WMRStageStatics::CurrentStage() {

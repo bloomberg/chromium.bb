@@ -17,9 +17,13 @@ class WMRTimestamp {
           timestamp);
   virtual ~WMRTimestamp();
 
-  ABI::Windows::Foundation::DateTime TargetTime() const;
-  ABI::Windows::Foundation::TimeSpan PredictionAmount() const;
+  virtual ABI::Windows::Foundation::DateTime TargetTime() const;
+  virtual ABI::Windows::Foundation::TimeSpan PredictionAmount() const;
   ABI::Windows::Perception::IPerceptionTimestamp* GetRawPtr() const;
+
+ protected:
+  // Necessary so subclasses don't call the explicit constructor.
+  WMRTimestamp();
 
  private:
   Microsoft::WRL::ComPtr<ABI::Windows::Perception::IPerceptionTimestamp>

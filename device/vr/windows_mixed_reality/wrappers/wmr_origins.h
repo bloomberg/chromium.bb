@@ -24,12 +24,16 @@ class WMRCoordinateSystem {
           coordinates);
   virtual ~WMRCoordinateSystem();
 
-  bool TryGetTransformTo(
+  virtual bool TryGetTransformTo(
       const WMRCoordinateSystem* other,
       ABI::Windows::Foundation::Numerics::Matrix4x4* this_to_other);
 
   ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem* GetRawPtr()
       const;
+
+ protected:
+  // Necessary so subclasses don't call the explicit constructor.
+  WMRCoordinateSystem();
 
  private:
   Microsoft::WRL::ComPtr<
@@ -48,7 +52,11 @@ class WMRStationaryOrigin {
           stationary_origin);
   virtual ~WMRStationaryOrigin();
 
-  std::unique_ptr<WMRCoordinateSystem> CoordinateSystem();
+  virtual std::unique_ptr<WMRCoordinateSystem> CoordinateSystem();
+
+ protected:
+  // Necessary so subclasses don't call the explicit constructor.
+  WMRStationaryOrigin();
 
  private:
   Microsoft::WRL::ComPtr<
@@ -67,8 +75,12 @@ class WMRAttachedOrigin {
           attached_origin);
   virtual ~WMRAttachedOrigin();
 
-  std::unique_ptr<WMRCoordinateSystem> TryGetCoordinatesAtTimestamp(
+  virtual std::unique_ptr<WMRCoordinateSystem> TryGetCoordinatesAtTimestamp(
       const WMRTimestamp* timestamp);
+
+ protected:
+  // Necessary so subclasses don't call the explicit constructor.
+  WMRAttachedOrigin();
 
  private:
   Microsoft::WRL::ComPtr<ABI::Windows::Perception::Spatial::
@@ -87,12 +99,17 @@ class WMRStageOrigin {
           stage_origin);
   virtual ~WMRStageOrigin();
 
-  std::unique_ptr<WMRCoordinateSystem> CoordinateSystem();
-  ABI::Windows::Perception::Spatial::SpatialMovementRange MovementRange();
+  virtual std::unique_ptr<WMRCoordinateSystem> CoordinateSystem();
+  virtual ABI::Windows::Perception::Spatial::SpatialMovementRange
+  MovementRange();
 
   // This will return an empty array if no bounds are set.
-  std::vector<ABI::Windows::Foundation::Numerics::Vector3> GetMovementBounds(
-      const WMRCoordinateSystem* coordinates);
+  virtual std::vector<ABI::Windows::Foundation::Numerics::Vector3>
+  GetMovementBounds(const WMRCoordinateSystem* coordinates);
+
+ protected:
+  // Necessary so subclasses don't call the explicit constructor.
+  WMRStageOrigin();
 
  private:
   Microsoft::WRL::ComPtr<
@@ -111,10 +128,17 @@ class WMRStageStatics {
           stage_statics);
   virtual ~WMRStageStatics();
 
-  std::unique_ptr<WMRStageOrigin> CurrentStage();
+  virtual std::unique_ptr<WMRStageOrigin> CurrentStage();
 
   std::unique_ptr<base::CallbackList<void()>::Subscription>
   AddStageChangedCallback(const base::RepeatingCallback<void()>& cb);
+
+  virtual void Dispose();
+
+ protected:
+  // Necessary so subclasses don't call the explicit constructor.
+  WMRStageStatics();
+  bool dispose_called_ = false;
 
  private:
   HRESULT OnCurrentChanged(IInspectable* sender, IInspectable* args);

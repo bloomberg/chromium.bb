@@ -37,6 +37,8 @@ WMRHolographicFramePrediction::WMRHolographicFramePrediction(
   DCHECK(prediction_);
 }
 
+WMRHolographicFramePrediction::WMRHolographicFramePrediction() {}
+
 WMRHolographicFramePrediction::~WMRHolographicFramePrediction() = default;
 
 std::unique_ptr<WMRTimestamp> WMRHolographicFramePrediction::Timestamp() {
@@ -73,6 +75,8 @@ WMRHolographicFrame::WMRHolographicFrame(
     : holographic_frame_(holographic_frame) {
   DCHECK(holographic_frame_);
 }
+
+WMRHolographicFrame::WMRHolographicFrame() {}
 
 WMRHolographicFrame::~WMRHolographicFrame() = default;
 

@@ -23,8 +23,12 @@ class WMRCamera {
           ABI::Windows::Graphics::Holographic::IHolographicCamera> camera);
   virtual ~WMRCamera();
 
-  ABI::Windows::Foundation::Size RenderTargetSize();
-  bool IsStereo();
+  virtual ABI::Windows::Foundation::Size RenderTargetSize();
+  virtual bool IsStereo();
+
+ protected:
+  // Necessary so subclasses don't call the explicit constructor.
+  WMRCamera();
 
  private:
   Microsoft::WRL::ComPtr<
@@ -41,16 +45,20 @@ class WMRCameraPose {
           ABI::Windows::Graphics::Holographic::IHolographicCameraPose> pose);
   virtual ~WMRCameraPose();
 
-  ABI::Windows::Foundation::Rect Viewport();
-  std::unique_ptr<WMRCamera> HolographicCamera();
-  ABI::Windows::Graphics::Holographic::HolographicStereoTransform
+  virtual ABI::Windows::Foundation::Rect Viewport();
+  virtual std::unique_ptr<WMRCamera> HolographicCamera();
+  virtual ABI::Windows::Graphics::Holographic::HolographicStereoTransform
   ProjectionTransform();
-  bool TryGetViewTransform(
+  virtual bool TryGetViewTransform(
       const WMRCoordinateSystem* origin,
       ABI::Windows::Graphics::Holographic::HolographicStereoTransform*
           transform);
   ABI::Windows::Graphics::Holographic::IHolographicCameraPose* GetRawPtr()
       const;
+
+ protected:
+  // Necessary so subclasses don't call the explicit constructor.
+  WMRCameraPose();
 
  private:
   Microsoft::WRL::ComPtr<
@@ -68,7 +76,11 @@ class WMRRenderingParameters {
           rendering_params);
   virtual ~WMRRenderingParameters();
 
-  Microsoft::WRL::ComPtr<ID3D11Texture2D> TryGetBackbufferAsTexture2D();
+  virtual Microsoft::WRL::ComPtr<ID3D11Texture2D> TryGetBackbufferAsTexture2D();
+
+ protected:
+  // Necessary so subclasses don't call the explicit constructor.
+  WMRRenderingParameters();
 
  private:
   Microsoft::WRL::ComPtr<ABI::Windows::Graphics::Holographic::

@@ -178,6 +178,25 @@ if (enable_vr) {
         "windows_mixed_reality/wrappers/wmr_timestamp.cc",
         "windows_mixed_reality/wrappers/wmr_timestamp.h",
       ]
+
+      # Sources only meant to be actually used in tests, but need to be always
+      # included.
+      sources += [
+        "test/locked_vr_test_hook.cc",
+        "test/locked_vr_test_hook.h",
+        "windows_mixed_reality/wrappers/test/mock_wmr_holographic_frame.cc",
+        "windows_mixed_reality/wrappers/test/mock_wmr_holographic_frame.h",
+        "windows_mixed_reality/wrappers/test/mock_wmr_holographic_space.cc",
+        "windows_mixed_reality/wrappers/test/mock_wmr_holographic_space.h",
+        "windows_mixed_reality/wrappers/test/mock_wmr_input_manager.cc",
+        "windows_mixed_reality/wrappers/test/mock_wmr_input_manager.h",
+        "windows_mixed_reality/wrappers/test/mock_wmr_origins.cc",
+        "windows_mixed_reality/wrappers/test/mock_wmr_origins.h",
+        "windows_mixed_reality/wrappers/test/mock_wmr_rendering.cc",
+        "windows_mixed_reality/wrappers/test/mock_wmr_rendering.h",
+        "windows_mixed_reality/wrappers/test/mock_wmr_timestamp.cc",
+        "windows_mixed_reality/wrappers/test/mock_wmr_timestamp.h",
+      ]
     }
 
     if (enable_oculus_vr) {

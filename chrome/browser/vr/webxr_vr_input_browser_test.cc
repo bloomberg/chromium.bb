@@ -422,30 +422,40 @@ std::string TransformToColMajorString(gfx::Transform& t) {
   return array_string;
 }
 
-// Test that head pose changes in OpenVR are properly reflected in the viewer
-// pose provided by WebXR.
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestHeadPosesUpdate) {
+void TestHeadPosesUpdateImpl(WebXrVrBrowserTestBase* t) {
   WebXrHeadPoseMock my_mock;
 
-  this->LoadUrlAndAwaitInitialization(
-      this->GetFileUrlForHtmlTestFile("webxr_test_head_poses"));
-  this->EnterSessionWithUserGestureOrFail();
+  t->LoadUrlAndAwaitInitialization(
+      t->GetFileUrlForHtmlTestFile("webxr_test_head_poses"));
+  t->EnterSessionWithUserGestureOrFail();
 
   auto pose = gfx::Transform();
   my_mock.SetHeadPose(pose);
-  this->RunJavaScriptOrFail("stepWaitForMatchingPose(" +
-                            TransformToColMajorString(pose) + ")");
-  this->WaitOnJavaScriptStep();
+  t->RunJavaScriptOrFail("stepWaitForMatchingPose(" +
+                         TransformToColMajorString(pose) + ")");
+  t->WaitOnJavaScriptStep();
 
   // No significance to this new transform other than that it's easy to tell
   // whether the correct pose got piped through to WebXR or not.
   pose.RotateAboutXAxis(90);
   pose.Translate3d(2, 3, 4);
   my_mock.SetHeadPose(pose);
-  this->RunJavaScriptOrFail("stepWaitForMatchingPose(" +
-                            TransformToColMajorString(pose) + ")");
-  this->WaitOnJavaScriptStep();
-  this->AssertNoJavaScriptErrors();
+  t->RunJavaScriptOrFail("stepWaitForMatchingPose(" +
+                         TransformToColMajorString(pose) + ")");
+  t->WaitOnJavaScriptStep();
+  t->AssertNoJavaScriptErrors();
+}
+
+// Test that head pose changes in OpenVR are properly reflected in the viewer
+// pose provided by WebXR.
+IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestHeadPosesUpdate) {
+  TestHeadPosesUpdateImpl(this);
+}
+
+// Tests that head pose changes in WMR are properly reflected in the viewer pose
+// provided by WebXR.
+IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestWMR, TestHeadPosesUpdate) {
+  TestHeadPosesUpdateImpl(this);
 }
 
 }  // namespace vr

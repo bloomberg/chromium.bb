@@ -21,12 +21,17 @@ class WMRHolographicSpace {
           ABI::Windows::Graphics::Holographic::IHolographicSpace> space);
   virtual ~WMRHolographicSpace();
 
-  ABI::Windows::Graphics::Holographic::HolographicAdapterId PrimaryAdapterId();
-  std::unique_ptr<WMRHolographicFrame> TryCreateNextFrame();
-  bool TrySetDirect3D11Device(
+  virtual ABI::Windows::Graphics::Holographic::HolographicAdapterId
+  PrimaryAdapterId();
+  virtual std::unique_ptr<WMRHolographicFrame> TryCreateNextFrame();
+  virtual bool TrySetDirect3D11Device(
       const Microsoft::WRL::ComPtr<
           ABI::Windows::Graphics::DirectX::Direct3D11::IDirect3DDevice>&
           device);
+
+ protected:
+  // Necessary so subclasses don't call the explicit constructor.
+  WMRHolographicSpace();
 
  private:
   Microsoft::WRL::ComPtr<ABI::Windows::Graphics::Holographic::IHolographicSpace>

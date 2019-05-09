@@ -25,8 +25,12 @@ class WMRHolographicFramePrediction {
           prediction);
   virtual ~WMRHolographicFramePrediction();
 
-  std::unique_ptr<WMRTimestamp> Timestamp();
-  std::vector<std::unique_ptr<WMRCameraPose>> CameraPoses();
+  virtual std::unique_ptr<WMRTimestamp> Timestamp();
+  virtual std::vector<std::unique_ptr<WMRCameraPose>> CameraPoses();
+
+ protected:
+  // Necessary so subclasses don't call the explicit constructor.
+  WMRHolographicFramePrediction();
 
  private:
   Microsoft::WRL::ComPtr<
@@ -44,10 +48,14 @@ class WMRHolographicFrame {
           holographic_frame);
   virtual ~WMRHolographicFrame();
 
-  std::unique_ptr<WMRHolographicFramePrediction> CurrentPrediction();
-  std::unique_ptr<WMRRenderingParameters> TryGetRenderingParameters(
+  virtual std::unique_ptr<WMRHolographicFramePrediction> CurrentPrediction();
+  virtual std::unique_ptr<WMRRenderingParameters> TryGetRenderingParameters(
       const WMRCameraPose* pose);
-  bool TryPresentUsingCurrentPrediction();
+  virtual bool TryPresentUsingCurrentPrediction();
+
+ protected:
+  // Necessary so subclasses don't call the explicit constructor.
+  WMRHolographicFrame();
 
  private:
   Microsoft::WRL::ComPtr<ABI::Windows::Graphics::Holographic::IHolographicFrame>

@@ -52,7 +52,7 @@ class WMRInputManager {
           manager);
   virtual ~WMRInputManager();
 
-  std::vector<WMRInputSourceState> GetDetectedSourcesAtTimestamp(
+  virtual std::vector<WMRInputSourceState> GetDetectedSourcesAtTimestamp(
       Microsoft::WRL::ComPtr<ABI::Windows::Perception::IPerceptionTimestamp>
           timestamp) const;
 
@@ -61,6 +61,10 @@ class WMRInputManager {
 
   std::unique_ptr<InputEventCallbackList::Subscription> AddReleasedCallback(
       const InputEventCallback& cb);
+
+ protected:
+  // Necessary so subclasses don't call the explicit constructor.
+  WMRInputManager();
 
  private:
   void SubscribeEvents();

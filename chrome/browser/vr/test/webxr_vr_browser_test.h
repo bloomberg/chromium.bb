@@ -83,6 +83,14 @@ class WebXrVrBrowserTestStandard : public WebXrVrBrowserTestBase {
   }
 };
 
+class WebXrVrBrowserTestWMR : public WebXrVrBrowserTestBase {
+ public:
+  WebXrVrBrowserTestWMR() {
+    // WMR already enabled by default.
+    enable_features_.push_back(features::kWebXr);
+  }
+};
+
 // Test class with WebXR disabled.
 class WebXrVrBrowserTestWebXrDisabled : public WebXrVrBrowserTestBase {
  public:

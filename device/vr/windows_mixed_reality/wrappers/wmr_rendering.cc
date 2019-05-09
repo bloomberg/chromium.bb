@@ -10,7 +10,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/logging.h"
 #include "device/vr/windows/d3d11_texture_helper.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_origins.h"
 
@@ -30,6 +29,8 @@ namespace device {
 WMRCamera::WMRCamera(ComPtr<IHolographicCamera> camera) : camera_(camera) {
   DCHECK(camera_);
 }
+
+WMRCamera::WMRCamera() {}
 
 WMRCamera::~WMRCamera() = default;
 
@@ -52,6 +53,8 @@ WMRCameraPose::WMRCameraPose(ComPtr<IHolographicCameraPose> pose)
     : pose_(pose) {
   DCHECK(pose_);
 }
+
+WMRCameraPose::WMRCameraPose() {}
 
 WMRCameraPose::~WMRCameraPose() = default;
 
@@ -97,6 +100,8 @@ WMRRenderingParameters::WMRRenderingParameters(
     : rendering_params_(rendering_params) {
   DCHECK(rendering_params_);
 }
+
+WMRRenderingParameters::WMRRenderingParameters() {}
 
 WMRRenderingParameters::~WMRRenderingParameters() = default;
 

@@ -14,6 +14,9 @@
 #include "base/strings/string_util.h"
 #include "base/win/core_winrt_util.h"
 #include "base/win/scoped_hstring.h"
+#include "device/vr/windows_mixed_reality/mixed_reality_statics.h"
+#include "device/vr/windows_mixed_reality/wrappers/test/mock_wmr_holographic_frame.h"
+#include "device/vr/windows_mixed_reality/wrappers/test/mock_wmr_holographic_space.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_holographic_frame.h"
 
 using ABI::Windows::Graphics::DirectX::Direct3D11::IDirect3DDevice;
@@ -25,6 +28,9 @@ using Microsoft::WRL::ComPtr;
 namespace device {
 std::unique_ptr<WMRHolographicSpace> WMRHolographicSpace::CreateForWindow(
     HWND hwnd) {
+  if (MixedRealityDeviceStatics::GetLockedTestHook().GetHook()) {
+    return std::make_unique<MockWMRHolographicSpace>();
+  }
   if (!hwnd)
     return nullptr;
 
@@ -52,6 +58,8 @@ WMRHolographicSpace::WMRHolographicSpace(ComPtr<IHolographicSpace> space)
     : space_(space) {
   DCHECK(space_);
 }
+
+WMRHolographicSpace::WMRHolographicSpace() {}
 
 WMRHolographicSpace::~WMRHolographicSpace() = default;
 

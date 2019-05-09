@@ -16,6 +16,8 @@
 #include "base/strings/string_util.h"
 #include "base/win/core_winrt_util.h"
 #include "base/win/scoped_hstring.h"
+#include "device/vr/windows_mixed_reality/mixed_reality_statics.h"
+#include "device/vr/windows_mixed_reality/wrappers/test/mock_wmr_input_manager.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_input_source_state.h"
 
 using ABI::Windows::Foundation::ITypedEventHandler;
@@ -64,6 +66,9 @@ WMRInputSourceState WMRInputSourceEventArgs::State() const {
 }
 
 std::unique_ptr<WMRInputManager> WMRInputManager::GetForWindow(HWND hwnd) {
+  if (MixedRealityDeviceStatics::GetLockedTestHook().GetHook()) {
+    return std::make_unique<MockWMRInputManager>();
+  }
   if (!hwnd)
     return nullptr;
 
@@ -92,6 +97,8 @@ WMRInputManager::WMRInputManager(ComPtr<ISpatialInteractionManager> manager)
   released_token_.value = 0;
   SubscribeEvents();
 }
+
+WMRInputManager::WMRInputManager() {}
 
 WMRInputManager::~WMRInputManager() {
   UnsubscribeEvents();

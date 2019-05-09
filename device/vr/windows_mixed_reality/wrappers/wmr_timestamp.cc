@@ -19,6 +19,8 @@ WMRTimestamp::WMRTimestamp(ComPtr<IPerceptionTimestamp> timestamp)
   DCHECK(timestamp_);
 }
 
+WMRTimestamp::WMRTimestamp() {}
+
 WMRTimestamp::~WMRTimestamp() = default;
 
 DateTime WMRTimestamp::TargetTime() const {
