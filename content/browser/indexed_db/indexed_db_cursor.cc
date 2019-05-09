@@ -112,14 +112,12 @@ void IndexedDBCursor::Advance(
       BindWeakOperation(
           &IndexedDBCursor::CursorAdvanceOperation, ptr_factory_.GetWeakPtr(),
           count, std::move(dispatcher_host),
-          base::WrapRefCounted(dispatcher_host->context()->TaskRunner()),
           std::move(callback)));
 }
 
 leveldb::Status IndexedDBCursor::CursorAdvanceOperation(
     uint32_t count,
     base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
-    scoped_refptr<base::SequencedTaskRunner> idb_runner,
     blink::mojom::IDBCursor::AdvanceCallback callback,
     IndexedDBTransaction* /*transaction*/) {
   IDB_TRACE("IndexedDBCursor::CursorAdvanceOperation");
@@ -155,7 +153,7 @@ leveldb::Status IndexedDBCursor::CursorAdvanceOperation(
     blob_info.swap(value->blob_info);
 
     if (!IndexedDBCallbacks::CreateAllBlobs(
-            dispatcher_host->blob_storage_context(), idb_runner,
+            dispatcher_host->blob_storage_context(),
             IndexedDBCallbacks::IndexedDBValueBlob::GetIndexedDBValueBlobs(
                 blob_info, &mojo_value->blob_or_file_info))) {
       return s;
@@ -196,13 +194,11 @@ void IndexedDBCursor::Continue(
       BindWeakOperation(
           &IndexedDBCursor::CursorContinueOperation, ptr_factory_.GetWeakPtr(),
           std::move(dispatcher_host),
-          base::WrapRefCounted(dispatcher_host->context()->TaskRunner()),
           base::Passed(&key), base::Passed(&primary_key), std::move(callback)));
 }
 
 leveldb::Status IndexedDBCursor::CursorContinueOperation(
     base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
-    scoped_refptr<base::SequencedTaskRunner> idb_runner,
     std::unique_ptr<IndexedDBKey> key,
     std::unique_ptr<IndexedDBKey> primary_key,
     blink::mojom::IDBCursor::CursorContinueCallback callback,
@@ -243,7 +239,7 @@ leveldb::Status IndexedDBCursor::CursorContinueOperation(
     blob_info.swap(value->blob_info);
 
     if (!IndexedDBCallbacks::CreateAllBlobs(
-            dispatcher_host->blob_storage_context(), idb_runner,
+            dispatcher_host->blob_storage_context(),
             IndexedDBCallbacks::IndexedDBValueBlob::GetIndexedDBValueBlobs(
                 blob_info, &mojo_value->blob_or_file_info))) {
       return s;
@@ -284,13 +280,11 @@ void IndexedDBCursor::PrefetchContinue(
       BindWeakOperation(
           &IndexedDBCursor::CursorPrefetchIterationOperation,
           ptr_factory_.GetWeakPtr(), std::move(dispatcher_host),
-          base::WrapRefCounted(dispatcher_host->context()->TaskRunner()),
           number_to_fetch, std::move(callback)));
 }
 
 leveldb::Status IndexedDBCursor::CursorPrefetchIterationOperation(
     base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
-    scoped_refptr<base::SequencedTaskRunner> idb_runner,
     int number_to_fetch,
     blink::mojom::IDBCursor::PrefetchCallback callback,
     IndexedDBTransaction* /*transaction*/) {
@@ -371,9 +365,10 @@ leveldb::Status IndexedDBCursor::CursorPrefetchIterationOperation(
 
   std::vector<blink::mojom::IDBValuePtr> mojo_values;
   mojo_values.reserve(found_values.size());
-  for (size_t i = 0; i < found_values.size(); ++i)
+  for (size_t i = 0; i < found_values.size(); ++i) {
     mojo_values.push_back(
         IndexedDBValue::ConvertAndEraseValue(&found_values[i]));
+  }
 
   std::vector<IndexedDBCallbacks::IndexedDBValueBlob> value_blobs;
   for (size_t i = 0; i < mojo_values.size(); ++i) {
@@ -383,8 +378,7 @@ leveldb::Status IndexedDBCursor::CursorPrefetchIterationOperation(
   }
 
   if (!IndexedDBCallbacks::CreateAllBlobs(
-          dispatcher_host->blob_storage_context(), idb_runner,
-          std::move(value_blobs))) {
+          dispatcher_host->blob_storage_context(), std::move(value_blobs))) {
     return s;
   }
 

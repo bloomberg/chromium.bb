@@ -82,7 +82,6 @@ class CONTENT_EXPORT IndexedDBCallbacks
 
   static bool CreateAllBlobs(
       scoped_refptr<ChromeBlobStorageContext> blob_context,
-      scoped_refptr<base::SequencedTaskRunner> idb_runner,
       std::vector<IndexedDBValueBlob> value_blobs);
 
   IndexedDBCallbacks(base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,

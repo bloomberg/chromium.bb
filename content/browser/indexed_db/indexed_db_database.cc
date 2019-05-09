@@ -1262,8 +1262,7 @@ Status IndexedDBDatabase::GetAllOperation(
   }
 
   if (!IndexedDBCallbacks::CreateAllBlobs(
-          dispatcher_host->blob_storage_context(),
-          dispatcher_host->context()->TaskRunner(), std::move(value_blobs))) {
+          dispatcher_host->blob_storage_context(), std::move(value_blobs))) {
     return s;
   }
 
