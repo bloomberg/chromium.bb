@@ -88,15 +88,6 @@ const char kSlotNameA[] = "Dlc-A";
 const char kSlotNameB[] = "Dlc-B";
 }  // namespace imageloader
 
-namespace dlcservice {
-const char kDlcServiceInterface[] = "org.chromium.DlcServiceInterface";
-const char kDlcServiceName[] = "org.chromium.DlcService";
-const char kDlcServicePath[] = "/org/chromium/DlcService";
-// Methods
-const char kInstallMethod[] = "Install";
-const char kUninstallMethod[] = "Uninstall";
-}  // namespace dlcservice
-
 namespace speech_synthesis {
 const char kSpeechSynthesizerInterface[] =
     "org.chromium.SpeechSynthesizerInterface";
