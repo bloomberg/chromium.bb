@@ -41782,6 +41782,20 @@ Called by update_net_trust_anchors.py.-->
     The attempt resulted in a retriable loading failure. We encountered an error
     page (e.g. 404 page).
   </int>
+  <int value="21" label="Loading deferred (retriable, auto-fetch exclusive)">
+    Background loading of the page was deferred because its URL matches the one
+    on the active tab URL. The attempt will be retried later.
+  </int>
+  <int value="22" label="Page has certificate error">
+    The loaded page has a HTTPS certificate error. The request was aborted.
+  </int>
+  <int value="23" label="Page is blocked by SafeBrowsing">
+    The loaded page is blocked by SafeBrowsing. The request was aborted.
+  </int>
+  <int value="24" label="Page is an interstitial or error page">
+    The loaded page is a Chrome interstitial or an error page. The request was
+    aborted.
+  </int>
 </enum>
 
 <enum name="OfflinePagesBackgroundSavePageResult">
@@ -41991,17 +42005,17 @@ Called by update_net_trust_anchors.py.-->
     Certain pages like file URL or NTP will not be saved because they're already
     available offline.
   </int>
-  <int value="8" label="Security certificate error">
-    Save operation failed because the page resulted in a security certificate
-    error.
+  <int value="8" label="Deprecated: Security certificate error">
+    Deprecated: Save operation failed because the page resulted in a security
+    certificate error.
   </int>
-  <int value="9" label="Error page detected">
-    Save operation failed because an error page (i.e. offline dino page) was
-    detected.
+  <int value="9" label="Deprecated: Error page detected">
+    Deprecated: Save operation failed because an error page (i.e. offline dino
+    page) was detected.
   </int>
-  <int value="10" label="Interstitial page detected">
-    Save operation failed because an interstitial page (i.e. page warning of
-    expired certificates or improper dev signatures) was detected.
+  <int value="10" label="Deprecated: Interstitial page detected">
+    Deprecated: Save operation failed because an interstitial page (i.e. page
+    warning of expired certificates or improper dev signatures) was detected.
   </int>
   <int value="11" label="Digest calculation failure">
     Failed to compute the digest of an archive file.

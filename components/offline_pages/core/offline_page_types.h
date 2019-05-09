@@ -25,29 +25,27 @@ namespace offline_pages {
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.offlinepages
 enum class SavePageResult {
-  SUCCESS,
-  CANCELLED,
-  DEVICE_FULL,
-  CONTENT_UNAVAILABLE,
-  ARCHIVE_CREATION_FAILED,
-  STORE_FAILURE,
-  ALREADY_EXISTS,
+  SUCCESS = 0,
+  CANCELLED = 1,
+  DEVICE_FULL = 2,
+  CONTENT_UNAVAILABLE = 3,
+  ARCHIVE_CREATION_FAILED = 4,
+  STORE_FAILURE = 5,
+  ALREADY_EXISTS = 6,
   // Certain pages, i.e. file URL or NTP, will not be saved because these
   // are already locally accessible.
-  SKIPPED,
-  SECURITY_CERTIFICATE_ERROR,
-  // Returned when we detect trying to save a chrome error page.
-  ERROR_PAGE,
-  // Returned when we detect trying to save a chrome interstitial page.
-  INTERSTITIAL_PAGE,
+  SKIPPED = 7,
+  DEPRECATED_SECURITY_CERTIFICATE_ERROR = 8,
+  DEPRECATED_ERROR_PAGE = 9,
+  DEPRECATED_INTERSTITIAL_PAGE = 10,
   // Failed to compute digest for the archive file.
-  DIGEST_CALCULATION_FAILED,
+  DIGEST_CALCULATION_FAILED = 11,
   // Unable to move the file into a public directory.
-  FILE_MOVE_FAILED,
+  FILE_MOVE_FAILED = 12,
   // Unable to add the file to the system download manager.
-  ADD_TO_DOWNLOAD_MANAGER_FAILED,
+  ADD_TO_DOWNLOAD_MANAGER_FAILED = 13,
   // Unable to get write permission on public directory.
-  PERMISSION_DENIED,
+  PERMISSION_DENIED = 14,
   kMaxValue = PERMISSION_DENIED,
 };
 

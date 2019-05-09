@@ -31,6 +31,8 @@ const char kHttpUrl[] = "http://foo.test/";
 const char kLocalhostUrl[] = "http://localhost";
 const char kFileOrigin[] = "file://example_file";
 const char kWssUrl[] = "wss://foo.test/";
+const char kFtpUrl[] = "ftp://example.test/";
+const char kDataUrl[] = "data:text/html,<html>test</html>";
 
 // This list doesn't include data: URL, as data: URLs will be explicitly marked
 // as not secure.
@@ -124,6 +126,10 @@ class TestSecurityStateHelper {
     return security_state::GetSecurityLevel(
         *GetVisibleSecurityState(), has_policy_certificate_,
         base::BindRepeating(&IsOriginSecure));
+  }
+
+  bool HasMajorCertificateError() const {
+    return security_state::HasMajorCertificateError(*GetVisibleSecurityState());
   }
 
  private:
@@ -221,14 +227,14 @@ TEST(SecurityStateTest, MalwareWithoutConnectionState) {
 // Tests that pseudo URLs always cause an HTTP_SHOW_WARNING to be shown.
 TEST(SecurityStateTest, AlwaysWarnOnDataUrls) {
   TestSecurityStateHelper helper;
-  helper.SetUrl(GURL("data:text/html,<html>test</html>"));
+  helper.SetUrl(GURL(kDataUrl));
   EXPECT_EQ(HTTP_SHOW_WARNING, helper.GetSecurityLevel());
 }
 
 // Tests that FTP URLs always cause an HTTP_SHOW_WARNING to be shown.
 TEST(SecurityStateTest, AlwaysWarnOnFtpUrls) {
   TestSecurityStateHelper helper;
-  helper.SetUrl(GURL("ftp://example.test/"));
+  helper.SetUrl(GURL(kFtpUrl));
   EXPECT_EQ(HTTP_SHOW_WARNING, helper.GetSecurityLevel());
 }
 
@@ -420,6 +426,63 @@ TEST(SecurityStateTest, BillingOverridesHTTPWarning) {
   helper.set_malicious_content_status(MALICIOUS_CONTENT_STATUS_BILLING);
   // Expect to see a warning for billing now.
   EXPECT_EQ(DANGEROUS, helper.GetSecurityLevel());
+}
+
+// Tests that non-cryptographic schemes are handled as having no certificate
+// errors.
+TEST(SecurityStateTest, NonCryptoHasNoCertificateErrors) {
+  TestSecurityStateHelper helper;
+  helper.set_cert_status(net::CERT_STATUS_SHA1_SIGNATURE_PRESENT |
+                         net::CERT_STATUS_REVOKED);
+
+  helper.SetUrl(GURL(kHttpUrl));
+  EXPECT_FALSE(helper.HasMajorCertificateError());
+
+  helper.SetUrl(GURL(kFtpUrl));
+  EXPECT_FALSE(helper.HasMajorCertificateError());
+
+  helper.SetUrl(GURL(kDataUrl));
+  EXPECT_FALSE(helper.HasMajorCertificateError());
+}
+
+// Tests that cryptographic schemes without certificate errors are acceptable.
+TEST(SecurityStateTest, CryptoWithNoCertificateErrors) {
+  TestSecurityStateHelper helper;
+  EXPECT_FALSE(helper.HasMajorCertificateError());
+
+  helper.set_cert_status(0);
+  EXPECT_FALSE(helper.HasMajorCertificateError());
+
+  helper.SetCertificate(nullptr);
+  EXPECT_FALSE(helper.HasMajorCertificateError());
+}
+
+// Tests that minor certificate errors are properly ignored.
+TEST(SecurityStateTest, MinorCertificateErrors) {
+  TestSecurityStateHelper helper;
+  helper.set_cert_status(net::CERT_STATUS_SHA1_SIGNATURE_PRESENT |
+                         net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION);
+  EXPECT_FALSE(helper.HasMajorCertificateError());
+
+  helper.set_cert_status(net::CERT_STATUS_SHA1_SIGNATURE_PRESENT |
+                         net::CERT_STATUS_NO_REVOCATION_MECHANISM);
+  EXPECT_FALSE(helper.HasMajorCertificateError());
+}
+
+// Tests that major certificate errors are detected.
+TEST(SecurityStateTest, MajorCertificateErrors) {
+  TestSecurityStateHelper helper;
+  helper.set_cert_status(net::CERT_STATUS_SHA1_SIGNATURE_PRESENT |
+                         net::CERT_STATUS_REVOKED);
+  EXPECT_TRUE(helper.HasMajorCertificateError());
+
+  helper.set_cert_status(net::CERT_STATUS_SHA1_SIGNATURE_PRESENT |
+                         net::CERT_STATUS_WEAK_SIGNATURE_ALGORITHM);
+  EXPECT_TRUE(helper.HasMajorCertificateError());
+
+  helper.set_cert_status(net::CERT_STATUS_SHA1_SIGNATURE_PRESENT |
+                         net::CERT_STATUS_PINNED_KEY_MISSING);
+  EXPECT_TRUE(helper.HasMajorCertificateError());
 }
 
 }  // namespace security_state

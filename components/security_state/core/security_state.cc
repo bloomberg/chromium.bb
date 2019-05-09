@@ -88,19 +88,12 @@ SecurityLevel GetSecurityLevel(
     return NONE;
   }
 
-  const GURL url = visible_security_state.url;
-
-  const bool is_cryptographic_with_certificate =
-      (url.SchemeIsCryptographic() && visible_security_state.certificate);
-
-  const bool is_major_cert_error =
-      net::IsCertStatusError(visible_security_state.cert_status) &&
-      !net::IsCertStatusMinorError(visible_security_state.cert_status);
-
   // Set the security level to DANGEROUS for major certificate errors.
-  if (is_cryptographic_with_certificate && is_major_cert_error) {
+  if (HasMajorCertificateError(visible_security_state)) {
     return DANGEROUS;
   }
+
+  const GURL& url = visible_security_state.url;
 
   // data: URLs don't define a secure context, and are a vector for spoofing.
   // Likewise, ftp: URLs are always non-secure, and are uncommon enough that
@@ -115,6 +108,9 @@ SecurityLevel GetSecurityLevel(
   // pseudo URLs (blob:, filesystem:). filesystem: is a standard scheme so does
   // not need to be explicitly listed here.
   // TODO(meacer): Remove special case for blob (crbug.com/684751).
+  const bool is_cryptographic_with_certificate =
+      visible_security_state.url.SchemeIsCryptographic() &&
+      visible_security_state.certificate;
   if (!is_cryptographic_with_certificate) {
     if (!visible_security_state.is_error_page &&
         !is_origin_secure_callback.Run(url) &&
@@ -172,6 +168,22 @@ SecurityLevel GetSecurityLevel(
     return EV_SECURE;
   }
   return SECURE;
+}
+
+bool HasMajorCertificateError(
+    const VisibleSecurityState& visible_security_state) {
+  if (!visible_security_state.connection_info_initialized)
+    return false;
+
+  const bool is_cryptographic_with_certificate =
+      visible_security_state.url.SchemeIsCryptographic() &&
+      visible_security_state.certificate;
+
+  const bool is_major_cert_error =
+      net::IsCertStatusError(visible_security_state.cert_status) &&
+      !net::IsCertStatusMinorError(visible_security_state.cert_status);
+
+  return is_cryptographic_with_certificate && is_major_cert_error;
 }
 
 VisibleSecurityState::VisibleSecurityState()

@@ -228,6 +228,9 @@ base::Optional<RequestNotifier::BackgroundSavePageResult> SingleAttemptResult(
       // Other failure status values.
     case Offliner::RequestStatus::LOADING_FAILED_NO_RETRY:
     case Offliner::RequestStatus::LOADING_FAILED_DOWNLOAD:
+    case Offliner::RequestStatus::LOADED_PAGE_HAS_CERTIFICATE_ERROR:
+    case Offliner::RequestStatus::LOADED_PAGE_IS_BLOCKED:
+    case Offliner::RequestStatus::LOADED_PAGE_IS_CHROME_INTERNAL:
       return RequestNotifier::BackgroundSavePageResult::LOADING_FAILURE;
     case Offliner::RequestStatus::DOWNLOAD_THROTTLED:
       return RequestNotifier::BackgroundSavePageResult::DOWNLOAD_THROTTLED;
@@ -1017,6 +1020,7 @@ void RequestCoordinator::UpdateRequestForAttempt(
     RecordNetworkQualityAtRequestStartForFailedRequest(
         request.client_id(), network_quality_at_request_start_);
   }
+
   if (IsCanceledOrInternalFailure(status)) {
     UpdateRequestForAbortedAttempt(request);
   } else if (attempt_result) {
@@ -1071,6 +1075,9 @@ bool RequestCoordinator::ShouldTryNextRequest(
     case Offliner::RequestStatus::LOADING_FAILED_NO_RETRY:
     case Offliner::RequestStatus::LOADING_FAILED_DOWNLOAD:
     case Offliner::RequestStatus::DOWNLOAD_THROTTLED:
+    case Offliner::RequestStatus::LOADED_PAGE_HAS_CERTIFICATE_ERROR:
+    case Offliner::RequestStatus::LOADED_PAGE_IS_BLOCKED:
+    case Offliner::RequestStatus::LOADED_PAGE_IS_CHROME_INTERNAL:
       return true;
     case Offliner::RequestStatus::FOREGROUND_CANCELED:
     case Offliner::RequestStatus::LOADING_CANCELED:

@@ -53,9 +53,6 @@ class TestMHTMLArchiver : public OfflinePageMHTMLArchiver {
     SUCCESS,
     NOT_ABLE_TO_ARCHIVE,
     WEB_CONTENTS_MISSING,
-    CONNECTION_SECURITY_ERROR,
-    ERROR_PAGE,
-    INTERSTITIAL_PAGE,
   };
 
   TestMHTMLArchiver(const GURL& url,
@@ -67,8 +64,6 @@ class TestMHTMLArchiver : public OfflinePageMHTMLArchiver {
   void GenerateMHTML(const base::FilePath& archives_dir,
                      content::WebContents* web_contents,
                      const CreateArchiveParams& create_archive_params) override;
-  bool HasConnectionSecurityError(content::WebContents* web_contents) override;
-  content::PageType GetPageType(content::WebContents* web_contents) override;
 
   const GURL url_;
   const TestScenario test_scenario_;
@@ -110,20 +105,6 @@ void TestMHTMLArchiver::GenerateMHTML(
                                 OfflineTimeNow(), kTestFileSize));
 
   clock_->Advance(kTimeToSaveMhtml);
-}
-
-bool TestMHTMLArchiver::HasConnectionSecurityError(
-    content::WebContents* web_contents) {
-  return test_scenario_ == TestScenario::CONNECTION_SECURITY_ERROR;
-}
-
-content::PageType TestMHTMLArchiver::GetPageType(
-    content::WebContents* web_contents) {
-  if (test_scenario_ == TestScenario::ERROR_PAGE)
-    return content::PageType::PAGE_TYPE_ERROR;
-  if (test_scenario_ == TestScenario::INTERSTITIAL_PAGE)
-    return content::PageType::PAGE_TYPE_INTERSTITIAL;
-  return content::PageType::PAGE_TYPE_NORMAL;
 }
 
 }  // namespace
@@ -272,45 +253,6 @@ TEST_F(OfflinePageMHTMLArchiverTest, NotAbleToGenerateArchive) {
   CreateArchive(page_url, TestMHTMLArchiver::TestScenario::NOT_ABLE_TO_ARCHIVE);
 
   EXPECT_EQ(OfflinePageArchiver::ArchiverResult::ERROR_ARCHIVE_CREATION_FAILED,
-            last_result());
-  EXPECT_EQ(base::FilePath(), last_file_path());
-  EXPECT_EQ(0LL, last_file_size());
-  histogram_tester()->ExpectTotalCount(kCreateArchiveTimeHistogram, 0);
-  histogram_tester()->ExpectTotalCount(kComputeDigestTimeHistogram, 0);
-}
-
-// Tests for archiver handling of non-secure connection.
-TEST_F(OfflinePageMHTMLArchiverTest, ConnectionNotSecure) {
-  GURL page_url = GURL(kTestURL);
-  CreateArchive(page_url,
-                TestMHTMLArchiver::TestScenario::CONNECTION_SECURITY_ERROR);
-
-  EXPECT_EQ(OfflinePageArchiver::ArchiverResult::ERROR_SECURITY_CERTIFICATE,
-            last_result());
-  EXPECT_EQ(base::FilePath(), last_file_path());
-  EXPECT_EQ(0LL, last_file_size());
-  histogram_tester()->ExpectTotalCount(kCreateArchiveTimeHistogram, 0);
-  histogram_tester()->ExpectTotalCount(kComputeDigestTimeHistogram, 0);
-}
-
-// Tests for archiver handling of an error page.
-TEST_F(OfflinePageMHTMLArchiverTest, PageError) {
-  GURL page_url = GURL(kTestURL);
-  CreateArchive(page_url, TestMHTMLArchiver::TestScenario::ERROR_PAGE);
-
-  EXPECT_EQ(OfflinePageArchiver::ArchiverResult::ERROR_ERROR_PAGE,
-            last_result());
-  EXPECT_EQ(base::FilePath(), last_file_path());
-  EXPECT_EQ(0LL, last_file_size());
-  histogram_tester()->ExpectTotalCount(kCreateArchiveTimeHistogram, 0);
-  histogram_tester()->ExpectTotalCount(kComputeDigestTimeHistogram, 0);
-}
-
-// Tests for archiver handling of an interstitial page.
-TEST_F(OfflinePageMHTMLArchiverTest, InterstitialPage) {
-  GURL page_url = GURL(kTestURL);
-  CreateArchive(page_url, TestMHTMLArchiver::TestScenario::INTERSTITIAL_PAGE);
-  EXPECT_EQ(OfflinePageArchiver::ArchiverResult::ERROR_INTERSTITIAL_PAGE,
             last_result());
   EXPECT_EQ(base::FilePath(), last_file_path());
   EXPECT_EQ(0LL, last_file_size());

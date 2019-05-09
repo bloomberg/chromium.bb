@@ -4,7 +4,9 @@
 
 #include "chrome/browser/offline_pages/background_loader_offliner.h"
 
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
@@ -19,6 +21,7 @@
 #include "chrome/browser/offline_pages/offliner_user_data.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/offline_pages/content/renovations/render_frame_script_injector.h"
@@ -30,13 +33,16 @@
 #include "components/offline_pages/core/renovations/page_renovation_loader.h"
 #include "components/offline_pages/core/renovations/page_renovator.h"
 #include "components/previews/content/previews_user_data.h"
+#include "components/security_state/core/security_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/mhtml_extra_parts.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/previews_state.h"
+#include "net/cert/cert_status_flags.h"
 #include "net/http/http_response_headers.h"
 
 namespace offline_pages {
@@ -228,7 +234,8 @@ bool BackgroundLoaderOffliner::LoadAndSave(
   loader_.get()->LoadPage(request.url());
 
   snapshot_controller_ = std::make_unique<BackgroundSnapshotController>(
-      base::ThreadTaskRunnerHandle::Get(), this, (bool)page_renovator_);
+      base::ThreadTaskRunnerHandle::Get(), this,
+      static_cast<bool>(page_renovator_));
 
   return true;
 }
@@ -430,6 +437,8 @@ void BackgroundLoaderOffliner::StartSnapshot() {
     DVLOG(1) << "Pending request was cleared during delay.";
     return;
   }
+  DCHECK(is_low_bar_met_)
+      << "Minimum quality must have been reached before saving a snapshot";
 
   // Add this signal to signal_data_.
   AddLoadingSignal("Snapshotting");
@@ -459,9 +468,18 @@ void BackgroundLoaderOffliner::StartSnapshot() {
     return;
   }
 
-  save_state_ = SAVING;
   content::WebContents* web_contents(
       content::WebContentsObserver::web_contents());
+
+  Offliner::RequestStatus loaded_page_error =
+      CanSavePageInBackground(web_contents);
+  if (loaded_page_error != Offliner::RequestStatus::UNKNOWN) {
+    std::move(completion_callback_).Run(request, loaded_page_error);
+    ResetState();
+    return;
+  }
+
+  save_state_ = SAVING;
 
   // Capture loading signals to UMA.
   RequestStats& image_stats = stats_[ResourceDataType::IMAGE];
@@ -625,6 +643,48 @@ void BackgroundLoaderOffliner::AddLoadingSignal(const char* signal_name) {
 
 void BackgroundLoaderOffliner::RenovationsCompleted() {
   snapshot_controller_->RenovationsCompleted();
+}
+
+Offliner::RequestStatus BackgroundLoaderOffliner::CanSavePageInBackground(
+    content::WebContents* web_contents) {
+  DCHECK(is_low_bar_met_)
+      << "Minimum quality must have been reached before checking loaded page";
+  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
+      GetVisibleSecurityState(web_contents);
+  // Checks for HTTPS certificate errors (HTTP connections are not affected).
+  if (security_state::HasMajorCertificateError(*visible_security_state))
+    return Offliner::RequestStatus::LOADED_PAGE_HAS_CERTIFICATE_ERROR;
+
+  // Checks if the page is blocked by SafeBrowsing.
+  if (visible_security_state->malicious_content_status !=
+      security_state::MaliciousContentStatus::MALICIOUS_CONTENT_STATUS_NONE) {
+    return Offliner::RequestStatus::LOADED_PAGE_IS_BLOCKED;
+  }
+
+  // Don't save Chrome error or interstitial pages.
+  if (GetPageType(web_contents) != content::PageType::PAGE_TYPE_NORMAL)
+    return Offliner::RequestStatus::LOADED_PAGE_IS_CHROME_INTERNAL;
+
+  return Offliner::RequestStatus::UNKNOWN;
+}
+
+std::unique_ptr<security_state::VisibleSecurityState>
+BackgroundLoaderOffliner::GetVisibleSecurityState(
+    content::WebContents* web_contents) {
+  // Note: this tab helper needs to be created here as in the background it is
+  // not created by default.
+  SecurityStateTabHelper::CreateForWebContents(web_contents);
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(web_contents);
+  DCHECK(helper);
+  return helper->GetVisibleSecurityState();
+}
+
+content::PageType BackgroundLoaderOffliner::GetPageType(
+    content::WebContents* web_contents) {
+  DCHECK(web_contents->GetController().GetVisibleEntry())
+      << "An entry must have committed at this WebContents";
+  return web_contents->GetController().GetVisibleEntry()->GetPageType();
 }
 
 }  // namespace offline_pages

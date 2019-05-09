@@ -16,16 +16,20 @@
 #include "components/offline_pages/core/background_snapshot_controller.h"
 #include "components/offline_pages/core/offline_page_types.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/page_type.h"
 
 namespace content {
 class BrowserContext;
 }  // namespace content
 
+namespace security_state {
+struct VisibleSecurityState;
+}  // namespace security_state
+
 namespace offline_pages {
 
 class OfflinerPolicy;
 class OfflinePageModel;
-
 class PageRenovationLoader;
 class PageRenovator;
 
@@ -90,10 +94,6 @@ class BackgroundLoaderOffliner
                               bool started) override;
   void OnNetworkBytesChanged(int64_t bytes) override;
 
- protected:
-  // Called to reset the loader.
-  virtual void ResetLoader();
-
  private:
   friend class TestBackgroundLoaderOffliner;
   friend class BackgroundLoaderOfflinerTest;
@@ -127,8 +127,27 @@ class BackgroundLoaderOffliner
   void DeleteOfflinePageCallback(const SavePageRequest& request,
                                  DeletePageResult result);
 
+  // Checks whether the loaded page can be saved in the background based on its
+  // security information and other characteristics. Returns the respective
+  // RequestStatus value for any specific error or RequestStatus::UNKNOWN
+  // otherwise.
+  Offliner::RequestStatus CanSavePageInBackground(
+      content::WebContents* web_contents);
+
   // Testing method to examine resource stats.
   RequestStats* GetRequestStatsForTest() { return stats_; }
+
+  // Called to reset the loader. Overridden in tests.
+  virtual void ResetLoader();
+
+  // Returns the VisibleSecurityState for the page currently loaded by the
+  // provided WebContents. Overridden in tests.
+  virtual std::unique_ptr<security_state::VisibleSecurityState>
+  GetVisibleSecurityState(content::WebContents* web_contents);
+
+  // Returns PageType for the page currently loaded by the provided WebContents.
+  // Overridden in tests.
+  virtual content::PageType GetPageType(content::WebContents* web_contents);
 
   std::unique_ptr<background_loader::BackgroundLoaderContents> loader_;
   // Not owned.

@@ -1199,40 +1199,6 @@ TEST_F(OfflinePageModelTaskifiedTest, MAYBE_CheckPublishInternalArchive) {
   PumpLoop();
 }
 
-// This test is disabled since it's lacking the ability of mocking store failure
-// in store_test_utils. https://crbug.com/781023
-// TODO(romax): reenable the test once the above issue is resolved.
-TEST_F(OfflinePageModelTaskifiedTest,
-       DISABLED_ClearCachedPagesTriggeredWhenSaveFailed) {
-  // After a save failed, only PostClearCachedPagesTask will be triggered.
-  page_generator()->SetArchiveDirectory(temporary_dir_path());
-  page_generator()->SetNamespace(kDefaultNamespace);
-  page_generator()->SetUrl(kTestUrl);
-  OfflinePageItem page1 = page_generator()->CreateItemWithTempFile();
-  OfflinePageItem page2 = page_generator()->CreateItemWithTempFile();
-  InsertPageIntoStore(page1);
-  InsertPageIntoStore(page2);
-
-  ResetResults();
-
-  base::MockCallback<SavePageCallback> callback;
-  EXPECT_CALL(callback, Run(Eq(SavePageResult::ERROR_PAGE), A<int64_t>()));
-
-  std::unique_ptr<OfflinePageTestArchiver> archiver(
-      BuildArchiver(kTestUrl, ArchiverResult::SUCCESSFULLY_CREATED));
-  OfflinePageTestArchiver* archiver_ptr = archiver.get();
-
-  SavePageWithCallback(kTestUrl, kTestClientId1, kTestUrl2, kEmptyRequestOrigin,
-                       std::move(archiver), callback.Get());
-  // The archiver will not be erased before PumpLoop().
-  ASSERT_TRUE(archiver_ptr);
-  EXPECT_TRUE(archiver_ptr->create_archive_called());
-
-  PumpLoop();
-  EXPECT_FALSE(observer_add_page_called());
-  EXPECT_FALSE(observer_delete_page_called());
-}
-
 TEST_F(OfflinePageModelTaskifiedTest, ExtraActionTriggeredWhenSaveSuccess) {
   // After a save successfully saved, both RemovePagesWithSameUrlInSameNamespace
   // and PostClearCachedPagesTask will be triggered.
