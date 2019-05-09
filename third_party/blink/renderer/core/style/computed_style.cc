@@ -244,28 +244,23 @@ ComputedStyle::Difference ComputedStyle::ComputeDifference(
        old_style->IsDisplayLayoutCustomBox())) {
     return Difference::kDisplayAffectingDescendantStyles;
   }
-  bool independent_equal = old_style->IndependentInheritedEqual(*new_style);
-  bool non_independent_equal =
-      old_style->NonIndependentInheritedEqual(*new_style);
-  if (!independent_equal || !non_independent_equal) {
-    if (non_independent_equal && !old_style->HasExplicitlyInheritedProperties())
-      return Difference::kIndependentInherited;
+  if (!old_style->NonIndependentInheritedEqual(*new_style))
     return Difference::kInherited;
-  }
-
   if (!old_style->LoadingCustomFontsEqual(*new_style) ||
       old_style->JustifyItems() != new_style->JustifyItems())
     return Difference::kInherited;
-
-  if (*old_style == *new_style) {
+  bool non_inherited_equal = old_style->NonInheritedEqual(*new_style);
+  if (!non_inherited_equal && old_style->HasExplicitlyInheritedProperties()) {
+    return Difference::kInherited;
+  }
+  if (!old_style->IndependentInheritedEqual(*new_style))
+    return Difference::kIndependentInherited;
+  if (non_inherited_equal) {
+    DCHECK(*old_style == *new_style);
     if (PseudoStylesEqual(*old_style, *new_style))
       return Difference::kEqual;
     return Difference::kPseudoStyle;
   }
-
-  if (old_style->HasExplicitlyInheritedProperties())
-    return Difference::kInherited;
-
   if (new_style->HasAnyPublicPseudoStyles() ||
       old_style->HasAnyPublicPseudoStyles())
     return Difference::kPseudoStyle;

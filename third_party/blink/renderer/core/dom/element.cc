@@ -2563,7 +2563,7 @@ StyleRecalcChange Element::RecalcOwnStyle(const StyleRecalcChange change) {
   }
 
   if (new_style) {
-    if (old_style && !change.RecalcChildren() &&
+    if (old_style && !child_change.RecalcChildren() &&
         old_style->HasChildDependentFlags())
       new_style->CopyChildDependentFlagsFrom(*old_style);
     if (RuntimeEnabledFeatures::LayoutNGEnabled())
