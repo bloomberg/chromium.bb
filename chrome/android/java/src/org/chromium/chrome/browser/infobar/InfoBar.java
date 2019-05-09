@@ -295,6 +295,13 @@ public abstract class InfoBar implements InfoBarView {
         mContainer = container;
     }
 
+    /**
+     * @return Whether or not this InfoBar is already dismissed (i.e. closed).
+     */
+    boolean isDismissed() {
+        return mIsDismissed;
+    }
+
     @Override
     public boolean areControlsEnabled() {
         return mControlsEnabled;

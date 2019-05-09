@@ -327,6 +327,8 @@ public class TranslateCompactInfoBar extends InfoBar
     }
 
     private void closeInfobar(boolean explicitly) {
+        if (isDismissed()) return;
+
         if (!mUserInteracted) {
             recordInfobarAction(INFOBAR_DECLINE);
         }
