@@ -28097,6 +28097,16 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="Both devices, pointing and keyboard, detected."/>
 </enum>
 
+<enum name="HintCacheStoreEntryType">
+  <summary>
+    Possible store entry types contained within the HintCacheStore.
+  </summary>
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Metadata"/>
+  <int value="2" label="Component Hint"/>
+  <int value="3" label="Fetched Hint"/>
+</enum>
+
 <enum name="HistogramActivityReport">
   <int value="0" label="Reports created"/>
   <int value="1" label="Histograms created"/>
