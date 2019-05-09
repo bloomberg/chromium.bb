@@ -122,16 +122,12 @@ base::Optional<bssl::UniquePtr<EC_POINT>> PointFromKeyAgreementResponse(
     const KeyAgreementResponse& response) {
   bssl::UniquePtr<EC_POINT> ret(EC_POINT_new(group));
 
-  BIGNUM x_bn, y_bn;
-  BN_init(&x_bn);
-  BN_init(&y_bn);
-  BN_bin2bn(response.x, sizeof(response.x), &x_bn);
-  BN_bin2bn(response.y, sizeof(response.y), &y_bn);
+  bssl::UniquePtr<BIGNUM> x_bn(BN_new()), y_bn(BN_new());
+  BN_bin2bn(response.x, sizeof(response.x), x_bn.get());
+  BN_bin2bn(response.y, sizeof(response.y), y_bn.get());
   const bool on_curve =
-      EC_POINT_set_affine_coordinates_GFp(group, ret.get(), &x_bn, &y_bn,
-                                          nullptr /* ctx */) == 1;
-  BN_clear(&x_bn);
-  BN_clear(&y_bn);
+      EC_POINT_set_affine_coordinates_GFp(group, ret.get(), x_bn.get(),
+                                          y_bn.get(), nullptr /* ctx */) == 1;
 
   if (!on_curve) {
     return base::nullopt;
