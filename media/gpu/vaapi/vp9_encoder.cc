@@ -112,8 +112,12 @@ bool VP9Encoder::PrepareEncodeJob(EncodeJob* encode_job) {
 
   *picture->frame_hdr = current_frame_hdr_;
 
+  // Use last, golden and altref for references.
+  constexpr std::array<bool, kVp9NumRefsPerFrame> ref_frames_used = {true, true,
+                                                                     true};
   if (!accelerator_->SubmitFrameParameters(encode_job, current_params_, picture,
-                                           reference_frames_)) {
+                                           reference_frames_,
+                                           ref_frames_used)) {
     LOG(ERROR) << "Failed submitting frame parameters";
     return false;
   }

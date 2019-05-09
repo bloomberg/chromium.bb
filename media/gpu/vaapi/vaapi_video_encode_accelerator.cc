@@ -212,7 +212,8 @@ class VaapiVideoEncodeAccelerator::VP9Accelerator
       AcceleratedVideoEncoder::EncodeJob* job,
       const VP9Encoder::EncodeParams& encode_params,
       scoped_refptr<VP9Picture> pic,
-      const Vp9ReferenceFrameVector& ref_frames) override;
+      const Vp9ReferenceFrameVector& ref_frames,
+      const std::array<bool, kVp9NumRefsPerFrame>& ref_frames_used) override;
 
  private:
   VaapiVideoEncodeAccelerator* const vea_;
@@ -1231,7 +1232,8 @@ bool VaapiVideoEncodeAccelerator::VP9Accelerator::SubmitFrameParameters(
     AcceleratedVideoEncoder::EncodeJob* job,
     const VP9Encoder::EncodeParams& encode_params,
     scoped_refptr<VP9Picture> pic,
-    const Vp9ReferenceFrameVector& ref_frames) {
+    const Vp9ReferenceFrameVector& ref_frames,
+    const std::array<bool, kVp9NumRefsPerFrame>& ref_frames_used) {
   VAEncSequenceParameterBufferVP9 seq_param = {};
 
   const auto& frame_header = pic->frame_hdr;
@@ -1267,11 +1269,17 @@ bool VaapiVideoEncodeAccelerator::VP9Accelerator::SubmitFrameParameters(
   if (frame_header->IsKeyframe()) {
     pic_param.ref_flags.bits.force_kf = true;
   } else {
-    // use golden, altref and last for prediction
-    pic_param.ref_flags.bits.ref_frame_ctrl_l0 = 0x07;
-    pic_param.ref_flags.bits.ref_last_idx = frame_header->ref_frame_idx[0];
-    pic_param.ref_flags.bits.ref_gf_idx = frame_header->ref_frame_idx[1];
-    pic_param.ref_flags.bits.ref_arf_idx = frame_header->ref_frame_idx[2];
+    for (size_t i = 0; i < kVp9NumRefsPerFrame; i++) {
+      if (ref_frames_used[i])
+        pic_param.ref_flags.bits.ref_frame_ctrl_l0 |= (1 << i);
+    }
+
+    if (ref_frames_used[0])
+      pic_param.ref_flags.bits.ref_last_idx = frame_header->ref_frame_idx[0];
+    if (ref_frames_used[1])
+      pic_param.ref_flags.bits.ref_gf_idx = frame_header->ref_frame_idx[1];
+    if (ref_frames_used[2])
+      pic_param.ref_flags.bits.ref_arf_idx = frame_header->ref_frame_idx[2];
   }
 
   pic_param.pic_flags.bits.frame_type = frame_header->frame_type;
