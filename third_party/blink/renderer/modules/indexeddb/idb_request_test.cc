@@ -106,7 +106,7 @@ class BackendDatabaseWithMockedClose
               mojom::blink::IDBKeyRangePtr key_range,
               bool key_only,
               int64_t max_count,
-              mojom::blink::IDBCallbacksAssociatedPtrInfo callbacks) override {}
+              mojom::blink::IDBDatabase::GetAllCallback callback) override {}
   void SetIndexKeys(int64_t transaction_id,
                     int64_t object_store_id,
                     std::unique_ptr<::blink::IDBKey> primary_key,

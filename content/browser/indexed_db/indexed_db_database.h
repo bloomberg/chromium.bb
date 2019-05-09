@@ -161,13 +161,14 @@ class CONTENT_EXPORT IndexedDBDatabase
            std::unique_ptr<blink::IndexedDBKeyRange> key_range,
            bool key_only,
            scoped_refptr<IndexedDBCallbacks> callbacks);
-  void GetAll(IndexedDBTransaction* transaction,
+  void GetAll(base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
+              IndexedDBTransaction* transaction,
               int64_t object_store_id,
               int64_t index_id,
               std::unique_ptr<blink::IndexedDBKeyRange> key_range,
               bool key_only,
               int64_t max_count,
-              scoped_refptr<IndexedDBCallbacks> callbacks);
+              blink::mojom::IDBDatabase::GetAllCallback callback);
   void Put(IndexedDBTransaction* transaction,
            int64_t object_store_id,
            IndexedDBValue* value,
@@ -248,12 +249,13 @@ class CONTENT_EXPORT IndexedDBDatabase
       scoped_refptr<IndexedDBCallbacks> callbacks,
       IndexedDBTransaction* transaction);
   leveldb::Status GetAllOperation(
+      base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
       int64_t object_store_id,
       int64_t index_id,
       std::unique_ptr<blink::IndexedDBKeyRange> key_range,
       indexed_db::CursorType cursor_type,
       int64_t max_count,
-      scoped_refptr<IndexedDBCallbacks> callbacks,
+      blink::mojom::IDBDatabase::GetAllCallback callback,
       IndexedDBTransaction* transaction);
   struct PutOperationParams;
   leveldb::Status PutOperation(std::unique_ptr<PutOperationParams> params,

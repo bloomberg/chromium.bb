@@ -922,24 +922,33 @@ void IndexedDBDatabase::SendObservations(
   }
 }
 
-void IndexedDBDatabase::GetAll(IndexedDBTransaction* transaction,
-                               int64_t object_store_id,
-                               int64_t index_id,
-                               std::unique_ptr<IndexedDBKeyRange> key_range,
-                               bool key_only,
-                               int64_t max_count,
-                               scoped_refptr<IndexedDBCallbacks> callbacks) {
+void IndexedDBDatabase::GetAll(
+    base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
+    IndexedDBTransaction* transaction,
+    int64_t object_store_id,
+    int64_t index_id,
+    std::unique_ptr<IndexedDBKeyRange> key_range,
+    bool key_only,
+    int64_t max_count,
+    blink::mojom::IDBDatabase::GetAllCallback callback) {
   DCHECK(transaction);
   IDB_TRACE1("IndexedDBDatabase::GetAll", "txn.id", transaction->id());
 
-  if (!ValidateObjectStoreId(object_store_id))
+  if (!ValidateObjectStoreId(object_store_id)) {
+    IndexedDBDatabaseError error =
+        CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
+                    "Unknown error", transaction);
+    std::move(callback).Run(
+        blink::mojom::IDBDatabaseGetAllResult::NewErrorResult(
+            blink::mojom::IDBError::New(error.code(), error.message())));
     return;
+  }
 
   transaction->ScheduleTask(base::BindOnce(
-      &IndexedDBDatabase::GetAllOperation, this, object_store_id, index_id,
-      std::move(key_range),
+      &IndexedDBDatabase::GetAllOperation, this, std::move(dispatcher_host),
+      object_store_id, index_id, std::move(key_range),
       key_only ? indexed_db::CURSOR_KEY_ONLY : indexed_db::CURSOR_KEY_AND_VALUE,
-      max_count, callbacks));
+      max_count, std::move(callback)));
 }
 
 void IndexedDBDatabase::Get(IndexedDBTransaction* transaction,
@@ -1089,12 +1098,13 @@ static_assert(blink::mojom::kIDBMaxMessageOverhead <= INT32_MAX,
               "kIDBMaxMessageOverhead is more than INT32_MAX");
 
 Status IndexedDBDatabase::GetAllOperation(
+    base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
     int64_t object_store_id,
     int64_t index_id,
     std::unique_ptr<IndexedDBKeyRange> key_range,
     indexed_db::CursorType cursor_type,
     int64_t max_count,
-    scoped_refptr<IndexedDBCallbacks> callbacks,
+    blink::mojom::IDBDatabase::GetAllCallback callback,
     IndexedDBTransaction* transaction) {
   IDB_TRACE1("IndexedDBDatabase::GetAllOperation", "txn.id", transaction->id());
 
@@ -1106,6 +1116,15 @@ Status IndexedDBDatabase::GetAllOperation(
       metadata_.object_stores[object_store_id];
 
   Status s = Status::OK();
+  if (!dispatcher_host) {
+    IndexedDBDatabaseError error =
+        CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
+                    "Unknown error", transaction);
+    std::move(callback).Run(
+        blink::mojom::IDBDatabaseGetAllResult::NewErrorResult(
+            blink::mojom::IDBError::New(error.code(), error.message())));
+    return s;
+  }
 
   std::unique_ptr<IndexedDBBackingStore::Cursor> cursor;
 
@@ -1139,6 +1158,12 @@ Status IndexedDBDatabase::GetAllOperation(
 
   if (!s.ok()) {
     DLOG(ERROR) << "Unable to open cursor operation: " << s.ToString();
+    IndexedDBDatabaseError error =
+        CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
+                    "Corruption detected, unable to continue", transaction);
+    std::move(callback).Run(
+        blink::mojom::IDBDatabaseGetAllResult::NewErrorResult(
+            blink::mojom::IDBError::New(error.code(), error.message())));
     return s;
   }
 
@@ -1147,7 +1172,9 @@ Status IndexedDBDatabase::GetAllOperation(
   if (!cursor) {
     // Doesn't matter if key or value array here - will be empty array when it
     // hits JavaScript.
-    callbacks->OnSuccessArray(&found_values);
+    std::vector<blink::mojom::IDBReturnValuePtr> mojo_found_values;
+    std::move(callback).Run(blink::mojom::IDBDatabaseGetAllResult::NewValues(
+        std::move(mojo_found_values)));
     return s;
   }
 
@@ -1165,8 +1192,15 @@ Status IndexedDBDatabase::GetAllOperation(
       cursor_valid = cursor->FirstSeek(&s);
       did_first_seek = true;
     }
-    if (!s.ok())
+    if (!s.ok()) {
+      IndexedDBDatabaseError error =
+          CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
+                      "Seek failure, unable to continue", transaction);
+      std::move(callback).Run(
+          blink::mojom::IDBDatabaseGetAllResult::NewErrorResult(
+              blink::mojom::IDBError::New(error.code(), error.message())));
       return s;
+    }
 
     if (!cursor_valid)
       break;
@@ -1190,9 +1224,12 @@ Status IndexedDBDatabase::GetAllOperation(
     else
       response_size += return_value.SizeEstimate();
     if (response_size > GetUsableMessageSizeInBytes()) {
-      callbacks->OnError(
+      IndexedDBDatabaseError error =
           CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
-                      "Maximum IPC message size exceeded.", transaction));
+                      "Maximum IPC message size exceeded.", transaction);
+      std::move(callback).Run(
+          blink::mojom::IDBDatabaseGetAllResult::NewErrorResult(
+              blink::mojom::IDBError::New(error.code(), error.message())));
       return s;
     }
 
@@ -1205,10 +1242,33 @@ Status IndexedDBDatabase::GetAllOperation(
   if (cursor_type == indexed_db::CURSOR_KEY_ONLY) {
     // IndexedDBKey already supports an array of values so we can leverage  this
     // to return an array of keys - no need to create our own array of keys.
-    callbacks->OnSuccess(IndexedDBKey(std::move(found_keys)));
-  } else {
-    callbacks->OnSuccessArray(&found_values);
+    std::move(callback).Run(blink::mojom::IDBDatabaseGetAllResult::NewKey(
+        IndexedDBKey(std::move(found_keys))));
+    return s;
   }
+
+  std::vector<blink::mojom::IDBReturnValuePtr> mojo_values;
+  mojo_values.reserve(found_values.size());
+  for (size_t i = 0; i < found_values.size(); ++i) {
+    mojo_values.push_back(
+        IndexedDBReturnValue::ConvertReturnValue(&found_values[i]));
+  }
+
+  std::vector<IndexedDBCallbacks::IndexedDBValueBlob> value_blobs;
+  for (size_t i = 0; i < mojo_values.size(); ++i) {
+    IndexedDBCallbacks::IndexedDBValueBlob::GetIndexedDBValueBlobs(
+        &value_blobs, found_values[i].blob_info,
+        &mojo_values[i]->value->blob_or_file_info);
+  }
+
+  if (!IndexedDBCallbacks::CreateAllBlobs(
+          dispatcher_host->blob_storage_context(),
+          dispatcher_host->context()->TaskRunner(), std::move(value_blobs))) {
+    return s;
+  }
+
+  std::move(callback).Run(
+      blink::mojom::IDBDatabaseGetAllResult::NewValues(std::move(mojo_values)));
   return s;
 }
 

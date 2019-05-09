@@ -66,7 +66,7 @@ class DatabaseImpl : public blink::mojom::IDBDatabase {
               const blink::IndexedDBKeyRange& key_range,
               bool key_only,
               int64_t max_count,
-              blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks) override;
+              blink::mojom::IDBDatabase::GetAllCallback callback) override;
   void SetIndexKeys(
       int64_t transaction_id,
       int64_t object_store_id,
