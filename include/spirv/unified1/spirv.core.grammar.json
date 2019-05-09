@@ -8404,7 +8404,8 @@
         },
         {
           "enumerant" : "Groups",
-          "value" : 18
+          "value" : 18,
+          "extensions" : [ "SPV_AMD_shader_ballot" ]
         },
         {
           "enumerant" : "DeviceEnqueue",
