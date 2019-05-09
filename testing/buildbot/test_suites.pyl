@@ -4716,6 +4716,11 @@
       'gpu_fyi_and_optional_non_linux_gtests',
     ],
 
+    'gpu_fyi_android_webgl2_and_gold_telemetry_tests': [
+      'gpu_telemetry_tests_for_skia_gold_testing',
+      'gpu_webgl2_conformance_telemetry_tests',
+    ],
+
     'gpu_fyi_linux_debug_gtests': [
       'gpu_angle_end2end_gtests',
       'gpu_angle_unit_gtests',
@@ -4773,6 +4778,16 @@
       'gpu_swiftshader_gtests',
     ],
 
+    # TODO(https://crbug.com/850107): Merge this back into
+    # gpu_fyi_mac_release_telemetry_tests once Gold is stabilized.
+    'gpu_fyi_mac_release_gold_telemetry_tests': [
+      'gpu_common_and_optional_telemetry_tests',
+      'gpu_telemetry_tests',
+      'gpu_telemetry_tests_for_skia_gold_testing',
+      'gpu_webgl2_conformance_telemetry_tests',
+      'gpu_webgl_conformance_telemetry_tests',
+    ],
+
     'gpu_fyi_mac_release_gtests': [
       'gpu_angle_end2end_gtests',
       'gpu_angle_unit_gtests',
@@ -4789,6 +4804,14 @@
       'gpu_telemetry_tests',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
+    ],
+
+    # TODO(https://crbug.com/850107): Merge this back into
+    # gpu_fyi_optional_telemetry_tests once Gold is stabilized.
+    'gpu_fyi_optional_gold_telemetry_tests': [
+      'gpu_common_and_optional_telemetry_tests',
+      'gpu_telemetry_tests_for_skia_gold_testing',
+      'gpu_webgl2_conformance_telemetry_tests',
     ],
 
     'gpu_fyi_optional_linux_telemetry_tests': [
@@ -4879,6 +4902,22 @@
       'gpu_win_specific_gtests',
     ],
 
+    # TODO(https://crbug.com/850107): Merge this back into
+    # gpu_fyi_win_intel_release_telemetry_tests once Gold is stabilized.
+    'gpu_fyi_win_intel_release_gold_telemetry_tests': [
+      'gpu_common_and_optional_telemetry_tests',
+      'gpu_telemetry_tests',
+      'gpu_telemetry_tests_for_skia_gold_testing',
+      'gpu_webgl2_conformance_d3d11_validating_telemetry_tests',
+      'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
+      'gpu_webgl2_conformance_telemetry_tests',
+      'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_telemetry_tests',
+      'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests',
+      'gpu_win_intel_specific_telemetry_tests',
+    ],
+
     'gpu_fyi_win_intel_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
@@ -4902,6 +4941,22 @@
       'gpu_swiftshader_gtests',
     ],
 
+    # TODO(https://crbug.com/850107): Merge this back into
+    # gpu_fyi_win_release_telemetry_tests once Gold is stabilized.
+    'gpu_fyi_win_release_gold_telemetry_tests': [
+      'gpu_common_and_optional_telemetry_tests',
+      'gpu_telemetry_tests',
+      'gpu_telemetry_tests_for_skia_gold_testing',
+      'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
+      'gpu_webgl2_conformance_telemetry_tests',
+      'gpu_webgl_conformance_d3d11_validating_telemetry_tests',
+      'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_d3d9_validating_telemetry_tests',
+      'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_telemetry_tests',
+      'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests',
+    ],
+
     'gpu_fyi_win_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
@@ -4915,6 +4970,16 @@
       'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests',
     ],
 
+    # TODO(https://crbug.com/850107): Merge this back into
+    # gpu_fyi_mac_release_telemetry_tests once Gold is stabilized.
+    'gpu_nexus5x_gold_telemetry_tests': [
+      'gpu_common_and_optional_telemetry_tests',
+      'gpu_telemetry_tests',
+      'gpu_telemetry_tests_for_skia_gold_testing',
+      'gpu_webgl_conformance_gles_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_telemetry_tests',
+    ],
+
     'gpu_nexus5x_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
@@ -4924,6 +4989,7 @@
 
     'gpu_optional_win_intel_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
+      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
@@ -4934,6 +5000,7 @@
 
     'gpu_optional_win_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
+      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_d3d11_validating_telemetry_tests',
       'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
