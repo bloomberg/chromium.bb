@@ -70,6 +70,39 @@ void DeviceManagerImpl::GetDevice(const std::string& guid,
                      std::move(device_client));
 }
 
+#if defined(OS_ANDROID)
+void DeviceManagerImpl::RefreshDeviceInfo(const std::string& guid,
+                                          RefreshDeviceInfoCallback callback) {
+  scoped_refptr<UsbDevice> device = usb_service_->GetDevice(guid);
+  if (!device) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  if (device->permission_granted()) {
+    std::move(callback).Run(mojom::UsbDeviceInfo::From(*device));
+    return;
+  }
+
+  device->RequestPermission(
+      base::BindOnce(&DeviceManagerImpl::OnPermissionGrantedToRefresh,
+                     weak_factory_.GetWeakPtr(), device, std::move(callback)));
+}
+
+void DeviceManagerImpl::OnPermissionGrantedToRefresh(
+    scoped_refptr<UsbDevice> device,
+    RefreshDeviceInfoCallback callback,
+    bool granted) {
+  DCHECK_EQ(granted, device->permission_granted());
+  if (!device->permission_granted()) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  std::move(callback).Run(mojom::UsbDeviceInfo::From(*device));
+}
+#endif  // defined(OS_ANDROID)
+
 #if defined(OS_CHROMEOS)
 void DeviceManagerImpl::CheckAccess(const std::string& guid,
                                     CheckAccessCallback callback) {
