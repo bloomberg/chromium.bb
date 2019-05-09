@@ -36,6 +36,8 @@ const char* const kRendererHostAllowedArgs[] = {
     "bytes_allocated", nullptr};
 const char* const kV8GCAllowedArgs[] = {"num_items", "num_tasks", nullptr};
 const char* const kTopLevelFlowAllowedArgs[] = {"task_queue_name", nullptr};
+const char* const kTopLevelIpcRunTaskAllowedArgs[] = {"ipc_program_counter",
+                                                      nullptr};
 
 const WhitelistEntry kEventArgsWhitelist[] = {
     {"__metadata", "thread_name", nullptr},
@@ -57,6 +59,7 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     {"startup", "PrefProvider::PrefProvider", nullptr},
     {"task_scheduler", "*", nullptr},
     {"toplevel", "*", nullptr},
+    {"toplevel.ipc", "TaskAnnotator::RunTask", kTopLevelIpcRunTaskAllowedArgs},
     {TRACE_DISABLED_BY_DEFAULT("cpu_profiler"), "*", nullptr},
     // Redefined the string since MemoryDumpManager::kTraceCategory causes
     // static initialization of this struct.

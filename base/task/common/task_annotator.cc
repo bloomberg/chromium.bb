@@ -95,6 +95,10 @@ void TaskAnnotator::RunTask(const char* trace_event_name,
 
   debug::ScopedTaskRunActivity task_activity(*pending_task);
 
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("toplevel.ipc"),
+               "TaskAnnotator::RunTask", "ipc_program_counter",
+               pending_task->ipc_program_counter);
+
   TRACE_EVENT_WITH_FLOW0(
       TRACE_DISABLED_BY_DEFAULT("toplevel.flow"), trace_event_name,
       TRACE_ID_MANGLE(GetTaskTraceID(*pending_task)), TRACE_EVENT_FLAG_FLOW_IN);
