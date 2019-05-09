@@ -1,12 +1,35 @@
-# `Source/core/paint`
+<!---
+  The live version of this document can be viewed at:
+  https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/renderer/core/paint/README.md
+-->
 
-This directory contains implementation of painters of layout objects. It covers
-the following document lifecycle phases:
+# renderer/core/paint
 
-*   Layerization (`kInCompositingUpdate`, `kCompositingInputsClean` and `kCompositingClean`)
-*   PaintInvalidation (`InPaintInvalidation` and `PaintInvalidationClean`)
-*   PrePaint (`InPrePaint` and `PrePaintClean`)
-*   Paint (`InPaint` and `PaintClean`)
+This directory contains implementation of painters of layout objects. It is
+responsible for generating display item lists and property trees from the
+layout object tree, and deciding how to group these for compositing.
+
+It covers the following document lifecycle phases:
+
+*   Compositing update
+    *    Decides layerization (GraphicsLayers).
+*   [PrePaint](#PrePaint)
+    *    Invalidates display items.
+    *    Builds paint property trees.
+*   [Paint](#Paint)
+    *    Walks the LayoutObject tree and creates a display item list.
+    *    Groups the display list into paint chunks which share the same
+         property tree state.
+    *    Passes the display item list to the compositor in cc::Layers.
+    *    Converts the blink property tree nodes into cc property tree nodes.
+
+For information about how the display list and paint property trees are
+implemented, see
+[the platform paint README file](../../platform/graphics/paint/README.md).
+
+This code is owned by the [rendering team](https://www.chromium.org/teams/rendering).
+
+[TOC]
 
 ## Glossaries
 
@@ -187,13 +210,14 @@ All elements which do not have a compositing trigger paint into the texture
 of the nearest `LayoutObject`with a compositing trigger on its
 *compositing container chain* (except for squashed layers; see below). For
 historical, practical and implementation detail reasons, only `LayoutObject`s
-with `PaintLayer`s can have a compositing trigger. See crbug.com/370604 for a
-bug tracking this limitation, which is often referred to as the "fundamental
-compositing bug".
+with `PaintLayer`s can have a compositing trigger. See
+[crbug.com/370604](https://crbug.com/370604) for a bug tracking this limitation,
+which is often referred to as the **fundamental compositing bug**.
 
 The various compositing triggers are listed
 [here](../../platform/graphics/compositing_reasons.h).
 They fall in to several categories:
+
 1. Direct reasons due to CSS style (see `CompositingReason::kComboAllDirectStyleDeterminedReasons`)
 2. Direct reasons due to other conditions (see `CompositingReason::kComboAllDirectNonStyleDeterminedReasons`)
 3. Composited scrolling-dependent reasons (see `CompositingReason::kComboAllCompositedScrollingDeterminedReasons`)
@@ -214,6 +238,7 @@ if the `LayoutObject` paints after and overlaps (or may overlap) another
 composited layer.
 
 Note that composited scrolling is special. Several ways it is special:
+
  * Composited descendants do _not_ necessarily cause composited scrolling of an
 ancestor.
  * The presence of LCD text prevents composited scrolling in the
@@ -227,6 +252,7 @@ composited scrolling if they have overflow and any composited descendants.
  reason from category (3) during the CompositingRequirementsUpdater
 
 Note that overlap triggers have two special behaviors:
+
  * Any `LayoutObject`
 which may overlap a `LayoutObject` that uses composited scrolling or a
 transform animation, paints after it, and scrolls with respect to it, receives
@@ -420,6 +446,7 @@ element itself is not isolated against ancestor mutations; it only isolates the
 element's subtree.
 
 Example tree:
+```
 +----------------------+
 | 1. Root LayoutObject |
 +----------------------+
@@ -448,11 +475,12 @@ Example tree:
 +-----------------+       +-----------------+
 | 7. LayoutObject |       | 8. LayoutObject |
 +-----------------+       +-----------------+
-
+```
 Suppose that element 3's style changes to include a transform (e.g.
 "transform: translateX(10px);").
 
 Typically, here is the order of the walk (depth first) and updates:
+
 *    Root element 1 is visited since some descendant needs updates
 *    Element 2 is visited since it is one of the descendants, but it doesn't
      need updates.
@@ -525,8 +553,8 @@ is created for the root `LayoutView`. During the tree walk, one
 `PaintInvalidatorContext` passed from the parent object. It tracks the following
 information to provide O(1) complexity access to them if possible:
 
-*   Paint invalidation container (Slimming Paint v1 only): Since as indicated by
-    the definitions in [Glossaries](#other-glossaries), the paint invalidation
+*   Paint invalidation container (Slimming Paint v1 only): As described by
+    the definitions in [Other glossaries](#Other-glossaries), the paint invalidation
     container for stacked objects can differ from normal objects, we have to
     track both separately. Here is an example:
 
@@ -541,7 +569,7 @@ information to provide O(1) complexity access to them if possible:
 *   Painting layer: the layer which will initiate painting of the current
     object. It's the same value as `LayoutObject::PaintingLayer()`.
 
-`PaintInvalidator`[PaintInvalidator.h] initializes `PaintInvalidatorContext`
+[`PaintInvalidator`](PaintInvalidator.h) initializes `PaintInvalidatorContext`
 for the current object, then calls `LayoutObject::InvalidatePaint()` which
 calls the object's paint invalidator (e.g. `BoxPaintInvalidator`) to complete
 paint invalidation of the object.
@@ -576,7 +604,8 @@ style to the first line part of the `LayoutInline`. In Blink's style
 implementation, the combined first line style of `LayoutInline` is identified
 with `kPseudoIdFirstLineInherited`.
 
-The normal paint invalidation of texts doesn't work for first line because
+The normal paint invalidation of texts doesn't work for first line because:
+
 *   `ComputedStyle::VisualInvalidationDiff()` can't detect first line style
     changes;
 *   The normal paint invalidation is based on whole LayoutObject's, not aware of
