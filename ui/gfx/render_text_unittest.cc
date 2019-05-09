@@ -1097,6 +1097,46 @@ TEST_F(RenderTextTest, MultilineElideWrapStress) {
   }
 }
 
+TEST_F(RenderTextTest, ElidedStyledTextRtl) {
+  static const char* kInputTexts[] = {
+      "http://ar.wikipedia.com/فحص",
+      "testحص,",
+      "حص,test",
+      "…",
+      "…test",
+      "test…",
+      "حص,test…",
+      "ٱ",
+      "\uFEFF",  // BOM: Byte Order Marker
+      "…\u200F",  // Right to left marker.
+  };
+
+  for (const auto* raw_text : kInputTexts) {
+    SCOPED_TRACE(
+        base::StringPrintf("ElidedStyledTextRtl text = %s", raw_text));
+    base::string16 input_text(UTF8ToUTF16(raw_text));
+
+    RenderText* render_text = GetRenderText();
+    render_text->SetText(input_text);
+    render_text->SetElideBehavior(ELIDE_TAIL);
+    render_text->SetStyle(TEXT_STYLE_STRIKE, true);
+    render_text->SetDirectionalityMode(DIRECTIONALITY_FORCE_LTR);
+
+    constexpr int kMaxContentWidth = 2000;
+    for (int i = 0; i < kMaxContentWidth; ++i) {
+      SCOPED_TRACE(base::StringPrintf("ElidedStyledTextRtl width = %d", i));
+      render_text->SetDisplayRect(Rect(i, 20));
+      render_text->GetStringSize();
+      base::string16 display_text = render_text->GetDisplayText();
+      EXPECT_LE(display_text.size(), input_text.size());
+
+      // Every size of content width was tried.
+      if (display_text == input_text)
+        break;
+    }
+  }
+}  // namespace gfx
+
 TEST_F(RenderTextTest, ElidedEmail) {
   RenderText* render_text = GetRenderText();
   render_text->SetText(UTF8ToUTF16("test@example.com"));
