@@ -2293,6 +2293,7 @@ enum WebFeature {
   kV8RTCRtpReceiver_JitterBufferDelayHint_AttributeSetter = 2887,
   kMediaCapabilitiesDecodingInfoWithKeySystemConfig = 2888,
   kRevertInCustomIdent = 2889,
+  kUnoptimizedImagePolicies = 2890,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

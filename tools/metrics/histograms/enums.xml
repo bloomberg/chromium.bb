@@ -23149,6 +23149,7 @@ Called by update_net_error_codes.py.-->
       label="V8RTCRtpReceiver_JitterBufferDelayHint_AttributeSetter"/>
   <int value="2888" label="MediaCapabilitiesDecodingInfoWithKeySystemConfig"/>
   <int value="2889" label="RevertInCustomIdent"/>
+  <int value="2890" label="UnoptimizedImagePolicies"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

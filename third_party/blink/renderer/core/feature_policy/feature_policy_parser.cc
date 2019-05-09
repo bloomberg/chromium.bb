@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
@@ -108,6 +109,16 @@ ParsedFeaturePolicy FeaturePolicyParser::Parse(
       } else {
         UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.FeaturePolicy.Header",
                                   feature);
+      }
+
+      // Detect usage of UnoptimizedImagePolicies origin trial
+      if (feature == mojom::FeaturePolicyFeature::kOversizedImages ||
+          feature == mojom::FeaturePolicyFeature::kUnoptimizedLossyImages ||
+          feature == mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages ||
+          feature ==
+              mojom::FeaturePolicyFeature::kUnoptimizedLosslessImagesStrict) {
+        UseCounter::Count(execution_context,
+                          mojom::WebFeature::kUnoptimizedImagePolicies);
       }
 
       ParsedFeaturePolicyDeclaration allowlist(feature, feature_type);

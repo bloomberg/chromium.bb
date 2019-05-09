@@ -755,6 +755,38 @@ TEST_F(FeaturePolicyParserTest, ParseParameterizedFeatures) {
   EXPECT_LE(max_double_value, parsed_policy[0].values.begin()->second);
 }
 
+// These declarations should each trigger the origin trial use counter.
+const char* const kOriginTrialPolicyDeclarations[] = {
+    "unoptimized-lossy-images",           "unoptimized-lossless-images",
+    "unoptimized-lossless-images-strict", "oversized-images",
+    "oversized-images; fullscreen",       "fullscreen; oversized-images",
+    "oversized-images 'self'(2.0)",       "oversized-images 'none'",
+    "unoptimized-lossy-images *(0.125)"};
+
+TEST_F(FeaturePolicyParserTest, OriginTrialFeatureUseCounter) {
+  Vector<String> messages;
+
+  // Validate that features which are not in the origin trial do not trigger
+  // the use counter.
+  {
+    auto dummy = std::make_unique<DummyPageHolder>();
+    FeaturePolicyParser::ParseHeader("payment; fullscreen", origin_a_.get(),
+                                     &messages, &dummy->GetDocument());
+    EXPECT_FALSE(UseCounter::IsCounted(dummy->GetDocument(),
+                                       WebFeature::kUnoptimizedImagePolicies));
+  }
+
+  // Validate that declarations which should trigger the use counter do.
+  for (const char* declaration : kOriginTrialPolicyDeclarations) {
+    auto dummy = std::make_unique<DummyPageHolder>();
+    FeaturePolicyParser::ParseHeader(declaration, origin_a_.get(), &messages,
+                                     &dummy->GetDocument());
+    EXPECT_TRUE(UseCounter::IsCounted(dummy->GetDocument(),
+                                      WebFeature::kUnoptimizedImagePolicies))
+        << declaration << " should trigger the origin trial use counter.";
+  }
+}
+
 // Test policy mutation methods
 class FeaturePolicyMutationTest : public testing::Test {
  protected:
