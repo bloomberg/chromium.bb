@@ -251,3 +251,20 @@ if (is_win) {
     ]
   }
 }
+
+fuzzer_test("speech_audio_encoder_fuzzer") {
+  sources = [
+    "../../browser/speech/audio_buffer.cc",
+    "../../browser/speech/audio_buffer.h",
+    "../../browser/speech/audio_encoder.cc",
+    "../../browser/speech/audio_encoder.h",
+    "../../browser/speech/audio_encoder_fuzzer.cc",
+    "//base/test/fuzzed_data_provider.h",
+    "//content/common/content_export.h",
+  ]
+
+  deps = [
+    "//base",
+    "//third_party/flac",
+  ]
+}
