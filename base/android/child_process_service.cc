@@ -71,7 +71,11 @@ void JNI_ChildProcessService_ExitChildProcess(JNIEnv* env) {
   _exit(0);
 }
 
-void JNI_ChildProcessService_DumpProcessStack(JNIEnv* env) {
+// Make sure this isn't inlined so it shows up in stack traces.
+// the function body unique by adding a log line, so it doesn't get merged
+// with other functions by link time optimizations (ICF).
+NOINLINE void JNI_ChildProcessService_DumpProcessStack(JNIEnv* env) {
+  LOG(ERROR) << "Dumping as requested.";
   base::debug::DumpWithoutCrashing();
 }
 
