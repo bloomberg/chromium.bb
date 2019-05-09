@@ -327,7 +327,8 @@ void ThrottlingURLLoader::Start(
             << "ThrottlingURLLoader doesn't support multiple throttles "
                "changing the URL.";
         if (original_url.SchemeIsHTTPOrHTTPS() &&
-            !url_request->url.SchemeIsHTTPOrHTTPS()) {
+            !url_request->url.SchemeIsHTTPOrHTTPS() &&
+            !throttle->makes_unsafe_redirect()) {
           NOTREACHED() << "A URLLoaderThrottle can't redirect from http(s) to "
                        << "a non http(s) scheme.";
         } else {
