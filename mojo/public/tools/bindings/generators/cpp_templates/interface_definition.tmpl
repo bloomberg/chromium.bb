@@ -5,7 +5,7 @@
 {%- set proxy_name = interface.name ~ "Proxy" %}
 {%- set namespace_as_string = "%s"|format(namespace|replace(".","::")) %}
 
-{%- macro alloc_params(struct, params, message, description) %}
+{%- macro alloc_params(struct, params, message, method_number, is_response) %}
   mojo::internal::SerializationContext serialization_context;
   serialization_context.TakeHandlesFromMessage({{message}});
   bool success = true;
@@ -18,7 +18,7 @@
     ReportValidationErrorForMessage(
         {{message}},
         mojo::internal::VALIDATION_ERROR_DESERIALIZATION_FAILED,
-        "{{description}} deserializer");
+        {{class_name}}::Name_, {{method_number}}, {{is_response}});
     return false;
   }
 {%- endmacro %}
@@ -304,7 +304,7 @@ bool {{class_name}}_{{method.name}}_ForwardToCallback::Accept(
               message->mutable_payload());
 
 {%-     set desc = class_name~"::"~method.name~" response" %}
-  {{alloc_params(method.response_param_struct, "params", "message", desc)}}
+  {{alloc_params(method.response_param_struct, "params", "message", method.sequential_ordinal, "true")}}
   if (!callback_.is_null())
     std::move(callback_).Run({{pass_params(method.response_parameters)}});
   return true;
@@ -376,7 +376,7 @@ bool {{class_name}}_{{method.name}}_HandleSyncResponse::Accept(
           message->mutable_payload());
 
 {%-       set desc = class_name~"::"~method.name~" response" %}
-  {{alloc_params(method.response_param_struct, "params", "message", desc)}}
+  {{alloc_params(method.response_param_struct, "params", "message", method.sequential_ordinal, "true")}}
 
 {%-       for param in method.response_parameters %}
   *out_{{param.name}}_ = std::move(p_{{param.name}});
@@ -432,7 +432,7 @@ bool {{class_name}}StubDispatch::Accept(
               message->mutable_payload());
 
 {%-       set desc = class_name~"::"~method.name %}
-      {{alloc_params(method.param_struct, "params", "message", desc)|
+      {{alloc_params(method.param_struct, "params", "message", method.sequential_ordinal, "false")|
           indent(4)}}
       // A null |impl| means no implementation was bound.
       DCHECK(impl);
@@ -494,7 +494,7 @@ bool {{class_name}}StubDispatch::AcceptWithResponder(
                   message->mutable_payload());
 
 {%-       set desc = class_name~"::"~method.name %}
-      {{alloc_params(method.param_struct, "params", "message", desc)|
+      {{alloc_params(method.param_struct, "params", "message", method.sequential_ordinal, "false")|
           indent(4)}}
       {{class_name}}::{{method.name}}Callback callback =
           {{class_name}}_{{method.name}}_ProxyToResponder::CreateCallback(

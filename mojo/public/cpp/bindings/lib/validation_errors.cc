@@ -94,12 +94,16 @@ void ReportValidationError(ValidationContext* context,
   }
 }
 
-void ReportValidationErrorForMessage(
-    mojo::Message* message,
-    ValidationError error,
-    const char* description) {
+void ReportValidationErrorForMessage(mojo::Message* message,
+                                     ValidationError error,
+                                     const char* interface_name,
+                                     unsigned int method_ordinal,
+                                     bool is_response) {
+  std::string description =
+      base::StringPrintf("%s.%d %s", interface_name, method_ordinal,
+                         is_response ? " response" : "");
   ValidationContext validation_context(nullptr, 0, 0, 0, message, description);
-  ReportValidationError(&validation_context, error, description);
+  ReportValidationError(&validation_context, error, description.c_str());
 }
 
 ScopedSuppressValidationErrorLoggingForTests

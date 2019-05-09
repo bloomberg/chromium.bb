@@ -111,6 +111,8 @@ def AddComputedData(module):
     for method in interface.methods:
       if method.ordinal is None:
         method.ordinal = next_ordinal
+      # this field is never scrambled
+      method.sequential_ordinal = next_ordinal
       next_ordinal = method.ordinal + 1
 
       if method.min_version is not None:
