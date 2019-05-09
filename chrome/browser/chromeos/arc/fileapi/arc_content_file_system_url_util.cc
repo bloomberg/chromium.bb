@@ -23,10 +23,7 @@ std::string EscapeArcUrl(const GURL& arc_url) {
 }
 
 GURL UnescapeArcUrl(const std::string& escaped_arc_url) {
-  return GURL(net::UnescapeURLComponent(
-      escaped_arc_url,
-      net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
-          net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS));
+  return GURL(net::UnescapeBinaryURLComponent(escaped_arc_url));
 }
 
 GURL ArcUrlToExternalFileUrl(const GURL& arc_url) {
