@@ -41,10 +41,12 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/prefs/pref_service.h"
 #endif
 
@@ -350,6 +352,16 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
 
   void SetUpOnMainThread() override {
     WebUIBrowserTest::SetUpOnMainThread();
+
+#if defined(OS_CHROMEOS)
+    // On Chrome OS, we need to stub out CupsPrintersManager, because the
+    // profile setup instatiates a ZeroConfPrinterDetector, which in turn sets
+    // |g_service_discovery_client| with a real instance. This causes a DCHECK
+    // during TestServiceDiscoveryClient construction.
+    chromeos::CupsPrintersManagerFactory::GetInstance()->SetTestingFactory(
+        ProfileManager::GetActiveUserProfile(),
+        BrowserContextKeyedServiceFactory::TestingFactory());
+#endif
 
     test_service_discovery_client_ = new TestServiceDiscoveryClient();
     test_service_discovery_client_->Start();
