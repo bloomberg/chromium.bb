@@ -78,20 +78,20 @@ TEST(V4L2DeviceTest, V4L2FormatToVideoFrameLayoutNV12) {
   ASSERT_TRUE(layout.has_value());
   EXPECT_EQ(PIXEL_FORMAT_NV12, layout->format());
   EXPECT_EQ(gfx::Size(300, 180), layout->coded_size());
-  constexpr uint64_t kNoModifier = gfx::NativePixmapHandle::kNoModifier;
   std::vector<VideoFrameLayout::Plane> expected_planes(
-      {{320, 0u, kNoModifier}, {320, 57600u, kNoModifier}});
+      {{320, 0u}, {320, 57600u}});
   EXPECT_EQ(expected_planes, layout->planes());
   EXPECT_EQ(std::vector<size_t>({86400u}), layout->buffer_sizes());
   EXPECT_EQ(86400u, layout->GetTotalBufferSize());
   std::ostringstream ostream;
   ostream << *layout;
-  const std::string kNoModifierStr = std::to_string(kNoModifier);
+  const std::string kNoModifierStr =
+      std::to_string(gfx::NativePixmapHandle::kNoModifier);
   EXPECT_EQ(ostream.str(),
             "VideoFrameLayout(format: PIXEL_FORMAT_NV12, coded_size: 300x180, "
-            "planes (stride, offset, modifier): [(320, 0, " +
-                kNoModifierStr + "), (320, 57600, " + kNoModifierStr +
-                ")], buffer_sizes: [86400])");
+            "planes (stride, offset): [(320, 0), (320, 57600)], buffer_sizes: "
+            "[86400], modifier: " +
+                kNoModifierStr + ")");
 }
 
 // Test V4L2FormatToVideoFrameLayout with YUV420 pixelformat, which has one
@@ -103,23 +103,20 @@ TEST(V4L2DeviceTest, V4L2FormatToVideoFrameLayoutYUV420) {
   ASSERT_TRUE(layout.has_value());
   EXPECT_EQ(PIXEL_FORMAT_I420, layout->format());
   EXPECT_EQ(gfx::Size(300, 180), layout->coded_size());
-  constexpr uint64_t kNoModifier = gfx::NativePixmapHandle::kNoModifier;
   std::vector<VideoFrameLayout::Plane> expected_planes(
-      {{320, 0u, kNoModifier},
-       {160, 57600u, kNoModifier},
-       {160, 72000u, kNoModifier}});
+      {{320, 0u}, {160, 57600u}, {160, 72000u}});
   EXPECT_EQ(expected_planes, layout->planes());
   EXPECT_EQ(std::vector<size_t>({86400u}), layout->buffer_sizes());
   EXPECT_EQ(86400u, layout->GetTotalBufferSize());
   std::ostringstream ostream;
   ostream << *layout;
-  const std::string kNoModifierStr = std::to_string(kNoModifier);
+  const std::string kNoModifierStr =
+      std::to_string(gfx::NativePixmapHandle::kNoModifier);
   EXPECT_EQ(ostream.str(),
             "VideoFrameLayout(format: PIXEL_FORMAT_I420, coded_size: 300x180, "
-            "planes (stride, offset, modifier): [(320, 0, " +
-                kNoModifierStr + "), (160, 57600, " + kNoModifierStr +
-                "), (160, 72000, " + kNoModifierStr +
-                ")], buffer_sizes: [86400])");
+            "planes (stride, offset): [(320, 0), (160, 57600), (160, 72000)], "
+            "buffer_sizes: [86400], modifier: " +
+                kNoModifierStr + ")");
 }
 
 // Test V4L2FormatToVideoFrameLayout with single planar v4l2_format.

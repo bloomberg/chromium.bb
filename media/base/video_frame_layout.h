@@ -39,8 +39,6 @@ class MEDIA_EXPORT VideoFrameLayout {
   struct Plane {
     Plane() = default;
     Plane(int32_t stride, size_t offset) : stride(stride), offset(offset) {}
-    Plane(int32_t stride, size_t offset, uint64_t modifier)
-        : stride(stride), offset(offset), modifier(modifier) {}
 
     bool operator==(const Plane& rhs) const;
     bool operator!=(const Plane& rhs) const;
@@ -52,13 +50,6 @@ class MEDIA_EXPORT VideoFrameLayout {
     // Offset of a plane, which stands for the offset of a start point of a
     // color plane from a buffer fd.
     size_t offset = 0;
-
-    // Modifier of a plane. The modifier is retrieved from GBM library. This can
-    // be a different value from kNoModifier only if the VideoFrame is created
-    // by using NativePixmap.
-    // TODO(crbug.com/914700): All planes share the modifier. Move the modifier
-    // variable from VideoFrameLayout::Plane to VideoFrameLayout.
-    uint64_t modifier = gfx::NativePixmapHandle::kNoModifier;
   };
 
   // Factory functions.
@@ -89,7 +80,8 @@ class MEDIA_EXPORT VideoFrameLayout {
       const gfx::Size& coded_size,
       std::vector<Plane> planes,
       std::vector<size_t> buffer_sizes = {},
-      size_t buffer_addr_align = kBufferAddressAlignment);
+      size_t buffer_addr_align = kBufferAddressAlignment,
+      uint64_t modifier = gfx::NativePixmapHandle::kNoModifier);
 
   VideoFrameLayout() = delete;
   VideoFrameLayout(const VideoFrameLayout&);
@@ -118,16 +110,17 @@ class MEDIA_EXPORT VideoFrameLayout {
   bool operator!=(const VideoFrameLayout& rhs) const;
 
   // Returns the required memory alignment for buffers.
-  size_t buffer_addr_align() const {
-    return buffer_addr_align_;
-  }
+  size_t buffer_addr_align() const { return buffer_addr_align_; }
+  // Return the modifier of buffers.
+  uint64_t modifier() const { return modifier_; }
 
  private:
   VideoFrameLayout(VideoPixelFormat format,
                    const gfx::Size& coded_size,
                    std::vector<Plane> planes,
                    std::vector<size_t> buffer_sizes,
-                   size_t buffer_addr_align);
+                   size_t buffer_addr_align,
+                   uint64_t modifier);
 
   VideoPixelFormat format_;
 
@@ -149,6 +142,11 @@ class MEDIA_EXPORT VideoFrameLayout {
   // allocating physical memory for the buffer, so it doesn't need to be
   // serialized when frames are passed through Mojo.
   size_t buffer_addr_align_;
+
+  // Modifier of buffers. The modifier is retrieved from GBM library. This
+  // can be a different value from kNoModifier only if the VideoFrame is created
+  // by using NativePixmap.
+  uint64_t modifier_;
 };
 
 // Outputs VideoFrameLayout::Plane to stream.

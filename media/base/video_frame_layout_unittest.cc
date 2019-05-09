@@ -240,9 +240,9 @@ TEST(VideoFrameLayout, ToString) {
       std::to_string(gfx::NativePixmapHandle::kNoModifier);
   EXPECT_EQ(ostream.str(),
             "VideoFrameLayout(format: PIXEL_FORMAT_I420, coded_size: 320x180, "
-            "planes (stride, offset, modifier): [(384, 0, " +
-                kNoModifier + "), (192, 0, " + kNoModifier + "), (192, 0, " +
-                kNoModifier + ")], buffer_sizes: [73728, 18432, 18432])");
+            "planes (stride, offset): [(384, 0), (192, 0), (192, 0)], "
+            "buffer_sizes: [73728, 18432, 18432], modifier: " +
+                kNoModifier + ")");
 }
 
 TEST(VideoFrameLayout, ToStringOneBuffer) {
@@ -261,8 +261,9 @@ TEST(VideoFrameLayout, ToStringOneBuffer) {
       std::to_string(gfx::NativePixmapHandle::kNoModifier);
   EXPECT_EQ(ostream.str(),
             "VideoFrameLayout(format: PIXEL_FORMAT_NV12, coded_size: 320x180, "
-            "planes (stride, offset, modifier): [(384, 100, " +
-                kNoModifier + ")], buffer_sizes: [122880])");
+            "planes (stride, offset): [(384, 100)], buffer_sizes: [122880], "
+            "modifier: " +
+                kNoModifier + ")");
 }
 
 TEST(VideoFrameLayout, ToStringNoBufferInfo) {
@@ -276,9 +277,9 @@ TEST(VideoFrameLayout, ToStringNoBufferInfo) {
       std::to_string(gfx::NativePixmapHandle::kNoModifier);
   EXPECT_EQ(ostream.str(),
             "VideoFrameLayout(format: PIXEL_FORMAT_NV12, coded_size: 320x180, "
-            "planes (stride, offset, modifier): [(0, 0, " +
-                kNoModifier + "), (0, 0, " + kNoModifier +
-                ")], buffer_sizes: [])");
+            "planes (stride, offset): [(0, 0), (0, 0)], buffer_sizes: [], "
+            "modifier: " +
+                kNoModifier + ")");
 }
 
 TEST(VideoFrameLayout, EqualOperator) {
@@ -287,22 +288,23 @@ TEST(VideoFrameLayout, EqualOperator) {
   std::vector<size_t> offsets = {0, 100, 200};
   std::vector<size_t> buffer_sizes = {73728, 18432, 18432};
   const size_t align = VideoFrameLayout::kBufferAddressAlignment;
+  const uint64_t modifier = 1;
 
   auto layout = VideoFrameLayout::CreateWithPlanes(
       PIXEL_FORMAT_I420, coded_size, CreatePlanes(strides, offsets),
-      buffer_sizes, align);
+      buffer_sizes, align, modifier);
   ASSERT_TRUE(layout.has_value());
 
   auto same_layout = VideoFrameLayout::CreateWithPlanes(
       PIXEL_FORMAT_I420, coded_size, CreatePlanes(strides, offsets),
-      buffer_sizes, align);
+      buffer_sizes, align, modifier);
   ASSERT_TRUE(same_layout.has_value());
   EXPECT_EQ(*layout, *same_layout);
 
   std::vector<size_t> another_buffer_sizes = {73728};
   auto different_layout = VideoFrameLayout::CreateWithPlanes(
       PIXEL_FORMAT_I420, coded_size, CreatePlanes(strides, offsets),
-      another_buffer_sizes, align);
+      another_buffer_sizes, align, modifier);
   ASSERT_TRUE(different_layout.has_value());
   EXPECT_NE(*layout, *different_layout);
 
@@ -310,6 +312,13 @@ TEST(VideoFrameLayout, EqualOperator) {
   different_layout = VideoFrameLayout::CreateWithPlanes(
       PIXEL_FORMAT_I420, coded_size, CreatePlanes(strides, offsets),
       buffer_sizes, another_align);
+  ASSERT_TRUE(different_layout.has_value());
+  EXPECT_NE(*layout, *different_layout);
+
+  const size_t another_modifier = 2;
+  different_layout = VideoFrameLayout::CreateWithPlanes(
+      PIXEL_FORMAT_I420, coded_size, CreatePlanes(strides, offsets),
+      buffer_sizes, align, another_modifier);
   ASSERT_TRUE(different_layout.has_value());
   EXPECT_NE(*layout, *different_layout);
 }

@@ -47,18 +47,15 @@ scoped_refptr<VideoFrame> CreateVideoFrameOzone(VideoPixelFormat pixel_format,
   for (size_t i = 0; i < num_planes; ++i) {
     planes[i].stride = pixmap->GetDmaBufPitch(i);
     planes[i].offset = pixmap->GetDmaBufOffset(i);
-    // TODO(crbug.com/957381): Move the modifier variable to NativePixmapHandle
-    // from NativePixmapPlane.
-    // TODO(crbug.com/914700): Move the modifier vairable from
-    // VideoFrameLayout::Plane to VideoFrameLayout.
-    planes[i].modifier = pixmap->GetBufferFormatModifier();
     buffer_sizes[i] = planes[i].offset +
                       planes[i].stride * VideoFrame::Rows(i, pixel_format,
                                                           coded_size.height());
   }
-
   auto layout = VideoFrameLayout::CreateWithPlanes(
-      pixel_format, coded_size, std::move(planes), std::move(buffer_sizes));
+      pixel_format, coded_size, std::move(planes), std::move(buffer_sizes),
+      VideoFrameLayout::kBufferAddressAlignment,
+      pixmap->GetBufferFormatModifier());
+
   if (!layout)
     return nullptr;
 
@@ -116,11 +113,7 @@ gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle(
   const size_t num_planes = VideoFrame::NumPlanes(video_frame->format());
   const size_t num_buffers = video_frame->layout().buffer_sizes().size();
   DCHECK_EQ(video_frame->layout().planes().size(), num_planes);
-  // TODO(crbug.com/914700): Move the modifier variable from
-  // VideoFrameLayout::Plane to VideoFrameLayout.
-  handle.native_pixmap_handle.modifier =
-      video_frame->layout().planes()[0].modifier;
-  // TODO(crbug.com/946880): Handles case that num_planes mismatches num_buffers
+  handle.native_pixmap_handle.modifier = video_frame->layout().modifier();
   for (size_t i = 0; i < num_planes; ++i) {
     const auto& plane = video_frame->layout().planes()[i];
     size_t buffer_size = 0;
