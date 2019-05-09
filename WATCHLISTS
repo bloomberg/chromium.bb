@@ -728,7 +728,6 @@
     },
     'chromeos_bluetooth': {
       'filepath': 'ash/system/bluetooth/'\
-                  '|chrome/browser/ui/bluetooth/'\
                   '|chrome/browser/ui/webui/chromeos/bluetooth*'\
                   '|chrome/browser/resources/settings/bluetooth_page/'\
                   '|chrome/browser/resources/chromeos/bluetooth_pairing_dialog/'\
