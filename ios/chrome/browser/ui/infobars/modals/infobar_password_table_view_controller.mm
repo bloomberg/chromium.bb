@@ -89,6 +89,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
       self.tableView.contentSize.height > self.view.frame.size.height;
 }
 
+- (void)viewDidDisappear:(BOOL)animated {
+  [self.infobarModalDelegate modalInfobarWasDismissed:self];
+  [super viewDidDisappear:animated];
+}
+
 #pragma mark - TableViewModel
 
 - (void)loadModel {

@@ -21,6 +21,9 @@
 // action.
 - (void)modalInfobarButtonWasAccepted:(id)sender;
 
+// Called when the InfobarModal was dismissed.
+- (void)modalInfobarWasDismissed:(id)sender;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_INFOBARS_MODALS_INFOBAR_MODAL_DELEGATE_H_

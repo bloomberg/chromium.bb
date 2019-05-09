@@ -147,4 +147,7 @@ NSString* const kInfobarBannerPresentedModalLabel = @"Modal Infobar";
                                               completion:nil];
 }
 
+- (void)modalInfobarWasDismissed:(id)sender {
+}
+
 @end
