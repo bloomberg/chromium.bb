@@ -194,10 +194,13 @@ void Dav1dVideoDecoder::Initialize(const VideoDecoderConfig& config,
   //
   // We only want 1 frame thread in low delay mode, since otherwise we'll
   // require at least two buffers before the first frame can be output.
+  //
+  // 2 frame threads seems desirable even on low core machines:
+  // https://crbug.com/957511
   if (low_delay)
     s.n_frame_threads = 1;
   else if (s.n_frame_threads > max_threads - s.n_tile_threads)
-    s.n_frame_threads = std::max(1, max_threads - s.n_tile_threads);
+    s.n_frame_threads = std::max(2, max_threads - s.n_tile_threads);
 
   // Route dav1d internal logs through Chrome's DLOG system.
   s.logger = {nullptr, &LogDav1dMessage};
