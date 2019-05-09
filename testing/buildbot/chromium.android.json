@@ -17797,16 +17797,21 @@
         "test": "net_unittests"
       }
     ],
-    "scripts": [
+    "isolated_scripts": [
       {
-        "args": [
-          "--platform",
-          "android-cronet",
-          "--target",
-          "Debug"
-        ],
-        "name": "sizes",
-        "script": "cronet_sizes.py"
+        "isolate_name": "cronet_sizes",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "cronet_sizes",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
+          ]
+        }
       }
     ]
   },
@@ -17845,18 +17850,6 @@
           ]
         }
       }
-    ],
-    "scripts": [
-      {
-        "args": [
-          "--platform",
-          "android-cronet",
-          "--target",
-          "Release"
-        ],
-        "name": "sizes",
-        "script": "cronet_sizes.py"
-      }
     ]
   },
   "android-cronet-arm64-dbg": {
@@ -17871,16 +17864,21 @@
       "cronet_unittests_android",
       "net_unittests"
     ],
-    "scripts": [
+    "isolated_scripts": [
       {
-        "args": [
-          "--platform",
-          "android-cronet",
-          "--target",
-          "Debug"
-        ],
-        "name": "sizes",
-        "script": "cronet_sizes.py"
+        "isolate_name": "cronet_sizes",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "cronet_sizes",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
+          ]
+        }
       }
     ]
   },
@@ -17926,18 +17924,6 @@
             }
           ]
         }
-      }
-    ],
-    "scripts": [
-      {
-        "args": [
-          "--platform",
-          "android-cronet",
-          "--target",
-          "Release"
-        ],
-        "name": "sizes",
-        "script": "cronet_sizes.py"
       }
     ]
   },
@@ -18876,16 +18862,21 @@
       "cronet_unittests_android",
       "net_unittests"
     ],
-    "scripts": [
+    "isolated_scripts": [
       {
-        "args": [
-          "--platform",
-          "android-cronet",
-          "--target",
-          "Debug"
-        ],
-        "name": "sizes",
-        "script": "cronet_sizes.py"
+        "isolate_name": "cronet_sizes",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "cronet_sizes",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
+          ]
+        }
       }
     ]
   },
@@ -18931,18 +18922,6 @@
             }
           ]
         }
-      }
-    ],
-    "scripts": [
-      {
-        "args": [
-          "--platform",
-          "android-cronet",
-          "--target",
-          "Release"
-        ],
-        "name": "sizes",
-        "script": "cronet_sizes.py"
       }
     ]
   },

@@ -353,12 +353,15 @@ class BBJSONGenerator(object):
                 raise BBGenErr('Error merging list keys ' + str(key) +
                                ' and indices ' + str(idx) + ' between ' +
                                str(a) + ' and ' + str(b)) # pragma: no cover
-        elif update: # pragma: no cover
-          a[key] = b[key] # pragma: no cover
+        elif update:
+          if b[key] is None:
+            del a[key]
+          else:
+            a[key] = b[key]
         else:
           raise BBGenErr('Conflict at %s' % '.'.join(
             path + [str(key)])) # pragma: no cover
-      else:
+      elif b[key] is not None:
         a[key] = b[key]
     return a
 

@@ -474,6 +474,21 @@
       'linux-win_cross-rel', # https://crbug.com/762167
     ],
   },
+  'cronet_sizes': {
+    'modifications': {
+      'android-cronet-arm-dbg': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': None,
+              'device_type': None,
+              'os': 'Ubuntu-14.04',
+            },
+          ],
+        },
+      },
+    },
+  },
   'dawn_end2end_tests': {
     'remove_from': [
       # chromium.gpu.fyi
@@ -1161,46 +1176,6 @@
       'Linux ChromiumOS MSan Tests',  # https://crbug.com/831676
       'Linux MSan Tests',  # https://crbug.com/831676
     ],
-  },
-  'sizes': {
-    'modifications': {
-      'android-cronet-arm-dbg': {
-        'args': [
-          '--platform', 'android-cronet',
-          '--target', 'Debug',
-        ],
-      },
-      'android-cronet-arm-rel': {
-        'args': [
-          '--platform', 'android-cronet',
-          '--target', 'Release',
-        ],
-      },
-      'android-cronet-arm64-dbg': {
-        'args': [
-          '--platform', 'android-cronet',
-          '--target', 'Debug',
-        ],
-      },
-      'android-cronet-arm64-rel': {
-        'args': [
-          '--platform', 'android-cronet',
-          '--target', 'Release',
-        ],
-      },
-      'android-cronet-x86-dbg': {
-        'args': [
-          '--platform', 'android-cronet',
-          '--target', 'Debug',
-        ],
-      },
-      'android-cronet-x86-rel': {
-        'args': [
-          '--platform', 'android-cronet',
-          '--target', 'Release',
-        ],
-      },
-    },
   },
   'swiftshader_unittests': {
     'remove_from': [

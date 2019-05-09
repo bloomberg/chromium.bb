@@ -2545,25 +2545,15 @@
       },
     },
 
-    'cronet_isolated_scripts': {
-      'cronet_sizes': {
-        'merge': {
-          'script': '//tools/perf/process_perf_results.py',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-14.04'
-            },
-          ],
-        },
-      },
+    'cronet_resource_sizes': {
       'resource_sizes_cronet_sample_apk': {
         'merge': {
           'script': '//tools/perf/process_perf_results.py',
         },
         'swarming': {
           'dimension_sets': [
+            # This suite simply analyzes build targets without running them.
+            # It can thus run on a standard linux machine w/o a device.
             {
               'os': 'Ubuntu-14.04'
             },
@@ -2572,9 +2562,20 @@
       },
     },
 
-    'cronet_scripts': {
-      'sizes': {
-        'script': 'cronet_sizes.py',
+    'cronet_sizes': {
+      'cronet_sizes': {
+        'merge': {
+          'script': '//tools/perf/process_perf_results.py',
+        },
+        'swarming': {
+          'dimension_sets': [
+            # This suite simply analyzes build targets without running them.
+            # It can thus run on a standard linux machine w/o a device.
+            {
+              'os': 'Ubuntu-14.04'
+            },
+          ],
+        },
       },
     },
 
@@ -4550,6 +4551,15 @@
       'desktop_chromium_isolated_scripts',
       'telemetry_perf_unittests_isolated_scripts',
       'win_specific_isolated_scripts',
+    ],
+
+    'cronet_dbg_isolated_scripts': [
+      'cronet_sizes',
+    ],
+
+    'cronet_rel_isolated_scripts': [
+      'cronet_sizes',
+      'cronet_resource_sizes',
     ],
 
     # BEGIN composition test suites used by the GPU bots
