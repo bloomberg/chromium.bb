@@ -12,18 +12,8 @@
 
 namespace device {
 
-class UsbDevice;
-struct UsbEndpointDescriptor;
-
-bool UsbDeviceFilterMatches(const mojom::UsbDeviceFilter& filter,
-                            const UsbDevice& device);
-
 bool UsbDeviceFilterMatches(const mojom::UsbDeviceFilter& filter,
                             const mojom::UsbDeviceInfo& device_info);
-
-bool UsbDeviceFilterMatchesAny(
-    const std::vector<mojom::UsbDeviceFilterPtr>& filters,
-    const UsbDevice& device);
 
 bool UsbDeviceFilterMatchesAny(
     const std::vector<mojom::UsbDeviceFilterPtr>& filters,
@@ -33,7 +23,7 @@ std::vector<mojom::UsbIsochronousPacketPtr> BuildIsochronousPacketArray(
     const std::vector<uint32_t>& packet_lengths,
     mojom::UsbTransferStatus status);
 
-uint8_t ConvertEndpointAddressToNumber(const UsbEndpointDescriptor& endpoint);
+uint8_t ConvertEndpointAddressToNumber(uint8_t address);
 
 uint8_t ConvertEndpointNumberToAddress(
     const mojom::UsbEndpointInfo& mojo_endpoint);

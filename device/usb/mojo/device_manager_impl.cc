@@ -176,8 +176,9 @@ void DeviceManagerImpl::OnGetDevices(
 
   std::vector<mojom::UsbDeviceInfoPtr> device_infos;
   for (const auto& device : devices) {
-    if (UsbDeviceFilterMatchesAny(filters, *device)) {
-      device_infos.push_back(mojom::UsbDeviceInfo::From(*device));
+    mojom::UsbDeviceInfoPtr device_info = mojom::UsbDeviceInfo::From(*device);
+    if (UsbDeviceFilterMatchesAny(filters, *device_info)) {
+      device_infos.push_back(std::move(device_info));
     }
   }
 

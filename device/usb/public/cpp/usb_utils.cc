@@ -7,42 +7,8 @@
 #include <utility>
 
 #include "device/usb/public/mojom/device_enumeration_options.mojom.h"
-#include "device/usb/usb_descriptors.h"
-#include "device/usb/usb_device.h"
 
 namespace device {
-
-bool UsbDeviceFilterMatches(const mojom::UsbDeviceFilter& filter,
-                            const UsbDevice& device) {
-  if (filter.has_vendor_id) {
-    if (device.vendor_id() != filter.vendor_id)
-      return false;
-
-    if (filter.has_product_id && device.product_id() != filter.product_id)
-      return false;
-  }
-
-  if (filter.serial_number && device.serial_number() != *filter.serial_number)
-    return false;
-
-  if (filter.has_class_code) {
-    for (const UsbConfigDescriptor& config : device.configurations()) {
-      for (const UsbInterfaceDescriptor& iface : config.interfaces) {
-        if (iface.interface_class == filter.class_code &&
-            (!filter.has_subclass_code ||
-             (iface.interface_subclass == filter.subclass_code &&
-              (!filter.has_protocol_code ||
-               iface.interface_protocol == filter.protocol_code)))) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
-  return true;
-}
 
 bool UsbDeviceFilterMatches(const mojom::UsbDeviceFilter& filter,
                             const mojom::UsbDeviceInfo& device_info) {
@@ -82,19 +48,6 @@ bool UsbDeviceFilterMatches(const mojom::UsbDeviceFilter& filter,
 
 bool UsbDeviceFilterMatchesAny(
     const std::vector<mojom::UsbDeviceFilterPtr>& filters,
-    const UsbDevice& device) {
-  if (filters.empty())
-    return true;
-
-  for (const auto& filter : filters) {
-    if (UsbDeviceFilterMatches(*filter, device))
-      return true;
-  }
-  return false;
-}
-
-bool UsbDeviceFilterMatchesAny(
-    const std::vector<mojom::UsbDeviceFilterPtr>& filters,
     const mojom::UsbDeviceInfo& device_info) {
   if (filters.empty())
     return true;
@@ -120,8 +73,8 @@ std::vector<mojom::UsbIsochronousPacketPtr> BuildIsochronousPacketArray(
   return packets;
 }
 
-uint8_t ConvertEndpointAddressToNumber(const UsbEndpointDescriptor& endpoint) {
-  return endpoint.address & 0x0F;
+uint8_t ConvertEndpointAddressToNumber(uint8_t address) {
+  return address & 0x0F;
 }
 
 uint8_t ConvertEndpointNumberToAddress(

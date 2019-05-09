@@ -10,6 +10,8 @@ source_set("cpp") {
   ]
 
   deps = [
+    # TODO(donna.wu@intel.com): remove this when usb_ids.h/cpp have been
+    # moved to the public folder.
     "//device/usb",
     "//device/usb/public/mojom",
   ]

@@ -22,7 +22,8 @@ device::mojom::UsbEndpointInfoPtr TypeConverter<
     device::UsbEndpointDescriptor>::Convert(const device::UsbEndpointDescriptor&
                                                 endpoint) {
   auto info = device::mojom::UsbEndpointInfo::New();
-  info->endpoint_number = device::ConvertEndpointAddressToNumber(endpoint);
+  info->endpoint_number =
+      device::ConvertEndpointAddressToNumber(endpoint.address);
   info->direction = endpoint.direction;
   info->type = endpoint.transfer_type;
   info->packet_size = static_cast<uint32_t>(endpoint.maximum_packet_size);
