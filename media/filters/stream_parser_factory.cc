@@ -230,6 +230,7 @@ static const CodecInfo kMPEG4FLACCodecInfo = {"flac", CodecInfo::AUDIO, nullptr,
                                               CodecInfo::HISTOGRAM_FLAC};
 
 static const CodecInfo* const kVideoMP4Codecs[] = {&kMPEG4FLACCodecInfo,
+                                                   &kOpusCodecInfo,
                                                    &kMPEG4VP09CodecInfo,
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
                                                    &kH264AVC1CodecInfo,
