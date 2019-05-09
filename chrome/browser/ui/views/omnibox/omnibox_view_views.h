@@ -40,6 +40,10 @@ namespace gfx {
 class RenderText;
 }
 
+namespace send_tab_to_self {
+class SendTabToSelfSubMenuModel;
+}
+
 namespace ui {
 class OSExchangeData;
 }  // namespace ui
@@ -362,6 +366,10 @@ class OmniboxViewViews : public OmniboxView,
       scoped_compositor_observer_;
   ScopedObserver<TemplateURLService, TemplateURLServiceObserver>
       scoped_template_url_service_observer_;
+
+  // Send tab to self submenu.
+  std::unique_ptr<send_tab_to_self::SendTabToSelfSubMenuModel>
+      send_tab_to_self_sub_menu_model_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewViews);
 };

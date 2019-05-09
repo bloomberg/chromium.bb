@@ -10,6 +10,10 @@
 
 class TabStripModel;
 
+namespace send_tab_to_self {
+class SendTabToSelfSubMenuModel;
+}
+
 // A menu model that builds the contents of the tab context menu. To make sure
 // the menu reflects the real state of the tab a new TabMenuModel should be
 // created each time the menu is shown.
@@ -24,6 +28,10 @@ class TabMenuModel : public ui::SimpleMenuModel {
   void Build(TabStripModel* tab_strip, int index);
 
   std::unique_ptr<ui::SimpleMenuModel> add_to_existing_group_submenu_;
+
+  // Send tab to self submenu.
+  std::unique_ptr<send_tab_to_self::SendTabToSelfSubMenuModel>
+      send_tab_to_self_sub_menu_model_;
 
   DISALLOW_COPY_AND_ASSIGN(TabMenuModel);
 };

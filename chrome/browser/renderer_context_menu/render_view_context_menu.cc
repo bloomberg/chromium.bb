@@ -67,6 +67,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/exclusive_access/keyboard_lock_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
+#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_sub_menu_model.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -1169,16 +1170,19 @@ void RenderViewContextMenu::AppendLinkItems() {
       }
     }
 #endif  // !defined(OS_CHROMEOS)
-
     if (browser && send_tab_to_self::ShouldOfferFeatureForLink(
                        browser->tab_strip_model()->GetActiveWebContents(),
                        params_.link_url)) {
       send_tab_to_self::RecordSendTabToSelfClickResult(
           send_tab_to_self::kLinkMenu, SendTabToSelfClickResult::kShowItem);
       menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-      menu_model_.AddItemWithStringIdAndIcon(IDC_CONTENT_LINK_SEND_TAB_TO_SELF,
-                                             IDS_LINK_MENU_SEND_TAB_TO_SELF,
-                                             *send_tab_to_self::GetImageSkia());
+      send_tab_to_self_sub_menu_model_ =
+          std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(
+              GetProfile());
+      menu_model_.AddSubMenuWithStringIdAndIcon(
+          IDC_CONTENT_LINK_SEND_TAB_TO_SELF, IDS_LINK_MENU_SEND_TAB_TO_SELF,
+          send_tab_to_self_sub_menu_model_.get(),
+          *send_tab_to_self::GetImageSkia());
     }
 
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
@@ -1374,16 +1378,19 @@ void RenderViewContextMenu::AppendPageItems() {
                                   IDS_CONTENT_CONTEXT_SAVEPAGEAS);
   menu_model_.AddItemWithStringId(IDC_PRINT, IDS_CONTENT_CONTEXT_PRINT);
   AppendMediaRouterItem();
-
   if (GetBrowser() &&
       send_tab_to_self::ShouldOfferFeature(
           GetBrowser()->tab_strip_model()->GetActiveWebContents())) {
     send_tab_to_self::RecordSendTabToSelfClickResult(
         send_tab_to_self::kContentMenu, SendTabToSelfClickResult::kShowItem);
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-    menu_model_.AddItemWithStringIdAndIcon(IDC_SEND_TAB_TO_SELF,
-                                           IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
-                                           *send_tab_to_self::GetImageSkia());
+    send_tab_to_self_sub_menu_model_ =
+        std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(
+            GetProfile());
+    menu_model_.AddSubMenuWithStringIdAndIcon(
+        IDC_SEND_TAB_TO_SELF, IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
+        send_tab_to_self_sub_menu_model_.get(),
+        *send_tab_to_self::GetImageSkia());
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   }
   if (TranslateService::IsTranslatableURL(params_.page_url)) {

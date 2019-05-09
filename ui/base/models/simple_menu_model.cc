@@ -171,6 +171,17 @@ void SimpleMenuModel::AddSubMenuWithStringId(int command_id,
   AddSubMenu(command_id, l10n_util::GetStringUTF16(string_id), model);
 }
 
+void SimpleMenuModel::AddSubMenuWithStringIdAndIcon(
+    int command_id,
+    int string_id,
+    MenuModel* model,
+    const gfx::ImageSkia& icon) {
+  Item item(command_id, TYPE_SUBMENU, l10n_util::GetStringUTF16(string_id));
+  item.submenu = model;
+  item.icon = gfx::Image(icon);
+  AppendItem(std::move(item));
+}
+
 void SimpleMenuModel::AddActionableSubMenu(int command_id,
                                            const base::string16& label,
                                            MenuModel* model) {

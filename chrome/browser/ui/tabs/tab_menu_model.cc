@@ -9,7 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
-#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_sub_menu_model.h"
 #include "chrome/browser/ui/tabs/existing_tab_group_sub_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
@@ -82,16 +82,20 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
                           IDS_TAB_CXMENU_SOUND_MUTE_SITE, num_affected_tabs)
                     : l10n_util::GetPluralStringFUTF16(
                           IDS_TAB_CXMENU_SOUND_UNMUTE_SITE, num_affected_tabs));
-
   if (send_tab_to_self::ShouldOfferFeature(
           tab_strip->GetWebContentsAt(index))) {
     send_tab_to_self::RecordSendTabToSelfClickResult(
         send_tab_to_self::kTabMenu, SendTabToSelfClickResult::kShowItem);
     AddSeparator(ui::NORMAL_SEPARATOR);
-    AddItemWithStringIdAndIcon(TabStripModel::CommandSendTabToSelf,
-                               IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
-                               *send_tab_to_self::GetImageSkia());
+    send_tab_to_self_sub_menu_model_ =
+        std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(
+            tab_strip->profile());
+    AddSubMenuWithStringIdAndIcon(TabStripModel::CommandSendTabToSelf,
+                                  IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
+                                  send_tab_to_self_sub_menu_model_.get(),
+                                  *send_tab_to_self::GetImageSkia());
   }
+
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItem(TabStripModel::CommandCloseTab,
           l10n_util::GetPluralStringFUTF16(IDS_TAB_CXMENU_CLOSETAB,

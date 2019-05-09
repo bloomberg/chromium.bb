@@ -108,6 +108,10 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
                   const base::string16& label,
                   MenuModel* model);
   void AddSubMenuWithStringId(int command_id, int string_id, MenuModel* model);
+  void AddSubMenuWithStringIdAndIcon(int command_id,
+                                     int string_id,
+                                     MenuModel* model,
+                                     const gfx::ImageSkia& icon);
   void AddActionableSubMenu(int command_id,
                             const base::string16& label,
                             MenuModel* model);

@@ -57,6 +57,10 @@ struct WebMediaPlayerAction;
 struct WebPluginAction;
 }
 
+namespace send_tab_to_self {
+class SendTabToSelfSubMenuModel;
+}
+
 class RenderViewContextMenu : public RenderViewContextMenuBase {
  public:
   RenderViewContextMenu(content::RenderFrameHost* render_frame_host,
@@ -277,6 +281,10 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   // embeds the MimeHandlerViewGuest. Otherwise this will be the same as
   // |source_web_contents_|.
   content::WebContents* const embedder_web_contents_;
+
+  // Send tab to self submenu.
+  std::unique_ptr<send_tab_to_self::SendTabToSelfSubMenuModel>
+      send_tab_to_self_sub_menu_model_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenu);
 };

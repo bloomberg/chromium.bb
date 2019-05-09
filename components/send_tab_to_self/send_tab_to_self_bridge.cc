@@ -581,14 +581,9 @@ void SendTabToSelfBridge::SetTargetDeviceNameToCacheInfoMap() {
 
   target_device_name_to_cache_info_.clear();
   for (const auto& device : all_devices) {
-    // If the current device is considered expired for our purposes, stop here
-    // since the next devices in the vector are at least as expired than this
-    // one.
-    if (clock_->Now() -
-            change_processor()->GetEntityModificationTime(device->guid()) >
-        kDeviceExpiration) {
-      break;
-    }
+    // TODO(crbug/959487) If the current device is considered expired for our
+    // purposes, stop here since the next devices in the vector are at least
+    // as expired than this one.
 
     // TODO(crbug.com/957716): Dedupe older versions of this device as well.
     // Don't include this device.
@@ -604,9 +599,9 @@ void SendTabToSelfBridge::SetTargetDeviceNameToCacheInfoMap() {
 
     // Only keep one device per device name. We only keep the first occurrence
     // which is the most recent.
-    TargetDeviceInfo device_info_for_ui(device->guid(), device->device_type());
+    TargetDeviceInfo target_device_info(device->guid(), device->device_type());
     target_device_name_to_cache_info_.emplace(device->client_name(),
-                                              device_info_for_ui);
+                                              target_device_info);
     oldest_device_cache_guid_ = device->guid();
   }
 }
