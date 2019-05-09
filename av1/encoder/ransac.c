@@ -373,7 +373,7 @@ static void clear_motion(RANSAC_MOTION *motion, int num_points) {
 }
 
 static int ransac(const int *matched_points, int npoints,
-                  int *num_inliers_by_motion, double *params_by_motion,
+                  int *num_inliers_by_motion, MotionModel *params_by_motion,
                   int num_desired_motions, const int minpts,
                   IsDegenerateFunc is_degenerate,
                   FindTransformationFunc find_transformation,
@@ -528,7 +528,11 @@ static int ransac(const int *matched_points, int npoints,
                              motions[i].num_inliers);
 
       find_transformation(motions[i].num_inliers, points1, points2,
-                          params_by_motion + (MAX_PARAMDIM - 1) * i);
+                          params_by_motion[i].params);
+
+      params_by_motion[i].num_inliers = motions[i].num_inliers;
+      memcpy(params_by_motion[i].inliers, motions[i].inlier_indices,
+             sizeof(*motions[i].inlier_indices) * npoints);
     }
     num_inliers_by_motion[i] = motions[i].num_inliers;
   }
@@ -550,8 +554,9 @@ finish_ransac:
 
 static int ransac_double_prec(const double *matched_points, int npoints,
                               int *num_inliers_by_motion,
-                              double *params_by_motion, int num_desired_motions,
-                              const int minpts, IsDegenerateFunc is_degenerate,
+                              MotionModel *params_by_motion,
+                              int num_desired_motions, const int minpts,
+                              IsDegenerateFunc is_degenerate,
                               FindTransformationFunc find_transformation,
                               ProjectPointsDoubleFunc projectpoints) {
   int trial_count = 0;
@@ -704,7 +709,9 @@ static int ransac_double_prec(const double *matched_points, int npoints,
                              motions[i].num_inliers);
 
       find_transformation(motions[i].num_inliers, points1, points2,
-                          params_by_motion + (MAX_PARAMDIM - 1) * i);
+                          params_by_motion[i].params);
+      memcpy(params_by_motion[i].inliers, motions[i].inlier_indices,
+             sizeof(*motions[i].inlier_indices) * npoints);
     }
     num_inliers_by_motion[i] = motions[i].num_inliers;
   }
@@ -741,7 +748,7 @@ static int is_degenerate_affine(double *p) {
 
 static int ransac_translation(int *matched_points, int npoints,
                               int *num_inliers_by_motion,
-                              double *params_by_motion,
+                              MotionModel *params_by_motion,
                               int num_desired_motions) {
   return ransac(matched_points, npoints, num_inliers_by_motion,
                 params_by_motion, num_desired_motions, 3,
@@ -750,7 +757,8 @@ static int ransac_translation(int *matched_points, int npoints,
 }
 
 static int ransac_rotzoom(int *matched_points, int npoints,
-                          int *num_inliers_by_motion, double *params_by_motion,
+                          int *num_inliers_by_motion,
+                          MotionModel *params_by_motion,
                           int num_desired_motions) {
   return ransac(matched_points, npoints, num_inliers_by_motion,
                 params_by_motion, num_desired_motions, 3, is_degenerate_affine,
@@ -758,7 +766,8 @@ static int ransac_rotzoom(int *matched_points, int npoints,
 }
 
 static int ransac_affine(int *matched_points, int npoints,
-                         int *num_inliers_by_motion, double *params_by_motion,
+                         int *num_inliers_by_motion,
+                         MotionModel *params_by_motion,
                          int num_desired_motions) {
   return ransac(matched_points, npoints, num_inliers_by_motion,
                 params_by_motion, num_desired_motions, 3, is_degenerate_affine,
@@ -776,7 +785,7 @@ RansacFunc av1_get_ransac_type(TransformationType type) {
 
 static int ransac_translation_double_prec(double *matched_points, int npoints,
                                           int *num_inliers_by_motion,
-                                          double *params_by_motion,
+                                          MotionModel *params_by_motion,
                                           int num_desired_motions) {
   return ransac_double_prec(matched_points, npoints, num_inliers_by_motion,
                             params_by_motion, num_desired_motions, 3,
@@ -786,7 +795,7 @@ static int ransac_translation_double_prec(double *matched_points, int npoints,
 
 static int ransac_rotzoom_double_prec(double *matched_points, int npoints,
                                       int *num_inliers_by_motion,
-                                      double *params_by_motion,
+                                      MotionModel *params_by_motion,
                                       int num_desired_motions) {
   return ransac_double_prec(matched_points, npoints, num_inliers_by_motion,
                             params_by_motion, num_desired_motions, 3,
@@ -796,7 +805,7 @@ static int ransac_rotzoom_double_prec(double *matched_points, int npoints,
 
 static int ransac_affine_double_prec(double *matched_points, int npoints,
                                      int *num_inliers_by_motion,
-                                     double *params_by_motion,
+                                     MotionModel *params_by_motion,
                                      int num_desired_motions) {
   return ransac_double_prec(matched_points, npoints, num_inliers_by_motion,
                             params_by_motion, num_desired_motions, 3,
