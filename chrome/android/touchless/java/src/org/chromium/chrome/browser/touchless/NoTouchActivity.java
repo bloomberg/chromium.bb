@@ -27,10 +27,12 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogPresenter;
+import org.chromium.chrome.browser.touchless.snackbar.BlackHoleSnackbarManager;
 import org.chromium.chrome.browser.touchless.ui.iph.KeyFunctionsIPHCoordinator;
 import org.chromium.chrome.browser.touchless.ui.progressbar.ProgressBarCoordinator;
 import org.chromium.chrome.browser.touchless.ui.progressbar.ProgressBarView;
@@ -70,6 +72,9 @@ public class NoTouchActivity extends SingleTabActivity {
 
     /** Tab observer that tracks media state. */
     private TouchlessTabObserver mTabObserver;
+
+    /** The snackbar manager for this activity that drops all snackbar requests. */
+    private BlackHoleSnackbarManager mSnackbarManager;
 
     /**
      * Internal class which performs the intent handling operations delegated by IntentHandler.
@@ -156,6 +161,7 @@ public class NoTouchActivity extends SingleTabActivity {
         if (launchNtpDueToInactivity) resetSavedInstanceState();
         super.initializeState();
 
+        mSnackbarManager = new BlackHoleSnackbarManager(this);
         mKeyFunctionsIPHCoordinator =
                 new KeyFunctionsIPHCoordinator(mTooltipView, getActivityTabProvider());
         mProgressBarCoordinator =
@@ -314,5 +320,10 @@ public class NoTouchActivity extends SingleTabActivity {
      */
     public TouchlessUiController getTouchlessUiController() {
         return mUiController;
+    }
+
+    @Override
+    public SnackbarManager getSnackbarManager() {
+        return mSnackbarManager;
     }
 }
