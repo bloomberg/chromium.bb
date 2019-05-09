@@ -626,10 +626,8 @@ void SyncEngineBackend::DoOnInvalidatorClientIdChange(
 
 base::WeakPtr<ModelTypeControllerDelegate>
 SyncEngineBackend::GetNigoriControllerDelegate() {
-  // TODO(crbug.com/922900): return actual ModelTypeControllerDelegate.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
-  return nullptr;
+  return sync_manager_->GetNigoriControllerDelegate();
 }
 
 bool SyncEngineBackend::HasUnsyncedItemsForTest() const {

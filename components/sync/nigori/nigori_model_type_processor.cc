@@ -26,7 +26,9 @@ const char kNigoriClientTagHash[] = "NigoriClientTagHash";
 }  // namespace
 
 NigoriModelTypeProcessor::NigoriModelTypeProcessor()
-    : bridge_(nullptr), weak_ptr_factory_for_worker_(this) {}
+    : bridge_(nullptr),
+      weak_ptr_factory_for_controller_(this),
+      weak_ptr_factory_for_worker_(this) {}
 
 NigoriModelTypeProcessor::~NigoriModelTypeProcessor() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -371,6 +373,12 @@ void NigoriModelTypeProcessor::ReportError(const ModelError& error) {
     // Tell sync about the error.
     activation_request_.error_handler.Run(error);
   }
+}
+
+base::WeakPtr<ModelTypeControllerDelegate>
+NigoriModelTypeProcessor::GetControllerDelegate() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return weak_ptr_factory_for_controller_.GetWeakPtr();
 }
 
 bool NigoriModelTypeProcessor::IsConnectedForTest() const {

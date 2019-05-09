@@ -172,7 +172,8 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
   // Notify about change in client id.
   void DoOnInvalidatorClientIdChange(const std::string& client_id);
 
-  // Return ModelTypeControllerDelegate for Nigori.
+  // Returns ModelTypeControllerDelegate for Nigori. USS implementation of
+  // Nigori must be enabled.
   base::WeakPtr<ModelTypeControllerDelegate> GetNigoriControllerDelegate();
 
   bool HasUnsyncedItemsForTest() const;

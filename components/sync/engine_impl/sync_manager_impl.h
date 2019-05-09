@@ -27,7 +27,6 @@
 #include "components/sync/engine_impl/js_sync_manager_observer.h"
 #include "components/sync/engine_impl/net/server_connection_manager.h"
 #include "components/sync/engine_impl/nudge_handler.h"
-#include "components/sync/engine_impl/sync_encryption_handler_impl.h"
 #include "components/sync/engine_impl/sync_engine_event_listener.h"
 #include "components/sync/js/js_backend.h"
 #include "components/sync/syncable/change_reorder_buffer.h"
@@ -98,6 +97,8 @@ class SyncManagerImpl
   const std::string cache_guid() override;
   bool HasUnsyncedItemsForTest() override;
   SyncEncryptionHandler* GetEncryptionHandler() override;
+  base::WeakPtr<ModelTypeControllerDelegate> GetNigoriControllerDelegate()
+      override;
   std::vector<std::unique_ptr<ProtocolEvent>> GetBufferedProtocolEvents()
       override;
   void RegisterDirectoryTypeDebugInfoObserver(
@@ -313,10 +314,12 @@ class SyncManagerImpl
 
   base::Closure report_unrecoverable_error_function_;
 
-  // Sync's encryption handler. It tracks the set of encrypted types, manages
-  // changing passphrases, and in general handles sync-specific interactions
-  // with the cryptographer.
-  std::unique_ptr<SyncEncryptionHandlerImpl> sync_encryption_handler_;
+  // Points to either SyncEncryptionHandlerImpl or NigoriSyncBridgeImpl
+  // depending on whether USS implementation of Nigori is enabled or not.
+  std::unique_ptr<SyncEncryptionHandler> sync_encryption_handler_;
+
+  // Initialized iff USS implementation of Nigori is enabled.
+  base::WeakPtr<ModelTypeControllerDelegate> nigori_controller_delegate_;
 
   base::WeakPtrFactory<SyncManagerImpl> weak_ptr_factory_;
 

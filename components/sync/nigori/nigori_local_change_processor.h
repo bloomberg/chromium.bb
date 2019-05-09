@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
@@ -16,6 +17,7 @@
 
 namespace syncer {
 
+class ModelTypeControllerDelegate;
 class NigoriSyncBridge;
 struct EntityData;
 
@@ -58,6 +60,10 @@ class NigoriLocalChangeProcessor {
   // be called after an error. This will result in sync being temporarily
   // disabled (generally until the next restart).
   virtual void ReportError(const ModelError& error) = 0;
+
+  // Returns the delegate for the controller.
+  virtual base::WeakPtr<ModelTypeControllerDelegate>
+  GetControllerDelegate() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NigoriLocalChangeProcessor);

@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -24,13 +25,17 @@
 #include "components/sync/engine/engine_util.h"
 #include "components/sync/engine/net/http_post_provider_factory.h"
 #include "components/sync/engine/polling_constants.h"
+#include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/engine_impl/cycle/directory_type_debug_info_emitter.h"
 #include "components/sync/engine_impl/loopback_server/loopback_connection_manager.h"
 #include "components/sync/engine_impl/model_type_connector_proxy.h"
 #include "components/sync/engine_impl/net/sync_server_connection_manager.h"
+#include "components/sync/engine_impl/sync_encryption_handler_impl.h"
 #include "components/sync/engine_impl/sync_scheduler.h"
 #include "components/sync/engine_impl/syncer_types.h"
 #include "components/sync/engine_impl/uss_migrator.h"
+#include "components/sync/nigori/nigori_model_type_processor.h"
+#include "components/sync/nigori/nigori_sync_bridge_impl.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/syncable/base_node.h"
 #include "components/sync/syncable/directory.h"
@@ -276,10 +281,31 @@ void SyncManagerImpl::Init(InitArgs* args) {
 
   allstatus_.SetHasKeystoreKey(
       !args->restored_keystore_key_for_bootstrapping.empty());
-  sync_encryption_handler_ = std::make_unique<SyncEncryptionHandlerImpl>(
-      &share_, args->encryptor, args->restored_key_for_bootstrapping,
-      args->restored_keystore_key_for_bootstrapping,
-      base::BindRepeating(&Nigori::GenerateScryptSalt));
+
+  Cryptographer* cryptographer_for_directory = nullptr;
+  syncable::NigoriHandler* nigori_handler = nullptr;
+  KeystoreKeysHandler* keystore_keys_handler = nullptr;
+  if (base::FeatureList::IsEnabled(switches::kSyncUSSNigori)) {
+    auto nigori_model_type_processor =
+        std::make_unique<NigoriModelTypeProcessor>();
+    nigori_controller_delegate_ =
+        nigori_model_type_processor->GetControllerDelegate();
+    auto nigori_sync_bridge_impl = std::make_unique<NigoriSyncBridgeImpl>(
+        std::move(nigori_model_type_processor), args->encryptor);
+    keystore_keys_handler = nigori_sync_bridge_impl.get();
+    sync_encryption_handler_ = std::move(nigori_sync_bridge_impl);
+  } else {
+    auto sync_encryption_handler_impl =
+        std::make_unique<SyncEncryptionHandlerImpl>(
+            &share_, args->encryptor, args->restored_key_for_bootstrapping,
+            args->restored_keystore_key_for_bootstrapping,
+            base::BindRepeating(&Nigori::GenerateScryptSalt));
+    cryptographer_for_directory =
+        sync_encryption_handler_impl->GetCryptographerUnsafe();
+    nigori_handler = sync_encryption_handler_impl.get();
+    keystore_keys_handler = sync_encryption_handler_impl.get();
+    sync_encryption_handler_ = std::move(sync_encryption_handler_impl);
+  }
   sync_encryption_handler_->AddObserver(this);
   sync_encryption_handler_->AddObserver(&debug_info_event_listener_);
   sync_encryption_handler_->AddObserver(&js_sync_encryption_handler_observer_);
@@ -293,10 +319,13 @@ void SyncManagerImpl::Init(InitArgs* args) {
           args->authenticated_account_id, args->cache_guid, absolute_db_path);
 
   DCHECK(backing_store);
+
+  // Note: |nigori_handler| and |cryptographer_for_directory| are nullptrs iff
+  // kSyncUSSNigori is enabled.
   share_.directory = std::make_unique<syncable::Directory>(
       std::move(backing_store), args->unrecoverable_error_handler,
-      report_unrecoverable_error_function_, sync_encryption_handler_.get(),
-      sync_encryption_handler_->GetCryptographerUnsafe());
+      report_unrecoverable_error_function_, nigori_handler,
+      cryptographer_for_directory);
 
   DVLOG(1) << "AccountId: " << args->authenticated_account_id;
   if (!OpenDirectory(args)) {
@@ -330,7 +359,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
 
   model_type_registry_ = std::make_unique<ModelTypeRegistry>(
       args->workers, &share_, this, base::Bind(&MigrateDirectoryData),
-      args->cancelation_signal, sync_encryption_handler_.get());
+      args->cancelation_signal, keystore_keys_handler);
   sync_encryption_handler_->AddObserver(model_type_registry_.get());
 
   // Build a SyncCycleContext and store the worker in it.
@@ -940,6 +969,11 @@ bool SyncManagerImpl::HasUnsyncedItemsForTest() {
 
 SyncEncryptionHandler* SyncManagerImpl::GetEncryptionHandler() {
   return sync_encryption_handler_.get();
+}
+
+base::WeakPtr<ModelTypeControllerDelegate>
+SyncManagerImpl::GetNigoriControllerDelegate() {
+  return nigori_controller_delegate_;
 }
 
 std::vector<std::unique_ptr<ProtocolEvent>>

@@ -1066,6 +1066,7 @@ string Directory::legacy_cache_guid_for_uma() const {
 }
 
 NigoriHandler* Directory::GetNigoriHandler() {
+  DCHECK(nigori_handler_);
   return nigori_handler_;
 }
 

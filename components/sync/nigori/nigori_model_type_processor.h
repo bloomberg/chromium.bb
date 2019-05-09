@@ -52,6 +52,7 @@ class NigoriModelTypeProcessor : public ModelTypeProcessor,
   void Put(std::unique_ptr<EntityData> entity_data) override;
   NigoriMetadataBatch GetMetadata() override;
   void ReportError(const ModelError& error) override;
+  base::WeakPtr<ModelTypeControllerDelegate> GetControllerDelegate() override;
 
   bool IsConnectedForTest() const;
 
@@ -97,6 +98,11 @@ class NigoriModelTypeProcessor : public ModelTypeProcessor,
   std::unique_ptr<CommitQueue> worker_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  // WeakPtrFactory for this processor for ModelTypeController (only gets
+  // invalidated during destruction).
+  base::WeakPtrFactory<ModelTypeControllerDelegate>
+      weak_ptr_factory_for_controller_;
 
   // WeakPtrFactory for this processor which will be sent to sync thread.
   base::WeakPtrFactory<NigoriModelTypeProcessor> weak_ptr_factory_for_worker_;

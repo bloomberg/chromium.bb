@@ -41,6 +41,8 @@ class MockNigoriLocalChangeProcessor : public NigoriLocalChangeProcessor {
   MOCK_METHOD1(Put, void(std::unique_ptr<EntityData>));
   MOCK_METHOD0(GetMetadata, NigoriMetadataBatch());
   MOCK_METHOD1(ReportError, void(const ModelError&));
+  MOCK_METHOD0(GetControllerDelegate,
+               base::WeakPtr<ModelTypeControllerDelegate>());
 };
 
 class NigoriSyncBridgeImplTest : public testing::Test {

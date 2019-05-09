@@ -219,6 +219,11 @@ SyncEncryptionHandler* FakeSyncManager::GetEncryptionHandler() {
   return &fake_encryption_handler_;
 }
 
+base::WeakPtr<ModelTypeControllerDelegate>
+FakeSyncManager::GetNigoriControllerDelegate() {
+  return nullptr;
+}
+
 std::vector<std::unique_ptr<ProtocolEvent>>
 FakeSyncManager::GetBufferedProtocolEvents() {
   return std::vector<std::unique_ptr<ProtocolEvent>>();
