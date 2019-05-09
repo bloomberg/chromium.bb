@@ -108,11 +108,24 @@ class ProfileChooserView : public ProfileMenuViewBase,
   // Returns true if header is created.
   bool AddSyncErrorViewIfNeeded(const AvatarMenu::Item& avatar_item);
 
+  // Adds a view showing a sync error and an error button, when dice is not
+  // enabled.
+  void AddPreDiceSyncErrorView(const AvatarMenu::Item& avatar_item,
+                               sync_ui_util::AvatarSyncErrorType error,
+                               int button_string_id,
+                               int content_string_id);
+
   // Adds a view showing the profile associated with |avatar_item| and an error
-  // button below.
+  // button below, when dice is enabled.
   void AddDiceSyncErrorView(const AvatarMenu::Item& avatar_item,
                             sync_ui_util::AvatarSyncErrorType error,
                             int button_string_id);
+
+  // Adds a promo for signin, if dice is not enabled.
+  void AddPreDiceSigninPromo();
+
+  // Adds a promo for signin, if dice is enabled.
+  void AddDiceSigninPromo();
 
   // Clean-up done after an action was performed in the ProfileChooser.
   void PostActionPerformed(ProfileMetrics::ProfileDesktopMenu action_performed);

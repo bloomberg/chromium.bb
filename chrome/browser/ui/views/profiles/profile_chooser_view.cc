@@ -410,7 +410,7 @@ void ProfileChooserView::AddProfileChooserView(AvatarMenu* avatar_menu) {
   bool sync_error =
       active_item ? AddSyncErrorViewIfNeeded(*active_item) : false;
 
-  if (!(dice_enabled_ && sync_error)) {
+  if (!sync_error || !dice_enabled_) {
     // Guest windows don't have an active profile.
     if (active_item)
       AddCurrentProfileView(*active_item, /* is_guest = */ false);
@@ -448,10 +448,19 @@ bool ProfileChooserView::AddSyncErrorViewIfNeeded(
 
   if (dice_enabled_) {
     AddDiceSyncErrorView(avatar_item, error, button_string_id);
-    return true;
+  } else {
+    AddPreDiceSyncErrorView(avatar_item, error, button_string_id,
+                            content_string_id);
   }
 
-  // Create pre-dice sync error view.
+  return true;
+}
+
+void ProfileChooserView::AddPreDiceSyncErrorView(
+    const AvatarMenu::Item& avatar_item,
+    sync_ui_util::AvatarSyncErrorType error,
+    int button_string_id,
+    int content_string_id) {
   AddMenuGroup();
   auto sync_problem_icon = std::make_unique<views::ImageView>();
   sync_problem_icon->SetImage(gfx::CreateVectorIcon(
@@ -470,8 +479,6 @@ bool ProfileChooserView::AddSyncErrorViewIfNeeded(
     // ButtonPressed().
     sync_error_button_->SetID(error);
   }
-
-  return true;
 }
 
 void ProfileChooserView::AddDiceSyncErrorView(
@@ -567,25 +574,53 @@ void ProfileChooserView::AddCurrentProfileView(
         IDS_PROFILES_EDIT_SIGNED_IN_PROFILE_ACCESSIBLE_NAME, profile_name,
         avatar_item.username));
   } else {
-    AddMenuGroup(false /* add_separator */);
     bool is_signin_allowed =
         profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed);
-    if (!dice_enabled_ && is_signin_allowed) {
-      CreateAndAddLabel(l10n_util::GetStringUTF16(IDS_PROFILES_SIGNIN_PROMO));
-
-      signin_current_profile_button_ = CreateAndAddBlueButton(
-          l10n_util::GetStringFUTF16(
-              IDS_SYNC_START_SYNC_BUTTON_LABEL,
-              l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)),
-          true /* md_style */);
-
-      signin_metrics::RecordSigninImpressionUserActionForAccessPoint(
-          signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
-    }
+    // For the dice promo equivalent, see AddDiceSigninPromo() call sites.
+    if (!dice_enabled_ && is_signin_allowed)
+      AddPreDiceSigninPromo();
 
     current_profile_card_->SetAccessibleName(l10n_util::GetStringFUTF16(
         IDS_PROFILES_EDIT_PROFILE_ACCESSIBLE_NAME, profile_name));
   }
+}
+
+void ProfileChooserView::AddPreDiceSigninPromo() {
+  AddMenuGroup(false /* add_separator */);
+  CreateAndAddLabel(l10n_util::GetStringUTF16(IDS_PROFILES_SIGNIN_PROMO));
+
+  signin_current_profile_button_ = CreateAndAddBlueButton(
+      l10n_util::GetStringFUTF16(
+          IDS_SYNC_START_SYNC_BUTTON_LABEL,
+          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)),
+      true /* md_style */);
+
+  signin_metrics::RecordSigninImpressionUserActionForAccessPoint(
+      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
+}
+
+void ProfileChooserView::AddDiceSigninPromo() {
+  AddMenuGroup();
+
+  // Show promo illustration + text when there is no promo account.
+  if (GetDiceSigninPromoShowCount() <=
+      kDiceSigninPromoIllustrationShowCountMax) {
+    // Add the illustration.
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    std::unique_ptr<NonAccessibleImageView> illustration =
+        std::make_unique<NonAccessibleImageView>();
+    illustration->SetImage(
+        *rb.GetNativeImageNamed(IDR_PROFILES_DICE_TURN_ON_SYNC).ToImageSkia());
+    AddViewItem(std::move(illustration));
+  }
+  // Add the promo text.
+  CreateAndAddLabel(l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SYNC_PROMO));
+
+  // Create a sign-in button without account information.
+  std::unique_ptr<DiceSigninButtonView> signin_button =
+      std::make_unique<DiceSigninButtonView>(this);
+  dice_signin_button_view_ = CreateAndAddDiceSigninButton();
+  signin_current_profile_button_ = dice_signin_button_view_->signin_button();
 }
 
 void ProfileChooserView::AddDiceSigninView() {
@@ -603,29 +638,9 @@ void ProfileChooserView::AddDiceSigninView() {
       promo_account_available);
 
   if (!promo_account_available) {
-    AddMenuGroup();
-
-    // Show promo illustration+text when there is no promo account.
-    if (GetDiceSigninPromoShowCount() <=
-        kDiceSigninPromoIllustrationShowCountMax) {
-      // Add the illustration.
-      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-      std::unique_ptr<NonAccessibleImageView> illustration =
-          std::make_unique<NonAccessibleImageView>();
-      illustration->SetImage(
-          *rb.GetNativeImageNamed(IDR_PROFILES_DICE_TURN_ON_SYNC)
-               .ToImageSkia());
-      AddViewItem(std::move(illustration));
-    }
-    // Add the promo text.
-    CreateAndAddLabel(l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SYNC_PROMO));
-
-    // Create a sign-in button without account information.
-    std::unique_ptr<DiceSigninButtonView> signin_button =
-        std::make_unique<DiceSigninButtonView>(this);
-    dice_signin_button_view_ = CreateAndAddDiceSigninButton();
-    signin_current_profile_button_ = dice_signin_button_view_->signin_button();
-
+    // For the pre-dice promo equivalent, see AddPreDiceSigninPromo() call
+    // sites.
+    AddDiceSigninPromo();
     return;
   }
 
