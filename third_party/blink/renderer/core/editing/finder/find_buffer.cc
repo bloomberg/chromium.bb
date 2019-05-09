@@ -138,19 +138,19 @@ FindBuffer::InvisibleLayoutScope::~InvisibleLayoutScope() {
 }
 
 bool ShouldIgnoreContents(const Node& node) {
-  if (!node.IsHTMLElement())
+  const auto* element = DynamicTo<HTMLElement>(node);
+  if (!element)
     return false;
-  const HTMLElement& element = ToHTMLElement(node);
-  return (!element.ShouldSerializeEndTag() && !IsHTMLInputElement(element)) ||
-         IsHTMLIFrameElement(element) || IsHTMLImageElement(element) ||
-         IsHTMLLegendElement(element) || IsHTMLMeterElement(element) ||
-         IsHTMLObjectElement(element) || IsHTMLProgressElement(element) ||
-         (IsHTMLSelectElement(element) &&
-          ToHTMLSelectElement(element).UsesMenuList()) ||
-         IsHTMLStyleElement(element) || IsHTMLScriptElement(element) ||
-         IsHTMLVideoElement(element) || IsHTMLAudioElement(element) ||
-         (element.GetDisplayLockContext() &&
-          !element.GetDisplayLockContext()->IsActivatable());
+  return (!element->ShouldSerializeEndTag() && !IsHTMLInputElement(*element)) ||
+         IsHTMLIFrameElement(*element) || IsHTMLImageElement(*element) ||
+         IsHTMLLegendElement(*element) || IsHTMLMeterElement(*element) ||
+         IsHTMLObjectElement(*element) || IsHTMLProgressElement(*element) ||
+         (IsHTMLSelectElement(*element) &&
+          ToHTMLSelectElement(*element).UsesMenuList()) ||
+         IsHTMLStyleElement(*element) || IsHTMLScriptElement(*element) ||
+         IsHTMLVideoElement(*element) || IsHTMLAudioElement(*element) ||
+         (element->GetDisplayLockContext() &&
+          !element->GetDisplayLockContext()->IsActivatable());
 }
 
 Node* GetNonSearchableAncestor(const Node& node) {
@@ -364,7 +364,7 @@ void FindBuffer::CollectTextUntilBlockBoundary(
       }
       // Move the node so we wouldn't encounter this node or its descendants
       // later.
-      if (!IsHTMLWBRElement(ToHTMLElement(*node)))
+      if (!IsHTMLWBRElement(To<HTMLElement>(*node)))
         buffer_.push_back(kObjectReplacementCharacter);
       node = FlatTreeTraversal::NextSkippingChildren(*node);
       continue;

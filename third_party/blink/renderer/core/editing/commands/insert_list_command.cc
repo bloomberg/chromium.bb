@@ -88,10 +88,10 @@ HTMLElement* InsertListCommand::MergeWithNeighboringLists(
     return nullptr;
 
   Element* next_sibling = ElementTraversal::NextSibling(*list);
-  if (!next_sibling || !next_sibling->IsHTMLElement())
+  auto* next_list = DynamicTo<HTMLElement>(next_sibling);
+  if (!next_list)
     return list;
 
-  HTMLElement* next_list = ToHTMLElement(next_sibling);
   GetDocument().UpdateStyleAndLayout();
   if (CanMergeLists(*list, *next_list)) {
     MergeIdenticalElements(list, next_list, editing_state);

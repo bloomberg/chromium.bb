@@ -1471,8 +1471,8 @@ WebTextInputType InputMethodController::TextInputType() const {
     return kWebTextInputTypeTextArea;
   }
 
-  if (element->IsHTMLElement()) {
-    if (ToHTMLElement(element)->IsDateTimeFieldElement())
+  if (auto* html_element = DynamicTo<HTMLElement>(element)) {
+    if (html_element->IsDateTimeFieldElement())
       return kWebTextInputTypeDateTimeField;
   }
 

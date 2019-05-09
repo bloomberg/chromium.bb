@@ -1120,14 +1120,14 @@ bool IsListItem(const Node* n) {
 }
 
 bool IsPresentationalHTMLElement(const Node* node) {
-  if (!node->IsHTMLElement())
+  const auto* element = DynamicTo<HTMLElement>(node);
+  if (!element)
     return false;
 
-  const HTMLElement& element = ToHTMLElement(*node);
-  return element.HasTagName(kUTag) || element.HasTagName(kSTag) ||
-         element.HasTagName(kStrikeTag) || element.HasTagName(kITag) ||
-         element.HasTagName(kEmTag) || element.HasTagName(kBTag) ||
-         element.HasTagName(kStrongTag);
+  return element->HasTagName(kUTag) || element->HasTagName(kSTag) ||
+         element->HasTagName(kStrikeTag) || element->HasTagName(kITag) ||
+         element->HasTagName(kEmTag) || element->HasTagName(kBTag) ||
+         element->HasTagName(kStrongTag);
 }
 
 Element* AssociatedElementOf(const Position& position) {
@@ -1374,19 +1374,20 @@ Position ComputePositionForNodeRemoval(const Position& position,
 }
 
 bool IsMailHTMLBlockquoteElement(const Node* node) {
-  if (!node || !node->IsHTMLElement())
+  const auto* element = DynamicTo<HTMLElement>(*node);
+  if (!element)
     return false;
 
-  const HTMLElement& element = ToHTMLElement(*node);
-  return element.HasTagName(kBlockquoteTag) &&
-         element.getAttribute("type") == "cite";
+  return element->HasTagName(kBlockquoteTag) &&
+         element->getAttribute("type") == "cite";
 }
 
 bool ElementCannotHaveEndTag(const Node& node) {
-  if (!node.IsHTMLElement())
+  auto* html_element = DynamicTo<HTMLElement>(node);
+  if (!html_element)
     return false;
 
-  return !ToHTMLElement(node).ShouldSerializeEndTag();
+  return !html_element->ShouldSerializeEndTag();
 }
 
 // FIXME: indexForVisiblePosition and visiblePositionForIndex use TextIterators
@@ -1498,16 +1499,16 @@ bool IsRenderedAsNonInlineTableImageOrHR(const Node* node) {
 }
 
 bool IsNonTableCellHTMLBlockElement(const Node* node) {
-  if (!node->IsHTMLElement())
+  const auto* element = DynamicTo<HTMLElement>(node);
+  if (!element)
     return false;
 
-  const HTMLElement& element = ToHTMLElement(*node);
-  return element.HasTagName(kListingTag) || element.HasTagName(kOlTag) ||
-         element.HasTagName(kPreTag) || element.HasTagName(kTableTag) ||
-         element.HasTagName(kUlTag) || element.HasTagName(kXmpTag) ||
-         element.HasTagName(kH1Tag) || element.HasTagName(kH2Tag) ||
-         element.HasTagName(kH3Tag) || element.HasTagName(kH4Tag) ||
-         element.HasTagName(kH5Tag);
+  return element->HasTagName(kListingTag) || element->HasTagName(kOlTag) ||
+         element->HasTagName(kPreTag) || element->HasTagName(kTableTag) ||
+         element->HasTagName(kUlTag) || element->HasTagName(kXmpTag) ||
+         element->HasTagName(kH1Tag) || element->HasTagName(kH2Tag) ||
+         element->HasTagName(kH3Tag) || element->HasTagName(kH4Tag) ||
+         element->HasTagName(kH5Tag);
 }
 
 bool IsBlockFlowElement(const Node& node) {
@@ -1695,12 +1696,12 @@ AtomicString GetUrlStringFromNode(const Node& node) {
   // TODO(editing-dev): This should probably be reconciled with
   // HitTestResult::absoluteImageURL.
   if (IsHTMLImageElement(node) || IsHTMLInputElement(node))
-    return ToHTMLElement(node).getAttribute(kSrcAttr);
+    return To<HTMLElement>(node).getAttribute(kSrcAttr);
   if (IsSVGImageElement(node))
     return ToSVGElement(node).ImageSourceURL();
   if (IsHTMLEmbedElement(node) || IsHTMLObjectElement(node) ||
       IsHTMLCanvasElement(node))
-    return ToHTMLElement(node).ImageSourceURL();
+    return To<HTMLElement>(node).ImageSourceURL();
   return AtomicString();
 }
 

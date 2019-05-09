@@ -503,13 +503,13 @@ bool ReplaceSelectionCommand::ShouldMergeEnd(
 }
 
 static bool IsHTMLHeaderElement(const Node* a) {
-  if (!a || !a->IsHTMLElement())
+  const auto* element = DynamicTo<HTMLElement>(a);
+  if (!element)
     return false;
 
-  const HTMLElement& element = ToHTMLElement(*a);
-  return element.HasTagName(kH1Tag) || element.HasTagName(kH2Tag) ||
-         element.HasTagName(kH3Tag) || element.HasTagName(kH4Tag) ||
-         element.HasTagName(kH5Tag) || element.HasTagName(kH6Tag);
+  return element->HasTagName(kH1Tag) || element->HasTagName(kH2Tag) ||
+         element->HasTagName(kH3Tag) || element->HasTagName(kH4Tag) ||
+         element->HasTagName(kH5Tag) || element->HasTagName(kH6Tag);
 }
 
 static bool HaveSameTagName(Element* a, Element* b) {
@@ -562,9 +562,9 @@ void ReplaceSelectionCommand::RemoveRedundantStylesAndKeepStyleSpanInline(
     EditingStyle* new_inline_style =
         MakeGarbageCollected<EditingStyle>(inline_style);
     if (inline_style) {
-      if (element->IsHTMLElement()) {
+      auto* html_element = DynamicTo<HTMLElement>(element);
+      if (html_element) {
         Vector<QualifiedName> attributes;
-        HTMLElement* html_element = ToHTMLElement(element);
         DCHECK(html_element);
 
         if (new_inline_style->ConflictsWithImplicitStyleOfElement(
@@ -701,29 +701,28 @@ void ReplaceSelectionCommand::
        node && node != past_end_node; node = next) {
     next = NodeTraversal::Next(*node);
 
-    if (!node->IsHTMLElement())
+    auto* element = DynamicTo<HTMLElement>(node);
+    if (!element)
       continue;
     // moveElementOutOfAncestor() in a previous iteration might have failed,
     // and |node| might have been detached from the document tree.
     if (!node->isConnected())
       continue;
 
-    HTMLElement& element = ToHTMLElement(*node);
-    if (IsProhibitedParagraphChild(element.localName())) {
+    if (IsProhibitedParagraphChild(element->localName())) {
       if (HTMLElement* paragraph_element =
-              ToHTMLElement(EnclosingElementWithTag(
-                  Position::InParentBeforeNode(element), kPTag))) {
-        MoveElementOutOfAncestor(&element, paragraph_element, editing_state);
+              To<HTMLElement>(EnclosingElementWithTag(
+                  Position::InParentBeforeNode(*element), kPTag))) {
+        MoveElementOutOfAncestor(element, paragraph_element, editing_state);
         if (editing_state->IsAborted())
           return;
       }
     }
 
-    if (IsHTMLHeaderElement(&element)) {
-      if (HTMLElement* header_element = ToHTMLElement(
-              HighestEnclosingNodeOfType(Position::InParentBeforeNode(element),
-                                         IsHTMLHeaderElement))) {
-        MoveElementOutOfAncestor(&element, header_element, editing_state);
+    if (IsHTMLHeaderElement(element)) {
+      if (auto* header_element = To<HTMLElement>(HighestEnclosingNodeOfType(
+              Position::InParentBeforeNode(*element), IsHTMLHeaderElement))) {
+        MoveElementOutOfAncestor(element, header_element, editing_state);
         if (editing_state->IsAborted())
           return;
       }
@@ -840,7 +839,8 @@ static void RemoveHeadContents(ReplacementFragment& fragment) {
 }
 
 static bool FollowBlockElementStyle(const Node* node) {
-  if (!node->IsHTMLElement())
+  const auto* element = DynamicTo<HTMLElement>(node);
+  if (!element)
     return false;
   // When content is inserted into an empty block, use the original style
   // instead of the block style.
@@ -852,11 +852,11 @@ static bool FollowBlockElementStyle(const Node* node) {
     return false;
   }
 
-  const HTMLElement& element = ToHTMLElement(*node);
-  return IsListItem(node) || IsTableCell(node) || element.HasTagName(kPreTag) ||
-         element.HasTagName(kH1Tag) || element.HasTagName(kH2Tag) ||
-         element.HasTagName(kH3Tag) || element.HasTagName(kH4Tag) ||
-         element.HasTagName(kH5Tag) || element.HasTagName(kH6Tag);
+  return IsListItem(node) || IsTableCell(node) ||
+         element->HasTagName(kPreTag) || element->HasTagName(kH1Tag) ||
+         element->HasTagName(kH2Tag) || element->HasTagName(kH3Tag) ||
+         element->HasTagName(kH4Tag) || element->HasTagName(kH5Tag) ||
+         element->HasTagName(kH6Tag);
 }
 
 // Remove style spans before insertion if they are unnecessary.  It's faster
@@ -1000,12 +1000,12 @@ static bool IsInlineHTMLElementWithStyle(const Node* node) {
   if (IsEnclosingBlock(node))
     return false;
 
-  if (!node->IsHTMLElement())
+  const auto* element = DynamicTo<HTMLElement>(node);
+  if (!element)
     return false;
 
   // We can skip over elements whose class attribute is
   // one of our internal classes.
-  const HTMLElement* element = ToHTMLElement(node);
   return EditingStyle::ElementIsStyledSpanOrHTMLEquivalent(element);
 }
 
@@ -1014,7 +1014,7 @@ ElementToSplitToAvoidPastingIntoInlineElementsWithStyle(
     const Position& insertion_pos) {
   Element* containing_block =
       EnclosingBlock(insertion_pos.ComputeContainerNode());
-  return ToHTMLElement(HighestEnclosingNodeOfType(
+  return To<HTMLElement>(HighestEnclosingNodeOfType(
       insertion_pos, IsInlineHTMLElementWithStyle, kCannotCrossEditingBoundary,
       containing_block));
 }
@@ -1349,9 +1349,9 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
        (IsHTMLListElement(inserted_nodes.RefNode()->firstChild()))) &&
       block_start && block_start->GetLayoutObject()->IsListItem() &&
       HasEditableStyle(*block_start->parentNode())) {
-    inserted_nodes.SetRefNode(
-        InsertAsListItems(ToHTMLElement(inserted_nodes.RefNode()), block_start,
-                          insertion_pos, inserted_nodes, editing_state));
+    inserted_nodes.SetRefNode(InsertAsListItems(
+        To<HTMLElement>(inserted_nodes.RefNode()), block_start, insertion_pos,
+        inserted_nodes, editing_state));
     if (editing_state->IsAborted())
       return;
   } else {
@@ -1948,7 +1948,7 @@ Node* ReplaceSelectionCommand::InsertAsListItems(HTMLElement* list_element,
                                                  EditingState* editing_state) {
   while (list_element->HasOneChild() &&
          IsHTMLListElement(list_element->firstChild()))
-    list_element = ToHTMLElement(list_element->firstChild());
+    list_element = To<HTMLElement>(list_element->firstChild());
 
   GetDocument().UpdateStyleAndLayout();
   bool is_start = IsStartOfParagraph(CreateVisiblePosition(insert_pos));

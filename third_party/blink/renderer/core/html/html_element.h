@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -217,6 +218,11 @@ class CORE_EXPORT HTMLElement : public Element {
 
 DEFINE_ELEMENT_TYPE_CASTS(HTMLElement, IsHTMLElement());
 
+template <>
+struct DowncastTraits<HTMLElement> {
+  static bool AllowFrom(const Node& node) { return node.IsHTMLElement(); }
+};
+
 template <typename T>
 bool IsElementOfType(const HTMLElement&);
 template <>
@@ -232,7 +238,8 @@ inline HTMLElement::HTMLElement(const QualifiedName& tag_name,
 }
 
 inline bool Node::HasTagName(const HTMLQualifiedName& name) const {
-  return IsHTMLElement() && ToHTMLElement(*this).HasTagName(name);
+  auto* html_element = DynamicTo<HTMLElement>(this);
+  return html_element && html_element->HasTagName(name);
 }
 
 // Functor used to match HTMLElements with a specific HTML tag when using the

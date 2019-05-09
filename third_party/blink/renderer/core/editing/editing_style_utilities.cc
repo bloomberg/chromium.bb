@@ -94,7 +94,7 @@ EditingStyleUtilities::CreateWrappingStyleForAnnotatedSerialization(
   // blockquote, to help us differentiate those styles from ones that the user
   // has applied. This helps us get the color of content pasted into
   // blockquotes right.
-  wrapping_style->RemoveStyleAddedByElement(ToHTMLElement(EnclosingNodeOfType(
+  wrapping_style->RemoveStyleAddedByElement(To<HTMLElement>(EnclosingNodeOfType(
       FirstPositionInOrBeforeNode(*context), IsMailHTMLBlockquoteElement,
       kCanCrossEditingBoundary)));
 

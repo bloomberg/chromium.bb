@@ -213,9 +213,7 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
       insertion_position.ParentAnchoredEquivalent().ComputeContainerNode());
   Node* list_child_node = EnclosingListChild(
       insertion_position.ParentAnchoredEquivalent().ComputeContainerNode());
-  HTMLElement* list_child = list_child_node && list_child_node->IsHTMLElement()
-                                ? ToHTMLElement(list_child_node)
-                                : nullptr;
+  auto* list_child = DynamicTo<HTMLElement>(list_child_node);
   Position canonical_pos =
       CreateVisiblePosition(insertion_position).DeepEquivalent();
   if (!start_block || !start_block->NonShadowBoundaryParentNode() ||
@@ -253,7 +251,7 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
     // |positionAvoidingSpecialElementBoundary()| creates new A element and
     // move to another place.
     list_child =
-        ToHTMLElement(EnclosingAnchorElement(original_insertion_position));
+        To<HTMLElement>(EnclosingAnchorElement(original_insertion_position));
   }
 
   GetDocument().UpdateStyleAndLayout();

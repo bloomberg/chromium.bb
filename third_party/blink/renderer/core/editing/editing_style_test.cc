@@ -23,9 +23,9 @@ TEST_F(EditingStyleTest, mergeInlineStyleOfElement) {
   UpdateAllLifecyclePhasesForTest();
 
   EditingStyle* editing_style = MakeGarbageCollected<EditingStyle>(
-      ToHTMLElement(GetDocument().getElementById("s2")));
+      To<HTMLElement>(GetDocument().getElementById("s2")));
   editing_style->MergeInlineStyleOfElement(
-      ToHTMLElement(GetDocument().getElementById("s1")),
+      To<HTMLElement>(GetDocument().getElementById("s1")),
       EditingStyle::kOverrideValues);
 
   EXPECT_FALSE(editing_style->Style()->HasProperty(CSSPropertyID::kFloat))

@@ -10,7 +10,8 @@
 namespace {
 
 blink::EUserSelect UsedValueOfUserSelect(const blink::Node& node) {
-  if (node.IsHTMLElement() && ToHTMLElement(node).IsTextControl())
+  auto* html_element = blink::DynamicTo<blink::HTMLElement>(node);
+  if (html_element && html_element->IsTextControl())
     return blink::EUserSelect::kText;
   if (!node.GetLayoutObject())
     return blink::EUserSelect::kNone;
