@@ -122,8 +122,11 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
   xd->mb_to_right_edge = ((cm->mi_cols - 1 - mi_col) * MI_SIZE) * 8;
   xd->above_mbmi = (mi_row > 0) ? &mi_above : NULL;
   xd->left_mbmi = (mi_col > 0) ? &mi_left : NULL;
+  xd->mi[0]->sb_type = bsize;
+  xd->mi[0]->motion_mode = SIMPLE_TRANSLATION;
 
   // Intra prediction search
+  xd->mi[0]->ref_frame[0] = INTRA_FRAME;
   for (mode = DC_PRED; mode <= PAETH_PRED; ++mode) {
     uint8_t *src, *dst;
     int src_stride, dst_stride;
@@ -133,9 +136,6 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
 
     dst = &predictor[0];
     dst_stride = bw;
-
-    xd->mi[0]->sb_type = bsize;
-    xd->mi[0]->ref_frame[0] = INTRA_FRAME;
 
     av1_predict_intra_block(
         cm, xd, block_size_wide[bsize], block_size_high[bsize], tx_size, mode,
@@ -157,6 +157,8 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
   }
 
   // Motion compensated prediction
+  xd->mi[0]->ref_frame[0] = GOLDEN_FRAME;
+
   int best_rf_idx = -1;
   int_mv best_mv;
   int64_t inter_cost;
@@ -675,6 +677,8 @@ static void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
       av1_make_interp_filters(EIGHTTAP_REGULAR, EIGHTTAP_REGULAR);
   xd->above_mbmi = NULL;
   xd->left_mbmi = NULL;
+  xd->mi[0]->sb_type = bsize;
+  xd->mi[0]->motion_mode = SIMPLE_TRANSLATION;
 
   for (int mi_row = 0; mi_row < cm->mi_rows; mi_row += mi_height) {
     // Motion estimation row boundary
@@ -688,6 +692,7 @@ static void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
       int64_t inter_cost, intra_cost;
 
       // Intra mode
+      xd->mi[0]->ref_frame[0] = INTRA_FRAME;
       int64_t best_intra_cost = INT64_MAX;
       for (PREDICTION_MODE mode = DC_PRED; mode <= PAETH_PRED; ++mode) {
         uint8_t *src_buf =
@@ -696,9 +701,6 @@ static void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
 
         uint8_t *dst_buf = &predictor[0];
         const int dst_stride = bw;
-
-        xd->mi[0]->sb_type = bsize;
-        xd->mi[0]->ref_frame[0] = INTRA_FRAME;
 
         av1_predict_intra_block(cm, xd, bw, bh, tx_size, mode, 0, 0,
                                 FILTER_INTRA_MODES, src_buf, src_stride,
@@ -721,6 +723,7 @@ static void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
 
       // Inter mode
       // Motion estimation column boundary
+      xd->mi[0]->ref_frame[0] = GOLDEN_FRAME;
       x->mv_limits.col_min =
           -((mi_col * MI_SIZE) + (17 - 2 * AOM_INTERP_EXTEND));
       x->mv_limits.col_max =
@@ -780,7 +783,8 @@ static void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
           const int ref_mi_row = round_floor(grid_pos_row, bh) * mi_height;
           const int ref_mi_col = round_floor(grid_pos_col, bw) * mi_width;
 
-          const int64_t mc_saved = best_intra_cost - inter_cost;
+          const int64_t mc_saved = (best_intra_cost - inter_cost)
+                                   << TPL_DEP_COST_SCALE_LOG2;
           for (int idy = 0; idy < mi_height; ++idy) {
             for (int idx = 0; idx < mi_width; ++idx) {
               TplDepStats *des_stats =
@@ -818,6 +822,10 @@ void av1_tpl_setup_forward_stats(AV1_COMP *cpi) {
   const GF_GROUP *gf_group = &cpi->twopass.gf_group;
   const int tpl_cur_idx = cpi->twopass.gf_group.frame_disp_idx[gf_group->index];
   TplDepFrame *tpl_frame = &cpi->tpl_stats[tpl_cur_idx];
+  memset(
+      tpl_frame->tpl_stats_ptr, 0,
+      tpl_frame->height * tpl_frame->width * sizeof(*tpl_frame->tpl_stats_ptr));
+  tpl_frame->is_valid = 0;
   int tpl_used_mask[MAX_LENGTH_TPL_FRAME_STATS] = { 0 };
   for (int idx = gf_group->index + 1; idx < cpi->tpl_gf_group_frames; ++idx) {
     const int tpl_future_idx = cpi->twopass.gf_group.frame_disp_idx[idx];
@@ -837,6 +845,7 @@ void av1_tpl_setup_forward_stats(AV1_COMP *cpi) {
         YV12_BUFFER_CONFIG *future_buf = get_framebuf(cpi, NULL, idx);
         get_tpl_forward_stats(cpi, x, xd, bsize, cur_buf, future_buf,
                               tpl_frame);
+        tpl_frame->is_valid = 1;
         tpl_used_mask[tpl_future_idx] = 1;
       }
     }
