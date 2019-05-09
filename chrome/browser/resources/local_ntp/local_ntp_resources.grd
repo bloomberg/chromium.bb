@@ -8,7 +8,6 @@
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_INSTANT_IFRAME_VALIDATION_JS" file="instant_iframe_validation.js" type="BINDATA" />
       <include name="IDR_CUSTOM_LINKS_ADD_SVG" file="icons\add_link.svg" type="BINDATA" />
       <include name="IDR_CUSTOM_LINKS_ADD_WHITE_SVG" file="icons\add_link_white.svg" type="BINDATA" />
       <include name="IDR_CUSTOM_LINKS_EDIT_HTML" file="custom_links_edit.html" type="BINDATA" />
