@@ -58,7 +58,6 @@
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/ime_engine_factory_registry.h"
-#include "ash/ime/ime_focus_handler.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/laser/laser_pointer_controller.h"
@@ -142,7 +141,6 @@
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/native_cursor_manager_ash.h"
-#include "ash/wm/non_client_frame_controller.h"
 #include "ash/wm/overlay_event_filter.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/resize_shadow_controller.h"
@@ -867,9 +865,6 @@ Shell::~Shell() {
   // Similarly for DockedMagnifierController.
   docked_magnifier_controller_ = nullptr;
 
-  // Must be released before |focus_controller_|.
-  ime_focus_handler_.reset();
-
   // Stop observing window activation changes before closing all windows.
   focus_controller_->RemoveObserver(this);
 
@@ -951,17 +946,6 @@ void Shell::Init(
     std::unique_ptr<base::Value> initial_display_prefs,
     std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory,
     scoped_refptr<dbus::Bus> dbus_bus) {
-  if (::features::IsSingleProcessMash()) {
-    // In SingleProcessMash mode ScreenMus is not created, which means Ash needs
-    // to set the WindowManagerFrameValues.
-    views::WindowManagerFrameValues frame_values;
-    frame_values.normal_insets = frame_values.maximized_insets =
-        NonClientFrameController::GetPreferredClientAreaInsets();
-    frame_values.max_title_bar_button_width =
-        NonClientFrameController::GetMaxTitleBarButtonWidth();
-    views::WindowManagerFrameValues::SetInstance(frame_values);
-  }
-
   if (!::features::IsMultiProcessMash()) {
     // DBus clients only needed in Ash. For MultiProcessMash these are
     // initialized in AshService::InitializeDBusClients.
@@ -1256,11 +1240,6 @@ void Shell::Init(
   // order to create mirror window. Run it after the main message loop
   // is started.
   display_manager_->CreateMirrorWindowAsyncIfAny();
-
-  if (!::features::IsMultiProcessMash()) {
-    ime_focus_handler_ = std::make_unique<ImeFocusHandler>(
-        focus_controller(), window_tree_host_manager_->input_method());
-  }
 
   if (base::FeatureList::IsEnabled(features::kMediaSessionNotification)) {
     media_notification_controller_ =

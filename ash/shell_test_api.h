@@ -9,7 +9,6 @@
 
 #include "ash/public/interfaces/shell_test_api.test-mojom.h"
 #include "base/macros.h"
-#include "services/ws/common/types.h"
 
 class PrefService;
 

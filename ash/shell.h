@@ -131,7 +131,6 @@ class HighlighterController;
 class HomeScreenController;
 class ImeController;
 class ImeEngineFactoryRegistry;
-class ImeFocusHandler;
 class ImmersiveContext;
 class KeyAccessibilityEnabler;
 class KeyboardBrightnessControlDelegate;
@@ -725,7 +724,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<HomeScreenController> home_screen_controller_;
   std::unique_ptr<ImeController> ime_controller_;
   std::unique_ptr<ImeEngineFactoryRegistry> ime_engine_factory_registry_;
-  std::unique_ptr<ImeFocusHandler> ime_focus_handler_;
   std::unique_ptr<ImmersiveContext> immersive_context_;
   std::unique_ptr<KeyboardBrightnessControlDelegate>
       keyboard_brightness_control_delegate_;

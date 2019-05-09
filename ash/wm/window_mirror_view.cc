@@ -7,10 +7,8 @@
 #include <algorithm>
 #include <memory>
 
-#include "ash/wm/non_client_frame_controller.h"
 #include "ash/wm/widget_finder.h"
 #include "ash/wm/window_state.h"
-#include "services/ws/top_level_proxy_window.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -108,7 +106,6 @@ void WindowMirrorView::AddedToWidget() {
   target_->TrackOcclusionState();
 
   force_occlusion_tracker_visible_.reset();
-  force_proxy_window_visible_.reset();
   env_observer_.RemoveAll();
 
   // Wait for window-occlusion tracker to be running before forcing visibility.
@@ -173,16 +170,6 @@ void WindowMirrorView::ForceVisibilityAndOcclusion() {
   force_occlusion_tracker_visible_ =
       std::make_unique<aura::WindowOcclusionTracker::ScopedForceVisible>(
           source_);
-
-  NonClientFrameController* frame_controller =
-      NonClientFrameController::Get(source_);
-  if (frame_controller) {
-    // In order for the remote client to produce frames the client needs to
-    // think the window is visible. It may not actually be visible now, so force
-    // it.
-    force_proxy_window_visible_ =
-        frame_controller->top_level_proxy_window()->ForceVisible();
-  }
 }
 
 void WindowMirrorView::OnWindowOcclusionTrackingResumed() {

@@ -30,7 +30,6 @@
 #include "ash/test_shell_delegate.h"
 #include "ash/utility/screenshot_controller.h"
 #include "ash/window_factory.h"
-#include "ash/wm/top_level_window_factory.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/work_area_insets.h"
 #include "base/memory/ptr_util.h"

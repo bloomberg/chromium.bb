@@ -13,7 +13,6 @@
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
-#include "services/ws/window_service.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_targeter.h"
@@ -75,8 +74,6 @@ bool IsTopLevelWindow(aura::Window* window) {
       !window->delegate()) {
     return false;
   }
-  if (ws::WindowService::IsProxyWindow(window))
-    return ws::WindowService::IsTopLevelWindow(window);
   return true;
 }
 
