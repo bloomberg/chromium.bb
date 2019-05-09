@@ -383,6 +383,7 @@ crbug.com/479260 [ linux amd no-angle ] conformance/extensions/angle-instanced-a
 crbug.com/794339 [ linux amd passthrough ] conformance/renderbuffers/depth-renderbuffer-initialization.html [ Failure ]
 crbug.com/794339 [ linux amd passthrough ] conformance/renderbuffers/stencil-renderbuffer-initialization.html [ Failure ]
 crbug.com/906066 [ linux amd passthrough ] conformance/rendering/draw-webgl-to-canvas-2d-repeatedly.html [ Failure ]
+crbug.com/960808 [ linux amd passthrough ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Failure ]
 
 # The following two tests only fail on Linux/Intel with Mesa 18.0.5,
 # not on Mesa 17.1.4 with the same Intel HD 630 GPU.
