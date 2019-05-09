@@ -210,11 +210,6 @@ void BindNoteTakingControllerRequestOnMainThread(
   Shell::Get()->note_taking_controller()->BindRequest(std::move(request));
 }
 
-void BindProcessCreationTimeRecorderOnMainThread(
-    mojom::ProcessCreationTimeRecorderRequest request) {
-  Shell::Get()->time_to_first_present_recorder()->Bind(std::move(request));
-}
-
 void BindShelfRequestOnMainThread(mojom::ShelfControllerRequest request) {
   Shell::Get()->shelf_controller()->BindRequest(std::move(request));
 }
@@ -351,9 +346,6 @@ void RegisterInterfaces(
         main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindNoteTakingControllerRequestOnMainThread),
-      main_thread_task_runner);
-  registry->AddInterface(
-      base::BindRepeating(&BindProcessCreationTimeRecorderOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(base::BindRepeating(&BindShelfRequestOnMainThread),
                          main_thread_task_runner);

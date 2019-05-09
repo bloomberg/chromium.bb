@@ -7,11 +7,9 @@
 
 #include <stdint.h>
 
-#include "ash/public/interfaces/process_creation_time_recorder.mojom.h"
+#include "ash/ash_export.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/time/time.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace aura {
 class Window;
@@ -26,40 +24,25 @@ namespace ash {
 class TimeToFirstPresentRecorderTestApi;
 
 // Used for tracking the time main started to the time the first bits make it
-// the screen and logging a histogram of the time. Chrome is responsible for
-// providing the start time by way of ProcessCreationTimeRecorder.
+// the screen and logging a histogram of the time.
 //
 // This only logs the time to present the primary root window.
-class TimeToFirstPresentRecorder : public mojom::ProcessCreationTimeRecorder {
+class ASH_EXPORT TimeToFirstPresentRecorder {
  public:
-  explicit TimeToFirstPresentRecorder(aura::Window* window);
-  ~TimeToFirstPresentRecorder() override;
+  // The name of the histogram the time is logged against.
+  static const char kMetricName[];
 
-  void Bind(mojom::ProcessCreationTimeRecorderRequest request);
+  explicit TimeToFirstPresentRecorder(aura::Window* window);
+  ~TimeToFirstPresentRecorder();
 
  private:
   friend class TimeToFirstPresentRecorderTestApi;
 
-  // If both times are available the time to present is logged.
-  void LogTime();
-
   // Callback from the compositor when it presented a valid frame.
   void DidPresentCompositorFrame(const gfx::PresentationFeedback& feedback);
 
-  base::TimeDelta time_to_first_present() const {
-    return present_time_ - process_creation_time_;
-  }
-
-  // mojom::ProcessCreationTimeRecorder:
-  void SetMainProcessCreationTime(base::TimeTicks start_time) override;
-
-  base::TimeTicks process_creation_time_;
-  base::TimeTicks present_time_;
-
-  // Only used by tests. If valid it's Run() when both times are determined.
+  // Only used by tests. If valid it's Run() when the time is recorded.
   base::OnceClosure log_callback_;
-
-  mojo::Binding<mojom::ProcessCreationTimeRecorder> binding_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TimeToFirstPresentRecorder);
 };

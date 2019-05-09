@@ -2,24 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/time_to_first_present_recorder_test_api.test-mojom-test-utils.h"
-#include "ash/public/interfaces/time_to_first_present_recorder_test_api.test-mojom.h"
+#include "ash/metrics/time_to_first_present_recorder.h"
+
+#include "ash/metrics/time_to_first_present_recorder_test_api.h"
 #include "base/command_line.h"
+#include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "content/public/common/service_manager_connection.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 using TimeToFirstPresentRecorderTest = InProcessBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(TimeToFirstPresentRecorderTest, VerifyTimeCalculated) {
-  ash::mojom::TimeToFirstPresentRecorderTestApiPtr recorder_test_api;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &recorder_test_api);
-  ash::mojom::TimeToFirstPresentRecorderTestApiAsyncWaiter recorder(
-      recorder_test_api.get());
-  base::TimeDelta time_delta;
-  recorder.GetProcessCreationToFirstPresentTime(&time_delta);
-  EXPECT_FALSE(time_delta.is_zero());
+  // It's possible that the metric was already recorded.
+  base::HistogramTester tester;
+  auto counts = tester.GetTotalCountsForPrefix(
+      ash::TimeToFirstPresentRecorder::kMetricName);
+  if (counts[ash::TimeToFirstPresentRecorder::kMetricName] == 1)
+    return;
+
+  // The metric wasn't recorded. Wait for it to be recorded.
+  base::RunLoop run_loop;
+  ash::TimeToFirstPresentRecorderTestApi::SetTimeToFirstPresentCallback(
+      run_loop.QuitClosure());
+  run_loop.Run();
+  counts = tester.GetTotalCountsForPrefix(
+      ash::TimeToFirstPresentRecorder::kMetricName);
+  EXPECT_EQ(1, counts[ash::TimeToFirstPresentRecorder::kMetricName]);
 }
