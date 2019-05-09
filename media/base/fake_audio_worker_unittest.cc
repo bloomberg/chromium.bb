@@ -116,7 +116,10 @@ TEST_F(FakeAudioWorkerTest, MAYBE_FakeBasicCallback) {
 }
 
 // Ensure the time between callbacks is sane.
-TEST_F(FakeAudioWorkerTest, TimeBetweenCallbacks) {
+//
+// TODO(https://crbug.com/960729): Test is flaky because its behavior depends on
+// real wallclock time. Need to mock time to fix this.
+TEST_F(FakeAudioWorkerTest, DISABLED_TimeBetweenCallbacks) {
   message_loop_.task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&FakeAudioWorkerTest::TimeCallbacksOnAudioThread,
