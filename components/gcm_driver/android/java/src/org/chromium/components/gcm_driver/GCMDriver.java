@@ -146,8 +146,8 @@ public class GCMDriver {
         }
 
         sInstance.nativeOnMessageReceived(sInstance.mNativeGCMDriverAndroid, message.getAppId(),
-                message.getSenderId(), message.getCollapseKey(), message.getRawData(),
-                message.getDataKeysAndValuesArray());
+                message.getSenderId(), message.getMessageId(), message.getCollapseKey(),
+                message.getRawData(), message.getDataKeysAndValuesArray());
     }
 
     @VisibleForTesting
@@ -162,5 +162,6 @@ public class GCMDriver {
     private native void nativeOnUnregisterFinished(long nativeGCMDriverAndroid, String appId,
             boolean success);
     private native void nativeOnMessageReceived(long nativeGCMDriverAndroid, String appId,
-            String senderId, String collapseKey, byte[] rawData, String[] dataKeysAndValues);
+            String senderId, String messageId, String collapseKey, byte[] rawData,
+            String[] dataKeysAndValues);
 }
