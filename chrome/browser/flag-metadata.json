@@ -2335,8 +2335,8 @@
   },
   {
     "name": "newblue",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "sonnysasaka" ],
+    "expiry_milestone": 81
   },
   {
     "name": "no-credit-card-abort",
