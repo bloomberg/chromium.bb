@@ -400,32 +400,42 @@ void WorkerThread::ScheduleToTerminateScriptExecution() {
       forcible_termination_delay_);
 }
 
-bool WorkerThread::ShouldTerminateScriptExecution() {
+WorkerThread::TerminationState WorkerThread::ShouldTerminateScriptExecution() {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   switch (thread_state_) {
     case ThreadState::kNotStarted:
       // Shutdown sequence will surely start during initialization sequence
       // on the worker thread. Don't have to schedule a termination task.
-      return false;
+      return TerminationState::kTerminationUnnecessary;
     case ThreadState::kRunning:
       // Terminating during debugger task may lead to crash due to heavy use
       // of v8 api in debugger. Any debugger task is guaranteed to finish, so
       // we can wait for the completion.
-      return !debugger_task_counter_;
+      return debugger_task_counter_ > 0 ? TerminationState::kPostponeTerminate
+                                        : TerminationState::kTerminate;
     case ThreadState::kReadyToShutdown:
-      // Shutdown sequence will surely start soon. Don't have to schedule a
-      // termination task.
-      return false;
+      // Shutdown sequence might have started in a nested event loop but
+      // JS might continue running after it exits the nested loop.
+      return exit_code_ == ExitCode::kNotTerminated
+                 ? TerminationState::kTerminate
+                 : TerminationState::kTerminationUnnecessary;
   }
   NOTREACHED();
-  return false;
+  return TerminationState::kTerminationUnnecessary;
 }
 
 void WorkerThread::EnsureScriptExecutionTerminates(ExitCode exit_code) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   MutexLocker lock(mutex_);
-  if (!ShouldTerminateScriptExecution())
-    return;
+  switch (ShouldTerminateScriptExecution()) {
+    case TerminationState::kTerminationUnnecessary:
+      return;
+    case TerminationState::kTerminate:
+      break;
+    case TerminationState::kPostponeTerminate:
+      ScheduleToTerminateScriptExecution();
+      return;
+  }
 
   DCHECK(exit_code == ExitCode::kSyncForciblyTerminated ||
          exit_code == ExitCode::kAsyncForciblyTerminated);
@@ -578,8 +588,6 @@ void WorkerThread::PrepareForShutdownOnWorkerThread() {
     if (thread_state_ == ThreadState::kReadyToShutdown)
       return;
     SetThreadState(ThreadState::kReadyToShutdown);
-    if (exit_code_ == ExitCode::kNotTerminated)
-      SetExitCode(ExitCode::kGracefullyTerminated);
   }
 
   if (WorkerThreadDebugger* debugger = WorkerThreadDebugger::From(GetIsolate()))
@@ -600,13 +608,13 @@ void WorkerThread::PrepareForShutdownOnWorkerThread() {
 
 void WorkerThread::PerformShutdownOnWorkerThread() {
   DCHECK(IsCurrentThread());
-#if DCHECK_IS_ON()
   {
     MutexLocker lock(mutex_);
     DCHECK(requested_to_terminate_);
     DCHECK_EQ(ThreadState::kReadyToShutdown, thread_state_);
+    if (exit_code_ == ExitCode::kNotTerminated)
+      SetExitCode(ExitCode::kGracefullyTerminated);
   }
-#endif
 
   // When child workers are present, wait for them to shutdown before shutting
   // down this thread. ChildThreadTerminatedOnWorkerThread() is responsible

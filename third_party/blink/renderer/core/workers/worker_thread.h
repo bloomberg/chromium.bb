@@ -277,9 +277,16 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   // normal shutdown sequence does not start within a certain time period.
   void ScheduleToTerminateScriptExecution();
 
+  enum class TerminationState {
+    kTerminate,
+    kPostponeTerminate,
+    kTerminationUnnecessary,
+  };
+
   // Returns true if we should synchronously terminate the script execution so
   // that a shutdown task can be handled by the thread event loop.
-  bool ShouldTerminateScriptExecution() EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+  TerminationState ShouldTerminateScriptExecution()
+      EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
   // Terminates worker script execution if the worker thread is running and not
   // already shutting down. Does not terminate if a debugger task is running,
