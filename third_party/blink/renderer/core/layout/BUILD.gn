@@ -329,8 +329,6 @@ blink_core_sources("layout") {
     "ng/inline/ng_baseline.h",
     "ng/inline/ng_bidi_paragraph.cc",
     "ng/inline/ng_bidi_paragraph.h",
-    "ng/inline/ng_caret_navigator.cc",
-    "ng/inline/ng_caret_navigator.h",
     "ng/inline/ng_caret_position.cc",
     "ng/inline/ng_caret_position.h",
     "ng/inline/ng_caret_rect.cc",

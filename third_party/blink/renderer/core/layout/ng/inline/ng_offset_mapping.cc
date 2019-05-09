@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/position.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_navigator.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/platform/text/character.h"
@@ -507,16 +506,6 @@ Position NGOffsetMapping::GetLastPosition(unsigned offset) const {
   const Node& node = result->GetOwner();
   const unsigned dom_offset = result->ConvertTextContentToLastDOMOffset(offset);
   return CreatePositionForOffsetMapping(node, dom_offset);
-}
-
-PositionWithAffinity NGOffsetMapping::GetPositionWithAffinity(
-    const NGCaretNavigator::Position& position) const {
-  if (position.IsBeforeCharacter()) {
-    return PositionWithAffinity(GetLastPosition(position.index),
-                                TextAffinity::kDownstream);
-  }
-  return PositionWithAffinity(GetFirstPosition(position.index + 1),
-                              TextAffinity::kUpstream);
 }
 
 bool NGOffsetMapping::HasBidiControlCharactersOnly(unsigned start,
