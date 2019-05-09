@@ -390,9 +390,11 @@ void MetricsService::RecordCompletedSessionEnd() {
 }
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-void MetricsService::OnAppEnterBackground() {
-  rotation_scheduler_->Stop();
-  reporting_service_.Stop();
+void MetricsService::OnAppEnterBackground(bool keep_recording_in_background) {
+  if (!keep_recording_in_background) {
+    rotation_scheduler_->Stop();
+    reporting_service_.Stop();
+  }
 
   MarkAppCleanShutdownAndCommit(state_manager_->clean_exit_beacon(),
                                 local_state_);

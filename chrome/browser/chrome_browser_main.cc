@@ -196,6 +196,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/metrics/thread_watcher_android.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #else
@@ -1300,6 +1301,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #if !defined(OS_ANDROID)
   // Now that the file thread has been started, start recording.
   StartMetricsRecording();
+#else
+  // When kUmaBackgroundSessions is enabled, start metrics recording for every
+  // Chrome start. Otherwise, recording is only started when Chrome becomes
+  // foregrounded.
+  if (base::FeatureList::IsEnabled(chrome::android::kUmaBackgroundSessions))
+    StartMetricsRecording();
 #endif  // !defined(OS_ANDROID)
 
   if (!base::debug::BeingDebugged()) {
