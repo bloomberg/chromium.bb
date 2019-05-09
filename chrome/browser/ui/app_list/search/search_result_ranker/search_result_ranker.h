@@ -6,10 +6,13 @@
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_RESULT_RANKER_SEARCH_RESULT_RANKER_H_
 
 #include "base/containers/flat_map.h"
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/file_manager/file_tasks_notifier.h"
+#include "chrome/browser/chromeos/file_manager/file_tasks_observer.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"
 
-class Profile;
 
 namespace app_list {
 
@@ -22,10 +25,10 @@ enum class RankingItemType;
 // FetchRankings queries each model for ranking results. Rank modifies the
 // scores of provided search results, which are intended to be the output of a
 // search provider.
-class SearchResultRanker {
+class SearchResultRanker : file_manager::file_tasks::FileTasksObserver {
  public:
   explicit SearchResultRanker(Profile* profile);
-  ~SearchResultRanker();
+  ~SearchResultRanker() override;
 
   // Queries each model contained with the SearchResultRanker for its results,
   // and saves them for use on subsequent calls to Rank().
@@ -42,6 +45,9 @@ class SearchResultRanker {
   // from the launcher, eg. an app ID or a filepath, and is derived from the
   // relevant ChromeSearchResult's ID.
   void Train(const std::string& id, RankingItemType type);
+
+  // file_manager::file_tasks::FileTaskObserver:
+  void OnFilesOpened(const std::vector<FileOpenEvent>& file_opens) override;
 
  private:
   // Records the time of the last call to FetchRankings() and is used to
@@ -62,6 +68,11 @@ class SearchResultRanker {
 
   // TODO(931149): Move the AppSearchResultRanker instance and associated logic
   // to here.
+
+  Profile* profile_;
+  /*ScopedObserver<file_manager::file_tasks::FileTasksNotifier,
+                 file_manager::file_tasks::FileTasksObserver>
+      file_tasks_observer_{this};*/
 };
 
 }  // namespace app_list

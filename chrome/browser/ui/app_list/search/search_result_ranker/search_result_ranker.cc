@@ -11,6 +11,8 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/chromeos/file_manager/file_tasks_notifier.h"
+#include "chrome/browser/chromeos/file_manager/file_tasks_notifier_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
@@ -72,9 +74,21 @@ SearchResultRanker::SearchResultRanker(Profile* profile) {
         app_list_features::kEnableAdaptiveResultRanker, "boost_coefficient",
         0.1);
   }
+
+  profile_ = profile;
+  if (auto* notifier =
+          file_manager::file_tasks::FileTasksNotifier::GetForProfile(profile_))
+    notifier->AddObserver(this);
+  /*file_tasks_observer_.Add(
+      file_manager::file_tasks::FileTasksNotifierFactory::GetInstance()
+          ->GetForProfile(profile));*/
 }
 
-SearchResultRanker::~SearchResultRanker() = default;
+SearchResultRanker::~SearchResultRanker() {
+  if (auto* notifier =
+          file_manager::file_tasks::FileTasksNotifier::GetForProfile(profile_))
+    notifier->RemoveObserver(this);
+}
 
 void SearchResultRanker::FetchRankings() {
   // The search controller potentially calls SearchController::FetchResults
@@ -123,6 +137,11 @@ void SearchResultRanker::Train(const std::string& id, RankingItemType type) {
     results_list_group_ranker_->Record(
         base::NumberToString(static_cast<int>(type)));
   }
+}
+
+void SearchResultRanker::OnFilesOpened(
+    const std::vector<FileOpenEvent>& file_opens) {
+  // TODO(959679): route file open events to a model as training signals.
 }
 
 }  // namespace app_list
