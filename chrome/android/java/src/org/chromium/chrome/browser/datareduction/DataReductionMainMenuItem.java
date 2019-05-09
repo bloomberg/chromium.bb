@@ -43,9 +43,7 @@ public class DataReductionMainMenuItem extends FrameLayout implements View.OnCli
         TextView itemText = (TextView) findViewById(R.id.menu_item_text);
         TextView itemSummary = (TextView) findViewById(R.id.menu_item_summary);
         ImageView icon = (ImageView) findViewById(R.id.icon);
-        icon.setContentDescription(getContext().getString(
-                DataReductionBrandingResourceProvider.getDataSaverBrandedString(
-                        R.string.data_reduction_title)));
+        icon.setContentDescription(getContext().getString(R.string.data_reduction_title_lite_mode));
 
         if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) {
             DataReductionProxyUma.dataReductionProxyUIAction(
@@ -74,8 +72,7 @@ public class DataReductionMainMenuItem extends FrameLayout implements View.OnCli
             DataReductionProxyUma.dataReductionProxyUIAction(
                     DataReductionProxyUma.ACTION_MAIN_MENU_DISPLAYED_OFF);
 
-            itemText.setText(DataReductionBrandingResourceProvider.getDataSaverBrandedString(
-                    R.string.data_reduction_title));
+            itemText.setText(R.string.data_reduction_title_lite_mode);
             itemSummary.setText(R.string.text_off);
         }
 

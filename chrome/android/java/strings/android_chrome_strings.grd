@@ -158,7 +158,7 @@ CHAR-LIMIT guidelines:
       <message name="IDS_SAVE" desc="Label for a button to save a change. Used in multiple contexts. [CHAR-LIMIT=20]">
         Save
       </message>
-      <message name="IDS_DETAILS_LINK" desc="In 1) Settings > Clean up computer (desktop), a link to open details of incompatible applications. In 2) Settings > Data Saver (mobile), static title for data usage breakdown." meaning="Short for 'view details'. Link; static title.">
+      <message name="IDS_DETAILS_LINK" desc="In 1) Settings > Clean up computer (desktop), a link to open details of incompatible applications. In 2) Settings > Lite mode (mobile), static title for data usage breakdown." meaning="Short for 'view details'. Link; static title.">
         Details
       </message>
       <message name="IDS_DONE" desc="Label for a button to save a change or finish editing data. Used in multiple contexts. [CHAR-LIMIT=20]">
@@ -1287,12 +1287,9 @@ Your Google account may have other forms of browsing history like searches and a
         Revoke all permissions for device
       </message>
 
-      <!-- Data Saver and Lite Mode-->
+      <!-- Lite Mode-->
       <message name="IDS_DATA_SAVER_IPH_REBRAND_LITE_MODE" desc="An onscreen notification to the user that the Chrome feature previously named 'Data Saver' is now named 'Lite mode'.">
         Data Saver is now Lite mode
-      </message>
-      <message name="IDS_DATA_REDUCTION_TITLE" desc="Menu item for Data Saver, which allows users to save mobile data by compressing network traffic.">
-        Data Saver
       </message>
       <message name="IDS_DATA_REDUCTION_TITLE_LITE_MODE" desc="Menu item for Lite mode, which allows users to save mobile data by compressing network traffic.">
         Lite mode
@@ -1300,34 +1297,25 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_DATA_REDUCTION_INITIAL_TITLE" desc="This title states that the below chart will contain the user's data savings after they have started browsing.">
         Your data savings will appear here
       </message>
-      <message name="IDS_DATA_REDUCTION_SAVED_LABEL" desc="Summary text for the menu item that states the amount of mobile data that was saved by Data Saver (i.e. XX MB saved). Data Saver allows users to to reduce their mobile data usage by compressing network traffic.">
+      <message name="IDS_DATA_REDUCTION_SAVED_LABEL" desc="Summary text for the menu item that states the amount of mobile data that was saved by Lite mode (i.e. XX MB saved). Lite mode allows users to to reduce their mobile data usage by compressing network traffic.">
         <ph name="data">%1$s<ex>1.0 GB</ex></ph> saved
       </message>
       <message name="IDS_DATA_REDUCTION_DATE_LABEL" desc="Summary text for the menu item that states the beginning date when the displayed mobile data was saved (i.e. XX MB saved 'since Feb 28')">
         since <ph name="date">%1$s<ex>Feb 28</ex></ph>
       </message>
-      <message name="IDS_DATA_REDUCTION_BENEFITS_DESCRIPTION" desc="Description text about the benefits of the Data Saver feature. Seen only before the user has enabled the feature.">
-        Use up to 60 percent less data and speed up the web.
-      </message>
-      <message name="IDS_DATA_REDUCTION_BENEFITS_DESCRIPTION_LITE_MODE" desc="Description text about the benefits of the Data Saver feature. Seen only before the user has enabled the feature.">
+      <message name="IDS_DATA_REDUCTION_BENEFITS_DESCRIPTION_LITE_MODE" desc="Description text about the benefits of the Lite mode feature. Seen only before the user has enabled the feature.">
          In Lite mode, Chrome loads pages faster and uses up to 60 percent less data.
-      </message>
-      <message name="IDS_DATA_REDUCTION_DESCRIPTION" desc="Text descripting how the Data Saver feature works. Seen only before the user has enabled the feature.">
-        When Data Saver is turned on, Chrome uses Google servers to speed up and compress page loads. On especially slow pages, Data Saver rewrites the page to load only the essential content. Data Saver does not optimize pages loaded in Incognito mode.
       </message>
       <message name="IDS_DATA_REDUCTION_DESCRIPTION_LITE_MODE" desc="Text describing how the Lite mode feature works. Seen only before the user has enabled the feature.">
         When Lite mode is on, Chrome uses Google servers to make pages load faster. Lite mode rewrites very slow pages to load only essential content. Lite mode does not apply to Incognito tabs.
       </message>
-      <message name="IDS_DATA_REDUCTION_MENU_ITEM_SUMMARY" desc="Summary text for data reduction menu item.">
-        <ph name="PERCENT">%1$s<ex>49%</ex></ph> data savings
-      </message>
       <message name="IDS_DATA_REDUCTION_MENU_ITEM_SUMMARY_LITE_MODE" desc="Label that states the percent of mobile data that was saved by Lite mode. Lite mode allows users to to reduce their mobile data usage by compressing network traffic.">
         <ph name="PERCENT">%1$s<ex>49%</ex></ph> data savings
       </message>
-      <message name="IDS_DATA_REDUCTION_SAVINGS_LABEL" desc="Data Reduction statistics label that states the amount of mobile data that was saved by Data Saver. Data Saver allows users to to reduce their mobile data usage by compressing network traffic.">
+      <message name="IDS_DATA_REDUCTION_SAVINGS_LABEL" desc="Data Reduction statistics label that states the amount of mobile data that was saved by Lite mode. Lite mode allows users to to reduce their mobile data usage by compressing network traffic.">
         data saved
       </message>
-      <message name="IDS_DATA_REDUCTION_USAGE_LABEL" desc="Data Reduction statistics label that states the amount of data that was used by Chrome when Data Saver is enabled.">
+      <message name="IDS_DATA_REDUCTION_USAGE_LABEL" desc="Data Reduction statistics label that states the amount of data that was used by Chrome when Lite mode is enabled.">
         data used
       </message>
       <message name="IDS_DATA_REDUCTION_START_DATE_CONTENT_DESCRIPTION" desc="This label is used in the device screen reader to describe the starting date that data savings are computed from. This will always be used in the form 'Start date: February 28'.">
@@ -1354,10 +1342,10 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_DATA_REDUCTION_BREAKDOWN_DATA_USED_SORTED" desc="This title states that the following table contains the details of how much data was saved for each site and that the table rows are sorted by the how much data was used for each site. This is used in the device's screen reader and is not displayed visually to the user.">
         Details: Sorted by amount of data used
       </message>
-      <message name="IDS_DATA_REDUCTION_BREAKDOWN_SAVED_TITLE" desc="Title for the data saved column on the Data Reduction statistics page. The breakdown lists for the top ten sites with the greatest amount of data usage or mobile data that was saved. Data Saver allows users to to reduce their mobile data usage by compressing network traffic.">
+      <message name="IDS_DATA_REDUCTION_BREAKDOWN_SAVED_TITLE" desc="Title for the data saved column on the Data Reduction statistics page. The breakdown lists for the top ten sites with the greatest amount of data usage or mobile data that was saved. Lite mode allows users to to reduce their mobile data usage by compressing network traffic.">
         Saved
       </message>
-      <message name="IDS_DATA_REDUCTION_BREAKDOWN_SAVED_HEADER_CONTENT_DESCRIPTION" desc="This label is used to state that by clicking the associated button, the displayed table will be sorted descending by the amount of mobile data that was saved when viewing a webpage by using Chrome's Data Saver feature. This is used in the device's screen reader and is not displayed visually to the user.">
+      <message name="IDS_DATA_REDUCTION_BREAKDOWN_SAVED_HEADER_CONTENT_DESCRIPTION" desc="This label is used to state that by clicking the associated button, the displayed table will be sorted descending by the amount of mobile data that was saved when viewing a webpage by using Chrome's Lite mode feature. This is used in the device's screen reader and is not displayed visually to the user.">
         Sort by amount of data saved
       </message>
       <message name="IDS_DATA_REDUCTION_BREAKDOWN_DATA_SAVED_SORTED" desc="This title states that the following table contains the details of how much data was saved for each site and that the table rows are sorted by how much data was saved for each site. This is used in the device's screen reader and is not displayed visually to the user.">
@@ -1366,7 +1354,7 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_DATA_REDUCTION_BREAKDOWN_USED_CONTENT_DESCRIPTION" desc="This label is used as a suffix to describe the amount of mobile data that was used to view a webpage. It is used in the form '0 bytes used'.">
         <ph name="amount">%1$s<ex>0 bytes</ex></ph> used
       </message>
-      <message name="IDS_DATA_REDUCTION_BREAKDOWN_SAVED_CONTENT_DESCRIPTION" desc="This label is used as a suffix to describe the amount of mobile data that was saved when viewing a webpage by using Chrome's Data Saver feature. It is used in the form '0 bytes used'.">
+      <message name="IDS_DATA_REDUCTION_BREAKDOWN_SAVED_CONTENT_DESCRIPTION" desc="This label is used as a suffix to describe the amount of mobile data that was saved when viewing a webpage by using Chrome's Lite mode feature. It is used in the form '0 bytes used'.">
         <ph name="amount">%1$s<ex>0 bytes</ex></ph> saved
       </message>
       <message name="IDS_DATA_REDUCTION_BREAKDOWN_REMAINING_SITES_LABEL" desc="Title for the the remaining sites on the Data Reduction statistics page. The breakdown lists the top ten sites with the greatest amount of data usage or mobile data that was saved and then groups the remaining sites together.">
@@ -1378,14 +1366,8 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_DATA_REDUCTION_USAGE_RESET_STATISTICS_BUTTON" desc="Text to be displayed on the button to reset the Data Reduction statistics.">
         Reset statistics
       </message>
-      <message name="IDS_DATA_REDUCTION_USAGE_RESET_STATISTICS_CONFIRMATION_TITLE" desc="Text to be displayed on the confirmation dialog to reset the Data Reduction statistics.">
-        Reset Data Saver?
-      </message>
       <message name="IDS_DATA_REDUCTION_USAGE_RESET_STATISTICS_CONFIRMATION_TITLE_LITE_MODE" desc="Text to be displayed on the confirmation dialog to reset the user's history of data savings.">
         Reset Lite mode?
-      </message>
-      <message name="IDS_DATA_REDUCTION_USAGE_RESET_STATISTICS_CONFIRMATION_DIALOG" desc="Text to be displayed on the confirmation dialog to reset the Data Reduction statistics.">
-        Resetting erases Data Saver history, including the list of visited sites.
       </message>
       <message name="IDS_DATA_REDUCTION_USAGE_RESET_STATISTICS_CONFIRMATION_DIALOG_LITE_MODE" desc="Text to be displayed on the confirmation dialog to reset the user's history of data savings.">
         Resetting erases your history of data savings, including the list of visited sites.
@@ -1394,39 +1376,21 @@ Your Google account may have other forms of browsing history like searches and a
         Reset
       </message>
 
-      <!-- Data Saver or Lite Mode Promo and FRE card -->
-      <message name="IDS_DATA_REDUCTION_PROMO_TITLE" desc="The title for the promo inviting users to enable Data Saver" >
-        Save data and browse faster
-      </message>
+      <!-- Lite Mode Promo and FRE card -->
       <message name="IDS_DATA_REDUCTION_PROMO_TITLE_LITE_MODE" desc="The title for the promo inviting users to enable Lite mode" >
         Browse faster. Use less data.
-      </message>
-      <message name="IDS_DATA_REDUCTION_PROMO_SUMMARY" desc="Description for the promo inviting users to enable Data Saver" >
-        Use up to 60 percent less data and speed up the web. Google servers will optimize the pages you visit.
       </message>
       <message name="IDS_DATA_REDUCTION_PROMO_SUMMARY_LITE_MODE" desc="Description for the promo inviting users to enable Lite mode. This informs users that their web traffic will be seen and optimized for speed and data usage, by Google servers (AKA 'Cloud technology')." meaning="The translation of percent should be spelled out instead of using the percent symbol.">
         In Lite mode, Chrome loads pages faster and uses up to 60 percent less data. Google's Cloud technology optimizes the pages you visit.
       </message>
-      <message name="IDS_DATA_REDUCTION_ENABLE_BUTTON" desc="Button the user presses if they want to enable Data Saver" >
-        Turn on Data Saver
-      </message>
       <message name="IDS_DATA_REDUCTION_ENABLE_BUTTON_LITE_MODE" desc="Button the user presses if they want to enable Lite mode" >
         Turn on Lite mode
-      </message>
-      <message name="IDS_DATA_REDUCTION_ENABLED_SWITCH" desc="Message to show when the Data Saver feature is enabled via the switch on the First Run Experience card" >
-        Data Saver is on
       </message>
       <message name="IDS_DATA_REDUCTION_ENABLED_SWITCH_LITE_MODE" desc="Message to show when the Lite mode feature is enabled via the switch on the First Run Experience card" >
         Lite mode is on
       </message>
-      <message name="IDS_DATA_REDUCTION_DISABLED_SWITCH" desc="Message to show when the Data Saver feature is disabled via the switch on the First Run Experience card" >
-        Data Saver is off
-      </message>
       <message name="IDS_DATA_REDUCTION_DISABLED_SWITCH_LITE_MODE" desc="Message to show when the Lite mode feature is disabled via the switch on the First Run Experience card" >
         Lite mode is off
-      </message>
-      <message name="IDS_DATA_REDUCTION_ENABLED_TOAST" desc="Toast message displayed after the user enables Data Saver from the promo" >
-        Data Saver is on. Manage it in Settings.
       </message>
       <message name="IDS_DATA_REDUCTION_ENABLED_TOAST_LITE_MODE" desc="Toast message displayed after the user enables Lite mode from the promo" >
         Lite mode is on. Manage it in Settings.
@@ -2193,7 +2157,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_CONTEXTMENU_OPEN_IMAGE_IN_EPHEMERAL_TAB" desc="Context-sensitive menu item to open a quick preview of the selected image. Note that 'preview' is a verb, not a noun. We're also labeling it *New* to draw attention to it when first released. The selected image link will open in an overlay panel on top of the current tab which will go away easily too. [CHAR-LIMIT=30]">
         Preview image <ph name="BEGIN_NEW">&lt;new&gt;</ph>New<ph name="END_NEW">&lt;/new&gt;</ph>
       </message>
-      <message name="IDS_CONTEXTMENU_LOAD_ORIGINAL_IMAGE" desc="Context sensitive menu item for Data Saver low fidelity placeholder images that loads the original version in place. [CHAR-LIMIT=30]">
+      <message name="IDS_CONTEXTMENU_LOAD_ORIGINAL_IMAGE" desc="Context sensitive menu item for Lite mode low fidelity placeholder images that loads the original version in place. [CHAR-LIMIT=30]">
         Load image
       </message>
       <message name="IDS_CONTEXTMENU_SEARCH_WEB_FOR_IMAGE" desc="Context sensitive menu item for search-for-Image command in a new tab. [CHAR-LIMIT=30]">
@@ -3890,13 +3854,13 @@ The site does NOT gain access to the camera. The camera images are only visible 
       <message name="IDS_IPH_DOWNLOAD_HOME_ACCESSIBILITY_TEXT" desc="The in-product-help accessibility text to open download home after a restart.">
         Find your files and pages in Downloads from the More Options button
       </message>
-      <message name="IDS_IPH_DATA_SAVER_PREVIEW_TEXT" desc="In-product help for when a data saver preview page and infobar are shown.">
+      <message name="IDS_IPH_DATA_SAVER_PREVIEW_TEXT" desc="In-product help for when a lite mode preview page and infobar are shown.">
           Chrome is using less data to show you this page
       </message>
-      <message name="IDS_IPH_DATA_SAVER_DETAIL_TEXT" desc="The in-product-help message to open data saver.">
+      <message name="IDS_IPH_DATA_SAVER_DETAIL_TEXT" desc="The in-product-help message to open lite mode.">
         See how much data you've saved
       </message>
-      <message name="IDS_IPH_DATA_SAVER_DETAIL_ACCESSIBILITY_TEXT" desc="The in-product-help accessibility text to open data saver.">
+      <message name="IDS_IPH_DATA_SAVER_DETAIL_ACCESSIBILITY_TEXT" desc="The in-product-help accessibility text to open lite mode.">
         See how much data you've saved from the More Options button
       </message>
       <message name="IDS_IPH_PREVIEWS_OMNIBOX_UI_TEXT" desc="The in-product-help text informing the user that the displayed page was modified to make it load faster or use less data. Prompts the user to tap the message and load the original, unaltered, page if they would like. The 'Lite page provided by Google.' sentence should match TC ID 373879247902731825">

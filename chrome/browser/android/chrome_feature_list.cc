@@ -203,7 +203,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &omnibox::kUIExperimentShowSuggestionFavicons,
     &password_manager::features::kGooglePasswordManager,
     &password_manager::features::kPasswordsKeyboardAccessory,
-    &previews::features::kDataSaverLiteModeRebranding,
     &safe_browsing::kCaptureSafetyNetId,
     &signin::kMiceFeature,
     &switches::kSyncSendTabToSelf,

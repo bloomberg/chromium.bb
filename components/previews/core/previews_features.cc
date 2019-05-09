@@ -95,10 +95,6 @@ const base::Feature kSlowPageTriggering{"PreviewsSlowPageTriggering",
 const base::Feature kHTTPSServerPreviewsUsingURLLoader{
     "HTTPSServerPreviewsUsingURLLoader", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Uses 'Lite Mode' strings instead of 'Data Saver'.
-const base::Feature kDataSaverLiteModeRebranding{
-    "DataSaverLiteModeRebranding", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // When enabled, reloading on a preview will cause the session (5 minute) rule
 // to trigger.
 const base::Feature kPreviewsReloadsAreSoftOptOuts{
