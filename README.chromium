@@ -258,3 +258,10 @@ D. Local Modifications
     https://unicode-org.atlassian.net/browse/ICU-20391
   - upstream PR:
     https://github.com/unicode-org/icu/pull/628
+
+9. Timezone breakage patch
+  - patches/timezone.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20595
+  - upstream PR:
+    https://github.com/unicode-org/icu/pull/649

@@ -1,0 +1,51 @@
+diff --git a/source/i18n/timezone.cpp b/source/i18n/timezone.cpp
+index f129d8b6..f7b48273 100644
+--- a/source/i18n/timezone.cpp
++++ b/source/i18n/timezone.cpp
+@@ -527,6 +527,11 @@ TimeZone::detectHostTimeZone()
+ 
+ // -------------------------------------
+ 
++static UMutex *gMutex() {
++    static UMutex* m = new UMutex();
++    return m;
++}
++
+ /**
+  * Initialize DEFAULT_ZONE from the system default time zone.  
+  * Upon return, DEFAULT_ZONE will not be NULL, unless operator new()
+@@ -536,6 +541,7 @@ static void U_CALLCONV initDefault()
+ {
+     ucln_i18n_registerCleanup(UCLN_I18N_TIMEZONE, timeZone_cleanup);
+ 
++    Mutex lock(gMutex());
+     // If setDefault() has already been called we can skip getting the
+     // default zone information from the system.
+     if (DEFAULT_ZONE != NULL) {
+@@ -571,7 +577,11 @@ TimeZone* U_EXPORT2
+ TimeZone::createDefault()
+ {
+     umtx_initOnce(gDefaultZoneInitOnce, initDefault);
+-    return (DEFAULT_ZONE != NULL) ? DEFAULT_ZONE->clone() : NULL;
++    if (DEFAULT_ZONE == NULL) return NULL;
++    {
++        Mutex lock(gMutex());
++        return DEFAULT_ZONE->clone();
++    }
+ }
+ 
+ // -------------------------------------
+@@ -582,8 +592,11 @@ TimeZone::adoptDefault(TimeZone* zone)
+     if (zone != NULL)
+     {
+         TimeZone *old = DEFAULT_ZONE;
+-        DEFAULT_ZONE = zone;
+-        delete old;
++        {
++            Mutex lock(gMutex());
++            DEFAULT_ZONE = zone;
++            delete old;
++        }
+         ucln_i18n_registerCleanup(UCLN_I18N_TIMEZONE, timeZone_cleanup);
+     }
+ }
