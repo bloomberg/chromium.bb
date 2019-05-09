@@ -456,6 +456,9 @@
   "captured_sites_interactive_tests": {
     "label": "//chrome/test:captured_sites_interactive_tests",
     "type": "windowed_test_launcher",
+    "args": [
+      '--disable-extensions',
+    ],
   },
   "capture_unittests": {
     "label": "//media/capture:capture_unittests",
