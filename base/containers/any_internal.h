@@ -85,8 +85,8 @@ class BASE_EXPORT AnyInternal {
   };
 
   struct alignas(sizeof(void*)) InlineAlloc {
-    // Holds a T if small. Tweaked to hold a promise executor inline.
-    char bytes[sizeof(void*) * 3];
+    // Holds a T if small.
+    char bytes[sizeof(void*)];
 
     template <typename T>
     T& value_as() {
