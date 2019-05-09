@@ -121,7 +121,7 @@ TEST_F(AppListControllerImplTest, UpdateExpandArrowViewVisibility) {
       ->home_screen_controller()
       ->home_launcher_gesture_handler()
       ->ShowHomeLauncher(display::Screen::GetScreen()->GetPrimaryDisplay());
-  EXPECT_EQ(mojom::WindowStateType::MINIMIZED,
+  EXPECT_EQ(WindowStateType::kMinimized,
             wm::GetWindowState(w1.get())->GetStateType());
   EXPECT_TRUE(GetExpandArrowViewVisibility());
 

@@ -49,7 +49,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/window_properties.h"               // nogncheck
-#include "ash/public/interfaces/window_state_type.mojom.h"  // nogncheck
+#include "ash/public/cpp/window_state_type.h"               // nogncheck
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -102,11 +102,11 @@ aura::Window* GetWindowForTabDraggingProperties(const TabDragContext* context) {
 // Returns true if |context| browser window is snapped.
 bool IsSnapped(const TabDragContext* context) {
   DCHECK(context);
-  ash::mojom::WindowStateType type =
+  ash::WindowStateType type =
       GetWindowForTabDraggingProperties(context)->GetProperty(
           ash::kWindowStateTypeKey);
-  return type == ash::mojom::WindowStateType::LEFT_SNAPPED ||
-         type == ash::mojom::WindowStateType::RIGHT_SNAPPED;
+  return type == ash::WindowStateType::kLeftSnapped ||
+         type == ash::WindowStateType::kRightSnapped;
 }
 
 // In Chrome OS tablet mode, when dragging a tab/tabs around, the desired

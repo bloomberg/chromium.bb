@@ -43,7 +43,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/window_state_type.mojom.h"
 #include "base/callback.h"
 #include "base/scoped_observer.h"
 #include "ui/aura/client/aura_constants.h"

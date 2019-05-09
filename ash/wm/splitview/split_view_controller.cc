@@ -107,15 +107,15 @@ gfx::Point GetBoundedPosition(const gfx::Point& location_in_screen,
                bounds_in_screen.y()));
 }
 
-mojom::WindowStateType GetStateTypeFromSnapPosition(
+WindowStateType GetStateTypeFromSnapPosition(
     SplitViewController::SnapPosition snap_position) {
   DCHECK(snap_position != SplitViewController::NONE);
   if (snap_position == SplitViewController::LEFT)
-    return mojom::WindowStateType::LEFT_SNAPPED;
+    return WindowStateType::kLeftSnapped;
   if (snap_position == SplitViewController::RIGHT)
-    return mojom::WindowStateType::RIGHT_SNAPPED;
+    return WindowStateType::kRightSnapped;
   NOTREACHED();
-  return mojom::WindowStateType::DEFAULT;
+  return WindowStateType::kDefault;
 }
 
 // Returns the minimum size of the window according to the screen orientation.
@@ -835,7 +835,7 @@ void SplitViewController::OnResizeLoopEnded(aura::Window* window) {
 
 void SplitViewController::OnPostWindowStateTypeChange(
     ash::wm::WindowState* window_state,
-    ash::mojom::WindowStateType old_type) {
+    ash::WindowStateType old_type) {
   if (window_state->IsSnapped()) {
     OnWindowSnapped(window_state->window());
   } else if (window_state->IsFullscreen() || window_state->IsMaximized()) {

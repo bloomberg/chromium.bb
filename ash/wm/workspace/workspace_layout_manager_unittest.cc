@@ -594,7 +594,7 @@ TEST_F(WorkspaceLayoutManagerTest,
   Shell::Get()->SetDisplayWorkAreaInsets(window.get(), insets);
   const wm::WMEvent snap_left(wm::WM_EVENT_SNAP_LEFT);
   window_state->OnWMEvent(&snap_left);
-  EXPECT_EQ(mojom::WindowStateType::LEFT_SNAPPED, window_state->GetStateType());
+  EXPECT_EQ(WindowStateType::kLeftSnapped, window_state->GetStateType());
   const gfx::Rect kWorkAreaBounds = GetPrimaryDisplay().work_area();
   gfx::Rect expected_bounds =
       gfx::Rect(kWorkAreaBounds.x(), kWorkAreaBounds.y(),
@@ -1922,9 +1922,7 @@ class TestState : public wm::WindowState::State {
     if (event->type() == wm::WM_EVENT_SYSTEM_UI_AREA_CHANGED)
       num_system_ui_area_changes_++;
   }
-  mojom::WindowStateType GetType() const override {
-    return mojom::WindowStateType::NORMAL;
-  }
+  WindowStateType GetType() const override { return WindowStateType::kNormal; }
   void AttachState(wm::WindowState* window_state,
                    wm::WindowState::State* previous_state) override {}
   void DetachState(wm::WindowState* window_state) override {}

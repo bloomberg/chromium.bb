@@ -89,20 +89,19 @@ BackdropController::~BackdropController() {
   Hide();
 }
 
-void BackdropController::OnWindowAddedToLayout(aura::Window* child) {
+void BackdropController::OnWindowAddedToLayout() {
   UpdateBackdrop();
 }
 
-void BackdropController::OnWindowRemovedFromLayout(aura::Window* child) {
+void BackdropController::OnWindowRemovedFromLayout() {
   UpdateBackdrop();
 }
 
-void BackdropController::OnChildWindowVisibilityChanged(aura::Window* child,
-                                                        bool visible) {
+void BackdropController::OnChildWindowVisibilityChanged() {
   UpdateBackdrop();
 }
 
-void BackdropController::OnWindowStackingChanged(aura::Window* window) {
+void BackdropController::OnWindowStackingChanged() {
   UpdateBackdrop();
 }
 
@@ -110,9 +109,7 @@ void BackdropController::OnDisplayMetricsChanged() {
   UpdateBackdrop();
 }
 
-void BackdropController::OnPostWindowStateTypeChange(
-    wm::WindowState* window_state,
-    mojom::WindowStateType old_type) {
+void BackdropController::OnPostWindowStateTypeChange() {
   UpdateBackdrop();
 }
 

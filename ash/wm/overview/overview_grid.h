@@ -184,7 +184,7 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
 
   // wm::WindowStateObserver:
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
-                                   mojom::WindowStateType old_type) override;
+                                   WindowStateType old_type) override;
 
   // ScreenRotationAnimatorObserver:
   void OnScreenCopiedBeforeRotation() override;

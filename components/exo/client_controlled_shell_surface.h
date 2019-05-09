@@ -83,21 +83,21 @@ class ClientControlledShellSurface
 
   // Set the callback to run when the surface state changed.
   using StateChangedCallback =
-      base::RepeatingCallback<void(ash::mojom::WindowStateType old_state_type,
-                                   ash::mojom::WindowStateType new_state_type)>;
+      base::RepeatingCallback<void(ash::WindowStateType old_state_type,
+                                   ash::WindowStateType new_state_type)>;
   void set_state_changed_callback(
       const StateChangedCallback& state_changed_callback) {
     state_changed_callback_ = state_changed_callback;
   }
 
   // Set the callback to run when the surface bounds changed.
-  using BoundsChangedCallback = base::RepeatingCallback<void(
-      ash::mojom::WindowStateType current_state,
-      ash::mojom::WindowStateType requested_state,
-      int64_t display_id,
-      const gfx::Rect& bounds,
-      bool is_resize,
-      int bounds_change)>;
+  using BoundsChangedCallback =
+      base::RepeatingCallback<void(ash::WindowStateType current_state,
+                                   ash::WindowStateType requested_state,
+                                   int64_t display_id,
+                                   const gfx::Rect& bounds,
+                                   bool is_resize,
+                                   int bounds_change)>;
   void set_bounds_changed_callback(
       const BoundsChangedCallback& bounds_changed_callback) {
     bounds_changed_callback_ = bounds_changed_callback;
@@ -144,16 +144,16 @@ class ClientControlledShellSurface
   void SetResizeOutset(int outset);
 
   // Sends the window state change event to client.
-  void OnWindowStateChangeEvent(ash::mojom::WindowStateType old_state,
-                                ash::mojom::WindowStateType next_state);
+  void OnWindowStateChangeEvent(ash::WindowStateType old_state,
+                                ash::WindowStateType next_state);
 
   // Sends the window bounds change event to client. |display_id| specifies in
   // which display the surface should live in. |drag_bounds_change| is
   // a masked value of ash::WindowResizer::kBoundsChange_Xxx, and specifies
   // how the bounds was changed. The bounds change event may also come from a
   // snapped window state change |requested_state|.
-  void OnBoundsChangeEvent(ash::mojom::WindowStateType current_state,
-                           ash::mojom::WindowStateType requested_state,
+  void OnBoundsChangeEvent(ash::WindowStateType current_state,
+                           ash::WindowStateType requested_state,
                            int64_t display_id,
                            const gfx::Rect& bounds,
                            int drag_bounds_change);
@@ -285,8 +285,7 @@ class ClientControlledShellSurface
 
   ash::wm::ClientControlledState* client_controlled_state_ = nullptr;
 
-  ash::mojom::WindowStateType pending_window_state_ =
-      ash::mojom::WindowStateType::NORMAL;
+  ash::WindowStateType pending_window_state_ = ash::WindowStateType::kNormal;
 
   bool can_maximize_ = true;
 

@@ -49,7 +49,7 @@ class ASH_EXPORT AlwaysOnTopController : public aura::WindowObserver,
 
   // Overridden from wm::WindowStateObserver:
   void OnPreWindowStateTypeChange(wm::WindowState* window_state,
-                                  mojom::WindowStateType old_type) override;
+                                  WindowStateType old_type) override;
 
   aura::Window* always_on_top_container_;
   aura::Window* pip_container_;

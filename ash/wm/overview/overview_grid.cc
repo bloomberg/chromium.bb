@@ -932,9 +932,8 @@ void OverviewGrid::OnWindowPropertyChanged(aura::Window* window,
   }
 }
 
-void OverviewGrid::OnPostWindowStateTypeChange(
-    wm::WindowState* window_state,
-    mojom::WindowStateType old_type) {
+void OverviewGrid::OnPostWindowStateTypeChange(wm::WindowState* window_state,
+                                               WindowStateType old_type) {
   // During preparation, window state can change, e.g. updating shelf
   // visibility may show the temporarily hidden (minimized) panels.
   if (!prepared_for_overview_)
@@ -947,7 +946,7 @@ void OverviewGrid::OnPostWindowStateTypeChange(
     return;
   }
 
-  mojom::WindowStateType new_type = window_state->GetStateType();
+  WindowStateType new_type = window_state->GetStateType();
   if (IsMinimizedWindowStateType(old_type) ==
       IsMinimizedWindowStateType(new_type)) {
     return;

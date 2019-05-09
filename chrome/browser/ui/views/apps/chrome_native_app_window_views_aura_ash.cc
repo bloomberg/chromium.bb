@@ -457,7 +457,7 @@ void ChromeNativeAppWindowViewsAuraAsh::OnWidgetActivationChanged(
 
 void ChromeNativeAppWindowViewsAuraAsh::OnPostWindowStateTypeChange(
     ash::wm::WindowState* window_state,
-    ash::mojom::WindowStateType old_type) {
+    ash::WindowStateType old_type) {
   DCHECK(!IsFrameless());
   DCHECK_EQ(GetNativeWindow(), window_state->window());
   if (window_state->IsFullscreen() != app_window()->IsFullscreen()) {

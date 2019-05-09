@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/window_state_type.mojom.h"
+#include "ash/public/cpp/window_state_type.h"
 #include "chrome/browser/chromeos/arc/pip/arc_pip_bridge.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -45,7 +45,7 @@ void ArcAppWindowLauncherItemController::ItemSelected(
     ui::BaseWindow* window = GetLastActiveWindow();
     aura::Window* native_window = window->GetNativeWindow();
     if (native_window->GetProperty(ash::kWindowStateTypeKey) ==
-        ash::mojom::WindowStateType::PIP) {
+        ash::WindowStateType::kPip) {
       Profile* profile = ChromeLauncherController::instance()->profile();
       arc::ArcPipBridge* pip_bridge =
           arc::ArcPipBridge::GetForBrowserContext(profile);

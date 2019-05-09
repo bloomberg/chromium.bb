@@ -94,7 +94,7 @@ class ASH_EXPORT WorkspaceLayoutManager
 
   // WindowStateObserver:
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
-                                   mojom::WindowStateType old_type) override;
+                                   WindowStateType old_type) override;
 
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,

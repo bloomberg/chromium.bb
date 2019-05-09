@@ -6,7 +6,6 @@
 
 #include "ash/public/cpp/immersive/immersive_revealed_lock.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/window_state_type.mojom.h"
 #include "base/macros.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/platform_util.h"

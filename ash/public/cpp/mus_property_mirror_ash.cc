@@ -44,8 +44,7 @@ void MusPropertyMirrorAsh::MirrorPropertyFromWidgetWindowToRootWindow(
     int32_t value = window->GetProperty(kShelfItemTypeKey);
     root_window->SetProperty(kShelfItemTypeKey, value);
   } else if (key == kWindowStateTypeKey) {
-    ash::mojom::WindowStateType value =
-        window->GetProperty(kWindowStateTypeKey);
+    ash::WindowStateType value = window->GetProperty(kWindowStateTypeKey);
     root_window->SetProperty(kWindowStateTypeKey, value);
   } else if (key == kWindowPinTypeKey) {
     ash::mojom::WindowPinType value = window->GetProperty(kWindowPinTypeKey);
@@ -53,7 +52,7 @@ void MusPropertyMirrorAsh::MirrorPropertyFromWidgetWindowToRootWindow(
   } else if (key == kRestoreBoundsOverrideKey) {
     MirrorOwnedProperty(window, root_window, kRestoreBoundsOverrideKey);
   } else if (key == kRestoreWindowStateTypeOverrideKey) {
-    ash::mojom::WindowStateType value =
+    ash::WindowStateType value =
         window->GetProperty(kRestoreWindowStateTypeOverrideKey);
     root_window->SetProperty(kRestoreWindowStateTypeOverrideKey, value);
   } else if (key == kShelfIDKey) {

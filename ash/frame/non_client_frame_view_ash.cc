@@ -107,7 +107,7 @@ class NonClientFrameViewAshImmersiveHelper : public wm::WindowStateObserver,
 
   // wm::WindowStateObserver:
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
-                                   mojom::WindowStateType old_type) override {
+                                   WindowStateType old_type) override {
     views::Widget* widget =
         views::Widget::GetWidgetForNativeWindow(window_state->window());
     if (immersive_fullscreen_controller_ &&

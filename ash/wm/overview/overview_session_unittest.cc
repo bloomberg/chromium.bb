@@ -467,14 +467,14 @@ TEST_F(OverviewSessionTest, ActivateMinimized) {
   window_state->OnWMEvent(&minimize_event);
   EXPECT_FALSE(window->IsVisible());
   EXPECT_EQ(0.f, window->layer()->GetTargetOpacity());
-  EXPECT_EQ(mojom::WindowStateType::MINIMIZED,
+  EXPECT_EQ(WindowStateType::kMinimized,
             wm::GetWindowState(window.get())->GetStateType());
 
   ToggleOverview();
 
   EXPECT_FALSE(window->IsVisible());
   EXPECT_EQ(0.f, window->layer()->GetTargetOpacity());
-  EXPECT_EQ(mojom::WindowStateType::MINIMIZED, window_state->GetStateType());
+  EXPECT_EQ(WindowStateType::kMinimized, window_state->GetStateType());
   wm::WindowPreviewView* preview_view =
       GetPreviewView(GetWindowItemForWindow(0, window.get()));
   EXPECT_TRUE(preview_view);
@@ -487,7 +487,7 @@ TEST_F(OverviewSessionTest, ActivateMinimized) {
 
   EXPECT_TRUE(window->IsVisible());
   EXPECT_EQ(1.f, window->layer()->GetTargetOpacity());
-  EXPECT_EQ(mojom::WindowStateType::NORMAL, window_state->GetStateType());
+  EXPECT_EQ(WindowStateType::kNormal, window_state->GetStateType());
 }
 
 // Tests that the ordering of windows is stable across different overview
@@ -4287,8 +4287,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   DragWindowTo(overview_item1, gfx::PointF(0, 0));
   // Since the only window is snapped, overview and splitview should be both
   // ended.
-  EXPECT_EQ(window_state1->GetStateType(),
-            mojom::WindowStateType::LEFT_SNAPPED);
+  EXPECT_EQ(window_state1->GetStateType(), WindowStateType::kLeftSnapped);
   EXPECT_FALSE(overview_controller()->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 
@@ -4307,8 +4306,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window1.get()));
   EXPECT_TRUE(overview_controller()->overview_session()->IsWindowInOverview(
       window2.get()));
-  EXPECT_EQ(window_state1->GetStateType(),
-            mojom::WindowStateType::RIGHT_SNAPPED);
+  EXPECT_EQ(window_state1->GetStateType(), WindowStateType::kRightSnapped);
   // Close |window2| will end overview and splitview.
   window2.reset();
   EXPECT_FALSE(overview_controller()->InOverviewSession());
@@ -4322,10 +4320,9 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   OverviewItem* overview_item3 =
       GetWindowItemForWindow(grid_index, window3.get());
   DragWindowTo(overview_item3, gfx::PointF(600, 300));
-  EXPECT_EQ(window_state1->GetStateType(),
-            mojom::WindowStateType::LEFT_SNAPPED);
+  EXPECT_EQ(window_state1->GetStateType(), WindowStateType::kLeftSnapped);
   EXPECT_EQ(wm::GetWindowState(window3.get())->GetStateType(),
-            mojom::WindowStateType::RIGHT_SNAPPED);
+            WindowStateType::kRightSnapped);
   EXPECT_FALSE(overview_controller()->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 
@@ -4344,15 +4341,14 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
       window3.get()));
   EXPECT_FALSE(overview_controller()->overview_session()->IsWindowInOverview(
       window1.get()));
-  EXPECT_EQ(window_state1->GetStateType(),
-            mojom::WindowStateType::LEFT_SNAPPED);
+  EXPECT_EQ(window_state1->GetStateType(), WindowStateType::kLeftSnapped);
   EXPECT_EQ(wm::GetWindowState(window3.get())->GetStateType(),
-            mojom::WindowStateType::LEFT_SNAPPED);
+            WindowStateType::kLeftSnapped);
   EXPECT_TRUE(overview_controller()->InOverviewSession());
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   ToggleOverview();
   EXPECT_EQ(wm::GetWindowState(window4.get())->GetStateType(),
-            mojom::WindowStateType::RIGHT_SNAPPED);
+            WindowStateType::kRightSnapped);
   EXPECT_FALSE(overview_controller()->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 

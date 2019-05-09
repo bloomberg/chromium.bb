@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/window_state_type.mojom.h"
+#include "ash/public/cpp/window_state_type.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
@@ -51,7 +51,7 @@ class LeftSnapWaiter : public aura::WindowObserver {
 
   bool IsLeftSnapped() {
     return window_->GetProperty(ash::kWindowStateTypeKey) ==
-           ash::mojom::WindowStateType::LEFT_SNAPPED;
+           ash::WindowStateType::kLeftSnapped;
   }
 
  private:

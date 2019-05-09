@@ -31,41 +31,41 @@ class TestClientControlledStateDelegate
   ~TestClientControlledStateDelegate() override = default;
 
   void HandleWindowStateRequest(WindowState* window_state,
-                                mojom::WindowStateType next_state) override {
+                                WindowStateType next_state) override {
     EXPECT_FALSE(deleted_);
     old_state_ = window_state->GetStateType();
     new_state_ = next_state;
   }
 
   void HandleBoundsRequest(WindowState* window_state,
-                           ash::mojom::WindowStateType requested_state,
+                           ash::WindowStateType requested_state,
                            const gfx::Rect& bounds) override {
     requested_bounds_ = bounds;
     if (requested_state != window_state->GetStateType()) {
-      DCHECK(requested_state == ash::mojom::WindowStateType::LEFT_SNAPPED ||
-             requested_state == ash::mojom::WindowStateType::RIGHT_SNAPPED);
+      DCHECK(requested_state == ash::WindowStateType::kLeftSnapped ||
+             requested_state == ash::WindowStateType::kRightSnapped);
       old_state_ = window_state->GetStateType();
       new_state_ = requested_state;
     }
   }
 
-  mojom::WindowStateType old_state() const { return old_state_; }
+  WindowStateType old_state() const { return old_state_; }
 
-  mojom::WindowStateType new_state() const { return new_state_; }
+  WindowStateType new_state() const { return new_state_; }
 
   const gfx::Rect& requested_bounds() const { return requested_bounds_; }
 
   void Reset() {
-    old_state_ = mojom::WindowStateType::DEFAULT;
-    new_state_ = mojom::WindowStateType::DEFAULT;
+    old_state_ = WindowStateType::kDefault;
+    new_state_ = WindowStateType::kDefault;
     requested_bounds_.SetRect(0, 0, 0, 0);
   }
 
   void mark_as_deleted() { deleted_ = true; }
 
  private:
-  mojom::WindowStateType old_state_ = mojom::WindowStateType::DEFAULT;
-  mojom::WindowStateType new_state_ = mojom::WindowStateType::DEFAULT;
+  WindowStateType old_state_ = WindowStateType::kDefault;
+  WindowStateType new_state_ = WindowStateType::kDefault;
   gfx::Rect requested_bounds_;
   bool deleted_ = false;
 
@@ -158,8 +158,8 @@ TEST_F(ClientControlledStateTest, Maximize) {
   // The state shouldn't be updated until EnterToNextState is called.
   EXPECT_FALSE(widget()->IsMaximized());
   EXPECT_EQ(kInitialBounds, widget()->GetWindowBoundsInScreen());
-  EXPECT_EQ(mojom::WindowStateType::DEFAULT, delegate()->old_state());
-  EXPECT_EQ(mojom::WindowStateType::MAXIMIZED, delegate()->new_state());
+  EXPECT_EQ(WindowStateType::kDefault, delegate()->old_state());
+  EXPECT_EQ(WindowStateType::kMaximized, delegate()->new_state());
   // Now enters the new state.
   state()->EnterNextState(window_state(), delegate()->new_state());
   EXPECT_TRUE(widget()->IsMaximized());
@@ -174,8 +174,8 @@ TEST_F(ClientControlledStateTest, Maximize) {
   widget()->Restore();
   EXPECT_TRUE(widget()->IsMaximized());
   EXPECT_EQ(kInitialBounds, widget()->GetWindowBoundsInScreen());
-  EXPECT_EQ(mojom::WindowStateType::MAXIMIZED, delegate()->old_state());
-  EXPECT_EQ(mojom::WindowStateType::NORMAL, delegate()->new_state());
+  EXPECT_EQ(WindowStateType::kMaximized, delegate()->old_state());
+  EXPECT_EQ(WindowStateType::kNormal, delegate()->new_state());
   state()->EnterNextState(window_state(), delegate()->new_state());
   EXPECT_FALSE(widget()->IsMaximized());
   EXPECT_EQ(kInitialBounds, widget()->GetWindowBoundsInScreen());
@@ -185,8 +185,8 @@ TEST_F(ClientControlledStateTest, Minimize) {
   widget()->Minimize();
   EXPECT_FALSE(widget()->IsMinimized());
   EXPECT_EQ(kInitialBounds, widget()->GetWindowBoundsInScreen());
-  EXPECT_EQ(mojom::WindowStateType::DEFAULT, delegate()->old_state());
-  EXPECT_EQ(mojom::WindowStateType::MINIMIZED, delegate()->new_state());
+  EXPECT_EQ(WindowStateType::kDefault, delegate()->old_state());
+  EXPECT_EQ(WindowStateType::kMinimized, delegate()->new_state());
   state()->EnterNextState(window_state(), delegate()->new_state());
   EXPECT_TRUE(widget()->IsMinimized());
   EXPECT_EQ(kInitialBounds, widget()->GetWindowBoundsInScreen());
@@ -194,8 +194,8 @@ TEST_F(ClientControlledStateTest, Minimize) {
   widget()->Restore();
   EXPECT_TRUE(widget()->IsMinimized());
   EXPECT_EQ(kInitialBounds, widget()->GetWindowBoundsInScreen());
-  EXPECT_EQ(mojom::WindowStateType::MINIMIZED, delegate()->old_state());
-  EXPECT_EQ(mojom::WindowStateType::NORMAL, delegate()->new_state());
+  EXPECT_EQ(WindowStateType::kMinimized, delegate()->old_state());
+  EXPECT_EQ(WindowStateType::kNormal, delegate()->new_state());
   state()->EnterNextState(window_state(), delegate()->new_state());
   EXPECT_FALSE(widget()->IsMinimized());
   EXPECT_EQ(kInitialBounds, widget()->GetWindowBoundsInScreen());
@@ -204,8 +204,8 @@ TEST_F(ClientControlledStateTest, Minimize) {
   widget()->Minimize();
   EXPECT_FALSE(widget()->IsMinimized());
   EXPECT_EQ(kInitialBounds, widget()->GetWindowBoundsInScreen());
-  EXPECT_EQ(mojom::WindowStateType::NORMAL, delegate()->old_state());
-  EXPECT_EQ(mojom::WindowStateType::MINIMIZED, delegate()->new_state());
+  EXPECT_EQ(WindowStateType::kNormal, delegate()->old_state());
+  EXPECT_EQ(WindowStateType::kMinimized, delegate()->new_state());
   state()->EnterNextState(window_state(), delegate()->new_state());
   EXPECT_TRUE(widget()->IsMinimized());
   EXPECT_EQ(kInitialBounds, widget()->GetWindowBoundsInScreen());
@@ -216,8 +216,8 @@ TEST_F(ClientControlledStateTest, Minimize) {
             widget()->GetNativeWindow()->GetProperty(
                 aura::client::kPreMinimizedShowStateKey));
   EXPECT_EQ(kInitialBounds, widget()->GetWindowBoundsInScreen());
-  EXPECT_EQ(mojom::WindowStateType::MINIMIZED, delegate()->old_state());
-  EXPECT_EQ(mojom::WindowStateType::NORMAL, delegate()->new_state());
+  EXPECT_EQ(WindowStateType::kMinimized, delegate()->old_state());
+  EXPECT_EQ(WindowStateType::kNormal, delegate()->new_state());
   state()->EnterNextState(window_state(), delegate()->new_state());
   EXPECT_FALSE(widget()->IsMinimized());
   EXPECT_EQ(kInitialBounds, widget()->GetWindowBoundsInScreen());
@@ -227,16 +227,16 @@ TEST_F(ClientControlledStateTest, Fullscreen) {
   widget()->SetFullscreen(true);
   EXPECT_FALSE(widget()->IsFullscreen());
   EXPECT_EQ(kInitialBounds, widget()->GetWindowBoundsInScreen());
-  EXPECT_EQ(mojom::WindowStateType::DEFAULT, delegate()->old_state());
-  EXPECT_EQ(mojom::WindowStateType::FULLSCREEN, delegate()->new_state());
+  EXPECT_EQ(WindowStateType::kDefault, delegate()->old_state());
+  EXPECT_EQ(WindowStateType::kFullscreen, delegate()->new_state());
   state()->EnterNextState(window_state(), delegate()->new_state());
   EXPECT_TRUE(widget()->IsFullscreen());
   EXPECT_EQ(kInitialBounds, widget()->GetWindowBoundsInScreen());
 
   widget()->SetFullscreen(false);
   EXPECT_TRUE(widget()->IsFullscreen());
-  EXPECT_EQ(mojom::WindowStateType::FULLSCREEN, delegate()->old_state());
-  EXPECT_EQ(mojom::WindowStateType::NORMAL, delegate()->new_state());
+  EXPECT_EQ(WindowStateType::kFullscreen, delegate()->old_state());
+  EXPECT_EQ(WindowStateType::kNormal, delegate()->new_state());
   state()->EnterNextState(window_state(), delegate()->new_state());
   EXPECT_FALSE(widget()->IsFullscreen());
   EXPECT_EQ(kInitialBounds, widget()->GetWindowBoundsInScreen());
@@ -248,8 +248,8 @@ TEST_F(ClientControlledStateTest, MaximizeToFullscreen) {
   widget()->Maximize();
   EXPECT_FALSE(widget()->IsMaximized());
   EXPECT_EQ(kInitialBounds, widget()->GetWindowBoundsInScreen());
-  EXPECT_EQ(mojom::WindowStateType::DEFAULT, delegate()->old_state());
-  EXPECT_EQ(mojom::WindowStateType::MAXIMIZED, delegate()->new_state());
+  EXPECT_EQ(WindowStateType::kDefault, delegate()->old_state());
+  EXPECT_EQ(WindowStateType::kMaximized, delegate()->new_state());
   state()->EnterNextState(window_state(), delegate()->new_state());
   EXPECT_TRUE(widget()->IsMaximized());
   EXPECT_EQ(kInitialBounds, widget()->GetWindowBoundsInScreen());
@@ -257,24 +257,24 @@ TEST_F(ClientControlledStateTest, MaximizeToFullscreen) {
   widget()->SetFullscreen(true);
   EXPECT_TRUE(widget()->IsMaximized());
   EXPECT_EQ(kInitialBounds, widget()->GetWindowBoundsInScreen());
-  EXPECT_EQ(mojom::WindowStateType::MAXIMIZED, delegate()->old_state());
-  EXPECT_EQ(mojom::WindowStateType::FULLSCREEN, delegate()->new_state());
+  EXPECT_EQ(WindowStateType::kMaximized, delegate()->old_state());
+  EXPECT_EQ(WindowStateType::kFullscreen, delegate()->new_state());
   state()->EnterNextState(window_state(), delegate()->new_state());
   EXPECT_TRUE(widget()->IsFullscreen());
   EXPECT_EQ(kInitialBounds, widget()->GetWindowBoundsInScreen());
 
   widget()->SetFullscreen(false);
   EXPECT_TRUE(widget()->IsFullscreen());
-  EXPECT_EQ(mojom::WindowStateType::FULLSCREEN, delegate()->old_state());
-  EXPECT_EQ(mojom::WindowStateType::MAXIMIZED, delegate()->new_state());
+  EXPECT_EQ(WindowStateType::kFullscreen, delegate()->old_state());
+  EXPECT_EQ(WindowStateType::kMaximized, delegate()->new_state());
   state()->EnterNextState(window_state(), delegate()->new_state());
   EXPECT_TRUE(widget()->IsMaximized());
   EXPECT_EQ(kInitialBounds, widget()->GetWindowBoundsInScreen());
 
   widget()->Restore();
   EXPECT_TRUE(widget()->IsMaximized());
-  EXPECT_EQ(mojom::WindowStateType::MAXIMIZED, delegate()->old_state());
-  EXPECT_EQ(mojom::WindowStateType::NORMAL, delegate()->new_state());
+  EXPECT_EQ(WindowStateType::kMaximized, delegate()->old_state());
+  EXPECT_EQ(WindowStateType::kNormal, delegate()->new_state());
   state()->EnterNextState(window_state(), delegate()->new_state());
   EXPECT_FALSE(widget()->IsMaximized());
   EXPECT_EQ(kInitialBounds, widget()->GetWindowBoundsInScreen());
@@ -291,8 +291,8 @@ TEST_F(ClientControlledStateTest, IgnoreWorkspace) {
   // Client is responsible to handle workspace change, so
   // no action should be taken.
   EXPECT_EQ(kInitialBounds, widget()->GetWindowBoundsInScreen());
-  EXPECT_EQ(mojom::WindowStateType::DEFAULT, delegate()->old_state());
-  EXPECT_EQ(mojom::WindowStateType::DEFAULT, delegate()->new_state());
+  EXPECT_EQ(WindowStateType::kDefault, delegate()->old_state());
+  EXPECT_EQ(WindowStateType::kDefault, delegate()->new_state());
   EXPECT_EQ(gfx::Rect(), delegate()->requested_bounds());
 }
 
@@ -347,8 +347,8 @@ TEST_F(ClientControlledStateTest, SnapWindow) {
               delegate()->requested_bounds().right(), 1);
   EXPECT_EQ(work_area.height(), delegate()->requested_bounds().height());
   EXPECT_TRUE(delegate()->requested_bounds().origin().IsOrigin());
-  EXPECT_EQ(mojom::WindowStateType::DEFAULT, delegate()->old_state());
-  EXPECT_EQ(mojom::WindowStateType::LEFT_SNAPPED, delegate()->new_state());
+  EXPECT_EQ(WindowStateType::kDefault, delegate()->old_state());
+  EXPECT_EQ(WindowStateType::kLeftSnapped, delegate()->new_state());
 
   delegate()->Reset();
 
@@ -358,8 +358,8 @@ TEST_F(ClientControlledStateTest, SnapWindow) {
   EXPECT_EQ(work_area.height(), delegate()->requested_bounds().height());
   EXPECT_EQ(work_area.bottom_right(),
             delegate()->requested_bounds().bottom_right());
-  EXPECT_EQ(mojom::WindowStateType::DEFAULT, delegate()->old_state());
-  EXPECT_EQ(mojom::WindowStateType::RIGHT_SNAPPED, delegate()->new_state());
+  EXPECT_EQ(WindowStateType::kDefault, delegate()->old_state());
+  EXPECT_EQ(WindowStateType::kRightSnapped, delegate()->new_state());
 }
 
 // Pin events should be applied immediately.
@@ -371,22 +371,22 @@ TEST_F(ClientControlledStateTest, Pinned) {
   window_state()->OnWMEvent(&pin_event);
   EXPECT_TRUE(window_state()->IsPinned());
   EXPECT_TRUE(GetScreenPinningController()->IsPinned());
-  EXPECT_EQ(mojom::WindowStateType::PINNED, window_state()->GetStateType());
-  EXPECT_EQ(mojom::WindowStateType::DEFAULT, delegate()->old_state());
-  EXPECT_EQ(mojom::WindowStateType::PINNED, delegate()->new_state());
+  EXPECT_EQ(WindowStateType::kPinned, window_state()->GetStateType());
+  EXPECT_EQ(WindowStateType::kDefault, delegate()->old_state());
+  EXPECT_EQ(WindowStateType::kPinned, delegate()->new_state());
 
   // All state transition events are ignored except for NORMAL.
   widget()->Maximize();
-  EXPECT_EQ(mojom::WindowStateType::PINNED, window_state()->GetStateType());
+  EXPECT_EQ(WindowStateType::kPinned, window_state()->GetStateType());
   EXPECT_TRUE(GetScreenPinningController()->IsPinned());
 
   widget()->Minimize();
-  EXPECT_EQ(mojom::WindowStateType::PINNED, window_state()->GetStateType());
+  EXPECT_EQ(WindowStateType::kPinned, window_state()->GetStateType());
   EXPECT_TRUE(GetScreenPinningController()->IsPinned());
   EXPECT_TRUE(window()->IsVisible());
 
   widget()->SetFullscreen(true);
-  EXPECT_EQ(mojom::WindowStateType::PINNED, window_state()->GetStateType());
+  EXPECT_EQ(WindowStateType::kPinned, window_state()->GetStateType());
   EXPECT_TRUE(GetScreenPinningController()->IsPinned());
 
   // WM/User cannot change the bounds of the pinned window.
@@ -401,7 +401,7 @@ TEST_F(ClientControlledStateTest, Pinned) {
 
   widget()->Restore();
   EXPECT_FALSE(window_state()->IsPinned());
-  EXPECT_EQ(mojom::WindowStateType::NORMAL, window_state()->GetStateType());
+  EXPECT_EQ(WindowStateType::kNormal, window_state()->GetStateType());
   EXPECT_FALSE(GetScreenPinningController()->IsPinned());
 
   // Two windows cannot be pinned simultaneously.
@@ -426,26 +426,22 @@ TEST_F(ClientControlledStateTest, TrustedPinnedBasic) {
   EXPECT_TRUE(window_state()->IsPinned());
   EXPECT_TRUE(GetScreenPinningController()->IsPinned());
 
-  EXPECT_EQ(mojom::WindowStateType::TRUSTED_PINNED,
-            window_state()->GetStateType());
-  EXPECT_EQ(mojom::WindowStateType::DEFAULT, delegate()->old_state());
-  EXPECT_EQ(mojom::WindowStateType::TRUSTED_PINNED, delegate()->new_state());
+  EXPECT_EQ(WindowStateType::kTrustedPinned, window_state()->GetStateType());
+  EXPECT_EQ(WindowStateType::kDefault, delegate()->old_state());
+  EXPECT_EQ(WindowStateType::kTrustedPinned, delegate()->new_state());
 
   // All state transition events are ignored except for NORMAL.
   widget()->Maximize();
-  EXPECT_EQ(mojom::WindowStateType::TRUSTED_PINNED,
-            window_state()->GetStateType());
+  EXPECT_EQ(WindowStateType::kTrustedPinned, window_state()->GetStateType());
   EXPECT_TRUE(GetScreenPinningController()->IsPinned());
 
   widget()->Minimize();
-  EXPECT_EQ(mojom::WindowStateType::TRUSTED_PINNED,
-            window_state()->GetStateType());
+  EXPECT_EQ(WindowStateType::kTrustedPinned, window_state()->GetStateType());
   EXPECT_TRUE(GetScreenPinningController()->IsPinned());
   EXPECT_TRUE(window()->IsVisible());
 
   widget()->SetFullscreen(true);
-  EXPECT_EQ(mojom::WindowStateType::TRUSTED_PINNED,
-            window_state()->GetStateType());
+  EXPECT_EQ(WindowStateType::kTrustedPinned, window_state()->GetStateType());
   EXPECT_TRUE(GetScreenPinningController()->IsPinned());
 
   // WM/User cannot change the bounds of the trusted-pinned window.
@@ -460,7 +456,7 @@ TEST_F(ClientControlledStateTest, TrustedPinnedBasic) {
 
   widget()->Restore();
   EXPECT_FALSE(window_state()->IsPinned());
-  EXPECT_EQ(mojom::WindowStateType::NORMAL, window_state()->GetStateType());
+  EXPECT_EQ(WindowStateType::kNormal, window_state()->GetStateType());
   EXPECT_FALSE(GetScreenPinningController()->IsPinned());
 
   // Two windows cannot be trusted-pinned simultaneously.

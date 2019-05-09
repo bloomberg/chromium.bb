@@ -101,7 +101,7 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
 
   // wm::WindowStateObserver:
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
-                                   mojom::WindowStateType old_type) override;
+                                   WindowStateType old_type) override;
 
   // Tell all managing windows not to handle WM events.
   void SetIgnoreWmEventsForExit();
@@ -117,7 +117,7 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
 
   // Returns the state type that |window| had before tablet mode started. If
   // |window| is not yet tracked, returns the current state type of |window|.
-  mojom::WindowStateType GetDesktopWindowStateType(aura::Window* window) const;
+  WindowStateType GetDesktopWindowStateType(aura::Window* window) const;
 
   // Returns a std::vector of up to two split view snap positions, parallel to
   // |windows|, implementing the logic for carrying over snapped window states

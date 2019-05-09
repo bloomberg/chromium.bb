@@ -10,7 +10,6 @@
 #include <string>
 
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/public/interfaces/window_state_type.mojom.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"

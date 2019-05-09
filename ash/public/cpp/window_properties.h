@@ -25,9 +25,10 @@ class Rect;
 
 namespace ash {
 
+enum class WindowStateType;
+
 namespace mojom {
 enum class WindowPinType;
-enum class WindowStateType;
 }
 
 enum class BackdropWindowMode {
@@ -113,8 +114,8 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kIsShowingInOverviewKey;
 
 // A property key to store the window state the window had before entering PIP.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
-    mojom::WindowStateType>* const kPrePipWindowStateTypeKey;
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<WindowStateType>* const
+    kPrePipWindowStateTypeKey;
 
 // Maps to ws::mojom::WindowManager::kRenderParentTitleArea_Property.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
@@ -130,8 +131,8 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<gfx::Rect*>* const
 // take preference over the current state if
 // |kRestoreWindowStateTypeOverrideKey| is set. This is used by e.g. the tablet
 // mode window manager.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
-    mojom::WindowStateType>* const kRestoreWindowStateTypeOverrideKey;
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<WindowStateType>* const
+    kRestoreWindowStateTypeOverrideKey;
 
 // A property key to store whether search key accelerator is reserved for a
 // window. This is used to pass through search key accelerators to Android
@@ -175,8 +176,8 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kWindowPositionManagedTypeKey;
 
 // A property key to indicate ash's extended window state.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
-    mojom::WindowStateType>* const kWindowStateTypeKey;
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<WindowStateType>* const
+    kWindowStateTypeKey;
 
 // A property key to indicate pip window state.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const

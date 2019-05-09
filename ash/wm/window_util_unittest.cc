@@ -33,9 +33,7 @@ class FakeWindowState : public WindowState::State {
     if (event->type() == WM_EVENT_MINIMIZE)
       was_visible_on_minimize_ = window_state->window()->IsVisible();
   }
-  mojom::WindowStateType GetType() const override {
-    return mojom::WindowStateType::NORMAL;
-  }
+  WindowStateType GetType() const override { return WindowStateType::kNormal; }
   void AttachState(WindowState* window_state,
                    WindowState::State* previous_state) override {}
   void DetachState(WindowState* window_state) override {}

@@ -1642,13 +1642,13 @@ class TestObserver : public wm::WindowStateObserver {
 
   // wm::WindowStateObserver:
   void OnPreWindowStateTypeChange(wm::WindowState* window_state,
-                                  mojom::WindowStateType old_type) override {
+                                  WindowStateType old_type) override {
     pre_count_++;
     last_old_state_ = old_type;
   }
 
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
-                                   mojom::WindowStateType old_type) override {
+                                   WindowStateType old_type) override {
     post_count_++;
     post_layer_visibility_ = window_state->window()->layer()->visible();
     EXPECT_EQ(last_old_state_, old_type);
@@ -1672,9 +1672,9 @@ class TestObserver : public wm::WindowStateObserver {
     return r;
   }
 
-  mojom::WindowStateType GetLastOldStateAndReset() {
-    mojom::WindowStateType r = last_old_state_;
-    last_old_state_ = mojom::WindowStateType::DEFAULT;
+  WindowStateType GetLastOldStateAndReset() {
+    WindowStateType r = last_old_state_;
+    last_old_state_ = WindowStateType::kDefault;
     return r;
   }
 
@@ -1682,7 +1682,7 @@ class TestObserver : public wm::WindowStateObserver {
   int pre_count_ = 0;
   int post_count_ = 0;
   bool post_layer_visibility_ = false;
-  mojom::WindowStateType last_old_state_ = mojom::WindowStateType::DEFAULT;
+  WindowStateType last_old_state_ = WindowStateType::kDefault;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
@@ -1715,28 +1715,24 @@ TEST_F(TabletModeWindowManagerTest, StateTypeChange) {
   window_state->OnWMEvent(&fullscreen_event);
   EXPECT_EQ(1, observer.GetPreCountAndReset());
   EXPECT_EQ(1, observer.GetPostCountAndReset());
-  EXPECT_EQ(mojom::WindowStateType::MAXIMIZED,
-            observer.GetLastOldStateAndReset());
+  EXPECT_EQ(WindowStateType::kMaximized, observer.GetLastOldStateAndReset());
 
   window_state->OnWMEvent(&maximize_event);
   EXPECT_EQ(1, observer.GetPreCountAndReset());
   EXPECT_EQ(1, observer.GetPostCountAndReset());
-  EXPECT_EQ(mojom::WindowStateType::FULLSCREEN,
-            observer.GetLastOldStateAndReset());
+  EXPECT_EQ(WindowStateType::kFullscreen, observer.GetLastOldStateAndReset());
 
   wm::WMEvent minimize_event(wm::WM_EVENT_MINIMIZE);
   window_state->OnWMEvent(&minimize_event);
   EXPECT_EQ(1, observer.GetPreCountAndReset());
   EXPECT_EQ(1, observer.GetPostCountAndReset());
-  EXPECT_EQ(mojom::WindowStateType::MAXIMIZED,
-            observer.GetLastOldStateAndReset());
+  EXPECT_EQ(WindowStateType::kMaximized, observer.GetLastOldStateAndReset());
 
   wm::WMEvent restore_event(wm::WM_EVENT_NORMAL);
   window_state->OnWMEvent(&restore_event);
   EXPECT_EQ(1, observer.GetPreCountAndReset());
   EXPECT_EQ(1, observer.GetPostCountAndReset());
-  EXPECT_EQ(mojom::WindowStateType::MINIMIZED,
-            observer.GetLastOldStateAndReset());
+  EXPECT_EQ(WindowStateType::kMinimized, observer.GetLastOldStateAndReset());
   EXPECT_EQ(true, observer.GetPostLayerVisibilityAndReset());
 
   window_state->RemoveObserver(&observer);

@@ -10,6 +10,7 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/public/cpp/window_state_type.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/display.h"
@@ -274,7 +275,7 @@ int XdgToplevelV6ResizeComponent(uint32_t edges) {
 
 using XdgSurfaceConfigureCallback =
     base::Callback<void(const gfx::Size& size,
-                        ash::mojom::WindowStateType state_type,
+                        ash::WindowStateType state_type,
                         bool resizing,
                         bool activated)>;
 
@@ -282,7 +283,7 @@ uint32_t HandleXdgSurfaceV6ConfigureCallback(
     wl_resource* resource,
     const XdgSurfaceConfigureCallback& callback,
     const gfx::Size& size,
-    ash::mojom::WindowStateType state_type,
+    ash::WindowStateType state_type,
     bool resizing,
     bool activated,
     const gfx::Vector2d& origin_offset) {
@@ -401,14 +402,14 @@ class WaylandToplevel : public aura::WindowObserver {
   }
 
   void OnConfigure(const gfx::Size& size,
-                   ash::mojom::WindowStateType state_type,
+                   ash::WindowStateType state_type,
                    bool resizing,
                    bool activated) {
     wl_array states;
     wl_array_init(&states);
-    if (state_type == ash::mojom::WindowStateType::MAXIMIZED)
+    if (state_type == ash::WindowStateType::kMaximized)
       AddState(&states, ZXDG_TOPLEVEL_V6_STATE_MAXIMIZED);
-    if (state_type == ash::mojom::WindowStateType::FULLSCREEN)
+    if (state_type == ash::WindowStateType::kFullscreen)
       AddState(&states, ZXDG_TOPLEVEL_V6_STATE_FULLSCREEN);
     if (resizing)
       AddState(&states, ZXDG_TOPLEVEL_V6_STATE_RESIZING);
@@ -576,7 +577,7 @@ class WaylandPopup : aura::WindowObserver {
   }
 
   void OnConfigure(const gfx::Size& size,
-                   ash::mojom::WindowStateType state_type,
+                   ash::WindowStateType state_type,
                    bool resizing,
                    bool activated) {
     // Nothing to do here as popups don't have additional configure state.

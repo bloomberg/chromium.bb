@@ -154,7 +154,7 @@ void WorkspaceLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   UpdateShelfVisibility();
   UpdateFullscreenState();
 
-  backdrop_controller_->OnWindowAddedToLayout(child);
+  backdrop_controller_->OnWindowAddedToLayout();
   WindowPositioner::RearrangeVisibleWindowOnShow(child);
   if (Shell::Get()->screen_pinning_controller()->IsPinned())
     wm::GetWindowState(child)->DisableAlwaysOnTop(nullptr);
@@ -184,7 +184,7 @@ void WorkspaceLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
 void WorkspaceLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
   UpdateShelfVisibility();
   UpdateFullscreenState();
-  backdrop_controller_->OnWindowRemovedFromLayout(child);
+  backdrop_controller_->OnWindowRemovedFromLayout();
 }
 
 void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
@@ -200,7 +200,7 @@ void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
     WindowPositioner::RearrangeVisibleWindowOnHideOrRemove(child);
   UpdateFullscreenState();
   UpdateShelfVisibility();
-  backdrop_controller_->OnChildWindowVisibilityChanged(child, visible);
+  backdrop_controller_->OnChildWindowVisibilityChanged();
 }
 
 void WorkspaceLayoutManager::SetChildBounds(aura::Window* child,
@@ -323,7 +323,7 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(aura::Window* window,
 void WorkspaceLayoutManager::OnWindowStackingChanged(aura::Window* window) {
   UpdateShelfVisibility();
   UpdateFullscreenState();
-  backdrop_controller_->OnWindowStackingChanged(window);
+  backdrop_controller_->OnWindowStackingChanged();
 }
 
 void WorkspaceLayoutManager::OnWindowDestroying(aura::Window* window) {
@@ -378,15 +378,15 @@ void WorkspaceLayoutManager::OnWindowActivated(ActivationReason reason,
 
 void WorkspaceLayoutManager::OnPostWindowStateTypeChange(
     wm::WindowState* window_state,
-    mojom::WindowStateType old_type) {
+    WindowStateType old_type) {
   // Notify observers that fullscreen state may be changing.
   if (window_state->IsFullscreen() ||
-      old_type == mojom::WindowStateType::FULLSCREEN) {
+      old_type == WindowStateType::kFullscreen) {
     UpdateFullscreenState();
   }
 
   UpdateShelfVisibility();
-  backdrop_controller_->OnPostWindowStateTypeChange(window_state, old_type);
+  backdrop_controller_->OnPostWindowStateTypeChange();
 }
 
 //////////////////////////////////////////////////////////////////////////////

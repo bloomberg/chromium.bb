@@ -10,7 +10,6 @@
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/public/interfaces/window_properties.mojom.h"
-#include "ash/public/interfaces/window_state_type.mojom.h"
 #include "base/bind.h"
 #include "base/unguessable_token.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
@@ -25,8 +24,7 @@
 
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT,
                                        ash::mojom::WindowPinType)
-DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT,
-                                       ash::mojom::WindowStateType)
+DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT, ash::WindowStateType)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT,
                                        ash::BackdropWindowMode)
 
@@ -99,9 +97,6 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
       kIsShowingInOverviewKey, mojom::kIsShowingInOverview_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(
-      kPrePipWindowStateTypeKey, mojom::kPrePipWindowStateType_Property,
-      base::BindRepeating(&IsValidWindowStateType));
-  property_converter->RegisterPrimitiveProperty(
       kRenderTitleAreaProperty,
       ws::mojom::WindowManager::kRenderParentTitleArea_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
@@ -111,9 +106,6 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
   property_converter->RegisterPrimitiveProperty(
       aura::client::kTopViewInset, mojom::kTopViewInset_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
-  property_converter->RegisterPrimitiveProperty(
-      kWindowStateTypeKey, mojom::kWindowStateType_Property,
-      base::BindRepeating(&IsValidWindowStateType));
   property_converter->RegisterPrimitiveProperty(
       kWindowPinTypeKey, mojom::kWindowPinType_Property,
       base::BindRepeating(&IsValidWindowPinType));
@@ -176,23 +168,22 @@ DEFINE_UI_CLASS_PROPERTY_KEY(
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kIsDeferredTabDraggingTargetWindowKey, false)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kIsDraggingTabsKey, false)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kIsShowingInOverviewKey, false)
-DEFINE_UI_CLASS_PROPERTY_KEY(mojom::WindowStateType,
+DEFINE_UI_CLASS_PROPERTY_KEY(WindowStateType,
                              kPrePipWindowStateTypeKey,
-                             mojom::WindowStateType::DEFAULT)
+                             WindowStateType::kDefault)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kRenderTitleAreaProperty, false)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect,
                                    kRestoreBoundsOverrideKey,
                                    nullptr)
-DEFINE_UI_CLASS_PROPERTY_KEY(mojom::WindowStateType,
+DEFINE_UI_CLASS_PROPERTY_KEY(WindowStateType,
                              kRestoreWindowStateTypeOverrideKey,
-                             mojom::WindowStateType::DEFAULT)
+                             WindowStateType::kDefault)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSearchKeyAcceleratorReservedKey, false)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kShelfIDKey, nullptr)
 DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kShelfItemTypeKey, TYPE_UNDEFINED)
 DEFINE_UI_CLASS_PROPERTY_KEY(aura::Window*,
                              kTabDraggingSourceWindowKey,
                              nullptr)
-
 DEFINE_UI_CLASS_PROPERTY_KEY(SkColor, kFrameActiveColorKey, kDefaultFrameColor)
 DEFINE_UI_CLASS_PROPERTY_KEY(SkColor,
                              kFrameInactiveColorKey,
@@ -201,9 +192,9 @@ DEFINE_UI_CLASS_PROPERTY_KEY(mojom::WindowPinType,
                              kWindowPinTypeKey,
                              mojom::WindowPinType::NONE)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kWindowPositionManagedTypeKey, false)
-DEFINE_UI_CLASS_PROPERTY_KEY(mojom::WindowStateType,
+DEFINE_UI_CLASS_PROPERTY_KEY(WindowStateType,
                              kWindowStateTypeKey,
-                             mojom::WindowStateType::DEFAULT)
+                             WindowStateType::kDefault)
 
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kWindowPipTypeKey, false)
 }  // namespace ash

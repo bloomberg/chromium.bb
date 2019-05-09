@@ -331,13 +331,13 @@ void TabletModeWindowManager::OnActiveUserSessionChanged(
         Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
     for (aura::Window* window : windows) {
       switch (wm::GetWindowState(window)->GetStateType()) {
-        case mojom::WindowStateType::LEFT_SNAPPED:
+        case WindowStateType::kLeftSnapped:
           if (split_view_controller->left_window() == nullptr) {
             split_view_controller->SnapWindow(window,
                                               SplitViewController::LEFT);
           }
           break;
-        case mojom::WindowStateType::RIGHT_SNAPPED:
+        case WindowStateType::kRightSnapped:
           if (split_view_controller->right_window() == nullptr) {
             split_view_controller->SnapWindow(window,
                                               SplitViewController::RIGHT);
@@ -364,7 +364,7 @@ void TabletModeWindowManager::OnActiveUserSessionChanged(
 
 void TabletModeWindowManager::OnPostWindowStateTypeChange(
     wm::WindowState* window_state,
-    mojom::WindowStateType old_type) {
+    WindowStateType old_type) {
   Shell::Get()->tablet_mode_controller()->MaybeObserveBoundsAnimation(
       window_state->window());
 }
@@ -376,7 +376,7 @@ void TabletModeWindowManager::SetIgnoreWmEventsForExit() {
 
 TabletModeWindowManager::TabletModeWindowManager() = default;
 
-mojom::WindowStateType TabletModeWindowManager::GetDesktopWindowStateType(
+WindowStateType TabletModeWindowManager::GetDesktopWindowStateType(
     aura::Window* window) const {
   auto iter = window_state_map_.find(window);
   return iter == window_state_map_.end()
@@ -391,25 +391,25 @@ TabletModeWindowManager::GetSnapPositions(
   if (!IsCandidateForSplitView(windows, 0u))
     return result;
   switch (GetDesktopWindowStateType(windows[0])) {
-    case mojom::WindowStateType::LEFT_SNAPPED:
+    case WindowStateType::kLeftSnapped:
       // windows[0] was snapped on the left in desktop mode. Snap windows[0] on
       // the left in split view. If windows[1] was snapped on the right in
       // desktop mode, then snap windows[1] on the right in split view.
       result.push_back(SplitViewController::LEFT);
       if (IsCandidateForSplitView(windows, 1u) &&
           GetDesktopWindowStateType(windows[1]) ==
-              mojom::WindowStateType::RIGHT_SNAPPED) {
+              WindowStateType::kRightSnapped) {
         result.push_back(SplitViewController::RIGHT);
       }
       return result;
-    case mojom::WindowStateType::RIGHT_SNAPPED:
+    case WindowStateType::kRightSnapped:
       // windows[0] was snapped on the right in desktop mode. Snap windows[0] on
       // the right in split view. If windows[1] was snapped on the left in
       // desktop mode, then snap windows[1] on the left in split view.
       result.push_back(SplitViewController::RIGHT);
       if (IsCandidateForSplitView(windows, 1u) &&
           GetDesktopWindowStateType(windows[1]) ==
-              mojom::WindowStateType::LEFT_SNAPPED) {
+              WindowStateType::kLeftSnapped) {
         result.push_back(SplitViewController::LEFT);
       }
       return result;

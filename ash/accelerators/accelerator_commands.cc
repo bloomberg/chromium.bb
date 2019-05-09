@@ -81,11 +81,11 @@ void ToggleFullscreen() {
 }
 
 bool CanUnpinWindow() {
-  // WindowStateType::TRUSTED_PINNED does not allow the user to press a key to
+  // WindowStateType::kTrustedPinned does not allow the user to press a key to
   // exit pinned mode.
   wm::WindowState* window_state = wm::GetActiveWindowState();
   return window_state &&
-         window_state->GetStateType() == mojom::WindowStateType::PINNED;
+         window_state->GetStateType() == WindowStateType::kPinned;
 }
 
 void UnpinWindow() {

@@ -38,7 +38,7 @@ namespace {
 // WindowState based on a given initial state. Records the last resize bounds.
 class FakeWindowState : public wm::WindowState::State {
  public:
-  explicit FakeWindowState(mojom::WindowStateType initial_state_type)
+  explicit FakeWindowState(WindowStateType initial_state_type)
       : state_type_(initial_state_type) {}
   ~FakeWindowState() override = default;
 
@@ -54,7 +54,7 @@ class FakeWindowState : public wm::WindowState::State {
       }
     }
   }
-  mojom::WindowStateType GetType() const override { return state_type_; }
+  WindowStateType GetType() const override { return state_type_; }
   void AttachState(wm::WindowState* window_state,
                    wm::WindowState::State* previous_state) override {}
   void DetachState(wm::WindowState* window_state) override {}
@@ -63,7 +63,7 @@ class FakeWindowState : public wm::WindowState::State {
   wm::WindowState* last_window_state() { return last_window_state_; }
 
  private:
-  mojom::WindowStateType state_type_;
+  WindowStateType state_type_;
   gfx::Rect last_bounds_;
   wm::WindowState* last_window_state_ = nullptr;
 
@@ -169,7 +169,7 @@ class PipWindowResizerTest : public AshTestBase,
   void PreparePipWindow(const gfx::Rect& bounds) {
     widget_ = CreateWidgetForTest(bounds);
     window_ = widget_->GetNativeWindow();
-    test_state_ = new FakeWindowState(mojom::WindowStateType::PIP);
+    test_state_ = new FakeWindowState(WindowStateType::kPip);
     wm::GetWindowState(window_)->SetStateObject(
         std::unique_ptr<wm::WindowState::State>(test_state_));
   }

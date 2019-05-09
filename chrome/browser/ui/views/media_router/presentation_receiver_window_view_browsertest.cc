@@ -27,7 +27,6 @@
 
 #if defined(CHROMEOS)
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/window_state_type.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/native_widget_types.h"

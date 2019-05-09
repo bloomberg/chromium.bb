@@ -1015,8 +1015,7 @@ TEST_F(ClientControlledShellSurfaceTest, SnapWindowInSplitViewModeTest) {
   ash::wm::ClientControlledState* state1 =
       static_cast<ash::wm::ClientControlledState*>(
           ash::wm::WindowState::TestApi::GetStateImpl(window_state1));
-  EXPECT_EQ(window_state1->GetStateType(),
-            ash::mojom::WindowStateType::MAXIMIZED);
+  EXPECT_EQ(window_state1->GetStateType(), ash::WindowStateType::kMaximized);
 
   // Snap window to left.
   ash::SplitViewController* split_view_controller =
@@ -1026,8 +1025,7 @@ TEST_F(ClientControlledShellSurfaceTest, SnapWindowInSplitViewModeTest) {
   window1->SetBounds(split_view_controller->GetSnappedWindowBoundsInScreen(
       window1, ash::SplitViewController::LEFT));
   state1->set_bounds_locally(false);
-  EXPECT_EQ(window_state1->GetStateType(),
-            ash::mojom::WindowStateType::LEFT_SNAPPED);
+  EXPECT_EQ(window_state1->GetStateType(), ash::WindowStateType::kLeftSnapped);
   EXPECT_EQ(shell_surface1->GetWidget()->GetWindowBoundsInScreen(),
             split_view_controller->GetSnappedWindowBoundsInScreen(
                 window1, ash::SplitViewController::LEFT));
@@ -1040,8 +1038,7 @@ TEST_F(ClientControlledShellSurfaceTest, SnapWindowInSplitViewModeTest) {
   window1->SetBounds(split_view_controller->GetSnappedWindowBoundsInScreen(
       window1, ash::SplitViewController::RIGHT));
   state1->set_bounds_locally(false);
-  EXPECT_EQ(window_state1->GetStateType(),
-            ash::mojom::WindowStateType::RIGHT_SNAPPED);
+  EXPECT_EQ(window_state1->GetStateType(), ash::WindowStateType::kRightSnapped);
   EXPECT_EQ(shell_surface1->GetWidget()->GetWindowBoundsInScreen(),
             split_view_controller->GetSnappedWindowBoundsInScreen(
                 window1, ash::SplitViewController::RIGHT));
@@ -1246,7 +1243,7 @@ TEST_F(ClientControlledShellSurfaceDragTest, DragWindowFromTopInTabletMode) {
   shell->overview_controller()->ToggleOverview();
   SendGestureEvents(window, gfx::Point(0, 210));
   EXPECT_EQ(ash::wm::GetWindowState(window)->GetStateType(),
-            ash::mojom::WindowStateType::LEFT_SNAPPED);
+            ash::WindowStateType::kLeftSnapped);
 }
 
 namespace {
@@ -1275,8 +1272,8 @@ class ClientControlledShellSurfaceDisplayTest : public test::ExoTestBase {
     return requested_display_ids_;
   }
 
-  void OnBoundsChangeEvent(ash::mojom::WindowStateType current_state,
-                           ash::mojom::WindowStateType requested_state,
+  void OnBoundsChangeEvent(ash::WindowStateType current_state,
+                           ash::WindowStateType requested_state,
                            int64_t display_id,
                            const gfx::Rect& bounds,
                            bool is_resize,
@@ -1810,8 +1807,8 @@ TEST_F(ClientControlledShellSurfaceTest, AdjustBoundsLocally) {
       exo_test_helper()->CreateClientControlledShellSurface(surface.get());
   gfx::Rect requested_bounds;
   shell_surface->set_bounds_changed_callback(base::BindRepeating(
-      [](gfx::Rect* dst, ash::mojom::WindowStateType current_state,
-         ash::mojom::WindowStateType requested_state, int64_t display_id,
+      [](gfx::Rect* dst, ash::WindowStateType current_state,
+         ash::WindowStateType requested_state, int64_t display_id,
          const gfx::Rect& bounds, bool is_resize,
          int bounds_change) { *dst = bounds; },
       base::Unretained(&requested_bounds)));
@@ -1851,8 +1848,7 @@ TEST_F(ClientControlledShellSurfaceTest, SnappedInTabletMode) {
 
   ash::wm::WMEvent event(ash::wm::WM_EVENT_SNAP_LEFT);
   window_state->OnWMEvent(&event);
-  EXPECT_EQ(window_state->GetStateType(),
-            ash::mojom::WindowStateType::LEFT_SNAPPED);
+  EXPECT_EQ(window_state->GetStateType(), ash::WindowStateType::kLeftSnapped);
 
   ash::NonClientFrameViewAsh* frame_view =
       static_cast<ash::NonClientFrameViewAsh*>(
@@ -1909,8 +1905,8 @@ TEST_F(ClientControlledShellSurfaceDisplayTest,
       base::Unretained(this)));
   ASSERT_EQ(0, bounds_change_count());
 
-  shell_surface->OnBoundsChangeEvent(ash::mojom::WindowStateType::NORMAL,
-                                     ash::mojom::WindowStateType::NORMAL, 0,
+  shell_surface->OnBoundsChangeEvent(ash::WindowStateType::kNormal,
+                                     ash::WindowStateType::kNormal, 0,
                                      gfx::Rect(10, 10, 100, 100), 0);
   ASSERT_EQ(1, bounds_change_count());
 
@@ -1920,14 +1916,14 @@ TEST_F(ClientControlledShellSurfaceDisplayTest,
   surface->Commit();
 
   EXPECT_TRUE(shell_surface->GetWidget()->IsMinimized());
-  shell_surface->OnBoundsChangeEvent(ash::mojom::WindowStateType::MINIMIZED,
-                                     ash::mojom::WindowStateType::MINIMIZED, 0,
+  shell_surface->OnBoundsChangeEvent(ash::WindowStateType::kMinimized,
+                                     ash::WindowStateType::kMinimized, 0,
                                      gfx::Rect(0, 0, 100, 100), 0);
   ASSERT_EQ(1, bounds_change_count());
 
   // Send bounds change when exiting minmized.
-  shell_surface->OnBoundsChangeEvent(ash::mojom::WindowStateType::MINIMIZED,
-                                     ash::mojom::WindowStateType::NORMAL, 0,
+  shell_surface->OnBoundsChangeEvent(ash::WindowStateType::kMinimized,
+                                     ash::WindowStateType::kNormal, 0,
                                      gfx::Rect(0, 0, 100, 100), 0);
   ASSERT_EQ(2, bounds_change_count());
 
@@ -1937,9 +1933,9 @@ TEST_F(ClientControlledShellSurfaceDisplayTest,
           shell_surface->GetWidget()->non_client_view()->frame_view());
   surface->SetFrame(SurfaceFrameType::NORMAL);
   surface->Commit();
-  shell_surface->OnBoundsChangeEvent(ash::mojom::WindowStateType::MINIMIZED,
-                                     ash::mojom::WindowStateType::RIGHT_SNAPPED,
-                                     0, gfx::Rect(0, 0, 100, 100), 0);
+  shell_surface->OnBoundsChangeEvent(ash::WindowStateType::kMinimized,
+                                     ash::WindowStateType::kRightSnapped, 0,
+                                     gfx::Rect(0, 0, 100, 100), 0);
   EXPECT_EQ(3, bounds_change_count());
   EXPECT_EQ(
       frame_view->GetClientBoundsForWindowBounds(gfx::Rect(0, 0, 100, 100)),
@@ -1948,9 +1944,9 @@ TEST_F(ClientControlledShellSurfaceDisplayTest,
 
   // Snapped, in tablet mode.
   EnableTabletMode(true);
-  shell_surface->OnBoundsChangeEvent(ash::mojom::WindowStateType::MINIMIZED,
-                                     ash::mojom::WindowStateType::RIGHT_SNAPPED,
-                                     0, gfx::Rect(0, 0, 100, 100), 0);
+  shell_surface->OnBoundsChangeEvent(ash::WindowStateType::kMinimized,
+                                     ash::WindowStateType::kRightSnapped, 0,
+                                     gfx::Rect(0, 0, 100, 100), 0);
   EXPECT_EQ(4, bounds_change_count());
   EXPECT_EQ(gfx::Rect(0, 0, 100, 100), requested_bounds().back());
 }
@@ -2086,8 +2082,8 @@ TEST_F(ClientControlledShellSurfaceTest, DoNotReplayWindowStateRequest) {
   auto shell_surface =
       exo_test_helper()->CreateClientControlledShellSurface(surface.get());
 
-  shell_surface->set_state_changed_callback(base::BindRepeating(
-      [](ash::mojom::WindowStateType, ash::mojom::WindowStateType) {
+  shell_surface->set_state_changed_callback(
+      base::BindRepeating([](ash::WindowStateType, ash::WindowStateType) {
         // This callback must not be called when a widget is created.
         EXPECT_TRUE(false);
       }));

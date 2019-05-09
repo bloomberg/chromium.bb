@@ -37,7 +37,7 @@ void LockWindowState::OnWMEvent(wm::WindowState* window_state,
       ToggleFullScreen(window_state, window_state->delegate());
       break;
     case wm::WM_EVENT_FULLSCREEN:
-      UpdateWindow(window_state, mojom::WindowStateType::FULLSCREEN);
+      UpdateWindow(window_state, WindowStateType::kFullscreen);
       break;
     case wm::WM_EVENT_PIP:
     case wm::WM_EVENT_PIN:
@@ -59,7 +59,7 @@ void LockWindowState::OnWMEvent(wm::WindowState* window_state,
                    GetMaximizedOrCenteredWindowType(window_state));
       return;
     case wm::WM_EVENT_MINIMIZE:
-      UpdateWindow(window_state, mojom::WindowStateType::MINIMIZED);
+      UpdateWindow(window_state, WindowStateType::kMinimized);
       return;
     case wm::WM_EVENT_SHOW_INACTIVE:
       return;
@@ -73,9 +73,9 @@ void LockWindowState::OnWMEvent(wm::WindowState* window_state,
       }
       break;
     case wm::WM_EVENT_ADDED_TO_WORKSPACE:
-      if (current_state_type_ != mojom::WindowStateType::MAXIMIZED &&
-          current_state_type_ != mojom::WindowStateType::MINIMIZED &&
-          current_state_type_ != mojom::WindowStateType::FULLSCREEN) {
+      if (current_state_type_ != WindowStateType::kMaximized &&
+          current_state_type_ != WindowStateType::kMinimized &&
+          current_state_type_ != WindowStateType::kFullscreen) {
         UpdateWindow(window_state,
                      GetMaximizedOrCenteredWindowType(window_state));
       } else {
@@ -91,7 +91,7 @@ void LockWindowState::OnWMEvent(wm::WindowState* window_state,
   }
 }
 
-mojom::WindowStateType LockWindowState::GetType() const {
+WindowStateType LockWindowState::GetType() const {
   return current_state_type_;
 }
 
@@ -100,9 +100,9 @@ void LockWindowState::AttachState(wm::WindowState* window_state,
   current_state_type_ = previous_state->GetType();
 
   // Initialize the state to a good preset.
-  if (current_state_type_ != mojom::WindowStateType::MAXIMIZED &&
-      current_state_type_ != mojom::WindowStateType::MINIMIZED &&
-      current_state_type_ != mojom::WindowStateType::FULLSCREEN) {
+  if (current_state_type_ != WindowStateType::kMaximized &&
+      current_state_type_ != WindowStateType::kMinimized &&
+      current_state_type_ != WindowStateType::kFullscreen) {
     UpdateWindow(window_state, GetMaximizedOrCenteredWindowType(window_state));
   }
 }
@@ -131,15 +131,15 @@ wm::WindowState* LockWindowState::SetLockWindowStateWithShelfExcluded(
 }
 
 void LockWindowState::UpdateWindow(wm::WindowState* window_state,
-                                   mojom::WindowStateType target_state) {
-  DCHECK(target_state == mojom::WindowStateType::MINIMIZED ||
-         target_state == mojom::WindowStateType::MAXIMIZED ||
-         (target_state == mojom::WindowStateType::NORMAL &&
+                                   WindowStateType target_state) {
+  DCHECK(target_state == WindowStateType::kMinimized ||
+         target_state == WindowStateType::kMaximized ||
+         (target_state == WindowStateType::kNormal &&
           !window_state->CanMaximize()) ||
-         target_state == mojom::WindowStateType::FULLSCREEN);
+         target_state == WindowStateType::kFullscreen);
 
-  if (target_state == mojom::WindowStateType::MINIMIZED) {
-    if (current_state_type_ == mojom::WindowStateType::MINIMIZED)
+  if (target_state == WindowStateType::kMinimized) {
+    if (current_state_type_ == WindowStateType::kMinimized)
       return;
 
     current_state_type_ = target_state;
@@ -157,7 +157,7 @@ void LockWindowState::UpdateWindow(wm::WindowState* window_state,
     return;
   }
 
-  const mojom::WindowStateType old_state_type = current_state_type_;
+  const WindowStateType old_state_type = current_state_type_;
   current_state_type_ = target_state;
   window_state->UpdateWindowPropertiesFromStateType();
   window_state->NotifyPreStateTypeChange(old_state_type);
@@ -165,7 +165,7 @@ void LockWindowState::UpdateWindow(wm::WindowState* window_state,
   window_state->NotifyPostStateTypeChange(old_state_type);
 
   if ((window_state->window()->TargetVisibility() ||
-       old_state_type == mojom::WindowStateType::MINIMIZED) &&
+       old_state_type == WindowStateType::kMinimized) &&
       !window_state->window()->layer()->visible()) {
     // The layer may be hidden if the window was previously minimized. Make
     // sure it's visible.
@@ -173,10 +173,10 @@ void LockWindowState::UpdateWindow(wm::WindowState* window_state,
   }
 }
 
-mojom::WindowStateType LockWindowState::GetMaximizedOrCenteredWindowType(
+WindowStateType LockWindowState::GetMaximizedOrCenteredWindowType(
     wm::WindowState* window_state) {
-  return window_state->CanMaximize() ? mojom::WindowStateType::MAXIMIZED
-                                     : mojom::WindowStateType::NORMAL;
+  return window_state->CanMaximize() ? WindowStateType::kMaximized
+                                     : WindowStateType::kNormal;
 }
 
 gfx::Rect LockWindowState::GetWindowBounds(aura::Window* window) {

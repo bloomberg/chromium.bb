@@ -15,7 +15,6 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/accessibility_controller.mojom-shared.h"
-#include "ash/public/interfaces/window_state_type.mojom.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
@@ -51,30 +50,30 @@ ActiveWindowStateType GetActiveWindowState() {
   wm::WindowState* active_window_state = ash::wm::GetActiveWindowState();
   if (active_window_state) {
     switch (active_window_state->GetStateType()) {
-      case mojom::WindowStateType::MAXIMIZED:
+      case WindowStateType::kMaximized:
         active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_MAXIMIZED;
         break;
-      case mojom::WindowStateType::FULLSCREEN:
+      case WindowStateType::kFullscreen:
         active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_FULLSCREEN;
         break;
-      case mojom::WindowStateType::LEFT_SNAPPED:
-      case mojom::WindowStateType::RIGHT_SNAPPED:
+      case WindowStateType::kLeftSnapped:
+      case WindowStateType::kRightSnapped:
         active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_SNAPPED;
         break;
-      case mojom::WindowStateType::PINNED:
+      case WindowStateType::kPinned:
         active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_PINNED;
         break;
-      case mojom::WindowStateType::TRUSTED_PINNED:
+      case WindowStateType::kTrustedPinned:
         active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_TRUSTED_PINNED;
         break;
-      case mojom::WindowStateType::PIP:
+      case WindowStateType::kPip:
         active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_PIP;
         break;
-      case mojom::WindowStateType::DEFAULT:
-      case mojom::WindowStateType::NORMAL:
-      case mojom::WindowStateType::MINIMIZED:
-      case mojom::WindowStateType::INACTIVE:
-      case mojom::WindowStateType::AUTO_POSITIONED:
+      case WindowStateType::kDefault:
+      case WindowStateType::kNormal:
+      case WindowStateType::kMinimized:
+      case WindowStateType::kInactive:
+      case WindowStateType::kAutoPositioned:
         active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_OTHER;
         break;
     }

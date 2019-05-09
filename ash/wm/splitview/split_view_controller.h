@@ -170,9 +170,8 @@ class ASH_EXPORT SplitViewController : public SplitViewNotifier,
                                intptr_t old) override;
 
   // ash::wm::WindowStateObserver:
-  void OnPostWindowStateTypeChange(
-      ash::wm::WindowState* window_state,
-      ash::mojom::WindowStateType old_type) override;
+  void OnPostWindowStateTypeChange(ash::wm::WindowState* window_state,
+                                   ash::WindowStateType old_type) override;
 
   // wm::ActivationChangeObserver:
   void OnWindowActivated(ActivationReason reason,

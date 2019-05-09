@@ -863,34 +863,34 @@ void HandleRemoteSurfaceCloseCallback(wl_resource* resource) {
 
 void HandleRemoteSurfaceStateChangedCallback(
     wl_resource* resource,
-    ash::mojom::WindowStateType old_state_type,
-    ash::mojom::WindowStateType new_state_type) {
+    ash::WindowStateType old_state_type,
+    ash::WindowStateType new_state_type) {
   DCHECK_NE(old_state_type, new_state_type);
 
   uint32_t state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_NORMAL;
   switch (new_state_type) {
-    case ash::mojom::WindowStateType::MINIMIZED:
+    case ash::WindowStateType::kMinimized:
       state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_MINIMIZED;
       break;
-    case ash::mojom::WindowStateType::MAXIMIZED:
+    case ash::WindowStateType::kMaximized:
       state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_MAXIMIZED;
       break;
-    case ash::mojom::WindowStateType::FULLSCREEN:
+    case ash::WindowStateType::kFullscreen:
       state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_FULLSCREEN;
       break;
-    case ash::mojom::WindowStateType::PINNED:
+    case ash::WindowStateType::kPinned:
       state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_PINNED;
       break;
-    case ash::mojom::WindowStateType::TRUSTED_PINNED:
+    case ash::WindowStateType::kTrustedPinned:
       state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_TRUSTED_PINNED;
       break;
-    case ash::mojom::WindowStateType::LEFT_SNAPPED:
+    case ash::WindowStateType::kLeftSnapped:
       state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_LEFT_SNAPPED;
       break;
-    case ash::mojom::WindowStateType::RIGHT_SNAPPED:
+    case ash::WindowStateType::kRightSnapped:
       state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_RIGHT_SNAPPED;
       break;
-    case ash::mojom::WindowStateType::PIP:
+    case ash::WindowStateType::kPip:
       state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_PIP;
       break;
     default:
@@ -903,8 +903,8 @@ void HandleRemoteSurfaceStateChangedCallback(
 
 void HandleRemoteSurfaceBoundsChangedCallback(
     wl_resource* resource,
-    ash::mojom::WindowStateType current_state,
-    ash::mojom::WindowStateType requested_state,
+    ash::WindowStateType current_state,
+    ash::WindowStateType requested_state,
     int64_t display_id,
     const gfx::Rect& bounds,
     bool resize,
@@ -920,9 +920,9 @@ void HandleRemoteSurfaceBoundsChangedCallback(
   // Override the reason only if the window enters snapped mode. If the window
   // resizes by dragging in snapped mode, we need to keep the original reason.
   if (requested_state != current_state) {
-    if (requested_state == ash::mojom::WindowStateType::LEFT_SNAPPED) {
+    if (requested_state == ash::WindowStateType::kLeftSnapped) {
       reason = ZCR_REMOTE_SURFACE_V1_BOUNDS_CHANGE_REASON_SNAP_TO_LEFT;
-    } else if (requested_state == ash::mojom::WindowStateType::RIGHT_SNAPPED) {
+    } else if (requested_state == ash::WindowStateType::kRightSnapped) {
       reason = ZCR_REMOTE_SURFACE_V1_BOUNDS_CHANGE_REASON_SNAP_TO_RIGHT;
     }
   }

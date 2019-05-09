@@ -20,11 +20,10 @@ class TestClientControlledStateDelegate
   ~TestClientControlledStateDelegate() override;
 
   // Overridden from ash::wm::ClientControlledState::Delegate:
-  void HandleWindowStateRequest(
-      ash::wm::WindowState* window_state,
-      ash::mojom::WindowStateType next_state) override;
+  void HandleWindowStateRequest(ash::wm::WindowState* window_state,
+                                ash::WindowStateType next_state) override;
   void HandleBoundsRequest(ash::wm::WindowState* window_state,
-                           ash::mojom::WindowStateType requested_state,
+                           ash::WindowStateType requested_state,
                            const gfx::Rect& bounds) override;
 
  private:

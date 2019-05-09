@@ -418,8 +418,8 @@ void ShellSurface::OnWindowBoundsChanged(aura::Window* window,
 
 void ShellSurface::OnPreWindowStateTypeChange(
     ash::wm::WindowState* window_state,
-    ash::mojom::WindowStateType old_type) {
-  ash::mojom::WindowStateType new_type = window_state->GetStateType();
+    ash::WindowStateType old_type) {
+  ash::WindowStateType new_type = window_state->GetStateType();
   if (ash::IsMinimizedWindowStateType(old_type) ||
       ash::IsMinimizedWindowStateType(new_type)) {
     return;
@@ -451,8 +451,8 @@ void ShellSurface::OnPreWindowStateTypeChange(
 
 void ShellSurface::OnPostWindowStateTypeChange(
     ash::wm::WindowState* window_state,
-    ash::mojom::WindowStateType old_type) {
-  ash::mojom::WindowStateType new_type = window_state->GetStateType();
+    ash::WindowStateType old_type) {
+  ash::WindowStateType new_type = window_state->GetStateType();
   if (ash::IsMaximizedOrFullscreenOrPinnedWindowStateType(new_type)) {
     Configure();
   }
@@ -590,9 +590,9 @@ void ShellSurface::Configure(bool ends_drag) {
           ash::wm::GetWindowState(widget_->GetNativeWindow())->GetStateType(),
           IsResizing(), widget_->IsActive(), origin_offset);
     } else {
-      serial = configure_callback_.Run(gfx::Size(),
-                                       ash::mojom::WindowStateType::NORMAL,
-                                       false, false, origin_offset);
+      serial =
+          configure_callback_.Run(gfx::Size(), ash::WindowStateType::kNormal,
+                                  false, false, origin_offset);
     }
   }
 

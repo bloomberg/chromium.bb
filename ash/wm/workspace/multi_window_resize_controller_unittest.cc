@@ -573,7 +573,7 @@ TEST_F(MultiWindowResizeControllerTest, TwoSnappedWindows) {
   wm::WindowState* w1_state = wm::GetWindowState(w1.get());
   const wm::WMEvent snap_left(wm::WM_EVENT_SNAP_LEFT);
   w1_state->OnWMEvent(&snap_left);
-  EXPECT_EQ(mojom::WindowStateType::LEFT_SNAPPED, w1_state->GetStateType());
+  EXPECT_EQ(WindowStateType::kLeftSnapped, w1_state->GetStateType());
   aura::test::TestWindowDelegate delegate2;
   std::unique_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegate(
       &delegate2, -2, gfx::Rect(100, 100, 100, 100)));
@@ -581,7 +581,7 @@ TEST_F(MultiWindowResizeControllerTest, TwoSnappedWindows) {
   wm::WindowState* w2_state = wm::GetWindowState(w2.get());
   const wm::WMEvent snap_right(wm::WM_EVENT_SNAP_RIGHT);
   w2_state->OnWMEvent(&snap_right);
-  EXPECT_EQ(mojom::WindowStateType::RIGHT_SNAPPED, w2_state->GetStateType());
+  EXPECT_EQ(WindowStateType::kRightSnapped, w2_state->GetStateType());
   EXPECT_EQ(0.5f, *w1_state->snapped_width_ratio());
   EXPECT_EQ(0.5f, *w2_state->snapped_width_ratio());
 
@@ -613,9 +613,9 @@ TEST_F(MultiWindowResizeControllerTest, TwoSnappedWindows) {
   generator->ReleaseLeftButton();
 
   // Check snapped states and bounds.
-  EXPECT_EQ(mojom::WindowStateType::LEFT_SNAPPED, w1_state->GetStateType());
+  EXPECT_EQ(WindowStateType::kLeftSnapped, w1_state->GetStateType());
   EXPECT_EQ(gfx::Rect(0, 0, 300, bottom_inset), w1->bounds());
-  EXPECT_EQ(mojom::WindowStateType::RIGHT_SNAPPED, w2_state->GetStateType());
+  EXPECT_EQ(WindowStateType::kRightSnapped, w2_state->GetStateType());
   EXPECT_EQ(gfx::Rect(300, 0, 100, bottom_inset), w2->bounds());
   EXPECT_EQ(0.75f, *w1_state->snapped_width_ratio());
   EXPECT_EQ(0.25f, *w2_state->snapped_width_ratio());

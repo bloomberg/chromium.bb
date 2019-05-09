@@ -43,8 +43,7 @@ void ClientControlledState::AdjustBoundsForMinimumWindowVisibility(
 }
 
 ClientControlledState::ClientControlledState(std::unique_ptr<Delegate> delegate)
-    : BaseState(mojom::WindowStateType::DEFAULT),
-      delegate_(std::move(delegate)) {}
+    : BaseState(WindowStateType::kDefault), delegate_(std::move(delegate)) {}
 
 ClientControlledState::~ClientControlledState() = default;
 
@@ -61,9 +60,9 @@ void ClientControlledState::HandleTransitionEvents(WindowState* window_state,
         Shell::Get()->screen_pinning_controller()->IsPinned()) {
       return;
     }
-    mojom::WindowStateType next_state_type = GetStateForTransitionEvent(event);
+    WindowStateType next_state_type = GetStateForTransitionEvent(event);
     delegate_->HandleWindowStateRequest(window_state, next_state_type);
-    mojom::WindowStateType old_state_type = state_type_;
+    WindowStateType old_state_type = state_type_;
 
     bool was_pinned = window_state->IsPinned();
     bool was_trusted_pinned = window_state->IsTrustedPinned();
@@ -86,7 +85,7 @@ void ClientControlledState::HandleTransitionEvents(WindowState* window_state,
     case WM_EVENT_FULLSCREEN: {
       // Reset window state
       window_state->UpdateWindowPropertiesFromStateType();
-      mojom::WindowStateType next_state = GetStateForTransitionEvent(event);
+      WindowStateType next_state = GetStateForTransitionEvent(event);
       VLOG(1) << "Processing State Transtion: event=" << event->type()
               << ", state=" << state_type_ << ", next_state=" << next_state;
       // Then ask delegate to handle the window state change.
@@ -98,14 +97,13 @@ void ClientControlledState::HandleTransitionEvents(WindowState* window_state,
       if (window_state->CanSnap()) {
         // Get the desired window bounds for the snap state.
         gfx::Rect bounds = GetSnappedWindowBoundsInParent(
-            window_state->window(),
-            event->type() == WM_EVENT_SNAP_LEFT
-                ? mojom::WindowStateType::LEFT_SNAPPED
-                : mojom::WindowStateType::RIGHT_SNAPPED);
+            window_state->window(), event->type() == WM_EVENT_SNAP_LEFT
+                                        ? WindowStateType::kLeftSnapped
+                                        : WindowStateType::kRightSnapped);
         window_state->set_bounds_changed_by_user(true);
 
         window_state->UpdateWindowPropertiesFromStateType();
-        mojom::WindowStateType next_state = GetStateForTransitionEvent(event);
+        WindowStateType next_state = GetStateForTransitionEvent(event);
         VLOG(1) << "Processing State Transtion: event=" << event->type()
                 << ", state=" << state_type_ << ", next_state=" << next_state;
 
@@ -230,14 +228,13 @@ void ClientControlledState::OnWindowDestroying(WindowState* window_state) {
   delegate_.reset();
 }
 
-bool ClientControlledState::EnterNextState(
-    WindowState* window_state,
-    mojom::WindowStateType next_state_type) {
+bool ClientControlledState::EnterNextState(WindowState* window_state,
+                                           WindowStateType next_state_type) {
   // Do nothing if  we're already in the same state, or delegate has already
   // been deleted.
   if (state_type_ == next_state_type || !delegate_)
     return false;
-  mojom::WindowStateType previous_state_type = state_type_;
+  WindowStateType previous_state_type = state_type_;
   state_type_ = next_state_type;
 
   window_state->UpdateWindowPropertiesFromStateType();
@@ -252,10 +249,10 @@ bool ClientControlledState::EnterNextState(
 
   window_state->NotifyPostStateTypeChange(previous_state_type);
 
-  if (next_state_type == mojom::WindowStateType::PINNED ||
-      previous_state_type == mojom::WindowStateType::PINNED ||
-      next_state_type == mojom::WindowStateType::TRUSTED_PINNED ||
-      previous_state_type == mojom::WindowStateType::TRUSTED_PINNED) {
+  if (next_state_type == WindowStateType::kPinned ||
+      previous_state_type == WindowStateType::kPinned ||
+      next_state_type == WindowStateType::kTrustedPinned ||
+      previous_state_type == WindowStateType::kTrustedPinned) {
     Shell::Get()->screen_pinning_controller()->SetPinnedWindow(
         window_state->window());
   }

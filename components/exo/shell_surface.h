@@ -39,7 +39,7 @@ class ShellSurface : public ShellSurfaceBase,
   // in steps of NxM pixels).
   using ConfigureCallback =
       base::RepeatingCallback<uint32_t(const gfx::Size& size,
-                                       ash::mojom::WindowStateType state_type,
+                                       ash::WindowStateType state_type,
                                        bool resizing,
                                        bool activated,
                                        const gfx::Vector2d& origin_offset)>;
@@ -97,12 +97,10 @@ class ShellSurface : public ShellSurfaceBase,
                              ui::PropertyChangeReason reason) override;
 
   // Overridden from ash::wm::WindowStateObserver:
-  void OnPreWindowStateTypeChange(
-      ash::wm::WindowState* window_state,
-      ash::mojom::WindowStateType old_type) override;
-  void OnPostWindowStateTypeChange(
-      ash::wm::WindowState* window_state,
-      ash::mojom::WindowStateType old_type) override;
+  void OnPreWindowStateTypeChange(ash::wm::WindowState* window_state,
+                                  ash::WindowStateType old_type) override;
+  void OnPostWindowStateTypeChange(ash::wm::WindowState* window_state,
+                                   ash::WindowStateType old_type) override;
 
   // Overridden from wm::ActivationChangeObserver:
   void OnWindowActivated(ActivationReason reason,

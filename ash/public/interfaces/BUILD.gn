@@ -63,7 +63,6 @@ mojom("interfaces_internal") {
     "wallpaper.mojom",
     "window_pin_type.mojom",
     "window_properties.mojom",
-    "window_state_type.mojom",
   ]
 
   public_deps = [

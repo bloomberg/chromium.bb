@@ -53,11 +53,11 @@ bool HasBackdrop() {
 
 uint32_t ConfigureFullscreen(uint32_t serial,
                              const gfx::Size& size,
-                             ash::mojom::WindowStateType state_type,
+                             ash::WindowStateType state_type,
                              bool resizing,
                              bool activated,
                              const gfx::Vector2d& origin_offset) {
-  EXPECT_EQ(ash::mojom::WindowStateType::FULLSCREEN, state_type);
+  EXPECT_EQ(ash::WindowStateType::kFullscreen, state_type);
   return serial;
 }
 
@@ -473,11 +473,11 @@ TEST_F(ShellSurfaceTest, SurfaceDestroyedCallback) {
 }
 
 uint32_t Configure(gfx::Size* suggested_size,
-                   ash::mojom::WindowStateType* has_state_type,
+                   ash::WindowStateType* has_state_type,
                    bool* is_resizing,
                    bool* is_active,
                    const gfx::Size& size,
-                   ash::mojom::WindowStateType state_type,
+                   ash::WindowStateType state_type,
                    bool resizing,
                    bool activated,
                    const gfx::Vector2d& origin_offset) {
@@ -492,8 +492,7 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
   // Must be before shell_surface so it outlives it, for shell_surface's
   // destructor calls Configure() referencing these 4 variables.
   gfx::Size suggested_size;
-  ash::mojom::WindowStateType has_state_type =
-      ash::mojom::WindowStateType::NORMAL;
+  ash::WindowStateType has_state_type = ash::WindowStateType::kNormal;
   bool is_resizing = false;
   bool is_active = false;
 
@@ -522,7 +521,7 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
 
   EXPECT_FALSE(shell_surface->GetWidget());
   EXPECT_TRUE(suggested_size.IsEmpty());
-  EXPECT_EQ(ash::mojom::WindowStateType::NORMAL, has_state_type);
+  EXPECT_EQ(ash::WindowStateType::kNormal, has_state_type);
 
   gfx::Size buffer_size(64, 64);
   std::unique_ptr<Buffer> buffer(
@@ -534,7 +533,7 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
   EXPECT_TRUE(shell_surface->GetWidget());
   EXPECT_EQ(maximized_bounds.size(), suggested_size);
-  EXPECT_EQ(ash::mojom::WindowStateType::MAXIMIZED, has_state_type);
+  EXPECT_EQ(ash::WindowStateType::kMaximized, has_state_type);
   shell_surface->Restore();
   shell_surface->AcknowledgeConfigure(0);
   // It should be restored to the original geometry size.
@@ -544,7 +543,7 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
   shell_surface->AcknowledgeConfigure(0);
   EXPECT_EQ(CurrentContext()->bounds().size().ToString(),
             suggested_size.ToString());
-  EXPECT_EQ(ash::mojom::WindowStateType::FULLSCREEN, has_state_type);
+  EXPECT_EQ(ash::WindowStateType::kFullscreen, has_state_type);
   shell_surface->SetFullscreen(false);
   shell_surface->AcknowledgeConfigure(0);
   EXPECT_EQ(geometry.size(), shell_surface->CalculatePreferredSize());

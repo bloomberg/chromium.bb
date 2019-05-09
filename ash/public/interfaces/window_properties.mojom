@@ -56,9 +56,6 @@ const string kIsDraggingTabs_Property = "ash:is-dragging-tabs";
 // If true, the window is currently showing in overview mode.
 const string kIsShowingInOverview_Property = "ash:is-showing-in-overview";
 
-// A property key to store the window state the window had before entering PIP.
-const string kPrePipWindowStateType_Property = "ash:pre-pip-window-state-type";
-
 // A property key to store the address of the source window that the drag
 // originated from if the window is currently in tab-dragging process.
 const string kTabDraggingSourceWindow_Property =

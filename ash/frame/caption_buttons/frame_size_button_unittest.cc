@@ -93,7 +93,7 @@ class FrameSizeButtonTest : public AshTestBase {
   }
 
   // Returns true if the window has |state_type|.
-  bool HasStateType(mojom::WindowStateType state_type) const {
+  bool HasStateType(WindowStateType state_type) const {
     return window_state()->GetStateType() == state_type;
   }
 
@@ -214,7 +214,7 @@ TEST_F(FrameSizeButtonTest, ButtonDrag) {
   generator->MoveMouseTo(CenterPointInScreen(close_button()));
   generator->ReleaseLeftButton();
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(HasStateType(mojom::WindowStateType::RIGHT_SNAPPED));
+  EXPECT_TRUE(HasStateType(WindowStateType::kRightSnapped));
 
   // Snap left.
   generator->MoveMouseTo(CenterPointInScreen(size_button()));
@@ -222,7 +222,7 @@ TEST_F(FrameSizeButtonTest, ButtonDrag) {
   generator->MoveMouseTo(CenterPointInScreen(minimize_button()));
   generator->ReleaseLeftButton();
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(HasStateType(mojom::WindowStateType::LEFT_SNAPPED));
+  EXPECT_TRUE(HasStateType(WindowStateType::kLeftSnapped));
 
   // 2) Test with scroll gestures.
   // Snap right.
@@ -230,14 +230,14 @@ TEST_F(FrameSizeButtonTest, ButtonDrag) {
                                    CenterPointInScreen(close_button()),
                                    base::TimeDelta::FromMilliseconds(100), 3);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(HasStateType(mojom::WindowStateType::RIGHT_SNAPPED));
+  EXPECT_TRUE(HasStateType(WindowStateType::kRightSnapped));
 
   // Snap left.
   generator->GestureScrollSequence(CenterPointInScreen(size_button()),
                                    CenterPointInScreen(minimize_button()),
                                    base::TimeDelta::FromMilliseconds(100), 3);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(HasStateType(mojom::WindowStateType::LEFT_SNAPPED));
+  EXPECT_TRUE(HasStateType(WindowStateType::kLeftSnapped));
 
   // 3) Test with tap gestures.
   const float touch_default_radius =
@@ -247,12 +247,12 @@ TEST_F(FrameSizeButtonTest, ButtonDrag) {
   generator->MoveMouseTo(CenterPointInScreen(size_button()));
   generator->PressMoveAndReleaseTouchTo(CenterPointInScreen(close_button()));
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(HasStateType(mojom::WindowStateType::RIGHT_SNAPPED));
+  EXPECT_TRUE(HasStateType(WindowStateType::kRightSnapped));
   // Snap left.
   generator->MoveMouseTo(CenterPointInScreen(size_button()));
   generator->PressMoveAndReleaseTouchTo(CenterPointInScreen(minimize_button()));
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(HasStateType(mojom::WindowStateType::LEFT_SNAPPED));
+  EXPECT_TRUE(HasStateType(WindowStateType::kLeftSnapped));
   ui::GestureConfiguration::GetInstance()->set_default_radius(
       touch_default_radius);
 }
@@ -272,7 +272,7 @@ TEST_F(FrameSizeButtonTest, SnapLeftOvershootMinimize) {
   generator->MoveMouseBy(-minimize_button()->width(), 0);
   generator->ReleaseLeftButton();
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(HasStateType(mojom::WindowStateType::LEFT_SNAPPED));
+  EXPECT_TRUE(HasStateType(WindowStateType::kLeftSnapped));
 }
 
 // Test that right clicking the size button has no effect.
@@ -354,7 +354,7 @@ TEST_F(FrameSizeButtonTest, ResetButtonsAfterClick) {
   // Release the mouse, snapping the window left.
   generator->ReleaseLeftButton();
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(HasStateType(mojom::WindowStateType::LEFT_SNAPPED));
+  EXPECT_TRUE(HasStateType(WindowStateType::kLeftSnapped));
 
   // None of the buttons should stay pressed and the buttons should have their
   // regular icons.
@@ -386,7 +386,7 @@ TEST_F(FrameSizeButtonTest, ResetButtonsAfterClick) {
   // Release the mouse. The window should stay snapped left.
   generator->ReleaseLeftButton();
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(HasStateType(mojom::WindowStateType::LEFT_SNAPPED));
+  EXPECT_TRUE(HasStateType(WindowStateType::kLeftSnapped));
 
   // The buttons should stay unpressed and the buttons should now have their
   // regular icons.
@@ -493,7 +493,7 @@ TEST_F(FrameSizeButtonTestRTL, ButtonDrag) {
   // Releasing should snap the window right.
   generator->ReleaseLeftButton();
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(HasStateType(mojom::WindowStateType::RIGHT_SNAPPED));
+  EXPECT_TRUE(HasStateType(WindowStateType::kRightSnapped));
 
   // None of the buttons should stay pressed and the buttons should have their
   // regular icons.

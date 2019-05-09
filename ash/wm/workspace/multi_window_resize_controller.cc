@@ -281,7 +281,7 @@ void MultiWindowResizeController::OnWindowDestroying(aura::Window* window) {
 
 void MultiWindowResizeController::OnPostWindowStateTypeChange(
     wm::WindowState* window_state,
-    mojom::WindowStateType old_type) {
+    WindowStateType old_type) {
   if (window_state->IsMaximized() || window_state->IsFullscreen() ||
       window_state->IsMinimized()) {
     ResetResizer();

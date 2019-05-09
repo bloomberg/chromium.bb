@@ -57,7 +57,7 @@ class ASH_EXPORT MultiWindowResizeController
 
   // wm::WindowStateObserver:
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
-                                   mojom::WindowStateType old_type) override;
+                                   WindowStateType old_type) override;
 
  private:
   friend class MultiWindowResizeControllerTest;

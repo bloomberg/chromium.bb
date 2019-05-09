@@ -28,13 +28,6 @@ class EventHandler;
 }
 
 namespace ash {
-namespace mojom {
-enum class WindowStateType;
-}
-
-namespace wm {
-class WindowState;
-}
 
 class BackdropDelegate;
 
@@ -54,12 +47,11 @@ class BackdropController : public AccessibilityObserver,
   explicit BackdropController(aura::Window* container);
   ~BackdropController() override;
 
-  void OnWindowAddedToLayout(aura::Window* child);
-  void OnWindowRemovedFromLayout(aura::Window* child);
-  void OnChildWindowVisibilityChanged(aura::Window* child, bool visible);
-  void OnWindowStackingChanged(aura::Window* window);
-  void OnPostWindowStateTypeChange(wm::WindowState* window_state,
-                                   mojom::WindowStateType old_type);
+  void OnWindowAddedToLayout();
+  void OnWindowRemovedFromLayout();
+  void OnChildWindowVisibilityChanged();
+  void OnWindowStackingChanged();
+  void OnPostWindowStateTypeChange();
   void OnDisplayMetricsChanged();
 
   void SetBackdropDelegate(std::unique_ptr<BackdropDelegate> delegate);

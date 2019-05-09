@@ -183,7 +183,7 @@ class ToplevelWindowEventHandler::ScopedWindowResizer
 
   // WindowStateObserver overrides:
   void OnPreWindowStateTypeChange(wm::WindowState* window_state,
-                                  mojom::WindowStateType type) override;
+                                  WindowStateType type) override;
 
  private:
   ToplevelWindowEventHandler* handler_;
@@ -237,7 +237,7 @@ bool ToplevelWindowEventHandler::ScopedWindowResizer::IsResize() const {
 
 void ToplevelWindowEventHandler::ScopedWindowResizer::
     OnPreWindowStateTypeChange(wm::WindowState* window_state,
-                               mojom::WindowStateType old) {
+                               WindowStateType old) {
   handler_->CompleteDrag(DragResult::SUCCESS);
 }
 

@@ -15,8 +15,8 @@
 #include "ash/public/cpp/frame_utils.h"
 #include "ash/public/cpp/touch_uma.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/window_state_type.mojom.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
@@ -86,18 +86,17 @@ bool IsV1AppBackButtonEnabled() {
 // Returns true if |window| is currently snapped in split view mode.
 bool IsSnappedInSplitView(const aura::Window* window) {
   ash::SplitViewState state = ash::SplitViewNotifier::Get()->GetCurrentState();
-  ash::mojom::WindowStateType type =
-      window->GetProperty(ash::kWindowStateTypeKey);
+  ash::WindowStateType type = window->GetProperty(ash::kWindowStateTypeKey);
   switch (state) {
     case ash::SplitViewState::kNoSnap:
       return false;
     case ash::SplitViewState::kLeftSnapped:
-      return type == ash::mojom::WindowStateType::LEFT_SNAPPED;
+      return type == ash::WindowStateType::kLeftSnapped;
     case ash::SplitViewState::kRightSnapped:
-      return type == ash::mojom::WindowStateType::RIGHT_SNAPPED;
+      return type == ash::WindowStateType::kRightSnapped;
     case ash::SplitViewState::kBothSnapped:
-      return type == ash::mojom::WindowStateType::LEFT_SNAPPED ||
-             type == ash::mojom::WindowStateType::RIGHT_SNAPPED;
+      return type == ash::WindowStateType::kLeftSnapped ||
+             type == ash::WindowStateType::kRightSnapped;
   }
 
   NOTREACHED();

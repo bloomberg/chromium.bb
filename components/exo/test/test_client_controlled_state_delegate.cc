@@ -4,7 +4,7 @@
 
 #include "components/exo/test/test_client_controlled_state_delegate.h"
 
-#include "ash/public/interfaces/window_state_type.mojom.h"
+#include "ash/public/cpp/window_state_type.h"
 #include "ash/wm/window_state.h"
 #include "base/bind.h"
 #include "components/exo/client_controlled_shell_surface.h"
@@ -23,7 +23,7 @@ TestClientControlledStateDelegate::~TestClientControlledStateDelegate() =
 
 void TestClientControlledStateDelegate::HandleWindowStateRequest(
     ash::wm::WindowState* window_state,
-    ash::mojom::WindowStateType next_state) {
+    ash::WindowStateType next_state) {
   views::Widget* widget =
       views::Widget::GetWidgetForNativeWindow(window_state->window());
   ClientControlledShellSurface* shell_surface =
@@ -33,17 +33,17 @@ void TestClientControlledStateDelegate::HandleWindowStateRequest(
                                           next_state);
 
   switch (next_state) {
-    case ash::mojom::WindowStateType::NORMAL:
-    case ash::mojom::WindowStateType::DEFAULT:
+    case ash::WindowStateType::kNormal:
+    case ash::WindowStateType::kDefault:
       shell_surface->SetRestored();
       break;
-    case ash::mojom::WindowStateType::MINIMIZED:
+    case ash::WindowStateType::kMinimized:
       shell_surface->SetMinimized();
       break;
-    case ash::mojom::WindowStateType::MAXIMIZED:
+    case ash::WindowStateType::kMaximized:
       shell_surface->SetMaximized();
       break;
-    case ash::mojom::WindowStateType::FULLSCREEN:
+    case ash::WindowStateType::kFullscreen:
       shell_surface->SetFullscreen(true);
       break;
     default:
@@ -55,7 +55,7 @@ void TestClientControlledStateDelegate::HandleWindowStateRequest(
 
 void TestClientControlledStateDelegate::HandleBoundsRequest(
     ash::wm::WindowState* window_state,
-    ash::mojom::WindowStateType requested_state,
+    ash::WindowStateType requested_state,
     const gfx::Rect& bounds) {
   views::Widget* widget =
       views::Widget::GetWidgetForNativeWindow(window_state->window());
@@ -70,9 +70,9 @@ void TestClientControlledStateDelegate::HandleBoundsRequest(
   shell_surface->SetBounds(display_id, bounds);
 
   if (requested_state != window_state->GetStateType()) {
-    DCHECK(requested_state == ash::mojom::WindowStateType::LEFT_SNAPPED ||
-           requested_state == ash::mojom::WindowStateType::RIGHT_SNAPPED);
-    if (requested_state == ash::mojom::WindowStateType::LEFT_SNAPPED)
+    DCHECK(requested_state == ash::WindowStateType::kLeftSnapped ||
+           requested_state == ash::WindowStateType::kRightSnapped);
+    if (requested_state == ash::WindowStateType::kLeftSnapped)
       shell_surface->SetSnappedToLeft();
     else
       shell_surface->SetSnappedToRight();
