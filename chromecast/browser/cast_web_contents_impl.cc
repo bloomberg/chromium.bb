@@ -62,8 +62,12 @@ CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
       last_state_(PageState::IDLE),
       enabled_for_dev_(init_params.enabled_for_dev),
       use_cma_renderer_(init_params.use_cma_renderer),
+      handle_inner_contents_(init_params.handle_inner_contents),
       remote_debugging_server_(
           shell::CastBrowserProcess::GetInstance()->remote_debugging_server()),
+      media_blocker_(init_params.use_media_blocker
+                         ? std::make_unique<CastMediaBlocker>(web_contents_)
+                         : nullptr),
       tab_id_(init_params.is_root_window ? 0 : next_tab_id++),
       main_frame_loaded_(false),
       closing_(false),
@@ -173,6 +177,16 @@ void CastWebContentsImpl::Stop(int error_code) {
   DCHECK_NE(PageState::LOADING, page_state_);
   DCHECK_NE(PageState::LOADED, page_state_);
   NotifyObservers();
+}
+
+void CastWebContentsImpl::BlockMediaLoading(bool blocked) {
+  if (media_blocker_)
+    media_blocker_->BlockMediaLoading(blocked);
+}
+
+void CastWebContentsImpl::EnableBackgroundVideoPlayback(bool enabled) {
+  if (media_blocker_)
+    media_blocker_->EnableBackgroundVideoPlayback(enabled);
 }
 
 void CastWebContentsImpl::SetDelegate(CastWebContents::Delegate* delegate) {
@@ -511,16 +525,21 @@ void CastWebContentsImpl::ResourceLoadComplete(
 
 void CastWebContentsImpl::InnerWebContentsCreated(
     content::WebContents* inner_web_contents) {
+  if (!handle_inner_contents_ || !delegate_)
+    return;
   auto result = inner_contents_.insert(std::make_unique<CastWebContentsImpl>(
-      inner_web_contents, InitParams{nullptr, enabled_for_dev_}));
-  if (delegate_)
-    delegate_->InnerContentsCreated(result.first->get(), this);
+      inner_web_contents,
+      InitParams{nullptr, enabled_for_dev_, false /* use_cma_renderer */,
+                 false /* is_root_window */, false /* handle_inner_contents */,
+                 false /* use_media_blocker */}));
+  delegate_->InnerContentsCreated(result.first->get(), this);
 }
 
 void CastWebContentsImpl::WebContentsDestroyed() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   closing_ = false;
   DisableDebugging();
+  media_blocker_.reset();
   content::WebContentsObserver::Observe(nullptr);
   web_contents_ = nullptr;
   Stop(net::OK);

@@ -154,14 +154,23 @@ class CastWebContents {
 
   // Initialization parameters for CastWebContents.
   struct InitParams {
-    Delegate* delegate;
-    // Whether the underlying WebContents is exposed to the remote debugger.
-    bool enabled_for_dev;
+    // Delegate for CastWebContents. This can be null for an inner WebContents.
+    Delegate* delegate = nullptr;
+    // Enable development mode for this CastWebCastWebContents. Whitelists
+    // certain functionality for the WebContents, like remote debugging and
+    // debugging interfaces.
+    bool enabled_for_dev = false;
     // Chooses a media renderer for the WebContents.
-    bool use_cma_renderer;
+    bool use_cma_renderer = false;
     // Whether the WebContents is a root native window, or if it is embedded in
     // another WebContents (see Delegate::InnerContentsCreated()).
     bool is_root_window = false;
+    // Whether inner WebContents events should be handled. If this is set to
+    // true, then inner WebContents will automatically have a CastWebContents
+    // created and notify the delegate.
+    bool handle_inner_contents = false;
+    // Construct internal media blocker and enable BlockMediaLoading().
+    bool use_media_blocker = false;
   };
 
   // Page state for the main frame.
@@ -219,6 +228,18 @@ class CastWebContents {
   // reload the page without waiting for the WebContents owner to tear down the
   // page.
   virtual void Stop(int error_code) = 0;
+
+  // ===========================================================================
+  // Media Management
+  // ===========================================================================
+
+  // Block/unblock media from loading in all RenderFrames for the WebContents.
+  virtual void BlockMediaLoading(bool blocked) = 0;
+  virtual void EnableBackgroundVideoPlayback(bool enabled) = 0;
+
+  // ===========================================================================
+  // Utility Methods
+  // ===========================================================================
 
   // Used to add or remove |observer| to the ObserverList in the implementation.
   // These functions should only be invoked by CastWebContents::Observer in a

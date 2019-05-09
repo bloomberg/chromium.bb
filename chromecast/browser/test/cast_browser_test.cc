@@ -59,7 +59,9 @@ void CastBrowserTest::PostRunTestOnMainThread() {
 content::WebContents* CastBrowserTest::CreateWebView() {
   CastWebView::CreateParams params;
   params.delegate = this;
-  params.enabled_for_dev = true;
+  params.web_contents_params.delegate = this;
+  params.web_contents_params.use_cma_renderer = true;
+  params.web_contents_params.enabled_for_dev = true;
   params.window_params.delegate = this;
   cast_web_view_ =
       web_contents_manager_->CreateWebView(params, nullptr, /* site_instance */

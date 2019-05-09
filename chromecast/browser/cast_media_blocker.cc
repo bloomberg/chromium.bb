@@ -7,17 +7,24 @@
 #include <utility>
 
 #include "base/threading/thread_checker.h"
+#include "chromecast/common/mojom/media_playback_options.mojom.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 namespace chromecast {
-namespace shell {
+
+CastMediaBlocker::CastMediaBlocker(content::WebContents* web_contents)
+    : CastMediaBlocker(content::MediaSession::Get(web_contents)) {
+  content::WebContentsObserver::Observe(web_contents);
+}
 
 CastMediaBlocker::CastMediaBlocker(content::MediaSession* media_session)
     : blocked_(false),
       paused_by_user_(true),
       suspended_(true),
       controllable_(false),
+      background_video_playback_enabled_(false),
       media_session_(media_session) {
   media_session::mojom::MediaSessionObserverPtr observer;
   observer_binding_.Bind(mojo::MakeRequest(&observer));
@@ -50,6 +57,14 @@ void CastMediaBlocker::BlockMediaLoading(bool blocked) {
     paused_by_user_ = true;
     Resume();
   }
+}
+
+void CastMediaBlocker::EnableBackgroundVideoPlayback(bool enabled) {
+  if (!web_contents())
+    return;
+
+  background_video_playback_enabled_ = enabled;
+  UpdateBackgroundVideoPlaybackState();
 }
 
 void CastMediaBlocker::MediaSessionInfoChanged(
@@ -115,5 +130,54 @@ void CastMediaBlocker::Resume() {
   media_session_->Resume(content::MediaSession::SuspendType::kSystem);
 }
 
-}  // namespace shell
+void CastMediaBlocker::RenderFrameCreated(
+    content::RenderFrameHost* render_frame_host) {
+  UpdateRenderFrameMediaBlockedState(render_frame_host);
+  UpdateRenderFrameBackgroundVideoPlaybackState(render_frame_host);
+}
+
+void CastMediaBlocker::RenderViewReady() {
+  UpdateMediaBlockedState();
+}
+
+void CastMediaBlocker::UpdateMediaBlockedState() {
+  if (!web_contents())
+    return;
+
+  const std::vector<content::RenderFrameHost*> frames =
+      web_contents()->GetAllFrames();
+  for (content::RenderFrameHost* frame : frames) {
+    UpdateRenderFrameMediaBlockedState(frame);
+  }
+}
+
+void CastMediaBlocker::UpdateBackgroundVideoPlaybackState() {
+  if (!web_contents())
+    return;
+  const std::vector<content::RenderFrameHost*> frames =
+      web_contents()->GetAllFrames();
+  for (content::RenderFrameHost* frame : frames) {
+    UpdateRenderFrameBackgroundVideoPlaybackState(frame);
+  }
+}
+
+void CastMediaBlocker::UpdateRenderFrameMediaBlockedState(
+    content::RenderFrameHost* render_frame_host) {
+  DCHECK(render_frame_host);
+  chromecast::shell::mojom::MediaPlaybackOptionsAssociatedPtr
+      media_playback_options;
+  render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
+      &media_playback_options);
+  media_playback_options->SetMediaLoadingBlocked(media_loading_blocked());
+}
+
+void CastMediaBlocker::UpdateRenderFrameBackgroundVideoPlaybackState(
+    content::RenderFrameHost* frame) {
+  chromecast::shell::mojom::MediaPlaybackOptionsAssociatedPtr
+      media_playback_options;
+  frame->GetRemoteAssociatedInterfaces()->GetInterface(&media_playback_options);
+  media_playback_options->SetBackgroundVideoPlaybackEnabled(
+      background_video_playback_enabled_);
+}
+
 }  // namespace chromecast

@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "chromecast/browser/cast_media_blocker.h"
 #include "chromecast/browser/cast_web_contents.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -52,6 +53,8 @@ class CastWebContentsImpl : public CastWebContents,
       const InterfaceSet& interface_set,
       service_manager::InterfaceProvider* interface_provider) override;
   service_manager::BinderRegistry* binder_registry() override;
+  void BlockMediaLoading(bool blocked) override;
+  void EnableBackgroundVideoPlayback(bool enabled) override;
 
   // Observer interface:
   void AddObserver(Observer* observer) override;
@@ -99,7 +102,9 @@ class CastWebContentsImpl : public CastWebContents,
   PageState last_state_;
   const bool enabled_for_dev_;
   bool use_cma_renderer_;
+  const bool handle_inner_contents_;
   shell::RemoteDebuggingServer* const remote_debugging_server_;
+  std::unique_ptr<CastMediaBlocker> media_blocker_;
 
   base::flat_set<std::unique_ptr<CastWebContents>> inner_contents_;
   std::vector<RendererFeature> renderer_features_;
