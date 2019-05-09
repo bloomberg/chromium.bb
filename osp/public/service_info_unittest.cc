@@ -4,6 +4,8 @@
 
 #include "osp/public/service_info.h"
 
+#include <utility>
+
 #include "osp_base/error.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
@@ -43,4 +45,10 @@ TEST(ServiceInfoTest, Compare) {
   EXPECT_NE(receiver1, receiver1_ipv6);
 }
 
+TEST(ServiceInfoTest, Update) {
+  ServiceInfo original{"foo", "baz", 1, {{192, 168, 1, 10}, 12345}, {}};
+  const ServiceInfo updated{"foo", "buzz", 1, {{193, 169, 2, 11}, 1234}, {}};
+  original.Update("buzz", 1, {{193, 169, 2, 11}, 1234}, {});
+  EXPECT_EQ(original, updated);
+}
 }  // namespace openscreen

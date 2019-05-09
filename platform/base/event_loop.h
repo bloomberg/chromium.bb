@@ -22,6 +22,7 @@ static constexpr int kUdpMaxPacketSize = 1 << 16;
 
 struct ReceivedData {
   ReceivedData();
+  ReceivedData(ReceivedData&&) MAYBE_NOEXCEPT;
   ~ReceivedData();
 
   IPEndpoint source;

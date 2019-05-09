@@ -9,6 +9,7 @@
 #include <string>
 
 #include "osp_base/ip_address.h"
+#include "osp_base/macros.h"
 #include "platform/api/network_interface.h"
 
 namespace openscreen {
@@ -16,10 +17,17 @@ namespace openscreen {
 // This contains canonical information about a specific Open Screen service
 // found on the network via our discovery mechanism (mDNS).
 struct ServiceInfo {
+  ServiceInfo() = default;
+  ServiceInfo(ServiceInfo&&) MAYBE_NOEXCEPT = default;
+  ServiceInfo(const ServiceInfo&) MAYBE_NOEXCEPT = default;
+
+  ServiceInfo& operator=(ServiceInfo&&) MAYBE_NOEXCEPT = default;
+  ServiceInfo& operator=(const ServiceInfo&) MAYBE_NOEXCEPT = default;
+
   bool operator==(const ServiceInfo& other) const;
   bool operator!=(const ServiceInfo& other) const;
 
-  bool Update(std::string&& friendly_name,
+  bool Update(std::string friendly_name,
               platform::NetworkInterfaceIndex network_interface_index,
               const IPEndpoint& v4_endpoint,
               const IPEndpoint& v6_endpoint);

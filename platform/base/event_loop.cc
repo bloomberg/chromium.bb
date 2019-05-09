@@ -4,6 +4,8 @@
 
 #include "platform/base/event_loop.h"
 
+#include <utility>
+
 #include "platform/api/logging.h"
 #include "platform/api/socket.h"
 
@@ -11,6 +13,7 @@ namespace openscreen {
 namespace platform {
 
 ReceivedData::ReceivedData() = default;
+ReceivedData::ReceivedData(ReceivedData&&) = default;
 ReceivedData::~ReceivedData() = default;
 
 Error ReceiveDataFromEvent(const UdpSocketReadableEvent& read_event,
