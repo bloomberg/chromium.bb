@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/ash/ash_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -25,6 +26,7 @@ class LauncherAnimationsTest : public UIPerformanceTest {
   void SetUpOnMainThread() override {
     UIPerformanceTest::SetUpOnMainThread();
 
+    test::PopulateDummyAppListItems(100);
     if (base::SysInfo::IsRunningOnChromeOS()) {
       base::RunLoop run_loop;
       base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),

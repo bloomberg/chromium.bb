@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/ash/ash_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -29,6 +30,7 @@ class LauncherDragTest : public UIPerformanceTest {
   void SetUpOnMainThread() override {
     UIPerformanceTest::SetUpOnMainThread();
 
+    test::PopulateDummyAppListItems(100);
     // Ash may not be ready to receive events right away.
     int warmup_seconds = base::SysInfo::IsRunningOnChromeOS() ? 5 : 1;
     base::RunLoop run_loop;
