@@ -2590,6 +2590,17 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         return new PageViewTimer(mTabModelSelector);
     }
 
+    /**
+     * TODO(https://crbug.com/931496): Revisit this as part of the broader discussion around
+     * activity-specific UI customizations.
+     * @return Whether this Activity supports the App Menu.
+     */
+    public boolean supportsAppMenu() {
+        // Derived classes that disable the toolbar should also have the Menu disabled without
+        // having to explicitly disable the Menu as well.
+        return getToolbarLayoutId() != NO_TOOLBAR_LAYOUT;
+    }
+
     /** Returns {@link BottomSheetController}, if present. */
     @Nullable
     public BottomSheetController getBottomSheetController() {

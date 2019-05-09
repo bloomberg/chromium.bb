@@ -795,13 +795,17 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         super.initializeToolbar();
         if (mIntentDataProvider.isMediaViewer()) {
             getToolbarManager().setToolbarShadowVisibility(View.GONE);
-
-            // The media viewer has no default menu items, so if there are also no custom items, we
-            // should hide the menu button altogether.
-            if (mIntentDataProvider.getMenuTitles().isEmpty()) {
-                getToolbarManager().getToolbar().disableMenuButton();
-            }
         }
+    }
+
+    @Override
+    public boolean supportsAppMenu() {
+        // The media viewer has no default menu items, so if there are also no custom items, we
+        // should disable the menu altogether.
+        if (mIntentDataProvider.isMediaViewer() && mIntentDataProvider.getMenuTitles().isEmpty()) {
+            return false;
+        }
+        return super.supportsAppMenu();
     }
 
     /**

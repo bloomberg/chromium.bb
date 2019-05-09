@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.widget.emptybackground;
 
 import android.app.Activity;
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
 import android.view.ViewStub;
@@ -38,7 +39,7 @@ public class EmptyBackgroundViewWrapper {
     private final SnackbarManager mSnackbarManager;
 
     private EmptyBackgroundViewTablet mBackgroundView;
-    private final AppMenuHandler mMenuHandler;
+    private final @Nullable AppMenuHandler mMenuHandler;
 
     /**
      * Creates a {@link EmptyBackgroundViewWrapper} instance that will lazily inflate.
@@ -54,8 +55,8 @@ public class EmptyBackgroundViewWrapper {
      *                             is in overview mode.
      */
     public EmptyBackgroundViewWrapper(TabModelSelector selector, TabCreator tabCreator,
-            Activity activity, AppMenuHandler menuHandler, SnackbarManager snackbarManager,
-            OverviewModeBehavior overviewModeBehavior) {
+            Activity activity, @Nullable AppMenuHandler menuHandler,
+            SnackbarManager snackbarManager, OverviewModeBehavior overviewModeBehavior) {
         mActivity = activity;
         mMenuHandler = menuHandler;
         mTabModelSelector = selector;
@@ -126,7 +127,7 @@ public class EmptyBackgroundViewWrapper {
                 R.id.empty_container_stub)).inflate();
         mBackgroundView.setTabModelSelector(mTabModelSelector);
         mBackgroundView.setTabCreator(mTabCreator);
-        mBackgroundView.setMenuOnTouchListener(mMenuHandler);
+        if (mMenuHandler != null) mBackgroundView.setMenuOnTouchListener(mMenuHandler);
         mBackgroundView.addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
             @Override
             public void onViewDetachedFromWindow(View v) {

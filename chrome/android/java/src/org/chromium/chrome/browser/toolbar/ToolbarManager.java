@@ -189,7 +189,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private TemplateUrlServiceObserver mTemplateUrlObserver;
     private LocationBar mLocationBar;
     private FindToolbarManager mFindToolbarManager;
-    private AppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
+    private @Nullable AppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
     private OverviewModeBehavior mOverviewModeBehavior;
     private LayoutManager mLayoutManager;
 
@@ -899,9 +899,11 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         if (tab == null) return;
         ChromeActivity activity = tab.getActivity();
 
-        if (!mAppMenuPropertiesDelegate.isTranslateMenuItemVisible(tab)) return;
-        if (!TranslateBridge.shouldShowManualTranslateIPH(tab)) return;
-
+        if (mAppMenuPropertiesDelegate == null
+                || !mAppMenuPropertiesDelegate.isTranslateMenuItemVisible(tab)
+                || !TranslateBridge.shouldShowManualTranslateIPH(tab)) {
+            return;
+        }
         // Find out if the help UI should appear.
         final Tracker tracker = TrackerFactory.getTrackerForProfile(tab.getProfile());
         if (!tracker.shouldTriggerHelpUI(featureName)) return;
@@ -983,7 +985,9 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
                 mTabModelSelector.getModel(isIncognito).closeAllTabs();
             };
-            mAppMenuButtonHelper.setOnClickRunnable(() -> recordBottomToolbarUseForIPH());
+            if (mAppMenuButtonHelper != null) {
+                mAppMenuButtonHelper.setOnClickRunnable(() -> recordBottomToolbarUseForIPH());
+            }
             mBottomControlsCoordinator.initializeWithNative(mActivity,
                     mActivity.getCompositorViewHolder().getResourceManager(),
                     mActivity.getCompositorViewHolder().getLayoutManager(),
@@ -1787,7 +1791,9 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             if (profile != null) {
                 mBookmarkBridge = new BookmarkBridge(profile);
                 mBookmarkBridge.addObserver(mBookmarksObserver);
-                mAppMenuPropertiesDelegate.setBookmarkBridge(mBookmarkBridge);
+                if (mAppMenuPropertiesDelegate != null) {
+                    mAppMenuPropertiesDelegate.setBookmarkBridge(mBookmarkBridge);
+                }
                 mLocationBar.setAutocompleteProfile(profile);
             }
             mCurrentProfile = profile;

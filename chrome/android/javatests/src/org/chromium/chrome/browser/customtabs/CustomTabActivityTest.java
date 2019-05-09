@@ -86,6 +86,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.TabsOpenedFromExternalAppTest;
 import org.chromium.chrome.browser.WarmupManager;
+import org.chromium.chrome.browser.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.browserservices.Origin;
@@ -238,10 +239,12 @@ public class CustomTabActivityTest {
         // first, otherwise the UI is manipulated on a non-UI thread.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             if (getActivity() == null) return;
-            AppMenuHandler handler = getActivity()
-                                             .getRootUiCoordinatorForTesting()
-                                             .getAppMenuCoordinatorForTesting()
-                                             .getAppMenuHandler();
+            AppMenuCoordinator coordinator = getActivity()
+                                                     .getRootUiCoordinatorForTesting()
+                                                     .getAppMenuCoordinatorForTesting();
+            // CCT doesn't always have a menu (ex. in the media viewer).
+            if (coordinator == null) return;
+            AppMenuHandler handler = coordinator.getAppMenuHandler();
             if (handler != null) handler.hideAppMenu();
         });
         mWebServer.shutdown();
@@ -595,7 +598,7 @@ public class CustomTabActivityTest {
     }
 
     /**
-     * Test the entries in app menu for media viewer.
+     * Test the App Menu does not show for media viewer.
      */
     @Test
     @SmallTest
@@ -607,13 +610,12 @@ public class CustomTabActivityTest {
         IntentHandler.addTrustedIntentExtras(intent);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
-        openAppMenuAndAssertMenuShown();
-        Menu menu = mCustomTabActivityTestRule.getMenu();
-        final int expectedMenuSize = 0;
-
-        Assert.assertNotNull("App menu is not initialized: ", menu);
-        assertEquals(expectedMenuSize, getActualMenuSize(menu));
-        assertEquals(expectedMenuSize, getVisibleMenuSize(menu));
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            getActivity().onMenuOrKeyboardAction(R.id.show_menu, false);
+            Assert.assertNull(getActivity()
+                                      .getRootUiCoordinatorForTesting()
+                                      .getAppMenuCoordinatorForTesting());
+        });
     }
 
     /**

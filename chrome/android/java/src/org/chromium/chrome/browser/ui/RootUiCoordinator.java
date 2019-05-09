@@ -11,6 +11,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.appmenu.AppMenuCoordinator;
+import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
@@ -28,7 +29,7 @@ import org.chromium.ui.base.DeviceFormFactor;
 public class RootUiCoordinator implements Destroyable, NativeInitObserver, InflationObserver,
                                           ChromeActivity.MenuOrKeyboardActionHandler {
     private ChromeActivity mActivity;
-    private AppMenuCoordinator mAppMenuCoordinator;
+    private @Nullable AppMenuCoordinator mAppMenuCoordinator;
     private @Nullable ImmersiveModeManager mImmersiveModeManager;
     private SystemUiCoordinator mSystemUiCoordinator;
 
@@ -57,12 +58,17 @@ public class RootUiCoordinator implements Destroyable, NativeInitObserver, Infla
 
     @Override
     public void onPostInflationStartup() {
-        mAppMenuCoordinator = new AppMenuCoordinator(mActivity, mActivity.getLifecycleDispatcher(),
-                mActivity.getToolbarManager(), mActivity, mActivity.getWindow().getDecorView());
-        if (mActivity.getToolbarManager() != null) {
+        // TODO(https://crbug.com/931496): Revisit this as part of the broader
+        // discussion around activity-specific UI customizations.
+        if (mActivity.supportsAppMenu()) {
+            mAppMenuCoordinator = new AppMenuCoordinator(mActivity,
+                    mActivity.getLifecycleDispatcher(), mActivity.getToolbarManager(), mActivity,
+                    mActivity.getWindow().getDecorView());
             mActivity.getToolbarManager().onAppMenuInitialized(
                     mAppMenuCoordinator.getAppMenuHandler(),
                     mAppMenuCoordinator.getAppMenuPropertiesDelegate());
+        } else if (mActivity.getToolbarManager() != null) {
+            mActivity.getToolbarManager().getToolbar().disableMenuButton();
         }
 
         mImmersiveModeManager = AppHooks.get().createImmersiveModeManager(
@@ -79,15 +85,19 @@ public class RootUiCoordinator implements Destroyable, NativeInitObserver, Infla
     @Override
     public void onFinishNativeInitialization() {
         mSystemUiCoordinator.onNativeInitialized(mActivity.getOverviewModeBehavior());
-        mAppMenuCoordinator.onNativeInitialized(mActivity.getOverviewModeBehavior());
+        if (mAppMenuCoordinator != null) {
+            mAppMenuCoordinator.onNativeInitialized(mActivity.getOverviewModeBehavior());
+        }
 
         // TODO(twellington): Move to a TabbedRootUiCoordinator or delegate?
         if (mActivity.getActivityType() == ChromeActivity.ActivityType.TABBED
                 && DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity)) {
-            EmptyBackgroundViewWrapper bgViewWrapper = new EmptyBackgroundViewWrapper(
-                    mActivity.getTabModelSelector(), mActivity.getTabCreator(false), mActivity,
-                    mAppMenuCoordinator.getAppMenuHandler(), mActivity.getSnackbarManager(),
-                    mActivity.getOverviewModeBehavior());
+            AppMenuHandler appMenuHandler =
+                    mAppMenuCoordinator == null ? null : mAppMenuCoordinator.getAppMenuHandler();
+            EmptyBackgroundViewWrapper bgViewWrapper =
+                    new EmptyBackgroundViewWrapper(mActivity.getTabModelSelector(),
+                            mActivity.getTabCreator(false), mActivity, appMenuHandler,
+                            mActivity.getSnackbarManager(), mActivity.getOverviewModeBehavior());
             bgViewWrapper.initialize();
         }
     }
