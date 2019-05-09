@@ -183,7 +183,7 @@ void LoopbackStream::OnMemberJoinedGroup(LoopbackGroupMember* member) {
       std::forward_as_tuple(input_params, network_->output_params()));
   DCHECK(emplace_result.second);  // There was no pre-existing map entry.
   SnooperNode* const snooper = &(emplace_result.first->second);
-  member->StartSnooping(snooper, Snoopable::SnoopingMode::kDeferred);
+  member->StartSnooping(snooper);
   network_->AddInput(snooper);
 }
 
@@ -199,7 +199,7 @@ void LoopbackStream::OnMemberLeftGroup(LoopbackGroupMember* member) {
   const auto snoop_it = snoopers_.find(member);
   DCHECK(snoop_it != snoopers_.end());
   SnooperNode* const snooper = &(snoop_it->second);
-  member->StopSnooping(snooper, Snoopable::SnoopingMode::kDeferred);
+  member->StopSnooping(snooper);
   network_->RemoveInput(snooper);
   snoopers_.erase(snoop_it);
 }

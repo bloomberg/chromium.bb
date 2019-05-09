@@ -230,6 +230,7 @@ class InputController final : public StreamMonitor {
     const std::unique_ptr<media::AudioProcessor> audio_processor_;
     media::AudioParameters output_params_;
     Snoopable* monitored_output_stream_ = nullptr;
+    std::unique_ptr<media::AudioBus> clamped_bus_;
   };
 #endif  // defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
 
