@@ -1,5 +1,10 @@
 [
   {
+    "prefix": "disable-accept-language-header",
+    "base": "http/tests/navigation/language",
+    "args": ["--disable-features=AcceptLanguageHeader"]
+  },
+  {
     "prefix": "gpu",
     "base": "fast/canvas",
     "args": ["--enable-accelerated-2d-canvas"]

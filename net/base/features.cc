@@ -7,6 +7,11 @@
 namespace net {
 namespace features {
 
+// Toggles the `Accept-Language` HTTP request header, which
+// https://github.com/WICG/lang-client-hint proposes that we deprecate.
+const base::Feature kAcceptLanguageHeader{"AcceptLanguageHeader",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kCapRefererHeaderLength = {
     "CapRefererHeaderLength", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::FeatureParam<int> kMaxRefererHeaderLength = {
