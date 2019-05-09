@@ -22,7 +22,6 @@
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button_border.h"
-#include "ui/views/controls/button/label_button_label.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/painter.h"
 #include "ui/views/style/platform_style.h"
@@ -175,44 +174,60 @@ void LabelButton::SetImageLabelSpacing(int spacing) {
   InvalidateLayout();
 }
 
+std::unique_ptr<LabelButtonBorder> LabelButton::CreateDefaultBorder() const {
+  if (style_ != Button::STYLE_TEXTBUTTON)
+    return std::make_unique<LabelButtonAssetBorder>(style_);
+  std::unique_ptr<LabelButtonBorder> border =
+      std::make_unique<LabelButtonBorder>();
+  border->set_insets(
+      views::LabelButtonAssetBorder::GetDefaultInsetsForStyle(style_));
+  return border;
+}
+
+void LabelButton::SetBorder(std::unique_ptr<Border> border) {
+  border_is_themed_border_ = false;
+  View::SetBorder(std::move(border));
+  ResetCachedPreferredSize();
+}
+
 gfx::Size LabelButton::CalculatePreferredSize() const {
-  if (cached_preferred_size_valid_)
-    return cached_preferred_size_;
+  // Cache the computed size, as recomputing it is an expensive operation.
+  if (!cached_preferred_size_valid_) {
+    // Use a temporary label copy for sizing to avoid calculation side-effects.
+    Label label(GetText(), {label_->font_list()});
+    label.SetLineHeight(label_->line_height());
+    label.SetShadows(label_->shadows());
 
-  // Use a temporary label copy for sizing to avoid calculation side-effects.
-  Label label(GetText(), {label_->font_list()});
-  label.SetLineHeight(label_->line_height());
-  label.SetShadows(label_->shadows());
+    if (style_ == STYLE_BUTTON) {
+      // Some text appears wider when rendered normally than when rendered bold.
+      // Accommodate the widest, as buttons may show bold and shouldn't resize.
+      const int current_width = label.GetPreferredSize().width();
+      label.SetFontList(cached_default_button_font_list_);
+      if (label.GetPreferredSize().width() < current_width)
+        label.SetFontList(label_->font_list());
+    }
 
-  if (style_ == STYLE_BUTTON) {
-    // Some text appears wider when rendered normally than when rendered bold.
-    // Accommodate the widest, as buttons may show bold and shouldn't resize.
-    const int current_width = label.GetPreferredSize().width();
-    label.SetFontList(cached_default_button_font_list_);
-    if (label.GetPreferredSize().width() < current_width)
-      label.SetFontList(label_->font_list());
+    // Calculate the required size.
+    const gfx::Size preferred_label_size = label.GetPreferredSize();
+    gfx::Size size = GetUnclampedSizeWithoutLabel();
+    size.Enlarge(preferred_label_size.width(), 0);
+
+    // Increase the height of the label (with insets) if larger.
+    size.set_height(std::max(
+        preferred_label_size.height() + GetInsets().height(), size.height()));
+
+    size.SetToMax(min_size_);
+
+    // Clamp size to max size (if valid).
+    if (max_size_.width() > 0)
+      size.set_width(std::min(max_size_.width(), size.width()));
+    if (max_size_.height() > 0)
+      size.set_height(std::min(max_size_.height(), size.height()));
+
+    cached_preferred_size_valid_ = true;
+    cached_preferred_size_ = size;
   }
 
-  // Calculate the required size.
-  const gfx::Size preferred_label_size = label.GetPreferredSize();
-  gfx::Size size = GetUnclampedSizeWithoutLabel();
-  size.Enlarge(preferred_label_size.width(), 0);
-
-  // Increase the height of the label (with insets) if larger.
-  size.set_height(std::max(preferred_label_size.height() + GetInsets().height(),
-                           size.height()));
-
-  size.SetToMax(min_size_);
-
-  // Clamp size to max size (if valid).
-  if (max_size_.width() > 0)
-    size.set_width(std::min(max_size_.width(), size.width()));
-  if (max_size_.height() > 0)
-    size.set_height(std::min(max_size_.height(), size.height()));
-
-  // Cache this computed size, as recomputing it is an expensive operation.
-  cached_preferred_size_valid_ = true;
-  cached_preferred_size_ = size;
   return cached_preferred_size_;
 }
 
@@ -312,53 +327,6 @@ void LabelButton::EnableCanvasFlippingForRTLUI(bool flip) {
   image_->EnableCanvasFlippingForRTLUI(flip);
 }
 
-std::unique_ptr<LabelButtonBorder> LabelButton::CreateDefaultBorder() const {
-  if (style_ != Button::STYLE_TEXTBUTTON)
-    return std::make_unique<LabelButtonAssetBorder>(style_);
-  std::unique_ptr<LabelButtonBorder> border =
-      std::make_unique<LabelButtonBorder>();
-  border->set_insets(views::LabelButtonAssetBorder::GetDefaultInsetsForStyle(
-      style_));
-  return border;
-}
-
-void LabelButton::SetBorder(std::unique_ptr<Border> border) {
-  border_is_themed_border_ = false;
-  View::SetBorder(std::move(border));
-  ResetCachedPreferredSize();
-}
-
-Label* LabelButton::label() const {
-  return label_;
-}
-
-gfx::Rect LabelButton::GetChildAreaBounds() {
-  return GetLocalBounds();
-}
-
-void LabelButton::OnFocus() {
-  Button::OnFocus();
-  // Typically the border renders differently when focused.
-  SchedulePaint();
-}
-
-void LabelButton::OnBlur() {
-  Button::OnBlur();
-  // Typically the border renders differently when focused.
-  SchedulePaint();
-}
-
-void LabelButton::OnThemeChanged() {
-  ResetColorsFromNativeTheme();
-  UpdateThemedBorder();
-  ResetLabelEnabledColor();
-  // Invalidate the layout to pickup the new insets from the border.
-  InvalidateLayout();
-  // The entire button has to be repainted here, since the native theme can
-  // define the tint for the entire background/border/focus ring.
-  SchedulePaint();
-}
-
 void LabelButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (is_default())
     node_data->AddState(ax::mojom::State::kDefault);
@@ -378,14 +346,64 @@ void LabelButton::RemoveLayerBeneathView(ui::Layer* old_layer) {
   image()->DestroyLayer();
 }
 
-void LabelButton::StateChanged(ButtonState old_state) {
-  const gfx::Size previous_image_size(image_->GetPreferredSize());
-  UpdateImage();
-  ResetLabelEnabledColor();
-  label_->SetEnabled(state() != STATE_DISABLED);
-  if (image_->GetPreferredSize() != previous_image_size)
-    InvalidateLayout();
-  Button::StateChanged(old_state);
+ui::NativeTheme::Part LabelButton::GetThemePart() const {
+  return ui::NativeTheme::kPushButton;
+}
+
+gfx::Rect LabelButton::GetThemePaintRect() const {
+  return GetLocalBounds();
+}
+
+ui::NativeTheme::State LabelButton::GetThemeState(
+    ui::NativeTheme::ExtraParams* params) const {
+  GetExtraParams(params);
+  switch (state()) {
+    case STATE_NORMAL:
+      return ui::NativeTheme::kNormal;
+    case STATE_HOVERED:
+      return ui::NativeTheme::kHovered;
+    case STATE_PRESSED:
+      return ui::NativeTheme::kPressed;
+    case STATE_DISABLED:
+      return ui::NativeTheme::kDisabled;
+    case STATE_COUNT:
+      NOTREACHED() << "Unknown state: " << state();
+  }
+  return ui::NativeTheme::kNormal;
+}
+
+const gfx::Animation* LabelButton::GetThemeAnimation() const {
+  return &hover_animation();
+}
+
+ui::NativeTheme::State LabelButton::GetBackgroundThemeState(
+    ui::NativeTheme::ExtraParams* params) const {
+  GetExtraParams(params);
+  return ui::NativeTheme::kNormal;
+}
+
+ui::NativeTheme::State LabelButton::GetForegroundThemeState(
+    ui::NativeTheme::ExtraParams* params) const {
+  GetExtraParams(params);
+  return ui::NativeTheme::kHovered;
+}
+
+void LabelButton::UpdateImage() {
+  image_->SetImage(GetImage(GetVisualState()));
+  ResetCachedPreferredSize();
+}
+
+void LabelButton::UpdateThemedBorder() {
+  // Don't override borders set by others.
+  if (!border_is_themed_border_)
+    return;
+
+  SetBorder(PlatformStyle::CreateThemedLabelButtonBorder(this));
+  border_is_themed_border_ = true;
+}
+
+gfx::Rect LabelButton::GetChildAreaBounds() {
+  return GetLocalBounds();
 }
 
 void LabelButton::GetExtraParams(ui::NativeTheme::ExtraParams* params) const {
@@ -457,65 +475,47 @@ void LabelButton::UpdateStyleToIndicateDefaultStatus() {
   ResetLabelEnabledColor();
 }
 
-void LabelButton::UpdateImage() {
-  image_->SetImage(GetImage(GetVisualState()));
-  ResetCachedPreferredSize();
-}
-
-void LabelButton::UpdateThemedBorder() {
-  // Don't override borders set by others.
-  if (!border_is_themed_border_)
-    return;
-
-  SetBorder(PlatformStyle::CreateThemedLabelButtonBorder(this));
-  border_is_themed_border_ = true;
-}
-
-void LabelButton::SetTextInternal(const base::string16& text) {
-  SetAccessibleName(text);
-  label_->SetText(text);
-}
-
 void LabelButton::ChildPreferredSizeChanged(View* child) {
   ResetCachedPreferredSize();
   PreferredSizeChanged();
 }
 
-ui::NativeTheme::Part LabelButton::GetThemePart() const {
-  return ui::NativeTheme::kPushButton;
+void LabelButton::OnFocus() {
+  Button::OnFocus();
+  // Typically the border renders differently when focused.
+  SchedulePaint();
 }
 
-gfx::Rect LabelButton::GetThemePaintRect() const {
-  return GetLocalBounds();
+void LabelButton::OnBlur() {
+  Button::OnBlur();
+  // Typically the border renders differently when focused.
+  SchedulePaint();
 }
 
-ui::NativeTheme::State LabelButton::GetThemeState(
-    ui::NativeTheme::ExtraParams* params) const {
-  GetExtraParams(params);
-  switch (state()) {
-    case STATE_NORMAL:   return ui::NativeTheme::kNormal;
-    case STATE_HOVERED:  return ui::NativeTheme::kHovered;
-    case STATE_PRESSED:  return ui::NativeTheme::kPressed;
-    case STATE_DISABLED: return ui::NativeTheme::kDisabled;
-    case STATE_COUNT:    NOTREACHED() << "Unknown state: " << state();
-  }
-  return ui::NativeTheme::kNormal;
+void LabelButton::OnThemeChanged() {
+  ResetColorsFromNativeTheme();
+  UpdateThemedBorder();
+  ResetLabelEnabledColor();
+  // Invalidate the layout to pickup the new insets from the border.
+  InvalidateLayout();
+  // The entire button has to be repainted here, since the native theme can
+  // define the tint for the entire background/border/focus ring.
+  SchedulePaint();
 }
 
-const gfx::Animation* LabelButton::GetThemeAnimation() const {
-  return &hover_animation();
+void LabelButton::StateChanged(ButtonState old_state) {
+  const gfx::Size previous_image_size(image_->GetPreferredSize());
+  UpdateImage();
+  ResetLabelEnabledColor();
+  label_->SetEnabled(state() != STATE_DISABLED);
+  if (image_->GetPreferredSize() != previous_image_size)
+    InvalidateLayout();
+  Button::StateChanged(old_state);
 }
 
-ui::NativeTheme::State LabelButton::GetBackgroundThemeState(
-    ui::NativeTheme::ExtraParams* params) const {
-  GetExtraParams(params);
-  return ui::NativeTheme::kNormal;
-}
-
-ui::NativeTheme::State LabelButton::GetForegroundThemeState(
-    ui::NativeTheme::ExtraParams* params) const {
-  GetExtraParams(params);
-  return ui::NativeTheme::kHovered;
+void LabelButton::SetTextInternal(const base::string16& text) {
+  SetAccessibleName(text);
+  label_->SetText(text);
 }
 
 void LabelButton::ResetCachedPreferredSize() {

@@ -14,6 +14,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/label_button_label.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/native_theme_delegate.h"
@@ -23,7 +24,6 @@ namespace views {
 
 class InkDropContainerView;
 class LabelButtonBorder;
-class LabelButtonLabel;
 
 // LabelButton is a button with text and an icon, it's not focusable by default.
 class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
@@ -89,7 +89,7 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // subclasses.
   virtual std::unique_ptr<LabelButtonBorder> CreateDefaultBorder() const;
 
-  // View:
+  // Button:
   void SetBorder(std::unique_ptr<Border> border) override;
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int w) const override;
@@ -100,9 +100,20 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   void AddLayerBeneathView(ui::Layer* new_layer) override;
   void RemoveLayerBeneathView(ui::Layer* old_layer) override;
 
+  // NativeThemeDelegate:
+  ui::NativeTheme::Part GetThemePart() const override;
+  gfx::Rect GetThemePaintRect() const override;
+  ui::NativeTheme::State GetThemeState(
+      ui::NativeTheme::ExtraParams* params) const override;
+  const gfx::Animation* GetThemeAnimation() const override;
+  ui::NativeTheme::State GetBackgroundThemeState(
+      ui::NativeTheme::ExtraParams* params) const override;
+  ui::NativeTheme::State GetForegroundThemeState(
+      ui::NativeTheme::ExtraParams* params) const override;
+
  protected:
   ImageView* image() const { return image_; }
-  Label* label() const;
+  Label* label() const { return label_; }
   InkDropContainerView* ink_drop_container() const {
     return ink_drop_container_;
   }
@@ -111,17 +122,23 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
     return explicitly_set_colors_[STATE_NORMAL];
   }
 
+  const std::array<bool, STATE_COUNT>& explicitly_set_colors() const {
+    return explicitly_set_colors_;
+  }
+  void set_explicitly_set_colors(const std::array<bool, STATE_COUNT>& colors) {
+    explicitly_set_colors_ = colors;
+  }
+
+  // Updates the image view to contain the appropriate button state image.
+  void UpdateImage();
+
+  // Updates the border as per the NativeTheme, unless a different border was
+  // set with SetBorder.
+  void UpdateThemedBorder();
+
   // Returns the available area for the label and image. Subclasses can change
   // these bounds if they need room to do manual painting.
   virtual gfx::Rect GetChildAreaBounds();
-
-  // View:
-  void OnFocus() override;
-  void OnBlur() override;
-  void OnThemeChanged() override;
-
-  // Button:
-  void StateChanged(ButtonState old_state) override;
 
   // Fills |params| with information about the button.
   virtual void GetExtraParams(ui::NativeTheme::ExtraParams* params) const;
@@ -133,38 +150,15 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // |is_default()|.
   virtual void UpdateStyleToIndicateDefaultStatus();
 
-  // Updates the image view to contain the appropriate button state image.
-  void UpdateImage();
-
-  // Updates the border as per the NativeTheme, unless a different border was
-  // set with SetBorder.
-  void UpdateThemedBorder();
-
-  // NativeThemeDelegate:
-  gfx::Rect GetThemePaintRect() const override;
-
-  const std::array<bool, STATE_COUNT>& explicitly_set_colors() const {
-    return explicitly_set_colors_;
-  }
-  void set_explicitly_set_colors(const std::array<bool, STATE_COUNT>& colors) {
-    explicitly_set_colors_ = colors;
-  }
+  // Button:
+  void ChildPreferredSizeChanged(View* child) override;
+  void OnFocus() override;
+  void OnBlur() override;
+  void OnThemeChanged() override;
+  void StateChanged(ButtonState old_state) override;
 
  private:
   void SetTextInternal(const base::string16& text);
-
-  // View:
-  void ChildPreferredSizeChanged(View* child) override;
-
-  // NativeThemeDelegate:
-  ui::NativeTheme::Part GetThemePart() const override;
-  ui::NativeTheme::State GetThemeState(
-      ui::NativeTheme::ExtraParams* params) const override;
-  const gfx::Animation* GetThemeAnimation() const override;
-  ui::NativeTheme::State GetBackgroundThemeState(
-      ui::NativeTheme::ExtraParams* params) const override;
-  ui::NativeTheme::State GetForegroundThemeState(
-      ui::NativeTheme::ExtraParams* params) const override;
 
   // Resets |cached_preferred_size_| and marks |cached_preferred_size_valid_|
   // as false.
