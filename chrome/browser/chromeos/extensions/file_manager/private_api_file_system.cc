@@ -750,12 +750,18 @@ void GetFileMetadataOnIOThread(
       base::BindOnce(&GetFileMetadataRespondOnUIThread, std::move(callback)));
 }
 
-// Gets the available space of the |path|.
-int64_t GetLocalDiskSpace(const base::FilePath& path) {
-  if (!base::PathExists(path)) {
-    return std::numeric_limits<int64_t>::min();
+// Gets the available space of the |paths|, stopping on the first path that
+// doesn't exist.
+std::vector<int64_t> GetLocalDiskSpaces(
+    const std::vector<base::FilePath>& paths) {
+  std::vector<int64_t> result;
+  for (const auto& path : paths) {
+    if (!base::PathExists(path)) {
+      break;
+    }
+    result.push_back(base::SysInfo::AmountOfFreeDiskSpace(path));
   }
-  return base::SysInfo::AmountOfFreeDiskSpace(path);
+  return result;
 }
 
 }  // namespace
@@ -820,21 +826,22 @@ void FileManagerPrivateInternalStartCopyFunction::RunAfterGetFileMetadata(
     return;
   }
 
-  base::FilePath destination_dir;
-  if (destination_url_.filesystem_id() ==
-      drive::util::GetDriveMountPointPath(chrome_details_.GetProfile())
-          .BaseName()
-          .value()) {
-    // Google Drive's cache is limited by the available space on the local disk.
-    destination_dir = file_manager::util::GetMyFilesFolderForProfile(
-        chrome_details_.GetProfile());
-  } else {
-    destination_dir = destination_url_.path().DirName();
+  auto* drive_integration_service =
+      drive::util::GetIntegrationServiceByProfile(chrome_details_.GetProfile());
+  std::vector<base::FilePath> destination_dirs;
+  if (drive_integration_service &&
+      drive_integration_service->GetMountPointPath().IsParent(
+          destination_url_.path())) {
+    // Google Drive's cache is limited by the available space on the local disk
+    // as well as the cloud storage.
+    destination_dirs.push_back(file_manager::util::GetMyFilesFolderForProfile(
+        chrome_details_.GetProfile()));
   }
+  destination_dirs.push_back(destination_url_.path().DirName());
 
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&GetLocalDiskSpace, destination_dir),
+      base::BindOnce(&GetLocalDiskSpaces, std::move(destination_dirs)),
       base::BindOnce(
           &FileManagerPrivateInternalStartCopyFunction::RunAfterCheckDiskSpace,
           this, file_info.size));
@@ -842,40 +849,51 @@ void FileManagerPrivateInternalStartCopyFunction::RunAfterGetFileMetadata(
 
 void FileManagerPrivateInternalStartCopyFunction::RunAfterCheckDiskSpace(
     int64_t space_needed,
-    int64_t space_available) {
-  if (space_available < 0) {
+    const std::vector<int64_t>& spaces_available) {
+  auto* drive_integration_service =
+      drive::util::GetIntegrationServiceByProfile(chrome_details_.GetProfile());
+  if (spaces_available.empty()) {
     // It might be a virtual path. In this case we just assume that it has
     // enough space.
     RunAfterFreeDiskSpace(true);
-  } else if (destination_url_.filesystem_id() ==
-                 file_manager::util::GetDownloadsMountPointName(
-                     chrome_details_.GetProfile()) ||
-             destination_url_.filesystem_id() ==
-                 drive::util::GetDriveMountPointPath(
-                     chrome_details_.GetProfile())
-                     .BaseName()
-                     .value()) {
-    // If the destination directory is local hard drive or Google Drive we
-    // must leave some additional space to make sure we don't break the system.
-    if (space_available - cryptohome::kMinFreeSpaceInBytes > space_needed) {
-      RunAfterFreeDiskSpace(true);
-    } else {
-      // Also we can try to secure needed space by freeing Drive caches.
-      drive::FileSystemInterface* const drive_file_system =
-          drive::util::GetFileSystemByProfile(chrome_details_.GetProfile());
-      if (!drive_file_system) {
-        RunAfterFreeDiskSpace(false);
-      } else {
-        drive_file_system->FreeDiskSpaceIfNeededFor(
-            space_needed,
-            base::Bind(&FileManagerPrivateInternalStartCopyFunction::
-                           RunAfterFreeDiskSpace,
-                       this));
-      }
-    }
-  } else {
-    RunAfterFreeDiskSpace(space_available > space_needed);
+    return;
   }
+  // If the target is not internal storage or Drive, succeed if sufficient space
+  // is available.
+  if (destination_url_.filesystem_id() !=
+          file_manager::util::GetDownloadsMountPointName(
+              chrome_details_.GetProfile()) &&
+      !(drive_integration_service &&
+        drive_integration_service->GetMountPointPath().IsParent(
+            destination_url_.path()))) {
+    RunAfterFreeDiskSpace(spaces_available[0] > space_needed);
+    return;
+  }
+
+  // If there isn't enough cloud space, fail.
+  if (spaces_available.size() > 1 && spaces_available[1] < space_needed) {
+    RunAfterFreeDiskSpace(false);
+    return;
+  }
+
+  // If the destination directory is local hard drive or Google Drive we
+  // must leave some additional space to make sure we don't break the system.
+  if (spaces_available[0] - cryptohome::kMinFreeSpaceInBytes > space_needed) {
+    RunAfterFreeDiskSpace(true);
+    return;
+  }
+  // Also we can try to secure needed space by freeing Drive caches.
+  drive::FileSystemInterface* const drive_file_system =
+      drive::util::GetFileSystemByProfile(chrome_details_.GetProfile());
+  if (!drive_file_system) {
+    RunAfterFreeDiskSpace(false);
+    return;
+  }
+  drive_file_system->FreeDiskSpaceIfNeededFor(
+      space_needed,
+      base::Bind(
+          &FileManagerPrivateInternalStartCopyFunction::RunAfterFreeDiskSpace,
+          this));
 }
 
 void FileManagerPrivateInternalStartCopyFunction::RunAfterFreeDiskSpace(
