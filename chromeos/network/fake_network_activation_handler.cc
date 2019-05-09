@@ -32,13 +32,14 @@ FakeNetworkActivationHandler::ActivationParams::ActivationParams(
 
 FakeNetworkActivationHandler::ActivationParams::~ActivationParams() = default;
 
-void FakeNetworkActivationHandler::ActivationParams::InvokeSuccessCallback() {
+void FakeNetworkActivationHandler::ActivationParams::InvokeSuccessCallback()
+    const {
   success_callback_.Run();
 }
 
 void FakeNetworkActivationHandler::ActivationParams::InvokeErrorCallback(
     const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
+    std::unique_ptr<base::DictionaryValue> error_data) const {
   error_callback_.Run(error_name, std::move(error_data));
 }
 
