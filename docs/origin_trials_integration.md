@@ -71,6 +71,63 @@ partial interface Navigator {
 }
 ```
 
+### Web Feature Counting
+
+Once the feature is created, in order to run the origin trial you need to track
+how often users use your feature. You can do it in two ways.
+
+#### Increment counter in your c++ code.
+
+1. Add your feature counter to end of [web\_feature.mojom]:
+
+```
+enum WebFeature {
+  // ...
+  kLastFeatureBeforeYours = 1235,
+  // Here, increment the last feature count before yours by 1.
+  kMyFeature = 1236,
+
+  kNumberOfFeatures,  // This enum value must be last.
+};
+```
+2. Run [update\_use\_counter\_feature\_enum.py] to update the UMA mapping.
+
+3. Increment your feature counter in c++ code.
+```c++
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+
+// ...
+
+  if (OriginTrials::myFeatureEnabled()) {
+    UseCounter::Count(context, WebFeature::kMyFeature);
+  }
+```
+
+#### Update counter with \[Measure\] IDL attribute
+
+1. Add \[[Measure]\] IDL attribute
+```
+partial interface Navigator {
+  [OriginTrialEnabled=MyFeature, Measure]
+  readonly attribute MyFeatureManager myFeature;
+```
+
+2. The code to increment your feature counter will be generated in V8
+    automatically. But it requires you to follow \[[Measure]\] IDL attribute
+    naming convention when you will add your feature counter to
+    [web\_feature.mojom].
+```
+enum WebFeature {
+  // ...
+  kLastFeatureBeforeYours = 1235,
+  // Here, increment the last feature count before yours by 1.
+  kV8Navigator_MyFeature_AttributeGetter = 1236,
+
+  kNumberOfFeatures,  // This enum value must be last.
+};
+```
+
+
 **NOTE:** Your feature implementation must not persist the result of the enabled
 check. Your code should simply call `OriginTrials::myFeatureEnabled()` as often
 as necessary to gate access to your feature.
@@ -139,3 +196,6 @@ as tests for script-added tokens. For examples, refer to the existing tests in
 [origin_trials/webexposed]: /third_party/blink/web_tests/http/tests/origin_trials/webexposed/
 [runtime\_enabled\_features.json5]: /third_party/blink/renderer/platform/runtime_enabled_features.json5
 [trial_token_unittest.cc]: /third_party/blink/common/origin_trials/trial_token_unittest.cc
+[web\_feature.mojom]: /third_party/blink/public/mojom/web_feature/web_feature.mojom
+[update\_use\_counter\_feature\_enum.py]: /tools/metrics/histograms/update_use_counter_feature_enum.py
+[Measure]: /third_party/blink/renderer/bindings/IDLExtendedAttributes.md#Measure_i_m_a_c
