@@ -42,8 +42,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceSchedulerParamsManager {
 
     // True if requests to servers that support prioritization (e.g.,
     // H2/SPDY/QUIC) should be delayed similar to other HTTP 1.1 requests.
-    // However, requests from such servers are not subject to
-    // kMaxNumDelayableRequestsPerHostPerClient limit.
     bool delay_requests_on_multiplexed_connections;
 
     // The maximum duration for which a request is queued after after which the

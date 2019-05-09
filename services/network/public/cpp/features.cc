@@ -45,6 +45,13 @@ const base::Feature kReporting{"Reporting", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kThrottleDelayable{"ThrottleDelayable",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When kPriorityRequestsDelayableOnSlowConnections is enabled, HTTP
+// requests fetched from a SPDY/QUIC/H2 proxies can be delayed by the
+// ResourceScheduler just as HTTP/1.1 resources are. However, requests from such
+// servers are not subject to kMaxNumDelayableRequestsPerHostPerClient limit.
+const base::Feature kDelayRequestsOnMultiplexedConnections{
+    "DelayRequestsOnMultiplexedConnections", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Kill switch for enforcing
 // URLLoaderFactoryParams::request_initiator_origin_lock for Cross-Origin Read
 // Blocking.  When enabled, then CORB treats |request_initiator| as opaque

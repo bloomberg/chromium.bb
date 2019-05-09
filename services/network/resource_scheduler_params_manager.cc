@@ -56,17 +56,17 @@ GetParamsForNetworkQualityContainer() {
   result.emplace(std::make_pair(
       net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
       ResourceSchedulerParamsManager::ParamsForNetworkQuality(
-          8, 3.0, true /* delay_requests_on_multiplexed_connections */,
+          8, 3.0, false /* delay_requests_on_multiplexed_connections */,
           base::nullopt)));
   result.emplace(std::make_pair(
       net::EFFECTIVE_CONNECTION_TYPE_2G,
       ResourceSchedulerParamsManager::ParamsForNetworkQuality(
-          8, 3.0, true /* delay_requests_on_multiplexed_connections */,
+          8, 3.0, false /* delay_requests_on_multiplexed_connections */,
           base::nullopt)));
   result.emplace(std::make_pair(
       net::EFFECTIVE_CONNECTION_TYPE_3G,
       ResourceSchedulerParamsManager::ParamsForNetworkQuality(
-          8, 3.0, true /* delay_requests_on_multiplexed_connections */,
+          8, 3.0, false /* delay_requests_on_multiplexed_connections */,
           base::nullopt)));
 
   for (int config_param_index = 1; config_param_index <= 20;
@@ -107,6 +107,40 @@ GetParamsForNetworkQualityContainer() {
           ResourceSchedulerParamsManager::ParamsForNetworkQuality(
               max_delayable_requests, non_delayable_weight, false,
               base::nullopt)));
+    }
+  }
+
+  // Next, read the experiments params for
+  // DelayRequestsOnMultiplexedConnections finch experiment, and modify |result|
+  // based on the experiment params.
+  if (base::FeatureList::IsEnabled(
+          features::kDelayRequestsOnMultiplexedConnections)) {
+    base::Optional<net::EffectiveConnectionType> max_effective_connection_type =
+        net::GetEffectiveConnectionTypeForName(
+            base::GetFieldTrialParamValueByFeature(
+                features::kDelayRequestsOnMultiplexedConnections,
+                "MaxEffectiveConnectionType"));
+
+    if (!max_effective_connection_type) {
+      // Use a default value if one is not set using field trial params.
+      max_effective_connection_type = net::EFFECTIVE_CONNECTION_TYPE_3G;
+    }
+
+    for (int ect = net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
+         ect <= max_effective_connection_type.value(); ++ect) {
+      net::EffectiveConnectionType effective_connection_type =
+          static_cast<net::EffectiveConnectionType>(ect);
+      ResourceSchedulerParamsManager::ParamsForNetworkQualityContainer::iterator
+          iter = result.find(effective_connection_type);
+      if (iter != result.end()) {
+        iter->second.delay_requests_on_multiplexed_connections = true;
+      } else {
+        result.emplace(std::make_pair(
+            effective_connection_type,
+            ResourceSchedulerParamsManager::ParamsForNetworkQuality(
+                kDefaultMaxNumDelayableRequestsPerClient, 0.0, true,
+                base::nullopt)));
+      }
     }
   }
 

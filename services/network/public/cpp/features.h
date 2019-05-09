@@ -24,6 +24,8 @@ extern const base::Feature kReporting;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kThrottleDelayable;
 COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::Feature kDelayRequestsOnMultiplexedConnections;
+COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kEnforceRequestInitiatorLockForCorb;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kFetchMetadata;
