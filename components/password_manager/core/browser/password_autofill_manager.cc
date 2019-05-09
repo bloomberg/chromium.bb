@@ -298,14 +298,13 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
 
   if (ShouldShowManualFallbackForPreLollipop(
           autofill_client_->GetSyncService())) {
-      autofill::Suggestion suggestion(
-          l10n_util::GetStringUTF8(IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS),
-          std::string(), std::string(),
-          autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY);
-      suggestions.push_back(suggestion);
+    autofill::Suggestion suggestion(
+        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS));
+    suggestion.frontend_id = autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY;
+    suggestions.push_back(suggestion);
 
-      metrics_util::LogContextOfShowAllSavedPasswordsShown(
-          metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD);
+    metrics_util::LogContextOfShowAllSavedPasswordsShown(
+        metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD);
   }
 
   metrics_util::LogPasswordDropdownShown(
@@ -338,18 +337,17 @@ bool PasswordAutofillManager::MaybeShowPasswordSuggestionsWithGeneration(
   // Add 'Generation' option.
   // The UI code will pick up an icon from the resources based on the string.
   autofill::Suggestion suggestion(
-      l10n_util::GetStringUTF8(IDS_PASSWORD_MANAGER_GENERATE_PASSWORD),
-      std::string(), std::string("keyIcon"),
-      autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY);
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_GENERATE_PASSWORD));
+  suggestion.icon = "keyIcon";
+  suggestion.frontend_id = autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY;
   suggestions.push_back(suggestion);
 
   // Add "Manage passwords".
   if (ShouldShowManualFallbackForPreLollipop(
           autofill_client_->GetSyncService())) {
     autofill::Suggestion suggestion(
-        l10n_util::GetStringUTF8(IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS),
-        std::string(), std::string(),
-        autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY);
+        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS));
+    suggestion.frontend_id = autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY;
     suggestions.push_back(suggestion);
 
     metrics_util::LogContextOfShowAllSavedPasswordsShown(

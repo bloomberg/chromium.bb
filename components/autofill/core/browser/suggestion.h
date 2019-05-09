@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 #include "ui/gfx/image/image.h"
 
 namespace autofill {
@@ -19,18 +20,19 @@ struct Suggestion {
   };
 
   Suggestion();
-
-  // Copy constructor for STL containers.
   Suggestion(const Suggestion& other);
+  Suggestion(Suggestion&& other);
 
-  explicit Suggestion(const base::string16& value);
-
+  explicit Suggestion(base::string16 value);
   // Constructor for unit tests. It will convert the strings from UTF-8 to
   // UTF-16.
-  Suggestion(const std::string& value,
-             const std::string& label,
-             const std::string& icon,
+  Suggestion(base::StringPiece value,
+             base::StringPiece label,
+             std::string icon,
              int frontend_id);
+
+  Suggestion& operator=(const Suggestion& other);
+  Suggestion& operator=(Suggestion&& other);
 
   ~Suggestion();
 
@@ -40,9 +42,8 @@ struct Suggestion {
 
   // ID for the frontend to use in identifying the particular result. Positive
   // values are sent over IPC to identify the item selected. Negative values
-  // (see popup_item_ids.h) have special built-in meanings. Default initialized
-  // to 0.
-  int frontend_id;
+  // (see popup_item_ids.h) have special built-in meanings.
+  int frontend_id = 0;
 
   base::string16 value;
   base::string16 label;
@@ -54,8 +55,9 @@ struct Suggestion {
   gfx::Image custom_icon;
   // If |custom_icon| is empty, the name of the fallback built-in icon.
   std::string icon;
-  MatchMode match;
-  bool is_value_secondary;  // |value| should be displayed as secondary text.
+  MatchMode match = PREFIX_MATCH;
+  // |value| should be displayed as secondary text.
+  bool is_value_secondary = false;
 };
 
 }  // namespace autofill
