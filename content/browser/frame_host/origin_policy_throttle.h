@@ -32,13 +32,16 @@ namespace content {
 class NavigationHandle;
 enum class OriginPolicyErrorReason;
 
+// Constant derived from the spec, https://github.com/WICG/origin-policy
+static constexpr const char* kDefaultOriginPolicyVersion = "0";
+
 // The OriginPolicyThrottle is responsible for deciding whether an origin
 // policy should be fetched, and doing so when that is positive.
 //
 // The intended use is that the navigation request will
 // - call OriginPolicyThrottle::ShouldRequestOriginPolicy to determine whether
-//   a policy should be requested and which version, and should add the
-//   appropriate SecOriginPolicy: header.
+//   a policy should be requested, and add the appropriate SecOriginPolicy:
+//   header.
 // - call OriginPolicyThrottle::MaybeCreateThrottleFor a given navigation.
 //   This will use presence of the header to decide whether to create a
 //   throttle or not.
@@ -50,10 +53,8 @@ class CONTENT_EXPORT OriginPolicyThrottle : public NavigationThrottle {
   };
 
   // Determine whether to request a policy (or advertise origin policy
-  // support) and which version.
-  // Returns whether the policy header should be sent. It it returns true,
-  // |version| will contain the policy version to use.
-  static bool ShouldRequestOriginPolicy(const GURL& url, std::string* version);
+  // support). Returns whether the policy header should be sent.
+  static bool ShouldRequestOriginPolicy(const GURL& url);
 
   // Create a throttle (if the request contains the appropriate header.
   // The throttle will handle fetching of the policy and updating the
@@ -85,6 +86,8 @@ class CONTENT_EXPORT OriginPolicyThrottle : public NavigationThrottle {
   static PolicyVersionAndReportTo
   GetRequestedPolicyAndReportGroupFromHeaderStringForTesting(
       const std::string& header);
+
+  static bool IsExemptedForTesting(const url::Origin& origin);
 
  private:
   using FetchCallback = base::OnceCallback<void(std::unique_ptr<std::string>)>;

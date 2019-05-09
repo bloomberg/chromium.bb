@@ -30,17 +30,16 @@
 
 namespace {
 // Constants derived from the spec, https://github.com/WICG/origin-policy
-static const char* kDefaultPolicy = "0";
-static const char* kDeletePolicy = "0";
-static const char* kWellKnown = "/.well-known/origin-policy/";
-static const char* kReportTo = "report-to";
-static const char* kPolicy = "policy";
+static constexpr const char* kDeletePolicy = "0";
+static constexpr const char* kWellKnown = "/.well-known/origin-policy/";
+static constexpr const char* kReportTo = "report-to";
+static constexpr const char* kPolicy = "policy";
 
 // Marker for (temporarily) exempted origins.
 // TODO(vogelheim): Make sure this is outside the value space for policy
 //                  names. A name with a comma in it shouldn't be allowed, but
 //                  I don't think we presently check this anywhere.
-static const char* kExemptedOriginPolicy = "exception,";
+static constexpr const char* kExemptedOriginPolicyVersion = "exception,";
 
 // Maximum policy size (implementation-defined limit in bytes).
 // (Limit copied from network::SimpleURLLoader::kMaxBoundedStringDownloadSize.)
@@ -56,9 +55,7 @@ void OriginPolicyAddExceptionFor(const GURL& url) {
 }
 
 // static
-bool OriginPolicyThrottle::ShouldRequestOriginPolicy(
-    const GURL& url,
-    std::string* request_version) {
+bool OriginPolicyThrottle::ShouldRequestOriginPolicy(const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   bool origin_policy_enabled =
       base::FeatureList::IsEnabled(features::kOriginPolicy) ||
@@ -70,13 +67,6 @@ bool OriginPolicyThrottle::ShouldRequestOriginPolicy(
   if (!url.SchemeIs(url::kHttpsScheme))
     return false;
 
-  if (request_version) {
-    const KnownVersionMap& versions = GetKnownVersions();
-    const auto iter = versions.find(url::Origin::Create(url));
-    bool has_version = iter != versions.end();
-    bool use_default = !has_version || iter->second == kExemptedOriginPolicy;
-    *request_version = use_default ? std::string(kDefaultPolicy) : iter->second;
-  }
   return true;
 }
 
@@ -95,14 +85,13 @@ OriginPolicyThrottle::MaybeCreateThrottleFor(NavigationHandle* handle) {
   // TODO(vogelheim): Rewrite & hoist up this DCHECK to ensure that ..HasHeader
   //     and ShouldRequestOriginPolicy are always equal on entry to the method.
   //     This depends on https://crbug.com/881234 being fixed.
-  DCHECK(OriginPolicyThrottle::ShouldRequestOriginPolicy(handle->GetURL(),
-                                                         nullptr));
+  DCHECK(OriginPolicyThrottle::ShouldRequestOriginPolicy(handle->GetURL()));
   return base::WrapUnique(new OriginPolicyThrottle(handle));
 }
 
 // static
 void OriginPolicyThrottle::AddExceptionFor(const GURL& url) {
-  GetKnownVersions()[url::Origin::Create(url)] = kExemptedOriginPolicy;
+  GetKnownVersions()[url::Origin::Create(url)] = kExemptedOriginPolicyVersion;
 }
 
 OriginPolicyThrottle::~OriginPolicyThrottle() {}
@@ -157,7 +146,7 @@ OriginPolicyThrottle::WillProcessResponse() {
   }
 
   // Process policy exceptions.
-  if (iter != versions.end() && iter->second == kExemptedOriginPolicy) {
+  if (iter != versions.end() && iter->second == kExemptedOriginPolicyVersion) {
     return NavigationThrottle::PROCEED;
   }
 
@@ -402,5 +391,14 @@ void OriginPolicyThrottle::Report(OriginPolicyErrorReason reason) {
 #else
 void OriginPolicyThrottle::Report(OriginPolicyErrorReason reason) {}
 #endif  // BUILDFLAG(ENABLE_REPORTING)
+
+bool OriginPolicyThrottle::IsExemptedForTesting(const url::Origin& origin) {
+  KnownVersionMap& versions = GetKnownVersions();
+  auto iter = versions.find(origin);
+  if (iter != versions.end())
+    return iter->second == kExemptedOriginPolicyVersion;
+
+  return false;
+}
 
 }  // namespace content

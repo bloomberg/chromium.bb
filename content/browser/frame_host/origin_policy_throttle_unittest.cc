@@ -43,7 +43,7 @@ class OriginPolicyThrottleTest : public RenderViewHostTestHarness,
 
   void CreateHandleFor(const GURL& url) {
     net::HttpRequestHeaders headers;
-    if (OriginPolicyThrottle::ShouldRequestOriginPolicy(url, nullptr))
+    if (OriginPolicyThrottle::ShouldRequestOriginPolicy(url))
       headers.SetHeader(net::HttpRequestHeaders::kSecOriginPolicy, "0");
 
     nav_handle_ = std::make_unique<MockNavigationHandle>(web_contents());
@@ -72,28 +72,10 @@ TEST_P(OriginPolicyThrottleTest, ShouldRequestOriginPolicy) {
 
   for (const auto& test_case : test_cases) {
     SCOPED_TRACE(testing::Message() << "URL: " << test_case.url);
-    EXPECT_EQ(enabled() && test_case.expect,
-              OriginPolicyThrottle::ShouldRequestOriginPolicy(
-                  GURL(test_case.url), nullptr));
+    EXPECT_EQ(
+        enabled() && test_case.expect,
+        OriginPolicyThrottle::ShouldRequestOriginPolicy(GURL(test_case.url)));
   }
-}
-
-TEST_P(OriginPolicyThrottleTest, ShouldRequestLastKnownVersion) {
-  if (!enabled())
-    return;
-
-  GURL url("https://example.org/bla");
-  EXPECT_TRUE(OriginPolicyThrottle::ShouldRequestOriginPolicy(url, nullptr));
-
-  std::string version;
-
-  OriginPolicyThrottle::ShouldRequestOriginPolicy(url, &version);
-  EXPECT_EQ(version, "0");
-
-  OriginPolicyThrottle::GetKnownVersionsForTesting()[url::Origin::Create(url)] =
-      "abcd";
-  OriginPolicyThrottle::ShouldRequestOriginPolicy(url, &version);
-  EXPECT_EQ(version, "abcd");
 }
 
 TEST_P(OriginPolicyThrottleTest, MaybeCreateThrottleFor) {
@@ -158,13 +140,9 @@ TEST_P(OriginPolicyThrottleTest, AddException) {
   OriginPolicyThrottle::GetKnownVersionsForTesting()[url::Origin::Create(url)] =
       "abcd";
 
-  std::string version;
-  OriginPolicyThrottle::ShouldRequestOriginPolicy(url, &version);
-  EXPECT_EQ(version, "abcd");
-
   OriginPolicyThrottle::AddExceptionFor(url);
-  OriginPolicyThrottle::ShouldRequestOriginPolicy(url, &version);
-  EXPECT_EQ(version, "0");
+  EXPECT_TRUE(
+      OriginPolicyThrottle::IsExemptedForTesting(url::Origin::Create(url)));
 }
 
 TEST_P(OriginPolicyThrottleTest, AddExceptionEndToEnd) {
@@ -196,10 +174,8 @@ TEST_P(OriginPolicyThrottleTest, AddExceptionEndToEnd) {
   EXPECT_FALSE(navigation->IsDeferred());
 
   // Also check that the header policy did not overwrite the exemption:
-  std::string version;
-  OriginPolicyThrottle::ShouldRequestOriginPolicy(
-      GURL("https://example.org/bla"), &version);
-  EXPECT_EQ(version, "0");
+  EXPECT_TRUE(OriginPolicyThrottle::IsExemptedForTesting(
+      url::Origin::Create(GURL("https://example.org/bla"))));
 }
 
 TEST(OriginPolicyThrottleTest, ParseHeaders) {

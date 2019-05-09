@@ -295,11 +295,9 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
   }
 
   // Ask whether we should request a policy.
-  std::string origin_policy_request;
-  if (OriginPolicyThrottle::ShouldRequestOriginPolicy(url,
-                                                      &origin_policy_request)) {
+  if (OriginPolicyThrottle::ShouldRequestOriginPolicy(url)) {
     headers->SetHeader(net::HttpRequestHeaders::kSecOriginPolicy,
-                       origin_policy_request);
+                       kDefaultOriginPolicyVersion);
   }
 
   // Next, set the HTTP Origin if needed.
