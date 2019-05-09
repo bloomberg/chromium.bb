@@ -650,9 +650,18 @@ void HintCacheStore::OnLoadHint(
 
   // If the hint exists, release it into the Hint unique_ptr contained in the
   // callback. This eliminates the need for any copies of the entry's hint.
-  std::unique_ptr<optimization_guide::proto::Hint> loaded_hint(
-      entry && entry->has_hint() ? entry->release_hint() : nullptr);
-  std::move(callback).Run(entry_key, std::move(loaded_hint));
+  if (entry && entry->has_hint()) {
+    std::unique_ptr<optimization_guide::proto::Hint> loaded_hint(
+        entry->release_hint());
+    UMA_HISTOGRAM_ENUMERATION(
+        "Previews.OptimizationGuide.HintCache.HintType.Loaded",
+        static_cast<StoreEntryType>(entry->entry_type()));
+    std::move(callback).Run(entry_key, std::move(loaded_hint));
+
+  } else {
+    std::unique_ptr<optimization_guide::proto::Hint> loaded_hint(nullptr);
+    std::move(callback).Run(entry_key, std::move(loaded_hint));
+  }
 }
 
 }  // namespace previews

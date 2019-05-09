@@ -88,21 +88,35 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
   HintsFetcherDisabledBrowserTest() = default;
   ~HintsFetcherDisabledBrowserTest() override = default;
 
+  void SetUpOnMainThread() override {
+    g_browser_process->network_quality_tracker()
+        ->ReportEffectiveConnectionTypeForTesting(
+            net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+    InProcessBrowserTest::SetUpOnMainThread();
+  }
+
   void SetUp() override {
-    https_server_.reset(
+    origin_server_.reset(
         new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
-    https_server_->ServeFilesFromSourceDirectory("chrome/test/data/previews");
-    https_server_->RegisterRequestMonitor(base::BindRepeating(
-        &HintsFetcherDisabledBrowserTest::MonitorResourceRequest,
+    origin_server_->ServeFilesFromSourceDirectory("chrome/test/data/previews");
+    origin_server_->RegisterRequestHandler(base::BindRepeating(
+        &HintsFetcherDisabledBrowserTest::HandleOriginRequest,
         base::Unretained(this)));
-    https_server_->RegisterRequestHandler(base::BindRepeating(
+
+    ASSERT_TRUE(origin_server_->Start());
+
+    https_url_ = origin_server_->GetURL("/hint_setup.html");
+    ASSERT_TRUE(https_url().SchemeIs(url::kHttpsScheme));
+
+    hints_server_.reset(
+        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+    hints_server_->ServeFilesFromSourceDirectory("chrome/test/data/previews");
+    hints_server_->RegisterRequestHandler(base::BindRepeating(
         &HintsFetcherDisabledBrowserTest::HandleGetHintsRequest,
         base::Unretained(this)));
 
-    ASSERT_TRUE(https_server_->Start());
-
-    https_url_ = https_server_->GetURL("/hint_setup.html");
-    ASSERT_TRUE(https_url().SchemeIs(url::kHttpsScheme));
+    ASSERT_TRUE(hints_server_->Start());
 
     InProcessBrowserTest::SetUp();
   }
@@ -119,7 +133,7 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
     // Set up OptimizationGuideServiceURL, this does not enable HintsFetching,
     // only provides the URL.
     cmd->AppendSwitchASCII(previews::switches::kOptimizationGuideServiceURL,
-                           https_server_->base_url().spec());
+                           hints_server_->base_url().spec());
     cmd->AppendSwitchASCII(previews::switches::kFetchHintsOverride,
                            "example1.com, example2.com");
   }
@@ -170,6 +184,20 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
     service->AddPointsForTesting(http_url2, 2);
   }
 
+  void LoadHintsForUrl(const GURL& url) {
+    base::HistogramTester histogram_tester;
+
+    // Navigate to |url| to prime the OptimizationGuide hints for the
+    // url's host and ensure that they have been loaded from the store (via
+    // histogram) prior to the navigation that tests functionality.
+    ui_test_utils::NavigateToURL(browser(), url);
+
+    RetryForHistogramUntilCountReached(
+        &histogram_tester,
+        previews::kPreviewsOptimizationGuideOnLoadedHintResultHistogramString,
+        1);
+  }
+
   const GURL& https_url() const { return https_url_; }
   const base::HistogramTester* GetHistogramTester() {
     return &histogram_tester_;
@@ -177,30 +205,38 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
 
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
-  std::unique_ptr<net::EmbeddedTestServer> https_server_;
+  std::unique_ptr<net::EmbeddedTestServer> origin_server_;
+  std::unique_ptr<net::EmbeddedTestServer> hints_server_;
   HintsFetcherRemoteResponseType response_type_ =
       HintsFetcherRemoteResponseType::kSuccessful;
 
  private:
-  // Called by |https_server_|.
-  void MonitorResourceRequest(const net::test_server::HttpRequest& request) {
-    // The request by HintsFetcher request should happen and be a POST request.
-    EXPECT_EQ(request.method, net::test_server::METHOD_POST);
+  std::unique_ptr<net::test_server::HttpResponse> HandleOriginRequest(
+      const net::test_server::HttpRequest& request) {
+    EXPECT_EQ(request.method, net::test_server::METHOD_GET);
+    std::unique_ptr<net::test_server::BasicHttpResponse> response;
+    response.reset(new net::test_server::BasicHttpResponse);
+    response->set_code(net::HTTP_OK);
+
+    return std::move(response);
   }
 
   std::unique_ptr<net::test_server::HttpResponse> HandleGetHintsRequest(
       const net::test_server::HttpRequest& request) {
     std::unique_ptr<net::test_server::BasicHttpResponse> response;
 
+    response.reset(new net::test_server::BasicHttpResponse);
+    // If the request is a GET, it corresponds to a navigation so return a
+    // normal response.
+    EXPECT_EQ(request.method, net::test_server::METHOD_POST);
     if (response_type_ == HintsFetcherRemoteResponseType::kSuccessful) {
-      response.reset(new net::test_server::BasicHttpResponse);
       response->set_code(net::HTTP_OK);
 
       optimization_guide::proto::GetHintsResponse get_hints_response;
 
       optimization_guide::proto::Hint* hint = get_hints_response.add_hints();
       hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
-      hint->set_key("host.domain.org");
+      hint->set_key(https_url_.host());
       optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
       page_hint->set_page_pattern("page pattern");
 
@@ -209,15 +245,14 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
       response->set_content(serialized_request);
     } else if (response_type_ ==
                HintsFetcherRemoteResponseType::kUnsuccessful) {
-      response.reset(new net::test_server::BasicHttpResponse);
       response->set_code(net::HTTP_NOT_FOUND);
 
     } else if (response_type_ == HintsFetcherRemoteResponseType::kMalformed) {
-      response.reset(new net::test_server::BasicHttpResponse);
       response->set_code(net::HTTP_OK);
 
       std::string serialized_request = "Not a proto";
       response->set_content(serialized_request);
+
     } else {
       NOTREACHED();
     }
@@ -226,7 +261,8 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
   }
 
   void TearDownOnMainThread() override {
-    EXPECT_TRUE(https_server_->ShutdownAndWaitUntilComplete());
+    EXPECT_TRUE(origin_server_->ShutdownAndWaitUntilComplete());
+    EXPECT_TRUE(hints_server_->ShutdownAndWaitUntilComplete());
 
     InProcessBrowserTest::TearDownOnMainThread();
   }
@@ -251,10 +287,13 @@ class HintsFetcherBrowserTest : public HintsFetcherDisabledBrowserTest {
   void SetUp() override {
     // Enable OptimizationHintsFetching with |kOptimizationHintsFetching|.
     scoped_feature_list_.InitWithFeatures(
-        {previews::features::kPreviews, previews::features::kOptimizationHints,
-         previews::features::kOptimizationHintsFetching},
+        {previews::features::kPreviews, previews::features::kNoScriptPreviews,
+         previews::features::kOptimizationHints,
+         previews::features::kResourceLoadingHints,
+         previews::features::kOptimizationHintsFetching,
+         data_reduction_proxy::features::
+             kDataReductionProxyEnabledWithNetworkService},
         {});
-
     // Call to inherited class to match same set up with feature flags added.
     HintsFetcherDisabledBrowserTest::SetUp();
   }
@@ -364,6 +403,39 @@ IN_PROC_BROWSER_TEST_F(
       "Previews.HintsFetcher.GetHintsRequest.HostCount", 2, 1);
 }
 
+IN_PROC_BROWSER_TEST_F(
+    HintsFetcherBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(HintsFetcherFetchedHintsLoaded)) {
+  const base::HistogramTester* histogram_tester = GetHistogramTester();
+  GURL url = https_url();
+
+  // Whitelist NoScript for https_url()'s' host.
+  SetUpComponentUpdateHints(https_url());
+
+  // Expect that the browser initialization will record at least one sample
+  // in each of the follow histograms as One Platform Hints are enabled.
+  EXPECT_GE(RetryForHistogramUntilCountReached(
+                histogram_tester,
+                "Previews.HintsFetcher.GetHintsRequest.HostCount", 1),
+            1);
+
+  LoadHintsForUrl(https_url());
+
+  ui_test_utils::NavigateToURL(browser(), https_url());
+
+  // Verifies that the fetched hint is loaded and not the component hint as
+  // fetched hints are prioritized.
+  histogram_tester->ExpectBucketCount(
+      "Previews.OptimizationGuide.HintCache.HintType.Loaded",
+      static_cast<int>(
+          previews::HintCacheStore::StoreEntryType::kComponentHint),
+      0);
+  histogram_tester->ExpectBucketCount(
+      "Previews.OptimizationGuide.HintCache.HintType.Loaded",
+      static_cast<int>(previews::HintCacheStore::StoreEntryType::kFetchedHint),
+      1);
+}
+
 IN_PROC_BROWSER_TEST_P(
     HintsFetcherWithResponseBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(HintsFetcherWithResponses)) {
@@ -402,10 +474,23 @@ IN_PROC_BROWSER_TEST_P(
     histogram_tester->ExpectBucketCount(
         "Previews.HintsFetcher.GetHintsRequest.NetErrorCode", net::OK, 1);
 
-    // TODO(mcrouse): Once hints are stored, validiation
-    // will be  done to show that nothing has been added to the store and hints
-    // can still be used. Current unittests cover this behavior but needed here
-    // for fault tests.
+    LoadHintsForUrl(https_url());
+
+    ui_test_utils::NavigateToURL(browser(), https_url());
+
+    // Verifies that no Fetched Hint was added to the store, only the
+    // Component hint is loaded.
+    histogram_tester->ExpectBucketCount(
+        "Previews.OptimizationGuide.HintCache.HintType.Loaded",
+        static_cast<int>(
+            previews::HintCacheStore::StoreEntryType::kComponentHint),
+        1);
+    histogram_tester->ExpectBucketCount(
+        "Previews.OptimizationGuide.HintCache.HintType.Loaded",
+        static_cast<int>(
+            previews::HintCacheStore::StoreEntryType::kFetchedHint),
+        0);
+
   } else {
     NOTREACHED();
   }
