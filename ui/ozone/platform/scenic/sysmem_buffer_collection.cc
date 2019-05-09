@@ -315,8 +315,7 @@ bool SysmemBufferCollection::CreateVkImage(size_t buffer_index,
 
   uint32_t viable_memory_types =
       properties.memoryTypeBits & requirements.memoryTypeBits;
-  uint32_t memory_type =
-      base::bits::CountLeadingZeroBits32(viable_memory_types);
+  uint32_t memory_type = base::bits::CountTrailingZeroBits(viable_memory_types);
 
   VkImportMemoryBufferCollectionFUCHSIA buffer_collection_info = {
       VK_STRUCTURE_TYPE_IMPORT_MEMORY_BUFFER_COLLECTION_FUCHSIA};
