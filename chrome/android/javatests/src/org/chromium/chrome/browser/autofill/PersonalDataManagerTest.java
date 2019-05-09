@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.test.ClearAppDataTestRule;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -52,8 +51,7 @@ public class PersonalDataManagerTest {
     @SmallTest
     @Feature({"Autofill"})
     @RetryOnFailure
-    public void testAddAndEditProfiles()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testAddAndEditProfiles() throws InterruptedException, TimeoutException {
         AutofillProfile profile = new AutofillProfile("" /* guid */, "" /* origin */, "John Smith",
                 "Acme Inc.", "1 Main\nApt A", "CA", "San Francisco", "", "94102", "", "US",
                 "4158889999", "john@acme.inc", "");
@@ -84,8 +82,7 @@ public class PersonalDataManagerTest {
     @SmallTest
     @Feature({"Autofill"})
     @RetryOnFailure
-    public void testUpdateLanguageCodeInProfile()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testUpdateLanguageCodeInProfile() throws InterruptedException, TimeoutException {
         AutofillProfile profile = new AutofillProfile("" /* guid */, "" /* origin */, "John Smith",
                 "Acme Inc.", "1 Main\nApt A", "CA", "San Francisco", "", "94102", "", "US",
                 "4158889999", "john@acme.inc", "fr");
@@ -114,8 +111,7 @@ public class PersonalDataManagerTest {
     @SmallTest
     @Feature({"Autofill"})
     @RetryOnFailure
-    public void testAddAndDeleteProfile()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testAddAndDeleteProfile() throws InterruptedException, TimeoutException {
         String profileOneGUID = mHelper.setProfile(createTestProfile());
         Assert.assertEquals(1, mHelper.getNumberOfProfilesForSettings());
 
@@ -127,8 +123,7 @@ public class PersonalDataManagerTest {
     @SmallTest
     @Feature({"Autofill"})
     @RetryOnFailure
-    public void testAddAndEditCreditCards()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testAddAndEditCreditCards() throws InterruptedException, TimeoutException {
         CreditCard card = new CreditCard(
                 "" /* guid */, "" /* origin */, "Visa", "1234123412341234", "", "5", "2020");
         String cardOneGUID = mHelper.setCreditCard(card);
@@ -166,8 +161,7 @@ public class PersonalDataManagerTest {
     @SmallTest
     @Feature({"Autofill"})
     @RetryOnFailure
-    public void testAddAndDeleteCreditCard()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testAddAndDeleteCreditCard() throws InterruptedException, TimeoutException {
         CreditCard card = new CreditCard(
                 "" /* guid */, "Chrome settings" /* origin */,
                 "Visa", "1234123412341234", "", "5", "2020");
@@ -181,8 +175,7 @@ public class PersonalDataManagerTest {
     @Test
     @SmallTest
     @Feature({"Autofill"})
-    public void testRespectCountryCodes()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testRespectCountryCodes() throws InterruptedException, TimeoutException {
         // The constructor should accept country names and ISO 3166-1-alpha-2 country codes.
         // getCountryCode() should return a country code.
         AutofillProfile profile1 = new AutofillProfile("" /* guid */, "" /* origin */, "John Smith",
@@ -208,8 +201,7 @@ public class PersonalDataManagerTest {
     @SmallTest
     @Feature({"Autofill"})
     @RetryOnFailure
-    public void testMultilineStreetAddress()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testMultilineStreetAddress() throws InterruptedException, TimeoutException {
         final String streetAddress1 = "Chez Mireille COPEAU Appartment. 2\n"
                 + "Entree A Batiment Jonquille\n"
                 + "25 RUE DE L'EGLISE";
@@ -244,7 +236,7 @@ public class PersonalDataManagerTest {
     @Test
     @SmallTest
     @Feature({"Autofill"})
-    public void testLabels() throws InterruptedException, ExecutionException, TimeoutException {
+    public void testLabels() throws InterruptedException, TimeoutException {
         AutofillProfile profile1 = new AutofillProfile("" /* guid */, "" /* origin */, "John Major",
                 "Acme Inc.", "123 Main", "California", "Los Angeles", "", "90210", "", "US",
                 "555 123-4567", "jm@example.com", "");
@@ -284,8 +276,7 @@ public class PersonalDataManagerTest {
     @Test
     @SmallTest
     @Feature({"Autofill"})
-    public void testProfilesFrecency()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testProfilesFrecency() throws InterruptedException, TimeoutException {
         // Create 3 profiles.
         AutofillProfile profile1 = new AutofillProfile("" /* guid */, "" /* origin */, "John Major",
                 "Acme Inc.", "123 Main", "California", "Los Angeles", "", "90210", "", "US",
@@ -325,8 +316,7 @@ public class PersonalDataManagerTest {
     @Test
     @SmallTest
     @Feature({"Autofill"})
-    public void testCreditCardsFrecency()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testCreditCardsFrecency() throws InterruptedException, TimeoutException {
         // Create 3 credit cards.
         CreditCard card1 = new CreditCard(
                 "" /* guid */, "" /* origin */, "Visa", "1234123412341234", "", "5", "2020");
@@ -362,8 +352,7 @@ public class PersonalDataManagerTest {
     @SmallTest
     @Feature({"Autofill"})
     @RetryOnFailure
-    public void testCreditCardsDeduping()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testCreditCardsDeduping() throws InterruptedException, TimeoutException {
         // Create a local card and an identical server card.
         CreditCard card1 = new CreditCard("" /* guid */, "" /* origin */, true /* isLocal */,
                 false /* isCached */, "John Doe", "1234123412341234", "", "5", "2020", "Visa",
@@ -390,7 +379,7 @@ public class PersonalDataManagerTest {
     @Feature({"Autofill"})
     @RetryOnFailure
     public void testProfileUseStatsSettingAndGetting()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         String guid = mHelper.setProfile(createTestProfile());
 
         // Make sure the profile does not have the specific use stats form the start.
@@ -410,7 +399,7 @@ public class PersonalDataManagerTest {
     @Feature({"Autofill"})
     @RetryOnFailure
     public void testCreditCardUseStatsSettingAndGetting()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         String guid = mHelper.setCreditCard(new CreditCard("" /* guid */, "" /* origin */,
                 true /* isLocal */, false /* isCached */, "John Doe", "1234123412341234", "", "5",
                 "2020", "Visa", 0 /* issuerIconDrawableId */, CardType.UNKNOWN,
@@ -432,8 +421,7 @@ public class PersonalDataManagerTest {
     @SmallTest
     @Feature({"Autofill"})
     @RetryOnFailure
-    public void testRecordAndLogProfileUse()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testRecordAndLogProfileUse() throws InterruptedException, TimeoutException {
         String guid = mHelper.setProfile(createTestProfile());
 
         // Set specific use stats for the profile.
@@ -458,8 +446,7 @@ public class PersonalDataManagerTest {
     @SmallTest
     @Feature({"Autofill"})
     @RetryOnFailure
-    public void testRecordAndLogCreditCardUse()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testRecordAndLogCreditCardUse() throws InterruptedException, TimeoutException {
         String guid = mHelper.setCreditCard(new CreditCard("" /* guid */, "" /* origin */,
                 true /* isLocal */, false /* isCached */, "John Doe", "1234123412341234", "", "5",
                 "2020", "Visa", 0 /* issuerIconDrawableId */, CardType.UNKNOWN,
@@ -487,8 +474,7 @@ public class PersonalDataManagerTest {
     @SmallTest
     @Feature({"Autofill"})
     @RetryOnFailure
-    public void testGetProfilesToSuggest_NoName()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testGetProfilesToSuggest_NoName() throws InterruptedException, TimeoutException {
         mHelper.setProfile(createTestProfile());
 
         List<AutofillProfile> profiles =
@@ -501,8 +487,7 @@ public class PersonalDataManagerTest {
     @SmallTest
     @Feature({"Autofill"})
     @RetryOnFailure
-    public void testGetProfilesToSuggest_WithName()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testGetProfilesToSuggest_WithName() throws InterruptedException, TimeoutException {
         mHelper.setProfile(createTestProfile());
 
         List<AutofillProfile> profiles =

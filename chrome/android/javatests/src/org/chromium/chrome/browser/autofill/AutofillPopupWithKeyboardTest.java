@@ -33,7 +33,6 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.DropdownPopupWindowInterface;
 import org.chromium.ui.R;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -63,7 +62,7 @@ public class AutofillPopupWithKeyboardTest {
     @RetryOnFailure
     @DisabledTest
     public void testShowAutofillPopupAndKeyboardimultaneously()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         mActivityTestRule.startMainActivityWithURL(UrlUtils.encodeHtmlDataUri("<html><head>"
                 + "<meta name=\"viewport\""
                 + "content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0\" /></head>"
@@ -118,7 +117,7 @@ public class AutofillPopupWithKeyboardTest {
                         return viewRef.get().findViewById(R.id.dropdown_popup_window) != null;
                     }
                 });
-        Object popupObject = TestThreadUtils.runOnUiThreadBlocking(
+        Object popupObject = TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> viewRef.get().findViewById(R.id.dropdown_popup_window).getTag());
         Assert.assertTrue(popupObject instanceof DropdownPopupWindowInterface);
         final DropdownPopupWindowInterface popup = (DropdownPopupWindowInterface) popupObject;
