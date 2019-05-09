@@ -81,8 +81,9 @@ id<GREYMatcher> addIdentityButtonInIdentityChooser() {
   [SigninEarlGreyUI signinWithIdentity:identity];
 
   // Check |identity| is signed-in.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [SigninEarlGreyUtils checkSignedInWithIdentity:identity]);
+  NSError* signedInError =
+      [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
+  GREYAssertNil(signedInError, signedInError.localizedDescription);
 }
 
 // Tests the "ADD ACCOUNT" button in the identity chooser view controller.
