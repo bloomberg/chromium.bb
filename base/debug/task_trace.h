@@ -15,8 +15,10 @@
 namespace base {
 namespace debug {
 
-// Provides a snapshot of which places in the code posted tasks with a FROM_HERE
-// that led to the TaskTrace() constructor call.
+// Provides a snapshot of which places in the code called
+// base::TaskRunner::PostTask() that led to the TaskTrace() constructor call.
+// Analogous to base::StackTrace, but for posted tasks rather than function
+// calls.
 //
 // Example usage:
 //   TaskTrace().Print();
