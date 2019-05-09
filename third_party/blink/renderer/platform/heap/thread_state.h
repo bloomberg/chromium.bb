@@ -595,6 +595,10 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   };
   GCData current_gc_data_;
 
+  // Used to ensure precise GC is only run when we don't need to scan the stack.
+  // crbug.com/937117
+  bool precise_gc_allowed_ = false;
+
   friend class BlinkGCObserver;
   friend class incremental_marking_test::IncrementalMarkingScope;
   friend class incremental_marking_test::IncrementalMarkingTestDriver;

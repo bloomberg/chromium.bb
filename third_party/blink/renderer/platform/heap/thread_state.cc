@@ -830,6 +830,8 @@ void ThreadState::RunScheduledGC(BlinkGC::StackState stack_state) {
   if (IsGCForbidden())
     return;
 
+  base::AutoReset<bool> precise_gc_allowed_scope(&precise_gc_allowed_, true);
+
   switch (GetGCState()) {
     case kForcedGCForTestingScheduled:
       CollectAllGarbageForTesting();
@@ -1459,6 +1461,13 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
                                  BlinkGC::MarkingType marking_type,
                                  BlinkGC::SweepingType sweeping_type,
                                  BlinkGC::GCReason reason) {
+  // // Precise GC must only be executed when we don't need to scan the stack.
+  // crbug.com/937117 crbug.com/937117
+  if (stack_state == BlinkGC::kNoHeapPointersOnStack &&
+      reason != BlinkGC::GCReason::kForcedGCForTesting &&
+      reason != BlinkGC::GCReason::kThreadTerminationGC)
+    CHECK(precise_gc_allowed_);
+
   // Nested garbage collection invocations are not supported.
   CHECK(!IsGCForbidden());
   // Garbage collection during sweeping is not supported. This can happen when
