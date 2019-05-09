@@ -377,6 +377,8 @@ void DOMWindow::focus(v8::Isolate* isolate) {
   ExecutionContext* incumbent_execution_context =
       incumbent_window->GetExecutionContext();
 
+  // TODO(mustaq): Use of |allow_focus| and consuming the activation here seems
+  // suspicious (https://crbug.com/959815).
   bool allow_focus = incumbent_execution_context->IsWindowInteractionAllowed();
   if (allow_focus) {
     incumbent_execution_context->ConsumeWindowInteraction();
@@ -388,8 +390,17 @@ void DOMWindow::focus(v8::Isolate* isolate) {
   }
 
   // If we're a top level window, bring the window to the front.
-  if (GetFrame()->IsMainFrame() && allow_focus)
+  if (GetFrame()->IsMainFrame() && allow_focus) {
     page->GetChromeClient().Focus(incumbent_window->GetFrame());
+  } else if (auto* local_frame = DynamicTo<LocalFrame>(GetFrame())) {
+    // We are depending on user activation twice since IsFocusAllowed() will
+    // check for activation. This should be addressed in
+    // https://crbug.com/959815.
+    if (local_frame->GetDocument() &&
+        !local_frame->GetDocument()->IsFocusAllowed()) {
+      return;
+    }
+  }
 
   page->GetFocusController().FocusDocumentView(GetFrame(),
                                                true /* notifyEmbedder */);

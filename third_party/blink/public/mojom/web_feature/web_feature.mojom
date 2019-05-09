@@ -2277,6 +2277,10 @@ enum WebFeature {
   kV8RTCQuicTransport_ReceiveDatagrams_Method = 2870,
   kV8RTCRtpReceiver_JitterBufferDelayHint_AttributeGetter = 2871,
   kV8RTCRtpReceiver_JitterBufferDelayHint_AttributeSetter = 2872,
+  kFocusWithoutUserActivationNotSandboxedNotAdFrame = 2882,
+  kFocusWithoutUserActivationNotSandboxedAdFrame = 2883,
+  kFocusWithoutUserActivationSandboxedNotAdFrame = 2884,
+  kFocusWithoutUserActivationSandboxedAdFrame = 2885,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

@@ -3344,6 +3344,9 @@ void Element::focus(const FocusParams& params) {
   if (!isConnected())
     return;
 
+  if (!GetDocument().IsFocusAllowed())
+    return;
+
   if (GetDocument().FocusedElement() == this)
     return;
 
