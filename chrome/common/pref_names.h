@@ -808,7 +808,7 @@ extern const char kRecoveryComponentNeedsElevation[];
 
 extern const char kRegisteredSupervisedUserWhitelists[];
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID)
 extern const char kCloudReportingEnabled[];
 #endif
 

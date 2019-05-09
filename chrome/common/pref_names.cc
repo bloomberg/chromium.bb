@@ -2333,7 +2333,7 @@ const char kRecoveryComponentNeedsElevation[] =
 const char kRegisteredSupervisedUserWhitelists[] =
     "supervised_users.whitelists";
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID)
 // Boolean that indicates whether Chrome enterprise cloud reporting is enabled
 // or not.
 const char kCloudReportingEnabled[] =

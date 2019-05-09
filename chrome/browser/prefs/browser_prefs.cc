@@ -214,6 +214,7 @@
 #include "components/feed/core/user_classifier.h"
 #endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
 #else   // defined(OS_ANDROID)
+#include "chrome/browser/enterprise_reporting/prefs.h"
 #include "chrome/browser/gcm/gcm_product_util.h"
 #include "chrome/browser/metrics/tab_stats_tracker.h"
 #include "chrome/browser/search/instant_service.h"
@@ -565,6 +566,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   StartupBrowserCreator::RegisterLocalStatePrefs(registry);
   task_manager::TaskManagerInterface::RegisterPrefs(registry);
   UpgradeDetector::RegisterPrefs(registry);
+  enterprise_reporting::RegisterPrefs(registry);
   // Obsolete. See MigrateObsoleteBrowserPrefs().
   registry->RegisterIntegerPref(kShowFirstRunBubbleOption, 0);
 #if !defined(OS_CHROMEOS)
