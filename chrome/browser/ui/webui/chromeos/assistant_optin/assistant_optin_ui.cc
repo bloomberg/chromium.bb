@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/public/cpp/window_properties.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,6 +27,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_features.h"
 #include "net/base/url_util.h"
+#include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 
 namespace chromeos {
@@ -121,6 +123,7 @@ void AssistantOptInDialog::Show(
   g_dialog = new AssistantOptInDialog(type, std::move(callback));
 
   g_dialog->ShowSystemDialog();
+  g_dialog->dialog_window()->SetProperty(ash::kHideInOverviewKey, true);
 }
 
 AssistantOptInDialog::AssistantOptInDialog(
