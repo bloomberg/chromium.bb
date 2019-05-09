@@ -1541,13 +1541,6 @@ CSSValue* ComputedStyleUtils::CreateTimingFunctionValue(
       return CSSIdentifierValue::Create(value_id);
     }
 
-    case TimingFunction::Type::FRAMES: {
-      const FramesTimingFunction* frames_timing_function =
-          ToFramesTimingFunction(timing_function);
-      int frames = frames_timing_function->NumberOfFrames();
-      return CSSFramesTimingFunctionValue::Create(frames);
-    }
-
     default:
       return CSSIdentifierValue::Create(CSSValueID::kLinear);
   }

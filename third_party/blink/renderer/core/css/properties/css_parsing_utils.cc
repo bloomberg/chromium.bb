@@ -152,28 +152,6 @@ CSSValue* ConsumeSteps(CSSParserTokenRange& range) {
   return CSSStepsTimingFunctionValue::Create(steps->GetIntValue(), position);
 }
 
-CSSValue* ConsumeFrames(CSSParserTokenRange& range) {
-  DCHECK_EQ(range.Peek().FunctionId(), CSSValueID::kFrames);
-  CSSParserTokenRange range_copy = range;
-  CSSParserTokenRange args =
-      css_property_parser_helpers::ConsumeFunction(range_copy);
-
-  CSSPrimitiveValue* frames =
-      css_property_parser_helpers::ConsumePositiveInteger(args);
-  if (!frames)
-    return nullptr;
-
-  int frames_int = frames->GetIntValue();
-  if (frames_int <= 1)
-    return nullptr;
-
-  if (!args.AtEnd())
-    return nullptr;
-
-  range = range_copy;
-  return CSSFramesTimingFunctionValue::Create(frames_int);
-}
-
 CSSValue* ConsumeCubicBezier(CSSParserTokenRange& range) {
   DCHECK_EQ(range.Peek().FunctionId(), CSSValueID::kCubicBezier);
   CSSParserTokenRange range_copy = range;
@@ -553,10 +531,6 @@ CSSValue* ConsumeAnimationTimingFunction(CSSParserTokenRange& range) {
   CSSValueID function = range.Peek().FunctionId();
   if (function == CSSValueID::kSteps)
     return ConsumeSteps(range);
-  if (RuntimeEnabledFeatures::FramesTimingFunctionEnabled() &&
-      function == CSSValueID::kFrames) {
-    return ConsumeFrames(range);
-  }
   if (function == CSSValueID::kCubicBezier)
     return ConsumeCubicBezier(range);
   return nullptr;

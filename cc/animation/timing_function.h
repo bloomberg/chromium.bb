@@ -20,7 +20,7 @@ class CC_ANIMATION_EXPORT TimingFunction {
   TimingFunction& operator=(const TimingFunction&) = delete;
 
   // Note that LINEAR is a nullptr TimingFunction (for now).
-  enum class Type { LINEAR, CUBIC_BEZIER, STEPS, FRAMES };
+  enum class Type { LINEAR, CUBIC_BEZIER, STEPS };
 
   virtual Type GetType() const = 0;
   virtual double GetValue(double t) const = 0;
@@ -96,28 +96,6 @@ class CC_ANIMATION_EXPORT StepsTimingFunction : public TimingFunction {
 
   int steps_;
   StepPosition step_position_;
-};
-
-class CC_ANIMATION_EXPORT FramesTimingFunction : public TimingFunction {
- public:
-  static std::unique_ptr<FramesTimingFunction> Create(int frames);
-  ~FramesTimingFunction() override;
-
-  FramesTimingFunction& operator=(const FramesTimingFunction&) = delete;
-
-  // TimingFunction implementation.
-  Type GetType() const override;
-  double GetValue(double t) const override;
-  std::unique_ptr<TimingFunction> Clone() const override;
-  double Velocity(double time) const override;
-
-  int frames() const { return frames_; }
-  double GetPreciseValue(double t) const;
-
- private:
-  explicit FramesTimingFunction(int frames);
-
-  int frames_;
 };
 
 }  // namespace cc

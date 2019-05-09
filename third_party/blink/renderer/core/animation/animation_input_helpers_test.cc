@@ -130,7 +130,6 @@ TEST_F(AnimationAnimationInputHelpersTest, ParseAnimationTimingFunction) {
   TimingFunctionRoundTrips("ease-in", exception_state);
   TimingFunctionRoundTrips("ease-out", exception_state);
   TimingFunctionRoundTrips("ease-in-out", exception_state);
-  TimingFunctionRoundTrips("frames(3)", exception_state);
   TimingFunctionRoundTrips("cubic-bezier(0.1, 5, 0.23, 0)", exception_state);
 
   EXPECT_EQ("steps(1, start)",
@@ -147,8 +146,6 @@ TEST_F(AnimationAnimationInputHelpersTest, ParseAnimationTimingFunction) {
 
   TimingFunctionThrows("steps(3, nowhere)", exception_state);
   TimingFunctionThrows("steps(-3, end)", exception_state);
-  TimingFunctionThrows("frames(3, end)", exception_state);
-  TimingFunctionThrows("frames(1)", exception_state);
   TimingFunctionThrows("cubic-bezier(0.1, 0, 4, 0.4)", exception_state);
 }
 

@@ -118,36 +118,4 @@ float StepsTimingFunction::GetStepsStartOffset() const {
   }
 }
 
-std::unique_ptr<FramesTimingFunction> FramesTimingFunction::Create(int frames) {
-  return base::WrapUnique(new FramesTimingFunction(frames));
-}
-
-FramesTimingFunction::FramesTimingFunction(int frames) : frames_(frames) {}
-
-FramesTimingFunction::~FramesTimingFunction() = default;
-
-TimingFunction::Type FramesTimingFunction::GetType() const {
-  return Type::FRAMES;
-}
-
-double FramesTimingFunction::GetValue(double t) const {
-  return GetPreciseValue(t);
-}
-
-std::unique_ptr<TimingFunction> FramesTimingFunction::Clone() const {
-  return base::WrapUnique(new FramesTimingFunction(*this));
-}
-
-double FramesTimingFunction::Velocity(double x) const {
-  return 0;
-}
-
-double FramesTimingFunction::GetPreciseValue(double t) const {
-  const double frames = static_cast<double>(frames_);
-  double output_progress = std::floor(frames * t) / (frames - 1);
-  if (t <= 1 && output_progress > 1)
-    output_progress = 1;
-  return output_progress;
-}
-
 }  // namespace cc

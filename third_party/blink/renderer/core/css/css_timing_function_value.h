@@ -97,31 +97,6 @@ class CSSStepsTimingFunctionValue : public CSSValue {
   StepsTimingFunction::StepPosition step_position_;
 };
 
-class CSSFramesTimingFunctionValue : public CSSValue {
- public:
-  static CSSFramesTimingFunctionValue* Create(int frames) {
-    return MakeGarbageCollected<CSSFramesTimingFunctionValue>(frames);
-  }
-
-  CSSFramesTimingFunctionValue(int frames)
-      : CSSValue(kFramesTimingFunctionClass), frames_(frames) {
-    DCHECK(RuntimeEnabledFeatures::FramesTimingFunctionEnabled());
-  }
-
-  int NumberOfFrames() const { return frames_; }
-
-  String CustomCSSText() const;
-
-  bool Equals(const CSSFramesTimingFunctionValue&) const;
-
-  void TraceAfterDispatch(blink::Visitor* visitor) {
-    CSSValue::TraceAfterDispatch(visitor);
-  }
-
- private:
-  int frames_;
-};
-
 }  // namespace cssvalue
 
 template <>
@@ -135,13 +110,6 @@ template <>
 struct DowncastTraits<cssvalue::CSSStepsTimingFunctionValue> {
   static bool AllowFrom(const CSSValue& value) {
     return value.IsStepsTimingFunctionValue();
-  }
-};
-
-template <>
-struct DowncastTraits<cssvalue::CSSFramesTimingFunctionValue> {
-  static bool AllowFrom(const CSSValue& value) {
-    return value.IsFramesTimingFunctionValue();
   }
 };
 

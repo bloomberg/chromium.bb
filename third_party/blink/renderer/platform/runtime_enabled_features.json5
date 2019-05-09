@@ -604,10 +604,6 @@
       name: "FractionalScrollOffsets",
     },
     {
-      name: "FramesTimingFunction",
-      status: "experimental",
-    },
-    {
       name: "FreezeFramesOnVisibility",
       status: "experimental",
     },

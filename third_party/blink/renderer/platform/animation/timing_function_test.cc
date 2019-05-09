@@ -50,10 +50,9 @@ namespace blink {
 
 namespace {
 
-class TimingFunctionTest : public testing::Test,
-                           private ScopedFramesTimingFunctionForTest {
+class TimingFunctionTest : public testing::Test {
  public:
-  TimingFunctionTest() : ScopedFramesTimingFunctionForTest(true) {}
+  TimingFunctionTest() {}
 
   void NotEqualHelperLoop(
       Vector<std::pair<std::string, scoped_refptr<TimingFunction>>>& v) {
@@ -114,11 +113,6 @@ TEST_F(TimingFunctionTest, StepToString) {
   EXPECT_EQ("steps(5)", step_timing_custom_end->ToString());
 }
 
-TEST_F(TimingFunctionTest, FrameToString) {
-  scoped_refptr<TimingFunction> frame_timing = FramesTimingFunction::Create(3);
-  EXPECT_EQ("frames(3)", frame_timing->ToString());
-}
-
 TEST_F(TimingFunctionTest, BaseOperatorEq) {
   scoped_refptr<TimingFunction> linear_timing = LinearTimingFunction::Shared();
   scoped_refptr<TimingFunction> cubic_timing1 =
@@ -130,7 +124,6 @@ TEST_F(TimingFunctionTest, BaseOperatorEq) {
       StepsTimingFunction::Preset(StepsTimingFunction::StepPosition::END);
   scoped_refptr<TimingFunction> steps_timing2 =
       StepsTimingFunction::Create(5, StepsTimingFunction::StepPosition::START);
-  scoped_refptr<TimingFunction> frames_timing = FramesTimingFunction::Create(5);
 
   Vector<std::pair<std::string, scoped_refptr<TimingFunction>>> v;
   v.push_back(std::make_pair("linearTiming", linear_timing));
@@ -138,7 +131,6 @@ TEST_F(TimingFunctionTest, BaseOperatorEq) {
   v.push_back(std::make_pair("cubicTiming2", cubic_timing2));
   v.push_back(std::make_pair("stepsTiming1", steps_timing1));
   v.push_back(std::make_pair("stepsTiming2", steps_timing2));
-  v.push_back(std::make_pair("framesTiming", frames_timing));
   NotEqualHelperLoop(v);
 }
 
@@ -258,21 +250,6 @@ TEST_F(TimingFunctionTest, StepsOperatorEqPreset) {
   EXPECT_EQ(*steps_b, *steps_a);
 }
 
-TEST_F(TimingFunctionTest, FramesOperatorEq) {
-  scoped_refptr<TimingFunction> frames_timing1 =
-      FramesTimingFunction::Create(5);
-  scoped_refptr<TimingFunction> frames_timing2 =
-      FramesTimingFunction::Create(7);
-
-  EXPECT_EQ(*FramesTimingFunction::Create(5), *frames_timing1);
-  EXPECT_EQ(*FramesTimingFunction::Create(7), *frames_timing2);
-
-  Vector<std::pair<std::string, scoped_refptr<TimingFunction>>> v;
-  v.push_back(std::make_pair("framesTiming1", frames_timing1));
-  v.push_back(std::make_pair("framesTiming2", frames_timing2));
-  NotEqualHelperLoop(v);
-}
-
 TEST_F(TimingFunctionTest, LinearEvaluate) {
   scoped_refptr<TimingFunction> linear_timing = LinearTimingFunction::Shared();
   EXPECT_EQ(0.2, linear_timing->Evaluate(0.2, 0));
@@ -307,21 +284,6 @@ TEST_F(TimingFunctionTest, StepRange) {
   start = -1;
   end = 10;
   steps->Range(&start, &end);
-  EXPECT_NEAR(0, start, 0.01);
-  EXPECT_NEAR(1, end, 0.01);
-}
-
-TEST_F(TimingFunctionTest, FrameRange) {
-  double start = 0;
-  double end = 1;
-  scoped_refptr<TimingFunction> frames = FramesTimingFunction::Create(4);
-  frames->Range(&start, &end);
-  EXPECT_NEAR(0, start, 0.01);
-  EXPECT_NEAR(1, end, 0.01);
-
-  start = -1;
-  end = 10;
-  frames->Range(&start, &end);
   EXPECT_NEAR(0, start, 0.01);
   EXPECT_NEAR(1, end, 0.01);
 }
@@ -495,22 +457,6 @@ TEST_F(TimingFunctionTest, StepsEvaluate) {
   EXPECT_EQ(0.75, steps_timing_custom_end->Evaluate(0.99, 0));
   EXPECT_EQ(1.00, steps_timing_custom_end->Evaluate(1.00, 0));
   EXPECT_EQ(2.00, steps_timing_custom_end->Evaluate(2.00, 0));
-}
-
-TEST_F(TimingFunctionTest, FramesEvaluate) {
-  scoped_refptr<TimingFunction> frames_timing = FramesTimingFunction::Create(5);
-  EXPECT_EQ(-2.50, frames_timing->Evaluate(-2.00, 0));
-  EXPECT_EQ(0.00, frames_timing->Evaluate(0.00, 0));
-  EXPECT_EQ(0.00, frames_timing->Evaluate(0.19, 0));
-  EXPECT_EQ(0.25, frames_timing->Evaluate(0.20, 0));
-  EXPECT_EQ(0.25, frames_timing->Evaluate(0.39, 0));
-  EXPECT_EQ(0.50, frames_timing->Evaluate(0.40, 0));
-  EXPECT_EQ(0.50, frames_timing->Evaluate(0.59, 0));
-  EXPECT_EQ(0.75, frames_timing->Evaluate(0.60, 0));
-  EXPECT_EQ(0.75, frames_timing->Evaluate(0.79, 0));
-  EXPECT_EQ(1.00, frames_timing->Evaluate(0.80, 0));
-  EXPECT_EQ(1.00, frames_timing->Evaluate(1.00, 0));
-  EXPECT_EQ(3.75, frames_timing->Evaluate(3.00, 0));
 }
 
 }  // namespace

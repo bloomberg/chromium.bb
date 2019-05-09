@@ -230,8 +230,6 @@ bool CSSValue::operator==(const CSSValue& other) const {
                                                                    other);
       case kStepsTimingFunctionClass:
         return CompareCSSValues<CSSStepsTimingFunctionValue>(*this, other);
-      case kFramesTimingFunctionClass:
-        return CompareCSSValues<CSSFramesTimingFunctionValue>(*this, other);
       case kUnicodeRangeClass:
         return CompareCSSValues<CSSUnicodeRangeValue>(*this, other);
       case kURIClass:
@@ -339,8 +337,6 @@ String CSSValue::CssText() const {
       return To<CSSCubicBezierTimingFunctionValue>(this)->CustomCSSText();
     case kStepsTimingFunctionClass:
       return To<CSSStepsTimingFunctionValue>(this)->CustomCSSText();
-    case kFramesTimingFunctionClass:
-      return To<CSSFramesTimingFunctionValue>(this)->CustomCSSText();
     case kUnicodeRangeClass:
       return To<CSSUnicodeRangeValue>(this)->CustomCSSText();
     case kURIClass:
@@ -485,9 +481,6 @@ void CSSValue::FinalizeGarbageCollectedObject() {
       return;
     case kStepsTimingFunctionClass:
       To<CSSStepsTimingFunctionValue>(this)->~CSSStepsTimingFunctionValue();
-      return;
-    case kFramesTimingFunctionClass:
-      To<CSSFramesTimingFunctionValue>(this)->~CSSFramesTimingFunctionValue();
       return;
     case kUnicodeRangeClass:
       To<CSSUnicodeRangeValue>(this)->~CSSUnicodeRangeValue();
@@ -641,9 +634,6 @@ void CSSValue::Trace(blink::Visitor* visitor) {
       return;
     case kStepsTimingFunctionClass:
       To<CSSStepsTimingFunctionValue>(this)->TraceAfterDispatch(visitor);
-      return;
-    case kFramesTimingFunctionClass:
-      To<CSSFramesTimingFunctionValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kUnicodeRangeClass:
       To<CSSUnicodeRangeValue>(this)->TraceAfterDispatch(visitor);
