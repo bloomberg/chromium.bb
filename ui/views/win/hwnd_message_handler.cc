@@ -3017,15 +3017,17 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouch(UINT message,
   event.latency()->AddLatencyNumberWithTimestamp(
       ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, event_time, 1);
 
-  if (event_type == ui::ET_TOUCH_RELEASED)
-    id_generator_.ReleaseNumber(pointer_id);
-
   // There are cases where the code handling the message destroys the
   // window, so use the weak ptr to check if destruction occurred or not.
   base::WeakPtr<HWNDMessageHandler> ref(msg_handler_weak_factory_.GetWeakPtr());
   delegate_->HandleTouchEvent(&event);
 
   if (ref) {
+    // Release the pointer id only when |HWNDMessageHandler| and |id_generator_|
+    // are not destroyed.
+    if (event_type == ui::ET_TOUCH_RELEASED)
+      id_generator_.ReleaseNumber(pointer_id);
+
     // Mark touch released events handled. These will usually turn into tap
     // gestures, and doing this avoids propagating the event to other windows.
     if (delegate_->GetFrameMode() == FrameMode::SYSTEM_DRAWN) {
