@@ -36,6 +36,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     <!--The polyfill is not needed for browser that have native API support,
         but is linked by these samples for wider compatibility.-->
     <!--script src='https://cdn.jsdelivr.net/npm/webxr-polyfill@latest/build/webxr-polyfill.js'></script-->
+    <script src='js/xrray-polyfill.js' type='module'></script>
     <script src='js/webxr-polyfill.js'></script>
 
     <script src='js/webxr-button.js'></script>
@@ -155,7 +156,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           // floor-relative space and will always be supported for
           // immersive sessions. It will not, however, provide boundaries
           // and generally expects the user to stand in one place.
-          // If the device doesn't have a way of determining the floor 
+          // If the device doesn't have a way of determining the floor
           // level (for example, with a 3DoF device) then it will return
           // an emulated floor-level space, where the view is translated
           // up by a static height so that the scene still renders in

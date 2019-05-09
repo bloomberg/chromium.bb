@@ -24,6 +24,8 @@ import {StatsViewer} from '../nodes/stats-viewer.js';
 import {Node} from '../core/node.js';
 import {vec3, quat} from '../math/gl-matrix.js';
 
+import '/js/xrray-polyfill.js';
+
 export class WebXRView extends RenderView {
   constructor(view, pose, layer) {
     super(
