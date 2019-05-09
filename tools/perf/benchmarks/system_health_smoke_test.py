@@ -137,6 +137,26 @@ _DISABLED_TESTS = frozenset({
 
   # crbug.com/937006
   'system_health.memory_mobile/browse:news:toi',
+
+  # The following tests are disabled because they are disabled on the perf
+  # waterfall (using tools/perf/expectations.config) on one platform or another.
+  # They may run fine on the CQ, but it isn't worth the bot time to run them.
+  # [
+  # crbug.com/799106
+  'system_health.memory_desktop/browse:media:flickr_infinite_scroll'
+  # crbug.com/836407
+  'system_health.memory_desktop/browse:tools:maps'
+  # crbug.com/924330
+  'system_health.memory_desktop/browse:media:pinterest:2018'
+  # crbug.com/899887
+  'system_health.memory_desktop/browse:social:facebook_infinite_scroll:2018'
+  # crbug.com/649392
+  'system_health.memory_desktop/play:media:google_play_music'
+  # crbug.com/934885
+  'system_health.memory_desktop/load_accessibility:media:wikipedia:2018'
+  # crbug.com/942952
+  'system_health.memory_desktop/browse:news:hackernews:2018'
+  # ]
 })
 
 
