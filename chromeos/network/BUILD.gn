@@ -184,6 +184,8 @@ source_set("test_support") {
   sources = [
     "fake_network_activation_handler.cc",
     "fake_network_activation_handler.h",
+    "fake_network_connection_handler.cc",
+    "fake_network_connection_handler.h",
     "fake_network_device_handler.cc",
     "fake_network_device_handler.h",
     "mock_managed_network_configuration_handler.cc",
