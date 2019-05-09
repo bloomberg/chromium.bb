@@ -40,14 +40,18 @@ source_set("public") {
   public_deps = [
     "../msgs",
   ]
+
   deps = [
     "../../osp_base",
     "../../platform",
   ]
+
+  configs += [ "../../build:allow_build_from_embedder" ]
 }
 
 source_set("test_support") {
   testonly = true
+
   sources = [
     "testing/message_demuxer_test_support.h",
   ]

@@ -16,7 +16,10 @@ executable("cddl") {
   ]
 
   deps = [
+    # CDDL always uses the default logger, even when embedded.
+    "../../platform:default_logger",
     "../../platform",
     "../../third_party/abseil",
   ]
+  configs += [ "../../build:allow_build_from_embedder" ]
 }

@@ -8,7 +8,7 @@ source_set("platform") {
   sources = [
     "api/event_waiter.cc",
     "api/event_waiter.h",
-    "api/logging.cc",
+    "api/logging_util.cc",
     "api/logging.h",
     "api/network_interface.cc",
     "api/network_interface.h",
@@ -23,14 +23,15 @@ source_set("platform") {
     "../osp_base",
     "../third_party/abseil",
   ]
+
   allow_circular_includes_from = [ "../osp_base" ]
+
   configs += [ "../build:allow_build_from_embedder" ]
 
   if (!build_with_chromium) {
     sources += [
       "base/event_loop.cc",
       "base/event_loop.h",
-      "base/logging.cc",
       "base/task_runner_factory.cc",
       "base/task_runner_impl.cc",
       "base/task_runner_impl.h",
@@ -43,18 +44,41 @@ source_set("platform") {
         # Required, to use the new IPv6 Sockets options introduced by RFC 3542.
         "__APPLE_USE_RFC_3542",
       ]
+
       sources += [ "mac/network_interface.cc" ]
     }
 
     if (is_posix) {
       sources += [
         "posix/event_waiter.cc",
-        "posix/logging.cc",
         "posix/socket.cc",
         "posix/socket.h",
       ]
     }
+
+    deps = [
+      ":default_logger"
+    ]
   }
+}
+
+source_set("default_logger") {
+  sources = [
+    "base/logging.cc",
+  ]
+
+  if (is_posix) {
+    sources += [
+      "posix/log_initializer.cc",
+    ]
+  }
+
+  configs += [ "../build:allow_build_from_embedder" ]
+
+  deps = [
+    "../osp_base",
+    "../third_party/abseil",
+  ]
 }
 
 source_set("platform_unittests") {
@@ -77,4 +101,6 @@ source_set("platform_unittests") {
     ":platform",
     "../third_party/googletest:gtest",
   ]
+
+  configs += [ "../build:allow_build_from_embedder" ]
 }
