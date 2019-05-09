@@ -300,7 +300,8 @@ void GCMDriver::DispatchMessageInternal(const std::string& app_id,
       GCMAppHandler* handler = GetAppHandler(app_id);
       if (handler) {
         handler->OnMessageDecryptionFailed(
-            app_id, ToGCMDecryptionResultDetailsString(result));
+            app_id, message.message_id,
+            ToGCMDecryptionResultDetailsString(result));
       }
       return;
     }

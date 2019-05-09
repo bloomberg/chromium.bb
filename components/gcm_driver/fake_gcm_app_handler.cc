@@ -63,6 +63,7 @@ void FakeGCMAppHandler::OnSendAcknowledged(
 
 void FakeGCMAppHandler::OnMessageDecryptionFailed(
     const std::string& app_id,
+    const std::string& message_id,
     const std::string& error_message) {
   ClearResults();
   received_event_ = DECRYPTION_FAILED_EVENT;

@@ -50,6 +50,7 @@ class FakeGCMAppHandler : public GCMAppHandler {
       const std::string& app_id,
       const GCMClient::SendErrorDetails& send_error_details) override;
   void OnMessageDecryptionFailed(const std::string& app_id,
+                                 const std::string& message_id,
                                  const std::string& error_message) override;
   void OnSendAcknowledged(const std::string& app_id,
                           const std::string& message_id) override;

@@ -11,6 +11,7 @@ GCMAppHandler::~GCMAppHandler() = default;
 
 void GCMAppHandler::OnMessageDecryptionFailed(
     const std::string& app_id,
+    const std::string& message_id,
     const std::string& error_message) {}
 
 bool GCMAppHandler::CanHandle(const std::string& app_id) const {

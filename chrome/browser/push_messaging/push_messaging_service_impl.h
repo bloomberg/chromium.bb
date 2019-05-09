@@ -80,6 +80,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   void OnSendAcknowledged(const std::string& app_id,
                           const std::string& message_id) override;
   void OnMessageDecryptionFailed(const std::string& app_id,
+                                 const std::string& message_id,
                                  const std::string& error_message) override;
   bool CanHandle(const std::string& app_id) const override;
 
