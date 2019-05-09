@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/web_app_install_task.h"
 #include "chrome/common/web_application_info.h"
@@ -19,7 +20,10 @@ namespace web_app {
 
 WebAppInstallManager::WebAppInstallManager(Profile* profile,
                                            InstallFinalizer* install_finalizer)
-    : InstallManager(profile), install_finalizer_(install_finalizer) {}
+    : InstallManager(profile), install_finalizer_(install_finalizer) {
+  data_retriever_factory_ = base::BindRepeating(
+      []() { return std::make_unique<WebAppDataRetriever>(); });
+}
 
 WebAppInstallManager::~WebAppInstallManager() = default;
 
@@ -39,8 +43,8 @@ void WebAppInstallManager::InstallWebAppFromManifest(
     OnceInstallCallback callback) {
   DCHECK(AreWebAppsUserInstallable(profile()));
 
-  auto task =
-      std::make_unique<WebAppInstallTask>(profile(), install_finalizer_);
+  auto task = std::make_unique<WebAppInstallTask>(
+      profile(), install_finalizer_, data_retriever_factory_.Run());
   task->InstallWebAppFromManifest(
       contents, install_source, std::move(dialog_callback),
       base::BindOnce(&WebAppInstallManager::OnTaskCompleted,
@@ -57,8 +61,8 @@ void WebAppInstallManager::InstallWebAppFromManifestWithFallback(
     OnceInstallCallback callback) {
   DCHECK(AreWebAppsUserInstallable(profile()));
 
-  auto task =
-      std::make_unique<WebAppInstallTask>(profile(), install_finalizer_);
+  auto task = std::make_unique<WebAppInstallTask>(
+      profile(), install_finalizer_, data_retriever_factory_.Run());
   task->InstallWebAppFromManifestWithFallback(
       contents, force_shortcut_app, install_source, std::move(dialog_callback),
       base::BindOnce(&WebAppInstallManager::OnTaskCompleted,
@@ -74,8 +78,8 @@ void WebAppInstallManager::InstallWebAppFromInfo(
     OnceInstallCallback callback) {
   DCHECK(AreWebAppsUserInstallable(profile()));
 
-  auto task =
-      std::make_unique<WebAppInstallTask>(profile(), install_finalizer_);
+  auto task = std::make_unique<WebAppInstallTask>(
+      profile(), install_finalizer_, data_retriever_factory_.Run());
   task->InstallWebAppFromInfo(
       std::move(web_application_info), no_network_install, install_source,
       base::BindOnce(&WebAppInstallManager::OnTaskCompleted,
@@ -105,6 +109,11 @@ void WebAppInstallManager::InstallWebAppForTesting(
     OnceInstallCallback callback) {
   // TODO(loyso): Implement it.
   NOTIMPLEMENTED();
+}
+
+void WebAppInstallManager::SetDataRetrieverFactoryForTesting(
+    DataRetrieverFactory data_retriever_factory) {
+  data_retriever_factory_ = std::move(data_retriever_factory);
 }
 
 void WebAppInstallManager::OnTaskCompleted(WebAppInstallTask* task,

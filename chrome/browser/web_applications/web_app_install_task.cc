@@ -22,9 +22,11 @@
 
 namespace web_app {
 
-WebAppInstallTask::WebAppInstallTask(Profile* profile,
-                                     InstallFinalizer* install_finalizer)
-    : data_retriever_(std::make_unique<WebAppDataRetriever>()),
+WebAppInstallTask::WebAppInstallTask(
+    Profile* profile,
+    InstallFinalizer* install_finalizer,
+    std::unique_ptr<WebAppDataRetriever> data_retriever)
+    : data_retriever_(std::move(data_retriever)),
       install_finalizer_(install_finalizer),
       profile_(profile) {}
 
@@ -100,11 +102,6 @@ void WebAppInstallTask::InstallWebAppFromInfo(
 
 void WebAppInstallTask::WebContentsDestroyed() {
   CallInstallCallback(AppId(), InstallResultCode::kWebContentsDestroyed);
-}
-
-void WebAppInstallTask::SetDataRetrieverForTesting(
-    std::unique_ptr<WebAppDataRetriever> data_retriever) {
-  data_retriever_ = std::move(data_retriever);
 }
 
 void WebAppInstallTask::SetInstallFinalizerForTesting(

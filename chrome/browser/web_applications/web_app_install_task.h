@@ -33,7 +33,9 @@ class WebAppDataRetriever;
 
 class WebAppInstallTask : content::WebContentsObserver {
  public:
-  WebAppInstallTask(Profile* profile, InstallFinalizer* install_finalizer);
+  WebAppInstallTask(Profile* profile,
+                    InstallFinalizer* install_finalizer,
+                    std::unique_ptr<WebAppDataRetriever> data_retriever);
   ~WebAppInstallTask() override;
 
   // Checks a WebApp installability, retrieves manifest and icons and
@@ -69,8 +71,6 @@ class WebAppInstallTask : content::WebContentsObserver {
   // WebContentsObserver:
   void WebContentsDestroyed() override;
 
-  void SetDataRetrieverForTesting(
-      std::unique_ptr<WebAppDataRetriever> data_retriever);
   void SetInstallFinalizerForTesting(InstallFinalizer* install_finalizer);
 
  private:

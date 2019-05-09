@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
@@ -19,6 +20,7 @@ namespace web_app {
 
 enum class InstallResultCode;
 class InstallFinalizer;
+class WebAppDataRetriever;
 class WebAppInstallTask;
 
 class WebAppInstallManager final : public InstallManager {
@@ -54,11 +56,18 @@ class WebAppInstallManager final : public InstallManager {
       std::unique_ptr<WebApplicationInfo> web_application_info,
       OnceInstallCallback callback) override;
 
+  using DataRetrieverFactory =
+      base::RepeatingCallback<std::unique_ptr<WebAppDataRetriever>()>;
+  void SetDataRetrieverFactoryForTesting(
+      DataRetrieverFactory data_retriever_factory);
+
  private:
   void OnTaskCompleted(WebAppInstallTask* task,
                        OnceInstallCallback callback,
                        const AppId& app_id,
                        InstallResultCode code);
+
+  DataRetrieverFactory data_retriever_factory_;
 
   using Tasks = base::flat_set<std::unique_ptr<WebAppInstallTask>,
                                base::UniquePtrComparator>;
