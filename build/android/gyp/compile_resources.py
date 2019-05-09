@@ -535,11 +535,14 @@ def _CompileDeps(aapt2_path, dep_subdirs, temp_dir):
     partial_path = os.path.join(partials_dir, dirname + '.zip')
     compile_command = (partial_compile_command +
                        ['--dir', directory, '-o', partial_path])
+    # There are resources targeting API-versions lower than our minapi. For
+    # various reasons it's easier to let aapt2 ignore these than for us to
+    # remove them from our build (e.g. it's from a 3rd party library).
     build_utils.CheckOutput(
         compile_command,
         stderr_filter=lambda output:
             build_utils.FilterLines(
-                output, r'ignoring configuration .* for styleable'))
+                output, r'ignoring configuration .* for (styleable|attribute)'))
 
     # Sorting the files in the partial ensures deterministic output from the
     # aapt2 link step which uses order of files in the partial.
