@@ -61,6 +61,12 @@ def _modify_plists(paths, dist, config):
         elif _KS_CHANNEL_ID in app_plist:
             del app_plist[_KS_CHANNEL_ID]
 
+        if dist.product_dirname:
+            app_plist['CrProductDirName'] = dist.product_dirname
+
+        if dist.creator_code:
+            app_plist['CFBundleSignature'] = dist.creator_code
+
         # See build/mac/tweak_info_plist.py and
         # chrome/browser/mac/keystone_glue.mm.
         keys_to_remove = set()
@@ -185,6 +191,11 @@ def customize_distribution(paths, dist, config):
 
     _modify_plists(paths, dist, config)
     _process_entitlements(paths, dist, config)
+
+    if dist.creator_code:
+        pkg_info_file = os.path.join(paths.work, config.app_dir, 'Contents',
+                                     'PkgInfo')
+        commands.write_file(pkg_info_file, 'APPL{}'.format(dist.creator_code))
 
     if dist.channel_customize:
         _replace_icons(paths, dist, config)

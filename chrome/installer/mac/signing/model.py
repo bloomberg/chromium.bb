@@ -131,6 +131,8 @@ class Distribution(object):
                  branding_code=None,
                  app_name_fragment=None,
                  dmg_name_fragment=None,
+                 product_dirname=None,
+                 creator_code=None,
                  channel_customize=False):
         """Creates a new Distribution object. All arguments are optional.
 
@@ -144,6 +146,13 @@ class Distribution(object):
             dmg_name_fragment: If present, this is appended to the
                 |config.CodeSignConfig.dmg_basename| to help differentiate
                 different |branding_code|s.
+            product_dirname: If present, this string value is set in the app's
+                Info.plist with the key "CrProductDirName". This key influences
+                the browser's default user-data-dir location.
+            creator_code: If present, this will set a new macOS creator code
+                in the Info.plist "CFBundleSignature" key and in the PkgInfo
+                file. If this is not specified, the original values from the
+                build products will be kept.
             channel_customize: If True, then the product will be modified in
                 several ways:
                 - The |channel| will be appended to the
@@ -155,6 +164,8 @@ class Distribution(object):
         self.branding_code = branding_code
         self.app_name_fragment = app_name_fragment
         self.dmg_name_fragment = dmg_name_fragment
+        self.product_dirname = product_dirname
+        self.creator_code = creator_code
         self.channel_customize = channel_customize
 
     def to_config(self, base_config):

@@ -29,6 +29,11 @@ def make_dir(at):
     os.mkdir(at)
 
 
+def write_file(path, contents):
+    with open(path, 'w') as f:
+        f.write(contents)
+
+
 def run_command(args, **kwargs):
     print('Running command: {}'.format(args))
     subprocess.check_call(args, **kwargs)

@@ -38,10 +38,11 @@ def plist_read(*args):
 
 @mock.patch('signing.commands.plistlib',
             **{'readPlist.side_effect': plist_read})
-@mock.patch.multiple('signing.commands', **{
-    m: mock.DEFAULT
-    for m in ('copy_files', 'move_file', 'make_dir', 'run_command')
-})
+@mock.patch.multiple(
+    'signing.commands', **{
+        m: mock.DEFAULT for m in ('copy_files', 'move_file', 'make_dir',
+                                  'write_file', 'run_command')
+    })
 class TestModification(unittest.TestCase):
 
     def setUp(self):
@@ -67,6 +68,7 @@ class TestModification(unittest.TestCase):
             '$I/Product Packaging/app-entitlements.plist',
             '$W/app-entitlements.plist')
         self.assertEqual(0, kwargs['move_file'].call_count)
+        self.assertEqual(0, kwargs['write_file'].call_count)
 
     def test_distribution_with_brand(self, plistlib, **kwargs):
         dist = model.Distribution(branding_code='MOO')
@@ -110,6 +112,52 @@ class TestModification(unittest.TestCase):
             '$I/Product Packaging/app-entitlements.plist',
             '$W/app-entitlements.plist')
         self.assertEqual(0, kwargs['move_file'].call_count)
+        self.assertEqual(0, kwargs['write_file'].call_count)
+
+    def test_distribution_with_product_dirname(self, plistlib, **kwargs):
+        dist = model.Distribution(product_dirname='Farmland/Cows')
+        config = dist.to_config(self.config)
+
+        modification.customize_distribution(self.paths, dist, config)
+
+        self.assertEqual(1, plistlib.writePlist.call_count)
+        plistlib.writePlist.assert_called_with(
+            {
+                'CFBundleIdentifier': config.base_bundle_id,
+                'KSProductID': 'test.ksproduct',
+                'CrProductDirName': 'Farmland/Cows'
+            },
+            '$W/App Product.app/Contents/Info.plist',
+        )
+
+        kwargs['copy_files'].assert_called_once_with(
+            '$I/Product Packaging/app-entitlements.plist',
+            '$W/app-entitlements.plist')
+        self.assertEqual(0, kwargs['move_file'].call_count)
+        self.assertEqual(0, kwargs['write_file'].call_count)
+
+    def test_distribution_with_creator_code(self, plistlib, **kwargs):
+        dist = model.Distribution(creator_code='Mooo')
+        config = dist.to_config(self.config)
+
+        modification.customize_distribution(self.paths, dist, config)
+
+        self.assertEqual(1, plistlib.writePlist.call_count)
+        plistlib.writePlist.assert_called_with(
+            {
+                'CFBundleIdentifier': config.base_bundle_id,
+                'KSProductID': 'test.ksproduct',
+                'CFBundleSignature': 'Mooo'
+            },
+            '$W/App Product.app/Contents/Info.plist',
+        )
+
+        kwargs['copy_files'].assert_called_once_with(
+            '$I/Product Packaging/app-entitlements.plist',
+            '$W/app-entitlements.plist')
+        kwargs['write_file'].assert_called_once_with(
+            '$W/App Product.app/Contents/PkgInfo', 'APPLMooo')
+        self.assertEqual(0, kwargs['move_file'].call_count)
 
     def test_distribution_with_brand_and_channel(self, plistlib, **kwargs):
         dist = model.Distribution(channel='beta', branding_code='RAWR')
@@ -133,11 +181,14 @@ class TestModification(unittest.TestCase):
             '$I/Product Packaging/app-entitlements.plist',
             '$W/app-entitlements.plist')
         self.assertEqual(0, kwargs['move_file'].call_count)
+        self.assertEqual(0, kwargs['write_file'].call_count)
 
     def test_customize_channel(self, plistlib, **kwargs):
         dist = model.Distribution(
             channel='canary',
             app_name_fragment='Canary',
+            product_dirname='Acme/Product Canary',
+            creator_code='Mooo',
             channel_customize=True)
         config = dist.to_config(self.config)
 
@@ -169,6 +220,8 @@ class TestModification(unittest.TestCase):
                 '$I/Product Packaging/document_canary.icns',
                 '$W/App Product Canary.app/Contents/Resources/document.icns')
         ])
+        kwargs['write_file'].assert_called_once_with(
+            '$W/App Product Canary.app/Contents/PkgInfo', 'APPLMooo')
 
         self.assertEqual(4, plistlib.writePlist.call_count)
         plistlib.writePlist.assert_has_calls([
@@ -182,7 +235,9 @@ class TestModification(unittest.TestCase):
                 'CFBundleExecutable': config.app_product,
                 'KSProductID': 'test.ksproduct.canary',
                 'KSChannelID': 'canary',
-                'KSChannelID-full': 'canary-full'
+                'KSChannelID-full': 'canary-full',
+                'CrProductDirName': 'Acme/Product Canary',
+                'CFBundleSignature': 'Mooo'
             }, '$W/App Product Canary.app/Contents/Info.plist'),
             mock.call({
                 'com.apple.application-identifier':
