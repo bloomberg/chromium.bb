@@ -94,6 +94,7 @@ customBackgrounds.IDS = {
   EDIT_BG_TEXT: 'edit-bg-text',
   MENU_BACK: 'menu-back',
   MENU_CANCEL: 'menu-cancel',
+  MENU_DONE: 'menu-done',
   MENU_TITLE: 'menu-title',
   LINK_ICON: 'link-icon',
   MENU: 'bg-sel-menu',
@@ -129,6 +130,7 @@ customBackgrounds.CLASSES = {
   OPTION_DISABLED: 'bg-option-disabled',  // The menu option is disabled.
   MENU_SHOWN: 'menu-shown',
   MOUSE_NAV: 'using-mouse-nav',
+  SELECTED: 'selected',
   SELECTED_BORDER: 'selected-border',
   SELECTED_CHECK: 'selected-check',
   SELECTED_CIRCLE: 'selected-circle',
@@ -311,6 +313,11 @@ customBackgrounds.resetImageMenu = function(showMenu) {
   menu.classList.toggle(customBackgrounds.CLASSES.ON_IMAGE_MENU, false);
   backgroundMenu.classList.toggle(
       customBackgrounds.CLASSES.MENU_SHOWN, showMenu);
+
+  // Reset done button state.
+  $(customBackgrounds.IDS.MENU_DONE).disabled = true;
+  customBackgrounds.selectedTile = null;
+  $(customBackgrounds.IDS.MENU_DONE).tabIndex = -1;
 };
 
 /* Close the collection selection dialog and cleanup the state
@@ -537,6 +544,43 @@ customBackgrounds.showCollectionSelectionDialog = function(collectionsSource) {
 };
 
 /**
+ * Apply styling to a selected tile in the richer picker and enable the done
+ * button.
+ * @param {!Element} tile The tile to apply styling to.
+ */
+customBackgrounds.selectTile = function(tile) {
+  tile.parentElement.classList.toggle(customBackgrounds.CLASSES.SELECTED, true);
+  $(customBackgrounds.IDS.MENU_DONE).disabled = false;
+  customBackgrounds.selectedTile = tile;
+  $(customBackgrounds.IDS.MENU_DONE).tabIndex = 0;
+
+  // Create and append selected check.
+  const selectedCircle = document.createElement('div');
+  const selectedCheck = document.createElement('div');
+  selectedCircle.classList.add(customBackgrounds.CLASSES.SELECTED_CIRCLE);
+  selectedCheck.classList.add(customBackgrounds.CLASSES.SELECTED_CHECK);
+  selectedCircle.appendChild(selectedCheck);
+  tile.appendChild(selectedCircle);
+};
+
+/**
+ * Remove styling from a selected tile in the richer picker and disable the
+ * done button.
+ * @param {!Element} tile The tile to remove styling from.
+ */
+customBackgrounds.deselectTile = function(tile) {
+  tile.parentElement.classList.toggle(
+      customBackgrounds.CLASSES.SELECTED, false);
+  $(customBackgrounds.IDS.MENU_DONE).disabled = true;
+  customBackgrounds.selectedTile = null;
+  $(customBackgrounds.IDS.MENU_DONE).tabIndex = -1;
+
+  // Remove selected check.
+  tile.innerHTML = '';
+};
+
+
+/**
  * Apply border and checkmark when a tile is selected
  * @param {!Element} tile The tile to apply styling to.
  */
@@ -637,15 +681,27 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
 
     const tileInteraction = function(tile) {
       if (customBackgrounds.selectedTile) {
-        customBackgrounds.removeSelectedState(customBackgrounds.selectedTile);
-        if (customBackgrounds.selectedTile.id === tile.id) {
-          customBackgrounds.unselectTile();
-          return ;
+        if (configData.richerPicker) {
+          const id = customBackgrounds.selectedTile.id;
+          customBackgrounds.deselectTile(customBackgrounds.selectedTile);
+          if (id === tile.id) {
+            return;
+          }
+        } else {
+          customBackgrounds.removeSelectedState(customBackgrounds.selectedTile);
+          if (customBackgrounds.selectedTile.id === tile.id) {
+            customBackgrounds.unselectTile();
+            return;
+          }
         }
       }
-      customBackgrounds.selectedTile = tile;
 
-      customBackgrounds.applySelectedState(tile);
+      if (configData.richerPicker) {
+        customBackgrounds.selectTile(tile);
+      } else {
+        customBackgrounds.applySelectedState(tile);
+        customBackgrounds.selectedTile = tile;
+      }
 
       $(customBackgrounds.IDS.DONE).tabIndex = 0;
 
@@ -878,6 +934,7 @@ customBackgrounds.init = function(
 
   $(customBackgrounds.IDS.MENU_CANCEL).onclick = function(event) {
     $(customBackgrounds.IDS.CUSTOMIZATION_MENU).close();
+    customBackgrounds.resetImageMenu(false);
   };
 
 

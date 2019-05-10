@@ -1008,6 +1008,20 @@ html[dir=rtl] .menu-option {
   margin-bottom: 8px;
 }
 
+#backgrounds-image-menu .bg-sel-tile-bg.selected {
+  background-color: rgba(var(--GB900-rgb), .08);
+}
+
+#backgrounds-image-menu .bg-sel-tile-bg.selected .bg-sel-tile {
+  height: 144px;
+  margin: 16px 16px 0 16px;
+  width: 144px;
+}
+
+#backgrounds-image-menu .bg-sel-tile-bg.selected .bg-sel-tile:focus {
+  outline: none;
+}
+
 #backgrounds-menu .bg-sel-tile,
 #backgrounds-image-menu .bg-sel-tile {
   background-position: center;
@@ -1081,4 +1095,30 @@ html[dir=rtl] #menu-back {
   color: rgb(var(--GG700-rgb));
   text-align: center;
   width: 100%;
+}
+
+.bg-sel-tile .selected-circle {
+  height: 20px;
+  left: initial;
+  right: 10px;
+  top: 10px;
+  width: 20px;
+}
+
+html[dir=rtl] .bg-sel-tile .selected-circle {
+  left: 10px;
+  right: initial;
+}
+
+.bg-sel-tile .selected-check {
+  height: 24px;
+  left: initial;
+  right: 0;
+  top: 0;
+  width: 24px;
+}
+
+html[dir=rtl] .bg-sel-tile .selected-check {
+  left: 0;
+  right: initial;
 }
