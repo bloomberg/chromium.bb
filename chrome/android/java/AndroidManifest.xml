@@ -48,9 +48,6 @@ by a child template that "extends" this file.
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.MANAGE_ACCOUNTS"/>
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
-    {% if target_sdk_version|int > 28 or target_sdk_version == "Q" %}
-        <uses-permission-sdk-23 android:name="android.permission.READ_MEDIA_IMAGES"/>
-    {% endif %}
     <uses-permission android:name="android.permission.NFC"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS"/>
