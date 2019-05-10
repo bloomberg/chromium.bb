@@ -386,6 +386,8 @@ class TransitionAnimationObserver : public ui::ImplicitAnimationObserver {
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override {
+    TRACE_EVENT_ASYNC_END1("ui", "AppList::StateTransitionAnimations", this,
+                           "state", view_->app_list_state());
     DCHECK(view_);
     view_->Layout();
   }
@@ -1544,6 +1546,8 @@ void AppListView::StartAnimationForState(
 
   settings.SetAnimationMetricsReporter(GetStateTransitionMetricsReporter());
   settings.AddObserver(transition_animation_observer_.get());
+  TRACE_EVENT_ASYNC_BEGIN0("ui", "AppList::StateTransitionAnimations",
+                           transition_animation_observer_.get());
 
   layer->SetTransform(gfx::Transform());
 

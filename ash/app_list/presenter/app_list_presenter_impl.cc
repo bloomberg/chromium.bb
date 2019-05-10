@@ -379,6 +379,7 @@ void AppListPresenterImpl::ScheduleDismissAnimation() {
     animation.SetAnimationMetricsReporter(
         view_->GetStateTransitionMetricsReporter());
     animation.AddObserver(this);
+    TRACE_EVENT_ASYNC_BEGIN0("ui", "AppList::StateTransitionAnimations", this);
 
     layer->SetTransform(gfx::Transform());
   }
@@ -446,6 +447,9 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
 // AppListPresenterImpl, ui::ImplicitAnimationObserver implementation:
 
 void AppListPresenterImpl::OnImplicitAnimationsCompleted() {
+  // This class observes the closing animation only.
+  TRACE_EVENT_ASYNC_END1("ui", "AppList::StateTransitionAnimations", this,
+                         "state", ash::mojom::AppListViewState::kClosed);
   NotifyVisibilityChanged(GetTargetVisibility(), GetDisplayId());
 
   if (is_visible_) {
