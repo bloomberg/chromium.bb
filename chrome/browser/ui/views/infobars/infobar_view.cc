@@ -109,19 +109,22 @@ InfoBarView::InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate)
     AddChildView(icon_);
   }
 
-  auto close_button = views::CreateVectorImageButton(this);
-  // This is the wrong color, but allows the button's size to be computed
-  // correctly.  We'll reset this with the correct color in OnThemeChanged().
-  views::SetImageFromVectorIcon(close_button.get(),
-                                vector_icons::kCloseRoundedIcon,
-                                gfx::kPlaceholderColor);
-  close_button->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
-  close_button->SetFocusForPlatform();
-  gfx::Insets close_button_spacing = GetCloseButtonSpacing();
-  close_button->SetProperty(views::kMarginsKey,
-                            new gfx::Insets(close_button_spacing.top(), 0,
+  if (this->delegate()->IsCloseable()) {
+    auto close_button = views::CreateVectorImageButton(this);
+    // This is the wrong color, but allows the button's size to be computed
+    // correctly.  We'll reset this with the correct color in OnThemeChanged().
+    views::SetImageFromVectorIcon(close_button.get(),
+                                  vector_icons::kCloseRoundedIcon,
+                                  gfx::kPlaceholderColor);
+    close_button->SetAccessibleName(
+        l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
+    close_button->SetFocusForPlatform();
+    gfx::Insets close_button_spacing = GetCloseButtonSpacing();
+    close_button->SetProperty(
+        views::kMarginsKey, new gfx::Insets(close_button_spacing.top(), 0,
                                             close_button_spacing.bottom(), 0));
-  close_button_ = AddChildView(std::move(close_button));
+    close_button_ = AddChildView(std::move(close_button));
+  }
 }
 
 InfoBarView::~InfoBarView() {
@@ -154,15 +157,18 @@ void InfoBarView::Layout() {
   if (content_minimum_width > 0)
     start_x += spacing + content_minimum_width;
 
-  const gfx::Insets close_button_spacing = GetCloseButtonSpacing();
-  close_button_->SizeToPreferredSize();
-  close_button_->SetPosition(gfx::Point(
-      std::max(start_x + close_button_spacing.left(),
-               width() - close_button_spacing.right() - close_button_->width()),
-      OffsetY(close_button_)));
+  if (close_button_) {
+    const gfx::Insets close_button_spacing = GetCloseButtonSpacing();
+    close_button_->SizeToPreferredSize();
+    close_button_->SetPosition(gfx::Point(
+        std::max(
+            start_x + close_button_spacing.left(),
+            width() - close_button_spacing.right() - close_button_->width()),
+        OffsetY(close_button_)));
 
-  // For accessibility reasons, the close button should come last.
-  DCHECK_EQ(close_button_, close_button_->parent()->children().back());
+    // For accessibility reasons, the close button should come last.
+    DCHECK_EQ(close_button_, close_button_->parent()->children().back());
+  }
 }
 
 void InfoBarView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -183,9 +189,10 @@ gfx::Size InfoBarView::CalculatePreferredSize() const {
   if (content_width)
     width += spacing + content_width;
 
-  return gfx::Size(
-      width + GetCloseButtonSpacing().width() + close_button_->width(),
-      computed_height());
+  const int trailing_space =
+      close_button_ ? GetCloseButtonSpacing().width() + close_button_->width()
+                    : GetElementSpacing();
+  return gfx::Size(width + trailing_space, computed_height());
 }
 
 void InfoBarView::ViewHierarchyChanged(
@@ -194,7 +201,8 @@ void InfoBarView::ViewHierarchyChanged(
 
   // Anything that needs to happen once after all subclasses add their children.
   if (details.is_add && (details.child == this)) {
-    ReorderChildView(close_button_, -1);
+    if (close_button_)
+      ReorderChildView(close_button_, -1);
     RecalculateHeight();
   }
 }
@@ -214,8 +222,10 @@ void InfoBarView::OnThemeChanged() {
   SetBackground(views::CreateSolidBackground(background_color));
 
   const SkColor text_color = GetColor(kInfoBarLabelTextColor);
-  views::SetImageFromVectorIcon(close_button_, vector_icons::kCloseRoundedIcon,
-                                text_color);
+  if (close_button_) {
+    views::SetImageFromVectorIcon(close_button_,
+                                  vector_icons::kCloseRoundedIcon, text_color);
+  }
 
   for (views::View* child : children()) {
     LabelType label_type = child->GetProperty(kLabelType);
@@ -288,7 +298,8 @@ int InfoBarView::StartX() const {
 }
 
 int InfoBarView::EndX() const {
-  return close_button_->x() - GetCloseButtonSpacing().left();
+  return close_button_ ? close_button_->x() - GetCloseButtonSpacing().left()
+                       : width() - GetElementSpacing();
 }
 
 int InfoBarView::OffsetY(views::View* view) const {

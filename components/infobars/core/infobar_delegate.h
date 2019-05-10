@@ -224,6 +224,9 @@ class InfoBarDelegate {
   // Called when the user clicks on the close button to dismiss the infobar.
   virtual void InfoBarDismissed();
 
+  // Returns true if the InfoBar has a close button; true by default.
+  virtual bool IsCloseable() const;
+
   // Type-checking downcast routines:
   virtual ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate();
   virtual HungRendererInfoBarDelegate* AsHungRendererInfoBarDelegate();

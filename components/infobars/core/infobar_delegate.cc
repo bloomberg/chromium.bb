@@ -72,6 +72,10 @@ bool InfoBarDelegate::ShouldExpire(const NavigationDetails& details) const {
 void InfoBarDelegate::InfoBarDismissed() {
 }
 
+bool InfoBarDelegate::IsCloseable() const {
+  return true;
+}
+
 ConfirmInfoBarDelegate* InfoBarDelegate::AsConfirmInfoBarDelegate() {
   return nullptr;
 }
