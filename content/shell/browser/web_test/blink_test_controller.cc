@@ -368,6 +368,37 @@ BlinkTestController::~BlinkTestController() {
   instance_ = nullptr;
 }
 
+void BlinkTestController::EnsureMainWindow() {
+  if (main_window_)
+    return;
+
+  ShellBrowserContext* browser_context =
+      ShellContentBrowserClient::Get()->browser_context();
+
+  initial_size_ = Shell::GetShellDefaultSize();
+  main_window_ = content::Shell::CreateNewWindow(
+      browser_context, GURL(url::kAboutBlankURL), nullptr, initial_size_);
+
+  WebContents* web_contents = main_window_->web_contents();
+  WebContentsObserver::Observe(web_contents);
+
+  RenderViewHost* render_view_host = web_contents->GetRenderViewHost();
+  RenderWidgetHost* render_view_host_widget = render_view_host->GetWidget();
+
+  current_pid_ = base::kNullProcessId;
+  default_prefs_ = render_view_host->GetWebkitPreferences();
+
+  // Focus the RenderWidgetHost. This will send an IPC message to the
+  // renderer to propagate the state change.
+  render_view_host_widget->Focus();
+
+  // Flush various interfaces to ensure a test run begins from a known
+  // state. This will block until page navigation to about:blank successfully
+  // completes.
+  render_view_host_widget->FlushForTesting();
+  GetWebTestControlPtr(render_view_host->GetMainFrame()).FlushForTesting();
+}
+
 bool BlinkTestController::PrepareForWebTest(const TestInfo& test_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   test_phase_ = DURING_TEST;
@@ -393,113 +424,60 @@ bool BlinkTestController::PrepareForWebTest(const TestInfo& test_info) {
   accumulated_web_test_runtime_flags_changes_.Clear();
   web_test_control_map_.clear();
 
-  ShellBrowserContext* browser_context =
-      ShellContentBrowserClient::Get()->browser_context();
   is_compositing_test_ =
       test_url_.spec().find("compositing/") != std::string::npos;
   initial_size_ = Shell::GetShellDefaultSize();
-  if (!main_window_) {
-    main_window_ = content::Shell::CreateNewWindow(
-        browser_context, GURL(url::kAboutBlankURL), nullptr, initial_size_);
-    WebContentsObserver::Observe(main_window_->web_contents());
 
-    // The render frame host is constructed before the call to
-    // WebContentsObserver::Observe, so we need to manually handle the creation
-    // of the new render frame host.
-    HandleNewRenderFrameHost(main_window_->web_contents()->GetMainFrame());
+  EnsureMainWindow();
 
-    if (is_devtools_protocol_test) {
-      devtools_protocol_test_bindings_.reset(
-          new DevToolsProtocolTestBindings(main_window_->web_contents()));
-    }
-    current_pid_ = base::kNullProcessId;
-    default_prefs_ = main_window_->web_contents()
-                         ->GetRenderViewHost()
-                         ->GetWebkitPreferences();
-    if (is_devtools_js_test) {
-      LoadDevToolsJSTest();
-    } else {
-      // Focus the RenderWidgetHost. This will send an IPC message to the
-      // renderer to propagate the state change.
-      main_window_->web_contents()->GetRenderViewHost()->GetWidget()->Focus();
-
-      // Flush various interfaces to ensure a test run begins from a known
-      // state.
-      main_window_->web_contents()
-          ->GetRenderViewHost()
-          ->GetWidget()
-          ->FlushForTesting();
-      GetWebTestControlPtr(
-          main_window_->web_contents()->GetRenderViewHost()->GetMainFrame())
-          .FlushForTesting();
-
-      // Loading the URL will immediately start the web test. Manually call
-      // LoadURLWithParams on the WebContents to avoid extraneous calls from
-      // content::Shell such as SetFocus(), which could race with the web
-      // test.
-      NavigationController::LoadURLParams params(test_url_);
-
-      // Using PAGE_TRANSITION_TYPED replicates an omnibox navigation.
-      params.transition_type =
-          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED);
-
-      // Clear history to purge the prior navigation to about:blank.
-      params.should_clear_history_list = true;
-      main_window_->web_contents()->GetController().LoadURLWithParams(params);
-    }
-  } else {
 #if defined(OS_MACOSX)
-    // Shell::SizeTo is not implemented on all platforms.
-    main_window_->SizeTo(initial_size_);
+  // Shell::SizeTo is not implemented on all platforms.
+  main_window_->SizeTo(initial_size_);
 #endif
-    main_window_->web_contents()
-        ->GetRenderViewHost()
-        ->GetWidget()
-        ->GetView()
-        ->SetSize(initial_size_);
-    // Try to reset the window size. This can fail, see crbug.com/772811
-    main_window_->web_contents()
-        ->GetRenderViewHost()
-        ->GetWidget()
-        ->SynchronizeVisualProperties();
-    RenderViewHost* render_view_host =
-        main_window_->web_contents()->GetRenderViewHost();
+  WebContents* web_contents = main_window_->web_contents();
+  RenderViewHost* render_view_host = web_contents->GetRenderViewHost();
+  RenderWidgetHost* render_view_host_widget = render_view_host->GetWidget();
 
-    if (is_devtools_protocol_test) {
-      devtools_protocol_test_bindings_.reset(
-          new DevToolsProtocolTestBindings(main_window_->web_contents()));
-    }
+  render_view_host_widget->GetView()->SetSize(initial_size_);
+  // Try to reset the window size. This can fail, see crbug.com/772811
+  render_view_host_widget->SynchronizeVisualProperties();
 
-    // Compositing tests override the default preferences (see
-    // BlinkTestController::OverrideWebkitPrefs) so we force them to be
-    // calculated again to ensure is_compositing_test_ changes are picked up.
-    OverrideWebkitPrefs(&default_prefs_);
+  if (is_devtools_protocol_test) {
+    devtools_protocol_test_bindings_.reset(
+        new DevToolsProtocolTestBindings(web_contents));
+  }
 
-    render_view_host->UpdateWebkitPreferences(default_prefs_);
-    HandleNewRenderFrameHost(render_view_host->GetMainFrame());
+  // Compositing tests override the default preferences (see
+  // BlinkTestController::OverrideWebkitPrefs) so we force them to be
+  // calculated again to ensure is_compositing_test_ changes are picked up.
+  OverrideWebkitPrefs(&default_prefs_);
 
-    // Focus the RenderWidgetHost. This will send an IPC message to the
-    // renderer to propagate the state change.
-    main_window_->web_contents()->GetRenderViewHost()->GetWidget()->Focus();
+  render_view_host->UpdateWebkitPreferences(default_prefs_);
 
-    // Flush various interfaces to ensure a test run begins from a known state.
-    main_window_->web_contents()
-        ->GetRenderViewHost()
-        ->GetWidget()
-        ->FlushForTesting();
-    GetWebTestControlPtr(render_view_host->GetMainFrame()).FlushForTesting();
+  RenderFrameHost* main_frame = render_view_host->GetMainFrame();
 
-    if (is_devtools_js_test) {
-      LoadDevToolsJSTest();
-    } else {
-      NavigationController::LoadURLParams params(test_url_);
-      // Using PAGE_TRANSITION_LINK avoids a BrowsingInstance/process swap
-      // between web tests.
-      params.transition_type =
-          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK);
-      params.should_clear_history_list = true;
-      main_window_->web_contents()->GetController().LoadURLWithParams(params);
-    }
+  bool new_frame = !base::ContainsKey(main_window_render_process_hosts_,
+                                      main_frame->GetProcess());
+  HandleNewRenderFrameHost(main_frame);
+
+  // Focus the RenderWidgetHost. This will send an IPC message to the
+  // renderer to propagate the state change.
+  render_view_host_widget->Focus();
+
+  // Flush various interfaces to ensure a test run begins from a known state.
+  render_view_host_widget->FlushForTesting();
+  GetWebTestControlPtr(main_frame).FlushForTesting();
+
+  if (is_devtools_js_test) {
+    LoadDevToolsJSTest();
+  } else {
+    NavigationController::LoadURLParams params(test_url_);
+    // Using PAGE_TRANSITION_LINK avoids a BrowsingInstance/process swap
+    // between web tests.
+    params.transition_type = ui::PageTransitionFromInt(
+        new_frame ? ui::PAGE_TRANSITION_TYPED : ui::PAGE_TRANSITION_LINK);
+    params.should_clear_history_list = true;
+    web_contents->GetController().LoadURLWithParams(params);
   }
   return true;
 }

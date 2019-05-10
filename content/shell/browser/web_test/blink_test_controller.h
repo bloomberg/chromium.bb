@@ -114,6 +114,9 @@ class BlinkTestController : public WebContentsObserver,
   BlinkTestController();
   ~BlinkTestController() override;
 
+  // Make sure the browser window has been created and ready to load a test.
+  void EnsureMainWindow();
+
   // True if the controller is ready for testing.
   bool PrepareForWebTest(const TestInfo& test_info);
   // True if the controller was reset successfully.

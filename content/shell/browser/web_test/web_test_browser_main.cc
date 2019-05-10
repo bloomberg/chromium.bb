@@ -84,6 +84,8 @@ int RunTests(const std::unique_ptr<content::BrowserMainRunner>& main_runner) {
     test_controller.SetTempPath(temp_path);
   }
 
+  test_controller.EnsureMainWindow();
+
   std::cout << "#READY\n";
   std::cout.flush();
 
