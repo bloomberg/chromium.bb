@@ -322,6 +322,44 @@ test.mostVisited.testGridResizeRtl = function() {
 
 
 /**
+ * Tests if the grid rebalances correctly when the window is resized.
+ */
+test.mostVisited.testGridResizeRebalance = function() {
+  const params = {  // Used to override the default grid parameters.
+    tileHeight: 10,
+    tileWidth: 10,
+    tilesAlwaysVisible: 6,
+    maxTilesPerRow: 5,
+    maxTiles: 10
+  };
+
+  window.innerWidth = 50;
+  // Create a grid a full row.
+  let container = document.createElement('div');
+  let expectedLayout = [
+    'translate(0px, 0px)', 'translate(10px, 0px)', 'translate(20px, 0px)',
+    'translate(30px, 0px)', 'translate(40px, 0px)'
+  ];
+  test.mostVisited.initGridWithAdd(container, params, 5);
+  assertEquals('50px', container.style.width);
+  test.mostVisited.assertLayout(container, expectedLayout);
+  test.mostVisited.assertVisibility(container, 0);
+
+  // Shrink the window so that only 4 tiles can fit in a row.
+  window.innerWidth = 40;
+  // The tiles should rebalance.
+  let expectedLayoutRebalance = [
+    'translate(0px, 0px)', 'translate(10px, 0px)', 'translate(20px, 0px)',
+    'translate(5px, 10px)', 'translate(15px, 10px)'
+  ];
+  test.mostVisited.grid.onResize();
+  assertEquals('30px', container.style.width);
+  test.mostVisited.assertLayout(container, expectedLayoutRebalance);
+  test.mostVisited.assertVisibility(container, 0);
+};
+
+
+/**
  * Tests if all tiles except the add button can be reordered.
  */
 test.mostVisited.testReorderStart = function() {

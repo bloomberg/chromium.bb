@@ -237,14 +237,20 @@ class Grid {
     this.tileWidth_ = 0;
     /** @private {number} */
     this.tilesAlwaysVisible_ = 0;
-    /** @private {number} */
+    /**
+     * The maximum number of tiles per row allowed by the grid parameters.
+     * @private {number}
+     */
     this.maxTilesPerRow_ = 0;
     /** @private {number} */
     this.maxTiles_ = 0;
 
     /** @private {number} */
     this.gridWidth_ = 0;
-    /** @private {number} */
+    /**
+     * The maximum number of tiles per row allowed by the window width.
+     * @private {number}
+     */
     this.maxTilesPerRowWindow_ = 0;
 
     /** @private {?Element} */
@@ -393,17 +399,24 @@ class Grid {
 
 
   /**
-   * Returns the number of tiles per row. This may be balanced if there are more
-   * than |this.maxTilesPerRow_| in order to make even rows.
+   * Returns the number of tiles per row. This may be balanced in order to make
+   * even rows.
    * @return {number} The number of tiles per row.
    * @private
    */
   getTilesPerRow_() {
-    const tilesPerRow = (this.tiles_.length > this.maxTilesPerRow_) ?
-        Math.ceil(this.tiles_.length / 2) :
-        this.tiles_.length;
-    // The number of tiles cannot exceed the max allowed by the window size.
-    return Math.min(tilesPerRow, this.maxTilesPerRowWindow_);
+    const maxTilesPerRow =
+        Math.min(this.maxTilesPerRow_, this.maxTilesPerRowWindow_);
+    if (this.tiles_.length >= maxTilesPerRow * 2) {
+      // We have enough for two full rows, so just return the max.
+      return maxTilesPerRow;
+    } else if (this.tiles_.length > maxTilesPerRow) {
+      // We have have a little more than one full row, so we need to rebalance.
+      return Math.ceil(this.tiles_.length / 2);
+    } else {
+      // We have (less than) a full row, so just return the tiles we have.
+      return this.tiles_.length;
+    }
   }
 
 
