@@ -10,9 +10,9 @@ ApplicationCacheHostForSharedWorker::ApplicationCacheHostForSharedWorker(
     blink::WebApplicationCacheHostClient* client,
     int appcache_host_id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : WebApplicationCacheHostImpl(nullptr /* interface_broker */,
-                                  client,
+    : WebApplicationCacheHostImpl(client,
                                   appcache_host_id,
+                                  MSG_ROUTING_NONE,
                                   std::move(task_runner)) {}
 
 ApplicationCacheHostForSharedWorker::~ApplicationCacheHostForSharedWorker() =

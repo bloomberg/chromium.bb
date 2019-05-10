@@ -1372,9 +1372,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void GetAuthenticator(blink::mojom::AuthenticatorRequest request) override;
   void GetVirtualAuthenticatorManager(
       blink::test::mojom::VirtualAuthenticatorManagerRequest request) override;
-  void RegisterAppCacheHost(blink::mojom::AppCacheHostRequest host_request,
-                            blink::mojom::AppCacheFrontendPtr frontend,
-                            int32_t id) override;
 
   // Allows tests to disable the swapout event timer to simulate bugs that
   // happen before it fires (to avoid flakiness).

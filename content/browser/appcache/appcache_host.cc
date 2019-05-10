@@ -128,7 +128,7 @@ void AppCacheHost::RemoveObserver(Observer* observer) {
 }
 
 void AppCacheHost::Unregister() {
-  service_->EraseHost(process_id_, host_id_);
+  service_->GetBackend(process_id_)->UnregisterHost(host_id_);
 }
 
 void AppCacheHost::SelectCache(const GURL& document_url,
@@ -357,12 +357,14 @@ void AppCacheHost::SetSpawningHostId(int spawning_host_id) {
 }
 
 const AppCacheHost* AppCacheHost::GetSpawningHost() const {
-  return service_->GetHost(process_id_, spawning_host_id_);
+  AppCacheBackendImpl* backend = service_->GetBackend(process_id_);
+  return backend ? backend->GetHost(spawning_host_id_) : nullptr;
 }
 
 AppCacheHost* AppCacheHost::GetParentAppCacheHost() const {
   DCHECK(is_for_dedicated_worker());
-  return service_->GetHost(parent_process_id_, parent_host_id_);
+  AppCacheBackendImpl* backend = service_->GetBackend(parent_process_id_);
+  return backend ? backend->GetHost(parent_host_id_) : nullptr;
 }
 
 void AppCacheHost::GetResourceList(GetResourceListCallback callback) {

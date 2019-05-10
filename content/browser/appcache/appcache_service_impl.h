@@ -24,7 +24,6 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
-#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 
 namespace base {
 class FilePath;
@@ -41,7 +40,6 @@ class SpecialStoragePolicy;
 namespace content {
 FORWARD_DECLARE_TEST(AppCacheServiceImplTest, ScheduleReinitialize);
 class AppCacheBackendImpl;
-class AppCacheHost;
 class AppCacheQuotaClient;
 class AppCachePolicy;
 class AppCacheServiceImplTest;
@@ -181,17 +179,6 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
     return url_loader_factory_getter_.get();
   }
 
-  // Returns a pointer to a registered host. It retains ownership.
-  AppCacheHost* GetHost(int process_id, int host_id);
-  bool EraseHost(int process_id, int host_id);
-  void RegisterHostForFrame(
-      blink::mojom::AppCacheHostRequest host_request,
-      blink::mojom::AppCacheFrontendPtrInfo frontend,
-      int32_t host_id,
-      int32_t render_frame_id,
-      int process_id,
-      mojo::ReportBadMessageCallback bad_message_callback);
-
  protected:
   friend class content::AppCacheServiceImplTest;
   friend class content::AppCacheStorageImplTest;
@@ -231,21 +218,6 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
 
  private:
-  // TODO: Once we remove 'blink::mojom::AppCacheBackend', remove this together.
-  friend class content::AppCacheBackendImpl;
-
-  void RegisterHostInternal(
-      blink::mojom::AppCacheHostRequest host_request,
-      blink::mojom::AppCacheFrontendPtr frontend,
-      int32_t id,
-      int32_t render_frame_id,
-      int process_id,
-      mojo::ReportBadMessageCallback bad_message_callback);
-  // The (process id, host id) pair that identifies one AppCacheHost.
-  using AppCacheHostProcessMap =
-      std::map<std::pair<int, int>, std::unique_ptr<AppCacheHost>>;
-  AppCacheHostProcessMap hosts_;
-
   base::WeakPtrFactory<AppCacheServiceImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheServiceImpl);

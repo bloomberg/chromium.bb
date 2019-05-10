@@ -222,14 +222,15 @@ class AppCacheRequestHandlerTest
     mock_service_->set_request_context(empty_context_.get());
     mock_policy_.reset(new MockAppCachePolicy);
     mock_service_->set_appcache_policy(mock_policy_.get());
+    backend_impl_ = std::make_unique<AppCacheBackendImpl>(mock_service_.get(),
+                                                          kMockProcessId);
     const int kHostId = 1;
     const int kRenderFrameId = 2;
-    blink::mojom::AppCacheFrontendPtrInfo frontend;
+    blink::mojom::AppCacheFrontendPtr frontend;
     mojo::MakeRequest(&frontend);
-    mock_service_->RegisterHostForFrame(
-        mojo::MakeRequest(&host_ptr_), std::move(frontend), kHostId,
-        kRenderFrameId, kMockProcessId, GetBadMessageCallback());
-    host_ = mock_service_->GetHost(kMockProcessId, kHostId);
+    backend_impl_->RegisterHost(mojo::MakeRequest(&host_ptr_),
+                                std::move(frontend), kHostId, kRenderFrameId);
+    host_ = backend_impl_->GetHost(kHostId);
     job_factory_.reset(new MockURLRequestJobFactory());
     empty_context_->set_job_factory(job_factory_.get());
   }
@@ -243,6 +244,7 @@ class AppCacheRequestHandlerTest
     handler_.reset();
     request_ = nullptr;
     url_request_.reset();
+    backend_impl_.reset();
     mock_service_.reset();
     mock_policy_.reset();
     job_factory_.reset();
@@ -721,7 +723,7 @@ class AppCacheRequestHandlerTest
                                         ResourceType::kSubResource));
     EXPECT_TRUE(handler_.get());
 
-    mock_service_->EraseHost(kMockProcessId, 1);
+    backend_impl_->UnregisterHost(1);
     host_ = nullptr;
 
     EXPECT_FALSE(handler_->MaybeLoadResource(nullptr));
@@ -746,7 +748,7 @@ class AppCacheRequestHandlerTest
     EXPECT_TRUE(job());
     EXPECT_TRUE(job()->IsWaiting());
 
-    mock_service_->EraseHost(kMockProcessId, 1);
+    backend_impl_->UnregisterHost(1);
     host_ = nullptr;
 
     if (request_handler_type_ == URLREQUEST) {
@@ -774,6 +776,7 @@ class AppCacheRequestHandlerTest
     SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
     EXPECT_TRUE(job());
 
+    backend_impl_.reset();
     mock_service_.reset();
     mock_policy_.reset();
     host_ = nullptr;
@@ -890,13 +893,6 @@ class AppCacheRequestHandlerTest
     return cache;
   }
 
-  mojo::ReportBadMessageCallback GetBadMessageCallback() {
-    return base::BindOnce(&AppCacheRequestHandlerTest::OnBadMessage,
-                          base::Unretained(this));
-  }
-
-  void OnBadMessage(const std::string& reason) { NOTREACHED(); }
-
   MockAppCacheStorage* mock_storage() {
     return reinterpret_cast<MockAppCacheStorage*>(mock_service_->storage());
   }
@@ -933,6 +929,7 @@ class AppCacheRequestHandlerTest
   std::unique_ptr<base::WaitableEvent> test_finished_event_;
   base::stack<base::OnceClosure> task_stack_;
   std::unique_ptr<MockAppCacheService> mock_service_;
+  std::unique_ptr<AppCacheBackendImpl> backend_impl_;
   std::unique_ptr<MockAppCachePolicy> mock_policy_;
   AppCacheHost* host_;
   blink::mojom::AppCacheHostPtr host_ptr_;

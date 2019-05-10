@@ -861,9 +861,6 @@ class TestSimpleDocumentInterfaceBrokerImpl
   void GetVirtualAuthenticatorManager(
       blink::test::mojom::VirtualAuthenticatorManagerRequest request) override {
   }
-  void RegisterAppCacheHost(blink::mojom::AppCacheHostRequest host_request,
-                            blink::mojom::AppCacheFrontendPtr frontend,
-                            int32_t id) override {}
 
   mojo::Binding<blink::mojom::DocumentInterfaceBroker> binding_;
   BinderCallback binder_callback_;

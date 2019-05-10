@@ -27,13 +27,25 @@ class CONTENT_EXPORT AppCacheBackendImpl
   // blink::mojom::AppCacheBackend
   void RegisterHost(blink::mojom::AppCacheHostRequest host_request,
                     blink::mojom::AppCacheFrontendPtr frontend,
-                    int32_t host_id) override;
+                    int32_t host_id,
+                    int32_t render_frame_id) override;
+  void UnregisterHost(int32_t host_id);
+
+  // Returns a pointer to a registered host. The backend retains ownership.
+  AppCacheHost* GetHost(int host_id) {
+    auto it = hosts_.find(host_id);
+    return (it != hosts_.end()) ? (it->second.get()) : nullptr;
+  }
+
+  using HostMap = std::unordered_map<int, std::unique_ptr<AppCacheHost>>;
+  const HostMap& hosts() { return hosts_; }
 
  private:
   // Raw pointer is safe because instances of this class are owned by
   // |service_|.
   AppCacheServiceImpl* service_;
   int process_id_;
+  HostMap hosts_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheBackendImpl);
 };
