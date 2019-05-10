@@ -175,6 +175,39 @@ if (!is_android) {
     ]
     output_dir = "$root_gen_dir/chrome"
   }
+
+  grit("downloads_resources") {
+    if (optimize_webui) {
+      source = "downloads/downloads_resources_vulcanized.grd"
+
+      deps = [
+        "//chrome/browser/resources/downloads:build",
+      ]
+    } else {
+      source = "downloads/downloads_resources.grd"
+
+      deps = [
+        "//chrome/browser/ui/webui/downloads:mojo_bindings",
+      ]
+    }
+
+    # The .grd contains references to generated files.
+    source_is_generated = true
+
+    grit_flags = [
+      "-E",
+      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+    ]
+
+    defines = chrome_grit_defines
+    outputs = [
+      "grit/downloads_resources.h",
+      "grit/downloads_resources_map.cc",
+      "grit/downloads_resources_map.h",
+      "downloads_resources.pak",
+    ]
+    output_dir = "$root_gen_dir/chrome"
+  }
 }
 
 if (is_chromeos) {

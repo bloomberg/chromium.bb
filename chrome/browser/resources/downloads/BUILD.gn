@@ -2,21 +2,63 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chrome/common/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
+import("//tools/grit/grit_rule.gni")
 import("../optimize_webui.gni")
 
-optimize_webui("build") {
-  deps = []
-  host = "downloads"
-  html_in_files = [ "downloads.html" ]
-  html_out_files = [ "vulcanized.html" ]
-  input = rebase_path(".", root_build_dir)
-  insert_in_head = "<base href=chrome://downloads>"
-  js_out_files = [ "crisper.js" ]
-  excludes = [
-    "chrome://resources/js/mojo_bindings_lite.js",
-    "chrome://downloads/downloads.mojom-lite.js",
-  ]
+if (optimize_webui) {
+  downloads_pak_file = "downloads_resources.pak"
+  unpak_folder = "downloads_resources.unpak"
+
+  optimize_webui("build") {
+    host = "downloads"
+    html_in_files = [ "downloads.html" ]
+    html_out_files = [ "vulcanized.html" ]
+    insert_in_head = "<base href=chrome://downloads>"
+    input = rebase_path("$target_gen_dir/$unpak_folder", root_build_dir)
+    js_out_files = [ "crisper.js" ]
+    excludes = [
+      "chrome://resources/js/mojo_bindings_lite.js",
+      "chrome://downloads/downloads.mojom-lite.js",
+    ]
+
+    deps = [
+      ":unpak",
+    ]
+  }
+
+  unpak("unpak") {
+    pak_file = downloads_pak_file
+    out_folder = unpak_folder
+
+    deps = [
+      ":flattened_resources",
+    ]
+  }
+
+  grit("flattened_resources") {
+    source = "downloads_resources.grd"
+
+    # The .grd contains references to generated files.
+    source_is_generated = true
+
+    defines = chrome_grit_defines
+    outputs = [
+      "grit/downloads_resources.h",
+      "grit/downloads_resources_map.cc",
+      "grit/downloads_resources_map.h",
+      downloads_pak_file,
+    ]
+    deps = [
+      "//chrome/browser/ui/webui/downloads:mojo_bindings",
+    ]
+    grit_flags = [
+      "-E",
+      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+    ]
+    output_dir = "$root_gen_dir/chrome/browser/resources/downloads"
+  }
 }
 
 js_type_check("closure_compile") {
