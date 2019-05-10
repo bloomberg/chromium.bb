@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/ntp_tiles/constants.h"
+#include "components/ntp_tiles/features.h"
 #include "components/ntp_tiles/icon_cacher.h"
 #include "components/ntp_tiles/pref_names.h"
 #include "components/ntp_tiles/switches.h"
@@ -31,10 +32,6 @@ using suggestions::SuggestionsService;
 namespace ntp_tiles {
 
 namespace {
-
-// The maximum number of custom links that can be shown. This is independent of
-// the maximum number of Most Visited sites that can be shown.
-const size_t kMaxNumCustomLinks = 10;
 
 const base::Feature kDisplaySuggestionsServiceTiles{
     "DisplaySuggestionsServiceTiles", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -733,6 +730,8 @@ void MostVisitedSites::BuildCustomLinks(
   DCHECK(custom_links_);
 
   NTPTilesVector tiles;
+  // The maximum number of custom links that can be shown is independent of the
+  // maximum number of Most Visited sites that can be shown.
   size_t num_tiles = std::min(links.size(), kMaxNumCustomLinks);
   for (size_t i = 0; i < num_tiles; ++i) {
     const CustomLinksManager::Link& link = links.at(i);

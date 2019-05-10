@@ -39,6 +39,7 @@
 #include "chrome/common/search.mojom.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/ntp_tiles/constants.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/search/search.h"
@@ -187,7 +188,8 @@ InstantService::InstantService(Profile* profile)
 
     // 9 tiles are required for the custom links feature in order to balance the
     // Most Visited rows (this is due to an additional "Add" button).
-    most_visited_sites_->SetMostVisitedURLsObserver(this, 9);
+    most_visited_sites_->SetMostVisitedURLsObserver(
+        this, ntp_tiles::kMaxNumMostVisited);
     most_visited_sites_->EnableCustomLinks(IsCustomLinksEnabled());
   }
 

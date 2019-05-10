@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/search/ntp_logging_events.h"
+#include "components/ntp_tiles/constants.h"
 #include "components/ntp_tiles/ntp_tile_impression.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -73,10 +74,9 @@ class NTPUserDataLogger
   FRIEND_TEST_ALL_PREFIXES(NTPUserDataLoggerTest, ShouldRecordLoadTime);
   FRIEND_TEST_ALL_PREFIXES(NTPUserDataLoggerTest, ShouldRecordNumberOfTiles);
   FRIEND_TEST_ALL_PREFIXES(NTPUserDataLoggerTest,
+                           ShouldNotRecordImpressionsForBinsBeyondMax);
+  FRIEND_TEST_ALL_PREFIXES(NTPUserDataLoggerTest,
                            ShouldRecordImpressionsAgainAfterNavigating);
-
-  // Number of Most Visited elements on the NTP for logging purposes.
-  static const int kNumMostVisited = 8;
 
   // content::WebContentsObserver override
   void NavigationEntryCommitted(
@@ -102,15 +102,17 @@ class NTPUserDataLogger
                               bool from_cache);
 
   // Records whether we have yet logged an impression for the tile at a given
-  // index and if so the corresponding details. A typical NTP will log 8
+  // index and if so the corresponding details. A typical NTP will log 9
   // impressions, but could record fewer for new users that haven't built up a
-  // history yet.
+  // history yet. If the user has customized their shortcuts, this number can
+  // increase up to 10 impressions.
   //
   // If something happens that causes the NTP to pull tiles from different
   // sources, such as signing in (switching from client to server tiles), then
   // only the impressions for the first source will be logged, leaving the
   // number of impressions for a source slightly out-of-sync with navigations.
-  std::array<base::Optional<ntp_tiles::NTPTileImpression>, kNumMostVisited>
+  std::array<base::Optional<ntp_tiles::NTPTileImpression>,
+             ntp_tiles::kMaxNumTiles>
       logged_impressions_;
 
   // The time we received the NTP_ALL_TILES_RECEIVED event.

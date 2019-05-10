@@ -17,6 +17,8 @@ static_library("ntp_tiles") {
     "custom_links_manager_impl.h",
     "custom_links_store.cc",
     "custom_links_store.h",
+    "features.cc",
+    "features.h",
     "icon_cacher.h",
     "icon_cacher_impl.cc",
     "icon_cacher_impl.h",

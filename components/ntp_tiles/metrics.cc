@@ -9,15 +9,13 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "components/ntp_tiles/constants.h"
 #include "components/rappor/public/rappor_utils.h"
 
 namespace ntp_tiles {
 namespace metrics {
 
 namespace {
-
-// Maximum number of tiles to record in histograms.
-const int kMaxNumTiles = 12;
 
 const int kLastTitleSource = static_cast<int>(TileTitleSource::LAST);
 

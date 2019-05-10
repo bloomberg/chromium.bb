@@ -459,7 +459,7 @@ void NTPUserDataLogger::LogSuggestionEventWithValue(
 
 void NTPUserDataLogger::LogMostVisitedImpression(
     const ntp_tiles::NTPTileImpression& impression) {
-  if ((impression.index >= kNumMostVisited) ||
+  if ((impression.index >= ntp_tiles::kMaxNumTiles) ||
       logged_impressions_[impression.index].has_value()) {
     return;
   }

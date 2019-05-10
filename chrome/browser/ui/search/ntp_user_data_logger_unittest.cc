@@ -17,13 +17,15 @@
 #include "chrome/common/search/ntp_logging_events.h"
 #include "chrome/common/url_constants.h"
 #include "components/favicon_base/favicon_types.h"
+#include "components/ntp_tiles/constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Bucket;
-using ntp_tiles::TileTitleSource;
 using ntp_tiles::TileSource;
+using ntp_tiles::TileTitleSource;
 using ntp_tiles::TileVisualType;
+using testing::ContainerEq;
 using testing::ElementsAre;
 using testing::IsEmpty;
 using testing::SizeIs;
@@ -52,6 +54,16 @@ ntp_tiles::NTPTileImpression MakeNTPTileImpression(int index,
                                       favicon_base::IconType::kInvalid,
                                       /*data_generation_time=*/base::Time(),
                                       /*url_for_rappor=*/GURL());
+}
+
+// Helper function that populates a list of expected impressions, each with the
+// expected |count|.
+std::vector<base::Bucket> FillImpressions(int numImpressions, int count) {
+  std::vector<base::Bucket> impressions;
+  for (int i = 0; i < numImpressions; ++i) {
+    impressions.push_back(Bucket(i, count));
+  }
+  return impressions;
 }
 
 class TestNTPUserDataLogger : public NTPUserDataLogger {
@@ -89,19 +101,19 @@ TEST_F(NTPUserDataLoggerTest, ShouldRecordNumberOfTiles) {
 
   const base::TimeDelta delta = base::TimeDelta::FromMilliseconds(73);
 
-  for (int i = 0; i < 8; ++i) {
+  for (int i = 0; i < ntp_tiles::kMaxNumTiles; ++i) {
     logger.LogMostVisitedImpression(MakeNTPTileImpression(
         i, TileSource::SUGGESTIONS_SERVICE, TileTitleSource::UNKNOWN,
         TileVisualType::THUMBNAIL));
   }
   logger.LogEvent(NTP_ALL_TILES_LOADED, delta);
   EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.NumberOfTiles"),
-              ElementsAre(Bucket(8, 1)));
+              ElementsAre(Bucket(ntp_tiles::kMaxNumTiles, 1)));
 
   // We should not log again for the same NTP.
   logger.LogEvent(NTP_ALL_TILES_LOADED, delta);
   EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.NumberOfTiles"),
-              ElementsAre(Bucket(8, 1)));
+              ElementsAre(Bucket(ntp_tiles::kMaxNumTiles, 1)));
 
   // Navigating away and back resets stats.
   logger.NavigatedFromURLToURL(GURL("chrome://newtab/"),
@@ -110,7 +122,7 @@ TEST_F(NTPUserDataLoggerTest, ShouldRecordNumberOfTiles) {
                                GURL("chrome://newtab/"));
   logger.LogEvent(NTP_ALL_TILES_LOADED, delta);
   EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.NumberOfTiles"),
-              ElementsAre(Bucket(0, 1), Bucket(8, 1)));
+              ElementsAre(Bucket(0, 1), Bucket(ntp_tiles::kMaxNumTiles, 1)));
 }
 
 TEST_F(NTPUserDataLoggerTest, ShouldNotRecordImpressionsBeforeAllTilesLoaded) {
@@ -296,50 +308,54 @@ TEST_F(NTPUserDataLoggerTest, ShouldNotRecordRepeatedImpressions) {
               IsEmpty());
 }
 
-TEST_F(NTPUserDataLoggerTest, ShouldNotRecordImpressionsForBinsBeyondEight) {
+TEST_F(NTPUserDataLoggerTest, ShouldNotRecordImpressionsForBinsBeyondMax) {
   TestNTPUserDataLogger logger(GURL("chrome://newtab/"));
 
   base::HistogramTester histogram_tester;
 
   // Impressions increment the associated bins.
-  for (int bin = 0; bin < 8; bin++) {
+  for (int bin = 0; bin < ntp_tiles::kMaxNumTiles; bin++) {
     logger.LogMostVisitedImpression(MakeNTPTileImpression(
         bin, TileSource::SUGGESTIONS_SERVICE, TileTitleSource::INFERRED,
         TileVisualType::THUMBNAIL));
   }
 
-  // Impressions are silently ignored for tiles >= 8.
-  logger.LogMostVisitedImpression(
-      MakeNTPTileImpression(8, TileSource::TOP_SITES, TileTitleSource::UNKNOWN,
-                            TileVisualType::THUMBNAIL));
-  logger.LogMostVisitedImpression(
-      MakeNTPTileImpression(9, TileSource::TOP_SITES, TileTitleSource::UNKNOWN,
-                            TileVisualType::THUMBNAIL_FAILED));
+  // Impressions are silently ignored for tiles >= ntp_tiles::kMaxNumTiles.
+  logger.LogMostVisitedImpression(MakeNTPTileImpression(
+      ntp_tiles::kMaxNumTiles, TileSource::TOP_SITES, TileTitleSource::UNKNOWN,
+      TileVisualType::THUMBNAIL));
+  logger.LogMostVisitedImpression(MakeNTPTileImpression(
+      ntp_tiles::kMaxNumTiles + 1, TileSource::TOP_SITES,
+      TileTitleSource::UNKNOWN, TileVisualType::THUMBNAIL_FAILED));
 
   // Send the ALL_TILES_LOADED event, this should trigger emitting histograms.
   logger.LogEvent(NTP_ALL_TILES_LOADED, base::TimeDelta::FromMilliseconds(73));
 
+  std::vector<base::Bucket> expectedImpressions =
+      FillImpressions(ntp_tiles::kMaxNumTiles, 1);
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression"),
-      ElementsAre(Bucket(0, 1), Bucket(1, 1), Bucket(2, 1), Bucket(3, 1),
-                  Bucket(4, 1), Bucket(5, 1), Bucket(6, 1), Bucket(7, 1)));
+      ContainerEq(expectedImpressions));
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.server"),
-      ElementsAre(Bucket(0, 1), Bucket(1, 1), Bucket(2, 1), Bucket(3, 1),
-                  Bucket(4, 1), Bucket(5, 1), Bucket(6, 1), Bucket(7, 1)));
+      ContainerEq(expectedImpressions));
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.client"),
       IsEmpty());
   EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.TileType"),
-              ElementsAre(Bucket(ntp_tiles::TileVisualType::THUMBNAIL, 8)));
+              ElementsAre(Bucket(ntp_tiles::TileVisualType::THUMBNAIL,
+                                 ntp_tiles::kMaxNumTiles)));
   EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.TileType.server"),
-              ElementsAre(Bucket(ntp_tiles::TileVisualType::THUMBNAIL, 8)));
+              ElementsAre(Bucket(ntp_tiles::TileVisualType::THUMBNAIL,
+                                 ntp_tiles::kMaxNumTiles)));
   EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.TileType.client"),
               IsEmpty());
-  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.TileTitle"),
-              ElementsAre(Bucket(kInferredTitleSource, 8)));
-  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.TileTitle.server"),
-              ElementsAre(Bucket(kInferredTitleSource, 8)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.TileTitle"),
+      ElementsAre(Bucket(kInferredTitleSource, ntp_tiles::kMaxNumTiles)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.TileTitle.server"),
+      ElementsAre(Bucket(kInferredTitleSource, ntp_tiles::kMaxNumTiles)));
   EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.TileTitle.client"),
               IsEmpty());
 }
@@ -348,7 +364,7 @@ TEST_F(NTPUserDataLoggerTest, ShouldRecordImpressionsAgainAfterNavigating) {
   TestNTPUserDataLogger logger(GURL("chrome://newtab/"));
 
   // Record some previous tile impressions.
-  for (int bin = 0; bin < 8; bin++) {
+  for (int bin = 0; bin < ntp_tiles::kMaxNumTiles; bin++) {
     logger.LogMostVisitedImpression(MakeNTPTileImpression(
         bin, TileSource::SUGGESTIONS_SERVICE, TileTitleSource::INFERRED,
         TileVisualType::THUMBNAIL));
