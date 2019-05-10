@@ -230,7 +230,7 @@ void HeartbeatSender::OnResponse(const grpc::Status& status,
                                  const apis::v1::HeartbeatResponse& response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (status.ok() && response.result() == apis::v1::HEARTBEATRESULT_SUCCESS) {
+  if (status.ok()) {
     heartbeat_succeeded_ = true;
     failed_heartbeat_count_ = 0;
 

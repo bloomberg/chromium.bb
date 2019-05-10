@@ -67,22 +67,8 @@ message HeartbeatRequest {
 
 // Sent in response to a HeartbeatRequest.
 message HeartbeatResponse {
-  // The result of the request.
-  optional HeartbeatResult result = 1;
   // The amount of time to wait before the host should send its next update.
-  optional int32 set_interval_seconds = 2;
-}
-
-// TODO(joedow): Translate XMPP stanza errors into proto format.
-// The result of a HeartBeatRequest.
-// Added HEARTBEATRESULT_ prefix because logging.h pollutes `ERROR`.
-enum HeartbeatResult {
-  // Field was not set.
-  HEARTBEATRESULT_UNSET = 0;
-  // The heartbeat was handled successfully.
-  HEARTBEATRESULT_SUCCESS = 1;
-  // There was an error processing the heartbeat request.
-  HEARTBEATRESULT_ERROR = 2;
+  optional int32 set_interval_seconds = 1;
 }
 
 // Requests that a new host entry to added to the Directory.
