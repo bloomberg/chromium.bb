@@ -3,8 +3,9 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 
-if (safe_browsing_mode == 1) {
+if (safe_browsing_mode == 1 || use_fuzzing_engine) {
   static_library("unrar") {
     sources = [
       "src/archive.cpp",
@@ -78,14 +79,32 @@ if (safe_browsing_mode == 1) {
       # The following is set to disable certain macro definitions in the unrar
       # source code.
       "CHROMIUM_UNRAR",
-
-      # Disables exceptions in unrar, replaces them with process termination.
-      "UNRAR_NO_EXCEPTIONS",
     ]
+
+    if (!use_libfuzzer) {
+      # Disables exceptions in unrar, replaces them with process termination.
+      defines += [ "UNRAR_NO_EXCEPTIONS" ]
+    } else {
+      configs -= [ "//build/config/compiler:no_exceptions" ]
+    }
 
     deps = [
       "//base",
     ]
+  }
+
+  if (use_fuzzing_engine && !is_asan && !is_msan) {
+    fuzzer_test("unrar_fuzzer") {
+      sources = [
+        "unrar_fuzzer.cc",
+      ]
+      deps = [
+        ":unrar",
+      ]
+      include_dirs = [ "//third_party/unrar/src" ]
+      defines = [ "CHROMIUM_UNRAR" ]
+      configs_to_remove = [ "//build/config/compiler:no_exceptions" ]
+    }
   }
 }
 

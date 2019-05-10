@@ -17,6 +17,7 @@ import("//testing/test.gni")
 # - additional_configs - additional configs to be used for compilation
 # - dict - a dictionary file for the fuzzer.
 # - environment_variables - certain whitelisted environment variables for the
+# - configs_to_remove - (EXPERIMENTAL, don't use) configs to remove.
 # fuzzer (AFL_DRIVER_DONT_DEFER is the only one allowed currently).
 # - libfuzzer_options - options for the fuzzer (e.g. -max_len=N or -timeout=N).
 # - asan_options - AddressSanitizer options (e.g. allow_user_segv_handler=1).
@@ -195,6 +196,9 @@ template("fuzzer_test") {
                              ])
       deps = test_deps
 
+      if (defined(invoker.configs_to_remove)) {
+        configs -= invoker.configs_to_remove
+      }
       if (defined(invoker.additional_configs)) {
         configs += invoker.additional_configs
       }
