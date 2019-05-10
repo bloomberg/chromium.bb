@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/elements/gray_highlight_button.h"
+#import "ios/chrome/browser/ui/elements/text_field_configuration.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
@@ -102,8 +103,9 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
 @end
 
 @interface AlertViewController ()
-@property(nonatomic, readwrite) NSArray<AlertAction*>* actions;
-@property(nonatomic, readwrite) NSArray<UITextField*>* textFields;
+
+// The actions for to this alert. |copy| for safety against mutable objects.
+@property(nonatomic, copy) NSArray<AlertAction*>* actions;
 
 // This maps UIButtons' tags with AlertActions' uniqueIdentifiers.
 @property(nonatomic, strong)
@@ -113,30 +115,22 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
 // Everything will be added here.
 @property(nonatomic, strong) UIView* contentView;
 
+// The message of the alert, will appear after the title.
+@property(nonatomic, copy) NSString* message;
+
+// Text field configurations for this alert. One text field will be created for
+// each |TextFieldConfiguration|. |copy| for safety against mutable objects.
+@property(nonatomic, copy)
+    NSArray<TextFieldConfiguration*>* textFieldConfigurations;
+
+// The text fields that had been added to this alert.
+@property(nonatomic, strong) NSArray<UITextField*>* textFields;
+
 @end
 
 @implementation AlertViewController
 
-@dynamic title;
-
-- (void)addAction:(AlertAction*)action {
-  if (!self.actions) {
-    self.actions = @[ action ];
-    return;
-  }
-  self.actions = [self.actions arrayByAddingObject:action];
-}
-
-- (void)addTextFieldWithConfigurationHandler:
-    (void (^)(UITextField* textField))configurationHandler {
-  UITextField* textField = [[UITextField alloc] init];
-  if (!self.textFields) {
-    self.textFields = @[ textField ];
-    return;
-  }
-  self.textFields = [self.textFields arrayByAddingObject:textField];
-  // TODO(crbug.com/951303): Implement configuration handlers support.
-}
+#pragma mark - Public
 
 - (void)loadView {
   [super loadView];
@@ -260,7 +254,7 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
         LayoutSides::kTrailing | LayoutSides::kLeading, messageInsets);
   }
 
-  if (self.textFields.count) {
+  if (self.textFieldConfigurations.count) {
     // |stackHolder| has the background, border and round corners of the stacked
     // fields.
     UIView* stackHolder = [[UIView alloc] init];
@@ -304,8 +298,12 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
     AddSameConstraintsWithInsets(fieldStack, stackHolder,
                                  fieldStackContentInsets);
 
-    for (UITextField* textField in self.textFields) {
-      if (textField != [self.textFields firstObject]) {
+    NSMutableArray<UITextField*>* textFields = [[NSMutableArray alloc]
+        initWithCapacity:self.textFieldConfigurations.count];
+    for (TextFieldConfiguration* textFieldConfiguration in self
+             .textFieldConfigurations) {
+      if (textFieldConfiguration !=
+          [self.textFieldConfigurations firstObject]) {
         UIView* hairline = [[UIView alloc] init];
         hairline.backgroundColor = [UIColor lightGrayColor];
         hairline.translatesAutoresizingMaskIntoConstraints = NO;
@@ -317,6 +315,12 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
             fieldStack, hairline,
             LayoutSides::kTrailing | LayoutSides::kLeading);
       }
+      UITextField* textField = [[UITextField alloc] init];
+      textField.text = textFieldConfiguration.text;
+      textField.placeholder = textFieldConfiguration.placeholder;
+      textField.secureTextEntry = textFieldConfiguration.secureTextEntry;
+      textField.accessibilityIdentifier =
+          textFieldConfiguration.accessibilityIdentifier;
       textField.translatesAutoresizingMaskIntoConstraints = NO;
       [fieldStack addArrangedSubview:textField];
       ChromeDirectionalEdgeInsets fieldInsets = ChromeDirectionalEdgeInsetsMake(
@@ -324,7 +328,9 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
       AddSameConstraintsToSidesWithInsets(
           textField, fieldStack, LayoutSides::kTrailing | LayoutSides::kLeading,
           fieldInsets);
+      [textFields addObject:textField];
     }
+    self.textFields = textFields;
   }
 
   UIView* lastArrangedView = stackView.arrangedSubviews.lastObject;
@@ -379,6 +385,20 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
     button.tag = action.uniqueIdentifier;
     self.buttonAlertActionsDictionary[@(action.uniqueIdentifier)] = action;
   }
+}
+
+#pragma mark - Getters
+
+- (NSArray<NSString*>*)textFieldResults {
+  if (!self.textFields) {
+    return nil;
+  }
+  NSMutableArray<NSString*>* results =
+      [[NSMutableArray alloc] initWithCapacity:self.textFields.count];
+  for (UITextField* textField in self.textFields) {
+    [results addObject:textField.text];
+  }
+  return results;
 }
 
 #pragma mark - Private

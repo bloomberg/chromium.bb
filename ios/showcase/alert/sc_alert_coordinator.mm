@@ -5,6 +5,7 @@
 #import "ios/showcase/alert/sc_alert_coordinator.h"
 
 #import "ios/chrome/browser/ui/alert_view_controller/alert_view_controller.h"
+#import "ios/chrome/browser/ui/elements/text_field_configuration.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -89,9 +90,6 @@
 }
 
 - (void)showAlert {
-  AlertViewController* alert = [[AlertViewController alloc] init];
-  alert.title = @"chromium.org says";
-  alert.message = @"This is an alert message from a website.";
   __weak __typeof(self) weakSelf = self;
   AlertAction* action =
       [AlertAction actionWithTitle:@"OK"
@@ -101,17 +99,18 @@
                                  dismissViewControllerAnimated:YES
                                                     completion:nil];
                            }];
-  [alert addAction:action];
-  [self presentAlertViewController:alert];
+  [self presentAlertWithTitle:@"chromium.org says"
+                      message:@"This is an alert message from a website."
+                      actions:@[ action ]
+      textFieldConfigurations:nil];
 }
 
 - (void)showPrompt {
-  AlertViewController* alert = [[AlertViewController alloc] init];
-  alert.title = @"chromium.org says";
-  alert.message = @"This is a promp message from a website.";
-  [alert addTextFieldWithConfigurationHandler:^(UITextField* textField) {
-    textField.placeholder = @"placehorder";
-  }];
+  TextFieldConfiguration* fieldConfiguration =
+      [[TextFieldConfiguration alloc] initWithText:nil
+                                       placeholder:@"placehorder"
+                           accessibilityIdentifier:nil
+                                   secureTextEntry:NO];
   __weak __typeof(self) weakSelf = self;
   AlertAction* OKAction =
       [AlertAction actionWithTitle:@"OK"
@@ -121,7 +120,6 @@
                                  dismissViewControllerAnimated:YES
                                                     completion:nil];
                            }];
-  [alert addAction:OKAction];
   AlertAction* cancelAction =
       [AlertAction actionWithTitle:@"Cancel"
                              style:UIAlertActionStyleCancel
@@ -130,14 +128,13 @@
                                  dismissViewControllerAnimated:YES
                                                     completion:nil];
                            }];
-  [alert addAction:cancelAction];
-  [self presentAlertViewController:alert];
+  [self presentAlertWithTitle:@"chromium.org says"
+                      message:@"This is a promp message from a website."
+                      actions:@[ OKAction, cancelAction ]
+      textFieldConfigurations:@[ fieldConfiguration ]];
 }
 
 - (void)showConfirm {
-  AlertViewController* alert = [[AlertViewController alloc] init];
-  alert.title = @"chromium.org says";
-  alert.message = @"This is a confirm message from a website.";
   __weak __typeof(self) weakSelf = self;
   AlertAction* OKAction =
       [AlertAction actionWithTitle:@"OK"
@@ -147,7 +144,6 @@
                                  dismissViewControllerAnimated:YES
                                                     completion:nil];
                            }];
-  [alert addAction:OKAction];
   AlertAction* cancelAction =
       [AlertAction actionWithTitle:@"Cancel"
                              style:UIAlertActionStyleCancel
@@ -156,22 +152,24 @@
                                  dismissViewControllerAnimated:YES
                                                     completion:nil];
                            }];
-  [alert addAction:cancelAction];
-  [self presentAlertViewController:alert];
+  [self presentAlertWithTitle:@"chromium.org says"
+                      message:@"This is a confirm message from a website."
+                      actions:@[ OKAction, cancelAction ]
+      textFieldConfigurations:nil];
 }
 
 - (void)showHTTPAuth {
-  AlertViewController* alert = [[AlertViewController alloc] init];
-  alert.title = @"Sign in";
-  alert.message =
-      @"https://www.chromium.org requires a username and a password.";
-  [alert addTextFieldWithConfigurationHandler:^(UITextField* textField) {
-    textField.placeholder = @"Username";
-  }];
-  [alert addTextFieldWithConfigurationHandler:^(UITextField* textField) {
-    textField.placeholder = @"Password";
-    textField.secureTextEntry = YES;
-  }];
+  TextFieldConfiguration* usernameOptions =
+      [[TextFieldConfiguration alloc] initWithText:nil
+                                       placeholder:@"Username"
+                           accessibilityIdentifier:nil
+                                   secureTextEntry:NO];
+  TextFieldConfiguration* passwordOptions =
+      [[TextFieldConfiguration alloc] initWithText:nil
+                                       placeholder:@"Password"
+                           accessibilityIdentifier:nil
+                                   secureTextEntry:YES];
+
   __weak __typeof(self) weakSelf = self;
   AlertAction* OKAction =
       [AlertAction actionWithTitle:@"Sign In"
@@ -181,7 +179,6 @@
                                  dismissViewControllerAnimated:YES
                                                     completion:nil];
                            }];
-  [alert addAction:OKAction];
   AlertAction* cancelAction =
       [AlertAction actionWithTitle:@"Cancel"
                              style:UIAlertActionStyleCancel
@@ -190,51 +187,71 @@
                                  dismissViewControllerAnimated:YES
                                                     completion:nil];
                            }];
-  [alert addAction:cancelAction];
-  [self presentAlertViewController:alert];
+  [self presentAlertWithTitle:@"Sign In"
+                      message:@"https://www.chromium.org requires a "
+                              @"username and a password."
+                      actions:@[ OKAction, cancelAction ]
+      textFieldConfigurations:@[ usernameOptions, passwordOptions ]];
 }
 
 - (void)showLongAlert {
-  AlertViewController* alert = [[AlertViewController alloc] init];
-  alert.title = @"Sign in";
-  alert.message =
+  TextFieldConfiguration* usernameOptions =
+      [[TextFieldConfiguration alloc] initWithText:nil
+                                       placeholder:@"Username"
+                           accessibilityIdentifier:nil
+                                   secureTextEntry:NO];
+  TextFieldConfiguration* passwordOptions =
+      [[TextFieldConfiguration alloc] initWithText:nil
+                                       placeholder:@"Password"
+                           accessibilityIdentifier:nil
+                                   secureTextEntry:YES];
+  __weak __typeof(self) weakSelf = self;
+  AlertAction* OKAction =
+      [AlertAction actionWithTitle:@"Sign In"
+                             style:UIAlertActionStyleDefault
+                           handler:^(AlertAction* action) {
+                             [weakSelf.containerViewController
+                                 dismissViewControllerAnimated:YES
+                                                    completion:nil];
+                           }];
+  AlertAction* cancelAction =
+      [AlertAction actionWithTitle:@"Cancel"
+                             style:UIAlertActionStyleCancel
+                           handler:^(AlertAction* action) {
+                             [weakSelf.containerViewController
+                                 dismissViewControllerAnimated:YES
+                                                    completion:nil];
+                           }];
+  NSString* message =
       @"It was the best of times, it was the worst of times, it was the age of "
       @"wisdom, it was the age of foolishness, it was the epoch of belief, it "
       @"was the epoch of incredulity, it was the season of Light, it was the "
       @"season of Darkness, it was the spring of hope, it was the winter of "
       @"despair, we had everything before us, we had nothing before us, we "
       @"were all going direct to Heaven, we were all going direct the other "
-      @"way.";
-  [alert addTextFieldWithConfigurationHandler:^(UITextField* textField) {
-    textField.placeholder = @"Username";
-  }];
-  [alert addTextFieldWithConfigurationHandler:^(UITextField* textField) {
-    textField.placeholder = @"Password";
-    textField.secureTextEntry = YES;
-  }];
-  __weak __typeof(self) weakSelf = self;
-  AlertAction* OKAction =
-      [AlertAction actionWithTitle:@"Sign In"
-                             style:UIAlertActionStyleDefault
-                           handler:^(AlertAction* action) {
-                             [weakSelf.containerViewController
-                                 dismissViewControllerAnimated:YES
-                                                    completion:nil];
-                           }];
-  AlertAction* cancelAction =
-      [AlertAction actionWithTitle:@"Cancel"
-                             style:UIAlertActionStyleCancel
-                           handler:^(AlertAction* action) {
-                             [weakSelf.containerViewController
-                                 dismissViewControllerAnimated:YES
-                                                    completion:nil];
-                           }];
-  [alert addAction:OKAction];
-  [alert addAction:cancelAction];
-  [self presentAlertViewController:alert];
+      @"way. It was the best of times, it was the worst of times, it was the "
+      @"age of wisdom, it was the age of foolishness, it was the epoch of "
+      @"belief, it was the epoch of incredulity, it was the season of Light, "
+      @"it was the season of Darkness, it was the spring of hope, it was the "
+      @"winter of despair, we had everything before us, we had nothing before "
+      @"us, we were all going direct to Heaven, we were all going direct the "
+      @"other way.";
+  [self presentAlertWithTitle:@"Long Alert"
+                      message:message
+                      actions:@[ OKAction, cancelAction ]
+      textFieldConfigurations:@[ usernameOptions, passwordOptions ]];
 }
 
-- (void)presentAlertViewController:(AlertViewController*)alertViewController {
+- (void)presentAlertWithTitle:(NSString*)title
+                      message:(NSString*)message
+                      actions:(NSArray<AlertAction*>*)actions
+      textFieldConfigurations:
+          (NSArray<TextFieldConfiguration*>*)textFieldConfigurations {
+  AlertViewController* alert = [[AlertViewController alloc] init];
+  [alert setTitle:title];
+  [alert setMessage:message];
+  [alert setTextFieldConfigurations:textFieldConfigurations];
+
   if (self.blockAlertSwitch.isOn) {
     __weak __typeof(self) weakSelf = self;
     AlertAction* blockAction =
@@ -245,13 +262,15 @@
                                    dismissViewControllerAnimated:YES
                                                       completion:nil];
                              }];
-    [alertViewController addAction:blockAction];
+    NSArray* newActions = [actions arrayByAddingObject:blockAction];
+    [alert setActions:newActions];
+  } else {
+    [alert setActions:actions];
   }
-  alertViewController.modalTransitionStyle =
-      UIModalTransitionStyleCrossDissolve;
-  alertViewController.modalPresentationStyle =
-      UIModalPresentationOverCurrentContext;
-  [self.containerViewController presentViewController:alertViewController
+
+  alert.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
+  alert.modalPresentationStyle = UIModalPresentationOverCurrentContext;
+  [self.containerViewController presentViewController:alert
                                              animated:true
                                            completion:nil];
 }

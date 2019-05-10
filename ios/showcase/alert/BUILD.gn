@@ -9,6 +9,7 @@ source_set("alert") {
   ]
   deps = [
     "//ios/chrome/browser/ui/alert_view_controller",
+    "//ios/chrome/browser/ui/elements",
     "//ios/showcase/common",
   ]
   libs = [ "UIKit.framework" ]
