@@ -29,9 +29,9 @@ class BitmapData : public base::RefCounted<BitmapData> {
   explicit BitmapData(base::ReadOnlySharedMemoryMapping mapping)
       : mapping_(std::move(mapping)) {}
 
+  const void* memory() const { return mapping_.memory(); }
   size_t size() const { return mapping_.size(); }
   const base::UnguessableToken& mapped_id() const { return mapping_.guid(); }
-  const void* memory() const { return mapping_.memory(); }
 
  private:
   friend class base::RefCounted<BitmapData>;
@@ -43,9 +43,9 @@ class BitmapData : public base::RefCounted<BitmapData> {
 
 namespace {
 
-// Holds a reference on the BitmapData so that the SharedMemory can outlive the
-// SharedBitmapId registration as long as this SharedBitmap object is held
-// alive.
+// Holds a reference on the BitmapData so that the WritableSharedMemoryMapping
+// can outlive the SharedBitmapId registration as long as this SharedBitmap
+// object is held alive.
 class ServerSharedBitmap : public SharedBitmap {
  public:
   // NOTE: bitmap_data->memory() is read-only but SharedBitmap expects a
@@ -79,15 +79,17 @@ std::unique_ptr<SharedBitmap> ServerSharedBitmapManager::GetSharedBitmapFromId(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto it = handle_map_.find(id);
-  if (it == handle_map_.end())
+  if (it == handle_map_.end()) {
     return nullptr;
+  }
 
   BitmapData* data = it->second.get();
 
   size_t bitmap_size;
   if (!ResourceSizes::MaybeSizeInBytes(size, format, &bitmap_size) ||
-      bitmap_size > data->size())
+      bitmap_size > data->size()) {
     return nullptr;
+  }
 
   if (!data->memory()) {
     return nullptr;
@@ -107,7 +109,7 @@ ServerSharedBitmapManager::GetSharedBitmapTracingGUIDFromId(
 }
 
 bool ServerSharedBitmapManager::ChildAllocatedSharedBitmap(
-    mojo::ScopedSharedBufferHandle buffer,
+    base::ReadOnlySharedMemoryMapping mapping,
     const SharedBitmapId& id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -115,15 +117,8 @@ bool ServerSharedBitmapManager::ChildAllocatedSharedBitmap(
   if (base::ContainsKey(handle_map_, id))
     return false;
 
-  base::ReadOnlySharedMemoryRegion region =
-      bitmap_allocation::FromMojoHandle(std::move(buffer));
-
   // This function handles public API requests, so verify we unwrapped a shared
   // memory handle before trying to use the handle.
-  if (!region.IsValid())
-    return false;
-
-  base::ReadOnlySharedMemoryMapping mapping = region.Map();
   if (!mapping.IsValid())
     return false;
 

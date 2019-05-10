@@ -71,8 +71,7 @@ base::WritableSharedMemoryMapping AllocateAndRegisterSharedBitmapMemory(
     SharedBitmapManager* shared_bitmap_manager) {
   base::MappedReadOnlyRegion shm =
       bitmap_allocation::AllocateSharedBitmap(size, RGBA_8888);
-  shared_bitmap_manager->ChildAllocatedSharedBitmap(
-      bitmap_allocation::ToMojoHandle(std::move(shm.region)), id);
+  shared_bitmap_manager->ChildAllocatedSharedBitmap(shm.region.Map(), id);
   return std::move(shm.mapping);
 }
 

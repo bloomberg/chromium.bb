@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/skia_output_surface.h"
@@ -204,8 +205,8 @@ void TestLayerTreeFrameSink::DidNotProduceFrame(const BeginFrameAck& ack) {
 void TestLayerTreeFrameSink::DidAllocateSharedBitmap(
     mojo::ScopedSharedBufferHandle buffer,
     const SharedBitmapId& id) {
-  bool ok =
-      shared_bitmap_manager_->ChildAllocatedSharedBitmap(std::move(buffer), id);
+  bool ok = shared_bitmap_manager_->ChildAllocatedSharedBitmap(
+      bitmap_allocation::FromMojoHandle(std::move(buffer)).Map(), id);
   DCHECK(ok);
   owned_bitmaps_.insert(id);
 }

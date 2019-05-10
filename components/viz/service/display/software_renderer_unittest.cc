@@ -85,9 +85,8 @@ class SoftwareRendererTest : public testing::Test {
 
     // Registers the SharedBitmapId in the display compositor.
     SharedBitmapId shared_bitmap_id = SharedBitmap::GenerateId();
-    shared_bitmap_manager_->ChildAllocatedSharedBitmap(
-        bitmap_allocation::ToMojoHandle(std::move(shm.region)),
-        shared_bitmap_id);
+    shared_bitmap_manager_->ChildAllocatedSharedBitmap(shm.region.Map(),
+                                                       shared_bitmap_id);
 
     // Makes a resource id that refers to the registered SharedBitmapId.
     return child_resource_provider_->ImportResource(

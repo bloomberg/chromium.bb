@@ -30,8 +30,7 @@ std::unique_ptr<SharedBitmap> TestSharedBitmapManager::GetSharedBitmapFromId(
     return nullptr;
   // NOTE: pixels needs to be writable for legacy reasons, but SharedBitmap
   // instances returned by a SharedBitmapManager are always read-only.
-  uint8_t* pixels =
-      static_cast<uint8_t*>(const_cast<void*>(it->second.memory()));
+  auto* pixels = static_cast<uint8_t*>(const_cast<void*>(it->second.memory()));
   return std::make_unique<SharedBitmap>(pixels);
 }
 
@@ -45,7 +44,7 @@ TestSharedBitmapManager::GetSharedBitmapTracingGUIDFromId(
 }
 
 bool TestSharedBitmapManager::ChildAllocatedSharedBitmap(
-    mojo::ScopedSharedBufferHandle buffer,
+    base::ReadOnlySharedMemoryMapping mapping,
     const SharedBitmapId& id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -53,11 +52,6 @@ bool TestSharedBitmapManager::ChildAllocatedSharedBitmap(
   // notification here should be about a bitmap that was previously allocated
   // with AllocateSharedBitmap().
   if (mapping_map_.find(id) == mapping_map_.end()) {
-    base::ReadOnlySharedMemoryRegion region =
-        bitmap_allocation::FromMojoHandle(std::move(buffer));
-    DCHECK(region.IsValid());
-    base::ReadOnlySharedMemoryMapping mapping = region.Map();
-    DCHECK(mapping.IsValid());
     mapping_map_.emplace(id, std::move(mapping));
   }
 

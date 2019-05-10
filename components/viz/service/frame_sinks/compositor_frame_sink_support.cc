@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/compositor_frame.h"
+#include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/shared_bitmap_manager.h"
@@ -324,8 +325,9 @@ bool CompositorFrameSinkSupport::DidAllocateSharedBitmap(
     mojo::ScopedSharedBufferHandle buffer,
     const SharedBitmapId& id) {
   if (!frame_sink_manager_->shared_bitmap_manager()->ChildAllocatedSharedBitmap(
-          std::move(buffer), id))
+          bitmap_allocation::FromMojoHandle(std::move(buffer)).Map(), id)) {
     return false;
+  }
 
   owned_bitmaps_.insert(id);
   return true;

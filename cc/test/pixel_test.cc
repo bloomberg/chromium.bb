@@ -214,12 +214,11 @@ bool PixelTest::PixelsMatchReference(const base::FilePath& ref_file,
 base::WritableSharedMemoryMapping PixelTest::AllocateSharedBitmapMemory(
     const viz::SharedBitmapId& id,
     const gfx::Size& size) {
-  base::MappedReadOnlyRegion mapped_region =
+  base::MappedReadOnlyRegion shm =
       viz::bitmap_allocation::AllocateSharedBitmap(size, viz::RGBA_8888);
-  this->shared_bitmap_manager_->ChildAllocatedSharedBitmap(
-      viz::bitmap_allocation::ToMojoHandle(std::move(mapped_region.region)),
-      id);
-  return std::move(mapped_region.mapping);
+  this->shared_bitmap_manager_->ChildAllocatedSharedBitmap(shm.region.Map(),
+                                                           id);
+  return std::move(shm.mapping);
 }
 
 viz::ResourceId PixelTest::AllocateAndFillSoftwareResource(

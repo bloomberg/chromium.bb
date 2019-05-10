@@ -26,7 +26,7 @@ class TestSharedBitmapManager : public SharedBitmapManager {
       const SharedBitmapId& id) override;
   base::UnguessableToken GetSharedBitmapTracingGUIDFromId(
       const SharedBitmapId& id) override;
-  bool ChildAllocatedSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
+  bool ChildAllocatedSharedBitmap(base::ReadOnlySharedMemoryMapping mapping,
                                   const SharedBitmapId& id) override;
   void ChildDeletedSharedBitmap(const SharedBitmapId& id) override;
 

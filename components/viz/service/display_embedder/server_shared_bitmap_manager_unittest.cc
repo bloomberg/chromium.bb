@@ -36,8 +36,7 @@ TEST_F(ServerSharedBitmapManagerTest, TestCreate) {
   std::fill(span.begin(), span.end(), 0xff);
 
   SharedBitmapId id = SharedBitmap::GenerateId();
-  manager()->ChildAllocatedSharedBitmap(
-      bitmap_allocation::ToMojoHandle(std::move(shm.region)), id);
+  manager()->ChildAllocatedSharedBitmap(shm.region.Map(), id);
 
   std::unique_ptr<SharedBitmap> large_bitmap;
   large_bitmap =
@@ -95,8 +94,7 @@ TEST_F(ServerSharedBitmapManagerTest, AddDuplicate) {
   SharedBitmapId id = SharedBitmap::GenerateId();
 
   // NOTE: Duplicate the mapping to compare its content later.
-  manager()->ChildAllocatedSharedBitmap(
-      bitmap_allocation::ToMojoHandle(std::move(shm.region)), id);
+  manager()->ChildAllocatedSharedBitmap(shm.region.Map(), id);
 
   base::MappedReadOnlyRegion shm2 =
       bitmap_allocation::AllocateSharedBitmap(bitmap_size, RGBA_8888);
@@ -104,8 +102,7 @@ TEST_F(ServerSharedBitmapManagerTest, AddDuplicate) {
   base::span<uint8_t> span2 = shm.mapping.GetMemoryAsSpan<uint8_t>();
   std::fill(span2.begin(), span2.end(), 0x00);
 
-  manager()->ChildAllocatedSharedBitmap(
-      bitmap_allocation::ToMojoHandle(std::move(shm2.region)), id);
+  manager()->ChildAllocatedSharedBitmap(shm2.region.Map(), id);
 
   std::unique_ptr<SharedBitmap> shared_bitmap;
   shared_bitmap = manager()->GetSharedBitmapFromId(bitmap_size, RGBA_8888, id);
@@ -125,8 +122,7 @@ TEST_F(ServerSharedBitmapManagerTest, SharedMemoryHandle) {
   EXPECT_FALSE(shared_memory_guid.is_empty());
 
   SharedBitmapId id = SharedBitmap::GenerateId();
-  manager()->ChildAllocatedSharedBitmap(
-      bitmap_allocation::ToMojoHandle(std::move(shm.region)), id);
+  manager()->ChildAllocatedSharedBitmap(shm.region.Map(), id);
 
   base::UnguessableToken tracing_guid =
       manager()->GetSharedBitmapTracingGUIDFromId(id);
@@ -137,10 +133,10 @@ TEST_F(ServerSharedBitmapManagerTest, SharedMemoryHandle) {
 
 TEST_F(ServerSharedBitmapManagerTest, InvalidScopedSharedBufferHandle) {
   SharedBitmapId id = SharedBitmap::GenerateId();
-  mojo::ScopedSharedBufferHandle invalid_handle(
-      mojo::SharedBufferHandle(0x1234567));
+  base::ReadOnlySharedMemoryMapping invalid_mapping;
+  EXPECT_FALSE(invalid_mapping.IsValid());
   EXPECT_FALSE(
-      manager()->ChildAllocatedSharedBitmap(std::move(invalid_handle), id));
+      manager()->ChildAllocatedSharedBitmap(std::move(invalid_mapping), id));
 
   // The client could still send an IPC to say it deleted the shared bitmap,
   // even though it wasn't valid, which should be ignored.
