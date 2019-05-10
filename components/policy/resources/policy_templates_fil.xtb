@@ -1101,17 +1101,6 @@
       Kung hindi nakatakda ang patakarang ito, ipagpapalagay na pinili ang <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Pinakamataas na bilang ng sabay-sabay na koneksyon sa proxy server</translation>
-<translation id="2948463916588961959">Sapilitang ine-enable ang mga wika ng spellcheck. Babalewalain ang mga hindi kilalang wika sa listahang iyon.
-
-      Kung ie-enable mo ang patakarang ito, mae-enable ang spellcheck para sa mga nakasaad na wika, bukod pa sa mga wika kung saan na-enable ng user ang spellcheck.
-
-      Kung hindi mo itatakda ang patakarang ito, o kung idi-disable mo ito, walang magiging pagbabago sa mga kagustuhan sa spellcheck ng user.
-
-      Kung itatakda ang patakarang SpellcheckEnabled sa naka-disable, hindi magkakaroon ng bisa ang patakarang ito.
-
-      Kung may wikang kasama sa patakarang ito at sa patakarang SpellcheckLanguageBlacklist, bibigyang priyoridad ang patakarang ito at mae-enable ang wika ng spellcheck.
-
-      Ang mga kasalukuyang sinusuportahang wika ay: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="2952347049958405264">Mga Paghihigpit:</translation>
 <translation id="2956777931324644324">Itinigil na ang patakarang ito simula ng bersyon 36 ng <ph name="PRODUCT_NAME" /> .
 
@@ -1449,7 +1438,6 @@
 
         Ginagamit ang patakarang ito ng pag-enroll sa patakaran ng cloud ng saklaw ng machine sa desktop at maaari itong itakda ng Registry o GPO sa Windows, plist sa Mac, at JSON na file ng patakaran sa Linux.</translation>
 <translation id="3660562134618097814">Ilipat ang cookies ng SAML IdP sa pag-log in</translation>
-<translation id="3668151900457104753">I-uninstall ang mga naka-blacklist na extension</translation>
 <translation id="3701121231485832347">Nagkokontrol ng mga setting na partikular sa mga <ph name="PRODUCT_OS_NAME" /> device na pinapamahalaan ng <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Hindi na ginagamit ang field na isang linya at aalisin ito sa hinaharap. Pakisimulang gamitin ang textbox na maraming linya sa ibaba.)</translation>
 <translation id="3709266154059827597">I-configure ang blacklist ng pag-install ng extension</translation>
@@ -1660,6 +1648,29 @@
       Kung itinakda sa true o iniwang hindi nakatakda ang patakarang ito, makakakuha ng mga alok ang mga user sa pamamagitan ng Pagpaparehistro ng Chrome OS.
 
       Kung itinakda sa false ang patakarang ito, hindi makakakuha ng mga alok ang user.</translation>
+<translation id="4008233182078913897">Tumutukoy ng listahan ng mga app at extension na na-install nang hindi napapansin,
+          nang walang pakikipag-ugnayan sa user, at hindi maa-uninstall o 
+          madi-disable ng user. Ang lahat ng pahintulot
+          na hiniling ng mga app/extension ay ibinibigay nang hindi hayagan, nang walang pakikipag-ugnayan sa user,
+          kabilang ang anumang karagdagang pahintulot na hiniling ng mga bersyon sa
+          hinaharap ng app/extension. Bukod pa rito, ibinibigay ang mga pahintulot para sa
+          enterprise.deviceAttributes at enterprise.platformKeys na extension
+          API. (Hindi available ang dalawang API na ito sa mga app/extension na
+          hindi sapilitang na-install.)
+
+          Mangingibabaw ang patakarang ito sa posibleng salungat na patakarang <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Kung may inalis na app o extension sa listahang ito na kamakailang sapilitang na-install, awtomatiko itong ia-uninstall ng <ph name="PRODUCT_NAME" />.
+
+          Para sa mga sitwasyon ng Windows na hindi kasali sa isang <ph name="MS_AD_NAME" /> na domain, para lang sa mga app at extension na nakalista sa Chrome Web Store ang sapilitang pag-install.
+
+          Tandaang puwedeng mabago ng mga user ang source code ng anumang extension sa pamamagitan ng Mga Tool ng Developer (na puwedeng humantong sa maling paggana ng extension). Kung isa itong alalahanin, dapat itakda ang patakarang <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Ang bawat item sa listahan ng patakaran ay isang string na may extension ID at, bilang opsyon, isang URL ng "update" na hinihiwalay ng semicolon (<ph name="SEMICOLON" />). Ang extension ID ay ang 32 titik na string na makikita halimbawa sa <ph name="CHROME_EXTENSIONS_LINK" /> kapag nasa developer mode. Dapat ay nakadirekta ang URL ng "update," kung tutukuyin, sa isang dokumentong Update Manifest XML gaya ng nakasaad sa <ph name="LINK_TO_EXTENSION_DOC1" />. Bilang default, ginagamit ang URL ng update ng Chrome Web Store (na kasalukuyang "https://clients2.google.com/service/update2/crx"). Tandaang ginagamit lang ang nakatakdang URL ng "update" sa patakarang ito para sa paunang pag-install; gagamitin ng mga susunod na pag-update ng extension ang URL ng update na nakasaad sa manifest ng extension. Tandaan ding mandatoryo ang hayagang pagtukoy sa URL ng "update" sa mga bersyon ng <ph name="PRODUCT_NAME" /> hanggang sa at kabilang ang 67.
+
+          Halimbawa, ini-install ng <ph name="EXTENSION_POLICY_EXAMPLE" /> ang extension na may id na <ph name="EXTENSION_ID_SAMPLE" /> mula sa karaniwang URL ng "update" ng Chrome Web Store. Para sa higit pang impormasyon tungkol sa pag-host ng mga extension, tingnan ang: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Kung hahayaang hindi nakatakda ang patakarang ito, walang app o extension ang awtomatikong ii-install at makakapag-uninstall ng anumang app o extension ang user sa <ph name="PRODUCT_NAME" />.
+
+          Tandaang hindi nalalapat sa incognito mode ang patakarang ito.</translation>
 <translation id="4008507541867797979">Kung itatakda sa true o hindi naka-configure ang patakarang ito, ipapakita ng <ph name="PRODUCT_OS_NAME" /> sa screen ng pag-log in ang mga kasalukuyang user at papayag itong pumili ng isa.
 
       Kung itatakda sa false ang patakarang ito, hindi ipapakita ng <ph name="PRODUCT_OS_NAME" /> sa screen ng pag-log in ang mga kasalukuyang user. Ipapakita ang karaniwang screen ng pag-sign in (na nagpo-prompt para sa email at password o telepono ng user) o ang interstitial na screen ng SAML (kung ie-enable sa pamamagitan ng patakaran ng <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), maliban na lang kung may naka-configure na Pinapamahalaang Session. Kapag may naka-configure na Pinapamahalaang Session, ang mga Pinapamahalaang Account lang ang ipapakita na nagbibigay-daang makapili ng isa sa mga ito.
@@ -1783,10 +1794,6 @@
           Kung hahayaang hindi nakatakda ang patakarang ito, naka-disable sa simula ang mga sticky key pero puwede ito i-enable ng user anumang oras.</translation>
 <translation id="4183229833636799228">Default na setting ng <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL para sa pagva-validate ng token ng pagpapatotoo ng client sa malayuang pag-access</translation>
-<translation id="4197038214024763371">Kung hindi itatakda ang patakarang ito o kung ie-enable ito, papayagan ang user na gamitin ang spellcheck.
-
-      Kung idi-disable ang patakarang ito, hindi papayagan ang user na gamitin ang spellcheck. Babalewalain din ang patakarang SpellcheckLanguage at SpellcheckLanguageBlacklist kapag naka-disable ang patakarang ito.
-      </translation>
 <translation id="4203389617541558220">Limitahan ang uptime ng device sa pamamagitan ng pagse-schedule ng mga awtomatikong reboot.
 
       Kapag nakatakda na ang patakaran, tinutukoy nito ang tagal ng uptime ng device na kung saan ise-schedule ang isang awtomatikong reboot pagkatapos.
@@ -2888,17 +2895,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6281043242780654992">Kino-configure ang mga patakaran para sa Native na Pagmemensahe. Hindi papayagan ang mga naka-blacklist na host ng native na pagmemensahe maliban kung naka-whitelist ang mga ito.</translation>
 <translation id="6282799760374509080">Payagan o tanggihan ang pagkuha ng audio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6306608379445125648">Sapilitang dini-disable ang mga wika ng spellcheck. Babalewalain ang mga hindi kilalang wika sa listahang iyon.
-
-      Kung ie-enable mo ang patakarang ito, madi-disable ang spellcheck para sa mga nakasaad na wika. Puwede pa ring i-enable o i-disable ng user ang spellcheck para sa mga wikang wala sa listahan.
-
-      Kung hindi mo itatakda ang patakarang ito, o kung idi-disable mo ito, walang magiging pagbabago sa mga kagustuhan sa spellcheck ng user.
-
-      Kung itatakda ang patakarang SpellcheckEnabled sa naka-disable, hindi magkakaroon ng bisa ang patakarang ito.
-
-      Kung may wikang kasama sa patakarang ito at sa patakarang SpellcheckLanguage, bibigyang priyoridad ang patakarang SpellcheckLanguage at mae-enable ang wika ng spellcheck.
-
-      Ang mga kasalukuyang sinusuportahang wika ay: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6310223829319187614">I-enable ang pag-autocomplete ng domain name sa pag-sign in ng user</translation>
 <translation id="6315673513957120120">Nagpapakita ang Chrome ng page ng babala kapag nag-navigate ang mga user sa mga site na may mga SSL error. Bilang default o kapag itinakda ang patakarang ito sa true, maaaring mag-click ang mga user sa mga page ng babala na ito.
       Kapag itinakda ang patakarang ito sa false, hindi makakapag-click ang mga user sa anumang page ng babala.</translation>
@@ -4317,11 +4313,6 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
       Naaapektuhan lang ng patakarang ito ang mga user na nag-authenticate gamit ang SAML.
 
       Dapat ay nakasaad ang value ng patakaran sa pamamagitan ng segundo.</translation>
-<translation id="9018338365267278833">Aalisin nito ang mga extension na lumalabas sa <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> o mga extension na lumalabas sa <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> na may installation mode na nakatakda sa naka-block at ipu-purge ang lokal na data ng user kasama nito.  Sumangguni sa patakaran sa privacy ng mga extension o patakaran sa pagpapanatili ng data para maunawaan kung ano ang puwedeng mangyari sa data ng user na hindi naka-store nang lokal.
-
-      Kapag nakatakda ang patakaran sa naka-enable, aalisin ang mga extension na nasa mga nabanggit na listahan (kung naka-install na sa machine) mula sa naturang machine nang buo (kasama ang lokal na data ng user).
-
-      Kapag nakatakda ang patakaran sa naka-disable o hinayaang hindi nakatakda, idi-disable ang mga extension na nasa mga nabanggit na listahan (kung naka-install na sa machine at nasa blacklist na <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) sa machine at hindi ii-install.</translation>
 <translation id="9027787254195333560">Nagbibigay-daan sa iyo ang patakarang ito na i-configure ang larawan ng avatar na kumakatawan sa user sa screen sa pag-log in. Itinatakda ang patakaran sa pamamagitan ng pagtukoy sa URL kung saan mada-download ng <ph name="PRODUCT_OS_NAME" /> ang larawan ng avatar at isang cryptographic na hash na ginagamit para i-verify ang integridad ng download. Dapat ay nasa format na JPEG ang larawan, hindi dapat lumampas sa 512kB ang laki nito. Dapat ay accessible ang URL nang walang anumang pag-authenticate.
 
       Dina-download at kina-cache ang larawan ng avatar. Muli itong ida-download sa tuwing magbabago ang URL o ang hash.

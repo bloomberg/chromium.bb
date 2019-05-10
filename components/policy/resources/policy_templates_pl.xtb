@@ -1072,17 +1072,6 @@ Jeśli pozostanie ona nieskonfigurowana, użytkownik może sam zdecydować, czy 
       Jeśli ta zasada nie została skonfigurowana, domyślnie stosowana jest opcja <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Maksymalna liczba jednoczesnych połączeń z serwerem proxy</translation>
-<translation id="2948463916588961959">Wymusza włączenie sprawdzania pisowni w wybranych językach. Nierozpoznane języki z tej listy będą ignorowane.
-
-      Jeśli ta zasada jest włączona, sprawdzanie pisowni będzie dostępne także w wybranych językach, a nie tylko w tych, dla których funkcję tę włączył użytkownik.
-
-      Jeśli nie skonfigurujesz tej zasady lub ją wyłączysz, nic nie zmieni się w ustawieniach użytkownika dotyczących sprawdzania pisowni.
-
-      Kiedy zasada SpellcheckEnabled jest wyłączona, ta zasada nie jest brana pod uwagę.
-
-      Jeśli dany język występuje na liście zarówno w tej zasadzie, jak i w zasadzie SpellcheckLanguageBlacklist, ta zasada ma priorytet i sprawdzanie pisowni w tym języku będzie włączone.
-
-      Aktualnie obsługiwane języki: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk oraz vi.</translation>
 <translation id="2952347049958405264">Ograniczenia:</translation>
 <translation id="2956777931324644324">Ta zasada została wycofana w wersji 36 <ph name="PRODUCT_NAME" />.
 
@@ -1410,7 +1399,6 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
 
         Ta zasada jest używana przez rejestrację zasad chmurowych obejmującą cały komputer na komputerach osobistych. Można ją skonfigurować przy użyciu Rejestru lub obiektu zasad grupy (GPO) w systemie Windows, plist na Macu i pliku zasad JSON na Linuksie.</translation>
 <translation id="3660562134618097814">Prześlij pliki cookie dostawcy tożsamości SAML podczas logowania</translation>
-<translation id="3668151900457104753">Odinstaluj rozszerzenia z czarnej listy</translation>
 <translation id="3701121231485832347">Kontroluje ustawienia urządzeń z systemem <ph name="PRODUCT_OS_NAME" />, którymi zarządza <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Pole z jednym wierszem jest nieużywane i zostanie usunięte. Zacznij używać wielowierszowego pola tekstowego poniżej).</translation>
 <translation id="3709266154059827597">Konfiguruj czarną listę instalacji rozszerzeń</translation>
@@ -1616,6 +1604,21 @@ Jeśli ta zasada jest wyłączona, informacje o sesji nie będą przesyłane. Je
       Jeśli nie skonfigurujesz tej zasady lub ustawisz dla niej wartość prawda, użytkownicy będą mogli wykorzystywać oferty przy rejestracji systemu operacyjnego Chrome.
 
       Jeśli ustawisz tu wartość fałsz, użytkownicy nie będą mogli wykorzystywać ofert.</translation>
+<translation id="4008233182078913897">Określa listę aplikacji i rozszerzeń, które zostaną zainstalowane dyskretnie, bez interakcji z użytkownikiem, a użytkownik nie będzie mógł ich odinstalować ani wyłączyć. Aplikacje/rozszerzenia bez interakcji z użytkownikiem otrzymają wszystkie uprawnienia, o które proszą, w tym wszelkie dodatkowe uprawnienia, o które będą prosić przyszłe ich wersje. Otrzymają też uprawnienia do interfejsów API dla rozszerzeń enterprise.deviceAttributes i enterprise.platformKeys. (Te dwa interfejsy API nie są dostępne dla aplikacji/rozszerzeń, których instalacja nie jest wymuszana).
+
+Ta zasada ma pierwszeństwo przed potencjalnie powodującą konflikt zasadą <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Jeśli z tej listy zostaną usunięte aplikacja lub rozszerzenie, których instalacja została wymuszona wcześniej, <ph name="PRODUCT_NAME" /> automatycznie je odinstaluje.
+
+W przypadku systemów Windows niepodłączonych do domeny <ph name="MS_AD_NAME" /> wymuszona instalacja jest ograniczona do aplikacji i rozszerzeń dostępnych w Chrome Web Store.
+
+Pamiętaj, że kod źródłowy każdego rozszerzenia można zmodyfikować za pomocą Narzędzi dla programistów (potencjalnie zakłócając jego działanie). Jeśli jest to problemem, ustaw zasadę <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator rozszerzenia i opcjonalnie URL „aktualizacji” oddzielone średnikiem (<ph name="SEMICOLON" />). Identyfikator rozszerzenia to ciąg 32 znaków, który znajdziesz np. na <ph name="CHROME_EXTENSIONS_LINK" /> w trybie programisty. URL „aktualizacji” powinien wskazywać plik manifestu aktualizacji w postaci dokumentu XML, zgodnie z opisem na <ph name="LINK_TO_EXTENSION_DOC1" />. Domyślnie używany jest URL aktualizacji Chrome Web Store (obecnie to „https://clients2.google.com/service/update2/crx”). Uwaga: URL „aktualizacji” ustawiony przez tę zasadę jest używany tylko podczas pierwszej instalacji. Późniejsze aktualizacje rozszerzenia korzystają z adresu URL aktualizacji wskazanego w pliku manifestu. Pamiętaj też, że podanie adresu URL „aktualizacji” było obowiązkowe w <ph name="PRODUCT_NAME" /> do wersji 67 włącznie.
+
+Na przykład <ph name="EXTENSION_POLICY_EXAMPLE" /> instaluje rozszerzenie o identyfikatorze <ph name="EXTENSION_ID_SAMPLE" /> ze standardowego adresu URL „aktualizacji” Chrome Web Store. Więcej informacji o hostowaniu rozszerzeń znajdziesz na <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+Jeśli ta zasada nie jest ustawiona, aplikacje ani rozszerzenia nie są instalowane automatycznie, a użytkownik może odinstalować dowolne z nich w <ph name="PRODUCT_NAME" />.
+
+Uwaga: ta zasada nie jest stosowana do trybu incognito.</translation>
 <translation id="4008507541867797979">Gdy ta zasada ma wartość prawda lub jest nieskonfigurowana, <ph name="PRODUCT_OS_NAME" /> będzie wyświetlać istniejących użytkowników na ekranie logowania i umożliwiać wybranie jednego z nich.
 
       Gdy zasada ma wartość fałsz, <ph name="PRODUCT_OS_NAME" /> nie będzie wyświetlać istniejących użytkowników na ekranie logowania. Wyświetlony zostanie normalny ekran logowania (umożliwiający wpisanie adresu e-mail i hasła lub numeru telefonu użytkownika) lub ekran SAML (jeśli jest włączony przy użyciu zasady <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), chyba że skonfigurowana jest sesja zarządzania – w takim przypadku wyświetlane będą tylko konta z sesją zarządzaną i będzie można wybrać jedno z nich.
@@ -1739,10 +1742,6 @@ Jeśli wartość |IdleAction| nie będzie określona, zostanie wykonane działan
           Jeśli ta zasada jest nieskonfigurowana, klawisze trwałe są początkowo wyłączone, ale użytkownik może je swobodnie włączyć.</translation>
 <translation id="4183229833636799228">Domyślne ustawienie wtyczki <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL pozwalający zweryfikować token uwierzytelniania klienta dostępu zdalnego</translation>
-<translation id="4197038214024763371">Jeśli ta zasada jest włączona lub nieskonfigurowana, użytkownik może korzystać ze sprawdzania pisowni.
-
-      Jeśli jest wyłączona, użytkownik nie może korzystać ze sprawdzania pisowni. Po jej wyłączeniu ignorowane są też zasady SpellcheckLanguage i SpellcheckLanguageBlacklist.
-      </translation>
 <translation id="4203389617541558220">Ogranicza czas działania urządzenia przez planowanie automatycznych ponownych uruchomień.
 
       Ustawienie tej zasady pozwala określić czas działania urządzenia. Po jego upływie następuje zaplanowane automatyczne ponowne uruchomienie.
@@ -2804,17 +2803,6 @@ Do odwzorowania sekwencji dowolnych znaków można używać symboli wieloznaczny
 <translation id="6281043242780654992">Konfiguruje zasady wiadomości natywnych. Hosty wiadomości natywnych na czarnej liście nie będą dostępne, dopóki nie znajdą się na białej liście.</translation>
 <translation id="6282799760374509080">Zezwól lub nie na przechwytywanie dźwięku</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6306608379445125648">Wymusza wyłączenie sprawdzania pisowni w wybranych językach. Nierozpoznane języki z tej listy będą ignorowane.
-
-      Po włączeniu tej zasady sprawdzanie pisowni będzie wyłączone w wybranych językach. Użytkownik może nadal włączać i wyłączać sprawdzanie pisowni dla języków, których nie ma na liście.
-
-      Jeśli nie skonfigurujesz tej zasady lub ją wyłączysz, nic nie zmieni się w ustawieniach użytkownika dotyczących sprawdzania pisowni.
-
-      Kiedy zasada SpellcheckEnabled jest wyłączona, ta zasada nie jest brana pod uwagę.
-
-      Jeśli dany język występuje na liście zarówno w tej zasadzie, jak i w zasadzie SpellcheckLanguage, ta druga ma priorytet i sprawdzanie pisowni w tym języku będzie włączone.
-
-      Aktualnie obsługiwane języki: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk oraz vi.</translation>
 <translation id="6310223829319187614">Włącz autouzupełnianie nazw domen w czasie logowania użytkownika</translation>
 <translation id="6315673513957120120">Chrome wyświetla stronę z ostrzeżeniem, gdy użytkownicy otworzą witrynę, w której występują błędy SSL. Domyślnie lub wtedy, gdy ta zasada jest włączona, użytkownicy mogą zignorować i zamknąć stronę z ostrzeżeniem.
       Po wyłączeniu tej zasady użytkownicy nie będą mogli zamknąć strony z ostrzeżeniem.</translation>
@@ -3535,7 +3523,7 @@ Jeśli zasada nie jest skonfigurowana, na wszystkich stronach używany jest domy
 
           Jeśli ta zasada jest włączona lub nieskonfigurowana, użytkownik może ustalić, czy hasła Kerberos będą zapamiętywane, by nie trzeba było ich znowu wpisywać. Bilety Kerberos są automatycznie pobierane, chyba że wymagane jest dodatkowe uwierzytelnienie (uwierzytelnianie dwuskładnikowe).
 
-          Jeśli ta zasada jest wyłączona, hasła nigdy nie są zapamiętywane, a wcześniej zapisane hasła zostają usunięte. Użytkownik musi wypisywać hasło za każdym razem, gdy wymagane jest uwierzytelnienie w systemie Kerberos. Zależnie od ustawień serwera okres między wymaganym uwierzytelnianiem wynosi zwykle od 8 godzin do kilku miesięcy.</translation>
+          Jeśli ta zasada jest wyłączona, hasła nigdy nie są zapamiętywane, a wcześniej zapisane hasła zostają usunięte. Użytkownik musi wpisywać hasło za każdym razem, gdy wymagane jest uwierzytelnienie w systemie Kerberos. Zależnie od ustawień serwera okres między wymaganym uwierzytelnianiem wynosi zwykle od 8 godzin do kilku miesięcy.</translation>
 <translation id="7694807474048279351">Planuje automatyczne ponowne uruchomienie po zastosowaniu aktualizacji <ph name="PRODUCT_OS_NAME" />.
 
       Jeśli ta zasada ma wartość „prawda”, po zastosowaniu aktualizacji <ph name="PRODUCT_OS_NAME" /> następuje zaplanowane automatyczne ponowne uruchomienie, które jest wymagane do zakończenia procesu aktualizacji. Ponowne uruchomienie jest zaplanowane do wykonania od razu, ale może zostać opóźnione nawet o 24 godziny, gdy użytkownik akurat korzysta z urządzenia.
@@ -4186,11 +4174,6 @@ Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta
       Ta zasada dotyczy tylko użytkowników, którzy uwierzytelnili się za pomocą SAML.
 
       Wartość zasady należy podać w sekundach.</translation>
-<translation id="9018338365267278833">Spowoduje usunięcie rozszerzeń znajdujących się na liście <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> lub na liście zasady <ph name="EXTENSION_SETTINGS_POLICY_NAME" />, które mają ustawiony tryb blokowania instalacji. Razem z rozszerzeniami zostaną trwale usunięte lokalne dane użytkownika.  Informacje o tym, co może stać się z danymi użytkownika, które nie są przechowywane lokalnie, znajdziesz w polityce prywatności rozszerzenia lub w polityce retencji danych.
-
-      Gdy ta zasada jest włączona, rozszerzenia znajdujące się na powyższych listach (jeśli są już zainstalowane na urządzeniu) zostaną całkowicie usunięte z tego urządzenia (razem z lokalnymi danymi użytkownika).
-
-      Gdy zasada jest wyłączona lub nieskonfigurowana, rozszerzenia znajdujące się na powyższych listach (jeśli są już zainstalowane na urządzeniu i znajdują się na czarnej liście <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) zostaną wyłączone na urządzeniu, ale nie odinstalowane.</translation>
 <translation id="9027787254195333560">Ta zasada pozwala wskazać obraz awatara, który oznacza użytkownika na ekranie logowania. Aby ją skonfigurować, podaj URL, z którego <ph name="PRODUCT_OS_NAME" /> może pobrać obraz awatara, oraz hash kryptograficzny używany do weryfikacji poprawności pobranego pliku. Obraz musi być w formacie JPEG, a jego rozmiar nie może przekraczać 512 KB. URL musi być dostępny bez uwierzytelniania.
 
       Po pobraniu obraz awatara jest zapisywany w pamięci podręcznej. Zostanie pobrany ponownie po każdej zmianie adresu URL lub hasha.

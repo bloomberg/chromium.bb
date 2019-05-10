@@ -1066,17 +1066,6 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
       Se esta política não for definida, a opção <ph name="PRINTERS_ALLOW_ALL" /> será adotada.
       </translation>
 <translation id="2908277604670530363">Número máximo de conexões simultâneas ao servidor proxy</translation>
-<translation id="2948463916588961959">Força a ativação da correção ortográfica de idiomas. Idiomas não reconhecidos incluídos na lista serão ignorados.
-
-      Se esta política for ativada, a correção ortográfica será ativada para os idiomas especificados, além dos idiomas para os quais o usuário tiver ativado a correção.
-
-      Se esta política não for definida ou for desativada, não haverá alterações nas preferências de correção ortográfica do usuário.
-
-      Se a política SpellcheckEnabled for definida como desativada, esta política não terá efeito.
-
-      Se um idioma estiver incluído tanto nesta política quanto na SpellcheckLanguageBlacklist, esta política terá prioridade e a correção ortográfica do idioma será ativada.
-
-      Os idiomas compatíveis no momento são: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="2952347049958405264">Restrições:</translation>
 <translation id="2956777931324644324">Esta política foi retirada de circulação a partir da versão 36 do <ph name="PRODUCT_NAME" />.
 
@@ -1403,7 +1392,6 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 
         Esta política é usada na inscrição no gerenciamento em nuvem do escopo da máquina no computador desktop e pode ser definida por registro ou GPO no Windows, por plist no Mac e por arquivo de política JSON no Linux.</translation>
 <translation id="3660562134618097814">Transferir cookies do IDP de SAML durante o login</translation>
-<translation id="3668151900457104753">Desinstalar extensões da lista de proibições</translation>
 <translation id="3701121231485832347">Controla configurações específicas de dispositivos <ph name="PRODUCT_OS_NAME" /> gerenciados pelo <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" />: o campo de linha única é obsoleto e será removido no futuro. Comece a usar a caixa de texto de várias linhas abaixo.</translation>
 <translation id="3709266154059827597">Configurar a lista de proibições de instalação da extensão</translation>
@@ -1612,6 +1600,21 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
       Se essa política for definida como "true" ou não for definida, os usuários terão permissão para resgatar ofertas por meio do registro do Chrome OS.
 
       Se essa política for definida como "false", os usuários não terão permissão para resgatar ofertas.</translation>
+<translation id="4008233182078913897">Especifica uma lista de apps e extensões que são instalados silenciosamente, sem interação do usuário e que não podem ser desinstalados ou desativados pelo usuário. Todas as permissões solicitadas pelos apps/extensões são concedidas implicitamente, sem interação do usuário, incluindo permissões extras solicitadas por futuras versões do app/extensão. Além disso, são concedidas permissões para as APIs de extensão enterprise.deviceAttributes e enterprise.platformKeys. Essas duas APIs não estão disponíveis para apps/extensões que não tenham sido instalados forçadamente.
+
+          Esta política tem precedência sobre uma política <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> potencialmente conflitante. Se um app ou extensão anteriormente instalado de modo forçado for removido dessa lista, ele será automaticamente desinstalado pelo <ph name="PRODUCT_NAME" />.
+
+          Em instâncias do Windows não vinculadas a um domínio do <ph name="MS_AD_NAME" />, a instalação forçada limita-se a apps e extensões listados na Chrome Web Store.
+
+          Observe que o código-fonte de qualquer extensão pode ser alterado pelos usuários por meio das Ferramentas para Desenvolvedores (possivelmente tornando a extensão defeituosa). Se essa preocupação existir, será preciso definir a política <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Cada item da lista da política é uma string que contém um código de extensão e, opcionalmente, um URL de "atualização" separados por ponto e vírgula (<ph name="SEMICOLON" />). O código da extensão é a string de 32 letras encontrada, por exemplo, em <ph name="CHROME_EXTENSIONS_LINK" /> no modo de desenvolvedor. O URL de "atualização", se especificado, precisa apontar para um documento XML de manifesto de atualização, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC1" />. Por padrão, é usado o URL de "atualização" da Chrome Web Store (atualmente, "https://clients2.google.com/service/update2/crx"). Observe que o URL de "atualização" definido nesta política só é usado na instalação inicial. As atualizações subsequentes da extensão empregam o URL de atualização indicado no manifesto da extensão. Observe também que especificar o URL de "atualização" era uma etapa obrigatória nas versões do <ph name="PRODUCT_NAME" /> até a 67.
+
+          Por exemplo, <ph name="EXTENSION_POLICY_EXAMPLE" /> instala a extensão com código <ph name="EXTENSION_ID_SAMPLE" /> por meio do URL de "atualização" padrão da Chrome Web Store. Para ver mais informações sobre a hospedagem de extensões, consulte: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Se esta política não for definida, nenhum app ou extensão será instalado automaticamente, e o usuário poderá desinstalar apps ou extensões no <ph name="PRODUCT_NAME" />.
+
+          Observe que esta política não se aplica ao modo de navegação anônima.</translation>
 <translation id="4008507541867797979">Se esta política for definida como verdadeira ou não for configurada, o <ph name="PRODUCT_OS_NAME" /> mostrará os usuários existentes na tela de login, permitindo escolher um deles.
 
       Se esta política for definida como falsa, o <ph name="PRODUCT_OS_NAME" /> não mostrará os usuários existentes na tela de login. A tela de login normal (que solicita o e-mail e a senha ou o número de telefone do usuário) ou a tela intersticial SAML (se tiver sido ativada por meio da política <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) será mostrada, a menos que uma sessão gerenciada tenha sido configurada. Se uma sessão gerenciada tiver sido configurada, apenas as contas da sessão gerenciada serão mostradas, permitindo escolher uma delas.
@@ -1733,10 +1736,6 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
           Se esta política não for definida, as teclas aderentes serão desativadas inicialmente, mas poderão ser ativadas pelo usuário a qualquer momento.</translation>
 <translation id="4183229833636799228">Configuração padrão de <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL para validação do token de autenticação do cliente de acesso remoto</translation>
-<translation id="4197038214024763371">Se esta política for ativada ou não for definida, o usuário poderá usar a correção ortográfica.
-
-      Se esta política for desativada, o usuário não poderá usar a correção ortográfica. As políticas SpellcheckLanguage e SpellcheckLanguageBlacklist também serão ignoradas quando esta política estiver desativada.
-      </translation>
 <translation id="4203389617541558220">Limitar tempo de execução do dispositivo agendando reinicializações automáticas.
 
       Quando esta política é definida, especifica o tempo de atividade do dispositivo, após o qual uma reinicialização automática é agendada.
@@ -2784,17 +2783,6 @@ Se esta política não for definida, qualquer plug-in que corresponder aos padr�
 <translation id="6281043242780654992">Configura políticas para as mensagens nativas. Os hosts de mensagens nativas presentes na lista de proibições não serão permitidos, a menos que estejam na lista de permissões.</translation>
 <translation id="6282799760374509080">Permitir ou negar captura de áudio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6306608379445125648">Força a desativação da correção ortográfica de idiomas. Idiomas não reconhecidos incluídos na lista serão ignorados.
-
-      Se esta política for ativada, a correção ortográfica será desativada para os idiomas especificados. O usuário pode ativar ou desativar a correção ortográfica para idiomas que não estiverem presentes na lista.
-
-      Se esta política não for definida ou for desativada, não haverá alterações nas preferências de correção ortográfica do usuário.
-
-      Se a política SpellcheckEnabled for definida como desativada, esta política não terá efeito.
-
-      A política SpellcheckLanguage tem prioridade sobre esta. Se um idioma estiver incluído nas duas políticas, a correção ortográfica desse idioma será ativada.
-
-      Os idiomas compatíveis no momento são: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6310223829319187614">Ativar preenchimento automático do nome de domínio durante login do usuário</translation>
 <translation id="6315673513957120120">O Chrome mostra uma página de aviso quando os usuários navegam para sites que têm erros de SSL. Por padrão ou quando esta política é definida como "true", os usuários têm permissão para clicar nessas páginas de aviso.
       A definição desta política como "false" não permite que os usuários cliquem em qualquer página de aviso.</translation>
@@ -4169,11 +4157,6 @@ Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC 
       Esta política só afeta usuários que fizeram a autenticação com SAML.
 
       O valor da política precisa ser especificado em segundos.</translation>
-<translation id="9018338365267278833">Isso removerá extensões que aparecem na <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> ou <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> que tenham o modo de instalação definido como bloqueado e limpará os dados locais do usuário.  Consulte a política de privacidade ou a política de retenção de dados das extensões para entender o que pode acontecer com os dados do usuário que não são armazenados localmente.
-
-      Quando a política for definida como ativada, as extensões que constam nas listas mencionadas anteriormente, caso já tenham sido instaladas em uma máquina, serão totalmente removidas da máquina, incluindo os dados de usuário locais.
-
-      Quando a política for definida como desativada ou estiver indefinida, as extensões que constam nas listas mencionadas anteriormente, caso já tenham sido instaladas em uma máquina e estejam na lista de proibições <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, serão desativadas na máquina, e não desinstaladas.</translation>
 <translation id="9027787254195333560">Esta política permite que você configure a imagem de avatar que representa o usuário na tela de login. A política é definida pela especificação do URL do qual o <ph name="PRODUCT_OS_NAME" /> pode fazer o download da imagem de avatar e de uma hash criptográfica usada para verificar a integridade do download. A imagem precisa estar no formato JPEG. O tamanho não pode ser superior a 512 KB. É necessário que o URL possa ser acessado sem qualquer tipo de autenticação.
 
       A imagem de avatar será transferida por download e armazenada em cache. O download será refeito sempre que o URL ou a hash mudarem.

@@ -70,6 +70,7 @@
 <translation id="1886928167269928266">전체</translation>
 <translation id="1911619930368729126">Google 드라이브로 업로드</translation>
 <translation id="1941314575388338491">복사하려면 두 번 탭하세요.</translation>
+<translation id="1952172573699511566">가능한 경우 웹사이트에서 텍스트를 선호하는 언어로 표시합니다.</translation>
 <translation id="1952728750904661634">관리 계정으로 로그인</translation>
 <translation id="1974060860693918893">고급</translation>
 <translation id="1989112275319619282">찾아보기</translation>
@@ -214,6 +215,7 @@
 <translation id="4124987746317609294">기간</translation>
 <translation id="4172051516777682613">항상 표시</translation>
 <translation id="418156467088430727">새 탭에서 오프라인 버전 보기</translation>
+<translation id="4181841719683918333">언어</translation>
 <translation id="4237682350741091554"><ph name="BEGIN_LINK" />설정<ph name="END_LINK" />에서 Chrome 동기화 및 맞춤설정을 관리하세요.</translation>
 <translation id="424315890655130736">암호 입력</translation>
 <translation id="4272631900155121838">QR 코드를 스캔하려면 설정에서 카메라를 사용하도록 설정하세요.</translation>
@@ -408,6 +410,7 @@
 <translation id="7192050974311852563">로깅 시작</translation>
 <translation id="7203585745079012652">음성 응답</translation>
 <translation id="722055596168483966">Google 서비스 맞춤설정</translation>
+<translation id="7265758999917665941">이 사이트 제외</translation>
 <translation id="7272437679830969316">신원을 인증할 수 없습니다. 비밀번호가 복사되지 않았습니다.</translation>
 <translation id="7280856130494094142">암호를 입력하여 동기화 시작</translation>
 <translation id="7285236536143823449">예</translation>
@@ -516,6 +519,7 @@
 <translation id="9081058212938299310"><ph name="USERNAME" />님의 비밀번호를 업데이트하시겠습니까?</translation>
 <translation id="9083392325882095631">항목 1개</translation>
 <translation id="9083838294503912307">모든 기기에서 동기화 및 맞춤설정하려면 동기화를 사용 설정하세요.</translation>
+<translation id="9087108903408689779">Chrome 추천 비밀번호:</translation>
 <translation id="9094033019050270033">비밀번호 업데이트</translation>
 <translation id="9100610230175265781">암호를 입력해야 합니다.</translation>
 <translation id="9148126808321036104">다시 로그인</translation>

@@ -1062,17 +1062,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis politikken ikke angives, anvendes <ph name="PRINTERS_ALLOW_ALL" /> som standard.
       </translation>
 <translation id="2908277604670530363">Maksimalt antal samtidige forbindelser til proxyserveren</translation>
-<translation id="2948463916588961959">Gennemtvinger aktivering af stavekontrol af sprog. Ikke-genkendte sprog på denne liste ignoreres.
-
-      Hvis du aktiverer denne politik, aktiveres stavekontrol for de angivne sprog samt de sprog, som brugeren har aktiveret stavekontrol for.
-
-      Hvis du ikke konfigurerer denne politik, eller hvis du deaktiverer den, vil der ikke være nogen ændring af brugerens præferencer i forhold til stavekontrol.
-
-      Hvis politikken SpellcheckEnabled er deaktiveret, har denne politik ikke nogen effekt.
-
-      Hvis et sprog er inkluderet i både denne politik og politikken SpellcheckLanguageBlacklist, har denne politik forrang, og stavekontrol af sproget aktiveres.
-
-      De aktuelt understøttede sprog er følgende: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="2952347049958405264">Begrænsninger:</translation>
 <translation id="2956777931324644324">Denne politik udgik fra og med <ph name="PRODUCT_NAME" /> version 36.
 
@@ -1401,7 +1390,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
         Denne politik bruges til maskinel massetilmelding til Cloud-politikken på computere og kan angives af registreringsdatabasen eller GPO i Windows, plist på Mac og JSON-politikfilen i Linux.</translation>
 <translation id="3660562134618097814">Overfør SAML-IdP-cookies ved login</translation>
-<translation id="3668151900457104753">Afinstaller sortlistede udvidelser</translation>
 <translation id="3701121231485832347">Styrer indstillinger, der gælder specifikt for <ph name="PRODUCT_OS_NAME" />-enheder, der administreres af <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (feltet med en enkelt linje er udfaset og fjernes inden for den nærmeste fremtid. Begynd at bruge tekstfeltet med flere linjer nedenfor).</translation>
 <translation id="3709266154059827597">Konfigurer sortliste for installation af udvidelser</translation>
@@ -1610,6 +1598,29 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis denne politik er angivet til Sand eller ikke er angivet, kan brugerne indløse kampagnetilbud via Chrome OS-registrering.
 
       Hvis denne politik er angivet til Falsk, kan brugerne ikke indløse kampagnetilbud.</translation>
+<translation id="4008233182078913897">Angiver en liste over apps og udvidelser, der installeres uovervåget.
+          Dette foregår uden brugerinteraktion, og hverken apps eller udvidelser kan
+          afinstalleres eller deaktiveres af brugeren. Alle tilladelser, som apps/udvidelser
+          anmoder om, gives implicit og uden brugerinteraktion, herunder
+          eventuelle ekstra tilladelser, der anmodes om af fremtidige
+          versioner af appen/udvidelsen. Derudover gives der tilladelser til
+          udvidelses-API'erne enterprise.deviceAttributes og enterprise.platformKeys.
+          (Disse to API'er er ikke tilgængelige for apps/udvidelser, der ikke
+          fjerninstalleres).
+
+          Denne politik har forrang, hvis der er uoverensstemmelse med en <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />-politik. Hvis en app eller udvidelse, som tidligere er blevet fjerninstalleret, fjernes fra denne liste, afinstalleres den automatisk af <ph name="PRODUCT_NAME" />.
+
+          I forbindelse med Windows-forekomster, som ikke er knyttet til et <ph name="MS_AD_NAME" />-domæne, er fjerninstallation begrænset til apps og udvidelser, som fås i Chrome Webshop.
+
+          Bemærk, at kildekoden i alle udvidelser kan ændres af brugere via Udviklerværktøjer (hvilket kan medføre, at udvidelsen ikke fungerer). Hvis du vil undgå dette, skal politikken <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> angives.
+
+          Hvert listepunkt i politikken er en streng, som indeholder et udvidelses-id og en "opdateringswebadresse" adskilt af et semikolon (<ph name="SEMICOLON" />). Udvidelses-id'et er den streng på 32 bogstaver, som f.eks. kan findes på <ph name="CHROME_EXTENSIONS_LINK" />, når udviklertilstanden bruges. Hvis den er angivet, skal "opdateringswebadressen" pege på et XML-dokument med et opdateringsmanifest som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1" />. Som standard anvendes Chrome Webshops opdateringswebadresse (som i øjeblikket er "https://clients2.google.com/service/update2/crx"). Bemærk, at "opdateringswebadressen", der angives i denne politik, kun bruges til den første installation. Efterfølgende opdateringer af udvidelsen anvender den opdateringswebadresse, som er angivet i udvidelsens manifest. Bemærk også, at det var påkrævet eksplicit at angive "opdateringswebadressen" i <ph name="PRODUCT_NAME" />-versioner op til og med 67.
+
+          <ph name="EXTENSION_POLICY_EXAMPLE" /> installerer f.eks. udvidelsen med id'et <ph name="EXTENSION_ID_SAMPLE" /> fra "standardopdateringswebadressen" fra Chrome Webshop. Du kan få flere oplysninger om hosting af udvidelser her: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Hvis denne politik ikke angives, installeres ingen apps eller udvidelser automatisk, og brugeren kan afinstallere alle apps og udvidelser i <ph name="PRODUCT_NAME" />.
+
+          Bemærk, at denne politik ikke gælder for inkognitotilstand.</translation>
 <translation id="4008507541867797979">Hvis denne politik er angivet som Sand eller ikke konfigureret, viser <ph name="PRODUCT_OS_NAME" /> eksisterende brugere på loginskærmen og giver mulighed for at vælge en.
 
       Hvis politikken er angivet som Falsk, viser <ph name="PRODUCT_OS_NAME" /> ikke eksisterende brugere på loginskærmen. Den almindelige loginskærm (der beder om brugerens mailadresse og adgangskode eller telefonnummer) eller den mellemliggende SAML-skærm (hvis denne er aktiveret via politikken <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) vises, medmindre der er konfigureret en administreret session. Når der er konfigureret en administreret session, vises kun konti i den administrerede session, og der kan vælges én af dem.
@@ -1731,10 +1742,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           Hvis denne politik ikke angives, er træge taster deaktiveret, men brugeren kan når som helst aktivere funktionen.</translation>
 <translation id="4183229833636799228">Standardindstilling for <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">Webadresse til validering af tokenet til klientgodkendelse for fjernadgang</translation>
-<translation id="4197038214024763371">Hvis denne politik ikke er konfigureret eller aktiveret, kan brugeren benytte stavekontrol.
-
-      Hvis denne politik er deaktiveret, har brugeren ikke tilladelse til at bruge stavekontrol. Politikkerne SpellcheckLanguage og SpellcheckLanguageBlacklist ignoreres også, når denne politik er deaktiveret.
-      </translation>
 <translation id="4203389617541558220">Begræns enhedens oppetid vha. planlagte automatiske genstarter.
 
       Hvis denne politik indstilles, angiver den længden for enhedens oppetid efter en planlagt genstart.
@@ -2791,17 +2798,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="6281043242780654992">Konfigurerer politikker for indbyggede beskedhosts. Indbyggede beskedhosts på spærrelisten vil ikke blive tilladt, medmindre de er på hvidlisten.</translation>
 <translation id="6282799760374509080">Tillad eller afvis lydoptagelse</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6306608379445125648">Gennemtvinger deaktivering af stavekontrol af sprog. Ikke-genkendte sprog på denne liste ignoreres.
-
-      Hvis du aktiverer denne politik, deaktiveres stavekontrol for de angivne sprog. Brugeren kan stadig aktivere eller deaktivere stavekontrol for sprog, der ikke er på listen.
-
-      Hvis du ikke konfigurerer denne politik, eller hvis du deaktiverer den, vil der ikke være nogen ændring af brugerens præferencer i forhold til stavekontrol.
-
-      Hvis politikken SpellcheckEnabled er deaktiveret, har denne politik ikke nogen effekt.
-
-      Hvis et sprog er inkluderet i både denne politik og politikken SpellcheckLanguage, har politikken SpellcheckLanguage forrang, og stavekontrol af sproget aktiveres.
-
-      De aktuelt understøttede sprog er følgende: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6310223829319187614">Aktivér autofuldførelse af domænenavn under brugers login</translation>
 <translation id="6315673513957120120">Chrome viser en advarselsside, når brugerne går til websites med SSL-fejl. Som standard, eller når denne politik er angivet til sand, kan brugerne klikke sig videre fra disse advarselssider.
       Hvis denne politik angives til falsk, kan brugerne ikke klikke sig videre fra nogen advarselssider.</translation>
@@ -4168,11 +4164,6 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
       Denne politik berører kun brugere, som er godkendt ved hjælp af SAML.
 
       Politikkens værdi skal angives i sekunder.</translation>
-<translation id="9018338365267278833">Dette fjerner udvidelser, der vises i <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, og udvidelser, der vises i<ph name="EXTENSION_SETTINGS_POLICY_NAME" />, hvor installationstilstanden er konfigureret til blokeret. Samtidig ryddes lokale brugerdata.  Se privatlivspolitikken for udvidelser eller politikken for dataopbevaring for at forstå, hvad der kan ske med de brugerdata, der ikke gemmes lokalt.
-
-      Når politikken er angivet som aktiveret, fjernes de udvidelser, der hører under de førnævnte lister (hvis de allerede er installeret på en computer), helt fra den pågældende computer (herunder lokale brugerdata).
-
-      Når politikken er angivet som deaktiveret eller ikke er konfigureret, deaktiveres de udvidelser, der hører under de førnævnte lister (hvis de allerede er installeret på en computer og findes på sortlisten <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />), fra den pågældende computer og afinstalleres ikke.</translation>
 <translation id="9027787254195333560">Denne politik giver dig mulighed for at konfigurere det avatarbillede, der repræsenterer brugeren på loginskærmen. Politikken konfigureres ved at angive den webadresse, hvor <ph name="PRODUCT_OS_NAME" /> kan downloade avatarbilledet og en kryptografisk hash-værdi, som bruges til at bekræfte downloadens integritet. Billedet skal være i .jpeg-format, og dets størrelse må ikke overstige 512 kB. Webadressen skal være tilgængelig uden nogen form for godkendelse.
 
       Avatarbilledet downloades og cachelagres. Det downloades igen, når webadressen eller hash-værdien ændres.

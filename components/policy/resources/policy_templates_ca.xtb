@@ -971,17 +971,6 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
       Si aquesta política no es defineix, es pressuposa que s'aplica <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Nombre màxim de connexions paral·leles al servidor intermediari</translation>
-<translation id="2948463916588961959">Força l'activació dels idiomes del corrector ortogràfic. S'ignoraran els idiomes de la llista que no es reconeguin.
-
-      Si actives aquesta política, s'activarà el corrector ortogràfic en els idiomes especificats, a més dels idiomes en què l'usuari ja l'havia activat.
-
-      Si no defineixes aquesta política o si la desactives, no es modificaran les preferències del corrector ortogràfic de l'usuari.
-
-      Si es desactiva la política SpellcheckEnabled, aquesta política no tindrà cap efecte.
-
-      Si un idioma està inclòs tant en aquesta política com a SpellcheckLanguageBlacklist, es prioritzarà aquesta i s'activarà l'idioma del corrector ortogràfic.
-
-      En aquests moments s'admeten els idiomes següents: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="2952347049958405264">Restriccions:</translation>
 <translation id="2956777931324644324">Aquesta política s'ha retirat a partir de <ph name="PRODUCT_NAME" />, versió 36.
 
@@ -1275,7 +1264,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
         La inscripció a polítiques al núvol segons l'abast de l'equip utilitza aquesta política als ordinadors. La política es pot definir amb Registry o GPO a Windows, plist a Mac i el fitxer de polítiques JSON a Linux.</translation>
 <translation id="3660562134618097814">Transfereix les galetes del proveïdor d'identitat SAML durant l'inici de sessió</translation>
-<translation id="3668151900457104753">Desinstal·la les extensions que són a la llista negra</translation>
 <translation id="3701121231485832347">Controla la configuració específica dels dispositius <ph name="PRODUCT_OS_NAME" /> gestionats per <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> El camp d'una sola línia ja no està disponible i se suprimirà en el futur. Comença a utilitzar el quadre de text amb diverses línies que hi ha més avall.</translation>
 <translation id="3709266154059827597">Configura la llista negra d'instal·lació d'extensions</translation>
@@ -1356,9 +1344,9 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3826475866868158882">S'han activat els serveis d'ubicació de Google</translation>
 <translation id="3831054243924627613">Aquesta política controla l'estat inicial del servei de còpia de seguretat i restauració d'Android.
 
-      Quan aquesta política no es configura o s'estableix en "<ph name="BR_DISABLED" />", el servei de còpia de seguretat i restauració d'Android es desactiva en un primer moment.
+      Quan aquesta política no es configura o s'estableix en "<ph name="BR_DISABLED" />", el servei de còpia de seguretat i restauració d'Android està desactivat des d'un principi.
 
-      Quan aquesta política s'estableix en "<ph name="BR_ENABLED" />", el servei de còpia de seguretat i restauració d'Android s'activa en un primer moment.
+      Quan aquesta política s'estableix en "<ph name="BR_ENABLED" />", el servei de còpia de seguretat i restauració d'Android està activat des d'un principi.
 
       Quan aquesta política s'estableix en "<ph name="BR_UNDER_USER_CONTROL" />", es demana a l'usuari que triï si vol utilitzar el servei de còpia de seguretat i restauració d'Android. Si l'usuari activa el servei de còpia de seguretat i restauració, les dades de l'aplicació d'Android es carreguen als servidors de còpia de seguretat d'Android, des d'on es restauraran quan es tornin a instal·lar aplicacions compatibles.
 
@@ -1477,6 +1465,21 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Si aquesta política es configura com a "true" o si no es configura, els usuaris podran bescanviar ofertes mitjançant el registre de Chrome OS.
 
       Si aquesta política es configura com a "false", l'usuari no podrà bescanviar ofertes.</translation>
+<translation id="4008233182078913897">Especifica una llista d'aplicacions i d'extensions que s'instal·len silenciosament, sense la interacció de l'usuari, i que l'usuari no pot desinstal·lar ni desactivar. Tots els permisos que les aplicacions o les extensions sol·liciten es concedeixen de manera implícita, sense cap interacció de l'usuari, inclosos els permisos addicionals que sol·licitin les versions futures de l'aplicació o l'extensió. A més, es concedeixen permisos a les API de les extensions enterprise.deviceAttributes i enterprise.platformKeys. Aquestes dues API no estan disponibles per a les aplicacions ni les extensions que no s'instal·lin a la força.
+
+          Aquesta política preval sobre una política <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> amb què pugui entrar en conflicte. Si se suprimeix d'aquesta llista una aplicació o una extensió que prèviament s'havia instal·lat a la força, <ph name="PRODUCT_NAME" /> la desinstal·larà automàticament.
+
+          En les instàncies de Windows que no formin part d'un domini que pertanyi a <ph name="MS_AD_NAME" />, la instal·lació forçada es limita a les aplicacions i les extensions incloses a Chrome Web Store.
+
+          Tingues en compte que els usuaris poden modificar el codi font de qualsevol extensió amb les Eines per a desenvolupadors (la qual cosa podria provocar problemes de funcionament de l'extensió). Si et preocupa aquesta possibilitat, defineix la política <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Cada element de la llista de la política és una cadena que conté un identificador d'extensió i, opcionalment, un URL d'actualització separats per punt i coma (<ph name="SEMICOLON" />). L'identificador d'extensió és la cadena de 32 lletres que, per exemple, es troba a <ph name="CHROME_EXTENSIONS_LINK" /> quan el mode de desenvolupador està activat. L'URL d'actualització, si s'especifica, ha de dirigir a un document XML de manifest d'actualització, tal com es descriu a <ph name="LINK_TO_EXTENSION_DOC1" />. De manera predeterminada, s'utilitza l'URL d'actualització de Chrome Web Store, que actualment és "https://clients2.google.com/service/update2/crx". Tingues en compte que l'URL d'actualització definit en aquesta política només s'utilitza per a la instal·lació inicial; les properes actualitzacions de l'extensió faran servir l'URL d'actualització indicat al fitxer de manifest de l'extensió. Recorda que, fins a la versió 67 (inclosa) de <ph name="PRODUCT_NAME" />, també calia especificar de manera obligatòria i explícita l'URL d'actualització.
+
+          Per exemple, <ph name="EXTENSION_POLICY_EXAMPLE" /> instal·la l'extensió amb l'identificador <ph name="EXTENSION_ID_SAMPLE" /> des de l'URL d'actualització de Chrome Web Store estàndard. Per obtenir més informació sobre com s'allotgen les extensions, consulta: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Si aquesta política es deixa sense establir, no s'instal·larà automàticament cap aplicació ni cap extensió i l'usuari podrà desinstal·lar-ne qualsevol a <ph name="PRODUCT_NAME" />.
+
+          Tingues en compte que aquesta política no s'aplica al mode d'incògnit.</translation>
 <translation id="4008507541867797979">Si aquesta política s'estableix en "true" o no es configura, <ph name="PRODUCT_OS_NAME" /> mostrarà els usuaris existents a la pantalla d'inici de sessió i permetrà triar-ne un.
 
       Si aquesta política s'estableix en "false", <ph name="PRODUCT_OS_NAME" /> no mostrarà els usuaris existents a la pantalla d'inici de sessió. Es mostrarà la pantalla d'inici de sessió normal (on es demana el telèfon o l'adreça electrònica i la contrasenya de l'usuari) o la intersticial SAML (si s'activa mitjançant la política <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), tret que es configuri una sessió gestionada. En aquest últim cas, només es mostraran els comptes de sessió gestiona i es permetrà triar-ne un.
@@ -1565,10 +1568,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
           Si aquesta política no s'estableix, les tecles permanents es desactivaran d'entrada, però l'usuari les podrà activar en qualsevol moment.</translation>
 <translation id="4183229833636799228">Configuració predeterminada del connector <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL per validar el testimoni d'autenticació del client per a l'accés remot</translation>
-<translation id="4197038214024763371">Si aquesta política no s'estableix o no s'activa, l'usuari podrà fer servir el corrector ortogràfic.
-
-      Si aquesta política es desactiva, l'usuari no podrà fer servir el corrector ortogràfic. A més, s'ignoraran les polítiques SpellcheckLanguage i SpellcheckLanguageBlacklist.
-      </translation>
 <translation id="4203389617541558220">Limiteu el temps d'utilització del dispositiu mitjançant la planificació de reinicis automàtics.
 
       Si s'estableix aquesta política, s'especifica el temps d'activitat del dispositiu que ha de transcórrer perquè es programi un reinici automàtic.
@@ -1654,7 +1653,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Utilitza el caràcter comodí "*" per cercar coincidències amb zero o més caràcters arbitraris. El caràcter d'escapada és "\", per tant, col·loca'l davant de "*" o "\" per obtenir instàncies reals d'aquests caràcters.
 
      Si aquesta política no es defineix, es podran veure tots els comptes de Google del dispositiu a <ph name="PRODUCT_NAME" />.</translation>
-<translation id="4363057787588706121">Permet combinar llistes de polítiques de fonts diferents</translation>
+<translation id="4363057787588706121">Permet combinar les polítiques de llista que provinguin de fonts diferents</translation>
 <translation id="436581050240847513">Informe de les interfícies de xarxa del dispositiu</translation>
 <translation id="4372704773119750918">No permetis que l'usuari d'empresa formi part dels perfils múltiples (com a usuari principal o secundari)</translation>
 <translation id="4377599627073874279">Permet que tots els llocs mostrin totes les imatges</translation>
@@ -1929,7 +1928,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
       A diferència de la política <ph name="URL_LIST_POLICY_NAME" />, les regles són bidireccionals. És a dir, si hi ha el complement d'Internet Explorer i està activat, també controlarà si <ph name="IE_PRODUCT_NAME" /> ha d'obrir aquests URL a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Activa l'inici amb alimentació (corrent altern)</translation>
-<translation id="5131211790949066746">Permet la combinació de les polítiques <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> i <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />de les llistes d'instal·lació d'extensions.
+<translation id="5131211790949066746">Permet la combinació de les polítiques de llista per a la instal·lació d'extensions <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> i <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 
       Si actives aquesta opció de configuració, els valors de la política de la plataforma de l'ordinador, de la política al núvol de l'ordinador i de la política de la plataforma de l'usuari es combinen en una sola llista i es fan servir conjuntament en lloc d'utilitzar-se només els valors d'una sola font amb la prioritat més alta.
 
@@ -2306,7 +2305,7 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
       Si la política s'estableix en "true", la política per al núvol té prioritat si entra en conflicte amb la política de la plataforma.
       Si la política s'estableix en "false" o no es configura, la política de la plataforma té prioritat si entra en conflicte amb la política per al núvol.
 
-      Aquesta política només està disponible com una política obligatòria de la plataforma de l'equip i tan sols afecta les polítiques per al núvol de l'equip.
+      Aquesta política només està disponible com una política de la plataforma de l'ordinador i només afecta les polítiques per al núvol de l'ordinador.
       </translation>
 <translation id="5905473632148429217">Permet les comprovacions OCSP/CRL en línia</translation>
 <translation id="5906199912611534122">Permet activar o desactivar la limitació de l'amplada de banda de la xarxa.
@@ -2514,17 +2513,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6281043242780654992">Configura les polítiques per a la missatgeria nativa. Només es permetran els amfitrions de missatgeria nativa afegits a la llista negra si també apareixen a la llista blanca.</translation>
 <translation id="6282799760374509080">Permet o bloqueja la captura d'àudio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6306608379445125648">Força la desactivació dels idiomes del corrector ortogràfic. S'ignoraran els idiomes de la llista que no es reconeguin.
-
-      Si actives aquesta política, el corrector ortogràfic es desactivarà per als idiomes especificats. L'usuari pot activar o desactivar igualment el corrector ortogràfic per als idiomes que no són a la llista.
-
-      Si no defineixes aquesta política o si la desactives, no es modificaran les preferències del corrector ortogràfic de l'usuari.
-
-      Si es desactiva la política SpellcheckEnabled, aquesta política no tindrà cap efecte.
-
-      Si un idioma està inclòs tant en aquesta política com a SpellcheckLanguage, es prioritzarà SpellcheckLanguage i s'activarà l'idioma del corrector ortogràfic.
-
-      En aquests moments s'admeten els idiomes següents: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6310223829319187614">Activa la funció de compleció automàtica del nom de domini durant l'inici de sessió de l'usuari</translation>
 <translation id="6315673513957120120">Chrome mostra una pàgina d'advertiment quan els usuaris accedeixen a llocs que tenen errors de SSL. De manera predeterminada o quan aquesta política s'estableix en "true", els usuaris poden fer clic per tancar aquestes pàgines d'advertiment.
       Si aquesta política s'estableix en "false", els usuaris no poden fer clic per tancar les pàgines d'advertiment.</translation>
@@ -3150,9 +3138,9 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si el valor d'aquesta política és 0, s'utilitzarà la mida de memòria cau predeterminada, però l'usuari no podrà canviar-la.
 
       Si no definiu aquesta política, s'utilitzarà la mida de memòria cau predeterminada i els usuaris podran substituir-la amb la marca "--disk-cache-size".</translation>
-<translation id="759389052790680884">Estableix la parada personalitzada de la càrrega de la bateria en percentatge.
+<translation id="759389052790680884">Estableix quan vols que la bateria deixi de carregar-se en percentatge.
 
-          La bateria deixa de carregar-se quan s'assoleix el valor en què s'ha establert l'aturada personalitzada de la càrrega de la bateria.
+          La bateria deixa de carregar-se quan s'assoleix el valor personalitzat de l'aturada de la càrrega.
 
           El valor de DeviceBatteryChargeCustomStartCharging ha de ser inferior al de DeviceBatteryChargeCustomStopCharging.
 
@@ -3778,11 +3766,6 @@ per donar prioritat a OverrideSecurityRestrictionsOnInsecureOrigin. Si totes due
 <translation id="8976248126101463034">Permet l'autenticació Gnubby als amfitrions d'accés remot</translation>
 <translation id="8976531594979650914">Utilitza la impressora predeterminada del sistema com a predeterminada</translation>
 <translation id="8992176907758534924">No permetis que cap lloc mostri imatges</translation>
-<translation id="9018338365267278833">Se suprimiran les extensions que apareguin a <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> o les que apareguin a<ph name="EXTENSION_SETTINGS_POLICY_NAME" /> i tinguin el mode d'instal·lació establert en "blocked", i les dades locals de l'usuari se suprimiran permanentment.  Consulta la política de privadesa de les extensions o la política de conservació de dades per entendre què pot passar quan les dades de l'usuari no s'emmagatzemen localment.
-
-      Quan la política s'estableix en "enabled", les extensions que s'inclouen a les llistes mencionades anteriorment (si ja s'han instal·lat en un ordinador) se suprimeixen totalment de l'ordinador en qüestió (incloses les dades locals de l'usuari).
-
-      Quan la política s'estableix en "disabled" o es deixa sense establir, les extensions que s'inclouen a les llistes mencionades anteriorment (si ja s'han instal·lat en un ordinador i són a la llista negra <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) es desactiven a l'ordinador però no es desinstal·len.</translation>
 <translation id="9035964157729712237">ID de les extensions que s'han d'excloure de la llista negra</translation>
 <translation id="9038058011835642205">Especifica una llista de llocs web que s'instal·len silenciosament, sense la interacció de l'usuari, i que l'usuari no pot desinstal·lar ni desactivar.
 

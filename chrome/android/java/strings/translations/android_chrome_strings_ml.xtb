@@ -280,7 +280,6 @@
 <translation id="3029613699374795922"><ph name="KBS" /> KB ഡൗൺലോഡ് ചെയ്‌തു</translation>
 <translation id="3029704984691124060">പാസ്‌ഫ്രെയ്‌സുകൾ പൊരുത്തപ്പെടുന്നില്ല</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />സഹായം തേടുക<ph name="END_LINK" /></translation>
-<translation id="3045654778214005718">ഇതേപോലുള്ള കൂടുതൽ കാര്യങ്ങൾ Google-ൽ കാണുക</translation>
 <translation id="305593374596241526">ലൊക്കേഷൻ ഓഫാണ്; <ph name="BEGIN_LINK" />Android ക്രമീകരണത്തിൽ<ph name="END_LINK" /> അത് ഓണാക്കുക.</translation>
 <translation id="3058498974290601450">നിങ്ങൾക്ക് ഏത് സമയത്തും ക്രമീകരണത്തിൽ സമന്വയം ഓണാക്കാവുന്നതാണ്</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> ബുക്ക്‌മാർക്ക്}other{<ph name="BOOKMARKS_COUNT_MANY" /> ബുക്ക്‌മാർക്കുകൾ}}</translation>
@@ -371,7 +370,6 @@
 <translation id="3773755127849930740">ജോടിയാക്കാൻ, <ph name="BEGIN_LINK" />Bluetooth ഓണാക്കുക<ph name="END_LINK" /></translation>
 <translation id="3775705724665058594">നിങ്ങളുടെ ഉപകരണങ്ങളിലേക്ക് അയയ്‌ക്കുക</translation>
 <translation id="3778956594442850293">ഹോം സ്‌ക്രീനിലേക്ക് ചേർത്തു</translation>
-<translation id="3781011235031427080">'ഇതുപോലുള്ള കൂടുതല്‍' ഷീറ്റ്, പകുതി ഉയരത്തില്‍ തുറന്നിരിക്കുന്നു</translation>
 <translation id="3789841737615482174">ഇന്‍സ്റ്റാളുചെയ്യുക</translation>
 <translation id="3810838688059735925">വീഡിയോ</translation>
 <translation id="3810973564298564668">മാനേജ് ചെയ്യുക</translation>
@@ -380,7 +378,7 @@
 <translation id="385051799172605136">പിന്നോട്ട്</translation>
 <translation id="3859306556332390985">മുന്നോട്ട് നീക്കുക</translation>
 <translation id="3894427358181296146">ഫോൾഡർ ചേർക്കുക</translation>
-<translation id="3895926599014793903">നിർബന്ധിത സൂം തയ്യാറാക്കുക</translation>
+<translation id="3895926599014793903">നിർബന്ധിത സൂം പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="3912508018559818924">വെബിൽ നിന്നുള്ള ഏറ്റവും മികച്ചത് കണ്ടെത്തുന്നു…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">എന്റെ വിവരങ്ങൾ സംയോജിപ്പിക്കുക</translation>
@@ -404,9 +402,9 @@
 <translation id="4034817413553209278">{HOURS,plural, =1{# മണിക്കൂർ}other{# മണിക്കൂർ}}</translation>
 <translation id="4042870126885713738">ഒരു വെബ് വിലാസം വ്യക്തമാക്കാത്തപ്പോഴോ ഒരു കണക്ഷൻ സ്ഥാപിക്കാൻ കഴിയാത്തപ്പോഴോ നിർദ്ദേശങ്ങൾ ദൃശ്യമാക്കുക</translation>
 <translation id="4046123991198612571">അടുത്ത ട്രാക്ക്</translation>
-<translation id="4048707525896921369">പേജ് വിട്ടുപോകാതെ തന്നെ വെബ്‌സൈറ്റുകളിലെ വിഷയങ്ങളെക്കുറിച്ച് അറിയുക. 'തിരയാൻ സ്‌പർശിക്കുക' എന്നത് ഒരു പദവും അതിന്റെ സന്ദർഭവും Google തിരയലിലേക്ക് അയച്ച്, നിർവചനങ്ങളും ചിത്രങ്ങളും തിരയൽ ഫലങ്ങളും മറ്റ് വിശദാംശങ്ങളും ലഭ്യമാക്കുന്നു.
+<translation id="4048707525896921369">പേജ് വിട്ടുപോകാതെ തന്നെ വെബ്‌സൈറ്റുകളിലെ വിഷയങ്ങളെക്കുറിച്ച് അറിയുക. തിരയാൻ ടാപ്പ് ചെയ്യുക എന്നത്  പദവും അതിന്റെ സന്ദർഭവും Google തിരയലിലേക്ക് അയച്ച്, നിർവചനങ്ങളും ചിത്രങ്ങളും തിരയൽ ഫലങ്ങളും മറ്റ് വിശദാംശങ്ങളും ലഭ്യമാക്കുന്നു.
 
-നിങ്ങളുടെ തിരയൽ പദം ക്രമീകരിക്കാൻ, തിരഞ്ഞെടുക്കുന്നതിനായി ദീർഘനേരം അമർത്തിപ്പിടിക്കുക. തിരയൽ പരിഷ്‌ക്കരിക്കാൻ, നേരെ മുകളിലേക്ക് പാനൽ നീക്കി, തിരയൽ ബോക്‌സ് സ്‌പർശിക്കുക.</translation>
+നിങ്ങളുടെ തിരയൽ പദം ക്രമീകരിക്കാൻ, തിരഞ്ഞെടുക്കുന്നതിനായി ദീർഘനേരം അമർത്തിപ്പിടിക്കുക. തിരയൽ പരിഷ്‌ക്കരിക്കാൻ, നേരെ മുകളിലേക്ക് പാനൽ നീക്കി, തിരയൽ ബോക്‌സ് ടാപ്പ് ചെയ്യുക.</translation>
 <translation id="4056223980640387499">സിപിയ</translation>
 <translation id="4060598801229743805">സ്‌ക്രീനിന്റെ മുകളിൽ ഓപ്‌ഷനുകൾ ലഭ്യമാണ്</translation>
 <translation id="4062305924942672200">നിയമ വിവരങ്ങൾ</translation>
@@ -443,7 +441,6 @@
 <translation id="4351244548802238354">ഡയലോഗ് അടയ്‌ക്കുക</translation>
 <translation id="4378154925671717803">ഫോൺ</translation>
 <translation id="4384468725000734951">തിരയാൻ Sogou ഉപയോഗിക്കുന്നു</translation>
-<translation id="4398088515904522762">ഈ ഫീച്ചർ ഉപയോഗിക്കാൻ <ph name="BEGIN_LINK" />പ്രവർത്തനവും ആശയവിനിമയങ്ങളും<ph name="END_LINK" /> ഓണാക്കുക</translation>
 <translation id="4404568932422911380">ബുക്ക്‌മാർക്കുകളൊന്നുമില്ല</translation>
 <translation id="4409723563706114196">പേജ് പ്രവചനങ്ങൾ ഉപയോഗിക്കുക</translation>
 <translation id="4411535500181276704">ലൈറ്റ് മോഡ്</translation>
@@ -490,7 +487,7 @@
 <translation id="4684427112815847243">എല്ലാം സമന്വയിപ്പിക്കുക</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 എന്നതും ‌മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> പേയ്‌മെന്റ് രീതികളും}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 എന്നതും ‌മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> പേയ്‌മെന്റ് രീതികളും}}</translation>
 <translation id="4698034686595694889"><ph name="APP_NAME" /> ആപ്പിൽ ഓഫ്‌ലൈനായി കാണുക</translation>
-<translation id="4698413471314543145">Chrome പ്രവർത്തിപ്പിക്കുന്നതിന് ആവശ്യമായ സുപ്രധാന പ്രവർത്തനം കാണുന്നില്ല; ഒന്നുകിൽ നിങ്ങളുടെ Chrome ഇൻസ്റ്റാളേഷൻ പൂർത്തിയായിട്ടില്ല, അല്ലെങ്കിൽ Android-ന്റെ ഈ പതിപ്പിന് അനുയോജ്യമായതല്ല.</translation>
+<translation id="4698413471314543145">Chrome പ്രവർത്തിപ്പിക്കുന്നതിന് ആവശ്യമായ സുപ്രധാന ഫംഗ്ഷൻ കാണുന്നില്ല; ഒന്നുകിൽ നിങ്ങളുടെ Chrome ഇൻസ്റ്റലേഷൻ പൂർത്തിയായിട്ടില്ല, അല്ലെങ്കിൽ Android-ന്റെ ഈ പതിപ്പിന് അനുയോജ്യമായതല്ല.</translation>
 <translation id="4699172675775169585">കാഷെ ചെയ്‌ത ചിത്രങ്ങളും ഫയലുകളും</translation>
 <translation id="4714588616299687897">നിങ്ങളുടെ ഡാറ്റ 60% വരെ ലാഭിക്കൂ</translation>
 <translation id="4719927025381752090">വിവർത്തനം ചെയ്യാനുള്ള ഓഫർ</translation>
@@ -600,7 +597,6 @@
 <translation id="5447765697759493033">ഈ സൈറ്റ് വിവർത്തനം ചെയ്യപ്പെടില്ല</translation>
 <translation id="545042621069398927">നിങ്ങളുടെ ഡൗൺലോഡ് വേഗത്തിലാക്കുന്നു.</translation>
 <translation id="5456381639095306749">പേജ് ഡൗൺലോഡ് ചെയ്യുക</translation>
-<translation id="5466407412363861127">ഈ ഫീച്ചർ <ph name="BEGIN_LINK" />സമന്വയം<ph name="END_LINK" /> ഉപയോഗിക്കുന്നു.</translation>
 <translation id="548278423535722844">മാപ്‌സ് ആപ്പിൽ തുറക്കുക</translation>
 <translation id="5487521232677179737">ഡാറ്റ മായ്‌ക്കുക</translation>
 <translation id="5494752089476963479">അനാവശ്യമോ തെറ്റിദ്ധരിപ്പിക്കുന്നതോ ആയ പരസ്യങ്ങള്‍ കാണിക്കുന്ന സൈറ്റുകളിലെ പരസ്യങ്ങൾ ബ്ലോക്ക് ചെയ്യുക</translation>
@@ -645,7 +641,7 @@
 <translation id="5726692708398506830">പേജിൽ എല്ലാം വലുതായി നൽകുക</translation>
 <translation id="5734520971562437809">60 ശതമാനം വരെ കുറഞ്ഞതോതിൽ ഡാറ്റ ഉപയോഗിച്ച് വെബ് വേഗത കൂട്ടുക.</translation>
 <translation id="5748802427693696783">സ്റ്റാൻഡേർഡ് ടാബുകളിലേക്ക് മാറി</translation>
-<translation id="5749068826913805084">ഫയലുകൾ ഡൗൺലോഡുചെയ്യാൻ Chrome-ന് സ്റ്റോറേജ് ആക്‌സസ്സ് ആവശ്യമുണ്ട്.</translation>
+<translation id="5749068826913805084">ഫയലുകൾ ഡൗൺലോഡ് ചെയ്യാൻ Chrome-ന് സ്റ്റോറേജ് ആക്‌സസ് ആവശ്യമുണ്ട്.</translation>
 <translation id="5763382633136178763">ആൾമാറാട്ട ടാബുകൾ</translation>
 <translation id="5763514718066511291">ഈ ആപ്പിനായുള്ള URL പകർത്താൻ ടാപ്പ് ചെയ്യുക</translation>
 <translation id="5765780083710877561">വിവരണം:</translation>
@@ -678,7 +674,7 @@
 <translation id="5942872142862698679">തിരയാൻ Google ഉപയോഗിക്കുന്നു</translation>
 <translation id="5944669582486359588">ലൈറ്റ് മോഡിൽ, Chrome 60 ശതമാനം വരെ കുറവ് ഡാറ്റ ഉപയോഗിക്കുന്നു, പേജുകൾ വേഗത്തിൽ ലോഡ് ചെയ്യുന്നു. നിങ്ങൾ സന്ദർശിക്കുന്ന പേജുകളെ Google-ന്‍റെ ക്ലൗഡ് സാങ്കേതികവിദ്യ ഒപ്റ്റിമൈസ് ചെയ്യുന്നു.</translation>
 <translation id="5952764234151283551">നിങ്ങൾ എത്തിച്ചേരാൻ ശ്രമിക്കുന്ന പേജിന്റെ URL Google-ലേക്ക് അയയ്ക്കുന്നു</translation>
-<translation id="5956665950594638604">പുതിയ ടാബിൽ Chrome സഹായ കേന്ദ്രം തുറക്കുക</translation>
+<translation id="5956665950594638604">പുതിയ ടാബിൽ Chrome സഹായകേന്ദ്രം തുറക്കുക</translation>
 <translation id="5958275228015807058">ഡൗൺലോഡുകളിൽ നിന്നും നിങ്ങളുടെ ഫയലുകളും ‌പേജുകളും കണ്ടെത്തുക</translation>
 <translation id="5962718611393537961">ചുരുക്കാൻ ടാപ്പ് ചെയ്യുക</translation>
 <translation id="6000066717592683814">Google ഉപയോഗിക്കുക</translation>
@@ -703,7 +699,6 @@
 <translation id="6177111841848151710">നിലവിലെ തിരയൽ യന്ത്രത്തിൽ ബ്ലോക്ക് ചെയ്‌തിരിക്കുന്നു</translation>
 <translation id="6177390657002841081">ഡാറ്റ സേവർ ഓണാക്കുക</translation>
 <translation id="6181444274883918285">സൈറ്റിനെ ഒഴിവാക്കൽ ലിസ്‌റ്റിൽ ചേർക്കുക</translation>
-<translation id="618993374665929060">'ഇതുപോലുള്ള കൂടുതല്‍' ഷീറ്റ്, മുഴുവന്‍ ഉയരത്തില്‍ തുറന്നിരിക്കുന്നു</translation>
 <translation id="6192333916571137726">ഫയൽ ഡൗൺലോഡ് ചെയ്യുക</translation>
 <translation id="6192792657125177640">അപവാദങ്ങള്‍</translation>
 <translation id="6194112207524046168">Chrome-നെ നിങ്ങളുടെ ക്യാമറ ആക്‌സസ് ചെയ്യാൻ അനുവദിക്കുന്നതിന്, <ph name="BEGIN_LINK" />Android ക്രമീകരണത്തിൽ<ph name="END_LINK" /> ക്യാമറയും ഓണാക്കുക.</translation>
@@ -786,7 +781,6 @@
 <translation id="6699370405921460408">നിങ്ങള്‍ സന്ദര്‍ശിക്കുന്ന പേജുകള്‍ Google സെര്‍‌വറുകള്‍ ഒപ്‌റ്റിമൈസ് ചെയ്യും.</translation>
 <translation id="6709133671862442373">വാർത്ത</translation>
 <translation id="6710213216561001401">കഴിഞ്ഞ</translation>
-<translation id="6712388303105732168">'ഇതുപോലുള്ള കൂടുതല്‍' ബട്ടണ്‍ ഉപയോഗിച്ച്, ഇതേപോലുള്ള കൂടുതൽ കാര്യങ്ങൾ Google-ൽ കാണുക</translation>
 <translation id="671481426037969117">നിങ്ങളുടെ <ph name="FQDN" /> ടൈമർ അവസാനിച്ചു. ഇത് നാളെ വീണ്ടും ആരംഭിക്കും.</translation>
 <translation id="6738867403308150051">ഡൗൺലോഡുചെയ്യുന്നു...</translation>
 <translation id="6746124502594467657">താഴേക്ക് നീക്കുക</translation>
@@ -833,7 +827,6 @@
 <translation id="702463548815491781">TalkBack അല്ലെങ്കിൽ ആക്‌സസ് മാറുക ഓണായിരിക്കുമ്പോൾ ശുപാർശ ചെയ്യുന്നു</translation>
 <translation id="7029809446516969842">പാസ്‌വേഡുകള്‍</translation>
 <translation id="7031882061095297553">ഇതിലേക്ക് സമന്വയിപ്പിക്കുക</translation>
-<translation id="7032663816368481562">വിലാസ ബാറിലുള്ള 'മോർ ലൈക്ക് ദിസ്' <ph name="ICON" /> ടാപ്പ് ചെയ്യുമ്പോൾ, ബന്ധപ്പെട്ട പേജുകളിലേക്ക് ദ്രുത ലിങ്കുകൾ കാണിക്കുന്നു. നിങ്ങൾ സന്ദർശിക്കുന്ന പേജുകളുടെ URL-കൾ Google-ന് അയയ്ക്കുന്നു.</translation>
 <translation id="7034608350006174882">Google Pay ഉപയോഗിക്കുന്ന കാർഡുകളും വിലാസങ്ങളും</translation>
 <translation id="7053983685419859001">തടയുക</translation>
 <translation id="7055152154916055070">റീഡയറക്‌റ്റ് ചെയ്യുന്നത് ബ്ലോക്ക് ചെയ്തു</translation>
@@ -845,7 +838,6 @@
 <translation id="7121362699166175603">ചരിത്രവും വിലാസ ബാറിലെ സ്വയം പൂർത്തീകരണങ്ങളും മായ്ക്കുന്നു. നിങ്ങളുടെ Google അക്കൗണ്ടിന് <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> എന്നതിൽ മറ്റ് തരത്തിലുള്ള ബ്രൗസിംഗ് ചരിത്രമുണ്ടായിരിക്കാം.</translation>
 <translation id="7128222689758636196">നിലവിലെ തിരയൽ യന്ത്രത്തിന് അനുവദിക്കുക</translation>
 <translation id="7138678301420049075">മറ്റുള്ളവ</translation>
-<translation id="7139148793369023665">'ഇതുപോലുള്ള കൂടുതല്‍' ഷീറ്റ് അവസാനിപ്പിച്ചു</translation>
 <translation id="7141896414559753902">പോപ്പ് അപ്പുകളും റീഡയറക്‌റ്റുകളും കാണിക്കുന്നതിൽ നിന്ന് സൈറ്റുകളെ ബ്ലോക്ക് ചെയ്യുക (ശുപാർശ ചെയ്‌തിരിക്കുന്നു)</translation>
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" />-ല്‍ നിന്ന് <ph name="BEGIN_LINK" />യഥാര്‍ത്ഥ പേജ് ലോഡ് ചെയ്യുക<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">അവസാന 24 മണിക്കൂർ</translation>
@@ -945,7 +937,6 @@
 <translation id="7846076177841592234">തിരഞ്ഞെടുത്തത് റദ്ദാക്കുക</translation>
 <translation id="784934925303690534">സമയ ശ്രേണി</translation>
 <translation id="7851858861565204677">മറ്റ് ഉപകരണങ്ങൾ</translation>
-<translation id="7854964836418414587">'ഇതുപോലുള്ള കൂടുതല്‍' അവസാനിപ്പിക്കുക</translation>
 <translation id="7875915731392087153">ഇമെയിൽ സൃഷ്‌ടിക്കുക</translation>
 <translation id="7876243839304621966">എല്ലാം നീക്കംചെയ്യുക</translation>
 <translation id="7882131421121961860">ചരിത്രം കണ്ടില്ല</translation>
@@ -969,7 +960,6 @@
 <translation id="802154636333426148">ഡൗൺലോഡ് പരാജയപ്പെട്ടു</translation>
 <translation id="8026334261755873520">ബ്രൌസിംഗ് ഡാറ്റ മായ്‌ക്കുക</translation>
 <translation id="8035133914807600019">പുതിയ ഫോൾഡർ…</translation>
-<translation id="8037686209485537503">ഇതുപോലെ കൂടുതൽ</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> ദിവസം ശേഷിക്കുന്നു</translation>
 <translation id="804335162455518893">SD കാർഡ് കണ്ടെത്തിയില്ല</translation>
 <translation id="805047784848435650">നിങ്ങളുടെ ബ്രൗസിംഗ്‌ ചരിത്രം അടിസ്ഥാനമാക്കിയുള്ളത്</translation>
@@ -983,7 +973,6 @@
 <translation id="8087000398470557479">ഈ ഉള്ളടക്കം Google-ൽ നിന്നുള്ള <ph name="DOMAIN_NAME" /> ഡൊമെയ്‌നിൽ നിന്നുള്ളതാണ്.</translation>
 <translation id="8103578431304235997">അദൃശ്യ ടാബ്</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
-<translation id="8105951947646329362">ബന്ധപ്പെട്ട പേജുകൾ നിർദ്ദേശിക്കുക</translation>
 <translation id="8109613176066109935">നിങ്ങളുടെ എല്ലാ ഉപകരണങ്ങളിലും ബുക്ക്‌മാർക്കുകൾ ലഭിക്കാൻ, സമന്വയിപ്പിക്കൽ ഓണാക്കുക</translation>
 <translation id="8110087112193408731">ഡിജിറ്റൽ ആരോഗ്യത്തിൽ നിങ്ങളുടെ Chrome ആക്റ്റിവിറ്റി കാണിക്കണോ?</translation>
 <translation id="8116925261070264013">മ്യൂട്ടുചെയ്‌തു</translation>
@@ -1032,7 +1021,6 @@
 <translation id="8497726226069778601">ഇതുവരെയും ഇവിടെ കാണാനായി ഒന്നുമില്ല...</translation>
 <translation id="8503559462189395349">Chrome പാസ്‌വേഡുകൾ</translation>
 <translation id="8503813439785031346">ഉപയോക്തൃനാമം</translation>
-<translation id="8504988642345501642">നിങ്ങൾ മുകളിലേക്ക് സ്ക്രോൾ ചെയ്യുമ്പോൾ, ബന്ധപ്പെട്ട പേജുകളിലേക്കുള്ള ദ്രുത ലിങ്കുകൾ കാണിക്കുന്നു. നിങ്ങൾ സന്ദർശിക്കുന്ന പേജുകളുടെ URL-കൾ Google-ന് അയയ്ക്കും.</translation>
 <translation id="8514477925623180633">Chrome ഉപയോഗിച്ച് സംഭരിച്ചിട്ടുള്ള പാസ്‍വേഡുകൾ എക്സ്പോർട്ട് ചെയ്യുക</translation>
 <translation id="8514577642972634246">അദൃശ്യ മോഡ് നൽകുക</translation>
 <translation id="851751545965956758">ഉപകരണങ്ങളിലേക്ക് കണക്‌റ്റ് ചെയ്യുന്നതിൽ നിന്ന് സൈറ്റുകളെ ബ്ലോക്ക് ചെയ്യുക</translation>
@@ -1124,7 +1112,6 @@
 <translation id="932327136139879170">ഹോം</translation>
 <translation id="932599481871055447">ഡാറ്റ ലാഭിച്ച് വേഗത്തിൽ ബ്രൗസ് ചെയ്യൂ</translation>
 <translation id="938850635132480979">പിശക്: <ph name="ERROR_CODE" /></translation>
-<translation id="945522503751344254">ഫീഡ്ബാക്ക് അയയ്ക്കുക</translation>
 <translation id="945632385593298557">നിങ്ങളുടെ മൈക്രോഫോൺ ആക്‌സസ് ചെയ്യുക</translation>
 <translation id="951339005376969845">നിലവിലുള്ള വിവരങ്ങൾ ഇല്ലാതാക്കുക. <ph name="FROM_ACCOUNT" /> എന്നതിലേക്ക് വീണ്ടും മാറുന്നതിലൂടെ നിങ്ങൾക്ക് ഇത് വീണ്ടെടുക്കാം.</translation>
 <translation id="95817756606698420"><ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> ഉപയോഗിച്ച് Chrome-ന് ചൈനയിൽ തിരയാനാവും. നിങ്ങൾക്കിത്‌ <ph name="BEGIN_LINK" />ക്രമീകരണത്തിൽ<ph name="END_LINK" /> മാറ്റാനാവും.</translation>

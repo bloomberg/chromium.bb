@@ -880,7 +880,7 @@
 <translation id="257788512393330403">A introdução da palavra-passe é obrigatória a cada seis horas</translation>
 <translation id="2586162458524426376">
       Esta política aplica-se ao ecrã de início de sessão. Consulte também a política <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> aplicável à sessão do utilizador.
-      Se a política estiver ativada, cada uma das origens nomeadas numa lista separada por vírgulas será executada no seu próprio processo. Deste modo, também as origens nomeadas por subdomínios serão isoladas; por exemplo, a especificação https://example.com/ implica também o isolamento de https://foo.example.com/ como parte do site https://example.com/.
+      Se a política estiver ativada, cada uma das origens nomeadas numa lista separada por vírgulas será executada no seu próprio processo. Deste modo, também as origens nomeadas por subdomínios serão isoladas; por exemplo, a especificação https://example.com/ implica também o isolamento de https://foo.example.com/ por ser parte do site https://example.com/.
       Se a política não for configurada ou estiver desativada, serão utilizadas as definições de isolamento de sites predefinidas na plataforma para o ecrã de início de sessão.
       </translation>
 <translation id="2587719089023392205">Definir o <ph name="PRODUCT_NAME" /> como o Navegador predefinido</translation>
@@ -1081,17 +1081,6 @@
       Se esta política não estiver definida, é assumida a opção <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Número máximo de ligações simultâneas ao servidor proxy</translation>
-<translation id="2948463916588961959">Força a ativação de idiomas com verificação ortográfica. Os idiomas não reconhecidos nessa lista são ignorados.
-
-      Se ativar esta política, a verificação ortográfica é ativada para os idiomas especificados, além dos idiomas para os quais o utilizador ativou a verificação ortográfica.
-
-      Se não definir esta política ou a desativar, as preferências de verificação ortográfica do utilizador não são alteradas.
-
-      Se a política SpellcheckEnabled estiver definida como desativada, esta política não tem efeito.
-
-      Se um idioma estiver incluído nesta política e na política SpellcheckLanguageBlacklist, esta política tem prioridade e o idioma com verificação ortográfica é ativado.
-
-      Os idiomas atualmente suportados são: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="2952347049958405264">Restrições:</translation>
 <translation id="2956777931324644324">Esta política foi retirada a partir da versão 36 do <ph name="PRODUCT_NAME" />.
 
@@ -1423,7 +1412,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
         Esta política é utilizada pela inscrição de políticas de nuvem num âmbito automático em computadores e pode ser definida pela Base de dados de registo ou GPO no Windows, pelo plist no Mac e pelo ficheiro da política JSON no Linux.</translation>
 <translation id="3660562134618097814">Transferir cookies SAML IdP durante o início de sessão</translation>
-<translation id="3668151900457104753">Desinstale extensões que estão na lista negra</translation>
 <translation id="3701121231485832347">Controla definições específicas para dispositivos <ph name="PRODUCT_OS_NAME" /> geridos por <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (O campo de uma única linha foi descontinuado e será removido no futuro. Comece a utilizar a caixa de texto multilinha abaixo.)</translation>
 <translation id="3709266154059827597">Configurar lista negra de instalação de extensões</translation>
@@ -1632,6 +1620,29 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política estiver definida como verdadeira ou não estiver definida, os utilizadores poderão resgatar ofertas através do Registo no Chrome OS.
 
       Se esta política estiver definida como falsa, os utilizadores não poderão resgatar ofertas.</translation>
+<translation id="4008233182078913897">Especifica uma lista de aplicações e extensões que são instaladas em silêncio,
+          sem interação do utilizador, e que não podem ser desinstaladas nem
+          desativadas pelo utilizador. Todas as autorizações solicitadas pelas
+          aplicações/extensões são concedidas implicitamente, sem a interação do utilizador,
+          incluindo quaisquer autorizações adicionais obrigatórias para as versões futuras
+          da aplicação/extensão. Além disso, as autorizações são concedidas às
+          APIs de extensão enterprise.deviceAttributes e
+          enterprise.platformKeys. (Estas duas APIs não estão disponíveis para aplicações/extensões cuja
+          instalação não é forçada.)
+
+          Esta política tem prioridade sobre uma política <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> potencialmente conflituosa. Se uma aplicação ou extensão previamente instalada de forma forçada for removida desta lista, é automaticamente desinstalada pelo <ph name="PRODUCT_NAME" />.
+
+          Em instâncias do Windows que não façam parte de um domínio <ph name="MS_AD_NAME" />, a instalação forçada está limitada a aplicações e extensões apresentadas na Web Store do Chrome.
+
+          Tenha em atenção que o código-fonte de qualquer extensão pode ser alterado pelos utilizadores através das Ferramentas para programadores (o que pode resultar no funcionamento incorreto da extensão). Se pretender evitar esta situação, defina a política <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Cada item de lista da política é uma string que contém um ID de extensão e, opcionalmente, um URL de "atualização" separado por ponto e vírgula (<ph name="SEMICOLON" />). O ID da extensão é a string de 32 letras encontrada, por exemplo, em <ph name="CHROME_EXTENSIONS_LINK" /> no modo de programador. O URL de "atualização", se especificado, deve apontar para um documento XML de Atualização do manifesto conforme descrito em <ph name="LINK_TO_EXTENSION_DOC1" />. Por predefinição, utiliza-se o URL de atualização da Web Store do Chrome (que, atualmente, é "https://clients2.google.com/service/update2/crx"). Tenha em atenção que o URL de "atualização" definido nesta política apenas é utilizado para a instalação inicial e as atualizações subsequentes da extensão utilizam o URL de atualização indicado no manifesto da extensão. Tenha também em atenção que era obrigatório especificar explicitamente o URL de "atualização" até à versão 67 do <ph name="PRODUCT_NAME" />, inclusive.
+
+          Por exemplo, a política <ph name="EXTENSION_POLICY_EXAMPLE" /> instala a extensão com o ID <ph name="EXTENSION_ID_SAMPLE" /> a partir do URL de "atualização" padrão da Web Store do Chrome. Para mais informações acerca do alojamento de extensões, consulte: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Se esta política não estiver definida, não é efetuada a instalação automática de aplicações ou de extensões e o utilizador pode desinstalar qualquer aplicação ou extensão no <ph name="PRODUCT_NAME" />.
+
+          Tenha em consideração que esta política não se aplica ao modo de navegação anónima.</translation>
 <translation id="4008507541867797979">Se esta política estiver definida como verdadeira ou não estiver configurada, o <ph name="PRODUCT_OS_NAME" /> apresenta os utilizadores existentes no ecrã de início de sessão e permite selecionar um.
 
       Se esta política estiver definida como falsa, o <ph name="PRODUCT_OS_NAME" /> não apresenta os utilizadores existentes no ecrã de início de sessão. É apresentado o ecrã de início de sessão normal (que solicita o email e a palavra-passe ou o número de telefone do utilizador) ou o ecrã intercalar em SAML (se ativado através da política <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), exceto se configurar uma sessão gerida. Quando configura uma sessão gerida, são apenas apresentadas as contas da sessão gerida para que selecione uma.
@@ -1748,15 +1759,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se esta política for definida como falsa, as teclas aderentes estarão sempre desativadas.
 
-          Se definir esta política, os utilizadores não a podem alterar nem substituir.
+          Se definir esta política, os utilizadores não a poderão alterar nem substituir.
 
-          Se esta política não for definida, as teclas aderentes estão inicialmente desativadas, mas podem ser ativadas em qualquer altura pelo utilizador.</translation>
+          Se esta política não for definida, as teclas aderentes estarão inicialmente desativadas, mas poderão ser ativadas em qualquer altura pelo utilizador.</translation>
 <translation id="4183229833636799228">Definição de <ph name="FLASH_PLUGIN_NAME" /> predefinida</translation>
 <translation id="4192388905594723944">URL para validar o símbolo de autenticação de cliente de acesso remoto</translation>
-<translation id="4197038214024763371">Se esta política não estiver definida ou ativada, o utilizador tem autorização para utilizar a verificação ortográfica.
-
-      Se esta política estiver desativada, o utilizador não tem autorização para utilizar a verificação ortográfica. Quando esta política está desativada, as políticas SpellcheckLanguage e SpellcheckLanguageBlacklist também são ignoradas.
-      </translation>
 <translation id="4203389617541558220">Limitar o tempo de atividade do dispositivo ao agendar reinícios automáticos.
 
       Quando esta política está definida, indica a duração do tempo de atividade do dispositivo após o qual é agendado um reinício automático.
@@ -2502,11 +2509,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se a política estiver ativada, cada uma das origens nomeadas numa
       lista separada por vírgulas será executada no seu próprio processo. Deste modo, também as
       origens nomeadas por subdomínios serão isoladas; por exemplo, a especificação https://example.com/
-      implica também o isolamento de https://foo.example.com/ como parte do site
+      implica também o isolamento de https://foo.example.com/ por ser parte do site
       https://example.com/.
       Se a política não for configurada ou estiver desativada, o utilizador poderá alterar esta definição.
 
-      NOTA: esta politica não se aplica ao Android. Para ativar IsolateOrigins no Android, utilize a definição de política IsolateOriginsAndroid.
+      NOTA: Esta política não se aplica ao Android. Para ativar IsolateOrigins no Android, utilize a definição de política IsolateOriginsAndroid.
       </translation>
 <translation id="572155275267014074">Definições do Android</translation>
 <translation id="5722934961007828462">Com esta definição ativada, o <ph name="PRODUCT_NAME" /> executará sempre a verificação da revogação de certificados de servidor que validem com êxito e estejam assinados por certificados da AC instalados localmente.
@@ -2817,17 +2824,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="6281043242780654992">Configura as políticas das Mensagens nativas. Os anfitriões de mensagens nativas na lista negra não terão autorização até passarem para a lista de autorizações.</translation>
 <translation id="6282799760374509080">Permitir ou impedir a captura de áudio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6306608379445125648">Força a desativação de idiomas com verificação ortográfica. Os idiomas não reconhecidos nessa lista são ignorados.
-
-      Se ativar esta política, a verificação ortográfica é desativada para os idiomas especificados. O utilizador ainda pode ativar ou desativar a verificação ortográfica para os idiomas não presentes na lista.
-
-      Se não definir esta política ou a desativar, as preferências de verificação ortográfica do utilizador não são alteradas.
-
-      Se a política SpellcheckEnabled estiver definida como desativada, esta política não tem efeito.
-
-      Se um idioma estiver incluído nesta política e na política SpellcheckLanguage, a política SpellcheckLanguage tem prioridade e o idioma com verificação ortográfica é ativado.
-
-      Os idiomas atualmente suportados são: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6310223829319187614">Ativar o preenchimento automático do nome do domínio durante o início de sessão do utilizador</translation>
 <translation id="6315673513957120120">O Chrome mostra uma página de aviso quando os utilizadores navegam para sites com erros de SSL. Por predefinição ou quando esta política está definida como verdadeira, os utilizadores estão autorizados a clicar nestas páginas de aviso.
       Definir esta política como falsa desautoriza os utilizadores a clicar em qualquer página de aviso.</translation>
@@ -3418,7 +3414,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se esta política estiver ativada, a lista de contas definida pela política é adicionada às definições de Contas Kerberos.
 
-          Se esta política estiver desativada ou não for definida, não são adicionadas contas às definições Contas Kerberos e todas as contas adicionadas anteriormente com esta política são removidas. Os utilizadores podem, contudo, adicionar contas manualmente se a política '"Os utilizadores podem adicionar contas Kerberos" estiver ativada.</translation>
+          Se esta política estiver desativada ou não for definida, não serão adicionadas contas às definições Contas Kerberos e todas as contas adicionadas anteriormente com esta política serão removidas. Os utilizadores podem, contudo, adicionar contas manualmente se a política '"Os utilizadores podem adicionar contas Kerberos" estiver ativada.</translation>
 <translation id="7458437477941640506">Não reverta para a versão de destino se a versão do SO for mais recente do que a do destino. As atualizações também estão desativadas.</translation>
 <translation id="7464991223784276288">Limitar os cookies dos URLs correspondentes à sessão atual.</translation>
 <translation id="7469554574977894907">Ativar sugestões de pesquisa</translation>
@@ -3554,7 +3550,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se esta política estiver ativada ou não for definida, os utilizadores podem decidir se pretendem que as palavras-passe do Kerberos sejam memorizadas, para que não tenham de as voltar a introduzir. As permissões Kerberos são obtidas automaticamente, exceto se for necessária autenticação adicional (autenticação de dois fatores).
 
-          Se esta política estiver desativada, as palavras-passe nunca são memorizadas e todas as palavras-passe armazenadas anteriormente são removidas. Os utilizadores terão de introduzir as palavras-passe sempre que for necessária a autenticação no sistema Kerberos. Consoante as definições do servidor, isto pode ocorrer num intervalo que, normalmente, varia entre 8 horas a vários meses.</translation>
+          Se esta política estiver desativada, as palavras-passe nunca são memorizadas e todas as palavras-passe armazenadas anteriormente são removidas. Os utilizadores terão de introduzir as palavras-passe sempre que for necessária a autenticação no sistema Kerberos. Consoante as definições do servidor, isto pode ocorrer num intervalo que, normalmente, varia entre 8 horas e vários meses.</translation>
 <translation id="7694807474048279351">Agendar um reinício automático depois de ter sido aplicada uma atualização do <ph name="PRODUCT_OS_NAME" />.
 
       Quando esta política estiver definida como verdadeira, é agendado um reinício automático, assim que tiver sido aplicada uma atualização do <ph name="PRODUCT_OS_NAME" />; é necessário reiniciar, para concluir o processo de atualização. O reinício é imediatamente agendado, mas pode ser adiado no dispositivo até 24 horas se um utilizador estiver atualmente a utilizar o dispositivo.
@@ -3595,7 +3591,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       (por exemplo, ao utilizar a entrada "Desativar isolamento de sites" em chrome://flags).  Definir a política como desativada e/ou não configurar a política não desativa o Isolamento de site.
       No <ph name="PRODUCT_OS_NAME" />, recomenda-se ainda que a política do dispositivo <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> seja definida para o mesmo valor. Se os valores especificados pelas duas políticas não coincidirem, poderá ocorrer um atraso ao iniciar uma sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
 
-      NOTA: esta politica não se aplica ao Android. Para ativar a política SitePerProcess no Android, utilize a definição da política SitePerProcessAndroid.
+      NOTA: Esta política não se aplica ao Android. Para ativar a política SitePerProcess no Android, utilize a definição da política SitePerProcessAndroid.
       </translation>
 <translation id="7747447585227954402">Permitir que os dispositivos utilizem um <ph name="PLUGIN_VM_NAME" /> no <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Ativa a autenticação de dois fatores para anfitriões de acesso remoto, em vez de um PIN especificado pelo utilizador.
@@ -4207,11 +4203,6 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
       Esta política apenas afeta os utilizadores que efetuaram a autenticação através de SAML.
 
       O valor da política deve ser especificado em segundos.</translation>
-<translation id="9018338365267278833">Esta política remove as extensões que são apresentadas na <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> ou na <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> que tiverem o modo de instalação definido como bloqueado e vai remover completamente os dados do utilizador locais através da mesma.  Consulte a política de privacidade ou a política de retenção de dados das extensões para compreender o que pode acontecer com os dados do utilizador que não estiverem armazenados localmente.
-
-      Quando a política está definida como ativada, as extensões que se enquadrarem nas listas mencionadas anteriormente (se já estiverem instaladas numa máquina) são removidas completamente dessa máquina (incluindo os dados do utilizador locais).
-
-      Quando a política está definida como desativada ou não está definida, as extensões que se enquadrarem nas listas mencionadas anteriormente (se já estiverem instaladas numa máquina e existirem na lista negra <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) são desativadas na máquina e não são desinstaladas.</translation>
 <translation id="9027787254195333560">Esta política permite-lhe configurar a imagem do avatar que representa o utilizador no ecrã de início de sessão. A política é definida ao especificar o URL a partir do qual o <ph name="PRODUCT_OS_NAME" /> pode transferir a imagem do avatar e um hash criptográfico utilizado para validar a integridade da transferência. A imagem tem de estar no formato JPEG e o tamanho não pode exceder 512 kB. O URL tem de ser acessível sem qualquer autenticação.
 
       A imagem do avatar é transferida e colocada em cache. Será transferida novamente sempre que o URL ou o hash forem alterados.

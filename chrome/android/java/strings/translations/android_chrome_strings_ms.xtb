@@ -282,7 +282,6 @@
 <translation id="3029613699374795922">Dimuat turun <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">Frasa laluan tidak sepadan</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Dapatkan bantuan<ph name="END_LINK" /></translation>
-<translation id="3045654778214005718">Lihat lagi kandungan seperti ini daripada Google</translation>
 <translation id="305593374596241526">Lokasi dimatikan, hidupkannya dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Anda boleh mematikan penyegerakan pada bila-bila masa dalam tetapan</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> penanda halaman}other{<ph name="BOOKMARKS_COUNT_MANY" /> penanda halaman}}</translation>
@@ -374,7 +373,6 @@
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Hidupkan Bluetooth<ph name="END_LINK" /> untuk membenarkan penggandingan</translation>
 <translation id="3775705724665058594">Hantar ke peranti anda</translation>
 <translation id="3778956594442850293">Ditambahkan pada Skrin utama</translation>
-<translation id="3781011235031427080">Lagi seperti ini dibuka pada ketinggian separa</translation>
 <translation id="3789841737615482174">Pasang</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Urus</translation>
@@ -446,7 +444,6 @@ Untuk melaraskan istilah carian anda, tekan lama untuk memilih. Untuk memperhalu
 <translation id="4351244548802238354">Tutup dialog</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4384468725000734951">Menggunakan Sogou untuk carian</translation>
-<translation id="4398088515904522762">Untuk menggunakan ciri ini, hidupkan <ph name="BEGIN_LINK" />Aktiviti dan interaksi<ph name="END_LINK" />.</translation>
 <translation id="4404568932422911380">Tiada penanda halaman</translation>
 <translation id="4409723563706114196">Gunakan ramalan halaman</translation>
 <translation id="4411535500181276704">Mod Ringkas</translation>
@@ -604,7 +601,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5447765697759493033">Tapak ini tidak akan diterjemah</translation>
 <translation id="545042621069398927">Mempercepatkan muat turun anda.</translation>
 <translation id="5456381639095306749">Muat turun halaman</translation>
-<translation id="5466407412363861127">Ciri ini menggunakan <ph name="BEGIN_LINK" />penyegerakan<ph name="END_LINK" />.</translation>
 <translation id="548278423535722844">Buka dalam apl peta</translation>
 <translation id="5487521232677179737">Kosongkan data</translation>
 <translation id="5494752089476963479">Sekat iklan di tapak yang menyiarkan iklan yang mengganggu atau mengelirukan</translation>
@@ -707,7 +703,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="6177111841848151710">Disekat untuk enjin carian semasa</translation>
 <translation id="6177390657002841081">Hidupkan Penjimat Data</translation>
 <translation id="6181444274883918285">Tambah pengecualian tapak</translation>
-<translation id="618993374665929060">Lagi seperti ini dibuka pada ketinggian penuh</translation>
 <translation id="6192333916571137726">Muat turun fail</translation>
 <translation id="6192792657125177640">Pengecualian</translation>
 <translation id="6194112207524046168">Untuk membenarkan Chrome mengakses kamera anda, hidupkan kamera dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" /> juga.</translation>
@@ -791,7 +786,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6699370405921460408">Pelayan Google akan mengoptimumkan halaman yang anda lawati.</translation>
 <translation id="6709133671862442373">Berita</translation>
 <translation id="6710213216561001401">Sebelumnya</translation>
-<translation id="6712388303105732168">Lihat lagi kandungan seperti ini daripada Google menggunakan butang Lagi Seperti Ini</translation>
 <translation id="671481426037969117">Pemasa <ph name="FQDN" /> anda sudah tamat. Pemasa akan bermula lagi esok.</translation>
 <translation id="6738867403308150051">Memuat turun…</translation>
 <translation id="6746124502594467657">Alihkan ke bawah</translation>
@@ -838,7 +832,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="702463548815491781">Disyorkan apabila TalkBack atau Akses Suis dihidupkan</translation>
 <translation id="7029809446516969842">Kata laluan</translation>
 <translation id="7031882061095297553">Segerakkan ke</translation>
-<translation id="7032663816368481562">Apabila anda mengetik Lagi seperti ini <ph name="ICON" /> dalam bar alamat, tunjukkan pautan pantas ke halaman yang berkaitan. URL halaman yang anda lawati dihantar kepada Google.</translation>
 <translation id="7034608350006174882">Kad dan alamat yang menggunakan Google Pay</translation>
 <translation id="7053983685419859001">Sekat</translation>
 <translation id="7055152154916055070">Ubah hala disekat:</translation>
@@ -850,7 +843,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="7121362699166175603">Mengosongkan sejarah dan autoselesai dalam bar alamat. Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain di <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Benarkan untuk enjin carian semasa</translation>
 <translation id="7138678301420049075">Lain-lain</translation>
-<translation id="7139148793369023665">Lagi seperti ini ditutup</translation>
 <translation id="7141896414559753902">Sekat tapak daripada memaparkan tetingkap timbul dan ubah hala (disyorkan)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Muatkan halaman asal<ph name="END_LINK" /> daripada <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">24 jam yang lalu</translation>
@@ -951,7 +943,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="7846076177841592234">Batalkan pilihan</translation>
 <translation id="784934925303690534">Julat masa</translation>
 <translation id="7851858861565204677">Peranti lain</translation>
-<translation id="7854964836418414587">Tutup lagi seperti ini</translation>
 <translation id="7875915731392087153">Buat e-mel</translation>
 <translation id="7876243839304621966">Buangkan semua</translation>
 <translation id="7882131421121961860">Tiada sejarah ditemui</translation>
@@ -975,7 +966,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="802154636333426148">Muat turun gagal</translation>
 <translation id="8026334261755873520">Kosongkan data semakan imbas</translation>
 <translation id="8035133914807600019">Folder baharu...</translation>
-<translation id="8037686209485537503">Lagi seperti ini</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> hari lagi</translation>
 <translation id="804335162455518893">Kad SD tidak ditemui</translation>
 <translation id="805047784848435650">Berdasarkan sejarah penyemakan imbas anda</translation>
@@ -989,7 +979,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="8087000398470557479">Kandungan ini adalah daripada <ph name="DOMAIN_NAME" />, disampaikan oleh Google.</translation>
 <translation id="8103578431304235997">Tab Inkognito</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
-<translation id="8105951947646329362">Cadangkan halaman yang berkaitan</translation>
 <translation id="8109613176066109935">Hidupkan penyegerakan untuk mendapatkan penanda halaman pada semua peranti anda</translation>
 <translation id="8110087112193408731">Tunjukkan aktiviti Chrome anda dalam Kesejahteraan Digital?</translation>
 <translation id="8116925261070264013">Diredam</translation>
@@ -1039,7 +1028,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="8497726226069778601">Belum ada apa-apa untuk dilihat di sini... lagi</translation>
 <translation id="8503559462189395349">Kata Laluan Chrome</translation>
 <translation id="8503813439785031346">Nama pengguna</translation>
-<translation id="8504988642345501642">Apabila anda menatal ke atas, tunjukkan pautan pantas ke halaman yang berkaitan. URL halaman yang anda lawati dihantar ke Google.</translation>
 <translation id="8514477925623180633">Eksport kata laluan yang disimpan dengan menggunakan Chrome</translation>
 <translation id="8514577642972634246">Masuk ke mod inkognito</translation>
 <translation id="851751545965956758">Sekat tapak daripada menyambung ke peranti</translation>
@@ -1132,7 +1120,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="932327136139879170">Laman Utama</translation>
 <translation id="932599481871055447">Jimatkan data dan semak imbas dengan lebih pantas</translation>
 <translation id="938850635132480979">Ralat: <ph name="ERROR_CODE" /></translation>
-<translation id="945522503751344254">Hantar maklum balas</translation>
 <translation id="945632385593298557">Akses mikrofon anda</translation>
 <translation id="951339005376969845">Padam data sedia ada. Anda boleh mendapatkannya semula dengan beralih semula kepada <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">Chrome boleh menggunakan <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> untuk melakukan carian di China. Anda boleh menukarnya dalam <ph name="BEGIN_LINK" />Tetapan<ph name="END_LINK" />.</translation>

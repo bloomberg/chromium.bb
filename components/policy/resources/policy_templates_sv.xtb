@@ -1103,17 +1103,6 @@
       Om inget värde anges för principen används <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Högsta antalet samtidiga anslutningar till proxyservern</translation>
-<translation id="2948463916588961959">Aktivera alltid språk för stavningskontroll. Okända språk i listan ignoreras.
-
-      När principen är aktiverad aktiveras stavningskontroll på de angivna språken, utöver de språk som användaren har aktiverat stavningskontroll för.
-
-      Om principen inte ställs in eller inaktiveras gäller användarens inställningar för stavningskontroll som de är.
-
-      Om principen SpellcheckEnabled har inaktiverats har den här principen ingen funktion.
-
-      Om ett språk är inkluderat i både den här principen och principen SpellcheckLanguageBlacklist har den här principen företräde och språket för stavningskontroll aktiveras.
-
-      För närvarande stöds följande språk: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="2952347049958405264">Begränsningar:</translation>
 <translation id="2956777931324644324">Den här policyn har gäller inte för version 36 och senare av <ph name="PRODUCT_NAME" />.
 
@@ -1451,7 +1440,6 @@
 
         Principen används på stationära datorer för registrering av datorn för molnhantering och kan ställas in via registret eller gruppolicyobjekt på Windows, plist på Mac och en JSON-principfil på Linux.</translation>
 <translation id="3660562134618097814">Överför SAML-cookies från identitetsleverantörer vid inloggning</translation>
-<translation id="3668151900457104753">Avinstallera svartlistade tillägg</translation>
 <translation id="3701121231485832347">Styr inställningar för <ph name="PRODUCT_OS_NAME" />-enheter som hanteras med <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Enradsfältet har fasats ut och tas snart bort. Börja använda flerradsfältet i stället.)</translation>
 <translation id="3709266154059827597">Konfigurera svartlista för tilläggsinstallation</translation>
@@ -1662,6 +1650,19 @@
       Om policyn är inställd på sant eller inte är inställd kan användarna utnyttja erbjudanden via registrering i Chrome OS.
 
       Om policyn är inställd på falskt kan användarna inte utnyttja erbjudanden.</translation>
+<translation id="4008233182078913897">Anger en lista med appar och tillägg som installeras tyst, utan att användaren gör något, och som användaren inte kan avinstallera eller inaktivera. Alla behörigheter som apparna eller tilläggen behöver beviljas implicit utan att användaren blir tillfrågad. Det gäller även nya behörigheter som tillkommer i framtida versioner av appen eller tillägget. Dessutom beviljas behörighet för tilläggs-API:erna enterprise.deviceAttributes och enterprise.platformKeys. (Dessa API:er är inte tillgängliga för appar eller tillägg som inte tvångsinstallerats.)
+
+          Den här principen har företräde framför en <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />-princip vid en eventuell konflikt. Om en app eller ett tillägg som tidigare har tvångsinstallerats tas bort från den här listan avinstalleras den/det automatiskt i <ph name="PRODUCT_NAME" />. På Windows-domäner som inte har anslutits till en <ph name="MS_AD_NAME" />-domän kan bara appar och tillägg som finns på Chrome Web Store tvångsinstalleras.
+
+          Observera att användarna kan ändra i källkoden till vilket tillägg som helst med hjälp av verktygen för utvecklare (vilket kan leda till att tillägget slutar fungera). Om detta är ett problem bör principen <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> ställas in.
+
+          Varje listpost i principen är en sträng med ett tilläggs-id och eventuellt en ”uppdateringsadress” med semikolon (<ph name="SEMICOLON" />) som avgränsare. Tilläggs-id:t är den sträng med 32 tecken som visas exempelvis på <ph name="CHROME_EXTENSIONS_LINK" /> i utvecklarläget. Om en ”uppdateringsadress” anges ska den peka på ett uppdateringsmanifest i XML-format enligt beskrivningen på <ph name="LINK_TO_EXTENSION_DOC1" />. Som standard används uppdateringsadressen på Chrome Web Store (som för närvarande är https://clients2.google.com/service/update2/crx). Observera att den ”uppdateringsadress” som anges i den här principen bara används vid den första installationen. För senare uppdateringar av tillägget används uppdateringsadressen i tilläggets manifestfil. Observera även att det var obligatoriskt att ange ”uppdateringsadressen” explicit i version 67 och äldre versioner av <ph name="PRODUCT_NAME" />.
+
+          Med <ph name="EXTENSION_POLICY_EXAMPLE" /> installeras t.ex. tillägget med id <ph name="EXTENSION_ID_SAMPLE" /> från den vanliga ”uppdateringsadressen” på Chrome Web Store. Mer information om att stå värd för tillägg finns här: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+           Om den här principen lämnas utan inställning installeras inga appar eller tillägg automatiskt och användaren får avinstallera alla appar och tillägg i <ph name="PRODUCT_NAME" />.
+
+          Observera att principen inte gäller i inkognitoläge.</translation>
 <translation id="4008507541867797979">Om den här principen är inställd på sant eller har lämnats utan inställning visas befintliga användare på inloggningsskärmen i <ph name="PRODUCT_OS_NAME" /> och det går att välja en.
 
       Om principen är inställd på falskt visas befintliga användare inte på inloggningsskärmen i <ph name="PRODUCT_OS_NAME" />. Den vanliga inloggningsskärmen (där användaren uppmanas att ange e-postadress och lösenord eller telefonnummer) eller mellansidan för SAML (om detta har aktiverats via principen <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) visas, såvida inte en hanterad session har konfigurerats. Om en hanterad session har konfigurerats visas bara kontona för den hanterade sessionen och användaren kan välja ett av dem.
@@ -1785,10 +1786,6 @@
           Om principen saknar inställning är tröga tangenter inaktiverat från start, men funktionen kan aktiveras av användaren när som helst.</translation>
 <translation id="4183229833636799228">Standardinställning för <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">Webbadress för validering av autentiseringstoken för fjärråtkomstklient</translation>
-<translation id="4197038214024763371">Om den här principen är aktiverad eller utan inställning är stavningskontroll tillgänglig för användaren.
-
-      Om principen har inaktiverats är stavningskontroll inte tillgänglig för användaren. Dessutom ignoreras principerna SpellcheckLanguage och SpellcheckLanguageBlacklist när den här principen är inaktiverad.
-      </translation>
 <translation id="4203389617541558220">Begränsa enhetens drifttid genom att schemalägga automatiska omstarter.
 
       När den här principen är aktiverad anger den hur länge enheten kan vara igång innan den startas om automatiskt.
@@ -2897,17 +2894,6 @@
 <translation id="6281043242780654992">Konfigurerar principer för Native Messaging. Om en värd för Native Messaging står på svarta listan är den förbjuden såvida den inte står på vitlistan.</translation>
 <translation id="6282799760374509080">Tillåta eller neka ljudinspelning</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6306608379445125648">Inaktivera alltid språk för stavningskontroll. Okända språk i listan ignoreras.
-
-      När principen är aktiverad inaktiveras stavningskontroll på de angivna språken. Användarna kan fortfarande aktivera eller inaktivera stavningskontroll på språk som inte finns i listan.
-
-      Om principen inte ställs in eller inaktiveras gäller användarens inställningar för stavningskontroll som de är.
-
-      Om principen SpellcheckEnabled har inaktiverats har den här principen ingen funktion.
-
-      Om ett språk är inkluderat i både den här principen och i principen SpellcheckLanguage, har principen SpellcheckLanguage företräde och språket för stavningskontroll aktiveras.
-
-      För närvarande stöds följande språk: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6310223829319187614">Aktivera autoslutför av domännamn vid användarinloggning</translation>
 <translation id="6315673513957120120">Chrome visar en varningssida när användare besöker webbplatser med SSL-fel. Som standardinställning eller om den här principen är inställd på sant ges användare möjligheten att klicka sig förbi dessa varningssidor.
       Om principen är inställd på falskt hindras användare från att klicka sig förbi varningssidor.</translation>
@@ -4324,11 +4310,6 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
       Den här principen påverkar endast användare som verifieras via SAML.
 
       Principens värde ska anges i sekunder.</translation>
-<translation id="9018338365267278833">Den tar bort tillägg som visas i <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> eller tillägg som visas i <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> vars installationsläge är inställt på blockerat och raderar samtidigt lokal användardata permanent.  Läs tilläggets sekretesspolicy eller datalagringspolicy om du vill veta mer om vad som händer med användardata som inte lagras lokalt.
-
-      När principen är aktiverad tas tilläggen i den ovannämnda listan (om de redan har installerats på datorn) bort från datorn helt (inklusive lokal användardata).
-
-      När principen är inaktiverad eller saknar inställning inaktiveras tilläggen i den ovannämnda listan (om de redan har installerats på datorn och finns med i den svarta listan <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) på datorn, men avinstalleras inte.</translation>
 <translation id="9027787254195333560">Med den här principen kan du konfigurera den avatarbild som representerar användaren på inloggningsskärmen. Du kan ställa in principen genom att ange en webbadress från vilken <ph name="PRODUCT_OS_NAME" /> kan ladda ned avatarbilden och en kryptografisk hash som används för att verifiera nedladdningens integritet. Bilden måste vara i JPEG-format och får inte vara större än 512 kB. Det måste gå att komma åt webbadressen utan autentisering.
 
       Avatarbilden laddas ned och cachelagras. Den laddas ned på nytt när webbadressen eller hashen ändras.

@@ -223,6 +223,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Kortelė</translation>
 <translation id="2114841414352855701">Nepaisoma, nes buvo pakeista taikant „<ph name="POLICY_NAME" />“.</translation>
+<translation id="2129079103035905234">Judesio jutikliai</translation>
 <translation id="213826338245044447">Žymės mobiliesiems</translation>
 <translation id="214556005048008348">Atšaukti mokėjimą</translation>
 <translation id="2147827593068025794">Fono sinchronizavimas</translation>
@@ -724,7 +725,7 @@
 <translation id="4926159001844873046">Svetainėje <ph name="SITE" /> nurodyta:</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" /> / <ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Rezultatų nėra</translation>
-<translation id="4945672369594656571">Valdoma, kaip apdorojami jūsų įrenginio ir paskyros duomenys. „Google“ apdoroja įrenginio ir paskyros duomenis tik pagal įrenginio ir paskyros valdytojo nurodymus ir tik įrenginio ir paskyros valdytojo nurodytais tikslais.</translation>
+<translation id="4945672369594656571">Valdoma, kaip apdorojami jūsų įrenginio ir paskyros duomenys. „Google“ apdoroja įrenginio ir paskyros duomenis tik pagal įrenginio ir paskyros valdytojo nurodymus ir tik įrenginio bei paskyros valdytojo nurodytais tikslais.</translation>
 <translation id="4950898438188848926">Skirtuko perjungimo mygtukas. Paspauskite „Enter“, kad perjungtumėte į atidarytą skirtuką „<ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" />“</translation>
 <translation id="495170559598752135">Veiksmai</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -893,6 +894,7 @@
 <translation id="5804241973901381774">Leidimai</translation>
 <translation id="5810442152076338065">Ryšys su <ph name="DOMAIN" /> užšifruotas naudojant pasenusį šifravimo paketą.</translation>
 <translation id="5813119285467412249">&amp;Pridėti dar kartą</translation>
+<translation id="583281660410589416">Nežinoma</translation>
 <translation id="5838278095973806738">Šioje svetainėje neturėtumėte pateikti neskelbtinos informacijos (pvz., slaptažodžių ar kredito kortelių numerių), nes ją gali pavogti užpuolikai.</translation>
 <translation id="5860033963881614850">Išjungta</translation>
 <translation id="5863847714970149516">Toliau pateiktame puslapyje gali būti bandoma jus apmokestinti</translation>

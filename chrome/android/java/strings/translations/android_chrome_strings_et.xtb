@@ -25,6 +25,7 @@
 <translation id="1175310183703641346">Teie järjehoidjaid, ajalugu, paroole ja muud sisu ei sünkroonita enam teie Google'i kontoga</translation>
 <translation id="1178581264944972037">Peata</translation>
 <translation id="1181037720776840403">Eemalda</translation>
+<translation id="1188239144602654184">Sisene AR-i</translation>
 <translation id="1197267115302279827">Teisalda järjehoidjad</translation>
 <translation id="119944043368869598">Tühjenda kõik</translation>
 <translation id="1201402288615127009">Edasi</translation>
@@ -282,7 +283,6 @@
 <translation id="3029613699374795922">Alla on laaditud <ph name="KBS" /> kB</translation>
 <translation id="3029704984691124060">Paroolid ei ühti</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Küsige abi<ph name="END_LINK" /></translation>
-<translation id="3045654778214005718">Vaadake Google'is rohkem sarnast sisu</translation>
 <translation id="305593374596241526">Asukoht on välja lülitatud. Lülitage see sisse <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Saate sünkroonimise seadetes alati sisse lülitada</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> järjehoidja}other{<ph name="BOOKMARKS_COUNT_MANY" /> järjehoidjat}}</translation>
@@ -374,7 +374,6 @@
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Lülitage Bluetooth sisse<ph name="END_LINK" />, et sidumine lubada</translation>
 <translation id="3775705724665058594">Saatmine teie seadmetesse</translation>
 <translation id="3778956594442850293">Lisatud avaekraanile</translation>
-<translation id="3781011235031427080">Jaotis Rohkem sarnaseid avatud poolele kõrgusele</translation>
 <translation id="3789841737615482174">Installi</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Halda</translation>
@@ -446,7 +445,6 @@ Otsingutermini korrigeerimiseks vajutage valimiseks pikalt. Otsingu täpsustamis
 <translation id="4351244548802238354">Sule dialoog</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4384468725000734951">Otsimiseks kasutatakse teenust Sogou</translation>
-<translation id="4398088515904522762">Selle funktsiooni kasutamiseks lülitage sisse valik <ph name="BEGIN_LINK" />Tegevused ja interaktsioonid<ph name="END_LINK" />.</translation>
 <translation id="4404568932422911380">Järjehoidjaid pole</translation>
 <translation id="4409723563706114196">Kasuta lehe ennustusi</translation>
 <translation id="4411535500181276704">Lihtsustatud režiim</translation>
@@ -604,7 +602,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5447765697759493033">Seda saiti ei tõlgita</translation>
 <translation id="545042621069398927">Allalaadimise kiirendamine.</translation>
 <translation id="5456381639095306749">Laadi leht alla</translation>
-<translation id="5466407412363861127">See funktsioon kasutab <ph name="BEGIN_LINK" />sünkroonimist<ph name="END_LINK" />.</translation>
+<translation id="5475862044948910901">Kas alustada liitreaalsuse seanssi?</translation>
 <translation id="548278423535722844">Avage kaardirakenduses</translation>
 <translation id="5487521232677179737">Kustuta andmed</translation>
 <translation id="5494752089476963479">Blokeeri reklaamid saitidel, mis kuvavad sekkuvaid või eksitavaid reklaame</translation>
@@ -707,7 +705,6 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="6177111841848151710">Praeguse otsingumootori puhul blokeeritud</translation>
 <translation id="6177390657002841081">Lülita andmemahu säästja sisse</translation>
 <translation id="6181444274883918285">Lisa saidi erand</translation>
-<translation id="618993374665929060">Jaotis Rohkem sarnaseid avatud täiskõrgusele</translation>
 <translation id="6192333916571137726">Faili allalaadimine</translation>
 <translation id="6192792657125177640">Erandid</translation>
 <translation id="6194112207524046168">Selleks et anda Chrome'ile juurdepääs teie kaamerale, lülitage kaamera sisse ka <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" />.</translation>
@@ -791,7 +788,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="6699370405921460408">Google'i serverid optimeerivad teie külastatavaid lehti.</translation>
 <translation id="6709133671862442373">Uudised</translation>
 <translation id="6710213216561001401">Eelmine</translation>
-<translation id="6712388303105732168">Kasutage nuppu Rohkem sarnaseid, et Google kuvaks rohkem sarnast sisu</translation>
 <translation id="671481426037969117">Teie rakenduse <ph name="FQDN" /> taimeri aeg sai otsa. See alustab uuesti homme.</translation>
 <translation id="6738867403308150051">Allalaadimine ...</translation>
 <translation id="6746124502594467657">Liiguta alla</translation>
@@ -838,7 +834,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="702463548815491781">Soovitatav juhul, kui TalkBack või lülitiga juurdepääs on sisse lülitatud</translation>
 <translation id="7029809446516969842">Paroolid</translation>
 <translation id="7031882061095297553">Sünkroonimine:</translation>
-<translation id="7032663816368481562">Kui puudutate aadressiribal ikooni Rohkem sarnaseid <ph name="ICON" />, kuvatakse kiirlingid seotud lehtede juurde. Külastatavate lehtede URL-id saadetakse Google'ile.</translation>
 <translation id="7034608350006174882">Kaardid ja aadressid, mis kasutavad teenust Google Pay</translation>
 <translation id="7053983685419859001">Blokeeri</translation>
 <translation id="7055152154916055070">Ümbersuunamine blokeeriti:</translation>
@@ -850,7 +845,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="7121362699166175603">Kustutab aadressiribalt ajaloo ja automaatse täitmise andmed. Aadressil <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> võib teie Google'i kontol olla muus vormis sirvimisajalugu.</translation>
 <translation id="7128222689758636196">Lubab praeguse otsingumootori puhul</translation>
 <translation id="7138678301420049075">Muu</translation>
-<translation id="7139148793369023665">Jaotis Rohkem sarnaseid suleti</translation>
 <translation id="7141896414559753902">Blokeeri saitidel hüpikakende ja ümbersuunamiste kuvamine (soovitatav)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Laadi originaalleht<ph name="END_LINK" /> domeenilt <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Viimased 24 tundi</translation>
@@ -875,6 +869,11 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Jaga 1 valitud üksust}other{Jaga # valitud üksust}}</translation>
 <translation id="7359002509206457351">Makseviisidele juurdepääsemine</translation>
+<translation id="7365126855094612066">Selle seansi ajal saab sait teha järgmist.
+• Luua teie keskkonnast 3D-kaardi
+• Jälgida kaamera liikumist
+
+Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad ainult teile.</translation>
 <translation id="7375125077091615385">Tüüp:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -951,7 +950,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="7846076177841592234">Tühista valik</translation>
 <translation id="784934925303690534">Ajavahemik</translation>
 <translation id="7851858861565204677">Muud seadmed</translation>
-<translation id="7854964836418414587">Sule jaotis Rohkem sarnaseid</translation>
 <translation id="7875915731392087153">Looge meil</translation>
 <translation id="7876243839304621966">Eemalda kõik</translation>
 <translation id="7882131421121961860">Ajalugu ei leitud</translation>
@@ -975,7 +973,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="802154636333426148">Allalaadimine ebaõnnestus</translation>
 <translation id="8026334261755873520">Sirvimisandmete kustutamine</translation>
 <translation id="8035133914807600019">Uus kaust …</translation>
-<translation id="8037686209485537503">Rohkem sarnaseid</translation>
 <translation id="8037750541064988519">Jäänud on <ph name="DAYS" /> päeva</translation>
 <translation id="804335162455518893">SD-kaarti ei leitud</translation>
 <translation id="805047784848435650">Teie sirvimisajaloo põhjal</translation>
@@ -989,7 +986,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="8087000398470557479">See sisu pärineb domeenilt <ph name="DOMAIN_NAME" /> ja seda pakub Google.</translation>
 <translation id="8103578431304235997">Inkognito vaheleht</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
-<translation id="8105951947646329362">Seotud lehtede soovitamine</translation>
 <translation id="8109613176066109935">Järjehoidjate kõigisse oma seadmetesse hankimiseks lülitage sünkroonimine sisse</translation>
 <translation id="8110087112193408731">Kas kuvada teie Chrome'i tegevused teenuses Digitaalne heaolu?</translation>
 <translation id="8116925261070264013">Vaigistatud</translation>
@@ -1039,7 +1035,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="8497726226069778601">Siin pole midagi vaadata ... veel</translation>
 <translation id="8503559462189395349">Chrome'i paroolid</translation>
 <translation id="8503813439785031346">Kasutajanimi</translation>
-<translation id="8504988642345501642">Üleskerimisel kuvatakse kiirlingid seotud lehtede juurde. Külastatavate lehtede URL-id saadetakse Google'ile.</translation>
 <translation id="8514477925623180633">Chrome'i salvestatud paroolide eksportimine</translation>
 <translation id="8514577642972634246">Inkognito režiimi sisenemine</translation>
 <translation id="851751545965956758">Blokeeri saitidel seadmetega ühenduse loomine</translation>
@@ -1132,7 +1127,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="932327136139879170">Kodu</translation>
 <translation id="932599481871055447">Säästke andmemahtu ja sirvige kiiremini</translation>
 <translation id="938850635132480979">Viga: <ph name="ERROR_CODE" /></translation>
-<translation id="945522503751344254">Saada tagasisidet</translation>
 <translation id="945632385593298557">Juurdepääs mikrofonile</translation>
 <translation id="951339005376969845">Kustutage olemasolevad andmed. Need saate hankida, kui lülitate tagasi kontole <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">Chrome saab Hiinas otsimiseks kasutada teenust <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" />. Seda saate muuta menüüs <ph name="BEGIN_LINK" />Seaded<ph name="END_LINK" />.</translation>

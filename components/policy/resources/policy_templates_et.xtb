@@ -146,6 +146,15 @@
       Kui määrate reegli olekule Väär, siis ei saadeta teavet arendaja lüliti oleku kohta.</translation>
 <translation id="1160479894929412407">QUIC-protokolli lubamine</translation>
 <translation id="1160939557934457296">Keela turvalise sirvimise hoiatuslehest edasiliikumine</translation>
+<translation id="1171342272070128466">Lubatakse dokitud luubi juurdepääsufunktsioon.
+
+          Kui see reegel on seatud väärtusele Tõene, on dokitud luup alati lubatud.
+
+          Kui see reegel on seatud väärtusele Väär, on dokitud luup alati keelatud.
+
+          Kui määrate reegli, ei saa kasutajad seda muuta ega alistada.
+
+          Kui see reegel jäetakse määramata, on dokitud luup algselt keelatud, kuid kasutaja võib selle igal ajal lubada.</translation>
 <translation id="1189817621108632689">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel ei ole lubatud pilte kuvada.
 
           Kui jätate selle reegli määramata, siis kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultImagesSetting”, kui see on määratud, või kasutaja isiklikku seadistust.
@@ -461,6 +470,7 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Kui reegel on lubatud, ei saa kasutajad loobuda vaikekäitumisest, mille puhul käitatakse igat saiti eraldi protsessina.
       Kui reegel on seadistamata või keelatud, saab kasutaja seadet muuta (nt jaotise chrome://flags kirje „Keela saidi isoleerimine” abil).
       </translation>
+<translation id="1767673020408652620">Rakenduse soovituste lubamine nullolekuga otsingukastis</translation>
 <translation id="1781356041596378058">See reegel juhib ka juurdepääsu Androidi arendaja valikutele. Kui määrate reegli väärtuseks Tõene, ei pääse kasutajad arendaja valikutele juurde. Kui määrate reegli väärtuseks Väär või jätate selle määramata, pääsevad kasutajad arendaja valikutele juurde, puudutades rakenduses Androidi seaded seitse korda järgunumbrit.</translation>
 <translation id="1793346220873697538">PIN-koodiga printimise vaikimisi keelamine</translation>
 <translation id="1797233582739332495">Kuva kasutajale korduv viip, mis näitab, et taaskäivitamine on nõutav</translation>
@@ -999,6 +1009,15 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 
       Loendi iga kirje määrab identifikaatori, mida kasutatakse seesmiselt seadmepõhiste kontode eristamiseks.</translation>
 <translation id="2769952903507981510">Kaugjuurdepääsu hostidele nõutava domeeninime seadistamine</translation>
+<translation id="2783078941107212091">Käivitaja nullolekuga otsingukastis lubatakse rakenduste soovitused.
+
+          Kui see reegel on seatud väärtusele Tõene, võidakse rakenduse soovitused kuvada nullolekuga otsingus.
+
+          Kui see reegel on seatud väärtusele Väär, siis rakenduse soovitusi nullolekuga otsingus ei kuvata.
+
+          Kui määrate reegli, ei saa kasutajad seda muuta ega alistada.
+
+          Kui see reegel jäetakse määramata, on hallatud seadmete puhul vaikeseade Väär.</translation>
 <translation id="2787173078141616821">Saada teavet Androidi oleku kohta</translation>
 <translation id="2799297758492717491">Lubatud loendisse lisatud URL-i mustrite puhul meediasisu automaatesituse lubamine</translation>
 <translation id="2801155097555584385">Aku laadimise alguse kohandatud taseme määramine protsentides</translation>
@@ -1107,17 +1126,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Kui see reegel on määramata, kasutatakse väärtust <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Puhverserveri samaaegsete ühenduste maksimaalne arv</translation>
-<translation id="2948463916588961959">Sundlubab õigekirjakontrolli keeled. Loendis olevaid tundmatuid keeli eiratakse. Loendis olevaid tundmatuid keeli eiratakse.
-
-      Kui lubate reegli, lubatakse õigekirjakontroll määratud keelte jaoks, mis lisanduvad keeltele, mille jaoks kasutaja on õigekirjakontrolli lubanud.
-
-      Kui jätate reegli määramata või keelate selle, ei mõjuta see kasutaja õigekirjakontrolli eelistusi.
-
-      Kui reegel SpellcheckEnabled on keelatud, ei ole sellel reeglil mingit mõju.
-
-      Kui keel on lisatud nii sellesse reeglisse kui ka reeglisse SpellcheckLanguageBlacklist, prioriseeritakse seda reeglit ja õigekirjakontrolli keel lubatakse.
-
-      Praegu toetatakse järgmisi keeli: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="2952347049958405264">Piirangud:</translation>
 <translation id="2956777931324644324">Selle reegli pakkumine lõpetati toote <ph name="PRODUCT_NAME" /> versiooniga 36.
 
@@ -1207,6 +1215,25 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Kui selle reegli väärtuseks on määratud Väär, on WPAD-i optimeerimine keelatud ja teenus <ph name="PRODUCT_NAME" /> peab DNS-põhiseid WPAD-i servereid kauem ootama. Kui reeglit pole määratud või see on lubatud, on WPAD-i optimeerimine lubatud.
 
       Olenemata sellest, kas ja kuidas see reegel on määratud, ei saa kasutajad WPAD-i optimeerimise seadet muuta.</translation>
+<translation id="3071839057966069710">Seadistab printerid.
+
+      Reegel võimaldab administraatoritel kasutajatele printeriseadistusi
+      pakkuda.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> ja <ph name="PRINTER_DESCRIPTION" /> on vabas vormis stringid, mida saab kohandada, et hõlbustada printeri valimist. <ph name="PRINTER_MANUFACTURER" /> ja <ph name="PRINTER_MODEL" /> hõlbustavad lõppkasutajate jaoks printerite tuvastamist. Need näitavad printeri tootjat ja mudelit. <ph name="PRINTER_URI" /> peab olema aadress, mida saab külastada klientarvutist, sh <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> ja <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> on valikuline. Selle olemasolul aitab see seadistus <ph name="ZEROCONF_DISCOVERY" /> printerite duplikaate eemaldada.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> peab vastama ühele stringidest, mis on seotud teenuses <ph name="PRODUCT_NAME" /> toetatud printeriga. Stringi kasutatakse printeri jaoks sobiva PPD tuvastamiseks ja installimiseks. Lisateavet leiate aadressilt https://support.google.com/chrome?p=noncloudprint.
+
+      <ph name="PRINTER_AUTOCONF" /> on kahendmuutuja märgis, mis näitab, kas tööriista IPP Everywhere peaks kasutama printeri seadistamiseks. Seda märgist toetatakse operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> versioonis 76 ja uuemates.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> peab sisaldama printeri nime või <ph name="PRINTER_AUTOCONF" /> tuleb määrata väärtusele Tõene. Printereid, mis kasutavad mõlemat või millel puuduvad atribuudid, eiratakse.
+
+      Printeri seadistus viiakse lõpule printeri esimesel kasutuskorral.  PPD-sid ei laadita alla enne, kui printerit kasutatakse.  Pärast seda salvestatakse sageli kasutatud PPD-d vahemällu.
+
+      See reegel ei mõjuta seda, kas kasutajad saavad individuaalsetes seadmetes printereid seadistada.  See on mõeldud individuaalsete kasutajate printerite seadistusi täiendama.
+
+      Active Directory hallatavate seadmete puhul toetab see reegel seadme <ph name="MACHINE_NAME_VARIABLE" /> laiendamist Active Directory seadme nimele või selle alamstringile. Näiteks kui seadme nimi on <ph name="MACHINE_NAME_EXAMPLE" />, siis asendatakse <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> nelja tähemärgiga, mis algab pärast kuuendat märki (nt <ph name="MACHINE_NAME_PART_EXAMPLE" />). Pange tähele, et loendamist alustatakse nullist.
+      </translation>
 <translation id="3072045631333522102">Ekraanisäästja, mida kasutatakse jaemüügirežiimis sisselogimiskuval</translation>
 <translation id="3072847235228302527">Teenusetingimuste määramine seadmes kasutatava konto jaoks</translation>
 <translation id="3077183141551274418">Lubab või keelab vahelehtede elutsüklid</translation>
@@ -1450,7 +1477,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 
         Seda reeglit kasutatakse arvutites seadme ulatuses pilvereegli registreerimiseks ja selle saab määrata failiga Registry või GPO Windowsis, failiga plist Macis ja JSON-i reeglifailiga Linuxis.</translation>
 <translation id="3660562134618097814">SAML IdP küpsisefailide ülekandmine sisselogimisel</translation>
-<translation id="3668151900457104753">Musta nimekirja kantud laienduste desinstallimine</translation>
 <translation id="3701121231485832347">Haldab üksuse <ph name="MS_AD_NAME" /> hallatud operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seadmete seadeid.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Üherealist välja enam ei toetata ja tulevikus see eemaldatakse. Hakake kasutama allolevat mitmerealist tekstivälja.)</translation>
 <translation id="3709266154059827597">Laienduste installimise musta nimekirja seadistamine</translation>
@@ -1661,6 +1687,28 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Kui see reegel määratakse tõeseks või seda ei määrata, saavad kasutajad pakkumisi lunastada Chrome OS-i registreerimise abil.
 
       Kui see reegel määratakse valeks, ei saa kasutajad pakkumisi lunastada.</translation>
+<translation id="4008233182078913897">Määrab loendi rakendustest ja laiendustest, mis installitakse märkamatult,
+          ilma et kasutaja peaks sekkuma, ning mida kasutaja ei saa
+          desinstallida ega keelata. Kõik rakenduste taotletud load antakse vaikimisi
+      ning kasutaja sekkumiseta (sh kõik lisaload,
+      mida rakenduse tulevased versioonid taotlevad). Lisaks antakse load laienduste
+          enterprise.deviceAttributes ja enterprise.platformKeys
+          API-dele. (Need API-d ei ole saadaval rakenduste/laienduste jaoks, mis
+          ei ole sundinstallitud.)
+
+          See reegel seatakse ettepoole potentsiaalselt konfliktsest reeglist <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Kui varem sundinstallitud rakendus või laiendus sellest loendist eemaldatakse, desinstallib teenus <ph name="PRODUCT_NAME" /> selle automaatselt.
+
+          Windowsi eksemplaride puhul, mis ei ole ühendatud domeeniga <ph name="MS_AD_NAME" />, saab sundinstallida vaid Chrome’i veebipoes olevaid rakendusi ja laiendusi.
+
+          Pange tähele, et arendaja tööriistadega saavad kasutajad muuta iga laienduse lähtekoodi (mis võib põhjustada laienduse väärtalitlust). Kui see on probleem, tuleb määrata reegel <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja „värskenduse” URL-i, mis on eraldatud semikooloniga (<ph name="SEMICOLON" />). Laienduse ID on 32-täheline string, mis kuvatakse näiteks arendajarežiimis aadressil <ph name="CHROME_EXTENSIONS_LINK" />. Värskenduse URL peab viitama XML-dokumendi värskendusmanifestile, nagu on kirjeldatud jaotises<ph name="LINK_TO_EXTENSION_DOC1" />. Vaikimisi kasutatakse Chrome'i veebipoe värskenduse URL-i (praegu „https://clients2.google.com/service/update2/crx”). Pange tähele, et reeglis määratud värskenduse URL-i kasutatakse vaid algsel installimisel ja laienduse tulevased värskendused kasutavad laienduse manifestis märgitud värskenduse URL-i. Samuti pange tähele, et selgesõnalise värskenduse URL-i määramine oli kuni rakenduse <ph name="PRODUCT_NAME" /> 67. versioonini kohustuslik.
+
+          Näiteks reegel <ph name="EXTENSION_POLICY_EXAMPLE" /> installib laienduse ID-ga <ph name="EXTENSION_ID_SAMPLE" /> standardselt Chrome'i veebipoe värskenduse URL-ilt. Lisateavet laienduste hostimise kohta leiate siit: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Kui see reegel jäetakse määramata, ei installita automaatselt ühtki rakendust ega laiendust ja kasutaja saab iga rakenduse või laienduse desinstallida teenuses <ph name="PRODUCT_NAME" />.
+
+          Pange tähele, et reegel ei kehti inkognito režiimis.</translation>
 <translation id="4008507541867797979">Kui reegel on määratud väärtusele Tõene või seadistamata, kuvab <ph name="PRODUCT_OS_NAME" /> olemasolevad kasutajad sisselogimiskuval ja võimaldab ühe neist valida.
 
       Kui reegel on määratud väärtusele Väär, ei kuva <ph name="PRODUCT_OS_NAME" /> sisselogimiskuval olemasolevaid kasutajaid. Kuvatakse tavapärane sisselogimisekraan (kus palutakse kasutajal sisestada e-posti aadress ja parool või telefoninumber) või SAML-i vaheekraan (kui see on reegliga <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" /> lubatud), v.a juhul, kui hallatud seanss on seadistatud. Kui hallatud seanss on seadistatud, kuvatakse ainult hallatud seansi kontod, mille hulgast saab valida soovitud konto.
@@ -1784,10 +1832,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
           Kui reegel on määramata, on nakkeklahvid algselt keelatud, kuid kasutaja võib need igal ajal lubada.</translation>
 <translation id="4183229833636799228">Pistikprogrammi <ph name="FLASH_PLUGIN_NAME" /> vaikeseade</translation>
 <translation id="4192388905594723944">URL kaugjuurdepääsuga kliendi autentimismärgi kinnitamiseks</translation>
-<translation id="4197038214024763371">Kui reegel on määramata või lubatud, saab kasutaja õigekirjakontrolli kasutada.
-
-      Kui reegel on keelatud, ei ole kasutajal lubatud õigekirjakontrolli kasutada. Kui reegel on keelatud, eiratakse reegleid SpellcheckLanguage ja SpellcheckLanguageBlacklist.
-      </translation>
 <translation id="4203389617541558220">Seadme tööaja piiramine, ajastades automaatsed taaskäivitused.
 
       Reegel määratleb seadme tööaja kestuse, mille järel tehakse automaatne taaskäivitus.
@@ -2459,6 +2503,7 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 
       Kui seda ei määrata, siis variatsioonide lähteväärtuse URL-i ei muudeta.</translation>
 <translation id="5561811616825571914">Sisselogimisekraanil valitakse nendele saitidele automaatselt kliendi sertifikaadid</translation>
+<translation id="5565178130821694365">Parool tuleb sisestada iga kahe päeva (48 tunni) järel</translation>
 <translation id="5566210228171064229">Nii PIN-koodiga kui ka ilma selleta printimise lubamine</translation>
 <translation id="556865034069957245">Reegel juhib täisekraanrežiimi saadavalolekut. Selles režiimis on kõik rakenduse <ph name="PRODUCT_NAME" /> kasutajaliidese elemendid varjatud ja nähtav on ainult veebisisu.
 
@@ -2891,17 +2936,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 <translation id="6281043242780654992">Omasõnumside reeglite seadistamine. Musta nimekirja lisatud omasõnumside hostid on keelatud seni, kuni need lisatakse lubatud üksuste nimekirja.</translation>
 <translation id="6282799760374509080">Heli jäädvustamise lubamine või keelamine</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6306608379445125648">Sundkeelab õigekirjakontrolli keeled. Loendis olevaid tundmatuid keeli eiratakse.
-
-      Kui lubate reegli, keelatakse õigekirjakontroll määratud keelte jaoks. Kasutaja saab siiski loendist puuduvate keelte jaoks õigekirjakontrolli lubada või keelata.
-
-      Kui jätate reegli määramata või keelate selle, ei mõjuta see kasutaja õigekirjakontrolli eelistusi.
-
-      Kui reegel SpellcheckEnabled on keelatud, ei ole sellel reeglil mingit mõju.
-
-      Kui keel on lisatud nii sellesse reeglisse kui ka reeglisse SpellcheckLanguage, prioriseeritakse reeglit SpellcheckLanguage ja õigekirjakontrolli keel lubatakse.
-
-      Praegu toetatakse järgmisi keeli: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6310223829319187614">Domeeni nime automaatse täitmise lubamine kasutaja sisselogimise ajal</translation>
 <translation id="6315673513957120120">Chrome kuvab hoiatuslehe, kui kasutajad liiguvad SSL-i vigadega saitidele. Vaikimisi või siis, kui selle reegli väärtuseks määratakse Tõene, lubatakse kasutajatel nendelt hoiatuslehtedelt kliki abil edasi liikuda.
       Kui selle reegli väärtuseks määratakse Väär, ei lubata kasutajatel hoiatuslehelt kliki abil edasi liikuda.</translation>
@@ -4320,11 +4354,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
       See reegel mõjutab ainult neid kasutajad, kes kasutavad autentimiseks SAML-i.
 
       Reegli väärtus tuleb määrata sekundites.</translation>
-<translation id="9018338365267278833">See eemaldab loendisse <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> või reeglisse <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> lisatud laiendused, mille installimisrežiimiks on määratud Blokeeritud, ja kustutab lõplikult ka kasutajate kohalikud andmed.  Vaadake laienduste privaatsuseeskirjadest või andmete säilitamise reeglitest teavet selle kohta, mis võib juhtuda kasutajate andmetega, mis ei ole kohalikult talletatud.
-
-      Kui reegel on seatud väärtusele Lubatud, eemaldatakse eelmainitud loenditesse kuuluvad laiendused (kui need on juba seadmesse installitud) täielikult (koos kasutaja kohalike andmetega).
-
-      Kui reegel on määramata või seatud väärtusele Keelatud, keelatakse seadmes eelmainitud loenditesse kuuluvad laiendused (kui need on juba seadmesse installitud ja kantud keelatud loendisse <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />), ent neid ei desinstallita.</translation>
 <translation id="9027787254195333560">Selle reegliga saate seadistada avatari pildi, mis kujutab kasutajat sisselogimisekraanil. Reegli seadistamiseks määrake URL, kust <ph name="PRODUCT_OS_NAME" /> saab alla laadida avatari pildi, ja krüptograafiline räsiväärtus, mida kasutatakse allalaadimise terviklikkuse kinnitamiseks. Pilt peab olema JPEG-vormingus, mille maksimaalne maht on 512 kB. URL peab olema juurdepääsetav autentimiseta.
 
       Avatari pilt laaditakse alla ja talletatakse vahemällu. URL-i või räsi muutumisel laaditakse pilt uuesti alla.

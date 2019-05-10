@@ -1097,17 +1097,6 @@
       If this policy is not set, <ph name="PRINTERS_ALLOW_ALL" /> is assumed.
       </translation>
 <translation id="2908277604670530363">Maximum number of concurrent connections to the proxy server</translation>
-<translation id="2948463916588961959">Force-enables spellcheck languages. Unrecognised languages in that list will be ignored.
-
-      If you enable this policy, spellcheck will be enabled for the languages specified, in addition to the languages for which the user has enabled spellcheck.
-
-      If you do not set this policy, or disable it, there will be no change to the user's spellcheck preferences.
-
-      If the SpellcheckEnabled policy is set to disabled, this policy will have no effect.
-
-      If a language is included in both this policy and the SpellcheckLanguageBlacklist policy, this policy is prioritised and the spellcheck language is enabled.
-
-      The currently supported languages are: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="2952347049958405264">Restrictions:</translation>
 <translation id="2956777931324644324">This policy has been retired as of <ph name="PRODUCT_NAME" /> version 36.
 
@@ -1442,7 +1431,6 @@
 
         This policy is used by machine scope cloud policy enrolment on desktop and can be set by Registry or GPO on Windows, plist on Mac and JSON policy file on Linux.</translation>
 <translation id="3660562134618097814">Transfer SAML IdP cookies during login</translation>
-<translation id="3668151900457104753">Uninstall blacklisted extensions</translation>
 <translation id="3701121231485832347">Controls settings specific to <ph name="MS_AD_NAME" />-managed <ph name="PRODUCT_OS_NAME" /> devices.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (The single-line field is deprecated and will be removed in the future. Please start using the multi-line text box below.)</translation>
 <translation id="3709266154059827597">Configure extension installation blacklist</translation>
@@ -1653,6 +1641,29 @@
       If this policy is set to true or left not set, users will be able to redeem offers through Chrome OS Registration.
 
       If this policy is set to false, user will not be able to redeem offers.</translation>
+<translation id="4008233182078913897">Specifies a list of apps and extensions that are installed silently,
+          without user interaction, and which cannot be uninstalled nor
+          disabled by the user. All permissions requested by the
+          apps/extensions are granted implicitly, without user interaction,
+          including any additional permissions requested by future versions of
+          the app/extension. Furthermore, permissions are granted for the
+          enterprise.deviceAttributes and enterprise.platformKeys extension
+          APIs. (These two APIs are not available to apps/extensions that are
+          not force-installed.)
+
+          This policy takes precedence over a potentially conflicting <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> policy. If an app or extension that previously had been force-installed is removed from this list, it is automatically uninstalled by <ph name="PRODUCT_NAME" />.
+
+          For Windows, instances that are not joined to a <ph name="MS_AD_NAME" /> domain, forced installation is limited to apps and extensions listed in the Chrome Web Store.
+
+          Note that the source code of any extension may be altered by users via Developer Tools (potentially rendering the extension dysfunctional). If this is a concern, the <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> policy should be set.
+
+          Each list item of the policy is a string that contains an extension ID and, optionally, an 'update' URL separated by a semicolon (<ph name="SEMICOLON" />). The extension ID is the 32-letter string found e.g. on <ph name="CHROME_EXTENSIONS_LINK" /> when in developer mode. The 'update' URL, if specified, should point to an Update Manifest XML document as described at <ph name="LINK_TO_EXTENSION_DOC1" />. By default, the Chrome Web Store's update URL is used (which currently is "https://clients2.google.com/service/update2/crx"). Note that the 'update' URL set in this policy is only used for the initial installation; subsequent updates of the extension employ the update URL indicated in the extension's manifest. Note: Specifying the 'update' URL explicitly was mandatory in <ph name="PRODUCT_NAME" /> versions up to and including 67.
+
+          For example, <ph name="EXTENSION_POLICY_EXAMPLE" /> installs the extension with ID <ph name="EXTENSION_ID_SAMPLE" /> from the standard Chrome Web Store 'update' URL. For more information about hosting extensions, see: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          If this policy is left not set, no apps or extensions are installed automatically and the user can uninstall any app or extension in <ph name="PRODUCT_NAME" />.
+
+          Note that this policy doesn't apply to incognito mode.</translation>
 <translation id="4008507541867797979">If this policy is set to true or not configured, <ph name="PRODUCT_OS_NAME" /> will show existing users on the login screen and allow to pick one.
 
       If this policy is set to false, <ph name="PRODUCT_OS_NAME" /> will not show existing users on the login screen. The normal sign-in screen (prompting for the user email and password or phone) or the SAML interstitial screen (if enabled via the <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" /> policy) will be shown, unless a Managed Session is configured. When a Managed Session is configured, only the Managed Session accounts will be shown, allowing to pick one of them.
@@ -1776,10 +1787,6 @@
           If this policy is left unset, the sticky keys is disabled initially but can be enabled by the user at any time.</translation>
 <translation id="4183229833636799228">Default <ph name="FLASH_PLUGIN_NAME" /> setting</translation>
 <translation id="4192388905594723944">URL for validating remote access client authentication token</translation>
-<translation id="4197038214024763371">If this policy is not set or enabled, the user is allowed to use spellcheck.
-
-      If this policy is disabled, the user is not allowed to use spellcheck. The SpellcheckLanguage and SpellcheckLanguageBlacklist policies will also be ignored when this policy is disabled.
-      </translation>
 <translation id="4203389617541558220">Limit the device uptime by scheduling automatic reboots.
 
       When this policy is set, it specifies the length of device uptime after which an automatic reboot is scheduled.
@@ -2875,17 +2882,6 @@
 <translation id="6281043242780654992">Configures policies for Native Messaging. Blacklisted native messaging hosts won't be allowed unless they are whitelisted.</translation>
 <translation id="6282799760374509080">Allow or deny audio capture</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6306608379445125648">Force-disables spellcheck languages. Unrecognised languages in that list will be ignored.
-
-      If you enable this policy, spellcheck will be disabled for the languages specified. The user can still enable or disable spellcheck for languages not in the list.
-
-      If you do not set this policy, or disable it, there will be no change to the user's spellcheck preferences.
-
-      If the SpellcheckEnabled policy is set to disabled, this policy will have no effect.
-
-      If a language is included in both this policy and the SpellcheckLanguage policy, the SpellcheckLanguage policy is prioritised and the spellcheck language will be enabled.
-
-      The currently supported languages are: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6310223829319187614">Enable domain name autocomplete during user sign in</translation>
 <translation id="6315673513957120120">Chrome shows a warning page when users navigate to sites that have SSL errors. By default or when this policy is set to true, users are allowed to click through these warning pages.
       Setting this policy to false disallows users to click through any warning page.</translation>
@@ -4302,11 +4298,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       This policy only affects users who authenticated using SAML.
 
       The policy value should be specified in seconds.</translation>
-<translation id="9018338365267278833">This will remove extensions appearing in the <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> or extensions appearing in <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> that have the installation mode set to blocked and will purge local user data with it.  Refer to the extensions privacy policy or data retention policy to understand what may happen with the user data that is not stored locally.
-
-      When the policy is set to enabled, extensions that fall in the aforementioned lists (if already installed on a machine) will be removed from that machine in its entirety (including local user data).
-
-      When the policy is set to disabled or left unset, extensions that fall in the aforementioned lists (if already installed on a machine and existing in the blacklist <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) will be disabled on the machine and not uninstalled.</translation>
 <translation id="9027787254195333560">This policy allows you to configure the avatar image representing the user on the login screen. The policy is set by specifying the URL from which <ph name="PRODUCT_OS_NAME" /> can download the avatar image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format; its size must not exceed 512 KB. The URL must be accessible without any authentication.
 
       The avatar image is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.

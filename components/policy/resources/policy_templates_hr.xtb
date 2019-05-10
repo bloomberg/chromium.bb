@@ -1068,17 +1068,6 @@
       Ako se to pravilo ne postavi, pretpostavlja se da vrijedi <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Maksimalan broj istodobnih veza na proxy poslužitelju</translation>
-<translation id="2948463916588961959">Prisilno omogućuje jezike provjere pravopisa. Jezici na popisu koji nisu prepoznati zanemarit će se.
-
-      Ako omogućite to pravilo, provjera pravopisa bit će omogućena za navedene jezike, kao i za one jezike za koje korisnik omogući provjeru pravopisa.
-
-      Ako to pravilo ne postavite ili ga onemogućite, korisnikove postavke provjere pravopisa neće se promijeniti.
-
-      Pravilo se neće primjenjivati ako se onemogući pravilo SpellcheckEnabled.
-
-      Ako je jezik naveden i u ovom pravilu i u pravilu SpellcheckLanguageBlacklist, prioritet će imati ovo pravilo i jezik za provjeru pravopisa bit će omogućen.
-
-      Trenutačno su podržani sljedeći jezici: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="2952347049958405264">Ograničenja:</translation>
 <translation id="2956777931324644324">To je pravilo ukinuto od verzije <ph name="PRODUCT_NAME" /> 36.
 
@@ -1407,7 +1396,6 @@
 
         To pravilo upotrebljava prijava za pravilo u oblaku strojnog opsega na radnoj površini i može ga postaviti Registry ili GPO u sustavu Windows, plist na Macu i JSON datoteka pravila na Linuxu.</translation>
 <translation id="3660562134618097814">Prenesi kolačiće SAML IdP-a tijekom prijave</translation>
-<translation id="3668151900457104753">Deinstaliraj proširenja na popisu nedopuštenih</translation>
 <translation id="3701121231485832347">Upravlja postavkama specifičnima za uređaje <ph name="PRODUCT_OS_NAME" /> kojima upravlja <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Polje s jednim retkom obustavljeno je i uklonit će se. Počnite upotrebljavati tekstni okvir s više redaka u nastavku.)</translation>
 <translation id="3709266154059827597">Konfiguriraj crnu listu instalacije proširenja</translation>
@@ -1616,6 +1604,28 @@
       Ako je ovo pravilo postavljeno na istinito ili ako nije postavljeno, korisnici će moći iskoristiti ponude registracijom OS-a Chrome.
 
       Ako je pravilo postavljeno na neistinito, korisnici neće moći iskoristiti ponude.</translation>
+<translation id="4008233182078913897">Određuje popis aplikacija i proširenja koji se instaliraju u pozadini
+          bez interakcije s korisnikom i koje korisnik ne može deinstalirati
+          ni onemogućiti. Sva dopuštenja koje
+          aplikacije/proširenja zahtijevaju dodjeljuju se implicitno, bez interakcije
+          s korisnikom, uključujući sva dodatna dopuštenja koja buduće verzije
+          aplikacije/proširenja mogu zahtijevati. Osim toga, dopuštenja se dodjeljuju za API-je
+          proširenja enterprise.deviceAttributes i enterprise.platformKeys. (Ta dva API-ja nisu dostupna za aplikacije/proširenja koji nisu
+          prisilno instalirani.)
+
+          To pravilo ima prednost pred pravilom <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> s kojim potencijalno može biti u sukobu. Ako se s popisa ukloni aplikacija ili proširenje koji su prethodno bili prisilno instalirani, <ph name="PRODUCT_NAME" /> automatski će ih deinstalirati.
+
+          Za instance Windowsa koje nisu pridružene domeni <ph name="MS_AD_NAME" /> prisilna instalacija ograničena je na aplikacije i proširenja koji su navedeni u Chrome web-trgovini.
+
+          Korisnici mogu izmijeniti izvorni kôd proširenja pomoću Alata za razvojne programere (zbog čega proširenje može prestati funkcionirati). Ako to predstavlja problem, postavite pravilo <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Svaka stavka pravila niz je koji sadrži ID proširenja i URL za "ažuriranje" odvojene točkom sa zarezom (<ph name="SEMICOLON" />). ID proširenja niz je od 32 slova koji se primjerice može pronaći na <ph name="CHROME_EXTENSIONS_LINK" /> u načinu rada razvojnog programera. URL za "ažuriranje", ako se navede, treba usmjeravati na XML dokument manifesta ažuriranja kako je opisano u dokumentu <ph name="LINK_TO_EXTENSION_DOC1" />. Prema zadanim postavkama, upotrebljava se URL za ažuriranje Chrome web-trgovine (koji je trenutačno "https://clients2.google.com/service/update2/crx"). URL za "ažuriranje" postavljen u ovom pravilu upotrebljava se samo za prvo instaliranje, dok će se za daljnja ažuriranja proširenja upotrebljavati URL ažuriranja naveden u manifestu proširenja. Napominjemo i to da je eksplicitno navođenje URL-a za "ažuriranje" bilo obavezno u verzijama preglednika <ph name="PRODUCT_NAME" /> zaključno s verzijom 67.
+
+          Na primjer, <ph name="EXTENSION_POLICY_EXAMPLE" /> instalira proširenje s ID-om <ph name="EXTENSION_ID_SAMPLE" /> sa standardnog URL-a za "ažuriranje" Chrome web-trgovine. Više informacija o hostingu proširenja potražite ovdje: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Ako se to pravilo ne postavi, aplikacije ili proširenja neće se instalirati automatski i korisnik može deinstalirati bilo koju aplikaciju ili proširenje u pregledniku <ph name="PRODUCT_NAME" />.
+
+          To se pravilo ne primjenjuje u anonimnom načinu.</translation>
 <translation id="4008507541867797979">Ako se to pravilo postavi na True ili se ne konfigurira, sustav <ph name="PRODUCT_OS_NAME" /> na zaslonu za prijavu prikazivat će postojeće korisnike i omogućivati odabir korisnika.
 
       Ako se pravilo postavi na False, <ph name="PRODUCT_OS_NAME" /> neće prikazivati postojeće korisnike na zaslonu za prijavu. Prikazivat će se obični zaslon za prijavu (na kojem se unose korisnička e-adresa i zaporka ili telefon) ili SAML međuprostorni zaslon (ako se omogući pravilom <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) osim ako se konfigurira upravljana sesija. Ako se konfigurira upravljana sesija, prikazivat će se samo računi upravljane sesije od kojih je moguće odabrati jedan.
@@ -1737,10 +1747,6 @@
           Ako se pravilo ne postavi, ljepljive tipke u početku su onemogućene, ali ih korisnici mogu omogućiti kad god žele.</translation>
 <translation id="4183229833636799228">Zadana postavka za dodatak <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL za validaciju tokena za autentifikaciju klijenta za daljinski pristup</translation>
-<translation id="4197038214024763371">Ako se pravilo ne postavi ili se omogući, korisniku će biti dopuštena upotreba provjere pravopisa.
-
-      Ako se pravilo onemogući, korisniku neće biti dopuštena upotreba provjere pravopisa. Kad je to pravilo onemogućeno, zanemaruju se i pravila SpellcheckLanguage i SpellcheckLanguageBlacklist.
-      </translation>
 <translation id="4203389617541558220">Ograniči aktivno vrijeme uređaja određivanjem vremena za automatska ponovna pokretanja.
 
       Kada se to pravilo postavi, određuje duljinu aktivnog vremena uređaja nakon kojeg je određeno automatsko ponovno pokretanje.
@@ -2806,17 +2812,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="6281043242780654992">Konfigurira pravila za lokalno slanje poruka. Zabranjeni hostovi za lokalno slanje poruka bit će dopušteni samo ako se nalaze na popisu dopuštenih.</translation>
 <translation id="6282799760374509080">Omogući ili onemogući snimanje zvuka</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6306608379445125648">Prisilno onemogućuje jezike provjere pravopisa. Jezici na popisu koji nisu prepoznati zanemarit će se.
-
-      Ako omogućite to pravilo, za navedene jezike neće biti omogućena provjera pravopisa. Za jezike koji nisu navedeni na popisu korisnik će moći omogućiti ili onemogućiti provjeru pravopisa.
-
-      Ako to pravilo ne postavite ili ga onemogućite, korisnikove postavke provjere pravopisa neće se promijeniti.
-
-      Pravilo se neće primjenjivati ako se onemogući pravilo SpellcheckEnabled.
-
-      Ako je jezik naveden i u ovom pravilu i u pravilu SpellcheckLanguage, pravilo SpellcheckLanguage ima prioritet i jezik za provjeru pravopisa bit će omogućen.
-
-      Trenutačno su podržani sljedeći jezici: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6310223829319187614">Omogući samodovršavanje naziva domene tijekom prijave korisnika</translation>
 <translation id="6315673513957120120">Chrome prikazuje stranicu upozorenja kada korisnici dođu do web-lokacija koje sadrže pogreške SSL-a. Prema zadanim postavkama ili kada se to pravilo postavi na "True", korisnicima je dopušteno klikanjem proći stranice upozorenja.
       Ako se pravilo postavi na "False", korisnici neće moći klikanjem proći stranice upozorenja.</translation>
@@ -4181,11 +4176,6 @@ za preglednike imaju isti raspored.
       To pravilo utječe samo na korisnike koji se autentificiraju pomoću SAML-a.
 
       Vrijednost pravila navodi se u sekundama.</translation>
-<translation id="9018338365267278833">Time će se ukloniti proširenja navedena na popisu <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> ili proširenja navedena u pravilu <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> za koje je način instalacije postavljen na blocked i s njima će se nepovratno ukloniti lokalni korisnički podaci.  U pravilima o privatnosti proširenja ili pravilima zadržavanja podataka možete saznati više o tome što se može dogoditi s korisničkim podacima koji nisu pohranjeni lokalno.
-
-      Ako se pravilo postavi na enabled, proširenja koja su obuhvaćena prethodnim popisima (ako su već instalirana na uređaju) potpuno će se ukloniti s uređaja (uključujući lokalne korisničke podatke).
-
-      Ako se pravilo postavi na disabled ili se ne postavi, proširenja obuhvaćena prethodnim popisima (ako su već instalirana na uređaju i navedena na popisu nedopuštenih <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) neće se deinstalirati, već onemogućiti na uređaju.</translation>
 <translation id="9027787254195333560">To pravilo omogućuje vam da konfigurirate sliku avatara koji predstavlja korisnika na zaslonu za prijavu. Pravilo se postavlja tako da se navede URL s kojeg <ph name="PRODUCT_OS_NAME" /> može preuzeti sliku avatara i kriptografsko hashiranje kojim se potvrđuje integritet preuzimanja. Slika mora biti u JPEG formatu i ne smije biti veća od 512 KB. URL-u se mora moći pristupiti bez autentifikacije.
 
       Slika avatara preuzima se i sprema u predmemoriju. Ponovo će se preuzeti svaki put kada se URL ili hashiranje promijene.

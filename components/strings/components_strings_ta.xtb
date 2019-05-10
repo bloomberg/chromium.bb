@@ -605,6 +605,7 @@
 <translation id="4265872034478892965">உங்கள் நிர்வாகி அனுமதித்தார்</translation>
 <translation id="4275830172053184480">உங்கள் சாதனத்தை மீண்டும் தொடங்கவும்</translation>
 <translation id="4277028893293644418">கடவுச்சொல்லை மீட்டமை</translation>
+<translation id="4279811152705618813"><ph name="ENROLLMENT_DOMAIN" /> டொமைனால் உங்கள் <ph name="DEVICE_TYPE" /> நிர்வகிக்கப்படுகிறது</translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{இந்தக் கார்டு உங்கள் Google கணக்கில் சேமிக்கப்பட்டது}other{இந்தக் கார்டுகள் உங்கள் Google கணக்கில் சேமிக்கப்பட்டன}}</translation>
 <translation id="42981349822642051">விரி</translation>
 <translation id="4302965934281694568">Chou3 (என்வலப்)</translation>
@@ -876,6 +877,7 @@
 <translation id="5804241973901381774">அனுமதிகள்</translation>
 <translation id="5810442152076338065"><ph name="DOMAIN" />க்கான உங்கள் இணைப்பு, நடைமுறையில் இல்லாத சைபர் சூட்டைப் பயன்படுத்தி என்க்ரிப்ட் செய்யப்பட்டது.</translation>
 <translation id="5813119285467412249">&amp;சேர்த்தலை மீண்டும் செய்</translation>
+<translation id="583281660410589416">தெரியாதது</translation>
 <translation id="5838278095973806738">தீங்கிழைப்பவர்கள் திருடிவிடலாம் என்பதால், இந்தத் தளத்தில் முக்கியத் தகவலை (எடுத்துக்காட்டு: கடவுச்சொற்கள் அல்லது கிரெடிட் கார்டுகள்) உள்ளிட வேண்டாம்.</translation>
 <translation id="5860033963881614850">ஆஃப்</translation>
 <translation id="5863847714970149516">அடுத்த பக்கத்தில் உங்களிடமிருந்து கட்டணம் வசூலிக்கப்படலாம்</translation>

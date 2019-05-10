@@ -70,6 +70,7 @@
 <translation id="1886928167269928266">ప్రారంభ సమయం</translation>
 <translation id="1911619930368729126">Google డిస్క్‌కి అప్‌. చే.</translation>
 <translation id="1941314575388338491">కాపీ చేయడానికి రెండుసార్లు నొక్కండి.</translation>
+<translation id="1952172573699511566">వీలైనప్పుడు వెబ్‌సైట్‌లు, మీ ప్రాధాన్య భాషలో వచనాన్ని చూపుతాయి.</translation>
 <translation id="1952728750904661634">నిర్వాహిత‌ ఖాతాతో సైన్ ఇన్ చేయండి</translation>
 <translation id="1974060860693918893">ఆధునిక</translation>
 <translation id="1989112275319619282">బ్రౌజ్ చేయి</translation>
@@ -214,6 +215,7 @@
 <translation id="4124987746317609294">సమయ పరిధి</translation>
 <translation id="4172051516777682613">ఎల్లప్పుడూ చూపు</translation>
 <translation id="418156467088430727">కొత్త ట్యాబ్‌లో ఆఫ్‌లైన్ వెర్ష‌న్‌ను వీక్షించండి</translation>
+<translation id="4181841719683918333">భాషలు</translation>
 <translation id="4237682350741091554"><ph name="BEGIN_LINK" />సెట్టింగ్‌లు<ph name="END_LINK" />లో Chrome సమకాలీకరణ మరియు వ్యక్తిగతీకరణను నిర్వహించండి</translation>
 <translation id="424315890655130736">రహస్య పదబంధాన్ని నమోదు చేయండి</translation>
 <translation id="4272631900155121838">QR కోడ్‌ను స్కాన్ చేయడానికి, సెట్టింగ్‌ల్లో కెమెరాను ప్రారంభించండి</translation>
@@ -413,7 +415,7 @@
 <translation id="7280856130494094142">సింక్‌ను ప్రారంభించడానికి రహస్య పదబంధాన్ని నమోదు చేయండి</translation>
 <translation id="7285236536143823449">సరే, నాకు సమ్మతమే</translation>
 <translation id="7291368939935408496">పాస్‌వర్డ్‌లను సిద్ధం చేస్తోంది...</translation>
-<translation id="7293171162284876153">సింక్ చేయడాన్ని ప్రారంభించడానికి, "మీ Chrome డేటాను సింక్ చేయి" ప్రారంభించండి.</translation>
+<translation id="7293171162284876153">సింక్ చేయడాన్ని ప్రారంభించడానికి, "మీ Chrome డేటాను సింక్ చేయి"ని ప్రారంభించండి.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> శాతం డౌన్‌లోడ్ అయ్యింది</translation>
 <translation id="7346909386216857016">సరే, అర్థమైంది</translation>
 <translation id="7348502496356775519">బుక్‌‍మార్క్</translation>

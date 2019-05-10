@@ -1073,17 +1073,6 @@ Kwa matukio ya Windows ambayo hayajaunganishwa kwenye kikoa cha <ph name="MS_AD_
       Ikiwa sera haijawekwa, <ph name="PRINTERS_ALLOW_ALL" /> itaendelea kufuatwa.
       </translation>
 <translation id="2908277604670530363">Kiwango cha juu kabisa cha miunganisho ya wakati mmoja kwenye seva ya proksi</translation>
-<translation id="2948463916588961959">Hulazimisha kuwasha sera ya kikagua tahajia katika lugha Lugha ambazo hazijatambuliwa katika orodha hii hazitazingatiwa.
-
-      Ukiwasha sera hii, kikagua tahajia kitawashwa kwa ajili ya lugha ulizobainisha, pamoja na lugha ambako mtumiaji amewasha kikagua tahajia.
-
-      Usipoweka sera hii, au ukiizima, hakutakuwa na mabadiliko kwenye mapendeleo ya mtumiaji kwenye kikagua tahajia.
-
-      Ikiwa sera ya SpellcheckEnabled imezimwa, sera hii haina athari yoyote.
-
-      Ikiwa lugha imejumuishwa katika sera hii na sera ya SpellcheckLanguageBlacklist, sera hii inapewa kipaumbele na lugha inayotumia kikagua tahajia huwashwa.
-
-      Lugha ambazo zinatumika kwa sasa: Kiafrikana, Kibulgaria, Kikatalani, Kicheki, Kiholanzi, Kigiriki, Kiingereza cha Australia, Kiingereza cha Kanada, Kiingereza cha Uingereza, Kiingereza cha Marekani, Kihispania, Kihispania cha Marekani Kusini, Kihispania cha Argentina, Kihispania cha Uhispania, Kihispania cha Meksiko, Kihispania cha Marekani, Kiestonia, Kiajemi, Kifarosi, Kifaransa, Kiyahudi, Kihindi, Kikoreshia, Kihungari, Kiindonesia, Kiitaliano, Kikorea, Kiluksembagi, Kiflemil, Kibokmali cha Norwe, Kiholanzi, Kipolandi, Kireno cha Brazil, Kireno cha Ulaya, Kiromania, Kirusi, Kislovakia, Kislovenia, Kialbania, Kiserbia, Kiswidi, Kitamili, Kitajiki, Kiturukiri, Kiukreni, Kivietinamu.</translation>
 <translation id="2952347049958405264">Vikwazo:</translation>
 <translation id="2956777931324644324">Sera hii imeondolewa kuanzia toleo la 36 la <ph name="PRODUCT_NAME" />.
 
@@ -1421,7 +1410,6 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 
         Sera hii inatumiwa na mpango wa ujumuishaji wa sera ya wingu katika upeo wa mashine kwenye kompyuta ya mezani na inaweza kuwekwa na Sajili au GPO kwenye Windows, faili ya plist kwenye Mac na faili ya sera ya JSON kwenye Linux.</translation>
 <translation id="3660562134618097814">Hamisha vidakuzi vya SAML IdP wakati wa kuingia katika akaunti</translation>
-<translation id="3668151900457104753">Ondoa viendelezi visivyoruhusiwa</translation>
 <translation id="3701121231485832347">Hudhibiti mipangilio ya <ph name="MS_AD_NAME" /> inayodhibitiwa na vifaa vya <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Sehemu ya mstari mmoja iliacha kufanya kazi na itaondolewa katika siku zijazo. Tafadhali anza kutumia kisanduku cha maandishi cha mistari mingi kilicho hapa chini)</translation>
 <translation id="3709266154059827597">Sanidi orodha inayotiliwa shaka ya usakinishaji wa kiendelezi</translation>
@@ -1633,6 +1621,30 @@ Sera hii isipowekwa, mtumiaji bado anaweza kusakinisha kiendelezi chochote katik
       Iwapo sera hii itawekwa kuwa ndivyo au kuachwa bila kuwekwa, watumiaji wataweza kukomboa matoleo kupitia Usajili wa Chrome OS.
 
       Iwapo sera hii itawekwa kuwa sivyo, mtumiaji hataweza kukomboa matoleo.</translation>
+<translation id="4008233182078913897">Hubainisha orodha ya programu na viendelezi vinavyosakinishwa chinichini,
+          bila kumhusisha mtumiaji, na ambavyo haviwezi kuondolewa au
+          kuzimwa na mtumiaji. Ruhusa zote zinazoombwa na
+          programu au viendelezi zitatolewa kwa njia
+fiche, bila mtumiaji kuhusishwa
+          ikijumuisha ruhusa zozote za ziada zinazoombwa na matoleo ya baadaye ya
+          programu au kiendelezi. Zaidi ya hayo, ruhusa za
+          API za viendelezi vya enterprise.deviceAttributes na enterprise.platformKeys zinatolewa
+          (API hizi mbili zinapatikana kwenye programu au viendelezi ambavyo
+          havisakinishwi kwa lazima.)
+
+          Sera hii inapewa kipaumbele ikiwa kuna sera inayoweza kukinzana ya <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Ikiwa programu au kiendelezi kilichosakinishwa hapo awali kwa lazima kitaondolewa kwenye orodha hii, kitaondolewa kiotomatiki na <ph name="PRODUCT_NAME" />.
+
+          Katika matukio ya Windows ambayo hayajaunganishwa kwenye kikoa cha <ph name="MS_AD_NAME" />, usakinishaji wa lazima unatumiwa tu na programu na viendelezi vilivyoorodheshwa katika Duka la Chrome kwenye Wavuti.
+          Kumbuka kuwa msimbo wa kiendelezi chochote unaweza kubadilishwa na mtumiaji kupitia Zana za Wasanidi Programu (hali hii inaweza kuzuia kiendelezi kufanya kazi vizuri). Ikiwa jambo hili litatokea, sera ya <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> inapaswa kuwekwa.
+
+           Kila kipengee cha orodha ya sera ni kifungu ambacho kinajumuisha kitambulisho cha kiendelezi na URL ya "sasisho" isiyo ya lazima inayotenganishwa kwa nukta mkato (<ph name="SEMICOLON" />). Kitambulisho cha kiendelezi ni kifungu cha herufi 32 kinachopatikana (kwa mfano) kwenye <ph name="CHROME_EXTENSIONS_LINK" /> ikiwa katika hali ya msanidi programu. URL ya "sasisho" , ikiwa imebainishwa, inapaswa kuashiria hati ya XML ya faili ya Maelezo ya Sasisho kama ilivyofafanuliwa katika <ph name="LINK_TO_EXTENSION_DOC1" />. Kwa chaguomsingi, URL ya sasisho ya Duka la Chrome kwenye Wavuti inatumika (ambayo kwa sasa ni "https://clients2.google.com/service/update2/crx"). Kumbuka kuwa URL ya "sasisho" iliyowekwa kwenye sera hii itatumiwa tu kwenye usanikishaji wa mwanzo; masasisho yanayofuata ya kiendelezi yatatumia URL ya sasisho inayoonyeshwa katika faili ya maelezo ya kiendelezi. Kumbuka pia kuwa hali ya kubainisha URL ya "sasisho" kwa njia bayana ilikuwa lazima katika matoleo ya <ph name="PRODUCT_NAME" /> na mapya zaidi ikiwa ni pamoja na toleo la 67.
+
+          Kwa mfano, <ph name="EXTENSION_POLICY_EXAMPLE" /> inasakinisha programu ya <ph name="EXTENSION_ID_SAMPLE" /> kutoka URL ya "sasisho" la
+kawaida la Duka la Chrome kwenye Wavuti. Kwa maelezo zaidi kuhusu jinsi ya kupangisha viendelezi, angalia: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Ikiwa sera hii haijawekwa, hakuna programu au viendelezi vitakavyosakinishwa kiotomatiki na mtumiaji anaweza kuondoa programu au kiendelezi chochote katika <ph name="PRODUCT_NAME" />.
+
+          Kumbukakwamba sera hii haitumiki katika hali fiche.</translation>
 <translation id="4008507541867797979">Sera hii ikiwekwa kuwa ndivyo au mipangilio isipowekwa, <ph name="PRODUCT_OS_NAME" /> itaonyesha watumiaji waliopo kwenye skrini ya kuingia katika akaunti na kukuruhusu uteue mmoja.
 
       Sera hii ikiwekwa kuwa sivyo, <ph name="PRODUCT_OS_NAME" /> haitaonyesha watumiaji waliopo kwenye skrini ya kuingia katika akaunti. Skrini ya kawaida ya kuingia katika akaunti (inayomdokezea mtumiaji kuweka anwani yake ya barua pepe na nenosiri au simu) au skrini ya ukurasa wenye maelezo yanayomwelekeza mtumiaji kuendelea na uthibitishaji kupitia SAML (kama imewashwa kupitia sera ya <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) itaonyeshwa, isipokuwa katika hali ambapo mipangilio ya Kipindi Kilichodhibitiwa imewashwa. Wakati mipangllio ya Kipindi kilichodhibitiwa imewekwa, ni akaunti za kipindi kilichodhibitiwa pekee zitakazoonyeshwa, hali inayokuruhusu kuteua moja.
@@ -1755,10 +1767,6 @@ Sera hii isipowekwa, mtumiaji bado anaweza kusakinisha kiendelezi chochote katik
           Sera hii isipowekwa, kipengele cha vitufe vinavyonata huzimwa mwanzoni lakini kinaweza kuwashwa na mtumiaji wakati wowote.</translation>
 <translation id="4183229833636799228">Mipangilio chaguomsingi ya <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL ya kuidhinisha tokeni ya kuthibitisha seva teja ya ufikiaji wa mbali</translation>
-<translation id="4197038214024763371">Kama sera hii haijawekwa au imewashwa, mtumiaji anaruhusiwa kutumia kikagua tahajia.
-
-      Kama Sera hii imezimwa, mtumiaji haruhusiwi kutumia kikagua tahajia. Sera za SpellcheckLanguage na SpellcheckLanguageBlacklist pia hazitatumiwa wakati sera hii inapozimwa.
-      </translation>
 <translation id="4203389617541558220">Pima muda wa kuwaka wa kifaa kwa kuratibu kuwasha tena kiotomatiki.
 Sera hii inapowekwa, inabainisha urefu wa muda wa kuwaka wa kifaa baada ya upi uwashaji tena kiotomatiki utaratibiwa.
 
@@ -2849,17 +2857,6 @@ Thamani ya sera inapaswa kubainishwa katika milisekunde. Thamani huwekwa pamoja 
 <translation id="6281043242780654992">Sanidi sera za Ujumbe Asili. Wapangishi wa ujumbe asili ambao hawajaidhinishwa hawataruhusiwa isipokuwa kama wamepewa idhini.</translation>
 <translation id="6282799760374509080">Ruhusu au upinge kurekodi sauti</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6306608379445125648">Hulazimisha kuzima kikagua tahajia katika lugha. Lugha ambazo hazijatambuliwa katika orodha hii hazitazingatiwa.
-
-      Ukiwasha sera hii, kikagua tahajia kitazimwa kwa lugha ulizobainisha. Mtumiaji bado anaweza kuwasha au kuzima kikagua tahajia kwa lugha ambazo hazipo kwenye orodha.
-
-      Usipoweka sera hii, au ukiizima, hakutakuwa na mabadiliko kwenye mapendeleo ya mtumiaji kwenye kikagua tahajia.
-
-      Ikiwa sera ya SpellcheckEnabled imezimwa, sera hii haina athari yoyote.
-
-      Ikiwa lugha imejumuishwa katika sera zote mbili na sera ya SpellcheckLanguage, sera ya SpellcheckLanguage inapewa kipaumbele na kikagua tahajia cha lugha kitawashwa.
-
-      Lugha ambazo zinatumika kwa sasa: Kiafrikana, Kibulgaria, Kikatalani, Kicheki, Kiholanzi, Kigiriki, Kiingereza cha Australia, Kiingereza cha Kanada, Kiingereza cha Uingereza, Kiingereza cha Marekani, Kihispania, Kihispania cha Marekani Kusini, Kihispania cha Argentina, Kihispania cha Uhispania, Kihispania cha Meksiko, Kihispania cha Marekani, Kiestonia, Kiajemi, Kifarosi, Kifaransa, Kiyahudi, Kihindi, Kikoreshia, Kihungari, Kiindonesia, Kiitaliano, Kikorea, Kiluksembagi, Kiflemil, Kibokmali cha Norwe, Kiholanzi, Kipolandi, Kireno cha Brazil, Kireno cha Ulaya, Kiromania, Kirusi, Kislovakia, Kislovenia, Kialbania, Kiserbia, Kiswidi, Kitamili, Kitajiki, Kiturukiri, Kiukreni, Kivietinamu.</translation>
 <translation id="6310223829319187614">Washa kipengee cha jina la kikoa cha kukamilisha kiotomatiki wakati wa mtumiaji kuingia katika akaunti</translation>
 <translation id="6315673513957120120">Chrome huonyesha ukurasa wa onyo watumiaji wanapoenda kwenye tovuti ambazo zina hitilafu za SSL. Kwa chaguomsingi au sera hii ikiwekwa kuwa ndivyo, watumiaji wanaruhusiwa kubofya kwenye kurasa hizi za onyo.
       Kuweka sera kuwa sivyo hakuwaruhusu watumiaji kubofya ukurasa wowote wa onyo.</translation>
@@ -4239,11 +4236,6 @@ kiwekwe kwenye maombi yote ya HTTP na HTTPS katika vikoa vyote vya google.com, j
       Sera hii huathiri watumiaji waliothibitisha kwa kutumia SAML pekee.
 
       Thamani ya sera lazima ibainishwe katika sekunde.</translation>
-<translation id="9018338365267278833">Hatua hii itaondoa viendelezi vinavyoonekana katika <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> au viendelezi vinavyoonekana katika <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> ambavyo vina hali ya usakinishaji iliyowekwa kuwa 'vimezuiwa' na itafuta data ya kifaa cha mtumiaji.  Rejelea sera ya faragha ya viendelezi au sera ya kuhifadhi data ili uelewe ambacho huenda kitafanyika kwenye data ya mtumiaji ambayo haijahifadhiwa katika kifaa.
-
-      Sera ikiwekwa kuwa 'imewashwa', viendelezi vinavyopatikana katika orodha zilizotajwa hapo awali (ikiwa tayari vimesakinishwa kwenye mashine) vitaondolewa kwenye mashine hiyo na mfumo wake wote (ikiwa ni pamoja na data ya kifaa cha mtumiaji).
-
-      Sera ikiwekwa kuwa imezimwa au ikiachwa bila kuwekwa, viendelezi vinavyopatikana katika orodha zilizotajwa hapo awali (ikiwa tayari vimesakinishwa kwenye mashine na vinavyopatikana kwenye orodha ya 'visivyoruhusiwa' <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) vitazimwa kwenye mashine na havitaondolewa.</translation>
 <translation id="9027787254195333560">Sera hii inakuruhusu kuweka mipangilio ya picha ya ishara inayowakilisha mtumiaji kwenye skrini ya kuingia katika akaunti. Sera inawekwa kwa kubainisha URL ambayo <ph name="PRODUCT_OS_NAME" /> inaweza kupakua picha ya ishara na alama ya reli ya kriptografia inayotumika kuthibitisha kuaminika kwa kipakuliwa. Picha sharti iwe katika muundo wa JPEG, ukubwa wake usizidi kB 512. Ni sharti URL ifikiwe bila uthibitishaji wowote.
 
       Picha ya ishara inapakuliwa na kuwekwa katika akiba. Itapakuliwa upya wakati URL au alama ya reli inabadilika.

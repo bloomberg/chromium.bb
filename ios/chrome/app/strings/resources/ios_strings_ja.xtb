@@ -70,6 +70,7 @@
 <translation id="1886928167269928266">始めから</translation>
 <translation id="1911619930368729126">ドライブにアップロード</translation>
 <translation id="1941314575388338491">ダブルタップしてコピー。</translation>
+<translation id="1952172573699511566">可能な場合、設定した言語でウェブサイトのテキストを表示します。</translation>
 <translation id="1952728750904661634">管理対象アカウントでログインする</translation>
 <translation id="1974060860693918893">詳細設定</translation>
 <translation id="1989112275319619282">閲覧</translation>
@@ -214,6 +215,7 @@
 <translation id="4124987746317609294">期間</translation>
 <translation id="4172051516777682613">常に表示</translation>
 <translation id="418156467088430727">オフライン版を新しいタブで表示</translation>
+<translation id="4181841719683918333">言語</translation>
 <translation id="4237682350741091554">[<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で Chrome 同期とパーソナライズを管理できます</translation>
 <translation id="424315890655130736">パスフレーズの入力</translation>
 <translation id="4272631900155121838">QR コードをスキャンするには、設定でカメラを有効にしてください</translation>
@@ -408,6 +410,7 @@
 <translation id="7192050974311852563">ログ記録を開始</translation>
 <translation id="7203585745079012652">回答を音声で聞く</translation>
 <translation id="722055596168483966">Google サービスのカスタマイズ</translation>
+<translation id="7265758999917665941">このサイトでは保存しない</translation>
 <translation id="7272437679830969316">ユーザー認証に失敗しました。パスワードはコピーされませんでした。</translation>
 <translation id="7280856130494094142">同期を開始するにはパスフレーズを入力してください</translation>
 <translation id="7285236536143823449">利用する</translation>
@@ -516,6 +519,7 @@
 <translation id="9081058212938299310"><ph name="USERNAME" /> のパスワードを更新しますか？</translation>
 <translation id="9083392325882095631">1個のアイテム</translation>
 <translation id="9083838294503912307">カスタマイズした設定を複数のデバイスで同期して使用するには、同期を有効にします。</translation>
+<translation id="9087108903408689779">Chrome の推奨パスワード:</translation>
 <translation id="9094033019050270033">パスワードを更新</translation>
 <translation id="9100610230175265781">パスフレーズを入力してください</translation>
 <translation id="9148126808321036104">もう一度ログインする</translation>

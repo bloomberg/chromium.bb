@@ -1052,17 +1052,6 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
       Se questa norma non viene impostata, viene usata l'opzione <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Numero massimo di connessioni simultanee al server proxy</translation>
-<translation id="2948463916588961959">Forza l'attivazione delle lingue per correttore ortografico. Le lingue non riconosciute di quell'elenco verranno ignorate.
-
-      Se attivi questa norma, il correttore ortografico verrà attivato per le lingue specificate, oltre alle lingue per le quali l'utente ha attivato il correttore ortografico.
-
-      Se non imposti la norma o la disattivi, le preferenze sul correttore ortografico dell'utente rimarranno invariate.
-
-      Questa norma non verrà applicata se la norma SpellcheckEnabled è disattivata.
-
-      Se una lingua è inclusa sia in questa norma che nella norma SpellcheckLanguageBlacklist, questa norma ha la priorità e verrà attivata la lingua per il correttore ortografico.
-
-      Le lingue attualmente supportate sono: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="2952347049958405264">Limitazioni:</translation>
 <translation id="2956777931324644324">Questa norma è stata ritirata a partire dalla versione 36 di <ph name="PRODUCT_NAME" />.
 
@@ -1389,7 +1378,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 
         Questo criterio viene utilizzato su desktop dalla registrazione con criteri cloud in ambito macchina e può essere impostato tramite il file di criteri registry o GPO su Windows, plist su Mac e JSON su Linux.</translation>
 <translation id="3660562134618097814">Trasferisci i cookie dell'IdP SAML durante l'accesso</translation>
-<translation id="3668151900457104753">Disinstalla le estensioni nella lista nera</translation>
 <translation id="3701121231485832347">Consente di gestire le impostazioni specifiche dei dispositivi <ph name="PRODUCT_OS_NAME" /> gestiti da <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Il campo a una sola riga è obsoleto e sarà rimosso a breve. Inizia a usare la casella di testo multiriga qui sotto).</translation>
 <translation id="3709266154059827597">Configura blacklist per l'installazione delle estensioni</translation>
@@ -1595,6 +1583,21 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
       Se questa norma viene impostata su true o non viene impostata, gli utenti potranno utilizzare le offerte tramite la registrazione a Chrome OS.
 
       Se questa norma viene impostata su false, gli utenti non potranno utilizzare le offerte.</translation>
+<translation id="4008233182078913897">Consente di specificare un elenco di app ed estensioni che vengono installate automaticamente, senza l'interazione dell'utente, e che non possono essere disinstallate né disattivate dall'utente. Tutte le autorizzazioni richieste dalle app/estensioni vengono concesse implicitamente, senza interazione dell'utente, comprese le eventuali autorizzazioni aggiuntive richieste dalle future versioni delle app/estensioni. Inoltre, le autorizzazioni sono concesse per le API delle estensioni enterprise.deviceAttributes ed enterprise.platformKeys. Queste due API non sono disponibili per le app/estensioni senza installazione forzata).
+
+          Questa norma ha precedenza su una norma <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> potenzialmente in conflitto. Se un'app o un'estensione con installazione forzata viene rimossa da questo elenco, tale app o estensione viene disinstallata automaticamente da <ph name="PRODUCT_NAME" />.
+
+          Per le istanze di Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />, l'installazione forzata è limitata alle app e alle estensioni elencate nel Chrome Web Store.
+
+          Tieni presente che il codice sorgente delle estensioni può essere modificato dagli utenti tramite Strumenti per sviluppatori (causando potenzialmente il malfunzionamento dell'estensione). Per evitare un problema di questo tipo, è consigliabile impostare la norma <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Ogni voce della norma è una stringa contenente un ID estensione e, facoltativamente, un URL "di aggiornamento" separati da punto e virgola (<ph name="SEMICOLON" />). L'ID estensione è la stringa di 32 lettere che si trova, ad esempio, all'indirizzo <ph name="CHROME_EXTENSIONS_LINK" /> quando è attiva la modalità sviluppatore. L'URL "di aggiornamento", se specificato, deve indirizzare a un documento XML Manifest di aggiornamento, come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC1" />. Per impostazione predefinita, viene utilizzato l'URL di aggiornamento del Chrome Web Store (che attualmente è "https://clients2.google.com/service/update2/crx"). Tieni presente che l'URL "di aggiornamento" impostato in questa norma viene utilizzato esclusivamente per l'installazione iniziale; per i successivi aggiornamenti dell'estensione viene utilizzato l'URL di aggiornamento indicato nel file manifest dell'estensione. Inoltre, specificare l'URL "di aggiornamento" in modo esplicito era obbligatorio nelle versioni di <ph name="PRODUCT_NAME" /> fino alla 67 inclusa.
+
+          Ad esempio, <ph name="EXTENSION_POLICY_EXAMPLE" /> installa l'estensione con ID <ph name="EXTENSION_ID_SAMPLE" /> dall'URL "di aggiornamento" del Chrome Web Store standard. Ulteriori informazioni sulle estensioni in hosting sono disponibili all'indirizzo <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Se questa norma non viene impostata, le app e le estensioni non vengono installate automaticamente e l'utente può disinstallare qualsiasi app o estensione in <ph name="PRODUCT_NAME" />.
+
+          Tieni presente che questa norma non si applica alla modalità di navigazione in incognito.</translation>
 <translation id="4008507541867797979">Se questa norma viene impostata su True o non viene configurata, nella schermata di accesso di <ph name="PRODUCT_OS_NAME" /> verranno visualizzati gli utenti esistenti tra cui sarà possibile selezionare un utente.
 
       Se la norma è impostata su False, nella schermata di accesso di <ph name="PRODUCT_OS_NAME" /> non verranno visualizzati gli utenti esistenti. Verrà visualizzata la normale schermata di accesso (richiesta di email utente e password o telefono) o la schermata interstiziale SAML (se attivata tramite la norma <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), a meno che non sia stata configurata una sessione gestita. Quando viene configurata una sessione gestita, verranno visualizzati solo gli account della sessione gestita, consentendo di selezionarne uno.
@@ -1716,10 +1719,6 @@ Il valore della norma deve essere specificato in millisecondi.</translation>
           Se questo criterio non viene impostato, i tasti permanenti sono inizialmente disattivati, ma possono essere attivati dall'utente in qualsiasi momento.</translation>
 <translation id="4183229833636799228">Impostazione predefinita per il plug-in <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL per la convalida del token di autenticazione del client di accesso remoto</translation>
-<translation id="4197038214024763371">Se questa norma non viene impostata o attivata, l'utente può usare il correttore ortografico.
-
-      Se questa norma viene disattivata, l'utente non può usare il correttore ortografico. Quando la norma viene disattivata, vengono ignorate anche le norme SpellcheckLanguage e SpellcheckLanguageBlacklist.
-      </translation>
 <translation id="4203389617541558220">Consente di limitare il tempo di attività del dispositivo programmando riavvii automatici.
 
 Se questa norma viene impostata consente di specificare il periodo di tempo di attività del dispositivo trascorso il quale è programmato un riavvio automatico.
@@ -2768,17 +2767,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="6281043242780654992">Consente di configurare le norme per i messaggi nativi. Gli host di messaggi nativi non autorizzati non saranno consentiti se non vengono aggiunti alla whitelist.</translation>
 <translation id="6282799760374509080">Consenti o nega acquisizione audio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6306608379445125648">Forza la disattivazione delle lingue per correttore ortografico. Le lingue non riconosciute di quell'elenco verranno ignorate.
-
-      Se attivi questa norma, il correttore ortografico verrà disattivato per le lingue specificate. L'utente può comunque attivare o disattivare il correttore ortografico per le lingue che non sono nell'elenco.
-
-      Se non imposti la norma o la disattivi, le preferenze sul correttore ortografico dell'utente rimarranno invariate.
-
-      Questa norma non verrà applicata se la norma SpellcheckEnabled è disattivata.
-
-      Se una lingua è inclusa sia in questa norma sia nella norma SpellcheckLanguage, la norma SpellcheckLanguage ha la priorità e verrà attivata la lingua per il correttore ortografico.
-
-      Le lingue attualmente supportate sono: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6310223829319187614">Consente il completamento automatico del nome di dominio durante l'accesso dell'utente</translation>
 <translation id="6315673513957120120">Chrome mostra una pagina di avviso quando gli utenti visitano siti che presentano errori SSL. Per impostazione predefinita, o se la norma viene impostata su true, gli utenti possono fare clic nelle pagine di avviso.
       Se questa norma viene impostata su false, gli utenti non possono fare clic nelle pagine di avviso.</translation>
@@ -3362,7 +3350,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="7433714841194914373">Abilita Instant</translation>
 <translation id="7434202861148928348">Configura i nomi di dominio richiesti per i client di accesso remoto</translation>
 <translation id="7443616896860707393">Richieste di autenticazione di base HTTP tra origini</translation>
-<translation id="7454519673779830548">Aggiungi account Kerberos compilati automaticamente. Se le credenziali di Kerberos corrispondono alle credenziali di accesso, un account può essere configurato in modo da riutilizzare le credenziali di accesso specificando "${{LOGIN_EMAIL}}" e "${{PASSWORD}}" rispettivamente per la voce principale e la password, in modo che le richieste di Kerberos possano essere recuperate automaticamente, a meno che non sia configurata l'autenticazione a due fattori. Gli utenti non possono modificare gli account aggiunti tramite questo criterio.
+<translation id="7454519673779830548">Aggiungi account Kerberos compilati automaticamente. Se le credenziali di Kerberos corrispondono alle credenziali di accesso, un account può essere configurato in modo da riutilizzare le credenziali di accesso specificando "${{LOGIN_EMAIL}}" e "${{PASSWORD}}" rispettivamente per l'account principale e la password, in modo che le richieste di Kerberos possano essere recuperate automaticamente, a meno che non sia configurata l'autenticazione a due fattori. Gli utenti non possono modificare gli account aggiunti tramite questo criterio.
 
           Se questo criterio è attivato, l'elenco degli account definiti dal criterio viene aggiunto alle impostazioni Account Kerberos.
 
@@ -3497,7 +3485,7 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
 <translation id="7687943045976362719">Se questa norma viene impostata, i tipi di contenuto specificati vengono gestiti da <ph name="PRODUCT_FRAME_NAME" />.
 
           Se la norma non viene impostata, verrà utilizzato per tutti i siti il renderer predefinito. (È possibile utilizzare la norma <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> per configurare il renderer predefinito).</translation>
-<translation id="7694245791806617022">Consente di controllare se la funzionalità "Ricorda password" è attiva nella finestra di dialogo dell'autenticazione. Le password sono memorizzate criptate su disco, accessibili solo al demone del sistema Kerberos durante una sessione utente.
+<translation id="7694245791806617022">Consente di controllare se la funzionalità "Ricorda password" è attiva nella finestra di dialogo dell'autenticazione Kerberos. Le password sono memorizzate criptate su disco, accessibili solo al demone del sistema Kerberos durante una sessione utente.
 
           Se il criterio è attivato o non configurato, gli utenti possono decidere se le password Kerberos vengono ricordate, in modo da non dovere essere inserite nuovamente. Le richieste di Kerberos vengono recuperate automaticamente, a meno che non sia necessaria un'ulteriore autenticazione (autenticazione a due fattori).
 
@@ -3539,8 +3527,8 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
 <translation id="7726421241038987229">
       Questa impostazione, SitePerProcess, può essere utilizzata per non consentire più agli utenti di disattivare il comportamento predefinito di isolamento di tutti i siti. Tieni presente che il criterio IsolateOrigins può essere utile anche per isolare origini aggiuntive più specifiche.
       Se il criterio è attivato, gli utenti non potranno disattivare il comportamento predefinito nei casi in cui ciascun sito viene eseguito nel proprio processo.
-      Se il criterio non è configurato o disattivato, l'utente potrà disattivare l'isolamento dei siti
-      (ad esempio, utilizzando la voce "Disattiva isolamento dei siti" in chrome://flags).  Impostare il criterio per la disattivazione e/o non configurare il criterio non comporta la disattivazione dell'isolamento dei siti.
+      Se il criterio non è configurato o è disattivato, l'utente potrà disattivare l'isolamento dei siti
+      (ad esempio, utilizzando la voce "Disattiva isolamento dei siti" in chrome://flags).  La disattivazione e/o la mancata configurazione del criterio non comporta la disattivazione dell'isolamento dei siti.
       In <ph name="PRODUCT_OS_NAME" />, si consiglia di impostare anche il criterio <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> relativo ai dispositivi sullo stesso valore. Se i valori specificati dai due criteri non corrispondono, può verificarsi un ritardo durante l'accesso a una sessione utente, mentre viene applicato il valore specificato dai criteri relativi agli utenti.
 
       NOTA: questo criterio non viene applicato su Android. Per attivare SitePerProcess su Android, utilizza l'impostazione del criterio SitePerProcessAndroid.
@@ -3614,7 +3602,7 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
 
           Se questo criterio è attivato o non configurato, gli utenti possono aggiungere account Kerberos tramite le impostazioni Account Kerberos nella pagina Impostazioni persone. Gli utenti hanno il controllo completo degli account che hanno aggiunto e possono modificarli o rimuoverli.
 
-          Se questo criterio è disattivato, gli utenti non possono aggiungere account Kerberos. Gli account possono aggiunti solo tramite il criterio "Configura account Kerberos". Si tratta di una soluzione efficace per bloccare gli account.</translation>
+          Se questo criterio è disattivato, gli utenti non possono aggiungere account Kerberos. Gli account possono essere aggiunti solo tramite il criterio "Configura account Kerberos". Si tratta di una soluzione efficace per bloccare gli account.</translation>
 <translation id="7895553628261067384">Accesso remoto</translation>
 <translation id="7902255855035461275">I pattern di questo elenco verranno confrontati con
       l'origine di sicurezza dell'URL richiedente. Se viene trovata una corrispondenza, l'accesso ai dispositivi
@@ -4119,11 +4107,6 @@ https://www.w3.org/TR/secure-contexts/
       Questa norma viene applicata soltanto per gli utenti che si sono autenticati tramite SAML.
 
       Il valore della norma deve essere specificato in secondi.</translation>
-<translation id="9018338365267278833">Consente di rimuovere le estensioni visualizzate in <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> o quelle visualizzate in <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> la cui modalità di installazione è impostata sul blocco ed elimina tutti i relativi dati utente locali.  Consulta le norme sulla privacy per le estensioni o le norme sulla conservazione dei dati per sapere cosa può accadere se i dati utente non vengono archiviati in locale.
-
-      Se la norma è attivata, le estensioni che rientrano negli elenchi sopra indicati (se già installati su una macchina) verranno rimosse completamente dalla macchina (inclusi i dati utente locali).
-
-      Se la norma è disattivata o non è impostata, le estensioni che rientrano negli elenchi sopra indicati (se già installati su una macchina e presenti nella lista nera <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) verranno disattivate sulla macchina e non installate.</translation>
 <translation id="9027787254195333560">Questa norma consente di configurare l'immagine avatar che rappresenta l'utente sulla schermata di accesso. La norma viene impostata specificando l'URL da cui <ph name="PRODUCT_OS_NAME" /> può scaricare l'immagine e un hash crittografico per verificare l'integrità del download. L'immagine deve essere in formato JPEG e avere dimensioni non superiori a 512 kB. L'URL deve essere accessibile senza nessuna autenticazione.
 
       L'immagine avatar viene scaricata e memorizzata nella cache. Verrà scaricata nuovamente ogni volta che l'URL o l'hash vengono modificati.

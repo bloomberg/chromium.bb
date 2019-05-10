@@ -1854,7 +1854,7 @@
 <translation id="3855676282923585394">Importar favoritos e configurações...</translation>
 <translation id="3856800405688283469">Selecionar fuso horário</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
-<translation id="3857807444929313943">Levante e toque novamente</translation>
+<translation id="3857807444929313943">Tire o dedo e toque novamente</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: sincronização pausada</translation>
 <translation id="3861241522664181545">Página pausada.</translation>
 <translation id="3862134173397075045">Bem-vindo à experiência de transmissão no Chrome!</translation>
@@ -4969,6 +4969,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8743390665131937741">Nível de zoom em tela cheia:</translation>
 <translation id="8743864605301774756">Atualizada 1 hora atrás</translation>
 <translation id="874689135111202667">{0,plural, =1{Fazer upload de um arquivo para este site?}one{Fazer upload de # arquivo para este site?}other{Fazer upload de # arquivos para este site?}}</translation>
+<translation id="8747503242566427664">Este aplicativo pode:</translation>
 <translation id="8748384418490037181">Opções do Smart Lock</translation>
 <translation id="8749863574775030885">Acessar dispositivos USB de um fornecedor desconhecido</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> quer se conectar a uma porta serial</translation>

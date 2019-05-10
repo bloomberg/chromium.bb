@@ -421,8 +421,8 @@ Pokud je toto nastavení zakázáno nebo není nakonfigurováno, firemní uživa
       Jako hodnotu této zásady zadejte adresu URL, ze které může systém <ph name="PRODUCT_OS_NAME" /> smluvní podmínky stáhnout. Smluvní podmínky musejí být uloženy ve formátu prostého textu s typem MIME „text/plain“. Nejsou povoleny žádné značky.</translation>
 <translation id="1750315445671978749">Blokovat veškerá stahování</translation>
 <translation id="1762072363876276024">
-      Tato zásada platí pro přihlašovací obrazovku. Prostudujte si také zásadu <ph name="SITE_PER_PROCESS_POLICY_NAME" />, která platí pro uživatelskou relaci. Obě zásady doporučujeme nastavit na stejnou hodnotu. Obě zásady doporučujeme nastavit na stejnou hodnotu. Pokud se hodnoty neshodují, může při zahajování uživatelské návštěvy dojít ke zpoždění způsobenému používáním hodnoty zadané v zásadě pro uživatele.
-      Pomocí tohoto nastavení (DeviceLoginScreenSitePerProcess) lze uživatelům zakázat odhlášení z výchozího chování, při němž jsou všechny weby izolovány. K izolaci dalších (podrobněji určených) zdrojů může být užitečná také zásada DeviceLoginScreenIsolateOrigins.
+      Tato zásada platí pro přihlašovací obrazovku. Prostudujte si také zásadu <ph name="SITE_PER_PROCESS_POLICY_NAME" />, která platí pro uživatelskou relaci. Obě zásady doporučujeme nastavit na stejnou hodnotu. Pokud se hodnoty neshodují, může při zahajování uživatelské návštěvy dojít ke zpoždění způsobenému používáním hodnoty zadané v zásadě pro uživatele.
+      Pomocí tohoto nastavení (DeviceLoginScreenSitePerProcess) lze uživatelům zakázat změnu výchozího chování, při němž jsou všechny weby izolovány. K izolaci dalších (podrobněji určených) zdrojů může být užitečná také zásada DeviceLoginScreenIsolateOrigins.
       Pokud je tato zásada aktivovaná, uživatelé se nebudou moci odhlásit z výchozího chování, v němž je každý web spuštěn v samostatném procesu.
       Pokud tato zásada není nakonfigurovaná nebo je deaktivovaná, uživatel toto nastavení bude moci změnit (např. pomocí možnosti Disable site isolation (Vypnout izolaci webů) na stránce chrome://flags).
       </translation>
@@ -853,7 +853,7 @@ Pokud toto nastavení deaktivujete, je to stejné, jako kdybyste ho nenastavili.
       Pokud zásadu nenastavíte, bude na uživatelích, aby zvolili, zda funkci datové komprese proxy serveru chtějí nebo nechtějí použít.</translation>
 <translation id="257788512393330403">Heslo je třeba zadat každých šest hodin</translation>
 <translation id="2586162458524426376">
-      Tato zásada platí pro přihlašovací obrazovku. Prostudujte si také zásadu <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, která platí pro uživatelskou relaci. Obě zásady doporučujeme nastavit na stejnou hodnotu.
+      Tato zásada platí pro přihlašovací obrazovku. Prostudujte si také zásadu <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, která platí pro uživatelskou relaci.
       Pokud tuto zásadu povolíte, každý ze zdrojů uvedených v seznamu odděleném čárkami se bude spouštět ve vlastním procesu. Budou izolovány i zdroje uvedené pomocí subdomén – např. pokud zadáte web https://example.com/, bude v rámci něj izolována i subdoména https://foo.example.com/.
       Pokud tuto zásadu ponecháte nenakonfigurovanou, použije se pro přihlašovací obrazovku výchozí nastavení platformy týkající se izolace webů.
       </translation>
@@ -1061,17 +1061,6 @@ Platné jsou tyto specifikace vzorů adres URL:
       Pokud tato zásada není nastavena, předpokládá se použití možnosti <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Maximální počet současných připojení k proxy serveru</translation>
-<translation id="2948463916588961959">Vynutí povolení jazyků kontroly pravopisu. Neznámé jazyky v seznamu budou ignorovány.
-
-      Pokud tuto zásadu povolíte, bude kontrola pravopisu kromě jazyků, pro které ji povolil uživatel, povolena také pro zadané jazyky.
-
-      Pokud tuto zásadu nenastavíte nebo ji zakážete, bude platit nastavení kontroly pravopisu zadané uživatelem beze změny.
-
-      Je-li kontrola pravopisu zakázána pomocí zásady SpellcheckEnabled, nebude mít tato zásada žádný účinek.
-
-      Pokud je jazyk uveden v této zásadě i v zásadě SpellcheckLanguageBlacklist, má přednost tato zásada a kontrola pravopisu pro tento jazyk je povolena.
-
-      V současné době jsou podporovány tyto jazyky: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="2952347049958405264">Omezení:</translation>
 <translation id="2956777931324644324">Podpora této zásady byla ve verzi 36 prohlížeče <ph name="PRODUCT_NAME" /> ukončena.
 
@@ -1401,7 +1390,6 @@ Tuto zásadu lze nastavit pouze jako doporučenou. Zásada slouží k přesunut
 
         Tato zásada se používá k registraci cloudových zásad pro počítač. V systému Windows ji lze nastavit pomocí registru nebo objektů zásad skupiny, na počítačích Mac pomocí souboru plist a v Linuxu pomocí souboru JSON se zásadami.</translation>
 <translation id="3660562134618097814">Přenos souborů cookie od poskytovatele identity SAML při přihlášení</translation>
-<translation id="3668151900457104753">Odinstalovat rozšíření na seznamu zakázaných</translation>
 <translation id="3701121231485832347">Ovládá nastavení specifická pro zařízení <ph name="PRODUCT_OS_NAME" /> spravovaná službou <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Podpora pole s jedním řádkem byla ukončena. Začněte používat níže uvedené textové pole s více řádky.)</translation>
 <translation id="3709266154059827597">Konfigurace seznamu zakázaných položek instalace rozšíření</translation>
@@ -1609,6 +1597,21 @@ Existující nepřihlášené profily po zapnutí této zásady budou uzamčeny 
       Pokud je tato zásada nastavena na hodnotu true nebo ponechána bez nastavení, uživatelé budou moci při registraci systému Chrome OS uplatňovat zvláštní nabídky.
 
       Pokud je tato zásada nastavena na hodnotu false, uživatelé zvláštní nabídky nebudou moci uplatnit.</translation>
+<translation id="4008233182078913897">Určuje seznam aplikací a rozšíření, které se instalují na pozadí bez zásahu uživatele a které uživatel nemůže odinstalovat ani deaktivovat. Všechna oprávnění požadovaná aplikacemi nebo rozšířeními jsou udělována implicitně bez zásahu uživatele, a to včetně všech dodatečných oprávnění požadovaných budoucími verzemi aplikace nebo rozšíření. Kromě toho jsou udělována také oprávnění k používání těchto rozhraní API pro rozšíření: enterprise.deviceAttributes a enterprise.platformKeys. (Tato rozhraní API jsou k dispozici pouze u aplikací/rozšíření, jejichž instalace je vynucena.)
+
+Tato zásada má přednost před potenciálně konfliktní zásadou <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Bude-li aplikace nebo rozšíření, které bylo dříve vynuceně nainstalováno, z tohoto seznamu odebráno, <ph name="PRODUCT_NAME" /> je automaticky odinstaluje.
+
+U instancí systému Windows, které nejsou propojeny s doménou <ph name="MS_AD_NAME" />, je vynucená instalace omezena pouze na aplikace a rozšíření z Internetového obchodu Chrome.
+
+Zdrojový kód libovolného rozšíření mohou uživatelé pomocí Nástrojů pro vývojáře upravit (což může způsobit, že rozšíření nebude fungovat). Pokud je to problém, nastavte zásadu <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+Každá položka v seznamu zásady představuje řetězec, který obsahuje ID rozšíření a volitelně také adresu URL pro aktualizaci oddělené středníkem (<ph name="SEMICOLON" />). ID rozšíření je řetězec s 32 písmeny a naleznete jej například zde: <ph name="CHROME_EXTENSIONS_LINK" /> (v režimu pro vývojáře). Pokud je zadána adresa URL pro aktualizaci, měla by odkazovat na dokument XML manifestu aktualizace (viz <ph name="LINK_TO_EXTENSION_DOC1" />). Ve výchozím nastavení se použije adresa URL pro aktualizaci Internetového obchodu Chrome (v současné době https://clients2.google.com/service/update2/crx). Adresa URL pro aktualizaci nastavená v této zásadě slouží pouze k počáteční instalaci. Další aktualizace rozšíření budou používat adresu URL pro aktualizaci uvedenou v manifestu rozšíření. Upozorňujeme, že až do verze 67 prohlížeče <ph name="PRODUCT_NAME" /> bylo explicitní zadání adresy URL pro aktualizaci povinné.
+
+Například <ph name="EXTENSION_POLICY_EXAMPLE" /> nainstaluje rozšíření s ID <ph name="EXTENSION_ID_SAMPLE" /> ze standardní adresy URL pro aktualizaci z Internetového obchodu Chrome. Další informace o hostování rozšíření viz <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+Je-li tato zásada ponechána nenastavená, žádné aplikace ani rozšíření se automaticky neinstalují a uživatel v prohlížeči <ph name="PRODUCT_NAME" /> může kteroukoliv aplikaci nebo rozšíření odinstalovat.
+
+Tato zásada se nevztahuje na anonymní režim.</translation>
 <translation id="4008507541867797979">Pokud je tato zásada nastavena na hodnotu true nebo není nakonfigurována, bude <ph name="PRODUCT_OS_NAME" /> na přihlašovací obrazovce ukazovat existující uživatele a umožní vybrat si z nich.
 
       Pokud je tato zásada nastavena na hodnotu false, <ph name="PRODUCT_OS_NAME" /> na přihlašovací obrazovce existující uživatele zobrazovat nebude. Jestliže není nakonfigurována spravovaná návštěvy, zobrazí se běžná přihlašovací obrazovka (vyzývající k zadání e‑mailu a hesla nebo telefonu uživatele) nebo vsunutá obrazovka SAML (pokud je zapnuta pomocí zásady <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />). Když je nakonfigurována spravovaná návštěvy, budou se zobrazovat jen účty spravované návštěvy a bude si z nich možné vybrat.
@@ -1729,13 +1732,9 @@ K dispozici jsou také samostatná nastavení pro napájení ze sítě a z bater
 
           Pokud tuto zásadu nastavíte, uživatelé ji nebudou moci změnit ani přepsat.
 
-          Pokud ji ponecháte nenastavenou, bude funkce Jedním prsem ve výchozím nastavení vypnutá, ale uživatel ji bude moci kdykoli zapnout.</translation>
+          Pokud ji ponecháte nenastavenou, bude funkce Jedním prstem ve výchozím nastavení vypnutá, ale uživatel ji bude moci kdykoli zapnout.</translation>
 <translation id="4183229833636799228">Výchozí nastavení pluginu <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">Adresa URL k potvrzení ověřovacího tokenu klienta vzdáleného připojení</translation>
-<translation id="4197038214024763371">Pokud tato zásada není nastavena nebo je povolena, má uživatel dovoleno používat kontrolu pravopisu.
-
-      Je-li tato zásada zakázána, uživatel kontrolu pravopisu používat nemůže. Pokud je tato zásada zakázána, budou ignorovány také zásady SpellcheckLanguage a SpellcheckLanguageBlacklist.
-      </translation>
 <translation id="4203389617541558220">Omezuje dobu, po kterou může být zařízení spuštěno, naplánováním automatických restartů.
 
 Pokud je tato zásada nastavena, udává dobu, po kterou je zařízení spuštěno a po jejímž uplynutí dojde k automatickému restartu. 
@@ -2811,17 +2810,6 @@ Není-li zásada nastavena, může se uživatelům zobrazit výzva, zda chtějí
 <translation id="6281043242780654992">Konfiguruje zásady pro zasílání nativních zpráv. Hostitelé zasílání nativních zpráv uvedení na seznamu zakázaných nebudou povoleni (pokud nebudou uvedeni na seznamu povolených hostitelů).</translation>
 <translation id="6282799760374509080">Povolit nebo zakázat záznam zvuku</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6306608379445125648">Vynutí zakázání jazyků kontroly pravopisu. Neznámé jazyky v seznamu budou ignorovány.
-
-      Pokud tuto zásadu povolíte, bude pro zadané jazyky kontrola pravopisu zakázána. Pro jazyky, které v seznamu nejsou uvedeny, může uživatel kontrolu pravopisu nadále zapnout nebo vypnout.
-
-      Pokud tuto zásadu nenastavíte nebo ji zakážete, bude platit nastavení kontroly pravopisu zadané uživatelem beze změny.
-
-      Je-li kontrola pravopisu zakázána pomocí zásady SpellcheckEnabled, nebude mít tato zásada žádný účinek.
-
-      Pokud je jazyk uveden v této zásadě i v zásadě SpellcheckLanguage, zásada SpellcheckLanguage má přednost a kontrola pravopisu pro tento jazyk bude povolena.
-
-      V současné době jsou podporovány tyto jazyky: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6310223829319187614">Aktivovat automatické doplňování názvu domény při přihlášení uživatele</translation>
 <translation id="6315673513957120120">Pokud uživatel přejde na web, který obsahuje chyby protokolu SSL, Chrome zobrazí stránku s upozorněním. Když je tato zásada nastavena na hodnotu True, mohou uživatelé stránky s upozorněním přeskočit a pokračovat. Platí to také ve výchozím nastavení.
 Nastavením této zásady na hodnotu False přeskočení stránky s upozorněním zakážete.</translation>
@@ -3417,9 +3405,9 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, optimaliz
 <translation id="7433714841194914373">Aktivovat Dynamický režim</translation>
 <translation id="7434202861148928348">Konfigurace povinného názvu domény pro klienty vzdáleného přístupu</translation>
 <translation id="7443616896860707393">Požadavky typu cross-origin standardu HTTP Basic Auth</translation>
-<translation id="7454519673779830548">Přidává předvyplněné účty Kerberos. Pokud identifikační údaje Kerberos odpovídají přihlašovací identifikačním údajům, u účtu lze nakonfigurovat opětovné použití přihlašovacích identifikačních údajů zadáním objektu zabezpečení ${{LOGIN_EMAIL}} a hesla ${{PASSWORD}}, aby lístek Kerberos bylo možné načíst automaticky (jestliže není nakonfigurováno dvoufázové ověření). Účty přidané pomocí této zásady uživatelé nemohou upravovat.
+<translation id="7454519673779830548">Přidává předvyplněné účty Kerberos. Pokud identifikační údaje Kerberos odpovídají přihlašovacím identifikačním údajům, u účtu lze nakonfigurovat opětovné použití přihlašovacích identifikačních údajů zadáním objektu zabezpečení ${{LOGIN_EMAIL}} a hesla ${{PASSWORD}}, aby lístek Kerberos bylo možné načíst automaticky (jestliže není nakonfigurováno dvoufázové ověření). Účty přidané pomocí této zásady uživatelé nemohou upravovat.
 
-          Pokud je tato zásada aktivovaná, v ní nakonfigurovaný seznam účtů se přidá do nastavení účtů Kerberos.
+          Pokud je tato zásada aktivovaná, seznam účtů v ní nakonfigurovaný se přidá do nastavení účtů Kerberos.
 
           Pokud je tato zásada deaktivovaná nebo není nastavená, do nastavení účtů Kerberos se žádné účty nepřidají a všechny účty, které pomocí této zásady byly přidány dříve, budou odstraněny. Pokud je aktivovaná zásada „Uživatelé mohou přidávat účty Kerberos“, uživatelé účty mohou ručně přidávat i nadále.</translation>
 <translation id="7458437477941640506">Pokud je verze operačního systému novější než cílová verze, nevracet se k cílové verzi. Jsou zakázány i aktualizace.</translation>
@@ -3598,9 +3586,9 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
 
       Pokud tato zásada není nastavena, protokol HTTP/0.9 bude na jiných než výchozích portech zakázán.</translation>
 <translation id="7726421241038987229">
-      Pomocí tohoto nastavení (SitePerProcess) lze uživatelům zakázat odhlášení z výchozího chování, při kterém jsou všechny weby izolovány. K izolaci dalších (podrobněji určených) zdrojů může být užitečná také zásada IsolateOrigins.
-      Pokud je tato zásada aktivovaná, uživatelé se nebudou moci odhlásit z výchozího chování, v němž je každý web spuštěn v samostatném procesu.
-      Pokud tato zásada není nakonfigurovaná nebo je deaktivovaná, uživatelé se z izolace webů budou moci odhlásit (např. pomocí možnosti Disable site isolation (Vypnout izolaci webů) na stránce chrome://flags).  Tím, že tuto zásadu deaktivujete nebo že ji nenakonfigurujete, izolaci webů nevypnete.
+      Pomocí tohoto nastavení (SitePerProcess) lze uživatelům zakázat změnu výchozího chování, při kterém jsou všechny weby izolovány. K izolaci dalších (podrobněji určených) zdrojů může být užitečná také zásada IsolateOrigins.
+      Pokud je tato zásada aktivovaná, uživatelé nebudou moci změnit výchozí chování, kdy je každý web spuštěn v samostatném procesu.
+      Pokud tato zásada není nakonfigurovaná nebo je deaktivovaná, budou uživatelé moci izolaci webů zakázat (např. pomocí možnosti Disable site isolation (Vypnout izolaci webů) na stránce chrome://flags).  Tím, že tuto zásadu deaktivujete nebo že ji nenakonfigurujete, izolaci webů nevypnete.
       V systému <ph name="PRODUCT_OS_NAME" /> doporučujeme nastavit na stejnou hodnotu také zásadu zařízení <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Pokud se hodnoty těchto dvou zásad neshodují, při vstupu do uživatelské relace může dojít k prodlevě způsobené používáním hodnoty zadané v zásadě pro uživatele.
 
       POZNÁMKA: Tato zásada se nevztahuje na systém Android. K aktivaci zásady SitePerProcess v systému Android použijte zásadu SitePerProcessAndroid.
@@ -4188,11 +4176,6 @@ POZNÁMKA: Až do verze 45 byla tato zásada podporována pouze v režimu veře
       Tato zásada má vliv pouze na uživatele, kteří provedli ověření pomocí technologie SAML.
 
       Hodnota zásady se zadává v sekundách.</translation>
-<translation id="9018338365267278833">Tato zásada odstraní rozšíření uvedená v zásadě <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> a rozšíření uvedená v zásadě <ph name="EXTENSION_SETTINGS_POLICY_NAME" />, která mají režim instalace nastavený na blokování. Vymaže při tom také místní data uživatele.  Informace o tom, co se může stát s daty uživatele, která nejsou uložena místně, najdete v zásadách ochrany soukromí nebo v zásadách uchovávání dat rozšíření.
-
-      Když je zásada zapnutá a v zařízení již jsou nainstalována některá rozšíření z výše uvedených seznamů, budou z počítače zcela odstraněna (včetně místních dat uživatele).
-
-      Když je tato zásada vypnutá nebo je ponechána nenastavená a v zařízení již jsou nainstalována některá rozšíření z výše uvedených seznamů (uvedená v seznamu zakázaných v zásadě <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />), budou na počítači zakázána, ale neodinstalují se.</translation>
 <translation id="9027787254195333560">Tato zásada umožňuje nakonfigurovat obrázek avatara, který na přihlašovací obrazovce představuje uživatele. Zásadu nastavíte zadáním adresy URL, ze které systém <ph name="PRODUCT_OS_NAME" /> může obrázek avatara stáhnout, a kryptografické hodnoty hash, která slouží k ověření integrity staženého obsahu. Obrázek musí být ve formátu JPEG a jeho velikost nesmí překročit 512 kB. Adresa URL musí být přístupná bez ověření.
 
       Obrázek avatara se stáhne a uloží do mezipaměti. Při každé změně adresy URL nebo hodnoty hash se stáhne znovu.

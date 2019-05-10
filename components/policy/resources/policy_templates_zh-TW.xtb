@@ -867,7 +867,7 @@
 <translation id="257788512393330403">每 6 小時需輸入密碼</translation>
 <translation id="2586162458524426376">
       這項政策適用於登入畫面。另請查看適用於使用者工作階段的 <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> 政策。
-      如果啟用這項政策，系統會以獨立程序分別執行逗號分隔清單中指定的每個來源。這也會讓系統隔離以子網域命名的來源，例如指定 https://example.com/ 也會導致 https://foo.example.com/ 遭到隔離，因為後者屬於 https://example.com/ 網站的一部分。
+      如果啟用這項政策，逗號分隔清單中指明的每個來源將各自以獨立程序執行。這也會將指明的來源依子網域隔離；比方說，如果指定 https://example.com/，https://foo.example.com/ 也會因為隸屬 https://example.com/ 網站而遭到隔離。
       如果不設定或停用這項政策，系統會將平台預設的網站隔離設定套用至登入畫面。
       </translation>
 <translation id="2587719089023392205">將 <ph name="PRODUCT_NAME" /> 設為預設瀏覽器</translation>
@@ -1067,17 +1067,6 @@
       如果未設定這項政策，系統會自動採用 <ph name="PRINTERS_ALLOW_ALL" />。
       </translation>
 <translation id="2908277604670530363">Proxy 伺服器的並行連線數量上限</translation>
-<translation id="2948463916588961959">這會針對指定語言強制執行拼字檢查功能。系統會忽略該清單中無法辨識的語言。
-
-      如果啟用這項政策，除了使用者已啟用拼字檢查功能的語言外，系統還會針對指定的語言啟用拼字檢查功能。
-
-      如果停用或不設定這項政策，則使用者的拼字檢查偏好設定不會受到任何影響。
-
-      如果 SpellcheckEnabled 政策設為停用，這項政策並不會有任何作用。
-
-      如果某個語言同時列在這項政策和 SpellcheckLanguageBlacklist 政策中，系統會優先執行這項政策，為該語言啟用拼字檢查功能。
-
-      拼字檢查功能目前支援的語言如下：af、bg、ca、cs、da、de、el、en-AU、en-CA、en-GB、en-US、es、es-419、es-AR、es-ES、es-MX、es-US、et、fa、fo、fr、he、hi、hr、hu、id、it、ko、lt、lv、nb、nl、pl、pt-BR、pt-PT、ro、ru、sh、sk、sl、sq、sr、sv、ta、tg、tr、uk、vi。</translation>
 <translation id="2952347049958405264">限制：</translation>
 <translation id="2956777931324644324">我們已於 <ph name="PRODUCT_NAME" /> 版本 36 中移除這項政策。
 
@@ -1403,7 +1392,6 @@
 <translation id="3660510274595679517">
         如果將這項政策設定為 True，系統會強制你註冊雲端管理服務。如果註冊失敗，系統會封鎖 Chrome 啟動程序。如果不設定這項政策或設為 False，你可以選擇是否要註冊雲端管理服務。即使註冊失敗，系統也不會封鎖 Chrome 啟動程序。在桌面註冊機器範圍雲端政策時會使用這項政策，你可以透過 Windows 的登錄檔或 GPO、Mac 的 plist 以及 Linux 的 JSON 政策檔設定這項政策。</translation>
 <translation id="3660562134618097814">登入時移轉 SAML IdP Cookie</translation>
-<translation id="3668151900457104753">解除安裝列入黑名單的擴充功能</translation>
 <translation id="3701121231485832347">控管 <ph name="MS_AD_NAME" /> 管理的 <ph name="PRODUCT_OS_NAME" /> 裝置專屬設定。</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (單行欄位已淘汰，日後將遭到移除。請開始使用下方的多行文字方塊。)</translation>
 <translation id="3709266154059827597">設定擴充功能安裝黑名單</translation>
@@ -1605,6 +1593,21 @@
       如果將這項政策設為 True 或未設定這項政策，使用者將可透過註冊 Chrome 作業系統來兌換優惠。
 
       如果將這項政策設為 False，使用者將無法兌換優惠。</translation>
+<translation id="4008233182078913897">指定要以無訊息方式 (使用者無需操作) 安裝的應用程式和擴充功能清單；使用者無法解除安裝或停用這些應用程式和擴充功能。系統會直接授予這些應用程式/擴充功能要求的所有權限 (使用者無需操作)，包括日後新版應用程式/擴充功能要求的任何其他權限。系統會直接授予這些應用程式/擴充功能要求的所有權限 (使用者無需操作)，包括日後新版應用程式/擴充功能要求的任何其他權限(這兩個 API 不適用於非強制安裝的應用程式/擴充功能)。
+
+          這項政策的優先順序高於可能發生衝突的 <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> 政策。如果從這份清單移除先前強制安裝的應用程式或擴充功能，<ph name="PRODUCT_NAME" /> 就會自動將其解除安裝。
+
+          如果 Windows 執行個體未加入 <ph name="MS_AD_NAME" /> 網域，系統只會強制安裝 Chrome 線上應用程式商店列出的應用程式和擴充功能。
+
+          請注意，使用者可透過開發人員工具變更擴充功能的原始碼 (這或許會造成擴充功能無法正常運作)。如果你對此有所顧慮，建議你設定 <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> 政策。
+
+          這項政策的每個清單項目都是一行字串，其中包含以分號 (<ph name="SEMICOLON" />) 區隔的擴充功能 ID 和「更新」網址 (選用)。擴充功能 ID 為 32 個字母的字串，如需查看範例，請在開發人員模式下前往 <ph name="CHROME_EXTENSIONS_LINK" />。「更新」網址 (如有指定) 應指向更新資訊清單 XML 文件，如 <ph name="LINK_TO_EXTENSION_DOC1" /> 所述。根據預設，系統會使用 Chrome 線上應用程式商店的更新網址 (目前為「https://clients2.google.com/service/update2/crx」)。請注意，這項政策設定的「更新」網址僅適用於初次安裝，後續的擴充功能更新將採用擴充功能資訊清單指定的更新網址。另請注意，自 67 版起，你必須在 <ph name="PRODUCT_NAME" /> 中明確指定「更新」網址。
+
+          舉例來說，<ph name="EXTENSION_POLICY_EXAMPLE" /> 會透過標準 Chrome 線上應用程式商店「更新」網址安裝 ID 為 <ph name="EXTENSION_ID_SAMPLE" /> 的擴充功能。如要進一步瞭解如何代管擴充功能，請參閱以下連結：<ph name="LINK_TO_EXTENSION_DOC2" />。
+
+          如果未設定這項政策，則系統不會自動安裝任何應用程式或擴充功能，且使用者可以在 <ph name="PRODUCT_NAME" /> 中解除安裝任何應用程式或擴充功能。
+
+          請注意，這項政策不適用於無痕模式。</translation>
 <translation id="4008507541867797979">如果將這項政策設為 true 或不予設定，<ph name="PRODUCT_OS_NAME" /> 會在登入畫面上顯示現有使用者並允許從中擇一登入。
 
       如果這項政策設為 false，除非已設定受管理工作階段，否則 <ph name="PRODUCT_OS_NAME" /> 不會在登入畫面上顯示現有使用者，而是顯示一般登入畫面 (提示輸入使用者電子郵件地址，以及密碼或電話號碼) 或 SAML 插頁式畫面 (如果透過 <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" /> 政策啟用的話)。設定受管理工作階段後，系統便只會顯示受管理工作階段帳戶並允許從中擇一登入。
@@ -1727,10 +1730,6 @@
           如果不設定這項政策，系統預設會停用相黏鍵，但使用者可以隨時啟用這項功能。</translation>
 <translation id="4183229833636799228"><ph name="FLASH_PLUGIN_NAME" /> 預設設定</translation>
 <translation id="4192388905594723944">用於驗證遠端存取用戶端驗證憑證的網址</translation>
-<translation id="4197038214024763371">如果不設定或啟用這項政策，使用者將可使用拼字檢查。
-
-      如果停用這項政策，使用者將無法使用拼字檢查，且系統會忽略 SpellcheckLanguage 和 SpellcheckLanguageBlacklist 政策。
-      </translation>
 <translation id="4203389617541558220">安排自動重新啟動，藉此限制裝置運作時間。
 
       如果你設定這項政策，表示系統會在經過指定的裝置運作時間長度之後安排自動重新啟動。
@@ -2468,7 +2467,7 @@
       設定這項政策後，使用者無法變更或覆寫此政策。</translation>
 <translation id="5708969689202733975">設定允許的快速解鎖模式</translation>
 <translation id="5711016543513883877">
-      如果啟用這項政策，系統會以獨立程序分別執行逗號分隔清單中指定的每個來源。這也會讓系統隔離以子網域命名的來源，例如指定 https://example.com/ 也會導致 https://foo.example.com/ 遭到隔離，因為後者屬於 https://example.com/ 網站的一部分。
+      如果啟用這項政策，逗號分隔清單中指明的每個來源將各自以獨立程序執行。這也會將指明的來源依子網域隔離；比方說，如果指定 https://example.com/，https://foo.example.com/ 也會因為隸屬 https://example.com/ 網站而遭到隔離。
       如果不設定或停用這項政策，使用者可以變更這項設定。
 
       注意：這項政策不適用於 Android。如果要在 Android 上啟用 IsolateOrigins，請使用 IsolateOriginsAndroid 政策設定。
@@ -2770,17 +2769,6 @@
 <translation id="6281043242780654992">設定內建訊息傳遞政策。如要允許列入黑名單的內建訊息傳遞主機，必須將其加入許可清單。</translation>
 <translation id="6282799760374509080">允許或拒絕擷取音訊</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6306608379445125648">這會針對指定語言強制停用拼字檢查功能。系統會忽略該清單中無法辨識的語言。
-
-      如果啟用這項政策，系統會為指定的語言停用拼字檢查功能。針對不在清單上的語言，使用者仍可以啟用或停用拼字檢查功能。
-
-      如果停用或不設定這項政策，則使用者的拼字檢查偏好設定不會受到任何影響。
-
-      如果 SpellcheckEnabled 政策設為停用，這項政策並不會有任何作用。
-
-      如果某個語言同時列在這項政策和 SpellcheckLanguage 政策中，系統會優先執行 SpellcheckLanguage 政策，為該語言啟用拼字檢查功能。
-
-      拼字檢查功能目前支援的語言如下：af、bg、ca、cs、da、de、el、en-AU、en-CA、en-GB、en-US、es、es-419、es-AR、es-ES、es-MX、es-US、et、fa、fo、fr、he、hi、hr、hu、id、it、ko、lt、lv、nb、nl、pl、pt-BR、pt-PT、ro、ru、sh、sk、sl、sq、sr、sv、ta、tg、tr、uk、vi。</translation>
 <translation id="6310223829319187614">允許在使用者登入過程中以自動完成功能填入網域名稱</translation>
 <translation id="6315673513957120120">當使用者瀏覽出現 SSL 錯誤的網站，Chrome 會顯示警告網頁。在預設或政策設為 True 的情況下，使用者可以忽略這類警告網頁，繼續前往原先指定的頁面。
       這項政策設為 False 時，系統會禁止使用者忽略任何警告網頁。</translation>
@@ -4117,11 +4105,6 @@
       這項政策只會影響採用 SAML 進行驗證的使用者。
 
       指定政策值時，請以秒為單位進行設定。</translation>
-<translation id="9018338365267278833">這項政策會移除列在 <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> 中的擴充功能，或列在 <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> 中且安裝模式設為封鎖的擴充功能，並一併清除本機使用者資料。如需瞭解系統會如何處理未儲存於本機的使用者資料，請參閱擴充功能隱私權政策或資料保留政策。
-
-      如果將這項政策設為啟用，系統會將上述清單中已安裝在裝置上的擴充功能完全移除；本機使用者資料也會一併遭到移除。
-
-      如果未設定或停用這項政策，將停用上述清單中的擴充功能 (如果已安裝在裝置上且列在黑名單 <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> 中)，但不會解除安裝。</translation>
 <translation id="9027787254195333560">這項政策可讓你設定使用者的登入畫面顯示圖片。如要設定這項政策，請指定顯示圖片網址讓 <ph name="PRODUCT_OS_NAME" />進行下載，並指定用於驗證下載內容完整性的加密編譯雜湊值。圖片必須是 JPEG 格式，且大小不得超過 512kB。網址必須未設定任何驗證機制，可直接存取。
 
       系統會下載並快取顯示圖片。只要網址或雜湊碼一有變更，系統就會重新下載圖片。

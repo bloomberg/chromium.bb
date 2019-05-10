@@ -1091,17 +1091,6 @@
       Bu politika ayarlanmazsa <ph name="PRINTERS_ALLOW_ALL" /> uygulanır.
       </translation>
 <translation id="2908277604670530363">Proxy sunucusuyla yapılabilecek maksimum eşzamanlı bağlantı sayısı</translation>
-<translation id="2948463916588961959">Yazım denetimi dillerini zorla etkinleştirir. Bu listedeki tanınmayan diller yoksayılır.
-
-      Bu politikayı etkinleştirirseniz, yazım denetimi, kullanıcının yazım denetimini etkinleştirdiği dillerin yanı sıra belirtilen diller için de etkinleştirilir.
-
-      Bu politikayı ayarlamazsanız veya devre dışı bırakırsanız, kullanıcının yazım denetimi tercihlerinde değişiklik yapılmaz.
-
-      SpellcheckEnabled politikası devre dışı olarak ayarlanırsa bu politikanın hiçbir etkisi olmaz.
-
-      Bir dil hem bu politikada hem de SpellcheckLanguageBlacklist politikasında yer alıyorsa, bu politikaya öncelik verilir ve yazım denetimi dili etkinleştirilir.
-
-      Şu anda desteklenen diller şunlardır: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="2952347049958405264">Kısıtlamalar:</translation>
 <translation id="2956777931324644324">Bu politika, <ph name="PRODUCT_NAME" /> 36. sürümü itibariyle geri çekilmiştir.
 
@@ -1436,7 +1425,6 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
 
         Bu politika, masaüstünde makine kapsamı bulut politika kaydı tarafından kullanılır ve Windows'da Registry ya da GPO, Mac'te plist, Linux'ta ise JSON politika dosyası tarafından ayarlanabilir.</translation>
 <translation id="3660562134618097814">Giriş sırasında SAML IdP çerezlerini aktar</translation>
-<translation id="3668151900457104753">Kara listeye alınan uzantıların yüklemesini kaldır</translation>
 <translation id="3701121231485832347"><ph name="MS_AD_NAME" /> tarafından yönetilen <ph name="PRODUCT_OS_NAME" /> cihazlara özgü ayarları kontrol eder.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Tek satırlı alanlar artık kullanılmamaktadır ve yakında kaldırılacaktır. Lütfen aşağıdaki çok satırlı metin kutusunu kullanın.)</translation>
 <translation id="3709266154059827597">Uzantı kurulum kara listesini yapılandır</translation>
@@ -1644,6 +1632,28 @@ False (yanlış) olarak ayarlanırsa veya hiç ayarlanmazsa, hiçbir sertifika o
       Bu politika doğru seçeneğine ayarlanırsa veya ayarlanmadan bırakılırsa kullanıcılar Chrome OS Kaydı aracılığıyla tekliflerden yararlanabilirler.
 
       Bu politika yanlış seçeneğine ayarlanırsa kullanıcılar tekliflerden yararlanamazlar.</translation>
+<translation id="4008233182078913897">Kullanıcı müdahalesi olmadan, sessiz şekilde yüklenecek ve
+          kullanıcı tarafından kaldırılamayacak uygulamaların ve uzantıların
+          listesini belirler. Uygulamalar/uzantılar tarafından istenen tüm
+          izinler ve uygulamanın/uzantının gelecekteki sürümleri tarafından
+          istenecek diğer izinler kullanıcı etkileşimi olmadan, örtülü olarak verilir.
+          Ayrıca, enterprise.deviceAttributes ve enterprise.platformKeys uzantı
+          API'leri için izinler verilir. (Bu iki API zorunlu olarak yüklenmemiş
+          uygulamalar/uzantılar tarafından kullanılamaz.)
+
+          Bu politika, kendisiyle çakışabilecek bir <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> politikasına göre önceliklidir. Daha önce zorunlu olarak yüklenmiş bir uygulama veya uzantı bu listeden kaldırılırsa <ph name="PRODUCT_NAME" /> tarafından da yüklemesi otomatik olarak kaldırılır.
+
+          <ph name="MS_AD_NAME" /> alan adına katılmamış Windows örnekleri için, zorunlu olarak yüklenen uygulamalar ve uzantılar yalnızca Chrome Web Mağazası'nda listelenenlerle sınırlıdır.
+
+          Bir uzantının kaynak kodunun kullanıcılar tarafından Geliştirici Araçları kullanılarak (uzantının işlevselliğini devre dışı bırakabilecek şekilde) değiştirilebileceğini unutmayın. Böyle bir endişe olması durumunda <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> politikası ayarlanmalıdır.
+
+          Politikaya ait her liste öğesi, noktalı virgülle (<ph name="SEMICOLON" />) ayrılmış bir uzantı kimliği ve isteğe bağlı bir "güncelleme" URL'si içeren bir dizedir. Uzantı kimliği, örneğin geliştirici modundayken <ph name="CHROME_EXTENSIONS_LINK" /> bağlantısında bulunabilen 32 harfli bir dizedir. "Güncelleme" URL'si (belirtilmişse) <ph name="LINK_TO_EXTENSION_DOC1" /> dokümanında açıklandığı gibi bir Güncelleme Manifest XML dokümanına işaret etmelidir. Varsayılan olarak Chrome Web Mağazası'nın güncelleme URL'si kullanılır (şu anda "https://clients2.google.com/service/update2/crx" şeklindedir). Bu politikada ayarlanan "güncelleme" URL'sinin sadece ilk yükleme için kullanıldığına, uzantının sonraki güncellemelerinde ise uzantının manifest dosyasında belirtilen güncelleme URL'sinin kullanıldığına dikkat edin. "Güncelleme" URL'sinin açıkça belirtilmesinin <ph name="PRODUCT_NAME" /> ürününün 67. ve önceki sürümlerinde zorunlu olduğunu da unutmayın.
+
+          Örneğin, <ph name="EXTENSION_POLICY_EXAMPLE" />, standart Chrome Web Mağazası "güncelleme" URL'sinden <ph name="EXTENSION_ID_SAMPLE" /> kimliğine sahip uzantıyı yükler. Uzantıların barındırılması hakkında daha fazla bilgi için <ph name="LINK_TO_EXTENSION_DOC2" /> dokümanına bakın.
+
+          Bu politika ayarlanmadan bırakılırsa, hiçbir uygulama veya uzantı otomatik olarak yüklenmez ve kullanıcı <ph name="PRODUCT_NAME" /> ürünündeki uygulama veya uzantıların yüklemesini kaldırabilir.
+
+          Bu politikanın gizli mod için geçerli olmadığını unutmayın.</translation>
 <translation id="4008507541867797979">Bu politika true (doğru) değerine ayarlanırsa veya yapılandırılmazsa, <ph name="PRODUCT_OS_NAME" /> mevcut kullanıcıları giriş ekranında gösterir ve birinin seçilmesine izin verir.
 
       Bu politika false (yanlış) değerine ayarlanırsa, <ph name="PRODUCT_OS_NAME" /> mevcut kullanıcıları giriş ekranında göstermez. Yönetilen Oturum yapılandırılmadığı takdirde normal oturum açma ekranı (kullanıcı e-postasını ve şifresini veya telefonunu ister) veya SAML geçiş ekranı (<ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" /> politikası tarafından etkinleştirilmişse) gösterilir. Yönetilen Oturum yapılandırıldığında yalnızca Yönetilen Oturum hesapları gösterilir ve birinin seçilmesine izin verilir.
@@ -1767,10 +1777,6 @@ False (yanlış) olarak ayarlanırsa veya hiç ayarlanmazsa, hiçbir sertifika o
           Bu politika ayarlanmadan bırakılırsa yapışkan tuşlar başlangıçta devre dışıdır ancak kullanıcı dilediği zaman etkinleştirebilir.</translation>
 <translation id="4183229833636799228">Varsayılan <ph name="FLASH_PLUGIN_NAME" /> ayarı</translation>
 <translation id="4192388905594723944">Uzaktan erişim istemci kimlik doğrulama jetonunu doğrulama URL'si</translation>
-<translation id="4197038214024763371">Bu politika ayarlanmazsa veya etkinleştirilirse kullanıcının yazım denetimini kullanmasına izin verilir.
-
-      Bu politika devre dışı bırakılırsa kullanıcının yazım denetimini kullanmasına izin verilmez. Bu politika devre dışı bırakıldığında he SpellcheckLanguage ve SpellcheckLanguageBlacklist politikaları da yoksayılır.
-      </translation>
 <translation id="4203389617541558220">Otomatik yeniden başlatmalar planlayarak cihazın açık olduğu süreyi sınırlandır.
 
       Bu politika ayarlandığında, sonrasında otomatik bir yeniden başlatma işleminin planlandığı cihaz açık kalma süresini belirtir.
@@ -2861,17 +2867,6 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 <translation id="6281043242780654992">Yerel Mesajlaşma için politikaları yapılandırır. Kara listeye alınan yerel mesajlaşma ana makinelerine, beyaz listeye eklenmedikçe izin verilmez.</translation>
 <translation id="6282799760374509080">Ses yakalamaya izin verme veya reddetme</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6306608379445125648">Yazım denetimi dillerini zorla devre dışı bırakır. Bu listedeki tanınmayan diller yoksayılır.
-
-      Bu politikayı etkinleştirirseniz, yazım denetimi belirtilen diller için devre dışı bırakılır. Kullanıcı, listede yer almayan diller için yazım denetimini etkinleştirebilir veya devre dışı bırakabilir.
-
-      Bu politikayı ayarlamazsanız veya devre dışı bırakırsanız, kullanıcının yazım denetimi tercihlerinde değişiklik yapılmaz.
-
-      SpellcheckEnabled politikası devre dışı olarak ayarlanırsa bu politikanın hiçbir etkisi olmaz.
-
-      Bir dil hem bu politikada hem de SpellcheckLanguage politikasında yer alıyorsa, SpellcheckLanguage politikasına öncelik verilir ve yazım denetimi dili etkinleştirilir.
-
-      Şu anda desteklenen diller şunlardır: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6310223829319187614">Kullanıcı oturum açarken alan adı otomatik doldurma özelliğini etkinleştir</translation>
 <translation id="6315673513957120120">Kullanıcılar SSL hatalarına neden olan sitelere gittiğinde Chrome bir uyarı iletisi görüntüler. Varsayılan olarak veya bu politika doğru seçeneğine ayarlandığında, kullanıcıların bu uyarı sayfalarını tıklamalarına izin verilir.
       Bu politika yanlış seçeneğine ayarlanırsa, kullanıcılar uyarı sayfalarını tıklayamazlar.</translation>
@@ -4256,11 +4251,6 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
       Bu politika sadece SAML kullanarak kimlik doğrulaması yapan kullanıcıları etkiler.
 
       Politika değeri saniye olarak belirtilmelidir.</translation>
-<translation id="9018338365267278833">Bu işlem, <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> içinde veya <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> politikasında görünen, yükleme modu engellenmiş olarak ayarlanmış uzantıları kaldırır ve içerdiği yerel kullanıcı verilerini temizler.  Yerel olarak depolanmamış kullanıcı verilerine ne olacağını anlamak için uzantı gizlilik politikasına veya veri saklama politikasına bakın.
-
-      Politika etkin olarak ayarlandığında, daha önce bahsedilen listelerdeki (bir makineye yüklenmiş durumdaysa) uzantılar (yerel kullanıcı verileri dahil) makineden tümüyle kaldırılır.
-
-      Politika devre dışı olarak ayarlanır veya ayarlanmadan bırakılırsa, daha önce bahsedilen listelerdeki (bir makineye yüklenmiş durumdaysa ve <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> kara listesindeyse) uzantılar makinede devre dışı bırakılır ve yüklenmez.</translation>
 <translation id="9027787254195333560">Bu politika, giriş ekranında kullanıcıyı temsil eden avatar resmini yapılandırmanıza olanak tanır. Politika, avatar resminin <ph name="PRODUCT_OS_NAME" /> tarafından indirilebileceği URL'nin belirtilmesi ve indirme işleminin bütünlüğünü doğrulamak için kullanılacak şifreleme karmasının tanımlanmasıyla ayarlanır. Resim JPEG biçiminde olmalı, boyutu 512 kB'tan fazla olmamalıdır. URL'ye kimlik doğrulaması yapmadan erişilebilmelidir.
 
       Avatar resmi indirilir ve önbelleğe alınır. URL veya karma her değiştiğinde resim tekrar indirilir.

@@ -1099,17 +1099,6 @@
       Jika dasar ini tidak ditetapkan, <ph name="PRINTERS_ALLOW_ALL" /> akan digunakan.
       </translation>
 <translation id="2908277604670530363">Bilangan maksimum sambungan serentak kepada pelayan proksi</translation>
-<translation id="2948463916588961959">Paksa dayakan semakan ejaan bahasa. Bahasa tidak dikenali dalam senarai itu akan diabaikan.
-
-      Jika anda mendayakan dasar ini, semakan ejaan akan didayakan untuk bahasa yang dinyatakan di samping bahasa yang pengguna telah dayakan semakan ejaan untuknya.
-
-      Jika anda tidak menetapkan dasar ini atau anda melumpuhkan dasar ini, tiada perubahan akan berlaku kepada pilihan semakan ejaan pengguna.
-
-      Jika dasar SpellcheckEnabled ditetapkan kepada dilumpuhkan, dasar ini tiada apa-apa kesan.
-
-      Jika bahasa disertakan dalam kedua-dua dasar ini dan dasar SpellcheckLanguageBlacklist, dasar ini diutamakan dan bahasa semakan ejaan akan didayakan.
-
-      Bahasa yang disokong pada masa ini ialah: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="2952347049958405264">Pengehadan:</translation>
 <translation id="2956777931324644324">Dasar ini telah dihentikan mengikut <ph name="PRODUCT_NAME" /> versi 36.
 
@@ -1447,7 +1436,6 @@
 
         Dasar ini digunakan oleh pendaftaran dasar awan skop mesin pada desktop dan boleh ditetapkan oleh Daftaran atau GPO pada Windows, plist pada Mac dan fail dasar JSON pada Linux.</translation>
 <translation id="3660562134618097814">Pindahkan kuki IdP SAML semasa log masuk</translation>
-<translation id="3668151900457104753">Menyahpasang sambungan yang disenaraihitamkan</translation>
 <translation id="3701121231485832347">Mengawal tetapan yang khusus untuk peranti <ph name="PRODUCT_OS_NAME" /> yang diurus <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Medan satu baris tidak akan digunakan lagi dan akan dialih keluar pada masa akan datang. Sila gunakan kotak teks berbilang baris di bawah.)</translation>
 <translation id="3709266154059827597">Konfigurasi senarai hitam pemasangan sambungan</translation>
@@ -1657,6 +1645,29 @@
       Jika dasar ini ditetapkan kepada benar atau dibiarkan tanpa ditetapkan, pengguna dapat menebus tawaran melalui Pendaftaran OS Chrome.
 
       Jika dasar ini ditetapkan kepada palsu, pengguna tidak akan dapat menebus tawaran.</translation>
+<translation id="4008233182078913897">Menyatakan senarai apl dan sambungan yang dipasang secara senyap,
+          tanpa interaksi pengguna dan tidak boleh dinyahpasang mahupun
+          dilumpuhkan oleh pengguna. Semua kebenaran yang diminta oleh
+          apl/sambungan diberikan secara tersirat, tanpa interaksi pengguna,
+          termasuk sebarang kebenaran tambahan yang diminta oleh versi apl/
+          sambungan pada masa hadapan. Di samping itu, kebenaran diberikan
+          untuk API sambungan enterprise.deviceAttributes dan enterprise.platformKeys.
+          (Kedua-dua API ini tidak tersedia kepada apl/sambungan yang tidak
+          dipasang secara paksa.)
+
+          Dasar ini diutamakan sekiranya berlaku percanggahan dasar <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Jika apl atau sambungan yang dipasang secara paksa sebelum ini dialih keluar daripada senarai ini, maka apl atau sambungan tersebut akan dinyahpasang oleh <ph name="PRODUCT_NAME" /> secara automatik.
+
+          Untuk tika Windows yang tidak dihubungkan ke domain <ph name="MS_AD_NAME" />, pemasangan paksa adalah terhad kepada apl dan sambungan yang disenaraikan di Gedung Web Chrome.
+
+          Sila ambil perhatian bahawa kod sumber mana-mana sambungan mungkin diubah oleh pengguna melalui Alatan Pembangun (berkemungkinan menyebabkan disfungsi pada sambungan). Jika perkara ini menimbulkan kebimbangan, maka dasar  <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> harus ditetapkan.
+
+          Setiap item senarai dasar ini ialah rentetan yang mengandungi ID sambungan dan, sebagai pilihan, URL "kemas kini" yang dipisahkan oleh koma bertitik (<ph name="SEMICOLON" />). ID sambungan ialah rentetan 32 huruf yang didapati, contohnya, pada <ph name="CHROME_EXTENSIONS_LINK" /> apabila dalam mod pembangun. URL "kemas kini", jika dinyatakan, harus menunjuk kepada dokumen XML Manifes Kemas Kini seperti yang dihuraikan di  <ph name="LINK_TO_EXTENSION_DOC1" />. Secara lalai, URL kemas kini Gedung Web Chrome digunakan (pada masa ini ialah "https://clients2.google.com/service/update2/crx"). Sila ambil perhatian bahawa URL "kemas kini" yang ditetapkan dalam dasar ini hanya digunakan untuk pemasangan awal; kemas kini sambungan yang berikutnya menggunakan URL kemas kini yang ditunjukkan dalam manifes sambungan tersebut. Sila ambil perhatian juga bahawa menyatakan URL "kemas kini" secara jelas adalah mandatori dalam <ph name="PRODUCT_NAME" /> sehingga dan merangkumi versi 67.
+
+          Contohnya, <ph name="EXTENSION_POLICY_EXAMPLE" /> memasang sambungan dengan id <ph name="EXTENSION_ID_SAMPLE" /> daripada URL "kemas kini" standard Gedung Web Chrome. Untuk mendapatkan maklumat lanjut tentang mengehoskan sambungan, lihat: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Jika dasar ini dibiarkan tanpa ditetapkan, tiada apl mahupun sambungan dipasang secara automatik dan pengguna boleh menyahpasang sebarang apl dan sambungan dalam <ph name="PRODUCT_NAME" />.
+
+          Sila ambil perhatian bahawa dasar ini tidak dilaksanakan pada mod inkognito.</translation>
 <translation id="4008507541867797979">Jika dasar ini ditetapkan kepada benar atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> akan memaparkan pengguna yang sedia ada pada skrin log masuk dan membenarkan untuk memilih satu.
 
       Jika dasar ini ditetapkan kepada palsu, <ph name="PRODUCT_OS_NAME" /> tidak akan menunjukkan pengguna yang sedia ada pada skrin log masuk. Skrin log masuk biasa (yang meminta e-mel dan kata laluan atau nombor telefon pengguna) atau skrin ruang antara SAML (jika didayakan melalui dasar <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) akan ditunjukkan, melainkan Sesi Terurus dikonfigurasikan. Apabila Sesi Terurus dikonfigurasikan, hanya akaun Sesi Terurus akan ditunjukkan dan salah satu akaun tersebut boleh dipilih.
@@ -1780,10 +1791,6 @@ Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu gantun
           Jika dasar ini dibiarkan tanpa ditetapkan, kekunci lekit dilumpuhkan pada mulanya tetapi boleh didayakan oleh pengguna pada bila-bila masa.</translation>
 <translation id="4183229833636799228">Tetapan <ph name="FLASH_PLUGIN_NAME" /> lalai</translation>
 <translation id="4192388905594723944">URL untuk mengesahkan token pengesahan pelanggan akses jauh</translation>
-<translation id="4197038214024763371">Jika dasar ini tidak ditetapkan atau didayakan, pengguna dibenarkan untuk menggunakan semakan ejaan.
-
-      Jika dasar ini dilumpuhkan, pengguna tidak dibenarkan untuk menggunakan semakan ejaan. Dasar SpellcheckLanguage dan SpellcheckLanguageBlacklist juga akan diabaikan apabila dasar ini dilumpuhkan.
-      </translation>
 <translation id="4203389617541558220">Hadkan masa hidup peranti dengan menjadualkan but semula automatik.
 
       Apabila dasar ini ditetapkan, dasar ini menetapkan tempoh masa hidup peranti dan but semula automatik akan dijadualkan selepas tempoh ini tamat.
@@ -2889,17 +2896,6 @@ Tidak seperti <ph name="URL_LIST_POLICY_NAME" />, peraturan dikenakan pada kedua
 <translation id="6281043242780654992">Konfigurasi dasar untuk Pemesejan Natif. Hos pemesejan natif yang disenaraihitamkan tidak akan dibenarkan melainkan hos ini disenaraiputihkan.</translation>
 <translation id="6282799760374509080">Benarkan atau nafikan rakaman audio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6306608379445125648">Paksa lumpuhkan semakan ejaan bahasa Bahasa tidak dikenali dalam senarai itu akan diabaikan.
-
-      Jika anda mendayakan dasar ini, semakan ejaan akan dilumpuhkan untuk bahasa yang dinyatakan. Pengguna masih boleh mendayakan atau melumpuhkan semakan ejaan untuk bahasa yang tidak tersenarai.
-
-      Jika anda tidak menetapkan dasar ini atau anda melumpuhkan dasar ini, tiada perubahan akan berlaku kepada pilihan semakan ejaan pengguna.
-
-      Jika dasar SpellcheckEnabled ditetapkan kepada dilumpuhkan, dasar ini tiada apa-apa kesan.
-
-      Jika bahasa disertakan dalam kedua-dua dasar ini dan dasar SpellcheckLanguage, dasar SpellcheckLanguage diutamakan dan bahasa semakan ejaan akan didayakan.
-
-      Bahasa yang disokong pada masa ini ialah: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6310223829319187614">Dayakan autolengkap nama domain semasa log masuk pengguna</translation>
 <translation id="6315673513957120120">Chrome memaparkan halaman amaran apabila pengguna menavigasi ke tapak yang mempunyai ralat SSL. Secara lalai atau apabila dasar ini ditetapkan kepada benar, pengguna dibenarkan mengklik lalu halaman amaran ini.
       Pengguna tidak dibenarkan mengklik lalu sebarang halaman amaran apabila dasar ini ditetapkan kepada palsu.</translation>
@@ -4319,11 +4315,6 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
       Dasar ini mempengaruhi pengguna yang membuat pengesahan menggunakan SAML sahaja.
 
       Nilai dasar harus dinyatakan dalam saat.</translation>
-<translation id="9018338365267278833">Dasar ini akan mengalih keluar sambungan yang dipaparkan dalam <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> atau sambungan yang dipaparkan dalam <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> yang telah menetapkan mod pemasangan kepada disekat dan akan menyingkirkan data pengguna setempat bersama-sama sambungan tersebut.  Rujuk dasar privasi sambungan atau dasar pengekalan data untuk memahami perkara yang mungkin berlaku kepada data pengguna yang tidak disimpan setempat.
-
-      Apabila dasar ini ditetapkan kepada didayakan, sambungan yang terangkum dalam senarai sebelumnya (jika sudah dipasang pada mesin) akan dialih keluar sepenuhnya daripada mesin itu (termasuk data pengguna setempat).
-
-      Apabila dasar ini ditetapkan kepada dilumpuhkan atau dibiarkan tanpa ditetapkan, sambungan yang terangkum dalam senarai sebelumnya (jika sudah dipasang pada mesin dan sedia ada dalam senarai hitam <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) akan dilumpuhkan pada mesin dan tidak dinyahpasang.</translation>
 <translation id="9027787254195333560">Dasar ini membolehkan anda mengkonfigurasi imej avatar yang mewakili pengguna pada skrin log masuk. Dasar ini ditetapkan dengan menyatakan URL tempat <ph name="PRODUCT_OS_NAME" /> boleh memuat turun imej avatar dan cincangan kriptografi yang digunakan untuk mengesahkan integriti muat turun tersebut. Imej mestilah menggunakan format JPEG dan saiz imej tidak boleh melebihi 512kB. URL mestilah boleh diakses tanpa sebarang pengesahan.
 
       Imej avatar dimuat turun dan dicache. Imej akan dimuat turun semula apabila URL atau cincangan berubah.

@@ -1068,17 +1068,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă politica nu este configurată, se va folosi <ph name="PRINTERS_ALLOW_ALL" /> în mod prestabilit.
       </translation>
 <translation id="2908277604670530363">Numărul maxim de conexiuni simultane la serverul proxy</translation>
-<translation id="2948463916588961959">Forțează activarea verificării ortografice pentru limbi. Limbile nerecunoscute din listă vor fi ignorate.
-
-      Dacă activezi politica, verificarea ortografică va fi activată pentru limbile indicate, pe lângă limbile pentru care utilizatorul a activat verificarea ortografică.
-
-      Dacă nu setezi sau dacă dezactivezi această politică, nu vor exista modificări în preferințele utilizatorului privind verificarea ortografică.
-
-      Dacă politica SpellcheckEnabled este dezactivată, nu va avea niciun efect.
-
-      Dacă o limbă este inclusă și în această politică, și în politica SpellcheckLanguageBlacklist, această politică are prioritate, iar verificarea ortografică pentru limbă este activată.
-
-      Limbile acceptate în prezent sunt: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="2952347049958405264">Restricții:</translation>
 <translation id="2956777931324644324">Această politică a fost retrasă începând cu <ph name="PRODUCT_NAME" /> versiunea 36.
 
@@ -1410,7 +1399,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
         Această politică este folosită de înregistrarea în politica de cloud a domeniului dispozitivului pe desktop și poate fi setată de fișierul de politică Registry sau GPO în Windows, plist în Mac și JSON în Linux.</translation>
 <translation id="3660562134618097814">Transferă cookie-urile unui furnizor de identitate SAML în timpul conectării</translation>
-<translation id="3668151900457104753">Dezinstalează extensiile din lista neagră</translation>
 <translation id="3701121231485832347">Controlează setările specifice dispozitivelor <ph name="PRODUCT_OS_NAME" /> gestionate de <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Câmpul cu un singur rând este învechit și va fi eliminat în viitor. Începe să folosești caseta text cu mai multe rânduri de mai jos.)</translation>
 <translation id="3709266154059827597">Configurează lista neagră pentru instalarea extensiilor</translation>
@@ -1619,6 +1607,29 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă politica este activată sau nu este configurată, utilizatorii pot valorifica oferte prin înregistrarea sistemului de operare Chrome.
 
       Dacă politica nu este activată, utilizatorii nu vor putea valorifica oferte.</translation>
+<translation id="4008233182078913897">Specifică o listă de aplicații și extensii instalate în fundal,
+          fără intervenția utilizatorului și care nu pot fi dezinstalate sau
+          dezactivate de acesta. Toate permisiunile solicitate de
+          aplicații/extensii sunt acordate în mod prestabilit, fără intervenția utilizatorului,
+          inclusiv orice permisiune suplimentară solicitată de viitoarele versiuni ale
+          aplicației/extensiei. În plus, permisiunile sunt acordate pentru
+          API-urile extensiei
+          enterprise.deviceAttributes și enterprise.platformKeys. (Aceste două API-uri nu sunt disponibile pentru aplicațiile/extensiile care
+          nu sunt instalate forțat.)
+
+          Această politică are prioritate față de o politică <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> care poate crea conflicte. Dacă o aplicație sau o extensie care a fost instalată forțat anterior este eliminată din listă, aceasta este dezinstalată automat de <ph name="PRODUCT_NAME" />.
+
+          Pentru instanțele Windows neasociate unui domeniu <ph name="MS_AD_NAME" />, instalarea forțată se limitează la aplicațiile și extensiile afișate în Magazinul web Chrome.
+
+          Reține că utilizatorii pot să modifice codul sursă al oricărei extensii cu ajutorul Developer Tools (ceea ce poate face extensia nefuncțională). Dacă acest aspect creează probleme, trebuie să se seteze politica <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Fiecare element din lista politicii este un șir care include un ID al extensiei și, opțional, o adresă URL de „actualizare”, separate prin punct și virgulă (<ph name="SEMICOLON" />). ID-ul extensiei este un șir alcătuit din 32 de litere și se găsește, de exemplu, la <ph name="CHROME_EXTENSIONS_LINK" /> în modul pentru dezvoltatori. Adresa URL de „actualizare”, dacă este specificată, trebuie să trimită la un document XML cu manifestul de actualizare, conform descrierii de la <ph name="LINK_TO_EXTENSION_DOC1" />. În mod prestabilit, se folosește adresa URL de actualizare a Magazinului web Chrome (care acum este „https://clients2.google.com/service/update2/crx”). Reține că adresa URL de „actualizare” setată în această politică este folosită numai la instalarea inițială. Actualizările ulterioare ale extensiei vor folosi adresa URL de actualizare indicată în manifestul extensiei. Reține și că specificarea explicită a adresei URL de „actualizare” era obligatorie în versiunile <ph name="PRODUCT_NAME" /> de până la 67, inclusiv.
+
+          De exemplu, <ph name="EXTENSION_POLICY_EXAMPLE" /> instalează aplicația <ph name="EXTENSION_ID_SAMPLE" /> de la adresa URL standard de „actualizare” din Magazinul web Chrome. Pentru mai multe informații despre găzduirea extensiilor, accesează <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Dacă politica nu este setată, nicio aplicație sau extensie nu va fi instalată automat, iar utilizatorul poate dezinstala orice aplicație sau extensie din <ph name="PRODUCT_NAME" />.
+
+          Reține că politica nu se aplică modului incognito.</translation>
 <translation id="4008507541867797979">Dacă această politică este activată sau nu este configurată, <ph name="PRODUCT_OS_NAME" /> va afișa utilizatorii existenți pe ecranul de conectare și va permite alegerea unuia.
 
       Dacă politica este dezactivată, <ph name="PRODUCT_OS_NAME" /> nu va afișa utilizatorii existenți pe ecranul de conectare. Se va afișa ecranul de conectare normal (care solicită adresa de e-mail și parola sau numărul de telefon al utilizatorului) sau ecranul interstițial SAML (dacă este activat prin politica <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), cu excepția cazului în care s-a configurat o sesiune gestionată, caz în care se vor afișa numai conturile pentru sesiuni gestionate și se va permite alegerea unuia.
@@ -1740,10 +1751,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Dacă această politică nu este configurată, tastele adezive vor fi dezactivate inițial, dar pot fi activate oricând de utilizator.</translation>
 <translation id="4183229833636799228">Setarea prestabilită pentru <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">Adresa URL pentru validarea indicativului de autentificare al clientului cu acces la distanță</translation>
-<translation id="4197038214024763371">Dacă politica nu este configurată sau activată, utilizatorului i se permite să folosească verificarea ortografică.
-
-      Dacă politica este dezactivată, utilizatorului nu i se permite să folosească verificarea ortografică. De asemenea, politicile SpellcheckLanguage și SpellcheckLanguageBlacklist vor fi ignorate când această politică este dezactivată.
-      </translation>
 <translation id="4203389617541558220">Limitați timpul de funcționare a dispozitivului, programând reporniri automate.
 
       Dacă această politică este configurată, ea specifică durata de funcționare a dispozitivului după care este programată o repornire automată.
@@ -2812,17 +2819,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="6281043242780654992">Configurează politicile pentru Mesageria nativă. Gazdele de mesagerie nativă trecute în lista neagră vor fi permise doar dacă sunt trecute în lista albă.</translation>
 <translation id="6282799760374509080">Permiteți sau refuzați preluarea conținutului audio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6306608379445125648">Forțează dezactivarea verificării ortografice pentru limbi. Limbile nerecunoscute din listă vor fi ignorate.
-
-      Dacă activezi politica, verificarea ortografică va fi dezactivată pentru limbile indicate. Utilizatorul mai poate să activeze sau să dezactiveze verificarea ortografică pentru limbile care nu sunt în listă.
-
-      Dacă nu setezi sau dacă dezactivezi această politică, nu vor exista modificări în preferințele utilizatorului privind verificarea ortografică.
-
-      Dacă politica SpellcheckEnabled este dezactivată, nu va avea niciun efect.
-
-      Dacă o limbă este inclusă și în această politică, și în politica SpellcheckLanguage, politica SpellcheckLanguage are prioritate, iar verificarea ortografică pentru limbă va fi activată.
-
-      Limbile acceptate în prezent sunt: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6310223829319187614">Activează completarea automată a numelui de domeniu la conectarea utilizatorului</translation>
 <translation id="6315673513957120120">Chrome afișează o pagină de avertisment atunci când utilizatorii accesează site-uri care au erori SSL. În mod prestabilit sau atunci când această politică este activată, utilizatorii au permisiunea să-și continue navigarea dând clic pe aceste pagini de avertisment.
       Dacă această politică este dezactivată, utilizatorii nu mai au permisiunea să-și continue navigarea dând clic pe aceste pagini de avertisment.</translation>
@@ -4187,11 +4183,6 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
       Politica afectează numai utilizatorii care s-au autentificat folosind SAML.
 
       Valoarea politicii trebuie specificată în milisecunde.</translation>
-<translation id="9018338365267278833">Astfel, se vor elimina extensiile care apar în <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> sau în <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> și care au modul de instalare setat la „blocat” și se vor șterge definitiv datele locale ale utilizatorului.  Consultă politica de confidențialitate privind extensiile sau politica de păstrare a datelor pentru a înțelege ce se poate întâmpla cu datele utilizatorului care nu sunt stocate local.
-
-      Când politica este activată, extensiile din listele menționate anterior (dacă sunt deja instalate pe un dispozitiv) vor fi eliminate în întregime de pe acel dispozitiv (inclusiv datele locale ale utilizatorului).
-
-      Când politica este dezactivată sau nu este configurată, extensiile din listele menționate anterior (dacă sunt instalate deja pe un dispozitiv și există în lista neagră <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) vor fi dezactivate de pe dispozitiv și nu vor fi dezinstalate.</translation>
 <translation id="9027787254195333560">Cu această politică poți configura imaginea avatar a utilizatorului pe ecranul de conectare. Politica este setată prin specificarea adresei URL de la care <ph name="PRODUCT_OS_NAME" /> poate descărca imaginea avatar și a unui cod hash criptografic utilizat pentru a verifica integritatea descărcării. Imaginea trebuie să fie în format JPEG, iar mărimea sa nu trebuie să depășească 512 KB. Adresa URL trebuie să poată fi accesată fără autentificare.
 
       Imaginea avatar este descărcată și salvată în memoria cache. Aceasta va fi descărcată din nou ori de câte ori adresa URL sau codul hash se modifică.

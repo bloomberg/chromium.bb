@@ -60,6 +60,7 @@
 <translation id="2908441821576996758">メール アドレスのカンマ区切りリストを入力してください。</translation>
 <translation id="2940813599313844715">オブジェクト</translation>
 <translation id="2942448076852699108">ハイライト表示されたコンテンツ</translation>
+<translation id="2983835398644161987">ピクチャー イン ピクチャーを終了</translation>
 <translation id="3040011195152428237">リンク</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3075154866155599887">有効な値を入力してください。フィールドの入力が不完全か、日付が無効です。</translation>
@@ -79,6 +80,7 @@
 <translation id="3822383571486410024">このテキストは <ph name="MIN_CHARACTERS" /> 文字以上で指定してください（現在は <ph name="CURRENT_LENGTH" /> 文字です）。</translation>
 <translation id="383465348367842624">「<ph name="ATSIGN" />」の前の文字列に記号「<ph name="INVALIDCHARACTER" />」を使用しないでください。</translation>
 <translation id="3846214748874656680">全画面表示を終了</translation>
+<translation id="3904511540324382638">ピクチャー イン ピクチャーを終了</translation>
 <translation id="3920932319529768807">まとめ</translation>
 <translation id="3924558731517983934">アプリケーション</translation>
 <translation id="3944740393230681990">プロローグ</translation>

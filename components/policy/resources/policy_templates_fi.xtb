@@ -1080,17 +1080,6 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
       Jos tätä käytäntöä ei ole määritetty, oletusarvo on <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Enimmäismäärä samanaikaisia ​​yhteyksiä välityspalvelimeen</translation>
-<translation id="2948463916588961959">Pakottaa oikoluvun kielten käyttöönoton. Luettelossa olevat kielet ohitetaan, jos niitä ei tunnisteta.
-
-      Jos tämä käytäntö on käytössä, oikoluku otetaan käyttöön määritettyjen ja käyttäjän valitsemien kielten osalta.
-
-      Jos tämä käytäntö on poistettu käytöstä tai sitä ei ole määritetty, käyttäjän oikolukuasetuksiin ei tehdä muutoksia.
-
-      Jos SpellcheckEnabled-käytäntö on poistettu käytöstä, tällä käytännöllä ei ole vaikutusta.
-
-      Jos jokin kieli on määritetty sekä tässä että SpellcheckLanguageBlacklist-käytännössä, tämä käytäntö on etusijalla ja kielen oikoluku otetaan käyttöön.
-
-      Tällä hetkellä tuettuja kieliä ovat seuraavat: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="2952347049958405264">Rajoitukset:</translation>
 <translation id="2956777931324644324">Tämä käytäntö on poistettu käytöstä tuotteen <ph name="PRODUCT_NAME" /> versiosta 36 alkaen.
 
@@ -1421,7 +1410,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 
         Tätä käytännön arvoa käytetään laitteen laajuisessa pöytäkoneen rekisteröimisessä pilvikäytäntöön. Arvon voi asettaa Windowsissa rekisteri tai ryhmäkäytäntöobjekti, Macissa plist ja Linuxissa JSON-käytäntötiedosto.</translation>
 <translation id="3660562134618097814">SAML-tunnistuspalvelun evästeiden siirto kirjautumisen aikana</translation>
-<translation id="3668151900457104753">Poista mustalla listalla olevat laajennukset</translation>
 <translation id="3701121231485832347">Määrittää sellaisten laitteiden (<ph name="PRODUCT_OS_NAME" />) asetukset, joita <ph name="MS_AD_NAME" /> ylläpitää</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Yksirivinen kenttä on poistettu käytöstä ja poistetaan pian kokonaan. Siirry käyttämään alla olevaa monirivistä tekstiruutua.)</translation>
 <translation id="3709266154059827597">Määritä, mitä laajennuksia ei saa asentaa</translation>
@@ -1631,6 +1619,29 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
       Jos käytännön arvoksi on asetettu tosi tai sille ei aseteta mitään arvoa, käyttäjät voivat lunastaa tarjouksia Chrome-käyttöjärjestelmän rekisteröitymisen kautta.
 
       Jos käytännön arvoksi on asetettu epätosi, käyttäjät eivät voi lunastaa tarjouksia.</translation>
+<translation id="4008233182078913897">Määrittää luettelon sovelluksista ja laajennuksista, jotka asennetaan hiljaisesti
+          ilman käyttäjän toimenpiteitä ja joita käyttäjä ei voi poistaa käytöstä tai
+          poistaa kokonaan. Kaikki sovellusten/laajennusten pyytämät käyttöluvat
+          myönnetään implisiittisesti ilman käyttäjän toimenpiteitä.
+          Tämä koskee myös uusia käyttölupia, joita sovelluksen/laajennuksen
+          myöhemmät versiot voivat pyytää. Lisäksi myönnetään
+          enterprise.deviceAttributes- ja enterprise.platformKeys-laajennussovellusliittymien
+          käyttöoikeus. (Näitä kahta sovellusliittymää voivat käyttää vain sovellukset/laajennukset, jotka
+          asennetaan pakollisina.)
+
+          Tätä käytäntöä sovelletaan ensisijaisesti, jos <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> on sen kanssa ristiriidassa. Jos sovellus tai laajennus on aiemmin asennettu pakollisena ja poistetaan tästä luettelosta, <ph name="PRODUCT_NAME" /> poistaa sen automaattisesti.
+
+          Jos Windows-asennusta ei ole liitetty <ph name="MS_AD_NAME" /> ‑verkkotunnukseen, pakollinen asennus koskee vain Chrome Web Storesta saatavia sovelluksia ja laajennuksia.
+
+          Huomaa, että käyttäjät voivat muokata laajennusten lähdekoodia Kehittäjätyökaluilla (mikä voi häiritä laajennuksen toimintaa). Jos tämä mahdollisuus on huomioitava, käytäntö <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> tulee määrittää.
+
+          Käytännön jokainen luettelokohde on merkkijono, joka sisältää laajennuksen tunnuksen sekä valinnaisesti myös puolipisteellä (<ph name="SEMICOLON" />) erotetun URL-osoitteen, jota käytetään päivitykseen. Laajennuksen tunnus on 32-kirjaiminen merkkijono, joka on nähtävissä kehittäjätilassa esimerkiksi täällä: <ph name="CHROME_EXTENSIONS_LINK" />. Laajennuksen mahdollisen päivitysosoitteen tulee johtaa XML-päivitysluetteloasiakirjaan, kuten osoitteessa <ph name="LINK_TO_EXTENSION_DOC1" /> on kuvattu. Oletusarvoisesti käytetään Chrome Web Storen päivitysosoitetta (joka on tällä hetkellä "https://clients2.google.com/service/update2/crx"). Huomaa, että tässä käytännössä määritettyä päivitysosoitetta käytetään vain ensimmäiseen asennukseen. Laajennuksen myöhempiin päivityksiin käytetään laajennuksen luettelossa ilmoitettua päivitysosoitetta. Päivitysosoitteen ilmoittaminen oli pakollista vielä tuotteen <ph name="PRODUCT_NAME" /> versiossa 67.
+
+          Esimerkki: <ph name="EXTENSION_POLICY_EXAMPLE" /> asentaa laajennuksen <ph name="EXTENSION_ID_SAMPLE" /> Chrome Web Storen tavallisen päivitysosoitteen kautta. Jos haluat lisätietoja laajennusten isännöinnistä, katso <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Jos tätä käytäntöä ei aseteta, mitään sovelluksia tai laajennuksia ei asenneta automaattisesti, ja käyttäjä voi poistaa minkä tahansa sovelluksen tai laajennuksen tuotteesta <ph name="PRODUCT_NAME" />.
+
+          Tätä käytäntöä ei sovelleta incognito-tilaan.</translation>
 <translation id="4008507541867797979">Jos tämän käytännön arvo on tosi tai sitä ei määritetä, <ph name="PRODUCT_OS_NAME" /> näyttää aiemmin lisätyt käyttäjät valittavina kirjautumisnäkymässä.
 
       Jos tämän käytännön arvo on epätosi, <ph name="PRODUCT_OS_NAME" /> ei näytä kirjautumisnäkymässä käyttäjiä. Sen sijaan näytetään tavallinen kirjautumisnäkymä, jossa pyydetään sähköpostiosoitetta ja salasanaa tai puhelinnumeroa, tai SAML-välinäkymä (jos <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" /> on käytössä), paitsi jos hallinnoitu istunto on määritetty. Tässä tapauksessa hallinnoitujen istuntojen käyttäjät näytetään ja yksi niistä voidaan valita.
@@ -1752,10 +1763,6 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
           Jos käytäntöä ei ole määritetty, päälle jäävät näppäimet poistetaan oletuksena käytöstä, mutta käyttäjä voi ottaa ne käyttöön milloin tahansa.</translation>
 <translation id="4183229833636799228"><ph name="FLASH_PLUGIN_NAME" />-oletusasetus</translation>
 <translation id="4192388905594723944">URL-osoite etäkäytön isännän todennustunnuksen varmentamista varten</translation>
-<translation id="4197038214024763371">Jos tätä käytäntöä ei ole määritetty tai se on käytössä, käyttäjä voi tarkistaa oikeinkirjoituksen.
-
-      Jos tämä käytäntö on poistettu käytöstä, käyttäjä ei voi tarkistaa oikeinkirjoitusta ja SpellcheckLanguage- ja SpellcheckLanguageBlacklist-käytännöt ohitetaan.
-      </translation>
 <translation id="4203389617541558220">Rajoita laitteen käyttöaikaa ajoittamalla automaattisia uudelleenkäynnistyksiä.
 
       Jos tämä käytäntö on asetettu, se määrittää pituuden laitteen käyttöajalle, jonka jälkeen on ajoitettu automaattinen uudelleenkäynnistys.
@@ -2817,17 +2824,6 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6281043242780654992">Määrittää laitteen oman viestijärjestelmän käytännöt. Kiellettyjen luettelossa olevia laitteen omaa viestijärjestelmää käyttäviä isäntiä ei sallita, ellei niitä ole lisätty sallittujen luetteloon.</translation>
 <translation id="6282799760374509080">Salli tai estä äänen kaappaaminen</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6306608379445125648">Pakottaa oikoluvun kielten poistamisen käytöstä. Luettelossa olevat kielet ohitetaan, jos niitä ei tunnisteta.
-
-      Jos tämä käytäntö on käytössä, oikoluku poistetaan käytöstä määritettyjen kielten osalta. Jos jotakin kieltä ei mainita luettelossa, käyttäjä voi yhä ottaa sen oikoluvun käyttöön tai poistaa sen käytöstä.
-
-      Jos tämä käytäntö on poistettu käytöstä tai sitä ei ole määritetty, käyttäjän oikolukuasetuksiin ei tehdä muutoksia.
-
-      Jos SpellcheckEnabled-käytäntö on poistettu käytöstä, tällä käytännöllä ei ole vaikutusta.
-
-      Jos jokin kieli on määritetty sekä tässä että SpellcheckLanguage-käytännössä, SpellcheckLanguage ohittaa tämän käytännön ja kielen oikoluku otetaan käyttöön.
-
-      Tällä hetkellä tuettuja kieliä ovat seuraavat: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6310223829319187614">Verkkotunnuksen automaattinen täydennys kirjautumisen yhteydessä</translation>
 <translation id="6315673513957120120">Chrome näyttää varoitussivun, jos käyttäjä avaa SSL-virheitä sisältävän sivuston. Jos käytännön arvo on Tosi, käyttäjä voi ohittaa varoitussivun. Tämä on myös oletusarvo.
       Käytännön arvo Epätosi estää varoitussivujen ohittamisen.</translation>
@@ -4206,11 +4202,6 @@ Jos tämän käytännön arvoksi on määritetty Tosi, käyttäjän on suoritett
       Tämä käytäntö koskee vain SAML-todennusta käyttäviä käyttäjiä.
 
       Määritä käytännön arvo sekunteina.</translation>
-<translation id="9018338365267278833">Tämä poistaa kohteessa <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> tai <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> näkyvät laajennukset, joiden asennustilaksi on määritetty estetty ja tyhjentää samalla paikallisen käyttäjädatan.  Lue laajennusten tietosuojakäytäntö tai datansäilytyskäytäntö ymmärtääksesi, mitä sellaiselle käyttäjädatalle saattaa tapahtua, jota ei ole tallennettu paikallisesti.
-
-      Kun käytännön arvoksi on määritetty käytössä, yllä mainittuihin luetteloihin kuuluvat laajennukset (jos ne on jo asennettu laitteelle) poistetaan laitteelta kokonaan (myös paikallinen käyttäjädata).
-
-      Kun käytännön arvoksi on määritetty ei käytössä tai käytäntöä ei ole määritetty, yllä mainittuihin luetteloihin kuuluvat laajennukset (jos ne on jo asennettu laitteelle ja ovat mustalla listalla <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) poistetaan käytöstä laitteella eikä poisteta.</translation>
 <translation id="9027787254195333560">Tämän käytännön avulla voit määrittää käyttäjän avatar-kuvan, joka näkyy kirjautumisnäytöllä. Määritä tämän käytännön arvoksi URL-osoite, josta <ph name="PRODUCT_OS_NAME" /> voi ladata avatarin, ja salauksen hajautusarvo, jonka avulla tarkistetaan latauksen eheys. Kuvan on oltava JPEG-muodossa, ja sen sallittu enimmäiskoko on 512 kt. Pääsy URL-osoitteeseen ei saa edellyttää todennusta.
 
       Avatar ladataan ja tallennetaan välimuistiin. Se ladataan uudelleen aina, kun URL-osoite tai hajautusarvo muuttuu.

@@ -282,7 +282,6 @@
 <translation id="3029613699374795922"><ph name="KBS" /> KB ડાઉનલોડ કર્યા</translation>
 <translation id="3029704984691124060">પાસફ્રેઝેસ મેળ ખાતા નથી</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />સહાય મેળવો<ph name="END_LINK" /></translation>
-<translation id="3045654778214005718">Google તરફથી આના જેવું વધુ જુઓ</translation>
 <translation id="305593374596241526">સ્થાન બંધ છે, તેને <ph name="BEGIN_LINK" />Android સેટિંગ<ph name="END_LINK" />માં ચાલુ કરો.</translation>
 <translation id="3058498974290601450">તમે કોઈ પણ સમયે સેટિંગમાં 'સિંક કરો' ચાલુ કરી શકો છો</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> બુકમાર્ક}one{<ph name="BOOKMARKS_COUNT_MANY" /> બુકમાર્ક}other{<ph name="BOOKMARKS_COUNT_MANY" /> બુકમાર્ક}}</translation>
@@ -374,7 +373,6 @@
 <translation id="3773755127849930740">જોડી કરવાની મંજૂરી આપવા માટે <ph name="BEGIN_LINK" />Bluetooth ચાલુ કરો<ph name="END_LINK" /></translation>
 <translation id="3775705724665058594">તમારા ડિવાઇસ પર મોકલો</translation>
 <translation id="3778956594442850293">હોમ સ્ક્રીન પર ઉમેર્યું</translation>
-<translation id="3781011235031427080">"આના જેવી વધુ" શીટ અડધી ઊંચાઈએ ખુલી</translation>
 <translation id="3789841737615482174">ઇન્સ્ટોલ કરો</translation>
 <translation id="3810838688059735925">વીડિયો</translation>
 <translation id="3810973564298564668">મેનેજ કરો</translation>
@@ -446,7 +444,6 @@
 <translation id="4351244548802238354">સંવાદ બંધ કરો</translation>
 <translation id="4378154925671717803">ફોન</translation>
 <translation id="4384468725000734951">શોધ માટે Sogou નો ઉપયોગ કરી રહ્યાં છે</translation>
-<translation id="4398088515904522762">આ સુવિધાનો ઉપયોગ કરવા માટે, <ph name="BEGIN_LINK" />પ્રવૃત્તિ અને ક્રિયાપ્રતિક્રિયાઓ<ph name="END_LINK" /> ચાલુ કરો.</translation>
 <translation id="4404568932422911380">કોઈ બુકમાર્ક નથી</translation>
 <translation id="4409723563706114196">પેજના પૂર્વાનુમાનનો ઉપયોગ કરો</translation>
 <translation id="4411535500181276704">લાઇટ મોડ</translation>
@@ -604,7 +601,6 @@
 <translation id="5447765697759493033">આ સાઇટનો અનુવાદ થશે નહીં</translation>
 <translation id="545042621069398927">તમારા ડાઉનલોડની ગતિ વધારી રહ્યાં છીએ.</translation>
 <translation id="5456381639095306749">પૃષ્ઠ ડાઉનલોડ કરો</translation>
-<translation id="5466407412363861127">આ સુવિધા <ph name="BEGIN_LINK" />સિંક<ph name="END_LINK" />નો ઉપયોગ કરે છે.</translation>
 <translation id="548278423535722844">નકશા અ‍ૅપ્લિકેશનમાં ખોલો</translation>
 <translation id="5487521232677179737">ડેટા સાફ કરો</translation>
 <translation id="5494752089476963479">ઘૃણાસ્પદ અથવા ભ્રામક જાહેરાતો બતાવતી સાઇટ પરથી જાહેરાતો બ્લૉક કરો</translation>
@@ -707,7 +703,6 @@
 <translation id="6177111841848151710">હાલનાં શોધ એંજિન માટે અવરોધિત</translation>
 <translation id="6177390657002841081">ડેટા સેવર ચાલુ કરો</translation>
 <translation id="6181444274883918285">સાઇટ અપવાદ ઉમેરો</translation>
-<translation id="618993374665929060">"આના જેવી વધુ" શીટ સંપૂર્ણ ઊંચાઈએ ખુલી</translation>
 <translation id="6192333916571137726">ફાઇલ ડાઉનલોડ કરો</translation>
 <translation id="6192792657125177640">અપવાદો</translation>
 <translation id="6194112207524046168">Chrome તમારો કૅમેરા ઍક્સેસ કરી શકે તે માટે <ph name="BEGIN_LINK" />Android સેટિંગ<ph name="END_LINK" />માં પણ કૅમેરા ચાલુ કરો.</translation>
@@ -791,7 +786,6 @@
 <translation id="6699370405921460408">Google સર્વર, તમે મુલાકાત લો છો તે પેજને ઑપ્ટિમાઇઝ કરશે.</translation>
 <translation id="6709133671862442373">News</translation>
 <translation id="6710213216561001401">પાછલી</translation>
-<translation id="6712388303105732168">"આના જેવા વધુ" બટનનો ઉપયોગ કરીને Google તરફથી "આના જેવી વધુ" શીટ જુઓ</translation>
 <translation id="671481426037969117">તમારું <ph name="FQDN" /> ટાઇમર સમાપ્ત થયું. તે આવતી કાલે ફરી શરૂ થશે.</translation>
 <translation id="6738867403308150051">ડાઉનલોડ કરી રહ્યું છે...</translation>
 <translation id="6746124502594467657">નીચે ખસેડો</translation>
@@ -838,7 +832,6 @@
 <translation id="702463548815491781">જ્યારે ટૉકબૅક અથવા સ્વિચ ઍક્સેસ ચાલુ હોય ત્યારે આપેલ સુઝાવ</translation>
 <translation id="7029809446516969842">પાસવર્ડ્સ</translation>
 <translation id="7031882061095297553">આના પર સમન્વયિત કરો</translation>
-<translation id="7032663816368481562">જ્યારે તમે ઍડ્રેસ બારમાં આના જેવા વધુ <ph name="ICON" /> પર ટૅપ કરો, ત્યારે સંબંધિત પેજની ઝડપી લિંક બતાવવામાં આવે છે. તમે મુલાકાત લો તે પેજના URLs Googleને મોકલવામાં આવે છે.</translation>
 <translation id="7034608350006174882">Google Pay નો ઉપયોગ કરીને કાર્ડ અને સરનામાં</translation>
 <translation id="7053983685419859001">અવરોધિત કરો</translation>
 <translation id="7055152154916055070">રીડાયરેક્ટ કરવાનું બ્લૉક કરવામાં આવ્યું છે:</translation>
@@ -850,7 +843,6 @@
 <translation id="7121362699166175603">ઍડ્રેસ બારમાં ઇતિહાસ અને ઑટોમૅટિક રીતે પૂર્ણતા સાફ કરે છે. તમારા Google એકાઉન્ટમાં <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> પર બ્રાઉઝિંગ ઇતિહાસના બીજા સ્વરૂપો હોય શકે.</translation>
 <translation id="7128222689758636196">હાલનાં શોધ એંજિન માટે પરવાનગી આપો</translation>
 <translation id="7138678301420049075">અન્ય</translation>
-<translation id="7139148793369023665">"આના જેવી વધુ" શીટ બંધ છે</translation>
 <translation id="7141896414559753902">સાઇટને પૉપ-અપ અને રીડાયરેક્ટ બતાવવા દેવાથી બ્લૉક કરો (સુઝાવ આપેલ)</translation>
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" />માંથી <ph name="BEGIN_LINK" />ઑરિજિનલ પેજ લોડ કરો<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">છેલ્લા 24 કલાક</translation>
@@ -951,7 +943,6 @@
 <translation id="7846076177841592234">પસંદગી રદ કરો</translation>
 <translation id="784934925303690534">સમય શ્રેણી</translation>
 <translation id="7851858861565204677">અન્ય ઉપકરણો</translation>
-<translation id="7854964836418414587">"આના જેવી વધુ" શીટ બંધ કરો</translation>
 <translation id="7875915731392087153">ઇમેઇલ બનાવો</translation>
 <translation id="7876243839304621966">બધું દૂર કરો</translation>
 <translation id="7882131421121961860">કોઈ ઇતિહાસ મળ્યો નથી</translation>
@@ -975,7 +966,6 @@
 <translation id="802154636333426148">ડાઉનલોડ નિષ્ફળ થયું</translation>
 <translation id="8026334261755873520">બ્રાઉઝિંગ ડેટા સાફ કરો</translation>
 <translation id="8035133914807600019">નવું ફોલ્ડર...</translation>
-<translation id="8037686209485537503">આના જેવા વધુ</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> દિવસ બાકી</translation>
 <translation id="804335162455518893">SD કાર્ડ મળ્યું નથી</translation>
 <translation id="805047784848435650">તમારા બ્રાઉઝિંગ ઇતિહાસના આધારે</translation>
@@ -989,7 +979,6 @@
 <translation id="8087000398470557479">આ કન્ટેન્ટ <ph name="DOMAIN_NAME" /> માંથી, Google દ્વારા વિતરિત કરેલ છે.</translation>
 <translation id="8103578431304235997">છૂપું ટૅબ</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
-<translation id="8105951947646329362">સંબંધિત પેજ સૂચવો</translation>
 <translation id="8109613176066109935">તમારા બધા ઉપકરણો પર તમારા બુકમાર્ક મેળવવા માટે, સિંક કરવાનું ચાલુ કરો</translation>
 <translation id="8110087112193408731">શું તમારી Chromeની પ્રવૃત્તિ ડિજિટલ લાઇફસ્ટાઇલમાં બતાવીએ?</translation>
 <translation id="8116925261070264013">મ્યૂટ કરેલ</translation>
@@ -1039,7 +1028,6 @@
 <translation id="8497726226069778601">હજી સુધી... અહીં જોવા માટે કંઈ નથી</translation>
 <translation id="8503559462189395349">Chrome પાસવર્ડ</translation>
 <translation id="8503813439785031346">વપરાશકર્તાનામ</translation>
-<translation id="8504988642345501642">જ્યારે તમે ઉપરની બાજુ સ્ક્રોલ કરો, ત્યારે સંબંધિત પેજની ઝડપી લિંક બતાવે છે. તમે મુલાકાત લો તે પેજના URLs Googleને મોકલવામાં આવે છે.</translation>
 <translation id="8514477925623180633">Chromeમાં સંગ્રહિત કરેલા પાસવર્ડની નિકાસ કરો</translation>
 <translation id="8514577642972634246">છુપા મોડમાં દાખલ થાઓ</translation>
 <translation id="851751545965956758">સાઇટને ઉપકરણો સાથે કનેક્ટ થવાથી બ્લૉક કરો</translation>
@@ -1132,7 +1120,6 @@
 <translation id="932327136139879170">હોમ</translation>
 <translation id="932599481871055447">ડેટા બચાવો અને વધુ ઝડપથી બ્રાઉઝ કરો</translation>
 <translation id="938850635132480979">ભૂલ: <ph name="ERROR_CODE" /></translation>
-<translation id="945522503751344254">પ્રતિસાદ મોકલો</translation>
 <translation id="945632385593298557">તમારા માઇક્રોફોનની ઍક્સેસ</translation>
 <translation id="951339005376969845">અસ્તિત્વમાંનો ડેટા ડિલીટ કરો. તમે <ph name="FROM_ACCOUNT" /> પર પાછા સ્વિચ કરીને એને પાછું મેળવી શકો છો.</translation>
 <translation id="95817756606698420">Chrome, ચાઇનામાં શોધ માટે <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> નો ઉપયોગ કરી શકે છે. તમે આને <ph name="BEGIN_LINK" />સેટિંગ્સ<ph name="END_LINK" />માં બદલી શકો છો.</translation>

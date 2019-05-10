@@ -1103,17 +1103,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če ta pravilnik ni nastavljen, se predvideva uporaba pravilnika <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Največje dovoljeno število hkratnih povezav s strežnikom proxy</translation>
-<translation id="2948463916588961959">Vsili omogočanje jezikov za preverjanje črkovanja. Neprepoznani jeziki na tem seznamu so prezrti.
-
-      Če omogočite ta pravilnik, je preverjanje črkovanja omogočeno za navedene jezike poleg jezikov, za katere je uporabnik omogočil preverjanje črkovanja.
-
-      Če ne nastavite tega pravilnika ali ga onemogočite, ni sprememb uporabnikovih nastavitev preverjanja črkovanja.
-
-      Če je pravilnik SpellcheckEnabled onemogočen, ta pravilnik nima učinka.
-
-      Če je jezik vključen v ta pravilnik in pravilnik SpellcheckLanguageBlacklist, ima ta pravilnik prednost in jezik za preverjanje črkovanja je omogočen.
-
-      Za zdaj so podprti ti jeziki: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="2952347049958405264">Omejitve:</translation>
 <translation id="2956777931324644324">Ta pravilnik se ne uporablja od uveljavitve različice brskalnika <ph name="PRODUCT_NAME" /> 36.
 
@@ -1451,7 +1440,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
         Ta pravilnik uporablja včlanitev v pravilnik oblaka v obsegu naprave v namiznem računalniku in ga je mogoče nastaviti prek registra ali pravilnika skupine v sistemu Windows, prek datoteke plist v sistemu macOS in datoteke pravilnika v obliki zapisa JSON v Linuxu.</translation>
 <translation id="3660562134618097814">Prenesi piškotke SAML IdP pri prijavi</translation>
-<translation id="3668151900457104753">Odmestitev razširitev, uvrščenih na seznam blokiranih</translation>
 <translation id="3701121231485832347">Nadzira nastavitve za naprave s sistemom <ph name="PRODUCT_OS_NAME" />, ki jih upravlja <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Enovrstično polje je zastarelo in bo v prihodnje odstranjeno. Začnite uporabljati večvrstično besedilno polje spodaj.)</translation>
 <translation id="3709266154059827597">Nastavi seznam razširitev, katerih namestitev je prepovedana</translation>
@@ -1662,6 +1650,29 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če je vrednost pravilnika nastavljena na »true« ali pravilnik ni nastavljen, lahko uporabniki unovčijo ponudbe prek registracije sistema Chrome OS.
 
       Če je vrednost pravilnika nastavljena na »false«, uporabniki ne morejo unovčiti ponudb.</translation>
+<translation id="4008233182078913897">Določa seznam aplikacij in razširitev, ki so nameščene brez obveščanja
+          in posegov uporabnika ter jih uporabnik ne more odmestiti ali
+          onemogočiti. Vsa dovoljenja, ki jih zahtevajo aplikacije/razširitve,
+          so implicitno odobrena brez posegov uporabnika,
+          vključno z morebitnimi dodatnimi dovoljenji, ki jih bodo zahtevale
+          prihodnje različice aplikacije/razširitve. Prav tako so odobrena dovoljenja
+          za razširitvena API-ja enterprise.deviceAttributes in enterprise.platformKeys.
+          (Ta API-ja nista na voljo aplikacijam/razširitvam,
+          ki niso vsiljeno nameščene.)
+
+          Ta pravilnik ima prednost pred pravilnikom <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> v primeru njunega spora. Če je aplikacija ali razširitev, ki je bila vsiljeno nameščena, odstranjena s tega seznama, jo brskalnik <ph name="PRODUCT_NAME" /> samodejno odmesti.
+
+          Za primerke sistema Windows, ki niso pridruženi v domeno <ph name="MS_AD_NAME" />, je vsiljeno nameščanje omejeno na aplikacije in razširitve, navedene v Spletni trgovini Chrome.
+
+          Upoštevajte, da lahko uporabniki spremenijo izvorno kodo katere koli razširitve z orodji za razvijalce (s čimer razširitev morda izgubi funkcionalnost). Če imate glede tega pomisleke, nastavite pravilnik <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Vsak element na seznamu pravilnika je niz, ki vsebuje ID razširitve in (neobvezno) URL za »posodobitev«, ločen s podpičjem (<ph name="SEMICOLON" />). ID razširitve je 32-mestni črkovni niz, ki ga je mogoče v načinu za razvijalce najti na primer na <ph name="CHROME_EXTENSIONS_LINK" />. Če je URL za »posodobitev« naveden, mora kazati na dokument XML manifesta za posodobitev, kot je opisano na <ph name="LINK_TO_EXTENSION_DOC1" />. Privzeto se uporabi URL za posodobitev v Spletni trgovini Chrome (ki je trenutno »https://clients2.google.com/service/update2/crx«). Upoštevajte, da se URL za »posodobitev«, nastavljen v tem pravilniku, uporabi samo pri začetni namestitvi; pri vseh nadaljnjih posodobitvah razširitve je uporabljen URL, naveden v manifestu razširitve. Upoštevajte tudi, da je bila izrecna navedba URL-ja za »posodobitev« obvezna v različicah brskalnika <ph name="PRODUCT_NAME" /> do vključno različice 67.
+
+          <ph name="EXTENSION_POLICY_EXAMPLE" /> namesti na primer razširitev z ID-jem <ph name="EXTENSION_ID_SAMPLE" /> s standardnega URL-ja za »posodobitev« v Spletni trgovini Chrome. Več informacij o gostovanju razširitev je na voljo tukaj: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Če ta pravilnik ni nastavljen, nobena aplikacija ali razširitev ni nameščena samodejno in uporabnik lahko odmesti katero koli aplikacijo ali razširitev v brskalniku <ph name="PRODUCT_NAME" />.
+
+          Upoštevajte, da se ta pravilnik ne uporablja za način brez beleženja zgodovine.</translation>
 <translation id="4008507541867797979">Če je ta pravilnik omogočen ali ni konfiguriran, bo operacijski sistem <ph name="PRODUCT_OS_NAME" /> na zaslonu za prijavo prikazal obstoječe uporabnike in omogočal izbiro enega.
 
       Če ta pravilnik ni omogočen, operacijski sistem <ph name="PRODUCT_OS_NAME" /> na zaslonu za prijavo ne bo prikazal obstoječih uporabnikov. Prikazan bo zaslon za običajno prijavo (s pozivom za vnos uporabniškega imena in gesla ali telefonske številke) ali vmesni zaslon za prijavo SAML (če je omogočena s pravilnikom <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), razen če je konfigurirana upravljana seja. Če je konfigurirana upravljana seja, bodo prikazani samo računi upravljane seje in mogoče bo izbrati enega izmed njih.
@@ -1785,10 +1796,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Če tega pravilnika ne nastavite, je zaklepanje tipk prvotno onemogočeno, vendar ga lahko uporabnik kadar koli omogoči.</translation>
 <translation id="4183229833636799228">Privzeta nastavitev za <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL za preverjanje žetona za preverjanje pristnosti odjemalca za oddaljeni dostop</translation>
-<translation id="4197038214024763371">Če ta pravilnik ni nastavljen ali omogočen, uporabnik lahko uporablja preverjanje črkovanja.
-
-      Če je ta pravilnik onemogočen, uporabnik ne more uporabljati preverjanja črkovanja. Pri tem sta prezrta tudi pravilnika SpellcheckLanguage in SpellcheckLanguageBlacklist.
-      </translation>
 <translation id="4203389617541558220">Omejitev časa delovanja naprave z načrtovanjem samodejnih vnovičnih zagonov.
 
       Če je ta pravilnik nastavljen, določa, kako dolgo lahko deluje naprava, preden se izvede načrtovan samodejni vnovični zagon.
@@ -2896,17 +2903,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="6281043242780654992">Konfigurira pravilnike za izvorno pošiljanje sporočil. Gostitelji izvornega pošiljanja sporočil s seznama blokiranih ne bodo dovoljeni, razen če bodo uvrščeni na seznam dovoljenih.</translation>
 <translation id="6282799760374509080">Omogočanje ali onemogočanje snemanja zvoka</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6306608379445125648">Vsili onemogočanje jezikov za preverjanje črkovanja. Neprepoznani jeziki na tem seznamu so prezrti.
-
-      Če omogočite ta pravilnik, je preverjanje črkovanja onemogočeno za navedene jezike. Uporabnik lahko še vedno omogoči ali onemogoči preverjanje črkovanja za jezike, ki niso na seznamu.
-
-      Če ne nastavite tega pravilnika ali ga onemogočite, ni sprememb uporabnikovih nastavitev preverjanja črkovanja.
-
-      Če je pravilnik SpellcheckEnabled onemogočen, ta pravilnik nima učinka.
-
-      Če je jezik vključen v ta pravilnik in pravilnik SpellcheckLanguage, ima prednost pravilnik SpellcheckLanguage in jezik za preverjanje črkovanja je omogočen.
-
-      Za zdaj so podprti ti jeziki: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6310223829319187614">Omogočanje samodokončanja imena domene med prijavo uporabnika</translation>
 <translation id="6315673513957120120">Chrome prikaže opozorilno stran, ko uporabniki prikrmarijo na spletna mesta, na katerih so napake SSL. Uporabnikom je privzeto (ali če je ta pravilnik omogočen) dovoljeno, da s klikom opustijo te strani z opozorilom.
       Če onemogočite ta pravilnik, uporabnikom ni dovoljeno s klikom opustiti katere koli strani z opozorilom.</translation>
@@ -4323,11 +4319,6 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
       Ta pravilnik vpliva samo na uporabnike, katerih pristnost je bila preverjena s SAML-jem.
 
       Vrednost za pravilnik mora biti izražena v sekundah.</translation>
-<translation id="9018338365267278833">S tem bodo odstranjene razširitve, ki se pojavijo v izdelku <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, ali razširitve, ki se pojavijo v pravilniku <ph name="EXTENSION_SETTINGS_POLICY_NAME" />, katerih način namestitve je nastavljen na blokirano in pri katerem so izbrisani lokalni uporabniški podatki.  Preberite pravilnik o zasebnosti za razširitve ali pravilnik o hrambi podatkov, če želite razumeti, kaj se lahko zgodi z uporabniškimi podatki, ki niso shranjeni lokalno.
-
-      Če je pravilnik omogočen, bodo razširitve, ki so uvrščene na prej omenjene sezname (če so že nameščene v napravi), v celoti odstranjene iz te naprave (vključno z lokalnimi uporabniškimi podatki).
-
-      Če je pravilnik onemogočen ali ni nastavljen, bodo razširitve, ki so uvrščene na prej omenjene sezname (če so že nameščene v napravi in uvrščene na seznam blokiranih <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />), v napravi onemogočene in ne bodo odmeščene.</translation>
 <translation id="9027787254195333560">S tem pravilnikom lahko nastavite sliko avatarja, ki na zaslonu za prijavo predstavlja uporabnika. Pravilnik se nastavi z določitvijo URL-ja, s katerega lahko operacijski sistem <ph name="PRODUCT_OS_NAME" />prenese sliko za avatar in kriptografsko zgoščeno vrednost za preverjanje celovitosti prenosa. Slika mora biti v obliki JPEG in njena velikost ne sme presegati 512 KB. URL mora biti dostopen brez preverjanja pristnosti.
 
       Slika za avatar se prenese in shrani v predpomnilnik. Če se spremeni URL ali zgoščena vrednost, se znova prenese.

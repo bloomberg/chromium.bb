@@ -1097,17 +1097,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bạn chưa đặt chính sách này, thì <ph name="PRINTERS_ALLOW_ALL" /> sẽ là tùy chọn mặc định.
       </translation>
 <translation id="2908277604670530363">Số lượng tối đa kết nối đồng thời tới máy chủ proxy</translation>
-<translation id="2948463916588961959">Buộc bật ngôn ngữ có tính năng kiểm tra chính tả. Các ngôn ngữ không nhận dạng được trong danh sách đó sẽ bị bỏ qua.
-
-      Nếu bạn bật chính sách này, tính năng kiểm tra chính tả sẽ được bật cho các ngôn ngữ đã chỉ định, ngoài các ngôn ngữ mà người dùng đã bật tính năng kiểm tra chính tả.
-
-      Nếu bạn tắt hoặc không đặt chính sách này, sẽ không có sự thay đổi nào đối với tùy chọn kiểm tra chính tả của người dùng.
-
-      Nếu bạn đặt chính sách SpellcheckEnabled thành tắt, chính sách này sẽ không có hiệu lực.
-
-      Nếu một ngôn ngữ có cả trong chính sách này lẫn chính sách SpellcheckLanguageBlacklist, thì chính sách này sẽ được ưu tiên và tính năng kiểm tra chính tả sẽ được bật.
-
-      Các ngôn ngữ hiện đang được hỗ trợ là: tiếng Afrikaans - Nam Phi, tiếng Bungari, tiếng Catalan, tiếng Séc, tiếng Đan Mạch, tiếng Đức, tiếng Hy Lạp, tiếng Anh - Úc, tiếng Anh - Canada, tiếng Anh - Anh, tiếng Anh - Mỹ, tiếng Tây Ban Nha, tiếng Tây Ban Nha-419, tiếng Tây Ban Nha - Argentina, tiếng Tây Ban Nha - Tây Ban Nha, tiếng Tây Ban Nha - Mexico, tiếng Tây Ban Nha - Mỹ, tiếng Estonia, tiếng Ba Tư, tiếng Faeroe, tiếng Pháp, tiếng Do Thái, tiếng Hindi, tiếng Croatia, tiếng Hungari, tiếng Indonesia, tiếng Ý, tiếng Hàn Quốc, tiếng Lithuania, tiếng Latvia, tiếng Bokmål, tiếng Hà Lan, tiếng Ba Lan, tiếng Bồ Đào Nha - Brazil, tiếng Bồ Đào Nha - Bồ Đào Nha, tiếng Rumani, tiếng Nga, tiếng Serbo - Croatia, tiếng Slovak, tiếng Slovenia, tiếng Albania, tiếng Serbia, tiếng Thụy Điển, tiếng Tamil, tiếng Tajik, tiếng Thổ Nhĩ Kỳ, tiếng Ukraina, tiếng Việt.</translation>
 <translation id="2952347049958405264">Hạn chế:</translation>
 <translation id="2956777931324644324">Chính sách này ngừng hoạt động kể từ phiên bản 36 của <ph name="PRODUCT_NAME" />.
 
@@ -1443,7 +1432,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
         Tính năng đăng ký chính sách đám mây trong phạm vi máy sử dụng chính sách này trên máy tính để bàn. Sổ đăng ký hoặc GPO trên Windows, plist trên máy Mac và tệp chính sách JSON trên Linux có thể đặt chính sách này.</translation>
 <translation id="3660562134618097814">Chuyển cookie SAML IdP trong khi đăng nhập</translation>
-<translation id="3668151900457104753">Gỡ cài đặt các tiện ích trong danh sách cấm</translation>
 <translation id="3701121231485832347">Kiểm soát các tùy chọn cài đặt dành riêng cho các thiết bị <ph name="PRODUCT_OS_NAME" /> do <ph name="MS_AD_NAME" /> quản lý.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Trường một dòng không dùng nữa và sẽ bị xóa trong tương lai. Hãy bắt đầu sử dụng hộp văn bản nhiều dòng bên dưới.)</translation>
 <translation id="3709266154059827597">Định cấu hình danh sách đen cài đặt tiện ích</translation>
@@ -1654,6 +1642,29 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu chính sách này được đặt thành true hoặc không được đặt, người dùng sẽ có thể đổi phiếu mua hàng thông qua Đăng ký Chrome OS.
 
       Nếu chính sách này được đặt thành false, người dùng sẽ không thể đổi phiếu mua hàng.</translation>
+<translation id="4008233182078913897">Chỉ định danh sách các ứng dụng và tiện ích được cài đặt tự động,
+          mà không có sự tương tác của người dùng và người dùng không thể gỡ cài đặt cũng như
+          tắt. Tất cả các quyền truy cập do ứng dụng/tiện ích
+          yêu cầu được cấp trực tiếp mà không có sự tương tác của người dùng,
+          kể cả mọi quyền truy cập bổ sung mà các phiên bản trong tương lai của ứng dụng/tiện ích đó
+          yêu cầu. Ngoài ra, các quyền truy cập sẽ được cấp cho
+           các API tiện ích
+          enterprise.deviceAttributes và enterprise.platformKeys. (Không sử dụng được 2 API này cho các ứng dụng/tiện ích không
+          buộc cài đặt.)
+
+          Chính sách này sẽ được ưu tiên trong trường hợp xung đột với chính sách <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Nếu một ứng dụng hoặc tiện ích bị buộc cài đặt trước đây hiện đã bị xóa khỏi danh sách này, thì <ph name="PRODUCT_NAME" /> sẽ tự động gỡ cài đặt ứng dụng hoặc tiện ích đó.
+
+          Đối với các phiên bản Windows không tham gia miền <ph name="MS_AD_NAME" />, thì việc buộc cài đặt sẽ chỉ giới hạn ở các ứng dụng và tiện ích trong Cửa hàng Chrome trực tuyến.
+
+          Xin lưu ý rằng người dùng có thể thay đổi mã nguồn của bất kỳ tiện ích nào thông qua Công cụ dành cho nhà phát triển (điều này có thể khiến tiện ích hoạt động không chính xác). Nếu bạn lo ngại về điều này thì cần phải đặt chính sách <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Mỗi mục danh sách của chính sách là một chuỗi chứa một mã tiện ích và một URL "cập nhật" (không bắt buộc) phân tách bằng dấu chấm phẩy (<ph name="SEMICOLON" />). Mã tiện ích là một chuỗi gồm 32 chữ cái, chẳng hạn như trên <ph name="CHROME_EXTENSIONS_LINK" /> khi ở chế độ nhà phát triển. URL "cập nhật" (nếu được chỉ định) sẽ trỏ tới tài liệu XML của tệp kê khai cập nhật như mô tả tại <ph name="LINK_TO_EXTENSION_DOC1" />. Theo mặc định, URL cập nhật của Cửa hàng Chrome trực tuyến sẽ được sử dụng (hiện là "https://clients2.google.com/service/update2/crx"). Xin lưu ý rằng URL "cập nhật" được đặt trong chính sách này chỉ dùng cho lần cài đặt ban đầu. Các lần cập nhật tiện ích tiếp theo sẽ sử dụng URL cập nhật nêu trong tệp kê khai của tiện ích. Ngoài ra, cũng xin lưu ý rằng bạn bắt buộc phải chỉ định URL "cập nhật" một cách rõ ràng trong các phiên bản <ph name="PRODUCT_NAME" /> bao gồm cả phiên bản 67.
+
+          Ví dụ: <ph name="EXTENSION_POLICY_EXAMPLE" /> cài đặt tiện ích có mã <ph name="EXTENSION_ID_SAMPLE" /> từ URL "cập nhật" tiêu chuẩn của Cửa hàng Chrome trực tuyến. Để biết thêm thông tin về việc lưu trữ tiện ích, hãy xem: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Nếu bạn không đặt chính sách này, thì sẽ không có ứng dụng hoặc tiện ích nào được cài đặt tự động và người dùng có thể gỡ cài đặt mọi ứng dụng hoặc tiện ích trong <ph name="PRODUCT_NAME" />.
+
+          Xin lưu ý rằng chính sách này không áp dụng cho chế độ ẩn danh.</translation>
 <translation id="4008507541867797979">Nếu đặt chính sách này thành true hoặc không định cấu hình chính sách này, thì <ph name="PRODUCT_OS_NAME" /> sẽ hiển thị người dùng hiện có trên màn hình đăng nhập và cho phép chọn một người dùng.
 
       Nếu đặt chính sách này thành false, <ph name="PRODUCT_OS_NAME" /> sẽ không hiển thị người dùng hiện có trên màn hình đăng nhập. Thay vào đó, màn hình đăng nhập thông thường (nhắc người dùng nhập email và mật khẩu hoặc số điện thoại) hoặc màn hình SAML xem kẽ (nếu đã bật qua chính sách <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) sẽ hiển thị, trừ khi đã định cấu hình phiên được quản lý. Khi đã định cấu hình phiên được quản lý, thì chỉ có các tài khoản của phiên được quản lý hiển thị, cho phép bạn chọn một trong số các tài khoản đó.
@@ -1777,10 +1788,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu bạn không đặt chính sách này, thì ban đầu, các phím cố định sẽ tắt nhưng người dùng có thể bật bất cứ lúc nào.</translation>
 <translation id="4183229833636799228">Cài đặt <ph name="FLASH_PLUGIN_NAME" /> mặc định</translation>
 <translation id="4192388905594723944">URL để xác thực mã thông báo xác thực ứng dụng truy cập từ xa</translation>
-<translation id="4197038214024763371">Nếu bạn không đặt hoặc nếu bạn bật chính sách này, người dùng sẽ được phép sử dụng tính năng kiểm tra chính tả.
-
-      Nếu bạn tắt chính sách này, người dùng sẽ không được phép sử dụng tính năng kiểm tra chính tả. Chính sách SpellcheckLanguage và SpellcheckLanguageBlacklist cũng sẽ bị bỏ qua khi bạn tắt chính sách này.
-      </translation>
 <translation id="4203389617541558220">Giới hạn thời gian hoạt động của thiết bị bằng cách lên lịch tự động khởi động lại.
 
       Khi chính sách này được đặt, chính sách chỉ định lượng thời gian hoạt động của thiết bị mà sau lượng thời gian đó, khởi động lại tự động sẽ được lên lịch.
@@ -2884,18 +2891,6 @@ Không giống như <ph name="URL_LIST_POLICY_NAME" />, các quy tắc áp dụn
 <translation id="6281043242780654992">Định cấu hình chính sách cho Nhắn tin gốc. Máy chủ nhắn tin gốc được đưa vào danh sách cấm sẽ không được phép trừ khi chúng được đưa vào danh sách cho phép.</translation>
 <translation id="6282799760374509080">Cho phép hoặc từ chối ghi âm</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6306608379445125648">Buộc tắt các ngôn ngữ có tính năng kiểm tra chính tả. Các ngôn ngữ không nhận dạng được trong danh sách đó sẽ bị bỏ qua.
-
-      Nếu bạn bật chính sách này, tính năng kiểm tra chính tả sẽ bị tắt đối với các ngôn ngữ đã chỉ định Người dùng vẫn có thể bật hoặc tắt tính năng kiểm tra chính tả đối với các ngôn ngữ không có trong danh sách.
-
-      Nếu bạn tắt hoặc không đặt chính sách này, sẽ không có sự thay đổi nào đối với tùy chọn kiểm tra chính tả của người dùng.
-
-      Nếu bạn đặt chính sách SpellcheckEnabled thành tắt, chính sách này sẽ không có hiệu lực.
-
-      Nếu một ngôn ngữ có trong cả chính sách này lẫn chính sách SpellcheckLanguage, thì chính sách SpellcheckLanguage sẽ được ưu tiên và ngôn ngữ có tính năng kiểm tra chính tả đó sẽ được bật.
-
-      Các ngôn ngữ hiện đang được hỗ trợ là: tiếng 
-Afrikaans Nam Phi, tiếng Bungari, tiếng Catalan, tiếng Séc, tiếng Đan Mạch, tiếng Đức, tiếng Hy Lạp, tiếng Anh - Úc, tiếng Anh - Canada, tiếng Anh - Anh, tiếng Anh - Mỹ, tiếng Tây Ban Nha, tiếng Tây Ban Nha-419, tiếng Tây Ban Nha - Argentina, tiếng Tây Ban Nha - Tây Ban Nha, tiếng Tây Ban Nha - Mexico, tiếng Tây Ban Nha - Mỹ, tiếng Estonia, tiếng Ba Tư, tiếng Faeroe, tiếng Pháp, tiếng Do Thái, tiếng Hindi, tiếng Croatia, tiếng Hungari, tiếng Indonesia, tiếng Ý, tiếng Hàn Quốc, tiếng Lithuania, tiếng Latvia, tiếng Bokmål, tiếng Hà Lan, tiếng Ba Lan, tiếng Bồ Đào Nha - Brazil, tiếng Bồ Đào Nha - Bồ Đào Nha, tiếng Rumani, tiếng Nga, tiếng Serbo - Croatia, tiếng Slovak, tiếng Slovenia, tiếng Albania, tiếng Serbia, tiếng Thụy Điển, tiếng Tamil, tiếng Tajik, tiếng Thổ Nhĩ Kỳ, tiếng Ukraina, tiếng Việt.</translation>
 <translation id="6310223829319187614">Bật tự động hoàn tất tên miền trong khi người dùng đăng nhập</translation>
 <translation id="6315673513957120120">Chrome hiển thị trang cảnh báo khi người dùng truy cập các trang web gặp lỗi SSL. Theo mặc định hoặc khi chính sách này được đặt thành true, người dùng được phép nhấp qua các trang cảnh báo này.
       Đặt chính sách này thành false sẽ không cho phép người dùng nhấp qua bất kỳ trang cảnh báo nào.</translation>
@@ -4301,11 +4296,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Chính sách này chỉ ảnh hưởng đến người dùng đã xác thực bằng Ngôn ngữ đánh dấu xác nhận bảo mật (SAML).
 
       Bạn nên chỉ định giá trị tính bằng giây cho chính sách này.</translation>
-<translation id="9018338365267278833">Thao tác này sẽ xóa các tiện ích xuất hiện trong <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> hoặc các tiện ích xuất hiện trong <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> có chế độ cài đặt được đặt thành chặn, đồng thời cũng xóa hoàn toàn dữ liệu người dùng trên thiết bị.  Hãy tham khảo chính sách quyền riêng tư của tiện ích hoặc chính sách lưu giữ dữ liệu để hiểu rõ những điều có thể xảy ra với dữ liệu người dùng không được lưu trữ trên thiết bị.
-
-      Khi bạn đặt chính sách này thành bật, thì những tiện ích thuộc các danh sách nêu trên (nếu đã cài đặt trên một máy) sẽ bị xóa hoàn toàn khỏi máy đó (bao gồm cả dữ liệu người dùng trên thiết bị).
-
-      Khi bạn không đặt hoặc đặt chính sách này thành tắt, thì những tiện ích thuộc các danh sách nêu trên (nếu đã cài đặt trên một máy và có trong danh sách cấm <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) sẽ bị tắt trên máy và không bị gỡ cài đặt.</translation>
 <translation id="9027787254195333560">Chính sách này cho phép bạn định cấu hình hình đại diện cho người dùng trên màn hình đăng nhập. Bạn đặt chính sách này bằng cách chỉ định URL mà từ đó <ph name="PRODUCT_OS_NAME" /> có thể tải xuống hình đại diện và một hàm băm mật mã dùng để xác minh tính toàn vẹn của tài nguyên đã tải xuống. Ảnh phải ở định dạng JPEG, kích thước ảnh không được vượt quá 512 kB. URL phải truy cập được mà không cần xác thực.
 
       Hình đại diện được tải xuống và lưu vào bộ nhớ đệm. Hình nền sẽ được tải xuống lại bất cứ khi nào URL hoặc hàm băm thay đổi.

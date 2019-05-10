@@ -349,6 +349,11 @@
       Ja šai politikai ir iestatīta vērtība “False”, paplašinājumu un spraudņu dati netiek vākti.
 
       Šī politika ir spēkā tikai tad, ja ir iespējots paplašinājums <ph name="CHROME_REPORTING_EXTENSION_NAME" /> un ierīce ir reģistrēta pakalpojumā <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="1560205870554624777">Nosaka, vai tiek iespējota Kerberos funkcionalitāte. Kerberos ir autentifikācijas protokols, ko var izmantot, lai veiktu autentificēšanu tīmekļa lietotnēs un failu kopīgošanas ierīcēs.
+
+          Ja šī politika ir iespējota, Kerberos funkcionalitāte ir iespējota. Kerberos kontus var pievienot, izmantojot politiku “Konfigurēt Kerberos kontus” vai Kerberos kontu iestatījumus lapā “Personu iestatījumi”.
+
+          Ja šī politika ir atspējota vai nav iestatīta, Kerberos kontu iestatījumi ir atspējoti. Kerberos kontus nevar pievienot, un Kerberos autentifikāciju nevar izmantot. Visi esošie Kerberos konti, kā arī visas saglabātās paroles tiek dzēstas.</translation>
 <translation id="1561424797596341174">Politikas ignorēšana attālās piekļuves saimniekdatora atkļūdošanas versijām</translation>
 <translation id="1561967320164410511">Universālā divfaktoru autentificēšana (U2F) un paplašinājumi atsevišķai apstiprināšanai</translation>
 <translation id="1574554504290354326">Šis iestatījums vairs netiek izmantots, tā vietā izmantojiet “SafeBrowsingExtendedReportingEnabled”. “SafeBrowsingExtendedReportingEnabled” iespējošana vai atspējošana ir ekvivalenta “SafeBrowsingExtendedReportingOptInAllowed” vērtības “False” iestatīšanai.
@@ -435,6 +440,12 @@
 
       Politikā ir jāiestata vietrādis URL, kur operētājsistēma <ph name="PRODUCT_OS_NAME" /> var lejupielādēt pakalpojumu sniegšanas noteikumus. Tiem ir jābūt rakstītiem kā vienkāršam tekstam, kas jārāda kā MIME veids “teksts/vienkāršs”. Iezīmēšana nav atļauta.</translation>
 <translation id="1750315445671978749">Bloķēt visas lejupielādes</translation>
+<translation id="1762072363876276024">
+      Šī politika attiecas uz pierakstīšanās ekrānu. Lūdzu, skatiet arī politiku <ph name="SITE_PER_PROCESS_POLICY_NAME" />, kas attiecas uz lietotāja sesiju. Ieteicams abām politikām iestatīt vienādu vērtību. Ja vērtības nebūs vienādas, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikas vērtība.
+      Šo politikas DeviceLoginScreenSitePerProcess iestatījumu var izmantot, lai neatļautu lietotājiem atteikties no noklusējuma rīcības — visu vietņu izolēšanas. Ņemiet vērā, ka politika DeviceLoginScreenIsolateOrigins var būt noderīga papildu detalizētāku vietņu izolēšanai.
+      Ja politika ir iespējota, lietotāji nevarēs atteikties no noklusējuma rīcības, kad katrai vietnei tiek izpildīts atsevišķs process.
+      Ja politika nav konfigurēta vai ir atspējota, lietotājs varēs mainīt iestatījumu (piemēram, izmantojot ierakstu “Atspējot vietnes izolēšanu” vietnē chrome://flags).
+      </translation>
 <translation id="1781356041596378058">Šī politika arī kontrolē piekļuvi Android izstrādātājiem paredzētajām opcijām. Ja iestatīsiet šo politiku kā patiesu, lietotāji nevarēs piekļūt izstrādātājiem paredzētajām opcijām. Ja iestatīsiet šo politiku kā aplamu vai neiestatīsiet politiku, lietotāji varēs piekļūt izstrādātājiem paredzētajām opcijām, septiņas reizes pieskaroties versijas numuram Android iestatījumu lietotnē.</translation>
 <translation id="1793346220873697538">Atspējot drukāšanu ar PIN kodu pēc noklusējuma</translation>
 <translation id="1797233582739332495">Periodiski rādīt lietotājam uzvedni par obligātu atkārtotu palaišanu</translation>
@@ -871,6 +882,11 @@
 
       Ja šī politika nav iestatīta, lietotājs varēs izvēlēties, izmantot vai neizmantot datu saspiešanas starpniekservera funkciju.</translation>
 <translation id="257788512393330403">Parole ir jāievada ik pēc sešām stundām</translation>
+<translation id="2586162458524426376">
+      Šī politika attiecas uz pierakstīšanās ekrānu. Lūdzu, skatiet arī politiku <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, kas attiecas uz lietotāja sesiju.
+      Ja politika ir iespējota, katrai komatatdalītajā sarakstā norādītajai vietnei tiks izpildīts atsevišķs process. Vietnes tiks arī izolētas pēc apakšdomēniem, piemēram, norādot https://example.com/, tiks izolēta arī vietne https://foo.example.com/ kā daļa no vietnes https://example.com/.
+      Ja politika nav konfigurēta vai ir atspējota, pierakstīšanās ekrānam tiks izmantoti platformas noklusējuma vietnes izolācijas iestatījumi.
+      </translation>
 <translation id="2587719089023392205">Iestatīt <ph name="PRODUCT_NAME" /> kā noklusējuma pārlūku</translation>
 <translation id="2592091433672667839">Neaktivitātes ilgums, pirms ekrānsaudzētājs tiek parādīts mazumtirdzniecības režīma pierakstīšanās ekrānā</translation>
 <translation id="2592162121850992309">Ja šai politikai ir iestatīta vērtība “True” vai nav iestatīta nekāda vērtība, un ja noteiktas grafiskā procesora funkcijas nav ievietotas melnajā sarakstā, paātrināta aparatūras darbība tiks iespējota.
@@ -881,6 +897,7 @@
           Visās jaunākajās Samba un Windows serveru versijās NTLMv2 tiek atbalstīta. Tā jāatspējo tikai tad, ja nepieciešama saderība ar vecākām versijām. Atspējošana samazina autentifikācijas drošību.
 
           Ja šai politikai nav iestatīta nekāda vērtība, noklusējums ir “True” un NTLMv2 ir iespējota.</translation>
+<translation id="26023406105317310">Konfigurēt Kerberos kontus</translation>
 <translation id="2604182581880595781">Konfigurēt ar tīkla failu kopīgošanas ierīcēm saistīto politiku.</translation>
 <translation id="2623014935069176671">Gaidīt sākotnējo lietotāja darbību</translation>
 <translation id="262740370354162807">Iespējo dokumentu iesniegšanu pakalpojumā <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1075,17 +1092,6 @@
       Ja šī politika nav iestatīta, tiek izmantota vērtība <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Maksimālais vienlaikus iespējamais savienojumu skaits ar starpniekserveri</translation>
-<translation id="2948463916588961959">Piespiedu kārtā iespējo pareizrakstības pārbaudes valodas. Tiks ignorētas sarakstā iekļautās valodas, kuras nevarēs atpazīt.
-
-      Ja iespējosiet šo politiku, pareizrakstības pārbaude tiks iespējota gan norādītajām valodām, gan tām valodām, kurām lietotājs ir iespējojis pareizrakstības pārbaudi.
-
-      Ja šī politika nav iespējota vai tā tiek atspējota, lietotāja pareizrakstības preferencēs netiks ieviestas izmaiņas.
-
-      Ja politika SpellcheckEnabled ir atspējota, tā nedarbosies.
-
-      Ja valoda ir ietverta gan šajā, gan SpellcheckLanguageBlacklist politikā, prioritāte ir šai politikai un pareizrakstības pārbaudes valoda tiks iespējota.
-
-      Pašreiz atbalstītās valodas: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="2952347049958405264">Ierobežojumi:</translation>
 <translation id="2956777931324644324">Kopš <ph name="PRODUCT_NAME" /> versijas 36 izlaišanas šī politika vairs netiek izmantota.
 
@@ -1215,6 +1221,7 @@
 <translation id="3159375329008977062">Lietotājam ir atļauts eksportēt/importēt Crostini konteinerus, izmantojot lietotāja saskarni</translation>
 <translation id="3165808775394012744">Šīs politikas ir šeit ietvertas, lai tās varētu ērti noņemt.</translation>
 <translation id="316778957754360075">Šī iestatījuma darbība ir pārtraukta ar <ph name="PRODUCT_NAME" /> versiju 29. Uzņēmumu mitinātas paplašinājumu/lietotņu kolekcijas ieteicams iestatīt, ietverot vietnes mitināšanu CRX pakotnēs politikā ExtensionInstallSources un vietnē ievietojot tiešas saites uz pakotņu lejupielādēm. Lietojumprogrammu palaidēju attiecīgajai tīmekļa lapai var izveidot, izmantojot politiku ExtensionInstallForcelist.</translation>
+<translation id="3168968618972302728">Politikas, kas ir saistītas ar Kerberos autentifikāciju.</translation>
 <translation id="3171369832001535378">Ierīces tīkla saimniekdatora veidne</translation>
 <translation id="3172512016079904926">Iespējo vietējās ziņojumapmaiņas saimniekdatoru instalēšanu lietotāja līmenī.
 
@@ -1410,6 +1417,7 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
 <translation id="3631099945620529777">Ja ir iestatīta vērtība “False”, uzdevumu pārvaldniekā ir atspējota poga Beigt procesu.
 
       Ja ir iestatīta vērtība “True” vai vērtība nav konfigurēta, lietotājs var beigt procesus uzdevumu pārvaldniekā.</translation>
+<translation id="3643284063603988867">Iespējot funkciju “Atcerēties paroli”</translation>
 <translation id="3646859102161347133">Ekrāna lupas veida iestatīšana</translation>
 <translation id="3653237928288822292">Noklusējuma meklētājprogrammas ikona</translation>
 <translation id="3660510274595679517">
@@ -1419,7 +1427,6 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
 
         Šo politiku izmanto ierīces tvēruma mākoņa politikas reģistrācijai galddatoros, un to var iestatīt, izmantojot reģistru vai GPO operētājsistēmā Windows, “plist” failu operētājsistēmā Mac un JSON politikas failu operētājsistēmā Linux.</translation>
 <translation id="3660562134618097814">SAML identitātes nodrošinātāja sīkfailu pārsūtīšana pieteikšanās laikā</translation>
-<translation id="3668151900457104753">Atinstalēt melnajā sarakstā iekļautos paplašinājumus</translation>
 <translation id="3701121231485832347">Kontrolē iestatījumus, kas ir raksturīgi <ph name="MS_AD_NAME" /> pārvaldītajām <ph name="PRODUCT_OS_NAME" /> ierīcēm.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Vienas rindas lauks ir novecojis, un to ir plānots noņemt. Lūdzu, sāciet lietot tālāk esošo vairākrindu tekstlodziņu.)</translation>
 <translation id="3709266154059827597">Konfigurē paplašinājumu instalēšanas melno sarakstu</translation>
@@ -1627,6 +1634,28 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja šai politikai ir iestatīta vērtība Patiesa vai politika nav iestatīta, lietotāji var izpirkt piedāvājumus, izmantojot operētājsistēmas Chrome OS reģistrāciju.
 
       Ja šai politikai ir iestatīta vērtība Nepatiesa, lietotāji nevar izpirkt piedāvājumus.</translation>
+<translation id="4008233182078913897">Norāda sarakstu ar lietotnēm un paplašinājumiem, kas tiek instalēti klusajā režīmā 
+          bez lietotāja iejaukšanās un ko lietotājs nevar atinstalēt vai atspējot. 
+          Visas lietotņu/paplašinājumu pieprasītās atļaujas, tostarp visas konkrētās 
+          lietotnes/paplašinājuma turpmāko versiju pieprasītās papildu atļaujas, tiek
+          piešķirtas tieši bez lietotāja iejaukšanās. Turklāt atļaujas tiek piešķirtas
+          paplašinājumu saskarnēm API enterprise.deviceAttributes un
+          enterprise.platformKeys. (Šīs divas saskarnes API nav pieejamas
+          lietotnēm/paplašinājumiem, kas nav instalēti piespiedu kārtā.)
+
+          Šīs politikas prioritāte ir lielāka par iespējami konfliktējošās politikas <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> prioritāti. Ja lietotne vai paplašinājums, kas iepriekš tika instalēts piespiedu kārtā, tiek noņemts no šī saraksta, <ph name="PRODUCT_NAME" /> to automātiski atinstalē.
+
+          Windows instancēs, kas nav pievienotas <ph name="MS_AD_NAME" /> domēnam, piespiedu instalēšana attiecas tikai uz lietotnēm un paplašinājumiem, kas norādīti Chrome interneta veikalā.
+
+          Ņemiet vērā, ka lietotāji var mainīt jebkura paplašinājuma pirmkodu, izmantojot izstrādātāja rīkus (potenciāli padarot paplašinājuma darbību neiespējamu). Ja tas rada problēmas, ir jāiestata politika <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Katrs politikas saraksta vienums ir virkne, kas ietver paplašinājuma ID un pēc vēlēšanās atjaunināšanas URL, kuri atdalīti ar semikolu (<ph name="SEMICOLON" />). Paplašinājuma ID ir 32 burtu virkne, kas ir redzama, piemēram, lapā <ph name="CHROME_EXTENSIONS_LINK" /> izstrādātāja režīmā. Atjaunināšanas vietrādim URL (ja tas ir norādīts) ir jānovirza uz atjauninājuma manifesta XML dokumentu, kā norādīts šeit: <ph name="LINK_TO_EXTENSION_DOC1" />. Pēc noklusējuma tiek izmantots Chrome interneta veikala atjaunināšanas URL (šobrīd: "https://clients2.google.com/service/update2/crx"). Ņemiet vērā, ka šajā politikā iestatītais atjaunināšanas URL tiek izmantots tikai sākotnējai instalācijai; nākamajiem paplašinājuma atjauninājumiem tiek izmantots paplašinājuma manifestā norādītais atjaunināšanas URL. Turklāt ņemiet vērā, ka atjaunināšanas URL tieša norādīšana bija obligāta visās vecākajās <ph name="PRODUCT_NAME" /> versijās līdz pat versijai 67 (ieskaitot).
+
+          Piemēram, <ph name="EXTENSION_POLICY_EXAMPLE" /> instalē paplašinājumu ar ID <ph name="EXTENSION_ID_SAMPLE" />, izmantojot Chrome interneta veikala standarta atjaunināšanas URL. Plašāku informāciju par paplašinājumu mitināšanu skatiet šeit: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Ja šī politika nav iestatīta, neviena lietotne un paplašinājums netiek instalēts automātiski un lietotājs var atinstalēt jebkuru <ph name="PRODUCT_NAME" /> pārlūkā esošu lietotni vai paplašinājumu.
+
+          Ņemiet vērā, ka šī politika neattiecas uz inkognito režīmu.</translation>
 <translation id="4008507541867797979">Ja šai politikai ir iestatīta vērtība “True” vai tā nav konfigurēta, <ph name="PRODUCT_OS_NAME" /> pieteikšanās ekrānā būs redzami esošie lietotāji un būs atļauts vienu izvēlēties.
 
       Ja šai politikai ir iestatīta vērtība “False”, <ph name="PRODUCT_OS_NAME" /> pieteikšanās ekrānā esošie lietotāji būs redzami. Tiks parādīts parastais pierakstīšanās ekrāns (vaicājot lietotāja e-pasta adresi un paroli vai tālruni) vai SAML starpposma ekrāns (ja tas ir iespējots, izmantojot <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" /> politiku), ja vien nav konfigurēta pārvaldītā sesija. Ja pārvaldītā sesija ir konfigurēta, tiks parādīti tikai pārvaldītās sesijas konti, ļaujot izvēlēties vienu no tiem.
@@ -1739,12 +1768,17 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           Šis iestatījums ignorēs politiku RemoteAccessHostClientDomain, ja tā ir iestatīta.
 
           Skatiet arī politiku RemoteAccessHostDomainList.</translation>
+<translation id="4164601239783385546">Iespējojiet taustiņu ķēdes pieejamības funkciju.
+
+          Ja šai politikai ir iestatīta vērtība “true”, taustiņu ķēde vienmēr būs iespējota.
+
+          Ja šai politikai ir iestatīta vērtība “false”, taustiņu ķēde vienmēr būs atspējota.
+
+          Ja iestatīsiet šo politiku, lietotāji nevarēs to mainīt un ignorēt.
+
+          Ja šī politika nav iestatīta, taustiņu ķēde sākotnēji būs atspējota, taču lietotājs var jebkurā brīdī to iespējot.</translation>
 <translation id="4183229833636799228">Spraudņa <ph name="FLASH_PLUGIN_NAME" /> noklusējuma iestatījums</translation>
 <translation id="4192388905594723944">Vietrādis URL attālās piekļuves klienta autentifikācijas pilnvaras apstiprināšanai</translation>
-<translation id="4197038214024763371">Ja šī politika nav iestatīta vai iespējota, lietotājs varēs lietot pareizrakstības pārbaudi.
-
-      Ja šī politika ir atspējota, lietotājs nevarēs lietot pareizrakstības pārbaudi. Ja šī politika ir atspējota, tiks ignorētas arī politikas SpellcheckLanguage un SpellcheckLanguageBlacklist.
-      </translation>
 <translation id="4203389617541558220">Ierobežojiet ierīces darbspējas laiku, plānojot automātiskas atkārtotas palaišanas gadījumus.
 
       Ja šī politika ir iestatīta, tā norāda ierīces darbspējas laiku, pēc kura ir plānota automātiska atkārtota palaišana.
@@ -1932,6 +1966,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4578912515887794133">Ja šis iestatījums ir iespējots, attālās piekļuves saimniekdatorā tiek salīdzināts lokālā lietotāja vārds (ar kuru ir saistīts saimniekdators) ar tā Google konta vārdu, kas ir reģistrēts kā saimniekdatora īpašnieks (piemēram, ja saimniekdators pieder Google konta janisberzins@example.com lietotājam, lokālā lietotāja vārdam ir jābūt “janisberzins”).  Ja saimniekdatora īpašnieka vārds atšķiras no lokālā lietotāja vārda, ar kuru ir saistīts saimniekdators, attālās piekļuves saimniekdators netiek startēts.  Politika RemoteAccessHostMatchUsername ir jāizmanto kopā ar politiku RemoteAccessHostDomain, lai ieviestu arī saimniekdatora īpašnieka Google konta saistīšanu ar konkrētu domēnu (piemēram, example.com).
 
           Ja šis iestatījums ir atspējots vai nav iestatīts, attālās piekļuves saimniekdatoru var saistīt ar jebkuru lokālo lietotāju.</translation>
+<translation id="4591366717022345234">Nodrošināt lietotājiem ātrā risinājuma būvējumu</translation>
 <translation id="4600786265870346112">Lielā kursora iespējošana</translation>
 <translation id="4604931264910482931">Vietējās ziņojumapmaiņas melnā saraksta konfigurēšana</translation>
 <translation id="4613508646038788144">Ja politikai ir iestatīta vērtība “False”, trešās puses programmatūra pārlūka Chrome procesos varēs ievietot izpildāmo kodu. Ja politikai nav iestatīta vērtība vai ir iestatīta vērtība “True”, trešās puses programmatūrai tiek liegta izpildāmā koda ievietošana pārlūka Chrome procesos.</translation>
@@ -2018,6 +2053,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="487460824085252184">Migrē automātiski, nepieprasa lietotāja piekrišanu.</translation>
 <translation id="4874982543810021567">WebUSB bloķēšana šajās vietnēs</translation>
 <translation id="4876805738539874299">Maksimālā iespējotā SSL versija</translation>
+<translation id="4887274746092315609">Iespējo SAML lietotāju paroles maiņas lapu sesijas laikā</translation>
 <translation id="4897928009230106190">Norāda parametrus, kas tiek izmantoti, veicot ieteikumu meklēšanu ar metodi POST. Izmantojot šo metodi, tiek meklēti ar komatu atdalītu vārdu/vērtību pāri. Ja vērtība ir veidnes parametrs, piemēram, {searchTerms} (iepriekšējā piemērā), tas tiks aizstāts ar īstiem meklēšanas vienumu datiem.
 
           Šī politika nav obligāta. Ja tā nav iestatīta, meklēšanas ieteikumu pieprasījums tiks nosūtīts, izmantojot metodi GET.
@@ -2243,6 +2279,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja politikai ir iestatīta vērtība “Legacy”, ir atļauts tikai RC4 šifrēšanas veids. Šī iespēja nav droša un var būt nepieciešama tikai ļoti specifiskos apstākļos.
 
       Skatiet arī šeit: https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
+<translation id="5249453807420671499">Lietotāji var pievienot Kerberos kontus</translation>
 <translation id="5255162913209987122">Var ieteikt</translation>
 <translation id="527237119693897329">Norādiet, kuri vietējās ziņojumapmaiņas saimniekdatori nav jāielādē.
 
@@ -2386,6 +2423,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja ir iestatīta šīs politikas vērtība un tā nav 0, lietotājam, kas pašlaik ir pieteicies demonstrācijā, automātiski tiks veikta atteikšanās, tiklīdz būs pagājis noteiktais neaktivitātes laiks.
 
       Politikas vērtība ir jānorāda milisekundēs.</translation>
+<translation id="5508307164752647432">Iespējot Kerberos funkcionalitāti</translation>
 <translation id="5511702823008968136">Iespējo grāmatzīmju joslu</translation>
 <translation id="5512418063782665071">Sākumlapas URL</translation>
 <translation id="551639594034811656">Šī politika nosaka procentuālo daļu sarakstu, kas definēs daļu no <ph name="PRODUCT_OS_NAME" /> OV ierīcēm, kuras atjaunināt katru dienu, sākot no dienas, kad atjauninājums tiek atklāts. Atklāšanas laiks ir vēlāks par atjauninājuma publicēšanas laiku, jo pēc atjauninājuma publicēšanas var paiet laiks, līdz ierīce pārbauda atjauninājumus.
@@ -2407,6 +2445,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ņemiet vērā: ja platformā tiek atbalstīti politikas paziņojumi, tiks iestatīts atsvaidzināšanas aizkaves laiks 24 stundas (ignorējot visas noklusējuma vērtības un šīs politikas vērtību), jo ir paredzēts, ka ar politikas paziņojumiem atsvaidzināšana tiks veikta piespiedu kārtā katru reizi, kad tiks mainīta politika, un biežāka atsvaidzināšana nebūs nepieciešama.</translation>
 <translation id="5530347722229944744">Bloķēt iespējami bīstamas lejupielādes</translation>
 <translation id="5535973522252703021">Kerberos deleģējamo serveru baltais saraksts</translation>
+<translation id="554903022911579950">Kerberos</translation>
 <translation id="555077880566103058">Atļauja visām vietnēm automātiski izpildīt spraudni <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">Šī politika neietekmē Android lietotnes.</translation>
 <translation id="5560039246134246593">Pievienot parametru attiecībā uz variantu sākotnējās vērtības iegūšanu pārlūkā <ph name="PRODUCT_NAME" />.
@@ -2518,6 +2557,16 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
  
       Ja šī politika ir iestatīta, lietotājs to nevar mainīt vai ignorēt.</translation>
 <translation id="5708969689202733975">Konfigurēt atļautos ātrās atbloķēšanas režīmus</translation>
+<translation id="5711016543513883877">
+      Ja politika ir iespējota, katrai komatatdalītajā sarakstā
+      norādītajai vietnei tiks izpildīts atsevišķs process. Vietnes tiks arī izolētas
+      pēc apakšdomēniem, piemēram, norādot https://example.com/, tiks
+      izolēta arī vietne https://foo.example.com/ kā daļa no vietnes
+      https://example.com/.
+      Ja politika nav konfigurēta vai ir atspējota, lietotājs varēs mainīt šo iestatījumu.
+
+      PIEZĪME. Šī politika neattiecas uz operētājsistēmu Android. Lai politiku IsolateOrigins iespējotu operētājsistēmā Android, izmantojiet politikas IsolateOriginsAndroid iestatījumu.
+      </translation>
 <translation id="572155275267014074">Android iestatījumi</translation>
 <translation id="5722934961007828462">Ja šis iestatījums ir iespējots, <ph name="PRODUCT_NAME" /> vienmēr atcels tādu servera sertifikātu pārbaudīšanu, kuri ir veiksmīgi pārbaudīti un parakstīti, izmantojot lokāli instalētus CA sertifikātus.
 
@@ -2822,17 +2871,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="6281043242780654992">Konfigurējiet vietējās ziņojumapmaiņas politikas. Melnajā sarakstā iekļauto vietējās ziņojumapmaiņas saimniekdatoru darbība netiks atļauta, ja vien tie nebūs iekļauti baltajā sarakstā.</translation>
 <translation id="6282799760374509080">Audio tveršanas ļaušana vai noraidīšana</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6306608379445125648">Piespiedu kārtā atspējo pareizrakstības pārbaudes valodas. Tiks ignorētas sarakstā iekļautās valodas, kuras nevarēs atpazīt.
-
-      Ja iespējosiet šo politiku, pareizrakstības pārbaude norādītajām valodās tiks atspējota. Lietotājs joprojām var iespējot vai atspējot pareizrakstības pārbaudi valodām, kas nav iekļautas sarakstā.
-
-      Ja šī politika nav iespējota vai tā tiek atspējota, lietotāja pareizrakstības preferencēs netiks ieviestas izmaiņas.
-
-      Ja politika SpellcheckEnabled ir atspējota, tā nedarbosies.
-
-      Ja valoda ir ietverta gan šajā, gan SpellcheckLanguage politikā, prioritāte ir SpellcheckLanguage politikai, un pareizrakstības pārbaudes valoda tiks iespējota.
-
-      Pašreiz atbalstītās valodas: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6310223829319187614">Domēna nosaukuma automātiskās pabeigšanas iespējošana lietotāja pierakstīšanās laikā</translation>
 <translation id="6315673513957120120">Ja lietotāji atver vietnes, kurās ir SSL kļūdas, pārlūkā Chrome tiek parādīta brīdinājuma lapa. Pēc noklusējuma, kā arī tad, ja šai politikai ir iestatīta vērtība Patiesa, lietotājiem ir atļauts no brīdinājuma lapas pāriet uz vietni.
       Ja politikai ir iestatīta vērtība Nepatiesa, lietotājiem tiek liegts no brīdinājuma lapas pāriet uz vietni.</translation>
@@ -3440,6 +3478,11 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 <translation id="7433714841194914373">Iespējo dinamisko meklēšanu</translation>
 <translation id="7434202861148928348">Nepieciešamo domēnu nosaukumu konfigurēšana attālās piekļuves klientiem</translation>
 <translation id="7443616896860707393">Savstarpējās izcelsmes HTTP pamata autentifikācijas uzvednes</translation>
+<translation id="7454519673779830548">Pievieno iepriekš aizpildītus Kerberos kontus. Ja Kerberos akreditācijas dati atbilst pieteikšanās akreditācijas datiem, kontu var konfigurēt atkārtotai pieteikšanās akreditācijas datu izmantošanai, norādot parametru “${{LOGIN_EMAIL}}” galvenajai rindiņai un parametru “${{PASSWORD}}” — parolei, lai Kerberos biļeti varētu izgūt automātiski (ja vien nav konfigurēta divpakāpju autentifikācija). Lietotāji nevar pārveidot kontus, kas pievienoti, izmantojot šo politiku.
+
+          Ja šī politika ir iespējota, politikā definētais kontu saraksts tiek pievienots Kerberos kontu iestatījumiem.
+
+          Ja šī politika ir atspējota vai nav iestatīta, Kerberos kontu iestatījumiem netiek pievienoti konti un visi konti, kas iepriekš tika pievienoti, izmantojot šo politiku, tiek noņemti. Ja ir iespējota politika “Lietotāji var pievienot Kerberos kontus”, lietotāji joprojām var pievienot kontus manuāli.</translation>
 <translation id="7458437477941640506">Neatritināt uz mērķa versiju, ja operētājsistēmas versija ir jaunāka nekā mērķa versija. Atjauninājumi ir atspējoti.</translation>
 <translation id="7464991223784276288">Atbilstošu vietrāžu URL sīkfailu ierobežošana pašreizējā sesijā</translation>
 <translation id="7469554574977894907">Iespējo meklēšanas ieteikumus</translation>
@@ -3577,6 +3620,11 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 <translation id="7687943045976362719">Ja šī politika ir iestatīta, norādītos satura tipus apstrādā <ph name="PRODUCT_FRAME_NAME" />.
 
           Ja šī politika nav iestatīta, visām vietnēm tiek izmantots noklusējuma renderētājs. (Politiku <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> var izmantot, lai konfigurētu noklusējuma renderētāju.)</translation>
+<translation id="7694245791806617022">Nosaka, vai Kerberos autentifikācijas dialoglodziņā ir iespējota funkcija “Atcerēties paroli”. Paroles tiek šifrētas un saglabātas diskā, kas ir pieejams tikai Kerberos sistēmai un lietotāja sesijas laikā.
+
+          Ja šī politika ir iespējota vai nav iestatīta, lietotāji var izlemt, vai Kerberos paroles tiks saglabātas, lai tās nevajadzētu ievadīt vēlreiz. Kerberos biļetes tiek iegūtas automātiski, ja vien nav nepieciešama papildu autentifikācija (divpakāpju autentifikācija).
+
+          Ja šī politika ir atspējota, paroles nekad netiek saglabātas un visas iepriekš saglabātās paroles tiek noņemtas. Lietotājiem ir jāievada sava parole katru reizi, kad ir jāveic autentifikācija Kerberos sistēmā. Atkarībā no servera iestatījumiem parasti tas notiek aptuveni ik pēc 8 stundām līdz vairākiem mēnešiem.</translation>
 <translation id="7694807474048279351">Plānojiet automātisku atkārtotu palaišanu pēc <ph name="PRODUCT_OS_NAME" /> atjauninājuma piemērošanas.
 
       Ja šī politika ir iestatīta uz “true”, automātiska atkārtota palaišana tiek plānota, kad tiek piemērots <ph name="PRODUCT_OS_NAME" /> atjauninājums un atjaunināšanas pabeigšanai ir nepieciešama atkārtota palaišana. Atkārtota palaišana tiek plānota nekavējoties, taču to var atspējot ierīcē līdz 24 stundām, ja lietotājs attiecīgajā brīdī izmanto ierīci.
@@ -3610,6 +3658,15 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
       Šī politika ir paredzēta uzņēmumiem, kas vēlas migrēt esošos serverus no HTTP/0.9, un tā tiks noņemta.
 
       Ja šī politika nav iestatīta, protokols HTTP/0.9 tiks atspējots portos, kas nav noklusējuma porti.</translation>
+<translation id="7726421241038987229">
+      Šis politikas SitePerProcess iestatījums var tikt izmantots, lai neatļautu lietotājiem atteikties no noklusējuma rīcības — visu vietņu izolēšanas. Ņemiet vērā, ka politika IsolateOrigins var būt noderīga arī papildu detalizētāku vietņu izolēšanai.
+      Ja politika ir iespējota, lietotāji nevarēs atteikties no noklusējuma rīcības, kad katrai vietnei tiek izpildīts atsevišķs process.
+      Ja politika nav konfigurēta vai ir atspējota, lietotājs varēs atteikties no vietnes izolācijas
+      (piemēram, izmantojot ierakstu “Atspējot vietnes izolēšanu” vietnē chrome://flags).  Atspējojot politiku un/vai nekonfigurējot politiku, vietnes izolācija netiek izslēgta.
+      Operētājsistēmā <ph name="PRODUCT_OS_NAME" /> šādu vērtību ieteicams iestatīt arī ierīces politikai <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Ja abām politikām iestatītās vērtības nav vienādas, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikas vērtība.
+
+      PIEZĪME. Šī politika neattiecas uz operētājsistēmu Android. Lai politiku SitePerProcess iespējotu operētājsistēmā Android, izmantojiet politikas SitePerProcessAndroid iestatījumu.
+      </translation>
 <translation id="7747447585227954402">Atļauj ierīcēm izmantot spraudni <ph name="PLUGIN_VM_NAME" /> produktā <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7749402620209366169">Iespējo divu faktoru autentifikāciju attālās piekļuves saimniekdatoriem, nevis izmanto lietotāja norādītu PIN.
 
@@ -3675,6 +3732,11 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
       Nosaka paplašinājuma ID, kas jāizmanto kā ekrānsaudzētājs pierakstīšanās ekrānā. Paplašinājumam ir jābūt daļai no AppPack, kas konfigurēts šim domēnam, izmantojot politiku DeviceAppPack.</translation>
 <translation id="7882857838942884046">Atspējojot Google Sync, Android dublēšana un atjaunošana nedarbosies pareizi.</translation>
 <translation id="7882890448959833986">Brīdinājuma par neatbalstītu OS rādīšanas apturēšana</translation>
+<translation id="7889788745439330797">Nosaka, vai lietotāji var pievienot Kerberos kontus.
+
+          Ja šī politika ir iespējota vai nav iestatīta, lietotāji var pievienot Kerberos kontus, izmantojot Kerberos kontu iestatījumus lapā “Personu iestatījumi”. Lietotāji var pilnībā kontrolēt pievienotos kontus, kā arī tos pārveidot vai noņemt.
+
+          Ja šī politika ir atspējota, lietotāji nevar pievienot Kerberos kontus. Kontus var pievienot, tikai izmantojot politiku “Konfigurēt Kerberos kontus”. Tas ir efektīvs veids, kā bloķēt kontus.</translation>
 <translation id="7895553628261067384">Attālā piekļuve</translation>
 <translation id="7902255855035461275">Šajā sarakstā pieejamajiem šabloniem tiek meklēta atbilstība pieprasītā URL
       drošības avotam. Ja tiek atrasta atbilstība, piekļuve video
@@ -4211,11 +4273,6 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
       Šī politika attiecas tikai uz lietotājiem, kuri tika autentificēti, izmantojot SAML.
 
       Politikas vērtība ir jānorāda sekundēs.</translation>
-<translation id="9018338365267278833">Šādā veidā tiks noņemti paplašinājumi, kas redzami šeit: <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, vai paplašinājumi, kas norādīti politikā <ph name="EXTENSION_SETTINGS_POLICY_NAME" />, kuru instalēšanas režīms ir iestatīts kā bloķēts un ar kuriem tiks notīrīti lietotāja lokālie dati.  Lai saprastu, kas var notikt ar lietotāja datiem, kuri nav saglabāti lokāli, skatiet paplašinājumu konfidencialitātes politiku vai datu uzglabāšanas politiku.
-
-      Ja politika ir iespējota, paplašinājumi, kas ietilpst iepriekš minētajos sarakstos (ja tie jau ir instalēti ierīcē), tiks pilnībā noņemti no šīs ierīces (tostarp lokālie lietotāja dati).
-
-      Ja politika ir atspējota vai nav iestatīta, paplašinājumi, kas ietilpst iepriekš minētajos sarakstos (ja tie jau ir instalēti ierīcē un atrodas melnajā sarakstā <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />), tiks atspējoti ierīcē, bet netiks atinstalēti.</translation>
 <translation id="9027787254195333560">Šī politika ļauj konfigurēt lietotāja iemiesojuma attēlu, kas tiek rādīts pieteikšanās ekrānā. Politika tiek iestatīta, norādot URL, no kura <ph name="PRODUCT_OS_NAME" /> var lejupielādēt iemiesojuma attēlu un šifrēšanas jaukšanu, kas tiek izmantota, lai apstiprinātu lejupielādes integritāti. Attēlam ir jābūt JPEG formātā, un tā lielums nedrīkst pārsniegt 512 KB. URL ir jābūt pieejamam bez autentifikācijas.
 
       Iemiesojuma attēls ir lejupielādēts un saglabāts kešatmiņā. Tas tiks lejupielādēts atkārtoti, kad mainīsies URL vai jaucējkods.
