@@ -26,7 +26,7 @@ const int kBitrate = 500;
 
 // List of psnr thresholds for speed settings 0-8
 const double kPsnrThreshold[9] = { 37.0, 36.9, 36.8, 36.7, 36.5,
-                                   36.3, 35.8, 35.3, 34.8 };
+                                   36.3, 35.8, 35.2, 34.8 };
 
 typedef struct {
   const char *filename;
@@ -46,17 +46,18 @@ std::ostream &operator<<(std::ostream &os, const TestVideoParam &test_arg) {
 // TODO(kyslov): Add more test vectors
 const TestVideoParam kTestVectors[] = {
   { "park_joy_90p_8_420.y4m", 8, AOM_IMG_FMT_I420, AOM_BITS_8, 0 },
+  { "paris_352_288_30.y4m", 8, AOM_IMG_FMT_I420, AOM_BITS_8, 0 },
 };
 
 class RTEndToEndTest
-    : public ::libaom_test::CodecTestWith3Params<TestVideoParam, int,
-                                                 unsigned int>,
+    : public ::libaom_test::CodecTestWith4Params<TestVideoParam, int,
+                                                 unsigned int, int>,
       public ::libaom_test::EncoderTest {
  protected:
   RTEndToEndTest()
       : EncoderTest(GET_PARAM(0)), test_video_param_(GET_PARAM(1)),
         cpu_used_(GET_PARAM(2)), psnr_(0.0), nframes_(0),
-        aq_mode_(GET_PARAM(3)) {}
+        aq_mode_(GET_PARAM(3)), threads_(GET_PARAM(4)) {}
 
   virtual ~RTEndToEndTest() {}
 
@@ -67,6 +68,7 @@ class RTEndToEndTest
     cfg_.g_usage =
         AOM_USAGE_REALTIME;  // TODO(kyslov): Move it to encode_test_driver.cc
     cfg_.rc_end_usage = AOM_CBR;
+    cfg_.g_threads = threads_;
     cfg_.rc_buf_sz = 1000;
     cfg_.rc_buf_initial_sz = 500;
     cfg_.rc_buf_optimal_sz = 600;
@@ -86,10 +88,11 @@ class RTEndToEndTest
                                   ::libaom_test::Encoder *encoder) {
     if (video->frame() == 0) {
       encoder->Control(AV1E_SET_FRAME_PARALLEL_DECODING, 1);
-      encoder->Control(AV1E_SET_TILE_COLUMNS, 1);
+      encoder->Control(AV1E_SET_TILE_COLUMNS, threads_);
       encoder->Control(AOME_SET_CPUUSED, cpu_used_);
       encoder->Control(AV1E_SET_TUNE_CONTENT, AOM_CONTENT_DEFAULT);
       encoder->Control(AV1E_SET_AQ_MODE, aq_mode_);
+      encoder->Control(AV1E_SET_ROW_MT, 1);
     }
   }
 
@@ -127,20 +130,44 @@ class RTEndToEndTest
   double psnr_;
   unsigned int nframes_;
   unsigned int aq_mode_;
+  unsigned int threads_;
 };
 
+// *Threaded* and *Large* tests are used to simplify test filtering.
 class RTEndToEndTestLarge : public RTEndToEndTest {};
+
+class RTEndToEndTestThreadedLarge : public RTEndToEndTest {};
+
+class RTEndToEndTestThreaded : public RTEndToEndTest {};
 
 TEST_P(RTEndToEndTestLarge, EndtoEndPSNRTest) { DoTest(); }
 
+TEST_P(RTEndToEndTestThreadedLarge, EndtoEndPSNRTest) { DoTest(); }
+
 TEST_P(RTEndToEndTest, EndtoEndPSNRTest) { DoTest(); }
+
+TEST_P(RTEndToEndTestThreaded, EndtoEndPSNRTest) { DoTest(); }
 
 AV1_INSTANTIATE_TEST_CASE(RTEndToEndTestLarge,
                           ::testing::ValuesIn(kTestVectors),
                           ::testing::Range(0, 7),
-                          ::testing::Values<unsigned int>(0));
+                          ::testing::Values<unsigned int>(0),
+                          ::testing::Values(1));
+
+AV1_INSTANTIATE_TEST_CASE(RTEndToEndTestThreadedLarge,
+                          ::testing::ValuesIn(kTestVectors),
+                          ::testing::Range(0, 7),
+                          ::testing::Values<unsigned int>(0),
+                          ::testing::Values(2, 5));
 
 AV1_INSTANTIATE_TEST_CASE(RTEndToEndTest, ::testing::Values(kTestVectors[0]),
                           ::testing::Range(7, 9),
-                          ::testing::Range<unsigned int>(0, 4));
+                          ::testing::Range<unsigned int>(0, 4),
+                          ::testing::Values(1));
+
+AV1_INSTANTIATE_TEST_CASE(RTEndToEndTestThreaded,
+                          ::testing::Values(kTestVectors[1]),
+                          ::testing::Range(7, 9),
+                          ::testing::Range<unsigned int>(0, 4),
+                          ::testing::Range(2, 5));
 }  // namespace
