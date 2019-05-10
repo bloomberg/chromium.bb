@@ -222,6 +222,7 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
     }
     case ui::AXEventGenerator::Event::ENABLED_CHANGED:
       FireUiaPropertyChangedEvent(UIA_IsEnabledPropertyId, node);
+      aria_properties_events_.insert(node);
       break;
     case ui::AXEventGenerator::Event::FLOW_FROM_CHANGED:
       FireUiaPropertyChangedEvent(UIA_FlowsFromPropertyId, node);
@@ -234,6 +235,7 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       break;
     case ui::AXEventGenerator::Event::HIERARCHICAL_LEVEL_CHANGED:
       FireUiaPropertyChangedEvent(UIA_LevelPropertyId, node);
+      aria_properties_events_.insert(node);
       break;
     case ui::AXEventGenerator::Event::IMAGE_ANNOTATION_CHANGED:
       FireWinAccessibilityEvent(EVENT_OBJECT_NAMECHANGE, node);
@@ -271,6 +273,7 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       break;
     case ui::AXEventGenerator::Event::LIVE_STATUS_CHANGED:
       FireUiaPropertyChangedEvent(UIA_LiveSettingPropertyId, node);
+      aria_properties_events_.insert(node);
       break;
     case ui::AXEventGenerator::Event::LOAD_COMPLETE:
       FireWinAccessibilityEvent(IA2_EVENT_DOCUMENT_LOAD_COMPLETE, node);
@@ -284,6 +287,7 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::MULTISELECTABLE_STATE_CHANGED:
       FireUiaPropertyChangedEvent(UIA_SelectionCanSelectMultiplePropertyId,
                                   node);
+      aria_properties_events_.insert(node);
       break;
     case ui::AXEventGenerator::Event::NAME_CHANGED:
       FireUiaPropertyChangedEvent(UIA_NamePropertyId, node);
