@@ -24,6 +24,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/native_theme/native_theme_dark_aura.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/painter.h"
@@ -231,6 +232,8 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
   set_close_on_deactivate(init_params.close_on_deactivate);
   set_margins(gfx::Insets());
   SetPaintToLayer();
+
+  SetNativeTheme(ui::NativeThemeDarkAura::instance());
 
   if (!ash::features::ShouldUseShaderRoundedCorner()) {
     bubble_content_mask_ = views::Painter::CreatePaintedLayer(

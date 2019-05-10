@@ -20,6 +20,7 @@
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/message_center/views/notification_header_view.h"
+#include "ui/native_theme/native_theme_dark_aura.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/style/typography.h"
@@ -110,6 +111,7 @@ MediaNotificationView::MediaNotificationView(
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(), 0));
 
+  SetNativeTheme(ui::NativeThemeDarkAura::instance());
   // |controls_button_view_| has the common notification control buttons.
   control_buttons_view_ =
       std::make_unique<message_center::NotificationControlButtonsView>(this);
