@@ -133,6 +133,16 @@ void TaskTabHelper::UpdateAndRecordTaskIds(
         context_record_task_id->set_root_task_id(
             prev_context_record_task_id->root_task_id());
       }
+#if defined(OS_ANDROID)
+      else {
+        // Cross-tab navigation - only supported in Android. In this case
+        // the parent and parent root Task IDs are passed from the Java layer
+        if (this->GetParentTaskId() != -1) {
+          context_record_task_id->set_parent_task_id(this->GetParentTaskId());
+          context_record_task_id->set_root_task_id(this->GetParentRootTaskId());
+        }
+      }
+#endif  // defined(OS_ANDROID)
     }
   } else {
     context_record_task_id->set_root_task_id(context_record_task_id->task_id());

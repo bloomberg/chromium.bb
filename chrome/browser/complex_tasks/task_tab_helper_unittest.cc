@@ -65,9 +65,11 @@ class TaskTabHelperUnitTest : public ChromeRenderViewHostTestHarness {
         .WillByDefault(testing::Return(DEFAULT_SEARCH_ENGINE_HUB_TYPE));
   }
 
+  void GoBack() { content::NavigationSimulator::GoBack(web_contents()); }
+
   void GoBackNTimes(int times) {
     while (times--) {
-      content::NavigationSimulator::GoBack(web_contents());
+      GoBack();
     }
   }
 
@@ -231,4 +233,37 @@ TEST_F(TaskTabHelperUnitTest, TestTaskIdNewChain) {
   EXPECT_EQ(b_context_record_task_id.parent_task_id(), -1);
   EXPECT_NE(a_context_record_task_id.root_task_id(),
             b_context_record_task_id.root_task_id());
+}
+
+TEST_F(TaskTabHelperUnitTest, TestTaskIdBackButton) {
+  NavigateAndCommit(GURL("http://a.com"), ui::PAGE_TRANSITION_TYPED);
+  NavigateAndCommit(GURL("http://b.com"));
+  sessions::ContextRecordTaskId b_context_record_task_id =
+      *sessions::ContextRecordTaskId::Get(GetLastCommittedEntry());
+  GoBack();
+  sessions::ContextRecordTaskId a_context_record_task_id =
+      *sessions::ContextRecordTaskId::Get(GetLastCommittedEntry());
+
+  // A should still have no parent after a back navigation and
+  // shouldn't link to B (like it would if we navigated a.com -> b.com -> a.com
+  // via clicking links)
+  EXPECT_EQ(a_context_record_task_id.parent_task_id(), -1);
+  EXPECT_NE(a_context_record_task_id.parent_task_id(),
+            b_context_record_task_id.task_id());
+}
+
+TEST_F(TaskTabHelperUnitTest, TestTaskIdBackViaLink) {
+  NavigateAndCommit(GURL("http://a.com"), ui::PAGE_TRANSITION_TYPED);
+  NavigateAndCommit(GURL("http://b.com"));
+  sessions::ContextRecordTaskId b_context_record_task_id =
+      *sessions::ContextRecordTaskId::Get(GetLastCommittedEntry());
+  NavigateAndCommit(GURL("http://a.com"));
+  sessions::ContextRecordTaskId a_context_record_task_id =
+      *sessions::ContextRecordTaskId::Get(GetLastCommittedEntry());
+
+  // We got back to a.com via a link (not back button) so it should now point to
+  // B.
+  EXPECT_NE(a_context_record_task_id.parent_task_id(), -1);
+  EXPECT_EQ(a_context_record_task_id.parent_task_id(),
+            b_context_record_task_id.task_id());
 }
