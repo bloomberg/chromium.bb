@@ -251,11 +251,19 @@ const CGFloat kButtonTrailingSpacing = 10;
 
   // Setup accessibility.
   _trailingButton.isAccessibilityElement = YES;
+  if (IsInfobarUIRebootEnabled()) {
+    _leadingButton.isAccessibilityElement = YES;
+    _leadingButton.accessibilityLabel =
+        l10n_util::GetNSString(IDS_IOS_INFOBAR_BADGES_PASSWORD_HINT);
+  }
   _locationButton.isAccessibilityElement = YES;
   _locationButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_ACCNAME_LOCATION);
 
   _accessibleElements = [[NSMutableArray alloc] init];
+  if (IsInfobarUIRebootEnabled()) {
+    [_accessibleElements addObject:_leadingButton];
+  }
   [_accessibleElements addObject:_locationButton];
   [_accessibleElements addObject:_trailingButton];
 
