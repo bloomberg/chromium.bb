@@ -647,8 +647,16 @@ by a child template that "extends" this file.
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
             android:exported="false">
         </activity>
+        {% if notouch_build == "true" %}
+        <activity-alias android:name="org.chromium.chrome.browser.preferences.Preferences"
+            android:targetActivity="org.chromium.chrome.browser.touchless.TouchlessPreferences">
+        </activity-alias>
+        <activity android:name="org.chromium.chrome.browser.touchless.TouchlessPreferences"
+            android:theme="@style/Theme.Chromium.Preferences.Touchless"
+        {% else %}
         <activity android:name="org.chromium.chrome.browser.preferences.Preferences"
             android:theme="@style/Theme.Chromium.Preferences"
+        {% endif %}
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
             android:label="@string/preferences"
             android:exported="false">

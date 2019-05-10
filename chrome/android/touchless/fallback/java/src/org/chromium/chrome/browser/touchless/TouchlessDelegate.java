@@ -31,4 +31,8 @@ public class TouchlessDelegate {
     public static Class<?> getNoTouchActivityClass() {
         return null;
     }
+
+    public static Class<?> getTouchlessPreferencesClass() {
+        return null;
+    }
 }
