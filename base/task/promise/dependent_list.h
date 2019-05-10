@@ -10,6 +10,7 @@
 #include "base/base_export.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 
 namespace base {
 namespace internal {
@@ -41,9 +42,10 @@ class BASE_EXPORT DependentList {
 
   struct BASE_EXPORT Node {
     Node();
+    explicit Node(Node&& other) noexcept;
+    ~Node();
 
-    // TODO(alexclarke): Make this a scoped_refptr.
-    AbstractPromise* dependent;
+    scoped_refptr<AbstractPromise> dependent;
     std::atomic<Node*> next{nullptr};
   };
 
@@ -61,9 +63,10 @@ class BASE_EXPORT DependentList {
   // A ConsumeXXX function may only be called once.
   Node* ConsumeOnceForCancel();
 
+  bool IsSettled() const;
   bool IsResolved() const;
   bool IsRejected() const;
-  bool IsCancelled() const;
+  bool IsCanceled() const;
 
  private:
   std::atomic<uintptr_t> head_;
