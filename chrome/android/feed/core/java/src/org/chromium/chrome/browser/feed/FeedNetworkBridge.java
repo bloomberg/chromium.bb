@@ -4,10 +4,10 @@
 
 package org.chromium.chrome.browser.feed;
 
+import com.google.android.libraries.feed.api.host.network.HttpRequest;
+import com.google.android.libraries.feed.api.host.network.HttpResponse;
+import com.google.android.libraries.feed.api.host.network.NetworkClient;
 import com.google.android.libraries.feed.common.functional.Consumer;
-import com.google.android.libraries.feed.host.network.HttpRequest;
-import com.google.android.libraries.feed.host.network.HttpResponse;
-import com.google.android.libraries.feed.host.network.NetworkClient;
 
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;

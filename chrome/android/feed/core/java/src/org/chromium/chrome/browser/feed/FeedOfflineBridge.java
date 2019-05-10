@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.feed;
 
-import com.google.android.libraries.feed.api.knowncontent.ContentMetadata;
-import com.google.android.libraries.feed.api.knowncontent.ContentRemoval;
-import com.google.android.libraries.feed.api.knowncontent.KnownContentApi;
+import com.google.android.libraries.feed.api.client.knowncontent.ContentMetadata;
+import com.google.android.libraries.feed.api.client.knowncontent.ContentRemoval;
+import com.google.android.libraries.feed.api.client.knowncontent.KnownContent;
 import com.google.android.libraries.feed.common.functional.Consumer;
 
 import org.chromium.base.Callback;
@@ -25,10 +25,9 @@ import java.util.concurrent.TimeUnit;
 
 /** Provides access to native implementations of OfflineIndicatorApi. */
 @JNINamespace("feed")
-public class FeedOfflineBridge
-        implements FeedOfflineIndicator, KnownContentApi.KnownContentListener {
+public class FeedOfflineBridge implements FeedOfflineIndicator, KnownContent.Listener {
     private long mNativeBridge;
-    private KnownContentApi mKnownContentApi;
+    private KnownContent mKnownContentApi;
 
     /**
      * Hold onto listeners in Java. It is difficult to offload this completely to native, because we
@@ -40,11 +39,11 @@ public class FeedOfflineBridge
      * Creates a FeedOfflineBridge for accessing native offlining logic.
      *
      * @param profile Profile of the user we are rendering the Feed for.
-     * @param knownContentApi Interface to access information about the Feed's articles.
+     * @param knownContent Interface to access information about the Feed's articles.
      */
-    public FeedOfflineBridge(Profile profile, KnownContentApi knownContentApi) {
+    public FeedOfflineBridge(Profile profile, KnownContent knownContent) {
         mNativeBridge = nativeInit(profile);
-        mKnownContentApi = knownContentApi;
+        mKnownContentApi = knownContent;
         mKnownContentApi.addListener(this);
     }
 

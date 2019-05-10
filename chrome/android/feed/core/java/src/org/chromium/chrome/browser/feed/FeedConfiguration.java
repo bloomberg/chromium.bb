@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.feed;
 
 import android.text.TextUtils;
 
-import com.google.android.libraries.feed.host.config.Configuration;
-import com.google.android.libraries.feed.host.config.Configuration.ConfigKey;
+import com.google.android.libraries.feed.api.host.config.Configuration;
+import com.google.android.libraries.feed.api.host.config.Configuration.ConfigKey;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;

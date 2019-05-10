@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.feed;
 
 import android.support.test.filters.SmallTest;
 
-import com.google.android.libraries.feed.host.config.Configuration;
-import com.google.android.libraries.feed.host.config.Configuration.ConfigKey;
+import com.google.android.libraries.feed.api.host.config.Configuration;
+import com.google.android.libraries.feed.api.host.config.Configuration.ConfigKey;
 
 import org.junit.Assert;
 import org.junit.Rule;

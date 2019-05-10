@@ -15,9 +15,9 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.support.test.filters.SmallTest;
 
+import com.google.android.libraries.feed.api.host.imageloader.BundledAssets;
+import com.google.android.libraries.feed.api.host.imageloader.ImageLoaderApi;
 import com.google.android.libraries.feed.common.functional.Consumer;
-import com.google.android.libraries.feed.host.imageloader.BundledAssets;
-import com.google.android.libraries.feed.host.imageloader.ImageLoaderApi;
 
 import org.junit.Before;
 import org.junit.Rule;

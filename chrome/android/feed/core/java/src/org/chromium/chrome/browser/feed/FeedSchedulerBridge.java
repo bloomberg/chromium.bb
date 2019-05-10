@@ -6,11 +6,8 @@ package org.chromium.chrome.browser.feed;
 
 import android.support.annotation.NonNull;
 
-import com.google.android.libraries.feed.api.common.MutationContext;
+import com.google.android.libraries.feed.api.host.scheduler.SchedulerApi;
 import com.google.android.libraries.feed.api.requestmanager.RequestManager;
-import com.google.android.libraries.feed.api.sessionmanager.SessionManager;
-import com.google.android.libraries.feed.host.logging.RequestReason;
-import com.google.android.libraries.feed.host.scheduler.SchedulerApi;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -24,7 +21,6 @@ import org.chromium.components.feed.NativeRequestBehavior;
 public class FeedSchedulerBridge implements FeedScheduler {
     private long mNativeBridge;
     private RequestManager mRequestManager;
-    private SessionManager mSessionManager;
 
     /**
      * Creates a FeedSchedulerBridge for accessing native scheduling logic.
@@ -46,17 +42,13 @@ public class FeedSchedulerBridge implements FeedScheduler {
      * Sets our copies for various interfaces provided by the Feed library. Should be done as early
      * as possible, as the scheduler will be unable to trigger refreshes until after it has the
      * mechanisms to correctly do so. When this is called, it is assumed that the given
-     * RequestManager and SessionManager are initialized and can be used immediately.
+     * RequestManager is initialized and can be used immediately.
      *
      * @param requestManager The interface that allows us make refresh requests.
-     * @param sessionManager The interface that provides correct consumtion of refresh results.
      */
-    public void initializeFeedDependencies(
-            @NonNull RequestManager requestManager, @NonNull SessionManager sessionManager) {
+    public void initializeFeedDependencies(@NonNull RequestManager requestManager) {
         assert mRequestManager == null;
-        assert mSessionManager == null;
         mRequestManager = requestManager;
-        mSessionManager = sessionManager;
     }
 
     @Override
@@ -130,9 +122,8 @@ public class FeedSchedulerBridge implements FeedScheduler {
 
     @CalledByNative
     private boolean triggerRefresh() {
-        if (mRequestManager != null && mSessionManager != null) {
-            mRequestManager.triggerRefresh(RequestReason.HOST_REQUESTED,
-                    mSessionManager.getUpdateConsumer(MutationContext.EMPTY_CONTEXT));
+        if (mRequestManager != null) {
+            mRequestManager.triggerScheduledRefresh();
             return true;
         }
         return false;

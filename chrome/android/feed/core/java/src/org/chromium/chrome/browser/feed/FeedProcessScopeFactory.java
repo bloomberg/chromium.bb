@@ -6,13 +6,13 @@ package org.chromium.chrome.browser.feed;
 
 import android.support.annotation.Nullable;
 
+import com.google.android.libraries.feed.api.host.config.ApplicationInfo;
+import com.google.android.libraries.feed.api.host.config.Configuration;
+import com.google.android.libraries.feed.api.host.config.DebugBehavior;
+import com.google.android.libraries.feed.api.host.network.NetworkClient;
+import com.google.android.libraries.feed.api.host.stream.TooltipSupportedApi;
 import com.google.android.libraries.feed.api.scope.FeedProcessScope;
 import com.google.android.libraries.feed.common.functional.Consumer;
-import com.google.android.libraries.feed.host.config.ApplicationInfo;
-import com.google.android.libraries.feed.host.config.Configuration;
-import com.google.android.libraries.feed.host.config.DebugBehavior;
-import com.google.android.libraries.feed.host.network.NetworkClient;
-import com.google.android.libraries.feed.host.stream.TooltipSupportedApi;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -145,11 +145,9 @@ public class FeedProcessScopeFactory {
                         .setContentStorage(contentStorage)
                         .setJournalStorage(journalStorage)
                         .build();
-        schedulerBridge.initializeFeedDependencies(
-                sFeedProcessScope.getRequestManager(), sFeedProcessScope.getSessionManager());
+        schedulerBridge.initializeFeedDependencies(sFeedProcessScope.getRequestManager());
 
-        sFeedOfflineIndicator =
-                new FeedOfflineBridge(profile, sFeedProcessScope.getKnownContentApi());
+        sFeedOfflineIndicator = new FeedOfflineBridge(profile, sFeedProcessScope.getKnownContent());
 
         sFeedAppLifecycle = new FeedAppLifecycle(sFeedProcessScope.getAppLifecycleListener(),
                 new FeedLifecycleBridge(profile), sFeedScheduler);

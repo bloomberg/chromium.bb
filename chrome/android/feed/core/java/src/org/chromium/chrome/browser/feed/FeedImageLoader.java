@@ -13,9 +13,9 @@ import android.support.annotation.DrawableRes;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 
+import com.google.android.libraries.feed.api.host.imageloader.BundledAssets;
+import com.google.android.libraries.feed.api.host.imageloader.ImageLoaderApi;
 import com.google.android.libraries.feed.common.functional.Consumer;
-import com.google.android.libraries.feed.host.imageloader.BundledAssets;
-import com.google.android.libraries.feed.host.imageloader.ImageLoaderApi;
 
 import org.chromium.base.Callback;
 import org.chromium.base.DiscardableReferencePool;

@@ -8,10 +8,10 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.support.test.filters.SmallTest;
 
+import com.google.android.libraries.feed.api.host.storage.CommitResult;
+import com.google.android.libraries.feed.api.host.storage.JournalMutation;
 import com.google.android.libraries.feed.common.Result;
 import com.google.android.libraries.feed.common.functional.Consumer;
-import com.google.android.libraries.feed.host.storage.CommitResult;
-import com.google.android.libraries.feed.host.storage.JournalMutation;
 import com.google.android.libraries.feed.testing.conformance.storage.JournalStorageConformanceTest;
 
 import org.junit.After;
