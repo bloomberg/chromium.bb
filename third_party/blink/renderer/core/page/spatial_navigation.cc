@@ -47,6 +47,14 @@
 
 namespace blink {
 
+// A small integer that easily fits into a double with a good margin for
+// arithmetic. In particular, we don't want to use
+// std::numeric_limits<double>::lowest() because, if subtracted, it becomes
+// NaN which will make all following arithmetic NaN too (an unusable number).
+constexpr double kMinDistance = std::numeric_limits<int>::lowest();
+
+constexpr int kFudgeFactor = 2;
+
 static void DeflateIfOverlapped(LayoutRect&, LayoutRect&);
 
 FocusCandidate::FocusCandidate(Node* node, SpatialNavigationDirection direction)
@@ -246,7 +254,7 @@ static void DeflateIfOverlapped(LayoutRect& a, LayoutRect& b) {
   if (!a.Intersects(b) || a.Contains(b) || b.Contains(a))
     return;
 
-  LayoutUnit deflate_factor = LayoutUnit(-FudgeFactor());
+  LayoutUnit deflate_factor = LayoutUnit(-kFudgeFactor);
 
   // Avoid negative width or height values.
   if ((a.Width() + 2 * deflate_factor > 0) &&
@@ -481,55 +489,42 @@ void EntryAndExitPointsForDirection(SpatialNavigationDirection direction,
   }
 }
 
-bool AreElementsOnSameLine(const FocusCandidate& first_candidate,
-                           const FocusCandidate& second_candidate) {
-  if (first_candidate.IsNull() || second_candidate.IsNull())
-    return false;
-
-  if (!first_candidate.visible_node->GetLayoutObject() ||
-      !second_candidate.visible_node->GetLayoutObject())
-    return false;
-
-  if (!first_candidate.rect_in_root_frame.Intersects(
-          second_candidate.rect_in_root_frame))
-    return false;
-
-  if (IsHTMLAreaElement(*first_candidate.focusable_node) ||
-      IsHTMLAreaElement(*second_candidate.focusable_node))
-    return false;
-
-  if (!first_candidate.visible_node->GetLayoutObject()->IsLayoutInline() ||
-      !second_candidate.visible_node->GetLayoutObject()->IsLayoutInline())
-    return false;
-
-  if (first_candidate.visible_node->GetLayoutObject()->ContainingBlock() !=
-      second_candidate.visible_node->GetLayoutObject()->ContainingBlock())
-    return false;
-
-  return true;
-}
-
 double ComputeDistanceDataForNode(SpatialNavigationDirection direction,
                                   const FocusCandidate& current_interest,
                                   const FocusCandidate& candidate) {
-  if (!IsRectInDirection(direction, current_interest.rect_in_root_frame,
-                         candidate.rect_in_root_frame))
-    return MaxDistance();
-
-  if (AreElementsOnSameLine(current_interest, candidate)) {
-    if ((direction == SpatialNavigationDirection::kUp &&
-         current_interest.rect_in_root_frame.Y() >
-             candidate.rect_in_root_frame.Y()) ||
-        (direction == SpatialNavigationDirection::kDown &&
-         candidate.rect_in_root_frame.Y() >
-             current_interest.rect_in_root_frame.Y())) {
-      return 0.0;
-    }
-  }
-
+  double distance = 0.0;
+  double overlap = 0.0;
   LayoutRect node_rect = candidate.rect_in_root_frame;
   LayoutRect current_rect = current_interest.rect_in_root_frame;
-  DeflateIfOverlapped(current_rect, node_rect);
+  if (node_rect.Contains(current_rect)) {
+    // When leaving an "insider", don't focus its underlaying container box.
+    // Go directly to the outside world. This avoids focus from being trapped
+    // inside a container.
+    return kMaxDistance;
+  }
+
+  if (current_rect.Contains(node_rect)) {
+    // We give priority to "insiders", candidates that are completely inside the
+    // current focus rect, by giving them a negative, < 0, distance number.
+    distance = kMinDistance;
+
+    // For insiders we cannot meassure the distance from the outer box. Instead,
+    // we meassure distance _from_ the focused container's rect's "opposite
+    // edge" in the navigated direction, just like we do when we look for
+    // candidates inside a focused scroll container.
+    current_rect = OppositeEdge(direction, current_rect);
+
+    // This candidate fully overlaps the current focus rect so we can omit the
+    // overlap term of the equation. An "insider" will always win against an
+    // "outsider".
+  } else if (!IsRectInDirection(direction, current_rect, node_rect)) {
+    return kMaxDistance;
+  } else {
+    DeflateIfOverlapped(current_rect, node_rect);
+    LayoutRect intersection_rect = Intersection(current_rect, node_rect);
+    overlap =
+        (intersection_rect.Width() * intersection_rect.Height()).ToDouble();
+  }
 
   LayoutPoint exit_point;
   LayoutPoint entry_point;
@@ -538,6 +533,9 @@ double ComputeDistanceDataForNode(SpatialNavigationDirection direction,
 
   LayoutUnit x_axis = (exit_point.X() - entry_point.X()).Abs();
   LayoutUnit y_axis = (exit_point.Y() - entry_point.Y()).Abs();
+  double euclidian_distance =
+      sqrt((x_axis * x_axis + y_axis * y_axis).ToDouble());
+  distance += euclidian_distance;
 
   LayoutUnit navigation_axis_distance;
   LayoutUnit weighted_orthogonal_axis_distance;
@@ -572,21 +570,17 @@ double ComputeDistanceDataForNode(SpatialNavigationDirection direction,
       break;
     default:
       NOTREACHED();
-      return MaxDistance();
+      return kMaxDistance;
   }
 
-  double euclidian_distance_pow2 =
-      (x_axis * x_axis + y_axis * y_axis).ToDouble();
-  LayoutRect intersection_rect = Intersection(current_rect, node_rect);
-  double overlap =
-      (intersection_rect.Width() * intersection_rect.Height()).ToDouble();
-
   // Distance calculation is based on http://www.w3.org/TR/WICD/#focus-handling
-  return sqrt(euclidian_distance_pow2) + navigation_axis_distance +
+  return distance + navigation_axis_distance +
          weighted_orthogonal_axis_distance - sqrt(overlap);
 }
 
-// Returns a thin rectangle that represents one of box's sides.
+// Returns a thin rectangle that represents one of |box|'s edges.
+// To not intersect elements that are positioned inside |box|, we add one
+// LayoutUnit of margin that puts the returned slice "just outside" |box|.
 LayoutRect OppositeEdge(SpatialNavigationDirection side,
                         const LayoutRect& box,
                         LayoutUnit thickness) {
@@ -595,16 +589,20 @@ LayoutRect OppositeEdge(SpatialNavigationDirection side,
     case SpatialNavigationDirection::kLeft:
       thin_rect.SetX(thin_rect.MaxX() - thickness);
       thin_rect.SetWidth(thickness);
+      thin_rect.Move(1, 0);
       break;
     case SpatialNavigationDirection::kRight:
       thin_rect.SetWidth(thickness);
+      thin_rect.Move(-1, 0);
       break;
     case SpatialNavigationDirection::kDown:
       thin_rect.SetHeight(thickness);
+      thin_rect.Move(0, -1);
       break;
     case SpatialNavigationDirection::kUp:
       thin_rect.SetY(thin_rect.MaxY() - thickness);
       thin_rect.SetHeight(thickness);
+      thin_rect.Move(0, 1);
       break;
     default:
       NOTREACHED();

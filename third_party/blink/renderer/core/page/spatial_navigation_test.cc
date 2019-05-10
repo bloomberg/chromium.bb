@@ -26,26 +26,28 @@ class SpatialNavigationTest : public RenderingTest {
 
   LayoutRect TopOfVisualViewport() {
     LayoutRect visual_viewport = RootViewport(&GetFrame());
+    visual_viewport.SetY(visual_viewport.Y() - 1);
     visual_viewport.SetHeight(LayoutUnit(0));
     return visual_viewport;
   }
 
   LayoutRect BottomOfVisualViewport() {
     LayoutRect visual_viewport = RootViewport(&GetFrame());
-    visual_viewport.SetY(visual_viewport.MaxY());
+    visual_viewport.SetY(visual_viewport.MaxY() + 1);
     visual_viewport.SetHeight(LayoutUnit(0));
     return visual_viewport;
   }
 
   LayoutRect LeftSideOfVisualViewport() {
     LayoutRect visual_viewport = RootViewport(&GetFrame());
+    visual_viewport.SetX(visual_viewport.X() - 1);
     visual_viewport.SetWidth(LayoutUnit(0));
     return visual_viewport;
   }
 
   LayoutRect RightSideOfVisualViewport() {
     LayoutRect visual_viewport = RootViewport(&GetFrame());
-    visual_viewport.SetX(visual_viewport.MaxX());
+    visual_viewport.SetX(visual_viewport.MaxX() + 1);
     visual_viewport.SetWidth(LayoutUnit(0));
     return visual_viewport;
   }
@@ -245,7 +247,7 @@ TEST_F(SpatialNavigationTest, StartAtVisibleFocusedIframe) {
 }
 
 TEST_F(SpatialNavigationTest, StartAtTopWhenGoingDownwardsWithoutFocus) {
-  EXPECT_EQ(LayoutRect(0, 0, 111, 0),
+  EXPECT_EQ(LayoutRect(0, -1, 111, 0),
             SearchOrigin({0, 0, 111, 222}, nullptr,
                          SpatialNavigationDirection::kDown));
 
@@ -256,7 +258,7 @@ TEST_F(SpatialNavigationTest, StartAtTopWhenGoingDownwardsWithoutFocus) {
 
 TEST_F(SpatialNavigationTest, StartAtBottomWhenGoingUpwardsWithoutFocus) {
   EXPECT_EQ(
-      LayoutRect(0, 222, 111, 0),
+      LayoutRect(0, 222 + 1, 111, 0),
       SearchOrigin({0, 0, 111, 222}, nullptr, SpatialNavigationDirection::kUp));
 
   EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), nullptr,
@@ -265,7 +267,7 @@ TEST_F(SpatialNavigationTest, StartAtBottomWhenGoingUpwardsWithoutFocus) {
 }
 
 TEST_F(SpatialNavigationTest, StartAtLeftSideWhenGoingEastWithoutFocus) {
-  EXPECT_EQ(LayoutRect(0, 0, 0, 222),
+  EXPECT_EQ(LayoutRect(-1, 0, 0, 222),
             SearchOrigin({0, 0, 111, 222}, nullptr,
                          SpatialNavigationDirection::kRight));
 
@@ -275,7 +277,7 @@ TEST_F(SpatialNavigationTest, StartAtLeftSideWhenGoingEastWithoutFocus) {
 }
 
 TEST_F(SpatialNavigationTest, StartAtRightSideWhenGoingWestWithoutFocus) {
-  EXPECT_EQ(LayoutRect(111, 0, 0, 222),
+  EXPECT_EQ(LayoutRect(111 + 1, 0, 0, 222),
             SearchOrigin({0, 0, 111, 222}, nullptr,
                          SpatialNavigationDirection::kLeft));
 
@@ -330,14 +332,15 @@ TEST_F(SpatialNavigationTest, StartAtContainersEdge) {
   // Go down.
   LayoutRect container_top_edge = container_box;
   container_top_edge.SetHeight(LayoutUnit(0));
+  container_top_edge.SetY(container_top_edge.Y() - 1);
   EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b,
                          SpatialNavigationDirection::kDown),
             container_top_edge);
 
   // Go up.
   LayoutRect container_bottom_edge = container_box;
-  container_bottom_edge.SetY(container_bottom_edge.MaxX());
   container_bottom_edge.SetHeight(LayoutUnit(0));
+  container_bottom_edge.SetY(container_bottom_edge.MaxX() + 1);
   EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b,
                          SpatialNavigationDirection::kUp),
             container_bottom_edge);
@@ -345,13 +348,14 @@ TEST_F(SpatialNavigationTest, StartAtContainersEdge) {
   // Go right.
   LayoutRect container_leftmost_edge = container_box;
   container_leftmost_edge.SetWidth(LayoutUnit(0));
+  container_leftmost_edge.SetX(container_leftmost_edge.X() - 1);
   EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b,
                          SpatialNavigationDirection::kRight),
             container_leftmost_edge);
 
   // Go left.
   LayoutRect container_rightmost_edge = container_box;
-  container_rightmost_edge.SetX(container_bottom_edge.MaxX());
+  container_rightmost_edge.SetX(container_bottom_edge.MaxX() + 1);
   container_rightmost_edge.SetWidth(LayoutUnit(0));
   EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b,
                          SpatialNavigationDirection::kLeft),
@@ -596,7 +600,7 @@ TEST_F(SpatialNavigationTest, BottomOfPinchedViewport) {
   EXPECT_EQ(origin.Height(), 0);
   EXPECT_EQ(origin.Width(), GetFrame().View()->Width());
   EXPECT_EQ(origin.X(), 0);
-  EXPECT_EQ(origin.Y(), GetFrame().View()->Height());
+  EXPECT_EQ(origin.Y(), GetFrame().View()->Height() + 1);
   EXPECT_EQ(origin, BottomOfVisualViewport());
 
   // Now, test SearchOrigin with a pinched viewport.
@@ -608,7 +612,7 @@ TEST_F(SpatialNavigationTest, BottomOfPinchedViewport) {
   EXPECT_EQ(origin.Height(), 0);
   EXPECT_LT(origin.Width(), GetFrame().View()->Width());
   EXPECT_GT(origin.X(), 0);
-  EXPECT_LT(origin.Y(), GetFrame().View()->Height());
+  EXPECT_LT(origin.Y(), GetFrame().View()->Height() + 1);
   EXPECT_EQ(origin, BottomOfVisualViewport());
 }
 
@@ -618,7 +622,7 @@ TEST_F(SpatialNavigationTest, TopOfPinchedViewport) {
   EXPECT_EQ(origin.Height(), 0);
   EXPECT_EQ(origin.Width(), GetFrame().View()->Width());
   EXPECT_EQ(origin.X(), 0);
-  EXPECT_EQ(origin.Y(), 0);
+  EXPECT_EQ(origin.Y(), -1);
   EXPECT_EQ(origin, TopOfVisualViewport());
 
   // Now, test SearchOrigin with a pinched viewport.
@@ -630,7 +634,7 @@ TEST_F(SpatialNavigationTest, TopOfPinchedViewport) {
   EXPECT_EQ(origin.Height(), 0);
   EXPECT_LT(origin.Width(), GetFrame().View()->Width());
   EXPECT_GT(origin.X(), 0);
-  EXPECT_GT(origin.Y(), 0);
+  EXPECT_GT(origin.Y(), -1);
   EXPECT_EQ(origin, TopOfVisualViewport());
 }
 
