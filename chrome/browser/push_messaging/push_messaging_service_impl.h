@@ -31,6 +31,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/push_messaging_service.h"
 
+class GURL;
 class Profile;
 class PushMessagingAppIdentifier;
 class PushMessagingServiceTest;
@@ -45,12 +46,17 @@ enum class PushRegistrationStatus;
 struct WebPushSubscriptionOptions;
 }  // namespace blink
 
+namespace content {
+class DevToolsBackgroundServicesContext;
+}  // namespace content
+
 namespace gcm {
 class GCMDriver;
-}
+}  // namespace gcm
+
 namespace instance_id {
 class InstanceIDDriver;
-}
+}  // namespace instance_id
 
 class PushMessagingServiceImpl : public content::PushMessagingService,
                                  public gcm::GCMAppHandler,
@@ -155,6 +161,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
                               blink::mojom::PushDeliveryStatus status);
 
   void DidHandleMessage(const std::string& app_id,
+                        const std::string& push_message_id,
                         const base::RepeatingClosure& completion_closure,
                         bool did_show_generic_notification);
 
@@ -251,6 +258,9 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   gcm::GCMDriver* GetGCMDriver() const;
 
   instance_id::InstanceIDDriver* GetInstanceIDDriver() const;
+
+  content::DevToolsBackgroundServicesContext* GetDevToolsContext(
+      const GURL& origin) const;
 
   // Testing methods -----------------------------------------------------------
 

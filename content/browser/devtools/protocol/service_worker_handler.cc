@@ -318,7 +318,8 @@ Response ServiceWorkerHandler::DeliverPushMessage(
   if (data.size() > 0)
     payload = data;
   BrowserContext::DeliverPushMessage(
-      browser_context_, GURL(origin), id, std::move(payload),
+      browser_context_, GURL(origin), id, /* push_message_id= */ std::string(),
+      std::move(payload),
       base::BindRepeating([](blink::mojom::PushDeliveryStatus status) {}));
 
   return Response::OK();

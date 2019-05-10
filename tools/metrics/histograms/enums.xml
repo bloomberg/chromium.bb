@@ -12380,6 +12380,7 @@ Called by update_net_error_codes.py.-->
 <enum name="DevToolsBackgroundService">
   <int value="2" label="Background Fetch"/>
   <int value="3" label="Background Sync"/>
+  <int value="4" label="Push Messaging"/>
 </enum>
 
 <enum name="DevToolsPanel">

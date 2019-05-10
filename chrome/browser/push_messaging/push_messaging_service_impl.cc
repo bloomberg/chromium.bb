@@ -4,6 +4,8 @@
 
 #include "chrome/browser/push_messaging/push_messaging_service_impl.h"
 
+#include <map>
+#include <sstream>
 #include <vector>
 
 #include "base/barrier_closure.h"
@@ -46,6 +48,7 @@
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/devtools_background_services_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/service_worker_context.h"
@@ -126,6 +129,29 @@ void UnregisterCallbackToClosure(
     blink::mojom::PushUnregistrationStatus status) {
   DCHECK(closure);
   std::move(closure).Run();
+}
+
+void LogMessageReceivedEventToDevTools(
+    content::DevToolsBackgroundServicesContext* devtools_context,
+    const PushMessagingAppIdentifier& app_identifier,
+    const std::string& message_id,
+    bool was_encrypted,
+    const std::string& error_message) {
+  if (!devtools_context)
+    return;
+
+  std::map<std::string, std::string> event_metadata = {
+      {"Success", error_message.empty() ? "Yes" : "No"},
+      {"Was Encrypted", was_encrypted ? "Yes" : "No"}};
+
+  if (!error_message.empty())
+    event_metadata["Error Reason"] = error_message;
+
+  devtools_context->LogBackgroundServiceEvent(
+      app_identifier.service_worker_registration_id(),
+      url::Origin::Create(app_identifier.origin()),
+      content::DevToolsBackgroundService::kPushMessaging,
+      "Push message received" /* event_name */, message_id, event_metadata);
 }
 
 }  // namespace
@@ -252,6 +278,12 @@ void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
                            blink::mojom::PushDeliveryStatus::UNKNOWN_APP_ID);
     return;
   }
+
+  LogMessageReceivedEventToDevTools(GetDevToolsContext(app_identifier.origin()),
+                                    app_identifier, message.message_id,
+                                    /* was_encrypted= */ message.decrypted,
+                                    std::string() /* error_message */);
+
   // Drop message and unregister if |origin| has lost push permission.
   if (!IsPermissionSet(app_identifier.origin())) {
     DeliverMessageCallback(app_id, app_identifier.origin(),
@@ -274,7 +306,8 @@ void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
   // Dispatch the message to the appropriate Service Worker.
   content::BrowserContext::DeliverPushMessage(
       profile_, app_identifier.origin(),
-      app_identifier.service_worker_registration_id(), payload,
+      app_identifier.service_worker_registration_id(), message.message_id,
+      payload,
       base::Bind(&PushMessagingServiceImpl::DeliverMessageCallback,
                  weak_factory_.GetWeakPtr(), app_identifier.app_id(),
                  app_identifier.origin(),
@@ -302,7 +335,7 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
 
   base::RepeatingClosure completion_closure = base::BindRepeating(
       &PushMessagingServiceImpl::DidHandleMessage, weak_factory_.GetWeakPtr(),
-      app_id, message_handled_closure,
+      app_id, message.message_id, message_handled_closure,
       false /* did_show_generic_notification */);
   // The |completion_closure| should run by default at the end of this function,
   // unless it is explicitly passed to another function or disabled.
@@ -333,7 +366,7 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
             requesting_origin, service_worker_registration_id,
             base::BindOnce(&PushMessagingServiceImpl::DidHandleMessage,
                            weak_factory_.GetWeakPtr(), app_id,
-                           message_handled_closure));
+                           message.message_id, message_handled_closure));
         // Disable the default completion closure.
         completion_closure_runner.ReplaceClosure(base::DoNothing());
       }
@@ -367,11 +400,26 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
         app_id, message.sender_id,
         base::BindOnce(&UnregisterCallbackToClosure,
                        completion_closure_runner.Release()));
+
+    if (app_identifier.is_null())
+      return;
+
+    if (auto* devtools_context = GetDevToolsContext(app_identifier.origin())) {
+      std::stringstream ss;
+      ss << unsubscribe_reason;
+      devtools_context->LogBackgroundServiceEvent(
+          app_identifier.service_worker_registration_id(),
+          url::Origin::Create(app_identifier.origin()),
+          content::DevToolsBackgroundService::kPushMessaging,
+          "Unsubscribed due to error" /* event_name */, message.message_id,
+          {{"Reason", ss.str()}});
+    }
   }
 }
 
 void PushMessagingServiceImpl::DidHandleMessage(
     const std::string& app_id,
+    const std::string& push_message_id,
     const base::RepeatingClosure& message_handled_closure,
     bool did_show_generic_notification) {
   auto in_flight_iterator = in_flight_message_deliveries_.find(app_id);
@@ -393,6 +441,21 @@ void PushMessagingServiceImpl::DidHandleMessage(
   chrome::android::Java_PushMessagingServiceObserver_onMessageHandled(
       base::android::AttachCurrentThread());
 #endif
+
+  PushMessagingAppIdentifier app_identifier =
+      PushMessagingAppIdentifier::FindByAppId(profile_, app_id);
+
+  if (app_identifier.is_null() || !did_show_generic_notification)
+    return;
+
+  if (auto* devtools_context = GetDevToolsContext(app_identifier.origin())) {
+    devtools_context->LogBackgroundServiceEvent(
+        app_identifier.service_worker_registration_id(),
+        url::Origin::Create(app_identifier.origin()),
+        content::DevToolsBackgroundService::kPushMessaging,
+        "Generic notification shown" /* event_name */, push_message_id,
+        {} /* event_metadata */);
+  }
 }
 
 void PushMessagingServiceImpl::SetMessageCallbackForTesting(
@@ -422,7 +485,17 @@ void PushMessagingServiceImpl::OnSendAcknowledged(
 void PushMessagingServiceImpl::OnMessageDecryptionFailed(
     const std::string& app_id,
     const std::string& message_id,
-    const std::string& error_message) {}
+    const std::string& error_message) {
+  PushMessagingAppIdentifier app_identifier =
+      PushMessagingAppIdentifier::FindByAppId(profile_, app_id);
+
+  if (app_identifier.is_null())
+    return;
+
+  LogMessageReceivedEventToDevTools(GetDevToolsContext(app_identifier.origin()),
+                                    app_identifier, message_id,
+                                    /* was_encrypted= */ true, error_message);
+}
 
 // GetEndpoint method ----------------------------------------------------------
 
@@ -1071,4 +1144,22 @@ instance_id::InstanceIDDriver* PushMessagingServiceImpl::GetInstanceIDDriver()
   CHECK(instance_id_profile_service);
   CHECK(instance_id_profile_service->driver());
   return instance_id_profile_service->driver();
+}
+
+content::DevToolsBackgroundServicesContext*
+PushMessagingServiceImpl::GetDevToolsContext(const GURL& origin) const {
+  auto* storage_partition =
+      content::BrowserContext::GetStoragePartitionForSite(profile_, origin);
+  if (!storage_partition)
+    return nullptr;
+
+  auto* devtools_context =
+      storage_partition->GetDevToolsBackgroundServicesContext();
+
+  if (!devtools_context->IsRecording(
+          content::DevToolsBackgroundService::kPushMessaging)) {
+    return nullptr;
+  }
+
+  return devtools_context;
 }
