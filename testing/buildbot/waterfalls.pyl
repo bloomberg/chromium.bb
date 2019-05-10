@@ -1069,6 +1069,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests',
+          'isolated_scripts': 'gpu_webgpu_integration_isolated_scripts',
         },
       },
       'Dawn Linux x64 DEPS Release (NVIDIA)': {
@@ -1079,6 +1080,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests',
+          'isolated_scripts': 'gpu_webgpu_integration_isolated_scripts',
         },
       },
       'Dawn Linux x64 Release (Intel HD 630)': {
@@ -1111,6 +1113,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests',
+          'isolated_scripts': 'gpu_webgpu_integration_isolated_scripts',
         },
       },
       'Dawn Mac x64 DEPS Release (Intel)': {
@@ -1122,6 +1125,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests',
+          'isolated_scripts': 'gpu_webgpu_integration_isolated_scripts',
         },
       },
       'Dawn Mac x64 Release (AMD)': {
@@ -1155,6 +1159,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests',
+          'isolated_scripts': 'gpu_webgpu_integration_win_x64_isolated_scripts',
         },
       },
       'Dawn Win10 x64 DEPS Release (NVIDIA)': {
@@ -1165,6 +1170,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests',
+          'isolated_scripts': 'gpu_webgpu_integration_win_x64_isolated_scripts',
         },
       },
       'Dawn Win10 x64 Release (Intel HD 630)': {
@@ -1197,6 +1203,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests',
+          'isolated_scripts': 'gpu_webgpu_integration_isolated_scripts',
         },
       },
       'Dawn Win10 x86 DEPS Release (NVIDIA)': {
@@ -1207,6 +1214,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests',
+          'isolated_scripts': 'gpu_webgpu_integration_isolated_scripts',
         },
       },
       'Dawn Win10 x86 Release (Intel HD 630)': {

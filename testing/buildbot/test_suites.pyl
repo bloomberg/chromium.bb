@@ -3550,6 +3550,52 @@
       },
     },
 
+    'gpu_webgpu_integration_isolated_scripts': {
+      'webgpu_blink_web_tests': {
+        'name': 'webgpu_blink_web_tests',
+        'args': [
+          '--additional-driver-flag', '--enable-unsafe-webgpu',
+          '--additional-driver-flag', '--disable-gpu-sandbox',
+          '--driver-logging',
+          # These tests are skipped by default. Since we run with
+          # --enable-unsafe-webgpu, ignore the Skip expectation.
+          '--skipped', 'ignore',
+          'webgpu',
+        ],
+        'linux_args': [ '--no-xvfb' ],
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'isolate_name': 'blink_web_tests_exparchive',
+      },
+    },
+
+    'gpu_webgpu_integration_win_x64_isolated_scripts': {
+      'webgpu_blink_web_tests': {
+        'name': 'webgpu_blink_web_tests',
+        'args': [
+          '--additional-driver-flag', '--enable-unsafe-webgpu',
+          '--additional-driver-flag', '--disable-gpu-sandbox',
+          '--driver-logging',
+          # These tests are skipped by default. Since we run with
+          # --enable-unsafe-webgpu, ignore the Skip expectation.
+          '--skipped', 'ignore',
+          '-t', 'Release_x64',
+          'webgpu',
+        ],
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'isolate_name': 'blink_web_tests_exparchive',
+      },
+    },
+
     'gpu_win_intel_specific_telemetry_tests': {
       'power_measurement_test': {
         'telemetry_test_name': 'power',
