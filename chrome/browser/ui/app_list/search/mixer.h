@@ -12,6 +12,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/strings/string16.h"
 
 class AppListModelUpdater;
 class ChromeSearchResult;
@@ -47,7 +48,7 @@ class Mixer {
   void AddProviderToGroup(size_t group_id, SearchProvider* provider);
 
   // Collects the results, sorts and publishes them.
-  void MixAndPublish(size_t num_max_results);
+  void MixAndPublish(size_t num_max_results, const base::string16& query);
 
   // Sets a SearchResultRanker to re-rank search results before they are
   // published.
@@ -80,7 +81,7 @@ class Mixer {
   // |results| may not have been sorted yet.
   static void RemoveDuplicates(SortedResults* results);
 
-  void FetchResults();
+  void FetchResults(const base::string16& query);
 
   AppListModelUpdater* const model_updater_;  // Not owned.
 

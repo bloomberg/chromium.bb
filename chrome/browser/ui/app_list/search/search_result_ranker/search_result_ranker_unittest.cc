@@ -14,6 +14,7 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/stl_util.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/profiles/profile.h"
@@ -133,7 +134,7 @@ TEST_F(SearchResultRankerTest, GroupRankerIsDisabledWithFlag) {
   auto ranker = MakeRanker(false);
   for (int i = 0; i < 20; ++i)
     ranker->Train("unused", RankingItemType::kFile);
-  ranker->FetchRankings();
+  ranker->FetchRankings(base::string16());
 
   auto results =
       MakeSearchResults({"A", "B", "C", "D"},
@@ -151,7 +152,7 @@ TEST_F(SearchResultRankerTest, GroupRankerImprovesScores) {
   auto ranker = MakeRanker(true, {{"boost_coefficient", "1.0"}});
   for (int i = 0; i < 20; ++i)
     ranker->Train("unused", RankingItemType::kFile);
-  ranker->FetchRankings();
+  ranker->FetchRankings(base::string16());
 
   auto results =
       MakeSearchResults({"A", "B", "C", "D"},

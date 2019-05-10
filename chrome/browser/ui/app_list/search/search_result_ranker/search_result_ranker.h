@@ -6,13 +6,12 @@
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_RESULT_RANKER_SEARCH_RESULT_RANKER_H_
 
 #include "base/containers/flat_map.h"
-#include "base/scoped_observer.h"
+#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_notifier.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"
-
 
 namespace app_list {
 
@@ -31,8 +30,11 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver {
   ~SearchResultRanker() override;
 
   // Queries each model contained with the SearchResultRanker for its results,
-  // and saves them for use on subsequent calls to Rank().
-  void FetchRankings();
+  // and saves them for use on subsequent calls to Rank(). The given query may
+  // be used as a feature for ranking search results provided to Rank(), but is
+  // not used to create new search results. If this is a zero-state scenario,
+  // the query should be empty.
+  void FetchRankings(const base::string16& query);
 
   // Modifies the scores of |results| using the saved rankings. This should be
   // called after rankings have been queried with a call to FetchRankings().

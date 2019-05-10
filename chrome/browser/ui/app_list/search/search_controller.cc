@@ -120,7 +120,7 @@ void SearchController::OnResultsChanged() {
       query_for_recommendation_
           ? AppListConfig::instance().num_start_page_tiles()
           : AppListConfig::instance().max_search_results();
-  mixer_->MixAndPublish(num_max_results);
+  mixer_->MixAndPublish(num_max_results, last_query_);
 }
 
 ChromeSearchResult* SearchController::FindSearchResult(

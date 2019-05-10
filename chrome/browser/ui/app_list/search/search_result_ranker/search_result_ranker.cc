@@ -90,7 +90,7 @@ SearchResultRanker::~SearchResultRanker() {
     notifier->RemoveObserver(this);
 }
 
-void SearchResultRanker::FetchRankings() {
+void SearchResultRanker::FetchRankings(const base::string16& query) {
   // The search controller potentially calls SearchController::FetchResults
   // several times for each user's search, so we cache the results of querying
   // the models for a short time, to prevent uneccessary queries.
@@ -98,6 +98,9 @@ void SearchResultRanker::FetchRankings() {
   if (now - time_of_last_fetch_ < kMinSecondsBetweenFetches)
     return;
   time_of_last_fetch_ = now;
+
+  // TODO(931149): The passed |query| should be used to choose between ranking
+  // results with using a zero-state or query-based model.
 
   if (results_list_group_ranker_) {
     group_ranks_.clear();

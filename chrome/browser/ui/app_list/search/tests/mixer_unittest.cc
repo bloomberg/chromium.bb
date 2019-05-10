@@ -159,7 +159,8 @@ class MixerTest : public testing::Test {
     for (size_t i = 0; i < providers_.size(); ++i)
       providers_[i]->Start(query);
 
-    mixer_->MixAndPublish(AppListConfig::instance().max_search_results());
+    mixer_->MixAndPublish(AppListConfig::instance().max_search_results(),
+                          base::string16());
   }
 
   std::string GetResults() const {

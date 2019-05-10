@@ -93,8 +93,8 @@ void Mixer::AddProviderToGroup(size_t group_id, SearchProvider* provider) {
   groups_[group_id]->AddProvider(provider);
 }
 
-void Mixer::MixAndPublish(size_t num_max_results) {
-  FetchResults();
+void Mixer::MixAndPublish(size_t num_max_results, const base::string16& query) {
+  FetchResults(query);
 
   SortedResults results;
   results.reserve(num_max_results);
@@ -155,9 +155,9 @@ void Mixer::RemoveDuplicates(SortedResults* results) {
   results->swap(final);
 }
 
-void Mixer::FetchResults() {
+void Mixer::FetchResults(const base::string16& query) {
   if (ranker_)
-    ranker_->FetchRankings();
+    ranker_->FetchRankings(query);
   for (const auto& group : groups_)
     group->FetchResults(ranker_.get());
 }
