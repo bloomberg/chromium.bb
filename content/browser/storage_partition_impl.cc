@@ -55,6 +55,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "net/base/features.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
@@ -1240,10 +1241,14 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     // TODO(lazyboy): Fix.
     if (storage_origin.is_empty()) {
       IncrementTaskCountOnUI();
+      // TODO(crbug.com/960325): Sometimes SessionStorage fails to call its
+      // callback. Figure out why.
       ClearSessionStorageOnUIThread(
           base::WrapRefCounted(dom_storage_context),
           base::WrapRefCounted(special_storage_policy), origin_matcher,
-          perform_storage_cleanup, decrement_callback);
+          perform_storage_cleanup,
+          mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+              static_cast<base::OnceClosure>(decrement_callback)));
     }
   }
 
