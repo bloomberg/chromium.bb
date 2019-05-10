@@ -150,9 +150,9 @@ std::vector<std::string> GetAppsPinnedByPolicy(
 syncer::StringOrdinal GetFirstPinnedAppPosition(Profile* profile,
                                                 bool exclude_chrome) {
   syncer::StringOrdinal position;
-  app_list::AppListSyncableService* app_service =
+  app_list::AppListSyncableService* syncable_service =
       app_list::AppListSyncableServiceFactory::GetForProfile(profile);
-  for (const auto& sync_peer : app_service->sync_items()) {
+  for (const auto& sync_peer : syncable_service->sync_items()) {
     if (!sync_peer.second->item_pin_ordinal.IsValid())
       continue;
     if (exclude_chrome && sync_peer.first == extension_misc::kChromeAppId)
@@ -178,9 +178,9 @@ syncer::StringOrdinal CreateFirstPinPosition(Profile* profile) {
 // app is not currently visible on a device.
 syncer::StringOrdinal CreateLastPinPosition(Profile* profile) {
   syncer::StringOrdinal position;
-  app_list::AppListSyncableService* app_service =
+  app_list::AppListSyncableService* syncable_service =
       app_list::AppListSyncableServiceFactory::GetForProfile(profile);
-  for (const auto& sync_peer : app_service->sync_items()) {
+  for (const auto& sync_peer : syncable_service->sync_items()) {
     if (!sync_peer.second->item_pin_ordinal.IsValid())
       continue;
     if (!position.IsValid() ||
@@ -199,7 +199,7 @@ syncer::StringOrdinal CreateLastPinPosition(Profile* profile) {
 // app.
 void InsertPinsAfterChromeAndBeforeFirstPinnedApp(
     LauncherControllerHelper* helper,
-    app_list::AppListSyncableService* app_service,
+    app_list::AppListSyncableService* syncable_service,
     const std::vector<std::string>& app_ids,
     std::vector<PinInfo>* pin_infos) {
   if (app_ids.empty())
@@ -207,7 +207,7 @@ void InsertPinsAfterChromeAndBeforeFirstPinnedApp(
 
   // Chrome must be pinned at this point.
   const syncer::StringOrdinal chrome_position =
-      app_service->GetPinPosition(extension_misc::kChromeAppId);
+      syncable_service->GetPinPosition(extension_misc::kChromeAppId);
   DCHECK(chrome_position.IsValid());
 
   // New pins are inserted after this position.
@@ -233,11 +233,11 @@ void InsertPinsAfterChromeAndBeforeFirstPinnedApp(
 
   for (const auto& app_id : app_ids) {
     // Check if we already processed the current app.
-    if (app_service->GetPinPosition(app_id).IsValid())
+    if (syncable_service->GetPinPosition(app_id).IsValid())
       continue;
 
     const syncer::StringOrdinal position = after.CreateBetween(before);
-    app_service->SetPinPosition(app_id, position);
+    syncable_service->SetPinPosition(app_id, position);
 
     // Even if app is not currently visible, its pin is pre-created.
     if (helper->IsValidIDForCurrentUser(app_id))
@@ -252,10 +252,10 @@ void InsertPinsAfterChromeAndBeforeFirstPinnedApp(
 std::vector<ash::ShelfID> GetPinnedAppsFromSync(
     LauncherControllerHelper* helper) {
   const PrefService* prefs = helper->profile()->GetPrefs();
-  app_list::AppListSyncableService* const app_service =
+  app_list::AppListSyncableService* const syncable_service =
       app_list::AppListSyncableServiceFactory::GetForProfile(helper->profile());
   // Some unit tests may not have it or service may not be initialized.
-  if (!app_service || !app_service->IsInitialized())
+  if (!syncable_service || !syncable_service->IsInitialized())
     return std::vector<ash::ShelfID>();
 
   std::vector<PinInfo> pin_infos;
@@ -264,7 +264,7 @@ std::vector<ash::ShelfID> GetPinnedAppsFromSync(
   // time. In the normal workflow we have at least Chrome browser pin info.
   bool first_run = true;
 
-  for (const auto& sync_peer : app_service->sync_items()) {
+  for (const auto& sync_peer : syncable_service->sync_items()) {
     if (!sync_peer.second->item_pin_ordinal.IsValid())
       continue;
 
@@ -285,10 +285,11 @@ std::vector<ash::ShelfID> GetPinnedAppsFromSync(
 
   // Make sure Chrome is always pinned.
   syncer::StringOrdinal chrome_position =
-      app_service->GetPinPosition(extension_misc::kChromeAppId);
+      syncable_service->GetPinPosition(extension_misc::kChromeAppId);
   if (!chrome_position.IsValid()) {
     chrome_position = CreateFirstPinPosition(helper->profile());
-    app_service->SetPinPosition(extension_misc::kChromeAppId, chrome_position);
+    syncable_service->SetPinPosition(extension_misc::kChromeAppId,
+                                     chrome_position);
     pin_infos.emplace_back(
         PinInfo(extension_misc::kChromeAppId, chrome_position));
   }
@@ -298,7 +299,7 @@ std::vector<ash::ShelfID> GetPinnedAppsFromSync(
     std::vector<std::string> default_app_ids;
     for (const char* default_app_id : kDefaultPinnedApps)
       default_app_ids.push_back(default_app_id);
-    InsertPinsAfterChromeAndBeforeFirstPinnedApp(helper, app_service,
+    InsertPinsAfterChromeAndBeforeFirstPinnedApp(helper, syncable_service,
                                                  default_app_ids, &pin_infos);
   }
 
@@ -308,16 +309,16 @@ std::vector<ash::ShelfID> GetPinnedAppsFromSync(
   // preallocated and apps will appear on shelf in deterministic order, even if
   // their install order differ.
   InsertPinsAfterChromeAndBeforeFirstPinnedApp(
-      helper, app_service, GetAppsPinnedByPolicy(helper), &pin_infos);
+      helper, syncable_service, GetAppsPinnedByPolicy(helper), &pin_infos);
 
   // In case Play Store appears first time on the device, pin it to the last
   // position.
   if (helper->IsValidIDForCurrentUser(arc::kPlayStoreAppId) &&
-      !app_service->GetSyncItem(arc::kPlayStoreAppId)) {
+      !syncable_service->GetSyncItem(arc::kPlayStoreAppId)) {
     const syncer::StringOrdinal play_store_position =
         CreateLastPinPosition(helper->profile());
     pin_infos.emplace_back(PinInfo(arc::kPlayStoreAppId, play_store_position));
-    app_service->SetPinPosition(arc::kPlayStoreAppId, play_store_position);
+    syncable_service->SetPinPosition(arc::kPlayStoreAppId, play_store_position);
   }
 
   // Sort pins according their ordinals.
@@ -343,9 +344,9 @@ void RemovePinPosition(Profile* profile, const ash::ShelfID& shelf_id) {
   }
   DCHECK(!app_id.empty());
 
-  app_list::AppListSyncableService* app_service =
+  app_list::AppListSyncableService* syncable_service =
       app_list::AppListSyncableServiceFactory::GetForProfile(profile);
-  app_service->SetPinPosition(app_id, syncer::StringOrdinal());
+  syncable_service->SetPinPosition(app_id, syncer::StringOrdinal());
 }
 
 void SetPinPosition(Profile* profile,
@@ -369,21 +370,22 @@ void SetPinPosition(Profile* profile,
   DCHECK(!app_id.empty());
   DCHECK_NE(app_id, app_id_before);
 
-  app_list::AppListSyncableService* app_service =
+  app_list::AppListSyncableService* syncable_service =
       app_list::AppListSyncableServiceFactory::GetForProfile(profile);
   // Some unit tests may not have this service.
-  if (!app_service)
+  if (!syncable_service)
     return;
 
   syncer::StringOrdinal position_before =
       app_id_before.empty() ? syncer::StringOrdinal()
-                            : app_service->GetPinPosition(app_id_before);
+                            : syncable_service->GetPinPosition(app_id_before);
   syncer::StringOrdinal position_after;
   for (const auto& shelf_id_after : shelf_ids_after) {
     const std::string& app_id_after = shelf_id_after.app_id;
     DCHECK_NE(app_id_after, app_id);
     DCHECK_NE(app_id_after, app_id_before);
-    syncer::StringOrdinal position = app_service->GetPinPosition(app_id_after);
+    syncer::StringOrdinal position =
+        syncable_service->GetPinPosition(app_id_after);
     DCHECK(position.IsValid());
     if (!position.IsValid()) {
       LOG(ERROR) << "Sync pin position was not found for " << app_id_after;
@@ -404,5 +406,5 @@ void SetPinPosition(Profile* profile,
     pin_position = position_after.CreateBefore();
   else
     pin_position = syncer::StringOrdinal::CreateInitialOrdinal();
-  app_service->SetPinPosition(app_id, pin_position);
+  syncable_service->SetPinPosition(app_id, pin_position);
 }
