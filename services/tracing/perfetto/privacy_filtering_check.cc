@@ -4,6 +4,8 @@
 
 #include "services/tracing/perfetto/privacy_filtering_check.h"
 
+#include <sstream>
+
 #include "base/logging.h"
 #include "services/tracing/perfetto/privacy_filtered_fields-inl.h"
 #include "third_party/perfetto/protos/perfetto/trace/interned_data/interned_data.pbzero.h"
@@ -28,22 +30,40 @@ int FindIndexOfValue(const int* const arr, uint32_t value) {
 }
 
 // Recursively verifies that the |proto| contains only accepted field IDs
-// including all sub messages.
-void VerifyProto(const MessageInfo* root, ProtoDecoder* proto) {
+// including all sub messages. Keeps track of |parent_ids| for printing error
+// message.
+void VerifyProtoRecursive(const MessageInfo* root,
+                          ProtoDecoder* proto,
+                          std::vector<uint32_t>* parent_ids) {
   proto->Reset();
   for (auto f = proto->ReadField(); f.valid(); f = proto->ReadField()) {
     int index = FindIndexOfValue(root->accepted_field_ids, f.id());
     if (index == -1) {
-      NOTREACHED() << " unexpected field id " << f.id();
+      std::stringstream error;
+      error << " Unexpected field in TracePacket proto. IDs from root to child";
+      for (int a : *parent_ids) {
+        error << " : " << a;
+      }
+      error << " : " << f.id();
+      LOG(DFATAL) << error.rdbuf();
       continue;
     }
     if (root->sub_messages && root->sub_messages[index] != nullptr) {
       ProtoDecoder decoder(f.data(), f.size());
-      VerifyProto(root->sub_messages[index], &decoder);
+      parent_ids->push_back(f.id());
+      VerifyProtoRecursive(root->sub_messages[index], &decoder, parent_ids);
+      parent_ids->pop_back();
     }
   }
 }
+
+// Verifies that the |proto| contains only accepted fields.
+void VerifyProto(const MessageInfo* root, ProtoDecoder* proto) {
+  std::vector<uint32_t> parent_ids;
+  VerifyProtoRecursive(root, proto, &parent_ids);
 }
+
+}  // namespace
 
 PrivacyFilteringCheck::PrivacyFilteringCheck() = default;
 PrivacyFilteringCheck::~PrivacyFilteringCheck() = default;
