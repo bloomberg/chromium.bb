@@ -218,7 +218,7 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
                 context.getResources().getDimensionPixelOffset(R.dimen.accessibility_tab_height);
         mDarkIconColor = ColorUtils.getIconTint(context, false);
         mDefaultCloseIconColor =
-                AppCompatResources.getColorStateList(context, R.color.light_icon_color);
+                AppCompatResources.getColorStateList(context, R.color.default_icon_color_secondary);
         mIncognitoCloseIconColor =
                 AppCompatResources.getColorStateList(context, R.color.white_alpha_70);
         mDefaultLevel = getResources().getInteger(R.integer.list_item_level_default);

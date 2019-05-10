@@ -143,9 +143,13 @@ public class FeedImageLoader implements ImageLoaderApi {
     private @DrawableRes int lookupDrawableIdentifier(String resourceName) {
         switch (resourceName) {
             case BundledAssets.OFFLINE_INDICATOR_BADGE:
-                return R.drawable.offline_pin_round;
+                return R.drawable.ic_offline_pin_24dp_on_light_bg;
+            case BundledAssets.OFFLINE_INDICATOR_BADGE_DARK_BG:
+                return R.drawable.ic_offline_pin_24dp_on_dark_bg;
             case BundledAssets.VIDEO_INDICATOR_BADGE:
-                return R.drawable.ic_play_circle_filled_grey;
+                return R.drawable.ic_play_circle_filled_24dp_on_light_bg;
+            case BundledAssets.VIDEO_INDICATOR_BADGE_DARK_BG:
+                return R.drawable.ic_play_circle_filled_24dp_on_dark_bg;
         }
 
         return 0;
