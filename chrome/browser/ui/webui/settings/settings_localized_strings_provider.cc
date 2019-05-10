@@ -1964,6 +1964,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
                           chromeos::IsAccountManagerAvailable(profile));
 
   // Toggles the Chrome OS Kerberos Accounts submenu in the People section.
+  // Note that the handler is also dependent on this pref.
   html_source->AddBoolean(
       "isKerberosEnabled",
       g_browser_process->local_state()->GetBoolean(prefs::kKerberosEnabled));

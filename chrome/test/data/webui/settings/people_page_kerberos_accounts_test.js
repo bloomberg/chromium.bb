@@ -22,12 +22,12 @@ cr.define('settings_people_page_kerberos_accounts', function() {
         {
           principalName: 'user@REALM',
           isSignedIn: true,
-          pic: 'chrome://theme/IDR_LOGIN_DEFAULT_USER_2',
+          pic: 'pic',
         },
         {
           principalName: 'user2@REALM2',
           isSignedIn: false,
-          pic: 'chrome://theme/IDR_LOGIN_DEFAULT_USER_2',
+          pic: 'pic2',
         }
       ]);
     }

@@ -54,39 +54,22 @@ cr.define('settings', function() {
   class KerberosAccountsBrowserProxyImpl {
     /** @override */
     getAccounts() {
-      // TODO(https://crbug.com/952232): Implement
-      return new Promise(function(resolve, reject) {
-        resolve([
-          {
-            principalName: 'user@REALM',
-            isSignedIn: true,
-            pic: 'chrome://theme/IDR_LOGIN_DEFAULT_USER_2',
-          },
-          {
-            principalName: 'user2@REALM2',
-            isSignedIn: false,
-            pic: 'chrome://theme/IDR_LOGIN_DEFAULT_USER_2',
-          }
-        ]);
-      });
+      return cr.sendWithPromise('getKerberosAccounts');
     }
 
     /** @override */
     addAccount() {
-      // TODO(https://crbug.com/952232): Implement
-      console.log('addKerberosAccount');
+      chrome.send('addKerberosAccount');
     }
 
     /** @override */
     reauthenticateAccount(principalName) {
-      // TODO(https://crbug.com/952232): Implement
-      console.log('reauthenticateKerberosAccount');
+      chrome.send('reauthenticateKerberosAccount', [principalName]);
     }
 
     /** @override */
     removeAccount(account) {
-      // TODO(https://crbug.com/952232): Implement
-      console.log('removeKerberosAccount');
+      chrome.send('removeKerberosAccount', [account.principalName]);
     }
   }
 

@@ -104,6 +104,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/fingerprint_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/google_assistant_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/internet_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/kerberos_accounts_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/multidevice_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/plugin_vm_handler.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
@@ -383,6 +384,11 @@ void SettingsUI::InitOSWebUIHandlers(Profile* profile,
   if (chromeos::switches::IsAssistantEnabled()) {
     web_ui->AddMessageHandler(
         std::make_unique<chromeos::settings::GoogleAssistantHandler>(profile));
+  }
+  if (g_browser_process->local_state()->GetBoolean(prefs::kKerberosEnabled)) {
+    // Note that UI is also dependent on this pref.
+    web_ui->AddMessageHandler(
+        std::make_unique<chromeos::settings::KerberosAccountsHandler>());
   }
   web_ui->AddMessageHandler(
       std::make_unique<chromeos::settings::KeyboardHandler>());
