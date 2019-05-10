@@ -42,6 +42,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileLock;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Wrapper for the steps needed to initialize the java and native sides of webview chromium.
@@ -229,6 +232,37 @@ public final class AwBrowserProcess {
     }
 
     /**
+     * Make a list of crash key-value pairs for in the same order as minidump file array.
+     * These crash key-value pairs are passed from native-code while generating the minidump files.
+     * This is basically reordering the crash-key maps in @code{crashesInfo} in the same order as
+     * minidump files, ignoring crashkeys for files that are not in the @code{minidumps} array and
+     * null for minidumps that don't have crash key-value maps in @code{crashesInfo}.
+     *
+     * @param minidumps array of minidump files to get crash-keys for.
+     * @param crashesInfo crash key-value pairs grouped/mapped by crash report uuid.
+     * @return list of crash key-value pairs map corresponding for each minidumps file.
+     */
+    private static List<Map<String, String>> getCrashKeysForCrashFiles(
+            File[] minidumps, Map<String, Map<String, String>> crashesInfo) {
+        List<Map<String, String>> crashesInfoList = new ArrayList<>(minidumps.length);
+        for (int i = 0; i < minidumps.length; i++) {
+            String fileName = minidumps[i].getName();
+            // crash report uuid is the minidump file name without any extensions.
+            int firstDotIndex = fileName.indexOf('.');
+            if (firstDotIndex == -1) {
+                firstDotIndex = fileName.length();
+            }
+            String crashUuid = fileName.substring(0, firstDotIndex);
+            if (crashesInfo == null) {
+                crashesInfoList.add(null);
+            } else {
+                crashesInfoList.add(crashesInfo.get(crashUuid));
+            }
+        }
+        return crashesInfoList;
+    }
+
+    /**
      * Pass Minidumps to a separate Service declared in the WebView provider package.
      * That Service will copy the Minidumps to its own data directory - at which point we can delete
      * our copies in the app directory.
@@ -245,7 +279,9 @@ public final class AwBrowserProcess {
             // The lifecycle of a minidump in the app directory is very simple: foo.dmpNNNNN --
             // where NNNNN is a Process ID (PID) -- gets created, and is either deleted or
             // copied over to the shared crash directory for all WebView-using apps.
-            final File[] minidumpFiles = crashFileManager.getMinidumpsSansLogcat();
+            Map<String, Map<String, String>> crashesInfoMap =
+                    crashFileManager.importMinidumpsCrashKeys();
+            final File[] minidumpFiles = crashFileManager.getCurrentMinidumpsSansLogcat();
             if (minidumpFiles.length == 0) return;
 
             // Delete the minidumps if the user doesn't allow crash data uploading.
@@ -288,8 +324,10 @@ public final class AwBrowserProcess {
                             }
                         }
                         try {
+                            List<Map<String, String>> crashesInfoList =
+                                    getCrashKeysForCrashFiles(minidumpFiles, crashesInfoMap);
                             ICrashReceiverService.Stub.asInterface(service).transmitCrashes(
-                                    minidumpFds);
+                                    minidumpFds, crashesInfoList);
                         } catch (RemoteException e) {
                             // TODO(gsennton): add a UMA metric here to ensure we aren't losing
                             // too many minidumps because of this.
