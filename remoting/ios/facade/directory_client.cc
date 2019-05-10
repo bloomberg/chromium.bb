@@ -27,8 +27,7 @@ void DirectoryClient::GetHostList(GetHostListCallback callback) {
   grpc_executor_->ExecuteRpc(CreateGrpcAsyncUnaryRequest(
       base::BindOnce(&DirectoryService::Stub::AsyncGetHostList,
                      base::Unretained(stub_.get())),
-      std::make_unique<grpc::ClientContext>(), apis::v1::GetHostListRequest(),
-      std::move(callback)));
+      apis::v1::GetHostListRequest(), std::move(callback)));
 }
 
 void DirectoryClient::CancelPendingRequests() {

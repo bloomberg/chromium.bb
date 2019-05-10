@@ -136,9 +136,10 @@ void FtlServicesPlayground::GetIceServer(base::OnceClosure on_done) {
   auto grpc_request = CreateGrpcAsyncUnaryRequest(
       base::BindOnce(&PeerToPeer::Stub::AsyncGetICEServer,
                      base::Unretained(peer_to_peer_stub_.get())),
-      FtlGrpcContext::CreateClientContext(), request,
+      request,
       base::BindOnce(&FtlServicesPlayground::OnGetIceServerResponse,
                      weak_factory_.GetWeakPtr(), std::move(on_done)));
+  FtlGrpcContext::FillClientContext(grpc_request->context());
   executor_->ExecuteRpc(std::move(grpc_request));
 }
 

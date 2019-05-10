@@ -13,10 +13,10 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "third_party/grpc/src/include/grpcpp/client_context.h"
 #include "third_party/grpc/src/include/grpcpp/support/status.h"
 
 namespace grpc {
-class ClientContext;
 class CompletionQueue;
 }  // namespace grpc
 
@@ -38,8 +38,10 @@ class GrpcAsyncRequest {
  public:
   using RunTaskCallback = base::RepeatingCallback<void(base::OnceClosure)>;
 
-  explicit GrpcAsyncRequest(std::unique_ptr<grpc::ClientContext> context);
+  GrpcAsyncRequest();
   virtual ~GrpcAsyncRequest();
+
+  grpc::ClientContext* context() { return &context_; }
 
   // Methods below are considered internal to grpc_support.
 
@@ -67,8 +69,6 @@ class GrpcAsyncRequest {
   // called and request will be silently dropped.
   virtual bool CanStartRequest() const = 0;
 
-  grpc::ClientContext* context() { return context_.get(); }
-
   base::WeakPtr<GrpcAsyncRequest> GetGrpcAsyncRequestWeakPtr();
 
  protected:
@@ -78,7 +78,7 @@ class GrpcAsyncRequest {
   grpc::Status status_{grpc::StatusCode::UNKNOWN, "Uninitialized"};
 
  private:
-  std::unique_ptr<grpc::ClientContext> context_;
+  grpc::ClientContext context_;
 
   base::WeakPtrFactory<GrpcAsyncRequest> grpc_async_request_weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(GrpcAsyncRequest);

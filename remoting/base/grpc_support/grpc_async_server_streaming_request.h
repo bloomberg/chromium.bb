@@ -33,7 +33,6 @@ using GrpcAsyncServerStreamingRpcFunction =
 class GrpcAsyncServerStreamingRequestBase : public GrpcAsyncRequest {
  public:
   GrpcAsyncServerStreamingRequestBase(
-      std::unique_ptr<grpc::ClientContext> context,
       base::OnceCallback<void(const grpc::Status&)> on_channel_closed,
       std::unique_ptr<ScopedGrpcServerStream>* scoped_stream);
   ~GrpcAsyncServerStreamingRequestBase() override;
@@ -92,22 +91,33 @@ class GrpcAsyncServerStreamingRequest
           grpc::CompletionQueue* cq,
           void* event_tag)>;
 
-  GrpcAsyncServerStreamingRequest(
-      std::unique_ptr<grpc::ClientContext> context,
-      StartAndCreateReaderCallback create_reader_callback,
-      const OnIncomingMessageCallback& on_incoming_msg,
-      base::OnceCallback<void(const grpc::Status&)> on_channel_closed,
-      std::unique_ptr<ScopedGrpcServerStream>* scoped_stream)
-      : GrpcAsyncServerStreamingRequestBase(std::move(context),
-                                            std::move(on_channel_closed),
-                                            scoped_stream) {
-    create_reader_callback_ = std::move(create_reader_callback);
-    on_incoming_msg_ = on_incoming_msg;
-  }
-
   ~GrpcAsyncServerStreamingRequest() override = default;
 
  private:
+  template <typename Req, typename Res>
+  friend std::unique_ptr<GrpcAsyncServerStreamingRequest<Res>>
+  CreateGrpcAsyncServerStreamingRequest(
+      GrpcAsyncServerStreamingRpcFunction<Req, Res> rpc_function,
+      const Req& request,
+      const base::RepeatingCallback<void(const Res&)>& on_incoming_msg,
+      base::OnceCallback<void(const grpc::Status&)> on_channel_closed,
+      std::unique_ptr<ScopedGrpcServerStream>* scoped_stream);
+
+  GrpcAsyncServerStreamingRequest(
+      const OnIncomingMessageCallback& on_incoming_msg,
+      base::OnceCallback<void(const grpc::Status&)> on_channel_closed,
+      std::unique_ptr<ScopedGrpcServerStream>* scoped_stream)
+      : GrpcAsyncServerStreamingRequestBase(std::move(on_channel_closed),
+                                            scoped_stream) {
+    on_incoming_msg_ = on_incoming_msg;
+  }
+
+  void SetCreateReaderCallback(StartAndCreateReaderCallback callback) {
+    DCHECK(!create_reader_callback_);
+    DCHECK(callback);
+    create_reader_callback_ = std::move(callback);
+  }
+
   // GrpcAsyncRequest implementations
   void Start(const RunTaskCallback& run_task_cb,
              grpc::CompletionQueue* cq,
@@ -150,16 +160,17 @@ template <typename RequestType, typename ResponseType>
 std::unique_ptr<GrpcAsyncServerStreamingRequest<ResponseType>>
 CreateGrpcAsyncServerStreamingRequest(
     GrpcAsyncServerStreamingRpcFunction<RequestType, ResponseType> rpc_function,
-    std::unique_ptr<grpc::ClientContext> context,
     const RequestType& request,
     const base::RepeatingCallback<void(const ResponseType&)>& on_incoming_msg,
     base::OnceCallback<void(const grpc::Status&)> on_channel_closed,
     std::unique_ptr<ScopedGrpcServerStream>* scoped_stream) {
-  auto start_and_create_reader_cb =
-      base::BindOnce(std::move(rpc_function), context.get(), request);
-  return std::make_unique<GrpcAsyncServerStreamingRequest<ResponseType>>(
-      std::move(context), std::move(start_and_create_reader_cb),
-      on_incoming_msg, std::move(on_channel_closed), scoped_stream);
+  // Cannot use make_unique because the constructor is private.
+  std::unique_ptr<GrpcAsyncServerStreamingRequest<ResponseType>> grpc_request(
+      new GrpcAsyncServerStreamingRequest<ResponseType>(
+          on_incoming_msg, std::move(on_channel_closed), scoped_stream));
+  grpc_request->SetCreateReaderCallback(base::BindOnce(
+      std::move(rpc_function), grpc_request->context(), request));
+  return grpc_request;
 }
 
 }  // namespace remoting

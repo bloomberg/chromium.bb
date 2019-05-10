@@ -21,10 +21,9 @@ void RunTaskIfScopedStreamIsAlive(
 }  // namespace
 
 GrpcAsyncServerStreamingRequestBase::GrpcAsyncServerStreamingRequestBase(
-    std::unique_ptr<grpc::ClientContext> context,
     base::OnceCallback<void(const grpc::Status&)> on_channel_closed,
     std::unique_ptr<ScopedGrpcServerStream>* scoped_stream)
-    : GrpcAsyncRequest(std::move(context)), weak_factory_(this) {
+    : weak_factory_(this) {
   DCHECK(on_channel_closed);
   DCHECK_NE(nullptr, scoped_stream);
   on_channel_closed_ = std::move(on_channel_closed);

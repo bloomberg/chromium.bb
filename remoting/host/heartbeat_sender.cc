@@ -89,12 +89,12 @@ void HeartbeatSender::HeartbeatClient::Heartbeat(
            << "=========================================================";
 
   auto client_context = std::make_unique<grpc::ClientContext>();
-  SetDeadline(client_context.get(),
-              base::Time::Now() + kHeartbeatResponseTimeout);
   auto async_request = CreateGrpcAsyncUnaryRequest(
       base::BindOnce(&DirectoryService::Stub::AsyncHeartbeat,
                      base::Unretained(directory_.get())),
-      std::move(client_context), request, std::move(callback));
+      request, std::move(callback));
+  SetDeadline(async_request->context(),
+              base::Time::Now() + kHeartbeatResponseTimeout);
   executor_.ExecuteRpc(std::move(async_request));
 }
 

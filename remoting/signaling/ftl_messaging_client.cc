@@ -75,9 +75,10 @@ void FtlMessagingClient::PullMessages(DoneCallback on_done) {
   auto grpc_request = CreateGrpcAsyncUnaryRequest(
       base::BindOnce(&Messaging::Stub::AsyncPullMessages,
                      base::Unretained(messaging_stub_.get())),
-      FtlGrpcContext::CreateClientContext(), request,
+      request,
       base::BindOnce(&FtlMessagingClient::OnPullMessagesResponse,
                      base::Unretained(this), std::move(on_done)));
+  FtlGrpcContext::FillClientContext(grpc_request->context());
   executor_->ExecuteRpc(std::move(grpc_request));
 }
 
@@ -110,9 +111,10 @@ void FtlMessagingClient::SendMessage(
   auto grpc_request = CreateGrpcAsyncUnaryRequest(
       base::BindOnce(&Messaging::Stub::AsyncSendMessage,
                      base::Unretained(messaging_stub_.get())),
-      FtlGrpcContext::CreateClientContext(), request,
+      request,
       base::BindOnce(&FtlMessagingClient::OnSendMessageResponse,
                      base::Unretained(this), std::move(on_done)));
+  FtlGrpcContext::FillClientContext(grpc_request->context());
   executor_->ExecuteRpc(std::move(grpc_request));
 }
 
@@ -173,9 +175,10 @@ void FtlMessagingClient::AckMessages(const ftl::AckMessagesRequest& request,
   auto grpc_request = CreateGrpcAsyncUnaryRequest(
       base::BindOnce(&Messaging::Stub::AsyncAckMessages,
                      base::Unretained(messaging_stub_.get())),
-      FtlGrpcContext::CreateClientContext(), request,
+      request,
       base::BindOnce(&FtlMessagingClient::OnAckMessagesResponse,
                      base::Unretained(this), std::move(on_done)));
+  FtlGrpcContext::FillClientContext(grpc_request->context());
   executor_->ExecuteRpc(std::move(grpc_request));
 }
 
@@ -199,8 +202,8 @@ FtlMessagingClient::OpenReceiveMessagesStream(
   auto grpc_request = CreateGrpcAsyncServerStreamingRequest(
       base::BindOnce(&Messaging::Stub::AsyncReceiveMessages,
                      base::Unretained(messaging_stub_.get())),
-      FtlGrpcContext::CreateClientContext(), request, on_incoming_msg,
-      std::move(on_channel_closed), &stream);
+      request, on_incoming_msg, std::move(on_channel_closed), &stream);
+  FtlGrpcContext::FillClientContext(grpc_request->context());
   executor_->ExecuteRpc(std::move(grpc_request));
   return stream;
 }

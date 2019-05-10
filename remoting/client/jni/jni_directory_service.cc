@@ -65,7 +65,7 @@ void JniDirectoryService::RetrieveHostList(
       base::BindOnce(
           &apis::v1::RemotingDirectoryService::Stub::AsyncGetHostList,
           base::Unretained(stub_.get())),
-      std::make_unique<grpc::ClientContext>(), apis::v1::GetHostListRequest(),
+      apis::v1::GetHostListRequest(),
       base::BindOnce(&JniDirectoryService::OnHostListRetrieved,
                      base::Unretained(this),
                      base::android::ScopedJavaGlobalRef<jobject>(callback))));
@@ -82,7 +82,7 @@ void JniDirectoryService::DeleteHost(
   grpc_executor_.ExecuteRpc(CreateGrpcAsyncUnaryRequest(
       base::BindOnce(&apis::v1::RemotingDirectoryService::Stub::AsyncDeleteHost,
                      base::Unretained(stub_.get())),
-      std::make_unique<grpc::ClientContext>(), request,
+      request,
       base::BindOnce(&JniDirectoryService::OnHostDeleted,
                      base::Unretained(this),
                      base::android::ScopedJavaGlobalRef<jobject>(callback))));

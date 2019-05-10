@@ -24,9 +24,13 @@ class MyClass {
     auto grpc_request = CreateGrpcAsyncUnaryRequest(
         base::BindOnce(&HelloService::Stub::AsyncSayHello,
                        base::Unretained(stub_.get())),
-        std::make_unique<grpc::ClientContext>(), request,
+        request,
         base::BindOnce(&MyClass::OnHelloResult,
                        base::Unretained(this)));
+
+    // Optional. The library sets a default deadline for you if it is not set.
+    SetDeadline(grpc_request->context(), kSomeDeadline);
+
     executor_->ExecuteRpc(std::move(grpc_request));
   }
 
@@ -35,7 +39,7 @@ class MyClass {
     auto grpc_Request = CreateGrpcAsyncServerStreamingRequest(
         base::BindOnce(&HelloService::Stub::AsyncStreamHello,
                        base::Unretained(stub_.get())),
-        std::make_unique<grpc::ClientContext>(), request,
+        request,
         base::BindRepeating(&MyClass::OnHelloStreamMessage,
                             base::Unretained(this)),
         base::BindOnce(&MyClass::OnHelloStreamClosed,
