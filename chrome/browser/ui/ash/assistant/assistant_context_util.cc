@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/public/cpp/window_properties.h"
 #include "base/bind.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -62,12 +63,16 @@ void RequestAssistantStructureForActiveBrowserWindow(
     return;
   }
 
-  content::WebContents* web_contents =
-      browser->tab_strip_model()->GetActiveWebContents();
-
   // Only returns context from the profile with assistant, which is primary
   // profile.
   if (!chromeos::ProfileHelper::IsPrimaryProfile(browser->profile())) {
+    std::move(callback).Run(nullptr, nullptr);
+    return;
+  }
+
+  aura::Window* window = browser->window()->GetNativeWindow();
+  // Ignore incognito window.
+  if (window->GetProperty(ash::kBlockedForAssistantSnapshotKey)) {
     std::move(callback).Run(nullptr, nullptr);
     return;
   }
@@ -78,12 +83,13 @@ void RequestAssistantStructureForActiveBrowserWindow(
   gfx::Rect bounds = browser->window()->GetBounds();
   gfx::Point top_left = bounds.origin();
   gfx::Point bottom_right = bounds.bottom_right();
-  auto* window_tree_host =
-      browser->window()->GetNativeWindow()->GetRootWindow()->GetHost();
+  auto* window_tree_host = window->GetRootWindow()->GetHost();
   // TODO: Revisit once multi-monitor support is planned.
   window_tree_host->ConvertDIPToScreenInPixels(&top_left);
   window_tree_host->ConvertDIPToScreenInPixels(&bottom_right);
 
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
   web_contents->RequestAXTreeSnapshot(
       base::BindOnce(
           &CreateAssistantStructureAndRunCallback, std::move(callback),
