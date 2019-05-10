@@ -1245,7 +1245,7 @@ void RenderWidgetHostInputEventRouter::SendGestureScrollEnd(
     case blink::WebInputEvent::kGesturePinchEnd:
       DCHECK_EQ(blink::WebGestureDevice::kTouchscreen, event.SourceDevice());
       scroll_end.data.scroll_end.inertial_phase =
-          blink::WebGestureEvent::kUnknownMomentumPhase;
+          blink::WebGestureEvent::InertialPhaseState::kUnknownMomentum;
       scroll_end.data.scroll_end.delta_units =
           blink::WebScrollGranularity::kScrollByPrecisePixel;
       break;
@@ -1264,7 +1264,7 @@ void RenderWidgetHostInputEventRouter::SendGestureScrollEnd(
                                     blink::WebInputEvent::kNoModifiers,
                                     base::TimeTicks::Now(), source_device);
   scroll_end.data.scroll_end.inertial_phase =
-      blink::WebGestureEvent::kUnknownMomentumPhase;
+      blink::WebGestureEvent::InertialPhaseState::kUnknownMomentum;
   scroll_end.data.scroll_end.delta_units =
       blink::WebScrollGranularity::kScrollByPrecisePixel;
   view->ProcessGestureEvent(

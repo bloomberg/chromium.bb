@@ -164,11 +164,12 @@ void InputScrollElasticityController::ObserveGestureEventAndResult(
       if (gesture_event.data.scroll_begin.synthetic)
         return;
 
-      bool enter_momentum = gesture_event.data.scroll_begin.inertial_phase ==
-                            blink::WebGestureEvent::kMomentumPhase;
+      bool enter_momentum =
+          gesture_event.data.scroll_begin.inertial_phase ==
+          blink::WebGestureEvent::InertialPhaseState::kMomentum;
       bool leave_momentum =
           gesture_event.data.scroll_begin.inertial_phase ==
-              blink::WebGestureEvent::kNonMomentumPhase &&
+              blink::WebGestureEvent::InertialPhaseState::kNonMomentum &&
           gesture_event.data.scroll_begin.delta_hint_units ==
               blink::WebScrollGranularity::kScrollByPrecisePixel;
       ObserveRealScrollBegin(enter_momentum, leave_momentum);
@@ -178,7 +179,7 @@ void InputScrollElasticityController::ObserveGestureEventAndResult(
       gfx::Vector2dF event_delta(-gesture_event.data.scroll_update.delta_x,
                                  -gesture_event.data.scroll_update.delta_y);
       bool has_momentum = gesture_event.data.scroll_update.inertial_phase ==
-                          blink::WebGestureEvent::kMomentumPhase;
+                          blink::WebGestureEvent::InertialPhaseState::kMomentum;
       ObserveScrollUpdate(event_delta, scroll_result.unused_scroll_delta,
                           event_timestamp, scroll_result.overscroll_behavior,
                           has_momentum);

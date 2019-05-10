@@ -822,7 +822,7 @@ void InputHandlerProxyTest::FlingAndSnap() {
   gesture_.data.scroll_update.delta_y =
       -40;  // -Y means scroll down - i.e. in the +Y direction.
   gesture_.data.scroll_update.inertial_phase =
-      blink::WebGestureEvent::kMomentumPhase;
+      blink::WebGestureEvent::InertialPhaseState::kMomentum;
   EXPECT_CALL(mock_input_handler_, GetSnapFlingInfo(_, _, _))
       .WillOnce(DoAll(testing::SetArgPointee<1>(gfx::Vector2dF(0, 0)),
                       testing::SetArgPointee<2>(gfx::Vector2dF(0, 100)),
@@ -850,7 +850,7 @@ TEST_P(InputHandlerProxyTest, SnapFlingIgnoresFollowingGSUAndGSE) {
   expected_disposition_ = InputHandlerProxy::DROP_EVENT;
   gesture_.SetType(WebInputEvent::kGestureScrollEnd);
   gesture_.data.scroll_end.inertial_phase =
-      blink::WebGestureEvent::kMomentumPhase;
+      blink::WebGestureEvent::InertialPhaseState::kMomentum;
   EXPECT_CALL(mock_input_handler_, ScrollEnd(_, _)).Times(0);
   EXPECT_EQ(expected_disposition_,
             input_handler_->RouteToTypeSpecificHandler(gesture_));

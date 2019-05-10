@@ -1001,7 +1001,7 @@ void RenderWidgetHostViewAura::GestureEventAck(
     // https://crbug.com/797855
     if (event_type == blink::WebInputEvent::kGestureScrollUpdate &&
         event.data.scroll_update.inertial_phase ==
-            blink::WebGestureEvent::kMomentumPhase &&
+            blink::WebGestureEvent::InertialPhaseState::kMomentum &&
         overscroll_controller_->overscroll_mode() != OVERSCROLL_NONE) {
       StopFling();
     }

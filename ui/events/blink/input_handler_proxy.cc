@@ -59,7 +59,7 @@ cc::ScrollState CreateScrollStateForGesture(const WebGestureEvent& event) {
       // start.
       scroll_state_data.is_in_inertial_phase =
           (event.data.scroll_begin.inertial_phase ==
-           WebGestureEvent::kMomentumPhase);
+           WebGestureEvent::InertialPhaseState::kMomentum);
       break;
     case WebInputEvent::kGestureScrollUpdate:
       scroll_state_data.delta_x = -event.data.scroll_update.delta_x;
@@ -68,7 +68,7 @@ cc::ScrollState CreateScrollStateForGesture(const WebGestureEvent& event) {
       scroll_state_data.velocity_y = event.data.scroll_update.velocity_y;
       scroll_state_data.is_in_inertial_phase =
           event.data.scroll_update.inertial_phase ==
-          WebGestureEvent::kMomentumPhase;
+          WebGestureEvent::InertialPhaseState::kMomentum;
       break;
     case WebInputEvent::kGestureScrollEnd:
       scroll_state_data.is_ending = true;
@@ -152,8 +152,9 @@ cc::SnapFlingController::GestureScrollUpdateInfo GetGestureScrollUpdateInfo(
   cc::SnapFlingController::GestureScrollUpdateInfo info;
   info.delta = gfx::Vector2dF(-event.data.scroll_update.delta_x,
                               -event.data.scroll_update.delta_y);
-  info.is_in_inertial_phase = event.data.scroll_update.inertial_phase ==
-                              blink::WebGestureEvent::kMomentumPhase;
+  info.is_in_inertial_phase =
+      event.data.scroll_update.inertial_phase ==
+      blink::WebGestureEvent::InertialPhaseState::kMomentum;
   info.event_time = event.TimeStamp();
   return info;
 }

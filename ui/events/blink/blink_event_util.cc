@@ -1261,13 +1261,13 @@ std::unique_ptr<blink::WebGestureEvent> GenerateInjectedScrollGesture(
     generated_gesture_event->data.scroll_begin.delta_x_hint = -scroll_delta.x();
     generated_gesture_event->data.scroll_begin.delta_y_hint = -scroll_delta.y();
     generated_gesture_event->data.scroll_begin.inertial_phase =
-        WebGestureEvent::kNonMomentumPhase;
+        WebGestureEvent::InertialPhaseState::kNonMomentum;
     generated_gesture_event->data.scroll_begin.delta_hint_units = granularity;
   } else if (type == WebInputEvent::Type::kGestureScrollUpdate) {
     generated_gesture_event->data.scroll_update.delta_x = -scroll_delta.x();
     generated_gesture_event->data.scroll_update.delta_y = -scroll_delta.y();
     generated_gesture_event->data.scroll_update.inertial_phase =
-        WebGestureEvent::kNonMomentumPhase;
+        WebGestureEvent::InertialPhaseState::kNonMomentum;
     generated_gesture_event->data.scroll_update.delta_units = granularity;
   }
 

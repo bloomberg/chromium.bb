@@ -1675,7 +1675,7 @@ InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
       if (gesture_event.GetType() ==
               blink::WebInputEvent::kGestureScrollUpdate &&
           gesture_event.data.scroll_update.inertial_phase ==
-              blink::WebGestureEvent::kMomentumPhase) {
+              blink::WebGestureEvent::InertialPhaseState::kMomentum) {
         host_->StopFling();
       }
 

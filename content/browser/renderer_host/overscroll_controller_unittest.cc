@@ -73,7 +73,7 @@ class OverscrollControllerTest : public ::testing::Test {
     event->SetTimeStamp(timestamp);
     if (inertial_update) {
       event->data.scroll_update.inertial_phase =
-          blink::WebGestureEvent::kMomentumPhase;
+          blink::WebGestureEvent::InertialPhaseState::kMomentum;
     }
     current_event_ = std::move(event);
     return controller_->WillHandleEvent(*current_event_);

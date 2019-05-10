@@ -40,7 +40,7 @@ bool IsGestureScrollUpdateInertialEvent(const blink::WebInputEvent& event) {
   const blink::WebGestureEvent& gesture =
       static_cast<const blink::WebGestureEvent&>(event);
   return gesture.data.scroll_update.inertial_phase ==
-         blink::WebGestureEvent::kMomentumPhase;
+         blink::WebGestureEvent::InertialPhaseState::kMomentum;
 }
 
 float ClampAbsoluteValue(float value, float max_abs) {
@@ -266,7 +266,7 @@ bool OverscrollController::DispatchEventCompletesAction(
     const blink::WebGestureEvent gesture_event =
         static_cast<const blink::WebGestureEvent&>(event);
     if (gesture_event.data.scroll_update.inertial_phase !=
-        blink::WebGestureEvent::kMomentumPhase)
+        blink::WebGestureEvent::InertialPhaseState::kMomentum)
       return false;
   }
 
@@ -278,7 +278,7 @@ bool OverscrollController::DispatchEventCompletesAction(
     const blink::WebGestureEvent gesture_event =
         static_cast<const blink::WebGestureEvent&>(event);
     if (gesture_event.data.scroll_end.inertial_phase !=
-        blink::WebGestureEvent::kMomentumPhase)
+        blink::WebGestureEvent::InertialPhaseState::kMomentum)
       return false;
   }
 
@@ -358,9 +358,10 @@ bool OverscrollController::ProcessEventForOverscroll(
       // when the scrolling is in inertial state.
       const blink::WebGestureEvent gesture_event =
           static_cast<const blink::WebGestureEvent&>(event);
-      bool reset_scroll_state = !IsGestureEventFromTouchpad(event) ||
-                                (gesture_event.data.scroll_end.inertial_phase ==
-                                 blink::WebGestureEvent::kMomentumPhase);
+      bool reset_scroll_state =
+          !IsGestureEventFromTouchpad(event) ||
+          (gesture_event.data.scroll_end.inertial_phase ==
+           blink::WebGestureEvent::InertialPhaseState::kMomentum);
 
       if (reset_scroll_state)
         ResetScrollState();

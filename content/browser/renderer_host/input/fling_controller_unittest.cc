@@ -110,7 +110,7 @@ class FlingControllerTest : public FlingControllerEventSenderClient,
     scroll_update.data.scroll_update.velocity_x = delta.x();
     scroll_update.data.scroll_update.velocity_y = delta.y();
     scroll_update.data.scroll_update.inertial_phase =
-        WebGestureEvent::kNonMomentumPhase;
+        WebGestureEvent::InertialPhaseState::kNonMomentum;
     scroll_update.data.scroll_update.delta_units =
         blink::WebScrollGranularity::kScrollByPrecisePixel;
     GestureEventWithLatencyInfo scroll_update_with_latency(scroll_update);
@@ -257,7 +257,7 @@ TEST_P(FlingControllerTest, ControllerHandlesTouchscreenGestureFling) {
   AdvanceTime();
   ProgressFling(NowTicks());
   ASSERT_EQ(WebInputEvent::kGestureScrollUpdate, last_sent_gesture_.GetType());
-  EXPECT_EQ(WebGestureEvent::kMomentumPhase,
+  EXPECT_EQ(WebGestureEvent::InertialPhaseState::kMomentum,
             last_sent_gesture_.data.scroll_update.inertial_phase);
   EXPECT_GT(last_sent_gesture_.data.scroll_update.delta_x, 0.f);
 
@@ -316,7 +316,7 @@ TEST_P(FlingControllerTest, ControllerSendsGSEWhenTouchscreenFlingIsOver) {
   while (FlingInProgress()) {
     ASSERT_EQ(WebInputEvent::kGestureScrollUpdate,
               last_sent_gesture_.GetType());
-    EXPECT_EQ(WebGestureEvent::kMomentumPhase,
+    EXPECT_EQ(WebGestureEvent::InertialPhaseState::kMomentum,
               last_sent_gesture_.data.scroll_update.inertial_phase);
     EXPECT_GT(last_sent_gesture_.data.scroll_update.delta_x, 0.f);
     AdvanceTime();
@@ -361,7 +361,7 @@ TEST_P(FlingControllerTest, EarlyTouchscreenFlingCancelationOnFlingStop) {
   AdvanceTime();
   ProgressFling(NowTicks());
   ASSERT_EQ(WebInputEvent::kGestureScrollUpdate, last_sent_gesture_.GetType());
-  EXPECT_EQ(WebGestureEvent::kMomentumPhase,
+  EXPECT_EQ(WebGestureEvent::InertialPhaseState::kMomentum,
             last_sent_gesture_.data.scroll_update.inertial_phase);
   EXPECT_GT(last_sent_gesture_.data.scroll_update.delta_x, 0.f);
 
@@ -405,7 +405,7 @@ TEST_P(FlingControllerTest, GestureFlingNotCancelledBySmallTimeDelta) {
   EXPECT_EQ(blink::WebGestureDevice::kTouchscreen,
             last_sent_gesture_.SourceDevice());
   ASSERT_EQ(WebInputEvent::kGestureScrollUpdate, last_sent_gesture_.GetType());
-  EXPECT_EQ(WebGestureEvent::kMomentumPhase,
+  EXPECT_EQ(WebGestureEvent::InertialPhaseState::kMomentum,
             last_sent_gesture_.data.scroll_update.inertial_phase);
   EXPECT_GT(last_sent_gesture_.data.scroll_update.delta_x, 0.f);
 }
@@ -430,7 +430,7 @@ TEST_P(FlingControllerTest, GestureFlingWithNegativeTimeDelta) {
   EXPECT_EQ(blink::WebGestureDevice::kTouchscreen,
             last_sent_gesture_.SourceDevice());
   ASSERT_EQ(WebInputEvent::kGestureScrollUpdate, last_sent_gesture_.GetType());
-  EXPECT_EQ(WebGestureEvent::kMomentumPhase,
+  EXPECT_EQ(WebGestureEvent::InertialPhaseState::kMomentum,
             last_sent_gesture_.data.scroll_update.inertial_phase);
   EXPECT_GT(last_sent_gesture_.data.scroll_update.delta_x, 0.f);
 }
@@ -529,7 +529,7 @@ TEST_P(FlingControllerTest, ControllerBoostsTouchscreenFling) {
   AdvanceTime();
   ProgressFling(NowTicks());
   ASSERT_EQ(WebInputEvent::kGestureScrollUpdate, last_sent_gesture_.GetType());
-  EXPECT_EQ(WebGestureEvent::kMomentumPhase,
+  EXPECT_EQ(WebGestureEvent::InertialPhaseState::kMomentum,
             last_sent_gesture_.data.scroll_update.inertial_phase);
   EXPECT_GT(last_sent_gesture_.data.scroll_update.delta_x, 0.f);
 
@@ -570,7 +570,7 @@ TEST_P(FlingControllerTest, MiddleClickAutoScrollFling) {
   AdvanceTime();
   ProgressFling(NowTicks());
   ASSERT_EQ(WebInputEvent::kGestureScrollUpdate, last_sent_gesture_.GetType());
-  EXPECT_EQ(WebGestureEvent::kMomentumPhase,
+  EXPECT_EQ(WebGestureEvent::InertialPhaseState::kMomentum,
             last_sent_gesture_.data.scroll_update.inertial_phase);
   EXPECT_GT(last_sent_gesture_.data.scroll_update.delta_x, 0.f);
 

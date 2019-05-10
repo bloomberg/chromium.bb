@@ -333,11 +333,11 @@ void FlingController::GenerateAndSendGestureScrollEvents(
     synthetic_gesture.event.data.scroll_update.delta_x = delta.x();
     synthetic_gesture.event.data.scroll_update.delta_y = delta.y();
     synthetic_gesture.event.data.scroll_update.inertial_phase =
-        WebGestureEvent::kMomentumPhase;
+        WebGestureEvent::InertialPhaseState::kMomentum;
   } else {
     DCHECK_EQ(WebInputEvent::kGestureScrollEnd, type);
     synthetic_gesture.event.data.scroll_end.inertial_phase =
-        WebGestureEvent::kMomentumPhase;
+        WebGestureEvent::InertialPhaseState::kMomentum;
     synthetic_gesture.event.data.scroll_end.generated_by_fling_controller =
         true;
   }

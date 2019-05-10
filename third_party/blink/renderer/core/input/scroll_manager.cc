@@ -56,11 +56,12 @@ cc::SnapFlingController::GestureScrollType ToGestureScrollType(
 
 cc::SnapFlingController::GestureScrollUpdateInfo GetGestureScrollUpdateInfo(
     const WebGestureEvent& event) {
-  return {.delta = gfx::Vector2dF(-event.data.scroll_update.delta_x,
-                                  -event.data.scroll_update.delta_y),
-          .is_in_inertial_phase = event.data.scroll_update.inertial_phase ==
-                                  WebGestureEvent::kMomentumPhase,
-          .event_time = event.TimeStamp()};
+  return {
+      .delta = gfx::Vector2dF(-event.data.scroll_update.delta_x,
+                              -event.data.scroll_update.delta_y),
+      .is_in_inertial_phase = event.data.scroll_update.inertial_phase ==
+                              WebGestureEvent::InertialPhaseState::kMomentum,
+      .event_time = event.TimeStamp()};
 }
 
 ScrollableArea* ScrollableAreaForSnapping(LayoutBox* layout_box) {
@@ -569,7 +570,8 @@ WebInputEventResult ScrollManager::HandleGestureScrollUpdate(
   scroll_state_data->position_x = position.X();
   scroll_state_data->position_y = position.Y();
   scroll_state_data->is_in_inertial_phase =
-      gesture_event.InertialPhase() == WebGestureEvent::kMomentumPhase;
+      gesture_event.InertialPhase() ==
+      WebGestureEvent::InertialPhaseState::kMomentum;
   scroll_state_data->is_direct_manipulation =
       gesture_event.SourceDevice() == WebGestureDevice::kTouchscreen;
   scroll_state_data->from_user_input = true;
@@ -638,7 +640,8 @@ WebInputEventResult ScrollManager::HandleGestureScrollEnd(
         std::make_unique<ScrollStateData>();
     scroll_state_data->is_ending = true;
     scroll_state_data->is_in_inertial_phase =
-        gesture_event.InertialPhase() == WebGestureEvent::kMomentumPhase;
+        gesture_event.InertialPhase() ==
+        WebGestureEvent::InertialPhaseState::kMomentum;
     scroll_state_data->from_user_input = true;
     scroll_state_data->is_direct_manipulation =
         gesture_event.SourceDevice() == WebGestureDevice::kTouchscreen;

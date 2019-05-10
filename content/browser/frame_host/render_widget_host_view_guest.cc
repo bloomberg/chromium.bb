@@ -787,7 +787,7 @@ void RenderWidgetHostViewGuest::OnHandleInputEvent(
     // sure other plugins would behave appropriately (i.e. return 'false').
     if (gesture_event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
         gesture_event.data.scroll_update.inertial_phase ==
-            blink::WebGestureEvent::kMomentumPhase) {
+            blink::WebGestureEvent::InertialPhaseState::kMomentum) {
       return;
     }
     host()->ForwardGestureEvent(gesture_event);

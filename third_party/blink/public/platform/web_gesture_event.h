@@ -20,11 +20,11 @@ namespace blink {
 
 class WebGestureEvent : public WebInputEvent {
  public:
-  enum InertialPhaseState {
-    kUnknownMomentumPhase = 0,  // No phase information.
-    kNonMomentumPhase,          // Regular scrolling phase.
-    kMomentumPhase,             // Momentum phase.
-    kLastPhase = kMomentumPhase,
+  enum class InertialPhaseState {
+    kUnknownMomentum = 0,  // No phase information.
+    kNonMomentum,          // Regular scrolling phase.
+    kMomentum,             // Momentum phase.
+    kMaxValue = kMomentum,
   };
 
   bool is_source_touch_event_set_non_blocking;

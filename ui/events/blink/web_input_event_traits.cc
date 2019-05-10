@@ -262,7 +262,7 @@ LatencyInfo WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(
     }
   } else if (event.SourceDevice() == blink::WebGestureDevice::kTouchscreen) {
     blink::WebGestureEvent::InertialPhaseState inertial_phase_state =
-        blink::WebGestureEvent::kUnknownMomentumPhase;
+        blink::WebGestureEvent::InertialPhaseState::kUnknownMomentum;
 
     switch (event.GetType()) {
       case blink::WebInputEvent::kGestureScrollBegin:
@@ -278,7 +278,8 @@ LatencyInfo WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(
         break;
     }
     bool is_in_inertial_phase =
-        inertial_phase_state == blink::WebGestureEvent::kMomentumPhase;
+        inertial_phase_state ==
+        blink::WebGestureEvent::InertialPhaseState::kMomentum;
     source_event_type = is_in_inertial_phase ? SourceEventType::INERTIAL
                                              : SourceEventType::TOUCH;
   }
