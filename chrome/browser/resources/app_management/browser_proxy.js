@@ -20,23 +20,59 @@ cr.define('app_management', function() {
 
         const /** @type {!Array<App>}*/ appList = [
           app_management.FakePageHandler.createApp(
-              'ahfgeienlihckogmohjhadlkjgocpleb', {
-                title: 'Web Store (system app)',
-                installSource: InstallSource.kSystem
-              }),
+              'blpcfgokakmgnkcojhhkbfblekacnbeo',
+              {
+                title: 'Built in app, not implemented',
+                type: AppType.kBuiltIn,
+                installSource: InstallSource.kSystem,
+              },
+              ),
           app_management.FakePageHandler.createApp(
               'aohghmighlieiainnegkcijnfilokake',
-              {title: 'Docs', type: AppType.kArc}),
+              {
+                title: 'Arc app',
+                type: AppType.kArc,
+                installSource: InstallSource.kUser,
+              },
+              ),
           app_management.FakePageHandler.createApp(
               'blpcfgokakmgnkcojhhkbfbldkacnbeo',
-              {title: 'Youtube', type: AppType.kCrostini}),
+              {
+                title: 'Crostini app, not implemented',
+                type: AppType.kCrostini,
+                installSource: InstallSource.kUser,
+              },
+              ),
           app_management.FakePageHandler.createApp(
-              'pjkljhegncpnkpknbcohdijeoejaedia', {title: 'Gmail'}),
+              'pjkljhegncpnkkknowihdijeoejaedia',
+              {
+                title: 'Chrome App',
+                type: AppType.kExtension,
+              },
+              ),
           app_management.FakePageHandler.createApp(
-              'aapocclcgogkmnckokdopfmhonfmgoek', {
-                title: 'Slides (policy installed)',
-                installSource: InstallSource.kPolicy
-              }),
+              'aapocclcdoekwnckovdopfmtonfmgok',
+              {
+                title: 'Web App',
+                type: AppType.kWeb,
+              },
+              ),
+          app_management.FakePageHandler.createApp(
+              'pjkljhegncpnkkknbcohdijeoejaedia',
+              {
+                title: 'Chrome App, OEM installed',
+                type: AppType.kExtension,
+                installSource: InstallSource.kOem,
+              },
+              ),
+          app_management.FakePageHandler.createApp(
+              'aapocclcgogkmnckokdopfmhonfmgok',
+              {
+                title: 'Web App, policy installed',
+                type: AppType.kWeb,
+                installSource: InstallSource.kPolicy,
+              },
+              ),
         ];
 
         this.handler.setApps(appList);
