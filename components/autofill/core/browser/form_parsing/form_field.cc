@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/form_field.h"
+#include "components/autofill/core/browser/form_parsing/form_field.h"
 
 #include <algorithm>
 #include <cstddef>
@@ -15,17 +15,17 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/address_field.h"
 #include "components/autofill/core/browser/autofill_field.h"
-#include "components/autofill/core/browser/autofill_scanner.h"
-#include "components/autofill/core/browser/credit_card_field.h"
-#include "components/autofill/core/browser/email_field.h"
+#include "components/autofill/core/browser/form_parsing/address_field.h"
+#include "components/autofill/core/browser/form_parsing/autofill_scanner.h"
+#include "components/autofill/core/browser/form_parsing/credit_card_field.h"
+#include "components/autofill/core/browser/form_parsing/email_field.h"
+#include "components/autofill/core/browser/form_parsing/name_field.h"
+#include "components/autofill/core/browser/form_parsing/phone_field.h"
+#include "components/autofill/core/browser/form_parsing/price_field.h"
+#include "components/autofill/core/browser/form_parsing/search_field.h"
+#include "components/autofill/core/browser/form_parsing/travel_field.h"
 #include "components/autofill/core/browser/form_structure.h"
-#include "components/autofill/core/browser/name_field.h"
-#include "components/autofill/core/browser/phone_field.h"
-#include "components/autofill/core/browser/price_field.h"
-#include "components/autofill/core/browser/search_field.h"
-#include "components/autofill/core/browser/travel_field.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/autofill_util.h"
@@ -133,10 +133,8 @@ bool FormField::ParseFieldSpecifics(AutofillScanner* scanner,
 // static
 bool FormField::ParseEmptyLabel(AutofillScanner* scanner,
                                 AutofillField** match) {
-  return ParseFieldSpecifics(scanner,
-                             base::ASCIIToUTF16("^$"),
-                             MATCH_LABEL | MATCH_ALL_INPUTS,
-                             match);
+  return ParseFieldSpecifics(scanner, base::ASCIIToUTF16("^$"),
+                             MATCH_LABEL | MATCH_ALL_INPUTS, match);
 }
 
 // static

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_ADDRESS_FIELD_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_ADDRESS_FIELD_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_FORM_PARSING_ADDRESS_FIELD_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_FORM_PARSING_ADDRESS_FIELD_H_
 
 #include <memory>
 #include <vector>
@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/autofill_type.h"
-#include "components/autofill/core/browser/form_field.h"
+#include "components/autofill/core/browser/form_parsing/form_field.h"
 
 namespace autofill {
 
@@ -99,4 +99,4 @@ class AddressField : public FormField {
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_ADDRESS_FIELD_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_FORM_PARSING_ADDRESS_FIELD_H_

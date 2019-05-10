@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/address_field.h"
+#include "components/autofill/core/browser/form_parsing/address_field.h"
 
 #include <stddef.h>
 
@@ -14,8 +14,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_field.h"
-#include "components/autofill/core/browser/autofill_scanner.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/form_parsing/autofill_scanner.h"
 #include "components/autofill/core/common/autofill_regex_constants.h"
 
 using base::UTF8ToUTF16;
@@ -68,9 +68,9 @@ std::unique_ptr<FormField> AddressField::Parse(AutofillScanner* scanner) {
                                    MATCH_DEFAULT | MATCH_TEXT_AREA, nullptr)) {
       continue;
     } else if (address_field->ParseAddressLines(scanner) ||
-        address_field->ParseCityStateZipCode(scanner) ||
-        address_field->ParseCountry(scanner) ||
-        address_field->ParseCompany(scanner)) {
+               address_field->ParseCityStateZipCode(scanner) ||
+               address_field->ParseCountry(scanner) ||
+               address_field->ParseCompany(scanner)) {
       has_trailing_non_labeled_fields = false;
       continue;
     } else if (ParseField(scanner, attention_ignored, nullptr) ||
@@ -185,8 +185,7 @@ bool AddressField::ParseAddressLines(AutofillScanner* scanner) {
       !ParseFieldSpecifics(scanner, pattern, MATCH_DEFAULT | MATCH_TEXT_AREA,
                            &street_address_) &&
       !ParseFieldSpecifics(scanner, label_pattern,
-                           MATCH_LABEL | MATCH_TEXT_AREA,
-                           &street_address_))
+                           MATCH_LABEL | MATCH_TEXT_AREA, &street_address_))
     return false;
 
   if (street_address_)
@@ -227,18 +226,15 @@ bool AddressField::ParseCountry(AutofillScanner* scanner) {
     return false;
 
   scanner->SaveCursor();
-  if (ParseFieldSpecifics(scanner,
-                          UTF8ToUTF16(kCountryRe),
-                          MATCH_DEFAULT | MATCH_SELECT,
-                          &country_)) {
+  if (ParseFieldSpecifics(scanner, UTF8ToUTF16(kCountryRe),
+                          MATCH_DEFAULT | MATCH_SELECT, &country_)) {
     return true;
   }
 
   // The occasional page (e.g. google account registration page) calls this a
   // "location". However, this only makes sense for select tags.
   scanner->Rewind();
-  return ParseFieldSpecifics(scanner,
-                             UTF8ToUTF16(kCountryLocationRe),
+  return ParseFieldSpecifics(scanner, UTF8ToUTF16(kCountryLocationRe),
                              MATCH_LABEL | MATCH_NAME | MATCH_SELECT,
                              &country_);
 }
@@ -247,9 +243,7 @@ bool AddressField::ParseZipCode(AutofillScanner* scanner) {
   if (zip_)
     return false;
 
-  if (!ParseFieldSpecifics(scanner,
-                           UTF8ToUTF16(kZipCodeRe),
-                           kZipCodeMatchType,
+  if (!ParseFieldSpecifics(scanner, UTF8ToUTF16(kZipCodeRe), kZipCodeMatchType,
                            &zip_)) {
     return false;
   }
@@ -264,9 +258,7 @@ bool AddressField::ParseCity(AutofillScanner* scanner) {
   if (city_)
     return false;
 
-  return ParseFieldSpecifics(scanner,
-                             UTF8ToUTF16(kCityRe),
-                             kCityMatchType,
+  return ParseFieldSpecifics(scanner, UTF8ToUTF16(kCityRe), kCityMatchType,
                              &city_);
 }
 
@@ -274,9 +266,7 @@ bool AddressField::ParseState(AutofillScanner* scanner) {
   if (state_)
     return false;
 
-  return ParseFieldSpecifics(scanner,
-                             UTF8ToUTF16(kStateRe),
-                             kStateMatchType,
+  return ParseFieldSpecifics(scanner, UTF8ToUTF16(kStateRe), kStateMatchType,
                              &state_);
 }
 
@@ -290,15 +280,11 @@ AddressField::ParseNameLabelResult AddressField::ParseNameAndLabelSeparately(
 
   AutofillField* cur_match = nullptr;
   size_t saved_cursor = scanner->SaveCursor();
-  bool parsed_name = ParseFieldSpecifics(scanner,
-                                         pattern,
-                                         match_type & ~MATCH_LABEL,
-                                         &cur_match);
+  bool parsed_name = ParseFieldSpecifics(scanner, pattern,
+                                         match_type & ~MATCH_LABEL, &cur_match);
   scanner->RewindTo(saved_cursor);
-  bool parsed_label = ParseFieldSpecifics(scanner,
-                                          pattern,
-                                          match_type & ~MATCH_NAME,
-                                          &cur_match);
+  bool parsed_label = ParseFieldSpecifics(scanner, pattern,
+                                          match_type & ~MATCH_NAME, &cur_match);
   if (parsed_name && parsed_label) {
     if (match)
       *match = cur_match;
@@ -392,9 +378,7 @@ AddressField::ParseNameLabelResult AddressField::ParseNameAndLabelForZipCode(
   if (!found_non_zip4) {
     // Look for a zip+4, whose field name will also often contain
     // the substring "zip".
-    ParseFieldSpecifics(scanner,
-                        UTF8ToUTF16(kZip4Re),
-                        kZipCodeMatchType,
+    ParseFieldSpecifics(scanner, UTF8ToUTF16(kZip4Re), kZipCodeMatchType,
                         &zip4_);
   }
   return result;
@@ -405,8 +389,8 @@ AddressField::ParseNameLabelResult AddressField::ParseNameAndLabelForCity(
   if (city_)
     return RESULT_MATCH_NONE;
 
-  return ParseNameAndLabelSeparately(
-      scanner, UTF8ToUTF16(kCityRe), kCityMatchType, &city_);
+  return ParseNameAndLabelSeparately(scanner, UTF8ToUTF16(kCityRe),
+                                     kCityMatchType, &city_);
 }
 
 AddressField::ParseNameLabelResult AddressField::ParseNameAndLabelForState(
@@ -414,8 +398,8 @@ AddressField::ParseNameLabelResult AddressField::ParseNameAndLabelForState(
   if (state_)
     return RESULT_MATCH_NONE;
 
-  return ParseNameAndLabelSeparately(
-      scanner, UTF8ToUTF16(kStateRe), kStateMatchType, &state_);
+  return ParseNameAndLabelSeparately(scanner, UTF8ToUTF16(kStateRe),
+                                     kStateMatchType, &state_);
 }
 
 }  // namespace autofill

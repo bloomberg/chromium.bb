@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_FIELD_CANDIDATES_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_FIELD_CANDIDATES_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_FORM_PARSING_FIELD_CANDIDATES_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_FORM_PARSING_FIELD_CANDIDATES_H_
 
 #include <unordered_map>
 #include <vector>
@@ -59,4 +59,4 @@ using FieldCandidatesMap = std::unordered_map<base::string16, FieldCandidates>;
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_FIELD_CANDIDATES_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_FORM_PARSING_FIELD_CANDIDATES_H_

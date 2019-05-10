@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_EMAIL_FIELD_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_EMAIL_FIELD_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_FORM_PARSING_EMAIL_FIELD_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_FORM_PARSING_EMAIL_FIELD_H_
 
 #include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "components/autofill/core/browser/form_field.h"
+#include "components/autofill/core/browser/form_parsing/form_field.h"
 
 namespace autofill {
 
@@ -29,4 +29,4 @@ class EmailField : public FormField {
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_EMAIL_FIELD_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_FORM_PARSING_EMAIL_FIELD_H_

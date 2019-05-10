@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_TRAVEL_FIELD_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_TRAVEL_FIELD_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_FORM_PARSING_TRAVEL_FIELD_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_FORM_PARSING_TRAVEL_FIELD_H_
 
 #include <memory>
 
-#include "components/autofill/core/browser/autofill_scanner.h"
-#include "components/autofill/core/browser/form_field.h"
+#include "components/autofill/core/browser/form_parsing/autofill_scanner.h"
+#include "components/autofill/core/browser/form_parsing/form_field.h"
 
 namespace autofill {
 
@@ -30,4 +30,4 @@ class TravelField : public FormField {
 };
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_TRAVEL_FIELD_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_FORM_PARSING_TRAVEL_FIELD_H_

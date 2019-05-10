@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/name_field.h"
+#include "components/autofill/core/browser/form_parsing/name_field.h"
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/autofill_scanner.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/form_parsing/autofill_scanner.h"
 #include "components/autofill/core/common/autofill_regex_constants.h"
 
 using base::UTF8ToUTF16;
@@ -99,8 +99,7 @@ void FullNameField::AddClassifications(
   AddClassification(field_, NAME_FULL, kBaseNameParserScore, field_candidates);
 }
 
-FullNameField::FullNameField(AutofillField* field) : field_(field) {
-}
+FullNameField::FullNameField(AutofillField* field) : field_(field) {}
 
 std::unique_ptr<FirstLastNameField> FirstLastNameField::ParseSpecificName(
     AutofillScanner* scanner) {

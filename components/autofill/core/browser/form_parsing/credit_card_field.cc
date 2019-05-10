@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/credit_card_field.h"
+#include "components/autofill/core/browser/form_parsing/credit_card_field.h"
 
 #include <stddef.h>
 
@@ -17,9 +17,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_field.h"
-#include "components/autofill/core/browser/autofill_scanner.h"
 #include "components/autofill/core/browser/field_filler.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/form_parsing/autofill_scanner.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_regex_constants.h"
 #include "components/autofill/core/common/autofill_regexes.h"
@@ -38,8 +38,7 @@ const size_t kMaxValidCardNumberSize = 19;
 // consecutive section of |haystack| matches |regex_needles|.
 bool FindConsecutiveStrings(const std::vector<base::string16>& regex_needles,
                             const std::vector<base::string16>& haystack) {
-  if (regex_needles.empty() ||
-      haystack.empty() ||
+  if (regex_needles.empty() || haystack.empty() ||
       (haystack.size() < regex_needles.size()))
     return false;
 
@@ -98,8 +97,7 @@ std::unique_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
       break;
 
     if (!credit_card_field->cardholder_) {
-      if (ParseField(scanner,
-                     base::UTF8ToUTF16(kNameOnCardRe),
+      if (ParseField(scanner, base::UTF8ToUTF16(kNameOnCardRe),
                      &credit_card_field->cardholder_)) {
         continue;
       }
@@ -110,10 +108,8 @@ std::unique_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
       // fields. So we search for "name" only when we've already parsed at
       // least one other credit card field and haven't yet parsed the
       // expiration date (which usually appears at the end).
-      if (fields > 0 &&
-          !credit_card_field->expiration_month_ &&
-          ParseField(scanner,
-                     base::UTF8ToUTF16(kNameOnCardContextualRe),
+      if (fields > 0 && !credit_card_field->expiration_month_ &&
+          ParseField(scanner, base::UTF8ToUTF16(kNameOnCardContextualRe),
                      &credit_card_field->cardholder_)) {
         continue;
       }
@@ -319,8 +315,7 @@ bool CreditCardField::LikelyCardYearSelectField(AutofillScanner* scanner) {
 
   const int kYearsToMatch = 3;
   std::vector<base::string16> years_to_check;
-  for (int year = time_exploded.year;
-       year < time_exploded.year + kYearsToMatch;
+  for (int year = time_exploded.year; year < time_exploded.year + kYearsToMatch;
        ++year) {
     years_to_check.push_back(base::NumberToString16(year));
   }
@@ -375,11 +370,9 @@ CreditCardField::CreditCardField()
       expiration_month_(nullptr),
       expiration_year_(nullptr),
       expiration_date_(nullptr),
-      exp_year_type_(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR) {
-}
+      exp_year_type_(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR) {}
 
-CreditCardField::~CreditCardField() {
-}
+CreditCardField::~CreditCardField() {}
 
 void CreditCardField::AddClassifications(
     FieldCandidatesMap* field_candidates) const {
@@ -421,9 +414,8 @@ void CreditCardField::AddClassifications(
 }
 
 bool CreditCardField::ParseExpirationDate(AutofillScanner* scanner) {
-  if (!expiration_date_ &&
-      base::LowerCaseEqualsASCII(scanner->Cursor()->form_control_type,
-                                 "month")) {
+  if (!expiration_date_ && base::LowerCaseEqualsASCII(
+                               scanner->Cursor()->form_control_type, "month")) {
     expiration_date_ = scanner->Cursor();
     expiration_month_ = nullptr;
     expiration_year_ = nullptr;

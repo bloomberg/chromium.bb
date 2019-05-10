@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/autofill_scanner.h"
+#include "components/autofill/core/browser/form_parsing/autofill_scanner.h"
 
 #include "base/logging.h"
 #include "components/autofill/core/browser/autofill_field.h"
@@ -21,8 +21,7 @@ AutofillScanner::AutofillScanner(
   Init(non_owning_);
 }
 
-AutofillScanner::~AutofillScanner() {
-}
+AutofillScanner::~AutofillScanner() {}
 
 void AutofillScanner::Advance() {
   DCHECK(!IsEnd());
