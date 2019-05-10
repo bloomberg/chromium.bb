@@ -74,6 +74,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/browser/plugin_service_impl.h"
@@ -1013,7 +1014,7 @@ class ParallelDownloadTest : public DownloadContentTest {
     download::DownloadItem* download =
         DownloadManagerForShell(shell())->CreateDownloadItem(
             "F7FB1F59-7DE1-4845-AFDB-8A688F70F583", 1, path, base::FilePath(),
-            url_chain, GURL(), GURL(), GURL(), GURL(),
+            url_chain, GURL(), GURL(), GURL(), GURL(), url::Origin(),
             "application/octet-stream", "application/octet-stream",
             base::Time::Now(), base::Time(), parameters.etag,
             parameters.last_modified, total_bytes, parameters.size,
@@ -2468,7 +2469,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_NoFile) {
       DownloadManagerForShell(shell())->CreateDownloadItem(
           "F7FB1F59-7DE1-4845-AFDB-8A688F70F583", 1, intermediate_file_path,
           base::FilePath(), url_chain, GURL(), GURL(), GURL(), GURL(),
-          "application/octet-stream", "application/octet-stream",
+          url::Origin(), "application/octet-stream", "application/octet-stream",
           base::Time::Now(), base::Time(), parameters.etag, std::string(),
           kIntermediateSize, parameters.size, std::string(),
           download::DownloadItem::INTERRUPTED,
@@ -2535,7 +2536,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_NoHash) {
       DownloadManagerForShell(shell())->CreateDownloadItem(
           "F7FB1F59-7DE1-4845-AFDB-8A688F70F583", 1, intermediate_file_path,
           base::FilePath(), url_chain, GURL(), GURL(), GURL(), GURL(),
-          "application/octet-stream", "application/octet-stream",
+          url::Origin(), "application/octet-stream", "application/octet-stream",
           base::Time::Now(), base::Time(), parameters.etag, std::string(),
           kIntermediateSize, parameters.size, std::string(),
           download::DownloadItem::INTERRUPTED,
@@ -2589,7 +2590,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
       DownloadManagerForShell(shell())->CreateDownloadItem(
           "F7FB1F59-7DE1-4845-AFDB-8A688F70F583", 1, intermediate_file_path,
           base::FilePath(), url_chain, GURL(), GURL(), GURL(), GURL(),
-          "application/octet-stream", "application/octet-stream",
+          url::Origin(), "application/octet-stream", "application/octet-stream",
           base::Time::Now(), base::Time(), "fake-etag", std::string(),
           kIntermediateSize, parameters.size, std::string(),
           download::DownloadItem::INTERRUPTED,
@@ -2649,7 +2650,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
       DownloadManagerForShell(shell())->CreateDownloadItem(
           "F7FB1F59-7DE1-4845-AFDB-8A688F70F583", 1, intermediate_file_path,
           base::FilePath(), url_chain, GURL(), GURL(), GURL(), GURL(),
-          "application/octet-stream", "application/octet-stream",
+          url::Origin(), "application/octet-stream", "application/octet-stream",
           base::Time::Now(), base::Time(), parameters.etag, std::string(),
           kIntermediateSize, parameters.size,
           std::string(std::begin(kPartialHash), std::end(kPartialHash)),
@@ -2716,7 +2717,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_WrongHash) {
       DownloadManagerForShell(shell())->CreateDownloadItem(
           "F7FB1F59-7DE1-4845-AFDB-8A688F70F583", 1, intermediate_file_path,
           base::FilePath(), url_chain, GURL(), GURL(), GURL(), GURL(),
-          "application/octet-stream", "application/octet-stream",
+          url::Origin(), "application/octet-stream", "application/octet-stream",
           base::Time::Now(), base::Time(), parameters.etag, std::string(),
           kIntermediateSize, parameters.size,
           std::string(std::begin(kPartialHash), std::end(kPartialHash)),
@@ -2793,7 +2794,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_ShortFile) {
       DownloadManagerForShell(shell())->CreateDownloadItem(
           "F7FB1F59-7DE1-4845-AFDB-8A688F70F583", 1, intermediate_file_path,
           base::FilePath(), url_chain, GURL(), GURL(), GURL(), GURL(),
-          "application/octet-stream", "application/octet-stream",
+          url::Origin(), "application/octet-stream", "application/octet-stream",
           base::Time::Now(), base::Time(), parameters.etag, std::string(),
           kIntermediateSize, parameters.size, std::string(),
           download::DownloadItem::INTERRUPTED,
@@ -2867,7 +2868,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_LongFile) {
       DownloadManagerForShell(shell())->CreateDownloadItem(
           "F7FB1F59-7DE1-4845-AFDB-8A688F70F583", 1, intermediate_file_path,
           base::FilePath(), url_chain, GURL(), GURL(), GURL(), GURL(),
-          "application/octet-stream", "application/octet-stream",
+          url::Origin(), "application/octet-stream", "application/octet-stream",
           base::Time::Now(), base::Time(), parameters.etag, std::string(),
           kIntermediateSize, parameters.size, std::string(),
           download::DownloadItem::INTERRUPTED,

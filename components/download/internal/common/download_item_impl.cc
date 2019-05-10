@@ -225,6 +225,7 @@ DownloadItemImpl::RequestInfo::RequestInfo(
     const GURL& site_url,
     const GURL& tab_url,
     const GURL& tab_referrer_url,
+    const base::Optional<url::Origin>& request_initiator,
     const std::string& suggested_filename,
     const base::FilePath& forced_file_path,
     ui::PageTransition transition_type,
@@ -236,6 +237,7 @@ DownloadItemImpl::RequestInfo::RequestInfo(
       site_url(site_url),
       tab_url(tab_url),
       tab_referrer_url(tab_referrer_url),
+      request_initiator(request_initiator),
       suggested_filename(suggested_filename),
       forced_file_path(forced_file_path),
       transition_type(transition_type),
@@ -290,6 +292,7 @@ DownloadItemImpl::DownloadItemImpl(
     const GURL& site_url,
     const GURL& tab_url,
     const GURL& tab_refererr_url,
+    const base::Optional<url::Origin>& request_initiator,
     const std::string& mime_type,
     const std::string& original_mime_type,
     base::Time start_time,
@@ -314,6 +317,7 @@ DownloadItemImpl::DownloadItemImpl(
                     site_url,
                     tab_url,
                     tab_refererr_url,
+                    request_initiator,
                     std::string(),
                     base::FilePath(),
                     ui::PAGE_TRANSITION_LINK,
@@ -363,6 +367,7 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
                     info.site_url,
                     info.tab_url,
                     info.tab_referrer_url,
+                    info.request_initiator,
                     base::UTF16ToUTF8(info.save_info->suggested_name),
                     info.save_info->file_path,
                     info.transition_type ? info.transition_type.value()
@@ -794,6 +799,11 @@ const GURL& DownloadItemImpl::GetTabUrl() const {
 
 const GURL& DownloadItemImpl::GetTabReferrerUrl() const {
   return request_info_.tab_referrer_url;
+}
+
+const base::Optional<url::Origin>& DownloadItemImpl::GetRequestInitiator()
+    const {
+  return request_info_.request_initiator;
 }
 
 std::string DownloadItemImpl::GetSuggestedFilename() const {

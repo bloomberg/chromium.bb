@@ -56,14 +56,15 @@ std::unique_ptr<DownloadItemImpl> CreateDownloadItemImpl(
       in_progress_info->current_path, in_progress_info->target_path,
       in_progress_info->url_chain, in_progress_info->referrer_url,
       in_progress_info->site_url, in_progress_info->tab_url,
-      in_progress_info->tab_referrer_url, in_progress_info->mime_type,
-      in_progress_info->original_mime_type, in_progress_info->start_time,
-      in_progress_info->end_time, in_progress_info->etag,
-      in_progress_info->last_modified, in_progress_info->received_bytes,
-      in_progress_info->total_bytes, in_progress_info->auto_resume_count,
-      in_progress_info->hash, in_progress_info->state,
-      in_progress_info->danger_type, in_progress_info->interrupt_reason,
-      in_progress_info->paused, in_progress_info->metered, false, base::Time(),
+      in_progress_info->tab_referrer_url, base::nullopt,
+      in_progress_info->mime_type, in_progress_info->original_mime_type,
+      in_progress_info->start_time, in_progress_info->end_time,
+      in_progress_info->etag, in_progress_info->last_modified,
+      in_progress_info->received_bytes, in_progress_info->total_bytes,
+      in_progress_info->auto_resume_count, in_progress_info->hash,
+      in_progress_info->state, in_progress_info->danger_type,
+      in_progress_info->interrupt_reason, in_progress_info->paused,
+      in_progress_info->metered, false, base::Time(),
       in_progress_info->transient, in_progress_info->received_slices);
 }
 

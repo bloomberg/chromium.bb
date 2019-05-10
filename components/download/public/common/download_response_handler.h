@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/optional.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_source.h"
@@ -17,6 +18,7 @@
 #include "net/cert/cert_status_flags.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "url/origin.h"
 
 namespace download {
 
@@ -94,7 +96,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadResponseHandler
   DownloadSource download_source_;
   net::CertStatus cert_status_;
   bool has_strong_validators_;
-  GURL origin_;
+  base::Optional<url::Origin> request_initiator_;
   bool is_partial_request_;
   bool completed_;
 

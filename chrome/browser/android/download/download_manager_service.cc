@@ -45,6 +45,7 @@
 #include "jni/DownloadItem_jni.h"
 #include "jni/DownloadManagerService_jni.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
+#include "url/origin.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF16ToJavaString;
@@ -848,8 +849,9 @@ void DownloadManagerService::CreateInterruptedDownloadForTest(
           in_progress_manager_.get(),
           ConvertJavaStringToUTF8(env, jdownload_guid), 1,
           target_path.AddExtension("crdownload"), target_path, url_chain,
-          GURL(), GURL(), GURL(), GURL(), "", "", base::Time(), base::Time(),
-          "", "", 0, -1, 0, "", download::DownloadItem::INTERRUPTED,
+          GURL(), GURL(), GURL(), GURL(), url::Origin(), "", "", base::Time(),
+          base::Time(), "", "", 0, -1, 0, "",
+          download::DownloadItem::INTERRUPTED,
           download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
           download::DOWNLOAD_INTERRUPT_REASON_CRASH, false, false, false,
           base::Time(), false,

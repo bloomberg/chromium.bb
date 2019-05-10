@@ -80,7 +80,7 @@ DownloadResponseHandler::DownloadResponseHandler(
     RecordDownloadCountWithSource(UNTHROTTLED_COUNT, download_source);
   }
   if (resource_request->request_initiator.has_value())
-    origin_ = resource_request->request_initiator.value().GetURL();
+    request_initiator_ = resource_request->request_initiator;
 }
 
 DownloadResponseHandler::~DownloadResponseHandler() = default;
@@ -103,10 +103,12 @@ void DownloadResponseHandler::OnReceiveResponse(
   // suggested name for the security origin of the downlaod URL. However, this
   // assumption doesn't hold if there were cross origin redirects. Therefore,
   // clear the suggested_name for such requests.
-  if (origin_.is_valid() && !create_info_->url_chain.back().SchemeIsBlob() &&
+  if (request_initiator_.has_value() &&
+      !create_info_->url_chain.back().SchemeIsBlob() &&
       !create_info_->url_chain.back().SchemeIs(url::kAboutScheme) &&
       !create_info_->url_chain.back().SchemeIs(url::kDataScheme) &&
-      origin_ != create_info_->url_chain.back().GetOrigin()) {
+      request_initiator_.value() !=
+          url::Origin::Create(create_info_->url_chain.back())) {
     create_info_->save_info->suggested_name.clear();
   }
 
@@ -143,6 +145,7 @@ DownloadResponseHandler::CreateDownloadCreateInfo(
   create_info->request_headers = request_headers_;
   create_info->request_origin = request_origin_;
   create_info->download_source = download_source_;
+  create_info->request_initiator = request_initiator_;
 
   HandleResponseHeaders(head.headers.get(), create_info.get());
   return create_info;

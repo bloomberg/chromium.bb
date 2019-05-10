@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker_impl.h"
 #include "base/time/time.h"
 #include "components/download/public/common/download_create_info.h"
@@ -27,6 +28,7 @@
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/resume_mode.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -53,6 +55,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
                 const GURL& site_url,
                 const GURL& tab_url,
                 const GURL& tab_referrer_url,
+                const base::Optional<url::Origin>& request_initiator,
                 const std::string& suggested_filename,
                 const base::FilePath& forced_file_path,
                 ui::PageTransition transition_type,
@@ -78,6 +81,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
 
     // The URL of the referrer of the tab that initiated the download.
     GURL tab_referrer_url;
+
+    // The origin of the requester that originally initiated the download.
+    base::Optional<url::Origin> request_initiator;
 
     // Filename suggestion from DownloadSaveInfo. It could, among others, be the
     // suggested filename in 'download' attribute of an anchor. Details:
@@ -171,6 +177,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
       const GURL& site_url,
       const GURL& tab_url,
       const GURL& tab_referrer_url,
+      const base::Optional<url::Origin>& request_initiator,
       const std::string& mime_type,
       const std::string& original_mime_type,
       base::Time start_time,
@@ -242,6 +249,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   const GURL& GetSiteUrl() const override;
   const GURL& GetTabUrl() const override;
   const GURL& GetTabReferrerUrl() const override;
+  const base::Optional<url::Origin>& GetRequestInitiator() const override;
   std::string GetSuggestedFilename() const override;
   const scoped_refptr<const net::HttpResponseHeaders>& GetResponseHeaders()
       const override;

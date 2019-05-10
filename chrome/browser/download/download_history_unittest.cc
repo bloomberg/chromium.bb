@@ -13,6 +13,7 @@
 #include "base/guid.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
@@ -225,7 +226,7 @@ class DownloadHistoryTest : public testing::Test {
       content::MockDownloadManager::CreateDownloadItemAdapter adapter(
           row.guid, history::ToContentDownloadId(row.id), row.current_path,
           row.target_path, row.url_chain, row.referrer_url, row.site_url,
-          row.tab_url, row.tab_referrer_url, row.mime_type,
+          row.tab_url, row.tab_referrer_url, base::nullopt, row.mime_type,
           row.original_mime_type, row.start_time, row.end_time, row.etag,
           row.last_modified, row.received_bytes, row.total_bytes, std::string(),
           history::ToContentDownloadState(row.state),

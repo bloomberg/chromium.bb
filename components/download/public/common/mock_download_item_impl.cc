@@ -17,6 +17,7 @@ MockDownloadItemImpl::MockDownloadItemImpl(DownloadItemImplDelegate* delegate)
                        GURL(),
                        GURL(),
                        GURL(),
+                       url::Origin(),
                        "application/octet-stream",
                        "application/octet-stream",
                        base::Time(),
