@@ -1200,6 +1200,12 @@ download::DownloadItem* DownloadManagerImpl::GetDownload(uint32_t download_id) {
 
 download::DownloadItem* DownloadManagerImpl::GetDownloadByGuid(
     const std::string& guid) {
+  if (!in_progress_downloads_.empty()) {
+    for (const auto& it : in_progress_downloads_) {
+      if (it->GetGuid() == guid)
+        return it.get();
+    }
+  }
   return base::ContainsKey(downloads_by_guid_, guid) ? downloads_by_guid_[guid]
                                                      : nullptr;
 }
@@ -1227,9 +1233,10 @@ void DownloadManagerImpl::OnUrlDownloadStopped(
 
 void DownloadManagerImpl::GetAllDownloads(
     download::SimpleDownloadManager::DownloadVector* downloads) {
-  for (const auto& it : downloads_) {
+  for (const auto& it : downloads_)
     downloads->push_back(it.second.get());
-  }
+  for (const auto& it : in_progress_downloads_)
+    downloads->push_back(it.get());
 }
 
 void DownloadManagerImpl::OpenDownload(download::DownloadItemImpl* download) {

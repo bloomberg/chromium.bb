@@ -765,7 +765,10 @@ TEST_F(DownloadManagerTest, OnInProgressDownloadsLoaded) {
   EXPECT_CALL(GetMockObserver(), OnDownloadCreated(download_manager_.get(), _))
       .WillOnce(Return());
   OnInProgressDownloadManagerInitialized();
-  ASSERT_FALSE(download_manager_->GetDownloadByGuid(kGuid));
+  ASSERT_TRUE(download_manager_->GetDownloadByGuid(kGuid));
+  std::vector<download::DownloadItem*> vector;
+  download_manager_->GetAllDownloads(&vector);
+  ASSERT_EQ(1u, vector.size());
 
   EXPECT_CALL(GetMockDownloadManagerDelegate(), GetNextId(_))
       .WillOnce(RunCallback<0>(1));
