@@ -1480,7 +1480,9 @@ enum class EnterTabSwitcherSnapshotResult {
   _historyCoordinator =
       [[HistoryCoordinator alloc] initWithBaseViewController:self.currentBVC
                                                 browserState:_mainBrowserState];
-  _historyCoordinator.loadStrategy = UrlLoadStrategy::NORMAL;
+  _historyCoordinator.loadStrategy = [self currentPageIsIncognito]
+                                         ? UrlLoadStrategy::ALWAYS_IN_INCOGNITO
+                                         : UrlLoadStrategy::NORMAL;
   _historyCoordinator.dispatcher = self.mainBVC.dispatcher;
   [_historyCoordinator start];
 }
