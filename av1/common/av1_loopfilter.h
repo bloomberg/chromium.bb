@@ -130,11 +130,11 @@ void av1_loop_filter_frame_init(struct AV1Common *cm, int plane_start,
 
 #if CONFIG_LPF_MASK
 void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
-                           struct macroblockd *mbd, int is_decoding,
+                           struct macroblockd *xd, int is_decoding,
                            int plane_start, int plane_end, int partial_frame);
 #else
 void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
-                           struct macroblockd *mbd, int plane_start,
+                           struct macroblockd *xd, int plane_start,
                            int plane_end, int partial_frame);
 #endif
 
