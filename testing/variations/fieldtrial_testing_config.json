@@ -4497,6 +4497,9 @@
             "experiments": [
                 {
                     "name": "Enabled_20190318",
+                    "params": {
+                        "sw_cache_strategy": "idletask"
+                    },
                     "enable_features": [
                         "ServiceWorkerAggressiveCodeCache"
                     ]
