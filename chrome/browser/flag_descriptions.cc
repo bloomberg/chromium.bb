@@ -3163,19 +3163,6 @@ const char kMediaSessionNotificationsDescription[] =
     "Shows notifications for media sessions showing the currently playing "
     "media and providing playback controls";
 
-const char kMemoryPressureThresholdName[] =
-    "Memory discard strategy for advanced pressure handling";
-const char kMemoryPressureThresholdDescription[] =
-    "Memory discarding strategy to use";
-const char kConservativeThresholds[] =
-    "Conservative memory pressure release strategy";
-const char kAggressiveCacheDiscardThresholds[] =
-    "Aggressive cache release strategy";
-const char kAggressiveTabDiscardThresholds[] =
-    "Aggressive tab release strategy";
-const char kAggressiveThresholds[] =
-    "Aggressive tab and cache release strategy";
-
 const char kNetworkPortalNotificationName[] =
     "Notifications about captive portals";
 const char kNetworkPortalNotificationDescription[] =

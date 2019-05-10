@@ -989,12 +989,6 @@ const char kEnableWin7WebRtcHWH264Decoding[] =
 // This switch allows us to pass the shared memory handle to the renderer.
 const char kFontCacheSharedHandle[] = "font-cache-shared-handle";
 
-// Sets the free memory thresholds below which the system is considered to be
-// under moderate and critical memory pressure. Used in the browser process,
-// and ignored if invalid. Specified as a pair of comma separated integers.
-// See base/win/memory_pressure_monitor.cc for defaults.
-const char kMemoryPressureThresholdsMb[] = "memory-pressure-thresholds-mb";
-
 // The boolean value (0/1) of FontRenderParams::antialiasing to be passed to
 // Ppapi processes.
 const char kPpapiAntialiasedTextEnabled[] = "ppapi-antialiased-text-enabled";

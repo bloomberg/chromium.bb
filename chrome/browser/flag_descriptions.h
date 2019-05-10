@@ -1908,13 +1908,6 @@ extern const char kLockScreenNotificationDescription[];
 extern const char kMediaSessionNotificationsName[];
 extern const char kMediaSessionNotificationsDescription[];
 
-extern const char kMemoryPressureThresholdName[];
-extern const char kMemoryPressureThresholdDescription[];
-extern const char kConservativeThresholds[];
-extern const char kAggressiveCacheDiscardThresholds[];
-extern const char kAggressiveTabDiscardThresholds[];
-extern const char kAggressiveThresholds[];
-
 extern const char kMojoImfName[];
 extern const char kMojoImfDescription[];
 

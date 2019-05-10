@@ -421,24 +421,6 @@ const FeatureEntry::Choice kEnableOopRasterizationChoices[] = {
      switches::kDisableOopRasterization, ""},
 };
 
-#if defined(OS_CHROMEOS)
-const FeatureEntry::Choice kMemoryPressureThresholdChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kConservativeThresholds,
-     chromeos::switches::kMemoryPressureThresholds,
-     chromeos::switches::kConservativeThreshold},
-    {flag_descriptions::kAggressiveCacheDiscardThresholds,
-     chromeos::switches::kMemoryPressureThresholds,
-     chromeos::switches::kAggressiveCacheDiscardThreshold},
-    {flag_descriptions::kAggressiveTabDiscardThresholds,
-     chromeos::switches::kMemoryPressureThresholds,
-     chromeos::switches::kAggressiveTabDiscardThreshold},
-    {flag_descriptions::kAggressiveThresholds,
-     chromeos::switches::kMemoryPressureThresholds,
-     chromeos::switches::kAggressiveThreshold},
-};
-#endif  // OS_CHROMEOS
-
 const FeatureEntry::Choice kExtensionContentVerificationChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kExtensionContentVerificationBootstrap,
@@ -1585,10 +1567,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop, FEATURE_VALUE_TYPE(message_center::kNewStyleNotifications)},
 #endif  // !OS_ANDROID
 #if defined(OS_CHROMEOS)
-    {"memory-pressure-thresholds",
-     flag_descriptions::kMemoryPressureThresholdName,
-     flag_descriptions::kMemoryPressureThresholdDescription, kOsCrOS,
-     MULTI_VALUE_TYPE(kMemoryPressureThresholdChoices)},
     {"wake-on-wifi-packet", flag_descriptions::kWakeOnPacketsName,
      flag_descriptions::kWakeOnPacketsDescription, kOsCrOSOwnerOnly,
      SINGLE_VALUE_TYPE(chromeos::switches::kWakeOnWifiPacket)},

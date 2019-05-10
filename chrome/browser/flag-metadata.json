@@ -2264,11 +2264,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "memory-pressure-thresholds",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "mime-handler-view-in-cross-process-frame",
     "owners": [ "ekaramad" ],
     "expiry_milestone": 80

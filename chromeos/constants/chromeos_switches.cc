@@ -423,10 +423,6 @@ const char kLoginProfile[] = "login-profile";
 // Specifies the user which is already logged in.
 const char kLoginUser[] = "login-user";
 
-// The memory pressure threshold selection which is used to decide whether and
-// when a memory pressure event needs to get fired.
-const char kMemoryPressureThresholds[] = "memory-pressure-thresholds";
-
 // Enables natural scroll by default.
 const char kNaturalScrollDefault[] = "enable-natural-scroll-default";
 
@@ -544,33 +540,16 @@ base::chromeos::MemoryPressureMonitor::MemoryPressureThresholds
 GetMemoryPressureThresholds() {
   using MemoryPressureMonitor = base::chromeos::MemoryPressureMonitor;
 
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          kMemoryPressureThresholds)) {
-    const std::string group_name =
-        base::FieldTrialList::FindFullName(kMemoryPressureExperimentName);
-    if (group_name == kConservativeThreshold)
-      return MemoryPressureMonitor::THRESHOLD_CONSERVATIVE;
-    if (group_name == kAggressiveCacheDiscardThreshold)
-      return MemoryPressureMonitor::THRESHOLD_AGGRESSIVE_CACHE_DISCARD;
-    if (group_name == kAggressiveTabDiscardThreshold)
-      return MemoryPressureMonitor::THRESHOLD_AGGRESSIVE_TAB_DISCARD;
-    if (group_name == kAggressiveThreshold)
-      return MemoryPressureMonitor::THRESHOLD_AGGRESSIVE;
-    return MemoryPressureMonitor::THRESHOLD_DEFAULT;
-  }
-
-  const std::string option =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          kMemoryPressureThresholds);
-  if (option == kConservativeThreshold)
+  const std::string group_name =
+      base::FieldTrialList::FindFullName(kMemoryPressureExperimentName);
+  if (group_name == kConservativeThreshold)
     return MemoryPressureMonitor::THRESHOLD_CONSERVATIVE;
-  if (option == kAggressiveCacheDiscardThreshold)
+  if (group_name == kAggressiveCacheDiscardThreshold)
     return MemoryPressureMonitor::THRESHOLD_AGGRESSIVE_CACHE_DISCARD;
-  if (option == kAggressiveTabDiscardThreshold)
+  if (group_name == kAggressiveTabDiscardThreshold)
     return MemoryPressureMonitor::THRESHOLD_AGGRESSIVE_TAB_DISCARD;
-  if (option == kAggressiveThreshold)
+  if (group_name == kAggressiveThreshold)
     return MemoryPressureMonitor::THRESHOLD_AGGRESSIVE;
-
   return MemoryPressureMonitor::THRESHOLD_DEFAULT;
 }
 

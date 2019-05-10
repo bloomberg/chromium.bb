@@ -313,32 +313,6 @@ NOINLINE void ResetThread_IO(
   base::debug::Alias(&line_number);
 }
 
-#if defined(OS_WIN)
-// Creates a memory pressure monitor using automatic thresholds, or those
-// specified on the command-line. Ownership is passed to the caller.
-std::unique_ptr<base::win::MemoryPressureMonitor>
-CreateWinMemoryPressureMonitor(const base::CommandLine& parsed_command_line) {
-  std::vector<std::string> thresholds =
-      base::SplitString(parsed_command_line.GetSwitchValueASCII(
-                            switches::kMemoryPressureThresholdsMb),
-                        ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-
-  int moderate_threshold_mb = 0;
-  int critical_threshold_mb = 0;
-  if (thresholds.size() == 2 &&
-      base::StringToInt(thresholds[0], &moderate_threshold_mb) &&
-      base::StringToInt(thresholds[1], &critical_threshold_mb) &&
-      moderate_threshold_mb >= critical_threshold_mb &&
-      critical_threshold_mb >= 0) {
-    return std::make_unique<base::win::MemoryPressureMonitor>(
-        moderate_threshold_mb, critical_threshold_mb);
-  }
-
-  // In absence of valid switches use the automatic defaults.
-  return std::make_unique<base::win::MemoryPressureMonitor>();
-}
-#endif  // defined(OS_WIN)
-
 enum WorkerPoolType : size_t {
   BACKGROUND = 0,
   BACKGROUND_BLOCKING,
@@ -425,7 +399,7 @@ std::unique_ptr<base::MemoryPressureMonitor> CreateMemoryPressureMonitor(
 #elif defined(OS_MACOSX)
   return std::make_unique<base::mac::MemoryPressureMonitor>();
 #elif defined(OS_WIN)
-  return CreateWinMemoryPressureMonitor(command_line);
+  return std::make_unique<base::win::MemoryPressureMonitor>();
 #else
   // No memory monitor on other platforms...
   return nullptr;
