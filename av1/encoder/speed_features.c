@@ -614,6 +614,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->use_comp_ref_nonrd = 0;
     sf->inter_mode_rd_model_estimation = 2;
     sf->cdef_pick_method = CDEF_PICK_FROM_Q;
+    sf->max_intra_bsize = BLOCK_16X16;
   }
   if (speed >= 8) {
     sf->use_fast_nonrd_pick_mode = 1;
