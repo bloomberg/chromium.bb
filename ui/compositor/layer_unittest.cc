@@ -462,6 +462,17 @@ class TestCompositorAnimationObserver : public CompositorAnimationObserver {
   DISALLOW_COPY_AND_ASSIGN(TestCompositorAnimationObserver);
 };
 
+#if defined(OS_WIN)
+bool IsFontsSmoothingEnabled() {
+  BOOL antialiasing = TRUE;
+  BOOL result = SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &antialiasing, 0);
+  if (result == FALSE) {
+    ADD_FAILURE() << "Failed to retrieve font aliasing configuration.";
+  }
+  return antialiasing;
+}
+#endif
+
 }  // namespace
 
 TEST_F(LayerWithRealCompositorTest, Draw) {
@@ -1888,6 +1899,11 @@ TEST_F(LayerWithRealCompositorTest, BackgroundBlurChangeDeviceScale) {
 // See https://codereview.chromium.org/1634103003/#msg41
 #if defined(OS_WIN)
 TEST_F(LayerWithRealCompositorTest, CanvasDrawFadedString) {
+  ASSERT_TRUE(IsFontsSmoothingEnabled())
+      << "The test requires that fonts smoothing (anti-aliasing) is activated. "
+         "If this assert is failing you need to manually activate the flag in "
+         "your system fonts settings.";
+
   viz::ParentLocalSurfaceIdAllocator allocator;
   allocator.GenerateId();
   gfx::Size size(50, 50);
@@ -1905,9 +1921,6 @@ TEST_F(LayerWithRealCompositorTest, CanvasDrawFadedString) {
   std::string filename;
   if (base::win::GetVersion() < base::win::Version::WIN10) {
     filename = "string_faded_win7.png";
-
-    // TODO(crbug.com/955128): Flaky.
-    return;
   } else {
     filename = "string_faded_win10.png";
   }
