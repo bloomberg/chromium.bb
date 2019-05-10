@@ -715,12 +715,7 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
   if (sender == header_row_) {
     if (IsExpandable() && content_row_->visible()) {
       SetManuallyExpandedOrCollapsed(true);
-      auto weak_ptr = weak_ptr_factory_.GetWeakPtr();
       ToggleExpanded();
-      // Check |this| is valid before continuing, because ToggleExpanded() might
-      // cause |this| to be deleted.
-      if (!weak_ptr)
-        return;
       Layout();
       SchedulePaint();
     }
@@ -1242,16 +1237,7 @@ void NotificationViewMD::ToggleInlineSettings(const ui::Event& event) {
   dont_block_button_->SetChecked(true);
 
   SetSettingMode(inline_settings_visible);
-
-  // Grab a weak pointer before calling SetExpanded() as it might cause |this|
-  // to be deleted.
-  {
-    auto weak_ptr = weak_ptr_factory_.GetWeakPtr();
-    SetExpanded(!inline_settings_visible);
-    if (!weak_ptr)
-      return;
-  }
-
+  SetExpanded(!inline_settings_visible);
   PreferredSizeChanged();
 
   if (inline_settings_visible)

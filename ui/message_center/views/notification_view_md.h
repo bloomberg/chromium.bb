@@ -325,8 +325,6 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
 
   base::TimeTicks last_mouse_pressed_timestamp_;
 
-  base::WeakPtrFactory<NotificationViewMD> weak_ptr_factory_{this};
-
   DISALLOW_COPY_AND_ASSIGN(NotificationViewMD);
 };
 
