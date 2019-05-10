@@ -4009,8 +4009,11 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "connection_options": "5RTO,NSTP"
-                    }
+                        "connection_options": "NSTP"
+                    },
+                    "enable_features": [
+                        "QuicDoesNotUseFeatures"
+                    ]
                 }
             ]
         }
