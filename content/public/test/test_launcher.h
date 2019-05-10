@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/test/launcher/test_launcher.h"
+#include "build/build_config.h"
 
 namespace base {
 class CommandLine;
@@ -49,7 +50,11 @@ class TestLauncherDelegate {
   virtual bool AdjustChildProcessCommandLine(
       base::CommandLine* command_line,
       const base::FilePath& temp_data_dir) = 0;
+#if !defined(OS_ANDROID)
+  // Android browser tests set the ContentMainDelegate itself for the test
+  // harness to use, and do not go through ContentMain() in TestLauncher.
   virtual ContentMainDelegate* CreateContentMainDelegate() = 0;
+#endif
 
   // Called prior to running each test. The delegate may alter the CommandLine
   // and options used to launch the subprocess. Additionally the client may
@@ -92,7 +97,12 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
                 char** argv) WARN_UNUSED_RESULT;
 
 TestLauncherDelegate* GetCurrentTestLauncherDelegate();
+
+#if !defined(OS_ANDROID)
+// ContentMain is not run on Android in the test process, and is run via
+// java for child processes. So ContentMainParams does not exist there.
 ContentMainParams* GetContentMainParams();
+#endif
 
 // Returns true if the currently running test has a prefix that indicates it
 // should run before a test of the same name without the prefix.

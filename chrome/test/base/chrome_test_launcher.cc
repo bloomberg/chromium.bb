@@ -134,10 +134,12 @@ bool ChromeTestLauncherDelegate::AdjustChildProcessCommandLine(
   return true;
 }
 
+#if !defined(OS_ANDROID)
 content::ContentMainDelegate*
 ChromeTestLauncherDelegate::CreateContentMainDelegate() {
   return new ChromeMainDelegate();
 }
+#endif
 
 void ChromeTestLauncherDelegate::PreSharding() {
 #if defined(OS_WIN)

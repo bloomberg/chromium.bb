@@ -76,7 +76,11 @@ const char kPreTestPrefix[] = "PRE_";
 const char kManualTestPrefix[] = "MANUAL_";
 
 TestLauncherDelegate* g_launcher_delegate = nullptr;
+#if !defined(OS_ANDROID)
+// ContentMain is not run on Android in the test process, and is run via
+// java for child processes. So ContentMainParams does not exist there.
 ContentMainParams* g_params = nullptr;
+#endif
 
 std::string RemoveAnyPrePrefixes(const std::string& test_name) {
   std::string result(test_name);
@@ -618,9 +622,15 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
     return 0;
   }
 
+#if !defined(OS_ANDROID)
+  // The ContentMainDelegate is set for browser tests on Android by the
+  // browser test target and is not created by the |launcher_delegate|.
   std::unique_ptr<ContentMainDelegate> content_main_delegate(
       launcher_delegate->CreateContentMainDelegate());
+  // ContentMain is not run on Android in the test process, and is run via
+  // java for child processes.
   ContentMainParams params(content_main_delegate.get());
+#endif
 
 #if defined(OS_WIN)
   sandbox::SandboxInterfaceInfo sandbox_info = {0};
@@ -654,7 +664,9 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
        command_line->HasSwitch(base::kGTestFilterFlag)) ||
       command_line->HasSwitch(base::kGTestListTestsFlag) ||
       command_line->HasSwitch(base::kGTestHelpFlag)) {
+#if !defined(OS_ANDROID)
     g_params = &params;
+#endif
     return launcher_delegate->RunTestSuite(argc, argv);
   }
 
@@ -691,9 +703,11 @@ TestLauncherDelegate* GetCurrentTestLauncherDelegate() {
   return g_launcher_delegate;
 }
 
+#if !defined(OS_ANDROID)
 ContentMainParams* GetContentMainParams() {
   return g_params;
 }
+#endif
 
 bool IsPreTest() {
   auto* test = testing::UnitTest::GetInstance();

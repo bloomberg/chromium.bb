@@ -120,9 +120,11 @@ class ContentTestLauncherDelegate : public TestLauncherDelegate {
   }
 
  protected:
+#if !defined(OS_ANDROID)
   ContentMainDelegate* CreateContentMainDelegate() override {
     return new ShellMainDelegate(true);
   }
+#endif
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentTestLauncherDelegate);
