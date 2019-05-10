@@ -115,6 +115,7 @@ class HtmlCheckerTest(SuperMoxTestBase):
     lines = [
       "br",
       "br>",
+      "<browser-switch-app></browser-switch-app>",
       "give me a break"
     ]
     for line in lines:
