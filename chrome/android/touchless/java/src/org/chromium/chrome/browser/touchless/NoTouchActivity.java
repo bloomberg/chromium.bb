@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogPresenter;
 import org.chromium.chrome.browser.touchless.snackbar.BlackHoleSnackbarManager;
 import org.chromium.chrome.browser.touchless.ui.iph.KeyFunctionsIPHCoordinator;
@@ -329,5 +330,10 @@ public class NoTouchActivity extends SingleTabActivity {
     @Override
     public SnackbarManager getSnackbarManager() {
         return mSnackbarManager;
+    }
+
+    @Override
+    protected TabDelegate createTabDelegate(boolean incognito) {
+        return new TouchlessTabDelegate(incognito);
     }
 }
