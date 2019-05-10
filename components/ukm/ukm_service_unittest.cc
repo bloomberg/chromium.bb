@@ -23,7 +23,7 @@
 #include "components/metrics/test_metrics_provider.h"
 #include "components/metrics/test_metrics_service_client.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/ukm/persisted_logs_metrics_impl.h"
+#include "components/ukm/unsent_log_store_metrics_impl.h"
 #include "components/ukm/ukm_pref_names.h"
 #include "components/variations/variations_associated_data.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -135,30 +135,30 @@ class UkmServiceTest : public testing::Test {
   void ClearPrefs() {
     prefs_.ClearPref(prefs::kUkmClientId);
     prefs_.ClearPref(prefs::kUkmSessionId);
-    prefs_.ClearPref(prefs::kUkmPersistedLogs);
+    prefs_.ClearPref(prefs::kUkmUnsentLogStore);
   }
 
   int GetPersistedLogCount() {
     const base::ListValue* list_value =
-        prefs_.GetList(prefs::kUkmPersistedLogs);
+        prefs_.GetList(prefs::kUkmUnsentLogStore);
     return list_value->GetSize();
   }
 
   Report GetPersistedReport() {
     EXPECT_GE(GetPersistedLogCount(), 1);
-    metrics::PersistedLogs result_persisted_logs(
-        std::make_unique<ukm::PersistedLogsMetricsImpl>(), &prefs_,
-        prefs::kUkmPersistedLogs,
+    metrics::UnsentLogStore result_unsent_log_store(
+        std::make_unique<ukm::UnsentLogStoreMetricsImpl>(), &prefs_,
+        prefs::kUkmUnsentLogStore,
         3,     // log count limit
         1000,  // byte limit
         0, std::string());
 
-    result_persisted_logs.LoadPersistedUnsentLogs();
-    result_persisted_logs.StageNextLog();
+    result_unsent_log_store.LoadPersistedUnsentLogs();
+    result_unsent_log_store.StageNextLog();
 
     std::string uncompressed_log_data;
-    EXPECT_TRUE(compression::GzipUncompress(result_persisted_logs.staged_log(),
-                                            &uncompressed_log_data));
+    EXPECT_TRUE(compression::GzipUncompress(
+      result_unsent_log_store.staged_log(), &uncompressed_log_data));
 
     Report report;
     EXPECT_TRUE(report.ParseFromString(uncompressed_log_data));

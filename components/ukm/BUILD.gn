@@ -11,8 +11,8 @@ static_library("ukm") {
   sources = [
     "app_source_url_recorder.cc",
     "app_source_url_recorder.h",
-    "persisted_logs_metrics_impl.cc",
-    "persisted_logs_metrics_impl.h",
+    "unsent_log_store_metrics_impl.cc",
+    "unsent_log_store_metrics_impl.h",
     "ukm_pref_names.cc",
     "ukm_pref_names.h",
     "ukm_recorder_impl.cc",

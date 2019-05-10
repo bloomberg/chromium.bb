@@ -20,7 +20,6 @@
 #include "components/metrics/metrics_service_client.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/ukm/persisted_logs_metrics_impl.h"
 #include "components/ukm/ukm_pref_names.h"
 #include "components/ukm/ukm_rotation_scheduler.h"
 #include "services/metrics/public/cpp/delegating_ukm_recorder.h"

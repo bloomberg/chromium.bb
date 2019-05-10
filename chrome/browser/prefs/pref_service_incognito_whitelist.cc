@@ -202,7 +202,7 @@ const char* const kPersistentPrefNames[] = {
     // changed by UMA/Sync/Unity consent, and need to be the same between
     // incognito and regular modes.
     ukm::prefs::kUkmClientId,
-    ukm::prefs::kUkmPersistedLogs,
+    ukm::prefs::kUkmUnsentLogStore,
     ukm::prefs::kUkmSessionId,
 
     // Variations preferences maybe changed from incognito mode and should be

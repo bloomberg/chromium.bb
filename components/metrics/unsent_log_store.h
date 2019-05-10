@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_METRICS_PERSISTED_LOGS_H_
-#define COMPONENTS_METRICS_PERSISTED_LOGS_H_
+#ifndef COMPONENTS_METRICS_UNSENT_LOG_STORE_H_
+#define COMPONENTS_METRICS_UNSENT_LOG_STORE_H_
 
 #include <stddef.h>
 
@@ -20,15 +20,15 @@ class PrefService;
 
 namespace metrics {
 
-class PersistedLogsMetrics;
+class UnsentLogStoreMetrics;
 
 // Maintains a list of unsent logs that are written and restored from disk.
-class PersistedLogs : public LogStore {
+class UnsentLogStore : public LogStore {
  public:
-  // Constructs a PersistedLogs that stores data in |local_state| under the
+  // Constructs an UnsentLogStore that stores data in |local_state| under the
   // preference |pref_name|.
   // Calling code is responsible for ensuring that the lifetime of |local_state|
-  // is longer than the lifetime of PersistedLogs.
+  // is longer than the lifetime of UnsentLogStore.
   //
   // When saving logs to disk, stores either the first |min_log_count| logs, or
   // at least |min_log_bytes| bytes of logs, whichever is greater.
@@ -39,14 +39,14 @@ class PersistedLogs : public LogStore {
   // |signing_key| is used to produce an HMAC-SHA256 signature of the logged
   // data, which will be uploaded with the log and used to validate data
   // integrity.
-  PersistedLogs(std::unique_ptr<PersistedLogsMetrics> metrics,
+  UnsentLogStore(std::unique_ptr<UnsentLogStoreMetrics> metrics,
                 PrefService* local_state,
                 const char* pref_name,
                 size_t min_log_count,
                 size_t min_log_bytes,
                 size_t max_log_size,
                 const std::string& signing_key);
-  ~PersistedLogs();
+  ~UnsentLogStore();
 
   // LogStore:
   bool has_unsent_logs() const override;
@@ -79,11 +79,11 @@ class PersistedLogs : public LogStore {
   void ReadLogsFromPrefList(const base::ListValue& list);
 
   // An object for recording UMA metrics.
-  std::unique_ptr<PersistedLogsMetrics> metrics_;
+  std::unique_ptr<UnsentLogStoreMetrics> metrics_;
 
   // A weak pointer to the PrefService object to read and write the preference
   // from.  Calling code should ensure this object continues to exist for the
-  // lifetime of the PersistedLogs object.
+  // lifetime of the UnsentLogStore object.
   PrefService* local_state_;
 
   // The name of the preference to serialize logs to/from.
@@ -111,10 +111,10 @@ class PersistedLogs : public LogStore {
     // |log_timestamp|, and |signing_key|. |log_data| is the uncompressed
     // serialized log protobuf. A hash and a signature are computed from
     // |log_data|. The signature is produced using |signing_key|. |log_data|
-    // will be compressed and storred in |compressed_log_data|. |log_timestamp|
+    // will be compressed and stored in |compressed_log_data|. |log_timestamp|
     // is stored as is.
     // |metrics| is the parent's metrics_ object, and should not be held.
-    void Init(PersistedLogsMetrics* metrics,
+    void Init(UnsentLogStoreMetrics* metrics,
               const std::string& log_data,
               const std::string& log_timestamp,
               const std::string& signing_key);
@@ -142,9 +142,9 @@ class PersistedLogs : public LogStore {
   // staged, the index will be -1.
   int staged_log_index_;
 
-  DISALLOW_COPY_AND_ASSIGN(PersistedLogs);
+  DISALLOW_COPY_AND_ASSIGN(UnsentLogStore);
 };
 
 }  // namespace metrics
 
-#endif  // COMPONENTS_METRICS_PERSISTED_LOGS_H_
+#endif  // COMPONENTS_METRICS_UNSENT_LOG_STORE_H_

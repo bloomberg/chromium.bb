@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_METRICS_PERSISTED_LOGS_METRICS_H_
-#define COMPONENTS_METRICS_PERSISTED_LOGS_METRICS_H_
+#ifndef COMPONENTS_METRICS_UNSENT_LOG_STORE_METRICS_H_
+#define COMPONENTS_METRICS_UNSENT_LOG_STORE_METRICS_H_
 
 #include "base/macros.h"
-#include "components/metrics/persisted_logs.h"
+#include "components/metrics/unsent_log_store.h"
 
 namespace metrics {
 
-// Interface for recording metrics from PersistedLogs.
-class PersistedLogsMetrics {
+// Interface for recording metrics from UnsentLogStore.
+class UnsentLogStoreMetrics {
  public:
   // Used to produce a histogram that keeps track of the status of recalling
   // persisted per logs.
@@ -31,8 +31,8 @@ class PersistedLogsMetrics {
     END_RECALL_STATUS  // Number of bins to use to create the histogram.
   };
 
-  PersistedLogsMetrics() {}
-  virtual ~PersistedLogsMetrics() {}
+  UnsentLogStoreMetrics() {}
+  virtual ~UnsentLogStoreMetrics() {}
 
   virtual void RecordLogReadStatus(LogReadStatus status) {}
 
@@ -44,9 +44,9 @@ class PersistedLogsMetrics {
   virtual void RecordDroppedLogsNum(int dropped_logs_num) {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PersistedLogsMetrics);
+  DISALLOW_COPY_AND_ASSIGN(UnsentLogStoreMetrics);
 };
 
 }  // namespace metrics
 
-#endif  // COMPONENTS_METRICS_PERSISTED_LOGS_METRICS_H_
+#endif  // COMPONENTS_METRICS_UNSENT_LOG_STORE_METRICS_H_

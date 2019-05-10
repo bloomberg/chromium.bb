@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/metrics/persisted_logs.h"
+#include "components/metrics/unsent_log_store.h"
 
 #include <memory>
 #include <string>
@@ -14,7 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/timer/elapsed_timer.h"
-#include "components/metrics/persisted_logs_metrics.h"
+#include "components/metrics/unsent_log_store_metrics.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "crypto/hmac.h"
@@ -44,11 +44,12 @@ std::string DecodeFromBase64(const std::string& to_convert) {
 
 }  // namespace
 
-PersistedLogs::LogInfo::LogInfo() {}
-PersistedLogs::LogInfo::LogInfo(const PersistedLogs::LogInfo& other) = default;
-PersistedLogs::LogInfo::~LogInfo() {}
+UnsentLogStore::LogInfo::LogInfo() {}
+UnsentLogStore::LogInfo::LogInfo(
+  const UnsentLogStore::LogInfo& other) = default;
+UnsentLogStore::LogInfo::~LogInfo() {}
 
-void PersistedLogs::LogInfo::Init(PersistedLogsMetrics* metrics,
+void UnsentLogStore::LogInfo::Init(UnsentLogStoreMetrics* metrics,
                                   const std::string& log_data,
                                   const std::string& log_timestamp,
                                   const std::string& signing_key) {
@@ -76,7 +77,7 @@ void PersistedLogs::LogInfo::Init(PersistedLogsMetrics* metrics,
   timestamp = log_timestamp;
 }
 
-PersistedLogs::PersistedLogs(std::unique_ptr<PersistedLogsMetrics> metrics,
+UnsentLogStore::UnsentLogStore(std::unique_ptr<UnsentLogStoreMetrics> metrics,
                              PrefService* local_state,
                              const char* pref_name,
                              size_t min_log_count,
@@ -96,42 +97,42 @@ PersistedLogs::PersistedLogs(std::unique_ptr<PersistedLogsMetrics> metrics,
   DCHECK(min_log_count_ > 0 || min_log_bytes_ > 0);
 }
 
-PersistedLogs::~PersistedLogs() {}
+UnsentLogStore::~UnsentLogStore() {}
 
-bool PersistedLogs::has_unsent_logs() const {
+bool UnsentLogStore::has_unsent_logs() const {
   return !!size();
 }
 
 // True if a log has been staged.
-bool PersistedLogs::has_staged_log() const {
+bool UnsentLogStore::has_staged_log() const {
   return staged_log_index_ != -1;
 }
 
 // Returns the compressed data of the element in the front of the list.
-const std::string& PersistedLogs::staged_log() const {
+const std::string& UnsentLogStore::staged_log() const {
   DCHECK(has_staged_log());
   return list_[staged_log_index_].compressed_log_data;
 }
 
 // Returns the hash of element in the front of the list.
-const std::string& PersistedLogs::staged_log_hash() const {
+const std::string& UnsentLogStore::staged_log_hash() const {
   DCHECK(has_staged_log());
   return list_[staged_log_index_].hash;
 }
 
 // Returns the signature of element in the front of the list.
-const std::string& PersistedLogs::staged_log_signature() const {
+const std::string& UnsentLogStore::staged_log_signature() const {
   DCHECK(has_staged_log());
   return list_[staged_log_index_].signature;
 }
 
 // Returns the timestamp of the element in the front of the list.
-const std::string& PersistedLogs::staged_log_timestamp() const {
+const std::string& UnsentLogStore::staged_log_timestamp() const {
   DCHECK(has_staged_log());
   return list_[staged_log_index_].timestamp;
 }
 
-void PersistedLogs::StageNextLog() {
+void UnsentLogStore::StageNextLog() {
   // CHECK, rather than DCHECK, because swap()ing with an empty list causes
   // hard-to-identify crashes much later.
   CHECK(!list_.empty());
@@ -140,14 +141,14 @@ void PersistedLogs::StageNextLog() {
   DCHECK(has_staged_log());
 }
 
-void PersistedLogs::DiscardStagedLog() {
+void UnsentLogStore::DiscardStagedLog() {
   DCHECK(has_staged_log());
   DCHECK_LT(static_cast<size_t>(staged_log_index_), list_.size());
   list_.erase(list_.begin() + staged_log_index_);
   staged_log_index_ = -1;
 }
 
-void PersistedLogs::PersistUnsentLogs() const {
+void UnsentLogStore::PersistUnsentLogs() const {
   ListPrefUpdate update(local_state_, pref_name_);
   // TODO(crbug.com/859477): Verify that the preference has been properly
   // registered.
@@ -155,18 +156,18 @@ void PersistedLogs::PersistUnsentLogs() const {
   WriteLogsToPrefList(update.Get());
 }
 
-void PersistedLogs::LoadPersistedUnsentLogs() {
+void UnsentLogStore::LoadPersistedUnsentLogs() {
   ReadLogsFromPrefList(*local_state_->GetList(pref_name_));
 }
 
-void PersistedLogs::StoreLog(const std::string& log_data) {
+void UnsentLogStore::StoreLog(const std::string& log_data) {
   list_.push_back(LogInfo());
   list_.back().Init(metrics_.get(), log_data,
                     base::NumberToString(base::Time::Now().ToTimeT()),
                     signing_key_);
 }
 
-void PersistedLogs::Purge() {
+void UnsentLogStore::Purge() {
   if (has_staged_log()) {
     DiscardStagedLog();
   }
@@ -174,9 +175,9 @@ void PersistedLogs::Purge() {
   local_state_->ClearPref(pref_name_);
 }
 
-void PersistedLogs::ReadLogsFromPrefList(const base::ListValue& list_value) {
+void UnsentLogStore::ReadLogsFromPrefList(const base::ListValue& list_value) {
   if (list_value.empty()) {
-    metrics_->RecordLogReadStatus(PersistedLogsMetrics::LIST_EMPTY);
+    metrics_->RecordLogReadStatus(UnsentLogStoreMetrics::LIST_EMPTY);
     return;
   }
 
@@ -193,7 +194,7 @@ void PersistedLogs::ReadLogsFromPrefList(const base::ListValue& list_value) {
         !dict->GetString(kLogSignatureKey, &list_[i].signature)) {
       list_.clear();
       metrics_->RecordLogReadStatus(
-          PersistedLogsMetrics::LOG_STRING_CORRUPTION);
+          UnsentLogStoreMetrics::LOG_STRING_CORRUPTION);
       return;
     }
 
@@ -209,10 +210,10 @@ void PersistedLogs::ReadLogsFromPrefList(const base::ListValue& list_value) {
     dict->GetString(kLogTimestampKey, &list_[i].timestamp);
   }
 
-  metrics_->RecordLogReadStatus(PersistedLogsMetrics::RECALL_SUCCESS);
+  metrics_->RecordLogReadStatus(UnsentLogStoreMetrics::RECALL_SUCCESS);
 }
 
-void PersistedLogs::WriteLogsToPrefList(base::ListValue* list_value) const {
+void UnsentLogStore::WriteLogsToPrefList(base::ListValue* list_value) const {
   list_value->Clear();
 
   // Keep the most recent logs which are smaller than |max_log_size_|.
