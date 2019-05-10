@@ -579,32 +579,51 @@ size_t LayoutGrid::ComputeAutoRepeatTracksCount(
   if (!auto_repeat_track_list_length)
     return 0;
 
-  if (!is_row_axis) {
-    if (!available_size) {
-      const Length& max_length = StyleRef().LogicalMaxHeight();
-      if (!max_length.IsMaxSizeNone()) {
-        available_size = ConvertLayoutUnitToOptional(
-            ConstrainContentBoxLogicalHeightByMinMax(
-                AvailableLogicalHeightUsing(max_length,
-                                            kExcludeMarginBorderPadding),
-                LayoutUnit(-1)));
-      }
-    }
-  }
-
   bool needs_to_fulfill_minimum_size = false;
   if (!available_size) {
+    const Length& max_size = is_row_axis ? StyleRef().LogicalMaxWidth()
+                                         : StyleRef().LogicalMaxHeight();
+    base::Optional<LayoutUnit> containing_block_available_size;
+    LayoutUnit available_max_size = LayoutUnit();
+    if (max_size.IsSpecified()) {
+      if (max_size.IsPercentOrCalc()) {
+        containing_block_available_size =
+            is_row_axis ? ContainingBlockLogicalWidthForContent()
+                        : ContainingBlockLogicalHeightForContent(
+                              kExcludeMarginBorderPadding);
+      }
+      LayoutUnit max_size_value = ValueForLength(
+          max_size, containing_block_available_size.value_or(LayoutUnit()));
+      available_max_size =
+          is_row_axis
+              ? AdjustContentBoxLogicalWidthForBoxSizing(max_size_value)
+              : AdjustContentBoxLogicalHeightForBoxSizing(max_size_value);
+    }
+
     const Length& min_size = is_row_axis ? StyleRef().LogicalMinWidth()
                                          : StyleRef().LogicalMinHeight();
-    if (!min_size.IsSpecified())
+    if (!available_max_size && !min_size.IsSpecified())
       return auto_repeat_track_list_length;
 
-    LayoutUnit containing_block_available_size =
-        is_row_axis ? ContainingBlockLogicalWidthForContent()
-                    : ContainingBlockLogicalHeightForContent(
-                          kExcludeMarginBorderPadding);
-    available_size = ValueForLength(min_size, containing_block_available_size);
-    needs_to_fulfill_minimum_size = true;
+    LayoutUnit available_min_size = LayoutUnit();
+    if (min_size.IsSpecified()) {
+      if (!containing_block_available_size && min_size.IsPercentOrCalc()) {
+        containing_block_available_size =
+            is_row_axis ? ContainingBlockLogicalWidthForContent()
+                        : ContainingBlockLogicalHeightForContent(
+                              kExcludeMarginBorderPadding);
+      }
+      LayoutUnit min_size_value = ValueForLength(
+          min_size, containing_block_available_size.value_or(LayoutUnit()));
+      available_min_size =
+          is_row_axis
+              ? AdjustContentBoxLogicalWidthForBoxSizing(min_size_value)
+              : AdjustContentBoxLogicalHeightForBoxSizing(min_size_value);
+      if (!max_size.IsSpecified())
+        needs_to_fulfill_minimum_size = true;
+    }
+
+    available_size = std::max(available_min_size, available_max_size);
   }
 
   LayoutUnit auto_repeat_tracks_size;
