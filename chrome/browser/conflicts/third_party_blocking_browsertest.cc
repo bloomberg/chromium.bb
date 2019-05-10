@@ -20,10 +20,10 @@
 #include "chrome/browser/conflicts/module_database_win.h"
 #include "chrome/browser/conflicts/proto/module_list.pb.h"
 #include "chrome/browser/conflicts/third_party_conflicts_manager_win.h"
+#include "chrome/chrome_elf/third_party_dlls/packed_list_format.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome_elf/third_party_dlls/packed_list_format.h"
 
 namespace {
 

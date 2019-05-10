@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "chrome_elf/sha1/sha1.h"
+#include "chrome/chrome_elf/sha1/sha1.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

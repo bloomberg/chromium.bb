@@ -1861,11 +1861,11 @@ def _CheckSpamLogging(input_api, output_api):
                  r"^chrome[\\/]browser[\\/]ui[\\/]startup[\\/]"
                      r"startup_browser_creator\.cc$",
                  r"^chrome[\\/]browser[\\/]browser_switcher[\\/]bho[\\/].*",
-                 r"^chrome[\\/]installer[\\/]setup[\\/].*",
-                 r"^chrome[\\/]chrome_cleaner[\\/].*",
-                 r"chrome[\\/]browser[\\/]diagnostics[\\/]" +
+                 r"^chrome[\\/]browser[\\/]diagnostics[\\/]" +
                      r"diagnostics_writer\.cc$",
-                 r"^chrome_elf[\\/]dll_hash[\\/]dll_hash_main\.cc$",
+                 r"^chrome[\\/]chrome_cleaner[\\/].*",
+                 r"^chrome[\\/]chrome_elf[\\/]dll_hash[\\/]dll_hash_main\.cc$",
+                 r"^chrome[\\/]installer[\\/]setup[\\/].*",
                  r"^chromecast[\\/]",
                  r"^cloud_print[\\/]",
                  r"^components[\\/]browser_watcher[\\/]"

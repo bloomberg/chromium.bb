@@ -20,7 +20,6 @@
 #include "chrome/browser/safe_browsing/download_protection/path_sanitizer.h"
 #include "chrome/browser/safe_browsing/incident_reporting/module_integrity_unittest_util_win.h"
 #include "chrome/browser/safe_browsing/incident_reporting/module_integrity_verifier_win.h"
-#include "chrome_elf/chrome_elf_constants.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "net/base/winsock_init.h"
 #include "testing/gtest/include/gtest/gtest.h"

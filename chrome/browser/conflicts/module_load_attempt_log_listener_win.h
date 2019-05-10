@@ -16,7 +16,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/win/object_watcher.h"
 #include "base/win/windows_types.h"
-#include "chrome_elf/third_party_dlls/packed_list_format.h"
+#include "chrome/chrome_elf/third_party_dlls/packed_list_format.h"
 
 namespace base {
 class SequencedTaskRunner;

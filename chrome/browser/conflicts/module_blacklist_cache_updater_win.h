@@ -17,7 +17,7 @@
 #include "base/sequence_checker.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
 #include "chrome/browser/conflicts/proto/module_list.pb.h"
-#include "chrome_elf/third_party_dlls/packed_list_format.h"
+#include "chrome/chrome_elf/third_party_dlls/packed_list_format.h"
 
 class ModuleListFilter;
 struct CertificateInfo;

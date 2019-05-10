@@ -700,7 +700,7 @@
                   '|components/chrome_cleaner/',
     },
     'chrome_elf': {
-      'filepath': 'chrome_elf',
+      'filepath': 'chrome/chrome_elf',
     },
     'chrome_grc': {
       'filepath': 'chrome/browser/resource_coordinator/'\

@@ -18,7 +18,7 @@
 #include "components/crash/core/common/crash_key.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
-#include "chrome_elf/third_party_dlls/public_api.h"
+#include "chrome/chrome_elf/third_party_dlls/public_api.h"
 #endif
 
 namespace {

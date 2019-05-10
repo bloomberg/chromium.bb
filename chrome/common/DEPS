@@ -1,8 +1,8 @@
 include_rules = [
+  "+chrome/chrome_elf/chrome_elf_main.h",
   "+chrome/grit",
   "+chrome/install_static",
   "+chrome/services/file_util/public",
-  "+chrome_elf/chrome_elf_main.h",
   "+chromeos",  # For chromeos_switches.h
   "+components/autofill/content/common",
   "+components/autofill/core/common",

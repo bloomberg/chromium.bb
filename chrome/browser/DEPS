@@ -19,9 +19,6 @@ include_rules = [
   "+chrome/services/removable_storage_writer/public",
   "+chrome/services/util_win/public",
   "+chrome/services/wifi_util_win/public",
-  "+chrome_elf/blacklist",
-  "+chrome_elf/chrome_elf_constants.h",
-  "+chrome_elf/dll_hash",
   "+chromeos",
   "+components",
   # Use identity_manager.h instead of the below files;

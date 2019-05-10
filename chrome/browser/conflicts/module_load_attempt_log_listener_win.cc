@@ -17,8 +17,7 @@
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/conflicts/module_blacklist_cache_util_win.h"
-#include "chrome_elf/third_party_dlls/packed_list_format.h"
-#include "chrome_elf/third_party_dlls/public_api.h"
+#include "chrome/chrome_elf/third_party_dlls/public_api.h"
 
 namespace {
 

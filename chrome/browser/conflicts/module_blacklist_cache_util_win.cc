@@ -21,7 +21,7 @@
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/conflicts/module_list_filter_win.h"
-#include "chrome_elf/third_party_dlls/packed_list_format.h"
+#include "chrome/chrome_elf/third_party_dlls/packed_list_format.h"
 
 namespace {
 

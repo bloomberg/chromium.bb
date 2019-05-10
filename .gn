@@ -229,6 +229,7 @@ check_targets = [
   "//chrome/build/*",
 
   #"//chrome/child/*",  # 1 error on Windows
+  "//chrome/chrome_elf/*",
   "//chrome/chrome_cleaner/*",
 
   #"//chrome/chrome_watcher/*",  # 3 errors on Windows
@@ -253,7 +254,6 @@ check_targets = [
 
   "//chromecast/*",
   "//chromeos/*",
-  "//chrome_elf/*",
   "//cloud_print/*",
   "//components/*",
   "//content/*",

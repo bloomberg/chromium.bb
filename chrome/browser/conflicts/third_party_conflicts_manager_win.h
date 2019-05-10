@@ -18,7 +18,7 @@
 #include "chrome/browser/conflicts/module_blacklist_cache_updater_win.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
 #include "chrome/browser/conflicts/module_list_component_updater_win.h"
-#include "chrome_elf/third_party_dlls/packed_list_format.h"
+#include "chrome/chrome_elf/third_party_dlls/packed_list_format.h"
 
 class IncompatibleApplicationsUpdater;
 class InstalledApplications;

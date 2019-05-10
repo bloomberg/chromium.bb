@@ -162,7 +162,6 @@ vs-chromium-project.txt
 /chrome/tools/test/reference_build
 /chrome/unit_tests_run.xml
 /chrome/web_ui_mojo_bindings.xml
-/chrome_elf/chrome_elf_resources.xml
 /chromecast/internal
 /chromeos/assistant/internal
 /cipd_cache/

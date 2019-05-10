@@ -3560,6 +3560,9 @@ jumbo_split_static_library("browser") {
       ":chrome_process_finder",
       "//chrome:file_pre_reader",
       "//chrome/browser/conflicts:module_info",
+      "//chrome/chrome_elf:blacklist",
+      "//chrome/chrome_elf:constants",
+      "//chrome/chrome_elf:dll_hash",
       "//chrome/chrome_watcher:client",
       "//chrome/common:metrics_constants_util_win",
       "//chrome/common:version_header",
@@ -3567,9 +3570,6 @@ jumbo_split_static_library("browser") {
       "//chrome/install_static:install_static_util",
       "//chrome/notification_helper:constants",
       "//chrome/services/util_win/public/mojom",
-      "//chrome_elf:blacklist",
-      "//chrome_elf:constants",
-      "//chrome_elf:dll_hash",
       "//components/browser_watcher",
       "//components/browser_watcher:browser_watcher_client",
       "//components/browser_watcher:stability_client",
@@ -3602,8 +3602,8 @@ jumbo_split_static_library("browser") {
     if (is_chrome_branded) {
       deps += [
         ":conflicts_module_list_proto",
-        "//chrome_elf:sha1",
-        "//chrome_elf:third_party_shared_defines",
+        "//chrome/chrome_elf:sha1",
+        "//chrome/chrome_elf:third_party_shared_defines",
         "//google_update",
       ]
       libs += [ "msi.lib" ]
