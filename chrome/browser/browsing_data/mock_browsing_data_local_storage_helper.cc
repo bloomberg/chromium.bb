@@ -44,7 +44,7 @@ void MockBrowsingDataLocalStorageHelper::AddLocalStorageSamples() {
 
 void MockBrowsingDataLocalStorageHelper::AddLocalStorageForOrigin(
     const url::Origin& origin,
-    size_t size) {
+    int64_t size) {
   response_.emplace_back(origin, size, base::Time());
   origins_[origin] = true;
 }

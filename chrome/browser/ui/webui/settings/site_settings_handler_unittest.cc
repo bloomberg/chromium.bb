@@ -11,6 +11,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
@@ -50,6 +51,7 @@
 #include "extensions/common/extension_builder.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/text/bytes_formatting.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
@@ -424,7 +426,7 @@ class SiteSettingsHandlerTest : public testing::Test {
         url::Origin::Create(GURL("https://www.example.com/")), 2);
 
     mock_browsing_data_local_storage_helper->AddLocalStorageForOrigin(
-        url::Origin::Create(GURL("https://www.google.com/")), 5);
+        url::Origin::Create(GURL("https://www.google.com/")), 50000000000);
     mock_browsing_data_local_storage_helper->Notify();
 
     mock_browsing_data_cookie_helper->AddCookieSamples(
@@ -761,7 +763,7 @@ TEST_F(SiteSettingsHandlerTest, OnStorageFetched) {
   EXPECT_EQ("https://www.google.com/",
             origin_info->FindKey("origin")->GetString());
   EXPECT_EQ(0, origin_info->FindKey("engagement")->GetDouble());
-  EXPECT_EQ(5, origin_info->FindKey("usage")->GetDouble());
+  EXPECT_EQ(50000000000, origin_info->FindKey("usage")->GetDouble());
   EXPECT_EQ(0, origin_info->FindKey("numCookies")->GetDouble());
 
   ASSERT_TRUE(storage_and_cookie_list->GetDictionary(2, &site_group));
@@ -1889,5 +1891,21 @@ TEST_F(SiteSettingsHandlerTest, HandleClearEtldPlus1DataAndCookies) {
 
   storage_and_cookie_list = GetOnStorageFetchedSentListValue();
   EXPECT_EQ(0U, storage_and_cookie_list->GetSize());
+}
+
+TEST_F(SiteSettingsHandlerTest, HandleGetFormattedBytes) {
+  const double size = 120000000000;
+  base::ListValue get_args;
+  get_args.AppendString(kCallbackId);
+  get_args.AppendDouble(size);
+  handler()->HandleGetFormattedBytes(&get_args);
+
+  // Validate that this method can handle large data.
+  const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+  EXPECT_EQ("cr.webUIResponse", data.function_name());
+  EXPECT_EQ(kCallbackId, data.arg1()->GetString());
+  ASSERT_TRUE(data.arg2()->GetBool());
+  EXPECT_EQ(base::UTF16ToUTF8(ui::FormatBytes(int64_t(size))),
+            data.arg3()->GetString());
 }
 }  // namespace settings
