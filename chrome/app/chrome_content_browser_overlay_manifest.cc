@@ -50,6 +50,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/kiosk_next_home/mojom/kiosk_next_home_interface_broker.mojom.h"  // nogncheck
 #include "chrome/browser/chromeos/supervision/mojom/onboarding_controller.mojom.h"
+#include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_page_handler.mojom.h"
 #include "chromeos/assistant/buildflags.h"  // nogncheck
 #include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
 #include "chromeos/services/device_sync/public/cpp/manifest.h"
@@ -225,6 +226,7 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                     chromeos::ime::mojom::InputEngineManager,
                     chromeos::kiosk_next_home::mojom::
                         KioskNextHomeInterfaceBroker,
+                    chromeos::machine_learning::mojom::PageHandler,
                     chromeos::media_perception::mojom::MediaPerception,
                     chromeos::supervision::mojom::OnboardingController,
                     cros::mojom::CrosImageCapture,

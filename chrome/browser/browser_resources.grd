@@ -752,6 +752,9 @@
         <include name="IDR_ARC_GRAPHICS_TRACING_UI_JS" file="resources\chromeos\arc_graphics_tracing\arc_graphics_tracing_ui.js" compress="gzip" type="BINDATA" />
         <include name="IDR_ARC_GRAPHICS_TRACING_CSS" file="resources\chromeos\arc_graphics_tracing\arc_graphics_tracing.css" compress="gzip" type="BINDATA" />
       </if>
+      <if expr="chromeos">
+        <include name="IDR_MACHINE_LEARNING_INTERNALS_HTML" file="resources\chromeos\machine_learning\machine_learning_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
+      </if>
     </includes>
   </release>
 </grit>

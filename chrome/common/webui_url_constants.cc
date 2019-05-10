@@ -213,6 +213,8 @@ const char kChromeUIInternetConfigDialogHost[] = "internet-config-dialog";
 const char kChromeUIInternetDetailDialogHost[] = "internet-detail-dialog";
 const char kChromeUILinuxCreditsHost[] = "linux-credits";
 const char kChromeUILinuxCreditsURL[] = "chrome://linux-credits/";
+const char kChromeUIMachineLearningInternalsHost[] =
+    "machine-learning-internals";
 const char kChromeUIMobileSetupHost[] = "mobilesetup";
 const char kChromeUIMobileSetupURL[] = "chrome://mobilesetup/";
 const char kChromeUIMultiDeviceSetupHost[] = "multidevice-setup";
@@ -492,6 +494,7 @@ const char* const kChromeHostURLs[] = {
     kChromeUIDriveInternalsHost,
     kChromeUIFirstRunHost,
     kChromeUILinuxCreditsHost,
+    kChromeUIMachineLearningInternalsHost,
     kChromeUINetworkHost,
     kChromeUIOobeHost,
     kChromeUIOSCreditsHost,
