@@ -8,7 +8,9 @@
 
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/sms/sms_manager.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/sms/sms.h"
 #include "third_party/blink/renderer/modules/sms/sms_receiver_options.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
@@ -69,6 +71,14 @@ ScriptPromise SMSReceiver::start(ScriptState* script_state) {
   // Validate options.
   ExecutionContext* context = ExecutionContext::From(script_state);
   DCHECK(context->IsContextThread());
+
+  LocalFrame* frame = GetFrame();
+  if (!frame->IsMainFrame()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(DOMExceptionCode::kNotAllowedError,
+                             "Must be in top-level browsing context."));
+  }
 
   StartMonitoring();
 
