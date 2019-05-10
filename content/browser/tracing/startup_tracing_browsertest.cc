@@ -122,8 +122,7 @@ class LargeTraceEventData : public base::trace_event::ConvertableToTraceFormat {
 // StartupTraceWriter, which Perfetto will then have to sync copy into
 // the SMB once the full tracing service starts up. This is to catch common
 // deadlocks.
-IN_PROC_BROWSER_TEST_F(StartupTracingInProcessTest,
-                       DISABLED_TestFilledStartupBuffer) {
+IN_PROC_BROWSER_TEST_F(StartupTracingInProcessTest, TestFilledStartupBuffer) {
   tracing::TraceEventDataSource::GetInstance()->SetupStartupTracing(
       /*privacy_filtering_enabled=*/false);
 
@@ -145,6 +144,15 @@ IN_PROC_BROWSER_TEST_F(StartupTracingInProcessTest,
   wait_for_tracing.Run();
 
   NavigateToURL(shell(), GetTestUrl("", "title1.html"));
+
+  base::RunLoop wait_for_stop;
+  TracingControllerImpl::GetInstance()->StopTracing(
+      TracingController::CreateStringEndpoint(base::BindRepeating(
+          [](base::RepeatingClosure quit_callback,
+             std::unique_ptr<const base::DictionaryValue> metadata,
+             base::RefCountedString* data) { quit_callback.Run(); },
+          wait_for_stop.QuitClosure())));
+  wait_for_stop.Run();
 }
 
 class BackgroundStartupTracingTest : public ContentBrowserTest {
