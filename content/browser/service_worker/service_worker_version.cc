@@ -351,6 +351,11 @@ void ServiceWorkerVersion::SetStatus(Status status) {
     embedded_worker_->OnWorkerVersionInstalled();
   else if (status == REDUNDANT)
     embedded_worker_->OnWorkerVersionDoomed();
+
+  // TODO(crbug.com/951571): Remove this once we figured out the cause of
+  // invalid controller status.
+  if (status == REDUNDANT)
+    redundant_state_callstack_ = base::debug::StackTrace();
 }
 
 void ServiceWorkerVersion::RegisterStatusChangeCallback(
@@ -702,6 +707,9 @@ void ServiceWorkerVersion::AddControllee(
   const std::string& uuid = provider_host->client_uuid();
   CHECK(!provider_host->client_uuid().empty());
   DCHECK(!base::ContainsKey(controllee_map_, uuid));
+  // TODO(crbug.com/951571): Change to DCHECK once we figured out the cause of
+  // invalid controller status.
+  CHECK(status_ == ACTIVATING || status_ == ACTIVATED);
 
   controllee_map_[uuid] = provider_host;
   embedded_worker_->UpdateForegroundPriority();

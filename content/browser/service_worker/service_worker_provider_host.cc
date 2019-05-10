@@ -8,8 +8,10 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/debug/alias.h"
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
+#include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -309,6 +311,14 @@ bool ServiceWorkerProviderHost::IsContextSecureForServiceWorker() const {
   return schemes.find(url_.scheme()) != schemes.end();
 }
 
+ServiceWorkerVersion* ServiceWorkerProviderHost::controller() const {
+  // TODO(crbug.com/951571): Remove this instrumentation logic once the bug is
+  // debugged. Limit crash rate at 20%.
+  bool should_crash = base::RandInt(0, 9) < 2;
+  CheckControllerConsistency(should_crash);
+  return controller_.get();
+}
+
 blink::mojom::ControllerServiceWorkerMode
 ServiceWorkerProviderHost::GetControllerMode() const {
   if (!controller_)
@@ -357,10 +367,10 @@ void ServiceWorkerProviderHost::OnSkippedWaiting(
   if (controller_registration_ != registration)
     return;
 
-  DCHECK(controller());
+  DCHECK(controller_);
   ServiceWorkerVersion* active = controller_registration_->active_version();
   DCHECK(active);
-  DCHECK_NE(active, controller());
+  DCHECK_NE(active, controller_.get());
   DCHECK_EQ(active->status(), ServiceWorkerVersion::ACTIVATING);
   UpdateController(true /* notify_controllerchange */);
 }
@@ -842,17 +852,43 @@ bool ServiceWorkerProviderHost::IsControllerDecided() const {
   return true;
 }
 
-#if DCHECK_IS_ON()
-void ServiceWorkerProviderHost::CheckControllerConsistency() const {
+void ServiceWorkerProviderHost::CheckControllerConsistency(
+    bool should_crash) const {
   if (!controller_) {
     DCHECK(!controller_registration_);
     return;
   }
+
   DCHECK(IsProviderForClient());
   DCHECK(controller_registration_);
   DCHECK_EQ(controller_->registration_id(), controller_registration_->id());
+
+  switch (controller_->status()) {
+    case ServiceWorkerVersion::NEW:
+    case ServiceWorkerVersion::INSTALLING:
+    case ServiceWorkerVersion::INSTALLED:
+      if (should_crash) {
+        ServiceWorkerVersion::Status status = controller_->status();
+        base::debug::Alias(&status);
+        CHECK(false) << "Controller service worker has a bad status: "
+                     << ServiceWorkerVersion::VersionStatusToString(status);
+      }
+      break;
+    case ServiceWorkerVersion::REDUNDANT: {
+      if (should_crash) {
+        DEBUG_ALIAS_FOR_CSTR(
+            redundant_callstack_str,
+            controller_->redundant_state_callstack().ToString().c_str(), 1024);
+        CHECK(false);
+      }
+      break;
+    }
+    case ServiceWorkerVersion::ACTIVATING:
+    case ServiceWorkerVersion::ACTIVATED:
+      // Valid status, controller is being activated.
+      break;
+  }
 }
-#endif
 
 void ServiceWorkerProviderHost::Register(
     const GURL& script_url,
