@@ -26,6 +26,10 @@
 #include "mojo/core/embedder/embedder.h"  // nogncheck
 #endif
 
+#if defined(OS_FUCHSIA)
+#include "skia/ext/test_fonts.h"  // nogncheck
+#endif
+
 namespace {
 
 class GfxTestSuite : public base::TestSuite {
@@ -49,6 +53,10 @@ class GfxTestSuite : public base::TestSuite {
 
 #if defined(OS_WIN)
     gfx::win::InitializeDirectWrite();
+#endif
+
+#if defined(OS_FUCHSIA)
+    skia::ConfigureTestFont();
 #endif
   }
 

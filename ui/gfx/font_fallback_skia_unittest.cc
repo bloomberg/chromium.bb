@@ -14,13 +14,13 @@ namespace {
 static const wchar_t* kFallbackFontTests[] = {
     L"\u0540\u0541",  // Armenian,
     L"\u0631\u0632",  // Arabic
-    L"\u0D21\u0D22",  // Malayalam
+    L"\u0915\u093f",  // Devanagari
     L"\u5203\u5204",  // CJK Unified Ideograph
 };
 
 }  // namespace
 
-TEST(FontFallbackAndroidTest, EmptyStringFallback) {
+TEST(FontFallbackSkiaTest, EmptyStringFallback) {
   Font base_font;
   Font fallback_font;
   bool result =
@@ -28,7 +28,7 @@ TEST(FontFallbackAndroidTest, EmptyStringFallback) {
   EXPECT_FALSE(result);
 }
 
-TEST(FontFallbackAndroidTest, FontFallback) {
+TEST(FontFallbackSkiaTest, FontFallback) {
   for (const auto* test : kFallbackFontTests) {
     Font base_font;
     Font fallback_font;

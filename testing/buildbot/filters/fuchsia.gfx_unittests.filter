@@ -1,18 +1,2 @@
-# https://crbug.com/952652 - Fail due to missing fonts.
--FontListTest.FirstAvailableOrFirst
--FontListTest.Fonts_*
--FontTest.LoadArial*
--FontTest.GetActualFontNameForTesting
--PlatformFontSkiaTest.DefaultFont
--RenderTextTest.HarfBuzz_BreakRunsByEmojiVariationSelectors
--RenderTextTest.HarfBuzz_FontListFallback
--RenderTextTest.HarfBuzz_UnicodeFallback
--RenderTextTest.SetFontList
--RenderTextTest.StringSizeBoldWidth
--RenderTextTest.StringSizeRespectsFontListMetrics
--RenderTextTest.StylePropagated
--RenderTextTest.SubpixelRenderingSuppressed
--RenderTextTest.TextDoesntClip
-
 # https://crbug.com/952652 - GpuMemoryBufferHandle Mojo struct traits.
 -StructTraitsTest.GpuMemoryBufferHandle

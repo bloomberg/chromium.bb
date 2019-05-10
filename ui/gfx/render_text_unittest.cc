@@ -2668,6 +2668,12 @@ TEST_F(RenderTextTest, StringSizeBoldWidth) {
   // TODO(mboc): Add some unittests for other weights (currently not
   // implemented because of test system font configuration).
   RenderText* render_text = GetRenderText();
+
+#if defined(OS_FUCHSIA)
+  // Increase font size to ensure that bold and regular styles differ in width.
+  render_text->SetFontList(FontList("Arial, 20px"));
+#endif  // defined(OS_FUCHSIA)
+
   render_text->SetText(UTF8ToUTF16("Hello World"));
 
   const int plain_width = render_text->GetStringSize().width();
@@ -4306,8 +4312,6 @@ TEST_F(RenderTextTest, HarfBuzz_UnicodeFallback) {
 
 // Ensure that the fallback fonts offered by GetFallbackFont() support glyphs
 // for different languages.
-// TODO(https://crbug.com/743296): Implements Fallback fonts on Fuchsia.
-#if !defined(OS_FUCHSIA)
 TEST_F(RenderTextTest, HarfBuzz_FallbackFontsSupportGlyphs) {
   // The word 'test' in different languages.
   static const wchar_t* kLanguageTests[] = {
@@ -4328,13 +4332,9 @@ TEST_F(RenderTextTest, HarfBuzz_FallbackFontsSupportGlyphs) {
     }
   }
 }
-#endif  // !defined(OS_FUCHSIA)
-
 
 // Ensure that the fallback fonts offered by GetFallbackFont() support glyphs
 // for different languages.
-// TODO(https://crbug.com/743296): Implements Fallback fonts on Fuchsia.
-#if !defined(OS_FUCHSIA)
 TEST_F(RenderTextTest, HarfBuzz_MultiRunsSupportGlyphs) {
   static const wchar_t* kLanguageTests[] = {
       L"www.اختبار.com",
@@ -4358,7 +4358,6 @@ TEST_F(RenderTextTest, HarfBuzz_MultiRunsSupportGlyphs) {
     }
   }
 }
-#endif  // !defined(OS_FUCHSIA)
 
 // Ensure that the width reported by RenderText is sufficient for drawing. Draws
 // to a canvas and checks if any pixel beyond the bounding rectangle is colored.
@@ -4419,39 +4418,23 @@ TEST_F(RenderTextTest, TextDoesntClip) {
     }
     {
       SCOPED_TRACE("TextDoesntClip Left Side");
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
-    defined(OS_ANDROID) || defined(ARCH_CPU_MIPS_FAMILY)
-      // TODO(dschuyler): On Windows, Chrome OS, Linux, Android, and Mac
-      // smoothing draws to the left of text.  This appears to be a preexisting
-      // issue that wasn't revealed by the prior unit tests.  RenderText
-      // currently only uses origins and advances and ignores bounding boxes so
-      // cannot account for under- and over-hang.
+      // TODO(dschuyler): Smoothing draws to the left of text. This appears to
+      // be a preexisting issue that wasn't revealed by the prior unit tests.
+      // RenderText currently only uses origins and advances and ignores
+      // bounding boxes so cannot account for under- and over-hang.
       rect_buffer.EnsureSolidRect(SK_ColorWHITE, 0, kTestSize, kTestSize - 1,
                                   string_size.height());
-#else
-      rect_buffer.EnsureSolidRect(SK_ColorWHITE, 0, kTestSize, kTestSize,
-                                  string_size.height());
-#endif
     }
     {
       SCOPED_TRACE("TextDoesntClip Right Side");
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
-    defined(OS_ANDROID) || defined(ARCH_CPU_MIPS_FAMILY)
-      // TODO(dschuyler): On Windows, Chrome OS, Linux, Android, and Mac
-      // smoothing draws to the right of text.  This appears to be a preexisting
-      // issue that wasn't revealed by the prior unit tests.  RenderText
-      // currently only uses origins and advances and ignores bounding boxes so
-      // cannot account for under- and over-hang.
+      // TODO(dschuyler): Smoothing draws to the right of text. This appears to
+      // be a preexisting issue that wasn't revealed by the prior unit tests.
+      // RenderText currently only uses origins and advances and ignores
+      // bounding boxes so cannot account for under- and over-hang.
       rect_buffer.EnsureSolidRect(SK_ColorWHITE,
                                   kTestSize + string_size.width() + 1,
                                   kTestSize, kTestSize - 1,
                                   string_size.height());
-#else
-      rect_buffer.EnsureSolidRect(SK_ColorWHITE,
-                                  kTestSize + string_size.width(),
-                                  kTestSize, kTestSize,
-                                  string_size.height());
-#endif
     }
   }
 }
@@ -4572,7 +4555,7 @@ TEST_F(RenderTextTest, SubpixelRenderingSuppressed) {
   render_text->SetText(UTF8ToUTF16("x"));
 
   DrawVisualText();
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
   // On Linux, whether subpixel AA is supported is determined by the platform
   // FontConfig. Force it into a particular style after computing runs. Other
   // platforms use a known default FontRenderParams from a static local.
@@ -4586,7 +4569,7 @@ TEST_F(RenderTextTest, SubpixelRenderingSuppressed) {
 
   render_text->set_subpixel_rendering_suppressed(true);
   DrawVisualText();
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
   // For Linux, runs shouldn't be re-calculated, and the suppression of the
   // SUBPIXEL_RENDERING_RGB set above should now take effect. But, after
   // checking, apply the override anyway to be explicit that it is suppressed.
