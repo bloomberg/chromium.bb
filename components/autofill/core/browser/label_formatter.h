@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/field_types.h"
 
 namespace autofill {

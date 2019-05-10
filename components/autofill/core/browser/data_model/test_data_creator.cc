@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/test_data_creator.h"
+#include "components/autofill/core/browser/data_model/test_data_creator.h"
+
+#include <inttypes.h>
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/autofill_profile.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
 
@@ -106,7 +108,8 @@ AutofillProfile TestDataCreator::CreateDisusedTestAddress() {
   profile.SetInfo(NAME_FULL, base::UTF8ToUTF16("Polly Disused"), app_locale_);
   profile.SetInfo(COMPANY_NAME,
                   base::UTF8ToUTF16(base::StringPrintf(
-                      "%lld Inc.", static_cast<long long>(use_date.ToTimeT()))),
+                      "%" PRIu64 " Inc.",
+                      use_date.ToDeltaSinceWindowsEpoch().InMicroseconds())),
                   app_locale_);
   profile.SetInfo(EMAIL_ADDRESS,
                   base::UTF8ToUTF16("polly.disused@fake.chromium.org"),
@@ -131,7 +134,8 @@ AutofillProfile TestDataCreator::CreateDisusedDeletableTestAddress() {
   profile.SetInfo(NAME_FULL, base::UTF8ToUTF16("Polly Deletable"), app_locale_);
   profile.SetInfo(COMPANY_NAME,
                   base::UTF8ToUTF16(base::StringPrintf(
-                      "%lld Inc.", static_cast<long long>(use_date.ToTimeT()))),
+                      "%" PRIu64 " Inc.",
+                      use_date.ToDeltaSinceWindowsEpoch().InMicroseconds())),
                   app_locale_);
   profile.SetInfo(EMAIL_ADDRESS,
                   base::UTF8ToUTF16("polly.deletable@fake.chromium.org"),

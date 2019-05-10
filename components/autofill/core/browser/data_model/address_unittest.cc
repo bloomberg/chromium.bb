@@ -9,9 +9,9 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/address.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/country_names.h"
+#include "components/autofill/core/browser/data_model/address.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -34,8 +34,8 @@ TEST_F(AddressTest, GetCountry) {
       address.GetInfo(AutofillType(ADDRESS_HOME_COUNTRY), "en-US");
   EXPECT_EQ(base::string16(), country);
 
-  address.SetInfo(
-      AutofillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("US"), "en-US");
+  address.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("US"),
+                  "en-US");
   country = address.GetInfo(AutofillType(ADDRESS_HOME_COUNTRY), "en-US");
   EXPECT_EQ(ASCIIToUTF16("United States"), country);
   country = address.GetInfo(
@@ -62,38 +62,37 @@ TEST_F(AddressTest, SetCountry) {
   EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
 
   // Test basic conversion.
-  address.SetInfo(
-      AutofillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("United States"),
-      "en-US");
+  address.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY),
+                  ASCIIToUTF16("United States"), "en-US");
   base::string16 country =
       address.GetInfo(AutofillType(ADDRESS_HOME_COUNTRY), "en-US");
   EXPECT_EQ(ASCIIToUTF16("US"), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
   EXPECT_EQ(ASCIIToUTF16("United States"), country);
 
   // Test basic synonym detection.
-  address.SetInfo(
-      AutofillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("USA"), "en-US");
+  address.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("USA"),
+                  "en-US");
   country = address.GetInfo(AutofillType(ADDRESS_HOME_COUNTRY), "en-US");
   EXPECT_EQ(ASCIIToUTF16("US"), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
   EXPECT_EQ(ASCIIToUTF16("United States"), country);
 
   // Test case-insensitivity.
-  address.SetInfo(
-      AutofillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("canADA"), "en-US");
+  address.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("canADA"),
+                  "en-US");
   country = address.GetInfo(AutofillType(ADDRESS_HOME_COUNTRY), "en-US");
   EXPECT_EQ(ASCIIToUTF16("CA"), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
   EXPECT_EQ(ASCIIToUTF16("Canada"), country);
 
   // Test country code detection.
-  address.SetInfo(
-      AutofillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("JP"), "en-US");
+  address.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("JP"),
+                  "en-US");
   country = address.GetInfo(AutofillType(ADDRESS_HOME_COUNTRY), "en-US");
   EXPECT_EQ(ASCIIToUTF16("JP"), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
   EXPECT_EQ(ASCIIToUTF16("Japan"), country);
 
   // Test that we ignore unknown countries.
-  address.SetInfo(
-      AutofillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("Unknown"), "en-US");
+  address.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("Unknown"),
+                  "en-US");
   country = address.GetInfo(AutofillType(ADDRESS_HOME_COUNTRY), "en-US");
   EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
   EXPECT_EQ(base::string16(), country);
@@ -125,13 +124,8 @@ TEST_F(AddressTest, IsCountry) {
   Address address;
   address.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
 
-  const char* const kValidMatches[] = {
-    "United States",
-    "USA",
-    "US",
-    "United states",
-    "us"
-  };
+  const char* const kValidMatches[] = {"United States", "USA", "US",
+                                       "United states", "us"};
   for (const char* valid_match : kValidMatches) {
     SCOPED_TRACE(valid_match);
     ServerFieldTypeSet matching_types;
@@ -140,10 +134,7 @@ TEST_F(AddressTest, IsCountry) {
     EXPECT_EQ(ADDRESS_HOME_COUNTRY, *matching_types.begin());
   }
 
-  const char* const kInvalidMatches[] = {
-    "United",
-    "Garbage"
-  };
+  const char* const kInvalidMatches[] = {"United", "Garbage"};
   for (const char* invalid_match : kInvalidMatches) {
     ServerFieldTypeSet matching_types;
     address.GetMatchingTypes(ASCIIToUTF16(invalid_match), "US",
@@ -240,10 +231,10 @@ TEST_F(AddressTest, GetStreetAddressAfterOverwritingLongAddressWithShorterOne) {
 TEST_F(AddressTest, SetRawStreetAddress) {
   const base::string16 empty_street_address;
   const base::string16 short_street_address = ASCIIToUTF16("456 Nowhere Ln.");
-  const base::string16 long_street_address =
-      ASCIIToUTF16("123 Example Ave.\n"
-                   "Apt. 42\n"
-                   "(The one with the blue door)");
+  const base::string16 long_street_address = ASCIIToUTF16(
+      "123 Example Ave.\n"
+      "Apt. 42\n"
+      "(The one with the blue door)");
 
   Address address;
   EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_LINE1));
@@ -272,10 +263,10 @@ TEST_F(AddressTest, SetRawStreetAddress) {
 // Street addresses should be set properly.
 TEST_F(AddressTest, SetStreetAddress) {
   const base::string16 empty_street_address;
-  const base::string16 multi_line_street_address =
-      ASCIIToUTF16("789 Fancy Pkwy.\n"
-                   "Unit 3.14\n"
-                   "Box 9");
+  const base::string16 multi_line_street_address = ASCIIToUTF16(
+      "789 Fancy Pkwy.\n"
+      "Unit 3.14\n"
+      "Box 9");
   const base::string16 single_line_street_address =
       ASCIIToUTF16("123 Main, Apt 7");
   const AutofillType type = AutofillType(ADDRESS_HOME_STREET_ADDRESS);

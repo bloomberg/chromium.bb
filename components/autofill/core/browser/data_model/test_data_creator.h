@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_DATA_CREATOR_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_DATA_CREATOR_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_DATA_MODEL_TEST_DATA_CREATOR_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_DATA_MODEL_TEST_DATA_CREATOR_H_
 
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
-#include "components/autofill/core/browser/autofill_profile.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 
 namespace autofill {
 
@@ -49,4 +49,4 @@ class TestDataCreator {
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_DATA_CREATOR_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_DATA_MODEL_TEST_DATA_CREATOR_H_

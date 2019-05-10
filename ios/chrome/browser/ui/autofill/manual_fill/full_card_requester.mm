@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/full_card_request_result_delegate_bridge.h"
 #include "ios/chrome/browser/ui/payments/full_card_requester.h"

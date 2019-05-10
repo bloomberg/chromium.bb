@@ -14,8 +14,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/data_model/phone_number.h"
 #include "components/autofill/core/browser/form_parsing/form_field.h"
-#include "components/autofill/core/browser/phone_number.h"
 
 namespace autofill {
 

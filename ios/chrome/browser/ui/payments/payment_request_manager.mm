@@ -21,7 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #import "base/values.h"
 #include "components/autofill/core/browser/autofill_manager.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #include "components/omnibox/browser/location_bar_model.h"

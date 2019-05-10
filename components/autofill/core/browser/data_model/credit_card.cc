@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -29,9 +29,9 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_field.h"
-#include "components/autofill/core/browser/autofill_metadata.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/data_model/autofill_metadata.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -391,8 +391,7 @@ base::string16 CreditCard::GetRawInfo(ServerFieldType type) const {
   }
 }
 
-void CreditCard::SetRawInfo(ServerFieldType type,
-                            const base::string16& value) {
+void CreditCard::SetRawInfo(ServerFieldType type, const base::string16& value) {
   DCHECK_EQ(CREDIT_CARD, AutofillType(type).group());
   switch (type) {
     case CREDIT_CARD_NAME_FULL:
@@ -472,8 +471,7 @@ void CreditCard::GetMatchingTypes(const base::string16& text,
   }
 
   int month;
-  if (ConvertMonth(text, app_locale, &month) &&
-      month == expiration_month_) {
+  if (ConvertMonth(text, app_locale, &month) && month == expiration_month_) {
     matching_types->insert(CREDIT_CARD_EXP_MONTH);
   }
 }
@@ -549,7 +547,7 @@ void CreditCard::operator=(const CreditCard& credit_card) {
 bool CreditCard::UpdateFromImportedCard(const CreditCard& imported_card,
                                         const std::string& app_locale) {
   if (this->GetInfo(AutofillType(CREDIT_CARD_NUMBER), app_locale) !=
-          imported_card.GetInfo(AutofillType(CREDIT_CARD_NUMBER), app_locale)) {
+      imported_card.GetInfo(AutofillType(CREDIT_CARD_NUMBER), app_locale)) {
     return false;
   }
 

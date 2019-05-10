@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_PHONE_NUMBER_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_PHONE_NUMBER_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_DATA_MODEL_PHONE_NUMBER_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_DATA_MODEL_PHONE_NUMBER_H_
 
 #include <stddef.h>
 
@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "components/autofill/core/browser/form_group.h"
+#include "components/autofill/core/browser/data_model/form_group.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
 
 namespace autofill {
@@ -96,4 +96,4 @@ class PhoneNumber : public FormGroup {
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_PHONE_NUMBER_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_DATA_MODEL_PHONE_NUMBER_H_

@@ -12,10 +12,10 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
-#include "components/autofill/core/browser/autofill_metadata.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/autofill_metadata.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
@@ -37,35 +37,23 @@ const CreditCard::RecordType FULL_SERVER_CARD = CreditCard::FULL_SERVER_CARD;
 
 namespace {
 
-// From https://www.paypalobjects.com/en_US/vhelp/paypalmanager_help/credit_card_numbers.htm
+// From
+// https://www.paypalobjects.com/en_US/vhelp/paypalmanager_help/credit_card_numbers.htm
 const char* const kValidNumbers[] = {
-  "378282246310005",
-  "3714 4963 5398 431",
-  "3787-3449-3671-000",
-  "5610591081018250",
-  "3056 9309 0259 04",
-  "3852-0000-0232-37",
-  "6011111111111117",
-  "6011 0009 9013 9424",
-  "3530-1113-3330-0000",
-  "3566002020360505",
-  "5555 5555 5555 4444",
-  "5105-1051-0510-5100",
-  "4111111111111111",
-  "4012 8888 8888 1881",
-  "4222-2222-2222-2",
-  "5019717010103742",
-  "6331101999990016",
-  "6247130048162403",
-  "4532261615476013542",
-  "6362970000457013",
+    "378282246310005",     "3714 4963 5398 431",  "3787-3449-3671-000",
+    "5610591081018250",    "3056 9309 0259 04",   "3852-0000-0232-37",
+    "6011111111111117",    "6011 0009 9013 9424", "3530-1113-3330-0000",
+    "3566002020360505",    "5555 5555 5555 4444", "5105-1051-0510-5100",
+    "4111111111111111",    "4012 8888 8888 1881", "4222-2222-2222-2",
+    "5019717010103742",    "6331101999990016",    "6247130048162403",
+    "4532261615476013542", "6362970000457013",
 };
 
 const char* const kInvalidNumbers[] = {
-  "4111 1111 112", /* too short */
-  "41111111111111111115", /* too long */
-  "4111-1111-1111-1110", /* wrong Luhn checksum */
-  "3056 9309 0259 04aa", /* non-digit characters */
+    "4111 1111 112",        /* too short */
+    "41111111111111111115", /* too long */
+    "4111-1111-1111-1110",  /* wrong Luhn checksum */
+    "3056 9309 0259 04aa",  /* non-digit characters */
 };
 
 }  // namespace
@@ -694,22 +682,16 @@ TEST(CreditCardTest, Compare) {
 TEST(CreditCardTest, IconResourceId) {
   EXPECT_EQ(IDR_AUTOFILL_CC_AMEX,
             CreditCard::IconResourceId(kAmericanExpressCard));
-  EXPECT_EQ(IDR_AUTOFILL_CC_DINERS,
-            CreditCard::IconResourceId(kDinersCard));
+  EXPECT_EQ(IDR_AUTOFILL_CC_DINERS, CreditCard::IconResourceId(kDinersCard));
   EXPECT_EQ(IDR_AUTOFILL_CC_DISCOVER,
             CreditCard::IconResourceId(kDiscoverCard));
-  EXPECT_EQ(IDR_AUTOFILL_CC_ELO,
-            CreditCard::IconResourceId(kEloCard));
-  EXPECT_EQ(IDR_AUTOFILL_CC_JCB,
-            CreditCard::IconResourceId(kJCBCard));
+  EXPECT_EQ(IDR_AUTOFILL_CC_ELO, CreditCard::IconResourceId(kEloCard));
+  EXPECT_EQ(IDR_AUTOFILL_CC_JCB, CreditCard::IconResourceId(kJCBCard));
   EXPECT_EQ(IDR_AUTOFILL_CC_MASTERCARD,
             CreditCard::IconResourceId(kMasterCard));
-  EXPECT_EQ(IDR_AUTOFILL_CC_MIR,
-            CreditCard::IconResourceId(kMirCard));
-  EXPECT_EQ(IDR_AUTOFILL_CC_UNIONPAY,
-            CreditCard::IconResourceId(kUnionPay));
-  EXPECT_EQ(IDR_AUTOFILL_CC_VISA,
-            CreditCard::IconResourceId(kVisaCard));
+  EXPECT_EQ(IDR_AUTOFILL_CC_MIR, CreditCard::IconResourceId(kMirCard));
+  EXPECT_EQ(IDR_AUTOFILL_CC_UNIONPAY, CreditCard::IconResourceId(kUnionPay));
+  EXPECT_EQ(IDR_AUTOFILL_CC_VISA, CreditCard::IconResourceId(kVisaCard));
 }
 
 TEST(CreditCardTest, UpdateFromImportedCard_UpdatedWithNameAndExpirationDate) {
@@ -1078,18 +1060,18 @@ TEST(CreditCardTest, SetExpirationMonth) {
   EXPECT_EQ(ASCIIToUTF16("07"), card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
   EXPECT_EQ(7, card.expiration_month());
 
-  card.SetInfo(
-      AutofillType(CREDIT_CARD_EXP_MONTH), ASCIIToUTF16("January"), "en-US");
+  card.SetInfo(AutofillType(CREDIT_CARD_EXP_MONTH), ASCIIToUTF16("January"),
+               "en-US");
   EXPECT_EQ(ASCIIToUTF16("01"), card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
   EXPECT_EQ(1, card.expiration_month());
 
-  card.SetInfo(
-      AutofillType(CREDIT_CARD_EXP_MONTH), ASCIIToUTF16("Apr"), "en-US");
+  card.SetInfo(AutofillType(CREDIT_CARD_EXP_MONTH), ASCIIToUTF16("Apr"),
+               "en-US");
   EXPECT_EQ(ASCIIToUTF16("04"), card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
   EXPECT_EQ(4, card.expiration_month());
 
-  card.SetInfo(AutofillType(CREDIT_CARD_EXP_MONTH),
-               UTF8ToUTF16("FÉVRIER"), "fr-FR");
+  card.SetInfo(AutofillType(CREDIT_CARD_EXP_MONTH), UTF8ToUTF16("FÉVRIER"),
+               "fr-FR");
   EXPECT_EQ(ASCIIToUTF16("02"), card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
   EXPECT_EQ(2, card.expiration_month());
 }

@@ -6,9 +6,9 @@
 
 #include "base/mac/foundation_util.h"
 #import "base/test/ios/wait_util.h"
-#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/test_region_data_loader.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"

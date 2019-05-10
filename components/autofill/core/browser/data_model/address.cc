@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/address.h"
+#include "components/autofill/core/browser/data_model/address.h"
 
 #include <stddef.h>
 #include <algorithm>
@@ -16,10 +16,10 @@
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_field.h"
-#include "components/autofill/core/browser/autofill_profile.h"
-#include "components/autofill/core/browser/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/country_names.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/state_names.h"
 #include "components/autofill/core/common/autofill_l10n_util.h"
 
@@ -150,9 +150,9 @@ void Address::SetRawInfo(ServerFieldType type, const base::string16& value) {
       break;
 
     case ADDRESS_HOME_STREET_ADDRESS:
-      street_address_ = base::SplitString(
-          value, base::ASCIIToUTF16("\n"),
-          base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      street_address_ =
+          base::SplitString(value, base::ASCIIToUTF16("\n"),
+                            base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
       break;
 
     default:

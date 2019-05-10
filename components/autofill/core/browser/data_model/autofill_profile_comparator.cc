@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/autofill_profile_comparator.h"
+#include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
 
 #include <algorithm>
 #include <vector>
@@ -20,9 +20,9 @@
 #include "components/autofill/core/browser/state_names.h"
 #include "third_party/libphonenumber/phonenumber_api.h"
 
-using i18n::phonenumbers::PhoneNumberUtil;
 using base::UTF16ToUTF8;
 using base::UTF8ToUTF16;
+using i18n::phonenumbers::PhoneNumberUtil;
 
 namespace autofill {
 namespace {
@@ -215,10 +215,9 @@ bool AutofillProfileComparator::MergeNames(const AutofillProfile& p1,
   return true;
 }
 
-bool AutofillProfileComparator::MergeCJKNames(
-    const AutofillProfile& p1,
-    const AutofillProfile& p2,
-    NameInfo* info) const {
+bool AutofillProfileComparator::MergeCJKNames(const AutofillProfile& p1,
+                                              const AutofillProfile& p2,
+                                              NameInfo* info) const {
   DCHECK(data_util::IsCJKName(p1.GetInfo(NAME_FULL, app_locale_)));
   DCHECK(data_util::IsCJKName(p2.GetInfo(NAME_FULL, app_locale_)));
 
@@ -228,16 +227,10 @@ bool AutofillProfileComparator::MergeCJKNames(
     base::string16 full;
   };
 
-  Name name1 = {
-    p1.GetRawInfo(NAME_FIRST),
-    p1.GetRawInfo(NAME_LAST),
-    p1.GetRawInfo(NAME_FULL)
-  };
-  Name name2 = {
-    p2.GetRawInfo(NAME_FIRST),
-    p2.GetRawInfo(NAME_LAST),
-    p2.GetRawInfo(NAME_FULL)
-  };
+  Name name1 = {p1.GetRawInfo(NAME_FIRST), p1.GetRawInfo(NAME_LAST),
+                p1.GetRawInfo(NAME_FULL)};
+  Name name2 = {p2.GetRawInfo(NAME_FIRST), p2.GetRawInfo(NAME_LAST),
+                p2.GetRawInfo(NAME_FULL)};
 
   const Name* most_recent_name =
       p2.use_date() >= p1.use_date() ? &name2 : &name1;

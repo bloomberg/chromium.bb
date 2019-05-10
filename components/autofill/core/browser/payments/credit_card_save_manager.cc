@@ -29,9 +29,9 @@
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
-#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/payments/legacy_strike_database.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
@@ -57,9 +57,9 @@ namespace {
 // Otherwise, returns |name|.
 //
 // Note that a better way to do this would be to use SplitName from
-// src/components/autofill/core/browser/contact_info.cc. However, for now we
-// want the logic of which variations of names are considered to be the same to
-// exactly match the logic applied on the Payments server.
+// src/components/autofill/core/browser/data_model/contact_info.cc. However, for
+// now we want the logic of which variations of names are considered to be the
+// same to exactly match the logic applied on the Payments server.
 base::string16 RemoveMiddleInitial(const base::string16& name) {
   std::vector<base::StringPiece16> parts =
       base::SplitStringPiece(name, base::kWhitespaceUTF16,

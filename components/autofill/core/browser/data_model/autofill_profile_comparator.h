@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_PROFILE_COMPARATOR_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_PROFILE_COMPARATOR_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_DATA_MODEL_AUTOFILL_PROFILE_COMPARATOR_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_DATA_MODEL_AUTOFILL_PROFILE_COMPARATOR_H_
 
 #include <memory>
 #include <set>
 
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
-#include "components/autofill/core/browser/address.h"
-#include "components/autofill/core/browser/autofill_profile.h"
-#include "components/autofill/core/browser/contact_info.h"
+#include "components/autofill/core/browser/data_model/address.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/contact_info.h"
 #include "components/autofill/core/common/autofill_l10n_util.h"
 #include "third_party/icu/source/i18n/unicode/translit.h"
 
@@ -234,4 +234,4 @@ class AutofillProfileComparator {
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_PROFILE_COMPARATOR_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_DATA_MODEL_AUTOFILL_PROFILE_COMPARATOR_H_

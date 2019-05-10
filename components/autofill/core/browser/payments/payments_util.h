@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <vector>
 
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 
 namespace autofill {
 

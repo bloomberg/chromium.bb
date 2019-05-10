@@ -8,7 +8,7 @@
 
 #import "base/mac/foundation_util.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/grit/components_scaled_resources.h"
 #import "ios/chrome/browser/ui/authentication/cells/legacy_account_control_item.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"

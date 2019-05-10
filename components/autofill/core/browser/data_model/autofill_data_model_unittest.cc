@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/autofill_data_model.h"
+#include "components/autofill/core/browser/data_model/autofill_data_model.h"
 
 #include <stddef.h>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "components/autofill/core/browser/autofill_metadata.h"
+#include "components/autofill/core/browser/data_model/autofill_metadata.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"

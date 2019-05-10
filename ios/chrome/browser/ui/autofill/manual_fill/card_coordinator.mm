@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/card_coordinator.h"
 
 #include "base/memory/ref_counted.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #import "components/autofill/ios/browser/personal_data_manager_observer_bridge.h"

@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/autofill/payments/save_card_ui.h"
 #include "components/autofill/core/browser/autofill_client.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/browser/ui/payments/save_card_bubble_controller.h"
 #include "components/security_state/core/security_state.h"

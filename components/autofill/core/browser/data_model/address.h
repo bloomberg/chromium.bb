@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_ADDRESS_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_ADDRESS_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_DATA_MODEL_ADDRESS_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_DATA_MODEL_ADDRESS_H_
 
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
-#include "components/autofill/core/browser/form_group.h"
+#include "components/autofill/core/browser/data_model/form_group.h"
 
 namespace autofill {
 
@@ -63,4 +63,4 @@ class Address : public FormGroup {
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_ADDRESS_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_DATA_MODEL_ADDRESS_H_

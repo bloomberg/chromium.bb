@@ -5,7 +5,7 @@
 #import "ios/web_view/internal/autofill/cwv_autofill_suggestion_internal.h"
 
 #include "base/strings/sys_string_conversions.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #include "ui/base/resource/resource_bundle.h"

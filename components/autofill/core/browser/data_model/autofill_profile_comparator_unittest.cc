@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/autofill_profile_comparator.h"
+#include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
 
 #include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/contact_info.h"
 #include "components/autofill/core/browser/country_names.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/contact_info.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,12 +32,12 @@ using autofill::NAME_FIRST;
 using autofill::NAME_FULL;
 using autofill::NAME_LAST;
 using autofill::NAME_MIDDLE;
-using autofill::PHONE_HOME_WHOLE_NUMBER;
-using autofill::PHONE_HOME_EXTENSION;
-using autofill::PHONE_HOME_NUMBER;
+using autofill::PHONE_HOME_CITY_AND_NUMBER;
 using autofill::PHONE_HOME_CITY_CODE;
 using autofill::PHONE_HOME_COUNTRY_CODE;
-using autofill::PHONE_HOME_CITY_AND_NUMBER;
+using autofill::PHONE_HOME_EXTENSION;
+using autofill::PHONE_HOME_NUMBER;
+using autofill::PHONE_HOME_WHOLE_NUMBER;
 
 // Classes, Functions, and other Symbols
 using autofill::Address;
@@ -62,21 +62,21 @@ class AutofillProfileComparatorTest : public ::testing::Test {
       : public ::autofill::AutofillProfileComparator {
    public:
     typedef ::autofill::AutofillProfileComparator Super;
-    using Super::Super;
-    using Super::UniqueTokens;
     using Super::CompareTokens;
     using Super::GetNamePartVariants;
-    using Super::IsNameVariantOf;
-    using Super::HaveMergeableNames;
-    using Super::HaveMergeableEmailAddresses;
-    using Super::HaveMergeableCompanyNames;
-    using Super::HaveMergeablePhoneNumbers;
     using Super::HaveMergeableAddresses;
+    using Super::HaveMergeableCompanyNames;
+    using Super::HaveMergeableEmailAddresses;
+    using Super::HaveMergeableNames;
+    using Super::HaveMergeablePhoneNumbers;
+    using Super::IsNameVariantOf;
+    using Super::Super;
+    using Super::UniqueTokens;
 
     using Super::DIFFERENT_TOKENS;
-    using Super::SAME_TOKENS;
     using Super::S1_CONTAINS_S2;
     using Super::S2_CONTAINS_S1;
+    using Super::SAME_TOKENS;
   };
 
   AutofillProfileComparatorTest() {
@@ -336,14 +336,16 @@ TEST_F(AutofillProfileComparatorTest, NormalizeForComparison) {
             comparator_.NormalizeForComparison(UTF8ToUTF16("まéÖä정")));
 
   // Spaces removed.
-  EXPECT_EQ(UTF8ToUTF16("유재석"), comparator_.NormalizeForComparison(
-      UTF8ToUTF16("유 재석"),
-      AutofillProfileComparator::DISCARD_WHITESPACE));
+  EXPECT_EQ(UTF8ToUTF16("유재석"),
+            comparator_.NormalizeForComparison(
+                UTF8ToUTF16("유 재석"),
+                AutofillProfileComparator::DISCARD_WHITESPACE));
 
   // Punctuation removed, Japanese kana normalized.
-  EXPECT_EQ(UTF8ToUTF16("ヒルケイツ"), comparator_.NormalizeForComparison(
-      UTF8ToUTF16("ビル・ゲイツ"),
-      AutofillProfileComparator::DISCARD_WHITESPACE));
+  EXPECT_EQ(UTF8ToUTF16("ヒルケイツ"),
+            comparator_.NormalizeForComparison(
+                UTF8ToUTF16("ビル・ゲイツ"),
+                AutofillProfileComparator::DISCARD_WHITESPACE));
 }
 
 TEST_F(AutofillProfileComparatorTest, MatchesAfterNormalization) {
@@ -699,7 +701,6 @@ TEST_F(AutofillProfileComparatorTest, MergeCJKNames) {
   NameInfo name3 = CreateNameInfo("영호", "", "이", "이영호");
   NameInfo name4 = CreateNameInfo("영호", "", "이", "");
   NameInfo name5 = CreateNameInfo("영호", "", "이", "이 영호");
-
 
   // Mergeable foreign name in Japanese with a 'KATAKANA MIDDLE DOT'.
   NameInfo name6 = CreateNameInfo("", "", "", "ゲイツ・ビル");

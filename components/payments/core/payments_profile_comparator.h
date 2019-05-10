@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "components/autofill/core/browser/autofill_profile_comparator.h"
+#include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
 
 // Utility functions used for processing and filtering address profiles
 // (AutofillProfile).

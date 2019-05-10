@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
 
 #include <stddef.h>
 
@@ -16,10 +16,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "components/autofill/core/browser/autofill_metadata.h"
-#include "components/autofill/core/browser/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/data_model/autofill_metadata.h"
+#include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -74,84 +74,82 @@ TEST(AutofillProfileTest, PreviewSummaryString) {
   // Case 0a/empty name and address, so the first two fields of the rest of the
   // data is used: "Hollywood, CA"
   AutofillProfile profile00(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile00, "", "", "",
-      "johnwayne@me.xyz", "Fox", "", "", "Hollywood", "CA", "91601", "US",
-      "16505678910");
+  test::SetProfileInfo(&profile00, "", "", "", "johnwayne@me.xyz", "Fox", "",
+                       "", "Hollywood", "CA", "91601", "US", "16505678910");
   base::string16 summary00 = GetLabel(&profile00);
   EXPECT_EQ(ASCIIToUTF16("Hollywood, CA"), summary00);
 
   // Case 1: "<address>" without line 2.
   AutofillProfile profile1(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile1, "", "", "",
-      "johnwayne@me.xyz", "Fox", "123 Zoo St.", "", "Hollywood", "CA",
-      "91601", "US", "16505678910");
+  test::SetProfileInfo(&profile1, "", "", "", "johnwayne@me.xyz", "Fox",
+                       "123 Zoo St.", "", "Hollywood", "CA", "91601", "US",
+                       "16505678910");
   base::string16 summary1 = GetLabel(&profile1);
   EXPECT_EQ(ASCIIToUTF16("123 Zoo St., Hollywood"), summary1);
 
   // Case 1a: "<address>" with line 2.
   AutofillProfile profile1a(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile1a, "", "", "",
-      "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
-      "91601", "US", "16505678910");
+  test::SetProfileInfo(&profile1a, "", "", "", "johnwayne@me.xyz", "Fox",
+                       "123 Zoo St.", "unit 5", "Hollywood", "CA", "91601",
+                       "US", "16505678910");
   base::string16 summary1a = GetLabel(&profile1a);
   EXPECT_EQ(ASCIIToUTF16("123 Zoo St., unit 5"), summary1a);
 
   // Case 2: "<lastname>"
   AutofillProfile profile2(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile2, "", "Mitchell",
-      "Morrison", "johnwayne@me.xyz", "Fox", "", "", "Hollywood", "CA",
-      "91601", "US", "16505678910");
+  test::SetProfileInfo(&profile2, "", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox", "", "", "Hollywood", "CA",
+                       "91601", "US", "16505678910");
   base::string16 summary2 = GetLabel(&profile2);
   // Summary includes full name, to the maximal extent available.
   EXPECT_EQ(ASCIIToUTF16("Mitchell Morrison, Hollywood"), summary2);
 
   // Case 3: "<lastname>, <address>"
   AutofillProfile profile3(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile3, "", "Mitchell",
-      "Morrison", "johnwayne@me.xyz", "Fox", "123 Zoo St.", "",
-      "Hollywood", "CA", "91601", "US", "16505678910");
+  test::SetProfileInfo(&profile3, "", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "",
+                       "Hollywood", "CA", "91601", "US", "16505678910");
   base::string16 summary3 = GetLabel(&profile3);
   EXPECT_EQ(ASCIIToUTF16("Mitchell Morrison, 123 Zoo St."), summary3);
 
   // Case 4: "<firstname>"
   AutofillProfile profile4(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile4, "Marion", "Mitchell", "",
-      "johnwayne@me.xyz", "Fox", "", "", "Hollywood", "CA", "91601", "US",
-      "16505678910");
+  test::SetProfileInfo(&profile4, "Marion", "Mitchell", "", "johnwayne@me.xyz",
+                       "Fox", "", "", "Hollywood", "CA", "91601", "US",
+                       "16505678910");
   base::string16 summary4 = GetLabel(&profile4);
   EXPECT_EQ(ASCIIToUTF16("Marion Mitchell, Hollywood"), summary4);
 
   // Case 5: "<firstname>, <address>"
   AutofillProfile profile5(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile5, "Marion", "Mitchell", "",
-      "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
-      "91601", "US", "16505678910");
+  test::SetProfileInfo(&profile5, "Marion", "Mitchell", "", "johnwayne@me.xyz",
+                       "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
+                       "91601", "US", "16505678910");
   base::string16 summary5 = GetLabel(&profile5);
   EXPECT_EQ(ASCIIToUTF16("Marion Mitchell, 123 Zoo St."), summary5);
 
   // Case 6: "<firstname> <lastname>"
   AutofillProfile profile6(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile6, "Marion", "Mitchell",
-      "Morrison", "johnwayne@me.xyz", "Fox", "", "", "Hollywood", "CA",
-      "91601", "US", "16505678910");
+  test::SetProfileInfo(&profile6, "Marion", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox", "", "", "Hollywood", "CA",
+                       "91601", "US", "16505678910");
   base::string16 summary6 = GetLabel(&profile6);
-  EXPECT_EQ(ASCIIToUTF16("Marion Mitchell Morrison, Hollywood"),
-            summary6);
+  EXPECT_EQ(ASCIIToUTF16("Marion Mitchell Morrison, Hollywood"), summary6);
 
   // Case 7: "<firstname> <lastname>, <address>"
   AutofillProfile profile7(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile7, "Marion", "Mitchell",
-      "Morrison", "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5",
-      "Hollywood", "CA", "91601", "US", "16505678910");
+  test::SetProfileInfo(&profile7, "Marion", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "16505678910");
   base::string16 summary7 = GetLabel(&profile7);
   EXPECT_EQ(ASCIIToUTF16("Marion Mitchell Morrison, 123 Zoo St."), summary7);
 
   // Case 7a: "<firstname> <lastname>, <address>" - same as #7, except for
   // e-mail.
   AutofillProfile profile7a(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile7a, "Marion", "Mitchell",
-    "Morrison", "marion@me.xyz", "Fox", "123 Zoo St.", "unit 5",
-    "Hollywood", "CA", "91601", "US", "16505678910");
+  test::SetProfileInfo(&profile7a, "Marion", "Mitchell", "Morrison",
+                       "marion@me.xyz", "Fox", "123 Zoo St.", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "16505678910");
   std::vector<AutofillProfile*> profiles;
   profiles.push_back(&profile7);
   profiles.push_back(&profile7a);
@@ -160,10 +158,12 @@ TEST(AutofillProfileTest, PreviewSummaryString) {
   ASSERT_EQ(profiles.size(), labels.size());
   summary7 = labels[0];
   base::string16 summary7a = labels[1];
-  EXPECT_EQ(ASCIIToUTF16(
-      "Marion Mitchell Morrison, 123 Zoo St., johnwayne@me.xyz"), summary7);
-  EXPECT_EQ(ASCIIToUTF16(
-      "Marion Mitchell Morrison, 123 Zoo St., marion@me.xyz"), summary7a);
+  EXPECT_EQ(
+      ASCIIToUTF16("Marion Mitchell Morrison, 123 Zoo St., johnwayne@me.xyz"),
+      summary7);
+  EXPECT_EQ(
+      ASCIIToUTF16("Marion Mitchell Morrison, 123 Zoo St., marion@me.xyz"),
+      summary7a);
 }
 
 TEST(AutofillProfileTest, AdjustInferredLabels) {
@@ -258,9 +258,11 @@ TEST(AutofillProfileTest, AdjustInferredLabels) {
   EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., CA"), labels[0]);
   EXPECT_EQ(ASCIIToUTF16("Jane Doe, 123 Letha Shore."), labels[1]);
   EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., CO, johndoe@hades.com,"
-                         " 16502111111"), labels[2]);
+                         " 16502111111"),
+            labels[2]);
   EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., CO, johndoe@hades.com,"
-                         " 16504444444"), labels[3]);
+                         " 16504444444"),
+            labels[3]);
   // This one differs from other ones by unique e-mail, so no need for extra
   // information.
   EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., CO, johndoe@styx.com"),
@@ -277,18 +279,18 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_CH) {
                        "CH", "+41 44-668-1800");
   profiles.back()->set_language_code("de_CH");
   static const char* kExpectedLabels[] = {
-    "",
-    "H. R. Giger",
-    "H. R. Giger, Brandschenkestrasse 110",
-    "H. R. Giger, Brandschenkestrasse 110, Zurich",
-    "H. R. Giger, Brandschenkestrasse 110, CH-8002 Zurich",
-    "Beispiel Inc, H. R. Giger, Brandschenkestrasse 110, CH-8002 Zurich",
-    "Beispiel Inc, H. R. Giger, Brandschenkestrasse 110, CH-8002 Zurich, "
-        "Switzerland",
-    "Beispiel Inc, H. R. Giger, Brandschenkestrasse 110, CH-8002 Zurich, "
-        "Switzerland, hrgiger@beispiel.com",
-    "Beispiel Inc, H. R. Giger, Brandschenkestrasse 110, CH-8002 Zurich, "
-        "Switzerland, hrgiger@beispiel.com, +41 44-668-1800",
+      "",
+      "H. R. Giger",
+      "H. R. Giger, Brandschenkestrasse 110",
+      "H. R. Giger, Brandschenkestrasse 110, Zurich",
+      "H. R. Giger, Brandschenkestrasse 110, CH-8002 Zurich",
+      "Beispiel Inc, H. R. Giger, Brandschenkestrasse 110, CH-8002 Zurich",
+      "Beispiel Inc, H. R. Giger, Brandschenkestrasse 110, CH-8002 Zurich, "
+      "Switzerland",
+      "Beispiel Inc, H. R. Giger, Brandschenkestrasse 110, CH-8002 Zurich, "
+      "Switzerland, hrgiger@beispiel.com",
+      "Beispiel Inc, H. R. Giger, Brandschenkestrasse 110, CH-8002 Zurich, "
+      "Switzerland, hrgiger@beispiel.com, +41 44-668-1800",
   };
 
   std::vector<base::string16> labels;
@@ -299,7 +301,6 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_CH) {
     EXPECT_EQ(UTF8ToUTF16(kExpectedLabels[i]), labels.back());
   }
 }
-
 
 TEST(AutofillProfileTest, CreateInferredLabelsI18n_FR) {
   std::vector<std::unique_ptr<AutofillProfile>> profiles;
@@ -353,21 +354,21 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_KR) {
       "Park Jae-sang, Gangnam Finance Center, 152 Teheran-ro",
       "Park Jae-sang, Gangnam Finance Center, 152 Teheran-ro, Yeoksam-Dong",
       "Park Jae-sang, Gangnam Finance Center, 152 Teheran-ro, Yeoksam-Dong, "
-          "Gangnam-Gu",
+      "Gangnam-Gu",
       "Park Jae-sang, Gangnam Finance Center, 152 Teheran-ro, Yeoksam-Dong, "
-          "Gangnam-Gu, Seoul",
+      "Gangnam-Gu, Seoul",
       "Park Jae-sang, Gangnam Finance Center, 152 Teheran-ro, Yeoksam-Dong, "
-          "Gangnam-Gu, Seoul, 135-984",
+      "Gangnam-Gu, Seoul, 135-984",
       "Park Jae-sang, Yeleul Inc, Gangnam Finance Center, 152 Teheran-ro, "
-          "Yeoksam-Dong, Gangnam-Gu, Seoul, 135-984",
+      "Yeoksam-Dong, Gangnam-Gu, Seoul, 135-984",
       "Park Jae-sang, Yeleul Inc, Gangnam Finance Center, 152 Teheran-ro, "
-          "Yeoksam-Dong, Gangnam-Gu, Seoul, 135-984, South Korea",
+      "Yeoksam-Dong, Gangnam-Gu, Seoul, 135-984, South Korea",
       "Park Jae-sang, Yeleul Inc, Gangnam Finance Center, 152 Teheran-ro, "
-          "Yeoksam-Dong, Gangnam-Gu, Seoul, 135-984, South Korea, "
-          "park@yeleul.com",
+      "Yeoksam-Dong, Gangnam-Gu, Seoul, 135-984, South Korea, "
+      "park@yeleul.com",
       "Park Jae-sang, Yeleul Inc, Gangnam Finance Center, 152 Teheran-ro, "
-          "Yeoksam-Dong, Gangnam-Gu, Seoul, 135-984, South Korea, "
-          "park@yeleul.com, +82-2-531-9000",
+      "Yeoksam-Dong, Gangnam-Gu, Seoul, 135-984, South Korea, "
+      "park@yeleul.com, +82-2-531-9000",
   };
 
   std::vector<base::string16> labels;
@@ -389,22 +390,22 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_JP_Latn) {
                        "JP", "+81-3-6384-9000");
   profiles.back()->set_language_code("ja_Latn");
   static const char* kExpectedLabels[] = {
-    "",
-    "Miku Hatsune",
-    "Miku Hatsune, Roppongi Hills Mori Tower",
-    "Miku Hatsune, Roppongi Hills Mori Tower, 6-10-1 Roppongi, Minato-ku",
-    "Miku Hatsune, Roppongi Hills Mori Tower, 6-10-1 Roppongi, Minato-ku, "
-        "Tokyo",
-    "Miku Hatsune, Roppongi Hills Mori Tower, 6-10-1 Roppongi, Minato-ku, "
-        "Tokyo, 106-6126",
-    "Miku Hatsune, Rei Inc, Roppongi Hills Mori Tower, 6-10-1 Roppongi, "
-        "Minato-ku, Tokyo, 106-6126",
-    "Miku Hatsune, Rei Inc, Roppongi Hills Mori Tower, 6-10-1 Roppongi, "
-        "Minato-ku, Tokyo, 106-6126, Japan",
-    "Miku Hatsune, Rei Inc, Roppongi Hills Mori Tower, 6-10-1 Roppongi, "
-        "Minato-ku, Tokyo, 106-6126, Japan, miku@rei.com",
-    "Miku Hatsune, Rei Inc, Roppongi Hills Mori Tower, 6-10-1 Roppongi, "
-        "Minato-ku, Tokyo, 106-6126, Japan, miku@rei.com, +81-3-6384-9000",
+      "",
+      "Miku Hatsune",
+      "Miku Hatsune, Roppongi Hills Mori Tower",
+      "Miku Hatsune, Roppongi Hills Mori Tower, 6-10-1 Roppongi, Minato-ku",
+      "Miku Hatsune, Roppongi Hills Mori Tower, 6-10-1 Roppongi, Minato-ku, "
+      "Tokyo",
+      "Miku Hatsune, Roppongi Hills Mori Tower, 6-10-1 Roppongi, Minato-ku, "
+      "Tokyo, 106-6126",
+      "Miku Hatsune, Rei Inc, Roppongi Hills Mori Tower, 6-10-1 Roppongi, "
+      "Minato-ku, Tokyo, 106-6126",
+      "Miku Hatsune, Rei Inc, Roppongi Hills Mori Tower, 6-10-1 Roppongi, "
+      "Minato-ku, Tokyo, 106-6126, Japan",
+      "Miku Hatsune, Rei Inc, Roppongi Hills Mori Tower, 6-10-1 Roppongi, "
+      "Minato-ku, Tokyo, 106-6126, Japan, miku@rei.com",
+      "Miku Hatsune, Rei Inc, Roppongi Hills Mori Tower, 6-10-1 Roppongi, "
+      "Minato-ku, Tokyo, 106-6126, Japan, miku@rei.com, +81-3-6384-9000",
   };
 
   std::vector<base::string16> labels;
@@ -471,10 +472,8 @@ TEST(AutofillProfileTest, CreateInferredLabels) {
   // Three fields at least - no filter.
   AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), nullptr,
                                         UNKNOWN_TYPE, 3, "en-US", &labels);
-  EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., Elysium"),
-            labels[0]);
-  EXPECT_EQ(ASCIIToUTF16("Jane Doe, 123 Letha Shore., Dis"),
-            labels[1]);
+  EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., Elysium"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("Jane Doe, 123 Letha Shore., Dis"), labels[1]);
 
   std::vector<ServerFieldType> suggested_fields;
   suggested_fields.push_back(ADDRESS_HOME_CITY);
@@ -648,7 +647,8 @@ TEST(AutofillProfileTest, CreateInferredLabelsSkipsEmptyFields) {
   ASSERT_EQ(3U, labels.size());
   EXPECT_EQ(ASCIIToUTF16("John Doe, doe@example.com, Gogole"), labels[0]);
   EXPECT_EQ(ASCIIToUTF16("John Doe, 88 Nowhere Ave., doe@example.com, Ggoole"),
-            labels[1]) << labels[1];
+            labels[1])
+      << labels[1];
   EXPECT_EQ(ASCIIToUTF16("John Doe, john.doe@example.com"), labels[2]);
 }
 
@@ -1091,10 +1091,9 @@ TEST(AutofillProfileTest, OverwriteName_DifferentCase) {
 
 TEST(AutofillProfileTest, AssignmentOperator) {
   AutofillProfile a(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&a, "Marion", "Mitchell", "Morrison",
-                       "marion@me.xyz", "Fox", "123 Zoo St.", "unit 5",
-                       "Hollywood", "CA", "91601", "US",
-                       "12345678910");
+  test::SetProfileInfo(&a, "Marion", "Mitchell", "Morrison", "marion@me.xyz",
+                       "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
+                       "91601", "US", "12345678910");
 
   // Result of assignment should be logically equal to the original profile.
   AutofillProfile b(base::GenerateGUID(), test::kEmptyOrigin);
@@ -1108,10 +1107,9 @@ TEST(AutofillProfileTest, AssignmentOperator) {
 
 TEST(AutofillProfileTest, Copy) {
   AutofillProfile a(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&a, "Marion", "Mitchell", "Morrison",
-                       "marion@me.xyz", "Fox", "123 Zoo St.", "unit 5",
-                       "Hollywood", "CA", "91601", "US",
-                       "12345678910");
+  test::SetProfileInfo(&a, "Marion", "Mitchell", "Morrison", "marion@me.xyz",
+                       "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
+                       "91601", "US", "12345678910");
 
   // Clone should be logically equal to the original.
   AutofillProfile b(a);
@@ -1157,8 +1155,7 @@ TEST(AutofillProfileTest, Compare) {
   // Addresses are compared in full. Regression test for http://crbug.com/375545
   test::SetProfileInfo(&a, "John", nullptr, nullptr, nullptr, nullptr, nullptr,
                        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
-  a.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS,
-               ASCIIToUTF16("line one\nline two"));
+  a.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS, ASCIIToUTF16("line one\nline two"));
   test::SetProfileInfo(&b, "John", nullptr, nullptr, nullptr, nullptr, nullptr,
                        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
   b.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS,
@@ -1200,9 +1197,8 @@ TEST(AutofillProfileTest, IsPresentButInvalid) {
 TEST(AutofillProfileTest, SetRawInfoPreservesLineBreaks) {
   AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
 
-  profile.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS,
-                     ASCIIToUTF16("123 Super St.\n"
-                                  "Apt. #42"));
+  profile.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS, ASCIIToUTF16("123 Super St.\n"
+                                                               "Apt. #42"));
   EXPECT_EQ(ASCIIToUTF16("123 Super St.\n"
                          "Apt. #42"),
             profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
@@ -1241,16 +1237,15 @@ TEST(AutofillProfileTest, FullAddress) {
   AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
                        "marion@me.xyz", "Fox", "123 Zoo St.", "unit 5",
-                       "Hollywood", "CA", "91601", "US",
-                       "12345678910");
+                       "Hollywood", "CA", "91601", "US", "12345678910");
 
   AutofillType full_address(HTML_TYPE_FULL_ADDRESS, HTML_MODE_NONE);
-  base::string16 formatted_address(ASCIIToUTF16(
-      "Marion Mitchell Morrison\n"
-      "Fox\n"
-      "123 Zoo St.\n"
-      "unit 5\n"
-      "Hollywood, CA 91601"));
+  base::string16 formatted_address(
+      ASCIIToUTF16("Marion Mitchell Morrison\n"
+                   "Fox\n"
+                   "123 Zoo St.\n"
+                   "unit 5\n"
+                   "Hollywood, CA 91601"));
   EXPECT_EQ(formatted_address, profile.GetInfo(full_address, "en-US"));
   // This should fail and leave the profile unchanged.
   EXPECT_FALSE(profile.SetInfo(full_address, ASCIIToUTF16("foobar"), "en-US"));
@@ -1339,8 +1334,7 @@ TEST(AutofillProfileTest,
   EXPECT_EQ(UTF8ToUTF16("Märion"), a.GetRawInfo(NAME_FIRST));
   EXPECT_EQ(UTF8ToUTF16("Mitchéll"), a.GetRawInfo(NAME_MIDDLE));
   EXPECT_EQ(UTF8ToUTF16("Morrison"), a.GetRawInfo(NAME_LAST));
-  EXPECT_EQ(UTF8ToUTF16("Märion Mitchéll Morrison"),
-            a.GetRawInfo(NAME_FULL));
+  EXPECT_EQ(UTF8ToUTF16("Märion Mitchéll Morrison"), a.GetRawInfo(NAME_FULL));
 }
 
 // Tests that no loss of information happens when SavingAdditionalInfo with a

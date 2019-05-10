@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_METADATA_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_METADATA_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_DATA_MODEL_AUTOFILL_METADATA_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_DATA_MODEL_AUTOFILL_METADATA_H_
 
 #include <string>
 
@@ -49,4 +49,4 @@ std::ostream& operator<<(std::ostream& os, const AutofillMetadata& metadata);
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_METADATA_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_DATA_MODEL_AUTOFILL_METADATA_H_

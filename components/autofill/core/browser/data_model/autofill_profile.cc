@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
 
 #include <algorithm>
 #include <functional>
@@ -22,16 +22,16 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/address.h"
 #include "components/autofill/core/browser/address_i18n.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_field.h"
-#include "components/autofill/core/browser/autofill_metadata.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
-#include "components/autofill/core/browser/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/autofill_type.h"
-#include "components/autofill/core/browser/contact_info.h"
-#include "components/autofill/core/browser/phone_number.h"
+#include "components/autofill/core/browser/data_model/address.h"
+#include "components/autofill/core/browser/data_model/autofill_metadata.h"
+#include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
+#include "components/autofill/core/browser/data_model/contact_info.h"
+#include "components/autofill/core/browser/data_model/phone_number.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/autofill/core/browser/state_names.h"
 #include "components/autofill/core/browser/validation.h"
@@ -135,18 +135,18 @@ void GetFieldsForDistinguishingProfiles(
     ServerFieldType excluded_field,
     std::vector<ServerFieldType>* distinguishing_fields) {
   static const ServerFieldType kDefaultDistinguishingFields[] = {
-    NAME_FULL,
-    ADDRESS_HOME_LINE1,
-    ADDRESS_HOME_LINE2,
-    ADDRESS_HOME_DEPENDENT_LOCALITY,
-    ADDRESS_HOME_CITY,
-    ADDRESS_HOME_STATE,
-    ADDRESS_HOME_ZIP,
-    ADDRESS_HOME_SORTING_CODE,
-    ADDRESS_HOME_COUNTRY,
-    EMAIL_ADDRESS,
-    PHONE_HOME_WHOLE_NUMBER,
-    COMPANY_NAME,
+      NAME_FULL,
+      ADDRESS_HOME_LINE1,
+      ADDRESS_HOME_LINE2,
+      ADDRESS_HOME_DEPENDENT_LOCALITY,
+      ADDRESS_HOME_CITY,
+      ADDRESS_HOME_STATE,
+      ADDRESS_HOME_ZIP,
+      ADDRESS_HOME_SORTING_CODE,
+      ADDRESS_HOME_COUNTRY,
+      EMAIL_ADDRESS,
+      PHONE_HOME_WHOLE_NUMBER,
+      COMPANY_NAME,
   };
 
   std::vector<ServerFieldType> default_fields;
@@ -261,8 +261,7 @@ AutofillProfile::AutofillProfile(const AutofillProfile& profile)
   operator=(profile);
 }
 
-AutofillProfile::~AutofillProfile() {
-}
+AutofillProfile::~AutofillProfile() {}
 
 AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
   if (this == &profile)
@@ -449,8 +448,8 @@ int AutofillProfile::Compare(const AutofillProfile& profile) const {
   return 0;
 }
 
-bool AutofillProfile::EqualsForSyncPurposes(const AutofillProfile& profile)
-    const {
+bool AutofillProfile::EqualsForSyncPurposes(
+    const AutofillProfile& profile) const {
   return use_count() == profile.use_count() &&
          UseDateEqualsInSeconds(&profile) && EqualsSansGuid(profile);
 }
@@ -709,7 +708,7 @@ void AutofillProfile::CreateInferredLabels(
   // Construct the default label for each profile. Also construct a map that
   // associates each label with the profiles that have this label. This map is
   // then used to detect which labels need further differentiating fields.
-  std::map<base::string16, std::list<size_t> > labels_to_profiles;
+  std::map<base::string16, std::list<size_t>> labels_to_profiles;
   for (size_t i = 0; i < profiles.size(); ++i) {
     base::string16 label = profiles[i]->ConstructInferredLabel(
         fields_to_use.data(), fields_to_use.size(), minimal_fields_shown,
@@ -776,14 +775,13 @@ base::string16 AutofillProfile::ConstructInferredLabel(
   std::unique_ptr<AddressData> address_data =
       i18n::CreateAddressDataFromAutofillProfile(trimmed_profile, app_locale);
   std::string address_line;
-  ::i18n::addressinput::GetFormattedNationalAddressLine(
-      *address_data, &address_line);
+  ::i18n::addressinput::GetFormattedNationalAddressLine(*address_data,
+                                                        &address_line);
   base::string16 label = base::UTF8ToUTF16(address_line);
 
   for (std::vector<ServerFieldType>::const_iterator it =
            remaining_fields.begin();
-       it != remaining_fields.end() && num_fields_to_use > 0;
-       ++it) {
+       it != remaining_fields.end() && num_fields_to_use > 0; ++it) {
     base::string16 field_value;
     // Special case whole numbers: we want the user-formatted (raw) version, not
     // the canonicalized version we'll fill into the page.
@@ -1060,8 +1058,8 @@ void AutofillProfile::CreateInferredLabelsHelper(
     std::vector<base::string16>* labels) {
   // For efficiency, we first construct a map of fields to their text values and
   // each value's frequency.
-  std::map<ServerFieldType,
-           std::map<base::string16, size_t> > field_text_frequencies_by_field;
+  std::map<ServerFieldType, std::map<base::string16, size_t>>
+      field_text_frequencies_by_field;
   for (const ServerFieldType& field : fields) {
     std::map<base::string16, size_t>& field_text_frequencies =
         field_text_frequencies_by_field[field];
@@ -1176,8 +1174,7 @@ FormGroup* AutofillProfile::MutableFormGroupForType(const AutofillType& type) {
 
 bool AutofillProfile::EqualsSansGuid(const AutofillProfile& profile) const {
   return origin() == profile.origin() &&
-         language_code() == profile.language_code() &&
-         Compare(profile) == 0;
+         language_code() == profile.language_code() && Compare(profile) == 0;
 }
 
 std::ostream& operator<<(std::ostream& os, const AutofillProfile& profile) {
