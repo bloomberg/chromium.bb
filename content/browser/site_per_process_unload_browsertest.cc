@@ -417,7 +417,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Attempt to navigate the second tab to a.com.  This will attempt to reuse
   // the hung process.
   base::TimeDelta kTimeout = base::TimeDelta::FromMilliseconds(100);
-  NavigationRequest::SetCommitTimeoutForTesting(kTimeout);
+  NavigationHandleImpl::SetCommitTimeoutForTesting(kTimeout);
   GURL hung_url(embedded_test_server()->GetURL("a.com", "/title3.html"));
   UnresponsiveRendererObserver unresponsive_renderer_observer(new_contents);
   EXPECT_TRUE(
@@ -431,7 +431,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_FALSE(hung_process);
 
   // Reset the timeout.
-  NavigationRequest::SetCommitTimeoutForTesting(base::TimeDelta());
+  NavigationHandleImpl::SetCommitTimeoutForTesting(base::TimeDelta());
 }
 
 // Test that unload handlers in iframes are run, even when the removed subtree

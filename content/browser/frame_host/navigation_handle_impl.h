@@ -37,6 +37,8 @@
 
 namespace content {
 
+class AppCacheNavigationHandle;
+class ChromeAppCacheService;
 class NavigationUIData;
 class NavigatorDelegate;
 class ServiceWorkerContextWrapper;
@@ -166,6 +168,13 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     return service_worker_handle_.get();
   }
 
+  void InitAppCacheHandle(ChromeAppCacheService* appcache_service);
+  AppCacheNavigationHandle* appcache_handle() const {
+    return appcache_handle_.get();
+  }
+
+  std::unique_ptr<AppCacheNavigationHandle> TakeAppCacheHandle();
+
   typedef base::OnceCallback<void(NavigationThrottle::ThrottleCheckResult)>
       ThrottleChecksFinishedCallback;
 
@@ -173,6 +182,10 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   FrameTreeNode* frame_tree_node() const {
     return navigation_request_->frame_tree_node();
   }
+
+  // Called when the navigation is ready to be committed. This will update the
+  // |state_| and inform the delegate.
+  void ReadyToCommitNavigation(bool is_error);
 
   // Called during commit. Takes ownership of the embedder's NavigationData
   // instance. This NavigationData may have been cloned prior to being added
@@ -231,6 +244,10 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // navigation or an error page.
   bool IsWaitingToCommit();
 
+  // Sets the READY_TO_COMMIT -> DID_COMMIT timeout.  Resets the timeout to the
+  // default value if |timeout| is zero.
+  static void SetCommitTimeoutForTesting(const base::TimeDelta& timeout);
+
  private:
   // TODO(clamy): Transform NavigationHandleImplTest into NavigationRequestTest
   // once NavigationHandleImpl has become a wrapper around NavigationRequest.
@@ -258,6 +275,21 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     return navigation_request_->handle_state();
   }
 
+  // Called if READY_TO_COMMIT -> COMMIT state transition takes an unusually
+  // long time.
+  void OnCommitTimeout();
+
+  // Called by the RenderProcessHost to handle the case when the process
+  // changed its state of being blocked.
+  void RenderProcessBlockedStateChanged(bool blocked);
+
+  void StopCommitTimeout();
+  void RestartCommitTimeout();
+
+  // TODO(zetamoo): Remove once |ready_to_commit_time_| is owned by
+  // NavigationRequest.
+  base::TimeTicks ready_to_commit_time() const { return ready_to_commit_time_; }
+
   // The NavigationRequest that owns this NavigationHandle.
   NavigationRequest* navigation_request_;
 
@@ -273,6 +305,17 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // request.
   std::vector<std::string> removed_request_headers_;
   net::HttpRequestHeaders modified_request_headers_;
+
+  // The time this navigation was ready to commit.
+  base::TimeTicks ready_to_commit_time_;
+
+  // Timer for detecting an unexpectedly long time to commit a navigation.
+  base::OneShotTimer commit_timeout_timer_;
+
+  // The subscription to the notification of the changing of the render
+  // process's blocked state.
+  std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
+      render_process_blocked_state_changed_subscription_;
 
   // The unique id of the corresponding NavigationEntry.
   int pending_nav_entry_id_;
@@ -291,6 +334,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // corresponding provider is created in the renderer.
   std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle_;
 
+  // Manages the lifetime of a pre-created AppCacheHost until a browser side
+  // navigation is ready to be committed, i.e we have a renderer process ready
+  // to service the navigation request.
+  std::unique_ptr<AppCacheNavigationHandle> appcache_handle_;
+
   // Embedder data from the IO thread tied to this navigation.
   std::unique_ptr<NavigationData> navigation_data_;
 
@@ -305,6 +353,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // Which proxy server was used for this navigation, if any.
   net::ProxyServer proxy_server_;
+
+  // Set in ReadyToCommitNavigation.
+  bool is_same_process_;
 
   // Allows to override response_headers_ in tests.
   // TODO(clamy): Clean this up once the architecture of unit tests is better.

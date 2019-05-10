@@ -103,16 +103,6 @@ constexpr base::Feature kHistoryNavigationDoNotUseCacheAblationStudy{
 constexpr base::FeatureParam<double> kDoNotUseCacheProbability{
     &kHistoryNavigationDoNotUseCacheAblationStudy, "probability", 0.0};
 
-// Default timeout for the READY_TO_COMMIT -> COMMIT transition.  Chosen
-// initially based on the Navigation.ReadyToCommitUntilCommit UMA, and then
-// refined based on feedback based on CrashExitCodes.Renderer/RESULT_CODE_HUNG.
-constexpr base::TimeDelta kDefaultCommitTimeout =
-    base::TimeDelta::FromSeconds(30);
-
-// Timeout for the READY_TO_COMMIT -> COMMIT transition.
-// Overrideable via SetCommitTimeoutForTesting.
-base::TimeDelta g_commit_timeout = kDefaultCommitTimeout;
-
 // Returns the net load flags to use based on the navigation type.
 // TODO(clamy): Remove the blink code that sets the caching flags when
 // PlzNavigate launches.
@@ -357,6 +347,9 @@ bool ShouldPropagateUserActivation(const url::Origin& previous_origin,
 // UMA_HISTOGRAM_MEDIUM_TIMES, but a custom kMinTime is used for high fidelity
 // near the low end of measured values.
 //
+// TODO(zetamoo): This is duplicated in navigation_handle_impl. Never update one
+// without the other.
+//
 // TODO(csharrison,nasko): This macro is incorrect for subframe navigations,
 // which will only have subframe-specific transition types. This means that all
 // subframes currently are tagged as NewNavigations.
@@ -436,53 +429,6 @@ void RecordStartToCommitMetrics(base::TimeTicks navigation_start_time,
     LOG_NAVIGATION_TIMING_HISTOGRAM("ReadyToCommitUntilCommit2", transition,
                                     is_background, now - ready_to_commit_time);
   }
-}
-
-void RecordReadyToCommitMetrics(base::TimeTicks navigation_start_time,
-                                ui::PageTransition transition,
-                                const base::TimeTicks& ready_to_commit_time,
-                                bool is_same_process,
-                                bool is_main_frame) {
-  constexpr base::Optional<bool> kIsBackground = base::nullopt;
-  base::TimeDelta delta = ready_to_commit_time - navigation_start_time;
-  LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit2", transition,
-                                  kIsBackground, delta);
-  if (is_main_frame) {
-    LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit2.MainFrame",
-                                    transition, kIsBackground, delta);
-  } else {
-    LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit2.Subframe", transition,
-                                    kIsBackground, delta);
-  }
-  if (is_same_process) {
-    LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit2.SameProcess",
-                                    transition, kIsBackground, delta);
-  } else {
-    LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit2.CrossProcess",
-                                    transition, kIsBackground, delta);
-  }
-}
-
-void RecordIsSameProcessMetrics(ui::PageTransition transition,
-                                bool is_same_process) {
-  // Log overall value, then log specific value per type of navigation.
-  UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameProcess", is_same_process);
-
-  if (transition & ui::PAGE_TRANSITION_FORWARD_BACK) {
-    UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameProcess.BackForward",
-                          is_same_process);
-    return;
-  }
-  if (ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD)) {
-    UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameProcess.Reload", is_same_process);
-    return;
-  }
-  if (ui::PageTransitionIsNewNavigation(transition)) {
-    UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameProcess.NewNavigation",
-                          is_same_process);
-    return;
-  }
-  NOTREACHED() << "Invalid page transition: " << transition;
 }
 
 }  // namespace
@@ -941,7 +887,7 @@ void NavigationRequest::BeginNavigation() {
                                                            common_params_.url);
 
   // Inform the NavigationHandle that the navigation will commit.
-  ReadyToCommitNavigation(false);
+  navigation_handle_->ReadyToCommitNavigation(false);
 
   CommitNavigation();
 }
@@ -1325,9 +1271,10 @@ void NavigationRequest::OnResponseStarted(
   }
 
   // Update the AppCache params of the commit params.
-  commit_params_.appcache_host_id = appcache_handle_
-                                        ? appcache_handle_->appcache_host_id()
-                                        : blink::mojom::kAppCacheNoHostId;
+  commit_params_.appcache_host_id =
+      navigation_handle_->appcache_handle()
+          ? navigation_handle_->appcache_handle()->appcache_host_id()
+          : blink::mojom::kAppCacheNoHostId;
 
   // Update fetch start timing. While NavigationRequest updates fetch start
   // timing for redirects, it's not aware of service worker interception so
@@ -1716,11 +1663,8 @@ void NavigationRequest::OnStartChecksComplete(
     if (navigating_frame_host->GetRenderViewHost()
             ->GetWebkitPreferences()
             .application_cache_enabled) {
-      // The final process id won't be available until
-      // NavigationRequest::ReadyToCommitNavigation.
-      appcache_handle_.reset(new AppCacheNavigationHandle(
-          static_cast<ChromeAppCacheService*>(partition->GetAppCacheService()),
-          ChildProcessHost::kInvalidUniqueID));
+      navigation_handle_->InitAppCacheHandle(
+          static_cast<ChromeAppCacheService*>(partition->GetAppCacheService()));
     }
   }
 
@@ -1813,7 +1757,8 @@ void NavigationRequest::OnStartChecksComplete(
           devtools_navigation_token(),
           frame_tree_node_->devtools_frame_token()),
       std::move(navigation_ui_data),
-      navigation_handle_->service_worker_handle(), appcache_handle_.get(),
+      navigation_handle_->service_worker_handle(),
+      navigation_handle_->appcache_handle(),
       std::move(prefetched_signed_exchange_cache_), this);
   DCHECK(!render_frame_host_);
 }
@@ -2050,7 +1995,7 @@ void NavigationRequest::CommitErrorPage(
     associated_site_instance_id_.reset();
   }
 
-  ReadyToCommitNavigation(true);
+  navigation_handle_->ReadyToCommitNavigation(true);
   render_frame_host_->FailedNavigation(this, common_params_, commit_params_,
                                        has_stale_copy_in_cache_, net_error_,
                                        error_page_content);
@@ -2543,7 +2488,7 @@ void NavigationRequest::OnWillProcessResponseProcessed(
     // commit. Inform observers that the navigation is now ready to commit,
     // unless it is not set to commit (204/205s/downloads).
     if (render_frame_host_)
-      ReadyToCommitNavigation(false);
+      navigation_handle_->ReadyToCommitNavigation(false);
   } else {
     handle_state_ = NavigationRequest::CANCELING;
   }
@@ -2751,7 +2696,7 @@ void NavigationRequest::DidCommitNavigation(
     handle_state_ = DID_COMMIT;
   }
 
-  StopCommitTimeout();
+  navigation_handle_->StopCommitTimeout();
 
   // Record metrics for the time it took to commit the navigation if it was to
   // another document without error.
@@ -2759,10 +2704,13 @@ void NavigationRequest::DidCommitNavigation(
     ui::PageTransition transition = common_params_.transition;
     base::Optional<bool> is_background =
         render_frame_host_->GetProcess()->IsProcessBackgrounded();
+    const base::TimeTicks& ready_to_commit_time =
+        navigation_handle_->ready_to_commit_time();
 
-    RecordStartToCommitMetrics(
-        common_params_.navigation_start, transition, ready_to_commit_time_,
-        is_background, is_same_process_, frame_tree_node_->IsMainFrame());
+    RecordStartToCommitMetrics(common_params_.navigation_start, transition,
+                               ready_to_commit_time, is_background,
+                               navigation_handle_->is_same_process_,
+                               frame_tree_node_->IsMainFrame());
   }
 
   DCHECK(!frame_tree_node_->IsMainFrame() || navigation_entry_committed)
@@ -2780,94 +2728,6 @@ void NavigationRequest::DidCommitNavigation(
     DCHECK(!IsSameDocument() || !frame_tree_node()->is_collapsed());
     frame_tree_node()->SetCollapsed(false);
   }
-}
-
-void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
-  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle",
-                               navigation_handle_.get(),
-                               "ReadyToCommitNavigation");
-
-  handle_state_ = READY_TO_COMMIT;
-  ready_to_commit_time_ = base::TimeTicks::Now();
-  RestartCommitTimeout();
-
-  if (appcache_handle_)
-    appcache_handle_->SetProcessId(render_frame_host_->GetProcess()->GetID());
-
-  // Record metrics for the time it takes to get to this state from the
-  // beginning of the navigation.
-  if (!IsSameDocument() && !is_error) {
-    is_same_process_ =
-        render_frame_host_->GetProcess()->GetID() ==
-        frame_tree_node_->current_frame_host()->GetProcess()->GetID();
-
-    RecordIsSameProcessMetrics(common_params_.transition, is_same_process_);
-
-    RecordReadyToCommitMetrics(common_params_.navigation_start,
-                               common_params_.transition, ready_to_commit_time_,
-                               is_same_process_,
-                               frame_tree_node_->IsMainFrame());
-  }
-
-  SetExpectedProcess(render_frame_host_->GetProcess());
-
-  if (!IsSameDocument())
-    GetDelegate()->ReadyToCommitNavigation(navigation_handle_.get());
-}
-
-void NavigationRequest::RenderProcessBlockedStateChanged(bool blocked) {
-  if (blocked)
-    StopCommitTimeout();
-  else
-    RestartCommitTimeout();
-}
-
-void NavigationRequest::StopCommitTimeout() {
-  commit_timeout_timer_.Stop();
-  render_process_blocked_state_changed_subscription_.reset();
-  render_frame_host_->GetRenderWidgetHost()->RendererIsResponsive();
-}
-
-void NavigationRequest::RestartCommitTimeout() {
-  commit_timeout_timer_.Stop();
-  if (handle_state_ >= DID_COMMIT)
-    return;
-
-  RenderProcessHost* renderer_host =
-      render_frame_host_->GetRenderWidgetHost()->GetProcess();
-  if (!render_process_blocked_state_changed_subscription_) {
-    render_process_blocked_state_changed_subscription_ =
-        renderer_host->RegisterBlockStateChangedCallback(base::BindRepeating(
-            &NavigationRequest::RenderProcessBlockedStateChanged,
-            base::Unretained(this)));
-  }
-  if (!renderer_host->IsBlocked())
-    commit_timeout_timer_.Start(
-        FROM_HERE, g_commit_timeout,
-        base::BindRepeating(&NavigationRequest::OnCommitTimeout,
-                            weak_factory_.GetWeakPtr()));
-}
-
-void NavigationRequest::OnCommitTimeout() {
-  DCHECK_EQ(READY_TO_COMMIT, handle_state_);
-  render_process_blocked_state_changed_subscription_.reset();
-  render_frame_host_->GetRenderWidgetHost()->RendererIsUnresponsive(
-      base::BindRepeating(&NavigationRequest::RestartCommitTimeout,
-                          weak_factory_.GetWeakPtr()));
-}
-
-// static
-void NavigationRequest::SetCommitTimeoutForTesting(
-    const base::TimeDelta& timeout) {
-  if (timeout.is_zero())
-    g_commit_timeout = kDefaultCommitTimeout;
-  else
-    g_commit_timeout = timeout;
-}
-
-std::unique_ptr<AppCacheNavigationHandle>
-NavigationRequest::TakeAppCacheHandle() {
-  return std::move(appcache_handle_);
 }
 
 GURL NavigationRequest::GetSiteForCommonParamsURL() const {
