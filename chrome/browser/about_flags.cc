@@ -2735,13 +2735,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
-    {"enable-downloads-location-change",
-     flag_descriptions::kDownloadsLocationChangeName,
-     flag_descriptions::kDownloadsLocationChangeDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kDownloadsLocationChange)},
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
     {"download-progress-infobar",
      flag_descriptions::kDownloadProgressInfoBarName,
      flag_descriptions::kDownloadProgressInfoBarDescription, kOsAndroid,

@@ -1005,11 +1005,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "enable-downloads-location-change",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-drive-fs",
     "owners": [ "sammc", "dats" ],
     "expiry_milestone": 76

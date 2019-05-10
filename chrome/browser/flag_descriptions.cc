@@ -2204,10 +2204,6 @@ const char kContextualSearchUnityIntegrationName[] =
 const char kContextualSearchUnityIntegrationDescription[] =
     "Enables integration of Tap to Search with Unified Consent.";
 
-const char kDownloadsLocationChangeName[] = "Enable downloads location change";
-const char kDownloadsLocationChangeDescription[] =
-    "Enable changing default downloads storage location on Android.";
-
 const char kDownloadProgressInfoBarName[] = "Enable download progress infobar";
 const char kDownloadProgressInfoBarDescription[] =
     "Enables an infobar notifying users about status of current downloads.";

@@ -1321,9 +1321,6 @@ extern const char kContextualSearchUnityIntegrationDescription[];
 extern const char kDontPrefetchLibrariesName[];
 extern const char kDontPrefetchLibrariesDescription[];
 
-extern const char kDownloadsLocationChangeName[];
-extern const char kDownloadsLocationChangeDescription[];
-
 extern const char kDownloadProgressInfoBarName[];
 extern const char kDownloadProgressInfoBarDescription[];
 
