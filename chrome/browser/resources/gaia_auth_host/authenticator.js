@@ -774,6 +774,36 @@ cr.define('cr.login', function() {
     }
 
     /**
+     * Asserts the |arr| which is known as |nameOfArr| is an array of strings.
+     * @private
+     */
+    assertStringArray_(arr, nameOfArr) {
+      console.assert(Array.isArray(arr),
+          'FATAL: Bad %s type: %s', nameOfArr, typeof arr);
+      for (let i = 0; i < arr.length; ++i) {
+        this.assertStringElement_(arr[i], nameOfArr, i);
+      }
+    }
+
+    /**
+     * Asserts the |dict| which is known as |nameOfDict| is a dict of strings.
+     * @private
+     */
+    assertStringDict_(dict, nameOfDict) {
+      console.assert(typeof dict == 'object',
+          'FATAL: Bad %s type: %s', nameOfDict, typeof dict);
+      for (const key in dict) {
+        this.assertStringElement_(dict[key], nameOfDict, key);
+      }
+    }
+
+    /** Asserts an element |elem| in a certain collection is a string. */
+    assertStringElement_(elem, nameOfCollection, index) {
+      console.assert(typeof elem == 'string',
+          'FATAL: Bad %s[%s] type: %s', nameOfCollection, index, typeof elem);
+    }
+
+    /**
      * Invoked to process authentication completion.
      * @private
      */
@@ -784,19 +814,7 @@ cr.define('cr.login', function() {
       // Chrome will crash on incorrect data type, so log some error message
       // here.
       if (this.services_) {
-        if (!Array.isArray(this.services_)) {
-          console.error('FATAL: Bad services type:' + typeof this.services_);
-        } else {
-          for (let i = 0; i < this.services_.length; ++i) {
-            if (typeof this.services_[i] == 'string') {
-              continue;
-            }
-
-            console.error(
-                'FATAL: Bad services[' + i +
-                '] type:' + typeof this.services_[i]);
-          }
-        }
+        this.assertStringArray_(this.services_, 'services');
       }
       if (this.isSamlUserPasswordless_ && this.authFlow == AuthFlow.SAML &&
           this.email_) {
@@ -805,6 +823,13 @@ cr.define('cr.login', function() {
         // |password_|, if any.
         this.password_ = '';
       }
+      let passwordAttributes = {};
+      if (this.authFlow == AuthFlow.SAML &&
+          this.samlHandler_.extractSamlPasswordAttributes &&
+          !this.isSamlUserPasswordless_) {
+        passwordAttributes = this.samlHandler_.passwordAttributes;
+      }
+      this.assertStringDict_(passwordAttributes, 'passwordAttributes');
       this.dispatchEvent(new CustomEvent(
           'authCompleted',
           // TODO(rsorokin): get rid of the stub values.
@@ -819,6 +844,7 @@ cr.define('cr.login', function() {
               sessionIndex: this.sessionIndex_ || '',
               trusted: this.trusted_,
               services: this.services_ || [],
+              passwordAttributes: passwordAttributes
             }
           }));
       this.resetStates();

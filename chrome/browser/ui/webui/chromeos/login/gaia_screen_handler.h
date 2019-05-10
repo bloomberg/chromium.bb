@@ -20,6 +20,10 @@
 
 class AccountId;
 
+namespace base {
+class DictionaryValue;
+}  // namespace base
+
 namespace net {
 class CanonicalCookie;
 }
@@ -32,6 +36,7 @@ namespace chromeos {
 
 class ActiveDirectoryPasswordChangeScreenHandler;
 class Key;
+class SamlPasswordAttributes;
 class SigninScreenHandler;
 
 class GaiaView {
@@ -167,17 +172,20 @@ class GaiaScreenHandler : public BaseScreenHandler,
 
   // WebUI message handlers.
   void HandleWebviewLoadAborted(const std::string& error_reason_str);
-  void HandleCompleteAuthentication(const std::string& gaia_id,
-                                    const std::string& email,
-                                    const std::string& password,
-                                    bool using_saml,
-                                    const ::login::StringList& services);
+  void HandleCompleteAuthentication(
+      const std::string& gaia_id,
+      const std::string& email,
+      const std::string& password,
+      bool using_saml,
+      const ::login::StringList& services,
+      const base::DictionaryValue* password_attributes);
   void OnGetCookiesForCompleteAuthentication(
       const std::string& gaia_id,
       const std::string& email,
       const std::string& password,
       bool using_saml,
       const ::login::StringList& services,
+      const SamlPasswordAttributes& password_attributes,
       const std::vector<net::CanonicalCookie>& cookies,
       const net::CookieStatusList& excluded_cookies);
   void HandleCompleteLogin(const std::string& gaia_id,
@@ -207,13 +215,6 @@ class GaiaScreenHandler : public BaseScreenHandler,
                                        const std::string& gaia_id);
   void HandleUpdateSigninUIState(int state);
 
-  // Allows for a password expiry notification to be shown using information
-  // extracted from the SAML response during SAML auth flow.
-  void HandleUpdatePasswordAttributes(
-      const std::string& passwordModifiedTimestamp,
-      const std::string& passwordExpirationTimestamp,
-      const std::string& passwordChangeUrl);
-
   // Allows WebUI to control the login shelf's guest button visibility during
   // OOBE.
   void HandleShowGuestInOobe(bool show);
@@ -224,7 +225,8 @@ class GaiaScreenHandler : public BaseScreenHandler,
   void DoCompleteLogin(const std::string& gaia_id,
                        const std::string& typed_email,
                        const std::string& password,
-                       bool using_saml);
+                       bool using_saml,
+                       const SamlPasswordAttributes& password_attributes);
 
   // Fill GAIA user name.
   void set_populated_email(const std::string& populated_email) {

@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "chromeos/login/auth/challenge_response_key.h"
 #include "chromeos/login/auth/key.h"
+#include "chromeos/login/auth/saml_password_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/password_manager/core/browser/password_hash_data.h"
 #include "components/user_manager/user_type.h"
@@ -85,6 +86,8 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) UserContext {
   const std::string& GetGAPSCookie() const;
   const base::Optional<password_manager::PasswordHashData>&
   GetSyncPasswordData() const;
+  const base::Optional<SamlPasswordAttributes>& GetSamlPasswordAttributes()
+      const;
 
   bool HasCredentials() const;
 
@@ -108,6 +111,8 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) UserContext {
   void SetGAPSCookie(const std::string& gaps_cookie);
   void SetSyncPasswordData(
       const password_manager::PasswordHashData& sync_password_data);
+  void SetSamlPasswordAttributes(
+      const SamlPasswordAttributes& saml_password_attributes);
   void SetIsUnderAdvancedProtection(bool is_under_advanced_protection);
 
   void ClearSecrets();
@@ -134,6 +139,9 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) UserContext {
 
   // For password reuse detection use.
   base::Optional<password_manager::PasswordHashData> sync_password_data_;
+
+  // Info about the user's SAML password, such as when it will expire.
+  base::Optional<SamlPasswordAttributes> saml_password_attributes_;
 };
 
 }  // namespace chromeos

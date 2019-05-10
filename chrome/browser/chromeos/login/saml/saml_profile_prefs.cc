@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/saml/saml_profile_prefs.h"
 
 #include "chrome/common/pref_names.h"
+#include "chromeos/login/auth/saml_password_attributes.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 
 namespace {
@@ -29,6 +30,8 @@ void RegisterSamlProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(
       prefs::kSamlPasswordExpirationAdvanceWarningDays,
       kDefaultSamlPasswordExpirationAdvanceWarningDays);
+
+  SamlPasswordAttributes::RegisterProfilePrefs(registry);
 }
 
 }  // namespace chromeos

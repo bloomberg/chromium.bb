@@ -14,7 +14,7 @@ class PrefRegistrySimple;
 class PrefService;
 
 namespace base {
-class Value;
+class DictionaryValue;
 }
 
 namespace chromeos {
@@ -37,7 +37,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) SamlPasswordAttributes {
   // Initialize an instance of this class with data received from javascript.
   // The data must be a PasswordAttributes object as defined in
   // saml_password_attributes.js
-  static SamlPasswordAttributes FromJs(const base::Value& js_object);
+  static SamlPasswordAttributes FromJs(const base::DictionaryValue& js_object);
 
   // Load an instance of this class from the given |prefs|.
   static SamlPasswordAttributes LoadFromPrefs(PrefService* prefs);

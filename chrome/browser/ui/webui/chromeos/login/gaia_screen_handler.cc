@@ -56,6 +56,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/constants/devicetype.h"
 #include "chromeos/dbus/util/version_loader.h"
+#include "chromeos/login/auth/saml_password_attributes.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/login/localized_values_builder.h"
@@ -236,6 +237,11 @@ std::string GetAdErrorMessage(authpolicy::ErrorType error) {
       DLOG(WARNING) << "Unhandled error code: " << error;
       return l10n_util::GetStringUTF8(IDS_AD_AUTH_UNKNOWN_ERROR);
   }
+}
+
+bool ExtractSamlPasswordAttributesEnabled() {
+  return ProfileHelper::Get()->GetSigninProfile()->GetPrefs()->GetBoolean(
+      prefs::kSamlInSessionPasswordChangeEnabled);
 }
 
 }  // namespace
@@ -467,8 +473,7 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
   params.SetString("webviewPartitionName", partition_name);
 
   params.SetBoolean("extractSamlPasswordAttributes",
-                    Profile::FromWebUI(web_ui())->GetPrefs()->GetBoolean(
-                        prefs::kSamlInSessionPasswordChangeEnabled));
+                    ExtractSamlPasswordAttributesEnabled());
 
   frame_state_ = FRAME_STATE_LOADING;
   CallJS("login.GaiaSigninScreen.loadAuthExtension", params);
@@ -598,12 +603,6 @@ void GaiaScreenHandler::RegisterMessages() {
   AddCallback("updateSigninUIState",
               &GaiaScreenHandler::HandleUpdateSigninUIState);
   AddCallback("showGuestInOobe", &GaiaScreenHandler::HandleShowGuestInOobe);
-
-  if (Profile::FromWebUI(web_ui())->GetPrefs()->GetBoolean(
-          prefs::kSamlInSessionPasswordChangeEnabled)) {
-    AddCallback("updatePasswordAttributes",
-                &GaiaScreenHandler::HandleUpdatePasswordAttributes);
-  }
 
   // Allow UMA metrics collection from JS.
   web_ui()->AddMessageHandler(std::make_unique<MetricsHandler>());
@@ -764,7 +763,8 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
     const std::string& email,
     const std::string& password,
     bool using_saml,
-    const ::login::StringList& services) {
+    const ::login::StringList& services,
+    const base::DictionaryValue* password_attributes) {
   if (!LoginDisplayHost::default_host())
     return;
 
@@ -786,7 +786,8 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
       GaiaUrls::GetInstance()->gaia_url(), cookie_options,
       base::BindOnce(&GaiaScreenHandler::OnGetCookiesForCompleteAuthentication,
                      weak_factory_.GetWeakPtr(), gaia_id, email, password,
-                     using_saml, services));
+                     using_saml, services,
+                     SamlPasswordAttributes::FromJs(*password_attributes)));
 }
 
 void GaiaScreenHandler::OnGetCookiesForCompleteAuthentication(
@@ -795,6 +796,7 @@ void GaiaScreenHandler::OnGetCookiesForCompleteAuthentication(
     const std::string& password,
     bool using_saml,
     const ::login::StringList& services,
+    const SamlPasswordAttributes& password_attributes,
     const std::vector<net::CanonicalCookie>& cookies,
     const net::CookieStatusList& excluded_cookies) {
   std::string auth_code, gaps_cookie;
@@ -806,7 +808,7 @@ void GaiaScreenHandler::OnGetCookiesForCompleteAuthentication(
   }
 
   if (auth_code.empty()) {
-    HandleCompleteLogin(gaia_id, email, password, using_saml);
+    DoCompleteLogin(gaia_id, email, password, using_saml, password_attributes);
     return;
   }
 
@@ -829,6 +831,9 @@ void GaiaScreenHandler::OnGetCookiesForCompleteAuthentication(
                                ? UserContext::AUTH_FLOW_GAIA_WITH_SAML
                                : UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML);
   user_context.SetGAPSCookie(gaps_cookie);
+  if (using_saml && ExtractSamlPasswordAttributesEnabled()) {
+    user_context.SetSamlPasswordAttributes(password_attributes);
+  }
   LoginDisplayHost::default_host()->CompleteLogin(user_context);
 }
 
@@ -837,7 +842,8 @@ void GaiaScreenHandler::HandleCompleteLogin(const std::string& gaia_id,
                                             const std::string& password,
                                             bool using_saml) {
   VLOG(1) << "HandleCompleteLogin";
-  DoCompleteLogin(gaia_id, typed_email, password, using_saml);
+  DoCompleteLogin(gaia_id, typed_email, password, using_saml,
+                  SamlPasswordAttributes());
 }
 
 void GaiaScreenHandler::HandleUsingSAMLAPI() {
@@ -929,25 +935,6 @@ void GaiaScreenHandler::HandleUpdateSigninUIState(int state) {
   }
 }
 
-void GaiaScreenHandler::HandleUpdatePasswordAttributes(
-    const std::string& passwordModifiedTimestamp,
-    const std::string& passwordExpirationTimestamp,
-    const std::string& passwordChangeUrl) {
-  CHECK(Profile::FromWebUI(web_ui())->GetPrefs()->GetBoolean(
-      prefs::kSamlInSessionPasswordChangeEnabled));
-  // TODO(olsen): Store this information in the user's session, use it to show a
-  // notification when the user's password is expired / is soon to expire.
-  if (passwordModifiedTimestamp.empty() &&
-      passwordExpirationTimestamp.empty() && passwordChangeUrl.empty()) {
-    VLOG(4) << "No password attributes extracted from SAML response";
-  } else {
-    VLOG(4) << "Extracted password attributes from SAML response: {";
-    VLOG(4) << "passwordModifiedTimestamp: " << passwordModifiedTimestamp;
-    VLOG(4) << "passwordExpirationTimestamp: " << passwordExpirationTimestamp;
-    VLOG(4) << "passwordChangeUrl: " << passwordChangeUrl << " }";
-  }
-}
-
 void GaiaScreenHandler::HandleShowGuestInOobe(bool show) {
   LoginScreenClient::Get()->login_screen()->SetShowGuestButtonInOobe(show);
 }
@@ -958,10 +945,12 @@ void GaiaScreenHandler::OnShowAddUser() {
   ShowGaiaAsync(base::nullopt);
 }
 
-void GaiaScreenHandler::DoCompleteLogin(const std::string& gaia_id,
-                                        const std::string& typed_email,
-                                        const std::string& password,
-                                        bool using_saml) {
+void GaiaScreenHandler::DoCompleteLogin(
+    const std::string& gaia_id,
+    const std::string& typed_email,
+    const std::string& password,
+    bool using_saml,
+    const SamlPasswordAttributes& password_attributes) {
   if (using_saml && !using_saml_api_)
     RecordSAMLScrapingVerificationResultInHistogram(true);
 
@@ -994,6 +983,11 @@ void GaiaScreenHandler::DoCompleteLogin(const std::string& gaia_id,
   user_context.SetAuthFlow(using_saml
                                ? UserContext::AUTH_FLOW_GAIA_WITH_SAML
                                : UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML);
+
+  if (using_saml && ExtractSamlPasswordAttributesEnabled()) {
+    user_context.SetSamlPasswordAttributes(password_attributes);
+  }
+
   LoginDisplayHost::default_host()->CompleteLogin(user_context);
 
   if (test_expects_complete_login_) {

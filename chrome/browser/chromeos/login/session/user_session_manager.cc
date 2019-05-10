@@ -1400,6 +1400,12 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
       }
     }
 
+    PrefService* prefs = profile->GetPrefs();
+    if (prefs->GetBoolean(prefs::kSamlInSessionPasswordChangeEnabled) &&
+        user_context_.GetSamlPasswordAttributes().has_value()) {
+      user_context_.GetSamlPasswordAttributes()->SaveToPrefs(prefs);
+    }
+
     // Transfers authentication-related data from the profile that was used for
     // authentication to the user's profile. The proxy authentication state is
     // transferred unconditionally. If the user authenticated via an auth

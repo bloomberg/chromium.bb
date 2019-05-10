@@ -163,6 +163,14 @@ cr.define('cr.login', function() {
        */
       this.extractSamlPasswordAttributes = false;
 
+      /**
+       * The password-attributes that were extracted from the SAMLResponse, if
+       * any. (Doesn't contain the password itself).
+       * @type {PasswordAttributes}
+       */
+      this.passwordAttributes_ =
+          samlPasswordAttributes.PasswordAttributes.EMPTY;
+
       this.webviewEventManager_ = WebviewEventManager.create();
 
       this.webviewEventManager_.addEventListener(
@@ -266,6 +274,14 @@ cr.define('cr.login', function() {
     }
 
     /**
+     * Gets the password attributes extracted from SAML Response.
+     * @return {PasswordAttributes}
+     */
+    get passwordAttributes() {
+      return this.passwordAttributes_;
+    }
+
+    /**
      * Removes the injected content script and unbinds all listeners from the
      * webview passed to the constructor. This SAMLHandler will be unusable
      * after this function returns.
@@ -287,6 +303,8 @@ cr.define('cr.login', function() {
       this.apiVersion_ = 0;
       this.apiToken_ = null;
       this.apiPasswordBytes_ = null;
+      this.passwordAttributes_ =
+          samlPasswordAttributes.PasswordAttributes.EMPTY;
     }
 
     /**
@@ -383,10 +401,8 @@ cr.define('cr.login', function() {
         return;
       }
 
-      const attr = samlPasswordAttributes.readPasswordAttributes(samlResponse);
-      chrome.send('updatePasswordAttributes', [
-        attr.modifiedTime, attr.expirationTime, attr.passwordChangeUrl
-      ]);
+      this.passwordAttributes_ =
+          samlPasswordAttributes.readPasswordAttributes(samlResponse);
     }
 
     /**

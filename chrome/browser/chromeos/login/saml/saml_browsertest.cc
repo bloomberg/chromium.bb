@@ -70,6 +70,7 @@
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/login/auth/key.h"
+#include "chromeos/login/auth/saml_password_attributes.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/account_id/account_id.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -798,42 +799,6 @@ IN_PROC_BROWSER_TEST_F(SamlTest, MetaRefreshToHTTPDisallowed) {
             WaitForAndGetFatalErrorMessage());
 }
 
-// Verifies that information about the user's password (specifically, whether
-// is has expired) can be extracted from the SAMLResponse from the IdP.
-IN_PROC_BROWSER_TEST_F(SamlTest, ExtractPasswordAttributes) {
-  // TODO(https://crbug.com/930109): Replace this with an end-to-end test that
-  // tests the actual functionality, once this is implemented.
-
-  fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
-  fake_saml_idp()->SetSamlResponseFile("saml_with_password_attributes.xml");
-  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
-
-  ASSERT_TRUE(content::ExecuteScript(GetLoginUI()->GetWebContents(),
-      "$('gaia-signin').gaiaAuthHost_.samlHandler_"
-      ".extractSamlPasswordAttributes = true;"));
-
-  base::Value attrs;
-  GetLoginUI()->RegisterMessageCallback("updatePasswordAttributes",
-      base::BindLambdaForTesting(
-          [&](const base::ListValue* val) { attrs = val->Clone(); }));
-
-  SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
-  SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
-
-  content::WindowedNotificationObserver session_start_waiter(
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::NotificationService::AllSources());
-  SigninFrameJS().TapOn("Submit");
-  session_start_waiter.Wait();
-
-  ASSERT_TRUE(attrs.is_list());
-  ASSERT_EQ(3ul, attrs.GetList().size());
-  EXPECT_EQ("1550836258421", attrs.GetList()[0].GetString());
-  EXPECT_EQ("1551873058421", attrs.GetList()[1].GetString());
-  EXPECT_EQ("https://example.com/adfs/portal/updatepassword/",
-            attrs.GetList()[2].GetString());
-}
-
 class SAMLEnrollmentTest : public SamlTest {
  public:
   SAMLEnrollmentTest();
@@ -1460,5 +1425,102 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, TestLoginMediaPermission) {
   EXPECT_FALSE(web_contents_delegate->CheckMediaAccessPermission(
       web_contents->GetMainFrame(), url3, blink::MEDIA_DEVICE_VIDEO_CAPTURE));
 }
+
+class SAMLPasswordAttributesTest : public SAMLPolicyTest,
+                                   public testing::WithParamInterface<bool> {
+ public:
+  SAMLPasswordAttributesTest() = default;
+  void SetUpOnMainThread() override;
+
+ protected:
+  bool in_session_pw_change_policy_enabled() { return GetParam(); }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SAMLPasswordAttributesTest);
+};
+
+void SAMLPasswordAttributesTest::SetUpOnMainThread() {
+  policy::PolicyMap user_policy;
+  user_policy.Set(
+      policy::key::kSamlInSessionPasswordChangeEnabled,
+      policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+      policy::POLICY_SOURCE_CLOUD,
+      std::make_unique<base::Value>(in_session_pw_change_policy_enabled()),
+      nullptr);
+  provider_.UpdateChromePolicy(user_policy);
+  base::RunLoop().RunUntilIdle();
+
+  SAMLPolicyTest::SetUpOnMainThread();
+}
+
+// Verifies that password attributes are extracted and stored during a
+// successful log in - but only if the appropriate policy is enabled.
+IN_PROC_BROWSER_TEST_P(SAMLPasswordAttributesTest, LoginSucceeded) {
+  fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
+  fake_saml_idp()->SetSamlResponseFile("saml_with_password_attributes.xml");
+  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
+
+  SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
+  SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
+
+  content::WindowedNotificationObserver session_start_waiter(
+      chrome::NOTIFICATION_SESSION_STARTED,
+      content::NotificationService::AllSources());
+  SigninFrameJS().TapOn("Submit");
+  session_start_waiter.Wait();
+
+  Profile* profile = ProfileHelper::Get()->GetProfileByUser(
+      user_manager::UserManager::Get()->GetPrimaryUser());
+  SamlPasswordAttributes attrs =
+      SamlPasswordAttributes::LoadFromPrefs(profile->GetPrefs());
+
+  if (in_session_pw_change_policy_enabled()) {
+    // These values are extracted from saml_with_password_attributes.xml
+    EXPECT_EQ(base::Time::FromJsTime(1550836258421L), attrs.modified_time());
+    EXPECT_EQ(base::Time::FromJsTime(1551873058421L), attrs.expiration_time());
+    EXPECT_EQ("https://example.com/adfs/portal/updatepassword/",
+              attrs.password_change_url());
+  } else {
+    // Nothing should be extracted when policy is disabled.
+    EXPECT_FALSE(attrs.has_modified_time());
+    EXPECT_FALSE(attrs.has_expiration_time());
+    EXPECT_FALSE(attrs.has_password_change_url());
+  }
+}
+
+// Verify that no password attributes are stored when login fails.
+IN_PROC_BROWSER_TEST_P(SAMLPasswordAttributesTest, LoginFailed) {
+  fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
+  fake_saml_idp()->SetSamlResponseFile("saml_with_password_attributes.xml");
+  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
+
+  // Give fake gaia an empty email address, so login will fail:
+  fake_gaia_.fake_gaia()->SetFakeMergeSessionParams(
+      /*email=*/"", kTestAuthSIDCookie1, kTestAuthLSIDCookie1);
+
+  SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
+  SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
+  SigninFrameJS().TapOn("Submit");
+
+  // SAML login fails:
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_LOGIN_FATAL_ERROR_NO_ACCOUNT_DETAILS),
+            WaitForAndGetFatalErrorMessage());
+
+  // Make sure no SAML password attributes are saved.
+  // None are saved for the logged in user, since there is no logged in user:
+  EXPECT_EQ(nullptr, user_manager::UserManager::Get()->GetPrimaryUser());
+
+  // Also, no attributes are saved in the signin profile:
+  Profile* profile = ProfileHelper::Get()->GetSigninProfile();
+  SamlPasswordAttributes attrs =
+      SamlPasswordAttributes::LoadFromPrefs(profile->GetPrefs());
+  EXPECT_FALSE(attrs.has_modified_time());
+  EXPECT_FALSE(attrs.has_expiration_time());
+  EXPECT_FALSE(attrs.has_password_change_url());
+}
+
+INSTANTIATE_TEST_SUITE_P(SAMLPasswordAttributesSuite,
+                         SAMLPasswordAttributesTest,
+                         testing::Bool());
 
 }  // namespace chromeos

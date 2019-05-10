@@ -52,9 +52,7 @@ void SamlPasswordAttributes::RegisterProfilePrefs(
 
 // static
 SamlPasswordAttributes SamlPasswordAttributes::FromJs(
-    const base::Value& js_object) {
-  CHECK(js_object.is_dict());
-
+    const base::DictionaryValue& js_object) {
   base::Time modified_time;
   const std::string* string_value = js_object.FindStringPath(kModifiedTimeKey);
   if (string_value) {
