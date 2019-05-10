@@ -30,31 +30,27 @@
   transition: outline-color 200ms;
 }
 
-#gaia-signin-form-container,
-#signin-frame {
+#gaia-signin-form-container {
   height: 100%;
   position: relative;
   width: 100%;
 }
 
 #signin-frame {
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
   display: block;
+  height: 560px;
   opacity: 0;
   overflow: hidden;
+  position: static;
   transition: opacity 500ms ease-in;
+  width: 768px;
 }
 
 #signin-frame.show {
   opacity: 1;
   transition: opacity 500ms ease-out;
-}
-
-#signin-frame-container-v2 #signin-frame {
-  border-top-left-radius: 4px;
-  border-top-right-radius: 4px;
-  height: 560px;
-  position: static;
-  width: 768px;
 }
 
 #gaia-signin .step-contents {
@@ -125,10 +121,6 @@
 
 #gaia-signin.v2 #gaia-navigation,
 #gaia-signin.v2 #gaia-step-contents {
-  display: none;
-}
-
-#gaia-signin:not(.v2) #signin-frame-dialog {
   display: none;
 }
 

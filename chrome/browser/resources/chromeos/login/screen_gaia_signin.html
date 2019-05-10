@@ -6,6 +6,7 @@
       has-buttons no-header no-footer-padding no-buttons-padding hidden>
     <div id="signin-frame-container-v2" slot="footer"
         class="flex layout vertical">
+      <webview id="signin-frame" name="signin-frame" hidden></webview>
     </div>
     <div id="gaia-screen-navigation-buttons"
         slot="bottom-buttons" class="relative flex layout horizontal center">
@@ -17,17 +18,16 @@
       <div id="gaia-screen-buttons-overlay" class="fit" hidden></div>
     </div>
   </oobe-dialog>
+  <offline-gaia id="offline-gaia" class="gaia-dialog" hidden>
+  </offline-gaia>
+  <offline-ad-login id="offline-ad-auth" class="gaia-dialog" hidden
+      i18n-values="ad-welcome-message:loginWelcomeMessage">
+  </offline-ad-login>
   <div id="gaia-step-contents" class="step-contents">
     <div id="gaia-signin-form-container">
-      <webview id="signin-frame" name="signin-frame" hidden></webview>
-      <offline-gaia id="offline-gaia" class="gaia-dialog" hidden>
-      </offline-gaia>
       <saml-interstitial id="saml-interstitial" class="fit gaia-dialog"
           hidden>
       </saml-interstitial>
-      <offline-ad-login id="offline-ad-auth" class="fit gaia-dialog" hidden
-          i18n-values="ad-welcome-message:loginWelcomeMessage">
-      </offline-ad-login>
     </div>
   </div>
   <div id="gaia-loading" class="step-loading gaia-dialog" hidden>

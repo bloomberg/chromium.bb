@@ -198,14 +198,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     navigation_: undefined,
 
 
-    /**
-     * This is a copy of authenticator object attribute.
-     * UI is tied to API version, so we adjust authernticator container
-     * to match the API version.
-     * Note that this cannot be changed after authenticator is created.
-     */
-    chromeOSApiVersion_: 2,
-
     /** @override */
     decorate: function() {
       this.navigation_ = $('gaia-navigation');
@@ -695,8 +687,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       this.setSigninFramePartition_(data.webviewPartitionName);
 
-      // Must be set before calling updateSigninFrameContainers_()
-      this.chromeOSApiVersion_ = data.chromeOSApiVersion;
       // This triggers updateSigninFrameContainers_()
       this.screenMode = data.screenMode;
       this.email = '';
@@ -707,24 +697,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       this.classList.toggle('full-width', false);
       $('saml-notice-container').hidden = true;
       this.samlPasswordConfirmAttempt_ = 0;
-
-      if (this.chromeOSApiVersion_ == 2) {
-        $('signin-frame-container-v2').appendChild($('signin-frame'));
-        $('gaia-signin')
-            .insertBefore($('offline-gaia'), $('gaia-step-contents'));
-        $('offline-gaia').removeAttribute('not-a-dialog');
-        $('offline-gaia').classList.toggle('fit', false);
-        $('gaia-signin')
-            .insertBefore($('offline-ad-auth'), $('gaia-step-contents'));
-        $('offline-ad-auth').removeAttribute('not-a-dialog');
-        $('offline-ad-auth').classList.toggle('fit', false);
-      } else {
-        $('gaia-signin-form-container').appendChild($('signin-frame'));
-        $('gaia-signin-form-container')
-            .appendChild($('offline-gaia'), $('gaia-step-contents'));
-        $('offline-gaia').setAttribute('not-a-dialog', true);
-        $('offline-gaia').classList.toggle('fit', true);
-      }
 
       this.updateSigninFrameContainers_();
 
@@ -784,10 +756,9 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     updateSigninFrameContainers_: function() {
       let oldState = this.classList.contains('v2');
       this.classList.toggle('v2', false);
-      if ((this.screenMode_ == ScreenMode.DEFAULT ||
-           this.screenMode_ == ScreenMode.OFFLINE ||
-           this.screenMode_ == ScreenMode.AD_AUTH) &&
-          this.chromeOSApiVersion_ == 2) {
+      if (this.screenMode_ == ScreenMode.DEFAULT ||
+          this.screenMode_ == ScreenMode.OFFLINE ||
+          this.screenMode_ == ScreenMode.AD_AUTH) {
         this.classList.toggle('v2', true);
       }
       if (this != Oobe.getInstance().currentScreen)

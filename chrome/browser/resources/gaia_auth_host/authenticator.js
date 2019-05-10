@@ -29,7 +29,6 @@ cr.define('cr.login', function() {
   const EMBEDDED_FORM_HEADER = 'google-accounts-embedded';
   const LOCATION_HEADER = 'location';
   const SERVICE_ID = 'chromeoslogin';
-  const EMBEDDED_SETUP_CHROMEOS_ENDPOINT = 'embedded/setup/chromeos';
   const EMBEDDED_SETUP_CHROMEOS_ENDPOINT_V2 = 'embedded/setup/v2/chromeos';
   const SAML_REDIRECTION_PATH = 'samlredirect';
   const BLANK_PAGE_URL = 'about:blank';
@@ -84,7 +83,6 @@ cr.define('cr.login', function() {
     'platformVersion',           // Version of the OS build.
     'releaseChannel',            // Installation channel.
     'endpointGen',               // Current endpoint generation.
-    'chromeOSApiVersion',        // GAIA Chrome OS API version
     'menuGuestMode',             // Enables "Guest mode" menu item
     'menuKeyboardOptions',       // Enables "Keyboard options" menu item
     'menuEnterpriseEnrollment',  // Enables "Enterprise enrollment" menu item.
@@ -298,7 +296,6 @@ cr.define('cr.login', function() {
       this.isNewGaiaFlow = data.isNewGaiaFlow;
       this.clientId_ = data.clientId;
       this.dontResizeNonEmbeddedPages = data.dontResizeNonEmbeddedPages;
-      this.chromeOSApiVersion_ = data.chromeOSApiVersion;
 
       this.initialFrameUrl_ = this.constructInitialFrameUrl_(data);
       this.reloadUrl_ = data.frameUrl || this.initialFrameUrl_;
@@ -321,11 +318,7 @@ cr.define('cr.login', function() {
     }
 
     constructChromeOSAPIUrl_() {
-      if (this.chromeOSApiVersion_ && this.chromeOSApiVersion_ == 2) {
-        return this.idpOrigin_ + EMBEDDED_SETUP_CHROMEOS_ENDPOINT_V2;
-      }
-
-      return this.idpOrigin_ + EMBEDDED_SETUP_CHROMEOS_ENDPOINT;
+      return this.idpOrigin_ + EMBEDDED_SETUP_CHROMEOS_ENDPOINT_V2;
     }
 
     /**
@@ -382,31 +375,28 @@ cr.define('cr.login', function() {
         if (data.endpointGen) {
           url = appendParam(url, 'endpoint_gen', data.endpointGen);
         }
-        if (data.chromeOSApiVersion == 2) {
-          let mi = '';
-          if (data.menuGuestMode) {
-            mi += 'gm,';
-          }
-          if (data.menuKeyboardOptions) {
-            mi += 'ko,';
-          }
-          if (data.menuEnterpriseEnrollment) {
-            mi += 'ee,';
-          }
-          if (mi.length) {
-            url = appendParam(url, 'mi', mi);
-          }
+        let mi = '';
+        if (data.menuGuestMode) {
+          mi += 'gm,';
+        }
+        if (data.menuKeyboardOptions) {
+          mi += 'ko,';
+        }
+        if (data.menuEnterpriseEnrollment) {
+          mi += 'ee,';
+        }
+        if (mi.length) {
+          url = appendParam(url, 'mi', mi);
+        }
 
-          if (data.lsbReleaseBoard) {
-            url = appendParam(url, 'chromeos_board', data.lsbReleaseBoard);
-          }
-          if (data.isFirstUser) {
-            url = appendParam(url, 'is_first_user', true);
-          }
-          if (data.obfuscatedOwnerId) {
-            url =
-                appendParam(url, 'obfuscated_owner_id', data.obfuscatedOwnerId);
-          }
+        if (data.lsbReleaseBoard) {
+          url = appendParam(url, 'chromeos_board', data.lsbReleaseBoard);
+        }
+        if (data.isFirstUser) {
+          url = appendParam(url, 'is_first_user', true);
+        }
+        if (data.obfuscatedOwnerId) {
+          url = appendParam(url, 'obfuscated_owner_id', data.obfuscatedOwnerId);
         }
       } else {
         url = appendParam(url, 'continue', this.continueUrl_);

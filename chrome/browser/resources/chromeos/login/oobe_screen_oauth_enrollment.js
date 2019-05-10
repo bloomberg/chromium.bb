@@ -265,7 +265,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       var gaiaParams = {};
       gaiaParams.gaiaUrl = data.gaiaUrl;
       gaiaParams.clientId = data.clientId;
-      gaiaParams.chromeOSApiVersion = 2;
       gaiaParams.isNewGaiaFlow = true;
       gaiaParams.needPassword = false;
       gaiaParams.hl = data.hl;

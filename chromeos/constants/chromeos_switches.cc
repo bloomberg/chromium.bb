@@ -164,9 +164,6 @@ const char kChildWallpaperSmall[] = "child-wallpaper-small";
 
 const char kConservativeThreshold[] = "conservative";
 
-// Forces use of Chrome OS Gaia API v1.
-const char kCrosGaiaApiV1[] = "cros-gaia-api-v1";
-
 // Forces CrOS region value.
 const char kCrosRegion[] = "cros-region";
 
