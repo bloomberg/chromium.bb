@@ -334,7 +334,12 @@ customBackgrounds.closeCollectionDialog = function(menu) {
  */
 customBackgrounds.setBackground = function(
     url, attributionLine1, attributionLine2, attributionActionUrl) {
-  customBackgrounds.closeCollectionDialog($(customBackgrounds.IDS.MENU));
+  if (configData.richerPicker) {
+    $(customBackgrounds.IDS.CUSTOMIZATION_MENU).close();
+    customBackgrounds.resetImageMenu(false);
+  } else {
+    customBackgrounds.closeCollectionDialog($(customBackgrounds.IDS.MENU));
+  }
   window.chrome.embeddedSearch.newTabPage.setBackgroundURLWithAttributions(
       url, attributionLine1, attributionLine2, attributionActionUrl);
 };
@@ -1280,7 +1285,9 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
 
   // Interactions with the done button on the background picker dialog.
   const doneInteraction = function(event) {
-    if ($(customBackgrounds.IDS.DONE).disabled) {
+    const done = configData.richerPicker ? $(customBackgrounds.IDS.MENU_DONE) :
+                                           $(customBackgrounds.IDS.DONE);
+    if (done.disabled) {
       return;
     }
     customBackgrounds.setBackground(
@@ -1290,6 +1297,7 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
         customBackgrounds.selectedTile.dataset.attributionActionUrl);
   };
   $(customBackgrounds.IDS.DONE).onclick = doneInteraction;
+  $(customBackgrounds.IDS.MENU_DONE).onclick = doneInteraction;
   $(customBackgrounds.IDS.DONE).onkeyup = function(event) {
     if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
       doneInteraction(event);
