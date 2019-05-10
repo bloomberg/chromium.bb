@@ -13,7 +13,8 @@
 #endif
 
 @interface SCAlertCoordinator ()
-@property(nonatomic, strong) UIViewController* containerViewController;
+@property(nonatomic, strong)
+    UIViewController* presentationContextViewController;
 @property(nonatomic, strong) UISwitch* blockAlertSwitch;
 @end
 
@@ -21,13 +22,38 @@
 
 @synthesize baseViewController = _baseViewController;
 
-- (void)start {
-  self.containerViewController = [[UIViewController alloc] init];
-  self.containerViewController.definesPresentationContext = YES;
-  self.containerViewController.title = @"Alert";
+- (void)stop {
+  self.baseViewController.toolbarHidden = YES;
+  [self.baseViewController popViewControllerAnimated:YES];
+}
 
-  UIView* containerView = self.containerViewController.view;
-  containerView.backgroundColor = [UIColor whiteColor];
+- (void)start {
+  self.baseViewController.toolbarHidden = NO;
+
+  UIViewController* containerViewController = [[UIViewController alloc] init];
+  containerViewController.extendedLayoutIncludesOpaqueBars = YES;
+  UIBarButtonItem* dummyItem = [[UIBarButtonItem alloc]
+      initWithBarButtonSystemItem:UIBarButtonSystemItemCamera
+                           target:nil
+                           action:nil];
+  containerViewController.toolbarItems = @[ dummyItem ];
+  UIBarButtonItem* backButton =
+      [[UIBarButtonItem alloc] initWithTitle:@"Back"
+                                       style:UIBarButtonItemStylePlain
+                                      target:self
+                                      action:@selector(stop)];
+  containerViewController.navigationItem.leftBarButtonItem = backButton;
+
+  self.presentationContextViewController = [[UIViewController alloc] init];
+  self.presentationContextViewController.definesPresentationContext = YES;
+  self.presentationContextViewController.title = @"Alert";
+  self.presentationContextViewController.view.backgroundColor =
+      [UIColor whiteColor];
+
+  [containerViewController
+      addChildViewController:self.presentationContextViewController];
+  [containerViewController.view
+      addSubview:self.presentationContextViewController.view];
 
   UIButton* alertButton = [UIButton buttonWithType:UIButtonTypeSystem];
   [alertButton setTitle:@"alert()" forState:UIControlStateNormal];
@@ -78,15 +104,17 @@
   verticalStack.spacing = 30;
   verticalStack.translatesAutoresizingMaskIntoConstraints = NO;
   verticalStack.distribution = UIStackViewDistributionFillEqually;
-  [containerView addSubview:verticalStack];
+  [self.presentationContextViewController.view addSubview:verticalStack];
 
   [NSLayoutConstraint activateConstraints:@[
     [verticalStack.centerXAnchor
-        constraintEqualToAnchor:containerView.centerXAnchor],
+        constraintEqualToAnchor:self.presentationContextViewController.view
+                                    .centerXAnchor],
     [verticalStack.centerYAnchor
-        constraintEqualToAnchor:containerView.centerYAnchor],
+        constraintEqualToAnchor:self.presentationContextViewController.view
+                                    .centerYAnchor],
   ]];
-  [self.baseViewController pushViewController:self.containerViewController
+  [self.baseViewController pushViewController:containerViewController
                                      animated:YES];
 }
 
@@ -96,7 +124,7 @@
       [AlertAction actionWithTitle:@"OK"
                              style:UIAlertActionStyleDefault
                            handler:^(AlertAction* action) {
-                             [weakSelf.containerViewController
+                             [weakSelf.presentationContextViewController
                                  dismissViewControllerAnimated:YES
                                                     completion:nil];
                            }];
@@ -117,7 +145,7 @@
       [AlertAction actionWithTitle:@"OK"
                              style:UIAlertActionStyleDefault
                            handler:^(AlertAction* action) {
-                             [weakSelf.containerViewController
+                             [weakSelf.presentationContextViewController
                                  dismissViewControllerAnimated:YES
                                                     completion:nil];
                            }];
@@ -125,7 +153,7 @@
       [AlertAction actionWithTitle:@"Cancel"
                              style:UIAlertActionStyleCancel
                            handler:^(AlertAction* action) {
-                             [weakSelf.containerViewController
+                             [weakSelf.presentationContextViewController
                                  dismissViewControllerAnimated:YES
                                                     completion:nil];
                            }];
@@ -141,7 +169,7 @@
       [AlertAction actionWithTitle:@"OK"
                              style:UIAlertActionStyleDefault
                            handler:^(AlertAction* action) {
-                             [weakSelf.containerViewController
+                             [weakSelf.presentationContextViewController
                                  dismissViewControllerAnimated:YES
                                                     completion:nil];
                            }];
@@ -149,7 +177,7 @@
       [AlertAction actionWithTitle:@"Cancel"
                              style:UIAlertActionStyleCancel
                            handler:^(AlertAction* action) {
-                             [weakSelf.containerViewController
+                             [weakSelf.presentationContextViewController
                                  dismissViewControllerAnimated:YES
                                                     completion:nil];
                            }];
@@ -176,7 +204,7 @@
       [AlertAction actionWithTitle:@"Sign In"
                              style:UIAlertActionStyleDefault
                            handler:^(AlertAction* action) {
-                             [weakSelf.containerViewController
+                             [weakSelf.presentationContextViewController
                                  dismissViewControllerAnimated:YES
                                                     completion:nil];
                            }];
@@ -184,7 +212,7 @@
       [AlertAction actionWithTitle:@"Cancel"
                              style:UIAlertActionStyleCancel
                            handler:^(AlertAction* action) {
-                             [weakSelf.containerViewController
+                             [weakSelf.presentationContextViewController
                                  dismissViewControllerAnimated:YES
                                                     completion:nil];
                            }];
@@ -211,7 +239,7 @@
       [AlertAction actionWithTitle:@"Sign In"
                              style:UIAlertActionStyleDefault
                            handler:^(AlertAction* action) {
-                             [weakSelf.containerViewController
+                             [weakSelf.presentationContextViewController
                                  dismissViewControllerAnimated:YES
                                                     completion:nil];
                            }];
@@ -219,7 +247,7 @@
       [AlertAction actionWithTitle:@"Cancel"
                              style:UIAlertActionStyleCancel
                            handler:^(AlertAction* action) {
-                             [weakSelf.containerViewController
+                             [weakSelf.presentationContextViewController
                                  dismissViewControllerAnimated:YES
                                                     completion:nil];
                            }];
@@ -259,7 +287,7 @@
         [AlertAction actionWithTitle:@"Block Dialogs"
                                style:UIAlertActionStyleDestructive
                              handler:^(AlertAction* action) {
-                               [weakSelf.containerViewController
+                               [weakSelf.presentationContextViewController
                                    dismissViewControllerAnimated:YES
                                                       completion:nil];
                              }];
@@ -271,9 +299,9 @@
 
   alert.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
   alert.modalPresentationStyle = UIModalPresentationOverCurrentContext;
-  [self.containerViewController presentViewController:alert
-                                             animated:true
-                                           completion:nil];
+  [self.presentationContextViewController presentViewController:alert
+                                                       animated:true
+                                                     completion:nil];
 }
 
 @end
