@@ -44,19 +44,15 @@
 #include "media/base/bitstream_buffer.h"
 #include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
-#include "media/base/media.h"
 #include "media/base/media_switches.h"
 #include "media/base/media_util.h"
 #include "media/base/test_data_util.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_frame.h"
-#include "media/ffmpeg/ffmpeg_common.h"
 #include "media/filters/ffmpeg_video_decoder.h"
-#include "media/filters/in_memory_url_protocol.h"
 #include "media/filters/ivf_parser.h"
 #include "media/filters/vp8_parser.h"
 #include "media/filters/vp9_parser.h"
-#include "media/filters/vpx_video_decoder.h"
 #include "media/gpu/buildflags.h"
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
 #include "media/gpu/h264_decoder.h"
@@ -69,7 +65,6 @@
 #include "media/video/video_encode_accelerator.h"
 #include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/libyuv/include/libyuv/planar_functions.h"
 
 #if BUILDFLAG(USE_VAAPI)
 #include "media/gpu/vaapi/vaapi_wrapper.h"
@@ -164,16 +159,16 @@ const unsigned int kFlushTimeoutMs = 2000;
 //                     h264_parser.h. Use kDefaultH264Level if not provided.
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
-const char* g_default_in_filename = "bear_320x192_40frames.yuv.webm";
+const char* g_default_in_filename = "bear_320x192_40frames.yuv";
 const base::FilePath::CharType* g_default_in_parameters =
     FILE_PATH_LITERAL(":320:192:1:out.h264:200000");
 #elif defined(OS_MACOSX)
 // VideoToolbox falls back to SW encoder with resolutions lower than this.
-const char* g_default_in_filename = "bear_640x384_40frames.yuv.webm";
+const char* g_default_in_filename = "bear_640x384_40frames.yuv";
 const base::FilePath::CharType* g_default_in_parameters =
     FILE_PATH_LITERAL(":640:384:1:out.h264:200000");
 #elif defined(OS_WIN)
-const char* g_default_in_filename = "bear_320x192_40frames.yuv.webm";
+const char* g_default_in_filename = "bear_320x192_40frames.yuv";
 const base::FilePath::CharType* g_default_in_parameters =
     FILE_PATH_LITERAL(",320,192,0,out.h264,200000");
 #endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
@@ -346,105 +341,6 @@ static std::string FilePathStringTypeToString(
 #endif  // defined(OS_WIN)
 }
 
-// Decodes webm vp9 |src_file| into |test_stream_->aligned_in_file_data|. Used
-// to save storage size in media/test/data since raw YUV files are huge.
-static bool DecodeFile(const base::FilePath& src_file,
-                       TestStream* test_stream) {
-  InitializeMediaLibrary();
-
-  const int file_size = base::checked_cast<int>([src_file]() {
-    int64_t tmp = 0;
-    CHECK(base::GetFileSize(src_file, &tmp))
-        << "Failed to get file size for '" << src_file << "'";
-    return tmp;
-  }());
-
-  // Read file data into memory.
-  scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(file_size));
-  auto* data = reinterpret_cast<char*>(buffer->writable_data());
-  CHECK_EQ(file_size, base::ReadFile(src_file, data, file_size))
-      << "Failed to read '" << src_file << "'";
-
-  // Initialize ffmpeg with the file data.
-  InMemoryUrlProtocol protocol(buffer->data(), buffer->data_size(), false);
-  FFmpegGlue glue(&protocol);
-  CHECK(glue.OpenContext());
-
-  // Find first vp9 stream in the file.
-  int stream_index = -1;
-  VideoDecoderConfig config;
-  for (size_t i = 0; i < glue.format_context()->nb_streams; ++i) {
-    AVStream* stream = glue.format_context()->streams[i];
-    const AVCodecParameters* codec_parameters = stream->codecpar;
-    const AVMediaType codec_type = codec_parameters->codec_type;
-    const AVCodecID codec_id = codec_parameters->codec_id;
-    if (codec_type == AVMEDIA_TYPE_VIDEO && codec_id == AV_CODEC_ID_VP9) {
-      CHECK(AVStreamToVideoDecoderConfig(stream, &config));
-      stream_index = i;
-      break;
-    }
-  }
-
-  CHECK(config.IsValidConfig());
-
-  test_stream->num_frames = 0;
-  test_stream->aligned_in_file_data.clear();
-
-  // Writes VideoFrames into the |test_stream_->aligned_in_file_data| structure.
-  class FrameWriter {
-   public:
-    explicit FrameWriter(TestStream* test_stream) : test_stream_(test_stream) {}
-    ~FrameWriter() = default;
-
-    void FrameReady(scoped_refptr<VideoFrame> frame) {
-      const size_t previous_end = test_stream_->aligned_in_file_data.size();
-
-      ++test_stream_->num_frames;
-      test_stream_->aligned_in_file_data.resize(
-          test_stream_->num_frames * test_stream_->aligned_buffer_size);
-      uint8_t* dest = reinterpret_cast<uint8_t*>(
-          &test_stream_->aligned_in_file_data[previous_end]);
-
-      for (size_t plane = 0;
-           plane < VideoFrame::NumPlanes(test_stream_->pixel_format); plane++) {
-        libyuv::CopyPlane(
-            frame->data(plane), frame->stride(plane), dest,
-            VideoFrame::RowBytes(plane, test_stream_->pixel_format,
-                                 test_stream_->coded_size.width()),
-            VideoFrame::RowBytes(plane, test_stream_->pixel_format,
-                                 test_stream_->visible_size.width()),
-            VideoFrame::Rows(plane, test_stream_->pixel_format,
-                             test_stream_->visible_size.height()));
-        dest += test_stream_->aligned_plane_size[plane];
-      }
-    }
-
-   private:
-    TestStream* const test_stream_;
-    DISALLOW_COPY_AND_ASSIGN(FrameWriter);
-  } frame_writer(test_stream);
-
-  // Setup decoder.
-  VpxVideoDecoder decoder;
-  decoder.Initialize(config, false, nullptr, base::DoNothing(),
-                     base::BindRepeating(&FrameWriter::FrameReady,
-                                         base::Unretained(&frame_writer)),
-                     base::NullCallback());
-
-  // Decode frames. No need to flush since VpxVideoDecoder is 1 in 1 out.
-  AVPacket packet = {};
-  while (av_read_frame(glue.format_context(), &packet) >= 0) {
-    if (packet.stream_index == stream_index) {
-      decoder.Decode(DecoderBuffer::CopyFrom(packet.data, packet.size),
-                     base::DoNothing());
-      base::RunLoop().RunUntilIdle();
-    }
-    av_packet_unref(&packet);
-  }
-
-  return true;
-}
-
 // Some platforms may have requirements on physical memory buffer alignment.
 // Since we are just mapping and passing chunks of the input file directly to
 // the VEA as input frames, to avoid copying large chunks of raw data on each
@@ -498,13 +394,6 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
   }
 
   base::FilePath src_file(StringToFilePathStringType(test_stream->in_filename));
-
-  // File is encoded and must be decoded first.
-  if (src_file.Extension() == ".webm") {
-    ASSERT_TRUE(DecodeFile(src_file, test_stream));
-    return;
-  }
-
   int64_t src_file_size = 0;
   LOG_ASSERT(base::GetFileSize(src_file, &src_file_size));
 

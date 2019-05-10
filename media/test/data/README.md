@@ -750,16 +750,9 @@ The frame sizes change between 1080p and 720p every 24 frames.
 
 ### VEA test files:
 
-#### bear_320x192_40frames.yuv.webm
+#### bear_320x192_40frames.yuv
 First 40 raw i420 frames of bear-1280x720.mp4 scaled down to 320x192 for
-video_encode_accelerator_unittest. Encoded with vp9 lossless:
-`ffmpeg -pix_fmt yuv420p -s:v 320x192 -r 30 -i bear_320x192_40frames.yuv -lossless 1 bear_320x192_40frames.yuv.webm`
-
-#### bear_640x384_40frames.yuv.webm
-First 40 raw i420 frames of bear-1280x720.mp4 scaled down to 340x384 for
-video_encode_accelerator_unittest. Encoded with vp9 lossless:
-`ffmpeg -pix_fmt yuv420p -s:v 640x384 -r 30 -i bear_640x384_40frames.yuv -lossless 1 bear_640x384_40frames.yuv.webm`
-
+video_encode_accelerator_unittest.
 
 ### ImageProcessor Test Files
 
