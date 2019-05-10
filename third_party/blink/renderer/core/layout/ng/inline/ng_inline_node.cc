@@ -228,7 +228,65 @@ void CollectInlinesInternal(LayoutBlockFlow* block,
   builder->ExitBlock();
 }
 
-static bool NeedsShaping(const NGInlineItem& item) {
+// Returns whether this text should break shaping. Even within a box, text runs
+// that have different shaping properties need to break shaping.
+inline bool ShouldBreakShapingBeforeText(const NGInlineItem& item,
+                                         const NGInlineItem& start_item,
+                                         const ComputedStyle& start_style,
+                                         const Font& start_font,
+                                         TextDirection start_direction) {
+  DCHECK_EQ(item.Type(), NGInlineItem::kText);
+  DCHECK(item.Style());
+  const ComputedStyle& style = *item.Style();
+  if (&style != &start_style) {
+    const Font& font = style.GetFont();
+    if (&font != &start_font && font != start_font)
+      return true;
+  }
+
+  // The resolved direction and run segment properties must match to shape
+  // across for HarfBuzzShaper.
+  return item.Direction() != start_direction ||
+         !item.EqualsRunSegment(start_item);
+}
+
+// Returns whether the start of this box should break shaping.
+inline bool ShouldBreakShapingBeforeBox(const NGInlineItem& item,
+                                        const Font& start_font) {
+  DCHECK_EQ(item.Type(), NGInlineItem::kOpenTag);
+  DCHECK(item.Style());
+  const ComputedStyle& style = *item.Style();
+
+  // These properties values must break shaping.
+  // https://drafts.csswg.org/css-text-3/#boundary-shaping
+  if ((style.MayHavePadding() && !style.PaddingStart().IsZero()) ||
+      (style.MayHaveMargin() && !style.MarginStart().IsZero()) ||
+      style.BorderStartWidth() ||
+      style.VerticalAlign() != EVerticalAlign::kBaseline)
+    return true;
+
+  return false;
+}
+
+// Returns whether the end of this box should break shaping.
+inline bool ShouldBreakShapingAfterBox(const NGInlineItem& item,
+                                       const Font& start_font) {
+  DCHECK_EQ(item.Type(), NGInlineItem::kCloseTag);
+  DCHECK(item.Style());
+  const ComputedStyle& style = *item.Style();
+
+  // These properties values must break shaping.
+  // https://drafts.csswg.org/css-text-3/#boundary-shaping
+  if ((style.MayHavePadding() && !style.PaddingEnd().IsZero()) ||
+      (style.MayHaveMargin() && !style.MarginEnd().IsZero()) ||
+      style.BorderEndWidth() ||
+      style.VerticalAlign() != EVerticalAlign::kBaseline)
+    return true;
+
+  return false;
+}
+
+inline bool NeedsShaping(const NGInlineItem& item) {
   return item.Type() == NGInlineItem::kText && !item.TextShapeResult();
 }
 
@@ -611,22 +669,23 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
       if (item.Type() == NGInlineItem::kText) {
         if (!item.Length())
           continue;
-        // Shape adjacent items together if the font and direction matches to
-        // allow ligatures and kerning to apply.
-        // Also run segment properties must match because NGInlineItem gives
-        // pre-segmented range to HarfBuzzShaper.
-        // TODO(kojii): Figure out the exact conditions under which this
-        // behavior is desirable.
-        if (font != item.Style()->GetFont() || direction != item.Direction() ||
-            !item.EqualsRunSegment(start_item))
+        if (ShouldBreakShapingBeforeText(item, start_item, start_style, font,
+                                         direction)) {
           break;
+        }
         end_offset = item.EndOffset();
         num_text_items++;
-      } else if (item.Type() == NGInlineItem::kOpenTag ||
-                 item.Type() == NGInlineItem::kCloseTag) {
-        // These items are opaque to shaping.
-        // Opaque items cannot have text, such as Object Replacement Characters,
-        // since such characters can affect shaping.
+      } else if (item.Type() == NGInlineItem::kOpenTag) {
+        if (ShouldBreakShapingBeforeBox(item, font)) {
+          break;
+        }
+        // Should not have any characters to be opaque to shaping.
+        DCHECK_EQ(0u, item.Length());
+      } else if (item.Type() == NGInlineItem::kCloseTag) {
+        if (ShouldBreakShapingAfterBox(item, font)) {
+          break;
+        }
+        // Should not have any characters to be opaque to shaping.
         DCHECK_EQ(0u, item.Length());
       } else {
         break;
