@@ -87,8 +87,6 @@ bool GetRTPFragmentationHeaderH264(webrtc::RTPFragmentationHeader* header,
   for (size_t i = 0; i < nalu_vector.size(); ++i) {
     header->fragmentationOffset[i] = nalu_vector[i].data - data;
     header->fragmentationLength[i] = nalu_vector[i].size;
-    header->fragmentationPlType[i] = 0;
-    header->fragmentationTimeDiff[i] = 0;
   }
   return true;
 }
@@ -785,8 +783,6 @@ void RTCVideoEncoder::Impl::ReturnEncodedImage(
       header.VerifyAndAllocateFragmentationHeader(1);
       header.fragmentationOffset[0] = 0;
       header.fragmentationLength[0] = image.size();
-      header.fragmentationPlType[0] = 0;
-      header.fragmentationTimeDiff[0] = 0;
       break;
     case webrtc::kVideoCodecH264:
       if (!GetRTPFragmentationHeaderH264(&header, image.data(), image.size())) {

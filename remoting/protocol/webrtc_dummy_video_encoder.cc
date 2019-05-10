@@ -215,8 +215,6 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
     header.VerifyAndAllocateFragmentationHeader(1);
     header.fragmentationOffset[0] = 0;
     header.fragmentationLength[0] = buffer_size;
-    header.fragmentationPlType[0] = 0;
-    header.fragmentationTimeDiff[0] = 0;
   }
 
   DCHECK(encoded_callback_);
