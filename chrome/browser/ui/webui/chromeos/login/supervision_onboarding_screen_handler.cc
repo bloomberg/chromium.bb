@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/login/screens/supervision_onboarding_screen.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "components/login/localized_values_builder.h"
 
 namespace chromeos {
@@ -20,6 +21,8 @@ SupervisionOnboardingScreenHandler::SupervisionOnboardingScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container) {
   set_user_acted_method_path("login.SupervisionOnboardingScreen.userActed");
+  supervision_onboarding_controller_ =
+      std::make_unique<supervision::OnboardingControllerImpl>();
 }
 
 SupervisionOnboardingScreenHandler::~SupervisionOnboardingScreenHandler() {
@@ -45,10 +48,21 @@ void SupervisionOnboardingScreenHandler::Unbind() {
 
 void SupervisionOnboardingScreenHandler::Show() {
   ShowScreen(kScreenId);
+
+  GetOobeUI()->AddHandlerToRegistry(base::BindRepeating(
+      &SupervisionOnboardingScreenHandler::BindSupervisionOnboardingController,
+      base::Unretained(this)));
+
+  CallJS("login.SupervisionOnboardingScreen.setupMojo");
 }
 
 void SupervisionOnboardingScreenHandler::Hide() {}
 
 void SupervisionOnboardingScreenHandler::Initialize() {}
+
+void SupervisionOnboardingScreenHandler::BindSupervisionOnboardingController(
+    supervision::mojom::OnboardingControllerRequest request) {
+  supervision_onboarding_controller_->BindRequest(std::move(request));
+}
 
 }  // namespace chromeos

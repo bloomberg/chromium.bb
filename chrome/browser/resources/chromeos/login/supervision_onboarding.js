@@ -11,6 +11,37 @@ Polymer({
 
   behaviors: [LoginScreenBehavior],
 
+  /** Overridden from LoginScreenBehavior. */
+  EXTERNAL_API: [
+    'setupMojo',
+  ],
+
+  /** @private {?chromeos.supervision.mojom.OnboardingControllerProxy} */
+  controller_: null,
+
+  /**
+   * @private {?chromeos.supervision.mojom.
+   *              OnboardingWebviewHostCallbackRouter}
+   */
+  hostCallbackRouter_: null,
+
+  setupMojo: function() {
+    this.controller_ =
+            chromeos.supervision.mojom.OnboardingController.getProxy();
+
+    this.hostCallbackRouter_ =
+        new chromeos.supervision.mojom.OnboardingWebviewHostCallbackRouter();
+
+    this.hostCallbackRouter_.loadPage.addListener(pageUrl => {
+      this.$.contentWebview.src = pageUrl;
+    });
+    this.hostCallbackRouter_.exitFlow.addListener(() => {
+      this.exitFlow_();
+    });
+
+    this.controller_.bindWebviewHost(this.hostCallbackRouter_.createProxy());
+  },
+
   /** @override */
   ready: function() {
     this.initializeLoginScreen('SupervisionOnboardingScreen', {
@@ -21,21 +52,24 @@ Polymer({
 
   /** @private */
   onBack_: function() {
-    this.exitSetupFlow_();
+    this.controller_.handleAction(
+        chromeos.supervision.mojom.OnboardingFlowAction.kShowPreviousPage);
   },
 
   /** @private */
   onSkip_: function() {
-    this.exitSetupFlow_();
+    this.controller_.handleAction(
+        chromeos.supervision.mojom.OnboardingFlowAction.kSkipFlow);
   },
 
   /** @private */
   onNext_: function() {
-    this.exitSetupFlow_();
+    this.controller_.handleAction(
+        chromeos.supervision.mojom.OnboardingFlowAction.kShowNextPage);
   },
 
   /** @private */
-  exitSetupFlow_: function() {
+  exitFlow_: function() {
     chrome.send('login.SupervisionOnboardingScreen.userActed',
         ['setup-finished']);
   }

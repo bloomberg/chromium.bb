@@ -1798,6 +1798,7 @@ jumbo_split_static_library("ui") {
       "//ash/public/cpp/resources:ash_public_unscaled_resources",
       "//ash/public/cpp/vector_icons",
       "//chrome/browser/chromeos",
+      "//chrome/browser/chromeos/supervision/mojom",
       "//chrome/browser/ui/webui/chromeos/add_supervision:mojo_bindings",
       "//chromeos",
       "//chromeos/assistant:buildflags",

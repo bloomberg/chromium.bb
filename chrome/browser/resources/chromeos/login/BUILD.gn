@@ -47,6 +47,7 @@ js_type_check("closure_compile") {
     ":recommend_apps",
     ":saml_confirm_password",
     ":saml_interstitial",
+    ":supervision_onboarding",
     ":sync_consent",
     ":throbber_notice",
     ":update_required_card",
@@ -142,6 +143,13 @@ js_library("multidevice_setup_first_run") {
     "//ui/webui/resources/cr_components/chromeos/multidevice_setup:multidevice_setup",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",
+  ]
+}
+
+js_library("supervision_onboarding") {
+  deps = [
+    "//chrome/browser/chromeos/supervision/mojom:mojom_js_library_for_compile",
+    "//ui/webui/resources/js:cr",
   ]
 }
 

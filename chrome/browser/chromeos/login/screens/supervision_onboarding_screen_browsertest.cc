@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/test/scoped_feature_list.h"
@@ -23,12 +24,15 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/supervision_onboarding_screen_handler.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_switches.h"
 
 namespace chromeos {
 
 namespace {
 
 constexpr char kTestUser[] = "test-user1@gmail.com";
+constexpr char kTestOnboardingPageUrl[] =
+    "https://families.google.com/families";
 
 chromeos::OobeUI* GetOobeUI() {
   auto* host = chromeos::LoginDisplayHost::default_host();
@@ -43,6 +47,10 @@ class SupervisionOnboardingTest : public MixinBasedInProcessBrowserTest {
   ~SupervisionOnboardingTest() override = default;
 
   void SetUpOnMainThread() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        chromeos::switches::kSupervisionOnboardingStartPageUrl,
+        kTestOnboardingPageUrl);
+
     login_manager_.LoginAndWaitForActiveSession(
         LoginManagerMixin::CreateDefaultUserContext(test_user_));
 

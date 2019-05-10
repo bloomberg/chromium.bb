@@ -493,6 +493,10 @@ const char kRegulatoryLabelDir[] = "regulatory-label-dir";
 // This makes it easier to test layout logic.
 const char kShowLoginDevOverlay[] = "show-login-dev-overlay";
 
+// Url for the Supervision Onboarding starting page.
+const char kSupervisionOnboardingStartPageUrl[] =
+    "supervision-onboarding-start-page-url";
+
 // Enables testing for encryption migration UI.
 const char kTestEncryptionMigrationUI[] = "test-encryption-migration-ui";
 

@@ -165,6 +165,13 @@ void AddSyncConsentResources(content::WebUIDataSource* source) {
 #endif
 }
 
+void AddSupervisionOnboardingScreenResources(content::WebUIDataSource* source) {
+  source->AddResourcePath("supervision_onboarding_controller.mojom.html",
+                          IDR_SUPERVISION_ONBOARDING_CONTROLLER_MOJOM_HTML);
+  source->AddResourcePath("onboarding_controller.mojom-lite.js",
+                          IDR_SUPERVISION_ONBOARDING_CONTROLLER_MOJOM_LITE_JS);
+}
+
 // Adds resources for ARC-dependent screens (PlayStore ToS, Assistant, etc...)
 void AddArcScreensResources(content::WebUIDataSource* source) {
   // Required for postprocessing of Goolge PlayStore Terms and Overlay help.
@@ -248,6 +255,7 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   AddFingerprintResources(source);
   AddSyncConsentResources(source);
   AddArcScreensResources(source);
+  AddSupervisionOnboardingScreenResources(source);
 
   source->AddResourcePath(kKeyboardUtilsJSPath, IDR_KEYBOARD_UTILS_JS);
   source->OverrideContentSecurityPolicyChildSrc(base::StringPrintf(
