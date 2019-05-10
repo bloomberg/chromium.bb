@@ -11,6 +11,8 @@ jumbo_static_library("content") {
     "content_payment_request_delegate.h",
     "initialization_task.cc",
     "initialization_task.h",
+    "payment_handler_host.cc",
+    "payment_handler_host.h",
     "payment_request.cc",
     "payment_request.h",
     "payment_request_converter.cc",

@@ -44,44 +44,6 @@ bool IsGooglePaymentMethodInstrumentSelected(const std::string& method_name) {
          method_name == kAndroidPayMethodName;
 }
 
-mojom::PaymentMethodChangeResponsePtr ConvertToPaymentMethodChangeResponse(
-    const mojom::PaymentDetailsPtr& details,
-    const PaymentInstrument& invoked_app) {
-  mojom::PaymentMethodChangeResponsePtr response =
-      mojom::PaymentMethodChangeResponse::New();
-  response->error = details->error;
-  response->stringified_payment_method_errors =
-      details->stringified_payment_method_errors;
-
-  if (details->total)
-    response->total = details->total->amount.Clone();
-
-  if (!details->modifiers)
-    return response;
-
-  response->modifiers = std::vector<mojom::PaymentHandlerModifierPtr>();
-
-  for (const auto& merchant : *details->modifiers) {
-    if (!invoked_app.IsValidForPaymentMethodIdentifier(
-            merchant->method_data->supported_method)) {
-      continue;
-    }
-
-    mojom::PaymentHandlerModifierPtr mod = mojom::PaymentHandlerModifier::New();
-    mod->method_data = mojom::PaymentHandlerMethodData::New();
-    mod->method_data->method_name = merchant->method_data->supported_method;
-    mod->method_data->stringified_data =
-        merchant->method_data->stringified_data;
-
-    if (merchant->total)
-      mod->total = merchant->total->amount.Clone();
-
-    response->modifiers->emplace_back(std::move(mod));
-  }
-
-  return response;
-}
-
 }  // namespace
 
 PaymentRequest::PaymentRequest(
@@ -99,7 +61,7 @@ PaymentRequest::PaymentRequest(
       display_manager_(display_manager),
       display_handle_(nullptr),
       binding_(this, std::move(request)),
-      payment_handler_host_binding_(this),
+      payment_handler_host_(this),
       top_level_origin_(url_formatter::FormatUrlForSecurityDisplay(
           web_contents_->GetLastCommittedURL())),
       frame_origin_(url_formatter::FormatUrlForSecurityDisplay(
@@ -317,11 +279,11 @@ void PaymentRequest::UpdateWith(mojom::PaymentDetailsPtr details) {
     return;
   }
 
-  if (change_payment_method_callback_) {
-    DCHECK(state()->selected_instrument());
-    std::move(change_payment_method_callback_)
-        .Run(ConvertToPaymentMethodChangeResponse(
-            details, *state()->selected_instrument()));
+  if (state()->selected_instrument() && state()->IsPaymentAppInvoked()) {
+    payment_handler_host_.UpdateWith(
+        details, base::BindRepeating(
+                     &PaymentInstrument::IsValidForPaymentMethodIdentifier,
+                     base::Unretained(state()->selected_instrument())));
   }
 
   bool is_resolving_promise_passed_into_show_method = !spec_->IsInitialized();
@@ -356,10 +318,8 @@ void PaymentRequest::NoUpdatedPaymentDetails() {
 
   spec_->RecomputeSpecForDetails();
 
-  if (change_payment_method_callback_) {
-    std::move(change_payment_method_callback_)
-        .Run(mojom::PaymentMethodChangeResponse::New());
-  }
+  if (state()->IsPaymentAppInvoked())
+    payment_handler_host_.NoUpdatedPaymentDetails();
 }
 
 void PaymentRequest::Abort() {
@@ -470,37 +430,16 @@ void PaymentRequest::HasEnrolledInstrument(bool per_method_quota) {
   }
 }
 
-void PaymentRequest::ChangePaymentMethod(
-    mojom::PaymentHandlerMethodDataPtr method_data,
-    mojom::PaymentHandlerHost::ChangePaymentMethodCallback callback) {
+bool PaymentRequest::ChangePaymentMethod(const std::string& method_name,
+                                         const std::string& stringified_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!state_ || !state_->IsPaymentAppInvoked() || !client_) {
-    mojom::PaymentMethodChangeResponsePtr response =
-        mojom::PaymentMethodChangeResponse::New();
-    response->error = errors::kInvalidState;
-    std::move(callback).Run(std::move(response));
-    return;
-  }
+  DCHECK(!method_name.empty());
 
-  if (!method_data) {
-    mojom::PaymentMethodChangeResponsePtr response =
-        mojom::PaymentMethodChangeResponse::New();
-    response->error = errors::kMethodDataRequired;
-    std::move(callback).Run(std::move(response));
-    return;
-  }
+  if (!state_ || !state_->IsPaymentAppInvoked() || !client_)
+    return false;
 
-  if (method_data->method_name.empty()) {
-    mojom::PaymentMethodChangeResponsePtr response =
-        mojom::PaymentMethodChangeResponse::New();
-    response->error = errors::kMethodNameRequired;
-    std::move(callback).Run(std::move(response));
-    return;
-  }
-
-  change_payment_method_callback_ = std::move(callback);
-  client_->OnPaymentMethodChange(method_data->method_name,
-                                 method_data->stringified_data);
+  client_->OnPaymentMethodChange(method_name, stringified_data);
+  return true;
 }
 
 void PaymentRequest::AreRequestedMethodsSupportedCallback(
@@ -626,7 +565,7 @@ void PaymentRequest::UserCancelled() {
   // We close all bindings and ask to be destroyed.
   client_.reset();
   binding_.Close();
-  payment_handler_host_binding_.Close();
+  payment_handler_host_.Disconnect();
   if (observer_for_testing_)
     observer_for_testing_->OnConnectionTerminated();
   manager_->DestroyRequest(this);
@@ -647,7 +586,7 @@ void PaymentRequest::OnConnectionTerminated() {
   // the binding and the dialog, and ask to be deleted.
   client_.reset();
   binding_.Close();
-  payment_handler_host_binding_.Close();
+  payment_handler_host_.Disconnect();
   delegate_->CloseDialog();
   if (observer_for_testing_)
     observer_for_testing_->OnConnectionTerminated();
@@ -661,7 +600,8 @@ void PaymentRequest::Pay() {
   DCHECK(state_->selected_instrument());
   if (state_->selected_instrument()->type() ==
       PaymentInstrument::Type::SERVICE_WORKER_APP) {
-    BindPaymentHandlerHost();
+    static_cast<ServiceWorkerPaymentInstrument*>(state_->selected_instrument())
+        ->set_payment_handler_host(payment_handler_host_.Bind());
   }
   state_->GeneratePaymentResponse();
 }
@@ -676,24 +616,6 @@ void PaymentRequest::RecordDialogShownEventInJourneyLogger() {
 
 bool PaymentRequest::IsIncognito() const {
   return delegate_->IsIncognito();
-}
-
-void PaymentRequest::BindPaymentHandlerHost() {
-  mojom::PaymentHandlerHostPtrInfo payment_handler_host;
-  payment_handler_host_binding_.Close();
-  payment_handler_host_binding_.Bind(mojo::MakeRequest(&payment_handler_host));
-
-  // Connection error handler can be set only after the Bind() call.
-  payment_handler_host_binding_.set_connection_error_handler(
-      base::BindOnce(&PaymentRequest::OnPaymentHandlerConnectionTerminated,
-                     weak_ptr_factory_.GetWeakPtr()));
-
-  static_cast<ServiceWorkerPaymentInstrument*>(state()->selected_instrument())
-      ->set_payment_handler_host(std::move(payment_handler_host));
-}
-
-void PaymentRequest::OnPaymentHandlerConnectionTerminated() {
-  payment_handler_host_binding_.Close();
 }
 
 void PaymentRequest::RecordFirstAbortReason(
