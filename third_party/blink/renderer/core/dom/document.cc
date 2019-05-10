@@ -6401,33 +6401,21 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
   ContentSecurityPolicy* last_origin_document_csp_ =
       frame_ ? frame_->Loader().GetLastOriginDocumentCSP() : nullptr;
 
-  scoped_refptr<SecurityOrigin> document_origin;
+  scoped_refptr<SecurityOrigin> document_origin =
+      initializer.GetDocumentOrigin();
   cookie_url_ = url_;
-  if (initializer.OriginToCommit()) {
-    // Origin to commit is specified by the browser process, it must be taken
-    // and used directly. It is currently supplied only for session history
-    // navigations, where the origin was already calcuated previously and
-    // stored on the session history entry.
-    document_origin = initializer.OriginToCommit();
-  } else {
-    if (Document* owner_document = initializer.OwnerDocument()) {
-      // Alias certain security properties from |owner_document|. Used for
-      // the case of about:blank pages inheriting the security properties of
-      // their requestor context.
-      // Note that this is currently somewhat broken; Blink always inherits
-      // from the parent or opener, even though it should actually be
-      // inherited from the request initiator.
-      document_origin = owner_document->GetMutableSecurityOrigin();
-      cookie_url_ = owner_document->CookieURL();
-      if (url_.IsEmpty())
-        last_origin_document_csp_ = owner_document->GetContentSecurityPolicy();
-    } else {
-      // Otherwise, create an origin that propagates precursor information
-      // as needed. For non-opaque origins, this creates a standard tuple
-      // origin, but for opaque origins, it creates an origin with the
-      // initiator origin as the precursor.
-      document_origin = SecurityOrigin::CreateWithReferenceOrigin(
-          url_, initializer.InitiatorOrigin().get());
+
+  if (!initializer.OriginToCommit() && initializer.OwnerDocument()) {
+    // Alias certain security properties from |owner_document|. Used for
+    // the case of about:blank pages inheriting the security properties of
+    // their requestor context.
+    // Note that this is currently somewhat broken; Blink always inherits
+    // from the parent or opener, even though it should actually be
+    // inherited from the request initiator.
+    cookie_url_ = initializer.OwnerDocument()->CookieURL();
+    if (url_.IsEmpty()) {
+      last_origin_document_csp_ =
+          initializer.OwnerDocument()->GetContentSecurityPolicy();
     }
   }
 

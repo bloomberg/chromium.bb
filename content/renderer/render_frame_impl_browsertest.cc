@@ -1196,52 +1196,37 @@ class RenderFrameRemoteInterfacesTest : public RenderViewTest {
 // DocumentInterfaceBroker, InterfaceProviderRequest-related code will be
 // removed.
 TEST_F(RenderFrameRemoteInterfacesTest, ChildFrameAtFirstCommittedLoad) {
-  constexpr struct {
-    const char* main_frame_url_override;
-    const char* child_frame_url;
-  } kTestCases[] = {
-      {kTestFirstURL, kAboutBlankURL},
-      {kTestSecondURL, "data:text/html,Child"},
-      {kAboutBlankURL, kAboutBlankURL},
-  };
+  ScopedNewFrameInterfaceProviderExerciser child_frame_exerciser(
+      frame_creation_observer());
+  const std::string html = base::StringPrintf("<iframe src=\"%s\"></iframe>",
+                                              "data:text/html,Child");
+  LoadHTMLWithUrlOverride(html.c_str(), kTestSecondURL);
 
-  for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(::testing::Message()
-                 << "main_frame_url = " << test_case.main_frame_url_override
-                 << ", child_frame_url = " << test_case.child_frame_url);
+  const GURL child_frame_url("data:text/html,Child");
+  ASSERT_NO_FATAL_FAILURE(
+      child_frame_exerciser.ExpectNewFrameAndWaitForLoad(child_frame_url));
 
-    ScopedNewFrameInterfaceProviderExerciser child_frame_exerciser(
-        frame_creation_observer());
-    const std::string html = base::StringPrintf("<iframe src=\"%s\"></iframe>",
-                                                test_case.child_frame_url);
-    LoadHTMLWithUrlOverride(html.c_str(), test_case.main_frame_url_override);
-
-    const GURL child_frame_url(test_case.child_frame_url);
-    ASSERT_NO_FATAL_FAILURE(
-        child_frame_exerciser.ExpectNewFrameAndWaitForLoad(child_frame_url));
-
-    // TODO(https://crbug.com/792410): It is unfortunate how many internal
-    // details of frame/document creation this encodes. Need to decouple.
-    const GURL initial_empty_url(kAboutBlankURL);
-    ExpectPendingInterfaceRequestsFromSources(
-        child_frame_exerciser.interface_request_for_initial_empty_document(),
-        child_frame_exerciser
-            .document_interface_broker_request_for_initial_empty_document(),
-        {{GURL(kNoDocumentMarkerURL), kFrameEventDidCreateNewFrame},
-         {initial_empty_url, kFrameEventDidCreateNewDocument},
-         {initial_empty_url, kFrameEventDidCreateDocumentElement},
-         {initial_empty_url, kFrameEventReadyToCommitNavigation},
-         // TODO(https://crbug.com/555773): It seems strange that the new
-         // document is created and DidCreateNewDocument is invoked *before* the
-         // provisional load would have even committed.
-         {child_frame_url, kFrameEventDidCreateNewDocument}});
-    ExpectPendingInterfaceRequestsFromSources(
-        child_frame_exerciser.interface_request_for_first_document(),
-        child_frame_exerciser
-            .document_interface_broker_request_for_first_document(),
-        {{child_frame_url, kFrameEventDidCommitProvisionalLoad},
-         {child_frame_url, kFrameEventDidCreateDocumentElement}});
-  }
+  // TODO(https://crbug.com/792410): It is unfortunate how many internal
+  // details of frame/document creation this encodes. Need to decouple.
+  const GURL initial_empty_url(kAboutBlankURL);
+  ExpectPendingInterfaceRequestsFromSources(
+      child_frame_exerciser.interface_request_for_initial_empty_document(),
+      child_frame_exerciser
+          .document_interface_broker_request_for_initial_empty_document(),
+      {{GURL(kNoDocumentMarkerURL), kFrameEventDidCreateNewFrame},
+       {initial_empty_url, kFrameEventDidCreateNewDocument},
+       {initial_empty_url, kFrameEventDidCreateDocumentElement},
+       {initial_empty_url, kFrameEventReadyToCommitNavigation},
+       // TODO(https://crbug.com/555773): It seems strange that the new
+       // document is created and DidCreateNewDocument is invoked *before* the
+       // provisional load would have even committed.
+       {child_frame_url, kFrameEventDidCreateNewDocument}});
+  ExpectPendingInterfaceRequestsFromSources(
+      child_frame_exerciser.interface_request_for_first_document(),
+      child_frame_exerciser
+          .document_interface_broker_request_for_first_document(),
+      {{child_frame_url, kFrameEventDidCommitProvisionalLoad},
+       {child_frame_url, kFrameEventDidCreateDocumentElement}});
 }
 
 // Expect that |remote_interfaces_| is bound before the first committed load in
@@ -1251,59 +1236,44 @@ TEST_F(RenderFrameRemoteInterfacesTest, ChildFrameAtFirstCommittedLoad) {
 // removed.
 TEST_F(RenderFrameRemoteInterfacesTest,
        MainFrameOfOpenedWindowAtFirstCommittedLoad) {
-  constexpr struct {
-    const char* main_frame_url_override;
-    const char* new_window_url;
-  } kTestCases[] = {
-      {kTestFirstURL, kAboutBlankURL},
-      {kTestSecondURL, "data:text/html,NewWindow"},
-      {kAboutBlankURL, kAboutBlankURL},
-  };
+  const GURL new_window_url("data:text/html,NewWindow");
+  ScopedNewFrameInterfaceProviderExerciser main_frame_exerciser(
+      frame_creation_observer(), std::string("foo"));
+  const std::string html =
+      base::StringPrintf("<script>window.open(\"%s\", \"_blank\")</script>",
+                         "data:text/html,NewWindow");
+  LoadHTMLWithUrlOverride(html.c_str(), kTestSecondURL);
+  ASSERT_NO_FATAL_FAILURE(
+      main_frame_exerciser.ExpectNewFrameAndWaitForLoad(new_window_url));
 
-  for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(::testing::Message()
-                 << "main_frame_url = " << test_case.main_frame_url_override
-                 << ", new_window_url = " << test_case.new_window_url);
-
-    const GURL new_window_url(test_case.new_window_url);
-    ScopedNewFrameInterfaceProviderExerciser main_frame_exerciser(
-        frame_creation_observer(), std::string("foo"));
-    const std::string html =
-        base::StringPrintf("<script>window.open(\"%s\", \"_blank\")</script>",
-                           test_case.new_window_url);
-    LoadHTMLWithUrlOverride(html.c_str(), test_case.main_frame_url_override);
-    ASSERT_NO_FATAL_FAILURE(
-        main_frame_exerciser.ExpectNewFrameAndWaitForLoad(new_window_url));
-
-    // The URL of the initial empty document is "" for opened windows, in
-    // contrast to child frames, where it is "about:blank". See
-    // Document::Document and Document::SetURL for more details.
-    //
-    // Furthermore, for main frames, InitializeCoreFrame is invoked first, and
-    // RenderFrameImpl::Initialize is invoked second, in contrast to child
-    // frames where it is vice versa. ContentRendererClient::RenderFrameCreated
-    // is invoked from RenderFrameImpl::Initialize, so we miss the events
-    // related to initial empty document that is created from
-    // InitializeCoreFrame, and there is already a document when
-    // RenderFrameCreated is invoked.
-    //
-    // TODO(https://crbug.com/792410): It is unfortunate how many internal
-    // details of frame/document creation this encodes. Need to decouple.
-    const GURL initial_empty_url;
-    ExpectPendingInterfaceRequestsFromSources(
-        main_frame_exerciser.interface_request_for_initial_empty_document(),
-        main_frame_exerciser
-            .document_interface_broker_request_for_initial_empty_document(),
-        {{initial_empty_url, kFrameEventDidCreateNewFrame},
-         {initial_empty_url, kFrameEventReadyToCommitNavigation},
-         {new_window_url, kFrameEventDidCreateNewDocument}});
-    ExpectPendingInterfaceRequestsFromSources(
-        main_frame_exerciser.interface_request_for_first_document(),
-        main_frame_exerciser
-            .document_interface_broker_request_for_first_document(),
-        {{new_window_url, kFrameEventDidCommitProvisionalLoad},
-         {new_window_url, kFrameEventDidCreateDocumentElement}});
-  }
+  // The URL of the initial empty document is "" for opened windows, in
+  // contrast to child frames, where it is "about:blank". See
+  // Document::Document and Document::SetURL for more details.
+  //
+  // Furthermore, for main frames, InitializeCoreFrame is invoked first, and
+  // RenderFrameImpl::Initialize is invoked second, in contrast to child
+  // frames where it is vice versa. ContentRendererClient::RenderFrameCreated
+  // is invoked from RenderFrameImpl::Initialize, so we miss the events
+  // related to initial empty document that is created from
+  // InitializeCoreFrame, and there is already a document when
+  // RenderFrameCreated is invoked.
+  //
+  // TODO(https://crbug.com/792410): It is unfortunate how many internal
+  // details of frame/document creation this encodes. Need to decouple.
+  const GURL initial_empty_url;
+  ExpectPendingInterfaceRequestsFromSources(
+      main_frame_exerciser.interface_request_for_initial_empty_document(),
+      main_frame_exerciser
+          .document_interface_broker_request_for_initial_empty_document(),
+      {{initial_empty_url, kFrameEventDidCreateNewFrame},
+       {initial_empty_url, kFrameEventReadyToCommitNavigation},
+       {new_window_url, kFrameEventDidCreateNewDocument}});
+  ExpectPendingInterfaceRequestsFromSources(
+      main_frame_exerciser.interface_request_for_first_document(),
+      main_frame_exerciser
+          .document_interface_broker_request_for_first_document(),
+      {{new_window_url, kFrameEventDidCommitProvisionalLoad},
+       {new_window_url, kFrameEventDidCreateDocumentElement}});
 }
 
 // Expect that |remote_interfaces_| is not bound to a new pipe if the first
@@ -1324,8 +1294,10 @@ TEST_F(RenderFrameRemoteInterfacesTest,
 //  4) The global object in the child frame's browsing context is re-used.
 //  5) Javascript objects stashed on the global object should continue to work.
 //
-// TODO(https://crbug.com/778318): Once the Window object inheritance is fixed,
-// add a similar test for: <iframe src="javascript:'html'"></iframe>.
+// TODO(japhet?): javascript: urls are untestable here, because they don't
+// go through the normal commit pipeline. If we were to give javascript: urls
+// their own DocumentLoader in blink and model them as a real navigation, we
+// should add a test case here.
 // TODO(crbug.com/718652): when all clients are converted to use
 // DocumentInterfaceBroker, InterfaceProviderRequest-related code will be
 // removed.
@@ -1333,37 +1305,43 @@ TEST_F(RenderFrameRemoteInterfacesTest,
        ChildFrameReusingWindowOfInitialDocument) {
   const GURL main_frame_url(kTestFirstURL);
   const GURL initial_empty_url(kAboutBlankURL);
-  const GURL child_frame_url(kTestSecondURL);
 
-  // Override the URL for the first navigation in the newly created frame to
-  // |child_frame_url|.
-  ScopedNewFrameInterfaceProviderExerciser child_frame_exerciser(
-      frame_creation_observer(), std::string("foo"));
+  constexpr const char* kTestCases[] = {kTestSecondURL, kAboutBlankURL};
 
-  std::string html = "<iframe src='" + child_frame_url.spec() + "'></iframe>";
-  LoadHTMLWithUrlOverride(html.c_str(), main_frame_url.spec().c_str());
+  for (const char* test_case : kTestCases) {
+    SCOPED_TRACE(::testing::Message() << "child_frame_url = " << test_case);
 
-  ASSERT_NO_FATAL_FAILURE(
-      child_frame_exerciser.ExpectNewFrameAndWaitForLoad(child_frame_url));
+    // Override the URL for the first navigation in the newly created frame to
+    // |child_frame_url|.
+    const GURL child_frame_url(test_case);
+    ScopedNewFrameInterfaceProviderExerciser child_frame_exerciser(
+        frame_creation_observer(), std::string("foo"));
 
-  ExpectPendingInterfaceRequestsFromSources(
-      child_frame_exerciser.interface_request_for_initial_empty_document(),
-      child_frame_exerciser
-          .document_interface_broker_request_for_initial_empty_document(),
-      {{GURL(kNoDocumentMarkerURL), kFrameEventDidCreateNewFrame},
-       {initial_empty_url, kFrameEventDidCreateNewDocument},
-       {initial_empty_url, kFrameEventDidCreateDocumentElement},
-       {initial_empty_url, kFrameEventReadyToCommitNavigation},
-       {child_frame_url, kFrameEventDidCreateNewDocument},
-       {child_frame_url, kFrameEventDidCommitProvisionalLoad},
-       {child_frame_url, kFrameEventDidCreateDocumentElement}});
+    std::string html = "<iframe src='" + child_frame_url.spec() + "'></iframe>";
+    LoadHTMLWithUrlOverride(html.c_str(), main_frame_url.spec().c_str());
 
-  auto request = child_frame_exerciser.interface_request_for_first_document();
-  ASSERT_FALSE(request.is_pending());
-  auto document_interface_broker_request =
-      child_frame_exerciser
-          .document_interface_broker_request_for_first_document();
-  ASSERT_FALSE(document_interface_broker_request.is_pending());
+    ASSERT_NO_FATAL_FAILURE(
+        child_frame_exerciser.ExpectNewFrameAndWaitForLoad(child_frame_url));
+
+    ExpectPendingInterfaceRequestsFromSources(
+        child_frame_exerciser.interface_request_for_initial_empty_document(),
+        child_frame_exerciser
+            .document_interface_broker_request_for_initial_empty_document(),
+        {{GURL(kNoDocumentMarkerURL), kFrameEventDidCreateNewFrame},
+         {initial_empty_url, kFrameEventDidCreateNewDocument},
+         {initial_empty_url, kFrameEventDidCreateDocumentElement},
+         {initial_empty_url, kFrameEventReadyToCommitNavigation},
+         {child_frame_url, kFrameEventDidCreateNewDocument},
+         {child_frame_url, kFrameEventDidCommitProvisionalLoad},
+         {child_frame_url, kFrameEventDidCreateDocumentElement}});
+
+    auto request = child_frame_exerciser.interface_request_for_first_document();
+    ASSERT_FALSE(request.is_pending());
+    auto document_interface_broker_request =
+        child_frame_exerciser
+            .document_interface_broker_request_for_first_document();
+    ASSERT_FALSE(document_interface_broker_request.is_pending());
+  }
 }
 
 // Expect that |remote_interfaces_| is bound to a new pipe on cross-document

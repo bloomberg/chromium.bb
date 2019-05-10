@@ -900,10 +900,6 @@ void DocumentLoader::CommitNavigation(const AtomicString& mime_type,
     parsing_policy = kForceSynchronousParsing;
 
   InstallNewDocument(Url(), initiator_origin, owner_document,
-                     GetFrameLoader().ShouldReuseDefaultView(
-                         Url(), content_security_policy_.Get())
-                         ? GlobalObjectReusePolicy::kUseExisting
-                         : GlobalObjectReusePolicy::kCreateNew,
                      mime_type, encoding, InstallNewDocumentReason::kNavigation,
                      parsing_policy, overriding_url);
   parser_->SetDocumentWasLoadedAsPartOfNavigation();
@@ -1543,7 +1539,6 @@ void DocumentLoader::InstallNewDocument(
     const KURL& url,
     const scoped_refptr<const SecurityOrigin> initiator_origin,
     Document* owner_document,
-    GlobalObjectReusePolicy global_object_reuse_policy,
     const AtomicString& mime_type,
     const AtomicString& encoding,
     InstallNewDocumentReason reason,
@@ -1551,6 +1546,27 @@ void DocumentLoader::InstallNewDocument(
     const KURL& overriding_url) {
   DCHECK(!frame_->GetDocument() || !frame_->GetDocument()->IsActive());
   DCHECK_EQ(frame_->Tree().ChildCount(), 0u);
+
+  DocumentInit init = DocumentInit::Create()
+                          .WithDocumentLoader(this)
+                          .WithURL(url)
+                          .WithOwnerDocument(owner_document)
+                          .WithInitiatorOrigin(initiator_origin)
+                          .WithOriginToCommit(origin_to_commit_)
+                          .WithSrcdocDocument(loading_srcdoc_)
+                          .WithNewRegistrationContext();
+
+  ContentSecurityPolicy* csp = content_security_policy_.Get();
+  // The only case where there should be nullptr content_security_policy_
+  // besides empty loads is a javascript: url, which inherits its CSP from the
+  // document in which it was executed.
+  if (!csp && !loading_url_as_empty_document_)
+    csp = frame_->GetDocument()->GetContentSecurityPolicy();
+  GlobalObjectReusePolicy global_object_reuse_policy =
+      GetFrameLoader().ShouldReuseDefaultView(init.GetDocumentOrigin(), csp)
+          ? GlobalObjectReusePolicy::kUseExisting
+          : GlobalObjectReusePolicy::kCreateNew;
+
   if (GetFrameLoader().StateMachine()->IsDisplayingInitialEmptyDocument()) {
     GetFrameLoader().StateMachine()->AdvanceTo(
         FrameLoaderStateMachine::kCommittedFirstRealLoad);
@@ -1575,17 +1591,8 @@ void DocumentLoader::InstallNewDocument(
   if (reason == InstallNewDocumentReason::kNavigation)
     WillCommitNavigation();
 
-  Document* document = frame_->DomWindow()->InstallNewDocument(
-      mime_type,
-      DocumentInit::Create()
-          .WithDocumentLoader(this)
-          .WithURL(url)
-          .WithOwnerDocument(owner_document)
-          .WithInitiatorOrigin(initiator_origin)
-          .WithOriginToCommit(origin_to_commit_)
-          .WithSrcdocDocument(loading_srcdoc_)
-          .WithNewRegistrationContext(),
-      false);
+  Document* document =
+      frame_->DomWindow()->InstallNewDocument(mime_type, init, false);
 
   // Clear the user activation state.
   // TODO(crbug.com/736415): Clear this bit unconditionally for all frames.
@@ -1719,7 +1726,6 @@ const AtomicString& DocumentLoader::MimeType() const {
 void DocumentLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
     const KURL& url,
     Document* owner_document,
-    GlobalObjectReusePolicy global_object_reuse_policy,
     const String& source) {
   // This is necessary because extensions look at DocumentLoader::url_ when
   // deciding whether to inject a content script. In the case where the content
@@ -1731,8 +1737,8 @@ void DocumentLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
   if (url_.IsEmpty())
     url_ = BlankURL();
 
-  InstallNewDocument(url, nullptr, owner_document, global_object_reuse_policy,
-                     MimeType(), response_.TextEncodingName(),
+  InstallNewDocument(url, nullptr, owner_document, MimeType(),
+                     response_.TextEncodingName(),
                      InstallNewDocumentReason::kJavascriptURL,
                      kForceSynchronousParsing, NullURL());
 

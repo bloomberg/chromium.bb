@@ -118,7 +118,6 @@ class CORE_EXPORT DocumentLoader
 
   void ReplaceDocumentWhileExecutingJavaScriptURL(const KURL&,
                                                   Document* owner_document,
-                                                  GlobalObjectReusePolicy,
                                                   const String& source);
 
   const AtomicString& MimeType() const;
@@ -299,7 +298,6 @@ class CORE_EXPORT DocumentLoader
       const KURL&,
       const scoped_refptr<const SecurityOrigin> initiator_origin,
       Document* owner_document,
-      GlobalObjectReusePolicy,
       const AtomicString& mime_type,
       const AtomicString& encoding,
       InstallNewDocumentReason,

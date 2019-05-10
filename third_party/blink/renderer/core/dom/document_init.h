@@ -94,6 +94,8 @@ class CORE_EXPORT DocumentInit final {
   DocumentInit& WithURL(const KURL&);
   const KURL& Url() const { return url_; }
 
+  scoped_refptr<SecurityOrigin> GetDocumentOrigin() const;
+
   // Specifies the Document to inherit security configurations from.
   DocumentInit& WithOwnerDocument(Document*);
   Document* OwnerDocument() const { return owner_document_.Get(); }
@@ -103,9 +105,6 @@ class CORE_EXPORT DocumentInit final {
   // when loading data: and about: schemes.
   DocumentInit& WithInitiatorOrigin(
       scoped_refptr<const SecurityOrigin> initiator_origin);
-  const scoped_refptr<const SecurityOrigin>& InitiatorOrigin() const {
-    return initiator_origin_;
-  }
 
   DocumentInit& WithOriginToCommit(
       scoped_refptr<SecurityOrigin> origin_to_commit);

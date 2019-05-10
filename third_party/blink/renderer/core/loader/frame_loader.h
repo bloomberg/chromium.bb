@@ -211,7 +211,8 @@ class CORE_EXPORT FrameLoader final {
   ContentSecurityPolicy* GetLastOriginDocumentCSP() {
     return last_origin_document_csp_.Get();
   }
-  bool ShouldReuseDefaultView(const KURL&, const ContentSecurityPolicy*);
+  bool ShouldReuseDefaultView(const scoped_refptr<const SecurityOrigin>&,
+                              const ContentSecurityPolicy*);
 
  private:
   bool AllowRequestForThisFrame(const FrameLoadRequest&);

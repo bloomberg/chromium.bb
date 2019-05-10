@@ -300,7 +300,7 @@ void FrameLoader::DispatchUnloadEvent() {
     bool keep_event_listeners =
         provisional_document_loader_ &&
         ShouldReuseDefaultView(
-            provisional_document_loader_->Url(),
+            SecurityOrigin::Create(provisional_document_loader_->Url()),
             provisional_document_loader_->GetContentSecurityPolicy());
     if (!keep_event_listeners)
       document->RemoveAllEventListenersRecursively();
@@ -341,17 +341,6 @@ void FrameLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
 
   const KURL& url = document->Url();
 
-  // Compute this before clearing the frame, because it may need to inherit an
-  // aliased security context.
-  // The document CSP is the correct one as it is used for CSP checks
-  // done previously before getting here:
-  // HTMLFormElement::ScheduleFormSubmission
-  // HTMLFrameElementBase::OpenURL
-  GlobalObjectReusePolicy global_object_reuse_policy =
-      ShouldReuseDefaultView(url, document->GetContentSecurityPolicy())
-          ? GlobalObjectReusePolicy::kUseExisting
-          : GlobalObjectReusePolicy::kCreateNew;
-
   document_loader_->StopLoading();
 
   // Don't allow any new child frames to load in this frame: attaching a new
@@ -372,7 +361,7 @@ void FrameLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
   frame_->GetDocument()->Shutdown();
   Client()->TransitionToCommittedForNewPage();
   document_loader_->ReplaceDocumentWhileExecutingJavaScriptURL(
-      url, owner_document, global_object_reuse_policy, source);
+      url, owner_document, source);
 }
 
 void FrameLoader::FinishedParsing() {
@@ -1338,8 +1327,9 @@ void FrameLoader::MarkAsLoading() {
   progress_tracker_->ProgressStarted();
 }
 
-bool FrameLoader::ShouldReuseDefaultView(const KURL& url,
-                                         const ContentSecurityPolicy* csp) {
+bool FrameLoader::ShouldReuseDefaultView(
+    const scoped_refptr<const SecurityOrigin>& origin,
+    const ContentSecurityPolicy* csp) {
   // Secure transitions can only happen when navigating from the initial empty
   // document.
   if (!state_machine_.IsDisplayingInitialEmptyDocument())
@@ -1355,7 +1345,6 @@ bool FrameLoader::ShouldReuseDefaultView(const KURL& url,
     return false;
   }
 
-  scoped_refptr<const SecurityOrigin> origin = SecurityOrigin::Create(url);
   return frame_->GetDocument()->GetSecurityOrigin()->CanAccess(origin.get());
 }
 
