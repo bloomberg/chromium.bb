@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/syslog_logging.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
@@ -40,6 +41,14 @@ void SecureOriginPrefsObserver::OnChangeInSecureOriginPref() {
         prefs::kUnsafelyTreatInsecureOriginAsSecure);
   }
 
+  std::vector<std::string> rejected_patterns;
   network::SecureOriginAllowlist::GetInstance().SetAuxiliaryAllowlist(
-      pref_value);
+      pref_value, &rejected_patterns);
+
+  if (!rejected_patterns.empty()) {
+    SYSLOG(ERROR) << "The '" << prefs::kUnsafelyTreatInsecureOriginAsSecure
+                  << "' preference or policy contained invalid values "
+                  << "(they have been ignored): "
+                  << base::JoinString(rejected_patterns, ", ");
+  }
 }

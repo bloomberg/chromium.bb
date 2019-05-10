@@ -115,8 +115,9 @@ std::string CanonicalizePatternComponents(const std::string& hostname_pattern) {
   return canonical_host;
 }
 
-std::vector<std::string> ParseSecureOriginAllowlist(
-    const std::vector<std::string>& origins_and_patterns_list) {
+std::vector<std::string> CanonicalizeAllowlist(
+    const std::vector<std::string>& origins_and_patterns_list,
+    std::vector<std::string>* rejected_patterns) {
   std::vector<std::string> result;
   for (const std::string& origin_or_pattern : origins_and_patterns_list) {
     if (origin_or_pattern.find("*") != std::string::npos) {
@@ -130,13 +131,20 @@ std::vector<std::string> ParseSecureOriginAllowlist(
       }
       LOG(ERROR) << "Allowlisted secure origin pattern " << origin_or_pattern
                  << " is not valid; ignoring.";
+      if (rejected_patterns)
+        rejected_patterns->push_back(origin_or_pattern);
       continue;
     }
 
     // Drop opaque origins, as they are unequal to any other origins.
     url::Origin origin(url::Origin::Create(GURL(origin_or_pattern)));
-    if (origin.opaque())
+    if (origin.opaque()) {
+      LOG(ERROR) << "Allowlisted secure origin pattern " << origin_or_pattern
+                 << " is not valid; ignoring.";
+      if (rejected_patterns)
+        rejected_patterns->push_back(origin_or_pattern);
       continue;
+    }
 
     result.push_back(origin.Serialize());
   }
@@ -144,10 +152,13 @@ std::vector<std::string> ParseSecureOriginAllowlist(
 }
 
 std::vector<std::string> ParseSecureOriginAllowlist(
-    const std::string& origins_str) {
-  std::vector<std::string> origin_patterns =
-      ParseSecureOriginAllowlist(base::SplitString(
-          origins_str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL));
+    const std::string& origins_str,
+    std::vector<std::string>* rejected_patterns = nullptr) {
+  std::vector<std::string> origin_patterns = CanonicalizeAllowlist(
+      base::SplitString(origins_str, ",", base::TRIM_WHITESPACE,
+                        base::SPLIT_WANT_ALL),
+      rejected_patterns);
+
   return origin_patterns;
 }
 
@@ -298,9 +309,10 @@ std::vector<std::string> SecureOriginAllowlist::GetCurrentAllowlist() {
 }
 
 void SecureOriginAllowlist::SetAuxiliaryAllowlist(
-    const std::string& auxiliary_allowlist) {
+    const std::string& auxiliary_allowlist,
+    std::vector<std::string>* rejected_patterns) {
   std::vector<std::string> parsed_list =
-      ParseSecureOriginAllowlist(auxiliary_allowlist);
+      ParseSecureOriginAllowlist(auxiliary_allowlist, rejected_patterns);
 
   base::AutoLock lock(lock_);
   auxiliary_allowlist_ = std::move(parsed_list);
@@ -320,6 +332,13 @@ bool SecureOriginAllowlist::IsOriginAllowlisted(const url::Origin& origin) {
   ParseCmdlineIfNeeded();
   return IsAllowlisted(cmdline_allowlist_, origin) ||
          IsAllowlisted(auxiliary_allowlist_, origin);
+}
+
+// static
+std::vector<std::string> SecureOriginAllowlist::CanonicalizeAllowlistForTesting(
+    const std::vector<std::string>& allowlist,
+    std::vector<std::string>* rejected_patterns) {
+  return CanonicalizeAllowlist(allowlist, rejected_patterns);
 }
 
 SecureOriginAllowlist::SecureOriginAllowlist() = default;

@@ -6,6 +6,7 @@
 
 #include "base/test/scoped_command_line.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -22,6 +23,13 @@ bool IsOriginAllowlisted(const char* str) {
 
 bool IsPotentiallyTrustworthy(const char* str) {
   return network::IsUrlPotentiallyTrustworthy(GURL(str));
+}
+
+std::vector<std::string> CanonicalizeAllowlist(
+    const std::vector<std::string>& allowlist,
+    std::vector<std::string>* rejected_patterns) {
+  return SecureOriginAllowlist::CanonicalizeAllowlistForTesting(
+      allowlist, rejected_patterns);
 }
 
 TEST(IsPotentiallyTrustworthy, MainTest) {
@@ -192,6 +200,44 @@ TEST_F(SecureOriginAllowlistTest, MixOfOriginAndHostnamePatterns) {
   EXPECT_TRUE(IsOriginAllowlisted("http://example.com/a.html"));
   EXPECT_TRUE(IsOriginAllowlisted("http://bar.foo.com/b.html"));
   EXPECT_TRUE(IsOriginAllowlisted("http://10.20.30.40/c.html"));
+}
+
+TEST_F(SecureOriginAllowlistTest, Canonicalization) {
+  std::vector<std::string> canonicalized;
+  std::vector<std::string> rejected;
+
+  // Basic test.
+  rejected.clear();
+  canonicalized = CanonicalizeAllowlist({"*.foo.com"}, &rejected);
+  EXPECT_THAT(rejected, ::testing::IsEmpty());
+  EXPECT_THAT(canonicalized, ::testing::ElementsAre("*.foo.com"));
+
+  // Okay to pass |nullptr| as a 2nd arg.
+  rejected.clear();
+  canonicalized = CanonicalizeAllowlist({"null", "*.com"}, nullptr);
+  EXPECT_THAT(canonicalized, ::testing::IsEmpty());
+
+  // Opaque origins or invalid urls should be rejected.
+  rejected.clear();
+  canonicalized = CanonicalizeAllowlist({"null", "invalid"}, &rejected);
+  EXPECT_THAT(rejected, ::testing::ElementsAre("null", "invalid"));
+  EXPECT_THAT(canonicalized, ::testing::IsEmpty());
+
+  // Wildcard shouldn't appear in eTLD+1.
+  rejected.clear();
+  canonicalized = CanonicalizeAllowlist({"*.com"}, &rejected);
+  EXPECT_THAT(rejected, ::testing::ElementsAre("*.com"));
+  EXPECT_THAT(canonicalized, ::testing::IsEmpty());
+
+  // Replacing '*' with a hostname component should form a valid hostname (so,
+  // schemes or ports or paths should not be part of a wildcards;  only valid
+  // hostname characters are allowed).
+  rejected.clear();
+  canonicalized = CanonicalizeAllowlist(
+      {"*.example.com", "*.example.com:1234", "!@#$%^&---.*.com"}, &rejected);
+  EXPECT_THAT(rejected,
+              ::testing::ElementsAre("*.example.com:1234", "!@#$%^&---.*.com"));
+  EXPECT_THAT(canonicalized, ::testing::ElementsAre("*.example.com"));
 }
 
 }  // namespace network

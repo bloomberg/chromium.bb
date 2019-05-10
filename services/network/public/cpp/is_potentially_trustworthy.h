@@ -80,15 +80,23 @@ class COMPONENT_EXPORT(NETWORK_CPP) SecureOriginAllowlist {
   //
   // As with --unsafely-treat-insecure-origin-as-secure, the
   // |auxiliary_allowlist| will be canonicalized (for more details see the
-  // class-level comment above).
+  // class-level comment above).  Input patterns that fail validation and
+  // canonicalization will not be added, and will be appended to the optional
+  // |rejected_patterns| output parameter.
   //
   // This method is safe to be called from any thread.
-  void SetAuxiliaryAllowlist(const std::string& auxiliary_allowlist);
+  void SetAuxiliaryAllowlist(const std::string& auxiliary_allowlist,
+                             std::vector<std::string>* rejected_patterns);
 
   // Empties the secure origin allowlist.
   //
   // This function is safe to be called from any thread.
   void ResetForTesting();
+
+  // For unit tests.
+  static std::vector<std::string> CanonicalizeAllowlistForTesting(
+      const std::vector<std::string>& allowlist,
+      std::vector<std::string>* rejected_patterns);
 
  private:
   friend class base::NoDestructor<SecureOriginAllowlist>;
