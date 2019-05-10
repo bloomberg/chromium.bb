@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div id="textbox" role="textbox" contenteditable>
   <p>
@@ -10,7 +11,6 @@
 
 <script>
   setup(() => {
-    let textbox = document.getElementById('textbox');
     textbox.focus();
     let selectionRange = document.createRange();
     selectionRange.selectNodeContents(textbox);
@@ -18,20 +18,11 @@
     getSelection().addRange(selectionRange);
   });
 
-  async_test((t) => {
+  async_test_after_layout_and_paint((t) => {
     let axRoot = accessibilityController.rootElement;
-    let selectionNotificationsCounter = 0;
 
     axRoot.addNotificationListener(t.step_func((notification) => {
-      if (notification == 'SelectedTextChanged' || notification == 'DocumentSelectionChanged')
-        ++selectionNotificationsCounter;
-
-      // A selection change notification should fire four times:
-      // 1. When the textbox receives focus.
-      // 2. When the selection in removed before it's set via getSelection().removeAllRanges().
-      // 3. When the selection is made.
-      // 4. When the selection is removed.
-      if (selectionNotificationsCounter == 4) {
+      if (notification == 'DocumentSelectionChanged') {
         axRoot.removeNotificationListener();
         assert_equals(axRoot.selectionAnchorObject, null, 'selectionAnchorObject');
         assert_equals(axRoot.selectionAnchorOffset, -1, 'selectionAnchorOffset');
