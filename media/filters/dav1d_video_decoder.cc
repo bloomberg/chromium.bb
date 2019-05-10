@@ -26,36 +26,27 @@ extern "C" {
 
 namespace media {
 
-static int GetDecoderTileThreadCount(const VideoDecoderConfig& config) {
-  // Values based on currently available content. Recommended by YouTube.
-  int tile_threads;
-
-  const int height = config.coded_size().height();
-  if (height >= 1000)
-    tile_threads = 8;
-  else if (height >= 700)
-    tile_threads = 5;
-  else if (height >= 300)
-    tile_threads = 3;
-  else
-    tile_threads = 2;
-
-  return tile_threads;
-}
-
-static int GetDecoderFrameThreadCount(const VideoDecoderConfig& config) {
-  // Values based on currently available content.
-  int frame_threads;
-
-  const int height = config.coded_size().height();
-  if (height >= 1000)
-    frame_threads = 8;
-  else if (height >= 700)
-    frame_threads = 4;
-  else
-    frame_threads = 2;
-
-  return frame_threads;
+static void GetDecoderThreadCounts(const int coded_height,
+                                   int* tile_threads,
+                                   int* frame_threads) {
+  // Tile thread counts based on currently available content. Recommended by
+  // YouTube, while frame thread values fit within limits::kMaxVideoThreads.
+  if (coded_height >= 700) {
+    *tile_threads =
+        4;  // Current 720p content is encoded in 5 tiles and 1080p content with
+            // 8 tiles, but we'll exceed limits::kMaxVideoThreads with 5+ tile
+            // threads with 3 frame threads (5 * 3 + 3 = 18 threads vs 16 max).
+            //
+            // Since 720p playback isn't smooth without 3 frame threads, we've
+            // chosen a slightly lower tile thread count.
+    *frame_threads = 3;
+  } else if (coded_height >= 300) {
+    *tile_threads = 3;
+    *frame_threads = 2;
+  } else {
+    *tile_threads = 2;
+    *frame_threads = 2;
+  }
 }
 
 static VideoPixelFormat Dav1dImgFmtToVideoPixelFormat(
@@ -178,10 +169,11 @@ void Dav1dVideoDecoder::Initialize(const VideoDecoderConfig& config,
   // maximum number of recommended threads (using number of processors, etc).
   //
   // dav1d will spawn |n_tile_threads| per frame thread.
-  s.n_tile_threads = GetDecoderTileThreadCount(config);
-  s.n_frame_threads = GetDecoderFrameThreadCount(config);
+  GetDecoderThreadCounts(config.coded_size().height(), &s.n_tile_threads,
+                         &s.n_frame_threads);
+
   const int max_threads = VideoDecoder::GetRecommendedThreadCount(
-      s.n_frame_threads * s.n_tile_threads);
+      s.n_frame_threads * (s.n_tile_threads + 1));
 
   // First clamp tile threads to the allowed maximum. We prefer tile threads
   // over frame threads since dav1d folk indicate they are more efficient. In an
@@ -199,21 +191,20 @@ void Dav1dVideoDecoder::Initialize(const VideoDecoderConfig& config,
   // require at least two buffers before the first frame can be output.
   //
   // If a system has the cores for it, we'll end up using the following:
-  // <300p: 2 tile threads, 2 frame threads = 4 total threads.
-  // <700p: 3 tile threads, 2 frame threads = 6 total threads.
+  // <300p: 2 tile threads, 2 frame threads = 2 * 2 + 2 = 6 total threads.
+  // <700p: 3 tile threads, 2 frame threads = 3 * 2 + 2 = 8 total threads.
   //
   // For higher resolutions we hit limits::kMaxVideoThreads (16):
-  // <1000p: 5 tile threads, 3 frame thread = 15 total threads.
-  // >1000p: 8 tile threads, 2 frame threads = 16 total threads.
+  // >700p: 4 tile threads, 3 frame threads = 4 * 3 + 3  = 15 total threads.
   //
   // Due to the (surprising) performance issues which occurred when setting
   // |n_frame_threads|=1 (https://crbug.com/957511) the minimum total number of
-  // threads is 4 (two tile and two frame) regardless of core count. The maximum
+  // threads is 6 (two tile and two frame) regardless of core count. The maximum
   // is min(2 * base::SysInfo::NumberOfProcessors(), limits::kMaxVideoThreads).
   if (low_delay)
     s.n_frame_threads = 1;
-  else if (s.n_frame_threads * s.n_tile_threads > max_threads)
-    s.n_frame_threads = std::max(2, max_threads / s.n_tile_threads);
+  else if (s.n_frame_threads * (s.n_tile_threads + 1) > max_threads)
+    s.n_frame_threads = std::max(2, max_threads / (s.n_tile_threads + 1));
 
   // Route dav1d internal logs through Chrome's DLOG system.
   s.logger = {nullptr, &LogDav1dMessage};
