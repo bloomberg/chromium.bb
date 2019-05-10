@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
 import org.junit.After;
@@ -68,6 +69,8 @@ public class TabListMediatorUnitTest {
     private static final int TAB1_ID = 456;
     private static final int TAB2_ID = 789;
     private static final int TAB3_ID = 123;
+    private static final int POSITION1 = 0;
+    private static final int POSITION2 = 1;
 
     @Mock
     TabContentManager mTabContentManager;
@@ -81,6 +84,8 @@ public class TabListMediatorUnitTest {
     TabModel mTabModel;
     @Mock
     TabListFaviconProvider mTabListFaviconProvider;
+    @Mock
+    RecyclerView mRecyclerView;
     @Captor
     ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
     @Captor
@@ -94,6 +99,8 @@ public class TabListMediatorUnitTest {
     private Tab mTab2;
     private TabListMediator mMediator;
     private TabListModel mModel;
+    private TabGridViewHolder mViewHolder1;
+    private TabGridViewHolder mViewHolder2;
 
     @Before
     public void setUp() {
@@ -104,6 +111,8 @@ public class TabListMediatorUnitTest {
 
         mTab1 = prepareTab(TAB1_ID, TAB1_TITLE);
         mTab2 = prepareTab(TAB2_ID, TAB2_TITLE);
+        mViewHolder1 = prepareViewHolder(TAB1_ID, POSITION1);
+        mViewHolder2 = prepareViewHolder(TAB2_ID, POSITION2);
 
         List<TabModel> tabModelList = new ArrayList<>();
         tabModelList.add(mTabModel);
@@ -127,6 +136,10 @@ public class TabListMediatorUnitTest {
         doNothing()
                 .when(mTabListFaviconProvider)
                 .getFaviconForUrlAsync(anyString(), anyBoolean(), mCallbackCaptor.capture());
+        doReturn(mTab1).when(mTabModelSelector).getTabById(TAB1_ID);
+        doReturn(mTab2).when(mTabModelSelector).getTabById(TAB2_ID);
+        doReturn(POSITION1).when(mTabModel).indexOf(mTab1);
+        doReturn(POSITION2).when(mTabModel).indexOf(mTab2);
 
         mModel = new TabListModel();
         mMediator = new TabListMediator(mModel, mTabModelSelector,
@@ -188,6 +201,15 @@ public class TabListMediatorUnitTest {
                 .run(mModel.get(1).get(TabProperties.TAB_ID));
 
         verify(mTabModel).closeTab(eq(mTab2), eq(null), eq(false), eq(false), eq(true));
+    }
+
+    @Test
+    public void sendsMoveTabSignalCorrectly() {
+        initAndAssertAllProperties();
+
+        mMediator.getItemTouchHelperCallback(0f).onMove(mRecyclerView, mViewHolder1, mViewHolder2);
+
+        verify(mTabModel).moveTab(eq(TAB1_ID), eq(2));
     }
 
     @Test
@@ -335,6 +357,36 @@ public class TabListMediatorUnitTest {
         assertThat(mModel.get(2).get(TabProperties.TITLE), equalTo(TAB3_TITLE));
     }
 
+    @Test
+    public void tabMovement_GTS_Forward() {
+        initAndAssertAllProperties();
+
+        assertThat(mModel.size(), equalTo(2));
+        assertThat(mModel.get(1).get(TabProperties.TAB_ID), equalTo(TAB2_ID));
+        assertThat(mModel.get(1).get(TabProperties.TITLE), equalTo(TAB2_TITLE));
+
+        mTabModelObserverCaptor.getValue().didMoveTab(mTab2, POSITION1, POSITION2);
+
+        assertThat(mModel.size(), equalTo(2));
+        assertThat(mModel.get(0).get(TabProperties.TAB_ID), equalTo(TAB2_ID));
+        assertThat(mModel.get(0).get(TabProperties.TITLE), equalTo(TAB2_TITLE));
+    }
+
+    @Test
+    public void tabMovement_GTS_BackWard() {
+        initAndAssertAllProperties();
+
+        assertThat(mModel.size(), equalTo(2));
+        assertThat(mModel.get(1).get(TabProperties.TAB_ID), equalTo(TAB2_ID));
+        assertThat(mModel.get(1).get(TabProperties.TITLE), equalTo(TAB2_TITLE));
+
+        mTabModelObserverCaptor.getValue().didMoveTab(mTab1, POSITION2, POSITION1);
+
+        assertThat(mModel.size(), equalTo(2));
+        assertThat(mModel.get(0).get(TabProperties.TAB_ID), equalTo(TAB2_ID));
+        assertThat(mModel.get(0).get(TabProperties.TITLE), equalTo(TAB2_TITLE));
+    }
+
     private void initAndAssertAllProperties() {
         List<Tab> tabs = new ArrayList<>();
         for (int i = 0; i < mTabModel.getCount(); i++) {
@@ -383,5 +435,12 @@ public class TabListMediatorUnitTest {
         doReturn("").when(tab).getUrl();
         doReturn(title).when(tab).getTitle();
         return tab;
+    }
+
+    private TabGridViewHolder prepareViewHolder(int id, int position) {
+        TabGridViewHolder viewHolder = mock(TabGridViewHolder.class);
+        doReturn(id).when(viewHolder).getTabId();
+        doReturn(position).when(viewHolder).getAdapterPosition();
+        return viewHolder;
     }
 }

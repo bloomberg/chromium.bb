@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -316,6 +317,13 @@ class TabListMediator {
                 if (mModel.indexFromId(tab.getId()) == TabModel.INVALID_TAB_INDEX) return;
                 mModel.removeAt(mModel.indexFromId(tab.getId()));
             }
+
+            @Override
+            public void didMoveTab(Tab tab, int newIndex, int curIndex) {
+                if (mModel.indexFromId(tab.getId()) == TabModel.INVALID_TAB_INDEX) return;
+                if (newIndex >= mModel.size() || curIndex >= mModel.size()) return;
+                mModel.move(curIndex, newIndex);
+            }
         };
 
         mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(mTabModelObserver);
@@ -434,11 +442,31 @@ class TabListMediator {
      * @return The callback that hosts the logic for swipe and drag related actions.
      */
     ItemTouchHelper.SimpleCallback getItemTouchHelperCallback(final float swipeToDismissThreshold) {
-        return new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.START | ItemTouchHelper.END) {
+        return new ItemTouchHelper.SimpleCallback(0, 0) {
             @Override
-            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder,
-                    RecyclerView.ViewHolder viewHolder1) {
-                return false;
+            public int getMovementFlags(
+                    RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+                final int dragFlags = !FeatureUtilities.isTabGroupsAndroidEnabled()
+                        ? ItemTouchHelper.START | ItemTouchHelper.END | ItemTouchHelper.UP
+                                | ItemTouchHelper.DOWN
+                        : 0;
+                final int swipeFlags = ItemTouchHelper.START | ItemTouchHelper.END;
+                return makeMovementFlags(dragFlags, swipeFlags);
+            }
+
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder fromViewHolder,
+                    RecyclerView.ViewHolder toViewHolder) {
+                assert fromViewHolder instanceof TabGridViewHolder;
+                assert toViewHolder instanceof TabGridViewHolder;
+
+                int tabId = ((TabGridViewHolder) fromViewHolder).getTabId();
+                int curIndex = mModel.indexFromId(tabId);
+                int distance =
+                        toViewHolder.getAdapterPosition() - fromViewHolder.getAdapterPosition();
+                int newIndex = curIndex + (distance > 0 ? distance + 1 : distance);
+                mTabModelSelector.getCurrentModel().moveTab(tabId, newIndex);
+                return true;
             }
 
             @Override
