@@ -832,11 +832,8 @@ function swapInNewTiles() {
 
   const parent = document.querySelector('#' + IDS.MOST_VISITED);
 
-  // Only fade in the new tiles if there were tiles before.
-  let fadeIn = false;
   const old = parent.querySelector('#' + IDS.MV_TILES);
   if (old) {
-    fadeIn = true;
     // Mark old tile DIV for removal after the transition animation is done.
     old.removeAttribute('id');
     old.classList.add('mv-tiles-old');
@@ -860,9 +857,7 @@ function swapInNewTiles() {
 
   // getComputedStyle causes the initial style (opacity 0) to be applied, so
   // that when we then set it to 1, that triggers the CSS transition.
-  if (fadeIn) {
-    flushOpacity();
-  }
+  flushOpacity();
   cur.style.opacity = 1.0;
 
   if (document.documentElement.classList.contains(CLASSES.NO_INITIAL_FADE)) {
