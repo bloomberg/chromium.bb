@@ -192,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestGamepadIncompleteData) {
   this->LoadUrlAndAwaitInitialization(
       this->GetFileUrlForHtmlTestFile("test_webxr_gamepad_support"));
   this->EnterSessionWithUserGestureOrFail();
-  this->ExecuteStepAndWait("validateInsufficientGamepadData()");
+  this->ExecuteStepAndWait("validateInputSourceHasNoGamepad()");
   this->RunJavaScriptOrFail("done()");
   this->EndTest();
 }

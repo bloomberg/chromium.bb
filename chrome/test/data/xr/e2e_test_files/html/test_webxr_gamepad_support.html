@@ -28,9 +28,16 @@ circumstances.
             "Number of returned gamepads matches expectation");
       }
 
-      let validateFirstGamepadStateCallback = null;
-      function validateInsufficientGamepadData() {
+      function validateInputSourceHasNoGamepad() {
+        assert_equals(onImmersiveXRFrameCallback, null);
         onImmersiveXRFrameCallback = function(session) {
+          // Clear the callback first in case any of the following asserts fail.
+          // If any asserts trigger, we don't run any code that follows, so if
+          // we did this as the last step of the callback and any of the asserts
+          // failed, we would be continually called, which just makes it harder
+          // to debug.
+          onImmersiveXRFrameCallback = null;
+
           // We don't expect to have attached any non-vr gamepads, and vr
           // gamepads shouldn't show up in navigator.getGamepads()
           assertNumNavigatorGamepadsMatchesExpectation(0);
@@ -38,14 +45,21 @@ circumstances.
           assert_equals(input_sources.length, 1, "There should only be one input source");
           assert_equals(input_sources[0].gamepad, null,
               "There should not be enough data to make a gamepad");
-          onImmersiveXRFrameCallback = null;
 
           finishJavaScriptStep();
         }
       }
 
-      function validateGamepad() {
+      function validateFirstGamepad(validationFunction) {
+        assert_equals(onImmersiveXRFrameCallback, null);
         onImmersiveXRFrameCallback = function(session) {
+          // Clear the callback first in case any of the following asserts fail.
+          // If any asserts trigger, we don't run any code that follows, so if
+          // we did this as the last step of the callback and any of the asserts
+          // failed, we would be continually called, which just makes it harder
+          // to debug.
+          onImmersiveXRFrameCallback = null;
+
           // We don't expect to have attached any non-vr gamepads, and vr
           // gamepads shouldn't show up in navigator.getGamepads()
           assertNumNavigatorGamepadsMatchesExpectation(0);
@@ -54,53 +68,46 @@ circumstances.
           assert_not_equals(input_sources[0].gamepad, null,
               "There should be enough data to make a gamepad");
           assert_equals(input_sources[0].gamepad.mapping, "xr-standard");
-          if (validateFirstGamepadStateCallback) {
-            validateFirstGamepadStateCallback(input_sources[0].gamepad);
+          if (validationFunction) {
+            validationFunction(input_sources[0].gamepad);
           }
-          onImmersiveXRFrameCallback = null;
 
           finishJavaScriptStep();
         }
       }
 
       function validateButtonNotPressed(button_index) {
-        validateFirstGamepadStateCallback = function(gamepad) {
+        let validationFunction = function(gamepad) {
           assert_less_than(button_index, gamepad.buttons.length,
             "Verify that we have at least as many buttons as requested");
           assert_false(gamepad.buttons[button_index].pressed);
-
-          validateFirstGamepadStateCallback = null;
         }
 
-        validateGamepad();
+        validateFirstGamepad(validationFunction);
       }
 
       function validateButtonPressed(button_index) {
-        validateFirstGamepadStateCallback = function(gamepad) {
+        let validationFunction = function(gamepad) {
           assert_less_than(button_index, gamepad.buttons.length,
             "Verify that we have at least as many buttons as requested");
           assert_true(gamepad.buttons[button_index].pressed);
-
-          validateFirstGamepadStateCallback = null;
         }
 
-        validateGamepad();
+        validateFirstGamepad(validationFunction);
       }
 
       function validateButtonTouched(button_index) {
-        validateFirstGamepadStateCallback = function(gamepad) {
+        let validationFunction = function(gamepad) {
           assert_less_than(button_index, gamepad.buttons.length,
             "Verify that we have at least as many buttons as requested");
           assert_true(gamepad.buttons[button_index].touched);
-
-          validateFirstGamepadStateCallback = null;
         }
 
-        validateGamepad();
+        validateFirstGamepad(validationFunction);
       }
 
       function validateAxesValues(axes_pair_index, x_axis_value, y_axis_value) {
-        validateFirstGamepadStateCallback = function(gamepad) {
+        let validationFunction = function(gamepad) {
           let epsilon = 0.001;
           let x_index = (2 * axes_pair_index);
           let y_index = (2 * axes_pair_index) + 1;
@@ -111,11 +118,9 @@ circumstances.
             "X approximately equals expected");
           assert_true(Math.abs(gamepad.axes[y_index] - y_axis_value) < epsilon,
             "Y approximately equals expected");
-
-          validateFirstGamepadStateCallback = null;
         }
 
-        validateGamepad();
+        validateFirstGamepad(validationFunction);
       }
     </script>
   </body>
