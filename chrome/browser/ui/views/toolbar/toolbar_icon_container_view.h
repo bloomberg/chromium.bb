@@ -6,10 +6,14 @@
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ICON_CONTAINER_VIEW_H_
 
 #include "base/macros.h"
+#include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/button_observer.h"
 #include "ui/views/view.h"
 
 // A general view container for any type of toolbar icons.
-class ToolbarIconContainerView : public views::View {
+class ToolbarIconContainerView : public views::View,
+                                 public views::ButtonObserver,
+                                 public views::ViewObserver {
  public:
   ToolbarIconContainerView();
   ~ToolbarIconContainerView() override;
@@ -20,14 +24,29 @@ class ToolbarIconContainerView : public views::View {
   // Adds the RHS child as well as setting its margins.
   void AddMainView(views::View* main_view);
 
+  // views::ButtonObserver:
+  void OnHighlightChanged(views::Button* observed_button,
+                          bool highlighted) override;
+  void OnStateChanged(views::Button* observed_button,
+                      views::Button::ButtonState old_state) override;
+
+  // views::ViewObserver:
+  void OnViewFocused(views::View* observed_view) override;
+  void OnViewBlurred(views::View* observed_view) override;
+
  private:
   // views::View:
   void ChildPreferredSizeChanged(views::View* child) override;
   void ChildVisibilityChanged(views::View* child) override;
 
+  void UpdateHighlight(bool highlighted);
+
   // The main view is nominally always present and is last child in the view
   // hierarchy.
   views::View* main_view_ = nullptr;
+
+  // Points to the child view that is currently highlighted.
+  views::View* highlighted_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarIconContainerView);
 };

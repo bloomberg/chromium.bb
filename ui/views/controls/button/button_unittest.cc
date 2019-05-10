@@ -21,6 +21,7 @@
 #include "ui/views/animation/test/test_ink_drop.h"
 #include "ui/views/animation/test/test_ink_drop_host.h"
 #include "ui/views/context_menu_controller.h"
+#include "ui/views/controls/button/button_observer.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -120,6 +121,42 @@ class TestButton : public Button, public ButtonListener {
   DISALLOW_COPY_AND_ASSIGN(TestButton);
 };
 
+class TestButtonObserver : public ButtonObserver {
+ public:
+  TestButtonObserver() = default;
+  ~TestButtonObserver() override = default;
+
+  void OnHighlightChanged(views::Button* observed_button,
+                          bool highlighted) override {
+    observed_button_ = observed_button;
+    highlighted_ = highlighted;
+  }
+
+  void OnStateChanged(views::Button* observed_button,
+                      views::Button::ButtonState old_state) override {
+    observed_button_ = observed_button;
+    state_changed_ = true;
+  }
+
+  void Reset() {
+    observed_button_ = nullptr;
+    highlighted_ = false;
+    state_changed_ = false;
+  }
+
+  views::Button* observed_button() { return observed_button_; }
+  bool highlighted() const { return highlighted_; }
+  bool state_changed() const { return state_changed_; }
+
+ private:
+  views::Button* observed_button_ = nullptr;
+  bool highlighted_ = false;
+  bool state_changed_ = false;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestButtonObserver);
+};
+
 }  // namespace
 
 class ButtonTest : public ViewsTestBase {
@@ -140,41 +177,55 @@ class ButtonTest : public ViewsTestBase {
     widget_->Init(params);
     widget_->Show();
 
-    button_ = new TestButton(false);
-    widget_->SetContentsView(button_);
+    button_ = std::make_unique<TestButton>(false);
+    widget_->SetContentsView(button_.get());
   }
 
   void TearDown() override {
+    if (button_observer_)
+      button_->RemoveButtonObserver(button_observer_.get());
+
+    button_observer_.reset();
+    button_.reset();
     widget_.reset();
+
     ViewsTestBase::TearDown();
   }
 
   void CreateButtonWithInkDrop(std::unique_ptr<InkDrop> ink_drop,
                                bool has_ink_drop_action_on_click) {
-    delete button_;
-    button_ = new TestButton(has_ink_drop_action_on_click);
-    InkDropHostViewTestApi(button_).SetInkDrop(std::move(ink_drop));
-    widget_->SetContentsView(button_);
+    button_ = std::make_unique<TestButton>(has_ink_drop_action_on_click);
+    InkDropHostViewTestApi(button_.get()).SetInkDrop(std::move(ink_drop));
+    widget_->SetContentsView(button_.get());
   }
 
   void CreateButtonWithRealInkDrop() {
-    delete button_;
-    button_ = new TestButton(false);
-    InkDropHostViewTestApi(button_).SetInkDrop(
-        std::make_unique<InkDropImpl>(button_, button_->size()));
-    widget_->SetContentsView(button_);
+    button_ = std::make_unique<TestButton>(false);
+    InkDropHostViewTestApi(button_.get())
+        .SetInkDrop(
+            std::make_unique<InkDropImpl>(button_.get(), button_->size()));
+    widget_->SetContentsView(button_.get());
+  }
+
+  void CreateButtonWithObserver() {
+    button_ = std::make_unique<TestButton>(false);
+    button_observer_ = std::make_unique<TestButtonObserver>();
+    button_->AddButtonObserver(button_observer_.get());
+    widget_->SetContentsView(button_.get());
   }
 
  protected:
   Widget* widget() { return widget_.get(); }
-  TestButton* button() { return button_; }
+  TestButton* button() { return button_.get(); }
+  TestButtonObserver* button_observer() { return button_observer_.get(); }
   void SetDraggedView(View* dragged_view) {
     widget_->dragged_view_ = dragged_view;
   }
 
  private:
   std::unique_ptr<Widget> widget_;
-  TestButton* button_ = nullptr;
+  std::unique_ptr<TestButton> button_;
+  std::unique_ptr<TestButtonObserver> button_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ButtonTest);
 };
@@ -557,7 +608,6 @@ TEST_F(ButtonTest, HideInkDropHighlightWhenRemoved) {
   // Remove references to and delete button() which cannot be removed by owned
   // containers as it's permanently set as owned by client.
   test_container.RemoveAllChildViews(false);
-  delete button();
 
   // Set the widget contents view to a new View so widget() doesn't contain a
   // stale reference to the test containers that are about to go out of scope.
@@ -710,8 +760,6 @@ TEST_F(ButtonTest, NoLayerAddedForWidgetVisibilityChanges) {
   EXPECT_FALSE(button()->layer());
   EXPECT_EQ(0, button()->ink_drop_layer_add_count());
   EXPECT_EQ(0, button()->ink_drop_layer_remove_count());
-
-  delete button();
 }
 
 // Verify that the Space key clicks the button on key-press on Mac, and
@@ -790,6 +838,59 @@ TEST_F(ButtonTest, CustomActionOnKeyPressedEvent) {
   ui::KeyEvent control_release(ui::ET_KEY_RELEASED, ui::VKEY_CONTROL,
                                ui::EF_NONE);
   EXPECT_FALSE(button()->OnKeyReleased(control_release));
+}
+
+// Verifies that ButtonObserver is notified when the button activition highlight
+// state is changed. Also verifies the |observed_button| and |highlighted|
+// passed to observer are correct.
+TEST_F(ButtonTest, ChangingHighlightStateNotifiesListener) {
+  CreateButtonWithObserver();
+  EXPECT_FALSE(button_observer()->highlighted());
+
+  button()->SetHighlighted(/*bubble_visible=*/true);
+  EXPECT_EQ(button_observer()->observed_button(), button());
+  EXPECT_TRUE(button_observer()->highlighted());
+
+  button()->SetHighlighted(/*bubble_visible=*/false);
+  EXPECT_EQ(button_observer()->observed_button(), button());
+  EXPECT_FALSE(button_observer()->highlighted());
+}
+
+// Verifies that ButtonObserver is notified when the button state is changed,
+// and that the |observed_button| is passed to observer correctly.
+TEST_F(ButtonTest, ClickingButtonNotifiesObserverOfStateChanges) {
+  CreateButtonWithObserver();
+  ui::test::EventGenerator generator(GetRootWindow(widget()));
+
+  generator.PressLeftButton();
+  EXPECT_EQ(button_observer()->observed_button(), button());
+  EXPECT_TRUE(button_observer()->state_changed());
+
+  button_observer()->Reset();
+  EXPECT_EQ(button_observer()->observed_button(), nullptr);
+  EXPECT_FALSE(button_observer()->state_changed());
+
+  generator.ReleaseLeftButton();
+  EXPECT_EQ(button_observer()->observed_button(), button());
+  EXPECT_TRUE(button_observer()->state_changed());
+}
+
+// Verifies the ButtonObserver is notified whenever Button::SetState() is
+// called directly.
+TEST_F(ButtonTest, SetStateNotifiesObserver) {
+  CreateButtonWithObserver();
+
+  button()->SetState(Button::ButtonState::STATE_HOVERED);
+  EXPECT_EQ(button_observer()->observed_button(), button());
+  EXPECT_TRUE(button_observer()->state_changed());
+
+  button_observer()->Reset();
+  EXPECT_EQ(button_observer()->observed_button(), nullptr);
+  EXPECT_FALSE(button_observer()->state_changed());
+
+  button()->SetState(Button::ButtonState::STATE_NORMAL);
+  EXPECT_EQ(button_observer()->observed_button(), button());
+  EXPECT_TRUE(button_observer()->state_changed());
 }
 
 }  // namespace views

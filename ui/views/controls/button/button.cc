@@ -17,6 +17,7 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/controls/button/button_controller.h"
 #include "ui/views/controls/button/button_controller_delegate.h"
+#include "ui/views/controls/button/button_observer.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -211,6 +212,16 @@ void Button::SetHighlighted(bool bubble_visible) {
   AnimateInkDrop(bubble_visible ? views::InkDropState::ACTIVATED
                                 : views::InkDropState::DEACTIVATED,
                  nullptr);
+  for (ButtonObserver& observer : button_observers_)
+    observer.OnHighlightChanged(this, bubble_visible);
+}
+
+void Button::AddButtonObserver(ButtonObserver* observer) {
+  button_observers_.AddObserver(observer);
+}
+
+void Button::RemoveButtonObserver(ButtonObserver* observer) {
+  button_observers_.RemoveObserver(observer);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -523,6 +534,8 @@ void Button::OnSetTooltipText(const base::string16& tooltip_text) {}
 
 void Button::StateChanged(ButtonState old_state) {
   button_controller_->OnStateChanged(old_state);
+  for (ButtonObserver& observer : button_observers_)
+    observer.OnStateChanged(this, old_state);
 }
 
 bool Button::IsTriggerableEvent(const ui::Event& event) {

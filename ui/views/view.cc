@@ -932,6 +932,7 @@ void View::Paint(const PaintInfo& parent_paint_info) {
 
 void View::SetBackground(std::unique_ptr<Background> b) {
   background_ = std::move(b);
+  SchedulePaint();
 }
 
 void View::SetBorder(std::unique_ptr<Border> b) {

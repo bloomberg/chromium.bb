@@ -42,6 +42,8 @@ ToolbarPageActionIconContainerView::ToolbarPageActionIconContainerView(
 
   for (PageActionIconView* icon_view : page_action_icons_) {
     icon_view->SetVisible(false);
+    icon_view->AddButtonObserver(this);
+    icon_view->views::View::AddObserver(this);
     AddChildView(icon_view);
   }
 
@@ -49,8 +51,12 @@ ToolbarPageActionIconContainerView::ToolbarPageActionIconContainerView(
   AddMainView(avatar_);
 }
 
-ToolbarPageActionIconContainerView::~ToolbarPageActionIconContainerView() =
-    default;
+ToolbarPageActionIconContainerView::~ToolbarPageActionIconContainerView() {
+  for (PageActionIconView* icon_view : page_action_icons_) {
+    icon_view->RemoveButtonObserver(this);
+    icon_view->views::View::RemoveObserver(this);
+  }
+}
 
 void ToolbarPageActionIconContainerView::UpdateAllIcons() {
   const ui::ThemeProvider* theme_provider = GetThemeProvider();
