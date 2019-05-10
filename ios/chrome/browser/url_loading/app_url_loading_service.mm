@@ -78,3 +78,7 @@ void AppUrlLoadingService::LoadUrlInNewTab(const UrlLoadParams& params) {
                             focusOmnibox:params.should_focus_omnibox];
   }
 }
+
+ios::ChromeBrowserState* AppUrlLoadingService::GetCurrentBrowserState() {
+  return [delegate_ currentBrowserState];
+}

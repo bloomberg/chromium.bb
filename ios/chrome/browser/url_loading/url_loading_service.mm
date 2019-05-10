@@ -233,7 +233,16 @@ void UrlLoadingService::LoadUrlInNewTab(const UrlLoadParams& params) {
   DCHECK(browser_);
   ios::ChromeBrowserState* browser_state = browser_->GetBrowserState();
 
-  if (params.in_incognito != browser_state->IsOffTheRecord()) {
+  // Two UrlLoadingServices exist, normal and incognito.  Handle two special
+  // cases that need to be sent up to the AppUrlLoadingService:
+  // 1) The URL needs to be loaded by the UrlLoadingService for the other mode.
+  // 2) The URL will be loaded in a foreground tab by this UrlLoadingService,
+  // but the UI associated with this UrlLoadingService is not currently visible,
+  // so the AppUrlLoadingService needs to switch modes before loading the URL.
+  if (params.in_incognito != browser_state->IsOffTheRecord() ||
+      (!params.in_background() &&
+       params.in_incognito !=
+           app_service_->GetCurrentBrowserState()->IsOffTheRecord())) {
     // When sending a load request that switches modes, ensure the tab
     // ends up appended to the end of the model, not just next to what is
     // currently selected in the other mode. This is done with the |append_to|
