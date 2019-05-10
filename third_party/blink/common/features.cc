@@ -263,6 +263,11 @@ const base::Feature kWebFontsCacheAwareTimeoutAdaption {
 #endif
 };
 
+// Enabled to block programmatic focus in subframes when not triggered by user
+// activation (see htpps://crbug.com/954349).
+const base::Feature kBlockingFocusWithoutUserActivation{
+    "BlockingFocusWithoutUserActivation", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsOffMainThreadSharedWorkerScriptFetchEnabled() {
   // Off-the-main-thread shared worker script fetch depends on PlzSharedWorker
   // (NetworkService).

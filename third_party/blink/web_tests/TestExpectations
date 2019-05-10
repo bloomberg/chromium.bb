@@ -5803,3 +5803,6 @@ crbug.com/961547 external/wpt/event-timing/programmatic-click-not-observed.html 
 
 # Sheriff 2019-05-10
 crbug.com/960623 [ Win ] http/tests/misc/resource-timing-sizes-multipart.html [ Pass Failure ]
+
+# This test might need to be removed.
+crbug.com/954349 fast/forms/autofocus-in-sandbox-with-allow-scripts.html [ Timeout ]
