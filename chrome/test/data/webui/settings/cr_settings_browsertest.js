@@ -2059,8 +2059,7 @@ CrSettingsMetricsReportingTest.prototype = {
   ]),
 };
 
-// TODO(crbug.com/960259): Broken with UnifiedConsent.
-TEST_F('CrSettingsMetricsReportingTest', 'DISABLED_All', function() {
+TEST_F('CrSettingsMetricsReportingTest', 'All', function() {
   mocha.run();
 });
 
