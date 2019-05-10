@@ -4,12 +4,14 @@
 
 #include "chrome/browser/ui/managed_ui.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -69,5 +71,50 @@ IN_PROC_BROWSER_TEST_F(ManagedUiTest, ShouldDisplayManagedUiOnDesktop) {
   EXPECT_FALSE(chrome::ShouldDisplayManagedUi(browser()->profile()));
 #else
   EXPECT_TRUE(chrome::ShouldDisplayManagedUi(browser()->profile()));
+#endif
+}
+
+IN_PROC_BROWSER_TEST_F(ManagedUiTest, GetManagedUiMenuItemLabel) {
+  TestingProfile::Builder builder;
+  auto profile = builder.Build();
+
+  TestingProfile::Builder builder_with_domain;
+  builder_with_domain.SetProfileName("foobar@example.com");
+  auto profile_with_domain = builder_with_domain.Build();
+
+  EXPECT_EQ(base::UTF8ToUTF16("Managed by your organization"),
+            chrome::GetManagedUiMenuItemLabel(profile.get()));
+  EXPECT_EQ(base::UTF8ToUTF16("Managed by example.com"),
+            chrome::GetManagedUiMenuItemLabel(profile_with_domain.get()));
+}
+
+IN_PROC_BROWSER_TEST_F(ManagedUiTest, GetManagedUiWebUILabel) {
+  TestingProfile::Builder builder;
+  auto profile = builder.Build();
+
+  TestingProfile::Builder builder_with_domain;
+  builder_with_domain.SetProfileName("foobar@example.com");
+  auto profile_with_domain = builder_with_domain.Build();
+
+#if !defined(OS_CHROMEOS)
+  EXPECT_EQ(
+      base::UTF8ToUTF16(
+          "Your <a href=\"chrome://management\">browser is managed</a> by your "
+          "organization"),
+      chrome::GetManagedUiWebUILabel(profile.get()));
+  EXPECT_EQ(
+      base::UTF8ToUTF16(
+          "Your <a href=\"chrome://management\">browser is managed</a> by "
+          "example.com"),
+      chrome::GetManagedUiWebUILabel(profile_with_domain.get()));
+#else
+  EXPECT_EQ(
+      base::UTF8ToUTF16("Your <a href=\"chrome://management\">Chrome device is "
+                        "managed</a> by your organization"),
+      chrome::GetManagedUiWebUILabel(profile.get()));
+  EXPECT_EQ(
+      base::UTF8ToUTF16("Your <a href=\"chrome://management\">Chrome device is "
+                        "managed</a> by example.com"),
+      chrome::GetManagedUiWebUILabel(profile_with_domain.get()));
 #endif
 }
