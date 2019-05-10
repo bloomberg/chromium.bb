@@ -622,7 +622,7 @@ void PasswordManager::DropFormManagers() {
 }
 
 bool PasswordManager::IsPasswordFieldDetectedOnPage() {
-  return !pending_login_managers_.empty();
+  return !pending_login_managers_.empty() || !form_managers_.empty();
 }
 
 void PasswordManager::AddObserverAndDeliverCredentials(

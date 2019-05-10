@@ -1005,6 +1005,19 @@ TEST_F(PasswordManagerTest, FormSubmit) {
   form_manager_to_save->Save();
 }
 
+TEST_F(PasswordManagerTest, IsPasswordFieldDetectedOnPage) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  TurnOnOnlyNewPassword(&scoped_feature_list);
+  PasswordForm form(MakeSimpleForm());
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+  EXPECT_FALSE(manager()->IsPasswordFieldDetectedOnPage());
+  manager()->OnPasswordFormsParsed(&driver_, {form});
+  EXPECT_TRUE(manager()->IsPasswordFieldDetectedOnPage());
+  manager()->DropFormManagers();
+  EXPECT_FALSE(manager()->IsPasswordFieldDetectedOnPage());
+}
+
 TEST_F(PasswordManagerTest, FormSubmitWhenPasswordsCannotBeSaved) {
   // Test that a plain form submit doesn't result in offering to save passwords.
   EXPECT_CALL(*store_, IsAbleToSavePasswords()).WillOnce(Return(false));
