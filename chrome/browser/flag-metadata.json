@@ -1144,8 +1144,8 @@
   },
   {
     "name": "enable-horizontal-tab-switcher",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "memex-team@google.com" ],
+    "expiry_milestone": 77
   },
   {
     "name": "enable-hosted-app-quit-notification",
