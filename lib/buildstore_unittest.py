@@ -67,7 +67,15 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     self.assertEqual(bs._IsBuildbucketClientMissing(), False)
     # Test Buildbucket is not needed.
     bs = BuildStore(_read_from_bb=False, _write_to_bb=False)
+    bs._transitioning_to_bb = False
     self.assertEqual(bs._IsBuildbucketClientMissing(), False)
+    # Test _transitioning_to_bb logic.
+    bs = BuildStore(_read_from_bb=False, _write_to_bb=False)
+    bs._transitioning_to_bb = False
+    bs.bb_client = None
+    self.assertFalse(bs._IsBuildbucketClientMissing())
+    bs._transitioning_to_bb = True
+    self.assertTrue(bs._IsBuildbucketClientMissing())
 
   def testInitializeClientsWithCIDBSetup(self):
     """Tests InitializeClients with mock CIDB."""
@@ -155,6 +163,7 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     init = self.PatchObject(BuildStore, 'InitializeClients',
                             return_value=True)
     bs = BuildStore(_read_from_bb=False)
+    bs._transitioning_to_bb = False
     fake_result = [
         {'message_value': 1234},
         {'message_value': 2341},
@@ -425,6 +434,7 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     init = self.PatchObject(BuildStore, 'InitializeClients',
                             return_value=True)
     bs = BuildStore(_read_from_bb=False)
+    bs._transitioning_to_bb = False
     bs.cidb_conn = mock.MagicMock()
     buildbucket_ids = [1234, 2341]
     # Test for CIDB redirect.
@@ -454,6 +464,7 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     init = self.PatchObject(BuildStore, 'InitializeClients',
                             return_value=True)
     bs = BuildStore(_read_from_bb=False)
+    bs._transitioning_to_bb = False
     bs.cidb_conn = mock.MagicMock()
     buildbucket_ids = ['bucket 1', 'bucket 2']
     # Test for buildbucket_ids.
@@ -477,6 +488,7 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     init = self.PatchObject(BuildStore, 'InitializeClients',
                             return_value=True)
     bs = BuildStore(_read_from_bb=False)
+    bs._transitioning_to_bb = False
     bs.cidb_conn = mock.MagicMock()
     build_ids = ['build 1', 'build 2']
     buildbucket_ids = [1234, 2341]
