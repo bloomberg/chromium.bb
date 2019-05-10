@@ -95,7 +95,7 @@ void FindDuplicates(std::vector<std::unique_ptr<PasswordForm>>* forms,
     tag_groups->front().push_back(unique_forms.front().get());
   }
   for (auto it = forms->begin() + 1; it != forms->end(); ++it) {
-    if (ArePasswordFormUniqueKeyEqual(**it, *unique_forms.back())) {
+    if (ArePasswordFormUniqueKeysEqual(**it, *unique_forms.back())) {
       if (tag_groups)
         tag_groups->back().push_back(it->get());
       duplicates->push_back(std::move(*it));

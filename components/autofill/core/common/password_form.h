@@ -355,8 +355,8 @@ struct PasswordForm {
 
 // True if the unique keys for the forms are the same. The unique key is
 // (origin, username_element, username_value, password_element, signon_realm).
-bool ArePasswordFormUniqueKeyEqual(const PasswordForm& left,
-                                   const PasswordForm& right);
+bool ArePasswordFormUniqueKeysEqual(const PasswordForm& left,
+                                    const PasswordForm& right);
 
 // A comparator for the unique key.
 struct LessThanUniqueKey {

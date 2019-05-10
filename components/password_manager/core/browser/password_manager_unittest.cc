@@ -67,7 +67,7 @@ MATCHER_P2(FormUsernamePasswordAre, username, password, "") {
 }
 
 MATCHER_P(FormHasUniqueKey, key, "") {
-  return ArePasswordFormUniqueKeyEqual(arg, key);
+  return ArePasswordFormUniqueKeysEqual(arg, key);
 }
 
 MATCHER_P(FormIgnoreDate, expected, "") {

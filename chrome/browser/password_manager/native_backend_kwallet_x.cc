@@ -413,7 +413,7 @@ password_manager::PasswordStoreChangeList NativeBackendKWallet::AddLogin(
   auto it = std::partition(
       forms.begin(), forms.end(),
       [&form](const std::unique_ptr<PasswordForm>& current_form) {
-        return !ArePasswordFormUniqueKeyEqual(form, *current_form);
+        return !ArePasswordFormUniqueKeysEqual(form, *current_form);
       });
   password_manager::PasswordStoreChangeList changes;
   if (it != forms.end()) {
@@ -449,7 +449,7 @@ bool NativeBackendKWallet::UpdateLogin(
   auto it = std::partition(
       forms.begin(), forms.end(),
       [&form](const std::unique_ptr<PasswordForm>& current_form) {
-        return !ArePasswordFormUniqueKeyEqual(form, *current_form);
+        return !ArePasswordFormUniqueKeysEqual(form, *current_form);
       });
 
   if (it == forms.end())
@@ -481,7 +481,7 @@ bool NativeBackendKWallet::RemoveLogin(
   std::vector<std::unique_ptr<PasswordForm>> kept_forms;
   kept_forms.reserve(all_forms.size());
   for (std::unique_ptr<PasswordForm>& saved_form : all_forms) {
-    if (!ArePasswordFormUniqueKeyEqual(form, *saved_form)) {
+    if (!ArePasswordFormUniqueKeysEqual(form, *saved_form)) {
       kept_forms.push_back(std::move(saved_form));
     }
   }

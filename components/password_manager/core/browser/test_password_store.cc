@@ -54,7 +54,7 @@ PasswordStoreChangeList TestPasswordStore::AddLoginImpl(
   auto iter = std::find_if(
       passwords_for_signon_realm.begin(), passwords_for_signon_realm.end(),
       [&form](const auto& password) {
-        return ArePasswordFormUniqueKeyEqual(form, password);
+        return ArePasswordFormUniqueKeysEqual(form, password);
       });
 
   if (iter != passwords_for_signon_realm.end()) {
@@ -75,7 +75,7 @@ PasswordStoreChangeList TestPasswordStore::UpdateLoginImpl(
   std::vector<autofill::PasswordForm>& forms =
       stored_passwords_[form.signon_realm];
   for (auto it = forms.begin(); it != forms.end(); ++it) {
-    if (ArePasswordFormUniqueKeyEqual(form, *it)) {
+    if (ArePasswordFormUniqueKeysEqual(form, *it)) {
       *it = form;
       changes.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE, form));
     }
@@ -90,7 +90,7 @@ PasswordStoreChangeList TestPasswordStore::RemoveLoginImpl(
       stored_passwords_[form.signon_realm];
   auto it = forms.begin();
   while (it != forms.end()) {
-    if (ArePasswordFormUniqueKeyEqual(form, *it)) {
+    if (ArePasswordFormUniqueKeysEqual(form, *it)) {
       it = forms.erase(it);
       changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
     } else {

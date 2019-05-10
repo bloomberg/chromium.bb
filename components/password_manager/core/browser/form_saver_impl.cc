@@ -53,7 +53,7 @@ void PostProcessMatches(const PasswordForm& pending,
   for (const auto* match : matches) {
     DCHECK(pending.preferred);
     if (match->IsFederatedCredential() ||
-        ArePasswordFormUniqueKeyEqual(pending, *match))
+        ArePasswordFormUniqueKeysEqual(pending, *match))
       continue;
     // Delete obsolete empty username credentials.
     const bool same_password = match->password_value == pending.password_value;

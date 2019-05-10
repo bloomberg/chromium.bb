@@ -181,8 +181,8 @@ bool PasswordForm::operator!=(const PasswordForm& form) const {
   return !operator==(form);
 }
 
-bool ArePasswordFormUniqueKeyEqual(const PasswordForm& left,
-                                   const PasswordForm& right) {
+bool ArePasswordFormUniqueKeysEqual(const PasswordForm& left,
+                                    const PasswordForm& right) {
   return (left.signon_realm == right.signon_realm &&
           left.origin == right.origin &&
           left.username_element == right.username_element &&

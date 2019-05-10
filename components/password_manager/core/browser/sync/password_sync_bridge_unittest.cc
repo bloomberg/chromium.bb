@@ -150,7 +150,7 @@ class FakeDatabase {
  private:
   int GetPrimaryKey(const autofill::PasswordForm& form) const {
     for (const auto& pair : data_) {
-      if (ArePasswordFormUniqueKeyEqual(*pair.second, form)) {
+      if (ArePasswordFormUniqueKeysEqual(*pair.second, form)) {
         return pair.first;
       }
     }

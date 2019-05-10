@@ -161,7 +161,7 @@ class MockBackend : public PasswordStoreX::NativeBackend {
   bool UpdateLogin(const PasswordForm& form,
                    PasswordStoreChangeList* changes) override {
     for (size_t i = 0; i < all_forms_.size(); ++i) {
-      if (ArePasswordFormUniqueKeyEqual(all_forms_[i], form)) {
+      if (ArePasswordFormUniqueKeysEqual(all_forms_[i], form)) {
         all_forms_[i] = form;
         changes->push_back(
             PasswordStoreChange(PasswordStoreChange::UPDATE, form));
@@ -173,7 +173,7 @@ class MockBackend : public PasswordStoreX::NativeBackend {
   bool RemoveLogin(const PasswordForm& form,
                    PasswordStoreChangeList* changes) override {
     for (size_t i = 0; i < all_forms_.size(); ++i) {
-      if (ArePasswordFormUniqueKeyEqual(all_forms_[i], form)) {
+      if (ArePasswordFormUniqueKeysEqual(all_forms_[i], form)) {
         changes->push_back(
             PasswordStoreChange(PasswordStoreChange::REMOVE, form));
         erase(i--);

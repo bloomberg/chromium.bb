@@ -875,7 +875,7 @@ std::unique_ptr<PasswordForm> PasswordStore::GetLoginImpl(
   std::vector<std::unique_ptr<PasswordForm>> candidates(
       FillMatchingLogins(FormDigest(primary_key)));
   for (auto& candidate : candidates) {
-    if (ArePasswordFormUniqueKeyEqual(*candidate, primary_key) &&
+    if (ArePasswordFormUniqueKeysEqual(*candidate, primary_key) &&
         !candidate->is_public_suffix_match) {
       return std::move(candidate);
     }

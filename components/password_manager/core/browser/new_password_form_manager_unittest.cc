@@ -61,7 +61,7 @@ const int kUsernameFieldIndex = 1;
 const int kPasswordFieldIndex = 2;
 
 MATCHER_P(FormHasUniqueKey, key, "") {
-  return ArePasswordFormUniqueKeyEqual(arg, key);
+  return ArePasswordFormUniqueKeysEqual(arg, key);
 }
 
 class MockPasswordManagerDriver : public StubPasswordManagerDriver {
@@ -946,7 +946,7 @@ TEST_F(NewPasswordFormManagerTest, OverridePassword) {
 
   form_manager_->Save();
 
-  EXPECT_TRUE(ArePasswordFormUniqueKeyEqual(saved_match_, updated_form));
+  EXPECT_TRUE(ArePasswordFormUniqueKeysEqual(saved_match_, updated_form));
   EXPECT_TRUE(updated_form.preferred);
   EXPECT_EQ(new_password, updated_form.password_value);
 }
@@ -986,7 +986,7 @@ TEST_F(NewPasswordFormManagerTest, UpdatePasswordOnChangePasswordForm) {
 
   form_manager_->Save();
 
-  EXPECT_TRUE(ArePasswordFormUniqueKeyEqual(saved_match_, updated_form));
+  EXPECT_TRUE(ArePasswordFormUniqueKeysEqual(saved_match_, updated_form));
   EXPECT_TRUE(updated_form.preferred);
   EXPECT_EQ(new_password, updated_form.password_value);
 }
@@ -1723,7 +1723,7 @@ TEST_F(NewPasswordFormManagerTest, Update) {
 
   form_manager_->Update(saved_match_);
 
-  EXPECT_TRUE(ArePasswordFormUniqueKeyEqual(saved_match_, updated_form));
+  EXPECT_TRUE(ArePasswordFormUniqueKeysEqual(saved_match_, updated_form));
   EXPECT_TRUE(updated_form.preferred);
   EXPECT_EQ(new_password, updated_form.password_value);
 }
@@ -1928,7 +1928,7 @@ TEST_F(NewPasswordFormManagerTest, HTTPAuthPasswordOverridden) {
   form_manager_->Save();
 
   EXPECT_TRUE(
-      ArePasswordFormUniqueKeyEqual(saved_http_auth_form, updated_form));
+      ArePasswordFormUniqueKeysEqual(saved_http_auth_form, updated_form));
   EXPECT_EQ(new_password, updated_form.password_value);
 }
 

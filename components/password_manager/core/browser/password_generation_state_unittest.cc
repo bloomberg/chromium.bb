@@ -62,7 +62,7 @@ PasswordForm CreateGenerated() {
 }
 
 MATCHER_P(FormHasUniqueKey, key, "") {
-  return ArePasswordFormUniqueKeyEqual(arg, key);
+  return ArePasswordFormUniqueKeysEqual(arg, key);
 }
 
 class PasswordGenerationStateTest : public testing::Test {

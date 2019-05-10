@@ -54,7 +54,7 @@ void BlacklistedCredentialsCleaner::OnGetPasswordStoreResults(
             PasswordStore::FormDigest(*result));
     blacklisted.date_created = result->date_created;
     // In case |blacklisted| and |result| differ, update the store.
-    if (!ArePasswordFormUniqueKeyEqual(blacklisted, *result))
+    if (!ArePasswordFormUniqueKeysEqual(blacklisted, *result))
       store_->UpdateLoginWithPrimaryKey(blacklisted, *result);
     else if (blacklisted != *result)
       store_->UpdateLogin(blacklisted);
