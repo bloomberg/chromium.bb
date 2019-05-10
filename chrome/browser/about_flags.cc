@@ -2703,6 +2703,10 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
 #if !defined(OS_ANDROID)
+    {"chrome-colors", flag_descriptions::kChromeColorsName,
+     flag_descriptions::kChromeColorsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kChromeColors)},
+
     {"remove-ntp-fakebox", flag_descriptions::kRemoveNtpFakeboxName,
      flag_descriptions::kRemoveNtpFakeboxDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kRemoveNtpFakebox)},

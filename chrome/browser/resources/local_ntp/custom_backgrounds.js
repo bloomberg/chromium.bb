@@ -217,6 +217,7 @@ customBackgrounds.setMenuVisibility = function() {
   $(customBackgrounds.IDS.EDIT_BG_DIVIDER).hidden = false;
   $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT).hidden =
       configData.hideShortcuts;
+  $(customBackgrounds.IDS.COLORS_BUTTON).hidden = !configData.chromeColors;
 };
 
 /**

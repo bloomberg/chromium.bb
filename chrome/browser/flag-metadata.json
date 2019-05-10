@@ -371,6 +371,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "chrome-colors",
+    "owners": ["gayane"],
+    "expiry_milestone": 78
+  },
+  {
     "name": "clear-old-browsing-data",
     "owners": [ "dullweber" ],
     "expiry_milestone": 78

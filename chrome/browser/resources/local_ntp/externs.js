@@ -33,7 +33,8 @@ let MostVisitedData;
  *            removeFakebox: boolean,
  *            alternateFakebox: boolean,
  *            fakeboxSearchIcon: boolean,
- *            hideShortcuts: boolean}}
+ *            hideShortcuts: boolean,
+ *            chromeColors: boolean}}
  */
 let configData;
 

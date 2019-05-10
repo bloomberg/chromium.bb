@@ -1551,6 +1551,9 @@ extern const char kAppManagementDescription[];
 extern const char kAutofillDropdownLayoutName[];
 extern const char kAutofillDropdownLayoutDescription[];
 
+extern const char kChromeColorsName[];
+extern const char kChromeColorsDescription[];
+
 extern const char kRemoveNtpFakeboxName[];
 extern const char kRemoveNtpFakeboxDescription[];
 

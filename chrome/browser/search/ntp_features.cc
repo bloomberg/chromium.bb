@@ -9,6 +9,10 @@
 
 namespace features {
 
+// If enabled, 'Chrome Colors' menu becomes visible in the customization picker.
+const base::Feature kChromeColors{"ChromeColors",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, does not fade in most visited tiles on initial page load.
 const base::Feature kDisableInitialMostVisitedFadeIn{
     "DisableInitialMostVisitedFadeIn", base::FEATURE_DISABLED_BY_DEFAULT};

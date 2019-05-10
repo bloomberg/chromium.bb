@@ -2597,6 +2597,10 @@ const char kAppManagementName[] = "Enable App Management page";
 const char kAppManagementDescription[] =
     "Shows the new app management page at chrome://apps.";
 
+const char kChromeColorsName[] = "Chrome Colors menu";
+const char kChromeColorsDescription[] =
+    "Show Chrome Colors menu in the NTP customization menu.";
+
 const char kRemoveNtpFakeboxName[] = "Remove fakebox from the NTP";
 const char kRemoveNtpFakeboxDescription[] =
     "Do not show the fakebox on the New Tab page.";
