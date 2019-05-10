@@ -38,6 +38,7 @@ js_library("languages") {
     "../prefs:prefs_types",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js:promise_resolver",
   ]
   externs_list = [

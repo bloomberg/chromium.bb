@@ -659,9 +659,15 @@ cr.define('languages_page_tests', function() {
           return;
         }
 
+        loadTimeData.overrideValues({
+          spellCheckDisabledReason: 'no languages!',
+        });
+
         assertFalse(languagesPage.$.enableSpellcheckingToggle.disabled);
         assertTrue(
             languageHelper.getPref('browser.enable_spellchecking').value);
+        assertEquals(
+            languagesPage.$.enableSpellcheckingToggle.subLabel, undefined);
 
         // Empty out supported languages
         languageHelper.setPrefValue('intl.accept_languages', '');
@@ -672,6 +678,9 @@ cr.define('languages_page_tests', function() {
         assertTrue(languagesPage.$.enableSpellcheckingToggle.disabled);
         assertFalse(
             languageHelper.getPref('browser.enable_spellchecking').value);
+        assertEquals(
+            languagesPage.$.enableSpellcheckingToggle.subLabel,
+            'no languages!');
       });
 
       test('error handling', function() {

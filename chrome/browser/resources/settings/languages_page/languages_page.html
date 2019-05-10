@@ -9,6 +9,7 @@
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
@@ -293,6 +294,7 @@
         <settings-toggle-button
             id="enableSpellcheckingToggle"
             label="$i18n{spellCheckTitle}"
+            sub-label="[[getSpellCheckSubLabel_(spellCheckLanguages_)]]"
             pref="{{prefs.browser.enable_spellchecking}}"
             disabled="[[!spellCheckLanguages_.length]]">
         </settings-toggle-button>

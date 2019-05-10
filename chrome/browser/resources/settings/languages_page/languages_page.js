@@ -27,6 +27,7 @@ Polymer({
   is: 'settings-languages-page',
 
   behaviors: [
+    I18nBehavior,
     PrefsBehavior,
   ],
 
@@ -690,6 +691,20 @@ Polymer({
       return 'selected';
     }
     return '';
+  },
+
+  /**
+   * @return {string|undefined}
+   * @private
+   */
+  getSpellCheckSubLabel_: function() {
+    // <if expr="not is_macosx">
+    if (this.spellCheckLanguages_.length === 0) {
+      return this.i18n('spellCheckDisabledReason');
+    }
+    // </if>
+
+    return undefined;
   },
 
   // <if expr="chromeos">
