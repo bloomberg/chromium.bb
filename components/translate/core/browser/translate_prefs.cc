@@ -487,8 +487,10 @@ std::vector<std::string> TranslatePrefs::GetBlacklistedSitesBetween(
   for (const auto& entry : *dict) {
     std::string site = entry.first;
     base::Time time;
-    // TODO(crbug.com/928787): Handle base::GetValueAsTime() failure.
-    ignore_result(base::GetValueAsTime(*entry.second, &time));
+    if (!base::GetValueAsTime(*entry.second, &time)) {
+      NOTREACHED();
+      continue;
+    }
     if (begin <= time && time < end)
       result.push_back(site);
   }
