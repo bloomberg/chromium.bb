@@ -83,6 +83,7 @@ class CONTENT_EXPORT AuthenticatorCommon {
   void IsUserVerifyingPlatformAuthenticatorAvailable(
       blink::mojom::Authenticator::
           IsUserVerifyingPlatformAuthenticatorAvailableCallback callback);
+  void Cancel();
 
   // Synchronous implementation of
   // IsUserVerifyingPlatformAuthenticatorAvailable.
@@ -149,12 +150,12 @@ class CONTENT_EXPORT AuthenticatorCommon {
           response_data,
       base::Optional<device::FidoTransportProtocol> transport_used);
 
-  void FailWithErrorAndCleanup();
-
   // Runs when timer expires and cancels all issued requests to a U2fDevice.
   void OnTimeout();
+  // Cancels the currently pending request (if any) with the supplied status.
+  void CancelWithStatus(blink::mojom::AuthenticatorStatus status);
   // Runs when the user cancels WebAuthN request via UI dialog.
-  void Cancel();
+  void OnCancelFromUI();
 
   // Called when a GetAssertion has completed, either because an allow_list was
   // used and so an answer is returned directly, or because the user selected an

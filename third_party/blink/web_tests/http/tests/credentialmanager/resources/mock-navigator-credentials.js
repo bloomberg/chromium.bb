@@ -112,6 +112,8 @@ class MockAuthenticator {
     return false;
   }
 
+  async cancel() {}
+
   // Resets state of mock Authenticator.
   reset() {
     this.status_ = blink.mojom.AuthenticatorStatus.UNKNOWN_ERROR;

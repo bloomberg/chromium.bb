@@ -77,6 +77,10 @@ void AuthenticatorImpl::IsUserVerifyingPlatformAuthenticatorAvailable(
       std::move(callback));
 }
 
+void AuthenticatorImpl::Cancel() {
+  authenticator_common_->Cancel();
+}
+
 void AuthenticatorImpl::DidFinishNavigation(
     NavigationHandle* navigation_handle) {
   // If the RenderFrameHost itself is navigated then this function will cause

@@ -79,6 +79,7 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
                     GetAssertionCallback callback) override;
   void IsUserVerifyingPlatformAuthenticatorAvailable(
       IsUserVerifyingPlatformAuthenticatorAvailableCallback callback) override;
+  void Cancel() override;
 
   // WebContentsObserver:
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;

@@ -97,6 +97,9 @@ constexpr char kInvalidStateError[] =
     "webauth: InvalidStateError: The user attempted to use an authenticator "
     "that recognized none of the provided credentials.";
 
+constexpr char kAbortErrorMessage[] =
+    "webauth: AbortError: The user aborted a request.";
+
 // Templates to be used with base::ReplaceStringPlaceholders. Can be
 // modified to include up to 9 replacements. The default values for
 // any additional replacements added should also be added to the
@@ -123,6 +126,29 @@ constexpr char kCreatePublicKeyTemplate[] =
     "         e => window.domAutomationController.send("
     "                  'webauth: ' + e.toString()));";
 
+constexpr char kCreatePublicKeyWithAbortSignalTemplate[] =
+    "navigator.credentials.create({ publicKey: {"
+    "  challenge: new TextEncoder().encode('climb a mountain'),"
+    "  rp: { id: '$3', name: 'Acme', icon: '$7'},"
+    "  user: { "
+    "    id: new TextEncoder().encode('1098237235409872'),"
+    "    name: 'avery.a.jones@example.com',"
+    "    displayName: 'Avery A. Jones', "
+    "    icon: '$8'},"
+    "  pubKeyCredParams: [{ type: 'public-key', alg: '$4'}],"
+    "  timeout: 1000,"
+    "  excludeCredentials: [],"
+    "  authenticatorSelection: {"
+    "     requireResidentKey: $1,"
+    "     userVerification: '$2',"
+    "     authenticatorAttachment: '$5',"
+    "  },"
+    "  attestation: '$6',"
+    "}, signal: $9}"
+    ").then(c => window.domAutomationController.send('webauth: OK'),"
+    "       e => window.domAutomationController.send("
+    "                'webauth: ' + e.toString()));";
+
 constexpr char kPlatform[] = "platform";
 constexpr char kCrossPlatform[] = "cross-platform";
 constexpr char kPreferredVerification[] = "preferred";
@@ -138,6 +164,7 @@ struct CreateParameters {
   const char* attestation = "none";
   const char* rp_icon = "https://pics.acme.com/00/p/aBjjjpqPb.png";
   const char* user_icon = "https://pics.acme.com/00/p/aBjjjpqPb.png";
+  const char* signal = "";
 };
 
 std::string BuildCreateCallWithParameters(const CreateParameters& parameters) {
@@ -150,8 +177,13 @@ std::string BuildCreateCallWithParameters(const CreateParameters& parameters) {
   substitutions.push_back(parameters.attestation);
   substitutions.push_back(parameters.rp_icon);
   substitutions.push_back(parameters.user_icon);
-  return base::ReplaceStringPlaceholders(kCreatePublicKeyTemplate,
-                                         substitutions, nullptr);
+  if (strlen(parameters.signal) == 0) {
+    return base::ReplaceStringPlaceholders(kCreatePublicKeyTemplate,
+                                           substitutions, nullptr);
+  }
+  substitutions.push_back(parameters.signal);
+  return base::ReplaceStringPlaceholders(
+      kCreatePublicKeyWithAbortSignalTemplate, substitutions, nullptr);
 }
 
 constexpr char kGetPublicKeyTemplate[] =
@@ -165,6 +197,17 @@ constexpr char kGetPublicKeyTemplate[] =
     "        e => window.domAutomationController.send("
     "                  'webauth: ' + e.toString()));";
 
+constexpr char kGetPublicKeyWithAbortSignalTemplate[] =
+    "navigator.credentials.get({ publicKey: {"
+    "  challenge: new TextEncoder().encode('climb a mountain'),"
+    "  rpId: 'acme.com',"
+    "  timeout: 1000,"
+    "  userVerification: '$1',"
+    "  $2},"
+    "  signal: $3"
+    "}).catch(c => window.domAutomationController.send("
+    "                  'webauth: ' + c.toString()));";
+
 // Default values for kGetPublicKeyTemplate.
 struct GetParameters {
   const char* user_verification = kPreferredVerification;
@@ -172,14 +215,20 @@ struct GetParameters {
       "allowCredentials: [{ type: 'public-key',"
       "     id: new TextEncoder().encode('allowedCredential'),"
       "     transports: ['usb', 'nfc', 'ble']}]";
+  const char* signal = "";
 };
 
 std::string BuildGetCallWithParameters(const GetParameters& parameters) {
-  std::vector<std::string> substititions;
-  substititions.push_back(parameters.user_verification);
-  substititions.push_back(parameters.allow_credentials);
-  return base::ReplaceStringPlaceholders(kGetPublicKeyTemplate, substititions,
-                                         nullptr);
+  std::vector<std::string> substitutions;
+  substitutions.push_back(parameters.user_verification);
+  substitutions.push_back(parameters.allow_credentials);
+  if (strlen(parameters.signal) == 0) {
+    return base::ReplaceStringPlaceholders(kGetPublicKeyTemplate, substitutions,
+                                           nullptr);
+  }
+  substitutions.push_back(parameters.signal);
+  return base::ReplaceStringPlaceholders(kGetPublicKeyWithAbortSignalTemplate,
+                                         substitutions, nullptr);
 }
 
 // Helper class that executes the given |closure| the very last moment before
@@ -825,6 +874,63 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
     ASSERT_EQ(kTimeoutErrorMessage, result);
   }
 }
+// Tests that when navigator.credentials.create() is called with abort
+// signal's aborted flag not set, we get a SUCCESS.
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       CreatePublicKeyCredentialWithAbortNotSet) {
+  for (const auto protocol : kAllProtocols) {
+    device::test::ScopedVirtualFidoDevice virtual_device;
+    virtual_device.SetSupportedProtocol(protocol);
+
+    CreateParameters parameters;
+    parameters.signal = "authAbortSignal";
+    std::string result;
+    std::string script =
+        "authAbortController = new AbortController();"
+        "authAbortSignal = authAbortController.signal;" +
+        BuildCreateCallWithParameters(parameters);
+
+    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+        shell()->web_contents()->GetMainFrame(), script, &result));
+    ASSERT_EQ("webauth: OK", result);
+  }
+}
+
+// Tests that when navigator.credentials.create() is called with abort
+// signal's aborted flag set before sending request, we get an AbortError.
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       CreatePublicKeyCredentialWithAbortSetBeforeCreate) {
+  CreateParameters parameters;
+  parameters.signal = "authAbortSignal";
+  std::string result;
+  std::string script =
+      "authAbortController = new AbortController();"
+      "authAbortSignal = authAbortController.signal;"
+      "authAbortController.abort();" +
+      BuildCreateCallWithParameters(parameters);
+
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      shell()->web_contents()->GetMainFrame(), script, &result));
+  ASSERT_EQ(kAbortErrorMessage, result.substr(0, strlen(kAbortErrorMessage)));
+}
+
+// Tests that when navigator.credentials.create() is called with abort
+// signal's aborted flag set after sending request, we get an AbortError.
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       CreatePublicKeyCredentialWithAbortSetAfterCreate) {
+  CreateParameters parameters;
+  parameters.signal = "authAbortSignal";
+  std::string result;
+  std::string script =
+      "authAbortController = new AbortController();"
+      "authAbortSignal = authAbortController.signal;" +
+      BuildCreateCallWithParameters(parameters) +
+      "authAbortController.abort();";
+
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      shell()->web_contents()->GetMainFrame(), script, &result));
+  ASSERT_EQ(kAbortErrorMessage, result.substr(0, strlen(kAbortErrorMessage)));
+}
 
 // Tests that when navigator.credentials.get() is called with user verification
 // required, we get an InvalidStateError because the virtual device isn't
@@ -859,6 +965,64 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
       shell()->web_contents()->GetMainFrame(),
       BuildGetCallWithParameters(parameters), &result));
   ASSERT_EQ(kResidentCredentialsErrorMessage, result);
+}
+
+// Tests that when navigator.credentials.get() is called with abort
+// signal's aborted flag not set, we get a kInvalidStateError, because the
+// virtual device does not have any registered credentials.
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       GetPublicKeyCredentialWithAbortNotSet) {
+  for (const auto protocol : kAllProtocols) {
+    device::test::ScopedVirtualFidoDevice virtual_device;
+    virtual_device.SetSupportedProtocol(protocol);
+
+    GetParameters parameters;
+    parameters.signal = "authAbortSignal";
+    std::string result;
+    std::string script =
+        "authAbortController = new AbortController();"
+        "authAbortSignal = authAbortController.signal;" +
+        BuildGetCallWithParameters(parameters);
+
+    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+        shell()->web_contents()->GetMainFrame(), script, &result));
+    ASSERT_EQ(kInvalidStateError, result);
+  }
+}
+
+// Tests that when navigator.credentials.get() is called with abort
+// signal's aborted flag set before sending request, we get an AbortError.
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       GetPublicKeyCredentialWithAbortSetBeforeGet) {
+  GetParameters parameters;
+  parameters.signal = "authAbortSignal";
+  std::string result;
+  std::string script =
+      "authAbortController = new AbortController();"
+      "authAbortSignal = authAbortController.signal;"
+      "authAbortController.abort();" +
+      BuildGetCallWithParameters(parameters);
+
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      shell()->web_contents()->GetMainFrame(), script, &result));
+  ASSERT_EQ(kAbortErrorMessage, result.substr(0, strlen(kAbortErrorMessage)));
+}
+
+// Tests that when navigator.credentials.get() is called with abort
+// signal's aborted flag set after sending request, we get an AbortError.
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       GetPublicKeyCredentialWithAbortSetAfterGet) {
+  GetParameters parameters;
+  parameters.signal = "authAbortSignal";
+  std::string result;
+  std::string script =
+      "authAbortController = new AbortController();"
+      "authAbortSignal = authAbortController.signal;" +
+      BuildGetCallWithParameters(parameters) + "authAbortController.abort();";
+
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      shell()->web_contents()->GetMainFrame(), script, &result));
+  ASSERT_EQ(kAbortErrorMessage, result.substr(0, strlen(kAbortErrorMessage)));
 }
 
 // WebAuthBrowserBleDisabledTest

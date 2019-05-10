@@ -27,6 +27,7 @@ enum AuthenticatorStatus {
   EMPTY_ALLOW_CREDENTIALS,
   ANDROID_NOT_SUPPORTED_ERROR,
   PROTECTION_POLICY_INCONSISTENT,
+  ABORT_ERROR,
   UNKNOWN_ERROR,
 };
 
@@ -366,4 +367,9 @@ interface Authenticator {
   // Parties use this method to determine whether they can create a new
   // credential using a user-verifying platform authenticator.
   IsUserVerifyingPlatformAuthenticatorAvailable() => (bool available);
+
+  // Cancel an ongoing MakeCredential or GetAssertion request
+  // Only one MakeCredential or GetAssertion call at a time is allowed,
+  // any future calls are cancelled
+  Cancel();
 };

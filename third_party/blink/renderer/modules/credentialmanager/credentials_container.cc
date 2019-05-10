@@ -11,6 +11,7 @@
 #include "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -278,6 +279,8 @@ DOMException* CredentialManagerErrorToDOMException(
                                   "requirement cannot be fulfilled by "
                                   "this device unless the device is secured "
                                   "with a screen lock.");
+    case CredentialManagerError::ABORT:
+      return DOMException::Create(DOMExceptionCode::kAbortError);
     case CredentialManagerError::UNKNOWN:
       return DOMException::Create(DOMExceptionCode::kNotReadableError,
                                   "An unknown error occurred while talking "
@@ -287,6 +290,16 @@ DOMException* CredentialManagerErrorToDOMException(
       break;
   }
   return nullptr;
+}
+
+// Abort an ongoing PublicKeyCredential create() or get() operation.
+void Abort(ScriptState* script_state) {
+  if (!script_state->ContextIsValid())
+    return;
+
+  auto* authenticator =
+      CredentialManagerProxy::From(script_state)->Authenticator();
+  authenticator->Cancel();
 }
 
 void OnStoreComplete(std::unique_ptr<ScopedPromiseResolver> scoped_resolver,
@@ -495,6 +508,15 @@ ScriptPromise CredentialsContainer::get(
       }
     }
 
+    if (options->hasSignal()) {
+      if (options->signal()->aborted()) {
+        resolver->Reject(DOMException::Create(DOMExceptionCode::kAbortError));
+        return promise;
+      }
+      options->signal()->AddAlgorithm(
+          WTF::Bind(&Abort, WTF::Passed(WrapPersistent(script_state))));
+    }
+
     auto mojo_options =
         MojoPublicKeyCredentialRequestOptions::From(options->publicKey());
     if (mojo_options) {
@@ -665,6 +687,15 @@ ScriptPromise CredentialsContainer::create(
             "an assertion"));
         return promise;
       }
+    }
+
+    if (options->hasSignal()) {
+      if (options->signal()->aborted()) {
+        resolver->Reject(DOMException::Create(DOMExceptionCode::kAbortError));
+        return promise;
+      }
+      options->signal()->AddAlgorithm(
+          WTF::Bind(&Abort, WTF::Passed(WrapPersistent(script_state))));
     }
 
     auto mojo_options =

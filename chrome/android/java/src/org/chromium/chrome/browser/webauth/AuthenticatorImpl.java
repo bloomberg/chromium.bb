@@ -116,6 +116,12 @@ public class AuthenticatorImpl implements Authenticator, HandlerResponseCallback
         callback.call(fingerprintManager != null && fingerprintManager.hasEnrolledFingerprints());
     }
 
+    @Override
+    public void cancel() {
+        onError(AuthenticatorStatus.NOT_IMPLEMENTED);
+        return;
+    }
+
     /**
      * Callbacks for receiving responses from the internal handlers.
      */

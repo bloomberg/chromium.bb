@@ -117,6 +117,8 @@ TypeConverter<CredentialManagerError, AuthenticatorStatus>::Convert(
   switch (status) {
     case blink::mojom::blink::AuthenticatorStatus::NOT_ALLOWED_ERROR:
       return CredentialManagerError::NOT_ALLOWED;
+    case blink::mojom::blink::AuthenticatorStatus::ABORT_ERROR:
+      return CredentialManagerError::ABORT;
     case blink::mojom::blink::AuthenticatorStatus::UNKNOWN_ERROR:
       return CredentialManagerError::UNKNOWN;
     case blink::mojom::blink::AuthenticatorStatus::PENDING_REQUEST:

@@ -590,7 +590,7 @@ void AuthenticatorCommon::MakeCredential(
       // requests if cryptotoken sends a new one such that requests from before
       // a navigation event do not prevent new requests. See
       // https://crbug.com/935480.
-      Cancel();
+      CancelWithStatus(blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
     } else {
       std::move(callback).Run(
           blink::mojom::AuthenticatorStatus::PENDING_REQUEST, nullptr);
@@ -768,7 +768,7 @@ void AuthenticatorCommon::MakeCredential(
                      weak_factory_.GetWeakPtr()));
 
   request_delegate_->RegisterActionCallbacks(
-      base::BindOnce(&AuthenticatorCommon::Cancel,
+      base::BindOnce(&AuthenticatorCommon::OnCancelFromUI,
                      weak_factory_.GetWeakPtr()) /* cancel_callback */,
       base::BindRepeating(
           &device::FidoRequestHandlerBase::StartAuthenticatorRequest,
@@ -800,7 +800,7 @@ void AuthenticatorCommon::GetAssertion(
       // requests if cryptotoken sends a new one such that requests from before
       // a navigation event do not prevent new requests. See
       // https://crbug.com/935480.
-      Cancel();
+      CancelWithStatus(blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
     } else {
       std::move(callback).Run(
           blink::mojom::AuthenticatorStatus::PENDING_REQUEST, nullptr);
@@ -911,7 +911,7 @@ void AuthenticatorCommon::GetAssertion(
                      weak_factory_.GetWeakPtr()));
 
   request_delegate_->RegisterActionCallbacks(
-      base::BindOnce(&AuthenticatorCommon::Cancel,
+      base::BindOnce(&AuthenticatorCommon::OnCancelFromUI,
                      weak_factory_.GetWeakPtr()) /* cancel_callback */,
       base::BindRepeating(
           &device::FidoRequestHandlerBase::StartAuthenticatorRequest,
@@ -976,6 +976,10 @@ bool AuthenticatorCommon::IsUserVerifyingPlatformAuthenticatorAvailableImpl(
 #else
   return false;
 #endif
+}
+
+void AuthenticatorCommon::Cancel() {
+  CancelWithStatus(blink::mojom::AuthenticatorStatus::ABORT_ERROR);
 }
 
 // Callback to handle the async registration response from a U2fDevice.
@@ -1340,21 +1344,8 @@ void AuthenticatorCommon::SignalFailureToRequestDelegate(
     request_->CancelActiveAuthenticators();
     return;
   }
-
-  FailWithErrorAndCleanup();
+  CancelWithStatus(error_awaiting_user_acknowledgement_);
 }  // namespace content
-
-void AuthenticatorCommon::FailWithErrorAndCleanup() {
-  DCHECK(make_credential_response_callback_ ||
-         get_assertion_response_callback_);
-  if (make_credential_response_callback_) {
-    InvokeCallbackAndCleanup(std::move(make_credential_response_callback_),
-                             error_awaiting_user_acknowledgement_);
-  } else if (get_assertion_response_callback_) {
-    InvokeCallbackAndCleanup(std::move(get_assertion_response_callback_),
-                             error_awaiting_user_acknowledgement_);
-  }
-}
 
 // TODO(crbug.com/814418): Add web tests to verify timeouts are
 // indistinguishable from NOT_ALLOWED_ERROR cases.
@@ -1370,12 +1361,22 @@ void AuthenticatorCommon::OnTimeout() {
       AuthenticatorRequestClientDelegate::InterestingFailureReason::kTimeout);
 }
 
-void AuthenticatorCommon::Cancel() {
+void AuthenticatorCommon::CancelWithStatus(
+    blink::mojom::AuthenticatorStatus status) {
   // If response callback is invoked already, then ignore cancel request.
   if (!make_credential_response_callback_ && !get_assertion_response_callback_)
     return;
+  if (make_credential_response_callback_) {
+    InvokeCallbackAndCleanup(std::move(make_credential_response_callback_),
+                             status);
+  } else if (get_assertion_response_callback_) {
+    InvokeCallbackAndCleanup(std::move(get_assertion_response_callback_),
+                             status);
+  }
+}
 
-  FailWithErrorAndCleanup();
+void AuthenticatorCommon::OnCancelFromUI() {
+  CancelWithStatus(error_awaiting_user_acknowledgement_);
 }
 
 void AuthenticatorCommon::InvokeCallbackAndCleanup(
