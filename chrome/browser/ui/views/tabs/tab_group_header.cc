@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/tabs/tab_style.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/canvas.h"
@@ -23,7 +24,7 @@
 
 TabGroupHeader::TabGroupHeader(const base::string16& group_title) {
   // TODO(crbug.com/905491): Call TabStyle::GetContentsInsets.
-  constexpr gfx::Insets kPlaceholderInsets = gfx::Insets(2, 10);
+  constexpr gfx::Insets kPlaceholderInsets = gfx::Insets(4, 27);
   SetBorder(views::CreateEmptyBorder(kPlaceholderInsets));
 
   views::FlexLayout* layout =
@@ -50,5 +51,7 @@ TabGroupHeader::TabGroupHeader(const base::string16& group_title) {
 void TabGroupHeader::OnPaint(gfx::Canvas* canvas) {
   // TODO(crbug.com/905491): Call TabStyle::PaintTab.
   constexpr SkColor kPlaceholderColor = SkColorSetRGB(0xAA, 0xBB, 0xCC);
-  canvas->FillRect(GetLocalBounds(), kPlaceholderColor);
+  gfx::Rect fill_bounds(GetLocalBounds());
+  fill_bounds.Inset(TabStyle::GetTabOverlap(), 0);
+  canvas->FillRect(fill_bounds, kPlaceholderColor);
 }

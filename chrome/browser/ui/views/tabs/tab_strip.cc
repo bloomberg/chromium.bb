@@ -1198,6 +1198,8 @@ void TabStrip::ChangeTabGroup(int model_index,
       controller_->ListTabsInGroup(old_group.value()).size() == 0) {
     group_headers_.erase(old_group.value());
   }
+  UpdateIdealBounds();
+  AnimateToIdealBounds();
 }
 
 bool TabStrip::ShouldTabBeVisible(const Tab* tab) const {
@@ -1863,6 +1865,10 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
                    });
   for (Tab* tab : selected_and_hovered_tabs)
     tab->Paint(paint_info);
+
+  // Paint group headers.
+  for (const auto& header_pair : group_headers_)
+    header_pair.second->Paint(paint_info);
 
   // Always paint the active tab over all the inactive tabs.
   if (active_tab && !is_dragging)
@@ -2574,11 +2580,16 @@ void TabStrip::UpdateIdealBounds() {
     return;  // Should only happen during creation/destruction, ignore.
 
   if (!touch_layout_) {
+    // Transform |group_headers_| to raw pointers to avoid exposing unique_ptrs.
+    std::map<int, TabGroupHeader*> group_headers;
+    for (const auto& header_pair : group_headers_)
+      group_headers[header_pair.first] = header_pair.second.get();
+
     const int available_width = (available_width_for_tabs_ < 0)
                                     ? GetTabAreaWidth()
                                     : available_width_for_tabs_;
-    layout_helper_->UpdateIdealBounds(&tabs_, available_width,
-                                      controller_->GetActiveIndex());
+    layout_helper_->UpdateIdealBounds(
+        controller(), &tabs_, std::move(group_headers), available_width);
   }
 
   new_tab_button_bounds_.set_origin(gfx::Point(GetNewTabButtonIdealX(), 0));

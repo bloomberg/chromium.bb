@@ -4,10 +4,15 @@
 
 #include "chrome/browser/ui/views/tabs/tab_strip_layout_helper.h"
 
+#include <set>
+
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_animation_state.h"
+#include "chrome/browser/ui/views/tabs/tab_group_header.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab_style_views.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -51,29 +56,100 @@ int TabStripLayoutHelper::GetPinnedTabCount(
   return pinned_count;
 }
 
-void TabStripLayoutHelper::UpdateIdealBounds(views::ViewModelT<Tab>* tabs,
-                                             int available_width,
-                                             int active_tab_index) {
-  std::vector<TabAnimationState> ideal_animation_states;
+namespace {
+
+// Helper types for UpdateIdealBounds.
+
+enum class TabSlotType {
+  kTab,
+  kGroupHeader,
+};
+
+struct TabSlot {
+  static TabSlot CreateForTab(int tab, bool pinned) {
+    TabSlot slot;
+    slot.type = TabSlotType::kTab;
+    slot.index = tab;
+    slot.pinned = pinned;
+    return slot;
+  }
+
+  static TabSlot CreateForGroupHeader(int group, bool pinned) {
+    TabSlot slot;
+    slot.type = TabSlotType::kGroupHeader;
+    slot.index = group;
+    slot.pinned = pinned;
+    return slot;
+  }
+
+  TabSlotType type;
+  int index;
+  bool pinned;
+};
+
+}  // namespace
+
+void TabStripLayoutHelper::UpdateIdealBounds(
+    TabStripController* controller,
+    views::ViewModelT<Tab>* tabs,
+    std::map<int, TabGroupHeader*> group_headers,
+    int available_width) {
+  std::vector<base::Optional<int>> tab_to_group_mapping(tabs->view_size());
+  for (const auto& header_pair : group_headers) {
+    const int group = header_pair.first;
+    std::vector<int> tabs = controller->ListTabsInGroup(group);
+    for (int tab : tabs)
+      tab_to_group_mapping[tab] = group;
+  }
+
   const int num_pinned_tabs = GetPinnedTabCount(tabs);
-  for (int tab_index = 0; tab_index < tabs->view_size(); tab_index++) {
+  const int active_tab_index = controller->GetActiveIndex();
+
+  std::vector<TabSlot> slots;
+  std::set<int> headers_already_added;
+  int active_index_in_slots = TabStripModel::kNoTab;
+  for (int i = 0; i < tabs->view_size(); ++i) {
+    const bool pinned = i < num_pinned_tabs;
+    base::Optional<int> group = tab_to_group_mapping[i];
+    if (group.has_value() &&
+        !base::ContainsKey(headers_already_added, group.value())) {
+      // Start of a group.
+      slots.push_back(TabSlot::CreateForGroupHeader(group.value(), pinned));
+      headers_already_added.insert(group.value());
+    }
+    slots.push_back(TabSlot::CreateForTab(i, pinned));
+    if (i == active_tab_index)
+      active_index_in_slots = slots.size() - 1;
+  }
+
+  std::vector<TabAnimationState> ideal_animation_states;
+  for (int i = 0; i < int{slots.size()}; ++i) {
     ideal_animation_states.push_back(TabAnimationState::ForIdealTabState(
         TabAnimationState::TabOpenness::kOpen,
-        tab_index < num_pinned_tabs
-            ? TabAnimationState::TabPinnedness::kPinned
-            : TabAnimationState::TabPinnedness::kUnpinned,
-        tab_index == active_tab_index
+        slots[i].pinned ? TabAnimationState::TabPinnedness::kPinned
+                        : TabAnimationState::TabPinnedness::kUnpinned,
+        i == active_index_in_slots
             ? TabAnimationState::TabActiveness::kActive
             : TabAnimationState::TabActiveness::kInactive,
         0));
   }
-  const std::vector<gfx::Rect> tab_bounds = CalculateTabBounds(
+
+  const std::vector<gfx::Rect> bounds = CalculateTabBounds(
       GetTabSizeInfo(), ideal_animation_states, available_width,
       &active_tab_width_, &inactive_tab_width_);
-  DCHECK_EQ(static_cast<size_t>(tabs->view_size()), tab_bounds.size());
+  DCHECK_EQ(slots.size(), bounds.size());
 
-  for (size_t i = 0; i < tab_bounds.size(); ++i)
-    tabs->set_ideal_bounds(i, tab_bounds[i]);
+  for (size_t i = 0; i < bounds.size(); ++i) {
+    const TabSlot& slot = slots[i];
+    switch (slot.type) {
+      case TabSlotType::kTab:
+        tabs->set_ideal_bounds(slot.index, bounds[i]);
+        break;
+      case TabSlotType::kGroupHeader:
+        group_headers[slot.index]->SetBoundsRect(bounds[i]);
+        break;
+    }
+  }
 }
 
 void TabStripLayoutHelper::UpdateIdealBoundsForPinnedTabs(

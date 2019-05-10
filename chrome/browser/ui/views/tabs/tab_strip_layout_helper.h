@@ -8,10 +8,12 @@
 #include <map>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/optional.h"
 #include "ui/views/view_model.h"
 
 class Tab;
+class TabGroupHeader;
+class TabStripController;
 
 // Helper class for TabStrip, that is responsible for calculating the tabs'
 // ideal layout and assigning those bounds, as well as caching the derived
@@ -29,11 +31,13 @@ class TabStripLayoutHelper {
   // Returns the number of pinned tabs in |tabs|.
   int GetPinnedTabCount(const views::ViewModelT<Tab>* tabs) const;
 
-  // Generates and sets the ideal bounds for |tabs|. Updates the
-  // cached widths in |active_tab_width_| and |inactive_tab_width_|.
-  void UpdateIdealBounds(views::ViewModelT<Tab>* tabs,
-                         int available_width,
-                         int active_tab_index);
+  // Generates and sets the ideal bounds for the views in |tabs| and
+  // |group_headers|. Updates the cached widths in |active_tab_width_| and
+  // |inactive_tab_width_|.
+  void UpdateIdealBounds(TabStripController* controller,
+                         views::ViewModelT<Tab>* tabs,
+                         std::map<int, TabGroupHeader*> group_headers,
+                         int available_width);
 
   // Generates and sets the ideal bounds for |tabs|. Updates
   // the cached values in |first_non_pinned_tab_index_| and

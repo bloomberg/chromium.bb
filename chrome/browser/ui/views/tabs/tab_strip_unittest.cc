@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
+#include "chrome/browser/ui/views/tabs/tab_group_header.h"
 #include "chrome/browser/ui/views/tabs/tab_icon.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
@@ -967,11 +968,59 @@ TEST_P(TabStripTest, HorizontalScroll) {
   EXPECT_EQ(1, controller_->GetActiveIndex());
 }
 
-TEST_P(TabStripTest, CreateTabGroup) {
+TEST_P(TabStripTest, GroupHeaderBasics) {
+  tab_strip_->SetBounds(0, 0, 1000, 100);
+  bounds_animator()->SetAnimationDuration(0);
   tab_strip_->AddTabAt(0, TabRendererData(), false);
+
+  Tab* tab = tab_strip_->tab_at(0);
+  const int first_slot_x = tab->x();
+
   base::Optional<int> group = controller_->CreateTabGroup();
   controller_->MoveTabIntoGroup(0, group);
-  EXPECT_EQ(1u, ListGroupHeaders().size());
+
+  std::vector<TabGroupHeader*> headers = ListGroupHeaders();
+  EXPECT_EQ(1u, headers.size());
+  TabGroupHeader* header = headers[0];
+  EXPECT_EQ(first_slot_x, header->x());
+  EXPECT_EQ(tab->width(), header->width());
+  EXPECT_EQ(tab->height(), header->height());
+}
+
+TEST_P(TabStripTest, GroupHeaderBetweenTabs) {
+  tab_strip_->SetBounds(0, 0, 1000, 100);
+  bounds_animator()->SetAnimationDuration(0);
+
+  tab_strip_->AddTabAt(0, TabRendererData(), false);
+  tab_strip_->AddTabAt(1, TabRendererData(), false);
+
+  const int second_slot_x = tab_strip_->tab_at(1)->x();
+
+  base::Optional<int> group = controller_->CreateTabGroup();
+  controller_->MoveTabIntoGroup(1, group);
+
+  TabGroupHeader* header = ListGroupHeaders()[0];
+  EXPECT_EQ(header->x(), second_slot_x);
+}
+
+// This can happen when a tab in the middle of a group starts to close.
+TEST_P(TabStripTest, DiscontinuousGroup) {
+  tab_strip_->SetBounds(0, 0, 1000, 100);
+  bounds_animator()->SetAnimationDuration(0);
+
+  tab_strip_->AddTabAt(0, TabRendererData(), false);
+  tab_strip_->AddTabAt(1, TabRendererData(), false);
+  tab_strip_->AddTabAt(2, TabRendererData(), false);
+
+  const int first_slot_x = tab_strip_->tab_at(0)->x();
+
+  base::Optional<int> group = controller_->CreateTabGroup();
+  controller_->MoveTabIntoGroup(0, group);
+  controller_->MoveTabIntoGroup(2, group);
+
+  std::vector<TabGroupHeader*> headers = ListGroupHeaders();
+  EXPECT_EQ(1u, headers.size());
+  EXPECT_EQ(first_slot_x, headers[0]->x());
 }
 
 TEST_P(TabStripTest, DeleteTabGroupHeaderWhenEmpty) {
