@@ -6,7 +6,6 @@
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../controls/extension_controlled_indicator.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="../icons.html">
@@ -86,7 +85,7 @@
 
 <if expr="chromeos">
         <!-- Google Assistant -->
-        <template is="dom-if" if="[[voiceInteractionFeatureEnabled_]]">
+        <template is="dom-if" if="[[isAssistantAllowed_]]">
           <div id="assistant-subpage-trigger" class="settings-box two-line"
             on-click="onGoogleAssistantTap_" actionable>
             <div class="start">
@@ -96,19 +95,8 @@
                     prefs.settings.voice_interaction.enabled.value)]]
               </div>
             </div>
-            <template is="dom-if" if="[[assistantOn_]]">
-              <cr-icon-button class="subpage-arrow"
-                  aria-label="$i18n{searchGoogleAssistant}"></cr-icon-button>
-            </template>
-            <template is="dom-if" if="[[!assistantOn_]]">
-              <div class="separator"></div>
-              <paper-button id="enable" class="secondary-button"
-                  on-click="onAssistantTurnOnTap_"
-                  aria-label="$i18n{searchPageTitle}"
-                  aria-describedby="secondaryText">
-                $i18n{assistantTurnOn}
-              </paper-button>
-            </template>
+            <cr-icon-button class="subpage-arrow"
+                aria-label="$i18n{searchGoogleAssistant}"></cr-icon-button>
           </div>
         </template>
 </if>
@@ -123,7 +111,7 @@
         </settings-subpage>
       </template>
 <if expr="chromeos">
-      <template is="dom-if" if="[[voiceInteractionFeatureEnabled_]]">
+      <template is="dom-if" if="[[isAssistantAllowed_]]">
         <template is="dom-if" route-path="/googleAssistant">
           <settings-subpage
               associated-control="[[$$('#assistant-subpage-trigger')]]"

@@ -45,10 +45,10 @@ Polymer({
 
   properties: {
     /** @private */
-    assistantFeatureEnabled_: {
+    isAssistantAllowed_: {
       type: Boolean,
       value: function() {
-        return loadTimeData.getBoolean('enableAssistant');
+        return loadTimeData.getBoolean('isAssistantAllowed');
       },
     },
 

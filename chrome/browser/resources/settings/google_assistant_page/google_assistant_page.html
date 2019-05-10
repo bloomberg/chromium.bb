@@ -52,7 +52,7 @@
           label="$i18n{googleAssistantEnableContext}"
           sub-label="$i18n{googleAssistantEnableContextDescription}">
       </settings-toggle-button>
-      <template is="dom-if" if="[[assistantFeatureEnabled_]]">
+      <template is="dom-if" if="[[isAssistantAllowed_]]">
         <settings-toggle-button id="google-assistant-hotword-enable"
             pref="{{prefs.settings.voice_interaction.hotword.enabled}}"
             label="$i18n{googleAssistantEnableHotword}"

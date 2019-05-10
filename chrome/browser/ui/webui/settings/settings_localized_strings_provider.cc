@@ -2200,6 +2200,7 @@ void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {
 
 void AddSearchStrings(content::WebUIDataSource* html_source, Profile* profile) {
 #if defined(OS_CHROMEOS)
+  // NOTE: This will be false when the flag is disabled.
   const bool is_assistant_allowed =
       assistant::IsAssistantAllowedForProfile(profile) ==
       ash::mojom::AssistantAllowedState::ALLOWED;
@@ -2219,7 +2220,6 @@ void AddSearchStrings(content::WebUIDataSource* html_source, Profile* profile) {
      IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_ENABLED},
     {"searchGoogleAssistantDisabled",
      IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_DISABLED},
-    {"assistantTurnOn", IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_TURN_ON},
 #endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
@@ -2229,9 +2229,7 @@ void AddSearchStrings(content::WebUIDataSource* html_source, Profile* profile) {
       base::ASCIIToUTF16(chrome::kOmniboxLearnMoreURL));
   html_source->AddString("searchExplanation", search_explanation_text);
 #if defined(OS_CHROMEOS)
-  html_source->AddBoolean("enableVoiceInteraction", is_assistant_allowed);
-  html_source->AddBoolean("enableAssistant",
-                          chromeos::switches::IsAssistantEnabled());
+  html_source->AddBoolean("isAssistantAllowed", is_assistant_allowed);
 #endif
 }
 
