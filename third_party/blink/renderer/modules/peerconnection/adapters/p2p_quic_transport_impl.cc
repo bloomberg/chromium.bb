@@ -163,7 +163,8 @@ std::unique_ptr<quic::QuicConnection> CreateQuicConnection(
       quic::QuicConnectionId(connection_id_bytes, sizeof(connection_id_bytes));
   return std::make_unique<quic::QuicConnection>(
       dummy_connection_id, dummy_address, helper, alarm_factory, packet_writer,
-      /* owns_writer */ true, perspective, quic::CurrentSupportedVersions());
+      /* owns_writer */ true, perspective,
+      quic::ParsedQuicVersionVector{quic::CurrentSupportedVersions()[0]});
 }
 
 // A dummy helper for a server crypto stream that accepts all client hellos

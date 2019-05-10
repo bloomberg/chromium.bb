@@ -199,7 +199,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_send_timestamps, false)
 // connection, such that version negotiation is not supported in connection.
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_no_server_conn_ver_negotiation2,
-          false)
+          true)
 
 // If true, enable QUIC version 46.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_46, true)
@@ -230,7 +230,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_monotonic_epoll_clock, false)
 // reconnection.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_no_client_conn_ver_negotiation,
-          false)
+          true)
 
 // If true, public reset packets sent from GFE will include a kEPID tag.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_spurious_ack_alarm, false)
