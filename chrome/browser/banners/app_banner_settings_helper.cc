@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/util/values/values_util.h"
 #include "chrome/browser/banners/app_banner_manager.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/browser_process.h"
@@ -182,21 +183,6 @@ bool WasEventWithinPeriod(AppBannerSettingsHelper::AppBannerEvent event,
   return (now - event_time < period);
 }
 
-base::Optional<base::TimeDelta> ParseTimeDelta(const base::Value* value) {
-  std::string delta_string;
-  if (!value || !value->GetAsString(&delta_string))
-    return base::nullopt;
-
-  int64_t delta_int64;
-  if (!base::StringToInt64(delta_string, &delta_int64))
-    return base::nullopt;
-  return base::TimeDelta::FromMicroseconds(delta_int64);
-}
-
-base::Value SerializeTimeDelta(const base::TimeDelta& delta) {
-  return base::Value(base::NumberToString(delta.InMicroseconds()));
-}
-
 // Dictionary of time information for how long to wait before showing the
 // "Install" text slide animation again.
 // Data format: {"last_shown": timestamp, "delay": duration}
@@ -230,18 +216,17 @@ base::Optional<NextInstallTextAnimation> NextInstallTextAnimation::Get(
   if (!next_dict || !next_dict->is_dict())
     return base::nullopt;
 
-  base::Optional<base::TimeDelta> last_shown_since_epoch =
-      ParseTimeDelta(next_dict->FindKey(kLastShownKey));
-  if (!last_shown_since_epoch)
+  base::Optional<base::Time> last_shown =
+      util::ValueToTime(next_dict->FindKey(kLastShownKey));
+  if (!last_shown)
     return base::nullopt;
 
   base::Optional<base::TimeDelta> delay =
-      ParseTimeDelta(next_dict->FindKey(kDelayKey));
+      util::ValueToTimeDelta(next_dict->FindKey(kDelayKey));
   if (!delay)
     return base::nullopt;
 
-  return NextInstallTextAnimation{
-      base::Time::FromDeltaSinceWindowsEpoch(*last_shown_since_epoch), *delay};
+  return NextInstallTextAnimation{*last_shown, *delay};
 }
 
 void NextInstallTextAnimation::RecordToPrefs(content::WebContents* web_contents,
@@ -251,9 +236,8 @@ void NextInstallTextAnimation::RecordToPrefs(content::WebContents* web_contents,
     return;
 
   base::Value next_dict(base::Value::Type::DICTIONARY);
-  next_dict.SetKey(kLastShownKey,
-                   SerializeTimeDelta(last_shown.ToDeltaSinceWindowsEpoch()));
-  next_dict.SetKey(kDelayKey, SerializeTimeDelta(delay));
+  next_dict.SetKey(kLastShownKey, util::TimeToValue(last_shown));
+  next_dict.SetKey(kDelayKey, util::TimeDeltaToValue(delay));
   app_prefs.dict()->SetKey(kNextInstallTextAnimation, std::move(next_dict));
   app_prefs.Save();
 }
