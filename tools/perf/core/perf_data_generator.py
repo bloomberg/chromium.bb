@@ -131,7 +131,10 @@ FYI_BUILDERS = {
       {
         'isolate': 'performance_test_suite',
         'extra_args': [
-          '--run-ref-build',
+          # TODO(crbug.com/612455): Enable ref builds once can pass both
+          # --browser=exact (used by this bot to have it run Monochrome6432)
+          # and --browser=reference together.
+          #'--run-ref-build',
           '--test-shard-map-filename=android-pixel2-perf_map.json',
         ],
         'num_shards': 7
