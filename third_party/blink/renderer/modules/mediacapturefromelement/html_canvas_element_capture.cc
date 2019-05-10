@@ -6,10 +6,10 @@
 
 #include <memory>
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_canvas_capture_handler.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
-#include "third_party/blink/renderer/modules/mediacapturefromelement/canvas_capture_handler.h"
 #include "third_party/blink/renderer/modules/mediacapturefromelement/canvas_capture_media_stream_track.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 
@@ -57,12 +57,11 @@ MediaStream* HTMLCanvasElementCapture::captureStream(
   const WebSize size(element.width(), element.height());
   std::unique_ptr<WebCanvasCaptureHandler> handler;
   if (given_frame_rate) {
-    handler = CanvasCaptureHandler::CreateCanvasCaptureHandler(
-        size, frame_rate, Platform::Current()->GetIOTaskRunner(), &track);
+    handler = Platform::Current()->CreateCanvasCaptureHandler(size, frame_rate,
+                                                              &track);
   } else {
-    handler = CanvasCaptureHandler::CreateCanvasCaptureHandler(
-        size, kDefaultFrameRate, Platform::Current()->GetIOTaskRunner(),
-        &track);
+    handler = Platform::Current()->CreateCanvasCaptureHandler(
+        size, kDefaultFrameRate, &track);
   }
 
   if (!handler) {

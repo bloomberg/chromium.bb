@@ -184,7 +184,6 @@ _CONFIG = [
             'base::RandGenerator',
             'base::RandDouble',
             'base::RandBytes',
-            'base::RandBytesAsString',
 
             # Feature list checking.
             'base::Feature.*',
@@ -547,15 +546,6 @@ _CONFIG = [
         ],
         'allowed': [
             'media::.+',
-        ]
-    },
-    {
-        'paths': [
-            'third_party/blink/renderer/modules/mediacapturefromelement/',
-        ],
-        'allowed': [
-            'media::.+',
-            'libyuv::.+',
         ]
     },
     {

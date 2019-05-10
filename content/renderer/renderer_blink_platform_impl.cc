@@ -55,6 +55,7 @@
 #include "content/renderer/media/audio_decoder.h"
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 #include "content/renderer/media/webrtc/transmission_encoding_info_handler.h"
+#include "content/renderer/media_capture_from_element/canvas_capture_handler.h"
 #include "content/renderer/media_capture_from_element/html_audio_element_capturer_source.h"
 #include "content/renderer/media_capture_from_element/html_video_element_capturer_source.h"
 #include "content/renderer/media_recorder/media_recorder_handler.h"
@@ -128,6 +129,7 @@ using blink::Platform;
 using blink::WebAudioDevice;
 using blink::WebAudioLatencyHint;
 using blink::WebBlobRegistry;
+using blink::WebCanvasCaptureHandler;
 using blink::WebDatabaseObserver;
 using blink::WebMediaPlayer;
 using blink::WebMediaRecorderHandler;
@@ -753,6 +755,17 @@ RendererBlinkPlatformImpl::CreateWebRtcAsyncResolverFactory() {
       render_thread->GetPeerConnectionDependencyFactory();
   rtc_dependency_factory->EnsureInitialized();
   return rtc_dependency_factory->CreateAsyncResolverFactory();
+}
+
+//------------------------------------------------------------------------------
+
+std::unique_ptr<WebCanvasCaptureHandler>
+RendererBlinkPlatformImpl::CreateCanvasCaptureHandler(
+    const WebSize& size,
+    double frame_rate,
+    WebMediaStreamTrack* track) {
+  return CanvasCaptureHandler::CreateCanvasCaptureHandler(
+      size, frame_rate, RenderThread::Get()->GetIOTaskRunner(), track);
 }
 
 //------------------------------------------------------------------------------

@@ -323,7 +323,6 @@ jumbo_source_set("unit_tests") {
     "media_controls/media_controls_impl_test.cc",
     "media_controls/media_controls_orientation_lock_delegate_test.cc",
     "media_controls/media_controls_rotate_to_fullscreen_delegate_test.cc",
-    "mediacapturefromelement/canvas_capture_handler_unittest.cc",
     "mediastream/media_constraints_test.cc",
     "mediastream/media_devices_test.cc",
     "mediastream/media_stream_video_capturer_source_test.cc",
