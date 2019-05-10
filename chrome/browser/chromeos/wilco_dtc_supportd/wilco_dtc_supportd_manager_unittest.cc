@@ -38,12 +38,18 @@ class TestUpstartClient final : public FakeUpstartClient {
   // FakeUpstartClient overrides:
   void StartWilcoDtcService(
       chromeos::VoidDBusMethodCallback callback) override {
-    std::move(callback).Run(true /* success */);
+    std::move(callback).Run(result_);
   }
 
   void StopWilcoDtcService(chromeos::VoidDBusMethodCallback callback) override {
-    std::move(callback).Run(true /* success */);
+    std::move(callback).Run(result_);
   }
+
+  // Sets the result to be passed into callbacks.
+  void set_result(bool result) { result_ = result; }
+
+ private:
+  bool result_ = true;
 };
 
 class MockMojoWilcoDtcSupportdService
@@ -116,6 +122,10 @@ class WilcoDtcSupportdManagerTest : public testing::Test {
 
   MockMojoWilcoDtcSupportdService* mojo_wilco_dtc_supportd_service() {
     return &mojo_wilco_dtc_supportd_service_;
+  }
+
+  void SetUpstartClientResult(bool result) {
+    upstart_client_->set_result(result);
   }
 
  private:
@@ -238,6 +248,16 @@ TEST_F(WilcoDtcSupportdManagerTest, ConfigurationData) {
                     .empty());
     run_loop.Run();
   }
+}
+
+// Test that Mojo bridge has been started even if the wilco DTC support
+// services were already running.
+TEST_F(WilcoDtcSupportdManagerTest, RunningUpstartJob) {
+  SetWilcoDtcAllowedPolicy(true);
+  SetUpstartClientResult(false);
+  WilcoDtcSupportdManager wilco_dtc_supportd_manager(CreateDelegate());
+
+  EXPECT_TRUE(WilcoDtcSupportdBridge::Get());
 }
 
 }  // namespace
