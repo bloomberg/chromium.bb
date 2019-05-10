@@ -100,7 +100,8 @@ class GCMEncryptionProvider {
                                std::unique_ptr<crypto::ECPrivateKey> key,
                                const std::string& auth_secret);
 
-  void DecryptMessageWithKey(const std::string& collapse_key,
+  void DecryptMessageWithKey(const std::string& message_id,
+                             const std::string& collapse_key,
                              const std::string& sender_id,
                              const std::string& salt,
                              const std::string& public_key,
