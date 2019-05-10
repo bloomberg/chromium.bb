@@ -2242,6 +2242,17 @@ net::Error NavigationRequest::CheckContentSecurityPolicy(
   FrameTreeNode* parent_ftn = frame_tree_node()->parent();
   RenderFrameHostImpl* parent =
       parent_ftn ? parent_ftn->current_frame_host() : nullptr;
+  if (!parent && frame_tree_node()
+                     ->current_frame_host()
+                     ->GetRenderViewHost()
+                     ->GetDelegate()
+                     ->IsPortal()) {
+    parent = frame_tree_node()
+                 ->render_manager()
+                 ->GetOuterDelegateNode()
+                 ->current_frame_host()
+                 ->GetParent();
+  }
 
   // TODO(andypaicu,https://crbug.com/837627): the current_frame_host is the
   // wrong RenderFrameHost. We should be using the navigation initiator
