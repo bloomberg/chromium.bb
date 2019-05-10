@@ -15,6 +15,7 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/http/http_auth.h"
+#include "net/log/net_log_with_source.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -137,10 +138,15 @@ class NET_EXPORT_PRIVATE HttpAuthController
 
   ~HttpAuthController();
 
+  // If this controller's NetLog hasn't been created yet, creates it and
+  // associates it with |caller_net_log|. Does nothing after the first
+  // invocation.
+  void BindToCallingNetLog(const NetLogWithSource& caller_net_log);
+
   // Searches the auth cache for an entry that encompasses the request's path.
   // If such an entry is found, updates |identity_| and |handler_| with the
   // cache entry's data and returns true.
-  bool SelectPreemptiveAuth(const NetLogWithSource& net_log);
+  bool SelectPreemptiveAuth(const NetLogWithSource& caller_net_log);
 
   // Invalidates the current handler.  If |action| is
   // INVALIDATE_HANDLER_AND_CACHED_CREDENTIALS, then also invalidate
@@ -221,6 +227,9 @@ class NET_EXPORT_PRIVATE HttpAuthController
   std::set<HttpAuth::Scheme> disabled_schemes_;
 
   CompletionOnceCallback callback_;
+
+  // NetLog to be used for logging in this controller.
+  NetLogWithSource net_log_;
 
   THREAD_CHECKER(thread_checker_);
 };

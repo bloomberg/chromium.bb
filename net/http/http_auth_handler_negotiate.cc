@@ -210,7 +210,7 @@ bool HttpAuthHandlerNegotiate::Init(HttpAuthChallengeTokenizer* challenge,
     x509_util::GetTLSServerEndPointChannelBinding(*ssl_info.cert,
                                                   &channel_bindings_);
   if (!channel_bindings_.empty())
-    net_log_.AddEvent(
+    net_log().AddEvent(
         NetLogEventType::AUTH_CHANNEL_BINDINGS,
         base::Bind(&NetLogParameterChannelBindings, channel_bindings_));
   return true;
@@ -344,7 +344,7 @@ int HttpAuthHandlerNegotiate::DoResolveCanonicalName() {
   HostResolver::ResolveHostParameters parameters;
   parameters.include_canonical_name = true;
   resolve_host_request_ = resolver_->CreateRequest(
-      HostPortPair(origin_.host(), 0), net_log_, parameters);
+      HostPortPair(origin_.host(), 0), net_log(), parameters);
   return resolve_host_request_->Start(base::BindOnce(
       &HttpAuthHandlerNegotiate::OnIOComplete, base::Unretained(this)));
 }

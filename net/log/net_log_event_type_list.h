@@ -2179,6 +2179,46 @@ EVENT_TYPE(AUTH_SERVER)
 // The channel bindings generated for the connection.
 EVENT_TYPE(AUTH_CHANNEL_BINDINGS)
 
+// Lifetime event for HttpAuthController.
+// Parameters:
+//  {
+//      "source_dependency": <Source ID of controlling entity>
+//  }
+EVENT_TYPE(AUTH_CONTROLLER)
+
+// Records on the caller's NetLog to indicate the HttpAuthController that's
+// servicing the request.
+//  {
+//      "source_dependency": <Source ID of HttpAuthController>
+//  }
+EVENT_TYPE(AUTH_BOUND_TO_CONTROLLER)
+
+// Records the invocation and completion of a single token generation operation.
+//
+// The BEGIN phase has the following parameters:
+//  {
+//       "source_dependency": <Source ID of caller>
+//  }
+//
+// The END phase has the following parameters:
+//  {
+//       "net_error": <Net Error. Only present in case of error.>
+//  }
+EVENT_TYPE(AUTH_GENERATE_TOKEN)
+
+// Records the invocation and completion of HandleAuthChallenge operation.
+//
+// The BEGIN phase has the following parameters:
+//  {
+//       "source_dependency": <Source ID of caller>
+//  }
+//
+// The END phase has the following parameters:
+//  {
+//       "net_error": <Net Error. Only present in case of error.>
+//  }
+EVENT_TYPE(AUTH_HANDLE_CHALLENGE)
+
 // ------------------------------------------------------------------------
 // HTML5 Application Cache
 // ------------------------------------------------------------------------
