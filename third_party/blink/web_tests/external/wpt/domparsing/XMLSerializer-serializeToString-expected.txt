@@ -17,6 +17,7 @@ PASS Check if start tag serialization drops element prefix if the namespace is s
 PASS Check if start tag serialization finds an appropriate prefix.
 PASS Check if start tag serialization takes into account of its xmlns:* attributes
 PASS Check if start tag serialization applied the original prefix even if it is declared in an ancestor element.
+FAIL Check if start tag serialization does NOT apply the default namespace if its namespace is declared in an ancestor. assert_equals: expected "<root xmlns:x=\"uri1\"><x:table xmlns=\"uri1\"/></root>" but got "<root xmlns:x=\"uri1\"><table xmlns=\"uri1\"/></root>"
 PASS Check if generated prefixes match to "ns${index}".
 FAIL Check if "ns1" is generated even if the element already has xmlns:ns1. assert_equals: expected "<root xmlns:ns2=\"uri2\"><child xmlns:ns1=\"uri1\" xmlns:ns1=\"uri3\" ns1:attr1=\"value1\"/></root>" but got "<root xmlns:ns2=\"uri2\"><child xmlns:ns1=\"uri1\" xmlns:ns3=\"uri3\" ns3:attr1=\"value1\"/></root>"
 PASS Check if no special handling for XLink namespace unlike HTML serializer.

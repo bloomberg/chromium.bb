@@ -268,7 +268,7 @@ MarkupAccumulator::AppendStartTagOpen(const Element& element) {
   // 12.2. Let candidate prefix be the result of retrieving a preferred prefix
   // string prefix from map given namespace ns.
   AtomicString candidate_prefix;
-  if (!ns.IsEmpty()) {
+  if (!ns.IsEmpty() && (!prefix.IsEmpty() || ns != local_default_namespace)) {
     candidate_prefix = RetrievePreferredPrefixString(ns, prefix);
   }
   // 12.4. if candidate prefix is not null (a namespace prefix is defined which
