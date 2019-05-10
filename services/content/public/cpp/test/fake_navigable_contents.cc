@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/unguessable_token.h"
 #include "services/content/public/cpp/navigable_contents_view.h"
 #include "services/content/public/cpp/test/fake_navigable_contents_factory.h"
 
@@ -41,14 +40,6 @@ void FakeNavigableContents::Navigate(const GURL& url,
 void FakeNavigableContents::GoBack(
     mojom::NavigableContents::GoBackCallback callback) {
   std::move(callback).Run(false /* success */);
-}
-
-void FakeNavigableContents::CreateView(bool in_service_process,
-                                       CreateViewCallback callback) {
-  auto token = base::UnguessableToken::Create();
-  NavigableContentsView::RegisterInProcessEmbedCallback(token,
-                                                        base::DoNothing());
-  std::move(callback).Run(token);
 }
 
 void FakeNavigableContents::Focus() {}

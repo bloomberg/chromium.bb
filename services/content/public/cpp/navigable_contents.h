@@ -70,13 +70,6 @@ class COMPONENT_EXPORT(CONTENT_SERVICE_CPP) NavigableContents
   // being done via Tab-key cycling or a similar mechanism.
   void FocusThroughTabTraversal(bool reverse);
 
-  // Force NavigableContents to use Window Service for embedding. Note this must
-  // be called before its view is created.
-  void ForceUseWindowService();
-
-  // Whether to use Window Service for embedding.
-  bool ShouldUseWindowService() const;
-
  private:
   // mojom::NavigableContentsClient:
   void ClearViewFocus() override;
@@ -92,8 +85,6 @@ class COMPONENT_EXPORT(CONTENT_SERVICE_CPP) NavigableContents
                              bool from_user_gesture) override;
   void UpdateContentAXTree(const ui::AXTreeID& id) override;
 
-  void OnEmbedTokenReceived(const base::UnguessableToken& token);
-
   mojo::Remote<mojom::NavigableContents> contents_;
   mojo::Receiver<mojom::NavigableContentsClient> client_receiver_;
   std::unique_ptr<NavigableContentsView> view_;
@@ -101,8 +92,6 @@ class COMPONENT_EXPORT(CONTENT_SERVICE_CPP) NavigableContents
   base::ReentrantObserverList<NavigableContentsObserver> observers_;
 
   ui::AXTreeID content_ax_tree_id_;
-
-  bool force_use_window_service_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(NavigableContents);
 };

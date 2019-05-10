@@ -40,8 +40,6 @@ class FakeNavigableContents : public mojom::NavigableContents {
   // mojom::NavigableContents:
   void Navigate(const GURL& url, mojom::NavigateParamsPtr params) override;
   void GoBack(mojom::NavigableContents::GoBackCallback callback) override;
-  void CreateView(bool in_service_process,
-                  CreateViewCallback callback) override;
   void Focus() override;
   void FocusThroughTabTraversal(bool reverse) override;
 
