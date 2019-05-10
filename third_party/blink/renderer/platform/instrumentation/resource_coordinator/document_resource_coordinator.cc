@@ -37,8 +37,8 @@ DocumentResourceCoordinator::DocumentResourceCoordinator(
 
 DocumentResourceCoordinator::~DocumentResourceCoordinator() = default;
 
-void DocumentResourceCoordinator::SetNetworkAlmostIdle(bool idle) {
-  service_->SetNetworkAlmostIdle(idle);
+void DocumentResourceCoordinator::SetNetworkAlmostIdle() {
+  service_->SetNetworkAlmostIdle();
 }
 
 void DocumentResourceCoordinator::SetLifecycleState(

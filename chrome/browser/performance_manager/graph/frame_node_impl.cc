@@ -48,8 +48,8 @@ void FrameNodeImpl::Bind(
   binding_.Bind(std::move(request));
 }
 
-void FrameNodeImpl::SetNetworkAlmostIdle(bool network_almost_idle) {
-  network_almost_idle_.SetAndMaybeNotify(this, network_almost_idle);
+void FrameNodeImpl::SetNetworkAlmostIdle() {
+  document_.network_almost_idle.SetAndMaybeNotify(this, true);
 }
 
 void FrameNodeImpl::SetLifecycleState(
@@ -60,7 +60,7 @@ void FrameNodeImpl::SetLifecycleState(
 
 void FrameNodeImpl::SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  has_nonempty_beforeunload_ = has_nonempty_beforeunload;
+  document_.has_nonempty_beforeunload = has_nonempty_beforeunload;
 }
 
 void FrameNodeImpl::SetInterventionPolicy(
@@ -133,12 +133,12 @@ resource_coordinator::mojom::LifecycleState FrameNodeImpl::lifecycle_state()
 
 bool FrameNodeImpl::has_nonempty_beforeunload() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return has_nonempty_beforeunload_;
+  return document_.has_nonempty_beforeunload;
 }
 
 const GURL& FrameNodeImpl::url() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return url_;
+  return document_.url;
 }
 
 bool FrameNodeImpl::is_current() const {
@@ -148,7 +148,7 @@ bool FrameNodeImpl::is_current() const {
 
 bool FrameNodeImpl::network_almost_idle() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return network_almost_idle_.value();
+  return document_.network_almost_idle.value();
 }
 
 bool FrameNodeImpl::is_ad_frame() const {
@@ -189,10 +189,10 @@ bool FrameNodeImpl::IsMainFrame() const {
 void FrameNodeImpl::OnNavigationCommitted(const GURL& url, bool same_document) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  url_ = url;
-
-  if (same_document)
+  if (same_document) {
+    document_.url = url;
     return;
+  }
 
   // Close |binding_| to ensure that messages queued by the previous document
   // before the navigation commit are dropped.
@@ -216,6 +216,9 @@ void FrameNodeImpl::OnNavigationCommitted(const GURL& url, bool same_document) {
   //       before the interface provider is bound. A posts B to PM sequence and
   //       C posts D to PM sequence, therefore B happens before D.
   binding_.Close();
+
+  // Reset properties.
+  document_.Reset(this, url);
 }
 
 bool FrameNodeImpl::AreAllInterventionPoliciesSet() const {
@@ -333,6 +336,17 @@ bool FrameNodeImpl::HasFrameNodeInDescendants(FrameNodeImpl* frame_node) const {
     }
   }
   return false;
+}
+
+FrameNodeImpl::DocumentProperties::DocumentProperties() = default;
+FrameNodeImpl::DocumentProperties::~DocumentProperties() = default;
+
+void FrameNodeImpl::DocumentProperties::Reset(FrameNodeImpl* frame_node,
+                                              const GURL& url_in) {
+  url = url_in;
+  has_nonempty_beforeunload = false;
+  // Network is busy on navigation.
+  network_almost_idle.SetAndMaybeNotify(frame_node, false);
 }
 
 }  // namespace performance_manager

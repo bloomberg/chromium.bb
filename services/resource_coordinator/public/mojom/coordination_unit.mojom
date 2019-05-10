@@ -49,7 +49,7 @@ enum PolicyControlledIntervention {
 // resource management to the embedder.
 interface DocumentCoordinationUnit {
   // Property signals.
-  SetNetworkAlmostIdle(bool idle);
+  SetNetworkAlmostIdle();
   SetLifecycleState(LifecycleState state);
   SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload);
   SetInterventionPolicy(PolicyControlledIntervention intervention,

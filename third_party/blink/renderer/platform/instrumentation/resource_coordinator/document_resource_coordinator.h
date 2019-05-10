@@ -27,7 +27,7 @@ class PLATFORM_EXPORT DocumentResourceCoordinator final {
       service_manager::InterfaceProvider*);
   ~DocumentResourceCoordinator();
 
-  void SetNetworkAlmostIdle(bool);
+  void SetNetworkAlmostIdle();
   void SetLifecycleState(resource_coordinator::mojom::LifecycleState);
   void SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload);
   void SetInterventionPolicy(

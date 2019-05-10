@@ -64,7 +64,7 @@ class FrameNodeImpl
       resource_coordinator::mojom::DocumentCoordinationUnitRequest request);
 
   // resource_coordinator::mojom::DocumentCoordinationUnit implementation.
-  void SetNetworkAlmostIdle(bool idle) override;
+  void SetNetworkAlmostIdle() override;
   void SetLifecycleState(
       resource_coordinator::mojom::LifecycleState state) override;
   void SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload) override;
@@ -112,6 +112,24 @@ class FrameNodeImpl
   friend class PageNodeImpl;
   friend class ProcessNodeImpl;
 
+  // Properties associated with a Document, which are reset when a
+  // different-document navigation is committed in the frame.
+  struct DocumentProperties {
+    DocumentProperties();
+    ~DocumentProperties();
+
+    void Reset(FrameNodeImpl* frame_node, const GURL& url_in);
+
+    GURL url;
+    bool has_nonempty_beforeunload = false;
+
+    // Network is considered almost idle when there are no more than 2 network
+    // connections.
+    ObservedProperty::
+        NotifiesOnlyOnChanges<bool, &GraphObserver::OnNetworkAlmostIdleChanged>
+            network_almost_idle{false};
+  };
+
   // Invoked by subframes on joining/leaving the graph.
   void AddChildFrame(FrameNodeImpl* frame_node);
   void RemoveChildFrame(FrameNodeImpl* frame_node);
@@ -137,13 +155,13 @@ class FrameNodeImpl
   const base::UnguessableToken dev_tools_token_;
 
   base::flat_set<FrameNodeImpl*> child_frame_nodes_;
+
+  // Does *not* change when a navigation is committed.
   ObservedProperty::NotifiesOnlyOnChanges<
       resource_coordinator::mojom::LifecycleState,
       &GraphObserver::OnLifecycleStateChanged>
       lifecycle_state_{resource_coordinator::mojom::LifecycleState::kRunning};
 
-  bool has_nonempty_beforeunload_ = false;
-  GURL url_;
   // This is a one way switch. Once marked an ad-frame, always an ad-frame.
   bool is_ad_frame_ = false;
 
@@ -151,19 +169,23 @@ class FrameNodeImpl
                                           &GraphObserver::OnIsCurrentChanged>
       is_current_{false};
 
-  // Network is considered almost idle when there are no more than 2 network
-  // connections.
-  ObservedProperty::
-      NotifiesOnlyOnChanges<bool, &GraphObserver::OnNetworkAlmostIdleChanged>
-          network_almost_idle_{false};
-
   // Intervention policy for this frame. These are communicated from the
   // renderer process and are controlled by origin trials.
+  //
+  // TODO(fdoray): Adapt aggregation logic in PageNodeImpl to allow moving this
+  // to DocumentProperties.
   resource_coordinator::mojom::InterventionPolicy
       intervention_policy_[static_cast<size_t>(
                                resource_coordinator::mojom::
                                    PolicyControlledIntervention::kMaxValue) +
                            1];
+
+  // Properties associated with a Document, which are reset when a
+  // different-document navigation is committed in the frame.
+  //
+  // TODO(fdoray): Cleanup this once there is a 1:1 mapping between
+  // RenderFrameHost and Document https://crbug.com/936696.
+  DocumentProperties document_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameNodeImpl);
 };

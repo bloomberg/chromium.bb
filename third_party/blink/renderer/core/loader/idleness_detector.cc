@@ -52,11 +52,6 @@ void IdlenessDetector::DomContentLoadedEventFired() {
   network_2_quiet_ = TimeTicks();
   network_0_quiet_ = TimeTicks();
 
-  if (auto* document_resource_coordinator =
-          local_frame_->GetDocument()->GetResourceCoordinator()) {
-    document_resource_coordinator->SetNetworkAlmostIdle(false);
-  }
-
   OnDidLoadResource();
 }
 
@@ -154,7 +149,7 @@ void IdlenessDetector::WillProcessTask(base::TimeTicks start_time) {
     DCHECK(local_frame_->GetDocument());
     if (auto* document_resource_coordinator =
             local_frame_->GetDocument()->GetResourceCoordinator()) {
-      document_resource_coordinator->SetNetworkAlmostIdle(true);
+      document_resource_coordinator->SetNetworkAlmostIdle();
     }
     local_frame_->GetDocument()->Fetcher()->OnNetworkQuiet();
     if (WebServiceWorkerNetworkProvider* service_worker_network_provider =
