@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace views {
 
@@ -39,7 +40,7 @@ void ImageViewBase::SetHorizontalAlignment(Alignment alignment) {
   if (alignment != horizontal_alignment_) {
     horizontal_alignment_ = alignment;
     UpdateImageOrigin();
-    SchedulePaint();
+    OnPropertyChanged(&horizontal_alignment_, kPropertyEffectsPaint);
   }
 }
 
@@ -51,7 +52,7 @@ void ImageViewBase::SetVerticalAlignment(Alignment alignment) {
   if (alignment != vertical_alignment_) {
     vertical_alignment_ = alignment;
     UpdateImageOrigin();
-    SchedulePaint();
+    OnPropertyChanged(&horizontal_alignment_, kPropertyEffectsPaint);
   }
 }
 
@@ -141,5 +142,17 @@ void ImageViewBase::PreferredSizeChanged() {
   View::PreferredSizeChanged();
   UpdateImageOrigin();
 }
+
+DEFINE_ENUM_CONVERTERS(
+    ImageViewBase::Alignment,
+    {ImageViewBase::Alignment::kLeading, base::ASCIIToUTF16("kLeading")},
+    {ImageViewBase::Alignment::kCenter, base::ASCIIToUTF16("kCenter")},
+    {ImageViewBase::Alignment::kTrailing, base::ASCIIToUTF16("kTrailing")})
+
+BEGIN_METADATA(ImageViewBase)
+METADATA_PARENT_CLASS(View)
+ADD_PROPERTY_METADATA(ImageViewBase, Alignment, HorizontalAlignment)
+ADD_PROPERTY_METADATA(ImageViewBase, Alignment, VerticalAlignment)
+END_METADATA()
 
 }  // namespace views

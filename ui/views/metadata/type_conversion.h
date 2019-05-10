@@ -6,7 +6,9 @@
 #define UI_VIEWS_METADATA_TYPE_CONVERSION_H_
 
 #include <stdint.h>
+#include <vector>
 
+#include "base/no_destructor.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -27,6 +29,55 @@ using ArgType = typename std::conditional<std::is_fundamental<T>::value ||
                                               std::is_pointer<T>::value,
                                           T,
                                           const T&>::type;
+
+// Types and macros for generating enum converters ----------------------------
+template <typename T>
+struct EnumStrings {
+  struct EnumString {
+    T enum_value;
+    base::string16 str_value;
+  };
+
+  EnumStrings(std::vector<EnumString> init_val) : pairs(std::move(init_val)) {}
+
+  const std::vector<EnumString> pairs;
+};
+
+template <typename T>
+static const EnumStrings<T>& GetEnumStringsInstance();
+
+// Generate the code to define a enum type to and from base::string16
+// conversions. The first argument is the type T, and the rest of the argument
+// should have the enum value and string pairs defined in a format like
+// "{enum_value0, string16_value0}, {enum_value1, string16_value1} ...".
+#define DEFINE_ENUM_CONVERTERS(T, ...)                                        \
+  template <>                                                                 \
+  const views::metadata::EnumStrings<T>&                                      \
+  views::metadata::GetEnumStringsInstance<T>() {                              \
+    static const base::NoDestructor<EnumStrings<T>> instance(                 \
+        std::vector<views::metadata::EnumStrings<T>::EnumString>(             \
+            {__VA_ARGS__}));                                                  \
+    return *instance;                                                         \
+  }                                                                           \
+                                                                              \
+  template <>                                                                 \
+  base::string16 views::metadata::ConvertToString<T>(T source_value) {        \
+    for (const auto& pair : GetEnumStringsInstance<T>().pairs) {              \
+      if (source_value == pair.enum_value)                                    \
+        return pair.str_value;                                                \
+    }                                                                         \
+    return base::string16();                                                  \
+  }                                                                           \
+                                                                              \
+  template <>                                                                 \
+  T views::metadata::ConvertFromString<T>(const base::string16& source_value, \
+                                          T default_value) {                  \
+    for (const auto& pair : GetEnumStringsInstance<T>().pairs) {              \
+      if (source_value == pair.str_value)                                     \
+        return pair.enum_value;                                               \
+    }                                                                         \
+    return default_value;                                                     \
+  }
 
 // TypeConverter Class --------------------------------------------------------
 template <typename TSource, typename TTarget>
