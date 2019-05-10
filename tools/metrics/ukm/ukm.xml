@@ -5562,6 +5562,14 @@ be describing additional metrics about the same event.
       Set to 1 when a user is shown a lite page redirect in page load.
     </summary>
   </metric>
+  <metric name="lite_page_redirect_eligibility_reason">
+    <summary>
+      Set to the value of the last known reason a Lite Page Redirect preview was
+      not eligible on this page load. The value of this metric corresponds to
+      the PreviewsEligibilityReason enum. This metric is only set when it is
+      non-zero.
+    </summary>
+  </metric>
   <metric name="navigation_restart_penalty">
     <summary>
       Set to the number of milliseconds spent restarting navigations when a Lite
@@ -5572,6 +5580,22 @@ be describing additional metrics about the same event.
   <metric name="noscript">
     <summary>
       Set to 1 when a user is shown a NoScript preview on a page load.
+    </summary>
+  </metric>
+  <metric name="noscript_eligibility_reason">
+    <summary>
+      Set to the value of the last known reason a NoScript preview was not
+      eligible on this page load. The value of this metric corresponds to the
+      PreviewsEligibilityReason enum. This metric is only set when it is
+      non-zero.
+    </summary>
+  </metric>
+  <metric name="offline_eligibility_reason">
+    <summary>
+      Set to the value of the last known reason an Offline preview was not
+      eligible on this page load. The value of this metric corresponds to the
+      PreviewsEligibilityReason enum. This metric is only set when it is
+      non-zero.
     </summary>
   </metric>
   <metric name="offline_preview">
@@ -5603,10 +5627,26 @@ be describing additional metrics about the same event.
       is impacted by the coin flip holdback.
     </summary>
   </metric>
+  <metric name="proxy_lite_page_eligibility_reason">
+    <summary>
+      Set to the value of the last known reason a Data Reduction Proxy Lite Page
+      preview was not eligible on this page load. The value of this metric
+      corresponds to the PreviewsEligibilityReason enum. This metric is only set
+      when it is non-zero.
+    </summary>
+  </metric>
   <metric name="resource_loading_hints">
     <summary>
       Set to 1 when a user is shown a resource loading hints based preview on a
       page load.
+    </summary>
+  </metric>
+  <metric name="resource_loading_hints_eligibility_reason">
+    <summary>
+      Set to the value of the last known reason a Resource Loading Hints preview
+      was not eligible on this page load. The value of this metric corresponds
+      to the PreviewsEligibilityReason enum. This metric is only set when it is
+      non-zero.
     </summary>
   </metric>
   <metric name="save_data_enabled">

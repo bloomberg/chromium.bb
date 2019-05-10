@@ -5,6 +5,7 @@
 #include "chrome/browser/page_load_metrics/observers/previews_ukm_observer.h"
 
 #include <memory>
+#include <unordered_map>
 
 #include "base/macros.h"
 #include "base/metrics/metrics_hashes.h"
@@ -49,6 +50,8 @@ class TestPreviewsUKMObserver : public PreviewsUKMObserver {
       bool save_data_enabled,
       bool is_offline_preview,
       CoinFlipHoldbackResult coin_flip_result,
+      std::unordered_map<PreviewsType, PreviewsEligibilityReason>
+          eligibility_reasons,
       base::Optional<base::TimeDelta> navigation_restart_penalty)
       : committed_preview_(committed_preview),
         allowed_state_(allowed_state),
@@ -60,6 +63,7 @@ class TestPreviewsUKMObserver : public PreviewsUKMObserver {
         save_data_enabled_(save_data_enabled),
         is_offline_preview_(is_offline_preview),
         coin_flip_result_(coin_flip_result),
+        eligibility_reasons_(eligibility_reasons),
         navigation_restart_penalty_(navigation_restart_penalty) {}
 
   ~TestPreviewsUKMObserver() override {}
@@ -124,6 +128,11 @@ class TestPreviewsUKMObserver : public PreviewsUKMObserver {
       user_data->set_cache_control_no_transform_directive();
     }
 
+    for (auto iter = eligibility_reasons_.begin();
+         iter != eligibility_reasons_.end(); iter++) {
+      user_data->SetEligibilityReasonForPreview(iter->first, iter->second);
+    }
+
     return PreviewsUKMObserver::OnCommit(navigation_handle, source_id);
   }
 
@@ -147,6 +156,8 @@ class TestPreviewsUKMObserver : public PreviewsUKMObserver {
   const bool save_data_enabled_;
   const bool is_offline_preview_;
   CoinFlipHoldbackResult coin_flip_result_;
+  std::unordered_map<PreviewsType, PreviewsEligibilityReason>
+      eligibility_reasons_;
   base::Optional<base::TimeDelta> navigation_restart_penalty_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPreviewsUKMObserver);
@@ -168,6 +179,8 @@ class PreviewsUKMObserverTest
                bool save_data_enabled,
                bool is_offline_preview,
                CoinFlipHoldbackResult coin_flip_result,
+               std::unordered_map<PreviewsType, PreviewsEligibilityReason>
+                   eligibility_reasons,
                base::Optional<base::TimeDelta> navigation_restart_penalty) {
     committed_preview_ = committed_preview;
     allowed_state_ = allowed_state;
@@ -179,6 +192,7 @@ class PreviewsUKMObserverTest
     save_data_enabled_ = save_data_enabled;
     is_offline_preview_ = is_offline_preview;
     coin_flip_result_ = coin_flip_result;
+    eligibility_reasons_ = eligibility_reasons;
     navigation_restart_penalty_ = navigation_restart_penalty;
     auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
         GURL(kDefaultTestUrl), web_contents());
@@ -200,6 +214,8 @@ class PreviewsUKMObserverTest
                    bool offline_preview_expected,
                    bool previews_likely_expected,
                    CoinFlipHoldbackResult coin_flip_result_expected,
+                   std::unordered_map<PreviewsType, PreviewsEligibilityReason>
+                       eligibility_reasons,
                    base::Optional<base::TimeDelta> navigation_restart_penalty) {
     using UkmEntry = ukm::builders::Previews;
     auto entries = test_ukm_recorder().GetEntriesByName(UkmEntry::kEntryName);
@@ -256,6 +272,61 @@ class PreviewsUKMObserverTest
             entry, UkmEntry::knavigation_restart_penaltyName,
             navigation_restart_penalty.value().InMilliseconds());
       }
+
+      int want_lite_page_eligibility_reason =
+          static_cast<int>(eligibility_reasons[PreviewsType::LITE_PAGE]);
+      if (want_lite_page_eligibility_reason) {
+        test_ukm_recorder().ExpectEntryMetric(
+            entry, UkmEntry::kproxy_lite_page_eligibility_reasonName,
+            want_lite_page_eligibility_reason);
+      } else {
+        EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
+            entry, UkmEntry::kproxy_lite_page_eligibility_reasonName));
+      }
+
+      int want_lite_page_redirect_eligibility_reason = static_cast<int>(
+          eligibility_reasons[PreviewsType::LITE_PAGE_REDIRECT]);
+      if (want_lite_page_redirect_eligibility_reason) {
+        test_ukm_recorder().ExpectEntryMetric(
+            entry, UkmEntry::klite_page_redirect_eligibility_reasonName,
+            want_lite_page_redirect_eligibility_reason);
+      } else {
+        EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
+            entry, UkmEntry::klite_page_redirect_eligibility_reasonName));
+      }
+
+      int want_noscript_eligibility_reason =
+          static_cast<int>(eligibility_reasons[PreviewsType::NOSCRIPT]);
+      if (want_noscript_eligibility_reason) {
+        test_ukm_recorder().ExpectEntryMetric(
+            entry, UkmEntry::knoscript_eligibility_reasonName,
+            want_noscript_eligibility_reason);
+      } else {
+        EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
+            entry, UkmEntry::knoscript_eligibility_reasonName));
+      }
+
+      int want_resource_loading_hints_eligibility_reason = static_cast<int>(
+          eligibility_reasons[PreviewsType::RESOURCE_LOADING_HINTS]);
+      if (want_resource_loading_hints_eligibility_reason) {
+        test_ukm_recorder().ExpectEntryMetric(
+            entry, UkmEntry::kresource_loading_hints_eligibility_reasonName,
+            want_resource_loading_hints_eligibility_reason);
+      } else {
+        EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
+            entry, UkmEntry::kresource_loading_hints_eligibility_reasonName));
+      }
+
+      int want_offline_eligibility_reason =
+          static_cast<int>(eligibility_reasons[PreviewsType::OFFLINE]);
+      if (want_offline_eligibility_reason) {
+        test_ukm_recorder().ExpectEntryMetric(
+            entry, UkmEntry::koffline_eligibility_reasonName,
+            want_offline_eligibility_reason);
+      } else {
+        EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
+            entry, UkmEntry::koffline_eligibility_reasonName));
+      }
     }
   }
 
@@ -270,7 +341,7 @@ class PreviewsUKMObserverTest
         committed_preview_, allowed_state_, lite_page_received_,
         lite_page_redirect_received_, noscript_on_, resource_loading_hints_on_,
         origin_opt_out_, save_data_enabled_, is_offline_preview_,
-        coin_flip_result_, navigation_restart_penalty_));
+        coin_flip_result_, eligibility_reasons_, navigation_restart_penalty_));
     // Data is only added to the first navigation after RunTest().
     committed_preview_ = PreviewsType::NONE;
     allowed_state_ = content::PREVIEWS_OFF;
@@ -280,6 +351,7 @@ class PreviewsUKMObserverTest
     resource_loading_hints_on_ = false;
     origin_opt_out_ = false;
     coin_flip_result_ = CoinFlipHoldbackResult::kNotSet;
+    eligibility_reasons_.clear();
     navigation_restart_penalty_ = base::nullopt;
   }
 
@@ -293,6 +365,8 @@ class PreviewsUKMObserverTest
   bool origin_opt_out_ = false;
   bool save_data_enabled_ = false;
   bool is_offline_preview_ = false;
+  std::unordered_map<PreviewsType, PreviewsEligibilityReason>
+      eligibility_reasons_ = {};
   CoinFlipHoldbackResult coin_flip_result_ = CoinFlipHoldbackResult::kNotSet;
   base::Optional<base::TimeDelta> navigation_restart_penalty_ = base::nullopt;
 
@@ -305,7 +379,7 @@ TEST_F(PreviewsUKMObserverTest, NoPreviewSeen) {
           false /* lite_page_redirect_received */, false /* noscript_on */,
           false /* resource_loading_hints_on */, false /* origin_opt_out */,
           false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
   NavigateToUntrackedUrl();
 
@@ -317,7 +391,7 @@ TEST_F(PreviewsUKMObserverTest, NoPreviewSeen) {
               0 /* opt_out_value */, false /* origin_opt_out_expected */,
               false /* save_data_enabled_expected */,
               false /* offline_preview_expected */, false /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet,
+              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
               base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -327,7 +401,7 @@ TEST_F(PreviewsUKMObserverTest, UntrackedPreviewTypeOptOut) {
           false /* lite_page_redirect_received */, false /* noscript_on */,
           false /* resource_loading_hints_on */, false /* origin_opt_out */,
           false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
   observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
@@ -341,7 +415,7 @@ TEST_F(PreviewsUKMObserverTest, UntrackedPreviewTypeOptOut) {
               0 /* opt_out_value */, false /* origin_opt_out_expected */,
               false /* save_data_enabled_expected */,
               false /* offline_preview_expected */, false /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet,
+              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
               base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -351,7 +425,7 @@ TEST_F(PreviewsUKMObserverTest, LitePageSeen) {
           false /* lite_page_redirect_received */, false /* noscript_on */,
           false /* resource_loading_hints_on */, false /* origin_opt_out */,
           false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   NavigateToUntrackedUrl();
@@ -364,7 +438,7 @@ TEST_F(PreviewsUKMObserverTest, LitePageSeen) {
               0 /* opt_out_value */, false /* origin_opt_out_expected */,
               false /* save_data_enabled_expected */,
               false /* offline_preview_expected */, false /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet,
+              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
               base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -380,7 +454,7 @@ TEST_F(PreviewsUKMObserverTest, LitePageOptOut) {
           false /* lite_page_redirect_received */, false /* noscript_on */,
           false /* resource_loading_hints_on */, false /* origin_opt_out */,
           false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
@@ -394,7 +468,7 @@ TEST_F(PreviewsUKMObserverTest, LitePageOptOut) {
               1 /* opt_out_value */, false /* origin_opt_out_expected */,
               false /* save_data_enabled_expected */,
               false /* offline_preview_expected */, false /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet,
+              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
               base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -409,7 +483,7 @@ TEST_F(PreviewsUKMObserverTest, LitePageOptOutChip) {
           false /* lite_page_redirect_received */, false /* noscript_on */,
           false /* resource_loading_hints_on */, false /* origin_opt_out */,
           false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
@@ -423,7 +497,7 @@ TEST_F(PreviewsUKMObserverTest, LitePageOptOutChip) {
               2 /* opt_out_value */, false /* origin_opt_out_expected */,
               false /* save_data_enabled_expected */,
               false /* offline_preview_expected */, false /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet,
+              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
               base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -433,7 +507,7 @@ TEST_F(PreviewsUKMObserverTest, LitePageRedirectSeen) {
           true /* lite_page_redirect_received */, false /* noscript_on */,
           false /* resource_loading_hints_on */, false /* origin_opt_out */,
           false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   NavigateToUntrackedUrl();
@@ -446,7 +520,7 @@ TEST_F(PreviewsUKMObserverTest, LitePageRedirectSeen) {
               0 /* opt_out_value */, false /* origin_opt_out_expected */,
               false /* save_data_enabled_expected */,
               false /* offline_preview_expected */, false /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet,
+              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
               base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -462,7 +536,7 @@ TEST_F(PreviewsUKMObserverTest, LitePageRedirectOptOut) {
           true /* lite_page_redirect_received */, false /* noscript_on */,
           false /* resource_loading_hints_on */, false /* origin_opt_out */,
           false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
@@ -476,7 +550,7 @@ TEST_F(PreviewsUKMObserverTest, LitePageRedirectOptOut) {
               1 /* opt_out_value */, false /* origin_opt_out_expected */,
               false /* save_data_enabled_expected */,
               false /* offline_preview_expected */, false /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet,
+              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
               base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -491,7 +565,7 @@ TEST_F(PreviewsUKMObserverTest, LitePageRedirectOptOutChip) {
           true /* lite_page_redirect_received */, false /* noscript_on */,
           false /* resource_loading_hints_on */, false /* origin_opt_out */,
           false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
@@ -505,7 +579,7 @@ TEST_F(PreviewsUKMObserverTest, LitePageRedirectOptOutChip) {
               2 /* opt_out_value */, false /* origin_opt_out_expected */,
               false /* save_data_enabled_expected */,
               false /* offline_preview_expected */, false /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet,
+              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
               base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -515,7 +589,7 @@ TEST_F(PreviewsUKMObserverTest, NoScriptSeen) {
           false /* lite_page_redirect_received */, true /* noscript_on */,
           false /* resource_loading_hints_on */, false /* origin_opt_out */,
           false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   NavigateToUntrackedUrl();
@@ -527,7 +601,7 @@ TEST_F(PreviewsUKMObserverTest, NoScriptSeen) {
       0 /* opt_out_value */, false /* origin_opt_out_expected */,
       false /* save_data_enabled_expected */,
       false /* offline_preview_expected */, false /* previews_likely */,
-      CoinFlipHoldbackResult::kNotSet,
+      CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
       base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -543,7 +617,7 @@ TEST_F(PreviewsUKMObserverTest, NoScriptOptOut) {
           false /* lite_page_redirect_received */, true /* noscript_on */,
           false /* resource_loading_hints_on */, false /* origin_opt_out */,
           false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
@@ -556,7 +630,7 @@ TEST_F(PreviewsUKMObserverTest, NoScriptOptOut) {
       1 /* opt_out_value */, false /* origin_opt_out_expected */,
       false /* save_data_enabled_expected */,
       false /* offline_preview_expected */, false /* previews_likely */,
-      CoinFlipHoldbackResult::kNotSet,
+      CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
       base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -571,7 +645,7 @@ TEST_F(PreviewsUKMObserverTest, NoScriptOptOutChip) {
           false /* lite_page_redirect_received */, true /* noscript_on */,
           false /* resource_loading_hints_on */, false /* origin_opt_out */,
           false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
@@ -584,7 +658,7 @@ TEST_F(PreviewsUKMObserverTest, NoScriptOptOutChip) {
       2 /* opt_out_value */, false /* origin_opt_out_expected */,
       false /* save_data_enabled_expected */,
       false /* offline_preview_expected */, false /* previews_likely */,
-      CoinFlipHoldbackResult::kNotSet,
+      CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
       base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -594,7 +668,7 @@ TEST_F(PreviewsUKMObserverTest, OfflinePreviewsSeen) {
           false /* lite_page_redirect_received */, false /* noscript_on */,
           false /* resource_loading_hints_on */, false /* origin_opt_out */,
           false /* save_data_enabled */, true /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   NavigateToUntrackedUrl();
@@ -607,7 +681,7 @@ TEST_F(PreviewsUKMObserverTest, OfflinePreviewsSeen) {
               0 /* opt_out_value */, false /* origin_opt_out_expected */,
               false /* save_data_enabled_expected */,
               true /* offline_preview_expected */, false /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet,
+              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
               base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -617,7 +691,7 @@ TEST_F(PreviewsUKMObserverTest, ResourceLoadingHintsSeen) {
           false /* lite_page_redirect_received */, false /* noscript_on */,
           true /* resource_loading_hints_on */, false /* origin_opt_out */,
           false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   NavigateToUntrackedUrl();
@@ -629,7 +703,7 @@ TEST_F(PreviewsUKMObserverTest, ResourceLoadingHintsSeen) {
       0 /* opt_out_value */, false /* origin_opt_out_expected */,
       false /* save_data_enabled_expected */,
       false /* offline_preview_expected */, false /* previews_likely */,
-      CoinFlipHoldbackResult::kNotSet,
+      CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
       base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -645,7 +719,7 @@ TEST_F(PreviewsUKMObserverTest, ResourceLoadingHintsOptOut) {
           false /* lite_page_redirect_received */, false /* noscript_on */,
           true /* resource_loading_hints_on */, false /* origin_opt_out */,
           false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
@@ -658,7 +732,7 @@ TEST_F(PreviewsUKMObserverTest, ResourceLoadingHintsOptOut) {
       1 /* opt_out_value */, false /* origin_opt_out_expected */,
       false /* save_data_enabled_expected */,
       false /* offline_preview_expected */, false /* previews_likely */,
-      CoinFlipHoldbackResult::kNotSet,
+      CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
       base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -673,7 +747,7 @@ TEST_F(PreviewsUKMObserverTest, ResourceLoadingHintsOptOutChip) {
           false /* lite_page_redirect_received */, false /* noscript_on */,
           true /* resource_loading_hints_on */, false /* origin_opt_out */,
           false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
@@ -686,7 +760,7 @@ TEST_F(PreviewsUKMObserverTest, ResourceLoadingHintsOptOutChip) {
       2 /* opt_out_value */, false /* origin_opt_out_expected */,
       false /* save_data_enabled_expected */,
       false /* offline_preview_expected */, false /* previews_likely */,
-      CoinFlipHoldbackResult::kNotSet,
+      CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
       base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -696,7 +770,7 @@ TEST_F(PreviewsUKMObserverTest, ClientLoFiSeen) {
           false /* lite_page_redirect_received */, false /* noscript_on */,
           false /* resource_loading_hints_on */, false /* origin_opt_out */,
           false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data =
@@ -731,7 +805,7 @@ TEST_F(PreviewsUKMObserverTest, ClientLoFiSeen) {
               0 /* opt_out_value */, false /* origin_opt_out_expected */,
               false /* save_data_enabled_expected */,
               false /* offline_preview_expected */, false /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet,
+              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
               base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -747,7 +821,7 @@ TEST_F(PreviewsUKMObserverTest, ClientLoFiOptOut) {
           false /* lite_page_redirect_received */, false /* noscript_on */,
           false /* resource_loading_hints_on */, false /* origin_opt_out */,
           false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data =
@@ -782,7 +856,7 @@ TEST_F(PreviewsUKMObserverTest, ClientLoFiOptOut) {
               1 /* opt_out_value */, false /* origin_opt_out_expected */,
               false /* save_data_enabled_expected */,
               false /* offline_preview_expected */, false /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet,
+              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
               base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -797,7 +871,7 @@ TEST_F(PreviewsUKMObserverTest, ClientLoFiOptOutChip) {
           false /* lite_page_redirect_received */, false /* noscript_on */,
           false /* resource_loading_hints_on */, false /* origin_opt_out */,
           false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data =
@@ -832,7 +906,7 @@ TEST_F(PreviewsUKMObserverTest, ClientLoFiOptOutChip) {
               2 /* opt_out_value */, false /* origin_opt_out_expected */,
               false /* save_data_enabled_expected */,
               false /* offline_preview_expected */, false /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet,
+              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
               base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -842,7 +916,7 @@ TEST_F(PreviewsUKMObserverTest, ServerLoFiSeen) {
           false /* lite_page_redirect_received */, false /* noscript_on */,
           false /* resource_loading_hints_on */, false /* origin_opt_out */,
           false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data =
@@ -877,7 +951,7 @@ TEST_F(PreviewsUKMObserverTest, ServerLoFiSeen) {
               0 /* opt_out_value */, false /* origin_opt_out_expected */,
               false /* save_data_enabled_expected */,
               false /* offline_preview_expected */, false /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet,
+              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
               base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -893,7 +967,7 @@ TEST_F(PreviewsUKMObserverTest, ServerLoFiOptOut) {
           false /* lite_page_redirect_received */, false /* noscript_on */,
           false /* resource_loading_hints_on */, false /* origin_opt_out */,
           false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data =
@@ -929,7 +1003,7 @@ TEST_F(PreviewsUKMObserverTest, ServerLoFiOptOut) {
               1 /* opt_out_value */, false /* origin_opt_out_expected */,
               false /* save_data_enabled_expected */,
               false /* offline_preview_expected */, false /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet,
+              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
               base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -944,7 +1018,7 @@ TEST_F(PreviewsUKMObserverTest, ServerLoFiOptOutChip) {
           false /* lite_page_redirect_received */, false /* noscript_on */,
           false /* resource_loading_hints_on */, false /* origin_opt_out */,
           false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data =
@@ -980,7 +1054,7 @@ TEST_F(PreviewsUKMObserverTest, ServerLoFiOptOutChip) {
               2 /* opt_out_value */, false /* origin_opt_out_expected */,
               false /* save_data_enabled_expected */,
               false /* offline_preview_expected */, false /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet,
+              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
               base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -990,7 +1064,7 @@ TEST_F(PreviewsUKMObserverTest, BothLoFiSeen) {
           false /* lite_page_redirect_received */, false /* noscript_on */,
           false /* resource_loading_hints_on */, false /* origin_opt_out */,
           false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data1 =
@@ -1030,7 +1104,7 @@ TEST_F(PreviewsUKMObserverTest, BothLoFiSeen) {
               0 /* opt_out_value */, false /* origin_opt_out_expected */,
               false /* save_data_enabled_expected */,
               false /* offline_preview_expected */, false /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet,
+              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
               base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -1046,7 +1120,7 @@ TEST_F(PreviewsUKMObserverTest, BothLoFiOptOut) {
           false /* lite_page_redirect_received */, false /* noscript_on */,
           false /* resource_loading_hints_on */, false /* origin_opt_out */,
           false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data1 =
@@ -1086,7 +1160,7 @@ TEST_F(PreviewsUKMObserverTest, BothLoFiOptOut) {
               1 /* opt_out_value */, false /* origin_opt_out_expected */,
               false /* save_data_enabled_expected */,
               false /* offline_preview_expected */, false /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet,
+              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
               base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -1101,7 +1175,7 @@ TEST_F(PreviewsUKMObserverTest, BothLoFiOptOutChip) {
           false /* lite_page_redirect_received */, false /* noscript_on */,
           false /* resource_loading_hints_on */, false /* origin_opt_out */,
           false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data1 =
@@ -1141,7 +1215,7 @@ TEST_F(PreviewsUKMObserverTest, BothLoFiOptOutChip) {
               2 /* opt_out_value */, false /* origin_opt_out_expected */,
               false /* save_data_enabled_expected */,
               false /* offline_preview_expected */, false /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet,
+              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
               base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -1151,7 +1225,7 @@ TEST_F(PreviewsUKMObserverTest, OriginOptOut) {
           false /* lite_page_redirect_received */, false /* noscript_on */,
           false /* resource_loading_hints_on */, true /* origin_opt_out */,
           false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   NavigateToUntrackedUrl();
@@ -1164,7 +1238,7 @@ TEST_F(PreviewsUKMObserverTest, OriginOptOut) {
               0 /* opt_out_value */, true /* origin_opt_out_expected */,
               false /* save_data_enabled_expected */,
               false /* offline_preview_expected */, false /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet,
+              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
               base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -1174,7 +1248,7 @@ TEST_F(PreviewsUKMObserverTest, DataSaverEnabled) {
           false /* lite_page_redirect_received */, false /* noscript_on */,
           false /* resource_loading_hints_on */, false /* origin_opt_out */,
           true /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   NavigateToUntrackedUrl();
@@ -1187,7 +1261,7 @@ TEST_F(PreviewsUKMObserverTest, DataSaverEnabled) {
               0 /* opt_out_value */, false /* origin_opt_out_expected */,
               true /* save_data_enabled_expected */,
               false /* offline_preview_expected */, false /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet,
+              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
               base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -1200,6 +1274,7 @@ TEST_F(PreviewsUKMObserverTest, NavigationRestartPenaltySeen) {
       false /* noscript_on */, false /* resource_loading_hints_on */,
       false /* origin_opt_out */, false /* save_data_enabled */,
       false /* is_offline_preview */, CoinFlipHoldbackResult::kNotSet,
+      {} /* eligibility_reasons */,
       base::TimeDelta::FromMilliseconds(1337) /* navigation_restart_penalty */);
 
   NavigateToUntrackedUrl();
@@ -1212,7 +1287,7 @@ TEST_F(PreviewsUKMObserverTest, NavigationRestartPenaltySeen) {
       false /* origin_opt_out_expected */,
       false /* save_data_enabled_expected */,
       false /* offline_preview_expected */, false /* previews_likely */,
-      CoinFlipHoldbackResult::kNotSet,
+      CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
       base::TimeDelta::FromMilliseconds(1337) /* navigation_restart_penalty */);
 }
 
@@ -1222,7 +1297,7 @@ TEST_F(PreviewsUKMObserverTest, PreviewsLikelySet_PreCommitDecision) {
           false /* lite_page_redirect_received */, false /* noscript_on */,
           false /* resource_loading_hints_on */, false /* origin_opt_out */,
           true /* save_data_enabled */, true /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   NavigateToUntrackedUrl();
@@ -1235,7 +1310,7 @@ TEST_F(PreviewsUKMObserverTest, PreviewsLikelySet_PreCommitDecision) {
               0 /* opt_out_value */, false /* origin_opt_out_expected */,
               true /* save_data_enabled_expected */,
               true /* offline_preview_expected */, true /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet,
+              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
               base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -1245,7 +1320,7 @@ TEST_F(PreviewsUKMObserverTest, PreviewsLikelyNotSet_PostCommitDecision) {
           false /* lite_page_redirect_received */, false /* noscript_on */,
           false /* resource_loading_hints_on */, false /* origin_opt_out */,
           true /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   NavigateToUntrackedUrl();
@@ -1258,7 +1333,7 @@ TEST_F(PreviewsUKMObserverTest, PreviewsLikelyNotSet_PostCommitDecision) {
               0 /* opt_out_value */, false /* origin_opt_out_expected */,
               true /* save_data_enabled_expected */,
               false /* offline_preview_expected */, false /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet,
+              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
               base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -1268,7 +1343,85 @@ TEST_F(PreviewsUKMObserverTest, PreviewsLikelyNotSet_PreviewsOff) {
           false /* lite_page_redirect_received */, false /* noscript_on */,
           false /* resource_loading_hints_on */, false /* origin_opt_out */,
           true /* save_data_enabled */, false /* is_offline_preview */,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
+          base::nullopt /* navigation_restart_penalty */);
+
+  NavigateToUntrackedUrl();
+
+  ValidateUKM(false /* server_lofi_expected */,
+              false /* client_lofi_expected */, false /* lite_page_expected */,
+              false /* lite_page_redirect_expected */,
+              false /* noscript_expected */,
+              false /* resource_loading_hints_expected */,
+              0 /* opt_out_value */, false /* origin_opt_out_expected */,
+              true /* save_data_enabled_expected */,
+              false /* offline_preview_expected */, false /* previews_likely */,
+              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
+              base::nullopt /* navigation_restart_penalty */);
+}
+
+TEST_F(PreviewsUKMObserverTest, CoinFlipResult_Holdback) {
+  RunTest(content::OFFLINE_PAGE_ON /* allowed_state */, PreviewsType::NONE,
+          false /* lite_page_received */,
+          false /* lite_page_redirect_received */, false /* noscript_on */,
+          false /* resource_loading_hints_on */, false /* origin_opt_out */,
+          true /* save_data_enabled */, true /* is_offline_preview */,
+          CoinFlipHoldbackResult::kHoldback, {} /* eligibility_reasons */,
+          base::nullopt /* navigation_restart_penalty */);
+
+  NavigateToUntrackedUrl();
+
+  ValidateUKM(false /* server_lofi_expected */,
+              false /* client_lofi_expected */, false /* lite_page_expected */,
+              false /* lite_page_redirect_expected */,
+              false /* noscript_expected */,
+              false /* resource_loading_hints_expected */,
+              0 /* opt_out_value */, false /* origin_opt_out_expected */,
+              true /* save_data_enabled_expected */,
+              true /* offline_preview_expected */, true /* previews_likely */,
+              CoinFlipHoldbackResult::kHoldback, {} /* eligibility_reasons */,
+              base::nullopt /* navigation_restart_penalty */);
+}
+
+TEST_F(PreviewsUKMObserverTest, CoinFlipResult_Allowed) {
+  RunTest(content::OFFLINE_PAGE_ON /* allowed_state */, PreviewsType::NONE,
+          false /* lite_page_received */,
+          false /* lite_page_redirect_received */, false /* noscript_on */,
+          false /* resource_loading_hints_on */, false /* origin_opt_out */,
+          true /* save_data_enabled */, true /* is_offline_preview */,
+          CoinFlipHoldbackResult::kAllowed, {} /* eligibility_reasons */,
+          base::nullopt /* navigation_restart_penalty */);
+
+  NavigateToUntrackedUrl();
+
+  ValidateUKM(false /* server_lofi_expected */,
+              false /* client_lofi_expected */, false /* lite_page_expected */,
+              false /* lite_page_redirect_expected */,
+              false /* noscript_expected */,
+              false /* resource_loading_hints_expected */,
+              0 /* opt_out_value */, false /* origin_opt_out_expected */,
+              true /* save_data_enabled_expected */,
+              true /* offline_preview_expected */, true /* previews_likely */,
+              CoinFlipHoldbackResult::kAllowed, {} /* eligibility_reasons */,
+              base::nullopt /* navigation_restart_penalty */);
+}
+
+TEST_F(PreviewsUKMObserverTest, LogPreviewsEligibilityReason_WithAllowed) {
+  RunTest(content::PREVIEWS_UNSPECIFIED /* allowed_state */, PreviewsType::NONE,
+          false /* lite_page_received */,
+          false /* lite_page_redirect_received */, false /* noscript_on */,
+          false /* resource_loading_hints_on */, false /* origin_opt_out */,
+          true /* save_data_enabled */, false /* is_offline_preview */,
           CoinFlipHoldbackResult::kNotSet,
+          {{PreviewsType::OFFLINE,
+            PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE},
+           {PreviewsType::LITE_PAGE,
+            PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE},
+           {PreviewsType::NOSCRIPT,
+            PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED},
+           // ALLOWED is equal to zero and should not be recorded.
+           {PreviewsType::LITE_PAGE_REDIRECT,
+            PreviewsEligibilityReason::ALLOWED}} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   NavigateToUntrackedUrl();
@@ -1282,16 +1435,32 @@ TEST_F(PreviewsUKMObserverTest, PreviewsLikelyNotSet_PreviewsOff) {
               true /* save_data_enabled_expected */,
               false /* offline_preview_expected */, false /* previews_likely */,
               CoinFlipHoldbackResult::kNotSet,
+              {{PreviewsType::OFFLINE,
+                PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE},
+               {PreviewsType::LITE_PAGE,
+                PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE},
+               {PreviewsType::NOSCRIPT,
+                PreviewsEligibilityReason::
+                    BLACKLIST_DATA_NOT_LOADED}} /* eligibility_reasons */,
               base::nullopt /* navigation_restart_penalty */);
 }
 
-TEST_F(PreviewsUKMObserverTest, CoinFlipResult_Holdback) {
-  RunTest(content::OFFLINE_PAGE_ON /* allowed_state */, PreviewsType::NONE,
+TEST_F(PreviewsUKMObserverTest, LogPreviewsEligibilityReason_NoneAllowed) {
+  RunTest(content::PREVIEWS_UNSPECIFIED /* allowed_state */, PreviewsType::NONE,
           false /* lite_page_received */,
           false /* lite_page_redirect_received */, false /* noscript_on */,
           false /* resource_loading_hints_on */, false /* origin_opt_out */,
-          true /* save_data_enabled */, true /* is_offline_preview */,
-          CoinFlipHoldbackResult::kHoldback,
+          true /* save_data_enabled */, false /* is_offline_preview */,
+          CoinFlipHoldbackResult::kNotSet,
+          {{PreviewsType::OFFLINE,
+            PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE},
+           {PreviewsType::LITE_PAGE,
+            PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE},
+           {PreviewsType::NOSCRIPT,
+            PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED},
+           {PreviewsType::LITE_PAGE_REDIRECT,
+            PreviewsEligibilityReason::
+                BLACKLIST_DATA_NOT_LOADED}} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   NavigateToUntrackedUrl();
@@ -1303,31 +1472,17 @@ TEST_F(PreviewsUKMObserverTest, CoinFlipResult_Holdback) {
               false /* resource_loading_hints_expected */,
               0 /* opt_out_value */, false /* origin_opt_out_expected */,
               true /* save_data_enabled_expected */,
-              true /* offline_preview_expected */, true /* previews_likely */,
-              CoinFlipHoldbackResult::kHoldback,
-              base::nullopt /* navigation_restart_penalty */);
-}
-
-TEST_F(PreviewsUKMObserverTest, CoinFlipResult_Allowed) {
-  RunTest(content::OFFLINE_PAGE_ON /* allowed_state */, PreviewsType::NONE,
-          false /* lite_page_received */,
-          false /* lite_page_redirect_received */, false /* noscript_on */,
-          false /* resource_loading_hints_on */, false /* origin_opt_out */,
-          true /* save_data_enabled */, true /* is_offline_preview */,
-          CoinFlipHoldbackResult::kAllowed,
-          base::nullopt /* navigation_restart_penalty */);
-
-  NavigateToUntrackedUrl();
-
-  ValidateUKM(false /* server_lofi_expected */,
-              false /* client_lofi_expected */, false /* lite_page_expected */,
-              false /* lite_page_redirect_expected */,
-              false /* noscript_expected */,
-              false /* resource_loading_hints_expected */,
-              0 /* opt_out_value */, false /* origin_opt_out_expected */,
-              true /* save_data_enabled_expected */,
-              true /* offline_preview_expected */, true /* previews_likely */,
-              CoinFlipHoldbackResult::kAllowed,
+              false /* offline_preview_expected */, false /* previews_likely */,
+              CoinFlipHoldbackResult::kNotSet,
+              {{PreviewsType::OFFLINE,
+                PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE},
+               {PreviewsType::LITE_PAGE,
+                PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE},
+               {PreviewsType::NOSCRIPT,
+                PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED},
+               {PreviewsType::LITE_PAGE_REDIRECT,
+                PreviewsEligibilityReason::
+                    BLACKLIST_DATA_NOT_LOADED}} /* eligibility_reasons */,
               base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -1337,7 +1492,7 @@ TEST_F(PreviewsUKMObserverTest, CheckReportingForHidden) {
           false /* lite_page_redirect_received */, false /* noscript_on */,
           false /* resource_loading_hints_on */, false /* origin_opt_out */,
           true /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   web_contents()->WasHidden();
@@ -1350,7 +1505,7 @@ TEST_F(PreviewsUKMObserverTest, CheckReportingForHidden) {
               0 /* opt_out_value */, false /* origin_opt_out_expected */,
               true /* save_data_enabled_expected */,
               false /* offline_preview_expected */, false /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet,
+              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
               base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -1360,7 +1515,7 @@ TEST_F(PreviewsUKMObserverTest, CheckReportingForFlushMetrics) {
           false /* lite_page_redirect_received */, false /* noscript_on */,
           false /* resource_loading_hints_on */, false /* origin_opt_out */,
           true /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
           base::nullopt /* navigation_restart_penalty */);
 
   SimulateAppEnterBackground();
@@ -1373,7 +1528,7 @@ TEST_F(PreviewsUKMObserverTest, CheckReportingForFlushMetrics) {
               0 /* opt_out_value */, false /* origin_opt_out_expected */,
               true /* save_data_enabled_expected */,
               false /* offline_preview_expected */, false /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet,
+              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
               base::nullopt /* navigation_restart_penalty */);
 }
 
@@ -1390,7 +1545,7 @@ TEST_F(PreviewsUKMObserverTest, TestPageEndReasonUMA) {
             false /* lite_page_redirect_received */, false /* noscript_on */,
             false /* resource_loading_hints_on */, false /* origin_opt_out */,
             false /* save_data_enabled */, false /* is_offline_preview */,
-            CoinFlipHoldbackResult::kNotSet,
+            CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
             base::nullopt /* navigation_restart_penalty */);
 
     NavigateToUntrackedUrl();

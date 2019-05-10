@@ -37,6 +37,16 @@ namespace {
 
 const char kOfflinePreviewsMimeType[] = "multipart/related";
 
+bool ShouldOptionalEligibilityReasonBeRecorded(
+    base::Optional<previews::PreviewsEligibilityReason> reason) {
+  if (!reason.has_value())
+    return false;
+
+  // Do not record ALLOWED values since we are only interested in recording
+  // reasons why a preview was not eligible to be shown.
+  return reason.value() != previews::PreviewsEligibilityReason::ALLOWED;
+}
+
 }  // namespace
 
 PreviewsUKMObserver::PreviewsUKMObserver()
@@ -106,15 +116,29 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
                             previews::PreviewsType::RESOURCE_LOADING_HINTS) {
     resource_loading_hints_seen_ = true;
   }
-  if (previews_user_data &&
-      previews_user_data->cache_control_no_transform_directive()) {
+  if (previews_user_data->cache_control_no_transform_directive()) {
     origin_opt_out_occurred_ = true;
   }
-  if (previews_user_data && previews_user_data->server_lite_page_info()) {
+  if (previews_user_data->server_lite_page_info()) {
     navigation_restart_penalty_ =
         navigation_handle->NavigationStart() -
         previews_user_data->server_lite_page_info()->original_navigation_start;
   }
+
+  lite_page_eligibility_reason_ =
+      previews_user_data->EligibilityReasonForPreview(
+          previews::PreviewsType::LITE_PAGE);
+  lite_page_redirect_eligibility_reason_ =
+      previews_user_data->EligibilityReasonForPreview(
+          previews::PreviewsType::LITE_PAGE_REDIRECT);
+  noscript_eligibility_reason_ =
+      previews_user_data->EligibilityReasonForPreview(
+          previews::PreviewsType::NOSCRIPT);
+  resource_loading_hints_eligibility_reason_ =
+      previews_user_data->EligibilityReasonForPreview(
+          previews::PreviewsType::RESOURCE_LOADING_HINTS);
+  offline_eligibility_reason_ = previews_user_data->EligibilityReasonForPreview(
+      previews::PreviewsType::OFFLINE);
 
   return CONTINUE_OBSERVING;
 }
@@ -218,6 +242,30 @@ void PreviewsUKMObserver::RecordPreviewsTypes(
   if (navigation_restart_penalty_.has_value()) {
     builder.Setnavigation_restart_penalty(
         navigation_restart_penalty_->InMilliseconds());
+  }
+
+  if (ShouldOptionalEligibilityReasonBeRecorded(
+          lite_page_eligibility_reason_)) {
+    builder.Setproxy_lite_page_eligibility_reason(
+        static_cast<int>(lite_page_eligibility_reason_.value()));
+  }
+  if (ShouldOptionalEligibilityReasonBeRecorded(
+          lite_page_redirect_eligibility_reason_)) {
+    builder.Setlite_page_redirect_eligibility_reason(
+        static_cast<int>(lite_page_redirect_eligibility_reason_.value()));
+  }
+  if (ShouldOptionalEligibilityReasonBeRecorded(noscript_eligibility_reason_)) {
+    builder.Setnoscript_eligibility_reason(
+        static_cast<int>(noscript_eligibility_reason_.value()));
+  }
+  if (ShouldOptionalEligibilityReasonBeRecorded(
+          resource_loading_hints_eligibility_reason_)) {
+    builder.Setresource_loading_hints_eligibility_reason(
+        static_cast<int>(resource_loading_hints_eligibility_reason_.value()));
+  }
+  if (ShouldOptionalEligibilityReasonBeRecorded(offline_eligibility_reason_)) {
+    builder.Setoffline_eligibility_reason(
+        static_cast<int>(offline_eligibility_reason_.value()));
   }
   builder.Record(ukm::UkmRecorder::Get());
 }

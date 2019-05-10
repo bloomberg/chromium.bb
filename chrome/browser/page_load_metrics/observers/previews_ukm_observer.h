@@ -10,6 +10,7 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_experiments.h"
 
 namespace content {
@@ -73,6 +74,16 @@ class PreviewsUKMObserver : public page_load_metrics::PageLoadMetricsObserver {
   bool origin_opt_out_occurred_ = false;
   bool save_data_enabled_ = false;
   bool previews_likely_ = false;
+  base::Optional<previews::PreviewsEligibilityReason>
+      lite_page_eligibility_reason_ = base::nullopt;
+  base::Optional<previews::PreviewsEligibilityReason>
+      lite_page_redirect_eligibility_reason_ = base::nullopt;
+  base::Optional<previews::PreviewsEligibilityReason>
+      noscript_eligibility_reason_ = base::nullopt;
+  base::Optional<previews::PreviewsEligibilityReason>
+      resource_loading_hints_eligibility_reason_ = base::nullopt;
+  base::Optional<previews::PreviewsEligibilityReason>
+      offline_eligibility_reason_ = base::nullopt;
   CoinFlipHoldbackResult coin_flip_result_ = CoinFlipHoldbackResult::kNotSet;
   base::Optional<base::TimeDelta> navigation_restart_penalty_ = base::nullopt;
 
