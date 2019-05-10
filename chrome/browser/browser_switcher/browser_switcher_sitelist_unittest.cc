@@ -41,10 +41,11 @@ std::unique_ptr<base::Value> StringArrayToValue(
 class BrowserSwitcherSitelistTest : public testing::Test {
  public:
   void Initialize(const std::vector<const char*>& url_list,
-                  const std::vector<const char*>& url_greylist) {
+                  const std::vector<const char*>& url_greylist,
+                  bool enabled = true) {
     BrowserSwitcherPrefs::RegisterProfilePrefs(prefs_backend_.registry());
     prefs_backend_.SetManagedPref(prefs::kEnabled,
-                                  std::make_unique<base::Value>(true));
+                                  std::make_unique<base::Value>(enabled));
     prefs_backend_.SetManagedPref(prefs::kUrlList,
                                   StringArrayToValue(url_list));
     prefs_backend_.SetManagedPref(prefs::kUrlGreylist,
@@ -54,6 +55,7 @@ class BrowserSwitcherSitelistTest : public testing::Test {
   }
 
   bool ShouldSwitch(const GURL& url) { return sitelist_->ShouldSwitch(url); }
+  Decision GetDecision(const GURL& url) { return sitelist_->GetDecision(url); }
 
   sync_preferences::TestingPrefServiceSyncable* prefs_backend() {
     return &prefs_backend_;
@@ -260,6 +262,30 @@ TEST_F(BrowserSwitcherSitelistTest, All3Sources) {
   EXPECT_TRUE(ShouldSwitch(GURL("http://yahoo.com/")));
   EXPECT_TRUE(ShouldSwitch(GURL("http://news.yahoo.com/")));
   EXPECT_FALSE(ShouldSwitch(GURL("http://finance.yahoo.com/")));
+}
+
+TEST_F(BrowserSwitcherSitelistTest, BrowserSwitcherDisabled) {
+  Initialize({"example.com"}, {}, false);
+  EXPECT_FALSE(ShouldSwitch(GURL("http://example.com/")));
+  EXPECT_EQ(Decision(kStay, kDisabled, ""),
+            GetDecision(GURL("http://example.com/")));
+}
+
+TEST_F(BrowserSwitcherSitelistTest, CheckReason) {
+  Initialize({"foo.invalid.com", "!example.com"},
+             {"//foo.invalid.com/foobar", "invalid.com"});
+  EXPECT_EQ(Decision(kStay, kProtocol, ""),
+            GetDecision(GURL("ftp://example.com/")));
+  EXPECT_EQ(Decision(kStay, kDefault, ""),
+            GetDecision(GURL("http://google.com/")));
+  EXPECT_EQ(Decision(kStay, kDefault, ""),
+            GetDecision(GURL("http://bar.invalid.com/")));
+  EXPECT_EQ(Decision(kStay, kSitelist, "!example.com"),
+            GetDecision(GURL("http://example.com/")));
+  EXPECT_EQ(Decision(kGo, kSitelist, "foo.invalid.com"),
+            GetDecision(GURL("http://foo.invalid.com/")));
+  EXPECT_EQ(Decision(kStay, kGreylist, "//foo.invalid.com/foobar"),
+            GetDecision(GURL("http://foo.invalid.com/foobar")));
 }
 
 }  // namespace browser_switcher

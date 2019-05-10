@@ -39,7 +39,7 @@ class MockBrowserSwitcherSitelist : public BrowserSwitcherSitelist {
   MockBrowserSwitcherSitelist() = default;
   ~MockBrowserSwitcherSitelist() override = default;
 
-  MOCK_CONST_METHOD1(ShouldSwitch, bool(const GURL&));
+  MOCK_CONST_METHOD1(GetDecision, Decision(const GURL&));
   MOCK_METHOD1(SetIeemSitelist, void(ParsedXml&&));
   MOCK_METHOD1(SetExternalSitelist, void(ParsedXml&&));
   MOCK_CONST_METHOD0(GetIeemSitelist, const RuleSet*());
@@ -82,8 +82,11 @@ class BrowserSwitcherNavigationThrottleTest
   MockBrowserSwitcherSitelist* sitelist_;
 };
 
+Decision STAY = {kStay, kDefault, ""};
+Decision GO = {kGo, kSitelist, "example.com"};
+
 TEST_F(BrowserSwitcherNavigationThrottleTest, ShouldIgnoreNavigation) {
-  EXPECT_CALL(*sitelist(), ShouldSwitch(_)).WillOnce(Return(false));
+  EXPECT_CALL(*sitelist(), GetDecision(_)).WillOnce(Return(STAY));
   std::unique_ptr<MockNavigationHandle> handle =
       CreateMockNavigationHandle(GURL("https://example.com/"));
   std::unique_ptr<NavigationThrottle> throttle =
@@ -92,7 +95,7 @@ TEST_F(BrowserSwitcherNavigationThrottleTest, ShouldIgnoreNavigation) {
 }
 
 TEST_F(BrowserSwitcherNavigationThrottleTest, LaunchesOnStartRequest) {
-  EXPECT_CALL(*sitelist(), ShouldSwitch(_)).WillOnce(Return(true));
+  EXPECT_CALL(*sitelist(), GetDecision(_)).WillOnce(Return(GO));
   std::unique_ptr<MockNavigationHandle> handle =
       CreateMockNavigationHandle(GURL("https://example.com/"));
   std::unique_ptr<NavigationThrottle> throttle =
@@ -103,9 +106,9 @@ TEST_F(BrowserSwitcherNavigationThrottleTest, LaunchesOnStartRequest) {
 }
 
 TEST_F(BrowserSwitcherNavigationThrottleTest, LaunchesOnRedirectRequest) {
-  EXPECT_CALL(*sitelist(), ShouldSwitch(_))
-      .WillOnce(Return(false))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*sitelist(), GetDecision(_))
+      .WillOnce(Return(STAY))
+      .WillOnce(Return(GO));
   std::unique_ptr<MockNavigationHandle> handle =
       CreateMockNavigationHandle(GURL("https://yahoo.com/"));
   std::unique_ptr<NavigationThrottle> throttle =

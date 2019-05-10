@@ -20,6 +20,40 @@ class ParsedXml;
 // having to convert uppercase/lowercase for every rule at every navigation.
 void CanonicalizeRule(std::string* rule);
 
+enum Action {
+  kStay = 0,
+  kGo = 1,
+};
+
+enum Reason {
+  // BrowserSwitcher is globally disabled.
+  kDisabled = 0,
+  // Protocol is not HTTP, HTTPS or FILE.
+  kProtocol = 1,
+  // A sitelist rule (either positive or negative) matched.
+  kSitelist = 2,
+  // A greylist rule matched.
+  kGreylist = 3,
+  // No rule matched, so default to STAY.
+  kDefault = 4,
+};
+
+struct Decision {
+  Decision(Action, Reason, base::StringPiece matching_rule);
+
+  Decision();
+  Decision(Decision&);
+  Decision(Decision&&);
+
+  bool operator==(const Decision&) const;
+
+  Action action;
+  Reason reason;
+  // If reason is kSitelist or kGreylist, this is the rule that caused the
+  // decision.
+  base::StringPiece matching_rule;
+};
+
 // Interface that decides whether a navigation should trigger a browser
 // switch.
 class BrowserSwitcherSitelist {
@@ -27,7 +61,11 @@ class BrowserSwitcherSitelist {
   virtual ~BrowserSwitcherSitelist();
 
   // Returns true if the given URL should be open in an alternative browser.
-  virtual bool ShouldSwitch(const GURL& url) const = 0;
+  bool ShouldSwitch(const GURL& url) const;
+
+  // Same as ShouldSwitch(), but returns a struct instead of a bool, also
+  // containing the reason why this decision was made.
+  virtual Decision GetDecision(const GURL& url) const = 0;
 
   // Set the Internet Explorer Enterprise Mode sitelist to use, in addition to
   // Chrome's sitelist/greylist policies. Consumes the object, and performs no
@@ -52,7 +90,7 @@ class BrowserSwitcherSitelistImpl : public BrowserSwitcherSitelist {
   ~BrowserSwitcherSitelistImpl() override;
 
   // BrowserSwitcherSitelist
-  bool ShouldSwitch(const GURL& url) const override;
+  Decision GetDecision(const GURL& url) const override;
   void SetIeemSitelist(ParsedXml&& sitelist) override;
   void SetExternalSitelist(ParsedXml&& sitelist) override;
   const RuleSet* GetIeemSitelist() const override;
@@ -62,7 +100,7 @@ class BrowserSwitcherSitelistImpl : public BrowserSwitcherSitelist {
   // Returns true if there are any rules configured.
   bool IsActive() const;
 
-  bool ShouldSwitchImpl(const GURL& url) const;
+  Decision GetDecisionImpl(const GURL& url) const;
 
   RuleSet ieem_sitelist_;
   RuleSet external_sitelist_;

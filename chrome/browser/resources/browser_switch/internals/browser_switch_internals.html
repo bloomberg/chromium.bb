@@ -14,6 +14,10 @@
     table {
       border-collapse: collapse;
       font-family: monospace;
+    }
+
+    pre,
+    table {
       font-size: 1.25em;
     }
 
@@ -32,13 +36,36 @@
     .url {
       text-align: start;
     }
+
+    #url-checker-input {
+      width: 400px;
+    }
   </style>
 </head>
 <body>
   <h1>Legacy Browser Support Internals</h1>
 
+  <p>
+    If an XML sitelist is configured, wait 1 minute after browser
+    startup for it to download, and then refresh this page.
+  </p>
+
   <!-- TODO(crbug/959379): Hide all this and show a message if
                            BrowserSwitcherEnabled is false. -->
+
+  <h2>URL Checker</h2>
+
+  <p>
+    Enter a complete URL (with the http:// part) to see what LBS would do
+    with it.
+  </p>
+
+  <p>
+    <input type="text" id="url-checker-input"
+        placeholder="http://example.com/">
+  </p>
+
+  <pre id=output></pre>
 
   <h2>Sitelist</h2>
   <table id="sitelist"></table>

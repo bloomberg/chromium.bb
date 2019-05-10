@@ -186,6 +186,16 @@ class BrowserSwitchHandler : public content::WebUIMessageHandler {
   // }
   void HandleGetAllRulesets(const base::ListValue* args);
 
+  // Resolves a promise with a JSON object describing the decision for a URL
+  // (stay/go) + reason. The result is formatted like this:
+  //
+  // {
+  //   "action": ("stay"|"go"),
+  //   "reason": ("globally_disabled"|"protocol"|"sitelist"|...),
+  //   "matching_rule": (string|undefined)
+  // }
+  void HandleGetDecision(const base::ListValue* args);
+
   DISALLOW_COPY_AND_ASSIGN(BrowserSwitchHandler);
 };
 
@@ -205,6 +215,10 @@ void BrowserSwitchHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getAllRulesets",
       base::BindRepeating(&BrowserSwitchHandler::HandleGetAllRulesets,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getDecision",
+      base::BindRepeating(&BrowserSwitchHandler::HandleGetDecision,
                           base::Unretained(this)));
 }
 
@@ -270,6 +284,53 @@ void BrowserSwitchHandler::HandleGetAllRulesets(const base::ListValue* args) {
   auto external_dict =
       RuleSetToDict(*service->sitelist()->GetExternalSitelist());
   retval.Set("external", std::move(external_dict));
+
+  ResolveJavascriptCallback(args->GetList()[0], retval);
+}
+
+void BrowserSwitchHandler::HandleGetDecision(const base::ListValue* args) {
+  DCHECK(args);
+  AllowJavascript();
+
+  GURL url = GURL(args->GetList()[1].GetString());
+  if (!url.is_valid()) {
+    RejectJavascriptCallback(args->GetList()[0], base::Value());
+    return;
+  }
+
+  auto* service = GetBrowserSwitcherService(web_ui());
+  browser_switcher::Decision decision = service->sitelist()->GetDecision(url);
+
+  base::DictionaryValue retval;
+
+  base::StringPiece action_name =
+      (decision.action == browser_switcher::kStay) ? "stay" : "go";
+  retval.Set("action", std::make_unique<base::Value>(action_name));
+
+  base::StringPiece reason_name;
+  switch (decision.reason) {
+    case browser_switcher::kDisabled:
+      reason_name = "globally_disabled";
+      break;
+    case browser_switcher::kProtocol:
+      reason_name = "protocol";
+      break;
+    case browser_switcher::kSitelist:
+      reason_name = "sitelist";
+      break;
+    case browser_switcher::kGreylist:
+      reason_name = "greylist";
+      break;
+    case browser_switcher::kDefault:
+      reason_name = "default";
+      break;
+  }
+  retval.Set("reason", std::make_unique<base::Value>(reason_name));
+
+  if (!decision.matching_rule.empty()) {
+    retval.Set("matching_rule",
+               std::make_unique<base::Value>(decision.matching_rule));
+  }
 
   ResolveJavascriptCallback(args->GetList()[0], retval);
 }

@@ -81,3 +81,24 @@ function updateTables(rulesets) {
 }
 
 cr.sendWithPromise('getAllRulesets').then(updateTables);
+
+function checkUrl() {
+  const url = $('url-checker-input').value;
+  if (!url) {
+    $('output').innerText = '';
+    return;
+  }
+  cr.sendWithPromise('getDecision', url)
+      .then(decision => {
+        // URL is valid.
+        $('output').innerText = JSON.stringify(decision, null, 2);
+      })
+      .catch(err => {
+        // URL is invalid.
+        $('output').innerText =
+            'Invalid URL. Make sure it is formatted properly.';
+      });
+}
+
+$('url-checker-input').addEventListener('input', checkUrl);
+checkUrl();
