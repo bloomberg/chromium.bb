@@ -749,7 +749,7 @@ class ManifestVersionedSyncStage(SyncStage):
           master_build_status['build_config'],
           1,
           branch=self._run.options.branch)
-      if latest and latest[0]['buildbucket_id'] != master_id:
+      if latest and str(latest[0]['buildbucket_id']) != str(master_id):
         raise failures_lib.MasterSlaveVersionMismatchFailure(
             'This slave\'s master (id=%s) has been supplanted by a newer '
             'master (id=%s). Aborting.' % (master_id, latest[0]['id']))
