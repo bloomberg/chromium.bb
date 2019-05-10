@@ -27,22 +27,6 @@ namespace {
 const char kClientSidePreviewsFieldTrial[] = "ClientSidePreviews";
 const char kEnabled[] = "Enabled";
 
-// Verifies that we can enable offline previews via comand line.
-TEST(PreviewsExperimentsTest, TestCommandLineOfflinePage) {
-  EXPECT_TRUE(params::IsOfflinePreviewsEnabled());
-
-  std::unique_ptr<base::FeatureList> feature_list =
-      std::make_unique<base::FeatureList>();
-
-  // The feature is explicitly enabled on the command-line.
-  feature_list->InitializeFromCommandLine("", "OfflinePreviews");
-  base::FeatureList::ClearInstanceForTesting();
-  base::FeatureList::SetInstance(std::move(feature_list));
-
-  EXPECT_FALSE(params::IsOfflinePreviewsEnabled());
-  base::FeatureList::ClearInstanceForTesting();
-}
-
 // Verifies that the default params are correct, and that custom params can be
 // set, for both the previews blacklist and offline previews.
 TEST(PreviewsExperimentsTest, TestParamsForBlackListAndOffline) {
