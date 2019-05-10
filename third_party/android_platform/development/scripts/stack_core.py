@@ -104,7 +104,7 @@ _SHARED_LIB_OFFSET_IN_APK = re.compile(' \(offset 0x(?P<offset>[0-9a-f]{0,16})\)
 
 def PrintTraceLines(trace_lines):
   """Print back trace."""
-  maxlen = max(map(lambda tl: len(tl[1]), trace_lines))
+  maxlen = min(80, max(map(lambda tl: len(tl[1]), trace_lines)))
   print
   print 'Stack Trace:'
   print '  RELADDR   ' + 'FUNCTION'.ljust(maxlen) + '  FILE:LINE'
@@ -117,7 +117,7 @@ def PrintTraceLines(trace_lines):
 
 def PrintValueLines(value_lines):
   """Print stack data values."""
-  maxlen = max(map(lambda tl: len(tl[2]), value_lines))
+  maxlen = min(80, max(map(lambda tl: len(tl[2]), value_lines)))
   print
   print 'Stack Data:'
   print '  ADDR      VALUE     ' + 'FUNCTION'.ljust(maxlen) + '  FILE:LINE'
