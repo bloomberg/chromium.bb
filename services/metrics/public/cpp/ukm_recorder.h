@@ -20,7 +20,6 @@
 class BackgroundFetchDelegateImpl;
 class IOSChromePasswordManagerClient;
 class MediaEngagementSession;
-class PlatformNotificationServiceImpl;
 class PluginInfoHostImpl;
 
 namespace autofill {
@@ -107,7 +106,6 @@ class METRICS_EXPORT UkmRecorder {
   friend DelegatingUkmRecorder;
   friend IOSChromePasswordManagerClient;
   friend MediaEngagementSession;
-  friend PlatformNotificationServiceImpl;
   friend PluginInfoHostImpl;
   friend TestRecordingHelper;
   friend UkmBackgroundRecorderService;
