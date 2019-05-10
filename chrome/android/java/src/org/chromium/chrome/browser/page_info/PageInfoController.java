@@ -22,13 +22,11 @@ import android.text.style.TextAppearanceSpan;
 import android.view.Window;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
@@ -36,9 +34,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.chrome.browser.page_info.PageInfoView.ConnectionInfoParams;
 import org.chromium.chrome.browser.page_info.PageInfoView.PageInfoViewParams;
-import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
-import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -52,7 +48,6 @@ import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
-import org.chromium.net.GURLUtils;
 import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
@@ -119,9 +114,6 @@ public class PageInfoController
     // The full URL from the URL bar, which is copied to the user's clipboard when they select 'Copy
     // URL'.
     private String mFullUrl;
-
-    // The scheme of the URL of this page.
-    private String mScheme;
 
     // Whether or not this page is an internal chrome page (e.g. the
     // chrome://settings page).
@@ -193,7 +185,6 @@ public class PageInfoController
         // This can happen if an invalid chrome-distiller:// url was entered.
         if (mFullUrl == null) mFullUrl = "";
 
-        mScheme = GURLUtils.getScheme(mFullUrl);
         try {
             mIsInternalPage = UrlUtilities.isInternalScheme(new URI(mFullUrl));
         } catch (URISyntaxException e) {
@@ -224,18 +215,12 @@ public class PageInfoController
         viewParams.urlOriginLength = OmniboxUrlEmphasizer.getOriginEndIndex(
                 displayUrlBuilder.toString(), mTab.getProfile());
 
-        if (shouldShowSiteSettingsButton()) {
+        if (SiteSettingsHelper.isSiteSettingsAvailable(mTab)) {
             viewParams.siteSettingsButtonClickCallback = () -> {
                 // Delay while the dialog closes.
                 runAfterDismiss(() -> {
                     recordAction(PageInfoAction.PAGE_INFO_SITE_SETTINGS_OPENED);
-                    Intent preferencesIntent = PreferencesLauncher.createIntentForSettingsPage(
-                            mContext, SingleWebsitePreferences.class.getName(),
-                            SingleWebsitePreferences.createFragmentArgsForSite(mFullUrl));
-                    // Disabling StrictMode to avoid violations (https://crbug.com/819410).
-                    try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-                        mContext.startActivity(preferencesIntent);
-                    }
+                    SiteSettingsHelper.showSiteSettings(mContext, mFullUrl);
                 });
             };
         } else {
@@ -510,15 +495,6 @@ public class PageInfoController
      */
     private boolean isShowingOfflinePage() {
         return mOfflinePageState != OfflinePageState.NOT_OFFLINE_PAGE && !isShowingPreview();
-    }
-
-    /**
-     * Whether the site settings button should be displayed for the given URL.
-     */
-    private boolean shouldShowSiteSettingsButton() {
-        return !isShowingOfflinePage() && !isShowingPreview()
-                && (UrlConstants.HTTP_SCHEME.equals(mScheme)
-                           || UrlConstants.HTTPS_SCHEME.equals(mScheme));
     }
 
     private boolean isSheet() {

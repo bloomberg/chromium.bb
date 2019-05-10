@@ -1101,6 +1101,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/page_info/PageInfoDialog.java",
   "java/src/org/chromium/chrome/browser/page_info/PageInfoView.java",
   "java/src/org/chromium/chrome/browser/page_info/PermissionParamsListBuilder.java",
+  "java/src/org/chromium/chrome/browser/page_info/SiteSettingsHelper.java",
   "java/src/org/chromium/chrome/browser/page_info/SystemSettingsActivityRequiredListener.java",
   "java/src/org/chromium/chrome/browser/partnerbookmarks/PartnerBookmark.java",
   "java/src/org/chromium/chrome/browser/partnerbookmarks/PartnerBookmarksFaviconThrottle.java",
