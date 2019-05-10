@@ -118,6 +118,12 @@ ScriptPromise BluetoothRemoteGATTDescriptor::writeValue(
         script_state, CreateInvalidDescriptorError());
   }
 
+  if (value.IsNeutered()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                                           "Value buffer has been detached."));
+  }
+
   // Partial implementation of writeValue algorithm:
   // https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothremotegattdescriptor-writevalue
 
