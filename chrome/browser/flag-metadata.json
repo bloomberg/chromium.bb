@@ -1755,11 +1755,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-v8-orinoco",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-vaapi-jpeg-image-decode-acceleration",
     "owners": [ "chromeos-camera-eng@google.com" ],
     "expiry_milestone": 76

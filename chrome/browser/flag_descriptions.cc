@@ -1957,10 +1957,6 @@ const char kV8VmFutureDescription[] =
     "This enables upcoming and experimental V8 VM features. "
     "This flag does not enable experimental JavaScript features.";
 
-const char kV8OrinocoName[] = "V8 Orinoco garbage collection features";
-const char kV8OrinocoDescription[] =
-    "This enables the V8 Orinoco garbage collection features.";
-
 const char kWalletServiceUseSandboxName[] =
     "Use Google Payments sandbox servers";
 const char kWalletServiceUseSandboxDescription[] =

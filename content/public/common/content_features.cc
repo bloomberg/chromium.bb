@@ -521,9 +521,6 @@ const base::Feature kUserAgentClientHint{"UserAgentClientHint",
 const base::Feature kV8LowMemoryModeForSubframes{
     "V8LowMemoryModeForSubframes", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables to use the V8 Orinoco garbage collector.
-const base::Feature kV8Orinoco{"V8Orinoco", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables future V8 VM features
 const base::Feature kV8VmFuture{"V8VmFuture",
                                 base::FEATURE_DISABLED_BY_DEFAULT};

@@ -1170,9 +1170,6 @@ extern const char kV8CacheOptionsCode[];
 extern const char kV8VmFutureName[];
 extern const char kV8VmFutureDescription[];
 
-extern const char kV8OrinocoName[];
-extern const char kV8OrinocoDescription[];
-
 extern const char kWalletServiceUseSandboxName[];
 extern const char kWalletServiceUseSandboxDescription[];
 

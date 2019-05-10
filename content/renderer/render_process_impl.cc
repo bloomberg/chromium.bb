@@ -126,9 +126,6 @@ RenderProcessImpl::RenderProcessImpl(
       "--harmony-dynamic-import --harmony-import-meta";
   v8::V8::SetFlagsFromString(kModuleFlags, sizeof(kModuleFlags));
 
-  SetV8FlagIfFeature(features::kV8Orinoco, "--no-single-threaded-gc");
-  SetV8FlagIfNotFeature(features::kV8Orinoco, "--single-threaded-gc");
-
   SetV8FlagIfFeature(features::kV8VmFuture, "--future");
   SetV8FlagIfNotFeature(features::kV8VmFuture, "--no-future");
 
