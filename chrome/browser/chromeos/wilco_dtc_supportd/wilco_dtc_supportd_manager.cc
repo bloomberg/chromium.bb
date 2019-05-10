@@ -161,12 +161,15 @@ void WilcoDtcSupportdManager::StopWilcoDtc(WilcoDtcCallback callback) {
 }
 
 void WilcoDtcSupportdManager::OnStartWilcoDtc(bool success) {
-  if (!success) {
-    DLOG(ERROR) << "Failed to start the wilco DTC";
-  } else {
+  if (!success)
+    DLOG(ERROR) << "Failed to start the wilco DTC, it might be already running";
+  else
     VLOG(1) << "Wilco DTC started";
-    if (!wilco_dtc_supportd_bridge_)
-      wilco_dtc_supportd_bridge_ = delegate_->CreateWilcoDtcSupportdBridge();
+
+  // The bridge has to be created regardless of a |success| value. When wilco
+  // DTC is already running, it responds with an error on attempt to start it.
+  if (!wilco_dtc_supportd_bridge_) {
+    wilco_dtc_supportd_bridge_ = delegate_->CreateWilcoDtcSupportdBridge();
     DCHECK(wilco_dtc_supportd_bridge_);
 
     // Once the bridge is created, notify it about an available configuration
