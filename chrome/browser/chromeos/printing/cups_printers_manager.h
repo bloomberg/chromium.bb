@@ -24,6 +24,7 @@ class PrefRegistrySyncable;
 namespace chromeos {
 
 class PpdProvider;
+class PrinterConfigurer;
 class PrinterDetector;
 class PrinterEventTracker;
 class SyncedPrintersManager;
@@ -57,6 +58,7 @@ class CupsPrintersManager : public PrinterInstallationManager,
       std::unique_ptr<PrinterDetector> usb_printer_detector,
       std::unique_ptr<PrinterDetector> zeroconf_printer_detector,
       scoped_refptr<PpdProvider> ppd_provider,
+      std::unique_ptr<PrinterConfigurer> printer_configurer,
       PrinterEventTracker* event_tracker,
       PrefService* pref_service);
 
