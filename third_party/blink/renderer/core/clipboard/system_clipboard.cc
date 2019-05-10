@@ -88,8 +88,14 @@ Vector<String> SystemClipboard::ReadAvailableTypes() {
 }
 
 String SystemClipboard::ReadPlainText() {
+  return ReadPlainText(buffer_);
+}
+
+String SystemClipboard::ReadPlainText(mojom::ClipboardBuffer buffer) {
+  if (!IsValidBufferType(buffer))
+    return String();
   String text;
-  clipboard_->ReadText(mojom::ClipboardBuffer::kStandard, &text);
+  clipboard_->ReadText(buffer, &text);
   return text;
 }
 
@@ -145,9 +151,10 @@ String SystemClipboard::ReadRTF() {
   return rtf;
 }
 
-SkBitmap SystemClipboard::ReadImage() {
+SkBitmap SystemClipboard::ReadImage(mojom::ClipboardBuffer buffer) {
   SkBitmap image;
-  clipboard_->ReadImage(mojom::ClipboardBuffer::kStandard, &image);
+  if (IsValidBufferType(buffer))
+    clipboard_->ReadImage(buffer, &image);
   return image;
 }
 
