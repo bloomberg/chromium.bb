@@ -60,6 +60,11 @@ class TouchlessExploreSitesCategoryCardView extends ExploreSitesCategoryCardView
         }
 
         @Override
+        public String getContextMenuTitle() {
+            return mModel.get(ExploreSitesSite.TITLE_KEY);
+        }
+
+        @Override
         public Bitmap getIconBitmap() {
             return mModel.get(ExploreSitesSite.ICON_KEY);
         }
