@@ -2012,7 +2012,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   """
   site_config.AddTemplate(
       'cq_luci_slave',
-      build_affinity=True,
+      build_affinity=False,
   )
 
 
