@@ -2184,9 +2184,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNewPrintPreviewLayoutDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kNewPrintPreviewLayout)},
 #endif
-    {"enable-nostate-prefetch", flag_descriptions::kNostatePrefetchName,
-     flag_descriptions::kNostatePrefetchDescription, kOsAll,
-     FEATURE_VALUE_TYPE(prerender::kNoStatePrefetchFeature)},
 
 #if defined(OS_CHROMEOS)
     {ui_devtools::switches::kEnableUiDevTools,

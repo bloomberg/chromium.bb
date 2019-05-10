@@ -1351,11 +1351,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-nostate-prefetch",
-    "owners": [ "ryansturm" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-notification-indicator",
     "owners": [ "newcomer" ],
     "expiry_milestone": 78

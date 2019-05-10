@@ -751,9 +751,6 @@ extern const char kNewblueDescription[];
 extern const char kNewTabLoadingAnimation[];
 extern const char kNewTabLoadingAnimationDescription[];
 
-extern const char kNostatePrefetchName[];
-extern const char kNostatePrefetchDescription[];
-
 extern const char kNotificationIndicatorName[];
 extern const char kNotificationIndicatorDescription[];
 

@@ -1214,10 +1214,6 @@ const char kNewTabLoadingAnimation[] = "New tab-loading animation";
 const char kNewTabLoadingAnimationDescription[] =
     "Enables a new look for the tab-loading animation.";
 
-const char kNostatePrefetchName[] = "NoState Prefetch";
-const char kNostatePrefetchDescription[] =
-    "If enabled, pre-downloads resources to improve page load speed.";
-
 const char kNotificationIndicatorName[] = "Notification Indicators";
 const char kNotificationIndicatorDescription[] =
     "Enable notification indicators, which appear on app icons when a "
