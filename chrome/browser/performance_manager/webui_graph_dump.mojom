@@ -15,8 +15,6 @@ import "url/mojom/url.mojom";
 struct WebUIPageInfo {
   int64 id;
 
-  int64 main_frame_id;
-
   url.mojom.Url main_frame_url;
 
   // TODO(siggi): Estimate data.
@@ -27,6 +25,7 @@ struct WebUIFrameInfo {
   int64 id;
 
   url.mojom.Url url;
+  int64 page_id;
   int64 parent_frame_id;
   int64 process_id;
 };
@@ -40,16 +39,20 @@ struct WebUIProcessInfo {
   uint64 private_footprint_kb;
 };
 
-// Represents the momentary state of an entire RC graph.
-struct WebUIGraph {
-  array<WebUIPageInfo> pages;
-  array<WebUIFrameInfo> frames;
-  array<WebUIProcessInfo> processes;
+interface WebUIGraphChangeStream {
+  FrameCreated(WebUIFrameInfo frame);
+  PageCreated(WebUIPageInfo pages);
+  ProcessCreated(WebUIProcessInfo process);
+
+  FrameChanged(WebUIFrameInfo frame);
+  PageChanged(WebUIPageInfo page);
+  ProcessChanged(WebUIProcessInfo process);
+
+  NodeDeleted(int64 node_id);
 };
 
-// This interface allows grabbing the momentary state of the RC graph for
-// visualization or inspection. This is exposed on the RC service, and used
-// from the chrome://discards WebUI graph view tab.
+// This interface allows subscribing to a stream of events that track the state
+// of the performance manager graph.
 interface WebUIGraphDump {
-  GetCurrentGraph() => (WebUIGraph graph);
+  SubscribeToChanges(WebUIGraphChangeStream change_subscriber);
 };

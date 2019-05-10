@@ -131,7 +131,4 @@ TEST_F(PerformanceManagerTest, CallOnGraph) {
   performance_manager()->DeleteNode(std::move(page_node));
 }
 
-// TODO(siggi): More tests!
-// - Test the WebUI interface.
-
 }  // namespace performance_manager

@@ -130,11 +130,6 @@ class PageNode extends GraphNode {
   manyBodyStrength() {
     return -600;
   }
-
-  /** override */
-  linkTargets() {
-    return [this.page.mainFrameId];
-  }
 }
 
 class FrameNode extends GraphNode {
@@ -163,7 +158,7 @@ class FrameNode extends GraphNode {
 
   /** override */
   linkTargets() {
-    return [this.frame.parentFrameId, this.frame.processId];
+    return [this.frame.parentFrameId, this.frame.processId, this.frame.pageId];
   }
 }
 
@@ -233,6 +228,9 @@ function bounding_force(graph_height) {
   return force;
 }
 
+/**
+ * @implements {performanceManager.mojom.WebUIGraphChangeStreamInterface}
+ */
 class Graph {
   /**
    * TODO(siggi): This should be SVGElement, but closure doesn't have externs
@@ -311,11 +309,103 @@ class Graph {
   }
 
   /**
+   * @param {!performanceManager.mojom.WebUIFrameInfo} frame
+   */
+  frameCreated(frame) {
+    this.addNode_(new FrameNode(frame));
+  }
+
+  /**
+   * @param {!performanceManager.mojom.WebUIPageInfo} page
+   */
+  pageCreated(page) {
+    this.addNode_(new PageNode(page));
+  }
+
+  /**
+   * @param {!performanceManager.mojom.WebUIProcessInfo} process
+   */
+  processCreated(process) {
+    this.addNode_(new ProcessNode(process));
+  }
+
+  /**
+   * @param {!performanceManager.mojom.WebUIFrameInfo} frame
+   */
+  frameChanged(frame) {
+    const frameNode = /** @type {!FrameNode} */ (this.nodes_.get(frame.id));
+    frameNode.frame = frame;
+  }
+
+  /**
+   * @param {!performanceManager.mojom.WebUIPageInfo} page
+   */
+  pageChanged(page) {
+    const pageNode = /** @type {!PageNode} */ (this.nodes_.get(page.id));
+    pageNode.page = page;
+  }
+
+  /**
+   * @param {!performanceManager.mojom.WebUIProcessInfo} process
+   */
+  processChanged(process) {
+    const processNode =
+        /** @type {!ProcessNode} */ (this.nodes_.get(process.id));
+    processNode.process = process;
+  }
+
+  /**
+   * @param {!number} nodeId
+   */
+  nodeDeleted(nodeId) {
+    const node = this.nodes_.get(nodeId);
+
+    // Filter away any links to or from the deleted node.
+    this.links_ =
+        this.links_.filter(link => link.source != node && link.target != node);
+
+    // And remove the node.
+    this.nodes_.delete(nodeId);
+  }
+
+  /**
    * @param {!Event} event A graph update event posted from the WebUI.
    * @private
    */
   onMessage_(event) {
-    this.onGraphDump_(event.data);
+    const type = /** @type {string} */ (event.data[0]);
+    const data = /** @type {Object|number} */ (event.data[1]);
+    switch (type) {
+      case 'frameCreated':
+        this.frameCreated(
+            /** @type {!performanceManager.mojom.WebUIFrameInfo} */ (data));
+        break;
+      case 'pageCreated':
+        this.pageCreated(
+            /** @type {!performanceManager.mojom.WebUIPageInfo} */ (data));
+        break;
+      case 'processCreated':
+        this.processCreated(
+            /** @type {!performanceManager.mojom.WebUIProcessInfo} */ (data));
+        break;
+      case 'frameChanged':
+        this.frameChanged(
+            /** @type {!performanceManager.mojom.WebUIFrameInfo} */ (data));
+        break;
+      case 'pageChanged':
+        this.pageChanged(
+            /** @type {!performanceManager.mojom.WebUIPageInfo} */ (data));
+        break;
+      case 'processChanged':
+        this.processChanged(
+            /** @type {!performanceManager.mojom.WebUIProcessInfo} */ (data));
+        break;
+      case 'nodeDeleted':
+        this.nodeDeleted(/** @type {number} */ (data));
+        break;
+    }
+
+    this.render_();
   }
 
   /** @private */
@@ -391,66 +481,6 @@ class Graph {
   }
 
   /**
-   * @param {!Map<number, !GraphNode>} oldNodes
-   * @param {performanceManager.mojom.WebUIPageInfo} page
-   * @private
-   */
-  addOrUpdatePage_(oldNodes, page) {
-    if (!page) {
-      return;
-    }
-    let node = /** @type {?PageNode} */ (oldNodes.get(page.id));
-    if (node) {
-      node.page = page;
-    } else {
-      node = new PageNode(page);
-      node.setInitialPosition(this.width_, this.height_);
-    }
-
-    this.nodes_.set(page.id, node);
-  }
-
-  /**
-   * @param {!Map<number, !GraphNode>} oldNodes
-   * @param {performanceManager.mojom.WebUIFrameInfo} frame
-   * @private
-   */
-  addOrUpdateFrame_(oldNodes, frame) {
-    if (!frame) {
-      return;
-    }
-    let node = /** @type {?FrameNode} */ (oldNodes.get(frame.id));
-    if (node) {
-      node.frame = frame;
-    } else {
-      node = new FrameNode(frame);
-      node.setInitialPosition(this.width_, this.height_);
-    }
-
-    this.nodes_.set(frame.id, node);
-  }
-
-  /**
-   * @param {!Map<number, !GraphNode>} oldNodes
-   * @param {performanceManager.mojom.WebUIProcessInfo} process
-   * @private
-   */
-  addOrUpdateProcess_(oldNodes, process) {
-    if (!process) {
-      return;
-    }
-    let node = /** @type {?ProcessNode} */ (oldNodes.get(process.id));
-    if (node) {
-      node.process = process;
-    } else {
-      node = new ProcessNode(process);
-      node.setInitialPosition(this.width_, this.height_);
-    }
-
-    this.nodes_.set(process.id, node);
-  }
-
-  /**
    * @param {!GraphNode} source
    * @param {number} dst_id
    * @private
@@ -463,41 +493,21 @@ class Graph {
   }
 
   /**
-   * @param {performanceManager.mojom.WebUIGraph} graph An updated graph from
-   *     the WebUI.
+   * Adds a new node to the graph, populates its links and gives it an initial
+   * position.
+   *
+   * @param {!GraphNode} node
    * @private
    */
-  onGraphDump_(graph) {
-    // Keep a copy of the current node list, as the new node list will copy
-    // existing nodes into it.
-    const oldNodes = this.nodes_;
-    this.nodes_ = new Map();
-    for (const page of graph.pages) {
-      this.addOrUpdatePage_(oldNodes, page);
-    }
-    for (const frame of graph.frames) {
-      this.addOrUpdateFrame_(oldNodes, frame);
-    }
-    for (const process of graph.processes) {
-      this.addOrUpdateProcess_(oldNodes, process);
+  addNode_(node) {
+    this.nodes_.set(node.id, node);
+
+    const linkTargets = node.linkTargets();
+    for (const linkTarget of linkTargets) {
+      this.maybeAddLink_(node, linkTarget);
     }
 
-
-    // Recompute the links, there's no benefit to maintaining the identity
-    // of the previous links.
-    // TODO(siggi): I'm not sure this is true in general. Edges might cache
-    //     their individual strengths, as a case in point.
-    this.links_ = [];
-    const newNodes = this.nodes_.values();
-    for (const node of newNodes) {
-      const linkTargets = node.linkTargets();
-      for (const linkTarget of linkTargets) {
-        this.maybeAddLink_(node, linkTarget);
-      }
-    }
-
-    // TODO(siggi): this is a good place to do initial positioning of new nodes.
-    this.render_();
+    node.setInitialPosition(this.width_, this.height_);
   }
 
   /**
