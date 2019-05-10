@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 
 #include "base/single_thread_task_runner.h"
-#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 
 namespace blink {
 

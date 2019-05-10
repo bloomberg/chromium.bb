@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media_capture_from_element/canvas_capture_handler.h"
+#include "third_party/blink/renderer/modules/mediacapturefromelement/canvas_capture_handler.h"
 
 #include <utility>
 
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/rand_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "components/viz/common/gl_helper.h"
 #include "media/base/limits.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
@@ -22,6 +20,8 @@
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_capturer_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
@@ -29,7 +29,7 @@
 
 using media::VideoFrame;
 
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -64,9 +64,9 @@ class VideoCapturerSource : public media::VideoCapturerSource {
   media::VideoCaptureFormats GetPreferredFormats() override {
     DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
     media::VideoCaptureFormats formats;
-    formats.push_back(media::VideoCaptureFormat(size_, frame_rate_,
+    formats.push_back(media::VideoCaptureFormat(gfx::Size(size_), frame_rate_,
                                                 media::PIXEL_FORMAT_I420));
-    formats.push_back(media::VideoCaptureFormat(size_, frame_rate_,
+    formats.push_back(media::VideoCaptureFormat(gfx::Size(size_), frame_rate_,
                                                 media::PIXEL_FORMAT_I420A));
     return formats;
   }
@@ -185,7 +185,8 @@ void CanvasCaptureHandler::SendNewFrame(
     SendFrame(ConvertToYUVFrame(image->isOpaque(), false,
                                 static_cast<const uint8_t*>(pixmap.addr(0, 0)),
                                 gfx::Size(pixmap.width(), pixmap.height()),
-                                pixmap.rowBytes(), pixmap.colorType()),
+                                static_cast<int>(pixmap.rowBytes()),
+                                pixmap.colorType()),
               timestamp, GetImageYUVColorSpace(image));
     return;
   }
@@ -307,9 +308,9 @@ void CanvasCaptureHandler::ReadARGBPixelsAsync(
   context_provider->GetGLHelper()->ReadbackTextureAsync(
       texture_info.fID, image_size,
       temp_argb_frame->visible_data(VideoFrame::kARGBPlane), kN32_SkColorType,
-      base::BindOnce(&CanvasCaptureHandler::OnARGBPixelsReadAsync,
-                     weak_ptr_factory_.GetWeakPtr(), image, temp_argb_frame,
-                     timestamp, surface_origin != kTopLeft_GrSurfaceOrigin));
+      WTF::Bind(&CanvasCaptureHandler::OnARGBPixelsReadAsync,
+                weak_ptr_factory_.GetWeakPtr(), image, temp_argb_frame,
+                timestamp, surface_origin != kTopLeft_GrSurfaceOrigin));
 }
 
 void CanvasCaptureHandler::ReadYUVPixelsAsync(
@@ -346,9 +347,9 @@ void CanvasCaptureHandler::ReadYUVPixelsAsync(
       output_frame->visible_data(media::VideoFrame::kUPlane),
       output_frame->stride(media::VideoFrame::kVPlane),
       output_frame->visible_data(media::VideoFrame::kVPlane), gfx::Point(0, 0),
-      base::BindOnce(&CanvasCaptureHandler::OnYUVPixelsReadAsync,
-                     weak_ptr_factory_.GetWeakPtr(), image, output_frame,
-                     timestamp));
+      WTF::Bind(&CanvasCaptureHandler::OnYUVPixelsReadAsync,
+                weak_ptr_factory_.GetWeakPtr(), image, output_frame,
+                timestamp));
 }
 
 void CanvasCaptureHandler::OnARGBPixelsReadAsync(
@@ -479,9 +480,10 @@ void CanvasCaptureHandler::SendFrame(scoped_refptr<VideoFrame> video_frame,
 void CanvasCaptureHandler::AddVideoCapturerSourceToVideoTrack(
     std::unique_ptr<media::VideoCapturerSource> source,
     blink::WebMediaStreamTrack* web_track) {
-  std::string str_track_id;
-  base::Base64Encode(base::RandBytesAsString(64), &str_track_id);
-  const blink::WebString track_id = blink::WebString::FromASCII(str_track_id);
+  Vector<char> base64_track_id;
+  Base64Encode(base::RandBytesAsString(64).c_str(), base64_track_id);
+  const auto track_id =
+      WebString::FromUTF8(base64_track_id.data(), base64_track_id.size());
   media::VideoCaptureFormats preferred_formats = source->GetPreferredFormats();
   blink::MediaStreamVideoSource* media_stream_source =
       new blink::MediaStreamVideoCapturerSource(
@@ -502,4 +504,4 @@ void CanvasCaptureHandler::AddVideoCapturerSourceToVideoTrack(
       true));
 }
 
-}  // namespace content
+}  // namespace blink

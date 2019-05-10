@@ -8,14 +8,13 @@
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 
 namespace base {
 class SingleThreadTaskRunner;
 }
 
 namespace blink {
-
-class Thread;
 
 class IOTaskRunnerTestingPlatformSupport : public TestingPlatformSupport {
  public:

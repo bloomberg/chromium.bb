@@ -357,8 +357,6 @@ target(link_target_type, "renderer") {
     "media/webrtc_local_audio_source_provider.h",
     "media/webrtc_logging.cc",
     "media/webrtc_logging.h",
-    "media_capture_from_element/canvas_capture_handler.cc",
-    "media_capture_from_element/canvas_capture_handler.h",
     "media_capture_from_element/html_audio_element_capturer_source.cc",
     "media_capture_from_element/html_audio_element_capturer_source.h",
     "media_capture_from_element/html_video_element_capturer_source.cc",

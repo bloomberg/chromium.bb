@@ -105,7 +105,6 @@ struct ThreadCreationParams;
 class WebAudioBus;
 class WebAudioLatencyHint;
 class WebBlobRegistry;
-class WebCanvasCaptureHandler;
 class WebCookieJar;
 class WebCrypto;
 class WebDatabaseObserver;
@@ -117,7 +116,6 @@ class WebMediaPlayer;
 class WebMediaRecorderHandler;
 class WebMediaStream;
 class WebMediaStreamCenter;
-class WebMediaStreamTrack;
 class WebPrescientNetworking;
 class WebPublicSuffixList;
 class WebPushProvider;
@@ -134,7 +132,6 @@ class WebTransmissionEncodingInfoHandler;
 class WebURLLoaderMockFactory;
 class WebURLResponse;
 class WebURLResponse;
-struct WebSize;
 
 namespace scheduler {
 class WebThreadScheduler;
@@ -639,10 +636,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   // May return null if WebRTC functionality is not implemented.
   virtual std::unique_ptr<webrtc::AsyncResolverFactory>
   CreateWebRtcAsyncResolverFactory();
-
-  // Creates a WebCanvasCaptureHandler to capture Canvas output.
-  virtual std::unique_ptr<WebCanvasCaptureHandler>
-  CreateCanvasCaptureHandler(const WebSize&, double, WebMediaStreamTrack*);
 
   // Fills in the WebMediaStream to capture from the WebMediaPlayer identified
   // by the second parameter.
