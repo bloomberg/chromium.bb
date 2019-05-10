@@ -18,5 +18,9 @@ source_set("domain") {
     "user_info.mm",
   ]
 
+  deps = [
+    "//remoting/proto/remoting/v1:directory_proto",
+  ]
+
   configs += [ "//build/config/compiler:enable_arc" ]
 }

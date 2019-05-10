@@ -7,7 +7,9 @@
 
 #include <memory>
 
-#include "third_party/grpc/src/include/grpcpp/channel.h"
+namespace grpc {
+class ChannelInterface;
+}  // namespace grpc
 
 namespace remoting {
 

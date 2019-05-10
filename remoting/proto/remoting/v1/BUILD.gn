@@ -3,12 +3,21 @@
 # found in the LICENSE file.
 
 import("//third_party/grpc/grpc_library.gni")
+import("//third_party/protobuf/proto_library.gni")
+
+proto_library("directory_proto") {
+  sources = [
+    "directory_messages.proto",
+    "host_info.proto",
+  ]
+}
 
 cc_grpc_library("directory_grpc_library") {
   sources = [
-    "directory_messages.proto",
     "directory_service.proto",
-    "host_info.proto",
+  ]
+  deps = [
+    ":directory_proto",
   ]
 }
 

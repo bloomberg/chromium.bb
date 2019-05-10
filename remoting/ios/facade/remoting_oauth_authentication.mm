@@ -13,8 +13,6 @@
 
 #import "base/bind.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
-#import "remoting/ios/facade/host_info.h"
-#import "remoting/ios/facade/host_list_fetcher.h"
 #import "remoting/ios/facade/ios_client_runtime_delegate.h"
 #import "remoting/ios/facade/remoting_service.h"
 #import "remoting/ios/persistence/remoting_keychain.h"
