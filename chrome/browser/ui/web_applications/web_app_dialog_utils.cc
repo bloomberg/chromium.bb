@@ -25,26 +25,13 @@ namespace web_app {
 
 namespace {
 
-// Use tricky function adapters here to connect old API with new unique_ptr
-// based API. TODO(loyso): Erase these type adapters. crbug.com/915043.
-using AcceptanceCallback = InstallManager::WebAppInstallationAcceptanceCallback;
-
-void BookmarkAppAcceptanceCallback(
-    AcceptanceCallback web_app_acceptance_callback,
-    bool user_accepted,
-    const WebApplicationInfo& web_app_info) {
-  std::move(web_app_acceptance_callback)
-      .Run(user_accepted, std::make_unique<WebApplicationInfo>(web_app_info));
-}
-
 void WebAppInstallDialogCallback(
     WebappInstallSource install_source,
     content::WebContents* initiator_web_contents,
     std::unique_ptr<WebApplicationInfo> web_app_info,
     ForInstallableSite for_installable_site,
-    AcceptanceCallback web_app_acceptance_callback) {
-  chrome::AppInstallationAcceptanceCallback adapted_callback = base::BindOnce(
-      BookmarkAppAcceptanceCallback, std::move(web_app_acceptance_callback));
+    InstallManager::WebAppInstallationAcceptanceCallback
+        web_app_acceptance_callback) {
   // This is a copy paste of BookmarkAppHelper::OnIconsDownloaded().
   // TODO(https://crbug.com/915043): Delete
   // BookmarkAppHelper::OnIconsDownloaded().
@@ -53,14 +40,14 @@ void WebAppInstallDialogCallback(
     web_app_info->open_as_window = true;
     if (install_source == WebappInstallSource::OMNIBOX_INSTALL_ICON) {
       chrome::ShowPWAInstallBubble(initiator_web_contents, *web_app_info,
-                                   std::move(adapted_callback));
+                                   std::move(web_app_acceptance_callback));
     } else {
       chrome::ShowPWAInstallDialog(initiator_web_contents, *web_app_info,
-                                   std::move(adapted_callback));
+                                   std::move(web_app_acceptance_callback));
     }
   } else {
     chrome::ShowBookmarkAppDialog(initiator_web_contents, *web_app_info,
-                                  std::move(adapted_callback));
+                                  std::move(web_app_acceptance_callback));
   }
 }
 

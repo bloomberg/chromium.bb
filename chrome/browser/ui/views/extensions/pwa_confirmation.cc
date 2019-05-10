@@ -124,12 +124,15 @@ base::string16 PWAConfirmation::GetDialogButtonLabel(ui::DialogButton button) {
 }
 
 void PWAConfirmation::Accept() {
-  std::move(callback_).Run(true, web_app_info_);
+  std::move(callback_).Run(true,
+                           std::make_unique<WebApplicationInfo>(web_app_info_));
 }
 
 void PWAConfirmation::WindowClosing() {
-  if (callback_)
-    std::move(callback_).Run(false, web_app_info_);
+  if (callback_) {
+    std::move(callback_).Run(
+        false, std::make_unique<WebApplicationInfo>(web_app_info_));
+  }
 }
 
 namespace chrome {

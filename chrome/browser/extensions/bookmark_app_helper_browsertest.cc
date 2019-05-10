@@ -182,8 +182,9 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppHelperTest, CreateWindowedPWAIntoAppWindow) {
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver> observer(this);
   observer.Add(ExtensionRegistry::Get(browser()->profile()));
-  bookmark_app_helper_->OnBubbleCompleted(true,
-                                          bookmark_app_helper_->web_app_info_);
+  bookmark_app_helper_->OnBubbleCompleted(
+      true, std::make_unique<WebApplicationInfo>(
+                bookmark_app_helper_->web_app_info_));
   Wait();  // Quits when the extension install completes.
 
   Browser* app_browser = chrome::FindBrowserWithWebContents(web_contents());

@@ -164,7 +164,7 @@ class BookmarkAppHelper : public content::NotificationObserver {
   // Called after the bubble has been shown, and the user has either accepted or
   // the dialog was dismissed.
   void OnBubbleCompleted(bool user_accepted,
-                         const WebApplicationInfo& web_app_info);
+                         std::unique_ptr<WebApplicationInfo> web_app_info);
 
   // Called when the installation of the app is complete to perform the final
   // installation steps.

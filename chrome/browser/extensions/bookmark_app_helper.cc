@@ -367,14 +367,16 @@ void BookmarkAppHelper::OnIconsDownloaded(
 
   if (!contents_) {
     // The web contents can be null in tests.
-    OnBubbleCompleted(true, web_app_info_);
+    OnBubbleCompleted(true,
+                      std::make_unique<WebApplicationInfo>(web_app_info_));
     return;
   }
 
   Browser* browser = chrome::FindBrowserWithWebContents(contents_);
   if (!browser) {
     // The browser can be null in tests.
-    OnBubbleCompleted(true, web_app_info_);
+    OnBubbleCompleted(true,
+                      std::make_unique<WebApplicationInfo>(web_app_info_));
     return;
   }
 
@@ -404,9 +406,10 @@ void BookmarkAppHelper::OnIconsDownloaded(
 
 void BookmarkAppHelper::OnBubbleCompleted(
     bool user_accepted,
-    const WebApplicationInfo& web_app_info) {
+    std::unique_ptr<WebApplicationInfo> web_app_info) {
   if (user_accepted) {
-    web_app_info_ = web_app_info;
+    DCHECK(web_app_info);
+    web_app_info_ = *web_app_info;
 
     if (is_policy_installed_app_)
       crx_installer_->set_install_source(Manifest::EXTERNAL_POLICY_DOWNLOAD);

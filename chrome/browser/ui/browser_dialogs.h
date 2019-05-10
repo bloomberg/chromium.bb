@@ -96,7 +96,7 @@ void ShowCreateChromeAppShortcutsDialog(
 // WebApplicationInfo parameter contains the information about the app,
 // possibly modified by the user.
 using AppInstallationAcceptanceCallback =
-    base::OnceCallback<void(bool, const WebApplicationInfo&)>;
+    base::OnceCallback<void(bool, std::unique_ptr<WebApplicationInfo>)>;
 
 // Shows the Bookmark App bubble.
 // See Extension::InitFromValueFlags::FROM_BOOKMARK for a description of
