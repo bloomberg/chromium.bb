@@ -102,7 +102,7 @@ int WebRtcVideoFrameAdapter::height() const {
 }
 
 rtc::scoped_refptr<webrtc::I420BufferInterface>
-WebRtcVideoFrameAdapter::ToI420() {
+WebRtcVideoFrameAdapter::CreateFrameAdapter() const {
   // We cant convert texture synchronously due to threading issues, see
   // https://crbug.com/663452. Instead, return a black frame (yuv = {0, 0x80,
   // 0x80}).
@@ -120,6 +120,21 @@ WebRtcVideoFrameAdapter::ToI420() {
   }
   return new rtc::RefCountedObject<FrameAdapter<webrtc::I420BufferInterface>>(
       frame_);
+}
+
+rtc::scoped_refptr<webrtc::I420BufferInterface>
+WebRtcVideoFrameAdapter::ToI420() {
+  if (!frame_adapter_) {
+    frame_adapter_ = CreateFrameAdapter();
+  }
+  return frame_adapter_;
+}
+
+const webrtc::I420BufferInterface* WebRtcVideoFrameAdapter::GetI420() const {
+  if (!frame_adapter_) {
+    frame_adapter_ = CreateFrameAdapter();
+  }
+  return frame_adapter_.get();
 }
 
 }  // namespace content

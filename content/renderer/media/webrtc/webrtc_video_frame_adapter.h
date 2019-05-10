@@ -27,9 +27,16 @@ class WebRtcVideoFrameAdapter : public webrtc::VideoFrameBuffer {
   int height() const override;
 
   rtc::scoped_refptr<webrtc::I420BufferInterface> ToI420() override;
+  const webrtc::I420BufferInterface* GetI420() const override;
 
  protected:
   ~WebRtcVideoFrameAdapter() override;
+
+  rtc::scoped_refptr<webrtc::I420BufferInterface> CreateFrameAdapter() const;
+
+  // Used to cache result of CreateFrameAdapter. Which is called from const
+  // GetI420().
+  mutable rtc::scoped_refptr<webrtc::I420BufferInterface> frame_adapter_;
 
   scoped_refptr<media::VideoFrame> frame_;
 };
