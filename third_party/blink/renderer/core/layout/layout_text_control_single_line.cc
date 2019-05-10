@@ -58,7 +58,7 @@ inline Element* LayoutTextControlSingleLine::EditingViewPortElement() const {
 
 inline HTMLElement* LayoutTextControlSingleLine::InnerSpinButtonElement()
     const {
-  return ToHTMLElement(InputElement()->UserAgentShadowRoot()->getElementById(
+  return To<HTMLElement>(InputElement()->UserAgentShadowRoot()->getElementById(
       shadow_element_names::SpinButton()));
 }
 

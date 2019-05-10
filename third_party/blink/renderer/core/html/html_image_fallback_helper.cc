@@ -28,8 +28,9 @@ static bool NoImageSourceSpecified(const Element& element) {
 }
 
 static bool ElementRepresentsNothing(const Element& element) {
-  bool alt_is_set = !ToHTMLElement(element).AltText().IsNull();
-  bool alt_is_empty = alt_is_set && ToHTMLElement(element).AltText().IsEmpty();
+  const auto& html_element = To<HTMLElement>(element);
+  bool alt_is_set = !html_element.AltText().IsNull();
+  bool alt_is_empty = alt_is_set && html_element.AltText().IsEmpty();
   bool src_is_set = !NoImageSourceSpecified(element);
   if (src_is_set && alt_is_empty)
     return true;
@@ -72,7 +73,7 @@ void HTMLImageFallbackHelper::CreateAltTextShadowTree(Element& element) {
   alt_text->setAttribute(kIdAttr, AtomicString("alttext"));
 
   Text* text =
-      Text::Create(element.GetDocument(), ToHTMLElement(element).AltText());
+      Text::Create(element.GetDocument(), To<HTMLElement>(element).AltText());
   alt_text->AppendChild(text);
 }
 
@@ -113,7 +114,7 @@ scoped_refptr<ComputedStyle> HTMLImageFallbackHelper::CustomStyleForAltText(
   bool image_has_intrinsic_dimensions =
       new_style->Width().IsSpecifiedOrIntrinsic() &&
       new_style->Height().IsSpecifiedOrIntrinsic();
-  bool image_has_no_alt_attribute = ToHTMLElement(element).AltText().IsNull();
+  bool image_has_no_alt_attribute = To<HTMLElement>(element).AltText().IsNull();
   bool treat_as_replaced =
       image_has_intrinsic_dimensions &&
       (element.GetDocument().InQuirksMode() || image_has_no_alt_attribute);

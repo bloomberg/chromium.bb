@@ -128,7 +128,8 @@ bool HTMLLabelElement::IsInInteractiveContent(Node* node) const {
   if (!IsShadowIncludingInclusiveAncestorOf(node))
     return false;
   while (node && this != node) {
-    if (node->IsHTMLElement() && ToHTMLElement(node)->IsInteractiveContent())
+    auto* html_element = DynamicTo<HTMLElement>(node);
+    if (html_element && html_element->IsInteractiveContent())
       return true;
     node = node->ParentOrShadowHostNode();
   }

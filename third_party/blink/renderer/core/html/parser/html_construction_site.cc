@@ -957,10 +957,9 @@ Element* HTMLConstructionSite::CreateElement(
     // 12. If element is a form-associated element, and the form
     // element pointer is not null, and there is no template element
     // on the stack of open elements, ...
+    auto* html_element = DynamicTo<HTMLElement>(element);
     FormAssociated* form_associated_element =
-        element->IsHTMLElement()
-            ? ToHTMLElement(element)->ToFormAssociatedOrNull()
-            : nullptr;
+        html_element ? html_element->ToFormAssociatedOrNull() : nullptr;
     if (form_associated_element && document.GetFrame() && form_.Get()) {
       // ... and element is either not listed or doesn't have a form
       // attribute, and the intended parent is in the same tree as the

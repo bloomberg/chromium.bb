@@ -43,7 +43,7 @@ TEST_F(OptionListTest, OptionOnly) {
   Select().SetInnerHTMLFromString(
       "text<input><option id=o1></option><input><option "
       "id=o2></option><input>");
-  auto* div = ToHTMLElement(
+  auto* div = To<HTMLElement>(
       Select().GetDocument().CreateRawElement(html_names::kDivTag));
   div->SetInnerHTMLFromString("<option id=o3></option>");
   Select().AppendChild(div);
@@ -78,7 +78,7 @@ TEST_F(OptionListTest, Optgroup) {
   ++iter;
   EXPECT_EQ(list.end(), iter);
 
-  ToHTMLElement(Select().firstChild())
+  To<HTMLElement>(Select().firstChild())
       ->SetInnerHTMLFromString(
           "<optgroup><option id=gg11></option></optgroup>"
           "<option id=g11></option>");

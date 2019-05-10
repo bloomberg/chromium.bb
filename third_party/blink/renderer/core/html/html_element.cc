@@ -102,9 +102,10 @@ namespace {
 
 // https://w3c.github.io/editing/execCommand.html#editing-host
 bool IsEditingHost(const Node& node) {
-  if (!node.IsHTMLElement())
+  auto* html_element = DynamicTo<HTMLElement>(node);
+  if (!html_element)
     return false;
-  String normalized_value = ToHTMLElement(node).contentEditable();
+  String normalized_value = html_element->contentEditable();
   if (normalized_value == "true" || normalized_value == "plaintext-only")
     return true;
   return node.GetDocument().InDesignMode() &&
@@ -115,13 +116,14 @@ bool IsEditingHost(const Node& node) {
 bool IsEditable(const Node& node) {
   if (IsEditingHost(node))
     return false;
-  if (node.IsHTMLElement() && ToHTMLElement(node).contentEditable() == "false")
+  auto* html_element = DynamicTo<HTMLElement>(node);
+  if (html_element && html_element->contentEditable() == "false")
     return false;
   if (!node.parentNode())
     return false;
   if (!IsEditingHost(*node.parentNode()) && !IsEditable(*node.parentNode()))
     return false;
-  if (node.IsHTMLElement())
+  if (html_element)
     return true;
   if (IsSVGSVGElement(node))
     return true;
@@ -1007,8 +1009,9 @@ HTMLFormElement* HTMLElement::FindFormAncestor() const {
 }
 
 static inline bool ElementAffectsDirectionality(const Node* node) {
-  return node->IsHTMLElement() && (IsHTMLBDIElement(ToHTMLElement(*node)) ||
-                                   ToHTMLElement(*node).hasAttribute(kDirAttr));
+  auto* html_element = DynamicTo<HTMLElement>(node);
+  return html_element && (IsHTMLBDIElement(*html_element) ||
+                          html_element->hasAttribute(kDirAttr));
 }
 
 void HTMLElement::ChildrenChanged(const ChildrenChange& change) {
@@ -1122,7 +1125,7 @@ void HTMLElement::AdjustDirectionalityIfNeededAfterChildrenChanged(
        element_to_adjust =
            FlatTreeTraversal::ParentElement(*element_to_adjust)) {
     if (ElementAffectsDirectionality(element_to_adjust)) {
-      ToHTMLElement(element_to_adjust)->CalculateAndAdjustDirectionality();
+      To<HTMLElement>(element_to_adjust)->CalculateAndAdjustDirectionality();
       return;
     }
   }
@@ -1409,11 +1412,10 @@ void HTMLElement::OnDirAttrChanged(const AttributeModificationParams& params) {
   if (!CanParticipateInFlatTree())
     return;
   UpdateDistributionForFlatTreeTraversal();
-  Element* parent = FlatTreeTraversal::ParentElement(*this);
-  if (parent && parent->IsHTMLElement() &&
-      ToHTMLElement(parent)->SelfOrAncestorHasDirAutoAttribute()) {
-    ToHTMLElement(parent)
-        ->AdjustDirectionalityIfNeededAfterChildAttributeChanged(this);
+  auto* parent =
+      DynamicTo<HTMLElement>(FlatTreeTraversal::ParentElement(*this));
+  if (parent && parent->SelfOrAncestorHasDirAutoAttribute()) {
+    parent->AdjustDirectionalityIfNeededAfterChildAttributeChanged(this);
   }
 
   if (DeprecatedEqualIgnoringCase(params.new_value, "auto"))

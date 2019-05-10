@@ -118,7 +118,7 @@ HTMLElement* VTTElement::CreateEquivalentHTMLElement(Document& document) {
 
   html_element->setAttribute(html_names::kClassAttr,
                              getAttribute(html_names::kClassAttr));
-  return ToHTMLElement(html_element);
+  return To<HTMLElement>(html_element);
 }
 
 void VTTElement::SetIsPastNode(bool is_past_node) {

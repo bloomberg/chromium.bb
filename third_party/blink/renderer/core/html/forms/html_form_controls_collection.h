@@ -48,7 +48,7 @@ class HTMLFormControlsCollection final : public HTMLCollection {
   ~HTMLFormControlsCollection() override;
 
   HTMLElement* item(unsigned offset) const {
-    return ToHTMLElement(HTMLCollection::item(offset));
+    return To<HTMLElement>(HTMLCollection::item(offset));
   }
 
   HTMLElement* namedItem(const AtomicString& name) const override;

@@ -98,7 +98,7 @@ bool RadioNodeList::CheckElementMatchesRadioNodeListFilter(
   DCHECK(IsHTMLObjectElement(test_element) ||
          test_element.IsFormControlElement());
   if (IsHTMLFormElement(ownerNode())) {
-    HTMLFormElement* form_element = ToHTMLElement(test_element).formOwner();
+    auto* form_element = To<HTMLElement>(test_element).formOwner();
     if (!form_element || form_element != ownerNode())
       return false;
   }
