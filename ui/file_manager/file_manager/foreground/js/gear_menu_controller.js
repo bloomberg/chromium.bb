@@ -73,6 +73,10 @@ function GearMenuController(
 GearMenuController.prototype.onShowGearMenu_ = function() {
   this.toggleRipple_.activated = true;
   this.refreshRemainingSpace_(false); /* Without loading caption. */
+
+  // Update view of drive-related settings.
+  this.commandHandler_.updateAvailability();
+
   this.updateNewServiceItem();
 };
 

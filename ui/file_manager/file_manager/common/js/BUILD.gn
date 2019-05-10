@@ -179,8 +179,6 @@ js_library("util") {
     "../../../externs/entry_location.js",
     "../../../externs/platform.js",
     "../../../externs/volume_info.js",
-    "../../../externs/volume_info_list.js",
-    "../../../externs/volume_manager.js",
   ]
 }
 
