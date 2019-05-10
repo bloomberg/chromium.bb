@@ -40,10 +40,37 @@ void TraceHardwareAvailable(bool added, device::mojom::XRDeviceId device_id) {
 }  // namespace
 
 void IsolatedXRRuntimeProvider::PollForDeviceChanges() {
+  // If we have multiple devices attached, only return one.  This typically will
+  // only happen if a device could be exposed through multiple APIs, such as
+  // OpenVR exposing a WMR or Oculus device.
+  bool disable_other_devices = false;
+
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+  if (check_wmr_) {
+    bool wmr_available =
+        !disable_other_devices && wmr_statics_->IsHardwareAvailable();
+    disable_other_devices = disable_other_devices || wmr_available;
+    if (wmr_available && !wmr_device_) {
+      wmr_device_ = std::make_unique<device::MixedRealityDevice>();
+      TraceHardwareAvailable(true, wmr_device_->GetId());
+      client_->OnDeviceAdded(
+          wmr_device_->BindXRRuntimePtr(), wmr_device_->BindGamepadFactory(),
+          wmr_device_->BindCompositorHost(), wmr_device_->GetId());
+    } else if (wmr_device_ && !wmr_available) {
+      TraceHardwareAvailable(false, wmr_device_->GetId());
+      client_->OnDeviceRemoved(wmr_device_->GetId());
+      wmr_device_ = nullptr;
+    }
+  }
+#endif
+
 #if BUILDFLAG(ENABLE_OCULUS_VR)
   if (check_oculus_) {
-    bool oculus_available = (oculus_device_ && oculus_device_->IsAvailable()) ||
-                            device::OculusDevice::IsHwAvailable();
+    bool oculus_available =
+        !disable_other_devices &&
+        ((oculus_device_ && oculus_device_->IsAvailable()) ||
+         device::OculusDevice::IsHwAvailable());
+    disable_other_devices = disable_other_devices || oculus_available;
     if (oculus_available && !oculus_device_) {
       oculus_device_ = std::make_unique<device::OculusDevice>();
       TraceHardwareAvailable(true, oculus_device_->GetId());
@@ -61,8 +88,11 @@ void IsolatedXRRuntimeProvider::PollForDeviceChanges() {
 
 #if BUILDFLAG(ENABLE_OPENVR)
   if (check_openvr_) {
-    bool openvr_available = (openvr_device_ && openvr_device_->IsAvailable()) ||
-                            device::OpenVRDevice::IsHwAvailable();
+    bool openvr_available =
+        !disable_other_devices &&
+        ((openvr_device_ && openvr_device_->IsAvailable()) ||
+         device::OpenVRDevice::IsHwAvailable());
+    disable_other_devices = disable_other_devices || openvr_available;
     if (openvr_available && !openvr_device_) {
       openvr_device_ = std::make_unique<device::OpenVRDevice>();
       TraceHardwareAvailable(true, openvr_device_->GetId());
@@ -74,23 +104,6 @@ void IsolatedXRRuntimeProvider::PollForDeviceChanges() {
       TraceHardwareAvailable(false, openvr_device_->GetId());
       client_->OnDeviceRemoved(openvr_device_->GetId());
       openvr_device_ = nullptr;
-    }
-  }
-#endif
-
-#if BUILDFLAG(ENABLE_WINDOWS_MR)
-  if (check_wmr_) {
-    bool wmr_available = wmr_statics_->IsHardwareAvailable();
-    if (wmr_available && !wmr_device_) {
-      wmr_device_ = std::make_unique<device::MixedRealityDevice>();
-      TraceHardwareAvailable(true, wmr_device_->GetId());
-      client_->OnDeviceAdded(
-          wmr_device_->BindXRRuntimePtr(), wmr_device_->BindGamepadFactory(),
-          wmr_device_->BindCompositorHost(), wmr_device_->GetId());
-    } else if (wmr_device_ && !wmr_available) {
-      TraceHardwareAvailable(false, wmr_device_->GetId());
-      client_->OnDeviceRemoved(wmr_device_->GetId());
-      wmr_device_ = nullptr;
     }
   }
 #endif
