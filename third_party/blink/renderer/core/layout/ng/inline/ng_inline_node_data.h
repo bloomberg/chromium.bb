@@ -19,6 +19,8 @@ struct CORE_EXPORT NGInlineNodeData : NGInlineItemsData {
     return static_cast<TextDirection>(base_direction_);
   }
 
+  bool IsEmptyInline() const { return is_empty_inline_; }
+
  private:
   const NGInlineItemsData& ItemsData(bool is_first_line) const {
     return !is_first_line || !first_line_items_

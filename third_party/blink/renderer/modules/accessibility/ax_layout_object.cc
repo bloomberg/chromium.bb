@@ -552,7 +552,7 @@ static bool HasLineBox(const LayoutBlockFlow& block_flow) {
   if (!block_flow.IsLayoutNGMixin())
     return block_flow.FirstLineBox();
   if (block_flow.HasNGInlineNodeData())
-    return !block_flow.GetNGInlineNodeData()->items.IsEmpty();
+    return !block_flow.GetNGInlineNodeData()->IsEmptyInline();
   // TODO(layout-dev): We should call this function after layout completion.
   return false;
 }
