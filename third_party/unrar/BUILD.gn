@@ -66,25 +66,10 @@ if (safe_browsing_mode == 1 || use_fuzzing_engine) {
       "//build/config/compiler:no_chromium_code",
 
       # This must be after no_chromium_code for warning flags to be ordered correctly
-      ":unrar_warnings",
+      ":unrar_config",
     ]
 
-    defines = [
-      "_FILE_OFFSET_BITS=64",
-      "LARGEFILE_SOURCE",
-      "RAR_SMP",
-      "SILENT",
-      "NOVOLUME",
-
-      # The following is set to disable certain macro definitions in the unrar
-      # source code.
-      "CHROMIUM_UNRAR",
-    ]
-
-    if (!use_libfuzzer) {
-      # Disables exceptions in unrar, replaces them with process termination.
-      defines += [ "UNRAR_NO_EXCEPTIONS" ]
-    } else {
+    if (use_libfuzzer) {
       configs -= [ "//build/config/compiler:no_exceptions" ]
     }
 
@@ -102,13 +87,19 @@ if (safe_browsing_mode == 1 || use_fuzzing_engine) {
         ":unrar",
       ]
       include_dirs = [ "//third_party/unrar/src" ]
-      defines = [ "CHROMIUM_UNRAR" ]
-      configs_to_remove = [ "//build/config/compiler:no_exceptions" ]
+      additional_configs = [
+        "//build/config/compiler:no_chromium_code",
+        ":unrar_config",
+      ]
+      configs_to_remove = [
+        "//build/config/compiler:no_exceptions",
+        "//build/config/compiler:chromium_code",
+      ]
     }
   }
 }
 
-config("unrar_warnings") {
+config("unrar_config") {
   cflags = [
     # unrar frequently drops parentheses around logical ops
     "-Wno-logical-op-parentheses",
@@ -125,4 +116,18 @@ config("unrar_warnings") {
     # unrar has missing braces for initialization in rarvm.cpp
     "-Wno-missing-braces",
   ]
+
+  defines = [
+    "_FILE_OFFSET_BITS=64",
+    "LARGEFILE_SOURCE",
+    "RAR_SMP",
+    "SILENT",
+    "NOVOLUME",
+    "CHROMIUM_UNRAR",
+  ]
+
+  if (!use_libfuzzer) {
+    # Disables exceptions in unrar, replaces them with process termination.
+    defines += [ "UNRAR_NO_EXCEPTIONS" ]
+  }
 }

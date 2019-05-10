@@ -13,9 +13,6 @@
 
 #include "rar.hpp"
 
-using third_party_unrar::CmdExtract;
-using third_party_unrar::CommandData;
-
 static int removeFile(const char* fpath,
                       const struct stat* sb,
                       int typeflag,
