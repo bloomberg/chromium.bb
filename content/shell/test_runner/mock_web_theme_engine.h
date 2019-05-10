@@ -12,7 +12,7 @@ namespace test_runner {
 
 class MockWebThemeEngine : public blink::WebThemeEngine {
  public:
-  virtual ~MockWebThemeEngine() {}
+  ~MockWebThemeEngine() override {}
 
 #if !defined(OS_MACOSX)
   // blink::WebThemeEngine:

@@ -23,16 +23,6 @@
 #include "third_party/blink/public/public_buildflags.h"
 #include "ui/base/layout.h"
 
-#if BUILDFLAG(USE_DEFAULT_RENDER_THEME)
-#include "content/child/webthemeengine_impl_default.h"
-#elif defined(OS_WIN)
-#include "content/child/webthemeengine_impl_win.h"
-#elif defined(OS_MACOSX)
-#include "content/child/webthemeengine_impl_mac.h"
-#elif defined(OS_ANDROID)
-#include "content/child/webthemeengine_impl_android.h"
-#endif
-
 namespace content {
 
 class WebCryptoImpl;
@@ -86,7 +76,7 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
  private:
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
-  WebThemeEngineImpl native_theme_engine_;
+  std::unique_ptr<blink::WebThemeEngine> native_theme_engine_;
   webcrypto::WebCryptoImpl web_crypto_;
   media::WebMediaCapabilitiesClientImpl media_capabilities_client_;
 };

@@ -12,9 +12,10 @@
 
 namespace content {
 
-class WebThemeEngineImpl : public blink::WebThemeEngine {
+class WebThemeEngineDefault : public blink::WebThemeEngine {
  public:
   // WebThemeEngine methods:
+  ~WebThemeEngineDefault() override;
   blink::WebSize GetSize(blink::WebThemeEngine::Part) override;
   void Paint(cc::PaintCanvas* canvas,
              blink::WebThemeEngine::Part part,

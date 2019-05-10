@@ -128,18 +128,15 @@ target(link_target_type, "child") {
     "//v8",
   ]
 
-  if (!use_default_render_theme) {
-    sources -= [
-      "webthemeengine_impl_default.cc",
-      "webthemeengine_impl_default.h",
-    ]
-  }
-
   if (is_android) {
     deps += [ "//third_party/android_sdk:cpu_features" ]
     if (notouch_build) {
       configs += [ ":notouch_config" ]
     }
+    sources -= [
+      "webthemeengine_impl_default.cc",
+      "webthemeengine_impl_default.h",
+    ]
   }
 
   if (is_linux) {

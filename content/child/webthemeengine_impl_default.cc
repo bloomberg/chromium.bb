@@ -203,7 +203,9 @@ static void GetNativeThemeExtraParams(
   }
 }
 
-blink::WebSize WebThemeEngineImpl::GetSize(WebThemeEngine::Part part) {
+WebThemeEngineDefault::~WebThemeEngineDefault() = default;
+
+blink::WebSize WebThemeEngineDefault::GetSize(WebThemeEngine::Part part) {
   ui::NativeTheme::ExtraParams extra;
   ui::NativeTheme::Part native_theme_part = NativeThemePart(part);
 #if defined(OS_WIN)
@@ -228,7 +230,7 @@ blink::WebSize WebThemeEngineImpl::GetSize(WebThemeEngine::Part part) {
       native_theme_part, ui::NativeTheme::kNormal, extra);
 }
 
-void WebThemeEngineImpl::Paint(
+void WebThemeEngineDefault::Paint(
     cc::PaintCanvas* canvas,
     WebThemeEngine::Part part,
     WebThemeEngine::State state,
@@ -242,7 +244,7 @@ void WebThemeEngineImpl::Paint(
       native_theme_extra_params);
 }
 
-void WebThemeEngineImpl::GetOverlayScrollbarStyle(ScrollbarStyle* style) {
+void WebThemeEngineDefault::GetOverlayScrollbarStyle(ScrollbarStyle* style) {
   style->fade_out_delay = ui::kOverlayScrollbarFadeDelay;
   style->fade_out_duration = ui::kOverlayScrollbarFadeDuration;
   // The other fields in this struct are used only on Android to draw solid
@@ -250,24 +252,24 @@ void WebThemeEngineImpl::GetOverlayScrollbarStyle(ScrollbarStyle* style) {
   // NativeTheme so these fields are unused.
 }
 
-bool WebThemeEngineImpl::SupportsNinePatch(Part part) const {
+bool WebThemeEngineDefault::SupportsNinePatch(Part part) const {
   return ui::NativeTheme::GetInstanceForWeb()->SupportsNinePatch(
       NativeThemePart(part));
 }
 
-blink::WebSize WebThemeEngineImpl::NinePatchCanvasSize(Part part) const {
+blink::WebSize WebThemeEngineDefault::NinePatchCanvasSize(Part part) const {
   return ui::NativeTheme::GetInstanceForWeb()->GetNinePatchCanvasSize(
       NativeThemePart(part));
 }
 
-blink::WebRect WebThemeEngineImpl::NinePatchAperture(Part part) const {
+blink::WebRect WebThemeEngineDefault::NinePatchAperture(Part part) const {
   return ui::NativeTheme::GetInstanceForWeb()->GetNinePatchAperture(
       NativeThemePart(part));
 }
 
 #if defined(OS_WIN)
 // static
-void WebThemeEngineImpl::cacheScrollBarMetrics(
+void WebThemeEngineDefault::cacheScrollBarMetrics(
     int32_t vertical_scroll_bar_width,
     int32_t horizontal_scroll_bar_height,
     int32_t vertical_arrow_bitmap_height,

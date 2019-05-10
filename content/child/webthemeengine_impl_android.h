@@ -9,9 +9,10 @@
 
 namespace content {
 
-class WebThemeEngineImpl : public blink::WebThemeEngine {
+class WebThemeEngineAndroid : public blink::WebThemeEngine {
  public:
   // WebThemeEngine methods:
+  ~WebThemeEngineAndroid() override;
   blink::WebSize GetSize(blink::WebThemeEngine::Part) override;
   void GetOverlayScrollbarStyle(
       blink::WebThemeEngine::ScrollbarStyle*) override;
