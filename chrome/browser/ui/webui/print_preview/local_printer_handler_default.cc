@@ -28,6 +28,20 @@ namespace printing {
 
 namespace {
 
+scoped_refptr<base::TaskRunner> CreatePrinterHandlerTaskRunner() {
+  // USER_VISIBLE because the result is displayed in the print preview dialog.
+  static constexpr base::TaskTraits kTraits = {
+      base::MayBlock(), base::TaskPriority::USER_VISIBLE};
+
+#if defined(OS_WIN)
+  // Windows drivers are likely not thread-safe.
+  return base::CreateSingleThreadTaskRunnerWithTraits(kTraits);
+#elif defined(USE_CUPS)
+  // CUPS is thread safe.
+  return base::CreateTaskRunnerWithTraits(kTraits);
+#endif
+}
+
 PrinterList EnumeratePrintersAsync() {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
@@ -82,7 +96,8 @@ std::string GetDefaultPrinterAsync() {
 
 LocalPrinterHandlerDefault::LocalPrinterHandlerDefault(
     content::WebContents* preview_web_contents)
-    : preview_web_contents_(preview_web_contents) {}
+    : preview_web_contents_(preview_web_contents),
+      task_runner_(CreatePrinterHandlerTaskRunner()) {}
 
 LocalPrinterHandlerDefault::~LocalPrinterHandlerDefault() {}
 
@@ -91,10 +106,9 @@ void LocalPrinterHandlerDefault::Reset() {}
 void LocalPrinterHandlerDefault::GetDefaultPrinter(DefaultPrinterCallback cb) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // USER_VISIBLE because the result is displayed in the print preview dialog.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&GetDefaultPrinterAsync), std::move(cb));
+  base::PostTaskAndReplyWithResult(task_runner_.get(), FROM_HERE,
+                                   base::BindOnce(&GetDefaultPrinterAsync),
+                                   std::move(cb));
 }
 
 void LocalPrinterHandlerDefault::StartGetPrinters(
@@ -103,10 +117,8 @@ void LocalPrinterHandlerDefault::StartGetPrinters(
   VLOG(1) << "Enumerate printers start";
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // USER_VISIBLE because the result is displayed in the print preview dialog.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&EnumeratePrintersAsync),
+  base::PostTaskAndReplyWithResult(
+      task_runner_.get(), FROM_HERE, base::BindOnce(&EnumeratePrintersAsync),
       base::BindOnce(&ConvertPrinterListForCallback, callback,
                      std::move(done_callback)));
 }
@@ -116,9 +128,8 @@ void LocalPrinterHandlerDefault::StartGetCapability(
     GetCapabilityCallback cb) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // USER_VISIBLE because the result is displayed in the print preview dialog.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::PostTaskAndReplyWithResult(
+      task_runner_.get(), FROM_HERE,
       base::BindOnce(&FetchCapabilitiesAsync, device_name), std::move(cb));
 }
 
