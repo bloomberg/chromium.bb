@@ -176,38 +176,30 @@ void DatabaseImpl::Get(
                                key_only, callbacks);
 }
 
-void DatabaseImpl::GetAll(int64_t transaction_id,
-                          int64_t object_store_id,
-                          int64_t index_id,
-                          const IndexedDBKeyRange& key_range,
-                          bool key_only,
-                          int64_t max_count,
-                          blink::mojom::IDBDatabase::GetAllCallback callback) {
+void DatabaseImpl::GetAll(
+    int64_t transaction_id,
+    int64_t object_store_id,
+    int64_t index_id,
+    const IndexedDBKeyRange& key_range,
+    bool key_only,
+    int64_t max_count,
+    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!connection_->IsConnected()) {
-    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
-                                 "Unknown error");
-    std::move(callback).Run(
-        blink::mojom::IDBDatabaseGetAllResult::NewErrorResult(
-            blink::mojom::IDBError::New(error.code(), error.message())));
+  scoped_refptr<IndexedDBCallbacks> callbacks(
+      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
+                             std::move(callbacks_info), idb_runner_));
+  if (!connection_->IsConnected())
     return;
-  }
 
   IndexedDBTransaction* transaction =
       connection_->GetTransaction(transaction_id);
-  if (!transaction) {
-    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
-                                 "Unknown error");
-    std::move(callback).Run(
-        blink::mojom::IDBDatabaseGetAllResult::NewErrorResult(
-            blink::mojom::IDBError::New(error.code(), error.message())));
+  if (!transaction)
     return;
-  }
 
   connection_->database()->GetAll(
-      dispatcher_host_->AsWeakPtr(), transaction, object_store_id, index_id,
+      transaction, object_store_id, index_id,
       std::make_unique<IndexedDBKeyRange>(key_range), key_only, max_count,
-      std::move(callback));
+      std::move(callbacks));
 }
 
 void DatabaseImpl::SetIndexKeys(

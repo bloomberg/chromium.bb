@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_blink_mojom_traits.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_dispatcher.h"
-#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -88,8 +87,7 @@ void WebIDBDatabaseImpl::GetAll(int64_t transaction_id,
                                 const IDBKeyRange* key_range,
                                 int64_t max_count,
                                 bool key_only,
-                                WebIDBCallbacks* callbacks_ptr) {
-  std::unique_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
+                                WebIDBCallbacks* callbacks) {
   IndexedDBDispatcher::ResetCursorPrefetchCaches(transaction_id, nullptr);
 
   mojom::blink::IDBKeyRangePtr key_range_ptr =
@@ -97,31 +95,7 @@ void WebIDBDatabaseImpl::GetAll(int64_t transaction_id,
   callbacks->SetState(nullptr, transaction_id);
   database_->GetAll(transaction_id, object_store_id, index_id,
                     std::move(key_range_ptr), key_only, max_count,
-                    WTF::Bind(&WebIDBDatabaseImpl::GetAllCallback,
-                              WTF::Unretained(this), std::move(callbacks)));
-}
-
-void WebIDBDatabaseImpl::GetAllCallback(
-    std::unique_ptr<WebIDBCallbacks> callbacks,
-    mojom::blink::IDBDatabaseGetAllResultPtr result) {
-  if (result->is_error_result()) {
-    callbacks->Error(result->get_error_result()->error_code,
-                     std::move(result->get_error_result()->error_message));
-    callbacks.reset();
-    return;
-  }
-
-  if (result->is_key()) {
-    callbacks->SuccessKey(std::move(result->get_key()));
-    callbacks.reset();
-    return;
-  }
-
-  if (result->is_values()) {
-    callbacks->SuccessArray(std::move(result->get_values()));
-    callbacks.reset();
-    return;
-  }
+                    GetCallbacksProxy(base::WrapUnique(callbacks)));
 }
 
 void WebIDBDatabaseImpl::SetIndexKeys(int64_t transaction_id,
