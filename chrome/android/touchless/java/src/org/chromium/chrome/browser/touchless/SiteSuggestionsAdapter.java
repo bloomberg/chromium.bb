@@ -166,7 +166,7 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
 
         if (holder.getItemViewType() == ViewType.ALL_APPS_TYPE) {
             tile.setIconDrawable(VectorDrawableCompat.create(tile.getResources(),
-                    R.drawable.ic_apps_black_24dp, tile.getContext().getTheme()));
+                    R.drawable.ic_apps_blue_24dp, tile.getContext().getTheme()));
             // If explore sites, clicks navigate to the Explore URL.
             tile.setOnClickListener(
                     (view)
