@@ -1152,6 +1152,8 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                   /*count*/ -2,
                   /*expected_text*/ L"",
                   /*expected_count*/ -2);
+
+  AXNodePosition::SetTreeForTesting(nullptr);
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveFormat) {
@@ -1162,7 +1164,80 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveFormat) {
   ComPtr<ITextRangeProvider> text_range_provider;
   GetTextRangeProviderFromTextNode(text_range_provider, root_node);
 
-  // TODO(https://crbug.com/928948): add tests
+  // Moving by 0 should have no effect.
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Format,
+                  /*count*/ 0,
+                  /*expected_text*/
+                  L"Text with formattingStandalone line with no formattingbold "
+                  L"textParagraph 1Paragraph 2Paragraph 3",
+                  /*expected_count*/ 0);
+
+  // Move forward.
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Format,
+                  /*count*/ 1,
+                  /*expected_text*/ L"Standalone line with no formatting",
+                  /*expected_count*/ 1);
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Format,
+                  /*count*/ 2,
+                  /*expected_text*/ L"Paragraph 1",
+                  /*expected_count*/ 2);
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Format,
+                  /*count*/ 1,
+                  /*expected_text*/ L"Paragraph 2Paragraph 3",
+                  /*expected_count*/ 1);
+
+  // Trying to move past the last format should have no effect.
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Format,
+                  /*count*/ 1,
+                  /*expected_text*/ L"Paragraph 2Paragraph 3",
+                  /*expected_count*/ 0);
+
+  // Move backward.
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Format,
+                  /*count*/ -2,
+                  /*expected_text*/ L"bold text",
+                  /*expected_count*/ -2);
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Format,
+                  /*count*/ -1,
+                  /*expected_text*/ L"Standalone line with no formatting",
+                  /*expected_count*/ -1);
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Format,
+                  /*count*/ -1,
+                  /*expected_text*/ L"Text with formatting",
+                  /*expected_count*/ -1);
+
+  // Moving backward by any number of formats at the start of document
+  // should have no effect.
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Format,
+                  /*count*/ -1,
+                  /*expected_text*/
+                  L"Text with formatting",
+                  /*expected_count*/ 0);
+
+  // Degenerate range moves.
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Format,
+                  /*count*/ 1,
+                  /*expected_text*/ L"Standalone line with no formatting",
+                  /*expected_count*/ 1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ -1,
+      /*expected_text*/ L"",
+      /*expected_count*/ -1);
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Format,
+                  /*count*/ 3,
+                  /*expected_text*/ L"",
+                  /*expected_count*/ 3);
+
+  // Trying to move past the last format should have no effect.
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Format,
+                  /*count*/ 70,
+                  /*expected_text*/ L"",
+                  /*expected_count*/ 0);
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Format,
+                  /*count*/ -2,
+                  /*expected_text*/ L"",
+                  /*expected_count*/ -2);
 
   AXNodePosition::SetTreeForTesting(nullptr);
 }
@@ -1205,7 +1280,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveWord) {
                   /*expected_text*/ L"2",
                   /*expected_count*/ 3);
 
-  // Trying to move past the last character should have no effect.
+  // Trying to move past the last word should have no effect.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
                   /*count*/ 1,
                   /*expected_text*/ L"2",
@@ -1247,7 +1322,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveWord) {
                   /*expected_text*/ L"",
                   /*expected_count*/ 4);
 
-  // Trying to move past the last character should have no effect.
+  // Trying to move past the last word should have no effect.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
                   /*count*/ 70,
                   /*expected_text*/ L"",
@@ -1256,6 +1331,8 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveWord) {
                   /*count*/ -2,
                   /*expected_text*/ L"",
                   /*expected_count*/ -2);
+
+  AXNodePosition::SetTreeForTesting(nullptr);
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveLine) {
@@ -1288,7 +1365,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveLine) {
                   /*expected_text*/ L"Paragraph 2",
                   /*expected_count*/ 2);
 
-  // Trying to move past the last character should have no effect.
+  // Trying to move past the last line should have no effect.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Line,
                   /*count*/ 1,
                   /*expected_text*/ L"Paragraph 2",
@@ -1304,7 +1381,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveLine) {
                   /*expected_text*/ L"First line of text",
                   /*expected_count*/ -4);
 
-  // Moving backward by any number of words at the start of document
+  // Moving backward by any number of lines at the start of document
   // should have no effect.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Line,
                   /*count*/ -20,
@@ -1322,7 +1399,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveLine) {
                   /*expected_text*/ L"",
                   /*expected_count*/ 4);
 
-  // Trying to move past the last character should have no effect.
+  // Trying to move past the last line should have no effect.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Line,
                   /*count*/ 70,
                   /*expected_text*/ L"",
@@ -1331,6 +1408,8 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveLine) {
                   /*count*/ -2,
                   /*expected_text*/ L"",
                   /*expected_count*/ -2);
+
+  AXNodePosition::SetTreeForTesting(nullptr);
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
@@ -1343,6 +1422,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   GetTextRangeProviderFromTextNode(text_range_provider, root_node);
 
   // TODO(https://crbug.com/928948): add tests
+  AXNodePosition::SetTreeForTesting(nullptr);
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
@@ -1411,6 +1491,8 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                   /*count*/ -1,
                   /*expected_text*/ L"",
                   /*expected_count*/ -1);
+
+  AXNodePosition::SetTreeForTesting(nullptr);
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMove) {
@@ -1422,6 +1504,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMove) {
   GetTextRangeProviderFromTextNode(text_range_provider, root_node);
 
   // TODO(https://crbug.com/928948): test intermixed unit types
+  AXNodePosition::SetTreeForTesting(nullptr);
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
