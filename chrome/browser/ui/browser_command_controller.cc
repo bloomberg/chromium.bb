@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -100,6 +101,33 @@ using content::NavigationEntry;
 using content::WebContents;
 
 namespace chrome {
+
+namespace {
+
+// Ensures that - if we have not popped up an infobar to prompt the user to e.g.
+// reload the current page - that the content pane of the browser is refocused.
+void AppInfoDialogClosedCallback(content::WebContents* web_contents,
+                                 views::Widget::ClosedReason /* unused */,
+                                 bool reload_prompt) {
+  if (reload_prompt)
+    return;
+
+  // Ensure that the web contents handle we have is still valid. It's possible
+  // (though unlikely) that either the browser or web contents has been pulled
+  // out from underneath us.
+  Browser* const browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (!browser)
+    return;
+
+  // We want to focus the active web contents, which again, might not be the
+  // original web contents (though it should be the vast majority of the time).
+  content::WebContents* const active_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  if (active_contents)
+    active_contents->Focus();
+}
+
+}  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserCommandController, public:
@@ -706,11 +734,17 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
           browser_,
           browser_->tab_strip_model()->GetActiveWebContents()->GetVisibleURL());
       break;
-    case IDC_HOSTED_APP_MENU_APP_INFO:
-      ShowPageInfoDialog(browser_->tab_strip_model()->GetActiveWebContents(),
-                         bubble_anchor_util::kAppMenuButton);
+    case IDC_HOSTED_APP_MENU_APP_INFO: {
+      content::WebContents* const web_contents =
+          browser_->tab_strip_model()->GetActiveWebContents();
+      if (web_contents) {
+        ShowPageInfoDialog(web_contents,
+                           base::BindOnce(&AppInfoDialogClosedCallback,
+                                          base::Unretained(web_contents)),
+                           bubble_anchor_util::kAppMenuButton);
+      }
       break;
-
+    }
     default:
       LOG(WARNING) << "Received Unimplemented Command: " << id;
       break;

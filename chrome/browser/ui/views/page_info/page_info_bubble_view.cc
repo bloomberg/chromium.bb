@@ -440,7 +440,8 @@ views::BubbleDialogDelegateView* PageInfoBubbleView::CreatePageInfoBubble(
     content::WebContents* web_contents,
     const GURL& url,
     security_state::SecurityLevel security_level,
-    const security_state::VisibleSecurityState& visible_security_state) {
+    const security_state::VisibleSecurityState& visible_security_state,
+    PageInfoClosingCallback closing_callback) {
   gfx::NativeView parent_view = platform_util::GetViewForWindow(parent_window);
 
   if (url.SchemeIs(content::kChromeUIScheme) ||
@@ -452,9 +453,9 @@ views::BubbleDialogDelegateView* PageInfoBubbleView::CreatePageInfoBubble(
                                           web_contents, url);
   }
 
-  return new PageInfoBubbleView(anchor_view, anchor_rect, parent_view, profile,
-                                web_contents, url, security_level,
-                                visible_security_state);
+  return new PageInfoBubbleView(
+      anchor_view, anchor_rect, parent_view, profile, web_contents, url,
+      security_level, visible_security_state, std::move(closing_callback));
 }
 
 PageInfoBubbleView::PageInfoBubbleView(
@@ -465,19 +466,15 @@ PageInfoBubbleView::PageInfoBubbleView(
     content::WebContents* web_contents,
     const GURL& url,
     security_state::SecurityLevel security_level,
-    const security_state::VisibleSecurityState& visible_security_state)
+    const security_state::VisibleSecurityState& visible_security_state,
+    PageInfoClosingCallback closing_callback)
     : PageInfoBubbleViewBase(anchor_view,
                              anchor_rect,
                              parent_window,
                              PageInfoBubbleViewBase::BUBBLE_PAGE_INFO,
                              web_contents),
       profile_(profile),
-      header_(nullptr),
-      site_settings_view_(nullptr),
-      cookie_button_(nullptr),
-      certificate_button_(nullptr),
-      page_feature_info_view_(nullptr),
-      weak_factory_(this) {
+      closing_callback_(std::move(closing_callback)) {
   // Capture the default bubble margin, and move it to the Layout classes. This
   // is necessary so that the views::Separator can extend the full width of the
   // bubble.
@@ -562,24 +559,9 @@ void PageInfoBubbleView::OnChosenObjectDeleted(
 
 void PageInfoBubbleView::OnWidgetDestroying(views::Widget* widget) {
   PageInfoBubbleViewBase::OnWidgetDestroying(widget);
-  presenter_->OnUIClosing();
-
-  // If we're closing the bubble because the user pressed ESC or because the
-  // user clicked Close (rather than the user clicking directly on something
-  // else), we should refocus the Omnibox. This lets the user tab into the
-  // "You should reload this page" infobar rather than dumping them back out
-  // into a stale webpage.
-  const views::Widget::ClosedReason closed_reason =
-      GetWidget()->closed_reason();
-  if (closed_reason == views::Widget::ClosedReason::kEscKeyPressed ||
-      closed_reason == views::Widget::ClosedReason::kCloseButtonClicked) {
-    // Because of how this bubble shows, the anchor is always in the toolbar,
-    // which means the infobar with the reload prompt is just after in the focus
-    // order.
-    View* const anchor = GetAnchorView();
-    if (anchor)
-      anchor->GetFocusManager()->SetFocusedView(anchor);
-  }
+  bool reload_prompt;
+  presenter_->OnUIClosing(&reload_prompt);
+  std::move(closing_callback_).Run(GetWidget()->closed_reason(), reload_prompt);
 }
 
 void PageInfoBubbleView::ButtonPressed(views::Button* button,
@@ -1041,7 +1023,8 @@ void ShowPageInfoDialogImpl(
     const GURL& virtual_url,
     security_state::SecurityLevel security_level,
     const security_state::VisibleSecurityState& visible_security_state,
-    bubble_anchor_util::Anchor anchor) {
+    bubble_anchor_util::Anchor anchor,
+    PageInfoClosingCallback closing_callback) {
   AnchorConfiguration configuration =
       GetPageInfoAnchorConfiguration(browser, anchor);
   gfx::Rect anchor_rect =
@@ -1051,7 +1034,7 @@ void ShowPageInfoDialogImpl(
       PageInfoBubbleView::CreatePageInfoBubble(
           configuration.anchor_view, anchor_rect, parent_window,
           browser->profile(), web_contents, virtual_url, security_level,
-          visible_security_state);
+          visible_security_state, std::move(closing_callback));
   bubble->SetHighlightedButton(configuration.highlighted_button);
   bubble->SetArrow(configuration.bubble_arrow);
   bubble->GetWidget()->Show();

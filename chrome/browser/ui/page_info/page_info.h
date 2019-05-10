@@ -164,7 +164,9 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
                                  const base::Value& object);
 
   // This method is called by the UI when the UI is closing.
-  void OnUIClosing();
+  // If specified, |reload_prompt| is set to whether closing the UI resulted in
+  // a prompt to the user to reload the page.
+  void OnUIClosing(bool* reload_prompt);
 
   // This method is called when the revoke SSL error bypass button is pressed.
   void OnRevokeSSLErrorBypassButtonPressed();

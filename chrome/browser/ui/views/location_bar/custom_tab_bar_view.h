@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_CUSTOM_TAB_BAR_VIEW_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -81,6 +82,11 @@ class CustomTabBarView : public views::AccessiblePaneView,
   // Takes the web contents for the custom tab bar back to the app scope.
   void GoBackToApp();
 
+  // Called when the AppInfo dialog closes to set the focus on the correct view
+  // within the browser.
+  void AppInfoClosedCallback(views::Widget::ClosedReason closed_reason,
+                             bool reload_prompt);
+
   SkColor title_bar_color_;
 
   base::string16 last_title_;
@@ -93,6 +99,8 @@ class CustomTabBarView : public views::AccessiblePaneView,
   ScopedObserver<TabStripModel, CustomTabBarView> tab_strip_model_observer_;
 
   views::FlexLayout* layout_manager_;
+
+  base::WeakPtrFactory<CustomTabBarView> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CustomTabBarView);
 };

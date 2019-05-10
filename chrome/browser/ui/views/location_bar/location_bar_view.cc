@@ -956,6 +956,24 @@ OmniboxPopupView* LocationBarView::GetOmniboxPopupView() {
   return omnibox_view_->model()->popup_model()->view();
 }
 
+void LocationBarView::OnPageInfoBubbleClosed(
+    views::Widget::ClosedReason closed_reason,
+    bool reload_prompt) {
+  // If we're closing the bubble because the user pressed ESC or because the
+  // user clicked Close (rather than the user clicking directly on something
+  // else), we should refocus the location bar. This lets the user tab into the
+  // "You should reload this page" infobar rather than dumping them back out
+  // into a stale webpage.
+  if (!reload_prompt)
+    return;
+  if (closed_reason != views::Widget::ClosedReason::kEscKeyPressed &&
+      closed_reason != views::Widget::ClosedReason::kCloseButtonClicked) {
+    return;
+  }
+
+  FocusLocation(false);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, private LocationBar implementation:
 
@@ -1298,7 +1316,9 @@ bool LocationBarView::ShowPageInfoDialog() {
       PageInfoBubbleView::CreatePageInfoBubble(
           this, gfx::Rect(), GetWidget()->GetNativeWindow(), profile(),
           contents, entry->GetVirtualURL(), helper->GetSecurityLevel(),
-          *helper->GetVisibleSecurityState());
+          *helper->GetVisibleSecurityState(),
+          base::BindOnce(&LocationBarView::OnPageInfoBubbleClosed,
+                         weak_factory_.GetWeakPtr()));
   bubble->SetHighlightedButton(location_icon_view());
   bubble->GetWidget()->Show();
   return true;

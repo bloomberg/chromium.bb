@@ -513,15 +513,20 @@ void PageInfo::OnSiteDataAccessed() {
   PresentSiteData();
 }
 
-void PageInfo::OnUIClosing() {
+void PageInfo::OnUIClosing(bool* reload_prompt) {
+  if (reload_prompt)
+    *reload_prompt = false;
 #if defined(OS_ANDROID)
   NOTREACHED();
 #else
   if (show_info_bar_ && web_contents() && !web_contents()->IsBeingDestroyed()) {
     InfoBarService* infobar_service =
         InfoBarService::FromWebContents(web_contents());
-    if (infobar_service)
+    if (infobar_service) {
       PageInfoInfoBarDelegate::Create(infobar_service);
+      if (reload_prompt)
+        *reload_prompt = true;
+    }
   }
 #endif
 }

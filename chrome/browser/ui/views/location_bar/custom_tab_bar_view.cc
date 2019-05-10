@@ -320,8 +320,11 @@ void CustomTabBarView::OnLocationIconPressed(const ui::MouseEvent& event) {}
 void CustomTabBarView::OnLocationIconDragged(const ui::MouseEvent& event) {}
 
 bool CustomTabBarView::ShowPageInfoDialog() {
-  return ::ShowPageInfoDialog(GetWebContents(),
-                              bubble_anchor_util::Anchor::kCustomTabBar);
+  return ::ShowPageInfoDialog(
+      GetWebContents(),
+      base::BindOnce(&CustomTabBarView::AppInfoClosedCallback,
+                     weak_factory_.GetWeakPtr()),
+      bubble_anchor_util::Anchor::kCustomTabBar);
 }
 
 SkColor CustomTabBarView::GetSecurityChipColor(
@@ -382,6 +385,24 @@ void CustomTabBarView::GoBackToApp() {
 
   // Otherwise, go back to the first in scope url.
   controller.GoToOffset(offset);
+}
+
+void CustomTabBarView::AppInfoClosedCallback(
+    views::Widget::ClosedReason closed_reason,
+    bool reload_prompt) {
+  // If we're closing the bubble because the user pressed ESC or because the
+  // user clicked Close (rather than the user clicking directly on something
+  // else), we should refocus the location bar. This lets the user tab into the
+  // "You should reload this page" infobar rather than dumping them back out
+  // into a stale webpage.
+  if (!reload_prompt)
+    return;
+  if (closed_reason != views::Widget::ClosedReason::kEscKeyPressed &&
+      closed_reason != views::Widget::ClosedReason::kCloseButtonClicked) {
+    return;
+  }
+
+  GetFocusManager()->SetFocusedView(location_icon_view_);
 }
 
 bool CustomTabBarView::IsShowingOriginForTesting() const {

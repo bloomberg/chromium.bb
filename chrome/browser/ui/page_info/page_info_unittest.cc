@@ -859,7 +859,8 @@ TEST_F(PageInfoTest, HTTPSSHA1) {
 TEST_F(PageInfoTest, NoInfoBar) {
   SetDefaultUIExpectations(mock_ui());
   EXPECT_EQ(0u, infobar_service()->infobar_count());
-  page_info()->OnUIClosing();
+  bool unused;
+  page_info()->OnUIClosing(&unused);
   EXPECT_EQ(0u, infobar_service()->infobar_count());
 }
 
@@ -872,7 +873,8 @@ TEST_F(PageInfoTest, ShowInfoBar) {
   EXPECT_EQ(0u, infobar_service()->infobar_count());
   page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                        CONTENT_SETTING_ALLOW);
-  page_info()->OnUIClosing();
+  bool unused;
+  page_info()->OnUIClosing(&unused);
   ASSERT_EQ(1u, infobar_service()->infobar_count());
 
   infobar_service()->RemoveInfoBar(infobar_service()->infobar_at(0));
@@ -882,7 +884,8 @@ TEST_F(PageInfoTest, NoInfoBarWhenSoundSettingChanged) {
   EXPECT_EQ(0u, infobar_service()->infobar_count());
   page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_SOUND,
                                        CONTENT_SETTING_BLOCK);
-  page_info()->OnUIClosing();
+  bool unused;
+  page_info()->OnUIClosing(&unused);
   EXPECT_EQ(0u, infobar_service()->infobar_count());
 }
 
@@ -892,7 +895,8 @@ TEST_F(PageInfoTest, ShowInfoBarWhenSoundSettingAndAnotherSettingChanged) {
                                        CONTENT_SETTING_BLOCK);
   page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_SOUND,
                                        CONTENT_SETTING_BLOCK);
-  page_info()->OnUIClosing();
+  bool unused;
+  page_info()->OnUIClosing(&unused);
   EXPECT_EQ(1u, infobar_service()->infobar_count());
 
   infobar_service()->RemoveInfoBar(infobar_service()->infobar_at(0));

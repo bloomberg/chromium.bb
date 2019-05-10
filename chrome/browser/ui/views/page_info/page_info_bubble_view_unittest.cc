@@ -71,11 +71,15 @@ class PageInfoBubbleViewTestApi {
     views::View* anchor_view = nullptr;
     view_ = new PageInfoBubbleView(
         anchor_view, gfx::Rect(), parent_, profile_, web_contents_, GURL(kUrl),
-        security_state::NONE, security_state::VisibleSecurityState());
+        security_state::NONE, security_state::VisibleSecurityState(),
+        base::BindOnce(&PageInfoBubbleViewTestApi::OnPageInfoBubbleClosed,
+                       base::Unretained(this), run_loop_.QuitClosure()));
   }
 
   PageInfoBubbleView* view() { return view_; }
   views::View* permissions_view() { return view_->permissions_view_; }
+  bool reload_prompt() const { return *reload_prompt_; }
+  views::Widget::ClosedReason closed_reason() const { return *closed_reason_; }
 
   base::string16 GetWindowTitle() { return view_->GetWindowTitle(); }
 
@@ -119,13 +123,26 @@ class PageInfoBubbleViewTestApi {
     CreateView();
   }
 
+  void WaitForBubbleClose() { run_loop_.Run(); }
+
  private:
+  void OnPageInfoBubbleClosed(base::RepeatingCallback<void()> quit_closure,
+                              views::Widget::ClosedReason closed_reason,
+                              bool reload_prompt) {
+    closed_reason_ = closed_reason;
+    reload_prompt_ = reload_prompt;
+    quit_closure.Run();
+  }
+
   PageInfoBubbleView* view_;  // Weak. Owned by its Widget.
 
   // For recreating the view.
   gfx::NativeView parent_;
   Profile* profile_;
   content::WebContents* web_contents_;
+  base::RunLoop run_loop_;
+  base::Optional<bool> reload_prompt_;
+  base::Optional<views::Widget::ClosedReason> closed_reason_;
 
   DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleViewTestApi);
 };
@@ -628,4 +645,13 @@ TEST_F(PageInfoBubbleViewTest, OpenPageInfoBubbleAfterNavigationStart) {
   navigation->Commit();
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURE_SUMMARY),
             api_->GetWindowTitle());
+}
+
+TEST_F(PageInfoBubbleViewTest, EnsureCloseCallback) {
+  api_->view()->GetWidget()->CloseWithReason(
+      views::Widget::ClosedReason::kCloseButtonClicked);
+  api_->WaitForBubbleClose();
+  EXPECT_EQ(false, api_->reload_prompt());
+  EXPECT_EQ(views::Widget::ClosedReason::kCloseButtonClicked,
+            api_->closed_reason());
 }

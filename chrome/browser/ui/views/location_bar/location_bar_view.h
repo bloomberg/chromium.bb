@@ -304,6 +304,10 @@ class LocationBarView : public LocationBar,
   // Gets the OmniboxPopupView associated with the model in |omnibox_view_|.
   OmniboxPopupView* GetOmniboxPopupView();
 
+  // Called when the page info bubble is closed.
+  void OnPageInfoBubbleClosed(views::Widget::ClosedReason closed_reason,
+                              bool reload_prompt);
+
   // LocationBar:
   GURL GetDestinationURL() const override;
   WindowOpenDisposition GetWindowOpenDisposition() const override;
@@ -449,11 +453,7 @@ class LocationBarView : public LocationBar,
                  ui::MaterialDesignControllerObserver>
       md_observer_{this};
 
-  // Used to scope the lifetime of asynchronous icon fetch callbacks to the
-  // lifetime of the object. Weak pointers issued by this factory are
-  // invalidated whenever we start a new icon fetch, so don't use this weak
-  // factory for any other purposes.
-  base::WeakPtrFactory<LocationBarView> icon_fetch_weak_ptr_factory_{this};
+  base::WeakPtrFactory<LocationBarView> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarView);
 };
