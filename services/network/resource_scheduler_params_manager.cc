@@ -56,17 +56,17 @@ GetParamsForNetworkQualityContainer() {
   result.emplace(std::make_pair(
       net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
       ResourceSchedulerParamsManager::ParamsForNetworkQuality(
-          8, 3.0, true /* delay_requests_on_multiplexed_connections */,
+          8, 3.0, false /* delay_requests_on_multiplexed_connections */,
           base::nullopt)));
   result.emplace(std::make_pair(
       net::EFFECTIVE_CONNECTION_TYPE_2G,
       ResourceSchedulerParamsManager::ParamsForNetworkQuality(
-          8, 3.0, true /* delay_requests_on_multiplexed_connections */,
+          8, 3.0, false /* delay_requests_on_multiplexed_connections */,
           base::nullopt)));
   result.emplace(std::make_pair(
       net::EFFECTIVE_CONNECTION_TYPE_3G,
       ResourceSchedulerParamsManager::ParamsForNetworkQuality(
-          8, 3.0, true /* delay_requests_on_multiplexed_connections */,
+          8, 3.0, false /* delay_requests_on_multiplexed_connections */,
           base::nullopt)));
 
   for (int config_param_index = 1; config_param_index <= 20;
