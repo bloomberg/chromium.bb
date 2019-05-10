@@ -17,6 +17,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/syslog_logging.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/win/registry.h"
@@ -174,7 +175,7 @@ std::vector<RulesetSource> BrowserSwitcherServiceWin::GetRulesetSources() {
   if (!sitelist_url.is_valid())
     return sources;
   sources.emplace_back(
-      sitelist_url,
+      sitelist_url, /* invert_rules */ false,
       base::BindOnce(&BrowserSwitcherServiceWin::OnIeemSitelistParsed,
                      weak_ptr_factory_.GetWeakPtr()));
   return sources;
@@ -207,7 +208,7 @@ GURL BrowserSwitcherServiceWin::GetIeemSitelistUrl() {
 
 void BrowserSwitcherServiceWin::OnIeemSitelistParsed(ParsedXml xml) {
   if (xml.error) {
-    LOG(ERROR) << "Unable to parse IEEM SiteList: " << *xml.error;
+    SYSLOG(ERROR) << "Unable to parse IEEM SiteList: " << *xml.error;
   } else {
     VLOG(2) << "Done parsing IEEM SiteList. "
             << "Applying rules to future navigations.";

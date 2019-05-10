@@ -81,6 +81,10 @@ class BrowserSwitcherPrefs : public KeyedService,
   // not managed, returns an invalid URL.
   GURL GetExternalSitelistUrl() const;
 
+  // Returns the URL to download for an external XML greylist. If the pref is
+  // not managed, returns an invalid URL.
+  GURL GetExternalGreylistUrl() const;
+
 #if defined(OS_WIN)
   // Returns true if Chrome should download and apply the XML sitelist from
   // IEEM's SiteList policy. If the pref is not managed, returns false.
@@ -167,6 +171,7 @@ extern const char kKeepLastTab[];
 extern const char kUrlList[];
 extern const char kUrlGreylist[];
 extern const char kExternalSitelistUrl[];
+extern const char kExternalGreylistUrl[];
 
 #if defined(OS_WIN)
 extern const char kUseIeSitelist[];

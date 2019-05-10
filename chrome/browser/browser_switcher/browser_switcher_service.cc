@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/syslog_logging.h"
 #include "chrome/browser/browser_switcher/alternative_browser_driver.h"
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #include "chrome/browser/browser_switcher/browser_switcher_sitelist.h"
@@ -74,8 +75,11 @@ constexpr net::NetworkTrafficAnnotationTag traffic_annotation =
 
 RulesetSource::RulesetSource(
     GURL url_,
+    bool contains_inverted_rules_,
     base::OnceCallback<void(ParsedXml xml)> parsed_callback_)
-    : url(std::move(url_)), parsed_callback(std::move(parsed_callback_)) {}
+    : url(std::move(url_)),
+      contains_inverted_rules(contains_inverted_rules_),
+      parsed_callback(std::move(parsed_callback_)) {}
 
 RulesetSource::RulesetSource(RulesetSource&&) = default;
 
@@ -126,7 +130,7 @@ network::mojom::URLLoaderFactory* XmlDownloader::GetURLLoaderFactoryForURL(
 void XmlDownloader::ParseXml(RulesetSource* source,
                              std::unique_ptr<std::string> bytes) {
   if (!bytes) {
-    DoneParsing(source, ParsedXml({}, {}, "could not fetch XML"));
+    DoneParsing(source, ParsedXml({}, "could not fetch XML"));
     return;
   }
   ParseIeemXml(*bytes, base::BindOnce(&XmlDownloader::DoneParsing,
@@ -136,6 +140,15 @@ void XmlDownloader::ParseXml(RulesetSource* source,
 
 void XmlDownloader::DoneParsing(RulesetSource* source, ParsedXml xml) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Greylists can't contain any negative rules, so remove the leading "!".
+  if (source->contains_inverted_rules) {
+    for (auto& rule : xml.rules) {
+      if (base::StartsWith(rule, "!", base::CompareCase::SENSITIVE))
+        rule.erase(0, 1);
+    }
+  }
+
   if (xml.error)
     LOG(ERROR) << *xml.error;
   std::move(source->parsed_callback).Run(std::move(xml));
@@ -205,13 +218,23 @@ void BrowserSwitcherService::SetSitelistForTesting(
 
 std::vector<RulesetSource> BrowserSwitcherService::GetRulesetSources() {
   std::vector<RulesetSource> sources;
-  GURL external_url = prefs_.GetExternalSitelistUrl();
-  if (!external_url.is_valid())
-    return sources;
-  sources.emplace_back(
-      external_url,
-      base::BindOnce(&BrowserSwitcherService::OnExternalSitelistParsed,
-                     weak_ptr_factory_.GetWeakPtr()));
+
+  GURL sitelist_url = prefs_.GetExternalSitelistUrl();
+  if (sitelist_url.is_valid()) {
+    sources.emplace_back(
+        sitelist_url, /* invert_rules */ false,
+        base::BindOnce(&BrowserSwitcherService::OnExternalSitelistParsed,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  GURL greylist_url = prefs_.GetExternalGreylistUrl();
+  if (greylist_url.is_valid()) {
+    sources.emplace_back(
+        greylist_url, /* invert_rules */ true,
+        base::BindOnce(&BrowserSwitcherService::OnExternalGreylistParsed,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+
   return sources;
 }
 
@@ -221,11 +244,21 @@ void BrowserSwitcherService::OnAllRulesetsParsed() {
 
 void BrowserSwitcherService::OnExternalSitelistParsed(ParsedXml xml) {
   if (xml.error) {
-    LOG(ERROR) << "Unable to parse IEEM SiteList: " << *xml.error;
+    SYSLOG(INFO) << "Unable to parse IEEM SiteList: " << *xml.error;
   } else {
-    VLOG(2) << "Done parsing external SiteList. "
+    VLOG(2) << "Done parsing external SiteList for sitelist rules. "
             << "Applying rules to future navigations.";
     sitelist()->SetExternalSitelist(std::move(xml));
+  }
+}
+
+void BrowserSwitcherService::OnExternalGreylistParsed(ParsedXml xml) {
+  if (xml.error) {
+    SYSLOG(INFO) << "Unable to parse IEEM SiteList: " << *xml.error;
+  } else {
+    VLOG(2) << "Done parsing external SiteList for greylist rules. "
+            << "Applying rules to future navigations.";
+    sitelist()->SetExternalGreylist(std::move(xml));
   }
 }
 

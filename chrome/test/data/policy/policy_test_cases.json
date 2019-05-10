@@ -4804,6 +4804,16 @@
     ]
   },
 
+  "BrowserSwitcherExternalGreylistUrl": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": {
+      "BrowserSwitcherExternalGreylistUrl": "file:///C:/src/greylist.xml"
+    },
+    "pref_mappings": [
+      { "pref": "browser_switcher.external_greylist_url" }
+    ]
+  },
+
   "BrowserSwitcherDelay": {
     "os": ["win", "linux", "mac"],
     "test_policy": {

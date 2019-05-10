@@ -343,6 +343,41 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
   run_loop.Run();
 }
 
+IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
+                       ExternalGreylistFetchAndParseAfterStartup) {
+  policy::PolicyMap policies;
+  EnableBrowserSwitcher(&policies);
+  auto url_list = std::make_unique<base::ListValue>();
+  url_list->GetList().emplace_back("*");
+  SetPolicy(&policies, policy::key::kBrowserSwitcherUrlList,
+            std::move(url_list));
+  SetPolicy(&policies, policy::key::kBrowserSwitcherExternalGreylistUrl,
+            std::make_unique<base::Value>(kAValidUrl));
+  policy_provider().UpdateChromePolicy(policies);
+  base::RunLoop().RunUntilIdle();
+
+  content::URLLoaderInterceptor interceptor(
+      base::BindRepeating(ReturnValidXml));
+
+  // Execute everything and make sure the rules are applied correctly.
+  auto* service =
+      BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](BrowserSwitcherService* service, base::OnceClosure quit) {
+            EXPECT_TRUE(ShouldSwitch(service, GURL("http://google.com/")));
+            EXPECT_FALSE(
+                ShouldSwitch(service, GURL("http://docs.google.com/")));
+            EXPECT_TRUE(ShouldSwitch(service, GURL("http://yahoo.com/")));
+            std::move(quit).Run();
+          },
+          service, run_loop.QuitClosure()),
+      TestTimeouts::action_timeout());
+  run_loop.Run();
+}
+
 #if defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, IeemSitelistInvalidUrl) {
   SetUseIeSitelist(true);

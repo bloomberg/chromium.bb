@@ -240,22 +240,28 @@ Decision BrowserSwitcherSitelistImpl::GetDecisionImpl(const GURL& url) const {
 void BrowserSwitcherSitelistImpl::SetIeemSitelist(ParsedXml&& parsed_xml) {
   DCHECK(!parsed_xml.error);
 
-  UMA_HISTOGRAM_COUNTS_100000(
-      "BrowserSwitcher.IeemSitelistSize",
-      parsed_xml.sitelist.size() + parsed_xml.greylist.size());
+  UMA_HISTOGRAM_COUNTS_100000("BrowserSwitcher.IeemSitelistSize",
+                              parsed_xml.rules.size());
 
-  ieem_sitelist_.sitelist = std::move(parsed_xml.sitelist);
-  ieem_sitelist_.greylist = std::move(parsed_xml.greylist);
+  ieem_sitelist_.sitelist = std::move(parsed_xml.rules);
 }
 
 void BrowserSwitcherSitelistImpl::SetExternalSitelist(ParsedXml&& parsed_xml) {
   DCHECK(!parsed_xml.error);
 
   UMA_HISTOGRAM_COUNTS_100000("BrowserSwitcher.ExternalSitelistSize",
-                              parsed_xml.sitelist.size());
+                              parsed_xml.rules.size());
 
-  external_sitelist_.sitelist = std::move(parsed_xml.sitelist);
-  external_sitelist_.greylist = std::move(parsed_xml.greylist);
+  external_sitelist_.sitelist = std::move(parsed_xml.rules);
+}
+
+void BrowserSwitcherSitelistImpl::SetExternalGreylist(ParsedXml&& parsed_xml) {
+  DCHECK(!parsed_xml.error);
+
+  UMA_HISTOGRAM_COUNTS_100000("BrowserSwitcher.ExternalGreylistSize",
+                              parsed_xml.rules.size());
+
+  external_sitelist_.greylist = std::move(parsed_xml.rules);
 }
 
 const RuleSet* BrowserSwitcherSitelistImpl::GetIeemSitelist() const {

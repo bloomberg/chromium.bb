@@ -222,21 +222,28 @@ TEST_F(BrowserSwitcherSitelistTest, ShouldIgnoreNonManagedPrefs) {
 TEST_F(BrowserSwitcherSitelistTest, SetIeemSitelist) {
   Initialize({}, {});
   ParsedXml ieem;
-  ieem.sitelist = {"example.com"};
-  ieem.greylist = {"foo.example.com"};
+  ieem.rules = {"example.com"};
   sitelist()->SetIeemSitelist(std::move(ieem));
   EXPECT_TRUE(ShouldSwitch(GURL("http://example.com/")));
   EXPECT_TRUE(ShouldSwitch(GURL("http://bar.example.com/")));
-  EXPECT_FALSE(ShouldSwitch(GURL("http://foo.example.com/")));
   EXPECT_FALSE(ShouldSwitch(GURL("http://google.com/")));
 }
 
 TEST_F(BrowserSwitcherSitelistTest, SetExternalSitelist) {
   Initialize({}, {});
   ParsedXml external;
-  external.sitelist = {"example.com"};
-  external.greylist = {"foo.example.com"};
+  external.rules = {"example.com"};
   sitelist()->SetExternalSitelist(std::move(external));
+  EXPECT_TRUE(ShouldSwitch(GURL("http://example.com/")));
+  EXPECT_TRUE(ShouldSwitch(GURL("http://bar.example.com/")));
+  EXPECT_FALSE(ShouldSwitch(GURL("http://google.com/")));
+}
+
+TEST_F(BrowserSwitcherSitelistTest, SetExternalGreylist) {
+  Initialize({"example.com"}, {});
+  ParsedXml external;
+  external.rules = {"foo.example.com"};
+  sitelist()->SetExternalGreylist(std::move(external));
   EXPECT_TRUE(ShouldSwitch(GURL("http://example.com/")));
   EXPECT_TRUE(ShouldSwitch(GURL("http://bar.example.com/")));
   EXPECT_FALSE(ShouldSwitch(GURL("http://foo.example.com/")));
@@ -246,22 +253,18 @@ TEST_F(BrowserSwitcherSitelistTest, SetExternalSitelist) {
 TEST_F(BrowserSwitcherSitelistTest, All3Sources) {
   Initialize({"google.com"}, {"mail.google.com"});
   ParsedXml ieem;
-  ieem.sitelist = {"example.com"};
-  ieem.greylist = {"foo.example.com"};
+  ieem.rules = {"example.com"};
   sitelist()->SetIeemSitelist(std::move(ieem));
   ParsedXml external;
-  external.sitelist = {"yahoo.com"};
-  external.greylist = {"finance.yahoo.com"};
+  external.rules = {"yahoo.com"};
   sitelist()->SetExternalSitelist(std::move(external));
   EXPECT_TRUE(ShouldSwitch(GURL("http://google.com/")));
   EXPECT_TRUE(ShouldSwitch(GURL("http://drive.google.com/")));
   EXPECT_FALSE(ShouldSwitch(GURL("http://mail.google.com/")));
   EXPECT_TRUE(ShouldSwitch(GURL("http://example.com/")));
   EXPECT_TRUE(ShouldSwitch(GURL("http://bar.example.com/")));
-  EXPECT_FALSE(ShouldSwitch(GURL("http://foo.example.com/")));
   EXPECT_TRUE(ShouldSwitch(GURL("http://yahoo.com/")));
   EXPECT_TRUE(ShouldSwitch(GURL("http://news.yahoo.com/")));
-  EXPECT_FALSE(ShouldSwitch(GURL("http://finance.yahoo.com/")));
 }
 
 TEST_F(BrowserSwitcherSitelistTest, BrowserSwitcherDisabled) {

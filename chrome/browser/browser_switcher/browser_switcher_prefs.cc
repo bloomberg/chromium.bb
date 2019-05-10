@@ -71,6 +71,7 @@ BrowserSwitcherPrefs::BrowserSwitcherPrefs(
     prefs::kUrlList,
     prefs::kUrlGreylist,
     prefs::kExternalSitelistUrl,
+    prefs::kExternalGreylistUrl,
 #if defined(OS_WIN)
     prefs::kUseIeSitelist,
     prefs::kChromePath,
@@ -105,6 +106,7 @@ void BrowserSwitcherPrefs::RegisterProfilePrefs(
   registry->RegisterListPref(prefs::kUrlList);
   registry->RegisterListPref(prefs::kUrlGreylist);
   registry->RegisterStringPref(prefs::kExternalSitelistUrl, "");
+  registry->RegisterStringPref(prefs::kExternalGreylistUrl, "");
 #if defined(OS_WIN)
   registry->RegisterBooleanPref(prefs::kUseIeSitelist, false);
   registry->RegisterStringPref(prefs::kChromePath, "");
@@ -142,6 +144,12 @@ GURL BrowserSwitcherPrefs::GetExternalSitelistUrl() const {
   if (!prefs_->IsManagedPreference(prefs::kExternalSitelistUrl))
     return GURL();
   return GURL(prefs_->GetString(prefs::kExternalSitelistUrl));
+}
+
+GURL BrowserSwitcherPrefs::GetExternalGreylistUrl() const {
+  if (!prefs_->IsManagedPreference(prefs::kExternalGreylistUrl))
+    return GURL();
+  return GURL(prefs_->GetString(prefs::kExternalGreylistUrl));
 }
 
 #if defined(OS_WIN)
@@ -293,6 +301,9 @@ const char kUrlGreylist[] = "browser_switcher.url_greylist";
 
 // URL with an external XML sitelist file to load.
 const char kExternalSitelistUrl[] = "browser_switcher.external_sitelist_url";
+
+// URL with an external XML greylist file to load.
+const char kExternalGreylistUrl[] = "browser_switcher.external_greylist_url";
 
 #if defined(OS_WIN)
 // If set to true, use the IE Enterprise Mode Sitelist policy.

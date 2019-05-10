@@ -77,6 +77,11 @@ class BrowserSwitcherSitelist {
   // Consumes the object, and performs no copy.
   virtual void SetExternalSitelist(ParsedXml&& sitelist) = 0;
 
+  // Set the XML sitelist file to use, in addition to Chrome's sitelist/greylist
+  // policies. This XML file is in the same format as an IEEM sitelist.
+  // Consumes the object, and performs no copy.
+  virtual void SetExternalGreylist(ParsedXml&& sitelist) = 0;
+
   virtual const RuleSet* GetIeemSitelist() const = 0;
   virtual const RuleSet* GetExternalSitelist() const = 0;
 };
@@ -93,6 +98,7 @@ class BrowserSwitcherSitelistImpl : public BrowserSwitcherSitelist {
   Decision GetDecision(const GURL& url) const override;
   void SetIeemSitelist(ParsedXml&& sitelist) override;
   void SetExternalSitelist(ParsedXml&& sitelist) override;
+  void SetExternalGreylist(ParsedXml&& greylist) override;
   const RuleSet* GetIeemSitelist() const override;
   const RuleSet* GetExternalSitelist() const override;
 

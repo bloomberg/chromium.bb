@@ -735,6 +735,7 @@
         'BrowserSwitcherDelay',
         'BrowserSwitcherEnabled',
         'BrowserSwitcherExternalSitelistUrl',
+        'BrowserSwitcherExternalGreylistUrl',
         'BrowserSwitcherKeepLastChromeTab',
         'BrowserSwitcherUrlList',
         'BrowserSwitcherUrlGreylist',
@@ -14776,7 +14777,7 @@
       'tags': [],
       'desc': '''This policy controls the list of websites that will never cause a browser switch.
 
-      Note that elements can also be added to this list through the <ph name="USE_IE_SITELIST_POLICY_NAME">BrowserSwitcherUseIeSitelist</ph> and <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME">BrowserSwitcherExternalSitelistUrl</ph> policies.
+      Note that elements can also be added to this list through the <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME">BrowserSwitcherExternalGreylistUrl</ph> policy.
 
       When this policy is left unset, no websites are added to the list.
 
@@ -14823,6 +14824,29 @@
       When this policy is left unset, or not set to a valid URL, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> does not use it as a source of rules for switching browsers.
 
       When this policy is set to a valid URL, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> downloads the site list from that URL, and applies the rules as if they had been configured with the <ph name="SITELIST_POLICY_NAME">BrowserSwitcherUrlList</ph> policy.
+
+      For more information on Internet Explorer's <ph name="IEEM_SITELIST_POLICY">SiteList</ph> policy: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode''',
+    },
+    {
+      'id': 564,
+      'name': 'BrowserSwitcherExternalGreylistUrl',
+      'type': 'string',
+      'schema': { 'type': 'string' },
+      'example_value': 'http://example.com/greylist.xml',
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'supported_on': ['chrome.*:76-'],
+      'caption': '''URL of an XML file that contains URLs that should never trigger a browser switch.''',
+      'tags': [],
+      'desc': '''This policy is a URL, that points to an XML file in the same format as Internet Explorer's <ph name="IEEM_SITELIST_POLICY">SiteList</ph> policy. This loads rules from an XML file, without sharing those rules with Internet Explorer.
+
+      The rules in this XML file apply in the same way as <ph name="GREYLIST_POLICY_NAME">BrowserSwitcherUrlGreylist</ph>. That is, these rules prevent <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from opening the alternative browser, and also prevent the alternative browser from opening <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      When this policy is left unset, or not set to a valid URL, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> does not use it as a source of rules that don't trigger a browser switch.
+
+      When this policy is set to a valid URL, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> downloads the site list from that URL, and applies the rules as if they had been configured with the <ph name="SITELIST_POLICY_NAME">BrowserSwitcherUrlGreylist</ph> policy.
 
       For more information on Internet Explorer's <ph name="IEEM_SITELIST_POLICY">SiteList</ph> policy: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode''',
     },
@@ -16533,6 +16557,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
         'BrowserSwitcherDelay',
         'BrowserSwitcherEnabled',
         'BrowserSwitcherExternalSitelistUrl',
+        'BrowserSwitcherExternalGreylistUrl',
         'BrowserSwitcherKeepLastChromeTab',
         'BrowserSwitcherUrlList',
         'BrowserSwitcherUrlGreylist',
@@ -16627,5 +16652,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546],
-  'highest_id_currently_used':  563
+  'highest_id_currently_used':  564
 }

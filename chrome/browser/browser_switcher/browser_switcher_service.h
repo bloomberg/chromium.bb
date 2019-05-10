@@ -32,12 +32,16 @@ class ParsedXml;
 // downloaded.
 struct RulesetSource {
   RulesetSource(GURL url_,
+                bool contains_inverted_rules,
                 base::OnceCallback<void(ParsedXml xml)> parsed_callback_);
   RulesetSource(RulesetSource&&);
   ~RulesetSource();
 
   // URL to download the ruleset from.
   GURL url;
+  // If true, all the rules are inverted before being passed to the
+  // callback. This is used for greylists.
+  bool contains_inverted_rules;
   // What to do once the URL download + parsing is complete (or failed).
   base::OnceCallback<void(ParsedXml xml)> parsed_callback;
 
@@ -108,6 +112,7 @@ class BrowserSwitcherService : public KeyedService {
  private:
   void StartDownload(Profile* profile);
   void OnExternalSitelistParsed(ParsedXml xml);
+  void OnExternalGreylistParsed(ParsedXml xml);
 
   std::unique_ptr<XmlDownloader> sitelist_downloader_;
 
