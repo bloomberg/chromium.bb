@@ -717,4 +717,54 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
       L"2",
       /*expected_count*/ -1);
 }
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       ExpandToEnclosingFormat) {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+      <body>
+        <div>plain</div>
+        <div>text</div>
+        <div style="font-style: italic">italic<div>
+        <div style="font-style: italic">text<div>
+      </body>
+      </html>)HTML");
+
+  auto* node = FindNode(ax::mojom::Role::kStaticText, "plain");
+  ASSERT_NE(nullptr, node);
+  EXPECT_TRUE(node->PlatformIsLeaf());
+  EXPECT_EQ(0u, node->PlatformChildCount());
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(text_range_provider, node);
+  ASSERT_NE(nullptr, text_range_provider.Get());
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"plain");
+
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Character,
+      /*count*/ 3,
+      /*expected_text*/ L"in",
+      /*expected_count*/ 3);
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->ExpandToEnclosingUnit(TextUnit_Format));
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"plaintext");
+
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Character,
+      /*count*/ 3,
+      /*expected_text*/ L"plaintextita",
+      /*expected_count*/ 3);
+
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Character,
+      /*count*/ 10,
+      /*expected_text*/ L"ta",
+      /*expected_count*/ 10);
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->ExpandToEnclosingUnit(TextUnit_Format));
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"italictext");
+}
 }  // namespace content

@@ -134,7 +134,11 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
       return S_OK;
     }
     case TextUnit_Format:
-      return E_NOTIMPL;
+      start_ = start_->CreatePreviousFormatStartPosition(
+          ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+      end_ = start_->CreateNextFormatEndPosition(
+          ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+      return S_OK;
     case TextUnit_Word:
       start_ = start_->CreatePreviousWordStartPosition(
           ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);

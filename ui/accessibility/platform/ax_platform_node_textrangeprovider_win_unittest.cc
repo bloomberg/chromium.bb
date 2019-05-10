@@ -851,6 +851,70 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
+       TestITextRangeProviderExpandToEnclosingFormat) {
+  Init(BuildAXTreeForMoveByFormat());
+  AXNodePosition::SetTreeForTesting(tree_.get());
+  AXNode* root_node = GetRootNode();
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(text_range_provider, root_node);
+
+  EXPECT_UIA_TEXTRANGE_EQ(
+      text_range_provider,
+      L"Text with formattingStandalone line with no formattingbold "
+      L"textParagraph 1Paragraph 2Paragraph 3");
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->ExpandToEnclosingUnit(TextUnit_Format));
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"Text with formatting");
+
+  // Set it up so that the text range is in the middle of a format boundary
+  // and expand by format.
+  int count;
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->Move(TextUnit_Character, /*count*/ 31, &count));
+  ASSERT_EQ(31, count);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"l");
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->ExpandToEnclosingUnit(TextUnit_Format));
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider,
+                          L"Standalone line with no formatting");
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->Move(TextUnit_Character, /*count*/ 35, &count));
+  ASSERT_EQ(35, count);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"o");
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->ExpandToEnclosingUnit(TextUnit_Format));
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"bold text");
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->Move(TextUnit_Character, /*count*/ 10, &count));
+  ASSERT_EQ(10, count);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"a");
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->ExpandToEnclosingUnit(TextUnit_Format));
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"Paragraph 1");
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->Move(TextUnit_Character, /*count*/ 15, &count));
+  ASSERT_EQ(15, count);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"g");
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->ExpandToEnclosingUnit(TextUnit_Format));
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"Paragraph 2Paragraph 3");
+
+  // Test expanding a degenerate range
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ -22, &count));
+  ASSERT_EQ(-22, count);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"");
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->ExpandToEnclosingUnit(TextUnit_Format));
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"Paragraph 2Paragraph 3");
+}
+
+TEST_F(AXPlatformNodeTextRangeProviderTest,
        TestITextRangeProviderExpandToEnclosingDocument) {
   Init(BuildTextDocument({"some text", "more text", "even more text"}));
   AXNodePosition::SetTreeForTesting(tree_.get());
