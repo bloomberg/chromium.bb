@@ -658,17 +658,30 @@ gfx::Rect BrowserAccessibility::GetInnerTextRangeBoundsRectInSubtree(
         InternalGetChild(i);
     const int child_inner_text_length =
         browser_accessibility_child->GetInnerText().length();
+
+    // The text bounds queried are not in this subtree; skip it and continue.
+    const int child_start_offset =
+        std::max(start_offset - child_offset_in_parent, 0);
+    if (child_start_offset > child_inner_text_length)
+      continue;
+
+    // The text bounds queried have already been gathered; short circuit.
+    const int child_end_offset =
+        std::min(end_offset - child_offset_in_parent, child_inner_text_length);
+    if (child_end_offset < 0)
+      return bounds;
+
+    // Increase the text bounds by the subtree text bounds.
     const gfx::Rect child_bounds =
         browser_accessibility_child->GetInnerTextRangeBoundsRectInSubtree(
-            std::max(start_offset - child_offset_in_parent, 0),
-            std::min(end_offset - child_offset_in_parent,
-                     child_inner_text_length),
-            coordinate_system, clipping_behavior, offscreen_result);
-    child_offset_in_parent += child_inner_text_length;
+            child_start_offset, child_end_offset, coordinate_system,
+            clipping_behavior, offscreen_result);
     if (bounds.IsEmpty())
       bounds = child_bounds;
     else
       bounds.Union(child_bounds);
+
+    child_offset_in_parent += child_inner_text_length;
   }
 
   return bounds;
@@ -677,6 +690,7 @@ gfx::Rect BrowserAccessibility::GetInnerTextRangeBoundsRectInSubtree(
 gfx::RectF BrowserAccessibility::GetInlineTextRect(const int start_offset,
                                                    const int end_offset,
                                                    const int max_length) const {
+  DCHECK(start_offset >= 0 && end_offset >= 0 && start_offset <= end_offset);
   int local_start_offset = start_offset, local_end_offset = end_offset;
   const std::vector<int32_t>& character_offsets =
       GetIntListAttribute(ax::mojom::IntListAttribute::kCharacterOffsets);

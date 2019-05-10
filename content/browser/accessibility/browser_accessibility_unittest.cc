@@ -236,6 +236,24 @@ TEST_F(BrowserAccessibilityTest, GetInnerTextRangeBoundsRect) {
       root_accessible->PlatformGetChild(0);
   ASSERT_NE(nullptr, static_text_accessible);
 
+#ifdef OS_ANDROID
+  // Android disallows getting inner text from root accessibility nodes.
+  EXPECT_EQ(gfx::Rect(0, 0, 0, 0).ToString(),
+            root_accessible
+                ->GetInnerTextRangeBoundsRect(
+                    0, 1, ui::AXCoordinateSystem::kRootFrame,
+                    ui::AXClippingBehavior::kUnclipped)
+                .ToString());
+#else
+  // Validate the bounding box of 'H' from root.
+  EXPECT_EQ(gfx::Rect(100, 100, 6, 9).ToString(),
+            root_accessible
+                ->GetInnerTextRangeBoundsRect(
+                    0, 1, ui::AXCoordinateSystem::kRootFrame,
+                    ui::AXClippingBehavior::kUnclipped)
+                .ToString());
+#endif
+
   // Validate the bounding box of 'H' from static text.
   EXPECT_EQ(gfx::Rect(100, 100, 6, 9).ToString(),
             static_text_accessible
