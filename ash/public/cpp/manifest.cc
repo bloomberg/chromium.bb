@@ -29,6 +29,7 @@
 #include "ash/public/interfaces/night_light_controller.mojom.h"
 #include "ash/public/interfaces/note_taking_controller.mojom.h"
 #include "ash/public/interfaces/pref_connector.mojom.h"
+#include "ash/public/interfaces/process_creation_time_recorder.mojom.h"
 #include "ash/public/interfaces/shelf.mojom.h"
 #include "ash/public/interfaces/shelf_integration_test_api.mojom.h"
 #include "ash/public/interfaces/shutdown.mojom.h"
@@ -90,7 +91,8 @@ const service_manager::Manifest& GetManifest() {
                   mojom::KeyboardController, mojom::LocaleUpdateController,
                   mojom::LoginScreen, mojom::MediaController,
                   mojom::NewWindowController, mojom::NightLightController,
-                  mojom::NoteTakingController, mojom::ShelfController,
+                  mojom::NoteTakingController,
+                  mojom::ProcessCreationTimeRecorder, mojom::ShelfController,
                   mojom::ShutdownController, mojom::SystemTray,
                   mojom::TabletModeController, mojom::TrayAction,
                   mojom::VoiceInteractionController, mojom::VpnList,

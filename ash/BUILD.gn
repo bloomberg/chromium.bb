@@ -1361,7 +1361,6 @@ component("ash") {
     "//components/prefs",
     "//components/quirks",
     "//components/session_manager:base",
-    "//components/startup_metric_utils/browser:lib",
     "//components/strings",
     "//components/sync",
     "//components/user_manager",

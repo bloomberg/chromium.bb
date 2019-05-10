@@ -13,7 +13,6 @@ include_rules = [
   "+components/prefs",
   "+components/quirks",
   "+components/session_manager",
-  "+components/startup_metric_utils",
   "+components/strings",
   "+components/sync",
   "+components/ui_devtools",

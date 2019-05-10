@@ -9,6 +9,7 @@
 #include "ash/public/interfaces/shell_test_api.test-mojom.h"
 #include "ash/public/interfaces/status_area_widget_test_api.test-mojom.h"
 #include "ash/public/interfaces/system_tray_test_api.test-mojom.h"
+#include "ash/public/interfaces/time_to_first_present_recorder_test_api.test-mojom.h"
 #include "base/no_destructor.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
@@ -21,7 +22,8 @@ const service_manager::Manifest& GetManifestOverlayForTesting() {
               "test", service_manager::Manifest::InterfaceList<
                           mojom::LoginScreenTestApi, mojom::ShelfTestApi,
                           mojom::ShellTestApi, mojom::StatusAreaWidgetTestApi,
-                          mojom::SystemTrayTestApi>())
+                          mojom::SystemTrayTestApi,
+                          mojom::TimeToFirstPresentRecorderTestApi>())
           .Build()};
   return *manifest;
 }

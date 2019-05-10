@@ -8,17 +8,12 @@
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
-#include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/presentation_feedback.h"
 
 namespace ash {
-
-// static
-const char TimeToFirstPresentRecorder::kMetricName[] =
-    "Ash.ProcessCreationToFirstPresent";
 
 TimeToFirstPresentRecorder::TimeToFirstPresentRecorder(aura::Window* window) {
   aura::WindowTreeHost* window_tree_host = window->GetHost();
@@ -30,13 +25,42 @@ TimeToFirstPresentRecorder::TimeToFirstPresentRecorder(aura::Window* window) {
 
 TimeToFirstPresentRecorder::~TimeToFirstPresentRecorder() = default;
 
-void TimeToFirstPresentRecorder::DidPresentCompositorFrame(
-    const gfx::PresentationFeedback& feedback) {
-  const base::TimeDelta time_to_first_present =
-      feedback.timestamp - startup_metric_utils::MainEntryPointTicks();
-  UMA_HISTOGRAM_TIMES(kMetricName, time_to_first_present);
+void TimeToFirstPresentRecorder::Bind(
+    mojom::ProcessCreationTimeRecorderRequest request) {
+  // Process createion time should only be set once.
+  if (binding_.is_bound() || !process_creation_time_.is_null())
+    return;
+
+  binding_.Bind(std::move(request));
+}
+
+void TimeToFirstPresentRecorder::SetMainProcessCreationTime(
+    base::TimeTicks start_time) {
+  if (!process_creation_time_.is_null())
+    return;
+
+  process_creation_time_ = start_time;
+  LogTime();
+
+  // Process creation time should be set only once.
+  binding_.Close();
+}
+
+void TimeToFirstPresentRecorder::LogTime() {
+  if (present_time_.is_null() || process_creation_time_.is_null())
+    return;
+
+  UMA_HISTOGRAM_TIMES("Ash.ProcessCreationToFirstPresent",
+                      time_to_first_present());
   if (log_callback_)
     std::move(log_callback_).Run();
+}
+
+void TimeToFirstPresentRecorder::DidPresentCompositorFrame(
+    const gfx::PresentationFeedback& feedback) {
+  DCHECK(present_time_.is_null());  // This should only be called once.
+  present_time_ = feedback.timestamp;
+  LogTime();
 }
 
 }  // namespace ash

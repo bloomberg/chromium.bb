@@ -11,6 +11,7 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/interfaces/process_creation_time_recorder.mojom.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/task/post_task.h"
@@ -72,6 +73,20 @@
 #if BUILDFLAG(ENABLE_WAYLAND_SERVER)
 #include "chrome/browser/exo_parts.h"
 #endif
+
+namespace {
+
+void PushProcessCreationTimeToAsh() {
+  ash::mojom::ProcessCreationTimeRecorderPtr recorder;
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(ash::mojom::kServiceName, &recorder);
+  DCHECK(!startup_metric_utils::MainEntryPointTicks().is_null());
+  recorder->SetMainProcessCreationTime(
+      startup_metric_utils::MainEntryPointTicks());
+}
+
+}  // namespace
 
 namespace internal {
 
@@ -189,6 +204,8 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 #if BUILDFLAG(ENABLE_WAYLAND_SERVER)
   exo_parts_ = ExoParts::CreateIfNecessary();
 #endif
+
+  PushProcessCreationTimeToAsh();
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
