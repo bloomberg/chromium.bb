@@ -22,7 +22,6 @@
 #include "components/sync/driver/sync_user_settings_impl.h"
 #include "components/sync/test/fake_server/bookmark_entity_builder.h"
 #include "components/sync/test/fake_server/entity_builder_factory.h"
-#include "components/sync/test/fake_server/fake_server_http_post_provider.h"
 
 namespace {
 
@@ -441,39 +440,6 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
 
   GetClient(0)->StopSyncServiceWithoutClearingData();
   EXPECT_EQ(cache_guid, prefs.GetCacheGuid());
-}
-
-IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
-                       PRE_RestartDuringInitialSync) {
-  SetupSyncNoWaitingForCompletion();
-
-  // The intended scenario being tested involves an ongoing initial sync. This
-  // means a cache GUID has been generated, but the initial birthday hasn't been
-  // received yet (which is received from the server as part of the initial
-  // GetUpdates request).
-  SyncPrefs prefs(GetProfile(0)->GetPrefs());
-  ASSERT_NE("", prefs.GetCacheGuid());
-  ASSERT_EQ("", prefs.GetBirthday());
-
-  // Mimic a non-responding server (slow connection) during shutdown, to make
-  // sure test teardown logic doesn't fetch the birthday. This is asserted in
-  // the next test and would otherwise fail.
-  fake_server::FakeServerHttpPostProvider::SetNetworkDelay(
-      base::TimeDelta::Max());
-}
-
-IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
-                       RestartDuringInitialSync) {
-  ASSERT_TRUE(SetupClients());
-
-  SyncPrefs prefs(GetProfile(0)->GetPrefs());
-  ASSERT_NE("", prefs.GetCacheGuid());
-  ASSERT_EQ("", prefs.GetBirthday());
-
-  EXPECT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
-
-  ASSERT_NE("", prefs.GetCacheGuid());
-  EXPECT_NE("", prefs.GetBirthday());
 }
 
 class EnableDisableSingleClientSelfNotifyTest

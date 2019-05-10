@@ -15,7 +15,6 @@
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/time/time.h"
 #include "components/sync/engine/net/http_post_provider_factory.h"
 #include "components/sync/engine/net/http_post_provider_interface.h"
 
@@ -51,9 +50,6 @@ class FakeServerHttpPostProvider
   // Undoes the effects of DisableNetwork.
   static void EnableNetwork();
 
-  // Mimics a slow network: each request will be blocked for the specified time.
-  static void SetNetworkDelay(base::TimeDelta delay);
-
  protected:
   ~FakeServerHttpPostProvider() override;
 
@@ -64,7 +60,6 @@ class FakeServerHttpPostProvider
                                        std::string* response);
 
   static std::atomic_bool network_enabled_;
-  static std::atomic<base::TimeDelta> network_delay_;
 
   // |fake_server_| should only be dereferenced on the same thread as
   // |fake_server_task_runner_| runs on.
