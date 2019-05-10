@@ -100,7 +100,7 @@ void RecordRequestHeaderChanged(RequestHeaderType type) {
   UMA_HISTOGRAM_ENUMERATION("Extensions.WebRequest.RequestHeaderChanged", type);
 }
 
-bool IsStringLowerCaseASCII(const std::string& s) {
+bool IsStringLowerCaseASCII(base::StringPiece s) {
   return std::none_of(s.begin(), s.end(), base::IsAsciiUpper<char>);
 }
 
@@ -165,9 +165,10 @@ constexpr bool IsValidHeaderName(const char* str) {
   return true;
 }
 
-constexpr bool ValidateRequestHeaderEntries() {
-  for (size_t i = 0; i < base::size(kRequestHeaderEntries); ++i) {
-    if (!IsValidHeaderName(kRequestHeaderEntries[i].first))
+template <typename T>
+constexpr bool ValidateHeaderEntries(const T& entries) {
+  for (size_t i = 0; i < base::size(entries); ++i) {
+    if (!IsValidHeaderName(entries[i].first))
       return false;
   }
   return true;
@@ -178,7 +179,8 @@ static_assert(static_cast<size_t>(RequestHeaderType::kMaxValue) - 1 ==
                   base::size(kRequestHeaderEntries),
               "Invalid number of request header entries");
 
-static_assert(ValidateRequestHeaderEntries(), "Invalid request header entries");
+static_assert(ValidateHeaderEntries(kRequestHeaderEntries),
+              "Invalid request header entries");
 
 // Uses |record_func| to record |header|. If |header| is not recorded, false is
 // returned.
@@ -199,6 +201,116 @@ void RecordRequestHeader(const std::string& header,
       it != kHeaderMap->end() ? it->second : RequestHeaderType::kOther;
   record_func(type);
 }
+
+void RecordResponseHeaderChanged(ResponseHeaderType type) {
+  UMA_HISTOGRAM_ENUMERATION("Extensions.WebRequest.ResponseHeaderChanged",
+                            type);
+}
+
+void RecordResponseHeaderAdded(ResponseHeaderType type) {
+  UMA_HISTOGRAM_ENUMERATION("Extensions.WebRequest.ResponseHeaderAdded", type);
+}
+
+void RecordResponseHeaderRemoved(ResponseHeaderType type) {
+  UMA_HISTOGRAM_ENUMERATION("Extensions.WebRequest.ResponseHeaderRemoved",
+                            type);
+}
+
+using ResponseHeaderEntry = std::pair<const char*, ResponseHeaderType>;
+constexpr ResponseHeaderEntry kResponseHeaderEntries[] = {
+    {"accept-patch", ResponseHeaderType::kAcceptPatch},
+    {"accept-ranges", ResponseHeaderType::kAcceptRanges},
+    {"access-control-allow-credentials",
+     ResponseHeaderType::kAccessControlAllowCredentials},
+    {"access-control-allow-headers",
+     ResponseHeaderType::kAccessControlAllowHeaders},
+    {"access-control-allow-methods",
+     ResponseHeaderType::kAccessControlAllowMethods},
+    {"access-control-allow-origin",
+     ResponseHeaderType::kAccessControlAllowOrigin},
+    {"access-control-expose-headers",
+     ResponseHeaderType::kAccessControlExposeHeaders},
+    {"access-control-max-age", ResponseHeaderType::kAccessControlMaxAge},
+    {"age", ResponseHeaderType::kAge},
+    {"allow", ResponseHeaderType::kAllow},
+    {"alt-svc", ResponseHeaderType::kAltSvc},
+    {"cache-control", ResponseHeaderType::kCacheControl},
+    {"clear-site-data", ResponseHeaderType::kClearSiteData},
+    {"connection", ResponseHeaderType::kConnection},
+    {"content-disposition", ResponseHeaderType::kContentDisposition},
+    {"content-encoding", ResponseHeaderType::kContentEncoding},
+    {"content-language", ResponseHeaderType::kContentLanguage},
+    {"content-length", ResponseHeaderType::kContentLength},
+    {"content-location", ResponseHeaderType::kContentLocation},
+    {"content-range", ResponseHeaderType::kContentRange},
+    {"content-security-policy", ResponseHeaderType::kContentSecurityPolicy},
+    {"content-security-policy-report-only",
+     ResponseHeaderType::kContentSecurityPolicyReportOnly},
+    {"content-type", ResponseHeaderType::kContentType},
+    {"date", ResponseHeaderType::kDate},
+    {"etag", ResponseHeaderType::kETag},
+    {"expect-ct", ResponseHeaderType::kExpectCT},
+    {"expires", ResponseHeaderType::kExpires},
+    {"feature-policy", ResponseHeaderType::kFeaturePolicy},
+    {"keep-alive", ResponseHeaderType::kKeepAlive},
+    {"large-allocation", ResponseHeaderType::kLargeAllocation},
+    {"last-modified", ResponseHeaderType::kLastModified},
+    {"location", ResponseHeaderType::kLocation},
+    {"pragma", ResponseHeaderType::kPragma},
+    {"proxy-authenticate", ResponseHeaderType::kProxyAuthenticate},
+    {"proxy-connection", ResponseHeaderType::kProxyConnection},
+    {"public-key-pins", ResponseHeaderType::kPublicKeyPins},
+    {"public-key-pins-report-only",
+     ResponseHeaderType::kPublicKeyPinsReportOnly},
+    {"referrer-policy", ResponseHeaderType::kReferrerPolicy},
+    {"refresh", ResponseHeaderType::kRefresh},
+    {"retry-after", ResponseHeaderType::kRetryAfter},
+    {"sec-websocket-accept", ResponseHeaderType::kSecWebSocketAccept},
+    {"server", ResponseHeaderType::kServer},
+    {"server-timing", ResponseHeaderType::kServerTiming},
+    {"set-cookie", ResponseHeaderType::kSetCookie},
+    {"sourcemap", ResponseHeaderType::kSourceMap},
+    {"strict-transport-security", ResponseHeaderType::kStrictTransportSecurity},
+    {"timing-allow-origin", ResponseHeaderType::kTimingAllowOrigin},
+    {"tk", ResponseHeaderType::kTk},
+    {"trailer", ResponseHeaderType::kTrailer},
+    {"transfer-encoding", ResponseHeaderType::kTransferEncoding},
+    {"upgrade", ResponseHeaderType::kUpgrade},
+    {"vary", ResponseHeaderType::kVary},
+    {"via", ResponseHeaderType::kVia},
+    {"warning", ResponseHeaderType::kWarning},
+    {"www-authenticate", ResponseHeaderType::kWWWAuthenticate},
+    {"x-content-type-options", ResponseHeaderType::kXContentTypeOptions},
+    {"x-dns-prefetch-control", ResponseHeaderType::kXDNSPrefetchControl},
+    {"x-frame-options", ResponseHeaderType::kXFrameOptions},
+    {"x-xss-protection", ResponseHeaderType::kXXSSProtection},
+};
+
+void RecordResponseHeader(base::StringPiece header,
+                          void (*record_func)(ResponseHeaderType)) {
+  using HeaderMapType = base::flat_map<base::StringPiece, ResponseHeaderType>;
+  static const base::NoDestructor<HeaderMapType> kHeaderMap([] {
+    std::vector<std::pair<base::StringPiece, ResponseHeaderType>> entries;
+    entries.reserve(base::size(kResponseHeaderEntries));
+    for (const auto& entry : kResponseHeaderEntries)
+      entries.emplace_back(entry.first, entry.second);
+    return HeaderMapType(entries.begin(), entries.end());
+  }());
+
+  DCHECK(IsStringLowerCaseASCII(header));
+  auto it = kHeaderMap->find(header);
+  ResponseHeaderType type =
+      it != kHeaderMap->end() ? it->second : ResponseHeaderType::kOther;
+  record_func(type);
+}
+
+// All entries other than kOther and kNone are mapped.
+static_assert(static_cast<size_t>(ResponseHeaderType::kMaxValue) - 1 ==
+                  base::size(kResponseHeaderEntries),
+              "Invalid number of response header entries");
+
+static_assert(ValidateHeaderEntries(kResponseHeaderEntries),
+              "Invalid response header entries");
 
 }  // namespace
 
@@ -1299,26 +1411,54 @@ void MergeOnHeadersReceivedResponses(
     *allowed_unsafe_redirect_url = new_url;
   }
 
-  // TODO(https://crbug.com/827582): Remove once data is gathered.
-  bool set_cookie_modified = false;
-  for (const auto& header : added_headers) {
-    if (header.first == "set-cookie") {
-      set_cookie_modified = true;
-      break;
-    }
-  }
-  UMA_HISTOGRAM_BOOLEAN("Extensions.WebRequest.SetCookieResponseHeaderChanged",
-                        set_cookie_modified);
+  // Record metrics.
+  {
+    auto record_response_headers =
+        [](const std::set<base::StringPiece>& headers,
+           void (*record_func)(ResponseHeaderType)) {
+          if (headers.empty()) {
+            record_func(ResponseHeaderType::kNone);
+            return;
+          }
 
-  bool set_cookie_removed = false;
-  for (const auto& header : removed_headers) {
-    if (header.first == "set-cookie") {
-      set_cookie_removed = true;
-      break;
+          for (const auto& header : headers)
+            RecordResponseHeader(header, record_func);
+        };
+
+    std::set<base::StringPiece> modified_header_names;
+    std::set<base::StringPiece> added_header_names;
+    std::set<base::StringPiece> removed_header_names;
+    for (const ResponseHeader& header : added_headers) {
+      // Skip logging this header if this was subsequently removed by an
+      // extension.
+      if (!override_response_headers->get()->HasHeader(header.first))
+        continue;
+
+      if (original_response_headers->HasHeader(header.first))
+        modified_header_names.insert(header.first);
+      else
+        added_header_names.insert(header.first);
     }
+
+    for (const ResponseHeader& header : removed_headers) {
+      if (!override_response_headers->get()->HasHeader(header.first))
+        removed_header_names.insert(header.first);
+      else
+        modified_header_names.insert(header.first);
+    }
+
+    DCHECK(std::all_of(modified_header_names.begin(),
+                       modified_header_names.end(), IsStringLowerCaseASCII));
+    DCHECK(std::all_of(added_header_names.begin(), added_header_names.end(),
+                       IsStringLowerCaseASCII));
+    DCHECK(std::all_of(removed_header_names.begin(), removed_header_names.end(),
+                       IsStringLowerCaseASCII));
+
+    record_response_headers(modified_header_names,
+                            &RecordResponseHeaderChanged);
+    record_response_headers(added_header_names, &RecordResponseHeaderAdded);
+    record_response_headers(removed_header_names, &RecordResponseHeaderRemoved);
   }
-  UMA_HISTOGRAM_BOOLEAN("Extensions.WebRequest.SetCookieResponseHeaderRemoved",
-                        set_cookie_removed && !set_cookie_modified);
 }
 
 bool MergeOnAuthRequiredResponses(const EventResponseDeltas& deltas,

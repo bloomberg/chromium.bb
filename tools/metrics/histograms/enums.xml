@@ -58779,6 +58779,70 @@ Full version information for the fingerprint enum values:
   <int value="46" label="kXForwardedProto"/>
 </enum>
 
+<enum name="WebRequest.ResponseHeader">
+  <int value="0" label="kNone"/>
+  <int value="1" label="kOther"/>
+  <int value="2" label="kAcceptPatch"/>
+  <int value="3" label="kAcceptRanges"/>
+  <int value="4" label="kAccessControlAllowCredentials"/>
+  <int value="5" label="kAccessControlAllowHeaders"/>
+  <int value="6" label="kAccessControlAllowMethods"/>
+  <int value="7" label="kAccessControlAllowOrigin"/>
+  <int value="8" label="kAccessControlExposeHeaders"/>
+  <int value="9" label="kAccessControlMaxAge"/>
+  <int value="10" label="kAge"/>
+  <int value="11" label="kAllow"/>
+  <int value="12" label="kAltSvc"/>
+  <int value="13" label="kCacheControl"/>
+  <int value="14" label="kClearSiteData"/>
+  <int value="15" label="kConnection"/>
+  <int value="16" label="kContentDisposition"/>
+  <int value="17" label="kContentEncoding"/>
+  <int value="18" label="kContentLanguage"/>
+  <int value="19" label="kContentLength"/>
+  <int value="20" label="kContentLocation"/>
+  <int value="21" label="kContentRange"/>
+  <int value="22" label="kContentSecurityPolicy"/>
+  <int value="23" label="kContentSecurityPolicyReportOnly"/>
+  <int value="24" label="kContentType"/>
+  <int value="25" label="kDate"/>
+  <int value="26" label="kETag"/>
+  <int value="27" label="kExpectCT"/>
+  <int value="28" label="kExpires"/>
+  <int value="29" label="kFeaturePolicy"/>
+  <int value="30" label="kKeepAlive"/>
+  <int value="31" label="kLargeAllocation"/>
+  <int value="32" label="kLastModified"/>
+  <int value="33" label="kLocation"/>
+  <int value="34" label="kPragma"/>
+  <int value="35" label="kProxyAuthenticate"/>
+  <int value="36" label="kProxyConnection"/>
+  <int value="37" label="kPublicKeyPins"/>
+  <int value="38" label="kPublicKeyPinsReportOnly"/>
+  <int value="39" label="kReferrerPolicy"/>
+  <int value="40" label="kRefresh"/>
+  <int value="41" label="kRetryAfter"/>
+  <int value="42" label="kSecWebSocketAccept"/>
+  <int value="43" label="kServer"/>
+  <int value="44" label="kServerTiming"/>
+  <int value="45" label="kSetCookie"/>
+  <int value="46" label="kSourceMap"/>
+  <int value="47" label="kStrictTransportSecurity"/>
+  <int value="48" label="kTimingAllowOrigin"/>
+  <int value="49" label="kTk"/>
+  <int value="50" label="kTrailer"/>
+  <int value="51" label="kTransferEncoding"/>
+  <int value="52" label="kUpgrade"/>
+  <int value="53" label="kVary"/>
+  <int value="54" label="kVia"/>
+  <int value="55" label="kWarning"/>
+  <int value="56" label="kWWWAuthenticate"/>
+  <int value="57" label="kXContentTypeOptions"/>
+  <int value="58" label="kXDNSPrefetchControl"/>
+  <int value="59" label="kXFrameOptions"/>
+  <int value="60" label="kXXSSProtection"/>
+</enum>
+
 <enum name="WebRequestEventListenerFlag">
   <int value="0" label="Total"/>
   <int value="1" label="None"/>
