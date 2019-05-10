@@ -190,6 +190,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_host_test_interface.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
@@ -5959,6 +5960,22 @@ void RenderFrameHostImpl::GetVirtualAuthenticatorManager(
     }
   }
 #endif  // !defined(OS_ANDROID)
+}
+
+void RenderFrameHostImpl::RegisterAppCacheHost(
+    blink::mojom::AppCacheHostRequest host_request,
+    blink::mojom::AppCacheFrontendPtr frontend,
+    int32_t id) {
+  auto* appcache_service_impl = static_cast<AppCacheServiceImpl*>(
+      GetProcess()->GetStoragePartition()->GetAppCacheService());
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&AppCacheServiceImpl::RegisterHostForFrame,
+                     appcache_service_impl->AsWeakPtr(),
+                     std::move(host_request), frontend.PassInterface(), id,
+                     routing_id_, GetProcess()->GetID(),
+                     mojo::GetBadMessageCallback()));
 }
 
 std::unique_ptr<NavigationRequest>

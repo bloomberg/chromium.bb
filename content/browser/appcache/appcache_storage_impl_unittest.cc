@@ -1705,8 +1705,6 @@ class AppCacheStorageImplTest : public testing::Test {
 
   void Continue_Reinitialize(ReinitTestCase test_case) {
     const int kMockRenderFrameId = MSG_ROUTING_NONE;
-    backend_ =
-        std::make_unique<AppCacheBackendImpl>(service_.get(), kProcessId);
 
     if (test_case == CORRUPT_SQL_ON_INSTALL) {
       // Break the db file
@@ -1719,9 +1717,10 @@ class AppCacheStorageImplTest : public testing::Test {
         test_case == CORRUPT_SQL_ON_INSTALL) {
       // Try to create a new appcache, the resulting update job will
       // eventually fail when it gets to disk cache initialization.
-      backend_->RegisterHost(blink::mojom::AppCacheHostRequest(),
-                             BindFrontend(), 1, kMockRenderFrameId);
-      AppCacheHost* host1 = backend_->GetHost(1);
+      service_->RegisterHostForFrame(blink::mojom::AppCacheHostRequest(),
+                                     BindFrontend(), 1, kMockRenderFrameId,
+                                     kProcessId, GetBadMessageCallback());
+      AppCacheHost* host1 = service_->GetHost(kProcessId, 1);
       const GURL kEmptyPageUrl(GetMockUrl("empty.html"));
       host1->SetFirstPartyUrlForTesting(kEmptyPageUrl);
       host1->SelectCache(kEmptyPageUrl, blink::mojom::kAppCacheNoCacheId,
@@ -1731,9 +1730,10 @@ class AppCacheStorageImplTest : public testing::Test {
       // Try to access the existing cache manifest.
       // The URLRequestJob  will eventually fail when it gets to disk
       // cache initialization.
-      backend_->RegisterHost(blink::mojom::AppCacheHostRequest(),
-                             BindFrontend(), 2, kMockRenderFrameId);
-      AppCacheHost* host2 = backend_->GetHost(2);
+      service_->RegisterHostForFrame(blink::mojom::AppCacheHostRequest(),
+                                     BindFrontend(), 2, kMockRenderFrameId,
+                                     kProcessId, GetBadMessageCallback());
+      AppCacheHost* host2 = service_->GetHost(kProcessId, 2);
       network::ResourceRequest request;
       request.url = GetMockUrl("manifest");
       handler_ =
@@ -1766,20 +1766,21 @@ class AppCacheStorageImplTest : public testing::Test {
     if (test_case == CORRUPT_CACHE_ON_INSTALL ||
         test_case == CORRUPT_SQL_ON_INSTALL) {
       EXPECT_TRUE(frontend_.error_event_was_raised_);
-      AppCacheHost* host1 = backend_->GetHost(1);
+      AppCacheHost* host1 = service_->GetHost(kProcessId, 1);
       EXPECT_FALSE(host1->associated_cache());
       EXPECT_FALSE(host1->group_being_updated_.get());
       EXPECT_TRUE(host1->disabled_storage_reference_.get());
     } else {
       ASSERT_EQ(CORRUPT_CACHE_ON_LOAD_EXISTING, test_case);
-      AppCacheHost* host2 = backend_->GetHost(2);
+      AppCacheHost* host2 = service_->GetHost(kProcessId, 2);
       EXPECT_TRUE(host2->disabled_storage_reference_.get());
     }
 
     // Cleanup and claim victory.
+    service_->EraseHost(kProcessId, 1);
+    service_->EraseHost(kProcessId, 2);
     service_->RemoveObserver(observer_.get());
     handler_.reset();
-    backend_.reset();
     observer_.reset();
     TestFinished();
   }
@@ -1796,11 +1797,18 @@ class AppCacheStorageImplTest : public testing::Test {
 
   MockStorageDelegate* delegate() { return delegate_.get(); }
 
-  blink::mojom::AppCacheFrontendPtr BindFrontend() {
-    blink::mojom::AppCacheFrontendPtr result;
+  blink::mojom::AppCacheFrontendPtrInfo BindFrontend() {
+    blink::mojom::AppCacheFrontendPtrInfo result;
     frontend_bindings_.AddBinding(&frontend_, mojo::MakeRequest(&result));
     return result;
   }
+
+  mojo::ReportBadMessageCallback GetBadMessageCallback() {
+    return base::BindOnce(&AppCacheStorageImplTest::OnBadMessage,
+                          base::Unretained(this));
+  }
+
+  void OnBadMessage(const std::string& reason) { NOTREACHED(); }
 
   void MakeCacheAndGroup(const GURL& manifest_url,
                          int64_t group_id,

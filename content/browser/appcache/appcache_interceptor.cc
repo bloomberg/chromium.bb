@@ -52,7 +52,7 @@ void AppCacheInterceptor::SetExtraRequestInfo(net::URLRequest* request,
 
   // TODO(michaeln): An invalid host id is indicative of bad data
   // from a child process. How should we handle that here?
-  AppCacheHost* host = backend->GetHost(host_id);
+  AppCacheHost* host = service->GetHost(process_id, host_id);
   if (!host)
     return;
 
