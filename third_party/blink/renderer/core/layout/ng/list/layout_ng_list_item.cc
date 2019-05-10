@@ -170,6 +170,12 @@ int LayoutNGListItem::Value() const {
 LayoutNGListItem::MarkerType LayoutNGListItem::MarkerText(
     StringBuilder* text,
     MarkerTextFormat format) const {
+  if (IsMarkerImage()) {
+    if (format == kWithSuffix)
+      text->Append(' ');
+    return kStatic;
+  }
+
   const ComputedStyle& style = StyleRef();
   switch (style.ListStyleType()) {
     case EListStyleType::kNone:
