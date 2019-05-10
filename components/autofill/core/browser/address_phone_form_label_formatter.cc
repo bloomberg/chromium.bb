@@ -40,7 +40,8 @@ base::string16 AddressPhoneFormLabelFormatter::
         FieldTypeGroup focused_group) const {
   std::vector<base::string16> label_parts;
   if (focused_group != NAME) {
-    AddLabelPartIfNotEmpty(GetLabelName(profile, app_locale()), &label_parts);
+    AddLabelPartIfNotEmpty(GetLabelFullName(profile, app_locale()),
+                           &label_parts);
   }
 
   if (focused_group != PHONE_HOME) {

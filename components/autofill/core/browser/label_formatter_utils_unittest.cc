@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/browser/label_formatter_utils.h"
 
+#include "base/bind.h"
 #include "base/guid.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -19,24 +20,73 @@
 namespace autofill {
 namespace {
 
-TEST(LabelFormatterUtilsTest, ConstructLabelLine) {
-  EXPECT_EQ(base::string16(), ConstructLabelLine({}));
+TEST(LabelFormatterUtilsTest, HaveSameFirstNames_OneProfileAndNoFirstName) {
+  AutofillProfile profile =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile, "", "", "", "", "", "", "", "", "", "", "DE",
+                       "");
+  EXPECT_TRUE(HaveSameFirstNames({&profile}, "de"));
+}
 
-  base::string16 name = base::ASCIIToUTF16("Blaise Pascal");
-  base::string16 phone = base::ASCIIToUTF16("01 53 01 82 00");
-  base::string16 email = base::ASCIIToUTF16("b.pascal@orange.fr");
+TEST(LabelFormatterUtilsTest, HaveSameFirstNames_OneProfileAndFirstName) {
+  AutofillProfile profile =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile, "Maria", "", "", "", "", "", "", "", "", "",
+                       "DE", "");
+  EXPECT_TRUE(HaveSameFirstNames({&profile}, "de"));
+}
 
-  base::string16 separator =
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_SUGGESTION_LABEL_SEPARATOR);
+TEST(LabelFormatterUtilsTest, HaveSameFirstNames_NoFirstNames) {
+  AutofillProfile profile1 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile1, "", "", "Kirch", "", "", "", "", "", "", "",
+                       "DE", "");
+  AutofillProfile profile2 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile2, "", "", "Winckelmann", "", "", "", "", "", "",
+                       "", "DE", "");
+  EXPECT_TRUE(HaveSameFirstNames({&profile1, &profile2}, "de"));
+}
 
-  EXPECT_EQ(name, ConstructLabelLine({name}));
-  EXPECT_EQ(base::JoinString({name, separator, phone, separator, email},
-                             base::string16()),
-            ConstructLabelLine({name, phone, email}));
+TEST(LabelFormatterUtilsTest, HaveSameFirstNames_SameFirstNames) {
+  AutofillProfile profile1 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile1, "Maria", "", "Kirch", "", "", "", "", "", "",
+                       "", "DE", "");
+  AutofillProfile profile2 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile2, "Maria", "", "Winckelmann", "", "", "", "",
+                       "", "", "", "DE", "");
+  EXPECT_TRUE(HaveSameFirstNames({&profile1, &profile2}, "de"));
+}
+
+TEST(LabelFormatterUtilsTest, HaveSameFirstNames_DifferentNonEmptyFirstNames) {
+  AutofillProfile profile1 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile1, "Maria", "", "Kirch", "", "", "", "", "", "",
+                       "", "DE", "");
+  AutofillProfile profile2 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile2, "Mary", "", "Kirch", "", "", "", "", "", "",
+                       "", "DE", "");
+  EXPECT_FALSE(HaveSameFirstNames({&profile1, &profile2}, "de"));
+}
+
+TEST(LabelFormatterUtilsTest, HaveSameFirstNames_NonEmptyAndEmptyFirstNames) {
+  AutofillProfile profile1 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile1, "Maria", "Margaretha", "Kirch", "", "", "",
+                       "", "", "", "", "DE", "");
+  AutofillProfile profile2 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile2, "", "Margaretha", "Winckelmann", "", "", "",
+                       "", "", "", "", "DE", "");
+  EXPECT_FALSE(HaveSameFirstNames({&profile1, &profile2}, "de"));
+  EXPECT_FALSE(HaveSameFirstNames({&profile2, &profile1}, "de"));
 }
 
 TEST(LabelFormatterUtilsTest,
-     HaveSameEmailAddressesWithOneProfileAndNoEmailAddress) {
+     HaveSameEmailAddresses_OneProfileAndNoEmailAddress) {
   AutofillProfile profile =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Maria", "Margaretha", "Kirch",
@@ -45,7 +95,7 @@ TEST(LabelFormatterUtilsTest,
 }
 
 TEST(LabelFormatterUtilsTest,
-     HaveSameEmailAddressesWithOneProfileAndEmailAddress) {
+     HaveSameEmailAddresses_OneProfileAndEmailAddress) {
   AutofillProfile profile =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Maria", "Margaretha", "Kirch", "", "", "", "",
@@ -53,8 +103,7 @@ TEST(LabelFormatterUtilsTest,
   EXPECT_TRUE(HaveSameEmailAddresses({&profile}, "de"));
 }
 
-TEST(LabelFormatterUtilsTest,
-     HaveSameEmailAddressesWithProfilesAndNoEmailAddresses) {
+TEST(LabelFormatterUtilsTest, HaveSameEmailAddresses_NoEmailAddresses) {
   AutofillProfile profile1 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "Maria", "Margaretha", "Kirch", "", "", "",
@@ -66,8 +115,7 @@ TEST(LabelFormatterUtilsTest,
   EXPECT_TRUE(HaveSameEmailAddresses({&profile1, &profile2}, "de"));
 }
 
-TEST(LabelFormatterUtilsTest,
-     HaveSameEmailAddressesWithProfilesAndSameEmailAddresses) {
+TEST(LabelFormatterUtilsTest, HaveSameEmailAddresses_SameEmailAddresses) {
   AutofillProfile profile1 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "Maria", "Margaretha", "Kirch",
@@ -80,7 +128,7 @@ TEST(LabelFormatterUtilsTest,
 }
 
 TEST(LabelFormatterUtilsTest,
-     HaveSameEmailAddressesWithProfilesAndDifferentNonEmptyEmailAddresses) {
+     HaveSameEmailAddresses_DifferentNonEmptyEmailAddresses) {
   AutofillProfile profile1 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "Maria", "Margaretha", "Kirch",
@@ -93,7 +141,7 @@ TEST(LabelFormatterUtilsTest,
 }
 
 TEST(LabelFormatterUtilsTest,
-     HaveSameEmailAddressesWithProfilesAndNonEmptyAndEmptyEmailAddresses) {
+     HaveSameEmailAddresses_NonEmptyAndEmptyEmailAddresses) {
   AutofillProfile profile1 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "Maria", "Margaretha", "Kirch",
@@ -106,8 +154,7 @@ TEST(LabelFormatterUtilsTest,
   EXPECT_FALSE(HaveSameEmailAddresses({&profile2, &profile1}, "de"));
 }
 
-TEST(LabelFormatterUtilsTest,
-     HaveSamePhoneNumbersWithOneProfileAndNoPhoneNumber) {
+TEST(LabelFormatterUtilsTest, HaveSamePhoneNumbers_OneProfileAndNoPhoneNumber) {
   AutofillProfile profile =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Maria", "Margaretha", "Kirch", "", "", "", "",
@@ -115,8 +162,7 @@ TEST(LabelFormatterUtilsTest,
   EXPECT_TRUE(HaveSamePhoneNumbers({&profile}, "de"));
 }
 
-TEST(LabelFormatterUtilsTest,
-     HaveSamePhoneNumbersWithOneProfileAndPhoneNumber) {
+TEST(LabelFormatterUtilsTest, HaveSamePhoneNumbers_OneProfileAndPhoneNumber) {
   AutofillProfile profile =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Maria", "Margaretha", "Kirch", "", "", "", "",
@@ -124,8 +170,7 @@ TEST(LabelFormatterUtilsTest,
   EXPECT_TRUE(HaveSamePhoneNumbers({&profile}, "de"));
 }
 
-TEST(LabelFormatterUtilsTest,
-     HaveSamePhoneNumbersWithProfilesAndNoPhoneNumber) {
+TEST(LabelFormatterUtilsTest, HaveSamePhoneNumbers_NoPhoneNumber) {
   AutofillProfile profile1 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "Maria", "Margaretha", "Kirch", "", "", "",
@@ -137,8 +182,7 @@ TEST(LabelFormatterUtilsTest,
   EXPECT_TRUE(HaveSamePhoneNumbers({&profile1, &profile2}, "de"));
 }
 
-TEST(LabelFormatterUtilsTest,
-     HaveSamePhoneNumbersWithProfilesAndSamePhoneNumbers) {
+TEST(LabelFormatterUtilsTest, HaveSamePhoneNumbers_SamePhoneNumbers) {
   AutofillProfile profile1 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "Maria", "Margaretha", "Kirch", "", "", "",
@@ -155,7 +199,7 @@ TEST(LabelFormatterUtilsTest,
 }
 
 TEST(LabelFormatterUtilsTest,
-     HaveSamePhoneNumbersWithProfilesAndDifferentNonEmptyPhoneNumbers) {
+     HaveSamePhoneNumbers_DifferentNonEmptyPhoneNumbers) {
   AutofillProfile profile1 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "Maria", "Margaretha", "Kirch", "", "", "",
@@ -168,7 +212,7 @@ TEST(LabelFormatterUtilsTest,
 }
 
 TEST(LabelFormatterUtilsTest,
-     HaveSamePhoneNumbersWithProfilesAndNonEmptyAndEmptyPhoneNumbers) {
+     HaveSamePhoneNumbers_NonEmptyAndEmptyPhoneNumbers) {
   AutofillProfile profile1 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "Maria", "Margaretha", "Kirch", "", "", "",

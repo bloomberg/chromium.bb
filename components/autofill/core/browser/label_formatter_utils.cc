@@ -8,6 +8,8 @@
 #include <iterator>
 #include <memory>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/address_i18n.h"
@@ -21,6 +23,38 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {
+namespace {
+
+// Returns true if all |profiles| have the same value for the data retrieved by
+// |get_data|.
+bool HaveSameData(
+    const std::vector<AutofillProfile*>& profiles,
+    const std::string& app_locale,
+    base::RepeatingCallback<base::string16(const AutofillProfile&,
+                                           const std::string&)> get_data,
+    base::RepeatingCallback<bool(const base::string16& str1,
+                                 const base::string16& str2)> matches) {
+  if (profiles.size() <= 1) {
+    return true;
+  }
+
+  const base::string16 first_profile_data =
+      get_data.Run(*profiles[0], app_locale);
+  for (size_t i = 1; i < profiles.size(); ++i) {
+    const base::string16 current_profile_data =
+        get_data.Run(*profiles[i], app_locale);
+    if (!matches.Run(first_profile_data, current_profile_data)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool Equals(const base::string16& str1, const base::string16& str2) {
+  return str1 == str2;
+}
+
+}  // namespace
 
 const int kStreetAddressFieldTypes[] = {
     ADDRESS_HOME_LINE1,          ADDRESS_HOME_LINE2,
@@ -126,11 +160,6 @@ AutofillProfile MakeTrimmedProfile(const AutofillProfile& profile,
   return trimmed_profile;
 }
 
-base::string16 GetLabelName(const AutofillProfile& profile,
-                            const std::string& app_locale) {
-  return profile.GetInfo(AutofillType(NAME_FULL), app_locale);
-}
-
 base::string16 GetLabelForFocusedAddress(
     ServerFieldType focused_field_type,
     bool form_has_street_address,
@@ -197,6 +226,16 @@ base::string16 GetLabelForProfileOnFocusedNonStreetAddress(
   return ConstructLabelLine(label_parts);
 }
 
+base::string16 GetLabelFullName(const AutofillProfile& profile,
+                                const std::string& app_locale) {
+  return profile.GetInfo(AutofillType(NAME_FULL), app_locale);
+}
+
+base::string16 GetLabelFirstName(const AutofillProfile& profile,
+                                 const std::string& app_locale) {
+  return profile.GetInfo(AutofillType(NAME_FIRST), app_locale);
+}
+
 base::string16 GetLabelEmail(const AutofillProfile& profile,
                              const std::string& app_locale) {
   const base::string16 email =
@@ -217,46 +256,35 @@ base::string16 GetLabelPhone(const AutofillProfile& profile,
 
 bool HaveSameEmailAddresses(const std::vector<AutofillProfile*>& profiles,
                             const std::string& app_locale) {
-  bool first_email_found = false;
-  base::string16 first_email;
+  return HaveSameData(profiles, app_locale, base::BindRepeating(&GetLabelEmail),
+                      base::BindRepeating(&Equals));
+}
 
-  for (const AutofillProfile* profile : profiles) {
-    base::string16 email_from_profile = GetLabelEmail(*profile, app_locale);
-
-    if (!first_email_found) {
-      // Store the first email address whether it's empty or not because we
-      // consider "" and "hao.le@aol.com" to be different email addresses.
-      first_email_found = true;
-      first_email = email_from_profile;
-    } else if (email_from_profile != first_email) {
-      return false;
-    }
-  }
-  return true;
+bool HaveSameFirstNames(const std::vector<AutofillProfile*>& profiles,
+                        const std::string& app_locale) {
+  return HaveSameData(profiles, app_locale,
+                      base::BindRepeating(&GetLabelFirstName),
+                      base::BindRepeating(&Equals));
 }
 
 bool HaveSamePhoneNumbers(const std::vector<AutofillProfile*>& profiles,
                           const std::string& app_locale) {
-  bool first_phone_found = false;
-  base::string16 first_phone;
+  // Note that the same country code is used in all comparisons.
+  auto equals = [](const std::string& country_code,
+                   const std::string& app_locale, const base::string16& phone1,
+                   const base::string16& phone2) -> bool {
+    return (phone1.empty() && phone2.empty()) ||
+           i18n::PhoneNumbersMatch(phone1, phone2, country_code, app_locale);
+  };
 
-  for (const AutofillProfile* profile : profiles) {
-    base::string16 phone_from_profile = GetLabelPhone(*profile, app_locale);
-
-    if (!first_phone_found) {
-      // Store the first phone number whether it's empty or not because we
-      // consider "" and "(514) 873-1100" to be different phone numbers.
-      first_phone_found = true;
-      first_phone = phone_from_profile;
-    } else if (!(first_phone.empty() && phone_from_profile.empty()) &&
-               !i18n::PhoneNumbersMatch(first_phone, phone_from_profile,
-                                        base::UTF16ToASCII(profile->GetInfo(
-                                            ADDRESS_HOME_COUNTRY, app_locale)),
-                                        app_locale)) {
-      return false;
-    }
-  }
-  return true;
+  return profiles.size() <= 1
+             ? true
+             : HaveSameData(
+                   profiles, app_locale, base::BindRepeating(&GetLabelPhone),
+                   base::BindRepeating(equals,
+                                       base::UTF16ToASCII(profiles[0]->GetInfo(
+                                           ADDRESS_HOME_COUNTRY, app_locale)),
+                                       app_locale));
 }
 
 }  // namespace autofill

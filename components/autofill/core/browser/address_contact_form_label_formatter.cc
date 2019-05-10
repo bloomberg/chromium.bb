@@ -37,7 +37,8 @@ base::string16 AddressContactFormLabelFormatter::GetLabelForProfile(
       !IsStreetAddressPart(focused_field_type());
 
   if (focused_group != NAME && !non_street_address_is_focused) {
-    AddLabelPartIfNotEmpty(GetLabelName(profile, app_locale()), &label_parts);
+    AddLabelPartIfNotEmpty(GetLabelFullName(profile, app_locale()),
+                           &label_parts);
   }
 
   if (!street_address_is_focused) {

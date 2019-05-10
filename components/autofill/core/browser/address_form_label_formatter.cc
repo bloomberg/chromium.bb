@@ -26,7 +26,8 @@ base::string16 AddressFormLabelFormatter::GetLabelForProfile(
                                    field_types_for_labels());
   } else {
     std::vector<base::string16> label_parts;
-    AddLabelPartIfNotEmpty(GetLabelName(profile, app_locale()), &label_parts);
+    AddLabelPartIfNotEmpty(GetLabelFullName(profile, app_locale()),
+                           &label_parts);
     AddLabelPartIfNotEmpty(GetLabelForFocusedAddress(
                                focused_field_type(), form_has_street_address_,
                                profile, app_locale(), field_types_for_labels()),

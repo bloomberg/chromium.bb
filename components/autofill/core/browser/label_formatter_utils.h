@@ -64,10 +64,6 @@ AutofillProfile MakeTrimmedProfile(const AutofillProfile& profile,
                                    const std::string& app_locale,
                                    const std::vector<ServerFieldType>& types);
 
-// Returns the full name associated with |profile|.
-base::string16 GetLabelName(const AutofillProfile& profile,
-                            const std::string& app_locale);
-
 // Returns either street-address data or non-street-address data found in
 // |profile|. If |focused_field_type| is a street address field, then returns
 // non-street-address data, e.g. Lowell, MA 01852.
@@ -122,6 +118,16 @@ base::string16 GetLabelForProfileOnFocusedNonStreetAddress(
     const std::vector<ServerFieldType>& types,
     const base::string16& contact_info);
 
+// Returns the full name associated with |profile|, if any; otherwise, returns
+// an empty string.
+base::string16 GetLabelFullName(const AutofillProfile& profile,
+                                const std::string& app_locale);
+
+// Returns the first name associated with |profile|, if any; otherwise, returns
+// an empty string.
+base::string16 GetLabelFirstName(const AutofillProfile& profile,
+                                 const std::string& app_locale);
+
 // Returns the email address associated with |profile|, if any; otherwise,
 // returns an empty string.
 base::string16 GetLabelEmail(const AutofillProfile& profile,
@@ -139,12 +145,17 @@ base::string16 GetLabelPhone(const AutofillProfile& profile,
 bool HaveSameEmailAddresses(const std::vector<AutofillProfile*>& profiles,
                             const std::string& app_locale);
 
+// Returns true if all |profiles| have the same first name. Note that names are
+// compared without normalization, so José and Jose are considered different
+// names.
+bool HaveSameFirstNames(const std::vector<AutofillProfile*>& profiles,
+                        const std::string& app_locale);
+
 // Returns true if all |profiles| have the same phone number after
 // normalization. Note that the absence of a phone number and an actual phone
 // number, e.g. (401) 847-8720, are considered different phone numbers.
 bool HaveSamePhoneNumbers(const std::vector<AutofillProfile*>& profiles,
                           const std::string& app_locale);
-
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_LABEL_FORMATTER_UTILS_H_
