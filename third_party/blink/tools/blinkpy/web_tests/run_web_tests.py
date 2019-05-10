@@ -46,6 +46,13 @@ _log = logging.getLogger(__name__)
 def main(argv, stderr):
     options, args = parse_args(argv)
 
+    # Disable LayoutNG unless explicitly enabled during transition period to
+    # avoid having to unnecessarily update test expectations every time the flag
+    # is flipped and to allow us to update expectations one bot at a time.
+    # TODO(eae): Remove once LayoutNG launches. https://crbug.com/961437
+    if not '--enable-blink-features=LayoutNG' in options.additional_driver_flag:
+        options.additional_driver_flag.append('--disable-blink-features=LayoutNG')
+
     if options.platform and 'test' in options.platform and not 'browser_test' in options.platform:
         # It's a bit lame to import mocks into real code, but this allows the user
         # to run tests against the test platform interactively, which is useful for
