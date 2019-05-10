@@ -19333,6 +19333,19 @@ Called by update_net_error_codes.py.-->
   <int value="24" label="UPDATE_NON_EXISTING_EXTENSION"/>
 </enum>
 
+<enum name="ExtensionInstallationDownloadingStage">
+  <int value="0" label="PENDING"/>
+  <int value="1" label="QUEUED_FOR_MANIFEST"/>
+  <int value="2" label="DOWNLOADING_MANIFEST"/>
+  <int value="3" label="DOWNLOADING_MANIFEST_RETRY"/>
+  <int value="4" label="PARSING_MANIFEST"/>
+  <int value="5" label="MANIFEST_LOADED"/>
+  <int value="6" label="QUEUED_FOR_CRX"/>
+  <int value="7" label="DOWNLOADING_CRX"/>
+  <int value="8" label="DOWNLOADING_CRX_RETRY"/>
+  <int value="9" label="FINISHED"/>
+</enum>
+
 <enum name="ExtensionInstallationFailureReason">
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="INVALID_ID"/>

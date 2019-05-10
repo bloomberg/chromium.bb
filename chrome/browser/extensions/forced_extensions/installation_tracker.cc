@@ -119,6 +119,13 @@ void InstallationTracker::ReportResults(bool succeeded) {
               installation.install_stage.value();
           UMA_HISTOGRAM_ENUMERATION("Extensions.ForceInstalledStage",
                                     install_stage);
+          if (install_stage == InstallationReporter::Stage::DOWNLOADING) {
+            DCHECK(installation.downloading_stage);
+            ExtensionDownloaderDelegate::Stage downloading_stage =
+                installation.downloading_stage.value();
+            UMA_HISTOGRAM_ENUMERATION(
+                "Extensions.ForceInstalledDownloadingStage", downloading_stage);
+          }
         }
         InstallationReporter::FailureReason failure_reason =
             installation.failure_reason.value_or(

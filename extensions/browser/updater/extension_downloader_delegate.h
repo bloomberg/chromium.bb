@@ -53,38 +53,45 @@ class ExtensionDownloaderDelegate {
   // download failed at least once already. So, this may result in sequence like
   // ... -> MANIFEST_LOADED -> QUEUED_FOR_CRX -> DOWNLOADING_CRX ->
   // DOWNLOADING_CRX_RETRY -> DOWNLOADING_CRX -> FINISHED.
+  // Note: enum used for UMA. Do NOT reorder or remove entries. Don't forget to
+  // update enums.xml (name: ExtensionInstallationDownloadingStage) when adding
+  // new entries.
   enum Stage {
     // Downloader just received extension download request.
-    PENDING,
+    PENDING = 0,
 
     // Extension is in manifest loading queue.
-    QUEUED_FOR_MANIFEST,
+    QUEUED_FOR_MANIFEST = 1,
 
     // There is an active request to download extension's manifest.
-    DOWNLOADING_MANIFEST,
+    DOWNLOADING_MANIFEST = 2,
 
     // There were one or more unsuccessful tries to download manifest, but we'll
     // try more.
-    DOWNLOADING_MANIFEST_RETRY,
+    DOWNLOADING_MANIFEST_RETRY = 3,
 
     // Manifest downloaded and is about to parse.
-    PARSING_MANIFEST,
+    PARSING_MANIFEST = 4,
 
     // Manifest downloaded and successfully parsed.
-    MANIFEST_LOADED,
+    MANIFEST_LOADED = 5,
 
     // Extension in CRX loading queue.
-    QUEUED_FOR_CRX,
+    QUEUED_FOR_CRX = 6,
 
     // There is an active request to download extension archive.
-    DOWNLOADING_CRX,
+    DOWNLOADING_CRX = 7,
 
     // There were one or more unsuccessful tries to download archive, but we'll
     // try more.
-    DOWNLOADING_CRX_RETRY,
+    DOWNLOADING_CRX_RETRY = 8,
 
     // Downloading finished, either successfully or not.
-    FINISHED,
+    FINISHED = 9,
+
+    // Magic constant used by the histogram macros.
+    // Always update it to the max value.
+    kMaxValue = FINISHED,
   };
 
   // Passed as an argument to the completion callbacks to signal whether
