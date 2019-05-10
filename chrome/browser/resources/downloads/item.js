@@ -442,6 +442,12 @@ cr.define('downloads', function() {
     },
 
     /** @private */
+    onUrlTap_: function() {
+      chrome.send('metricsHandler:recordAction',
+        ['Downloads_OpenUrlOfDownloadedItem']);
+    },
+
+    /** @private */
     onPauseOrResumeTap_: function() {
       if (this.isInProgress_) {
         this.mojoHandler_.pause(this.data.id);
