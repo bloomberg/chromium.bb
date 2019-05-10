@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "cc/base/switches.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_controller.h"
@@ -25,6 +26,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/hit_test_region_observer.h"
 #include "content/shell/browser/shell.h"
+#include "ui/base/ui_base_features.h"
 
 namespace {
 
@@ -172,6 +174,102 @@ class ScrollLatencyBrowserTest : public ContentBrowserTest {
     }
   }
 
+  void RunScrollbarButtonLatencyTest() {
+    // Click on the forward scrollbar button to induce a compositor thread
+    // scrollbar scroll.
+    blink::WebFloatPoint scrollbar_forward_button(795, 595);
+    blink::WebMouseEvent mouse_event = SyntheticWebMouseEventBuilder::Build(
+        blink::WebInputEvent::kMouseDown, scrollbar_forward_button.x,
+        scrollbar_forward_button.y, 0);
+    mouse_event.button = blink::WebMouseEvent::Button::kLeft;
+    mouse_event.SetTimeStamp(base::TimeTicks::Now());
+    GetWidgetHost()->ForwardMouseEvent(mouse_event);
+
+    mouse_event.SetType(blink::WebInputEvent::kMouseUp);
+    GetWidgetHost()->ForwardMouseEvent(mouse_event);
+
+    RunUntilInputProcessed(GetWidgetHost());
+
+    FetchHistogramsFromChildProcesses();
+    VerifyRecordedSamplesForHistogram(
+        1, "Event.Latency.ScrollBegin.Scrollbar.TimeToScrollUpdateSwapBegin4");
+    VerifyRecordedSamplesForHistogram(
+        1,
+        "Event.Latency.ScrollBegin.Scrollbar.RendererSwapToBrowserNotified2");
+    VerifyRecordedSamplesForHistogram(
+        1,
+        "Event.Latency.ScrollBegin.Scrollbar.BrowserNotifiedToBeforeGpuSwap2");
+    VerifyRecordedSamplesForHistogram(
+        1, "Event.Latency.ScrollBegin.Scrollbar.GpuSwap2");
+    VerifyRecordedSamplesForHistogram(
+        1, "Event.Latency.ScrollBegin.Scrollbar.TimeToScrollUpdateSwapBegin4");
+    std::string thread_name =
+        DoesScrollbarScrollOnMainThread() ? "Main" : "Impl";
+    VerifyRecordedSamplesForHistogram(
+        1, "Event.Latency.ScrollBegin.Scrollbar.TimeToHandled_" + thread_name);
+    VerifyRecordedSamplesForHistogram(
+        1, "Event.Latency.ScrollBegin.Scrollbar.HandledToRendererSwap2_" +
+               thread_name);
+  }
+
+  void RunScrollbarThumbDragLatencyTest() {
+    // Click on the scrollbar thumb and drag it twice to induce a compositor
+    // thread scrollbar ScrollBegin and ScrollUpdate.
+    blink::WebFloatPoint scrollbar_thumb(795, 30);
+    blink::WebMouseEvent mouse_down = SyntheticWebMouseEventBuilder::Build(
+        blink::WebInputEvent::kMouseDown, scrollbar_thumb.x, scrollbar_thumb.y,
+        0);
+    mouse_down.button = blink::WebMouseEvent::Button::kLeft;
+    mouse_down.SetTimeStamp(base::TimeTicks::Now());
+    GetWidgetHost()->ForwardMouseEvent(mouse_down);
+
+    blink::WebMouseEvent mouse_move = SyntheticWebMouseEventBuilder::Build(
+        blink::WebInputEvent::kMouseMove, scrollbar_thumb.x,
+        scrollbar_thumb.y + 10, 0);
+    mouse_move.button = blink::WebMouseEvent::Button::kLeft;
+    mouse_move.SetTimeStamp(base::TimeTicks::Now());
+    GetWidgetHost()->ForwardMouseEvent(mouse_move);
+    mouse_move.SetPositionInWidget(scrollbar_thumb.x, scrollbar_thumb.y + 20);
+    mouse_move.SetPositionInScreen(scrollbar_thumb.x, scrollbar_thumb.y + 20);
+    GetWidgetHost()->ForwardMouseEvent(mouse_move);
+
+    blink::WebMouseEvent mouse_up = SyntheticWebMouseEventBuilder::Build(
+        blink::WebInputEvent::kMouseUp, scrollbar_thumb.x,
+        scrollbar_thumb.y + 20, 0);
+    mouse_up.button = blink::WebMouseEvent::Button::kLeft;
+    mouse_up.SetTimeStamp(base::TimeTicks::Now());
+    GetWidgetHost()->ForwardMouseEvent(mouse_up);
+
+    RunUntilInputProcessed(GetWidgetHost());
+
+    FetchHistogramsFromChildProcesses();
+    const std::string scroll_types[] = {"ScrollBegin", "ScrollUpdate"};
+    for (const std::string& scroll_type : scroll_types) {
+      VerifyRecordedSamplesForHistogram(
+          1, "Event.Latency." + scroll_type +
+                 ".Scrollbar.TimeToScrollUpdateSwapBegin4");
+      VerifyRecordedSamplesForHistogram(
+          1, "Event.Latency." + scroll_type +
+                 ".Scrollbar.RendererSwapToBrowserNotified2");
+      VerifyRecordedSamplesForHistogram(
+          1, "Event.Latency." + scroll_type +
+                 ".Scrollbar.BrowserNotifiedToBeforeGpuSwap2");
+      VerifyRecordedSamplesForHistogram(
+          1, "Event.Latency." + scroll_type + ".Scrollbar.GpuSwap2");
+      VerifyRecordedSamplesForHistogram(
+          1, "Event.Latency." + scroll_type +
+                 ".Scrollbar.TimeToScrollUpdateSwapBegin4");
+      std::string thread_name =
+          DoesScrollbarScrollOnMainThread() ? "Main" : "Impl";
+      VerifyRecordedSamplesForHistogram(1, "Event.Latency." + scroll_type +
+                                               ".Scrollbar.TimeToHandled_" +
+                                               thread_name);
+      VerifyRecordedSamplesForHistogram(
+          1, "Event.Latency." + scroll_type +
+                 ".Scrollbar.HandledToRendererSwap2_" + thread_name);
+    }
+  }
+
   // Returns true if the given histogram has recorded the expected number of
   // samples.
   bool VerifyRecordedSamplesForHistogram(
@@ -180,6 +278,8 @@ class ScrollLatencyBrowserTest : public ContentBrowserTest {
     return num_samples ==
            histogram_tester_.GetAllSamples(histogram_name).size();
   }
+
+  virtual bool DoesScrollbarScrollOnMainThread() const { return true; }
 
   std::unique_ptr<base::RunLoop> run_loop_;
   bool disable_threaded_scrolling_ = false;
@@ -253,6 +353,35 @@ IN_PROC_BROWSER_TEST_F(ScrollLatencyBrowserTest,
       0, "Event.Latency.ScrollBegin.Touch.TimeToHandled2_Impl"));
   EXPECT_TRUE(VerifyRecordedSamplesForHistogram(
       0, "Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin4"));
+}
+
+class ScrollLatencyCompositedScrollbarBrowserTest
+    : public ScrollLatencyBrowserTest {
+ public:
+  ScrollLatencyCompositedScrollbarBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kCompositorThreadedScrollbarScrolling);
+  }
+  ~ScrollLatencyCompositedScrollbarBrowserTest() override {}
+
+ protected:
+  bool DoesScrollbarScrollOnMainThread() const override { return false; }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(ScrollLatencyCompositedScrollbarBrowserTest,
+                       ScrollbarButtonLatency) {
+  LoadURL();
+
+  RunScrollbarButtonLatencyTest();
+}
+
+IN_PROC_BROWSER_TEST_F(ScrollLatencyCompositedScrollbarBrowserTest,
+                       ScrollbarThumbDragLatency) {
+  LoadURL();
+
+  RunScrollbarThumbDragLatencyTest();
 }
 
 }  // namespace content

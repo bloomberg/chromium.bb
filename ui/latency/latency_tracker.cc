@@ -38,6 +38,8 @@ std::string LatencySourceEventTypeToInputModalityString(
       return "KeyPress";
     case ui::SourceEventType::TOUCHPAD:
       return "Touchpad";
+    case ui::SourceEventType::SCROLLBAR:
+      return "Scrollbar";
     default:
       return "";
   }
@@ -109,7 +111,8 @@ void LatencyTracker::OnGpuSwapBuffersCompleted(const LatencyInfo& latency) {
       source_event_type == ui::SourceEventType::TOUCH ||
       source_event_type == ui::SourceEventType::INERTIAL ||
       source_event_type == ui::SourceEventType::KEY_PRESS ||
-      source_event_type == ui::SourceEventType::TOUCHPAD) {
+      source_event_type == ui::SourceEventType::TOUCHPAD ||
+      source_event_type == ui::SourceEventType::SCROLLBAR) {
     ComputeEndToEndLatencyHistograms(gpu_swap_begin_timestamp,
                                      gpu_swap_end_timestamp, latency);
   }
@@ -175,7 +178,8 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
   if (latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
           &original_timestamp)) {
-    DCHECK(input_modality == "Wheel" || input_modality == "Touch");
+    DCHECK(input_modality == "Wheel" || input_modality == "Touch" ||
+           input_modality == "Scrollbar");
 
     // For inertial scrolling we don't separate the first event from the rest of
     // them.
@@ -203,8 +207,8 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
   } else if (latency.FindLatency(
                  ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
                  &original_timestamp)) {
-    DCHECK(input_modality == "Wheel" || input_modality == "Touch");
-
+    DCHECK(input_modality == "Wheel" || input_modality == "Touch" ||
+           input_modality == "Scrollbar");
     // For inertial scrolling we don't separate the first event from the rest of
     // them.
     scroll_name = IsInertialScroll(latency) ? "ScrollInertial" : "ScrollUpdate";
@@ -274,7 +278,7 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
     DCHECK_AND_RETURN_ON_FAIL(found_component);
   }
 
-  // Inertial scrolls are excluded from Ukm metrics.
+  // Inertial and scrollbar scrolls are excluded from Ukm metrics.
   if ((input_modality == "Touch" && !IsInertialScroll(latency)) ||
       input_modality == "Wheel") {
     InputMetricEvent input_metric_event;

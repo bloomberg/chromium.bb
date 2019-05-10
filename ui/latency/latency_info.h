@@ -105,6 +105,7 @@ enum class SourceEventType {
   // TODO(crbug.com/868056) Touchpad scrolling latency report as WHEEL.
   TOUCHPAD,
   FRAME,
+  SCROLLBAR,
   OTHER,
   LAST = OTHER,
 };

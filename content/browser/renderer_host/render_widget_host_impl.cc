@@ -1318,6 +1318,15 @@ void RenderWidgetHostImpl::WaitForInputProcessed(
     SyntheticGestureParams::GestureType type,
     SyntheticGestureParams::GestureSourceType source,
     base::OnceClosure callback) {
+  // TODO(bokan): Input can be queued and delayed in InputRouterImpl based on
+  // the kind of events we're getting. To be truly robust, we should wait until
+  // those queues are flushed before issuing this message. This will be done in
+  // a follow-up and is the reason for the currently unused type and source
+  // params. https://crbug.com/902446.
+  WaitForInputProcessed(std::move(callback));
+}
+
+void RenderWidgetHostImpl::WaitForInputProcessed(base::OnceClosure callback) {
   // TODO(bokan): The RequestPresentationCallback mechanism doesn't seem to
   // work in OOPIFs. For now, just callback immediately. Remove when fixed.
   // https://crbug.com/924646.
@@ -1326,11 +1335,6 @@ void RenderWidgetHostImpl::WaitForInputProcessed(
     return;
   }
 
-  // TODO(bokan): Input can be queued and delayed in InputRouterImpl based on
-  // the kind of events we're getting. To be truly robust, we should wait until
-  // those queues are flushed before issuing this message. This will be done in
-  // a follow-up and is the reason for the currently unused type and source
-  // params. https://crbug.com/902446.
   input_router_->WaitForInputProcessed(std::move(callback));
 }
 

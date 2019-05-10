@@ -679,6 +679,13 @@ void MaybeSendSyntheticTapGesture(WebContents* guest_web_contents) {
                                             blink::WebFloatPoint(1, 1));
 }
 
+void RunUntilInputProcessed(RenderWidgetHost* host) {
+  base::RunLoop run_loop;
+  RenderWidgetHostImpl::From(host)->WaitForInputProcessed(
+      run_loop.QuitClosure());
+  run_loop.Run();
+}
+
 void WaitForLoadStopWithoutSuccessCheck(WebContents* web_contents) {
   // In many cases, the load may have finished before we get here.  Only wait if
   // the tab still has a pending navigation.

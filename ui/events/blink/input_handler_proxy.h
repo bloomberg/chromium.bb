@@ -89,7 +89,7 @@ class InputHandlerProxy : public cc::InputHandlerClient,
       const base::TimeTicks now);
   EventDisposition RouteToTypeSpecificHandler(
       const blink::WebInputEvent& event,
-      const LatencyInfo& latency_info = LatencyInfo());
+      const LatencyInfo& original_latency_info = LatencyInfo());
 
   // cc::InputHandlerClient implementation.
   void WillShutdown() override;
@@ -183,6 +183,12 @@ class InputHandlerProxy : public cc::InputHandlerClient,
       const blink::WebTouchEvent& touch_event,
       bool* is_touching_scrolling_layer,
       cc::TouchAction* white_listed_touch_action);
+
+  // Scroll updates injected from within the renderer process will not have a
+  // scroll update component, since those are added to the latency info
+  // in the browser process before being dispatched to the renderer.
+  void EnsureScrollUpdateLatencyComponent(LatencyInfo* monitored_latency_info,
+                                          base::TimeTicks original_timestamp);
 
   InputHandlerProxyClient* client_;
   cc::InputHandler* input_handler_;

@@ -429,6 +429,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                              SyntheticGestureParams::GestureSourceType source,
                              base::OnceClosure callback);
 
+  // Resolves the given callback once all effects of previously forwarded input
+  // have been fully realized (i.e. resulting compositor frame has been drawn,
+  // swapped, and presented).
+  void WaitForInputProcessed(base::OnceClosure callback);
+
   // Retrieve an iterator over any RenderWidgetHosts that are immediately
   // embedded within this one. This does not return hosts that are embedded
   // indirectly (i.e. nested within embedded hosts).

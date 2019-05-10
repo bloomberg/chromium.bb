@@ -306,6 +306,10 @@ void ResendGestureScrollUpdateToEmbedder(WebContents* guest_web_contents,
 // tap gesture to its RenderWidgetHostView.
 void MaybeSendSyntheticTapGesture(WebContents* guest_web_contents);
 
+// Spins a run loop until effects of previously forwarded input are fully
+// realized.
+void RunUntilInputProcessed(RenderWidgetHost* host);
+
 // Holds down modifier keys for the duration of its lifetime and releases them
 // upon destruction. This allows simulating multiple input events without
 // simulating modifier key releases in between.

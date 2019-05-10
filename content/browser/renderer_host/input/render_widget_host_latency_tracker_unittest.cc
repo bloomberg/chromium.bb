@@ -692,6 +692,64 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToScrollHistograms) {
   }
 }
 
+TEST_F(RenderWidgetHostLatencyTrackerTest, ScrollbarEndToEndHistograms) {
+  // For all combinations of ScrollBegin/ScrollUpdate main/impl rendering,
+  // ensure that the LatencyTracker logs the correct set of histograms.
+  const GURL url(kUrl);
+  contents()->NavigateAndCommit(url);
+  ResetHistograms();
+  {
+    auto mouse_move =
+        SyntheticWebMouseEventBuilder::Build(blink::WebMouseEvent::kMouseMove);
+    base::TimeTicks now = base::TimeTicks::Now();
+
+    const ui::LatencyComponentType scroll_components[] = {
+        ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
+        ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
+    };
+    for (ui::LatencyComponentType component : scroll_components) {
+      const bool on_main[] = {true, false};
+      for (bool on_main_thread : on_main) {
+        ui::LatencyInfo scrollbar_latency(ui::SourceEventType::SCROLLBAR);
+        AddFakeComponentsWithTimeStamp(*tracker(), &scrollbar_latency, now);
+        scrollbar_latency.AddLatencyNumberWithTimestamp(component, now, 1);
+        AddRenderingScheduledComponent(&scrollbar_latency, on_main_thread, now);
+        tracker()->OnInputEvent(mouse_move, &scrollbar_latency);
+        EXPECT_TRUE(scrollbar_latency.FindLatency(
+            ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
+        EXPECT_TRUE(scrollbar_latency.FindLatency(
+            ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, nullptr));
+        tracker()->OnInputEventAck(mouse_move, &scrollbar_latency,
+                                   INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+        viz_tracker()->OnGpuSwapBuffersCompleted(scrollbar_latency);
+      }
+    }
+  }
+
+  const std::string scroll_types[] = {"ScrollBegin", "ScrollUpdate"};
+  for (const std::string& scroll_type : scroll_types) {
+    // Each histogram that doesn't take main/impl into account should have
+    // two samples (one each for main and impl).
+    const std::string histogram_prefix = "Event.Latency." + scroll_type;
+    histogram_tester().ExpectUniqueSample(
+        histogram_prefix + ".Scrollbar.TimeToScrollUpdateSwapBegin4", 0, 2);
+    histogram_tester().ExpectUniqueSample(
+        histogram_prefix + ".Scrollbar.RendererSwapToBrowserNotified2", 0, 2);
+    histogram_tester().ExpectUniqueSample(
+        histogram_prefix + ".Scrollbar.BrowserNotifiedToBeforeGpuSwap2", 0, 2);
+    histogram_tester().ExpectUniqueSample(
+        histogram_prefix + ".Scrollbar.GpuSwap2", 0, 2);
+    const std::string main_or_impl[] = {"Main", "Impl"};
+    for (const std::string& thread : main_or_impl) {
+      histogram_tester().ExpectUniqueSample(
+          histogram_prefix + ".Scrollbar.TimeToHandled2_" + thread, 0, 1);
+      histogram_tester().ExpectUniqueSample(
+          histogram_prefix + ".Scrollbar.HandledToRendererSwap2_" + thread, 0,
+          1);
+    }
+  }
+}
+
 TEST_F(RenderWidgetHostLatencyTrackerTest,
        LatencyTerminatedOnAckIfRenderingNotScheduled) {
   {
