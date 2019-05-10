@@ -3060,6 +3060,9 @@ void Document::open(Document* entered_document,
   // Change |document|'s URL to the URL of the responsible document specified
   // by the entry settings object.
   if (entered_document && this != entered_document) {
+    auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
+    csp->CopyStateFrom(entered_document->GetContentSecurityPolicy());
+    InitContentSecurityPolicy(csp);
     // Clear the hash fragment from the inherited URL to prevent a
     // scroll-into-view for any document.open()'d frame.
     KURL new_url = entered_document->Url();
