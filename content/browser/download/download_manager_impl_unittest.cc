@@ -383,7 +383,8 @@ TestInProgressManager::TestInProgressManager()
           nullptr,
           base::FilePath(),
           download::InProgressDownloadManager::IsOriginSecureCallback(),
-          base::BindRepeating(&URLAlwaysSafe)) {}
+          base::BindRepeating(&URLAlwaysSafe),
+          nullptr) {}
 
 void TestInProgressManager::AddDownloadItem(
     std::unique_ptr<download::DownloadItemImpl> item) {

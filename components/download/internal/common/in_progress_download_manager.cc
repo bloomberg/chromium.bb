@@ -168,13 +168,15 @@ InProgressDownloadManager::InProgressDownloadManager(
     Delegate* delegate,
     const base::FilePath& in_progress_db_dir,
     const IsOriginSecureCallback& is_origin_secure_cb,
-    const URLSecurityPolicy& url_security_policy)
+    const URLSecurityPolicy& url_security_policy,
+    service_manager::Connector* connector)
     : delegate_(delegate),
       file_factory_(new DownloadFileFactory()),
       download_start_observer_(nullptr),
       is_origin_secure_cb_(is_origin_secure_cb),
       url_security_policy_(url_security_policy),
       use_empty_db_(in_progress_db_dir.empty()),
+      connector_(connector),
       weak_factory_(this) {
   Initialize(in_progress_db_dir);
 }
@@ -252,15 +254,14 @@ void InProgressDownloadManager::BeginDownload(
     const GURL& tab_referrer_url) {
   std::unique_ptr<network::ResourceRequest> request =
       CreateResourceRequest(params.get());
-  auto connector = delegate_ ? delegate_->GetServiceConnector() : nullptr;
   GetIOTaskRunner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&BeginResourceDownload, std::move(params),
-                     std::move(request), std::move(url_loader_factory_getter),
-                     url_security_policy_, is_new_download,
-                     weak_factory_.GetWeakPtr(), site_url, tab_url,
-                     tab_referrer_url, std::move(connector),
-                     base::ThreadTaskRunnerHandle::Get()));
+      base::BindOnce(
+          &BeginResourceDownload, std::move(params), std::move(request),
+          std::move(url_loader_factory_getter), url_security_policy_,
+          is_new_download, weak_factory_.GetWeakPtr(), site_url, tab_url,
+          tab_referrer_url, connector_ ? connector_->Clone() : nullptr,
+          base::ThreadTaskRunnerHandle::Get()));
 }
 
 void InProgressDownloadManager::InterceptDownloadFromNavigation(
@@ -275,17 +276,17 @@ void InProgressDownloadManager::InterceptDownloadFromNavigation(
     net::CertStatus cert_status,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter) {
-  auto connector = delegate_ ? delegate_->GetServiceConnector() : nullptr;
   GetIOTaskRunner()->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &CreateDownloadHandlerForNavigation, weak_factory_.GetWeakPtr(),
-          std::move(resource_request), render_process_id, render_frame_id,
-          site_url, tab_url, tab_referrer_url, std::move(url_chain),
-          std::move(response), std::move(cert_status),
-          std::move(url_loader_client_endpoints),
-          std::move(url_loader_factory_getter), url_security_policy_,
-          std::move(connector), base::ThreadTaskRunnerHandle::Get()));
+      base::BindOnce(&CreateDownloadHandlerForNavigation,
+                     weak_factory_.GetWeakPtr(), std::move(resource_request),
+                     render_process_id, render_frame_id, site_url, tab_url,
+                     tab_referrer_url, std::move(url_chain),
+                     std::move(response), std::move(cert_status),
+                     std::move(url_loader_client_endpoints),
+                     std::move(url_loader_factory_getter), url_security_policy_,
+                     connector_ ? connector_->Clone() : nullptr,
+                     base::ThreadTaskRunnerHandle::Get()));
 }
 
 void InProgressDownloadManager::Initialize(
@@ -572,14 +573,12 @@ void InProgressDownloadManager::OnDownloadsInitialized() {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&InProgressDownloadManager::NotifyDownloadsInitialized,
-                       weak_factory_.GetWeakPtr(),
-                       base::Unretained(delegate_)));
+                       weak_factory_.GetWeakPtr()));
   }
 }
 
-void InProgressDownloadManager::NotifyDownloadsInitialized(Delegate* delegate) {
-  // Do nothing if |delegate_| changes while posing the task.
-  if (delegate_ == delegate)
+void InProgressDownloadManager::NotifyDownloadsInitialized() {
+  if (delegate_)
     delegate_->OnDownloadsInitialized();
 }
 

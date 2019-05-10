@@ -251,9 +251,6 @@ DownloadManagerService::RetriveInProgressDownloadManager(
     content::BrowserContext* context) {
   if (in_progress_manager_) {
     DCHECK(!context->IsOffTheRecord());
-    // We are no longer interested in listening to |in_progress_manager_|,
-    // remove this object from being the delegate.
-    in_progress_manager_->SetDelegate(nullptr);
     // Set |is_pending_downloads_loaded_| to false so that we need to wait for
     // download history to initialize before performing new download actions.
     is_pending_downloads_loaded_ = false;
@@ -436,8 +433,10 @@ void DownloadManagerService::CancelDownload(
 void DownloadManagerService::OnDownloadsInitialized(
     download::SimpleDownloadManagerCoordinator* coordinator,
     bool active_downloads_only) {
-  if (active_downloads_only)
+  if (active_downloads_only) {
+    OnPendingDownloadsLoaded();
     return;
+  }
   is_manager_initialized_ = true;
   OnPendingDownloadsLoaded();
 
@@ -699,11 +698,13 @@ void DownloadManagerService::CreateInProgressDownloadManager() {
     return;
   base::FilePath data_dir;
   base::android::GetDataDirectory(&data_dir);
+  service_manager::Connector* connector = service_binding_.GetConnector();
   in_progress_manager_ = std::make_unique<download::InProgressDownloadManager>(
-      this, data_dir.Append(chrome::kInitialProfile),
+      nullptr, data_dir.Append(chrome::kInitialProfile),
       base::BindRepeating(&IgnoreOriginSecurityCheck),
-      base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe));
-  content::GetNetworkServiceFromConnector(service_binding_.GetConnector());
+      base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe),
+      connector);
+  content::GetNetworkServiceFromConnector(connector);
   scoped_refptr<network::SharedURLLoaderFactory> factory =
       SystemNetworkContextManager::GetInstance()->GetSharedURLLoaderFactory();
   in_progress_manager_->set_url_loader_factory_getter(
@@ -760,18 +761,6 @@ void DownloadManagerService::OnPendingDownloadsLoaded() {
     }
   }
   pending_actions_.clear();
-}
-
-void DownloadManagerService::OnDownloadsInitialized() {
-  OnPendingDownloadsLoaded();
-}
-
-std::unique_ptr<service_manager::Connector>
-DownloadManagerService::GetServiceConnector() {
-  service_manager::Connector* connector = service_binding_.GetConnector();
-  if (connector)
-    return connector->Clone();  // Clone for use on a different thread.
-  return nullptr;
 }
 
 content::DownloadManager* DownloadManagerService::GetDownloadManager(

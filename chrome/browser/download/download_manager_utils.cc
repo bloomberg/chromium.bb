@@ -12,6 +12,7 @@
 #include "components/download/public/common/in_progress_download_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_request_utils.h"
+#include "content/public/common/service_manager_connection.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/download/download_manager_service.h"
@@ -33,6 +34,13 @@ void GetDownloadManagerOnProfileCreation(Profile* profile) {
   DCHECK(manager);
 }
 
+service_manager::Connector* GetServiceConnector() {
+  auto* connection = content::ServiceManagerConnection::GetForProcess();
+  if (!connection)
+    return nullptr;
+  return connection->GetConnector();
+}
+
 }  // namespace
 
 download::InProgressDownloadManager*
@@ -50,7 +58,8 @@ DownloadManagerUtils::RetrieveInProgressDownloadManager(Profile* profile) {
       nullptr,
       profile->IsOffTheRecord() ? base::FilePath() : profile->GetPath(),
       base::BindRepeating(&IgnoreOriginSecurityCheck),
-      base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe));
+      base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe),
+      GetServiceConnector());
 }
 
 void DownloadManagerUtils::InitializeSimpleDownloadManager(

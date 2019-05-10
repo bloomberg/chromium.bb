@@ -390,7 +390,7 @@ AwBrowserContext::RetriveInProgressDownloadManager() {
   return new download::InProgressDownloadManager(
       nullptr, base::FilePath(),
       base::BindRepeating(&IgnoreOriginSecurityCheck),
-      base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe));
+      base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe), nullptr);
 }
 
 web_restrictions::WebRestrictionsClient*

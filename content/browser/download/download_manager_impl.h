@@ -210,7 +210,6 @@ class CONTENT_EXPORT DownloadManagerImpl
       override;
   net::URLRequestContextGetter* GetURLRequestContextGetter(
       const download::DownloadCreateInfo& info) override;
-  std::unique_ptr<service_manager::Connector> GetServiceConnector() override;
 
   // Creates a new download item and call |callback|.
   void CreateNewDownloadItemToStart(

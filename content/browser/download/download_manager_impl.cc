@@ -362,7 +362,7 @@ DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
     in_progress_manager_ =
         std::make_unique<download::InProgressDownloadManager>(
             this, base::FilePath(), base::BindRepeating(&IsOriginSecure),
-            base::BindRepeating(&DownloadRequestUtils::IsURLSafe));
+            base::BindRepeating(&DownloadRequestUtils::IsURLSafe), nullptr);
   } else {
     in_progress_manager_->SetDelegate(this);
     in_progress_manager_->set_download_start_observer(nullptr);
@@ -676,16 +676,6 @@ net::URLRequestContextGetter* DownloadManagerImpl::GetURLRequestContextGetter(
       browser_context_, info.render_process_id, info.render_frame_id);
   return storage_partition ? storage_partition->GetURLRequestContext()
                            : nullptr;
-}
-
-std::unique_ptr<service_manager::Connector>
-DownloadManagerImpl::GetServiceConnector() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  service_manager::Connector* connector = GetServiceManagerConnector();
-  if (connector)
-    return connector->Clone();  // Clone for use on a different thread.
-  return nullptr;
 }
 
 service_manager::Connector* DownloadManagerImpl::GetServiceManagerConnector() {

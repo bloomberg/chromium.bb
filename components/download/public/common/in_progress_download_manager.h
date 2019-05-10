@@ -59,7 +59,7 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   class COMPONENTS_DOWNLOAD_EXPORT Delegate {
    public:
     // Called when in-progress downloads are initialized.
-    virtual void OnDownloadsInitialized() = 0;
+    virtual void OnDownloadsInitialized() {}
 
     // Intercepts the download to another system if applicable. Returns true if
     // the download was intercepted.
@@ -81,16 +81,14 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
     // TODO(qinmin): remove this once network service is fully enabled.
     virtual net::URLRequestContextGetter* GetURLRequestContextGetter(
         const DownloadCreateInfo& download_create_info);
-
-    virtual std::unique_ptr<service_manager::Connector>
-    GetServiceConnector() = 0;
   };
 
   using IsOriginSecureCallback = base::RepeatingCallback<bool(const GURL&)>;
   InProgressDownloadManager(Delegate* delegate,
                             const base::FilePath& in_progress_db_dir,
                             const IsOriginSecureCallback& is_origin_secure_cb,
-                            const URLSecurityPolicy& url_security_policy);
+                            const URLSecurityPolicy& url_security_policy,
+                            service_manager::Connector* connector);
   ~InProgressDownloadManager() override;
 
   // SimpleDownloadManager implementation.
@@ -218,8 +216,8 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   // Called when downloads are initialized.
   void OnDownloadsInitialized();
 
-  // Called to notify |delegate| that downloads are initialized.
-  void NotifyDownloadsInitialized(Delegate* delegate);
+  // Called to notify |delegate_| that downloads are initialized.
+  void NotifyDownloadsInitialized();
 
   // Active download handlers.
   std::vector<UrlDownloadHandler::UniqueUrlDownloadHandlerPtr>
@@ -270,6 +268,9 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
 
   // Whether this object uses an empty database and no history will be saved.
   bool use_empty_db_;
+
+  // Connector to the service manager.
+  service_manager::Connector* connector_;
 
   base::WeakPtrFactory<InProgressDownloadManager> weak_factory_;
 
