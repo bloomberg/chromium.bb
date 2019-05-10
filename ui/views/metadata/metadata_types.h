@@ -9,10 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "ui/views/metadata/type_conversion.h"
 #include "ui/views/views_export.h"
 
 namespace views {
@@ -28,7 +26,7 @@ enum class PropertyFlags {
 };
 
 // Interface for classes that provide ClassMetaData (via macros in
-// metadata_macros.h).  GetClassMetaData() is automatically overridden and
+// metadata_header_macros.h). GetClassMetaData() is automatically overridden and
 // implemented in the relevant macros, so a class must merely have
 // MetaDataProvider somewhere in its ancestry.
 class MetaDataProvider {
@@ -39,10 +37,9 @@ class MetaDataProvider {
 class MemberMetaDataBase;
 
 // Represents the 'meta data' that describes a class. Using the appropriate
-// macros in ui/views/metadata/metadata_macros.h, a descendant of this class
-// is declared within the scope of the containing class. See information about
-// using the macros in the comment for the views::View class.
-// When instantiated
+// macros in ui/views/metadata/metadata_impl_macros.h, a descendant of this
+// class is declared within the scope of the containing class. See information
+// about using the macros in the comment for the views::View class.
 class VIEWS_EXPORT ClassMetaData {
  public:
   ClassMetaData();
@@ -148,54 +145,6 @@ class VIEWS_EXPORT MemberMetaDataBase {
 
   DISALLOW_COPY_AND_ASSIGN(MemberMetaDataBase);
 };  // class MemberMetaDataBase
-
-// Represents meta data for a specific read-only property member of class
-// |TClass|, with underlying type |TValue|, as the type of the actual member.
-template <typename TClass, typename TValue, TValue (TClass::*Get)() const>
-class ClassPropertyReadOnlyMetaData : public MemberMetaDataBase {
- public:
-  ClassPropertyReadOnlyMetaData() {}
-  ~ClassPropertyReadOnlyMetaData() override = default;
-
-  base::string16 GetValueAsString(void* obj) const override {
-    return Convert<TValue, base::string16>((static_cast<TClass*>(obj)->*Get)());
-  }
-
-  PropertyFlags GetPropertyFlags() const override {
-    return PropertyFlags::kReadOnly;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ClassPropertyReadOnlyMetaData);
-};
-
-// Represents meta data for a specific property member of class |TClass|, with
-// underlying type |TValue|, as the type of the actual member.
-// Allows for interaction with the property as if it were the underlying data
-// type (|TValue|), but still uses the Property's functionality under the hood
-// (so it will trigger things like property changed notifications).
-template <typename TClass,
-          typename TValue,
-          void (TClass::*Set)(ArgType<TValue>),
-          TValue (TClass::*Get)() const>
-class ClassPropertyMetaData
-    : public ClassPropertyReadOnlyMetaData<TClass, TValue, Get> {
- public:
-  ClassPropertyMetaData() {}
-  ~ClassPropertyMetaData() override = default;
-
-  void SetValueAsString(void* obj, const base::string16& new_value) override {
-    (static_cast<TClass*>(obj)->*Set)(Convert<base::string16, TValue>(
-        new_value, (static_cast<TClass*>(obj)->*Get)()));
-  }
-
-  PropertyFlags GetPropertyFlags() const override {
-    return PropertyFlags::kEmpty;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ClassPropertyMetaData);
-};
 
 }  // namespace metadata
 }  // namespace views

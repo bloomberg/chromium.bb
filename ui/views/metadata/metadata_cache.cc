@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "ui/views/metadata/metadata_types.h"
 

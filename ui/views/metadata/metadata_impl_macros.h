@@ -2,21 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_METADATA_METADATA_MACROS_H_
-#define UI_VIEWS_METADATA_METADATA_MACROS_H_
+#ifndef UI_VIEWS_METADATA_METADATA_IMPL_MACROS_H_
+#define UI_VIEWS_METADATA_METADATA_IMPL_MACROS_H_
 
-#include "base/compiler_specific.h"
 #include "ui/views/metadata/metadata_cache.h"
 #include "ui/views/metadata/metadata_macros_internal.h"
+#include "ui/views/metadata/property_metadata.h"
 
-// Metadata Generation Macros -------------------------------------------------
-
-// Class Header (.h) ----------------------------------------------------------
-#define METADATA_HEADER(class_name)       \
-  METADATA_ACCESSORS_INTERNAL(class_name) \
-  METADATA_CLASS_INTERNAL(class_name)
-
-// Class Implementation (.cc) -------------------------------------------------
+// Generate the implementation of the metadata accessors and internal class with
+// additional macros for defining the class' properties.
 #define BEGIN_METADATA(class_name)                                          \
   views::metadata::ClassMetaData* class_name::METADATA_CLASS_NAME_INTERNAL( \
       class_name)::meta_data_ = nullptr;                                    \
@@ -65,4 +59,4 @@
   property_name##_prop->SetMemberType(#property_type);               \
   AddMemberData(std::move(property_name##_prop));
 
-#endif  // UI_VIEWS_METADATA_METADATA_MACROS_H_
+#endif  // UI_VIEWS_METADATA_METADATA_IMPL_MACROS_H_

@@ -6,7 +6,7 @@
 #define UI_VIEWS_METADATA_METADATA_MACROS_INTERNAL_H_
 
 #include "base/compiler_specific.h"
-#include "ui/views/metadata/metadata_cache.h"
+#include "ui/views/metadata/metadata_types.h"
 
 // Internal Metadata Generation Helpers ---------------------------------------
 
