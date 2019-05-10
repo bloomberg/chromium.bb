@@ -63,6 +63,11 @@ bool CheckSystemLibraryLoadParams(const char* lib_name,
   if (!lib_name)
     lib_name = params.library_path.c_str();
 
+  if (params.library_fd >= 0) {
+    error->Format("Cannot load system library from fd %d: %s",
+                  params.library_fd, lib_name);
+    return false;
+  }
   if (params.library_offset != 0) {
     error->Format("Cannot load system library from offset 0x%08lx: %s",
                   static_cast<unsigned long>(params.library_offset), lib_name);
@@ -72,6 +77,10 @@ bool CheckSystemLibraryLoadParams(const char* lib_name,
     error->Format("Cannot load system library at address 0x%08lx: %s",
                   static_cast<unsigned long>(params.wanted_address), lib_name);
     return false;
+  }
+  if (params.reserved_size != 0) {
+    error->Format("Cannot load system library in reserved memory map: %s",
+                  lib_name);
   }
   return true;
 }

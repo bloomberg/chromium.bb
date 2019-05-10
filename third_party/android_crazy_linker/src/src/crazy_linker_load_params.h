@@ -17,14 +17,24 @@ namespace crazy {
 // into the current process' address space.
 //
 // |library_path| is either the full library path.
+// |library_fd| is a file descriptor. If >= 0, the |library_path| is ignored.
 // |library_offset| is the page-aligned offset where the library starts in
-// its input file (typically > 0 when reading from Android APKs).
+//   its input file (typically > 0 when reading from Android APKs).
 // |wanted_address| is either 0, or the address where the library should
-// be loaded.
+//   be loaded.
+// |reserved_size| is either 0, or a page-aligned size in bytes corresponding
+//   to a reserved memory area where to load the library, starting from
+//   |wanted_address|.
+// |reserved_load_fallback| is ignored if |reserved_size| is 0. Otherwise, a
+//   value of true means that if the load fails at the reserved address range,
+//   the linker will try again at a different address.
 struct LoadParams {
   String library_path;
+  int library_fd = -1;
   off_t library_offset = 0;
   uintptr_t wanted_address = 0;
+  uintptr_t reserved_size = 0;
+  bool reserved_load_fallback = false;
 };
 
 }  // namespace crazy

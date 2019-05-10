@@ -23,6 +23,31 @@ namespace crazy {
 
 namespace {
 
+// A FileDescriptor sub-class that can also avoid closing the descriptor
+// on scope exit if DontCloseOnExit() is called.
+class LibraryFd : public FileDescriptor {
+ public:
+  LibraryFd() = default;
+
+  explicit LibraryFd(int fd) : FileDescriptor(fd) {}
+
+  explicit LibraryFd(const char* path) : FileDescriptor(path) {}
+
+  ~LibraryFd() {
+    if (!close_on_exit_)
+      Release();
+  }
+
+  LibraryFd(LibraryFd&& other) = default;
+  LibraryFd& operator=(LibraryFd&& other) = default;
+
+  // Ensure the file descriptor is not closed in the destructor.
+  void DontCloseOnExit() { close_on_exit_ = false; }
+
+ private:
+  bool close_on_exit_ = true;
+};
+
 class InternalElfLoader {
  public:
   ~InternalElfLoader();
@@ -42,7 +67,7 @@ class InternalElfLoader {
   MemoryMapping ReleaseMapping() { return std::move(reserved_map_); }
 
  private:
-  FileDescriptor fd_;
+  LibraryFd fd_;
   const char* path_ = nullptr;
 
   ELF::Ehdr header_ = {};
@@ -82,14 +107,31 @@ InternalElfLoader::~InternalElfLoader() {
 
 bool InternalElfLoader::LoadAt(const LoadParams& params, Error* error) {
   const char* lib_path = params.library_path.c_str();
-  LOG("lib_path='%s', file_offset=%p, load_address=%lx", lib_path,
-      params.library_offset, static_cast<unsigned long>(params.wanted_address));
+  LOG("lib_path='%s', file_fd=%d, file_offset=%p, load_address=%lx"
+      "reserved_size=%lx reserved_load_fallback=%s",
+      lib_path, params.library_fd, params.library_offset,
+      static_cast<unsigned long>(params.wanted_address),
+      static_cast<unsigned long>(params.reserved_size),
+      params.reserved_load_fallback ? "true" : "false");
 
   // Check that the load address is properly page-aligned.
   uintptr_t wanted_address = params.wanted_address;
   if (wanted_address != PAGE_START(wanted_address)) {
     error->Format("Load address is not page aligned (%08x)", wanted_address);
     return false;
+  }
+
+  if (params.reserved_size != 0) {
+    if (!wanted_address) {
+      error->Format("Reserved size 0x%08lx has not reserved address",
+                    static_cast<unsigned long>(params.reserved_size));
+      return false;
+    }
+    if (params.reserved_size != PAGE_START(params.reserved_size)) {
+      error->Format("Reserved size 0x%08lx is not page-aligned",
+                    static_cast<unsigned long>(params.reserved_size));
+      return false;
+    }
   }
 
   // Check that the file offset is also properly page-aligned.
@@ -104,9 +146,14 @@ bool InternalElfLoader::LoadAt(const LoadParams& params, Error* error) {
   file_offset_ = file_offset;
 
   // Open the file.
-  if (!fd_.OpenReadOnly(lib_path)) {
-    error->Format("Can't open file: %s", strerror(errno));
-    return false;
+  if (params.library_fd >= 0) {
+    fd_ = LibraryFd(params.library_fd);
+    fd_.DontCloseOnExit();
+  } else {
+    if (!fd_.OpenReadOnly(lib_path)) {
+      error->Format("Can't open file: %s", strerror(errno));
+      return false;
+    }
   }
 
   if (file_offset && fd_.SeekTo(file_offset) < 0) {
@@ -122,13 +169,25 @@ bool InternalElfLoader::LoadAt(const LoadParams& params, Error* error) {
     return false;
   }
 
-  if (!LoadSegments(error) || !FindPhdr(error)) {
-    // An error occured, cleanup the address space by un-mapping the
-    // range that was reserved by ReserveAddressSpace().
+  bool success = LoadSegments(error);
+  if (!success) {
+    // If loading the segments fail, but |reserved_size| was not 0, and
+    // |reserved_size_load_fallback| is true, then try again at a not-fixed
+    // address.
+    if (params.reserved_size > 0 && params.reserved_load_fallback) {
+      LOG("Loading to reserved mapping failed, falling back to random one");
+      LoadParams params2 = params;
+      params2.wanted_address = 0;
+      params2.reserved_size = 0;
+      params2.reserved_load_fallback = false;
+      success = ReserveAddressSpace(params2, error) && LoadSegments(error);
+    }
+  }
+  success = success && FindPhdr(error);
+  if (!success) {
     reserved_map_.Deallocate();
     return false;
   }
-
   return true;
 }
 
@@ -235,26 +294,37 @@ bool InternalElfLoader::ReserveAddressSpace(const LoadParams& params,
     mmap_flags |= MAP_FIXED;
   }
 
-  size_t reserved_size = load_size_;
+  void* start = reinterpret_cast<void*>(params.wanted_address);
+  size_t reserved_size = params.reserved_size;
 
-  LOG("Trying to reserve memory address=%p size=%lu (0x%lx)", addr,
-      static_cast<unsigned long>(load_size_),
-      static_cast<unsigned long>(load_size_));
+  if (!reserved_size) {
+    // Reserve the area ourselves.
+    reserved_size = load_size_;
+    LOG("Trying to reserve memory address=%p size=%lu (0x%lx)", addr,
+        static_cast<unsigned long>(load_size_),
+        static_cast<unsigned long>(load_size_));
 
-  void* start = mmap(addr, reserved_size, PROT_NONE, mmap_flags, -1, 0);
-  if (start == MAP_FAILED) {
-    error->Format("Could not reserve %lu bytes of address space",
-                  static_cast<unsigned long>(reserved_size));
+    start = mmap(addr, reserved_size, PROT_NONE, mmap_flags, -1, 0);
+    if (start == MAP_FAILED) {
+      error->Format("Could not reserve %lu bytes of address space",
+                    static_cast<unsigned long>(reserved_size));
+      return false;
+    }
+    if (addr && start != addr) {
+      error->Format("Could not map at %p requested, backing out", addr);
+      munmap(start, reserved_size);
+      return false;
+    }
+    // Take ownership of the mapping here.
+    reserved_map_ = MemoryMapping(start, reserved_size);
+  } else if (reserved_size < load_size_) {
+    error->Format("Reserved map size is too small 0x%lx (0x%lx required)",
+                  static_cast<unsigned long>(reserved_size),
+                  static_cast<unsigned long>(load_size_));
     return false;
+  } else {
+    LOG("Using client-allocated mapping!");
   }
-  if (addr && start != addr) {
-    error->Format("Could not map at %p requested, backing out", addr);
-    munmap(start, reserved_size);
-    return false;
-  }
-
-  // Take ownership of the mapping here.
-  reserved_map_ = MemoryMapping(start, reserved_size);
 
   load_start_ = start;
   load_bias_ = reinterpret_cast<ELF::Addr>(load_start_) - min_vaddr;

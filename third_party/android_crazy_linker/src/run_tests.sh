@@ -168,8 +168,10 @@ crazy_linker_test_dl_wrappers_valid_handles \
 crazy_linker_test_jni_hooks \
 crazy_linker_test_load_library \
 crazy_linker_test_load_library_depends \
+crazy_linker_test_load_library_with_fd \
 crazy_linker_test_load_library_with_gnu_hash_table \
 crazy_linker_test_load_library_with_relr_relocations \
+crazy_linker_test_load_library_with_reserved_map \
 crazy_linker_test_relocated_shared_relro \
 crazy_linker_test_search_path_list \
 crazy_linker_test_shared_relro \

@@ -82,6 +82,25 @@ void crazy_context_set_load_address(crazy_context_t* context,
 // Return the current load address in a context.
 size_t crazy_context_get_load_address(crazy_context_t* context) _CRAZY_PUBLIC;
 
+// Set the explicit library file descriptor in a context object. Values >= 0
+// will be used during the next crazy_library_open() call to read the library
+// file, instead of opening it using its path.
+void crazy_context_set_library_fd(crazy_context_t* context,
+                                  int fd) _CRAZY_PUBLIC;
+
+// Return the current library file descriptor in a context.
+int crazy_context_get_library_fd(crazy_context_t* context) _CRAZY_PUBLIC;
+
+// Set an explicit reserved memory mapping to be used on the next library
+// load. |reserved_address| is the page-aligned reserved address,
+// |reserved_size| is the page-aligned reserved size, and if |load_fallback|
+// is true, then the linker will try to load the library at a different
+// address if it fails to load its segments at the reserved address range.
+void crazy_context_set_reserved_map(crazy_context_t* context,
+                                    uintptr_t reserved_address,
+                                    size_t reserved_size,
+                                    bool load_fallback) _CRAZY_PUBLIC;
+
 // Destroy a given context object.
 void crazy_context_destroy(crazy_context_t* context) _CRAZY_PUBLIC;
 

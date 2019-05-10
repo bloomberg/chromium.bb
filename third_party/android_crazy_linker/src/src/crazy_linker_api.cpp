@@ -32,6 +32,9 @@ using crazy::LibraryView;
 
 struct crazy_context_t {
   size_t load_address = 0;
+  int library_fd = -1;
+  size_t reserved_size = 0;
+  bool reserved_load_fallback = false;
   Error error;
 };
 
@@ -62,6 +65,23 @@ void crazy_context_set_load_address(crazy_context_t* context,
 
 size_t crazy_context_get_load_address(crazy_context_t* context) {
   return context->load_address;
+}
+
+void crazy_context_set_library_fd(crazy_context_t* context, int fd) {
+  context->library_fd = fd;
+}
+
+int crazy_context_get_library_fd(crazy_context_t* context) {
+  return context->library_fd;
+}
+
+void crazy_context_set_reserved_map(crazy_context_t* context,
+                                    uintptr_t reserved_address,
+                                    size_t reserved_size,
+                                    bool load_fallback) {
+  context->load_address = reserved_address;
+  context->reserved_size = reserved_size;
+  context->reserved_load_fallback = load_fallback;
 }
 
 void crazy_context_destroy(crazy_context_t* context) {
@@ -112,6 +132,8 @@ crazy_status_t crazy_library_open(crazy_library_t** library,
   crazy::LibraryList* libs = globals->libraries();
   crazy::LoadParams params;
   params.wanted_address = context->load_address;
+  params.reserved_size = context->reserved_size;
+  params.reserved_load_fallback = context->reserved_load_fallback;
   crazy::Expected<LibraryView*> found =
       libs->FindAndCheckLoadedLibrary(lib_name, params, &context->error);
   if (!found.has_value())
@@ -119,11 +141,22 @@ crazy_status_t crazy_library_open(crazy_library_t** library,
 
   LibraryView* view = found.value();
   if (!view) {
-    if (!libs->LocateLibraryFile(lib_name, *globals->search_path_list(),
-                                 &params, &context->error)) {
-      return CRAZY_STATUS_FAILURE;
+    if (context->library_fd >= 0) {
+      params.library_path = lib_name;
+      params.library_fd = context->library_fd;
+    } else {
+      if (!libs->LocateLibraryFile(lib_name, *globals->search_path_list(),
+                                   &params, &context->error)) {
+        return CRAZY_STATUS_FAILURE;
+      }
     }
     view = libs->LoadLibraryInternal(params, &context->error);
+
+    // Cleanup context.
+    context->library_fd = -1;
+    context->load_address = 0;
+    context->reserved_size = 0;
+    context->reserved_load_fallback = false;
   }
 
   if (!view)

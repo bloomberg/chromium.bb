@@ -229,16 +229,19 @@ SharedLibrary::~SharedLibrary() = default;
 bool SharedLibrary::Load(const LoadParams& params, Error* error) {
   // First, record the path.
   const char* full_path = params.library_path.c_str();
-  LOG("full path '%s'", full_path);
-
-  size_t full_path_len = strlen(full_path);
-  if (full_path_len >= sizeof(full_path_)) {
-    error->Format("Path too long: %s", full_path);
-    return false;
+  if (params.library_fd >= 0) {
+    snprintf(full_path_, sizeof(full_path_), "fd(%d):%s", params.library_fd,
+             full_path);
+  } else {
+    size_t full_path_len = strlen(full_path);
+    if (full_path_len >= sizeof(full_path_)) {
+      error->Format("Path too long: %s", full_path);
+      return false;
+    }
+    strlcpy(full_path_, full_path, sizeof(full_path_));
   }
-
-  strlcpy(full_path_, full_path, sizeof(full_path_));
   base_name_ = GetBaseNamePtr(full_path_);
+  LOG("full path '%s'", full_path_);
 
   // Default value of |soname_| will be |base_name_| unless overidden
   // by a DT_SONAME entry. This helps deal with broken libraries that don't
@@ -263,6 +266,9 @@ bool SharedLibrary::Load(const LoadParams& params, Error* error) {
     }
 
     reserved_map_ = std::move(ret.reserved_mapping);
+
+    LOG("Reserved mapping %p size=0x%lx", reserved_map_.address(),
+        static_cast<unsigned long>(reserved_map_.size()));
   }
 
   if (phdr_table_get_relro_info(view_.phdr(),
