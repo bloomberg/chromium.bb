@@ -50,18 +50,22 @@ class CORE_EXPORT InspectorAgentState {
   // these is to be able to call overloaded methods from the template
   // implementations below; they just delegate to protocol::Value parsing
   // and serialization.
-  static void EncodeCBOR(bool v, std::vector<uint8_t>* out);
-  static bool DecodeCBOR(::inspector_protocol_encoding::span<uint8_t> in,
-                         bool* v);
-  static void EncodeCBOR(int32_t v, std::vector<uint8_t>* out);
-  static bool DecodeCBOR(::inspector_protocol_encoding::span<uint8_t> in,
-                         int32_t* v);
-  static void EncodeCBOR(double v, std::vector<uint8_t>* out);
-  static bool DecodeCBOR(::inspector_protocol_encoding::span<uint8_t> in,
-                         double* v);
-  static void EncodeCBOR(const WTF::String& v, std::vector<uint8_t>* out);
-  static bool DecodeCBOR(::inspector_protocol_encoding::span<uint8_t> in,
-                         WTF::String* v);
+  static void Serialize(bool v, std::vector<uint8_t>* out);
+  static bool Deserialize(::inspector_protocol_encoding::span<uint8_t> in,
+                          bool* v);
+  static void Serialize(int32_t v, std::vector<uint8_t>* out);
+  static bool Deserialize(::inspector_protocol_encoding::span<uint8_t> in,
+                          int32_t* v);
+  static void Serialize(double v, std::vector<uint8_t>* out);
+  static bool Deserialize(::inspector_protocol_encoding::span<uint8_t> in,
+                          double* v);
+  static void Serialize(const WTF::String& v, std::vector<uint8_t>* out);
+  static bool Deserialize(::inspector_protocol_encoding::span<uint8_t> in,
+                          WTF::String* v);
+  static void Serialize(const std::vector<uint8_t>& v,
+                        std::vector<uint8_t>* out);
+  static bool Deserialize(::inspector_protocol_encoding::span<uint8_t> in,
+                          std::vector<uint8_t>* v);
 
  public:
   // A field is connected to the |agent_state|, which initializes the field
@@ -125,7 +129,7 @@ class CORE_EXPORT InspectorAgentState {
       }
       value_ = value;
       std::vector<uint8_t> encoded_value;
-      EncodeCBOR(value, &encoded_value);
+      Serialize(value, &encoded_value);
       session_state_->EnqueueUpdate(prefix_key_, &encoded_value);
     }
 
@@ -147,9 +151,9 @@ class CORE_EXPORT InspectorAgentState {
         return;
       auto it = reattach_state->entries.find(prefix_key_);
       if (it != reattach_state->entries.end()) {
-        DecodeCBOR(::inspector_protocol_encoding::span<uint8_t>(
-                       it->value->data(), it->value->size()),
-                   &value_);
+        Deserialize(::inspector_protocol_encoding::span<uint8_t>(
+                        it->value->data(), it->value->size()),
+                    &value_);
       }
     }
 
@@ -207,7 +211,7 @@ class CORE_EXPORT InspectorAgentState {
         return;
       map_.Set(key, value);
       std::vector<uint8_t> encoded_value;
-      EncodeCBOR(value, &encoded_value);
+      Serialize(value, &encoded_value);
       session_state_->EnqueueUpdate(prefix_key_ + key, &encoded_value);
     }
 
@@ -244,9 +248,9 @@ class CORE_EXPORT InspectorAgentState {
           continue;
         WTF::String suffix_key = entry.key.Substring(prefix_key_.length());
         ValueType v;
-        if (DecodeCBOR(::inspector_protocol_encoding::span<uint8_t>(
-                           entry.value->data(), entry.value->size()),
-                       &v)) {
+        if (Deserialize(::inspector_protocol_encoding::span<uint8_t>(
+                            entry.value->data(), entry.value->size()),
+                        &v)) {
           map_.Set(suffix_key, v);
         }
       }
@@ -260,6 +264,7 @@ class CORE_EXPORT InspectorAgentState {
   using Integer = SimpleField<int32_t>;
   using Double = SimpleField<double>;
   using String = SimpleField<WTF::String>;
+  using Bytes = SimpleField<std::vector<uint8_t>>;
   using BooleanMap = MapField<bool>;
   using IntegerMap = MapField<int32_t>;
   using DoubleMap = MapField<double>;

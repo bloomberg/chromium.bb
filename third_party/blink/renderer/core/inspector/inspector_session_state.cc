@@ -56,12 +56,12 @@ mojom::blink::DevToolsSessionStatePtr InspectorSessionState::TakeUpdates() {
 // Encoding / Decoding routines.
 //
 /*static*/
-void InspectorAgentState::EncodeCBOR(bool v, std::vector<uint8_t>* out) {
+void InspectorAgentState::Serialize(bool v, std::vector<uint8_t>* out) {
   out->push_back(v ? EncodeTrue() : EncodeFalse());
 }
 
 /*static*/
-bool InspectorAgentState::DecodeCBOR(span<uint8_t> in, bool* v) {
+bool InspectorAgentState::Deserialize(span<uint8_t> in, bool* v) {
   CBORTokenizer tokenizer(in);
   if (tokenizer.TokenTag() == CBORTokenTag::TRUE_VALUE) {
     *v = true;
@@ -75,12 +75,12 @@ bool InspectorAgentState::DecodeCBOR(span<uint8_t> in, bool* v) {
 }
 
 /*static*/
-void InspectorAgentState::EncodeCBOR(int32_t v, std::vector<uint8_t>* out) {
+void InspectorAgentState::Serialize(int32_t v, std::vector<uint8_t>* out) {
   ::inspector_protocol_encoding::cbor::EncodeInt32(v, out);
 }
 
 /*static*/
-bool InspectorAgentState::DecodeCBOR(span<uint8_t> in, int32_t* v) {
+bool InspectorAgentState::Deserialize(span<uint8_t> in, int32_t* v) {
   CBORTokenizer tokenizer(in);
   if (tokenizer.TokenTag() == CBORTokenTag::INT32) {
     *v = tokenizer.GetInt32();
@@ -90,12 +90,12 @@ bool InspectorAgentState::DecodeCBOR(span<uint8_t> in, int32_t* v) {
 }
 
 /*static*/
-void InspectorAgentState::EncodeCBOR(double v, std::vector<uint8_t>* out) {
+void InspectorAgentState::Serialize(double v, std::vector<uint8_t>* out) {
   ::inspector_protocol_encoding::cbor::EncodeDouble(v, out);
 }
 
 /*static*/
-bool InspectorAgentState::DecodeCBOR(span<uint8_t> in, double* v) {
+bool InspectorAgentState::Deserialize(span<uint8_t> in, double* v) {
   CBORTokenizer tokenizer(in);
   if (tokenizer.TokenTag() == CBORTokenTag::DOUBLE) {
     *v = tokenizer.GetDouble();
@@ -105,8 +105,8 @@ bool InspectorAgentState::DecodeCBOR(span<uint8_t> in, double* v) {
 }
 
 /*static*/
-void InspectorAgentState::EncodeCBOR(const WTF::String& v,
-                                     std::vector<uint8_t>* out) {
+void InspectorAgentState::Serialize(const WTF::String& v,
+                                    std::vector<uint8_t>* out) {
   if (v.Is8Bit()) {
     auto span8 = v.Span8();
     EncodeFromLatin1(span<uint8_t>(span8.data(), span8.size()), out);
@@ -120,7 +120,7 @@ void InspectorAgentState::EncodeCBOR(const WTF::String& v,
 }
 
 /*static*/
-bool InspectorAgentState::DecodeCBOR(span<uint8_t> in, WTF::String* v) {
+bool InspectorAgentState::Deserialize(span<uint8_t> in, WTF::String* v) {
   CBORTokenizer tokenizer(in);
   if (tokenizer.TokenTag() == CBORTokenTag::STRING8) {
     *v = WTF::String(
@@ -135,6 +135,22 @@ bool InspectorAgentState::DecodeCBOR(span<uint8_t> in, WTF::String* v) {
     return true;
   }
   return false;
+}
+
+/*static*/
+void InspectorAgentState::Serialize(const std::vector<uint8_t>& v,
+                                    std::vector<uint8_t>* out) {
+  // We could CBOR encode this, but since we never look at the contents
+  // anyway (except for decoding just below), we just cheat and use the
+  // blob directly.
+  out->insert(out->end(), v.begin(), v.end());
+}
+
+/*static*/
+bool InspectorAgentState::Deserialize(span<uint8_t> in,
+                                      std::vector<uint8_t>* v) {
+  v->insert(v->end(), in.begin(), in.end());
+  return true;
 }
 
 //
