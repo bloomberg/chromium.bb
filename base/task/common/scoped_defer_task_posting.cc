@@ -38,12 +38,13 @@ ScopedDeferTaskPosting* ScopedDeferTaskPosting::Get() {
 }
 
 // static
-void ScopedDeferTaskPosting::Set(ScopedDeferTaskPosting* scope) {
+bool ScopedDeferTaskPosting::Set(ScopedDeferTaskPosting* scope) {
   // We can post a task from within a ScheduleWork in some tests, so we can
   // get nested scopes. In this case ignore all except the top one.
-  if (!Get())
-    return;
-  return GetScopedDeferTaskPostingTLS().Set(scope);
+  if (Get() && scope)
+    return false;
+  GetScopedDeferTaskPostingTLS().Set(scope);
+  return true;
 }
 
 // static
@@ -52,10 +53,14 @@ bool ScopedDeferTaskPosting::IsPresent() {
 }
 
 ScopedDeferTaskPosting::ScopedDeferTaskPosting() {
-  Set(this);
+  top_level_scope_ = Set(this);
 }
 
 ScopedDeferTaskPosting::~ScopedDeferTaskPosting() {
+  if (!top_level_scope_) {
+    DCHECK(deferred_tasks_.empty());
+    return;
+  }
   Set(nullptr);
   for (DeferredTask& deferred_task : deferred_tasks_) {
     deferred_task.task_runner->PostTask(deferred_task.from_here,

@@ -34,7 +34,9 @@ class BASE_EXPORT ScopedDeferTaskPosting {
 
  private:
   static ScopedDeferTaskPosting* Get();
-  static void Set(ScopedDeferTaskPosting* scope);
+  // Returns whether the |scope| was set as active, which happens only
+  // when the scope wasn't set before.
+  static bool Set(ScopedDeferTaskPosting* scope);
 
   void DeferTaskPosting(scoped_refptr<SequencedTaskRunner> task_runner,
                         const Location& from_here,
@@ -55,6 +57,11 @@ class BASE_EXPORT ScopedDeferTaskPosting {
   };
 
   std::vector<DeferredTask> deferred_tasks_;
+
+  // Scopes can be nested (e.g. ScheduleWork inside PostTasks can post a task
+  // to another task runner), so we want to know whether the scope is top-level
+  // or not.
+  bool top_level_scope_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedDeferTaskPosting);
 };

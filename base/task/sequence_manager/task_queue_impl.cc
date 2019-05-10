@@ -50,6 +50,8 @@ TaskQueueImpl::GuardedTaskPoster::GuardedTaskPoster(TaskQueueImpl* outer)
 TaskQueueImpl::GuardedTaskPoster::~GuardedTaskPoster() {}
 
 bool TaskQueueImpl::GuardedTaskPoster::PostTask(PostedTask task) {
+  // Do not process new PostTasks while we are handling a PostTask (tracing
+  // has to do this) as it can lead to a deadlock and defer it instead.
   ScopedDeferTaskPosting disallow_task_posting;
 
   auto token = operations_controller_.TryBeginOperation();
