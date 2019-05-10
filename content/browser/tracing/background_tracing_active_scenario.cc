@@ -468,7 +468,7 @@ void BackgroundTracingActiveScenario::OnProtoDataComplete(
   UMA_HISTOGRAM_MEMORY_KB("Tracing.Background.FinalizingTraceSizeInKB",
                           proto_trace->size() / 1024);
 
-  BackgroundTracingManager::GetInstance()->SetTraceToUploadForTesting(
+  BackgroundTracingManagerImpl::GetInstance()->SetTraceToUpload(
       std::move(proto_trace));
 
   if (started_finalizing_closure_) {
