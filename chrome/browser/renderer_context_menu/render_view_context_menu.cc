@@ -941,6 +941,14 @@ void RenderViewContextMenu::RecordUsedItem(int id) {
     UMA_HISTOGRAM_EXACT_LINEAR("ContextMenu.SelectedOption.ImageLink", enum_id,
                                kUmaEnumToControlId[kMappingSize - 1].enum_id);
   }
+
+  // chrome://downloads link context.
+  if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_LINK) &&
+      GetDocumentURL(params_) == GURL("chrome://downloads")) {
+    base::RecordAction(base::UserMetricsAction(
+        "Downloads_OpenUrlOfDownloadedItemFromContextMenu"));
+  }
+
   // Selected text context.
   if (content_type_->SupportsGroup(
           ContextMenuContentType::ITEM_GROUP_SEARCH_PROVIDER) &&
