@@ -344,9 +344,11 @@ void av1_build_interintra_predictors_sbuv(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                           const BUFFER_SET *ctx,
                                           BLOCK_SIZE bsize);
 
-void av1_build_intra_predictors_for_interintra(
-    const AV1_COMMON *cm, MACROBLOCKD *xd, BLOCK_SIZE bsize, int plane,
-    const BUFFER_SET *ctx, uint8_t *intra_pred, int intra_stride);
+void av1_build_intra_predictors_for_interintra(const AV1_COMMON *cm,
+                                               MACROBLOCKD *xd,
+                                               BLOCK_SIZE bsize, int plane,
+                                               const BUFFER_SET *ctx,
+                                               uint8_t *dst, int dst_stride);
 
 void av1_combine_interintra(MACROBLOCKD *xd, BLOCK_SIZE bsize, int plane,
                             const uint8_t *inter_pred, int inter_stride,
