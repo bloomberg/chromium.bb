@@ -245,7 +245,7 @@ void RemoveProfilesNotUsedSinceTimestamp(
       num_profiles_supressed);
 }
 
-void PrepareSuggestions(bool contains_address,
+void PrepareSuggestions(bool add_profile_icon,
                         const std::vector<base::string16>& labels,
                         std::vector<Suggestion>* suggestions) {
   DCHECK_EQ(suggestions->size(), labels.size());
@@ -255,11 +255,10 @@ void PrepareSuggestions(bool contains_address,
     (*suggestions)[i].label = labels[i];
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-    if (base::FeatureList::IsEnabled(
-            autofill::features::kAutofillUseImprovedLabelDisambiguation)) {
+    if (add_profile_icon) {
       (*suggestions)[i].icon = "accountBoxIcon";
     }
-#endif
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
   }
 }
 
