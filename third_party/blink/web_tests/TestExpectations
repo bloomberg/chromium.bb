@@ -5971,3 +5971,6 @@ crbug.com/959129 [ Win ] http/tests/devtools/tracing/timeline-script-parse.js [ 
 
 # Sheriff 2019-05-07
 crbug.com/960443 [ Mac10.10 Mac10.11 ] external/wpt/animation-worklet/worklet-animation-with-scroll-timeline.https.html [ Failure Pass ]
+
+# Sheriff 2019-05-07
+crbug.com/961547 external/wpt/event-timing/programmatic-click-not-observed.html [ Pass Failure ]
