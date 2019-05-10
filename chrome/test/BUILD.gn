@@ -2395,6 +2395,8 @@ test("browser_tests") {
 }
 
 if (is_linux || is_mac || is_win) {
+  import("//tools/binary_size/sizes.gni")
+
   group("browser_tests_apprtc") {
     testonly = true
     data_deps = [
@@ -2410,6 +2412,12 @@ if (is_linux || is_mac || is_win) {
     } else {
       write_runtime_deps = "$root_out_dir/$target_name.runtime_deps"
     }
+  }
+
+  sizes_test("chrome_sizes") {
+    data_deps = [
+      "//chrome",
+    ]
   }
 }
 
