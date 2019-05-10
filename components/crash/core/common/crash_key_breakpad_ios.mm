@@ -27,6 +27,8 @@ namespace {
 // Accessing the BreakpadRef is done on an async queue, so serialize the
 // access to the current thread, as the CrashKeyString API is sync. This
 // matches //ios/chrome/browser/crash_report/breakpad_helper.mm.
+// When getting a value, wait until the value is received.
+// Note: This will block the current thread.
 void WithBreakpadRefSync(void (^block)(BreakpadRef ref)) {
   dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
 
@@ -37,13 +39,20 @@ void WithBreakpadRefSync(void (^block)(BreakpadRef ref)) {
   dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
 }
 
+// When setting a value, avoid to block the current thread.
+void WithBreakpadRefAsync(void (^block)(BreakpadRef ref)) {
+  [[BreakpadController sharedInstance] withBreakpadRef:^(BreakpadRef ref) {
+    block(ref);
+  }];
+}
+
 }  // namespace
 
 void CrashKeyStringImpl::Set(base::StringPiece value) {
   NSString* key = base::SysUTF8ToNSString(name_);
   NSString* value_ns = base::SysUTF8ToNSString(value.as_string());
 
-  WithBreakpadRefSync(^(BreakpadRef ref) {
+  WithBreakpadRefAsync(^(BreakpadRef ref) {
     BreakpadAddUploadParameter(ref, key, value_ns);
   });
 }
@@ -51,7 +60,7 @@ void CrashKeyStringImpl::Set(base::StringPiece value) {
 void CrashKeyStringImpl::Clear() {
   NSString* key = base::SysUTF8ToNSString(name_);
 
-  WithBreakpadRefSync(^(BreakpadRef ref) {
+  WithBreakpadRefAsync(^(BreakpadRef ref) {
     BreakpadRemoveUploadParameter(ref, key);
   });
 }
