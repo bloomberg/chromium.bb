@@ -48,13 +48,13 @@ TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
       Polymer.dom.flush();
     });
 
-    test('basic', function() {
+    test('showing menu in toolbar', function() {
       toolbar = assert(ui.$$('cr-toolbar'));
-      assertTrue(toolbar.showMenu);
+      assertFalse(toolbar.showMenu);
     });
 
     test('app drawer', function() {
-      assertEquals(null, ui.$$('settings-menu'));
+      assertEquals(null, ui.$$('cr-drawer settings-menu'));
       const drawer = ui.$.drawer;
       assertFalse(!!drawer.open);
 
@@ -64,7 +64,7 @@ TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
 
       // Validate that dialog is open and menu is shown so it will animate.
       assertTrue(drawer.open);
-      assertTrue(!!ui.$$('settings-menu'));
+      assertTrue(!!ui.$$('cr-drawer settings-menu'));
 
       return whenDone
           .then(function() {
@@ -76,37 +76,43 @@ TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
             // Drawer is closed, but menu is still stamped so
             // its contents remain visible as the drawer slides
             // out.
-            assertTrue(!!ui.$$('settings-menu'));
+            assertTrue(!!ui.$$('cr-drawer settings-menu'));
           });
     });
 
     test('advanced UIs stay in sync', function() {
       const main = ui.$$('settings-main');
+      const floatingMenu = ui.$$('#left settings-menu');
       assertTrue(!!main);
+      assertTrue(!!floatingMenu);
 
-      assertFalse(!!ui.$$('settings-menu'));
+      assertFalse(!!ui.$$('cr-drawer settings-menu'));
       assertFalse(ui.advancedOpened_);
+      assertFalse(floatingMenu.advancedOpened);
       assertFalse(main.advancedToggleExpanded);
 
       main.advancedToggleExpanded = true;
       Polymer.dom.flush();
 
-      assertFalse(!!ui.$$('settings-menu'));
+      assertFalse(!!ui.$$('cr-drawer settings-menu'));
       assertTrue(ui.advancedOpened_);
+      assertTrue(floatingMenu.advancedOpened);
       assertTrue(main.advancedToggleExpanded);
 
       ui.$.drawerTemplate.if = true;
       Polymer.dom.flush();
 
-      const menu = ui.$$('settings-menu');
-      assertTrue(!!menu);
-      assertTrue(menu.advancedOpened);
+      const drawerMenu = ui.$$('cr-drawer settings-menu');
+      assertTrue(!!drawerMenu);
+      assertTrue(floatingMenu.advancedOpened);
+      assertTrue(drawerMenu.advancedOpened);
 
-      menu.$.advancedButton.click();
+      drawerMenu.$.advancedButton.click();
       Polymer.dom.flush();
 
       // Check that all values are updated in unison.
-      assertFalse(menu.advancedOpened);
+      assertFalse(drawerMenu.advancedOpened);
+      assertFalse(floatingMenu.advancedOpened);
       assertFalse(ui.advancedOpened_);
       assertFalse(main.advancedToggleExpanded);
     });

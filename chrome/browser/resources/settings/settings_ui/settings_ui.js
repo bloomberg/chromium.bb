@@ -45,6 +45,9 @@ Polymer({
       value: false,
     },
 
+    /** @private */
+    narrow_: Boolean,
+
     /**
      * @private {!PageVisibility}
      */

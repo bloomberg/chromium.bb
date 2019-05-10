@@ -42,16 +42,17 @@
       }
 
       #leftContent {
-        /* margin-start here must match margin-end on #rightContent. */
-        margin-inline-start: 12px;
         position: relative;
         transition: opacity 100ms;
       }
 
       #leftSpacer {
         align-items: center;
+        box-sizing: border-box;
         display: flex;
-        margin-inline-start: 6px;
+        /* 12px to match #rightSpacer + 6px to align with icons in menus. */
+        padding-inline-start: calc(12px + 6px);
+        width: var(--cr-toolbar-left-spacer-width, auto);
       }
 
       cr-icon-button {
@@ -69,8 +70,8 @@
         justify-content: center;
       }
 
-      #rightContent {
-        margin-inline-end: 12px;
+      #rightSpacer {
+        padding-inline-end: 12px;
       }
 
       :host([narrow]) #centeredContent {
@@ -89,6 +90,10 @@
 
       :host(:not([narrow])) #leftContent {
         flex: 1 1 var(--cr-toolbar-field-margin, 0);
+      }
+
+      :host(:not([narrow])) #centeredContent {
+        flex-basis: var(--cr-toolbar-center-basis, 0);
       }
 
       :host(:not([narrow])) #rightContent {
@@ -178,7 +183,9 @@
     </div>
 
     <div id="rightContent">
-      <slot></slot>
+      <div id="rightSpacer">
+        <slot></slot>
+      </div>
     </div>
   </template>
   <script src="cr_toolbar.js"></script>
