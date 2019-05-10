@@ -12,6 +12,7 @@
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/presenter/app_list_presenter_delegate.h"
 #include "ash/app_list/presenter/app_list_presenter_export.h"
+#include "ash/app_list/views/app_list_view.h"
 #include "ash/public/cpp/pagination/pagination_model_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/interfaces/app_list_view.mojom.h"

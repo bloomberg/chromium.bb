@@ -57,8 +57,14 @@ class SearchModel;
 class TransitionAnimationObserver;
 
 namespace {
+
 // The background corner radius in peeking and fullscreen state.
 constexpr int kAppListBackgroundRadius = 28;
+
+// The fraction of app list height that the app list must be released at in
+// order to transition to the next state.
+constexpr int kAppListThresholdDenominator = 3;
+
 }  // namespace
 
 // AppListView is the top-level view and controller of app list UI. It creates
@@ -281,6 +287,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   void OnTabletModeAnimationTransitionNotified(
       TabletModeAnimationTransition animation_transition);
 
+  // Called at the end of dragging AppList from Shelf.
+  void EndDragFromShelf(ash::mojom::AppListViewState app_list_state);
+
   views::Widget* get_fullscreen_widget_for_test() const {
     return fullscreen_widget_;
   }
@@ -420,7 +429,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   // Returns preferred y of fullscreen widget bounds in parent window for the
   // specified state.
-  int GetPreferredWidgetYForState(ash::mojom::AppListViewState state);
+  int GetPreferredWidgetYForState(ash::mojom::AppListViewState state) const;
 
   // Returns preferred fullscreen widget bounds in parent window for the
   // specified state. Note that this function should only be called after the
@@ -431,6 +440,11 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Updates y position of |app_list_background_shield_| based on the
   // |app_list_state_| and |is_in_drag_|.
   void UpdateAppListBackgroundYPosition();
+
+  // Returns whether it should update child views' position and opacity in each
+  // animation frame.
+  bool ShouldUpdateChildViewsDuringAnimation(
+      ash::mojom::AppListViewState target_state) const;
 
   AppListViewDelegate* delegate_;    // Weak. Owned by AppListService.
   AppListModel* const model_;        // Not Owned.
@@ -509,6 +523,14 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   // Records the presentation time for app launcher dragging.
   std::unique_ptr<ash::PresentationTimeRecorder> presentation_time_recorder_;
+
+  // Update child views' position and opacity in each animation frame when it is
+  // true. The padding between child views is affected by the height of
+  // AppListView. In the normal animation, child views' location is only updated
+  // at the end of animation. As a result, the dramatic change in padding leads
+  // to animation jank. However, updating child views in each animation frame is
+  // expensive. So it is only applied in the limited scenarios.
+  bool update_childview_each_frame_ = false;
 
   base::WeakPtrFactory<AppListView> weak_ptr_factory_;
 

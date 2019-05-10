@@ -9,7 +9,6 @@
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/views/app_list_main_view.h"
-#include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
@@ -211,16 +210,8 @@ void AppListPresenterImpl::UpdateYPositionAndOpacity(int y_position_in_screen,
 
 void AppListPresenterImpl::EndDragFromShelf(
     ash::mojom::AppListViewState app_list_state) {
-  if (view_) {
-    if (app_list_state == ash::mojom::AppListViewState::kClosed ||
-        view_->app_list_state() == ash::mojom::AppListViewState::kClosed) {
-      view_->Dismiss();
-    } else {
-      view_->SetState(app_list_state);
-    }
-    view_->SetIsInDrag(false);
-    view_->UpdateChildViewsYPositionAndOpacity();
-  }
+  if (view_)
+    view_->EndDragFromShelf(app_list_state);
 }
 
 void AppListPresenterImpl::ProcessMouseWheelOffset(

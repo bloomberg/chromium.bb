@@ -1229,6 +1229,49 @@ TEST_F(AppListPresenterDelegateTest, TapAutoHideShelfWithAppListOpened) {
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 }
 
+// Verifies that in clamshell mode, AppList has the expected state based on the
+// drag distance after dragging from Peeking state.
+TEST_F(AppListPresenterDelegateTest, DragAppListViewFromPeeking) {
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckState(ash::mojom::AppListViewState::kPeeking);
+
+  // Calculate |threshold| in the same way with AppListView::EndDrag.
+  const int threshold =
+      app_list::AppListConfig::instance().peeking_app_list_height() /
+      app_list::kAppListThresholdDenominator;
+
+  // Drag AppListView downward by |threshold| then release the gesture.
+  // Check the final state should be Peeking.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  app_list::AppListView* view = GetAppListView();
+  const int drag_to_peeking_distance = threshold;
+  gfx::Point drag_start = view->GetBoundsInScreen().top_center();
+  gfx::Point drag_end(drag_start.x(),
+                      drag_start.y() + drag_to_peeking_distance);
+  generator->GestureScrollSequence(
+      drag_start, drag_end,
+      generator->CalculateScrollDurationForFlingVelocity(drag_start, drag_end,
+                                                         2, 1000),
+      1000);
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckState(ash::mojom::AppListViewState::kPeeking);
+
+  // Drag AppListView upward by bigger distance then release the gesture.
+  // Check the final state should be kFullscreenAllApps.
+  const int drag_to_fullscreen_distance = threshold + 1;
+  drag_start = view->GetBoundsInScreen().top_center();
+  drag_end =
+      gfx::Point(drag_start.x(), drag_start.y() - drag_to_fullscreen_distance);
+
+  generator->GestureScrollSequence(
+      drag_start, drag_end,
+      generator->CalculateScrollDurationForFlingVelocity(drag_start, drag_end,
+                                                         2, 1000),
+      1000);
+  GetAppListTestHelper()->CheckState(
+      ash::mojom::AppListViewState::kFullscreenAllApps);
+}
+
 // Test a variety of behaviors for home launcher (app list in tablet mode).
 class AppListPresenterDelegateHomeLauncherTest
     : public AppListPresenterDelegateTest {
