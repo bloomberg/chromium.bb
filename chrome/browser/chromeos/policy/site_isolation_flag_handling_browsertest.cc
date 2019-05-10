@@ -16,8 +16,10 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
+#include "chrome/browser/chromeos/login/test/user_policy_mixin.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/login_policy_test_base.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -254,16 +256,18 @@ const Params kTestCases[] = {
            false /* expected_request_restart */,
            {} /* expected_flags_for_user */)};
 
+constexpr char kTestUserAccountId[] = "username@examle.com";
 constexpr char kTestUserGaiaId[] = "1111111111";
+constexpr char kTestUserPassword[] = "password";
 
 class SiteIsolationFlagHandlingTest
-    : public policy::LoginPolicyTestBase,
+    : public OobeBaseTest,
       public ::testing::WithParamInterface<Params> {
  protected:
   SiteIsolationFlagHandlingTest() = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    policy::LoginPolicyTestBase::SetUpCommandLine(command_line);
+    OobeBaseTest::SetUpCommandLine(command_line);
 
     // Simulate login_manager behavior: pass --site-per-process or
     // --isolate-origins between policy flag sentinels according to test case
@@ -285,39 +289,51 @@ class SiteIsolationFlagHandlingTest
       command_line->AppendSwitch(switches::kPolicySwitchesEnd);
   }
 
-  // This is called from |LoginPolicyTestBase| and specifies the user policy
-  // values to be served by the local policy test server.
-  void GetMandatoryPoliciesValue(base::DictionaryValue* policy) const override {
-    if (GetParam().user_policy_site_per_process) {
-      policy->Set(policy::key::kSitePerProcess,
-                  std::make_unique<base::Value>(true));
-    }
-    if (!GetParam().user_policy_isolate_origins.empty()) {
-      policy->Set(policy::key::kIsolateOrigins,
-                  std::make_unique<base::Value>(
-                      GetParam().user_policy_isolate_origins));
-    }
-  }
 
   void SetUpInProcessBrowserTestFixture() override {
-    policy::LoginPolicyTestBase::SetUpInProcessBrowserTestFixture();
+    SessionManagerClient::InitializeFakeInMemory();
 
     // Mark that chrome restart can be requested.
     // Note that AttemptRestart() is mocked out in UserSessionManager through
     // |SetAttemptRestartClosureInTests| (set up in SetUpOnMainThread).
-    SessionManagerClient::InitializeFake();
     FakeSessionManagerClient::Get()->set_supports_browser_restart(true);
+
+    std::unique_ptr<ScopedDevicePolicyUpdate> update =
+        device_state_.RequestDevicePolicyUpdate();
+    update->policy_payload()
+        ->mutable_ephemeral_users_enabled()
+        ->set_ephemeral_users_enabled(GetParam().ephemeral_users);
+    update.reset();
+
+    std::unique_ptr<ScopedUserPolicyUpdate> user_policy_update =
+        user_policy_.RequestCachedPolicyUpdate();
+    if (GetParam().user_policy_site_per_process) {
+      user_policy_update->policy_payload()
+          ->mutable_siteperprocess()
+          ->mutable_policy_options()
+          ->set_mode(em::PolicyOptions::MANDATORY);
+      user_policy_update->policy_payload()->mutable_siteperprocess()->set_value(
+          true);
+    }
+
+    if (!GetParam().user_policy_isolate_origins.empty()) {
+      user_policy_update->policy_payload()
+          ->mutable_isolateorigins()
+          ->mutable_policy_options()
+          ->set_mode(em::PolicyOptions::MANDATORY);
+      user_policy_update->policy_payload()->mutable_isolateorigins()->set_value(
+          GetParam().user_policy_isolate_origins);
+    }
+    user_policy_update.reset();
+
+    OobeBaseTest::SetUpInProcessBrowserTestFixture();
   }
 
   void SetUpOnMainThread() override {
-    policy::LoginPolicyTestBase::SetUpOnMainThread();
+    fake_gaia_.SetupFakeGaiaForLogin(kTestUserAccountId, kTestUserGaiaId,
+                                     "fake-refresh-token");
 
-    // Write ephemeral users status directly into CrosSettings.
-    scoped_testing_cros_settings_.device_settings()->SetBoolean(
-        kAccountsPrefEphemeralUsersEnabled, GetParam().ephemeral_users);
-
-    // This makes the user manager reload CrosSettings.
-    GetChromeUserManager()->OwnershipStatusChanged();
+    OobeBaseTest::SetUpOnMainThread();
 
     login_wait_loop_ = std::make_unique<base::RunLoop>();
 
@@ -369,12 +385,15 @@ class SiteIsolationFlagHandlingTest
   // This is important because ephemeral users only work on enrolled machines.
   DeviceStateMixin device_state_{
       &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
+  UserPolicyMixin user_policy_{
+      &mixin_host_,
+      AccountId::FromUserEmailGaiaId(kTestUserAccountId, kTestUserGaiaId)};
+
+  chromeos::FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
 
   // Observes for user session start.
   std::unique_ptr<content::WindowedNotificationObserver>
       user_session_started_observer_;
-  policy::MockConfigurationPolicyProvider provider_;
-  chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
   DISALLOW_COPY_AND_ASSIGN(SiteIsolationFlagHandlingTest);
 };
 
@@ -384,11 +403,13 @@ IN_PROC_BROWSER_TEST_P(SiteIsolationFlagHandlingTest, FlagHandlingTest) {
   // Start user sign-in. We can't use |LoginPolicyTestBase::LogIn|, because
   // it waits for a user session start unconditionally, which will not happen if
   // chrome requests a restart to set user-session flags.
-  SkipToLoginScreen();
+  chromeos::WizardController::SkipPostLoginScreensForTesting();
+  OobeBaseTest::WaitForSigninScreen();
+
   LoginDisplayHost::default_host()
       ->GetOobeUI()
       ->GetView<GaiaScreenHandler>()
-      ->ShowSigninScreenForTest(kAccountId, kAccountPassword, kEmptyServices);
+      ->ShowSigninScreenForTest(kTestUserAccountId, kTestUserPassword, "[]");
 
   // Wait for either the user session to start, or for restart to be requested
   // (whichever happens first).
@@ -408,7 +429,7 @@ IN_PROC_BROWSER_TEST_P(SiteIsolationFlagHandlingTest, FlagHandlingTest) {
 
   // Also verify flags if chrome was restarted.
   AccountId test_account_id =
-      AccountId::FromUserEmailGaiaId(GetAccount(), kTestUserGaiaId);
+      AccountId::FromUserEmailGaiaId(kTestUserAccountId, kTestUserGaiaId);
   std::vector<std::string> flags_for_user;
   bool has_flags_for_user = FakeSessionManagerClient::Get()->GetFlagsForUser(
       cryptohome::CreateAccountIdentifierFromAccountId(test_account_id),

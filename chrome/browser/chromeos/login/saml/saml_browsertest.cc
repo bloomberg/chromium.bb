@@ -38,6 +38,7 @@
 #include "chrome/browser/chromeos/login/test/https_forwarder.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
+#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_screen_tester.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
@@ -932,6 +933,14 @@ class SAMLPolicyTest : public SamlTest {
       &mixin_host_,
       chromeos::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
 
+  // Add a fake user so the login screen does not show GAIA auth by default.
+  // This enables tests to control when the GAIA is shown (and ensure it's
+  // loaded after SAML config has been set up).
+  chromeos::LoginManagerMixin login_manager_{
+      &mixin_host_,
+      {chromeos::LoginManagerMixin::TestUserInfo(
+          AccountId::FromUserEmailGaiaId("user@gmail.com", "1111"))}};
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SAMLPolicyTest);
 };
@@ -952,7 +961,9 @@ class SAMLPolicyTestWebUILogin : public SAMLPolicyTest {
 };
 
 SAMLPolicyTest::SAMLPolicyTest()
-    : device_policy_(test_helper_.device_policy()) {}
+    : device_policy_(test_helper_.device_policy()) {
+  device_state_.set_skip_initial_policy_setup(true);
+}
 
 SAMLPolicyTest::~SAMLPolicyTest() {}
 
@@ -1090,6 +1101,8 @@ void SAMLPolicyTest::ShowGAIALoginForm() {
 
 void SAMLPolicyTest::ShowSAMLInterstitial() {
   login_screen_load_observer_->Wait();
+  WaitForOobeUI();
+
   content::DOMMessageQueue message_queue;
   ASSERT_TRUE(
       content::ExecuteScript(GetLoginUI()->GetWebContents(),

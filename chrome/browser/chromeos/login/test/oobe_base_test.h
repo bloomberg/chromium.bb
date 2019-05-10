@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_TEST_OOBE_BASE_TEST_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_TEST_OOBE_BASE_TEST_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -33,6 +34,8 @@ class OobeBaseTest : public MixinBasedInProcessBrowserTest {
   // MixinBasedInProcessBrowserTest::
   void SetUp() override;
   void SetUpCommandLine(base::CommandLine* command_line) override;
+  void CreatedBrowserMainParts(
+      content::BrowserMainParts* browser_main_parts) override;
   void SetUpOnMainThread() override;
 
   // If this returns true (default), then SetUpOnMainThread would wait for

@@ -7,14 +7,10 @@
 #include <vector>
 
 #include "apps/test/app_window_waiter.h"
-#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
-#include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/fake_cws.h"
@@ -22,17 +18,13 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/app_launch_controller.h"
 #include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
+#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/embedded_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
-#include "chrome/browser/chromeos/policy/device_policy_builder.h"
-#include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/extensions/browsertest_util.h"
-#include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
@@ -46,7 +38,7 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
-#include "extensions/common/value_builder.h"
+#include "extensions/browser/sandboxed_unpacker.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
@@ -127,10 +119,9 @@ class TerminationObserver : public content::NotificationObserver {
 class AutoLaunchedKioskTest : public MixinBasedInProcessBrowserTest {
  public:
   AutoLaunchedKioskTest()
-      : install_attributes_(
-            chromeos::StubInstallAttributes::CreateCloudManaged("domain.com",
-                                                                "device_id")),
-        verifier_format_override_(crx_file::VerifierFormat::CRX3) {}
+      : verifier_format_override_(crx_file::VerifierFormat::CRX3) {
+    device_state_.set_domain("domain.com");
+  }
 
   ~AutoLaunchedKioskTest() override = default;
 
@@ -159,34 +150,30 @@ class AutoLaunchedKioskTest : public MixinBasedInProcessBrowserTest {
     MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
   }
 
-  bool SetUpUserDataDirectory() override {
-    InitDevicePolicy();
-
-    base::FilePath user_data_path;
-    if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_path)) {
-      ADD_FAILURE() << "Unable to get used data dir";
-      return false;
-    }
-
-    if (!CacheDevicePolicyToLocalState(user_data_path))
-      return false;
-
-    return MixinBasedInProcessBrowserTest::SetUpUserDataDirectory();
-  }
-
   void SetUpInProcessBrowserTestFixture() override {
     host_resolver()->AddRule("*", "127.0.0.1");
 
     SessionManagerClient::InitializeFakeInMemory();
 
     FakeSessionManagerClient::Get()->set_supports_browser_restart(true);
-    FakeSessionManagerClient::Get()->set_device_policy(
-        device_policy_helper_.device_policy()->GetBlob());
-    FakeSessionManagerClient::Get()->set_device_local_account_policy(
-        kTestAccountId, device_local_account_policy_.GetBlob());
 
-    // Arbitrary non-empty state keys.
-    FakeSessionManagerClient::Get()->set_server_backed_state_keys({"1"});
+    std::unique_ptr<ScopedDevicePolicyUpdate> device_policy_update =
+        device_state_.RequestDevicePolicyUpdate();
+    em::DeviceLocalAccountsProto* const device_local_accounts =
+        device_policy_update->policy_payload()->mutable_device_local_accounts();
+    device_local_accounts->set_auto_login_id(kTestAccountId);
+
+    em::DeviceLocalAccountInfoProto* const account =
+        device_local_accounts->add_account();
+    account->set_account_id(kTestAccountId);
+    account->set_type(em::DeviceLocalAccountInfoProto::ACCOUNT_TYPE_KIOSK_APP);
+    account->mutable_kiosk_app()->set_app_id(GetTestAppId());
+
+    device_policy_update.reset();
+
+    std::unique_ptr<ScopedUserPolicyUpdate> device_local_account_policy_update =
+        device_state_.RequestDeviceLocalAccountPolicyUpdate(kTestAccountId);
+    device_local_account_policy_update.reset();
 
     MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
   }
@@ -213,61 +200,6 @@ class AutoLaunchedKioskTest : public MixinBasedInProcessBrowserTest {
     termination_observer_.reset();
 
     MixinBasedInProcessBrowserTest::TearDownOnMainThread();
-  }
-
-  void InitDevicePolicy() {
-    device_policy_helper_.InstallOwnerKey();
-
-    // Create device policy, and cache it to local state.
-    em::DeviceLocalAccountsProto* const device_local_accounts =
-        device_policy_helper_.device_policy()
-            ->payload()
-            .mutable_device_local_accounts();
-
-    em::DeviceLocalAccountInfoProto* const account =
-        device_local_accounts->add_account();
-    account->set_account_id(kTestAccountId);
-    account->set_type(em::DeviceLocalAccountInfoProto::ACCOUNT_TYPE_KIOSK_APP);
-    account->mutable_kiosk_app()->set_app_id(GetTestAppId());
-
-    device_local_accounts->set_auto_login_id(kTestAccountId);
-
-    device_policy_helper_.device_policy()->Build();
-
-    device_local_account_policy_.policy_data().set_username(kTestAccountId);
-    device_local_account_policy_.policy_data().set_policy_type(
-        policy::dm_protocol::kChromePublicAccountPolicyType);
-    device_local_account_policy_.policy_data().set_settings_entity_id(
-        kTestAccountId);
-    device_local_account_policy_.Build();
-  }
-
-  bool CacheDevicePolicyToLocalState(const base::FilePath& user_data_path) {
-    em::PolicyData policy_data;
-    if (!device_policy_helper_.device_policy()->payload().SerializeToString(
-            policy_data.mutable_policy_value())) {
-      ADD_FAILURE() << "Failed to serialize device policy.";
-      return false;
-    }
-    const std::string policy_data_str = policy_data.SerializeAsString();
-    std::string policy_data_encoded;
-    base::Base64Encode(policy_data_str, &policy_data_encoded);
-
-    std::unique_ptr<base::DictionaryValue> local_state =
-        extensions::DictionaryBuilder()
-            .Set(prefs::kDeviceSettingsCache, policy_data_encoded)
-            .Set("PublicAccounts",
-                 extensions::ListBuilder().Append(GetTestAppUserId()).Build())
-            .Build();
-    local_state->SetKey(prefs::kOobeComplete, base::Value(true));
-
-    JSONFileValueSerializer serializer(
-        user_data_path.Append(chrome::kLocalStateFilename));
-    if (!serializer.Serialize(*local_state)) {
-      ADD_FAILURE() << "Failed to write local state.";
-      return false;
-    }
-    return true;
   }
 
   const std::string GetTestAppUserId() const {
@@ -322,9 +254,6 @@ class AutoLaunchedKioskTest : public MixinBasedInProcessBrowserTest {
   std::unique_ptr<TerminationObserver> termination_observer_;
 
  private:
-  chromeos::ScopedStubInstallAttributes install_attributes_;
-  policy::UserPolicyBuilder device_local_account_policy_;
-  policy::DevicePolicyCrosTestHelper device_policy_helper_;
   FakeCWS fake_cws_;
   extensions::SandboxedUnpacker::ScopedVerifierFormatOverrideForTest
       verifier_format_override_;
@@ -332,6 +261,9 @@ class AutoLaunchedKioskTest : public MixinBasedInProcessBrowserTest {
   EmbeddedTestServerSetupMixin embedded_test_server_setup_{
       &mixin_host_, embedded_test_server()};
   LoginManagerMixin login_manager_{&mixin_host_, {}};
+
+  DeviceStateMixin device_state_{
+      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
 
   DISALLOW_COPY_AND_ASSIGN(AutoLaunchedKioskTest);
 };

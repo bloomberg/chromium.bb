@@ -97,14 +97,7 @@ void LoginPolicyTestBase::SetMergeSessionParams() {
 
 void LoginPolicyTestBase::SkipToLoginScreen() {
   chromeos::WizardController::SkipPostLoginScreensForTesting();
-  chromeos::WizardController* const wizard_controller =
-      chromeos::WizardController::default_controller();
-  ASSERT_TRUE(wizard_controller);
-  wizard_controller->SkipToLoginForTesting(chromeos::LoginScreenContext());
-
-  content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-      content::NotificationService::AllSources()).Wait();
+  OobeBaseTest::WaitForSigninScreen();
 }
 
 void LoginPolicyTestBase::LogIn(const std::string& user_id,
