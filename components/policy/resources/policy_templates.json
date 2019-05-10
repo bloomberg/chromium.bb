@@ -12964,7 +12964,9 @@
       'id': 407,
       'caption': '''Enable third party software injection blocking''',
       'tags': [],
-      'desc': '''If the policy is set to false then third party software will be allowed to inject executable code into Chrome's processes. If the policy is unset or set to true then third party software will be prevented from injecting executable code into Chrome's processes.''',
+      'desc': '''If the policy is set to false then third party software will be allowed to inject executable code into Chrome's processes. If the policy is unset or set to true then third party software will be prevented from injecting executable code into Chrome's processes.
+
+      Regardless of the value of this policy, the browser will not currently block third party software from injecting executable code into its processes on a machine that is joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain.''',
     },
     {
       'name': 'SpellcheckEnabled',
