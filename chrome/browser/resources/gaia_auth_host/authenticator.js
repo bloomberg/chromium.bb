@@ -8,9 +8,8 @@
 /**
  * @fileoverview An UI component to authenciate to Chrome. The component hosts
  * IdP web pages in a webview. A client who is interested in monitoring
- * authentication events should pass a listener object of type
- * cr.login.GaiaAuthHost.Listener as defined in this file. After initialization,
- * call {@code load} to start the authentication flow.
+ * authentication events should subscribe itself via addEventListener(). After
+ * initialization, call {@code load} to start the authentication flow.
  *
  * See go/cros-auth-design for details on Google API.
  */
@@ -1022,9 +1021,6 @@ cr.define('cr.login', function() {
   Authenticator.SUPPORTED_PARAMS = SUPPORTED_PARAMS;
 
   return {
-    // TODO(guohui, xiyuan): Rename GaiaAuthHost to Authenticator once the old
-    // iframe-based flow is deprecated.
-    GaiaAuthHost: Authenticator,
     Authenticator: Authenticator
   };
 });

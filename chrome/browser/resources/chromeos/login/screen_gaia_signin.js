@@ -202,7 +202,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     decorate: function() {
       this.navigation_ = $('gaia-navigation');
 
-      this.gaiaAuthHost_ = new cr.login.GaiaAuthHost($('signin-frame'));
+      this.gaiaAuthHost_ = new cr.login.Authenticator($('signin-frame'));
       this.gaiaAuthHost_.addEventListener(
           'ready', this.onAuthReady_.bind(this));
 
@@ -334,7 +334,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       this.gaiaAuthParams_.doSamlRedirect = doSamlRedirect;
       this.gaiaAuthHost_.load(
-          cr.login.GaiaAuthHost.AuthMode.DEFAULT, this.gaiaAuthParams_);
+          cr.login.Authenticator.AuthMode.DEFAULT, this.gaiaAuthParams_);
     },
 
     /**
@@ -705,8 +705,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         Oobe.getInstance().updateScreenSize(this);
 
       var params = {};
-      for (var i in cr.login.GaiaAuthHost.SUPPORTED_PARAMS) {
-        var name = cr.login.GaiaAuthHost.SUPPORTED_PARAMS[i];
+      for (var i in cr.login.Authenticator.SUPPORTED_PARAMS) {
+        var name = cr.login.Authenticator.SUPPORTED_PARAMS[i];
         if (data[name])
           params[name] = data[name];
       }
@@ -773,7 +773,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * Whether the current auth flow is SAML.
      */
     isSAML: function() {
-      return this.gaiaAuthHost_.authFlow == cr.login.GaiaAuthHost.AuthFlow.SAML;
+      return this.gaiaAuthHost_.authFlow ==
+          cr.login.Authenticator.AuthFlow.SAML;
     },
 
     /**
