@@ -1713,53 +1713,17 @@
     "additional_compile_targets": [
       "chrome",
       "chrome/installer/linux"
-    ],
-    "isolated_scripts": [
-      {
-        "isolate_name": "chrome_sizes",
-        "merge": {
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "name": "chrome_sizes",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      }
     ]
   },
   "mac-google-rel": {
     "additional_compile_targets": [
       "chrome"
-    ],
-    "isolated_scripts": [
-      {
-        "isolate_name": "chrome_sizes",
-        "merge": {
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "name": "chrome_sizes",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      }
     ]
   },
   "win-google-rel": {
     "additional_compile_targets": [
       "chrome",
       "chrome_official_builder"
-    ],
-    "isolated_scripts": [
-      {
-        "isolate_name": "chrome_sizes",
-        "merge": {
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "name": "chrome_sizes",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      }
     ]
   }
 }

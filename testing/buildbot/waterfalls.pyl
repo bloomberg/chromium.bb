@@ -679,26 +679,17 @@
           'chrome',
           'chrome/installer/linux',
         ],
-        'test_suites': {
-          'isolated_scripts': 'chrome_sizes',
-        },
       },
       'mac-google-rel': {
         'additional_compile_targets': [
           'chrome',
         ],
-        'test_suites': {
-          'isolated_scripts': 'chrome_sizes',
-        },
       },
       'win-google-rel': {
         'additional_compile_targets': [
           'chrome',
           'chrome_official_builder',
         ],
-        'test_suites': {
-          'isolated_scripts': 'chrome_sizes',
-        },
       },
     },
   },
