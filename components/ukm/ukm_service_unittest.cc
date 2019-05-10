@@ -285,7 +285,7 @@ TEST_F(UkmServiceTest, SourceSerialization) {
 
   EXPECT_EQ(id, proto_source.id());
   EXPECT_EQ(GURL("https://google.com/final").spec(), proto_source.url());
-  EXPECT_FALSE(proto_source.has_initial_url());
+  EXPECT_TRUE(proto_source.has_initial_url());
 }
 
 TEST_F(UkmServiceTest, AddEntryWithEmptyMetrics) {
@@ -442,43 +442,34 @@ TEST_F(UkmServiceTest, GetNewSourceID) {
 }
 
 TEST_F(UkmServiceTest, RecordInitialUrl) {
-  for (bool should_record_initial_url : {true, false}) {
-    base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
-    ScopedUkmFeatureParams params(
-        base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-        {{"RecordInitialUrl", should_record_initial_url ? "true" : "false"}});
+  ClearPrefs();
+  UkmService service(&prefs_, &client_,
+                     true /* restrict_to_whitelisted_entries */);
+  TestRecordingHelper recorder(&service);
+  EXPECT_EQ(GetPersistedLogCount(), 0);
+  service.Initialize();
+  task_runner_->RunUntilIdle();
+  service.EnableRecording(/*extensions=*/false);
+  service.EnableReporting();
 
-    ClearPrefs();
-    UkmService service(&prefs_, &client_,
-                       true /* restrict_to_whitelisted_entries */);
-    TestRecordingHelper recorder(&service);
-    EXPECT_EQ(GetPersistedLogCount(), 0);
-    service.Initialize();
-    task_runner_->RunUntilIdle();
-    service.EnableRecording(/*extensions=*/false);
-    service.EnableReporting();
+  ukm::SourceId id = GetWhitelistedSourceId(0);
+  UkmSource::NavigationData navigation_data;
+  navigation_data.urls = {GURL("https://google.com/initial"),
+                          GURL("https://google.com/final")};
+  recorder.RecordNavigation(id, navigation_data);
 
-    ukm::SourceId id = GetWhitelistedSourceId(0);
-    UkmSource::NavigationData navigation_data;
-    navigation_data.urls = {GURL("https://google.com/initial"),
-                            GURL("https://google.com/final")};
-    recorder.RecordNavigation(id, navigation_data);
+  service.Flush();
+  EXPECT_EQ(GetPersistedLogCount(), 1);
 
-    service.Flush();
-    EXPECT_EQ(GetPersistedLogCount(), 1);
+  Report proto_report = GetPersistedReport();
+  EXPECT_EQ(1, proto_report.sources_size());
+  const Source& proto_source = proto_report.sources(0);
 
-    Report proto_report = GetPersistedReport();
-    EXPECT_EQ(1, proto_report.sources_size());
-    const Source& proto_source = proto_report.sources(0);
-
-    EXPECT_EQ(id, proto_source.id());
-    EXPECT_EQ(GURL("https://google.com/final").spec(), proto_source.url());
-    EXPECT_EQ(should_record_initial_url, proto_source.has_initial_url());
-    if (should_record_initial_url) {
-      EXPECT_EQ(GURL("https://google.com/initial").spec(),
-                proto_source.initial_url());
-    }
-  }
+  EXPECT_EQ(id, proto_source.id());
+  EXPECT_EQ(GURL("https://google.com/final").spec(), proto_source.url());
+  EXPECT_TRUE(proto_source.has_initial_url());
+  EXPECT_EQ(GURL("https://google.com/initial").spec(),
+            proto_source.initial_url());
 }
 
 TEST_F(UkmServiceTest, RestrictToWhitelistedSourceIds) {

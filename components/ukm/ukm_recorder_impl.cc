@@ -88,12 +88,6 @@ bool HasSupportedScheme(const GURL& url) {
          url.SchemeIs(kExtensionScheme) || url.SchemeIs(kAppScheme);
 }
 
-// True if we should record the initial_url field of the UKM Source proto.
-bool ShouldRecordInitialUrl() {
-  return base::GetFieldTrialParamByFeatureAsBool(kUkmFeature,
-                                                 "RecordInitialUrl", false);
-}
-
 enum class DroppedDataReason {
   NOT_DROPPED = 0,
   RECORDING_DISABLED = 1,
@@ -325,8 +319,6 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
     }
     Source* proto_source = report->add_sources();
     kv.second->PopulateProto(proto_source);
-    if (!ShouldRecordInitialUrl())
-      proto_source->clear_initial_url();
 
     serialized_source_type_counts[GetSourceIdType(kv.first)]++;
   }
