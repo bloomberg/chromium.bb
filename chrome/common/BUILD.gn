@@ -168,8 +168,6 @@ static_library("common") {
     "page_load_metrics/page_load_metrics_util.h",
     "page_load_metrics/page_load_timing.cc",
     "page_load_metrics/page_load_timing.h",
-    "page_load_metrics/page_track_decider.cc",
-    "page_load_metrics/page_track_decider.h",
     "pdf_util.cc",
     "pdf_util.h",
     "pref_names_util.cc",
