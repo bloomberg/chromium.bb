@@ -620,9 +620,9 @@ public class LibraryLoader {
 
         if (processType == LibraryProcessType.PROCESS_BROWSER
                 && PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION) {
-            // Perform the detection and deletion of obsolete native libraries on a background
+            // Perform the detection and deletion of obsolete native libraries on a
             // background thread.
-            PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
+            new Thread(() -> {
                 final String suffix = BuildInfo.getInstance().extractedFileSuffix;
                 final File[] files = getLibraryDir().listFiles();
                 if (files == null) return;
@@ -645,7 +645,7 @@ public class LibraryLoader {
                         }
                     }
                 }
-            });
+            }).start();
         }
 
         // From this point on, native code is ready to use and checkIsReady()
