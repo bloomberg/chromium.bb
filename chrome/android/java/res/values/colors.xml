@@ -181,9 +181,6 @@
     <color name="payments_section_edit_background">@color/modern_secondary_color</color>
     <color name="payments_section_chevron">#B2B2B2</color>
 
-    <!-- Translate Infobar colors -->
-    <color name="translate_overflow_menu_divider_color">@color/modern_grey_300</color>
-
     <!-- Other colors -->
     <color name="media_viewer_bg">#000000</color>
     <color name="image_viewer_bg">#0E0E0E</color>
