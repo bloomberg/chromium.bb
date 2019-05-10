@@ -2234,6 +2234,31 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklistUninstallPolicy) {
   EXPECT_FALSE(service->GetInstalledExtension(kGoodCrxId));
 }
 
+/// Ensure that when INSTALLATION_REMOVED is set
+// that blacklisted extensions are removed from the device.
+IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallRemovedPolicy) {
+  EXPECT_TRUE(InstallExtension(kGoodCrxName));
+
+  extensions::ExtensionService* service = extension_service();
+  EXPECT_TRUE(service->GetInstalledExtension(kGoodCrxId));
+
+  // Should uninstall good_v1.crx.
+  base::DictionaryValue dict_value;
+  dict_value.SetString(std::string(kGoodCrxId) + "." +
+                           extensions::schema_constants::kInstallationMode,
+                       extensions::schema_constants::kRemoved);
+  PolicyMap policies;
+  policies.Set(key::kExtensionSettings, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               dict_value.CreateDeepCopy(), nullptr);
+  extensions::TestExtensionRegistryObserver observer(
+      extensions::ExtensionRegistry::Get(browser()->profile()));
+  UpdateProviderPolicy(policies);
+  observer.WaitForExtensionUnloaded();
+
+  EXPECT_FALSE(service->GetInstalledExtension(kGoodCrxId));
+}
+
 // Ensure that bookmark apps are not blocked by the ExtensionAllowedTypes
 // policy.
 IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionAllowedTypes_BookmarkApp) {
