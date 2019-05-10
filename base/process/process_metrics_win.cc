@@ -143,9 +143,9 @@ TimeDelta ProcessMetrics::GetCumulativeCPUUsage() {
 
   if (!GetProcessTimes(process_.Get(), &creation_time, &exit_time, &kernel_time,
                        &user_time)) {
-    // We don't assert here because in some cases (such as in the Task Manager)
-    // we may call this function on a process that has just exited but we have
-    // not yet received the notification.
+    // This should never fail because we duplicate the handle to guarantee it
+    // will remain valid.
+    DCHECK(false);
     return TimeDelta();
   }
 
