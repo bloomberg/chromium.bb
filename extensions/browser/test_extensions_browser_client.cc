@@ -7,7 +7,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
-#include "extensions/browser/component_extension_resource_manager.h"
 #include "extensions/browser/extension_host_delegate.h"
 #include "extensions/browser/test_runtime_api_delegate.h"
 #include "extensions/browser/updater/null_extension_cache.h"
@@ -136,8 +135,8 @@ TestExtensionsBrowserClient::MaybeCreateResourceBundleRequestJob(
 base::FilePath TestExtensionsBrowserClient::GetBundleResourcePath(
     const network::ResourceRequest& request,
     const base::FilePath& extension_resources_path,
-    ComponentExtensionResourceInfo* resource_info) const {
-  *resource_info = {};
+    int* resource_id) const {
+  *resource_id = 0;
   return base::FilePath();
 }
 
@@ -145,7 +144,7 @@ void TestExtensionsBrowserClient::LoadResourceFromResourceBundle(
     const network::ResourceRequest& request,
     network::mojom::URLLoaderRequest loader,
     const base::FilePath& resource_relative_path,
-    const ComponentExtensionResourceInfo& resource_info,
+    int resource_id,
     const std::string& content_security_policy,
     network::mojom::URLLoaderClientPtr client,
     bool send_cors_header) {

@@ -266,16 +266,16 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
         // caller has asked for compressed icons (i.e. PNG-formatted data), not
         // uncompressed (i.e. a gfx::ImageSkia).
         if (extension->location() == extensions::Manifest::COMPONENT) {
-          extensions::ComponentExtensionResourceInfo resource_info;
+          int resource_id = 0;
           const extensions::ComponentExtensionResourceManager* manager =
               extensions::ExtensionsBrowserClient::Get()
                   ->GetComponentExtensionResourceManager();
           if (manager && manager->IsComponentExtensionResource(
                              extension->path(), ext_resource.relative_path(),
-                             &resource_info)) {
+                             &resource_id)) {
             base::StringPiece data =
                 ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-                    resource_info.resource_id);
+                    resource_id);
             RunCallbackWithCompressedData(
                 size_hint_in_dip, default_icon_resource, is_placeholder_icon,
                 icon_effects, std::move(callback),

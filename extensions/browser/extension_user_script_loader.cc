@@ -95,15 +95,15 @@ bool LoadScriptContent(const HostID& host_id,
       script_file->extension_root(), script_file->relative_path(),
       ExtensionResource::SYMLINKS_MUST_RESOLVE_WITHIN_ROOT);
   if (path.empty()) {
-    ComponentExtensionResourceInfo resource_info;
+    int resource_id = 0;
     if (ExtensionsBrowserClient::Get()
             ->GetComponentExtensionResourceManager()
             ->IsComponentExtensionResource(script_file->extension_root(),
                                            script_file->relative_path(),
-                                           &resource_info)) {
-      DCHECK(!resource_info.gzipped);
+                                           &resource_id)) {
       const ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-      content = rb.GetRawDataResource(resource_info.resource_id).as_string();
+      DCHECK(!rb.IsGzipped(resource_id));
+      content = rb.GetRawDataResource(resource_id).as_string();
     } else {
       LOG(WARNING) << "Failed to get file path to "
                    << script_file->relative_path().value() << " from "

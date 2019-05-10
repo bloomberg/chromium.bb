@@ -4,8 +4,8 @@
     <output filename="grit/file_manager_resources.h" type="rc_header">
       <emit emit_type='prepend'></emit>
     </output>
-    <output filename="grit/file_manager_resources_map.cc" type="gzipped_resource_file_map_source" />
-    <output filename="grit/file_manager_resources_map.h" type="gzipped_resource_map_header" />
+    <output filename="grit/file_manager_resources_map.cc" type="resource_file_map_source" />
+    <output filename="grit/file_manager_resources_map.h" type="resource_map_header" />
     <output filename="file_manager_resources.pak" type="data_package" />
     <output filename="file_manager_resources.rc" type="rc_all" />
   </outputs>

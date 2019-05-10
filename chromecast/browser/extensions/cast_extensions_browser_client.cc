@@ -119,7 +119,7 @@ CastExtensionsBrowserClient::MaybeCreateResourceBundleRequestJob(
 base::FilePath CastExtensionsBrowserClient::GetBundleResourcePath(
     const network::ResourceRequest& request,
     const base::FilePath& extension_resources_path,
-    ComponentExtensionResourceInfo* resource_info) const {
+    int* resource_id) const {
   return base::FilePath();
 }
 
@@ -127,7 +127,7 @@ void CastExtensionsBrowserClient::LoadResourceFromResourceBundle(
     const network::ResourceRequest& request,
     network::mojom::URLLoaderRequest loader,
     const base::FilePath& resource_relative_path,
-    const ComponentExtensionResourceInfo& resource_info,
+    int resource_id,
     const std::string& content_security_policy,
     network::mojom::URLLoaderClientPtr client,
     bool send_cors_header) {
