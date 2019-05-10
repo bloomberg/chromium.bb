@@ -101,14 +101,9 @@ class NearbyDistanceTool : public InspectTool {
   bool HandleMouseMove(const WebMouseEvent& event) override;
   bool HandleMouseUp(const WebMouseEvent& event) override;
   void Draw(float scale) override;
-  void VisitNode(Node* node);
-  void VisitPseudoLayoutChildren(PseudoId pseudo_id,
-                                 LayoutObject* layout_object);
-  void AddLayoutBox(LayoutObject* layout_object);
   void Trace(blink::Visitor* visitor) override;
 
   Member<Node> hovered_node_;
-  std::unique_ptr<protocol::Array<protocol::Array<double>>> boxes_;
   DISALLOW_COPY_AND_ASSIGN(NearbyDistanceTool);
 };
 

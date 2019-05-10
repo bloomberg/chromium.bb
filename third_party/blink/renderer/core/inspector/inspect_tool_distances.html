@@ -13,11 +13,14 @@
  */
 function drawDistances(data)
 {
-  const rect = quadToRect(getVisualQuad(data));
+  const info = data['distanceInfo'];
+  if (!info)
+    return;
+  const rect = quadToRect(getVisualQuad(info));
   const context = window.context;
   context.save();
   context.strokeStyle = '#ccc';
-  for (const box of data['boxes'])
+  for (const box of info['boxes'])
     context.strokeRect(box[0], box[1], box[2], box[3]);
   context.strokeStyle = '#f00';
   context.lineWidth = 1;

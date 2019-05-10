@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -22,7 +21,6 @@
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/inspector/inspector_css_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_dom_agent.h"
-#include "third_party/blink/renderer/core/inspector/inspector_dom_snapshot_agent.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -95,40 +93,6 @@ Node* HoveredNodeForEvent(LocalFrame* frame,
       ignore_pointer_events_none);
 }
 
-std::unique_ptr<protocol::Array<double>> RectForLayoutRect(
-    const LayoutRect& rect) {
-  std::unique_ptr<protocol::Array<double>> result =
-      protocol::Array<double>::create();
-
-  result->addItem(rect.X());
-  result->addItem(rect.Y());
-  result->addItem(rect.Width());
-  result->addItem(rect.Height());
-  return result;
-}
-
-// Returns |layout_object|'s bounding box in document coordinates.
-LayoutRect RectInRootFrame(const LayoutObject* layout_object) {
-  LocalFrameView* local_frame_view = layout_object->GetFrameView();
-  LayoutRect rect_in_absolute(layout_object->AbsoluteBoundingBoxFloatRect());
-  return local_frame_view
-             ? local_frame_view->ConvertToRootFrame(rect_in_absolute)
-             : rect_in_absolute;
-}
-
-LayoutRect TextFragmentRectInRootFrame(
-    const LayoutObject* layout_object,
-    const LayoutText::TextBoxInfo& text_box) {
-  FloatRect local_coords_text_box_rect(text_box.local_rect);
-  LayoutRect absolute_coords_text_box_rect(
-      layout_object->LocalToAbsoluteQuad(local_coords_text_box_rect)
-          .BoundingBox());
-  LocalFrameView* local_frame_view = layout_object->GetFrameView();
-  return local_frame_view ? local_frame_view->ConvertToRootFrame(
-                                absolute_coords_text_box_rect)
-                          : absolute_coords_text_box_rect;
-}
-
 }  // namespace
 
 // SearchingForNodeTool --------------------------------------------------------
@@ -164,7 +128,7 @@ void SearchingForNodeTool::Draw(float scale) {
                              node->GetLayoutObject() &&
                              node->GetDocument().GetFrame();
   InspectorHighlight highlight(node, *highlight_config_, contrast_info_,
-                               append_element_info, is_locked_ancestor_);
+                               append_element_info, false, is_locked_ancestor_);
   if (event_target_node_) {
     highlight.AppendEventTargetQuads(event_target_node_.Get(),
                                      *highlight_config_);
@@ -341,7 +305,7 @@ void NodeHighlightTool::DrawNode() {
                              node_->GetLayoutObject() &&
                              node_->GetDocument().GetFrame();
   InspectorHighlight highlight(node_.Get(), *highlight_config_, contrast_info_,
-                               append_element_info, is_locked_ancestor_);
+                               append_element_info, false, is_locked_ancestor_);
   std::unique_ptr<protocol::DictionaryValue> highlight_json =
       highlight.AsProtocolValue();
   overlay_->EvaluateInOverlay("drawHighlight", std::move(highlight_json));
@@ -366,6 +330,7 @@ void NodeHighlightTool::DrawMatchingSelector() {
       continue;
     InspectorHighlight highlight(element, *highlight_config_, contrast_info_,
                                  false /* append_element_info */,
+                                 false /* append_distance_info */,
                                  false /* is_locked_ancestor */);
     overlay_->EvaluateInOverlay("drawHighlight", highlight.AsProtocolValue());
   }
@@ -411,6 +376,12 @@ bool NearbyDistanceTool::HandleMouseMove(const WebMouseEvent& event) {
     }
   }
 
+  // If |node| is in a display locked subtree, highlight the highest locked
+  // element instead.
+  if (Node* locked_ancestor =
+          DisplayLockUtilities::HighestLockedExclusiveAncestor(*node))
+    node = locked_ancestor;
+
   // Store values for the highlight.
   hovered_node_ = node;
   return true;
@@ -424,103 +395,11 @@ void NearbyDistanceTool::Draw(float scale) {
   Node* node = hovered_node_.Get();
   if (!node)
     return;
-  node->GetDocument().EnsurePaintLocationDataValidForNode(node);
-  LayoutObject* layout_object = node->GetLayoutObject();
-  if (!layout_object)
-    return;
-
-  CSSStyleDeclaration* style =
-      MakeGarbageCollected<CSSComputedStyleDeclaration>(node, true);
-  std::unique_ptr<protocol::DictionaryValue> computed_style =
-      protocol::DictionaryValue::create();
-  for (size_t i = 0; i < style->length(); ++i) {
-    AtomicString name(style->item(i));
-    const CSSValue* value = style->GetPropertyCSSValueInternal(name);
-    if (!value)
-      continue;
-    if (value->IsColorValue()) {
-      Color color = static_cast<const cssvalue::CSSColorValue*>(value)->Value();
-      String hex_color =
-          String::Format("#%02X%02X%02X%02X", color.Red(), color.Green(),
-                         color.Blue(), color.Alpha());
-      computed_style->setString(name, hex_color);
-    } else {
-      computed_style->setString(name, value->CssText());
-    }
-  }
-
-  std::unique_ptr<protocol::DOM::BoxModel> model;
-  InspectorHighlight::GetBoxModel(node, &model, false);
-  boxes_ = protocol::Array<protocol::Array<double>>::create();
-  VisitNode(&(node->GetDocument()));
-  LayoutRect document_rect(node->GetDocument().GetLayoutView()->DocumentRect());
-  LocalFrameView* local_frame_view = node->GetDocument().View();
-  boxes_->addItem(
-      RectForLayoutRect(local_frame_view->ConvertToRootFrame(document_rect)));
-
-  std::unique_ptr<protocol::DictionaryValue> object =
-      protocol::DictionaryValue::create();
-  object->setArray("boxes", boxes_->toValue());
-  object->setArray("content", model->getContent()->toValue());
-  object->setArray("padding", model->getPadding()->toValue());
-  object->setArray("border", model->getBorder()->toValue());
-  object->setObject("style", std::move(computed_style));
-  overlay_->EvaluateInOverlay("drawDistances", std::move(object));
-}
-
-void NearbyDistanceTool::VisitNode(Node* node) {
-  LayoutObject* layout_object = node->GetLayoutObject();
-  if (layout_object)
-    AddLayoutBox(layout_object);
-
-  if (node->IsElementNode()) {
-    Element* element = ToElement(node);
-
-    if (element->GetPseudoId()) {
-      if (layout_object)
-        VisitPseudoLayoutChildren(element->GetPseudoId(), layout_object);
-    } else {
-      for (PseudoId pseudo_id :
-           {kPseudoIdFirstLetter, kPseudoIdBefore, kPseudoIdAfter}) {
-        if (Node* pseudo_node = element->GetPseudoElement(pseudo_id))
-          VisitNode(pseudo_node);
-      }
-    }
-  }
-
-  if (!node->IsContainerNode())
-    return;
-  Node* first_child = InspectorDOMSnapshotAgent::FirstChild(*node, false);
-  for (Node* child = first_child; child;
-       child = InspectorDOMSnapshotAgent::NextSibling(*child, false))
-    VisitNode(child);
-}
-
-void NearbyDistanceTool::VisitPseudoLayoutChildren(
-    PseudoId pseudo_id,
-    LayoutObject* layout_object) {
-  protocol::DOM::PseudoType pseudo_type;
-  if (!InspectorDOMAgent::GetPseudoElementType(pseudo_id, &pseudo_type))
-    return;
-  for (LayoutObject* child = layout_object->SlowFirstChild(); child;
-       child = child->NextSibling()) {
-    if (child->IsAnonymous())
-      AddLayoutBox(child);
-  }
-}
-
-void NearbyDistanceTool::AddLayoutBox(LayoutObject* layout_object) {
-  if (layout_object->IsText()) {
-    LayoutText* layout_text = ToLayoutText(layout_object);
-    for (const auto& text_box : layout_text->GetTextBoxInfo()) {
-      LayoutRect text_rect(
-          TextFragmentRectInRootFrame(layout_object, text_box));
-      boxes_->addItem(RectForLayoutRect(text_rect));
-    }
-  } else {
-    LayoutRect rect(RectInRootFrame(layout_object));
-    boxes_->addItem(RectForLayoutRect(rect));
-  }
+  InspectorHighlight highlight(
+      node, InspectorHighlight::DefaultConfig(),
+      InspectorHighlightContrastInfo(), false /* append_element_info */,
+      true /* append_distance_info */, false /* is_locked_ancestor */);
+  overlay_->EvaluateInOverlay("drawDistances", highlight.AsProtocolValue());
 }
 
 void NearbyDistanceTool::Trace(blink::Visitor* visitor) {

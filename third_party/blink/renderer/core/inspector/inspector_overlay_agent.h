@@ -156,6 +156,7 @@ class CORE_EXPORT InspectorOverlayAgent final
       protocol::Maybe<protocol::DOM::RGBA> content_outline_color) override;
   protocol::Response getHighlightObjectForTest(
       int node_id,
+      protocol::Maybe<bool> include_distance,
       std::unique_ptr<protocol::DictionaryValue>* highlight) override;
 
   // InspectorBaseAgent overrides.

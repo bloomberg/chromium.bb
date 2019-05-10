@@ -13,11 +13,14 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
+#include "third_party/blink/renderer/core/inspector/inspector_dom_agent.h"
+#include "third_party/blink/renderer/core/inspector/inspector_dom_snapshot_agent.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_grid.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -394,6 +397,40 @@ void CollectQuads(Node* node, Vector<FloatQuad>& out_quads) {
   }
 }
 
+std::unique_ptr<protocol::Array<double>> RectForLayoutRect(
+    const LayoutRect& rect) {
+  std::unique_ptr<protocol::Array<double>> result =
+      protocol::Array<double>::create();
+
+  result->addItem(rect.X());
+  result->addItem(rect.Y());
+  result->addItem(rect.Width());
+  result->addItem(rect.Height());
+  return result;
+}
+
+// Returns |layout_object|'s bounding box in document coordinates.
+LayoutRect RectInRootFrame(const LayoutObject* layout_object) {
+  LocalFrameView* local_frame_view = layout_object->GetFrameView();
+  LayoutRect rect_in_absolute(layout_object->AbsoluteBoundingBoxFloatRect());
+  return local_frame_view
+             ? local_frame_view->ConvertToRootFrame(rect_in_absolute)
+             : rect_in_absolute;
+}
+
+LayoutRect TextFragmentRectInRootFrame(
+    const LayoutObject* layout_object,
+    const LayoutText::TextBoxInfo& text_box) {
+  FloatRect local_coords_text_box_rect(text_box.local_rect);
+  LayoutRect absolute_coords_text_box_rect(
+      layout_object->LocalToAbsoluteQuad(local_coords_text_box_rect)
+          .BoundingBox());
+  LocalFrameView* local_frame_view = layout_object->GetFrameView();
+  return local_frame_view ? local_frame_view->ConvertToRootFrame(
+                                absolute_coords_text_box_rect)
+                          : absolute_coords_text_box_rect;
+}
+
 }  // namespace
 
 InspectorHighlight::InspectorHighlight(float scale)
@@ -413,6 +450,7 @@ InspectorHighlight::InspectorHighlight(
     const InspectorHighlightConfig& highlight_config,
     const InspectorHighlightContrastInfo& node_contrast,
     bool append_element_info,
+    bool append_distance_info,
     bool is_locked_ancestor)
     : highlight_paths_(protocol::ListValue::create()),
       show_rulers_(highlight_config.show_rulers),
@@ -434,9 +472,103 @@ InspectorHighlight::InspectorHighlight(
 
   if (element_info_ && is_locked_ancestor)
     element_info_->setString("isLockedAncestor", "true");
+  if (append_distance_info)
+    AppendDistanceInfo(node);
 }
 
 InspectorHighlight::~InspectorHighlight() = default;
+
+void InspectorHighlight::AppendDistanceInfo(Node* node) {
+  if (!InspectorHighlight::GetBoxModel(node, &model_, false))
+    return;
+  boxes_ = protocol::Array<protocol::Array<double>>::create();
+  computed_style_ = protocol::DictionaryValue::create();
+
+  node->GetDocument().EnsurePaintLocationDataValidForNode(node);
+  LayoutObject* layout_object = node->GetLayoutObject();
+  if (!layout_object)
+    return;
+
+  CSSStyleDeclaration* style =
+      MakeGarbageCollected<CSSComputedStyleDeclaration>(node, true);
+  for (size_t i = 0; i < style->length(); ++i) {
+    AtomicString name(style->item(i));
+    const CSSValue* value = style->GetPropertyCSSValueInternal(name);
+    if (!value)
+      continue;
+    if (value->IsColorValue()) {
+      Color color = static_cast<const cssvalue::CSSColorValue*>(value)->Value();
+      String hex_color =
+          String::Format("#%02X%02X%02X%02X", color.Red(), color.Green(),
+                         color.Blue(), color.Alpha());
+      computed_style_->setString(name, hex_color);
+    } else {
+      computed_style_->setString(name, value->CssText());
+    }
+  }
+
+  VisitAndCollectDistanceInfo(&(node->GetDocument()));
+  LayoutRect document_rect(node->GetDocument().GetLayoutView()->DocumentRect());
+  LocalFrameView* local_frame_view = node->GetDocument().View();
+  boxes_->addItem(
+      RectForLayoutRect(local_frame_view->ConvertToRootFrame(document_rect)));
+}
+
+void InspectorHighlight::VisitAndCollectDistanceInfo(Node* node) {
+  LayoutObject* layout_object = node->GetLayoutObject();
+  if (layout_object)
+    AddLayoutBoxToDistanceInfo(layout_object);
+
+  if (node->IsElementNode()) {
+    Element* element = ToElement(node);
+
+    if (element->GetPseudoId()) {
+      if (layout_object)
+        VisitAndCollectDistanceInfo(element->GetPseudoId(), layout_object);
+    } else {
+      for (PseudoId pseudo_id :
+           {kPseudoIdFirstLetter, kPseudoIdBefore, kPseudoIdAfter}) {
+        if (Node* pseudo_node = element->GetPseudoElement(pseudo_id))
+          VisitAndCollectDistanceInfo(pseudo_node);
+      }
+    }
+  }
+
+  if (!node->IsContainerNode())
+    return;
+  Node* first_child = InspectorDOMSnapshotAgent::FirstChild(*node, false);
+  for (Node* child = first_child; child;
+       child = InspectorDOMSnapshotAgent::NextSibling(*child, false))
+    VisitAndCollectDistanceInfo(child);
+}
+
+void InspectorHighlight::VisitAndCollectDistanceInfo(
+    PseudoId pseudo_id,
+    LayoutObject* layout_object) {
+  protocol::DOM::PseudoType pseudo_type;
+  if (!InspectorDOMAgent::GetPseudoElementType(pseudo_id, &pseudo_type))
+    return;
+  for (LayoutObject* child = layout_object->SlowFirstChild(); child;
+       child = child->NextSibling()) {
+    if (child->IsAnonymous())
+      AddLayoutBoxToDistanceInfo(child);
+  }
+}
+
+void InspectorHighlight::AddLayoutBoxToDistanceInfo(
+    LayoutObject* layout_object) {
+  if (layout_object->IsText()) {
+    LayoutText* layout_text = ToLayoutText(layout_object);
+    for (const auto& text_box : layout_text->GetTextBoxInfo()) {
+      LayoutRect text_rect(
+          TextFragmentRectInRootFrame(layout_object, text_box));
+      boxes_->addItem(RectForLayoutRect(text_rect));
+    }
+  } else {
+    LayoutRect rect(RectInRootFrame(layout_object));
+    boxes_->addItem(RectForLayoutRect(rect));
+  }
+}
 
 void InspectorHighlight::AppendQuad(const FloatQuad& quad,
                                     const Color& fill_color,
@@ -556,6 +688,16 @@ std::unique_ptr<protocol::DictionaryValue> InspectorHighlight::AsProtocolValue()
   object->setValue("paths", highlight_paths_->clone());
   object->setBoolean("showRulers", show_rulers_);
   object->setBoolean("showExtensionLines", show_extension_lines_);
+  if (model_) {
+    std::unique_ptr<protocol::DictionaryValue> distance_info =
+        protocol::DictionaryValue::create();
+    distance_info->setArray("boxes", boxes_->toValue());
+    distance_info->setArray("content", model_->getContent()->toValue());
+    distance_info->setArray("padding", model_->getPadding()->toValue());
+    distance_info->setArray("border", model_->getBorder()->toValue());
+    distance_info->setValue("style", computed_style_->clone());
+    object->setValue("distanceInfo", std::move(distance_info));
+  }
   if (element_info_)
     object->setValue("elementInfo", element_info_->clone());
   if (grid_info_ && grid_info_->size() > 0)
