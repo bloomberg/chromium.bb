@@ -35,6 +35,7 @@
 #include "chrome/browser/chromeos/login/test/network_portal_detector_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/oobe_window_visibility_waiter.h"
 #include "chrome/browser/chromeos/login/test/test_condition_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
@@ -667,12 +668,7 @@ class KioskTest : public OobeBaseTest {
         apps::AppWindowWaiter(app_window_registry, test_app_id_).Wait();
     EXPECT_TRUE(window);
 
-    // Login screen should be gone or fading out.
-    LoginDisplayHost* login_display_host = LoginDisplayHost::default_host();
-    EXPECT_TRUE(
-        login_display_host == NULL ||
-        login_display_host->GetNativeWindow()->layer()->GetTargetOpacity() ==
-            0.0f);
+    OobeWindowVisibilityWaiter(false /*target_visibility*/).Wait();
 
     // Terminate the app.
     if (terminate_app)
@@ -1397,11 +1393,6 @@ class KioskUpdateTest : public KioskTest {
     disks::DiskMountManager::InitializeForTesting(fake_disk_mount_manager_);
 
     KioskTest::SetUp();
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
-    KioskTest::SetUpCommandLine(command_line);
   }
 
   void TearDown() override {
@@ -2214,6 +2205,7 @@ class KioskEnterpriseTest : public KioskTest {
  protected:
   KioskEnterpriseTest() { set_use_consumer_kiosk_mode(false); }
 
+  // KioskTest:
   void SetUpInProcessBrowserTestFixture() override {
     settings_helper_.SetCurrentUserIsOwner(false);
 
