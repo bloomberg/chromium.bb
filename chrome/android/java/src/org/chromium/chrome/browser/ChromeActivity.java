@@ -2564,6 +2564,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * @return Whether this Activity supports the App Menu.
      */
     public boolean supportsAppMenu() {
+        if (FeatureUtilities.isNoTouchModeEnabled()) return false;
+
         // Derived classes that disable the toolbar should also have the Menu disabled without
         // having to explicitly disable the Menu as well.
         return getToolbarLayoutId() != NO_TOOLBAR_LAYOUT;
