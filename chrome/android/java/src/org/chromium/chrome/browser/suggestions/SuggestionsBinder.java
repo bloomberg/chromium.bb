@@ -111,19 +111,21 @@ public class SuggestionsBinder {
 
         mTextLayout.setMinimumHeight(showThumbnail ? mThumbnailSize : 0);
 
-        ViewGroup.MarginLayoutParams publisherBarParams =
-                (ViewGroup.MarginLayoutParams) mPublisherBar.getLayoutParams();
-        if (showHeadline) {
-            // When we show a headline and not a description, we reduce the top margin of the
-            // publisher bar.
-            publisherBarParams.topMargin = mPublisherBar.getResources().getDimensionPixelSize(
-                    R.dimen.snippets_publisher_margin_top);
-        } else {
-            // When there is no headline and no description, we remove the top margin of the
-            // publisher bar.
-            publisherBarParams.topMargin = 0;
+        if (mPublisherBar != null) {
+            ViewGroup.MarginLayoutParams publisherBarParams =
+                    (ViewGroup.MarginLayoutParams) mPublisherBar.getLayoutParams();
+            if (showHeadline) {
+                // When we show a headline and not a description, we reduce the top margin of the
+                // publisher bar.
+                publisherBarParams.topMargin = mPublisherBar.getResources().getDimensionPixelSize(
+                        R.dimen.snippets_publisher_margin_top);
+            } else {
+                // When there is no headline and no description, we remove the top margin of the
+                // publisher bar.
+                publisherBarParams.topMargin = 0;
+            }
+            mPublisherBar.setLayoutParams(publisherBarParams);
         }
-        mPublisherBar.setLayoutParams(publisherBarParams);
     }
 
     public void updateOfflineBadgeVisibility(boolean visible) {

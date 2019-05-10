@@ -4,11 +4,14 @@
 
 package org.chromium.chrome.browser.touchless;
 
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.widget.TextView;
 
 import org.chromium.chrome.browser.suggestions.SuggestionsBinder;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
+import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.touchless.R;
 
 /** Overrides SuggestionsBinder methods to provide touchless specific values and functionality. */
