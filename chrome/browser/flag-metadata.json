@@ -1386,16 +1386,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-offline-auto-reload",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-offline-auto-reload-visible-only",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-offline-previews",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     // This flag is used for frequent manual testing and should not be removed.

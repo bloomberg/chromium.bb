@@ -168,6 +168,9 @@ const char kDiagnosticsFormat[]             = "diagnostics-format";
 // Tells the diagnostics mode to do the requested recovery step(s).
 const char kDiagnosticsRecovery[]           = "diagnostics-recovery";
 
+// Disable auto-reload of error pages.
+const char kDisableAutoReload[] = "disable-auto-reload";
+
 // Disable several subsystems which run network requests in the background.
 // This is for use when doing network performance testing to avoid noise in the
 // measurements.
@@ -212,13 +215,6 @@ const char kDisableExtensionsExcept[] = "disable-extensions-except";
 const char kDisableExtensionsFileAccessCheck[] =
     "disable-extensions-file-access-check";
 
-// Disable auto-reload of error pages if offline.
-const char kDisableOfflineAutoReload[]      = "disable-offline-auto-reload";
-
-// Disable only auto-reloading error pages when the tab is visible.
-const char kDisableOfflineAutoReloadVisibleOnly[] =
-    "disable-offline-auto-reload-visible-only";
-
 // Disable pop-up blocking.
 const char kDisablePopupBlocking[]          = "disable-popup-blocking";
 
@@ -261,6 +257,9 @@ const char kDumpBrowserHistograms[]         = "dump-browser-histograms";
 // Overrides the path of Easy Unlock component app.
 const char kEasyUnlockAppPath[]             = "easy-unlock-app-path";
 
+// Enable auto-reload of error pages.
+const char kEnableAutoReload[] = "enable-auto-reload";
+
 // If the WebRTC logging private API is active, enables audio debug recordings.
 const char kEnableAudioDebugRecordingsFromExtension[] =
     "enable-audio-debug-recordings-from-extension";
@@ -300,13 +299,6 @@ const char kEnableNavigationTracing[] = "enable-navigation-tracing";
 
 // Enables the network-related benchmarking extensions.
 const char kEnableNetBenchmarking[]         = "enable-net-benchmarking";
-
-// Enable auto-reload of error pages if offline.
-const char kEnableOfflineAutoReload[]       = "enable-offline-auto-reload";
-
-// Only auto-reload error pages when the tab is visible.
-const char kEnableOfflineAutoReloadVisibleOnly[] =
-    "enable-offline-auto-reload-visible-only";
 
 // Enables a number of potentially annoying security features (strict mixed
 // content mode, powerful feature restrictions, etc.)

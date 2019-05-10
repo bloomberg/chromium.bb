@@ -1245,17 +1245,6 @@ const char kOfferStoreUnmaskedWalletCardsDescription[] =
     "Show the checkbox to offer local saving of a credit card downloaded from "
     "the server.";
 
-const char kOfflineAutoReloadName[] = "Offline Auto-Reload Mode";
-const char kOfflineAutoReloadDescription[] =
-    "Pages that fail to load while the browser is offline will be "
-    "auto-reloaded when the browser is online again.";
-
-const char kOfflineAutoReloadVisibleOnlyName[] =
-    "Only Auto-Reload Visible Tabs";
-const char kOfflineAutoReloadVisibleOnlyDescription[] =
-    "Pages that fail to load while the browser is offline will only be "
-    "auto-reloaded if their tab is visible.";
-
 const char kOmniboxAlternateMatchDescriptionSeparatorName[] =
     "Omnibox Alternate Match Description Separator";
 const char kOmniboxAlternateMatchDescriptionSeparatorDescription[] =

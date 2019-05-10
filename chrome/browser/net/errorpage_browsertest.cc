@@ -39,7 +39,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/error_page/common/error_page_switches.h"
 #include "components/google/core/common/google_util.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -936,7 +935,7 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, Incognito) {
 class ErrorPageAutoReloadTest : public InProcessBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnableOfflineAutoReload);
+    command_line->AppendSwitch(switches::kEnableAutoReload);
   }
 
   void TearDownOnMainThread() override { url_loader_interceptor_.reset(); }

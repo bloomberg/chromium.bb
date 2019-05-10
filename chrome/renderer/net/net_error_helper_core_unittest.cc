@@ -177,7 +177,7 @@ class NetErrorHelperCoreTest : public testing::Test,
         default_url_(GURL(kFailedUrl)),
         error_url_(GURL(content::kUnreachableWebDataURL)),
         tracking_request_count_(0) {
-    SetUpCore(false, false, true);
+    SetUpCore(false, true);
   }
 
   ~NetErrorHelperCoreTest() override {
@@ -186,13 +186,11 @@ class NetErrorHelperCoreTest : public testing::Test,
   }
 
   void SetUpCore(bool auto_reload_enabled,
-                 bool auto_reload_visible_only,
                  bool visible) {
     // The old value of timer_, if any, will be freed by the old core_ being
     // destructed, since core_ takes ownership of the timer.
     timer_ = new base::MockOneShotTimer();
-    core_.reset(new NetErrorHelperCore(this, auto_reload_enabled,
-                                       auto_reload_visible_only, visible));
+    core_.reset(new NetErrorHelperCore(this, auto_reload_enabled, visible));
     core_->set_timer_for_testing(base::WrapUnique(timer_));
   }
 
@@ -2085,7 +2083,7 @@ class NetErrorHelperCoreAutoReloadTest : public NetErrorHelperCoreTest {
  public:
   void SetUp() override {
     NetErrorHelperCoreTest::SetUp();
-    SetUpCore(true, false, true);
+    SetUpCore(true, true);
   }
 };
 
@@ -2407,7 +2405,7 @@ TEST_F(NetErrorHelperCoreAutoReloadTest, ShouldSuppressErrorPage) {
 }
 
 TEST_F(NetErrorHelperCoreAutoReloadTest, HiddenAndShown) {
-  SetUpCore(true, true, true);
+  SetUpCore(true, true);
   DoErrorLoad(net::ERR_CONNECTION_RESET);
   EXPECT_TRUE(timer()->IsRunning());
   core()->OnWasHidden();
@@ -2417,7 +2415,7 @@ TEST_F(NetErrorHelperCoreAutoReloadTest, HiddenAndShown) {
 }
 
 TEST_F(NetErrorHelperCoreAutoReloadTest, HiddenWhileOnline) {
-  SetUpCore(true, true, true);
+  SetUpCore(true, true);
   core()->NetworkStateChanged(false);
   DoErrorLoad(net::ERR_CONNECTION_RESET);
   EXPECT_FALSE(timer()->IsRunning());
@@ -2439,7 +2437,7 @@ TEST_F(NetErrorHelperCoreAutoReloadTest, HiddenWhileOnline) {
 }
 
 TEST_F(NetErrorHelperCoreAutoReloadTest, ShownWhileNotReloading) {
-  SetUpCore(true, true, false);
+  SetUpCore(true, false);
   DoErrorLoad(net::ERR_CONNECTION_RESET);
   EXPECT_FALSE(timer()->IsRunning());
   core()->OnWasShown();
@@ -2447,7 +2445,7 @@ TEST_F(NetErrorHelperCoreAutoReloadTest, ShownWhileNotReloading) {
 }
 
 TEST_F(NetErrorHelperCoreAutoReloadTest, ManualReloadShowsError) {
-  SetUpCore(true, true, true);
+  SetUpCore(true, true);
   DoErrorLoad(net::ERR_CONNECTION_RESET);
   core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                       NetErrorHelperCore::ERROR_PAGE);

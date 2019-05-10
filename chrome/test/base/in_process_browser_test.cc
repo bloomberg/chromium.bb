@@ -226,9 +226,8 @@ void InProcessBrowserTest::SetUp() {
 
   // Auto-reload breaks many browser tests, which assume error pages won't be
   // reloaded out from under them. Tests that expect or desire this behavior can
-  // append switches::kEnableOfflineAutoReload, which will override the disable
-  // here.
-  command_line->AppendSwitch(switches::kDisableOfflineAutoReload);
+  // append switches::kEnableAutoReload, which will override the disable here.
+  command_line->AppendSwitch(switches::kDisableAutoReload);
 
   // Allow subclasses to change the command line before running any tests.
   SetUpCommandLine(command_line);

@@ -161,14 +161,11 @@ NetErrorHelper::NetErrorHelper(RenderFrame* render_frame)
   RenderThread::Get()->AddObserver(this);
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   bool auto_reload_enabled =
-      command_line->HasSwitch(switches::kEnableOfflineAutoReload);
-  bool auto_reload_visible_only =
-      command_line->HasSwitch(switches::kEnableOfflineAutoReloadVisibleOnly);
+      command_line->HasSwitch(switches::kEnableAutoReload);
   // TODO(mmenke): Consider only creating a NetErrorHelperCore for main frames.
   // subframes don't need any of the NetErrorHelperCore's extra logic.
   core_.reset(new NetErrorHelperCore(this,
                                      auto_reload_enabled,
-                                     auto_reload_visible_only,
                                      !render_frame->IsHidden()));
 
   render_frame->GetAssociatedInterfaceRegistry()->AddInterface(

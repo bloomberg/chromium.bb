@@ -1973,24 +1973,10 @@ namespace {
 bool IsAutoReloadEnabled() {
   const base::CommandLine& browser_command_line =
       *base::CommandLine::ForCurrentProcess();
-  if (browser_command_line.HasSwitch(switches::kEnableOfflineAutoReload))
+  if (browser_command_line.HasSwitch(switches::kEnableAutoReload))
     return true;
-  if (browser_command_line.HasSwitch(switches::kDisableOfflineAutoReload))
+  if (browser_command_line.HasSwitch(switches::kDisableAutoReload))
     return false;
-  return true;
-}
-
-bool IsAutoReloadVisibleOnlyEnabled() {
-  const base::CommandLine& browser_command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (browser_command_line.HasSwitch(
-      switches::kEnableOfflineAutoReloadVisibleOnly)) {
-    return true;
-  }
-  if (browser_command_line.HasSwitch(
-      switches::kDisableOfflineAutoReloadVisibleOnly)) {
-    return false;
-  }
   return true;
 }
 
@@ -2204,11 +2190,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     }
 
     if (IsAutoReloadEnabled())
-      command_line->AppendSwitch(switches::kEnableOfflineAutoReload);
-    if (IsAutoReloadVisibleOnlyEnabled()) {
-      command_line->AppendSwitch(
-          switches::kEnableOfflineAutoReloadVisibleOnly);
-    }
+      command_line->AppendSwitch(switches::kEnableAutoReload);
 
     MaybeAppendBlinkSettingsSwitchForFieldTrial(
         browser_command_line, command_line);

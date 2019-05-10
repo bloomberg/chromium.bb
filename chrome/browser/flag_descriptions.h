@@ -771,12 +771,6 @@ extern const char kNtlmV2EnabledDescription[];
 extern const char kOfferStoreUnmaskedWalletCardsName[];
 extern const char kOfferStoreUnmaskedWalletCardsDescription[];
 
-extern const char kOfflineAutoReloadName[];
-extern const char kOfflineAutoReloadDescription[];
-
-extern const char kOfflineAutoReloadVisibleOnlyName[];
-extern const char kOfflineAutoReloadVisibleOnlyDescription[];
-
 extern const char kOmniboxAlternateMatchDescriptionSeparatorName[];
 extern const char kOmniboxAlternateMatchDescriptionSeparatorDescription[];
 

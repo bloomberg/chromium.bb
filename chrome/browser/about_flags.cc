@@ -1429,15 +1429,6 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(
          autofill::switches::kEnableOfferStoreUnmaskedWalletCards,
          autofill::switches::kDisableOfferStoreUnmaskedWalletCards)},
-    {"enable-offline-auto-reload", flag_descriptions::kOfflineAutoReloadName,
-     flag_descriptions::kOfflineAutoReloadDescription, kOsAll,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableOfflineAutoReload,
-                               switches::kDisableOfflineAutoReload)},
-    {"enable-offline-auto-reload-visible-only",
-     flag_descriptions::kOfflineAutoReloadVisibleOnlyName,
-     flag_descriptions::kOfflineAutoReloadVisibleOnlyDescription, kOsAll,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableOfflineAutoReloadVisibleOnly,
-                               switches::kDisableOfflineAutoReloadVisibleOnly)},
 #if defined(OS_CHROMEOS)
     {"enable-virtual-keyboard", flag_descriptions::kVirtualKeyboardName,
      flag_descriptions::kVirtualKeyboardDescription, kOsCrOS,

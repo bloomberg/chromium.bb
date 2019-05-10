@@ -503,13 +503,11 @@ bool NetErrorHelperCore::IsReloadableError(
 
 NetErrorHelperCore::NetErrorHelperCore(Delegate* delegate,
                                        bool auto_reload_enabled,
-                                       bool auto_reload_visible_only,
                                        bool is_visible)
     : delegate_(delegate),
       last_probe_status_(error_page::DNS_PROBE_POSSIBLE),
       can_show_network_diagnostics_dialog_(false),
       auto_reload_enabled_(auto_reload_enabled),
-      auto_reload_visible_only_(auto_reload_visible_only),
       auto_reload_timer_(new base::OneShotTimer()),
       auto_reload_paused_(false),
       auto_reload_in_flight_(false),
@@ -561,16 +559,12 @@ void NetErrorHelperCore::OnStop() {
 
 void NetErrorHelperCore::OnWasShown() {
   visible_ = true;
-  if (!auto_reload_visible_only_)
-    return;
   if (auto_reload_paused_)
     MaybeStartAutoReloadTimer();
 }
 
 void NetErrorHelperCore::OnWasHidden() {
   visible_ = false;
-  if (!auto_reload_visible_only_)
-    return;
   PauseAutoReloadTimer();
 }
 
@@ -935,7 +929,7 @@ void NetErrorHelperCore::StartAutoReloadTimer() {
 
   committed_error_page_info_->auto_reload_triggered = true;
 
-  if (!online_ || (!visible_ && auto_reload_visible_only_)) {
+  if (!online_ || !visible_) {
     auto_reload_paused_ = true;
     return;
   }
