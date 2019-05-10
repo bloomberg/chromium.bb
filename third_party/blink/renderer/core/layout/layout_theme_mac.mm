@@ -1231,11 +1231,12 @@ LengthSize LayoutThemeMac::GetControlSize(
 LengthSize LayoutThemeMac::MinimumControlSize(
     ControlPart part,
     const FontDescription& font_description,
-    float zoom_factor) const {
+    float zoom_factor,
+    const ComputedStyle& style) const {
   switch (part) {
     case kSquareButtonPart:
     case kButtonPart:
-      return LengthSize(Length::Fixed(0),
+      return LengthSize(style.MinWidth().Zoom(zoom_factor),
                         Length::Fixed(static_cast<int>(15 * zoom_factor)));
     case kInnerSpinButtonPart: {
       IntSize base = StepperSizes()[NSMiniControlSize];
@@ -1245,7 +1246,7 @@ LengthSize LayoutThemeMac::MinimumControlSize(
     }
     default:
       return LayoutTheme::MinimumControlSize(part, font_description,
-                                             zoom_factor);
+                                             zoom_factor, style);
   }
 }
 
@@ -1414,14 +1415,13 @@ void LayoutThemeMac::AdjustControlPartStyle(ComputedStyle& style) {
 
       // Width / Height
       // The width and height here are affected by the zoom.
-      // FIXME: Check is flawed, since it doesn't take min-width/max-width
-      // into account.
       LengthSize control_size = GetControlSize(
           part, style.GetFont().GetFontDescription(),
           LengthSize(style.Width(), style.Height()), style.EffectiveZoom());
 
-      LengthSize min_control_size = MinimumControlSize(
-          part, style.GetFont().GetFontDescription(), style.EffectiveZoom());
+      LengthSize min_control_size =
+          MinimumControlSize(part, style.GetFont().GetFontDescription(),
+                             style.EffectiveZoom(), style);
 
       // Only potentially set min-size to |control_size| for these parts.
       if (part == kCheckboxPart || part == kRadioPart)

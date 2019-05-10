@@ -272,7 +272,8 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   // Returns the minimum size for a control in zoomed coordinates.
   virtual LengthSize MinimumControlSize(ControlPart,
                                         const FontDescription&,
-                                        float /*zoomFactor*/) const {
+                                        float /*zoomFactor*/,
+                                        const ComputedStyle& style) const {
     return LengthSize(Length::Fixed(0), Length::Fixed(0));
   }
 

@@ -183,7 +183,8 @@ class LayoutThemeMac final : public LayoutTheme {
                             float zoom_factor) const override;
   LengthSize MinimumControlSize(ControlPart,
                                 const FontDescription&,
-                                float zoom_factor) const override;
+                                float zoom_factor,
+                                const ComputedStyle& style) const override;
 
   LengthBox ControlPadding(ControlPart,
                            const FontDescription&,
