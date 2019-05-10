@@ -413,8 +413,8 @@ inline void DispatchEventsOnWindowAndFocusedElement(Document* document,
 }
 
 inline bool HasCustomFocusLogic(const Element& element) {
-  return element.IsHTMLElement() &&
-         ToHTMLElement(element).HasCustomFocusLogic();
+  auto* html_element = DynamicTo<HTMLElement>(element);
+  return html_element && html_element->HasCustomFocusLogic();
 }
 
 inline bool IsShadowHostWithoutCustomFocusLogic(const Element& element) {
@@ -1123,15 +1123,16 @@ Element* FocusController::NextFocusableElementInForm(Element* element,
   // Will nvestigate further for a proper solution later.
   static const int kFocusTraversalThreshold = 50;
   element->GetDocument().UpdateStyleAndLayout();
-  if (!element->IsHTMLElement())
+  auto* html_element = DynamicTo<HTMLElement>(element);
+  if (!html_element)
     return nullptr;
 
   if (!element->IsFormControlElement() &&
-      !ToHTMLElement(element)->isContentEditableForBinding())
+      !html_element->isContentEditableForBinding())
     return nullptr;
 
   HTMLFormElement* form_owner = nullptr;
-  if (ToHTMLElement(element)->isContentEditableForBinding())
+  if (html_element->isContentEditableForBinding())
     form_owner = Traversal<HTMLFormElement>::FirstAncestor(*element);
   else
     form_owner = ToHTMLFormControlElement(element)->formOwner();
@@ -1146,9 +1147,10 @@ Element* FocusController::NextFocusableElementInForm(Element* element,
        next_element =
            FindFocusableElement(focus_type, *next_element, owner_map),
        ++traversal) {
-    if (!next_element->IsHTMLElement())
+    auto* next_html_element = DynamicTo<HTMLElement>(next_element);
+    if (!next_html_element)
       continue;
-    if (ToHTMLElement(next_element)->isContentEditableForBinding() &&
+    if (next_html_element->isContentEditableForBinding() &&
         next_element->IsDescendantOf(form_owner))
       return next_element;
     if (!next_element->IsFormControlElement())

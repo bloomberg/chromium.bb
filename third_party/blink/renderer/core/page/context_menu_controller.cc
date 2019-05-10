@@ -207,8 +207,8 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
   // all else.
   data.link_url = result.AbsoluteLinkURL();
 
-  if (result.InnerNode()->IsHTMLElement()) {
-    HTMLElement* html_element = ToHTMLElement(result.InnerNode());
+  auto* html_element = DynamicTo<HTMLElement>(result.InnerNode());
+  if (html_element) {
     if (!html_element->title().IsEmpty()) {
       data.title_text = html_element->title();
     } else {

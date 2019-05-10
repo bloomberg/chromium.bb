@@ -52,9 +52,9 @@ bool HTMLFieldSetElement::IsValidElement() {
     if (element->IsFormControlElement()) {
       if (!ToHTMLFormControlElement(element)->IsNotCandidateOrValid())
         return false;
-    } else if (element->IsHTMLElement() &&
-               blink::ToHTMLElement(element)->IsFormAssociatedCustomElement()) {
-      if (!element->EnsureElementInternals().IsNotCandidateOrValid())
+    } else if (auto* html_element = DynamicTo<HTMLElement>(element)) {
+      if (html_element->IsFormAssociatedCustomElement() &&
+          !element->EnsureElementInternals().IsNotCandidateOrValid())
         return false;
     }
   }

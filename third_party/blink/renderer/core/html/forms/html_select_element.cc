@@ -752,33 +752,35 @@ void HTMLSelectElement::RecalcListItems() const {
 
   for (Element* current_element = ElementTraversal::FirstWithin(*this);
        current_element && list_items_.size() < kMaxListItems;) {
-    if (!current_element->IsHTMLElement()) {
+    auto* current_html_element = DynamicTo<HTMLElement>(current_element);
+    if (!current_html_element) {
       current_element =
           ElementTraversal::NextSkippingChildren(*current_element, this);
       continue;
     }
-    HTMLElement& current = blink::ToHTMLElement(*current_element);
 
     // We should ignore nested optgroup elements. The HTML parser flatten
     // them.  However we need to ignore nested optgroups built by DOM APIs.
     // This behavior matches to IE and Firefox.
-    if (IsHTMLOptGroupElement(current)) {
-      if (current.parentNode() != this) {
-        current_element = ElementTraversal::NextSkippingChildren(current, this);
+    if (IsHTMLOptGroupElement(*current_html_element)) {
+      if (current_html_element->parentNode() != this) {
+        current_element =
+            ElementTraversal::NextSkippingChildren(*current_html_element, this);
         continue;
       }
-      list_items_.push_back(&current);
-      if (Element* next_element = ElementTraversal::FirstWithin(current)) {
+      list_items_.push_back(current_html_element);
+      if (Element* next_element =
+              ElementTraversal::FirstWithin(*current_html_element)) {
         current_element = next_element;
         continue;
       }
     }
 
-    if (IsHTMLOptionElement(current))
-      list_items_.push_back(&current);
+    if (IsHTMLOptionElement(*current_html_element))
+      list_items_.push_back(current_html_element);
 
-    if (IsHTMLHRElement(current))
-      list_items_.push_back(&current);
+    if (IsHTMLHRElement(*current_html_element))
+      list_items_.push_back(current_html_element);
 
     // In conforming HTML code, only <optgroup> and <option> will be found
     // within a <select>. We call NodeTraversal::nextSkippingChildren so

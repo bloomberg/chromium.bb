@@ -801,8 +801,8 @@ bool SelectTextInsteadOfDrag(const Node& node) {
     return true;
 
   for (Node& ancestor_node : NodeTraversal::InclusiveAncestorsOf(node)) {
-    if (ancestor_node.IsHTMLElement() &&
-        ToHTMLElement(&ancestor_node)->draggable())
+    auto* html_element = DynamicTo<HTMLElement>(ancestor_node);
+    if (html_element && html_element->draggable())
       return false;
   }
 

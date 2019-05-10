@@ -505,8 +505,8 @@ void ImageLoader::DoUpdateFromElement(
     // own origin checking logic that may get confused if service workers
     // respond with resources from another origin.
     // https://w3c.github.io/ServiceWorker/#implementer-concerns
-    if (GetElement()->IsHTMLElement() &&
-        ToHTMLElement(GetElement())->IsPluginElement()) {
+    auto* html_element = DynamicTo<HTMLElement>(GetElement());
+    if (html_element && html_element->IsPluginElement()) {
       resource_request.SetSkipServiceWorker(true);
     }
 

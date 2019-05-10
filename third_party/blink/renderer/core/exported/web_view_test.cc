@@ -2659,8 +2659,8 @@ TEST_F(WebViewTest, LongPressObject) {
             web_view->MainFrameWidget()->HandleInputEvent(
                 WebCoalescedInputEvent(event)));
 
-  HTMLElement* element = ToHTMLElement(
-      web_view->MainFrameImpl()->GetDocument().GetElementById("obj"));
+  auto* element = To<HTMLElement>(static_cast<Node*>(
+      web_view->MainFrameImpl()->GetDocument().GetElementById("obj")));
   EXPECT_FALSE(element->CanStartSelection());
 }
 
@@ -2684,8 +2684,8 @@ TEST_F(WebViewTest, LongPressObjectFallback) {
             web_view->MainFrameWidget()->HandleInputEvent(
                 WebCoalescedInputEvent(event)));
 
-  HTMLElement* element = ToHTMLElement(
-      web_view->MainFrameImpl()->GetDocument().GetElementById("obj"));
+  auto* element = To<HTMLElement>(static_cast<Node*>(
+      web_view->MainFrameImpl()->GetDocument().GetElementById("obj")));
   EXPECT_TRUE(element->CanStartSelection());
 }
 

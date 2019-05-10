@@ -261,25 +261,26 @@ class HasHTMLTagName {
 // This requires isHTML*Element(const Element&) and isHTML*Element(const
 // HTMLElement&).  When the input element is an HTMLElement, we don't need to
 // check the namespace URI, just the local name.
-#define DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(thisType)                \
-  inline bool Is##thisType(const thisType* element);                         \
-  inline bool Is##thisType(const thisType& element);                         \
-  inline bool Is##thisType(const HTMLElement* element) {                     \
-    return element && Is##thisType(*element);                                \
-  }                                                                          \
-  inline bool Is##thisType(const Node& node) {                               \
-    return node.IsHTMLElement() ? Is##thisType(ToHTMLElement(node)) : false; \
-  }                                                                          \
-  inline bool Is##thisType(const Node* node) {                               \
-    return node && Is##thisType(*node);                                      \
-  }                                                                          \
-  inline bool Is##thisType(const Element* element) {                         \
-    return element && Is##thisType(*element);                                \
-  }                                                                          \
-  template <>                                                                \
-  inline bool IsElementOfType<const thisType>(const HTMLElement& element) {  \
-    return Is##thisType(element);                                            \
-  }                                                                          \
+#define DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(thisType)               \
+  inline bool Is##thisType(const thisType* element);                        \
+  inline bool Is##thisType(const thisType& element);                        \
+  inline bool Is##thisType(const HTMLElement* element) {                    \
+    return element && Is##thisType(*element);                               \
+  }                                                                         \
+  inline bool Is##thisType(const Node& node) {                              \
+    auto* html_element = DynamicTo<HTMLElement>(node);                      \
+    return html_element ? Is##thisType(html_element) : false;               \
+  }                                                                         \
+  inline bool Is##thisType(const Node* node) {                              \
+    return node && Is##thisType(*node);                                     \
+  }                                                                         \
+  inline bool Is##thisType(const Element* element) {                        \
+    return element && Is##thisType(*element);                               \
+  }                                                                         \
+  template <>                                                               \
+  inline bool IsElementOfType<const thisType>(const HTMLElement& element) { \
+    return Is##thisType(element);                                           \
+  }                                                                         \
   DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(thisType)
 
 }  // namespace blink

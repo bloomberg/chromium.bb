@@ -371,7 +371,8 @@ static bool IsRequiredOwnedElement(AXObject* parent,
                                    ax::mojom::Role current_role,
                                    HTMLElement* current_element) {
   Node* parent_node = parent->GetNode();
-  if (!parent_node || !parent_node->IsHTMLElement())
+  auto* parent_html_element = DynamicTo<HTMLElement>(parent_node);
+  if (!parent_html_element)
     return false;
 
   if (current_role == ax::mojom::Role::kListItem)
@@ -388,7 +389,7 @@ static bool IsRequiredOwnedElement(AXObject* parent,
   if (IsHTMLTableCellElement(*current_element))
     return IsHTMLTableRowElement(*parent_node);
   if (IsHTMLTableRowElement(*current_element))
-    return IsHTMLTableSectionElement(ToHTMLElement(*parent_node));
+    return IsHTMLTableSectionElement(parent_html_element);
 
   // In case of ListboxRole and its child, ListBoxOptionRole, inheritance of
   // presentation role is handled in AXListBoxOption because ListBoxOption Role
@@ -417,9 +418,7 @@ const AXObject* AXNodeObject::InheritsPresentationalRoleFrom() const {
   if (!parent)
     return nullptr;
 
-  HTMLElement* element = nullptr;
-  if (GetNode() && GetNode()->IsHTMLElement())
-    element = ToHTMLElement(GetNode());
+  auto* element = DynamicTo<HTMLElement>(GetNode());
   if (!parent->HasInheritedPresentationalRole())
     return nullptr;
 
@@ -1279,26 +1278,26 @@ int AXNodeObject::HeadingLevel() const {
     }
   }
 
-  if (!node->IsHTMLElement())
+  auto* element = DynamicTo<HTMLElement>(node);
+  if (!element)
     return 0;
 
-  HTMLElement& element = ToHTMLElement(*node);
-  if (element.HasTagName(kH1Tag))
+  if (element->HasTagName(kH1Tag))
     return 1;
 
-  if (element.HasTagName(kH2Tag))
+  if (element->HasTagName(kH2Tag))
     return 2;
 
-  if (element.HasTagName(kH3Tag))
+  if (element->HasTagName(kH3Tag))
     return 3;
 
-  if (element.HasTagName(kH4Tag))
+  if (element->HasTagName(kH4Tag))
     return 4;
 
-  if (element.HasTagName(kH5Tag))
+  if (element->HasTagName(kH5Tag))
     return 5;
 
-  if (element.HasTagName(kH6Tag))
+  if (element->HasTagName(kH6Tag))
     return 6;
 
   if (RoleValue() == ax::mojom::Role::kHeading)
@@ -2187,9 +2186,7 @@ bool AXNodeObject::NameFromLabelElement() const {
   // Based on
   // http://rawgit.com/w3c/aria/master/html-aam/html-aam.html#accessible-name-and-description-calculation
   // 5.1/5.5 Text inputs, Other labelable Elements
-  HTMLElement* html_element = nullptr;
-  if (GetNode()->IsHTMLElement())
-    html_element = ToHTMLElement(GetNode());
+  auto* html_element = DynamicTo<HTMLElement>(GetNode());
   if (html_element && html_element->IsLabelable()) {
     if (html_element->labels() && html_element->labels()->length() > 0)
       return true;
@@ -2827,10 +2824,7 @@ String AXNodeObject::NativeTextAlternative(
 
   // 5.1/5.5 Text inputs, Other labelable Elements
   // If you change this logic, update AXNodeObject::nameFromLabelElement, too.
-  HTMLElement* html_element = nullptr;
-  if (GetNode()->IsHTMLElement())
-    html_element = ToHTMLElement(GetNode());
-
+  auto* html_element = DynamicTo<HTMLElement>(GetNode());
   if (html_element && html_element->IsLabelable()) {
     name_from = ax::mojom::NameFrom::kRelatedElement;
     if (name_sources) {
