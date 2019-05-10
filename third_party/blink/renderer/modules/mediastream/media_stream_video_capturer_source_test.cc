@@ -21,7 +21,7 @@
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
-#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 using ::testing::_;
@@ -30,19 +30,6 @@ using ::testing::InSequence;
 namespace blink {
 
 namespace {
-
-class IOTaskRunnerTestingPlatformSupport : public TestingPlatformSupport {
- public:
-  IOTaskRunnerTestingPlatformSupport()
-      : io_thread_(Thread::CreateThread(
-            ThreadCreationParams(WebThreadType::kTestThread))) {}
-  scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() const override {
-    return io_thread_->GetTaskRunner();
-  }
-
- private:
-  std::unique_ptr<Thread> io_thread_;
-};
 
 class MockVideoCapturerSource : public media::VideoCapturerSource {
  public:
