@@ -96,12 +96,13 @@ class RulesetManager {
   void UpdateAllowedPages(const ExtensionId& extension_id,
                           URLPatternSet allowed_pages);
 
-  // Returns the action to take for the given request.
+  // Returns the action to take for the given request. Note: the returned action
+  // is owned by |request|.
   // Precedence order: Allow > Blocking > Redirect rules.
   // For redirect rules, most recently installed extensions are given
   // preference.
-  Action EvaluateRequest(const WebRequestInfo& request,
-                         bool is_incognito_context) const;
+  const Action& EvaluateRequest(const WebRequestInfo& request,
+                                bool is_incognito_context) const;
 
   // Returns true if there is an active matcher which modifies "extraHeaders".
   bool HasAnyExtraHeadersMatcher() const;
@@ -146,6 +147,10 @@ class RulesetManager {
   base::Optional<Action> GetRemoveHeadersAction(
       const std::vector<const ExtensionRulesetData*>& rulesets,
       const RequestParams& params) const;
+
+  // Helper for EvaluateRequest.
+  Action EvaluateRequestInternal(const WebRequestInfo& request,
+                                 bool is_incognito_context) const;
 
   // Returns true if the given |request| should be evaluated for
   // blocking/redirection.

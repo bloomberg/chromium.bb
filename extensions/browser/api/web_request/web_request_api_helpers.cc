@@ -956,12 +956,14 @@ void MergeOnBeforeSendHeadersResponses(
 
         // Prevent extensions from adding any header removed by the Declarative
         // Net Request API.
-        if (std::find_if(request.request_headers_to_remove.begin(),
-                         request.request_headers_to_remove.end(),
+        DCHECK(request.dnr_action.has_value());
+        if (std::find_if(request.dnr_action->request_headers_to_remove.begin(),
+                         request.dnr_action->request_headers_to_remove.end(),
                          [&key](const char* header_to_remove) {
                            return base::EqualsCaseInsensitiveASCII(
                                header_to_remove, key);
-                         }) != request.request_headers_to_remove.end()) {
+                         }) !=
+            request.dnr_action->request_headers_to_remove.end()) {
           extension_conflicts = true;
           break;
         }
@@ -1339,14 +1341,17 @@ void MergeOnHeadersReceivedResponses(
 
     // Prevent extensions from adding any response header which was removed by
     // the Declarative Net Request API.
-    if (!extension_conflicts && !request.response_headers_to_remove.empty()) {
+    DCHECK(request.dnr_action.has_value());
+    if (!extension_conflicts &&
+        !request.dnr_action->response_headers_to_remove.empty()) {
       for (const ResponseHeader& header : delta.added_response_headers) {
-        if (std::find_if(request.response_headers_to_remove.begin(),
-                         request.response_headers_to_remove.end(),
+        if (std::find_if(request.dnr_action->response_headers_to_remove.begin(),
+                         request.dnr_action->response_headers_to_remove.end(),
                          [&header](const char* header_to_remove) {
                            return base::EqualsCaseInsensitiveASCII(
                                header.first, header_to_remove);
-                         }) != request.response_headers_to_remove.end()) {
+                         }) !=
+            request.dnr_action->response_headers_to_remove.end()) {
           extension_conflicts = true;
           break;
         }
