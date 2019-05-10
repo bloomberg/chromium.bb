@@ -988,7 +988,7 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkState) {
   ASSERT_TRUE(tether_network);
   EXPECT_EQ(kTetherName1, tether_network->name());
   EXPECT_EQ(kTetherGuid1, tether_network->path());
-  EXPECT_EQ(kTetherCarrier1, tether_network->carrier());
+  EXPECT_EQ(kTetherCarrier1, tether_network->tether_carrier());
   EXPECT_EQ(kTetherBatteryPercentage1, tether_network->battery_percentage());
   EXPECT_EQ(kTetherSignalStrength1, tether_network->signal_strength());
   EXPECT_FALSE(tether_network->tether_has_connected_to_host());
@@ -1006,7 +1006,7 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkState) {
   ASSERT_TRUE(tether_network);
   EXPECT_EQ(kTetherName1, tether_network->name());
   EXPECT_EQ(kTetherGuid1, tether_network->path());
-  EXPECT_EQ("NewCarrier", tether_network->carrier());
+  EXPECT_EQ("NewCarrier", tether_network->tether_carrier());
   EXPECT_EQ(5, tether_network->battery_percentage());
   EXPECT_EQ(10, tether_network->signal_strength());
   EXPECT_FALSE(tether_network->tether_has_connected_to_host());

@@ -281,7 +281,7 @@ void NetworkState::GetStateProperties(base::Value* dictionary) const {
   if (NetworkTypePattern::Tether().MatchesType(type())) {
     dictionary->SetKey(kTetherBatteryPercentage,
                        base::Value(battery_percentage()));
-    dictionary->SetKey(kTetherCarrier, base::Value(carrier()));
+    dictionary->SetKey(kTetherCarrier, base::Value(tether_carrier()));
     dictionary->SetKey(kTetherHasConnectedToHost,
                        base::Value(tether_has_connected_to_host()));
     dictionary->SetKey(kTetherSignalStrength, base::Value(signal_strength()));

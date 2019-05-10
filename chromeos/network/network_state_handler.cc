@@ -689,7 +689,7 @@ void NetworkStateHandler::AddTetherNetworkState(const std::string& guid,
   tether_network_state->set_update_received();
   tether_network_state->set_update_requested(false);
   tether_network_state->set_connectable(true);
-  tether_network_state->set_carrier(carrier);
+  tether_network_state->set_tether_carrier(carrier);
   tether_network_state->set_battery_percentage(battery_percentage);
   tether_network_state->set_tether_has_connected_to_host(has_connected_to_host);
   tether_network_state->set_signal_strength(signal_strength);
@@ -718,7 +718,7 @@ bool NetworkStateHandler::UpdateTetherNetworkProperties(
     return false;
   }
 
-  tether_network_state->set_carrier(carrier);
+  tether_network_state->set_tether_carrier(carrier);
   tether_network_state->set_battery_percentage(battery_percentage);
   tether_network_state->set_signal_strength(signal_strength);
   network_list_sorted_ = false;

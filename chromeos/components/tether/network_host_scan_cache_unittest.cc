@@ -105,7 +105,7 @@ class NetworkHostScanCacheTest : public testing::Test {
               tether_network_guid);
       ASSERT_TRUE(tether_network_state);
       EXPECT_EQ(entry.device_name, tether_network_state->name());
-      EXPECT_EQ(entry.carrier, tether_network_state->carrier());
+      EXPECT_EQ(entry.carrier, tether_network_state->tether_carrier());
       EXPECT_EQ(entry.battery_percentage,
                 tether_network_state->battery_percentage());
       EXPECT_EQ(entry.signal_strength, tether_network_state->signal_strength());

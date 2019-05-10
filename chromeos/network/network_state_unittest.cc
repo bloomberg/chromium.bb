@@ -322,7 +322,7 @@ TEST_F(NetworkStateTest, ConnectionStateNotVisible) {
 
 TEST_F(NetworkStateTest, TetherProperties) {
   network_state_.set_type_for_testing(kTypeTether);
-  network_state_.set_carrier("Project Fi");
+  network_state_.set_tether_carrier("Project Fi");
   network_state_.set_battery_percentage(85);
   network_state_.set_tether_has_connected_to_host(true);
   network_state_.set_signal_strength(75);

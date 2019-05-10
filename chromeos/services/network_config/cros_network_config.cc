@@ -165,7 +165,7 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
     case mojom::NetworkType::kTether: {
       auto tether = mojom::TetherStateProperties::New();
       tether->battery_percentage = network->battery_percentage();
-      tether->carrier = network->carrier();
+      tether->carrier = network->tether_carrier();
       tether->has_connected_to_host = network->tether_has_connected_to_host();
       tether->signal_strength = network->signal_strength();
       result->tether = std::move(tether);

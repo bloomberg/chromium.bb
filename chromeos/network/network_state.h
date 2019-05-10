@@ -137,8 +137,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   void set_battery_percentage(int battery_percentage) {
     battery_percentage_ = battery_percentage;
   }
-  const std::string& carrier() const { return carrier_; }
-  void set_carrier(const std::string& carrier) { carrier_ = carrier; }
+  const std::string& tether_carrier() const { return tether_carrier_; }
+  void set_tether_carrier(const std::string& tether_carrier) {
+    tether_carrier_ = tether_carrier;
+  }
   bool tether_has_connected_to_host() const {
     return tether_has_connected_to_host_;
   }
@@ -307,7 +309,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   std::unique_ptr<VpnProviderInfo> vpn_provider_;
 
   // Tether properties.
-  std::string carrier_;
+  std::string tether_carrier_;
   int battery_percentage_ = 0;
 
   // Whether the current device has already connected to the tether host device
