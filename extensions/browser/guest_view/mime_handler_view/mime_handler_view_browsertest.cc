@@ -391,7 +391,7 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, Iframe) {
   RunTest("test_iframe.html");
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Abort) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, Abort) {
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     // With the network service, abortStream isn't needed since we pass a Mojo
     // pipe to the renderer. If the plugin chooses to cancel the main request
@@ -419,11 +419,11 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, EmbeddedDataUrlObject) {
   RunTest("test_embedded_data_url_object.html");
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, EmbeddedDataUrlEmbed) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, EmbeddedDataUrlEmbed) {
   RunTest("test_embedded_data_url_embed.html");
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, EmbeddedDataUrlLong) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, EmbeddedDataUrlLong) {
   RunTest("test_embedded_data_url_long.html");
 }
 
@@ -456,13 +456,13 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, SingleRequest) {
 }
 
 // Test that a mime handler view can keep a background page alive.
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, BackgroundPage) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, BackgroundPage) {
   extensions::ProcessManager::SetEventPageIdleTimeForTesting(1);
   extensions::ProcessManager::SetEventPageSuspendingTimeForTesting(1);
   RunTest("testBackgroundPage.csv");
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, TargetBlankAnchor) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, TargetBlankAnchor) {
   RunTest("testTargetBlankAnchor.csv");
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
   content::WaitForLoadStop(browser()->tab_strip_model()->GetWebContentsAt(1));
