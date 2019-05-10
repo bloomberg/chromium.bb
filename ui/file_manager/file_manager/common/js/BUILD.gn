@@ -44,13 +44,6 @@ js_type_check("test_support_type_check") {
 js_library("async_util") {
 }
 
-js_unittest("async_util_unittest") {
-  deps = [
-    ":async_util",
-    "//ui/file_manager/base/js:test_error_reporting",
-  ]
-}
-
 js_library("files_app_entry_types") {
   deps = [
     "../../../externs:file_manager_private",
@@ -201,7 +194,6 @@ js_unittest("util_unittest") {
 
 js_unit_tests("unit_tests") {
   deps = [
-    ":async_util_unittest",
     ":file_type_unittest",
     ":files_app_entry_types_unittest",
     ":importer_common_unittest",
