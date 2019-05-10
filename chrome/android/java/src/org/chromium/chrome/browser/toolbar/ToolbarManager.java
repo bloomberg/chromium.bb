@@ -191,6 +191,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private @Nullable AppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
     private OverviewModeBehavior mOverviewModeBehavior;
     private LayoutManager mLayoutManager;
+    private IdentityDiscController mIdentityDiscController;
 
     private TabObserver mTabObserver;
     private BookmarkBridge.BookmarkModelObserver mBookmarksObserver;
@@ -313,6 +314,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                 new TopToolbarCoordinator(controlContainer, mActivity.findViewById(R.id.toolbar));
         mActionModeController = new ActionModeController(mActivity, mActionBarDelegate);
         mActionModeController.setCustomSelectionActionModeCallback(mToolbarActionModeCallback);
+
+        mIdentityDiscController = new IdentityDiscController(activity, this);
 
         mToolbar.setPaintInvalidator(invalidator);
         mActionModeController.setTabStripHeight(mToolbar.getTabStripHeight());
@@ -1211,6 +1214,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         mIncognitoStateProvider.destroy();
         mTabCountProvider.destroy();
 
+        mIdentityDiscController.destroy();
         mLocationBarModel.destroy();
         mHandler.removeCallbacksAndMessages(null); // Cancel delayed tasks.
         if (mLocationBar != null) {
@@ -1702,6 +1706,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         if (mToolbar.getMenuButtonWrapper() != null && !isBottomToolbarVisible()) {
             mToolbar.getMenuButtonWrapper().setVisibility(View.VISIBLE);
         }
+        mIdentityDiscController.updateButtonState(
+                mLocationBarModel.getNewTabPageForCurrentTab() != null);
     }
 
     private void updateBookmarkButtonStatus() {

@@ -626,7 +626,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         if (stringValue == null || stringValue.isEmpty()) {
             return RecyclerView.NO_POSITION;
         }
-        
+
         try {
             return Integer.parseInt(stringValue);
         } catch (NumberFormatException e) {

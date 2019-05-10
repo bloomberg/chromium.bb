@@ -244,6 +244,8 @@
     <dimen name="toolbar_shadow_height">8dp</dimen>
     <dimen name="toolbar_progress_bar_height">2dp</dimen>
     <dimen name="toolbar_button_width">48dp</dimen>
+    <dimen name="toolbar_identity_disc_size">24dp</dimen>
+    <dimen name="toolbar_identity_disc_size_duet">32dp</dimen>
 
     <dimen name="toolbar_edge_padding">8dp</dimen>
     <dimen name="location_bar_vertical_margin">8dp</dimen>

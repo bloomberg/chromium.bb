@@ -1538,6 +1538,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/tasks/tab_groups/LayoutTabGroupCreationButton.java",
   "java/src/org/chromium/chrome/browser/toolbar/AppThemeColorProvider.java",
   "java/src/org/chromium/chrome/browser/toolbar/HomeButton.java",
+  "java/src/org/chromium/chrome/browser/toolbar/IdentityDiscController.java",
   "java/src/org/chromium/chrome/browser/toolbar/IncognitoStateProvider.java",
   "java/src/org/chromium/chrome/browser/toolbar/IncognitoToggleTabLayout.java",
   "java/src/org/chromium/chrome/browser/toolbar/KeyboardNavigationListener.java",

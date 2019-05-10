@@ -1639,10 +1639,6 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             }
         }
 
-        if (mExperimentalButton != null) {
-            ApiCompatibilityUtils.setImageTintList(mExperimentalButton, tint);
-        }
-
         // TODO(amaralp): Have the LocationBar listen to tint changes.
         if (mLocationBar != null) mLocationBar.updateVisualsForState();
 
@@ -2475,8 +2471,6 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         mExperimentalButton.setImageDrawable(image);
         mExperimentalButton.setContentDescription(
                 getContext().getResources().getString(contentDescriptionResId));
-        ApiCompatibilityUtils.setImageTintList(mExperimentalButton, getTint());
-
         mExperimentalButtonLayoutListener = () -> requestLayoutHostUpdateForExperimentalButton();
         if (mTabSwitcherState == STATIC_TAB) {
             if (!mUrlFocusChangeInProgress && !urlHasFocus()) {
