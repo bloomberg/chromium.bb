@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -140,7 +141,7 @@ class FakeReposBase(object):
   # Hostname
   NB_GIT_REPOS = 1
   USERS = [
-      ('user1@example.com', 'foo'),
+      ('user1@example.com', 'foo Fuß'),
       ('user2@example.com', 'bar'),
   ]
 

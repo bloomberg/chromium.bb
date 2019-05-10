@@ -117,8 +117,8 @@ class GIT(object):
   def Capture(args, cwd, strip_out=True, **kwargs):
     env = GIT.ApplyEnvVars(kwargs)
     output = subprocess2.check_output(
-        ['git'] + args,
-        cwd=cwd, stderr=subprocess2.PIPE, env=env, **kwargs)
+        ['git'] + args, cwd=cwd, stderr=subprocess2.PIPE, env=env,
+        **kwargs).decode('utf-8')
     return output.strip() if strip_out else output
 
   @staticmethod
@@ -388,7 +388,7 @@ class GIT(object):
     """Asserts git's version is at least min_version."""
     if cls.current_version is None:
       current_version = cls.Capture(['--version'], '.')
-      matched = re.search(r'version ([0-9\.]+)', current_version.decode())
+      matched = re.search(r'version ([0-9\.]+)', current_version)
       cls.current_version = matched.group(1)
     current_version_list = list(map(only_int, cls.current_version.split('.')))
     for min_ver in map(int, min_version.split('.')):

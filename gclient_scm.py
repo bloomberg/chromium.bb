@@ -256,9 +256,10 @@ class GitWrapper(SCMWrapper):
   def _GetDiffFilenames(self, base):
     """Returns the names of files modified since base."""
     return self._Capture(
-      # Filter to remove base if it is None.
-      filter(bool, ['-c', 'core.quotePath=false', 'diff', '--name-only', base])
-    ).split()
+        # Filter to remove base if it is None.
+        list(filter(bool, ['-c', 'core.quotePath=false', 'diff', '--name-only',
+                           base])
+        )).split()
 
   def diff(self, options, _args, _file_list):
     _, revision = gclient_utils.SplitUrlRevision(self.url)
@@ -630,7 +631,7 @@ class GitWrapper(SCMWrapper):
     # Skip url auto-correction if remote.origin.gclient-auto-fix-url is set.
     # This allows devs to use experimental repos which have a different url
     # but whose branch(s) are the same as official repos.
-    if (current_url.rstrip(b'/') != url.rstrip('/') and url != 'git://foo' and
+    if (current_url.rstrip('/') != url.rstrip('/') and url != 'git://foo' and
         subprocess2.capture(
             ['git', 'config', 'remote.%s.gclient-auto-fix-url' % self.remote],
             cwd=self.checkout_path).strip() != 'False'):
@@ -1306,7 +1307,8 @@ class GitWrapper(SCMWrapper):
     kwargs.setdefault('stderr', subprocess2.PIPE)
     strip = kwargs.pop('strip', True)
     env = scm.GIT.ApplyEnvVars(kwargs)
-    ret = subprocess2.check_output(['git'] + args, env=env, **kwargs)
+    ret = subprocess2.check_output(
+        ['git'] + args, env=env, **kwargs).decode('utf-8')
     if strip:
       ret = ret.strip()
     return ret
