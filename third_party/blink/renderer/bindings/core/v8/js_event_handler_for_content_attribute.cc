@@ -97,8 +97,8 @@ v8::Local<v8::Value> JSEventHandlerForContentAttribute::GetCompiledHandler(
   // Step 5. If element is not null and element has a form owner, let form owner
   // be that form owner. Otherwise, let form owner be null.
   HTMLFormElement* form_owner = nullptr;
-  if (element && element->IsHTMLElement()) {
-    form_owner = ToHTMLElement(element)->formOwner();
+  if (auto* html_element = DynamicTo<HTMLElement>(element)) {
+    form_owner = html_element->formOwner();
   }
 
   // Step 10. Let function be the result of calling FunctionCreate, with

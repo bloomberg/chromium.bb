@@ -2824,7 +2824,7 @@ bool Element::DidAttachInternals() const {
 }
 
 ElementInternals& Element::EnsureElementInternals() {
-  return EnsureElementRareData().EnsureElementInternals(ToHTMLElement(*this));
+  return EnsureElementRareData().EnsureElementInternals(To<HTMLElement>(*this));
 }
 
 ShadowRoot* Element::createShadowRoot(ExceptionState& exception_state) {

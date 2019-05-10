@@ -175,7 +175,7 @@ static HTMLElement* FirstInSpecialElement(const Position& pos) {
     if (RootEditableElement(runner) != element)
       break;
     if (IsSpecialHTMLElement(runner)) {
-      HTMLElement* special_element = ToHTMLElement(&runner);
+      auto* special_element = To<HTMLElement>(&runner);
       VisiblePosition v_pos = CreateVisiblePosition(pos);
       VisiblePosition first_in_element =
           CreateVisiblePosition(FirstPositionInOrBeforeNode(*special_element));
@@ -198,7 +198,7 @@ static HTMLElement* LastInSpecialElement(const Position& pos) {
     if (RootEditableElement(runner) != element)
       break;
     if (IsSpecialHTMLElement(runner)) {
-      HTMLElement* special_element = ToHTMLElement(&runner);
+      auto* special_element = To<HTMLElement>(&runner);
       VisiblePosition v_pos = CreateVisiblePosition(pos);
       VisiblePosition last_in_element =
           CreateVisiblePosition(LastPositionInOrAfterNode(*special_element));
@@ -355,7 +355,7 @@ bool LineBreakExistsAtVisiblePosition(const VisiblePosition& visible_position) {
 HTMLElement* CreateHTMLElement(Document& document, const QualifiedName& name) {
   DCHECK_EQ(name.NamespaceURI(), html_names::xhtmlNamespaceURI)
       << "Unexpected namespace: " << name;
-  return ToHTMLElement(document.CreateElement(
+  return To<HTMLElement>(document.CreateElement(
       name, CreateElementFlags::ByCloneNode(), g_null_atom));
 }
 
@@ -367,7 +367,7 @@ HTMLElement* EnclosingList(const Node* node) {
 
   for (Node& runner : NodeTraversal::AncestorsOf(*node)) {
     if (IsHTMLUListElement(runner) || IsHTMLOListElement(runner))
-      return ToHTMLElement(&runner);
+      return To<HTMLElement>(&runner);
     if (runner == root)
       return nullptr;
   }

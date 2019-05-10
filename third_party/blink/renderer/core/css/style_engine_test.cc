@@ -1564,7 +1564,7 @@ TEST_F(StyleEngineTest, MediaQueriesChangePrefersReducedMotion) {
 
 TEST_F(StyleEngineTest, ShadowRootStyleRecalcCrash) {
   GetDocument().body()->SetInnerHTMLFromString("<div id=host></div>");
-  HTMLElement* host = ToHTMLElement(GetDocument().getElementById("host"));
+  auto* host = To<HTMLElement>(GetDocument().getElementById("host"));
   ASSERT_TRUE(host);
 
   ShadowRoot& shadow_root =

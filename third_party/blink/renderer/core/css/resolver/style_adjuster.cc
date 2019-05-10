@@ -510,10 +510,10 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   const ComputedStyle& parent_style = *state.ParentStyle();
   const ComputedStyle& layout_parent_style = *state.LayoutParentStyle();
 
-  if (element && element->IsHTMLElement() &&
-      (style.Display() != EDisplay::kNone ||
-       element->LayoutObjectIsNeeded(style))) {
-    AdjustStyleForHTMLElement(style, ToHTMLElement(*element));
+  auto* html_element = DynamicTo<HTMLElement>(element);
+  if (html_element && (style.Display() != EDisplay::kNone ||
+                       element->LayoutObjectIsNeeded(style))) {
+    AdjustStyleForHTMLElement(style, *html_element);
   }
   if (style.Display() != EDisplay::kNone) {
     bool is_document_element =

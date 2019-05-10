@@ -566,11 +566,10 @@ void StyleResolver::MatchAllRules(StyleResolverState& state,
     collector.AddElementStyleProperties(
         state.GetElement()->AdditionalPresentationAttributeStyle());
 
-    if (state.GetElement()->IsHTMLElement()) {
+    if (auto* html_element = DynamicTo<HTMLElement>(state.GetElement())) {
       bool is_auto;
       TextDirection text_direction =
-          ToHTMLElement(state.GetElement())
-              ->DirectionalityIfhasDirAutoAttribute(is_auto);
+          html_element->DirectionalityIfhasDirAutoAttribute(is_auto);
       if (is_auto) {
         state.SetHasDirAutoAttribute(true);
         collector.AddElementStyleProperties(

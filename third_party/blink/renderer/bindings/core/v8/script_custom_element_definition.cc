@@ -197,7 +197,7 @@ HTMLElement* ScriptCustomElementDefinition::CreateAutonomousCustomElementSync(
     element->SetTagNameForCreateElementNS(tag_name);
   DCHECK_EQ(element->GetCustomElementState(), CustomElementState::kCustom);
   AddDefaultStylesTo(*element);
-  return ToHTMLElement(element);
+  return To<HTMLElement>(element);
 }
 
 // https://html.spec.whatwg.org/C/#upgrades

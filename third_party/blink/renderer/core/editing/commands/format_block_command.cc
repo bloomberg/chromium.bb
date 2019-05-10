@@ -141,10 +141,11 @@ void FormatBlockCommand::FormatRange(const Position& start,
   // Copy the inline style of the original block element to the newly created
   // block-style element.
   if (outer_block != node_after_insertion_position &&
-      ToHTMLElement(node_after_insertion_position)->hasAttribute(kStyleAttr)) {
-    block_element->setAttribute(
-        kStyleAttr,
-        ToHTMLElement(node_after_insertion_position)->getAttribute(kStyleAttr));
+      To<HTMLElement>(node_after_insertion_position)
+          ->hasAttribute(kStyleAttr)) {
+    block_element->setAttribute(kStyleAttr,
+                                To<HTMLElement>(node_after_insertion_position)
+                                    ->getAttribute(kStyleAttr));
   }
 
   GetDocument().UpdateStyleAndLayout();
