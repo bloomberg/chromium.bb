@@ -22,7 +22,7 @@ class DisplaySettingsHandler;
 class AccessibilityControllerClient;
 class AppListClientImpl;
 class AshShellInit;
-class CastConfigClientMediaRouter;
+class CastConfigControllerMediaRouter;
 class ChromeNewWindowClient;
 class ImeControllerClient;
 class KioskNextShellClient;
@@ -66,6 +66,8 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
 
   // Initialized in PreProfileInit in all configs before Shell init:
   std::unique_ptr<NetworkConnectDelegateChromeOS> network_connect_delegate_;
+  std::unique_ptr<CastConfigControllerMediaRouter>
+      cast_config_controller_media_router_;
 
   // Initialized in PreProfileInit if ash config != MASH:
   std::unique_ptr<AshShellInit> ash_shell_init_;
@@ -96,7 +98,6 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
 #endif
 
   // Initialized in PostProfileInit in all configs:
-  std::unique_ptr<CastConfigClientMediaRouter> cast_config_client_media_router_;
   std::unique_ptr<KioskNextShellClient> kiosk_next_shell_client_;
   std::unique_ptr<LoginScreenClient> login_screen_client_;
   std::unique_ptr<MediaClient> media_client_;

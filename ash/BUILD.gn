@@ -192,8 +192,6 @@ component("ash") {
     "bluetooth_devices_observer.h",
     "cancel_mode.cc",
     "cancel_mode.h",
-    "cast_config_controller.cc",
-    "cast_config_controller.h",
     "custom_tab/arc_custom_tab_view.cc",
     "custom_tab/arc_custom_tab_view.h",
     "dbus/ash_dbus_helper.cc",

@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "ash/public/cpp/ash_view_ids.h"
+#include "ash/public/cpp/cast_config_controller.h"
 #include "ash/public/interfaces/ash_message_center_controller.mojom-test-utils.h"
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
@@ -16,7 +17,7 @@
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
-#include "chrome/browser/ui/ash/cast_config_client_media_router.h"
+#include "chrome/browser/ui/ash/cast_config_controller_media_router.h"
 #include "chrome/common/media_router/media_source_helper.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/common/service_manager_connection.h"
@@ -92,6 +93,13 @@ class SystemTrayTrayCastMediaRouterChromeOSTest : public InProcessBrowserTest {
 
  private:
   // InProcessBrowserTest:
+  void SetUp() override {
+    // This makes sure CastDeviceCache is not initialized until after the
+    // MockMediaRouter is ready. (MockMediaRouter can't be constructed yet.)
+    CastConfigControllerMediaRouter::SetMediaRouterForTest(nullptr);
+    InProcessBrowserTest::SetUp();
+  }
+
   void PreRunTestOnMainThread() override {
     media_router_ = std::make_unique<media_router::MockMediaRouter>();
     ON_CALL(*media_router_, RegisterMediaSinksObserver(_))
@@ -100,7 +108,7 @@ class SystemTrayTrayCastMediaRouterChromeOSTest : public InProcessBrowserTest {
     ON_CALL(*media_router_, RegisterMediaRoutesObserver(_))
         .WillByDefault(Invoke(
             this, &SystemTrayTrayCastMediaRouterChromeOSTest::CaptureRoutes));
-    CastConfigClientMediaRouter::SetMediaRouterForTest(media_router_.get());
+    CastConfigControllerMediaRouter::SetMediaRouterForTest(media_router_.get());
     InProcessBrowserTest::PreRunTestOnMainThread();
   }
 
@@ -119,7 +127,7 @@ class SystemTrayTrayCastMediaRouterChromeOSTest : public InProcessBrowserTest {
 
   void PostRunTestOnMainThread() override {
     InProcessBrowserTest::PostRunTestOnMainThread();
-    CastConfigClientMediaRouter::SetMediaRouterForTest(nullptr);
+    CastConfigControllerMediaRouter::SetMediaRouterForTest(nullptr);
   }
 
   bool CaptureSink(media_router::MediaSinksObserver* media_sinks_observer) {

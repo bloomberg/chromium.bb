@@ -22,7 +22,6 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/autoclick/autoclick_controller.h"
-#include "ash/cast_config_controller.h"
 #include "ash/dbus/ash_dbus_helper.h"
 #include "ash/dbus/ash_dbus_services.h"
 #include "ash/detachable_base/detachable_base_handler.h"
@@ -619,7 +618,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       ash_display_controller_(std::make_unique<AshDisplayController>()),
       brightness_control_delegate_(
           std::make_unique<system::BrightnessControllerChromeos>()),
-      cast_config_(std::make_unique<CastConfigController>()),
       connector_(connector),
       first_run_helper_(std::make_unique<FirstRunHelper>()),
       focus_cycler_(std::make_unique<FocusCycler>()),

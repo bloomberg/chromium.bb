@@ -11,7 +11,6 @@
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/assistant_volume_control.mojom.h"
-#include "ash/public/interfaces/cast_config.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/cros_display_config.mojom.h"
 #include "ash/public/interfaces/display_output_protection.mojom.h"
@@ -81,7 +80,7 @@ const service_manager::Manifest& GetManifest() {
                   mojom::AssistantNotificationController,
                   mojom::AssistantScreenContextController,
                   mojom::AssistantSetupController,
-                  mojom::AssistantVolumeControl, mojom::CastConfig,
+                  mojom::AssistantVolumeControl,
                   mojom::KioskNextShellController,
                   mojom::CrosDisplayConfigController,
                   mojom::DockedMagnifierController,

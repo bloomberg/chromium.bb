@@ -106,7 +106,6 @@ class BacklightsForcedOffSetter;
 class BluetoothNotificationController;
 class BluetoothPowerController;
 class BrightnessControlDelegate;
-class CastConfigController;
 class DisplayOutputProtection;
 class CrosDisplayConfig;
 class DesksController;
@@ -353,7 +352,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   BrightnessControlDelegate* brightness_control_delegate() {
     return brightness_control_delegate_.get();
   }
-  CastConfigController* cast_config() { return cast_config_.get(); }
   service_manager::Connector* connector() { return connector_; }
   CrosDisplayConfig* cros_display_config() {
     return cros_display_config_.get();
@@ -710,7 +708,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<AssistantController> assistant_controller_;
   std::unique_ptr<BacklightsForcedOffSetter> backlights_forced_off_setter_;
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
-  std::unique_ptr<CastConfigController> cast_config_;
   std::unique_ptr<CrosDisplayConfig> cros_display_config_;
   service_manager::Connector* const connector_;
   std::unique_ptr<DesksController> desks_controller_;

@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/cast_config_controller.h"
+#include "ash/public/cpp/cast_config_controller.h"
 #include "ash/public/interfaces/ime_controller.mojom.h"
 #include "ash/public/interfaces/ime_info.mojom.h"
 #include "base/macros.h"
@@ -29,7 +29,7 @@ class ModeIndicatorObserver;
 // which might live in Chrome browser or in a separate mojo service.
 class ASH_EXPORT ImeController : public mojom::ImeController,
                                  public display::DisplayObserver,
-                                 public CastConfigControllerObserver {
+                                 public CastConfigController::Observer {
  public:
   class Observer {
    public:
@@ -113,8 +113,8 @@ class ASH_EXPORT ImeController : public mojom::ImeController,
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 
-  // CastConfigControllerObserver:
-  void OnDevicesUpdated(std::vector<mojom::SinkAndRoutePtr> devices) override;
+  // CastConfigController::Observer:
+  void OnDevicesUpdated(const std::vector<SinkAndRoute>& devices) override;
 
   // Synchronously returns the cached caps lock state.
   bool IsCapsLockEnabled() const;

@@ -2,43 +2,54 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/cast_config_client_media_router.h"
+#include "chrome/browser/ui/ash/cast_config_controller_media_router.h"
 
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/media_router/media_source_helper.h"
 #include "chrome/common/url_constants.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/common/service_manager_connection.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace {
 
-media_router::MediaRouter* media_router_for_test_ = nullptr;
+base::Optional<media_router::MediaRouter*> media_router_for_test_;
 
-// Returns the MediaRouter instance for the current primary profile.
+// Returns the MediaRouter instance for the current primary profile, if there is
+// one.
 media_router::MediaRouter* GetMediaRouter() {
   if (media_router_for_test_)
-    return media_router_for_test_;
+    return *media_router_for_test_;
 
-  auto* router = media_router::MediaRouterFactory::GetApiForBrowserContext(
-      ProfileManager::GetPrimaryUserProfile());
+  if (!user_manager::UserManager::IsInitialized())
+    return nullptr;
+
+  auto* user = user_manager::UserManager::Get()->GetPrimaryUser();
+  if (!user)
+    return nullptr;
+
+  Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+  if (!profile)
+    return nullptr;
+
+  auto* router =
+      media_router::MediaRouterFactory::GetApiForBrowserContext(profile);
   DCHECK(router);
   return router;
 }
@@ -59,11 +70,11 @@ class CastDeviceCache : public media_router::MediaRoutesObserver,
   using MediaRoutes = std::vector<media_router::MediaRoute>;
   using MediaRouteIds = std::vector<media_router::MediaRoute::Id>;
 
-  explicit CastDeviceCache(ash::mojom::CastConfigClient* cast_config_client);
+  explicit CastDeviceCache(
+      const base::RepeatingClosure& update_devices_callback);
   ~CastDeviceCache() override;
 
-  // This may call cast_config_client->RequestDeviceRefresh() before
-  // returning.
+  // This may run |update_devices_callback_| before returning.
   void Init();
 
   const MediaSinks& sinks() const { return sinks_; }
@@ -80,22 +91,21 @@ class CastDeviceCache : public media_router::MediaRoutesObserver,
   MediaSinks sinks_;
   MediaRoutes routes_;
 
-  // Not owned.
-  ash::mojom::CastConfigClient* cast_config_client_;
+  base::RepeatingClosure update_devices_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CastDeviceCache);
 };
 
 CastDeviceCache::CastDeviceCache(
-    ash::mojom::CastConfigClient* cast_config_client)
+    const base::RepeatingClosure& update_devices_callback)
     : MediaRoutesObserver(GetMediaRouter()),
       MediaSinksObserver(
           GetMediaRouter(),
           media_router::MediaSourceForDesktop(),
           url::Origin::Create(GURL(chrome::kChromeUIMediaRouterURL))),
-      cast_config_client_(cast_config_client) {}
+      update_devices_callback_(update_devices_callback) {}
 
-CastDeviceCache::~CastDeviceCache() {}
+CastDeviceCache::~CastDeviceCache() = default;
 
 void CastDeviceCache::Init() {
   CHECK(MediaSinksObserver::Init());
@@ -121,123 +131,130 @@ void CastDeviceCache::OnSinksReceived(const MediaSinks& sinks) {
     sinks_.push_back(sink);
   }
 
-  cast_config_client_->RequestDeviceRefresh();
+  update_devices_callback_.Run();
 }
 
 void CastDeviceCache::OnRoutesUpdated(
     const MediaRoutes& routes,
     const MediaRouteIds& unused_joinable_route_ids) {
   routes_ = routes;
-  cast_config_client_->RequestDeviceRefresh();
+  update_devices_callback_.Run();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// CastConfigClientMediaRouter:
+// CastConfigControllerMediaRouter:
 
-void CastConfigClientMediaRouter::SetMediaRouterForTest(
+void CastConfigControllerMediaRouter::SetMediaRouterForTest(
     media_router::MediaRouter* media_router) {
   media_router_for_test_ = media_router;
 }
 
-CastConfigClientMediaRouter::CastConfigClientMediaRouter() : binding_(this) {
+CastConfigControllerMediaRouter::CastConfigControllerMediaRouter() {
   // TODO(jdufault): This should use a callback interface once there is an
   // equivalent. See crbug.com/666005.
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
                  content::NotificationService::AllSources());
-
-  // When starting up, we need to connect to ash and set ourselves as the
-  // client.
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &cast_config_);
-
-  // Register this object as the client interface implementation.
-  ash::mojom::CastConfigClientAssociatedPtrInfo ptr_info;
-  binding_.Bind(mojo::MakeRequest(&ptr_info));
-  cast_config_->SetClient(std::move(ptr_info));
 }
 
-CastConfigClientMediaRouter::~CastConfigClientMediaRouter() {}
+CastConfigControllerMediaRouter::~CastConfigControllerMediaRouter() = default;
 
-CastDeviceCache* CastConfigClientMediaRouter::devices() {
+CastDeviceCache* CastConfigControllerMediaRouter::device_cache() {
   // The CastDeviceCache instance is lazily allocated because the MediaRouter
   // component is not ready when the constructor is invoked.
-  if (!devices_ && GetMediaRouter()) {
-    devices_ = std::make_unique<CastDeviceCache>(this);
-    devices_->Init();
+  if (!device_cache_ && GetMediaRouter()) {
+    device_cache_ = std::make_unique<CastDeviceCache>(base::BindRepeating(
+        &CastConfigControllerMediaRouter::RequestDeviceRefresh,
+        base::Unretained(this)));
+    device_cache_->Init();
   }
 
-  return devices_.get();
+  return device_cache_.get();
 }
 
-void CastConfigClientMediaRouter::RequestDeviceRefresh() {
-  // The media router component isn't ready yet.
-  if (!devices())
-    return;
+void CastConfigControllerMediaRouter::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
 
-  // We failed to connect to ash; don't crash in release.
-  if (!cast_config_) {
-    NOTREACHED();
-    return;
+void CastConfigControllerMediaRouter::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+bool CastConfigControllerMediaRouter::HasSinksAndRoutes() const {
+  return !devices_.empty();
+}
+
+bool CastConfigControllerMediaRouter::HasActiveRoute() const {
+  for (const auto& device : devices_) {
+    if (device.route.is_local_source && !device.route.title.empty())
+      return true;
   }
+
+  return false;
+}
+
+void CastConfigControllerMediaRouter::RequestDeviceRefresh() {
+  // The media router component isn't ready yet.
+  if (!device_cache())
+    return;
 
   // Build the old-style SinkAndRoute set out of the MediaRouter
   // source/sink/route setup. We first map the existing sinks, and then we
   // update those sinks with activity information.
+  devices_.clear();
 
-  std::vector<ash::mojom::SinkAndRoutePtr> items;
-
-  for (const media_router::MediaSink& sink : devices()->sinks()) {
-    ash::mojom::SinkAndRoutePtr sr = ash::mojom::SinkAndRoute::New();
-    sr->route = ash::mojom::CastRoute::New();
-    sr->sink = ash::mojom::CastSink::New();
-    sr->sink->id = sink.id();
-    sr->sink->name = sink.name();
-    sr->sink->domain = sink.domain().value_or(std::string());
-    // TODO(crbug.com/788854): Replace SinkIconType with
-    // ash::mojom::SinkIconType.
-    sr->sink->sink_icon_type =
-        static_cast<ash::mojom::SinkIconType>(sink.icon_type());
-    items.push_back(std::move(sr));
+  for (const media_router::MediaSink& sink : device_cache()->sinks()) {
+    ash::SinkAndRoute device;
+    device.sink.id = sink.id();
+    device.sink.name = sink.name();
+    device.sink.domain = sink.domain().value_or(std::string());
+    device.sink.sink_icon_type =
+        static_cast<ash::SinkIconType>(sink.icon_type());
+    devices_.push_back(std::move(device));
   }
 
-  for (const media_router::MediaRoute& route : devices()->routes()) {
+  for (const media_router::MediaRoute& route : device_cache()->routes()) {
     if (!route.for_display())
       continue;
 
-    for (ash::mojom::SinkAndRoutePtr& item : items) {
-      if (item->sink->id == route.media_sink_id()) {
-        item->route->id = route.media_route_id();
-        item->route->title = route.description();
-        item->route->is_local_source = route.is_local();
+    for (ash::SinkAndRoute& device : devices_) {
+      if (device.sink.id == route.media_sink_id()) {
+        device.route.id = route.media_route_id();
+        device.route.title = route.description();
+        device.route.is_local_source = route.is_local();
 
         // Default to a tab/app capture. This will display the media router
         // description. This means we will properly support DIAL casts.
-        item->route->content_source = ash::mojom::ContentSource::TAB;
-        if (media_router::IsDesktopMirroringMediaSource(route.media_source()))
-          item->route->content_source = ash::mojom::ContentSource::DESKTOP;
-
+        device.route.content_source =
+            media_router::IsDesktopMirroringMediaSource(route.media_source())
+                ? ash::ContentSource::kDesktop
+                : ash::ContentSource::kTab;
         break;
       }
     }
   }
 
-  cast_config_->OnDevicesUpdated(std::move(items));
+  for (auto& observer : observers_)
+    observer.OnDevicesUpdated(devices_);
 }
 
-void CastConfigClientMediaRouter::CastToSink(ash::mojom::CastSinkPtr sink) {
+const std::vector<ash::SinkAndRoute>&
+CastConfigControllerMediaRouter::GetSinksAndRoutes() {
+  return devices_;
+}
+
+void CastConfigControllerMediaRouter::CastToSink(const std::string& sink_id) {
   // TODO(imcheng): Pass in tab casting timeout.
   GetMediaRouter()->CreateRoute(
-      media_router::MediaSourceForDesktop().id(), sink->id,
+      media_router::MediaSourceForDesktop().id(), sink_id,
       url::Origin::Create(GURL("http://cros-cast-origin/")), nullptr,
       base::DoNothing(), base::TimeDelta(), false);
 }
 
-void CastConfigClientMediaRouter::StopCasting(ash::mojom::CastRoutePtr route) {
-  GetMediaRouter()->TerminateRoute(route->id);
+void CastConfigControllerMediaRouter::StopCasting(const std::string& route_id) {
+  GetMediaRouter()->TerminateRoute(route_id);
 }
 
-void CastConfigClientMediaRouter::Observe(
+void CastConfigControllerMediaRouter::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -246,7 +263,7 @@ void CastConfigClientMediaRouter::Observe(
       // The active profile has changed, which means that the media router has
       // as well. Reset the device cache to ensure we are using up-to-date
       // object instances.
-      devices_.reset();
+      device_cache_.reset();
       RequestDeviceRefresh();
       break;
   }

@@ -15,7 +15,6 @@
 #include "ash/assistant/assistant_screen_context_controller.h"
 #include "ash/assistant/assistant_setup_controller.h"
 #include "ash/autotest/shelf_integration_test_api.h"
-#include "ash/cast_config_controller.h"
 #include "ash/display/ash_display_controller.h"
 #include "ash/display/cros_display_config.h"
 #include "ash/display/display_output_protection.h"
@@ -131,10 +130,6 @@ void BindCrosDisplayConfigControllerRequestOnMainThread(
 void BindAshMessageCenterControllerRequestOnMainThread(
     mojom::AshMessageCenterControllerRequest request) {
   Shell::Get()->message_center_controller()->BindRequest(std::move(request));
-}
-
-void BindCastConfigOnMainThread(mojom::CastConfigRequest request) {
-  Shell::Get()->cast_config()->BindRequest(std::move(request));
 }
 
 void BindDisplayOutputProtectionRequestOnMainThread(
@@ -303,8 +298,6 @@ void RegisterInterfaces(
   registry->AddInterface(
       base::BindRepeating(&BindAshMessageCenterControllerRequestOnMainThread),
       main_thread_task_runner);
-  registry->AddInterface(base::BindRepeating(&BindCastConfigOnMainThread),
-                         main_thread_task_runner);
   if (base::FeatureList::IsEnabled(features::kKioskNextShell)) {
     registry->AddInterface(
         base::BindRepeating(&BindKioskNextShellControllerRequestOnMainThread),

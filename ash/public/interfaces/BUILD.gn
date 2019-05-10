@@ -27,7 +27,6 @@ mojom("interfaces_internal") {
     "assistant_image_downloader.mojom",
     "assistant_setup.mojom",
     "assistant_volume_control.mojom",
-    "cast_config.mojom",
     "constants.mojom",
     "cros_display_config.mojom",
     "display_output_protection.mojom",

@@ -29,7 +29,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/media/router/media_routes_observer.h"
-#include "chrome/browser/ui/ash/cast_config_client_media_router.h"
+#include "chrome/browser/ui/ash/cast_config_controller_media_router.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #endif
 
@@ -71,13 +71,13 @@ void PlatformAppBrowserTest::SetUpOnMainThread() {
   ON_CALL(*media_router_, RegisterMediaSinksObserver(testing::_))
       .WillByDefault(testing::Return(true));
 
-  CastConfigClientMediaRouter::SetMediaRouterForTest(media_router_.get());
+  CastConfigControllerMediaRouter::SetMediaRouterForTest(media_router_.get());
 #endif
 }
 
 void PlatformAppBrowserTest::TearDownOnMainThread() {
 #if defined(OS_CHROMEOS)
-  CastConfigClientMediaRouter::SetMediaRouterForTest(nullptr);
+  CastConfigControllerMediaRouter::SetMediaRouterForTest(nullptr);
 #endif
   ExtensionApiTest::TearDownOnMainThread();
 }

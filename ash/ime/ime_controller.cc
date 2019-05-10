@@ -19,9 +19,9 @@ ImeController::ImeController()
     : mode_indicator_observer_(std::make_unique<ModeIndicatorObserver>()) {}
 
 ImeController::~ImeController() {
-  Shell* shell = Shell::Get();
-  shell->cast_config()->RemoveObserver(this);
-  shell->display_manager()->RemoveObserver(this);
+  if (CastConfigController::Get())
+    CastConfigController::Get()->RemoveObserver(this);
+  Shell::Get()->display_manager()->RemoveObserver(this);
 }
 
 void ImeController::AddObserver(Observer* observer) {
@@ -40,9 +40,9 @@ void ImeController::SetClient(mojom::ImeControllerClientPtr client) {
   client_ = std::move(client);
 
   // Initializes some observers for client.
-  Shell* shell = Shell::Get();
-  shell->cast_config()->AddObserver(this);
-  shell->display_manager()->AddObserver(this);
+  if (CastConfigController::Get())
+    CastConfigController::Get()->AddObserver(this);
+  Shell::Get()->display_manager()->AddObserver(this);
 }
 
 bool ImeController::CanSwitchIme() const {
@@ -186,13 +186,12 @@ void ImeController::OnDisplayMetricsChanged(const display::Display& display,
   client_->UpdateMirroringState(is_mirroring);
 }
 
-void ImeController::OnDevicesUpdated(
-    std::vector<mojom::SinkAndRoutePtr> devices) {
+void ImeController::OnDevicesUpdated(const std::vector<SinkAndRoute>& devices) {
   DCHECK(client_);
 
   bool casting_desktop = false;
-  for (auto& receiver : devices) {
-    if (receiver->route->content_source == mojom::ContentSource::DESKTOP) {
+  for (const auto& receiver : devices) {
+    if (receiver.route.content_source == ContentSource::kDesktop) {
       casting_desktop = true;
       break;
     }

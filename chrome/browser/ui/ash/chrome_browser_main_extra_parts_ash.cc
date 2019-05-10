@@ -27,7 +27,7 @@
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/ash/accessibility/accessibility_controller_client.h"
 #include "chrome/browser/ui/ash/ash_shell_init.h"
-#include "chrome/browser/ui/ash/cast_config_client_media_router.h"
+#include "chrome/browser/ui/ash/cast_config_controller_media_router.h"
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
 #include "chrome/browser/ui/ash/ime_controller_client.h"
 #include "chrome/browser/ui/ash/kiosk_next_shell_client.h"
@@ -151,6 +151,9 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
       std::make_unique<NetworkConnectDelegateChromeOS>();
   chromeos::NetworkConnect::Initialize(network_connect_delegate_.get());
 
+  cast_config_controller_media_router_ =
+      std::make_unique<CastConfigControllerMediaRouter>();
+
   ash_shell_init_ = std::make_unique<AshShellInit>();
 
   if (ui_devtools::UiDevToolsServer::IsUiDevToolsEnabled(
@@ -208,8 +211,6 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
-  cast_config_client_media_router_ =
-      std::make_unique<CastConfigClientMediaRouter>();
   login_screen_client_ = std::make_unique<LoginScreenClient>();
   // https://crbug.com/884127 ensuring that LoginScreenClient is initialized before using it InitializeDeviceDisablingManager.
   g_browser_process->platform_part()->InitializeDeviceDisablingManager();
@@ -277,7 +278,6 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   display_settings_handler_.reset();
   media_client_.reset();
   login_screen_client_.reset();
-  cast_config_client_media_router_.reset();
   kiosk_next_shell_client_.reset();
 
   // Initialized in PreProfileInit:
@@ -290,6 +290,7 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   // needs to be released before destroying the profile.
   app_list_client_.reset();
   ash_shell_init_.reset();
+  cast_config_controller_media_router_.reset();
 
   chromeos::NetworkConnect::Shutdown();
   network_connect_delegate_.reset();
