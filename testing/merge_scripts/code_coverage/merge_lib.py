@@ -187,6 +187,16 @@ def merge_profiles(input_dir, output_file, input_extension, profdata_tool_path):
         'List of invalid .profraw files that failed to validate and convert: %r'
     ), invalid_profraw_files)
 
+  # The list of input files could be empty in the following scenarios:
+  # 1. The test target is pure Python scripts test which doesn't execute any
+  #    C/C++ binaries, such as devtools_closure_compile.
+  # 2. The test target executes binary and does dumps coverage profile data
+  #    files, however, all of them turned out to be invalid.
+  if not profile_input_file_paths:
+    logging.info('There is no valid profraw/profdata files to merge, skip '
+                 'invoking profdata tools.')
+    return invalid_profraw_files
+
   invalid_profdata_files = _call_profdata_tool(
       profile_input_file_paths=profile_input_file_paths,
       profile_output_file_path=output_file,
