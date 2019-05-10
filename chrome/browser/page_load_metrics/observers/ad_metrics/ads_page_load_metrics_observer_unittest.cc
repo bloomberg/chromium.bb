@@ -328,7 +328,51 @@ class AdsPageLoadMetricsObserverTest : public SubresourceFilterTestHarness {
     clock_ = std::make_unique<base::SimpleTestTickClock>();
   }
 
+  // Given the prefix of the CPU histogram to check, either "Cpu.FullPage" or
+  // "Cpu.AdFrames.PerFrame", as well as the type, one of "" (for "FullPage"),
+  // "Activated", or "Unactivated", along with the total pre and post cpu time
+  // and total time, check all the relevant cpu histograms.
+  void CheckCpuHistograms(const std::string& prefix,
+                          std::string type,
+                          int pre_task_time,
+                          int pre_time,
+                          int post_task_time,
+                          int post_time) {
+    int total_task_time = pre_task_time + post_task_time;
+    int total_time = pre_time + post_time;
+    std::string suffix = type == "Activated" ? "Activation" : "Interactive";
+    type = type.empty() ? "" : "." + type;
+
+    CheckSpecificCpuHistogram(
+        SuffixedHistogram(prefix + ".PercentUsage" + type),
+        SuffixedHistogram(prefix + ".TotalUsage" + type), total_task_time,
+        total_time);
+    CheckSpecificCpuHistogram(
+        SuffixedHistogram(prefix + ".PercentUsage" + type + ".Pre" + suffix),
+        SuffixedHistogram(prefix + ".TotalUsage" + type + ".Pre" + suffix),
+        pre_task_time, pre_time);
+    CheckSpecificCpuHistogram(
+        SuffixedHistogram(prefix + ".PercentUsage" + type + ".Post" + suffix),
+        SuffixedHistogram(prefix + ".TotalUsage" + type + ".Post" + suffix),
+        post_task_time, post_time);
+  }
+
  private:
+  void CheckSpecificCpuHistogram(std::string percent_histogram,
+                                 std::string total_histogram,
+                                 int total_task_time,
+                                 int total_time) {
+    if (total_time) {
+      histogram_tester().ExpectUniqueSample(
+          percent_histogram, 100 * total_task_time / total_time, 1);
+      histogram_tester().ExpectUniqueSample(total_histogram, total_task_time,
+                                            1);
+    } else {
+      histogram_tester().ExpectTotalCount(percent_histogram, 0);
+      histogram_tester().ExpectTotalCount(total_histogram, 0);
+    }
+  }
+
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) {
     auto observer = std::make_unique<AdsPageLoadMetricsObserver>();
     ads_observer_ = observer.get();
@@ -833,33 +877,14 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetrics) {
   AdvancePageDuration(base::TimeDelta::FromMilliseconds(2000));
   NavigateFrame(kNonAdUrl, main_frame);
 
-  // Overall usage on page for 3 categories:
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("Cpu.FullPage.PercentUsage"),
-      100 * (500 + 500 + 1000 + 500) / 4000 /*=62%*/, 1);
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("Cpu.FullPage.PercentUsage.PreInteractive"),
-      100 * (500 + 500) / 2000 /*=50%*/, 1);
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("Cpu.FullPage.PercentUsage.PostInteractive"),
-      100 * (1000 + 500) / 2000 /*=75%*/, 1);
-
-  // Make sure there are no activated numbers reported.
-  histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("Cpu.AdFrames.PerFrame.PercentUsage.Activated"), 0);
-
-  // Usage for ad frame on page for 3 categories:
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("Cpu.AdFrames.PerFrame.PercentUsage.Unactivated"),
-      100 * (500 + 1000) / 4000 /*=37%*/, 1);
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram(
-          "Cpu.AdFrames.PerFrame.PercentUsage.Unactivated.PreInteractive"),
-      100 * (500) / 2000 /*=25%*/, 1);
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram(
-          "Cpu.AdFrames.PerFrame.PercentUsage.Unactivated.PostInteractive"),
-      100 * (1000) / 2000 /*=50%*/, 1);
+  // Check the cpu histograms.
+  CheckCpuHistograms("Cpu.FullPage", "", /*pre_tasks=*/500 + 500,
+                     /*pre_time=*/2000, /*post_tasks=*/1000 + 500,
+                     /*post_time=*/2000);
+  CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Activated", 0, 0, 0, 0);
+  CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Unactivated", /*pre_tasks=*/500,
+                     /*pre_time=*/2000, /*post_tasks=*/1000,
+                     /*post_time=*/2000);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest,
@@ -895,33 +920,14 @@ TEST_F(AdsPageLoadMetricsObserverTest,
   AdvancePageDuration(base::TimeDelta::FromMilliseconds(500));
   NavigateFrame(kNonAdUrl, main_frame);
 
-  // Overall usage on page for 3 categories:
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("Cpu.FullPage.PercentUsage"),
-      100 * (500 + 500 + 1000) / 3500 /*=57%*/, 1);
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("Cpu.FullPage.PercentUsage.PreInteractive"),
-      100 * (500 + 500) / 2000 /*=50%*/, 1);
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("Cpu.FullPage.PercentUsage.PostInteractive"),
-      100 * (1000) / 1500 /*=66%*/, 1);
-
-  // Make sure there are no activated numbers reported.
-  histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("Cpu.AdFrames.PerFrame.PercentUsage.Activated"), 0);
-
-  // Usage for ad frame on page for 3 categories:
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("Cpu.AdFrames.PerFrame.PercentUsage.Unactivated"),
-      100 * (500 + 1000) / 3500 /*=42%*/, 1);
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram(
-          "Cpu.AdFrames.PerFrame.PercentUsage.Unactivated.PreInteractive"),
-      100 * (500) / 2000 /*=25%*/, 1);
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram(
-          "Cpu.AdFrames.PerFrame.PercentUsage.Unactivated.PostInteractive"),
-      100 * (1000) / 1500 /*=66%*/, 1);
+  // Check the cpu histograms.
+  CheckCpuHistograms("Cpu.FullPage", "", /*pre_tasks=*/500 + 500,
+                     /*pre_time=*/2000, /*post_tasks=*/1000,
+                     /*post_time=*/1500);
+  CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Activated", 0, 0, 0, 0);
+  CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Unactivated", /*pre_tasks=*/500,
+                     /*pre_time=*/2000, /*post_tasks=*/1000,
+                     /*post_time=*/1500);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsOnActivation) {
@@ -959,33 +965,15 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsOnActivation) {
   AdvancePageDuration(base::TimeDelta::FromMilliseconds(1500));
   NavigateFrame(kNonAdUrl, main_frame);
 
-  // Overall usage on page for 3 categories:
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("Cpu.FullPage.PercentUsage"),
-      100 * (500 + 500 + 1000 + 500) / 4000 /*=62%*/, 1);
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("Cpu.FullPage.PercentUsage.PreInteractive"),
-      100 * (500 + 500) / 2000 /*=50%*/, 1);
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("Cpu.FullPage.PercentUsage.PostInteractive"),
-      100 * (1000 + 500) / 2000 /*=75%*/, 1);
-
-  // Make sure there are no unactivated numbers reported.
-  histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("Cpu.AdFrames.PerFrame.PercentUsage.Unactivated"), 0);
-
-  // Usage for ad frame on page for 3 categories:
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("Cpu.AdFrames.PerFrame.PercentUsage.Activated"),
-      100 * (500 + 500 + 500) / 4000 /*=37%*/, 1);
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram(
-          "Cpu.AdFrames.PerFrame.PercentUsage.Activated.PreActivation"),
-      100 * (500 + 500) / 2500 /*=40%*/, 1);
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram(
-          "Cpu.AdFrames.PerFrame.PercentUsage.Activated.PostActivation"),
-      100 * (500) / 1500 /*=33%*/, 1);
+  // Check the cpu histograms.
+  CheckCpuHistograms("Cpu.FullPage", "", /*pre_tasks=*/500 + 500,
+                     /*pre_time=*/2000, /*post_tasks=*/1000 + 500,
+                     /*post_time=*/2000);
+  CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Unactivated", 0, 0, 0, 0);
+  CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Activated",
+                     /*pre_tasks=*/500 + 500, /*pre_time=*/2500,
+                     /*post_tasks=*/500,
+                     /*post_time=*/1500);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, TestNoReportingWhenAlwaysBackgrounded) {
@@ -1020,12 +1008,9 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestNoReportingWhenAlwaysBackgrounded) {
   NavigateFrame(kNonAdUrl, main_frame);
 
   // Ensure that all metrics are zero.
-  histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("Cpu.FullPage.PercentUsage"), 0);
-  histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("Cpu.AdFrames.PerFrame.PercentUsage.Unactivated"), 0);
-  histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("Cpu.AdFrames.PerFrame.PercentUsage.Activated"), 0);
+  CheckCpuHistograms("Cpu.FullPage", "", 0, 0, 0, 0);
+  CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Unactivated", 0, 0, 0, 0);
+  CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Activated", 0, 0, 0, 0);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsNoInteractive) {
@@ -1046,31 +1031,12 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsNoInteractive) {
   AdvancePageDuration(base::TimeDelta::FromMilliseconds(2000));
   NavigateFrame(kNonAdUrl, main_frame);
 
-  // Overall usage on page for 3 categories:
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("Cpu.FullPage.PercentUsage"),
-      100 * (500 + 500) / 2000 /*=50%*/, 1);
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("Cpu.FullPage.PercentUsage.PreInteractive"),
-      100 * (500 + 500) / 2000 /*=50%*/, 1);
-  histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("Cpu.FullPage.PercentUsage.PostInteractive"), 0);
-
-  // Make sure there are no activated numbers reported.
-  histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("Cpu.AdFrames.PerFrame.PercentUsage.Activated"), 0);
-
-  // Usage for ad frame on page for 3 categories:
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("Cpu.AdFrames.PerFrame.PercentUsage.Unactivated"),
-      100 * (500) / 2000 /*=25%*/, 1);
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram(
-          "Cpu.AdFrames.PerFrame.PercentUsage.Unactivated.PreInteractive"),
-      100 * (500) / 2000 /*=25%*/, 1);
-  histogram_tester().ExpectTotalCount(
-      SuffixedHistogram(
-          "Cpu.AdFrames.PerFrame.PercentUsage.Unactivated.PostInteractive"), 0);
+  // Check the cpu histograms.
+  CheckCpuHistograms("Cpu.FullPage", "", /*pre_tasks=*/500 + 500,
+                     /*pre_time=*/2000, /*post_tasks=*/0, /*post_time=*/0);
+  CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Activated", 0, 0, 0, 0);
+  CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Unactivated", /*pre_tasks=*/500,
+                     /*pre_time=*/2000, /*post_tasks=*/0, /*post_time=*/0);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsShortTimeframes) {
@@ -1101,10 +1067,7 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsShortTimeframes) {
   NavigateFrame(kNonAdUrl, main_frame);
 
   // Make sure there are no numbers reported, as the timeframes are too short.
-  histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("Cpu.AdFrames.PerFrame.PercentUsage.Activated"), 0);
-  histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("Cpu.AdFrames.PerFrame.PercentUsage.Unctivated"), 0);
-  histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("Cpu.FullPage.PercentUsage"), 0);
+  CheckCpuHistograms("Cpu.FullPage", "", 0, 0, 0, 0);
+  CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Activated", 0, 0, 0, 0);
+  CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Unactivated", 0, 0, 0, 0);
 }

@@ -570,29 +570,40 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForCpuUsage(
           FrameData::InteractiveStatus::kPreInteractive);
       base::TimeDelta task_duration_post = ad_frame_data.GetInteractiveCpuUsage(
           FrameData::InteractiveStatus::kPostInteractive);
+      base::TimeDelta task_duration_total =
+          task_duration_pre + task_duration_post;
       if (total_duration.InMilliseconds() > 0) {
         ADS_HISTOGRAM("Cpu.AdFrames.PerFrame.PercentUsage.Unactivated",
                       UMA_HISTOGRAM_PERCENTAGE, visibility,
-                      GetCpuPercentage(task_duration_pre + task_duration_post,
-                                       total_duration));
+                      GetCpuPercentage(task_duration_total, total_duration));
+        ADS_HISTOGRAM("Cpu.AdFrames.PerFrame.TotalUsage.Unactivated",
+                      PAGE_LOAD_HISTOGRAM, visibility, task_duration_total);
       }
       if (pre_interactive_duration_.InMilliseconds() > 0) {
         ADS_HISTOGRAM(
             "Cpu.AdFrames.PerFrame.PercentUsage.Unactivated.PreInteractive",
             UMA_HISTOGRAM_PERCENTAGE, visibility,
             GetCpuPercentage(task_duration_pre, pre_interactive_duration_));
+        ADS_HISTOGRAM(
+            "Cpu.AdFrames.PerFrame.TotalUsage.Unactivated.PreInteractive",
+            PAGE_LOAD_HISTOGRAM, visibility, task_duration_pre);
       }
       if (post_interactive_duration.InMilliseconds() > 0) {
         ADS_HISTOGRAM(
             "Cpu.AdFrames.PerFrame.PercentUsage.Unactivated.PostInteractive",
             UMA_HISTOGRAM_PERCENTAGE, visibility,
             GetCpuPercentage(task_duration_post, post_interactive_duration));
+        ADS_HISTOGRAM(
+            "Cpu.AdFrames.PerFrame.TotalUsage.Unactivated.PostInteractive",
+            PAGE_LOAD_HISTOGRAM, visibility, task_duration_post);
       }
     } else {
       base::TimeDelta task_duration_pre = ad_frame_data.GetActivationCpuUsage(
           FrameData::UserActivationStatus::kNoActivation);
       base::TimeDelta task_duration_post = ad_frame_data.GetActivationCpuUsage(
           FrameData::UserActivationStatus::kReceivedActivation);
+      base::TimeDelta task_duration_total =
+          task_duration_pre + task_duration_post;
       base::TimeDelta pre_activation_duration =
           ad_frame_data.pre_activation_foreground_duration();
       base::TimeDelta post_activation_duration =
@@ -600,20 +611,27 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForCpuUsage(
       if (total_duration.InMilliseconds() > 0) {
         ADS_HISTOGRAM("Cpu.AdFrames.PerFrame.PercentUsage.Activated",
                       UMA_HISTOGRAM_PERCENTAGE, visibility,
-                      GetCpuPercentage(task_duration_pre + task_duration_post,
-                                       total_duration));
+                      GetCpuPercentage(task_duration_total, total_duration));
+        ADS_HISTOGRAM("Cpu.AdFrames.PerFrame.TotalUsage.Activated",
+                      PAGE_LOAD_HISTOGRAM, visibility, task_duration_total);
       }
       if (pre_activation_duration.InMilliseconds() > 0) {
         ADS_HISTOGRAM(
             "Cpu.AdFrames.PerFrame.PercentUsage.Activated.PreActivation",
             UMA_HISTOGRAM_PERCENTAGE, visibility,
             GetCpuPercentage(task_duration_pre, pre_activation_duration));
+        ADS_HISTOGRAM(
+            "Cpu.AdFrames.PerFrame.TotalUsage.Activated.PreActivation",
+            PAGE_LOAD_HISTOGRAM, visibility, task_duration_pre);
       }
       if (post_activation_duration.InMilliseconds() > 0) {
         ADS_HISTOGRAM(
             "Cpu.AdFrames.PerFrame.PercentUsage.Activated.PostActivation",
             UMA_HISTOGRAM_PERCENTAGE, visibility,
             GetCpuPercentage(task_duration_post, post_activation_duration));
+        ADS_HISTOGRAM(
+            "Cpu.AdFrames.PerFrame.TotalUsage.Activated.PostActivation",
+            PAGE_LOAD_HISTOGRAM, visibility, task_duration_post);
       }
     }
   }
@@ -634,23 +652,29 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForCpuUsage(
   base::TimeDelta task_duration_post =
       aggregate_frame_data_->GetInteractiveCpuUsage(
           FrameData::InteractiveStatus::kPostInteractive);
+  base::TimeDelta task_duration_total = task_duration_pre + task_duration_post;
   if (total_duration.InMilliseconds() > 0) {
     ADS_HISTOGRAM("Cpu.FullPage.PercentUsage", UMA_HISTOGRAM_PERCENTAGE,
                   visibility,
-                  GetCpuPercentage(task_duration_pre + task_duration_post,
-                                   total_duration));
+                  GetCpuPercentage(task_duration_total, total_duration));
+    ADS_HISTOGRAM("Cpu.FullPage.TotalUsage", PAGE_LOAD_HISTOGRAM, visibility,
+                  task_duration_total);
   }
   if (pre_interactive_duration_.InMilliseconds() > 0) {
     ADS_HISTOGRAM(
         "Cpu.FullPage.PercentUsage.PreInteractive", UMA_HISTOGRAM_PERCENTAGE,
         visibility,
         GetCpuPercentage(task_duration_pre, pre_interactive_duration_));
+    ADS_HISTOGRAM("Cpu.FullPage.TotalUsage.PreInteractive", PAGE_LOAD_HISTOGRAM,
+                  visibility, task_duration_pre);
   }
   if (post_interactive_duration.InMilliseconds() > 0) {
     ADS_HISTOGRAM(
         "Cpu.FullPage.PercentUsage.PostInteractive", UMA_HISTOGRAM_PERCENTAGE,
         visibility,
         GetCpuPercentage(task_duration_post, post_interactive_duration));
+    ADS_HISTOGRAM("Cpu.FullPage.TotalUsage.PostInteractive",
+                  PAGE_LOAD_HISTOGRAM, visibility, task_duration_post);
   }
 }
 
