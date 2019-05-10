@@ -926,6 +926,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessInternalsHitTestBrowserTest,
   EXPECT_NE(div_scroll_top_start, div_scroll_top);
 }
 
+// TODO(https://crbug.com/961135): disabled because tests are flaky
 IN_PROC_BROWSER_TEST_P(SitePerProcessInternalsHitTestBrowserTest,
                        DISABLED_NestedLocalNonFastScrollableDivCoordsAreLocal) {
   GURL main_url(embedded_test_server()->GetURL(
