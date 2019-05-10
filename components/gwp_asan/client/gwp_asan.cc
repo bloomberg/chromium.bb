@@ -16,6 +16,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/numerics/safe_math.h"
 #include "base/optional.h"
+#include "base/partition_alloc_buildflags.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
@@ -24,6 +25,10 @@
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
 #include "components/gwp_asan/client/sampling_malloc_shims.h"
 #endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
+
+#if BUILDFLAG(USE_PARTITION_ALLOC)
+#include "components/gwp_asan/client/sampling_partitionalloc_shims.h"
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC)
 
 namespace gwp_asan {
 
@@ -54,7 +59,10 @@ constexpr double kDefaultProcessSamplingProbability = 0.2;
 // conditions apply.
 constexpr int kDefaultProcessSamplingBoost = 4;
 
-const base::Feature kGwpAsan{"GwpAsanMalloc", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kGwpAsanMalloc{"GwpAsanMalloc",
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kGwpAsanPartitionAlloc{"GwpAsanPartitionAlloc",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Returns whether this process should be sampled to enable GWP-ASan.
 bool SampleProcess(const base::Feature& feature,
@@ -183,7 +191,7 @@ void EnableForMalloc(bool is_canary_dev, bool is_browser_process) {
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
   static bool init_once = [&]() -> bool {
     auto settings = internal::GetAllocatorSettings(
-        internal::kGwpAsan, is_canary_dev, is_browser_process);
+        internal::kGwpAsanMalloc, is_canary_dev, is_browser_process);
     if (!settings)
       return false;
 
@@ -194,9 +202,29 @@ void EnableForMalloc(bool is_canary_dev, bool is_browser_process) {
   }();
   ignore_result(init_once);
 #else
-  ignore_result(internal::kGwpAsan);
+  ignore_result(internal::kGwpAsanMalloc);
   DLOG(WARNING) << "base::allocator shims are unavailable for GWP-ASan.";
 #endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
+}
+
+void EnableForPartitionAlloc(bool is_canary_dev) {
+#if BUILDFLAG(USE_PARTITION_ALLOC)
+  static bool init_once = [&]() -> bool {
+    auto settings = internal::GetAllocatorSettings(
+        internal::kGwpAsanPartitionAlloc, is_canary_dev, false);
+    if (!settings)
+      return false;
+
+    internal::InstallPartitionAllocHooks(
+        settings->max_allocated_pages, settings->num_metadata,
+        settings->total_pages, settings->sampling_frequency);
+    return true;
+  }();
+  ignore_result(init_once);
+#else
+  ignore_result(internal::kGwpAsanPartitionAlloc);
+  DLOG(WARNING) << "PartitionAlloc hooks are unavailable for GWP-ASan.";
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC)
 }
 
 }  // namespace gwp_asan

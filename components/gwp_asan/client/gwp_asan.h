@@ -21,12 +21,13 @@ struct AllocatorSettings {
 
 }  // namespace internal
 
-// Enable GWP-ASan for the current process. This should only be called once per
-// process. This can not be disabled once it has been enabled. The caller should
-// indicate whether this build is a canary or dev build or if the current
-// process is the browser process. In both cases, GWP-ASan will use more memory.
+// Enable GWP-ASan for the current process for the given allocator. This should
+// only be called once per process. This can not be disabled once it has been
+// enabled.
+
 GWP_ASAN_EXPORT void EnableForMalloc(bool is_canary_dev,
                                      bool is_browser_process);
+GWP_ASAN_EXPORT void EnableForPartitionAlloc(bool is_canary_dev);
 
 }  // namespace gwp_asan
 
