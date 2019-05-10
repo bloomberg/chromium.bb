@@ -484,17 +484,25 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
   }
   params.sync_manager_factory =
       std::make_unique<SyncManagerFactory>(network_connection_tracker_);
-  // The first time we start up the engine we want to ensure we have a clean
-  // directory, so delete any old one that might be there.
-  params.delete_sync_data_folder = !user_settings_->IsFirstSetupComplete();
-  if (params.delete_sync_data_folder) {
-    // This looks questionable here but it mimics the old behavior of deleting
-    // the directory via Directory::DeleteDirectoryFiles(). One consecuence is
-    // that, for sync the transport users (without sync-the-feature enabled),
-    // the cache GUID and other fields are reset on every restart.
-    // TODO(crbug.com/923285): Reconsider the lifetime of the cache GUID and
-    // its persistence depending on StorageOption.
+  params.birthday = sync_prefs_.GetBirthday();
+  params.cache_guid = sync_prefs_.GetCacheGuid();
+  // If either the cache GUID or the birthday are unitialized, it means we
+  // haven't completed a first sync cycle. We regenerate the cache GUID either
+  // way, even if just the birthday is missing, because fetching updates
+  // requires that the request either has a birthday, or there should be no
+  // progress marker.
+  // TODO(crbug.com/923285): This looks questionable here for
+  // |!IsFirstSetupComplete()| but it mimics the old behavior of deleting the
+  // directory via Directory::DeleteDirectoryFiles(). One consecuence is that,
+  // for sync the transport users (without sync-the-feature enabled), the cache
+  // GUID and other fields are reset on every restart.
+  if (params.cache_guid.empty() || params.birthday.empty() ||
+      !user_settings_->IsFirstSetupComplete()) {
     sync_prefs_.ClearDirectoryConsistencyPreferences();
+    params.cache_guid = GenerateCacheGUID();
+    params.birthday.clear();
+    params.delete_sync_data_folder = true;
+    sync_prefs_.SetCacheGuid(params.cache_guid);
   }
   params.enable_local_sync_backend = sync_prefs_.IsLocalSyncEnabled();
   params.local_sync_backend_folder = sync_client_->GetLocalSyncBackendFolder();
@@ -502,12 +510,7 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
       sync_prefs_.GetEncryptionBootstrapToken();
   params.restored_keystore_key_for_bootstrapping =
       sync_prefs_.GetKeystoreEncryptionBootstrapToken();
-  params.cache_guid = sync_prefs_.GetCacheGuid();
-  if (params.cache_guid.empty()) {
-    params.cache_guid = GenerateCacheGUID();
-    sync_prefs_.SetCacheGuid(params.cache_guid);
-  }
-  params.birthday = sync_prefs_.GetBirthday();
+
   params.bag_of_chips = sync_prefs_.GetBagOfChips();
   params.engine_components_factory =
       std::make_unique<EngineComponentsFactoryImpl>(
@@ -858,6 +861,10 @@ void ProfileSyncService::OnEngineInitialized(
                              ERROR_REASON_ENGINE_INIT_FAILURE);
     return;
   }
+
+  // TODO(crbug.com/923285): The store birthday should be available at this
+  // point, so we should ideally save to prefs, since OnSyncCycleCompleted()
+  // does not get called for the first sync cycle for control types.
 
   sync_js_controller_.AttachJsBackend(js_backend);
 
