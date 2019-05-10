@@ -190,7 +190,7 @@ class ChunkDemuxerTest : public ::testing::Test {
     Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb =
         base::BindRepeating(&ChunkDemuxerTest::OnEncryptedMediaInitData,
                             base::Unretained(this));
-    EXPECT_MEDIA_LOG(BufferingByPtsDts(true));
+    EXPECT_MEDIA_LOG(ChunkDemuxerCtor());
     demuxer_.reset(new ChunkDemuxer(open_cb, progress_cb,
                                     encrypted_media_init_data_cb, &media_log_));
   }

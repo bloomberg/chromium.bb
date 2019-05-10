@@ -391,9 +391,8 @@ MATCHER_P2(NoSpliceForBadMux, overlapped_buffer_count, splice_time_us, "") {
                              base::NumberToString(splice_time_us));
 }
 
-MATCHER_P(BufferingByPtsDts, by_pts_bool, "") {
-  return CONTAINS_STRING(arg, std::string("ChunkDemuxer: buffering by ") +
-                                  (by_pts_bool ? "PTS" : "DTS"));
+MATCHER(ChunkDemuxerCtor, "") {
+  return CONTAINS_STRING(arg, "ChunkDemuxer");
 }
 
 MATCHER_P2(DiscardingEmptyFrame, pts_us, dts_us, "") {

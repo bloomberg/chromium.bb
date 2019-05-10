@@ -86,16 +86,11 @@ class FrameProcessorTest : public ::testing::TestWithParam<bool> {
         audio_id_(1),
         video_id_(2) {
     use_sequence_mode_ = GetParam();
-
-    // TODO(wolenetz): Remove range API parameterization once production code no
-    // longer varies per kMseBufferByPts feature. See https://crbug.com/771349
-    range_api_ = ChunkDemuxerStream::RangeApi::kNewByPts;
-
     frame_processor_ = std::make_unique<FrameProcessor>(
         base::Bind(
             &FrameProcessorTestCallbackHelper::OnPossibleDurationIncrease,
             base::Unretained(&callbacks_)),
-        &media_log_, range_api_);
+        &media_log_);
     frame_processor_->SetParseWarningCallback(
         base::Bind(&FrameProcessorTestCallbackHelper::OnParseWarning,
                    base::Unretained(&callbacks_)));
@@ -308,7 +303,6 @@ class FrameProcessorTest : public ::testing::TestWithParam<bool> {
   StrictMock<FrameProcessorTestCallbackHelper> callbacks_;
 
   bool use_sequence_mode_;
-  ChunkDemuxerStream::RangeApi range_api_;
 
   std::unique_ptr<FrameProcessor> frame_processor_;
   base::TimeDelta append_window_start_;
@@ -349,8 +343,7 @@ class FrameProcessorTest : public ::testing::TestWithParam<bool> {
     switch (type) {
       case DemuxerStream::AUDIO: {
         ASSERT_FALSE(audio_);
-        audio_.reset(
-            new ChunkDemuxerStream(DemuxerStream::AUDIO, "1", range_api_));
+        audio_.reset(new ChunkDemuxerStream(DemuxerStream::AUDIO, "1"));
         AudioDecoderConfig decoder_config(kCodecVorbis, kSampleFormatPlanarF32,
                                           CHANNEL_LAYOUT_STEREO, 1000,
                                           EmptyExtraData(), Unencrypted());
@@ -363,8 +356,7 @@ class FrameProcessorTest : public ::testing::TestWithParam<bool> {
       }
       case DemuxerStream::VIDEO: {
         ASSERT_FALSE(video_);
-        video_.reset(
-            new ChunkDemuxerStream(DemuxerStream::VIDEO, "2", range_api_));
+        video_.reset(new ChunkDemuxerStream(DemuxerStream::VIDEO, "2"));
         ASSERT_TRUE(video_->UpdateVideoConfig(TestVideoConfig::Normal(), false,
                                               &media_log_));
         stream = video_.get();
@@ -1248,8 +1240,7 @@ TEST_P(FrameProcessorTest, TimestampOffsetNegativeDts) {
 TEST_P(FrameProcessorTest, LargeTimestampOffsetJumpForward) {
   // Verifies that jumps forward in buffers emitted from the coded frame
   // processing algorithm can create discontinuous buffered ranges if those
-  // jumps are large enough, in both kinds of AppendMode, and in both kinds of
-  // RangeApi.
+  // jumps are large enough, in both kinds of AppendMode.
   InSequence s;
   AddTestTracks(HAS_AUDIO);
   frame_processor_->SetSequenceMode(use_sequence_mode_);

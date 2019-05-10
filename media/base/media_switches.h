@@ -112,7 +112,6 @@ MEDIA_EXPORT extern const base::Feature kMediaCastOverlayButton;
 MEDIA_EXPORT extern const base::Feature kMediaEngagementBypassAutoplayPolicies;
 MEDIA_EXPORT extern const base::Feature kMediaLearningExperiment;
 MEDIA_EXPORT extern const base::Feature kMemoryPressureBasedSourceBufferGC;
-MEDIA_EXPORT extern const base::Feature kMseBufferByPts;
 MEDIA_EXPORT extern const base::Feature kNewEncodeCpuLoadEstimator;
 MEDIA_EXPORT extern const base::Feature kOverflowIconsForMediaControls;
 MEDIA_EXPORT extern const base::Feature kOverlayFullscreenVideo;

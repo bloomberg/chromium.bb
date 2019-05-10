@@ -258,10 +258,6 @@ const base::Feature kD3D11VideoDecoderIgnoreWorkarounds{
 const base::Feature kFallbackAfterDecodeError{"FallbackAfterDecodeError",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Manage and report MSE buffered ranges by PTS intervals, not DTS intervals.
-const base::Feature kMseBufferByPts{"MseBufferByPts",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable new cpu load estimator. Intended for evaluation in local
 // testing and origin-trial.
 // TODO(nisse): Delete once we have switched over to always using the

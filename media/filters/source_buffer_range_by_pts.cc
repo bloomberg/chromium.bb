@@ -112,13 +112,6 @@ void SourceBufferRangeByPts::AppendBuffersToEnd(
          new_buffers.front()->is_key_frame())
       << range_start_pts_ << ", " << new_buffers.front()->is_key_frame();
 
-  // TODO(wolenetz): Uncomment this DCHECK once SAP-Type-2 is more fully
-  // supported. It is hit by NewByPts versions of
-  // FrameProcessorTest.OOOKeyframePrecededByDependantNonKeyframeShouldWarn. See
-  // https://crbug.com/718641.
-  // DCHECK(range_start_pts_ == kNoTimestamp ||
-  // range_start_pts_ <= new_buffers.front()->timestamp());
-
   AdjustEstimatedDurationForNewAppend(new_buffers);
 
   for (BufferQueue::const_iterator itr = new_buffers.begin();

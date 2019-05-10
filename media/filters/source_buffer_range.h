@@ -88,7 +88,7 @@ class MEDIA_EXPORT SourceBufferRange {
 
   // TODO(wolenetz): Remove in favor of
   // GetEndTimestamp()/GetBufferedEndTimestamp() once they report in PTS, not
-  // DTS. See https://crbug.com/718641.
+  // DTS. See https://crbug.com/771349.
   void GetRangeEndTimesForTesting(base::TimeDelta* highest_pts,
                                   base::TimeDelta* end_time) const;
 
@@ -109,7 +109,7 @@ class MEDIA_EXPORT SourceBufferRange {
   // updates the |size_in_bytes_| accordingly. Note, this does not update
   // |keyframe_map_|.
   // TODO(wolenetz): elevate keyframe_map_ to base class so this comment has
-  // better context. See https://crbug.com/718641.
+  // better context. See https://crbug.com/771349.
   void FreeBufferRange(const BufferQueue::const_iterator& starting_point,
                        const BufferQueue::const_iterator& ending_point);
 
@@ -128,10 +128,7 @@ class MEDIA_EXPORT SourceBufferRange {
   // the next buffer in presentation sequence at or after |highest_frame_|.
   // |buffers_| must not be empty, and |highest_frame_| must not be nullptr.
   // Uses |gap_policy_| to potentially allow gaps.
-  // TODO(wolenetz): Switch to using this helper in CanAppendBuffersToEnd(),
-  // etc, when switching to managing ranges by their presentation interval, and
-  // not necessarily just their decode times. See https://crbug.com/718641. Once
-  // being used and not just tested, the following also applies:
+  //
   // Due to potential for out-of-order decode vs presentation time, this method
   // should only be used to determine adjacency of keyframes with the end of
   // |buffers_|.
@@ -141,10 +138,7 @@ class MEDIA_EXPORT SourceBufferRange {
   // timestamp of the next buffer in decode sequence at or after the last buffer
   // in |buffers_|'s decode timestamp.  |buffers_| must not be empty. Uses
   // |gap_policy_| to potentially allow gaps.
-  // TODO(wolenetz): Switch to using this helper in CanAppendBuffersToEnd(),
-  // etc, appropriately when switching to managing ranges by their presentation
-  // interval between GOPs, and by their decode sequence within GOPs. See
-  // https://crbug.com/718641. Once that's done, the following also would apply:
+  //
   // Due to potential for out-of-order decode vs presentation time, this method
   // should only be used to determine adjacency of non-keyframes with the end of
   // |buffers_|, when determining if a non-keyframe with |decode_timestamp|

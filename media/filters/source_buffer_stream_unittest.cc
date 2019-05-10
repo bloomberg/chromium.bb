@@ -28,7 +28,6 @@
 #include "media/base/timestamp_constants.h"
 #include "media/base/webvtt_util.h"
 #include "media/filters/source_buffer_range.h"
-#include "media/filters/source_buffer_range_by_dts.h"
 #include "media/filters/source_buffer_range_by_pts.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -83,8 +82,7 @@ class SourceBufferStreamTest : public testing::Test {
 
   template <typename ConfigT>
   void ResetStream(const ConfigT& config) {
-    stream_.reset(
-        new SourceBufferStream<SourceBufferRangeByPts>(config, &media_log_));
+    stream_.reset(new SourceBufferStream(config, &media_log_));
   }
 
   void SetMemoryLimit(size_t buffers_of_data) {
@@ -458,7 +456,7 @@ class SourceBufferStreamTest : public testing::Test {
   base::TimeDelta frame_duration() const { return frame_duration_; }
 
   StrictMock<MockMediaLog> media_log_;
-  std::unique_ptr<SourceBufferStream<SourceBufferRangeByPts>> stream_;
+  std::unique_ptr<SourceBufferStream> stream_;
 
   VideoDecoderConfig video_config_;
   AudioDecoderConfig audio_config_;
@@ -894,11 +892,11 @@ TEST_F(SourceBufferStreamTest, End_Overlap_Several) {
   // Check expected ranges: stream should not have kept buffers at DTS 13,14;
   // PTS 12,13 because the keyframe on which they depended (10, PTS=DTS) was
   // overwritten. Note that partial second GOP of B includes PTS [10,14), DTS
-  // [10,12). In both ByDts and ByPts, these are continuous with the overlapped
-  // original range's next GOP at (15, PTS=DTS).
+  // [10,12). These are continuous with the overlapped original range's next GOP
+  // at (15, PTS=DTS).
   // Unlike the rest of the position based test API used in this case, these
   // range expectation strings are the actual timestamps (divided by
-  // frame_duration_), in DTS if ByDts, in PTS if ByPts.
+  // frame_duration_).
   CheckExpectedRanges("{ [5,19) }");
 
   // Check buffers in range.
@@ -1279,11 +1277,11 @@ TEST_F(SourceBufferStreamTest, End_Overlap_Selected_AfterEndOfNew_2) {
   // Check expected ranges: stream should not have kept buffers at DTS 8,9;
   // PTS 7,8 because the keyframe on which they depended (5, PTS=DTS) was
   // overwritten. Note that partial second GOP of B includes PTS [5,9), DTS
-  // [5,7). In both ByDts and ByPts, these are continuous with the overlapped
-  // original range's next GOP at (10, PTS=DTS).
+  // [5,7). These are continuous with the overlapped original range's next GOP
+  // at (10, PTS=DTS).
   // Unlike the rest of the position based test API used in this case, these
   // range expectation strings are the actual timestamps (divided by
-  // frame_duration_), in DTS if ByDts, in PTS if ByPts.
+  // frame_duration_).
   CheckExpectedRanges("{ [0,14) }");
 
   // Make sure rest of data is as expected.
@@ -1323,11 +1321,11 @@ TEST_F(SourceBufferStreamTest, End_Overlap_Selected_AfterEndOfNew_3) {
   // PTS 7,8 because the keyframe on which they depended (5, PTS=DTS) was
   // overwritten. However, they were in the GOP being read from, so were put
   // into the track buffer. Note that partial second GOP of B includes PTS
-  // [5,9), DTS [5,7). In both ByDts and ByPts, these are continuous with the
-  // overlapped original range's next GOP at (10, PTS=DTS).
+  // [5,9), DTS [5,7). These are continuous with the overlapped original range's
+  // next GOP at (10, PTS=DTS).
   // Unlike the rest of the position based test API used in this case, these
   // range expectation strings are the actual timestamps (divided by
-  // frame_duration_), in DTS if ByDts, in PTS if ByPts.
+  // frame_duration_).
   CheckExpectedRanges("{ [0,14) }");
 
   // Check for data in the track buffer.
@@ -1402,11 +1400,11 @@ TEST_F(SourceBufferStreamTest, End_Overlap_Selected_OverlappedByNew_2) {
   // PTS 6,7,8 because the keyframe on which they depended (5, PTS=DTS) was
   // overwritten. However, they were in the GOP being read from, so were put
   // into the track buffer. Note that partial second GOP of B includes PTS
-  // [5,9), DTS [5,6). In both ByDts and ByPts, these are continuous with the
-  // overlapped original range's next GOP at (10, PTS=DTS).
+  // [5,9), DTS [5,6). These are continuous with the overlapped original range's
+  // next GOP at (10, PTS=DTS).
   // Unlike the rest of the position based test API used in this case, these
   // range expectation strings are the actual timestamps (divided by
-  // frame_duration_), in DTS if ByDts, in PTS if ByPts.
+  // frame_duration_).
   CheckExpectedRanges("{ [0,14) }");
 
   // Check for data in the track buffer.
@@ -1450,11 +1448,11 @@ TEST_F(SourceBufferStreamTest, End_Overlap_Selected_OverlappedByNew_3) {
   // and PTS) because the keyframe on which they depended (10, PTS=DTS) was
   // overwritten. The GOP being read from was overwritten, so track buffer
   // should contain DTS 6-9 (PTS 9,6,7,8). Note that the partial third GOP of B
-  // includes (10, PTS=DTS). In both ByDts and ByPts, this partial GOP is
-  // continuous with the overlapped original range's next GOP at (15, PTS=DTS).
+  // includes (10, PTS=DTS). This partial GOP is continuous with the overlapped
+  // original range's next GOP at (15, PTS=DTS).
   // Unlike the rest of the position based test API used in this case, these
   // range expectation strings are the actual timestamps (divided by
-  // frame_duration_), in DTS if ByDts, in PTS if ByPts.
+  // frame_duration_).
   CheckExpectedRanges("{ [0,19) }");
 
   // Check for data in the track buffer.
@@ -1537,12 +1535,12 @@ TEST_F(SourceBufferStreamTest, End_Overlap_Selected_NoKeyframeAfterNew2) {
   // should contain DTS 16, PTS 19.
   // Unlike the rest of the position based test API used in this case,
   // CheckExpectedRanges() uses expectation strings containing actual timestamps
-  // (divided by frame_duration_), in DTS if ByDts, in PTS if ByPts.
+  // (divided by frame_duration_).
   CheckExpectedRanges("{ [5,15) }");
 
-  // Now do another end-overlap. Append one full GOP plus keyframe of 2nd.
-  // Note that this new keyframe at (5, PTS=DTS) is continuous in both ByPts and
-  // ByDts with the overlapped range's next GOP (B) at (10, PTS=DTS).
+  // Now do another end-overlap. Append one full GOP plus keyframe of 2nd. Note
+  // that this new keyframe at (5, PTS=DTS) is continuous with the overlapped
+  // range's next GOP (B) at (10, PTS=DTS).
   NewCodedFrameGroupAppend(0, 6, &kDataA);
   CheckExpectedRanges("{ [0,15) }");
 

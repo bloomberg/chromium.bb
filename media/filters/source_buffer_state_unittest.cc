@@ -56,17 +56,13 @@ void InvokeCbAndSaveResult(const base::Callback<bool()>& cb, bool* result) {
 
 class SourceBufferStateTest : public ::testing::Test {
  public:
-  SourceBufferStateTest() : mock_stream_parser_(nullptr) {
-    // TODO(wolenetz): Remove range API parameterization once production code no
-    // longer varies per kMseBufferByPts feature. See https://crbug.com/771349.
-    range_api_ = ChunkDemuxerStream::RangeApi::kNewByPts;
-  }
+  SourceBufferStateTest() : mock_stream_parser_(nullptr) {}
 
   std::unique_ptr<SourceBufferState> CreateSourceBufferState() {
     std::unique_ptr<FrameProcessor> frame_processor = base::WrapUnique(
         new FrameProcessor(base::Bind(&SourceBufferStateTest::OnUpdateDuration,
                                       base::Unretained(this)),
-                           &media_log_, range_api_));
+                           &media_log_));
     mock_stream_parser_ = new testing::StrictMock<MockStreamParser>();
     return base::WrapUnique(new SourceBufferState(
         base::WrapUnique(mock_stream_parser_), std::move(frame_processor),
@@ -145,8 +141,8 @@ class SourceBufferStateTest : public ::testing::Test {
 
   ChunkDemuxerStream* CreateDemuxerStream(DemuxerStream::Type type) {
     static unsigned track_id = 0;
-    demuxer_streams_.push_back(base::WrapUnique(new ChunkDemuxerStream(
-        type, base::NumberToString(++track_id), range_api_)));
+    demuxer_streams_.push_back(base::WrapUnique(
+        new ChunkDemuxerStream(type, base::NumberToString(++track_id))));
     return demuxer_streams_.back().get();
   }
 
@@ -154,7 +150,6 @@ class SourceBufferStateTest : public ::testing::Test {
   std::vector<std::unique_ptr<ChunkDemuxerStream>> demuxer_streams_;
   MockStreamParser* mock_stream_parser_;
   StreamParser::NewConfigCB new_config_cb_;
-  ChunkDemuxerStream::RangeApi range_api_;
 };
 
 TEST_F(SourceBufferStateTest, InitSingleAudioTrack) {
