@@ -61,10 +61,9 @@ const char* const kScrollIntoViewScript =
     R"(function(node) {
     const rect = node.getBoundingClientRect();
     if (rect.height < window.innerHeight) {
-      window.scrollBy({top: rect.top - window.innerHeight * 0.25,
-        behavior: 'smooth'});
+      window.scrollBy({top: rect.top - window.innerHeight * 0.25});
     } else {
-      window.scrollBy({top: rect.top, behavior: 'smooth'});
+      window.scrollBy({top: rect.top});
     }
     node.scrollIntoViewIfNeeded();
   })";
