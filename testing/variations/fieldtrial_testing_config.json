@@ -2024,7 +2024,7 @@
             ]
         }
     ],
-    "FCMInvalidationsExperiment": [
+    "FCMInvalidations": [
         {
             "platforms": [
                 "android",
@@ -2037,7 +2037,7 @@
             ],
             "experiments": [
                 {
-                    "name": "FCMInvalidationsEnabled",
+                    "name": "Enabled_FCMInvalidations_20190507",
                     "enable_features": [
                         "FCMInvalidations"
                     ]
