@@ -16,7 +16,6 @@
 #include "ash/shell.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/overview/overview_controller.h"
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/stl_util.h"
@@ -61,6 +60,32 @@ void EncodeScreenshotAndRunCallback(
       std::move(callback));
 }
 
+void MirrorChildren(ui::Layer* to_mirror,
+                    ui::Layer* mirror,
+                    const ::wm::MapLayerFunc& map_func) {
+  for (auto* child : to_mirror->children()) {
+    ui::LayerOwner* owner = child->owner();
+    ui::Layer* child_mirror = owner ? map_func.Run(owner).release() : nullptr;
+    if (child_mirror) {
+      mirror->Add(child_mirror);
+      MirrorChildren(child, child_mirror, map_func);
+    }
+  }
+}
+
+std::unique_ptr<ui::LayerTreeOwner> MirrorLayersWithClosure(
+    ui::LayerOwner* root,
+    const ::wm::MapLayerFunc& map_func) {
+  DCHECK(root->OwnsLayer());
+  auto layer = map_func.Run(root);
+  if (!layer)
+    return nullptr;
+
+  auto mirror = std::make_unique<ui::LayerTreeOwner>(std::move(layer));
+  MirrorChildren(root->layer(), mirror->root(), map_func);
+  return mirror;
+}
+
 std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshot(
     aura::Window* root_window) {
   using LayerSet = base::flat_set<const ui::Layer*>;
@@ -88,7 +113,7 @@ std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshot(
   aura::Window* app_list_tablet_mode_container =
       ash::Shell::GetContainer(root_window, kShellWindowId_HomeScreenContainer);
 
-  // Ignore app list to prevent interfering with app list animations.
+  // Prevent app list from being snapshot on top of other contents.
   if (app_list_container)
     excluded_layers.insert(app_list_container->layer());
   if (app_list_tablet_mode_container)
@@ -102,7 +127,7 @@ std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshot(
       blocked_layers.insert(window->layer());
   }
 
-  return ::wm::RecreateLayersWithClosure(
+  return MirrorLayersWithClosure(
       root_window,
       base::BindRepeating(
           [](LayerSet blocked_layers, LayerSet excluded_layers,
@@ -127,7 +152,7 @@ std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshot(
             if (excluded_layers.count(owner->layer()))
               return nullptr;
 
-            return owner->RecreateLayer();
+            return owner->layer()->Mirror();
           },
           std::move(blocked_layers), std::move(excluded_layers)));
 }
@@ -170,13 +195,6 @@ void AssistantScreenContextController::RequestScreenshot(
     const gfx::Rect& rect,
     mojom::AssistantScreenContextController::RequestScreenshotCallback
         callback) {
-  // http://crbug.com/941276
-  // We need to avoid requesting screenshot in known situations that will break.
-  if (Shell::Get()->overview_controller()->InOverviewSession() ||
-      Shell::Get()->overview_controller()->IsCompletingShutdownAnimations()) {
-    std::move(callback).Run(std::vector<uint8_t>());
-    return;
-  }
   aura::Window* root_window = Shell::Get()->GetRootWindowForNewWindows();
 
   std::unique_ptr<ui::LayerTreeOwner> layer_owner =

@@ -84,15 +84,17 @@ TEST_F(AssistantScreenContextControllerTest, Screenshot) {
 
   // Test that windows marked as blocked for assistant snapshot is not included.
   EXPECT_FALSE(FindLayerWithClosure(
-      layer_owner->root(),
-      base::BindRepeating(
-          [](ui::Layer* target, ui::Layer* layer) { return layer == target; },
-          window1_layer)));
+      layer_owner->root(), base::BindRepeating(
+                               [](ui::Layer* layer, ui::Layer* mirror) {
+                                 return layer->ContainsMirrorForTest(mirror);
+                               },
+                               window1_layer)));
   EXPECT_TRUE(FindLayerWithClosure(
-      layer_owner->root(),
-      base::BindRepeating(
-          [](ui::Layer* target, ui::Layer* layer) { return layer == target; },
-          window2_layer)));
+      layer_owner->root(), base::BindRepeating(
+                               [](ui::Layer* layer, ui::Layer* mirror) {
+                                 return layer->ContainsMirrorForTest(mirror);
+                               },
+                               window2_layer)));
 
   // Test that a solid black layer is inserted.
   EXPECT_TRUE(FindLayerWithClosure(

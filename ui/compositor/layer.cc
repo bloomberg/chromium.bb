@@ -784,6 +784,15 @@ void Layer::SetSurfaceSize(gfx::Size surface_size_in_dip) {
   RecomputeDrawsContentAndUVRect();
 }
 
+bool Layer::ContainsMirrorForTest(Layer* mirror) const {
+  const auto it =
+      std::find_if(mirrors_.begin(), mirrors_.end(),
+                   [mirror](const std::unique_ptr<LayerMirror>& mirror_ptr) {
+                     return mirror_ptr.get()->dest() == mirror;
+                   });
+  return it != mirrors_.end();
+}
+
 void Layer::SetTransferableResource(
     const viz::TransferableResource& resource,
     std::unique_ptr<viz::SingleReleaseCallback> release_callback,

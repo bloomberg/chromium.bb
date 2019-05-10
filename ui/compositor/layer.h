@@ -491,6 +491,8 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // set to stretch to fill bounds.
   void SetSurfaceSize(gfx::Size surface_size_in_dip);
 
+  bool ContainsMirrorForTest(Layer* mirror) const;
+
  private:
   friend class LayerOwner;
   class LayerMirror;
