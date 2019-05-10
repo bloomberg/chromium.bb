@@ -90,7 +90,7 @@ bool IsSameScope(const GURL& app_url,
 
 // static
 void HostedAppBrowserController::SetAppPrefsForWebContents(
-    WebAppBrowserController* controller,
+    web_app::AppBrowserController* controller,
     content::WebContents* web_contents) {
   auto* rvh = web_contents->GetRenderViewHost();
 
@@ -125,7 +125,7 @@ void HostedAppBrowserController::ClearAppPrefsForWebContents(
 }
 
 HostedAppBrowserController::HostedAppBrowserController(Browser* browser)
-    : WebAppBrowserController(browser),
+    : AppBrowserController(browser),
       extension_id_(web_app::GetAppIdFromApplicationName(browser->app_name())),
       // If a bookmark app has a URL handler, then it is a PWA.
       // TODO(https://crbug.com/774918): Replace once there is a more explicit
@@ -246,7 +246,7 @@ gfx::ImageSkia HostedAppBrowserController::GetWindowIcon() const {
 
 base::Optional<SkColor> HostedAppBrowserController::GetThemeColor() const {
   base::Optional<SkColor> web_theme_color =
-      WebAppBrowserController::GetThemeColor();
+      AppBrowserController::GetThemeColor();
   if (web_theme_color)
     return web_theme_color;
 
@@ -273,7 +273,7 @@ base::string16 HostedAppBrowserController::GetTitle() const {
     return base::UTF8ToUTF16(extension->name());
   }
 
-  return WebAppBrowserController::GetTitle();
+  return AppBrowserController::GetTitle();
 }
 
 GURL HostedAppBrowserController::GetAppLaunchURL() const {
@@ -321,13 +321,13 @@ bool HostedAppBrowserController::IsInstalled() const {
 }
 
 void HostedAppBrowserController::OnTabInserted(content::WebContents* contents) {
-  WebAppBrowserController::OnTabInserted(contents);
+  AppBrowserController::OnTabInserted(contents);
   extensions::HostedAppBrowserController::SetAppPrefsForWebContents(this,
                                                                     contents);
 }
 
 void HostedAppBrowserController::OnTabRemoved(content::WebContents* contents) {
-  WebAppBrowserController::OnTabRemoved(contents);
+  AppBrowserController::OnTabRemoved(contents);
   extensions::HostedAppBrowserController::ClearAppPrefsForWebContents(contents);
 }
 

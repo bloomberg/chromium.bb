@@ -111,7 +111,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
-#include "chrome/browser/ui/web_app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
@@ -621,7 +621,7 @@ WebContents* BrowserView::GetActiveWebContents() const {
 }
 
 bool BrowserView::IsBrowserTypeHostedApp() const {
-  return WebAppBrowserController::IsForExperimentalWebAppBrowser(
+  return web_app::AppBrowserController::IsForExperimentalWebAppBrowser(
       browser_.get());
 }
 
@@ -2045,7 +2045,8 @@ bool BrowserView::ShouldShowWindowTitle() const {
 }
 
 gfx::ImageSkia BrowserView::GetWindowAppIcon() {
-  WebAppBrowserController* app_controller = browser()->web_app_controller();
+  web_app::AppBrowserController* app_controller =
+      browser()->web_app_controller();
   return app_controller ? app_controller->GetWindowAppIcon() : GetWindowIcon();
 }
 
@@ -2055,7 +2056,8 @@ gfx::ImageSkia BrowserView::GetWindowIcon() {
     return gfx::ImageSkia();
 
   // Hosted apps always show their app icon.
-  WebAppBrowserController* app_controller = browser()->web_app_controller();
+  web_app::AppBrowserController* app_controller =
+      browser()->web_app_controller();
   if (app_controller)
     return app_controller->GetWindowIcon();
 

@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "chrome/browser/ui/web_app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -153,7 +153,7 @@ SkColor BrowserNonClientFrameView::GetFrameColor(
   if (frame_->ShouldUseTheme())
     return GetThemeProviderForProfile()->GetColor(color_id);
 
-  WebAppBrowserController* web_app_controller =
+  web_app::AppBrowserController* web_app_controller =
       browser_view_->browser()->web_app_controller();
   if (web_app_controller && web_app_controller->GetThemeColor())
     return *web_app_controller->GetThemeColor();

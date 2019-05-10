@@ -50,7 +50,6 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
-// #include "chrome/browser/ui/web_app_browser_controller.h"
 
 #if !defined(OS_ANDROID)
 #include "components/zoom/zoom_observer.h"
@@ -107,7 +106,10 @@ class WebContentsModalDialogHost;
 namespace viz {
 class SurfaceId;
 }
-class WebAppBrowserController;
+
+namespace web_app {
+class AppBrowserController;
+}
 
 class Browser : public TabStripModelObserver,
                 public content::WebContentsDelegate,
@@ -321,11 +323,11 @@ class Browser : public TabStripModelObserver,
   BrowserInstantController* instant_controller() {
     return instant_controller_.get();
   }
-  const WebAppBrowserController* web_app_controller() const {
-    return web_app_controller_.get();
+  const web_app::AppBrowserController* web_app_controller() const {
+    return app_controller_.get();
   }
-  WebAppBrowserController* web_app_controller() {
-    return web_app_controller_.get();
+  web_app::AppBrowserController* web_app_controller() {
+    return app_controller_.get();
   }
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
@@ -1083,7 +1085,7 @@ class Browser : public TabStripModelObserver,
   // Helper which handles bookmark app specific browser configuration.
   // This must be initialized before |command_controller_| to ensure the correct
   // set of commands are enabled.
-  std::unique_ptr<WebAppBrowserController> web_app_controller_;
+  std::unique_ptr<web_app::AppBrowserController> app_controller_;
 
   BookmarkBar::State bookmark_bar_state_;
 

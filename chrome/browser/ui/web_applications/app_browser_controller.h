@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEB_APP_BROWSER_CONTROLLER_H_
-#define CHROME_BROWSER_UI_WEB_APP_BROWSER_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_WEB_APPLICATIONS_APP_BROWSER_CONTROLLER_H_
+#define CHROME_BROWSER_UI_WEB_APPLICATIONS_APP_BROWSER_CONTROLLER_H_
 
 #include <string>
 
@@ -20,11 +20,13 @@ namespace gfx {
 class ImageSkia;
 }
 
+namespace web_app {
+
 // Class to encapsulate logic to control the browser UI for web apps.
-class WebAppBrowserController : public TabStripModelObserver,
-                                public content::WebContentsObserver {
+class AppBrowserController : public TabStripModelObserver,
+                             public content::WebContentsObserver {
  public:
-  ~WebAppBrowserController() override;
+  ~AppBrowserController() override;
 
   // Returns whether |browser| uses the experimental hosted app experience.
   // Convenience wrapper for checking IsForExperimentalWebAppBrowser() on
@@ -103,7 +105,7 @@ class WebAppBrowserController : public TabStripModelObserver,
       const TabStripSelectionChange& selection) override;
 
  protected:
-  explicit WebAppBrowserController(Browser* browser);
+  explicit AppBrowserController(Browser* browser);
   // Called by OnTabstripModelChanged().
   virtual void OnTabInserted(content::WebContents* contents);
   virtual void OnTabRemoved(content::WebContents* contents);
@@ -111,7 +113,9 @@ class WebAppBrowserController : public TabStripModelObserver,
  private:
   Browser* const browser_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebAppBrowserController);
+  DISALLOW_COPY_AND_ASSIGN(AppBrowserController);
 };
 
-#endif  // CHROME_BROWSER_UI_WEB_APP_BROWSER_CONTROLLER_H_
+}  // namespace web_app
+
+#endif  // CHROME_BROWSER_UI_WEB_APPLICATIONS_APP_BROWSER_CONTROLLER_H_

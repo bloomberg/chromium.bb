@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
-#include "chrome/browser/ui/web_app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 SafeBrowsingControllerClient::SafeBrowsingControllerClient(
@@ -39,7 +39,7 @@ void SafeBrowsingControllerClient::Proceed() {
   // to a regular Chrome window and proceed as usual there.
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   if (browser &&
-      WebAppBrowserController::IsForExperimentalWebAppBrowser(browser)) {
+      web_app::AppBrowserController::IsForExperimentalWebAppBrowser(browser)) {
     chrome::OpenInChrome(browser);
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)

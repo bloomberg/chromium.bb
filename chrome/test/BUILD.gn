@@ -3519,7 +3519,7 @@ test("unit_tests") {
       "../browser/ui/toolbar/toolbar_actions_bar_unittest.cc",
       "../browser/ui/toolbar/toolbar_actions_bar_unittest.h",
       "../browser/ui/toolbar/toolbar_actions_model_unittest.cc",
-      "../browser/ui/web_app_browser_controller_unittest.cc",
+      "../browser/ui/web_applications/app_browser_controller_unittest.cc",
       "../browser/ui/webui/browsing_history_handler_unittest.cc",
       "../browser/ui/webui/dark_mode_handler_unittest.cc",
       "../browser/ui/webui/downloads/downloads_dom_handler_unittest.cc",

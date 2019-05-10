@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/browser/ui/web_app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/web_application_info.h"
@@ -143,7 +143,7 @@ class UrlHidingInterstitialPage
 // |install_interstitial| is true.
 class UrlHidingWebContentsObserver : public content::WebContentsObserver {
  public:
-  UrlHidingWebContentsObserver(content::WebContents* contents)
+  explicit UrlHidingWebContentsObserver(content::WebContents* contents)
       : content::WebContentsObserver(contents), install_interstitial_(true) {}
 
   void DidFinishNavigation(content::NavigationHandle* handle) override {
@@ -225,7 +225,7 @@ class CustomTabBarViewBrowserTest : public extensions::ExtensionBrowserTest {
   BrowserView* browser_view_;
   LocationBarView* location_bar_;
   CustomTabBarView* custom_tab_bar_;
-  WebAppBrowserController* web_app_controller_;
+  web_app::AppBrowserController* web_app_controller_;
 
   net::EmbeddedTestServer* https_server() { return &https_server_; }
 

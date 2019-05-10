@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
-#include "chrome/browser/ui/web_app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_sequence.h"
@@ -25,7 +25,8 @@ constexpr gfx::Tween::Type kTweenType = gfx::Tween::FAST_OUT_SLOW_IN_2;
 }  // namespace
 
 HostedAppOriginText::HostedAppOriginText(Browser* browser) {
-  DCHECK(WebAppBrowserController::IsForExperimentalWebAppBrowser(browser));
+  DCHECK(
+      web_app::AppBrowserController::IsForExperimentalWebAppBrowser(browser));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
 

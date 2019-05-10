@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/web_app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace web_app {
+
 // Tests that various URLs get formatted as an origin string in the desired way.
-TEST(WebAppBrowserController, FormatUrlOrigin) {
+TEST(AppBrowserController, FormatUrlOrigin) {
   constexpr struct {
     const char* const input;
     const wchar_t* const expectation;
@@ -29,7 +31,9 @@ TEST(WebAppBrowserController, FormatUrlOrigin) {
       {"https://xn--36c-tfa.com", L"xn--36c-tfa.com"},
   };
   for (auto test_case : kTestCases) {
-    EXPECT_EQ(WebAppBrowserController::FormatUrlOrigin(GURL(test_case.input)),
+    EXPECT_EQ(AppBrowserController::FormatUrlOrigin(GURL(test_case.input)),
               base::WideToUTF16(test_case.expectation));
   }
 }
+
+}  // namespace web_app

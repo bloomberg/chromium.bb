@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/browser/ui/web_app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -181,7 +181,7 @@ void OpaqueBrowserFrameView::InitViews() {
   window_title_->SetID(VIEW_ID_WINDOW_TITLE);
   AddChildView(window_title_);
 
-  WebAppBrowserController* controller =
+  web_app::AppBrowserController* controller =
       browser_view()->browser()->web_app_controller();
   if (controller && controller->ShouldShowHostedAppButtonContainer()) {
     set_hosted_app_button_container(new HostedAppButtonContainer(

@@ -13,7 +13,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
-#include "chrome/browser/ui/web_app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 class Browser;
@@ -36,11 +36,12 @@ class Extension;
 // Class to encapsulate logic to control the browser UI for extension based web
 // apps.
 class HostedAppBrowserController : public ExtensionUninstallDialog::Delegate,
-                                   public WebAppBrowserController {
+                                   public web_app::AppBrowserController {
  public:
   // Functions to set preferences that are unique to app windows.
-  static void SetAppPrefsForWebContents(WebAppBrowserController* controller,
-                                        content::WebContents* web_contents);
+  static void SetAppPrefsForWebContents(
+      web_app::AppBrowserController* controller,
+      content::WebContents* web_contents);
 
   // Clear preferences that are unique to app windows.
   static void ClearAppPrefsForWebContents(content::WebContents* web_contents);

@@ -17,7 +17,7 @@
 
 ManifestWebAppBrowserController::ManifestWebAppBrowserController(
     Browser* browser)
-    : WebAppBrowserController(browser), app_launch_url_(GURL()) {}
+    : AppBrowserController(browser), app_launch_url_(GURL()) {}
 
 ManifestWebAppBrowserController::~ManifestWebAppBrowserController() = default;
 
@@ -91,6 +91,6 @@ void ManifestWebAppBrowserController::OnTabInserted(
     content::WebContents* contents) {
   if (app_launch_url_.is_empty())
     app_launch_url_ = contents->GetURL();
-  WebAppBrowserController::OnTabInserted(contents);
+  AppBrowserController::OnTabInserted(contents);
   UpdateToolbarVisibility(false);
 }

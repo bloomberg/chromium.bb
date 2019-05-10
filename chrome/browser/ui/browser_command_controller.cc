@@ -42,7 +42,7 @@
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/web_app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/webui/inspect_ui.h"
 #include "chrome/common/content_restriction.h"
 #include "chrome/common/pref_names.h"
@@ -968,7 +968,7 @@ void BrowserCommandController::InitCommandState() {
                                         normal_window || browser_->is_app());
 
   const bool is_experimental_hosted_app =
-      WebAppBrowserController::IsForExperimentalWebAppBrowser(browser_);
+      web_app::AppBrowserController::IsForExperimentalWebAppBrowser(browser_);
   // Hosted app browser commands.
   command_updater_.UpdateCommandEnabled(IDC_COPY_URL,
                                         is_experimental_hosted_app);
@@ -1266,7 +1266,7 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
 void BrowserCommandController::UpdateCommandsForHostedAppAvailability() {
   bool has_toolbar =
       browser_->is_type_tabbed() ||
-      WebAppBrowserController::IsForExperimentalWebAppBrowser(browser_);
+      web_app::AppBrowserController::IsForExperimentalWebAppBrowser(browser_);
   if (window() && window()->ShouldHideUIForFullscreen())
     has_toolbar = false;
   command_updater_.UpdateCommandEnabled(IDC_FOCUS_TOOLBAR, has_toolbar);

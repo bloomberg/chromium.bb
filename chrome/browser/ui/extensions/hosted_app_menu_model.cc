@@ -10,7 +10,7 @@
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/web_app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -31,7 +31,7 @@ void HostedAppMenuModel::Build() {
   AddItemWithStringId(IDC_HOSTED_APP_MENU_APP_INFO,
                       IDS_APP_CONTEXT_MENU_SHOW_INFO);
   int app_info_index = GetItemCount() - 1;
-  SetMinorText(app_info_index, WebAppBrowserController::FormatUrlOrigin(
+  SetMinorText(app_info_index, web_app::AppBrowserController::FormatUrlOrigin(
                                    browser()
                                        ->tab_strip_model()
                                        ->GetActiveWebContents()

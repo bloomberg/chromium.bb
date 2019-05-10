@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/browser/ui/web_app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/win/titlebar_config.h"
 #include "content/public/browser/web_contents.h"
 #include "skia/ext/image_operations.h"
@@ -111,7 +111,7 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
     AddChildView(window_title_);
   }
 
-  WebAppBrowserController* controller =
+  web_app::AppBrowserController* controller =
       browser_view->browser()->web_app_controller();
   if (controller && controller->ShouldShowHostedAppButtonContainer()) {
     // TODO(alancutter): Avoid snapshotting GetCaptionColor() values here and

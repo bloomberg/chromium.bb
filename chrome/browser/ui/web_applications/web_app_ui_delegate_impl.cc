@@ -9,7 +9,7 @@
 #include "base/callback.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/web_app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_delegate_impl_factory.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 

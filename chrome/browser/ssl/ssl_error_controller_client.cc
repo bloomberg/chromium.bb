@@ -198,7 +198,7 @@ void SSLErrorControllerClient::Proceed() {
   // to a regular Chrome window and proceed as usual there.
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   if (browser &&
-      WebAppBrowserController::IsForExperimentalWebAppBrowser(browser)) {
+      web_app::AppBrowserController::IsForExperimentalWebAppBrowser(browser)) {
     chrome::OpenInChrome(browser);
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
