@@ -739,25 +739,25 @@ locale.  The strings in this file are specific to iOS.
         Google Apps
       </message>
       <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_DETAIL" desc="Feature detail text in the settings for the user to enable/disable, to have autocomplete searches and URLs. Text related to 'Autocomplete Searches and URLs' [iOS only]">
-        Sends some cookies and searches from the address bar and search box to your default search engine
+        Sends some cookies and searches from the address bar and search box to your default search engine.
       </message>
       <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_TEXT" desc="Feature title in the settings for the user to enable/disable, to have autocomplete searches and URLs. Text related to 'Sends searches from the address bar and search box, and some cookies to your default search engine' [iOS only]">
-        Autocomplete searches and URLs
+        Autocomplete Searches and URLs
       </message>
       <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_DETAIL" desc="Detail text for a feature in the settings for the user to enable/disable, to make searches andn browsing better. Related to 'Make searches and browsing better'. [iOS only]">
-        Sends URLs of pages you visit to Google
+        Sends URLs of pages you visit to Google.
       </message>
       <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_TEXT" desc="Title for a feature in the settings for the user to enable/disable, to make searches andn browsing better. Related to 'Sends URLs of pages you visit to Google'. [iOS only]">
-        Make searches and browsing better
+        Make Searches and Browsing Better
       </message>
       <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_ENTER_PASSPHRASE_TO_START_SYNC" desc="Title button to ask the user to tap their passphrase. The sync is blocked until the correct passphrase is entered">
-        Enter passphrase to start sync
+        Enter passphrase to start sync.
       </message>
       <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_IMPROVE_CHROME_DETAIL" desc="Feature detail text in the settings for the user enable or disable. Related with 'Help improve Chrome's features and performance' feature. [iOS only]">
-        Automatically sends usage statistics and crash reports to Google
+        Automatically sends usage statistics and crash reports to Google.
       </message>
       <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_SIGN_IN_DETAIL_TEXT" desc="Invite the user to sign-in and explains the benefit. [iOS only]">
-        Sync and personalize across devices
+        Sync and personalize across devices.
       </message>
       <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_TITLE" desc="Title for the view in the Settings for enabling/disabling Sync and all the Google services. [Length: 26em] [iOS only]">
         Sync and Google Services
@@ -1647,7 +1647,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
         Unable to connect to the Internet.
       </message>
       <message name="IDS_IOS_SYNC_ERROR_TITLE" desc="Title of the error message shown for sync errors. [Length: 60em] [iOS only]">
-        Sync isn't working
+        Sync Isn't Working
       </message>
       <message name="IDS_IOS_SYNC_ERROR_UNRECOVERABLE" desc="The error message to display when there is an unrecoverable sync error. [Length: 100em, can be multiple lines] [iOS only]">
         Try signing in again.
