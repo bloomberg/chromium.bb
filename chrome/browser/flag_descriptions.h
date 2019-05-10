@@ -763,11 +763,6 @@ extern const char kNotificationsNativeFlagDescription[];
 extern const char kUseMultiloginEndpointName[];
 extern const char kUseMultiloginEndpointDescription[];
 
-#if defined(OS_POSIX)
-extern const char kNtlmV2EnabledName[];
-extern const char kNtlmV2EnabledDescription[];
-#endif
-
 extern const char kOfferStoreUnmaskedWalletCardsName[];
 extern const char kOfferStoreUnmaskedWalletCardsDescription[];
 

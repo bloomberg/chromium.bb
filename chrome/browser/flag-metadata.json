@@ -1361,11 +1361,6 @@
     "expiry_milestone": 78
   },
   {
-    "name": "enable-ntlm-v2",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-ntp-button",
     "owners": [ "twellington" ],
     "expiry_milestone": 78

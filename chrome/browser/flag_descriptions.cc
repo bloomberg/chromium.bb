@@ -1233,12 +1233,6 @@ const char kUseMultiloginEndpointName[] = "Use Multilogin endpoint.";
 const char kUseMultiloginEndpointDescription[] =
     "Use Gaia OAuth multilogin for identity consistency.";
 
-#if defined(OS_POSIX)
-const char kNtlmV2EnabledName[] = "Enable NTLMv2 Authentication";
-const char kNtlmV2EnabledDescription[] =
-    "Enable NTLMv2 HTTP Authentication. This disables NTLMv1 support.";
-#endif
-
 const char kOfferStoreUnmaskedWalletCardsName[] =
     "Google Payments card saving checkbox";
 const char kOfferStoreUnmaskedWalletCardsDescription[] =
