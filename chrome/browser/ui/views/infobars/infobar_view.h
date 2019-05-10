@@ -62,11 +62,11 @@ class InfoBarView : public infobars::InfoBar,
   views::Link* CreateLink(const base::string16& text,
                           views::LinkListener* listener) const;
 
-  // Given |labels| and the total |available_width| to display them in, sets
-  // each label's size so that the longest label shrinks until it reaches the
-  // length of the next-longest label, then both shrink until reaching the
+  // Given |views| and the total |available_width| to display them in, sets
+  // each view's size so that the longest view shrinks until it reaches the
+  // length of the next-longest view, then both shrink until reaching the
   // length of the next-longest, and so forth.
-  static void AssignWidths(Labels* labels, int available_width);
+  static void AssignWidths(Views* views, int available_width);
 
   // Returns the minimum width the content (that is, everything between the icon
   // and the close button) can be shrunk to.  This is used to prevent the close
@@ -91,9 +91,9 @@ class InfoBarView : public infobars::InfoBar,
  private:
   FRIEND_TEST_ALL_PREFIXES(InfoBarViewTest, ShouldDrawSeparator);
 
-  // Does the actual work for AssignWidths().  Assumes |labels| is sorted by
+  // Does the actual work for AssignWidths().  Assumes |views| is sorted by
   // decreasing preferred width.
-  static void AssignWidthsSorted(Labels* labels, int available_width);
+  static void AssignWidthsSorted(Views* views, int available_width);
 
   // Returns whether this infobar should draw a 1 px separator at its top.
   bool ShouldDrawSeparator() const;

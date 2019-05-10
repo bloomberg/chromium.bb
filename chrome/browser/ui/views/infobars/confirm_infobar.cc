@@ -67,10 +67,10 @@ void ConfirmInfoBar::Layout() {
   InfoBarView::Layout();
 
   int x = StartX();
-  Labels labels;
-  labels.push_back(label_);
-  labels.push_back(link_);
-  AssignWidths(&labels, std::max(0, EndX() - x - NonLabelWidth()));
+  Views views;
+  views.push_back(label_);
+  views.push_back(link_);
+  AssignWidths(&views, std::max(0, EndX() - x - NonLabelWidth()));
 
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
 

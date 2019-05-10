@@ -61,9 +61,9 @@ DEFINE_UI_CLASS_PROPERTY_KEY(LabelType, kLabelType, LabelType::kNone)
 constexpr int kInfoBarLabelBackgroundColor = ThemeProperties::COLOR_INFOBAR;
 constexpr int kInfoBarLabelTextColor = ThemeProperties::COLOR_BOOKMARK_TEXT;
 
-bool SortLabelsByDecreasingWidth(views::Label* label_1, views::Label* label_2) {
-  return label_1->GetPreferredSize().width() >
-      label_2->GetPreferredSize().width();
+bool SortViewsByDecreasingWidth(views::View* view_1, views::View* view_2) {
+  return view_1->GetPreferredSize().width() >
+         view_2->GetPreferredSize().width();
 }
 
 int GetElementSpacing() {
@@ -280,9 +280,9 @@ views::Link* InfoBarView::CreateLink(const base::string16& text,
 }
 
 // static
-void InfoBarView::AssignWidths(Labels* labels, int available_width) {
-  std::sort(labels->begin(), labels->end(), SortLabelsByDecreasingWidth);
-  AssignWidthsSorted(labels, available_width);
+void InfoBarView::AssignWidths(Views* views, int available_width) {
+  std::sort(views->begin(), views->end(), SortViewsByDecreasingWidth);
+  AssignWidthsSorted(views, available_width);
 }
 
 int InfoBarView::ContentMinimumWidth() const {
@@ -345,16 +345,16 @@ void InfoBarView::PlatformSpecificOnHeightRecalculated() {
 }
 
 // static
-void InfoBarView::AssignWidthsSorted(Labels* labels, int available_width) {
-  if (labels->empty())
+void InfoBarView::AssignWidthsSorted(Views* views, int available_width) {
+  if (views->empty())
     return;
-  gfx::Size back_label_size(labels->back()->GetPreferredSize());
-  back_label_size.set_width(
-      std::min(back_label_size.width(),
-               available_width / static_cast<int>(labels->size())));
-  labels->back()->SetSize(back_label_size);
-  labels->pop_back();
-  AssignWidthsSorted(labels, available_width - back_label_size.width());
+  gfx::Size back_view_size(views->back()->GetPreferredSize());
+  back_view_size.set_width(
+      std::min(back_view_size.width(),
+               available_width / static_cast<int>(views->size())));
+  views->back()->SetSize(back_view_size);
+  views->pop_back();
+  AssignWidthsSorted(views, available_width - back_view_size.width());
 }
 
 bool InfoBarView::ShouldDrawSeparator() const {
