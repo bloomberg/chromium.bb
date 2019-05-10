@@ -4300,11 +4300,16 @@ bool WebGLRenderingContextBase::ValidateReadPixelsFormatAndType(
 
   switch (type) {
     case GL_UNSIGNED_BYTE:
-      if (buffer && buffer->GetType() != DOMArrayBufferView::kTypeUint8) {
-        SynthesizeGLError(
-            GL_INVALID_OPERATION, "readPixels",
-            "type UNSIGNED_BYTE but ArrayBufferView not Uint8Array");
-        return false;
+      if (buffer) {
+        auto bufferType = buffer->GetType();
+        if (bufferType != DOMArrayBufferView::kTypeUint8 &&
+            bufferType != DOMArrayBufferView::kTypeUint8Clamped) {
+          SynthesizeGLError(
+              GL_INVALID_OPERATION, "readPixels",
+              "type UNSIGNED_BYTE but ArrayBufferView not Uint8Array or "
+              "Uint8ClampedArray");
+          return false;
+        }
       }
       return true;
     case GL_UNSIGNED_SHORT_5_6_5:
@@ -7326,24 +7331,28 @@ bool WebGLRenderingContextBase::ValidateTexFuncData(
   if (!ValidateSettableTexFormat(function_name, format))
     return false;
 
+  auto pixelType = pixels->GetType();
+
   switch (type) {
     case GL_BYTE:
-      if (pixels->GetType() != DOMArrayBufferView::kTypeInt8) {
+      if (pixelType != DOMArrayBufferView::kTypeInt8) {
         SynthesizeGLError(GL_INVALID_OPERATION, function_name,
                           "type BYTE but ArrayBufferView not Int8Array");
         return false;
       }
       break;
     case GL_UNSIGNED_BYTE:
-      if (pixels->GetType() != DOMArrayBufferView::kTypeUint8) {
+      if (pixelType != DOMArrayBufferView::kTypeUint8 &&
+          pixelType != DOMArrayBufferView::kTypeUint8Clamped) {
         SynthesizeGLError(
             GL_INVALID_OPERATION, function_name,
-            "type UNSIGNED_BYTE but ArrayBufferView not Uint8Array");
+            "type UNSIGNED_BYTE but ArrayBufferView not Uint8Array or "
+            "Uint8ClampedArray");
         return false;
       }
       break;
     case GL_SHORT:
-      if (pixels->GetType() != DOMArrayBufferView::kTypeInt16) {
+      if (pixelType != DOMArrayBufferView::kTypeInt16) {
         SynthesizeGLError(GL_INVALID_OPERATION, function_name,
                           "type SHORT but ArrayBufferView not Int16Array");
         return false;
@@ -7353,7 +7362,7 @@ bool WebGLRenderingContextBase::ValidateTexFuncData(
     case GL_UNSIGNED_SHORT_5_6_5:
     case GL_UNSIGNED_SHORT_4_4_4_4:
     case GL_UNSIGNED_SHORT_5_5_5_1:
-      if (pixels->GetType() != DOMArrayBufferView::kTypeUint16) {
+      if (pixelType != DOMArrayBufferView::kTypeUint16) {
         SynthesizeGLError(
             GL_INVALID_OPERATION, function_name,
             "type UNSIGNED_SHORT but ArrayBufferView not Uint16Array");
@@ -7361,7 +7370,7 @@ bool WebGLRenderingContextBase::ValidateTexFuncData(
       }
       break;
     case GL_INT:
-      if (pixels->GetType() != DOMArrayBufferView::kTypeInt32) {
+      if (pixelType != DOMArrayBufferView::kTypeInt32) {
         SynthesizeGLError(GL_INVALID_OPERATION, function_name,
                           "type INT but ArrayBufferView not Int32Array");
         return false;
@@ -7372,7 +7381,7 @@ bool WebGLRenderingContextBase::ValidateTexFuncData(
     case GL_UNSIGNED_INT_10F_11F_11F_REV:
     case GL_UNSIGNED_INT_5_9_9_9_REV:
     case GL_UNSIGNED_INT_24_8:
-      if (pixels->GetType() != DOMArrayBufferView::kTypeUint32) {
+      if (pixelType != DOMArrayBufferView::kTypeUint32) {
         SynthesizeGLError(
             GL_INVALID_OPERATION, function_name,
             "type UNSIGNED_INT but ArrayBufferView not Uint32Array");
@@ -7380,7 +7389,7 @@ bool WebGLRenderingContextBase::ValidateTexFuncData(
       }
       break;
     case GL_FLOAT:  // OES_texture_float
-      if (pixels->GetType() != DOMArrayBufferView::kTypeFloat32) {
+      if (pixelType != DOMArrayBufferView::kTypeFloat32) {
         SynthesizeGLError(GL_INVALID_OPERATION, function_name,
                           "type FLOAT but ArrayBufferView not Float32Array");
         return false;
@@ -7390,7 +7399,7 @@ bool WebGLRenderingContextBase::ValidateTexFuncData(
     case GL_HALF_FLOAT_OES:  // OES_texture_half_float
       // As per the specification, ArrayBufferView should be null or a
       // Uint16Array when OES_texture_half_float is enabled.
-      if (pixels->GetType() != DOMArrayBufferView::kTypeUint16) {
+      if (pixelType != DOMArrayBufferView::kTypeUint16) {
         SynthesizeGLError(GL_INVALID_OPERATION, function_name,
                           "type HALF_FLOAT_OES but ArrayBufferView is not NULL "
                           "and not Uint16Array");

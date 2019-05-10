@@ -5501,11 +5501,16 @@ bool WebGL2RenderingContextBase::ValidateReadPixelsFormatAndType(
 
   switch (type) {
     case GL_UNSIGNED_BYTE:
-      if (buffer && buffer->GetType() != DOMArrayBufferView::kTypeUint8) {
-        SynthesizeGLError(
-            GL_INVALID_OPERATION, "readPixels",
-            "type UNSIGNED_BYTE but ArrayBufferView not Uint8Array");
-        return false;
+      if (buffer) {
+        auto bufferType = buffer->GetType();
+        if (bufferType != DOMArrayBufferView::kTypeUint8 &&
+            bufferType != DOMArrayBufferView::kTypeUint8Clamped) {
+          SynthesizeGLError(
+              GL_INVALID_OPERATION, "readPixels",
+              "type UNSIGNED_BYTE but ArrayBufferView not Uint8Array or "
+              "Uint8ClampedArray");
+          return false;
+        }
       }
       return true;
     case GL_BYTE:
