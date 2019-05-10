@@ -28,11 +28,14 @@ bool StructTraits<viz::mojom::CompositorFrameMetadataDataView,
   if (!data.ReadScrollableViewportSize(&out->scrollable_viewport_size))
     return false;
 
+  if (data.frame_token() == 0u)
+    return false;
+  out->frame_token = data.frame_token();
+
   out->may_contain_video = data.may_contain_video();
   out->is_resourceless_software_draw_with_scroll_or_animation =
       data.is_resourceless_software_draw_with_scroll_or_animation();
   out->content_source_id = data.content_source_id();
-  out->frame_token = data.frame_token();
   out->send_frame_token_to_embedder = data.send_frame_token_to_embedder();
   out->root_background_color = data.root_background_color();
   out->min_page_scale_factor = data.min_page_scale_factor();

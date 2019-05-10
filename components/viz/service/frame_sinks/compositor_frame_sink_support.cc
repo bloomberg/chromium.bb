@@ -566,7 +566,6 @@ void CompositorFrameSinkSupport::DidPresentCompositorFrame(
     uint32_t presentation_token,
     const gfx::PresentationFeedback& feedback) {
   DCHECK(presentation_token);
-  DCHECK(!presentation_feedbacks_.count(presentation_token));
   presentation_feedbacks_.emplace(presentation_token, feedback);
   UpdateNeedsBeginFramesInternal();
 }
