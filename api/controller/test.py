@@ -55,6 +55,10 @@ def BuildTargetUnitTest(input_proto, output_proto):
   if not result_path:
     cros_build_lib.Die('result_path is required.')
 
+  # Method flags.
+  # An empty sysroot means build packages was not run.
+  was_built = not input_proto.flags.empty_sysroot
+
   # Chroot handling.
   chroot = input_proto.chroot.path
   cache_dir = input_proto.chroot.cache_dir
@@ -80,7 +84,7 @@ def BuildTargetUnitTest(input_proto, output_proto):
 
     try:
       commands.RunUnitTests(constants.SOURCE_ROOT, board, extra_env=extra_env,
-                            chroot_args=chroot_args)
+                            chroot_args=chroot_args, build_stage=was_built)
     except failures_lib.PackageBuildFailure as e:
       # Add the failed packages.
       for pkg in e.failed_packages:

@@ -7,11 +7,14 @@
 
 from __future__ import print_function
 
+import mock
+
 from chromite.api.controller import test as test_controller
 from chromite.api.gen.chromiumos import common_pb2
 from chromite.api.gen.chromite.api import image_pb2
 from chromite.api.gen.chromite.api import test_pb2
 from chromite.cbuildbot import commands
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import failures_lib
@@ -23,11 +26,12 @@ class BuildTargetUnitTestTest(cros_test_lib.MockTempDirTestCase):
   """Tests for the UnitTest function."""
 
   def _GetInput(self, board=None, result_path=None, chroot_path=None,
-                cache_dir=None):
+                cache_dir=None, empty_sysroot=None):
     """Helper to build an input message instance."""
     return test_pb2.BuildTargetUnitTestRequest(
         build_target={'name': board}, result_path=result_path,
-        chroot={'path': chroot_path, 'cache_dir': cache_dir}
+        chroot={'path': chroot_path, 'cache_dir': cache_dir},
+        flags={'empty_sysroot': empty_sysroot}
     )
 
   def _GetOutput(self):
@@ -115,17 +119,20 @@ class BuildTargetUnitTestTest(cros_test_lib.MockTempDirTestCase):
     rce = cros_build_lib.RunCommandError('error',
                                          cros_build_lib.CommandResult())
     error = failures_lib.BuildScriptFailure(rce, 'shortname')
-    self.PatchObject(commands, 'RunUnitTests', side_effect=error)
+    patch = self.PatchObject(commands, 'RunUnitTests', side_effect=error)
     self.PatchObject(portage_util, 'ParseParallelEmergeStatusFile',
                      return_value=[])
 
-    input_msg = self._GetInput(board='board', result_path=self.tempdir)
+    input_msg = self._GetInput(board='board', result_path=self.tempdir,
+                               empty_sysroot=True)
     output_msg = self._GetOutput()
 
     rc = test_controller.BuildTargetUnitTest(input_msg, output_msg)
 
     self.assertNotEqual(0, rc)
     self.assertFalse(output_msg.failed_packages)
+    patch.assert_called_with(constants.SOURCE_ROOT, 'board', extra_env=mock.ANY,
+                             chroot_args=mock.ANY, build_stage=False)
 
 
 class VmTestTest(cros_test_lib.MockTestCase):
