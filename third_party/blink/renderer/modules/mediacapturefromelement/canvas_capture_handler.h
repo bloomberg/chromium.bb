@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_CAPTURE_FROM_ELEMENT_CANVAS_CAPTURE_HANDLER_H_
-#define CONTENT_RENDERER_MEDIA_CAPTURE_FROM_ELEMENT_CANVAS_CAPTURE_HANDLER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIACAPTUREFROMELEMENT_CANVAS_CAPTURE_HANDLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIACAPTUREFROMELEMENT_CANVAS_CAPTURE_HANDLER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -11,21 +11,21 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "content/common/content_export.h"
 #include "media/base/video_frame_pool.h"
 #include "media/capture/video_capturer_source.h"
 #include "third_party/blink/public/platform/web_canvas_capture_handler.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 
 class SkImage;
 
-namespace content {
+namespace blink {
 
 // CanvasCaptureHandler acts as the link between Blink side HTMLCanvasElement
 // and Chrome side VideoCapturerSource. It is responsible for handling
@@ -36,7 +36,7 @@ namespace content {
 // All methods are called on the same thread as construction and destruction,
 // i.e. the Main Render thread. Note that a CanvasCaptureHandlerDelegate is
 // used to send back frames to |io_task_runner_|, i.e. IO thread.
-class CONTENT_EXPORT CanvasCaptureHandler final
+class MODULES_EXPORT CanvasCaptureHandler final
     : public blink::WebCanvasCaptureHandler {
  public:
   ~CanvasCaptureHandler() override;
@@ -127,6 +127,6 @@ class CONTENT_EXPORT CanvasCaptureHandler final
   DISALLOW_COPY_AND_ASSIGN(CanvasCaptureHandler);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_CAPTURE_FROM_ELEMENT_CANVAS_CAPTURE_HANDLER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIACAPTUREFROMELEMENT_CANVAS_CAPTURE_HANDLER_H_

@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media_capture_from_element/canvas_capture_handler.h"
+#include "third_party/blink/renderer/modules/mediacapturefromelement/canvas_capture_handler.h"
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
-#include "content/child/child_process.h"
 #include "media/base/limits.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,6 +15,7 @@
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_capturer_source.h"
 #include "third_party/blink/public/web/web_heap.h"
+#include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
@@ -27,7 +26,7 @@ using ::testing::SaveArg;
 using ::testing::Test;
 using ::testing::TestWithParam;
 
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -49,9 +48,7 @@ ACTION_P(RunClosure, closure) {
 class CanvasCaptureHandlerTest
     : public TestWithParam<testing::tuple<bool, int, int>> {
  public:
-  CanvasCaptureHandlerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+  CanvasCaptureHandlerTest() = default;
 
   void SetUp() override {
     canvas_capture_handler_ = CanvasCaptureHandler::CreateCanvasCaptureHandler(
@@ -131,11 +128,7 @@ class CanvasCaptureHandlerTest
     return ms_source->GetSourceForTesting();
   }
 
-  // A ChildProcess is needed to fool the Tracks and Sources believing they are
-  // on the right threads. A ScopedTaskEnvironment must be instantiated before
-  // ChildProcess to prevent it from leaking a ThreadPool.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-  ChildProcess child_process_;
+  ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CanvasCaptureHandlerTest);
@@ -190,7 +183,8 @@ TEST_P(CanvasCaptureHandlerTest, GetFormatsStartAndStop) {
       params,
       base::BindRepeating(&CanvasCaptureHandlerTest::OnDeliverFrame,
                           base::Unretained(this)),
-      base::Bind(&CanvasCaptureHandlerTest::OnRunning, base::Unretained(this)));
+      base::BindRepeating(&CanvasCaptureHandlerTest::OnRunning,
+                          base::Unretained(this)));
   canvas_capture_handler_->SendNewFrame(
       GenerateTestImage(testing::get<0>(GetParam()),
                         testing::get<1>(GetParam()),
@@ -247,4 +241,4 @@ INSTANTIATE_TEST_SUITE_P(
                        ::testing::Values(kTestCanvasCaptureFrameEvenSize,
                                          kTestCanvasCaptureFrameOddSize)));
 
-}  // namespace content
+}  // namespace blink

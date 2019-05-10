@@ -39,7 +39,6 @@ namespace blink {
 namespace scheduler {
 class WebThreadScheduler;
 }
-class WebCanvasCaptureHandler;
 class WebGraphicsContext3DProvider;
 class WebMediaPlayer;
 class WebMediaRecorderHandler;
@@ -160,10 +159,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       blink::WebLocalFrame* frame) override;
   std::unique_ptr<webrtc::AsyncResolverFactory>
   CreateWebRtcAsyncResolverFactory() override;
-  std::unique_ptr<blink::WebCanvasCaptureHandler> CreateCanvasCaptureHandler(
-      const blink::WebSize& size,
-      double frame_rate,
-      blink::WebMediaStreamTrack* track) override;
   void CreateHTMLVideoElementCapturer(
       blink::WebMediaStream* web_media_stream,
       blink::WebMediaPlayer* web_media_player,
