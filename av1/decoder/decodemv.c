@@ -1552,9 +1552,11 @@ void av1_read_mode_info(AV1Decoder *const pbi, MACROBLOCKD *xd, int mi_row,
 
   if (frame_is_intra_only(cm)) {
     read_intra_frame_mode_info(cm, xd, mi_row, mi_col, r);
-    intra_copy_frame_mvs(cm, mi_row, mi_col, x_mis, y_mis);
+    if (pbi->common.seq_params.order_hint_info.enable_ref_frame_mvs)
+      intra_copy_frame_mvs(cm, mi_row, mi_col, x_mis, y_mis);
   } else {
     read_inter_frame_mode_info(pbi, xd, mi_row, mi_col, r);
-    av1_copy_frame_mvs(cm, mi, mi_row, mi_col, x_mis, y_mis);
+    if (pbi->common.seq_params.order_hint_info.enable_ref_frame_mvs)
+      av1_copy_frame_mvs(cm, mi, mi_row, mi_col, x_mis, y_mis);
   }
 }

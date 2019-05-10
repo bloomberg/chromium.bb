@@ -447,7 +447,8 @@ static void update_state(const AV1_COMP *const cpi,
 
   const int x_mis = AOMMIN(bw, cm->mi_cols - mi_col);
   const int y_mis = AOMMIN(bh, cm->mi_rows - mi_row);
-  av1_copy_frame_mvs(cm, mi, mi_row, mi_col, x_mis, y_mis);
+  if (cm->seq_params.order_hint_info.enable_ref_frame_mvs)
+    av1_copy_frame_mvs(cm, mi, mi_row, mi_col, x_mis, y_mis);
 }
 
 void av1_setup_src_planes(MACROBLOCK *x, const YV12_BUFFER_CONFIG *src,
