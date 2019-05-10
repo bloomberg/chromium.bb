@@ -70,6 +70,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/navigation_handle_observer.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/failing_http_transaction_factory.h"
@@ -85,6 +86,7 @@
 #include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "ui/gfx/geometry/size.h"
@@ -126,7 +128,8 @@ std::unique_ptr<net::test_server::HttpResponse> HandleCachableRequestHandler(
 class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
  public:
   PageLoadMetricsBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(ukm::kUkmFeature);
+    scoped_feature_list_.InitWithFeatures(
+        {ukm::kUkmFeature, blink::features::kPortals}, {});
   }
 
   ~PageLoadMetricsBrowserTest() override {}
@@ -2271,4 +2274,94 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, FirstInputFromScroll) {
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstInputDelay, 0);
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstInputTimestamp,
                                      0);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PortalPageLoad_IsNotLogged) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title1.html"));
+  content::WebContents* outer_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  GURL portal_url =
+      embedded_test_server()->GetURL("portal.test", "/title2.html");
+  std::string script = R"(
+    var portal = document.createElement('portal');
+    portal.src = '%s';
+    document.body.appendChild(portal);
+  )";
+
+  content::TestNavigationObserver portal_nav_observer(portal_url);
+  portal_nav_observer.StartWatchingNewWebContents();
+  EXPECT_TRUE(
+      ExecJs(outer_contents,
+             base::StringPrintf(script.c_str(), portal_url.spec().c_str())));
+  portal_nav_observer.WaitForNavigationFinished();
+
+  // For simplicity, use the redirect chain length histogram as a proxy for
+  // whether page_load_metrics tracked the navigation, since it is emitted
+  // unconditionally on commit.
+  histogram_tester_.ExpectTotalCount("PageLoad.Navigation.RedirectChainLength",
+                                     1);
+}
+
+// Portals that activate and re-navigate should be treated normally.
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       NonEmbeddedPortalPageLoad_IsLogged) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title1.html"));
+  content::WebContents* outer_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  GURL portal_url =
+      embedded_test_server()->GetURL("portal.test", "/title2.html");
+  std::string script = R"(
+    var portal = document.createElement('portal');
+    portal.src = '%s';
+    document.body.appendChild(portal);
+  )";
+
+  content::WebContentsAddedObserver contents_observer;
+  content::TestNavigationObserver portal_nav_observer(portal_url);
+  portal_nav_observer.StartWatchingNewWebContents();
+  EXPECT_TRUE(
+      ExecJs(outer_contents,
+             base::StringPrintf(script.c_str(), portal_url.spec().c_str())));
+  portal_nav_observer.WaitForNavigationFinished();
+
+  // The portal has navigated but is still embedded. Activate it to make it
+  // non-embedded.
+  content::WebContents* portal_contents = contents_observer.GetWebContents();
+  std::string activated_listener = R"(
+    activated = false;
+    window.addEventListener('portalactivate', e => {
+      activated = true;
+    });
+  )";
+  EXPECT_TRUE(ExecJs(portal_contents, activated_listener));
+  EXPECT_TRUE(
+      ExecJs(outer_contents, "document.querySelector('portal').activate()"));
+
+  std::string activated_poll = R"(
+    setInterval(() => {
+      if (activated)
+        window.domAutomationController.send(true);
+    }, 10);
+  )";
+  EXPECT_EQ(true, EvalJsWithManualReply(portal_contents, activated_poll));
+
+  // The activated portal contents should be the currently active contents.
+  // Navigate it again and ensure that page_load_metrics tracks that page load.
+  EXPECT_EQ(portal_contents,
+            browser()->tab_strip_model()->GetActiveWebContents());
+  EXPECT_NE(portal_contents, outer_contents);
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title3.html"));
+
+  // For simplicity, use the redirect chain length histogram as a proxy for
+  // whether page_load_metrics tracked the navigation, since it is emitted
+  // unconditionally on commit.
+  histogram_tester_.ExpectTotalCount("PageLoad.Navigation.RedirectChainLength",
+                                     2);
 }

@@ -750,6 +750,12 @@ bool MetricsWebContentsObserver::ShouldTrackNavigation(
   DCHECK(navigation_handle->IsInMainFrame());
   DCHECK(!navigation_handle->HasCommitted() ||
          !navigation_handle->IsSameDocument());
+  // If there is an outer WebContents, then this WebContents is embedded into
+  // another one (it is either a portal or a Chrome App <webview>). Ignore these
+  // navigations for now.
+  if (web_contents()->GetOuterWebContents())
+    return false;
+
   // Ignore non-HTTP schemes (e.g. chrome://).
   if (!navigation_handle->GetURL().SchemeIsHTTPOrHTTPS())
     return false;
