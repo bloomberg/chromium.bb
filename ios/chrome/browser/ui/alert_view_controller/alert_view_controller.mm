@@ -349,6 +349,18 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
     button.tag = action.uniqueIdentifier;
     self.buttonAlertActionsDictionary[@(action.uniqueIdentifier)] = action;
   }
+
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(handleKeyboardWillShow:)
+             name:UIKeyboardWillShowNotification
+           object:nil];
+
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(handleKeyboardWillHide:)
+             name:UIKeyboardWillHideNotification
+           object:nil];
 }
 
 #pragma mark - Getters
@@ -366,6 +378,17 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
 }
 
 #pragma mark - Private
+
+- (void)handleKeyboardWillShow:(NSNotification*)notification {
+  CGRect keyboardFrame =
+      [notification.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
+  self.additionalSafeAreaInsets =
+      UIEdgeInsetsMake(0, 0, keyboardFrame.size.height, 0);
+}
+
+- (void)handleKeyboardWillHide:(NSNotification*)notification {
+  self.additionalSafeAreaInsets = UIEdgeInsetsZero;
+}
 
 - (void)didSelectActionForButton:(UIButton*)button {
   AlertAction* action = self.buttonAlertActionsDictionary[@(button.tag)];
