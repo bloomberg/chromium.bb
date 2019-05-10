@@ -36,7 +36,13 @@ class HTMLFrameOwnerElement;
 
 enum class SpatialNavigationDirection { kNone, kUp, kRight, kDown, kLeft };
 
-constexpr double kMaxDistance = std::numeric_limits<double>::max();
+inline double MaxDistance() {
+  return std::numeric_limits<double>::max();
+}
+
+inline int FudgeFactor() {
+  return 2;
+}
 
 CORE_EXPORT bool IsSpatialNavigationEnabled(const LocalFrame*);
 
@@ -73,6 +79,8 @@ CORE_EXPORT bool IsScrollableAreaOrDocument(const Node*);
 CORE_EXPORT Node* ScrollableAreaOrDocumentOf(Node*);
 bool CanScrollInDirection(const Node* container, SpatialNavigationDirection);
 bool CanScrollInDirection(const LocalFrame*, SpatialNavigationDirection);
+bool AreElementsOnSameLine(const FocusCandidate& first_candidate,
+                           const FocusCandidate& second_candidate);
 
 double ComputeDistanceDataForNode(SpatialNavigationDirection,
                                   const FocusCandidate& current_interest,

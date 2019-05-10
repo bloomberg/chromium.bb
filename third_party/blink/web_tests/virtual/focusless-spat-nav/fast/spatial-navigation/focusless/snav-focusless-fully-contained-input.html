@@ -19,30 +19,22 @@
   }
 </style>
 
-<div tabindex="0" id="container">
+<div tabindex="0">
   <input id="input" type="text" value="second"></input>
 </div>
-<a href="www" id="outsider">Outsider</a>
 
 <script>
-  const container = document.getElementById("container");
   const input = document.getElementById("input");
-  const outsider = document.getElementById("outsider");
 
-  // Spatial navigation attempts to determine when one valid focusable fully
-  // contains another. In this case, the contained, "inner" target should be
-  // selected when we start from the container div.
+  // Spatial navigation attempts to determine when one valid target fully
+  // contains another. In this case, the contained "inner" target should be
+  // selected. This is done by performing a hit test.
   //
-  // This test ensures the "is contained"-test works correctly on an <input>.
-  // This requires special attention because the focusable node is in the
-  // the <input>'s Shadow DOM.
+  // This test ensures the hit test works correctly on an input box. This
+  // requires special attention because the hit element will be in the input's
+  // shadow dom.
   test(() => {
     assert_true(!!window.internals);
-    snav.triggerMove('Down');
-    assert_equals(window.internals.interestedElement,
-                  container,
-                  "Expected interest to move to the surrounding div.");
-
     snav.triggerMove('Down');
     assert_equals(window.internals.interestedElement,
                   input,
