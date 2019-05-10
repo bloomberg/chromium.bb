@@ -91,8 +91,7 @@ SerialChooserContext::GetGrantedObjects(const url::Origin& requesting_origin,
       continue;
 
     objects.push_back(std::make_unique<Object>(
-        requesting_origin.GetURL(), embedding_origin.GetURL(),
-        it->second.Clone(),
+        requesting_origin, embedding_origin, it->second.Clone(),
         content_settings::SettingSource::SETTING_SOURCE_USER, is_incognito_));
   }
 
@@ -115,8 +114,7 @@ SerialChooserContext::GetAllGrantedObjects() {
         continue;
 
       objects.push_back(std::make_unique<Object>(
-          requesting_origin.GetURL(), embedding_origin.GetURL(),
-          it->second.Clone(),
+          requesting_origin, embedding_origin, it->second.Clone(),
           content_settings::SettingSource::SETTING_SOURCE_USER, is_incognito_));
     }
   }

@@ -11,6 +11,7 @@
 
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
+#include "base/optional.h"
 #include "base/values.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -30,8 +31,8 @@ class Origin;
 class ChooserContextBase : public KeyedService {
  public:
   struct Object {
-    Object(GURL requesting_origin,
-           GURL embedding_origin,
+    Object(const url::Origin& requesting_origin,
+           const base::Optional<url::Origin>& embedding_origin,
            base::Value value,
            content_settings::SettingSource source,
            bool incognito);

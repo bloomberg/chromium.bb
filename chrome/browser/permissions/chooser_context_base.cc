@@ -25,13 +25,14 @@ ChooserContextBase::ChooserContextBase(
 
 ChooserContextBase::~ChooserContextBase() = default;
 
-ChooserContextBase::Object::Object(GURL requesting_origin,
-                                   GURL embedding_origin,
-                                   base::Value value,
-                                   content_settings::SettingSource source,
-                                   bool incognito)
-    : requesting_origin(requesting_origin),
-      embedding_origin(embedding_origin),
+ChooserContextBase::Object::Object(
+    const url::Origin& requesting_origin,
+    const base::Optional<url::Origin>& embedding_origin,
+    base::Value value,
+    content_settings::SettingSource source,
+    bool incognito)
+    : requesting_origin(requesting_origin.GetURL()),
+      embedding_origin(embedding_origin ? embedding_origin->GetURL() : GURL()),
       value(std::move(value)),
       source(source),
       incognito(incognito) {}
@@ -84,8 +85,7 @@ ChooserContextBase::GetGrantedObjects(const url::Origin& requesting_origin,
   for (auto& object : objects->GetList()) {
     if (IsValidObject(object)) {
       results.push_back(std::make_unique<Object>(
-          requesting_origin.GetURL(), embedding_origin.GetURL(),
-          std::move(object), info.source,
+          requesting_origin, embedding_origin, std::move(object), info.source,
           host_content_settings_map_->is_incognito()));
     }
   }
@@ -123,8 +123,8 @@ ChooserContextBase::GetAllGrantedObjects() {
       }
 
       results.push_back(std::make_unique<Object>(
-          requesting_origin_url, embedding_origin_url, std::move(object),
-          info.source, content_setting.incognito));
+          requesting_origin, embedding_origin, std::move(object), info.source,
+          content_setting.incognito));
     }
   }
 

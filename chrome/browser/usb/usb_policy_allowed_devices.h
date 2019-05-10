@@ -10,8 +10,9 @@
 #include <set>
 #include <utility>
 
+#include "base/optional.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace device {
 namespace mojom {
@@ -29,12 +30,15 @@ class PrefService;
 // preference value so that the map can be updated accordingly.
 class UsbPolicyAllowedDevices {
  public:
-  // A map of device IDs to a set of GURLs stored in a std::pair. The device IDs
-  // correspond to a pair of |vendor_id| and |product_id| integers. The GURLs
-  // correspond to a pair of |requesting_url| and |embedding_url| that are
-  // allowed to access the device mapped to them.
+  // A map of device IDs to a set of origins stored in a std::pair. The device
+  // IDs correspond to a pair of |vendor_id| and |product_id| integers. The
+  // origins correspond to a pair of |requesting_origin| and |embedding_origin|
+  // that are allowed to access the device mapped to them. If |embedding_origin|
+  // is base::nullopt then |requesting_origin| is allowed to access the device
+  // when embedded in any top-level frame.
   using UsbDeviceIdsToUrlsMap =
-      std::map<std::pair<int, int>, std::set<std::pair<GURL, GURL>>>;
+      std::map<std::pair<int, int>,
+               std::set<std::pair<url::Origin, base::Optional<url::Origin>>>>;
 
   // Initializes |pref_change_registrar_| with |pref_service| and adds an
   // an observer for the pref path |kManagedWebUsbAllowDevicesForUrls|.
@@ -43,11 +47,11 @@ class UsbPolicyAllowedDevices {
 
   // Checks if |requesting_origin| (when embedded within |embedding_origin|) is
   // allowed to use the device with |device_info|.
-  bool IsDeviceAllowed(const GURL& requesting_origin,
-                       const GURL& embedding_origin,
+  bool IsDeviceAllowed(const url::Origin& requesting_origin,
+                       const url::Origin& embedding_origin,
                        const device::mojom::UsbDeviceInfo& device_info);
-  bool IsDeviceAllowed(const GURL& requesting_origin,
-                       const GURL& embedding_origin,
+  bool IsDeviceAllowed(const url::Origin& requesting_origin,
+                       const url::Origin& embedding_origin,
                        const std::pair<int, int>& device_ids);
 
   const UsbDeviceIdsToUrlsMap& map() const { return usb_device_ids_to_urls_; }
