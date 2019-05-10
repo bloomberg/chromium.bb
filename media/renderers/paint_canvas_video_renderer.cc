@@ -286,7 +286,9 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTexturesWithExternalBackend(
 // The SkImage will take ownership of the underlying resource.
 sk_sp<SkImage> NewSkImageFromVideoFrameNative(
     VideoFrame* video_frame,
-    viz::ContextProvider* context_provider) {
+    viz::ContextProvider* context_provider,
+    bool allow_wrap_texture,
+    bool* wrapped_video_frame_texture) {
   DCHECK(PIXEL_FORMAT_ARGB == video_frame->format() ||
          PIXEL_FORMAT_XRGB == video_frame->format() ||
          PIXEL_FORMAT_RGB24 == video_frame->format() ||
@@ -305,21 +307,26 @@ sk_sp<SkImage> NewSkImageFromVideoFrameNative(
   gpu::gles2::GLES2Interface* gl = context_provider->ContextGL();
   unsigned source_texture = 0;
   gfx::ColorSpace color_space_for_skia;
-  if (mailbox_holder.texture_target != GL_TEXTURE_2D) {
+  *wrapped_video_frame_texture =
+      mailbox_holder.texture_target == GL_TEXTURE_2D && allow_wrap_texture;
+  if (*wrapped_video_frame_texture) {
+    // Fast path where we can avoid a copy, by having last_image_ directly wrap
+    // the VideoFrame texture.
+    gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
+    source_texture =
+        gl->CreateAndConsumeTextureCHROMIUM(mailbox_holder.mailbox.name);
+    color_space_for_skia = video_frame->ColorSpace();
+  } else {
     // TODO(dcastagna): At the moment Skia doesn't support targets different
     // than GL_TEXTURE_2D.  Avoid this copy once
-    // https://code.google.com/p/skia/issues/detail?id=3868 is addressed.
+    // https://code.google.com/p/skia/issues/detail?id=3868 is addressed, when
+    // we allow wrapping.
     gl->GenTextures(1, &source_texture);
     DCHECK(source_texture);
     gl->BindTexture(GL_TEXTURE_2D, source_texture);
     PaintCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
         gl, video_frame, GL_TEXTURE_2D, source_texture, GL_RGBA, GL_RGBA,
         GL_UNSIGNED_BYTE, 0, false, false);
-  } else {
-    gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
-    source_texture =
-        gl->CreateAndConsumeTextureCHROMIUM(mailbox_holder.mailbox.name);
-    color_space_for_skia = video_frame->ColorSpace();
   }
   GrGLTextureInfo source_texture_info;
   source_texture_info.fID = source_texture;
@@ -601,7 +608,10 @@ void PaintCanvasVideoRenderer::Paint(
     return;
   }
 
-  if (!UpdateLastImage(video_frame, context_provider))
+  // Don't allow wrapping the VideoFrame texture, as we want to be able to cache
+  // the PaintImage, to avoid redundant readbacks if the canvas is software.
+  if (!UpdateLastImage(video_frame, context_provider,
+                       false /* allow_wrap_texture */))
     return;
 
   cc::PaintFlags video_flags;
@@ -677,6 +687,10 @@ void PaintCanvasVideoRenderer::Paint(
     SynchronizeVideoFrameRead(video_frame, context_provider->ContextGL(),
                               context_provider->ContextSupport());
   }
+  // Because we are not retaining a reference to the VideoFrame, it would be
+  // invalid for last_image_ to directly wrap its texture(s), as they will be
+  // recycled.
+  DCHECK(!last_image_wraps_video_frame_texture_);
 }
 
 void PaintCanvasVideoRenderer::Copy(
@@ -1107,8 +1121,10 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
     GrContext* gr_context = context_provider->GrContext();
     if (!gr_context)
       return false;
-    if (!UpdateLastImage(video_frame, context_provider))
+    if (!UpdateLastImage(video_frame, context_provider,
+                         true /* allow_wrap_texture */)) {
       return false;
+    }
 
     GrBackendTexture backend_texture =
         last_image_.GetSkImage()->getBackendTexture(true);
@@ -1118,12 +1134,7 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
     if (!backend_texture.getGLTextureInfo(&texture_info))
       return false;
 
-    // Synchronize |video_frame| with the read operations in UpdateLastImage(),
-    // which are triggered by getBackendTexture().
     gpu::gles2::GLES2Interface* canvas_gl = context_provider->ContextGL();
-    SynchronizeVideoFrameRead(video_frame, canvas_gl,
-                              context_provider->ContextSupport());
-
     gpu::MailboxHolder mailbox_holder;
     mailbox_holder.texture_target = texture_info.fTarget;
     canvas_gl->ProduceTextureDirectCHROMIUM(texture_info.fID,
@@ -1151,12 +1162,25 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
     gpu::SyncToken dest_sync_token;
     destination_gl->GenUnverifiedSyncTokenCHROMIUM(dest_sync_token.GetData());
     canvas_gl->WaitSyncTokenCHROMIUM(dest_sync_token.GetConstData());
+
+    // Because we are not retaining a reference to the VideoFrame, it would be
+    // invalid to keep last_image_ around if it directly wraps the VideoFrame
+    // texture(s), as they will be recycled.
+    if (last_image_wraps_video_frame_texture_)
+      ResetCache();
+
+    // Synchronize |video_frame| with the read operations in UpdateLastImage(),
+    // which are triggered by getBackendTexture() or CopyTextureCHROMIUM (in the
+    // case last_image_ was referencing its texture(s) directly).
+    SynchronizeVideoFrameRead(video_frame, canvas_gl,
+                              context_provider->ContextSupport());
   } else {
     CopyVideoFrameSingleTextureToGLTexture(
         destination_gl, video_frame.get(), target, texture, internal_format,
         format, type, level, premultiply_alpha, flip_y);
     SynchronizeVideoFrameRead(video_frame, destination_gl, nullptr);
   }
+  DCHECK(!last_image_wraps_video_frame_texture_);
 
   return true;
 }
@@ -1232,6 +1256,7 @@ bool PaintCanvasVideoRenderer::PrepareVideoFrameForWebGL(
   SyncTokenClientImpl client(source_gl);
   video_frame->UpdateReleaseSyncToken(&client);
 
+  DCHECK(!last_image_wraps_video_frame_texture_);
   return true;
 }
 
@@ -1426,11 +1451,14 @@ void PaintCanvasVideoRenderer::ResetCache() {
   // Clear cached values.
   last_image_ = cc::PaintImage();
   last_id_.reset();
+  last_image_wraps_video_frame_texture_ = false;
 }
 
 bool PaintCanvasVideoRenderer::UpdateLastImage(
     const scoped_refptr<VideoFrame>& video_frame,
-    viz::ContextProvider* context_provider) {
+    viz::ContextProvider* context_provider,
+    bool allow_wrap_texture) {
+  DCHECK(!last_image_wraps_video_frame_texture_);
   if (!last_image_ || video_frame->unique_id() != last_id_ ||
       !last_image_.GetSkImage()->getBackendTexture(true).isValid()) {
     ResetCache();
@@ -1456,7 +1484,9 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
                                       cc::PaintImage::GetNextContentId());
       } else {
         paint_image_builder.set_image(
-            NewSkImageFromVideoFrameNative(video_frame.get(), context_provider),
+            NewSkImageFromVideoFrameNative(
+                video_frame.get(), context_provider, allow_wrap_texture,
+                &last_image_wraps_video_frame_texture_),
             cc::PaintImage::GetNextContentId());
       }
     } else {
@@ -1480,6 +1510,9 @@ bool PaintCanvasVideoRenderer::PrepareVideoFrame(
     viz::ContextProvider* context_provider,
     unsigned int textureTarget,
     unsigned int texture) {
+  // We are about to replace last_image_, make sure to reset related state such
+  // as last_id_ or last_image_wraps_video_frame_texture_.
+  ResetCache();
   auto paint_image_builder =
       cc::PaintImageBuilder::WithDefault()
           .set_id(renderer_stable_id_)

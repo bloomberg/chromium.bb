@@ -186,7 +186,8 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
   // Update the cache holding the most-recently-painted frame. Returns false
   // if the image couldn't be updated.
   bool UpdateLastImage(const scoped_refptr<VideoFrame>& video_frame,
-                       viz::ContextProvider* context_provider);
+                       viz::ContextProvider* context_provider,
+                       bool allow_wrap_texture);
 
   void CorrectLastImageDimensions(const SkIRect& visible_rect);
 
@@ -197,6 +198,10 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
 
   // Last image used to draw to the canvas.
   cc::PaintImage last_image_;
+
+  // last_image_ directly wraps a texture from a VideoFrame, in which case we
+  // need to synchronize access before releasing the VideoFrame.
+  bool last_image_wraps_video_frame_texture_ = false;
 
   // VideoFrame::unique_id() of the videoframe used to generate |last_image_|.
   base::Optional<int> last_id_;
