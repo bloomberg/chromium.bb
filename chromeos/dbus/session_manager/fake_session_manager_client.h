@@ -247,6 +247,11 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   }
 
  private:
+  // Called in response to writing owner key file specified in new device
+  // policy - used for in-memory fake only.
+  // Notifies OwnerKeySet() observers, and runs |callback_to_run|.
+  void HandleOwnerKeySet(base::OnceClosure callback_to_run);
+
   // Whether browser restarts should be handled - intended for use in tests.
   bool supports_browser_restart_ = false;
 

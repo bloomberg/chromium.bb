@@ -498,7 +498,6 @@ void FakeSessionManagerClient::StorePolicy(
         base::BindOnce(std::move(callback), true /* success */));
   } else {
     policy_[GetMemoryStorageKey(descriptor)] = policy_blob;
-    PostReply(FROM_HERE, std::move(callback), true /* success */);
 
     if (IsChromeDevicePolicy(descriptor)) {
       // TODO(ljusten): For historical reasons, this code path only stores keys
@@ -508,18 +507,27 @@ void FakeSessionManagerClient::StorePolicy(
         GetStubPolicyFilePath(descriptor, &key_path);
         DCHECK(!key_path.empty());
 
-        base::PostTaskWithTraits(
+        base::PostTaskWithTraitsAndReply(
             FROM_HERE,
             {base::MayBlock(),
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
             base::BindOnce(StoreFiles,
                            std::map<base::FilePath, std::string>{
-                               {key_path, response.new_public_key()}}));
-        for (auto& observer : observers_)
-          observer.OwnerKeySet(true /* success */);
+                               {key_path, response.new_public_key()}}),
+            base::BindOnce(
+                &FakeSessionManagerClient::HandleOwnerKeySet,
+                weak_ptr_factory_.GetWeakPtr(),
+                base::BindOnce(std::move(callback), true /*success*/)));
       }
       for (auto& observer : observers_)
         observer.PropertyChangeComplete(true /* success */);
+    }
+
+    // Run the callback if it hasn't been passed to
+    // PostTaskWithTraitsAndReply(), in which case it will be run after the
+    // owner key file was stored to disk.
+    if (callback) {
+      PostReply(FROM_HERE, std::move(callback), true /* success */);
     }
   }
 }
@@ -715,6 +723,14 @@ void FakeSessionManagerClient::set_device_local_account_policy(
 void FakeSessionManagerClient::OnPropertyChangeComplete(bool success) {
   for (auto& observer : observers_)
     observer.PropertyChangeComplete(success);
+}
+
+void FakeSessionManagerClient::HandleOwnerKeySet(
+    base::OnceClosure callback_to_run) {
+  for (auto& observer : observers_)
+    observer.OwnerKeySet(true /* success */);
+
+  std::move(callback_to_run).Run();
 }
 
 }  // namespace chromeos
