@@ -19,11 +19,14 @@
 
 namespace chromeos {
 
+class UsbPrinterNotificationController;
+
 class AutomaticUsbPrinterConfigurer : public CupsPrintersManager::Observer {
  public:
   AutomaticUsbPrinterConfigurer(
-      std::unique_ptr<PrinterConfigurer> printer_configurer_,
-      PrinterInstallationManager* installation_manager);
+      std::unique_ptr<PrinterConfigurer> printer_configurer,
+      PrinterInstallationManager* installation_manager,
+      UsbPrinterNotificationController* notification_controller);
 
   ~AutomaticUsbPrinterConfigurer() override;
 
@@ -54,6 +57,7 @@ class AutomaticUsbPrinterConfigurer : public CupsPrintersManager::Observer {
 
   std::unique_ptr<PrinterConfigurer> printer_configurer_;
   PrinterInstallationManager* installation_manager_;  // Not owned.
+  UsbPrinterNotificationController* notification_controller_;  // Not owned.
   base::flat_set<std::string> printers_;
 
   base::WeakPtrFactory<AutomaticUsbPrinterConfigurer> weak_factory_;

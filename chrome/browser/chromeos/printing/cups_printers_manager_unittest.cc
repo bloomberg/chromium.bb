@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/printing/printers_map.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager.h"
 #include "chrome/browser/chromeos/printing/usb_printer_detector.h"
+#include "chrome/browser/chromeos/printing/usb_printer_notification_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -294,6 +295,24 @@ class FakePrinterConfigurer : public PrinterConfigurer {
   base::flat_set<std::string> configured_;
 };
 
+class FakeUsbPrinterNotificationController
+    : public UsbPrinterNotificationController {
+ public:
+  FakeUsbPrinterNotificationController() = default;
+  ~FakeUsbPrinterNotificationController() override = default;
+
+  void ShowEphemeralNotification(const Printer& printer) override {
+    NOTIMPLEMENTED();
+  }
+  void RemoveNotification(const std::string& printer_id) override {
+    NOTIMPLEMENTED();
+  }
+  bool IsNotification(const std::string& printer_id) const override {
+    NOTIMPLEMENTED();
+    return false;
+  }
+};
+
 class CupsPrintersManagerTest : public testing::Test,
                                 public CupsPrintersManager::Observer {
  public:
@@ -308,6 +327,9 @@ class CupsPrintersManagerTest : public testing::Test,
     usb_detector_ = usb_detector.get();
     auto printer_configurer = std::make_unique<FakePrinterConfigurer>();
     printer_configurer_ = printer_configurer.get();
+    auto usb_notif_controller =
+        std::make_unique<FakeUsbPrinterNotificationController>();
+    usb_notif_controller_ = usb_notif_controller.get();
 
     // Register the pref |UserNativePrintersAllowed|
     CupsPrintersManager::RegisterProfilePrefs(pref_service_.registry());
@@ -315,7 +337,8 @@ class CupsPrintersManagerTest : public testing::Test,
     manager_ = CupsPrintersManager::CreateForTesting(
         &synced_printers_manager_, std::move(usb_detector),
         std::move(zeroconf_detector), ppd_provider_,
-        std::move(printer_configurer), &event_tracker_, &pref_service_);
+        std::move(printer_configurer), std::move(usb_notif_controller),
+        &event_tracker_, &pref_service_);
     manager_->AddObserver(this);
   }
 
@@ -354,6 +377,7 @@ class CupsPrintersManagerTest : public testing::Test,
   FakePrinterDetector* usb_detector_;          // Not owned.
   FakePrinterDetector* zeroconf_detector_;     // Not owned.
   FakePrinterConfigurer* printer_configurer_;  // Not owned.
+  FakeUsbPrinterNotificationController* usb_notif_controller_;  // Not owned.
   scoped_refptr<FakePpdProvider> ppd_provider_;
 
   // This is unused, it's just here for memory ownership.

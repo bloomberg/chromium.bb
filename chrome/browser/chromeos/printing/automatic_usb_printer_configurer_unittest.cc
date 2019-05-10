@@ -12,6 +12,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/printing/printers_map.h"
+#include "chrome/browser/chromeos/printing/usb_printer_notification_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -127,6 +128,28 @@ class FakePrinterConfigurer : public PrinterConfigurer {
   base::flat_set<std::string> configured_;
 };
 
+class FakeUsbPrinterNotificationController
+    : public UsbPrinterNotificationController {
+ public:
+  FakeUsbPrinterNotificationController() = default;
+  ~FakeUsbPrinterNotificationController() override = default;
+
+  void ShowEphemeralNotification(const Printer& printer) override {
+    open_notifications_.insert(printer.id());
+  }
+
+  void RemoveNotification(const std::string& printer_id) override {
+    open_notifications_.erase(printer_id);
+  }
+
+  bool IsNotification(const std::string& printer_id) const override {
+    return open_notifications_.contains(printer_id);
+  }
+
+ private:
+  base::flat_set<std::string> open_notifications_;
+};
+
 class AutomaticUsbPrinterConfigurerTest : public testing::Test {
  public:
   AutomaticUsbPrinterConfigurerTest() {
@@ -136,10 +159,13 @@ class AutomaticUsbPrinterConfigurerTest : public testing::Test {
         std::make_unique<FakePrinterInstallationManager>();
     auto printer_configurer = std::make_unique<FakePrinterConfigurer>();
     fake_printer_configurer_ = printer_configurer.get();
+    fake_notification_controller_ =
+        std::make_unique<FakeUsbPrinterNotificationController>();
 
     auto_usb_printer_configurer_ =
         std::make_unique<AutomaticUsbPrinterConfigurer>(
-            std::move(printer_configurer), fake_installation_manager_.get());
+            std::move(printer_configurer), fake_installation_manager_.get(),
+            fake_notification_controller_.get());
 
     fake_observable_printers_manager_.SetObserver(
         auto_usb_printer_configurer_.get());
@@ -151,6 +177,8 @@ class AutomaticUsbPrinterConfigurerTest : public testing::Test {
   FakeObservablePrintersManager fake_observable_printers_manager_;
   FakePrinterConfigurer* fake_printer_configurer_;  // not owned.
   std::unique_ptr<FakePrinterInstallationManager> fake_installation_manager_;
+  std::unique_ptr<FakeUsbPrinterNotificationController>
+      fake_notification_controller_;
   std::unique_ptr<AutomaticUsbPrinterConfigurer> auto_usb_printer_configurer_;
 
  private:
@@ -248,6 +276,43 @@ TEST_F(AutomaticUsbPrinterConfigurerTest, UsbPrinterRemovedFromSet) {
   fake_observable_printers_manager_.RemoveAutomaticPrinter(printer_id);
 
   EXPECT_EQ(0u, auto_usb_printer_configurer_->printers_.size());
+}
+
+TEST_F(AutomaticUsbPrinterConfigurerTest, NotificationOpenedForNewAutomatic) {
+  const std::string printer_id = "id";
+  const Printer printer = CreateUsbPrinter(printer_id);
+
+  fake_observable_printers_manager_.AddNearbyAutomaticPrinter(printer);
+
+  EXPECT_TRUE(fake_notification_controller_->IsNotification(printer_id));
+}
+
+TEST_F(AutomaticUsbPrinterConfigurerTest,
+       NotificationOpenedForPreviouslyConfigured) {
+  const std::string printer_id = "id";
+  const Printer printer = CreateUsbPrinter(printer_id);
+
+  // Mark the printer as configured.
+  fake_printer_configurer_->MarkConfigured(printer_id);
+
+  // Even though the printer is already configured, adding the printer should
+  // result in a notification being shown.
+  fake_observable_printers_manager_.AddNearbyAutomaticPrinter(printer);
+
+  EXPECT_TRUE(fake_notification_controller_->IsNotification(printer_id));
+}
+
+TEST_F(AutomaticUsbPrinterConfigurerTest, NotificationClosed) {
+  const std::string printer_id = "id";
+  const Printer printer = CreateUsbPrinter(printer_id);
+
+  fake_observable_printers_manager_.AddNearbyAutomaticPrinter(printer);
+
+  EXPECT_TRUE(fake_notification_controller_->IsNotification(printer_id));
+
+  fake_observable_printers_manager_.RemoveAutomaticPrinter(printer_id);
+
+  EXPECT_FALSE(fake_notification_controller_->IsNotification(printer_id));
 }
 
 }  // namespace chromeos

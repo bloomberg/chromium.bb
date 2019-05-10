@@ -28,6 +28,7 @@ class PrinterConfigurer;
 class PrinterDetector;
 class PrinterEventTracker;
 class SyncedPrintersManager;
+class UsbPrinterNotificationController;
 
 // Top level manager of available CUPS printers in ChromeOS.  All functions
 // in this class must be called from a sequenced context.
@@ -59,6 +60,8 @@ class CupsPrintersManager : public PrinterInstallationManager,
       std::unique_ptr<PrinterDetector> zeroconf_printer_detector,
       scoped_refptr<PpdProvider> ppd_provider,
       std::unique_ptr<PrinterConfigurer> printer_configurer,
+      std::unique_ptr<UsbPrinterNotificationController>
+          usb_notification_controller,
       PrinterEventTracker* event_tracker,
       PrefService* pref_service);
 

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/stl_util.h"
+#include "chrome/browser/chromeos/printing/usb_printer_notification_controller.h"
 #include "chrome/common/chrome_features.h"
 
 namespace chromeos {
@@ -26,9 +27,11 @@ bool IsInAutomaticList(const std::string& printer_id,
 
 AutomaticUsbPrinterConfigurer::AutomaticUsbPrinterConfigurer(
     std::unique_ptr<PrinterConfigurer> printer_configurer,
-    PrinterInstallationManager* installation_manager)
+    PrinterInstallationManager* installation_manager,
+    UsbPrinterNotificationController* notification_controller)
     : printer_configurer_(std::move(printer_configurer)),
       installation_manager_(installation_manager),
+      notification_controller_(notification_controller),
       weak_factory_(this) {
   DCHECK(installation_manager);
 }
@@ -85,6 +88,7 @@ void AutomaticUsbPrinterConfigurer::CompleteConfiguration(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
   VLOG(1) << "Auto USB Printer setup successful for " << printer.id();
 
+  notification_controller_->ShowEphemeralNotification(printer);
   printers_.insert(printer.id());
 }
 
@@ -92,6 +96,7 @@ void AutomaticUsbPrinterConfigurer::PruneRemovedPrinters(
     const std::vector<Printer>& automatic_printers) {
   for (auto it = printers_.begin(); it != printers_.end();) {
     if (!IsInAutomaticList(*it, automatic_printers)) {
+      notification_controller_->RemoveNotification(*it);
       it = printers_.erase(it);
     } else {
       ++it;

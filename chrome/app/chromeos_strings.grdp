@@ -3233,6 +3233,14 @@
     Get help
   </message>
 
+  <!-- USB Printer Installation Notification -->
+  <message name="IDS_USB_PRINTER_NOTIFICATION_CONNECTED_TITLE" desc="Title of the USB printer connected successfully notification.">
+    USB printer connected
+  </message>
+  <message name="IDS_USB_PRINTER_NOTIFICATION_CONNECTED_MESSAGE" desc="Message displayed when the USB printer is connected successfully.">
+    <ph name="PRINTER_NAME">$1<ex> Google InkJet 1234</ex></ph> is connected and ready
+  </message>
+
   <!-- RequestPin dialog messages -->
   <message name="IDS_REQUEST_PIN_DIALOG_HEADER" desc="The text displayed in the certificate provider PIN request dialog.">
     "<ph name="EXTENSION_NAME">$1<ex>My Extension</ex></ph>" is requesting your <ph name="CODE_TYPE">$2<ex>PIN</ex></ph>
