@@ -138,10 +138,6 @@ public class ShareServiceImpl implements ShareService {
     private static final TaskRunner TASK_RUNNER =
             PostTask.createSequencedTaskRunner(TaskTraits.USER_BLOCKING);
 
-    static {
-        TASK_RUNNER.disableLifetimeCheck();
-    }
-
     public ShareServiceImpl(@Nullable WebContents webContents) {
         mActivity = activityFromWebContents(webContents);
     }

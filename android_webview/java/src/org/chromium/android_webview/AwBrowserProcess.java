@@ -62,12 +62,6 @@ public final class AwBrowserProcess {
     private static FileLock sExclusiveFileLock;
     private static String sWebViewPackageName;
 
-    // TODO(ksolt): This is a temporary solution to avoid lifetime check errors.
-    // Will be fixed after we decide how to handle the destruction of static TaskRunners.
-    static {
-        sSequencedTaskRunner.disableLifetimeCheck();
-    }
-
     /**
      * Loads the native library, and performs basic static construction of objects needed
      * to run webview in this process. Does not create threads; safe to call from zygote.
