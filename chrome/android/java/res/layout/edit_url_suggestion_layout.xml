@@ -22,18 +22,16 @@
         android:layout_marginEnd="@dimen/omnibox_suggestion_refine_view_modern_end_padding">
 
         <org.chromium.ui.widget.ChromeImageButton
-            android:id="@+id/url_copy_icon"
-            style="@style/OmniboxSuggestionIconButton"
-            app:srcCompat="@drawable/ic_content_copy_black"
-            android:contentDescription="@string/copy_link"
-            android:visibility="gone" />
-
-        <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/url_share_icon"
             style="@style/OmniboxSuggestionIconButton"
             app:srcCompat="@drawable/ic_share_white_24dp"
-            android:contentDescription="@string/menu_share_page"
-            android:visibility="gone" />
+            android:contentDescription="@string/menu_share_page" />
+
+        <org.chromium.ui.widget.ChromeImageButton
+            android:id="@+id/url_copy_icon"
+            style="@style/OmniboxSuggestionIconButton"
+            app:srcCompat="@drawable/ic_content_copy_black"
+            android:contentDescription="@string/copy_link" />
 
         <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/url_edit_icon"

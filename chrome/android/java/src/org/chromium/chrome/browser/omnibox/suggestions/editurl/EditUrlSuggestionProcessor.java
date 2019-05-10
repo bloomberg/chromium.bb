@@ -16,7 +16,6 @@ import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.omnibox.UrlBar.OmniboxAction;
@@ -82,15 +81,6 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
             new CachedMetrics.ActionEvent("Omnibox.EditUrlSuggestion.Edit");
     private static final CachedMetrics.ActionEvent ACTION_EDIT_URL_SUGGESTION_SHARE =
             new CachedMetrics.ActionEvent("Omnibox.EditUrlSuggestion.Share");
-
-    /** The name of the parameter for getting the experiment variation. */
-    private static final String FIELD_TRIAL_PARAM_NAME = "variation";
-
-    /** The name of the experiment variation that shows the copy icon. */
-    private static final String COPY_ICON_VARIATION_NAME = "copy_icon";
-
-    /** The name of the experiment variation that shows both the copy and share icon. */
-    private static final String COPY_SHARE_ICON_VARIATION_NAME = "copy_share_icon";
 
     /** The delegate for accessing the location bar for observation and modification. */
     private final LocationBarDelegate mLocationBarDelegate;
@@ -193,19 +183,6 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
     @Override
     public void populateModel(OmniboxSuggestion suggestion, PropertyModel model, int position) {
         model.set(EditUrlSuggestionProperties.TEXT_CLICK_LISTENER, this);
-
-        // Check which variation of the experiment is being run.
-        String variation = getSearchReadyOmniboxVariation();
-        if (TextUtils.equals(COPY_ICON_VARIATION_NAME, variation)) {
-            model.set(EditUrlSuggestionProperties.COPY_ICON_VISIBLE, true);
-            model.set(EditUrlSuggestionProperties.SHARE_ICON_VISIBLE, false);
-        } else if (TextUtils.equals(COPY_SHARE_ICON_VARIATION_NAME, variation)) {
-            model.set(EditUrlSuggestionProperties.COPY_ICON_VISIBLE, true);
-            model.set(EditUrlSuggestionProperties.SHARE_ICON_VISIBLE, true);
-        } else {
-            model.set(EditUrlSuggestionProperties.COPY_ICON_VISIBLE, false);
-            model.set(EditUrlSuggestionProperties.SHARE_ICON_VISIBLE, true);
-        }
         model.set(EditUrlSuggestionProperties.BUTTON_CLICK_LISTENER, this);
 
         if (mOriginalTitle == null) mOriginalTitle = mTabProvider.get().getTitle();
@@ -229,14 +206,6 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
     public void destroy() {
         mLastProcessedSuggestion = null;
         mSelectionHandler = null;
-    }
-
-    /**
-     * @return The experiment variation for the Search Ready Omnibox.
-     */
-    private static String getSearchReadyOmniboxVariation() {
-        return ChromeFeatureList.getFieldTrialParamByFeature(
-                ChromeFeatureList.SEARCH_READY_OMNIBOX, FIELD_TRIAL_PARAM_NAME);
     }
 
     @Override
