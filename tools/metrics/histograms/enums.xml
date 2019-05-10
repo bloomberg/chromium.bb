@@ -23202,6 +23202,9 @@ Called by update_net_error_codes.py.-->
   <int value="2888" label="MediaCapabilitiesDecodingInfoWithKeySystemConfig"/>
   <int value="2889" label="RevertInCustomIdent"/>
   <int value="2890" label="UnoptimizedImagePolicies"/>
+  <int value="2891" label="VTTCueParser"/>
+  <int value="2892" label="MediaElementTextTrackContainer"/>
+  <int value="2893" label="MediaElementTextTrackList"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

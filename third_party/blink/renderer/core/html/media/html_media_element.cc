@@ -2928,8 +2928,10 @@ TextTrack* HTMLMediaElement::addTextTrack(const AtomicString& kind,
 }
 
 TextTrackList* HTMLMediaElement::textTracks() {
-  if (!text_tracks_)
+  if (!text_tracks_) {
+    UseCounter::Count(GetDocument(), WebFeature::kMediaElementTextTrackList);
     text_tracks_ = MakeGarbageCollected<TextTrackList>(this);
+  }
 
   return text_tracks_.Get();
 }
@@ -3647,6 +3649,8 @@ void HTMLMediaElement::AssertShadowRootChildren(ShadowRoot& shadow_root) {
 }
 
 TextTrackContainer& HTMLMediaElement::EnsureTextTrackContainer() {
+  UseCounter::Count(GetDocument(), WebFeature::kMediaElementTextTrackContainer);
+
   ShadowRoot& shadow_root = EnsureUserAgentShadowRoot();
   AssertShadowRootChildren(shadow_root);
 

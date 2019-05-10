@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
 #include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/track/vtt/vtt_element.h"
 #include "third_party/blink/renderer/core/html/track/vtt/vtt_region.h"
 #include "third_party/blink/renderer/core/html/track/vtt/vtt_scanner.h"
@@ -92,7 +93,9 @@ VTTParser::VTTParser(VTTParserClient* client, Document& document)
       current_start_time_(0),
       current_end_time_(0),
       current_region_(nullptr),
-      client_(client) {}
+      client_(client) {
+  UseCounter::Count(document, WebFeature::kVTTCueParser);
+}
 
 void VTTParser::GetNewCues(HeapVector<Member<TextTrackCue>>& output_cues) {
   DCHECK(output_cues.IsEmpty());
