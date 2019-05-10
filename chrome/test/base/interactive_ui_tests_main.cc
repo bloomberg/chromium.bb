@@ -23,6 +23,10 @@
 #endif
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "ash/test/ui_controls_factory_ash.h"
+#endif
+
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
 #include "chrome/test/base/always_on_top_window_killer_win.h"
@@ -42,8 +46,7 @@ class InteractiveUITestSuite : public ChromeTestSuite {
     ChromeTestSuite::Initialize();
 
 #if defined(OS_CHROMEOS)
-    // Do not InstallUIControlsAura in ChromeOS, it will be installed in
-    // InProcessBrowserTest::PreRunTestOnMainThread().
+    ui_controls::InstallUIControlsAura(ash::test::CreateAshUIControls());
 #elif defined(OS_WIN)
     com_initializer_.reset(new base::win::ScopedCOMInitializer());
     ui_controls::InstallUIControlsAura(

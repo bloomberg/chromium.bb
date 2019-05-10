@@ -91,7 +91,6 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "ash/test/ui_controls_factory_ash.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/test/base/default_ash_event_generator_delegate.h"
@@ -101,10 +100,6 @@
 #include "chromeos/services/device_sync/fake_device_sync.h"
 #include "components/user_manager/user_names.h"
 #include "ui/aura/test/mus/change_completion_waiter.h"
-#include "ui/aura/test/ui_controls_factory_aura.h"
-#include "ui/aura/window.h"
-#include "ui/base/test/ui_controls.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/events/test/event_generator.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -573,21 +568,6 @@ void InProcessBrowserTest::PreRunTestOnMainThread() {
     content::WaitForLoadStop(tab);
     SetInitialWebContents(tab);
   }
-
-#if defined(OS_CHROMEOS)
-  // OobeTest and LoginCursorTest do not have the browser window but wants to
-  // interact with its UI through UIControls -- and those UI are actually for
-  // Ash (login / lock screen / oobe). Thus AshUIControls should be created for
-  // such test.
-  aura::WindowTreeHost* host = nullptr;
-  if (features::IsUsingWindowService() && browser_)
-    host = browser_->window()->GetNativeWindow()->GetHost();
-
-  if (host)
-    ui_controls::InstallUIControlsAura(aura::test::CreateUIControlsAura(host));
-  else
-    ui_controls::InstallUIControlsAura(ash::test::CreateAshUIControls());
-#endif
 
 #if !defined(OS_ANDROID)
   // Do not use the real StorageMonitor for tests, which introduces another
