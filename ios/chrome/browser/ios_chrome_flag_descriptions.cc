@@ -278,6 +278,10 @@ const char kHistoryBatchUpdatesFilterDescription[] =
     "When enabled History inserts and deletes history items in the same "
     "BatchUpdates block.";
 
+const char kIdentityDiscName[] = "Identity Disc";
+const char kIdentityDiscDescription[] =
+    "Enables Identity Disc, profile avatar icon button in toolbar.";
+
 const char kInfobarUIRebootName[] = "Infobar UI Reboot";
 const char kInfobarUIRebootDescription[] =
     "When enabled, Infobar will use the new UI.";

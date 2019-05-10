@@ -586,6 +586,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"lock-bottom-toolbar", flag_descriptions::kLockBottomToolbarName,
      flag_descriptions::kLockBottomToolbarDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(fullscreen::features::kLockBottomToolbar)},
+    {"identity-disc", flag_descriptions::kIdentityDiscName,
+     flag_descriptions::kIdentityDiscDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kIdentityDisc)},
 };
 
 // Add all switches from experimental flags to |command_line|.

@@ -13,3 +13,6 @@
 // See: http://crbug.com/939508.
 const base::Feature kUseNSURLSessionForGaiaSigninRequests{
     "UseNSURLSessionForGaiaSigninRequests", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kIdentityDisc{"IdentityDisc",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};

@@ -227,6 +227,11 @@ extern const char kFullscreenViewportAdjustmentExperimentDescription[];
 extern const char kHistoryBatchUpdatesFilterName[];
 extern const char kHistoryBatchUpdatesFilterDescription[];
 
+// Title and description for the flag to display current user identity on
+// New Tab Page.
+extern const char kIdentityDiscName[];
+extern const char kIdentityDiscDescription[];
+
 // Title and description for the flag to enable the new UI Reboot on Infobars.
 extern const char kInfobarUIRebootName[];
 extern const char kInfobarUIRebootDescription[];

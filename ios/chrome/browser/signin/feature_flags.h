@@ -10,4 +10,7 @@
 // Feature flag to enable NSURLSession for GAIAAuthFetcherIOS.
 extern const base::Feature kUseNSURLSessionForGaiaSigninRequests;
 
+// Feature flag to enable display of current user identity on New Tab Page.
+extern const base::Feature kIdentityDisc;
+
 #endif  // IOS_CHROME_BROWSER_SIGNIN_FEATURE_FLAGS_H_
