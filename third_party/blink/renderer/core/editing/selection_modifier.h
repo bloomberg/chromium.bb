@@ -101,6 +101,16 @@ class CORE_EXPORT SelectionModifier {
   VisiblePosition ModifyMovingBackward(TextGranularity);
   Position NextWordPositionForPlatform(const Position&);
 
+  static VisiblePosition PreviousLinePosition(const VisiblePosition&,
+                                              LayoutUnit line_direction_point);
+  static VisiblePosition NextLinePosition(const VisiblePosition&,
+                                          LayoutUnit line_direction_point);
+  static VisiblePosition PreviousParagraphPosition(
+      const VisiblePosition&,
+      LayoutUnit line_direction_point);
+  static VisiblePosition NextParagraphPosition(const VisiblePosition&,
+                                               LayoutUnit line_direction_point);
+
   Member<const LocalFrame> frame_;
   // TODO(editing-dev): We should get rid of |selection_| once we change
   // all member functions not to use |selection_|.

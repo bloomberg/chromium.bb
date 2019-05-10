@@ -647,22 +647,6 @@ TEST_F(VisibleUnitsLineTest, startOfLine) {
       StartOfLine(CreateVisiblePositionInFlatTree(*seven, 1)).DeepEquivalent());
 }
 
-TEST_F(VisibleUnitsLineTest,
-       PreviousRootInlineBoxCandidatePositionWithDisplayNone) {
-  SetBodyContent(
-      "<div contenteditable>"
-      "<div id=one>one abc</div>"
-      "<div id=two>two <b id=none style=display:none>def</b> ghi</div>"
-      "</div>");
-  Element* const one = GetDocument().getElementById("one");
-  Element* const two = GetDocument().getElementById("two");
-  const VisiblePosition& visible_position =
-      CreateVisiblePosition(Position::LastPositionInNode(*two));
-  EXPECT_EQ(Position(one->firstChild(), 7),
-            PreviousRootInlineBoxCandidatePosition(two->lastChild(),
-                                                   visible_position));
-}
-
 TEST_P(ParameterizedVisibleUnitsLineTest, InSameLineSkippingEmptyEditableDiv) {
   // This test records the InSameLine() results in
   // editing/selection/skip-over-contenteditable.html

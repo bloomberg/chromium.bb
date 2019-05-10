@@ -68,7 +68,10 @@ VisiblePosition RightBoundaryOfLine(const VisiblePosition& c,
                                           : LogicalStartOfLine(c);
 }
 
-VisiblePosition PreviousParagraphPosition(
+}  // namespace
+
+// static
+VisiblePosition SelectionModifier::PreviousParagraphPosition(
     const VisiblePosition& passed_position,
     LayoutUnit x_point) {
   DCHECK(passed_position.IsValid()) << passed_position;
@@ -84,8 +87,10 @@ VisiblePosition PreviousParagraphPosition(
   return position;
 }
 
-VisiblePosition NextParagraphPosition(const VisiblePosition& passed_position,
-                                      LayoutUnit x_point) {
+// static
+VisiblePosition SelectionModifier::NextParagraphPosition(
+    const VisiblePosition& passed_position,
+    LayoutUnit x_point) {
   DCHECK(passed_position.IsValid()) << passed_position;
   VisiblePosition position = passed_position;
   do {
@@ -97,8 +102,6 @@ VisiblePosition NextParagraphPosition(const VisiblePosition& passed_position,
   } while (InSameParagraph(passed_position, position));
   return position;
 }
-
-}  // namespace
 
 LayoutUnit NoXPosForVerticalArrowNavigation() {
   return LayoutUnit::Min();

@@ -30,4 +30,22 @@ TEST_F(SelectionModifierTest, MoveForwardByWordNone) {
   EXPECT_EQ(SelectionInDOMTree(), modifier.Selection().AsSelection());
 }
 
+TEST_F(SelectionModifierTest, PreviousLineWithDisplayNone) {
+  InsertStyleElement("body{font-family: monospace}");
+  const SelectionInDOMTree selection = SetSelectionTextToBody(
+      "<div contenteditable>"
+      "<div>foo bar</div>"
+      "<div>foo <b style=\"display:none\">qux</b> bar baz|</div>"
+      "</div>");
+  SelectionModifier modifier(GetFrame(), selection);
+  modifier.Modify(SelectionModifyAlteration::kMove,
+                  SelectionModifyDirection::kBackward, TextGranularity::kLine);
+  EXPECT_EQ(
+      "<div contenteditable>"
+      "<div>foo bar|</div>"
+      "<div>foo <b style=\"display:none\">qux</b> bar baz</div>"
+      "</div>",
+      GetSelectionTextFromBody(modifier.Selection().AsSelection()));
+}
+
 }  // namespace blink
