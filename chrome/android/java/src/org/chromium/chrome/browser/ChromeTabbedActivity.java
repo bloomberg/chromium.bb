@@ -615,19 +615,27 @@ public class ChromeTabbedActivity
 
                 private void closeIfNoTabsAndHomepageEnabled(boolean isPendingClosure) {
                     if (getTabModelSelector().getTotalTabCount() == 0) {
-                        // If the last tab is closed, and one of the following is true, then exit
-                        // Chrome:
-                        //   1. If homepage is enabled.
-                        //   2. If TabGroupsAndroid is enabled, and isPendingClosure is true.
-                        //      isPendingClosure is used to avoid calling finish() when closing all
-                        //      tabs in tab switcher.
-                        if (HomepageManager.shouldCloseAppWithZeroTabs()
-                                || (FeatureUtilities.isTabGroupsAndroidEnabled()
-                                        && isPendingClosure)) {
+                        // If the last tab is closed, and homepage is enabled, then exit Chrome.
+                        if (HomepageManager.shouldCloseAppWithZeroTabs()) {
                             finish();
                         } else if (isPendingClosure) {
                             NewTabPageUma.recordNTPImpression(
                                     NewTabPageUma.NTP_IMPESSION_POTENTIAL_NOTAB);
+                        }
+                    }
+
+                    // TODO(960196) : remove this when the associated bug fix. This is a band-aid
+                    // fix for Tabgroups and closing tabs with TabGroupUi.
+                    // If one of the following is true, then exit Chrome when TabGroupsAndroid is
+                    // enabled, and tab switcher is not shown:
+                    //   1. If the very last tab is closed.
+                    //   2. If normal tab model is selected and no normal tabs.
+                    if (FeatureUtilities.isTabGroupsAndroidEnabled()
+                            && !mOverviewModeController.overviewVisible()) {
+                        if (getTabModelSelector().getTotalTabCount() == 0
+                                || (!getTabModelSelector().isIncognitoSelected()
+                                        && getTabModelSelector().getModel(false).getCount() == 0)) {
+                            finish();
                         }
                     }
                 }
