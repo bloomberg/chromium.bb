@@ -12484,7 +12484,7 @@
       'name': 'CloudPolicyOverridesPlatformPolicy',
       'type': 'main',
       'schema': { 'type': 'boolean'},
-      'supported_on': ['chrome.*:65-'],
+      'supported_on': ['chrome.*:75-'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
