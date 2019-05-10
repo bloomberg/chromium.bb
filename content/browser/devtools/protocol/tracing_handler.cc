@@ -242,6 +242,7 @@ class TracingHandler::TracingSession {
       base::OnceCallback<void(float percent_full,
                               size_t approximate_event_count)>
           on_buffer_usage_callback) = 0;
+  virtual bool HasTracingFailed() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TracingSession);
@@ -282,6 +283,8 @@ class TracingHandler::LegacyTracingSession
     TracingController::GetInstance()->GetTraceBufferUsage(
         std::move(on_buffer_usage_callback));
   }
+
+  bool HasTracingFailed() override { return false; }
 };
 
 class TracingHandler::PerfettoTracingSession
@@ -290,19 +293,16 @@ class TracingHandler::PerfettoTracingSession
       public mojo::DataPipeDrainer::Client {
  public:
   ~PerfettoTracingSession() override {
-#if DCHECK_IS_ON()
     DCHECK(!tracing_active_);
-#endif
   }
 
   // TracingHandler::TracingSession implementation:
   void EnableTracing(const base::trace_event::TraceConfig& chrome_config,
                      base::OnceClosure on_recording_enabled_callback) override {
     DCHECK(!tracing_session_host_);
-#if DCHECK_IS_ON()
     DCHECK(!tracing_active_);
     tracing_active_ = true;
-#endif
+
     ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
         tracing::mojom::kServiceName, &consumer_host_);
 
@@ -355,12 +355,12 @@ class TracingHandler::PerfettoTracingSession
     use_proto_format_ = use_proto_format;
     agent_label_ = agent_label;
     endpoint_ = endpoint;
-#if DCHECK_IS_ON()
     tracing_active_ = false;
-#endif
 
     if (!tracing_session_host_) {
-      OnTracingSessionFailed();
+      if (endpoint_)
+        endpoint_->ReceiveTraceFinalContents(nullptr);
+
       return;
     }
 
@@ -407,6 +407,10 @@ class TracingHandler::PerfettoTracingSession
       return;
     }
     std::move(on_buffer_usage_callback).Run(percent_full, 0);
+  }
+
+  bool HasTracingFailed() override {
+    return tracing_active_ && !tracing_session_host_;
   }
 
   // tracing::mojom::TracingSessionClient implementation:
@@ -471,6 +475,13 @@ class TracingHandler::PerfettoTracingSession
     tracing_session_host_.reset();
     binding_.Close();
     drainer_.reset();
+
+    if (on_recording_enabled_callback_)
+      std::move(on_recording_enabled_callback_).Run();
+
+    if (pending_disable_tracing_task_)
+      std::move(pending_disable_tracing_task_).Run();
+
     if (endpoint_) {
       // TODO(oysteine): Signal to the client that tracing failed.
       endpoint_->ReceiveTraceFinalContents(nullptr);
@@ -514,9 +525,9 @@ class TracingHandler::PerfettoTracingSession
   std::unique_ptr<mojo::DataPipeDrainer> drainer_;
   bool data_complete_ = false;
   bool read_buffers_complete_ = false;
+  bool tracing_active_ = false;
 
 #if DCHECK_IS_ON()
-  bool tracing_active_ = false;
   base::trace_event::TraceConfig last_config_for_perfetto_;
 #endif
 };
@@ -858,6 +869,9 @@ Response TracingHandler::End() {
 
   if (!session_)
     return Response::Error("Tracing is not started");
+
+  if (session_->HasTracingFailed())
+    return Response::Error("Tracing failed");
 
   scoped_refptr<TracingController::TraceDataEndpoint> endpoint;
   if (return_as_stream_) {
