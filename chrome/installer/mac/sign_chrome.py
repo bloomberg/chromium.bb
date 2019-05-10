@@ -86,6 +86,9 @@ def main():
     config = create_config(args.identity, args.keychain, args.development)
     paths = model.Paths(args.input, args.output, None)
 
+    if not os.path.exists(paths.output):
+        os.mkdir(paths.output)
+
     pipeline.sign_all(paths, config, package_dmg=not args.no_dmg)
 
 
