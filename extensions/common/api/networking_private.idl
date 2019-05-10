@@ -281,7 +281,10 @@ namespace networkingPrivate {
   dictionary IPConfigProperties {
     DOMString? Gateway;
     DOMString? IPAddress;
+    DOMString[]? ExcludedRoutes;
+    DOMString[]? IncludedRoutes;
     DOMString[]? NameServers;
+    DOMString[]? SearchDomains;
     long? RoutingPrefix;
     DOMString? Type;
     DOMString? WebProxyAutoDiscoveryUrl;

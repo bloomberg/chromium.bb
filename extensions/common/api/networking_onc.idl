@@ -295,8 +295,14 @@ namespace networking.onc {
     // The IP address for a connection. Can be IPv4 or IPv6 address, depending
     // on value of <code>Type</code>.
     DOMString? IPAddress;
+    // Array of IP blocks in CIDR notation, see onc_spec.md for details.
+    DOMString[]? ExcludedRoutes;
+    // Array of IP blocks in CIDR notation, see onc_spec.md for details.
+    DOMString[]? IncludedRoutes;
     // Array of addresses used for name servers.
     DOMString[]? NameServers;
+    // Array of strings for name resolution, see onc_spec.md for details.
+    DOMString[]? SearchDomains;
     // The routing prefix.
     long? RoutingPrefix;
     // The IP configuration type. Can be <code>IPv4</code> or <code>IPv6</code>.

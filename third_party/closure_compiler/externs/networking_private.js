@@ -330,7 +330,10 @@ chrome.networkingPrivate.FoundNetworkProperties;
  * @typedef {{
  *   Gateway: (string|undefined),
  *   IPAddress: (string|undefined),
+ *   ExcludedRoutes: (!Array<string>|undefined),
+ *   kIncludedRoutes: (!Array<string>|undefined),
  *   NameServers: (!Array<string>|undefined),
+ *   SearchDomains: (!Array<string>|undefined),
  *   RoutingPrefix: (number|undefined),
  *   Type: (string|undefined),
  *   WebProxyAutoDiscoveryUrl: (string|undefined)
@@ -628,7 +631,6 @@ chrome.networkingPrivate.ManagedThirdPartyVPNProperties;
  *   ActivationType: (string|undefined),
  *   ActivationState: (!chrome.networkingPrivate.ActivationStateType|undefined),
  *   AllowRoaming: (boolean|undefined),
- *   Carrier: (string|undefined),
  *   ESN: (string|undefined),
  *   Family: (string|undefined),
  *   FirmwareRevision: (string|undefined),
@@ -652,7 +654,7 @@ chrome.networkingPrivate.ManagedThirdPartyVPNProperties;
  *   SIMLockStatus: (!chrome.networkingPrivate.SIMLockStatus|undefined),
  *   SIMPresent: (boolean|undefined),
  *   SignalStrength: (number|undefined),
- *   SupportNetworkScan: (boolean|undefined),
+ *   SupportNetworkScan: (boolean|undefined)
  * }}
  */
 chrome.networkingPrivate.CellularProperties;
@@ -665,7 +667,6 @@ chrome.networkingPrivate.CellularProperties;
  *   ActivationType: (string|undefined),
  *   ActivationState: (!chrome.networkingPrivate.ActivationStateType|undefined),
  *   AllowRoaming: (boolean|undefined),
- *   Carrier: (!chrome.networkingPrivate.ManagedDOMString|undefined),
  *   ESN: (string|undefined),
  *   Family: (string|undefined),
  *   FirmwareRevision: (string|undefined),
@@ -689,7 +690,7 @@ chrome.networkingPrivate.CellularProperties;
  *   SIMLockStatus: (!chrome.networkingPrivate.SIMLockStatus|undefined),
  *   SIMPresent: (boolean|undefined),
  *   SignalStrength: (number|undefined),
- *   SupportNetworkScan: (boolean|undefined),
+ *   SupportNetworkScan: (boolean|undefined)
  * }}
  */
 chrome.networkingPrivate.ManagedCellularProperties;
@@ -705,6 +706,13 @@ chrome.networkingPrivate.ManagedCellularProperties;
  * }}
  */
 chrome.networkingPrivate.CellularStateProperties;
+
+/**
+ * @typedef {{
+ *   Outer: (string|undefined)
+ * }}
+ */
+chrome.networkingPrivate.EAPStateProperties;
 
 /**
  * @typedef {{
@@ -791,7 +799,8 @@ chrome.networkingPrivate.VPNStateProperties;
  *   RoamThreshold: (number|undefined),
  *   SSID: (string|undefined),
  *   Security: (string|undefined),
- *   SignalStrength: (number|undefined)
+ *   SignalStrength: (number|undefined),
+ *   TetheringState: (string|undefined)
  * }}
  */
 chrome.networkingPrivate.WiFiProperties;
@@ -811,7 +820,8 @@ chrome.networkingPrivate.WiFiProperties;
  *   RoamThreshold: (!chrome.networkingPrivate.ManagedLong|undefined),
  *   SSID: (!chrome.networkingPrivate.ManagedDOMString|undefined),
  *   Security: !chrome.networkingPrivate.ManagedDOMString,
- *   SignalStrength: (number|undefined)
+ *   SignalStrength: (number|undefined),
+ *   TetheringState: (string|undefined)
  * }}
  */
 chrome.networkingPrivate.ManagedWiFiProperties;
@@ -819,11 +829,13 @@ chrome.networkingPrivate.ManagedWiFiProperties;
 /**
  * @typedef {{
  *   BSSID: (string|undefined),
+ *   EAP: (!chrome.networkingPrivate.EAPStateProperties|undefined),
  *   Frequency: (number|undefined),
  *   HexSSID: (string|undefined),
  *   Security: string,
  *   SignalStrength: (number|undefined),
- *   SSID: (string|undefined)
+ *   SSID: (string|undefined),
+ *   TetheringState: (string|undefined)
  * }}
  */
 chrome.networkingPrivate.WiFiStateProperties;
@@ -1190,19 +1202,6 @@ chrome.networkingPrivate.startActivate = function(networkGuid, carrier, callback
  * @deprecated Use networking.castPrivate API.
  */
 chrome.networkingPrivate.verifyDestination = function(properties, callback) {};
-
-/**
- * Verifies that the device is a trusted device and retrieves encrypted network
- * credentials.
- * @param {!chrome.networkingPrivate.VerificationProperties} properties
- *     Properties of the destination to use in verifying that it     is a
- *     trusted device.
- * @param {string} networkGuid The GUID of the Cellular network to activate.
- * @param {function(string):void} callback A callback function that receives
- *     base64-encoded encrypted     credential data to send to a trusted device.
- * @deprecated Use networking.castPrivate API.
- */
-chrome.networkingPrivate.verifyAndEncryptCredentials = function(properties, networkGuid, callback) {};
 
 /**
  * Verifies that the device is a trusted device and encrypts supplied data with
