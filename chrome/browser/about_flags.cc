@@ -2826,11 +2826,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTabHoverCardImagesDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kTabHoverCardImages)},
 
-    {"top-sites-from-site-engagement",
-     flag_descriptions::kTopSitesFromSiteEngagementName,
-     flag_descriptions::kTopSitesFromSiteEngagementDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kTopSitesFromSiteEngagement)},
-
 #if defined(OS_POSIX)
     {"enable-ntlm-v2", flag_descriptions::kNtlmV2EnabledName,
      flag_descriptions::kNtlmV2EnabledDescription,

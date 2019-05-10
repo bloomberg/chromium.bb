@@ -1111,9 +1111,6 @@ extern const char kTopChromeTouchUiDescription[];
 extern const char kThreadedScrollingName[];
 extern const char kThreadedScrollingDescription[];
 
-extern const char kTopSitesFromSiteEngagementName[];
-extern const char kTopSitesFromSiteEngagementDescription[];
-
 extern const char kTouchAdjustmentName[];
 extern const char kTouchAdjustmentDescription[];
 

@@ -509,8 +509,6 @@ jumbo_split_static_library("browser") {
     "engagement/site_engagement_service.h",
     "engagement/site_engagement_service_factory.cc",
     "engagement/site_engagement_service_factory.h",
-    "engagement/top_sites/site_engagement_top_sites_provider.cc",
-    "engagement/top_sites/site_engagement_top_sites_provider.h",
     "external_protocol/external_protocol_handler.cc",
     "external_protocol/external_protocol_handler.h",
     "external_protocol/external_protocol_observer.cc",

@@ -409,9 +409,6 @@ extern const base::Feature kThirdPartyModulesBlocking;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kTopSitesFromSiteEngagement;
-
-COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kTreatUnsafeDownloadsAsActive;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const char kTreatUnsafeDownloadsAsActiveParamName[];

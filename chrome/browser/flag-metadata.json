@@ -2928,11 +2928,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "top-sites-from-site-engagement",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "touch-events",
     "owners": [ "eirage", "input-dev" ],
     "expiry_milestone": 76

@@ -27,7 +27,6 @@
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/history/core/browser/top_sites_backend.h"
-#include "components/history/core/browser/top_sites_provider.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 
@@ -59,7 +58,6 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
 
   TopSitesImpl(PrefService* pref_service,
                HistoryService* history_service,
-               std::unique_ptr<TopSitesProvider> provider,
                const PrepopulatedPageList& prepopulated_pages,
                const CanAddURLToHistoryFn& can_add_url_to_history);
 
@@ -215,9 +213,6 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   // HistoryService that TopSitesImpl can query. May be null, but if defined it
   // must outlive TopSitesImpl.
   HistoryService* history_service_;
-
-  // The provider to query for most visited URLs.
-  std::unique_ptr<TopSitesProvider> provider_;
 
   // Can URL be added to the history?
   CanAddURLToHistoryFn can_add_url_to_history_;

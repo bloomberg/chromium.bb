@@ -637,10 +637,6 @@ const base::Feature kSystemWebApps{"SystemWebApps",
 const base::Feature kAppManagement{"AppManagement",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable TopSites to source and sort its site data using site engagement.
-const base::Feature kTopSitesFromSiteEngagement{
-    "TopSitesFromSiteEngagement", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Disable downloads of unsafe file types over insecure transports if initiated
 // from a secure page
 const base::Feature kTreatUnsafeDownloadsAsActive{

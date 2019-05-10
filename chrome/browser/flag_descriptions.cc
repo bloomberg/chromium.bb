@@ -1854,11 +1854,6 @@ const char kThreadedScrollingDescription[] =
     "this can dramatically hurt scrolling performance of most websites and is "
     "intended for testing purposes only.";
 
-const char kTopSitesFromSiteEngagementName[] = "Top Sites from Site Engagement";
-const char kTopSitesFromSiteEngagementDescription[] =
-    "Enable Top Sites on the New Tab Page to be sourced and sorted using site "
-    "engagement.";
-
 const char kTouchAdjustmentName[] = "Touch adjustment";
 const char kTouchAdjustmentDescription[] =
     "Refine the position of a touch gesture in order to compensate for touches "
