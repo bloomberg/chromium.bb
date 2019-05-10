@@ -25,8 +25,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/downloads_resources.h"
+#include "chrome/grit/downloads_resources_map.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/prefs/pref_service.h"
@@ -142,25 +143,10 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->AddResourcePath("crisper.js", IDR_DOWNLOADS_CRISPER_JS);
   source->SetDefaultResource(IDR_DOWNLOADS_VULCANIZED_HTML);
 #else
-  source->AddResourcePath("browser_proxy.html",
-                          IDR_DOWNLOADS_BROWSER_PROXY_HTML);
-  source->AddResourcePath("browser_proxy.js", IDR_DOWNLOADS_BROWSER_PROXY_JS);
-  source->AddResourcePath("constants.html", IDR_DOWNLOADS_CONSTANTS_HTML);
-  source->AddResourcePath("constants.js", IDR_DOWNLOADS_CONSTANTS_JS);
-  source->AddResourcePath("downloads.js", IDR_DOWNLOADS_DOWNLOADS_JS);
-  source->AddResourcePath("i18n_setup.html", IDR_DOWNLOADS_I18N_SETUP_HTML);
-  source->AddResourcePath("icon_loader.html", IDR_DOWNLOADS_ICON_LOADER_HTML);
-  source->AddResourcePath("icon_loader.js", IDR_DOWNLOADS_ICON_LOADER_JS);
-  source->AddResourcePath("icons.html", IDR_DOWNLOADS_ICONS_HTML);
-  source->AddResourcePath("item.html", IDR_DOWNLOADS_ITEM_HTML);
-  source->AddResourcePath("item.js", IDR_DOWNLOADS_ITEM_JS);
-  source->AddResourcePath("manager.html", IDR_DOWNLOADS_MANAGER_HTML);
-  source->AddResourcePath("manager.js", IDR_DOWNLOADS_MANAGER_JS);
-  source->AddResourcePath("search_service.html",
-                          IDR_DOWNLOADS_SEARCH_SERVICE_HTML);
-  source->AddResourcePath("search_service.js", IDR_DOWNLOADS_SEARCH_SERVICE_JS);
-  source->AddResourcePath("toolbar.html", IDR_DOWNLOADS_TOOLBAR_HTML);
-  source->AddResourcePath("toolbar.js", IDR_DOWNLOADS_TOOLBAR_JS);
+  for (size_t i = 0; i < kDownloadsResourcesSize; ++i) {
+    source->AddResourcePath(kDownloadsResources[i].name,
+                            kDownloadsResources[i].value);
+  }
   source->SetDefaultResource(IDR_DOWNLOADS_DOWNLOADS_HTML);
 #endif
 
