@@ -181,8 +181,8 @@ void FileAnalyzer::OnZipAnalysisFinished(
   UMA_HISTOGRAM_BOOLEAN(
       "SBClientDownload.ZipFileHasArchiveButNoExecutable",
       archive_results.has_archive && !archive_results.has_executable);
-  UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractZipFeaturesTime",
-                      base::TimeTicks::Now() - zip_analysis_start_time_);
+  UMA_HISTOGRAM_MEDIUM_TIMES("SBClientDownload.ExtractZipFeaturesTimeMedium",
+                             base::TimeTicks::Now() - zip_analysis_start_time_);
   for (const auto& file_name : archive_results.archived_archive_filenames)
     RecordArchivedArchiveFileExtensionType(file_name);
 
@@ -251,8 +251,8 @@ void FileAnalyzer::OnRarAnalysisFinished(
   UMA_HISTOGRAM_BOOLEAN(
       "SBClientDownload.RarFileHasArchiveButNoExecutable",
       archive_results.has_archive && !archive_results.has_executable);
-  UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractRarFeaturesTime",
-                      base::TimeTicks::Now() - rar_analysis_start_time_);
+  UMA_HISTOGRAM_MEDIUM_TIMES("SBClientDownload.ExtractRarFeaturesTimeMedium",
+                             base::TimeTicks::Now() - rar_analysis_start_time_);
   for (const auto& file_name : archive_results.archived_archive_filenames)
     RecordArchivedArchiveFileExtensionType(file_name);
 
@@ -350,8 +350,8 @@ void FileAnalyzer::OnDmgAnalysisFinished(
                              uma_file_type);
   }
 
-  UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractDmgFeaturesTime",
-                      base::TimeTicks::Now() - dmg_analysis_start_time_);
+  UMA_HISTOGRAM_MEDIUM_TIMES("SBClientDownload.ExtractDmgFeaturesTimeMedium",
+                             base::TimeTicks::Now() - dmg_analysis_start_time_);
 
   std::move(callback_).Run(std::move(results_));
 }
