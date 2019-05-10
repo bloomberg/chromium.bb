@@ -378,23 +378,40 @@ public abstract class AppHooks {
     }
 
     /**
-     * @param activity An activity for access to different features.
+     * Use {@link #attachTouchlessMenuCoordinator(ChromeActivity, TouchlessUiController)} instead.
      */
+    @Deprecated
     public void attachTouchlessMenuCoordinator(ChromeActivity activity) {}
 
     /**
      * @param activity An activity for access to different features.
-     * @return A new {@link TouchlessUiController} instance.
+     * @param uiController A TouchlessUiController to use.
      */
+    public void attachTouchlessMenuCoordinator(
+            ChromeActivity activity, TouchlessUiController uiController) {
+        attachTouchlessMenuCoordinator(activity);
+    }
+
+    /**
+     * Deprecated, use {@link #createTouchlessUiController(Activity)}.
+     */
+    @Deprecated
     public TouchlessUiController createTouchlessUiController(ChromeActivity activity) {
         return null;
     }
 
     /**
-     * Get the UI controller from the activity if it exists.
-     * @param activity The activity to get the UI controller from.
-     * @return The UI controller or null.
+     * @param activity An activity for access to different features.
+     * @return A new {@link TouchlessUiController} instance.
      */
+    public TouchlessUiController createTouchlessUiController(Activity activity) {
+        return createTouchlessUiController((ChromeActivity) activity);
+    }
+
+    /**
+     * Use {@link #attachTouchlessMenuCoordinator(ChromeActivity, TouchlessUiController)}.
+     */
+    @Deprecated
     public TouchlessUiController getTouchlessUiControllerForActivity(ChromeActivity activity) {
         return null;
     }

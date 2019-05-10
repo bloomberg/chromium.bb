@@ -146,7 +146,7 @@ public class NoTouchActivity extends SingleTabActivity {
         getFullscreenManager().setTab(getActivityTab());
 
         mUiController = AppHooks.get().createTouchlessUiController(this);
-        AppHooks.get().attachTouchlessMenuCoordinator(this);
+        AppHooks.get().attachTouchlessMenuCoordinator(this, mUiController);
         super.finishNativeInitialization();
     }
 
@@ -239,7 +239,8 @@ public class NoTouchActivity extends SingleTabActivity {
 
     @Override
     public ModalDialogManager createModalDialogManager() {
-        return new ModalDialogManager(new TouchlessDialogPresenter(this), ModalDialogType.APP);
+        return new ModalDialogManager(
+                new TouchlessDialogPresenter(this, mUiController), ModalDialogType.APP);
     }
 
     @Override
