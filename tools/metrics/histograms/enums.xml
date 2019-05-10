@@ -8676,6 +8676,29 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Will use composited scrolling"/>
 </enum>
 
+<enum name="CompositorAnimationsFailureReason">
+  <int value="0" label="No failure"/>
+  <int value="1" label="Accelerated animations disabled"/>
+  <int value="2" label="Effect suppressed by devtools"/>
+  <int value="3" label="Either the animation or effect is invalid"/>
+  <int value="4" label="Effect has unsupported timing parameters"/>
+  <int value="5" label="Effect has a composite mode other than 'replace'"/>
+  <int value="6" label="Target element has invalid compositing state"/>
+  <int value="7" label="Target element has other incompatible animations"/>
+  <int value="8" label="Target element has a CSS offset"/>
+  <int value="9"
+      label="Target element has multiple transform properties specified"/>
+  <int value="10" label="Animation affects non-CSS properties"/>
+  <int value="11"
+      label="Transform related property cannot be animated on the target
+             element"/>
+  <int value="12" label="Transform related property depends on box size"/>
+  <int value="13" label="Filter related property moves pixels"/>
+  <int value="14" label="Animation has an unsupported CSS property"/>
+  <int value="15"
+      label="There are multiple transform animations on the target element"/>
+</enum>
+
 <enum name="CompositorFrameSinkSubmitResult">
   <int value="0" label="Accepted"/>
   <int value="1" label="CopyOutputResults not allowed"/>

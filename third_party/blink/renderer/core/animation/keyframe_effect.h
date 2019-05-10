@@ -103,7 +103,7 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
 
   void NotifySampledEffectRemovedFromEffectStack();
 
-  CompositorAnimations::FailureCode CheckCanStartAnimationOnCompositor(
+  CompositorAnimations::FailureReasons CheckCanStartAnimationOnCompositor(
       const base::Optional<CompositorElementIdSet>& composited_element_ids,
       double animation_playback_rate) const;
   // Must only be called once.

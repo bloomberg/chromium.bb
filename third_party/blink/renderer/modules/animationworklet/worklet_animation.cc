@@ -551,13 +551,12 @@ bool WorkletAnimation::StartOnCompositor() {
       target, target.ComputedStyleRef(), target.ParentComputedStyle());
 
   double playback_rate = 1;
-  CompositorAnimations::FailureCode failure_code =
+  CompositorAnimations::FailureReasons failure_reasons =
       GetEffect()->CheckCanStartAnimationOnCompositor(
           base::Optional<CompositorElementIdSet>(), playback_rate);
 
-  if (!failure_code.Ok()) {
+  if (failure_reasons != CompositorAnimations::kNoFailure)
     return false;
-  }
 
   if (!CheckElementComposited(target))
     return false;

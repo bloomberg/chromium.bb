@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/animation/animation.h"
 
 #include <memory>
+#include "base/bits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_double.h"
@@ -46,6 +47,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
@@ -898,14 +900,14 @@ TEST_F(AnimationAnimationTest, NoCompositeWithoutCompositedElementId) {
       timeline->Play(keyframe_effect_not_composited);
 
   SimulateFrame(0, composited_element_ids);
-  EXPECT_TRUE(
-      animation_composited->CheckCanStartAnimationOnCompositorInternal().Ok());
-  EXPECT_TRUE(animation_composited
-                  ->CheckCanStartAnimationOnCompositor(composited_element_ids)
-                  .Ok());
-  EXPECT_FALSE(animation_not_composited
-                   ->CheckCanStartAnimationOnCompositor(composited_element_ids)
-                   .Ok());
+  EXPECT_EQ(animation_composited->CheckCanStartAnimationOnCompositorInternal(),
+            CompositorAnimations::kNoFailure);
+  EXPECT_EQ(animation_composited->CheckCanStartAnimationOnCompositor(
+                composited_element_ids),
+            CompositorAnimations::kNoFailure);
+  EXPECT_NE(animation_not_composited->CheckCanStartAnimationOnCompositor(
+                composited_element_ids),
+            CompositorAnimations::kNoFailure);
 }
 
 // Regression test for http://crbug.com/819591 . If a compositable animation is
@@ -940,6 +942,82 @@ TEST_F(AnimationAnimationTest, PreCommitWithUnresolvedStartTimes) {
   // At this point, a call to PreCommit should bail out and tell us to wait for
   // next commit because there are no resolved start times.
   EXPECT_FALSE(animation->PreCommit(0, base::nullopt, true));
+}
+
+namespace {
+int GenerateHistogramValue(CompositorAnimations::FailureReason reason) {
+  // The enum values in CompositorAnimations::FailureReasons are stored as 2^i
+  // as they are a bitmask, but are recorded into the histogram as (i+1) to give
+  // sequential histogram values. The exception is kNoFailure, which is stored
+  // as 0 and recorded as 0.
+  if (reason == CompositorAnimations::kNoFailure)
+    return CompositorAnimations::kNoFailure;
+  return base::bits::CountTrailingZeroBits(static_cast<uint32_t>(reason)) + 1;
+}
+}  // namespace
+
+TEST_F(AnimationAnimationTest, PreCommitRecordsHistograms) {
+  const std::string histogram_name =
+      "Blink.Animation.CompositedAnimationFailureReason";
+
+  // Initially the animation in this test has no target, so it is invalid.
+  {
+    HistogramTester histogram;
+    ASSERT_TRUE(animation->PreCommit(0, base::nullopt, true));
+    histogram.ExpectBucketCount(
+        histogram_name,
+        GenerateHistogramValue(CompositorAnimations::kInvalidAnimationOrEffect),
+        1);
+  }
+
+  // Restart the animation with a target and compositing state.
+  {
+    HistogramTester histogram;
+    ResetWithCompositedAnimation();
+    histogram.ExpectBucketCount(
+        histogram_name,
+        GenerateHistogramValue(CompositorAnimations::kNoFailure), 1);
+  }
+
+  // Now make the playback rate 0. This trips both the invalid animation and
+  // unsupported timing parameter reasons.
+  animation->setPlaybackRate(0);
+  animation->NotifyCompositorStartTime(100);
+  {
+    HistogramTester histogram;
+    ASSERT_TRUE(animation->PreCommit(0, base::nullopt, true));
+    histogram.ExpectBucketCount(
+        histogram_name,
+        GenerateHistogramValue(CompositorAnimations::kInvalidAnimationOrEffect),
+        1);
+    histogram.ExpectBucketCount(
+        histogram_name,
+        GenerateHistogramValue(
+            CompositorAnimations::kEffectHasUnsupportedTimingParameters),
+        1);
+  }
+  animation->setPlaybackRate(1);
+
+  // Finally, change the keyframes to something unsupported by the compositor.
+  Persistent<StringKeyframe> start_keyframe = StringKeyframe::Create();
+  start_keyframe->SetCSSPropertyValue(
+      CSSPropertyID::kLeft, "0", SecureContextMode::kInsecureContext, nullptr);
+  Persistent<StringKeyframe> end_keyframe = StringKeyframe::Create();
+  end_keyframe->SetCSSPropertyValue(CSSPropertyID::kLeft, "100px",
+                                    SecureContextMode::kInsecureContext,
+                                    nullptr);
+
+  ToKeyframeEffect(animation->effect())
+      ->SetKeyframes({start_keyframe, end_keyframe});
+  UpdateAllLifecyclePhasesForTest();
+  {
+    HistogramTester histogram;
+    ASSERT_TRUE(animation->PreCommit(0, base::nullopt, true));
+    histogram.ExpectBucketCount(
+        histogram_name,
+        GenerateHistogramValue(CompositorAnimations::kUnsupportedCSSProperty),
+        1);
+  }
 }
 
 TEST_F(AnimationAnimationTest, SetKeyframesCausesCompositorPending) {

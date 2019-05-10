@@ -215,36 +215,37 @@ void KeyframeEffect::NotifySampledEffectRemovedFromEffectStack() {
   sampled_effect_ = nullptr;
 }
 
-CompositorAnimations::FailureCode
+CompositorAnimations::FailureReasons
 KeyframeEffect::CheckCanStartAnimationOnCompositor(
     const base::Optional<CompositorElementIdSet>& composited_element_ids,
     double animation_playback_rate) const {
-  if (!model_->HasFrames()) {
-    return CompositorAnimations::FailureCode::Actionable(
-        "Animation effect has no keyframes");
-  }
+  CompositorAnimations::FailureReasons reasons =
+      CompositorAnimations::kNoFailure;
 
+  // There would be no reason to composite an effect that has no keyframes; it
+  // has no visual result.
+  if (model_->Properties().IsEmpty())
+    reasons |= CompositorAnimations::kInvalidAnimationOrEffect;
+
+  // There would be no reason to composite an effect that has no target; it has
+  // no visual result.
   if (!target_) {
-    return CompositorAnimations::FailureCode::Actionable(
-        "Animation effect has no target element");
+    reasons |= CompositorAnimations::kInvalidAnimationOrEffect;
+  } else {
+    if (target_->GetComputedStyle() && target_->GetComputedStyle()->HasOffset())
+      reasons |= CompositorAnimations::kTargetHasCSSOffset;
+
+    // Do not put transforms on compositor if more than one of them are defined
+    // in computed style because they need to be explicitly ordered
+    if (HasMultipleTransformProperties())
+      reasons |= CompositorAnimations::kTargetHasMultipleTransformProperties;
+
+    reasons |= CompositorAnimations::CheckCanStartAnimationOnCompositor(
+        SpecifiedTiming(), *target_, GetAnimation(), *Model(),
+        composited_element_ids, animation_playback_rate);
   }
 
-  if (target_->GetComputedStyle() && target_->GetComputedStyle()->HasOffset()) {
-    return CompositorAnimations::FailureCode::Actionable(
-        "Accelerated animations do not support elements with offset-position "
-        "or offset-path CSS properties");
-  }
-
-  // Do not put transforms on compositor if more than one of them are defined
-  // in computed style because they need to be explicitly ordered
-  if (HasMultipleTransformProperties()) {
-    return CompositorAnimations::FailureCode::Actionable(
-        "Animation effect applies to multiple transform-related properties");
-  }
-
-  return CompositorAnimations::CheckCanStartAnimationOnCompositor(
-      SpecifiedTiming(), *target_, GetAnimation(), *Model(),
-      composited_element_ids, animation_playback_rate);
+  return reasons;
 }
 
 void KeyframeEffect::StartAnimationOnCompositor(

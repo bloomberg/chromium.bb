@@ -185,7 +185,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   void SetOutdated();
   bool Outdated() { return outdated_; }
 
-  CompositorAnimations::FailureCode CheckCanStartAnimationOnCompositor(
+  CompositorAnimations::FailureReasons CheckCanStartAnimationOnCompositor(
       const base::Optional<CompositorElementIdSet>& composited_element_ids)
       const;
   void StartAnimationOnCompositor(
@@ -265,8 +265,8 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   void BeginUpdatingState();
   void EndUpdatingState();
 
-  CompositorAnimations::FailureCode CheckCanStartAnimationOnCompositorInternal()
-      const;
+  CompositorAnimations::FailureReasons
+  CheckCanStartAnimationOnCompositorInternal() const;
   void CreateCompositorAnimation();
   void DestroyCompositorAnimation();
   void AttachCompositorTimeline();

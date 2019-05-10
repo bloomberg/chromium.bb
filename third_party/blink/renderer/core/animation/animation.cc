@@ -33,6 +33,7 @@
 #include <limits>
 #include <memory>
 
+#include "base/metrics/histogram_macros.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/animation/animation_timeline.h"
@@ -67,7 +68,33 @@ unsigned NextSequenceNumber() {
 double ToMilliseconds(double seconds) {
   return seconds * 1000;
 }
+
+void RecordCompositorAnimationFailureReasons(
+    CompositorAnimations::FailureReasons failure_reasons) {
+  // UMA_HISTOGRAM_ENUMERATION requires that the enum_max must be strictly
+  // greater than the sample value. kFailureReasonCount doesn't include the
+  // kNoFailure value but the histograms do so adding the +1 is necessary.
+  // TODO(dcheng): Fix https://crbug.com/705169 so this isn't needed.
+  constexpr uint32_t kFailureReasonEnumMax =
+      CompositorAnimations::kFailureReasonCount + 1;
+
+  if (failure_reasons == CompositorAnimations::kNoFailure) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Blink.Animation.CompositedAnimationFailureReason",
+        CompositorAnimations::kNoFailure, kFailureReasonEnumMax);
+    return;
+  }
+
+  for (uint32_t i = 0; i < CompositorAnimations::kFailureReasonCount; i++) {
+    unsigned val = 1 << i;
+    if (failure_reasons & val) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Blink.Animation.CompositedAnimationFailureReason", i + 1,
+          kFailureReasonEnumMax);
+    }
+  }
 }
+}  // namespace
 
 Animation* Animation::Create(AnimationEffect* effect,
                              AnimationTimeline* timeline,
@@ -358,9 +385,11 @@ bool Animation::PreCommit(
   if (should_start) {
     compositor_group_ = compositor_group;
     if (start_on_compositor) {
-      CompositorAnimations::FailureCode failure_code =
+      CompositorAnimations::FailureReasons failure_reasons =
           CheckCanStartAnimationOnCompositor(composited_element_ids);
-      if (failure_code.Ok()) {
+      RecordCompositorAnimationFailureReasons(failure_reasons);
+
+      if (failure_reasons == CompositorAnimations::kNoFailure) {
         CreateCompositorAnimation();
         StartAnimationOnCompositor(composited_element_ids);
         compositor_state_ = std::make_unique<CompositorState>(*this);
@@ -877,72 +906,65 @@ void Animation::ForceServiceOnNextFrame() {
   timeline_->Wake();
 }
 
-CompositorAnimations::FailureCode Animation::CheckCanStartAnimationOnCompositor(
+CompositorAnimations::FailureReasons
+Animation::CheckCanStartAnimationOnCompositor(
     const base::Optional<CompositorElementIdSet>& composited_element_ids)
     const {
-  CompositorAnimations::FailureCode code =
+  CompositorAnimations::FailureReasons reasons =
       CheckCanStartAnimationOnCompositorInternal();
-  if (!code.Ok()) {
-    return code;
+  if (content_ && content_->IsKeyframeEffect()) {
+    reasons |= ToKeyframeEffect(content_.Get())
+                   ->CheckCanStartAnimationOnCompositor(composited_element_ids,
+                                                        playback_rate_);
   }
-  return ToKeyframeEffect(content_.Get())
-      ->CheckCanStartAnimationOnCompositor(composited_element_ids,
-                                           playback_rate_);
+  return reasons;
 }
 
-CompositorAnimations::FailureCode
+CompositorAnimations::FailureReasons
 Animation::CheckCanStartAnimationOnCompositorInternal() const {
-  if (is_composited_animation_disabled_for_testing_) {
-    return CompositorAnimations::FailureCode::NonActionable(
-        "Accelerated animations disabled for testing");
-  }
-  if (EffectSuppressed()) {
-    return CompositorAnimations::FailureCode::NonActionable(
-        "Animation effect suppressed by DevTools");
-  }
+  CompositorAnimations::FailureReasons reasons =
+      CompositorAnimations::kNoFailure;
 
-  if (playback_rate_ == 0) {
-    return CompositorAnimations::FailureCode::Actionable(
-        "Animation is not playing");
-  }
+  if (is_composited_animation_disabled_for_testing_)
+    reasons |= CompositorAnimations::kAcceleratedAnimationsDisabled;
 
-  if (std::isinf(EffectEnd()) && playback_rate_ < 0) {
-    return CompositorAnimations::FailureCode::Actionable(
-        "Accelerated animations do not support reversed infinite duration "
-        "animations");
-  }
+  if (EffectSuppressed())
+    reasons |= CompositorAnimations::kEffectSuppressedByDevtools;
 
-  // FIXME: Timeline playback rates should be compositable
-  if (TimelineInternal() && TimelineInternal()->PlaybackRate() != 1) {
-    return CompositorAnimations::FailureCode::NonActionable(
-        "Accelerated animations do not support timelines with playback rates "
-        "other than 1");
-  }
+  // An Animation with zero playback rate will produce no visual output, so
+  // there is no reason to composite it.
+  if (playback_rate_ == 0)
+    reasons |= CompositorAnimations::kInvalidAnimationOrEffect;
 
-  if (!timeline_) {
-    return CompositorAnimations::FailureCode::Actionable(
-        "Animation is not attached to a timeline");
-  }
-  if (!content_) {
-    return CompositorAnimations::FailureCode::Actionable(
-        "Animation has no animation effect");
-  }
-  if (!content_->IsKeyframeEffect()) {
-    return CompositorAnimations::FailureCode::NonActionable(
-        "Animation effect is not keyframe-based");
-  }
+  // An infinite duration animation with a negative playback rate is essentially
+  // a static value, so there is no reason to composite it.
+  if (std::isinf(EffectEnd()) && playback_rate_ < 0)
+    reasons |= CompositorAnimations::kInvalidAnimationOrEffect;
 
-  if (!Playing()) {
-    return CompositorAnimations::FailureCode::Actionable(
-        "Animation is not playing");
-  }
+  // An Animation without a timeline effectively isn't playing, so there is no
+  // reason to composite it. Additionally, mutating the timeline playback rate
+  // is a debug feature available via devtools; we don't support this on the
+  // compositor currently and there is no reason to do so.
+  if (!timeline_ || timeline_->PlaybackRate() != 1)
+    reasons |= CompositorAnimations::kInvalidAnimationOrEffect;
 
-  return CompositorAnimations::FailureCode::None();
+  // An Animation without an effect cannot produce a visual, so there is no
+  // reason to composite it.
+  if (!content_ || !content_->IsKeyframeEffect())
+    reasons |= CompositorAnimations::kInvalidAnimationOrEffect;
+
+  // An Animation that is not playing will not produce a visual, so there is no
+  // reason to composite it.
+  if (!Playing())
+    reasons |= CompositorAnimations::kInvalidAnimationOrEffect;
+
+  return reasons;
 }
 
 void Animation::StartAnimationOnCompositor(
     const base::Optional<CompositorElementIdSet>& composited_element_ids) {
-  DCHECK(CheckCanStartAnimationOnCompositor(composited_element_ids).Ok());
+  DCHECK_EQ(CheckCanStartAnimationOnCompositor(composited_element_ids),
+            CompositorAnimations::kNoFailure);
 
   bool reversed = playback_rate_ < 0;
 
