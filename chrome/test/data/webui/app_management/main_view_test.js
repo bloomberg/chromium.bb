@@ -47,7 +47,8 @@ suite('<app-management-main-view>', function() {
     assertDeepEquals(expected, store.lastAction);
   });
 
-  test('more apps bar visibility', async function() {
+  // TODO(jshikaram) uncomment once more apps bar is added back.
+  test.skip('more apps bar visibility', async function() {
     // The more apps bar shouldn't appear when there are 4 apps.
     await addApps(NUMBER_OF_APPS_DISPLAYED_DEFAULT);
     expectEquals(NUMBER_OF_APPS_DISPLAYED_DEFAULT, getAppItems().length);

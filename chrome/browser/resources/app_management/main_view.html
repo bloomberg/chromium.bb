@@ -46,7 +46,8 @@
     </style>
     <app-management-expandable-app-list
         apps="[[appsList]]"
-        list-title="$i18n{appListTitle}">
+        list-title="$i18n{appListTitle}"
+        collapsed-size="[[appsList.length]]">
       <template is="dom-repeat" items="[[appsList]]" as="app" notify-dom-change>
         <app-management-app-item app="[[app]]">
           <cr-icon-button slot="right-content"
@@ -56,7 +57,7 @@
       </template>
     </app-management-expandable-app-list>
 
-    <div class="card-container">
+    <div class="card-container" hidden>
       <span class="notification-row" on-click="onClickNotificationSublabel_">
         <div class="notification-row-sublabel">
           <div class="header-text">
