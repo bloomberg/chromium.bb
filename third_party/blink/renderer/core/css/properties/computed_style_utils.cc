@@ -2083,6 +2083,8 @@ CSSValue* ComputedStyleUtils::ValueForScrollSnapType(
     const cc::ScrollSnapType& type,
     const ComputedStyle& style) {
   if (!type.is_none) {
+    if (type.strictness == cc::SnapStrictness::kProximity)
+      return CSSIdentifierValue::Create(type.axis);
     return MakeGarbageCollected<CSSValuePair>(
         CSSIdentifierValue::Create(type.axis),
         CSSIdentifierValue::Create(type.strictness),
