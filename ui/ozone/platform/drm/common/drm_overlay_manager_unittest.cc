@@ -245,4 +245,25 @@ TEST(DrmOverlayManagerTest, DifferentWidgetsSameCandidatesAreDistinct) {
   EXPECT_EQ(manager.requests().size(), 0u);
 }
 
+TEST(DrmOverlayManagerTest, NonIntegerDisplayRect) {
+  TestDrmOverlayManager manager;
+
+  // Candidates for output surface and single-on-top quad.
+  std::vector<OverlaySurfaceCandidate> candidates = {
+      CreateCandidate(gfx::Rect(0, 0, 100, 100), 0),
+      CreateCandidate(gfx::Rect(10, 10, 20, 20), 1)};
+
+  // Submit a set of candidates that could potentially be displayed in an
+  // overlay so they are stored in the cache. This ensures a comparison gets
+  // made adding the next value to the cache.
+  manager.CheckOverlaySupport(&candidates, kPrimaryWidget);
+
+  // Modify the display_rect for the second candidate so it's non-integer. We
+  // will never try to promote this to an overlay but something will get stored
+  // in the cache. This verifies we don't try to convert the non-integer RectF
+  // into a Rect which DCHECKs.
+  candidates[1].display_rect = gfx::RectF(9.4, 10.43, 20.11, 20.99);
+  manager.CheckOverlaySupport(&candidates, kPrimaryWidget);
+}
+
 }  // namespace ui
