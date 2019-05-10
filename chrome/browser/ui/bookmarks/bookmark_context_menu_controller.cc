@@ -43,7 +43,7 @@ namespace {
 constexpr UserMetricsAction kBookmarkBarNewBackgroundTab(
     "BookmarkBar_ContextMenu_OpenAll");
 constexpr UserMetricsAction kBookmarkBarNewWindow(
-    "BookmarkBar_ContextMenu_OpenAll");
+    "BookmarkBar_ContextMenu_OpenAllInNewWindow");
 constexpr UserMetricsAction kBookmarkBarIncognito(
     "BookmarkBar_ContextMenu_OpenAllIncognito");
 constexpr UserMetricsAction kAppMenuBookmarksNewBackgroundTab(
