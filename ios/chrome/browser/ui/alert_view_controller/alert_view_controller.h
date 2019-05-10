@@ -9,26 +9,6 @@
 
 #import "ios/chrome/browser/ui/alert_view_controller/alert_consumer.h"
 
-// This class is a replacement for UIAlertAction.
-// Current limitations:
-//     Actions Styles are not supported.
-@interface AlertAction : NSObject
-
-// The title for this action.
-@property(nonatomic, readonly) NSString* title;
-
-// The style for this action. Matches UIAlertAction style.
-@property(nonatomic, readonly) UIAlertActionStyle style;
-
-// Initializes an action with |title| and |handler|.
-+ (instancetype)actionWithTitle:(NSString*)title
-                          style:(UIAlertActionStyle)style
-                        handler:(void (^)(AlertAction* action))handler;
-
-- (instancetype)init NS_UNAVAILABLE;
-
-@end
-
 // This class is a replacement for UIAlertController that supports custom
 // presentation styles, i.e. change modalPresentationStyle,
 // modalTransitionStyle, or transitioningDelegate. The style is more similar to

@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/alert_view_controller/alert_view_controller.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/alert_view_controller/alert_action.h"
 #import "ios/chrome/browser/ui/elements/gray_highlight_button.h"
 #import "ios/chrome/browser/ui/elements/text_field_configuration.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -64,43 +65,6 @@ constexpr int kButtonTextDestructiveColor = 0xdf322f;
 constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
 
 }  // namespace
-
-@interface AlertAction ()
-
-@property(nonatomic, readwrite) NSString* title;
-@property(nonatomic, readwrite) UIAlertActionStyle style;
-
-// The unique identifier for the actions created.
-@property(nonatomic) NSInteger uniqueIdentifier;
-
-// Block to be called when this action is triggered.
-@property(nonatomic, copy) void (^handler)(AlertAction* action);
-
-@end
-
-@implementation AlertAction
-
-- (instancetype)initWithTitle:(NSString*)title
-                        style:(UIAlertActionStyle)style
-                      handler:(void (^)(AlertAction* action))handler {
-  self = [super init];
-  if (self) {
-    static NSInteger actionIdentifier = 0;
-    _uniqueIdentifier = ++actionIdentifier;
-    _title = title;
-    _handler = handler;
-    _style = style;
-  }
-  return self;
-}
-
-+ (instancetype)actionWithTitle:(NSString*)title
-                          style:(UIAlertActionStyle)style
-                        handler:(void (^)(AlertAction* action))handler {
-  return [[AlertAction alloc] initWithTitle:title style:style handler:handler];
-}
-
-@end
 
 @interface AlertViewController ()
 

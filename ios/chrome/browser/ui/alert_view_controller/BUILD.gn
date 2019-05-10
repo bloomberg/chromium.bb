@@ -4,6 +4,8 @@
 
 source_set("alert_view_controller") {
   sources = [
+    "alert_action.h",
+    "alert_action.mm",
     "alert_consumer.h",
     "alert_view_controller.h",
     "alert_view_controller.mm",

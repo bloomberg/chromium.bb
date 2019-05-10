@@ -4,6 +4,7 @@
 
 #import "ios/showcase/alert/sc_alert_coordinator.h"
 
+#import "ios/chrome/browser/ui/alert_view_controller/alert_action.h"
 #import "ios/chrome/browser/ui/alert_view_controller/alert_view_controller.h"
 #import "ios/chrome/browser/ui/elements/text_field_configuration.h"
 
