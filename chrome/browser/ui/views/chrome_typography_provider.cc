@@ -110,18 +110,17 @@ SkColor GetHarmonyTextColorForNonStandardNativeTheme(
 #if defined(OS_WIN)
 // static
 int ChromeTypographyProvider::GetPlatformFontHeight(int font_context) {
-  const bool windows_10 = base::win::GetVersion() >= base::win::Version::WIN10;
   switch (font_context) {
     case CONTEXT_HEADLINE:
-      return windows_10 ? 27 : 28;
+      return 27;
     case views::style::CONTEXT_DIALOG_TITLE:
-      return windows_10 ? 20 : 21;
+      return 20;
     case CONTEXT_BODY_TEXT_LARGE:
     case CONTEXT_TAB_HOVER_CARD_TITLE:
     case views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT:
       return 18;
     case CONTEXT_BODY_TEXT_SMALL:
-      return windows_10 ? 16 : 15;
+      return 16;
   }
   NOTREACHED();
   return 0;
