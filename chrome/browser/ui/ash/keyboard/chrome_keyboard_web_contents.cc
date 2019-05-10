@@ -29,11 +29,9 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/aura/window.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/resources/keyboard_resource_util.h"
-#include "ui/views/mus/remote_view/remote_view_provider.h"
 
 namespace {
 
@@ -84,7 +82,7 @@ class ChromeKeyboardContentsDelegate : public content::WebContentsDelegate,
     // keyboard window must have been added to keyboard container window at this
     // point. Otherwise, wrong keyboard bounds is used and may cause problem as
     // described in https://crbug.com/367788.
-    DCHECK(features::IsUsingWindowService() || keyboard_window->parent());
+    DCHECK(keyboard_window->parent());
     // keyboard window bounds may not set to |pos| after this call. If keyboard
     // is in FULL_WIDTH mode, only the height of keyboard window will be
     // changed.
@@ -171,11 +169,6 @@ ChromeKeyboardWebContents::ChromeKeyboardWebContents(
   keyboard_window->layer()->SetMasksToBounds(false);
   keyboard_window->SetProperty(ui::kAXRoleOverride, ax::mojom::Role::kKeyboard);
 
-  // TODO(stevenjb): For features::IsUsingWindowService() we need to add an
-  // EventHandler class so that the correct events are filtered and handled
-  // by the Ash containing window. See keyboard::KeyboardEventFilter.
-  // https://crbug.com/843332.
-
   keyboard_window->AddObserver(this);
 
   window_bounds_observer_ =
@@ -183,7 +176,6 @@ ChromeKeyboardWebContents::ChromeKeyboardWebContents(
 }
 
 ChromeKeyboardWebContents::~ChromeKeyboardWebContents() {
-  remote_view_provider_.reset();
   window_bounds_observer_.reset();
   if (web_contents_) {
     web_contents_->ClosePage();
@@ -229,29 +221,10 @@ void ChromeKeyboardWebContents::RenderViewCreated(
 }
 
 void ChromeKeyboardWebContents::DidStopLoading() {
-  if (!::features::IsUsingWindowService()) {
-    // TODO(https://crbug.com/845780): Change this to a DCHECK when we change
-    // ReloadKeyboardIfNeeded to also have a callback.
-    if (!load_callback_.is_null())
-      std::move(load_callback_).Run(base::UnguessableToken(), gfx::Size());
-    return;
-  }
-  if (remote_view_provider_)
-    return;
-  remote_view_provider_ = std::make_unique<views::RemoteViewProvider>(
-      web_contents_->GetNativeView());
-  remote_view_provider_->SetCallbacks(base::NullCallback(), unembed_callback_);
-  remote_view_provider_->GetEmbedToken(
-      base::BindOnce(&ChromeKeyboardWebContents::OnGotEmbedToken,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
-
-void ChromeKeyboardWebContents::OnGotEmbedToken(
-    const base::UnguessableToken& token) {
-  VLOG(1) << "OnGotEmbedToken: " << token;
-  token_ = token;
-  web_contents_->GetNativeView()->Show();
-  MaybeRunLoadCallback();
+  // TODO(https://crbug.com/845780): Change this to a DCHECK when we change
+  // ReloadKeyboardIfNeeded to also have a callback.
+  if (!load_callback_.is_null())
+    std::move(load_callback_).Run(gfx::Size());
 }
 
 void ChromeKeyboardWebContents::LoadContents(const GURL& url) {
@@ -269,13 +242,4 @@ void ChromeKeyboardWebContents::OnWindowBoundsChanged(
     ui::PropertyChangeReason reason) {
   VLOG(1) << "OnWindowBoundsChanged: " << new_bounds.ToString();
   contents_size_ = new_bounds.size();
-  MaybeRunLoadCallback();
-}
-
-void ChromeKeyboardWebContents::MaybeRunLoadCallback() {
-  // Note: |contents_size_| may still be empty, in which case
-  // AshKeyboardUI::AshKeyboardView::OnWindowBoundsChanged should get called
-  // with the correct contents size.
-  if (!load_callback_.is_null() && !token_.is_empty())
-    std::move(load_callback_).Run(token_, contents_size_);
 }

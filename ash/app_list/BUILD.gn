@@ -137,7 +137,6 @@ component("app_list") {
     "//ui/resources",
     "//ui/strings",
     "//ui/views",
-    "//ui/views/mus/remote_view:remote_view_host",
     "//ui/wm",
   ]
 

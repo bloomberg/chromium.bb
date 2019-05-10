@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/mus_property_mirror_ash.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"

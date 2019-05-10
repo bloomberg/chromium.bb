@@ -58,8 +58,7 @@ class ASH_EXPORT AshKeyboardController
   void SendOnKeyboardUIDestroyed();
 
   // mojom::KeyboardController:
-  void KeyboardContentsLoaded(const base::UnguessableToken& token,
-                              const gfx::Size& size) override;
+  void KeyboardContentsLoaded(const gfx::Size& size) override;
   void GetKeyboardConfig(GetKeyboardConfigCallback callback) override;
   void SetKeyboardConfig(
       keyboard::mojom::KeyboardConfigPtr keyboard_config) override;

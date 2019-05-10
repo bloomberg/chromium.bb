@@ -87,9 +87,8 @@ void AshKeyboardController::SendOnKeyboardUIDestroyed() {
 // mojom::KeyboardController
 
 void AshKeyboardController::KeyboardContentsLoaded(
-    const base::UnguessableToken& token,
     const gfx::Size& size) {
-  keyboard_controller()->KeyboardContentsLoaded(token, size);
+  keyboard_controller()->KeyboardContentsLoaded(size);
 }
 
 void AshKeyboardController::GetKeyboardConfig(

@@ -237,10 +237,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
   bool IsKeyboardVisible();
 
-  // When the window service is running, this will be called with |token| for
-  // embedding the window and the initial window size.
-  void KeyboardContentsLoaded(const base::UnguessableToken& token,
-                              const gfx::Size& size);
+  void KeyboardContentsLoaded(const gfx::Size& size);
 
   aura::Window* parent_container() { return parent_container_; }
 

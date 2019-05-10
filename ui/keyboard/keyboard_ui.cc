@@ -35,10 +35,9 @@ void KeyboardUI::HideKeyboardWindow() {
     window->Hide();
 }
 
-void KeyboardUI::KeyboardContentsLoaded(const base::UnguessableToken& token,
-                                        const gfx::Size& size) {
-  NOTREACHED() << "Unexpected call to KeyboardContentsLoaded. Token: " << token
-               << " Size: " << size.ToString();
+void KeyboardUI::KeyboardContentsLoaded(const gfx::Size& size) {
+  NOTREACHED() << "Unexpected call to KeyboardContentsLoaded. Size: "
+               << size.ToString();
 }
 
 void KeyboardUI::SetController(KeyboardController* controller) {

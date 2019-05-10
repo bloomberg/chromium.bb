@@ -61,9 +61,6 @@
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/mus/desktop_window_tree_host_mus.h"
-#include "ui/views/mus/mus_client.h"
-#include "ui/views/mus/window_manager_frame_values.h"
 #include "ui/views/rect_based_targeting_utils.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -101,10 +98,6 @@ bool IsSnappedInSplitView(const aura::Window* window) {
 
   NOTREACHED();
   return false;
-}
-
-const views::WindowManagerFrameValues& frame_values() {
-  return views::WindowManagerFrameValues::instance();
 }
 
 // Returns true if the header should be painted so that it looks the same as
@@ -630,10 +623,9 @@ bool BrowserNonClientFrameViewAsh::ShouldShowCaptionButtons() const {
 }
 
 int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {
-  int left_inset = frame_values().normal_insets.left();
-  if (profile_indicator_icon_)
-    left_inset += kProfileIndicatorPadding + profile_indicator_icon_->width();
-  return left_inset;
+  return profile_indicator_icon_
+             ? kProfileIndicatorPadding + profile_indicator_icon_->width()
+             : 0;
 }
 
 int BrowserNonClientFrameViewAsh::GetTabStripRightInset() const {

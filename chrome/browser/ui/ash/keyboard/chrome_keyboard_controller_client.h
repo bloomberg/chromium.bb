@@ -160,8 +160,7 @@ class ChromeKeyboardControllerClient
   void OnLoadKeyboardContentsRequested() override;
   void OnKeyboardUIDestroyed() override;
 
-  void OnKeyboardContentsLoaded(const base::UnguessableToken& token,
-                                const gfx::Size& size);
+  void OnKeyboardContentsLoaded(const gfx::Size& size);
 
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override;

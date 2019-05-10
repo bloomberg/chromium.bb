@@ -1151,11 +1151,10 @@ bool KeyboardController::IsKeyboardVisible() {
 }
 
 void KeyboardController::KeyboardContentsLoaded(
-    const base::UnguessableToken& token,
     const gfx::Size& size) {
   if (!IsEnabled())
     return;
-  ui_->KeyboardContentsLoaded(token, size);
+  ui_->KeyboardContentsLoaded(size);
 }
 
 ui::TextInputClient* KeyboardController::GetTextInputClient() {

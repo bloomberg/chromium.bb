@@ -391,11 +391,10 @@ void ChromeKeyboardControllerClient::OnKeyboardUIDestroyed() {
 }
 
 void ChromeKeyboardControllerClient::OnKeyboardContentsLoaded(
-    const base::UnguessableToken& token,
     const gfx::Size& size) {
   DVLOG(1) << "OnLoadKeyboardContentsRequested: " << size.ToString();
   NotifyKeyboardLoaded();
-  keyboard_controller_ptr_->KeyboardContentsLoaded(token, size);
+  keyboard_controller_ptr_->KeyboardContentsLoaded(size);
 }
 
 void ChromeKeyboardControllerClient::OnSessionStateChanged() {

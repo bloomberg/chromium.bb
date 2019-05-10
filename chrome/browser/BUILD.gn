@@ -3930,7 +3930,6 @@ jumbo_split_static_library("browser") {
       "//ui/aura",
       "//ui/compositor",
       "//ui/snapshot",
-      "//ui/views/mus",
     ]
     if (use_gtk) {
       deps += [ "//chrome/browser/ui/libgtkui" ]

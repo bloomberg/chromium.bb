@@ -3067,8 +3067,6 @@ jumbo_split_static_library("ui") {
         "views/ime_driver/simple_input_method.cc",
         "views/ime_driver/simple_input_method.h",
       ]
-
-      deps += [ "//ui/views/mus" ]
     }
 
     if (is_win) {
@@ -3337,7 +3335,6 @@ jumbo_split_static_library("ui") {
       "//chrome/browser/ui:app_launch_event_logger_proto",
       "//chrome/browser/ui/app_list/search/search_result_ranker:app_launch_predictor_proto",
       "//chrome/browser/ui/app_list/search/search_result_ranker:recurrence_ranker_proto",
-      "//ui/views/mus/remote_view:remote_view_provider",
     ]
 
     if (is_chromeos) {

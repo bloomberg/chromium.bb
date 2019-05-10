@@ -33,11 +33,9 @@
 #include "components/constrained_window/constrained_window_views.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/cpp/mus_property_mirror_ash.h"
 #include "ash/test/ash_test_views_delegate.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "content/public/browser/context_factory.h"
-#include "ui/aura/mus/window_tree_client.h"
 #else
 #include "ui/views/test/test_views_delegate.h"
 #endif

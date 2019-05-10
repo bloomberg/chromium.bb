@@ -1297,7 +1297,6 @@ component("ash") {
     "//ui/resources",
     "//ui/strings",
     "//ui/views",
-    "//ui/views/mus:for_mojo_application",
     "//ui/wm",
   ]
   deps = [
@@ -1559,7 +1558,6 @@ static_library("ash_shell_lib_with_content") {
     "//ui/message_center",
     "//ui/views:test_support",
     "//ui/views/examples:views_examples_with_content_lib",
-    "//ui/views/mus/remote_view:remote_view_provider",
     "//ui/wm",
   ]
 }
@@ -1716,7 +1714,6 @@ test("ash_unittests") {
     "metrics/task_switch_time_tracker_unittest.cc",
     "metrics/user_metrics_recorder_unittest.cc",
     "multi_device_setup/multi_device_notification_presenter_unittest.cc",
-    "mus_property_mirror_ash_unittest.cc",
     "policy/policy_recommendation_restorer_unittest.cc",
     "root_window_controller_unittest.cc",
     "rotator/screen_rotation_animation_unittest.cc",
@@ -2003,7 +2000,6 @@ test("ash_unittests") {
     "//ui/strings",
     "//ui/views",
     "//ui/views:test_support",
-    "//ui/views/mus",
     "//ui/views/window/vector_icons",
     "//ui/wm",
     "//ui/wm:test_support",

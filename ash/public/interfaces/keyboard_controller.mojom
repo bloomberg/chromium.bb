@@ -7,7 +7,6 @@ module ash.mojom;
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/keyboard/public/keyboard_config.mojom";
 import "ui/keyboard/public/keyboard_controller_types.mojom";
-import "mojo/public/mojom/base/unguessable_token.mojom";
 
 enum HideReason {
   // Hide requested by an explicit user action.
@@ -55,10 +54,8 @@ interface KeyboardControllerObserver {
 };
 
 interface KeyboardController {
-  // Informs the controller that the keyboard contents have loaded. Provides a
-  // token for embedding the client window and the size of the contents.
-  KeyboardContentsLoaded(mojo_base.mojom.UnguessableToken token,
-                         gfx.mojom.Size size);
+  // Informs the controller that the keyboard contents have loaded.
+  KeyboardContentsLoaded(gfx.mojom.Size size);
 
   // Retrieves the current keyboard configuration.
   GetKeyboardConfig() => (keyboard.mojom.KeyboardConfig config);

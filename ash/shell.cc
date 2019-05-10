@@ -209,7 +209,6 @@
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/corewm/tooltip_controller.h"
 #include "ui/views/focus/focus_manager_factory.h"
-#include "ui/views/mus/window_manager_frame_values.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/accelerator_filter.h"
@@ -946,13 +945,8 @@ void Shell::Init(
     std::unique_ptr<base::Value> initial_display_prefs,
     std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory,
     scoped_refptr<dbus::Bus> dbus_bus) {
-  if (!::features::IsMultiProcessMash()) {
-    // DBus clients only needed in Ash. For MultiProcessMash these are
-    // initialized in AshService::InitializeDBusClients.
-
-    // Required by DetachableBaseHandler.
-    chromeos::InitializeDBusClient<chromeos::HammerdClient>(dbus_bus.get());
-  }
+  // Required by DetachableBaseHandler.
+  chromeos::InitializeDBusClient<chromeos::HammerdClient>(dbus_bus.get());
 
   // This creates the MessageCenter object which is used by some other objects
   // initialized here, so it needs to come early.

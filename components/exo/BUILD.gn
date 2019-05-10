@@ -79,7 +79,6 @@ source_set("exo") {
     "//ui/message_center/public/cpp",
     "//ui/ozone",
     "//ui/views",
-    "//ui/views/mus",
     "//ui/wm",
     "//ui/wm/public",
   ]

@@ -31,7 +31,6 @@
 #include "ui/compositor/paint_recorder.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/native/native_view_host.h"
-#include "ui/views/mus/mus_client.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
