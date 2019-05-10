@@ -261,10 +261,6 @@ TEST_F(DataReductionProxyParamsTest, QuicEnableNonCoreProxies) {
                                            test.trial_group_name);
 
     EXPECT_EQ(test.expected_enabled, params::IsIncludedInQuicFieldTrial());
-    if (params::IsIncludedInQuicFieldTrial()) {
-      EXPECT_EQ(test.expected_enable_non_core_proxies,
-                params::IsQuicEnabledForNonCoreProxies());
-    }
   }
 }
 

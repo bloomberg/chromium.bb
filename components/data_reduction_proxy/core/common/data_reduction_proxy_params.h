@@ -77,9 +77,6 @@ bool WarnIfNoDataReductionProxy();
 // proxy server as quic://proxy.googlezip.net.
 bool IsIncludedInQuicFieldTrial();
 
-// Returns true if QUIC is enabled for non core data reduction proxies.
-bool IsQuicEnabledForNonCoreProxies();
-
 const char* GetQuicFieldTrialName();
 
 // If the Data Reduction Proxy is used for a page load, the URL for the
