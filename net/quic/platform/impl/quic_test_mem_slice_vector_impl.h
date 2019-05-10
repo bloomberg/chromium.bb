@@ -5,6 +5,8 @@
 #ifndef NET_QUIC_PLATFORM_IMPL_QUIC_TEST_MEM_SLICE_VECTOR_IMPL_H_
 #define NET_QUIC_PLATFORM_IMPL_QUIC_TEST_MEM_SLICE_VECTOR_IMPL_H_
 
+#include <memory>
+
 #include "net/quic/platform/impl/quic_mem_slice_span_impl.h"
 
 namespace quic {
@@ -24,6 +26,9 @@ class QuicTestMemSliceVectorImpl {
   explicit QuicTestMemSliceVectorImpl(
       std::vector<std::pair<char*, size_t>> buffers);
   ~QuicTestMemSliceVectorImpl();
+
+  QuicTestMemSliceVectorImpl(QuicTestMemSliceVectorImpl&& other);
+  QuicTestMemSliceVectorImpl& operator=(QuicTestMemSliceVectorImpl&& other);
 
   QuicMemSliceSpanImpl span();
 

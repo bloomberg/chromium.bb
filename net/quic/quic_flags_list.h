@@ -358,3 +358,9 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_server_drop_version_negotiation,
           false)
+
+// When true, version negotiation packets sent by the server will set the fixed
+// bit.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_send_version_negotiation_fixed_bit,
+          false)
