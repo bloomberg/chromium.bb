@@ -11,6 +11,7 @@ import os
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import cros_sdk_lib
 
 
@@ -86,6 +87,10 @@ class CreateArguments(object):
 
     return args
 
+  @property
+  def chroot_path(self):
+    return self.paths.chroot_path
+
 
 class UpdateArguments(object):
   """Value object to handle the update arguments."""
@@ -128,12 +133,27 @@ def Create(arguments):
   """
   cros_build_lib.AssertOutsideChroot()
 
+  chroot_exists = os.path.isdir(arguments.chroot_path)
+  version = GetChrootVersion(arguments.chroot_path)
+
+  chroot_broken = chroot_exists and not version
+  if not arguments.replace:
+    # Do some extra checks when we're just creating it.
+    if chroot_broken:
+      # Force replace when we can't get a version for a chroot that exists,
+      # since something must have gone wrong.
+      logging.info('Replacing broken chroot.')
+      arguments.replace = True
+    elif chroot_exists:
+      # It already exists and no need to replace it, we can exit now.
+      return version
+
   cmd = [os.path.join(constants.CHROMITE_BIN_DIR, 'cros_sdk')]
   cmd.extend(arguments.GetArgList())
 
   cros_build_lib.RunCommand(cmd)
 
-  return GetChrootVersion(arguments.paths.chroot_path)
+  return GetChrootVersion(arguments.chroot_path)
 
 
 def GetChrootVersion(chroot_path=None):
