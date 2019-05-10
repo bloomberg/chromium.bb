@@ -967,9 +967,6 @@ vibration/vibration-page-visibility.html
 virtual/gpu/fast/canvas/canvas-filter-frameless-document.html
 virtual/gpu/fast/canvas/feimage-with-foreignobject-taint-canvas-2.html
 virtual/gpu-rasterization/images/drag-image-descendant-painting-sibling.html
-virtual/layout_ng/fast/block/float/floats-not-cleared-crash.html
-virtual/layout_ng/fast/block/float/positioned-float-crash.html
-virtual/layout_ng/fast/block/margin-collapse/019.html
 
 # Include //media/OWNERS on review of changes to media-gpu-accelerated SmokeTests coverage.
 virtual/media-gpu-accelerated/media/video-autoplay.html

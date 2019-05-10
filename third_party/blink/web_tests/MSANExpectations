@@ -72,8 +72,6 @@ crbug.com/729136 [ Linux ] http/tests/devtools/components/file-path-scoring.js [
 crbug.com/729136 [ Linux ] http/tests/devtools/elements/styles-4/styles-should-not-force-sync-style-recalc.js [ Timeout ]
 crbug.com/729136 [ Linux ] webaudio/mixing.html [ Timeout ]
 
-crbug.com/739365 [ Linux ] virtual/layout_ng/fast/block/float/assert-when-moving-float.html [ Skip ]
-
 # Tests timing out on WebKit Linux Trusty MSAN
 crbug.com/760543 [ Linux ] http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.js [ Pass Timeout ]
 crbug.com/760543 [ Linux ] http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Pass Timeout ]
