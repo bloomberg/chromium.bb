@@ -7,5 +7,8 @@ import("//components/gwp_asan/buildflags/buildflags.gni")
 
 buildflag_header("buildflags") {
   header = "buildflags.h"
-  flags = [ "ENABLE_GWP_ASAN_MALLOC=$enable_gwp_asan_malloc" ]
+  flags = [
+    "ENABLE_GWP_ASAN_MALLOC=$enable_gwp_asan_malloc",
+    "ENABLE_GWP_ASAN_PARTITIONALLOC=$enable_gwp_asan_partitionalloc",
+  ]
 }

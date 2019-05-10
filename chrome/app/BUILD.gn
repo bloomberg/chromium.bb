@@ -400,7 +400,7 @@ static_library("test_support") {
     deps += [ "//services/ws/public/mojom:constants" ]
   }
 
-  if (enable_gwp_asan_malloc) {
+  if (enable_gwp_asan_malloc || enable_gwp_asan_partitionalloc) {
     deps += [ "//components/gwp_asan/client" ]
   }
 }

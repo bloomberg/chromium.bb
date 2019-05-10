@@ -166,7 +166,8 @@
 #include "chrome/child/pdf_child_init.h"
 #endif
 
-#if BUILDFLAG(ENABLE_GWP_ASAN_MALLOC)
+#if BUILDFLAG(ENABLE_GWP_ASAN_MALLOC) || \
+    BUILDFLAG(ENABLE_GWP_ASAN_PARTITIONALLOC)
 #include "components/gwp_asan/client/gwp_asan.h"  // nogncheck
 #endif
 
@@ -559,15 +560,26 @@ void ChromeMainDelegate::PostTaskSchedulerStart() {
 
 void ChromeMainDelegate::PostFieldTrialInitialization() {
 #if BUILDFLAG(ENABLE_GWP_ASAN_MALLOC)
-  version_info::Channel channel = chrome::GetChannel();
-  bool is_canary_dev = (channel == version_info::Channel::CANARY ||
-                        channel == version_info::Channel::DEV);
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
-  bool is_browser_process = process_type.empty();
-  gwp_asan::EnableForMalloc(is_canary_dev, is_browser_process);
+  {
+    version_info::Channel channel = chrome::GetChannel();
+    bool is_canary_dev = (channel == version_info::Channel::CANARY ||
+                          channel == version_info::Channel::DEV);
+    const base::CommandLine& command_line =
+        *base::CommandLine::ForCurrentProcess();
+    std::string process_type =
+        command_line.GetSwitchValueASCII(switches::kProcessType);
+    bool is_browser_process = process_type.empty();
+    gwp_asan::EnableForMalloc(is_canary_dev, is_browser_process);
+  }
+#endif
+
+#if BUILDFLAG(ENABLE_GWP_ASAN_PARTITIONALLOC)
+  {
+    version_info::Channel channel = chrome::GetChannel();
+    bool is_canary_dev = (channel == version_info::Channel::CANARY ||
+                          channel == version_info::Channel::DEV);
+    gwp_asan::EnableForPartitionAlloc(is_canary_dev);
+  }
 #endif
 }
 
