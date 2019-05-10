@@ -949,7 +949,11 @@ void InlineTextBoxPainter::PaintHighlightMarkerForeground(const PaintInfo& paint
     LayoutPoint textOrigin(boxOrigin.X(), boxOrigin.Y() + ascent);
     TextPainter textPainter(paintInfo.context, font, run, textOrigin, boxRect, inline_text_box_.IsHorizontal());
 
-    textPainter.Paint(sPos, ePos, inline_text_box_.Len(), textStyle);
+    NodeHolder node_holder = GetNodeHolder(
+        LineLayoutAPIShim::LayoutObjectFrom(inline_text_box_.GetLineLayoutItem())
+            ->GetNode());
+
+    textPainter.Paint(sPos, ePos, inline_text_box_.Len(), textStyle, node_holder);
 }
 
 void InlineTextBoxPainter::PaintHighlightMarkerBackground(const PaintInfo& paintInfo,
