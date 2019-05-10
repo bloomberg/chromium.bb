@@ -17,14 +17,13 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/metrics/ukm_background_recorder_service.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/download/public/background_service/download_params.h"
 #include "components/download/public/background_service/download_service.h"
-#include "components/history/core/browser/history_service.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_items_collection/core/offline_item.h"
 #include "content/public/browser/background_fetch_description.h"
@@ -399,47 +398,27 @@ void BackgroundFetchDelegateImpl::
     RecordBackgroundFetchDeletingRegistrationUkmEvent(
         const url::Origin& origin,
         bool user_initiated_abort) {
-  // Log the UKM event anyway, if the origin can be found in the user's
-  // history database.
-  history::HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(profile_,
-                                           ServiceAccessType::EXPLICIT_ACCESS);
-  DCHECK(history_service);
-  const GURL origin_url = origin.GetURL();
-  history_service->GetVisibleVisitCountToHost(
-      origin_url,
-      base::BindRepeating(&BackgroundFetchDelegateImpl::DidQueryUrl,
-                          weak_ptr_factory_.GetWeakPtr(), origin_url,
-                          user_initiated_abort),
-      &task_tracker_);
+  auto* ukm_background_service =
+      ukm::UkmBackgroundRecorderFactory::GetForProfile(profile_);
+  ukm_background_service->GetBackgroundSourceIdIfAllowed(
+      origin,
+      base::BindOnce(&BackgroundFetchDelegateImpl::DidGetBackgroundSourceId,
+                     weak_ptr_factory_.GetWeakPtr(), user_initiated_abort));
 }
 
-void BackgroundFetchDelegateImpl::DidQueryUrl(const GURL& origin_url,
-                                              bool user_initiated_abort,
-                                              bool success,
-                                              int num_visits,
-                                              base::Time first_visit) {
-  // This notifies the tests that the history query has completed.
-  if (history_query_complete_closure_for_testing_) {
-    base::PostTask(FROM_HERE,
-                   std::move(history_query_complete_closure_for_testing_));
-  }
-
-  if (!success || !num_visits)
+void BackgroundFetchDelegateImpl::DidGetBackgroundSourceId(
+    bool user_initiated_abort,
+    base::Optional<ukm::SourceId> source_id) {
+  // This background event did not meet the requirements for the UKM service.
+  if (!source_id)
     return;
 
-  ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
-  ukm::UkmRecorder* recorder = ukm::UkmRecorder::Get();
-  DCHECK(recorder);
-
-  // This is OK from a privacy perspective since we have verified that the
-  // origin the background fetch is associated with, is in the history service
-  // database.
-  recorder->UpdateSourceURL(source_id, origin_url);
-
-  ukm::builders::BackgroundFetchDeletingRegistration(source_id)
+  ukm::builders::BackgroundFetchDeletingRegistration(*source_id)
       .SetUserInitiatedAbort(user_initiated_abort)
       .Record(ukm::UkmRecorder::Get());
+
+  if (ukm_event_recorded_for_testing_)
+    std::move(ukm_event_recorded_for_testing_).Run();
 }
 
 void BackgroundFetchDelegateImpl::MarkJobComplete(

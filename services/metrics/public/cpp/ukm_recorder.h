@@ -17,7 +17,6 @@
 #include "services/metrics/public/mojom/ukm_interface.mojom-forward.h"
 #include "url/gurl.h"
 
-class BackgroundFetchDelegateImpl;
 class IOSChromePasswordManagerClient;
 class MediaEngagementSession;
 class PluginInfoHostImpl;
@@ -102,7 +101,6 @@ class METRICS_EXPORT UkmRecorder {
   void RecordAppURL(base::UkmSourceId source_id, const GURL& url);
 
  private:
-  friend BackgroundFetchDelegateImpl;
   friend DelegatingUkmRecorder;
   friend IOSChromePasswordManagerClient;
   friend MediaEngagementSession;

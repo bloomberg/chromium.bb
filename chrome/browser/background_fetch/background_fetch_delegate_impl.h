@@ -13,7 +13,6 @@
 
 #include "base/containers/flat_set.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task/cancelable_task_tracker.h"
 #include "components/download/public/background_service/download_params.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
@@ -132,9 +131,8 @@ class BackgroundFetchDelegateImpl
   void GetUploadData(const std::string& download_guid,
                      download::GetUploadDataCallback callback);
 
-  void set_history_query_complete_closure_for_testing(
-      base::OnceClosure closure) {
-    history_query_complete_closure_for_testing_ = std::move(closure);
+  void set_ukm_event_recorded_for_testing(base::OnceClosure closure) {
+    ukm_event_recorded_for_testing_ = std::move(closure);
   }
 
   base::WeakPtr<BackgroundFetchDelegateImpl> GetWeakPtr() {
@@ -263,17 +261,13 @@ class BackgroundFetchDelegateImpl
   base::WeakPtr<Client> GetClient(const std::string& job_unique_id);
 
   // Helper methods for recording BackgroundFetchDeletingRegistration UKM event.
-  // We try to look for any URL corresponding to this origin in the user's
-  // browsing history. If we find one, we record the UKM event with a new
-  // SourceID, after associating it with |origin|.
+  // We check with UkmBackgroundRecorderService whether this event for |origin|
+  // can be recorded.
   void RecordBackgroundFetchDeletingRegistrationUkmEvent(
       const url::Origin& origin,
       bool user_initiated_abort);
-  void DidQueryUrl(const GURL& origin_url,
-                   bool user_initiated_abort,
-                   bool success,
-                   int num_visits,
-                   base::Time first_visit);
+  void DidGetBackgroundSourceId(bool user_initiated_abort,
+                                base::Optional<ukm::SourceId> source_id);
 
   // The profile this service is being created for.
   Profile* profile_;
@@ -298,12 +292,8 @@ class BackgroundFetchDelegateImpl
   // Set of Observers to be notified of any changes to the shown notifications.
   std::set<Observer*> observers_;
 
-  // Task tracker used for querying URLs in the history service.
-  base::CancelableTaskTracker task_tracker_;
-
-  // Testing-only closure to observe when the history service query has
-  // finished, and the result of logging UKM can be observed.
-  base::OnceClosure history_query_complete_closure_for_testing_;
+  // Testing-only closure to inform tests when a UKM event has been recorded.
+  base::OnceClosure ukm_event_recorded_for_testing_;
 
   base::WeakPtrFactory<BackgroundFetchDelegateImpl> weak_ptr_factory_;
 
