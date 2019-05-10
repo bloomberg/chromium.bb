@@ -995,6 +995,8 @@ void LocalNtpSource::StartDataRequest(
         l10n_util::GetStringUTF16(IDS_NTP_CUSTOMIZE_MENU_SHORTCUTS_LABEL));
     replacements["colorsOption"] = base::UTF16ToUTF8(
         l10n_util::GetStringUTF16(IDS_NTP_CUSTOMIZE_MENU_COLORS_LABEL));
+    replacements["uploadImage"] = base::UTF16ToUTF8(
+        l10n_util::GetStringUTF16(IDS_NTP_CUSTOM_BG_UPLOAD_AN_IMAGE));
 
     replacements["bgPreloader"] = "";
     GURL custom_background_url = GetCustomBackgroundURL(profile_->GetPrefs());

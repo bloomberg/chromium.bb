@@ -1025,7 +1025,7 @@ html[dir=rtl] .menu-option {
 
 #backgrounds-default.bg-sel-tile-bg {
   background-color: white;
-  border: 1px solid black;
+  border: 1px solid rgb(var(--GG300-rgb));
   height: 174px;
   margin-inline-end: 6px;
   width: 174px;
@@ -1033,7 +1033,7 @@ html[dir=rtl] .menu-option {
 
 #backgrounds-upload.bg-sel-tile-bg {
   background-color: white;
-  border: 1px solid black;
+  border: 1px solid rgb(var(--GG300-rgb));
   height: 174px;
   margin-inline-end: 6px;
   vertical-align: top;
@@ -1063,4 +1063,22 @@ html[dir=rtl] #menu-back {
 .on-img-menu #menu-back {
   margin-inline-start: 212px;
   visibility: visible;
+}
+
+#backgrounds-upload-icon {
+  -webkit-mask-image: url(icons/upload.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background: 32px 24px rgb(var(--GG700-rgb));
+  height: 32px;
+  margin-bottom: 8px;
+  margin-inline-start: 72px;
+  margin-top: 61px;
+  width: 32px;
+}
+
+#backgrounds-upload-text {
+  color: rgb(var(--GG700-rgb));
+  text-align: center;
+  width: 100%;
 }
