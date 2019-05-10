@@ -28,6 +28,8 @@ EXTENSIONS_TO_COMMENTS = {
     'py': '#',
     'gn': '#',
     'gni': '#',
+    'mojom': '//',
+    'typemap': '#',
 }
 
 def _GetHeader(filename):
