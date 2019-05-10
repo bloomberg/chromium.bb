@@ -248,27 +248,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   FuzzerVariant variant = PIPELINE_FUZZER_VARIANT;
 
   if (variant == SRC) {
-    {
-      media::ProgressivePipelineIntegrationFuzzerTest test;
-      test.RunTest(data, size);
-    }
+    media::ProgressivePipelineIntegrationFuzzerTest test;
+    test.RunTest(data, size);
   } else {
-    // Sequentially fuzz with new and old MSE buffering APIs.  See
-    // https://crbug.com/718641.
-    {
-      base::test::ScopedFeatureList features_with_buffering_api_forced;
-      features_with_buffering_api_forced.InitAndEnableFeature(
-          media::kMseBufferByPts);
-      media::MediaSourcePipelineIntegrationFuzzerTest test;
-      test.RunTest(data, size, MseFuzzerVariantEnumToMimeTypeString(variant));
-    }
-    {
-      base::test::ScopedFeatureList features_with_buffering_api_forced;
-      features_with_buffering_api_forced.InitAndDisableFeature(
-          media::kMseBufferByPts);
-      media::MediaSourcePipelineIntegrationFuzzerTest test;
-      test.RunTest(data, size, MseFuzzerVariantEnumToMimeTypeString(variant));
-    }
+    media::MediaSourcePipelineIntegrationFuzzerTest test;
+    test.RunTest(data, size, MseFuzzerVariantEnumToMimeTypeString(variant));
   }
 
   return 0;

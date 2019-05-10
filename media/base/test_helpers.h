@@ -396,15 +396,6 @@ MATCHER_P(BufferingByPtsDts, by_pts_bool, "") {
                                   (by_pts_bool ? "PTS" : "DTS"));
 }
 
-MATCHER_P3(NegativeDtsFailureWhenByDts, frame_type, pts_us, dts_us, "") {
-  return CONTAINS_STRING(
-      arg, std::string(frame_type) + " frame with PTS " +
-               base::NumberToString(pts_us) + "us has negative DTS " +
-               base::NumberToString(dts_us) +
-               "us after applying timestampOffset, handling any discontinuity, "
-               "and filtering against append window");
-}
-
 MATCHER_P2(DiscardingEmptyFrame, pts_us, dts_us, "") {
   return CONTAINS_STRING(arg,
                          "Discarding empty audio or video coded frame, PTS=" +
