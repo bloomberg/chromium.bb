@@ -457,8 +457,7 @@ void HTMLMetaElement::GetViewportDescriptionFromContentAttribute(
 void HTMLMetaElement::ProcessViewportContentAttribute(
     const String& content,
     ViewportDescription::Type origin) {
-  if (content.IsNull())
-    return;
+  DCHECK(!content.IsNull());
 
   ViewportData& viewport_data = GetDocument().GetViewportData();
   if (!viewport_data.ShouldOverrideLegacyDescription(origin))
@@ -566,6 +565,22 @@ void HTMLMetaElement::ProcessContent() {
     return;
 
   const AtomicString& content_value = FastGetAttribute(kContentAttr);
+
+  if (EqualIgnoringASCIICase(name_value, "theme-color") &&
+      GetDocument().GetFrame()) {
+    GetDocument().GetFrame()->Client()->DispatchDidChangeThemeColor();
+    return;
+  }
+  if (EqualIgnoringASCIICase(name_value, "color-scheme")) {
+    ProcessColorScheme(content_value);
+    return;
+  }
+
+  // All situations below require a content attribute (which can be the empty
+  // string).
+  if (content_value.IsNull())
+    return;
+
   if (EqualIgnoringASCIICase(name_value, "viewport")) {
     ProcessViewportContentAttribute(content_value,
                                     ViewportDescription::kViewportMeta);
@@ -579,11 +594,6 @@ void HTMLMetaElement::ProcessContent() {
   } else if (EqualIgnoringASCIICase(name_value, "mobileoptimized")) {
     ProcessViewportContentAttribute("width=device-width, initial-scale=1",
                                     ViewportDescription::kMobileOptimizedMeta);
-  } else if (EqualIgnoringASCIICase(name_value, "theme-color") &&
-             GetDocument().GetFrame()) {
-    GetDocument().GetFrame()->Client()->DispatchDidChangeThemeColor();
-  } else if (EqualIgnoringASCIICase(name_value, "color-scheme")) {
-    ProcessColorScheme(content_value);
   }
 }
 

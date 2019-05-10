@@ -211,4 +211,13 @@ TEST_F(HTMLMetaElementTest, ColorSchemeForcedDarkeningAndMQ) {
   EXPECT_TRUE(media_query->matches());
 }
 
+TEST_F(HTMLMetaElementTest, ReferrerPolicyWithoutContent) {
+  GetDocument().head()->SetInnerHTMLFromString(R"HTML(
+    <meta name="referrer" content="strict-origin">
+    <meta name="referrer" >
+  )HTML");
+  EXPECT_EQ(network::mojom::ReferrerPolicy::kStrictOrigin,
+            GetDocument().GetReferrerPolicy());
+}
+
 }  // namespace blink
