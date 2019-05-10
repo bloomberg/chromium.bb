@@ -2232,6 +2232,7 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
       module_name = "Vr" + _bundle_name
       base_module_target = ":$_base_module_target_name"
       native_switches = _native_switches
+      is_monochrome_or_trichrome = true
       uncompress_shared_libraries = true
       version_code = _version_code
       version_name = _version_name

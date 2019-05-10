@@ -1,6 +1,6 @@
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
-import("//chrome/android/features/module_names_to_package_ids.gni")
+import("//chrome/android/features/dynamic_feature_modules.gni")
 
 template("autofill_assistant_module_tmpl") {
   _manifest = "$target_gen_dir/$target_name/AndroidManifest.xml"
