@@ -501,6 +501,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
             initializeTabModels();
             initializeToolbar();
+            if (FeatureUtilities.isNoTouchModeEnabled() && getToolbarManager() != null) {
+                getToolbarManager().getToolbar().disableMenuButton();
+            }
+
             if (!isFinishing() && getFullscreenManager() != null) {
                 getFullscreenManager().initialize(
                         (ControlContainer) findViewById(R.id.control_container),
@@ -1575,6 +1579,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     @CallSuper
     public boolean shouldShowAppMenu() {
+        if (FeatureUtilities.isNoTouchModeEnabled()) return false;
         if (isActivityFinishingOrDestroyed()) return false;
 
         @ActivityState
@@ -2161,6 +2166,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             PreferencesLauncher.launchSettingsPage(this, null);
             RecordUserAction.record("MobileMenuSettings");
         } else if (id == R.id.show_menu) {
+            if (FeatureUtilities.isNoTouchModeEnabled()) return false;
             showAppMenuForKeyboardEvent();
         } else if (id == R.id.find_in_page_id) {
             if (mFindToolbarManager == null) return false;
