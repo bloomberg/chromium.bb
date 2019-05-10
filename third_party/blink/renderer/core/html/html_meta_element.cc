@@ -531,6 +531,7 @@ void HTMLMetaElement::DidNotifySubtreeInsertionsToDocument() {
 }
 
 void HTMLMetaElement::RemovedFrom(ContainerNode& insertion_point) {
+  HTMLElement::RemovedFrom(insertion_point);
   const AtomicString& name_value = FastGetAttribute(kNameAttr);
   if (!name_value.IsEmpty())
     NameRemoved(name_value);
