@@ -879,6 +879,8 @@ message GetPaymentInformationProto {
   repeated string supported_basic_card_networks = 6;
   // Contact details that should be gathered.
   optional ContactDetailsProto contact_details = 5;
+  // Override for the text of the confirm button in the payment request.
+  optional string confirm_button_text = 7;
 }
 
 // Resets Autofill Assistant: clears any state and server payload.

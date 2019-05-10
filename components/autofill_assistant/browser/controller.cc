@@ -741,8 +741,12 @@ void Controller::UpdatePaymentRequestActions() {
 
   auto chips = std::make_unique<std::vector<Chip>>();
   chips->emplace_back();
-  chips->back().text =
-      l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_PAYMENT_INFO_CONFIRM);
+  if (!payment_request_options_->confirm_button_text.empty()) {
+    chips->back().text = payment_request_options_->confirm_button_text;
+  } else {
+    chips->back().text =
+        l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_PAYMENT_INFO_CONFIRM);
+  }
   chips->back().type = HIGHLIGHTED_ACTION;
   chips->back().disabled = !continue_button_enabled;
   if (continue_button_enabled) {

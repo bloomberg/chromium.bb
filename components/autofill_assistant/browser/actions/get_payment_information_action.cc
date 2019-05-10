@@ -52,6 +52,8 @@ void GetPaymentInformationAction::InternalProcessAction(
       !get_payment_information.shipping_address_name().empty();
   payment_options->request_payment_method =
       get_payment_information.ask_for_payment();
+  payment_options->confirm_button_text =
+      get_payment_information.confirm_button_text();
 
   payment_options->callback =
       base::BindOnce(&GetPaymentInformationAction::OnGetPaymentInformation,
