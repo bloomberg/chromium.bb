@@ -136,7 +136,7 @@ static HTMLElement* AncestorToRetainStructureAndAppearanceForBlock(
     return Traversal<HTMLTableElement>::FirstAncestor(*common_ancestor_block);
 
   if (IsNonTableCellHTMLBlockElement(common_ancestor_block))
-    return ToHTMLElement(common_ancestor_block);
+    return To<HTMLElement>(common_ancestor_block);
 
   return nullptr;
 }
@@ -150,7 +150,7 @@ static inline HTMLElement* AncestorToRetainStructureAndAppearance(
 static inline HTMLElement*
 AncestorToRetainStructureAndAppearanceWithNoLayoutObject(
     const Node& common_ancestor) {
-  HTMLElement* common_ancestor_block = ToHTMLElement(EnclosingNodeOfType(
+  auto* common_ancestor_block = To<HTMLElement>(EnclosingNodeOfType(
       FirstPositionInOrBeforeNode(common_ancestor), IsHTMLBlockElement));
   return AncestorToRetainStructureAndAppearanceForBlock(common_ancestor_block);
 }
@@ -201,7 +201,7 @@ static HTMLElement* HighestAncestorToWrapMarkup(
           ContainerNode* ancestor = parent_list_node->parentNode();
           while (ancestor && !IsHTMLListElement(ancestor))
             ancestor = ancestor->parentNode();
-          special_common_ancestor = ToHTMLElement(ancestor);
+          special_common_ancestor = To<HTMLElement>(ancestor);
         }
       }
 
@@ -226,8 +226,8 @@ static HTMLElement* HighestAncestorToWrapMarkup(
     constraining_ancestor = constraining_ancestor
                                 ? constraining_ancestor
                                 : EnclosingBlock(check_ancestor);
-    HTMLElement* new_special_common_ancestor =
-        ToHTMLElement(HighestEnclosingNodeOfType(
+    auto* new_special_common_ancestor =
+        To<HTMLElement>(HighestEnclosingNodeOfType(
             Position::FirstPositionInNode(*check_ancestor),
             &IsPresentationalHTMLElement, kCanCrossEditingBoundary,
             constraining_ancestor));
@@ -694,7 +694,7 @@ DocumentFragment* CreateContextualFragment(
     next_node = node->nextSibling();
     if (IsHTMLHtmlElement(*node) || IsHTMLHeadElement(*node) ||
         IsHTMLBodyElement(*node)) {
-      HTMLElement* element = ToHTMLElement(node);
+      auto* element = To<HTMLElement>(node);
       if (Node* first_child = element->firstChild())
         next_node = first_child;
       RemoveElementPreservingChildren(fragment, element);

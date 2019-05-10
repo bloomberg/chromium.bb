@@ -149,7 +149,7 @@ HTMLElement* CustomElementDefinition::CreateElement(
       Upgrade(*result);
     else
       EnqueueUpgradeReaction(*result);
-    return ToHTMLElement(result);
+    return To<HTMLElement>(result);
   }
 
   // 6. If definition is non-null, then:
@@ -211,7 +211,7 @@ void CustomElementDefinition::Upgrade(Element& element) {
   element.SetCustomElementDefinition(this);
 
   if (IsFormAssociated())
-    ToHTMLElement(element).EnsureElementInternals().DidUpgrade();
+    To<HTMLElement>(element).EnsureElementInternals().DidUpgrade();
   AddDefaultStylesTo(element);
 }
 

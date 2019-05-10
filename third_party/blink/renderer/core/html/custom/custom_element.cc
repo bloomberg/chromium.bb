@@ -139,7 +139,7 @@ HTMLElement* CustomElement::CreateCustomElement(Document& document,
     return definition->CreateElement(document, tag_name, flags);
   }
   // 7. Otherwise:
-  return ToHTMLElement(
+  return To<HTMLElement>(
       CreateUncustomizedOrUndefinedElementTemplate<kQNameIsValid>(
           document, tag_name, flags, g_null_atom));
 }

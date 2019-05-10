@@ -564,8 +564,10 @@ EditingStyle* StyledMarkupTraverser<Strategy>::CreateInlineStyle(
   if (element.IsStyledElement() && element.InlineStyle())
     inline_style->OverrideWithStyle(element.InlineStyle());
 
-  if (element.IsHTMLElement() && ShouldAnnotate())
-    inline_style->MergeStyleFromRulesForSerialization(&ToHTMLElement(element));
+  auto* html_element = DynamicTo<HTMLElement>(element);
+  if (html_element && ShouldAnnotate()) {
+    inline_style->MergeStyleFromRulesForSerialization(html_element);
+  }
 
   return inline_style;
 }

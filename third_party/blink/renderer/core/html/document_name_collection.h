@@ -18,7 +18,7 @@ class DocumentNameCollection final : public HTMLNameCollection {
                          const AtomicString& name);
 
   HTMLElement* Item(unsigned offset) const {
-    return ToHTMLElement(HTMLNameCollection::item(offset));
+    return To<HTMLElement>(HTMLNameCollection::item(offset));
   }
 
   bool ElementMatches(const HTMLElement&) const;

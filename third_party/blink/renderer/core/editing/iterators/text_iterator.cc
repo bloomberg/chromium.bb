@@ -359,6 +359,7 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
       // Handle the current node according to its type.
       if (iteration_progress_ < kHandledNode) {
         if (!SkipsUnselectableContent() || layout_object->IsSelectable()) {
+          auto* html_element = DynamicTo<HTMLElement>(*node_);
           if (layout_object->IsText() &&
               node_->getNodeType() ==
                   Node::kTextNode) {  // FIXME: What about kCdataSectionNode?
@@ -367,12 +368,12 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
           } else if (layout_object &&
                      (layout_object->IsImage() ||
                       layout_object->IsLayoutEmbeddedContent() ||
-                      (node_ && node_->IsHTMLElement() &&
-                       (IsHTMLFormControlElement(ToHTMLElement(*node_)) ||
-                        IsHTMLLegendElement(ToHTMLElement(*node_)) ||
-                        IsHTMLImageElement(ToHTMLElement(*node_)) ||
-                        IsHTMLMeterElement(ToHTMLElement(*node_)) ||
-                        IsHTMLProgressElement(ToHTMLElement(*node_)))))) {
+                      (html_element &&
+                       (IsHTMLFormControlElement(html_element) ||
+                        IsHTMLLegendElement(html_element) ||
+                        IsHTMLImageElement(html_element) ||
+                        IsHTMLMeterElement(html_element) ||
+                        IsHTMLProgressElement(html_element))))) {
             HandleReplacedElement();
           } else {
             HandleNonTextNode();
@@ -498,14 +499,14 @@ void TextIteratorAlgorithm<Strategy>::HandleTextNode() {
 
 template <typename Strategy>
 bool TextIteratorAlgorithm<Strategy>::SupportsAltText(const Node& node) {
-  if (!node.IsHTMLElement())
+  const auto* element = DynamicTo<HTMLElement>(node);
+  if (!element)
     return false;
-  const HTMLElement& element = ToHTMLElement(node);
 
   // FIXME: Add isSVGImageElement.
-  if (IsHTMLImageElement(element))
+  if (IsHTMLImageElement(*element))
     return true;
-  if (IsHTMLInputElement(element) &&
+  if (IsHTMLInputElement(*element) &&
       ToHTMLInputElement(node).type() == input_type_names::kImage)
     return true;
   return false;
@@ -551,7 +552,7 @@ void TextIteratorAlgorithm<Strategy>::HandleReplacedElement() {
   }
 
   if (EmitsImageAltText() && TextIterator::SupportsAltText(*node_)) {
-    text_state_.EmitAltText(ToHTMLElement(*node_));
+    text_state_.EmitAltText(To<HTMLElement>(*node_));
     return;
   }
   // TODO(editing-dev): We can remove |UpdateForReplacedElement()| call when

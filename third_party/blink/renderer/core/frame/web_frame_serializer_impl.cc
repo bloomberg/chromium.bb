@@ -398,8 +398,8 @@ void WebFrameSerializerImpl::EndTagToString(Element* element,
     if (param->is_html_document) {
       result.Append('>');
       // FIXME: This code is horribly wrong.  WebFrameSerializerImpl must die.
-      if (!element->IsHTMLElement() ||
-          ToHTMLElement(element)->ShouldSerializeEndTag()) {
+      auto* html_element = DynamicTo<HTMLElement>(element);
+      if (!html_element || html_element->ShouldSerializeEndTag()) {
         // We need to write end tag when it is required.
         result.Append("</");
         result.Append(element->nodeName().DeprecatedLower());

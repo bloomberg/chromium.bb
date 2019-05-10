@@ -705,10 +705,10 @@ void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& main_frame,
             location));
     result.SetToShadowHostIfInRestrictedShadowRoot();
     Node* hit_node = result.InnerNode();
+    auto* html_element = DynamicTo<HTMLElement>(hit_node);
     if (!result.GetScrollbar() && hit_node && hit_node->GetLayoutObject() &&
-        hit_node->GetLayoutObject()->IsEmbeddedObject() &&
-        hit_node->IsHTMLElement() &&
-        ToHTMLElement(hit_node)->IsPluginElement()) {
+        hit_node->GetLayoutObject()->IsEmbeddedObject() && html_element &&
+        html_element->IsPluginElement()) {
       mouse_capture_element_ = ToHTMLPlugInElement(hit_node);
       TRACE_EVENT_ASYNC_BEGIN0("input", "capturing mouse", this);
     }
