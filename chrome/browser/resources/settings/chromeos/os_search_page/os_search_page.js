@@ -1,13 +1,13 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 /**
  * @fileoverview
- * 'settings-search-page' is the settings page containing search settings.
+ * 'os-settings-search-page' contains search and assistant settings.
  */
 Polymer({
-  is: 'settings-search-page',
+  is: 'os-settings-search-page',
 
   behaviors: [I18nBehavior],
 
@@ -31,16 +31,13 @@ Polymer({
     /** @type {?Map<string, string>} */
     focusConfig_: Object,
 
-    // <if expr="chromeos">
     /** @private Can be disallowed due to flag, policy, locale, etc. */
     isAssistantAllowed_: {
       type: Boolean,
       value: function() {
-        return loadTimeData.getBoolean('isAssistantAllowed') &&
-            loadTimeData.getBoolean('showOSSettings');
+        return loadTimeData.getBoolean('isAssistantAllowed');
       },
     },
-    // </if>
   },
 
   /** @private {?settings.SearchEnginesBrowserProxy} */
@@ -53,7 +50,6 @@ Polymer({
 
   /** @override */
   ready: function() {
-    // Omnibox search engine
     const updateSearchEngines = searchEngines => {
       this.set('searchEngines_', searchEngines.defaults);
     };
@@ -61,18 +57,11 @@ Polymer({
     cr.addWebUIListener('search-engines-changed', updateSearchEngines);
 
     this.focusConfig_ = new Map();
-    if (settings.routes.SEARCH_ENGINES) {
-      this.focusConfig_.set(
-          settings.routes.SEARCH_ENGINES.path,
-          '#engines-subpage-trigger');
-    }
-    // <if expr="chromeos">
     if (settings.routes.GOOGLE_ASSISTANT) {
       this.focusConfig_.set(
           settings.routes.GOOGLE_ASSISTANT.path,
           '#assistant-subpage-trigger .subpage-arrow');
     }
-    // </if>
   },
 
   /** @private */
@@ -88,19 +77,11 @@ Polymer({
   },
 
   /** @private */
-  onManageSearchEnginesTap_: function() {
-    settings.navigateTo(settings.routes.SEARCH_ENGINES);
-  },
-
-  // <if expr="chromeos">
-  /** @private */
   onGoogleAssistantTap_: function() {
     assert(this.isAssistantAllowed_);
     settings.navigateTo(settings.routes.GOOGLE_ASSISTANT);
   },
-  // </if>
 
-  // <if expr="chromeos">
   /**
    * @param {boolean} toggleValue
    * @return {string}
@@ -110,15 +91,6 @@ Polymer({
     return this.i18n(
         toggleValue ? 'searchGoogleAssistantEnabled' :
                       'searchGoogleAssistantDisabled');
-  },
-  // </if>
-
-  /**
-   * @param {!Event} event
-   * @private
-   */
-  doNothing_: function(event) {
-    event.stopPropagation();
   },
 
   /**

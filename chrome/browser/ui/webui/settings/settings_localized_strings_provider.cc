@@ -2215,17 +2215,24 @@ void AddSearchStrings(content::WebUIDataSource* html_source, Profile* profile) {
   const bool is_assistant_allowed =
       assistant::IsAssistantAllowedForProfile(profile) ==
       ash::mojom::AssistantAllowedState::ALLOWED;
+  // SplitSettings moves Assistant to the OS settings window.
+  const bool assistant_in_browser_settings =
+      is_assistant_allowed && !chromeos::features::IsSplitSettingsEnabled();
 #endif
 
   LocalizedString localized_strings[] = {
 #if defined(OS_CHROMEOS)
-    {"searchPageTitle", is_assistant_allowed ? IDS_SETTINGS_SEARCH_AND_ASSISTANT
-                                             : IDS_SETTINGS_SEARCH},
+    {"searchPageTitle", assistant_in_browser_settings
+                            ? IDS_SETTINGS_SEARCH_AND_ASSISTANT
+                            : IDS_SETTINGS_SEARCH},
 #else
     {"searchPageTitle", IDS_SETTINGS_SEARCH},
 #endif
     {"searchEnginesManage", IDS_SETTINGS_SEARCH_MANAGE_SEARCH_ENGINES},
 #if defined(OS_CHROMEOS)
+    {"osSearchPageTitle", is_assistant_allowed
+                              ? IDS_SETTINGS_SEARCH_AND_ASSISTANT
+                              : IDS_SETTINGS_SEARCH},
     {"searchGoogleAssistant", IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT},
     {"searchGoogleAssistantEnabled",
      IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_ENABLED},
