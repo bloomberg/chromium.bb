@@ -5881,6 +5881,24 @@
             ]
         }
     ],
+    "WebRTC-CongestionWindow": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "ios",
+                "android",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "QueueSize:800,MinBitrate:30000"
+                }
+            ]
+        }
+    ],
     "WebRTC-EnableWebRtcEcdsa": [
         {
             "platforms": [
