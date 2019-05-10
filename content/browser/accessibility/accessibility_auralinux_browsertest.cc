@@ -193,6 +193,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   CheckTextAtOffset(atk_text, 0, ATK_TEXT_BOUNDARY_LINE_START, 0,
                     InputContentsString().size(),
                     InputContentsString().c_str());
+
+  g_object_unref(atk_text);
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
@@ -209,6 +211,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   // Last line does not have a trailing newline.
   CheckTextAtOffset(atk_text, 32, ATK_TEXT_BOUNDARY_LINE_START, 32,
                     InputContentsString().size(), "\"KHTML, like\".");
+
+  g_object_unref(atk_text);
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
@@ -236,6 +240,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
         n_characters,
         "cooperation between intelligent rational decision-makers.\"");
   }
+
+  g_object_unref(atk_text);
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
@@ -328,6 +334,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   EXPECT_EQ(0, y);
   EXPECT_EQ(0, width);
   EXPECT_EQ(0, height);
+
+  g_object_unref(atk_text);
 }
 
 AtkCoordType kCoordinateTypes[] = {
@@ -430,6 +438,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
       EXPECT_EQ(combined_extents.height(), atk_rect.height);
     }
   }
+
+  g_object_unref(atk_text);
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
@@ -509,6 +519,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
       EXPECT_EQ(previous_height, height);
     }
   }
+
+  g_object_unref(atk_text);
 }
 
 #if defined(ATK_230)
@@ -575,6 +587,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestScrollToPoint) {
   atk_component_get_extents(ATK_COMPONENT(frame), nullptr, &frame_y, nullptr,
                             nullptr, ATK_XY_SCREEN);
   EXPECT_EQ(frame_y, y);
+
+  g_object_unref(atk_text);
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestScrollTo) {
@@ -714,6 +728,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestSetSelection) {
   EXPECT_EQ(1, start_offset);
   EXPECT_EQ(contents_string_length, end_offset);
   g_free(selected_text);
+
+  g_object_unref(atk_text);
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestAtkTextListItem) {

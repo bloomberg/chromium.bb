@@ -1499,8 +1499,9 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestFocusTriggersAtkWindowActive) {
 
   AtkObject* root_atk_object(GetRootAtkObject());
   EXPECT_TRUE(ATK_IS_OBJECT(root_atk_object));
-  g_object_ref(root_atk_object);
   EXPECT_TRUE(ATK_IS_WINDOW(root_atk_object));
+
+  g_object_ref(root_atk_object);
 
   AXNode* child_node = GetRootNode()->children()[0];
 
@@ -1761,17 +1762,14 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectSetSizePosInSet) {
   AXNode* radiobutton1 = GetRootNode()->children()[0];
   AtkObject* radiobutton1_atk_object(AtkObjectFromNode(radiobutton1));
   EXPECT_TRUE(ATK_IS_OBJECT(radiobutton1_atk_object));
-  g_object_ref(radiobutton1_atk_object);
 
   AXNode* radiobutton2 = GetRootNode()->children()[1];
   AtkObject* radiobutton2_atk_object(AtkObjectFromNode(radiobutton2));
   EXPECT_TRUE(ATK_IS_OBJECT(radiobutton2_atk_object));
-  g_object_ref(radiobutton2_atk_object);
 
   AXNode* radiobutton3 = GetRootNode()->children()[2];
   AtkObject* radiobutton3_atk_object(AtkObjectFromNode(radiobutton3));
   EXPECT_TRUE(ATK_IS_OBJECT(radiobutton3_atk_object));
-  g_object_ref(radiobutton3_atk_object);
 
   // Notice that setsize was never assigned to any of the kRadioButtons, but was
   // inferred.
