@@ -10120,6 +10120,7 @@ static int ref_mv_idx_to_search(AV1_COMP *const cpi, MACROBLOCK *x,
                                 int64_t ref_best_rd, inter_mode_info *mode_info,
                                 BLOCK_SIZE bsize, int mi_row, int mi_col,
                                 const int ref_set) {
+  AV1_COMMON *const cm = &cpi->common;
   const MACROBLOCKD *const xd = &x->e_mbd;
   const MB_MODE_INFO *const mbmi = xd->mi[0];
   const PREDICTION_MODE this_mode = mbmi->mode;
@@ -10139,6 +10140,13 @@ static int ref_mv_idx_to_search(AV1_COMP *const cpi, MACROBLOCK *x,
   if (!cpi->sf.prune_mode_search_simple_translation) return good_indices;
   if (!have_nearmv_in_inter_mode(this_mode)) return good_indices;
   if (num_pels_log2_lookup[bsize] <= 6) return good_indices;
+  // Do not prune when there is internal resizing. TODO(elliottk) fix this
+  // so b/2384 can be resolved.
+  if (av1_is_scaled(get_ref_scale_factors(cm, mbmi->ref_frame[0])) ||
+      (mbmi->ref_frame[1] > 0 &&
+       av1_is_scaled(get_ref_scale_factors(cm, mbmi->ref_frame[1])))) {
+    return good_indices;
+  }
 
   // Calculate the RD cost for the motion vectors using simple translation.
   int64_t idx_rdcost[] = { INT64_MAX, INT64_MAX, INT64_MAX };
