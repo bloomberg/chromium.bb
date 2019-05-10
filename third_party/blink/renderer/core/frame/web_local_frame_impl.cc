@@ -187,7 +187,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/page_scale_constraints_set.h"
 #include "third_party/blink/renderer/core/frame/pausable_script_executor.h"
-#include "third_party/blink/renderer/core/frame/pausable_task.h"
 #include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_owner.h"
@@ -810,13 +809,6 @@ void WebLocalFrameImpl::RequestExecuteV8Function(
   PausableScriptExecutor::CreateAndRun(GetFrame(), ToIsolate(GetFrame()),
                                        context, function, receiver, argc, argv,
                                        callback);
-}
-
-void WebLocalFrameImpl::PostPausableTask(PausableTaskCallback callback) {
-  DCHECK(GetFrame());
-  Document* document = GetFrame()->GetDocument();
-  DCHECK(document);
-  PausableTask::Post(document, std::move(callback));
 }
 
 void WebLocalFrameImpl::RequestExecuteScriptInIsolatedWorld(

@@ -369,22 +369,6 @@ class WebLocalFrame : public WebFrame {
                                         v8::Local<v8::Value> argv[],
                                         WebScriptExecutionCallback*) = 0;
 
-  enum class PausableTaskResult {
-    // The context was invalid or destroyed.
-    kContextInvalidOrDestroyed,
-    // Script is not paused.
-    kReady,
-  };
-  using PausableTaskCallback = base::OnceCallback<void(PausableTaskResult)>;
-
-  // Queues a callback to run script when the context is not paused, e.g. for a
-  // modal JS dialog or window.print(). This callback can run immediately if the
-  // context is not paused. If the context is invalidated before becoming
-  // unpaused, the callback will be run with a kContextInvalidOrDestroyed value.
-  // This asserts that the context is valid at the time of this
-  // call.
-  virtual void PostPausableTask(PausableTaskCallback) = 0;
-
   enum ScriptExecutionType {
     // Execute script synchronously, unless the page is suspended.
     kSynchronous,

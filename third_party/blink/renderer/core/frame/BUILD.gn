@@ -125,8 +125,6 @@ blink_core_sources("frame") {
     "page_scale_constraints_set.h",
     "pausable_script_executor.cc",
     "pausable_script_executor.h",
-    "pausable_task.cc",
-    "pausable_task.h",
     "performance_monitor.cc",
     "performance_monitor.h",
     "picture_in_picture_controller.cc",
