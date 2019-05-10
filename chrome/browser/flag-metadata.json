@@ -1174,8 +1174,8 @@
   },
   {
     "name": "enable-incognito-window-counter",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "rhalavati" ],
+    "expiry_milestone": 77
   },
   {
     "name": "enable-inline-update-flow",
