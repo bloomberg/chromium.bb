@@ -35,6 +35,12 @@ cr.define('extension_manager_tests', function() {
 
     setup(function() {
       manager = document.querySelector('extensions-manager');
+      // Wait for the first view to be active before starting tests, if one is
+      // not active already. Sometimes, on Mac with native HTML imports
+      // disabled, no views are active at this point.
+      return manager.$.viewManager.querySelector('.active') ?
+          Promise.resolve() :
+          test_util.eventToPromise('view-enter-start', manager);
     });
 
     test(assert(TestNames.ItemListVisibility), function() {
