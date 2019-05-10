@@ -27,6 +27,7 @@ namespace blink {
 namespace {
 
 const char kFrobulateTrialName[] = "Frobulate";
+const char kFrobulateNavigationTrialName[] = "FrobulateNavigation";
 const char kFrobulateEnabledOrigin[] = "https://www.example.com";
 const char kFrobulateEnabledOriginUnsecure[] = "http://www.example.com";
 
@@ -99,6 +100,15 @@ class OriginTrialContextTest : public testing::Test,
     return origin_trial_context_->IsFeatureEnabled(feature);
   }
 
+  std::unique_ptr<Vector<OriginTrialFeature>> GetEnabledNavigationFeatures() {
+    return origin_trial_context_->GetEnabledNavigationFeatures();
+  }
+
+  bool ActivateNavigationFeature(OriginTrialFeature feature) {
+    origin_trial_context_->ActivateNavigationFeaturesFromInitiator({feature});
+    return origin_trial_context_->IsNavigationFeatureActivated(feature);
+  }
+
   void ExpectStatusUniqueMetric(OriginTrialTokenStatus status, int count) {
     histogram_tester_->ExpectUniqueSample(kResultHistogram,
                                           static_cast<int>(status), count);
@@ -137,6 +147,10 @@ TEST_F(OriginTrialContextTest, EnabledSecureRegisteredOrigin) {
 
   // Status metric should be updated.
   ExpectStatusUniqueMetric(OriginTrialTokenStatus::kSuccess, 1);
+
+  // kOriginTrialsSampleAPI is not a navigation feature, so shouldn't be
+  // included in GetEnabledNavigationFeatures().
+  EXPECT_EQ(nullptr, GetEnabledNavigationFeatures());
 }
 
 // ... but if the browser says it's invalid for any reason, that's enough to
@@ -250,6 +264,27 @@ TEST_F(OriginTrialContextTest, FeaturePolicy) {
   EXPECT_TRUE(messages.IsEmpty());
   ASSERT_EQ(1u, result.size());
   EXPECT_EQ(mojom::FeaturePolicyFeature::kFrobulate, result[0].feature);
+}
+
+TEST_F(OriginTrialContextTest, GetEnabledNavigationFeatures) {
+  TokenValidator()->SetResponse(OriginTrialTokenStatus::kSuccess,
+                                kFrobulateNavigationTrialName);
+  EXPECT_TRUE(
+      IsFeatureEnabled(kFrobulateEnabledOrigin,
+                       OriginTrialFeature::kOriginTrialsSampleAPINavigation));
+
+  auto enabled_navigation_features = GetEnabledNavigationFeatures();
+  ASSERT_NE(nullptr, enabled_navigation_features.get());
+  EXPECT_EQ(WTF::Vector<OriginTrialFeature>(
+                {OriginTrialFeature::kOriginTrialsSampleAPINavigation}),
+            *enabled_navigation_features.get());
+}
+
+TEST_F(OriginTrialContextTest, ActivateNavigationFeature) {
+  EXPECT_TRUE(ActivateNavigationFeature(
+      OriginTrialFeature::kOriginTrialsSampleAPINavigation));
+  EXPECT_FALSE(
+      ActivateNavigationFeature(OriginTrialFeature::kOriginTrialsSampleAPI));
 }
 
 }  // namespace blink

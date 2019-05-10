@@ -66,8 +66,27 @@ class CORE_EXPORT OriginTrialContext final
   // Returns null if no tokens were added to the ExecutionContext.
   static std::unique_ptr<Vector<String>> GetTokens(ExecutionContext*);
 
+  // Returns the navigation trial features that are enabled in the specified
+  // ExecutionContext, that should be forwarded to (and activated in)
+  // ExecutionContexts navigated to from the given ExecutionContext. Returns
+  // null if no such trials were added to the ExecutionContext.
+  static std::unique_ptr<Vector<OriginTrialFeature>>
+  GetEnabledNavigationFeatures(ExecutionContext*);
+
+  // Activates navigation trial features forwarded from the ExecutionContext
+  // that navigated to the specified ExecutionContext. Only features for which
+  // origin_trials::IsCrossNavigationFeature returns true can be activated via
+  // this method. Trials activated via this method will return true from
+  // IsNavigationFeatureActivated, for the specified ExecutionContext.
+  static void ActivateNavigationFeaturesFromInitiator(
+      ExecutionContext*,
+      const Vector<OriginTrialFeature>*);
+
   void AddToken(const String& token);
   void AddTokens(const Vector<String>& tokens);
+
+  void ActivateNavigationFeaturesFromInitiator(
+      const Vector<OriginTrialFeature>& features);
 
   // Forces a given origin-trial-enabled feature to be enabled in this context
   // and immediately adds required bindings to already initialized JS contexts.
@@ -76,6 +95,16 @@ class CORE_EXPORT OriginTrialContext final
   // Returns true if the feature should be considered enabled for the current
   // execution context.
   bool IsFeatureEnabled(OriginTrialFeature feature) const;
+
+  std::unique_ptr<Vector<OriginTrialFeature>> GetEnabledNavigationFeatures()
+      const;
+
+  // Returns true if the navigation feature is activated in the current
+  // ExecutionContext. Navigation features are features that are enabled in one
+  // ExecutionContext, but whose behavior is activated in ExecutionContexts that
+  // are navigated to from that context. For example, if navigating from context
+  // A to B, a navigation feature is enabled in A, and activated in B.
+  bool IsNavigationFeatureActivated(const OriginTrialFeature feature) const;
 
   // Installs JavaScript bindings on the relevant objects for any features which
   // should be enabled by the current set of trial tokens. This method is called
@@ -96,9 +125,14 @@ class CORE_EXPORT OriginTrialContext final
   // the token is valid.
   bool EnableTrialFromToken(const String& token);
 
+  // Installs JavaScript bindings on the relevant objects for the specified
+  // OriginTrialFeature.
+  void InstallFeature(OriginTrialFeature, ScriptState*);
+
   Vector<String> tokens_;
   HashSet<OriginTrialFeature> enabled_features_;
   HashSet<OriginTrialFeature> installed_features_;
+  HashSet<OriginTrialFeature> navigation_activated_features_;
   std::unique_ptr<TrialTokenValidator> trial_token_validator_;
 };
 

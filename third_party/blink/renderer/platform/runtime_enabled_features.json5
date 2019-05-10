@@ -1011,6 +1011,10 @@
       origin_trial_os: ["invalid"],
     },
     {
+      name: "OriginTrialsSampleAPINavigation",
+      origin_trial_feature_name: "FrobulateNavigation",
+    },
+    {
       name: "OutOfBlinkCors",
     },
     {

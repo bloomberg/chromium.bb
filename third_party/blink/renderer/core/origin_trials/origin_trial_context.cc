@@ -85,6 +85,13 @@ String ExtractTokenOrQuotedString(const String& header_value, unsigned& pos) {
   return result;
 }
 
+// Returns whether the given feature can be activated across navigations. Only
+// features reviewed and approved by security reviewers can be activated across
+// navigations.
+bool IsCrossNavigationFeature(OriginTrialFeature feature) {
+  return origin_trials::GetNavigationOriginTrialFeatures().Contains(feature);
+}
+
 }  // namespace
 
 OriginTrialContext::OriginTrialContext(
@@ -154,12 +161,43 @@ void OriginTrialContext::AddTokens(ExecutionContext* context,
 }
 
 // static
+void OriginTrialContext::ActivateNavigationFeaturesFromInitiator(
+    ExecutionContext* context,
+    const Vector<OriginTrialFeature>* features) {
+  if (!features || features->IsEmpty())
+    return;
+  FromOrCreate(context)->ActivateNavigationFeaturesFromInitiator(*features);
+}
+
+// static
 std::unique_ptr<Vector<String>> OriginTrialContext::GetTokens(
     ExecutionContext* execution_context) {
   const OriginTrialContext* context = From(execution_context);
   if (!context || context->tokens_.IsEmpty())
     return nullptr;
   return std::make_unique<Vector<String>>(context->tokens_);
+}
+
+// static
+std::unique_ptr<Vector<OriginTrialFeature>>
+OriginTrialContext::GetEnabledNavigationFeatures(
+    ExecutionContext* execution_context) {
+  const OriginTrialContext* context = From(execution_context);
+  return context ? context->GetEnabledNavigationFeatures() : nullptr;
+}
+
+std::unique_ptr<Vector<OriginTrialFeature>>
+OriginTrialContext::GetEnabledNavigationFeatures() const {
+  if (enabled_features_.IsEmpty())
+    return nullptr;
+  std::unique_ptr<Vector<OriginTrialFeature>> result =
+      std::make_unique<Vector<OriginTrialFeature>>();
+  for (const OriginTrialFeature& feature : enabled_features_) {
+    if (IsCrossNavigationFeature(feature)) {
+      result->push_back(feature);
+    }
+  }
+  return result->IsEmpty() ? nullptr : std::move(result);
 }
 
 void OriginTrialContext::AddToken(const String& token) {
@@ -191,6 +229,16 @@ void OriginTrialContext::AddTokens(const Vector<String>& tokens) {
   }
 }
 
+void OriginTrialContext::ActivateNavigationFeaturesFromInitiator(
+    const Vector<OriginTrialFeature>& features) {
+  for (const OriginTrialFeature& feature : features) {
+    if (IsCrossNavigationFeature(feature)) {
+      navigation_activated_features_.insert(feature);
+    }
+  }
+  InitializePendingFeatures();
+}
+
 void OriginTrialContext::InitializePendingFeatures() {
   if (!enabled_features_.size())
     return;
@@ -207,11 +255,19 @@ void OriginTrialContext::InitializePendingFeatures() {
     return;
   ScriptState::Scope scope(script_state);
   for (OriginTrialFeature enabled_feature : enabled_features_) {
-    if (installed_features_.Contains(enabled_feature))
-      continue;
-    InstallPendingOriginTrialFeature(enabled_feature, script_state);
-    installed_features_.insert(enabled_feature);
+    InstallFeature(enabled_feature, script_state);
   }
+  for (OriginTrialFeature enabled_feature : navigation_activated_features_) {
+    InstallFeature(enabled_feature, script_state);
+  }
+}
+
+void OriginTrialContext::InstallFeature(OriginTrialFeature enabled_feature,
+                                        ScriptState* script_state) {
+  if (installed_features_.Contains(enabled_feature))
+    return;
+  InstallPendingOriginTrialFeature(enabled_feature, script_state);
+  installed_features_.insert(enabled_feature);
 }
 
 void OriginTrialContext::AddFeature(OriginTrialFeature feature) {
@@ -241,6 +297,14 @@ bool OriginTrialContext::IsFeatureEnabled(OriginTrialFeature feature) const {
   if (!context)
     return false;
   return context->IsFeatureEnabled(feature);
+}
+
+bool OriginTrialContext::IsNavigationFeatureActivated(
+    OriginTrialFeature feature) const {
+  if (!RuntimeEnabledFeatures::OriginTrialsEnabled())
+    return false;
+
+  return navigation_activated_features_.Contains(feature);
 }
 
 bool OriginTrialContext::EnableTrialFromToken(const String& token) {
