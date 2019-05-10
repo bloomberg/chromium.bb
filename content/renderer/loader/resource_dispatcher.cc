@@ -142,7 +142,7 @@ void ResourceDispatcher::OnUploadProgress(int request_id,
 void ResourceDispatcher::OnReceivedResponse(
     int request_id,
     const network::ResourceResponseHead& response_head) {
-  TRACE_EVENT0("loader", "ResourceDispatcher::OnReceivedResponse");
+  TRACE_EVENT0("loading", "ResourceDispatcher::OnReceivedResponse");
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
@@ -203,7 +203,7 @@ void ResourceDispatcher::OnReceivedRedirect(
     const net::RedirectInfo& redirect_info,
     const network::ResourceResponseHead& response_head,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  TRACE_EVENT0("loader", "ResourceDispatcher::OnReceivedRedirect");
+  TRACE_EVENT0("loading", "ResourceDispatcher::OnReceivedRedirect");
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
@@ -267,7 +267,7 @@ void ResourceDispatcher::FollowPendingRedirect(
 void ResourceDispatcher::OnRequestComplete(
     int request_id,
     const network::URLLoaderCompletionStatus& status) {
-  TRACE_EVENT0("loader", "ResourceDispatcher::OnRequestComplete");
+  TRACE_EVENT0("loading", "ResourceDispatcher::OnRequestComplete");
 
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)

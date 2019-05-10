@@ -1202,7 +1202,7 @@ void HTMLDocumentParser::SetDecoder(
 }
 
 void HTMLDocumentParser::DocumentElementAvailable() {
-  TRACE_EVENT0("blink,loader", "HTMLDocumentParser::documentElementAvailable");
+  TRACE_EVENT0("blink,loading", "HTMLDocumentParser::DocumentElementAvailable");
   TimeDelta delta;
   if (!appcache_queueing_start_time_.is_null()) {
     delta = CurrentTimeTicks() - appcache_queueing_start_time_;

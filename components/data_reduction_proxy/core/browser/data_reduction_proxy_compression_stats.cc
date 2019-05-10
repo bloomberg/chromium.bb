@@ -526,7 +526,7 @@ void DataReductionProxyCompressionStats::RecordDataUseWithMimeType(
     data_use_measurement::DataUseUserData::DataUseContentType content_type,
     int32_t service_hash_code) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  TRACE_EVENT0("loader",
+  TRACE_EVENT0("loading",
                "DataReductionProxyCompressionStats::RecordDataUseWithMimeType")
 
   IncreaseInt64Pref(data_reduction_proxy::prefs::kHttpReceivedContentLength,
