@@ -53,6 +53,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
 #include "components/offline_pages/buildflags/buildflags.h"
@@ -1246,6 +1247,16 @@ void ChromeDownloadManagerDelegate::OnDownloadTargetDetermined(
     target_info->result = download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED;
     // A dangerous type would take precendence over the blocking of the file.
     target_info->danger_type = download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS;
+  }
+
+  if (base::FeatureList::IsEnabled(
+          download::features::kPreventDownloadsWithSamePath)) {
+    // A separate reservation with the same target path may exist.
+    // If so, cancel the current reservation.
+    if (DownloadPathReservationTracker::CheckDownloadPathForExistingDownload(
+            target_info->target_path, item)) {
+      target_info->result = download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED;
+    }
   }
 
   callback.Run(target_info->target_path, target_info->target_disposition,

@@ -33,6 +33,10 @@ COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
 COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature kRefreshExpirationDate;
 #endif
 
+// Whether concurrent downloads to the same target path should be allowed.
+COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
+    kPreventDownloadsWithSamePath;
+
 }  // namespace features
 }  // namespace download
 
