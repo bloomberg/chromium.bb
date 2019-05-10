@@ -9,6 +9,7 @@
 #include "ios/chrome/browser/infobars/infobar_controller_delegate.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator_implementation.h"
+#import "ios/chrome/browser/ui/infobars/infobar_container.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -63,6 +64,8 @@
     // RemoveInfoBar() will delete the InfobarIOS that owns this Coordinator
     // from memory.
     self.delegate->RemoveInfoBar();
+    _confirmInfobarDelegate = nil;
+    [self.infobarContainer childCoordinatorStopped];
   }
 }
 

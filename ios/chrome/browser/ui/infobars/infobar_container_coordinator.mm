@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_constants.h"
+#import "ios/chrome/browser/ui/infobars/infobar_container.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container_consumer.h"
 #include "ios/chrome/browser/ui/infobars/infobar_container_mediator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
@@ -24,7 +25,8 @@
 #error "This file requires ARC support."
 #endif
 
-@interface InfobarContainerCoordinator () <InfobarContainerConsumer>
+@interface InfobarContainerCoordinator () <InfobarContainer,
+                                           InfobarContainerConsumer>
 
 @property(nonatomic, assign) WebStateList* webStateList;
 
@@ -176,6 +178,7 @@
   infobarCoordinator.browserState = self.browserState;
   infobarCoordinator.baseViewController = self.baseViewController;
   infobarCoordinator.dispatcher = self.dispatcher;
+  infobarCoordinator.infobarContainer = self;
   if (!infobarCoordinator.bannerWasPresented)
     [infobarCoordinator presentInfobarBannerAnimated:YES completion:nil];
   self.infobarViewController = infobarCoordinator.bannerViewController;
@@ -201,6 +204,15 @@
   DCHECK(IsInfobarUIRebootEnabled());
   // TODO(crbug.com/927064): NO-OP - This shouldn't be needed in the new UI
   // since we use autolayout for the contained Infobars.
+}
+
+#pragma mark InfobarContainer
+
+- (void)childCoordinatorStopped {
+  DCHECK(IsInfobarUIRebootEnabled());
+  // TODO(crbug.com/961343): When more than one InfobarCoordinator can exist
+  // concurrently, delete only the one that stopped.
+  [self.childCoordinators removeAllObjects];
 }
 
 #pragma mark - InfobarCommands

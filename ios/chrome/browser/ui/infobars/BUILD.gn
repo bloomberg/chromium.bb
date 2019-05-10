@@ -30,6 +30,7 @@ source_set("infobars") {
 
 source_set("public") {
   sources = [
+    "infobar_container.h",
     "infobar_positioner.h",
   ]
 }

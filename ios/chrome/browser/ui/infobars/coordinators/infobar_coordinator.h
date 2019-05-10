@@ -13,6 +13,7 @@
 
 @protocol ApplicationCommands;
 @protocol InfobarBadgeUIDelegate;
+@protocol InfobarContainer;
 
 @class InfobarBannerTransitionDriver;
 @class InfobarBannerViewController;
@@ -83,6 +84,9 @@ class InfoBarDelegate;
 
 // The dispatcher for this Coordinator.
 @property(nonatomic, weak) id<ApplicationCommands> dispatcher;
+
+// The InfobarContainer for this InfobarCoordinator.
+@property(nonatomic, weak) id<InfobarContainer> infobarContainer;
 
 // YES if an InfobarBanner is being presented.
 @property(nonatomic, assign, getter=isPresentingInfobarBanner)

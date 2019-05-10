@@ -328,3 +328,30 @@ TEST_F(InfobarContainerCoordinatorTest, TestInfobarBannerDismissalByBaseVC) {
       }));
   ASSERT_FALSE([infobar_container_coordinator_ isPresentingInfobarBanner]);
 }
+
+// Tests that the ChildCoordinator is deleted once it stops.
+// TODO(crbug.com/961343): Update test when more than one Child Coordinator is
+// supported.
+TEST_F(InfobarContainerCoordinatorTest, TestInfobarChildCoordinatorCount) {
+  AddInfobar();
+
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^bool {
+        return [infobar_container_coordinator_ isPresentingInfobarBanner];
+      }));
+  ASSERT_TRUE([infobar_container_coordinator_ isPresentingInfobarBanner]);
+
+  ASSERT_EQ(NSUInteger(1),
+            infobar_container_coordinator_.childCoordinators.count);
+  ASSERT_TRUE([infobar_container_coordinator_ isPresentingInfobarBanner]);
+
+  web_state_list_->CloseWebStateAt(0, 0);
+
+  ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^bool {
+        return ![infobar_container_coordinator_ isPresentingInfobarBanner];
+      }));
+  ASSERT_FALSE([infobar_container_coordinator_ isPresentingInfobarBanner]);
+  ASSERT_EQ(NSUInteger(0),
+            infobar_container_coordinator_.childCoordinators.count);
+}
