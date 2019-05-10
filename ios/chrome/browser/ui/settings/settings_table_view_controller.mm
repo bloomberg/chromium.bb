@@ -50,6 +50,7 @@
 #import "ios/chrome/browser/ui/settings/content_settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_coordinator.h"
+#import "ios/chrome/browser/ui/settings/language_settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/material_cell_catalog_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/privacy_table_view_controller.h"
@@ -109,6 +110,8 @@ NSString* const kSettingsAutofillCreditCardImageName =
 NSString* const kSettingsAutofillProfileImageName = @"settings_addresses";
 NSString* const kSettingsVoiceSearchImageName = @"settings_voice_search";
 NSString* const kSettingsPrivacyImageName = @"settings_privacy";
+NSString* const kSettingsLanguageSettingsImageName =
+    @"settings_language_settings";
 NSString* const kSettingsContentSettingsImageName =
     @"settings_content_settings";
 NSString* const kSettingsBandwidthImageName = @"settings_bandwidth";
@@ -138,6 +141,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeAutofillProfile,
   ItemTypeVoiceSearch,
   ItemTypePrivacy,
+  ItemTypeLanguageSettings,
   ItemTypeContentSettings,
   ItemTypeBandwidth,
   ItemTypeAboutChrome,
@@ -442,6 +446,10 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   _articlesForYouItem = [self articlesForYouSwitchItem];
   [model addItem:_articlesForYouItem
       toSectionWithIdentifier:SectionIdentifierAdvanced];
+  if (base::FeatureList::IsEnabled(kLanguageSettings)) {
+    [model addItem:[self languageSettingsDetailItem]
+        toSectionWithIdentifier:SectionIdentifierAdvanced];
+  }
   [model addItem:[self contentSettingsDetailItem]
       toSectionWithIdentifier:SectionIdentifierAdvanced];
   [model addItem:[self bandwidthManagementDetailItem]
@@ -618,6 +626,14 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
                                    IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY)
                     detailText:nil
                  iconImageName:kSettingsPrivacyImageName];
+}
+
+- (TableViewItem*)languageSettingsDetailItem {
+  return [self
+      detailItemWithType:ItemTypeLanguageSettings
+                    text:l10n_util::GetNSString(IDS_IOS_LANGUAGE_SETTINGS_TITLE)
+              detailText:nil
+           iconImageName:kSettingsLanguageSettingsImageName];
 }
 
 - (TableViewItem*)contentSettingsDetailItem {
@@ -845,6 +861,10 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
       break;
     case ItemTypePrivacy:
       controller = [[PrivacyTableViewController alloc]
+          initWithBrowserState:_browserState];
+      break;
+    case ItemTypeLanguageSettings:
+      controller = [[LanguageSettingsTableViewController alloc]
           initWithBrowserState:_browserState];
       break;
     case ItemTypeContentSettings:

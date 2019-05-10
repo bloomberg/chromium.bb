@@ -94,6 +94,14 @@ imageset("settings_debug") {
   ]
 }
 
+imageset("settings_language_settings") {
+  sources = [
+    "settings_language_settings.imageset/Contents.json",
+    "settings_language_settings.imageset/settings_language_settings@2x.png",
+    "settings_language_settings.imageset/settings_language_settings@3x.png",
+  ]
+}
+
 imageset("settings_passwords") {
   sources = [
     "settings_passwords.imageset/Contents.json",
