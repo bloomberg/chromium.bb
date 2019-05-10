@@ -42,6 +42,7 @@ namespace password_manager {
 class LogManager;
 class PasswordFormManagerForUI;
 class PasswordManager;
+class PasswordManagerDriver;
 class PasswordManagerMetricsRecorder;
 class PasswordRequirementsService;
 class PasswordStore;
@@ -126,9 +127,10 @@ class PasswordManagerClient {
 
   // Informs the embedder that the focus changed to a different input in the
   // same frame (e.g. tabbed from email to password field).
-  virtual void FocusedInputChanged(const url::Origin& last_committed_origin,
-                                   bool is_fillable,
-                                   bool is_password_field) = 0;
+  virtual void FocusedInputChanged(
+      password_manager::PasswordManagerDriver* driver,
+      bool is_fillable,
+      bool is_password_field) = 0;
 
   // Informs the embedder of a password forms that the user should choose from.
   // Returns true if the prompt is indeed displayed. If the prompt is not

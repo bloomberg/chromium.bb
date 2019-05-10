@@ -69,7 +69,8 @@ class PasswordAccessoryControllerImpl
   void OnFilledIntoFocusedField(autofill::FillingStatus status) override;
   void RefreshSuggestionsForField(const url::Origin& origin,
                                   bool is_fillable,
-                                  bool is_password_field) override;
+                                  bool is_password_field,
+                                  bool is_manual_generation_available) override;
   void DidNavigateMainFrame() override;
   void GetFavicon(
       int desired_size_in_pixel,

@@ -72,9 +72,11 @@ class PasswordAccessoryController
   // Makes sure, that all shown suggestions are appropriate for the currently
   // focused field and for fields that lost the focus. If a field lost focus,
   // |is_fillable| will be false.
-  virtual void RefreshSuggestionsForField(const url::Origin& origin,
-                                          bool is_fillable,
-                                          bool is_password_field) = 0;
+  virtual void RefreshSuggestionsForField(
+      const url::Origin& origin,
+      bool is_fillable,
+      bool is_password_field,
+      bool is_manual_generation_available) = 0;
 
   // Reacts to a navigation on the main frame, e.g. by clearing caches.
   virtual void DidNavigateMainFrame() = 0;

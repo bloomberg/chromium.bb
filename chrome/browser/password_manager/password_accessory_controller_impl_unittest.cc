@@ -143,6 +143,11 @@ base::string16 manage_passwords_str() {
       IDS_PASSWORD_MANAGER_ACCESSORY_ALL_PASSWORDS_LINK);
 }
 
+base::string16 generate_password_str() {
+  return l10n_util::GetStringUTF16(
+      IDS_PASSWORD_MANAGER_ACCESSORY_GENERATE_PASSWORD_BUTTON_TITLE);
+}
+
 // Creates a AccessorySheetDataBuilder object with a "Manage passwords..."
 // footer.
 AccessorySheetDataBuilder PasswordAccessorySheetDataBuilder(
@@ -262,7 +267,8 @@ TEST_F(PasswordAccessoryControllerTest, TransformsMatchesToSuggestions) {
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
-      /*is_password_field=*/false);
+      /*is_password_field=*/false,
+      /*is_manual_generation_available=*/false);
 }
 
 TEST_F(PasswordAccessoryControllerTest, HintsToEmptyUserNames) {
@@ -284,7 +290,8 @@ TEST_F(PasswordAccessoryControllerTest, HintsToEmptyUserNames) {
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
-      /*is_password_field=*/false);
+      /*is_password_field=*/false,
+      /*is_manual_generation_available=*/false);
 }
 
 TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
@@ -324,7 +331,8 @@ TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
-      /*is_password_field=*/false);
+      /*is_password_field=*/false,
+      /*is_manual_generation_available=*/false);
 }
 
 TEST_F(PasswordAccessoryControllerTest, RepeatsSuggestionsForSameFrame) {
@@ -348,7 +356,8 @@ TEST_F(PasswordAccessoryControllerTest, RepeatsSuggestionsForSameFrame) {
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
-      /*is_password_field=*/false);
+      /*is_password_field=*/false,
+      /*is_manual_generation_available=*/false);
 }
 
 TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
@@ -365,7 +374,8 @@ TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
-      /*is_password_field=*/false);
+      /*is_password_field=*/false,
+      /*is_manual_generation_available=*/false);
 }
 
 TEST_F(PasswordAccessoryControllerTest, OnFilledIntoFocusedField) {
@@ -403,7 +413,8 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
-      /*is_password_field=*/false);
+      /*is_password_field=*/false,
+      /*is_manual_generation_available=*/false);
 
   // Pretend that we focus a password field now: By triggering a refresh with
   // |is_password_field| set to true, all suggestions should become interactive.
@@ -423,7 +434,8 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
-      /*is_password_field=*/true);
+      /*is_password_field=*/true,
+      /*is_manual_generation_available=*/false);
 }
 
 TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
@@ -445,7 +457,8 @@ TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
-      /*is_password_field=*/false);
+      /*is_password_field=*/false,
+      /*is_manual_generation_available=*/false);
 
   controller()->SavePasswordsForOrigin({CreateEntry("Alf", "M3lm4k").first},
                                        url::Origin::Create(GURL(kExampleSite)));
@@ -465,7 +478,8 @@ TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
-      /*is_password_field=*/false);
+      /*is_password_field=*/false,
+      /*is_manual_generation_available=*/false);
 }
 
 TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
@@ -489,7 +503,8 @@ TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
-      /*is_password_field=*/false);
+      /*is_password_field=*/false,
+      /*is_manual_generation_available=*/false);
 
   // Pretend that the focus was lost or moved to an unfillable field. Now, only
   // the empty state message should be sent.
@@ -504,7 +519,8 @@ TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/false,
-      /*is_password_field=*/false);  // Unused.
+      /*is_password_field=*/false,
+      /*is_manual_generation_available=*/false);
 }
 
 TEST_F(PasswordAccessoryControllerTest, NavigatingMainFrameClearsSuggestions) {
@@ -528,7 +544,8 @@ TEST_F(PasswordAccessoryControllerTest, NavigatingMainFrameClearsSuggestions) {
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
-      /*is_password_field=*/false);
+      /*is_password_field=*/false,
+      /*is_manual_generation_available=*/false);
 
   // Pretend that the focus was lost or moved to an unfillable field.
   NavigateAndCommit(GURL("https://random.other-site.org/"));
@@ -546,7 +563,8 @@ TEST_F(PasswordAccessoryControllerTest, NavigatingMainFrameClearsSuggestions) {
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL("https://random.other-site.org/")),
       /*is_fillable=*/true,
-      /*is_password_field=*/false);  // Unused.
+      /*is_password_field=*/false,
+      /*is_manual_generation_available=*/false);
 }
 
 TEST_F(PasswordAccessoryControllerTest, FetchFaviconForCurrentUrl) {
@@ -559,7 +577,8 @@ TEST_F(PasswordAccessoryControllerTest, FetchFaviconForCurrentUrl) {
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
-      /*is_password_field=*/false);
+      /*is_password_field=*/false,
+      /*is_manual_generation_available=*/false);
 
   EXPECT_CALL(*favicon_service(), GetRawFaviconForPageURL(GURL(kExampleSite), _,
                                                           kIconSize, _, _, _))
@@ -579,7 +598,8 @@ TEST_F(PasswordAccessoryControllerTest, RequestsFaviconsOnceForOneOrigin) {
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
-      /*is_password_field=*/false);
+      /*is_password_field=*/false,
+      /*is_manual_generation_available=*/false);
 
   EXPECT_CALL(*favicon_service(), GetRawFaviconForPageURL(GURL(kExampleSite), _,
                                                           kIconSize, _, _, _))
@@ -619,7 +639,8 @@ TEST_F(PasswordAccessoryControllerTest, FaviconsAreCachedUntilNavigation) {
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
-      /*is_password_field=*/false);
+      /*is_password_field=*/false,
+      /*is_manual_generation_available=*/false);
 
   EXPECT_CALL(*favicon_service(), GetRawFaviconForPageURL(GURL(kExampleSite), _,
                                                           kIconSize, _, _, _))
@@ -647,7 +668,8 @@ TEST_F(PasswordAccessoryControllerTest, FaviconsAreCachedUntilNavigation) {
               Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)), /*is_fillable=*/true,
-      /*is_password_field=*/false);
+      /*is_password_field=*/false,
+      /*is_manual_generation_available=*/false);
 
   // The cache was cleared, so now the service has to be queried again.
   EXPECT_CALL(*favicon_service(), GetRawFaviconForPageURL(GURL(kExampleSite), _,
@@ -667,7 +689,7 @@ TEST_F(PasswordAccessoryControllerTest, NoFaviconCallbacksWhenOriginChanges) {
   EXPECT_CALL(mock_manual_filling_controller_,
               Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
-      url::Origin::Create(GURL(kExampleSite)), true, false);
+      url::Origin::Create(GURL(kExampleSite)), true, false, false);
 
   // Right after starting the favicon request for example.com, a navigation
   // changes the URL of the focused frame. Even if the request is completed,
@@ -689,7 +711,43 @@ TEST_F(PasswordAccessoryControllerTest, NoFaviconCallbacksWhenOriginChanges) {
   EXPECT_CALL(mock_manual_filling_controller_,
               Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
-      url::Origin::Create(GURL("https://other.frame.com/")), true, false);
+      url::Origin::Create(GURL("https://other.frame.com/")), true, false,
+      false);
 
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(PasswordAccessoryControllerTest, AddsGenerationCommandWhenAvailable) {
+  controller()->SavePasswordsForOrigin({},
+                                       url::Origin::Create(GURL(kExampleSite)));
+  AccessorySheetDataBuilder data_builder(passwords_empty_str(kExampleDomain));
+  data_builder.AppendFooterCommand(generate_password_str())
+      .AppendFooterCommand(manage_passwords_str());
+  EXPECT_CALL(mock_manual_filling_controller_,
+              RefreshSuggestionsForField(
+                  /*is_fillable=*/true, data_builder.Build()));
+  EXPECT_CALL(mock_manual_filling_controller_,
+              ShowWhenKeyboardIsVisible(FillingSource::PASSWORD_FALLBACKS));
+  controller()->RefreshSuggestionsForField(
+      url::Origin::Create(GURL(kExampleSite)),
+      /*is_fillable=*/true,
+      /*is_password_field=*/true,
+      /*is_manual_generation_available=*/true);
+}
+
+TEST_F(PasswordAccessoryControllerTest, NoGenerationCommandIfNotPasswordField) {
+  controller()->SavePasswordsForOrigin({},
+                                       url::Origin::Create(GURL(kExampleSite)));
+  EXPECT_CALL(mock_manual_filling_controller_,
+              RefreshSuggestionsForField(
+                  /*is_fillable=*/true, PasswordAccessorySheetDataBuilder(
+                                            passwords_empty_str(kExampleDomain))
+                                            .Build()));
+  EXPECT_CALL(mock_manual_filling_controller_,
+              Hide(FillingSource::PASSWORD_FALLBACKS));
+  controller()->RefreshSuggestionsForField(
+      url::Origin::Create(GURL(kExampleSite)),
+      /*is_fillable=*/true,
+      /*is_password_field=*/false,
+      /*is_manual_generation_available=*/true);
 }

@@ -1020,14 +1020,23 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
 }
 
 void ChromePasswordManagerClient::FocusedInputChanged(
-    const url::Origin& last_committed_origin,
+    password_manager::PasswordManagerDriver* driver,
     bool is_fillable,
     bool is_password_field) {
 #if defined(OS_ANDROID)
   if (PasswordAccessoryController::AllowedForWebContents(web_contents())) {
+    bool is_manual_generation_available =
+        password_manager_util::ManualPasswordGenerationEnabled(driver);
+
+    password_manager::ContentPasswordManagerDriver* content_driver =
+        static_cast<password_manager::ContentPasswordManagerDriver*>(driver);
+    url::Origin last_committed_origin =
+        content_driver->render_frame_host()->GetLastCommittedOrigin();
+
     PasswordAccessoryController::GetOrCreate(web_contents())
         ->RefreshSuggestionsForField(last_committed_origin, is_fillable,
-                                     is_password_field);
+                                     is_password_field,
+                                     is_manual_generation_available);
   }
 #endif  // defined(OS_ANDROID)
 }

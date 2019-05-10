@@ -300,8 +300,7 @@ void ContentPasswordManagerDriver::CheckSafeBrowsingReputation(
 
 void ContentPasswordManagerDriver::FocusedInputChanged(bool is_fillable,
                                                        bool is_password_field) {
-  client_->FocusedInputChanged(render_frame_host_->GetLastCommittedOrigin(),
-                               is_fillable, is_password_field);
+  client_->FocusedInputChanged(this, is_fillable, is_password_field);
 }
 
 void ContentPasswordManagerDriver::LogFirstFillingResult(

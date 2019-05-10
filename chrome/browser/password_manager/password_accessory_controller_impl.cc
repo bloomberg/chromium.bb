@@ -26,6 +26,7 @@
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/web_contents.h"
@@ -181,8 +182,10 @@ void PasswordAccessoryControllerImpl::OnOptionSelected(
 void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
     const url::Origin& origin,
     bool is_fillable,
-    bool is_password_field) {
+    bool is_password_field,
+    bool is_manual_generation_available) {
   std::vector<UserInfo> info_to_add;
+  std::vector<FooterCommand> footer_commands_to_add;
 
   if (is_fillable) {
     const std::vector<PasswordAccessorySuggestion> suggestions =
@@ -192,16 +195,27 @@ void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
                    [is_password_field](const auto& x) {
                      return Translate(is_password_field, x);
                    });
+
+    if (is_password_field && is_manual_generation_available) {
+      base::string16 generate_password_title = l10n_util::GetStringUTF16(
+          IDS_PASSWORD_MANAGER_ACCESSORY_GENERATE_PASSWORD_BUTTON_TITLE);
+      footer_commands_to_add.push_back(FooterCommand(generate_password_title));
+    }
   }
+
+  base::string16 manage_passwords_title = l10n_util::GetStringUTF16(
+      IDS_PASSWORD_MANAGER_ACCESSORY_ALL_PASSWORDS_LINK);
+  footer_commands_to_add.push_back(FooterCommand(manage_passwords_title));
 
   bool has_suggestions = !info_to_add.empty();
 
   GetManualFillingController()->RefreshSuggestionsForField(
-      is_fillable, autofill::CreateAccessorySheetData(
-                       GetTitle(has_suggestions, GetFocusedFrameOrigin()),
-                       std::move(info_to_add)));
+      is_fillable,
+      autofill::CreateAccessorySheetData(
+          GetTitle(has_suggestions, GetFocusedFrameOrigin()),
+          std::move(info_to_add), std::move(footer_commands_to_add)));
 
-  if (is_password_field) {
+  if (is_password_field && is_fillable) {
     GetManualFillingController()->ShowWhenKeyboardIsVisible(
         FillingSource::PASSWORD_FALLBACKS);
   } else {

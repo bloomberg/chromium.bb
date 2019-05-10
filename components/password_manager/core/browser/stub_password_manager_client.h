@@ -32,7 +32,7 @@ class StubPasswordManagerClient : public PasswordManagerClient {
       bool has_generated_password,
       bool update_password) override;
   void HideManualFallbackForSaving() override;
-  void FocusedInputChanged(const url::Origin& last_committed_origin,
+  void FocusedInputChanged(password_manager::PasswordManagerDriver* driver,
                            bool is_fillable,
                            bool is_password_field) override;
   bool PromptUserToChooseCredentials(

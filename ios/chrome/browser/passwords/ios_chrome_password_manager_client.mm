@@ -15,6 +15,7 @@
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
+#include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_requirements_service.h"
@@ -121,7 +122,7 @@ void IOSChromePasswordManagerClient::HideManualFallbackForSaving() {
 }
 
 void IOSChromePasswordManagerClient::FocusedInputChanged(
-    const url::Origin& last_committed_origin,
+    password_manager::PasswordManagerDriver* driver,
     bool is_fillable,
     bool is_password_field) {
   NOTIMPLEMENTED();

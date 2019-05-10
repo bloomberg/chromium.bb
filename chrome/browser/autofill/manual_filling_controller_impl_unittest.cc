@@ -36,8 +36,8 @@ class MockPasswordAccessoryController : public PasswordAccessoryController {
       void(const std::map<base::string16, const autofill::PasswordForm*>&,
            const url::Origin&));
   MOCK_METHOD1(OnFilledIntoFocusedField, void(autofill::FillingStatus));
-  MOCK_METHOD3(RefreshSuggestionsForField,
-               void(const url::Origin&, bool, bool));
+  MOCK_METHOD4(RefreshSuggestionsForField,
+               void(const url::Origin&, bool, bool, bool));
   MOCK_METHOD0(DidNavigateMainFrame, void());
   MOCK_METHOD2(GetFavicon,
                void(int, base::OnceCallback<void(const gfx::Image&)>));

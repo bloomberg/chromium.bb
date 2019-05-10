@@ -6,13 +6,12 @@
 
 #include <utility>
 
-#include "chrome/grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
-
 namespace autofill {
 
-AccessorySheetData CreateAccessorySheetData(base::string16 title,
-                                            std::vector<UserInfo> user_info) {
+AccessorySheetData CreateAccessorySheetData(
+    base::string16 title,
+    std::vector<UserInfo> user_info,
+    std::vector<FooterCommand> footer_commands) {
   // TODO(crbug.com/902425): Remove hard-coded enum value
   AccessorySheetData data(FallbackSheetType::PASSWORD, std::move(title));
   for (auto& i : user_info) {
@@ -21,9 +20,9 @@ AccessorySheetData CreateAccessorySheetData(base::string16 title,
 
   // TODO(crbug.com/902425): Generalize options (both adding to footer, and
   // handling selection).
-  base::string16 manage_passwords_title = l10n_util::GetStringUTF16(
-      IDS_PASSWORD_MANAGER_ACCESSORY_ALL_PASSWORDS_LINK);
-  data.add_footer_command(FooterCommand(manage_passwords_title));
+  for (auto& footer_command : footer_commands) {
+    data.add_footer_command(std::move(footer_command));
+  }
 
   return data;
 }

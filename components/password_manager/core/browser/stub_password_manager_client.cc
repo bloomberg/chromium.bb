@@ -30,7 +30,7 @@ void StubPasswordManagerClient::ShowManualFallbackForSaving(
 void StubPasswordManagerClient::HideManualFallbackForSaving() {}
 
 void StubPasswordManagerClient::FocusedInputChanged(
-    const url::Origin& last_committed_origin,
+    password_manager::PasswordManagerDriver* driver,
     bool is_fillable,
     bool is_password_field) {}
 

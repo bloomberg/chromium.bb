@@ -20,6 +20,7 @@ class LogManager;
 
 namespace password_manager {
 class PasswordFormManagerForUI;
+class PasswordManagerDriver;
 }
 
 namespace web {
@@ -73,7 +74,7 @@ class IOSChromePasswordManagerClient
       bool has_generated_password,
       bool is_update) override;
   void HideManualFallbackForSaving() override;
-  void FocusedInputChanged(const url::Origin& last_committed_origin,
+  void FocusedInputChanged(password_manager::PasswordManagerDriver* driver,
                            bool is_fillable,
                            bool is_password_field) override;
   bool PromptUserToChooseCredentials(
