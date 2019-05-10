@@ -210,9 +210,11 @@ class XrBrowserTestBase : public InProcessBrowserTest {
   std::unordered_set<std::string> ignored_requirements_;
 
  private:
+  void LogJavaScriptFailure();
   std::unique_ptr<net::EmbeddedTestServer> server_;
   base::test::ScopedFeatureList scoped_feature_list_;
   bool test_skipped_at_startup_ = false;
+  bool javascript_failed_ = false;
   DISALLOW_COPY_AND_ASSIGN(XrBrowserTestBase);
 };
 

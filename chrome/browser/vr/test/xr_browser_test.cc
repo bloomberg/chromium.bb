@@ -195,6 +195,11 @@ void XrBrowserTestBase::LoadUrlAndAwaitInitialization(const GURL& url) {
 void XrBrowserTestBase::RunJavaScriptOrFail(
     const std::string& js_expression,
     content::WebContents* web_contents) {
+  if (javascript_failed_) {
+    LogJavaScriptFailure();
+    return;
+  }
+
   ASSERT_TRUE(content::ExecuteScript(web_contents, js_expression))
       << "Failed to run given JavaScript: " << js_expression;
 }
@@ -202,6 +207,11 @@ void XrBrowserTestBase::RunJavaScriptOrFail(
 bool XrBrowserTestBase::RunJavaScriptAndExtractBoolOrFail(
     const std::string& js_expression,
     content::WebContents* web_contents) {
+  if (javascript_failed_) {
+    LogJavaScriptFailure();
+    return false;
+  }
+
   bool result;
   DLOG(ERROR) << "Run JavaScript: " << js_expression;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
@@ -214,6 +224,11 @@ bool XrBrowserTestBase::RunJavaScriptAndExtractBoolOrFail(
 std::string XrBrowserTestBase::RunJavaScriptAndExtractStringOrFail(
     const std::string& js_expression,
     content::WebContents* web_contents) {
+  if (javascript_failed_) {
+    LogJavaScriptFailure();
+    return "";
+  }
+
   std::string result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       web_contents,
@@ -332,6 +347,18 @@ void XrBrowserTestBase::WaitOnJavaScriptStep(
       reason +=
           " JavaScript testharness reported failure reason: " + result_string;
     }
+    // Store that we've failed waiting for a JavaScript step so we can abort
+    // further attempts to run JavaScript, which has the potential to do weird
+    // things and produce non-useful output due to JavaScript code continuing
+    // to run when it's in a known bad state.
+    // This is a workaround for the fact that FAIL() and other gtest macros that
+    // cause test failures only abort the current function. Thus, a failure here
+    // will show up as a test failure, but there's nothing that actually stops
+    // the test from continuing to run since FAIL() is not being called in the
+    // main test body.
+    javascript_failed_ = true;
+    // Newlines to help the failure reason stick out.
+    LOG(ERROR) << "\n\n\nvvvvvvvvvvvvvvvvv Useful Stack vvvvvvvvvvvvvvvvv\n\n";
     FAIL() << reason;
   }
 
@@ -430,6 +457,12 @@ void XrBrowserTestBase::EndTest() {
 
 void XrBrowserTestBase::AssertNoJavaScriptErrors() {
   AssertNoJavaScriptErrors(GetCurrentWebContents());
+}
+
+void XrBrowserTestBase::LogJavaScriptFailure() {
+  LOG(ERROR) << "HEY! LISTEN! Not running requested JavaScript due to previous "
+                "failure. Failures below this are likely garbage. Look for the "
+                "useful stack above.";
 }
 
 }  // namespace vr
