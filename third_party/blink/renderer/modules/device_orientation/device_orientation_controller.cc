@@ -155,8 +155,9 @@ void DeviceOrientationController::Trace(blink::Visitor* visitor) {
 
 void DeviceOrientationController::RegisterWithOrientationEventPump(
     bool absolute) {
+  // The document's frame may be null if the document was already shut down.
+  LocalFrame* frame = GetDocument().GetFrame();
   if (!orientation_event_pump_) {
-    LocalFrame* frame = GetDocument().GetFrame();
     if (!frame)
       return;
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
@@ -164,7 +165,8 @@ void DeviceOrientationController::RegisterWithOrientationEventPump(
     orientation_event_pump_ =
         MakeGarbageCollected<DeviceOrientationEventPump>(task_runner, absolute);
   }
-  orientation_event_pump_->AddController(this);
+  // TODO(crbug.com/850619): Ensure a valid frame is passed.
+  orientation_event_pump_->AddController(this, frame);
 }
 
 // static
