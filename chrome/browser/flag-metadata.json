@@ -1264,8 +1264,8 @@
   },
   {
     "name": "enable-mark-http-as",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "cthomp", "estark" ],
+    "expiry_milestone": 80
   },
   {
     "name": "enable-md-rounded-corners-on-dialogs",
