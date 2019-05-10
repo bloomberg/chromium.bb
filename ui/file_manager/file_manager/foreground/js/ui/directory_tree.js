@@ -1985,24 +1985,6 @@ class DirectoryTree extends cr.ui.Tree {
   }
 
   /**
-   * Invoked when an item in the tree gets focus.
-   * @param {!Event} e Event.
-   * @private
-   */
-  onFocus_(e) {
-    if (this.selectedItem && this.selectedItem.labelElement) {
-      // Grab the current location to check if it needs to move
-      const element = this.selectedItem.labelElement;
-      const originalPos = element.getBoundingClientRect();
-      element.scrollIntoViewIfNeeded();
-      const newPos = element.getBoundingClientRect();
-      if (newPos.x !== originalPos.x || newPos.y !== originalPos.y) {
-        element.scrollIntoView({inline: 'start'});
-      }
-    }
-  }
-
-  /**
    * Select the item corresponding to the given entry.
    * @param {!DirectoryEntry|!FilesAppDirEntry} entry The directory entry to be
    *     selected. Can be a fake.
