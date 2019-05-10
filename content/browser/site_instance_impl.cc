@@ -618,7 +618,13 @@ GURL SiteInstanceImpl::GetSiteForURLInternal(
   // (which ignores the hostname in this case - see https://crbug.com/776160).
   GURL site_url;
   if (!origin.host().empty() && origin.scheme() != url::kFileScheme) {
-    if (SiteIsolationPolicy::IsStrictOriginIsolationEnabled())
+    // For Strict Origin Isolation, use the full origin instead of site for all
+    // HTTP/HTTPS URLs.  Note that the HTTP/HTTPS restriction guarantees that
+    // we won't hit this for hosted app effective URLs, which would otherwise
+    // need to append a non-translated site URL to the hash below (see
+    // https://crbug.com/961386).
+    if (SiteIsolationPolicy::IsStrictOriginIsolationEnabled() &&
+        origin.GetURL().SchemeIsHTTPOrHTTPS())
       return origin.GetURL();
 
     site_url = GetSiteForOrigin(origin);

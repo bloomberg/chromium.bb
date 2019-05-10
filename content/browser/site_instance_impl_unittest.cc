@@ -943,6 +943,34 @@ TEST_F(SiteInstanceTest, StrictOriginIsolation) {
             file_url);
 }
 
+// Ensure that the site URL for a URL that resolves to a non-HTTP/HTTPS
+// effective site URL won't break with strict origin isolation.  The effective
+// site URL should still contain the non-translated site URL in its hash.  See
+// https://crbug.com/961386.
+TEST_F(SiteInstanceTest, StrictOriginIsolationWithEffectiveURLs) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kStrictOriginIsolation);
+  EXPECT_TRUE(base::FeatureList::IsEnabled(features::kStrictOriginIsolation));
+
+  const GURL kOriginalUrl("https://original.com");
+  const GURL kTranslatedUrl(GetWebUIURL("translated"));
+  EffectiveURLContentBrowserClient modified_client(kOriginalUrl,
+                                                   kTranslatedUrl);
+  ContentBrowserClient* regular_client =
+      SetBrowserClientForTesting(&modified_client);
+
+  TestBrowserContext browser_context;
+  IsolationContext isolation_context(&browser_context);
+
+  // Ensure that original.com's effective site URL still contains the
+  // non-translated site URL in its hash.
+  GURL expected_site_url(kTranslatedUrl.spec() + "#" + kOriginalUrl.spec());
+  EXPECT_EQ(SiteInstanceImpl::GetSiteForURL(isolation_context, kOriginalUrl),
+            expected_site_url);
+
+  SetBrowserClientForTesting(regular_client);
+}
+
 TEST_F(SiteInstanceTest, IsolatedOrigins) {
   GURL foo_url("http://www.foo.com");
   GURL isolated_foo_url("http://isolated.foo.com");
