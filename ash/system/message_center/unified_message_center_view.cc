@@ -21,6 +21,7 @@
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
@@ -39,6 +40,9 @@
 namespace ash {
 
 namespace {
+
+constexpr base::TimeDelta kHideStackingBarAnimationDuration =
+    base::TimeDelta::FromMilliseconds(330);
 
 enum ClearAllButtonTag {
   kStackingBarClearAllButtonTag,
@@ -205,7 +209,7 @@ bool StackingNotificationCounterView::SetCount(int total_notification_count,
   stacked_notification_count_ = stacked_notification_count;
 
   if (features::IsNotificationStackingBarRedesignEnabled()) {
-    SetVisible(total_notification_count_ > 1);
+    UpdateVisibility();
 
     auto tooltip = l10n_util::GetStringFUTF16Int(
         IDS_ASH_MESSAGE_CENTER_STACKING_BAR_CLEAR_ALL_BUTTON_TOOLTIP,
@@ -227,6 +231,12 @@ bool StackingNotificationCounterView::SetCount(int total_notification_count,
 
   SchedulePaint();
   return true;
+}
+
+void StackingNotificationCounterView::SetAnimationState(
+    UnifiedMessageCenterAnimationState animation_state) {
+  animation_state_ = animation_state;
+  UpdateVisibility();
 }
 
 void StackingNotificationCounterView::OnPaint(gfx::Canvas* canvas) {
@@ -269,6 +279,20 @@ void StackingNotificationCounterView::OnPaint(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
 }
 
+void StackingNotificationCounterView::UpdateVisibility() {
+  switch (animation_state_) {
+    case UnifiedMessageCenterAnimationState::IDLE:
+      SetVisible(total_notification_count_ > 1);
+      break;
+    case UnifiedMessageCenterAnimationState::HIDE_STACKING_BAR:
+      SetVisible(true);
+      break;
+    case UnifiedMessageCenterAnimationState::COLLAPSE:
+      SetVisible(false);
+      break;
+  }
+}
+
 UnifiedMessageCenterView::UnifiedMessageCenterView(
     UnifiedSystemTrayView* parent,
     UnifiedSystemTrayModel* model)
@@ -278,7 +302,8 @@ UnifiedMessageCenterView::UnifiedMessageCenterView(
       scroll_bar_(new MessageCenterScrollBar(this)),
       scroller_(new views::ScrollView()),
       message_list_view_(new UnifiedMessageListView(this, model)),
-      last_scroll_position_from_bottom_(kClearAllButtonRowHeight) {
+      last_scroll_position_from_bottom_(kClearAllButtonRowHeight),
+      animation_(std::make_unique<gfx::LinearAnimation>(this)) {
   message_list_view_->Init();
 
   AddChildView(stacking_counter_);
@@ -307,6 +332,13 @@ void UnifiedMessageCenterView::SetMaxHeight(int max_height) {
 void UnifiedMessageCenterView::SetAvailableHeight(int available_height) {
   available_height_ = available_height;
   UpdateVisibility();
+}
+
+void UnifiedMessageCenterView::OnNotificationSlidOut() {
+  if (stacking_counter_->visible() &&
+      message_list_view_->GetTotalNotificationCount() <= 1) {
+    StartHideStackingBarAnimation();
+  }
 }
 
 void UnifiedMessageCenterView::ListPreferredSizeChanged() {
@@ -341,12 +373,20 @@ void UnifiedMessageCenterView::Layout() {
                               GetStackedNotificationCount());
   if (stacking_counter_->visible()) {
     gfx::Rect counter_bounds(GetContentsBounds());
-    counter_bounds.set_height(GetStackingNotificationCounterHeight());
+
+    int stacking_counter_height = GetStackingNotificationCounterHeight();
+    int stacking_counter_offset = 0;
+    if (animation_state_ ==
+        UnifiedMessageCenterAnimationState::HIDE_STACKING_BAR)
+      stacking_counter_offset = GetAnimationValue() * stacking_counter_height;
+
+    counter_bounds.set_height(stacking_counter_height);
+    counter_bounds.set_y(counter_bounds.y() - stacking_counter_offset);
     stacking_counter_->SetBoundsRect(counter_bounds);
 
     gfx::Rect scroller_bounds(GetContentsBounds());
-    scroller_bounds.Inset(
-        gfx::Insets(GetStackingNotificationCounterHeight(), 0, 0, 0));
+    scroller_bounds.Inset(gfx::Insets(
+        stacking_counter_height - stacking_counter_offset, 0, 0, 0));
     scroller_->SetBoundsRect(scroller_bounds);
   } else {
     scroller_->SetBoundsRect(GetContentsBounds());
@@ -360,8 +400,11 @@ gfx::Size UnifiedMessageCenterView::CalculatePreferredSize() const {
   gfx::Size preferred_size = scroller_->GetPreferredSize();
 
   if (stacking_counter_->visible()) {
-    preferred_size.set_height(preferred_size.height() +
-                              GetStackingNotificationCounterHeight());
+    int bar_height = GetStackingNotificationCounterHeight();
+    if (animation_state_ ==
+        UnifiedMessageCenterAnimationState::HIDE_STACKING_BAR)
+      bar_height -= GetAnimationValue() * bar_height;
+    preferred_size.set_height(preferred_size.height() + bar_height);
   }
 
   // Hide Clear All button at the buttom from initial viewport.
@@ -420,9 +463,51 @@ void UnifiedMessageCenterView::OnDidChangeFocus(views::View* before,
   OnMessageCenterScrolled();
 }
 
+void UnifiedMessageCenterView::AnimationEnded(const gfx::Animation* animation) {
+  // This is also called from AnimationCanceled().
+  animation_->SetCurrentValue(1.0);
+  PreferredSizeChanged();
+
+  switch (animation_state_) {
+    case UnifiedMessageCenterAnimationState::IDLE:
+      break;
+    case UnifiedMessageCenterAnimationState::HIDE_STACKING_BAR:
+      break;
+    case UnifiedMessageCenterAnimationState::COLLAPSE:
+      NOTIMPLEMENTED();
+      break;
+  }
+
+  animation_state_ = UnifiedMessageCenterAnimationState::IDLE;
+  stacking_counter_->SetAnimationState(animation_state_);
+}
+
+void UnifiedMessageCenterView::AnimationProgressed(
+    const gfx::Animation* animation) {
+  PreferredSizeChanged();
+}
+
+void UnifiedMessageCenterView::AnimationCanceled(
+    const gfx::Animation* animation) {
+  AnimationEnded(animation);
+}
+
 void UnifiedMessageCenterView::SetNotificationRectBelowScroll(
     const gfx::Rect& rect_below_scroll) {
   parent_->SetNotificationRectBelowScroll(rect_below_scroll);
+}
+
+void UnifiedMessageCenterView::StartHideStackingBarAnimation() {
+  animation_->End();
+  animation_state_ = UnifiedMessageCenterAnimationState::HIDE_STACKING_BAR;
+  stacking_counter_->SetAnimationState(animation_state_);
+  animation_->SetDuration(kHideStackingBarAnimationDuration);
+  animation_->Start();
+}
+
+double UnifiedMessageCenterView::GetAnimationValue() const {
+  return gfx::Tween::CalculateValue(gfx::Tween::FAST_OUT_SLOW_IN,
+                                    animation_->GetCurrentValue());
 }
 
 void UnifiedMessageCenterView::UpdateVisibility() {

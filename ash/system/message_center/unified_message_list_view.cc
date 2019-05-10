@@ -395,6 +395,8 @@ void UnifiedMessageListView::AnimationEnded(const gfx::Animation* animation) {
     UpdateClearAllAnimation();
   }
 
+  UpdateBorders();
+
   if (state_ != State::IDLE)
     StartAnimation();
 }
@@ -457,9 +459,11 @@ void UnifiedMessageListView::CollapseAllNotifications() {
 }
 
 void UnifiedMessageListView::UpdateBorders() {
-  // When the stacking bar is shown, there should never be a top notification.
-  bool is_top = !features::IsNotificationStackingBarRedesignEnabled() ||
-                children().size() == 1;
+  // The top notification is drawn with rounded corners when the stacking bar is
+  // not shown.
+  bool is_top = (!features::IsNotificationStackingBarRedesignEnabled() ||
+                 children().size() == 1) &&
+                state_ != State::MOVE_DOWN;
   for (auto* child : children()) {
     AsMVC(child)->UpdateBorder(is_top, child == children().back());
     is_top = false;
@@ -532,8 +536,13 @@ void UnifiedMessageListView::StartAnimation() {
     case State::IDLE:
       break;
     case State::SLIDE_OUT:
-      FALLTHROUGH;
+      animation_->SetDuration(kClosingAnimationDuration);
+      animation_->Start();
+      break;
     case State::MOVE_DOWN:
+      // |message_center_view_| can be null in tests.
+      if (message_center_view_)
+        message_center_view_->OnNotificationSlidOut();
       animation_->SetDuration(kClosingAnimationDuration);
       animation_->Start();
       break;
