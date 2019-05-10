@@ -14,6 +14,25 @@
 
 namespace tracing {
 
+namespace {
+
+perfetto::TraceConfig::DataSource* AddDataSourceConfig(
+    perfetto::TraceConfig* perfetto_config,
+    const char* name,
+    const std::string& chrome_config_string,
+    bool privacy_filtering_enabled) {
+  auto* data_source = perfetto_config->add_data_sources();
+  auto* source_config = data_source->mutable_config();
+  source_config->set_name(name);
+  source_config->set_target_buffer(0);
+  auto* chrome_config = source_config->mutable_chrome_config();
+  chrome_config->set_trace_config(chrome_config_string);
+  chrome_config->set_privacy_filtering_enabled(privacy_filtering_enabled);
+  return data_source;
+}
+
+}  // namespace
+
 perfetto::TraceConfig GetDefaultPerfettoConfig(
     const base::trace_event::TraceConfig& chrome_config,
     bool privacy_filtering_enabled) {
@@ -32,15 +51,6 @@ perfetto::TraceConfig GetDefaultPerfettoConfig(
   builtin_data_sources->set_disable_trace_config(privacy_filtering_enabled);
   builtin_data_sources->set_disable_system_info(privacy_filtering_enabled);
 
-  // Capture actual trace events.
-  auto* trace_event_data_source = perfetto_config.add_data_sources();
-  for (auto& enabled_pid :
-       chrome_config.process_filter_config().included_process_ids()) {
-    *trace_event_data_source->add_producer_name_filter() = base::StrCat(
-        {mojom::kPerfettoProducerNamePrefix,
-         base::NumberToString(static_cast<uint32_t>(enabled_pid))});
-  }
-
   // We strip the process filter from the config string we send to Perfetto,
   // so perfetto doesn't reject it from a future
   // TracingService::ChangeTraceConfig call due to being an unsupported
@@ -50,44 +60,33 @@ perfetto::TraceConfig GetDefaultPerfettoConfig(
       base::trace_event::TraceConfig::ProcessFilterConfig());
   std::string chrome_config_string = processfilter_stripped_config.ToString();
 
-  auto* trace_event_config = trace_event_data_source->mutable_config();
-  trace_event_config->set_name(tracing::mojom::kTraceEventDataSourceName);
-  trace_event_config->set_target_buffer(0);
-  auto* chrome_proto_config = trace_event_config->mutable_chrome_config();
-  chrome_proto_config->set_trace_config(chrome_config_string);
-  chrome_proto_config->set_privacy_filtering_enabled(privacy_filtering_enabled);
+  // Capture actual trace events.
+  auto* trace_event_data_source = AddDataSourceConfig(
+      &perfetto_config, tracing::mojom::kTraceEventDataSourceName,
+      chrome_config_string, privacy_filtering_enabled);
+  for (auto& enabled_pid :
+       chrome_config.process_filter_config().included_process_ids()) {
+    *trace_event_data_source->add_producer_name_filter() = base::StrCat(
+        {mojom::kPerfettoProducerNamePrefix,
+         base::NumberToString(static_cast<uint32_t>(enabled_pid))});
+  }
 
 // Capture system trace events if supported and enabled. The datasources will
 // only emit events if system tracing is enabled in |chrome_config|.
 #if defined(OS_CHROMEOS) || (defined(IS_CHROMECAST) && defined(OS_LINUX))
-  auto* system_trace_config =
-      perfetto_config.add_data_sources()->mutable_config();
-  system_trace_config->set_name(tracing::mojom::kSystemTraceDataSourceName);
-  system_trace_config->set_target_buffer(0);
-  auto* system_chrome_config = system_trace_config->mutable_chrome_config();
-  system_chrome_config->set_trace_config(chrome_config_string);
-  system_chrome_config->set_privacy_filtering_enabled(
-      privacy_filtering_enabled);
+  AddDataSourceConfig(&perfetto_config,
+                      tracing::mojom::kSystemTraceDataSourceName,
+                      chrome_config_string, privacy_filtering_enabled);
 #endif
 
 #if defined(OS_CHROMEOS)
-  auto* arc_trace_config = perfetto_config.add_data_sources()->mutable_config();
-  arc_trace_config->set_name(tracing::mojom::kArcTraceDataSourceName);
-  arc_trace_config->set_target_buffer(0);
-  auto* arc_chrome_config = arc_trace_config->mutable_chrome_config();
-  arc_chrome_config->set_trace_config(chrome_config_string);
-  arc_chrome_config->set_privacy_filtering_enabled(privacy_filtering_enabled);
+  AddDataSourceConfig(&perfetto_config, tracing::mojom::kArcTraceDataSourceName,
+                      chrome_config_string, privacy_filtering_enabled);
 #endif
 
   // Also capture global metadata.
-  auto* trace_metadata_config =
-      perfetto_config.add_data_sources()->mutable_config();
-  trace_metadata_config->set_name(tracing::mojom::kMetaDataSourceName);
-  trace_metadata_config->set_target_buffer(0);
-  auto* metadata_chrome_config = trace_metadata_config->mutable_chrome_config();
-  metadata_chrome_config->set_trace_config(chrome_config_string);
-  metadata_chrome_config->set_privacy_filtering_enabled(
-      privacy_filtering_enabled);
+  AddDataSourceConfig(&perfetto_config, tracing::mojom::kMetaDataSourceName,
+                      chrome_config_string, privacy_filtering_enabled);
 
   return perfetto_config;
 }
