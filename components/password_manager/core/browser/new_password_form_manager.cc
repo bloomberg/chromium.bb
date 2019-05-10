@@ -209,6 +209,8 @@ FormFetcher* NewPasswordFormManager::GetFormFetcher() {
 }
 
 const GURL& NewPasswordFormManager::GetOrigin() const {
+  if (IsHttpAuth())
+    return observed_http_auth_digest_->origin;
   return observed_form_.url;
 }
 
