@@ -787,9 +787,14 @@ void WorkletAnimation::UpdateInputState(
   bool was_active = IsActive(last_play_state_);
   bool is_active = IsActive(play_state_);
 
-  double current_time_ms = ToMilliseconds(current_time);
+  // We don't animate if there is no valid current time.
+  if (!current_time)
+    return;
+
   bool did_time_change = current_time != last_input_update_current_time_;
   last_input_update_current_time_ = current_time;
+
+  double current_time_ms = current_time.value().InMillisecondsF();
 
   if (!was_active && is_active) {
     input_state->Add({id_, std::string(animator_name_.Utf8().data()),

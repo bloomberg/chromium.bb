@@ -119,12 +119,19 @@ void WorkletAnimation::UpdateInputState(MutatorInputState* input_state,
     return;
 
   DCHECK(is_timeline_active || state_ == State::REMOVED);
-  // When the timeline is inactive we apply last current time to the animation.
-  double current_time =
-      is_timeline_active
-          ? CurrentTime(monotonic_time, scroll_tree, is_active_tree)
-          : last_current_time_.value_or(
-                std::numeric_limits<double>::quiet_NaN());
+
+  base::Optional<base::TimeDelta> current_time =
+      CurrentTime(monotonic_time, scroll_tree, is_active_tree);
+
+  // When the timeline is inactive (only the case with scroll timelines), the
+  // animation holds its last current time and last current output. This
+  // means we don't need to produce any new input state. See also:
+  // https://drafts.csswg.org/web-animations/#responding-to-a-newly-inactive-timeline
+  if (!is_timeline_active)
+    current_time = last_current_time_;
+
+  if (!current_time)
+    return;
   last_current_time_ = current_time;
 
   switch (state_) {
@@ -133,12 +140,14 @@ void WorkletAnimation::UpdateInputState(MutatorInputState* input_state,
       // keyframe effect at the moment. We should pass in the number of effects
       // once Worklet Group Effect is fully implemented in cc.
       // https://crbug.com/767043.
-      input_state->Add({worklet_animation_id(), name(), current_time,
-                        CloneOptions(), 1 /* num_effects */});
+      input_state->Add({worklet_animation_id(), name(),
+                        current_time->InMillisecondsF(), CloneOptions(),
+                        1 /* num_effects */});
       state_ = State::RUNNING;
       break;
     case State::RUNNING:
-      input_state->Update({worklet_animation_id(), current_time});
+      input_state->Update(
+          {worklet_animation_id(), current_time->InMillisecondsF()});
       break;
     case State::REMOVED:
       input_state->Remove(worklet_animation_id());
@@ -165,8 +174,7 @@ void WorkletAnimation::SetPlaybackRate(double playback_rate) {
   if (start_time_ && last_current_time_) {
     // Update startTime in order to maintain previous currentTime and,
     // as a result, prevent the animation from jumping.
-    base::TimeDelta current_time =
-        base::TimeDelta::FromMillisecondsD(last_current_time_.value());
+    base::TimeDelta current_time = last_current_time_.value();
     start_time_ = start_time_.value() + current_time / playback_rate_ -
                   current_time / playback_rate;
   }
@@ -180,22 +188,22 @@ void WorkletAnimation::UpdatePlaybackRate(double playback_rate) {
   SetNeedsPushProperties();
 }
 
-double WorkletAnimation::CurrentTime(base::TimeTicks monotonic_time,
-                                     const ScrollTree& scroll_tree,
-                                     bool is_active_tree) {
+base::Optional<base::TimeDelta> WorkletAnimation::CurrentTime(
+    base::TimeTicks monotonic_time,
+    const ScrollTree& scroll_tree,
+    bool is_active_tree) {
   DCHECK(IsTimelineActive(scroll_tree, is_active_tree));
   base::TimeTicks timeline_time;
   if (scroll_timeline_) {
     base::Optional<base::TimeTicks> scroll_monotonic_time =
         scroll_timeline_->CurrentTime(scroll_tree, is_active_tree);
     if (!scroll_monotonic_time)
-      return std::numeric_limits<double>::quiet_NaN();
+      return base::nullopt;
     timeline_time = scroll_monotonic_time.value();
   } else {
     timeline_time = monotonic_time;
   }
-  return (timeline_time - start_time_.value()).InMillisecondsF() *
-         playback_rate_;
+  return (timeline_time - start_time_.value()) * playback_rate_;
 }
 
 bool WorkletAnimation::NeedsUpdate(base::TimeTicks monotonic_time,
@@ -209,7 +217,7 @@ bool WorkletAnimation::NeedsUpdate(base::TimeTicks monotonic_time,
   if (!IsTimelineActive(scroll_tree, is_active_tree))
     return false;
 
-  double current_time =
+  base::Optional<base::TimeDelta> current_time =
       CurrentTime(monotonic_time, scroll_tree, is_active_tree);
   bool needs_update = last_current_time_ != current_time;
   return needs_update;

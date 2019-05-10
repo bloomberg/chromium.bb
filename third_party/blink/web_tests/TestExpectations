@@ -2758,11 +2758,6 @@ crbug.com/723741 virtual/threaded/http/tests/devtools/tracing/idle-callback.js [
 # Sheriff 2019-03-08
 crbug.com/940050 virtual/threaded/external/wpt/animation-worklet/playback-rate.https.html [ Pass Timeout ]
 
-crbug.com/937456 virtual/threaded/animations/animationworklet/scroll-timeline-non-compositable.html [ Failure ]
-crbug.com/937456 virtual/disable-blink-gen-property-trees/animations/animationworklet/scroll-timeline-non-compositable.html [ Failure ]
-crbug.com/937456 virtual/disable-blink-gen-property-trees/animations/animationworklet/scroll-timeline-non-scrollable.html [ Failure ]
-crbug.com/937456 virtual/threaded/animations/animationworklet/scroll-timeline-non-scrollable.html [ Failure ]
-
 # Untriaged failures after https://crrev.com/c/543695/.
 # These need to be updated but appear not to be related to that change.
 crbug.com/626703 http/tests/devtools/indexeddb/database-refresh-view.js [ Pass Failure ]

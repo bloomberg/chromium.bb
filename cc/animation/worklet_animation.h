@@ -102,10 +102,12 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
   ~WorkletAnimation() override;
 
   // Returns the current time to be passed into the underlying AnimationWorklet.
-  // The current time is based on the timeline associated with the animation.
-  double CurrentTime(base::TimeTicks monotonic_time,
-                     const ScrollTree& scroll_tree,
-                     bool is_active_tree);
+  // The current time is based on the timeline associated with the animation and
+  // in case of scroll timeline it may be nullopt when the associated scrolling
+  // node is not available in the particular ScrollTree.
+  base::Optional<base::TimeDelta> CurrentTime(base::TimeTicks monotonic_time,
+                                              const ScrollTree& scroll_tree,
+                                              bool is_active_tree);
 
   // Returns true if the worklet animation needs to be updated which happens iff
   // its current time is going to be different from last time given these input.
@@ -152,9 +154,10 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
   base::Optional<base::TimeDelta> local_time_;
 
   base::Optional<base::TimeTicks> start_time_;
+
   // Last current time used for updating. We use this to skip updating if
   // current time has not changed since last update.
-  base::Optional<double> last_current_time_;
+  base::Optional<base::TimeDelta> last_current_time_;
 
   State state_;
 
