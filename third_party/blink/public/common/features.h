@@ -77,6 +77,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kAlwaysAccelerateCanvas;
 
 BLINK_COMMON_EXPORT extern const base::Feature
     kWebFontsCacheAwareTimeoutAdaption;
+BLINK_COMMON_EXPORT extern const base::Feature
+    kBlockingFocusWithoutUserActivation;
 
 // Returns true when off-the-main-thread shared worker script fetch is enabled.
 BLINK_COMMON_EXPORT bool IsOffMainThreadSharedWorkerScriptFetchEnabled();

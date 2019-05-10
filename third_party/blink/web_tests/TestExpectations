@@ -6316,3 +6316,6 @@ crbug.com/954297 [ Linux Win ] http/tests/devtools/oopif/oopif-presentation-cons
 crbug.com/954297 [ Linux Win ] virtual/nobinary-for-devtools/http/tests/devtools/oopif/oopif-presentation-console-messages.js [ Pass Crash Timeout ]
 crbug.com/953994 [ Linux Win ] http/tests/security/svg-image-with-cached-remote-image.html [ Pass Crash ]
 crbug.com/953994 [ Linux Win ] virtual/outofblink-cors/http/tests/security/svg-image-with-cached-remote-image.html [ Pass Crash ]
+
+# This test might need to be removed.
+crbug.com/954349 fast/forms/autofocus-in-sandbox-with-allow-scripts.html [ Timeout ]

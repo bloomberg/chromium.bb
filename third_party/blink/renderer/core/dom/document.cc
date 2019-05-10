@@ -43,6 +43,7 @@
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom-blink.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
@@ -7756,13 +7757,10 @@ bool Document::IsFocusAllowed() const {
     return true;
   }
 
-  // TODO(ekaramad): This method, for now, always returns true. The intent is
-  // for this method to eventually block programmatic focus in certain cases.
-  // The enforcement will be added after metrics are collected
-  // (https://crbug.com/954349).
   WebFeature uma_type;
+  bool sandboxed = IsSandboxed(WebSandboxFlags::kNavigation);
   bool ad = frame_->IsAdSubframe();
-  if (IsSandboxed(WebSandboxFlags::kNavigation)) {
+  if (sandboxed) {
     uma_type = ad ? WebFeature::kFocusWithoutUserActivationSandboxedAdFrame
                   : WebFeature::kFocusWithoutUserActivationSandboxedNotAdFrame;
   } else {
@@ -7771,7 +7769,11 @@ bool Document::IsFocusAllowed() const {
            : WebFeature::kFocusWithoutUserActivationNotSandboxedNotAdFrame;
   }
   UseCounter::Count(*this, uma_type);
-  return true;
+  if (!base::FeatureList::IsEnabled(
+          features::kBlockingFocusWithoutUserActivation)) {
+    return true;
+  }
+  return !sandboxed;
 }
 
 LazyLoadImageObserver& Document::EnsureLazyLoadImageObserver() {
