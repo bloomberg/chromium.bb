@@ -152,17 +152,21 @@ js2gtest("browser_tests_js_mojo_lite_webui") {
     "usb_internals_browsertest.js",
   ]
 
+  deps = [
+    "//chrome/browser/ui",
+  ]
+
   if (is_win || is_mac || is_desktop_linux || is_chromeos) {
     sources += [ "discards/discards_browsertest.js" ]
   }
 
   if (is_chromeos) {
-    sources += [ "multidevice_setup/multidevice_setup_browsertest.js" ]
+    sources += [
+      "chromeos/machine_learning_internals_browsertest.js",
+      "multidevice_setup/multidevice_setup_browsertest.js",
+    ]
+    deps += [ "//chromeos/services/machine_learning/public/cpp:test_support" ]
   }
-
-  deps = [
-    "//chrome/browser/ui",
-  ]
 
   extra_js_files = [ "//chrome/browser/resources/downloads/constants.js" ]
 
@@ -186,6 +190,7 @@ js2gtest("unit_tests_js") {
   if (is_chromeos) {
     sources += [
       "../../../browser/resources/chromeos/braille_ime/braille_ime_unittest.gtestjs",
+      "../../../browser/resources/chromeos/machine_learning/machine_learning_internals_utils_unittest.gtestjs",
       "../../../browser/resources/chromeos/select_to_speak/node_utils_unittest.gtestjs",
       "../../../browser/resources/chromeos/select_to_speak/paragraph_utils_unittest.gtestjs",
       "../../../browser/resources/chromeos/select_to_speak/rect_utils_unittest.gtestjs",
@@ -195,6 +200,7 @@ js2gtest("unit_tests_js") {
     ]
     extra_js_files += [
       "../../../browser/resources/chromeos/braille_ime/braille_ime.js",
+      "../../../browser/resources/chromeos/machine_learning/machine_learning_internals_utils.js",
       "../../../browser/resources/chromeos/select_to_speak/paragraph_utils.js",
       "../../../browser/resources/chromeos/select_to_speak/rect_utils.js",
       "../../../browser/resources/chromeos/select_to_speak/select_to_speak.js",

@@ -1046,6 +1046,8 @@ test("browser_tests") {
       "../browser/ui/webui/bookmarks/bookmarks_browsertest.h",
       "../browser/ui/webui/chrome_url_data_manager_browsertest.cc",
       "../browser/ui/webui/chromeos/bluetooth_pairing_dialog_browsertest-inl.h",
+      "../browser/ui/webui/chromeos/machine_learning/machine_learning_internals_browsertest.cc",
+      "../browser/ui/webui/chromeos/machine_learning/machine_learning_internals_browsertest.h",
       "../browser/ui/webui/constrained_web_dialog_ui_browsertest.cc",
       "../browser/ui/webui/extensions/extension_settings_browsertest.cc",
       "../browser/ui/webui/extensions/extension_settings_browsertest.h",
