@@ -5080,6 +5080,7 @@ grit("resources") {
     "//chrome/browser/performance_manager:mojo_bindings_js",
     "//chrome/browser/resources/ssl/ssl_error_assistant:make_ssl_error_assistant_protobuf",
     "//chrome/browser/ui/webui/bluetooth_internals:mojo_bindings_js",
+    "//chrome/browser/ui/webui/downloads:mojo_bindings_js",
     "//chrome/browser/ui/webui/interventions_internals:mojo_bindings_js",
     "//chrome/browser/ui/webui/omnibox:mojo_bindings_js",
     "//chrome/browser/ui/webui/usb_internals:mojo_bindings_js",
@@ -5139,6 +5140,7 @@ grit("resources") {
   if (!is_android && optimize_webui) {
     deps += [
       "//chrome/browser/resources/bookmarks:build",
+      "//chrome/browser/resources/downloads:build",
       "//chrome/browser/resources/history:build",
     ]
     if (is_chromeos) {

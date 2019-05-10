@@ -158,6 +158,37 @@
       <include name="IDR_UKM_INTERNALS_CSS" file="../../components/ukm/debug/ukm_internals.css" flattenhtml="true" compress="gzip" type="BINDATA" />
       <include name="IDR_TRANSLATE_INTERNALS_HTML" file="../../components/translate/translate_internals/translate_internals.html" flattenhtml="true" allowexternalscript="true" compress="gzip" type="BINDATA" />
       <include name="IDR_TRANSLATE_INTERNALS_JS" file="../../components/translate/translate_internals/translate_internals.js" flattenhtml="true" compress="gzip" type="BINDATA" />
+      <if expr="not is_android">
+        <include name="IDR_DOWNLOADS_IMAGES_INCOGNITO_MARKER_SVG" file="resources\downloads\images\incognito_marker.svg" type="BINDATA" />
+        <include name="IDR_DOWNLOADS_IMAGES_NO_DOWNLOADS_SVG" file="resources\downloads\images\no_downloads.svg" type="BINDATA" />
+        <include name="IDR_DOWNLOADS_MOJO_LITE_JS" file="${root_gen_dir}\chrome\browser\ui\webui\downloads\downloads.mojom-lite.js" use_base_dir="false" type="BINDATA" />
+        <if expr="optimize_webui">
+          <then>
+            <include name="IDR_DOWNLOADS_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\downloads\vulcanized.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
+            <include name="IDR_DOWNLOADS_CRISPER_JS" file="${root_gen_dir}\chrome\browser\resources\downloads\crisper.js" use_base_dir="false" flattenhtml="true" type="BINDATA" compress="gzip" />
+          </then>
+          <else>
+            <include name="IDR_DOWNLOADS_DOWNLOADS_HTML" file="resources\downloads\downloads.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+            <include name="IDR_DOWNLOADS_BROWSER_PROXY_HTML" file="resources\downloads\browser_proxy.html" type="BINDATA" />
+            <include name="IDR_DOWNLOADS_BROWSER_PROXY_JS" file="resources\downloads\browser_proxy.js" type="BINDATA" />
+            <include name="IDR_DOWNLOADS_CONSTANTS_HTML" file="resources\downloads\constants.html" type="BINDATA" />
+            <include name="IDR_DOWNLOADS_CONSTANTS_JS" file="resources\downloads\constants.js" type="BINDATA" />
+            <include name="IDR_DOWNLOADS_DOWNLOADS_JS" file="resources\downloads\downloads.js" type="BINDATA" />
+            <include name="IDR_DOWNLOADS_I18N_SETUP_HTML" file="resources\downloads\i18n_setup.html" type="BINDATA" />
+            <include name="IDR_DOWNLOADS_ICON_LOADER_HTML" file="resources\downloads\icon_loader.html" type="BINDATA" />
+            <include name="IDR_DOWNLOADS_ICON_LOADER_JS" file="resources\downloads\icon_loader.js" type="BINDATA" />
+            <include name="IDR_DOWNLOADS_ICONS_HTML" file="resources\downloads\icons.html" type="BINDATA" />
+            <include name="IDR_DOWNLOADS_ITEM_HTML" file="resources\downloads\item.html" type="BINDATA" />
+            <include name="IDR_DOWNLOADS_ITEM_JS" file="resources\downloads\item.js" type="BINDATA" />
+            <include name="IDR_DOWNLOADS_MANAGER_HTML" file="resources\downloads\manager.html" type="BINDATA" />
+            <include name="IDR_DOWNLOADS_MANAGER_JS" file="resources\downloads\manager.js" type="BINDATA" />
+            <include name="IDR_DOWNLOADS_SEARCH_SERVICE_HTML" file="resources\downloads\search_service.html" type="BINDATA" />
+            <include name="IDR_DOWNLOADS_SEARCH_SERVICE_JS" file="resources\downloads\search_service.js" type="BINDATA" />
+            <include name="IDR_DOWNLOADS_TOOLBAR_HTML" file="resources\downloads\toolbar.html" type="BINDATA" />
+            <include name="IDR_DOWNLOADS_TOOLBAR_JS" file="resources\downloads\toolbar.js" type="BINDATA" />
+          </else>
+        </if>
+      </if>
       <include name="IDR_FEEDBACK_MANIFEST" file="resources\feedback\manifest.json" type="BINDATA" />
       <if expr="is_android">
         <include name="IDR_EXPLORE_SITES_INTERNALS_HTML" file="resources\explore_sites_internals\explore_sites_internals.html" allowexternalscript="true" compress="gzip" type="BINDATA" />

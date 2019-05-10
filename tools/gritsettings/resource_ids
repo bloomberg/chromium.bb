@@ -81,36 +81,29 @@
   # START chrome/browser section.
   "chrome/browser/browser_resources.grd": {
     "includes": [11000],
-    "structures": [11900],
+    "structures": [12000],
   },
   "chrome/browser/resources/chromeos/cellular_setup/cellular_setup_resources.grd": {
-    "structures": [11940],
+    "structures": [12040],
   },
   "chrome/browser/resources/chromeos/multidevice_setup/multidevice_setup_resources.grd": {
-    "structures": [11945],
+    "structures": [12045],
   },
   "chrome/browser/resources/component_extension_resources.grd": {
-    "includes": [12000],
-    "structures": [12250],
-  },
-  "chrome/browser/resources/downloads/downloads_resources_vulcanized.grd": {
-    "includes": [12300],
-  },
-  "chrome/browser/resources/downloads/downloads_resources.grd": {
-    "includes": [12310],
-    "structures": [12320],
-  },
-  "chrome/browser/resources/extensions/extensions_resources_vulcanized.grd": {
-    "includes": [12400],
-  },
-  "chrome/browser/resources/extensions/extensions_resources.grd": {
-    "structures": [12410],
+    "includes": [12100],
+    "structures": [12350],
   },
   "chrome/browser/resources/invalidations_resources.grd": {
-    "includes": [12500],
+    "includes": [12400],
   },
   "chrome/browser/resources/local_ntp/local_ntp_resources.grd": {
-    "includes": [12540],
+    "includes": [12440],
+  },
+  "chrome/browser/resources/extensions/extensions_resources_vulcanized.grd": {
+    "includes": [12500],
+  },
+  "chrome/browser/resources/extensions/extensions_resources.grd": {
+    "structures": [12510],
   },
   "chrome/browser/resources/net_internals/net_internals_resources.grd": {
     "includes": [12600],
