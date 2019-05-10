@@ -1323,6 +1323,13 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="AltClickMappedToRightClick">
+  <owner>zentaro@chromium.org</owner>
+  <description>
+    User pressed alt click on a touchpad device to generate right click.
+  </description>
+</action>
+
 <action name="Android.BookmarkPage.RemoveItem">
   <owner>huayinz@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
