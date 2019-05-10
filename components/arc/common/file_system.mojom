@@ -181,6 +181,11 @@ struct SelectFilesResult {
   // Content URLs of the selected files.
   // Empty if the user closes the file selector without selecting any files.
   array<url.mojom.Url> urls;
+
+  // Name of the selected Android picker activity.
+  // Filled only when the user selected an Android picker activity instead of
+  // selecting files. (e.g. "com.google.photos/.PickerActivity")
+  string? picker_activity;
 };
 
 // UI event to be dispatched to ChromeOS file selector.
@@ -198,6 +203,7 @@ enum FileSelectorEventType {
   CLICK_OK,         // Clicks OK button.
   CLICK_DIRECTORY,  // Clicks a directory in the left pane.
   CLICK_FILE,       // Clicks a file in the right pane.
+  CLICK_CANCEL,     // Clicks Cancel button.
 };
 
 // Represents a clickable UI element shown on ChromeOS file selector.

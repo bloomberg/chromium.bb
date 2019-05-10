@@ -9,6 +9,7 @@
 #include "base/json/json_reader.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/mock_callback.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_select_files_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -41,6 +42,15 @@ MATCHER_P(FileTypeInfoMatcher, expected, "") {
 
 MATCHER_P(FilePathMatcher, expected, "") {
   EXPECT_EQ(expected.value(), arg.value());
+  return true;
+}
+
+MATCHER_P(SelectFilesResultMatcher, expected, "") {
+  EXPECT_EQ(expected->urls.size(), arg->urls.size());
+  for (size_t i = 0; i < expected->urls.size(); ++i) {
+    EXPECT_EQ(expected->urls[i], arg->urls[i]);
+  }
+  EXPECT_EQ(expected->picker_activity, arg->picker_activity);
   return true;
 }
 
@@ -225,6 +235,29 @@ TEST_F(ArcSelectFilesHandlerTest, FileSelected_CallbackCalled) {
   arc_select_files_handler_->FileSelected(base::FilePath(), 0, nullptr);
 }
 
+TEST_F(ArcSelectFilesHandlerTest, FileSelected_PickerActivitySelected) {
+  std::string package_name = "com.google.photos";
+  std::string activity_name = ".PickerActivity";
+
+  SelectFilesRequestPtr request = SelectFilesRequest::New();
+  request->action_type = SelectFilesActionType::OPEN_DOCUMENT;
+
+  base::MockCallback<SelectFilesCallback> callback;
+  arc_select_files_handler_->SelectFiles(request, callback.Get());
+
+  mojom::SelectFilesResultPtr expected_result = mojom::SelectFilesResult::New();
+  expected_result->picker_activity =
+      base::StringPrintf("%s/%s", package_name.c_str(), activity_name.c_str());
+
+  EXPECT_CALL(std::move(callback),
+              Run(SelectFilesResultMatcher(expected_result.get())))
+      .Times(1);
+
+  arc_select_files_handler_->FileSelected(
+      ConvertAndroidActivityToFilePath(package_name, activity_name), 0,
+      nullptr);
+}
+
 TEST_F(ArcSelectFilesHandlerTest, FileSelectionCanceled_CallbackCalled) {
   SelectFilesRequestPtr request = SelectFilesRequest::New();
   request->action_type = SelectFilesActionType::OPEN_DOCUMENT;
@@ -232,13 +265,19 @@ TEST_F(ArcSelectFilesHandlerTest, FileSelectionCanceled_CallbackCalled) {
   base::MockCallback<SelectFilesCallback> callback;
   arc_select_files_handler_->SelectFiles(request, callback.Get());
 
-  EXPECT_CALL(std::move(callback), Run(_)).Times(1);
+  mojom::SelectFilesResultPtr expected_result = mojom::SelectFilesResult::New();
+
+  EXPECT_CALL(std::move(callback),
+              Run(SelectFilesResultMatcher(expected_result.get())))
+      .Times(1);
   arc_select_files_handler_->FileSelectionCanceled(nullptr);
 }
 
 TEST_F(ArcSelectFilesHandlerTest, OnFileSelectorEvent) {
   CallOnFileSelectorEventAndCheckScript(mojom::FileSelectorEventType::CLICK_OK,
                                         "", kScriptClickOk);
+  CallOnFileSelectorEventAndCheckScript(
+      mojom::FileSelectorEventType::CLICK_CANCEL, "", kScriptClickCancel);
   CallOnFileSelectorEventAndCheckScript(
       mojom::FileSelectorEventType::CLICK_DIRECTORY, "Click Target",
       base::StringPrintf(kScriptClickDirectory, "\"Click Target\""));

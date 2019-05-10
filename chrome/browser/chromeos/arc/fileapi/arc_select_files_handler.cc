@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_select_files_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
@@ -35,6 +36,10 @@ namespace arc {
 // Script for clicking OK button on the selector.
 const char kScriptClickOk[] =
     "(function() { document.querySelector('#ok-button').click(); })();";
+
+// Script for clicking Cancel button on the selector.
+const char kScriptClickCancel[] =
+    "(function() { document.querySelector('#cancel-button').click(); })();";
 
 // Script for clicking a directory element in the left pane of the selector.
 // %s should be replaced by the target directory name wrapped by double-quotes.
@@ -183,6 +188,17 @@ void ArcSelectFilesHandler::FileSelected(const base::FilePath& path,
                                          int index,
                                          void* params) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(callback_);
+
+  const std::string& activity = ConvertFilePathToAndroidActivity(path);
+  if (!activity.empty()) {
+    // The user selected an Android picker activity instead of a file.
+    mojom::SelectFilesResultPtr result = mojom::SelectFilesResult::New();
+    result->picker_activity = activity;
+    std::move(callback_).Run(std::move(result));
+    return;
+  }
+
   std::vector<base::FilePath> files;
   files.push_back(path);
   FilesSelectedInternal(files, params);
@@ -235,6 +251,9 @@ void ArcSelectFilesHandler::OnFileSelectorEvent(
   switch (event->type) {
     case mojom::FileSelectorEventType::CLICK_OK:
       script = kScriptClickOk;
+      break;
+    case mojom::FileSelectorEventType::CLICK_CANCEL:
+      script = kScriptClickCancel;
       break;
     case mojom::FileSelectorEventType::CLICK_DIRECTORY:
       script = base::StringPrintf(kScriptClickDirectory,

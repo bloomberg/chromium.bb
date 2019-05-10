@@ -27,6 +27,7 @@ class SelectFileDialogHolder;
 
 // Exposed for testing.
 extern const char kScriptClickOk[];
+extern const char kScriptClickCancel[];
 extern const char kScriptClickDirectory[];
 extern const char kScriptClickFile[];
 extern const char kScriptGetElements[];
