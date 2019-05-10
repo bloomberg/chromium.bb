@@ -1549,3 +1549,36 @@ util.entryDebugString = (entry) => {
   }
   return entryDescription;
 };
+
+/**
+ * Returns true if all entries belong to the same volume. If there are no
+ * entries it also returns false.
+ *
+ * @param {!Array<Entry|FilesAppEntry>} entries
+ * @param {!VolumeManager} volumeManager
+ * @return boolean
+ */
+util.isSameVolume = (entries, volumeManager) => {
+  if (!entries.length) {
+    return false;
+  }
+
+  const firstEntry = entries[0];
+  if (!firstEntry) {
+    return false;
+  }
+  const volumeInfo = volumeManager.getVolumeInfo(firstEntry);
+
+  for (let i = 1; i < entries.length; i++) {
+    if (!entries[i]) {
+      return false;
+    }
+    const volumeInfoToCompare = volumeManager.getVolumeInfo(assert(entries[i]));
+    if (!volumeInfoToCompare ||
+        volumeInfoToCompare.volumeId !== volumeInfo.volumeId) {
+      return false;
+    }
+  }
+
+  return true;
+};
