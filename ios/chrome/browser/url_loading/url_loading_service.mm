@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/url_loading/app_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
+#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -84,7 +85,21 @@ void UrlLoadingService::Load(const UrlLoadParams& params) {
       Dispatch(fixed_params);
       break;
     }
-    default: {
+    case UrlLoadStrategy::ALWAYS_IN_INCOGNITO: {
+      ios::ChromeBrowserState* browser_state = browser_->GetBrowserState();
+      if (params.disposition == WindowOpenDisposition::CURRENT_TAB &&
+          !browser_state->IsOffTheRecord()) {
+        UrlLoadingServiceFactory::GetForBrowserState(
+            browser_state->GetOffTheRecordChromeBrowserState())
+            ->Load(params);
+      } else {
+        UrlLoadParams fixed_params = params;
+        fixed_params.in_incognito = YES;
+        Dispatch(fixed_params);
+      }
+      break;
+    }
+    case UrlLoadStrategy::NORMAL: {
       Dispatch(params);
       break;
     }
@@ -128,24 +143,20 @@ void UrlLoadingService::LoadUrlInCurrentTab(const UrlLoadParams& params) {
     return;
   }
 
-  // Ask the prerender service to load this URL if it can, and return if it does
-  // so.
   PrerenderService* prerenderService =
       PrerenderServiceFactory::GetForBrowserState(browser_state);
-  WebStateList* web_state_list = browser_->GetWebStateList();
-  id<SessionWindowRestoring> restorer =
-      (id<SessionWindowRestoring>)browser_->GetTabModel();
-  if (prerenderService && prerenderService->MaybeLoadPrerenderedURL(
-                              web_params.url, web_params.transition_type,
-                              web_state_list, restorer)) {
-    notifier_->TabDidPrerenderUrl(web_params.url, web_params.transition_type);
-    return;
-  }
 
   // Some URLs are not allowed while in incognito.  If we are in incognito and
   // load a disallowed URL, instead create a new tab not in the incognito state.
-  if (browser_state->IsOffTheRecord() &&
-      !IsURLAllowedInIncognito(web_params.url)) {
+  // Also if there's no current web state, that means there is no current tab
+  // to open in, so this also redirects to a new tab.
+  WebStateList* web_state_list = browser_->GetWebStateList();
+  web::WebState* current_web_state = web_state_list->GetActiveWebState();
+  if (!current_web_state || (browser_state->IsOffTheRecord() &&
+                             !IsURLAllowedInIncognito(web_params.url))) {
+    if (prerenderService) {
+      prerenderService->CancelPrerender();
+    }
     notifier_->TabFailedToLoadUrl(web_params.url, web_params.transition_type);
     UrlLoadParams params =
         UrlLoadParams::InNewTab(web_params.url, web_params.virtual_url);
@@ -155,8 +166,16 @@ void UrlLoadingService::LoadUrlInCurrentTab(const UrlLoadParams& params) {
     return;
   }
 
-  web::WebState* current_web_state = web_state_list->GetActiveWebState();
-  DCHECK(current_web_state);
+  // Ask the prerender service to load this URL if it can, and return if it does
+  // so.
+  id<SessionWindowRestoring> restorer =
+      (id<SessionWindowRestoring>)browser_->GetTabModel();
+  if (prerenderService && prerenderService->MaybeLoadPrerenderedURL(
+                              web_params.url, web_params.transition_type,
+                              web_state_list, restorer)) {
+    notifier_->TabDidPrerenderUrl(web_params.url, web_params.transition_type);
+    return;
+  }
 
   BOOL typedOrGeneratedTransition =
       PageTransitionCoreTypeIs(web_params.transition_type,
