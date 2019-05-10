@@ -891,16 +891,14 @@ _QUERIES = {
 
 # Default gerrit query used to find changes for CQ.
 CQ_READY_QUERY = (
-    '%(open)s AND %(approved)s AND label:Commit-Queue>=2 AND '
-    '-label:Legacy-Commit-Queue=-1' % _QUERIES,
+    '%(open)s AND %(approved)s AND label:Commit-Queue>=2' % _QUERIES,
     lambda change: change.IsMergeable())
 
 # The PreCQ does not require the CQ+2 bit to be set if it's a recent CL, or if
 # the Commit-Queue +1 flag has been set.
 PRECQ_READY_QUERY = (
     '%(open)s AND (%(approved)s AND label:Commit-Queue>=2 OR '
-    'label:Code-Review=+2 AND -age:2h OR label:Commit-Queue=+1) AND '
-    '-label:Legacy-Commit-Queue=-1' % _QUERIES,
+    'label:Code-Review=+2 AND -age:2h OR label:Commit-Queue=+1)' % _QUERIES,
     lambda change: not change.IsBeingMerged())
 
 GERRIT_ON_BORG_LABELS = {
@@ -912,7 +910,9 @@ GERRIT_ON_BORG_LABELS = {
 
 # Path is releative to the root of the Gerrit instance
 WHITELISTED_PARALLEL_CQ_PROJECTS = [
+    'chromeos/infra_internal/skylab_inventory',
     'chromiumos/chromite',
+    'chromiumos/infra/recipes',
 ]
 
 # Actions that a CQ run can take on a CL
