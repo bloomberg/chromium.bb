@@ -10,6 +10,7 @@
 #include <map>
 #include <string>
 
+#include "base/bind_helpers.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -43,14 +44,17 @@ class MimeHandlerViewAttachHelper : content::RenderProcessHostObserver {
   // renderer is notified to start the MimHandlerView creation process. The
   // mentioned child frame will be used to attach the GuestView's WebContents to
   // the outer WebContents (WebContents associated with
-  // |navigating_frame_tree_node_id|).
-  static void OverrideBodyForInterceptedResponse(
+  // |navigating_frame_tree_node_id|). When this method returns true, the
+  // corresponding resource load will be halted until |resume| is invoked. This
+  // provides an opportunity for UI thread initializations.
+  static bool OverrideBodyForInterceptedResponse(
       int32_t navigating_frame_tree_node_id,
       const GURL& resource_url,
       const std::string& mime_type,
       const std::string& stream_id,
       std::string* payload,
-      uint32_t* data_pipe_size);
+      uint32_t* data_pipe_size,
+      base::OnceClosure resume_load = base::DoNothing());
 
   ~MimeHandlerViewAttachHelper() override;
 

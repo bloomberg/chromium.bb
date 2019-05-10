@@ -89,25 +89,29 @@ MimeHandlerViewAttachHelper* MimeHandlerViewAttachHelper::Get(
 }
 
 // static
-void MimeHandlerViewAttachHelper::OverrideBodyForInterceptedResponse(
+bool MimeHandlerViewAttachHelper::OverrideBodyForInterceptedResponse(
     int32_t navigating_frame_tree_node_id,
     const GURL& resource_url,
     const std::string& mime_type,
     const std::string& stream_id,
     std::string* payload,
-    uint32_t* data_pipe_size) {
+    uint32_t* data_pipe_size,
+    base::OnceClosure resume_load) {
   if (!content::MimeHandlerViewMode::UsesCrossProcessFrame())
-    return;
+    return false;
   auto color = GetBackgroundColorStringForMimeType(resource_url, mime_type);
   auto html_str =
       base::StringPrintf(kFullPageMimeHandlerViewHTML, SkColorGetR(color),
                          SkColorGetG(color), SkColorGetB(color));
   payload->assign(html_str);
   *data_pipe_size = kFullPageMimeHandlerViewDataPipeSize;
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(CreateFullPageMimeHandlerView,
-                                          navigating_frame_tree_node_id,
-                                          resource_url, mime_type, stream_id));
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(CreateFullPageMimeHandlerView,
+                     navigating_frame_tree_node_id, resource_url, mime_type,
+                     stream_id),
+      std::move(resume_load));
+  return true;
 }
 
 void MimeHandlerViewAttachHelper::RenderProcessHostDestroyed(
