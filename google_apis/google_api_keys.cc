@@ -78,12 +78,8 @@
 #define GOOGLE_API_KEY_PHYSICAL_WEB_TEST DUMMY_API_TOKEN
 #endif
 
-#if !defined(GOOGLE_API_KEY_REMOTING_FTL)
-#define GOOGLE_API_KEY_REMOTING_FTL DUMMY_API_TOKEN
-#endif
-
-#if !defined(GOOGLE_API_KEY_REMOTING_FTL_MOBILE)
-#define GOOGLE_API_KEY_REMOTING_FTL_MOBILE DUMMY_API_TOKEN
+#if !defined(GOOGLE_API_KEY_REMOTING)
+#define GOOGLE_API_KEY_REMOTING DUMMY_API_TOKEN
 #endif
 
 // These are used as shortcuts for developers and users providing
@@ -124,15 +120,10 @@ class APIKeyCache {
     api_key_non_stable_ = api_key_;
 #endif
 
-    api_key_remoting_ftl_ = CalculateKeyValue(
-        GOOGLE_API_KEY_REMOTING_FTL,
-        STRINGIZE_NO_EXPANSION(GOOGLE_API_KEY_REMOTING_FTL), nullptr,
-        std::string(), environment.get(), command_line);
-
-    api_key_remoting_ftl_mobile_ = CalculateKeyValue(
-        GOOGLE_API_KEY_REMOTING_FTL_MOBILE,
-        STRINGIZE_NO_EXPANSION(GOOGLE_API_KEY_REMOTING_FTL_MOBILE), nullptr,
-        std::string(), environment.get(), command_line);
+    api_key_remoting_ = CalculateKeyValue(
+        GOOGLE_API_KEY_REMOTING,
+        STRINGIZE_NO_EXPANSION(GOOGLE_API_KEY_REMOTING), nullptr, std::string(),
+        environment.get(), command_line);
 
     metrics_key_ = CalculateKeyValue(
         GOOGLE_METRICS_SIGNING_KEY,
@@ -202,10 +193,7 @@ class APIKeyCache {
   void set_api_key(const std::string& api_key) { api_key_ = api_key; }
 #endif
   std::string api_key_non_stable() const { return api_key_non_stable_; }
-  std::string api_key_remoting_ftl() const { return api_key_remoting_ftl_; }
-  std::string api_key_remoting_ftl_mobile() const {
-    return api_key_remoting_ftl_mobile_;
-  }
+  std::string api_key_remoting() const { return api_key_remoting_; }
 
   std::string metrics_key() const { return metrics_key_; }
 
@@ -303,8 +291,7 @@ class APIKeyCache {
 
   std::string api_key_;
   std::string api_key_non_stable_;
-  std::string api_key_remoting_ftl_;
-  std::string api_key_remoting_ftl_mobile_;
+  std::string api_key_remoting_;
   std::string metrics_key_;
   std::string client_ids_[CLIENT_NUM_ITEMS];
   std::string client_secrets_[CLIENT_NUM_ITEMS];
@@ -325,12 +312,8 @@ std::string GetNonStableAPIKey() {
   return g_api_key_cache.Get().api_key_non_stable();
 }
 
-std::string GetRemotingFtlAPIKey() {
-  return g_api_key_cache.Get().api_key_remoting_ftl();
-}
-
-std::string GetRemotingFtlMobileAPIKey() {
-  return g_api_key_cache.Get().api_key_remoting_ftl_mobile();
+std::string GetRemotingAPIKey() {
+  return g_api_key_cache.Get().api_key_remoting();
 }
 
 #if defined(OS_IOS)

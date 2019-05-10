@@ -83,12 +83,7 @@ GrpcChannelSharedPtr FtlGrpcContext::CreateChannel() {
 
 // static
 void FtlGrpcContext::FillClientContext(grpc::ClientContext* context) {
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  std::string api_key = google_apis::GetRemotingFtlMobileAPIKey();
-#else
-  std::string api_key = google_apis::GetRemotingFtlAPIKey();
-#endif
-  context->AddMetadata("x-goog-api-key", api_key);
+  context->AddMetadata("x-goog-api-key", google_apis::GetRemotingAPIKey());
 }
 
 // static
