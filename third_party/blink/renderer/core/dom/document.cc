@@ -2050,7 +2050,6 @@ void Document::PropagateStyleToViewport() {
   if (overflow_anchor == EOverflowAnchor::kVisible)
     overflow_anchor = EOverflowAnchor::kAuto;
 
-  cc::ScrollSnapType snap_type = overflow_style->GetScrollSnapType();
   ScrollBehavior scroll_behavior = document_element_style->GetScrollBehavior();
 
   EOverscrollBehavior overscroll_behavior_x =
@@ -2066,6 +2065,9 @@ void Document::PropagateStyleToViewport() {
             static_cast<OverscrollBehaviorType>(overscroll_behavior_y)));
   }
 
+  // We only propagate the properties related to snap container since viewport
+  // defining element cannot be a snap area.
+  cc::ScrollSnapType snap_type = overflow_style->GetScrollSnapType();
   Length scroll_padding_top = overflow_style->ScrollPaddingTop();
   Length scroll_padding_right = overflow_style->ScrollPaddingRight();
   Length scroll_padding_bottom = overflow_style->ScrollPaddingBottom();

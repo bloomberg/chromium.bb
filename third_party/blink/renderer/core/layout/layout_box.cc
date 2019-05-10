@@ -342,7 +342,7 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
     if (flow_thread && flow_thread != this)
       flow_thread->FlowThreadDescendantStyleDidChange(this, diff, *old_style);
 
-    UpdateScrollSnapMappingAfterStyleChange(&new_style, old_style);
+    UpdateScrollSnapMappingAfterStyleChange(*old_style);
 
     if (ShouldClipOverflow()) {
       // The overflow clip paint property depends on border sizes through
@@ -457,42 +457,48 @@ void LayoutBox::UpdateGridPositionAfterStyleChange(
 }
 
 void LayoutBox::UpdateScrollSnapMappingAfterStyleChange(
-    const ComputedStyle* new_style,
-    const ComputedStyle* old_style) {
+    const ComputedStyle& old_style) {
+  DCHECK(Style());
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
   if (!snap_coordinator)
     return;
 
-  // Scroll snap type has no effect on the viewport defining element instead
-  // they are handled by the LayoutView.
-  bool allows_snap_container =
-      GetNode() != GetDocument().ViewportDefiningElement();
-
-  cc::ScrollSnapType old_snap_type =
-      old_style ? old_style->GetScrollSnapType() : cc::ScrollSnapType();
-  cc::ScrollSnapType new_snap_type = new_style && allows_snap_container
-                                         ? new_style->GetScrollSnapType()
-                                         : cc::ScrollSnapType();
-  bool is_removed = !new_style;
-  if (old_snap_type != new_snap_type || is_removed) {
-    snap_coordinator->SnapContainerDidChange(*this, is_removed);
+  // scroll-snap-type and scroll-padding invalidate the snap container.
+  if (old_style.GetScrollSnapType() != StyleRef().GetScrollSnapType() ||
+      old_style.ScrollPaddingBottom() != StyleRef().ScrollPaddingBottom() ||
+      old_style.ScrollPaddingLeft() != StyleRef().ScrollPaddingLeft() ||
+      old_style.ScrollPaddingTop() != StyleRef().ScrollPaddingTop() ||
+      old_style.ScrollPaddingRight() != StyleRef().ScrollPaddingRight()) {
+    snap_coordinator->SnapContainerDidChange(*this, false /* is_removed */);
   }
 
-  cc::ScrollSnapAlign old_snap_align =
-      old_style ? old_style->GetScrollSnapAlign() : cc::ScrollSnapAlign();
-  cc::ScrollSnapAlign new_snap_align = new_style && allows_snap_container
-                                           ? new_style->GetScrollSnapAlign()
-                                           : cc::ScrollSnapAlign();
-  if (old_snap_align != new_snap_align)
-    snap_coordinator->SnapAreaDidChange(*this, new_snap_align);
+  // scroll-snap-align, scroll-snap-stop and scroll-margin invalidate the snap
+  // area.
+  if (old_style.GetScrollSnapAlign() != StyleRef().GetScrollSnapAlign() ||
+      old_style.ScrollSnapStop() != StyleRef().ScrollSnapStop() ||
+      old_style.ScrollMarginBottom() != StyleRef().ScrollMarginBottom() ||
+      old_style.ScrollMarginLeft() != StyleRef().ScrollMarginLeft() ||
+      old_style.ScrollMarginTop() != StyleRef().ScrollMarginTop() ||
+      old_style.ScrollMarginRight() != StyleRef().ScrollMarginRight())
+    snap_coordinator->SnapAreaDidChange(*this, StyleRef().GetScrollSnapAlign());
 }
 
 void LayoutBox::AddScrollSnapMapping() {
-  UpdateScrollSnapMappingAfterStyleChange(Style(), nullptr);
+  SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
+  if (!snap_coordinator)
+    return;
+
+  snap_coordinator->SnapContainerDidChange(*this, false /* is_removed */);
+  snap_coordinator->SnapAreaDidChange(*this, Style()->GetScrollSnapAlign());
 }
 
 void LayoutBox::ClearScrollSnapMapping() {
-  UpdateScrollSnapMappingAfterStyleChange(nullptr, Style());
+  SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
+  if (!snap_coordinator)
+    return;
+
+  snap_coordinator->SnapContainerDidChange(*this, true /* is_removed */);
+  snap_coordinator->SnapAreaDidChange(*this, cc::ScrollSnapAlign());
 }
 
 void LayoutBox::UpdateFromStyle() {

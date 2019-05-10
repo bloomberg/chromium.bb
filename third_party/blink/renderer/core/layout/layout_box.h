@@ -1673,8 +1673,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void UpdateShapeOutsideInfoAfterStyleChange(const ComputedStyle&,
                                               const ComputedStyle* old_style);
   void UpdateGridPositionAfterStyleChange(const ComputedStyle*);
-  void UpdateScrollSnapMappingAfterStyleChange(const ComputedStyle*,
-                                               const ComputedStyle* old_style);
+  void UpdateScrollSnapMappingAfterStyleChange(const ComputedStyle& old_style);
   void ClearScrollSnapMapping();
   void AddScrollSnapMapping();
 

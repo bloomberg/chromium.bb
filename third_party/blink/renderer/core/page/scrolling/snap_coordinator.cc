@@ -45,8 +45,55 @@ static LayoutBox* FindSnapContainer(const LayoutBox& snap_area) {
   return box;
 }
 
+void SnapCoordinator::SnapContainerDidChange(LayoutBox& snap_container,
+                                             bool is_removed) {
+  if (is_removed) {
+    snap_container_map_.erase(&snap_container);
+    return;
+  }
+
+  // Scroll snap properties have no effect on the viewport defining element
+  // instead they are propagated to (See Document::PropagateStyleToViewport) and
+  // handled by the LayoutView.
+  if (snap_container.GetNode() ==
+      snap_container.GetDocument().ViewportDefiningElement())
+    return;
+
+  bool is_scroll_container =
+      snap_container.IsLayoutView() || snap_container.HasOverflowClip();
+  if (!is_scroll_container) {
+    snap_container_map_.erase(&snap_container);
+    snap_container.ClearSnapAreas();
+    snap_container.SetNeedsPaintPropertyUpdate();
+    return;
+  }
+
+  // Note that even if scroll snap type is 'none' we continue to maintain its
+  // snap container entry as long as the element is a scroller. This is because
+  // while the scroller does not snap, it still captures the snap areas in its
+  // subtree for whom it is the nearest  ancestor scroll container per spec [1].
+  //
+  // [1] https://drafts.csswg.org/css-scroll-snap/#overview
+
+  // TODO(sunyunjia): Only update when the localframe doesn't need layout.
+  UpdateSnapContainerData(snap_container);
+
+  // TODO(majidvp): Add logic to correctly handle orphaned snap areas here.
+  // 1. Removing container: find a new snap container for its orphan snap
+  // areas (most likely nearest ancestor of current container) otherwise add
+  // them to an orphan list.
+  // 2. Adding container: may take over snap areas from nearest ancestor snap
+  // container or from existing areas in orphan pool.
+}
+
 void SnapCoordinator::SnapAreaDidChange(LayoutBox& snap_area,
                                         cc::ScrollSnapAlign scroll_snap_align) {
+  // The viewport defining element cannot be a snap area.
+  if (snap_area.GetNode() ==
+          snap_area.GetDocument().ViewportDefiningElement() ||
+      snap_area.IsLayoutView())
+    return;
+
   LayoutBox* old_container = snap_area.SnapContainer();
   if (scroll_snap_align.alignment_inline == cc::SnapAlignment::kNone &&
       scroll_snap_align.alignment_block == cc::SnapAlignment::kNone) {
@@ -331,40 +378,6 @@ bool SnapCoordinator::PerformSnapping(
         kProgrammaticScroll, kScrollBehaviorSmooth);
   }
   return true;
-}
-
-void SnapCoordinator::SnapContainerDidChange(LayoutBox& snap_container,
-                                             bool is_removed) {
-  if (is_removed) {
-    snap_container_map_.erase(&snap_container);
-    return;
-  }
-
-  bool is_scroll_container =
-      snap_container.IsLayoutView() || snap_container.HasOverflowClip();
-  if (!is_scroll_container) {
-    snap_container_map_.erase(&snap_container);
-    snap_container.ClearSnapAreas();
-    snap_container.SetNeedsPaintPropertyUpdate();
-    return;
-  }
-
-  // Note that even if scroll snap type is 'none' we continue to maintain its
-  // snap container entry as long as the element is a scroller. This is because
-  // while the scroller does not snap, it still captures the snap areas in its
-  // subtree for whom it is the nearest  ancestor scroll container per spec [1].
-  //
-  // [1] https://drafts.csswg.org/css-scroll-snap/#overview
-
-  // TODO(sunyunjia): Only update when the localframe doesn't need layout.
-  UpdateSnapContainerData(snap_container);
-
-  // TODO(majidvp): Add logic to correctly handle orphaned snap areas here.
-  // 1. Removing container: find a new snap container for its orphan snap
-  // areas (most likely nearest ancestor of current container) otherwise add
-  // them to an orphan list.
-  // 2. Adding container: may take over snap areas from nearest ancestor snap
-  // container or from existing areas in orphan pool.
 }
 
 base::Optional<cc::SnapContainerData> SnapCoordinator::GetSnapContainerData(
