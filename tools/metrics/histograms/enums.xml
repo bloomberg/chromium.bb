@@ -55822,6 +55822,7 @@ Full version information for the fingerprint enum values:
 
 <enum name="UpdateEngineDownloadErrorCode">
   <int value="0" label="Download Error"/>
+  <int value="99" label="libcurl HTTP request internal error"/>
   <int value="100" label="Input Malformed (Internal Error)"/>
   <int value="101" label="Unknown HTTP Status (not 200-599)"/>
   <int value="400" label="Bad Request (HTTP Status 400)"/>
