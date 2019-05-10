@@ -1049,8 +1049,8 @@ void PasswordFormManager::SavePendingToStore(bool update) {
     if (!pending_credentials_.IsFederatedCredential()) {
       auto updated_password_it =
           best_matches_.find(pending_credentials_.username_value);
-      DCHECK(best_matches_.end() != updated_password_it);
-      old_password = updated_password_it->second->password_value;
+      if (updated_password_it != best_matches_.end())
+        old_password = updated_password_it->second->password_value;
     }
 
     form_saver_->Update(pending_credentials_, matches, old_password);
