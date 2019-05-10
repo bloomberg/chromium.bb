@@ -147,7 +147,6 @@
 #include "chrome/browser/extensions/api/networking_private/networking_private_ui_delegate_factory_impl.h"
 #include "chrome/browser/extensions/browser_context_keyed_service_factories.h"
 #include "chrome/browser/extensions/extension_management.h"
-#include "chrome/browser/ui/bookmarks/enhanced_bookmark_key_service_factory.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics_factory.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_delegate_impl_factory.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
@@ -259,7 +258,6 @@ void ChromeBrowserMainExtraPartsProfiles::
 #if defined(OS_CHROMEOS)
   chromeos::EasyUnlockServiceFactory::GetInstance();
 #endif
-  EnhancedBookmarkKeyServiceFactory::GetInstance();
 #endif
 #if defined(OS_ANDROID)
   explore_sites::ExploreSitesServiceFactory::GetInstance();
