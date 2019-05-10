@@ -174,8 +174,9 @@ public class MinidumpUploadCallable implements Callable<Integer> {
         if (isSuccessful(responseCode)) {
             String responseContent = getResponseContentAsString(connection);
             // The crash server returns the crash ID.
-            String id = responseContent != null ? responseContent : "unknown";
-            Log.i(TAG, "Minidump " + mFileToUpload.getName() + " uploaded successfully, id: " + id);
+            String uploadId = responseContent != null ? responseContent : "unknown";
+            String crashFileName = mFileToUpload.getName();
+            Log.i(TAG, "Minidump " + crashFileName + " uploaded successfully, id: " + uploadId);
 
             // TODO(acleung): MinidumpUploadService is in charge of renaming while this class is
             // in charge of deleting. We should move all the file system operations into
@@ -183,7 +184,8 @@ public class MinidumpUploadCallable implements Callable<Integer> {
             CrashFileManager.markUploadSuccess(mFileToUpload);
 
             try {
-                appendUploadedEntryToLog(id);
+                String localId = CrashFileManager.getCrashLocalIdFromFileName(crashFileName);
+                appendUploadedEntryToLog(localId, uploadId);
             } catch (IOException ioe) {
                 Log.e(TAG, "Fail to write uploaded entry to log file");
             }
@@ -205,9 +207,10 @@ public class MinidumpUploadCallable implements Callable<Integer> {
      * Records the upload entry to a log file
      * similar to what is done in chrome/app/breakpad_linux.cc
      *
-     * @param id The crash ID return from the server.
+     * @param localId The local ID when crash happened.
+     * @param uploadId The crash ID return from the server.
      */
-    private void appendUploadedEntryToLog(String id) throws IOException {
+    private void appendUploadedEntryToLog(String localId, String uploadId) throws IOException {
         FileWriter writer = new FileWriter(mLogfile, /* Appending */ true);
 
         // The log entries are formated like so:
@@ -215,7 +218,11 @@ public class MinidumpUploadCallable implements Callable<Integer> {
         StringBuilder sb = new StringBuilder();
         sb.append(System.currentTimeMillis() / 1000);
         sb.append(",");
-        sb.append(id);
+        sb.append(uploadId);
+        if (localId != null) {
+            sb.append(",");
+            sb.append(localId);
+        }
         sb.append('\n');
 
         try {

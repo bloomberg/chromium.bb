@@ -25,6 +25,7 @@ import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -58,6 +59,11 @@ public class CrashFileManager {
     // This should mirror the C++ CrashUploadList::kReporterLogFilename variable.
     @VisibleForTesting
     public static final String CRASH_DUMP_LOGFILE = "uploads.log";
+
+    // Local ID is the segment after the last hyphen and before the extensions part. It's usually an
+    // alphanumeric value but there is not restriction of having other characters like `_`. So we
+    // define the id to be a sequence of non separator characters {`-`, `,` or `.`}
+    private static final Pattern CRASH_LOCAL_ID_PATTERN = Pattern.compile("^[^.]+-([^-,]+?)\\.");
 
     // Unlike the MINIDUMP_READY_FOR_UPLOAD_PATTERN below, this pattern omits a ".tryN" suffix.
     private static final Pattern MINIDUMP_SANS_LOGCAT_PATTERN =
@@ -550,6 +556,24 @@ public class CrashFileManager {
             if (filenameSansExtension.endsWith(localId)) {
                 return f;
             }
+        }
+        return null;
+    }
+
+    /**
+     * Extracts crash local ID from crash file name.
+     *
+     * ID is the last part of the file name. e.g. {@code
+     * chromium-renderer-minidump-f297dbcba7a2d0bb.dump.try2} has local ID of {@code
+     * f297dbcba7a2d0bb}.
+     *
+     * @param fileName Crash File name.
+     * @return Local ID string or null if not found.
+     */
+    public static String getCrashLocalIdFromFileName(String fileName) {
+        Matcher matcher = CRASH_LOCAL_ID_PATTERN.matcher(fileName);
+        if (matcher.find()) {
+            return matcher.group(1);
         }
         return null;
     }

@@ -795,4 +795,22 @@ public class CrashFileManagerTest {
         Assert.assertFalse(success2.exists());
         Assert.assertFalse(success3.exists());
     }
+
+    @Test
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testGetCrashLocalIdFromFileName() {
+        Assert.assertEquals("abc123d4",
+                CrashFileManager.getCrashLocalIdFromFileName("pkg-process_1212-abc123d4.dmp"));
+        Assert.assertEquals("abc123_d4",
+                CrashFileManager.getCrashLocalIdFromFileName(
+                        "pkg-process_1212-abc123_d4.dmp.try001"));
+        Assert.assertEquals("abc123_d4",
+                CrashFileManager.getCrashLocalIdFromFileName(
+                        "pkg-process-1212,-abc123_d4.dmp.try001"));
+        Assert.assertNull(
+                CrashFileManager.getCrashLocalIdFromFileName("pkg-process-1234,5678.dmp-1.try001"));
+        Assert.assertNull(
+                CrashFileManager.getCrashLocalIdFromFileName("chromium_renderer.dmp.try001"));
+    }
 }
