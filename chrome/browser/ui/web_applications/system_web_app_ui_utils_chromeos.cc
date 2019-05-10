@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils_chromeos.h"
 
 #include <string>
+#include <utility>
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -35,7 +36,11 @@ base::Optional<std::string> GetAppIdForSystemWebApp(Profile* profile,
 
 Browser* LaunchSystemWebApp(Profile* profile,
                             SystemAppType app_type,
-                            const GURL& url) {
+                            const GURL& url,
+                            bool* did_create) {
+  if (did_create)
+    *did_create = false;
+
   Browser* browser = FindSystemWebAppBrowser(profile, app_type);
   if (browser) {
     content::WebContents* web_contents =
@@ -63,11 +68,15 @@ Browser* LaunchSystemWebApp(Profile* profile,
       display::kInvalidDisplayId);
   params.override_url = url;
 
-  if (!browser)
+  if (!browser) {
+    if (did_create)
+      *did_create = true;
     browser = CreateApplicationWindow(params, url);
+  }
 
   ShowApplicationWindow(params, url, browser,
                         WindowOpenDisposition::CURRENT_TAB);
+
   return browser;
 }
 
@@ -92,7 +101,8 @@ Browser* FindSystemWebAppBrowser(Profile* profile, SystemAppType app_type) {
         extensions::ExtensionRegistry::Get(browser->profile())
             ->GetExtensionById(GetAppIdFromApplicationName(browser->app_name()),
                                extensions::ExtensionRegistry::EVERYTHING);
-    if (browser_extension == extension)
+
+    if (browser_extension->id() == extension->id())
       return browser;
   }
 

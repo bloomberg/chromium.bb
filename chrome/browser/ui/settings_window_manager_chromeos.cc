@@ -52,9 +52,11 @@ void SettingsWindowManager::ShowChromePageForProfile(Profile* profile,
   // TODO(calamity): Auto-launch the settings app on install if not found, and
   // figure out how to invoke OnNewSettingsWindow() in that case.
   if (web_app::SystemWebAppManager::IsEnabled()) {
+    bool did_create;
     Browser* browser = web_app::LaunchSystemWebApp(
-        profile, web_app::SystemAppType::SETTINGS, gurl);
-    if (!browser)
+        profile, web_app::SystemAppType::SETTINGS, gurl, &did_create);
+    // Only notify if we created a new browser.
+    if (!did_create || !browser)
       return;
 
     for (SettingsWindowManagerObserver& observer : observers_)

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEB_APPLICATIONS_SYSTEM_WEB_APP_UI_UTILS_CHROMEOS_H_
 #define CHROME_BROWSER_UI_WEB_APPLICATIONS_SYSTEM_WEB_APP_UI_UTILS_CHROMEOS_H_
 
+#include <utility>
+
 #include "base/optional.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "url/gurl.h"
@@ -20,10 +22,11 @@ base::Optional<std::string> GetAppIdForSystemWebApp(Profile* profile,
 
 // Launches a System App to the given URL, reusing any existing window for the
 // app. Returns the browser for the System App, or nullptr if launch/focus
-// failed.
+// failed. |did_create| will reflect whether a new window was created if passed.
 Browser* LaunchSystemWebApp(Profile* profile,
                             SystemAppType app_type,
-                            const GURL& url = GURL());
+                            const GURL& url = GURL(),
+                            bool* did_create = nullptr);
 
 // Returns a browser that is hosting the given system app type, or nullptr if
 // not found.
