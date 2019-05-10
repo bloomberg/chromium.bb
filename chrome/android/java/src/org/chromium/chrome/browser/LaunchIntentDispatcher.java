@@ -273,7 +273,8 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
     public static boolean isCustomTabIntent(Intent intent) {
         if (intent == null) return false;
         if (CustomTabsIntent.shouldAlwaysUseBrowserUI(intent)
-                || !intent.hasExtra(CustomTabsIntent.EXTRA_SESSION)) {
+                || !intent.hasExtra(CustomTabsIntent.EXTRA_SESSION)
+                || FeatureUtilities.isNoTouchModeEnabled()) {
             return false;
         }
         return IntentHandler.getUrlFromIntent(intent) != null;
