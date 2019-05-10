@@ -35,8 +35,6 @@ constexpr SkColor kSplitviewLabelEnabledColor = SK_ColorWHITE;
 constexpr SkColor kSplitviewLabelBackgroundColor =
     SkColorSetA(SK_ColorBLACK, 0xDE);
 
-constexpr int kSplitviewAnimationDurationMs = 250;
-
 }  // namespace ash
 
 #endif  // ASH_WM_SPLITVIEW_SPLIT_VIEW_CONSTANTS_H_
