@@ -84,8 +84,12 @@ message Source {
   // Flag indicating if the metric was collected while inside a "custom tab".
   optional bool is_custom_tab = 7;
 
-  // Timestamp of navigation to this Source, as seen by the client. Time of
-  // events related to this Source will generally be relative to this timestamp.
+  // Relative time of navigation for this Source, as seen by the client, and is
+  // set for sources of type ukm::SourceIdType::NAVIGATION_ID. Time of events
+  // related to this Source will generally be relative to this timestamp. The
+  // recorded navigation time is in TimeTicks, which is the relative time since
+  // the origin. The origin is platform-specific but is guaranteed to be
+  // monotonically increase within each session.
   optional int64 navigation_time_msec = 3;
 
   // Unique identifier (for a given client_id/session_id) for the tab this

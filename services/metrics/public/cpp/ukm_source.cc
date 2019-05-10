@@ -64,6 +64,7 @@ UkmSource::NavigationData UkmSource::NavigationData::CopyWithSanitizedUrls(
   sanitized_navigation_data.tab_id = tab_id;
   sanitized_navigation_data.is_same_document_navigation =
       is_same_document_navigation;
+  sanitized_navigation_data.navigation_time = navigation_time;
   return sanitized_navigation_data;
 }
 
@@ -129,6 +130,11 @@ void UkmSource::PopulateProto(Source* proto_source) const {
 
   if (navigation_data_.is_same_document_navigation)
     proto_source->set_is_same_document_navigation(true);
+
+  if (navigation_data_.navigation_time) {
+    proto_source->set_navigation_time_msec(
+        navigation_data_.navigation_time->since_origin().InMilliseconds());
+  }
 }
 
 }  // namespace ukm
