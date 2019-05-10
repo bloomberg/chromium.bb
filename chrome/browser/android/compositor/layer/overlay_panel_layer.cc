@@ -16,16 +16,14 @@
 #include "ui/base/l10n/l10n_util_android.h"
 #include "ui/gfx/color_utils.h"
 
-namespace {
-
-// This is the default width for any icon displayed on an OverlayPanel.
-const float kDefaultIconWidthDp = 36.0f;
-
-}  // namespace
-
 namespace android {
 
+const float OverlayPanelLayer::kDefaultIconWidthDp = 36.0f;
+const int OverlayPanelLayer::kInvalidResourceID = -1;
+
 scoped_refptr<cc::Layer> OverlayPanelLayer::GetIconLayer() {
+  if (panel_icon_resource_id_ == -1)
+    return nullptr;
   ui::Resource* panel_icon_resource = resource_manager_->GetResource(
       ui::ANDROID_RESOURCE_TYPE_STATIC, panel_icon_resource_id_);
   DCHECK(panel_icon_resource);
@@ -209,7 +207,7 @@ void OverlayPanelLayer::SetProperties(
   // ---------------------------------------------------------------------------
   // Open Tab icon
   // ---------------------------------------------------------------------------
-  if (open_tab_icon_resource_id_ != -1) {
+  if (open_tab_icon_resource_id_ != kInvalidResourceID) {
     ui::Resource* open_tab_icon_resource =
         resource_manager_->GetStaticResourceWithTint(open_tab_icon_resource_id_,
                                                      icon_tint);

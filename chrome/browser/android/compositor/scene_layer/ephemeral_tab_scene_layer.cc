@@ -3,17 +3,16 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/android/compositor/scene_layer/ephemeral_tab_scene_layer.h"
-#include "base/android/jni_android.h"
-#include "base/android/jni_array.h"
+#include "base/android/jni_string.h"
 #include "cc/layers/solid_color_layer.h"
 #include "chrome/browser/android/compositor/layer/ephemeral_tab_layer.h"
-#include "content/public/browser/android/compositor.h"
+#include "chrome/browser/profiles/profile_android.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/EphemeralTabSceneLayer_jni.h"
 #include "ui/android/resources/resource_manager_impl.h"
 #include "ui/android/view_android.h"
-#include "ui/gfx/android/java_bitmap.h"
 
+using base::android::ConvertJavaStringToUTF8;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
 
@@ -58,6 +57,19 @@ void EphemeralTabSceneLayer::SetResourceIds(JNIEnv* env,
       text_resource_id, bar_background_resource_id, bar_shadow_resource_id,
       panel_icon_resource_id, drag_handlebar_resource_id,
       open_tab_icon_resource_id, close_icon_resource_id);
+}
+
+void EphemeralTabSceneLayer::GetFavicon(JNIEnv* env,
+                                        const JavaParamRef<jobject>& object,
+                                        const JavaParamRef<jobject>& jprofile,
+                                        const JavaParamRef<jstring>& jurl,
+                                        jint size) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
+  DCHECK(profile);
+  if (!profile)
+    return;
+  ephemeral_tab_layer_->GetLocalFaviconImageForURL(
+      profile, ConvertJavaStringToUTF8(env, jurl), size);
 }
 
 void EphemeralTabSceneLayer::Update(JNIEnv* env,

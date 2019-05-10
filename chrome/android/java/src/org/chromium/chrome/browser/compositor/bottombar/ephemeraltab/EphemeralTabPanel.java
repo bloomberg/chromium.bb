@@ -11,6 +11,7 @@ import android.view.MotionEvent;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TimeUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
@@ -83,7 +84,9 @@ public class EphemeralTabPanel extends OverlayPanel {
             Context context, LayoutUpdateHost updateHost, OverlayPanelManager panelManager) {
         super(context, updateHost, panelManager);
         mSceneLayer =
-                new EphemeralTabSceneLayer(mContext.getResources().getDisplayMetrics().density);
+                new EphemeralTabSceneLayer(mContext.getResources().getDisplayMetrics().density,
+                        mContext.getResources().getDimensionPixelSize(
+                                R.dimen.compositor_tab_title_favicon_size));
         mEventFilter = new OverlayPanelEventFilter(mContext, this) {
             @Override
             public boolean onInterceptTouchEventInternal(MotionEvent e, boolean isKeyboardShowing) {
@@ -230,6 +233,13 @@ public class EphemeralTabPanel extends OverlayPanel {
      */
     public boolean canPromoteToNewTab() {
         return !mActivity.isCustomTab();
+    }
+
+    /**
+     * @return URL of the page to open in the panel.
+     */
+    public String getUrl() {
+        return mUrl;
     }
 
     // Panel base methods

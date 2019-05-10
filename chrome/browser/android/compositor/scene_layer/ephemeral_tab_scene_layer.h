@@ -5,15 +5,10 @@
 #ifndef CHROME_BROWSER_ANDROID_COMPOSITOR_SCENE_LAYER_EPHEMERAL_TAB_SCENE_LAYER_H_
 #define CHROME_BROWSER_ANDROID_COMPOSITOR_SCENE_LAYER_EPHEMERAL_TAB_SCENE_LAYER_H_
 
-#include <memory>
-#include <vector>
-
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/macros.h"
 #include "chrome/browser/android/compositor/scene_layer/scene_layer.h"
-#include "ui/android/resources/resource_manager_impl.h"
 
 namespace cc {
 class Layer;
@@ -44,6 +39,12 @@ class EphemeralTabSceneLayer : public SceneLayer {
                       jint drag_handlebar_resource_id,
                       jint open_tab_icon_resource_id,
                       jint close_icon_resource_id);
+
+  void GetFavicon(JNIEnv* env,
+                  const base::android::JavaParamRef<jobject>& object,
+                  const base::android::JavaParamRef<jobject>& jprofile,
+                  const base::android::JavaParamRef<jstring>& jurl,
+                  jint size);
 
   void Update(JNIEnv* env,
               const base::android::JavaParamRef<jobject>& object,

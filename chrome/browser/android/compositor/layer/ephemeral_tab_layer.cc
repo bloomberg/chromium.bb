@@ -4,12 +4,50 @@
 
 #include "chrome/browser/android/compositor/layer/ephemeral_tab_layer.h"
 
+#include "base/task/cancelable_task_tracker.h"
 #include "cc/layers/layer.h"
-#include "cc/layers/nine_patch_layer.h"
-#include "cc/resources/scoped_ui_resource.h"
-#include "content/public/browser/android/compositor.h"
-#include "ui/android/resources/nine_patch_resource.h"
+#include "cc/layers/ui_resource_layer.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
+#include "components/favicon/core/favicon_service.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/android/resources/resource_manager.h"
+#include "ui/base/l10n/l10n_util_android.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "url/gurl.h"
+
+namespace {
+
+void OnLocalFaviconAvailable(
+    scoped_refptr<cc::UIResourceLayer> layer,
+    scoped_refptr<cc::UIResourceLayer> icon_layer,
+    const float dp_to_px,
+    const float panel_width,
+    const float bar_height,
+    const float padding,
+    const favicon_base::FaviconRawBitmapResult& result) {
+  if (!result.is_valid())
+    return;
+  SkBitmap favicon_bitmap;
+  gfx::PNGCodec::Decode(result.bitmap_data->front(), result.bitmap_data->size(),
+                        &favicon_bitmap);
+  if (favicon_bitmap.isNull())
+    return;
+  const float icon_width =
+      android::OverlayPanelLayer::kDefaultIconWidthDp * dp_to_px;
+  favicon_bitmap.setImmutable();
+  layer->SetBitmap(favicon_bitmap);
+  layer->SetBounds(gfx::Size(icon_width, icon_width));
+
+  bool is_rtl = l10n_util::IsLayoutRtl();
+  float icon_x = is_rtl ? panel_width - icon_width - padding : padding;
+  float icon_y = (bar_height - layer->bounds().height()) / 2;
+  icon_layer->SetIsDrawable(false);
+  layer->SetIsDrawable(true);
+  layer->SetPosition(gfx::PointF(icon_x, icon_y));
+}
+
+}  // namespace
 
 namespace android {
 // static
@@ -63,6 +101,10 @@ void EphemeralTabLayer::SetProperties(
       progress_bar_background_resource_id, progress_bar_resource_id,
       progress_bar_visible, bar_bottom, progress_bar_height,
       progress_bar_opacity, progress_bar_completion, panel_width);
+  dp_to_px_ = dp_to_px;
+  panel_width_ = panel_width;
+  bar_height_ = bar_height;
+  bar_margin_side_ = bar_margin_side;
 }
 
 void EphemeralTabLayer::SetupTextLayer(float bar_top,
@@ -113,17 +155,48 @@ void EphemeralTabLayer::SetupTextLayer(float bar_top,
   title_->SetPosition(gfx::PointF(0.f, title_top));
 }
 
+void EphemeralTabLayer::GetLocalFaviconImageForURL(Profile* profile,
+                                                   const std::string& url,
+                                                   int size) {
+  panel_icon_->SetIsDrawable(true);
+  favicon_layer_->SetIsDrawable(false);
+  favicon::FaviconService* favicon_service =
+      FaviconServiceFactory::GetForProfile(profile,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
+  DCHECK(favicon_service);
+  if (!favicon_service)
+    return;
+
+  favicon_base::FaviconRawBitmapCallback callback_runner = base::BindRepeating(
+      &OnLocalFaviconAvailable, favicon_layer_, panel_icon_, dp_to_px_,
+      panel_width_, bar_height_, bar_margin_side_);
+
+  // Set |fallback_to_host|=true so the favicon database will fall back to
+  // matching only the hostname to have the best chance of finding a favicon.
+  const bool fallback_to_host = true;
+  favicon_service->GetRawFaviconForPageURL(
+      GURL(url),
+      {favicon_base::IconType::kFavicon, favicon_base::IconType::kTouchIcon,
+       favicon_base::IconType::kTouchPrecomposedIcon,
+       favicon_base::IconType::kWebManifestIcon},
+      size, fallback_to_host, callback_runner, cancelable_task_tracker_.get());
+}
+
 EphemeralTabLayer::EphemeralTabLayer(ui::ResourceManager* resource_manager)
     : OverlayPanelLayer(resource_manager),
       title_(cc::UIResourceLayer::Create()),
+      favicon_layer_(cc::UIResourceLayer::Create()),
       text_layer_(cc::UIResourceLayer::Create()) {
   // Content layer
   text_layer_->SetIsDrawable(true);
-
   title_->SetIsDrawable(true);
 
   AddBarTextLayer(text_layer_);
   text_layer_->AddChild(title_);
+
+  favicon_layer_->SetIsDrawable(true);
+  layer_->AddChild(favicon_layer_);
+  cancelable_task_tracker_.reset(new base::CancelableTaskTracker());
 }
 
 EphemeralTabLayer::~EphemeralTabLayer() {}

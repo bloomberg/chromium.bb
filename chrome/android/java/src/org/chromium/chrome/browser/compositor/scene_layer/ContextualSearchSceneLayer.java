@@ -61,7 +61,8 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
         int searchContextViewId = searchBarControl.getSearchContextViewId();
         int searchTermViewId = searchBarControl.getSearchTermViewId();
         int searchCaptionViewId = searchBarControl.getCaptionViewId();
-        int openNewTabIconId = panel.canPromoteToNewTab() ? R.drawable.open_in_new_tab : -1;
+        int openNewTabIconId =
+                panel.canPromoteToNewTab() ? R.drawable.open_in_new_tab : INVALID_RESOURCE_ID;
 
         int searchPromoViewId = promoControl.getViewId();
         boolean searchPromoVisible = promoControl.isVisible();
