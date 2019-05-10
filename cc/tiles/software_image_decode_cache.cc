@@ -316,8 +316,8 @@ void SoftwareImageDecodeCache::UnrefImage(const CacheKey& key) {
 void SoftwareImageDecodeCache::DecodeImageInTask(const CacheKey& key,
                                                  const PaintImage& paint_image,
                                                  DecodeTaskType task_type) {
-  TRACE_EVENT1("cc", "SoftwareImageDecodeCache::DecodeImageInTask", "key",
-               key.ToString());
+  TRACE_EVENT1("cc,benchmark", "SoftwareImageDecodeCache::DecodeImageInTask",
+               "key", key.ToString());
   base::AutoLock lock(lock_);
 
   auto image_it = decoded_images_.Peek(key);

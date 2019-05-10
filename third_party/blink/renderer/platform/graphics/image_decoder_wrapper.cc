@@ -127,7 +127,7 @@ bool ImageDecoderWrapper::Decode(ImageDecoderFactory* factory,
   {
     // This trace event is important since it is used by telemetry scripts to
     // measure the decode time.
-    TRACE_EVENT0("blink", "ImageFrameGenerator::decode");
+    TRACE_EVENT0("blink,benchmark", "ImageFrameGenerator::decode");
     frame = decoder->DecodeFrameBufferAtIndex(frame_index_);
   }
   // SetMemoryAllocator() can try to access decoder's data, so we have to

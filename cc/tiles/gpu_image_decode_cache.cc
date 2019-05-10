@@ -1669,7 +1669,7 @@ void GpuImageDecodeCache::DecodeImageIfNecessary(const DrawImage& draw_image,
     return;
   }
 
-  TRACE_EVENT0("cc", "GpuImageDecodeCache::DecodeImage");
+  TRACE_EVENT0("cc,benchmark", "GpuImageDecodeCache::DecodeImage");
   RecordImageMipLevelUMA(image_data->upload_scale_mip_level);
 
   image_data->decode.ResetData();

@@ -177,7 +177,7 @@ bool ImageFrameGenerator::DecodeToYUV(SegmentReader* data,
 
   {
     // This is the YUV analog of ImageFrameGenerator::decode.
-    TRACE_EVENT0("blink", "ImageFrameGenerator::decodeToYUV");
+    TRACE_EVENT0("blink,benchmark", "ImageFrameGenerator::decodeToYUV");
     decoder->DecodeToYUV();
   }
 
