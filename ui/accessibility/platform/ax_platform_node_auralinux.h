@@ -59,6 +59,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
                                         gint y,
                                         AtkCoordType coord_type);
   bool GrabFocus();
+  bool GrabFocusOrSetSequentialFocusNavigationStartingPointAtOffset(int offset);
   bool GrabFocusOrSetSequentialFocusNavigationStartingPoint();
   bool DoDefaultAction();
   const gchar* GetDefaultActionName();

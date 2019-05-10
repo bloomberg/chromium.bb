@@ -763,11 +763,17 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
       R"HTML(<!DOCTYPE html>
       <html>
       <body>
-        <a href="http://google.com">0</a>
-        <div>1</div>
-        <a href="http://google.com">2</a>
-        <div>3</div>
-        <a href="http://google.com">4</a>
+      <div>
+        0
+        <a href="http://google.com">1</a>
+        2
+        <a href="http://google.com">3</a>
+        4
+        <a href="http://google.com">5</a>
+        6
+        <a href="http://google.com">7</a>
+        8
+      </div>
       </body>
       </html>)HTML");
 
@@ -775,12 +781,19 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   AtkObject* document = GetRendererAccessible();
   ASSERT_TRUE(ATK_IS_COMPONENT(document));
 
-  AtkObject* child_3 = atk_object_ref_accessible_child(document, 3);
-  AtkObject* child_4 = atk_object_ref_accessible_child(document, 4);
+  AtkObject* parent_div = atk_object_ref_accessible_child(document, 0);
+  EXPECT_NE(parent_div, nullptr);
+
+  AtkObject* child_2 = atk_object_ref_accessible_child(parent_div, 2);
+  AtkObject* child_3 = atk_object_ref_accessible_child(parent_div, 3);
+  AtkObject* child_7 = atk_object_ref_accessible_child(parent_div, 7);
+  EXPECT_NE(child_2, nullptr);
+  EXPECT_NE(child_3, nullptr);
+  EXPECT_NE(child_7, nullptr);
 
   // Move the caret to the "3" div. This should also set the sequential
   // focus navigation starting point.
-  atk_text_set_caret_offset(ATK_TEXT(child_3), 0);
+  atk_text_set_caret_offset(ATK_TEXT(child_2), 0);
 
   auto waiter = std::make_unique<AccessibilityNotificationWaiter>(
       shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kFocus);
@@ -797,12 +810,39 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
                    ui::VKEY_TAB, false, false, false, false);
   waiter->WaitForNotification();
 
-  AtkStateSet* state_set = atk_object_ref_state_set(child_4);
+  AtkStateSet* state_set = atk_object_ref_state_set(child_3);
   ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_FOCUSED));
   g_object_unref(state_set);
 
+  // Now we repeat a similar test, but this time setting the caret offset
+  // on the parent node. In this case, the sequential navigation starting
+  // point should move to the appropriate child.
+  atk_text_set_caret_offset(ATK_TEXT(parent_div), 13);
+  SimulateKeyPress(shell()->web_contents(), ui::DomKey::TAB, ui::DomCode::TAB,
+                   ui::VKEY_TAB, false, false, false, false);
+  waiter->WaitForNotification();
+
+  SimulateKeyPress(shell()->web_contents(), ui::DomKey::TAB, ui::DomCode::TAB,
+                   ui::VKEY_TAB, false, false, false, false);
+  waiter->WaitForNotification();
+
+  state_set = atk_object_ref_state_set(child_7);
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_FOCUSED));
+  g_object_unref(state_set);
+
+  // Now test setting the caret in a node that can accept focus. That
+  // node should actually receive focus.
+  atk_text_set_caret_offset(ATK_TEXT(child_3), 0);
+  SimulateKeyPress(shell()->web_contents(), ui::DomKey::TAB, ui::DomCode::TAB,
+                   ui::VKEY_TAB, false, false, false, false);
+  waiter->WaitForNotification();
+  state_set = atk_object_ref_state_set(child_3);
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_FOCUSED));
+  g_object_unref(state_set);
+
+  g_object_unref(child_2);
   g_object_unref(child_3);
-  g_object_unref(child_4);
+  g_object_unref(child_7);
 }
 
 }  // namespace content

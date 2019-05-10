@@ -1144,7 +1144,9 @@ gboolean SetCaretOffset(AtkText* atk_text, gint offset) {
 
   // Orca expects atk_text_set_caret_offset to either focus the target element
   // or set the sequential focus navigation starting point there.
-  obj->GrabFocusOrSetSequentialFocusNavigationStartingPoint();
+  int utf16_offset = obj->UnicodeToUTF16OffsetInText(offset);
+  obj->GrabFocusOrSetSequentialFocusNavigationStartingPointAtOffset(
+      utf16_offset);
 
   return TRUE;
 }
@@ -3540,6 +3542,49 @@ bool AXPlatformNodeAuraLinux::GrabFocus() {
   AXActionData action_data;
   action_data.action = ax::mojom::Action::kFocus;
   return delegate_->AccessibilityPerformAction(action_data);
+}
+
+bool AXPlatformNodeAuraLinux::
+    GrabFocusOrSetSequentialFocusNavigationStartingPointAtOffset(int offset) {
+  int child_count = delegate_->GetChildCount();
+  if (IsPlainTextField() || child_count == 0)
+    return GrabFocusOrSetSequentialFocusNavigationStartingPoint();
+
+  // When this node has children, we walk through them to figure out what child
+  // node should get focus. We are essentially repeating the process used when
+  // building the hypertext here.
+  int current_offset = 0;
+  for (int i = 0; i < child_count; ++i) {
+    auto* child =
+        AtkObjectToAXPlatformNodeAuraLinux(delegate_->ChildAtIndex(i));
+
+    if (child->IsTextOnlyObject()) {
+      current_offset +=
+          child->GetString16Attribute(ax::mojom::StringAttribute::kName).size();
+    } else {
+      // Add an offset for the embedded character.
+      current_offset += 1;
+    }
+
+    // If the offset is larger than our size, try to work with the last child,
+    // which is also the behavior of SetCaretOffset.
+    if (offset <= current_offset || i == child_count - 1) {
+      // When deciding to do this on the parent or the child we want to err
+      // toward doing it on a focusable node. If neither node is focusable, we
+      // should call GrabFocusOrSetSequentialFocusNavigationStartingPoint on
+      // the child.
+      bool can_focus_node = GetData().HasState(ax::mojom::State::kFocusable);
+      bool can_focus_child =
+          child->GetData().HasState(ax::mojom::State::kFocusable);
+      if (can_focus_node && !can_focus_child)
+        return GrabFocusOrSetSequentialFocusNavigationStartingPoint();
+      else
+        return child->GrabFocusOrSetSequentialFocusNavigationStartingPoint();
+    }
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 bool AXPlatformNodeAuraLinux::
