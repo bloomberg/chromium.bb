@@ -1715,9 +1715,6 @@
   <message name="IDS_AUTO_LAUNCH_NOTIFICATION_TITLE" desc="Title of the notification which is shown when the managed guest session auto launched.">
     Managed guest session
   </message>
-  <message name="IDS_AUTO_LAUNCH_NOTIFICATION_MESSAGE" desc="Message of the notification which is shown when the managed guest session auto launched.">
-    The administrator of this device has access to all activity, including passwords and communications.
-  </message>
   <message name="IDS_AUTO_LAUNCH_NOTIFICATION_BUTTON" desc="Text of the button.">
     View details
   </message>

@@ -85,6 +85,7 @@
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/session/session_termination_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_util.h"
 #include "components/google/core/common/google_util.h"
@@ -1019,8 +1020,8 @@ void ExistingUserController::ShowAutoLaunchManagedGuestSessionNotification() {
       l10n_util::GetStringUTF16(IDS_AUTO_LAUNCH_NOTIFICATION_BUTTON)));
   const base::string16 title =
       l10n_util::GetStringUTF16(IDS_AUTO_LAUNCH_NOTIFICATION_TITLE);
-  const base::string16 message =
-      l10n_util::GetStringUTF16(IDS_AUTO_LAUNCH_NOTIFICATION_MESSAGE);
+  const base::string16 message = l10n_util::GetStringUTF16(
+      IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_FULL_WARNING);
   auto delegate =
       base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
           base::BindRepeating([](base::Optional<int> button_index) {
