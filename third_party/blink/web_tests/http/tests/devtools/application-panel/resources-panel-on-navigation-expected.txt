@@ -19,6 +19,9 @@ Storage
 Cache
   Cache Storage
   Application Cache
+Background Services
+  Background Fetch
+  Background Sync
 Frames
   top
 Visible view is a query view: true
@@ -41,6 +44,9 @@ Storage
 Cache
   Cache Storage
   Application Cache
+Background Services
+  Background Fetch
+  Background Sync
 Frames
   top
 Visible view is a query view: false
