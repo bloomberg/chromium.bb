@@ -66,7 +66,7 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
 
 }  // namespace
 
-@interface AlertViewController ()
+@interface AlertViewController () <UITextFieldDelegate>
 
 // The actions for to this alert. |copy| for safety against mutable objects.
 @property(nonatomic, copy) NSArray<AlertAction*>* actions;
@@ -286,6 +286,7 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
       textField.accessibilityIdentifier =
           textFieldConfiguration.accessibilityIdentifier;
       textField.translatesAutoresizingMaskIntoConstraints = NO;
+      textField.delegate = self;
       [fieldStack addArrangedSubview:textField];
       ChromeDirectionalEdgeInsets fieldInsets = ChromeDirectionalEdgeInsetsMake(
           0.0, kTextfieldInset, 0.0, kTextfieldInset);
@@ -375,6 +376,18 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
     [results addObject:textField.text];
   }
   return results;
+}
+
+#pragma mark - UITextFieldDelegate
+
+- (BOOL)textFieldShouldReturn:(UITextField*)textField {
+  NSUInteger index = [self.textFields indexOfObject:textField];
+  if (index + 1 < self.textFields.count) {
+    [self.textFields[index + 1] becomeFirstResponder];
+  } else {
+    [textField resignFirstResponder];
+  }
+  return NO;
 }
 
 #pragma mark - Private
