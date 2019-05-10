@@ -1806,9 +1806,9 @@ void RenderTextHarfBuzz::ShapeRuns(
     SCOPED_UMA_HISTOGRAM_LONG_TIMER("RenderTextHarfBuzz.GetFallbackFontTime");
     TRACE_EVENT1("ui", "RenderTextHarfBuzz::GetFallbackFont", "script",
                  TRACE_STR_COPY(uscript_getShortName(font_params.script)));
-    const base::char16* run_text = &(text[runs.front()->range.start()]);
-    fallback_found = GetFallbackFont(
-        primary_font, run_text, runs.front()->range.length(), &fallback_font);
+    const base::StringPiece16 run_text(&text[runs.front()->range.start()],
+                                       runs.front()->range.length());
+    fallback_found = GetFallbackFont(primary_font, run_text, &fallback_font);
   }
   if (fallback_found) {
     preferred_fallback_family = fallback_font.GetFontName();

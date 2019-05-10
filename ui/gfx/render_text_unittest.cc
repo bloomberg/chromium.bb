@@ -4129,6 +4129,11 @@ TEST_F(RenderTextTest, EmojiFlagGlyphCount) {
 #if defined(OS_MACOSX)
   // On Mac, the flags should be found, so two glyphs result.
   EXPECT_EQ(2u, run_list->runs()[0]->shape.glyph_count);
+#elif defined(OS_ANDROID)
+  // It seems that some versions of android support the flags. Older versions
+  // don't support it.
+  EXPECT_TRUE(2u == run_list->runs()[0]->shape.glyph_count ||
+              4u == run_list->runs()[0]->shape.glyph_count);
 #else
   // Elsewhere, the flags are not found, so each surrogate pair gets a
   // placeholder glyph. Eventually, all platforms should have 2 glyphs.

@@ -72,15 +72,12 @@ std::vector<Font> GetFallbackFonts(const Font& font) {
   return fallback_fonts;
 }
 
-bool GetFallbackFont(const Font& font,
-                     const base::char16* text,
-                     int text_length,
-                     Font* result) {
-  base::ScopedCFTypeRef<CFStringRef> cf_string(
-      CFStringCreateWithCharacters(kCFAllocatorDefault, text, text_length));
+bool GetFallbackFont(const Font& font, base::StringPiece16 text, Font* result) {
+  base::ScopedCFTypeRef<CFStringRef> cf_string(CFStringCreateWithCharacters(
+      kCFAllocatorDefault, text.data(), text.length()));
   CTFontRef ct_font = base::mac::NSToCFCast(font.GetNativeFont());
   base::ScopedCFTypeRef<CTFontRef> ct_result(
-      CTFontCreateForString(ct_font, cf_string, {0, text_length}));
+      CTFontCreateForString(ct_font, cf_string, {0, text.length()}));
   if (FontsEqual(ct_font, ct_result))
     return false;
 

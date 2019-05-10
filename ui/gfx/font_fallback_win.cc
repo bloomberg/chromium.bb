@@ -336,13 +336,12 @@ namespace internal {
 //   EMR_DELETEOBJECT ID:2
 //   EMR_EOF
 bool GetUniscribeFallbackFont(const Font& font,
-                              const wchar_t* text,
-                              int text_length,
+                              base::StringPiece16 text,
                               Font* result) {
   static HDC hdc = CreateCompatibleDC(NULL);
 
   // The length passed to |ScriptStringAnalyse| must be at least 1.
-  if (text_length <= 0)
+  if (text.empty())
     return false;
 
   // Use a meta file to intercept the fallback font chosen by Uniscribe.
@@ -368,7 +367,7 @@ bool GetUniscribeFallbackFont(const Font& font,
   // Run the script analysis.
   SCRIPT_STRING_ANALYSIS script_analysis;
   HRESULT hresult =
-      ScriptStringAnalyse(meta_file_dc, text, text_length, 0, -1,
+      ScriptStringAnalyse(meta_file_dc, text.data(), text.length(), 0, -1,
                           SSA_METAFILE | SSA_FALLBACK | SSA_GLYPHS | SSA_LINK,
                           0, NULL, NULL, NULL, NULL, NULL, &script_analysis);
 
@@ -378,7 +377,7 @@ bool GetUniscribeFallbackFont(const Font& font,
   }
 
   MetaFileEnumState state;
-  state.expected_text = base::StringPiece16(text, text_length);
+  state.expected_text = text;
 
   HENHMETAFILE meta_file = CloseEnhMetaFile(meta_file_dc);
   if (SUCCEEDED(hresult)) {
@@ -457,10 +456,7 @@ std::vector<Font> GetFallbackFonts(const Font& font) {
   return *font_link->GetLinkedFonts(Font(font_family, 10));
 }
 
-bool GetFallbackFont(const Font& font,
-                     const base::char16* text,
-                     int text_length,
-                     Font* result) {
+bool GetFallbackFont(const Font& font, base::StringPiece16 text, Font* result) {
   TRACE_EVENT0("fonts", "gfx::GetFallbackFont");
   // Creating a DirectWrite font fallback can be expensive. It's ok in the
   // browser process because we can use the shared system fallback, but in the
@@ -471,8 +467,8 @@ bool GetFallbackFont(const Font& font,
   // Check that we have at least as much text as was claimed. If we have less
   // text than expected then DirectWrite will become confused and crash. This
   // shouldn't happen, but crbug.com/624905 shows that it happens sometimes.
-  DCHECK_GE(wcslen(text), static_cast<size_t>(text_length));
-  text_length = std::min(wcslen(text), static_cast<size_t>(text_length));
+  DCHECK_GE(wcslen(text.data()), text.length());
+  size_t text_length = std::min(wcslen(text.data()), text.length());
 
   Microsoft::WRL::ComPtr<IDWriteFactory> factory;
   gfx::win::CreateDWriteFactory(factory.GetAddressOf());
@@ -480,7 +476,7 @@ bool GetFallbackFont(const Font& font,
   factory.CopyTo(factory2.GetAddressOf());
   if (!factory2) {
     // IDWriteFactory2 is not available before Win8.1
-    return internal::GetUniscribeFallbackFont(font, text, text_length, result);
+    return internal::GetUniscribeFallbackFont(font, text, result);
   }
 
   Microsoft::WRL::ComPtr<IDWriteFontFallback> fallback;
@@ -504,8 +500,8 @@ bool GetFallbackFont(const Font& font,
       base::i18n::IsRTL() ? DWRITE_READING_DIRECTION_RIGHT_TO_LEFT
                           : DWRITE_READING_DIRECTION_LEFT_TO_RIGHT;
   if (FAILED(gfx::win::TextAnalysisSource::Create(
-          text_analysis.GetAddressOf(), text, locale.c_str(),
-          number_substitution.Get(), reading_direction))) {
+          &text_analysis, base::string16(text.data(), text_length),
+          locale.c_str(), number_substitution.Get(), reading_direction))) {
     return false;
   }
   base::string16 original_name = base::UTF8ToUTF16(font.GetFontName());

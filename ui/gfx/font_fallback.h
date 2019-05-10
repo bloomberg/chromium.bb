@@ -25,8 +25,7 @@ GFX_EXPORT std::vector<Font> GetFallbackFonts(const Font& font);
 // initial |font|. Returns the resulting font via out param |result|. Returns
 // |true| if a fallback font was found.
 bool GFX_EXPORT GetFallbackFont(const Font& font,
-                                const base::char16* text,
-                                int text_length,
+                                base::StringPiece16 text,
                                 Font* result);
 
 #endif  // ANDROID || OS_MACOSX || OS_WIN

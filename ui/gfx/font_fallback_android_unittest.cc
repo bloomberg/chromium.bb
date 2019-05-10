@@ -23,8 +23,8 @@ static const wchar_t* kFallbackFontTests[] = {
 TEST(FontFallbackAndroidTest, EmptyStringFallback) {
   Font base_font;
   Font fallback_font;
-  bool result = GetFallbackFont(base_font, base::ASCIIToUTF16("").c_str(), 0,
-                                &fallback_font);
+  bool result =
+      GetFallbackFont(base_font, base::StringPiece16(), &fallback_font);
   EXPECT_FALSE(result);
 }
 
@@ -34,8 +34,7 @@ TEST(FontFallbackAndroidTest, FontFallback) {
     Font fallback_font;
     base::string16 text = base::WideToUTF16(test);
 
-    if (!GetFallbackFont(base_font, text.c_str(), text.size(),
-                         &fallback_font)) {
+    if (!GetFallbackFont(base_font, text, &fallback_font)) {
       ADD_FAILURE() << "Font fallback failed: '" << text << "'";
     }
   }

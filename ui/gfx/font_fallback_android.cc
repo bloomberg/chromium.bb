@@ -23,13 +23,10 @@ std::vector<Font> GetFallbackFonts(const Font& font) {
   return std::vector<Font>();
 }
 
-bool GetFallbackFont(const Font& font,
-                     const base::char16* text,
-                     int text_length,
-                     Font* result) {
+bool GetFallbackFont(const Font& font, base::StringPiece16 text, Font* result) {
   TRACE_EVENT0("fonts", "gfx::GetFallbackFont");
 
-  if (text_length <= 0)
+  if (text.empty())
     return false;
 
   sk_sp<SkFontMgr> font_mgr(SkFontMgr::RefDefault());
@@ -47,27 +44,27 @@ bool GetFallbackFont(const Font& font,
 
   std::set<SkFontID> tested_typeface;
   SkString skia_family_name;
-  size_t fewest_missing_glyphs = text_length + 1;
+  size_t fewest_missing_glyphs = text.length() + 1;
 
-  int offset = 0;
-  while (offset < text_length) {
+  size_t offset = 0;
+  while (offset < text.length()) {
     UChar32 code_point;
-    U16_NEXT(text, offset, text_length, code_point);
+    U16_NEXT(text.data(), offset, text.length(), code_point);
 
     sk_sp<SkTypeface> typeface(font_mgr->matchFamilyStyleCharacter(
         font.GetFontName().c_str(), skia_style,
         locale.empty() ? nullptr : bcp47_locales, locale.empty() ? 0 : 1,
-        text[offset]));
+        code_point));
     // If the typeface is not found or was already tested, skip it.
     if (!typeface || !tested_typeface.insert(typeface->uniqueID()).second)
       continue;
 
     // Validate that every character has a known glyph in the font.
     size_t missing_glyphs = 0;
-    int i = 0;
-    while (i < text_length) {
+    size_t i = 0;
+    while (i < text.length()) {
       UChar32 c;
-      U16_NEXT(text, i, text_length, c);
+      U16_NEXT(text.data(), i, text.length(), c);
       if (typeface->unicharToGlyph(c) == 0)
         ++missing_glyphs;
     }

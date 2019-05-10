@@ -91,11 +91,9 @@ class GetFallbackFontTest
  protected:
   bool GetFallbackFont(const Font& font, Font* result) {
     if (test_option_.fallback_font == FallbackFontFn::DEFAULT) {
-      return gfx::GetFallbackFont(font, test_case_.text.c_str(),
-                                  test_case_.text.size(), result);
+      return gfx::GetFallbackFont(font, test_case_.text, result);
     } else if (test_option_.fallback_font == FallbackFontFn::UNISCRIBE) {
-      return internal::GetUniscribeFallbackFont(font, test_case_.text.c_str(),
-                                                test_case_.text.size(), result);
+      return internal::GetUniscribeFallbackFont(font, test_case_.text, result);
     }
     return false;
   }
@@ -203,14 +201,14 @@ TEST_F(FontFallbackWinTest, EmptyStringUniscribeFallback) {
   Font base_font;
   Font fallback_font;
   bool result =
-      internal::GetUniscribeFallbackFont(base_font, L"", 0, &fallback_font);
+      internal::GetUniscribeFallbackFont(base_font, L"", &fallback_font);
   EXPECT_FALSE(result);
 }
 
 TEST_F(FontFallbackWinTest, EmptyStringFallback) {
   Font base_font;
   Font fallback_font;
-  bool result = GetFallbackFont(base_font, L"", 0, &fallback_font);
+  bool result = GetFallbackFont(base_font, L"", &fallback_font);
   EXPECT_FALSE(result);
 }
 
