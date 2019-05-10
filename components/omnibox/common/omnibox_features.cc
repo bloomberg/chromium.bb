@@ -206,8 +206,9 @@ const base::Feature kUIExperimentMaxAutocompleteMatches{
 const base::Feature kQueryInOmnibox{"QueryInOmnibox",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used for showing the URL suggestion favicons as a UI experiment,
-// currently only used on desktop platforms.
+// Feature used for showing the URL suggestion favicons as a UI experiment.
+// Already launched on Desktop, and currently under development on Android.
+// This flag is not used on iOS.
 const base::Feature kUIExperimentShowSuggestionFavicons{
   "OmniboxUIExperimentShowSuggestionFavicons",
 #if defined(OS_ANDROID)
