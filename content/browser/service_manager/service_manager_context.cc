@@ -82,7 +82,6 @@
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/service_manager.h"
-#include "services/service_manager/service_process_launcher.h"
 #include "services/shape_detection/public/mojom/constants.mojom.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
@@ -218,54 +217,6 @@ void StartServiceInGpuProcess(
                         request.PassMessagePipe()));
   std::move(callback).Run(base::nullopt);
 }
-
-class NullServiceProcessLauncherFactory
-    : public service_manager::ServiceProcessLauncherFactory {
- public:
-  NullServiceProcessLauncherFactory() {}
-  ~NullServiceProcessLauncherFactory() override {}
-
- private:
-  std::unique_ptr<service_manager::ServiceProcessLauncher> Create(
-      const base::FilePath& service_path) override {
-    // There are innocuous races where browser code may attempt to connect
-    // to a specific renderer instance through the Service Manager after that
-    // renderer has been terminated. These result in this code path being hit
-    // fairly regularly and the resulting log spam causes confusion. We suppress
-    // this message only for "content_renderer".
-    const base::FilePath::StringType kRendererServiceFilename =
-        base::FilePath().AppendASCII(mojom::kRendererServiceName).value();
-    const base::FilePath::StringType service_executable =
-        service_path.BaseName().value();
-    if (service_executable.find(kRendererServiceFilename) ==
-        base::FilePath::StringType::npos) {
-      LOG(ERROR) << "Attempting to run unsupported native service: "
-                 << service_path.value();
-    }
-    return nullptr;
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(NullServiceProcessLauncherFactory);
-};
-
-// This class is intended for tests that want to load service binaries (rather
-// than via the utility process). Production code uses
-// NullServiceProcessLauncherFactory.
-class ServiceBinaryLauncherFactory
-    : public service_manager::ServiceProcessLauncherFactory {
- public:
-  ServiceBinaryLauncherFactory() = default;
-  ~ServiceBinaryLauncherFactory() override = default;
-
- private:
-  std::unique_ptr<service_manager::ServiceProcessLauncher> Create(
-      const base::FilePath& service_path) override {
-    return std::make_unique<service_manager::ServiceProcessLauncher>(
-        nullptr, service_path);
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceBinaryLauncherFactory);
-};
 
 // SharedURLLoaderFactory for device service, backed by
 // GetContentClient()->browser()->GetSystemSharedURLLoaderFactory().
@@ -448,19 +399,13 @@ class ServiceManagerContext::InProcessServiceManagerContext
       std::vector<service_manager::Manifest> manifests,
       service_manager::mojom::ServicePtrInfo packaged_services_service_info,
       scoped_refptr<base::SequencedTaskRunner> ui_thread_task_runner) {
-    std::unique_ptr<service_manager::ServiceProcessLauncherFactory>
-        service_process_launcher_factory;
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableServiceBinaryLauncher)) {
-      service_process_launcher_factory =
-          std::make_unique<ServiceBinaryLauncherFactory>();
-    } else {
-      service_process_launcher_factory =
-          std::make_unique<NullServiceProcessLauncherFactory>();
-    }
     service_manager_ = std::make_unique<service_manager::ServiceManager>(
-        std::move(service_process_launcher_factory), std::move(manifests));
-
+        std::move(manifests), base::CommandLine::ForCurrentProcess()->HasSwitch(
+                                  switches::kEnableServiceBinaryLauncher)
+                                  ? service_manager::ServiceManager::
+                                        ServiceExecutablePolicy::kSupported
+                                  : service_manager::ServiceManager::
+                                        ServiceExecutablePolicy::kNotSupported);
     service_manager_->RegisterService(
         service_manager::Identity(mojom::kPackagedServicesServiceName,
                                   service_manager::kSystemInstanceGroup,

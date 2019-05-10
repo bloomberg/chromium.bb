@@ -31,6 +31,7 @@ source_set("service_manager") {
     "service_instance_registry.h",
     "service_manager.cc",
     "service_manager.h",
+    "service_process_host.h",
     "service_process_launcher_delegate.h",
     "service_process_launcher_factory.h",
     "switches.cc",

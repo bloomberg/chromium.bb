@@ -30,6 +30,7 @@
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/service_instance.h"
+#include "services/service_manager/service_process_host.h"
 
 #if !defined(OS_IOS)
 #include "services/service_manager/service_process_launcher.h"
@@ -63,14 +64,86 @@ const Identity& GetServiceManagerInstanceIdentity() {
   return *id;
 }
 
+// Default ServiceProcessHost implementation. This launches a service process
+// from a standalone executable only.
+class DefaultServiceProcessHost : public ServiceProcessHost {
+ public:
+  explicit DefaultServiceProcessHost(const base::FilePath& executable_path)
+#if !defined(OS_IOS)
+      : launcher_(nullptr, executable_path)
+#endif
+  {
+  }
+
+  ~DefaultServiceProcessHost() override = default;
+
+  mojo::PendingRemote<mojom::Service> Launch(const Identity& identity,
+                                             SandboxType sandbox_type,
+                                             LaunchCallback callback) override {
+#if defined(OS_IOS)
+    return mojo::NullRemote();
+#else
+    // TODO(https://crbug.com/781334): Support sandboxing.
+    return launcher_
+        .Start(identity, SANDBOX_TYPE_NO_SANDBOX, std::move(callback))
+        .PassInterface();
+#endif  // defined(OS_IOS)
+  }
+
+ private:
+#if !defined(OS_IOS)
+  ServiceProcessLauncher launcher_;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(DefaultServiceProcessHost);
+};
+
+// Default ServiceManager::Delegate implementation. This supports launching only
+// standalone service executables.
+//
+// TODO(https://crbug.com/781334): Migrate all service process support into this
+// implementation and merge it into ServiceProcessHost.
+class DefaultServiceManagerDelegate : public ServiceManager::Delegate {
+ public:
+  explicit DefaultServiceManagerDelegate(
+      ServiceManager::ServiceExecutablePolicy service_executable_policy)
+      : service_executable_policy_(service_executable_policy) {}
+  ~DefaultServiceManagerDelegate() override = default;
+
+  bool RunBuiltinServiceInstanceInCurrentProcess(
+      const Identity& identity,
+      mojo::PendingReceiver<mojom::Service> receiver) override {
+    return false;
+  }
+
+  std::unique_ptr<ServiceProcessHost>
+  CreateProcessHostForBuiltinServiceInstance() override {
+    return nullptr;
+  }
+
+  std::unique_ptr<ServiceProcessHost> CreateProcessHostForServiceExecutable(
+      const base::FilePath& executable_path) override {
+    if (service_executable_policy_ ==
+        ServiceManager::ServiceExecutablePolicy::kNotSupported) {
+      return nullptr;
+    }
+
+    DCHECK_EQ(ServiceManager::ServiceExecutablePolicy::kSupported,
+              service_executable_policy_);
+    return std::make_unique<DefaultServiceProcessHost>(executable_path);
+  }
+
+ private:
+  const ServiceManager::ServiceExecutablePolicy service_executable_policy_;
+
+  DISALLOW_COPY_AND_ASSIGN(DefaultServiceManagerDelegate);
+};
+
 }  // namespace
 
-ServiceManager::ServiceManager(std::unique_ptr<ServiceProcessLauncherFactory>
-                                   service_process_launcher_factory,
-                               const std::vector<Manifest>& manifests)
-    : catalog_(manifests),
-      service_process_launcher_factory_(
-          std::move(service_process_launcher_factory)) {
+ServiceManager::ServiceManager(const std::vector<Manifest>& manifests,
+                               std::unique_ptr<Delegate> delegate)
+    : delegate_(std::move(delegate)), catalog_(manifests) {
   Manifest service_manager_manifest =
       ManifestBuilder()
           .WithOptions(ManifestOptionsBuilder()
@@ -88,6 +161,13 @@ ServiceManager::ServiceManager(std::unique_ptr<ServiceProcessLauncherFactory>
   service_binding_.Bind(remote.InitWithNewPipeAndPassReceiver());
   service_manager_instance_->StartWithRemote(std::move(remote));
 }
+
+ServiceManager::ServiceManager(
+    const std::vector<Manifest>& manifests,
+    ServiceExecutablePolicy service_executable_policy)
+    : ServiceManager(manifests,
+                     std::make_unique<DefaultServiceManagerDelegate>(
+                         service_executable_policy)) {}
 
 ServiceManager::~ServiceManager() {
   // Stop all of the instances before destroying any of them. This ensures that

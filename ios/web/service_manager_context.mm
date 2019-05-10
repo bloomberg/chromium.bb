@@ -82,8 +82,9 @@ class ServiceManagerContext::InProcessServiceManagerContext
   void StartOnIOThread(
       std::vector<service_manager::Manifest> manifests,
       service_manager::mojom::ServicePtrInfo packaged_services_service_info) {
-    service_manager_ =
-        std::make_unique<service_manager::ServiceManager>(nullptr, manifests);
+    service_manager_ = std::make_unique<service_manager::ServiceManager>(
+        manifests, service_manager::ServiceManager::ServiceExecutablePolicy::
+                       kNotSupported);
 
     service_manager_->RegisterService(
         service_manager::Identity(mojom::kPackagedServicesServiceName,

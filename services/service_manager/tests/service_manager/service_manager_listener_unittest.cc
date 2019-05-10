@@ -104,8 +104,8 @@ class TestTargetService : public Service {
 class ServiceManagerListenerTest : public testing::Test, public Service {
  public:
   ServiceManagerListenerTest()
-      : service_manager_(nullptr, GetTestManifests()) {}
-
+      : service_manager_(GetTestManifests(),
+                         ServiceManager::ServiceExecutablePolicy::kSupported) {}
   ~ServiceManagerListenerTest() override = default;
 
   Connector* connector() { return service_binding_.GetConnector(); }

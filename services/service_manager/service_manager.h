@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/containers/unique_ptr_adapters.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/process/process.h"
@@ -26,8 +27,9 @@
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/service_instance_registry.h"
-#include "services/service_manager/service_process_launcher_factory.h"
+#include "services/service_manager/service_process_host.h"
 
 namespace service_manager {
 
@@ -35,16 +37,74 @@ class ServiceInstance;
 
 class ServiceManager : public Service {
  public:
-  // Constructs a new ServiceManager instance which exclusively uses |manifests|
-  // as its source of truth regarding what services exist and how they should
-  // be configured.
+  // This is an interface a ServiceManager instance can use to delegate certain
+  // operations (like launching in-process services) to its embedding runtime
+  // environment.
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    // Asks for a new concrete instance of the service identified by |identity|
+    // to be created in the calling (i.e. the Service Manager's) process. If
+    // created, the instance should bind to |receiver|. Returns |true| if the
+    // instance was created or |false| otherwise (e.g. the service was unknown
+    // or in-process instances are not supported by the runtime environment).
+    virtual bool RunBuiltinServiceInstanceInCurrentProcess(
+        const Identity& identity,
+        mojo::PendingReceiver<mojom::Service> receiver) = 0;
+
+    // Creates a new ServiceProcessHost to host an out-of-process service
+    // instance.
+    //
+    // May return null if builtin out-of-process services are not supported by
+    // the runtime environment.
+    //
+    // TODO(https://crbug.com/895615): Process launching should be fully the
+    // responsibility of the Service Manager. This exists because much of the
+    // Chromium process launching logic today is still buried in the Content
+    // layer.
+    virtual std::unique_ptr<ServiceProcessHost>
+    CreateProcessHostForBuiltinServiceInstance() = 0;
+
+    // Creates a new ServiceProcessHost to host an out-of-process service
+    // instance for a service using a standalone executable.
+    //
+    // May return null if service executables are not supported by the runtime
+    // environment.
+    //
+    // TODO(https://crbug.com/895615): Process launching should be fully the
+    // responsibility of the Service Manager. This exists because much of the
+    // Chromium process launching logic today is still buried in the Content
+    // layer.
+    virtual std::unique_ptr<ServiceProcessHost>
+    CreateProcessHostForServiceExecutable(
+        const base::FilePath& executable_path) = 0;
+  };
+
+  // Indicates whether standalone service executables are supported by this
+  // ServiceManager instance. Only used when an explicit Delegate is not
+  // specified at construction time.
+  enum class ServiceExecutablePolicy {
+    kSupported,
+    kNotSupported,
+  };
+
+  // Constructs a new ServiceManager instance. |delegate| is used to augment
+  // default Service Manager behavior.
   //
-  // |service_process_launcher_factory| is an instance of an object capable of
-  // vending implementations of ServiceProcessLauncher, e.g. for out-of-process
-  // execution.
-  explicit ServiceManager(std::unique_ptr<ServiceProcessLauncherFactory>
-                              service_process_launcher_factory,
-                          const std::vector<Manifest>& manifests);
+  // |manifests| is the complete list of manifests for all services available to
+  // the runtime environment.
+  ServiceManager(const std::vector<Manifest>& manifests,
+                 std::unique_ptr<Delegate> delegate);
+
+  // Like above but uses a default internal Delegate implementation. With the
+  // default implementation, only packaged services, manually registered service
+  // instances, or (policy permitting) service executables are supported. No
+  // builtin (in-process or out-of-process) services are supported unless
+  // manually registered with |RegisterService()| below.
+  ServiceManager(const std::vector<Manifest>& manifests,
+                 ServiceExecutablePolicy service_executable_policy);
+
   ~ServiceManager() override;
 
   // Provide a callback to be notified whenever an instance is destroyed.
@@ -126,6 +186,8 @@ class ServiceManager : public Service {
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle receiving_pipe) override;
 
+  const std::unique_ptr<Delegate> delegate_;
+
   ServiceBinding service_binding_{this};
 
   // Ownership of all ServiceInstances.
@@ -145,8 +207,6 @@ class ServiceManager : public Service {
 
   mojo::InterfacePtrSet<mojom::ServiceManagerListener> listeners_;
   base::Callback<void(const Identity&)> instance_quit_callback_;
-  std::unique_ptr<ServiceProcessLauncherFactory>
-      service_process_launcher_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceManager);
 };

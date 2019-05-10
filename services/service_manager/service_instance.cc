@@ -7,12 +7,14 @@
 #include <set>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/mojom/constants.mojom.h"
 #include "services/service_manager/service_manager.h"
+#include "services/service_manager/service_process_host.h"
 #include "services/service_manager/service_process_launcher.h"
 
 namespace service_manager {
@@ -240,15 +242,16 @@ bool ServiceInstance::StartWithExecutablePath(const base::FilePath& path,
 #else
   DCHECK(!service_remote_);
   DCHECK(!path.empty());
-  process_launcher_ =
-      service_manager_->service_process_launcher_factory_->Create(path);
-  if (!process_launcher_)
+  DCHECK(!process_host_);
+  process_host_ =
+      service_manager_->delegate_->CreateProcessHostForServiceExecutable(path);
+  if (!process_host_)
     return false;
-  // TODO(tsepez): use actual sandbox type. https://crbug.com/788778
-  mojom::ServicePtr service = process_launcher_->Start(
-      identity_, SANDBOX_TYPE_NO_SANDBOX,
-      base::BindOnce(&ServiceInstance::SetPID, weak_ptr_factory_.GetWeakPtr()));
-  StartWithRemote(service.PassInterface());
+
+  StartWithRemote(
+      process_host_->Launch(identity_, sandbox_type,
+                            base::BindOnce(&ServiceInstance::SetPID,
+                                           weak_ptr_factory_.GetWeakPtr())));
   return true;
 #endif
 }

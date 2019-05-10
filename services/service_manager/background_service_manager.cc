@@ -19,30 +19,7 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/service_manager.h"
 
-#if !defined(OS_IOS)
-#include "services/service_manager/service_process_launcher.h"
-#include "services/service_manager/service_process_launcher_factory.h"
-#endif
-
 namespace service_manager {
-
-namespace {
-
-#if !defined(OS_IOS)
-// Used to ensure we only init once.
-class ServiceProcessLauncherFactoryImpl : public ServiceProcessLauncherFactory {
- public:
-  ServiceProcessLauncherFactoryImpl() = default;
-
- private:
-  std::unique_ptr<ServiceProcessLauncher> Create(
-      const base::FilePath& service_path) override {
-    return std::make_unique<ServiceProcessLauncher>(nullptr, service_path);
-  }
-};
-#endif
-
-}  // namespace
 
 BackgroundServiceManager::BackgroundServiceManager(
     const std::vector<Manifest>& manifests)
@@ -80,14 +57,8 @@ void BackgroundServiceManager::RegisterService(
 
 void BackgroundServiceManager::InitializeOnBackgroundThread(
     const std::vector<Manifest>& manifests) {
-  std::unique_ptr<ServiceProcessLauncherFactory> process_launcher_factory;
-#if !defined(OS_IOS)
-  process_launcher_factory =
-      std::make_unique<ServiceProcessLauncherFactoryImpl>();
-#endif
-
   service_manager_ = std::make_unique<ServiceManager>(
-      std::move(process_launcher_factory), manifests);
+      manifests, ServiceManager::ServiceExecutablePolicy::kSupported);
 }
 
 void BackgroundServiceManager::ShutDownOnBackgroundThread(

@@ -35,7 +35,7 @@
 namespace service_manager {
 
 class ServiceManager;
-class ServiceProcessLauncher;
+class ServiceProcessHost;
 
 // ServiceInstance is the Service Manager-side representation of a service
 // instance running in the system. All communication between the Service
@@ -169,7 +169,7 @@ class ServiceInstance : public mojom::Connector,
   const bool can_contact_all_services_;
 
 #if !defined(OS_IOS)
-  std::unique_ptr<ServiceProcessLauncher> process_launcher_;
+  std::unique_ptr<ServiceProcessHost> process_host_;
 #endif
 
   // The Service remote used to control the instance.

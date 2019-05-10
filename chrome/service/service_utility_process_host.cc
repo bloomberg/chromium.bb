@@ -132,24 +132,6 @@ class ServicePdfToEmfConverterClientImpl
   mojo::Binding<printing::mojom::PdfToEmfConverterClient> binding_;
 };
 
-class NullServiceProcessLauncherFactory
-    : public service_manager::ServiceProcessLauncherFactory {
- public:
-  NullServiceProcessLauncherFactory() = default;
-  ~NullServiceProcessLauncherFactory() override = default;
-
-  // service_manager::ServiceProcessLauncherFactory:
-  std::unique_ptr<service_manager::ServiceProcessLauncher> Create(
-      const base::FilePath& service_path) override {
-    LOG(ERROR) << "Attempting to run unsupported native service: "
-               << service_path.value();
-    return nullptr;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NullServiceProcessLauncherFactory);
-};
-
 class ConnectionFilterImpl : public content::ConnectionFilter {
  public:
   ConnectionFilterImpl() {
@@ -365,7 +347,8 @@ bool ServiceUtilityProcessHost::StartProcess(bool sandbox) {
       content::GetContentBrowserManifest(),
       content::GetContentUtilityManifest()};
   service_manager_ = std::make_unique<service_manager::ServiceManager>(
-      std::make_unique<NullServiceProcessLauncherFactory>(), manifests);
+      manifests,
+      service_manager::ServiceManager::ServiceExecutablePolicy::kNotSupported);
 
   service_manager::mojom::ServicePtrInfo browser_proxy;
   service_manager_connection_ = content::ServiceManagerConnection::Create(
