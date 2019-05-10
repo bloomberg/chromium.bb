@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/css/css_font_style_range_value.h"
 #include "third_party/blink/renderer/core/css/css_font_variation_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_auto_repeat_value.h"
+#include "third_party/blink/renderer/core/css/css_grid_integer_repeat_value.h"
 #include "third_party/blink/renderer/core/css/css_path_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/core/css/css_quad_value.h"
@@ -839,6 +840,7 @@ Vector<GridTrackSize> StyleBuilderConverter::ConvertGridTrackSizeList(
   for (auto& curr_value : To<CSSValueList>(value)) {
     DCHECK(!curr_value->IsGridLineNamesValue());
     DCHECK(!curr_value->IsGridAutoRepeatValue());
+    DCHECK(!curr_value->IsGridIntegerRepeatValue());
     track_sizes.push_back(ConvertGridTrackSize(state, *curr_value));
   }
   return track_sizes;
@@ -861,13 +863,17 @@ void StyleBuilderConverter::ConvertGridTrackList(
   }
 
   size_t current_named_grid_line = 0;
-  for (auto curr_value : To<CSSValueList>(value)) {
-    if (curr_value->IsGridLineNamesValue()) {
-      ConvertGridLineNamesList(*curr_value, current_named_grid_line,
+  auto convert_line_name_or_track_size = [&](const CSSValue& curr_value) {
+    if (curr_value.IsGridLineNamesValue()) {
+      ConvertGridLineNamesList(curr_value, current_named_grid_line,
                                named_grid_lines, ordered_named_grid_lines);
-      continue;
+    } else {
+      ++current_named_grid_line;
+      track_sizes.push_back(ConvertGridTrackSize(state, curr_value));
     }
+  };
 
+  for (auto curr_value : To<CSSValueList>(value)) {
     if (auto* grid_auto_repeat_value =
             DynamicTo<CSSGridAutoRepeatValue>(curr_value.Get())) {
       DCHECK(auto_repeat_track_sizes.IsEmpty());
@@ -893,8 +899,17 @@ void StyleBuilderConverter::ConvertGridTrackList(
       continue;
     }
 
-    ++current_named_grid_line;
-    track_sizes.push_back(ConvertGridTrackSize(state, *curr_value));
+    if (auto* repeated_values =
+            DynamicTo<CSSGridIntegerRepeatValue>(curr_value.Get())) {
+      size_t repetitions = repeated_values->Repetitions();
+      for (size_t i = 0; i < repetitions; ++i) {
+        for (auto curr_value : *repeated_values)
+          convert_line_name_or_track_size(*curr_value);
+      }
+      continue;
+    }
+
+    convert_line_name_or_track_size(*curr_value);
   }
 
   // The parser should have rejected any <track-list> without any <track-size>

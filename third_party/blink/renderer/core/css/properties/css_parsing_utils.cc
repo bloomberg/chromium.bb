@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/css/css_font_style_range_value.h"
 #include "third_party/blink/renderer/core/css/css_function_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_auto_repeat_value.h"
+#include "third_party/blink/renderer/core/css/css_grid_integer_repeat_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_line_names_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_template_areas_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
@@ -1757,11 +1758,13 @@ bool ConsumeGridTrackRepeatFunction(CSSParserTokenRange& range,
     // We clamp the repetitions to a multiple of the repeat() track list's size,
     // while staying below the max grid size.
     repetitions = std::min(repetitions, kGridMaxTracks / number_of_tracks);
-    for (size_t i = 0; i < repetitions; ++i) {
-      for (size_t j = 0; j < repeated_values->length(); ++j)
-        list.Append(repeated_values->Item(j));
-    }
+    auto* integer_repeated_values =
+        MakeGarbageCollected<CSSGridIntegerRepeatValue>(repetitions);
+    for (size_t i = 0; i < repeated_values->length(); ++i)
+      integer_repeated_values->Append(repeated_values->Item(i));
+    list.Append(*integer_repeated_values);
   }
+
   return true;
 }
 

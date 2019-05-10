@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/css/css_function_value.h"
 #include "third_party/blink/renderer/core/css/css_gradient_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_auto_repeat_value.h"
+#include "third_party/blink/renderer/core/css/css_grid_integer_repeat_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_line_names_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_template_areas_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
@@ -205,6 +206,8 @@ bool CSSValue::operator==(const CSSValue& other) const {
         return CompareCSSValues<CSSUnsetValue>(*this, other);
       case kGridAutoRepeatClass:
         return CompareCSSValues<CSSGridAutoRepeatValue>(*this, other);
+      case kGridIntegerRepeatClass:
+        return CompareCSSValues<CSSGridIntegerRepeatValue>(*this, other);
       case kGridLineNamesClass:
         return CompareCSSValues<CSSGridLineNamesValue>(*this, other);
       case kGridTemplateAreasClass:
@@ -313,6 +316,8 @@ String CSSValue::CssText() const {
       return To<CSSInitialValue>(this)->CustomCSSText();
     case kGridAutoRepeatClass:
       return To<CSSGridAutoRepeatValue>(this)->CustomCSSText();
+    case kGridIntegerRepeatClass:
+      return To<CSSGridIntegerRepeatValue>(this)->CustomCSSText();
     case kGridLineNamesClass:
       return To<CSSGridLineNamesValue>(this)->CustomCSSText();
     case kGridTemplateAreasClass:
@@ -444,6 +449,9 @@ void CSSValue::FinalizeGarbageCollectedObject() {
       return;
     case kGridAutoRepeatClass:
       To<CSSGridAutoRepeatValue>(this)->~CSSGridAutoRepeatValue();
+      return;
+    case kGridIntegerRepeatClass:
+      To<CSSGridIntegerRepeatValue>(this)->~CSSGridIntegerRepeatValue();
       return;
     case kGridLineNamesClass:
       To<CSSGridLineNamesValue>(this)->~CSSGridLineNamesValue();
@@ -598,6 +606,9 @@ void CSSValue::Trace(blink::Visitor* visitor) {
       return;
     case kGridAutoRepeatClass:
       To<CSSGridAutoRepeatValue>(this)->TraceAfterDispatch(visitor);
+      return;
+    case kGridIntegerRepeatClass:
+      To<CSSGridIntegerRepeatValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kGridLineNamesClass:
       To<CSSGridLineNamesValue>(this)->TraceAfterDispatch(visitor);

@@ -76,6 +76,8 @@ blink_core_sources("css") {
     "css_gradient_value.h",
     "css_grid_auto_repeat_value.cc",
     "css_grid_auto_repeat_value.h",
+    "css_grid_integer_repeat_value.cc",
+    "css_grid_integer_repeat_value.h",
     "css_grid_line_names_value.cc",
     "css_grid_line_names_value.h",
     "css_grid_template_areas_value.cc",

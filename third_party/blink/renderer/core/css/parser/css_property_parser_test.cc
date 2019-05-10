@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/css_color_value.h"
+#include "third_party/blink/renderer/core/css/css_grid_integer_repeat_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
@@ -22,6 +23,12 @@ static int ComputeNumberOfTracks(const CSSValueList* value_list) {
   for (auto& value : *value_list) {
     if (value->IsGridLineNamesValue())
       continue;
+    if (auto* repeat_value =
+            DynamicTo<cssvalue::CSSGridIntegerRepeatValue>(*value)) {
+      number_of_tracks +=
+          repeat_value->Repetitions() * ComputeNumberOfTracks(repeat_value);
+      continue;
+    }
     ++number_of_tracks;
   }
   return number_of_tracks;

@@ -155,6 +155,9 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
   bool IsGridAutoRepeatValue() const {
     return class_type_ == kGridAutoRepeatClass;
   }
+  bool IsGridIntegerRepeatValue() const {
+    return class_type_ == kGridIntegerRepeatClass;
+  }
   bool IsPendingSubstitutionValue() const {
     return class_type_ == kPendingSubstitutionValueClass;
   }
@@ -246,6 +249,7 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
     kImageSetClass,
     kGridLineNamesClass,
     kGridAutoRepeatClass,
+    kGridIntegerRepeatClass,
     kAxisClass,
     // Do not append non-list class types here.
   };
