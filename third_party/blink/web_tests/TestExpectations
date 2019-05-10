@@ -5974,3 +5974,6 @@ crbug.com/960443 [ Mac10.10 Mac10.11 ] external/wpt/animation-worklet/worklet-an
 
 # Sheriff 2019-05-07
 crbug.com/961547 external/wpt/event-timing/programmatic-click-not-observed.html [ Pass Failure ]
+
+# Sheriff 2019-05-10
+crbug.com/960623 [ Win ] http/tests/misc/resource-timing-sizes-multipart.html [ Pass Failure ]
