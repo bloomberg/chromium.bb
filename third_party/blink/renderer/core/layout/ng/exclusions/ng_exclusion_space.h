@@ -226,6 +226,49 @@ class CORE_EXPORT NGExclusionSpaceInternal {
     bool has_shape_exclusions;
   };
 
+  // The closed-off area is an internal data-structure representing an area
+  // above a float. It contains a layout opportunity, and two vectors of
+  // |NGShelfEdge|. E.g.
+  //
+  //    0 1 2 3 4 5 6 7 8
+  // 0  +---+.      .+---+
+  //    |xxx|.      .|xxx|
+  // 10 |xxx|.      .|xxx|
+  //    +---+.      .+---+
+  // 20      ........
+  //      +---+
+  // 30   |xxx|
+  //      |xxx|
+  // 40   +---+
+  //
+  // In the above example the closed-off area is represented with the dotted
+  // line.
+  //
+  // It has the internal values of:
+  // {
+  //   opportunity: {
+  //     start_offset: {20, LayoutUnit::Min()},
+  //     end_offset: {65, 25},
+  //   }
+  //   line_left_edges: [{0, 15}],
+  //   line_right_edges: [{0, 15}],
+  // }
+  //
+  // Once a closed-off area has been created, it can never be changed due to
+  // the property that floats always align their block-start edges.
+  struct NGClosedArea {
+    NGClosedArea(NGLayoutOpportunity opportunity,
+                 const Vector<NGShelfEdge, 1>& line_left_edges,
+                 const Vector<NGShelfEdge, 1>& line_right_edges)
+        : opportunity(opportunity),
+          line_left_edges(line_left_edges),
+          line_right_edges(line_right_edges) {}
+
+    const NGLayoutOpportunity opportunity;
+    const Vector<NGShelfEdge, 1> line_left_edges;
+    const Vector<NGShelfEdge, 1> line_right_edges;
+  };
+
  private:
   // In order to reduce the amount of Vector copies, instances of a
   // NGExclusionSpaceInternal can share the same exclusions_ Vector. See the
@@ -296,40 +339,22 @@ class CORE_EXPORT NGExclusionSpaceInternal {
                                        const LayoutUnit available_inline_size,
                                        const LambdaFunc&) const;
 
-    // See NGShelf for a broad description of what shelves are. We always begin
-    // with one, which has the internal value of:
+    // See |NGShelf| for a broad description of what shelves are. We always
+    // begin with one, which has the internal value of:
     // {
     //   block_offset: LayoutUnit::Min(),
     //   line_left: LayoutUnit::Min(),
     //   line_right: LayoutUnit::Max(),
     // }
     //
-    // The list of opportunities represent "closed-off" areas. E.g.
-    //
-    //    0 1 2 3 4 5 6 7 8
-    // 0  +---+.      .+---+
-    //    |xxx|.      .|xxx|
-    // 10 |xxx|.      .|xxx|
-    //    +---+.      .+---+
-    // 20      ........
-    //      +---+
-    // 30   |xxx|
-    //      |xxx|
-    // 40   +---+
-    //
-    // In the above example the opportunity is represented with the dotted line.
-    // It has the internal values of:
-    // {
-    //   start_offset: {20, LayoutUnit::Min()},
-    //   end_offset: {65, 25},
-    // }
-    // Once an opportunity has been created, it can never been changed due to
-    // the property that floats always align their block-start edges.
-    //
-    // We exploit this property by keeping this list of "closed-off" areas, and
-    // removing shelves to make insertion faster.
     Vector<NGShelf, 4> shelves_;
-    Vector<NGLayoutOpportunity, 4> opportunities_;
+
+    // See |NGClosedArea| for a broad description of what closed-off areas are.
+    //
+    // Floats always align their block-start edges. We exploit this property by
+    // keeping a list of closed-off areas. Once a closed-off area has been
+    // created, it can never change.
+    Vector<NGClosedArea, 4> areas_;
 
     bool track_shape_exclusions_;
   };

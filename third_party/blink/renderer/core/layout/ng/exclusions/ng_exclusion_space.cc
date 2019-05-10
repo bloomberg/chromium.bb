@@ -16,29 +16,33 @@ namespace {
 //
 // We don't explicitly check the inline-size/block-size of the opportunity as
 // they are always produced in the order.
-void InsertOpportunity(const NGLayoutOpportunity& opportunity,
-                       Vector<NGLayoutOpportunity, 4>* opportunities) {
-  if (opportunities->IsEmpty()) {
-    opportunities->emplace_back(opportunity);
+void InsertClosedArea(
+    const NGExclusionSpaceInternal::NGClosedArea area,
+    Vector<NGExclusionSpaceInternal::NGClosedArea, 4>* areas) {
+  if (areas->IsEmpty()) {
+    areas->emplace_back(area);
     return;
   }
 
   // We go backwards through the list as there is a higher probability that a
-  // new opportunity will be at the end of the list.
-  for (wtf_size_t j = opportunities->size() - 1; j >= 0; --j) {
-    const NGLayoutOpportunity& other = opportunities->at(j);
-    if (other.rect.BlockStartOffset() <= opportunity.rect.BlockStartOffset()) {
+  // new area will be at the end of the list.
+  for (wtf_size_t j = areas->size() - 1; j >= 0; --j) {
+    const NGExclusionSpaceInternal::NGClosedArea& other = areas->at(j);
+    if (other.opportunity.rect.BlockStartOffset() <=
+        area.opportunity.rect.BlockStartOffset()) {
 #if DCHECK_IS_ON()
       // If we have the same block-start offset ensure that the size of the
       // opportunity doesn't violate the order.
-      if (other.rect.BlockStartOffset() ==
-          opportunity.rect.BlockStartOffset()) {
-        DCHECK_LE(other.rect.BlockSize(), opportunity.rect.BlockSize());
-        DCHECK_GE(other.rect.InlineSize(), opportunity.rect.InlineSize());
+      if (other.opportunity.rect.BlockStartOffset() ==
+          area.opportunity.rect.BlockStartOffset()) {
+        DCHECK_LE(other.opportunity.rect.BlockSize(),
+                  area.opportunity.rect.BlockSize());
+        DCHECK_GE(other.opportunity.rect.InlineSize(),
+                  area.opportunity.rect.InlineSize());
       }
 #endif
 
-      opportunities->insert(j + 1, opportunity);
+      areas->insert(j + 1, area);
       return;
     }
   }
@@ -397,7 +401,9 @@ void NGExclusionSpaceInternal::DerivedGeometry::Add(
                                                *shelf.shape_exclusions))
                                          : nullptr);
 
-          InsertOpportunity(opportunity, &opportunities_);
+          InsertClosedArea(NGClosedArea(opportunity, shelf.line_left_edges,
+                                        shelf.line_right_edges),
+                           &areas_);
         }
       }
 
@@ -579,12 +585,12 @@ void NGExclusionSpaceInternal::DerivedGeometry::IterateAllLayoutOpportunities(
     const LayoutUnit available_inline_size,
     const LambdaFunc& lambda) const {
   auto* shelves_it = shelves_.begin();
-  auto* opps_it = opportunities_.begin();
+  auto* areas_it = areas_.begin();
 
   auto* const shelves_end = shelves_.end();
-  auto* const opps_end = opportunities_.end();
+  auto* const areas_end = areas_.end();
 
-  while (shelves_it != shelves_end || opps_it != opps_end) {
+  while (shelves_it != shelves_end || areas_it != areas_end) {
     // We should never exhaust the opportunities list before the shelves list,
     // as there is always an infinitely sized shelf at the very end.
     DCHECK_NE(shelves_it, shelves_end);
@@ -595,22 +601,35 @@ void NGExclusionSpaceInternal::DerivedGeometry::IterateAllLayoutOpportunities(
       continue;
     }
 
-    if (opps_it != opps_end) {
-      const NGLayoutOpportunity& opportunity = *opps_it;
+    if (areas_it != areas_end) {
+      const NGClosedArea& area = *areas_it;
 
-      if (!Intersects(opportunity, offset, available_inline_size)) {
-        ++opps_it;
+      if (!Intersects(area.opportunity, offset, available_inline_size)) {
+        ++areas_it;
         continue;
       }
 
-      // We always prefer the closed-off opportunity, instead of the shelf
-      // opportunity if they exist at the some offset.
-      if (opportunity.rect.BlockStartOffset() <= shelf.block_offset) {
-        if (lambda(CreateLayoutOpportunity(opportunity, offset,
-                                           available_inline_size)))
-          return;
+      LayoutUnit block_start_offset = std::max(
+          area.opportunity.rect.BlockStartOffset(), offset.block_offset);
 
-        ++opps_it;
+      // We always prefer the closed-off area opportunity, instead of the shelf
+      // opportunity if they exist at the some offset.
+      if (block_start_offset <=
+          std::max(shelf.block_offset, offset.block_offset)) {
+        LayoutUnit block_end_offset = area.opportunity.rect.BlockEndOffset();
+
+        bool has_solid_edges =
+            HasSolidEdges(area.line_left_edges, block_start_offset,
+                          block_end_offset) &&
+            HasSolidEdges(area.line_right_edges, block_start_offset,
+                          block_end_offset);
+        if (has_solid_edges) {
+          if (lambda(CreateLayoutOpportunity(area.opportunity, offset,
+                                             available_inline_size)))
+            return;
+        }
+
+        ++areas_it;
         continue;
       }
     }
