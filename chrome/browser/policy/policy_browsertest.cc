@@ -2212,29 +2212,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklist_BookmarkApp) {
   EXPECT_TRUE(service->IsExtensionEnabled(bookmark_app->id()));
 }
 
-// Ensure that when the UninstallBlacklistedExtensions policy is set
-// that blacklisted extensions are removed from the device
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklistUninstallPolicy) {
-  EXPECT_TRUE(InstallExtension(kGoodCrxName));
-
-  extensions::ExtensionService* service = extension_service();
-  EXPECT_TRUE(service->GetInstalledExtension(kGoodCrxId));
-
-  // Now create policy to block all extensions and set a flag to uninstall
-  // blocked extensions
-  PolicyMap policies;
-  policies.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               extensions::ListBuilder().Append("*").Build(), nullptr);
-  policies.Set(key::kUninstallBlacklistedExtensions, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(true), nullptr);
-  UpdateProviderPolicy(policies);
-
-  EXPECT_FALSE(service->GetInstalledExtension(kGoodCrxId));
-}
-
-/// Ensure that when INSTALLATION_REMOVED is set
+// Ensure that when INSTALLATION_REMOVED is set
 // that blacklisted extensions are removed from the device.
 IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallRemovedPolicy) {
   EXPECT_TRUE(InstallExtension(kGoodCrxName));

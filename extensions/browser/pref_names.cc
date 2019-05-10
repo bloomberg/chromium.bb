@@ -56,7 +56,6 @@ const char kPrefIncognitoPreferences[] = "incognito_preferences";
 const char kPrefRegularOnlyPreferences[] = "regular_only_preferences";
 const char kPrefContentSettings[] = "content_settings";
 const char kPrefIncognitoContentSettings[] = "incognito_content_settings";
-const char kUninstallBlacklistedExtensions[] = "extensions.remove_blacklisted";
 
 }  // namespace pref_names
 }  // namespace extensions

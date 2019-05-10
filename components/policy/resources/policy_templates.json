@@ -415,7 +415,6 @@
         'ExtensionAllowInsecureUpdates',
         'ExtensionSettings',
         'ExtensionInstallListsMergeEnabled',
-        'UninstallBlacklistedExtensions',
       ],
     },
     {
@@ -3780,25 +3779,6 @@
       If you enable this setting, the values from machine platform policy, machine cloud policy and user platform policy are merged into a single list and used as a whole instead of only using the values from the single source with highest priority.
 
       If you disable this setting or leave it unset, only list entries from the highest priority source are taken and all other sources are shown as conflicts but ignored.''',
-    },
-    {
-      'name': 'UninstallBlacklistedExtensions',
-      'type': 'main',
-      'schema': {'type': 'boolean' },
-      'supported_on': ['chrome.*:75-', 'chrome_os:75-'],
-      'features' : {
-        'dynamic_refresh' : True,
-        'per_profile': True,
-      },
-      'example_value': True,
-      'id': 546,
-      'caption': '''Uninstall blacklisted extensions''',
-      'tags': [],
-      'desc': '''This will remove extensions appearing in the <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME">ExtensionInstallBlacklist</ph> or extensions appearing in <ph name="EXTENSION_SETTINGS_POLICY_NAME">ExtensionSettings</ph> that have the installation mode set to blocked and will purge local user data with it.  Refer to the extensions privacy policy or data retention policy to understand what may happen with the user data that is not stored locally.
-
-      When the policy is set to enabled, extensions that fall in the aforementioned lists (if already installed on a machine) will be removed from that machine in its entirety (including local user data).
-
-      When the policy is set to disabled or left unset, extensions that fall in the aforementioned lists (if already installed on a machine and existing in the blacklist <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME">ExtensionInstallBlacklist</ph>) will be disabled on the machine and not uninstalled.''',
     },
     {
       'name': 'ShowHomeButton',
@@ -15896,6 +15876,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     },
   },
   'placeholders': [],
-  'deleted_policy_ids': [412],
+  'deleted_policy_ids': [412, 546],
   'highest_id_currently_used':  556
 }

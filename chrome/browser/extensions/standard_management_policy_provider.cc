@@ -207,11 +207,6 @@ bool StandardManagementPolicyProvider::ShouldForceUninstall(
   if (UserMayLoad(extension, error))
     return false;
   if (settings_->GetInstallationMode(extension) ==
-          ExtensionManagement::INSTALLATION_BLOCKED &&
-      settings_->ShouldUninstallPolicyBlacklistedExtensions()) {
-    return true;
-  }
-  if (settings_->GetInstallationMode(extension) ==
       ExtensionManagement::INSTALLATION_REMOVED) {
     return true;
   }

@@ -1131,18 +1131,6 @@
     ]
   },
 
-  "UninstallBlacklistedExtensions": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "UninstallBlacklistedExtensions": true },
-    "pref_mappings": [
-      { "pref": "extensions.remove_blacklisted",
-        "indicator_tests": [
-          { "policy": { "UninstallBlacklistedExtensions": true } }
-        ]
-      }
-    ]
-  },
-
   "ExtensionSettings": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": {

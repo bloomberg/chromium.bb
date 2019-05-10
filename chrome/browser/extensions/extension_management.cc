@@ -69,8 +69,6 @@ ExtensionManagement::ExtensionManagement(Profile* profile)
   pref_change_registrar_.Add(pref_names::kAllowedTypes, pref_change_callback);
   pref_change_registrar_.Add(pref_names::kExtensionManagement,
                              pref_change_callback);
-  pref_change_registrar_.Add(pref_names::kUninstallBlacklistedExtensions,
-                             pref_change_callback);
 #if !defined(OS_CHROMEOS)
   pref_change_registrar_.Add(prefs::kCloudReportingEnabled,
                              pref_change_callback);
@@ -312,10 +310,6 @@ bool ExtensionManagement::CheckMinimumVersion(
   if (!meets_requirement && required_version)
     *required_version = iter->second->minimum_version_required->GetString();
   return meets_requirement;
-}
-
-bool ExtensionManagement::ShouldUninstallPolicyBlacklistedExtensions() const {
-  return pref_service_->GetBoolean(pref_names::kUninstallBlacklistedExtensions);
 }
 
 void ExtensionManagement::Refresh() {
