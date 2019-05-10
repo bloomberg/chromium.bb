@@ -49,7 +49,11 @@ void PreflightCache::AppendEntry(
   // kMaxCacheEntries at maximum.
   MayPurge(kMaxCacheEntries - 1);
 
-  cache_[origin][url.spec()] = std::move(preflight_result);
+  const std::string& key = url.spec();
+  UMA_HISTOGRAM_COUNTS_1000("Net.Cors.PreflightCacheKeySize", key.length());
+  UMA_HISTOGRAM_COUNTS_10000("Net.Cors.PreflightCacheValueSize",
+                             preflight_result->EstimateMemoryPressureInBytes());
+  cache_[origin][key] = std::move(preflight_result);
 }
 
 bool PreflightCache::CheckIfRequestCanSkipPreflight(
@@ -96,9 +100,15 @@ bool PreflightCache::CheckIfRequestCanSkipPreflight(
 }
 
 size_t PreflightCache::ReportAndGatherSizeMetric() {
-  size_t entries = CountEntries();
-  UMA_HISTOGRAM_COUNTS_10000("Net.Cors.PreflightCacheEntries", entries);
-  return entries;
+  size_t total_entries = 0;
+  for (auto const& cache_per_origin : cache_) {
+    size_t entries = cache_per_origin.second.size();
+    UMA_HISTOGRAM_COUNTS_10000("Net.Cors.PreflightCacheEntriesPerOrigin",
+                               entries);
+    total_entries += entries;
+  }
+  UMA_HISTOGRAM_COUNTS_10000("Net.Cors.PreflightCacheEntries", total_entries);
+  return total_entries;
 }
 
 size_t PreflightCache::CountOriginsForTesting() const {
