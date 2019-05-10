@@ -67,7 +67,6 @@ crbug.com/591099 css3/filters/composited-layer-child-bounds-after-composited-to-
 crbug.com/591099 css3/filters/effect-drop-shadow-hw.html [ Pass ]
 crbug.com/591099 css3/filters/filter-repaint-composited-fallback-crash.html [ Pass ]
 crbug.com/591099 css3/filters/filter-repaint-composited-fallback.html [ Pass ]
-crbug.com/591099 editing/pasteboard/drop-text-without-selection.html [ Failure ]
 crbug.com/591099 editing/selection/paint-hyphen.html [ Pass ]
 crbug.com/591099 external/wpt/acid/acid2/reftest.html [ Failure Pass ]
 crbug.com/591099 external/wpt/content-security-policy/unsafe-hashes/javascript_src_allowed-href_blank.html [ Pass ]
