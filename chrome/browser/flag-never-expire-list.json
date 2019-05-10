@@ -56,6 +56,7 @@
   "extensions-on-chrome-urls",
   "force-effective-connection-type",
   "force-show-update-menu-badge",
+  "force-text-direction",
   "force-update-menu-type",
   "ignore-gpu-blacklist",
   "ignore-previews-blocklist",

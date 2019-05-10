@@ -2064,8 +2064,10 @@
   },
   {
     "name": "force-text-direction",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "pbos", "ellyjones" ],
+    // This flag is used for developers who don't speak an RTL language to QA
+    // RTL UI layout.
+    "expiry_milestone": -1
   },
   {
     "name": "force-ui-direction",
