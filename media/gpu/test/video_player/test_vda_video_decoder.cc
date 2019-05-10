@@ -241,8 +241,10 @@ void TestVDAVideoDecoder::ProvidePictureBuffers(
 }
 
 void TestVDAVideoDecoder::DismissPictureBuffer(int32_t picture_buffer_id) {
-  // TODO(dstaessens@) support dismissing picture buffers.
-  NOTIMPLEMENTED();
+  // Drop reference to the video frame associated with the picture buffer, so
+  // the video frame and related texture are automatically destroyed once the
+  // renderer and video frame processors are done using them.
+  ASSERT_EQ(video_frames_.erase(picture_buffer_id), 1u);
 }
 
 void TestVDAVideoDecoder::PictureReady(const Picture& picture) {
