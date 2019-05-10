@@ -88,6 +88,10 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
   // ExternalUseClient implementation:
   void ReleaseCachedResources(const std::vector<ResourceId>& ids) override;
 
+  // If set true, callbacks triggering will be in a reverse order as SignalQuery
+  // calls.
+  void SetOutOfOrderCallbacks(bool out_of_order_callbacks);
+
  private:
   explicit FakeSkiaOutputSurface(
       scoped_refptr<ContextProvider> context_provider);

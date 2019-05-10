@@ -276,6 +276,13 @@ void FakeSkiaOutputSurface::RemoveContextLostObserver(
   NOTIMPLEMENTED();
 }
 
+void FakeSkiaOutputSurface::SetOutOfOrderCallbacks(
+    bool out_of_order_callbacks) {
+  TestContextSupport* support =
+      static_cast<TestContextSupport*>(context_provider()->ContextSupport());
+  support->set_out_of_order_callbacks(out_of_order_callbacks);
+}
+
 bool FakeSkiaOutputSurface::GetGrBackendTexture(
     const ResourceMetadata& metadata,
     GrBackendTexture* backend_texture) {

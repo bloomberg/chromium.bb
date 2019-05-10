@@ -10351,7 +10351,21 @@ class FrameSinkClient : public viz::TestLayerTreeFrameSinkClient {
   scoped_refptr<viz::ContextProvider> display_context_provider_;
 };
 
-TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
+enum RendererTestType { TEST_GL, TEST_SKIA };
+
+class LayerTreeHostImplTestWithRenderer
+    : public LayerTreeHostImplTest,
+      public ::testing::WithParamInterface<RendererTestType> {
+ protected:
+  bool test_type() const { return GetParam(); }
+};
+
+// TODO(crbug.com/948128): Enable this test for SkiaRenderer.
+INSTANTIATE_TEST_SUITE_P(,
+                         LayerTreeHostImplTestWithRenderer,
+                         ::testing::Values(TEST_GL));
+
+TEST_P(LayerTreeHostImplTestWithRenderer, ShutdownReleasesContext) {
   scoped_refptr<viz::TestContextProvider> context_provider =
       viz::TestContextProvider::Create();
   FrameSinkClient test_client(context_provider);
@@ -10359,9 +10373,11 @@ TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
   constexpr bool synchronous_composite = true;
   constexpr bool disable_display_vsync = false;
   constexpr double refresh_rate = 60.0;
+  viz::RendererSettings renderer_settings = viz::RendererSettings();
+  renderer_settings.use_skia_renderer = test_type() == TEST_SKIA;
   auto layer_tree_frame_sink = std::make_unique<viz::TestLayerTreeFrameSink>(
       context_provider, viz::TestContextProvider::CreateWorker(), nullptr,
-      viz::RendererSettings(), base::ThreadTaskRunnerHandle::Get().get(),
+      renderer_settings, base::ThreadTaskRunnerHandle::Get().get(),
       synchronous_composite, disable_display_vsync, refresh_rate);
   layer_tree_frame_sink->SetClient(&test_client);
 
