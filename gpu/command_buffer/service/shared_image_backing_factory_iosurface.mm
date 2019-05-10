@@ -104,6 +104,21 @@ base::Optional<DawnTextureFormat> GetDawnFormat(viz::ResourceFormat format) {
   }
 }
 
+base::Optional<DawnTextureFormat> GetDawnFormat(gfx::BufferFormat format) {
+  switch (format) {
+    case gfx::BufferFormat::R_8:
+      return DAWN_TEXTURE_FORMAT_R8_UNORM;
+    case gfx::BufferFormat::RG_88:
+      return DAWN_TEXTURE_FORMAT_R8_G8_UNORM;
+    case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::BGRX_8888:
+      return DAWN_TEXTURE_FORMAT_B8_G8_R8_A8_UNORM;
+    default:
+      return {};
+  }
+}
+
 base::scoped_nsprotocol<id<MTLTexture>> API_AVAILABLE(macos(10.11))
     CreateMetalTexture(id<MTLDevice> mtl_device,
                        IOSurfaceRef io_surface,
@@ -638,6 +653,7 @@ SharedImageBackingFactoryIOSurface::CreateSharedImage(
   NOTIMPLEMENTED();
   return nullptr;
 }
+
 std::unique_ptr<SharedImageBacking>
 SharedImageBackingFactoryIOSurface::CreateSharedImage(
     const Mailbox& mailbox,
@@ -648,8 +664,29 @@ SharedImageBackingFactoryIOSurface::CreateSharedImage(
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     uint32_t usage) {
-  NOTIMPLEMENTED();
-  return nullptr;
+  if (handle.type != gfx::GpuMemoryBufferType::IO_SURFACE_BUFFER) {
+    NOTIMPLEMENTED();
+    return nullptr;
+  }
+
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
+      IOSurfaceLookupFromMachPort(handle.mach_port.get()));
+  if (!io_surface) {
+    DLOG(ERROR) << "IOSurfaceLookupFromMachPort failed.";
+    return nullptr;
+  }
+
+  viz::ResourceFormat resource_format = viz::GetResourceFormat(format);
+  size_t estimated_size = 0;
+  if (!viz::ResourceSizes::MaybeSizeInBytes(size, resource_format,
+                                            &estimated_size)) {
+    DLOG(ERROR) << "Failed to calculate SharedImage size";
+    return nullptr;
+  }
+
+  return std::make_unique<SharedImageBackingIOSurface>(
+      mailbox, resource_format, size, color_space, usage, std::move(io_surface),
+      GetDawnFormat(format), estimated_size);
 }
 
 bool SharedImageBackingFactoryIOSurface::CanImportGpuMemoryBuffer(
