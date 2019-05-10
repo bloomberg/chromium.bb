@@ -2141,8 +2141,7 @@
               "device_type": "bullhead",
               "os": "Android"
             }
-          ],
-          "hard_timeout": 960
+          ]
         },
         "test": "components_browsertests"
       },
@@ -2164,7 +2163,6 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 960,
           "shards": 5
         },
         "test": "components_unittests"
@@ -2188,7 +2186,6 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 960,
           "shards": 10
         },
         "test": "content_browsertests"
@@ -2210,8 +2207,7 @@
               "device_type": "bullhead",
               "os": "Android"
             }
-          ],
-          "hard_timeout": 960
+          ]
         },
         "test": "content_unittests"
       },
@@ -2232,8 +2228,7 @@
               "device_type": "bullhead",
               "os": "Android"
             }
-          ],
-          "hard_timeout": 960
+          ]
         },
         "test": "unit_tests"
       }

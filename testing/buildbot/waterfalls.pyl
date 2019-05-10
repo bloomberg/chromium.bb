@@ -1499,7 +1499,6 @@
               'os': 'Android',
             },
           ],
-          'hard_timeout': 960,
         },
         'test_suites': {
           'gtest_tests': 'site_isolation_android_fyi_gtests',
