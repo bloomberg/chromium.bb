@@ -359,6 +359,12 @@ AppsGridView::~AppsGridView() {
   if (item_list_)
     item_list_->RemoveObserver(this);
 
+  // Cancel animations now, otherwise RemoveAllChildViews() may call back to
+  // ViewHierarchyChanged() during removal, which can lead to double deletes
+  // (because ViewHierarchyChanged() may attempt to delete a view that is part
+  // way through deletion).
+  bounds_animator_.Cancel();
+
   view_model_.Clear();
   RemoveAllChildViews(true);
 }
