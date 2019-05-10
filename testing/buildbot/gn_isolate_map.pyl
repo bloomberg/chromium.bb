@@ -602,6 +602,11 @@
     "label": "//sandbox/linux:chrome_sandbox",
     "type": "additional_compile_target",
   },
+  "chrome_sizes": {
+    "label": "//chrome/test:chrome_sizes",
+    "type": "generated_script",
+    "script": "bin/chrome_sizes",
+  },
   "chromedriver": {
     "label": "//chrome/test/chromedriver:chromedriver",
     "type": "additional_compile_target",
