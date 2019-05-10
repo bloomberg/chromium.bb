@@ -76,7 +76,7 @@ TEST_F(PagePlaceholderTabHelperTest, TabShownAndPlaceholderShown) {
   EXPECT_TRUE(tab_helper()->will_add_placeholder_for_next_navigation());
   web_state_->WasShown();
   EXPECT_TRUE(tab_helper()->displaying_placeholder());
-  EXPECT_TRUE(tab_helper()->will_add_placeholder_for_next_navigation());
+  EXPECT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
 }
 
 // Tests that placeholder is removed after WasHidden().
@@ -116,6 +116,7 @@ TEST_F(PagePlaceholderTabHelperTest, NotShownIfCancelled) {
 // Tests that placeholder is shown between DidStartNavigation/PageLoaded
 // WebStateObserver callbacks.
 TEST_F(PagePlaceholderTabHelperTest, Shown) {
+  web_state_->WasShown();
   ASSERT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
   tab_helper()->AddPlaceholderForNextNavigation();
   ASSERT_FALSE(tab_helper()->displaying_placeholder());
@@ -130,8 +131,24 @@ TEST_F(PagePlaceholderTabHelperTest, Shown) {
   EXPECT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
 }
 
+// Tests that placeholder is not shown if the tab is not visible at
+// DidStartNavigation
+TEST_F(PagePlaceholderTabHelperTest, NotShownIfTabNotVisible) {
+  ASSERT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
+  tab_helper()->AddPlaceholderForNextNavigation();
+  ASSERT_FALSE(tab_helper()->displaying_placeholder());
+  EXPECT_TRUE(tab_helper()->will_add_placeholder_for_next_navigation());
+
+  web_state_->OnNavigationStarted(nullptr);
+  EXPECT_FALSE(tab_helper()->displaying_placeholder());
+  web_state_->WasShown();
+  EXPECT_TRUE(tab_helper()->displaying_placeholder());
+  EXPECT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
+}
+
 // Tests that placeholder is removed if cancelled while presented.
 TEST_F(PagePlaceholderTabHelperTest, RemovedIfCancelledWhileShown) {
+  web_state_->WasShown();
   ASSERT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
   tab_helper()->AddPlaceholderForNextNavigation();
   ASSERT_FALSE(tab_helper()->displaying_placeholder());
@@ -147,6 +164,7 @@ TEST_F(PagePlaceholderTabHelperTest, RemovedIfCancelledWhileShown) {
 
 // Tests that destructing WebState removes the placeholder.
 TEST_F(PagePlaceholderTabHelperTest, DestructWebStateWhenShowingPlaceholder) {
+  web_state_->WasShown();
   ASSERT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
   tab_helper()->AddPlaceholderForNextNavigation();
   ASSERT_FALSE(tab_helper()->displaying_placeholder());

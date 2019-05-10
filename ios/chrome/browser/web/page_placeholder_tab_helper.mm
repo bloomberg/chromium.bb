@@ -46,6 +46,7 @@ void PagePlaceholderTabHelper::CancelPlaceholderForNextNavigation() {
 
 void PagePlaceholderTabHelper::WasShown(web::WebState* web_state) {
   if (add_placeholder_for_next_navigation_) {
+    add_placeholder_for_next_navigation_ = false;
     AddPlaceholder();
   }
 }
@@ -58,7 +59,7 @@ void PagePlaceholderTabHelper::DidStartNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
   DCHECK_EQ(web_state_, web_state);
-  if (add_placeholder_for_next_navigation_) {
+  if (add_placeholder_for_next_navigation_ && web_state->IsVisible()) {
     add_placeholder_for_next_navigation_ = false;
     AddPlaceholder();
   }
@@ -112,11 +113,16 @@ void PagePlaceholderTabHelper::AddPlaceholder() {
 }
 
 void PagePlaceholderTabHelper::DisplaySnapshotImage(UIImage* snapshot) {
+  DCHECK(web_state_->IsVisible())
+      << "The WebState must be visible to display a page placeholder.";
+  UIView* web_state_view = web_state_->GetView();
+  NamedGuide* guide = [NamedGuide guideWithName:kContentAreaGuide
+                                           view:web_state_view];
+  DCHECK(guide) << "The ContentArea named guide must be in the WebState view's "
+                   "hierarchy to properly position the page placeholder.";
   placeholder_view_.image = snapshot;
-  [web_state_->GetView() addSubview:placeholder_view_];
-  AddSameConstraints([NamedGuide guideWithName:kContentAreaGuide
-                                          view:placeholder_view_],
-                     placeholder_view_);
+  [web_state_view addSubview:placeholder_view_];
+  AddSameConstraints(guide, placeholder_view_);
 }
 
 void PagePlaceholderTabHelper::RemovePlaceholder() {
