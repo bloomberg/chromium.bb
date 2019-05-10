@@ -847,6 +847,9 @@
                   '|chrome/browser/chromeos/printing/'\
                   '|printing/',
     },
+    'custom_proxy': {
+      'filepath': 'services/network/network_service_proxy_delegate.*',
+    },
     'custom_tabs': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/customtabs/|'\
                   'chrome/android/java/src/org/chromium/chrome/browser/browseractions/|'\
@@ -2253,6 +2256,8 @@
     'cups_printing': ['baileyberro+watch-printers@chromium.org',
                       'jimmyxgong+watch-printers@chromium.org',
                       'zentaro+watch-printers@chromium.org'],
+    'custom_proxy': ['lbendig@opera.com',
+                     'wdzierzanowski@opera.com'],
     'custom_tabs': ['amalova+watch@chromium.org',
                     'lizeb+watch-custom-tabs@chromium.org',
                     'peconn+watch@chromium.org',
