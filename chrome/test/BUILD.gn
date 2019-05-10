@@ -616,6 +616,7 @@ test("browser_tests") {
       "../browser/banners/app_banner_manager_desktop_browsertest.cc",
       "../browser/banners/test_app_banner_manager_desktop.cc",
       "../browser/banners/test_app_banner_manager_desktop.h",
+      "../browser/battery/battery_metrics_browsertest.cc",
       "../browser/bitmap_fetcher/bitmap_fetcher_browsertest.cc",
       "../browser/browser_encoding_browsertest.cc",
       "../browser/browsing_data/browsing_data_cache_storage_helper_browsertest.cc",

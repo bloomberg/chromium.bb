@@ -34,6 +34,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "chrome/browser/battery/battery_metrics.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_child_process_watcher.h"
 #include "chrome/browser/chrome_content_browser_client.h"
@@ -267,6 +268,8 @@ void BrowserProcessImpl::Init() {
 
   net_log_ = std::make_unique<net_log::ChromeNetLog>();
 
+  battery_metrics_ = std::make_unique<BatteryMetrics>();
+
   ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
       chrome::kChromeSearchScheme);
 
@@ -409,6 +412,8 @@ void BrowserProcessImpl::StartTearDown() {
   // Debugger must be cleaned up before ProfileManager.
   remote_debugging_server_.reset();
   devtools_auto_opener_.reset();
+
+  battery_metrics_.reset();
 
   // Need to clear profiles (download managers) before the io_thread_.
   {

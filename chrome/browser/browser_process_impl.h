@@ -35,6 +35,7 @@
 #include "services/network/public/cpp/network_quality_tracker.h"
 #include "services/network/public/mojom/network_service.mojom-forward.h"
 
+class BatteryMetrics;
 class ChromeChildProcessWatcher;
 class ChromeFeatureListCreator;
 class ChromeMetricsServicesManagerClient;
@@ -361,6 +362,8 @@ class BrowserProcessImpl : public BrowserProcess,
 
   // Lives here so can safely log events on shutdown.
   std::unique_ptr<net_log::ChromeNetLog> net_log_;
+
+  std::unique_ptr<BatteryMetrics> battery_metrics_;
 
   std::unique_ptr<ChromeResourceDispatcherHostDelegate>
       resource_dispatcher_host_delegate_;
