@@ -130,7 +130,9 @@ suite('GoogleAssistantHandler', function() {
 
   test('hotwordToggleEnabled', function() {
     let button = page.$$('#google-assistant-hotword-enable');
+    let indicator = page.$$('#hotword-policy-pref-indicator');
     assertFalse(!!button);
+    assertFalse(!!indicator);
 
     page.setPrefValue('settings.voice_interaction.enabled', true);
 
@@ -141,13 +143,17 @@ suite('GoogleAssistantHandler', function() {
 
     Polymer.dom.flush();
     button = page.$$('#dsp-hotword-state');
+    indicator = page.$$('#hotword-policy-pref-indicator');
     assertTrue(!!button);
+    assertFalse(!!indicator);
     assertFalse(button.hasAttribute('disabled'));
   });
 
   test('hotwordToggleDisabled', function() {
     let button = page.$$('#google-assistant-hotword-enable');
+    let indicator = page.$$('#hotword-policy-pref-indicator');
     assertFalse(!!button);
+    assertFalse(!!indicator);
 
     page.setPrefValue('settings.voice_interaction.enabled', true);
 
@@ -158,7 +164,9 @@ suite('GoogleAssistantHandler', function() {
 
     Polymer.dom.flush();
     button = page.$$('#dsp-hotword-state');
+    indicator = page.$$('#hotword-policy-pref-indicator');
     assertTrue(!!button);
+    assertTrue(!!indicator);
     assertTrue(button.hasAttribute('disabled'));
   });
 

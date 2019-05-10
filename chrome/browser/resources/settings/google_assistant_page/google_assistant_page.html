@@ -25,18 +25,8 @@
         min-width: 200px;
       }
 
-      /**
-       * This style is copied from the settings_dropdown_menu.
-       * We don't use the settings_dropdown_menu for the
-       * dspHotwordState drop down (see below), because the
-       * dspHotwordState manages 2 preferences. The
-       * settings_dropdown_menu is designed to manage only a
-       * single preference.
-       */
       cr-policy-pref-indicator {
-        height: 24px;
-        order: 0;
-        width: 24px;
+        margin-inline-end: var(--cr-controlled-by-spacing);
       }
     </style>
     <settings-toggle-button id="google-assistant-enable"
@@ -73,13 +63,15 @@
               $i18n{googleAssistantEnableHotwordDescription}
             </div>
           </div>
-          <template is="dom-if"
-              if="[[prefs.settings.voice_interaction.enabled.controllerBy]]"
-              restamp>
-            <cr-policy-pref-indicator
+          <template is="dom-if" if="[[hotwordEnforced_]]" restamp>
+            <cr-policy-pref-indicator id="hotword-policy-pref-indicator"
                 pref="{{prefs.settings.voice_interaction.hotword.enabled}}">
             </cr-policy-pref-indicator>
           </template>
+          <!-- We don't use the settings_dropdown_menu for the dspHotwordState
+               drop down, because the dspHotwordState manages 2 preferences.
+               The settings_dropdown_menu is designed to manage only a single
+               preference. -->
           <select id="dsp-hotword-state" class="md-select"
               aria-labelledby="googleAssistantEnableHotword"
               on-change="onDspHotwordStateChange_"
