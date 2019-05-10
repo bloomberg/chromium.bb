@@ -277,6 +277,7 @@ void ShelfLayoutManager::InitObservers() {
   Shell::Get()->activation_client()->AddObserver(this);
   Shell::Get()->locale_update_controller()->AddObserver(this);
   state_.session_state = Shell::Get()->session_controller()->GetSessionState();
+  shelf_background_type_ = GetShelfBackgroundType();
   wallpaper_controller_observer_.Add(Shell::Get()->wallpaper_controller());
   display::Screen::GetScreen()->AddObserver(this);
   ScreenRotationAnimator::GetForRootWindow(
