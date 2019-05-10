@@ -206,8 +206,8 @@ void DocumentMarkerController::AddHighlightMarker(
   DCHECK(!document_->NeedsLayoutTreeUpdate());
   AddMarkerInternal(range, [foreground_color, background_color, include_nonselectable_text](
                                int start_offset, int end_offset) {
-    return new HighlightMarker(start_offset, end_offset, foreground_color,
-                               background_color, include_nonselectable_text);
+    return MakeGarbageCollected<HighlightMarker>(
+      start_offset, end_offset, foreground_color, background_color, include_nonselectable_text);
   });
 }
 

@@ -24,7 +24,7 @@
 #ifndef BBWindowHooks_h
 #define BBWindowHooks_h
 
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect_read_only.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -45,7 +45,7 @@ namespace blink {
         DEFINE_WRAPPERTYPEINFO();
         USING_GARBAGE_COLLECTED_MIXIN(BBWindowHooks);
     public:
-        static BBWindowHooks* Create(LocalFrame* frame) { return new BBWindowHooks(frame); }
+        static BBWindowHooks* Create(LocalFrame* frame) { return MakeGarbageCollected<BBWindowHooks>(frame); }
 
         bool isBlock(Node* node);
         String getPlainText(Node* node, const String& excluder = "", const String& mask = "");
@@ -62,9 +62,9 @@ namespace blink {
 
         void Trace(blink::Visitor*) override;
 
+        explicit BBWindowHooks(LocalFrame*);
     private:
 
-        explicit BBWindowHooks(LocalFrame*);
         bool matchSelector(Node *node, const String& selector);
         void appendTextContent(Node *node, StringBuilder& content, const String& excluder, const String& mask);
     };
