@@ -487,10 +487,6 @@ void PPBNaClPrivate::LaunchSelLdr(
     // Even on error, some FDs/handles may be passed to here.
     // We must release those resources.
     // See also nacl_process_host.cc.
-    if (base::SharedMemory::IsHandleValid(
-            launch_result.crash_info_shmem_handle))
-      base::SharedMemory::CloseHandle(launch_result.crash_info_shmem_handle);
-
     if (PP_ToBool(main_service_runtime)) {
       load_manager->ReportLoadError(PP_NACL_ERROR_SEL_LDR_LAUNCH,
                                     "ServiceRuntime: failed to start",
@@ -527,8 +523,8 @@ void PPBNaClPrivate::LaunchSelLdr(
   }
 
   // Store the crash information shared memory handle.
-  load_manager->set_crash_info_shmem_handle(
-      launch_result.crash_info_shmem_handle);
+  load_manager->set_crash_info_shmem_region(
+      std::move(launch_result.crash_info_shmem_region));
 
   // Create the trusted plugin channel.
   if (!IsValidChannelHandle(launch_result.trusted_ipc_channel_handle)) {
