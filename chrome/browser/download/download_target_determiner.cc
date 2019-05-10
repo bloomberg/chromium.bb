@@ -142,6 +142,9 @@ void DownloadTargetDeterminer::DoLoop() {
       case STATE_GENERATE_TARGET_PATH:
         result = DoGenerateTargetPath();
         break;
+      case STATE_CHECK_IF_DOWNLOAD_BLOCKED:
+        result = DoCheckIfDownloadBlocked();
+        break;
       case STATE_NOTIFY_EXTENSIONS:
         result = DoNotifyExtensions();
         break;
@@ -193,7 +196,7 @@ DownloadTargetDeterminer::Result
   DCHECK(!should_notify_extensions_);
   bool is_forced_path = !download_->GetForcedFilePath().empty();
 
-  next_state_ = STATE_NOTIFY_EXTENSIONS;
+  next_state_ = STATE_CHECK_IF_DOWNLOAD_BLOCKED;
 
   // Transient download should use the existing path.
   if (download_->IsTransient()) {
@@ -305,6 +308,35 @@ DownloadTargetDeterminer::Result
   DVLOG(20) << "Generated virtual path: " << virtual_path_.AsUTF8Unsafe();
 
   return CONTINUE;
+}
+
+DownloadTargetDeterminer::Result
+DownloadTargetDeterminer::DoCheckIfDownloadBlocked() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!virtual_path_.empty());
+
+  next_state_ = STATE_NOTIFY_EXTENSIONS;
+
+  delegate_->ShouldBlockDownload(
+      download_, virtual_path_,
+      base::Bind(&DownloadTargetDeterminer::CheckIfDownloadBlockedDone,
+                 weak_ptr_factory_.GetWeakPtr()));
+  return QUIT_DOLOOP;
+}
+
+void DownloadTargetDeterminer::CheckIfDownloadBlockedDone(bool should_block) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Delegate should not call back here more than once.
+  DCHECK_EQ(STATE_NOTIFY_EXTENSIONS, next_state_);
+
+  if (should_block) {
+    ScheduleCallbackAndDeleteSelf(
+        download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
+    return;
+  }
+
+  DoLoop();
 }
 
 DownloadTargetDeterminer::Result

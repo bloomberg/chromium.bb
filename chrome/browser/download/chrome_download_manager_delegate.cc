@@ -791,6 +791,15 @@ DownloadProtectionService*
   return nullptr;
 }
 
+void ChromeDownloadManagerDelegate::ShouldBlockDownload(
+    download::DownloadItem* download,
+    const base::FilePath& virtual_path,
+    const ShouldBlockDownloadCallback& callback) {
+  // TODO(https://crbug.com/960819): Block insecure downloads in secure contexts
+  // as mixed content.
+  callback.Run(false);
+}
+
 void ChromeDownloadManagerDelegate::NotifyExtensions(
     DownloadItem* download,
     const base::FilePath& virtual_path,

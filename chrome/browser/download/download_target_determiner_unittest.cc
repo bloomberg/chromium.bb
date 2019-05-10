@@ -177,6 +177,10 @@ struct DownloadTestCase {
 class MockDownloadTargetDeterminerDelegate
     : public DownloadTargetDeterminerDelegate {
  public:
+  MOCK_METHOD3(ShouldBlockDownload,
+               void(download::DownloadItem*,
+                    const base::FilePath&,
+                    const ShouldBlockDownloadCallback&));
   MOCK_METHOD3(CheckDownloadUrl,
                void(download::DownloadItem*,
                     const base::FilePath&,
@@ -202,6 +206,8 @@ class MockDownloadTargetDeterminerDelegate
                     const GetFileMimeTypeCallback&));
 
   void SetupDefaults() {
+    ON_CALL(*this, ShouldBlockDownload(_, _, _))
+        .WillByDefault(WithArg<2>(ScheduleCallback(false)));
     ON_CALL(*this, CheckDownloadUrl(_, _, _))
         .WillByDefault(WithArg<2>(
             ScheduleCallback(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS)));
@@ -1485,6 +1491,21 @@ TEST_F(DownloadTargetDeterminerTest, ManagedPath) {
   ASSERT_TRUE(download_prefs()->IsDownloadPathManaged());
   RunTestCasesWithActiveItem(kManagedPathTestCases,
                              base::size(kManagedPathTestCases));
+}
+
+// Test basic blocking functionality via ShouldBlockDownloads.
+TEST_F(DownloadTargetDeterminerTest, BlockDownloads) {
+  const DownloadTestCase kBlockDownloadsTestCases[] = {
+      {AUTOMATIC, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+       DownloadFileType::NOT_DANGEROUS, "http://example.com/foo.txt", "",
+       FILE_PATH_LITERAL(""), FILE_PATH_LITERAL(""),
+       DownloadItem::TARGET_DISPOSITION_OVERWRITE, EXPECT_EMPTY},
+  };
+
+  ON_CALL(*delegate(), ShouldBlockDownload(_, _, _))
+      .WillByDefault(WithArg<2>(ScheduleCallback(true)));
+  RunTestCasesWithActiveItem(kBlockDownloadsTestCases,
+                             base::size(kBlockDownloadsTestCases));
 }
 
 // Test basic functionality supporting extensions that want to override download
