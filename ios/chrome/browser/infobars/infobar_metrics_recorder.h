@@ -41,6 +41,24 @@ enum class MobileMessagesBannerDismissType {
   kMaxValue = ExpandedToModal,
 };
 
+// Values for the UMA Mobile.Messages.Modal.Event histogram. These values
+// are persisted to logs. Entries should not be renumbered and numeric values
+// should never be reused.
+enum class MobileMessagesModalEvent {
+  // Infobar Modal was accepted.
+  Accepted = 0,
+  // Infobar Modal was canceled.
+  Canceled = 1,
+  // Infobar Modal was dismissed.
+  Dismissed = 2,
+  // Infobar Modal was presented.
+  Presented = 3,
+  // Infobar Modal settings were opened.
+  SettingsOpened = 4,
+  // Highest enumerator. Recommended by Histogram metrics best practices.
+  kMaxValue = SettingsOpened,
+};
+
 // Used to record metrics related to Infobar events.
 @interface InfobarMetricsRecorder : NSObject
 
@@ -54,6 +72,9 @@ enum class MobileMessagesBannerDismissType {
 
 // Records histogram for Banner |dismissType|.
 - (void)recordBannerDismissType:(MobileMessagesBannerDismissType)dismissType;
+
+// Records histogram for Modal |event|.
+- (void)recordModalEvent:(MobileMessagesModalEvent)event;
 
 @end
 

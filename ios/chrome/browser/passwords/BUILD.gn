@@ -108,6 +108,7 @@ source_set("infobar_delegates") {
     "ios_chrome_save_password_infobar_delegate.mm",
   ]
   deps = [
+    ":public",
     "//base",
     "//components/infobars/core",
     "//components/password_manager/core/browser",
@@ -116,6 +117,17 @@ source_set("infobar_delegates") {
     "//ios/chrome/app/theme",
     "//ios/chrome/browser/ui/infobars:feature_flags",
     "//ui/base",
+  ]
+}
+
+source_set("public") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "ios_chrome_password_infobar_metrics_recorder.h",
+    "ios_chrome_password_infobar_metrics_recorder.mm",
+  ]
+  deps = [
+    "//base",
   ]
 }
 

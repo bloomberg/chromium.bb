@@ -38179,6 +38179,31 @@ Called by update_use_counter_css.py.-->
   <int value="4" label="ReturnedToOrigin"/>
 </enum>
 
+<enum name="MobileMessagesModalEvent">
+  <int value="0" label="Accepted"/>
+  <int value="1" label="Canceled"/>
+  <int value="2" label="Dismissed"/>
+  <int value="3" label="Presented"/>
+  <int value="4" label="SettingsOpened"/>
+</enum>
+
+<enum name="MobileMessagesPasswordsModalDismiss">
+  <int value="0" label="TappedNeverForThisSite"/>
+  <int value="1" label="SavedCredentials"/>
+  <int value="2" label="UpdatedCredentials"/>
+</enum>
+
+<enum name="MobileMessagesPasswordsModalEvent">
+  <int value="0" label="EditedUserName"/>
+  <int value="1" label="EditedPassword"/>
+  <int value="2" label="UnmaskedPassword"/>
+</enum>
+
+<enum name="MobileMessagesPasswordsModalPresent">
+  <int value="0" label="PresentedAfterSaveBanner"/>
+  <int value="1" label="PresentedAfterUpdateBanner"/>
+</enum>
+
 <enum name="MobileSessionCallerApp">
   <int value="0" label="Google Search"/>
   <int value="1" label="Gmail"/>

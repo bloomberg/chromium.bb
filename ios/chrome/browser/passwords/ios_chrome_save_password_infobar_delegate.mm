@@ -32,14 +32,35 @@ IOSChromeSavePasswordInfoBarDelegate::IOSChromeSavePasswordInfoBarDelegate(
     std::unique_ptr<PasswordFormManagerForUI> form_manager)
     : IOSChromePasswordManagerInfoBarDelegate(is_sync_user,
                                               std::move(form_manager)),
-      password_update_(password_update) {
-  form_to_save()->GetMetricsRecorder()->RecordPasswordBubbleShown(
-      form_to_save()->GetCredentialSource(),
-      password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING);
+      password_update_(password_update),
+      infobar_type_(password_update
+                        ? PasswordInfobarType::kPasswordInfobarTypeUpdate
+                        : PasswordInfobarType::kPasswordInfobarTypeSave) {
+  if (password_update) {
+    form_to_save()->GetMetricsRecorder()->RecordPasswordBubbleShown(
+        form_to_save()->GetCredentialSource(),
+        password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING_UPDATE);
+
+  } else {
+    form_to_save()->GetMetricsRecorder()->RecordPasswordBubbleShown(
+        form_to_save()->GetCredentialSource(),
+        password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING);
+  }
 }
 
 IOSChromeSavePasswordInfoBarDelegate::~IOSChromeSavePasswordInfoBarDelegate() {
-  password_manager::metrics_util::LogSaveUIDismissalReason(infobar_response());
+  switch (infobar_type_) {
+    case PasswordInfobarType::kPasswordInfobarTypeUpdate: {
+      DCHECK(IsInfobarUIRebootEnabled());
+      password_manager::metrics_util::LogUpdateUIDismissalReason(
+          infobar_response());
+      break;
+    }
+    case PasswordInfobarType::kPasswordInfobarTypeSave:
+      password_manager::metrics_util::LogSaveUIDismissalReason(
+          infobar_response());
+      break;
+  }
   form_to_save()->GetMetricsRecorder()->RecordUIDismissalReason(
       infobar_response());
 }
@@ -93,7 +114,7 @@ bool IOSChromeSavePasswordInfoBarDelegate::Accept() {
   form_to_save()->Save();
   set_infobar_response(password_manager::metrics_util::CLICKED_SAVE);
   password_update_ = true;
-  current_password_saved = true;
+  current_password_saved_ = true;
   return true;
 }
 
@@ -127,5 +148,5 @@ bool IOSChromeSavePasswordInfoBarDelegate::IsPasswordUpdate() const {
 
 bool IOSChromeSavePasswordInfoBarDelegate::IsCurrentPasswordSaved() const {
   DCHECK(IsInfobarUIRebootEnabled());
-  return current_password_saved;
+  return current_password_saved_;
 }

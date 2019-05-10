@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#import "ios/chrome/browser/passwords/ios_chrome_password_infobar_metrics_recorder.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_manager_infobar_delegate.h"
 
 @protocol ApplicationCommands;
@@ -65,7 +66,11 @@ class IOSChromeSavePasswordInfoBarDelegate
 
   // true if the current set of credentials has already been saved at the moment
   // the InfobarModal is created.
-  bool current_password_saved = false;
+  bool current_password_saved_ = false;
+
+  // The PasswordInfobarType for this delegate. Set at initialization and won't
+  // change throughout the life of the delegate.
+  const PasswordInfobarType infobar_type_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromeSavePasswordInfoBarDelegate);
 };

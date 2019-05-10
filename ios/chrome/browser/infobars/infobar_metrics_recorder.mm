@@ -18,6 +18,9 @@ const char kInfobarConfirmBannerEventHistogram[] =
     "Mobile.Messages.Banner.Event.InfobarTypeConfirm";
 const char kInfobarConfirmBannerDismissTypeHistogram[] =
     "Mobile.Messages.Banner.Dismiss.InfobarTypeConfirm";
+// Modal.
+const char kInfobarConfirmModalEventHistogram[] =
+    "Mobile.Messages.Modal.Event.InfobarTypeConfirm";
 
 // Histogram names for InfobarTypePasswordSave.
 // Banner.
@@ -25,6 +28,9 @@ const char kInfobarPasswordSaveBannerEventHistogram[] =
     "Mobile.Messages.Banner.Event.InfobarTypePasswordSave";
 const char kInfobarPasswordSaveBannerDismissTypeHistogram[] =
     "Mobile.Messages.Banner.Dismiss.InfobarTypePasswordSave";
+// Modal.
+const char kInfobarPasswordSaveModalEventHistogram[] =
+    "Mobile.Messages.Modal.Event.InfobarTypePasswordSave";
 
 // Histogram names for InfobarTypePasswordUpdate.
 // Banner.
@@ -32,6 +38,9 @@ const char kInfobarPasswordUpdateBannerEventHistogram[] =
     "Mobile.Messages.Banner.Event.InfobarTypePasswordUpdate";
 const char kInfobarPasswordUpdateBannerDismissTypeHistogram[] =
     "Mobile.Messages.Banner.Dismiss.InfobarTypePasswordUpdate";
+// Modal.
+const char kInfobarPasswordUpdateModalEventHistogram[] =
+    "Mobile.Messages.Modal.Event.InfobarTypePasswordUpdate";
 
 }  // namespace
 
@@ -81,6 +90,21 @@ const char kInfobarPasswordUpdateBannerDismissTypeHistogram[] =
     case InfobarType::kInfobarTypePasswordUpdate:
       UMA_HISTOGRAM_ENUMERATION(
           kInfobarPasswordUpdateBannerDismissTypeHistogram, dismissType);
+      break;
+  }
+}
+
+- (void)recordModalEvent:(MobileMessagesModalEvent)event {
+  switch (self.infobarType) {
+    case InfobarType::kInfobarTypeConfirm:
+      UMA_HISTOGRAM_ENUMERATION(kInfobarConfirmModalEventHistogram, event);
+      break;
+    case InfobarType::kInfobarTypePasswordSave:
+      UMA_HISTOGRAM_ENUMERATION(kInfobarPasswordSaveModalEventHistogram, event);
+      break;
+    case InfobarType::kInfobarTypePasswordUpdate:
+      UMA_HISTOGRAM_ENUMERATION(kInfobarPasswordUpdateModalEventHistogram,
+                                event);
       break;
   }
 }

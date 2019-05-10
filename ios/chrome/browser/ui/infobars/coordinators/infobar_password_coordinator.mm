@@ -6,6 +6,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/infobars/infobar_controller_delegate.h"
+#import "ios/chrome/browser/passwords/ios_chrome_password_infobar_metrics_recorder.h"
 #import "ios/chrome/browser/passwords/ios_chrome_save_password_infobar_delegate.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
@@ -29,6 +30,8 @@
 // InfobarPasswordTableViewController owned by this Coordinator.
 @property(nonatomic, strong)
     InfobarPasswordTableViewController* modalViewController;
+// The InfobarType for the banner presented by this Coordinator.
+@property(nonatomic, assign, readonly) InfobarType infobarBannerType;
 
 @end
 
@@ -43,6 +46,12 @@
   self = [super initWithInfoBarDelegate:passwordInfoBarDelegate];
   if (self) {
     _passwordInfoBarDelegate = passwordInfoBarDelegate;
+    // Set |_infobarBannerType| at init time since
+    // passwordInfoBarDelegate->IsPasswordUpdate() can change after the user has
+    // interacted with the ModalInfobar.
+    _infobarBannerType = passwordInfoBarDelegate->IsPasswordUpdate()
+                             ? InfobarType::kInfobarTypePasswordUpdate
+                             : InfobarType::kInfobarTypePasswordSave;
   }
   return self;
 }
@@ -52,12 +61,9 @@
 - (void)start {
   if (!self.started) {
     self.started = YES;
-    InfobarType infobarType = self.passwordInfoBarDelegate->IsPasswordUpdate()
-                                  ? InfobarType::kInfobarTypePasswordUpdate
-                                  : InfobarType::kInfobarTypePasswordSave;
-    self.bannerViewController =
-        [[InfobarBannerViewController alloc] initWithDelegate:self
-                                                         type:infobarType];
+    self.bannerViewController = [[InfobarBannerViewController alloc]
+        initWithDelegate:self
+                    type:self.infobarBannerType];
     self.bannerViewController.titleText = base::SysUTF16ToNSString(
         self.passwordInfoBarDelegate->GetMessageText());
     NSString* username = self.passwordInfoBarDelegate->GetUserNameText();
@@ -87,10 +93,17 @@
 #pragma mark - InfobarCoordinatorImplementation
 
 - (void)configureModalViewController {
+  // Do not use |self.infobarBannerType| since the modal type might change each
+  // time is presented. e.g. We present a Modal of type Save and tap on "Save".
+  // The next time the Modal is presented we'll present a Modal of Type "Update"
+  // since the credentials are currently saved.
+  InfobarType infobarModalType =
+      self.passwordInfoBarDelegate->IsPasswordUpdate()
+          ? InfobarType::kInfobarTypePasswordUpdate
+          : InfobarType::kInfobarTypePasswordSave;
   self.modalViewController = [[InfobarPasswordTableViewController alloc]
-      initWithTableViewStyle:UITableViewStylePlain
-                 appBarStyle:ChromeTableViewControllerStyleNoAppBar];
-  self.modalViewController.infobarModalDelegate = self;
+      initWithDelegate:self
+                  type:infobarModalType];
   self.modalViewController.title =
       self.passwordInfoBarDelegate->GetInfobarModalTitleText();
   self.modalViewController.username =
@@ -112,6 +125,8 @@
   self.modalViewController.URL = self.passwordInfoBarDelegate->GetURLHostText();
   self.modalViewController.currentCredentialsSaved =
       self.passwordInfoBarDelegate->IsCurrentPasswordSaved();
+
+  [self recordModalPresentationMetricsUsingModalType:infobarModalType];
 }
 
 - (void)dismissBannerWhenInteractionIsFinished {
@@ -159,6 +174,41 @@
                  [self.dispatcher showSavedPasswordsSettingsFromViewController:
                                       self.baseViewController];
                }];
+}
+
+#pragma mark - Helpers
+
+- (void)recordModalPresentationMetricsUsingModalType:
+    (InfobarType)infobarModalType {
+  IOSChromePasswordInfobarMetricsRecorder* passwordMetricsRecorder;
+  switch (infobarModalType) {
+    case InfobarType::kInfobarTypePasswordUpdate:
+      passwordMetricsRecorder = [[IOSChromePasswordInfobarMetricsRecorder alloc]
+          initWithType:PasswordInfobarType::kPasswordInfobarTypeUpdate];
+      break;
+    case InfobarType::kInfobarTypePasswordSave:
+      passwordMetricsRecorder = [[IOSChromePasswordInfobarMetricsRecorder alloc]
+          initWithType:PasswordInfobarType::kPasswordInfobarTypeSave];
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  switch (self.infobarBannerType) {
+    case InfobarType::kInfobarTypePasswordUpdate:
+      [passwordMetricsRecorder
+          recordModalPresent:MobileMessagesPasswordsModalPresent::
+                                 PresentedAfterUpdateBanner];
+      break;
+    case InfobarType::kInfobarTypePasswordSave:
+      [passwordMetricsRecorder
+          recordModalPresent:MobileMessagesPasswordsModalPresent::
+                                 PresentedAfterSaveBanner];
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 @end

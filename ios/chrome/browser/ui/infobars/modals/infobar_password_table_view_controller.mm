@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
+#import "ios/chrome/browser/passwords/ios_chrome_password_infobar_metrics_recorder.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_constants.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_password_modal_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
@@ -49,9 +51,44 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @property(nonatomic, strong) TableViewTextButtonItem* cancelInfobarItem;
 // Username at the time the InfobarModal is presented.
 @property(nonatomic, copy) NSString* originalUsername;
+// InfobarPasswordModalDelegate for this ViewController.
+@property(nonatomic, strong) id<InfobarPasswordModalDelegate>
+    infobarModalDelegate;
+// Used to build and record metrics.
+@property(nonatomic, strong) InfobarMetricsRecorder* metricsRecorder;
+// Used to build and record metrics specific to passwords.
+@property(nonatomic, strong)
+    IOSChromePasswordInfobarMetricsRecorder* passwordMetricsRecorder;
 @end
 
 @implementation InfobarPasswordTableViewController
+
+- (instancetype)initWithDelegate:(id<InfobarPasswordModalDelegate>)modalDelegate
+                            type:(InfobarType)infobarType {
+  self = [super initWithTableViewStyle:UITableViewStylePlain
+                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  if (self) {
+    _infobarModalDelegate = modalDelegate;
+    _metricsRecorder =
+        [[InfobarMetricsRecorder alloc] initWithType:infobarType];
+    switch (infobarType) {
+      case InfobarType::kInfobarTypePasswordUpdate:
+        _passwordMetricsRecorder =
+            [[IOSChromePasswordInfobarMetricsRecorder alloc]
+                initWithType:PasswordInfobarType::kPasswordInfobarTypeUpdate];
+        break;
+      case InfobarType::kInfobarTypePasswordSave:
+        _passwordMetricsRecorder =
+            [[IOSChromePasswordInfobarMetricsRecorder alloc]
+                initWithType:PasswordInfobarType::kPasswordInfobarTypeSave];
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+  return self;
+}
 
 #pragma mark - ViewController Lifecycle
 
@@ -74,7 +111,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   UIBarButtonItem* settingsButton = [[UIBarButtonItem alloc]
       initWithImage:settingsImage
               style:UIBarButtonItemStylePlain
-             target:self.infobarModalDelegate
+             target:self
              action:@selector(presentPasswordSettings)];
   self.navigationItem.leftBarButtonItem = cancelButton;
   self.navigationItem.rightBarButtonItem = settingsButton;
@@ -83,15 +120,21 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self loadModel];
 }
 
-- (void)viewDidLayoutSubviews {
-  [super viewDidLayoutSubviews];
-  self.tableView.scrollEnabled =
-      self.tableView.contentSize.height > self.view.frame.size.height;
+- (void)viewDidAppear:(BOOL)animated {
+  [super viewDidAppear:animated];
+  [self.metricsRecorder recordModalEvent:MobileMessagesModalEvent::Presented];
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
   [self.infobarModalDelegate modalInfobarWasDismissed:self];
+  [self.metricsRecorder recordModalEvent:MobileMessagesModalEvent::Dismissed];
   [super viewDidDisappear:animated];
+}
+
+- (void)viewDidLayoutSubviews {
+  [super viewDidLayoutSubviews];
+  self.tableView.scrollEnabled =
+      self.tableView.contentSize.height > self.view.frame.size.height;
 }
 
 #pragma mark - TableViewModel
@@ -174,19 +217,29 @@ typedef NS_ENUM(NSInteger, ItemType) {
       TableViewTextButtonCell* tableViewTextButtonCell =
           base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
       [tableViewTextButtonCell.button
-                 addTarget:self.infobarModalDelegate
+                 addTarget:self
                     action:@selector(neverSaveCredentialsForCurrentSite)
           forControlEvents:UIControlEventTouchUpInside];
       break;
     }
-    case ItemTypeUsername:
-    case ItemTypePassword: {
+    case ItemTypeUsername: {
       TableViewTextEditCell* editCell =
           base::mac::ObjCCast<TableViewTextEditCell>(cell);
       [editCell.textField addTarget:self
+                             action:@selector(usernameEditDidBegin)
+                   forControlEvents:UIControlEventEditingDidBegin];
+      [editCell.textField addTarget:self
                              action:@selector(updateSaveCredentialsButtonState)
                    forControlEvents:UIControlEventEditingChanged];
+      break;
+    }
+    case ItemTypePassword: {
+      TableViewTextEditCell* editCell =
+          base::mac::ObjCCast<TableViewTextEditCell>(cell);
       editCell.textField.delegate = self;
+      [editCell.textField addTarget:self
+                             action:@selector(updateSaveCredentialsButtonState)
+                   forControlEvents:UIControlEventEditingChanged];
       break;
     }
     case ItemTypeURL:
@@ -227,15 +280,46 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)dismissInfobarModal:(UIButton*)sender {
+  [self.metricsRecorder recordModalEvent:MobileMessagesModalEvent::Canceled];
   [self.infobarModalDelegate dismissInfobarModal:sender
                                         animated:YES
                                       completion:nil];
 }
 
 - (void)saveCredentialsButtonWasPressed:(UIButton*)sender {
+  [self.metricsRecorder recordModalEvent:MobileMessagesModalEvent::Accepted];
+  if ([self.saveCredentialsItem.buttonText
+          isEqualToString:l10n_util::GetNSString(
+                              IDS_IOS_PASSWORD_MANAGER_SAVE_BUTTON)]) {
+    [self.passwordMetricsRecorder
+        recordModalDismiss:MobileMessagesPasswordsModalDismiss::
+                               SavedCredentials];
+  } else {
+    [self.passwordMetricsRecorder
+        recordModalDismiss:MobileMessagesPasswordsModalDismiss::
+                               UpdatedCredentials];
+  }
   [self.infobarModalDelegate
       updateCredentialsWithUsername:self.usernameItem.textFieldValue
                            password:self.unmaskedPassword];
+}
+
+- (void)presentPasswordSettings {
+  [self.metricsRecorder
+      recordModalEvent:MobileMessagesModalEvent::SettingsOpened];
+  [self.infobarModalDelegate presentPasswordSettings];
+}
+
+- (void)neverSaveCredentialsForCurrentSite {
+  [self.passwordMetricsRecorder
+      recordModalDismiss:MobileMessagesPasswordsModalDismiss::
+                             TappedNeverForThisSite];
+  [self.infobarModalDelegate neverSaveCredentialsForCurrentSite];
+}
+
+- (void)usernameEditDidBegin {
+  [self.passwordMetricsRecorder
+      recordModalEvent:MobileMessagesPasswordsModalEvent::EditedUserName];
 }
 
 @end
