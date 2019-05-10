@@ -80,6 +80,11 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
     ABORT,
   };
 
+  enum class UpdateCheckType {
+    kMainScriptDuringStartWorker,  // Only check main script.
+    kAllScriptsBeforeStartWorker,  // Check all scripts.
+  };
+
   // Holds internal state of ServiceWorkerRegistrationJob, to compel use of the
   // getter/setter functions.
   struct Internal {
@@ -107,6 +112,16 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
       blink::ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
 
+  // Trigger the UpdateCheckType::kAllScriptsBeforeStartWorker type check if
+  // ServiceWorkerImportedScriptUpdateCheck is enabled.
+  void TriggerUpdateCheckInBrowser(
+      ServiceWorkerUpdateChecker::UpdateStatusCallback callback);
+
+  // When ServiceWorkerImportedScriptUpdateCheck is enabled, returns
+  // UpdateCheckType::kAllScriptsBeforeStartWorker, otherwise, returns
+  // UpdateCheckType::kMainScriptDuringStartWorker.
+  UpdateCheckType GetUpdateCheckType() const;
+
   // This method is only called when ServiceWorkerImportedScriptUpdateCheck is
   // enabled. When some script changed, the parameter |script_changed| is set
   // to true.
@@ -120,6 +135,13 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
       scoped_refptr<ServiceWorkerRegistration> existing_registration,
       blink::ServiceWorkerStatusCode status);
   void UpdateAndContinue();
+
+  // Starts a service worker for [[Update]].
+  // For Non-ServiceWorkerImportedScriptUpdateCheck: it includes byte-for-byte
+  // checking for main script.
+  // For ServiceWorkerImportedScriptUpdateCheck: the script comparison has
+  // finished at this point. It starts install phase.
+  void StartWorkerForUpdate();
   void OnStartWorkerFinished(blink::ServiceWorkerStatusCode status);
   void OnStoreRegistrationComplete(blink::ServiceWorkerStatusCode status);
   void InstallAndContinue();
