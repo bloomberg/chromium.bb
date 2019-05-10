@@ -281,26 +281,8 @@ bool Button::OnKeyReleased(const ui::KeyEvent& event) {
   return button_controller_->OnKeyReleased(event);
 }
 
-// TODO(cyan): Move the implementation into ButtonController.
 void Button::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_TAP && IsTriggerableEvent(*event)) {
-    // Set the button state to hot and start the animation fully faded in. The
-    // GESTURE_END event issued immediately after will set the state to
-    // STATE_NORMAL beginning the fade out animation. See
-    // http://crbug.com/131184.
-    SetState(STATE_HOVERED);
-    hover_animation_.Reset(1.0);
-    NotifyClick(*event);
-    event->SetHandled();
-  } else if (event->type() == ui::ET_GESTURE_TAP_DOWN &&
-             ShouldEnterPushedState(*event)) {
-    SetState(STATE_PRESSED);
-    RequestFocusFromEvent();
-    event->SetHandled();
-  } else if (event->type() == ui::ET_GESTURE_TAP_CANCEL ||
-             event->type() == ui::ET_GESTURE_END) {
-    SetState(STATE_NORMAL);
-  }
+  button_controller_->OnGestureEvent(event);
 }
 
 bool Button::AcceleratorPressed(const ui::Accelerator& accelerator) {

@@ -39,11 +39,6 @@ const char* MenuButton::GetClassName() const {
   return kViewClassName;
 }
 
-void MenuButton::OnGestureEvent(ui::GestureEvent* event) {
-  if (button_controller()->OnGestureEvent(event))
-    LabelButton::OnGestureEvent(event);
-}
-
 void MenuButton::NotifyClick(const ui::Event& event) {
   // Notify MenuButtonListener via MenuButtonController, instead of
   // ButtonListener::ButtonPressed.

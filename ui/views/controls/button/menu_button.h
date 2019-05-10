@@ -47,9 +47,6 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   // View:
   const char* GetClassName() const override;
 
-  // ui::EventHandler:
-  void OnGestureEvent(ui::GestureEvent* event) override;
-
  protected:
   // Button:
   void NotifyClick(const ui::Event& event) final;

@@ -53,14 +53,10 @@ class VIEWS_EXPORT MenuButtonController : public ButtonController {
   void OnMouseExited(const ui::MouseEvent& event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnKeyReleased(const ui::KeyEvent& event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
   void UpdateAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnStateChanged(Button::ButtonState old_state) override;
   bool IsTriggerableEvent(const ui::Event& event) override;
-
-  // Methods that parallel ui::EventHandler:
-  // Returns false if the gesture event has already been handled, and should not
-  // be processed further.
-  bool OnGestureEvent(ui::GestureEvent* event);
 
   // Calls TakeLock with is_sibling_menu_show as false and a nullptr to the
   // event.
