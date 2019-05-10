@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <memory>
 #include <string>
 
 #include "base/posix/eintr_wrapper.h"
