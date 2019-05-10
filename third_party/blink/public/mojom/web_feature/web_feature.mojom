@@ -873,7 +873,6 @@ enum WebFeature {
   kV8Document_Scripts_AttributeGetter = 1302,
   kV8Document_Anchors_AttributeGetter = 1303,
   kV8Document_Applets_AttributeGetter = 1304,
-  kXMLHttpRequestCrossOriginWithCredentials = 1305,
   kMediaStreamTrackRemote = 1306,
   kV8Node_IsConnected_AttributeGetter = 1307,
   kShadowRootDelegatesFocus = 1308,

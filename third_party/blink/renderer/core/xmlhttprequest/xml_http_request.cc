@@ -1043,17 +1043,10 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
     }
   }
 
-  const bool same_origin_request = GetSecurityOrigin()->CanRequest(url_);
-
-  if (!same_origin_request && with_credentials_) {
-    UseCounter::Count(&execution_context,
-                      WebFeature::kXMLHttpRequestCrossOriginWithCredentials);
-  }
-
   // We also remember whether upload events should be allowed for this request
   // in case the upload listeners are added after the request is started.
   upload_events_allowed_ =
-      same_origin_request || upload_events ||
+      GetSecurityOrigin()->CanRequest(url_) || upload_events ||
       !cors::IsCorsSafelistedMethod(method_) ||
       !cors::ContainsOnlyCorsSafelistedHeaders(request_headers_);
 

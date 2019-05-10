@@ -21513,7 +21513,7 @@ Called by update_net_error_codes.py.-->
   <int value="1302" label="V8Document_Scripts_AttributeGetter"/>
   <int value="1303" label="V8Document_Anchors_AttributeGetter"/>
   <int value="1304" label="V8Document_Applets_AttributeGetter"/>
-  <int value="1305" label="XMLHttpRequestCrossOriginWithCredentials"/>
+  <int value="1305" label="OBSOLETE_XMLHttpRequestCrossOriginWithCredentials"/>
   <int value="1306" label="MediaStreamTrackRemote"/>
   <int value="1307" label="V8Node_IsConnected_AttributeGetter"/>
   <int value="1308" label="ShadowRootDelegatesFocus"/>
