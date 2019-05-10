@@ -29,6 +29,7 @@
 using net::test::IsError;
 using net::test::IsOk;
 using testing::_;
+using testing::DoAll;
 using testing::Return;
 using testing::SetArgPointee;
 

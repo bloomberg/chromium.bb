@@ -13,6 +13,7 @@
 
 using testing::_;
 using testing::AnyNumber;
+using testing::DoAll;
 using testing::Return;
 using testing::Sequence;
 using testing::SetArgPointee;

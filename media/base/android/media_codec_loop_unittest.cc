@@ -17,6 +17,7 @@
 
 using ::testing::_;
 using ::testing::AtLeast;
+using ::testing::DoAll;
 using ::testing::Eq;
 using ::testing::Field;
 using ::testing::InSequence;

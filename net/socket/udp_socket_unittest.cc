@@ -49,6 +49,7 @@
 
 using net::test::IsError;
 using net::test::IsOk;
+using testing::DoAll;
 using testing::Not;
 
 namespace net {

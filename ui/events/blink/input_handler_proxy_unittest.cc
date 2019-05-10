@@ -45,6 +45,7 @@ using blink::WebMouseWheelEvent;
 using blink::WebTouchEvent;
 using blink::WebTouchPoint;
 using testing::_;
+using testing::DoAll;
 using testing::Field;
 
 namespace ui {

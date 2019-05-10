@@ -39,6 +39,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
+using testing::DoAll;
 using testing::ElementsAre;
 using testing::Property;
 using testing::Return;

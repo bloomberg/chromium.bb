@@ -43,6 +43,7 @@
 using content::BrowserThread;
 using content::WebContents;
 using testing::_;
+using testing::DoAll;
 using testing::Eq;
 using testing::Return;
 using testing::SetArgPointee;

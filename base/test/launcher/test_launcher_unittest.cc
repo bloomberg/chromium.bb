@@ -74,8 +74,8 @@ class TestLauncherTest : public testing::Test {
     }
     using ::testing::_;
     EXPECT_CALL(delegate, GetTests(_))
-        .WillOnce(
-            DoAll(testing::SetArgPointee<0>(tests), testing::Return(true)));
+        .WillOnce(testing::DoAll(testing::SetArgPointee<0>(tests),
+                                 testing::Return(true)));
     EXPECT_CALL(delegate, WillRunTest(_, _))
         .WillRepeatedly(testing::Return(true));
     EXPECT_CALL(delegate, ShouldRunTest(_, _))

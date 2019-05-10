@@ -35,6 +35,7 @@
 
 using ::testing::_;
 using ::testing::Between;
+using ::testing::DoAll;
 using ::testing::Property;
 using ::testing::Return;
 using ::testing::ReturnArg;

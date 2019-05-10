@@ -77,9 +77,10 @@ TEST_F(SnapFlingControllerTest, CreatesAndAnimatesCurveOnFirstInertialGSU) {
 
   EXPECT_CALL(mock_client_,
               GetSnapFlingInfo(testing::_, testing::_, testing::_))
-      .WillOnce(DoAll(testing::SetArgPointee<1>(gfx::Vector2dF(0, 0)),
-                      testing::SetArgPointee<2>(gfx::Vector2dF(0, 100)),
-                      testing::Return(true)));
+      .WillOnce(
+          testing::DoAll(testing::SetArgPointee<1>(gfx::Vector2dF(0, 0)),
+                         testing::SetArgPointee<2>(gfx::Vector2dF(0, 100)),
+                         testing::Return(true)));
   EXPECT_CALL(mock_client_, RequestAnimationForSnapFling()).Times(1);
   EXPECT_CALL(mock_client_, ScrollByForSnapFling(testing::_)).Times(1);
   EXPECT_TRUE(controller_->HandleGestureScrollUpdate(gsu));
