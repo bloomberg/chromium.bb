@@ -10,8 +10,12 @@
 #include "base/metrics/user_metrics.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/unified_consent/unified_consent_metrics.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
@@ -102,9 +106,13 @@ typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
   SyncSetupService* syncSetupService =
       SyncSetupServiceFactory::GetForBrowserState(self.browserState);
   switch (result) {
-    case AdvancedSyncSettingsCoordinatorResultConfirm:
+    case AdvancedSyncSettingsCoordinatorResultConfirm: {
       base::RecordAction(
           base::UserMetricsAction("Signin_Signin_ConfirmAdvancedSyncSettings"));
+      syncer::SyncService* syncService =
+          ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
+      unified_consent::metrics::RecordSyncSetupDataTypesHistrogam(
+          syncService->GetUserSettings(), self.browserState->GetPrefs());
       if (syncSetupService->IsSyncEnabled()) {
         // FirstSetupComplete flag should be only turned on when the user agrees
         // to start Sync.
@@ -112,6 +120,7 @@ typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
         syncSetupService->SetFirstSetupComplete();
       }
       break;
+    }
     case AdvancedSigninSettingsCoordinatorResultCancel:
       base::RecordAction(base::UserMetricsAction(
           "Signin_Signin_ConfirmCancelAdvancedSyncSettings"));
