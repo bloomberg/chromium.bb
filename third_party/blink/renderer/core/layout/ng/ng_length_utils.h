@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_fragment_geometry.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
@@ -454,6 +455,22 @@ LayoutUnit CalculateChildPercentageBlockSizeForMinMax(
     const NGBlockNode node,
     const NGBoxStrut& border_padding,
     LayoutUnit parent_percentage_block_size);
+
+// The following function clamps the calculated size based on the node
+// requirements. Specifically, this adjusts the size based on size containment
+// and display locking status.
+LayoutUnit ClampIntrinsicBlockSize(const NGBlockNode&,
+                                   const NGBoxStrut& border_scrollbar_padding,
+                                   LayoutUnit current_intrinsic_block_size);
+
+// This function checks if the inline size of this node has to be calculated
+// without considering children. If so, it returns the calculated size.
+// Otherwise, it returns base::nullopt and the caller has to compute the size
+// itself.
+base::Optional<MinMaxSize> CalculateMinMaxSizesIgnoringChildren(
+    const NGBlockNode&,
+    const NGBoxStrut& border_scrollbar_padding,
+    NGMinMaxSizeType);
 
 }  // namespace blink
 

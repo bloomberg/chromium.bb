@@ -187,15 +187,12 @@ void NGBlockLayoutAlgorithm::SetBoxType(NGPhysicalFragment::NGBoxType type) {
 
 base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
     const MinMaxSizeInput& input) const {
-  MinMaxSize sizes;
-
-  // Size-contained elements don't consider their contents for intrinsic sizing.
-  if (node_.ShouldApplySizeContainment()) {
-    if (input.size_type == NGMinMaxSizeType::kBorderBoxSize)
-      sizes = border_scrollbar_padding_.InlineSum();
+  base::Optional<MinMaxSize> sizes = CalculateMinMaxSizesIgnoringChildren(
+      node_, border_scrollbar_padding_, input.size_type);
+  if (sizes)
     return sizes;
-  }
 
+  sizes.emplace();
   LayoutUnit child_percentage_resolution_block_size =
       CalculateChildPercentageBlockSizeForMinMax(
           ConstraintSpace(), Node(), border_padding_,
@@ -225,7 +222,7 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
           float_left_inline_size + float_right_inline_size;
 
       if (child_clear != EClear::kNone)
-        sizes.max_size = std::max(sizes.max_size, float_inline_size);
+        sizes->max_size = std::max(sizes->max_size, float_inline_size);
 
       if (child_clear == EClear::kBoth || child_clear == EClear::kLeft)
         float_left_inline_size = LayoutUnit();
@@ -304,13 +301,13 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
       // This is just a standard inflow child.
       max_inline_contribution = child_sizes.max_size + margins.InlineSum();
     }
-    sizes.max_size = std::max(sizes.max_size, max_inline_contribution);
+    sizes->max_size = std::max(sizes->max_size, max_inline_contribution);
 
     // The min inline contribution just assumes that floats are all on their own
     // "line".
     LayoutUnit min_inline_contribution =
         child_sizes.min_size + margins.InlineSum();
-    sizes.min_size = std::max(sizes.min_size, min_inline_contribution);
+    sizes->min_size = std::max(sizes->min_size, min_inline_contribution);
 
     // Anything that isn't a float will create a new "line" resetting the float
     // size trackers.
@@ -320,11 +317,11 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
     }
   }
 
-  DCHECK_GE(sizes.min_size, LayoutUnit());
-  DCHECK_LE(sizes.min_size, sizes.max_size) << Node().ToString();
+  DCHECK_GE(sizes->min_size, LayoutUnit());
+  DCHECK_LE(sizes->min_size, sizes->max_size) << Node().ToString();
 
   if (input.size_type == NGMinMaxSizeType::kBorderBoxSize)
-    sizes += border_scrollbar_padding_.InlineSum();
+    *sizes += border_scrollbar_padding_.InlineSum();
   return sizes;
 }
 
@@ -622,10 +619,10 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
   intrinsic_block_size_ = std::max(intrinsic_block_size_,
                                    CalculateMinimumBlockSize(end_margin_strut));
 
-  // With contain:size we need to ignore all kinds of intrinsic sizing. If block
-  // height was specified as auto, its content-box size will become 0.
-  if (Node().ShouldApplySizeContainment())
-    intrinsic_block_size_ = border_scrollbar_padding_.BlockSum();
+  // TODO(layout-dev): Is CalculateMinimumBlockSize common to other algorithms,
+  // and should move into ClampIntrinsicBlockSize?
+  intrinsic_block_size_ = ClampIntrinsicBlockSize(
+      Node(), border_scrollbar_padding_, intrinsic_block_size_);
 
   // Recompute the block-axis size now that we know our content size.
   // NOTE: For table cells, the block-size is just the intrinsic block-size.

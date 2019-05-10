@@ -17,6 +17,7 @@
 namespace blink {
 
 class ComputedStyle;
+class DisplayLockContext;
 class Document;
 class LayoutObject;
 class LayoutBox;
@@ -190,6 +191,15 @@ class CORE_EXPORT NGLayoutInputNode {
 
   bool ShouldApplySizeContainment() const {
     return box_->ShouldApplySizeContainment();
+  }
+
+  // Display locking functionality.
+  const DisplayLockContext& GetDisplayLockContext() const {
+    DCHECK(box_->GetDisplayLockContext());
+    return *box_->GetDisplayLockContext();
+  }
+  bool DisplayLockInducesSizeContainment() const {
+    return box_->DisplayLockInducesSizeContainment();
   }
 
   // Returns the first NGPaintFragment for this node. When block fragmentation

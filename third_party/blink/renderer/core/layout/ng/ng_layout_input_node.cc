@@ -91,6 +91,14 @@ void NGLayoutInputNode::IntrinsicSize(
     *aspect_ratio = LogicalSize(LayoutUnit(), LayoutUnit());
     return;
   }
+  if (DisplayLockInducesSizeContainment()) {
+    *computed_inline_size =
+        GetDisplayLockContext().GetLockedContentLogicalWidth();
+    *computed_block_size =
+        GetDisplayLockContext().GetLockedContentLogicalHeight();
+    *aspect_ratio = LogicalSize(**computed_inline_size, **computed_block_size);
+    return;
+  }
   IntrinsicSizingInfo legacy_sizing_info;
 
   ToLayoutReplaced(box_)->ComputeIntrinsicSizingInfo(legacy_sizing_info);

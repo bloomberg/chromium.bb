@@ -1188,4 +1188,46 @@ LayoutUnit CalculateChildPercentageBlockSizeForMinMax(
   return child_percentage_block_size;
 }
 
+LayoutUnit ClampIntrinsicBlockSize(const NGBlockNode& node,
+                                   const NGBoxStrut& border_scrollbar_padding,
+                                   LayoutUnit current_intrinsic_block_size) {
+  // If display locking induces size containment, then we replace its content
+  // size with the locked content size.
+  if (node.DisplayLockInducesSizeContainment()) {
+    return node.GetDisplayLockContext().GetLockedContentLogicalHeight() +
+           border_scrollbar_padding.BlockSum();
+  }
+  // With contain: size, we ignore intrinsic sizing. If the block-size was
+  // specified as auto, its content-box size will become 0.
+  if (node.ShouldApplySizeContainment())
+    return border_scrollbar_padding.BlockSum();
+
+  return current_intrinsic_block_size;
+}
+
+base::Optional<MinMaxSize> CalculateMinMaxSizesIgnoringChildren(
+    const NGBlockNode& node,
+    const NGBoxStrut& border_scrollbar_padding,
+    NGMinMaxSizeType type) {
+  MinMaxSize sizes;
+  // Display locked elements override the content size, without considering
+  // children. Note that this check has to be first, since display locking
+  // overrides the content sizes even if |node| has no children.
+  // TODO(961297): Investigate whether contain: size should "win" here.
+  if (node.DisplayLockInducesSizeContainment()) {
+    sizes = node.GetDisplayLockContext().GetLockedContentLogicalWidth();
+    if (type == NGMinMaxSizeType::kBorderBoxSize)
+      sizes += border_scrollbar_padding.InlineSum();
+    return sizes;
+  }
+  // Size contained elements don't consider children for intrinsic sizing.
+  // This is the same path as if the node has no children.
+  if (node.ShouldApplySizeContainment() || !node.FirstChild()) {
+    if (type == NGMinMaxSizeType::kBorderBoxSize)
+      sizes += border_scrollbar_padding.InlineSum();
+    return sizes;
+  }
+  return base::nullopt;
+}
+
 }  // namespace blink

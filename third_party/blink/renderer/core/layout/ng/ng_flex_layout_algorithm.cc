@@ -393,15 +393,12 @@ void NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
 
 base::Optional<MinMaxSize> NGFlexLayoutAlgorithm::ComputeMinMaxSize(
     const MinMaxSizeInput& input) const {
-  MinMaxSize sizes;
-  if (Node().ShouldApplySizeContainment()) {
-    // TODO(dgrogan): When this code was written it didn't make any more tests
-    // pass, so it may be wrong or untested.
-    if (input.size_type == NGMinMaxSizeType::kBorderBoxSize)
-      sizes = border_scrollbar_padding_.InlineSum();
+  base::Optional<MinMaxSize> sizes = CalculateMinMaxSizesIgnoringChildren(
+      Node(), border_scrollbar_padding_, input.size_type);
+  if (sizes)
     return sizes;
-  }
 
+  sizes.emplace();
   LayoutUnit child_percentage_resolution_block_size =
       CalculateChildPercentageBlockSizeForMinMax(
           ConstraintSpace(), Node(), border_padding_,
@@ -426,24 +423,26 @@ base::Optional<MinMaxSize> NGFlexLayoutAlgorithm::ComputeMinMaxSize(
     NGBoxStrut child_margins = ComputeMinMaxMargins(Style(), child);
     child_min_max_sizes += child_margins.InlineSum();
     if (is_column_) {
-      sizes.min_size = std::max(sizes.min_size, child_min_max_sizes.min_size);
-      sizes.max_size = std::max(sizes.max_size, child_min_max_sizes.max_size);
+      sizes->min_size = std::max(sizes->min_size, child_min_max_sizes.min_size);
+      sizes->max_size = std::max(sizes->max_size, child_min_max_sizes.max_size);
     } else {
-      sizes.max_size += child_min_max_sizes.max_size;
-      if (IsMultiline())
-        sizes.min_size = std::max(sizes.min_size, child_min_max_sizes.min_size);
-      else
-        sizes.min_size += child_min_max_sizes.min_size;
+      sizes->max_size += child_min_max_sizes.max_size;
+      if (IsMultiline()) {
+        sizes->min_size =
+            std::max(sizes->min_size, child_min_max_sizes.min_size);
+      } else {
+        sizes->min_size += child_min_max_sizes.min_size;
+      }
     }
   }
-  sizes.max_size = std::max(sizes.max_size, sizes.min_size);
+  sizes->max_size = std::max(sizes->max_size, sizes->min_size);
 
   // Due to negative margins, it is possible that we calculated a negative
   // intrinsic width. Make sure that we never return a negative width.
-  sizes.Encompass(LayoutUnit());
+  sizes->Encompass(LayoutUnit());
 
   if (input.size_type == NGMinMaxSizeType::kBorderBoxSize)
-    sizes += border_scrollbar_padding_.InlineSum();
+    *sizes += border_scrollbar_padding_.InlineSum();
 
   return sizes;
 }

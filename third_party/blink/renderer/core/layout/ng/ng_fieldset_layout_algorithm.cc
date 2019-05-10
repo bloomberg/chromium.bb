@@ -144,6 +144,7 @@ base::Optional<MinMaxSize> NGFieldsetLayoutAlgorithm::ComputeMinMaxSize(
   MinMaxSize sizes;
 
   // Size-contained elements don't consider their contents for intrinsic sizing.
+  // TODO(crbug.com/958975): Display locking needs to handle this.
   if (node_.ShouldApplySizeContainment())
     return sizes;
 
