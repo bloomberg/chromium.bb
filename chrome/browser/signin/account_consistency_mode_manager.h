@@ -39,7 +39,7 @@ class AccountConsistencyModeManager : public KeyedService {
   // May return nullptr if there is none (e.g. in incognito).
   static AccountConsistencyModeManager* GetForProfile(Profile* profile);
 
-  explicit AccountConsistencyModeManager(Profile* profile);
+  AccountConsistencyModeManager(Profile* profile, bool auto_migrate_to_dice);
   ~AccountConsistencyModeManager() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -76,7 +76,7 @@ class AccountConsistencyModeManager : public KeyedService {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AccountConsistencyModeManagerTest,
-                           MigrateAtCreation);
+                           MigratePreDiceProfileAtCreation);
   FRIEND_TEST_ALL_PREFIXES(AccountConsistencyModeManagerTest,
                            SigninAllowedChangesDiceState);
   FRIEND_TEST_ALL_PREFIXES(AccountConsistencyModeManagerTest,
@@ -88,7 +88,8 @@ class AccountConsistencyModeManager : public KeyedService {
   static void SetDiceMigrationOnStartup(PrefService* prefs, bool migrate);
 
   // Returns true if migration can happen on the next startup.
-  static bool IsReadyForDiceMigration(Profile* profile);
+  static bool IsReadyForDiceMigration(Profile* profile,
+                                      bool auto_migrate_to_dice);
 #endif
 
   // Returns the account consistency method for the current profile.

@@ -5255,6 +5255,8 @@ static_library("test_support") {
     "search_engines/template_url_service_factory_test_util.h",
     "search_engines/template_url_service_test_util.cc",
     "search_engines/template_url_service_test_util.h",
+    "signin/account_consistency_mode_manager_test_util.cc",
+    "signin/account_consistency_mode_manager_test_util.h",
     "signin/chrome_signin_client_test_util.cc",
     "signin/chrome_signin_client_test_util.h",
     "signin/identity_test_environment_profile_adaptor.cc",

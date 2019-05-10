@@ -1391,10 +1391,11 @@ TEST_F(HostContentSettingsMapTest, AddContentSettingsObserver) {
 // Guest profiles do not exist on Android, so don't run these tests there.
 #if !defined(OS_ANDROID)
 TEST_F(HostContentSettingsMapTest, GuestProfile) {
-  TestingProfile profile;
-  profile.SetGuestSession(true);
+  TestingProfile::Builder profile_builder;
+  profile_builder.SetGuestSession();
+  std::unique_ptr<Profile> profile = profile_builder.Build();
   HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(&profile);
+      HostContentSettingsMapFactory::GetForProfile(profile.get());
 
   GURL host("http://example.com/");
   ContentSettingsPattern pattern =
@@ -1414,7 +1415,7 @@ TEST_F(HostContentSettingsMapTest, GuestProfile) {
                 host, host, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
 
   const base::DictionaryValue* all_settings_dictionary =
-      profile.GetPrefs()->GetDictionary(
+      profile->GetPrefs()->GetDictionary(
           GetPrefName(CONTENT_SETTINGS_TYPE_COOKIES));
   EXPECT_TRUE(all_settings_dictionary->empty());
 }
@@ -1422,10 +1423,11 @@ TEST_F(HostContentSettingsMapTest, GuestProfile) {
 // Default settings should not be modifiable for the guest profile (there is no
 // UI to do this).
 TEST_F(HostContentSettingsMapTest, GuestProfileDefaultSetting) {
-  TestingProfile profile;
-  profile.SetGuestSession(true);
+  TestingProfile::Builder profile_builder;
+  profile_builder.SetGuestSession();
+  std::unique_ptr<Profile> profile = profile_builder.Build();
   HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(&profile);
+      HostContentSettingsMapFactory::GetForProfile(profile.get());
 
   GURL host("http://example.com/");
 
@@ -1445,19 +1447,20 @@ TEST_F(HostContentSettingsMapTest, GuestProfileDefaultSetting) {
 // We used to incorrectly store content settings in prefs for the guest profile.
 // We need to ensure these get deleted appropriately.
 TEST_F(HostContentSettingsMapTest, GuestProfileMigration) {
-  TestingProfile profile;
-  profile.SetGuestSession(true);
+  TestingProfile::Builder profile_builder;
+  profile_builder.SetGuestSession();
+  std::unique_ptr<Profile> profile = profile_builder.Build();
 
   // Set a pref manually in the guest profile.
   std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       "{\"[*.]\\xC4\\x87ira.com,*\":{\"setting\":1}}");
-  profile.GetPrefs()->Set(GetPrefName(CONTENT_SETTINGS_TYPE_COOKIES), *value);
+  profile->GetPrefs()->Set(GetPrefName(CONTENT_SETTINGS_TYPE_COOKIES), *value);
 
   // Test that during construction all the prefs get cleared.
-  HostContentSettingsMapFactory::GetForProfile(&profile);
+  HostContentSettingsMapFactory::GetForProfile(profile.get());
 
   const base::DictionaryValue* all_settings_dictionary =
-      profile.GetPrefs()->GetDictionary(
+      profile->GetPrefs()->GetDictionary(
           GetPrefName(CONTENT_SETTINGS_TYPE_COOKIES));
   EXPECT_TRUE(all_settings_dictionary->empty());
 }

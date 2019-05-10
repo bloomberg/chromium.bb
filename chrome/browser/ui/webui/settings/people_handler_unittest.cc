@@ -16,6 +16,8 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
+#include "chrome/browser/signin/account_consistency_mode_manager_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
@@ -1403,10 +1405,18 @@ TEST_P(PeopleHandlerDiceUnifiedConsentTest, StoredAccountsList) {
       dice_enabled ? signin::AccountConsistencyMethod::kDice
                    : signin::AccountConsistencyMethod::kDiceMigration);
 
-  // Setup the profile.
+  // Create a pre-dice profile so that it does not automatically migrates to
+  // Dice.
   std::unique_ptr<TestingProfile> profile =
       IdentityTestEnvironmentProfileAdaptor::
-          CreateProfileForIdentityTestEnvironment();
+          CreateProfileForIdentityTestEnvironment(
+              {{AccountConsistencyModeManagerFactory::GetInstance(),
+                base::BindRepeating([](content::BrowserContext* context)
+                                        -> std::unique_ptr<KeyedService> {
+                  return std::make_unique<AccountConsistencyModeManager>(
+                      Profile::FromBrowserContext(context),
+                      /*auto_migrate_to_dice=*/false);
+                })}});
 
   auto identity_test_env_adaptor =
       std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile.get());

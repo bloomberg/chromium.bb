@@ -984,13 +984,16 @@ void ProfileImpl::OnLocaleReady() {
 
   FullBrowserTransitionManager::Get()->OnProfileCreated(this);
 
+  // The version must be set before the keyed services are created, so
+  // that they can call WasCreatedByVersionOrLater in their constructor.
+  ChromeVersionService::OnProfileLoaded(prefs_.get(), IsNewProfile());
+
   {
     SCOPED_UMA_HISTOGRAM_TIMER("Profile.CreateBrowserContextServicesTime");
     BrowserContextDependencyManager::GetInstance()
         ->CreateBrowserContextServices(this);
   }
 
-  ChromeVersionService::OnProfileLoaded(prefs_.get(), IsNewProfile());
   DoFinalInit();
 }
 
