@@ -81,6 +81,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
@@ -256,9 +257,11 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     public void performPostInflationStartup() {
         super.performPostInflationStartup();
 
-        getToolbarManager().setCloseButtonDrawable(mIntentDataProvider.getCloseButtonDrawable());
-        getToolbarManager().setShowTitle(mIntentDataProvider.getTitleVisibilityState()
-                == CustomTabsIntent.SHOW_PAGE_TITLE);
+        getToolbarManager().setCloseButtonDrawable(FeatureUtilities.isNoTouchModeEnabled()
+                        ? null
+                        : mIntentDataProvider.getCloseButtonDrawable());
+        getToolbarManager().setShowTitle(
+                mIntentDataProvider.getTitleVisibilityState() == CustomTabsIntent.SHOW_PAGE_TITLE);
         if (mConnection.shouldHideDomainForSession(mSession)) {
             getToolbarManager().setUrlBarHidden(true);
         }
