@@ -116,6 +116,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @MediumTest
     @Feature({"Browser"})
     @RetryOnFailure
+    @DisabledTest(message = "https://crbug.com/959265")
     public void testCopyImageLinkCopiesLinkURL() throws Throwable {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         ContextMenuUtils.selectContextMenuItem(InstrumentationRegistry.getInstrumentation(),
@@ -403,6 +404,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @SmallTest
     @Feature({"Browser", "ContextMenu"})
     @RetryOnFailure
+    @DisabledTest(message = "https://crbug.com/959265")
     public void testContextMenuRetrievesImageLinkOptions()
             throws TimeoutException, InterruptedException {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
