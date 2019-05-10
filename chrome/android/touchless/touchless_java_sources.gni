@@ -33,6 +33,7 @@ touchless_java_sources = [
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessExploreSitesCategoryCardView.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessExploreSitesPage.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessLayoutManager.java",
+  "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessModelCoordinator.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPage.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPageAdapter.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPageMediator.java",
@@ -44,6 +45,8 @@ touchless_java_sources = [
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessTabDelegate.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessTabObserver.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessUiController.java",
+  "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessUiCoordinator.java",
+  "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessUiCoordinatorImpl.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessZoomHelper.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/dialog/TouchlessDialogPresenter.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/dialog/TouchlessDialogProperties.java",
@@ -67,6 +70,8 @@ touchless_junit_test_java_sources = [ "touchless/junit/src/org/chromium/chrome/b
 
 touchess_fallback_java_sources = [
   "touchless/fallback/java/src/org/chromium/chrome/browser/touchless/TouchlessDelegate.java",
+  "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessModelCoordinator.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessUiController.java",
+  "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessUiCoordinator.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/dialog/TouchlessDialogProperties.java",
 ]

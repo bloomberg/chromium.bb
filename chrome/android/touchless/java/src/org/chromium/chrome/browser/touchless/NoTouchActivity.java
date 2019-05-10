@@ -15,7 +15,6 @@ import android.view.ViewGroup;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeInactivityTracker;
@@ -32,17 +31,10 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
-import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogPresenter;
-import org.chromium.chrome.browser.touchless.snackbar.BlackHoleSnackbarManager;
-import org.chromium.chrome.browser.touchless.ui.iph.KeyFunctionsIPHCoordinator;
-import org.chromium.chrome.browser.touchless.ui.progressbar.ProgressBarCoordinator;
-import org.chromium.chrome.browser.touchless.ui.progressbar.ProgressBarView;
-import org.chromium.chrome.browser.touchless.ui.tooltip.TooltipView;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.modaldialog.ModalDialogManager;
-import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
 
 /**
  * An Activity used to display WebContents on devices that don't support touch.
@@ -57,25 +49,13 @@ public class NoTouchActivity extends SingleTabActivity {
     // Time at which an intent was received and handled.
     private long mIntentHandlingTimeMs;
 
-    private KeyFunctionsIPHCoordinator mKeyFunctionsIPHCoordinator;
-    private ProgressBarCoordinator mProgressBarCoordinator;
-    private TooltipView mTooltipView;
-    private ProgressBarView mProgressBarView;
-
-    /** The class that enables zooming for all websites and handles touchless zooming. */
-    private TouchlessZoomHelper mTouchlessZoomHelper;
-
-    /** The class that controls the UI for touchless devices. */
-    private TouchlessUiController mUiController;
+    private TouchlessUiCoordinator mUiCoordinator;
 
     /** The class that finishes this activity after a timeout. */
     private ChromeInactivityTracker mInactivityTracker;
 
     /** Tab observer that tracks media state. */
     private TouchlessTabObserver mTabObserver;
-
-    /** The snackbar manager for this activity that drops all snackbar requests. */
-    private BlackHoleSnackbarManager mSnackbarManager;
 
     /**
      * Internal class which performs the intent handling operations delegated by IntentHandler.
@@ -145,8 +125,6 @@ public class NoTouchActivity extends SingleTabActivity {
 
         getFullscreenManager().setTab(getActivityTab());
 
-        mUiController = AppHooks.get().createTouchlessUiController(this);
-        AppHooks.get().attachTouchlessMenuCoordinator(this, mUiController);
         super.finishNativeInitialization();
     }
 
@@ -161,13 +139,6 @@ public class NoTouchActivity extends SingleTabActivity {
         // super#initializeState.
         if (launchNtpDueToInactivity) resetSavedInstanceState();
         super.initializeState();
-
-        mSnackbarManager = new BlackHoleSnackbarManager(this);
-        mKeyFunctionsIPHCoordinator =
-                new KeyFunctionsIPHCoordinator(mTooltipView, getActivityTabProvider());
-        mProgressBarCoordinator =
-                new ProgressBarCoordinator(mProgressBarView, getActivityTabProvider());
-        mTouchlessZoomHelper = new TouchlessZoomHelper(getActivityTabProvider());
 
         // By this point if we were going to restore a URL from savedInstanceState we would already
         // have done so.
@@ -239,8 +210,7 @@ public class NoTouchActivity extends SingleTabActivity {
 
     @Override
     public ModalDialogManager createModalDialogManager() {
-        return new ModalDialogManager(
-                new TouchlessDialogPresenter(this, mUiController), ModalDialogType.APP);
+        return getUiCoordinator().createModalDialogManager();
     }
 
     @Override
@@ -278,22 +248,14 @@ public class NoTouchActivity extends SingleTabActivity {
     }
 
     @Override
-    protected void doLayoutInflation() {
-        super.doLayoutInflation();
-        ViewGroup coordinatorLayout = (ViewGroup) findViewById(R.id.coordinator);
-        mTooltipView = new TooltipView(this);
-        mProgressBarView = new ProgressBarView(this);
-        coordinatorLayout.addView(mTooltipView);
-        coordinatorLayout.addView(mProgressBarView);
+    public void performPreInflationStartup() {
+        super.performPreInflationStartup();
+        getUiCoordinator();
     }
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        if (mProgressBarCoordinator != null) mProgressBarCoordinator.onKeyEvent();
-
-        boolean consumedEvent = mUiController != null ? mUiController.onKeyEvent(event) : false;
-
-        return consumedEvent || super.dispatchKeyEvent(event);
+        return getUiCoordinator().dispatchKeyEvent(event) || super.dispatchKeyEvent(event);
     }
 
     @Override
@@ -309,32 +271,27 @@ public class NoTouchActivity extends SingleTabActivity {
         getFullscreenManager().exitPersistentFullscreenMode();
     }
 
-    @Override
-    protected void onDestroyInternal() {
-        super.onDestroyInternal();
-        if (mKeyFunctionsIPHCoordinator != null) mKeyFunctionsIPHCoordinator.destroy();
-        if (mProgressBarCoordinator != null) mProgressBarCoordinator.destroy();
-        if (mTouchlessZoomHelper != null) mTouchlessZoomHelper.destroy();
-        if (mUiController != null) {
-            mUiController.destroy();
-            mUiController = null;
+    private TouchlessUiCoordinator getUiCoordinator() {
+        if (mUiCoordinator == null) {
+            mUiCoordinator = AppHooks.get().createTouchlessUiCoordinator(this);
         }
-    }
-
-    /**
-     * @return A UI controller implementation.
-     */
-    public TouchlessUiController getTouchlessUiController() {
-        return mUiController;
+        return mUiCoordinator;
     }
 
     @Override
     public SnackbarManager getSnackbarManager() {
-        return mSnackbarManager;
+        return getUiCoordinator().getSnackbarManager();
     }
 
     @Override
     protected TabDelegate createTabDelegate(boolean incognito) {
         return new TouchlessTabDelegate(incognito);
+    }
+
+    /**
+     * TODO(mthiesse): Delete this, it's to keep downstream compiling with a 3-sided patch.
+     */
+    public TouchlessUiController getTouchlessUiController() {
+        return null;
     }
 }

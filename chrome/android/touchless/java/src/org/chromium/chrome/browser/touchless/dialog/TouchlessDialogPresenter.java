@@ -20,7 +20,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.touchless.TouchlessUiController;
+import org.chromium.chrome.browser.touchless.TouchlessModelCoordinator;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.DialogListItemProperties;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.ListItemType;
 import org.chromium.chrome.touchless.R;
@@ -39,7 +39,7 @@ import java.util.ArrayList;
 public class TouchlessDialogPresenter extends Presenter {
     /** An activity to attach dialogs to. */
     private final ChromeActivity mActivity;
-    private final TouchlessUiController mUiController;
+    private final TouchlessModelCoordinator mModelCoordinator;
 
     /** The dialog this class abstracts. */
     private Dialog mDialog;
@@ -48,9 +48,10 @@ public class TouchlessDialogPresenter extends Presenter {
     private PropertyModelChangeProcessor<PropertyModel, Pair<ViewGroup, ModelListAdapter>,
             PropertyKey> mModelChangeProcessor;
 
-    public TouchlessDialogPresenter(ChromeActivity activity, TouchlessUiController uiController) {
+    public TouchlessDialogPresenter(
+            ChromeActivity activity, TouchlessModelCoordinator modelCoordinator) {
         mActivity = activity;
-        mUiController = uiController;
+        mModelCoordinator = modelCoordinator;
     }
 
     @Override
@@ -76,12 +77,18 @@ public class TouchlessDialogPresenter extends Presenter {
 
         mDialog.setOnCancelListener(dialogInterface
                 -> dismissCurrentDialog(DialogDismissalCause.NAVIGATE_BACK_OR_TOUCH_OUTSIDE));
-        mDialog.setOnShowListener(dialog -> mUiController.addModelToQueue(model));
-        mDialog.setOnDismissListener(dialog -> mUiController.removeModelFromQueue(model));
+        mDialog.setOnShowListener(dialog -> {
+            if (mModelCoordinator != null) mModelCoordinator.addModelToQueue(model);
+        });
+        mDialog.setOnDismissListener(dialog -> {
+            if (mModelCoordinator != null) mModelCoordinator.removeModelFromQueue(model);
+        });
         // Cancel on touch outside should be disabled by default. The ModelChangeProcessor wouldn't
         // notify change if the property is not set during initialization.
         mDialog.setCanceledOnTouchOutside(false);
-        mDialog.setOnKeyListener((dialog, keyCode, event) -> mUiController.onKeyEvent(event));
+        mDialog.setOnKeyListener((dialog, keyCode, event) -> {
+            return mModelCoordinator != null ? mModelCoordinator.onKeyEvent(event) : false;
+        });
         ViewGroup dialogView = (ViewGroup) LayoutInflater.from(mDialog.getContext())
                 .inflate(R.layout.touchless_dialog_view, null);
         ModelListAdapter adapter = new ModelListAdapter(mActivity);
