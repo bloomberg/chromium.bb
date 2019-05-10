@@ -99,60 +99,6 @@ constexpr TimeDelta kDefaultIncrementalMarkingStepDuration =
 
 constexpr size_t kMaxTerminationGCLoops = 20;
 
-const char* GcReasonString(BlinkGC::GCReason reason) {
-  switch (reason) {
-    case BlinkGC::GCReason::kPreciseGC:
-      return "PreciseGC";
-    case BlinkGC::GCReason::kConservativeGC:
-      return "ConservativeGC";
-    case BlinkGC::GCReason::kForcedGCForTesting:
-      return "ForcedGCForTesting";
-    case BlinkGC::GCReason::kMemoryPressureGC:
-      return "MemoryPressureGC";
-    case BlinkGC::GCReason::kPageNavigationGC:
-      return "PageNavigationGC";
-    case BlinkGC::GCReason::kThreadTerminationGC:
-      return "ThreadTerminationGC";
-    case BlinkGC::GCReason::kIncrementalV8FollowupGC:
-      return "IncrementalV8FollowupGC";
-    case BlinkGC::GCReason::kUnifiedHeapGC:
-      return "UnifiedHeapGC";
-  }
-  return "<Unknown>";
-}
-
-const char* MarkingTypeString(BlinkGC::MarkingType type) {
-  switch (type) {
-    case BlinkGC::kAtomicMarking:
-      return "AtomicMarking";
-    case BlinkGC::kIncrementalMarking:
-      return "IncrementalMarking";
-    case BlinkGC::kTakeSnapshot:
-      return "TakeSnapshot";
-  }
-  return "<Unknown>";
-}
-
-const char* SweepingTypeString(BlinkGC::SweepingType type) {
-  switch (type) {
-    case BlinkGC::kLazySweeping:
-      return "LazySweeping";
-    case BlinkGC::kEagerSweeping:
-      return "EagerSweeping";
-  }
-  return "<Unknown>";
-}
-
-const char* StackStateString(BlinkGC::StackState state) {
-  switch (state) {
-    case BlinkGC::kNoHeapPointersOnStack:
-      return "NoHeapPointersOnStack";
-    case BlinkGC::kHeapPointersOnStack:
-      return "HeapPointersOnStack";
-  }
-  return "<Unknown>";
-}
-
 // Helper function to convert a byte count to a KB count, capping at
 // INT_MAX if the number is larger than that.
 constexpr base::Histogram::Sample CappedSizeInKB(size_t size_in_bytes) {
@@ -1374,7 +1320,7 @@ void ThreadState::IncrementalMarkingStart(BlinkGC::GCReason reason) {
     ThreadHeapStatsCollector::EnabledScope stats_scope(
         Heap().stats_collector(),
         ThreadHeapStatsCollector::kIncrementalMarkingStartMarking, "reason",
-        GcReasonString(reason));
+        BlinkGC::ToString(reason));
     AtomicPauseScope atomic_pause_scope(this);
     next_incremental_marking_step_duration_ =
         kDefaultIncrementalMarkingStepDuration;
@@ -1396,7 +1342,7 @@ void ThreadState::IncrementalMarkingStep(BlinkGC::StackState stack_state) {
       ThreadHeapStatsCollector::kIncrementalMarkingStep);
   VLOG(2) << "[state:" << this << "] "
           << "IncrementalMarking: Step "
-          << "Reason: " << GcReasonString(current_gc_data_.reason);
+          << "Reason: " << BlinkGC::ToString(current_gc_data_.reason);
   AtomicPauseScope atomic_pause_scope(this);
   if (stack_state == BlinkGC::kNoHeapPointersOnStack) {
     Heap().FlushNotFullyConstructedObjects();
@@ -1429,7 +1375,7 @@ void ThreadState::IncrementalMarkingFinalize() {
       ThreadHeapStatsCollector::kIncrementalMarkingFinalize);
   VLOG(2) << "[state:" << this << "] "
           << "IncrementalMarking: Finalize "
-          << "Reason: " << GcReasonString(current_gc_data_.reason);
+          << "Reason: " << BlinkGC::ToString(current_gc_data_.reason);
   // Call into the regular bottleneck instead of the internal version to get
   // UMA accounting and allow follow up GCs if necessary.
   CollectGarbage(BlinkGC::kNoHeapPointersOnStack, BlinkGC::kIncrementalMarking,
@@ -1524,10 +1470,10 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
   VLOG(1) << "[state:" << this << "]"
           << " CollectGarbage: time: " << std::setprecision(2)
           << total_collect_garbage_time.InMillisecondsF() << "ms"
-          << " stack: " << StackStateString(stack_state)
-          << " marking: " << MarkingTypeString(marking_type)
-          << " sweeping: " << SweepingTypeString(sweeping_type)
-          << " reason: " << GcReasonString(reason);
+          << " stack: " << BlinkGC::ToString(stack_state)
+          << " marking: " << BlinkGC::ToString(marking_type)
+          << " sweeping: " << BlinkGC::ToString(sweeping_type)
+          << " reason: " << BlinkGC::ToString(reason);
 }
 
 void ThreadState::AtomicPauseMarkPrologue(BlinkGC::StackState stack_state,
@@ -1582,7 +1528,7 @@ void ThreadState::RunAtomicPause(BlinkGC::StackState stack_state,
           Heap().stats_collector(),
           ThreadHeapStatsCollector::kAtomicPhaseMarking, "lazySweeping",
           sweeping_type == BlinkGC::kLazySweeping ? "yes" : "no", "gcReason",
-          GcReasonString(reason));
+          BlinkGC::ToString(reason));
       AtomicPauseMarkPrologue(stack_state, marking_type, reason);
       AtomicPauseMarkTransitiveClosure();
       AtomicPauseMarkEpilogue(marking_type);

@@ -24,6 +24,7 @@ blink_platform_sources("heap") {
     "address_cache.cc",
     "address_cache.h",
     "atomic_entry_flag.h",
+    "blink_gc.cc",
     "blink_gc.h",
     "blink_gc_memory_dump_provider.cc",
     "blink_gc_memory_dump_provider.h",
