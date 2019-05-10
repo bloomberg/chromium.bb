@@ -2093,6 +2093,7 @@ void Browser::OnTabInsertedAt(WebContents* contents, int index) {
     if (index < new_active_index)
       session_service->SetSelectedTabInWindow(session_id(), new_active_index);
   }
+  contents->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
 }
 
 void Browser::OnTabClosing(WebContents* contents) {

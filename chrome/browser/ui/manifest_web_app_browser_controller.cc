@@ -92,5 +92,4 @@ void ManifestWebAppBrowserController::OnTabInserted(
   if (app_launch_url_.is_empty())
     app_launch_url_ = contents->GetURL();
   AppBrowserController::OnTabInserted(contents);
-  UpdateToolbarVisibility(false);
 }
