@@ -9,11 +9,14 @@ source_set("earl_grey_support") {
 
   deps = [
     "//base/test:test_support",
+    "//build/config/ios:xctest",
     "//ios/third_party/earl_grey:earl_grey+link",
     "//testing/gtest:gtest",
   ]
 
   sources = [
+    "base_earl_grey_test_case.h",
+    "base_earl_grey_test_case.mm",
     "coverage_utils.h",
     "coverage_utils.mm",
     "disabled_test_macros.h",
@@ -53,6 +56,8 @@ source_set("eg_test_support+eg2") {
   testonly = true
 
   sources = [
+    "base_earl_grey_test_case.h",
+    "base_earl_grey_test_case.mm",
     "coverage_utils.h",
     "coverage_utils_stub.mm",
     "disabled_test_macros.h",

@@ -4,7 +4,6 @@
 
 #import "ios/web/shell/test/earl_grey/web_shell_test_case.h"
 
-#import "ios/testing/earl_grey/coverage_utils.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -32,19 +31,5 @@
   return [super testInvocations];
 }
 #endif
-
-- (void)setUp {
-#if defined(CHROME_EARL_GREY_2)
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
-    XCUIApplication* application = [[XCUIApplication alloc] init];
-    [application launch];
-  });
-#endif
-
-  [CoverageUtils configureCoverageReportPath];
-
-  [super setUp];
-}
 
 @end
