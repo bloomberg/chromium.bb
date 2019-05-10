@@ -235,7 +235,7 @@ TEST_F(PolicyMapTest, MergeFrom) {
         POLICY_SOURCE_ENTERPRISE_DEFAULT, nullptr,
         CreateExternalDataFetcher("b"));
   b.Set(kTestPolicyName4, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
+        POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE,
         std::make_unique<base::Value>(true), nullptr);
   b.Set(kTestPolicyName5, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_PLATFORM, std::make_unique<base::Value>(std::string()),
@@ -279,7 +279,7 @@ TEST_F(PolicyMapTest, MergeFrom) {
       ->AddConflictingPolicy(*b.Get(kTestPolicyName3));
   // POLICY_SCOPE_MACHINE over POLICY_SCOPE_USER for POLICY_LEVEL_RECOMMENDED.
   c.Set(kTestPolicyName4, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
+        POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE,
         std::make_unique<base::Value>(true), nullptr);
   c.GetMutable(kTestPolicyName4)->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
   c.GetMutable(kTestPolicyName4)->AddConflictingPolicy(conflicted_policy_4);
@@ -452,7 +452,7 @@ TEST_F(PolicyMapTest, MergeValuesList) {
 
   platform_user_mandatory_dict.AddConflictingPolicy(
       PolicyMap::Entry(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                       POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
+                       POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE,
                        std::make_unique<base::Value>(list_dict_c), nullptr));
 
   PolicyMap::Entry merged_user_mandatory_dict(

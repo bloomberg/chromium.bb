@@ -817,11 +817,11 @@ void DeviceLocalAccountPolicyProviderTest::SetUp() {
   // Values implicitly enforced for public accounts.
   expected_policy_map_.Set(key::kShelfAutoHideBehavior, POLICY_LEVEL_MANDATORY,
                            POLICY_SCOPE_MACHINE,
-                           POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
+                           POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE,
                            std::make_unique<base::Value>("Never"), nullptr);
   expected_policy_map_.Set(key::kShowLogoutButtonInTray, POLICY_LEVEL_MANDATORY,
                            POLICY_SCOPE_MACHINE,
-                           POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
+                           POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE,
                            std::make_unique<base::Value>(true), nullptr);
 
   // Policy defaults (for policies not set by admin).
