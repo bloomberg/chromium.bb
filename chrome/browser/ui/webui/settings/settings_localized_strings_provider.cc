@@ -567,6 +567,16 @@ void AddAndroidAppStrings(content::WebUIDataSource* html_source) {
           IDS_SETTINGS_ANDROID_APPS_SUBTEXT,
           GetHelpUrlWithBoard(chrome::kAndroidAppsLearnMoreURL)));
 }
+
+void AddAppsStrings(content::WebUIDataSource* html_source) {
+  LocalizedString localized_strings[] = {
+      {"appsPageTitle", IDS_SETTINGS_APPS_TITLE},
+      {"manageYourApps", IDS_SETTINGS_APPS_LINK_TEXT},
+  };
+
+  AddLocalizedStringsBulk(html_source, localized_strings,
+                          base::size(localized_strings));
+}
 #endif
 
 void AddAppearanceStrings(content::WebUIDataSource* html_source,
@@ -2924,6 +2934,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddPluginVmStrings(html_source, profile);
   AddKioskNextShellStrings(html_source);
   AddAndroidAppStrings(html_source);
+  AddAppsStrings(html_source);
   AddBluetoothStrings(html_source);
   AddChromeOSUserStrings(html_source, profile);
   AddDateTimeStrings(html_source);

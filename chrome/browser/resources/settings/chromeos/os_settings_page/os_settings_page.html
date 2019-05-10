@@ -12,6 +12,7 @@
 <link rel="import" href="../../settings_page/main_page_behavior.html">
 <link rel="import" href="../../settings_page/settings_section.html">
 <link rel="import" href="../../settings_page_css.html">
+<link rel="import" href="../../app_management_page/app_management_page.html">
 <link rel="import" href="../../android_apps_page/android_apps_browser_proxy.html">
 <link rel="import" href="../../android_apps_page/android_apps_page.html">
 <link rel="import" href="../../bluetooth_page/bluetooth_page.html">
@@ -151,6 +152,12 @@
           <settings-section page-title="$i18n{searchPageTitle}"
               section="search">
             <settings-search-page prefs="{{prefs}}"></settings-search-page>
+          </settings-section>
+        </template>
+        <template is="dom-if" if="[[showApps]]" restamp>
+          <settings-section page-title="$i18n{appsPageTitle}" section="apps">
+            <settings-app-management-page>
+            </settings-app-management-page>
           </settings-section>
         </template>
         <template is="dom-if" if="[[shouldCreateAndroidAppsSection_(

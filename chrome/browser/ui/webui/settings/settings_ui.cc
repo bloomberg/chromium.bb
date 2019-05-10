@@ -107,6 +107,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/multidevice_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/plugin_vm_handler.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/components/account_manager/account_manager.h"
@@ -486,6 +487,9 @@ void SettingsUI::InitOSWebUIHandlers(Profile* profile,
         std::make_unique<chromeos::settings::PowerHandler>(
             profile->GetPrefs()));
   }
+
+  html_source->AddBoolean(
+      "showApps", base::FeatureList::IsEnabled(features::kAppManagement));
 }
 #endif  // defined(OS_CHROMEOS)
 

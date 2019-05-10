@@ -621,6 +621,14 @@
     <message name="IDS_SETTINGS_ANDROID_APPS_MANAGE_APP_LINKS" desc="Label for accessing app preferrences on ARC side.">
       Manage Play app links
     </message>
+
+    <!-- Apps Section Page -->
+    <message name="IDS_SETTINGS_APPS_TITLE" desc="The title of Apps section.">
+      Apps
+    </message>
+    <message name="IDS_SETTINGS_APPS_LINK_TEXT" desc="The label for the button which links to the App Management page.">
+      Manage your apps
+    </message>
   </if>
 
   <!-- Appearance Page -->

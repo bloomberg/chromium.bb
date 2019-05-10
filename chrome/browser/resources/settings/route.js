@@ -13,6 +13,7 @@
  *   ACCOUNT_MANAGER: (undefined|!settings.Route),
  *   ADVANCED: (undefined|!settings.Route),
  *   ADDRESSES: (undefined|!settings.Route),
+ *   APPS: (undefined|!settings.Route),
  *   ANDROID_APPS: (undefined|!settings.Route),
  *   ANDROID_APPS_DETAILS: (undefined|!settings.Route),
  *   CROSTINI: (undefined|!settings.Route),
@@ -274,6 +275,11 @@ cr.define('settings', function() {
     if (loadTimeData.valueExists('assistantEnabled') &&
         loadTimeData.getBoolean('assistantEnabled')) {
       r.GOOGLE_ASSISTANT = r.SEARCH.createChild('/googleAssistant');
+    }
+
+    if (loadTimeData.valueExists('showApps') &&
+        loadTimeData.getBoolean('showApps')) {
+      r.APPS = r.BASIC.createSection('/apps', 'apps');
     }
 
     r.ANDROID_APPS = r.BASIC.createSection('/androidApps', 'androidApps');

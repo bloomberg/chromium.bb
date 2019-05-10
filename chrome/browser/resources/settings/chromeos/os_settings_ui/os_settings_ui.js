@@ -51,6 +51,9 @@ Polymer({
     pageVisibility_: {type: Object, value: settings.pageVisibility},
 
     /** @private */
+    showApps_: Boolean,
+
+    /** @private */
     showAndroidApps_: Boolean,
 
     /** @private */
@@ -141,6 +144,9 @@ Polymer({
       vpnNameTemplate: loadTimeData.getString('vpnNameTemplate'),
     };
 
+    // TODO(crbug.com/961514) remove unnecessary valueExists() calls.
+    this.showApps_ = loadTimeData.valueExists('showApps') &&
+        loadTimeData.getBoolean('showApps');
     this.showAndroidApps_ = loadTimeData.valueExists('androidAppsVisible') &&
         loadTimeData.getBoolean('androidAppsVisible');
     this.showKioskNextShell_ = loadTimeData.valueExists('showKioskNextShell') &&

@@ -22,6 +22,8 @@ Polymer({
       notify: true,
     },
 
+    showApps: Boolean,
+
     showAndroidApps: Boolean,
 
     showCrostini: Boolean,

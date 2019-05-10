@@ -23,6 +23,8 @@ Polymer({
     },
 
     // <if expr="chromeos">
+    showApps: Boolean,
+
     showAndroidApps: Boolean,
 
     showCrostini: Boolean,

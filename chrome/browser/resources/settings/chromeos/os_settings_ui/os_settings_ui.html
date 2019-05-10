@@ -64,6 +64,7 @@
       <div class="drawer-content">
         <template is="dom-if" id="drawerTemplate">
           <os-settings-menu page-visibility="[[pageVisibility_]]"
+              show-apps="[[showApps_]]"
               show-android-apps="[[showAndroidApps_]]"
               show-crostini="[[showCrostini_]]"
               show-plugin-vm="[[showPluginVm_]]"
@@ -79,6 +80,7 @@
       <os-settings-main id="main" prefs="{{prefs}}"
           toolbar-spinner-active="{{toolbarSpinnerActive_}}"
           page-visibility="[[pageVisibility_]]"
+          show-apps="[[showApps_]]"
           show-android-apps="[[showAndroidApps_]]"
           show-kiosk-next-shell="[[showKioskNextShell_]]"
           show-crostini="[[showCrostini_]]"
