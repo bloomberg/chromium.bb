@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/data_use_measurement/chrome_data_use_measurement.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
@@ -244,7 +245,7 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
       InitDataReductionProxySettings(profile_prefs, io_data,
                                      std::move(service));
   io_data->SetDataReductionProxyService(
-      data_reduction_proxy_service()->GetWeakPtr());
+      data_reduction_proxy_service()->GetWeakPtr(), GetUserAgent());
 
   data_reduction_proxy::DataReductionProxySettings::
       SetCallbackToRegisterSyntheticFieldTrial(base::Bind(

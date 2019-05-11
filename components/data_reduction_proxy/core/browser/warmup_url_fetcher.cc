@@ -32,8 +32,10 @@ namespace {
 const int kInvalidResponseCode = -1;
 
 void BindNetworkContextOnUI(network::mojom::CustomProxyConfigPtr config,
-                            network::mojom::NetworkContextRequest request) {
+                            network::mojom::NetworkContextRequest request,
+                            const std::string& user_agent) {
   auto params = network::mojom::NetworkContextParams::New();
+  params->user_agent = user_agent;
   params->initial_custom_proxy_config = std::move(config);
   content::GetNetworkService()->CreateNetworkContext(std::move(request),
                                                      std::move(params));
@@ -46,7 +48,8 @@ WarmupURLFetcher::WarmupURLFetcher(
     CreateCustomProxyConfigCallback create_custom_proxy_config_callback,
     WarmupURLFetcherCallback callback,
     GetHttpRttCallback get_http_rtt_callback,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    const std::string& user_agent)
     : is_fetch_in_flight_(false),
       previous_attempt_counts_(0),
       non_network_service_url_loader_factory_(
@@ -54,6 +57,7 @@ WarmupURLFetcher::WarmupURLFetcher(
       create_custom_proxy_config_callback_(create_custom_proxy_config_callback),
       callback_(callback),
       get_http_rtt_callback_(get_http_rtt_callback),
+      user_agent_(user_agent),
       ui_task_runner_(ui_task_runner) {
   DCHECK(non_network_service_url_loader_factory_);
   DCHECK(create_custom_proxy_config_callback);
@@ -177,7 +181,7 @@ WarmupURLFetcher::GetNetworkServiceURLLoaderFactory(
       FROM_HERE,
       base::BindOnce(&BindNetworkContextOnUI,
                      create_custom_proxy_config_callback_.Run({proxy_server}),
-                     mojo::MakeRequest(&context_)));
+                     mojo::MakeRequest(&context_), user_agent_));
 
   auto factory_params = network::mojom::URLLoaderFactoryParams::New();
   factory_params->process_id = network::mojom::kBrowserProcessId;

@@ -78,7 +78,8 @@ class DataReductionProxyIOData : public mojom::DataReductionProxy {
   // Sets the Data Reduction Proxy service after it has been created.
   // Virtual for testing.
   virtual void SetDataReductionProxyService(
-      base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service);
+      base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service,
+      const std::string& user_agent);
 
   // Creates an interceptor suitable for following the Data Reduction Proxy
   // bypass protocol.
@@ -238,7 +239,7 @@ class DataReductionProxyIOData : public mojom::DataReductionProxy {
   // Initializes the weak pointer to |this| on the IO thread. It must be done
   // on the IO thread, since it is used for posting tasks from the UI thread
   // to IO thread objects in a thread safe manner.
-  void InitializeOnIOThread();
+  void InitializeOnIOThread(const std::string& user_agent);
 
   // Records that the data reduction proxy is unreachable or not.
   void SetUnreachable(bool unreachable);

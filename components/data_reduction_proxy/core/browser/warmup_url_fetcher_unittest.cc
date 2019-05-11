@@ -51,7 +51,8 @@ class WarmupURLFetcherTest : public WarmupURLFetcher {
                 base::Unretained(this)),
             base::BindRepeating(&WarmupURLFetcherTest::GetHttpRttEstimate,
                                 base::Unretained(this)),
-            base::ThreadTaskRunnerHandle::Get()) {}
+            base::ThreadTaskRunnerHandle::Get(),
+            std::string() /*user_agent*/) {}
   ~WarmupURLFetcherTest() override {}
 
   size_t callback_received_count() const { return callback_received_count_; }

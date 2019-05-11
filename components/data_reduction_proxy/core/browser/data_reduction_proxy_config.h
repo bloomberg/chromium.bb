@@ -100,7 +100,8 @@ class DataReductionProxyConfig
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       WarmupURLFetcher::CreateCustomProxyConfigCallback
           create_custom_proxy_config_callback,
-      NetworkPropertiesManager* manager);
+      NetworkPropertiesManager* manager,
+      const std::string& user_agent);
 
   // Sets the proxy configs, enabling or disabling the proxy according to
   // the value of |enabled|. If |restricted| is true, only enable the fallback

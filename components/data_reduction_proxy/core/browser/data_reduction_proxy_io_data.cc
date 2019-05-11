@@ -134,7 +134,8 @@ void DataReductionProxyIOData::ShutdownOnUIThread() {
 }
 
 void DataReductionProxyIOData::SetDataReductionProxyService(
-    base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service) {
+    base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service,
+    const std::string& user_agent) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   service_ = data_reduction_proxy_service;
   url_request_context_getter_ = service_->url_request_context_getter();
@@ -143,15 +144,16 @@ void DataReductionProxyIOData::SetDataReductionProxyService(
   // before the Initialize task can be executed. The task is only created as
   // part of class initialization.
   if (io_task_runner_->BelongsToCurrentThread()) {
-    InitializeOnIOThread();
+    InitializeOnIOThread(user_agent);
     return;
   }
   io_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&DataReductionProxyIOData::InitializeOnIOThread,
-                                base::Unretained(this)));
+                                base::Unretained(this), user_agent));
 }
 
-void DataReductionProxyIOData::InitializeOnIOThread() {
+void DataReductionProxyIOData::InitializeOnIOThread(
+    const std::string& user_agent) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   DCHECK(network_properties_manager_);
 
@@ -163,7 +165,7 @@ void DataReductionProxyIOData::InitializeOnIOThread() {
       url_loader_factory,
       base::BindRepeating(&DataReductionProxyIOData::CreateCustomProxyConfig,
                           base::Unretained(this), true),
-      network_properties_manager_.get());
+      network_properties_manager_.get(), user_agent);
   bypass_stats_->InitializeOnIOThread();
   proxy_delegate_->InitializeOnIOThread(this);
   if (config_client_)

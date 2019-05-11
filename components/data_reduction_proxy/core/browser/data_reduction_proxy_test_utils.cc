@@ -275,10 +275,11 @@ void TestDataReductionProxyIOData::SetIgnoreLongTermBlackListRules(
 }
 
 void TestDataReductionProxyIOData::SetDataReductionProxyService(
-    base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service) {
+    base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service,
+    const std::string& user_agent) {
   if (!service_set_)
     DataReductionProxyIOData::SetDataReductionProxyService(
-        data_reduction_proxy_service);
+        data_reduction_proxy_service, user_agent);
 
   service_set_ = true;
 }
@@ -623,7 +624,8 @@ void DataReductionProxyTestContext::InitSettingsWithoutCheck() {
       simple_pref_service_.get(), io_data_.get(),
       CreateDataReductionProxyServiceInternal(settings_.get()));
   io_data_->SetDataReductionProxyService(
-      settings_->data_reduction_proxy_service()->GetWeakPtr());
+      settings_->data_reduction_proxy_service()->GetWeakPtr(),
+      std::string() /*user_agent*/);
   settings_->data_reduction_proxy_service()->SetIOData(io_data_->GetWeakPtr());
 }
 
