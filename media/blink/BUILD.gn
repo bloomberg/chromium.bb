@@ -61,8 +61,6 @@ component("blink") {
     "webencryptedmediaclient_impl.h",
     "webinbandtexttrack_impl.cc",
     "webinbandtexttrack_impl.h",
-    "webmediacapabilitiesclient_impl.cc",
-    "webmediacapabilitiesclient_impl.h",
     "webmediaplayer_delegate.h",
     "webmediaplayer_params.cc",
     "webmediaplayer_params.h",
@@ -156,7 +154,6 @@ test("media_blink_unittests") {
     "watch_time_component_unittest.cc",
     "watch_time_reporter_unittest.cc",
     "webaudiosourceprovider_impl_unittest.cc",
-    "webmediacapabilitiesclient_impl_unittest.cc",
     "webmediaplayer_impl_unittest.cc",
     "webmediaplayer_util_unittest.cc",
   ]

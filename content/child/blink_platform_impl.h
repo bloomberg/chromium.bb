@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "components/webcrypto/webcrypto_impl.h"
 #include "content/common/content_export.h"
-#include "media/blink/webmediacapabilitiesclient_impl.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_gesture_device.h"
 #include "third_party/blink/public/platform/web_url_error.h"
@@ -67,7 +66,6 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
       const blink::WebSecurityOrigin& script_origin) override;
   blink::WebCrypto* Crypto() override;
   const char* GetBrowserServiceName() const override;
-  blink::WebMediaCapabilitiesClient* MediaCapabilitiesClient() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() const override;
   std::unique_ptr<NestedMessageLoopRunner> CreateNestedMessageLoopRunner()
@@ -78,7 +76,6 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
   std::unique_ptr<blink::WebThemeEngine> native_theme_engine_;
   webcrypto::WebCryptoImpl web_crypto_;
-  media::WebMediaCapabilitiesClientImpl media_capabilities_client_;
 };
 
 }  // namespace content

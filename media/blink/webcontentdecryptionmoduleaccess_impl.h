@@ -47,8 +47,7 @@ class WebContentDecryptionModuleAccessImpl
   void CreateContentDecryptionModule(
       blink::WebContentDecryptionModuleResult result,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
-
-  const CdmConfig& GetCdmConfig() const;
+  bool UseHardwareSecureCodecs() const override;
 
  private:
   const blink::WebString key_system_;

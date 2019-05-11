@@ -640,11 +640,6 @@ const char* BlinkPlatformImpl::GetBrowserServiceName() const {
   return mojom::kBrowserServiceName;
 }
 
-blink::WebMediaCapabilitiesClient*
-BlinkPlatformImpl::MediaCapabilitiesClient() {
-  return &media_capabilities_client_;
-}
-
 WebThemeEngine* BlinkPlatformImpl::ThemeEngine() {
   return native_theme_engine_.get();
 }

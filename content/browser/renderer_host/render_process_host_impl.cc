@@ -191,7 +191,6 @@
 #include "media/audio/audio_manager.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
-#include "media/mojo/services/video_decode_perf_history.h"
 #include "media/webrtc/webrtc_switches.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -2058,13 +2057,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   AddUIThreadInterface(registry.get(),
                        base::BindRepeating(&ClipboardHostImpl::Create));
-
-  media::VideoDecodePerfHistory* video_perf_history =
-      GetBrowserContext()->GetVideoDecodePerfHistory();
-  AddUIThreadInterface(
-      registry.get(),
-      base::BindRepeating(&media::VideoDecodePerfHistory::BindRequest,
-                          base::Unretained(video_perf_history)));
 
   registry->AddInterface(
       base::BindRepeating(&MimeRegistryImpl::Create),

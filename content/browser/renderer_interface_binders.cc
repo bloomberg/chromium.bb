@@ -28,6 +28,8 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "media/mojo/interfaces/video_decode_perf_history.mojom.h"
+#include "media/mojo/services/video_decode_perf_history.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/vibration_manager.mojom.h"
 #include "services/network/restricted_cookie_manager.h"
@@ -236,6 +238,12 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
         static_cast<StoragePartitionImpl*>(host->GetStoragePartition())
             ->GetCookieStoreContext()
             ->CreateService(std::move(request), origin);
+      }));
+  parameterized_binder_registry_.AddInterface(base::BindRepeating(
+      [](media::mojom::VideoDecodePerfHistoryRequest request,
+         RenderProcessHost* host, const url::Origin& origin) {
+        host->GetBrowserContext()->GetVideoDecodePerfHistory()->BindRequest(
+            std::move(request));
       }));
 }
 
