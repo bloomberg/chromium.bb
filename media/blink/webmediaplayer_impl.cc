@@ -1653,7 +1653,8 @@ void WebMediaPlayerImpl::OnError(PipelineStatus status) {
 #if defined(OS_ANDROID)
   // |mb_data_source_| may be nullptr if someone passes in a m3u8 as a data://
   // URL, since MediaPlayer doesn't support data:// URLs, fail playback now.
-  const bool found_hls = status == PipelineStatus::DEMUXER_ERROR_DETECTED_HLS;
+  const bool found_hls = base::FeatureList::IsEnabled(kHlsPlayer) &&
+                         status == PipelineStatus::DEMUXER_ERROR_DETECTED_HLS;
   if (found_hls && mb_data_source_) {
     demuxer_found_hls_ = true;
 

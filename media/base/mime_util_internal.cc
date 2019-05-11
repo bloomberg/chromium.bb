@@ -5,6 +5,7 @@
 #include "media/base/mime_util_internal.h"
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -360,21 +361,23 @@ void MimeUtil::AddSupportedMediaFormats() {
   AddContainerWithCodecs("video/mp2t", mp2t_codecs);
 #endif  // BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
 #if defined(OS_ANDROID)
-  // HTTP Live Streaming (HLS).
-  CodecSet hls_codecs{H264,
-                      // TODO(ddorwin): Is any MP3 codec string variant included
-                      // in real queries?
-                      MP3,
-                      // Android HLS only supports MPEG4_AAC (missing demuxer
-                      // support for MPEG2_AAC)
-                      MPEG4_AAC};
-  AddContainerWithCodecs("application/x-mpegurl", hls_codecs);
-  AddContainerWithCodecs("application/vnd.apple.mpegurl", hls_codecs);
-  AddContainerWithCodecs("audio/mpegurl", hls_codecs);
-  // Not documented by Apple, but unfortunately used extensively by Apple and
-  // others for both audio-only and audio+video playlists. See
-  // https://crbug.com/675552 for details and examples.
-  AddContainerWithCodecs("audio/x-mpegurl", hls_codecs);
+  if (base::FeatureList::IsEnabled(kCanPlayHls)) {
+    // HTTP Live Streaming (HLS).
+    CodecSet hls_codecs{H264,
+                        // TODO(ddorwin): Is any MP3 codec string variant
+                        // included in real queries?
+                        MP3,
+                        // Android HLS only supports MPEG4_AAC (missing demuxer
+                        // support for MPEG2_AAC)
+                        MPEG4_AAC};
+    AddContainerWithCodecs("application/x-mpegurl", hls_codecs);
+    AddContainerWithCodecs("application/vnd.apple.mpegurl", hls_codecs);
+    AddContainerWithCodecs("audio/mpegurl", hls_codecs);
+    // Not documented by Apple, but unfortunately used extensively by Apple and
+    // others for both audio-only and audio+video playlists. See
+    // https://crbug.com/675552 for details and examples.
+    AddContainerWithCodecs("audio/x-mpegurl", hls_codecs);
+  }
 #endif  // defined(OS_ANDROID)
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 }

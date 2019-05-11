@@ -143,6 +143,8 @@ MEDIA_EXPORT extern const base::Feature kMediaDrmPreprovisioning;
 MEDIA_EXPORT extern const base::Feature kMediaDrmPreprovisioningAtStartup;
 MEDIA_EXPORT extern const base::Feature kAImageReaderVideoOutput;
 MEDIA_EXPORT extern const base::Feature kDisableSurfaceLayerForVideo;
+MEDIA_EXPORT extern const base::Feature kCanPlayHls;
+MEDIA_EXPORT extern const base::Feature kHlsPlayer;
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
