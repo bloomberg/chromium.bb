@@ -51,17 +51,10 @@ static const uint8_t kDataB = 0x33;
 static const int kDataSize = 1;
 
 // Matchers for verifying common media log entry strings.
-MATCHER(ContainsSameTimestampAt30MillisecondsLog, "") {
-  return CONTAINS_STRING(arg,
-                         "Detected an append sequence with keyframe following "
-                         "a non-keyframe, both with the same decode timestamp "
-                         "of 0.03");
-}
-
 MATCHER_P(ContainsTrackBufferExhaustionSkipLog, skip_milliseconds, "") {
   return CONTAINS_STRING(arg,
                          "Media append that overlapped current playback "
-                         "position caused time gap in playing VIDEO stream "
+                         "position may cause time gap in playing VIDEO stream "
                          "because the next keyframe is " +
                              base::NumberToString(skip_milliseconds) +
                              "ms beyond last overlapped frame. Media may "
@@ -187,14 +180,12 @@ class SourceBufferStreamTest : public testing::Test {
   }
 
   bool GarbageCollect(base::TimeDelta media_time, int new_data_size) {
-    return stream_->GarbageCollectIfNeeded(
-        DecodeTimestamp::FromPresentationTime(media_time), new_data_size);
+    return stream_->GarbageCollectIfNeeded(media_time, new_data_size);
   }
 
-  bool GarbageCollectWithPlaybackAtBuffer(int position, int newDataBuffers) {
-    return stream_->GarbageCollectIfNeeded(
-        DecodeTimestamp::FromPresentationTime(position * frame_duration_),
-        newDataBuffers * kDataSize);
+  bool GarbageCollectWithPlaybackAtBuffer(int position, int new_data_buffers) {
+    return GarbageCollect(position * frame_duration_,
+                          new_data_buffers * kDataSize);
   }
 
   void RemoveInMs(int start, int end, int duration) {
@@ -209,18 +200,16 @@ class SourceBufferStreamTest : public testing::Test {
   }
 
   void SignalStartOfCodedFrameGroup(base::TimeDelta start_timestamp) {
-    stream_->OnStartOfCodedFrameGroup(
-        DecodeTimestamp::FromPresentationTime(start_timestamp),
-        start_timestamp);
+    stream_->OnStartOfCodedFrameGroup(start_timestamp);
   }
 
   int GetRemovalRangeInMs(int start, int end, int bytes_to_free,
                           int* removal_end) {
-    DecodeTimestamp removal_end_timestamp =
-        DecodeTimestamp::FromMilliseconds(*removal_end);
+    base::TimeDelta removal_end_timestamp =
+        base::TimeDelta::FromMilliseconds(*removal_end);
     int bytes_removed =
-        stream_->GetRemovalRange(DecodeTimestamp::FromMilliseconds(start),
-                                 DecodeTimestamp::FromMilliseconds(end),
+        stream_->GetRemovalRange(base::TimeDelta::FromMilliseconds(start),
+                                 base::TimeDelta::FromMilliseconds(end),
                                  bytes_to_free, &removal_end_timestamp);
     *removal_end = removal_end_timestamp.InMilliseconds();
     return bytes_removed;
@@ -487,10 +476,7 @@ class SourceBufferStreamTest : public testing::Test {
                      const uint8_t* data,
                      int size) {
     if (begin_coded_frame_group) {
-      stream_->OnStartOfCodedFrameGroup(
-          DecodeTimestamp::FromPresentationTime(starting_position *
-                                                frame_duration_),
-          starting_position * frame_duration_);
+      stream_->OnStartOfCodedFrameGroup(starting_position * frame_duration_);
     }
 
     int keyframe_interval = frames_per_second_ / keyframes_per_second_;
@@ -700,19 +686,16 @@ class SourceBufferStreamTest : public testing::Test {
     BufferQueue buffers = StringToBufferQueue(buffers_to_append);
 
     if (start_new_coded_frame_group) {
-      DecodeTimestamp start_timestamp = DecodeTimestamp::FromPresentationTime(
-          coded_frame_group_start_timestamp);
+      base::TimeDelta start_timestamp = coded_frame_group_start_timestamp;
 
-      DecodeTimestamp buffers_start_timestamp =
-          DecodeTimestamp::FromPresentationTime(buffers[0]->timestamp());
+      base::TimeDelta buffers_start_timestamp = buffers[0]->timestamp();
 
-      if (start_timestamp == kNoDecodeTimestamp())
+      if (start_timestamp == kNoTimestamp)
         start_timestamp = buffers_start_timestamp;
       else
         ASSERT_TRUE(start_timestamp <= buffers_start_timestamp);
 
-      stream_->OnStartOfCodedFrameGroup(start_timestamp,
-                                        start_timestamp.ToPresentationTime());
+      stream_->OnStartOfCodedFrameGroup(start_timestamp);
     }
 
     if (!one_by_one) {
@@ -2569,7 +2552,7 @@ TEST_F(SourceBufferStreamTest,
   NewCodedFrameGroupAppend("1000K 1010 1020 1030 1040");
 
   // GC should be a no-op, since we are just under memory limit.
-  EXPECT_TRUE(stream_->GarbageCollectIfNeeded(DecodeTimestamp(), 0));
+  EXPECT_TRUE(GarbageCollect(base::TimeDelta(), 0));
   CheckExpectedRangesByTimestamp("{ [0,100) [1000,1050) }");
 
   // Seek to the near the end of the first range
@@ -2581,8 +2564,7 @@ TEST_F(SourceBufferStreamTest,
   // GOP in that first range. Neither can it collect the last appended GOP
   // (which is the entire second range), so GC should return false since it
   // couldn't collect enough.
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(95), 7));
+  EXPECT_FALSE(GarbageCollect(base::TimeDelta::FromMilliseconds(95), 7));
   CheckExpectedRangesByTimestamp("{ [50,100) [1000,1050) }");
 }
 
@@ -2732,8 +2714,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_DeleteAfterLastAppend) {
   // So the ranges before GC are "{ [100,280) [310,400) [490,670) }".
   NewCodedFrameGroupAppend("100K 130 160 190K 220 250K");
 
-  EXPECT_TRUE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(580), 0));
+  EXPECT_TRUE(GarbageCollect(base::TimeDelta::FromMilliseconds(580), 0));
 
   // Should save the newly appended GOPs.
   CheckExpectedRangesByTimestamp("{ [100,280) [580,670) }");
@@ -2753,8 +2734,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_DeleteAfterLastAppendMerged) {
   // range.  So the range before GC is "{ [220,670) }".
   NewCodedFrameGroupAppend("220K 250 280 310K 340 370");
 
-  EXPECT_TRUE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(580), 0));
+  EXPECT_TRUE(GarbageCollect(base::TimeDelta::FromMilliseconds(580), 0));
 
   // Should save the newly appended GOPs.
   CheckExpectedRangesByTimestamp("{ [220,400) [580,670) }");
@@ -2934,52 +2914,44 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_SaveDataAtPlaybackPosition) {
   CheckExpectedRanges("{ [0,299) }");
 
   // Playback position at 0, all data must be preserved.
-  EXPECT_FALSE(
-      stream_->GarbageCollectIfNeeded(DecodeTimestamp::FromMilliseconds(0), 0));
+  EXPECT_FALSE(GarbageCollect(base::TimeDelta::FromMilliseconds(0), 0));
   CheckExpectedRanges("{ [0,299) }");
 
   // Playback position at 1 sec, the first second of data [0,29) should be
   // collected, since we are way over memory limit.
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(1000), 0));
+  EXPECT_FALSE(GarbageCollect(base::TimeDelta::FromMilliseconds(1000), 0));
   CheckExpectedRanges("{ [30,299) }");
 
   // Playback position at 1.1 sec, no new data can be collected, since the
   // playback position is still in the first GOP of buffered data.
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(1100), 0));
+  EXPECT_FALSE(GarbageCollect(base::TimeDelta::FromMilliseconds(1100), 0));
   CheckExpectedRanges("{ [30,299) }");
 
   // Playback position at 5.166 sec, just at the very end of GOP corresponding
   // to buffer range 150-155, which should be preserved.
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(5166), 0));
+  EXPECT_FALSE(GarbageCollect(base::TimeDelta::FromMilliseconds(5166), 0));
   CheckExpectedRanges("{ [150,299) }");
 
   // Playback position at 5.167 sec, just past the end of GOP corresponding to
   // buffer range 150-155, it should be garbage collected now.
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(5167), 0));
+  EXPECT_FALSE(GarbageCollect(base::TimeDelta::FromMilliseconds(5167), 0));
   CheckExpectedRanges("{ [155,299) }");
 
   // Playback at 9.0 sec, we can now successfully collect all data except the
   // last second and we are back under memory limit of 30 buffers, so GCIfNeeded
   // should return true.
-  EXPECT_TRUE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(9000), 0));
+  EXPECT_TRUE(GarbageCollect(base::TimeDelta::FromMilliseconds(9000), 0));
   CheckExpectedRanges("{ [270,299) }");
 
   // Playback at 9.999 sec, GC succeeds, since we are under memory limit even
   // without removing any data.
-  EXPECT_TRUE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(9999), 0));
+  EXPECT_TRUE(GarbageCollect(base::TimeDelta::FromMilliseconds(9999), 0));
   CheckExpectedRanges("{ [270,299) }");
 
   // Playback at 15 sec, this should never happen during regular playback in
   // browser, since this position has no data buffered, but it should still
   // cause no problems to GC algorithm, so test it just in case.
-  EXPECT_TRUE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(15000), 0));
+  EXPECT_TRUE(GarbageCollect(base::TimeDelta::FromMilliseconds(15000), 0));
   CheckExpectedRanges("{ [270,299) }");
 }
 
@@ -3009,16 +2981,14 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP) {
   // GC. Because it is after 290ms, this tests that the GOP is saved when
   // deleting from the back.
   NewCodedFrameGroupAppend("500K 530 560 590");
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(290), 0));
+  EXPECT_FALSE(GarbageCollect(base::TimeDelta::FromMilliseconds(290), 0));
 
   // Should save GOPs between 290ms and the last GOP appended.
   CheckExpectedRangesByTimestamp("{ [290,380) [500,620) }");
 
   // Continue appending to this GOP after GC.
   AppendBuffers("620D30");
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(290), 0));
+  EXPECT_FALSE(GarbageCollect(base::TimeDelta::FromMilliseconds(290), 0));
   CheckExpectedRangesByTimestamp("{ [290,380) [500,650) }");
 }
 
@@ -3036,13 +3006,11 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Middle) {
 
   // This whole GOP should be saved after GC, which will fail due to GOP being
   // larger than 1 buffer
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(80), 0));
+  EXPECT_FALSE(GarbageCollect(base::TimeDelta::FromMilliseconds(80), 0));
   CheckExpectedRangesByTimestamp("{ [80,170) }");
   // We should still be able to continue appending data to GOP
   AppendBuffers("170D30");
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(80), 0));
+  EXPECT_FALSE(GarbageCollect(base::TimeDelta::FromMilliseconds(80), 0));
   CheckExpectedRangesByTimestamp("{ [80,200) }");
 
   // Append a 2nd range after this range, without triggering GC.
@@ -3056,16 +3024,14 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Middle) {
   // it is after the selected range, this tests that the GOP is saved when
   // deleting from the back.
   NewCodedFrameGroupAppend("500K 530 560 590");
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(80), 0));
+  EXPECT_FALSE(GarbageCollect(base::TimeDelta::FromMilliseconds(80), 0));
 
   // Should save the GOPs between the seek point and GOP that was last appended
   CheckExpectedRangesByTimestamp("{ [80,200) [400,620) }");
 
   // Continue appending to this GOP after GC.
   AppendBuffers("620D30");
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(80), 0));
+  EXPECT_FALSE(GarbageCollect(base::TimeDelta::FromMilliseconds(80), 0));
   CheckExpectedRangesByTimestamp("{ [80,200) [400,650) }");
 }
 
@@ -3085,8 +3051,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Selected1) {
 
   // GC should save the GOP at 0ms and 90ms, and will fail since GOP larger
   // than 1 buffer
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(90), 0));
+  EXPECT_FALSE(GarbageCollect(base::TimeDelta::FromMilliseconds(90), 0));
   CheckExpectedRangesByTimestamp("{ [0,180) }");
 
   // Seek to 0 and check all buffers.
@@ -3099,8 +3064,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Selected1) {
   NewCodedFrameGroupAppend("180K 210 240");
 
   // Should save the GOP at 90ms and the GOP at 180ms.
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(90), 0));
+  EXPECT_FALSE(GarbageCollect(base::TimeDelta::FromMilliseconds(90), 0));
   CheckExpectedRangesByTimestamp("{ [90,270) }");
   CheckExpectedBuffers("90K 120 150 180K 210 240");
   CheckNoNextBuffer();
@@ -3123,8 +3087,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Selected2) {
 
   // GC will save data in the range where the most recent append has happened
   // [0; 180) and the range where the next read position is [270;360)
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(270), 0));
+  EXPECT_FALSE(GarbageCollect(base::TimeDelta::FromMilliseconds(270), 0));
   CheckExpectedRangesByTimestamp("{ [0,180) [270,360) }");
 
   // Add 3 GOPs to the end of the selected range at 360ms, 450ms, and 540ms.
@@ -3134,8 +3097,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Selected2) {
   // Overlap the GOP at 450ms and garbage collect to test deleting from the
   // back.
   NewCodedFrameGroupAppend("450K 480 510");
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(270), 0));
+  EXPECT_FALSE(GarbageCollect(base::TimeDelta::FromMilliseconds(270), 0));
 
   // Should save GOPs from GOP at 270ms to GOP at 450ms.
   CheckExpectedRangesByTimestamp("{ [270,540) }");
@@ -3158,8 +3120,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Selected3) {
 
   // GC should save the newly appended GOP, which is also the next GOP that
   // will be returned from the seek request.
-  EXPECT_FALSE(
-      stream_->GarbageCollectIfNeeded(DecodeTimestamp::FromMilliseconds(0), 0));
+  EXPECT_FALSE(GarbageCollect(base::TimeDelta::FromMilliseconds(0), 0));
   CheckExpectedRangesByTimestamp("{ [0,60) }");
 
   // Check the buffers in the range.
@@ -3171,8 +3132,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Selected3) {
 
   // GC should still save the rest of this GOP and should be able to fulfill
   // the read.
-  EXPECT_FALSE(
-      stream_->GarbageCollectIfNeeded(DecodeTimestamp::FromMilliseconds(0), 0));
+  EXPECT_FALSE(GarbageCollect(base::TimeDelta::FromMilliseconds(0), 0));
   CheckExpectedRangesByTimestamp("{ [0,120) }");
   CheckExpectedBuffers("60 90");
   CheckNoNextBuffer();
@@ -3211,8 +3171,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_MediaTimeAfterLastAppendTime) {
   // the last appended buffer (330), but still within buffered ranges, taking
   // into account the duration of the last frame (timestamp of the last frame is
   // 330, duration is 30, so the latest valid buffered position is 330+30=360).
-  EXPECT_TRUE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(360), 0));
+  EXPECT_TRUE(GarbageCollect(base::TimeDelta::FromMilliseconds(360), 0));
 
   // GC should collect one GOP from the front to bring us back under memory
   // limit of 10 buffers.
@@ -3239,8 +3198,7 @@ TEST_F(SourceBufferStreamTest,
   // return a media_time that is slightly outside of video buffered range). In
   // those cases the GC algorithm should clamp the media_time value to the
   // buffered ranges to work correctly (see crbug.com/563292).
-  EXPECT_TRUE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(361), 0));
+  EXPECT_TRUE(GarbageCollect(base::TimeDelta::FromMilliseconds(361), 0));
 
   // GC should collect one GOP from the front to bring us back under memory
   // limit of 10 buffers.
@@ -4482,8 +4440,7 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceTrimming_ExistingTrimming) {
   B_buffers.push_back(bufferB2);
 
   // Append buffers, trigger splice trimming.
-  stream_->OnStartOfCodedFrameGroup(bufferA1->GetDecodeTimestamp(),
-                                    bufferA1->timestamp());
+  stream_->OnStartOfCodedFrameGroup(bufferA1->timestamp());
   stream_->Append(A_buffers);
   EXPECT_MEDIA_LOG(TrimmedSpliceOverlap(3000, 2000, 1000));
   stream_->Append(B_buffers);
@@ -5112,7 +5069,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollectionUnderMemoryPressure) {
   // notification takes no effect and the memory limits and won't remove
   // anything from buffered ranges, since we are under the limit of 20 bytes.
   stream_->OnMemoryPressure(
-      DecodeTimestamp::FromMilliseconds(0),
+      base::TimeDelta::FromMilliseconds(0),
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE, false);
   EXPECT_TRUE(GarbageCollect(base::TimeDelta::FromMilliseconds(8), 0));
   CheckExpectedRangesByTimestamp("{ [0,16) }");
@@ -5124,7 +5081,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollectionUnderMemoryPressure) {
 
   // Verify that effective MSE memory limit is reduced under memory pressure.
   stream_->OnMemoryPressure(
-      DecodeTimestamp::FromMilliseconds(0),
+      base::TimeDelta::FromMilliseconds(0),
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE, false);
 
   // Effective memory limit is now 8 buffers, but we still will not collect any
@@ -5141,7 +5098,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollectionUnderMemoryPressure) {
   // becomes even more aggressive and collects everything up to the current
   // playback position.
   stream_->OnMemoryPressure(
-      DecodeTimestamp::FromMilliseconds(0),
+      base::TimeDelta::FromMilliseconds(0),
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL, false);
   EXPECT_TRUE(GarbageCollect(base::TimeDelta::FromMilliseconds(13), 0));
   CheckExpectedRangesByTimestamp("{ [12,16) }");
@@ -5168,11 +5125,11 @@ TEST_F(SourceBufferStreamTest, InstantGarbageCollectionUnderMemoryPressure) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kMemoryPressureBasedSourceBufferGC);
   stream_->OnMemoryPressure(
-      DecodeTimestamp::FromMilliseconds(7),
+      base::TimeDelta::FromMilliseconds(7),
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL, true);
   CheckExpectedRangesByTimestamp("{ [6,16) }");
   stream_->OnMemoryPressure(
-      DecodeTimestamp::FromMilliseconds(9),
+      base::TimeDelta::FromMilliseconds(9),
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL, true);
   CheckExpectedRangesByTimestamp("{ [9,16) }");
 }

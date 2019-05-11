@@ -166,16 +166,13 @@ bool ChunkDemuxerStream::EvictCodedFrames(base::TimeDelta media_time,
   if (!is_enabled_)
     stream_->Seek(media_time);
 
-  // Note: The direct conversion from PTS to DTS is safe here, since we don't
-  // need to know currentTime precisely for GC. GC only needs to know which GOP
-  // currentTime points to.
-  DecodeTimestamp media_time_dts =
-      DecodeTimestamp::FromPresentationTime(media_time);
-  return stream_->GarbageCollectIfNeeded(media_time_dts, newDataSize);
+  // |media_time| is allowed to be a little imprecise here. GC only needs to
+  // know which GOP currentTime points to.
+  return stream_->GarbageCollectIfNeeded(media_time, newDataSize);
 }
 
 void ChunkDemuxerStream::OnMemoryPressure(
-    DecodeTimestamp media_time,
+    base::TimeDelta media_time,
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level,
     bool force_instant_gc) {
   base::AutoLock auto_lock(lock_);
@@ -240,7 +237,7 @@ void ChunkDemuxerStream::OnStartOfCodedFrameGroup(DecodeTimestamp start_dts,
     group_start_observer_cb_.Run(start_dts, start_pts);
 
   base::AutoLock auto_lock(lock_);
-  stream_->OnStartOfCodedFrameGroup(start_dts, start_pts);
+  stream_->OnStartOfCodedFrameGroup(start_pts);
 }
 
 bool ChunkDemuxerStream::UpdateAudioConfig(const AudioDecoderConfig& config,
@@ -808,11 +805,9 @@ void ChunkDemuxer::OnMemoryPressure(
     base::TimeDelta currentMediaTime,
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level,
     bool force_instant_gc) {
-  DecodeTimestamp media_time_dts =
-      DecodeTimestamp::FromPresentationTime(currentMediaTime);
   base::AutoLock auto_lock(lock_);
   for (const auto& itr : source_state_map_) {
-    itr.second->OnMemoryPressure(media_time_dts, memory_pressure_level,
+    itr.second->OnMemoryPressure(currentMediaTime, memory_pressure_level,
                                  force_instant_gc);
   }
 }

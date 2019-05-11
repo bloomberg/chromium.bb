@@ -72,7 +72,7 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   bool EvictCodedFrames(base::TimeDelta media_time, size_t newDataSize);
 
   void OnMemoryPressure(
-      DecodeTimestamp media_time,
+      base::TimeDelta media_time,
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level,
       bool force_instant_gc);
 
@@ -94,8 +94,10 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   size_t GetBufferedSize() const;
 
   // Signal to the stream that buffers handed in through subsequent calls to
-  // Append() belong to a coded frame group that starts at |start_dts| and
-  // |start_pts|.
+  // Append() belong to a coded frame group that starts at |start_pts|.
+  // |start_dts| is used only to help tests verify correctness of calls to this
+  // method. If |group_start_observer_cb_| is set, first invokes this test-only
+  // callback with |start_dts| and |start_pts| to assist test verification.
   void OnStartOfCodedFrameGroup(DecodeTimestamp start_dts,
                                 base::TimeDelta start_pts);
 
@@ -173,6 +175,8 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
 
   const MediaTrack::Id media_track_id_;
 
+  // Test-only callbacks to assist verification of Append() and
+  // OnStartOfCodedFrameGroup() calls, respectively.
   AppendObserverCB append_observer_cb_;
   GroupStartObserverCB group_start_observer_cb_;
 
