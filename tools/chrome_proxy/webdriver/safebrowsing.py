@@ -44,7 +44,7 @@ class SafeBrowsing(IntegrationTest):
       except TimeoutException:
         # Verify that on device safebrowsing records unsafe for mainframe
         # request at bucket=0
-        unsafe_resources = t.GetHistogram('SB2.ResourceTypes2.Unsafe')
+        unsafe_resources = t.GetBrowserHistogram('SB2.ResourceTypes2.Unsafe')
         self.assertEqual(1, unsafe_resources['count'])
         self.assertEqual(1, unsafe_resources['buckets'][0]['count'])
 

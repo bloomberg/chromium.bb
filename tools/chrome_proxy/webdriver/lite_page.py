@@ -135,7 +135,7 @@ class LitePage(IntegrationTest):
       test_driver.LoadURL(
         'http://check.googlezip.net/cacheable/test.html?age_seconds=360')
 
-      histogram = test_driver.GetHistogram(
+      histogram = test_driver.GetBrowserHistogram(
         'Previews.StalePreviewTimestampShown')
       self.assertEqual(1, histogram['count'])
       # Check that there is a single entry in the 'Timestamp Shown' bucket.
@@ -147,7 +147,7 @@ class LitePage(IntegrationTest):
       test_driver.LoadURL(
         'http://check.googlezip.net/cacheable/test.html?age_seconds=0')
 
-      histogram = test_driver.GetHistogram(
+      histogram = test_driver.GetBrowserHistogram(
         'Previews.StalePreviewTimestampShown')
       # Check that there is still a single entry in the 'Timestamp Shown'
       # bucket.

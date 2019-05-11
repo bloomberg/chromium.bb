@@ -79,9 +79,9 @@ class Smoke(IntegrationTest):
       t.LoadURL('http://check.googlezip.net/test.html')
       t.SleepUntilHistogramHasEntry("DataReductionProxy.Pingback.Succeeded")
       # Verify one pingback attempt that was successful.
-      attempted = t.GetHistogram('DataReductionProxy.Pingback.Attempted')
+      attempted = t.GetBrowserHistogram('DataReductionProxy.Pingback.Attempted')
       self.assertEqual(1, attempted['count'])
-      succeeded = t.GetHistogram('DataReductionProxy.Pingback.Succeeded')
+      succeeded = t.GetBrowserHistogram('DataReductionProxy.Pingback.Succeeded')
       self.assertEqual(1, succeeded['count'])
 
   # Ensure pageload metric pingback with DataSaver has the variations header.
