@@ -516,6 +516,10 @@ void TouchEventConverterEvdev::ReportTouchEvent(
 void TouchEventConverterEvdev::CancelAllTouches() {
   // TODO(denniskempin): Remove once upper layers properly handle single
   // cancelled touches.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableCancelAllTouches)) {
+    return;
+  }
   for (size_t i = 0; i < events_.size(); i++) {
     InProgressTouchEvdev* event = &events_[i];
     if (event->was_touching || event->touching) {

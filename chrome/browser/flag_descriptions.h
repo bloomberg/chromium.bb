@@ -1781,6 +1781,9 @@ extern const char kCrosVmCupsProxyDescription[];
 extern const char kCryptAuthV2EnrollmentName[];
 extern const char kCryptAuthV2EnrollmentDescription[];
 
+extern const char kDisableCancelAllTouchesName[];
+extern const char kDisableCancelAllTouchesDescription[];
+
 extern const char kDisableExplicitDmaFencesName[];
 extern const char kDisableExplicitDmaFencesDescription[];
 

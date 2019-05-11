@@ -2958,6 +2958,11 @@ const char kCryptAuthV2EnrollmentName[] = "CryptAuth v2 Enrollment";
 const char kCryptAuthV2EnrollmentDescription[] =
     "Use the CryptAuth v2 Enrollment protocol.";
 
+const char kDisableCancelAllTouchesName[] = "Disable CancelAllTouches()";
+const char kDisableCancelAllTouchesDescription[] =
+    "If enabled, a canceled touch will not force all other touches to be "
+    "canceled.";
+
 const char kDisableExplicitDmaFencesName[] = "Disable explicit dma-fences";
 const char kDisableExplicitDmaFencesDescription[] =
     "Always rely on implicit syncrhonization between GPU and display "

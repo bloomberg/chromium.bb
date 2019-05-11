@@ -32814,6 +32814,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1882330924" label="NTPArticleSuggestions:enabled"/>
   <int value="-1881250251" label="InterestFeedContentSuggestions:disabled"/>
   <int value="-1880355454" label="disable-topchrome-md"/>
+  <int value="-1879877238" label="disable-cancel-all-touches"/>
   <int value="-1876881908"
       label="disable-infobar-for-protected-media-identifier"/>
   <int value="-1875383510" label="UseGoogleLocalNtp:disabled"/>
