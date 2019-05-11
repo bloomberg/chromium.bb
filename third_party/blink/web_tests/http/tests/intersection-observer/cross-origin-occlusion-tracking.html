@@ -32,14 +32,24 @@ async_test(t => {
     }
   });
 
+  let detachAndCheck = (() => {
+    iframe.remove();
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        checkTracking(false);
+        t.done();
+      });
+    });
+  });
+
   checkTracking(false);
 
   let count = 0;
   addEventListener("message", event => {
     requestAnimationFrame(() => {
       checkTracking(event.data.expected);
-      if (count++ > 3) {
-        t.done();
+      if (count++ > 3 && event.data.expected) {
+        detachAndCheck();
       } else {
         iframe.contentWindow.postMessage("", "*");
       }
