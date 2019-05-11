@@ -1996,6 +1996,56 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer6) {
   CheckNoNextBuffer();
 }
 
+// Test that overlap-appending with a GOP that begins with time of next track
+// buffer frame drops that track buffer frame and buffers the new GOP correctly.
+// append :    10K   40    70     100
+// read the first two buffers
+// after  :    10K   40   *70*    100
+//
+// append : 0K    30    60    90    120
+// after  : 0K    30    60    90    120
+// track  :               *70*    100
+//
+// read the buffer at 70ms from track
+// after  : 0K    30    60    90    120
+// track  :                      *100*
+//
+// append :                       100K   130
+// after  : 0K    30    60    90 *100K*  130
+// track  : (empty)
+// 100K, not 100, should be the next buffer read.
+TEST_F(SourceBufferStreamTest,
+       Overlap_That_Prunes_All_of_Previous_TrackBuffer) {
+  NewCodedFrameGroupAppend("10K 40 70 100");
+  CheckExpectedRangesByTimestamp("{ [10,130) }");
+
+  // Seek to 70ms.
+  SeekToTimestampMs(70);
+  CheckExpectedBuffers("10K 40");
+
+  // Overlap with a new coded frame group from 0 to 120ms, leaving the original
+  // nonkeyframes at 70ms and 100ms in the track buffer.
+  NewCodedFrameGroupAppend("0K 30 60 90 120");
+  CheckExpectedRangesByTimestamp("{ [0,150) }");
+
+  // Verify that 70 gets read out of the track buffer, leaving the nonkeyframe
+  // at 100ms in the track buffer.
+  CheckExpectedBuffers("70");
+
+  // Overlap with a coded frame group having a keyframe at 100ms. This should
+  // clear the track buffer and serve that keyframe, not the original
+  // nonkeyframe at time 100ms on the next read call.
+  NewCodedFrameGroupAppend("100K 130");
+  CheckExpectedRangesByTimestamp("{ [0,160) }");
+  CheckExpectedBuffers("100K 130");
+  CheckNoNextBuffer();
+
+  // Check the final result: should not include data from the track buffer.
+  SeekToTimestampMs(0);
+  CheckExpectedBuffers("0K 30 60 90 100K 130");
+  CheckNoNextBuffer();
+}
+
 TEST_F(SourceBufferStreamTest, Seek_Keyframe) {
   // Append 6 buffers at positions 0 through 5.
   NewCodedFrameGroupAppend(0, 6);
