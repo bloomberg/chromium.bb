@@ -50,9 +50,9 @@ void MojoAudioOutputIPC::RequestDeviceAuthorization(
   DCHECK(!StreamCreationRequested());
   delegate_ = delegate;
 
-  // We wrap the callback in a ScopedCallbackRunner to detect the case when the
-  // mojo connection is terminated prior to receiving the response. In this
-  // case, the callback runner will be destructed and call
+  // We wrap the callback in a WrapCallbackWithDefaultInvokeIfNotRun to detect
+  // the case when the mojo connection is terminated prior to receiving the
+  // response. In this case, the callback runner will be destructed and call
   // ReceivedDeviceAuthorization with an error.
   DoRequestDeviceAuthorization(
       session_id, device_id,
@@ -162,8 +162,8 @@ MojoAudioOutputIPC::MakeProviderRequest() {
   // Don't set a connection error handler.
   // There are three possible reasons for a connection error.
   // 1. The connection is broken before authorization was completed. In this
-  //    case, the ScopedCallbackRunner wrapping the callback will call the
-  //    callback with failure.
+  //    case, the WrapCallbackWithDefaultInvokeIfNotRun wrapping the callback
+  //    will call the callback with failure.
   // 2. The connection is broken due to authorization being denied. In this
   //    case, the callback was called with failure first, so the state of the
   //    stream provider is irrelevant.

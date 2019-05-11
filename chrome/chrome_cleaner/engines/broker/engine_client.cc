@@ -58,7 +58,8 @@ using ResultCallback = base::OnceCallback<void(uint32_t)>;
 // example when this is used to wrap SaveResultCallback it must be destroyed on
 // the Mojo thread. The easiest way to ensure this is to call
 // CallbackWithErrorHandling from the Mojo thread and never use base::Passed on
-// the resulting ScopedCallbackRunner to pass it another sequence.
+// the resulting WrapCallbackWithDefaultInvokeIfNotRun to pass it another
+// sequence.
 ResultCallback CallbackWithErrorHandling(ResultCallback callback) {
   return mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       std::move(callback), EngineResultCode::kSandboxUnavailable);
