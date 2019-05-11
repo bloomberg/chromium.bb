@@ -44,7 +44,9 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
 
   AXPlatformNode* ax_platform_node() const { return platform_node_; }
 
+  // Test helpers.
   void BuildAllWrappers(AXTree* tree, AXNode* node);
+  void ResetNativeEventTarget();
 
   // AXPlatformNodeDelegate.
   const AXNodeData& GetData() const override;
@@ -119,8 +121,6 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   int32_t GetPosInSet() const override;
   int32_t GetSetSize() const override;
   const std::vector<gfx::NativeViewAccessible> GetDescendants() const override;
-  void Descendants(const AXNode* node,
-                   std::vector<gfx::NativeViewAccessible>* descendants) const;
 
  private:
   TestAXNodeWrapper(AXTree* tree, AXNode* node);
@@ -137,11 +137,14 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
                                     int32_t focus_offset);
 
   TestAXNodeWrapper* HitTestSyncInternal(int x, int y);
+  void Descendants(const AXNode* node,
+                   std::vector<gfx::NativeViewAccessible>* descendants) const;
 
   AXTree* tree_;
   AXNode* node_;
   ui::AXUniqueId unique_id_;
   AXPlatformNode* platform_node_;
+  gfx::AcceleratedWidget native_event_target_;
 };
 
 }  // namespace ui

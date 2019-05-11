@@ -375,7 +375,7 @@ SAFEARRAY* AXPlatformNodeWin::CreateUIAElementsArrayForRelation(
     const ax::mojom::IntListAttribute& attribute) {
   std::vector<int32_t> id_list = GetIntListAttribute(attribute);
   base::EraseIf(id_list, [&](int32_t node_id) {
-    return !GetDelegate()->GetFromNodeID(node_id);
+    return !IsValidUiaRelationTarget(GetDelegate()->GetFromNodeID(node_id));
   });
   SAFEARRAY* propertyvalue = CreateUIAElementsArrayFromIdVector(id_list);
   return propertyvalue;
@@ -388,7 +388,7 @@ SAFEARRAY* AXPlatformNodeWin::CreateUIAElementsArrayForReverseRelation(
   std::vector<int32_t> ax_platform_node_ids;
   ax_platform_node_ids.reserve(reverse_relations.size());
   for (AXPlatformNode* ax_platform_node : reverse_relations) {
-    if (ax_platform_node) {
+    if (IsValidUiaRelationTarget(ax_platform_node)) {
       ax_platform_node_ids.push_back(
           static_cast<AXPlatformNodeWin*>(ax_platform_node)->GetData().id);
     }
@@ -405,7 +405,11 @@ SAFEARRAY* AXPlatformNodeWin::CreateUIAElementsArrayFromIdVector(
   for (const auto& node_id : ids) {
     AXPlatformNodeWin* node_win =
         static_cast<AXPlatformNodeWin*>(GetDelegate()->GetFromNodeID(node_id));
-    DCHECK(node_win);
+
+    // The caller should validate that all incoming ids are valid relation
+    // targets so that this function does not need to re-check before allocating
+    // the SAFEARRAY.
+    DCHECK(IsValidUiaRelationTarget(node_win));
     SafeArrayPutElement(uia_array, &i,
                         static_cast<IRawElementProviderSimple*>(node_win));
     ++i;
@@ -651,6 +655,20 @@ void AXPlatformNodeWin::FireUiaTextEditTextChangedEvent(
     text_edit_text_changed_func(this, text_edit_change_type,
                                 changed_data.Release());
   }
+}
+
+bool AXPlatformNodeWin::IsValidUiaRelationTarget(
+    AXPlatformNode* ax_platform_node) {
+  if (!ax_platform_node)
+    return false;
+  if (!ax_platform_node->GetDelegate())
+    return false;
+
+  // This is needed for get_FragmentRoot.
+  if (!ax_platform_node->GetDelegate()->GetTargetForNativeAccessibilityEvent())
+    return false;
+
+  return true;
 }
 
 //
@@ -2063,6 +2081,9 @@ IFACEMETHODIMP AXPlatformNodeWin::GetColumnHeaderItems(SAFEARRAY** result) {
 
   std::vector<int32_t> column_header_ids =
       GetDelegate()->GetColHeaderNodeIds(GetTableColumn());
+  base::EraseIf(column_header_ids, [&](int32_t node_id) {
+    return !IsValidUiaRelationTarget(GetDelegate()->GetFromNodeID(node_id));
+  });
   if (column_header_ids.empty())
     return S_FALSE;
   *result = CreateUIAElementsArrayFromIdVector(column_header_ids);
@@ -2078,6 +2099,9 @@ IFACEMETHODIMP AXPlatformNodeWin::GetRowHeaderItems(SAFEARRAY** result) {
 
   std::vector<int32_t> row_header_ids =
       GetDelegate()->GetRowHeaderNodeIds(GetTableRow());
+  base::EraseIf(row_header_ids, [&](int32_t node_id) {
+    return !IsValidUiaRelationTarget(GetDelegate()->GetFromNodeID(node_id));
+  });
   if (row_header_ids.empty())
     return S_FALSE;
   *result = CreateUIAElementsArrayFromIdVector(row_header_ids);
@@ -2096,6 +2120,9 @@ IFACEMETHODIMP AXPlatformNodeWin::GetColumnHeaders(SAFEARRAY** result) {
     return E_FAIL;
 
   std::vector<int32_t> column_header_ids = GetDelegate()->GetColHeaderNodeIds();
+  base::EraseIf(column_header_ids, [&](int32_t node_id) {
+    return !IsValidUiaRelationTarget(GetDelegate()->GetFromNodeID(node_id));
+  });
   *result = CreateUIAElementsArrayFromIdVector(column_header_ids);
   return S_OK;
 }
@@ -2108,6 +2135,9 @@ IFACEMETHODIMP AXPlatformNodeWin::GetRowHeaders(SAFEARRAY** result) {
     return E_FAIL;
 
   std::vector<int32_t> row_header_ids = GetDelegate()->GetRowHeaderNodeIds();
+  base::EraseIf(row_header_ids, [&](int32_t node_id) {
+    return !IsValidUiaRelationTarget(GetDelegate()->GetFromNodeID(node_id));
+  });
   *result = CreateUIAElementsArrayFromIdVector(row_header_ids);
   return S_OK;
 }
@@ -3586,15 +3616,15 @@ IFACEMETHODIMP AXPlatformNodeWin::get_FragmentRoot(
 
   gfx::AcceleratedWidget widget =
       delegate_->GetTargetForNativeAccessibilityEvent();
-  DCHECK(widget);
-
-  ui::AXFragmentRootWin* root =
-      AXFragmentRootWin::GetForAcceleratedWidget(widget);
-  if (root != nullptr) {
-    root->GetNativeViewAccessible()->QueryInterface(
-        IID_PPV_ARGS(fragment_root));
-    DCHECK(*fragment_root);
-    return S_OK;
+  if (widget) {
+    ui::AXFragmentRootWin* root =
+        AXFragmentRootWin::GetForAcceleratedWidget(widget);
+    if (root != nullptr) {
+      root->GetNativeViewAccessible()->QueryInterface(
+          IID_PPV_ARGS(fragment_root));
+      DCHECK(*fragment_root);
+      return S_OK;
+    }
   }
 
   *fragment_root = nullptr;
@@ -3811,8 +3841,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       for (int32_t id : data.GetIntListAttribute(
                ax::mojom::IntListAttribute::kLabelledbyIds)) {
         auto* node_win = GetDelegate()->GetFromNodeID(id);
-        if (node_win) {
-          DCHECK(node_win);
+        if (IsValidUiaRelationTarget(node_win)) {
           result->vt = VT_UNKNOWN;
           result->punkVal = node_win->GetNativeViewAccessible();
           result->punkVal->AddRef();

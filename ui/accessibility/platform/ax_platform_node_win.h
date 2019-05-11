@@ -1152,8 +1152,9 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   SAFEARRAY* CreateUIAElementsArrayForReverseRelation(
       const ax::mojom::IntListAttribute& attribute);
 
-  // Return an array of automation elements given a vector
-  // of |AXNode| ids.
+  // Return an array of automation elements given a vector of |AXNode| ids.
+  // The caller should validate that all of the given ids are valid relation
+  // targets.
   SAFEARRAY* CreateUIAElementsArrayFromIdVector(std::vector<int32_t>& ids);
 
   // Return an array that contains the center x, y coordinates of the
@@ -1249,6 +1250,10 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
       const gfx::Range& range,
       const base::string16& active_composition_text,
       bool is_composition_committed);
+
+  // Return true if the given element is valid enough to be returned as a value
+  // for a UIA relation property (e.g. ControllerFor).
+  static bool IsValidUiaRelationTarget(AXPlatformNode* ax_platform_node);
 
   // Start and end offsets of an active composition
   gfx::Range active_composition_range_;

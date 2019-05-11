@@ -3398,9 +3398,17 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetControllerForPropertyId) {
       QueryInterfaceFromNode<IRawElementProviderSimple>(
           GetRootNode()->children()[0]);
 
-  std::vector<std::wstring> expected_names = {L"panel1", L"panel2"};
+  std::vector<std::wstring> expected_names_1 = {L"panel1", L"panel2"};
   EXPECT_UIA_ELEMENT_ARRAY_BSTR_EQ(tab_node, UIA_ControllerForPropertyId,
-                                   UIA_NamePropertyId, expected_names);
+                                   UIA_NamePropertyId, expected_names_1);
+
+  // Remove panel1's native event target and verify it's no longer returned.
+  TestAXNodeWrapper* panel1_wrapper =
+      TestAXNodeWrapper::GetOrCreate(tree_.get(), GetRootNode()->children()[1]);
+  panel1_wrapper->ResetNativeEventTarget();
+  std::vector<std::wstring> expected_names_2 = {L"panel2"};
+  EXPECT_UIA_ELEMENT_ARRAY_BSTR_EQ(tab_node, UIA_ControllerForPropertyId,
+                                   UIA_NamePropertyId, expected_names_2);
 }
 
 TEST_F(AXPlatformNodeWinTest, TestUIAGetDescribedByPropertyId) {
@@ -3604,9 +3612,19 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetPropertyValueFlowsFromMultiple) {
   ComPtr<IRawElementProviderSimple> child_node2 =
       QueryInterfaceFromNode<IRawElementProviderSimple>(
           GetRootNode()->children()[1]);
-  std::vector<std::wstring> expected_names = {L"root", L"child1"};
+  std::vector<std::wstring> expected_names_1 = {L"root", L"child1"};
   EXPECT_UIA_UNORDERED_ELEMENT_ARRAY_BSTR_EQ(
-      child_node2, UIA_FlowsFromPropertyId, UIA_NamePropertyId, expected_names);
+      child_node2, UIA_FlowsFromPropertyId, UIA_NamePropertyId,
+      expected_names_1);
+
+  // Remove child1's native event target and verify it's no longer returned.
+  TestAXNodeWrapper* child1_wrapper =
+      TestAXNodeWrapper::GetOrCreate(tree_.get(), GetRootNode()->children()[0]);
+  child1_wrapper->ResetNativeEventTarget();
+  std::vector<std::wstring> expected_names_2 = {L"root"};
+  EXPECT_UIA_UNORDERED_ELEMENT_ARRAY_BSTR_EQ(
+      child_node2, UIA_FlowsFromPropertyId, UIA_NamePropertyId,
+      expected_names_2);
 }
 
 TEST_F(AXPlatformNodeWinTest, TestUIAGetPropertyValueFrameworkId) {
@@ -3647,6 +3665,17 @@ TEST_F(AXPlatformNodeWinTest, TestGetPropertyValue_LabeledByTest) {
   EXPECT_EQ(S_OK, propertyValue.ptr()->punkVal->QueryInterface(
                       IID_PPV_ARGS(&referenced_element)));
   EXPECT_UIA_BSTR_EQ(referenced_element, UIA_NamePropertyId, L"Name");
+
+  // Remove referenced_node's native event target and verify it's no longer
+  // returned.
+  TestAXNodeWrapper* referenced_node_wrapper =
+      TestAXNodeWrapper::GetOrCreate(tree_.get(), GetRootNode()->children()[0]);
+  referenced_node_wrapper->ResetNativeEventTarget();
+
+  propertyValue.Reset();
+  EXPECT_EQ(S_OK, root_node->GetPropertyValue(UIA_LabeledByPropertyId,
+                                              propertyValue.Receive()));
+  EXPECT_EQ(propertyValue.type(), VT_EMPTY);
 }
 
 TEST_F(AXPlatformNodeWinTest, TestGetPropertyValue_HelpText) {
@@ -3793,6 +3822,19 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetFragmentRoot) {
   EXPECT_HRESULT_SUCCEEDED(
       element1_provider->get_FragmentRoot(&actual_fragment_root));
   EXPECT_EQ(expected_fragment_root.Get(), actual_fragment_root.Get());
+
+  // Test the case where the fragment root has gone away.
+  ax_fragment_root_.reset();
+  actual_fragment_root.Reset();
+  EXPECT_UIA_ELEMENTNOTAVAILABLE(
+      element1_provider->get_FragmentRoot(&actual_fragment_root));
+
+  // Test the case where the widget has gone away.
+  TestAXNodeWrapper* element1_wrapper =
+      TestAXNodeWrapper::GetOrCreate(tree_.get(), element1_node);
+  element1_wrapper->ResetNativeEventTarget();
+  EXPECT_UIA_ELEMENTNOTAVAILABLE(
+      element1_provider->get_FragmentRoot(&actual_fragment_root));
 }
 
 TEST_F(AXPlatformNodeWinTest, TestUIAGetEmbeddedFragmentRoots) {

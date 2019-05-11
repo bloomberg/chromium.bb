@@ -248,6 +248,10 @@ void TestAXNodeWrapper::BuildAllWrappers(AXTree* tree, AXNode* node) {
   }
 }
 
+void TestAXNodeWrapper::ResetNativeEventTarget() {
+  native_event_target_ = gfx::kNullAcceleratedWidget;
+}
+
 AXPlatformNode* TestAXNodeWrapper::GetFromNodeID(int32_t id) {
   // Force creating all of the wrappers for this tree.
   BuildAllWrappers(tree_, node_);
@@ -447,11 +451,7 @@ int32_t TestAXNodeWrapper::GetCellId(int32_t row_index,
 
 gfx::AcceleratedWidget
 TestAXNodeWrapper::GetTargetForNativeAccessibilityEvent() {
-#if defined(OS_WIN)
-  return gfx::kMockAcceleratedWidget;
-#else
-  return AXPlatformNodeDelegateBase::GetTargetForNativeAccessibilityEvent();
-#endif
+  return native_event_target_;
 }
 
 int32_t TestAXNodeWrapper::CellIndexToId(int32_t cell_index) const {
@@ -615,6 +615,11 @@ TestAXNodeWrapper::TestAXNodeWrapper(AXTree* tree, AXNode* node)
     : tree_(tree),
       node_(node),
       platform_node_(AXPlatformNode::Create(this)) {
+#if defined(OS_WIN)
+  native_event_target_ = gfx::kMockAcceleratedWidget;
+#else
+  native_event_target_ = gfx::kNullAcceleratedWidget;
+#endif
 }
 
 bool TestAXNodeWrapper::IsOrderedSetItem() const {
