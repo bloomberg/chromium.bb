@@ -14,6 +14,8 @@
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/track/text_track.h"
@@ -139,6 +141,22 @@ void MediaControlsTouchlessImpl::MaybeShow() {
 
 void MediaControlsTouchlessImpl::Hide() {
   SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueID::kNone);
+}
+
+LayoutObject* MediaControlsTouchlessImpl::PanelLayoutObject() {
+  return nullptr;
+}
+
+LayoutObject* MediaControlsTouchlessImpl::TimelineLayoutObject() {
+  return bottom_container_->TimelineLayoutObject();
+}
+
+LayoutObject* MediaControlsTouchlessImpl::ButtonPanelLayoutObject() {
+  return bottom_container_->TimeDisplayLayoutObject();
+}
+
+LayoutObject* MediaControlsTouchlessImpl::ContainerLayoutObject() {
+  return GetLayoutObject();
 }
 
 MediaControlsTouchlessMediaEventListener&
@@ -272,7 +290,42 @@ void MediaControlsTouchlessImpl::ShowContextMenu() {
 }
 
 void MediaControlsTouchlessImpl::OnMediaMenuResult(
-    mojom::blink::MenuResponsePtr reponse) {}
+    mojom::blink::MenuResponsePtr response) {
+  if (response.is_null())
+    return;
+
+  switch (response->clicked) {
+    case mojom::blink::MenuItem::FULLSCREEN:
+      if (MediaElement().IsFullscreen())
+        Fullscreen::ExitFullscreen(GetDocument());
+      else
+        Fullscreen::RequestFullscreen(MediaElement());
+      break;
+    case mojom::blink::MenuItem::MUTE:
+      MediaElement().setMuted(!MediaElement().muted());
+      break;
+    case mojom::blink::MenuItem::DOWNLOAD:
+      Download();
+      break;
+    case mojom::blink::MenuItem::CAPTIONS:
+      text_track_manager_->DisableShowingTextTracks();
+      if (response->track_index >= 0)
+        text_track_manager_->ShowTextTrackAtIndex(response->track_index);
+      break;
+  }
+}
+
+void MediaControlsTouchlessImpl::Download() {
+  const KURL& url = MediaElement().currentSrc();
+  if (url.IsNull() || url.IsEmpty())
+    return;
+  ResourceRequest request(url);
+  request.SetSuggestedFilename(MediaElement().title());
+  request.SetRequestContext(mojom::RequestContextType::DOWNLOAD);
+  request.SetRequestorOrigin(SecurityOrigin::Create(GetDocument().Url()));
+  GetDocument().GetFrame()->Client()->DownloadURL(
+      request, DownloadCrossOriginRedirects::kFollow);
+}
 
 void MediaControlsTouchlessImpl::OnMediaControlsMenuHostConnectionError() {
   media_controls_host_.reset();
@@ -393,6 +446,11 @@ void MediaControlsTouchlessImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(volume_container_);
   MediaControls::Trace(visitor);
   HTMLDivElement::Trace(visitor);
+}
+
+void MediaControlsTouchlessImpl::OnMediaMenuResultForTest(
+    mojom::blink::MenuResponsePtr response) {
+  OnMediaMenuResult(std::move(response));
 }
 
 }  // namespace blink

@@ -19,6 +19,8 @@
 #include "third_party/blink/renderer/core/html/media/html_media_test_helper.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/time_ranges.h"
+#include "third_party/blink/renderer/core/html/track/text_track.h"
+#include "third_party/blink/renderer/core/html/track/text_track_list.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
@@ -122,6 +124,14 @@ class MediaControlsTouchlessImplTest : public PageTestBase {
 
   void SetScreenOrientation(WebScreenOrientationType orientation_type) {
     chrome_client_->SetOrientation(orientation_type);
+  }
+
+  void SimulateClickOnMenuItem(mojom::blink::MenuItem menu_item,
+                               int track_index) {
+    mojom::blink::MenuResponsePtr response(mojom::blink::MenuResponse::New());
+    response->clicked = menu_item;
+    response->track_index = track_index;
+    media_controls_->OnMediaMenuResultForTest(std::move(response));
   }
 
   void CheckControlKeys(int seek_forward_key,
@@ -314,6 +324,48 @@ TEST_F(MediaControlsTouchlessImplTest, VolumeDisplayTest) {
   EXPECT_NEAR(volume + volume_delta,
               volume_bar_height / volume_bar_background_height, error);
 }
+
+/** (jazzhsu@) TODO: Add mojom binding test and fix the following test.
+TEST_F(MediaControlsTouchlessImplTest, ContextMenuTest) {
+  // Fullscreen buttom test.
+  EXPECT_FALSE(MediaElement().IsFullscreen());
+  SimulateClickOnMenuItem(mojom::blink::MenuItem::FULLSCREEN, -1);
+  test::RunPendingTasks();
+  EXPECT_TRUE(MediaElement().IsFullscreen());
+  SimulateClickOnMenuItem(mojom::blink::MenuItem::FULLSCREEN, -1);
+  test::RunPendingTasks();
+  EXPECT_FALSE(MediaElement().IsFullscreen());
+
+  // Mute buttom test.
+  EXPECT_FALSE(MediaElement().muted());
+  SimulateClickOnMenuItem(mojom::blink::MenuItem::MUTE, -1);
+  EXPECT_TRUE(MediaElement().muted());
+  SimulateClickOnMenuItem(mojom::blink::MenuItem::MUTE, -1);
+  EXPECT_FALSE(MediaElement().muted());
+
+  // Text track test.
+  TextTrack* track1 = MediaElement().addTextTrack("subtitle", "english",
+                                                  "en", NASSERT_NO_EXCEPTION);
+  TextTrack* track2 = MediaElement().addTextTrack("subtitle", "english2",
+                                                  "en", ASSERT_NO_EXCEPTION);
+  EXPECT_NE(track1->mode(), TextTrack::ShowingKeyword());
+  EXPECT_NE(track2->mode(), TextTrack::ShowingKeyword());
+
+  // Select first track.
+  SimulateClickOnMenuItem(mojom::blink::MenuItem::CAPTIONS, 0);
+  EXPECT_EQ(track1->mode(), TextTrack::ShowingKeyword());
+
+  // Select second track.
+  SimulateClickOnMenuItem(mojom::blink::MenuItem::CAPTIONS, 1);
+  EXPECT_NE(track1->mode(), TextTrack::ShowingKeyword());
+  EXPECT_EQ(track2->mode(), TextTrack::ShowingKeyword());
+
+  // Turn all tracks off.
+  SimulateClickOnMenuItem(mojom::blink::MenuItem::CAPTIONS, -1);
+  EXPECT_NE(track1->mode(), TextTrack::ShowingKeyword());
+  EXPECT_NE(track2->mode(), TextTrack::ShowingKeyword());
+}
+*/
 
 TEST_F(MediaControlsTouchlessImplTestWithMockScheduler,
        MidOverlayHideTimerTest) {

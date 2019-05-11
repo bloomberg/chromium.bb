@@ -16,19 +16,31 @@ MediaControlsTouchlessBottomContainerElement::
   SetShadowPseudoId(
       AtomicString("-internal-media-controls-touchless-bottom-container"));
 
-  MediaControlsTouchlessTimeDisplayElement* time_display_element =
+  time_display_element_ =
       MakeGarbageCollected<MediaControlsTouchlessTimeDisplayElement>(
           media_controls);
-  MediaControlsTouchlessTimelineElement* timeline_element =
+  timeline_element_ =
       MakeGarbageCollected<MediaControlsTouchlessTimelineElement>(
           media_controls);
 
-  ParserAppendChild(time_display_element);
-  ParserAppendChild(timeline_element);
+  ParserAppendChild(time_display_element_);
+  ParserAppendChild(timeline_element_);
+}
+
+LayoutObject*
+MediaControlsTouchlessBottomContainerElement::TimelineLayoutObject() {
+  return timeline_element_->GetLayoutObject();
+}
+
+LayoutObject*
+MediaControlsTouchlessBottomContainerElement::TimeDisplayLayoutObject() {
+  return time_display_element_->GetLayoutObject();
 }
 
 void MediaControlsTouchlessBottomContainerElement::Trace(
     blink::Visitor* visitor) {
+  visitor->Trace(timeline_element_);
+  visitor->Trace(time_display_element_);
   MediaControlsTouchlessElement::Trace(visitor);
 }
 

@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -4063,6 +4064,20 @@ void HTMLMediaElement::OnRemovedFromDocumentTimerFired(TimerBase*) {
     return;
 
   PauseInternal();
+}
+
+void HTMLMediaElement::DefaultEventHandler(Event& event) {
+  if (event.IsKeyboardEvent() && ShouldShowControls()) {
+    const String& key = ToKeyboardEvent(event).key();
+    if (key == "SoftRight") {
+      // We need to handle the event here rather than in
+      // MediaControlsTouchlessImpl because right soft key
+      // event is not sent to JS.
+      GetMediaControls()->ShowContextMenu();
+      event.SetDefaultHandled();
+    }
+  }
+  HTMLElement::DefaultEventHandler(event);
 }
 
 void HTMLMediaElement::AudioSourceProviderImpl::Wrap(
