@@ -347,7 +347,7 @@ namespace {
                 bool printMax = (style != enumMask && maxEnum.size() > 0);
 
                 for (const auto& v : sorted)
-                    out << enumFmt(opPrefix, v, style, !printMax && v.first == sorted.back().first);
+                    out << enumFmt(opPrefix, v, style, !printMax && v.second == sorted.back().second);
 
                 if (printMax)
                     out << maxEnum;
