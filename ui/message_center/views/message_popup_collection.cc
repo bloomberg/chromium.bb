@@ -4,7 +4,6 @@
 
 #include "ui/message_center/views/message_popup_collection.h"
 
-#include "base/bind.h"
 #include "base/stl_util.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/animation/tween.h"
@@ -30,8 +29,7 @@ constexpr base::TimeDelta kMoveDownDuration =
 MessagePopupCollection::MessagePopupCollection(
     PopupAlignmentDelegate* alignment_delegate)
     : animation_(std::make_unique<gfx::LinearAnimation>(this)),
-      alignment_delegate_(alignment_delegate),
-      weak_ptr_factory_(this) {
+      alignment_delegate_(alignment_delegate) {
   MessageCenter::Get()->AddObserver(this);
   alignment_delegate_->set_collection(this);
 }
@@ -296,14 +294,7 @@ void MessagePopupCollection::TransitionToAnimation() {
     resize_requested_ = false;
     state_ = State::MOVE_DOWN;
     MoveDownPopups();
-
-    // This function may be called by a child MessageView when a notification is
-    // expanded by the user.  Deleting the pop-up should be delayed so we are
-    // out of the child view's call stack. See crbug.com/957033.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&MessagePopupCollection::ClosePopupsOutsideWorkArea,
-                       weak_ptr_factory_.GetWeakPtr()));
+    ClosePopupsOutsideWorkArea();
     return;
   }
 
