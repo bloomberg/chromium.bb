@@ -181,6 +181,9 @@ TEST_F(StructTraitsTest, GpuMemoryBufferHandle) {
   base::ScopedFD buffer_handle;
 #elif defined(OS_FUCHSIA)
   zx::vmo buffer_handle;
+  handle2.native_pixmap_handle.buffer_collection_id =
+      gfx::SysmemBufferCollectionId::Create();
+  handle2.native_pixmap_handle.buffer_index = 0;
 #endif
   handle2.native_pixmap_handle.modifier = kModifier;
   handle2.native_pixmap_handle.planes.emplace_back(kOffset, kStride, kSize,

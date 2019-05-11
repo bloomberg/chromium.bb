@@ -1,2 +1,0 @@
-# https://crbug.com/952652 - GpuMemoryBufferHandle Mojo struct traits.
--StructTraitsTest.GpuMemoryBufferHandle

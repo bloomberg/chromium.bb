@@ -50,7 +50,7 @@ bool StructTraits<
     return false;
   out->fd = handle.TakeFD();
 #elif defined(OS_FUCHSIA)
-  if (!handle.is_valid_handle())
+  if (!handle.is_handle())
     return false;
   out->vmo = zx::vmo(handle.TakeHandle());
 #endif  // defined(OS_LINUX)

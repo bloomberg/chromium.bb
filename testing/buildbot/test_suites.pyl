@@ -2651,11 +2651,7 @@
       'cronet_unittests': {},
       'crypto_unittests': {},
       'fidlgen_js_unittests': {},
-      'gfx_unittests': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.gfx_unittests.filter',
-        ],
-      },
+      'gfx_unittests': {},
       'gpu_unittests': {},
       'http_service_tests': {},
       'ipc_tests': {},
