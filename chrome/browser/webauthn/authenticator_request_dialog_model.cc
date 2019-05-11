@@ -403,11 +403,11 @@ void AuthenticatorRequestDialogModel::OnAuthenticatorRemovedDuringPINEntry() {
 }
 
 void AuthenticatorRequestDialogModel::OnAuthenticatorMissingResidentKeys() {
-  SetCurrentStep(Step::kMissingResidentKeys);
+  SetCurrentStep(Step::kMissingCapability);
 }
 
 void AuthenticatorRequestDialogModel::OnAuthenticatorMissingUserVerification() {
-  SetCurrentStep(Step::kMissingUserVerification);
+  SetCurrentStep(Step::kMissingCapability);
 }
 
 void AuthenticatorRequestDialogModel::OnAuthenticatorStorageFull() {

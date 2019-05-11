@@ -59,8 +59,7 @@ class AuthenticatorRequestDialogModel {
     kTimedOut,
     kKeyNotRegistered,
     kKeyAlreadyRegistered,
-    kMissingResidentKeys,
-    kMissingUserVerification,
+    kMissingCapability,
     kStorageFull,
 
     // The request is completed, and the dialog should be closed.
@@ -141,8 +140,7 @@ class AuthenticatorRequestDialogModel {
     return current_step() == Step::kTimedOut ||
            current_step() == Step::kKeyNotRegistered ||
            current_step() == Step::kKeyAlreadyRegistered ||
-           current_step() == Step::kMissingResidentKeys ||
-           current_step() == Step::kMissingUserVerification ||
+           current_step() == Step::kMissingCapability ||
            current_step() == Step::kClosed;
   }
 

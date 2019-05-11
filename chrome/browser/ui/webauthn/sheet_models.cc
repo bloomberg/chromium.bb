@@ -937,12 +937,13 @@ AuthenticatorGenericErrorSheetModel::ForClientPinErrorAuthenticatorRemoved(
 
 // static
 std::unique_ptr<AuthenticatorGenericErrorSheetModel>
-AuthenticatorGenericErrorSheetModel::ForMissingResidentKeysSupport(
+AuthenticatorGenericErrorSheetModel::ForMissingCapability(
     AuthenticatorRequestDialogModel* dialog_model) {
   return base::WrapUnique(new AuthenticatorGenericErrorSheetModel(
       dialog_model,
       l10n_util::GetStringUTF16(IDS_WEBAUTHN_ERROR_MISSING_CAPABILITY_TITLE),
-      l10n_util::GetStringUTF16(IDS_WEBAUTHN_MISSING_RESIDENT_KEYS_DESC)));
+      l10n_util::GetStringFUTF16(IDS_WEBAUTHN_ERROR_MISSING_CAPABILITY_DESC,
+                                 GetRelyingPartyIdString(dialog_model))));
 }
 
 // static
@@ -953,17 +954,6 @@ AuthenticatorGenericErrorSheetModel::ForStorageFull(
       dialog_model,
       l10n_util::GetStringUTF16(IDS_WEBAUTHN_ERROR_MISSING_CAPABILITY_TITLE),
       l10n_util::GetStringUTF16(IDS_WEBAUTHN_STORAGE_FULL_DESC)));
-}
-
-// static
-std::unique_ptr<AuthenticatorGenericErrorSheetModel>
-AuthenticatorGenericErrorSheetModel::ForMissingUserVerificationSupport(
-    AuthenticatorRequestDialogModel* dialog_model) {
-  return base::WrapUnique(new AuthenticatorGenericErrorSheetModel(
-      dialog_model,
-      l10n_util::GetStringUTF16(IDS_WEBAUTHN_ERROR_MISSING_CAPABILITY_TITLE),
-      l10n_util::GetStringFUTF16(IDS_WEBAUTHN_MISSING_USER_VERIFICATION_DESC,
-                                 GetRelyingPartyIdString(dialog_model))));
 }
 
 AuthenticatorGenericErrorSheetModel::AuthenticatorGenericErrorSheetModel(
@@ -1030,7 +1020,7 @@ base::string16 AuthenticatorSelectAccountSheetModel::GetStepTitle() const {
 
 base::string16 AuthenticatorSelectAccountSheetModel::GetStepDescription()
     const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_SELECT_ACCOUNT_DESC);
+  return base::string16();
 }
 
 bool AuthenticatorSelectAccountSheetModel::IsAcceptButtonVisible() const {

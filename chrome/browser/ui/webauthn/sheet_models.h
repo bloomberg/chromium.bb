@@ -435,10 +435,7 @@ class AuthenticatorGenericErrorSheetModel : public AuthenticatorSheetModelBase {
   ForClientPinErrorAuthenticatorRemoved(
       AuthenticatorRequestDialogModel* dialog_model);
   static std::unique_ptr<AuthenticatorGenericErrorSheetModel>
-  ForMissingResidentKeysSupport(AuthenticatorRequestDialogModel* dialog_model);
-  static std::unique_ptr<AuthenticatorGenericErrorSheetModel>
-  ForMissingUserVerificationSupport(
-      AuthenticatorRequestDialogModel* dialog_model);
+  ForMissingCapability(AuthenticatorRequestDialogModel* dialog_model);
   static std::unique_ptr<AuthenticatorGenericErrorSheetModel> ForStorageFull(
       AuthenticatorRequestDialogModel* dialog_model);
 

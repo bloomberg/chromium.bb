@@ -9631,28 +9631,22 @@ Please help our engineers fix this problem. Tell us what happened right before y
         Name
       </message>
       <message name="IDS_WEBAUTHN_SELECT_ACCOUNT" desc="The title on a dialog where the user is expected to select an account from a list. For example, the list may include several identities, e.g. joe@gmail.com, mary@gmail.com, and the user has to select one to login as.">
-        Select account
-      </message>
-      <message name="IDS_WEBAUTHN_SELECT_ACCOUNT_DESC" desc="The description on a dialog where the user is expected to select an account from a list. For example, the list may include several identities, e.g. joe@gmail.com, mary@gmail.com, and the user has to select one to login as.">
-        Select an account to sign in:
+        Select an account to sign in
       </message>
       <message name="IDS_WEBAUTHN_UNKNOWN_ACCOUNT" desc="Label shown to the user on the list of account names if the account stored does not have a name associated to it.">
         Unknown account
       </message>
       <message name="IDS_WEBAUTHN_RESIDENT_KEY_PRIVACY" desc="A message included in dialogs when activating a security key (an external physical device for user authentication) may cause information about a site visit to be recorded on that security key. Since this is a privacy concern, a message is shown to the user.">
-        This will leave a record of your visit to this site on your security key.
+        A record of your visit to this site will be kept on your security key.
       </message>
       <message name="IDS_WEBAUTHN_ERROR_MISSING_CAPABILITY_TITLE" desc="Title of the dialog informing the user that the security key (an external physical device for user authentication) that they selected does not support some capability that the site requested.">
         Your security key can't be used with this site
       </message>
-      <message name="IDS_WEBAUTHN_MISSING_RESIDENT_KEYS_DESC" desc="The description on a dialog informing the user that the security key (an external physical device for user authentication) that they selected does not support storing credentials, but the website demanded this feature">
-        That security key does not support internal storage of credentials, but that feature was requested.
-      </message>
-      <message name="IDS_WEBAUTHN_MISSING_USER_VERIFICATION_DESC" desc="The description on a dialog informing the user that the security key (an external physical device for user authentication) that they selected does not support any methods of identifying its owner, e.g. a fingerprint reader or a secret code (PIN).">
+      <message name="IDS_WEBAUTHN_ERROR_MISSING_CAPABILITY_DESC" desc="The description on a dialog informing the user that the security key (an external physical device for user authentication) that they selected does not support some capability that the site requested.">
         <ph name="WEBSITE"><ex>accounts.google.com</ex>$1</ph> may require a newer or different kind of security key
       </message>
       <message name="IDS_WEBAUTHN_STORAGE_FULL_DESC" desc="The description on a dialog informing the user that the security key (an external physical device for user authentication) that they selected does not have enough storage capacity to create the requested account.">
-        Your security key does not have enough free space for any more accounts.
+        Your security key does not have enough space for any more accounts.
       </message>
       <message name="IDS_WEBAUTHN_REQUEST_ATTESTATION_PERMISSION_TITLE" desc="Title of a dialog informing the user that the website wants to see information that identifies the user's Security Key, such as make and model number. The 'make' of a device is the brand name of the manufacturer, e.g. Yubikey is a make of Security Key. The 'model' of a device is the specific product, e.g. Yubikey Neo is a model of Security Key.">
         Allow this site to see your security key?
