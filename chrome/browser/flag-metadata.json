@@ -2319,6 +2319,11 @@
     "expiry_milestone": 77
   },
   {
+    "name": "ntp-disable-initial-most-visited-fade-in",
+    "owners": ["dbeam"],
+    "expiry_milestone": 80
+  },
+  {
     "name": "oculus-vr",
     "owners": [ "//device/vr/OWNERS", "xr-dev@chromium.org" ],
     "expiry_milestone": 79

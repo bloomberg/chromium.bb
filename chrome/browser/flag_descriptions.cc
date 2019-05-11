@@ -2590,6 +2590,11 @@ const char kNtpCustomizationMenuV2Name[] = "NTP customization menu version 2";
 const char kNtpCustomizationMenuV2Description[] =
     "Use the second version of the NTP customization menu.";
 
+extern const char kNtpDisableInitialMostVisitedFadeInName[] =
+    "Disable NTP initial most visited fade in";
+extern const char kNtpDisableInitialMostVisitedFadeInDescription[] =
+    "Do now initially fade in most visited tiles on the New Tab Page";
+
 const char kEnableReaderModeName[] = "Enable Reader Mode";
 const char kEnableReaderModeDescription[] =
     "Allows viewing of simplified web pages by selecting 'Customize and "

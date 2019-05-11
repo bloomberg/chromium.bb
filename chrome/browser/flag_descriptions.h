@@ -1546,6 +1546,9 @@ extern const char kRemoveNtpFakeboxDescription[];
 extern const char kNtpCustomizationMenuV2Name[];
 extern const char kNtpCustomizationMenuV2Description[];
 
+extern const char kNtpDisableInitialMostVisitedFadeInName[];
+extern const char kNtpDisableInitialMostVisitedFadeInDescription[];
+
 extern const char kEnableReaderModeName[];
 extern const char kEnableReaderModeDescription[];
 

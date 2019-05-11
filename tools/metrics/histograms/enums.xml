@@ -34180,6 +34180,7 @@ from previous Chrome versions.
   <int value="185991204" label="enable-webrtc-srtp-encrypted-headers"/>
   <int value="188610022" label="NewMessageListView:enabled"/>
   <int value="189728101" label="FasterLocationReload:disabled"/>
+  <int value="189777537" label="DisableInitialMostVisitedFadeIn:enabled"/>
   <int value="191737931" label="enable-mark-http-as"/>
   <int value="192167036" label="LogJsConsoleMessages:disabled"/>
   <int value="194573877" label="MacViewsNativeDialogs:disabled"/>
@@ -34846,6 +34847,7 @@ from previous Chrome versions.
   <int value="1222017136" label="WebRtcUseEchoCanceller3:disabled"/>
   <int value="1222032915"
       label="kAutofillRationalizeRepeatedServerPredictions:enabled"/>
+  <int value="1222808563" label="DisableInitialMostVisitedFadeIn:disabled"/>
   <int value="1226624874" label="Mus:disabled"/>
   <int value="1228115769" label="SiteCharacteristicsDatabase:disabled"/>
   <int value="1229299518" label="SingleTabMode:disabled"/>

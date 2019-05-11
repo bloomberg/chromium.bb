@@ -2708,6 +2708,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNtpCustomizationMenuV2Name,
      flag_descriptions::kNtpCustomizationMenuV2Description, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kNtpCustomizationMenuV2)},
+
+    {"ntp-disable-initial-most-visited-fade-in",
+     flag_descriptions::kNtpDisableInitialMostVisitedFadeInName,
+     flag_descriptions::kNtpDisableInitialMostVisitedFadeInDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kDisableInitialMostVisitedFadeIn)},
 #endif  // !defined(OS_ANDROID)
 
 #if defined(DCHECK_IS_CONFIGURABLE)
