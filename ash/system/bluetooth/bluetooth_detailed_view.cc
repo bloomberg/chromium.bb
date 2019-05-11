@@ -215,7 +215,7 @@ void BluetoothDetailedView::UpdateDeviceScrollList(
 
 void BluetoothDetailedView::SetToggleIsOn(bool is_on) {
   if (toggle_)
-    toggle_->SetIsOn(is_on, true);
+    toggle_->AnimateIsOn(is_on);
 }
 
 void BluetoothDetailedView::CreateItems() {
@@ -316,11 +316,10 @@ void BluetoothDetailedView::HandleButtonPressed(views::Button* sender,
                                                 const ui::Event& event) {
   if (sender == toggle_) {
     Shell::Get()->tray_bluetooth_helper()->SetBluetoothEnabled(
-        toggle_->is_on());
-  } else if (sender == settings_) {
-    ShowSettings();
+        toggle_->GetIsOn());
   } else {
-    NOTREACHED();
+    DCHECK_EQ(settings_, sender);
+    ShowSettings();
   }
 }
 
@@ -336,8 +335,7 @@ void BluetoothDetailedView::CreateExtraTitleRowButtons() {
   toggle_ =
       TrayPopupUtils::CreateToggleButton(this, IDS_ASH_STATUS_TRAY_BLUETOOTH);
   toggle_->SetIsOn(Shell::Get()->tray_bluetooth_helper()->GetBluetoothState() ==
-                       BluetoothSystem::State::kPoweredOn,
-                   false /* animate */);
+                   BluetoothSystem::State::kPoweredOn);
   tri_view()->AddView(TriView::Container::END, toggle_);
 
   settings_ = CreateSettingsButton(IDS_ASH_STATUS_TRAY_BLUETOOTH_SETTINGS);

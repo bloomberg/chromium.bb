@@ -82,8 +82,8 @@ void NetworkSectionHeaderView::SetToggleVisibility(bool visible) {
 
 void NetworkSectionHeaderView::SetToggleState(bool toggle_enabled, bool is_on) {
   toggle_->SetEnabled(toggle_enabled);
-  toggle_->set_accepts_events(toggle_enabled);
-  toggle_->SetIsOn(is_on, true /* animate */);
+  toggle_->SetAcceptsEvents(toggle_enabled);
+  toggle_->AnimateIsOn(is_on);
 }
 
 int NetworkSectionHeaderView::GetHeightForWidth(int width) const {
@@ -98,8 +98,8 @@ void NetworkSectionHeaderView::ButtonPressed(views::Button* sender,
   // disabling of mobile radio. The toggle will get unlocked in the next
   // call to NetworkListView::Update(). Note that we don't disable/enable
   // because that would clear focus.
-  toggle_->set_accepts_events(false);
-  OnToggleToggled(toggle_->is_on());
+  toggle_->SetAcceptsEvents(false);
+  OnToggleToggled(toggle_->GetIsOn());
 }
 void NetworkSectionHeaderView::InitializeLayout() {
   TrayPopupUtils::ConfigureAsStickyHeader(this);
@@ -115,7 +115,7 @@ void NetworkSectionHeaderView::InitializeLayout() {
 
 void NetworkSectionHeaderView::AddToggleButton(bool enabled) {
   toggle_ = TrayPopupUtils::CreateToggleButton(this, title_id_);
-  toggle_->SetIsOn(enabled, false);
+  toggle_->SetIsOn(enabled);
   container_->AddView(TriView::Container::END, toggle_);
 }
 

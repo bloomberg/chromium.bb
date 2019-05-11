@@ -17,6 +17,7 @@
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/border.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/painter.h"
 
 namespace views {
@@ -113,11 +114,10 @@ class ToggleButton::ThumbView : public InkDropHostView {
 // static
 const char ToggleButton::kViewClassName[] = "ToggleButton";
 
-ToggleButton::ToggleButton(ButtonListener* listener)
-    : Button(listener), thumb_view_(new ThumbView()) {
+ToggleButton::ToggleButton(ButtonListener* listener) : Button(listener) {
   slide_animation_.SetSlideDuration(80 /* ms */);
   slide_animation_.SetTweenType(gfx::Tween::LINEAR);
-  AddChildView(thumb_view_);
+  thumb_view_ = AddChildView(std::make_unique<ThumbView>());
   SetInkDropMode(InkDropMode::ON);
   SetFocusForPlatform();
   set_has_ink_drop_action_on_click(true);
@@ -128,20 +128,37 @@ ToggleButton::~ToggleButton() {
   SetInkDropMode(InkDropMode::OFF);
 }
 
-void ToggleButton::SetIsOn(bool is_on, bool animate) {
-  if (is_on_ == is_on)
+void ToggleButton::AnimateIsOn(bool is_on) {
+  if (GetIsOn() == is_on)
     return;
-
-  is_on_ = is_on;
-  if (!animate) {
-    slide_animation_.Reset(is_on_ ? 1.0 : 0.0);
-    UpdateThumb();
-    SchedulePaint();
-  } else if (is_on_) {
+  if (is_on)
     slide_animation_.Show();
-  } else {
+  else
     slide_animation_.Hide();
-  }
+  OnPropertyChanged(&slide_animation_, kPropertyEffectsNone);
+}
+
+void ToggleButton::SetIsOn(bool is_on) {
+  if ((GetIsOn() == is_on) && !slide_animation_.is_animating())
+    return;
+  slide_animation_.Reset(is_on ? 1.0 : 0.0);
+  UpdateThumb();
+  OnPropertyChanged(&slide_animation_, kPropertyEffectsPaint);
+}
+
+bool ToggleButton::GetIsOn() const {
+  return slide_animation_.IsShowing();
+}
+
+void ToggleButton::SetAcceptsEvents(bool accepts_events) {
+  if (GetAcceptsEvents() == accepts_events)
+    return;
+  accepts_events_ = accepts_events;
+  OnPropertyChanged(&accepts_events_, kPropertyEffectsNone);
+}
+
+bool ToggleButton::GetAcceptsEvents() const {
+  return accepts_events_;
 }
 
 gfx::Size ToggleButton::CalculatePreferredSize() const {
@@ -188,7 +205,7 @@ const char* ToggleButton::GetClassName() const {
 }
 
 bool ToggleButton::CanAcceptEvent(const ui::Event& event) {
-  return accepts_events_ && Button::CanAcceptEvent(event);
+  return GetAcceptsEvents() && Button::CanAcceptEvent(event);
 }
 
 void ToggleButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
@@ -203,8 +220,8 @@ void ToggleButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   Button::GetAccessibleNodeData(node_data);
 
   node_data->role = ax::mojom::Role::kSwitch;
-  node_data->SetCheckedState(is_on_ ? ax::mojom::CheckedState::kTrue
-                                    : ax::mojom::CheckedState::kFalse);
+  node_data->SetCheckedState(GetIsOn() ? ax::mojom::CheckedState::kTrue
+                                       : ax::mojom::CheckedState::kFalse);
 }
 
 void ToggleButton::OnFocus() {
@@ -223,7 +240,7 @@ void ToggleButton::OnBlur() {
 }
 
 void ToggleButton::NotifyClick(const ui::Event& event) {
-  SetIsOn(!is_on(), true);
+  AnimateIsOn(!GetIsOn());
 
   // Skip over Button::NotifyClick, to customize the ink drop animation.
   // Leave the ripple in place when the button is activated via the keyboard.
@@ -280,7 +297,7 @@ std::unique_ptr<InkDropRipple> ToggleButton::CreateInkDropRipple() const {
 }
 
 SkColor ToggleButton::GetInkDropBaseColor() const {
-  return GetTrackColor(is_on() || HasFocus());
+  return GetTrackColor(GetIsOn() || HasFocus());
 }
 
 void ToggleButton::AnimationProgressed(const gfx::Animation* animation) {
@@ -293,5 +310,11 @@ void ToggleButton::AnimationProgressed(const gfx::Animation* animation) {
   }
   Button::AnimationProgressed(animation);
 }
+
+BEGIN_METADATA(ToggleButton)
+METADATA_PARENT_CLASS(Button)
+ADD_PROPERTY_METADATA(ToggleButton, bool, IsOn)
+ADD_PROPERTY_METADATA(ToggleButton, bool, AcceptsEvents)
+END_METADATA()
 
 }  // namespace views

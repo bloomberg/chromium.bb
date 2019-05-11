@@ -486,7 +486,7 @@ bool NotifierSettingsView::IsScrollable() {
 }
 
 void NotifierSettingsView::SetQuietModeState(bool is_quiet_mode) {
-  quiet_mode_toggle_->SetIsOn(is_quiet_mode, false /* animate */);
+  quiet_mode_toggle_->SetIsOn(is_quiet_mode);
   if (is_quiet_mode) {
     quiet_mode_icon_->SetImage(
         gfx::CreateVectorIcon(kNotificationCenterDoNotDisturbOnIcon,
@@ -602,7 +602,7 @@ bool NotifierSettingsView::OnMouseWheel(const ui::MouseWheelEvent& event) {
 void NotifierSettingsView::ButtonPressed(views::Button* sender,
                                          const ui::Event& event) {
   if (sender == quiet_mode_toggle_) {
-    MessageCenter::Get()->SetQuietMode(quiet_mode_toggle_->is_on());
+    MessageCenter::Get()->SetQuietMode(quiet_mode_toggle_->GetIsOn());
     return;
   }
 

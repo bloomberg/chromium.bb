@@ -148,7 +148,6 @@ class KeyboardStatusRow : public views::View {
   ~KeyboardStatusRow() override = default;
 
   views::ToggleButton* toggle() const { return toggle_; }
-  bool is_toggled() const { return toggle_->is_on(); }
 
   void Init(views::ButtonListener* listener, bool use_unified_theme) {
     TrayPopupUtils::ConfigureAsStickyHeader(this);
@@ -175,7 +174,7 @@ class KeyboardStatusRow : public views::View {
     // The on-screen keyboard toggle button.
     toggle_ = TrayPopupUtils::CreateToggleButton(
         listener, IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD);
-    toggle_->SetIsOn(keyboard::IsKeyboardEnabled(), false);
+    toggle_->SetIsOn(keyboard::IsKeyboardEnabled());
     tri_view->AddView(TriView::Container::END, toggle_);
   }
 

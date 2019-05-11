@@ -15,17 +15,20 @@ namespace views {
 // slider.
 class VIEWS_EXPORT ToggleButton : public Button {
  public:
+  METADATA_HEADER(ToggleButton);
+
   static const char kViewClassName[];
 
   explicit ToggleButton(ButtonListener* listener);
   ~ToggleButton() override;
 
-  void SetIsOn(bool is_on, bool animate);
-  bool is_on() const { return is_on_; }
+  // AnimateIsOn() animates the state change to |is_on|; SetIsOn() doesn't.
+  void AnimateIsOn(bool is_on);
+  void SetIsOn(bool is_on);
+  bool GetIsOn() const;
 
-  void set_accepts_events(bool accepts_events) {
-    accepts_events_ = accepts_events;
-  }
+  void SetAcceptsEvents(bool accepts_events);
+  bool GetAcceptsEvents() const;
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
@@ -67,7 +70,6 @@ class VIEWS_EXPORT ToggleButton : public Button {
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
 
-  bool is_on_ = false;
   gfx::SlideAnimation slide_animation_{this};
   ThumbView* thumb_view_;
 
