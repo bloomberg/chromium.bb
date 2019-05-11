@@ -1593,8 +1593,12 @@ base::Time ExtensionPrefs::GetLastLaunchTime(
 void ExtensionPrefs::SetLastLaunchTime(const std::string& extension_id,
                                        const base::Time& time) {
   DCHECK(crx_file::id_util::IdIsValid(extension_id));
-  ScopedExtensionPrefUpdate update(prefs_, extension_id);
-  SaveTime(update.Get().get(), kPrefLastLaunchTime, time);
+  {
+    ScopedExtensionPrefUpdate update(prefs_, extension_id);
+    SaveTime(update.Get().get(), kPrefLastLaunchTime, time);
+  }
+  for (auto& observer : observer_list_)
+    observer.OnExtensionLastLaunchTimeChanged(extension_id, time);
 }
 
 void ExtensionPrefs::ClearLastLaunchTimes() {

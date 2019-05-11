@@ -30,6 +30,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/switches.h"
@@ -66,7 +67,8 @@ namespace apps {
 ExtensionApps::ExtensionApps()
     : binding_(this),
       profile_(nullptr),
-      observer_(this),
+      prefs_observer_(this),
+      registry_observer_(this),
       app_type_(apps::mojom::AppType::kUnknown) {}
 
 ExtensionApps::~ExtensionApps() = default;
@@ -81,7 +83,8 @@ void ExtensionApps::Initialize(const apps::mojom::AppServicePtr& app_service,
 
   profile_ = profile;
   DCHECK(profile_);
-  observer_.Add(extensions::ExtensionRegistry::Get(profile_));
+  prefs_observer_.Add(extensions::ExtensionPrefs::Get(profile_));
+  registry_observer_.Add(extensions::ExtensionRegistry::Get(profile_));
   HostContentSettingsMapFactory::GetForProfile(profile_)->AddObserver(this);
 }
 
@@ -277,7 +280,9 @@ void ExtensionApps::OnContentSettingChanged(
     return;
   }
 
-  DCHECK(profile_);
+  if (!profile_) {
+    return;
+  }
 
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile_);
@@ -302,6 +307,34 @@ void ExtensionApps::OnContentSettingChanged(
       Publish(std::move(app));
     }
   }
+}
+
+void ExtensionApps::OnExtensionLastLaunchTimeChanged(
+    const std::string& app_id,
+    const base::Time& last_launch_time) {
+  if (!profile_) {
+    return;
+  }
+
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile_);
+  const extensions::Extension* extension =
+      registry->GetInstalledExtension(app_id);
+  if (!extension || !Accepts(extension)) {
+    return;
+  }
+
+  apps::mojom::AppPtr app = apps::mojom::App::New();
+  app->app_type = app_type_;
+  app->app_id = extension->id();
+  app->last_launch_time = last_launch_time;
+
+  Publish(std::move(app));
+}
+
+void ExtensionApps::OnExtensionPrefsWillBeDestroyed(
+    extensions::ExtensionPrefs* prefs) {
+  prefs_observer_.Remove(prefs);
 }
 
 void ExtensionApps::OnExtensionInstalled(

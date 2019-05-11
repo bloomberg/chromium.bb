@@ -48,6 +48,11 @@ class ExtensionPrefsObserver {
   virtual void OnExtensionRuntimePermissionsChanged(
       const std::string& extension_id) {}
 
+  // Called when an extension's last-launch-time has changed.
+  virtual void OnExtensionLastLaunchTimeChanged(
+      const std::string& extension_id,
+      const base::Time& last_launch_time) {}
+
   // Called when the ExtensionPrefs object (the thing that this observer
   // observes) will be destroyed. In response, the observer, |this|, should
   // call "prefs->RemoveObserver(this)", whether directly or indirectly (e.g.

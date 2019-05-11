@@ -12,6 +12,7 @@
 #include "chrome/browser/apps/app_service/icon_key_util.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
+#include "extensions/browser/extension_prefs_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
@@ -32,6 +33,7 @@ namespace apps {
 //
 // See chrome/services/app_service/README.md.
 class ExtensionApps : public apps::mojom::Publisher,
+                      public extensions::ExtensionPrefsObserver,
                       public extensions::ExtensionRegistryObserver,
                       public content_settings::Observer {
  public:
@@ -72,6 +74,13 @@ class ExtensionApps : public apps::mojom::Publisher,
                                ContentSettingsType content_type,
                                const std::string& resource_identifier) override;
 
+  // extensions::ExtensionPrefsObserver overrides.
+  void OnExtensionLastLaunchTimeChanged(
+      const std::string& app_id,
+      const base::Time& last_launch_time) override;
+  void OnExtensionPrefsWillBeDestroyed(
+      extensions::ExtensionPrefs* prefs) override;
+
   // extensions::ExtensionRegistryObserver overrides.
   void OnExtensionInstalled(content::BrowserContext* browser_context,
                             const extensions::Extension* extension,
@@ -108,9 +117,11 @@ class ExtensionApps : public apps::mojom::Publisher,
 
   Profile* profile_;
 
+  ScopedObserver<extensions::ExtensionPrefs, extensions::ExtensionPrefsObserver>
+      prefs_observer_;
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
-      observer_;
+      registry_observer_;
 
   apps_util::IncrementingIconKeyFactory icon_key_factory_;
 

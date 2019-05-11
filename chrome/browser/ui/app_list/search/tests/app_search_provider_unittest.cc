@@ -62,7 +62,7 @@ namespace test {
 
 namespace {
 
-constexpr char kGmailQeuery[] = "Gmail";
+constexpr char kGmailQuery[] = "Gmail";
 constexpr char kGmailArcName[] = "Gmail ARC";
 constexpr char kGmailExtensionName[] = "Gmail Ext";
 constexpr char kGmailArcPackage[] = "com.google.android.gm";
@@ -179,7 +179,7 @@ class AppSearchProviderTest : public AppListTestBase {
   void AddExtension(const std::string& id,
                     const std::string& name,
                     extensions::Manifest::Location location,
-                    int extra_flags) {
+                    int init_from_value_flags) {
     scoped_refptr<const extensions::Extension> extension =
         extensions::ExtensionBuilder()
             .SetManifest(
@@ -204,15 +204,15 @@ class AppSearchProviderTest : public AppListTestBase {
                              .Build())
                     .Build())
             .SetLocation(location)
-            .AddFlags(extra_flags)
+            .AddFlags(init_from_value_flags)
             .SetID(id)
             .Build();
-    service()->AddExtension(extension.get());
-    // This sets install time and other extension parameters.
-    extensions::ExtensionPrefs::Get(profile())->OnExtensionInstalled(
-        extension.get(), extensions::Extension::ENABLED,
-        syncer::StringOrdinal::CreateInitialOrdinal() /* page_ordinal */,
-        std::string() /* install_parameter */);
+
+    const syncer::StringOrdinal& page_ordinal =
+        syncer::StringOrdinal::CreateInitialOrdinal();
+
+    service()->OnExtensionInstalled(extension.get(), page_ordinal,
+                                    extensions::kInstallFlagNone);
   }
 
   const SearchProvider::Results& results() { return app_search_->results(); }
@@ -692,7 +692,8 @@ TEST_F(AppSearchProviderTest, FilterDuplicate) {
 
   AddExtension(extension_misc::kGmailAppId, kGmailExtensionName,
                extensions::Manifest::EXTERNAL_PREF_DOWNLOAD,
-               0 /* extra_flags */);
+               extensions::Extension::NO_FLAGS);
+
   const std::string arc_gmail_app_id =
       AddArcApp(kGmailArcName, kGmailArcPackage, kGmailArcActivity);
   arc_test().arc_app_list_prefs()->SetLastLaunchTime(arc_gmail_app_id);
@@ -708,15 +709,21 @@ TEST_F(AppSearchProviderTest, FilterDuplicate) {
       extension_misc::kGmailAppId,
       arc_gmail_app_info->last_launch_time - base::TimeDelta::FromSeconds(1));
 
+  // Allow async callbacks to run.
+  base::RunLoop().RunUntilIdle();
+
   CreateSearch();
-  EXPECT_EQ(kGmailArcName, RunQuery(kGmailQeuery));
+  EXPECT_EQ(kGmailArcName, RunQuery(kGmailQuery));
 
   extension_prefs->SetLastLaunchTime(
       extension_misc::kGmailAppId,
       arc_gmail_app_info->last_launch_time + base::TimeDelta::FromSeconds(1));
 
+  // Allow async callbacks to run.
+  base::RunLoop().RunUntilIdle();
+
   CreateSearch();
-  EXPECT_EQ(kGmailExtensionName, RunQuery(kGmailQeuery));
+  EXPECT_EQ(kGmailExtensionName, RunQuery(kGmailQuery));
 }
 
 TEST_F(AppSearchProviderTest, FetchInternalApp) {
@@ -848,7 +855,7 @@ class AppSearchProviderWithExtensionInstallType
   DISALLOW_COPY_AND_ASSIGN(AppSearchProviderWithExtensionInstallType);
 };
 
-TEST_P(AppSearchProviderWithExtensionInstallType, InstallInernallyRanking) {
+TEST_P(AppSearchProviderWithExtensionInstallType, InstallInternallyRanking) {
   extensions::ExtensionPrefs* const prefs =
       extensions::ExtensionPrefs::Get(profile());
   ASSERT_TRUE(prefs);
@@ -858,7 +865,7 @@ TEST_P(AppSearchProviderWithExtensionInstallType, InstallInernallyRanking) {
       crx_file::id_util::GenerateId(kRankingNormalAppName);
   AddExtension(normal_app_id, kRankingNormalAppName,
                extensions::Manifest::EXTERNAL_PREF_DOWNLOAD,
-               0 /* extra_flags */);
+               extensions::Extension::NO_FLAGS);
 
   // Wait a bit to make sure time is updated.
   WaitTimeUpdated();
@@ -870,11 +877,12 @@ TEST_P(AppSearchProviderWithExtensionInstallType, InstallInernallyRanking) {
     case TestExtensionInstallType::CONTROLLED_BY_POLICY:
       AddExtension(internal_app_id, kRankingInternalAppName,
                    extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD,
-                   0 /* extra_flags */);
+                   extensions::Extension::NO_FLAGS);
       break;
     case TestExtensionInstallType::CHROME_COMPONENT:
       AddExtension(internal_app_id, kRankingInternalAppName,
-                   extensions::Manifest::COMPONENT, 0 /* extra_flags */);
+                   extensions::Manifest::COMPONENT,
+                   extensions::Extension::NO_FLAGS);
       break;
     case TestExtensionInstallType::INSTALLED_BY_DEFAULT:
       AddExtension(internal_app_id, kRankingInternalAppName,
