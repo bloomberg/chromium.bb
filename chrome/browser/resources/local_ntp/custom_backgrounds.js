@@ -75,6 +75,8 @@ customBackgrounds.IDS = {
   ATTR2: 'attr2',
   ATTRIBUTIONS: 'custom-bg-attr',
   BACK_CIRCLE: 'bg-sel-back-circle',
+  BACKGROUNDS_DEFAULT: 'backgrounds-default',
+  BACKGROUNDS_DEFAULT_ICON: 'backgrounds-default-icon',
   BACKGROUNDS_BUTTON: 'backgrounds-button',
   BACKGROUNDS_IMAGE_MENU: 'backgrounds-image-menu',
   BACKGROUNDS_MENU: 'backgrounds-menu',
@@ -316,6 +318,7 @@ customBackgrounds.resetImageMenu = function(showMenu) {
 
   // Reset done button state.
   $(customBackgrounds.IDS.MENU_DONE).disabled = true;
+  customBackgrounds.deselectTile(customBackgrounds.selectedTile);
   customBackgrounds.selectedTile = null;
   $(customBackgrounds.IDS.MENU_DONE).tabIndex = -1;
 };
@@ -493,7 +496,12 @@ customBackgrounds.showCollectionSelectionDialog = function(collectionsSource) {
           $(customBackgrounds.IDS.BACKGROUNDS_IMAGE_MENU)
               .classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, true);
 
-          customBackgrounds.resetSelectionDialog();
+          // In the RP the upload or default tile may be selected.
+          if (configData.richerPicker) {
+            customBackgrounds.deselectTile(customBackgrounds.selectedTile);
+          } else {
+            customBackgrounds.resetSelectionDialog();
+          }
           customBackgrounds.showImageSelectionDialog(tile.dataset.name);
         } else {
           customBackgrounds.handleError(collImgErrors);
@@ -571,9 +579,12 @@ customBackgrounds.selectTile = function(tile) {
 /**
  * Remove styling from a selected tile in the richer picker and disable the
  * done button.
- * @param {!Element} tile The tile to remove styling from.
+ * @param {?Element} tile The tile to remove styling from.
  */
 customBackgrounds.deselectTile = function(tile) {
+  if (tile === null) {
+    return;
+  }
   tile.parentElement.classList.toggle(
       customBackgrounds.CLASSES.SELECTED, false);
   $(customBackgrounds.IDS.MENU_DONE).disabled = true;
@@ -1319,6 +1330,15 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
         $('img_tile_0').focus();
       }
     }
+  };
+
+  $(customBackgrounds.IDS.BACKGROUNDS_DEFAULT).onclick = function() {
+    const tile = $(customBackgrounds.IDS.BACKGROUNDS_DEFAULT_ICON);
+    tile.dataset.url = '';
+    tile.dataset.attributionLine1 = '';
+    tile.dataset.attributionLine2 = '';
+    tile.dataset.attributionActionUrl = '';
+    customBackgrounds.selectTile(tile);
   };
 
   $(customBackgrounds.IDS.BACKGROUNDS_BUTTON).onclick = function() {

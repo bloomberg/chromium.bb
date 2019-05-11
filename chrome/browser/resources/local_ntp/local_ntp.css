@@ -1008,10 +1008,7 @@ html[dir=rtl] .menu-option {
   margin-bottom: 8px;
 }
 
-#backgrounds-image-menu .bg-sel-tile-bg.selected {
-  background-color: rgba(var(--GB900-rgb), .08);
-}
-
+.selected #backgrounds-default-icon,
 #backgrounds-image-menu .bg-sel-tile-bg.selected .bg-sel-tile {
   height: 144px;
   margin: 16px 16px 0 16px;
@@ -1043,6 +1040,11 @@ html[dir=rtl] .menu-option {
   height: 174px;
   margin-inline-end: 6px;
   width: 174px;
+}
+
+#backgrounds-default.selected,
+#backgrounds-image-menu .bg-sel-tile-bg.selected {
+  background-color: rgba(var(--GB900-rgb), .08);
 }
 
 #backgrounds-upload.bg-sel-tile-bg {
@@ -1083,7 +1085,7 @@ html[dir=rtl] #menu-back {
   -webkit-mask-image: url(icons/upload.svg);
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: 100%;
-  background: 32px 24px rgb(var(--GG700-rgb));
+  background: 32px 32px rgb(var(--GG700-rgb));
   height: 32px;
   margin-bottom: 8px;
   margin-inline-start: 72px;
@@ -1121,4 +1123,13 @@ html[dir=rtl] .bg-sel-tile .selected-circle {
 html[dir=rtl] .bg-sel-tile .selected-check {
   left: 0;
   right: initial;
+}
+
+#backgrounds-default-icon {
+  background-color: white;
+  background-image: url(icons/upload.svg);
+  background-repeat: no-repeat;
+  height: 174px;
+  opacity: 1;
+  width: 174px;
 }
