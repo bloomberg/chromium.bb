@@ -97,6 +97,7 @@ class CORE_EXPORT SpatialNavigationController
   bool UpdateCanExitFocus(Element* element);
   bool UpdateCanSelectInterestedElement(Element* element);
   bool UpdateHasNextFormElement(Element* element);
+  bool UpdateHasDefaultVideoControls(Element* element);
 
   const mojom::blink::SpatialNavigationHostPtr& GetSpatialNavigationHost();
 

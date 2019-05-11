@@ -4067,7 +4067,8 @@ void HTMLMediaElement::OnRemovedFromDocumentTimerFired(TimerBase*) {
 }
 
 void HTMLMediaElement::DefaultEventHandler(Event& event) {
-  if (event.IsKeyboardEvent() && ShouldShowControls()) {
+  if (event.IsKeyboardEvent() && event.type() == event_type_names::kKeyup &&
+      ShouldShowControls()) {
     // TODO(bokan): Cleanup magic numbers once https://crbug.com/949766 lands.
     const int key =
         static_cast<int>(ToKeyboardEvent(event).KeyEvent()->dom_key);

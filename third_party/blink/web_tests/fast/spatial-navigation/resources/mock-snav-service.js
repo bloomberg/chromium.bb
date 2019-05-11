@@ -5,6 +5,7 @@ class MockSpatialNavigationHostService {
     this.canExitFocus = false;
     this.canSelectElement = false;
     this.hasNextFormElement = false;
+    this.hasDefaultVideoControls = false;
     this.callback = null;
     this.bindingSet_ = new mojo.BindingSet(blink.mojom.SpatialNavigationHost);
     this.interceptor_ = new MojoInterfaceInterceptor(
@@ -18,6 +19,7 @@ class MockSpatialNavigationHostService {
     this.canExitFocus = state.canExitFocus;
     this.canSelectElement = state.canSelectElement;
     this.hasNextFormElement = state.hasNextFormElement;
+    this.hasDefaultVideoControls = state.hasDefaultVideoControls;
     if (this.callback) {
       this.callback();
     }
