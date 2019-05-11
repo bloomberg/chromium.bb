@@ -566,17 +566,6 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseInfiniteUnload) {
   LoadUrlAndQuitBrowser(INFINITE_UNLOAD_HTML, "infiniteunload");
 }
 
-// Tests closing the browser with a beforeunload handler that hangs.
-// If this flakes, use http://crbug.com/78803 and http://crbug.com/86469
-IN_PROC_BROWSER_TEST_F(UnloadTest, DISABLED_BrowserCloseInfiniteBeforeUnload) {
-  // Tests makes no sense in single-process mode since the renderer is hung.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSingleProcess))
-    return;
-
-  LoadUrlAndQuitBrowser(INFINITE_BEFORE_UNLOAD_HTML, "infinitebeforeunload");
-}
-
 // Tests closing the browser on a page with an unload listener registered where
 // the unload handler has an infinite loop followed by an alert.
 // If this flakes, use http://crbug.com/86469

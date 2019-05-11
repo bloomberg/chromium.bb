@@ -87,6 +87,12 @@ const char kTestTotalShards[] = "GTEST_TOTAL_SHARDS";
 // The environment variable name for the test shard index.
 const char kTestShardIndex[] = "GTEST_SHARD_INDEX";
 
+// Prefix indicating test has to run prior to the other test.
+const char kPreTestPrefix[] = "PRE_";
+
+// Prefix indicating test is disabled, will not run unless specified.
+const char kDisabledTestPrefix[] = "DISABLED_";
+
 namespace {
 
 // Global tag for test runs where the results are unreliable for any reason.
@@ -570,6 +576,69 @@ const char kIsolatedScriptRunDisabledTestsFlag[] =
 const char kIsolatedScriptTestFilterFlag[] = "isolated-script-test-filter";
 const char kIsolatedScriptTestRepeatFlag[] = "isolated-script-test-repeat";
 
+class TestLauncher::TestInfo {
+ public:
+  TestInfo() = default;
+  TestInfo(const TestInfo& other) = default;
+  TestInfo(const TestIdentifier& test_id);
+  ~TestInfo() = default;
+
+  // Returns test name excluding DISABLE_ prefix.
+  std::string GetDisabledStrippedName() const;
+
+  // Returns full test name.
+  std::string GetFullName() const;
+
+  // Returns test name with PRE_ prefix added, excluding DISABLE_ prefix.
+  std::string GetPreName() const;
+
+  const std::string& test_case_name() const { return test_case_name_; }
+  const std::string& test_name() const { return test_name_; }
+  const std::string& file() const { return file_; }
+  int line() const { return line_; }
+  bool disabled() const { return disabled_; }
+  bool pre_test() const { return pre_test_; }
+
+ private:
+  std::string test_case_name_;
+  std::string test_name_;
+  std::string file_;
+  int line_;
+  bool disabled_;
+  bool pre_test_;
+};
+
+TestLauncher::TestInfo::TestInfo(const TestIdentifier& test_id)
+    : test_case_name_(test_id.test_case_name),
+      test_name_(test_id.test_name),
+      file_(test_id.file),
+      line_(test_id.line),
+      disabled_(false),
+      pre_test_(false) {
+  disabled_ = GetFullName().find(kDisabledTestPrefix) != std::string::npos;
+  pre_test_ = test_name_.find(kPreTestPrefix) != std::string::npos;
+}
+
+std::string TestLauncher::TestInfo::GetDisabledStrippedName() const {
+  std::string test_name = GetFullName();
+  ReplaceSubstringsAfterOffset(&test_name, 0, kDisabledTestPrefix,
+                               std::string());
+  return test_name;
+}
+
+std::string TestLauncher::TestInfo::GetFullName() const {
+  return FormatFullTestName(test_case_name_, test_name_);
+}
+
+std::string TestLauncher::TestInfo::GetPreName() const {
+  std::string name = test_name_;
+  ReplaceSubstringsAfterOffset(&name, 0, kDisabledTestPrefix, std::string());
+  std::string case_name = test_case_name_;
+  ReplaceSubstringsAfterOffset(&case_name, 0, kDisabledTestPrefix,
+                               std::string());
+  return FormatFullTestName(case_name, kPreTestPrefix + name);
+}
+
 TestLauncherDelegate::~TestLauncherDelegate() = default;
 
 TestLauncher::LaunchOptions::LaunchOptions() = default;
@@ -1038,10 +1107,11 @@ bool TestLauncher::Init(CommandLine* command_line) {
     }
   }
 
-  if (!launcher_delegate_->GetTests(&tests_)) {
-    LOG(ERROR) << "Failed to get list of tests.";
+  if (!InitTests())
     return false;
-  }
+
+  if (!ValidateTests())
+    return false;
 
   if (command_line->HasSwitch(switches::kTestLauncherPrintTestStdio)) {
     std::string print_test_stdio = command_line->GetSwitchValueASCII(
@@ -1157,6 +1227,51 @@ bool TestLauncher::Init(CommandLine* command_line) {
   return true;
 }
 
+bool TestLauncher::InitTests() {
+  std::vector<TestIdentifier> tests;
+  if (!launcher_delegate_->GetTests(&tests)) {
+    LOG(ERROR) << "Failed to get list of tests.";
+    return false;
+  }
+  for (const TestIdentifier& test_id : tests) {
+    TestInfo test_info(test_id);
+    tests_.push_back(test_info);
+  }
+  return true;
+}
+
+bool TestLauncher::ValidateTests() {
+  bool result = true;
+  std::unordered_set<std::string> disabled_tests;
+  std::unordered_set<std::string> pre_tests;
+
+  // Find disabled and pre tests
+  for (const TestInfo& test_info : tests_) {
+    if (test_info.disabled())
+      disabled_tests.insert(test_info.GetDisabledStrippedName());
+    if (test_info.pre_test())
+      pre_tests.insert(test_info.GetDisabledStrippedName());
+  }
+
+  for (const TestInfo& test_info : tests_) {
+    // If any test has a matching disabled test, fail and log for audit.
+    if (base::ContainsKey(disabled_tests, test_info.GetFullName())) {
+      LOG(ERROR) << test_info.GetFullName()
+                 << " duplicated by a DISABLED_ test";
+      result = false;
+    }
+    // Remove pre tests that have a matching subsequent test.
+    pre_tests.erase(test_info.GetPreName());
+  }
+
+  // If any tests remain in pre_tests set, fail and log for audit.
+  for (const std::string& pre_test : pre_tests) {
+    LOG(ERROR) << pre_test << " is an orphaned pre test";
+    result = false;
+  }
+  return result;
+}
+
 void TestLauncher::CreateAndStartThreadPool(int num_parallel_jobs) {
   // These values are taken from ThreadPool::StartWithDefaultParams(), which
   // is not used directly to allow a custom number of threads in the foreground
@@ -1182,7 +1297,7 @@ void TestLauncher::CombinePositiveTestFilters(
   // in both filters.
   if (!filter_a.empty() && !filter_b.empty()) {
     for (const auto& i : tests_) {
-      std::string test_name = FormatFullTestName(i.test_case_name, i.test_name);
+      std::string test_name = i.GetFullName();
       bool found_a = false;
       bool found_b = false;
       for (const auto& k : filter_a) {
@@ -1204,30 +1319,25 @@ void TestLauncher::CombinePositiveTestFilters(
 
 void TestLauncher::RunTests() {
   std::vector<std::string> test_names;
-  for (const TestIdentifier& test_id : tests_) {
-    std::string test_name =
-        FormatFullTestName(test_id.test_case_name, test_id.test_name);
-
+  for (const TestInfo& test_info : tests_) {
+    std::string test_name = test_info.GetFullName();
     results_tracker_.AddTest(test_name);
-
-    if (test_name.find("DISABLED") != std::string::npos) {
+    // Skip disabled tests unless explicitly requested.
+    if (test_info.disabled()) {
       results_tracker_.AddDisabledTest(test_name);
-
-      // Skip disabled tests unless explicitly requested.
       if (skip_diabled_tests_)
         continue;
     }
 
-    bool will_run_test = launcher_delegate_->WillRunTest(test_id.test_case_name,
-                                                         test_id.test_name);
+    bool will_run_test = launcher_delegate_->WillRunTest(
+        test_info.test_case_name(), test_info.test_name());
     if (!will_run_test)
       continue;
 
     // Count tests in the binary, before we apply filter and sharding.
     test_found_count_++;
 
-    std::string test_name_no_disabled =
-        TestNameWithoutDisabledPrefix(test_name);
+    std::string test_name_no_disabled = test_info.GetDisabledStrippedName();
 
     // Skip the test that doesn't match the filter (if given).
     if (has_at_least_one_positive_filter_) {
@@ -1263,8 +1373,8 @@ void TestLauncher::RunTests() {
     size_t index_of_first_period = test_name_to_bucket.find(".");
     if (index_of_first_period == std::string::npos)
       index_of_first_period = 0;
-    base::ReplaceSubstringsAfterOffset(&test_name_to_bucket,
-                                       index_of_first_period, "PRE_", "");
+    base::ReplaceSubstringsAfterOffset(
+        &test_name_to_bucket, index_of_first_period, "PRE_", std::string());
 
     if (Hash(test_name_to_bucket) % total_shards_ !=
         static_cast<uint32_t>(shard_index_)) {
@@ -1273,10 +1383,11 @@ void TestLauncher::RunTests() {
 
     // Report test locations after applying all filters, so that we report test
     // locations only for those tests that were run as part of this shard.
-    results_tracker_.AddTestLocation(test_name, test_id.file, test_id.line);
+    results_tracker_.AddTestLocation(test_name, test_info.file(),
+                                     test_info.line());
 
     bool should_run_test = launcher_delegate_->ShouldRunTest(
-        test_id.test_case_name, test_id.test_name);
+        test_info.test_case_name(), test_info.test_name());
     if (should_run_test) {
       // Only a subset of tests that are run require placeholders -- namely,
       // those that will output results.

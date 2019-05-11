@@ -180,6 +180,15 @@ class TestLauncher {
  private:
   bool Init(CommandLine* command_line) WARN_UNUSED_RESULT;
 
+  // Gets tests from the delegate, and converts to TestInfo objects.
+  // Returns false if delegate fails to return tests.
+  bool InitTests();
+
+  // Validate tests names. This includes no name conflict between tests
+  // without DISABLED_ prefix, and orphaned PRE_ tests.
+  // Returns false if any violation is found.
+  bool ValidateTests();
+
   // Runs all tests in current iteration.
   void RunTests();
 
@@ -226,8 +235,11 @@ class TestLauncher {
   std::vector<std::string> positive_test_filter_;
   std::vector<std::string> negative_test_filter_;
 
+  // Class to encapsulate gtest information.
+  class TestInfo;
+
   // Tests to use (cached result of TestLauncherDelegate::GetTests).
-  std::vector<TestIdentifier> tests_;
+  std::vector<TestInfo> tests_;
 
   // Number of tests found in this binary.
   size_t test_found_count_;

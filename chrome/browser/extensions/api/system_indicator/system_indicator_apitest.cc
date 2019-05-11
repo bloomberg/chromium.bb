@@ -49,16 +49,17 @@ class SystemIndicatorApiTest : public ExtensionApiTest {
 
 // https://crbug.com/960363: Test crashes on ChromeOS.
 #if defined(OS_CHROMEOS)
-#define MAYBE_SystemIndicator DISABLED_SystemIndicator_CrOS
+#define MAYBE_SystemIndicatorBasic DISABLED_SystemIndicatorBasic
 #else
-#define MAYBE_SystemIndicator SystemIndicator
+#define MAYBE_SystemIndicatorBasic SystemIndicatorBasic
 #endif
-IN_PROC_BROWSER_TEST_F(SystemIndicatorApiTest, MAYBE_SystemIndicator) {
+IN_PROC_BROWSER_TEST_F(SystemIndicatorApiTest, MAYBE_SystemIndicatorBasic) {
   ASSERT_TRUE(RunExtensionTest("system_indicator/basics")) << message_;
 }
 
 // Failing on 10.6, flaky elsewhere http://crbug.com/497643
-IN_PROC_BROWSER_TEST_F(SystemIndicatorApiTest, DISABLED_SystemIndicator) {
+IN_PROC_BROWSER_TEST_F(SystemIndicatorApiTest,
+                       DISABLED_SystemIndicatorUnloaded) {
   ResultCatcher catcher;
 
   const Extension* extension =

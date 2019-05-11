@@ -22,7 +22,7 @@ class Profile;
 class StatusTray;
 
 namespace extensions {
-FORWARD_DECLARE_TEST(SystemIndicatorApiTest, SystemIndicator);
+FORWARD_DECLARE_TEST(SystemIndicatorApiTest, SystemIndicatorUnloaded);
 
 class ExtensionIndicatorIcon;
 class ExtensionRegistry;
@@ -48,7 +48,7 @@ class SystemIndicatorManager : public ExtensionRegistryObserver,
   void Shutdown() override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(SystemIndicatorApiTest, SystemIndicator);
+  FRIEND_TEST_ALL_PREFIXES(SystemIndicatorApiTest, SystemIndicatorUnloaded);
 
   // A structure representing the system indicator for an extension.
   struct SystemIndicator {

@@ -82,7 +82,7 @@ using GLImageScanoutType = testing::Types<
     GLImageNativePixmapTestDelegate<gfx::BufferUsage::SCANOUT,
                                     gfx::BufferFormat::BGRA_8888>>;
 
-INSTANTIATE_TYPED_TEST_SUITE_P(GLImageNativePixmapScanout,
+INSTANTIATE_TYPED_TEST_SUITE_P(GLImageNativePixmapScanoutBGRA,
                                GLImageTest,
                                GLImageScanoutType);
 
@@ -92,7 +92,7 @@ using GLImageScanoutTypeDisabled = testing::Types<
 
 // This test is disabled since we need mesa support for XR30/XB30 that is not
 // available on many boards yet.
-INSTANTIATE_TYPED_TEST_SUITE_P(DISABLED_GLImageNativePixmapScanout,
+INSTANTIATE_TYPED_TEST_SUITE_P(DISABLED_GLImageNativePixmapScanoutRGBX,
                                GLImageTest,
                                GLImageScanoutTypeDisabled);
 

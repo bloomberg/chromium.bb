@@ -882,7 +882,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 #define MAYBE_WriteRemoteCharacteristic_Twice WriteRemoteCharacteristic_Twice
 #else
 #define MAYBE_WriteRemoteCharacteristic_Twice \
-  DISABLEDWriteRemoteCharacteristic_Twice
+  DISABLED_WriteRemoteCharacteristic_Twice
 #endif
 // Tests WriteRemoteCharacteristic multiple times.
 #if defined(OS_WIN)

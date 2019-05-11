@@ -61,21 +61,25 @@ class TestLauncherTest : public testing::Test {
         FROM_HERE, BindOnce(&RunLoop::QuitCurrentWhenIdleDeprecated));
   }
 
-  // Setup expected delegate calls, and which tests the delegate will return.
-  void SetUpExpectCalls(std::vector<const std::string> test_names) {
-    std::vector<TestIdentifier> tests;
+  // Adds tests to be returned by the delegate.
+  void AddMockedTests(std::string test_case_name,
+                      const std::vector<std::string>& test_names) {
     for (const std::string& test_name : test_names) {
       TestIdentifier test_data;
-      test_data.test_case_name = "Test";
+      test_data.test_case_name = test_case_name;
       test_data.test_name = test_name;
       test_data.file = "File";
       test_data.line = 100;
-      tests.push_back(test_data);
+      tests_.push_back(test_data);
     }
+  }
+
+  // Setup expected delegate calls, and which tests the delegate will return.
+  void SetUpExpectCalls() {
     using ::testing::_;
     EXPECT_CALL(delegate, GetTests(_))
-        .WillOnce(testing::DoAll(testing::SetArgPointee<0>(tests),
-                                 testing::Return(true)));
+        .WillOnce(::testing::DoAll(testing::SetArgPointee<0>(tests_),
+                                   testing::Return(true)));
     EXPECT_CALL(delegate, WillRunTest(_, _))
         .WillRepeatedly(testing::Return(true));
     EXPECT_CALL(delegate, ShouldRunTest(_, _))
@@ -86,11 +90,39 @@ class TestLauncherTest : public testing::Test {
   MockTestLauncher test_launcher;
   MockTestLauncherDelegate delegate;
   base::test::ScopedTaskEnvironment scoped_task_environment;
+
+ private:
+  std::vector<TestIdentifier> tests_;
 };
+
+// A test and a disabled test cannot share a name.
+TEST_F(TestLauncherTest, TestNameSharedWithDisabledTest) {
+  AddMockedTests("Test", {"firstTest", "DISABLED_firstTest"});
+  SetUpExpectCalls();
+  EXPECT_FALSE(test_launcher.Run(command_line.get()));
+}
+
+// A test case and a disabled test case cannot share a name.
+TEST_F(TestLauncherTest, TestNameSharedWithDisabledTestCase) {
+  AddMockedTests("DISABLED_Test", {"firstTest"});
+  AddMockedTests("Test", {"firstTest"});
+  SetUpExpectCalls();
+  EXPECT_FALSE(test_launcher.Run(command_line.get()));
+}
+
+// Compiled tests should not contain an orphaned pre test.
+TEST_F(TestLauncherTest, OrphanePreTest) {
+  AddMockedTests("Test", {"firstTest", "PRE_firstTestOrphane"});
+  SetUpExpectCalls();
+  EXPECT_FALSE(test_launcher.Run(command_line.get()));
+}
 
 // Test TestLauncher filters DISABLED tests by default.
 TEST_F(TestLauncherTest, FilterDisabledTestByDefault) {
-  SetUpExpectCalls({"firstTest", "secondTest", "DISABLED_firstTest"});
+  AddMockedTests("DISABLED_TestDisabled", {"firstTest"});
+  AddMockedTests("Test",
+                 {"firstTest", "secondTest", "DISABLED_firstTestDisabled"});
+  SetUpExpectCalls();
   using ::testing::_;
   std::vector<std::string> tests_names = {"Test.firstTest", "Test.secondTest"};
   EXPECT_CALL(delegate,
@@ -102,8 +134,10 @@ TEST_F(TestLauncherTest, FilterDisabledTestByDefault) {
 
 // Test TestLauncher "gtest_filter" switch.
 TEST_F(TestLauncherTest, UsingCommandLineSwitch) {
-  SetUpExpectCalls({"firstTest", "secondTest", "DISABLED_firstTest"});
-  command_line->AppendSwitchASCII("gtest_filter", "Test.first*");
+  AddMockedTests("Test",
+                 {"firstTest", "secondTest", "DISABLED_firstTestDisabled"});
+  SetUpExpectCalls();
+  command_line->AppendSwitchASCII("gtest_filter", "Test*.first*");
   using ::testing::_;
   std::vector<std::string> tests_names = {"Test.firstTest"};
   EXPECT_CALL(delegate,
@@ -115,12 +149,16 @@ TEST_F(TestLauncherTest, UsingCommandLineSwitch) {
 
 // Test TestLauncher run disabled unit tests switch.
 TEST_F(TestLauncherTest, RunDisabledTests) {
-  SetUpExpectCalls({"firstTest", "secondTest", "DISABLED_firstTest"});
+  AddMockedTests("DISABLED_TestDisabled", {"firstTest"});
+  AddMockedTests("Test",
+                 {"firstTest", "secondTest", "DISABLED_firstTestDisabled"});
+  SetUpExpectCalls();
   command_line->AppendSwitch("gtest_also_run_disabled_tests");
-  command_line->AppendSwitchASCII("gtest_filter", "Test.first*");
+  command_line->AppendSwitchASCII("gtest_filter", "Test*.first*");
   using ::testing::_;
-  std::vector<std::string> tests_names = {"Test.firstTest",
-                                          "Test.DISABLED_firstTest"};
+  std::vector<std::string> tests_names = {"DISABLED_TestDisabled.firstTest",
+                                          "Test.firstTest",
+                                          "Test.DISABLED_firstTestDisabled"};
   EXPECT_CALL(delegate,
               RunTests(_, testing::ElementsAreArray(tests_names.cbegin(),
                                                     tests_names.cend())))
@@ -139,7 +177,7 @@ TEST_F(TestLauncherTest, FaultyShardSetup) {
 
 // Shard index must be lesser than total shards
 TEST_F(TestLauncherTest, RedirectStdio) {
-  SetUpExpectCalls({});
+  SetUpExpectCalls();
   command_line->AppendSwitchASCII("test-launcher-print-test-stdio", "always");
   using ::testing::_;
   EXPECT_CALL(delegate, RunTests(_, _)).Times(1);

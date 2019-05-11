@@ -167,9 +167,10 @@ TEST_F(TestResultsTrackerTester, JsonSummaryRootTags) {
   tracker.OnTestIterationStarting();
   tracker.AddTest("Test2");  // Test should appear in alphabetical order.
   tracker.AddTest("Test1");
-  tracker.AddTest("Test3");
   tracker.AddTest("Test1");  // Test should only appear once.
-  tracker.AddDisabledTest("Test3");
+  // DISABLED_ prefix should be removed.
+  tracker.AddTest("DISABLED_Test3");
+  tracker.AddDisabledTest("DISABLED_Test3");
   tracker.AddGlobalTag("global1");
 
   Optional<Value> root = SaveAndReadSummary();
@@ -272,6 +273,31 @@ TEST_F(TestResultsTrackerTester, JsonSummaryTestPlaceholderOrder) {
 
   iteration_val = &(val->GetList().at(1));
   ValidateTestResult(iteration_val, test_result);
+}
+
+// Disabled tests results are not saved in json summary.
+TEST_F(TestResultsTrackerTester, JsonSummaryDisabledTestResults) {
+  tracker.AddDisabledTest("Test");
+  TestResult test_result =
+      GenerateTestResult("Test", TestResult::TEST_SUCCESS,
+                         TimeDelta::FromMilliseconds(30), "output");
+  test_result.test_result_parts.push_back(GenerateTestResultPart(
+      TestResultPart::kSuccess, "TestFile", 110, "summary", "message"));
+  tracker.AddTestPlaceholder("Test");
+
+  tracker.OnTestIterationStarting();
+  tracker.GeneratePlaceholderIteration();
+  tracker.AddTestResult(test_result);
+
+  Optional<Value> root = SaveAndReadSummary();
+
+  Value* val = root->FindListKey("per_iteration_data");
+  ASSERT_TRUE(val);
+  ASSERT_EQ(1u, val->GetList().size());
+
+  Value* iteration_val = &(val->GetList().at(0));
+  // No result is saved since a placeholder was not specified.
+  EXPECT_EQ(0u, iteration_val->DictSize());
 }
 
 }  // namespace
