@@ -67,6 +67,9 @@ class AppUpdate {
   const std::string& ShortName() const;
   bool ShortNameChanged() const;
 
+  const std::string& Description() const;
+  bool DescriptionChanged() const;
+
   std::vector<std::string> AdditionalSearchTerms() const;
   bool AdditionalSearchTermsChanged() const;
 

@@ -52,6 +52,9 @@ void AppUpdate::Merge(apps::mojom::App* state, const apps::mojom::App* delta) {
   if (delta->short_name.has_value()) {
     state->short_name = delta->short_name;
   }
+  if (delta->description.has_value()) {
+    state->description = delta->description;
+  }
   if (!delta->additional_search_terms.empty()) {
     DCHECK(state->permissions.empty() ||
            (delta->permissions.size() == state->permissions.size()));
@@ -159,6 +162,21 @@ const std::string& AppUpdate::ShortName() const {
 bool AppUpdate::ShortNameChanged() const {
   return delta_ && delta_->short_name.has_value() &&
          (!state_ || (delta_->short_name != state_->short_name));
+}
+
+const std::string& AppUpdate::Description() const {
+  if (delta_ && delta_->description.has_value()) {
+    return delta_->description.value();
+  }
+  if (state_ && state_->description.has_value()) {
+    return state_->description.value();
+  }
+  return base::EmptyString();
+}
+
+bool AppUpdate::DescriptionChanged() const {
+  return delta_ && delta_->description.has_value() &&
+         (!state_ || (delta_->description != state_->description));
 }
 
 std::vector<std::string> AppUpdate::AdditionalSearchTerms() const {

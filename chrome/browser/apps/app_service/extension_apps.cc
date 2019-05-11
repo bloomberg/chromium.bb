@@ -516,6 +516,7 @@ apps::mojom::AppPtr ExtensionApps::Convert(
   app->readiness = readiness;
   app->name = extension->name();
   app->short_name = extension->short_name();
+  app->description = extension->description();
 
   IconEffects icon_effects = IconEffects::kNone;
 #if defined(OS_CHROMEOS)
