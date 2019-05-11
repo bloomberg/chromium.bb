@@ -302,21 +302,23 @@ std::string CreateFnmatchQuery(const std::string& query) {
   return base::StrCat(query_pieces);
 }
 
-std::vector<base::FilePath> SearchByPattern(const base::FilePath& root,
-                                            const std::string& query,
-                                            size_t max_results) {
-  std::vector<base::FilePath> prefix_matches;
-  std::vector<base::FilePath> other_matches;
+std::vector<std::pair<base::FilePath, bool>> SearchByPattern(
+    const base::FilePath& root,
+    const std::string& query,
+    size_t max_results) {
+  std::vector<std::pair<base::FilePath, bool>> prefix_matches;
+  std::vector<std::pair<base::FilePath, bool>> other_matches;
 
   base::FileEnumerator enumerator(
-      root, true, base::FileEnumerator::FILES, CreateFnmatchQuery(query),
-      base::FileEnumerator::FolderSearchPolicy::ALL);
+      root, true,
+      base::FileEnumerator::DIRECTORIES | base::FileEnumerator::FILES,
+      CreateFnmatchQuery(query), base::FileEnumerator::FolderSearchPolicy::ALL);
 
   for (base::FilePath path = enumerator.Next(); !path.empty();
        path = enumerator.Next()) {
     if (base::StartsWith(path.BaseName().value(), query,
                          base::CompareCase::INSENSITIVE_ASCII)) {
-      prefix_matches.push_back(path);
+      prefix_matches.emplace_back(path, enumerator.GetInfo().IsDirectory());
       if (max_results && prefix_matches.size() == max_results) {
         return prefix_matches;
       }
@@ -324,7 +326,7 @@ std::vector<base::FilePath> SearchByPattern(const base::FilePath& root,
     }
     if (!max_results ||
         prefix_matches.size() + other_matches.size() < max_results) {
-      other_matches.push_back(path);
+      other_matches.emplace_back(path, enumerator.GetInfo().IsDirectory());
     }
   }
   prefix_matches.insert(
@@ -1198,7 +1200,7 @@ ExtensionFunction::ResponseAction FileManagerPrivateSearchFilesFunction::Run() {
 }
 
 void FileManagerPrivateSearchFilesFunction::OnSearchByPattern(
-    const std::vector<base::FilePath>& results) {
+    const std::vector<std::pair<base::FilePath, bool>>& results) {
   auto my_files_path = file_manager::util::GetMyFilesFolderForProfile(
       chrome_details_.GetProfile());
 
@@ -1216,16 +1218,16 @@ void FileManagerPrivateSearchFilesFunction::OnSearchByPattern(
 
   auto entries = std::make_unique<base::ListValue>();
   entries->GetList().reserve(results.size());
-  for (const auto& path : results) {
+  for (const auto& result : results) {
     base::FilePath fs_path("/");
-    if (!my_files_path.AppendRelativePath(path, &fs_path)) {
+    if (!my_files_path.AppendRelativePath(result.first, &fs_path)) {
       continue;
     }
     base::DictionaryValue entry;
     entry.SetKey("fileSystemName", base::Value(fs_name));
     entry.SetKey("fileSystemRoot", base::Value(fs_root));
     entry.SetKey("fileFullPath", base::Value(fs_path.AsUTF8Unsafe()));
-    entry.SetKey("fileIsDirectory", base::Value(false));
+    entry.SetKey("fileIsDirectory", base::Value(result.second));
     entries->GetList().emplace_back(std::move(entry));
   }
 

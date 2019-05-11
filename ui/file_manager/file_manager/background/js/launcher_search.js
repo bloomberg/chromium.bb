@@ -240,7 +240,9 @@ LauncherSearch.prototype
     chrome.fileManagerPrivate.searchDriveMetadata(param, results => {
       chrome.fileManagerPrivate.getDriveConnectionState(connectionState => {
         if (connectionState.type !== 'online') {
-          results = results.filter(result => result.availableOffline !== false);
+          results = results.filter(
+              result => result.entry.isDirectory ||
+                  result.availableOffline !== false);
         }
         chrome.metricsPrivate.recordTime(
             'FileBrowser.LauncherSearch.Drive', Date.now() - startTime);

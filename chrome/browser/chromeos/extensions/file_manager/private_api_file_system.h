@@ -378,7 +378,8 @@ class FileManagerPrivateSearchFilesFunction
   // ExtensionFunction overrides.
   ResponseAction Run() override;
 
-  void OnSearchByPattern(const std::vector<base::FilePath>& results);
+  void OnSearchByPattern(
+      const std::vector<std::pair<base::FilePath, bool>>& results);
 
   const ChromeExtensionFunctionDetails chrome_details_;
 };
