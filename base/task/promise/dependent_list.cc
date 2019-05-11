@@ -4,8 +4,6 @@
 
 #include "base/task/promise/dependent_list.h"
 
-#include "base/task/promise/abstract_promise.h"
-
 namespace base {
 namespace internal {
 
@@ -18,13 +16,6 @@ DependentList::DependentList(ConstructRejected) : head_(kRejectedSentinel) {}
 DependentList::~DependentList() = default;
 
 DependentList::Node::Node() = default;
-
-DependentList::Node::Node(Node&& other) {
-  dependent = std::move(other.dependent);
-  DCHECK_EQ(other.next, nullptr);
-}
-
-DependentList::Node::~Node() = default;
 
 DependentList::InsertResult DependentList::Insert(Node* node) {
   // This method uses std::memory_order_acquire semantics on read (the failure
@@ -92,12 +83,6 @@ DependentList::Node* DependentList::ConsumeOnceForCancel() {
   return reinterpret_cast<Node*>(prev_head);
 }
 
-bool DependentList::IsSettled() const {
-  uintptr_t value = head_.load(std::memory_order_acquire);
-  return value == kResolvedSentinel || value == kRejectedSentinel ||
-         value == kCanceledSentinel;
-}
-
 bool DependentList::IsResolved() const {
   return head_.load(std::memory_order_acquire) == kResolvedSentinel;
 }
@@ -106,7 +91,7 @@ bool DependentList::IsRejected() const {
   return head_.load(std::memory_order_acquire) == kRejectedSentinel;
 }
 
-bool DependentList::IsCanceled() const {
+bool DependentList::IsCancelled() const {
   return head_.load(std::memory_order_acquire) == kCanceledSentinel;
 }
 
