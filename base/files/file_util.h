@@ -333,6 +333,15 @@ BASE_EXPORT bool DevicePathToDriveLetterPath(const FilePath& device_path,
 // be resolved with this function.
 BASE_EXPORT bool NormalizeToNativeFilePath(const FilePath& path,
                                            FilePath* nt_path);
+
+// Method that wraps the win32 GetLongPathName API, normalizing the specified
+// path to its long form. An example where this is needed is when comparing
+// temp file paths. If a username isn't a valid 8.3 short file name (even just a
+// lengthy name like "user with long name"), Windows will set the TMP and TEMP
+// environment variables to be 8.3 paths. ::GetTempPath (called in
+// base::GetTempDir) just uses the value specified by TMP or TEMP, and so can
+// return a short path. Returns an empty path on error.
+BASE_EXPORT FilePath MakeLongFilePath(const FilePath& input);
 #endif
 
 // This function will return if the given file is a symlink or not.

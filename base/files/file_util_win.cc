@@ -761,6 +761,23 @@ bool NormalizeToNativeFilePath(const FilePath& path, FilePath* nt_path) {
   return success;
 }
 
+FilePath MakeLongFilePath(const FilePath& input) {
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
+
+  DWORD path_long_len = ::GetLongPathName(input.value().c_str(), nullptr, 0);
+  if (path_long_len == 0UL)
+    return FilePath();
+
+  base::string16 path_long_str;
+  path_long_len = ::GetLongPathName(
+      input.value().c_str(), base::WriteInto(&path_long_str, path_long_len),
+      path_long_len);
+  if (path_long_len == 0UL)
+    return FilePath();
+
+  return base::FilePath(path_long_str);
+}
+
 // TODO(rkc): Work out if we want to handle NTFS junctions here or not, handle
 // them if we do decide to.
 bool IsLink(const FilePath& file_path) {

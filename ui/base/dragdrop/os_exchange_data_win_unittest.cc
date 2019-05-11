@@ -390,7 +390,13 @@ TEST_F(OSExchangeDataWinTest, VirtualFiles) {
     for (size_t i = 0; i < retrieved_virtual_files_.size(); i++) {
       EXPECT_EQ(kTestFilenames_and_Contents[i].first,
                 retrieved_virtual_files_[i].display_name);
-      EXPECT_EQ(temp_dir, retrieved_virtual_files_[i].path.DirName());
+      // Check if the temp files that back the virtual files are actually
+      // created in the temp directory. Need to compare long file paths here
+      // because GetTempDir can return a short ("8.3") path if the test is run
+      // under a username that is too long.
+      EXPECT_EQ(
+          base::MakeLongFilePath(temp_dir),
+          base::MakeLongFilePath(retrieved_virtual_files_[i].path.DirName()));
       EXPECT_EQ(kTestFilenames_and_Contents[i].first.Extension(),
                 retrieved_virtual_files_[i].path.Extension());
       EXPECT_TRUE(base::ReadFileToString(retrieved_virtual_files_[i].path,
@@ -520,7 +526,13 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesDuplicateNames) {
             retrieved_virtual_files_[i].path.value()));
       }
 
-      EXPECT_EQ(temp_dir, retrieved_virtual_files_[i].path.DirName());
+      // Check if the temp files that back the virtual files are actually
+      // created in the temp directory. Need to compare long file paths here
+      // because GetTempDir can return a short ("8.3") path if the test is run
+      // under a username that is too long.
+      EXPECT_EQ(
+          base::MakeLongFilePath(temp_dir),
+          base::MakeLongFilePath(retrieved_virtual_files_[i].path.DirName()));
       EXPECT_EQ(kTestFilenames_and_Contents[i].first.Extension(),
                 retrieved_virtual_files_[i].path.Extension());
       EXPECT_TRUE(base::ReadFileToString(retrieved_virtual_files_[i].path,
@@ -597,7 +609,13 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesDuplicateNamesCaseInsensitivity) {
             retrieved_virtual_files_[i].path.value()));
       }
 
-      EXPECT_EQ(temp_dir, retrieved_virtual_files_[i].path.DirName());
+      // Check if the temp files that back the virtual files are actually
+      // created in the temp directory. Need to compare long file paths here
+      // because GetTempDir can return a short ("8.3") path if the test is run
+      // under a username that is too long.
+      EXPECT_EQ(
+          base::MakeLongFilePath(temp_dir),
+          base::MakeLongFilePath(retrieved_virtual_files_[i].path.DirName()));
       EXPECT_EQ(kTestFilenames_and_Contents[i].first.Extension(),
                 retrieved_virtual_files_[i].path.Extension());
       EXPECT_TRUE(base::ReadFileToString(retrieved_virtual_files_[i].path,
@@ -710,7 +728,13 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesInvalidAndDuplicateNames) {
             retrieved_virtual_files_[i].path.value()));
       }
 
-      EXPECT_EQ(temp_dir, retrieved_virtual_files_[i].path.DirName());
+      // Check if the temp files that back the virtual files are actually
+      // created in the temp directory. Need to compare long file paths here
+      // because GetTempDir can return a short ("8.3") path if the test is run
+      // under a username that is too long.
+      EXPECT_EQ(
+          base::MakeLongFilePath(temp_dir),
+          base::MakeLongFilePath(retrieved_virtual_files_[i].path.DirName()));
       EXPECT_EQ(kTestFilenames_and_Contents[i].first.Extension(),
                 retrieved_virtual_files_[i].path.Extension());
       // Ability to read the contents implies a temp file was successfully
@@ -771,7 +795,14 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesEmptyContents) {
     for (size_t i = 0; i < retrieved_virtual_files_.size(); i++) {
       EXPECT_EQ(kTestFilenames_and_Contents[i].first,
                 retrieved_virtual_files_[i].display_name);
-      EXPECT_EQ(temp_dir, retrieved_virtual_files_[i].path.DirName());
+
+      // Check if the temp files that back the virtual files are actually
+      // created in the temp directory. Need to compare long file paths here
+      // because GetTempDir can return a short ("8.3") path if the test is run
+      // under a username that is too long.
+      EXPECT_EQ(
+          base::MakeLongFilePath(temp_dir),
+          base::MakeLongFilePath(retrieved_virtual_files_[i].path.DirName()));
       EXPECT_EQ(kTestFilenames_and_Contents[i].first.Extension(),
                 retrieved_virtual_files_[i].path.Extension());
       EXPECT_TRUE(base::ReadFileToString(retrieved_virtual_files_[i].path,

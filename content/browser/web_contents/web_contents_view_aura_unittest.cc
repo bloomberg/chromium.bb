@@ -379,7 +379,12 @@ TEST_F(WebContentsViewAuraTest, DragDropVirtualFiles) {
   for (size_t i = 0; i < retrieved_file_infos.size(); i++) {
     EXPECT_EQ(test_filenames_and_contents[i].first,
               retrieved_file_infos[i].display_name);
-    EXPECT_EQ(temp_dir, retrieved_file_infos[i].path.DirName());
+    // Check if the temp files that back the virtual files are actually created
+    // in the temp directory. Need to compare long file paths here because
+    // GetTempDir can return a short ("8.3") path if the test is run
+    // under a username that is too long.
+    EXPECT_EQ(base::MakeLongFilePath(temp_dir),
+              base::MakeLongFilePath(retrieved_file_infos[i].path.DirName()));
     EXPECT_EQ(test_filenames_and_contents[i].first.Extension(),
               retrieved_file_infos[i].path.Extension());
     EXPECT_TRUE(
