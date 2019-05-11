@@ -690,6 +690,12 @@ static void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
 
     for (int mi_col = 0; mi_col < cm->mi_cols; mi_col += mi_width) {
       int64_t inter_cost, intra_cost;
+      x->mv_limits.col_min =
+          -((mi_col * MI_SIZE) + (17 - 2 * AOM_INTERP_EXTEND));
+      x->mv_limits.col_max =
+          ((cm->mi_cols - 1 - mi_col) * MI_SIZE) + (17 - 2 * AOM_INTERP_EXTEND);
+      xd->mb_to_left_edge = -((mi_col * MI_SIZE) * 8);
+      xd->mb_to_right_edge = ((cm->mi_cols - 1 - mi_col) * MI_SIZE) * 8;
 
       // Intra mode
       xd->mi[0]->ref_frame[0] = INTRA_FRAME;
@@ -724,12 +730,6 @@ static void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
       // Inter mode
       // Motion estimation column boundary
       xd->mi[0]->ref_frame[0] = GOLDEN_FRAME;
-      x->mv_limits.col_min =
-          -((mi_col * MI_SIZE) + (17 - 2 * AOM_INTERP_EXTEND));
-      x->mv_limits.col_max =
-          ((cm->mi_cols - 1 - mi_col) * MI_SIZE) + (17 - 2 * AOM_INTERP_EXTEND);
-      xd->mb_to_left_edge = -((mi_col * MI_SIZE) * 8);
-      xd->mb_to_right_edge = ((cm->mi_cols - 1 - mi_col) * MI_SIZE) * 8;
 
       const int mb_y_offset =
           mi_row * MI_SIZE * src->y_stride + mi_col * MI_SIZE;
