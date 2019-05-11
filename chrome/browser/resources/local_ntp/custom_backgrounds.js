@@ -303,7 +303,7 @@ customBackgrounds.resetSelectionDialog = function() {
  * Remove image tiles and maybe swap back to main background menu.
  * @param {boolean} showMenu Whether the main background menu should be shown.
  */
-customBackgrounds.resetImageMenu = function(showMenu) {
+customBackgrounds.richerPicker_resetImageMenu = function(showMenu) {
   const backgroundMenu = $(customBackgrounds.IDS.BACKGROUNDS_MENU);
   const imageMenu = $(customBackgrounds.IDS.BACKGROUNDS_IMAGE_MENU);
   const menu = $(customBackgrounds.IDS.CUSTOMIZATION_MENU);
@@ -318,7 +318,7 @@ customBackgrounds.resetImageMenu = function(showMenu) {
 
   // Reset done button state.
   $(customBackgrounds.IDS.MENU_DONE).disabled = true;
-  customBackgrounds.deselectTile(customBackgrounds.selectedTile);
+  customBackgrounds.richerPicker_deselectTile(customBackgrounds.selectedTile);
   customBackgrounds.selectedTile = null;
   $(customBackgrounds.IDS.MENU_DONE).tabIndex = -1;
 };
@@ -339,7 +339,7 @@ customBackgrounds.setBackground = function(
     url, attributionLine1, attributionLine2, attributionActionUrl) {
   if (configData.richerPicker) {
     $(customBackgrounds.IDS.CUSTOMIZATION_MENU).close();
-    customBackgrounds.resetImageMenu(false);
+    customBackgrounds.richerPicker_resetImageMenu(false);
   } else {
     customBackgrounds.closeCollectionDialog($(customBackgrounds.IDS.MENU));
   }
@@ -498,7 +498,8 @@ customBackgrounds.showCollectionSelectionDialog = function(collectionsSource) {
 
           // In the RP the upload or default tile may be selected.
           if (configData.richerPicker) {
-            customBackgrounds.deselectTile(customBackgrounds.selectedTile);
+            customBackgrounds.richerPicker_deselectTile(
+                customBackgrounds.selectedTile);
           } else {
             customBackgrounds.resetSelectionDialog();
           }
@@ -561,7 +562,7 @@ customBackgrounds.showCollectionSelectionDialog = function(collectionsSource) {
  * button.
  * @param {!Element} tile The tile to apply styling to.
  */
-customBackgrounds.selectTile = function(tile) {
+customBackgrounds.richerPicker_selectTile = function(tile) {
   tile.parentElement.classList.toggle(customBackgrounds.CLASSES.SELECTED, true);
   $(customBackgrounds.IDS.MENU_DONE).disabled = false;
   customBackgrounds.selectedTile = tile;
@@ -581,7 +582,7 @@ customBackgrounds.selectTile = function(tile) {
  * done button.
  * @param {?Element} tile The tile to remove styling from.
  */
-customBackgrounds.deselectTile = function(tile) {
+customBackgrounds.richerPicker_deselectTile = function(tile) {
   if (tile === null) {
     return;
   }
@@ -699,7 +700,8 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
       if (customBackgrounds.selectedTile) {
         if (configData.richerPicker) {
           const id = customBackgrounds.selectedTile.id;
-          customBackgrounds.deselectTile(customBackgrounds.selectedTile);
+          customBackgrounds.richerPicker_deselectTile(
+              customBackgrounds.selectedTile);
           if (id === tile.id) {
             return;
           }
@@ -713,7 +715,7 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
       }
 
       if (configData.richerPicker) {
-        customBackgrounds.selectTile(tile);
+        customBackgrounds.richerPicker_selectTile(tile);
       } else {
         customBackgrounds.applySelectedState(tile);
         customBackgrounds.selectedTile = tile;
@@ -950,7 +952,7 @@ customBackgrounds.init = function(
 
   $(customBackgrounds.IDS.MENU_CANCEL).onclick = function(event) {
     $(customBackgrounds.IDS.CUSTOMIZATION_MENU).close();
-    customBackgrounds.resetImageMenu(false);
+    customBackgrounds.richerPicker_resetImageMenu(false);
   };
 
 
@@ -1258,7 +1260,7 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
   // Interactions with the back arrow on the image selection dialog.
   const backInteraction = function(event) {
     if (configData.richerPicker) {
-      customBackgrounds.resetImageMenu(true);
+      customBackgrounds.richerPicker_resetImageMenu(true);
     }
     customBackgrounds.resetSelectionDialog();
     customBackgrounds.showCollectionSelectionDialog(
@@ -1338,7 +1340,7 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
     tile.dataset.attributionLine1 = '';
     tile.dataset.attributionLine2 = '';
     tile.dataset.attributionActionUrl = '';
-    customBackgrounds.selectTile(tile);
+    customBackgrounds.richerPicker_selectTile(tile);
   };
 
   $(customBackgrounds.IDS.BACKGROUNDS_BUTTON).onclick = function() {
@@ -1347,11 +1349,11 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
   };
 
   $(customBackgrounds.IDS.SHORTCUTS_BUTTON).onclick = function() {
-    customBackgrounds.resetImageMenu(false);
+    customBackgrounds.richerPicker_resetImageMenu(false);
   };
 
   $(customBackgrounds.IDS.COLORS_BUTTON).onclick = function() {
-    customBackgrounds.resetImageMenu(false);
+    customBackgrounds.richerPicker_resetImageMenu(false);
   };
 };
 
