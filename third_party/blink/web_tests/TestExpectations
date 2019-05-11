@@ -5559,3 +5559,7 @@ crbug.com/960623 [ Win ] http/tests/misc/resource-timing-sizes-multipart.html [ 
 
 # This test might need to be removed.
 crbug.com/954349 fast/forms/autofocus-in-sandbox-with-allow-scripts.html [ Timeout ]
+
+# Sheriff 2019-05-11
+crbug.com/962139 [ Linux Debug ] external/wpt/html/infrastructure/urls/dynamic-changes-to-base-urls/dynamic-urls.sub.html [ Pass Crash ]
+crbug.com/962139 [ Linux Debug ] external/wpt/html/infrastructure/urls/dynamic-changes-to-base-urls/historical.sub.xhtml [ Pass Crash ]
