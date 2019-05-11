@@ -21,9 +21,9 @@
  * will fill a supplied 16-byte array with the digest.
  */
 
-#include "base/hash/md5.h"
-
 #include <stddef.h>
+
+#include "base/hash/md5.h"
 
 namespace {
 
@@ -259,14 +259,6 @@ void MD5Final(MD5Digest* digest, MD5Context* context) {
   byteReverse(reinterpret_cast<uint8_t*>(ctx->buf), 4);
   memcpy(digest->a, ctx->buf, 16);
   memset(ctx, 0, sizeof(*ctx)); /* In case it's sensitive */
-}
-
-void MD5IntermediateFinal(MD5Digest* digest, const MD5Context* context) {
-  /* MD5Final mutates the MD5Context*. Make a copy for generating the
-     intermediate value. */
-  MD5Context context_copy;
-  memcpy(&context_copy, context, sizeof(context_copy));
-  MD5Final(digest, &context_copy);
 }
 
 std::string MD5DigestToBase16(const MD5Digest& digest) {

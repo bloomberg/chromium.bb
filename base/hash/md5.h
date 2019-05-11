@@ -5,13 +5,17 @@
 #ifndef BASE_HASH_MD5_H_
 #define BASE_HASH_MD5_H_
 
-#include <stddef.h>
-#include <stdint.h>
+#include <string>
 
 #include "base/base_export.h"
 #include "base/strings/string_piece.h"
+#include "build/build_config.h"
 
-namespace base {
+#if defined(OS_NACL)
+#include "base/hash/md5_nacl.h"
+#else
+#include "base/hash/md5_boringssl.h"
+#endif
 
 // MD5 stands for Message Digest algorithm 5.
 // MD5 is a robust hash function, designed for cyptography, but often used
@@ -36,14 +40,7 @@ namespace base {
 //
 // You can call MD5DigestToBase16() to generate a string of the digest.
 
-// The output of an MD5 operation.
-struct MD5Digest {
-  uint8_t a[16];
-};
-
-// Used for storing intermediate data during an MD5 computation. Callers
-// should not access the data.
-typedef char MD5Context[88];
+namespace base {
 
 // Initializes the given MD5 context structure for subsequent calls to
 // MD5Update().
@@ -56,12 +53,6 @@ BASE_EXPORT void MD5Update(MD5Context* context, const StringPiece& data);
 
 // Finalizes the MD5 operation and fills the buffer with the digest.
 BASE_EXPORT void MD5Final(MD5Digest* digest, MD5Context* context);
-
-// MD5IntermediateFinal() generates a digest without finalizing the MD5
-// operation.  Can be used to generate digests for the input seen thus far,
-// without affecting the digest generated for the entire input.
-BASE_EXPORT void MD5IntermediateFinal(MD5Digest* digest,
-                                      const MD5Context* context);
 
 // Converts a digest into human-readable hexadecimal.
 BASE_EXPORT std::string MD5DigestToBase16(const MD5Digest& digest);

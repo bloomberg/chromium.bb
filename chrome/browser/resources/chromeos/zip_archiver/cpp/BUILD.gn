@@ -51,6 +51,7 @@ source_set("ziparchiver_unittests") {
 
   deps = [
     ":zip_archiver_library",
+    "//base",
     "//testing/gtest",
   ]
 
