@@ -16,10 +16,7 @@ CupsPrintJobManager::CupsPrintJobManager(Profile* profile) : profile_(profile) {
       std::make_unique<CupsPrintJobNotificationManager>(profile, this);
 }
 
-CupsPrintJobManager::~CupsPrintJobManager() {
-  notification_manager_.reset();
-  profile_ = nullptr;
-}
+CupsPrintJobManager::~CupsPrintJobManager() = default;
 
 void CupsPrintJobManager::Shutdown() {}
 
