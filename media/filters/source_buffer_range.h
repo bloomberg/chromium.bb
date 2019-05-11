@@ -68,12 +68,6 @@ class MEDIA_EXPORT SourceBufferRange {
   // Resets this range to an "unseeked" state.
   void ResetNextBufferPosition();
 
-  // TODO(wolenetz): Remove in favor of
-  // GetEndTimestamp()/GetBufferedEndTimestamp() once they report in PTS, not
-  // DTS. See https://crbug.com/771349.
-  void GetRangeEndTimesForTesting(base::TimeDelta* highest_pts,
-                                  base::TimeDelta* end_time) const;
-
   size_t size_in_bytes() const { return size_in_bytes_; }
 
  protected:

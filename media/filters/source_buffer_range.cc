@@ -55,20 +55,6 @@ void SourceBufferRange::ResetNextBufferPosition() {
   next_buffer_index_ = -1;
 }
 
-void SourceBufferRange::GetRangeEndTimesForTesting(
-    base::TimeDelta* highest_pts,
-    base::TimeDelta* end_time) const {
-  if (highest_frame_) {
-    *highest_pts = highest_frame_->timestamp();
-    *end_time = *highest_pts + highest_frame_->duration();
-    DCHECK_NE(*highest_pts, kNoTimestamp);
-    DCHECK_NE(*end_time, kNoTimestamp);
-    return;
-  }
-
-  *highest_pts = *end_time = kNoTimestamp;
-}
-
 void SourceBufferRange::AdjustEstimatedDurationForNewAppend(
     const BufferQueue& new_buffers) {
   if (buffers_.empty() || new_buffers.empty()) {

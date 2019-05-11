@@ -265,9 +265,8 @@ class SourceBufferStreamTest : public testing::Test {
     std::stringstream ss;
     ss << "{ ";
     for (const auto& r : stream_->ranges_) {
-      base::TimeDelta highest_pts;
-      base::TimeDelta end_time;
-      r->GetRangeEndTimesForTesting(&highest_pts, &end_time);
+      base::TimeDelta highest_pts = r->GetEndTimestamp();
+      base::TimeDelta end_time = r->GetBufferedEndTimestamp();
       ss << "<" << highest_pts.InMilliseconds() << ","
          << end_time.InMilliseconds() << "> ";
     }
