@@ -63,7 +63,13 @@ class LayoutProviderTest : public testing::Test {
 // Check legacy font sizes. No new code should be using these constants, but if
 // these tests ever fail it probably means something in the old UI will have
 // changed by mistake.
-TEST_F(LayoutProviderTest, LegacyFontSizeConstants) {
+// https://crbug.com/961938
+#if defined(OS_MACOSX)
+#define MAYBE_LegacyFontSizeConstants DISABLED_LegacyFontSizeConstants
+#else
+#define MAYBE_LegacyFontSizeConstants LegacyFontSizeConstants
+#endif
+TEST_F(LayoutProviderTest, MAYBE_LegacyFontSizeConstants) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::FontList label_font = rb.GetFontListWithDelta(ui::kLabelFontSizeDelta);
 
