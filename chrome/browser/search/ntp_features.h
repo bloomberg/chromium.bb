@@ -14,6 +14,7 @@ namespace features {
 
 extern const base::Feature kChromeColors;
 extern const base::Feature kDisableInitialMostVisitedFadeIn;
+extern const base::Feature kGridLayoutForNtpShortcuts;
 extern const base::Feature kNtpCustomizationMenuV2;
 extern const base::Feature kRemoveNtpFakebox;
 

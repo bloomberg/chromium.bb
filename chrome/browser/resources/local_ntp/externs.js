@@ -30,6 +30,7 @@ let MostVisitedData;
  *            isGooglePage: boolean,
  *            googleBaseUrl: string,
  *            isAccessibleBrowser: boolean,
+ *            enableShortcutsGrid: boolean,
  *            removeFakebox: boolean,
  *            alternateFakebox: boolean,
  *            fakeboxSearchIcon: boolean,

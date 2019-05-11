@@ -601,6 +601,9 @@ class LocalNtpSource::SearchConfigurationProvider
                                ->IsAccessibleBrowser());
 
     if (is_google) {
+      config_data.SetBoolean(
+          "enableShortcutsGrid",
+          base::FeatureList::IsEnabled(features::kGridLayoutForNtpShortcuts));
       config_data.SetBoolean("removeFakebox", base::FeatureList::IsEnabled(
                                                   features::kRemoveNtpFakebox));
       config_data.SetBoolean("alternateFakebox",

@@ -1274,6 +1274,9 @@ function createIframes() {
 
   if (configData.isGooglePage) {
     args.push('enableCustomLinks=1');
+    if (configData.enableShortcutsGrid) {
+      args.push('enableGrid=1');
+    }
     args.push(
         'addLink=' +
         encodeURIComponent(configData.translatedStrings.addLinkTitle));

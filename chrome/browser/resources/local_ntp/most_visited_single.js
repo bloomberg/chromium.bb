@@ -48,10 +48,14 @@ const IDS = {
  */
 const CLASSES = {
   FAILED_FAVICON: 'failed-favicon',  // Applied when the favicon fails to load.
+  GRID_LAYOUT: 'grid-layout',
+  // Applied to the grid tile being moved while reordering.
+  GRID_REORDER: 'grid-reorder',
   GRID_TILE: 'grid-tile',
   GRID_TILE_CONTAINER: 'grid-tile-container',
   REORDER: 'reorder',  // Applied to the tile being moved while reordering.
-  REORDERING: 'reordering',      // Applied while we are reordering.
+  // Applied while we are reordering. Disables hover styling.
+  REORDERING: 'reordering',
   MAC_CHROMEOS: 'mac-chromeos',  // Reduces font weight for MacOS and ChromeOS.
   // Material Design classes.
   MD_EMPTY_TILE: 'md-empty-tile',
@@ -119,6 +123,13 @@ const TileVisualType = {
  * @const {number}
  */
 const RESIZE_TIMEOUT_DELAY = 66;
+
+
+/**
+ * Timeout delay in ms before starting the reorder flow.
+ * @const {number}
+ */
+const REORDER_TIMEOUT_DELAY = 1000;
 
 
 /**
@@ -202,6 +213,21 @@ let queryArgs = {};
 
 
 /**
+ * True if we are currently reordering the tiles.
+ * @type {boolean}
+ */
+let reordering = false;
+
+
+/**
+ * The tile that is being moved during the reorder flow. Null if we are
+ * currently not reordering.
+ * @type {?Element}
+ */
+let elementToReorder = null;
+
+
+/**
  * True if custom links is enabled.
  * @type {boolean}
  */
@@ -209,10 +235,26 @@ let isCustomLinksEnabled = false;
 
 
 /**
+ * True if the grid layout is enabled.
+ * @type {boolean}
+ */
+let isGridEnabled = false;
+
+
+/**
  * The current grid of tiles.
  * @type {?Grid}
  */
 let currGrid = null;
+
+
+/**
+ * Called by tests to enable the grid layout.
+ */
+function enableGridLayoutForTesting() {
+  isGridEnabled = true;
+  document.body.classList.add(CLASSES.GRID_LAYOUT);
+}
 
 
 /**
@@ -511,7 +553,7 @@ class Grid {
     this.newIndexOfItemToReorder_ = index;
 
     // Apply reorder styling.
-    tile.classList.add(CLASSES.REORDER);
+    tile.classList.add(CLASSES.GRID_REORDER);
     // Disable other hover/active styling for all tiles.
     document.body.classList.add(CLASSES.REORDERING);
 
@@ -535,7 +577,7 @@ class Grid {
     const index = Number(tile.getAttribute('index'));
 
     // Remove reorder styling.
-    tile.classList.remove(CLASSES.REORDER);
+    tile.classList.remove(CLASSES.GRID_REORDER);
     document.body.classList.remove(CLASSES.REORDERING);
 
     // Move the tile to its new position and notify EmbeddedSearchAPI that the
@@ -849,9 +891,18 @@ function swapInNewTiles() {
   cur.id = IDS.MV_TILES;
   parent.appendChild(cur);
 
-  // Initialize the new tileset before modifying opacity. This will prevent the
-  // transform transition from applying after the tiles fade in.
-  currGrid.init(cur);
+  if (isGridEnabled) {
+    // Initialize the new tileset before modifying opacity. This will prevent
+    // the transform transition from applying after the tiles fade in.
+    currGrid.init(cur);
+  } else {
+    // Re-balance the tiles if there are more than |MD_MAX_TILES_PER_ROW| in
+    // order to make even rows.
+    if (cur.childNodes.length > MD_MAX_TILES_PER_ROW) {
+      cur.style.maxWidth = 'calc(var(--md-tile-width) * ' +
+          Math.ceil(cur.childNodes.length / 2) + ')';
+    }
+  }
 
   const flushOpacity = () => window.getComputedStyle(cur).opacity;
 
@@ -868,6 +919,26 @@ function swapInNewTiles() {
   // Make sure the tiles variable contain the next tileset we'll use if the host
   // page sends us an updated set of tiles.
   tiles = document.createElement('div');
+}
+
+
+/**
+ * Explicitly hide tiles that are not visible in order to prevent keyboard
+ * navigation.
+ */
+function updateTileVisibility() {
+  const allTiles = document.querySelectorAll(
+      '#' + IDS.MV_TILES + ' .' + CLASSES.MD_TILE_CONTAINER);
+  if (allTiles.length === 0) {
+    return;
+  }
+
+  // Get the current number of tiles per row. Hide any tile after the first two
+  // rows.
+  const tilesPerRow = Math.trunc(document.body.offsetWidth / MD_TILE_WIDTH);
+  for (let i = MD_NUM_TILES_ALWAYS_VISIBLE; i < allTiles.length; i++) {
+    allTiles[i].style.display = (i < tilesPerRow * 2) ? 'block' : 'none';
+  }
 }
 
 
@@ -931,6 +1002,113 @@ function blacklistTile(tile) {
  */
 function editCustomLink(tid) {
   window.parent.postMessage({cmd: 'startEditLink', tid: tid}, DOMAIN_ORIGIN);
+}
+
+
+/**
+ * Starts the reorder flow. Updates the visual style of the held tile to
+ * indicate that it is being moved.
+ * @param {!Element} tile Tile that is being moved.
+ */
+function startReorder(tile) {
+  reordering = true;
+  elementToReorder = tile;
+
+  tile.classList.add(CLASSES.REORDER);
+  // Disable other hover/active styling for all tiles.
+  document.body.classList.add(CLASSES.REORDERING);
+
+  document.addEventListener('dragend', () => {
+    stopReorder(tile);
+  }, {once: true});
+}
+
+
+/**
+ * Stops the reorder flow. Resets the held tile's visual style and tells the
+ * EmbeddedSearchAPI that a tile has been moved.
+ * @param {!Element} tile Tile that has been moved.
+ */
+function stopReorder(tile) {
+  reordering = false;
+  elementToReorder = null;
+
+  tile.classList.remove(CLASSES.REORDER);
+  document.body.classList.remove(CLASSES.REORDERING);
+
+  // Update |data-pos| for all tiles and notify EmbeddedSearchAPI that the tile
+  // has been moved.
+  const allTiles = document.querySelectorAll('#mv-tiles .' + CLASSES.MD_TILE);
+  for (let i = 0; i < allTiles.length; i++) {
+    allTiles[i].setAttribute('data-pos', i);
+  }
+  chrome.embeddedSearch.newTabPage.reorderCustomLink(
+      Number(tile.firstChild.getAttribute('data-tid')),
+      Number(tile.firstChild.getAttribute('data-pos')));
+}
+
+
+/**
+ * Sets up event listeners necessary for tile reordering.
+ * @param {!Element} tile Tile on which to set the event listeners.
+ */
+function setupReorder(tile) {
+  // Starts the reorder flow after the user has held the mouse button down for
+  // |REORDER_TIMEOUT_DELAY|.
+  tile.addEventListener('mousedown', (event) => {
+    // Do not reorder if the edit menu was clicked or if ctrl/shift/alt/meta is
+    // also held down.
+    if (event.button == 0 /* LEFT CLICK */ && !event.ctrlKey &&
+        !event.shiftKey && !event.altKey && !event.metaKey &&
+        !event.target.classList.contains(CLASSES.MD_MENU)) {
+      let timeout = -1;
+
+      // Cancel the timeout if the user drags the mouse off the tile and
+      // releases or if the mouse if released.
+      const dragend = () => {
+        window.clearTimeout(timeout);
+      };
+      document.addEventListener('dragend', dragend, {once: true});
+
+      const mouseup = () => {
+        if (event.button == 0 /* LEFT CLICK */) {
+          window.clearTimeout(timeout);
+        }
+      };
+      document.addEventListener('mouseup', mouseup, {once: true});
+
+      const timeoutFunc = (dragend_in, mouseup_in) => {
+        if (!reordering) {
+          startReorder(tile);
+        }
+        document.removeEventListener('dragend', dragend_in);
+        document.removeEventListener('mouseup', mouseup_in);
+      };
+      // Wait for |REORDER_TIMEOUT_DELAY| before starting the reorder flow.
+      timeout = window.setTimeout(
+          timeoutFunc.bind(dragend, mouseup), REORDER_TIMEOUT_DELAY);
+    }
+  });
+
+  tile.addEventListener('dragover', (event) => {
+    // Only executed when the reorder flow is ongoing. Inserts the tile that is
+    // being moved before/after this |tile| according to order in the list.
+    if (reordering && elementToReorder && elementToReorder != tile) {
+      // Determine which side to insert the element on:
+      // - If the held tile comes after the current tile, insert behind the
+      //   current tile.
+      // - If the held tile comes before the current tile, insert in front of
+      //   the current tile.
+      let insertBefore;  // Element to insert the held tile behind.
+      if (tile.compareDocumentPosition(elementToReorder) &
+          Node.DOCUMENT_POSITION_FOLLOWING) {
+        insertBefore = tile;
+      } else {
+        insertBefore = tile.nextSibling;
+      }
+      $('mv-tiles').insertBefore(elementToReorder, insertBefore);
+    }
+  });
 }
 
 
@@ -1129,7 +1307,17 @@ function renderMaterialDesignTile(data) {
     mdTileContainer.appendChild(mdMenu);
   }
 
-  return currGrid.createGridTile(mdTileContainer, data.tid, !!data.isAddButton);
+  if (isGridEnabled) {
+    return currGrid.createGridTile(
+        mdTileContainer, data.tid, !!data.isAddButton);
+  } else {
+    // Enable reordering.
+    if (isCustomLinksEnabled && !data.isAddButton) {
+      mdTileContainer.draggable = 'true';
+      setupReorder(mdTileContainer);
+    }
+    return mdTileContainer;
+  }
 }
 
 
@@ -1166,6 +1354,12 @@ function init() {
     isCustomLinksEnabled = true;
   }
 
+  // Enable grid layout.
+  if (queryArgs['enableGrid'] == '1') {
+    isGridEnabled = true;
+    document.body.classList.add(CLASSES.GRID_LAYOUT);
+  }
+
   // Set the maximum number of tiles to show.
   if (isCustomLinksEnabled) {
     maxNumTiles = MD_MAX_NUM_CUSTOM_LINK_TILES;
@@ -1181,7 +1375,11 @@ function init() {
     }
     resizeTimeout = window.setTimeout(() => {
       resizeTimeout = null;
-      currGrid.onResize();
+      if (isGridEnabled) {
+        currGrid.onResize();
+      } else {
+        updateTileVisibility();
+      }
     }, RESIZE_TIMEOUT_DELAY);
   };
 
@@ -1198,8 +1396,9 @@ function listen() {
 
 
 return {
-  Grid: Grid,      // Exposed for testing.
-  init: init,      // Exposed for testing.
+  Grid: Grid,  // Exposed for testing.
+  init: init,  // Exposed for testing.
+  enableGridLayoutForTesting: enableGridLayoutForTesting,
   listen: listen,
 };
 }

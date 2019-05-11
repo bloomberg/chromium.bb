@@ -29,7 +29,7 @@ test.mostVisited.MOST_VISITED = 'most-visited';
 test.mostVisited.CLASSES = {
   GRID_TILE: 'grid-tile',
   GRID_TILE_CONTAINER: 'grid-tile-container',
-  REORDER: 'reorder',
+  GRID_REORDER: 'grid-reorder',
   REORDERING: 'reordering',
 };
 
@@ -89,6 +89,7 @@ test.mostVisited.setUp = function() {
       });
 
   test.mostVisited.mostvisited = test.mostVisited.init();
+  test.mostVisited.mostvisited.enableGridLayoutForTesting();
   test.mostVisited.grid = new test.mostVisited.mostvisited.Grid();
 };
 
@@ -390,21 +391,21 @@ test.mostVisited.testReorderStart = function() {
     assertEquals(i, Number(tile.getAttribute('rid')));
     assertTrue(tile.firstChild.draggable);
 
-    assertFalse(tile.classList.contains(test.mostVisited.CLASSES.REORDER));
+    assertFalse(tile.classList.contains(test.mostVisited.CLASSES.GRID_REORDER));
     assertFalse(
         document.body.classList.contains(test.mostVisited.CLASSES.REORDERING));
 
     // Start the reorder flow.
     tile.firstChild.dispatchEvent(dragStart);
 
-    assertTrue(tile.classList.contains(test.mostVisited.CLASSES.REORDER));
+    assertTrue(tile.classList.contains(test.mostVisited.CLASSES.GRID_REORDER));
     assertTrue(
         document.body.classList.contains(test.mostVisited.CLASSES.REORDERING));
 
     // Stop the reorder flow.
     document.dispatchEvent(mouseUp);
 
-    assertFalse(tile.classList.contains(test.mostVisited.CLASSES.REORDER));
+    assertFalse(tile.classList.contains(test.mostVisited.CLASSES.GRID_REORDER));
     assertFalse(
         document.body.classList.contains(test.mostVisited.CLASSES.REORDERING));
   }
@@ -415,7 +416,8 @@ test.mostVisited.testReorderStart = function() {
   assertFalse(addButton.firstChild.draggable);
   addButton.firstChild.dispatchEvent(dragStart);
 
-  assertFalse(addButton.classList.contains(test.mostVisited.CLASSES.REORDER));
+  assertFalse(
+      addButton.classList.contains(test.mostVisited.CLASSES.GRID_REORDER));
   assertFalse(
       document.body.classList.contains(test.mostVisited.CLASSES.REORDERING));
 };

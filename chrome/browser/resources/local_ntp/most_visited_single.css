@@ -57,10 +57,28 @@ a:visited {
 
 #mv-tiles,
 .mv-tiles-old {
+  display: flex;
+  flex-wrap: wrap;
   font-size: 0;
+  justify-content: center;
+  /* 5 112px tiles per row. If you change this, also change the corresponding
+   * values in local_ntp.css. */
+  max-width: calc(var(--md-tile-width) * var(--md-max-tiles-row));
   opacity: 0;
   padding: 10px 6px 0;
+  position: static;
+  /* This align correctly for both LTR and RTL */
+  text-align: -webkit-auto;
+  user-select: none;
+}
+
+body.grid-layout :-webkit-any(#mv-tiles, .mv-tiles-old) {
+  display: block;
+  flex-wrap: unset;
+  justify-content: unset;
+  max-width: unset;
   position: relative;
+  text-align: unset;
 }
 
 html:not(.no-initial-fade) :-webkit-any(#mv-tiles, .mv-tiles-old) {
@@ -94,11 +112,11 @@ body.reordering .grid-tile {
 
 /* Prevent transitions on the held tile in order for it to smoothly follow the
  * mouse. */
-.reorder .grid-tile {
+.grid-reorder .grid-tile {
   transition-duration: 0s;
 }
 
-.reorder {
+.grid-tile-container.grid-reorder {
   z-index: 10;  /* Ensure the held tile is visible. */
 }
 
@@ -114,6 +132,24 @@ body.reordering .grid-tile {
   width: var(--md-tile-width);
 }
 
+.md-tile-container.reorder .md-tile {
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), 0.3),
+      0 4px 8px 3px rgba(var(--GG800-rgb), 0.15);
+  transition-duration: 200ms;
+}
+
+html[darkmode=true] .md-tile-container.reorder .md-tile {
+  background-color: rgb(var(--dark-mode-bg-rgb));
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4),
+      0 4px 8px 3px rgba(0, 0, 0, 0.25);
+}
+
+.md-tile-container.reorder .md-tile .md-tile-inner {
+  z-index: unset;
+}
+
 .md-tile {
   cursor: pointer;
   padding: var(--md-tile-padding-top) var(--md-tile-padding-horizontal)
@@ -125,17 +161,17 @@ body.reordering .grid-tile {
 }
 
 body:not(.reordering) .md-tile-container:hover,
-.grid-tile-container.reorder .md-tile-container {
+.grid-tile-container.grid-reorder .md-tile-container {
   background-color: rgba(var(--GG900-rgb), 0.06);
 }
 
 html[darkmode=true] body:not(.reordering) .md-tile-container:hover,
-html[darkmode=true] .grid-tile-container.reorder .md-tile-container {
+html[darkmode=true] .grid-tile-container.grid-reorder .md-tile-container {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
 body.dark-theme:not(.reordering) .md-tile-container:hover,
-body.dark-theme .grid-tile-container.reorder .md-tile-container {
+body.dark-theme .grid-tile-container.grid-reorder .md-tile-container {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
@@ -246,7 +282,7 @@ html[darkmode=true] .md-title {
 }
 
 /* Apply when a custom background is set. */
-body.dark-theme .md-tile-container .md-title {
+body.dark-theme .md-tile-container:not(.reorder) .md-title {
   color: rgb(var(--GG050-rgb));
   filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.35));
 }
@@ -263,12 +299,16 @@ html[darkmode=true] body.using-theme .md-title-container {
   background-color: rgb(var(--GG900-rgb));
 }
 
-body.using-theme .md-tile-container .md-title {
+html[darkmode=true] body.using-theme .md-tile-container.reorder .md-title-container {
+  background-color: rgb(var(--dark-mode-bg-rgb));
+}
+
+body.using-theme .md-tile-container:not(.reorder) .md-title {
   color: rgb(var(--GG800-rgb));
   filter: unset;
 }
 
-html[darkmode=true] body.using-theme .md-tile-container .md-title {
+html[darkmode=true] body.using-theme .md-tile-container:not(.reorder) .md-title {
   color: rgb(var(--GG200-rgb));
 }
 
@@ -339,12 +379,12 @@ html[darkmode=true] body:not(.reordering) .md-menu:focus::after {
   background-color: rgb(var(--GG400-rgb));
 }
 
-body.dark-theme .md-tile-container .md-menu::after,
+body.dark-theme .md-tile-container:not(.reorder) .md-menu::after,
 body.dark-theme:not(.reordering) .md-menu:focus:not(.mouse-navigation)::after {
   background-color: white;
 }
 
-html[darkmode=true] body.dark-theme .md-tile-container .md-menu::after,
+html[darkmode=true] body.dark-theme .md-tile-container:not(.reorder) .md-menu::after,
 html[darkmode=true] body.dark-theme:not(.reordering) .md-menu:focus:not(.mouse-navigation)::after {
   background-color: rgb(var(--GG200-rgb));
 }
