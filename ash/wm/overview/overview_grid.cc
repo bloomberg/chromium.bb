@@ -1298,6 +1298,7 @@ void OverviewGrid::InitSelectionWidget(OverviewSession::Direction direction) {
   params.parent = root_window_->GetChildById(kShellWindowId_WallpaperContainer);
   selection_widget_->Init(params);
   aura::Window* widget_window = selection_widget_->GetNativeWindow();
+  widget_window->SetProperty(kHideInDeskMiniViewKey, true);
   // Disable the "bounce in" animation when showing the window.
   ::wm::SetWindowVisibilityAnimationTransition(widget_window,
                                                ::wm::ANIMATE_NONE);

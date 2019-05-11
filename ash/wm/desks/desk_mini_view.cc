@@ -6,9 +6,9 @@
 
 #include <algorithm>
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/wm/desks/close_desk_button.h"
 #include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desk_preview_view.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
@@ -21,15 +21,20 @@ constexpr int kDeskPreviewHeight = 64;
 
 constexpr int kLabelPreviewSpacing = 8;
 
-constexpr int kCloseButtonMargin = 2;
+constexpr int kCloseButtonMargin = 4;
 
 constexpr gfx::Size kCloseButtonSize{24, 24};
-
-constexpr int kPreviewCornerRadius = 2;
 
 constexpr SkColor kActiveColor = SkColorSetARGB(0xEE, 0xFF, 0xFF, 0xFF);
 
 constexpr SkColor kInactiveColor = SkColorSetARGB(0x50, 0xFF, 0xFF, 0xFF);
+
+std::unique_ptr<DeskPreviewView> CreateDeskPreviewView(
+    DeskMiniView* mini_view) {
+  auto desk_preview_view = std::make_unique<DeskPreviewView>(mini_view);
+  desk_preview_view->set_owned_by_client();
+  return desk_preview_view;
+}
 
 // The desk preview bounds are proportional to the bounds of the display on
 // which it resides, but always has a fixed height `kDeskPreviewHeight`.
@@ -42,59 +47,20 @@ gfx::Rect GetDeskPreviewBounds(aura::Window* root_window) {
 }  // namespace
 
 // -----------------------------------------------------------------------------
-
-// A view that shows the contents of the corresponding desk in its mini_view.
-class DeskPreviewView : public views::View {
- public:
-  explicit DeskPreviewView(DeskMiniView* mini_view) : mini_view_(mini_view) {
-    // For now use a solid color layer.
-    SetPaintToLayer(ui::LAYER_SOLID_COLOR);
-    if (features::ShouldUseShaderRoundedCorner()) {
-      layer()->SetRoundedCornerRadius(
-          {kPreviewCornerRadius, kPreviewCornerRadius, kPreviewCornerRadius,
-           kPreviewCornerRadius});
-    }
-
-    // TODO(afakhry): Mirror the contents of the corresponding desk.
-  }
-
-  ~DeskPreviewView() override = default;
-
-  // ui::EventHandler:
-  void OnMouseEvent(ui::MouseEvent* event) override {
-    switch (event->type()) {
-      case ui::ET_MOUSE_PRESSED:
-      case ui::ET_MOUSE_DRAGGED:
-      case ui::ET_MOUSE_RELEASED:
-      case ui::ET_MOUSE_MOVED:
-      case ui::ET_MOUSE_ENTERED:
-      case ui::ET_MOUSE_EXITED:
-        mini_view_->OnHoverStateMayHaveChanged();
-        break;
-
-      default:
-        break;
-    }
-    views::View::OnMouseEvent(event);
-  }
-
- private:
-  DeskMiniView* mini_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeskPreviewView);
-};
-
-// -----------------------------------------------------------------------------
 // DeskMiniView
 
-DeskMiniView::DeskMiniView(const Desk* desk,
+DeskMiniView::DeskMiniView(aura::Window* root_window,
+                           Desk* desk,
                            const base::string16& title,
                            views::ButtonListener* listener)
     : views::Button(listener),
+      root_window_(root_window),
       desk_(desk),
-      desk_preview_(new DeskPreviewView(this)),
+      desk_preview_(CreateDeskPreviewView(this)),
       label_(new views::Label(title)),
       close_desk_button_(new CloseDeskButton(this)) {
+  desk_->AddObserver(this);
+
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
@@ -108,7 +74,7 @@ DeskMiniView::DeskMiniView(const Desk* desk,
 
   // TODO(afakhry): Tooltips and accessible names.
 
-  AddChildView(desk_preview_);
+  AddChildView(desk_preview_.get());
   AddChildView(label_);
   AddChildView(close_desk_button_);
 
@@ -120,10 +86,23 @@ DeskMiniView::DeskMiniView(const Desk* desk,
   SchedulePaint();
 }
 
-DeskMiniView::~DeskMiniView() = default;
+DeskMiniView::~DeskMiniView() {
+  if (desk_)
+    desk_->RemoveObserver(this);
+}
+
+void DeskMiniView::OnDeskRemoved() {
+  desk_->RemoveObserver(this);
+  desk_ = nullptr;
+}
 
 void DeskMiniView::SetTitle(const base::string16& title) {
   label_->SetText(title);
+}
+
+aura::Window* DeskMiniView::GetDeskContainer() const {
+  DCHECK(desk_);
+  return desk_->GetDeskContainerForRoot(root_window_);
 }
 
 void DeskMiniView::OnHoverStateMayHaveChanged() {
@@ -135,8 +114,9 @@ void DeskMiniView::OnHoverStateMayHaveChanged() {
 }
 
 void DeskMiniView::UpdateActivationState() {
-  desk_preview_->layer()->SetColor(desk_->is_active() ? kActiveColor
-                                                      : kInactiveColor);
+  DCHECK(desk_);
+  desk_preview_->SetBorderColor(desk_->is_active() ? kActiveColor
+                                                   : kInactiveColor);
 }
 
 const char* DeskMiniView::GetClassName() const {
@@ -180,6 +160,7 @@ gfx::Size DeskMiniView::CalculatePreferredSize() const {
 
 void DeskMiniView::ButtonPressed(views::Button* sender,
                                  const ui::Event& event) {
+  DCHECK(desk_);
   if (sender != close_desk_button_)
     return;
 
@@ -194,21 +175,8 @@ void DeskMiniView::ButtonPressed(views::Button* sender,
   controller->RemoveDesk(desk_);
 }
 
-void DeskMiniView::OnMouseEvent(ui::MouseEvent* event) {
-  switch (event->type()) {
-    case ui::ET_MOUSE_PRESSED:
-    case ui::ET_MOUSE_DRAGGED:
-    case ui::ET_MOUSE_RELEASED:
-    case ui::ET_MOUSE_MOVED:
-    case ui::ET_MOUSE_ENTERED:
-    case ui::ET_MOUSE_EXITED:
-      OnHoverStateMayHaveChanged();
-      break;
-
-    default:
-      break;
-  }
-  views::Button::OnMouseEvent(event);
+void DeskMiniView::OnDeskWindowsChanged() {
+  desk_preview_->RecreateDeskContentsMirrorLayers();
 }
 
 }  // namespace ash

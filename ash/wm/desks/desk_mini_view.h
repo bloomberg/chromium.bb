@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/wm/desks/desk.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
@@ -15,7 +16,6 @@
 namespace ash {
 
 class CloseDeskButton;
-class Desk;
 class DeskPreviewView;
 
 // A view that acts as a mini representation (a.k.a. desk thumbnail) of a
@@ -23,12 +23,16 @@ class DeskPreviewView;
 // shows a preview of the contents of the associated desk, its title, and
 // supports desk activation and removal.
 class ASH_EXPORT DeskMiniView : public views::Button,
-                                public views::ButtonListener {
+                                public views::ButtonListener,
+                                public Desk::Observer {
  public:
-  DeskMiniView(const Desk* desk,
+  DeskMiniView(aura::Window* root_window,
+               Desk* desk,
                const base::string16& title,
                views::ButtonListener* listener);
   ~DeskMiniView() override;
+
+  aura::Window* root_window() { return root_window_; }
 
   const Desk* desk() const { return desk_; }
 
@@ -36,7 +40,25 @@ class ASH_EXPORT DeskMiniView : public views::Button,
     return close_desk_button_;
   }
 
+  // Called by DesksBarView to inform us that the desk was actually deleted, and
+  // the animation to remove the mini_view is about to begin.
+  // Note that the mini_view outlives the desk (which will be removed after all
+  // observers have been removed) because of the animation. We need to stop
+  // observing it now.
+  // Note that we can't make it the other way around (i.e. make the desk outlive
+  // the mini_view). The desk's existence (or lack thereof) is more important
+  // than the existence of the mini_view, since it determines whether we can
+  // create new desks or remove existing ones. This determines whether the close
+  // button will show on hover, and whether the new_desk_button is enabled. We
+  // shouldn't allow that state to be wrong while the mini_views perform the
+  // desk removal animation.
+  void OnDeskRemoved();
+
   void SetTitle(const base::string16& title);
+
+  // Returns the associated desk's container window on the display this
+  // mini_view resides on.
+  aura::Window* GetDeskContainer() const;
 
   // Updates the visibility state of the close button depending on whether this
   // view is mouse hovered.
@@ -54,15 +76,20 @@ class ASH_EXPORT DeskMiniView : public views::Button,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // ui::EventHandler:
-  void OnMouseEvent(ui::MouseEvent* event) override;
+  // Desk::Observer:
+  void OnDeskWindowsChanged() override;
 
  private:
-  // The associated desk.
-  const Desk* desk_;  // Not owned.
+  // The root window on which this mini_view is created.
+  aura::Window* root_window_;
+
+  // The associated desk. Can be null when the desk is deleted before this
+  // mini_view completes its removal animation. See comment above
+  // OnDeskRemoved().
+  Desk* desk_;  // Not owned.
 
   // The view that shows a preview of the desk contents.
-  DeskPreviewView* desk_preview_;
+  std::unique_ptr<DeskPreviewView> desk_preview_;
 
   // The desk title.
   views::Label* label_;

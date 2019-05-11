@@ -17,6 +17,7 @@ namespace ash {
 
 class DeskMiniView;
 class NewDeskButton;
+class DeskBarHoverObserver;
 
 // A bar that resides at the top portion of the overview mode's ShieldView,
 // which contains the virtual desks mini_views, as well as the new desk button.
@@ -50,6 +51,9 @@ class ASH_EXPORT DesksBarView : public views::View,
   // to a widget, as it needs to call `GetWidget()` when it's performing a
   // layout.
   void Init();
+
+  // Updates the visibility state of the close buttons on all the mini_views.
+  void OnHoverStateMayHaveChanged();
 
   // views::View:
   const char* GetClassName() const override;
@@ -98,6 +102,10 @@ class ASH_EXPORT DesksBarView : public views::View,
   // The views representing desks mini_views. They're owned by this DeskBarView
   // (i.e. `owned_by_client_` is true).
   std::vector<std::unique_ptr<DeskMiniView>> mini_views_;
+
+  // Observes mouse events on the desks bar widget and updates the states of the
+  // mini_views accordingly.
+  std::unique_ptr<DeskBarHoverObserver> hover_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(DesksBarView);
 };

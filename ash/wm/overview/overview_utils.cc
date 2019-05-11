@@ -10,6 +10,7 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
@@ -130,7 +131,7 @@ void ImmediatelyCloseWidgetOnExit(std::unique_ptr<views::Widget> widget) {
 wm::WindowTransientDescendantIteratorRange GetVisibleTransientTreeIterator(
     aura::Window* window) {
   auto hide_predicate = [](aura::Window* window) {
-    return !window->IsVisible();
+    return window->GetProperty(kHideInOverviewKey);
   };
   return wm::GetTransientTreeIterator(window,
                                       base::BindRepeating(hide_predicate));

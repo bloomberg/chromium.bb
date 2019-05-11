@@ -190,6 +190,8 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
 
     if (transient->GetProperty(kHideInOverviewKey))
       transient_children_to_hide.push_back(transient);
+
+    transient->SetProperty(kIsShowingInOverviewKey, true);
   }
 
   if (!transient_children_to_hide.empty()) {
@@ -199,7 +201,10 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
 }
 
 ScopedOverviewTransformWindow::~ScopedOverviewTransformWindow() {
-  window_->ClearProperty(ash::kIsShowingInOverviewKey);
+  for (auto* transient : wm::GetTransientTreeIterator(window_))
+    transient->ClearProperty(kIsShowingInOverviewKey);
+  DCHECK(!window_->GetProperty(kIsShowingInOverviewKey));
+
   window_->SetEventTargetingPolicy(original_event_targeting_policy_);
   UpdateMask(/*show=*/false);
   StopObservingImplicitAnimations();

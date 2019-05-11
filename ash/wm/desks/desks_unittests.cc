@@ -114,6 +114,22 @@ class TestObserver : public DesksController::Observer {
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
+class TestDeskObserver : public Desk::Observer {
+ public:
+  TestDeskObserver() = default;
+  ~TestDeskObserver() override = default;
+
+  int notify_counts() const { return notify_counts_; }
+
+  // Desk::Observer:
+  void OnDeskWindowsChanged() override { ++notify_counts_; }
+
+ private:
+  int notify_counts_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDeskObserver);
+};
+
 // Used for waiting for the desk switch animations on all root windows to
 // complete.
 class DeskSwitchAnimationWaiter : public DesksController::Observer {
@@ -449,7 +465,7 @@ TEST_F(DesksTest, WindowActivation) {
   auto* controller = DesksController::Get();
   controller->NewDesk();
   ASSERT_EQ(2u, controller->desks().size());
-  const Desk* desk_1 = controller->desks()[0].get();
+  Desk* desk_1 = controller->desks()[0].get();
   const Desk* desk_2 = controller->desks()[1].get();
   EXPECT_EQ(desk_1, controller->active_desk());
   EXPECT_EQ(3u, desk_1->windows().size());
@@ -502,10 +518,16 @@ TEST_F(DesksTest, WindowActivation) {
 
   // Remove `desk_2` and expect that its windows will be moved to the active
   // desk.
+  TestDeskObserver observer;
+  desk_1->AddObserver(&observer);
   controller->RemoveDesk(desk_2);
   EXPECT_EQ(1u, controller->desks().size());
   EXPECT_EQ(desk_1, controller->active_desk());
   EXPECT_EQ(4u, desk_1->windows().size());
+  // Even though two new windows have been added to desk_1, observers should be
+  // notified only once.
+  EXPECT_EQ(1, observer.notify_counts());
+  desk_1->RemoveObserver(&observer);
   EXPECT_TRUE(DoesActiveDeskContainWindow(win3.get()));
   EXPECT_TRUE(DoesActiveDeskContainWindow(win4.get()));
 

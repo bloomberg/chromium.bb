@@ -113,6 +113,11 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kIsShowingInOverviewKey;
 
+// If true, the window will be ignored when mirroring the desk contents into
+// the desk's mini_view.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
+    kHideInDeskMiniViewKey;
+
 // A property key to store the window state the window had before entering PIP.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<WindowStateType>* const
     kPrePipWindowStateTypeKey;

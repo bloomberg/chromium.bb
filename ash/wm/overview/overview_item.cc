@@ -10,6 +10,7 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/shell.h"
@@ -567,6 +568,8 @@ void OverviewItem::UpdateCannotSnapWarningVisibility() {
         root_window()->GetChildById(kShellWindowId_AlwaysOnTopContainer);
     cannot_snap_widget_ = std::make_unique<RoundedLabelWidget>();
     cannot_snap_widget_->Init(params);
+    auto* widget_window = cannot_snap_widget_->GetNativeWindow();
+    widget_window->SetProperty(kHideInDeskMiniViewKey, true);
   }
 
   DoSplitviewOpacityAnimation(cannot_snap_widget_->GetNativeWindow()->layer(),
@@ -997,6 +1000,7 @@ void OverviewItem::CreateWindowLabel() {
   item_widget_->Init(params);
   aura::Window* widget_window = item_widget_->GetNativeWindow();
   widget_window->parent()->StackChildBelow(widget_window, GetWindow());
+  widget_window->SetProperty(kHideInDeskMiniViewKey, true);
 
   shadow_ = std::make_unique<ui::Shadow>();
   shadow_->Init(kShadowElevation);

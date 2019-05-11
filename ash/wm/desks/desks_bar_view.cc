@@ -19,7 +19,9 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/events/event_observer.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/views/event_monitor.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_animations.h"
 
@@ -41,6 +43,50 @@ base::string16 GetMiniViewTitle(int mini_view_index) {
 }
 
 }  // namespace
+
+// -----------------------------------------------------------------------------
+// DeskBarHoverObserver:
+
+class DeskBarHoverObserver : public ui::EventObserver {
+ public:
+  DeskBarHoverObserver(DesksBarView* owner, aura::Window* widget_window)
+      : owner_(owner),
+        event_monitor_(views::EventMonitor::CreateWindowMonitor(
+            this,
+            widget_window,
+            {ui::ET_MOUSE_PRESSED, ui::ET_MOUSE_DRAGGED, ui::ET_MOUSE_RELEASED,
+             ui::ET_MOUSE_MOVED, ui::ET_MOUSE_ENTERED, ui::ET_MOUSE_EXITED})) {}
+
+  ~DeskBarHoverObserver() override = default;
+
+  // ui::EventObserver:
+  void OnEvent(const ui::Event& event) override {
+    switch (event.type()) {
+      case ui::ET_MOUSE_PRESSED:
+      case ui::ET_MOUSE_DRAGGED:
+      case ui::ET_MOUSE_RELEASED:
+      case ui::ET_MOUSE_MOVED:
+      case ui::ET_MOUSE_ENTERED:
+      case ui::ET_MOUSE_EXITED:
+        owner_->OnHoverStateMayHaveChanged();
+        break;
+
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+
+ private:
+  DesksBarView* owner_;
+
+  std::unique_ptr<views::EventMonitor> event_monitor_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeskBarHoverObserver);
+};
+
+// -----------------------------------------------------------------------------
+// DesksBarView:
 
 DesksBarView::DesksBarView()
     : backgroud_view_(new views::View),
@@ -95,6 +141,13 @@ std::unique_ptr<views::Widget> DesksBarView::CreateDesksWidget(
 
 void DesksBarView::Init() {
   UpdateNewMiniViews(/*animate=*/false);
+  hover_observer_ = std::make_unique<DeskBarHoverObserver>(
+      this, GetWidget()->GetNativeWindow());
+}
+
+void DesksBarView::OnHoverStateMayHaveChanged() {
+  for (auto& mini_view : mini_views_)
+    mini_view->OnHoverStateMayHaveChanged();
 }
 
 const char* DesksBarView::GetClassName() const {
@@ -190,6 +243,8 @@ void DesksBarView::OnDeskRemoved(const Desk* desk) {
   std::transform(partition_iter, mini_views_.end(),
                  std::back_inserter(mini_views_after), transform_lambda);
 
+  removed_mini_view->OnDeskRemoved();
+
   PerformRemoveDeskMiniViewAnimation(std::move(removed_mini_view),
                                      mini_views_before, mini_views_after,
                                      begin_x - GetFirstMiniViewXOffset());
@@ -232,10 +287,12 @@ void DesksBarView::UpdateNewMiniViews(bool animate) {
   const int begin_x = GetFirstMiniViewXOffset();
   std::vector<DeskMiniView*> new_mini_views;
 
+  aura::Window* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();
+  DCHECK(root_window);
   for (const auto& desk : desks) {
     if (!FindMiniViewForDesk(desk.get())) {
       mini_views_.emplace_back(std::make_unique<DeskMiniView>(
-          desk.get(), GetMiniViewTitle(mini_views_.size()), this));
+          root_window, desk.get(), GetMiniViewTitle(mini_views_.size()), this));
       DeskMiniView* mini_view = mini_views_.back().get();
       mini_view->set_owned_by_client();
       new_mini_views.emplace_back(mini_view);

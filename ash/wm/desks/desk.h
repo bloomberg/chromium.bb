@@ -11,6 +11,7 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "ui/aura/window_observer.h"
 
 namespace ash {
@@ -28,6 +29,12 @@ class DeskContainerObserver;
 // the desk is in active, those containers are hidden.
 class ASH_EXPORT Desk : public aura::WindowObserver {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    // Called after windows are added or removed from this desk.
+    virtual void OnDeskWindowsChanged() = 0;
+  };
+
   explicit Desk(int associated_container_id);
   ~Desk() override;
 
@@ -36,6 +43,9 @@ class ASH_EXPORT Desk : public aura::WindowObserver {
   const base::flat_set<aura::Window*>& windows() const { return windows_; }
 
   bool is_active() const { return is_active_; }
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   void OnRootWindowAdded(aura::Window* root);
   void OnRootWindowClosing(aura::Window* root);
@@ -63,6 +73,8 @@ class ASH_EXPORT Desk : public aura::WindowObserver {
   void OnWindowDestroying(aura::Window* window) override;
 
  private:
+  void NotifyDeskWindowsChanged();
+
   // The associated container ID with this desk.
   const int container_id_;
 
@@ -75,8 +87,15 @@ class ASH_EXPORT Desk : public aura::WindowObserver {
   base::flat_map<aura::Window*, std::unique_ptr<DeskContainerObserver>>
       roots_to_containers_observers_;
 
+  base::ObserverList<Observer> observers_;
+
   // TODO(afakhry): Consider removing this.
   bool is_active_ = false;
+
+  // If false, observers won't be notified of desk's windows changes. This is
+  // used to throttle those notifications when we add or remove many windows,
+  // and we want to notify observers only once.
+  bool should_notify_windows_changed_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(Desk);
 };

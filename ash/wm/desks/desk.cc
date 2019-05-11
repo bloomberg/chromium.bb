@@ -11,6 +11,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/window_util.h"
+#include "base/auto_reset.h"
 
 namespace ash {
 
@@ -63,6 +64,14 @@ Desk::~Desk() {
   DCHECK(windows_.empty()) << "DesksController should remove my windows first.";
 }
 
+void Desk::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void Desk::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void Desk::OnRootWindowAdded(aura::Window* root) {
   DCHECK(!roots_to_containers_observers_.count(root));
 
@@ -92,6 +101,8 @@ void Desk::AddWindowToDesk(aura::Window* window) {
     if (result.second)
       transient_window->AddObserver(this);
   }
+
+  NotifyDeskWindowsChanged();
 }
 
 void Desk::Activate(bool update_window_activation) {
@@ -145,29 +156,43 @@ void Desk::Deactivate(bool update_window_activation) {
 void Desk::MoveWindowsToDesk(Desk* target_desk) {
   DCHECK(target_desk);
 
-  for (auto* window : windows_) {
-    window->RemoveObserver(this);
+  {
+    // Throttle notifying the observers, while we move those windows and notify
+    // them only once when done.
+    base::AutoReset<bool> this_desk_throttled(&should_notify_windows_changed_,
+                                              false);
+    base::AutoReset<bool> target_desk_throttled(
+        &(target_desk->should_notify_windows_changed_), false);
 
-    // Add the window to the target desk before reparenting such that when the
-    // target desk's DeskContainerObserver notices this reparenting and calls
-    // AddWindowToDesk(), the window had already been added and there's no need
-    // to iterate over its transient hierarchy.
-    target_desk->windows_.emplace(window);
-    window->AddObserver(target_desk);
+    for (auto* window : windows_) {
+      window->RemoveObserver(this);
 
-    // Reparent windows to the target desk's container in the same root window.
-    // Note that `windows_` may contain transient children, which may not have
-    // the same parent as the source desk's container. So, only reparent the
-    // windows which are direct children of the source desks' container.
-    // TODO(afakhry): Check if this is necessary.
-    aura::Window* root = window->GetRootWindow();
-    aura::Window* source_container = GetDeskContainerForRoot(root);
-    aura::Window* target_container = target_desk->GetDeskContainerForRoot(root);
-    if (window->parent() == source_container)
-      target_container->AddChild(window);
+      // Add the window to the target desk before reparenting such that when the
+      // target desk's DeskContainerObserver notices this reparenting and calls
+      // AddWindowToDesk(), the window had already been added and there's no
+      // need to iterate over its transient hierarchy.
+      target_desk->windows_.emplace(window);
+      window->AddObserver(target_desk);
+
+      // Reparent windows to the target desk's container in the same root
+      // window. Note that `windows_` may contain transient children, which may
+      // not have the same parent as the source desk's container. So, only
+      // reparent the windows which are direct children of the source desks'
+      // container.
+      // TODO(afakhry): Check if this is necessary.
+      aura::Window* root = window->GetRootWindow();
+      aura::Window* source_container = GetDeskContainerForRoot(root);
+      aura::Window* target_container =
+          target_desk->GetDeskContainerForRoot(root);
+      if (window->parent() == source_container)
+        target_container->AddChild(window);
+    }
+
+    windows_.clear();
   }
 
-  windows_.clear();
+  NotifyDeskWindowsChanged();
+  target_desk->NotifyDeskWindowsChanged();
 }
 
 aura::Window* Desk::GetDeskContainerForRoot(aura::Window* root) const {
@@ -179,6 +204,15 @@ aura::Window* Desk::GetDeskContainerForRoot(aura::Window* root) const {
 void Desk::OnWindowDestroying(aura::Window* window) {
   const size_t count = windows_.erase(window);
   DCHECK(count);
+  NotifyDeskWindowsChanged();
+}
+
+void Desk::NotifyDeskWindowsChanged() {
+  if (!should_notify_windows_changed_)
+    return;
+
+  for (auto& observer : observers_)
+    observer.OnDeskWindowsChanged();
 }
 
 }  // namespace ash
