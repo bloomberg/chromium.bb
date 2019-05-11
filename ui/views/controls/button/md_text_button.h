@@ -46,7 +46,7 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   SkColor GetInkDropBaseColor() const override;
   void SetEnabledTextColors(SkColor color) override;
   void SetText(const base::string16& text) override;
-  void UpdateStyleToIndicateDefaultStatus() override;
+  PropertyEffects UpdateStyleToIndicateDefaultStatus() override;
   void StateChanged(ButtonState old_state) override;
 
  protected:

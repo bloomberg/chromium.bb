@@ -149,9 +149,10 @@ void MdTextButton::SetText(const base::string16& text) {
   UpdatePadding();
 }
 
-void MdTextButton::UpdateStyleToIndicateDefaultStatus() {
-  is_prominent_ = is_prominent_ || is_default();
+PropertyEffects MdTextButton::UpdateStyleToIndicateDefaultStatus() {
+  is_prominent_ = is_prominent_ || GetIsDefault();
   UpdateColors();
+  return kPropertyEffectsNone;
 }
 
 MdTextButton::MdTextButton(ButtonListener* listener, int button_context)

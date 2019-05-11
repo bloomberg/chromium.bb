@@ -142,7 +142,7 @@ TEST_F(LabelButtonTest, Init) {
   EXPECT_EQ(text, accessible_node_data.GetString16Attribute(
                       ax::mojom::StringAttribute::kName));
 
-  EXPECT_FALSE(button.is_default());
+  EXPECT_FALSE(button.GetIsDefault());
   EXPECT_EQ(button.style(), Button::STYLE_TEXTBUTTON);
   EXPECT_EQ(Button::STATE_NORMAL, button.state());
 

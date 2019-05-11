@@ -109,7 +109,7 @@ void ButtonExample::LabelButtonPressed(LabelButton* label_button,
           (label_button->style() + 1) % Button::STYLE_COUNT));
     }
   } else if (event.IsAltDown()) {
-    label_button->SetIsDefault(!label_button->is_default());
+    label_button->SetIsDefault(!label_button->GetIsDefault());
   }
   example_view()->GetLayoutManager()->Layout(example_view());
 }

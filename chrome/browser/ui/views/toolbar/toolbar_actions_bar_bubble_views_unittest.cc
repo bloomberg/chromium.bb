@@ -233,10 +233,11 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestBubbleDefaultDialogButtons) {
   ShowBubble(&delegate);
 
   ASSERT_TRUE(bubble()->GetDialogClientView()->ok_button());
-  EXPECT_TRUE(bubble()->GetDialogClientView()->ok_button()->is_default());
+  EXPECT_TRUE(bubble()->GetDialogClientView()->ok_button()->GetIsDefault());
 
   ASSERT_TRUE(bubble()->GetDialogClientView()->cancel_button());
-  EXPECT_FALSE(bubble()->GetDialogClientView()->cancel_button()->is_default());
+  EXPECT_FALSE(
+      bubble()->GetDialogClientView()->cancel_button()->GetIsDefault());
 
   CloseBubble();
 }

@@ -29,6 +29,8 @@ class LabelButtonBorder;
 // LabelButton is a button with text and an icon, it's not focusable by default.
 class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
  public:
+  METADATA_HEADER(LabelButton);
+
   static const char kViewClassName[];
 
   // Creates a LabelButton with ButtonPressed() events sent to |listener| and
@@ -45,7 +47,7 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   void SetImage(ButtonState for_state, const gfx::ImageSkia& image);
 
   // Gets or sets the text shown on the button.
-  const base::string16& GetText() const;
+  base::string16 GetText() const;
   virtual void SetText(const base::string16& text);
 
   // Sets the text color shown for the specified button |for_state| to |color|.
@@ -70,11 +72,14 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
     return horizontal_alignment_;
   }
 
+  gfx::Size GetMinSize() const;
   void SetMinSize(const gfx::Size& min_size);
+
+  gfx::Size GetMaxSize() const;
   void SetMaxSize(const gfx::Size& max_size);
 
   // Gets or sets the option to handle the return key; false by default.
-  bool is_default() const { return is_default_; }
+  bool GetIsDefault() const;
   void SetIsDefault(bool is_default);
 
   // Gets or sets the button's overall style; the default is |STYLE_TEXTBUTTON|.
@@ -84,6 +89,7 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   void SetStyleDeprecated(ButtonStyle style);
 
   // Sets the spacing between the image and the text.
+  int GetImageLabelSpacing() const;
   void SetImageLabelSpacing(int spacing);
 
   // Creates the default border for this button. This can be overridden by
@@ -147,8 +153,9 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // Resets colors from the NativeTheme, explicitly set colors are unchanged.
   virtual void ResetColorsFromNativeTheme();
 
-  // Changes the visual styling to match changes in the default state.
-  virtual void UpdateStyleToIndicateDefaultStatus();
+  // Changes the visual styling to match changes in the default state.  Returns
+  // the PropertyEffects triggered as a result.
+  virtual PropertyEffects UpdateStyleToIndicateDefaultStatus();
 
   // Button:
   void ChildPreferredSizeChanged(View* child) override;

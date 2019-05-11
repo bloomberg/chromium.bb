@@ -6,6 +6,7 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -175,6 +176,19 @@ bool ConvertFromString<bool>(const base::string16& source_value,
   if (source_value == base::ASCIIToUTF16("false"))
     return false;
   return source_value == base::ASCIIToUTF16("true") || default_value;
+}
+
+template <>
+gfx::Size ConvertFromString<gfx::Size>(const base::string16& source_value,
+                                       const gfx::Size& default_value) {
+  const auto values =
+      base::SplitStringPiece(source_value, base::ASCIIToUTF16("{,}"),
+                             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  int width, height;
+  return (values.size() == 2) && base::StringToInt(values[0], &width) &&
+                 base::StringToInt(values[1], &height)
+             ? gfx::Size(width, height)
+             : default_value;
 }
 
 }  // namespace metadata

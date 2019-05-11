@@ -225,6 +225,11 @@ template <>
 VIEWS_EXPORT bool ConvertFromString<bool>(const base::string16& source_value,
                                           bool default_value);
 
+template <>
+VIEWS_EXPORT gfx::Size ConvertFromString<gfx::Size>(
+    const base::string16& source_value,
+    const gfx::Size& default_value);
+
 template <typename TTarget>
 class TypeConverter<base::string16, TTarget> {
  public:
