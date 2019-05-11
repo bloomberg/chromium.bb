@@ -56,6 +56,12 @@ function setGridSize(id, width, height)
      gridElement.style.height = height;
 }
 
+function setGridItemPlacement(id, gridRow, gridColumn) {
+     var gridItem = document.getElementById(id);
+     gridItem.style.gridRow = gridRow;
+     gridItem.style.gridColumn = gridColumn;
+}
+
 function testGridDefinitions(firstGridItemData, secondGridItemData, thirdGridItemData)
 {
     var i1 = document.getElementById(firstGridItemData.id);
@@ -112,6 +118,18 @@ function testChangingGridDefinitions()
      testGridDefinitions({ 'id': 'i1', 'width': '45', 'height': '25', 'x': '0', 'y': '25' }, { 'id': 'i2', 'width': '45', 'height': '25', 'x': '0', 'y': '0' }, { 'id': 'i3', 'width': '45', 'height': '25', 'x': '45', 'y': '25' });
      setGridSize('grid2', '100px', '100px');
      testGridDefinitions({ 'id': 'i21', 'width': '25', 'height': '45', 'x': '0', 'y': '0' }, { 'id': 'i22', 'width': '25', 'height': '45', 'x': '25', 'y': '0' }, { 'id': 'i23', 'width': '25', 'height': '45', 'x': '25', 'y': '45' });
+
+     // Move the third item so that there is an empty track between it and the others.
+     setGridItemPlacement('i3', 'auto', '3');
+     testGridDefinitions({ 'id': 'i1', 'width': '45', 'height': '25', 'x': '0', 'y': '25' }, { 'id': 'i2', 'width': '45', 'height': '25', 'x': '0', 'y': '0' }, { 'id': 'i3', 'width': '25', 'height': '25', 'x': '90', 'y': '25' });
+     setGridItemPlacement('i23', '3', 'auto');
+     testGridDefinitions({ 'id': 'i21', 'width': '25', 'height': '45', 'x': '0', 'y': '0' }, { 'id': 'i22', 'width': '25', 'height': '45', 'x': '25', 'y': '0' }, { 'id': 'i23', 'width': '25', 'height': '25', 'x': '25', 'y': '90' });
+
+     // Set the same templates, but using auto-fit instead of auto-fill. The empty track should collapse.
+     setGridTemplate('grid1', 'none', 'repeat(auto-fit, 45px)');
+     testGridDefinitions({ 'id': 'i1', 'width': '45', 'height': '25', 'x': '0', 'y': '25' }, { 'id': 'i2', 'width': '45', 'height': '25', 'x': '0', 'y': '0' }, { 'id': 'i3', 'width': '25', 'height': '25', 'x': '45', 'y': '25' });
+     setGridTemplate('grid2', 'repeat(auto-fit, 45px)', 'none');
+     testGridDefinitions({ 'id': 'i21', 'width': '25', 'height': '45', 'x': '0', 'y': '0' }, { 'id': 'i22', 'width': '25', 'height': '45', 'x': '25', 'y': '0' }, { 'id': 'i23', 'width': '25', 'height': '25', 'x': '25', 'y': '45' });
 
      done();
 }
