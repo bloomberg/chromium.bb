@@ -8,13 +8,6 @@
 
 namespace media {
 
-// static
-bool SourceBufferRange::IsUncommonSameTimestampSequence(
-    bool prev_is_keyframe,
-    bool current_is_keyframe) {
-  return current_is_keyframe && !prev_is_keyframe;
-}
-
 SourceBufferRange::SourceBufferRange(
     GapPolicy gap_policy,
     const InterbufferDistanceCB& interbuffer_distance_cb)

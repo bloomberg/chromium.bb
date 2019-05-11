@@ -35,15 +35,6 @@ const int kMaxGarbageCollectAlgorithmWarningLogs = 20;
 // Limit the number of MEDIA_LOG() logs for splice overlap trimming.
 const int kMaxAudioSpliceLogs = 20;
 
-// Limit the number of MEDIA_LOG() logs for same DTS for non-keyframe followed
-// by keyframe. Prior to relaxing the "media segments must begin with a
-// keyframe" requirement, we issued decode error for this situation. That was
-// likely too strict, and now that the keyframe requirement is relaxed, we have
-// no knowledge of media segment boundaries here. Now, we log but don't trigger
-// decode error, since we allow these sequences which may cause extra decoder
-// work or other side-effects.
-const int kMaxStrangeSameTimestampsLogs = 20;
-
 // Helper method that returns true if |ranges| is sorted in increasing order,
 // false otherwise.
 bool IsRangeListSorted(const SourceBufferStream::RangeList& ranges) {
@@ -717,16 +708,6 @@ bool SourceBufferStream::IsDtsMonotonicallyIncreasing(
         MEDIA_LOG(ERROR, media_log_)
             << "Buffers did not monotonically increase.";
         return false;
-      }
-
-      if (current_timestamp == prev_timestamp &&
-          SourceBufferRange::IsUncommonSameTimestampSequence(
-              prev_is_keyframe, current_is_keyframe)) {
-        LIMITED_MEDIA_LOG(DEBUG, media_log_, num_strange_same_timestamps_logs_,
-                          kMaxStrangeSameTimestampsLogs)
-            << "Detected an append sequence with keyframe following a "
-               "non-keyframe, both with the same decode timestamp of "
-            << current_timestamp.InSecondsF();
       }
     }
 

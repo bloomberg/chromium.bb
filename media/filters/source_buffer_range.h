@@ -37,24 +37,6 @@ class MEDIA_EXPORT SourceBufferRange {
     ALLOW_GAPS
   };
 
-  // Sequential buffers with the same decode timestamp make sense under certain
-  // conditions, typically when the first buffer is a keyframe. Due to some
-  // atypical media append behaviors where a new keyframe might have the same
-  // decode timestamp as a previous non-keyframe, the playback of the sequence
-  // might involve some throwaway decode work. This method supports detecting
-  // this situation so that callers can log warnings (it returns true in this
-  // case only).
-  // For all other cases, including more typical same-DTS sequences, this method
-  // returns false. Examples of typical situations where DTS of two consecutive
-  // frames can be equal:
-  // - Video: VP8 Alt-Ref frames.
-  // - Video: IPBPBP...: DTS for I frame and for P frame can be equal.
-  // - Text track cues that start at same time.
-  // Returns true if |prev_is_keyframe| and |current_is_keyframe| indicate a
-  // same timestamp situation that is atypical. False is returned otherwise.
-  static bool IsUncommonSameTimestampSequence(bool prev_is_keyframe,
-                                              bool current_is_keyframe);
-
   SourceBufferRange(GapPolicy gap_policy,
                     const InterbufferDistanceCB& interbuffer_distance_cb);
 
