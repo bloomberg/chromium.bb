@@ -128,6 +128,10 @@ void MimeHandlerViewContainerManager::CreateBeforeUnloadControl(
   if (!post_message_support_)
     post_message_support_ = std::make_unique<PostMessageSupport>(this);
   mime_handler::BeforeUnloadControlPtr before_unload_control;
+  if (before_unload_control_binding_.is_bound()) {
+    // Might happen when reloading the same page.
+    before_unload_control_binding_.Close();
+  }
   before_unload_control_binding_.Bind(
       mojo::MakeRequest(&before_unload_control));
   std::move(callback).Run(std::move(before_unload_control));
