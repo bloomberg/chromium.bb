@@ -57,9 +57,10 @@ import org.junit.runner.RunWith;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
 
-/** Integration tests for %s. */
+/** Instrumentation tests for {@link %s}. */
 @RunWith(ChromeJUnit4ClassRunner.class)
-public class %sTest extends DummyUiActivityTestCase {
+public class %sInstrumentationTest extends DummyUiActivityTestCase {
+
 }
 '''
 
@@ -76,10 +77,11 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 
-/** Unit tests for %s. */
+/** Unit tests for {@link %s}. */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-public class %sUnitTest {
+public class %sTest {
+
 }
 
 '''
@@ -152,19 +154,22 @@ def GetPackageAndFile(source):
   print(infomsg("File name: %s" % file_name))
   return (package_name, file_name)
 
-# Generate java test file , OWNER and modify corresponding GNI
-def CreateJavaTestFile(package_path, file_name):
+# Generate an instrumentation test file, OWNER and modify corresponding GNI
+def CreateInstrumentationTestFile(package_path, file_name):
   package_name = package_path.replace('/', '.')
 
   ins_testfile_path = os.path.join(root_path, 'chrome/android/javatests/src/',
                                    package_path)
-  ins_testfile = os.path.join(ins_testfile_path, file_name + 'Test.java')
+  ins_testfile = os.path.join(ins_testfile_path, (file_name +
+    'InstrumentationTest.java'))
   print(infomsg("+++ Creating instrumentation_test file: %s" % ins_testfile))
 
   if os.path.exists(ins_testfile):
     print(warningmsg("%s already exist!\n" % ins_testfile))
   else:
-    os.makedirs(os.path.dirname(ins_testfile))
+    dir_name = os.path.dirname(ins_testfile)
+    if not os.path.exists(dir_name):
+      os.makedirs(dir_name)
     try:
       file = open(ins_testfile, "w")
       filecontent = _INST_TEST_FILE % (this_year, package_name, file_name,
@@ -181,23 +186,26 @@ def CreateJavaTestFile(package_path, file_name):
     CreateOwnerFile(ins_owner, source_ownerfile)
   # Modify GN file
   tag = "chrome_test_java_sources"
-  txt = 'javatests/src/%s/%sTest.java' % (package_path, file_name)
+  txt = 'javatests/src/%s/%sInstrumentationTest.java' % (package_path,
+      file_name)
   ModifyGnFile(javatest_gni, tag, txt)
 
 
-# Generate junit test file , OWNER and modify corresponding GNI
-def CreateJunitTestFile(package_path, file_name):
+# Generate a unit test file, OWNER and modify corresponding GNI
+def CreateUnitTestFile(package_path, file_name):
   package_name = package_path.replace('/', '.')
 
   unit_testfile_path = os.path.join(root_path, 'chrome/android/junit/src/',
                                     package_path)
-  unit_testfile = os.path.join(unit_testfile_path, file_name + "UnitTest.java")
+  unit_testfile = os.path.join(unit_testfile_path, file_name + "Test.java")
   print(infomsg("+++ Creating unit test file: %s" % unit_testfile))
 
   if os.path.exists(unit_testfile):
     print(warningmsg("%s already exist!\n" % unit_testfile))
   else:
-    os.makedirs(os.path.dirname(unit_testfile))
+    dir_name = os.path.dirname(unit_testfile)
+    if not os.path.exists(dir_name):
+      os.makedirs(dir_name)
     try:
       file = open(unit_testfile, "w")
       filecontent = _UNIT_TEST_FILE % (this_year, package_name, file_name,
@@ -214,7 +222,7 @@ def CreateJunitTestFile(package_path, file_name):
     CreateOwnerFile(unit_testowner, source_ownerfile)
   # Modify GN file
   tag = "chrome_junit_test_java_sources"
-  txt = 'junit/src/%s/%sUnitTest.java' % (package_path, file_name)
+  txt = 'junit/src/%s/%sTest.java' % (package_path, file_name)
   ModifyGnFile(junittest_gni, tag, txt)
 
 # Create OWNER file if it doesn't exist
@@ -299,13 +307,13 @@ def main():
   ran = False
   if args.unittest:
     ran = True
-    CreateJavaTestFile(package_path, file_name)
+    CreateUnitTestFile(package_path, file_name)
   if args.instrumentation:
     ran = True
-    CreateJunitTestFile(package_path, file_name)
+    CreateInstrumentationTestFile(package_path, file_name)
   if not ran:  # default for both tests
-    CreateJavaTestFile(package_path, file_name)
-    CreateJunitTestFile(package_path, file_name)
+    CreateInstrumentationTestFile(package_path, file_name)
+    CreateUnitTestFile(package_path, file_name)
 
 
 if __name__ == "__main__":
