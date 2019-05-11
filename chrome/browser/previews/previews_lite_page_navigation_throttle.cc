@@ -748,7 +748,8 @@ PreviewsLitePageNavigationThrottle::GetOrCreateServerLitePageInfo(
   const ChromeNavigationUIData* chrome_navigation_ui_data =
       static_cast<const ChromeNavigationUIData*>(
           navigation_handle->GetNavigationUIData());
-  info->page_id = chrome_navigation_ui_data->data_reduction_proxy_page_id();
+  if (chrome_navigation_ui_data)
+    info->page_id = chrome_navigation_ui_data->data_reduction_proxy_page_id();
   // The page id may not be set in some corner cases (like forward navigation),
   // so make sure it gets set here.
   if (info->page_id == 0U)
