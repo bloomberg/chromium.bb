@@ -85,7 +85,7 @@ std::string StatusToString(const SourceBufferStreamStatus& status) {
 }
 
 // Helper method for logging, converts a range into a readable string.
-std::string RangeToString(const SourceBufferRangeByPts& range) {
+std::string RangeToString(const SourceBufferRange& range) {
   if (range.size_in_bytes() == 0) {
     return "[]";
   }
@@ -566,14 +566,13 @@ void SourceBufferStream::RemoveInternal(DecodeTimestamp start,
 
   auto itr = ranges_.begin();
   while (itr != ranges_.end()) {
-    SourceBufferRangeByPts* range = itr->get();
+    SourceBufferRange* range = itr->get();
     if (RangeGetStartTimestamp(range) >= end)
       break;
 
     // Split off any remaining GOPs starting at or after |end| and add it to
     // |ranges_|.
-    std::unique_ptr<SourceBufferRangeByPts> new_range =
-        RangeSplitRange(range, end);
+    std::unique_ptr<SourceBufferRange> new_range = RangeSplitRange(range, end);
     if (new_range) {
       itr = ranges_.insert(++itr, std::move(new_range));
 
@@ -1005,7 +1004,7 @@ size_t SourceBufferStream::GetRemovalRange(
 
   for (auto itr = ranges_.begin();
        itr != ranges_.end() && bytes_freed < total_bytes_to_free; ++itr) {
-    SourceBufferRangeByPts* range = itr->get();
+    SourceBufferRange* range = itr->get();
     if (RangeGetStartTimestamp(range) >= end_timestamp)
       break;
     if (RangeGetEndTimestamp(range) < start_timestamp)
@@ -1032,10 +1031,10 @@ size_t SourceBufferStream::FreeBuffers(size_t total_bytes_to_free,
 
   // This range will save the last GOP appended to |range_for_next_append_|
   // if the buffers surrounding it get deleted during garbage collection.
-  std::unique_ptr<SourceBufferRangeByPts> new_range_for_append;
+  std::unique_ptr<SourceBufferRange> new_range_for_append;
 
   while (!ranges_.empty() && bytes_freed < total_bytes_to_free) {
-    SourceBufferRangeByPts* current_range = NULL;
+    SourceBufferRange* current_range = NULL;
     BufferQueue buffers;
     size_t bytes_deleted = 0;
 
@@ -1297,7 +1296,7 @@ void SourceBufferStream::PrepareRangesForNextAppend(
 
     // Split the range at |buffers_start_timestamp|, if necessary, then return
     // early.
-    std::unique_ptr<SourceBufferRangeByPts> new_range =
+    std::unique_ptr<SourceBufferRange> new_range =
         RangeSplitRange(range_for_next_append_->get(), buffers_start_timestamp);
     if (!new_range)
       return;
@@ -1408,8 +1407,7 @@ void SourceBufferStream::MergeWithNextRangeIfNecessary(
     const RangeList::iterator& range_with_new_buffers_itr) {
   DCHECK(range_with_new_buffers_itr != ranges_.end());
 
-  SourceBufferRangeByPts* range_with_new_buffers =
-      range_with_new_buffers_itr->get();
+  SourceBufferRange* range_with_new_buffers = range_with_new_buffers_itr->get();
   RangeList::iterator next_range_itr = range_with_new_buffers_itr;
   ++next_range_itr;
 
@@ -1672,7 +1670,7 @@ SourceBufferStream::FindExistingRangeFor(DecodeTimestamp start_timestamp) {
 }
 
 SourceBufferStream::RangeList::iterator SourceBufferStream::AddToRanges(
-    std::unique_ptr<SourceBufferRangeByPts> new_range) {
+    std::unique_ptr<SourceBufferRange> new_range) {
   DecodeTimestamp start_timestamp = RangeGetStartTimestamp(new_range.get());
   auto itr = ranges_.end();
   for (itr = ranges_.begin(); itr != ranges_.end(); ++itr) {
@@ -1695,14 +1693,14 @@ SourceBufferStream::GetSelectedRangeItr() {
 }
 
 void SourceBufferStream::SeekAndSetSelectedRange(
-    SourceBufferRangeByPts* range,
+    SourceBufferRange* range,
     DecodeTimestamp seek_timestamp) {
   if (range)
     RangeSeek(range, seek_timestamp);
   SetSelectedRange(range);
 }
 
-void SourceBufferStream::SetSelectedRange(SourceBufferRangeByPts* range) {
+void SourceBufferStream::SetSelectedRange(SourceBufferRange* range) {
   DVLOG(1) << __func__ << " " << GetStreamTypeName() << ": " << selected_range_
            << " " << (selected_range_ ? RangeToString(*selected_range_) : "")
            << " -> " << range << " " << (range ? RangeToString(*range) : "");
@@ -2036,39 +2034,39 @@ DecodeTimestamp SourceBufferStream::BufferGetTimestamp(
 }
 
 void SourceBufferStream::RangeAppendBuffersToEnd(
-    SourceBufferRangeByPts* range,
+    SourceBufferRange* range,
     const BufferQueue& buffers,
     DecodeTimestamp group_start_time) {
   range->AppendBuffersToEnd(buffers, group_start_time.ToPresentationTime());
 }
 
 DecodeTimestamp SourceBufferStream::RangeGetBufferedEndTimestamp(
-    SourceBufferRangeByPts* range) const {
+    SourceBufferRange* range) const {
   return DecodeTimestamp::FromPresentationTime(
       range->GetBufferedEndTimestamp());
 }
 
 DecodeTimestamp SourceBufferStream::RangeGetEndTimestamp(
-    SourceBufferRangeByPts* range) const {
+    SourceBufferRange* range) const {
   return DecodeTimestamp::FromPresentationTime(range->GetEndTimestamp());
 }
 
 DecodeTimestamp SourceBufferStream::RangeGetStartTimestamp(
-    SourceBufferRangeByPts* range) const {
+    SourceBufferRange* range) const {
   return DecodeTimestamp::FromPresentationTime(range->GetStartTimestamp());
 }
 
-bool SourceBufferStream::RangeCanSeekTo(SourceBufferRangeByPts* range,
+bool SourceBufferStream::RangeCanSeekTo(SourceBufferRange* range,
                                         DecodeTimestamp seek_time) const {
   return range->CanSeekTo(seek_time.ToPresentationTime());
 }
 
-int SourceBufferStream::RangeGetConfigIdAtTime(SourceBufferRangeByPts* range,
+int SourceBufferStream::RangeGetConfigIdAtTime(SourceBufferRange* range,
                                                DecodeTimestamp config_time) {
   return range->GetConfigIdAtTime(config_time.ToPresentationTime());
 }
 
-bool SourceBufferStream::RangeSameConfigThruRange(SourceBufferRangeByPts* range,
+bool SourceBufferStream::RangeSameConfigThruRange(SourceBufferRange* range,
                                                   DecodeTimestamp start,
                                                   DecodeTimestamp end) {
   return range->SameConfigThruRange(start.ToPresentationTime(),
@@ -2076,13 +2074,13 @@ bool SourceBufferStream::RangeSameConfigThruRange(SourceBufferRangeByPts* range,
 }
 
 bool SourceBufferStream::RangeFirstGOPEarlierThanMediaTime(
-    SourceBufferRangeByPts* range,
+    SourceBufferRange* range,
     DecodeTimestamp media_time) const {
   return range->FirstGOPEarlierThanMediaTime(media_time.ToPresentationTime());
 }
 
 size_t SourceBufferStream::RangeGetRemovalGOP(
-    SourceBufferRangeByPts* range,
+    SourceBufferRange* range,
     DecodeTimestamp start_timestamp,
     DecodeTimestamp end_timestamp,
     size_t bytes_to_free,
@@ -2096,32 +2094,32 @@ size_t SourceBufferStream::RangeGetRemovalGOP(
   return result;
 }
 
-bool SourceBufferStream::RangeBelongsToRange(SourceBufferRangeByPts* range,
+bool SourceBufferStream::RangeBelongsToRange(SourceBufferRange* range,
                                              DecodeTimestamp timestamp) const {
   return range->BelongsToRange(timestamp.ToPresentationTime());
 }
 
 DecodeTimestamp SourceBufferStream::RangeFindHighestBufferedTimestampAtOrBefore(
-    SourceBufferRangeByPts* range,
+    SourceBufferRange* range,
     DecodeTimestamp timestamp) const {
   return DecodeTimestamp::FromPresentationTime(
       range->FindHighestBufferedTimestampAtOrBefore(
           timestamp.ToPresentationTime()));
 }
 
-void SourceBufferStream::RangeSeek(SourceBufferRangeByPts* range,
+void SourceBufferStream::RangeSeek(SourceBufferRange* range,
                                    DecodeTimestamp timestamp) {
   range->Seek(timestamp.ToPresentationTime());
 }
 
 DecodeTimestamp SourceBufferStream::RangeNextKeyframeTimestamp(
-    SourceBufferRangeByPts* range,
+    SourceBufferRange* range,
     DecodeTimestamp timestamp) {
   return DecodeTimestamp::FromPresentationTime(
       range->NextKeyframeTimestamp(timestamp.ToPresentationTime()));
 }
 
-bool SourceBufferStream::RangeGetBuffersInRange(SourceBufferRangeByPts* range,
+bool SourceBufferStream::RangeGetBuffersInRange(SourceBufferRange* range,
                                                 DecodeTimestamp start,
                                                 DecodeTimestamp end,
                                                 BufferQueue* buffers) {
@@ -2129,13 +2127,13 @@ bool SourceBufferStream::RangeGetBuffersInRange(SourceBufferRangeByPts* range,
                                   end.ToPresentationTime(), buffers);
 }
 
-std::unique_ptr<SourceBufferRangeByPts> SourceBufferStream::RangeSplitRange(
-    SourceBufferRangeByPts* range,
+std::unique_ptr<SourceBufferRange> SourceBufferStream::RangeSplitRange(
+    SourceBufferRange* range,
     DecodeTimestamp timestamp) {
   return range->SplitRange(timestamp.ToPresentationTime());
 }
 
-bool SourceBufferStream::RangeTruncateAt(SourceBufferRangeByPts* range,
+bool SourceBufferStream::RangeTruncateAt(SourceBufferRange* range,
                                          DecodeTimestamp timestamp,
                                          BufferQueue* deleted_buffers,
                                          bool is_exclusive) {
@@ -2144,16 +2142,16 @@ bool SourceBufferStream::RangeTruncateAt(SourceBufferRangeByPts* range,
 }
 
 DecodeTimestamp SourceBufferStream::RangeKeyframeBeforeTimestamp(
-    SourceBufferRangeByPts* range,
+    SourceBufferRange* range,
     DecodeTimestamp timestamp) {
   return DecodeTimestamp::FromPresentationTime(
       range->KeyframeBeforeTimestamp(timestamp.ToPresentationTime()));
 }
 
-std::unique_ptr<SourceBufferRangeByPts> SourceBufferStream::RangeNew(
+std::unique_ptr<SourceBufferRange> SourceBufferStream::RangeNew(
     const BufferQueue& new_buffers,
     DecodeTimestamp range_start_time) {
-  return std::make_unique<SourceBufferRangeByPts>(
+  return std::make_unique<SourceBufferRange>(
       TypeToGapPolicy(GetType()), new_buffers,
       range_start_time.ToPresentationTime(),
       base::BindRepeating(&SourceBufferStream::GetMaxInterbufferDistance,

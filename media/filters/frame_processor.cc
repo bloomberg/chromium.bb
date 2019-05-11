@@ -95,10 +95,9 @@ class MseTrackBuffer {
   // monotonically increasing.
   void SetHighestPresentationTimestampIfIncreased(base::TimeDelta timestamp);
 
-  // Adds |frame| to the end of |processed_frames_|. In some BufferingByPts
-  // SAP-Type-2 conditions, may also flush any previously enqueued frames, which
-  // can fail. Returns the result of such flushing, or true if no flushing was
-  // done.
+  // Adds |frame| to the end of |processed_frames_|. In some SAP-Type-2
+  // conditions, may also flush any previously enqueued frames, which can fail.
+  // Returns the result of such flushing, or true if no flushing was done.
   bool EnqueueProcessedFrame(scoped_refptr<StreamParserBuffer> frame);
 
   // Appends |processed_frames_|, if not empty, to |stream_| and clears

@@ -28,7 +28,6 @@
 #include "media/base/timestamp_constants.h"
 #include "media/base/webvtt_util.h"
 #include "media/filters/source_buffer_range.h"
-#include "media/filters/source_buffer_range_by_pts.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::HasSubstr;
@@ -5179,7 +5178,7 @@ TEST_F(SourceBufferStreamTest, InstantGarbageCollectionUnderMemoryPressure) {
 }
 
 TEST_F(SourceBufferStreamTest, GCFromFrontThenExplicitRemoveFromMiddleToEnd) {
-  // Attempts to exercise SBRByPts::GetBufferIndexAt() after its
+  // Attempts to exercise SourceBufferRange::GetBufferIndexAt() after its
   // |keyframe_map_index_base_| has been increased, and when there is a GOP
   // following the search timestamp.  GC followed by an explicit remove may
   // trigger that code path.
@@ -5194,7 +5193,7 @@ TEST_F(SourceBufferStreamTest, GCFromFrontThenExplicitRemoveFromMiddleToEnd) {
   CheckExpectedRangesByTimestamp("{ [0,150) }");
 
   // Seek to the second GOP's keyframe to allow GC to collect all of the first
-  // GOP (ostensibly increasing SBR's |keyframe_map_index_base_|).
+  // GOP (ostensibly increasing SourceBufferRange's |keyframe_map_index_base_|).
   SeekToTimestampMs(50);
   GarbageCollect(base::TimeDelta::FromMilliseconds(50), 0);
   CheckExpectedRangesByTimestamp("{ [50,150) }");
