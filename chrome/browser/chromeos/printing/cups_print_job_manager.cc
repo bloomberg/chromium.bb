@@ -12,8 +12,8 @@
 namespace chromeos {
 
 CupsPrintJobManager::CupsPrintJobManager(Profile* profile) : profile_(profile) {
-  notification_manager_.reset(
-      new CupsPrintJobNotificationManager(profile, this));
+  notification_manager_ =
+      std::make_unique<CupsPrintJobNotificationManager>(profile, this);
 }
 
 CupsPrintJobManager::~CupsPrintJobManager() {
