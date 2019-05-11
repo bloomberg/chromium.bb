@@ -1727,9 +1727,6 @@ class DirectoryTree extends cr.ui.Tree {
         fileOperationManager, 'entries-changed',
         this.onEntriesChanged_.bind(this));
 
-    // Add a listener so we can scroll selected item into view.
-    this.addEventListener('focus', this.onFocus_.bind(this));
-
     this.addEventListener('click', (event) => {
       // Chromevox triggers |click| without switching focus, we force the focus
       // here so we can handle further keyboard/mouse events to expand/collapse
