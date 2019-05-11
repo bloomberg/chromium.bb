@@ -65,7 +65,7 @@ CupsPrintJobNotification::CupsPrintJobNotification(
   UpdateNotification();
 }
 
-CupsPrintJobNotification::~CupsPrintJobNotification() {}
+CupsPrintJobNotification::~CupsPrintJobNotification() = default;
 
 void CupsPrintJobNotification::OnPrintJobStatusUpdated() {
   // After cancellation, ignore all updates.

@@ -51,7 +51,7 @@ SyncedPrintersManagerFactory::SyncedPrintersManagerFactory()
   DependsOn(ModelTypeStoreServiceFactory::GetInstance());
 }
 
-SyncedPrintersManagerFactory::~SyncedPrintersManagerFactory() {}
+SyncedPrintersManagerFactory::~SyncedPrintersManagerFactory() = default;
 
 SyncedPrintersManager* SyncedPrintersManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* browser_context) const {

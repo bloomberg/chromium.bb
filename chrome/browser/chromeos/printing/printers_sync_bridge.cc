@@ -158,7 +158,7 @@ PrintersSyncBridge::PrintersSyncBridge(
       store_delegate_(std::make_unique<StoreProxy>(this, std::move(callback))),
       observers_(new base::ObserverListThreadSafe<Observer>()) {}
 
-PrintersSyncBridge::~PrintersSyncBridge() {}
+PrintersSyncBridge::~PrintersSyncBridge() = default;
 
 std::unique_ptr<MetadataChangeList>
 PrintersSyncBridge::CreateMetadataChangeList() {

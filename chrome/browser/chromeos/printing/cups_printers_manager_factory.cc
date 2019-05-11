@@ -33,7 +33,7 @@ CupsPrintersManagerFactory::CupsPrintersManagerFactory()
   DependsOn(chromeos::SyncedPrintersManagerFactory::GetInstance());
 }
 
-CupsPrintersManagerFactory::~CupsPrintersManagerFactory() {}
+CupsPrintersManagerFactory::~CupsPrintersManagerFactory() = default;
 
 KeyedService* CupsPrintersManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {

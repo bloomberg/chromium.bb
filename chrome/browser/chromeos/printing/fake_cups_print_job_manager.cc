@@ -25,7 +25,7 @@ FakeCupsPrintJobManager::FakeCupsPrintJobManager(Profile* profile)
   VLOG(1) << "Using Fake Print Job Manager";
 }
 
-FakeCupsPrintJobManager::~FakeCupsPrintJobManager() {}
+FakeCupsPrintJobManager::~FakeCupsPrintJobManager() = default;
 
 bool FakeCupsPrintJobManager::CreatePrintJob(const std::string& printer_name,
                                              const std::string& title,
