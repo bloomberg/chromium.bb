@@ -149,7 +149,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'b16655545f81ac9701015e1bba8f6c967927ff66',
+  'swiftshader_revision': '4d65934f642466d4d61c3d8c84fc344a571e73a4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
