@@ -17,6 +17,7 @@
 #include "ui/views/controls/button/label_button_label.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/native_theme_delegate.h"
 #include "ui/views/style/typography.h"
 
@@ -146,12 +147,12 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // Resets colors from the NativeTheme, explicitly set colors are unchanged.
   virtual void ResetColorsFromNativeTheme();
 
-  // Changes the visual styling of this button to reflect the state of
-  // |is_default()|.
+  // Changes the visual styling to match changes in the default state.
   virtual void UpdateStyleToIndicateDefaultStatus();
 
   // Button:
   void ChildPreferredSizeChanged(View* child) override;
+  void PreferredSizeChanged() override;
   void OnFocus() override;
   void OnBlur() override;
   void OnThemeChanged() override;
@@ -160,8 +161,7 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
  private:
   void SetTextInternal(const base::string16& text);
 
-  // Resets |cached_preferred_size_| and marks |cached_preferred_size_valid_|
-  // as false.
+  // Resets |cached_preferred_size_|.
   void ResetCachedPreferredSize();
 
   // Gets the preferred size (without respecting min_size_ or max_size_), but
@@ -185,7 +185,7 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // A separate view is necessary to hold the ink drop layer so that it can
   // be stacked below |image_| and on top of |label_|, without resorting to
   // drawing |label_| on a layer (which can mess with subpixel anti-aliasing).
-  InkDropContainerView* const ink_drop_container_;
+  InkDropContainerView* ink_drop_container_;
 
   // The cached font lists in the normal and default button style. The latter
   // may be bold.
@@ -193,39 +193,39 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   gfx::FontList cached_default_button_font_list_;
 
   // The images and colors for each button state.
-  gfx::ImageSkia button_state_images_[STATE_COUNT];
-  SkColor button_state_colors_[STATE_COUNT];
+  gfx::ImageSkia button_state_images_[STATE_COUNT] = {};
+  SkColor button_state_colors_[STATE_COUNT] = {};
 
   // Used to track whether SetTextColor() has been invoked.
-  std::array<bool, STATE_COUNT> explicitly_set_colors_;
+  std::array<bool, STATE_COUNT> explicitly_set_colors_ = {};
 
   // |min_size_| and |max_size_| may be set to clamp the preferred size.
   gfx::Size min_size_;
   gfx::Size max_size_;
 
   // Cache the last computed preferred size.
-  mutable gfx::Size cached_preferred_size_;
-  mutable bool cached_preferred_size_valid_;
+  mutable base::Optional<gfx::Size> cached_preferred_size_;
 
   // Flag indicating default handling of the return key via an accelerator.
   // Whether or not the button appears or behaves as the default button in its
   // current context;
-  bool is_default_;
+  bool is_default_ = false;
 
   // The button's overall style.
-  ButtonStyle style_;
+  ButtonStyle style_ = STYLE_TEXTBUTTON;
 
-  // True if current border was set by UpdateThemedBorder. Defaults to true.
-  bool border_is_themed_border_;
+  // True if current border was set by UpdateThemedBorder.
+  bool border_is_themed_border_ = true;
 
   // Spacing between the image and the text.
-  int image_label_spacing_;
+  int image_label_spacing_ = LayoutProvider::Get()->GetDistanceMetric(
+      DISTANCE_RELATED_LABEL_HORIZONTAL);
 
   // Alignment of the button. This can be different from the alignment of the
   // text; for example, the label may be set to ALIGN_TO_HEAD (alignment matches
   // text direction) while |this| is laid out as ALIGN_LEFT (alignment matches
   // UI direction).
-  gfx::HorizontalAlignment horizontal_alignment_;
+  gfx::HorizontalAlignment horizontal_alignment_ = gfx::ALIGN_LEFT;
 
   DISALLOW_COPY_AND_ASSIGN(LabelButton);
 };

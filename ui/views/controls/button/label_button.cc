@@ -21,17 +21,12 @@
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button_border.h"
-#include "ui/views/layout/layout_provider.h"
 #include "ui/views/painter.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace views {
-namespace {
-// The length of the hover fade animation.
-constexpr int kHoverAnimationDurationMs = 170;
-}  // namespace
 
 // static
 const char LabelButton::kViewClassName[] = "LabelButton";
@@ -40,33 +35,24 @@ LabelButton::LabelButton(ButtonListener* listener,
                          const base::string16& text,
                          int button_context)
     : Button(listener),
-      image_(new ImageView()),
-      label_(new LabelButtonLabel(text, button_context)),
-      ink_drop_container_(new InkDropContainerView()),
       cached_normal_font_list_(
           style::GetFont(button_context, style::STYLE_PRIMARY)),
       cached_default_button_font_list_(
-          style::GetFont(button_context, style::STYLE_DIALOG_BUTTON_DEFAULT)),
-      button_state_colors_(),
-      explicitly_set_colors_(),
-      is_default_(false),
-      style_(STYLE_TEXTBUTTON),
-      border_is_themed_border_(true),
-      image_label_spacing_(LayoutProvider::Get()->GetDistanceMetric(
-          DISTANCE_RELATED_LABEL_HORIZONTAL)),
-      horizontal_alignment_(gfx::ALIGN_LEFT) {
-  SetAnimationDuration(kHoverAnimationDurationMs);
-  SetTextInternal(text);
-
-  AddChildView(ink_drop_container_);
+          style::GetFont(button_context, style::STYLE_DIALOG_BUTTON_DEFAULT)) {
+  ink_drop_container_ = AddChildView(std::make_unique<InkDropContainerView>());
   ink_drop_container_->SetVisible(false);
 
-  AddChildView(image_);
+  image_ = AddChildView(std::make_unique<ImageView>());
   image_->set_can_process_events_within_subtree(false);
 
-  AddChildView(label_);
+  label_ =
+      AddChildView(std::make_unique<LabelButtonLabel>(text, button_context));
   label_->SetAutoColorReadabilityEnabled(false);
   label_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
+
+  constexpr int kHoverAnimationDurationMs = 170;
+  SetAnimationDuration(kHoverAnimationDurationMs);
+  SetTextInternal(text);
 }
 
 LabelButton::~LabelButton() = default;
@@ -137,11 +123,12 @@ void LabelButton::SetIsDefault(bool is_default) {
   // TODO(estade): move this to MdTextButton once |style_| is removed.
   if (is_default == is_default_)
     return;
-
   is_default_ = is_default;
   ui::Accelerator accel(ui::VKEY_RETURN, ui::EF_NONE);
-  is_default_ ? AddAccelerator(accel) : RemoveAccelerator(accel);
-
+  if (is_default_)
+    AddAccelerator(accel);
+  else
+    RemoveAccelerator(accel);
   UpdateStyleToIndicateDefaultStatus();
 }
 
@@ -176,8 +163,7 @@ void LabelButton::SetImageLabelSpacing(int spacing) {
 std::unique_ptr<LabelButtonBorder> LabelButton::CreateDefaultBorder() const {
   if (style_ != Button::STYLE_TEXTBUTTON)
     return std::make_unique<LabelButtonAssetBorder>(style_);
-  std::unique_ptr<LabelButtonBorder> border =
-      std::make_unique<LabelButtonBorder>();
+  auto border = std::make_unique<LabelButtonBorder>();
   border->set_insets(
       views::LabelButtonAssetBorder::GetDefaultInsetsForStyle(style_));
   return border;
@@ -191,7 +177,7 @@ void LabelButton::SetBorder(std::unique_ptr<Border> border) {
 
 gfx::Size LabelButton::CalculatePreferredSize() const {
   // Cache the computed size, as recomputing it is an expensive operation.
-  if (!cached_preferred_size_valid_) {
+  if (!cached_preferred_size_) {
     // Use a temporary label copy for sizing to avoid calculation side-effects.
     Label label(GetText(), {label_->font_list()});
     label.SetLineHeight(label_->line_height());
@@ -223,11 +209,10 @@ gfx::Size LabelButton::CalculatePreferredSize() const {
     if (max_size_.height() > 0)
       size.set_height(std::min(max_size_.height(), size.height()));
 
-    cached_preferred_size_valid_ = true;
     cached_preferred_size_ = size;
   }
 
-  return cached_preferred_size_;
+  return cached_preferred_size_.value();
 }
 
 int LabelButton::GetHeightForWidth(int width) const {
@@ -240,9 +225,7 @@ int LabelButton::GetHeightForWidth(int width) const {
   // Height is the larger of size without label and label height with insets.
   int height = std::max(size_without_label.height(), label_height_with_insets);
 
-  // Make sure height respects min_size_.
-  if (height < min_size_.height())
-    height = min_size_.height();
+  height = std::max(height, min_size_.height());
 
   // Clamp height to the maximum height (if valid).
   if (max_size_.height() > 0)
@@ -261,7 +244,7 @@ void LabelButton::Layout() {
   // label is short.
   gfx::Rect label_area(child_area);
 
-  gfx::Insets insets(GetInsets());
+  gfx::Insets insets = GetInsets();
   child_area.Inset(insets);
   // Labels can paint over the vertical component of the border insets.
   label_area.Inset(insets.left(), 0, insets.right(), 0);
@@ -292,8 +275,9 @@ void LabelButton::Layout() {
     image_origin.Offset(0, (child_area.height() - image_size.height()) / 2);
   }
   if (horizontal_alignment_ == gfx::ALIGN_CENTER) {
-    const int spacing = (image_size.width() > 0 && label_size.width() > 0) ?
-        image_label_spacing_ : 0;
+    const int spacing = (image_size.width() > 0 && label_size.width() > 0)
+                            ? image_label_spacing_
+                            : 0;
     const int total_width = image_size.width() + label_size.width() +
         spacing;
     image_origin.Offset((child_area.width() - total_width) / 2, 0);
@@ -376,7 +360,6 @@ ui::NativeTheme::State LabelButton::GetForegroundThemeState(
 
 void LabelButton::UpdateImage() {
   image_->SetImage(GetImage(GetVisualState()));
-  ResetCachedPreferredSize();
 }
 
 void LabelButton::UpdateThemedBorder() {
@@ -475,8 +458,12 @@ void LabelButton::UpdateStyleToIndicateDefaultStatus() {
 }
 
 void LabelButton::ChildPreferredSizeChanged(View* child) {
-  ResetCachedPreferredSize();
   PreferredSizeChanged();
+}
+
+void LabelButton::PreferredSizeChanged() {
+  ResetCachedPreferredSize();
+  Button::PreferredSizeChanged();
 }
 
 void LabelButton::OnFocus() {
@@ -518,8 +505,7 @@ void LabelButton::SetTextInternal(const base::string16& text) {
 }
 
 void LabelButton::ResetCachedPreferredSize() {
-  cached_preferred_size_valid_ = false;
-  cached_preferred_size_ = gfx::Size();
+  cached_preferred_size_ = base::nullopt;
 }
 
 gfx::Size LabelButton::GetUnclampedSizeWithoutLabel() const {
