@@ -32,11 +32,11 @@ base::TimeDelta GetTickDeltaSinceEpoch() {
   return NowTicks() - base::TimeTicks::UnixEpoch();
 }
 
-// Returns all the SiteCharacteristicsFeatureProto elements contained in a
-// SiteCharacteristicsProto protobuf object.
-std::vector<SiteCharacteristicsFeatureProto*> GetAllFeaturesFromProto(
-    SiteCharacteristicsProto* proto) {
-  std::vector<SiteCharacteristicsFeatureProto*> ret(
+// Returns all the SiteDataFeatureProto elements contained in a
+// SiteDataProto protobuf object.
+std::vector<SiteDataFeatureProto*> GetAllFeaturesFromProto(
+    SiteDataProto* proto) {
+  std::vector<SiteDataFeatureProto*> ret(
       {proto->mutable_updates_favicon_in_background(),
        proto->mutable_updates_title_in_background(),
        proto->mutable_uses_audio_in_background(),
@@ -223,7 +223,7 @@ LocalSiteCharacteristicsDataImpl::~LocalSiteCharacteristicsDataImpl() {
 }
 
 base::TimeDelta LocalSiteCharacteristicsDataImpl::FeatureObservationDuration(
-    const SiteCharacteristicsFeatureProto& feature_proto) const {
+    const SiteDataFeatureProto& feature_proto) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Get the current observation duration value if available.
   base::TimeDelta observation_time_for_feature;
@@ -247,7 +247,7 @@ base::TimeDelta LocalSiteCharacteristicsDataImpl::FeatureObservationDuration(
 
 // static:
 void LocalSiteCharacteristicsDataImpl::IncrementFeatureObservationDuration(
-    SiteCharacteristicsFeatureProto* feature_proto,
+    SiteDataFeatureProto* feature_proto,
     base::TimeDelta extra_observation_duration) {
   if (!feature_proto->has_use_timestamp() ||
       InternalRepresentationToTimeDelta(feature_proto->use_timestamp())
@@ -287,7 +287,7 @@ void LocalSiteCharacteristicsDataImpl::
 }
 
 SiteFeatureUsage LocalSiteCharacteristicsDataImpl::GetFeatureUsage(
-    const SiteCharacteristicsFeatureProto& feature_proto,
+    const SiteDataFeatureProto& feature_proto,
     const base::TimeDelta min_obs_time) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -308,7 +308,7 @@ SiteFeatureUsage LocalSiteCharacteristicsDataImpl::GetFeatureUsage(
 }
 
 void LocalSiteCharacteristicsDataImpl::NotifyFeatureUsage(
-    SiteCharacteristicsFeatureProto* feature_proto,
+    SiteDataFeatureProto* feature_proto,
     const char* feature_name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsLoaded());
@@ -332,7 +332,7 @@ void LocalSiteCharacteristicsDataImpl::NotifyFeatureUsage(
 }
 
 void LocalSiteCharacteristicsDataImpl::OnInitCallback(
-    base::Optional<SiteCharacteristicsProto> db_site_characteristics) {
+    base::Optional<SiteDataProto> db_site_characteristics) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Check if the initialization has succeeded.
   if (db_site_characteristics) {
@@ -398,8 +398,7 @@ void LocalSiteCharacteristicsDataImpl::DecrementNumLoadedBackgroundTabs() {
     FlushFeaturesObservationDurationToProto();
 }
 
-const SiteCharacteristicsProto&
-LocalSiteCharacteristicsDataImpl::FlushStateToProto() {
+const SiteDataProto& LocalSiteCharacteristicsDataImpl::FlushStateToProto() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Update the proto with the most current performance measurement averages.
   if (cpu_usage_estimate_.num_datums() ||

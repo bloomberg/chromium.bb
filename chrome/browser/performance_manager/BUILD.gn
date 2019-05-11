@@ -4,6 +4,7 @@
 
 import("//chrome/common/features.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//third_party/protobuf/proto_library.gni")
 
 mojom("mojo_bindings") {
   sources = [
@@ -12,5 +13,11 @@ mojom("mojo_bindings") {
   public_deps = [
     "//mojo/public/mojom/base",
     "//url/mojom:url_mojom_gurl",
+  ]
+}
+
+proto_library("site_data_proto") {
+  sources = [
+    "persistence/site_data/site_data.proto",
   ]
 }

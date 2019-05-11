@@ -108,7 +108,7 @@ TEST_F(LocalSiteCharacteristicsNonRecordingDataStoreTest, InspectorWorks) {
 
   // We expect an empty data store at the outset.
   EXPECT_EQ(0U, inspector->GetAllInMemoryOrigins().size());
-  std::unique_ptr<SiteCharacteristicsProto> data;
+  std::unique_ptr<SiteDataProto> data;
   bool is_dirty = false;
   EXPECT_FALSE(inspector->GetDataForOrigin(kTestOrigin, &is_dirty, &data));
   EXPECT_FALSE(is_dirty);

@@ -78,7 +78,7 @@ class NoopLocalSiteCharacteristicsDatabase
       ReadSiteCharacteristicsFromDBCallback callback) override;
   void WriteSiteCharacteristicsIntoDB(
       const url::Origin& origin,
-      const SiteCharacteristicsProto& site_characteristic_proto) override;
+      const SiteDataProto& site_characteristic_proto) override;
   void RemoveSiteCharacteristicsFromDB(
       const std::vector<url::Origin>& site_origins) override;
   void ClearDatabase() override;

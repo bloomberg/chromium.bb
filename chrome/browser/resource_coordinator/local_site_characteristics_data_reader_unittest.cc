@@ -40,18 +40,17 @@ class MockLocalSiteCharacteristicsDatabase
                         ReadSiteCharacteristicsFromDBCallback&));
 
   MOCK_METHOD2(WriteSiteCharacteristicsIntoDB,
-               void(const url::Origin&, const SiteCharacteristicsProto&));
+               void(const url::Origin&, const SiteDataProto&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockLocalSiteCharacteristicsDatabase);
 };
 
-void InitializeSiteCharacteristicsProto(
-    SiteCharacteristicsProto* site_characteristics) {
+void InitializeSiteDataProto(SiteDataProto* site_characteristics) {
   DCHECK(site_characteristics);
   site_characteristics->set_last_loaded(42);
 
-  SiteCharacteristicsFeatureProto used_feature_proto;
+  SiteDataFeatureProto used_feature_proto;
   used_feature_proto.set_observation_duration(0U);
   used_feature_proto.set_use_timestamp(1U);
 
@@ -152,14 +151,13 @@ TEST_F(LocalSiteCharacteristicsDataReaderTest,
 
   // Override the read callback to simulate a successful read from the
   // database.
-  SiteCharacteristicsProto proto = {};
-  InitializeSiteCharacteristicsProto(&proto);
+  SiteDataProto proto = {};
+  InitializeSiteDataProto(&proto);
   auto read_from_db_mock_impl =
       [&](const url::Origin& origin,
           LocalSiteCharacteristicsDatabase::
               ReadSiteCharacteristicsFromDBCallback& callback) {
-        std::move(callback).Run(
-            base::Optional<SiteCharacteristicsProto>(proto));
+        std::move(callback).Run(base::Optional<SiteDataProto>(proto));
       };
 
   EXPECT_CALL(database, OnReadSiteCharacteristicsFromDB(

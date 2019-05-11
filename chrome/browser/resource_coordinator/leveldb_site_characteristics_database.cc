@@ -134,11 +134,11 @@ class LevelDBSiteCharacteristicsDatabase::AsyncHelper {
 
   // Implementations of the DB manipulation functions of
   // LevelDBSiteCharacteristicsDatabase that run on a blocking sequence.
-  base::Optional<SiteCharacteristicsProto> ReadSiteCharacteristicsFromDB(
+  base::Optional<SiteDataProto> ReadSiteCharacteristicsFromDB(
       const url::Origin& origin);
   void WriteSiteCharacteristicsIntoDB(
       const url::Origin& origin,
-      const SiteCharacteristicsProto& site_characteristic_proto);
+      const SiteDataProto& site_characteristic_proto);
   void RemoveSiteCharacteristicsFromDB(
       const std::vector<url::Origin>& site_origin);
   void ClearDatabase();
@@ -216,7 +216,7 @@ void LevelDBSiteCharacteristicsDatabase::AsyncHelper::OpenOrCreateDatabase() {
   }
 }
 
-base::Optional<SiteCharacteristicsProto>
+base::Optional<SiteDataProto>
 LevelDBSiteCharacteristicsDatabase::AsyncHelper::ReadSiteCharacteristicsFromDB(
     const url::Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -232,12 +232,12 @@ LevelDBSiteCharacteristicsDatabase::AsyncHelper::ReadSiteCharacteristicsFromDB(
     s = db_->Get(read_options_, SerializeOriginIntoDatabaseKey(origin),
                  &protobuf_value);
   }
-  base::Optional<SiteCharacteristicsProto> site_characteristic_proto;
+  base::Optional<SiteDataProto> site_characteristic_proto;
   if (s.ok()) {
-    site_characteristic_proto = SiteCharacteristicsProto();
+    site_characteristic_proto = SiteDataProto();
     if (!site_characteristic_proto->ParseFromString(protobuf_value)) {
       site_characteristic_proto = base::nullopt;
-      DLOG(ERROR) << "Error while trying to parse a SiteCharacteristicsProto "
+      DLOG(ERROR) << "Error while trying to parse a SiteDataProto "
                   << "protobuf.";
     }
   }
@@ -247,7 +247,7 @@ LevelDBSiteCharacteristicsDatabase::AsyncHelper::ReadSiteCharacteristicsFromDB(
 void LevelDBSiteCharacteristicsDatabase::AsyncHelper::
     WriteSiteCharacteristicsIntoDB(
         const url::Origin& origin,
-        const SiteCharacteristicsProto& site_characteristic_proto) {
+        const SiteDataProto& site_characteristic_proto) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!db_)
@@ -426,7 +426,7 @@ void LevelDBSiteCharacteristicsDatabase::ReadSiteCharacteristicsFromDB(
 
 void LevelDBSiteCharacteristicsDatabase::WriteSiteCharacteristicsIntoDB(
     const url::Origin& origin,
-    const SiteCharacteristicsProto& site_characteristic_proto) {
+    const SiteDataProto& site_characteristic_proto) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   blocking_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&LevelDBSiteCharacteristicsDatabase::

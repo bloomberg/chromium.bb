@@ -90,7 +90,7 @@ double GetSiteEngagementScore(content::WebContents* contents) {
 }
 
 mojom::SiteCharacteristicsFeaturePtr ConvertFeatureFromProto(
-    const SiteCharacteristicsFeatureProto& proto) {
+    const SiteDataFeatureProto& proto) {
   mojom::SiteCharacteristicsFeaturePtr feature =
       mojom::SiteCharacteristicsFeature::New();
 
@@ -110,7 +110,7 @@ mojom::SiteCharacteristicsFeaturePtr ConvertFeatureFromProto(
 }
 
 mojom::SiteCharacteristicsDatabaseEntryPtr ConvertEntryFromProto(
-    SiteCharacteristicsProto* proto) {
+    SiteDataProto* proto) {
   mojom::SiteCharacteristicsDatabaseValuePtr value =
       mojom::SiteCharacteristicsDatabaseValue::New();
 
@@ -345,7 +345,7 @@ void DiscardsDetailsProviderImpl::GetSiteCharacteristicsDatabase(
   for (const url::Origin& origin : in_memory_origins) {
     // Get the data for this origin and convert it from proto to the
     // corresponding mojo structure.
-    std::unique_ptr<SiteCharacteristicsProto> proto;
+    std::unique_ptr<SiteDataProto> proto;
     bool is_dirty = false;
     if (data_store_inspector_->GetDataForOrigin(origin, &is_dirty, &proto)) {
       auto entry = ConvertEntryFromProto(proto.get());

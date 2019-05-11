@@ -70,8 +70,8 @@ base::TimeDelta GetLongestGracePeriod() {
                    params.audio_usage_grace_period});
 }
 
-// Returns the SiteCharacteristicsProto that backs |reader|.
-const SiteCharacteristicsProto* GetSiteCharacteristicsProtoFromReader(
+// Returns the SiteDataProto that backs |reader|.
+const SiteDataProto* GetSiteDataProtoFromReader(
     SiteCharacteristicsDataReader* reader) {
   const internal::LocalSiteCharacteristicsDataImpl* impl =
       static_cast<LocalSiteCharacteristicsDataReader*>(reader)
@@ -599,8 +599,8 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest,
 
   auto reader =
       GetReaderForOrigin(browser()->profile(), url::Origin::Create(test_url));
-  const SiteCharacteristicsProto* site_characteristics =
-      GetSiteCharacteristicsProtoFromReader(reader.get());
+  const SiteDataProto* site_characteristics =
+      GetSiteDataProtoFromReader(reader.get());
 
   EXPECT_EQ(0, site_characteristics->updates_title_in_background()
                    .observation_duration());
@@ -623,8 +623,8 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest,
 
   auto reader =
       GetReaderForOrigin(browser()->profile(), url::Origin::Create(test_url));
-  const SiteCharacteristicsProto* site_characteristics =
-      GetSiteCharacteristicsProtoFromReader(reader.get());
+  const SiteDataProto* site_characteristics =
+      GetSiteDataProtoFromReader(reader.get());
 
   auto observation_duration =
       site_characteristics->updates_title_in_background()
@@ -640,7 +640,7 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest,
 
   reader =
       GetReaderForOrigin(browser()->profile(), url::Origin::Create(test_url));
-  site_characteristics = GetSiteCharacteristicsProtoFromReader(reader.get());
+  site_characteristics = GetSiteDataProtoFromReader(reader.get());
 
   EXPECT_GE(observation_duration,
             site_characteristics->updates_title_in_background()

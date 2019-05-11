@@ -81,7 +81,7 @@ void NoopLocalSiteCharacteristicsDatabase::ReadSiteCharacteristicsFromDB(
 
 void NoopLocalSiteCharacteristicsDatabase::WriteSiteCharacteristicsIntoDB(
     const url::Origin& origin,
-    const SiteCharacteristicsProto& site_characteristic_proto) {}
+    const SiteDataProto& site_characteristic_proto) {}
 
 void NoopLocalSiteCharacteristicsDatabase::RemoveSiteCharacteristicsFromDB(
     const std::vector<url::Origin>& site_origins) {}

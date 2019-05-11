@@ -12,10 +12,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "chrome/browser/performance_manager/persistence/site_data/site_data.pb.h"
 #include "chrome/browser/resource_coordinator/exponential_moving_average.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_database.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_feature_usage.h"
-#include "chrome/browser/resource_coordinator/site_characteristics.pb.h"
 #include "chrome/browser/resource_coordinator/site_characteristics_tab_visibility.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "url/origin.h"
@@ -41,7 +41,7 @@ FORWARD_DECLARE_TEST(LocalSiteCharacteristicsDataImplTest,
                      LateAsyncReadDoesntBypassClearEvent);
 
 // Internal class used to read/write site characteristics. This is a wrapper
-// class around a SiteCharacteristicsProto object and offers various to query
+// class around a SiteDataProto object and offers various to query
 // and/or modify it. This class shouldn't be used directly, instead it should be
 // created by a LocalSiteCharacteristicsDataStore that will serve reader and
 // writer objects.
@@ -126,7 +126,7 @@ class LocalSiteCharacteristicsDataImpl
         site_characteristics_.last_loaded());
   }
 
-  const SiteCharacteristicsProto& site_characteristics_for_testing() const {
+  const SiteDataProto& site_characteristics_for_testing() const {
     return site_characteristics_;
   }
 
@@ -168,7 +168,7 @@ class LocalSiteCharacteristicsDataImpl
   virtual ~LocalSiteCharacteristicsDataImpl();
 
   // Helper functions to convert from/to the internal representation that is
-  // used to store TimeDelta values in the |SiteCharacteristicsProto| protobuf.
+  // used to store TimeDelta values in the |SiteDataProto| protobuf.
   static base::TimeDelta InternalRepresentationToTimeDelta(
       ::google::protobuf::int64 value) {
     return base::TimeDelta::FromSeconds(value);
@@ -182,7 +182,7 @@ class LocalSiteCharacteristicsDataImpl
   // since this site has been loaded (if applicable). If a feature has been
   // used then it returns 0.
   base::TimeDelta FeatureObservationDuration(
-      const SiteCharacteristicsFeatureProto& feature_proto) const;
+      const SiteDataFeatureProto& feature_proto) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(LocalSiteCharacteristicsDataImplTest,
@@ -202,7 +202,7 @@ class LocalSiteCharacteristicsDataImpl
   // Add |extra_observation_duration| to the observation window of a given
   // feature if it hasn't been used yet, do nothing otherwise.
   static void IncrementFeatureObservationDuration(
-      SiteCharacteristicsFeatureProto* feature_proto,
+      SiteDataFeatureProto* feature_proto,
       base::TimeDelta extra_observation_duration);
 
   // Clear all the past observations about this site and invalidate the pending
@@ -210,28 +210,26 @@ class LocalSiteCharacteristicsDataImpl
   void ClearObservationsAndInvalidateReadOperation();
 
   // Returns the usage of |site_feature| for this site.
-  SiteFeatureUsage GetFeatureUsage(
-      const SiteCharacteristicsFeatureProto& feature_proto,
-      const base::TimeDelta min_obs_time) const;
+  SiteFeatureUsage GetFeatureUsage(const SiteDataFeatureProto& feature_proto,
+                                   const base::TimeDelta min_obs_time) const;
 
-  // Helper function to update a given |SiteCharacteristicsFeatureProto| when a
+  // Helper function to update a given |SiteDataFeatureProto| when a
   // feature gets used.
-  void NotifyFeatureUsage(SiteCharacteristicsFeatureProto* feature_proto,
+  void NotifyFeatureUsage(SiteDataFeatureProto* feature_proto,
                           const char* feature_name);
 
   bool IsLoaded() const { return loaded_tabs_count_ > 0U; }
 
   // Callback that needs to be called by the database once it has finished
   // trying to read the protobuf.
-  void OnInitCallback(
-      base::Optional<SiteCharacteristicsProto> site_characteristic_proto);
+  void OnInitCallback(base::Optional<SiteDataProto> site_characteristic_proto);
 
   // Decrement the |loaded_tabs_in_background_count_| counter and update the
   // local feature observation durations if necessary.
   void DecrementNumLoadedBackgroundTabs();
 
   // Flush any state that's maintained in member variables to the proto.
-  const SiteCharacteristicsProto& FlushStateToProto();
+  const SiteDataProto& FlushStateToProto();
 
   // Updates the proto with the current total observation duration and updates
   // |background_session_begin_| to NowTicks().
@@ -241,7 +239,7 @@ class LocalSiteCharacteristicsDataImpl
 
   // This site's characteristics, contains the features and other values are
   // measured.
-  SiteCharacteristicsProto site_characteristics_;
+  SiteDataProto site_characteristics_;
 
   // The in-memory storage for the moving performance averages.
   ExponentialMovingAverage load_duration_;       // microseconds.

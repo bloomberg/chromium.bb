@@ -73,7 +73,7 @@ void LocalSiteCharacteristicsNonRecordingDataStore::GetDatabaseSize(
 bool LocalSiteCharacteristicsNonRecordingDataStore::GetDataForOrigin(
     const url::Origin& origin,
     bool* is_dirty,
-    std::unique_ptr<SiteCharacteristicsProto>* data) {
+    std::unique_ptr<SiteDataProto>* data) {
   if (!data_store_inspector_)
     return false;
 

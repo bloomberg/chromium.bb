@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@ option optimize_for = LITE_RUNTIME;
 
 // Contains the information that we want to track about a given site feature.
 // Next Id: 3
-message SiteCharacteristicsFeatureProto {
+message SiteDataFeatureProto {
   // The cumulative observation time for this feature in seconds, set to 0 once
   // this feature has been observed.
   optional int64 observation_duration = 1;
@@ -19,7 +19,7 @@ message SiteCharacteristicsFeatureProto {
 
 // Contains decaying average performance measurement estimates.
 // Next Id: 4
-message SiteCharacteristicsPerformanceMeasurement {
+message SiteDataPerformanceMeasurement {
   // A decaying average of the CPU usage measurements. Units: microseconds.
   optional float avg_cpu_usage_us = 1;
   // A decaying average of the process footprint measurements. Units: kilobytes.
@@ -29,21 +29,21 @@ message SiteCharacteristicsPerformanceMeasurement {
   optional float avg_load_duration_us = 3;
 };
 
-// Defines the characteristics that we want to track about a given site.
+// Defines the data that we want to track about a given site.
 // Next Id: 7
-message SiteCharacteristicsProto {
+message SiteDataProto {
   // The last time this site has been in the loaded state, in seconds since
   // epoch.
   optional uint32 last_loaded = 1;
 
   // List of features that we're tracking.
-  optional SiteCharacteristicsFeatureProto updates_favicon_in_background = 2;
-  optional SiteCharacteristicsFeatureProto updates_title_in_background = 3;
-  optional SiteCharacteristicsFeatureProto uses_audio_in_background = 4;
-  optional SiteCharacteristicsFeatureProto uses_notifications_in_background = 5;
+  optional SiteDataFeatureProto updates_favicon_in_background = 2;
+  optional SiteDataFeatureProto updates_title_in_background = 3;
+  optional SiteDataFeatureProto uses_audio_in_background = 4;
+  optional SiteDataFeatureProto uses_notifications_in_background = 5;
 
   // Load time performance measurement estimates. This maintains a decaying
   // average of the resource usage of a page until shortly after it becomes
   // idle.
-  optional SiteCharacteristicsPerformanceMeasurement load_time_estimates = 6;
+  optional SiteDataPerformanceMeasurement load_time_estimates = 6;
 }

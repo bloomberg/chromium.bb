@@ -37,7 +37,7 @@ class TestLocalSiteCharacteristicsDataImpl
       : LocalSiteCharacteristicsDataImpl(origin, delegate, database) {}
 
   base::TimeDelta FeatureObservationTimestamp(
-      const SiteCharacteristicsFeatureProto& feature_proto) {
+      const SiteDataFeatureProto& feature_proto) {
     return InternalRepresentationToTimeDelta(feature_proto.use_timestamp());
   }
 
@@ -65,25 +65,25 @@ class MockLocalSiteCharacteristicsDatabase
                         ReadSiteCharacteristicsFromDBCallback&));
 
   MOCK_METHOD2(WriteSiteCharacteristicsIntoDB,
-               void(const url::Origin&, const SiteCharacteristicsProto&));
+               void(const url::Origin&, const SiteDataProto&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockLocalSiteCharacteristicsDatabase);
 };
 
-// Returns a SiteCharacteristicsFeatureProto that indicates that a feature
+// Returns a SiteDataFeatureProto that indicates that a feature
 // hasn't been used.
-SiteCharacteristicsFeatureProto GetUnusedFeatureProto() {
-  SiteCharacteristicsFeatureProto unused_feature_proto;
+SiteDataFeatureProto GetUnusedFeatureProto() {
+  SiteDataFeatureProto unused_feature_proto;
   unused_feature_proto.set_observation_duration(1U);
   unused_feature_proto.set_use_timestamp(0U);
   return unused_feature_proto;
 }
 
-// Returns a SiteCharacteristicsFeatureProto that indicates that a feature
+// Returns a SiteDataFeatureProto that indicates that a feature
 // has been used.
-SiteCharacteristicsFeatureProto GetUsedFeatureProto() {
-  SiteCharacteristicsFeatureProto used_feature_proto;
+SiteDataFeatureProto GetUsedFeatureProto() {
+  SiteDataFeatureProto used_feature_proto;
   used_feature_proto.set_observation_duration(0U);
   used_feature_proto.set_use_timestamp(1U);
   return used_feature_proto;
@@ -316,7 +316,7 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, AllDurationGetSavedOnUnload) {
   local_site_data->NotifyUsesAudioInBackground();
   local_site_data->NotifySiteUnloaded(TabVisibility::kBackground);
 
-  SiteCharacteristicsProto expected_proto;
+  SiteDataProto expected_proto;
 
   auto expected_last_loaded_time =
       TestLocalSiteCharacteristicsDataImpl::TimeDeltaToInternalRepresentation(
@@ -327,7 +327,7 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, AllDurationGetSavedOnUnload) {
   // Features that haven't been used should have an observation duration of
   // |kIntervalInternalRepresentation| and an observation timestamp equal to
   // zero.
-  SiteCharacteristicsFeatureProto unused_feature_proto;
+  SiteDataFeatureProto unused_feature_proto;
   unused_feature_proto.set_observation_duration(
       kIntervalInternalRepresentation);
 
@@ -342,7 +342,7 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, AllDurationGetSavedOnUnload) {
   // be equal to zero, and its observation timestamp should be equal to the last
   // loaded time in this case (as this feature has been used right before
   // unloading).
-  SiteCharacteristicsFeatureProto used_feature_proto;
+  SiteDataFeatureProto used_feature_proto;
   used_feature_proto.set_use_timestamp(expected_last_loaded_time);
   expected_proto.mutable_uses_audio_in_background()->CopyFrom(
       used_feature_proto);
@@ -439,10 +439,8 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
   // Initialize a fake protobuf that indicates that this site updates its title
   // while in background and set a fake last loaded time (this should be
   // overriden once the callback runs).
-  base::Optional<SiteCharacteristicsProto> test_proto =
-      SiteCharacteristicsProto();
-  SiteCharacteristicsFeatureProto unused_feature_proto =
-      GetUnusedFeatureProto();
+  base::Optional<SiteDataProto> test_proto = SiteDataProto();
+  SiteDataFeatureProto unused_feature_proto = GetUnusedFeatureProto();
   test_proto->mutable_updates_title_in_background()->CopyFrom(
       GetUsedFeatureProto());
   test_proto->mutable_updates_favicon_in_background()->CopyFrom(
@@ -488,7 +486,7 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
   EXPECT_CALL(mock_db,
               WriteSiteCharacteristicsIntoDB(::testing::_, ::testing::_))
       .WillOnce(::testing::Invoke(
-          [](const url::Origin& origin, const SiteCharacteristicsProto& proto) {
+          [](const url::Origin& origin, const SiteDataProto& proto) {
             ASSERT_TRUE(proto.has_load_time_estimates());
             const auto& estimates = proto.load_time_estimates();
             ASSERT_TRUE(estimates.has_avg_load_duration_us());
@@ -627,8 +625,7 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
   EXPECT_EQ(0u, local_site_data->cpu_usage_estimate().num_datums());
   EXPECT_EQ(0u, local_site_data->private_footprint_kb_estimate().num_datums());
 
-  base::Optional<SiteCharacteristicsProto> test_proto =
-      SiteCharacteristicsProto();
+  base::Optional<SiteDataProto> test_proto = SiteDataProto();
 
   // Run the callback to indicate that the initialization has completed.
   std::move(read_cb).Run(test_proto);
@@ -646,7 +643,7 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
   EXPECT_CALL(mock_db,
               WriteSiteCharacteristicsIntoDB(::testing::_, ::testing::_))
       .WillOnce(::testing::Invoke(
-          [](const url::Origin& origin, const SiteCharacteristicsProto& proto) {
+          [](const url::Origin& origin, const SiteDataProto& proto) {
             ASSERT_FALSE(proto.has_load_time_estimates());
           }));
 
@@ -712,8 +709,7 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, DataLoadedCallbackInvoked) {
       base::BindLambdaForTesting([&]() { callback_invoked = true; }));
 
   // Run the callback to indicate that the initialization has completed.
-  base::Optional<SiteCharacteristicsProto> test_proto =
-      SiteCharacteristicsProto();
+  base::Optional<SiteDataProto> test_proto = SiteDataProto();
   std::move(read_cb).Run(test_proto);
 
   EXPECT_TRUE(callback_invoked);
