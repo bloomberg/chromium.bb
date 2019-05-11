@@ -350,8 +350,6 @@ class SimpleBuilder(generic_builders.Builder):
             builder_run.config.afdo_update_ebuild):
           self._RunStage(afdo_stages.AFDOUpdateChromeEbuildStage,
                          builder_run=builder_run)
-          self._RunStage(afdo_stages.AFDOUpdateKernelEbuildStage,
-                         builder_run=builder_run)
 
         # Kick off our background stages.
         queue.put([builder_run, board])
@@ -501,7 +499,6 @@ class DistributedBuilder(SimpleBuilder):
           self._run.config.afdo_update_ebuild and
           not self._run.config.afdo_generate_min):
         self._RunStage(afdo_stages.AFDOUpdateChromeEbuildStage)
-        self._RunStage(afdo_stages.AFDOUpdateKernelEbuildStage)
         updateEbuild_successful = True
     finally:
       if self._run.config.master:
