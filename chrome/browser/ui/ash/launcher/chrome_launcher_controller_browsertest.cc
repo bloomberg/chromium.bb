@@ -163,13 +163,6 @@ void RestoreWindow(ui::BaseWindow* window) {
   aura::test::WaitForAllChangesToComplete();
 }
 
-// Returns the shelf view for the primary display.
-// TODO(jamescook): Convert users of this function to the mojo shelf test API.
-ash::ShelfView* GetPrimaryShelfView() {
-  return ash::Shelf::ForWindow(ash::Shell::GetPrimaryRootWindow())
-      ->GetShelfViewForTesting();
-}
-
 int64_t GetDisplayIdForBrowserWindow(BrowserWindow* window) {
   return display::Screen::GetScreen()
       ->GetDisplayNearestWindow(window->GetNativeWindow())
@@ -1615,106 +1608,6 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ActivateAfterSessionRestore) {
 // TODO(crbug.com/759779, crbug.com/819386): add back |DISABLED_DragAndDrop|.
 // TODO(crbug.com/759779, crbug.com/819386): add back
 // |MultiDisplayBasicDragAndDrop|.
-
-// Do tests for removal of items from the shelf by dragging.
-// Disabled due to flake: http://crbug.com/448482
-IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragOffShelf) {
-  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow(),
-                                     gfx::Point());
-  ash::ShelfViewTestAPI test(GetPrimaryShelfView());
-  const ash::ShelfView* shelf_view = GetPrimaryShelfView();
-  test.SetAnimationDuration(1);  // Speed up animations for test.
-  // Create a known application and check that we have 3 items in the shelf.
-  CreateShortcut("app1");
-  test.RunMessageLoopUntilAnimationsDone();
-  EXPECT_EQ(3, shelf_model()->item_count());
-
-  // Test #1: Ripping out the browser item should not change anything.
-  int browser_index = GetIndexOfShelfItemType(ash::TYPE_BROWSER_SHORTCUT);
-  EXPECT_LE(0, browser_index);
-  RipOffItemIndex(browser_index, &generator, &test, RIP_OFF_ITEM);
-  // => It should not have been removed and the location should be unchanged.
-  EXPECT_EQ(3, shelf_model()->item_count());
-  EXPECT_EQ(browser_index, GetIndexOfShelfItemType(ash::TYPE_BROWSER_SHORTCUT));
-  // Make sure that the hide state has been unset after the snap back animation
-  // finished.
-  ash::ShelfAppButton* button = test.GetButton(browser_index);
-  EXPECT_FALSE(button->state() & ash::ShelfAppButton::STATE_HIDDEN);
-
-  // Test #2: Ripping out the application and canceling the operation should
-  // not change anything.
-  int app_index = GetIndexOfShelfItemType(ash::TYPE_PINNED_APP);
-  EXPECT_LE(0, app_index);
-  RipOffItemIndex(app_index, &generator, &test, RIP_OFF_ITEM_AND_CANCEL);
-  // => It should not have been removed and the location should be unchanged.
-  ASSERT_EQ(3, shelf_model()->item_count());
-  EXPECT_EQ(app_index, GetIndexOfShelfItemType(ash::TYPE_PINNED_APP));
-
-  // Test #3: Ripping out the application and moving it back in should not
-  // change anything.
-  RipOffItemIndex(app_index, &generator, &test, RIP_OFF_ITEM_AND_RETURN);
-  // => It should not have been removed and the location should be unchanged.
-  ASSERT_EQ(3, shelf_model()->item_count());
-  // Through the operation the index might have changed.
-  app_index = GetIndexOfShelfItemType(ash::TYPE_PINNED_APP);
-
-  // Test #4: Ripping out the application should remove the item.
-  RipOffItemIndex(app_index, &generator, &test, RIP_OFF_ITEM);
-  // => It should not have been removed and the location should be unchanged.
-  EXPECT_EQ(2, shelf_model()->item_count());
-  EXPECT_EQ(-1, GetIndexOfShelfItemType(ash::TYPE_PINNED_APP));
-
-  // Test #5: Uninstalling an application while it is being ripped off should
-  // not crash.
-  CreateShortcut("app2");
-  test.RunMessageLoopUntilAnimationsDone();
-  int app2_index = GetIndexOfShelfItemType(ash::TYPE_PINNED_APP);
-  EXPECT_EQ(3, shelf_model()->item_count());  // And it remains that way.
-  RipOffItemIndex(app2_index, &generator, &test,
-                  RIP_OFF_ITEM_AND_DONT_RELEASE_MOUSE);
-  controller_->UnpinAppWithID("app2");
-  test.RunMessageLoopUntilAnimationsDone();
-  EXPECT_EQ(2, shelf_model()->item_count());  // The item should now be gone.
-  generator.ReleaseLeftButton();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2, shelf_model()->item_count());  // And it remains that way.
-  EXPECT_EQ(-1, GetIndexOfShelfItemType(ash::TYPE_PINNED_APP));
-
-  // Test #6: Ripping out the application when the overflow button exists.
-  // After ripping out, overflow button should be removed.
-  int items_added = 0;
-  EXPECT_FALSE(shelf_view->GetOverflowButton()->visible());
-
-  // Create fake app shortcuts until overflow button is created.
-  while (!shelf_view->GetOverflowButton()->visible()) {
-    std::string fake_app_id = base::StringPrintf("fake_app_%d", items_added);
-    PinFakeApp(fake_app_id);
-    test.RunMessageLoopUntilAnimationsDone();
-
-    ++items_added;
-    ASSERT_LT(items_added, 10000);
-  }
-  // Make one more item after creating a overflow button.
-  std::string fake_app_id = base::StringPrintf("fake_app_%d", items_added);
-  PinFakeApp(fake_app_id);
-  test.RunMessageLoopUntilAnimationsDone();
-
-  int total_count = shelf_model()->item_count();
-  app_index = GetIndexOfShelfItemType(ash::TYPE_PINNED_APP);
-  RipOffItemIndex(app_index, &generator, &test, RIP_OFF_ITEM);
-  // When an item is ripped off from the shelf that has overflow button
-  // (see crbug.com/3050787), it was hidden accidentally and was then
-  // suppressing any further events. If handled correctly the operation will
-  // however correctly done and the item will get removed (as well as the
-  // overflow button).
-  EXPECT_EQ(total_count - 1, shelf_model()->item_count());
-  EXPECT_TRUE(shelf_view->GetOverflowButton()->visible());
-
-  // Rip off again and the overflow button should has disappeared.
-  RipOffItemIndex(app_index, &generator, &test, RIP_OFF_ITEM);
-  EXPECT_EQ(total_count - 2, shelf_model()->item_count());
-  EXPECT_FALSE(shelf_view->GetOverflowButton()->visible());
-}
 
 // TODO(crbug.com/759779, crbug.com/819386): add back |ClickItem|.
 
