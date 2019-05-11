@@ -49,6 +49,8 @@ class ASH_EXPORT UnifiedSystemTrayController
   void HandleSettingsAction();
   // Shutdown the computer. Called from the view.
   void HandlePowerAction();
+  // Switch to page represented by it's button. Called from the view.
+  void HandlePageSwitchAction(int page);
   // Show date and time settings. Called from the view.
   void HandleOpenDateTimeSettingsAction();
   // Show enterprise managed device info. Called from the view.

@@ -73,7 +73,8 @@ void UnifiedSystemTrayModel::DBusObserver::KeyboardBrightnessChanged(
 }
 
 UnifiedSystemTrayModel::UnifiedSystemTrayModel()
-    : dbus_observer_(std::make_unique<DBusObserver>(this)) {}
+    : dbus_observer_(std::make_unique<DBusObserver>(this)),
+      pagination_model_(std::make_unique<PaginationModel>()) {}
 
 UnifiedSystemTrayModel::~UnifiedSystemTrayModel() = default;
 

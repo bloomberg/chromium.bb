@@ -117,6 +117,11 @@ void UnifiedSystemTrayController::HandlePowerAction() {
   CloseBubble();
 }
 
+void UnifiedSystemTrayController::HandlePageSwitchAction(int page) {
+  // TODO(amehfooz) Record Pagination Metrics here.
+  model_->pagination_model()->SelectPage(page, true);
+}
+
 void UnifiedSystemTrayController::HandleOpenDateTimeSettingsAction() {
   ClockModel* model = Shell::Get()->system_tray_model()->clock();
 

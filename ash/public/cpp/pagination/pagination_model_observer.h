@@ -12,19 +12,19 @@ namespace ash {
 class ASH_PUBLIC_EXPORT PaginationModelObserver {
  public:
   // Invoked when the total number of page is changed.
-  virtual void TotalPagesChanged() = 0;
+  virtual void TotalPagesChanged() {}
 
   // Invoked when the selected page index is changed.
-  virtual void SelectedPageChanged(int old_selected, int new_selected) = 0;
+  virtual void SelectedPageChanged(int old_selected, int new_selected) {}
 
   // Invoked when a transition starts.
-  virtual void TransitionStarted() = 0;
+  virtual void TransitionStarted() {}
 
   // Invoked when the transition data is changed.
-  virtual void TransitionChanged() = 0;
+  virtual void TransitionChanged() {}
 
   // Invoked when a transition ends.
-  virtual void TransitionEnded() = 0;
+  virtual void TransitionEnded() {}
 
   // Invoked when a grid scroll starts.
   virtual void ScrollStarted() {}
